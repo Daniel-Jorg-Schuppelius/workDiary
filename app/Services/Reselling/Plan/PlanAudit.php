@@ -47,9 +47,12 @@ final class PlanAudit {
 
     public const LAST_FAILED = 'last_failed';
 
+    /** Vorlagenposition mehr Lizenzen zugeordnet, als sie berechnet (Phase 167, MVP-1454). */
+    public const LINE_OVERBOOKED = 'line_overbooked';
+
     public const KINDS = [
         self::SUBSCRIPTION_WITHOUT_PLAN, self::PLAN_WITHOUT_SUBSCRIPTION, self::QUANTITY_MISMATCH, self::PLAN_AFTER_END,
-        self::PLAN_PAUSED, self::PLAN_MISSING, self::NEXT_EXECUTION_OFF, self::LAST_FAILED,
+        self::PLAN_PAUSED, self::PLAN_MISSING, self::NEXT_EXECUTION_OFF, self::LAST_FAILED, self::LINE_OVERBOOKED,
     ];
 
     /** Toleranz zwischen nächster Ausführung der Vorlage und Periodenbeginn. */
@@ -102,9 +105,12 @@ final class PlanAudit {
         $linksBySubscription = [];
         /** @var array<string, true> $linkedLines */
         $linkedLines = [];
+        /** @var array<string, int> $linkedByLine Vorlagenposition → zugeordnete Lizenzen über alle Abos */
+        $linkedByLine = [];
         foreach ($links as $link) {
             $linksBySubscription[(int) $link->subscription_id][] = $link;
             $linkedLines[$link->lineKey()] = true;
+            $linkedByLine[$link->lineKey()] = ($linkedByLine[$link->lineKey()] ?? 0) + (int) $link->quantity;
         }
         $nextStarts = $this->nextPeriodStarts($organization, array_values(array_map('intval', $subscriptions->pluck('id')->all())), $reference);
         $executions = $this->executions->statesFor($organization, $templates->filter(static fn(PlanTemplate $t): bool => $t->lastFailed));
@@ -163,8 +169,16 @@ final class PlanAudit {
                 continue;
             }
             foreach ($template->licenceLines() as $line) {
-                if (! isset($linkedLines[ResalePlanLink::lineKeyOf($template->key, $line->position)])) {
+                $lineKey = ResalePlanLink::lineKeyOf($template->key, $line->position);
+                if (! isset($linkedLines[$lineKey])) {
                     $findings[] = $this->finding(self::PLAN_WITHOUT_SUBSCRIPTION, null, $template, $line, ['quantity' => (string) round($line->licences($template->intervalMonths()), 2)]);
+
+                    continue;
+                }
+                // Mehr zugeordnet, als die Position berechnet: die übrigen Abos gelten als gedeckt, werden aber nie berechnet.
+                $licences = (int) round($line->licences($template->intervalMonths()));
+                if (($linkedByLine[$lineKey] ?? 0) > $licences) {
+                    $findings[] = $this->finding(self::LINE_OVERBOOKED, null, $template, $line, ['linked' => $linkedByLine[$lineKey], 'quantity' => $licences]);
                 }
             }
         }

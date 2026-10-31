@@ -51,7 +51,7 @@ final class HolderTakeover {
         }
         $subscription->loadMissing('assignments');
 
-        return max(0, $subscription->quantity - $subscription->assignedQuantityBetween($from, $subscription->ends_on));
+        return $subscription->transferableQuantityBetween($from, $subscription->ends_on);
     }
 
     public static function isWhole(ResaleSubscription $subscription, CarbonImmutable $from): bool {

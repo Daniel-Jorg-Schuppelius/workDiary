@@ -124,6 +124,18 @@ subscription to the new holder, otherwise an assignment starts on the
 effective date. If an invoice already goes to the successor company, the
 board offers the takeover directly at that invoice.
 
+**Quantities and coverage:** The register never lets you assign more than
+there is. You assign at most what a period still has open — also when moving
+a link. Only licences that are neither transferred nor already invoiced to
+the holder in the period can be transferred, allocated or taken over; an
+assignment to the own holder is refused, and legacy cases appear with
+“Return assignment”. A line of a recurring template takes at most as many
+licences as it bills (“Template line overbooked” reports legacy cases). If a
+template covers only part of a subscription, the invoice proposal contains
+the rest (“4 of 9 licences, 5 via recurring template”); the automatic run
+leaves it out. An invoice line carries at most as many stock licences as it
+has pieces.
+
 **Generic list:** Besides the provider exports (Telekom, Quality Hosting)
 the import accepts any CSV or XLSX list whose columns are recognisable by
 name — German or English: id, company, product, quantity, start, end,

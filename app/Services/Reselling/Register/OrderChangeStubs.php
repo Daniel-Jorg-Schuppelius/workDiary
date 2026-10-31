@@ -122,6 +122,11 @@ final class OrderChangeStubs {
         if ($target === null || in_array($target->status, [PeriodStatus::Waived, PeriodStatus::Disputed], true)) {
             return null;
         }
+        // Nur so viel, wie die erste Periode des Nachfolgers noch offen hat (Phase 167, MVP-1457) — sonst bleibt der Stummel.
+        $moving = (float) $stub->links->sum(static fn (ResalePeriodLink $link): float => (float) $link->months);
+        if ($moving > $target->openMonths() + 0.001) {
+            return null;
+        }
 
         $moved = [];
         $term = $target->termMonths();

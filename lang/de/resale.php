@@ -322,6 +322,7 @@ return [
         'error' => [
             'line_missing' => 'Rechnungsposition nicht gefunden.',
             'exceeds' => 'Die Position hat nur noch :amount frei.',
+            'exceeds_period' => 'Die Periode braucht nur noch :amount — mehr lässt sich ihr nicht zuordnen.',
         ],
     ],
     'widget' => [
@@ -384,6 +385,7 @@ return [
         'end_customer' => 'Endkunde :name',
         'unit_piece' => 'Stück',
         'unit_year' => 'Jahr',
+        'plan_remainder' => ':open von :quantity Lizenzen, :planned über Serienvorlage',
         'until' => 'Perioden bis',
         'until_today' => 'nur fällige',
         'until_years' => '+:years Jahr|+:years Jahre',
@@ -651,7 +653,7 @@ return [
         'title' => 'Lizenzen abtreten: :subscription',
         'action' => 'Lizenzen abtreten',
         'submit' => 'Abtreten',
-        'hint' => 'Halter :holder hat :quantity Lizenzen, davon sind :available noch nicht abgetreten. Der neue Halter bekommt eigene Abrechnungsperioden; der Vertrag plant mit dem Rest.',
+        'hint' => 'Halter :holder hat :quantity Lizenzen, davon sind im gewählten Zeitraum :available frei — weder abgetreten noch schon über Rechnungen an :holder berechnet. Der neue Halter bekommt eigene Abrechnungsperioden; der Vertrag plant mit dem Rest.',
         'mode' => 'Neuer Halter',
         'action_period' => 'Periode an :customer abtreten',
         'timeline_hint' => 'Auch ein Halterwechsel im Zeitverlauf ist eine Abtretung: alle Lizenzen für den alten Zeitraum an den früheren Halter, danach läuft der Vertrag beim jetzigen Halter weiter.',
@@ -659,7 +661,10 @@ return [
         'section' => 'Abgetretene Lizenzen',
         'from' => 'Abgetreten aus',
         'assigned_hint' => ':count Lizenz an andere Halter abgetreten|:count Lizenzen an andere Halter abgetreten',
-        'none_available' => 'Im Zeitraum :from – :to sind alle :quantity Lizenzen abgetreten. Zeitraum ändern oder eine Abtretung zurücknehmen.',
+        'none_available' => 'Im Zeitraum :from – :to sind alle :quantity Lizenzen abgetreten oder schon über Rechnungen an den Halter berechnet. Zeitraum ändern, eine Abtretung zurücknehmen oder einen Rechnungsbezug lösen.',
+        'billed' => ':period: :billed von :quantity Lizenzen über Rechnungen an :holder berechnet',
+        'self_assignment' => 'Abtretung an den eigenen Halter',
+        'self_assignment_text' => 'Die Abtretung geht an den Halter des Vertrags: die Rechnungsbezüge hängen an der Vertragsperiode, die Periode der Abtretung bleibt offen. Zurücknehmen, dann gilt wieder die Vertragsperiode.',
         'segments' => [
             'title' => 'Freie Lizenzen je Zeitraum',
             'period' => 'Zeitraum',
@@ -669,7 +674,8 @@ return [
         ],
         'error' => [
             'holder' => 'Bitte einen Halter wählen.',
-            'quantity' => 'Nur :available Lizenzen sind noch nicht abgetreten.',
+            'quantity' => 'Nur :available Lizenzen sind im Zeitraum weder abgetreten noch über Rechnungen an den Halter berechnet.',
+            'same_holder' => 'Der neue Halter ist der Halter des Vertrags — eine Abtretung an sich selbst nimmt dem Vertrag nur Lizenzen weg.',
         ],
         'flash' => [
             'created' => ':quantity Lizenzen an :holder abgetreten.',
@@ -1105,6 +1111,7 @@ return [
                 'duplicate_key' => 'Dieser Schlüssel ist bereits einer anderen Lizenz zugeordnet.',
             ],
         ],
+        'line_free' => ':free frei',
         'error' => [
             'roles_missing' => 'Mindestens ein Schlüssel je Lizenz ist nötig.',
             'quantity' => 'Die Anzahl muss zwischen 1 und :max liegen.',
@@ -1124,6 +1131,7 @@ return [
             'not_blocked' => 'Die Lizenz ist nicht gesperrt.',
             'unblock_unconfirmed' => 'Bitte bestätigen Sie, dass die Lizenz erneut verwendbar ist.',
             'line_recipient' => 'Die gewählte Rechnungsposition gehört zu einem anderen Rechnungsempfänger.',
+            'line_exhausted' => 'Diese Rechnungsposition trägt schon :quantity Lizenz(en) — eine andere Position wählen.',
             'line_missing' => 'Die gewählte Rechnungsposition ist nicht (mehr) im Spiegel.',
             'customer_foreign' => 'Der Kunde gehört nicht zu Ihrer Organisation.',
             'holder_mismatch' => 'Der Endkunde gehört nicht zu diesem Kunden.',
@@ -1298,6 +1306,8 @@ return [
         ],
         'error' => [
             'subscription' => 'Das Abo gehört nicht zu diesem Konto.',
+            'quantity' => 'Die Vorlagenposition hat nur noch :free Lizenzen frei.',
+            'line' => 'Diese Vorlagenposition gibt es nicht (mehr).',
         ],
         'flash' => [
             'saved' => 'Zuordnung gespeichert.',
@@ -1312,6 +1322,7 @@ return [
             'plan_missing_short' => 'Vorlage nicht mehr vorhanden',
             'next_execution_off_short' => 'Ausführung neben dem Periodenbeginn',
             'last_failed_short' => 'Letzte Ausführung fehlgeschlagen',
+            'line_overbooked_short' => 'Vorlagenposition überbucht',
             'subscription_without_plan' => 'Für dieses Abo berechnet keine Serienvorlage — die Rechnung muss von Hand kommen.',
             'plan_without_subscription' => 'Diese Vorlagenposition (:quantity Lizenzen) gehört zu keinem Abo im Register — Abo fehlt oder Vorlage ist veraltet.',
             'quantity_mismatch' => 'Die Vorlagen berechnen :linked Lizenzen, das Abo hat :quantity.',
@@ -1320,6 +1331,7 @@ return [
             'plan_missing' => 'Die zugeordnete Vorlage :plan gibt es nicht mehr.',
             'next_execution_off' => 'Die Vorlage führt am :next aus, die nächste Periode beginnt am :period.',
             'last_failed' => 'Letzte Ausführung: :state',
+            'line_overbooked' => 'Der Position sind :linked Lizenzen zugeordnet, sie berechnet nur :quantity — eine Zuordnung lösen oder die Vorlage anpassen.',
         ],
     ],
     // Überblick als Aufgabenliste und Sammelaktionen (Feature 185, MVP-1414/1415)
@@ -1423,6 +1435,8 @@ return [
         'without_period' => 'ohne Periode',
         'line_taken' => 'vergeben an :periods',
         'writeoff' => 'Als Ausfall verbuchen',
+        'overcovered' => 'überdeckt',
+        'overcovered_hint' => 'Mehr Rechnungsbezüge als Lizenzen — einen Bezug lösen oder eine Abtretung an den eigenen Halter zurücknehmen.',
     ],
     // Phase 166 (MVP-1447/1448/1451)
     'takeover' => [
@@ -1445,7 +1459,7 @@ return [
             'no_holder' => 'Ohne Halter oder bei eigenem Bestand gibt es nichts zu übernehmen.',
             'same_holder' => 'Der neue Halter ist der bisherige.',
             'after_end' => 'Der Stichtag liegt nach dem Ende des Abos (:date).',
-            'nothing_free' => 'Ab dem Stichtag sind alle Lizenzen des Vertrags abgetreten — die Übernahme an der jeweiligen Abtretung starten.',
+            'nothing_free' => 'Ab dem Stichtag sind alle Lizenzen des Vertrags abgetreten oder schon über Rechnungen an den bisherigen Halter berechnet — die Übernahme an der jeweiligen Abtretung starten oder den Stichtag ändern.',
         ],
     ],
 ];

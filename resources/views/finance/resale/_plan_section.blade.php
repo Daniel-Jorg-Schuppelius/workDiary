@@ -98,7 +98,7 @@
                                                     <option value="{{ $candidate->sqid }}">{{ $candidate->label }} · {{ $candidate->holderLabel() }} · {{ $candidate->identityLabel() }}</option>
                                                 @endforeach
                                             </select>
-                                            <input type="number" name="quantity" min="1" value="{{ $openLicences }}" class="input input-xs input-bordered w-14 text-right" aria-label="{{ __('resale.account.col.licences') }}">
+                                            <input type="number" name="quantity" min="1" max="{{ $openLicences }}" value="{{ $openLicences }}" class="input input-xs input-bordered w-14 text-right" aria-label="{{ __('resale.account.col.licences') }}">
                                             <x-icon-btn icon="add_link" size="xs" tone="primary" type="submit" :title="__('resale.plan.assign')" />
                                         </form>
                                         <x-icon-btn icon="add" size="xs" tone="ghost" data-entry-modal-trigger :href="route('finance.resale.create', ['plan' => $template->key, 'position' => $line->position])" :title="__('resale.plan.create')" />

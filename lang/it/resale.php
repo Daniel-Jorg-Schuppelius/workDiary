@@ -322,6 +322,7 @@ return [
         'error' => [
             'line_missing' => 'Riga di fattura non trovata.',
             'exceeds' => 'La riga ha solo :amount ancora disponibili.',
+            'exceeds_period' => 'Il periodo richiede ancora solo :amount: non è possibile assegnarne di più.',
         ],
     ],
     'widget' => [
@@ -384,6 +385,7 @@ return [
         'end_customer' => 'Cliente finale :name',
         'unit_piece' => 'pezzo',
         'unit_year' => 'anno',
+        'plan_remainder' => ':open di :quantity licenze, :planned tramite modello ricorrente',
         'until' => 'Periodi fino al',
         'until_today' => 'solo scaduti',
         'until_years' => '+:years anno|+:years anni',
@@ -651,7 +653,7 @@ return [
         'title' => 'Cedere licenze: :subscription',
         'action' => 'Cedere licenze',
         'submit' => 'Cedere',
-        'hint' => 'Il titolare :holder ha :quantity licenze, di cui :available non ancora cedute. Il nuovo titolare riceve periodi propri; il contratto pianifica con il resto.',
+        'hint' => 'Il titolare :holder ha :quantity licenze, di cui :available libere nel periodo scelto — né cedute né già fatturate a :holder. Il nuovo titolare riceve periodi propri; il contratto pianifica con il resto.',
         'mode' => 'Nuovo titolare',
         'action_period' => 'Cedere il periodo a :customer',
         'timeline_hint' => 'Anche un cambio di titolare nel tempo è una cessione: tutte le licenze del vecchio periodo al titolare precedente, poi il contratto prosegue con il titolare attuale.',
@@ -659,7 +661,10 @@ return [
         'section' => 'Licenze cedute',
         'from' => 'Ceduto da',
         'assigned_hint' => ':count licenza ceduta ad altri titolari|:count licenze cedute ad altri titolari',
-        'none_available' => 'Tra il :from e il :to tutte le :quantity licenze sono cedute. Modificare il periodo o revocare una cessione.',
+        'none_available' => 'Tra il :from e il :to tutte le :quantity licenze sono cedute o già fatturate al titolare. Modificare il periodo, revocare una cessione o scollegare un riferimento di fattura.',
+        'billed' => ':period: :billed di :quantity licenze fatturate a :holder',
+        'self_assignment' => 'Cessione al proprio titolare',
+        'self_assignment_text' => 'La cessione va al titolare del contratto: i collegamenti di fattura restano sul periodo del contratto, il periodo della cessione resta aperto. Revocarla, poi vale di nuovo il periodo del contratto.',
         'segments' => [
             'title' => 'Licenze libere per periodo',
             'period' => 'Periodo',
@@ -669,7 +674,8 @@ return [
         ],
         'error' => [
             'holder' => 'Scelga un titolare.',
-            'quantity' => 'Solo :available licenze non sono ancora cedute.',
+            'quantity' => 'Solo :available licenze del periodo non sono né cedute né fatturate al titolare.',
+            'same_holder' => 'Il nuovo titolare è il titolare del contratto: una cessione a sé stesso toglie soltanto licenze al contratto.',
         ],
         'flash' => [
             'created' => ':quantity licenze cedute a :holder.',
@@ -1105,6 +1111,7 @@ return [
                 'duplicate_key' => 'Questa chiave è già assegnata a un’altra licenza.',
             ],
         ],
+        'line_free' => ':free libera/e',
         'error' => [
             'roles_missing' => 'È necessaria almeno una chiave per licenza.',
             'quantity' => 'Il numero deve essere compreso tra 1 e :max.',
@@ -1124,6 +1131,7 @@ return [
             'not_blocked' => 'La licenza non è bloccata.',
             'unblock_unconfirmed' => 'Confermi che la licenza è di nuovo utilizzabile.',
             'line_recipient' => 'La riga di fattura scelta appartiene a un altro destinatario della fattura.',
+            'line_exhausted' => 'Questa riga di fattura copre già :quantity licenza/e: scegliere un’altra riga.',
             'line_missing' => 'La riga di fattura scelta non è più nello specchio.',
             'customer_foreign' => 'Il cliente non appartiene alla Sua organizzazione.',
             'holder_mismatch' => 'Il cliente finale non appartiene a questo cliente.',
@@ -1298,6 +1306,8 @@ return [
         ],
         'error' => [
             'subscription' => 'Questo abbonamento non appartiene a questo conto.',
+            'quantity' => 'Alla riga del modello restano solo :free licenze libere.',
+            'line' => 'Questa riga del modello non esiste (più).',
         ],
         'flash' => [
             'saved' => 'Assegnazione salvata.',
@@ -1312,6 +1322,7 @@ return [
             'plan_missing_short' => 'Modello scomparso',
             'next_execution_off_short' => 'Esecuzione lontana dall\'inizio periodo',
             'last_failed_short' => 'Ultima esecuzione fallita',
+            'line_overbooked_short' => 'Riga del modello sovrassegnata',
             'subscription_without_plan' => 'Nessun modello ricorrente fattura questo abbonamento: la fattura va creata a mano.',
             'plan_without_subscription' => 'Questa riga del modello (:quantity licenze) non appartiene ad alcun abbonamento del registro: abbonamento mancante o modello obsoleto.',
             'quantity_mismatch' => 'I modelli fatturano :linked licenze, l\'abbonamento ne ha :quantity.',
@@ -1320,6 +1331,7 @@ return [
             'plan_missing' => 'Il modello assegnato :plan non esiste più.',
             'next_execution_off' => 'Il modello si esegue il :next, il prossimo periodo inizia il :period.',
             'last_failed' => 'Ultima esecuzione: :state',
+            'line_overbooked' => 'Alla riga sono assegnate :linked licenze, ne fattura solo :quantity: rimuovere un’assegnazione o adattare il modello.',
         ],
     ],
     // Überblick als Aufgabenliste und Sammelaktionen (Feature 185, MVP-1414/1415)
@@ -1423,6 +1435,8 @@ return [
         'without_period' => 'senza periodo',
         'line_taken' => 'usata da :periods',
         'writeoff' => 'Registrare come perdita',
+        'overcovered' => 'sovracoperto',
+        'overcovered_hint' => 'Più collegamenti di fattura che licenze: scollegare un riferimento o revocare una cessione al proprio titolare.',
     ],
     // Phase 166 (MVP-1447/1448/1451)
     'takeover' => [
@@ -1445,7 +1459,7 @@ return [
             'no_holder' => 'Senza titolare o per lo stock proprio non c’è nulla da subentrare.',
             'same_holder' => 'Il nuovo titolare è quello precedente.',
             'after_end' => 'La data di decorrenza è successiva alla fine dell’abbonamento (:date).',
-            'nothing_free' => 'Dalla data di decorrenza tutte le licenze del contratto sono cedute: avviare il subentro sulla rispettiva cessione.',
+            'nothing_free' => 'Dalla data di decorrenza tutte le licenze del contratto sono cedute o già fatturate al titolare precedente: avviare il subentro sulla rispettiva cessione o modificare la data di decorrenza.',
         ],
     ],
 ];

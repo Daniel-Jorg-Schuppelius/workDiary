@@ -306,6 +306,44 @@ class ResaleSubscription extends Model {
     }
 
     /**
+     * Perioden, die den Zeitraum berühren und schon über Rechnungen an diesen Halter
+     * berechnet sind — mit der Zahl berechneter Lizenzen (Bezüge in Lizenzen, aufgerundet).
+     *
+     * @return list<array{period: ResalePeriod, billed: int}>
+     */
+    public function billedPeriodsBetween(CarbonImmutable $from, ?CarbonImmutable $to): array {
+        $billed = [];
+        foreach ($this->periods()->with('links')->get() as $period) {
+            if ($period->ends_on->lessThan($from) || ($to !== null && $period->starts_on->greaterThan($to))) {
+                continue;
+            }
+            $licences = (int) ceil($period->coveredMonths() / max(1, $period->termMonths()) - 0.001);
+            if ($licences > 0) {
+                $billed[] = ['period' => $period, 'billed' => $licences];
+            }
+        }
+
+        return $billed;
+    }
+
+    /**
+     * Lizenzen, die im Zeitraum noch abgetreten werden können (Pilot 2026-10-31): weder
+     * abgetreten noch in einer Periode schon über Rechnungen an diesen Halter berechnet —
+     * je Periode gerechnet, das Minimum zählt. Sonst stünden nach der Abtretung mehr
+     * Rechnungsbezüge an der Periode, als sie Lizenzen hat.
+     */
+    public function transferableQuantityBetween(CarbonImmutable $from, ?CarbonImmutable $to): int {
+        $free = $this->quantity - $this->assignedQuantityBetween($from, $to);
+        foreach ($this->billedPeriodsBetween($from, $to) as ['period' => $period, 'billed' => $billed]) {
+            $periodFrom = $period->starts_on->max($from);
+            $periodTo = $to === null ? $period->ends_on : $period->ends_on->min($to);
+            $free = min($free, $this->quantity - $this->assignedQuantityBetween($periodFrom, $periodTo) - $billed);
+        }
+
+        return max(0, $free);
+    }
+
+    /**
      * Zeitabschnitte des Vertrags mit abgetretener und freier Menge (Dialog
      * „Lizenzen abtreten“, Pilot 2026-10-31): Grenzen sind der Vertragsbeginn,
      * der Beginn und der Folgetag des Endes jeder Abtretung; gleichbleibende
@@ -538,6 +576,15 @@ class ResaleSubscription extends Model {
     /** Halter als Vergleichsschlüssel wie {@see ResaleAccountAllocation::holderKey()}. */
     public function holderKey(): string {
         return ResaleAccountAllocation::holderKeyOf($this->customer_id, $this->foreign_customer_id, (bool) $this->is_own_holding);
+    }
+
+    /**
+     * Abtretung an den Halter des eigenen Vertrags (Phase 167, MVP-1458): sie nimmt dem Vertrag die
+     * Lizenzen, deren Rechnungsbezüge an seinen Perioden hängen bleiben — die Periode der Abtretung
+     * bleibt offen, obwohl bezahlt ist. Neu nicht mehr anlegbar; Altfälle zeigt das Register mit Rücknahme.
+     */
+    public function isSelfAssignment(): bool {
+        return $this->isAssignment() && $this->parent !== null && $this->holderKey() === $this->parent->holderKey();
     }
 
     /**

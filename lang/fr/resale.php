@@ -322,6 +322,7 @@ return [
         'error' => [
             'line_missing' => 'Ligne de facture introuvable.',
             'exceeds' => 'La ligne n’a plus que :amount de disponible.',
+            'exceeds_period' => 'La période n’a plus besoin que de :amount — impossible d’en affecter davantage.',
         ],
     ],
     'widget' => [
@@ -384,6 +385,7 @@ return [
         'end_customer' => 'Client final :name',
         'unit_piece' => 'pièce',
         'unit_year' => 'an',
+        'plan_remainder' => ':open sur :quantity licences, :planned via modèle récurrent',
         'until' => 'Périodes jusqu’au',
         'until_today' => 'échues seulement',
         'until_years' => '+:years an|+:years ans',
@@ -651,7 +653,7 @@ return [
         'title' => 'Céder des licences : :subscription',
         'action' => 'Céder des licences',
         'submit' => 'Céder',
-        'hint' => 'Le détenteur :holder a :quantity licences, dont :available non encore cédées. Le nouveau détenteur reçoit ses propres périodes ; le contrat planifie avec le reste.',
+        'hint' => 'Le détenteur :holder a :quantity licences, dont :available libres sur la période choisie — ni cédées ni déjà facturées à :holder. Le nouveau détenteur reçoit ses propres périodes ; le contrat planifie avec le reste.',
         'mode' => 'Nouveau détenteur',
         'action_period' => 'Céder la période à :customer',
         'timeline_hint' => 'Un changement de détenteur dans le temps est aussi une cession : toutes les licences de l’ancienne période vont à l’ancien détenteur, ensuite le contrat continue avec le détenteur actuel.',
@@ -659,7 +661,10 @@ return [
         'section' => 'Licences cédées',
         'from' => 'Cédé depuis',
         'assigned_hint' => ':count licence cédée à d’autres détenteurs|:count licences cédées à d’autres détenteurs',
-        'none_available' => 'Du :from au :to, les :quantity licences sont toutes cédées. Modifiez la période ou reprenez une cession.',
+        'none_available' => 'Du :from au :to, les :quantity licences sont toutes cédées ou déjà facturées au détenteur. Modifiez la période, reprenez une cession ou supprimez un lien de facture.',
+        'billed' => ':period : :billed licences sur :quantity facturées à :holder',
+        'self_assignment' => 'Cession au propre détenteur',
+        'self_assignment_text' => 'La cession va au détenteur du contrat : les liens de facture restent sur la période du contrat, la période de la cession reste ouverte. La reprendre, puis la période du contrat s’applique à nouveau.',
         'segments' => [
             'title' => 'Licences libres par période',
             'period' => 'Période',
@@ -669,7 +674,8 @@ return [
         ],
         'error' => [
             'holder' => 'Veuillez choisir un détenteur.',
-            'quantity' => 'Seules :available licences ne sont pas encore cédées.',
+            'quantity' => 'Seules :available licences de la période ne sont ni cédées ni facturées au détenteur.',
+            'same_holder' => 'Le nouveau détenteur est le détenteur du contrat — une cession à soi-même ne fait que retirer des licences au contrat.',
         ],
         'flash' => [
             'created' => ':quantity licences cédées à :holder.',
@@ -1105,6 +1111,7 @@ return [
                 'duplicate_key' => 'Cette clé est déjà affectée à une autre licence.',
             ],
         ],
+        'line_free' => ':free libre(s)',
         'error' => [
             'roles_missing' => 'Au moins une clé par licence est nécessaire.',
             'quantity' => 'Le nombre doit être compris entre 1 et :max.',
@@ -1124,6 +1131,7 @@ return [
             'not_blocked' => 'La licence n’est pas bloquée.',
             'unblock_unconfirmed' => 'Veuillez confirmer que la licence est à nouveau utilisable.',
             'line_recipient' => 'La ligne de facture choisie appartient à un autre destinataire de facture.',
+            'line_exhausted' => 'Cette ligne de facture porte déjà :quantity licence(s) — choisir une autre ligne.',
             'line_missing' => 'La ligne de facture choisie n’est plus dans le miroir.',
             'customer_foreign' => 'Le client n’appartient pas à votre organisation.',
             'holder_mismatch' => 'Le client final n’appartient pas à ce client.',
@@ -1298,6 +1306,8 @@ return [
         ],
         'error' => [
             'subscription' => 'Cet abonnement n\'appartient pas à ce compte.',
+            'quantity' => 'La ligne de modèle n’a plus que :free licences libres.',
+            'line' => 'Cette ligne de modèle n’existe pas (ou plus).',
         ],
         'flash' => [
             'saved' => 'Affectation enregistrée.',
@@ -1312,6 +1322,7 @@ return [
             'plan_missing_short' => 'Modèle disparu',
             'next_execution_off_short' => 'Exécution décalée du début de période',
             'last_failed_short' => 'Dernière exécution échouée',
+            'line_overbooked_short' => 'Ligne de modèle surréservée',
             'subscription_without_plan' => 'Aucun modèle récurrent ne facture cet abonnement : la facture doit être créée à la main.',
             'plan_without_subscription' => 'Cette ligne de modèle (:quantity licences) n\'appartient à aucun abonnement du registre : abonnement manquant ou modèle obsolète.',
             'quantity_mismatch' => 'Les modèles facturent :linked licences, l\'abonnement en a :quantity.',
@@ -1320,6 +1331,7 @@ return [
             'plan_missing' => 'Le modèle affecté :plan n\'existe plus.',
             'next_execution_off' => 'Le modèle s\'exécute le :next, la prochaine période commence le :period.',
             'last_failed' => 'Dernière exécution : :state',
+            'line_overbooked' => ':linked licences sont affectées à la ligne, elle n’en facture que :quantity — supprimer une affectation ou adapter le modèle.',
         ],
     ],
     // Überblick als Aufgabenliste und Sammelaktionen (Feature 185, MVP-1414/1415)
@@ -1423,6 +1435,8 @@ return [
         'without_period' => 'sans période',
         'line_taken' => 'utilisée par :periods',
         'writeoff' => 'Comptabiliser comme perte',
+        'overcovered' => 'surcouverte',
+        'overcovered_hint' => 'Plus de liens de facture que de licences — supprimer un lien ou reprendre une cession au propre détenteur.',
     ],
     // Phase 166 (MVP-1447/1448/1451)
     'takeover' => [
@@ -1445,7 +1459,7 @@ return [
             'no_holder' => 'Sans titulaire ou pour le stock propre, il n’y a rien à reprendre.',
             'same_holder' => 'Le nouveau titulaire est l’ancien.',
             'after_end' => 'La date d’effet est postérieure à la fin de l’abonnement (:date).',
-            'nothing_free' => 'À partir de la date d’effet, toutes les licences du contrat sont cédées — lancer la reprise sur la cession concernée.',
+            'nothing_free' => 'À partir de la date d’effet, toutes les licences du contrat sont cédées ou déjà facturées à l’ancien titulaire — lancer la reprise sur la cession concernée ou modifier la date d’effet.',
         ],
     ],
 ];

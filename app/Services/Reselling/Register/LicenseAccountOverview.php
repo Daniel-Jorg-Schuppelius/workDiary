@@ -103,7 +103,7 @@ final class LicenseAccountOverview {
     }
 
     /**
-     * @return array{group: LicenseAccountGroup, allocations: Collection<int, ResaleAccountAllocation>, products: list<ProductRow>, years: list<int>, rows: list<GridRow>, findings: list<array<string, mixed>>, due: list<ResalePeriod>, plan: array{available: bool, templates: list<array{template: PlanTemplate, lines: list<array{line: PlanLine, links: list<ResalePlanLink>}>, execution: TemplateExecution|null}>, findings: list<array<string, mixed>>}}
+     * @return array{group: LicenseAccountGroup, allocations: Collection<int, ResaleAccountAllocation>, products: list<ProductRow>, years: list<int>, rows: list<GridRow>, findings: list<array<string, mixed>>, selfAssignments: list<ResaleSubscription>, due: list<ResalePeriod>, plan: array{available: bool, templates: list<array{template: PlanTemplate, lines: list<array{line: PlanLine, links: list<ResalePlanLink>}>, execution: TemplateExecution|null}>, findings: list<array<string, mixed>>}}
      */
     public function detail(Organization $organization, LicenseAccountGroup $group, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
@@ -149,6 +149,7 @@ final class LicenseAccountOverview {
             'years' => array_keys($years),
             'rows' => $rows,
             'findings' => $this->audit->forSubscriptions($organization, $group->subscriptions),
+            'selfAssignments' => array_values(array_filter($group->subscriptions->all(), static fn(ResaleSubscription $s): bool => $s->isSelfAssignment())),
             'due' => $due,
             'plan' => $this->planFor($organization, $group),
         ];

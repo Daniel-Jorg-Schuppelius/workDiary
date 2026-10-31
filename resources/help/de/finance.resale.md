@@ -124,6 +124,19 @@ ganze Abo an den neuen Halter, sonst entsteht ab dem Stichtag eine
 Abtretung. Geht eine Rechnung schon an die nachfolgende Firma, bietet die
 Tafel die Übernahme direkt an dieser Rechnung an.
 
+**Mengen und Deckung:** Das Register lässt nirgends mehr zuordnen, als da
+ist. Einer Periode ordnen Sie höchstens zu, was sie noch offen hat — auch
+beim Verschieben eines Bezugs. Abtreten, aufteilen und übernehmen lassen
+sich nur Lizenzen, die im Zeitraum weder abgetreten noch schon über
+Rechnungen an den Halter berechnet sind; eine Abtretung an den eigenen
+Halter lehnt das Register ab und zeigt Altfälle mit „Abtretung
+zurücknehmen“. Eine Position einer Serienvorlage nimmt höchstens so viele
+Lizenzen auf, wie sie berechnet („Vorlagenposition überbucht“ meldet
+Altfälle). Deckt eine Vorlage nur einen Teil eines Abos, enthält der
+Rechnungsvorschlag den Rest („4 von 9 Lizenzen, 5 über Serienvorlage“); der
+automatische Serienlauf lässt ihn aus. Eine Rechnungsposition trägt
+höchstens so viele Stücklizenzen, wie sie Stück hat.
+
 **Generische Liste:** Neben den Anbieter-Exporten (Telekom, Quality
 Hosting) nimmt der Import jede CSV- oder XLSX-Liste, deren Spalten am Namen
 erkennbar sind — deutsch oder englisch: Kennung, Firma, Produkt, Menge,

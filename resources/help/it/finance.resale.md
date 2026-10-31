@@ -128,6 +128,19 @@ abbonamento al nuovo titolare, altrimenti dalla data di decorrenza nasce una
 cessione. Se una fattura va già all’azienda subentrante, la tavola offre il
 subentro direttamente su quella fattura.
 
+**Quantità e copertura:** il registro non consente mai di assegnare più di
+quanto ci sia. A un periodo Lei assegna al massimo ciò che ha ancora aperto,
+anche spostando un collegamento. Si possono cedere, ripartire o rilevare
+solo licenze che nel periodo non sono né cedute né già fatturate al
+titolare; una cessione al proprio titolare viene rifiutata e i casi
+precedenti compaiono con «Revoca cessione». Una riga di un modello
+ricorrente accoglie al massimo tante licenze quante ne fattura («Riga del
+modello sovrassegnata» segnala i casi precedenti). Se un modello copre solo
+una parte di un abbonamento, la proposta di fattura contiene il resto («4 di
+9 licenze, 5 tramite modello ricorrente»); l’esecuzione automatica lo
+esclude. Una riga di fattura copre al massimo tante licenze di magazzino
+quanti pezzi ha.
+
 **Elenco generico:** oltre agli export dei fornitori (Telekom, Quality
 Hosting) l’import accetta qualsiasi elenco CSV o XLSX le cui colonne siano
 riconoscibili dal nome — tedesco o inglese: id, azienda, prodotto, quantità,

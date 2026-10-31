@@ -164,6 +164,12 @@ final class PeriodLinker {
                 if ($months > $free + 0.001) {
                     throw new \InvalidArgumentException((string) __('resale.link.error.exceeds', ['amount' => LicenseMonths::label($free, LicenseMonths::split($line)['months'])]));
                 }
+                // Nie mehr, als die Periode noch braucht (Phase 167, MVP-1452): ein Bezug derselben Position an
+                // dieser Periode zählt nicht mit, weil der neue ihn ersetzt.
+                $open = $this->openMonthsFor($period, $line);
+                if ($months > $open + 0.001) {
+                    throw new \InvalidArgumentException((string) __('resale.link.error.exceeds_period', ['amount' => LicenseMonths::label($open, (float) $period->termMonths())]));
+                }
             }
             $termMonths = $period->termMonths();
             $link = ResalePeriodLink::query()->updateOrCreate(
@@ -190,6 +196,20 @@ final class PeriodLinker {
 
             return $link;
         });
+    }
+
+    /**
+     * Noch offene Lizenzmonate der Periode ohne den Bezug derselben Position (Zeilensperre wie beim Verbrauch).
+     */
+    private function openMonthsFor(ResalePeriod $period, MirrorLine $line): float {
+        $covered = (float) ResalePeriodLink::query()->withoutGlobalScopes()
+            ->where('period_id', $period->id)
+            ->where(static fn ($q) => $q->where('linkable_type', '!=', $line->morphClass)->orWhere('linkable_id', '!=', $line->morphId))
+            ->lockForUpdate()
+            ->get(['months'])
+            ->sum(static fn (ResalePeriodLink $link): float => (float) $link->months);
+
+        return max(0.0, $period->requiredMonths() - $covered);
     }
 
     /**

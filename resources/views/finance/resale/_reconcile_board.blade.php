@@ -80,6 +80,10 @@
                                   title="{{ $compact::compact($covered) }} / {{ $compact::compact($required) }} {{ __('resale.link.months') }}">
                                 {{ __('resale.link.licences_of', ['covered' => $compact::compact($covered / max(1, $periodTerm)), 'quantity' => $period->quantity, 'months' => $periodTerm]) }}
                             </span>
+                            {{-- Altfall: mehr Bezüge, als die Periode Lizenzen hat (Phase 167) — einen Bezug lösen oder die Abtretung zurücknehmen. --}}
+                            @if ($covered > $required + 0.001)
+                                <x-status-badge size="xs" tone="error" :label="__('resale.board.overcovered')" :title="__('resale.board.overcovered_hint')" />
+                            @endif
                         </td>
                         <td class="align-top text-sm">
                             @foreach ($row['links'] as $entry)
