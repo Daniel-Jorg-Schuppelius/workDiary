@@ -92,6 +92,42 @@ dialogo con articolo, quantità, inizio e prezzo presi dalla fattura.
 L’assegnazione può colpire un periodo di un altro abbonamento dello stesso
 destinatario — mai un periodo di un altro cliente.
 
+**Cartella di lavoro e tavola di riconciliazione:** la riconciliazione di un
+destinatario è la cartella di lavoro: in alto gli abbonamenti con modifica,
+subentro, cessione di licenze e restituzione, sotto la tavola di
+riconciliazione per prodotto. A sinistra tutti i periodi in ordine di data
+con previsto e copertura, a destra le righe di fattura: quelle collegate con
+il periodo di servizio, per i periodi aperti quelle libere corrispondenti,
+fatture ad altri clienti e annullamenti. Le righe senza periodo adatto
+compaiono come riga propria «senza periodo» alla loro data. Ogni riga indica
+la sua **corrispondenza**: «corrisponde» (inizio ciclo al massimo a 14
+giorni dall’inizio del periodo), «spostata di n giorni» (fino a 90 giorni),
+«si sovrappone solo al periodo», «fuori dal periodo» o «appartiene piuttosto
+a …» (un altro periodo aperto è più vicino). Le assegnazioni dubbie chiedono
+conferma prima del salvataggio; nella finestra di collegamento e
+nell’assegnazione rapida della pagina dell’abbonamento Lei le conferma con
+la casella. I collegamenti che non corrispondono temporalmente sono
+evidenziati in giallo: li verifichi e li scolleghi se necessario. «Elaborare
+il prossimo destinatario» nella panoramica guida attraverso tutti i
+destinatari con importo aperto; un destinatario è completato quando non
+resta alcun periodo scaduto aperto né alcun rilievo sui modelli. Se il
+fornitore rinnova un abbonamento come nuovo ordine, l’esecuzione delle
+proposte rinuncia al breve periodo residuo del vecchio ordine e sposta i
+suoi collegamenti al primo periodo del nuovo.
+
+**Insolvenza e subentro:** se una fattura è stata annullata perché il
+cliente è insolvente, registri il periodo nella tavola con «Registrare come
+perdita»: la finestra di rinuncia propone il motivo con il numero della
+fattura. Se un’altra azienda prosegue le licenze, usi «Subentro»
+sull’abbonamento: nuovo titolare e data di decorrenza. Se la data di
+decorrenza coincide con l’inizio del primo periodo aperto, al nuovo titolare
+vengono fatturati anche i periodi aperti; se è successiva, il registro
+rinuncia su richiesta ai periodi aperti precedenti come crediti inesigibili.
+Una data di decorrenza all’inizio dell’abbonamento passa l’intero
+abbonamento al nuovo titolare, altrimenti dalla data di decorrenza nasce una
+cessione. Se una fattura va già all’azienda subentrante, la tavola offre il
+subentro direttamente su quella fattura.
+
 **Elenco generico:** oltre agli export dei fornitori (Telekom, Quality
 Hosting) l’import accetta qualsiasi elenco CSV o XLSX le cui colonne siano
 riconoscibili dal nome — tedesco o inglese: id, azienda, prodotto, quantità,

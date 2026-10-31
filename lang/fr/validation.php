@@ -1572,6 +1572,8 @@ return [
         'line_id' => 'Ligne de facture',
         'line_ids' => 'Lignes de facture',
         'line_ids.*' => 'Ligne de facture',
+        'confirm_fit' => 'Confirmation de correspondance',
+        'waive_before' => 'Renonciation avant la date d’effet',
         'lineup_jersey' => 'Numéro de maillot',
         'lineup_jersey.*' => 'Numéro de maillot',
         'lineup_member' => 'Personne alignée',

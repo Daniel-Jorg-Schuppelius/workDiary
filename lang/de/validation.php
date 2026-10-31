@@ -1572,6 +1572,8 @@ return [
         'line_id' => 'Rechnungsposition',
         'line_ids' => 'Rechnungspositionen',
         'line_ids.*' => 'Rechnungsposition',
+        'confirm_fit' => 'Bestätigung der Passung',
+        'waive_before' => 'Verzicht vor dem Stichtag',
         'lineup_jersey' => 'Trikotnummer',
         'lineup_jersey.*' => 'Trikotnummer',
         'lineup_member' => 'Aufgestellte Person',

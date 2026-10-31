@@ -53,31 +53,7 @@
         </div>
     @endif
 
-    <div class="space-y-3" x-data="resaleHolderPicker"
-         data-map="{{ json_encode($foreignByCustomer, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE) }}"
-         data-holder="{{ $mode }}"
-         data-customer="{{ old('customer_id', $prefill['customer_id']) }}"
-         data-foreign="{{ old('foreign_customer_id', '') }}">
-        <x-select-field name="mode" :label="__('resale.transfer.mode')" x-model="holder">
-            <option value="customer" @selected($mode === 'customer')>{{ __('resale.inbox.mode_customer') }}</option>
-            <option value="foreign" @selected($mode === 'foreign')>{{ __('resale.inbox.mode_foreign') }}</option>
-        </x-select-field>
-        <x-select-field name="customer_id" :label="__('resale.inbox.customer')" x-model="customer" required>
-            <option value="">—</option>
-            @foreach ($customers as $customer)
-                <option value="{{ $customer->sqid }}" @selected(old('customer_id', $prefill['customer_id']) === $customer->sqid)>{{ $customer->name }}</option>
-            @endforeach
-        </x-select-field>
-        <div x-show="showForeign()">
-            <x-select-field name="foreign_customer_id" :label="__('resale.inbox.foreign')" x-model="foreign">
-                <option value="">—</option>
-                <template x-for="fc in options()" :key="fc.sqid">
-                    <option :value="fc.sqid" x-text="fc.name"></option>
-                </template>
-            </x-select-field>
-        </div>
-        <p class="text-xs text-warning" x-show="noForeign()">{{ __('resale.dialog.no_foreign_customers') }}</p>
-    </div>
+    @include('finance.resale._holder_picker', ['customerDefault' => $prefill['customer_id']])
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <x-input-field name="quantity" type="number" min="1" :max="$available" :disabled="$available <= 0" :label="__('resale.transfer.quantity')" :value="old('quantity', (string) $quantityDefault)" required />

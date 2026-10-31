@@ -93,6 +93,40 @@ cantidad, inicio y precio tomados de la factura. La asignación puede
 dirigirse a un periodo de otra suscripción del mismo destinatario — nunca a
 un periodo de otro cliente.
 
+**Carpeta de trabajo y tablero de conciliación:** la conciliación de un
+destinatario es la carpeta de trabajo: arriba las suscripciones con editar,
+traspaso, ceder licencias y devolución, debajo el tablero de conciliación
+por producto. A la izquierda todos los periodos por fecha con previsto y
+cobertura, a la derecha las líneas de factura: las asignadas con su periodo
+de servicio, para periodos abiertos las libres que encajan, facturas a otros
+clientes y anulaciones. Las líneas sin periodo adecuado aparecen en una fila
+propia «sin periodo» en su fecha. Cada línea muestra su **encaje**: «encaja»
+(inicio de ciclo como máximo a 14 días del inicio del periodo), «desplazada
+n días» (hasta 90 días), «solo se solapa con el periodo», «fuera del
+periodo» o «corresponde más bien a …» (otro periodo abierto está más cerca).
+Las asignaciones dudosas piden confirmación antes de guardar; en el diálogo
+de vínculo y en la asignación rápida de la página de la suscripción usted
+las confirma con la casilla. Los vínculos que no encajan en el tiempo
+aparecen en amarillo: revíselos y deshágalos si es necesario. «Trabajar el
+siguiente destinatario» en la vista general recorre todos los destinatarios
+con importe abierto; un destinatario está terminado cuando no queda ningún
+periodo vencido abierto ni ningún hallazgo de plantilla. Si el proveedor
+renueva una suscripción como pedido nuevo, la ejecución de propuestas
+renuncia al breve periodo residual del pedido anterior y traslada sus
+vínculos al primer periodo del nuevo.
+
+**Insolvencia y traspaso:** si una factura se anuló porque el cliente es
+insolvente, registre el periodo en el tablero con «Registrar como impago»;
+el diálogo de renuncia trae el motivo con el número de factura. Si otra
+empresa continúa las licencias, use «Traspaso» en la suscripción: nuevo
+titular y fecha efectiva. Si la fecha efectiva coincide con el inicio del
+primer periodo abierto, al nuevo titular se le facturan también los periodos
+abiertos; si es posterior, el registro renuncia, si se desea, a los periodos
+abiertos anteriores como impago. Una fecha efectiva en el inicio de la
+suscripción traspasa toda la suscripción al nuevo titular; si no, a partir
+de la fecha efectiva se crea una cesión. Si una factura ya va a la empresa
+sucesora, el tablero ofrece el traspaso directamente en esa factura.
+
 **Lista genérica:** además de las exportaciones de proveedores (Telekom,
 Quality Hosting), la importación acepta cualquier lista CSV o XLSX cuyas
 columnas se reconozcan por su nombre — alemán o inglés: id, empresa,

@@ -34,6 +34,7 @@ class LinkResalePeriodRequest extends BaseFormRequest {
             'line_id' => ['required', 'string', 'max:64'],
             'months' => ['required', 'numeric', 'min:0.01', 'max:100000'],
             'note' => ['nullable', 'string', 'max:255'],
+            'confirm_fit' => ['nullable', 'boolean'],
         ];
     }
 
@@ -42,7 +43,11 @@ class LinkResalePeriodRequest extends BaseFormRequest {
             if ($validator->errors()->has('line_id')) {
                 return;
             }
-            $this->validateLineRecipient($validator, $this->period(), $this->line());
+            $line = $this->line();
+            $this->validateLineRecipient($validator, $this->period(), $line);
+            if ($line !== null && ! $validator->errors()->hasAny(['period_id', 'line_id'])) {
+                $this->validateLineFit($validator, $this->period(), $line);
+            }
         });
     }
 

@@ -1368,6 +1368,7 @@ return [
         'link_removed' => 'Referencia de factura eliminada',
         'link_moved' => 'Vínculo de factura movido a otro periodo',
         'auto_confirmed' => 'Vínculo de factura confirmado automáticamente (coincidencia segura)',
+        'order_change' => 'Periodo residual renunciado por cambio de pedido, vínculos trasladados al sucesor',
     ],
     'resale_account_allocation' => [
         'saved' => 'Reparto de cuenta de licencias guardado',
@@ -1380,6 +1381,7 @@ return [
     'resale_subscription' => [
         'rehomed' => 'Titular de la suscripción cambiado',
         'holder_assigned' => 'Titular de la suscripción asignado',
+        'taken_over' => 'Suscripción traspasada a otra empresa desde una fecha efectiva',
     ],
     'lexware' => [
         'tariffChanged' => 'Perfil de tarifa Lexware modificado',

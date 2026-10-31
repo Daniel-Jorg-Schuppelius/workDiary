@@ -19,7 +19,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reselling\Concerns\ProvidesHolderPicker;
-use App\Http\Requests\Reselling\{AssignResaleHolderRequest, BulkAssignResaleHolderRequest, ImportResaleFilesRequest, SaveResaleSubscriptionRequest, TransferResaleSubscriptionRequest};
+use App\Http\Requests\Reselling\{AssignResaleHolderRequest, BulkAssignResaleHolderRequest, ImportResaleFilesRequest, SaveResaleSubscriptionRequest, TakeoverResaleSubscriptionRequest, TransferResaleSubscriptionRequest};
 use App\Models\Contract\Contract;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\Organization;
@@ -30,8 +30,9 @@ use App\Services\Reselling\Contracts\DomainHolderWriter;
 use App\Services\Reselling\Marketplace\MarketplaceCompany;
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine, MirrorVoucher};
 use App\Services\Reselling\Plan\{PlanLine, RecurringPlans};
-use App\Services\Reselling\Register\{DomainSubscriptionSync, HolderResolver, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodLinker, PeriodPlanner, ResaleOverview};
-use App\Support\{CsvExport, Sqid, UrlSafety};
+use App\Services\Reselling\Register\{DomainSubscriptionSync, HolderResolver, HolderTakeover, LicenceAssignments, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodLinker, PeriodPlanner, ResaleOverview};
+use App\Support\{CsvExport, ErrorText, Sqid, UrlSafety};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Carbon\Exceptions\InvalidFormatException;
 use CommonToolkit\Helper\Data\JsonHelper;
@@ -40,6 +41,7 @@ use Illuminate\Database\Eloquent\{Builder, Collection};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{DB, Gate, Log, Storage};
 use Illuminate\Support\Str;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -361,7 +363,7 @@ class ResaleSubscriptionController extends Controller {
         if (! UrlSafety::isSameOriginOrRelative($referer, request()->getHost())) {
             return null;
         }
-        $fragments = [route('finance.resale.edit', $subscription->sqid), route('finance.resale.transfer.create', $subscription->sqid), route('finance.resale.show', $subscription->sqid)];
+        $fragments = [route('finance.resale.edit', $subscription->sqid), route('finance.resale.transfer.create', $subscription->sqid), route('finance.resale.takeover.create', $subscription->sqid), route('finance.resale.show', $subscription->sqid)];
 
         return in_array(strtok($referer, '?#'), $fragments, true) ? null : $referer;
     }
@@ -427,46 +429,56 @@ class ResaleSubscriptionController extends Controller {
      * Abtretung anlegen: Kind-Abo mit Halter, Menge und Laufzeit; Produkt,
      * Preise und Rhythmus vom Vertrag. Der Vertrag plant danach mit dem Rest.
      */
-    public function transferStore(TransferResaleSubscriptionRequest $request, ResaleSubscription $subscription, PeriodPlanner $planner): RedirectResponse {
-        $holder = $request->holder();
+    public function transferStore(TransferResaleSubscriptionRequest $request, ResaleSubscription $subscription, LicenceAssignments $assignments): RedirectResponse {
         $quantity = (int) $request->validated('quantity');
         $salePrice = $request->validated('sale_unit_price');
-        $assignment = DB::transaction(function () use ($request, $subscription, $planner, $holder, $quantity, $salePrice): ResaleSubscription {
-            $subscription->load('assignments');
-            $sequence = $subscription->nextAssignmentSuffix();
-            $assignment = ResaleSubscription::query()->create([
-                'organization_id' => $subscription->organization_id,
-                'parent_id' => $subscription->id,
-                'kind' => $subscription->kind,
-                'provider' => $subscription->provider,
-                'external_id' => $subscription->external_id !== null ? $subscription->external_id . '#' . $sequence : null,
-                'label' => $subscription->label,
-                'company_name' => $holder['foreign'] !== null ? $holder['foreign']->name : $holder['customer']->name,
-                'customer_id' => $holder['foreign'] === null ? $holder['customer']->id : null,
-                'foreign_customer_id' => $holder['foreign']?->id,
-                'is_own_holding' => false,
-                'article_ref' => $subscription->article_ref,
-                'quantity' => $quantity,
-                'starts_on' => (string) $request->validated('starts_on'),
-                'ends_on' => $request->validated('ends_on') ?: $subscription->ends_on?->toDateString(),
-                'term_months' => $subscription->term_months,
-                'interval' => $subscription->interval,
-                'renewal' => $subscription->renewal,
-                'purchase_unit_price' => $subscription->purchase_unit_price?->getAmount(),
-                'sale_unit_price' => is_numeric($salePrice) ? (string) $salePrice : $subscription->sale_unit_price?->getAmount(),
-                'currency' => $subscription->currency,
-                'status' => $subscription->status,
-                'notes' => $request->validated('note') ?: null,
-                'created_by_user_id' => $request->user()?->id,
-            ]);
-            $planner->sync($assignment);
-            $subscription->unsetRelation('assignments');
-            $planner->sync($subscription);
-
-            return $assignment;
-        });
+        $assignment = $assignments->create(
+            $subscription,
+            $request->holder(),
+            $quantity,
+            (string) $request->validated('starts_on'),
+            $request->validated('ends_on') ?: $subscription->ends_on?->toDateString(),
+            is_numeric($salePrice) ? (string) $salePrice : null,
+            $request->validated('note') ?: null,
+            $request->user()?->id,
+        );
 
         return $this->backToCaller($subscription)->with('success', __('resale.transfer.flash.created', ['quantity' => $quantity, 'holder' => $assignment->holderLabel()]));
+    }
+
+    /**
+     * Übernahme durch eine andere Firma ab Stichtag (Phase 166, MVP-1451). Vorbelegung
+     * aus der Abgleichstafel: Kunde der fremden Rechnung und Beginn ihrer Periode.
+     */
+    public function takeoverCreate(Request $request, ResaleSubscription $subscription): View {
+        $customerId = Sqid::decode(Customer::class, (string) $request->query('customer', ''));
+        $from = $this->queryDate($request, 'starts_on') ?? HolderTakeover::defaultFrom($subscription);
+
+        return view('finance.resale._takeover_dialog', [
+            'subscription' => $subscription->load(['customer', 'foreignCustomer', 'parent']),
+            'from' => $from,
+            'whole' => HolderTakeover::isWhole($subscription, $from),
+            'openPeriods' => $subscription->periods()->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
+                ->where('starts_on', '<', DateRange::dayAfter(ResalePeriod::today()))->orderBy('starts_on')->get(),
+            'customerDefault' => $customerId !== null ? Sqid::encode(Customer::class, $customerId) : '',
+        ] + $this->holderPicker());
+    }
+
+    public function takeoverStore(TakeoverResaleSubscriptionRequest $request, ResaleSubscription $subscription, HolderTakeover $takeover, LinkProposer $proposer): RedirectResponse {
+        $from = $request->takeoverDate();
+        $before = $subscription->holderLabel();
+        $result = $takeover->apply($subscription, $request->holder(), $from, $request->boolean('waive_before'), $request->validated('note') ?: null, $request->user()?->id);
+        $redirect = $this->backToCaller($subscription)->with('success', __('resale.takeover.flash', [
+            'holder' => $before, 'customer' => $result['subscription']->holderLabel(), 'date' => $from->format('d.m.Y'), 'waived' => $result['waived'],
+        ]));
+        try {
+            // Rechnungen des neuen Halters gleich zuordnen — wie beim Halterwechsel im Abgleich.
+            $proposer->propose($this->currentOrganizationOrAbort(404));
+        } catch (RuntimeException $e) {
+            $redirect->with('warning', ErrorText::for($e));
+        }
+
+        return $redirect;
     }
 
     public function importCreate(): View {

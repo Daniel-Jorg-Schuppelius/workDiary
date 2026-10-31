@@ -1606,6 +1606,8 @@ return [
         'line_id' => 'Invoice line item',
         'line_ids' => 'Invoice line items',
         'line_ids.*' => 'Invoice line item',
+        'confirm_fit' => 'Fit confirmation',
+        'waive_before' => 'Waiver before the effective date',
         'lineup_jersey' => 'Jersey number',
         'lineup_jersey.*' => 'Jersey number',
         'lineup_member' => 'Lined-up person',

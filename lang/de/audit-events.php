@@ -1368,6 +1368,7 @@ return [
         'link_removed' => 'Rechnungsbezug gelöst',
         'link_moved' => 'Rechnungsbezug auf andere Periode verschoben',
         'auto_confirmed' => 'Rechnungsbezug automatisch bestätigt (sicherer Treffer des Vorschlagslaufs)',
+        'order_change' => 'Restperiode beim Bestellungswechsel verzichtet, Bezüge an den Nachfolger',
     ],
     'resale_account_allocation' => [
         'saved' => 'Aufteilung eines Lizenzkontos gespeichert',
@@ -1380,6 +1381,7 @@ return [
     'resale_subscription' => [
         'rehomed' => 'Halter des Abos gewechselt',
         'holder_assigned' => 'Halter des Abos zugeordnet',
+        'taken_over' => 'Abo ab Stichtag von anderer Firma übernommen',
     ],
     'lexware' => [
         'tariffChanged' => 'Lexware-Tarifprofil geändert',

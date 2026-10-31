@@ -1368,6 +1368,7 @@ return [
         'link_removed' => 'Invoice reference removed',
         'link_moved' => 'Invoice link moved to another period',
         'auto_confirmed' => 'Invoice link auto-confirmed (sure match of the proposal run)',
+        'order_change' => 'Stub period waived at order change, links moved to the successor',
     ],
     'resale_account_allocation' => [
         'saved' => 'License account allocation saved',
@@ -1380,6 +1381,7 @@ return [
     'resale_subscription' => [
         'rehomed' => 'Subscription holder changed',
         'holder_assigned' => 'Subscription holder assigned',
+        'taken_over' => 'Subscription taken over by another company from an effective date',
     ],
     'lexware' => [
         'tariffChanged' => 'Lexware plan profile changed',

@@ -35,6 +35,12 @@
                     <x-icon-btn placement="danger" icon="delete" tone="ghost" size="sm" type="submit" show-label>{{ __('resale.action.delete') }}</x-icon-btn>
                 </form>
             @endif
+            @if ($canManage && $subscription->hasHolder() && ! $subscription->is_own_holding)
+                {{-- Andere Firma führt die Lizenzen weiter, etwa nach Insolvenz (Phase 166, MVP-1451). --}}
+                <x-icon-btn icon="handshake" tone="ghost" size="sm" data-entry-modal-trigger
+                            :href="route('finance.resale.takeover.create', $subscription->sqid)"
+                            show-label>{{ __('resale.takeover.action') }}</x-icon-btn>
+            @endif
             @if ($canManage && ! $subscription->isAssignment() && $subscription->quantity > 1)
                 <x-icon-btn icon="call_split" tone="ghost" size="sm" data-entry-modal-trigger
                             :href="route('finance.resale.transfer.create', $subscription->sqid)"
@@ -274,6 +280,11 @@
                                                 <input type="hidden" name="per_licence" value="{{ number_format($row['per_licence'], 2, '.', '') }}">
                                                 <input type="number" name="licences" step="0.01" min="0.01" value="{{ number_format($row['default_licences'], 2, '.', '') }}"
                                                        class="input input-xs input-bordered w-16 text-right" aria-label="{{ __('resale.link.licences_field') }}" title="{{ __('resale.link_ui.licences_times', ['months' => \App\View\Components\Resale\LicenceMonths::compact($row['per_licence'])]) }}">
+                                                {{-- Fragliche Passung (⚠) prüft der Server; das Häkchen bestätigt sie (Phase 166, MVP-1448). --}}
+                                                <label class="flex items-center gap-1 text-xs text-muted" title="{{ __('resale.fit.confirm_hint') }}">
+                                                    <input type="checkbox" name="confirm_fit" value="1" class="checkbox checkbox-xs">
+                                                    {{ __('resale.fit.confirm_short') }}
+                                                </label>
                                                 <x-icon-btn icon="add_link" size="xs" tone="primary" type="submit" :title="__('resale.link.action.link')" />
                                             </form>
                                         @endif
