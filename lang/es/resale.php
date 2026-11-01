@@ -853,7 +853,6 @@ return [
         'col_linked' => 'Compensado',
         'linked_with' => ':amount en :periods',
         'unlinked' => 'aún no compensado',
-        'licences_field' => 'Licencias abonadas',
         'action_link' => 'Compensar como abono',
         'sign_hint' => 'Se guarda como vínculo negativo.',
         'error_amount' => 'Indique una cantidad mayor que cero.',

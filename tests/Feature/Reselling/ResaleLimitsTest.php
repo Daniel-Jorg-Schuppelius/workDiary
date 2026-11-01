@@ -292,4 +292,33 @@ class ResaleLimitsTest extends TestCase {
         $this->assertSame(PeriodStatus::Billed, $period->status);
         $this->assertSame(36.0, $period->coveredMonths());
     }
+
+    public function test_quick_link_counts_licences_of_the_period_for_a_multi_year_line(): void {
+        // Pilot 2026-11-01: Rest einer 8-Jahres-Position (12 von 96 Monaten frei) an ein anderes Abo — vorbelegt war 0,13
+        // „Lizenzen der Position“, gebucht 0,13 × 96 = 12,48 Monate, mehr als frei. Jetzt: 1,00 Lizenz × 12 Monate der Periode.
+        $admin = $this->orgAdmin();
+        $customer = $this->customer('Mehrjahr GmbH', 'c-mj');
+        $old = $this->subscription($customer, ['starts_on' => '2017-01-01', 'ends_on' => '2024-12-31', 'status' => 'ended', 'external_id' => 'mj-1']);
+        $voucher = LexofficeVoucher::create([
+            'organization_id' => $this->organization->id, 'external_id' => 'v-mj', 'contact_external_id' => 'c-mj', 'voucher_type' => 'invoice', 'voucher_status' => 'paid',
+            'voucher_number' => 'RE/2023/0900', 'voucher_date' => '2023-12-03', 'total_amount' => 1, 'currency' => 'EUR', 'archived' => false,
+            'service_starts_on' => '2017-01-01', 'service_ends_on' => '2024-12-31', 'lines_synced_at' => now(),
+        ]);
+        $line = LexofficeVoucherLine::create([
+            'organization_id' => $this->organization->id, 'voucher_id' => $voucher->id, 'position' => 1, 'type' => 'service', 'external_article_id' => 'art-exo',
+            'lexoffice_article_id' => $this->exchange->id, 'name' => 'Exchange Online (Plan 1)', 'quantity' => 8, 'unit_name' => 'Jahr', 'unit_net' => '47.40', 'total_net' => '379.20', 'tax_rate' => 19, 'currency' => 'EUR',
+        ]);
+        foreach ($old->periods()->limit(7)->get() as $period) {
+            (new PeriodLinker)->attach($period, $line, 12.0, null, $admin->id);
+        }
+        $new = $this->subscription($customer, ['starts_on' => '2025-01-01', 'external_id' => 'mj-2']);
+        $target = $new->periods()->firstOrFail();
+
+        $this->actingAs($admin)->get(route('finance.resale.show', $new->sqid))->assertOk()
+            ->assertSee('name="per_licence" value="12"', false)->assertSee('value="1.00"', false);
+        $this->actingAs($admin)->post(route('finance.resale.links.quick', $new->sqid), [
+            'line_id' => Sqid::encode(LexofficeVoucherLine::class, $line->id), 'period_id' => $target->sqid, 'licences' => '1.00', 'per_licence' => '12', 'confirm_fit' => '1',
+        ])->assertSessionHasNoErrors();
+        $this->assertSame(12.0, $target->refresh()->coveredMonths());
+    }
 }

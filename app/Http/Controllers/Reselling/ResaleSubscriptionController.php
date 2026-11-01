@@ -171,7 +171,7 @@ class ResaleSubscriptionController extends Controller {
      * Schnellzuordnung; die übrigen Positionen einklappbar; dazu die Zahl
      * noch nicht gespiegelter Rechnungen.
      *
-     * @return array{has_source: bool, vouchers: list<array{voucher: MirrorVoucher, permalink: string|null, rows: int, licence: list<array{line: MirrorLine, months: float, per_licence: float, linked: array{months: float, periods: list<string>}|null, remaining: float, default_licences: float}>, other: list<MirrorLine>}>, pending: int, hidden: int}
+     * @return array{has_source: bool, vouchers: list<array{voucher: MirrorVoucher, permalink: string|null, rows: int, licence: list<array{line: MirrorLine, months: float, per_licence: float, linked: array{months: float, periods: list<string>}|null, remaining: float, term: int, default_licences: float}>, other: list<MirrorLine>}>, pending: int, hidden: int}
      */
     private function recipientInvoices(Organization $organization, ResaleSubscription $subscription, ?ResalePeriod $firstOpen): array {
         $billedTo = $subscription->is_own_holding ? null : $subscription->billedTo();
@@ -189,6 +189,10 @@ class ResaleSubscriptionController extends Controller {
             }
         }
         $linked = $this->linker->consumed($licenceLines);
+        // Die Menge im Formular zählt Lizenzen der Periode (× ihre Laufzeit), nicht Lizenzen der Rechnungsposition:
+        // „8 Jahr“ ist eine Lizenz über 96 Monate — 12 freie Monate wären 0,13 davon und gerundet mehr als frei.
+        $term = $firstOpen?->termMonths() ?? max(1, (int) $subscription->term_months);
+        $need = $firstOpen?->openMonths() ?? (float) $term;
 
         $rows = [];
         $hidden = 0;
@@ -206,15 +210,15 @@ class ResaleSubscriptionController extends Controller {
                 $months = $split['licences'] * $split['months'];
                 $info = $linked[$line->identity()] ?? null;
                 $remaining = max(0.0, $months - ($info['months'] ?? 0.0));
-                $perLicence = max(0.01, $split['months']);
-                $needLicences = max(1.0, ($firstOpen?->requiredMonths() ?? 1.0) / $perLicence);
                 $licence[] = [
                     'line' => $line,
                     'months' => $months,
                     'per_licence' => $split['months'],
                     'linked' => $info,
                     'remaining' => $remaining,
-                    'default_licences' => round(min($remaining / $perLicence, $needLicences), 2),
+                    'term' => $term,
+                    // Abgerundet auf zwei Stellen: nie mehr vorbelegen, als frei bzw. offen ist.
+                    'default_licences' => floor(min($remaining, max($need, 0.01)) / $term * 100) / 100,
                 ];
             }
             if ($licence === []) {

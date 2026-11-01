@@ -853,7 +853,6 @@ return [
         'col_linked' => 'Compensé',
         'linked_with' => ':amount sur :periods',
         'unlinked' => 'pas encore compensé',
-        'licences_field' => 'Licences créditées',
         'action_link' => 'Compenser comme avoir',
         'sign_hint' => 'Enregistré comme lien négatif.',
         'error_amount' => 'Veuillez saisir une quantité supérieure à zéro.',
