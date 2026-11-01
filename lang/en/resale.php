@@ -32,7 +32,7 @@ return [
         'unassigned' => 'Without holder',
     ],
     'filter' => [
-        'search' => 'Search (label, holder, reference, invoice number)',
+        'search' => 'Search (label, holder, company, reference, invoice number)',
         'all_kinds' => 'All kinds',
         'all_providers' => 'All providers',
         'planning' => 'Active + cancelled',
@@ -75,6 +75,7 @@ return [
         'customer_self' => '— the customer itself —',
         'own' => 'Own holding',
         'unassigned' => 'Not assigned yet',
+        'assign' => 'Assign holder',
         'customer' => 'Customer',
         'foreign' => 'End customer (via partner)',
         'via' => 'via :partner',
@@ -257,6 +258,9 @@ return [
         'mode_foreign' => 'Existing end customer',
         'customer' => 'Customer or partner',
         'foreign' => 'End customer',
+        'mentioned' => 'Partner: :customer (:count invoice)|Partner: :customer (:count invoices)',
+        'mentioned_hint' => 'The company appears in the text of these invoices — probably an end customer of this partner. Click opens the assignment as an end customer of this partner.',
+        'mentioned_title' => 'Named in invoice text',
         'flash' => [
             'assigned' => ':count subscriptions assigned.',
         ],
@@ -299,6 +303,7 @@ return [
         'reason' => 'Reason',
         'reason_hint' => 'Goodwill, trial, own use … shown in list and report.',
         'reason_order_change' => 'Order change: remainder goes to the successor from :date',
+        'order_change' => 'Order change',
         'reason_voided' => 'Bad debt: invoice :voucher voided',
         'reason_presets' => ['Bad debt (insolvency)', 'Goodwill', 'Trial period', 'Own use', 'Billed twice'],
         'origin' => [

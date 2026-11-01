@@ -121,7 +121,8 @@ n’est ouverte et qu’aucune constatation de modèle ne subsiste. Si le
 fournisseur renouvelle un abonnement sous forme de nouvelle commande,
 l’exécution des propositions abandonne la courte période résiduelle de
 l’ancienne commande et transfère ses liens à la première période de la
-nouvelle.
+nouvelle. La période résiduelle apparaît alors comme « Changement de commande »,
+pas comme un abandon : les factures du successeur couvrent la période.
 
 **Insolvabilité et reprise :** si une facture a été annulée parce que le
 client est insolvable, comptabilisez la période dans le tableau avec «
@@ -178,7 +179,14 @@ prérempli.
 pas encore rattacher la société à un titulaire arrivent dans la boîte de
 réception. Par société, vous décidez une fois : client, client final d’un
 partenaire ou parc propre — la suggestion vient de la comparaison des noms
-avec les clients et clients finaux. La décision est mémorisée ; l’import
+avec les clients et clients finaux et des textes de facture : si la société
+figure dans le texte de factures adressées à un partenaire, la boîte de
+réception propose ce partenaire, et un clic ouvre l’affectation comme client
+final. Les abonnements terminés restent aussi ici tant qu’une période échue
+est ouverte — sans titulaire, personne ne trouverait leurs factures. « Attribuer un
+titulaire » à côté de « Pas encore affecté » (compte de licences,
+abonnement, périodes) ouvre la même affectation. La
+décision est mémorisée ; l’import
 suivant rattache aussitôt la même société. Les lignes que l’import n’a pas
 pu traiter (date illisible, quantité sans nombre, identifiant en double)
 restent comme constats sur l’import : le nombre dans le message, le détail

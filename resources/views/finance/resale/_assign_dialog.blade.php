@@ -23,13 +23,25 @@
 >
     <input type="hidden" name="company" value="{{ $company }}">
     <div class="text-sm text-base-content/70">{{ trans_choice('resale.inbox.assign_hint', $count, ['count' => $count]) }}</div>
+    @if (($mentioned ?? []) !== [])
+        <div class="text-xs" title="{{ __('resale.inbox.mentioned_hint') }}">
+            <span class="font-medium">{{ __('resale.inbox.mentioned_title') }}:</span>
+            @foreach ($mentioned as $mention)
+                <span class="text-info">{{ trans_choice('resale.inbox.mentioned', $mention['vouchers'], ['customer' => $mention['customer']->name, 'count' => $mention['vouchers']]) }}</span>@if (! $loop->last) · @endif
+            @endforeach
+        </div>
+    @endif
 
     {{-- Fremdkunden-Auswahl nur, wenn der gewählte Kunde Fremdkunden hat (resaleHolderPicker). --}}
-    @php $mode = (string) old('mode', 'customer'); @endphp
+    @php
+        // Vorbelegung aus dem Rechnungstext-Vorschlag des Posteingangs (Partner).
+        $mode = (string) old('mode', $prefillMode ?? 'customer');
+        $selectedCustomer = (string) old('customer_id', $prefillCustomer ?? '');
+    @endphp
     <div class="space-y-3" x-data="resaleHolderPicker"
          data-map="{{ json_encode($foreignByCustomer, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE) }}"
          data-holder="{{ $mode }}"
-         data-customer="{{ old('customer_id', '') }}"
+         data-customer="{{ $selectedCustomer }}"
          data-foreign="{{ old('foreign_customer_id', '') }}">
         <x-select-field name="mode" :label="__('resale.inbox.mode')" :hint="__('resale.inbox.mode_hint')" x-model="holder">
             <option value="customer" @selected($mode === 'customer')>{{ __('resale.inbox.mode_customer') }}</option>
@@ -42,7 +54,7 @@
             <x-select-field name="customer_id" :label="__('resale.inbox.customer')" x-model="customer">
                 <option value="">—</option>
                 @foreach ($customers as $customer)
-                    <option value="{{ $customer->sqid }}" @selected(old('customer_id') === $customer->sqid)>{{ $customer->name }}</option>
+                    <option value="{{ $customer->sqid }}" @selected($selectedCustomer === $customer->sqid)>{{ $customer->name }}</option>
                 @endforeach
             </x-select-field>
         </div>

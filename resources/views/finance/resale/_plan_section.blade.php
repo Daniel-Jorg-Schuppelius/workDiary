@@ -13,6 +13,14 @@
   $storeRoute (Ziel der Zuordnung), $canManage. Lizenzkonto und Arbeitsmappe.
 --}}
 @if ($plan['available'])
+    @php
+        // Belege öffnen den Belegdialog wie in der Periodenzeile (Pilot 2026-11-01: „hier sind die Rechnungen nicht erreichbar“).
+        $voucherUrl = static fn (?string $source, ?string $voucher): ?string => $source !== null && $voucher !== null ? route('finance.resale.vouchers.show', ['source' => $source, 'voucher' => $voucher]) : null;
+        $executionByTemplate = [];
+        foreach ($plan['templates'] as $planEntry) {
+            $executionByTemplate[$planEntry['template']->key] = $planEntry['execution'];
+        }
+    @endphp
     <x-card :title="__('resale.plan.title')" padding="p-0" class="mt-4 mb-4">
         <p class="px-4 pt-3 text-xs text-muted">{{ __('resale.plan.subtitle') }}</p>
         @forelse ($plan['templates'] as $entry)
@@ -27,8 +35,17 @@
                         {{-- Fehlgeschlagene Ausführung (MVP-1441): Meldung des Programms als Tooltip, dazu ob die Rechnung entstand und bezahlt ist. --}}
                         @if ($template->lastFailed)
                             <x-status-badge size="xs" tone="error" :label="__('resale.plan.failed')" :title="$template->lastError" />
-                            @if (($entry['execution'] ?? null) !== null)
-                                <span class="text-xs {{ $entry['execution']->state === \App\Services\Reselling\Plan\TemplateExecution::OPEN ? 'text-warning' : 'text-muted' }}" title="{{ $template->lastError }}">{{ $entry['execution']->label() }}</span>
+                            @if (($execution = $entry['execution'] ?? null) !== null)
+                                @php
+                                    $executionTone = $execution->state === \App\Services\Reselling\Plan\TemplateExecution::OPEN ? 'text-warning' : 'text-muted';
+                                    $executionUrl = $voucherUrl($execution->sourceKey, $execution->voucherKey);
+                                @endphp
+                                @if ($executionUrl !== null)
+                                    <a href="{{ $executionUrl }}" data-entry-modal-trigger class="link link-hover text-xs {{ $executionTone }}" title="{{ $template->lastError }}">{{ $execution->label() }}</a>
+                                    @if ($execution->previewUrl !== null)<x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$execution->previewUrl" :title="__('resale.invoices.preview')" />@endif
+                                @else
+                                    <span class="text-xs {{ $executionTone }}" title="{{ $template->lastError }}">{{ $execution->label() }}</span>
+                                @endif
                             @endif
                         @endif
                         <span class="text-xs text-muted">{{ $template->recipientName }}@if ($template->nextExecutionOn) · {{ __('resale.plan.next', ['date' => $template->nextExecutionOn->fdate()]) }}@endif · {{ $template->finalize ? __('resale.plan.finalize') : __('resale.plan.draft_only') }}</span>
@@ -59,7 +76,17 @@
                                         <a href="{{ route('finance.resale.show', $link->subscription->sqid) }}" class="link link-hover font-medium">{{ $link->subscription->label }}</a>
                                         <span class="text-xs text-muted">×{{ $link->quantity }}</span>
                                         <x-status-badge size="xs" :tone="$link->origin->tone()" :label="$link->origin->label()" />
-                                        @if ($link->note)<span class="text-xs text-muted" title="{{ __('resale.plan.from_invoice', ['voucher' => $link->note]) }}">{{ $link->note }}</span>@endif
+                                        @if ($link->note)
+                                            @php
+                                                $noteVoucher = $plan['vouchers'][$link->note] ?? null;
+                                            @endphp
+                                            @if ($noteVoucher !== null)
+                                                <a href="{{ $voucherUrl($noteVoucher->sourceKey, $noteVoucher->voucherKey) }}" data-entry-modal-trigger class="link link-hover text-xs text-muted" title="{{ __('resale.plan.from_invoice', ['voucher' => $link->note]) }}">{{ $link->note }}</a>
+                                                @if ($noteVoucher->previewUrl !== null)<x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$noteVoucher->previewUrl" :title="__('resale.invoices.preview')" />@endif
+                                            @else
+                                                <span class="text-xs text-muted" title="{{ __('resale.plan.from_invoice', ['voucher' => $link->note]) }}">{{ $link->note }}</span>
+                                            @endif
+                                        @endif
                                         @if ($canManage)
                                             @if ($link->origin === \App\Enums\Reselling\LinkOrigin::Proposed)
                                                 <form method="POST" action="{{ route('finance.resale.accounts.plan.store', $group->routeKey()) }}" class="inline">
@@ -117,21 +144,48 @@
             <x-empty-state compact icon="event_repeat" :title="__('resale.plan.none')" />
         @endforelse
         @if ($plan['findings'] !== [])
-            <ul class="border-t border-base-300 px-4 py-3 space-y-1 text-sm">
-                @foreach ($plan['findings'] as $finding)
-                    {{-- Befund: feste Abzeichen-Spalte, rechts das Abo (Produkt bzw. Domain) mit Halter und Kennung in einer Zeile,
-                         darunter Vorlage und Stand; die Meldung des Programms gekürzt mit Tooltip (Pilot 2026-10-31). --}}
-                    <li class="flex items-start gap-3 border-l-2 border-warning/60 pl-2 py-0.5">
-                        <span class="w-44 shrink-0 pt-0.5"><x-status-badge size="xs" tone="warning" :label="__('resale.plan.finding.' . $finding['kind'] . '_short')" /></span>
-                        <span class="min-w-0 flex-1">
-                            @if ($finding['subscription'] !== null)<a href="{{ route('finance.resale.show', $finding['subscription']->sqid) }}" class="link link-hover font-medium">{{ $finding['subscription']->label }}</a> <span class="text-xs text-muted">· {{ $finding['subscription']->holderLabel() }} · {{ $finding['subscription']->identityLabel() }}</span>@endif
-                            @if ($finding['template'] !== null)<span class="block text-xs text-muted">{{ __('resale.plan.col.line') }}: {{ $finding['template']->label() }}@if ($finding['line'] !== null) · {{ $finding['line']->label() }}@endif</span>@endif
-                            <span class="block text-xs text-muted">{{ __('resale.plan.finding.' . $finding['kind'], $finding['params']) }}</span>
-                            @if (($finding['params']['error'] ?? '') !== '')<span class="block text-xs text-muted/80 line-clamp-1" title="{{ $finding['params']['error'] }}">{{ $finding['params']['error'] }}</span>@endif
-                        </span>
-                    </li>
+            {{-- Befunde je Art (Pilot 2026-11-01): Kopf mit einzeiligem Abzeichen und Anzahl, der gemeinsame Satz nur einmal,
+                 darunter die Abos (Produkt bzw. Domain) mit Halter und Kennung — Einzelheiten nur, wo sie sich unterscheiden. --}}
+            @php
+                $findingGroups = [];
+                foreach ($plan['findings'] as $finding) {
+                    $findingGroups[$finding['kind']][] = $finding;
+                }
+            @endphp
+            <div class="border-t border-base-300 px-4 py-3 space-y-3 text-sm">
+                @foreach ($findingGroups as $kind => $groupFindings)
+                    @php
+                        $sharedText = array_filter($groupFindings, static fn (array $f): bool => $f['params'] !== []) === [];
+                    @endphp
+                    <section>
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <x-status-badge size="xs" tone="warning" class="whitespace-nowrap" :label="__('resale.plan.finding.' . $kind . '_short')" />
+                            <span class="text-xs font-medium tabular-nums">{{ count($groupFindings) }}</span>
+                            @if ($sharedText)<span class="text-xs text-muted">{{ __('resale.plan.finding.' . $kind) }}</span>@endif
+                        </div>
+                        <ul class="mt-1 space-y-1 border-l-2 border-warning/60 pl-3">
+                            @foreach ($groupFindings as $finding)
+                                <li>
+                                    @if ($finding['subscription'] !== null)<a href="{{ route('finance.resale.show', $finding['subscription']->sqid) }}" class="link link-hover font-medium">{{ $finding['subscription']->label }}</a> <span class="text-xs text-muted">· {{ $finding['subscription']->holderLabel() }} · {{ $finding['subscription']->identityLabel() }}</span>@endif
+                                    @if ($finding['template'] !== null)<span class="block text-xs text-muted">{{ __('resale.plan.col.line') }}: {{ $finding['template']->label() }}@if ($finding['line'] !== null) · {{ $finding['line']->label() }}@endif</span>@endif
+                                    @unless ($sharedText)<span class="block text-xs text-muted">{{ __('resale.plan.finding.' . $kind, $finding['params']) }}</span>@endunless
+                                    @if (($finding['params']['error'] ?? '') !== '')<span class="block text-xs text-muted/80 line-clamp-1" title="{{ $finding['params']['error'] }}">{{ $finding['params']['error'] }}</span>@endif
+                                    @php
+                                        $findingExecution = $finding['template'] !== null ? ($executionByTemplate[$finding['template']->key] ?? null) : null;
+                                        $findingUrl = $findingExecution !== null ? $voucherUrl($findingExecution->sourceKey, $findingExecution->voucherKey) : null;
+                                    @endphp
+                                    @if ($findingUrl !== null)
+                                        <span class="flex items-center gap-1 text-xs">
+                                            <a href="{{ $findingUrl }}" data-entry-modal-trigger class="link link-hover">{{ __('resale.voucher.title', ['number' => $findingExecution->voucherNumber ?? '—']) }}</a>
+                                            @if ($findingExecution->previewUrl !== null)<x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$findingExecution->previewUrl" :title="__('resale.invoices.preview')" />@endif
+                                        </span>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    </section>
                 @endforeach
-            </ul>
+            </div>
         @endif
     </x-card>
 @endif

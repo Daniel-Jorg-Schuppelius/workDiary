@@ -112,7 +112,9 @@ if needed. “Work on the next recipient” in the overview leads through all
 recipients with an open amount; a recipient is done when no due period is
 open and no template finding remains. If the provider renews a subscription
 as a new order, the proposal run waives the short remaining period of the
-old order and moves its links to the first period of the new one.
+old order and moves its links to the first period of the new one. The remaining period
+then shows as “Order change”, not as a waiver: the successor’s invoices cover
+the time.
 
 **Insolvency and takeover:** If an invoice was voided because the customer
 is insolvent, record the period on the board with “Record as bad debt” — the
@@ -163,7 +165,13 @@ reconciliation offers this at an invoice of the other customer as
 **Inbox:** Imported subscriptions whose company the register cannot assign
 to a holder yet land in the inbox. Per company you decide once: customer,
 end customer of a partner (foreign customer) or own holding — the suggestion
-comes from a name comparison with customers and foreign customers. The
+comes from a name comparison with customers and foreign customers and from
+the invoice texts: if the company appears in the text of invoices to a
+partner, the inbox suggests that partner, and a click opens the assignment as
+an end customer. Ended subscriptions also stay here while a due period is
+open — without a holder nobody would find their invoices. “Assign holder” next to
+“Not assigned yet” (license account, subscription, periods) opens the same
+assignment. The
 decision is remembered; the next import assigns the same company at once.
 Lines the import could not process (unreadable date, quantity without a
 number, duplicate identifier) are kept as findings on the import: the count

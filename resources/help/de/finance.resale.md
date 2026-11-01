@@ -113,7 +113,9 @@ passen, sind gelb markiert — prüfen Sie sie und lösen Sie sie bei Bedarf.
 offenem Betrag; fertig ist ein Empfänger ohne fällige offene Periode und
 ohne Vorlagenbefund. Verlängert der Anbieter ein Abo als neue Bestellung,
 verzichtet der Vorschlagslauf die kurze Restperiode der alten Bestellung und
-gibt ihre Bezüge an die erste Periode der neuen.
+gibt ihre Bezüge an die erste Periode der neuen. Die Restperiode steht dann als
+„Bestellungswechsel“ da, nicht als Verzicht: Die Rechnungen des Nachfolgers
+decken die Zeit.
 
 **Insolvenz und Übernahme:** Wurde eine Rechnung storniert, weil der Kunde
 insolvent ist, verbuchen Sie die Periode in der Tafel mit „Als Ausfall
@@ -165,7 +167,12 @@ des anderen Kunden als „Periode an … abtreten" vorbelegt an.
 **Posteingang:** Importierte Abos, deren Firma das Register noch keinem
 Halter zuordnen kann, landen im Posteingang. Je Firma entscheiden Sie einmal:
 Kunde, Endkunde eines Partners (Fremdkunde) oder eigener Bestand — der
-Vorschlag kommt aus dem Namensvergleich mit Kunden und Fremdkunden. Die
+Vorschlag kommt aus dem Namensvergleich mit Kunden und Fremdkunden und aus
+den Rechnungstexten: Steht die Firma im Text von Rechnungen an einen Partner,
+schlägt der Posteingang diesen Partner vor, und ein Klick öffnet die Zuordnung
+als Endkunde. Auch beendete Abos bleiben hier, solange eine fällige Periode
+offen ist — ohne Halter fände sonst niemand ihre Rechnungen. „Halter zuordnen“ neben
+„Noch nicht zugeordnet“ (Lizenzkonto, Abo, Perioden) öffnet dieselbe Zuordnung. Die
 Entscheidung wird gemerkt, der nächste Import ordnet dieselbe Firma sofort
 zu. Zeilen, die der Import nicht verarbeiten konnte (unlesbares Datum, Menge
 ohne Zahl, doppelte Kennung), stehen als Befunde am Import: die Anzahl in

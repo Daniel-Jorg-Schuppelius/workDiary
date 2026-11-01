@@ -102,7 +102,7 @@ final class ResaleOverview {
             ->whereNull('decided_at')
             ->whereHas('links', static fn(Builder $l) => $l->where('origin', LinkOrigin::Proposed->value))
             ->count();
-        $unassigned = ResaleSubscription::query()->planning()->unassigned()->count();
+        $unassigned = ResaleSubscription::query()->awaitingHolder()->count();
         $unlinked = $this->mirror->unlinkedLines($organization, 1)['total'];
 
         $accountRows = $this->accounts->overview($organization, $reference);

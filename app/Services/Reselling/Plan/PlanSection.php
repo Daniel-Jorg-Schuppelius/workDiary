@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Plan;
 
 use App\Models\Platform\Organization;
-use App\Models\Reselling\{ResalePlanLink, ResaleSubscription};
+use App\Models\Reselling\{ResalePeriod, ResalePlanLink, ResaleSubscription};
+use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorVoucher};
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
 /**
@@ -25,13 +27,14 @@ use Illuminate\Support\Collection;
  * sich Daten und Teilstück (`finance.resale._plan_section`).
  *
  * @phpstan-type PlanEntry array{template: PlanTemplate, lines: list<array{line: PlanLine, links: list<ResalePlanLink>}>, execution: TemplateExecution|null}
- * @phpstan-type PlanBlock array{available: bool, templates: list<PlanEntry>, findings: list<array<string, mixed>>}
+ * @phpstan-type PlanBlock array{available: bool, templates: list<PlanEntry>, findings: list<array<string, mixed>>, vouchers: array<string, MirrorVoucher>}
  */
 final class PlanSection {
     public function __construct(
         private readonly RecurringPlans $plans,
         private readonly PlanAudit $audit,
         private readonly TemplateExecutions $executions,
+        private readonly InvoiceMirror $mirror,
     ) {}
 
     /**
@@ -41,7 +44,7 @@ final class PlanSection {
      */
     public function build(Organization $organization, Collection $subscriptions, array $recipientIds): array {
         if (! $this->plans->availableFor($organization)) {
-            return ['available' => false, 'templates' => [], 'findings' => []];
+            return ['available' => false, 'templates' => [], 'findings' => [], 'vouchers' => []];
         }
         $subscriptionIds = array_values(array_map('intval', $subscriptions->pluck('id')->all()));
         $links = ResalePlanLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereIn('subscription_id', $subscriptionIds)
@@ -74,7 +77,41 @@ final class PlanSection {
         }
         unset($entry);
 
-        return ['available' => true, 'templates' => $templates, 'findings' => $this->audit->findings($organization, $subscriptionIds)];
+        return ['available' => true, 'templates' => $templates, 'findings' => $this->audit->findings($organization, $subscriptionIds), 'vouchers' => $this->noteVouchers($organization, $links, $shown, $recipientIds)];
+    }
+
+    /**
+     * Belege hinter den Bezugsnotizen (Pilot 2026-11-01): die Nummer am Bezug öffnet den Belegdialog.
+     * Gesucht wird bei den Empfängern der Seite und der Vorlagen, so weit zurück, wie der Vorschlag
+     * beim ältesten Bezug sah.
+     *
+     * @param  Collection<int, ResalePlanLink>  $links
+     * @param  list<PlanTemplate>  $templates
+     * @param  list<int>  $recipientIds
+     * @return array<string, MirrorVoucher> Belegnummer → Beleg
+     */
+    private function noteVouchers(Organization $organization, Collection $links, array $templates, array $recipientIds): array {
+        $noted = $links->filter(static fn(ResalePlanLink $link): bool => (string) $link->note !== '');
+        if ($noted->isEmpty()) {
+            return [];
+        }
+        $numbers = array_values(array_unique(array_map(static fn(ResalePlanLink $link): string => (string) $link->note, $noted->all())));
+        $oldest = $noted->min('created_at');
+        $from = ($oldest !== null ? CarbonImmutable::parse($oldest) : ResalePeriod::today())->subMonths(PlanLinkProposer::INVOICE_LOOKBACK_MONTHS);
+        $recipients = $recipientIds;
+        foreach ($templates as $template) {
+            if ($template->recipientCustomerId !== null) {
+                $recipients[] = $template->recipientCustomerId;
+            }
+        }
+        $vouchers = [];
+        foreach ($this->mirror->vouchersFor($organization, array_values(array_unique($recipients)), $from, 500) as $voucher) {
+            if ($voucher->voucherNumber !== null && in_array($voucher->voucherNumber, $numbers, true)) {
+                $vouchers[$voucher->voucherNumber] ??= $voucher;
+            }
+        }
+
+        return $vouchers;
     }
 
     /**

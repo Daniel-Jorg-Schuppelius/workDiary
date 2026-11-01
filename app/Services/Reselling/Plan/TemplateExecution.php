@@ -34,6 +34,10 @@ final readonly class TemplateExecution {
         public ?string $voucherNumber,
         public ?CarbonImmutable $voucherDate,
         public ?CarbonImmutable $expectedOn,
+        /** Beleg im Spiegel (Quelle, Schlüssel, Vorschau) — öffnet den Belegdialog (Pilot 2026-11-01). */
+        public ?string $sourceKey = null,
+        public ?string $voucherKey = null,
+        public ?string $previewUrl = null,
     ) {}
 
     public function label(): string {

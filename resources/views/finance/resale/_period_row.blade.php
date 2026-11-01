@@ -35,7 +35,7 @@
             <a href="{{ route('finance.resale.show', $subscription->sqid) }}" class="link link-hover font-medium">{{ $subscription->label }}</a>
         </td>
         <td class="text-sm">
-            {{ $subscription->holderLabel() }}
+            <x-resale.holder :subscription="$subscription" />
             @if ($subscription->foreignCustomer !== null)
                 <span class="block text-xs text-muted">{{ __('resale.holder.via', ['partner' => $subscription->foreignCustomer->customer?->name]) }}</span>
             @endif
@@ -115,7 +115,7 @@
         @endif
     </td>
     <td>
-        <x-status-badge size="xs" :tone="$period->status->tone()" :label="$period->status->label()" />
+        <x-status-badge size="xs" :tone="$period->statusTone()" :label="$period->statusLabel()" />
         @if ($period->decided_at !== null)
             <span class="block text-xs text-muted">{{ $period->decidedBy?->name ?? __('resale.link.origin.auto') }} · {{ $period->decided_at->fdate() }}</span>
         @endif

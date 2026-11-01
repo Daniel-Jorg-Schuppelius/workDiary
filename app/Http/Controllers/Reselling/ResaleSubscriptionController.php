@@ -30,7 +30,7 @@ use App\Services\Reselling\Contracts\DomainHolderWriter;
 use App\Services\Reselling\Marketplace\MarketplaceCompany;
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine, MirrorVoucher};
 use App\Services\Reselling\Plan\{PlanLine, RecurringPlans};
-use App\Services\Reselling\Register\{DomainSubscriptionSync, HolderResolver, HolderTakeover, LicenceAssignments, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodLinker, PeriodPlanner, ResaleOverview};
+use App\Services\Reselling\Register\{DomainSubscriptionSync, HolderResolver, HolderTakeover, LicenceAssignments, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodLinker, PeriodPlanner, RecipientReconciler, ResaleOverview};
 use App\Support\{CsvExport, ErrorText, Sqid, UrlSafety};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
@@ -88,6 +88,7 @@ class ResaleSubscriptionController extends Controller {
             $q = $filters['q'];
             $query->where(function (Builder $w) use ($q): void {
                 $w->whereLikeEscaped('label', $q)
+                    ->orWhereLikeEscaped('company_name', $q)
                     ->orWhereLikeEscaped('external_id', $q)
                     ->orWhereHas('customer', static fn(Builder $c) => $c->whereLikeEscaped('name', $q))
                     ->orWhereHas('foreignCustomer', static fn(Builder $f) => $f->whereLikeEscaped('name', $q))
@@ -103,7 +104,7 @@ class ResaleSubscriptionController extends Controller {
         }
         if (SubscriptionStatus::tryFrom($filters['status']) !== null) {
             $query->where('status', $filters['status']);
-        } elseif ($filters['status'] === '') {
+        } elseif ($filters['status'] === '' && ! $filters['unassigned']) {
             $query->planning();
         }
         $customerId = $filters['customer'] !== '' ? Sqid::decode(Customer::class, $filters['customer']) : null;
@@ -115,7 +116,7 @@ class ResaleSubscriptionController extends Controller {
             $query->whereIn('id', ResalePeriod::query()->due($today)->select('subscription_id'));
         }
         if ($filters['unassigned']) {
-            $query->unassigned();
+            $query->awaitingHolder();
         }
 
         $subscriptions = $query->orderBy('label')->orderBy('starts_on')->paginate(self::PER_PAGE)->withQueryString();
@@ -124,7 +125,7 @@ class ResaleSubscriptionController extends Controller {
         $summary = [
             'active' => ResaleSubscription::query()->planning()->count(),
             'open_periods' => ResalePeriod::query()->due($today)->count(),
-            'unassigned' => ResaleSubscription::query()->planning()->unassigned()->count(),
+            'unassigned' => ResaleSubscription::query()->awaitingHolder()->count(),
         ];
 
         return view('finance.resale.index', [
@@ -639,18 +640,21 @@ class ResaleSubscriptionController extends Controller {
         return $error;
     }
 
-    public function inbox(HolderResolver $resolver): View {
+    public function inbox(HolderResolver $resolver, RecipientReconciler $reconciler): View {
         $organization = $this->currentOrganizationOrAbort(404);
         $groups = [];
-        $subscriptions = ResaleSubscription::query()->planning()->unassigned()->orderBy('company_name')->orderBy('label')->get();
+        $subscriptions = ResaleSubscription::query()->awaitingHolder()->orderBy('company_name')->orderBy('label')->get();
         foreach ($subscriptions as $subscription) {
             $name = $subscription->company_name ?? '';
             $groups[$name] ??= ['company' => $name, 'subscriptions' => [], 'providers' => []];
             $groups[$name]['subscriptions'][] = $subscription;
             $groups[$name]['providers'][$subscription->provider->value] = $subscription->provider->label();
         }
+        // Partner, in deren Rechnungstexten die Firma steht (Pilot 2026-11-01): Ein Endkunde trägt selten den Namen des Partners.
+        $mentioned = $subscriptions->isEmpty() ? [] : $reconciler->mentioningRecipients($organization, array_values(array_filter(array_keys($groups), static fn($n): bool => $n !== '')), $subscriptions->min('starts_on')->subDays(LinkProposer::WINDOW_BEFORE));
         foreach (array_keys($groups) as $name) {
             $groups[$name]['suggestions'] = $name === '' ? ['customers' => collect(), 'foreign' => collect()] : $resolver->suggestions($organization, $name);
+            $groups[$name]['mentioned'] = $mentioned[$name] ?? [];
         }
         ksort($groups);
 
@@ -660,12 +664,24 @@ class ResaleSubscriptionController extends Controller {
         ]);
     }
 
-    public function assignCreate(Request $request): View {
+    public function assignCreate(Request $request, RecipientReconciler $reconciler): View {
+        $organization = $this->currentOrganizationOrAbort(404);
         $company = trim((string) $request->query('company', ''));
+        // Partner, in deren Rechnungstexten die Firma steht — von jedem Einstieg aus, nicht nur aus dem Posteingang.
+        $mentioned = [];
+        $from = $company !== '' ? $this->unassignedOf($company)->min('starts_on') : null;
+        if ($from !== null) {
+            $mentioned = $reconciler->mentioningRecipients($organization, [$company], CarbonImmutable::parse($from)->subDays(LinkProposer::WINDOW_BEFORE))[$company] ?? [];
+        }
+        $partnerId = Sqid::decode(Customer::class, (string) $request->query('partner', ''));
+        $partner = ($partnerId !== null ? Customer::query()->find($partnerId) : null) ?? ($mentioned[0]['customer'] ?? null);
 
         return view('finance.resale._assign_dialog', [
             'company' => $company,
             'count' => $this->unassignedOf($company)->count(),
+            'mentioned' => $mentioned,
+            'prefillMode' => $partner !== null ? 'partner' : 'customer',
+            'prefillCustomer' => $partner->sqid ?? '',
         ] + $this->holderPicker());
     }
 

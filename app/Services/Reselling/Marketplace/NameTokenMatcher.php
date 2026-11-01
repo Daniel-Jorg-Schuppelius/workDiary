@@ -61,8 +61,16 @@ final class NameTokenMatcher {
     }
 
     public static function matches(string $a, string $b): bool {
-        $tokensA = self::significantTokens($a);
-        $tokensB = self::significantTokens($b);
+        return self::tokensMatch(self::significantTokens($a), self::significantTokens($b));
+    }
+
+    /**
+     * Wie {@see matches()} auf schon zerlegten Namen — für viele Vergleiche gegen dieselben Texte.
+     *
+     * @param  list<string>  $tokensA
+     * @param  list<string>  $tokensB
+     */
+    public static function tokensMatch(array $tokensA, array $tokensB): bool {
         if ($tokensA === [] || $tokensB === []) {
             return false;
         }
