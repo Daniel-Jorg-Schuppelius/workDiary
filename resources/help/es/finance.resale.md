@@ -386,6 +386,11 @@ antigüedad. Las pestañas siguen el flujo: Resumen · Cuentas de
 licencia · Conciliación · Periodos · Bandeja │ Suscripciones · Inventario de
 licencias · Compras │ Informes · Precios; la clasificación de productos y la
 facturación están en el menú ⋯.
+Las tarjetas sobre las listas llevan a lo que cuentan: en cuentas de
+licencias, conciliación, existencias de licencias y en un lote filtran la
+lista; en la carpeta de trabajo de un destinatario filtran el tablero de
+conciliación por los productos afectados, y allí un segundo clic en la
+tarjeta activa quita el filtro.
 
 **Propuestas seguras e inseguras:** La ejecución de propuestas (cada hora y
 tras cada importación) confirma por sí misma las coincidencias seguras — un

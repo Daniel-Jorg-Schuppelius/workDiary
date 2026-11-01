@@ -41,18 +41,23 @@ class LicenseAccountController extends Controller {
         private readonly AllocationDeriver $deriver,
     ) {}
 
-    public function index(): View {
+    public function index(Request $request): View {
         $organization = $this->currentOrganizationOrAbort(404);
         $rows = $this->overview->overview($organization);
+        $summary = [
+            'accounts' => count($rows),
+            'open' => array_sum(array_column($rows, 'open')),
+            'conflicts' => array_sum(array_column($rows, 'conflicts')),
+        ];
+        // Die Kacheln filtern die Liste auf Konten, die zu ihrer Zahl beitragen (Pilot 2026-11-01).
+        $show = $request->string('show')->toString();
+        if (in_array($show, ['open', 'conflicts'], true)) {
+            $rows = array_values(array_filter($rows, static fn(array $row): bool => $row[$show] > 0));
+        } else {
+            $show = '';
+        }
 
-        return view('finance.resale.accounts.index', [
-            'rows' => $rows,
-            'summary' => [
-                'accounts' => count($rows),
-                'open' => array_sum(array_column($rows, 'open')),
-                'conflicts' => array_sum(array_column($rows, 'conflicts')),
-            ],
-        ]);
+        return view('finance.resale.accounts.index', ['rows' => $rows, 'summary' => $summary, 'show' => $show]);
     }
 
     public function show(string $account): View {

@@ -19,9 +19,11 @@
         @include('finance.resale._tabs')
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-            <x-kpi-tile :label="__('resale.account.summary.accounts')" :value="$summary['accounts']" />
-            <x-kpi-tile :label="__('resale.account.summary.open')" :value="$summary['open']" :tone="$summary['open'] > 0 ? 'error' : 'success'" />
-            <x-kpi-tile :label="__('resale.account.summary.conflicts')" :value="$summary['conflicts']" :tone="$summary['conflicts'] > 0 ? 'warning' : 'neutral'" />
+            <x-kpi-tile :label="__('resale.account.summary.accounts')" :value="$summary['accounts']" :href="route('finance.resale.accounts.index')" />
+            <x-kpi-tile :label="__('resale.account.summary.open')" :value="$summary['open']" :tone="$summary['open'] > 0 ? 'error' : 'success'"
+                        :href="route('finance.resale.accounts.index', ['show' => 'open'])" :active="$show === 'open'" />
+            <x-kpi-tile :label="__('resale.account.summary.conflicts')" :value="$summary['conflicts']" :tone="$summary['conflicts'] > 0 ? 'warning' : 'neutral'"
+                        :href="route('finance.resale.accounts.index', ['show' => 'conflicts'])" :active="$show === 'conflicts'" />
         </div>
 
         <x-table scroll="flex" :zebra="true" table-sort="client">
@@ -87,7 +89,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty :colspan="8" icon="account_balance_wallet" :title="__('resale.account.empty')" compact />
+                <x-table.empty :colspan="8" icon="account_balance_wallet" :title="$show !== '' ? __('resale.account.filter_empty') : __('resale.account.empty')" compact />
             @endforelse
         </x-table>
     </x-index-page>

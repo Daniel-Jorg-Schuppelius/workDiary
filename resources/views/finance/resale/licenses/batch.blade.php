@@ -43,11 +43,17 @@
         @include('finance.resale._tabs')
 
         <div class="grid grid-cols-2 gap-3 mb-4 sm:grid-cols-5">
-            <x-kpi-tile :label="__('resale.license.field.purchased')" :value="$counts['purchased']" />
-            <x-kpi-tile :label="__('resale.license.status.available')" :value="$counts['available']" tone="success" />
-            <x-kpi-tile :label="__('resale.license.status.sold')" :value="$counts['sold']" />
-            <x-kpi-tile :label="__('resale.license.status.incomplete')" :value="$counts['incomplete']" :tone="$counts['incomplete'] > 0 ? 'warning' : 'neutral'" />
-            <x-kpi-tile :label="__('resale.license.status.blocked')" :value="$counts['blocked']" :tone="$counts['blocked'] > 0 ? 'error' : 'neutral'" />
+            {{-- Kacheln filtern die Lizenzen der Charge nach Status, „Gekauft“ zeigt alle (Pilot 2026-11-01). --}}
+            <x-kpi-tile :label="__('resale.license.field.purchased')" :value="$counts['purchased']"
+                        :href="route('finance.resale.licenses.batches.show', $batch) . '#units'" />
+            <x-kpi-tile :label="__('resale.license.status.available')" :value="$counts['available']" tone="success"
+                        :href="route('finance.resale.licenses.batches.show', [$batch, 'status' => 'available']) . '#units'" :active="$status?->value === 'available'" />
+            <x-kpi-tile :label="__('resale.license.status.sold')" :value="$counts['sold']"
+                        :href="route('finance.resale.licenses.batches.show', [$batch, 'status' => 'sold']) . '#units'" :active="$status?->value === 'sold'" />
+            <x-kpi-tile :label="__('resale.license.status.incomplete')" :value="$counts['incomplete']" :tone="$counts['incomplete'] > 0 ? 'warning' : 'neutral'"
+                        :href="route('finance.resale.licenses.batches.show', [$batch, 'status' => 'incomplete']) . '#units'" :active="$status?->value === 'incomplete'" />
+            <x-kpi-tile :label="__('resale.license.status.blocked')" :value="$counts['blocked']" :tone="$counts['blocked'] > 0 ? 'error' : 'neutral'"
+                        :href="route('finance.resale.licenses.batches.show', [$batch, 'status' => 'blocked']) . '#units'" :active="$status?->value === 'blocked'" />
         </div>
 
         <x-card class="mb-4">
@@ -61,7 +67,7 @@
             </x-detail-grid>
         </x-card>
 
-        <x-card :title="__('resale.license.units_title')" icon="key" padding="p-0" class="mb-4">
+        <x-card id="units" :title="$status !== null ? __('resale.license.units_title') . ' · ' . $status->label() : __('resale.license.units_title')" icon="key" padding="p-0" class="mb-4 scroll-mt-4">
             <x-table bare>
                 <x-slot:head>
                     <tr>
@@ -74,9 +80,11 @@
                         <th class="text-right"></th>
                     </tr>
                 </x-slot:head>
-                @foreach ($units as $unit)
+                @forelse ($units as $unit)
                     @include('finance.resale.licenses._unit_row', ['unit' => $unit, 'showProduct' => false])
-                @endforeach
+                @empty
+                    <x-table.empty :colspan="7" icon="key" :title="__('resale.license.empty.units')" compact />
+                @endforelse
             </x-table>
             <x-pagination :paginator="$units" />
         </x-card>

@@ -1156,6 +1156,7 @@ return [
         'subtitle' => 'Je Anbieterkonto: Lizenzen je Produkt, Halter mit Mengen und die Lizenzjahre mit Rechnung oder Lücke.',
         'empty' => 'Noch keine Lizenzkonten — Abos kommen über Import oder Dialog.',
         'due_empty' => 'Alle fälligen Perioden sind berechnet.',
+        'filter_empty' => 'Kein Lizenzkonto passt zum Filter.',
         'products_more' => '+ :count weitere',
         'products_domains' => '{1} Domain|[2,*] Domains',
         'summary' => [
@@ -1417,6 +1418,8 @@ return [
     // Phase 166 (MVP-1447/1448/1451)
     'board' => [
         'hint' => 'Links die Abrechnungsperioden, rechts die Rechnungen. Jede freie Rechnung steht bei der Periode, zu der sie am besten passt — ein Klick ordnet sie zu.',
+        'focus' => 'Nur Produkte mit „:filter“',
+        'focus_reset' => 'Alle Produkte zeigen',
         'summary' => 'Soll :required · gedeckt :covered · abgerechnet :invoiced · frei :free',
         'col' => [
             'period' => 'Periode (Soll)',

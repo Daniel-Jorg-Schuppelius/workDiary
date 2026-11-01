@@ -361,6 +361,10 @@ grace, per provider the last import with its age. The tabs follow the
 workflow: Overview · Licence accounts · Reconciliation · Periods · Inbox │
 Subscriptions · Licence stock · Purchasing │ Reports · Prices; product
 classification and billing settings live in the ⋯ menu.
+The tiles above the lists lead to what they count: on licence accounts,
+reconciliation, licence stock and in a batch they filter the list, in a
+recipient’s workbook they filter the reconciliation board to the affected
+products; there a second click on the active tile removes the filter again.
 
 **Sure and unsure proposals:** The proposal run (hourly and after every
 import) confirms sure matches itself — one voucher whose invoice date lies

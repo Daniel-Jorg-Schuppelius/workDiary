@@ -37,6 +37,41 @@ use Carbon\CarbonImmutable;
  * @phpstan-type BoardBlock array{product: ProductRow, rows: list<BoardRow>, targets: list<PeriodRow>}
  */
 final class ReconcileBoard {
+    /** Kennzahlen des Abgleichs, nach denen Liste und Tafel filtern (Kacheln, Pilot 2026-11-01). */
+    public const FOCUS = ['open', 'partial', 'proposed', 'free', 'missing', 'surplus'];
+
+    /**
+     * Nur die Produkte, die zur Kennzahl beitragen; ihre Zeilen bleiben vollständig, damit der Zeitstrahl lesbar bleibt.
+     *
+     * @param  list<BoardBlock>  $blocks
+     * @return list<BoardBlock>
+     */
+    public static function focus(array $blocks, string $focus): array {
+        return array_values(array_filter($blocks, static fn(array $block): bool => match ($focus) {
+            'free', 'missing', 'surplus' => $block['product'][$focus] > 0.001,
+            default => array_filter($block['rows'], static fn(array $row): bool => self::counts($row, $focus)) !== [],
+        }));
+    }
+
+    /**
+     * Zählt die Zeile für die Kennzahl so wie {@see RecipientReconciler::forCustomer()}?
+     *
+     * @param  BoardRow  $row
+     */
+    private static function counts(array $row, string $focus): bool {
+        $period = $row['period'];
+        if ($period === null) {
+            return false;
+        }
+
+        return match ($focus) {
+            'open' => $row['open'] !== null && $period->status !== PeriodStatus::Partial,
+            'partial' => $row['open'] !== null && $period->status === PeriodStatus::Partial,
+            'proposed' => ! $row['upcoming'] && $period->status === PeriodStatus::Billed && $period->isProposedOnly(),
+            default => false,
+        };
+    }
+
     /**
      * @param  array{subscriptions: iterable<ResaleSubscription>, products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, product_by_subscription: array<int, string>}  $result  {@see RecipientReconciler::forCustomer()}
      * @return list<BoardBlock>
