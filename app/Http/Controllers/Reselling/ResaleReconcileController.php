@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Reselling;
 
+use App\Enums\Reselling\PeriodStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Reselling\{AssignResaleLineRequest, RehomeResaleSubscriptionRequest};
@@ -20,7 +21,7 @@ use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\License\LicenseInvoiceLinks;
 use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Plan\{PlanLinkEditor, PlanSection};
-use App\Services\Reselling\Register\{LinkProposer, PeriodLinker, RecipientReconciler, ReconcileBoard};
+use App\Services\Reselling\Register\{LineFit, LinkProposer, PeriodLinker, RecipientReconciler, ReconcileBoard};
 use App\Support\{ErrorText, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
@@ -192,6 +193,39 @@ class ResaleReconcileController extends Controller {
         }
 
         return $redirect;
+    }
+
+    /**
+     * Dialog: Rechnungsposition ohne passende Periode einer offenen Periode des Empfängers
+     * zuordnen (Phase 168, MVP-1462); passende zuerst, fragliche Passung mit Bestätigung.
+     */
+    public function lineCreate(Request $request, Customer $customer): View {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $line = $this->mirror->lineByKey($organization, (string) $request->query('line', ''));
+        if ($line === null || $line->recipientCustomerId !== $customer->id) {
+            abort(404);
+        }
+        $periods = ResalePeriod::query()
+            ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
+            ->whereHas('subscription', static fn ($s) => $s->forCustomer($customer)->where('is_own_holding', false))
+            ->with(['subscription', 'links'])
+            ->orderBy('starts_on')
+            ->get();
+        /** @var array<string, list<ResalePeriod>> $byProduct */
+        $byProduct = [];
+        foreach ($periods as $period) {
+            $byProduct[$period->subscription->productKey()][] = $period;
+        }
+        $rows = [];
+        foreach ($periods as $period) {
+            if ($period->openMonths() <= 0.001) {
+                continue;
+            }
+            $rows[] = ['period' => $period, 'fit' => LineFit::of($line, $period, $byProduct[$period->subscription->productKey()] ?? []), 'open' => $period->openMonths()];
+        }
+        usort($rows, static fn (array $a, array $b): int => ($a['fit']->rank() <=> $b['fit']->rank()) ?: ($a['period']->starts_on <=> $b['period']->starts_on));
+
+        return view('finance.resale._reconcile_line_dialog', ['customer' => $customer, 'line' => $line, 'free' => $this->linker->freeMonths($line), 'rows' => $rows]);
     }
 
     /** Position → Periode eines beliebigen Abos dieses Empfängers. */

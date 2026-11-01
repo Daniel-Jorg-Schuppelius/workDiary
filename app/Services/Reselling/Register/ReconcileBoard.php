@@ -42,22 +42,6 @@ final class ReconcileBoard {
      * @return list<BoardBlock>
      */
     public function build(array $result, CarbonImmutable $reference): array {
-        /** @var array<int, PeriodRow> $openById */
-        $openById = [];
-        /** @var array<string, list<PeriodRow>> $targets */
-        $targets = [];
-        /** @var array<string, true> $offered Positionen, die einer offenen Periode als Kandidat angeboten werden */
-        $offered = [];
-        foreach ($result['periods'] as $row) {
-            $openById[$row['period']->id] = $row;
-            $targets[$row['product']][] = $row;
-            foreach ($row['candidates'] as $candidate) {
-                foreach ($candidate['rows'] as $twin) {
-                    $offered[$twin['line']->identity()] = true;
-                }
-            }
-        }
-
         /** @var array<string, list<ResalePeriod>> $competitors offene Perioden je Produkt (auch bevorstehende) */
         $competitors = [];
         /** @var array<string, list<array{0: ResalePeriod, 1: ResaleSubscription}>> $periodsByProduct */
@@ -69,6 +53,36 @@ final class ReconcileBoard {
                 if (in_array($period->status, [PeriodStatus::Open, PeriodStatus::Partial], true)) {
                     $competitors[$product][] = $period;
                 }
+            }
+        }
+
+        /** @var array<int, PeriodRow> $openById */
+        $openById = [];
+        /** @var array<string, list<PeriodRow>> $targets */
+        $targets = [];
+        /** @var array<string, array{period: int, score: list<int>, outside: bool}> $best Position → offene Periode, zu der sie am besten passt */
+        $best = [];
+        foreach ($result['periods'] as $row) {
+            $openById[$row['period']->id] = $row;
+            $targets[$row['product']][] = $row;
+            // Jede freie Rechnung steht nur einmal — bei der Periode, zu der sie zeitlich am besten passt
+            // (Phase 168, MVP-1461); vorher stand dieselbe Rechnung in jeder offenen Periode ihres Fensters.
+            foreach ($row['candidates'] as $candidate) {
+                $fit = LineFit::of($candidate['row']['line'], $row['period'], $competitors[$row['product']] ?? []);
+                $score = [$fit->rank(), $fit->days ?? PHP_INT_MAX, $row['period']->starts_on->getTimestamp()];
+                foreach ($candidate['rows'] as $twin) {
+                    $identity = $twin['line']->identity();
+                    if (! isset($best[$identity]) || $score < $best[$identity]['score']) {
+                        $best[$identity] = ['period' => (int) $row['period']->id, 'score' => $score, 'outside' => $fit->kind === LineFit::OUTSIDE];
+                    }
+                }
+            }
+        }
+        /** @var array<string, true> $offered Positionen, die einer offenen Periode als Kandidat angeboten werden */
+        $offered = [];
+        foreach ($best as $identity => $entry) {
+            if (! $entry['outside']) {
+                $offered[$identity] = true;
             }
         }
 
@@ -89,6 +103,10 @@ final class ReconcileBoard {
                 $open = $openById[$period->id] ?? null;
                 $candidates = [];
                 foreach ($open['candidates'] ?? [] as $candidate) {
+                    $identity = $candidate['row']['line']->identity();
+                    if (! isset($offered[$identity]) || ($best[$identity]['period'] ?? null) !== (int) $period->id) {
+                        continue;
+                    }
                     $candidates[] = ['candidate' => $candidate, 'fit' => LineFit::of($candidate['row']['line'], $period, $competitors[$product] ?? [])];
                 }
                 usort($candidates, static fn (array $a, array $b): int => ($a['fit']->rank() <=> $b['fit']->rank()) ?: ($a['candidate']['distance'] <=> $b['candidate']['distance']));

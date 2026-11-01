@@ -575,7 +575,6 @@ return [
         'no_customer' => 'no customer',
         'no_customer_hint' => 'Lexoffice contact without a customer link — link the contact to a customer first.',
         'lines_without_subscription' => ':count licence line without subscription|:count licence lines without subscription',
-        'distance' => ':days day from period start|:days days from period start',
         'kpi' => [
             'open' => 'Open',
             'partial' => 'Partial',
@@ -601,7 +600,6 @@ return [
             'open' => 'Open reconciliation',
             'customer' => 'Customer',
             'rehome' => 'Holder → :customer',
-            'create_from_line' => 'Create subscription from line',
         ],
         'empty' => 'Nothing to resolve — all periods covered, no free licence lines.',
         'products' => [
@@ -641,12 +639,6 @@ return [
         'periods' => [
             'foreign' => 'Invoiced to :recipient',
             'voided' => 'voided',
-            'none' => 'No licence line of this product in the mirror — :amount were probably never invoiced. Create a catch-up invoice or waive.',
-            'taken' => 'consumed by :periods',
-            'all_taken' => 'All lines of this product are consumed — :amount without invoice.',
-        ],
-        'lines' => [
-            'other_products' => 'Other products',
         ],
     ],
     'transfer' => [
@@ -1425,7 +1417,7 @@ return [
     ],
     // Phase 166 (MVP-1447/1448/1451)
     'board' => [
-        'hint' => 'Per product, the billing periods (target) on the left and the invoice lines (actual) on the right — linked, fitting free, foreign and voided ones. Yellow notes mark links and candidates that do not fit in time.',
+        'hint' => 'Billing periods on the left, invoices on the right. Each free invoice sits at the period it fits best — one click assigns it.',
         'summary' => 'Target :required · covered :covered · invoiced :invoiced · free :free',
         'col' => [
             'period' => 'Period (target)',
@@ -1435,6 +1427,14 @@ return [
         'without_period' => 'without period',
         'line_taken' => 'used by :periods',
         'writeoff' => 'Record as bad debt',
+        'assign' => 'Assign :amount',
+        'no_candidate' => 'No fitting free invoice — :amount open. Bill it later or waive.',
+        'create_subscription' => 'Create subscription',
+        'assign_other' => 'Assign to another period',
+        'line_dialog' => [
+            'title' => 'Assign invoice :voucher',
+            'none' => 'This recipient has no open period.',
+        ],
         'overcovered' => 'over-covered',
         'overcovered_hint' => 'More invoice links than licences — remove a link or return an assignment to the own holder.',
     ],

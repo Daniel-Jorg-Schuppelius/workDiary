@@ -575,7 +575,6 @@ return [
         'no_customer' => 'aucun client',
         'no_customer_hint' => 'Contact Lexoffice sans client associé — associez d’abord le contact à un client.',
         'lines_without_subscription' => ':count ligne de licence sans abonnement|:count lignes de licence sans abonnement',
-        'distance' => ':days jour du début de période|:days jours du début de période',
         'kpi' => [
             'open' => 'Ouvertes',
             'partial' => 'Partielles',
@@ -601,7 +600,6 @@ return [
             'open' => 'Ouvrir le rapprochement',
             'customer' => 'Client',
             'rehome' => 'Détenteur → :customer',
-            'create_from_line' => 'Créer l’abonnement depuis la ligne',
         ],
         'empty' => 'Rien à clarifier — toutes les périodes couvertes, aucune ligne de licence libre.',
         'products' => [
@@ -641,12 +639,6 @@ return [
         'periods' => [
             'foreign' => 'Facturé à :recipient',
             'voided' => 'annulée',
-            'none' => 'Aucune ligne de licence de ce produit dans le miroir — :amount n’ont probablement jamais été facturés. Facture de rattrapage ou renonciation.',
-            'taken' => 'consommée par :periods',
-            'all_taken' => 'Toutes les lignes de ce produit sont consommées — :amount sans facture.',
-        ],
-        'lines' => [
-            'other_products' => 'Autres produits',
         ],
     ],
     'transfer' => [
@@ -1425,7 +1417,7 @@ return [
     ],
     // Phase 166 (MVP-1447/1448/1451)
     'board' => [
-        'hint' => 'Par produit, à gauche les périodes de facturation (prévu), à droite les lignes de facture (réel) — affectées, libres correspondantes, d’autres destinataires et annulées. Les remarques jaunes signalent les liens et candidats qui ne correspondent pas dans le temps.',
+        'hint' => 'À gauche les périodes de facturation, à droite les factures. Chaque facture libre se trouve à la période qui lui correspond le mieux — un clic l’affecte.',
         'summary' => 'Prévu :required · couvert :covered · facturé :invoiced · libre :free',
         'col' => [
             'period' => 'Période (prévu)',
@@ -1435,6 +1427,14 @@ return [
         'without_period' => 'sans période',
         'line_taken' => 'utilisée par :periods',
         'writeoff' => 'Comptabiliser comme perte',
+        'assign' => 'Affecter :amount',
+        'no_candidate' => 'Aucune facture libre correspondante — :amount ouvert. Facturer après coup ou renoncer.',
+        'create_subscription' => 'Créer l’abonnement',
+        'assign_other' => 'Affecter à une autre période',
+        'line_dialog' => [
+            'title' => 'Affecter la facture :voucher',
+            'none' => 'Ce destinataire n’a aucune période ouverte.',
+        ],
         'overcovered' => 'surcouverte',
         'overcovered_hint' => 'Plus de liens de facture que de licences — supprimer un lien ou reprendre une cession au propre détenteur.',
     ],

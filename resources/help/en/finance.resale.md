@@ -99,18 +99,20 @@ left all periods in date order with target and coverage, on the right the
 invoice lines: linked ones with their service period, for open periods the
 fitting free ones, invoices to other customers and voided ones. Lines
 without a fitting period appear as their own row “without period” at their
-date. Each line shows its **fit**: “fits” (cycle start at most 14 days from
-the period start), “offset by n days” (up to 90 days), “only overlaps the
-period”, “outside the period” or “belongs rather to …” (another open period
-is closer). Doubtful assignments ask before saving; in the link dialog and
-in the quick assignment on the subscription page you confirm them with the
-checkbox. Links that do not fit in time are marked yellow — check them and
-unlink them if needed. “Work on the next recipient” in the overview leads
-through all recipients with an open amount; a recipient is done when no due
-period is open and no template finding remains. If the provider renews a
-subscription as a new order, the proposal run waives the short remaining
-period of the old order and moves its links to the first period of the new
-one.
+date. Each free invoice sits only at the period it fits best, and “Assign …”
+assigns it with one click; the amount is what the period still needs. An
+offset of a few weeks between the provider’s order date and the invoice date
+is normal and not shown; a collective invoice that covers the whole period
+fits. Invoices without a fitting period appear as a row “without period”
+with “Create subscription” or “Assign to another period”. Doubtful
+assignments ask before saving; in the link dialog and in the quick
+assignment on the subscription page you confirm them with the checkbox.
+Links that do not fit in time are marked yellow — check them and unlink them
+if needed. “Work on the next recipient” in the overview leads through all
+recipients with an open amount; a recipient is done when no due period is
+open and no template finding remains. If the provider renews a subscription
+as a new order, the proposal run waives the short remaining period of the
+old order and moves its links to the first period of the new one.
 
 **Insolvency and takeover:** If an invoice was voided because the customer
 is insolvent, record the period on the board with “Record as bad debt” — the

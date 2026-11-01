@@ -127,7 +127,7 @@
                             <a href="{{ route('finance.resale.show', $subscription->sqid) }}" class="link link-hover font-medium">{{ $subscription->label }}</a>
                             @if ($subscription->isAssignment())<span class="block text-xs text-muted">{{ __('resale.transfer.from') }} {{ $subscription->parent?->label }} · {{ $subscription->parent?->holderLabel() }}</span>@endif
                             {{-- Abtretung an den eigenen Halter (Phase 167, MVP-1458): zurücknehmen, dann greifen die Rechnungsbezüge wieder. --}}
-                            @if ($subscription->isSelfAssignment())<x-status-badge size="xs" tone="error" class="mt-0.5" :label="__('resale.transfer.self_assignment')" :title="__('resale.transfer.self_assignment_text')" />@endif
+                            @if ($subscription->selfAssignmentConflict())<x-status-badge size="xs" tone="error" class="mt-0.5" :label="__('resale.transfer.self_assignment')" :title="__('resale.transfer.self_assignment_text')" />@endif
                         </td>
                         <td class="text-sm">{{ $subscription->holderLabel() }}</td>
                         <td class="text-sm">

@@ -160,7 +160,7 @@ final class AllocationDeriver {
                     $result['removed'] += $this->retire($assignment, $reference) ? 1 : 0;
                 }
                 $contract->unsetRelation('assignments');
-                $this->planner->sync($contract, $reference);
+                $this->planner->sync($contract, $reference, assignmentsChanged: true);
             }
         });
 
@@ -221,7 +221,7 @@ final class AllocationDeriver {
         foreach (array_keys($parents) as $parentId) {
             $parent = ResaleSubscription::query()->withoutGlobalScopes()->find($parentId);
             if ($parent !== null) {
-                $this->planner->sync($parent, $reference);
+                $this->planner->sync($parent, $reference, assignmentsChanged: true);
             }
         }
 

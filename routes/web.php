@@ -3120,6 +3120,8 @@ Route::middleware('auth')->group(function () {
             Route::get('abgleich/weiter', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'next'])->name('reconcile.next')->middleware('can:reselling.view');
             Route::get('abgleich/{customer}', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'show'])->name('reconcile.show')->middleware('can:reselling.view');
             Route::post('abgleich/{customer}/bezug', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'assign'])->name('reconcile.assign')->middleware('can:reselling.manage');
+            // Rechnung ohne passende Periode einer gewählten Periode zuordnen (Phase 168, MVP-1462).
+            Route::get('abgleich/{customer}/position', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'lineCreate'])->name('reconcile.line.create')->middleware('can:reselling.manage');
             Route::post('abgleich/{customer}/halter', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'rehome'])->name('reconcile.rehome')->middleware('can:reselling.manage');
             // Vorlagenposition einem Abo des Empfängers zuordnen — Arbeitsmappe (Phase 165, MVP-1444).
             Route::post('abgleich/{customer}/vorlage', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'planLinkStore'])->name('reconcile.plan.store')->middleware('can:reselling.manage');
