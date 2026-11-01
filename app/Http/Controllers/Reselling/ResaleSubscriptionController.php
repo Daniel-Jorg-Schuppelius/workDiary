@@ -90,7 +90,9 @@ class ResaleSubscriptionController extends Controller {
                 $w->whereLikeEscaped('label', $q)
                     ->orWhereLikeEscaped('external_id', $q)
                     ->orWhereHas('customer', static fn(Builder $c) => $c->whereLikeEscaped('name', $q))
-                    ->orWhereHas('foreignCustomer', static fn(Builder $f) => $f->whereLikeEscaped('name', $q));
+                    ->orWhereHas('foreignCustomer', static fn(Builder $f) => $f->whereLikeEscaped('name', $q))
+                    // Auch nach Rechnungsnummer (Pilot 2026-11-01): Abos, an deren Perioden der Beleg hängt.
+                    ->orWhereHas('periods.links', static fn(Builder $l) => $l->whereLikeEscaped('voucher_number', $q));
             });
         }
         if (SubscriptionKind::tryFrom($filters['kind']) !== null) {

@@ -179,7 +179,11 @@ abbonamenti con riquadri di stato (aperto, fatturato, parziale, rinunciato,
 contestato). «Calcola proposte» confronta i periodi aperti con le righe di
 licenza delle fatture rispecchiate e crea proposte; Lei le conferma, collega a
 mano una riga (solo fatture dello stesso destinatario, solo mesi di licenza
-liberi) oppure rinuncia con un motivo («cortesia»). I periodi decisi non
+liberi) oppure rinuncia con un motivo («cortesia»).
+Nella finestra di collegamento compaiono prima le fatture nella finestra del
+periodo, sotto tutte le altre del destinatario; il campo di ricerca trova
+ciascuna dal suo numero, e una già usata indica dove è collegata. Anche gli
+elenchi di abbonamenti e periodi cercano per numero di fattura. I periodi decisi non
 vengono più toccati dalla pianificazione; «riapri» li riapre. Se una fattura
 collegata viene poi stornata in Lexoffice, l’esecuzione successiva azzera i
 mesi del collegamento, annota lo storno e riapre il periodo, così la fattura

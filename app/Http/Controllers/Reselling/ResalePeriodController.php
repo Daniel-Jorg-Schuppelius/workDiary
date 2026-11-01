@@ -78,9 +78,12 @@ class ResalePeriodController extends Controller {
         }
         if ($filters['q'] !== '') {
             $q = $filters['q'];
-            $query->whereHas('subscription', static fn(Builder $s) => $s->where(static fn(Builder $w) => $w->whereLikeEscaped('label', $q)
-                ->orWhereHas('customer', static fn(Builder $c) => $c->whereLikeEscaped('name', $q))
-                ->orWhereHas('foreignCustomer', static fn(Builder $f) => $f->whereLikeEscaped('name', $q))));
+            // Auch nach Rechnungsnummer (Pilot 2026-11-01): die Perioden, an denen der Beleg hängt.
+            $query->where(static fn(Builder $outer) => $outer
+                ->whereHas('subscription', static fn(Builder $s) => $s->where(static fn(Builder $w) => $w->whereLikeEscaped('label', $q)
+                    ->orWhereHas('customer', static fn(Builder $c) => $c->whereLikeEscaped('name', $q))
+                    ->orWhereHas('foreignCustomer', static fn(Builder $f) => $f->whereLikeEscaped('name', $q))))
+                ->orWhereHas('links', static fn(Builder $l) => $l->whereLikeEscaped('voucher_number', $q)));
         }
         $periods = $query->orderBy('starts_on')->orderBy('subscription_id')->paginate(self::PER_PAGE)->withQueryString();
         $this->mirror->preload($organization, $periods->getCollection()->flatMap(static fn(ResalePeriod $p) => $p->links));
@@ -365,32 +368,39 @@ class ResalePeriodController extends Controller {
         $period->load(['subscription.customer', 'subscription.foreignCustomer.customer', 'links']);
         $billedTo = $period->subscription->billedTo();
         $hasSource = $billedTo !== null && $this->mirror->coversRecipient($organization, $billedTo);
-        $lines = $billedTo === null ? collect() : $this->mirror->candidatesFor($organization, $billedTo->id, $period);
+        $candidates = $billedTo === null ? ['window' => collect(), 'other' => collect()] : $this->mirror->candidatesFor($organization, $billedTo->id, $period);
         // Bezüge an DIESER Periode zählen nicht: ein erneuter Bezug ersetzt sie; sie werden nur markiert.
-        $consumed = $this->linker->consumed($lines, $period);
+        $consumed = $this->linker->consumed($candidates['window']->concat($candidates['other']), $period);
         $linked = $period->links->map(static fn(ResalePeriodLink $l): string => $l->mirrorIdentity())->all();
         $competitors = LineFit::competitorsOf($period);
-        $rows = [];
-        foreach ($lines as $line) {
-            $split = LicenseMonths::split($line);
-            $months = $split['licences'] * $split['months'];
-            $free = max(0.0, $months - ($consumed[$line->identity()]['months'] ?? 0.0));
-            $rows[] = [
-                'line' => $line,
-                'licences' => $split['licences'],
-                'per_licence' => $split['months'],
-                'free' => $free,
-                'used' => in_array($line->identity(), $linked, true) || $free <= 0.001,
-                'partly' => $free > 0.001 && $free < $months - 0.001,
-                'fit' => LineFit::of($line, $period, $competitors),
-            ];
+        $groups = ['window' => [], 'other' => []];
+        foreach ($candidates as $group => $lines) {
+            foreach ($lines as $line) {
+                $split = LicenseMonths::split($line);
+                $months = $split['licences'] * $split['months'];
+                $taken = $consumed[$line->identity()] ?? null;
+                $free = max(0.0, $months - ($taken['months'] ?? 0.0));
+                $groups[$group][] = [
+                    'line' => $line,
+                    'licences' => $split['licences'],
+                    'per_licence' => $split['months'],
+                    'free' => $free,
+                    'used' => in_array($line->identity(), $linked, true) || $free <= 0.001,
+                    'partly' => $free > 0.001 && $free < $months - 0.001,
+                    'taken_by' => $taken['periods'] ?? [],
+                    'fit' => LineFit::of($line, $period, $competitors),
+                    // Suche im Dialog (Pilot 2026-11-01): Nummer, Datum, Leistungszeitraum, Artikel.
+                    'haystack' => mb_strtolower(implode(' ', array_filter([$line->voucherNumber, $line->voucherDate?->format('d.m.Y'), $line->servicePeriodLabel(), $line->label()]))),
+                ];
+            }
         }
         // Passende zuerst (Phase 166, MVP-1448), sonst neueste Rechnung zuerst wie aus dem Spiegel.
-        usort($rows, static fn(array $a, array $b): int => $a['fit']->rank() <=> $b['fit']->rank());
+        usort($groups['window'], static fn(array $a, array $b): int => $a['fit']->rank() <=> $b['fit']->rank());
 
         return view('finance.resale._link_dialog', [
             'period' => $period,
-            'rows' => $rows,
+            'rows' => $groups['window'],
+            'others' => $groups['other'],
             'needed' => $period->openMonths(),
             'hasSource' => $hasSource,
         ]);

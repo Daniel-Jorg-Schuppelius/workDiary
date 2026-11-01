@@ -174,7 +174,11 @@ status tiles (open, billed, partial, waived, disputed). "Compute proposals"
 matches the open periods against the licence lines of the mirrored invoices
 and creates proposals; you confirm them, link a line by hand (only invoices of
 the same recipient, only free licence months) or waive with a reason
-("goodwill"). Decided periods are no longer touched by planning; "reopen"
+("goodwill").
+In the link dialog the invoices within the period window come first, below them
+all other invoices of the recipient; the search field finds any by its number,
+and a used one names where it is linked. The subscription and period lists also
+search by invoice number. Decided periods are no longer touched by planning; "reopen"
 opens them again. If a linked invoice is later voided in Lexoffice, the next
 run sets the link to zero months, notes the cancellation and reopens the
 period so the replacement invoice can be linked. Domain subscriptions are

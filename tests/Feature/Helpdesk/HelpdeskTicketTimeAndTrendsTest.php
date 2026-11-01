@@ -41,6 +41,8 @@ final class HelpdeskTicketTimeAndTrendsTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        // Das Ticket aus setUp zählt im Monatsverlauf mit — ohne feste Zeit fiel es ab November aus dem Oktober.
+        Carbon::setTestNow('2026-10-22 12:00:00');
         $this->setUpOrganization();
         $this->lead = User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
         $this->worker = User::factory()->user()->create(['organization_id' => $this->organization->id]);
@@ -102,7 +104,6 @@ final class HelpdeskTicketTimeAndTrendsTest extends TestCase {
     }
 
     public function test_monthly_trends_cover_twelve_months_with_counts(): void {
-        Carbon::setTestNow('2026-10-22 12:00:00');
         $tickets = app(ServiceTicketService::class);
         $tickets->create($this->organization, $this->lead, ['title' => 'Alt', 'reported_at' => '2026-08-05 09:00:00']);
         $tickets->create($this->organization, $this->lead, ['title' => 'Neu', 'reported_at' => '2026-10-02 09:00:00']);

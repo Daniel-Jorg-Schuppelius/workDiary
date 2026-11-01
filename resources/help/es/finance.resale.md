@@ -179,7 +179,12 @@ suscripciones con mosaicos de estado (abierto, facturado, parcial, renunciado,
 en disputa). «Calcular propuestas» compara los periodos abiertos con las
 posiciones de licencia de las facturas reflejadas y crea propuestas; usted las
 confirma, vincula a mano una posición (solo facturas del mismo destinatario,
-solo meses de licencia libres) o renuncia con un motivo («cortesía»). La
+solo meses de licencia libres) o renuncia con un motivo («cortesía»).
+En el diálogo de vinculación aparecen primero las facturas dentro de la
+ventana del periodo y debajo todas las demás del destinatario; el campo de
+búsqueda encuentra cualquiera por su número, y una ya usada indica dónde está
+vinculada. Las listas de suscripciones y de periodos también buscan por número
+de factura. La
 planificación ya no toca los periodos decididos; «reabrir» los abre de nuevo.
 Si una factura vinculada se anula después en Lexoffice, la siguiente ejecución
 pone el vínculo a cero meses, anota la anulación y reabre el periodo para que

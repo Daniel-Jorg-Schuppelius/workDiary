@@ -176,7 +176,11 @@ Status-Kacheln (offen, berechnet, teilweise, verzichtet, strittig).
 „Vorschläge berechnen" gleicht die offenen Perioden mit den Lizenzpositionen
 der gespiegelten Rechnungen ab und legt Vorschläge an; Sie bestätigen sie,
 ordnen von Hand eine Position zu (nur Rechnungen desselben Empfängers, nur
-freie Lizenzmonate) oder verzichten mit Grund („Kulanz"). Entschiedene
+freie Lizenzmonate) oder verzichten mit Grund („Kulanz").
+Im Zuordnen-Dialog stehen oben die Rechnungen im Zeitfenster der Periode,
+darunter alle übrigen des Empfängers; das Suchfeld findet jede an ihrer Nummer,
+und eine vergebene nennt, wo sie hängt. Auch Abo- und Periodenliste suchen nach
+Rechnungsnummer. Entschiedene
 Perioden fasst die Planung nicht mehr an; „Zurücknehmen" öffnet sie wieder.
 Wird eine zugeordnete Rechnung später in Lexoffice storniert, setzt der
 nächste Lauf den Bezug auf null Monate, vermerkt den Storno und öffnet die
