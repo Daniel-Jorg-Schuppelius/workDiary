@@ -31,18 +31,34 @@
     @elseif ($rows === [])
         <div role="status" class="alert alert-info text-sm"><span>{{ __('resale.link.no_lines') }}</span></div>
     @endif
-    {{-- Nur Abo-Positionen: Support-Stunden und Hardware gehören nicht in diese Liste (Einstufung über „Produkte"). --}}
-    <x-select-field name="line_id" :label="__('resale.link.line')" required :hint="__('resale.link.line_hint')">
-        <option value="">—</option>
-        @foreach ($rows as $row)
-            @php $line = $row['line']; @endphp
-            <option value="{{ $line->key }}" @selected((string) old('line_id') === $line->key) @disabled($row['used'])>
-                {{ $line->voucherNumber }} · {{ $line->voucherDate?->fdate() }}@if ($line->servicePeriodLabel() !== null) · {{ __('resale.reconcile.service_period') }} {{ $line->servicePeriodLabel() }}@endif · {{ __('resale.link_ui.position', ['position' => $line->position]) }} · {{ \Illuminate\Support\Str::limit($line->label(), 40) }} · {{ \App\Services\Reselling\Register\LicenseMonths::label($row['licences'] * $row['per_licence'], $row['per_licence']) }} × {{ $line->unitNet->withScale(2)->format() }}
-                @if ($row['used']) · {{ __('resale.link.line_used') }} @elseif ($row['partly']) · {{ __('resale.invoices.remaining', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label($row['free'], $row['per_licence'])]) }} @endif
-                @if ($row['fit']->needsConfirmation()) · ⚠ {{ $row['fit']->label() }} @endif
-            </option>
-        @endforeach
-    </x-select-field>
+    {{-- Nur Abo-Positionen: Support-Stunden und Hardware gehören nicht in diese Liste (Einstufung über „Produkte").
+         Oben das Zeitfenster der Periode, darunter alle übrigen Rechnungen des Empfängers — die Suche findet jede an ihrer Nummer (Pilot 2026-11-01). --}}
+    <div data-filter-scope>
+        <x-select-field name="line_id" :label="__('resale.link.line')" required data-filter-list :hint="__('resale.link.line_hint')">
+            <x-slot:beforeSelect>
+                <input type="search" data-filter-search autocomplete="off" class="input input-sm input-bordered w-full mb-2"
+                       placeholder="{{ __('resale.link.search') }}" aria-label="{{ __('resale.link.search') }}">
+            </x-slot:beforeSelect>
+            <option value="">—</option>
+            @foreach (['window' => $rows, 'other' => $others] as $group => $groupRows)
+                @if ($groupRows !== [])
+                    <optgroup label="{{ __('resale.link.group_' . $group) }}">
+                        @foreach ($groupRows as $row)
+                            @php
+                                $line = $row['line'];
+                            @endphp
+                            <option value="{{ $line->key }}" data-haystack="{{ $row['haystack'] }}" @selected((string) old('line_id') === $line->key) @disabled($row['used'])>
+                                {{ $line->voucherNumber }} · {{ $line->voucherDate?->fdate() }}@if ($line->servicePeriodLabel() !== null) · {{ __('resale.reconcile.service_period') }} {{ $line->servicePeriodLabel() }}@endif · {{ __('resale.link_ui.position', ['position' => $line->position]) }} · {{ \Illuminate\Support\Str::limit($line->label(), 40) }} · {{ \App\Services\Reselling\Register\LicenseMonths::label($row['licences'] * $row['per_licence'], $row['per_licence']) }} × {{ $line->unitNet->withScale(2)->format() }}
+                                @if ($row['used']) · {{ $row['taken_by'] !== [] ? __('resale.board.line_taken', ['periods' => implode(', ', $row['taken_by'])]) : __('resale.link.line_used') }} @elseif ($row['partly']) · {{ __('resale.invoices.remaining', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label($row['free'], $row['per_licence'])]) }} @endif
+                                @if ($row['fit']->needsConfirmation()) · ⚠ {{ $row['fit']->label() }} @endif
+                            </option>
+                        @endforeach
+                    </optgroup>
+                @endif
+            @endforeach
+        </x-select-field>
+        <p data-filter-empty class="text-xs text-muted hidden">{{ __('resale.link.no_match') }}</p>
+    </div>
     <x-input-field name="months" type="number" step="0.01" min="0.01" :label="__('resale.link.months_field')" :value="old('months', number_format($needed, 2, '.', ''))" required :hint="__('resale.link.months_hint')" />
     <x-input-field name="note" :label="__('resale.field.note')" :value="old('note')" />
     <x-checkbox-field name="confirm_fit" :toggle="false" tone="warning" :checked="(bool) old('confirm_fit')" :label="__('resale.fit.confirm_field')" :hint="__('resale.fit.confirm_hint')" />

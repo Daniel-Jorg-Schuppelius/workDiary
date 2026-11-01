@@ -171,22 +171,21 @@ final class InvoiceMirror {
 
     /**
      * Kandidaten für eine Periode: Lizenzpositionen des Empfängers im Fenster
-     * der Periode (−90 Tage, Fensterende je Position, Leistungszeitraum),
-     * neueste Rechnung zuerst.
+     * der Periode (−90 Tage, Fensterende je Position, Leistungszeitraum) und —
+     * damit der Dialog jede Rechnung über ihre Nummer findet (Pilot 2026-11-01) —
+     * alle übrigen; jeweils neueste Rechnung zuerst.
      *
-     * @return Collection<int, MirrorLine>
+     * @return array{window: Collection<int, MirrorLine>, other: Collection<int, MirrorLine>}
      */
-    public function candidatesFor(Organization $organization, int $recipientCustomerId, ResalePeriod $period): Collection {
-        $from = $period->starts_on->subDays(LinkProposer::WINDOW_BEFORE);
+    public function candidatesFor(Organization $organization, int $recipientCustomerId, ResalePeriod $period): array {
         $subscription = $period->subscription;
         $lines = $subscription->kind === SubscriptionKind::Domain
-            ? $this->linesMentioningDomains($organization, [$recipientCustomerId], [$subscription->label], $from)
-            : $this->linesFor($organization, [$recipientCustomerId], $from);
+            ? $this->linesMentioningDomains($organization, [$recipientCustomerId], [$subscription->label])
+            : $this->linesFor($organization, [$recipientCustomerId]);
+        $sorted = $lines->sortBy([static fn(MirrorLine $a, MirrorLine $b): int => ($b->voucherDate <=> $a->voucherDate) ?: ($a->position <=> $b->position)]);
+        $inWindow = static fn(MirrorLine $line): bool => LinkProposer::inWindow($period, $line);
 
-        return $lines
-            ->filter(static fn(MirrorLine $line): bool => LinkProposer::inWindow($period, $line))
-            ->sortBy([static fn(MirrorLine $a, MirrorLine $b): int => ($b->voucherDate <=> $a->voucherDate) ?: ($a->position <=> $b->position)])
-            ->values();
+        return ['window' => $sorted->filter($inWindow)->values(), 'other' => $sorted->reject($inWindow)->values()];
     }
 
     /**

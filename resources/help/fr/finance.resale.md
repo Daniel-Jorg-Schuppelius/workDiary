@@ -190,7 +190,12 @@ abandonnée, contestée). « Calculer les propositions » rapproche les période
 ouvertes des lignes de licences des factures miroir et crée des propositions ;
 vous les confirmez, rattachez une ligne à la main (uniquement des factures du
 même destinataire, uniquement des mois de licence libres) ou renoncez avec un
-motif (« geste commercial »). Les périodes décidées ne sont plus touchées par
+motif (« geste commercial »).
+Dans la boîte de rattachement, les factures dans la fenêtre de la période
+viennent d’abord, puis toutes les autres du destinataire ; le champ de recherche
+trouve chacune par son numéro, et une facture déjà utilisée indique où elle est
+rattachée. Les listes des abonnements et des périodes cherchent aussi par numéro
+de facture. Les périodes décidées ne sont plus touchées par
 la planification ; « rouvrir » les rouvre. Si une facture rattachée est
 annulée plus tard dans Lexoffice, le prochain calcul met le lien à zéro mois,
 note l’annulation et rouvre la période pour que la facture de remplacement
