@@ -853,7 +853,6 @@ return [
         'col_linked' => 'Compensato',
         'linked_with' => ':amount su :periods',
         'unlinked' => 'non ancora compensato',
-        'licences_field' => 'Licenze accreditate',
         'action_link' => 'Compensare come nota di credito',
         'sign_hint' => 'Salvato come collegamento negativo.',
         'error_amount' => 'Indicare una quantità maggiore di zero.',

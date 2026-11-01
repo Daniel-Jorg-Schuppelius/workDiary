@@ -853,7 +853,6 @@ return [
         'col_linked' => 'Netted',
         'linked_with' => ':amount against :periods',
         'unlinked' => 'not netted yet',
-        'licences_field' => 'Credited licences',
         'action_link' => 'Net as credit note',
         'sign_hint' => 'Stored as a negative link.',
         'error_amount' => 'Please enter a quantity above zero.',

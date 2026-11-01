@@ -222,9 +222,9 @@
                                                 <option value="{{ $target['period']->sqid }}">{{ $target['subscription']->label }} · {{ $target['period']->label() }} ({{ $target['period']->status->label() }})</option>
                                             @endforeach
                                         </select>
-                                        <input type="hidden" name="per_licence" value="{{ number_format($creditRow['per_licence'], 2, '.', '') }}">
-                                        <input type="number" name="licences" step="0.01" min="0.01" value="{{ number_format($creditFree / max(0.01, $creditRow['per_licence']), 2, '.', '') }}"
-                                               class="input input-xs input-bordered w-16 text-right" aria-label="{{ __('resale.credit_notes.licences_field') }}" title="{{ __('resale.link_ui.licences_times', ['months' => $compact::compact($creditRow['per_licence'])]) }}">
+                                        {{-- Lizenzmonate statt Lizenzen der Position: keine Rundung über die Gutschrift hinaus (Pilot 2026-11-01). --}}
+                                        <input type="number" name="months" step="0.01" min="0.01" value="{{ number_format($creditFree, 2, '.', '') }}"
+                                               class="input input-xs input-bordered w-16 text-right" aria-label="{{ __('resale.link.months_field') }}" title="{{ __('resale.link.months_field') }}">
                                         <x-icon-btn icon="remove_circle" size="xs" tone="error" type="submit" :title="__('resale.credit_notes.action_link')" />
                                     </form>
                                 @endif

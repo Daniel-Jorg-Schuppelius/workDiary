@@ -281,9 +281,10 @@
                                                         <option value="{{ $period->sqid }}" @selected($period->starts_on->lessThanOrEqualTo($voucher->voucherDate ?? $today) && $period->ends_on->greaterThanOrEqualTo($voucher->voucherDate ?? $today))>{{ $period->label() }}@if (! \App\Services\Reselling\Register\LinkAudit::fits($line, $period)) ⚠@endif</option>
                                                     @endforeach
                                                 </select>
-                                                <input type="hidden" name="per_licence" value="{{ number_format($row['per_licence'], 2, '.', '') }}">
+                                                {{-- Lizenzen der Periode × ihre Laufzeit (nicht der Rechnungsposition) — Pilot 2026-11-01. --}}
+                                                <input type="hidden" name="per_licence" value="{{ $row['term'] }}">
                                                 <input type="number" name="licences" step="0.01" min="0.01" value="{{ number_format($row['default_licences'], 2, '.', '') }}"
-                                                       class="input input-xs input-bordered w-16 text-right" aria-label="{{ __('resale.link.licences_field') }}" title="{{ __('resale.link_ui.licences_times', ['months' => \App\View\Components\Resale\LicenceMonths::compact($row['per_licence'])]) }}">
+                                                       class="input input-xs input-bordered w-16 text-right" aria-label="{{ __('resale.link.licences_field') }}" title="{{ __('resale.link_ui.licences_times', ['months' => $row['term']]) }}">
                                                 {{-- Fragliche Passung (⚠) prüft der Server; das Häkchen bestätigt sie (Phase 166, MVP-1448). --}}
                                                 <label class="flex items-center gap-1 text-xs text-muted" title="{{ __('resale.fit.confirm_hint') }}">
                                                     <input type="checkbox" name="confirm_fit" value="1" class="checkbox checkbox-xs">

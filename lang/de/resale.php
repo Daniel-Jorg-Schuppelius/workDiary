@@ -853,7 +853,6 @@ return [
         'col_linked' => 'Verrechnet',
         'linked_with' => ':amount an :periods',
         'unlinked' => 'noch nicht verrechnet',
-        'licences_field' => 'Gutgeschriebene Lizenzen',
         'action_link' => 'Als Gutschrift verrechnen',
         'sign_hint' => 'Wird als negativer Bezug gespeichert.',
         'error_amount' => 'Bitte eine Menge über null angeben.',
