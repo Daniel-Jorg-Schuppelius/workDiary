@@ -119,7 +119,7 @@
                     </td>
                     <td>
                         @if (! $subscription->hasHolder())
-                            <x-status-badge size="xs" tone="warning" :label="__('resale.holder.unassigned')" />
+                            <x-resale.holder :subscription="$subscription" />
                             {{-- Firma laut Anbieter als Anhaltspunkt für die Zuordnung (Nachbesserung 2026-10-27). --}}
                             @if (trim((string) $subscription->company_name) !== '')
                                 <span class="block text-xs text-muted">{{ $subscription->company_name }}</span>

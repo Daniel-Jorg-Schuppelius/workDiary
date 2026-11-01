@@ -39,7 +39,11 @@
                         <td class="text-sm">
                             {{-- Ohne Firmenname (Domains) können es Dutzende sein: die ersten acht, der Rest in der Liste. --}}
                             @foreach (array_slice($group['subscriptions'], 0, 8) as $subscription)
-                                <a href="{{ route('finance.resale.show', $subscription->sqid) }}" class="link link-hover block">{{ $subscription->label }} × {{ $subscription->quantity }}</a>
+                                <span class="block">
+                                    <a href="{{ route('finance.resale.show', $subscription->sqid) }}" class="link link-hover">{{ $subscription->label }} × {{ $subscription->quantity }}</a>
+                                    {{-- Beendet, aber mit fälliger offener Periode: ohne Halter fände niemand ihre Rechnungen (Pilot 2026-11-01). --}}
+                                    @if (! $subscription->status->isPlanning())<x-status-badge size="xs" :tone="$subscription->status->tone()" :label="$subscription->status->label()" />@endif
+                                </span>
                             @endforeach
                             @if (count($group['subscriptions']) > 8)
                                 <a href="{{ route('finance.resale.subscriptions', ['unassigned' => 1]) }}" class="link link-hover block text-xs text-muted">{{ __('resale.inbox.more', ['count' => count($group['subscriptions']) - 8]) }}</a>
@@ -47,13 +51,19 @@
                         </td>
                         <td class="text-sm">{{ implode(', ', $group['providers']) }}</td>
                         <td class="text-sm">
+                            {{-- Partner, in deren Rechnungstexten die Firma steht: Klick öffnet die Zuordnung als Endkunde dieses Partners. --}}
+                            @foreach ($group['mentioned'] as $mention)
+                                <a href="{{ route('finance.resale.inbox.assign', ['company' => $group['company'], 'partner' => $mention['customer']->sqid]) }}" data-entry-modal-trigger class="mr-1" title="{{ __('resale.inbox.mentioned_hint') }}">
+                                    <x-status-badge tone="info" outline>{{ trans_choice('resale.inbox.mentioned', $mention['vouchers'], ['customer' => $mention['customer']->name, 'count' => $mention['vouchers']]) }}</x-status-badge>
+                                </a>
+                            @endforeach
                             @foreach ($group['suggestions']['customers'] as $customer)
                                 <x-status-badge tone="plain" outline class="mr-1">{{ __('resale.inbox.mode_customer') }}: {{ $customer->name }}</x-status-badge>
                             @endforeach
                             @foreach ($group['suggestions']['foreign'] as $foreign)
                                 <x-status-badge tone="plain" outline class="mr-1">{{ __('resale.inbox.mode_foreign') }}: {{ $foreign->name }} ({{ $foreign->customer?->name }})</x-status-badge>
                             @endforeach
-                            @if ($group['suggestions']['customers']->isEmpty() && $group['suggestions']['foreign']->isEmpty())
+                            @if ($group['mentioned'] === [] && $group['suggestions']['customers']->isEmpty() && $group['suggestions']['foreign']->isEmpty())
                                 <span class="text-muted">—</span>
                             @endif
                         </td>

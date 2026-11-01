@@ -257,4 +257,23 @@ class ResalePeriod extends Model {
     public function label(): string {
         return $this->starts_on->format('d.m.Y') . ' – ' . $this->ends_on->format('d.m.Y');
     }
+
+    /**
+     * Restperiode eines Bestellungswechsels ({@see \App\Services\Reselling\Register\OrderChangeStubs}): verzichtet
+     * vom Vorschlagslauf, ohne Bearbeiter und mit dessen Grund — kein Forderungsverzicht, die Rechnungen des
+     * Nachfolgers decken die Zeit (Pilot 2026-11-01: „warum wird automatisch ein Verzicht eingetragen“).
+     */
+    public function isOrderChange(): bool {
+        $prefix = rtrim(explode(':date', (string) __('resale.link.reason_order_change'))[0]);
+
+        return $this->status === PeriodStatus::Waived && $this->decided_by_user_id === null && $prefix !== '' && str_starts_with((string) $this->waived_reason, $prefix);
+    }
+
+    public function statusLabel(): string {
+        return $this->isOrderChange() ? (string) __('resale.link.order_change') : $this->status->label();
+    }
+
+    public function statusTone(): string {
+        return $this->isOrderChange() ? 'info' : $this->status->tone();
+    }
 }

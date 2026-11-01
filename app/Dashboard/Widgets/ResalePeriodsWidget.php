@@ -83,7 +83,7 @@ class ResalePeriodsWidget extends Widget {
             'open' => $open->count(),
             'openAmount' => implode(' · ', array_map(static fn(Money $m): string => $m->withScale(2)->format(), array_values($amounts))),
             'proposed' => (clone $due)->where('status', PeriodStatus::Billed->value)->whereNull('decided_at')->whereHas('links')->count(),
-            'unassigned' => ResaleSubscription::query()->planning()->unassigned()->count(),
+            'unassigned' => ResaleSubscription::query()->awaitingHolder()->count(),
             // Feature 185 (MVP-1412): Befunde Bestand ↔ Serienvorlagen.
             'planIssues' => $user->organization !== null ? count(app(\App\Services\Reselling\Plan\PlanAudit::class)->findings($user->organization)) : 0,
         ]);

@@ -115,7 +115,9 @@ panoramica guida attraverso tutti i destinatari con importo aperto; un
 destinatario è completato quando non resta alcun periodo scaduto aperto né
 alcun rilievo sui modelli. Se il fornitore rinnova un abbonamento come nuovo
 ordine, l’esecuzione delle proposte rinuncia al breve periodo residuo del
-vecchio ordine e sposta i suoi collegamenti al primo periodo del nuovo.
+vecchio ordine e sposta i suoi collegamenti al primo periodo del nuovo. Il
+periodo residuo compare allora come «Cambio d’ordine», non come rinuncia: le
+fatture del successore coprono quel tempo.
 
 **Insolvenza e subentro:** se una fattura è stata annullata perché il
 cliente è insolvente, registri il periodo nella tavola con «Registrare come
@@ -168,7 +170,12 @@ fattura dell’altro cliente come «Cedere il periodo a …», precompilato.
 non riesce ancora ad assegnare a un titolare finiscono nella posta in
 arrivo. Per azienda decide una volta: cliente, cliente finale di un partner
 oppure parco proprio — il suggerimento viene dal confronto dei nomi con
-clienti e clienti finali. La decisione viene memorizzata; l’import
+clienti e clienti finali e dai testi delle fatture: se l’azienda compare nel
+testo di fatture a un partner, la posta in arrivo propone quel partner, e un
+clic apre l’assegnazione come cliente finale. Anche gli abbonamenti terminati
+restano qui finché un periodo scaduto è aperto — senza titolare nessuno
+troverebbe le loro fatture. «Assegnare il titolare» accanto a «Non ancora
+assegnato» (conto licenze, abbonamento, periodi) apre la stessa assegnazione. La decisione viene memorizzata; l’import
 successivo assegna subito la stessa azienda. Le righe che l’import non ha
 potuto elaborare (data illeggibile, quantità senza numero, identificativo
 duplicato) restano come rilievi sull’import: il numero nel messaggio, i

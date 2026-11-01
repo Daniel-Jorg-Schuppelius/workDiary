@@ -9,6 +9,9 @@
   Anbieter-Exporte ins Register bringen (Feature 152, MVP-759): Telekom-
   Käufe (CSV), Quality-Hosting-Verträge (XLSX), Preisliste (XLSX). Upsert
   über Anbieter und Kennung; unbekannte Firmen landen in der Inbox.
+  Normaler Formularversand, kein data-entry-form: die Antwort ist die
+  Vorschau-Seite, der Dialog-Host verwarf sie und lud neu (Pilot 2026-11-01:
+  Import ohne Wirkung, ohne Eintrag). Gate DialogFormViewResponseRuleTest.
 --}}
 <x-modal
     :title="__('resale.import.title')"
@@ -18,7 +21,6 @@
     :action="route('finance.resale.import.store')"
     method="POST"
     enctype="multipart/form-data"
-    :form-data="['data-entry-form' => '']"
     :submit-label="__('resale.import.submit')"
 >
     <div class="text-sm text-base-content/70">{{ __('resale.import.hint') }}</div>

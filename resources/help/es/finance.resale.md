@@ -115,7 +115,9 @@ general recorre todos los destinatarios con importe abierto; un destinatario
 está terminado cuando no queda ningún periodo vencido abierto ni ningún
 hallazgo de plantilla. Si el proveedor renueva una suscripción como pedido
 nuevo, la ejecución de propuestas renuncia al breve periodo residual del
-pedido anterior y traslada sus vínculos al primer periodo del nuevo.
+pedido anterior y traslada sus vínculos al primer periodo del nuevo. El periodo
+residual aparece entonces como «Cambio de pedido», no como renuncia: las
+facturas del sucesor cubren ese tiempo.
 
 **Insolvencia y traspaso:** si una factura se anuló porque el cliente es
 insolvente, registre el periodo en el tablero con «Registrar como impago»;
@@ -168,7 +170,12 @@ periodo a …», ya rellenado.
 registro aún no puede asignar a un titular llegan a la bandeja de entrada.
 Por empresa decide una vez: cliente, cliente final de un socio o parque
 propio — la sugerencia viene de la comparación de nombres con clientes y
-clientes finales. La decisión se memoriza; la siguiente importación asigna
+clientes finales y de los textos de las facturas: si la empresa aparece en el
+texto de facturas a un socio, la bandeja propone ese socio, y un clic abre la
+asignación como cliente final. Las suscripciones terminadas también siguen
+aquí mientras haya un periodo vencido abierto — sin titular nadie
+encontraría sus facturas. «Asignar titular» junto a «Aún sin asignar»
+(cuenta de licencias, suscripción, periodos) abre la misma asignación. La decisión se memoriza; la siguiente importación asigna
 enseguida la misma empresa. Las filas que la importación no pudo procesar
 (fecha ilegible, cantidad sin número, identificador duplicado) quedan como
 hallazgos en la importación: el número en el mensaje, los detalles

@@ -32,7 +32,7 @@ return [
         'unassigned' => 'Senza titolare',
     ],
     'filter' => [
-        'search' => 'Cerca (descrizione, titolare, riferimento, numero fattura)',
+        'search' => 'Cerca (descrizione, titolare, azienda, riferimento, numero fattura)',
         'all_kinds' => 'Tutti i tipi',
         'all_providers' => 'Tutti i fornitori',
         'planning' => 'Attivi + disdetti',
@@ -75,6 +75,7 @@ return [
         'customer_self' => '— il cliente stesso —',
         'own' => 'Parco proprio',
         'unassigned' => 'Non ancora assegnato',
+        'assign' => 'Assegnare il titolare',
         'customer' => 'Cliente',
         'foreign' => 'Cliente finale (tramite partner)',
         'via' => 'tramite :partner',
@@ -257,6 +258,9 @@ return [
         'mode_foreign' => 'Cliente finale esistente',
         'customer' => 'Cliente o partner',
         'foreign' => 'Cliente finale',
+        'mentioned' => 'Partner: :customer (:count fattura)|Partner: :customer (:count fatture)',
+        'mentioned_hint' => 'L’azienda compare nel testo di queste fatture — probabilmente un cliente finale di questo partner. Un clic apre l’assegnazione come cliente finale di questo partner.',
+        'mentioned_title' => 'Citato nel testo della fattura',
         'flash' => [
             'assigned' => ':count abbonamenti assegnati.',
         ],
@@ -299,6 +303,7 @@ return [
         'reason' => 'Motivo',
         'reason_hint' => 'Cortesia, prova, uso proprio … visibile in elenco e report.',
         'reason_order_change' => 'Cambio d’ordine: il resto passa al successore dal :date',
+        'order_change' => 'Cambio d’ordine',
         'reason_voided' => 'Credito inesigibile: fattura :voucher annullata',
         'reason_presets' => ['Credito inesigibile (insolvenza)', 'Cortesia', 'Periodo di prova', 'Uso proprio', 'Fatturato due volte'],
         'origin' => [

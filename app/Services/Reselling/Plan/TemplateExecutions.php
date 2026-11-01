@@ -45,7 +45,7 @@ final class TemplateExecutions {
             return [];
         }
         $since = ResalePeriod::today()->subMonths(self::LOOKBACK_MONTHS);
-        /** @var array<string, array<string, array{number: string|null, date: CarbonImmutable|null, paid: bool}>> $vouchers Vorlage → Beleg → Stand */
+        /** @var array<string, array<string, array{number: string|null, date: CarbonImmutable|null, paid: bool, line: MirrorLine}>> $vouchers Vorlage → Beleg → Stand */
         $vouchers = [];
         foreach ($this->mirror->linesFor($organization, null, $since, null, false) as $line) {
             /** @var MirrorLine $line */
@@ -53,7 +53,7 @@ final class TemplateExecutions {
                 || in_array($line->voucherStatus, [MirrorLine::STATUS_VOIDED, MirrorLine::STATUS_DRAFT], true)) {
                 continue;
             }
-            $vouchers[$line->planKey][$line->voucherKey] ??= ['number' => $line->voucherNumber, 'date' => $line->voucherDate, 'paid' => $line->voucherStatus === MirrorLine::STATUS_PAID];
+            $vouchers[$line->planKey][$line->voucherKey] ??= ['number' => $line->voucherNumber, 'date' => $line->voucherDate, 'paid' => $line->voucherStatus === MirrorLine::STATUS_PAID, 'line' => $line];
         }
         $states = [];
         foreach ($wanted as $key => $template) {
@@ -79,7 +79,7 @@ final class TemplateExecutions {
             }
             $states[$key] = $best === null
                 ? new TemplateExecution(TemplateExecution::MISSING, null, null, $expected)
-                : new TemplateExecution($best['paid'] ? TemplateExecution::PAID : TemplateExecution::OPEN, $best['number'], $best['date'], $expected);
+                : new TemplateExecution($best['paid'] ? TemplateExecution::PAID : TemplateExecution::OPEN, $best['number'], $best['date'], $expected, $best['line']->sourceKey, $best['line']->voucherKey, $best['line']->previewUrl);
         }
 
         return $states;

@@ -152,21 +152,22 @@ class RecurringPlanTest extends TestCase {
                 'name' => 'Exchange Online (Plan 1)', 'quantity' => 12, 'unit_name' => 'Monat', 'unit_net' => '3.95', 'total_net' => '47.40', 'tax_rate' => 19, 'currency' => 'EUR',
             ]);
         };
-        $voucher('tpl-paid', 'RE/2026/1010', '2026-01-13', 'paid');
-        $voucher('tpl-paid', 'RE/2025/0789', '2025-01-13', 'paid');
+        $voucher('tpl-paid', 'RE/2026/0501', '2026-01-13', 'paid');
+        $voucher('tpl-paid', 'RE/2025/0499', '2025-01-13', 'paid');
         $voucher('tpl-paused', 'RE/2026/0500', '2026-05-01', 'open');
 
         $plans = app(RecurringPlans::class);
         $states = app(\App\Services\Reselling\Plan\TemplateExecutions::class)->statesFor($this->organization, $plans->templatesFor($this->organization));
         $this->assertSame('paid', $states['lexoffice:tpl-paid']->state);
-        $this->assertSame('RE/2026/1010', $states['lexoffice:tpl-paid']->voucherNumber, 'die Rechnung im Fenster um „nächste Ausführung minus ein Jahr“, nicht die vom Vorjahr');
+        $this->assertSame('RE/2026/0501', $states['lexoffice:tpl-paid']->voucherNumber, 'die Rechnung im Fenster um „nächste Ausführung minus ein Jahr“, nicht die vom Vorjahr');
         $this->assertSame('missing', $states['lexoffice:tpl-none']->state);
         $this->assertSame('2026-02-01', $states['lexoffice:tpl-none']->expectedOn?->toDateString());
         $this->assertSame('open', $states['lexoffice:tpl-paused']->state, 'ohne nächste Ausführung zählt die jüngste Rechnung');
 
         // Befunde tragen den Stand, die Kontoseite zeigt ihn neben dem Abzeichen mit der Meldung als Tooltip.
         foreach (['tpl-paid', 'tpl-none', 'tpl-paused'] as $i => $key) {
-            ResalePlanLink::query()->create(['organization_id' => $this->organization->id, 'subscription_id' => $exchange->id, 'plan_key' => 'lexoffice:' . $key, 'line_position' => 2, 'quantity' => 1, 'origin' => LinkOrigin::Confirmed]);
+            ResalePlanLink::query()->create(['organization_id' => $this->organization->id, 'subscription_id' => $exchange->id, 'plan_key' => 'lexoffice:' . $key, 'line_position' => 2, 'quantity' => 1, 'origin' => LinkOrigin::Confirmed,
+                'note' => $key === 'tpl-none' ? 'RE/2025/0499' : null]);
         }
         $findings = array_values(array_filter(app(PlanAudit::class)->findings($this->organization), static fn(array $f): bool => $f['kind'] === PlanAudit::LAST_FAILED));
         $this->assertCount(3, $findings);
@@ -174,13 +175,17 @@ class RecurringPlanTest extends TestCase {
         foreach ($findings as $finding) {
             $byKey[$finding['template']?->key] = $finding['params']['state'];
         }
-        $this->assertSame(__('resale.plan.execution.paid', ['number' => 'RE/2026/1010', 'date' => '13.01.2026']), $byKey['lexoffice:tpl-paid']);
+        $this->assertSame(__('resale.plan.execution.paid', ['number' => 'RE/2026/0501', 'date' => '13.01.2026']), $byKey['lexoffice:tpl-paid']);
         $this->assertSame(__('resale.plan.execution.missing_expected', ['expected' => '01.02.2026']), $byKey['lexoffice:tpl-none']);
         $this->assertSame(__('resale.plan.execution.open', ['number' => 'RE/2026/0500', 'date' => '01.05.2026']), $byKey['lexoffice:tpl-paused']);
         $this->actingAs($admin)->get(route('finance.resale.accounts.show', 'qualityhosting:CNL00010'))->assertOk()
-            ->assertSee(__('resale.plan.execution.paid', ['number' => 'RE/2026/1010', 'date' => '13.01.2026']))
+            ->assertSee(__('resale.plan.execution.paid', ['number' => 'RE/2026/0501', 'date' => '13.01.2026']))
             ->assertSee(__('resale.plan.execution.missing_expected', ['expected' => '01.02.2026']))
-            ->assertSee('title="' . $mailError . '"', false);
+            ->assertSee('title="' . $mailError . '"', false)
+            // Belege sind erreichbar (Pilot 2026-11-01): Stand und Notiz am Bezug öffnen den Belegdialog.
+            ->assertSee(route('finance.resale.vouchers.show', ['source' => $states['lexoffice:tpl-paid']->sourceKey, 'voucher' => $states['lexoffice:tpl-paid']->voucherKey]), false)
+            ->assertSee('RE/2025/0499</a>', false);
+        $this->assertNotNull($states['lexoffice:tpl-paid']->voucherKey);
     }
 
     /**

@@ -618,6 +618,18 @@ class ResaleSubscription extends Model {
         return $query->whereNull('customer_id')->whereNull('foreign_customer_id')->where('is_own_holding', false);
     }
 
+    /**
+     * Abos ohne Halter, die noch Arbeit machen: planbar oder mit fälliger offener Periode. Ein beendetes Abo
+     * ohne Halter fiel sonst aus Posteingang und Zählern, und seine Rechnungen fand niemand (Pilot 2026-11-01).
+     *
+     * @param  Builder<ResaleSubscription>  $query
+     * @return Builder<ResaleSubscription>
+     */
+    public function scopeAwaitingHolder(Builder $query): Builder {
+        return $this->scopeUnassigned($query)->where(fn(Builder $w) => $this->scopePlanning($w)
+            ->orWhereIn('id', ResalePeriod::query()->due()->select('subscription_id')));
+    }
+
     /** Wer die Rechnung bekommt: der Kunde selbst oder der Partner des Fremdkunden. */
     public function billedTo(): ?Customer {
         if ($this->is_own_holding) {

@@ -220,7 +220,7 @@
                             @endif
                         </td>
                         <td class="align-top">
-                            <x-status-badge size="xs" :tone="$period->status->tone()" :label="$period->status->label()" />
+                            <x-status-badge size="xs" :tone="$period->statusTone()" :label="$period->statusLabel()" />
                             @if ($period->waived_reason)
                                 <span class="block text-xs text-muted max-w-48" title="{{ $period->waived_reason }}">{{ \Illuminate\Support\Str::limit($period->waived_reason, 50) }}</span>
                             @endif

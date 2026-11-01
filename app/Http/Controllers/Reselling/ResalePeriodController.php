@@ -81,6 +81,7 @@ class ResalePeriodController extends Controller {
             // Auch nach Rechnungsnummer (Pilot 2026-11-01): die Perioden, an denen der Beleg hängt.
             $query->where(static fn(Builder $outer) => $outer
                 ->whereHas('subscription', static fn(Builder $s) => $s->where(static fn(Builder $w) => $w->whereLikeEscaped('label', $q)
+                    ->orWhereLikeEscaped('company_name', $q)
                     ->orWhereHas('customer', static fn(Builder $c) => $c->whereLikeEscaped('name', $q))
                     ->orWhereHas('foreignCustomer', static fn(Builder $f) => $f->whereLikeEscaped('name', $q))))
                 ->orWhereHas('links', static fn(Builder $l) => $l->whereLikeEscaped('voucher_number', $q)));

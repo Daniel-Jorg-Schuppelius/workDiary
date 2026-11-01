@@ -62,7 +62,7 @@
                 <x-detail-grid>
                     <x-detail-grid.row :label="__('resale.field.holder')">
                         @if (! $subscription->hasHolder())
-                            <x-status-badge size="xs" tone="warning" :label="__('resale.holder.unassigned')" />
+                            <x-resale.holder :subscription="$subscription" />
                         @elseif ($subscription->is_own_holding)
                             {{ __('resale.holder.own') }}
                         @elseif ($subscription->foreignCustomer !== null)

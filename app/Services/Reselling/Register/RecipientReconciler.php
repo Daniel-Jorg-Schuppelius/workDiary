@@ -299,6 +299,56 @@ final class RecipientReconciler {
     }
 
     /**
+     * Umgekehrte Richtung für den Posteingang (Pilot 2026-11-01): je Firma ohne Halter die Rechnungsempfänger,
+     * in deren Rechnungstexten sie steht — meist der Partner, der den Endkunden abrechnet. Meiste Belege zuerst.
+     *
+     * @param  list<string>  $companies
+     * @return array<string, list<array{customer: Customer, vouchers: int}>> Firma → Empfänger
+     */
+    public function mentioningRecipients(Organization $organization, array $companies, CarbonImmutable $from): array {
+        if ($companies === []) {
+            return [];
+        }
+        /** @var array<string, array{recipient: int, text: string}> $texts */
+        $texts = [];
+        foreach ($this->mirror->linesFor($organization, null, $from) as $line) {
+            if ($line->recipientCustomerId === null) {
+                continue;
+            }
+            $voucher = $line->sourceKey . ':' . $line->voucherKey;
+            $texts[$voucher] ??= ['recipient' => $line->recipientCustomerId, 'text' => trim((string) $line->voucherText)];
+            $texts[$voucher]['text'] .= ' ' . $line->text();
+        }
+        $tokens = array_map(static fn(array $entry): array => ['recipient' => $entry['recipient'], 'tokens' => NameTokenMatcher::significantTokens($entry['text'])], $texts);
+        /** @var array<string, array<int, int>> $counts */
+        $counts = [];
+        /** @var array<int, int> $ids */
+        $ids = [];
+        foreach ($companies as $company) {
+            $companyTokens = NameTokenMatcher::significantTokens($company);
+            foreach ($tokens as $entry) {
+                if (NameTokenMatcher::tokensMatch($companyTokens, $entry['tokens'])) {
+                    $counts[$company][$entry['recipient']] = ($counts[$company][$entry['recipient']] ?? 0) + 1;
+                    $ids[$entry['recipient']] = $entry['recipient'];
+                }
+            }
+        }
+        $customers = Customer::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereKey(array_values($ids))->get(['id', 'name'])->keyBy('id');
+        $result = [];
+        foreach ($counts as $company => $byRecipient) {
+            arsort($byRecipient);
+            foreach ($byRecipient as $id => $vouchers) {
+                $customer = $customers->get($id);
+                if ($customer instanceof Customer) {
+                    $result[$company][] = ['customer' => $customer, 'vouchers' => $vouchers];
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Abos ohne Halter, deren Firmenname in den Rechnungstexten dieses
      * Empfängers vorkommt — der Partner rechnet den Endkunden ab, das Abo
      * wartet aber noch im Posteingang.
@@ -318,7 +368,7 @@ final class RecipientReconciler {
         }
         /** @var array<string, InboxHint> $hints */
         $hints = [];
-        $unassigned = ResaleSubscription::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->unassigned()->orderBy('label')->get();
+        $unassigned = ResaleSubscription::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->awaitingHolder()->orderBy('label')->get();
         foreach ($unassigned as $subscription) {
             $name = trim((string) $subscription->company_name);
             if ($name === '') {

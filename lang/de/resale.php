@@ -32,7 +32,7 @@ return [
         'unassigned' => 'Ohne Halter',
     ],
     'filter' => [
-        'search' => 'Suche (Bezeichnung, Halter, Kennung, Rechnungsnummer)',
+        'search' => 'Suche (Bezeichnung, Halter, Firma, Kennung, Rechnungsnummer)',
         'all_kinds' => 'Alle Arten',
         'all_providers' => 'Alle Anbieter',
         'planning' => 'Aktiv + gekündigt',
@@ -75,6 +75,7 @@ return [
         'customer_self' => '— der Kunde selbst —',
         'own' => 'Eigener Bestand',
         'unassigned' => 'Noch nicht zugeordnet',
+        'assign' => 'Halter zuordnen',
         'customer' => 'Kunde',
         'foreign' => 'Fremdkunde (über Partner)',
         'via' => 'über :partner',
@@ -257,6 +258,9 @@ return [
         'mode_foreign' => 'Vorhandener Fremdkunde',
         'customer' => 'Kunde bzw. Partner',
         'foreign' => 'Fremdkunde',
+        'mentioned' => 'Partner: :customer (:count Rechnung)|Partner: :customer (:count Rechnungen)',
+        'mentioned_hint' => 'Die Firma steht im Text dieser Rechnungen — vermutlich ein Endkunde dieses Partners. Klick öffnet die Zuordnung als Endkunde dieses Partners.',
+        'mentioned_title' => 'Im Rechnungstext genannt',
         'flash' => [
             'assigned' => ':count Abos zugeordnet.',
         ],
@@ -299,6 +303,7 @@ return [
         'reason' => 'Grund',
         'reason_hint' => 'Kulanz, Testphase, eigener Bedarf … erscheint in Liste und Bericht.',
         'reason_order_change' => 'Bestellungswechsel: Rest an den Nachfolger ab :date',
+        'order_change' => 'Bestellungswechsel',
         'reason_voided' => 'Forderungsausfall: Rechnung :voucher storniert',
         'reason_presets' => ['Forderungsausfall (Insolvenz)', 'Kulanz', 'Testphase', 'Eigener Bedarf', 'Doppelt berechnet'],
         'origin' => [

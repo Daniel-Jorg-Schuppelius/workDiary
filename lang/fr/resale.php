@@ -32,7 +32,7 @@ return [
         'unassigned' => 'Sans titulaire',
     ],
     'filter' => [
-        'search' => 'Recherche (libellé, titulaire, référence, numéro de facture)',
+        'search' => 'Recherche (libellé, titulaire, société, référence, numéro de facture)',
         'all_kinds' => 'Tous les types',
         'all_providers' => 'Tous les fournisseurs',
         'planning' => 'Actifs + résiliés',
@@ -75,6 +75,7 @@ return [
         'customer_self' => '— le client lui-même —',
         'own' => 'Parc propre',
         'unassigned' => 'Pas encore affecté',
+        'assign' => 'Attribuer un titulaire',
         'customer' => 'Client',
         'foreign' => 'Client final (via partenaire)',
         'via' => 'via :partner',
@@ -257,6 +258,9 @@ return [
         'mode_foreign' => 'Client final existant',
         'customer' => 'Client ou partenaire',
         'foreign' => 'Client final',
+        'mentioned' => 'Partenaire : :customer (:count facture)|Partenaire : :customer (:count factures)',
+        'mentioned_hint' => 'La société figure dans le texte de ces factures — probablement un client final de ce partenaire. Un clic ouvre l’affectation comme client final de ce partenaire.',
+        'mentioned_title' => 'Cité dans le texte de facture',
         'flash' => [
             'assigned' => ':count abonnements affectés.',
         ],
@@ -299,6 +303,7 @@ return [
         'reason' => 'Motif',
         'reason_hint' => 'Geste commercial, essai, usage propre … visible dans la liste et le rapport.',
         'reason_order_change' => 'Changement de commande : le reste passe au successeur à partir du :date',
+        'order_change' => 'Changement de commande',
         'reason_voided' => 'Créance irrécouvrable : facture :voucher annulée',
         'reason_presets' => ['Créance irrécouvrable (insolvabilité)', 'Geste commercial', 'Période d’essai', 'Usage interne', 'Facturé deux fois'],
         'origin' => [

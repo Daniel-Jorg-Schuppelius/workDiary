@@ -143,7 +143,7 @@
                             <td class="text-sm wd-pin-col min-w-[14rem]">
                                 <a href="{{ route('finance.resale.show', $subscription->sqid) }}" class="link link-hover font-medium whitespace-nowrap">{{ $row['product'] }}</a>
                                 <span class="block text-xs text-muted">
-                                    {{ $row['holder'] }} · ×{{ $subscription->quantity }} · {{ $subscription->provider->label() }}
+                                    @if ($subscription->hasHolder()){{ $row['holder'] }}@else<x-resale.holder :subscription="$subscription" />@endif · ×{{ $subscription->quantity }} · {{ $subscription->provider->label() }}
                                     {{-- Domain-Abos: Fremdkennung = Domain = Produktname, nicht doppelt zeigen. --}}
                                     @if ($subscription->external_id && $subscription->external_id !== $row['product']) · <span class="font-mono">{{ $subscription->external_id }}</span>@endif
                                 </span>
@@ -159,7 +159,7 @@
                                 <td class="text-center align-top text-xs whitespace-nowrap px-1.5">
                                     @foreach ($row['cells'][$year] ?? [] as $cell)
                                         @php $period = $cell['period']; $upcoming = $period->starts_on->greaterThan($today); @endphp
-                                        <div class="mb-1 flex flex-col items-center gap-0.5" title="{{ $period->label() }} · {{ $period->status->label() }}">
+                                        <div class="mb-1 flex flex-col items-center gap-0.5" title="{{ $period->label() }} · {{ $period->statusLabel() }}">
                                             @if ($subscription->is_own_holding)
                                                 <x-status-badge size="xs" :label="$period->starts_on->format('d.m.')" />
                                             @elseif ($cell['vouchers'] !== [])
@@ -171,7 +171,7 @@
                                             @elseif (in_array($period->status, [\App\Enums\Reselling\PeriodStatus::Open, \App\Enums\Reselling\PeriodStatus::Partial], true))
                                                 <x-status-badge size="xs" tone="error" :label="__('resale.account.grid.missing')" />
                                             @else
-                                                <x-status-badge size="xs" :tone="$period->status->tone()" :label="$period->status->label()" />
+                                                <x-status-badge size="xs" :tone="$period->statusTone()" :label="$period->statusLabel()" />
                                             @endif
                                             <span class="text-muted tabular-nums">{{ $period->starts_on->format('d.m.') }} · ×{{ $period->quantity }}</span>
                                         </div>
@@ -200,8 +200,8 @@
                     @forelse ($due as $period)
                         @php $subscription = $period->subscription; @endphp
                         <tr class="hover">
-                            <td class="text-sm">{{ $subscription->holderLabel() }}<span class="block text-xs text-muted">{{ $subscription->productName() }} · ×{{ $period->quantity }}</span></td>
-                            <td class="text-sm tabular-nums whitespace-nowrap"><a href="{{ route('finance.resale.show', $subscription->sqid) }}" class="link link-hover">{{ $period->label() }}</a><span class="block text-xs"><x-status-badge size="xs" :tone="$period->status->tone()" :label="$period->status->label()" /></span></td>
+                            <td class="text-sm"><x-resale.holder :subscription="$subscription" /><span class="block text-xs text-muted">{{ $subscription->productName() }} · ×{{ $period->quantity }}</span></td>
+                            <td class="text-sm tabular-nums whitespace-nowrap"><a href="{{ route('finance.resale.show', $subscription->sqid) }}" class="link link-hover">{{ $period->label() }}</a><span class="block text-xs"><x-status-badge size="xs" :tone="$period->statusTone()" :label="$period->statusLabel()" /></span></td>
                             <td class="text-right tabular-nums whitespace-nowrap">{{ $period->openAmount()?->format() ?? '—' }}</td>
                         </tr>
                     @empty
@@ -313,7 +313,7 @@
                     <tr class="hover">
                         <td class="font-mono text-xs"><a href="{{ route('finance.resale.show', $contract->sqid) }}" class="link link-hover">{{ $contract->external_id ?? '—' }}</a></td>
                         <td class="text-sm">{{ $contract->productName() }}</td>
-                        <td class="text-sm">{{ $contract->holderLabel() }}</td>
+                        <td class="text-sm"><x-resale.holder :subscription="$contract" /></td>
                         <td class="text-right tabular-nums">{{ $contract->quantity }}</td>
                         <td class="text-sm tabular-nums whitespace-nowrap">{{ $contract->starts_on->fdate() }}@if ($contract->ends_on) – {{ $contract->ends_on->fdate() }}@endif</td>
                         <td class="text-sm">{{ $contract->provider->label() }}</td>

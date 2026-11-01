@@ -32,7 +32,7 @@ return [
         'unassigned' => 'Sin titular',
     ],
     'filter' => [
-        'search' => 'Buscar (descripción, titular, referencia, número de factura)',
+        'search' => 'Buscar (descripción, titular, empresa, referencia, número de factura)',
         'all_kinds' => 'Todos los tipos',
         'all_providers' => 'Todos los proveedores',
         'planning' => 'Activas + canceladas',
@@ -75,6 +75,7 @@ return [
         'customer_self' => '— el propio cliente —',
         'own' => 'Parque propio',
         'unassigned' => 'Aún sin asignar',
+        'assign' => 'Asignar titular',
         'customer' => 'Cliente',
         'foreign' => 'Cliente final (vía socio)',
         'via' => 'vía :partner',
@@ -257,6 +258,9 @@ return [
         'mode_foreign' => 'Cliente final existente',
         'customer' => 'Cliente o socio',
         'foreign' => 'Cliente final',
+        'mentioned' => 'Socio: :customer (:count factura)|Socio: :customer (:count facturas)',
+        'mentioned_hint' => 'La empresa aparece en el texto de estas facturas — probablemente un cliente final de este socio. Un clic abre la asignación como cliente final de este socio.',
+        'mentioned_title' => 'Mencionado en el texto de la factura',
         'flash' => [
             'assigned' => ':count suscripciones asignadas.',
         ],
@@ -299,6 +303,7 @@ return [
         'reason' => 'Motivo',
         'reason_hint' => 'Cortesía, prueba, uso propio … visible en la lista y el informe.',
         'reason_order_change' => 'Cambio de pedido: el resto pasa al sucesor desde el :date',
+        'order_change' => 'Cambio de pedido',
         'reason_voided' => 'Impago: factura :voucher anulada',
         'reason_presets' => ['Impago (insolvencia)', 'Cortesía', 'Periodo de prueba', 'Uso propio', 'Facturado dos veces'],
         'origin' => [

@@ -798,6 +798,12 @@ class LinkProposerTest extends TestCase {
         $this->assertStringContainsString('30.12.2022', (string) $stub->waived_reason);
         $this->assertSame(0, $stub->links()->count(), 'der Bezug wanderte zum Nachfolger');
         $this->assertDatabaseHas('audit_logs', ['event' => OrderChangeStubs::AUDIT, 'auditable_id' => $stub->id]);
+        // Angezeigt als Bestellungswechsel, nicht als Verzicht (Pilot 2026-11-01); ein Verzicht mit Bearbeiter bleibt einer.
+        $this->assertTrue($stub->isOrderChange());
+        $this->assertSame(__('resale.link.order_change'), $stub->statusLabel());
+        $manual = $old->periods()->orderBy('starts_on')->firstOrFail()->forceFill(['status' => PeriodStatus::Waived, 'waived_reason' => 'Kulanz', 'decided_by_user_id' => $this->orgAdmin()->id, 'decided_at' => now()]);
+        $this->assertFalse($manual->isOrderChange());
+        $this->assertSame(PeriodStatus::Waived->label(), $manual->statusLabel());
         $periods = $new->periods()->limit(3)->get();
         $this->assertSame(['2022-12-30', '2023-12-30', '2024-12-30'], $periods->map(static fn (ResalePeriod $p): string => $p->starts_on->toDateString())->all());
         $this->assertSame([12.0, 12.0, 12.0], $periods->map(static fn (ResalePeriod $p): float => $p->coveredMonths())->all(), 'Rest der Rechnung 2022, dann 2023 und 2024 trotz 30 Tagen Versatz');
