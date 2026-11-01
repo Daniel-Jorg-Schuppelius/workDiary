@@ -107,10 +107,10 @@ class RecipientReconcilerTest extends TestCase {
         // Ein 1er-Vertrag, sauber berechnet — und ein 5er-Vertrag über zwei Jahre, für den es nie eine Rechnung gab.
         $single = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2024-04-10', 'ends_on' => '2026-04-10', 'status' => 'ended']);
         $five = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2024-04-24', 'ends_on' => '2026-04-24', 'quantity' => 5, 'status' => 'ended']);
-        $this->voucher('c-eco', 'RE/2024/0630', '2024-04-14', [['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95']]);
-        $this->voucher('c-eco', 'RE/2025/0830', '2025-04-14', [['article' => $this->exchange, 'quantity' => 1, 'unit' => 'Jahr', 'net' => '47.40']]);
+        $this->voucher('c-eco', 'RE/2024/9002', '2024-04-14', [['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95']]);
+        $this->voucher('c-eco', 'RE/2025/9006', '2025-04-14', [['article' => $this->exchange, 'quantity' => 1, 'unit' => 'Jahr', 'net' => '47.40']]);
         // Business Standard wurde berechnet, steht aber in keinem Abo.
-        $this->voucher('c-eco', 'RE/2025/0886', '2025-08-10', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);
+        $this->voucher('c-eco', 'RE/2025/9007', '2025-08-10', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);
         (new LinkProposer)->propose($this->organization);
         $this->assertSame(PeriodStatus::Billed, $single->periods()->first()?->status);
 
@@ -128,7 +128,7 @@ class RecipientReconcilerTest extends TestCase {
         $first = $result['periods'][0];
         $this->assertSame($five->id, $first['subscription']->id);
         $this->assertSame([], $first['candidates']);
-        $this->assertSame(['RE/2024/0630', 'RE/2025/0830'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucherNumber, $first['taken']), 'im Fenster der Periode, nächste zuerst');
+        $this->assertSame(['RE/2024/9002', 'RE/2025/9006'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucherNumber, $first['taken']), 'im Fenster der Periode, nächste zuerst');
         $this->assertStringContainsString('Ökotherm Service GmbH · ×1 · Telekom Cloud Marketplace ab 10.04.2024 · 10.04.2024 – 09.04.2025', $first['taken'][0]['row']['periods'][0]);
 
         $admin = $this->orgAdmin();
@@ -138,18 +138,18 @@ class RecipientReconcilerTest extends TestCase {
             ->assertSee('10 × 12 Mon. nie abgerechnet')
             ->assertSee('1 × 12 Mon. ohne Periode')
             // Vergebene Rechnungen stehen bei ihrer eigenen Periode (Tafel seit Phase 168), nicht als Liste an der offenen.
-            ->assertSee('RE/2024/0630');
+            ->assertSee('RE/2024/9002');
     }
 
     public function test_overview_lists_recipients_with_problems_first_and_contacts_without_customer(): void {
         $admin = $this->orgAdmin();
         $clean = $this->customerWithContact('Badhaus Bäder GmbH', 'c-kl');
         $subClean = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $clean->id, 'article_ref' => 'lex:' . $this->standard->id, 'starts_on' => '2025-10-01']);
-        $this->voucher('c-kl', 'RE/2025/0900', '2025-10-01', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);
+        $this->voucher('c-kl', 'RE/2025/9010', '2025-10-01', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);
         $gap = $this->customerWithContact('Ute Mahlwerk', 'c-um');
         $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $gap->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01']);
         // Rechnung an einen Lexoffice-Kontakt, den kein Kunde kennt.
-        $this->voucher('c-unknown', 'RE/2025/0950', '2025-10-05', [['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95']]);
+        $this->voucher('c-unknown', 'RE/2025/9015', '2025-10-05', [['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95']]);
         (new LinkProposer)->propose($this->organization);
         // Bestätigter Vorschlag: nichts mehr zu klären. Unbestätigte zählen als Klärungsbedarf.
         $this->actingAs($admin)->post(route('finance.resale.periods.confirm', $subClean->periods()->firstOrFail()->sqid))->assertRedirect();
@@ -177,7 +177,7 @@ class RecipientReconcilerTest extends TestCase {
         $other = $this->customerWithContact('Fremde GmbH', 'c-x');
         $subOther = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $other->id, 'article_ref' => 'lex:' . $this->standard->id, 'starts_on' => '2025-09-12']);
         // Zwei gleiche Positionen ohne Endkundennennung: der Vorschlagslauf kann sie nicht trennen.
-        $voucher = $this->voucher('c-nordlicht', 'RE/2025/1000', '2025-09-15', [
+        $voucher = $this->voucher('c-nordlicht', 'RE/2025/9019', '2025-09-15', [
             ['article' => $this->standard, 'quantity' => 12, 'net' => '12.13'],
             ['article' => $this->standard, 'quantity' => 1, 'unit' => 'Jahr', 'net' => '145.56'],
         ]);
@@ -185,7 +185,7 @@ class RecipientReconcilerTest extends TestCase {
         $this->assertSame(12.0, LicenseMonths::ofLine($this->mirrorLine($lineB)), '„1 Jahr" = 12 Lizenzmonate');
 
         $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $partner))->assertOk();
-        $page->assertSee('Steuerbüro Zahlenwerk')->assertSee('Hof 24 GmbH')->assertSee('RE/2025/1000');
+        $page->assertSee('Steuerbüro Zahlenwerk')->assertSee('Hof 24 GmbH')->assertSee('RE/2025/9019');
 
         $periodZahlenwerk = $subZahlenwerk->periods()->firstOrFail();
         $periodHaus = $subHaus->periods()->firstOrFail();
@@ -245,7 +245,7 @@ class RecipientReconcilerTest extends TestCase {
         $admin = $this->orgAdmin();
         $customer = $this->customerWithContact('Nordlicht Systems GmbH', 'c-nordlicht');
         $subscription = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'quantity' => 3, 'starts_on' => '2025-08-12']);
-        $voucher = $this->voucher('c-nordlicht', 'RE/2025/0900', '2025-08-20', [
+        $voucher = $this->voucher('c-nordlicht', 'RE/2025/9010', '2025-08-20', [
             ['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95'],
             ['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95'],
             ['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95'],
@@ -295,7 +295,7 @@ class RecipientReconcilerTest extends TestCase {
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'quantity' => 4, 'label' => 'Microsoft 365 Apps for business',
             'company_name' => 'Robert Beispiel', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR', 'starts_on' => '2025-02-13',
         ]);
-        $this->voucher('c-eco', 'RE/2025/0800', '2025-02-13', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']], null, 'paid', 'Microsoftdienste Robert Beispiel');
+        $this->voucher('c-eco', 'RE/2025/9001', '2025-02-13', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']], null, 'paid', 'Microsoftdienste Robert Beispiel');
 
         $result = (new RecipientReconciler)->forCustomer($this->organization, $customer);
         [$first, $second] = $result['periods'];
@@ -339,14 +339,14 @@ class RecipientReconcilerTest extends TestCase {
         [$p2024, $p2025] = $subscription->periods()->get()->all();
         // Rechnung erst im März 2026 gestellt, Leistungszeitraum aber das Jahr ab 31.12.2024: gehört zur ERSTEN Periode.
         // „24 Monat" bei zwölf Monaten Leistung = zwei Lizenzen × 12.
-        $late = $this->voucher('c-mv', 'RE/2026/1050', '2026-03-10', [['article' => $this->exchange, 'quantity' => 24, 'net' => '3.95']], null, 'paid', '', '2024-12-31', '2025-12-30');
+        $late = $this->voucher('c-mv', 'RE/2026/9004', '2026-03-10', [['article' => $this->exchange, 'quantity' => 24, 'net' => '3.95']], null, 'paid', '', '2024-12-31', '2025-12-30');
         $onTime = $this->voucher('c-mv', 'RE/2026/1002', '2026-01-05', [['article' => $this->exchange, 'quantity' => 2, 'unit' => 'Stück', 'net' => '47.40']], null, 'paid', '', '2025-12-31', '2026-12-30');
         $line = $late->lines()->firstOrFail()->load('voucher');
         $this->assertSame(['licences' => 2.0, 'months' => 12.0], LicenseMonths::split($this->mirrorLine($line)));
         $this->assertSame(['licences' => 2.0, 'months' => 12.0], LicenseMonths::split($this->mirrorLine($onTime->lines()->firstOrFail()->load('voucher'))), '„Stück" nimmt die Laufzeit aus dem Leistungszeitraum');
 
         (new LinkProposer)->propose($this->organization);
-        $this->assertSame('RE/2026/1050', $p2024->fresh()?->links()->first()?->voucher_number, 'Leistungszeitraum schlägt Rechnungsdatum');
+        $this->assertSame('RE/2026/9004', $p2024->fresh()?->links()->first()?->voucher_number, 'Leistungszeitraum schlägt Rechnungsdatum');
         $this->assertSame('RE/2026/1002', $p2025->fresh()?->links()->first()?->voucher_number);
         $this->assertSame(PeriodStatus::Billed, $p2024->fresh()?->status);
         $this->assertSame(PeriodStatus::Billed, $p2025->fresh()?->status);
@@ -362,9 +362,9 @@ class RecipientReconcilerTest extends TestCase {
         $customer = $this->customerWithContact('Ute Mahlwerk', 'c-um');
         // Anbieter-Export kennt nur den gekündigten Vertrag bis 2024 — die Rechnungen laufen weiter.
         $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2023-08-07', 'ends_on' => '2024-08-12', 'quantity' => 3, 'status' => 'ended']);
-        $this->voucher('c-um', 'RE/2023/0568', '2023-08-10', [['article' => $this->exchange, 'quantity' => 36, 'net' => '3.95']]);
-        $this->voucher('c-um', 'RE/2024/0724', '2024-10-26', [['article' => $this->exchange, 'quantity' => 24, 'net' => '3.95']]);
-        $this->voucher('c-um', 'RE/2025/0945', '2025-10-26', [['article' => $this->exchange, 'quantity' => 24, 'net' => '3.95']]);
+        $this->voucher('c-um', 'RE/2023/9002', '2023-08-10', [['article' => $this->exchange, 'quantity' => 36, 'net' => '3.95']]);
+        $this->voucher('c-um', 'RE/2024/9006', '2024-10-26', [['article' => $this->exchange, 'quantity' => 24, 'net' => '3.95']]);
+        $this->voucher('c-um', 'RE/2025/9014', '2025-10-26', [['article' => $this->exchange, 'quantity' => 24, 'net' => '3.95']]);
         (new LinkProposer)->propose($this->organization);
 
         $result = (new RecipientReconciler)->forCustomer($this->organization, $customer);
@@ -374,7 +374,7 @@ class RecipientReconcilerTest extends TestCase {
         // erst die vom Oktober 2025 trifft keine Periode mehr — ab da fehlt der Vertrag.
         $this->assertSame('2025-10-26', $product['gap_since']?->toDateString(), 'ab der ersten Position, die keine Periode mehr trifft');
         $gaps = array_values(array_filter($result['lines'], static fn(array $l): bool => $l['gap']));
-        $this->assertSame(['RE/2025/0945'], array_map(static fn(array $l): string => (string) $l['line']->voucherNumber, $gaps));
+        $this->assertSame(['RE/2025/9014'], array_map(static fn(array $l): string => (string) $l['line']->voucherNumber, $gaps));
 
         $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $customer))->assertOk();
         $page->assertSee('Position ohne Abo ab 26.10.2025')->assertSee(__('resale.board.create_subscription'));
@@ -448,27 +448,27 @@ class RecipientReconcilerTest extends TestCase {
 
         // Rechnungen: eine vor dem Fenster (zählt nur über ihr Leistungsende), eine stornierte,
         // eine ohne gespiegelte Positionen, eine Support-Position, eine fremde.
-        $this->voucher('c-kl', 'RE/2025/0900', '2025-10-01', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);
-        $this->voucher('c-kl', 'RE/2025/0901', '2025-10-02', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13'], ['article' => $support, 'quantity' => 2, 'unit' => 'Stunde', 'net' => '90.00']]);
+        $this->voucher('c-kl', 'RE/2025/9010', '2025-10-01', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);
+        $this->voucher('c-kl', 'RE/2025/9011', '2025-10-02', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13'], ['article' => $support, 'quantity' => 2, 'unit' => 'Stunde', 'net' => '90.00']]);
         $this->voucher('c-kl', 'RE/2024/0100', '2024-01-01', [['article' => $this->standard, 'quantity' => 36, 'net' => '12.13']], null, 'paid', '', '2024-01-01', '2026-12-31');
-        $this->voucher('c-kl', 'RE/2025/0950', '2025-10-05', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']], null, 'voided');
-        $this->voucher('c-kl', 'RE/2025/0960', '2025-10-06', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']])->forceFill(['lines_synced_at' => null])->save();
-        $this->voucher('c-x', 'RE/2025/0970', '2025-10-03', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);
+        $this->voucher('c-kl', 'RE/2025/9015', '2025-10-05', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']], null, 'voided');
+        $this->voucher('c-kl', 'RE/2025/9016', '2025-10-06', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']])->forceFill(['lines_synced_at' => null])->save();
+        $this->voucher('c-x', 'RE/2025/9018', '2025-10-03', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);
 
         $lines = new \App\Plugins\Lexoffice\Services\LexofficeRecipientInvoiceLines;
         $contacts = $map->byCustomer($customer->id);
         $from = \Carbon\CarbonImmutable::parse('2025-07-03');
         $numbers = static fn(\Illuminate\Support\Collection $rows): array => $rows->map(static fn(LexofficeVoucherLine $l): string => (string) $l->voucher->voucher_number)->sort()->values()->all();
-        $this->assertSame(['RE/2024/0100', 'RE/2025/0900', 'RE/2025/0901', 'RE/2025/0960'], $numbers($lines->for($this->organization, $contacts, $from)), 'nur Lizenzpositionen, gültige Rechnungen, Leistungsende zählt');
-        $this->assertSame(['RE/2025/0950'], $numbers($lines->voided($this->organization, $contacts)));
+        $this->assertSame(['RE/2024/0100', 'RE/2025/9010', 'RE/2025/9011', 'RE/2025/9016'], $numbers($lines->for($this->organization, $contacts, $from)), 'nur Lizenzpositionen, gültige Rechnungen, Leistungsende zählt');
+        $this->assertSame(['RE/2025/9015'], $numbers($lines->voided($this->organization, $contacts)));
         $this->assertSame([], $lines->for($this->organization, [], $from)->all(), 'leere Kontaktliste = nichts');
         $this->assertSame(5, $lines->for($this->organization, null)->count(), 'null = alle Kontakte der Organisation (auch Fremde GmbH)');
-        $this->assertSame(['RE/2024/0100', 'RE/2025/0900', 'RE/2025/0901', 'RE/2025/0960'], $numbers($lines->forPeriod($this->organization, $contacts, $period)));
+        $this->assertSame(['RE/2024/0100', 'RE/2025/9010', 'RE/2025/9011', 'RE/2025/9016'], $numbers($lines->forPeriod($this->organization, $contacts, $period)));
         $this->assertSame(1, $lines->pendingCount($this->organization, $contacts, $from));
 
         $vouchers = $lines->vouchers($this->organization, $contacts, $from);
-        $this->assertSame(['RE/2025/0901', 'RE/2025/0900', 'RE/2024/0100'], $vouchers->pluck('voucher_number')->all(), 'neueste zuerst, nur gespiegelte');
-        $flags = $vouchers->firstWhere('voucher_number', 'RE/2025/0901')?->lines->map(static fn($l): bool => (bool) $l->getAttribute('is_license'))->all();
+        $this->assertSame(['RE/2025/9011', 'RE/2025/9010', 'RE/2024/0100'], $vouchers->pluck('voucher_number')->all(), 'neueste zuerst, nur gespiegelte');
+        $flags = $vouchers->firstWhere('voucher_number', 'RE/2025/9011')?->lines->map(static fn($l): bool => (bool) $l->getAttribute('is_license'))->all();
         $this->assertSame([true, false], $flags, 'Support-Position bleibt sichtbar, aber markiert');
 
         (new LinkProposer)->propose($this->organization);
@@ -486,9 +486,9 @@ class RecipientReconcilerTest extends TestCase {
         $fallback = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Fallback GmbH']);
         $this->assertSame([], \App\Plugins\Lexoffice\Services\LexofficeContactMap::forCustomer($fallback)->byCustomer($fallback->id), 'kein verknüpfter Kontakt');
         $subscription = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $fallback->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01']);
-        $this->voucher('c-unmapped', 'RE/2025/0960', '2025-10-03', [['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95']], $fallback);
+        $this->voucher('c-unmapped', 'RE/2025/9016', '2025-10-03', [['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95']], $fallback);
         // Ein weiterer unbekannter Kontakt ohne Kunden-ID bleibt eine eigene Kontaktzeile (Empfängername aus dem Beleg).
-        $this->voucher('c-nobody', 'RE/2025/0961', '2025-10-04', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);
+        $this->voucher('c-nobody', 'RE/2025/9017', '2025-10-04', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);
         (new LinkProposer)->propose($this->organization);
         $this->assertSame(PeriodStatus::Open, $subscription->periods()->firstOrFail()->status, 'ohne Kontakt kann der Lauf nichts zuordnen');
 

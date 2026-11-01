@@ -91,14 +91,14 @@ class ProposalAutoConfirmTest extends TestCase {
     public function test_sure_matches_are_auto_confirmed_and_unsure_ones_stay_proposals(): void {
         // Sicher: fünf Exchange-Positionen eines Belegs am Periodenbeginn für den 5er-Vertrag.
         $sure = $this->subscription($this->exchange, 5, '2026-10-18');
-        $this->invoice('v-1134', 'RE/2026/1134', '2026-10-18', $this->exchange, 5);
+        $this->invoice('v-9011', 'RE/2026/9011', '2026-10-18', $this->exchange, 5);
         // Unsicher: Standard-Abo ohne Artikelschlüssel (Namensheuristik) — gleiche Rechnung, gleicher Tag.
         $byName = $this->subscription($this->standard, 1, '2026-10-09', 'none');
         $byName->forceFill(['article_ref' => null])->save();
-        $this->invoice('v-1130', 'RE/2026/1130', '2026-10-09', $this->standard, 1);
+        $this->invoice('v-9010', 'RE/2026/9010', '2026-10-09', $this->standard, 1);
         // Unsicher: Rechnung 60 Tage nach Periodenbeginn.
         $late = $this->subscription($this->exchange, 1, '2026-07-01');
-        $this->invoice('v-late', 'RE/2026/1099', '2026-08-30', $this->exchange, 1);
+        $this->invoice('v-late', 'RE/2026/9007', '2026-08-30', $this->exchange, 1);
 
         $result = (new LinkProposer)->propose($this->organization);
 

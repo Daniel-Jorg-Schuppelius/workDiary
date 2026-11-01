@@ -75,7 +75,7 @@ class MirrorCompositeTest extends TestCase {
 
         // Lokale Rechnung für den einen, Lexoffice-Spiegel für den anderen — beide decken die erste Periode.
         $invoice = Invoice::query()->create([
-            'organization_id' => $this->organization->id, 'customer_id' => $this->local->id, 'number' => 'RE-2025-0820', 'status' => InvoiceStatus::Issued,
+            'organization_id' => $this->organization->id, 'customer_id' => $this->local->id, 'number' => 'RE-2025-9003', 'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE, 'category' => 'resale', 'issued_on' => '2025-08-06', 'currency' => 'EUR',
         ]);
         $invoice->items()->create([
@@ -84,7 +84,7 @@ class MirrorCompositeTest extends TestCase {
         ]);
         $voucher = LexofficeVoucher::create([
             'organization_id' => $this->organization->id, 'external_id' => 'v-1', 'contact_external_id' => 'c-nordlicht', 'voucher_type' => 'invoice',
-            'voucher_status' => 'paid', 'voucher_number' => 'RE/2025/0821', 'voucher_date' => '2025-08-07', 'total_amount' => 100, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),
+            'voucher_status' => 'paid', 'voucher_number' => 'RE/2025/9004', 'voucher_date' => '2025-08-07', 'total_amount' => 100, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),
         ]);
         LexofficeVoucherLine::create([
             'organization_id' => $this->organization->id, 'voucher_id' => $voucher->id, 'position' => 1, 'type' => 'service',
@@ -102,7 +102,7 @@ class MirrorCompositeTest extends TestCase {
         $this->assertTrue($mirror->coversRecipient($this->organization, $this->lexoffice));
 
         $lines = $mirror->linesFor($this->organization, null);
-        $this->assertSame(['RE-2025-0820' => 'local', 'RE/2025/0821' => 'lexoffice'], $lines->mapWithKeys(static fn($l): array => [(string) $l->voucherNumber => $l->sourceKey])->all());
+        $this->assertSame(['RE-2025-9003' => 'local', 'RE/2025/9004' => 'lexoffice'], $lines->mapWithKeys(static fn($l): array => [(string) $l->voucherNumber => $l->sourceKey])->all());
         $this->assertSame([$this->local->id, $this->lexoffice->id], $lines->map(static fn($l): ?int => $l->recipientCustomerId)->all(), 'Empfänger je Quelle als Kunde');
 
         $result = (new LinkProposer)->propose($this->organization);
@@ -112,7 +112,7 @@ class MirrorCompositeTest extends TestCase {
         $lexLink = $this->lexofficeSubscription->periods()->orderBy('starts_on')->firstOrFail()->links()->firstOrFail();
         $this->assertSame((new InvoiceItem)->getMorphClass(), $localLink->linkable_type);
         $this->assertSame((new LexofficeVoucherLine)->getMorphClass(), $lexLink->linkable_type);
-        $this->assertSame(['RE-2025-0820', 'RE/2025/0821'], [$localLink->voucher_number, $lexLink->voucher_number]);
+        $this->assertSame(['RE-2025-9003', 'RE/2025/9004'], [$localLink->voucher_number, $lexLink->voucher_number]);
 
         // Verbrauch quellübergreifend: dieselbe Positions-ID in zwei Quellen ist zweimal 12 Monate, nicht 24.
         $consumed = (new PeriodLinker)->consumed($lines);
@@ -131,7 +131,7 @@ class MirrorCompositeTest extends TestCase {
         $this->assertSame([0.0, 0.0], [$byName['Badhaus Bäder GmbH']['free'], $byName['Nordlicht Systems GmbH']['free']]);
 
         $admin = $this->orgAdmin();
-        $this->actingAs($admin)->get(route('finance.resale.periods.index', ['status' => 'all']))->assertOk()->assertSee('RE-2025-0820')->assertSee('RE/2025/0821');
+        $this->actingAs($admin)->get(route('finance.resale.periods.index', ['status' => 'all']))->assertOk()->assertSee('RE-2025-9003')->assertSee('RE/2025/9004');
         $this->actingAs($admin)->get(route('finance.resale.reconcile.index', ['show' => 'all']))->assertOk()->assertSee('Badhaus Bäder GmbH')->assertSee('Nordlicht Systems GmbH');
     }
 
@@ -141,7 +141,7 @@ class MirrorCompositeTest extends TestCase {
         $this->assertNull($mirror->sourceFor((new LexofficeVoucherLine)->getMorphClass()));
         $this->assertFalse($mirror->coversRecipient($this->organization, $this->lexoffice), 'ohne Lexoffice-Quelle keine Rechnungen für den Lexoffice-Empfänger');
 
-        $this->assertSame(['RE-2025-0820'], $mirror->linesFor($this->organization, null)->map(static fn($l): string => (string) $l->voucherNumber)->all());
+        $this->assertSame(['RE-2025-9003'], $mirror->linesFor($this->organization, null)->map(static fn($l): string => (string) $l->voucherNumber)->all());
         $result = (new LinkProposer(mirror: $mirror))->propose($this->organization);
         $this->assertSame(1, $result['links']);
         $this->assertSame(PeriodStatus::Billed, $this->localSubscription->periods()->orderBy('starts_on')->firstOrFail()->status);

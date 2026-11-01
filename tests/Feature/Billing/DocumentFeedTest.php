@@ -124,7 +124,7 @@ final class DocumentFeedTest extends TestCase {
     public function test_totals_separate_direction_and_apply_sign(): void {
         $this->voucher(['external_id' => 'v1', 'customer_id' => $this->customer->id,
             'voucher_type' => 'salesinvoice', 'voucher_status' => 'paid',
-            'voucher_number' => 'RE/2026/1110', 'total_amount' => '1000.00']);
+            'voucher_number' => 'RE/2026/9008', 'total_amount' => '1000.00']);
         $this->voucher(['external_id' => 'v2', 'customer_id' => $this->customer->id,
             'voucher_type' => 'salescreditnote', 'voucher_status' => 'paid',
             'voucher_number' => 'GS/2026/0014', 'total_amount' => '100.00']);
@@ -170,7 +170,7 @@ final class DocumentFeedTest extends TestCase {
         Invoice::query()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
-            'number' => 'RE/2026/1110',
+            'number' => 'RE/2026/9008',
             'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE,
             'category' => Invoice::CATEGORY_SERVICE,
@@ -180,11 +180,11 @@ final class DocumentFeedTest extends TestCase {
         ]);
         $this->voucher(['external_id' => 'v7', 'customer_id' => $this->customer->id,
             'voucher_type' => 'salesinvoice', 'voucher_status' => 'open',
-            'voucher_number' => 'RE/2026/1110', 'total_amount' => '1000.00']);
+            'voucher_number' => 'RE/2026/9008', 'total_amount' => '1000.00']);
 
         $rows = (new DocumentFeedQuery($this->filters()))->paginate(30, 'date', 'desc');
 
-        $matching = collect($rows->items())->filter(fn(object $row): bool => $row->number === 'RE/2026/1110');
+        $matching = collect($rows->items())->filter(fn(object $row): bool => $row->number === 'RE/2026/9008');
         $this->assertCount(1, $matching, 'Übergebene Rechnung darf nur einmal erscheinen.');
         $this->assertSame('voucher', $matching->first()->source_type, 'Extern führt.');
 
@@ -319,7 +319,7 @@ final class DocumentFeedTest extends TestCase {
     public function test_feed_page_renders_with_tabs(): void {
         $this->voucher(['external_id' => 'v12', 'customer_id' => $this->customer->id,
             'voucher_type' => 'salesinvoice', 'voucher_status' => 'open',
-            'voucher_number' => 'RE/2026/1111', 'total_amount' => '90.00']);
+            'voucher_number' => 'RE/2026/9009', 'total_amount' => '90.00']);
 
         $this->actingAs($this->admin)
             ->withSession($this->range())
@@ -327,7 +327,7 @@ final class DocumentFeedTest extends TestCase {
             ->assertOk()
             ->assertSee(__('billing.feed.tab.outgoing'))
             ->assertSee(__('billing.feed.tab.incoming'))
-            ->assertSee('RE/2026/1111');
+            ->assertSee('RE/2026/9009');
     }
 
     public function test_project_filter_keeps_only_documents_of_the_project(): void {
@@ -466,7 +466,7 @@ final class DocumentFeedTest extends TestCase {
     public function test_metrics_tab_counts_and_page_total_come_from_one_aggregation(): void {
         $this->voucher(['external_id' => 'v1', 'customer_id' => $this->customer->id,
             'voucher_type' => 'salesinvoice', 'voucher_status' => 'paid',
-            'voucher_number' => 'RE/2026/1110', 'total_amount' => '1000.00']);
+            'voucher_number' => 'RE/2026/9008', 'total_amount' => '1000.00']);
         $this->voucher(['external_id' => 'v2', 'customer_id' => $this->customer->id,
             'voucher_type' => 'salescreditnote', 'voucher_status' => 'paid',
             'voucher_number' => 'GS/2026/0014', 'total_amount' => '100.00']);
@@ -505,7 +505,7 @@ final class DocumentFeedTest extends TestCase {
     public function test_tab_filter_narrows_metrics_but_not_the_tab_counters(): void {
         $this->voucher(['external_id' => 'v1', 'customer_id' => $this->customer->id,
             'voucher_type' => 'salesinvoice', 'voucher_status' => 'paid',
-            'voucher_number' => 'RE/2026/1110', 'total_amount' => '1000.00']);
+            'voucher_number' => 'RE/2026/9008', 'total_amount' => '1000.00']);
         $this->voucher(['external_id' => 'v3', 'supplier_id' => $this->supplier->id,
             'voucher_type' => 'purchaseinvoice', 'voucher_status' => 'paid',
             'voucher_number' => 'ER-1', 'total_amount' => '39.15']);

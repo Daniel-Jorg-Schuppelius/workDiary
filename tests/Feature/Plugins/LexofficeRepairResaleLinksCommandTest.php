@@ -85,20 +85,20 @@ class LexofficeRepairResaleLinksCommandTest extends TestCase {
     }
 
     public function test_orphaned_links_are_rehomed_when_unique_and_listed_otherwise(): void {
-        [, $premiumLine] = $this->voucher('RE/2025/0820', [
+        [, $premiumLine] = $this->voucher('RE/2025/9003', [
             ['article' => null, 'name' => 'Business Support'],
             ['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium'],
         ]);
-        [$exoLine, $bpLine] = $this->voucher('RE/2025/0821', [
+        [$exoLine, $bpLine] = $this->voucher('RE/2025/9004', [
             ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)'],
             ['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium'],
         ]);
-        $unique = $this->orphanLink('RE/2025/0820');
-        $byArticle = $this->orphanLink('RE/2025/0821', $this->exchange->id);
-        $byNote = $this->orphanLink('RE/2025/0821', null, 'Bezug auf Microsoft 365 Business Premium laut Abgleich');
-        $ambiguous = $this->orphanLink('RE/2025/0821');
+        $unique = $this->orphanLink('RE/2025/9003');
+        $byArticle = $this->orphanLink('RE/2025/9004', $this->exchange->id);
+        $byNote = $this->orphanLink('RE/2025/9004', null, 'Bezug auf Microsoft 365 Business Premium laut Abgleich');
+        $ambiguous = $this->orphanLink('RE/2025/9004');
         $missing = $this->orphanLink('RE/2024/0001');
-        $intact = $this->orphanLink('RE/2025/0820');
+        $intact = $this->orphanLink('RE/2025/9003');
         $intact->forceFill(['linkable_id' => $premiumLine->id])->save();
 
         // Probelauf: alles nur gelistet, nichts geschrieben.
@@ -132,12 +132,12 @@ class LexofficeRepairResaleLinksCommandTest extends TestCase {
     }
 
     public function test_duplicate_target_at_the_same_period_is_not_rehomed(): void {
-        [$line] = $this->voucher('RE/2025/0820', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium']]);
-        $orphan = $this->orphanLink('RE/2025/0820');
+        [$line] = $this->voucher('RE/2025/9003', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium']]);
+        $orphan = $this->orphanLink('RE/2025/9003');
         // Dieselbe Periode hat die Position inzwischen (z. B. per Vorschlagslauf) erneut verknüpft.
         ResalePeriodLink::query()->create([
             'organization_id' => $this->organization->id, 'period_id' => $orphan->period_id, 'subscription_id' => $orphan->subscription_id,
-            'linkable_type' => $line->getMorphClass(), 'linkable_id' => $line->id, 'voucher_number' => 'RE/2025/0820', 'voucher_date' => '2025-10-14',
+            'linkable_type' => $line->getMorphClass(), 'linkable_id' => $line->id, 'voucher_number' => 'RE/2025/9003', 'voucher_date' => '2025-10-14',
             'quantity' => 1, 'months' => 12, 'amount' => '247.20', 'currency' => 'EUR', 'origin' => LinkOrigin::Proposed,
         ]);
 
@@ -150,7 +150,7 @@ class LexofficeRepairResaleLinksCommandTest extends TestCase {
     }
 
     public function test_organization_without_orphans_is_silent(): void {
-        $this->voucher('RE/2025/0820', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium']]);
+        $this->voucher('RE/2025/9003', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium']]);
 
         $this->artisan('lexoffice:repair-resale-links', ['--organization' => (string) $this->organization->id])
             ->expectsOutputToContain('Reparatur: 0 umgehängt, 0 nicht auflösbar.')

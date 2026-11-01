@@ -51,8 +51,8 @@ class ResaleUnlinkedLinesTest extends TestCase {
             'external_id' => 'c-ute', 'referenceable_type' => $customer->getMorphClass(), 'referenceable_id' => $customer->getKey(),
         ]);
         $voucher = LexofficeVoucher::create([
-            'organization_id' => $this->organization->id, 'external_id' => 'v-0365', 'contact_external_id' => 'c-ute', 'voucher_type' => 'invoice',
-            'voucher_status' => 'paid', 'voucher_number' => 'RE/2022/0365', 'voucher_date' => '2022-04-22', 'total_amount' => 112.81, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),
+            'organization_id' => $this->organization->id, 'external_id' => 'v-9001', 'contact_external_id' => 'c-ute', 'voucher_type' => 'invoice',
+            'voucher_status' => 'paid', 'voucher_number' => 'RE/2022/9001', 'voucher_date' => '2022-04-22', 'total_amount' => 112.81, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),
         ]);
         $line = LexofficeVoucherLine::create([
             'organization_id' => $this->organization->id, 'voucher_id' => $voucher->id, 'position' => 2, 'type' => 'service',
@@ -70,7 +70,7 @@ class ResaleUnlinkedLinesTest extends TestCase {
         $this->assertSame(1, $byKey['unlinked']['count']);
         $this->assertSame('zuordnen', $byKey['unlinked']['group']);
         $this->actingAs($admin)->get(route('finance.resale.periods.index', ['unlinked' => 1]))->assertOk()
-            ->assertSee('RE/2022/0365')
+            ->assertSee('RE/2022/9001')
             ->assertSee(route('finance.resale.create', ['line' => $key]), false)
             ->assertSee(route('finance.resale.periods.unlinked.ignore'), false);
 

@@ -299,7 +299,7 @@ TXT;
         $period = $subscription->periods()->orderBy('starts_on')->firstOrFail();
         $voucher = LexofficeVoucher::create([
             'organization_id' => $this->organization->id, 'external_id' => 'inv-1', 'contact_external_id' => 'c-kl', 'voucher_type' => 'invoice', 'voucher_status' => 'paid',
-            'voucher_number' => 'RE/2025/0820', 'voucher_date' => '2025-10-14', 'total_amount' => 494.4, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),
+            'voucher_number' => 'RE/2025/9003', 'voucher_date' => '2025-10-14', 'total_amount' => 494.4, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),
         ]);
         $line = LexofficeVoucherLine::create([
             'organization_id' => $this->organization->id, 'voucher_id' => $voucher->id, 'position' => 1, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 24, 'unit_name' => 'Monat',
@@ -307,7 +307,7 @@ TXT;
         ]);
         ResalePeriodLink::create([
             'organization_id' => $this->organization->id, 'period_id' => $period->id, 'subscription_id' => $subscription->id, 'linkable_type' => $line->getMorphClass(), 'linkable_id' => $line->id,
-            'voucher_number' => 'RE/2025/0820', 'voucher_date' => '2025-10-14', 'quantity' => 2, 'months' => 24, 'amount' => '494.40', 'currency' => 'EUR', 'origin' => LinkOrigin::Confirmed, 'confirmed_at' => now(),
+            'voucher_number' => 'RE/2025/9003', 'voucher_date' => '2025-10-14', 'quantity' => 2, 'months' => 24, 'amount' => '494.40', 'currency' => 'EUR', 'origin' => LinkOrigin::Confirmed, 'confirmed_at' => now(),
         ]);
         $period->forceFill(['status' => PeriodStatus::Billed, 'decided_at' => now()])->save();
         $entry = ResalePurchaseEntry::query()->create([
