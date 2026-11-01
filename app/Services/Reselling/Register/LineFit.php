@@ -63,6 +63,11 @@ final class LineFit {
         if (! LinkProposer::serviceOverlaps($period, $line)) {
             return new self(self::OUTSIDE, $days);
         }
+        // Mehrjahres- oder Sammelrechnung, deren Leistungszeitraum die Periode ganz umfasst: passt,
+        // auch wenn ihr Zyklus nicht am Periodenbeginn liegt (Phase 168, MVP-1459 — 34 Domain-Fehlalarme auf Prod).
+        if (self::covers($line, $period)) {
+            return new self(self::EXACT, $days);
+        }
         $kind = match (true) {
             $days <= LinkProposer::SERVICE_TOLERANCE_DAYS => self::EXACT,
             $days <= LinkProposer::WINDOW_BEFORE => self::SHIFTED,
@@ -149,6 +154,16 @@ final class LineFit {
         $date = LicenseMonths::referenceDate($line);
 
         return $date === null ? null : (int) abs($date->diffInDays($start));
+    }
+
+    /** Umfasst der Leistungszeitraum die ganze Periode (Toleranz wie beim Zyklus)? */
+    public static function covers(MirrorLine $line, ResalePeriod $period): bool {
+        if ($line->serviceFrom === null || $line->serviceTo === null) {
+            return false;
+        }
+
+        return ! $line->serviceFrom->greaterThan($period->starts_on->addDays(LinkProposer::SERVICE_TOLERANCE_DAYS))
+            && ! $line->serviceTo->lessThan($period->ends_on->subDays(LinkProposer::SERVICE_TOLERANCE_DAYS));
     }
 
     public function needsConfirmation(): bool {

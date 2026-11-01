@@ -99,10 +99,13 @@ Perioden in Datumsfolge mit Soll und Deckung, rechts die
 Rechnungspositionen: zugeordnete mit ihrem Leistungszeitraum, bei offenen
 Perioden die passenden freien, Rechnungen an andere Kunden und Stornos.
 Positionen ohne passende Periode stehen als eigene Zeile „ohne Periode“ an
-ihrem Datum. Jede Position trägt ihre **Passung**: „passt“ (Zyklusbeginn
-höchstens 14 Tage vom Periodenbeginn), „um n Tage versetzt“ (bis 90 Tage),
-„überschneidet die Periode nur“, „außerhalb der Periode“ oder „gehört eher
-zu …“ (eine andere offene Periode liegt näher). Fragliche Zuordnungen fragen
+ihrem Datum. Jede freie Rechnung steht nur bei der Periode, zu der sie
+zeitlich am besten passt, und „… zuordnen“ ordnet sie mit einem Klick zu;
+die Menge ist, was die Periode noch braucht. Ein Versatz von einigen Wochen
+zwischen Bestelldatum beim Anbieter und Rechnungsdatum ist normal und wird
+nicht angezeigt; eine Sammelrechnung, die die Periode ganz umfasst, passt.
+Rechnungen ohne passende Periode stehen als Zeile „ohne Periode“ mit „Abo
+anlegen“ oder „Einer anderen Periode zuordnen“. Fragliche Zuordnungen fragen
 vor dem Speichern nach; im Bezug-Dialog und in der Schnellzuordnung der
 Abo-Seite bestätigen Sie sie mit dem Häkchen. Bezüge, die zeitlich nicht
 passen, sind gelb markiert — prüfen Sie sie und lösen Sie sie bei Bedarf.

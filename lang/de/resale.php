@@ -575,7 +575,6 @@ return [
         'no_customer' => 'kein Kunde',
         'no_customer_hint' => 'Lexoffice-Kontakt ohne Kundenzuordnung — erst den Kontakt im Kunden verknüpfen.',
         'lines_without_subscription' => ':count Lizenzposition ohne Abo|:count Lizenzpositionen ohne Abo',
-        'distance' => ':days Tag zum Periodenbeginn|:days Tage zum Periodenbeginn',
         'kpi' => [
             'open' => 'Offen',
             'partial' => 'Teilweise',
@@ -601,7 +600,6 @@ return [
             'open' => 'Abgleich öffnen',
             'customer' => 'Kunde',
             'rehome' => 'Halter → :customer',
-            'create_from_line' => 'Abo aus Position anlegen',
         ],
         'empty' => 'Nichts zu klären — alle Perioden gedeckt, keine freien Lizenzpositionen.',
         'products' => [
@@ -641,12 +639,6 @@ return [
         'periods' => [
             'foreign' => 'Rechnung an :recipient',
             'voided' => 'storniert',
-            'none' => 'Keine Lizenzposition dieses Produkts im Belegspiegel — :amount wurden vermutlich nie abgerechnet. Rechnung nachholen oder verzichten.',
-            'taken' => 'vergeben an :periods',
-            'all_taken' => 'Alle Positionen dieses Produkts sind vergeben — :amount ohne Rechnung.',
-        ],
-        'lines' => [
-            'other_products' => 'Andere Produkte',
         ],
     ],
     'transfer' => [
@@ -1425,7 +1417,7 @@ return [
     ],
     // Phase 166 (MVP-1447/1448/1451)
     'board' => [
-        'hint' => 'Je Produkt links die Abrechnungsperioden (Soll), rechts die Rechnungspositionen (Ist) — zugeordnete, passende freie, fremde und stornierte. Gelbe Hinweise zeigen Bezüge und Kandidaten, die zeitlich nicht passen.',
+        'hint' => 'Links die Abrechnungsperioden, rechts die Rechnungen. Jede freie Rechnung steht bei der Periode, zu der sie am besten passt — ein Klick ordnet sie zu.',
         'summary' => 'Soll :required · gedeckt :covered · abgerechnet :invoiced · frei :free',
         'col' => [
             'period' => 'Periode (Soll)',
@@ -1435,6 +1427,14 @@ return [
         'without_period' => 'ohne Periode',
         'line_taken' => 'vergeben an :periods',
         'writeoff' => 'Als Ausfall verbuchen',
+        'assign' => ':amount zuordnen',
+        'no_candidate' => 'Keine passende freie Rechnung — :amount offen. Rechnung nachholen oder verzichten.',
+        'create_subscription' => 'Abo anlegen',
+        'assign_other' => 'Einer anderen Periode zuordnen',
+        'line_dialog' => [
+            'title' => 'Rechnung :voucher zuordnen',
+            'none' => 'Dieser Empfänger hat keine offene Periode.',
+        ],
         'overcovered' => 'überdeckt',
         'overcovered_hint' => 'Mehr Rechnungsbezüge als Lizenzen — einen Bezug lösen oder eine Abtretung an den eigenen Halter zurücknehmen.',
     ],

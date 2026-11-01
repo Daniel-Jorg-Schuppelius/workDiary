@@ -149,7 +149,7 @@ final class LicenseAccountOverview {
             'years' => array_keys($years),
             'rows' => $rows,
             'findings' => $this->audit->forSubscriptions($organization, $group->subscriptions),
-            'selfAssignments' => array_values(array_filter($group->subscriptions->all(), static fn(ResaleSubscription $s): bool => $s->isSelfAssignment())),
+            'selfAssignments' => array_values(array_filter($group->subscriptions->all(), static fn(ResaleSubscription $s): bool => $s->selfAssignmentConflict())),
             'due' => $due,
             'plan' => $this->planFor($organization, $group),
         ];

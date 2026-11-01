@@ -340,7 +340,7 @@ class ResaleSubscriptionController extends Controller {
         if ($subscription->isAssignment() && $subscription->parent !== null) {
             // Menge oder Laufzeit der Abtretung geändert: der Vertrag plant mit dem neuen Rest.
             $subscription->parent->unsetRelation('assignments');
-            $planner->sync($subscription->parent);
+            $planner->sync($subscription->parent, assignmentsChanged: true);
         }
 
         return $this->backToCaller($subscription)->with('success', __('resale.flash.updated'));
@@ -385,7 +385,7 @@ class ResaleSubscriptionController extends Controller {
         if ($parent !== null) {
             // Abtretung weg: der Vertrag bekommt seine Lizenzen zurück.
             $parent->unsetRelation('assignments');
-            $planner->sync($parent);
+            $planner->sync($parent, assignmentsChanged: true);
         }
         // Aus der Mappe oder dem Vertrag gelöscht: dorthin zurück; von der eigenen (nun fehlenden) Seite zur Liste (MVP-1443).
         if ($caller !== null) {

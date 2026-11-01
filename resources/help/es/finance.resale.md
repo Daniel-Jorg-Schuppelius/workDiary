@@ -100,20 +100,22 @@ por producto. A la izquierda todos los periodos por fecha con previsto y
 cobertura, a la derecha las líneas de factura: las asignadas con su periodo
 de servicio, para periodos abiertos las libres que encajan, facturas a otros
 clientes y anulaciones. Las líneas sin periodo adecuado aparecen en una fila
-propia «sin periodo» en su fecha. Cada línea muestra su **encaje**: «encaja»
-(inicio de ciclo como máximo a 14 días del inicio del periodo), «desplazada
-n días» (hasta 90 días), «solo se solapa con el periodo», «fuera del
-periodo» o «corresponde más bien a …» (otro periodo abierto está más cerca).
-Las asignaciones dudosas piden confirmación antes de guardar; en el diálogo
-de vínculo y en la asignación rápida de la página de la suscripción usted
-las confirma con la casilla. Los vínculos que no encajan en el tiempo
-aparecen en amarillo: revíselos y deshágalos si es necesario. «Trabajar el
-siguiente destinatario» en la vista general recorre todos los destinatarios
-con importe abierto; un destinatario está terminado cuando no queda ningún
-periodo vencido abierto ni ningún hallazgo de plantilla. Si el proveedor
-renueva una suscripción como pedido nuevo, la ejecución de propuestas
-renuncia al breve periodo residual del pedido anterior y traslada sus
-vínculos al primer periodo del nuevo.
+propia «sin periodo» en su fecha. Cada factura libre aparece solo en el
+periodo que mejor le encaja, y «Asignar …» la asigna con un clic; la
+cantidad es lo que el periodo aún necesita. Un desfase de algunas semanas
+entre la fecha de pedido en el proveedor y la fecha de factura es normal y
+no se muestra; una factura agrupada que cubre todo el periodo encaja. Las
+facturas sin periodo adecuado aparecen en una fila «sin periodo» con «Crear
+suscripción» o «Asignar a otro periodo». Las asignaciones dudosas piden
+confirmación antes de guardar; en el diálogo de vínculo y en la asignación
+rápida de la página de la suscripción usted las confirma con la casilla. Los
+vínculos que no encajan en el tiempo aparecen en amarillo: revíselos y
+deshágalos si es necesario. «Trabajar el siguiente destinatario» en la vista
+general recorre todos los destinatarios con importe abierto; un destinatario
+está terminado cuando no queda ningún periodo vencido abierto ni ningún
+hallazgo de plantilla. Si el proveedor renueva una suscripción como pedido
+nuevo, la ejecución de propuestas renuncia al breve periodo residual del
+pedido anterior y traslada sus vínculos al primer periodo del nuevo.
 
 **Insolvencia y traspaso:** si una factura se anuló porque el cliente es
 insolvente, registre el periodo en el tablero con «Registrar como impago»;

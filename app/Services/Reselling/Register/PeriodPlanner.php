@@ -191,13 +191,16 @@ final class PeriodPlanner {
     /**
      * Perioden mit der Datenbank abgleichen.
      *
+     * @param  bool  $assignmentsChanged  eine Abtretung entfiel oder änderte sich: auch entschiedene Perioden
+     *                                    übernehmen die neue Menge (Phase 168, MVP-1460 — sonst blieb nach der
+     *                                    Rücknahme der letzten Abtretung die Vertragsperiode bei 0 Lizenzen)
      * @return array{created: int, updated: int, removed: int, kept: int}
      */
-    public function sync(ResaleSubscription $subscription, ?CarbonImmutable $reference = null): array {
+    public function sync(ResaleSubscription $subscription, ?CarbonImmutable $reference = null, bool $assignmentsChanged = false): array {
         $planned = $this->plan($subscription, $reference);
         $result = ['created' => 0, 'updated' => 0, 'removed' => 0, 'kept' => 0];
 
-        DB::transaction(function () use ($subscription, $planned, &$result): void {
+        DB::transaction(function () use ($subscription, $planned, $assignmentsChanged, &$result): void {
             // Zeilensperre auf dem Abo: Import, Scheduler und Dialog dürfen nicht
             // gleichzeitig planen (Unique je Abo und Beginn).
             ResaleSubscription::query()->withoutGlobalScopes()->whereKey($subscription->getKey())->lockForUpdate()->get(['id']);
@@ -247,7 +250,7 @@ final class PeriodPlanner {
                     // Entschiedene Perioden bleiben — außer die Menge hat sich durch eine
                     // Abtretung geändert: die Deckung bleibt, Soll und Status folgen der
                     // neuen Menge (4 statt 9 Lizenzen → 48 von 48 = berechnet, nicht teilweise).
-                    if ($subscription->assignments->isNotEmpty() && $period->quantity !== $quantity) {
+                    if (($assignmentsChanged || $subscription->assignments->isNotEmpty()) && $period->quantity !== $quantity) {
                         $period->fill(['quantity' => $quantity, 'expected_purchase' => $expectedPurchase, 'expected_sale' => $expectedSale]);
                         if (in_array($period->status, [PeriodStatus::Open, PeriodStatus::Partial, PeriodStatus::Billed], true)) {
                             $period->status = $period->statusFromCoverage($period->coveredMonths());

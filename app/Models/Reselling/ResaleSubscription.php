@@ -588,6 +588,27 @@ class ResaleSubscription extends Model {
     }
 
     /**
+     * Schadet die Abtretung an den eigenen Halter (Phase 168)? Nur, wenn der Vertrag im Zeitraum der
+     * Abtretung eine Periode mit mehr Rechnungsbezügen als Lizenzen hat — hängen die Bezüge an der
+     * Abtretung selbst, ist sie nur überflüssig und bekommt keinen Hinweis.
+     */
+    public function selfAssignmentConflict(): bool {
+        if (! $this->isSelfAssignment() || $this->parent === null) {
+            return false;
+        }
+        foreach ($this->parent->periods()->with('links')->get() as $period) {
+            if ($period->ends_on->lessThan($this->starts_on) || ($this->ends_on !== null && $period->starts_on->greaterThan($this->ends_on))) {
+                continue;
+            }
+            if ($period->coveredMonths() > $period->requiredMonths() + 0.001) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Abos ohne Halter (weder Kunde noch Fremdkunde noch eigener Bestand) — die Inbox.
      *
      * @param  Builder<ResaleSubscription>  $query

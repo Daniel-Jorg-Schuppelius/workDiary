@@ -73,4 +73,13 @@ class LineFitTest extends TestCase {
         $this->assertSame(LineFit::SHIFTED, $byDate->kind);
         $this->assertSame(21, $byDate->days);
     }
+
+    public function test_collective_invoice_covering_the_whole_period_fits(): void {
+        // Phase 168: Sammelrechnung über 20 Monate (27.01.2017–07.10.2018) für eine Domainperiode ab 26.09.2017 — passt, kein „überschneidet nur“.
+        $period = $this->period(1, '2017-09-26', '2018-09-25');
+        $fit = LineFit::of($this->line('2017-12-02', '2017-01-27', '2018-10-07'), $period);
+        $this->assertSame(LineFit::EXACT, $fit->kind);
+        $this->assertFalse($fit->needsConfirmation());
+        $this->assertTrue(LineFit::covers($this->line('2017-12-02', '2017-01-27', '2018-10-07'), $period));
+    }
 }

@@ -137,8 +137,8 @@ class RecipientReconcilerTest extends TestCase {
             ->assertSee('0 / 5 Lizenzen · 12 Mon.')
             ->assertSee('10 × 12 Mon. nie abgerechnet')
             ->assertSee('1 × 12 Mon. ohne Periode')
-            ->assertSee('RE/2024/0630')
-            ->assertSee('vergeben an Ökotherm Service GmbH · ×1 · Telekom Cloud Marketplace ab 10.04.2024 · 10.04.2024 – 09.04.2025');
+            // Vergebene Rechnungen stehen bei ihrer eigenen Periode (Tafel seit Phase 168), nicht als Liste an der offenen.
+            ->assertSee('RE/2024/0630');
     }
 
     public function test_overview_lists_recipients_with_problems_first_and_contacts_without_customer(): void {
@@ -377,7 +377,7 @@ class RecipientReconcilerTest extends TestCase {
         $this->assertSame(['RE/2025/0945'], array_map(static fn(array $l): string => (string) $l['line']->voucherNumber, $gaps));
 
         $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $customer))->assertOk();
-        $page->assertSee('Position ohne Abo ab 26.10.2025')->assertSee('Abo aus Position anlegen');
+        $page->assertSee('Position ohne Abo ab 26.10.2025')->assertSee(__('resale.board.create_subscription'));
 
         // Dialog aus der Position: Produkt, Menge (1 Lizenz — „24 Monat" ohne Zeitraum), Beginn, Jahrespreis vorbelegt.
         $line = $gaps[0]['line'];

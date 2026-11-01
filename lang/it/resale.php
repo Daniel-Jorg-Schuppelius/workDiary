@@ -575,7 +575,6 @@ return [
         'no_customer' => 'nessun cliente',
         'no_customer_hint' => 'Contatto Lexoffice senza cliente collegato — colleghi prima il contatto a un cliente.',
         'lines_without_subscription' => ':count riga licenza senza abbonamento|:count righe licenza senza abbonamento',
-        'distance' => ':days giorno dall’inizio periodo|:days giorni dall’inizio periodo',
         'kpi' => [
             'open' => 'Aperti',
             'partial' => 'Parziali',
@@ -601,7 +600,6 @@ return [
             'open' => 'Apri riconciliazione',
             'customer' => 'Cliente',
             'rehome' => 'Titolare → :customer',
-            'create_from_line' => 'Crea abbonamento dalla riga',
         ],
         'empty' => 'Niente da chiarire — tutti i periodi coperti, nessuna riga licenza libera.',
         'products' => [
@@ -641,12 +639,6 @@ return [
         'periods' => [
             'foreign' => 'Fatturato a :recipient',
             'voided' => 'stornata',
-            'none' => 'Nessuna riga licenza di questo prodotto nello specchio — :amount probabilmente mai fatturati. Fattura di recupero o rinuncia.',
-            'taken' => 'consumata da :periods',
-            'all_taken' => 'Tutte le righe di questo prodotto sono consumate — :amount senza fattura.',
-        ],
-        'lines' => [
-            'other_products' => 'Altri prodotti',
         ],
     ],
     'transfer' => [
@@ -1425,7 +1417,7 @@ return [
     ],
     // Phase 166 (MVP-1447/1448/1451)
     'board' => [
-        'hint' => 'Per prodotto, a sinistra i periodi di fatturazione (previsto), a destra le righe di fattura (effettivo): collegate, libere corrispondenti, di altri destinatari e annullate. Le note gialle segnalano collegamenti e candidati che non corrispondono temporalmente.',
+        'hint' => 'A sinistra i periodi di fatturazione, a destra le fatture. Ogni fattura libera si trova al periodo che le corrisponde meglio: un clic la assegna.',
         'summary' => 'Previsto :required · coperto :covered · fatturato :invoiced · libero :free',
         'col' => [
             'period' => 'Periodo (previsto)',
@@ -1435,6 +1427,14 @@ return [
         'without_period' => 'senza periodo',
         'line_taken' => 'usata da :periods',
         'writeoff' => 'Registrare come perdita',
+        'assign' => 'Assegna :amount',
+        'no_candidate' => 'Nessuna fattura libera adatta: :amount aperto. Fatturare in seguito o rinunciare.',
+        'create_subscription' => 'Crea abbonamento',
+        'assign_other' => 'Assegna a un altro periodo',
+        'line_dialog' => [
+            'title' => 'Assegna fattura :voucher',
+            'none' => 'Questo destinatario non ha periodi aperti.',
+        ],
         'overcovered' => 'sovracoperto',
         'overcovered_hint' => 'Più collegamenti di fattura che licenze: scollegare un riferimento o revocare una cessione al proprio titolare.',
     ],

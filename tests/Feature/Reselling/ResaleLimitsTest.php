@@ -21,7 +21,7 @@ use App\Plugins\Lexoffice\Models\{LexofficeArticle, LexofficeRecurringTemplate, 
 use App\Plugins\Lexoffice\Services\{LexofficeInvoiceMirrorSource, LexofficeRecurringTemplateSync};
 use App\Services\Reselling\License\{LicenseInvoiceLinks, LicenseStockException, LicenseStockService};
 use App\Services\Reselling\Plan\PlanAudit;
-use App\Services\Reselling\Register\{AllocationDeriver, LicenseAccounts, LinkProposer, PeriodLinker, PeriodPlanner, ResaleInvoiceDraftService};
+use App\Services\Reselling\Register\{AllocationDeriver, LicenceAssignments, LicenseAccounts, LinkProposer, PeriodLinker, PeriodPlanner, ResaleInvoiceDraftService};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -253,10 +253,43 @@ class ResaleLimitsTest extends TestCase {
             'renewal' => 'cancel', 'status' => 'ended', 'currency' => 'EUR', 'external_id' => 'CN2#1',
         ]);
         $this->assertTrue($legacy->isSelfAssignment());
+        $this->assertFalse($legacy->selfAssignmentConflict(), 'ohne Bezüge am Vertrag nur überflüssig — kein Hinweis');
+        // Bezüge hängen noch an der Vertragsperiode (Menge 0): jetzt schadet sie und wird gezeigt.
+        $contractPeriod = $contract->periods()->firstOrFail();
+        ResalePeriodLink::query()->create([
+            'organization_id' => $this->organization->id, 'period_id' => $contractPeriod->id, 'subscription_id' => $contract->id, 'linkable_type' => 'lexoffice_voucher_lines',
+            'linkable_id' => 999999, 'voucher_number' => 'RE/2023/0999', 'voucher_date' => '2023-08-10', 'quantity' => 3, 'months' => 36, 'currency' => 'EUR', 'origin' => 'auto', 'confirmed_at' => now(),
+        ]);
+        $contractPeriod->forceFill(['status' => PeriodStatus::Billed, 'decided_at' => now()])->save(); // wie auf Prod: automatisch bestätigt
+        (new PeriodPlanner)->sync($contract->fresh() ?? $contract, null, assignmentsChanged: true);
+        $this->assertSame(0, $contractPeriod->refresh()->quantity);
+        $this->assertTrue($legacy->fresh()?->selfAssignmentConflict());
         $group = app(LicenseAccounts::class)->group($this->organization, 'qualityhosting:CNL2');
         $this->assertNotNull($group);
         $this->actingAs($admin)->get(route('finance.resale.accounts.show', $group->routeKey()))->assertOk()
             ->assertSee(__('resale.transfer.self_assignment'))->assertSee(route('finance.resale.destroy', $legacy->sqid), false);
         $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $holder))->assertOk()->assertSee(__('resale.transfer.self_assignment'));
+    }
+
+    public function test_returning_the_last_assignment_restores_the_decided_contract_period(): void {
+        // Phase 168, MVP-1460: entschiedene Vertragsperiode, alle Lizenzen abgetreten — nach der Rücknahme wieder volle Menge.
+        $admin = $this->orgAdmin();
+        $holder = $this->customer('Rücknahme GmbH', 'c-rn');
+        $other = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Abtretung GmbH']);
+        $contract = $this->subscription($holder, ['quantity' => 3, 'starts_on' => '2023-08-07', 'ends_on' => '2024-08-06', 'status' => 'ended', 'external_id' => 'CN3']);
+        $period = $contract->periods()->firstOrFail();
+        foreach ($this->invoice('c-rn', 'RE/2023/0700', '2023-08-10', 3) as $line) {
+            (new PeriodLinker)->attach($period, $line, 12.0, null, $admin->id);
+        }
+        $this->assertNotNull($period->fresh()?->decided_at);
+        $assignment = (new LicenceAssignments)->create($contract, ['customer' => $other, 'foreign' => null], 3, '2023-08-07', '2024-08-06', null, null, null);
+        $this->assertSame(0, $period->refresh()->quantity, 'abgetreten: der Vertrag behält keine Lizenz');
+
+        $this->actingAs($admin)->delete(route('finance.resale.destroy', $assignment->sqid))->assertRedirect();
+
+        $period->refresh();
+        $this->assertSame(3, $period->quantity, 'nach der Rücknahme wieder drei Lizenzen');
+        $this->assertSame(PeriodStatus::Billed, $period->status);
+        $this->assertSame(36.0, $period->coveredMonths());
     }
 }

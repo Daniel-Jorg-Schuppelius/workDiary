@@ -103,22 +103,25 @@ prévu et couverture, à droite les lignes de facture : affectées avec leur
 période de prestation, pour les périodes ouvertes les lignes libres
 correspondantes, les factures à d’autres clients et les annulations. Les
 lignes sans période correspondante apparaissent sur une ligne propre « sans
-période » à leur date. Chaque ligne indique sa **correspondance** : «
-correspond » (début de cycle à 14 jours au plus du début de période), «
-décalé de n jours » (jusqu’à 90 jours), « chevauche seulement la période »,
-« hors de la période » ou « appartient plutôt à … » (une autre période
-ouverte est plus proche). Les affectations douteuses demandent une
-confirmation avant l’enregistrement ; dans la boîte de dialogue de lien et
-dans l’affectation rapide de la page d’abonnement, vous les confirmez avec
-la case à cocher. Les liens qui ne correspondent pas dans le temps sont
-marqués en jaune — vérifiez-les et supprimez-les si nécessaire. « Traiter le
-prochain destinataire » dans la vue d’ensemble parcourt tous les
-destinataires avec un montant ouvert ; un destinataire est terminé
-lorsqu’aucune période échue n’est ouverte et qu’aucune constatation de
-modèle ne subsiste. Si le fournisseur renouvelle un abonnement sous forme de
-nouvelle commande, l’exécution des propositions abandonne la courte période
-résiduelle de l’ancienne commande et transfère ses liens à la première
-période de la nouvelle.
+période » à leur date. Chaque facture libre ne figure qu’à la période qui
+lui correspond le mieux, et « Affecter … » l’affecte d’un clic ; la quantité
+est ce dont la période a encore besoin. Un décalage de quelques semaines
+entre la date de commande chez le fournisseur et la date de facture est
+normal et n’est pas affiché ; une facture groupée couvrant toute la période
+correspond. Les factures sans période correspondante apparaissent sur une
+ligne « sans période » avec « Créer l’abonnement » ou « Affecter à une autre
+période ». Les affectations douteuses demandent une confirmation avant
+l’enregistrement ; dans la boîte de dialogue de lien et dans l’affectation
+rapide de la page d’abonnement, vous les confirmez avec la case à cocher.
+Les liens qui ne correspondent pas dans le temps sont marqués en jaune —
+vérifiez-les et supprimez-les si nécessaire. « Traiter le prochain
+destinataire » dans la vue d’ensemble parcourt tous les destinataires avec
+un montant ouvert ; un destinataire est terminé lorsqu’aucune période échue
+n’est ouverte et qu’aucune constatation de modèle ne subsiste. Si le
+fournisseur renouvelle un abonnement sous forme de nouvelle commande,
+l’exécution des propositions abandonne la courte période résiduelle de
+l’ancienne commande et transfère ses liens à la première période de la
+nouvelle.
 
 **Insolvabilité et reprise :** si une facture a été annulée parce que le
 client est insolvable, comptabilisez la période dans le tableau avec «

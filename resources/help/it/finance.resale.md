@@ -99,21 +99,23 @@ riconciliazione per prodotto. A sinistra tutti i periodi in ordine di data
 con previsto e copertura, a destra le righe di fattura: quelle collegate con
 il periodo di servizio, per i periodi aperti quelle libere corrispondenti,
 fatture ad altri clienti e annullamenti. Le righe senza periodo adatto
-compaiono come riga propria «senza periodo» alla loro data. Ogni riga indica
-la sua **corrispondenza**: «corrisponde» (inizio ciclo al massimo a 14
-giorni dall’inizio del periodo), «spostata di n giorni» (fino a 90 giorni),
-«si sovrappone solo al periodo», «fuori dal periodo» o «appartiene piuttosto
-a …» (un altro periodo aperto è più vicino). Le assegnazioni dubbie chiedono
-conferma prima del salvataggio; nella finestra di collegamento e
-nell’assegnazione rapida della pagina dell’abbonamento Lei le conferma con
-la casella. I collegamenti che non corrispondono temporalmente sono
-evidenziati in giallo: li verifichi e li scolleghi se necessario. «Elaborare
-il prossimo destinatario» nella panoramica guida attraverso tutti i
-destinatari con importo aperto; un destinatario è completato quando non
-resta alcun periodo scaduto aperto né alcun rilievo sui modelli. Se il
-fornitore rinnova un abbonamento come nuovo ordine, l’esecuzione delle
-proposte rinuncia al breve periodo residuo del vecchio ordine e sposta i
-suoi collegamenti al primo periodo del nuovo.
+compaiono come riga propria «senza periodo» alla loro data. Ogni fattura
+libera compare solo al periodo che le corrisponde meglio e «Assegna …» la
+assegna con un clic; la quantità è ciò di cui il periodo ha ancora bisogno.
+Uno sfasamento di alcune settimane tra la data d’ordine presso il fornitore
+e la data della fattura è normale e non viene mostrato; una fattura
+cumulativa che copre l’intero periodo corrisponde. Le fatture senza periodo
+adatto compaiono in una riga «senza periodo» con «Crea abbonamento» o
+«Assegna a un altro periodo». Le assegnazioni dubbie chiedono conferma prima
+del salvataggio; nella finestra di collegamento e nell’assegnazione rapida
+della pagina dell’abbonamento Lei le conferma con la casella. I collegamenti
+che non corrispondono temporalmente sono evidenziati in giallo: li verifichi
+e li scolleghi se necessario. «Elaborare il prossimo destinatario» nella
+panoramica guida attraverso tutti i destinatari con importo aperto; un
+destinatario è completato quando non resta alcun periodo scaduto aperto né
+alcun rilievo sui modelli. Se il fornitore rinnova un abbonamento come nuovo
+ordine, l’esecuzione delle proposte rinuncia al breve periodo residuo del
+vecchio ordine e sposta i suoi collegamenti al primo periodo del nuovo.
 
 **Insolvenza e subentro:** se una fattura è stata annullata perché il
 cliente è insolvente, registri il periodo nella tavola con «Registrare come
