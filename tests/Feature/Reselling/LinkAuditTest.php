@@ -25,8 +25,8 @@ use Tests\TestCase;
 
 /**
  * Prüffälle an Bezügen (Feature 185, MVP-1403): die Produktivmuster vom
- * 08.09.2026 synthetisch — RE/2025/0900 Pos. 2 (24 Monate) mit 60 Lizenzmonaten
- * an zwei Perioden, RE/2023/0550 (Leistung 2023/24) an der Periode 2022/23.
+ * 08.09.2026 synthetisch — RE/2025/9010 Pos. 2 (24 Monate) mit 60 Lizenzmonaten
+ * an zwei Perioden, RE/2023/9001 (Leistung 2023/24) an der Periode 2022/23.
  */
 class LinkAuditTest extends TestCase {
     use RefreshDatabase;
@@ -83,17 +83,17 @@ class LinkAuditTest extends TestCase {
         $linker = new PeriodLinker;
 
         // Überbucht: eine 24-Monats-Position trägt 12 + 24 = 36 Lizenzmonate (Prüfung umgangen wie beim Altbestand).
-        $block = $this->line('RE/2025/0900', '2025-08-22', 24, '2024-08-01', '2026-07-31');
+        $block = $this->line('RE/2025/9010', '2025-08-22', 24, '2024-08-01', '2026-07-31');
         $linker->attach($p2024, $block, 12, null, $admin->id);
         ResalePeriodLink::query()->create([
             'organization_id' => $this->organization->id, 'period_id' => $p2023->id, 'subscription_id' => $contract->id, 'linkable_type' => $block->getMorphClass(), 'linkable_id' => $block->id,
-            'voucher_number' => 'RE/2025/0900', 'voucher_date' => '2025-08-22', 'quantity' => 2, 'months' => 24, 'currency' => 'EUR', 'origin' => 'manual', 'confirmed_at' => now(),
+            'voucher_number' => 'RE/2025/9010', 'voucher_date' => '2025-08-22', 'quantity' => 2, 'months' => 24, 'currency' => 'EUR', 'origin' => 'manual', 'confirmed_at' => now(),
         ]);
         // Zeitlich unpassend: Leistung 2023/24 hängt an der Periode 2022/23.
-        $late = $this->line('RE/2023/0550', '2023-10-18', 12, '2023-10-18', '2024-10-17');
+        $late = $this->line('RE/2023/9001', '2023-10-18', 12, '2023-10-18', '2024-10-17');
         ResalePeriodLink::query()->create([
             'organization_id' => $this->organization->id, 'period_id' => $p2022->id, 'subscription_id' => $contract->id, 'linkable_type' => $late->getMorphClass(), 'linkable_id' => $late->id,
-            'voucher_number' => 'RE/2023/0550', 'voucher_date' => '2023-10-18', 'quantity' => 1, 'months' => 12, 'currency' => 'EUR', 'origin' => 'manual', 'confirmed_at' => now(),
+            'voucher_number' => 'RE/2023/9001', 'voucher_date' => '2023-10-18', 'quantity' => 1, 'months' => 12, 'currency' => 'EUR', 'origin' => 'manual', 'confirmed_at' => now(),
         ]);
         $p2023->refresh();
         $p2023->forceFill(['status' => PeriodStatus::Billed])->save();

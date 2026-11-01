@@ -36,7 +36,7 @@ final class LicenseMonths {
      * Leistungszeitraum der Position aus ihrem Text („… => stb-zahlenwerk.de =>
      * 06.10.2017 - 06.10.2018“): Sammelrechnungen tragen auf Belegebene nur die
      * Spanne aller Positionen, der Zeitraum je Position steht im Text
-     * (Befund 2026-10-29, RE/2017/0017 mit neun Domains).
+     * (Befund 2026-10-29: Sammelrechnung mit neun Domains).
      *
      * @return array{from: CarbonImmutable, to: CarbonImmutable}|null
      */

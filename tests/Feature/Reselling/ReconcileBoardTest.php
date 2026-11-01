@@ -81,7 +81,7 @@ class ReconcileBoardTest extends TestCase {
         $line2023 = $this->invoice('RE/2023/0100', '2023-11-30', '2023-11-30', '2024-11-29');
         $line2024 = $this->invoice('RE/2024/0100', '2024-11-30', '2024-11-30', '2025-11-29');
         $this->invoice('RE/2025/0090', '2024-12-28', null, null, 'voided');
-        $this->invoice('RE/2019/0100', '2019-11-30', '2019-11-30', '2020-11-29');
+        $this->invoice('RE/2019/9001', '2019-11-30', '2019-11-30', '2020-11-29');
         $workspace = route('finance.resale.reconcile.show', $this->customer);
 
         $page = $this->actingAs($admin)->get($workspace)->assertOk();
@@ -91,7 +91,7 @@ class ReconcileBoardTest extends TestCase {
             ->assertDontSee(__('resale.fit.elsewhere', ['period' => $p2024->label()]))
             ->assertSee(__('resale.board.assign', ['amount' => '1 × 12 ' . __('resale.link.months_short')]))
             // Rechnung ohne Periode (vor dem Abo): eigene Zeile an ihrem Datum.
-            ->assertSee(__('resale.board.without_period'))->assertSee('RE/2019/0100')
+            ->assertSee(__('resale.board.without_period'))->assertSee('RE/2019/9001')
             // Storno dicht an der Periode: Ausfall verbuchen mit vorbelegtem Grund.
             ->assertSee(__('resale.board.writeoff'))
             ->assertSee(route('finance.resale.periods.waive.create', ['period' => $p2024->sqid, 'reason' => __('resale.link.reason_voided', ['voucher' => 'RE/2025/0090'])]));
@@ -151,14 +151,14 @@ class ReconcileBoardTest extends TestCase {
         ]);
         (new PeriodPlanner)->sync($subscription);
         $period = $subscription->periods()->firstOrFail();
-        $line = $this->invoice('RE/2019/0100', '2019-11-30', '2019-11-30', '2020-11-29');
+        $line = $this->invoice('RE/2019/9001', '2019-11-30', '2019-11-30', '2020-11-29');
         $workspace = route('finance.resale.reconcile.show', $this->customer);
         $key = Sqid::encode(LexofficeVoucherLine::class, $line->id);
 
         $this->actingAs($admin)->get($workspace)->assertOk()->assertSee(__('resale.board.create_subscription'))
             ->assertSee(route('finance.resale.reconcile.line.create', ['customer' => $this->customer, 'line' => $key]));
         $this->actingAs($admin)->get(route('finance.resale.reconcile.line.create', ['customer' => $this->customer, 'line' => $key]))->assertOk()
-            ->assertSee(__('resale.board.line_dialog.title', ['voucher' => 'RE/2019/0100']))->assertSee($period->label())->assertSee(__('resale.fit.confirm_field'));
+            ->assertSee(__('resale.board.line_dialog.title', ['voucher' => 'RE/2019/9001']))->assertSee($period->label())->assertSee(__('resale.fit.confirm_field'));
         // Fremder Empfänger: kein Dialog.
         $stranger = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Fremd GmbH']);
         $this->actingAs($admin)->get(route('finance.resale.reconcile.line.create', ['customer' => $stranger, 'line' => $key]))->assertNotFound();
@@ -166,6 +166,6 @@ class ReconcileBoardTest extends TestCase {
         $payload = ['line_id' => $key, 'period_id' => $period->sqid, 'months' => '12'];
         $this->actingAs($admin)->from($workspace)->post(route('finance.resale.reconcile.assign', $this->customer), $payload)->assertSessionHasErrors('confirm_fit');
         $this->actingAs($admin)->from($workspace)->post(route('finance.resale.reconcile.assign', $this->customer), $payload + ['confirm_fit' => '1'])->assertSessionHasNoErrors();
-        $this->assertSame('RE/2019/0100', $period->links()->first()?->voucher_number);
+        $this->assertSame('RE/2019/9001', $period->links()->first()?->voucher_number);
     }
 }

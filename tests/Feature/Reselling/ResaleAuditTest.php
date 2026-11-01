@@ -95,8 +95,8 @@ class ResaleAuditTest extends TestCase {
         $this->assertSame(1, $this->logs(ResaleSubscription::class)->where('event', 'created')->where('auditable_id', $subscription->id)->count());
         $this->assertSame($subscription->periods()->count(), $this->logs(ResalePeriod::class)->where('event', 'created')->count(), 'geplante Perioden protokolliert');
 
-        $this->voucherLine('RE/2025/0820', '2025-10-14');
-        $this->voucherLine('RE/2026/1022', '2026-08-22');
+        $this->voucherLine('RE/2025/9003', '2025-10-14');
+        $this->voucherLine('RE/2026/9001', '2026-08-22');
         $before = AuditLog::query()->count();
 
         $result = (new LinkProposer)->propose($this->organization);
@@ -110,7 +110,7 @@ class ResaleAuditTest extends TestCase {
 
     public function test_confirm_waive_reopen_and_link_removal_are_audited_with_user(): void {
         $subscription = $this->subscription();
-        $this->voucherLine('RE/2025/0820', '2025-10-14');
+        $this->voucherLine('RE/2025/9003', '2025-10-14');
         (new LinkProposer)->propose($this->organization);
         [$p2025, $p2026] = $subscription->periods()->get();
 
@@ -121,7 +121,7 @@ class ResaleAuditTest extends TestCase {
         $this->assertSame($this->admin->id, $confirmed->user_id);
         $this->assertSame($this->organization->id, $confirmed->organization_id);
         $this->assertSame(PeriodStatus::Billed->value, $confirmed->changes['status'] ?? null);
-        $this->assertSame(['RE/2025/0820'], $confirmed->changes['vouchers'] ?? null);
+        $this->assertSame(['RE/2025/9003'], $confirmed->changes['vouchers'] ?? null);
         $this->assertSame(1, $this->logs(ResalePeriod::class)->where('auditable_id', $p2025->id)->where('event', 'updated')->count());
 
         // Verzichten und zurücknehmen.

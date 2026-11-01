@@ -62,8 +62,8 @@ class ResaleVoucherDialogTest extends TestCase {
         (new PeriodPlanner)->sync($subscription);
         $period = $subscription->periods()->where('starts_on', '2026-07-04')->firstOrFail();
         $voucher = LexofficeVoucher::create([
-            'organization_id' => $this->organization->id, 'external_id' => 'v-1081', 'contact_external_id' => 'c-lastkraft', 'voucher_type' => 'invoice',
-            'voucher_status' => 'paid', 'voucher_number' => 'RE/2026/1081', 'voucher_date' => '2026-07-04', 'total_amount' => 56.41, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),
+            'organization_id' => $this->organization->id, 'external_id' => 'v-9006', 'contact_external_id' => 'c-lastkraft', 'voucher_type' => 'invoice',
+            'voucher_status' => 'paid', 'voucher_number' => 'RE/2026/9006', 'voucher_date' => '2026-07-04', 'total_amount' => 56.41, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),
             'voucher_text' => 'Microsoft Dienste Lastkraft Transporte', 'service_starts_on' => '2026-07-04', 'service_ends_on' => '2027-07-03',
         ]);
         $line = LexofficeVoucherLine::create([
@@ -82,7 +82,7 @@ class ResaleVoucherDialogTest extends TestCase {
         $this->actingAs($admin)->get(route('finance.resale.show', $subscription->sqid))->assertOk()->assertSee(e($url), false);
 
         $dialog = $this->actingAs($admin)->get($url)->assertOk();
-        $dialog->assertSee(__('resale.voucher.title', ['number' => 'RE/2026/1081']))
+        $dialog->assertSee(__('resale.voucher.title', ['number' => 'RE/2026/9006']))
             ->assertSee('Microsoft Dienste Lastkraft Transporte')
             ->assertSee('Exchange Online (Plan 1)')->assertSee('Business Support')
             ->assertSee(__('resale.voucher.compare.title'))

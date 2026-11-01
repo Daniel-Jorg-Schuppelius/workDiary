@@ -51,7 +51,7 @@ final class LexofficeVoucherSearchTest extends TestCase {
         LexofficeVoucher::query()->create([
             'organization_id' => $this->organization->id, 'external_id' => 'voucher-1',
             'customer_id' => $this->customer->id, 'voucher_type' => 'salesinvoice', 'voucher_status' => 'open',
-            'voucher_number' => 'RE/2026/1076', 'voucher_date' => '2026-06-29',
+            'voucher_number' => 'RE/2026/9005', 'voucher_date' => '2026-06-29',
             'total_amount' => '167.08', 'currency' => 'EUR', 'archived' => false,
         ]);
     }
@@ -67,23 +67,23 @@ final class LexofficeVoucherSearchTest extends TestCase {
     }
 
     public function test_search_by_company_name(): void {
-        $this->search('Haustechnik')->assertOk()->assertSee('RE/2026/1076');
+        $this->search('Haustechnik')->assertOk()->assertSee('RE/2026/9005');
     }
 
     public function test_search_by_german_date(): void {
-        $this->search('29.06.2026')->assertOk()->assertSee('RE/2026/1076');
+        $this->search('29.06.2026')->assertOk()->assertSee('RE/2026/9005');
     }
 
     public function test_search_by_month_and_year(): void {
-        $this->search('06.2026')->assertOk()->assertSee('RE/2026/1076');
+        $this->search('06.2026')->assertOk()->assertSee('RE/2026/9005');
     }
 
     public function test_search_by_german_amount(): void {
-        $this->search('167,08')->assertOk()->assertSee('RE/2026/1076');
+        $this->search('167,08')->assertOk()->assertSee('RE/2026/9005');
     }
 
     public function test_search_excludes_non_matching(): void {
-        $this->search('Sanitär GmbH')->assertOk()->assertDontSee('RE/2026/1076');
+        $this->search('Sanitär GmbH')->assertOk()->assertDontSee('RE/2026/9005');
     }
 
     public function test_legacy_voucher_route_keeps_the_search_term(): void {

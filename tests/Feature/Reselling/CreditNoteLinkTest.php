@@ -101,7 +101,7 @@ class CreditNoteLinkTest extends TestCase {
     public function test_credit_note_link_is_negative_and_lowers_the_coverage(): void {
         $subscription = $this->subscription();
         $period = $subscription->periods()->orderBy('starts_on')->firstOrFail();
-        $invoiceLine = $this->line('invoice', 'RE/2025/0820', '2025-10-14', 12);
+        $invoiceLine = $this->line('invoice', 'RE/2025/9003', '2025-10-14', 12);
         $creditLine = $this->line('creditnote', 'GS/2025/0007', '2026-02-01', 6);
         $linker = new PeriodLinker;
 
@@ -130,7 +130,7 @@ class CreditNoteLinkTest extends TestCase {
 
     public function test_invoice_line_rejects_non_positive_months(): void {
         $period = $this->subscription()->periods()->orderBy('starts_on')->firstOrFail();
-        $invoiceLine = $this->line('invoice', 'RE/2025/0820', '2025-10-14', 12);
+        $invoiceLine = $this->line('invoice', 'RE/2025/9003', '2025-10-14', 12);
         $linker = new PeriodLinker;
 
         try {
@@ -147,7 +147,7 @@ class CreditNoteLinkTest extends TestCase {
         $admin = $this->orgAdmin();
         $subscription = $this->subscription();
         $period = $subscription->periods()->orderBy('starts_on')->firstOrFail();
-        $invoiceLine = $this->line('invoice', 'RE/2025/0820', '2025-10-14', 12);
+        $invoiceLine = $this->line('invoice', 'RE/2025/9003', '2025-10-14', 12);
         $creditLine = $this->line('creditnote', 'GS/2025/0007', '2026-02-01', 6);
         (new PeriodLinker)->attach($period, $invoiceLine, 12.0, null, null);
 

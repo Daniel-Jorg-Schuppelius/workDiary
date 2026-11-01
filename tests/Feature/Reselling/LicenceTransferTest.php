@@ -99,8 +99,8 @@ class LicenceTransferTest extends TestCase {
         $this->assertSame(4, $contract->fresh()?->billableQuantityOn(\Carbon\CarbonImmutable::parse('2025-01-01')));
 
         // Jeder Halter bekommt seine eigenen Rechnungen zugeordnet.
-        $this->invoice('c-schub', 'RE/2024/0719', '2024-10-23', 4);
-        $this->invoice('c-mb', 'RE/2024/0720', '2024-10-23', 5);
+        $this->invoice('c-schub', 'RE/2024/9004', '2024-10-23', 4);
+        $this->invoice('c-mb', 'RE/2024/9005', '2024-10-23', 5);
         (new LinkProposer)->propose($this->organization);
         $this->assertSame(PeriodStatus::Billed, $contract->periods()->first()?->status);
         $this->assertSame(PeriodStatus::Billed, $assignment->periods()->first()?->status);
@@ -250,8 +250,8 @@ class LicenceTransferTest extends TestCase {
             'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'cancel', 'status' => 'cancelled', 'currency' => 'EUR', 'sale_unit_price' => '47.40',
         ]);
         (new PeriodPlanner)->sync($contract);
-        $this->invoice('c-schub', 'RE/2024/0719', '2024-10-23', 4);
-        $this->invoice('c-mb', 'RE/2024/0718', '2024-10-23', 5);
+        $this->invoice('c-schub', 'RE/2024/9004', '2024-10-23', 4);
+        $this->invoice('c-mb', 'RE/2024/9003', '2024-10-23', 5);
         (new LinkProposer)->propose($this->organization);
         $first = $contract->periods()->firstOrFail();
         $this->assertSame(PeriodStatus::Partial, $first->status, '48 von 108 — Schub allein');

@@ -343,12 +343,12 @@ class RecurringPlanTest extends TestCase {
 
     public function test_voucher_line_sync_stores_the_recurring_template_reference(): void {
         $voucher = LexofficeVoucher::create([
-            'organization_id' => $this->organization->id, 'external_id' => 'v-1134', 'contact_external_id' => self::CONTACT, 'voucher_type' => 'invoice',
-            'voucher_status' => 'open', 'voucher_number' => 'RE/2026/1134', 'voucher_date' => '2026-10-18', 'total_amount' => 282.03, 'currency' => 'EUR', 'archived' => false,
+            'organization_id' => $this->organization->id, 'external_id' => 'v-9011', 'contact_external_id' => self::CONTACT, 'voucher_type' => 'invoice',
+            'voucher_status' => 'open', 'voucher_number' => 'RE/2026/9011', 'voucher_date' => '2026-10-18', 'total_amount' => 282.03, 'currency' => 'EUR', 'archived' => false,
         ]);
         FakePluginHttp::fake([
-            'https://api.lexware.io/v1/invoices/v-1134' => FakePluginHttp::response([
-                'id' => 'v-1134', 'voucherNumber' => 'RE/2026/1134', 'recurringTemplateId' => 'tpl-1', 'totalPrice' => ['currency' => 'EUR', 'totalNetAmount' => 237.0],
+            'https://api.lexware.io/v1/invoices/v-9011' => FakePluginHttp::response([
+                'id' => 'v-9011', 'voucherNumber' => 'RE/2026/9011', 'recurringTemplateId' => 'tpl-1', 'totalPrice' => ['currency' => 'EUR', 'totalNetAmount' => 237.0],
                 'taxConditions' => ['taxType' => 'net'], 'lineItems' => $this->exchangeLines(5), 'address' => ['contactId' => self::CONTACT, 'name' => 'Schub'],
             ]),
         ]);
