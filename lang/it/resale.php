@@ -1156,6 +1156,7 @@ return [
         'subtitle' => 'Per conto fornitore: licenze per prodotto, intestatari con quantità e anni di licenza con fattura o lacuna.',
         'empty' => 'Ancora nessun conto licenze: gli abbonamenti arrivano da importazione o finestra.',
         'due_empty' => 'Tutti i periodi scaduti sono fatturati.',
+        'filter_empty' => 'Nessun conto licenze corrisponde al filtro.',
         'products_more' => '+ :count altri',
         'products_domains' => '{1} dominio|[2,*] domini',
         'summary' => [
@@ -1417,6 +1418,8 @@ return [
     // Phase 166 (MVP-1447/1448/1451)
     'board' => [
         'hint' => 'A sinistra i periodi di fatturazione, a destra le fatture. Ogni fattura libera si trova al periodo che le corrisponde meglio: un clic la assegna.',
+        'focus' => 'Solo prodotti con «:filter»',
+        'focus_reset' => 'Mostra tutti i prodotti',
         'summary' => 'Previsto :required · coperto :covered · fatturato :invoiced · libero :free',
         'col' => [
             'period' => 'Periodo (previsto)',

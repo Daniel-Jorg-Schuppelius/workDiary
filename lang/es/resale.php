@@ -1156,6 +1156,7 @@ return [
         'subtitle' => 'Por cuenta de proveedor: licencias por producto, titulares con cantidades y los años de licencia con factura o hueco.',
         'empty' => 'Aún no hay cuentas de licencias; las suscripciones llegan por importación o diálogo.',
         'due_empty' => 'Todos los periodos vencidos están facturados.',
+        'filter_empty' => 'Ninguna cuenta de licencias coincide con el filtro.',
         'products_more' => '+ :count más',
         'products_domains' => '{1} dominio|[2,*] dominios',
         'summary' => [
@@ -1417,6 +1418,8 @@ return [
     // Phase 166 (MVP-1447/1448/1451)
     'board' => [
         'hint' => 'A la izquierda los periodos de facturación, a la derecha las facturas. Cada factura libre está en el periodo que mejor le encaja; un clic la asigna.',
+        'focus' => 'Solo productos con «:filter»',
+        'focus_reset' => 'Mostrar todos los productos',
         'summary' => 'Previsto :required · cubierto :covered · facturado :invoiced · libre :free',
         'col' => [
             'period' => 'Periodo (previsto)',

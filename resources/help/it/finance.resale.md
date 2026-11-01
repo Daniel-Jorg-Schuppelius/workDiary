@@ -382,6 +382,11 @@ fornitore l’ultima importazione con la sua età. Le schede seguono il
 flusso: Panoramica · Conti licenze · Riconciliazione · Periodi · Posta in
 arrivo │ Abbonamenti · Scorte licenze · Acquisti │ Report · Prezzi;
 classificazione prodotti e fatturazione stanno nel menu ⋯.
+I riquadri sopra gli elenchi portano a ciò che contano: nei conti licenze,
+nella riconciliazione, nella dotazione di licenze e in un lotto filtrano
+l’elenco; nella cartella di lavoro di un destinatario filtrano la tavola di
+riconciliazione sui prodotti interessati, e lì un secondo clic sul riquadro
+attivo rimuove il filtro.
 
 **Proposte sicure e incerte:** L’esecuzione delle proposte (ogni ora e dopo
 ogni importazione) conferma da sola le corrispondenze sicure — un documento

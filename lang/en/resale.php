@@ -1156,6 +1156,7 @@ return [
         'subtitle' => 'Per provider account: licences per product, holders with quantities and the licence years with invoice or gap.',
         'empty' => 'No license accounts yet — subscriptions arrive via import or dialog.',
         'due_empty' => 'All due periods are invoiced.',
+        'filter_empty' => 'No licence account matches the filter.',
         'products_more' => '+ :count more',
         'products_domains' => '{1} domain|[2,*] domains',
         'summary' => [
@@ -1417,6 +1418,8 @@ return [
     // Phase 166 (MVP-1447/1448/1451)
     'board' => [
         'hint' => 'Billing periods on the left, invoices on the right. Each free invoice sits at the period it fits best — one click assigns it.',
+        'focus' => 'Only products with “:filter”',
+        'focus_reset' => 'Show all products',
         'summary' => 'Target :required · covered :covered · invoiced :invoiced · free :free',
         'col' => [
             'period' => 'Period (target)',

@@ -36,10 +36,18 @@
         @include('finance.resale._tabs')
 
         <div class="grid grid-cols-2 gap-3 mb-4 sm:grid-cols-4">
-            <x-kpi-tile :label="__('resale.license.summary.available')" :value="$summary['available']" tone="success" />
-            <x-kpi-tile :label="__('resale.license.summary.sold')" :value="$summary['sold']" />
-            <x-kpi-tile :label="__('resale.license.summary.incomplete')" :value="$summary['incomplete']" :tone="$summary['incomplete'] > 0 ? 'warning' : 'neutral'" />
-            <x-kpi-tile :label="__('resale.license.summary.reorder')" :value="$summary['reorder']" :tone="$summary['reorder'] > 0 ? 'error' : 'neutral'" />
+            {{-- Kacheln filtern die Liste (Pilot 2026-11-01); Suche und Produkt bleiben, weil die Zahlen von ihnen abhängen. --}}
+            @php
+                $tileQuery = array_filter(['q' => $filters['q'], 'product' => $filters['product']]);
+            @endphp
+            <x-kpi-tile :label="__('resale.license.summary.available')" :value="$summary['available']" tone="success"
+                        :href="route('finance.resale.licenses.index', $tileQuery + ['status' => 'available'])" :active="$filters['status'] === 'available'" />
+            <x-kpi-tile :label="__('resale.license.summary.sold')" :value="$summary['sold']"
+                        :href="route('finance.resale.licenses.index', $tileQuery + ['status' => 'sold'])" :active="$filters['status'] === 'sold'" />
+            <x-kpi-tile :label="__('resale.license.summary.incomplete')" :value="$summary['incomplete']" :tone="$summary['incomplete'] > 0 ? 'warning' : 'neutral'"
+                        :href="route('finance.resale.licenses.index', $tileQuery + ['status' => 'incomplete'])" :active="$filters['status'] === 'incomplete'" />
+            <x-kpi-tile :label="__('resale.license.summary.reorder')" :value="$summary['reorder']" :tone="$summary['reorder'] > 0 ? 'error' : 'neutral'"
+                        :href="route('finance.resale.licenses.index', $tileQuery + ['reorder' => 1])" :active="$filters['reorder']" />
         </div>
 
         <x-filter-bar :action="route('finance.resale.licenses.index')" :reset="route('finance.resale.licenses.index')">

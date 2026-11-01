@@ -401,6 +401,11 @@ suivent le déroulement : Vue d’ensemble · Comptes de licences · Rapprocheme
 Périodes · Boîte de réception │ Abonnements · Stock de licences · Achats │
 Rapports · Prix ; la classification des produits et la facturation sont dans
 le menu ⋯.
+Les tuiles au-dessus des listes mènent à ce qu’elles comptent : dans les
+comptes de licences, le rapprochement, le stock de licences et un lot, elles
+filtrent la liste ; dans le classeur de travail d’un destinataire, elles
+filtrent le tableau de rapprochement sur les produits concernés, et un second
+clic sur la tuile active y supprime le filtre.
 
 **Propositions sûres et incertaines :** Le calcul de propositions (chaque
 heure et après chaque import) confirme lui-même les correspondances sûres —

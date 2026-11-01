@@ -1156,6 +1156,7 @@ return [
         'subtitle' => 'Par compte fournisseur : licences par produit, détenteurs avec quantités et années de licence avec facture ou manque.',
         'empty' => 'Pas encore de comptes de licences : les abonnements arrivent par import ou dialogue.',
         'due_empty' => 'Toutes les périodes échues sont facturées.',
+        'filter_empty' => 'Aucun compte de licences ne correspond au filtre.',
         'products_more' => '+ :count autres',
         'products_domains' => '{1} domaine|[2,*] domaines',
         'summary' => [
@@ -1417,6 +1418,8 @@ return [
     // Phase 166 (MVP-1447/1448/1451)
     'board' => [
         'hint' => 'À gauche les périodes de facturation, à droite les factures. Chaque facture libre se trouve à la période qui lui correspond le mieux — un clic l’affecte.',
+        'focus' => 'Uniquement les produits avec « :filter »',
+        'focus_reset' => 'Afficher tous les produits',
         'summary' => 'Prévu :required · couvert :covered · facturé :invoiced · libre :free',
         'col' => [
             'period' => 'Période (prévu)',

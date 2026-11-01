@@ -366,6 +366,10 @@ in der Karenz liegende Perioden, je Anbieter der letzte Import mit Alter. Die
 Reiter folgen dem Ablauf: Überblick · Lizenzkonten · Abgleich · Perioden ·
 Inbox │ Abos · Lizenzbestand · Einkauf │ Berichte · Preise; Produkt-Einstufung
 und Abrechnung liegen im ⋯-Menü.
+Die Kacheln über den Listen führen zu dem, was sie zählen: Auf Lizenzkonten,
+Abgleich, Lizenzbestand und in einer Charge filtern sie die Liste, in der
+Arbeitsmappe eines Empfängers die Abgleichstafel auf die betroffenen Produkte;
+dort hebt ein zweiter Klick auf die aktive Kachel den Filter wieder auf.
 
 **Sichere und unsichere Vorschläge:** Der Vorschlagslauf (stündlich und
 nach jedem Import) bestätigt sichere Treffer selbst — ein Beleg, dessen

@@ -52,7 +52,7 @@ class ResaleReconcileController extends Controller {
         $organization = $this->currentOrganizationOrAbort(404);
         $rows = $this->reconciler->overview($organization);
         $filter = (string) $request->query('show', 'problems');
-        if ($filter === 'problems') {
+        if ($filter !== 'all') {
             // Nicht fertig (Phase 165, MVP-1445) — oder ohne Kunde mit freien Positionen, die noch niemand erklärt.
             $rows = array_values(array_filter($rows, static fn(array $r): bool => ! $r['done'] || $r['proposed'] > 0 || $r['free'] > 0.001));
         }
@@ -61,6 +61,13 @@ class ResaleReconcileController extends Controller {
             foreach ($totals as $key => $value) {
                 $totals[$key] = $value + $row[$key];
             }
+        }
+        // Eine Kachel filtert auf die Empfänger hinter ihrer Zahl (Pilot 2026-11-01); jede Kennzahl > 0 ist Klärungsbedarf,
+        // die Summen der Kacheln bleiben daher stehen.
+        if (in_array($filter, ReconcileBoard::FOCUS, true)) {
+            $rows = array_values(array_filter($rows, static fn(array $r): bool => $r[$filter] > 0.001));
+        } elseif ($filter !== 'all') {
+            $filter = 'problems';
         }
 
         return view('finance.resale.reconcile', ['rows' => $rows, 'filter' => $filter, 'totals' => $totals]);
@@ -77,8 +84,10 @@ class ResaleReconcileController extends Controller {
         return redirect()->route('finance.resale.reconcile.show', $first['customer']);
     }
 
-    public function show(Customer $customer): View {
+    public function show(Request $request, Customer $customer): View {
         $organization = $this->currentOrganizationOrAbort(404);
+        $focus = $request->string('focus')->toString();
+        $focus = in_array($focus, ReconcileBoard::FOCUS, true) ? $focus : '';
         $today = ResalePeriod::today();
         $result = $this->reconciler->forCustomer($organization, $customer, $today);
         $workspace = $this->workspacePosition($organization, $customer, $today);
@@ -100,12 +109,14 @@ class ResaleReconcileController extends Controller {
 
         // Stücklizenzen des Empfängers ohne Rechnungsbezug (Feature 185, MVP-1428).
         $unbilledLicenses = $this->licenseLinks->unbilled($organization, $today, (int) $customer->id);
+        $board = $this->board->build($result, $today);
 
         return view('finance.resale.reconcile_show', [
             'customer' => $customer,
             'today' => $today,
             'allPeriods' => $allPeriods,
-            'board' => $this->board->build($result, $today),
+            'board' => $focus !== '' ? ReconcileBoard::focus($board, $focus) : $board,
+            'focus' => $focus,
             'unbilledLicenses' => $unbilledLicenses,
             // Serienvorlagen des Empfängers in der Mappe (Phase 165, MVP-1444): adressiert an ihn oder über Zuordnung verbunden.
             'plan' => $this->planSection->build($organization, $result['subscriptions'], [(int) $customer->id]),

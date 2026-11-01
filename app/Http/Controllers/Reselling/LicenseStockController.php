@@ -190,10 +190,13 @@ class LicenseStockController extends Controller {
             ->with('success', __('resale.license.flash.batch_created', ['count' => $batch->quantity]));
     }
 
-    public function batchShow(ResaleLicenseBatch $batch): View {
+    public function batchShow(Request $request, ResaleLicenseBatch $batch): View {
         $organization = $this->currentOrganizationOrAbort(404);
         $batch->load(['product', 'supplier']);
-        $units = $batch->units()->withStockState()->orderBy('position')->paginate(50);
+        $status = LicenseUnitStatus::tryFrom($request->string('status')->toString());
+        $units = $batch->units()->withStockState()
+            ->when($status, static fn ($u, LicenseUnitStatus $s) => $u->withStatus($s))
+            ->orderBy('position')->paginate(50)->withQueryString();
         $history = ResaleLicenseAssignment::query()
             ->whereIn('unit_id', $batch->units()->getQuery()->select('id'))
             ->with(['unit', 'customer', 'foreignCustomer'])
@@ -206,6 +209,7 @@ class LicenseStockController extends Controller {
             'batch' => $batch,
             'counts' => $this->stock->batchCounts($organization, [$batch->id])->get($batch->id, ['purchased' => 0, 'available' => 0, 'sold' => 0, 'incomplete' => 0, 'blocked' => 0]),
             'units' => $units,
+            'status' => $status,
             'history' => $history,
         ]);
     }

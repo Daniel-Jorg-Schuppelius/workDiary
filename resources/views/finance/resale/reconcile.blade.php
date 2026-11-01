@@ -35,12 +35,19 @@
         @include('finance.resale._tabs')
 
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
-            <x-kpi-tile :label="__('resale.reconcile.kpi.open')" :value="$totals['open']" :tone="$totals['open'] > 0 ? 'error' : 'success'" />
-            <x-kpi-tile :label="__('resale.reconcile.kpi.partial')" :value="$totals['partial']" :tone="$totals['partial'] > 0 ? 'warning' : 'neutral'" />
-            <x-kpi-tile :label="__('resale.reconcile.kpi.proposed')" :value="$totals['proposed']" :tone="$totals['proposed'] > 0 ? 'info' : 'neutral'" />
-            <x-kpi-tile :label="__('resale.reconcile.kpi.free')" :value="$compact::compact($totals['free'])" format="raw" :tone="$totals['free'] > 0.001 ? 'warning' : 'neutral'" />
-            <x-kpi-tile :label="__('resale.reconcile.kpi.missing')" :value="$compact::compact($totals['missing'])" format="raw" :tone="$totals['missing'] > 0.001 ? 'error' : 'neutral'" />
-            <x-kpi-tile :label="__('resale.reconcile.kpi.surplus')" :value="$compact::compact($totals['surplus'])" format="raw" :tone="$totals['surplus'] > 0.001 ? 'info' : 'neutral'" />
+            {{-- Jede Kachel filtert die Liste auf die Empfänger hinter ihrer Zahl (Pilot 2026-11-01). --}}
+            <x-kpi-tile :label="__('resale.reconcile.kpi.open')" :value="$totals['open']" :tone="$totals['open'] > 0 ? 'error' : 'success'"
+                        :href="route('finance.resale.reconcile.index', ['show' => 'open'])" :active="$filter === 'open'" />
+            <x-kpi-tile :label="__('resale.reconcile.kpi.partial')" :value="$totals['partial']" :tone="$totals['partial'] > 0 ? 'warning' : 'neutral'"
+                        :href="route('finance.resale.reconcile.index', ['show' => 'partial'])" :active="$filter === 'partial'" />
+            <x-kpi-tile :label="__('resale.reconcile.kpi.proposed')" :value="$totals['proposed']" :tone="$totals['proposed'] > 0 ? 'info' : 'neutral'"
+                        :href="route('finance.resale.reconcile.index', ['show' => 'proposed'])" :active="$filter === 'proposed'" />
+            <x-kpi-tile :label="__('resale.reconcile.kpi.free')" :value="$compact::compact($totals['free'])" format="raw" :tone="$totals['free'] > 0.001 ? 'warning' : 'neutral'"
+                        :href="route('finance.resale.reconcile.index', ['show' => 'free'])" :active="$filter === 'free'" />
+            <x-kpi-tile :label="__('resale.reconcile.kpi.missing')" :value="$compact::compact($totals['missing'])" format="raw" :tone="$totals['missing'] > 0.001 ? 'error' : 'neutral'"
+                        :href="route('finance.resale.reconcile.index', ['show' => 'missing'])" :active="$filter === 'missing'" />
+            <x-kpi-tile :label="__('resale.reconcile.kpi.surplus')" :value="$compact::compact($totals['surplus'])" format="raw" :tone="$totals['surplus'] > 0.001 ? 'info' : 'neutral'"
+                        :href="route('finance.resale.reconcile.index', ['show' => 'surplus'])" :active="$filter === 'surplus'" />
         </div>
         <p class="text-xs text-muted mb-3">{{ __('resale.reconcile.legend') }}</p>
 
@@ -48,6 +55,9 @@
             <select name="show" class="select select-sm select-bordered w-56" aria-label="{{ __('resale.field.status') }}">
                 <option value="problems" @selected($filter === 'problems')>{{ __('resale.reconcile.filter_problems') }}</option>
                 <option value="all" @selected($filter === 'all')>{{ __('resale.reconcile.filter_all') }}</option>
+                @foreach (\App\Services\Reselling\Register\ReconcileBoard::FOCUS as $key)
+                    <option value="{{ $key }}" @selected($filter === $key)>{{ __('resale.reconcile.kpi.' . $key) }}</option>
+                @endforeach
             </select>
         </x-filter-bar>
 

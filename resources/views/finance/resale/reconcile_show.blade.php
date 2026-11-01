@@ -65,12 +65,16 @@
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
-            <x-kpi-tile :label="__('resale.reconcile.kpi.open')" :value="$open" :tone="$open > 0 ? 'error' : 'success'" />
-            <x-kpi-tile :label="__('resale.reconcile.kpi.partial')" :value="$partial" :tone="$partial > 0 ? 'warning' : 'neutral'" />
-            <x-kpi-tile :label="__('resale.reconcile.kpi.proposed')" :value="$proposed" :tone="$proposed > 0 ? 'info' : 'neutral'" />
-            <x-kpi-tile :label="__('resale.reconcile.kpi.free')" :value="$compact::compact($free)" format="raw" :tone="$free > 0.001 ? 'warning' : 'neutral'" />
-            <x-kpi-tile :label="__('resale.reconcile.kpi.missing')" :value="$compact::compact($missing)" format="raw" :tone="$missing > 0.001 ? 'error' : 'neutral'" />
-            <x-kpi-tile :label="__('resale.reconcile.kpi.surplus')" :value="$compact::compact($surplus)" format="raw" :tone="$surplus > 0.001 ? 'info' : 'neutral'" />
+            {{-- Kacheln filtern die Tafel auf die Produkte hinter ihrer Zahl; die aktive Kachel hebt den Filter wieder auf (Pilot 2026-11-01). --}}
+            @php
+                $focusUrl = static fn (string $key): string => route('finance.resale.reconcile.show', $focus === $key ? [$customer] : [$customer, 'focus' => $key]) . '#board';
+            @endphp
+            <x-kpi-tile :label="__('resale.reconcile.kpi.open')" :value="$open" :tone="$open > 0 ? 'error' : 'success'" :href="$focusUrl('open')" :active="$focus === 'open'" />
+            <x-kpi-tile :label="__('resale.reconcile.kpi.partial')" :value="$partial" :tone="$partial > 0 ? 'warning' : 'neutral'" :href="$focusUrl('partial')" :active="$focus === 'partial'" />
+            <x-kpi-tile :label="__('resale.reconcile.kpi.proposed')" :value="$proposed" :tone="$proposed > 0 ? 'info' : 'neutral'" :href="$focusUrl('proposed')" :active="$focus === 'proposed'" />
+            <x-kpi-tile :label="__('resale.reconcile.kpi.free')" :value="$compact::compact($free)" format="raw" :tone="$free > 0.001 ? 'warning' : 'neutral'" :href="$focusUrl('free')" :active="$focus === 'free'" />
+            <x-kpi-tile :label="__('resale.reconcile.kpi.missing')" :value="$compact::compact($missing)" format="raw" :tone="$missing > 0.001 ? 'error' : 'neutral'" :href="$focusUrl('missing')" :active="$focus === 'missing'" />
+            <x-kpi-tile :label="__('resale.reconcile.kpi.surplus')" :value="$compact::compact($surplus)" format="raw" :tone="$surplus > 0.001 ? 'info' : 'neutral'" :href="$focusUrl('surplus')" :active="$focus === 'surplus'" />
         </div>
 
         @if (! $has_source)
@@ -166,7 +170,15 @@
 
         {{-- Abgleichstafel je Produkt (Phase 166, MVP-1447): Perioden (Soll) und Rechnungspositionen (Ist) auf einem Zeitstrahl —
              ersetzt Bilanz je Produkt, offene Perioden, alle Perioden und alle Positionen. --}}
-        @include('finance.resale._reconcile_board')
+        <div id="board" class="scroll-mt-4">
+            @if ($focus !== '')
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                    <x-status-badge size="sm" tone="info" :label="__('resale.board.focus', ['filter' => __('resale.reconcile.kpi.' . $focus)])" />
+                    <a href="{{ route('finance.resale.reconcile.show', $customer) }}#board" class="link link-hover text-xs">{{ __('resale.board.focus_reset') }}</a>
+                </div>
+            @endif
+            @include('finance.resale._reconcile_board')
+        </div>
 
         {{-- Serienvorlagen des Empfängers (Phase 165, MVP-1444): Zuordnung, Ausführungsstand und Befunde hier statt im Lizenzkonto. --}}
         @include('finance.resale._plan_section', ['plan' => $plan, 'candidates' => $planCandidates, 'storeRoute' => route('finance.resale.reconcile.plan.store', $customer), 'canManage' => $canManage])

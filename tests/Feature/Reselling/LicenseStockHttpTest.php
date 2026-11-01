@@ -205,6 +205,22 @@ final class LicenseStockHttpTest extends TestCase {
         $this->get(route('finance.resale.licenses.index', ['q' => 'gibt-es-nicht']))->assertOk()->assertSee(__('resale.license.empty.units'));
     }
 
+    public function test_tiles_filter_units_by_status_and_keep_search_and_product(): void {
+        $this->actingAs($this->user([Permission::ResellingView]));
+        $this->get(route('finance.resale.licenses.index'))->assertOk()
+            ->assertSee(route('finance.resale.licenses.index', ['status' => 'incomplete']))
+            ->assertSee(route('finance.resale.licenses.index', ['reorder' => 1]));
+        $this->get(route('finance.resale.licenses.index', ['product' => $this->product->sqid]))->assertOk()
+            ->assertSee(route('finance.resale.licenses.index', ['product' => $this->product->sqid, 'status' => 'available']));
+
+        $this->get(route('finance.resale.licenses.batches.show', $this->batch))->assertOk()
+            ->assertSee(route('finance.resale.licenses.batches.show', [$this->batch, 'status' => 'incomplete']) . '#units');
+        $this->get(route('finance.resale.licenses.batches.show', [$this->batch, 'status' => 'incomplete']))->assertOk()
+            ->assertSee($this->unit(3)->label())->assertDontSee($this->unit(1)->label());
+        $this->get(route('finance.resale.licenses.batches.show', [$this->batch, 'status' => 'blocked']))->assertOk()
+            ->assertSee(__('resale.license.empty.units'));
+    }
+
     public function test_csv_upload_previews_and_applies_only_after_confirmation(): void {
         $manager = $this->user([Permission::ResellingView, Permission::ResellingManage]);
         $file = UploadedFile::fake()->createWithContent('schluessel.csv', "position;key_1;key_2\n3;NEU-SN-3;NEU-AK-3\n");

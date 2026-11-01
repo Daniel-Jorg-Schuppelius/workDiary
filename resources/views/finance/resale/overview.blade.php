@@ -50,7 +50,7 @@
                         :hint="($overview['summary']['open_amount'] !== '' ? $overview['summary']['open_amount'] . ' · ' : '') . __('resale.overview.kpi.open_hint', ['days' => \App\Services\Reselling\Register\ResaleOverview::GRACE_DAYS])"
                         :href="route('finance.resale.periods.index', ['status' => 'problems'])" />
             <x-kpi-tile :label="__('resale.account.summary.conflicts')" :value="$overview['summary']['findings']" :tone="$overview['summary']['findings'] > 0 ? 'warning' : 'neutral'"
-                        :href="route('finance.resale.accounts.index')" />
+                        :href="route('finance.resale.accounts.index', ['show' => 'conflicts'])" />
             <x-kpi-tile :label="__('resale.summary.unassigned')" :value="$overview['summary']['unassigned']" :tone="$overview['summary']['unassigned'] > 0 ? 'warning' : 'neutral'"
                         :href="route('finance.resale.subscriptions', ['unassigned' => 1])" />
         </div>
