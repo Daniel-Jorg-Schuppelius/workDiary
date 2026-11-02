@@ -388,6 +388,7 @@ return [
     ],
     'draft' => [
         'action' => 'Invoice draft',
+        'in_draft' => 'In draft',
         'dialog_title' => 'Create invoice draft',
         'submit' => 'Create draft',
         'hint' => 'All open periods of the recipient become positions of an invoice draft: locally as a draft, with external billing as a transfer to the accounting program — one position per subscription and contiguous period (several open years of a domain become “n year”), end customer in the description, quantity in months for monthly articles. Nothing is finalised — you review and complete it in the program.',

@@ -168,7 +168,7 @@
                                                 @endforeach
                                             @elseif ($upcoming)
                                                 <x-status-badge size="xs" outline :label="__('resale.account.grid.upcoming', ['date' => $period->starts_on->format('d.m.')])" />
-                                            @elseif (in_array($period->status, [\App\Enums\Reselling\PeriodStatus::Open, \App\Enums\Reselling\PeriodStatus::Partial], true))
+                                            @elseif (in_array($period->status, [\App\Enums\Reselling\PeriodStatus::Open, \App\Enums\Reselling\PeriodStatus::Partial], true) && ! $period->isInDraft())
                                                 <x-status-badge size="xs" tone="error" :label="__('resale.account.grid.missing')" />
                                             @else
                                                 <x-status-badge size="xs" :tone="$period->statusTone()" :label="$period->statusLabel()" />

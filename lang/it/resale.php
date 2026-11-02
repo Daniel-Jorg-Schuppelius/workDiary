@@ -388,6 +388,7 @@ return [
     ],
     'draft' => [
         'action' => 'Bozza fattura',
+        'in_draft' => 'In bozza',
         'dialog_title' => 'Crea bozza fattura',
         'submit' => 'Crea bozza',
         'hint' => 'Tutti i periodi aperti del destinatario diventano posizioni di una bozza di fattura: localmente come bozza, con fatturazione esterna come trasferimento al programma di contabilità — una posizione per abbonamento e periodo contiguo (più anni aperti di un dominio diventano «n anno»), cliente finale nella descrizione, quantità in mesi per articoli mensili. Nulla viene finalizzato — verificate e chiudete nel programma.',

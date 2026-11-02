@@ -225,7 +225,8 @@ période, client final dans la description, quantité en mois pour les
 articles mensuels. Les périodes mémorisent le brouillon : un second clic
 n’en crée pas un deuxième mais nomme le brouillon en attente avec numéro et
 date ; ce n’est que lorsque le brouillon est devenu facture ou que la
-période est décidée qu’elles sont de nouveau libres. Le dialogue ne liste
+période est décidée qu’elles sont de nouveau libres ; jusque-là, elles affichent « En brouillon ».
+Le dialogue ne liste
 que les destinataires avec périodes ouvertes et prix de vente et indique en
 dessous ce qui est déjà dans un brouillon. La création requiert le droit
 *Créer des brouillons de facture à partir des périodes*.

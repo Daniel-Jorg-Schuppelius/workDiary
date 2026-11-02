@@ -207,7 +207,8 @@ vorgeschlagenen Bezügen. Eine Position je Abo und Zeitraum, Endkunde in der
 Beschreibung, Menge in Monaten bei Monatsartikeln. Die Perioden merken sich
 den Entwurf: ein zweiter Klick legt keinen zweiten an, sondern nennt den
 ausstehenden mit Nummer und Datum; erst wenn der Entwurf zur Rechnung wurde
-oder die Periode entschieden ist, sind sie wieder frei. Der Dialog listet
+oder die Periode entschieden ist, sind sie wieder frei; bis dahin zeigen sie
+„Im Entwurf“ statt „fehlt“ oder „Offen“. Der Dialog listet
 nur Empfänger mit offenen Perioden und Verkaufspreis und nennt darunter, was
 schon im Entwurf steht. Das Anlegen braucht das Recht *Rechnungsentwürfe aus
 Perioden erzeugen*.

@@ -274,11 +274,20 @@ class ResalePeriod extends Model {
         return $this->status === PeriodStatus::Waived && $this->decided_by_user_id === null && $prefix !== '' && str_starts_with((string) $this->waived_reason, $prefix);
     }
 
+    /** Steht in einem Rechnungsentwurf, der noch nicht als Rechnung zurückkam: nichts fehlt, es ist in Arbeit. */
+    public function isInDraft(): bool {
+        return (string) $this->draft_reference !== '' && in_array($this->status, [PeriodStatus::Open, PeriodStatus::Partial], true);
+    }
+
     public function statusLabel(): string {
-        return $this->isOrderChange() ? (string) __('resale.link.order_change') : $this->status->label();
+        return match (true) {
+            $this->isOrderChange() => (string) __('resale.link.order_change'),
+            $this->isInDraft() => (string) __('resale.draft.in_draft'),
+            default => $this->status->label(),
+        };
     }
 
     public function statusTone(): string {
-        return $this->isOrderChange() ? 'info' : $this->status->tone();
+        return $this->isOrderChange() || $this->isInDraft() ? 'info' : $this->status->tone();
     }
 }

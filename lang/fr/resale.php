@@ -388,6 +388,7 @@ return [
     ],
     'draft' => [
         'action' => 'Brouillon de facture',
+        'in_draft' => 'En brouillon',
         'dialog_title' => 'Créer un brouillon de facture',
         'submit' => 'Créer le brouillon',
         'hint' => 'Toutes les périodes ouvertes du destinataire deviennent des positions d’un brouillon de facture : localement comme brouillon, en facturation externe comme transfert vers le logiciel de comptabilité — une position par abonnement et période contiguë (plusieurs années ouvertes d’un domaine deviennent « n an »), client final dans la description, quantité en mois pour les articles mensuels. Rien n’est finalisé — vous vérifiez et clôturez dans le logiciel.',

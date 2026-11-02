@@ -212,7 +212,7 @@ propuestos. Una posición por suscripción y periodo, cliente final en la
 descripción, cantidad en meses para artículos mensuales. Los periodos
 recuerdan el borrador: un segundo clic no crea un segundo, sino que nombra
 el pendiente con número y fecha; solo cuando el borrador se convirtió en
-factura o el periodo está decidido vuelven a estar libres. El diálogo lista
+factura o el periodo está decidido vuelven a estar libres; hasta entonces muestran «En borrador». El diálogo lista
 solo destinatarios con periodos abiertos y precio de venta y nombra debajo
 lo que ya está en un borrador. Crear requiere el permiso *Crear borradores
 de factura a partir de periodos*.
