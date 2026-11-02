@@ -205,7 +205,8 @@ subscription and period, end customer in the description, quantity in
 months for monthly articles. The periods remember the draft: a second click
 does not create a second one but names the pending draft with number and
 date; only when the draft became an invoice or the period is decided are
-they free again. The dialog lists only recipients with open periods and a
+they free again; until then they show “In draft” instead of “missing” or
+“Open”. The dialog lists only recipients with open periods and a
 sale price and names below what is already in a draft. Creating requires
 the right *Create invoice drafts from periods*.
 

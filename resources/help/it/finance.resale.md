@@ -210,7 +210,7 @@ proposti. Una riga per abbonamento e periodo, cliente finale nella
 descrizione, quantità in mesi per gli articoli mensili. I periodi ricordano
 la bozza: un secondo clic non ne crea una seconda ma indica quella in
 sospeso con numero e data; solo quando la bozza è diventata fattura o il
-periodo è deciso tornano liberi. La finestra elenca solo destinatari con
+periodo è deciso tornano liberi; fino ad allora mostrano «In bozza». La finestra elenca solo destinatari con
 periodi aperti e prezzo di vendita e indica sotto ciò che è già in una
 bozza. La creazione richiede il diritto *Creare bozze di fattura dai
 periodi*.

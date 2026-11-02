@@ -388,6 +388,7 @@ return [
     ],
     'draft' => [
         'action' => 'Borrador de factura',
+        'in_draft' => 'En borrador',
         'dialog_title' => 'Crear borrador de factura',
         'submit' => 'Crear borrador',
         'hint' => 'Todos los periodos abiertos del destinatario se convierten en posiciones de un borrador de factura: localmente como borrador, con facturación externa como traspaso al programa de contabilidad — una posición por suscripción y periodo contiguo (varios años abiertos de un dominio se convierten en «n año»), cliente final en la descripción, cantidad en meses para artículos mensuales. Nada se consolida — usted revisa y cierra en el programa.',

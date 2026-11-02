@@ -388,6 +388,7 @@ return [
     ],
     'draft' => [
         'action' => 'Rechnungsentwurf',
+        'in_draft' => 'Im Entwurf',
         'dialog_title' => 'Rechnungsentwurf anlegen',
         'submit' => 'Entwurf anlegen',
         'hint' => 'Alle offenen Perioden des Empfängers werden Positionen eines Rechnungsentwurfs: lokal als Entwurf, bei externer Hoheit als Übergabe an das Buchhaltungsprogramm — eine Position je Abo und zusammenhängendem Zeitraum (mehrere offene Jahre einer Domain werden „n Jahr“), Endkunde in der Beschreibung, Menge in Monaten bei Monatsartikeln. Nichts wird festgeschrieben — Sie prüfen und schließen im Programm ab.',

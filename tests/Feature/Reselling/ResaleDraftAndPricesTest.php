@@ -90,6 +90,36 @@ class ResaleDraftAndPricesTest extends TestCase {
         $this->assertNotContains('article_price_differs', $premium['flags'] ?? [], 'Median 247,20 € = Artikelpreis');
     }
 
+    /** Pilot 2026-11-02: eine Periode im Rechnungsentwurf fehlt nicht, sie ist in Arbeit — bis die Rechnung zurückkommt. */
+    public function test_periods_in_a_draft_show_it_instead_of_missing(): void {
+        $admin = $this->orgAdmin();
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Entwurfshof GmbH']);
+        $subscription = ResaleSubscription::query()->create([
+            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'provider_account' => 'entwurfshof', 'label' => 'Postfach Entwurfshof',
+            'customer_id' => $customer->id, 'quantity' => 1, 'starts_on' => '2024-08-05', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto',
+            'sale_unit_price' => '47.40', 'currency' => 'EUR', 'status' => 'active',
+        ]);
+        (new PeriodPlanner)->sync($subscription);
+        [$missing, $drafted] = $subscription->periods()->orderBy('starts_on')->get()->all();
+        $drafted->forceFill(['draft_reference' => 'entwurf-1', 'draft_created_at' => now()])->save();
+
+        $this->assertTrue($drafted->isInDraft());
+        $this->assertSame(__('resale.draft.in_draft'), $drafted->statusLabel());
+        $this->assertSame('info', $drafted->statusTone());
+        $this->assertFalse($missing->isInDraft());
+        $this->assertSame(PeriodStatus::Open->label(), $missing->statusLabel());
+
+        // Lizenzjahre: die Periode im Entwurf statt „fehlt“, die andere fehlt weiter; dazu „Fällig ohne Rechnung“, Mappe und Periodenliste.
+        $grid = $this->actingAs($admin)->get(route('finance.resale.accounts.show', 'qualityhosting:entwurfshof'))->assertOk();
+        $grid->assertSee(__('resale.draft.in_draft'));
+        $this->assertSame(2, preg_match_all('/>\s*' . preg_quote((string) __('resale.account.grid.missing'), '/') . '\s*</', (string) $grid->getContent()), 'drei fällige Perioden, eine davon im Entwurf');
+        $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $customer))->assertOk()->assertSee(__('resale.draft.in_draft'));
+        $this->actingAs($admin)->get(route('finance.resale.periods.index', ['status' => 'open']))->assertOk()->assertSee(__('resale.draft.in_draft'));
+
+        // Entschieden oder berechnet zählt der Stempel nicht mehr.
+        $this->assertFalse($drafted->forceFill(['status' => PeriodStatus::Billed])->isInDraft());
+    }
+
     public function test_local_billing_creates_a_local_invoice_draft_with_proposed_links(): void {
         $admin = $this->orgAdmin();
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH', 'billing_mode' => \App\Enums\Finance\BillingMode::Workdiary]);
