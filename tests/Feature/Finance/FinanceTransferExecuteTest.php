@@ -295,6 +295,22 @@ class FinanceTransferExecuteTest extends TestCase {
             ->where('external_type', LexofficeTarget::EXT_TYPE_INVOICE)->count());
     }
 
+    /** Pilot 2026-11-02: Kontakt ohne Rechnungsadresse — Lexoffice antwortet 406, der Nutzer liest, was zu tun ist, statt JSON. */
+    public function test_execute_lexoffice_names_a_missing_billing_address(): void {
+        $this->makeTimeEntry();
+        $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
+
+        FakePluginHttp::fake([
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d']]], 200),
+            'https://api.lexware.io/v1/invoices*' => FakePluginHttp::response(['status' => 406, 'error' => 'Not Acceptable', 'path' => '/v1/invoices', 'message' => 'Referenced contact needs to have exactly one billing address, but 0 addresses were found.'], 406),
+        ]);
+
+        $this->post(route('finance.transfers.execute', $transfer))->assertSessionHasErrors('transfer');
+        $transfer = $transfer->fresh();
+        $this->assertSame(TransferStatus::Failed, $transfer->status);
+        $this->assertSame((string) __('lexoffice::finance.error.contact_billing_address', ['customer' => $transfer->customer->name, 'count' => 0]), $transfer->failure_reason);
+    }
+
     /**
      * Konsolidierungs-Audit 2026-10, k2-01: ein Abbruch nach dem Senden ist
      * „Ausgang unklar"; der nächste Lauf findet den Entwurf über den Marker in

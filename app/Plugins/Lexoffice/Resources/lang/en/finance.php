@@ -16,6 +16,7 @@ return [
         'lexoffice_dunning_not_invoice' => 'A dunning can only be created for an invoice.',
         'lexoffice_not_configured' => 'Lexoffice is not configured for this organisation (API key missing).',
         'lexoffice_outcome_unclear' => 'Outcome of the Lexoffice transfer is unclear (timeout after sending) — do not retry blindly; the next run looks for the draft via the source marker.',
+        'contact_billing_address' => 'The contact “:customer” needs exactly one billing address in Lexoffice but has :count. Please correct the address there and repeat the transfer.',
         'lexoffice_oc_no_customer' => 'A manufacturing order without a customer cannot be handed over as an order confirmation.',
         'lexoffice_oc_not_linked' => 'No Lexoffice order confirmation is linked to this manufacturing order.',
         'lexoffice_quote_no_customer' => 'A manufacturing order without a customer cannot be handed over as a quotation.',
