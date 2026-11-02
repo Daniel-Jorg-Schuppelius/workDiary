@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Enums\Finance\{BillingMode, TransferChannel, TransferStatus, TransferTarget};
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Finance\BillingTransfer;
@@ -39,6 +39,7 @@ use Throwable;
  * {@see FacturationTargetRegistry}.
  */
 class FinanceTransferController extends Controller {
+    use ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange;
 
     public function __construct(
@@ -93,13 +94,16 @@ class FinanceTransferController extends Controller {
 
     /**
      * Anlage-Dialog (Modal-Partial). Optionaler ?customer={sqid} belegt das
-     * Ziel aus dem effektiven billing_mode vor.
+     * Ziel aus dem effektiven billing_mode vor. Ohne Vorwahl gilt der
+     * Org-Standard, und jede Kundenoption trägt ihr Ziel, dem die Zielauswahl
+     * im Dialog folgt — ein fester Rückfall auf „Datei“ ließ Übergaben am
+     * führenden Programm vorbeilaufen.
      */
     public function create(Request $request): View {
         $allowedChannels = $this->allowedChannels();
         abort_if($allowedChannels === [], 403);
 
-        $customers = Customer::query()->orderBy('name')->get(['id', 'name', 'billing_mode', 'organization_id']);
+        $customers = Customer::query()->with('organization:id,settings')->orderBy('name')->get(['id', 'name', 'billing_mode', 'organization_id']);
 
         $selected = null;
         $rawCustomer = (string) $request->query('customer', '');
@@ -110,14 +114,18 @@ class FinanceTransferController extends Controller {
         }
 
         $mode = $selected !== null ? $this->modeResolver->effectiveFor($selected) : null;
+        $targetByCustomer = $customers->mapWithKeys(fn (Customer $customer): array => [
+            (int) $customer->id => self::defaultTargetFor($this->modeResolver->effectiveFor($customer)),
+        ]);
 
         return view('finance.transfers._form_dialog', [
             'customers' => $customers,
             'selectedCustomer' => $selected,
             'selectedMode' => $mode,
+            'targetByCustomer' => $targetByCustomer,
             'allowedChannels' => $allowedChannels,
-            'allowedTargets' => $this->availableTargets($selected, $mode),
-            'defaultTarget' => $mode !== null ? self::defaultTargetFor($mode) : TransferTarget::File,
+            'allowedTargets' => $this->availableTargets($selected, $mode, $targetByCustomer->all()),
+            'defaultTarget' => self::defaultTargetFor($mode ?? $this->modeResolver->forOrganization($this->currentOrganizationOrNull())),
             'showDatevHint' => $mode === BillingMode::Datev,
         ]);
     }
@@ -410,14 +418,17 @@ class FinanceTransferController extends Controller {
 
     /**
      * Auswählbare Ziele: Hoheit des Fakturierungswegs minus die nach dem
-     * Umschaltstichtag gesperrten Ziele (MVP-653).
+     * Umschaltstichtag gesperrten Ziele (MVP-653). Ohne gewählten Kunden die
+     * Ziele aller angebotenen Kunden plus Datei-Paket; der Server prüft beim
+     * Speichern gegen den dann gewählten Kunden.
      *
+     * @param  array<int, TransferTarget>  $customerTargets
      * @return list<TransferTarget>
      */
-    private function availableTargets(?Customer $customer, ?BillingMode $mode): array {
+    private function availableTargets(?Customer $customer, ?BillingMode $mode, array $customerTargets = []): array {
         $targets = $mode !== null
             ? self::allowedTargetsFor($mode)
-            : [TransferTarget::Lexoffice, TransferTarget::File];
+            : array_values(array_filter(TransferTarget::cases(), fn (TransferTarget $target): bool => $target === TransferTarget::File || in_array($target, $customerTargets, true)));
 
         if ($customer === null) {
             return $targets;

@@ -9,8 +9,9 @@
   Anlage-Dialog Faktura-Übergabe (Feature 045, Teil B): Kunde, Kanal,
   Zeitraum (x-date-range). Ziel wird aus dem effektiven billing_mode
   vorbelegt (lexoffice ⇒ lexoffice, datev ⇒ Datei-Paket mit Hinweis
-  „Desktop-API folgt", workdiary ⇒ nur Datei). Der Server prüft die
-  Ziel-Zulässigkeit beim Speichern erneut.
+  „Desktop-API folgt", workdiary ⇒ nur Datei) und folgt der Kundenwahl
+  (data-default-from, Ziel je Kundenoption in data-default). Der Server
+  prüft die Ziel-Zulässigkeit beim Speichern erneut.
 --}}
 
 <x-modal
@@ -29,7 +30,7 @@
             <select id="customer_id" name="customer_id" required class="select select-bordered w-full">
                 <option value="">{{ __('-- bitte wählen --') }}</option>
                 @foreach ($customers as $c)
-                    <option value="{{ $c->sqid }}"
+                    <option value="{{ $c->sqid }}" data-default="{{ $targetByCustomer[$c->id]->value }}"
                             @selected(old('customer_id', $selectedCustomer?->sqid) === $c->sqid)>{{ $c->name }}</option>
                 @endforeach
             </select>
@@ -48,7 +49,7 @@
 
         <div class="fieldset">
             <label for="target" class="fieldset-label">{{ __('finance.field.target') }} *</label>
-            <select id="target" name="target" required class="select select-bordered w-full">
+            <select id="target" name="target" required class="select select-bordered w-full" data-default-from="customer_id">
                 @foreach ($allowedTargets as $target)
                     <option value="{{ $target->value }}" @selected(old('target', $defaultTarget->value) === $target->value)>{{ $target->label() }}</option>
                 @endforeach

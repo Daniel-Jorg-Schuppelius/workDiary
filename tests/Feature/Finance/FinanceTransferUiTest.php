@@ -199,6 +199,47 @@ class FinanceTransferUiTest extends TestCase {
             ->assertDontSee('value="lexoffice"', false);
     }
 
+    /** Befund 2026-11-02: aus der Liste geöffnet stand das Ziel fest auf „Datei“, obwohl die Organisation Lexoffice führt. */
+    public function test_create_without_customer_preselects_org_default_target(): void {
+        $this->organization->update(['settings' => ['billing_mode' => BillingMode::Lexoffice->value]]);
+
+        $response = $this->actingAs($this->accountant)->get(route('finance.transfers.create'));
+
+        $response->assertOk()
+            ->assertSee('value="lexoffice" selected', false)
+            ->assertSee('value="file"', false)
+            ->assertSee('data-default-from="customer_id"', false)
+            ->assertSee('value="' . $this->customer->sqid . '" data-default="lexoffice"', false);
+    }
+
+    public function test_create_without_customer_offers_only_file_when_workdiary_leads(): void {
+        $response = $this->actingAs($this->accountant)->get(route('finance.transfers.create'));
+
+        $response->assertOk()
+            ->assertSee('value="file" selected', false)
+            ->assertDontSee('value="lexoffice"', false)
+            ->assertSee('value="' . $this->customer->sqid . '" data-default="file"', false);
+    }
+
+    /** Die Zielauswahl folgt der Kundenwahl: jede Kundenoption trägt ihr eigenes Ziel, ein Kunden-Override zählt. */
+    public function test_create_without_customer_marks_target_per_customer(): void {
+        $this->organization->update(['settings' => ['billing_mode' => BillingMode::Lexoffice->value]]);
+        $datev = Customer::create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Beta GmbH',
+            'currency' => 'EUR',
+            'billing_mode' => BillingMode::Datev,
+            'created_by' => $this->accountant->id,
+        ]);
+
+        $response = $this->actingAs($this->accountant)->get(route('finance.transfers.create'));
+
+        $response->assertOk()
+            ->assertSee('value="' . $this->customer->sqid . '" data-default="lexoffice"', false)
+            ->assertSee('value="' . $datev->sqid . '" data-default="file"', false)
+            ->assertSee('value="lexoffice" selected', false);
+    }
+
     public function test_store_rejects_lexoffice_target_for_workdiary_customer(): void {
         $this->makeTimeEntry();
 

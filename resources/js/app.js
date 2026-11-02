@@ -974,13 +974,41 @@ document.addEventListener("click", (event) => {
             apply(true);
         });
     };
+
+    // Vorbelegung aus der Elternauswahl: ein Select mit
+    // `data-default-from="<name des Eltern-Selects>"` übernimmt beim Eltern-
+    // Wechsel den Wert aus `data-default` der gewählten Eltern-<option>, sofern
+    // er als wählbare Option vorhanden ist (Übergabeziel folgt dem
+    // Fakturierungsweg des Kunden). Alle Optionen bleiben wählbar.
+    /** @param {ParentNode} root */
+    const bindDefaultFromParent = (root) => {
+        if (!root) return;
+        /** @type {NodeListOf<HTMLSelectElement>} */ (root.querySelectorAll("select[data-default-from]")).forEach((child) => {
+            if (child.dataset.defaultFromBound === "1") return;
+            const scope = child.closest("form") || root;
+            const parent = /** @type {HTMLSelectElement | null} */ (scope.querySelector(
+                `select[name="${child.dataset.defaultFrom}"]`,
+            ));
+            if (!parent) return;
+            child.dataset.defaultFromBound = "1";
+
+            parent.addEventListener("change", () => {
+                const value = parent.selectedOptions[0]?.dataset.default ?? "";
+                if (value === "") return;
+                const option = Array.from(child.options).find((opt) => opt.value === value);
+                if (option && !option.disabled) child.value = value;
+            });
+        });
+    };
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", () => {
             bindDependentSelects(document);
+            bindDefaultFromParent(document);
             initDialogForms(document);
         });
     } else {
         bindDependentSelects(document);
+        bindDefaultFromParent(document);
         initDialogForms(document);
     }
 
@@ -998,6 +1026,7 @@ document.addEventListener("click", (event) => {
             applyRecurrenceToggle,
         );
         bindDependentSelects(root);
+        bindDefaultFromParent(root);
         // Inline-<script>-Tags aus AJAX-Inhalten führt der Browser nicht aus.
         // Stattdessen binden wir hier die Listener für bekannte Form-Bausteine.
         bindRangeLinks(root);
