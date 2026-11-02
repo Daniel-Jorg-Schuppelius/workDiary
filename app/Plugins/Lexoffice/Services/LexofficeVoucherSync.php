@@ -46,6 +46,9 @@ class LexofficeVoucherSync {
     /** Rechnungen, deren Positionen je Sync-Lauf nachgeladen werden (Ratenlimit). */
     private const LINES_PER_RUN = 100;
 
+    /** Nach so vielen Tagen wird ein Beleg ohne Zahlungsdatum erneut bei Lexoffice gefragt (perf-06). */
+    private const PAID_DATE_RECHECK_DAYS = 7;
+
     /** @param  int|null  $organizationId  null = gebundene Organisation bzw. Einzelplatz-Konfiguration */
     public function __construct(
         private readonly ?int $organizationId,
@@ -57,9 +60,9 @@ class LexofficeVoucherSync {
     }
 
     /**
-     * @return array{contacts: int, created: int, updated: int, archived: int, paid_dates: int, lines: int, categories: int, frozen?: bool, lines_error?: string, categories_error?: string}
+     * @return array{mode: string, contacts: int, created: int, updated: int, archived: int, paid_dates: int, lines: int, categories: int, frozen?: bool, lines_error?: string, categories_error?: string}
      */
-    public function sync(Organization $organization): array {
+    public function sync(Organization $organization, bool $full = false): array {
         // G3 (MVP-690): Nach abgeschlossenem Buchhaltungswechsel mit Quelle
         // Lexoffice ist der Spiegel eingefroren — der Sync würde den GoBD-
         // Bestand gegen ein auslaufendes Konto abgleichen.
@@ -69,11 +72,17 @@ class LexofficeVoucherSync {
             ->where('status', \App\Enums\Migration\AccountingMigrationStatus::Completed->value)
             ->exists();
         if ($completedMigration) {
-            return ['contacts' => 0, 'created' => 0, 'updated' => 0, 'archived' => 0, 'paid_dates' => 0, 'lines' => 0, 'categories' => 0, 'frozen' => true];
+            return ['mode' => 'skipped', 'contacts' => 0, 'created' => 0, 'updated' => 0, 'archived' => 0, 'paid_dates' => 0, 'lines' => 0, 'categories' => 0, 'frozen' => true];
         }
 
         if (! app(LexofficeClientFactory::class)->isConfigured($this->organizationId)) {
             throw new LexofficeNotConfiguredException();
+        }
+
+        // Stündlich reicht der Änderungsfilter (Leistungsanalyse 2026-11-02, perf-05):
+        // der Durchgang je Kontakt (≈ 400 Aufrufe) läuft nur beim ersten Mal und im --full-Lauf.
+        if (! $full && $this->hasSyncedBefore($organization)) {
+            return $this->syncIncremental($organization);
         }
 
         $contactMap = $this->buildContactMap($organization);
@@ -100,15 +109,26 @@ class LexofficeVoucherSync {
         $archived = $this->archiveMissing($organization, $seen, array_map('strval', array_keys($contactMap)));
         $collective = $this->syncCollective($organization);
 
-        $result = [
+        return $this->completeRun($organization, [
+            'mode' => 'full',
             'contacts' => count($contactMap),
             'created' => $created + $collective['created'],
             'updated' => $updated + $collective['updated'],
             'archived' => (int) $archived,
-            'paid_dates' => $this->enrichPaidDates($organization->id),
-            'lines' => 0,
-            'categories' => 0,
-        ];
+        ]);
+    }
+
+    /**
+     * Gemeinsamer Abschluss von Voll- und inkrementellem Lauf: Zahlungsdaten,
+     * Positionen und Kategoriezeilen nachladen.
+     *
+     * @param  array{mode: string, contacts: int, created: int, updated: int, archived: int}  $result
+     * @return array{mode: string, contacts: int, created: int, updated: int, archived: int, paid_dates: int, lines: int, categories: int, frozen?: bool, lines_error?: string, categories_error?: string}
+     */
+    private function completeRun(Organization $organization, array $result): array {
+        $result['paid_dates'] = $this->enrichPaidDates($organization->id);
+        $result['lines'] = 0;
+        $result['categories'] = 0;
         // Feature 152 (MVP-760): Positionen der neuen Rechnungen nachladen —
         // je Lauf begrenzt, der Backfill läuft über lexoffice:sync-voucher-lines.
         // Ein Fehler hier darf den Belegsync nicht als gescheitert melden
@@ -204,8 +224,10 @@ class LexofficeVoucherSync {
             } else {
                 $verb = $this->upsertVoucherItem($organization->id, null, $collective, $item);
             }
-            if ($verb !== null) {
-                $counts[$verb]++;
+            if ($verb === 'created') {
+                $counts['created']++;
+            } elseif ($verb === 'updated') {
+                $counts['updated']++;
             }
         }
 
@@ -222,29 +244,35 @@ class LexofficeVoucherSync {
      * Belegarten ohne Zahlung) werden toleriert.
      */
     public function enrichPaidDates(int $organizationId, int $limit = 100): int {
+        // Belege ohne Ergebnis tragen eine Prüfmarke (perf-06): vorher fragte jeder
+        // Lauf dieselben 100 neuesten Belege erneut ab, obwohl Lexoffice kein
+        // Zahlungsdatum lieferte.
+        $recheckBefore = now()->subDays(self::PAID_DATE_RECHECK_DAYS);
         $candidates = LexofficeVoucher::query()
             ->where('organization_id', $organizationId)
             ->where('voucher_status', 'paid')
             ->whereNull('paid_date')
             ->whereIn('voucher_type', VoucherTypes::REVENUE_WITH_CREDITS)
+            ->where(static fn ($q) => $q->whereNull('paid_date_checked_at')->orWhere('paid_date_checked_at', '<', $recheckBefore))
             ->orderByDesc('voucher_date')
             ->limit($limit)
             ->get(['id', 'external_id']);
 
         $enriched = 0;
         foreach ($candidates as $voucher) {
+            $attributes = ['paid_date_checked_at' => now()];
             try {
                 $paidDate = (new PaymentsEndpoint($this->client()))->get(new ID((string) $voucher->external_id))->getPaidDate();
             } catch (ApiException|UnexpectedValueException) {
-                // Auch eine nicht lesbare Antwort bleibt ein Fehler dieses Belegs, nicht des Laufs.
-                continue;
-            }
-            if ($paidDate === null) {
-                continue;
-            }
+                $voucher->forceFill($attributes)->save();
 
-            $voucher->forceFill(['paid_date' => $paidDate->format('Y-m-d')])->save();
-            $enriched++;
+                continue;
+            }
+            if ($paidDate !== null) {
+                $attributes['paid_date'] = $paidDate->format('Y-m-d');
+                $enriched++;
+            }
+            $voucher->forceFill($attributes)->save();
         }
 
         return $enriched;
@@ -316,6 +344,68 @@ class LexofficeVoucherSync {
      * @param  array{customer_id: ?int, supplier_id: ?int}  $owners
      * @param  array<string, mixed>  $item
      * @return 'created'|'updated'|null  null, wenn der Eintrag keine id hat.
+     */
+    /**
+     * Inkrementeller Lauf: eine Belegliste mit `updatedDateFrom` für alle
+     * Kontakte, Besitzer über die Kontaktkarte; verschwundene Belege archiviert
+     * nur der Volllauf. Positionen, Zahlungsdaten und Kategorien wie im Volllauf.
+     *
+     * @return array{mode: string, contacts: int, created: int, updated: int, archived: int, paid_dates: int, lines: int, categories: int, frozen?: bool, lines_error?: string, categories_error?: string}
+     */
+    private function syncIncremental(Organization $organization): array {
+        $linked = $this->buildContactMap($organization);
+        $collective = $this->collectiveOwners($organization);
+        $withContact = array_flip(LexofficeVoucher::query()
+            ->where('organization_id', $organization->id)
+            ->whereNotNull('contact_external_id')
+            ->pluck('external_id')->map(static fn (mixed $id): string => (string) $id)->all());
+        $since = LexofficeVoucher::query()->where('organization_id', $organization->id)->max('synced_at');
+        $from = $since !== null ? Carbon::parse((string) $since)->subDay()->toDateString() : null;
+
+        $counts = ['created' => 0, 'updated' => 0];
+        foreach ($this->fetchVouchers(null, $from) as $item) {
+            $contactId = (string) ($item['contactId'] ?? '');
+            if ($contactId !== '') {
+                $verb = $this->upsertVoucherItem($organization->id, $contactId, $linked[$contactId] ?? ['customer_id' => null, 'supplier_id' => null], $item);
+            } elseif (isset($withContact[(string) ($item['id'] ?? '')])) {
+                continue;
+            } else {
+                $verb = $this->upsertVoucherItem($organization->id, null, $collective, $item);
+            }
+            if ($verb === 'created') {
+                $counts['created']++;
+            } elseif ($verb === 'updated') {
+                $counts['updated']++;
+            }
+        }
+
+        return $this->completeRun($organization, [
+            'mode' => 'incremental',
+            'contacts' => count($linked),
+            'created' => $counts['created'],
+            'updated' => $counts['updated'],
+            'archived' => 0,
+        ]);
+    }
+
+    private function hasSyncedBefore(Organization $organization): bool {
+        return LexofficeVoucher::query()->where('organization_id', $organization->id)->exists();
+    }
+
+    /** @return array{customer_id: ?int, supplier_id: ?int} */
+    private function collectiveOwners(Organization $organization): array {
+        $customerId = Customer::query()->where('organization_id', $organization->id)->where('is_collective', true)->value('id');
+        $supplierId = Supplier::query()->where('organization_id', $organization->id)->where('is_collective', true)->value('id');
+
+        return [
+            'customer_id' => $customerId !== null ? (int) $customerId : null,
+            'supplier_id' => $supplierId !== null ? (int) $supplierId : null,
+        ];
+    }
+
+    /**
+     * @param  array{customer_id: ?int, supplier_id: ?int}  $owners
+     * @param  array<string, mixed>  $item  voucherlist-Eintrag
      */
     private function upsertVoucherItem(int $organizationId, ?string $contactExternalId, array $owners, array $item): ?string {
         if (empty($item['id'])) {

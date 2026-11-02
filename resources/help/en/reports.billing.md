@@ -76,6 +76,7 @@ Lexoffice only.
   - **Unbilled time**: billable time entries of the period that have not yet
     been used up by any billing path, with the number of entries and the
     expected revenue from the stored amounts.
+- Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
 - Charts: billable and non-billable hours over time, and **Revenue per
   customer (top 15)** from local invoices and the vouchers mirrored from the
   accounting software. Clicking a customer opens **Customers & projects** for
@@ -125,6 +126,7 @@ amounts by the date of the expense.
   largest categories shown individually and the rest combined, and **Top
   spenders (top 15)**.
 - Tiles: **Total (gross)**, **Employees**, **Categories** and **months**.
+- Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
 - Table with one row per **Employee** and **Category**, one column per month
   and the **Total**, followed by **Top categories**.
 
@@ -189,6 +191,7 @@ and with the **See all time entries** permission.
   **Articles with revenue** (including articles of the accounting software
   that are not mapped to an article of your own article master) and **Share
   without article link** (lines without a selected article).
+- Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
 - Chart of the articles with the highest revenue; you set how many it shows
   with **Top N in chart** (3 to 50, default 10). It also shows articles of the
   accounting software that are not mapped to your own article master, these

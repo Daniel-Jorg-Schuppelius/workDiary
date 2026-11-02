@@ -37,7 +37,7 @@
         @endif
     </x-filter-bar>
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <x-kpi-tile :label="__('Stopps mit Ist')" :value="$totals['stops']" :hint="$totals['done'] . ' ' . __('erledigt') . ' · ' . $totals['not_met'] . ' ' . __('nicht angetroffen')" />
+        <x-kpi-tile :label="__('Stopps mit Ist')" :value="$totals['stops']" :hint="$totals['done'] . ' ' . __('erledigt') . ' · ' . $totals['not_met'] . ' ' . __('nicht angetroffen')" href="#tour-stops" />
         <x-kpi-tile :label="__('Ø Abweichung Ankunft')" :value="$totals['avg_arrival_delta'] !== null ? $signed((int) round($totals['avg_arrival_delta'])) : '—'" />
         <x-kpi-tile :label="__('Anteil verspätet (> 5 min)')" :value="$totals['late_share'] !== null ? $num($totals['late_share'], 1) . ' %' : '—'" />
         <x-kpi-tile :label="__('Ø Abweichung Dauer')" :value="$totals['avg_service_delta'] !== null ? $signed((int) round($totals['avg_service_delta'])) : '—'" />
@@ -65,7 +65,7 @@
             </x-table>
         </x-card>
     @endif
-    <x-card padding="p-0">
+    <x-card padding="p-0" id="tour-stops" class="scroll-mt-24">
         @if ($rows === [])
             <x-empty-state icon="route" :title="__('Keine Stopps mit Ist-Zeiten im gewählten Zeitraum.')" />
         @else

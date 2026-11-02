@@ -40,7 +40,7 @@
     </x-filter-bar>
 
     <div class="grid gap-3 grid-cols-2 sm:grid-cols-3 xl:grid-cols-6">
-        <x-kpi-tile :label="__('article.costing.kpi.orders')" :value="$result['order_count']" tone="primary" />
+        <x-kpi-tile :label="__('article.costing.kpi.orders')" :value="$result['order_count']" tone="primary" href="#costing-orders" />
         <x-kpi-tile :label="__('article.costing.kpi.unit_cost_avg')" :value="$eur($result['unit_cost_avg'], 4)" tone="info"
                     :hint="$result['unit_cost_min'] !== null ? __('article.costing.kpi.unit_cost_range', ['min' => $eur($result['unit_cost_min'], 4), 'max' => $eur($result['unit_cost_max'] ?? '0', 4)]) : null" />
         <x-kpi-tile :label="__('article.costing.kpi.material')" :value="$eur($result['actual_material'])"
@@ -88,7 +88,7 @@
         </x-card>
     @endif
 
-    <x-card>
+    <x-card id="costing-orders" class="scroll-mt-24">
         <h2 class="font-semibold mb-3">{{ __('article.costing.per_order') }}</h2>
         <x-table bare table-sort="client">
             <x-slot:head>

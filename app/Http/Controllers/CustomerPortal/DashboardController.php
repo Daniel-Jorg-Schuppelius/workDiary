@@ -13,11 +13,11 @@ namespace App\Http\Controllers\CustomerPortal;
 use App\Enums\Customer\IntakeStatus;
 use App\Enums\CustomerPortal\PortalCapability;
 use App\Enums\Invoicing\InvoiceStatus;
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\CustomerIntake;
 use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Invoicing\Invoice;
-use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Reselling\ResaleSubscription;
 use App\Modules\ModuleRegistry;
@@ -28,29 +28,30 @@ use App\Services\CustomerPortal\Contracts\PortalNoticeSource;
 use App\Services\CustomerPortal\{PortalInsights, PortalNavigation, PortalTimeEntries, PortalVisibility};
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\{Auth, Log};
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Throwable;
 
 class DashboardController extends Controller {
+    use ResolvesPortalUser;
+
     public function __invoke(PortalVisibility $visibility, ModuleRegistry $modules, CustomerIntakeStages $stages, PortalTimeEntries $portalTimes, PortalNavigation $navigation): View {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
+        $user = $this->portalUser();
         $customerId = (int) $user->customer_id;
-        $customer = $user->customer;
+        $customer = $this->portalCustomer();
 
         // Kacheln/Zähler nur für freigegebene Bereiche (MVP-511) — nicht
         // Freigegebenes wird weder gezählt noch verlinkt.
         $stats = [];
-        if ($customer !== null && $visibility->allows($customer, PortalCapability::Diary)) {
+        if ($visibility->allows($customer, PortalCapability::Diary)) {
             $stats['diary'] = DiaryEntry::query()->where('customer_id', $customerId)->count();
         }
-        if ($customer !== null && $visibility->timeDetail($customer) !== \App\Enums\CustomerPortal\PortalTimeDetail::None) {
+        if ($visibility->timeDetail($customer) !== \App\Enums\CustomerPortal\PortalTimeDetail::None) {
             // Dieselbe Grundmenge wie die Liste (MVP-1237): Stunden des laufenden Jahres, Einträge gesamt.
             $stats['time_minutes'] = (int) $portalTimes->yearQuery($customer, (int) now()->year)->sum('time_entries.minutes');
             $stats['time_entries'] = $portalTimes->baseQuery($customer)->count();
         }
-        if ($customer !== null && $visibility->allows($customer, PortalCapability::Invoices)) {
+        if ($visibility->allows($customer, PortalCapability::Invoices)) {
             // Wie die Liste: Entwürfe sind interne Arbeitsstände (MVP-1019), dazu die
             // Rechnungen des Buchhaltungsprogramms (MVP-1118); offen = nicht bezahlt bzw. Restbetrag.
             $local = Invoice::query()->where('customer_id', $customerId)->where('status', '!=', InvoiceStatus::Draft)->get(['id', 'status']);
@@ -59,7 +60,7 @@ class DashboardController extends Controller {
             $stats['invoices_open'] = $local->filter(static fn (Invoice $invoice): bool => in_array($invoice->status, [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid], true))->count()
                 + count(array_filter($external, static fn ($invoice): bool => $invoice->open > 0));
         }
-        if ($customer !== null && $visibility->allows($customer, PortalCapability::OpenIssues)) {
+        if ($visibility->allows($customer, PortalCapability::OpenIssues)) {
             $stats['open_issues'] = OpenIssue::query()
                 ->where('visibility', \App\Enums\OpenIssue\OpenIssueVisibility::Customer->value)
                 ->whereNull('closed_at')
@@ -83,7 +84,7 @@ class DashboardController extends Controller {
                 })
                 ->count();
         }
-        if ($customer !== null && $visibility->allows($customer, PortalCapability::Subscriptions)) {
+        if ($visibility->allows($customer, PortalCapability::Subscriptions)) {
             // Bestand wie in „meine Abos": Kunde + Endkunden, Org-Grenze des Portalkontos.
             $stats['subscriptions'] = ResaleSubscription::query()
                 ->where('organization_id', (int) $user->organization_id)
@@ -92,7 +93,7 @@ class DashboardController extends Controller {
                 ->count();
         }
 
-        if ($customer !== null && $visibility->allows($customer, PortalCapability::Intakes)) {
+        if ($visibility->allows($customer, PortalCapability::Intakes)) {
             // Laufende Vorgänge und die, bei denen der Kunde am Zug ist (MVP-1075).
             $intakes = CustomerIntake::query()->ofPortalUser($user)
                 ->whereIn('status', [...array_map(static fn (IntakeStatus $s): string => $s->value, IntakeStatus::open()), IntakeStatus::HandedOver->value])
@@ -107,7 +108,7 @@ class DashboardController extends Controller {
         // Hinweise der Module (MVP-915, z. B. Krisenmitteilungen); eine fehlerhafte Quelle fällt einzeln aus.
         $notices = [];
         $organization = $user->organization;
-        if ($customer !== null && $organization !== null) {
+        if ($organization !== null) {
             foreach ($modules->extensions(PortalNoticeSource::class) as $class) {
                 try {
                     /** @var PortalNoticeSource $source */
@@ -120,7 +121,7 @@ class DashboardController extends Controller {
         }
 
         // Kennzahlenzeile „Dieses Jahr" (MVP-1243): nur mit Freigabe „Auswertungen", keine Diagramme.
-        $insights = $customer !== null && $visibility->allows($customer, PortalCapability::Insights)
+        $insights = $visibility->allows($customer, PortalCapability::Insights)
             ? app(PortalInsights::class)->summary($customer, (int) now()->year)
             : null;
 
@@ -131,7 +132,7 @@ class DashboardController extends Controller {
             'notices' => $notices,
             'insights' => $insights,
             // Bereichskacheln aus derselben Liste wie die Navigation (E5).
-            'areas' => $customer !== null ? $navigation->areas($customer) : [],
+            'areas' => $navigation->areas($customer),
         ]);
     }
 }

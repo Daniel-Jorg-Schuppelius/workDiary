@@ -12,11 +12,14 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\TaskSync;
 
-/** Verbindung eines Aufgabenimports, umgesetzt über {@see IsTaskImportConnection}. */
-interface TaskImportConnection {
-    public function isReady(): bool;
+use App\Plugins\Support\Contracts\ReadyConnection;
 
+/** Verbindung eines Aufgabenimports, umgesetzt über {@see IsTaskImportConnection}. */
+interface TaskImportConnection extends ReadyConnection {
     public function sourceId(): ?string;
+
+    /** Basis-URL der Quelle, wie die Prüfung sie festgehalten hat (Linkbasis für {@see AbstractTaskImportService::sourceUrl()}). */
+    public function sourceUrl(): ?string;
 
     /** @return list<array{id: string, name: string, url: ?string}> */
     public function availableSources(): array;

@@ -13,10 +13,11 @@ declare(strict_types=1);
 namespace App\Plugins\Easybill;
 
 use App\Plugins\Easybill\Console\EasybillSyncCommand;
-use App\Plugins\Easybill\Services\{EasybillTarget, EasybillVoucherPullService};
+use App\Plugins\Easybill\Services\{EasybillArticleCatalogSource, EasybillTarget, EasybillVoucherPullService};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry;
 use App\Services\Finance\Targets\FacturationTargetRegistry;
+use App\Services\Platform\Catalog\ArticleCatalog;
 
 /**
  * Bootet das easybill-Plugin (MVP-431): Config-Defaults unter
@@ -39,6 +40,8 @@ class EasybillServiceProvider extends PluginServiceProviderBase {
 
         // Beleg-Rückabruf (MVP-1031): der Kern kennt die Anbindung nur über die Registry.
         $this->app->make(VoucherPullerRegistry::class)->register(EasybillVoucherPullService::class);
+        // Artikelkatalog (Feature 185, gap-09): easybill-Artikel erreichen den Kern nur über diese Quelle.
+        $this->app->make(ArticleCatalog::class)->register($this->app->make(EasybillArticleCatalogSource::class));
 
         // Belegnummern beim Übertragen (Phase 145).
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Numbering\Contracts\DocumentIssuer::class, \App\Plugins\Easybill\Services\EasybillDocumentIssuer::class);

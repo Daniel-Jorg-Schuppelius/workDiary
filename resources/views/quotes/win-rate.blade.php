@@ -37,7 +37,7 @@
         <x-kpi-tile :label="__('quotes.win_rate.volume_rate')" :value="$percent($totals['volume_rate'])" />
         <x-kpi-tile :label="__('quotes.win_rate.won_volume')" :value="$totals['won_volume']->format()" />
         <x-kpi-tile :label="__('quotes.win_rate.open')" :value="$result['open']['count'] . ' · ' . $result['open']['volume']->format()"
-                    :hint="__('quotes.win_rate.open_hint')" />
+                    :hint="__('quotes.win_rate.open_hint')" :href="route('quotes.index', ['state' => 'open'])" />
     </div>
 
     <x-card>

@@ -25,13 +25,13 @@
     </x-slot:toolbar>
 
     <div class="grid gap-4 lg:grid-cols-4">
-        <x-kpi-tile :label="__('learning.field.courses')" :value="$summary['courses']" />
-        <x-kpi-tile :label="__('learning.field.enrollments')" :value="$summary['enrollments']" />
-        <x-kpi-tile :label="__('learning.field.completed')" :value="$summary['completed']" tone="success" />
-        <x-kpi-tile :label="__('learning.field.attempts')" :value="$summary['attempts']" />
+        <x-kpi-tile :label="__('learning.field.courses')" :value="$summary['courses']" href="#learning-completion" />
+        <x-kpi-tile :label="__('learning.field.enrollments')" :value="$summary['enrollments']" href="#learning-completion" />
+        <x-kpi-tile :label="__('learning.field.completed')" :value="$summary['completed']" tone="success" href="#learning-completion" />
+        <x-kpi-tile :label="__('learning.field.attempts')" :value="$summary['attempts']" href="#learning-hard-questions" />
     </div>
 
-    <x-card class="mt-4">
+    <x-card class="mt-4" id="learning-completion" class="scroll-mt-24">
         <h3 class="mb-3 text-sm font-semibold">{{ __('learning.field.completion_rate') }}</h3>
         <x-table :bare="true">
             <x-slot:head>
@@ -86,7 +86,7 @@
             </x-table>
         </x-card>
 
-        <x-card>
+        <x-card id="learning-hard-questions" class="scroll-mt-24">
             <h3 class="mb-3 text-sm font-semibold">{{ __('learning.field.hard_questions') }}</h3>
             <x-table :bare="true">
                 <x-slot:head>

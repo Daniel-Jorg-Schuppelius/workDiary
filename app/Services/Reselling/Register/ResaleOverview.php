@@ -18,10 +18,11 @@ use App\Models\Reselling\{ResaleImport, ResalePeriod, ResaleSubscription};
 use App\Services\Reselling\License\LicenseInvoiceLinks;
 use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Plan\{PlanAudit, RecurringPlans};
-use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Überblick des Reselling-Registers als Aufgabenliste (Feature 185, MVP-1414):
@@ -30,8 +31,15 @@ use Illuminate\Database\Eloquent\Builder;
  * dazu der Stand je Anbieter (letzter Import) und der letzte Vorschlagslauf.
  * Nur Zähler und Verweise; entschieden wird auf den Fachseiten.
  *
+ * Die Zähler liegen 60 s im Cache je Organisation und Stichtag (nur Zahlen und
+ * Beträge als Zeichenketten), weil jeder Aufruf der Zählerseite sonst vier
+ * Volllasten über Abos und Perioden rechnet (Leistungsanalyse 2026-11-02,
+ * perfc-07); der Org-Stempel verwirft sie bei jeder Registeränderung.
+ * Anbieterstand und letzter Lauf sind billig und bleiben live.
+ *
  * @phpstan-type Task array{group: string, key: string, tone: string, icon: string, title: string, detail: string|null, count: int, url: string, dialog: bool, manage: bool}
  * @phpstan-type ImportState array{provider: SubscriptionProvider, last: ResaleImport|null, age: int|null, stale: bool}
+ * @phpstan-type Counters array{active: int, open: int, open_amounts: list<array{amount: string, currency: string}>, grace: int, planned: int, proposed: int, unassigned: int, unlinked: int, allocation_conflicts: int, link_findings: array<string, int>, plan_findings: array<string, int>, unbilled_licenses: int, renewals: int}
  */
 final class ResaleOverview {
     /** Ab diesem Alter gilt der Anbieterstand als veraltet (Übersicht und Digest). */
@@ -48,6 +56,9 @@ final class ResaleOverview {
     /** Aufgabengruppen des Überblicks in Anzeigereihenfolge (Phase 163, MVP-1433). */
     public const GROUPS = ['berechnen', 'zuordnen', 'plan', 'anbieter'];
 
+    /** Lebensdauer der Zähler im Cache (Sekunden). */
+    public const CACHE_TTL = 60;
+
     public function __construct(
         private readonly LicenseAccountOverview $accounts,
         private readonly PlanAudit $planAudit,
@@ -62,16 +73,81 @@ final class ResaleOverview {
      */
     public function build(Organization $organization, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
-        $due = ResalePeriod::query()->where('starts_on', '<', DateRange::dayAfter($reference))
-            ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false));
-        $openAll = (clone $due)->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])->with('links')->orderBy('starts_on')->get();
+        $counters = $this->counters($organization, $reference);
+        $openAmount = implode(' · ', array_map(
+            static fn(array $m): string => Money::of($m['amount'], CurrencyCode::tryFrom($m['currency']) ?? CurrencyCode::Euro)->withScale(2)->format(),
+            $counters['open_amounts'],
+        ));
+        $imports = $this->imports($organization, $reference);
+        $stale = array_values(array_filter($imports, static fn(array $i): bool => $i['stale']));
+        $linkFindings = $counters['link_findings'];
+        $planFindings = $counters['plan_findings'];
+
+        $tasks = [];
+        // Berechnen — was Geld kostet
+        // Fällige Perioden führen in die Arbeitsmappe des nächsten offenen Empfängers (Phase 165, MVP-1445), nicht in die Liste.
+        $this->task($tasks, 'berechnen', 'open', 'error', 'event_busy', $counters['open'], (string) __($openAmount !== '' ? 'resale.overview.task.open_detail' : 'resale.overview.task.open_detail_grace', ['amount' => $openAmount, 'days' => self::GRACE_DAYS]), route('finance.resale.reconcile.next'));
+        $this->task($tasks, 'berechnen', 'link_findings', 'warning', 'link_off', (int) array_sum($linkFindings), $this->kindDetail($linkFindings, 'resale.account.finding.'), route('finance.resale.accounts.index'));
+        $this->task($tasks, 'berechnen', 'allocation_conflicts', 'warning', 'call_split', $counters['allocation_conflicts'], null, route('finance.resale.accounts.index'));
+        $this->task($tasks, 'berechnen', 'unbilled_licenses', 'warning', 'key_off', $counters['unbilled_licenses'], (string) __('resale.overview.task.unbilled_licenses_detail', ['days' => LicenseInvoiceLinks::UNBILLED_DAYS]), route('finance.resale.licenses.index', ['status' => 'sold', 'unbilled' => 1]));
+        // Zuordnen — was das Register noch nicht erklären kann
+        $this->task($tasks, 'zuordnen', 'unassigned', 'warning', 'inbox', $counters['unassigned'], null, route('finance.resale.inbox'), manage: true);
+        $this->task($tasks, 'zuordnen', 'unlinked', 'warning', 'playlist_add', $counters['unlinked'], (string) __('resale.overview.task.unlinked_detail'), route('finance.resale.periods.index', ['unlinked' => 1]), manage: true);
+        // Plan prüfen — was die nächste Rechnung falsch macht
+        $this->task($tasks, 'plan', 'plan_findings', 'warning', 'event_repeat', (int) array_sum($planFindings), $this->kindDetail($planFindings, 'resale.plan.finding.', '_short'), route('finance.resale.accounts.index'));
+        // Anbieterstand und Termine
+        $this->task($tasks, 'anbieter', 'stale_imports', 'neutral', 'upload', count($stale), $stale === [] ? null : implode(' · ', array_map(static fn(array $i): string => $i['provider']->label() . ' (' . __('resale.overview.state.age', ['days' => $i['age']]) . ')', $stale)), route('finance.resale.import.create'), dialog: true, manage: true);
+        $this->task($tasks, 'anbieter', 'renewals', 'neutral', 'autorenew', $counters['renewals'], (string) __('resale.overview.task.renewals_detail', ['days' => self::RENEWAL_DAYS]), route('finance.resale.report.renewals'));
+
+        return [
+            'summary' => [
+                'active' => $counters['active'],
+                'open' => $counters['open'],
+                'open_amount' => $openAmount,
+                'grace' => $counters['grace'],
+                'planned' => $counters['planned'],
+                'proposed' => $counters['proposed'],
+                'unassigned' => $counters['unassigned'],
+                'unlinked' => $counters['unlinked'],
+                'findings' => (int) array_sum($linkFindings) + (int) array_sum($planFindings) + $counters['allocation_conflicts'],
+            ],
+            'groups' => self::GROUPS,
+            'tasks' => $tasks,
+            'imports' => $imports,
+            'last_run' => LinkProposer::lastRunAt($organization),
+        ];
+    }
+
+    /**
+     * Zähler aus dem Cache (Formprüfung) oder frisch gerechnet.
+     *
+     * @return Counters
+     */
+    private function counters(Organization $organization, CarbonImmutable $reference): array {
+        $key = ResaleCacheStamp::key('overview-counters', 1, (int) $organization->id, $reference->toDateString());
+        $cached = Cache::get($key);
+        if (is_array($cached) && isset($cached['open'], $cached['open_amounts'], $cached['link_findings'], $cached['plan_findings']) && is_array($cached['open_amounts'])) {
+            /** @var Counters $cached */
+            return $cached;
+        }
+        $counters = $this->countersUncached($organization, $reference);
+        Cache::put($key, $counters, self::CACHE_TTL);
+
+        return $counters;
+    }
+
+    /** @return Counters */
+    private function countersUncached(Organization $organization, CarbonImmutable $reference): array {
+        $openAll = ResalePeriod::query()->due($reference)->with('links')->orderBy('starts_on')->get();
         // Ausnahmen statt Bestätigungen (Phase 163): Aufgabe erst nach der Karenz und nicht, solange eine
         // aktive Serienvorlage ihre Ausführung für diese Periode noch vor sich hat.
         $nextExecutions = $this->plans->nextExecutions($organization);
         $graceLimit = $reference->subDays(self::GRACE_DAYS);
-        $open = collect();
+        $open = 0;
         $grace = 0;
         $planned = 0;
+        /** @var array<string, Money> $amounts */
+        $amounts = [];
         foreach ($openAll as $period) {
             if (self::isPlanned($period, $nextExecutions[(int) $period->subscription_id] ?? null)) {
                 $planned++;
@@ -83,11 +159,7 @@ final class ResaleOverview {
 
                 continue;
             }
-            $open->push($period);
-        }
-        /** @var array<string, Money> $amounts */
-        $amounts = [];
-        foreach ($open as $period) {
+            $open++;
             $amount = $period->openAmount();
             if ($amount === null) {
                 continue;
@@ -95,56 +167,28 @@ final class ResaleOverview {
             $code = $amount->getCurrency()->value;
             $amounts[$code] = isset($amounts[$code]) ? $amounts[$code]->plus($amount) : $amount;
         }
-        $openAmount = implode(' · ', array_map(static fn(Money $m): string => $m->withScale(2)->format(), array_values($amounts)));
         // Vorschläge gelten (Phase 163, MVP-1429): unbestätigte sind Stichprobe, keine Aufgabe.
-        $proposed = (clone $due)
+        $proposed = ResalePeriod::query()->started($reference)
             ->whereIn('status', [PeriodStatus::Billed->value, PeriodStatus::Partial->value])
             ->whereNull('decided_at')
             ->whereHas('links', static fn(Builder $l) => $l->where('origin', LinkOrigin::Proposed->value))
             ->count();
-        $unassigned = ResaleSubscription::query()->awaitingHolder()->count();
-        $unlinked = $this->mirror->unlinkedLines($organization, 1)['total'];
-
         $accountRows = $this->accounts->overview($organization, $reference);
-        $allocationConflicts = (int) array_sum(array_column($accountRows, 'conflicts'));
-        $linkFindings = $this->linkFindings($organization);
-        $planFindings = $this->plans->availableFor($organization) ? $this->planAudit->countByKind($organization) : [];
-        $renewals = (int) ($this->renewals->build($reference, $reference->addDays(self::RENEWAL_DAYS), $reference)['buckets'][self::RENEWAL_DAYS] ?? 0);
-        $imports = $this->imports($organization, $reference);
-        $stale = array_values(array_filter($imports, static fn(array $i): bool => $i['stale']));
-
-        $tasks = [];
-        // Berechnen — was Geld kostet
-        // Fällige Perioden führen in die Arbeitsmappe des nächsten offenen Empfängers (Phase 165, MVP-1445), nicht in die Liste.
-        $this->task($tasks, 'berechnen', 'open', 'error', 'event_busy', $open->count(), (string) __($openAmount !== '' ? 'resale.overview.task.open_detail' : 'resale.overview.task.open_detail_grace', ['amount' => $openAmount, 'days' => self::GRACE_DAYS]), route('finance.resale.reconcile.next'));
-        $this->task($tasks, 'berechnen', 'link_findings', 'warning', 'link_off', (int) array_sum($linkFindings), $this->kindDetail($linkFindings, 'resale.account.finding.'), route('finance.resale.accounts.index'));
-        $this->task($tasks, 'berechnen', 'allocation_conflicts', 'warning', 'call_split', $allocationConflicts, null, route('finance.resale.accounts.index'));
-        $this->task($tasks, 'berechnen', 'unbilled_licenses', 'warning', 'key_off', $this->licenseLinks->unbilledCount($organization, $reference), (string) __('resale.overview.task.unbilled_licenses_detail', ['days' => LicenseInvoiceLinks::UNBILLED_DAYS]), route('finance.resale.licenses.index', ['status' => 'sold', 'unbilled' => 1]));
-        // Zuordnen — was das Register noch nicht erklären kann
-        $this->task($tasks, 'zuordnen', 'unassigned', 'warning', 'inbox', $unassigned, null, route('finance.resale.inbox'), manage: true);
-        $this->task($tasks, 'zuordnen', 'unlinked', 'warning', 'playlist_add', $unlinked, (string) __('resale.overview.task.unlinked_detail'), route('finance.resale.periods.index', ['unlinked' => 1]), manage: true);
-        // Plan prüfen — was die nächste Rechnung falsch macht
-        $this->task($tasks, 'plan', 'plan_findings', 'warning', 'event_repeat', (int) array_sum($planFindings), $this->kindDetail($planFindings, 'resale.plan.finding.', '_short'), route('finance.resale.accounts.index'));
-        // Anbieterstand und Termine
-        $this->task($tasks, 'anbieter', 'stale_imports', 'neutral', 'upload', count($stale), $stale === [] ? null : implode(' · ', array_map(static fn(array $i): string => $i['provider']->label() . ' (' . __('resale.overview.state.age', ['days' => $i['age']]) . ')', $stale)), route('finance.resale.import.create'), dialog: true, manage: true);
-        $this->task($tasks, 'anbieter', 'renewals', 'neutral', 'autorenew', $renewals, (string) __('resale.overview.task.renewals_detail', ['days' => self::RENEWAL_DAYS]), route('finance.resale.report.renewals'));
 
         return [
-            'summary' => [
-                'active' => ResaleSubscription::query()->planning()->count(),
-                'open' => $open->count(),
-                'open_amount' => $openAmount,
-                'grace' => $grace,
-                'planned' => $planned,
-                'proposed' => $proposed,
-                'unassigned' => $unassigned,
-                'unlinked' => $unlinked,
-                'findings' => (int) array_sum($linkFindings) + (int) array_sum($planFindings) + $allocationConflicts,
-            ],
-            'groups' => self::GROUPS,
-            'tasks' => $tasks,
-            'imports' => $imports,
-            'last_run' => LinkProposer::lastRunAt($organization),
+            'active' => ResaleSubscription::query()->planning()->count(),
+            'open' => $open,
+            'open_amounts' => array_values(array_map(static fn(Money $m): array => ['amount' => $m->getAmount(), 'currency' => $m->getCurrency()->value], $amounts)),
+            'grace' => $grace,
+            'planned' => $planned,
+            'proposed' => $proposed,
+            'unassigned' => ResaleSubscription::query()->awaitingHolder()->count(),
+            'unlinked' => $this->mirror->unlinkedLines($organization, 1)['total'],
+            'allocation_conflicts' => (int) array_sum(array_column($accountRows, 'conflicts')),
+            'link_findings' => $this->linkFindings($organization),
+            'plan_findings' => $this->plans->availableFor($organization) ? $this->planAudit->countByKind($organization) : [],
+            'unbilled_licenses' => $this->licenseLinks->unbilledCount($organization, $reference),
+            'renewals' => (int) ($this->renewals->build($reference, $reference->addDays(self::RENEWAL_DAYS), $reference)['buckets'][self::RENEWAL_DAYS] ?? 0),
         ];
     }
 

@@ -23,6 +23,7 @@ return [
         'access_media' => \App\Models\Access\AccessMedium::class,
         'access_medium_handovers' => \App\Models\Access\AccessMediumHandover::class,
         'accounting_accounts' => \App\Models\Accounting\AccountingAccount::class,
+        'accounting_articles' => \App\Models\Finance\AccountingArticle::class,
         'accounting_budget_releases' => \App\Models\Accounting\AccountingBudgetRelease::class,
         'accounting_budgets' => \App\Models\Accounting\AccountingBudget::class,
         'accounting_entries' => \App\Models\Accounting\AccountingEntry::class,

@@ -13,7 +13,6 @@
 --}}
 @php
     $mode = (string) old('mode', 'customer');
-    $preset = (string) old('customer_id', $suggestions[0]['customer']->sqid ?? '');
 @endphp
 <x-modal
     :title="trans_choice('resale.bulk.assign_title', $subscriptions->count(), ['count' => $subscriptions->count()])"
@@ -46,45 +45,16 @@
         </div>
     @endif
 
-    {{-- Fremdkunden-Auswahl nur, wenn der gewählte Kunde Fremdkunden hat (resaleHolderPicker, wie der Inbox-Dialog). --}}
-    <div class="space-y-3" x-data="resaleHolderPicker"
-         data-map="{{ json_encode($foreignByCustomer, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE) }}"
-         data-holder="{{ $mode }}"
-         data-customer="{{ $preset }}"
-         data-foreign="{{ old('foreign_customer_id', '') }}">
-        <x-select-field name="mode" :label="__('resale.inbox.mode')" x-model="holder">
-            <option value="customer" @selected($mode === 'customer')>{{ __('resale.inbox.mode_customer') }}</option>
-            @if ($withCompany > 0)
-                <option value="partner" @selected($mode === 'partner')>{{ __('resale.inbox.mode_partner') }}</option>
-            @endif
-            <option value="foreign" @selected($mode === 'foreign')>{{ __('resale.inbox.mode_foreign') }}</option>
-            <option value="own" @selected($mode === 'own')>{{ __('resale.holder.own') }}</option>
-        </x-select-field>
-        @if ($withCompany > 0)
-            <p class="text-xs text-muted" x-show="holder === 'partner'">{{ __('resale.bulk.partner_hint') }}</p>
-        @endif
+    {{-- Partner-Modus nur mit Firma laut Anbieter (wie der Inbox-Dialog). --}}
+    @include('finance.resale._holder_picker', [
+        'mode' => $mode,
+        'modes' => $withCompany > 0 ? ['customer', 'partner', 'foreign', 'own'] : ['customer', 'foreign', 'own'],
+        'modeLabel' => __('resale.inbox.mode'),
+        'modeHints' => $withCompany > 0 ? ['partner' => __('resale.bulk.partner_hint')] : [],
+        'customerDefault' => $suggestions[0]['customer']->sqid ?? '',
+    ])
 
-        <div x-show="needsCustomer()">
-            <x-select-field name="customer_id" :label="__('resale.inbox.customer')" x-model="customer">
-                <option value="">—</option>
-                @foreach ($customers as $customer)
-                    <option value="{{ $customer->sqid }}" @selected($preset === $customer->sqid)>{{ $customer->name }}</option>
-                @endforeach
-            </x-select-field>
-        </div>
-
-        <div x-show="showForeign()">
-            <x-select-field name="foreign_customer_id" :label="__('resale.inbox.foreign')" x-model="foreign">
-                <option value="">—</option>
-                <template x-for="fc in options()" :key="fc.sqid">
-                    <option :value="fc.sqid" x-text="fc.name"></option>
-                </template>
-            </x-select-field>
-        </div>
-        <p class="text-xs text-warning" x-show="noForeign()">{{ __('resale.dialog.no_foreign_customers') }}</p>
-
-        @if ($withCompany > 0)
-            <x-checkbox-field name="remember" :label="__('resale.bulk.remember')" :checked="(bool) old('remember', true)" :hint="__('resale.bulk.remember_hint')" />
-        @endif
-    </div>
+    @if ($withCompany > 0)
+        <x-checkbox-field name="remember" :label="__('resale.bulk.remember')" :checked="(bool) old('remember', true)" :hint="__('resale.bulk.remember_hint')" />
+    @endif
 </x-modal>

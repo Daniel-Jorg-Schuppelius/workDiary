@@ -36,7 +36,7 @@
     </x-slot:toolbar>
 
     <div class="grid gap-4 sm:grid-cols-3">
-        <x-kpi-tile :label="__('commission.field.entry_count')" :value="$totals['count']" tone="neutral" />
+        <x-kpi-tile :label="__('commission.field.entry_count')" :value="$totals['count']" tone="neutral" href="#commission-rows" />
         <x-kpi-tile :label="__('commission.field.total_base')" :value="$totals['base']->format()" tone="info" format="raw" />
         <x-kpi-tile :label="__('commission.field.total_commission')" :value="$totals['commission']->format()" tone="primary" format="raw" />
     </div>
@@ -70,7 +70,7 @@
         @endif
     </x-card>
 
-    <x-card>
+    <x-card id="commission-rows" class="scroll-mt-24">
         <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
             <x-icon name="receipt_long" class="text-muted" /> {{ __('commission.section.run_rows') }}
         </h3>

@@ -22,16 +22,16 @@
 
         <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
             <x-kpi-tile :label="__('finance.dunning.kpi.candidates')" :value="count($candidates)" format="int"
-                        :tone="count($candidates) > 0 ? 'warning' : 'neutral'" />
+                        :tone="count($candidates) > 0 ? 'warning' : 'neutral'" href="#dunning-candidates" />
             <x-kpi-tile :label="__('finance.dunning.kpi.open_sum')"
                         :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($openSum, 2, withThousandsSeparator: true) . ' €'"
                         format="raw" tone="primary"
                         :hint="__('finance.dunning.kpi.open_sum_hint')" />
             <x-kpi-tile :label="__('finance.dunning.kpi.waiting')" :value="count($waiting)" format="int"
-                        :hint="__('finance.dunning.kpi.waiting_hint')" />
+                        :hint="__('finance.dunning.kpi.waiting_hint')" :href="count($waiting) > 0 ? '#dunning-waiting' : null" />
             <x-kpi-tile :label="__('finance.dunning.kpi.blocked')" :value="count($blocked)" format="int"
                         :tone="count($blocked) > 0 ? 'info' : 'neutral'"
-                        :hint="__('finance.dunning.kpi.blocked_hint')" />
+                        :hint="__('finance.dunning.kpi.blocked_hint')" :href="count($blocked) > 0 ? '#dunning-blocked' : null" />
         </div>
 
         @if ($baseRateMissing ?? false)
@@ -50,7 +50,7 @@
 
         @if (count($blocked) > 0)
             {{-- Mahnsperren: eigener Abschnitt — nie in der Auswahl. --}}
-            <x-card as="details" padding="p-0">
+            <x-card as="details" padding="p-0" id="dunning-blocked" class="scroll-mt-24">
                 <summary class="cursor-pointer px-4 py-3 text-sm font-medium">
                     {{ trans_choice('finance.dunning.blocked_heading', count($blocked), ['count' => count($blocked)]) }}
                 </summary>
@@ -76,7 +76,7 @@
 
         @if (count($waiting) > 0)
             {{-- Karenz läuft: sichtbar halten, damit nichts lautlos verschwindet. --}}
-            <x-card as="details" padding="p-0">
+            <x-card as="details" padding="p-0" id="dunning-waiting" class="scroll-mt-24">
                 <summary class="cursor-pointer px-4 py-3 text-sm font-medium">
                     {{ trans_choice('finance.dunning.waiting_heading', count($waiting), ['count' => count($waiting)]) }}
                 </summary>
@@ -110,7 +110,7 @@
                     </x-bulk-toolbar>
                 </div>
         @endif
-        <x-table scroll="flex">
+        <x-table scroll="flex" id="dunning-candidates">
             <x-slot:head>
                 <tr>
                     @if ($bulkEnabled)

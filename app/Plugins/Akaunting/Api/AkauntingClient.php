@@ -16,7 +16,7 @@ use APIToolkit\API\Authentication\BasicAuthentication;
 use App\Plugins\Akaunting\AkauntingPlugin;
 use App\Plugins\Akaunting\Exceptions\AkauntingApiException;
 use App\Plugins\Support\{GuardsPluginApiResponses, PluginApiClient, PluginHttpFactory};
-use App\Plugins\Support\TaskSync\IncompleteRemoteReadException;
+use App\Plugins\Support\TaskSync\{IncompleteRemoteReadException, OffsetPage, RemotePages};
 
 /**
  * Lesender Zugriff auf die Akaunting-API: Belege (`documents`) je Art über die
@@ -66,27 +66,26 @@ class AkauntingClient {
     public function documentIds(string $type): array {
         $ids = [];
         $total = null;
-        for ($page = 1; $page <= self::MAX_ID_PAGES; $page++) {
+        $pages = RemotePages::offset(function (int $page) use ($type, &$total): OffsetPage {
             $result = $this->page($type, ' sort:id', $page);
-            if ($result['total'] === null || ($total !== null && $result['total'] !== $total)) {
+            if ($result['total'] === null) {
                 throw new IncompleteRemoteReadException('listing_changed');
             }
             $total = $result['total'];
-            foreach ($result['rows'] as $row) {
-                if (is_scalar($row['id'] ?? null)) {
-                    $ids[] = (string) $row['id'];
-                }
-            }
-            if ($result['rows'] === [] || $page >= $result['last_page']) {
-                if (count($ids) !== $total) {
-                    throw new IncompleteRemoteReadException('listing_changed');
-                }
 
-                return $ids;
+            return new OffsetPage($result['rows'], $result['rows'] !== [] && $page < $result['last_page'], $total);
+        }, self::MAX_ID_PAGES);
+
+        foreach ($pages as $row) {
+            if (is_scalar($row['id'] ?? null)) {
+                $ids[] = (string) $row['id'];
             }
         }
+        if (count($ids) !== $total) {
+            throw new IncompleteRemoteReadException('listing_changed');
+        }
 
-        throw new IncompleteRemoteReadException('page_limit');
+        return $ids;
     }
 
     /**
@@ -106,6 +105,34 @@ class AkauntingClient {
             if (! is_array($row) || ($row['type'] ?? null) !== $type) {
                 throw new IncompleteRemoteReadException('invalid_response');
             }
+        }
+        $last = data_get($body, 'meta.last_page');
+        $total = data_get($body, 'meta.total');
+
+        return [
+            'rows' => array_values(array_filter($rows, 'is_array')),
+            'last_page' => is_numeric($last) ? (int) $last : $page,
+            'total' => is_numeric($total) ? (int) $total : null,
+        ];
+    }
+
+    /**
+     * Eine Seite des Artikelstamms (`GET /api/items`, Feature 185, gap-09):
+     * `Item`-Resource mit `id`, `type` (product/service), `name`,
+     * `description`, `sale_price`, `enabled`, `taxes.data[].tax.rate`;
+     * Umschlag `data` + `meta.last_page`/`meta.total`, Seitengröße über `limit`.
+     *
+     * @return array{rows: list<array<string, mixed>>, last_page: int, total: ?int}
+     */
+    public function items(int $page): array {
+        $body = $this->guard($this->api()->getResponse($this->baseUrl . '/api/items', [
+            'search' => 'sort:id',
+            'limit' => $this->pageSize,
+            'page' => $page,
+        ]), '/api/items');
+        $rows = $body['data'] ?? null;
+        if (! is_array($rows) || ! array_is_list($rows)) {
+            throw new IncompleteRemoteReadException('invalid_response');
         }
         $last = data_get($body, 'meta.last_page');
         $total = data_get($body, 'meta.total');

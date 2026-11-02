@@ -29,6 +29,7 @@ return [
         'driver_license_checks' => 'Contrôles du permis de conduire',
         'documents_invoice' => 'Factures (DMS)',
         'passenger_rides' => 'Dossiers de courses (données de lieu et de passagers)',
+        'remote_pending_sessions' => 'Sessions de télémaintenance (reprises/écartées)',
         'employee_records' => 'Données du personnel (salariés sortis)',
         'portal_accounts' => 'Accès au portail (désactivés)',
         'personnel_files' => 'Dossiers du personnel (salariés sortis)',

@@ -104,6 +104,8 @@ final class ScheduledTimeImportTest extends TestCase {
         $this->artisan('kimai:import')->assertExitCode(0);
         $this->assertSame(2, TimeEntry::query()->where('project_id', $project->id)->count());
 
+        // Karenz der Löschungserkennung: was in derselben Minute entstand, gilt noch nicht als drüben gelöscht (Befund 2026-11-02).
+        $this->travel(5)->minutes();
         FakePluginHttp::fake([self::KIMAI . '/api/timesheets*' => FakePluginHttp::response([$this->kimaiRow(102, '2026-06-02')])]);
         $this->artisan('kimai:import')->assertExitCode(0);
         $this->assertSame(1, TimeEntry::query()->where('project_id', $project->id)->count(), 'In Kimai gelöscht — hier ebenfalls entfernt.');
@@ -119,6 +121,7 @@ final class ScheduledTimeImportTest extends TestCase {
         $this->artisan('clockify:import')->assertExitCode(0);
         $this->assertSame(2, TimeEntry::query()->where('project_id', $project->id)->count());
 
+        $this->travel(5)->minutes();
         FakePluginHttp::fake([$report => FakePluginHttp::response(['timeentries' => [$this->clockifyRow('a2', '2026-06-02')]])]);
         $this->artisan('clockify:import')->assertExitCode(0);
         $this->assertSame(1, TimeEntry::query()->where('project_id', $project->id)->count(), 'In Clockify gelöscht — hier ebenfalls entfernt.');

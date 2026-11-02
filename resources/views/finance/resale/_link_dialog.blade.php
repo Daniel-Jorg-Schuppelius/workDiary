@@ -10,7 +10,8 @@
   Positionen des Rechnungsempfängers (alle Spiegelquellen) im Fenster um den
   Periodenbeginn. Zeilen ($rows: line (MirrorLine), licences, per_licence,
   free, used, partly, fit) bereitet der Controller vor; passende zuerst,
-  fragliche Passung verlangt die Bestätigung (Phase 166, MVP-1448).
+  fragliche Passung verlangt die Bestätigung (Phase 166, MVP-1448). Alle
+  übrigen Rechnungen ($others) kommen erst mit „Alle anzeigen“ ($all).
 --}}
 <x-modal
     :title="__('resale.link.link_title', ['period' => $period->label()])"
@@ -58,6 +59,10 @@
             @endforeach
         </x-select-field>
         <p data-filter-empty class="text-xs text-muted hidden">{{ __('resale.link.no_match') }}</p>
+        @if (! $all && $hasSource)
+            {{-- Erst auf Wunsch alle Rechnungen des Empfängers seit Beginn (perfc-08); derselbe Dialog mit all=1 ersetzt diesen. --}}
+            <p class="text-xs mt-1"><a data-entry-modal-trigger href="{{ route('finance.resale.periods.link.create', [$period->sqid, 'all' => 1]) }}" class="link link-hover">{{ __('resale.link.show_all') }}</a></p>
+        @endif
     </div>
     <x-input-field name="months" type="number" step="0.01" min="0.01" :label="__('resale.link.months_field')" :value="old('months', number_format($needed, 2, '.', ''))" required :hint="__('resale.link.months_hint')" />
     <x-input-field name="note" :label="__('resale.field.note')" :value="old('note')" />

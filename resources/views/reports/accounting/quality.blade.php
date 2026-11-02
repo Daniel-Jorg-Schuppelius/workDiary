@@ -22,13 +22,13 @@
         </x-slot:actions>
 
         <div class="grid gap-3 sm:grid-cols-4">
-            <x-kpi-tile :label="__('accounting.reports.quality.kpi.drafts')" :value="$drafts" />
-            <x-kpi-tile :label="__('accounting.reports.quality.kpi.unbalanced')" :value="$unbalanced" />
-            <x-kpi-tile :label="__('accounting.reports.quality.kpi.blocked_runs')" :value="$blocked_runs" />
-            <x-kpi-tile :label="__('accounting.reports.quality.kpi.open_expectations')" :value="$open_expectations" />
+            <x-kpi-tile :label="__('accounting.reports.quality.kpi.drafts')" :value="$drafts" href="#quality-findings" />
+            <x-kpi-tile :label="__('accounting.reports.quality.kpi.unbalanced')" :value="$unbalanced" href="#quality-findings" />
+            <x-kpi-tile :label="__('accounting.reports.quality.kpi.blocked_runs')" :value="$blocked_runs" href="#quality-findings" />
+            <x-kpi-tile :label="__('accounting.reports.quality.kpi.open_expectations')" :value="$open_expectations" href="#quality-findings" />
         </div>
 
-        <x-card :title="__('accounting.reports.quality.headline')" icon="fact_check">
+        <x-card :title="__('accounting.reports.quality.headline')" icon="fact_check" id="quality-findings" class="scroll-mt-24">
             @if ($findings === [])
                 <x-empty-state icon="check_circle" :title="__('accounting.reports.quality.none')" compact />
             @else

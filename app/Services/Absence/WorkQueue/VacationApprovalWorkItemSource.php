@@ -31,8 +31,10 @@ use Illuminate\Support\Facades\Gate;
 final class VacationApprovalWorkItemSource implements WorkItemSource {
     public function __construct(private readonly DeputyResolver $deputies) {}
 
+    public const KEY = 'vacation_approval';
+
     public function key(): string {
-        return 'vacation_approval';
+        return self::KEY;
     }
 
     public function label(): string {

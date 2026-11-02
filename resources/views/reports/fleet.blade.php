@@ -49,7 +49,7 @@
 
     {{-- KPI-Kacheln --}}
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <x-kpi-tile :label="__('Fahrzeuge')" :value="$totals['vehicles']" />
+        <x-kpi-tile :label="__('Fahrzeuge')" :value="$totals['vehicles']" href="#fleet-vehicles" />
         <x-kpi-tile :label="__('Σ km')" :value="$km($totals['km'])" :hint="$totals['trip_count'] . ' ' . __('Fahrten')" />
         <x-kpi-tile :label="__('Tankungen / Ladungen')" :value="$totals['fuel_count']"
                     :hint="trim(($totals['liters'] > 0 ? $num($totals['liters'], 1) . ' L ' : '') . ($totals['kwh'] > 0 ? '· ' . $num($totals['kwh'], 1) . ' kWh' : ''))" />
@@ -57,7 +57,7 @@
         <x-kpi-tile :label="__('Ø €/km')" :value="$totals['avg_cost_per_km'] !== null ? $num($totals['avg_cost_per_km'], 3) . ' €' : '–'" />
     </div>
 
-    <x-card>
+    <x-card id="fleet-vehicles" class="scroll-mt-24">
         @if (empty($rows))
             <x-empty-state icon="directions_car" :title="__('Keine Fahrzeug-Daten im gewählten Zeitraum.')" />
         @else

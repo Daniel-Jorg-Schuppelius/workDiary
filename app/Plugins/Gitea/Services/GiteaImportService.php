@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Plugins\Gitea\Services;
 
 use App\Enums\Task\TaskStatus;
-use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Plugins\Gitea\Api\GiteaClientFactory;
 use App\Plugins\Gitea\GiteaPlugin;
@@ -147,12 +146,5 @@ class GiteaImportService extends AbstractTaskImportService {
             'url' => $url,
             'project' => is_string(data_get($raw, 'repository.full_name')) ? (string) data_get($raw, 'repository.full_name') : null,
         ], $issues);
-    }
-
-    public function sourceUrl(ExternalReference $reference): ?string {
-        $url = data_get($reference->payload, 'remote.url');
-        $baseUrl = (string) $this->connection((int) $reference->organization_id)?->source_url;
-
-        return is_string($url) && SelfHostedInstance::owns($baseUrl, $url) ? $url : null;
     }
 }

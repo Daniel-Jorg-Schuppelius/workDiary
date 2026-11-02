@@ -43,6 +43,9 @@ final readonly class JobDefinition {
         // Lange Läufe als Hintergrundprozess, damit sie die minütlichen Jobs
         // desselben schedule:run-Ticks nicht verzögern (Vollscan 2026-08-23, J8).
         public bool $runInBackground = false,
+        // Minutenversatz der Takt-Kadenzen (perf-01); der Wächter bleibt auf der vollen Stunde.
+        public bool $stagger = true,
+        public ?string $guard = null, // Klassenname einer Vorprüfung (JobGuard) im schedule:run-Prozess (perf-02)
     ) {
         if ($allowedCadences === []) {
             throw new InvalidArgumentException("Job [{$key}] braucht mindestens eine erlaubte Kadenz.");
@@ -72,6 +75,8 @@ final readonly class JobDefinition {
             dependsOn: array_values((array) ($data['depends_on'] ?? [])),
             // Default: alles ab 5 Minuten erwarteter Laufzeit läuft im Hintergrund.
             runInBackground: (bool) ($data['run_in_background'] ?? ((int) ($data['expected_runtime_minutes'] ?? 5) >= 5)),
+            stagger: (bool) ($data['stagger'] ?? true),
+            guard: isset($data['guard']) ? (string) $data['guard'] : null,
         );
     }
 

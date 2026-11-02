@@ -46,17 +46,25 @@ class ContractController extends Controller {
 
         $statusFilter = ContractStatus::tryFrom($request->string('status')->toString())?->value;
         $kindFilter = ContractKind::tryFrom($request->string('kind')->toString())?->value;
+        // Kachelfilter (ux-pattern-katalog §4): laufend bzw. Ende in drei Monaten; die Kachelwerte bleiben stehen.
+        $show = $request->string('show')->toString();
+        if (! in_array($show, ['open', 'ending_soon'], true)) {
+            $show = '';
+        }
 
         $contracts = Contract::query()
             ->with(['customer', 'supplier', 'responsible'])
             ->when($statusFilter !== null, fn ($q) => $q->where('status', $statusFilter))
             ->when($kindFilter !== null, fn ($q) => $q->where('kind', $kindFilter))
+            ->when($show !== '', fn ($q) => $q->open())
+            ->when($show === 'ending_soon', fn ($q) => $q->whereNotNull('ends_on')->where('ends_on', '<', \App\Support\Query\DateRange::dayAfter(now()->addMonths(3))))
             ->orderByDesc('id')
             ->paginate(25)
             ->withQueryString();
 
         return view('contracts.index', [
             'contracts' => $contracts,
+            'show' => $show,
             'nextTermination' => collect($contracts->items())
                 ->mapWithKeys(fn (Contract $c): array => [
                     $c->id => $c->status->isOpen() ? $this->service->nextTerminationDate($c) : null,

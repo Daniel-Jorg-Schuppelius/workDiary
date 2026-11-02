@@ -143,6 +143,17 @@ final class IncomingRetentionTest extends TestCase {
             ->assertDontSeeText(__('sepa.retention.hint'));
     }
 
+    /** Sicherheitsaudit 2026-11-02, sec-07: ein abgelehnter Eingang bekommt keinen Einbehalt — weder Dialog noch Dienst. */
+    public function test_a_rejected_document_gets_no_retention(): void {
+        $invoice = $this->invoice();
+        $invoice->forceFill(['status' => IncomingEInvoiceStatus::Rejected, 'decided_at' => now()])->save();
+
+        $this->actingAs($this->admin)->get(route('finance.incoming-invoices.retentions.form', $invoice))->assertNotFound();
+        $this->actingAs($this->admin)->post(route('finance.incoming-invoices.retentions.store', $invoice), ['kind' => RetentionKind::Warranty->value, 'percent' => '5'])
+            ->assertSessionHasErrors(['amount' => __('sepa.retention.error.rejected')]);
+        $this->assertSame(0, IncomingInvoiceRetention::query()->count());
+    }
+
     public function test_overdue_retention_is_reported(): void {
         User::factory()->buchhaltung()->create(['organization_id' => $this->org->id]);
         $invoice = $this->invoice();

@@ -47,6 +47,8 @@ class WarrantyPeriodController extends Controller {
         $filters = [
             'side' => (string) $request->query('side', ''),
             'status' => (string) $request->query('status', WarrantyStatus::Open->value),
+            // Kachel „läuft bald ab“ (ux-pattern-katalog §4): Ende innerhalb von 180 Tagen.
+            'expiring' => $request->boolean('expiring'),
         ];
 
         $query = WarrantyPeriod::query()->with(['customer:id,name,company', 'supplier:id,name,company', 'project:id,name', 'responsible:id,name']);
@@ -55,6 +57,9 @@ class WarrantyPeriodController extends Controller {
         }
         if (WarrantyStatus::tryFrom($filters['status']) !== null) {
             $query->where('status', $filters['status']);
+        }
+        if ($filters['expiring']) {
+            $query->whereBetween('ends_on', \App\Support\Query\DateRange::days(now(), now()->addDays(180)));
         }
 
         $critical = $this->warranties->subcontractorsEndingFirst((int) $this->currentOrganization()->id);

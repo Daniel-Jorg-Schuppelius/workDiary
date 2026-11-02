@@ -16,7 +16,7 @@ use App\Plugins\FreeScout\Api\FreeScoutClientFactory;
 use App\Plugins\FreeScout\{FreeScoutConfig, FreeScoutPlugin};
 use App\Plugins\FreeScout\Models\{FreeScoutConnection, FreeScoutProjectLink};
 use App\Plugins\FreeScout\Services\FreeScoutImportService;
-use App\Plugins\Support\TaskSync\{SelfHostedInstance, TokenTaskImportAdminController};
+use App\Plugins\Support\TaskSync\TokenTaskImportAdminController;
 
 /**
  * FreeScout-Verbindungsseite (MVP-1336): „Verbindung prüfen“ liest die Instanz
@@ -42,16 +42,10 @@ class FreeScoutAdminController extends TokenTaskImportAdminController {
     }
 
     protected function verifyConnection(int $organizationId): array {
-        $baseUrl = (string) FreeScoutConfig::resolve($organizationId)['base_url'];
-        $account = app(FreeScoutClientFactory::class)->for($organizationId)->account();
-
-        return [
-            'source_id' => SelfHostedInstance::key($baseUrl),
-            'source_name' => SelfHostedInstance::name($baseUrl) . ($account['version'] !== null ? ' · ' . $account['version'] : ''),
-            'source_url' => $baseUrl,
-            'account_id' => $account['id'],
-            'account_name' => $account['name'],
-        ];
+        return $this->selfHostedIdentity(
+            (string) FreeScoutConfig::resolve($organizationId)['base_url'],
+            app(FreeScoutClientFactory::class)->for($organizationId)->account(),
+        );
     }
 
     protected function providerName(): string {

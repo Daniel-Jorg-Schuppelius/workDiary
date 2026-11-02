@@ -46,6 +46,8 @@ etwas liegt. Suche und Filter bleiben beim Wechsel des Reiters erhalten.
 **Kennzahlen:** Die Kacheln rechnen über die gesamte gefilterte Menge, nicht
 nur über die sichtbare Seite – je Währung getrennt und ohne Umrechnung.
 
+Ein Klick auf **Offen** filtert auf offene Belege (ein zweiter Klick hebt den Filter auf); die Summenkacheln bleiben ohne Ziel.
+
 - **Erlöse**, **Aufwand (extern)** und **Saldo** stellen Ausgangs- und
   Eingangsbelege gegenüber.
 - **Meine Auslagen** nennt Ihre eigenen Auslagen und den Anteil, der noch in

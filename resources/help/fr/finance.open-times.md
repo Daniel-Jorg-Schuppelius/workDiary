@@ -67,6 +67,8 @@ Fonctionnalités :
    réservée à l'administration et à la comptabilité et ne peut pas
    être annulée d'un clic.
 
+Un clic sur une tuile d’alerte filtre la liste sur ces entrées et passe sur « Tout » ; la barre de filtres propose la même valeur.
+
 La page est visible pour les rôles disposant de l'autorisation
 « afficher toutes les saisies de temps » (par défaut comptabilité,
 direction et administration).

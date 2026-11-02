@@ -69,6 +69,8 @@ on the length of the period it is per day, per week or per quarter instead.
 **Remaining vacation per employee (top 15)** shows the highest remaining
 balances.
 
+Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
+
 The filters **Area** (**Mine only** or **Entire team** for all people in the
 organization), **Employee**, **Team** and **Status** are shown to
 administrators and to people with the right **See all vacation requests**;
@@ -125,6 +127,8 @@ exhausted**. Charts: **Sick days per month** with a median line (per day, week
 or quarter depending on the period) and the heatmap **Sick days per employee
 and month**.
 
+Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
+
 Filters as in **Vacation & flex**: **Area**, **Employee** and **Team** – here
 for administrators and people with the right **View sick leaves**; everyone
 else only sees their own row. This page offers no export.
@@ -143,6 +147,7 @@ tiles, charts and export.
   **no assignment**. The legend is below the matrix.
 - Tiles: **Employees**, **Qualifications**, **Assignments**, **Expiring (≤30 d)**
   and **Expired**.
+- Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
 - Charts: **Holders per qualification (top 15)** and **Assignments per
   qualification by status** for the twelve most common qualifications.
 
@@ -161,6 +166,7 @@ that occurred within the header period.
 
 - Tiles: **Total events**, **Open** (all not closed), **Closed** and
   **Critical** (severity critical).
+- Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
 - Charts: **Events per month** with the second series **of which closed** and
   **Events per month by status**, stacked by **Reported**, **Investigating**,
   **Measures defined** and **Closed**; per day, week or quarter depending on the

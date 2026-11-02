@@ -33,6 +33,8 @@ Auswertungsrechten sieht andere Kacheln als jemand ohne. Ausgeblendete
 Kacheln stellen keine Abfragen mehr; ein aufgeräumtes Dashboard lädt
 deshalb auch schneller.
 
+Die Zählkacheln der Kennzahlen-Widgets führen ins Auftragsbuch mit dem passenden Statusfilter, zu den Diensten und zur Mitarbeiterliste.
+
 ## Voraussetzungen
 
 - Ein angemeldetes Benutzerkonto; besondere Rechte sind nicht nötig.

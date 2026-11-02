@@ -59,6 +59,8 @@ class EventController extends Controller {
             'from' => $request->query('from'),
             'to' => $request->query('to'),
             'only_mandatory' => $request->boolean('only_mandatory'),
+            // Kachelfilter (ux-pattern-katalog §4): anstehend bzw. heute, dieselben Mengen wie die Zähler.
+            'show' => in_array($request->query('show'), ['upcoming', 'today'], true) ? (string) $request->query('show') : '',
         ];
 
         $query = Event::query()
@@ -75,6 +77,8 @@ class EventController extends Controller {
             ->when($filters['from'], fn($q) => $q->where('ended_at', '>=', CarbonImmutable::parse((string) $filters['from'], Tz::current())->startOfDay()->utc()))
             ->when($filters['to'], fn($q) => $q->where('started_at', '<=', CarbonImmutable::parse((string) $filters['to'], Tz::current())->endOfDay()->utc()))
             ->when($filters['only_mandatory'], fn($q) => $q->where('is_mandatory', true))
+            ->when($filters['show'] === 'upcoming', fn($q) => $q->where('started_at', '>=', now())->whereNull('cancelled_at'))
+            ->when($filters['show'] === 'today', fn($q) => $q->whereBetween('started_at', [Tz::now()->startOfDay()->setTimezone('UTC'), Tz::now()->endOfDay()->setTimezone('UTC')]))
             ->orderBy($sort, $dir);
 
         $events = $query->paginate(25)->withQueryString();

@@ -175,7 +175,7 @@ class TicketRoutingService {
             $load = ServiceTicket::query()
                 ->where('organization_id', $ticket->organization_id)
                 ->whereIn('assigned_to_user_id', $candidates)
-                ->whereNotIn('status', [\App\Enums\ServiceTicket\ServiceTicketStatus::Closed, \App\Enums\ServiceTicket\ServiceTicketStatus::Done])
+                ->open()
                 ->groupBy('assigned_to_user_id')
                 ->selectRaw('assigned_to_user_id, COUNT(*) as aggregate')
                 ->pluck('aggregate', 'assigned_to_user_id');

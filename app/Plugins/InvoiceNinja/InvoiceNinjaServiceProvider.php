@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace App\Plugins\InvoiceNinja;
 
-use App\Plugins\InvoiceNinja\Services\{InvoiceNinjaVoucherLinks, InvoiceNinjaVoucherPullService};
+use App\Plugins\InvoiceNinja\Services\{InvoiceNinjaArticleCatalogSource, InvoiceNinjaVoucherLinks, InvoiceNinjaVoucherPullService};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
 use App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry;
+use App\Services\Platform\Catalog\ArticleCatalog;
 
 class InvoiceNinjaServiceProvider extends PluginServiceProviderBase {
     protected function pluginId(): string {
@@ -27,5 +28,7 @@ class InvoiceNinjaServiceProvider extends PluginServiceProviderBase {
         $this->app->make(VoucherPullerRegistry::class)->register(InvoiceNinjaVoucherPullService::class);
         // Link zum Original im Belegfluss.
         $this->app->make(DocumentFeedSourceRegistry::class)->register(new InvoiceNinjaVoucherLinks);
+        // Artikelkatalog (Feature 185, gap-09): Produkte erreichen den Kern nur über diese Quelle.
+        $this->app->make(ArticleCatalog::class)->register($this->app->make(InvoiceNinjaArticleCatalogSource::class));
     }
 }

@@ -12,17 +12,16 @@ declare(strict_types=1);
 
 namespace App\Plugins\Kanboard;
 
-use App\Plugins\Support\PluginSettingsResolver;
+use App\Plugins\Support\{PluginSettingsResolver, SelfHostedConfig};
 
 /** Kanboard-Zugang je Organisation aus den Plugin-Einstellungen. */
 final class KanboardConfig {
     /** @return array{base_url: ?string, username: ?string, api_token: ?string} */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(KanboardPlugin::ID, $organizationId);
-        $baseUrl = $r->string('base_url', trim: true);
 
         return [
-            'base_url' => $baseUrl !== null ? rtrim($baseUrl, '/') : null,
+            'base_url' => SelfHostedConfig::baseUrl($r),
             'username' => $r->string('username', trim: true),
             'api_token' => $r->string('api_token', trim: true),
         ];

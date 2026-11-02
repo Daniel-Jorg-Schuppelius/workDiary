@@ -30,8 +30,8 @@ use Illuminate\Support\Facades\Log;
  *
  * Zusätzlich (MVP-463): der Create-Pfad des Spiegel-Exports läuft über die
  * Outbox ({@see MirrorsCreatedEntries}) statt nur über den stündlichen
- * `toggl:push` — der bleibt als Backfill bestehen; sein
- * whereNotExists-Guard verhindert Doppel-Pushes in beide Richtungen.
+ * `toggl:push` — der bleibt als Backfill bestehen; die Sperre je Eintrag im
+ * Push-Skelett lässt nur einen von beiden posten.
  */
 class TogglOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCreatedEntries {
     public const OP_ENTRY_CREATE = 'toggl.entry.create';
@@ -122,9 +122,9 @@ class TogglOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCr
 
     /**
      * Create-Pfad (G1/G2): Eignung prüft {@see TogglExportService::pushSingle()}
-     * mit denselben Schutzlinien wie der Stunden-Batch (inkl. Referenz-Re-Check
-     * gegen ein Rennen mit `toggl:push`). Unmapptes Projekt/fehlende Config ist
-     * ein Drop, kein Fehler.
+     * mit denselben Schutzlinien wie der Stunden-Batch, unter der Sperre je
+     * Eintrag — hält `toggl:push` sie gerade, wiederholt die Outbox nach dem
+     * Backoff. Unmapptes Projekt/fehlende Config ist ein Drop, kein Fehler.
      */
     private function dispatchCreate(IntegrationOutboxEntry $outbox): bool {
         if (! $this->mirrorCreateEnabled($outbox->organization_id)) {

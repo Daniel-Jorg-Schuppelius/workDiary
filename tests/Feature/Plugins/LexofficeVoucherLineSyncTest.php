@@ -347,7 +347,8 @@ class LexofficeVoucherLineSyncTest extends TestCase {
     public function test_drafts_are_skipped_and_changed_vouchers_reload_their_lines(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $this->linkContact('c-nordlicht', $customer);
-        $item = ['id' => 'inv-1', 'voucherType' => 'invoice', 'voucherStatus' => 'draft', 'voucherNumber' => 'RE/2025/0001', 'voucherDate' => '2025-08-06', 'totalAmount' => 294.17, 'currency' => 'EUR', 'updatedDate' => '2025-08-06T10:00:00.000+02:00'];
+        // contactId wie in der echten voucherlist-Antwort: der zweite Lauf ist inkrementell und ordnet den Beleg darüber zu.
+        $item = ['id' => 'inv-1', 'contactId' => 'c-nordlicht', 'voucherType' => 'invoice', 'voucherStatus' => 'draft', 'voucherNumber' => 'RE/2025/0001', 'voucherDate' => '2025-08-06', 'totalAmount' => 294.17, 'currency' => 'EUR', 'updatedDate' => '2025-08-06T10:00:00.000+02:00'];
         $finalized = ['voucherStatus' => 'open', 'updatedDate' => '2025-08-07T09:00:00.000+02:00'] + $item;
         FakePluginHttp::fake([
             'https://api.lexware.io/v1/voucherlist*' => [

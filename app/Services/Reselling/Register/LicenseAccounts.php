@@ -23,16 +23,27 @@ use Illuminate\Support\Collection;
  * Ablösungskette —, Abtretungen zum Konto ihres Vertrags. Abos ohne
  * Kundennummer und Firma (von Hand angelegt) bilden je Anbieter und Halter
  * ein eigenes Konto.
+ *
+ * Abos und Konten liegen je Request im {@see ResaleRequestMemo} hinter einer
+ * Bestandssignatur (Anzahl, jüngste Änderung, höchste ID — eine Aggregatabfrage):
+ * ein Lizenzkonto lud die Abos dreimal (Leistungsanalyse 2026-11-02, perfc-04);
+ * Import und Halterwechsel im selben Prozess ändern die Signatur und laden neu.
  */
 final class LicenseAccounts {
+    private readonly ResaleRequestMemo $memo;
+
+    public function __construct(?ResaleRequestMemo $memo = null) {
+        $this->memo = $memo ?? app(ResaleRequestMemo::class);
+    }
+
     /** @return Collection<int, ResaleSubscription> */
     public function subscriptions(Organization $organization): Collection {
-        return ResaleSubscription::query()->withoutGlobalScopes()
+        return $this->memo->remember($this->memoPrefix($organization) . ':subscriptions', static fn(): Collection => ResaleSubscription::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->with(['customer:id,name', 'foreignCustomer:id,name,customer_id', 'foreignCustomer.customer:id,name'])
             ->with(ResaleSubscription::providerBillingRelations())
             ->orderBy('starts_on')
-            ->get();
+            ->get());
     }
 
     /**
@@ -40,7 +51,29 @@ final class LicenseAccounts {
      * @return array<string, LicenseAccountGroup> Schlüssel → Konto
      */
     public function groups(Organization $organization, ?Collection $subscriptions = null): array {
-        $subscriptions ??= $this->subscriptions($organization);
+        if ($subscriptions !== null) {
+            return $this->build($subscriptions);
+        }
+
+        return $this->memo->remember($this->memoPrefix($organization) . ':groups', fn(): array => $this->build($this->subscriptions($organization)));
+    }
+
+    public function group(Organization $organization, string $key): ?LicenseAccountGroup {
+        return $this->groups($organization)[$key] ?? null;
+    }
+
+    /** Konto eines Abos (Schlüssel des Kopfes seiner Kette). */
+    public function keyFor(Organization $organization, ResaleSubscription $subscription): string {
+        $byId = $this->subscriptions($organization)->keyBy('id');
+
+        return self::keyOf($this->headOf($byId->get($subscription->id) ?? $subscription, $byId));
+    }
+
+    /**
+     * @param  Collection<int, ResaleSubscription>  $subscriptions
+     * @return array<string, LicenseAccountGroup>
+     */
+    private function build(Collection $subscriptions): array {
         ResaleSubscription::withCatalogArticles($subscriptions);
         $byId = $subscriptions->keyBy('id');
         /** @var array<string, list<ResaleSubscription>> $members */
@@ -63,15 +96,27 @@ final class LicenseAccounts {
         return $groups;
     }
 
-    public function group(Organization $organization, string $key): ?LicenseAccountGroup {
-        return $this->groups($organization)[$key] ?? null;
+    /**
+     * Memo-Präfix der Organisation; eine geänderte Bestandssignatur verwirft Abos und Konten.
+     */
+    private function memoPrefix(Organization $organization): string {
+        $prefix = 'license-accounts:' . $organization->id;
+        $signature = $this->signature($organization);
+        if ($this->memo->remember($prefix . ':signature', static fn(): string => $signature) !== $signature) {
+            $this->memo->forget($prefix);
+            $this->memo->remember($prefix . ':signature', static fn(): string => $signature);
+        }
+
+        return $prefix;
     }
 
-    /** Konto eines Abos (Schlüssel des Kopfes seiner Kette). */
-    public function keyFor(Organization $organization, ResaleSubscription $subscription): string {
-        $byId = $this->subscriptions($organization)->keyBy('id');
+    private function signature(Organization $organization): string {
+        $row = ResaleSubscription::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->selectRaw('COUNT(*) AS n, MAX(updated_at) AS u, MAX(id) AS m')
+            ->first();
 
-        return self::keyOf($this->headOf($byId->get($subscription->id) ?? $subscription, $byId));
+        return $row === null ? '0' : implode('|', [(string) $row->getAttribute('n'), (string) $row->getAttribute('u'), (string) $row->getAttribute('m')]);
     }
 
     /**

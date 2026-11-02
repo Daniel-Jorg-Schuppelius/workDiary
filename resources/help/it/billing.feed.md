@@ -46,6 +46,8 @@ qualcosa. Ricerca e filtri restano attivi quando cambia scheda.
 **Indicatori:** i riquadri sono calcolati sull'intero insieme filtrato, non
 solo sulla pagina visibile – separati per valuta e senza conversione.
 
+Un clic su **Aperto** filtra i documenti aperti (un secondo clic toglie il filtro); i riquadri di somme non hanno destinazione.
+
 - **Ricavi**, **Costi (esterni)** e **Saldo** confrontano documenti in uscita
   e in entrata.
 - **Le mie note spese** indica le sue note spese e la parte ancora in

@@ -28,4 +28,9 @@ return [
         'delivery_title' => 'Lieferschein',
         'transfer_marker' => 'Übergabenachweis :marker',
     ],
+    'vouchers' => [
+        'sync_now' => 'Belege jetzt abgleichen',
+        'sync_confirm' => "Belege jetzt mit Lexoffice abgleichen? Der Lauf holt neue und geänderte Belege im Hintergrund; der tägliche Vollabgleich bleibt davon unberührt.",
+        'sync_hint' => "Holt neue und geänderte Lexoffice-Belege im Hintergrund — manueller Gegenpart zum geplanten Beleg-Sync.",
+    ],
 ];

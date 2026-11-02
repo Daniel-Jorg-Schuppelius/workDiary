@@ -178,6 +178,7 @@ return [
             'sync_articles' => 'Lexoffice-Artikel synchronisieren',
             'sync_contacts' => 'Lexoffice-Kontakte synchronisieren',
             'sync_vouchers' => 'Lexoffice-Belege synchronisieren',
+            'sync_vouchers_full' => 'Lexoffice-Belege vollständig abgleichen (täglich)',
         ],
         'location' => ['purge_points' => 'Standort-Rohpunkte bereinigen', 'close_stale_visits' => 'Verwaiste Standort-Besuche schließen'],
         'mail' => ['poll' => 'Mail-Eingang abrufen'],

@@ -92,6 +92,7 @@ class PluginState extends Model {
                 if (app()->resolved(\App\Plugins\PluginManager::class)) {
                     app(\App\Plugins\PluginManager::class)->flushRuntimeCaches();
                 }
+                \App\Services\Navigation\NavigationRegistry::bumpGlobalStamp(); // Menü-Cache (perf-13)
             } catch (\Throwable) {
                 // Cache-Invalidierung darf nie werfen.
             }

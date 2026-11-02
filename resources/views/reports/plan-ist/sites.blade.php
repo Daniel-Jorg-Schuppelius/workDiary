@@ -60,8 +60,8 @@
     @else
         <div class="grid gap-3 sm:grid-cols-3">
             <x-kpi-tile :label="__('Ist')" :value="$fmtH($totals['actual_minutes'])" tone="primary" />
-            <x-kpi-tile :label="__('Ortsbesuche')" :value="$totals['visits']" tone="neutral" format="int" />
-            <x-kpi-tile :label="__('Personen')" :value="$totals['users']" tone="neutral" format="int" />
+            <x-kpi-tile :label="__('Ortsbesuche')" :value="$totals['visits']" tone="neutral" format="int" href="#plan-ist-sites" />
+            <x-kpi-tile :label="__('Personen')" :value="$totals['users']" tone="neutral" format="int" href="#plan-ist-sites" />
         </div>
 
         <x-charts.bar :title="__('Ist-Zeiten je Standort (Top 15)')"
@@ -70,7 +70,7 @@
                       :x-label="__('Standort')"
                       :y-label="__('Ist (h)')" />
 
-        <x-card :title="__('Je Standort')" icon="location_on">
+        <x-card :title="__('Je Standort')" icon="location_on" id="plan-ist-sites" class="scroll-mt-24">
             <x-table>
                 <x-slot:head>
                     <tr>

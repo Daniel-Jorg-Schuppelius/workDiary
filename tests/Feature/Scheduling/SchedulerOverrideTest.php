@@ -12,7 +12,7 @@ namespace Tests\Feature\Scheduling;
 
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\ScheduledJobOverride;
-use App\Scheduling\{Cadence, CadenceType, SchedulerOverrideService, SchedulerRegistrar};
+use App\Scheduling\{Cadence, CadenceType, JobOffset, SchedulerOverrideService, SchedulerRegistrar};
 use App\Support\MorphMap;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -60,7 +60,7 @@ class SchedulerOverrideTest extends TestCase {
     public function test_reschedule_within_allowed_cadences_takes_effect(): void {
         $this->service->reschedule('toggl.import', new Cadence(CadenceType::EveryFifteenMinutes));
 
-        $this->assertSame('*/15 * * * *', $this->registeredExpressions()['toggl:import']);
+        $this->assertSame($this->withOffset(CadenceType::EveryFifteenMinutes), $this->registeredExpressions()['toggl:import']);
     }
 
     public function test_reschedule_rejects_disallowed_cadence(): void {
@@ -89,14 +89,14 @@ class SchedulerOverrideTest extends TestCase {
             'cadence' => ['type' => 'everyMinute'],
         ]);
 
-        $this->assertSame('0 * * * *', $this->registeredExpressions()['toggl:import']);
+        $this->assertSame($this->withOffset(CadenceType::Hourly), $this->registeredExpressions()['toggl:import']);
     }
 
     public function test_reset_restores_default(): void {
         $this->service->reschedule('toggl.import', new Cadence(CadenceType::EveryFifteenMinutes));
         $this->service->reset('toggl.import');
 
-        $this->assertSame('0 * * * *', $this->registeredExpressions()['toggl:import']);
+        $this->assertSame($this->withOffset(CadenceType::Hourly), $this->registeredExpressions()['toggl:import']);
         $this->assertDatabaseCount('scheduled_job_overrides', 0);
     }
 
@@ -109,5 +109,9 @@ class SchedulerOverrideTest extends TestCase {
                 ->where('event', 'created')
                 ->exists(),
         );
+    }
+    /** Erwarteter Ausdruck des Toggl-Imports samt Minutenversatz (perf-01). */
+    private function withOffset(CadenceType $type): string {
+        return (new Cadence($type))->withOffset(JobOffset::minutes('toggl.import', $type))->cronExpression();
     }
 }

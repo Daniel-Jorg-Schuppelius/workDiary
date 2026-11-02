@@ -84,6 +84,27 @@ final class LexofficeRecipientInvoiceLines {
     }
 
     /**
+     * Alle Positionen gültiger Rechnungen ab `$from`, die aus einer der
+     * Serienvorlagen entstanden — über `recurring_template_id` (Index), nicht
+     * über alle Zeilen der Organisation (Leistungsanalyse 2026-11-02, perfc-04).
+     *
+     * @param  list<string>  $templateExternalIds
+     * @return Collection<int, LexofficeVoucherLine>
+     */
+    public function forTemplates(Organization $organization, array $templateExternalIds, CarbonImmutable $from): Collection {
+        if ($templateExternalIds === []) {
+            return collect();
+        }
+
+        return LexofficeVoucherLine::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereIn('voucher_id', $this->voucherQuery($organization, null, $from)->whereIn('recurring_template_id', $templateExternalIds)->select('id'))
+            ->with(['voucher:id,external_id,contact_external_id,customer_id,voucher_type,voucher_number,voucher_date,voucher_status,service_starts_on,service_ends_on,voucher_text,recipient_name,recurring_template_id', 'article:id,name,unit_name'])
+            ->orderBy('id')
+            ->get();
+    }
+
+    /**
      * Kandidaten für eine Periode: Lizenzpositionen des Empfängers im Fenster
      * der Periode (−90 Tage, Fensterende je Position, Leistungszeitraum),
      * neueste Rechnung zuerst.

@@ -337,6 +337,35 @@ class SevDeskClient {
         return $this->object($body);
     }
 
+    // ── Artikel ─────────────────────────────────────────────────────────
+
+    /**
+     * Eine Seite des Artikelstamms (`GET /Part`, Feature 185, gap-09):
+     * `Model_Part` mit `id`, `name`, `partNumber`, `text`, `priceNet`/`price`,
+     * `taxRate`, `status` (50 inaktiv, 100 aktiv), `stockEnabled`; die Einheit
+     * kommt über `embed=unity` (`unity.name`), `countAll=true` liefert `total`.
+     *
+     * @return array{rows: list<array<string, mixed>>, total: ?int}
+     */
+    public function parts(int $offset, int $limit): array {
+        $body = (array) $this->guard(
+            $this->api()->requestResponse('get', $this->baseUrl . '/Part', ['query' => [
+                'offset' => $offset,
+                'limit' => $limit,
+                'countAll' => 'true',
+                'embed' => 'unity',
+                'ordering[id]' => 'ASC',
+            ]]),
+            '/Part',
+        );
+        $total = $body['total'] ?? null;
+
+        return [
+            'rows' => array_values(array_filter($this->rows($body), 'is_array')),
+            'total' => is_numeric($total) ? (int) $total : null,
+        ];
+    }
+
     // ── Benutzer (contactPerson-Pflichtfeld der Rechnung) ───────────────
 
     /** @return array<string, mixed> Erster SevUser des Accounts (GET /SevUser). */

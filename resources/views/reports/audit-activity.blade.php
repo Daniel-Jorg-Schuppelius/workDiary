@@ -46,9 +46,9 @@
     </x-filter-bar>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <x-kpi-tile :label="__('Events Σ')" :value="$totals['total']" />
-        <x-kpi-tile :label="__('Aktive Benutzer')" :value="$totals['users']" />
-        <x-kpi-tile :label="__('Entity-Typen')" :value="$totals['types']" />
+        <x-kpi-tile :label="__('Events Σ')" :value="$totals['total']" href="#audit-recent" />
+        <x-kpi-tile :label="__('Aktive Benutzer')" :value="$totals['users']" href="#audit-by-user" />
+        <x-kpi-tile :label="__('Entity-Typen')" :value="$totals['types']" href="#audit-by-type" />
     </div>
 
     <div class="chart-grid grid gap-3 xl:grid-cols-2">
@@ -79,7 +79,7 @@
             </x-table>
         </x-card>
 
-        <x-card>
+        <x-card id="audit-by-type" class="scroll-mt-24">
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Nach Entity-Typ (Top 20)') }}</h3>
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -96,7 +96,7 @@
             </x-table>
         </x-card>
 
-        <x-card>
+        <x-card id="audit-by-user" class="scroll-mt-24">
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Nach Benutzer (Top 20)') }}</h3>
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -114,7 +114,7 @@
         </x-card>
     </div>
 
-    <x-card>
+    <x-card id="audit-recent" class="scroll-mt-24">
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Letzte 100 Events') }}</h3>
         @if ($recent->isEmpty())
             <x-empty-state icon="history" :title="__('Keine Events im Zeitraum.')" />

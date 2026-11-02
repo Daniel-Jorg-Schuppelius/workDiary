@@ -1,7 +1,7 @@
 ---
 title: "Leads"
 topic: sales.leads
-version: 3
+version: 4
 keywords:
     - prospects
     - prospecting
@@ -60,3 +60,15 @@ Leads carry custom fields (Administration › Custom fields), tags and
 attachments. When the lead is anonymised after the deletion period,
 attachments, custom fields and tags are removed as well. Documents in document
 management are attached to the customer only.
+
+## Cockpit
+
+The lead record is the prospect's cockpit: header with status, source and
+tags, below that contact and needs, the communication notes with follow-up,
+custom fields, attachments, the quotes created from the lead and the history.
+"Quote from lead" creates a quote with the contact details; the quotes are
+listed with their status in the record, and the lead report counts them per
+source and conversion. As for customer, supplier and project, the panels of
+other modules only show what exists for the lead — a module without data for
+the lead does not appear. The history lists the audit entries of the lead
+including its quotes; appointment bookings are attached to the open lead.

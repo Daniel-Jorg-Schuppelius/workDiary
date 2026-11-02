@@ -24,12 +24,17 @@
     </x-slot:actions>
 
     <div class="grid gap-4 sm:grid-cols-3">
-        <x-kpi-tile :label="__('disposal.index.kpi.open')" :value="$openCount" />
-        <x-kpi-tile :label="__('disposal.index.kpi.hazardous_open')" :value="$hazardousOpenCount" tone="warning" />
-        <x-kpi-tile :label="__('disposal.index.kpi.completed_year')" :value="$completedCount" tone="success" />
+        <x-kpi-tile :label="__('disposal.index.kpi.open')" :value="$openCount" :href="route('disposal.index', ['show' => 'open'])" :active="$show === 'open' && ! request()->boolean('hazardous')" />
+        <x-kpi-tile :label="__('disposal.index.kpi.hazardous_open')" :value="$hazardousOpenCount" tone="warning" :href="route('disposal.index', ['show' => 'open', 'hazardous' => 1])" :active="$show === 'open' && request()->boolean('hazardous')" />
+        <x-kpi-tile :label="__('disposal.index.kpi.completed_year')" :value="$completedCount" tone="success" :href="route('disposal.index', ['show' => 'completed_year'])" :active="$show === 'completed_year'" />
     </div>
 
     <x-filter-bar :action="route('disposal.index')" :reset="route('disposal.index')">
+        <select name="show" class="select select-sm select-bordered w-52 shrink-0" aria-label="{{ __('Filter') }}">
+            <option value="">{{ __('Alle') }}</option>
+            <option value="open" @selected($show === 'open')>{{ __('disposal.index.kpi.open') }}</option>
+            <option value="completed_year" @selected($show === 'completed_year')>{{ __('disposal.index.kpi.completed_year') }}</option>
+        </select>
         <select name="status" class="select select-sm select-bordered w-48 shrink-0" aria-label="{{ __('Status') }}">
             <option value="">{{ __('Alle Status') }}</option>
             @foreach (\App\Enums\Disposal\DisposalJobStatus::options() as $value => $label)

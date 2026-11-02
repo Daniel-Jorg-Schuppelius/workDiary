@@ -67,6 +67,7 @@ class KimaiImportService extends MatchingTimeImportService implements CsvAndApiT
         $from ??= CarbonImmutable::now()->subDays((int) ($config['sync_window_days'] ?? 30))->startOfDay();
 
         $allUsers = (bool) ($config['api_all_users'] ?? true);
+        $fetchedAt = CarbonImmutable::now();
         try {
             $rows = $client->getTimesheets($from, $to, $allUsers);
         } catch (RuntimeException $e) {
@@ -88,7 +89,7 @@ class KimaiImportService extends MatchingTimeImportService implements CsvAndApiT
             $config,
             // Ohne `user=all` liefert Kimai nur die Zeiten des Token-Benutzers —
             // fremde Einträge fehlten dann, ohne gelöscht zu sein.
-            RemoteSyncWindow::whenComplete($allUsers, $from, $to ?? CarbonImmutable::now()->endOfDay()),
+            RemoteSyncWindow::whenComplete($allUsers, $from, $to ?? CarbonImmutable::now()->endOfDay(), $fetchedAt),
         );
     }
 

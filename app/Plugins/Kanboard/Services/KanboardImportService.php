@@ -13,12 +13,11 @@ declare(strict_types=1);
 namespace App\Plugins\Kanboard\Services;
 
 use App\Enums\Task\TaskStatus;
-use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Plugins\Kanboard\Api\KanboardClientFactory;
 use App\Plugins\Kanboard\KanboardPlugin;
 use App\Plugins\Kanboard\Models\{KanboardConnection, KanboardProjectLink};
-use App\Plugins\Support\TaskSync\{AbstractTaskImportService, IncompleteRemoteReadException, RemoteTask, SelfHostedInstance};
+use App\Plugins\Support\TaskSync\{AbstractTaskImportService, IncompleteRemoteReadException, RemoteTask};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -130,13 +129,6 @@ class KanboardImportService extends AbstractTaskImportService {
                 : null,
             'project' => null,
         ], $issues);
-    }
-
-    public function sourceUrl(ExternalReference $reference): ?string {
-        $url = data_get($reference->payload, 'remote.url');
-        $baseUrl = (string) $this->connection((int) $reference->organization_id)?->source_url;
-
-        return is_string($url) && SelfHostedInstance::owns($baseUrl, $url) ? $url : null;
     }
 
     /** Unix-Sekunden als Zahl oder Ziffernfolge; 0 und Unlesbares sind kein Zeitpunkt. */

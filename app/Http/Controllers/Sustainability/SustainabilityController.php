@@ -237,10 +237,14 @@ class SustainabilityController extends Controller {
         Gate::authorize('viewAny', SustainabilityAssessment::class);
 
         [$sort, $dir] = SortableQuery::resolve($request, self::ASSESSMENT_SORTS, 'created');
+        // Kachel „Kritische Bewertungen“ (ux-pattern-katalog §4): dieselbe Menge wie der Zähler der Übersicht.
+        $critical = $request->boolean('critical');
 
         return view('sustainability.assessments.index', [
+            'critical' => $critical,
             // Zweitschlüssel id: gleiche Werte (Status, Version) blättern sonst nicht stabil.
             'assessments' => SustainabilityAssessment::query()
+                ->when($critical, fn ($q) => $q->where('rating', 'red')->where('status', SustainabilityAssessmentStatus::Final))
                 ->orderBy(self::ASSESSMENT_SORTS[$sort], $dir)
                 ->orderBy('id', $dir)
                 ->paginate(25)

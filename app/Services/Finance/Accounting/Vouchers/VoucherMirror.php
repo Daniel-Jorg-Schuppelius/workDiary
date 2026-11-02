@@ -19,6 +19,7 @@ use App\Models\Customer\Customer;
 use App\Models\Finance\{AccountingVoucher, AccountingVoucherLine};
 use App\Models\Integration\ExternalReference;
 use App\Models\Supplier\Supplier;
+use App\Services\Finance\Accounting\Articles\ArticleMirror;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 
@@ -35,6 +36,8 @@ use Illuminate\Support\Carbon;
  * ist kein Grund, in workDiary einen Kunden oder Lieferanten zu erfinden.
  */
 class VoucherMirror {
+    public function __construct(private readonly ArticleMirror $articles) {}
+
     /**
      * @param  array{read: int, created: int, updated: int, skipped: int}  $counters
      */
@@ -108,12 +111,14 @@ class VoucherMirror {
             return 0;
         }
         $existing = AccountingVoucherLine::query()->withoutGlobalScopes()->where('voucher_id', $voucher->id)->get()->keyBy('position');
+        // Katalogschlüssel des Artikelspiegels (gap-09), sonst `<plugin>:<Fremd-ID>` bis zum nächsten Artikelabgleich.
+        $catalogKeys = $this->articles->keysFor($organizationId, $pluginId, array_values(array_filter(array_map(static fn (MirroredVoucherLine $l): ?string => $l->externalArticleId, $lines))));
         $seen = [];
         foreach ($lines as $line) {
             $attributes = [
                 'external_article_id' => $line->externalArticleId !== null ? mb_substr($line->externalArticleId, 0, 128) : null,
-                // Katalogschlüssel, sonst `<plugin>:<Fremd-ID>` — Schlüssel für Einstufung und Rechnungsbezug (Feature 185).
-                'article_ref' => $line->articleRef !== null ? mb_substr($line->articleRef, 0, 64) : ($line->externalArticleId !== null ? mb_substr($pluginId . ':' . $line->externalArticleId, 0, 64) : null),
+                // Schlüssel für Einstufung und Rechnungsbezug (Feature 185).
+                'article_ref' => $line->articleRef !== null ? mb_substr($line->articleRef, 0, 64) : ($line->externalArticleId !== null ? ($catalogKeys[$line->externalArticleId] ?? mb_substr($pluginId . ':' . $line->externalArticleId, 0, 64)) : null),
                 'name' => mb_substr($line->name, 0, 255),
                 'description' => $line->description,
                 'quantity' => $line->quantity,

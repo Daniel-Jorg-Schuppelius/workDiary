@@ -26,17 +26,20 @@
 
     {{-- Zähler --}}
     <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        {{-- Kacheln filtern die Liste nach Status (ux-pattern-katalog §4); die Zahlen bleiben über dem Gesamtbestand stehen. --}}
         @foreach ([
-            ['key' => 'all',       'label' => __('Gesamt'),         'tone' => 'primary'],
-            ['key' => 'planned',   'label' => __('Geplant'),        'tone' => 'info'],
-            ['key' => 'active',    'label' => __('In Bearbeitung'), 'tone' => 'warning'],
-            ['key' => 'done',      'label' => __('Abgeschlossen'),  'tone' => 'success'],
-            ['key' => 'cancelled', 'label' => __('Storniert'),      'tone' => 'neutral'],
+            ['key' => 'all',       'status' => null,     'label' => __('Gesamt'),         'tone' => 'primary'],
+            ['key' => 'planned',   'status' => '2',      'label' => __('Geplant'),        'tone' => 'info'],
+            ['key' => 'active',    'status' => 'active', 'label' => __('In Bearbeitung'), 'tone' => 'warning'],
+            ['key' => 'done',      'status' => 'done',   'label' => __('Abgeschlossen'),  'tone' => 'success'],
+            ['key' => 'cancelled', 'status' => '8',      'label' => __('Storniert'),      'tone' => 'neutral'],
         ] as $tile)
             <x-kpi-tile
                 :label="$tile['label']"
                 :value="$counts[$tile['key']]"
-                :tone="$tile['tone']" />
+                :tone="$tile['tone']"
+                :href="route('diary.index', array_filter(array_merge($filters, ['status' => $tile['status']]), static fn ($v) => $v !== null && $v !== ''))"
+                :active="$tile['status'] !== null && ($filters['status'] ?? '') === $tile['status']" />
         @endforeach
     </div>
 

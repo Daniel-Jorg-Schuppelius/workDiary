@@ -59,7 +59,8 @@ class SupportReportConfigurationTest extends TestCase {
         $scheduler = collect((array) $report['scheduler']);
         $toggl = $scheduler->firstWhere('job', 'toggl.import');
         $this->assertFalse($toggl['enabled']);
-        $this->assertSame('0 * * * *', $toggl['cron']);
+        // Takt-Jobs tragen den Minutenversatz aus ihrem Schlüssel (Leistungsanalyse 2026-11-02, perf-01).
+        $this->assertSame(\App\Scheduling\JobOffset::minutes('toggl.import', \App\Scheduling\CadenceType::Hourly) . ' * * * *', $toggl['cron']);
 
         $this->assertSame('manual', $report['updates']['mode']);
         $this->assertIsArray($report['updates']['pending']);

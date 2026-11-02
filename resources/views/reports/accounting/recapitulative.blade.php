@@ -50,10 +50,10 @@
 
         <div class="grid gap-3 sm:grid-cols-2">
             <x-kpi-tile :label="__('accounting.recapitulative.total')" :value="$total" />
-            <x-kpi-tile :label="__('accounting.reports.kpi.findings')" :value="count($unclear)" />
+            <x-kpi-tile :label="__('accounting.reports.kpi.findings')" :value="count($unclear)" href="#recap-unclear" />
         </div>
 
-        <x-card :title="__('accounting.reports.unclear.title')" icon="help">
+        <x-card :title="__('accounting.reports.unclear.title')" icon="help" id="recap-unclear" class="scroll-mt-24">
             @if ($unclear === [])
                 <x-empty-state icon="check_circle" :title="__('accounting.reports.unclear.none')" compact />
             @else

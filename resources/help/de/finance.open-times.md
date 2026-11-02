@@ -66,6 +66,8 @@ Funktionen:
    Administration und Buchhaltung zur Verfügung und lässt sich nicht
    per Klick rückgängig machen.
 
+Ein Klick auf eine Warn-Kachel filtert die Liste auf diese Einträge und schaltet dabei auf „Alle“; die Filterleiste bietet denselben Wert an.
+
 Sichtbar ist die Seite für Rollen mit der Berechtigung
 „Zeiteinträge aller anzeigen" (standardmäßig Buchhaltung,
 Geschäftsführung und Administration).

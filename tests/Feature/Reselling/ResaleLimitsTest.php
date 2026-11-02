@@ -21,7 +21,7 @@ use App\Plugins\Lexoffice\Models\{LexofficeArticle, LexofficeRecurringTemplate, 
 use App\Plugins\Lexoffice\Services\{LexofficeInvoiceMirrorSource, LexofficeRecurringTemplateSync};
 use App\Services\Reselling\License\{LicenseInvoiceLinks, LicenseStockException, LicenseStockService};
 use App\Services\Reselling\Plan\PlanAudit;
-use App\Services\Reselling\Register\{AllocationDeriver, LicenceAssignments, LicenseAccounts, LinkProposer, PeriodLinker, PeriodPlanner, ResaleInvoiceDraftService};
+use App\Services\Reselling\Register\{AllocationDeriver, LicenseAccounts, LinkProposer, PeriodLinker, PeriodPlanner, ResaleInvoiceDraftService};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -282,7 +282,17 @@ class ResaleLimitsTest extends TestCase {
             (new PeriodLinker)->attach($period, $line, 12.0, null, $admin->id);
         }
         $this->assertNotNull($period->fresh()?->decided_at);
-        $assignment = (new LicenceAssignments)->create($contract, ['customer' => $other, 'foreign' => null], 3, '2023-08-07', '2024-08-06', null, null, null);
+        // Altbestand: alle drei Lizenzen abgetreten, obwohl sie dem Halter schon berechnet sind — der Dienst lehnt das seit
+        // dem Sicherheitsaudit 2026-11-02 (sec-02) wie der Validator ab; die Rücknahme muss solche Zeilen trotzdem heilen.
+        $assignment = ResaleSubscription::query()->create([
+            'organization_id' => $this->organization->id, 'parent_id' => $contract->id, 'kind' => $contract->kind, 'provider' => $contract->provider,
+            'external_id' => 'CN3#1', 'label' => $contract->label, 'company_name' => $other->name, 'customer_id' => $other->id, 'is_own_holding' => false,
+            'article_ref' => $contract->article_ref, 'quantity' => 3, 'starts_on' => '2023-08-07', 'ends_on' => '2024-08-06', 'term_months' => 12,
+            'interval' => $contract->interval, 'renewal' => $contract->renewal, 'sale_unit_price' => '47.40', 'currency' => 'EUR', 'status' => $contract->status,
+        ]);
+        (new PeriodPlanner)->sync($assignment);
+        $contract->unsetRelation('assignments');
+        (new PeriodPlanner)->sync($contract);
         $this->assertSame(0, $period->refresh()->quantity, 'abgetreten: der Vertrag behält keine Lizenz');
 
         $this->actingAs($admin)->delete(route('finance.resale.destroy', $assignment->sqid))->assertRedirect();

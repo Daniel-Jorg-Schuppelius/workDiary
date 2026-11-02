@@ -1,7 +1,7 @@
 ---
 title: "Helpdesk y Service Desk"
 topic: helpdesk.overview
-version: 2
+version: 3
 keywords:
     - sistema de tickets
     - crear ticket
@@ -65,6 +65,18 @@ defecto: comercial → Contabilidad, técnica → Jefe de equipo, RR. HH. →
 Administración de personal). Aprobar, rechazar, consultar y delegar tienen
 el mismo efecto que en el expediente; un rechazo cierra la ronda y la
 autoaprobación sigue bloqueada.
+
+**Servicios de negocio y mapa de servicios:** Un ticket puede llevar un
+servicio de negocio (por ejemplo «correo» o «servidor de contabilidad») y una
+oferta de servicio del catálogo; después los tickets se filtran, enrutan y
+evalúan en los informes por ellos. El mapa de servicios muestra cómo dependen
+los servicios de negocio entre sí: por cada servicio, de qué depende, quién lo
+necesita y quién se vería afectado por una caída — junto con los tickets
+abiertos de esos servicios. Las dependencias se mantienen en el servicio de
+negocio (selección múltiple); un ciclo se rechaza. En el ticket, la tarjeta
+«Impacto» muestra a qué otros servicios de negocio afectaría una caída del
+servicio notificado y cuántos tickets hay abiertos allí — así se prioriza una
+incidencia antes de que lleguen los avisos consecutivos.
 
 **Satisfacción e informes:** Tras el cierre, el cliente puede emitir una
 valoración breve en el portal — una por ticket. Los informes muestran el

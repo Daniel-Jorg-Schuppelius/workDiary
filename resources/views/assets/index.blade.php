@@ -25,9 +25,11 @@
         </x-slot:actions>
 
         <div class="grid gap-3 sm:grid-cols-3">
-            <x-kpi-tile :label="__('Assets gesamt')" :value="$kpis['total']" tone="neutral" />
-            <x-kpi-tile :label="__('In Wartung/Reparatur')" :value="$kpis['maintenance']" :tone="$kpis['maintenance'] > 0 ? 'warning' : 'neutral'" />
-            <x-kpi-tile :label="__('Gesperrt')" :value="$kpis['blocked']" :tone="$kpis['blocked'] > 0 ? 'error' : 'neutral'" />
+            <x-kpi-tile :label="__('Assets gesamt')" :value="$kpis['total']" tone="neutral" :href="route('assets.index')" />
+            <x-kpi-tile :label="__('In Wartung/Reparatur')" :value="$kpis['maintenance']" :tone="$kpis['maintenance'] > 0 ? 'warning' : 'neutral'"
+                        :href="route('assets.index', ['show' => 'maintenance'])" :active="$activeFilters['show'] === 'maintenance'" />
+            <x-kpi-tile :label="__('Gesperrt')" :value="$kpis['blocked']" :tone="$kpis['blocked'] > 0 ? 'error' : 'neutral'"
+                        :href="route('assets.index', ['status' => \App\Enums\Asset\AssetStatus::Blocked->value])" :active="$activeFilters['status'] === \App\Enums\Asset\AssetStatus::Blocked->value" />
         </div>
 
         <x-filter-bar :action="route('assets.index')"
@@ -56,6 +58,7 @@
                     @endforeach
                 </select>
             </x-filter-field>
+            <x-filter-toggle name="show" value="maintenance" :label="__('In Wartung/Reparatur')" :checked="$activeFilters['show'] === 'maintenance'" tone="warning" />
         </x-filter-bar>
 
         @if ($hasActiveFilters || $assets->total() > 0)

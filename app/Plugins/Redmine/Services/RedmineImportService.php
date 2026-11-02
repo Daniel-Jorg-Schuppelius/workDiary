@@ -18,7 +18,7 @@ use App\Models\Platform\Organization;
 use App\Plugins\Redmine\Api\{RedmineClient, RedmineClientFactory};
 use App\Plugins\Redmine\Models\{RedmineConnection, RedmineProjectLink};
 use App\Plugins\Redmine\RedminePlugin;
-use App\Plugins\Support\TaskSync\{AbstractTaskImportService, IncompleteRemoteReadException, RemoteTask, SelfHostedInstance};
+use App\Plugins\Support\TaskSync\{AbstractTaskImportService, IncompleteRemoteReadException, RemoteTask};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\DateHelper;
 use Illuminate\Database\Eloquent\{Collection as EloquentCollection, Model};
@@ -171,11 +171,11 @@ class RedmineImportService extends AbstractTaskImportService {
         ], $issues);
     }
 
+    /** Nur Ticket-Links; andere Pfade der Instanz (Projekte, Wiki) stehen nie im Payload. */
     public function sourceUrl(ExternalReference $reference): ?string {
-        $url = data_get($reference->payload, 'remote.url');
-        $baseUrl = (string) $this->connection((int) $reference->organization_id)?->source_url;
+        $url = parent::sourceUrl($reference);
 
-        return is_string($url) && SelfHostedInstance::owns($baseUrl, $url) && preg_match('#/issues/\d+$#', $url) === 1 ? $url : null;
+        return $url !== null && preg_match('#/issues/\d+$#', $url) === 1 ? $url : null;
     }
 
     /**

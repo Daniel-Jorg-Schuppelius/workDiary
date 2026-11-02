@@ -47,9 +47,9 @@
                         :hint="__(':n bezahlte Rechnungen im Zeitraum', ['n' => $kpis['paidCount']])" />
             <x-kpi-tile :label="__('Pünktlich bezahlt')" :value="$kpis['onTimeShare'] !== null ? $days($kpis['onTimeShare']) . ' %' : '—'" />
             <x-kpi-tile :label="__('Überfällige Rechnungen')" :value="$kpis['overdueCount']"
-                        :tone="$kpis['overdueCount'] > 0 ? 'warning' : 'success'" />
+                        :tone="$kpis['overdueCount'] > 0 ? 'warning' : 'success'" href="#payment-overdue" />
             <x-kpi-tile :label="__('Überfälliges Volumen')" :value="$eur($kpis['overdueTotal'])"
-                        :tone="$kpis['overdueTotal'] > 0 ? 'warning' : 'success'" />
+                        :tone="$kpis['overdueTotal'] > 0 ? 'warning' : 'success'" href="#payment-overdue" />
         </div>
 
         <div class="chart-grid grid gap-3 xl:grid-cols-2">
@@ -69,7 +69,7 @@
                             :note="__('Verzug = Tage nach Fälligkeit (Frühzahler zählen als 0); Klick filtert diesen Bericht auf den Kunden.')" />
         </div>
 
-        <x-card class="mt-4">
+        <x-card class="mt-4" id="payment-overdue" class="scroll-mt-24">
             <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Überfällige offene Rechnungen (Top 15)') }}</h2>
             <div class="mb-3 text-xs text-muted">{{ __('Zeitraum') }}: {{ $label }} · {{ __('Stichtag: Zeitraumende') }}</div>
 

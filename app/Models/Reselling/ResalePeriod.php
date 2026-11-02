@@ -18,8 +18,8 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\{Organization, User};
 use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Register\LicenseMonths;
+use App\Support\{CarbonFmt, Tz};
 use App\Support\Query\DateRange;
-use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -121,13 +121,13 @@ class ResalePeriod extends Model {
         return $this->hasMany(ResalePurchaseEntry::class, 'period_id');
     }
 
-    /** Ist-Einkauf aus Einkaufsbelegen (null, wenn keiner zugeteilt ist). */
-    public function actualPurchase(): ?float {
+    /** Ist-Einkauf aus Einkaufsbelegen in der Periodenwährung (null, wenn keiner zugeteilt ist). */
+    public function actualPurchase(): ?Money {
         if ($this->purchases->isEmpty()) {
             return null;
         }
 
-        return (float) $this->purchases->sum(static fn(ResalePurchaseEntry $e): float => $e->net_amount->toFloat());
+        return Money::sum($this->purchases->map(static fn(ResalePurchaseEntry $e): Money => $e->net_amount), $this->currency, 2);
     }
 
     /** @return HasMany<ResalePeriodLink, $this> */
@@ -203,6 +203,29 @@ class ResalePeriod extends Model {
         return $this->links->isNotEmpty() && $this->links->every(static fn(ResalePeriodLink $l): bool => ! $l->origin->isDecided());
     }
 
+    /** Beginnt erst noch — bevorstehende Perioden werden weder bestätigt noch entschieden. */
+    public function isUpcoming(): bool {
+        return $this->starts_on->greaterThan(self::today());
+    }
+
+    /** Bestätigen braucht einen offenen Vorschlag an einer fälligen Periode (Sicherheitsaudit 2026-11-02, sec-05). */
+    public function isConfirmable(): bool {
+        return $this->isProposedOnly() && ! $this->isUpcoming();
+    }
+
+    /**
+     * Verzichten oder strittig stellen geht nur bei fälligen Perioden ohne
+     * Nutzerentscheidung; teilweise gedeckte bleiben entscheidbar, offene
+     * sind nie entschieden (Sicherheitsaudit 2026-11-02, sec-03).
+     */
+    public function isDecidable(): bool {
+        if ($this->isUpcoming()) {
+            return false;
+        }
+
+        return $this->decided_at === null || in_array($this->status, [PeriodStatus::Open, PeriodStatus::Partial], true);
+    }
+
     /**
      * Vom Nutzer entschieden (bestätigt, manuell verknüpft, verzichtet,
      * strittig) — die Planung fasst Menge, Ende und Preis nicht mehr an.
@@ -247,20 +270,43 @@ class ResalePeriod extends Model {
     }
 
     /**
-     * Offene Perioden fremder Halter, deren Beginn erreicht ist — nur die
-     * können fehlen. Eigener Bestand wird nie berechnet und zählt nicht.
+     * Perioden fremder Halter, deren Beginn erreicht ist — nur die können
+     * fehlen. Eigener Bestand wird nie berechnet und zählt nie.
      *
      * @param  Builder<ResalePeriod>  $query
      * @return Builder<ResalePeriod>
      */
-    public function scopeDue(Builder $query, ?CarbonImmutable $reference = null): Builder {
-        return $query->where('status', PeriodStatus::Open->value)
-            ->where('starts_on', '<', DateRange::dayAfter($reference ?? self::today()))
+    public function scopeStarted(Builder $query, ?CarbonImmutable $reference = null): Builder {
+        return $query->where('starts_on', '<', DateRange::dayAfter($reference ?? self::today()))
             ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false));
     }
 
+    /**
+     * Fällig: begonnen ({@see scopeStarted()}) und nicht entschieden — die eine
+     * Definition für Überblick, Mappe, Cockpit, Berichte und Entwurf
+     * (Konsolidierungs-Audit 2026-11-02, kon-02). Teilweise gedeckte Perioden
+     * zählen mit, solange der Aufrufer sie nicht ausschließt; im Speicher:
+     * {@see ResaleSubscription::duePeriods()}.
+     *
+     * @param  Builder<ResalePeriod>  $query
+     * @return Builder<ResalePeriod>
+     */
+    public function scopeDue(Builder $query, ?CarbonImmutable $reference = null, bool $withPartial = true): Builder {
+        return $query->started($reference)->whereIn('status', array_map(static fn(PeriodStatus $s): string => $s->value, self::dueStatuses($withPartial)));
+    }
+
+    /**
+     * Nicht entschiedene Zustände: offen, auf Wunsch auch teilweise gedeckt.
+     *
+     * @return list<PeriodStatus>
+     */
+    public static function dueStatuses(bool $withPartial = true): array {
+        return $withPartial ? [PeriodStatus::Open, PeriodStatus::Partial] : [PeriodStatus::Open];
+    }
+
+    /** Zeitraum im Anzeigeformat der Organisation (Belegtexte bleiben bei festem `d.m.Y`). */
     public function label(): string {
-        return $this->starts_on->format('d.m.Y') . ' – ' . $this->ends_on->format('d.m.Y');
+        return (string) CarbonFmt::period($this->starts_on, $this->ends_on);
     }
 
     /**

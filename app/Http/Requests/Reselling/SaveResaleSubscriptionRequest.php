@@ -23,6 +23,7 @@ use App\Models\Platform\Organization;
 use App\Models\Reselling\ResaleSubscription;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Platform\Catalog\{ArticleCatalog, CatalogArticle};
+use App\Services\Reselling\Plan\PlanLinkEditor;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Validation\{Rule, Validator};
@@ -121,6 +122,9 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
             'sale_unit_price' => ['nullable', 'numeric', 'min:0', 'max:9999999'],
             'status' => ['required', Rule::enum(SubscriptionStatus::class)],
             'notes' => ['nullable', 'string', 'max:2000'],
+            // „Abo aus Vorlage anlegen“ (MVP-1413): Vorlagenposition, der das neue Abo zugeordnet wird — nur beim Anlegen.
+            'plan_key' => ['nullable', 'string', 'max:120'],
+            'plan_position' => ['nullable', 'integer', 'min:0', 'required_with:plan_key'],
         ];
     }
 
@@ -131,6 +135,9 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
             $this->validateHolder($validator, (string) ($data['holder'] ?? 'none'), $data, $subscription?->foreign_customer_id);
             if (($data['renewal'] ?? null) === RenewalMode::Cancel->value && empty($data['ends_on'])) {
                 $validator->errors()->add('ends_on', (string) __('resale.error.ends_on_required'));
+            }
+            if ($subscription === null && $this->planKey() !== null && ! $validator->errors()->hasAny(['plan_key', 'plan_position', 'quantity'])) {
+                $this->validatePlanLine($validator, $this->planKey(), $this->planPosition(), (int) $data['quantity']);
             }
             if ($subscription !== null && ! $validator->errors()->hasAny(['quantity', 'starts_on', 'ends_on'])) {
                 $this->validateAssignedQuantity($validator, $subscription, (int) $data['quantity'], (string) $data['starts_on'], $data['ends_on'] ?? null);
@@ -144,6 +151,37 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
                 $validator->errors()->add('quantity', (string) __('resale.error.amount_too_large'));
             }
         });
+    }
+
+    /** Vorlagenschlüssel aus „Abo aus Vorlage anlegen“, sonst null. */
+    public function planKey(): ?string {
+        return StringHelper::trimToNull(is_string($this->input('plan_key')) ? $this->input('plan_key') : null);
+    }
+
+    public function planPosition(): int {
+        return max(0, (int) $this->input('plan_position', 0));
+    }
+
+    /**
+     * Die Vorlagenposition muss es geben und noch so viele Lizenzen frei haben
+     * (Phase 167, MVP-1454) — dieselbe Prüfung wie im Editor, hier als Feldfehler
+     * vor dem Anlegen (Sicherheitsaudit 2026-11-02, sec-04).
+     */
+    private function validatePlanLine(Validator $validator, string $planKey, int $position, int $quantity): void {
+        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        if (! $organization instanceof Organization) {
+            return;
+        }
+        try {
+            $free = app(PlanLinkEditor::class)->freeLicences($organization, null, $planKey, $position);
+        } catch (\InvalidArgumentException $e) {
+            $validator->errors()->add('plan_key', \App\Support\ErrorText::for($e));
+
+            return;
+        }
+        if ($quantity > $free) {
+            $validator->errors()->add('quantity', (string) __('resale.plan.error.quantity', ['free' => $free]));
+        }
     }
 
     /**

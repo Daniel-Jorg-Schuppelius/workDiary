@@ -22866,6 +22866,7 @@ CREATE TABLE IF NOT EXISTS "lexoffice_vouchers"(
   "sales_user_id" integer,
   "sales_agent_id" integer,
   "recurring_template_id" varchar,
+  "paid_date_checked_at" datetime,
   foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
   foreign key("customer_id") references customers("id") on delete set null on update no action,
   foreign key("organization_id") references organizations("id") on delete cascade on update no action,
@@ -25125,6 +25126,35 @@ CREATE UNIQUE INDEX "resale_prices_class_uq" on "resale_price_catalog"(
   "interval",
   "valid_from"
 );
+CREATE TABLE IF NOT EXISTS "accounting_articles"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "plugin_id" varchar not null,
+  "external_id" varchar not null,
+  "number" varchar,
+  "name" varchar not null,
+  "description" text,
+  "unit_name" varchar,
+  "net_unit_price" numeric,
+  "currency" varchar not null default 'EUR',
+  "vat_rate" numeric,
+  "kind" varchar not null default 'service',
+  "archived_at" datetime,
+  "synced_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "acc_article_org_plugin_ext_uq" on "accounting_articles"(
+  "organization_id",
+  "plugin_id",
+  "external_id"
+);
+CREATE INDEX "acc_article_org_plugin_number_idx" on "accounting_articles"(
+  "organization_id",
+  "plugin_id",
+  "number"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -26171,3 +26201,5 @@ INSERT INTO migrations VALUES(1042,'2027_04_01_200000_add_observed_properties_to
 INSERT INTO migrations VALUES(1043,'2027_04_01_210000_add_invoice_number_to_domain_accounting_entries',15);
 INSERT INTO migrations VALUES(1044,'2027_04_01_220000_add_provider_details_to_domain_tables',16);
 INSERT INTO migrations VALUES(1045,'2027_04_01_230000_add_price_class_to_resale_price_catalog',17);
+INSERT INTO migrations VALUES(1046,'2027_04_02_100000_add_paid_date_checked_at_to_lexoffice_vouchers',18);
+INSERT INTO migrations VALUES(1047,'2027_04_02_110000_create_accounting_articles_table',18);

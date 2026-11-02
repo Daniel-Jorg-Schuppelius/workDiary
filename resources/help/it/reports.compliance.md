@@ -54,6 +54,7 @@ amministratori; a tutti gli altri l’accesso viene negato.
   (persone con almeno una voce) e **Tipi entità** (tipi di oggetto distinti).
   Anche questi due contano tutte le voci del periodo, non solo gli elenchi
   top 20.
+- Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
 - Grafici: **Eventi nel tempo**, **Principali attori (top 15)** e gli eventi
   nel tempo per tipo di evento.
 - Tabelle: **Per evento**, **Per tipo entità (top 20)**, **Per utente (top
@@ -83,6 +84,7 @@ attive, si aggiungono i rilievi sui tempi di guida e di riposo.
   **Dipendenti interessati**, **Aperto (senza correzione)** e **Con
   correzione approvata** (rilievi in giorni con una correzione dell’orario
   approvata).
+- Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
 - Un riquadro per tipo di violazione con il numero; un clic apre il report
   dettagliato filtrato su quel tipo.
 - Grafici: rilievi aperti nel tempo e rilievi nel tempo per tipo di
@@ -105,6 +107,7 @@ controllo, passa a **Risolto**; se si ripresenta, torna su **Aperto**.
 
 - Riquadri per stato: **Aperto**, **Confermato**, **Risolto** e
   **Accettato**, contati su tutta l’organizzazione. Un clic filtra l’elenco.
+- Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
 - Grafico **Rilievi nuovi vs. riscontrati al mese** per gli ultimi 24 mesi
   con dati.
 - Elenco: **Dipendente**, **Data**, **Tipo**, **Valore**, **Soglia**,

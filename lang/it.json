@@ -11092,5 +11092,6 @@
     "Steuersatz hinzufügen": "Aggiungi aliquota",
     "Steuersatz entfernen": "Rimuovi aliquota",
     "Netto und Steuer ergeben :sum, nicht das Brutto.": "Netto e imposta danno :sum, non il lordo.",
-    "Steuersätze": "Aliquote"
+    "Steuersätze": "Aliquote",
+    "Der Eingang ist als „keine Rechnung“ abgelegt — Zuordnung, Werte und Einbehalte lassen sich nicht mehr ändern.": "Il documento è archiviato come «non è una fattura»: assegnazione, valori e trattenute non si possono più modificare."
 }

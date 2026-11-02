@@ -85,7 +85,7 @@
              des Tages; Soll, Unverteilt, Fortschritt, Bilanz, Tätigkeiten und
              Stempelungen liegen unter „Weitere Details" (für alle, kein Modus). --}}
         <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
-            <x-kpi-tile :label="__('Erfasst')" :value="$fmt($entriesMinutes)" tone="info" />
+            <x-kpi-tile :label="__('Erfasst')" :value="$fmt($entriesMinutes)" tone="info" href="#today-entries" />
 
             {{-- Anwesenheit-Tile: tickert live mit dem Header-Stempel-Timer mit. --}}
             <div class="rounded-box border border-success/40 bg-base-100 px-4 py-3 shadow-xs">
@@ -119,7 +119,7 @@
              page-shell darf die Karte nicht unter ihre Inhaltshöhe schrumpfen —
              overflow-hidden würde sonst ohne Scrollbalken abschneiden; bei
              Platzmangel scrollt stattdessen der Seiten-Container. --}}
-        <x-card as="section" padding="p-0" class="shrink-0 overflow-hidden">
+        <x-card as="section" padding="p-0" class="shrink-0 overflow-hidden scroll-mt-24" id="today-entries">
             <header class="flex items-center justify-between gap-2 border-b border-base-300 p-3">
                 <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Zeiteinträge') }}</h2>
                 <span class="text-xs text-muted">{{ $entries->count() }}</span>

@@ -203,11 +203,75 @@ class WorkQueueTest extends TestCase {
         $this->actingAs($user)->get(route('work-queue.index'))->assertOk()->assertSee(__('work-queue.empty.title'));
 
         Task::factory()->create(['organization_id' => $this->organization->id, 'assigned_to' => $user->id, 'title' => 'Kachel-Aufgabe']);
+        // Der Vorrat liegt 60 s im Cache (perfc-06); die Kachel liest denselben Eintrag wie die Seite.
+        app(WorkQueue::class)->forget($user, $this->organization);
         $this->actingAs($user);
         $html = (string) app(WorkQueueWidget::class)->render($user);
 
         $this->assertStringContainsString('Kachel-Aufgabe', $html);
         $this->assertStringContainsString(route('work-queue.index'), $html);
+    }
+
+    public function test_queue_is_cached_per_user_and_source_set_and_caps_each_source(): void {
+        $user = $this->worker();
+        $registry = app(ModuleRegistry::class);
+        $registry->contribute(WorkItemSource::class, WorkQueueTestFloodSource::class);
+        app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
+        $queue = app(WorkQueue::class);
+        $flood = array_intersect_key($queue->sourcesFor($user), ['test_flood' => true]);
+
+        WorkQueueTestFloodSource::$calls = 0;
+        $items = $queue->itemsFor($user, $this->organization, $flood);
+        $this->assertCount(WorkQueue::SOURCE_LIMIT, $items, 'je Quelle höchstens die Obergrenze');
+        $this->assertSame('Flut 0001', $items[0]->title, 'die dringendsten (früheste Fälligkeit) bleiben');
+        $this->assertSame(['test_flood' => 5], $queue->overflowFor($user, $this->organization, $flood), 'der Rest wird gezählt');
+        $this->assertSame(1, WorkQueueTestFloodSource::$calls);
+
+        $again = $queue->itemsFor($user, $this->organization, $flood);
+        $this->assertSame(1, WorkQueueTestFloodSource::$calls, 'zweiter Aufruf aus dem Cache, ohne die Quelle zu fragen');
+        $this->assertEquals(array_map(static fn (WorkItem $i): array => $i->toArray(), $items), array_map(static fn (WorkItem $i): array => $i->toArray(), $again));
+
+        $queue->forget($user, $this->organization, $flood);
+        $queue->itemsFor($user, $this->organization, $flood);
+        $this->assertSame(2, WorkQueueTestFloodSource::$calls, 'nach dem Verwerfen fragt der Vorrat die Quelle wieder');
+
+        $this->actingAs($this->orgAdmin())->get(route('work-queue.index'))->assertOk();
+    }
+
+    public function test_work_item_round_trips_through_its_array_form(): void {
+        $item = new WorkItem(source: 'task', key: 'task:7', title: 'Aufgabe', url: 'https://example.test/t/7', detail: 'Detail', dueAt: CarbonImmutable::parse('2026-10-25 08:00:00'), personal: true, count: 3);
+
+        $copy = WorkItem::fromArray($item->toArray());
+
+        $this->assertEquals($item, $copy);
+        $this->assertNull(WorkItem::fromArray(['source' => 's', 'key' => 'k', 'title' => 't', 'url' => null])->dueAt);
+    }
+}
+
+final class WorkQueueTestFloodSource implements WorkItemSource {
+    public static int $calls = 0;
+
+    public function key(): string {
+        return 'test_flood';
+    }
+
+    public function label(): string {
+        return 'Flut';
+    }
+
+    public function category(): WorkItemCategory {
+        return WorkItemCategory::Task;
+    }
+
+    public function available(User $viewer): bool {
+        return true;
+    }
+
+    public function items(User $viewer, Organization $organization): iterable {
+        self::$calls++;
+        for ($i = WorkQueue::SOURCE_LIMIT + 5; $i >= 1; $i--) {
+            yield new WorkItem(source: 'test_flood', key: 'flood:' . $i, title: sprintf('Flut %04d', $i), url: null, dueAt: CarbonImmutable::parse('2026-12-01')->addDays($i));
+        }
     }
 }
 

@@ -51,6 +51,24 @@ abstract class TokenTaskImportAdminController extends Controller {
         return 'token';
     }
 
+    /**
+     * Identität einer selbst gehosteten Instanz für {@see verifyConnection()}:
+     * Schlüssel und Name aus der Basis-URL, die Version dahinter, das Konto
+     * wie gemeldet.
+     *
+     * @param  array{id: ?string, name: ?string, version: ?string}  $account
+     * @return array{source_id: string, source_name: string, source_url: string, account_id: ?string, account_name: ?string}
+     */
+    protected function selfHostedIdentity(string $baseUrl, array $account): array {
+        return [
+            'source_id' => SelfHostedInstance::key($baseUrl),
+            'source_name' => SelfHostedInstance::name($baseUrl) . ($account['version'] !== null ? ' · ' . $account['version'] : ''),
+            'source_url' => $baseUrl,
+            'account_id' => $account['id'],
+            'account_name' => $account['name'],
+        ];
+    }
+
     public function verify(): RedirectResponse {
         $admin = $this->admin();
         $organization = $this->organization($admin);

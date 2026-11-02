@@ -134,9 +134,9 @@ class SchedulerRuntimeTest extends TestCase {
 
     public function test_watchdog_flags_overdue_job_once_per_due_run(): void {
         $this->enableTogglPlugin();
-        // Zeit einfrieren: 45 min nach der vollen Stunde — der Hourly-Soll-
-        // Lauf (:00) ist damit sicher jenseits von Laufzeit+Grace (30 min).
-        $this->travelTo(now()->startOfHour()->addMinutes(45));
+        // Zeit einfrieren: 45 min nach dem Soll-Slot (volle Stunde plus Versatz
+        // des Jobs, perf-01) — damit sicher jenseits von Laufzeit+Grace (30 min).
+        $this->travelTo($this->togglSlot()->addMinutes(45));
         // Hourly-Job, letzter Erfolg vor 3 Stunden, danach gestartet aber
         // nie wieder erfolgreich → überfällig.
         ScheduledJobState::query()->create([
@@ -255,16 +255,16 @@ class SchedulerRuntimeTest extends TestCase {
      */
     public function test_watchdog_ignores_a_running_job_of_the_current_due_slot(): void {
         $this->enableTogglPlugin();
-        $this->travelTo(now()->startOfHour()->addMinutes(45));
+        $this->travelTo($this->togglSlot()->addMinutes(45));
         ScheduledJobState::query()->create([
             'job_key' => 'toggl.import',
-            'last_started_at' => CarbonImmutable::now()->startOfHour(),
+            'last_started_at' => $this->togglSlot(),
             'last_success_at' => CarbonImmutable::now()->subHours(3),
             'last_status' => JobRunStatus::Running,
         ]);
         ScheduledJobRun::query()->create([
             'job_key' => 'toggl.import',
-            'started_at' => CarbonImmutable::now()->startOfHour(),
+            'started_at' => $this->togglSlot(),
             'status' => JobRunStatus::Running,
         ]);
 
@@ -282,8 +282,11 @@ class SchedulerRuntimeTest extends TestCase {
         // Kein plugin_settings-Eintrag: toggl ist nirgends aktiviert. Der
         // eigentlich überfällige Sync darf dann weder alarmieren noch den
         // Dedup-Marker setzen — sonst meldet der Wächter Anbindungen, die
-        // bewusst nicht laufen.
-        $this->travelTo(now()->startOfHour()->addMinutes(45));
+        // bewusst nicht laufen. (phpunit.xml schaltet das Gating ab, damit der
+        // eingefrorene Zeitplan vollständig bleibt — hier gilt die Vorgabe.)
+        config(['scheduler.skip_inactive_plugins' => true]);
+        \App\Scheduling\PluginBinding::reset();
+        $this->travelTo($this->togglSlot()->addMinutes(45));
         ScheduledJobState::query()->create([
             'job_key' => 'toggl.import',
             'last_started_at' => CarbonImmutable::now()->subHours(3),
@@ -300,5 +303,10 @@ class SchedulerRuntimeTest extends TestCase {
         // Sobald das Plugin irgendwo aktiv ist, greift die Überwachung wieder.
         $this->enableTogglPlugin();
         $this->assertSame(1, Artisan::call('scheduler:watchdog', ['--fail' => true]));
+    }
+    /** Soll-Slot des stündlichen Toggl-Imports: volle Stunde plus Minutenversatz (perf-01). */
+    private function togglSlot(): CarbonImmutable {
+        return CarbonImmutable::now()->startOfHour()
+            ->addMinutes(\App\Scheduling\JobOffset::minutes('toggl.import', \App\Scheduling\CadenceType::Hourly));
     }
 }

@@ -15,6 +15,8 @@ namespace App\Services\Reselling\Register;
 use App\Enums\Reselling\PeriodStatus;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
+use App\Services\Concerns\AssertsStatusTransition;
+use App\Services\Reselling\Register\Concerns\LocksResalePeriods;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Collection;
 
@@ -28,6 +30,9 @@ use Illuminate\Support\Collection;
  * die erste Periode des Nachfolgers. Entscheidung des Inhabers 2026-10-31.
  */
 final class OrderChangeStubs {
+    use AssertsStatusTransition;
+    use LocksResalePeriods;
+
     public const AUDIT = 'resale_period.order_change';
 
     /** Der Vorgänger darf bis so viele Tage vor dem Beginn des Nachfolgers enden … */
@@ -143,7 +148,9 @@ final class OrderChangeStubs {
             }
             $moved[] = ['voucher_number' => $link->voucher_number, 'months' => (float) $link->months];
         }
+        $this->lockAndRefresh($stub);
         $before = $stub->status->value;
+        $this->assertStatusTransition($stub->status, PeriodStatus::Waived);
         $stub->forceFill([
             'status' => PeriodStatus::Waived,
             'waived_reason' => (string) __('resale.link.reason_order_change', ['date' => $successor->starts_on->format('d.m.Y')]),
@@ -152,8 +159,13 @@ final class OrderChangeStubs {
         ])->save();
         $target->unsetRelation('links');
         $target->load('links');
+        $this->lockAndRefresh($target);
         if ($target->decided_at === null) {
-            $target->forceFill(['status' => $target->statusFromCoverage($target->coveredMonths())])->save();
+            $status = $target->statusFromCoverage($target->coveredMonths());
+            if ($status !== $target->status) {
+                $this->assertStatusTransition($target->status, $status);
+                $target->forceFill(['status' => $status])->save();
+            }
         }
 
         return [$stub, ['status_before' => $before, 'successor_subscription_id' => $successor->id, 'successor_period_id' => $target->id, 'moved' => $moved]];

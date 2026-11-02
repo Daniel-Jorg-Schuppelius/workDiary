@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\WooCommerce;
 
-use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Support\ApiHealthProbe;
+use App\Plugins\AbstractPlugin;
+use App\Plugins\Support\{ChecksConnectionHealth, SelfHostedSettings};
+use App\Plugins\Support\ShopOrders\ShopOrderSettings;
 use App\Plugins\WooCommerce\Api\WooCommerceClientFactory;
 use App\Plugins\WooCommerce\Models\WooCommerceConnection;
 
@@ -23,6 +24,8 @@ use App\Plugins\WooCommerce\Models\WooCommerceConnection;
  * Gemeinsame Strecke aller Shops: {@see \App\Plugins\Support\ShopOrders\AbstractShopOrderImportService}.
  */
 class WooCommercePlugin extends AbstractPlugin {
+    use ChecksConnectionHealth;
+
     public const ID = 'woocommerce';
 
     public const SERVICE_PROVIDER = WooCommerceServiceProvider::class;
@@ -41,12 +44,10 @@ class WooCommercePlugin extends AbstractPlugin {
 
     public function settingsSchema(): array {
         return [
-            ['key' => 'base_url', 'label' => __('woocommerce::woocommerce.settings.base_url'), 'type' => 'text', 'required' => true, 'help' => __('woocommerce::woocommerce.settings.base_url_help')],
-            ['key' => 'consumer_key', 'label' => __('woocommerce::woocommerce.settings.consumer_key'), 'type' => 'text', 'required' => true, 'help' => __('woocommerce::woocommerce.settings.consumer_key_help')],
-            ['key' => 'consumer_secret', 'label' => __('woocommerce::woocommerce.settings.consumer_secret'), 'type' => 'password', 'required' => true],
-            ['key' => 'initial_window_days', 'label' => __('integration.shop_orders.settings.initial_window_days'), 'type' => 'number', 'default' => 30, 'help' => __('integration.shop_orders.settings.initial_window_days_help')],
-            ['key' => 'include_cancelled', 'label' => __('integration.shop_orders.settings.include_cancelled'), 'type' => 'boolean', 'default' => false, 'help' => __('integration.shop_orders.settings.include_cancelled_help')],
-            ['key' => 'allow_private_network', 'label' => __('integration.shop_orders.settings.allow_private_network'), 'type' => 'boolean', 'default' => false, 'help' => __('integration.shop_orders.settings.allow_private_network_help')],
+            SelfHostedSettings::field(self::ID, 'base_url'),
+            SelfHostedSettings::field(self::ID, 'consumer_key'),
+            SelfHostedSettings::field(self::ID, 'consumer_secret', 'password', help: false),
+            ...ShopOrderSettings::fields(),
         ];
     }
 
@@ -58,19 +59,15 @@ class WooCommercePlugin extends AbstractPlugin {
         return ['route' => 'admin.woocommerce.index', 'label' => 'WooCommerce', 'icon' => 'storefront'];
     }
 
-    public function healthCheck(): PluginHealth {
-        $organization = $this->healthOrgContext();
-        if ($organization instanceof PluginHealth) {
-            return $organization;
-        }
-        if (! WooCommerceConfig::isConfigured((int) $organization->id)) {
-            return PluginHealth::degraded((string) __('woocommerce::woocommerce.health.not_configured'), 'not_configured');
-        }
-        $connection = WooCommerceConnection::query()->where('organization_id', $organization->id)->first();
-        if (! $connection instanceof WooCommerceConnection || ! $connection->isReady()) {
-            return PluginHealth::degraded((string) __('woocommerce::woocommerce.health.not_connected'), 'not_connected');
-        }
+    protected function healthConfigured(int $organizationId): bool {
+        return WooCommerceConfig::isConfigured($organizationId);
+    }
 
-        return ApiHealthProbe::probe($this->name(), fn () => app(WooCommerceClientFactory::class)->for((int) $organization->id)->probe());
+    protected function healthConnectionModel(): string {
+        return WooCommerceConnection::class;
+    }
+
+    protected function healthProbe(int $organizationId): void {
+        app(WooCommerceClientFactory::class)->for($organizationId)->probe();
     }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Leads"
 topic: sales.leads
-version: 3
+version: 4
 keywords:
     - prospectos
     - clientes potenciales
@@ -60,3 +60,15 @@ Los leads tienen campos propios (Administración › Campos propios), etiquetas 
 adjuntos. Al anonimizar el lead tras el plazo de supresión se eliminan también
 los adjuntos, los campos propios y las etiquetas. Los documentos de la gestión
 documental se vinculan solo al cliente.
+
+## Cockpit
+
+La ficha del lead es el cockpit del interesado: cabecera con estado, origen y
+etiquetas, debajo contacto y necesidad, las notas de comunicación con
+seguimiento, los campos propios, los adjuntos, las ofertas creadas desde el
+lead y el historial. «Oferta desde el lead» crea una oferta con los datos de
+contacto; las ofertas aparecen con su estado en la ficha, y el informe de leads
+las cuenta por origen y conversión. Como en cliente, proveedor y proyecto, los
+paneles de otros módulos muestran solo lo que existe para el lead — un módulo
+sin datos del lead no aparece. El historial lista las entradas de auditoría del
+lead, ofertas incluidas; las reservas de cita se vinculan al lead abierto.

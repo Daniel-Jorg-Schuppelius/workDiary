@@ -71,6 +71,26 @@ final class Sqid {
     }
 
     /**
+     * Dekodiert eine Liste von Sqids (Sammelaktionen, Mehrfachauswahl) — ungültige
+     * und leere Werte fallen still heraus, die Reihenfolge bleibt.
+     *
+     * @param  class-string  $modelClass
+     * @param  iterable<mixed>  $values
+     * @return list<int>
+     */
+    public static function decodeMany(string $modelClass, iterable $values): array {
+        $ids = [];
+        foreach ($values as $value) {
+            $id = is_int($value) || is_string($value) ? self::decode($modelClass, $value) : null;
+            if ($id !== null) {
+                $ids[] = $id;
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
      * Dekodiert eine Sqid und akzeptiert als Backward-Compat-Fallback auch
      * rohe numerische IDs (alte Bookmarks/Links/API-Clients vor der Sqid-
      * Umstellung). Reihenfolge: erst Sqid-Decoding, dann numerischer Fallback.

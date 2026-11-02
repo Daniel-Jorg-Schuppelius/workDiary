@@ -28,21 +28,27 @@
         </x-slot:actions>
 
         <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+            @php($openStatus = \App\Enums\Warranty\WarrantyStatus::Open->value)
             <x-kpi-tile :label="__('warranty.kpi.owed')" :value="$openOwed" format="int"
-                        :hint="__('warranty.kpi.owed_hint')" />
+                        :hint="__('warranty.kpi.owed_hint')"
+                        :href="route('warranties.index', ['side' => \App\Enums\Warranty\WarrantySide::Owed->value, 'status' => $openStatus])"
+                        :active="$filters['side'] === \App\Enums\Warranty\WarrantySide::Owed->value && $filters['status'] === $openStatus && ! $filters['expiring']" />
             <x-kpi-tile :label="__('warranty.kpi.claimable')" :value="$openClaimable" format="int"
-                        :hint="__('warranty.kpi.claimable_hint')" />
+                        :hint="__('warranty.kpi.claimable_hint')"
+                        :href="route('warranties.index', ['side' => \App\Enums\Warranty\WarrantySide::Claimable->value, 'status' => $openStatus])"
+                        :active="$filters['side'] === \App\Enums\Warranty\WarrantySide::Claimable->value && $filters['status'] === $openStatus && ! $filters['expiring']" />
             <x-kpi-tile :label="__('warranty.kpi.expiring')" :value="$expiringSoon" format="int"
-                        :tone="$expiringSoon > 0 ? 'warning' : 'neutral'" />
+                        :tone="$expiringSoon > 0 ? 'warning' : 'neutral'"
+                        :href="route('warranties.index', ['status' => $openStatus, 'expiring' => 1])" :active="$filters['expiring']" />
             <x-kpi-tile :label="__('warranty.kpi.critical')" :value="$critical->count()" format="int"
                         :tone="$critical->isNotEmpty() ? 'error' : 'success'"
-                        :hint="__('warranty.kpi.critical_hint')" />
+                        :hint="__('warranty.kpi.critical_hint')" :href="$critical->isNotEmpty() ? '#warranties-critical' : null" />
         </div>
 
         @if ($critical->isNotEmpty())
             {{-- Der teure Fall bekommt eine eigene Fläche: Wer ihn übersieht,
                  haftet allein für einen fremden Mangel. --}}
-            <div class="rounded-box border border-error/40 bg-error/5 px-4 py-3">
+            <div class="rounded-box border border-error/40 bg-error/5 px-4 py-3 scroll-mt-24" id="warranties-critical">
                 <p class="text-sm font-medium">{{ __('warranty.critical.heading') }}</p>
                 <p class="mt-1 text-xs text-base-content/70">{{ __('warranty.critical.hint') }}</p>
                 <ul class="mt-2 space-y-1 text-sm">
@@ -75,6 +81,7 @@
                     @endforeach
                 </select>
             </x-filter-field>
+            <x-filter-toggle name="expiring" :label="__('warranty.kpi.expiring')" :checked="$filters['expiring']" tone="warning" />
         </x-filter-bar>
 
         <x-table scroll="flex" :pin-rows="true" :zebra="true" table-sort="client">

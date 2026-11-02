@@ -81,6 +81,7 @@ producto** – solo proceden de Lexoffice.
   - **Tiempo no facturado**: registros de tiempo facturables del período que
     aún no ha consumido ninguna vía de facturación, con el número de
     registros y los ingresos previstos según los importes guardados.
+- Un clic en un mosaico de recuento lleva a la tabla o lista que cuenta; los mosaicos de sumas y cuotas no tienen destino.
 - Gráficos: horas facturables y no facturables a lo largo del tiempo y
   **Facturación por cliente (top 15)** a partir de las facturas locales y de
   los comprobantes reflejados del programa de contabilidad. Un clic en un
@@ -134,6 +135,7 @@ importes brutos según la fecha del gasto.
   categorías más grandes por separado y el resto agrupado, y **Principales
   generadores (top 15)**.
 - Mosaicos: **Suma (bruto)**, **Empleados**, **Categorías** y **Meses**.
+- Un clic en un mosaico de recuento lleva a la tabla o lista que cuenta; los mosaicos de sumas y cuotas no tienen destino.
 - Tabla con una fila por **Empleado** y **Categoría**, una columna por mes y
   la **Suma**, seguida de **Principales categorías**.
 
@@ -203,6 +205,7 @@ registros de tiempo**.
   contabilidad que no están vinculados a ningún artículo de su propio
   maestro de artículos) y **Proporción sin referencia de artículo** (líneas
   sin artículo seleccionado).
+- Un clic en un mosaico de recuento lleva a la tabla o lista que cuenta; los mosaicos de sumas y cuotas no tienen destino.
 - Gráfico de los artículos con más ingresos; cuántos muestra lo decide con
   **Top N en el gráfico** (de 3 a 50, por defecto 10). También muestra los
   artículos del programa de contabilidad no vinculados a su propio maestro de

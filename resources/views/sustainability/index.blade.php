@@ -38,8 +38,8 @@
     {{-- Kennzahlen --}}
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <x-kpi-tile :label="__('CO₂e gesamt (kg)')" :value="$aggregate['co2e_total_kg']" format="int" />
-        <x-kpi-tile :label="__('Kritische Bewertungen (rot)')" :value="$critical" :tone="$critical > 0 ? 'error' : 'neutral'" />
-        <x-kpi-tile :label="__('Offene Maßnahmen')" :value="$openMeasures" :tone="$openMeasures > 0 ? 'warning' : 'neutral'" />
+        <x-kpi-tile :label="__('Kritische Bewertungen (rot)')" :value="$critical" :tone="$critical > 0 ? 'error' : 'neutral'" :href="route('sustainability.assessments.index', ['critical' => 1])" />
+        <x-kpi-tile :label="__('Offene Maßnahmen')" :value="$openMeasures" :tone="$openMeasures > 0 ? 'warning' : 'neutral'" :href="route('sustainability.measures.index', ['status' => 'open'])" />
         <x-kpi-tile :label="__('Anteil Schätzwerte')" :value="$estimatedShare . ' %'" :tone="$estimatedShare > 50 ? 'warning' : 'info'"
                     :hint="__('gemessen/berechnet vor geschätzt')" />
     </div>

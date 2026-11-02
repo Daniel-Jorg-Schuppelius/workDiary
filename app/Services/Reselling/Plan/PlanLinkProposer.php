@@ -15,7 +15,7 @@ namespace App\Services\Reselling\Plan;
 use App\Enums\Reselling\{LinkOrigin, SubscriptionKind};
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResalePlanLink, ResaleSubscription};
-use App\Services\Reselling\Marketplace\{MarketplaceCompany, ProductNameMatcher};
+use App\Services\Reselling\Marketplace\{NameTokenMatcher, ProductNameMatcher};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
 use App\Services\Reselling\Register\LicenseAccounts;
 use App\Support\DomainNames;
@@ -103,7 +103,7 @@ final class PlanLinkProposer {
                                 return true;
                             }
 
-                            return self::mentions($s->foreignCustomer->name, $line->text() . ' ' . $template->title);
+                            return NameTokenMatcher::mentionedIn($s->foreignCustomer->name, $line->text() . ' ' . $template->title, [$s->foreignCustomer->company, $s->foreignCustomer->matchcode]);
                         })
                         ->sortBy([['quantity', 'desc'], ['starts_on', 'asc'], ['id', 'asc']])
                         ->values();
@@ -223,21 +223,5 @@ final class PlanLinkProposer {
         $text = trim((string) $line->articleName . ' ' . $line->text());
 
         return $this->matcher->matches($subscription->label, $text) || $this->matcher->matches($subscription->productName(), $text);
-    }
-
-    /** Alle Kern-Tokens (≥ 4 Zeichen) des Namens im Text — die Nennung des Endkunden. */
-    public static function mentions(string $name, string $text): bool {
-        $haystack = ' ' . MarketplaceCompany::matchKey($text) . ' ';
-        $tokens = array_values(array_filter(explode(' ', MarketplaceCompany::matchKey($name)), static fn(string $t): bool => mb_strlen($t) >= 4));
-        if ($tokens === []) {
-            return false;
-        }
-        foreach ($tokens as $token) {
-            if (! str_contains($haystack, ' ' . $token . ' ')) {
-                return str_contains(str_replace(' ', '', $haystack), str_replace(' ', '', MarketplaceCompany::matchKey($name)));
-            }
-        }
-
-        return true;
     }
 }

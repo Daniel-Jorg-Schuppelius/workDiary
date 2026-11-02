@@ -124,7 +124,7 @@
                 </x-slot:head>
                 @forelse ($subscriptions as $subscription)
                     @php
-                        $openCount = $subscription->periods->filter(static fn ($p): bool => in_array($p->status, [\App\Enums\Reselling\PeriodStatus::Open, \App\Enums\Reselling\PeriodStatus::Partial], true) && ! $p->starts_on->greaterThan($today))->count();
+                        $openCount = $subscription->duePeriods($today)->count();
                     @endphp
                     <tr class="hover">
                         <td class="text-sm">

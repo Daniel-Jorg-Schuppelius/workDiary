@@ -29,10 +29,10 @@
     </x-slot:toolbar>
 
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <x-kpi-tile :label="__('Meine Stunden')" :value="$fmtHours($totalMinutes)" tone="primary" :hint="__('Im gewählten Zeitraum')" />
-        <x-kpi-tile :label="__('Erfasste Tage')" :value="$bookedDays" tone="info" />
+        <x-kpi-tile :label="__('Meine Stunden')" :value="$fmtHours($totalMinutes)" tone="primary" :hint="__('Im gewählten Zeitraum')" :href="route('reports.my-month')" />
+        <x-kpi-tile :label="__('Erfasste Tage')" :value="$bookedDays" tone="info" :href="route('reports.my-month')" />
         <x-kpi-tile :label="__('Ø pro Tag')" :value="$fmtHours($avgMinutesPerDay)" tone="neutral" :hint="__('Bezogen auf erfasste Tage')" />
-        <x-kpi-tile :label="__('Aktive Projekte')" :value="$activeProjects" tone="secondary" />
+        <x-kpi-tile :label="__('Aktive Projekte')" :value="$activeProjects" tone="secondary" :href="route('projects.index', ['status' => \App\Enums\Project\ProjectStatus::Active->value])" />
     </div>
 
     <div class="chart-grid grid gap-3 xl:grid-cols-2">

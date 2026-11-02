@@ -33,15 +33,15 @@
     </x-filter-bar>
 
     <div class="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        <x-kpi-tile :label="__('Fälle gesamt')" :value="$data['total']" />
-        <x-kpi-tile :label="__('Offen')" :value="$data['open']" />
-        <x-kpi-tile :label="__('Abgeschlossen')" :value="$data['closed']" />
-        <x-kpi-tile :label="__('Überfällig')" :value="$data['overdue']" />
+        <x-kpi-tile :label="__('Fälle gesamt')" :value="$data['total']" href="#claims-breakdown" />
+        <x-kpi-tile :label="__('Offen')" :value="$data['open']" :href="route('claims.index', ['show' => 'open'])" />
+        <x-kpi-tile :label="__('Abgeschlossen')" :value="$data['closed']" href="#claims-breakdown" />
+        <x-kpi-tile :label="__('Überfällig')" :value="$data['overdue']" :href="route('claims.index', ['overdue' => 1])" />
         <x-kpi-tile :label="__('Ø Dauer (Tage)')" :value="$data['avg_duration_days'] ?? '—'" />
         <x-kpi-tile :label="__('Kosten (ausgeführt)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $data['cost_total'], 2, withThousandsSeparator: true) . ' €'" />
     </div>
 
-    <div class="grid gap-4 lg:grid-cols-2">
+    <div class="grid gap-4 lg:grid-cols-2 scroll-mt-24" id="claims-breakdown">
         @foreach (['by_cause' => __('Nach Ursache'), 'by_defect' => __('Nach Mangelart'), 'by_article' => __('Nach Artikel'), 'by_supplier' => __('Nach Lieferant')] as $key => $label)
             <x-card :title="$label">
                 @if ($data[$key] === [])

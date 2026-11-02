@@ -73,6 +73,8 @@ payé ; selon la longueur de la période, il est établi par jour, par semaine o
 par trimestre. **Congés restants par collaborateur (top 15)** montre les soldes
 restants les plus élevés.
 
+Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
+
 Les filtres **Zone** (**Uniquement les miens** ou **Toute l’équipe** pour
 toutes les personnes de l'organisation), **Employé**, **Équipe** et **Statut**
 sont visibles pour les administrateurs et les personnes disposant du droit
@@ -132,6 +134,8 @@ médical** et **Droit épuisé**. Graphiques : **Jours de maladie par mois** ave
 une ligne de médiane (par jour, semaine ou trimestre selon la période) et la
 carte de chaleur **Jours de maladie par collaborateur et par mois**.
 
+Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
+
 Filtres comme dans **Congés et flex** : **Zone**, **Employé** et **Équipe** –
 ici pour les administrateurs et les personnes disposant du droit **Voir les
 arrêts maladie** ; toutes les autres ne voient que leur propre ligne. Cette
@@ -151,6 +155,7 @@ matrice ni dans les tuiles, les graphiques et l’export.
   **expiré**, gris **aucune attribution**. La légende figure sous la matrice.
 - Tuiles : **Employés**, **Qualifications**, **Attributions**, **Expirent (≤30
   j)** et **Expiré**.
+- Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
 - Graphiques : **Titulaires par qualification (top 15)** et **Attributions par
   qualification selon le statut** pour les douze qualifications les plus
   fréquentes.
@@ -172,6 +177,7 @@ de sécurité survenus pendant la période de l'en-tête.
 
 - Tuiles : **Total des événements**, **Ouverts** (tous ceux qui ne sont pas
   clôturés), **Clôturés** et **Critiques** (gravité critique).
+- Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
 - Graphiques : **Événements par mois** avec la seconde série **dont clôturés**
   et **Événements par mois par statut**, empilés selon **Signalé**, **En
   investigation**, **Mesures définies** et **Clôturé** ; par jour, semaine ou

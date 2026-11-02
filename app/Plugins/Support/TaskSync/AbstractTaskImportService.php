@@ -92,8 +92,17 @@ abstract class AbstractTaskImportService extends AbstractTaskSyncService {
     /** @param array<string, mixed> $raw */
     abstract protected function normalize(array $raw, Organization $organization): RemoteTask;
 
-    /** Sicherer Link zur Quellaufgabe aus dem Referenz-Payload (nur https auf dem Anbieter-Host). */
-    abstract public function sourceUrl(ExternalReference $reference): ?string;
+    /**
+     * Sicherer Link zur Quellaufgabe aus dem Referenz-Payload: Standard ist
+     * die selbst gehostete Instanz der Verbindung ({@see SelfHostedInstance::owns()});
+     * Cloud-Anbieter (Jira, Asana) prüfen stattdessen gegen ihren Host.
+     */
+    public function sourceUrl(ExternalReference $reference): ?string {
+        $url = data_get($reference->payload, 'remote.url');
+        $baseUrl = (string) $this->connection((int) $reference->organization_id)?->sourceUrl();
+
+        return is_string($url) && SelfHostedInstance::owns($baseUrl, $url) ? $url : null;
+    }
 
     /**
      * Meldet die Quelle einen Bearbeitungsstand? Kennt sie nur offen und

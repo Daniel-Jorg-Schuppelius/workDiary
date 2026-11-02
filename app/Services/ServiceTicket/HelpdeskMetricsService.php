@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket;
 
-use App\Enums\ServiceTicket\{ChangeStatus, ServiceRequestStatus, ServiceTicketStatus};
+use App\Enums\ServiceTicket\{ChangeStatus, ServiceRequestStatus};
 use App\Models\Audit\AuditLog;
 use App\Models\Knowledge\{ContentReference, KnowledgeArticle};
 use App\Models\ServiceTicket\{Change, Problem, ServiceRequest, ServiceTicket, SlaClockSegment, TicketSatisfaction};
@@ -53,19 +53,6 @@ class HelpdeskMetricsService {
         '7-30' => [7, 30],
         '>30' => [30, null],
     ];
-
-    /**
-     * Offene Ticket-Status (alles außer isResolved) — geteilt mit den
-     * Drilldowns, damit Histogramm und Trefferliste dieselbe Menge sehen.
-     *
-     * @return list<string>
-     */
-    public static function openStatuses(): array {
-        return array_values(array_map(
-            static fn(ServiceTicketStatus $status): string => $status->value,
-            array_filter(ServiceTicketStatus::cases(), static fn(ServiceTicketStatus $status): bool => ! $status->isResolved()),
-        ));
-    }
 
     /**
      * Ticketvolumen je ISO-Woche und Queue (Zeitreihe).
@@ -363,7 +350,7 @@ class HelpdeskMetricsService {
         }
 
         $tickets = ServiceTicket::query()
-            ->whereIn('status', self::openStatuses())
+            ->open()
             ->whereNotNull('reported_at')
             ->with('queue:id,name')
             ->get(['id', 'queue_id', 'status', 'reported_at']);

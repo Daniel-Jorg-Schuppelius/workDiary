@@ -14,18 +14,19 @@ namespace App\Plugins\Kanboard;
 
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
-use App\Models\Project\Task;
-use App\Plugins\{AbstractPlugin, PluginHealth};
+use App\Plugins\AbstractPlugin;
 use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer, TaskSyncer};
 use App\Plugins\Kanboard\Api\KanboardClientFactory;
 use App\Plugins\Kanboard\Models\KanboardConnection;
 use App\Plugins\Kanboard\Services\KanboardImportService;
-use App\Plugins\Support\ApiHealthProbe;
+use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSettings};
 
 /**
  * Kanboard-Aufgabenimport (Feature 173, Phase 158): Aufgaben ausgewählter Kanboard-Projekte werden als Aufgaben in WorkDiary-Projekte übernommen, nur lesend.
  */
 class KanboardPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
+    use ChecksConnectionHealth, RendersTaskLink;
+
     public const ID = 'kanboard';
 
     public const SERVICE_PROVIDER = KanboardServiceProvider::class;
@@ -45,12 +46,10 @@ class KanboardPlugin extends AbstractPlugin implements LinksExternalRecords, Slo
     }
 
     public function settingsSchema(): array {
-        return [
-            ['key' => 'base_url', 'label' => __('kanboard::kanboard.settings.base_url'), 'type' => 'text', 'required' => true, 'help' => __('kanboard::kanboard.settings.base_url_help')],
-            ['key' => 'username', 'label' => __('kanboard::kanboard.settings.username'), 'type' => 'text', 'help' => __('kanboard::kanboard.settings.username_help')],
-            ['key' => 'api_token', 'label' => __('kanboard::kanboard.settings.api_token'), 'type' => 'password', 'required' => true, 'help' => __('kanboard::kanboard.settings.api_token_help')],
-            ['key' => 'allow_private_network', 'label' => __('kanboard::kanboard.settings.allow_private_network'), 'type' => 'boolean', 'default' => false, 'help' => __('kanboard::kanboard.settings.allow_private_network_help')],
-        ];
+        return SelfHostedSettings::schema(self::ID, [
+            SelfHostedSettings::field(self::ID, 'username', required: false),
+            SelfHostedSettings::field(self::ID, 'api_token', 'password'),
+        ]);
     }
 
     public function capabilities(): array {
@@ -65,36 +64,23 @@ class KanboardPlugin extends AbstractPlugin implements LinksExternalRecords, Slo
         return ['route' => 'admin.kanboard.index', 'label' => 'Kanboard', 'icon' => 'view_kanban'];
     }
 
-    public function healthCheck(): PluginHealth {
-        $organization = $this->healthOrgContext();
-        if ($organization instanceof PluginHealth) {
-            return $organization;
-        }
-        if (! KanboardConfig::isConfigured((int) $organization->id)) {
-            return PluginHealth::degraded((string) __('kanboard::kanboard.health.not_configured'), 'not_configured');
-        }
-        $connection = KanboardConnection::query()->where('organization_id', $organization->id)->first();
-        if (! $connection instanceof KanboardConnection || ! $connection->isReady()) {
-            return PluginHealth::degraded((string) __('kanboard::kanboard.health.not_connected'), 'not_connected');
-        }
+    protected function healthConfigured(int $organizationId): bool {
+        return KanboardConfig::isConfigured($organizationId);
+    }
 
-        return ApiHealthProbe::probe($this->name(), fn () => app(KanboardClientFactory::class)->for((int) $organization->id)->probe());
+    protected function healthConnectionModel(): string {
+        return KanboardConnection::class;
+    }
+
+    protected function healthProbe(int $organizationId): void {
+        app(KanboardClientFactory::class)->for($organizationId)->probe();
     }
 
     public function externalRecordUrl(ExternalReference $reference): ?string {
         return $reference->plugin_id === self::ID ? app(KanboardImportService::class)->sourceUrl($reference) : null;
     }
 
-    public function renderActions(string $slot, mixed $context = null): ?string {
-        if ($slot !== 'task-dialog.links' || ! $context instanceof Task || ! $this->isEnabled()) {
-            return null;
-        }
-        $reference = ExternalReference::query()
-            ->forPlugin($context->organization_id, self::ID, self::EXT_TYPE_TASK)
-            ->forReferenceable($context)
-            ->first();
-        $url = $reference !== null ? $this->externalRecordUrl($reference) : null;
-
-        return $url !== null ? view('plugins.task-import._link', ['url' => $url, 'label' => (string) __('kanboard::kanboard.task_link')])->render() : null;
+    protected function taskLinkType(): string {
+        return self::EXT_TYPE_TASK;
     }
 }

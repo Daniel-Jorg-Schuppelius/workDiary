@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice-Konflikte"
 topic: admin.lexoffice
-version: 5
+version: 6
 keywords:
     - Lexware Office
     - Synchronisationskonflikt
@@ -69,7 +69,10 @@ sobald der Kontakt zugeordnet ist, ordnet der nächste Sync sie zu. Ein Kunde
 wird nur an Verkaufsbelegen gesetzt, ein Lieferant nur an Einkaufsbelegen,
 auch wenn ein Kontakt beiden zugeordnet ist. Der Positionsabgleich speichert
 zusätzlich den Nettobetrag und bei einer Gutschrift ihren Bezug zur
-Rechnung.
+Rechnung. Von Hand stoßen Sie den Lauf in den **Lexoffice-Einstellungen**
+(Plugins → Lexoffice) mit **Belege jetzt abgleichen** an: Er holt neue und
+geänderte Belege im Hintergrund, der tägliche Vollabgleich bleibt bestehen;
+der Knopf braucht das Recht **Belege mit Lexoffice synchronisieren** und hinterlegte Zugangsdaten.
 
 Berechtigung: Die Zuordnungs-Inbox steht Administratoren und der Rolle
 **Buchhaltung** offen.

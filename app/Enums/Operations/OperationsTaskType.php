@@ -37,6 +37,7 @@ enum OperationsTaskType: string implements HasLabel {
     case ComponentEol = 'component_eol';
     case PluginDisabled = 'plugin_disabled';
     case SchedulerOverdue = 'scheduler_overdue';
+    case SchedulerFailing = 'scheduler_failing';
     // Vollscan 2026-08-23 (J6): Queue-Zustand war nur auf der Diagnoseseite sichtbar.
     case QueueFailedJobs = 'queue_failed_jobs';
     case QueueWorkerDown = 'queue_worker_down';
@@ -73,7 +74,8 @@ enum OperationsTaskType: string implements HasLabel {
             // Fehlende Konfiguration/offene Supportfreigaben sind reine
             // Aufgaben (Onboarding-/Grant-UI benachrichtigt bereits selbst);
             // die Limit-Warnung (N9) ist ebenfalls eine reine Betriebsaufgabe.
-            self::ConfigMissing, self::SupportGrantOpen, self::LicenseLimitNear => null,
+            // Fehlerserien eines Jobs sind eine Betriebsaufgabe (perf-04); die Überfälligkeit benachrichtigt bereits.
+            self::ConfigMissing, self::SupportGrantOpen, self::LicenseLimitNear, self::SchedulerFailing => null,
         };
     }
 

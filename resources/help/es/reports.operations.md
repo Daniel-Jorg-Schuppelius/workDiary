@@ -71,6 +71,7 @@ tareas y rutas del período.
   **Tiempo de servicio Σ**, **Tareas** con el número de tareas vencidas y su
   tasa de cierre (el mosaico cambia de color en cuanto una tarea está
   vencida) y **Rutas** con los kilómetros y la duración planificados.
+- Un clic en un mosaico de recuento lleva a la tabla o lista que cuenta; los mosaicos de sumas y cuotas no tienen destino.
 - Gráficos: **Órdenes de servicio: creadas vs. completadas por semana** y
   **Backlog por cliente (top 15)** con las órdenes de servicio aún abiertas
   por cliente. Con el permiso **Ver los informes**, un clic en una barra abre
@@ -107,6 +108,7 @@ registros de tiempo repartidos del período entre **Tareas**, **Activos**,
 **Actividades** y las dimensiones libres de **Dimensiones de tiempo**.
 
 - Mosaicos: **Tiempo repartido** y el número de **Dimensiones**.
+- Un clic en un mosaico de recuento lleva a la tabla o lista que cuenta; los mosaicos de sumas y cuotas no tienen destino.
 - Una tarjeta por dimensión con **Destino**, **Minutos** (mostrados en horas y
   minutos) y **Registros** (número de registros de tiempo), en orden
   descendente de tiempo.
@@ -128,6 +130,7 @@ de procedimiento**.
   con un punto abierto o una orden de seguimiento) y **Ø horas hasta la
   decisión** (desde la creación hasta la aceptación del riesgo, solo
   desviaciones decididas).
+- Un clic en un mosaico de recuento lleva a la tabla o lista que cuenta; los mosaicos de sumas y cuotas no tienen destino.
 - Gráficos: **Desviaciones por tipo**, las desviaciones a lo largo del tiempo
   por gravedad y **Procedimientos con más desviaciones (top 10)**.
 - Lista: **Fecha**, **Procedimiento**, **Paso**, **Tipo**, **Gravedad**,
@@ -169,6 +172,7 @@ de trabajo cae en el período.
 - Gráficos: **Valor de consumo por material (top 20)** y los costes de
   material a lo largo del tiempo.
 - Mosaicos: **Materiales**, **Usos** y **Neto Σ**.
+- Un clic en un mosaico de recuento lleva a la tabla o lista que cuenta; los mosaicos de sumas y cuotas no tienen destino.
 - Tabla **Consumo por material**: **SKU**, **Material**, **Unidad**,
   **Cantidad**, **Usos** y **Neto**, en orden descendente de importe neto. El
   mismo material en unidades distintas aparece en filas separadas; las líneas
@@ -191,6 +195,7 @@ archivadas no cuentan.
   **Intervenciones activas** (tiempo de intervención con el número de
   intervenciones) y **Proporción activa** (tiempo de intervención en relación
   con el tiempo de guardia).
+- Un clic en un mosaico de recuento lleva a la tabla o lista que cuenta; los mosaicos de sumas y cuotas no tienen destino.
 - Gráficos: **Guardia por empleado y semana** como mapa de calor y las
   intervenciones a lo largo del tiempo.
 - Tabla por empleado: **Turnos**, **Disponibilidad**, **Intervenciones**,
@@ -280,6 +285,7 @@ los informes**.
 
 - Mosaicos: **Órdenes con huecos**, **Lagunas bloqueantes** (reglas
   bloqueantes) y **Brechas leves** (avisos).
+- Un clic en un mosaico de recuento lleva a la tabla o lista que cuenta; los mosaicos de sumas y cuotas no tienen destino.
 - Gráficos: las órdenes con huecos de clasificación a lo largo del tiempo y
   **Clasificaciones faltantes por cliente (top 15)**.
 - **Por dominio** y **Por fase**: dónde están los huecos y a partir de qué

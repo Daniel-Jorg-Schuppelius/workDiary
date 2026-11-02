@@ -13,12 +13,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Claims\Portal;
 
 use App\Enums\CustomerPortal\PortalCapability;
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
 use App\Models\Claims\ClaimRmaReturn;
-use App\Models\Customer\Customer;
 use App\Models\Inventory\StockDelivery;
-use App\Models\Platform\User;
 use App\Models\Shipping\Shipment;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Claims\PortalReturnService;
@@ -26,16 +25,18 @@ use App\Services\CustomerPortal\PortalVisibility;
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Storage};
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /** Retourenanmeldung im Kundenportal (MVP-935). */
 class ReturnRequestController extends Controller {
+    use ResolvesPortalUser;
+
     public function __construct(private readonly PortalReturnService $returns) {}
 
     public function create(): View {
-        $customer = $this->customer();
+        $customer = $this->portalCustomer();
         $deliveries = $this->returns->deliveries($customer);
 
         return view('customer.claims.return', [
@@ -52,7 +53,7 @@ class ReturnRequestController extends Controller {
     }
 
     public function store(Request $request, PortalVisibility $visibility): RedirectResponse {
-        $customer = $this->customer();
+        $customer = $this->portalCustomer();
         foreach (['delivery_id' => StockDelivery::class, 'asset_id' => Asset::class] as $field => $class) {
             if ($request->filled($field)) {
                 $request->merge([$field => Sqid::decodeOrNumeric($class, $request->string($field)->toString())]);
@@ -68,8 +69,7 @@ class ReturnRequestController extends Controller {
             'photos' => ['nullable', 'array', 'max:5'],
             'photos.*' => FileAttacher::rule(),
         ]);
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
+        $user = $this->portalUser();
         $result = $this->returns->submit($user, $customer, $data, array_values((array) $request->file('photos', [])));
 
         $flash = __('claims.portal_return.flash.submitted', ['number' => $result['claim']->number, 'rma' => $result['rma']->rma_number]);
@@ -81,18 +81,12 @@ class ReturnRequestController extends Controller {
     }
 
     public function label(ClaimRmaReturn $rma, Shipment $shipment): BinaryFileResponse {
-        $customer = $this->customer();
+        $customer = $this->portalCustomer();
         abort_unless((int) $rma->claimCase?->customer_id === $customer->id && $shipment->claim_rma_return_id === $rma->id, 404);
         $label = $shipment->labelAttachment() ?? abort(404);
         $disk = Storage::disk($label->disk);
         abort_unless($disk->exists($label->path), 404);
 
         return response()->download($disk->path($label->path), 'retoure-' . $rma->rma_number . '.' . pathinfo($label->original_name, PATHINFO_EXTENSION));
-    }
-
-    private function customer(): Customer {
-        $user = Auth::guard('customer')->user();
-
-        return $user instanceof User && $user->customer instanceof Customer ? $user->customer : abort(403);
     }
 }

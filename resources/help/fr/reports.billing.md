@@ -81,6 +81,7 @@ ne proviennent que de Lexoffice.
   - **Temps non facturé** : saisies de temps facturables de la période qui
     n’ont encore été consommées par aucun circuit de facturation, avec le
     nombre de saisies et le revenu attendu d’après les montants enregistrés.
+- Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
 - Graphiques : heures facturables et non facturables dans le temps, ainsi que
   **Chiffre d'affaires par client (top 15)** à partir des factures locales et
   des pièces reprises en miroir du logiciel comptable. Un clic sur un client
@@ -135,6 +136,7 @@ les montants bruts selon la date de la dépense.
   plus grandes catégories séparément et le reste regroupé, ainsi que
   **Principaux émetteurs (top 15)**.
 - Tuiles : **Total (brut)**, **Employés**, **Catégories** et **mois**.
+- Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
 - Tableau avec une ligne par **Employé** et **Catégorie**, une colonne par
   mois et le **Total**, suivi de **Principales catégories**.
 
@@ -205,6 +207,7 @@ toutes les saisies de temps**.
   du logiciel comptable qui ne sont rattachés à aucun article de votre
   propre fichier articles) et **Part sans référence article** (lignes sans
   article choisi).
+- Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
 - Graphique des articles au chiffre d’affaires le plus élevé ; vous en
   fixez le nombre avec **Top N dans le graphique** (3 à 50, 10 par défaut).
   Il montre aussi les articles du logiciel comptable non rattachés à votre

@@ -84,7 +84,7 @@ class ShipmentParcelController extends Controller {
             'length_cm' => isset($data['length_cm']) ? (int) $data['length_cm'] : null,
             'width_cm' => isset($data['width_cm']) ? (int) $data['width_cm'] : null,
             'height_cm' => isset($data['height_cm']) ? (int) $data['height_cm'] : null,
-            'serials' => array_values(array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(StockSerial::class, $sqid), $data['serials'] ?? []))),
+            'serials' => Sqid::decodeMany(StockSerial::class, $data['serials'] ?? []),
         ];
     }
 

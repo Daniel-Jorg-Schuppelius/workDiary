@@ -68,17 +68,17 @@
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <x-kpi-tile :label="__('Service-Aufträge')" :value="$orders['total']"
-                    :hint="__('Abschluss') . ': ' . $pct($orders['completion_rate'])" />
+                    :hint="__('Abschluss') . ': ' . $pct($orders['completion_rate'])" href="#operations-orders" />
         <x-kpi-tile :label="__('Servicezeit Σ')" :value="$fmtMin($orders['service_minutes'])" />
         <x-kpi-tile :label="__('Tasks')" :value="$tasks['total']"
                     :tone="$tasks['overdue'] > 0 ? 'warning' : 'neutral'"
-                    :hint="$tasks['overdue'] . ' ' . __('überfällig') . ' · ' . $pct($tasks['completion_rate'])" />
+                    :hint="$tasks['overdue'] . ' ' . __('überfällig') . ' · ' . $pct($tasks['completion_rate'])" href="#operations-tasks" />
         <x-kpi-tile :label="__('Touren')" :value="$tours['total']"
-                    :hint="$num($tours['planned_distance_km'], 1) . ' km · ' . $fmtMin($tours['planned_minutes'])" />
+                    :hint="$num($tours['planned_distance_km'], 1) . ' km · ' . $fmtMin($tours['planned_minutes'])" href="#operations-tours" />
     </div>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <x-card>
+        <x-card id="operations-orders" class="scroll-mt-24">
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Service-Aufträge – Status') }}</h3>
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -105,7 +105,7 @@
             </x-table>
         </x-card>
 
-        <x-card>
+        <x-card id="operations-tasks" class="scroll-mt-24">
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Tasks – Status') }}</h3>
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -133,7 +133,7 @@
         </x-card>
     </div>
 
-    <x-card>
+    <x-card id="operations-tours" class="scroll-mt-24">
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Touren – pro Mitarbeiter') }}</h3>
         @if (empty($tours['per_user']))
             <x-empty-state icon="engineering" :title="__('Keine Touren im Zeitraum.')" />

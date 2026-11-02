@@ -314,6 +314,8 @@ class TogglImportTest extends TestCase {
         $this->fakeApi(timeEntries: [$entry111, $entry222], clients: $clients, projects: $projects);
         $this->service()->importFromApi($this->organization, $config, $from, $to);
         $this->assertSame(2, TimeEntry::query()->where('project_id', $project->id)->count());
+        // Referenzen jünger als der Abrufbeginn löscht kein Lauf (Karenz).
+        $this->travel(5)->minutes();
 
         // Teilabruf: die Workspace-Liste bricht ab (500) — Eintrag 222 fehlt
         // in der Lieferung, darf aber NICHT als gelöscht gelten.

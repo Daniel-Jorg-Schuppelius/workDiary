@@ -14,18 +14,19 @@ namespace App\Plugins\Leantime;
 
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
-use App\Models\Project\Task;
-use App\Plugins\{AbstractPlugin, PluginHealth};
+use App\Plugins\AbstractPlugin;
 use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer, TaskSyncer};
 use App\Plugins\Leantime\Api\LeantimeClientFactory;
 use App\Plugins\Leantime\Models\LeantimeConnection;
 use App\Plugins\Leantime\Services\LeantimeImportService;
-use App\Plugins\Support\ApiHealthProbe;
+use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSettings};
 
 /**
  * Leantime-Aufgabenimport (Feature 173, Phase 158): To-dos ausgewählter Leantime-Projekte werden als Aufgaben in WorkDiary-Projekte übernommen, nur lesend.
  */
 class LeantimePlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
+    use ChecksConnectionHealth, RendersTaskLink;
+
     public const ID = 'leantime';
 
     public const SERVICE_PROVIDER = LeantimeServiceProvider::class;
@@ -45,11 +46,7 @@ class LeantimePlugin extends AbstractPlugin implements LinksExternalRecords, Slo
     }
 
     public function settingsSchema(): array {
-        return [
-            ['key' => 'base_url', 'label' => __('leantime::leantime.settings.base_url'), 'type' => 'text', 'required' => true, 'help' => __('leantime::leantime.settings.base_url_help')],
-            ['key' => 'api_key', 'label' => __('leantime::leantime.settings.api_key'), 'type' => 'password', 'required' => true, 'help' => __('leantime::leantime.settings.api_key_help')],
-            ['key' => 'allow_private_network', 'label' => __('leantime::leantime.settings.allow_private_network'), 'type' => 'boolean', 'default' => false, 'help' => __('leantime::leantime.settings.allow_private_network_help')],
-        ];
+        return SelfHostedSettings::schema(self::ID, [SelfHostedSettings::field(self::ID, 'api_key', 'password')]);
     }
 
     public function capabilities(): array {
@@ -64,36 +61,23 @@ class LeantimePlugin extends AbstractPlugin implements LinksExternalRecords, Slo
         return ['route' => 'admin.leantime.index', 'label' => 'Leantime', 'icon' => 'rocket_launch'];
     }
 
-    public function healthCheck(): PluginHealth {
-        $organization = $this->healthOrgContext();
-        if ($organization instanceof PluginHealth) {
-            return $organization;
-        }
-        if (! LeantimeConfig::isConfigured((int) $organization->id)) {
-            return PluginHealth::degraded((string) __('leantime::leantime.health.not_configured'), 'not_configured');
-        }
-        $connection = LeantimeConnection::query()->where('organization_id', $organization->id)->first();
-        if (! $connection instanceof LeantimeConnection || ! $connection->isReady()) {
-            return PluginHealth::degraded((string) __('leantime::leantime.health.not_connected'), 'not_connected');
-        }
+    protected function healthConfigured(int $organizationId): bool {
+        return LeantimeConfig::isConfigured($organizationId);
+    }
 
-        return ApiHealthProbe::probe($this->name(), fn () => app(LeantimeClientFactory::class)->for((int) $organization->id)->probe());
+    protected function healthConnectionModel(): string {
+        return LeantimeConnection::class;
+    }
+
+    protected function healthProbe(int $organizationId): void {
+        app(LeantimeClientFactory::class)->for($organizationId)->probe();
     }
 
     public function externalRecordUrl(ExternalReference $reference): ?string {
         return $reference->plugin_id === self::ID ? app(LeantimeImportService::class)->sourceUrl($reference) : null;
     }
 
-    public function renderActions(string $slot, mixed $context = null): ?string {
-        if ($slot !== 'task-dialog.links' || ! $context instanceof Task || ! $this->isEnabled()) {
-            return null;
-        }
-        $reference = ExternalReference::query()
-            ->forPlugin($context->organization_id, self::ID, self::EXT_TYPE_TICKET)
-            ->forReferenceable($context)
-            ->first();
-        $url = $reference !== null ? $this->externalRecordUrl($reference) : null;
-
-        return $url !== null ? view('plugins.task-import._link', ['url' => $url, 'label' => (string) __('leantime::leantime.task_link')])->render() : null;
+    protected function taskLinkType(): string {
+        return self::EXT_TYPE_TICKET;
     }
 }

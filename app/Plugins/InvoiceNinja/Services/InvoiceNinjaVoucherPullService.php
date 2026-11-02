@@ -17,7 +17,7 @@ use App\Enums\Finance\AccountingVoucherState;
 use App\Models\Finance\AccountingVoucher;
 use App\Plugins\InvoiceNinja\Api\{InvoiceNinjaClient, InvoiceNinjaClientFactory};
 use App\Plugins\InvoiceNinja\{InvoiceNinjaConfig, InvoiceNinjaPlugin};
-use App\Plugins\Support\TaskSync\IncompleteRemoteReadException;
+use App\Plugins\Support\TaskSync\{IncompleteRemoteReadException, OffsetPage, RemotePages};
 use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, MirroredVoucherLine, VoucherMirror, VoucherPuller};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
@@ -133,15 +133,19 @@ class InvoiceNinjaVoucherPullService implements VoucherPuller {
      */
     private function readEntity(InvoiceNinjaClient $client, string $entity, array $query, int $maxPages, bool $partialAllowed): array {
         $rows = [];
-        for ($page = 1; $page <= $maxPages; $page++) {
+        $pages = RemotePages::offset(function (int $page) use ($client, $entity, $query): OffsetPage {
             $result = $client->page($entity, $query, $page);
-            array_push($rows, ...$result['rows']);
-            if ($result['rows'] === [] || $page >= $result['total_pages']) {
-                return $rows;
+
+            return new OffsetPage($result['rows'], $result['rows'] !== [] && $page < $result['total_pages']);
+        }, $maxPages);
+        try {
+            foreach ($pages as $row) {
+                $rows[] = $row;
             }
-        }
-        if (! $partialAllowed) {
-            throw new IncompleteRemoteReadException('page_limit');
+        } catch (IncompleteRemoteReadException $e) {
+            if (! $partialAllowed || $e->reason !== 'page_limit') {
+                throw $e;
+            }
         }
 
         return $rows;

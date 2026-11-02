@@ -14,7 +14,6 @@ namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
-use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use App\Models\ServiceTicket\ServiceTicket;
@@ -61,17 +60,9 @@ class ServiceTicketsWidget extends Widget {
     }
 
     public function render(User $user): View|string {
-        $openStatuses = array_map(
-            static fn (ServiceTicketStatus $s): string => $s->value,
-            array_values(array_filter(
-                ServiceTicketStatus::cases(),
-                static fn (ServiceTicketStatus $s): bool => ! $s->isResolved(),
-            )),
-        );
-
         $query = ServiceTicket::query()
             ->where('assigned_to_user_id', $user->id)
-            ->whereIn('status', $openStatuses);
+            ->open();
 
         return view('dashboard.widgets.service-tickets', [
             'openCount' => (clone $query)->count(),

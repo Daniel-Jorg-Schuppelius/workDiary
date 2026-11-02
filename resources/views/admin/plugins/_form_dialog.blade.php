@@ -93,13 +93,21 @@
         @endif
     @endif
 
-    @if ($state && $state->isAutoDisabled())
+    {{-- Aktionen des Plugins neben dem Speichern (z. B. Beleg-Sync anstoßen): eigene
+         Formulare, deshalb im Footer außerhalb des Einstellungsformulars. --}}
+    @php
+        $pluginActions = app(\App\Plugins\PluginManager::class)->renderSlot('plugin-settings.actions', $plugin);
+    @endphp
+    @if (($state && $state->isAutoDisabled()) || $pluginActions !== '')
         <x-slot:footerExtra>
-            <x-action-form :action="route('admin.plugins.reset-errors', $plugin->id())"
-                  :confirm="__('Failure-Counter zurücksetzen und Plugin wieder aktivieren?')"
-                  confirm-tone="primary">
-                <x-icon-btn icon="restart_alt" tone="warning" size="sm" type="submit" show-label>{{ __('Reset & Reaktivieren') }}</x-icon-btn>
-            </x-action-form>
+            {!! $pluginActions !!}
+            @if ($state && $state->isAutoDisabled())
+                <x-action-form :action="route('admin.plugins.reset-errors', $plugin->id())"
+                      :confirm="__('Failure-Counter zurücksetzen und Plugin wieder aktivieren?')"
+                      confirm-tone="primary">
+                    <x-icon-btn icon="restart_alt" tone="warning" size="sm" type="submit" show-label>{{ __('Reset & Reaktivieren') }}</x-icon-btn>
+                </x-action-form>
+            @endif
         </x-slot:footerExtra>
     @endif
 </x-modal>

@@ -43,6 +43,8 @@ class RentalCaseController extends Controller {
         Gate::authorize('viewAny', RentalCase::class);
 
         $statusFilter = RentalCaseStatus::tryFrom($request->string('status')->toString())?->value;
+        // Kachel „offen“ (ux-pattern-katalog §4): mehrere Status, die die Status-Auswahl einzeln kennt.
+        $showOpen = $request->string('show')->toString() === 'open';
         $customerId = $request->filled('customer_id')
             ? Sqid::decodeOrNumeric(Customer::class, $request->input('customer_id'))
             : null;
@@ -51,11 +53,13 @@ class RentalCaseController extends Controller {
             'cases' => RentalCase::query()
                 ->with(['customer', 'responsible', 'caseAssets.asset'])
                 ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter))
+                ->when($showOpen, fn($q) => $q->open())
                 ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
                 ->when($request->filled('overdue'), fn($q) => $q->where('status', RentalCaseStatus::Overdue->value))
                 ->orderByDesc('id')
                 ->paginate(25)
                 ->withQueryString(),
+            'showOpen' => $showOpen,
             'openCount' => RentalCase::query()->open()->count(),
             'overdueCount' => RentalCase::query()->where('status', RentalCaseStatus::Overdue->value)->count(),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),

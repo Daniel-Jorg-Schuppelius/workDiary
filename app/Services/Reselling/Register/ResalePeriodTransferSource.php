@@ -166,7 +166,10 @@ final class ResalePeriodTransferSource implements TransferSource {
     }
 
     /**
-     * Perioden, die eine bestätigte oder übergebene Übergabe hält (Pendant zu `excludeReserved`).
+     * Perioden, die eine Übergabe hält (Pendant zu `excludeReserved`) — auch im
+     * Entwurf: zwischen Anlegen und Bestätigen stempelt noch nichts, ein zweiter
+     * Entwurf nähme dieselben Perioden (Sicherheitsaudit 2026-11-02, sec-01).
+     * Ein liegen gebliebener Entwurf gibt sie beim Verwerfen wieder frei.
      *
      * @param  list<int>  $ids
      * @return array<int, true>
@@ -179,7 +182,7 @@ final class ResalePeriodTransferSource implements TransferSource {
             ->join('billing_transfers', 'billing_transfers.id', '=', 'billing_transfer_items.billing_transfer_id')
             ->where('billing_transfer_items.source_type', MorphMap::alias(ResalePeriod::class))
             ->whereIn('billing_transfer_items.source_id', $ids)
-            ->whereIn('billing_transfers.status', [TransferStatus::Confirmed->value, TransferStatus::Transferred->value])
+            ->whereIn('billing_transfers.status', [TransferStatus::Draft->value, TransferStatus::Confirmed->value, TransferStatus::Transferred->value])
             ->whereNull('billing_transfers.deleted_at')
             ->pluck('billing_transfer_items.source_id');
 

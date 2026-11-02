@@ -10,11 +10,10 @@
 
 namespace App\Http\Controllers\CustomerPortal;
 
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
-use App\Models\Platform\User;
 use App\Services\CustomerPortal\PortalInsights;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -23,11 +22,10 @@ use Illuminate\View\View;
  * wenn sein Bereich ebenfalls freigegeben ist ({@see PortalInsights}).
  */
 class InsightsController extends Controller {
+    use ResolvesPortalUser;
+
     public function index(Request $request, PortalInsights $insights): View {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-        $customer = $user->customer;
-        abort_if($customer === null, 404);
+        $customer = $this->portalCustomer();
 
         $years = $insights->years($customer);
         $year = PortalInsights::pickYear((int) $request->query('year', 0), $years);

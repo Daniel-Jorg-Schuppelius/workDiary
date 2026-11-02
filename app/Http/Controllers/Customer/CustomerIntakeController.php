@@ -52,11 +52,14 @@ class CustomerIntakeController extends Controller {
         $open = array_map(static fn (IntakeStatus $status): string => $status->value, IntakeStatus::open());
         $status = IntakeStatus::tryFrom($request->string('status')->toString());
         $kind = IntakeKind::tryFrom($request->string('kind')->toString());
+        // Kachel „offen“ (ux-pattern-katalog §4): drei Status, die die Status-Auswahl einzeln kennt.
+        $showOpen = $request->string('show')->toString() === 'open';
 
         $intakes = CustomerIntake::query()
             ->with(['customer:id,name', 'assignee:id,name', 'quote:id,status,number,version,valid_until'])
             ->where(fn ($query) => $query->whereIn('status', $open)->orWhereBetween('closed_at', [$from, $to]))
             ->when($status !== null, fn ($query) => $query->where('status', $status?->value))
+            ->when($showOpen, fn ($query) => $query->whereIn('status', $open))
             ->when($kind !== null, fn ($query) => $query->where('kind', $kind?->value))
             ->when($request->boolean('mine'), fn ($query) => $query->where('assigned_user_id', (int) $request->user()?->id))
             ->orderByDesc('created_at')
@@ -65,6 +68,8 @@ class CustomerIntakeController extends Controller {
 
         return view('customer-intakes.index', [
             'intakes' => $intakes,
+            'showOpen' => $showOpen,
+            'status' => $status === null ? '' : $status->value,
             'stages' => $this->stages,
             'openCount' => CustomerIntake::query()->whereIn('status', $open)->count(),
             'awaitingCount' => CustomerIntake::query()->where('status', IntakeStatus::AwaitingCustomer->value)->count(),

@@ -67,6 +67,17 @@ enum ServiceTicketStatus: string implements HasLabel, HasStatusTransitions {
     }
 
     /**
+     * „Offen“ für Arbeitsvorrat, Cockpit, Kachel, Kennzahlen und Routing: alles,
+     * was nicht gelöst ist (Wartezustände eingeschlossen) — Abfragen nutzen
+     * {@see \App\Models\ServiceTicket\ServiceTicket::open()}.
+     *
+     * @return list<self>
+     */
+    public static function openCases(): array {
+        return array_values(array_filter(self::cases(), static fn (self $status): bool => ! $status->isResolved()));
+    }
+
+    /**
      * Warten nur aus triaged/in_progress und zurück nur nach in_progress
      * (Feature 065); done→in_progress ist die Wiederöffnung, accepted/closed
      * öffnen ebenfalls nur nach in_progress (Pflichtgrund im Service).

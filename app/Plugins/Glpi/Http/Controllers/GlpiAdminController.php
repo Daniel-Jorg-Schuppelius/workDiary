@@ -16,7 +16,7 @@ use App\Plugins\Glpi\Api\GlpiClientFactory;
 use App\Plugins\Glpi\{GlpiConfig, GlpiPlugin};
 use App\Plugins\Glpi\Models\{GlpiConnection, GlpiProjectLink};
 use App\Plugins\Glpi\Services\GlpiImportService;
-use App\Plugins\Support\TaskSync\{SelfHostedInstance, TokenTaskImportAdminController};
+use App\Plugins\Support\TaskSync\TokenTaskImportAdminController;
 
 /**
  * GLPI-Verbindungsseite (MVP-1337): „Verbindung prüfen“ liest die Instanz
@@ -42,16 +42,10 @@ class GlpiAdminController extends TokenTaskImportAdminController {
     }
 
     protected function verifyConnection(int $organizationId): array {
-        $baseUrl = (string) GlpiConfig::resolve($organizationId)['base_url'];
-        $account = app(GlpiClientFactory::class)->for($organizationId)->account();
-
-        return [
-            'source_id' => SelfHostedInstance::key($baseUrl),
-            'source_name' => SelfHostedInstance::name($baseUrl) . ($account['version'] !== null ? ' · ' . $account['version'] : ''),
-            'source_url' => $baseUrl,
-            'account_id' => $account['id'],
-            'account_name' => $account['name'],
-        ];
+        return $this->selfHostedIdentity(
+            (string) GlpiConfig::resolve($organizationId)['base_url'],
+            app(GlpiClientFactory::class)->for($organizationId)->account(),
+        );
     }
 
     protected function providerName(): string {

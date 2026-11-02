@@ -48,6 +48,8 @@ class GuaranteeController extends Controller {
         $filters = [
             'direction' => (string) $request->query('direction', ''),
             'status' => (string) $request->query('status', GuaranteeStatus::Active->value),
+            // Kachelfilter (ux-pattern-katalog §4): läuft in 90 Tagen ab bzw. Rückgabe fällig.
+            'show' => in_array($request->query('show'), ['expiring', 'return_due'], true) ? (string) $request->query('show') : '',
         ];
 
         $query = Guarantee::query()->with(['customer:id,name,company', 'supplier:id,name,company', 'issuerSupplier:id,name,company', 'project:id,name', 'responsible:id,name']);
@@ -56,6 +58,11 @@ class GuaranteeController extends Controller {
         }
         if (GuaranteeStatus::tryFrom($filters['status']) !== null) {
             $query->where('status', $filters['status']);
+        }
+        if ($filters['show'] === 'expiring') {
+            $query->whereNotNull('expires_on')->where('expires_on', '<', \App\Support\Query\DateRange::dayAfter(now()->addDays(90)));
+        } elseif ($filters['show'] === 'return_due') {
+            $query->whereHas('retention', fn ($q) => $q->where('status', \App\Enums\Invoicing\RetentionStatus::Released->value));
         }
 
         $guarantees = $query->orderByRaw('expires_on IS NULL, expires_on')->paginate(50)->withQueryString();

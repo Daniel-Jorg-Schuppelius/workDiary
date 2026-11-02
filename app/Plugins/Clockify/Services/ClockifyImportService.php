@@ -69,6 +69,7 @@ class ClockifyImportService extends MatchingTimeImportService implements CsvAndA
         $from ??= CarbonImmutable::now()->subDays((int) ($config['sync_window_days'] ?? 30))->startOfDay();
         $to ??= CarbonImmutable::now()->endOfDay();
 
+        $fetchedAt = CarbonImmutable::now();
         try {
             $rows = $client->getTimeEntries($from, $to);
         } catch (RuntimeException $e) {
@@ -86,7 +87,7 @@ class ClockifyImportService extends MatchingTimeImportService implements CsvAndA
 
         // Der Detailed-Report umfasst alle Benutzer des Workspace — fehlende
         // Einträge sind drüben gelöscht.
-        return $this->ingest($organization, $entries, $config, new RemoteSyncWindow($from, $to));
+        return $this->ingest($organization, $entries, $config, new RemoteSyncWindow($from, $to, $fetchedAt));
     }
 
     /**

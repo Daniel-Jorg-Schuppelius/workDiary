@@ -126,6 +126,7 @@ class InvoicePlaneVoucherPullService implements VoucherPuller {
             $index++;
             $quantity = is_numeric($item['item_quantity'] ?? null) ? (float) $item['item_quantity'] : 1.0;
             $price = VoucherMirror::decimal($item['item_price'] ?? null, 4) ?? '0.0000';
+            $productId = is_numeric($item['item_product_id'] ?? null) && (int) $item['item_product_id'] > 0 ? (string) (int) $item['item_product_id'] : null;
             $lines[] = new MirroredVoucherLine(
                 position: $index,
                 name: mb_substr(trim((string) ($item['item_name'] ?? '')) ?: '#' . $index, 0, 255),
@@ -133,7 +134,10 @@ class InvoicePlaneVoucherPullService implements VoucherPuller {
                 unitNet: $price,
                 totalNet: VoucherMirror::decimal($quantity * (float) $price) ?? '0.00',
                 currency: 'EUR',
+                // Artikelbezug seit InvoicePlane 1.4.7 (`item_product_id`), Einheit seit 1.5.0 (gap-09).
+                externalArticleId: $productId,
                 description: trim((string) ($item['item_description'] ?? '')) ?: null,
+                unitName: trim((string) ($item['item_product_unit'] ?? '')) ?: null,
             );
         }
 

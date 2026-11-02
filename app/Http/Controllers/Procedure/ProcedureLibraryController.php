@@ -85,7 +85,7 @@ class ProcedureLibraryController extends Controller {
             return back()->with('error', __('procedure.notice.noDraft'));
         }
         $data = $request->validate(['library_steps' => ['required', 'array', 'min:1'], 'library_steps.*' => ['string']]);
-        $ids = array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(ProcedureLibraryStep::class, $sqid), $data['library_steps']));
+        $ids = Sqid::decodeMany(ProcedureLibraryStep::class, $data['library_steps']);
         $count = 0;
         foreach (ProcedureLibraryStep::query()->whereIn('id', $ids)->orderBy('label')->get() as $library) {
             $this->templates->addStepFromLibrary($draft, $library);

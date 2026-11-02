@@ -13,9 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Taiga\Services;
 
 use App\Enums\Task\TaskStatus;
-use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
-use App\Plugins\Support\TaskSync\{AbstractTaskImportService, IncompleteRemoteReadException, RemoteTask, SelfHostedInstance};
+use App\Plugins\Support\TaskSync\{AbstractTaskImportService, IncompleteRemoteReadException, RemoteTask};
 use App\Plugins\Taiga\Api\TaigaClientFactory;
 use App\Plugins\Taiga\Models\{TaigaConnection, TaigaProjectLink};
 use App\Plugins\Taiga\TaigaPlugin;
@@ -155,12 +154,5 @@ class TaigaImportService extends AbstractTaskImportService {
                 : null,
             'project' => is_string(data_get($raw, 'project_extra_info.name')) ? (string) data_get($raw, 'project_extra_info.name') : null,
         ], $issues);
-    }
-
-    public function sourceUrl(ExternalReference $reference): ?string {
-        $url = data_get($reference->payload, 'remote.url');
-        $appUrl = (string) $this->connection((int) $reference->organization_id)?->source_url;
-
-        return is_string($url) && SelfHostedInstance::owns($appUrl, $url) ? $url : null;
     }
 }

@@ -82,13 +82,11 @@ final class HolderResolver {
      */
     public function suggestions(Organization $organization, string $companyName): array {
         $wanted = MarketplaceCompany::normalizeName($companyName);
-        $customers = Customer::query()->withoutGlobalScopes()->where('organization_id', $organization->id)
-            ->get(['id', 'name', 'company', 'number'])
+        // Aus dem Lauf-Cache: der Posteingang fragt je Firma, die Stammdaten ändern sich dabei nicht (perfc-09).
+        $customers = $this->customers($organization)
             ->filter(static fn(Customer $c): bool => self::similar($c->name, $companyName, $wanted) || self::similar((string) $c->company, $companyName, $wanted))
             ->values();
-        $foreign = ForeignCustomer::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereNull('archived_at')
-            ->with('customer:id,name')
-            ->get(['id', 'name', 'company', 'customer_id'])
+        $foreign = $this->foreignCustomers($organization)
             ->filter(static fn(ForeignCustomer $f): bool => self::similar($f->name, $companyName, $wanted) || self::similar((string) $f->company, $companyName, $wanted))
             ->values();
 
@@ -212,6 +210,7 @@ final class HolderResolver {
         return $this->foreign[$organization->id] ??= ForeignCustomer::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->whereNull('archived_at')
+            ->with('customer:id,name')
             ->get();
     }
 

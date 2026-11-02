@@ -42,6 +42,11 @@ final class FetchTenderNoticesCommand extends Command {
             $result['stored'],
         ));
 
+        $pruned = $importer->pruneExpired();
+        if ($pruned > 0) {
+            $this->info(sprintf('%d abgelaufene Bekanntmachungen ohne Treffer gelöscht.', $pruned));
+        }
+
         if ($this->option('no-match') || $result['stored'] === 0) {
             return self::SUCCESS;
         }

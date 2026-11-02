@@ -103,6 +103,8 @@ class AssetController extends Controller {
         $query = trim($request->string('q')->toString());
         $classFilter = $this->normalizeAssetClass($request->string('class')->toString());
         $statusFilter = $this->normalizeAssetStatus($request->string('status')->toString());
+        // Kachel „In Wartung/Reparatur“ (ux-pattern-katalog §4): zwei Status in einem Filter, den die Status-Auswahl nicht kennt.
+        $showMaintenance = $request->string('show')->toString() === 'maintenance';
         ['sort' => $sort, 'dir' => $dir] = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');
 
         $assetsQuery = Asset::query()
@@ -124,6 +126,9 @@ class AssetController extends Controller {
 
         if ($statusFilter !== null) {
             $assetsQuery->where('status', $statusFilter);
+        }
+        if ($showMaintenance) {
+            $assetsQuery->whereIn('status', [AssetStatus::InMaintenance->value, AssetStatus::InRepair->value]);
         }
 
         $assets = $assetsQuery->paginate(20)->withQueryString();
@@ -153,6 +158,7 @@ class AssetController extends Controller {
                 'q' => $query,
                 'class' => $classFilter ?? 'all',
                 'status' => $statusFilter ?? 'all',
+                'show' => $showMaintenance ? 'maintenance' : '',
             ],
             'sort' => $sort,
             'dir' => $dir,
@@ -160,8 +166,9 @@ class AssetController extends Controller {
                 $query !== '' ? __('Suche: :value', ['value' => $query]) : null,
                 $classFilter !== null ? __('Typ: :value', ['value' => $classOptions[$classFilter] ?? $classFilter]) : null,
                 $statusFilter !== null ? __('Status: :value', ['value' => $statusOptions[$statusFilter] ?? $statusFilter]) : null,
+                $showMaintenance ? __('In Wartung/Reparatur') : null,
             ])),
-            'hasActiveFilters' => $query !== '' || $classFilter !== null || $statusFilter !== null,
+            'hasActiveFilters' => $query !== '' || $classFilter !== null || $statusFilter !== null || $showMaintenance,
         ]);
     }
 

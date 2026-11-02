@@ -142,7 +142,7 @@ TXT;
         $this->assertSame('31970911', $entry->document_number);
         $this->assertSame('187.92', $entry->net_amount->getAmount());
         $this->assertSame('2026-09-03', $entry->period?->starts_on->toDateString(), 'Periode laut Laufzeit der Position');
-        $this->assertSame(187.92, $entry->period?->fresh()?->load('purchases')->actualPurchase());
+        $this->assertSame('187.92', $entry->period?->fresh()?->load('purchases')->actualPurchase()?->getAmount());
 
         // Nochmal: Duplikate werden erkannt.
         $again = $allocator->importProviderInvoice($this->organization, $reader->parse(self::INVOICE_TEXT), SubscriptionProvider::QualityHosting);
@@ -365,7 +365,7 @@ TXT;
         // Idempotent: derselbe Lauf importiert nichts doppelt — auch die periodenlosen nicht.
         $this->assertSame(['entries' => 0, 'skipped' => 3], app(PurchaseAllocator::class)->syncDomainAccounting($this->organization));
         $this->assertSame(3, ResalePurchaseEntry::query()->count());
-        $this->assertSame(4.5, $subscription->periods()->get()[1]->load('purchases')->actualPurchase(), 'nur der Eintrag in der Periode zählt zum Ist-Einkauf');
+        $this->assertSame('4.50', $subscription->periods()->get()[1]->load('purchases')->actualPurchase()?->getAmount(), 'nur der Eintrag in der Periode zählt zum Ist-Einkauf');
         $this->assertNull($subscription->periods()->get()[0]->load('purchases')->actualPurchase());
     }
 

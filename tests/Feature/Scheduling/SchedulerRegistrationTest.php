@@ -22,7 +22,9 @@ use Tests\TestCase;
  * Regressionstest MVP-180: Die Registry-Migration darf das Verhalten
  * von Standardinstallationen NICHT ändern. Die Soll-Liste ist der
  * eingefrorene Stand der früheren routes/console.php-Einträge
- * (Kommando → [Cron-Ausdruck, onOneServer, withoutOverlapping]).
+ * (Kommando → [Cron-Ausdruck, onOneServer, withoutOverlapping]). Seit der
+ * Leistungsanalyse 2026-11-02 (perf-01) tragen Takt-Kadenzen einen festen
+ * Minutenversatz aus dem Job-Key; die Ausdrücke hier sind der Stand danach.
  */
 class SchedulerRegistrationTest extends TestCase {
     use RefreshDatabase;
@@ -36,21 +38,21 @@ class SchedulerRegistrationTest extends TestCase {
         'claims:escalate' => ['15 7 * * *', true, true],
         // Umfragen im festen Abstand (MVP-1293).
         'surveys:send-scheduled' => ['30 9 * * *', true, true],
-        'operations:scan' => ['0 * * * *', true, true],
+        'operations:scan' => ['34 * * * *', true, true],
         // Neu mit MVP-1095: Sendungsverfolgung offener Versandaufträge.
-        'shipping:track' => ['0 * * * *', true, true],
+        'shipping:track' => ['34 * * * *', true, true],
         // Neu mit MVP-054 (kein Alt-Eintrag): Update-Check (Opt-in-Gate im Command).
         'updates:check' => ['30 6 * * *', true, true],
         // Neuigkeiten-Rail (Opt-in-Gate im Command; externer Abruf nie im Web-Request).
-        'news-feed:refresh' => ['*/30 * * * *', true, true],
+        'news-feed:refresh' => ['26,56 * * * *', true, true],
         // Neu mit Bauturbo A17 (MVP-335): täglicher GoBD-Integritätsnachweis.
         'audit:verify' => ['30 2 * * *', true, true],
         // Vollaudit 2026-07 (H10/H13/N17): E-Mail-Eingang, Domain-Sync/-Events,
         // zyklische Inventur — liefen vorher nie automatisch.
-        'mail:poll' => ['*/5 * * * *', true, true],
+        'mail:poll' => ['4,9,14,19,24,29,34,39,44,49,54,59 * * * *', true, true],
         'domain:sync' => ['40 4 * * *', true, true],
         'domain:sync-prices' => ['50 4 * * *', true, true],
-        'domain:events' => ['*/30 * * * *', true, true],
+        'domain:events' => ['20,50 * * * *', true, true],
         'inventory:cycle-counts' => ['50 5 * * 1', true, true],
         'inventory:expiring-lots' => ['10 6 * * *', true, true],
         // MVP-836: Demo-Organisationen nach Aufbewahrungsfrist (No-Op ohne DEMO_RETENTION_DAYS).
@@ -62,7 +64,7 @@ class SchedulerRegistrationTest extends TestCase {
         // Neu mit MVP-1110: täglicher Hinweis auf zuzuordnende Rechnungseingänge.
         'incoming-invoices:digest' => ['20 8 * * *', true, true],
         // Neu mit MVP-1111: Übergaben des Rechnungseingangs wiederholen.
-        'incoming-invoices:transfer' => ['0 * * * *', true, true],
+        'incoming-invoices:transfer' => ['12 * * * *', true, true],
         'archive:run' => ['0 3 * * *', true, true],
         'plans:purge' => ['30 3 * * *', true, true],
         // Feature 165 (MVP-1188): Umfangsabgleich bei bewusst begrenzten Organisationen.
@@ -71,14 +73,14 @@ class SchedulerRegistrationTest extends TestCase {
         // Feature 153 (MVP-770): Suchindex-Abgleich im Betriebsfenster.
         'search:reconcile' => ['50 21 * * *', true, true],
         'location:purge-points' => ['45 3 * * *', true, true],
-        'location:close-stale-visits' => ['0 * * * *', true, true], // MVP-1186
+        'location:close-stale-visits' => ['17 * * * *', true, true], // MVP-1186
         'integration:purge-inbox' => ['0 4 * * *', true, true],
         'chat:send-reminders' => ['* * * * *', false, true],
         'chat:send-scheduled' => ['* * * * *', false, true],
         // Feature 149 (MVP-749): liegengebliebene Lernsitzungen beenden —
         // ohne diesen Kehraus liefe eine Sitzung nach geschlossenem Browser
         // weiter und würde als riesige Spanne in die Zeitkonten gebucht.
-        'learning:close-stale-sessions' => ['*/15 * * * *', true, true],
+        'learning:close-stale-sessions' => ['10,25,40,55 * * * *', true, true],
         // Feature 149 (LTI 1.3): Schlüsseltausch nach Frist, Nonce-Kehraus.
         'learning:lti-rotate-keys' => ['50 3 * * *', true, true],
         'learning:lti-prune-nonces' => ['5 4 * * *', true, true],
@@ -86,114 +88,116 @@ class SchedulerRegistrationTest extends TestCase {
         'uploads:prune-chunks' => ['15 4 * * *', true, true],
         // MVP-803: Abend-Erinnerung bei offener Stempelung.
         'attendance:remind-open' => ['0 19 * * *', true, true],
-        'attendance:close-open' => ['*/15 * * * *', true, true],
+        'attendance:close-open' => ['7,22,37,52 * * * *', true, true],
         'recurrence:generate' => ['30 4 * * *', true, true],
-        'events:dispatch-reminders' => ['*/5 * * * *', true, true],
+        'events:dispatch-reminders' => ['2,7,12,17,22,27,32,37,42,47,52,57 * * * *', true, true],
         'events:check-certificates' => ['0 6 * * *', true, true],
         'events:materialize-recurrences' => ['0 2 * * *', true, true],
-        'plugin:healthcheck --no-fail' => ['0 * * * *', true, true],
+        'plugin:healthcheck --no-fail' => ['8 * * * *', true, true],
         // Vollscan 2026-08-23 (J1/J2): Hinweisgeber-Fristen/Aufbewahrung/Scan und
         // Helpdesk-Polling waren in der Doku versprochen, aber nie registriert.
-        'whistleblowing:deadlines' => ['0 * * * *', true, true],
+        'whistleblowing:deadlines' => ['42 * * * *', true, true],
         'whistleblowing:retention-review' => ['40 4 * * *', true, true],
-        'whistleblowing:scan' => ['*/5 * * * *', true, true],
+        'whistleblowing:scan' => ['1,6,11,16,21,26,31,36,41,46,51,56 * * * *', true, true],
         // Neu mit MVP-795: Quarantäne-Freigabe der Bewerbungsunterlagen
         // (Vollscan 2026-09-15, Befund P6-46).
-        'recruiting:scan-uploads' => ['*/15 * * * *', true, true],
+        'recruiting:scan-uploads' => ['5,20,35,50 * * * *', true, true],
         // Neu 2026-10-05: abgelaufene Stellenanzeigen auf „abgelaufen“ setzen.
         'recruiting:expire-postings' => ['50 2 * * *', true, true],
-        'zammad:sync' => ['*/15 * * * *', true, true],
-        'github:sync' => ['0 * * * *', true, true],
-        'gitlab:sync' => ['0 * * * *', true, true],
+        'zammad:sync' => ['9,24,39,54 * * * *', true, true],
+        'github:sync' => ['14 * * * *', true, true],
+        'gitlab:sync' => ['5 * * * *', true, true],
         'model:prune' => ['50 3 * * *', true, true],
         // Plugin-Review 2026-08: Bereinigung quittierter/alter Plugin-Fehler.
         'model:prune --model=App\\Models\\PluginError' => ['40 3 * * *', true, true],
-        'remote:sync-sessions' => ['0 * * * *', true, true],
-        'toggl:import' => ['0 * * * *', true, true],
-        'toggl:push' => ['0 * * * *', true, true],
+        'remote:sync-sessions' => ['16 * * * *', true, true],
+        'toggl:import' => ['39 * * * *', true, true],
+        'toggl:push' => ['14 * * * *', true, true],
         // Phase 137 (E21): API-Import wie Toggl.
-        'kimai:import' => ['0 * * * *', true, true],
-        'clockify:import' => ['0 * * * *', true, true],
-        'clockify:push' => ['0 * * * *', true, true],
-        'openproject:import' => ['0 * * * *', true, true],
-        'todoist:sync' => ['0 * * * *', true, true],
+        'kimai:import' => ['22 * * * *', true, true],
+        'clockify:import' => ['24 * * * *', true, true],
+        'clockify:push' => ['14 * * * *', true, true],
+        'openproject:import' => ['24 * * * *', true, true],
+        'todoist:sync' => ['9 * * * *', true, true],
         // Neu mit Phase 157: Aufgabenimporte Jira und Asana.
-        'jira:sync' => ['*/15 * * * *', true, true],
+        'jira:sync' => ['11,26,41,56 * * * *', true, true],
         'jira:sync --full' => ['40 3 * * *', true, true],
-        'asana:sync' => ['*/15 * * * *', true, true],
+        'asana:sync' => ['4,19,34,49 * * * *', true, true],
         'asana:sync --full' => ['50 3 * * *', true, true],
-        'glpi:sync' => ['*/15 * * * *', true, true],
+        'glpi:sync' => ['14,29,44,59 * * * *', true, true],
         'glpi:sync --full' => ['22 5 * * *', true, true],
-        'freescout:sync' => ['*/15 * * * *', true, true],
+        'freescout:sync' => ['11,26,41,56 * * * *', true, true],
         'freescout:sync --full' => ['12 5 * * *', true, true],
-        'leantime:sync' => ['*/15 * * * *', true, true],
+        'leantime:sync' => ['13,28,43,58 * * * *', true, true],
         'leantime:sync --full' => ['2 5 * * *', true, true],
-        'taiga:sync' => ['*/15 * * * *', true, true],
+        'taiga:sync' => ['13,28,43,58 * * * *', true, true],
         'taiga:sync --full' => ['52 4 * * *', true, true],
-        'plane:sync' => ['*/15 * * * *', true, true],
+        'plane:sync' => ['14,29,44,59 * * * *', true, true],
         'plane:sync --full' => ['55 5 * * *', true, true],
-        'kanboard:sync' => ['*/15 * * * *', true, true],
+        'kanboard:sync' => ['11,26,41,56 * * * *', true, true],
         'kanboard:sync --full' => ['25 5 * * *', true, true],
-        'vikunja:sync' => ['*/15 * * * *', true, true],
+        'vikunja:sync' => ['2,17,32,47 * * * *', true, true],
         'vikunja:sync --full' => ['25 4 * * *', true, true],
-        'firefly:sync' => ['0 * * * *', true, true],
-        'prestashop:sync' => ['*/15 * * * *', true, true],
+        'firefly:sync' => ['29 * * * *', true, true],
+        'prestashop:sync' => ['8,23,38,53 * * * *', true, true],
         'prestashop:sync --full' => ['40 4 * * *', true, true],
-        'shopware:sync' => ['*/15 * * * *', true, true],
+        'shopware:sync' => ['8,23,38,53 * * * *', true, true],
         'shopware:sync --full' => ['30 4 * * *', true, true],
-        'woocommerce:sync' => ['*/15 * * * *', true, true],
+        'woocommerce:sync' => ['11,26,41,56 * * * *', true, true],
         'woocommerce:sync --full' => ['20 4 * * *', true, true],
-        'redmine:sync' => ['*/15 * * * *', true, true],
+        'redmine:sync' => ['6,21,36,51 * * * *', true, true],
         'redmine:sync --full' => ['10 4 * * *', true, true],
-        'gitea:sync' => ['*/15 * * * *', true, true],
+        'gitea:sync' => ['3,18,33,48 * * * *', true, true],
         'gitea:sync --full' => ['0 4 * * *', true, true],
         // Neu mit Feature 095: Calendly-Termin-Backfill (Polling/Reconciliation).
-        'calendly:backfill' => ['0 * * * *', true, true],
+        'calendly:backfill' => ['10 * * * *', true, true],
         // Neu mit MVP-122: DATEV-Online — Belegbilder und EXTF-Importe.
         'datev-online:sync' => ['40 2 * * *', true, true],
         // Neu mit Feature 080 (MVP-359): Cloud-Dokumenteingang-Delta-Lauf.
-        'cloud-intake:wake' => ['*/5 * * * *', true, true],
-        'cloud-intake:sync' => ['*/15 * * * *', true, true],
+        'cloud-intake:wake' => ['1,6,11,16,21,26,31,36,41,46,51,56 * * * *', true, true],
+        'cloud-intake:sync' => ['2,17,32,47 * * * *', true, true],
         // MVP-1078: Upload-Links der Kundeneingänge.
-        'customer-intakes:sync-uploads' => ['*/15 * * * *', true, true],
+        'customer-intakes:sync-uploads' => ['5,20,35,50 * * * *', true, true],
         // Neu mit Feature 066 (MVP-734): Peppol-Eingang beim Access-Point-Provider.
-        'peppol:receive' => ['0 * * * *', true, true],
+        'peppol:receive' => ['24 * * * *', true, true],
         // Neu mit Feature 017 Phase 32 (MVP-364/365): Cloud-Backup + Verify.
         'workdiary:backup:run' => ['30 1 * * *', true, true],
         'workdiary:backup:verify' => ['30 3 * * 6', true, true],
         // Geplanter Restore-Test (MVP-1204): monatlich am 1.
         'workdiary:backup:restore-test' => ['30 2 1 * *', true, true],
         // Neu mit Bauturbo A9 (MVP-329): CardDAV-Kontakt-Lese-Sync.
-        'carddav:sync' => ['0 * * * *', true, true],
+        'carddav:sync' => ['23 * * * *', true, true],
         // Kalender-Publish-Reconciliation (MS365-Integrationsplan 2026-08, S2):
         // täglicher Voll-Publish; Einzeltermine weiterhin ereignisgetrieben.
         'caldav:publish' => ['35 4 * * *', true, true],
-        'caldav:import' => ['0 * * * *', true, true],
+        'caldav:import' => ['33 * * * *', true, true],
         'sevdesk:pull-vouchers' => ['5 5 * * *', true, true],
-        'accounting:pull-vouchers --plugin=invoiceninja' => ['0 * * * *', true, true],
-        'accounting:pull-vouchers --plugin=akaunting' => ['0 * * * *', true, true],
+        'accounting:pull-vouchers --plugin=invoiceninja' => ['20 * * * *', true, true],
+        'accounting:pull-vouchers --plugin=akaunting' => ['44 * * * *', true, true],
         'msgraph:publish' => ['45 4 * * *', true, true],
         'google-calendar:publish' => ['55 4 * * *', true, true],
-        'google-calendar:import' => ['0 * * * *', true, true],
+        'google-calendar:import' => ['15 * * * *', true, true],
         // MS365-Plan §8: Graph-Subscription-Anlage/-Renewal (Sender-Seite).
         'msgraph:subscriptions' => ['20 4 * * *', true, true],
         // Audit 2026-08 (W4.4): Google-Drive-Push-Kanäle. Google-Kanäle laufen
         // ~24 h und lassen sich nicht verlängern → dreimal täglich neu anlegen.
         'google-drive:subscriptions' => ['35 */8 * * *', true, true],
         // Feature 102 Schnitt E: Microsoft-To-Do-Abgleich (Todoist-Muster).
-        'msgraph:todo-sync' => ['0 * * * *', true, true],
+        'msgraph:todo-sync' => ['56 * * * *', true, true],
         // Feature 102 C3: Zwei-Wege-Kalender-Rückimport (Opt-in two_way).
-        'msgraph:calendar-import' => ['0 * * * *', true, true],
-        'openproject:push' => ['0 * * * *', true, true],
+        'msgraph:calendar-import' => ['29 * * * *', true, true],
+        'openproject:push' => ['20 * * * *', true, true],
         'workdiary:backup:check-restore' => ['0 5 * * *', true, true],
         'maintenance:scan-due' => ['30 5 * * *', true, true],
-        'notifications:scan-deadlines' => ['0 * * * *', true, true],
+        'notifications:scan-deadlines' => ['51 * * * *', true, true],
         'org:offboard-due' => ['10 0 * * *', true, true],
         'travel-logs:lock-due' => ['20 0 * * *', true, true],
-        'tickets:scan-sla-breaches' => ['*/5 * * * *', true, true],
-        'lexoffice:sync-contacts' => ['0 * * * *', true, true],
-        'lexoffice:sync-articles' => ['0 * * * *', true, true],
-        'lexoffice:sync-vouchers' => ['0 * * * *', true, true],
+        'tickets:scan-sla-breaches' => ['1,6,11,16,21,26,31,36,41,46,51,56 * * * *', true, true],
+        'lexoffice:sync-contacts' => ['19 * * * *', true, true],
+        'lexoffice:sync-articles' => ['44 * * * *', true, true],
+        'lexoffice:sync-vouchers' => ['44 * * * *', true, true],
+        // Täglicher Volllauf je Kontakt (perf-05); stündlich läuft nur noch der Änderungsfilter.
+        'lexoffice:sync-vouchers --full' => ['50 5 * * *', true, true],
         // Neu mit Feature 152 (MVP-758): Reselling-Register, Perioden vorrollen.
         'resale:sync-periods' => ['5 6 * * *', true, true],
         'resale:sync-domains' => ['10 5 * * *', true, true],
@@ -211,15 +215,15 @@ class SchedulerRegistrationTest extends TestCase {
         // Review 2026-09-10 (A8): Aufbewahrung der Import-Dateien.
         'resale:prune-imports' => ['30 5 * * *', true, true],
         // Neu mit Feature 078 (MVP-322): JTL-Wawi-Projektions-Sync.
-        'jtl:sync' => ['0 * * * *', true, true],
+        'jtl:sync' => ['50 * * * *', true, true],
         // Neu mit Feature 093 (MVP-433/434): Billbee-Multichannel-Sync.
-        'billbee:sync' => ['*/15 * * * *', true, true],
+        'billbee:sync' => ['8,23,38,53 * * * *', true, true],
         // Neu mit Feature 101 (MVP-495/498): Etsy-Marktplatz-Sync.
-        'etsy:sync' => ['*/15 * * * *', true, true],
+        'etsy:sync' => ['4,19,34,49 * * * *', true, true],
         // Neu mit Feature 093 (MVP-431): easybill-Beleg-Rückabruf.
-        'easybill:sync' => ['0 * * * *', true, true],
+        'easybill:sync' => ['35 * * * *', true, true],
         // Neu mit Feature 077 (MVP-313): orgaMAX-Projektions-Sync.
-        'orgamax:sync' => ['0 * * * *', true, true],
+        'orgamax:sync' => ['16 * * * *', true, true],
         // Neu mit MVP-459 (Druck/Kopiershop): Löschfristen der Produktionsdateien.
         'print:purge-files' => ['45 3 * * *', true, true],
         // Zählerstands-Faktura (Feature 116, MVP-605): Entwürfe am 2. des Monats.
@@ -229,7 +233,7 @@ class SchedulerRegistrationTest extends TestCase {
         // einen Veröffentlichungstag erst am Folgetag vollständig bereit — der
         // Abruf holt deshalb nachts den Vortag.
         'tenders:fetch-notices' => ['15 5 * * *', true, true],
-        'catalog:fetch-due' => ['*/15 * * * *', true, true],
+        'catalog:fetch-due' => ['3,18,33,48 * * * *', true, true],
         // Neu mit Feature 107 (W3-Rest): vorgemerkte DATANORM-Preisstände.
         'catalog:apply-pending-prices' => ['20 2 * * *', true, true],
         'security:advisories-pull' => ['30 5 * * *', true, true],
@@ -264,7 +268,7 @@ class SchedulerRegistrationTest extends TestCase {
         // Neu mit Feature 095 (MVP-441): tägliche Quelltext-Integritätsprüfung.
         'integrity:verify --trigger=schedule' => ['20 3 * * *', true, true],
         // Neu mit Feature 096 (MVP-445): Angriffserkennungs-Auswertung.
-        'security:evaluate' => ['*/5 * * * *', true, true],
+        'security:evaluate' => ['1,6,11,16,21,26,31,36,41,46,51,56 * * * *', true, true],
         // Neu mit Feature 098: Kunden-Sonderkonditionen — Monatsrechnungen +
         // Retainer-Pauschalen an Lexoffice (jeweils am Monatsersten).
         'customer-billing:generate-invoices' => ['25 5 1 * *', true, true],
@@ -336,7 +340,7 @@ class SchedulerRegistrationTest extends TestCase {
         $this->assertSame('37 8 * * *', $commands['audit:verify']['expression'], '02:30 → 08:37');
         $this->assertSame('21 9 1 * *', $commands['customer-billing:generate-invoices']['expression'], 'Monatserster 05:25 → 09:21');
         $this->assertSame('50 21 * * *', $commands['search:reconcile']['expression'], 'im Fenster unverändert');
-        $this->assertSame('*/5 * * * *', $commands['mail:poll']['expression']);
+        $this->assertSame((new \App\Scheduling\Cadence(\App\Scheduling\CadenceType::EveryFiveMinutes))->withOffset(\App\Scheduling\JobOffset::minutes('mail.poll', \App\Scheduling\CadenceType::EveryFiveMinutes))->cronExpression(), $commands['mail:poll']['expression'], 'Taktjob bleibt, mit Versatz');
         $this->assertSame('0 * * * *', $commands['scheduler:watchdog']['expression']);
     }
 

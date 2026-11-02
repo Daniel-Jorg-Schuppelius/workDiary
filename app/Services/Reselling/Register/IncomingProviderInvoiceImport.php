@@ -26,7 +26,7 @@ use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CountryCode;
 use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper, StringHelper};
 use CommonToolkit\ValueObjects\Money;
-use Illuminate\Support\Facades\{DB, Log, Storage};
+use Illuminate\Support\Facades\{DB, Log};
 use PDFToolkit\Helper\PDFTextProvider;
 use RuntimeException;
 use Throwable;
@@ -288,22 +288,7 @@ class IncomingProviderInvoiceImport {
      * @return array{contents: string, mime: ?string, path: string, name: string}|null
      */
     protected function storedOriginal(IncomingEInvoice $incoming): ?array {
-        $version = $incoming->document?->currentVersion;
-        if ($version === null) {
-            return null;
-        }
-        $disk = Storage::disk((string) ($version->disk ?: 'local'));
-        $path = (string) $version->path;
-        if ($path === '' || ! $disk->exists($path)) {
-            return null;
-        }
-
-        return [
-            'contents' => (string) $disk->get($path),
-            'mime' => $version->mime !== null ? (string) $version->mime : null,
-            'path' => $disk->path($path),
-            'name' => (string) $version->original_name,
-        ];
+        return $incoming->storedOriginal();
     }
 
     /** @return Result */

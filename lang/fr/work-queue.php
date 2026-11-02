@@ -78,4 +78,5 @@ return [
         'all' => 'Tout afficher',
         'empty' => 'Aucun élément ne vous attend pour le moment.',
     ],
+    'overflow' => '{1} Un élément de plus n’est pas listé : la file affiche au plus :limit par source.|[2,*] :count éléments de plus ne sont pas listés : la file affiche au plus :limit par source.',
 ];

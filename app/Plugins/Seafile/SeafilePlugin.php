@@ -21,7 +21,7 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{BackupTarget, BackupTargetConnector, DocumentIntakeOrigins, DocumentIntakeSource, IntakeSourceConnector, LinksExternalRecords, PluginCapability};
 use App\Plugins\Seafile\Api\SeafileClientFactory;
 use App\Plugins\Seafile\Services\{SeafileBackupTarget, SeafileIntake};
-use App\Plugins\Support\ApiHealthProbe;
+use App\Plugins\Support\{ApiHealthProbe, SelfHostedSettings};
 use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
 use App\Support\Ui\UiAction;
@@ -56,11 +56,7 @@ class SeafilePlugin extends AbstractPlugin implements BackupTarget, BackupTarget
     }
 
     public function settingsSchema(): array {
-        return [
-            ['key' => 'base_url', 'label' => __('seafile::seafile.settings.base_url'), 'type' => 'text', 'required' => true, 'help' => __('seafile::seafile.settings.base_url_help')],
-            ['key' => 'api_token', 'label' => __('seafile::seafile.settings.api_token'), 'type' => 'password', 'required' => true, 'help' => __('seafile::seafile.settings.api_token_help')],
-            ['key' => 'allow_private_network', 'label' => __('seafile::seafile.settings.allow_private_network'), 'type' => 'boolean', 'default' => false, 'help' => __('seafile::seafile.settings.allow_private_network_help')],
-        ];
+        return SelfHostedSettings::schema(self::ID, [SelfHostedSettings::field(self::ID, 'api_token', 'password')]);
     }
 
     public function capabilities(): array {

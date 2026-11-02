@@ -55,12 +55,11 @@ class SetOrganizationContext {
                 app()->instance('currentOrganization', $org);
 
                 // Aktive Org als Spatie-Team-Kontext; globale Rollen (team_id = NULL) bleiben überall gültig.
-                $registrar = app(PermissionRegistrar::class);
-                $registrar->setPermissionsTeamId($org->id);
-
-                // Nach Team-Wechsel beide Spatie-Caches (Registrar + geladene User-Relationen) leeren,
-                // sonst werten Policies/isAdmin() gegen den alten Team-Cache aus.
-                $registrar->forgetCachedPermissions();
+                // Der Team-Cache (TeamScopedPermissionRegistrar) wechselt mit dem Team den Schlüssel —
+                // bis zur Leistungsanalyse 2026-11-02 (perf-14) wurde hier der Rechte-Cache bei jedem
+                // Request gelöscht und neu geschrieben. Die geladenen User-Relationen gehören
+                // weiter dem alten Team.
+                app(PermissionRegistrar::class)->setPermissionsTeamId($org->id);
                 $user->unsetRelation('roles');
                 $user->unsetRelation('permissions');
             }

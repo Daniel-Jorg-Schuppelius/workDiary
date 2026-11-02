@@ -747,7 +747,7 @@ class IncomingEInvoiceService {
             return false;
         }
         $document = $incoming->document;
-        $original = $this->storedOriginal($incoming);
+        $original = $incoming->storedOriginal();
         if ($document === null || $original === null) {
             return false;
         }
@@ -849,7 +849,7 @@ class IncomingEInvoiceService {
         if (! self::isRevalidatable($incoming)) {
             return false;
         }
-        $original = $this->storedOriginal($incoming);
+        $original = $incoming->storedOriginal();
         if ($original === null) {
             return false;
         }
@@ -869,31 +869,6 @@ class IncomingEInvoiceService {
         ]);
 
         return true;
-    }
-
-    /**
-     * Abgelegtes Original des Eingangs (aktuelle Dokumentversion) für
-     * Nacherkennung und Neuvalidierung; null ohne Version oder Datei.
-     *
-     * @return array{contents: string, mime: ?string, path: string, name: string}|null
-     */
-    private function storedOriginal(\App\Models\Invoicing\IncomingEInvoice $incoming): ?array {
-        $version = $incoming->document?->currentVersion;
-        if ($version === null) {
-            return null;
-        }
-        $disk = \Illuminate\Support\Facades\Storage::disk((string) ($version->disk ?: 'local'));
-        $path = (string) $version->path;
-        if ($path === '' || ! $disk->exists($path)) {
-            return null;
-        }
-
-        return [
-            'contents' => (string) $disk->get($path),
-            'mime' => $version->mime !== null ? (string) $version->mime : null,
-            'path' => $disk->path($path),
-            'name' => (string) $version->original_name,
-        ];
     }
 
     /**

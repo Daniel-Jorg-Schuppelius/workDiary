@@ -23,6 +23,7 @@ use App\Models\Supplier\Supplier;
 use App\Support\ReferenceTokens;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Eingehende E-Rechnung im Prüfbereich (Feature 066, MVP-165/167):
@@ -425,6 +426,31 @@ class IncomingEInvoice extends Model {
     /** @return BelongsTo<Document, $this> */
     public function document(): BelongsTo {
         return $this->belongsTo(Document::class);
+    }
+
+    /**
+     * Abgelegtes Original (aktuelle Dokumentversion) für Nacherkennung,
+     * Neuvalidierung und Anbieter-Import; null ohne Version oder Datei.
+     *
+     * @return array{contents: string, mime: ?string, path: string, name: string}|null
+     */
+    public function storedOriginal(): ?array {
+        $version = $this->document?->currentVersion;
+        if ($version === null) {
+            return null;
+        }
+        $disk = Storage::disk((string) ($version->disk ?: 'local'));
+        $path = (string) $version->path;
+        if ($path === '' || ! $disk->exists($path)) {
+            return null;
+        }
+
+        return [
+            'contents' => (string) $disk->get($path),
+            'mime' => $version->mime !== null ? (string) $version->mime : null,
+            'path' => $disk->path($path),
+            'name' => (string) $version->original_name,
+        ];
     }
 
     /** @return HasMany<IncomingInvoiceRetention, $this> Einbehalte (MVP-953) */

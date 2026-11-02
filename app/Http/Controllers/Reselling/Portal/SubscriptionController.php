@@ -38,7 +38,7 @@ class SubscriptionController extends Controller {
 
     public function index(): View {
         $user = $this->portalUser();
-        $customer = $this->portalCustomer($user);
+        $customer = $this->portalCustomer();
         $today = ResalePeriod::today();
 
         $subscriptions = $this->visible($user, $customer, $today)
@@ -73,7 +73,7 @@ class SubscriptionController extends Controller {
 
     public function show(ResaleSubscription $subscription): View {
         $user = $this->portalUser();
-        $customer = $this->portalCustomer($user);
+        $customer = $this->portalCustomer();
         $today = ResalePeriod::today();
 
         // Leak-Schutz: außerhalb der Kundensicht existiert das Abo für dieses Portalkonto nicht.
@@ -134,12 +134,5 @@ class SubscriptionController extends Controller {
         }
 
         return $labels;
-    }
-
-    private function portalCustomer(User $user): Customer {
-        $customer = $user->customer;
-        abort_unless($customer instanceof Customer && (int) $customer->organization_id === (int) $user->organization_id, 403);
-
-        return $customer;
     }
 }

@@ -35,6 +35,9 @@
         <x-filter-toggle name="mine" :label="__('work-queue.filter.mine')" :checked="$filters['mine']" />
     </x-filter-bar>
 
+    @if ($overflow > 0)
+        <div role="status" class="alert alert-info text-sm mb-2"><span>{{ trans_choice('work-queue.overflow', $overflow, ['count' => $overflow, 'limit' => \App\Services\WorkQueue\WorkQueue::SOURCE_LIMIT]) }}</span></div>
+    @endif
     @if ($items->isEmpty())
         <x-empty-state framed icon="task_alt" :title="__('work-queue.empty.title')" :message="__('work-queue.empty.message')" />
     @else

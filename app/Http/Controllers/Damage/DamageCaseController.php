@@ -43,17 +43,21 @@ class DamageCaseController extends Controller {
         $subjectTypes = array_map(static fn (string $class): string => MorphMap::alias($class), DamageCaseService::SUBJECTS);
         $subjectType = in_array($request->string('subject_type')->toString(), $subjectTypes, true) ? $request->string('subject_type')->toString() : null;
         $open = [DamageCaseStatus::Reported->value, DamageCaseStatus::Submitted->value, DamageCaseStatus::InReview->value];
+        // Kachel „offen“ (ux-pattern-katalog §4): drei Status, die die Status-Auswahl einzeln kennt.
+        $showOpen = $request->string('show')->toString() === 'open';
 
         return view('damage.index', [
             'cases' => DamageCase::query()
                 ->with('subject')
                 ->when($status, fn ($q, DamageCaseStatus $s) => $q->where('status', $s->value))
+                ->when($showOpen, fn ($q) => $q->whereIn('status', $open))
                 ->when($kind, fn ($q, DamageKind $k) => $q->where('kind', $k->value))
                 ->when($subjectType !== null, fn ($q) => $q->where('subject_type', $subjectType))
                 ->orderByDesc('id')
                 ->paginate(25)
                 ->withQueryString(),
             'subjectTypes' => $subjectTypes,
+            'showOpen' => $showOpen,
             'openCount' => DamageCase::query()->whereIn('status', $open)->count(),
             'openEstimate' => (string) DamageCase::query()->whereIn('status', $open)->sum('estimated_amount'),
             'settledTotal' => (string) DamageCase::query()->whereIn('status', [DamageCaseStatus::Settled->value, DamageCaseStatus::Closed->value])->sum('settled_amount'),

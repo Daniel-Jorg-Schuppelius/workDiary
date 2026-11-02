@@ -52,6 +52,7 @@ für Administratoren; allen anderen wird der Zugriff verweigert.
   (Personen mit mindestens einem Eintrag) und **Entity-Typen** (verschiedene
   Objekttypen). Auch diese beiden zählen über alle Einträge im Zeitraum, nicht
   nur über die Top-20-Listen.
+- Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
 - Diagramme: **Ereignisse im Verlauf**, **Top-Akteure (Top 15)** und die
   Ereignisse im Verlauf nach Ereignistyp.
 - Tabellen: **Nach Event**, **Nach Entity-Typ (Top 20)**, **Nach Benutzer
@@ -80,6 +81,7 @@ die Lenk- und Ruhezeitbefunde hinzu.
 - Kacheln: **Befunde gesamt** (ein Klick öffnet den Einzelreport),
   **Betroffene Mitarbeitende**, **Offen (ohne Korrektur)** und **Mit
   genehmigter Korrektur** (Befunde an Tagen mit genehmigter Zeitkorrektur).
+- Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
 - Je Verstoßart eine Kachel mit der Anzahl; ein Klick öffnet den
   Einzelreport, gefiltert auf diese Art.
 - Diagramme: offene Befunde im Verlauf und Befunde im Verlauf nach
@@ -103,6 +105,7 @@ Wird ein Befund dabei nicht mehr erkannt, setzt der Abgleich ihn auf
 - Kacheln je Status: **Offen**, **Quittiert**, **Behoben** und
   **Akzeptiert**, gezählt über die ganze Organisation. Ein Klick filtert die
   Liste.
+- Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
 - Diagramm **Neue vs. quittierte Befunde je Monat** für die letzten 24 Monate
   mit Daten.
 - Liste: **Mitarbeiter**, **Datum**, **Art**, **Wert**, **Schwelle**,

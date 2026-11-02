@@ -66,6 +66,8 @@ Funzionalità:
    amministrazione e contabilità e non può essere annullata con un
    clic.
 
+Un clic su una tessera di avviso filtra l’elenco su quelle voci e passa a «Tutto»; la barra dei filtri offre lo stesso valore.
+
 La pagina è visibile ai ruoli con l'autorizzazione «visualizzare
 tutte le registrazioni di tempo» (per impostazione predefinita
 contabilità, direzione e amministrazione).

@@ -46,6 +46,8 @@ Search and filters are kept when you switch tabs.
 **Key figures:** The tiles are calculated over the whole filtered set, not
 just the visible page – separately per currency and without conversion.
 
+Clicking **Open** filters for open documents (a second click removes the filter); the total tiles have no target.
+
 - **Revenue**, **Cost (external)** and **Balance** compare outgoing and
   incoming documents.
 - **My expenses** shows your own expenses and the share still under review.

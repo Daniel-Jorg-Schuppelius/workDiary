@@ -38,10 +38,10 @@
 
     <div class="grid gap-4 sm:grid-cols-3">
         <x-kpi-tile :label="__('Aufträge mit Lücken')" :value="$entries_with_gaps"
-                    :tone="$entries_with_gaps > 0 ? 'warning' : 'success'" />
+                    :tone="$entries_with_gaps > 0 ? 'warning' : 'success'" href="#data-quality-entries" />
         <x-kpi-tile :label="__('Harte Lücken')" :value="$by_severity['hard'] ?? 0"
-                    :tone="($by_severity['hard'] ?? 0) > 0 ? 'error' : 'success'" />
-        <x-kpi-tile :label="__('Weiche Lücken')" :value="$by_severity['soft'] ?? 0" />
+                    :tone="($by_severity['hard'] ?? 0) > 0 ? 'error' : 'success'" href="#data-quality-entries" />
+        <x-kpi-tile :label="__('Weiche Lücken')" :value="$by_severity['soft'] ?? 0" href="#data-quality-entries" />
     </div>
 
     <div class="grid gap-4 lg:grid-cols-2">
@@ -78,7 +78,7 @@
         </x-card>
     </div>
 
-    <x-card>
+    <x-card id="data-quality-entries" class="scroll-mt-24">
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Betroffene Aufträge') }}</h3>
         @if (empty($rows))
             <x-empty-state icon="check_circle"

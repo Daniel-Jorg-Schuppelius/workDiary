@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Plugins\Clockify\Services;
 
-use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
@@ -22,13 +21,12 @@ use App\Plugins\Clockify\ClockifyPlugin;
 use App\Plugins\Clockify\Exceptions\ClockifyApiException;
 use App\Plugins\Support\{AbstractTimeEntryPushService, ImportedTimeEntry, MatchingTimeImportService, RemoteTimeFingerprint};
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 
 /**
  * Überträgt in workDiary erfasste Zeiten nach Clockify (Konsolidierungs-Audit
- * C5, Audit 2026-08 Welle 1.1) — SPIEGELUNG nach dem Toggl-Muster:
- * {@see markPushed()} ist ein No-op, die Einträge bleiben lokal abrechenbar
+ * C5, Audit 2026-08 Welle 1.1) — SPIEGELUNG nach dem Toggl-Muster
+ * ({@see mirrorsEntries()}): die Einträge bleiben lokal abrechenbar
  * und über die zusätzliche `entry`-Reference writeback-fähig.
  *
  * Anders als Toggl/Kimai gibt es keine `project_id`-References (Clockify-
@@ -69,24 +67,8 @@ class ClockifyExportService extends AbstractTimeEntryPushService {
         return array_keys($this->projectMap);
     }
 
-    protected function scopeCandidates(Builder $query): Builder {
-        return $query
-            ->whereNotNull('started_at')
-            ->whereNotNull('ended_at')
-            ->where('kind', TimeEntryKind::Work->value)
-            // Import-Echo + Push-Idempotenz auf Query-Ebene (wie Toggl): JEDE
-            // bestehende Clockify-Referenz schließt aus, weil markPushed()
-            // exported nicht setzt.
-            ->whereNotExists(function ($sub): void {
-                $sub->from('external_references')
-                    ->whereColumn('external_references.referenceable_id', 'time_entries.id')
-                    ->where('external_references.referenceable_type', (new TimeEntry)->getMorphClass())
-                    ->where('external_references.plugin_id', ClockifyPlugin::ID)
-                    ->whereIn('external_references.external_type', [
-                        MatchingTimeImportService::EXT_TYPE_ENTRY,
-                        self::EXT_TYPE_PUSHED,
-                    ]);
-            });
+    protected function mirrorsEntries(): bool {
+        return true;
     }
 
     protected function shouldSkip(Organization $organization, TimeEntry $entry): bool {
@@ -119,10 +101,6 @@ class ClockifyExportService extends AbstractTimeEntryPushService {
     }
 
     /** Spiegelung statt Rückbuchung: lokal bleibt der Eintrag abrechenbar. */
-    protected function markPushed(TimeEntry $entry): void {
-        // bewusst kein exported=true — siehe Klassen-Docblock.
-    }
-
     protected function isExpectedFailure(\Throwable $e): bool {
         return $e instanceof ClockifyApiException;
     }

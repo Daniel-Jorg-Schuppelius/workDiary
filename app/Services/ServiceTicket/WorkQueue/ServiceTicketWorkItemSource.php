@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket\WorkQueue;
 
-use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Enums\User\Permission;
 use App\Enums\WorkQueue\WorkItemCategory;
 use App\Models\Platform\{Organization, User};
@@ -45,14 +44,10 @@ final class ServiceTicketWorkItemSource implements WorkItemSource {
 
     public function items(User $viewer, Organization $organization): iterable {
         $gate = Gate::forUser($viewer);
-        $unresolved = array_map(
-            static fn (ServiceTicketStatus $s): string => $s->value,
-            array_values(array_filter(ServiceTicketStatus::cases(), static fn (ServiceTicketStatus $s): bool => ! $s->isResolved())),
-        );
         $tickets = ServiceTicket::query()
             ->where('organization_id', $organization->id)
             ->where('assigned_to_user_id', $viewer->id)
-            ->whereIn('status', $unresolved)
+            ->open()
             ->orderBy('resolution_due_at')
             ->get();
 

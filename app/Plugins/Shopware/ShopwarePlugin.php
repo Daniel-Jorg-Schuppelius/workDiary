@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace App\Plugins\Shopware;
 
-use App\Plugins\{AbstractPlugin, PluginHealth};
+use App\Plugins\AbstractPlugin;
 use App\Plugins\Shopware\Api\ShopwareClientFactory;
 use App\Plugins\Shopware\Models\ShopwareConnection;
-use App\Plugins\Support\ApiHealthProbe;
+use App\Plugins\Support\{ChecksConnectionHealth, SelfHostedSettings};
+use App\Plugins\Support\ShopOrders\ShopOrderSettings;
 
 /**
  * Shopware-6-Bestellimport (Feature 175, Phase 158): Bestellungen eines
@@ -23,6 +24,8 @@ use App\Plugins\Support\ApiHealthProbe;
  * Gemeinsame Strecke aller Shops: {@see \App\Plugins\Support\ShopOrders\AbstractShopOrderImportService}.
  */
 class ShopwarePlugin extends AbstractPlugin {
+    use ChecksConnectionHealth;
+
     public const ID = 'shopware';
 
     public const SERVICE_PROVIDER = ShopwareServiceProvider::class;
@@ -41,12 +44,10 @@ class ShopwarePlugin extends AbstractPlugin {
 
     public function settingsSchema(): array {
         return [
-            ['key' => 'base_url', 'label' => __('shopware::shopware.settings.base_url'), 'type' => 'text', 'required' => true, 'help' => __('shopware::shopware.settings.base_url_help')],
-            ['key' => 'client_id', 'label' => __('shopware::shopware.settings.client_id'), 'type' => 'text', 'required' => true, 'help' => __('shopware::shopware.settings.client_id_help')],
-            ['key' => 'client_secret', 'label' => __('shopware::shopware.settings.client_secret'), 'type' => 'password', 'required' => true],
-            ['key' => 'initial_window_days', 'label' => __('integration.shop_orders.settings.initial_window_days'), 'type' => 'number', 'default' => 30, 'help' => __('integration.shop_orders.settings.initial_window_days_help')],
-            ['key' => 'include_cancelled', 'label' => __('integration.shop_orders.settings.include_cancelled'), 'type' => 'boolean', 'default' => false, 'help' => __('integration.shop_orders.settings.include_cancelled_help')],
-            ['key' => 'allow_private_network', 'label' => __('integration.shop_orders.settings.allow_private_network'), 'type' => 'boolean', 'default' => false, 'help' => __('integration.shop_orders.settings.allow_private_network_help')],
+            SelfHostedSettings::field(self::ID, 'base_url'),
+            SelfHostedSettings::field(self::ID, 'client_id'),
+            SelfHostedSettings::field(self::ID, 'client_secret', 'password', help: false),
+            ...ShopOrderSettings::fields(),
         ];
     }
 
@@ -58,19 +59,15 @@ class ShopwarePlugin extends AbstractPlugin {
         return ['route' => 'admin.shopware.index', 'label' => 'Shopware', 'icon' => 'storefront'];
     }
 
-    public function healthCheck(): PluginHealth {
-        $organization = $this->healthOrgContext();
-        if ($organization instanceof PluginHealth) {
-            return $organization;
-        }
-        if (! ShopwareConfig::isConfigured((int) $organization->id)) {
-            return PluginHealth::degraded((string) __('shopware::shopware.health.not_configured'), 'not_configured');
-        }
-        $connection = ShopwareConnection::query()->where('organization_id', $organization->id)->first();
-        if (! $connection instanceof ShopwareConnection || ! $connection->isReady()) {
-            return PluginHealth::degraded((string) __('shopware::shopware.health.not_connected'), 'not_connected');
-        }
+    protected function healthConfigured(int $organizationId): bool {
+        return ShopwareConfig::isConfigured($organizationId);
+    }
 
-        return ApiHealthProbe::probe($this->name(), fn () => app(ShopwareClientFactory::class)->for((int) $organization->id)->probe());
+    protected function healthConnectionModel(): string {
+        return ShopwareConnection::class;
+    }
+
+    protected function healthProbe(int $organizationId): void {
+        app(ShopwareClientFactory::class)->for($organizationId)->probe();
     }
 }

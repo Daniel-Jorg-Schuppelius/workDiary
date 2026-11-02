@@ -168,6 +168,7 @@ return [
         'error' => [
             'in_run' => 'The invoice is already in a payment run.',
             'outgoing' => 'Outgoing documents from the invoice mailbox have no retention.',
+            'rejected' => 'Rejected documents have no retention.', // Sicherheitsaudit 2026-11-02, sec-07
             'amount' => 'Please enter a percentage or amount greater than 0.',
             'exceeds' => 'The retentions exceed the invoice amount.',
             'not_open' => 'Only open retentions can be released.',

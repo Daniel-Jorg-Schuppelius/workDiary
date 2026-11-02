@@ -30,6 +30,7 @@ return [
         'driver_license_checks' => 'Führerscheinkontrollen',
         'documents_invoice' => 'Rechnungen (DMS)',
         'passenger_rides' => 'Fahrtakten (Orts-/Fahrgastbezug)',
+        'remote_pending_sessions' => 'Fernwartungssitzungen (übernommen/verworfen)',
         'employee_records' => 'Personalstamm (ausgeschiedene Mitarbeiter)',
         'portal_accounts' => 'Portalzugänge (deaktiviert)',
         'personnel_files' => 'Personalakten (ausgeschiedene Mitarbeiter)',

@@ -14,13 +14,12 @@ namespace App\Plugins\Redmine;
 
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
-use App\Models\Project\Task;
-use App\Plugins\{AbstractPlugin, PluginHealth};
+use App\Plugins\AbstractPlugin;
 use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer, TaskSyncer, TimeImporter};
 use App\Plugins\Redmine\Api\RedmineClientFactory;
 use App\Plugins\Redmine\Models\RedmineConnection;
 use App\Plugins\Redmine\Services\RedmineImportService;
-use App\Plugins\Support\ApiHealthProbe;
+use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSettings};
 
 /**
  * Redmine-Aufgaben- und Zeitimport (Feature 172, Phase 158): Issues
@@ -28,6 +27,8 @@ use App\Plugins\Support\ApiHealthProbe;
  * im Zielprojekt — nur lesend, ohne Rückexport.
  */
 class RedminePlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer, TimeImporter {
+    use ChecksConnectionHealth, RendersTaskLink;
+
     public const ID = 'redmine';
 
     public const SERVICE_PROVIDER = RedmineServiceProvider::class;
@@ -47,13 +48,10 @@ class RedminePlugin extends AbstractPlugin implements LinksExternalRecords, Slot
     }
 
     public function settingsSchema(): array {
-        return [
-            ['key' => 'base_url', 'label' => __('redmine::redmine.settings.base_url'), 'type' => 'text', 'required' => true, 'help' => __('redmine::redmine.settings.base_url_help')],
-            ['key' => 'api_key', 'label' => __('redmine::redmine.settings.api_key'), 'type' => 'password', 'required' => true, 'help' => __('redmine::redmine.settings.api_key_help')],
-            ['key' => 'allow_private_network', 'label' => __('redmine::redmine.settings.allow_private_network'), 'type' => 'boolean', 'default' => false, 'help' => __('redmine::redmine.settings.allow_private_network_help')],
-            ['key' => 'default_billable', 'label' => __('redmine::redmine.settings.default_billable'), 'type' => 'boolean', 'default' => true, 'help' => __('redmine::redmine.settings.default_billable_help')],
-            ['key' => 'time_window_days', 'label' => __('redmine::redmine.settings.time_window_days'), 'type' => 'number', 'default' => 30, 'help' => __('redmine::redmine.settings.time_window_days_help')],
-        ];
+        return SelfHostedSettings::schema(self::ID, [SelfHostedSettings::field(self::ID, 'api_key', 'password')], [
+            SelfHostedSettings::field(self::ID, 'default_billable', 'boolean', required: false, default: true),
+            SelfHostedSettings::field(self::ID, 'time_window_days', 'number', required: false, default: 30),
+        ]);
     }
 
     public function capabilities(): array {
@@ -72,36 +70,23 @@ class RedminePlugin extends AbstractPlugin implements LinksExternalRecords, Slot
         return ['route' => 'admin.redmine.index', 'label' => 'Redmine', 'icon' => 'bug_report'];
     }
 
-    public function healthCheck(): PluginHealth {
-        $organization = $this->healthOrgContext();
-        if ($organization instanceof PluginHealth) {
-            return $organization;
-        }
-        if (! RedmineConfig::isConfigured((int) $organization->id)) {
-            return PluginHealth::degraded((string) __('redmine::redmine.health.not_configured'), 'not_configured');
-        }
-        $connection = RedmineConnection::query()->where('organization_id', $organization->id)->first();
-        if (! $connection instanceof RedmineConnection || ! $connection->isReady()) {
-            return PluginHealth::degraded((string) __('redmine::redmine.health.not_connected'), 'not_connected');
-        }
+    protected function healthConfigured(int $organizationId): bool {
+        return RedmineConfig::isConfigured($organizationId);
+    }
 
-        return ApiHealthProbe::probe('Redmine', fn () => app(RedmineClientFactory::class)->for((int) $organization->id)->probe());
+    protected function healthConnectionModel(): string {
+        return RedmineConnection::class;
+    }
+
+    protected function healthProbe(int $organizationId): void {
+        app(RedmineClientFactory::class)->for($organizationId)->probe();
     }
 
     public function externalRecordUrl(ExternalReference $reference): ?string {
         return $reference->plugin_id === self::ID ? app(RedmineImportService::class)->sourceUrl($reference) : null;
     }
 
-    public function renderActions(string $slot, mixed $context = null): ?string {
-        if ($slot !== 'task-dialog.links' || ! $context instanceof Task || ! $this->isEnabled()) {
-            return null;
-        }
-        $reference = ExternalReference::query()
-            ->forPlugin($context->organization_id, self::ID, self::EXT_TYPE_ISSUE)
-            ->forReferenceable($context)
-            ->first();
-        $url = $reference !== null ? $this->externalRecordUrl($reference) : null;
-
-        return $url !== null ? view('plugins.task-import._link', ['url' => $url, 'label' => (string) __('redmine::redmine.task_link')])->render() : null;
+    protected function taskLinkType(): string {
+        return self::EXT_TYPE_ISSUE;
     }
 }

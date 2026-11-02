@@ -97,11 +97,11 @@
         @php($total = array_sum($stats))
         <div class="grid gap-4 sm:grid-cols-5">
             @foreach (\App\Enums\Inventory\RecallItemStatus::cases() as $st)
-                <x-kpi-tile :label="$st->label()" :value="$stats[$st->value] ?? 0" />
+                <x-kpi-tile :label="$st->label()" :value="$stats[$st->value] ?? 0" href="#recall-items" />
             @endforeach
             <x-kpi-tile :label="__('recall.stats.return_rate')" :value="$total > 0 ? intdiv(100 * (($stats['returned'] ?? 0) + ($stats['resolved'] ?? 0)), $total) . ' %' : '—'" />
         </div>
-        <x-card :title="__('recall.section.items')" icon="groups" padding="p-0">
+        <x-card :title="__('recall.section.items')" icon="groups" padding="p-0" id="recall-items" class="scroll-mt-24">
             <x-table bare>
                 <x-slot:head>
                     <tr>

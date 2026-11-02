@@ -2004,6 +2004,7 @@ return [
         'product_key' => 'Produkt',
         'subscription_id' => 'Abo',
         'plan_key' => 'Serienvorlage',
+        'plan_position' => 'Vorlagenposition',
         'line_position' => 'Vorlagenposition',
         'product_id' => 'Produkt',
         'product_version' => 'Version',

@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\InvoicePlane;
 
 use App\Plugins\InvoicePlane\Schema\{NullVoucherReaderFactory, VoucherReaderFactory};
-use App\Plugins\InvoicePlane\Services\InvoicePlaneVoucherPullService;
+use App\Plugins\InvoicePlane\Services\{InvoicePlaneArticleCatalogSource, InvoicePlaneVoucherPullService};
 use App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry;
+use App\Services\Platform\Catalog\ArticleCatalog;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -31,5 +32,7 @@ class InvoicePlaneServiceProvider extends ServiceProvider {
 
     public function boot(): void {
         $this->app->make(VoucherPullerRegistry::class)->register(InvoicePlaneVoucherPullService::class);
+        // Artikelkatalog (Feature 185, gap-09): `ip_products` erreicht den Kern nur über diese Quelle.
+        $this->app->make(ArticleCatalog::class)->register($this->app->make(InvoicePlaneArticleCatalogSource::class));
     }
 }

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Invoicing;
 
 use App\Enums\Invoicing\{RetentionBase, RetentionKind};
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Models\Invoicing\{Invoice, InvoiceRetention};
 use App\Models\Platform\User;
@@ -32,6 +33,7 @@ use RuntimeException;
  * Beleginhalt.
  */
 class InvoiceRetentionController extends Controller {
+    use AuthorizesOrganizationManagement;
     public function __construct(private readonly RetentionService $retentions) {}
 
     public function dialog(Invoice $invoice): View {
@@ -90,7 +92,7 @@ class InvoiceRetentionController extends Controller {
     public function release(Request $request, Invoice $invoice, InvoiceRetention $retention): RedirectResponse {
         // Freigeben ist Lifecycle: Die update-Policy (nur Entwurf) passt nicht,
         // Maßstab ist das Abrechnungsrecht — wie beim Mahnen.
-        abort_unless($request->user()?->canManageBilling() ?? false, 403);
+        $this->authorizeBilling();
         abort_unless((int) $retention->invoice_id === (int) $invoice->id, 404);
 
         try {

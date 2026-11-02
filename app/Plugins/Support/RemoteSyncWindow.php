@@ -23,17 +23,29 @@ use Carbon\CarbonImmutable;
  * Ungelieferte fälschlich als gelöscht.
  */
 final class RemoteSyncWindow {
+    /**
+     * Referenzen, die kurz vor dem Abrufbeginn entstanden, gelten noch nicht als
+     * fehlend — Uhrenabstand zwischen Prozessen und Nachlauf der Fremd-API.
+     */
+    public const GRACE_SECONDS = 60;
+
     public function __construct(
         public readonly CarbonImmutable $from,
         public readonly CarbonImmutable $to,
+        /** Beginn des Abrufs: Referenzen danach hat dieser Lauf nicht gelesen (Befund 2026-11-02). */
+        public readonly CarbonImmutable $fetchedAt,
     ) {}
 
-    /** Fenster nur, wenn der Lauf vollständig war — sonst null. */
-    public static function whenComplete(bool $complete, ?CarbonImmutable $from, ?CarbonImmutable $to): ?self {
+    public static function whenComplete(bool $complete, ?CarbonImmutable $from, ?CarbonImmutable $to, CarbonImmutable $fetchedAt): ?self {
         if (! $complete || $from === null || $to === null) {
             return null;
         }
 
-        return new self($from, $to);
+        return new self($from, $to, $fetchedAt);
+    }
+
+    /** Nur Referenzen vor diesem Zeitpunkt darf der Lauf als drüben gelöscht werten. */
+    public function deletionCutoff(): CarbonImmutable {
+        return $this->fetchedAt->subSeconds(self::GRACE_SECONDS);
     }
 }

@@ -14,6 +14,7 @@ namespace App\Services\Reselling\Register;
 
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Reselling\ResaleSubscription;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -26,12 +27,24 @@ final class LicenceAssignments {
     public function __construct(private readonly PeriodPlanner $planner = new PeriodPlanner) {}
 
     /**
+     * Die freie Menge wird unter der Zeilensperre des Vertrags erneut geprüft
+     * (Sicherheitsaudit 2026-11-02, sec-02): der Validator sah das Modell vor
+     * der Transaktion, zwei gleichzeitige Abtretungen sähen sonst beide die
+     * ganze freie Menge.
+     *
      * @param  array{customer: Customer, foreign: ForeignCustomer|null}  $holder
      * @param  string|null  $salePrice  Verkaufspreis je Lizenz, sonst der des Vertrags
+     *
+     * @throws \InvalidArgumentException mehr Lizenzen, als im Zeitraum frei sind
      */
     public function create(ResaleSubscription $contract, array $holder, int $quantity, string $startsOn, ?string $endsOn, ?string $salePrice, ?string $note, ?int $userId): ResaleSubscription {
         return DB::transaction(function () use ($contract, $holder, $quantity, $startsOn, $endsOn, $salePrice, $note, $userId): ResaleSubscription {
-            $contract->load('assignments');
+            ResaleSubscription::query()->withoutGlobalScopes()->whereKey($contract->getKey())->lockForUpdate()->get(['id']);
+            $contract->refresh()->load('assignments');
+            $available = $contract->transferableQuantityBetween(CarbonImmutable::parse($startsOn), $endsOn !== null ? CarbonImmutable::parse($endsOn) : null);
+            if ($quantity < 1 || $quantity > $available) {
+                throw new \InvalidArgumentException((string) __('resale.transfer.error.quantity', ['available' => max(0, $available)]));
+            }
             $sequence = $contract->nextAssignmentSuffix();
             $assignment = ResaleSubscription::query()->create([
                 'organization_id' => $contract->organization_id,

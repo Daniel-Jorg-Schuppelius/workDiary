@@ -13,11 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\Redmine\Api;
 
 use APIToolkit\API\Authentication\ApiKeyAuthentication;
-use APIToolkit\API\Pagination\CursorPage;
 use App\Plugins\Redmine\Exceptions\RedmineApiException;
 use App\Plugins\Redmine\RedminePlugin;
 use App\Plugins\Support\{GuardsPluginApiResponses, PluginApiClient, PluginHttpFactory};
-use App\Plugins\Support\TaskSync\{IncompleteRemoteReadException, RemotePages};
+use App\Plugins\Support\TaskSync\{IncompleteRemoteReadException, OffsetPage, RemotePages};
 use CommonToolkit\Helper\Data\PersonNameHelper;
 use Generator;
 
@@ -148,23 +147,18 @@ class RedmineClient {
      * @return Generator<int, mixed>
      */
     private function pages(string $path, string $key, array $query): Generator {
-        $total = null;
+        $offset = 0;
 
-        return RemotePages::all(function (?string $offset) use ($path, $key, $query, &$total): CursorPage {
-            $current = (int) ($offset ?? 0);
-            $body = $this->guard($this->api()->getResponse($this->url($path), $query + ['offset' => $current, 'limit' => $this->pageSize]), $path);
+        return RemotePages::offset(function () use ($path, $key, $query, &$offset): OffsetPage {
+            $body = $this->guard($this->api()->getResponse($this->url($path), $query + ['offset' => $offset, 'limit' => $this->pageSize]), $path);
             $items = $body[$key] ?? null;
             if (! is_array($items) || ! array_is_list($items) || ! is_numeric($body['total_count'] ?? null)) {
                 throw new IncompleteRemoteReadException('invalid_response');
             }
-            // Schrumpft die Gesamtzahl beim Blättern, rücken Einträge über die Seitengrenze — kein vollständiges Lesen.
-            if ($total !== null && (int) $body['total_count'] < $total) {
-                throw new IncompleteRemoteReadException('listing_changed');
-            }
             $total = (int) $body['total_count'];
-            $next = $current + count($items);
+            $offset += count($items);
 
-            return new CursorPage($items, $items !== [] && $next < $total ? (string) $next : null);
+            return new OffsetPage($items, $items !== [] && $offset < $total, $total);
         }, $this->maxPages);
     }
 

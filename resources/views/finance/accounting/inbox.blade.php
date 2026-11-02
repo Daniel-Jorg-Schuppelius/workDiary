@@ -49,10 +49,11 @@
         <x-accounting.sovereignty-note />
 
         <div class="grid gap-3 sm:grid-cols-4">
-            <x-kpi-tile :label="__('accounting.inbox.state.blocked')" :value="$counts['blocked'] ?? 0" />
-            <x-kpi-tile :label="__('accounting.inbox.state.open')" :value="$counts['open'] ?? 0" />
-            <x-kpi-tile :label="__('accounting.inbox.state.ready')" :value="$counts['ready'] ?? 0" />
-            <x-kpi-tile :label="__('accounting.inbox.state.posted')" :value="$counts['posted'] ?? 0" />
+            @foreach (['blocked', 'open', 'ready', 'posted'] as $inboxState)
+                <x-kpi-tile :label="__('accounting.inbox.state.' . $inboxState)" :value="$counts[$inboxState] ?? 0"
+                            :href="route('finance.accounting.inbox.index', array_filter(['kind' => $selectedKind?->value, 'include_posted' => $includePosted || $inboxState === 'posted' ? 1 : null, 'state' => $inboxState]))"
+                            :active="$state === $inboxState" />
+            @endforeach
         </div>
 
         @if ($fourEyes)
@@ -67,6 +68,12 @@
                 <option value="">{{ __('accounting.inbox.filter.all_kinds') }}</option>
                 @foreach ($kinds as $kind)
                     <option value="{{ $kind->value }}" @selected($selectedKind === $kind)>{{ $kind->label() }}</option>
+                @endforeach
+            </select>
+            <select name="state" class="select select-sm select-bordered w-44 shrink-0" aria-label="{{ __('Filter') }}">
+                <option value="">{{ __('Alle') }}</option>
+                @foreach (['blocked', 'open', 'ready', 'posted'] as $inboxState)
+                    <option value="{{ $inboxState }}" @selected($state === $inboxState)>{{ __('accounting.inbox.state.' . $inboxState) }}</option>
                 @endforeach
             </select>
             <x-filter-toggle name="include_posted" class="order-40"

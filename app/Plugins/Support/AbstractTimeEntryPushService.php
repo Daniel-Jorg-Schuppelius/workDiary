@@ -12,12 +12,15 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Models\Time\TimeEntry;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Cache\{Lock, LockTimeoutException};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Gemeinsames Skelett der Zeit-Export-Rückkanäle (OpenProject, Kimai, …):
@@ -27,9 +30,17 @@ use Illuminate\Support\Collection;
  * ({@see prepareExport()}), Remote-Anlage ({@see createRemoteEntry()}),
  * Skip-Zusatzregeln ({@see shouldSkip()}) und die Abbruch-Bedingung
  * ({@see shouldAbort()}, z. B. Rate-Limit).
+ *
+ * Prüfung, Anlage und Referenz laufen je Eintrag unter einer Sperre
+ * ({@see pushOne()}): Stunden-Batch und Outbox-Anlage starten zur vollen
+ * Stunde gleichzeitig und sahen beide noch keine Referenz, bevor der jeweils
+ * andere gepostet hatte (Befund 2026-11-02: doppelte Toggl-Einträge).
  */
 abstract class AbstractTimeEntryPushService {
     public const EXT_TYPE_PUSHED = 'pushed_entry';
+
+    /** Haltedauer der Sperre je Eintrag: Drossel, POST-Timeout und Verbindungs-Retries des Toolkits. */
+    public const LOCK_SECONDS = 120;
 
     /** Plugin-Id, unter der die pushed-References abgelegt werden. */
     abstract protected function pluginId(): string;
@@ -62,6 +73,17 @@ abstract class AbstractTimeEntryPushService {
 
     /** Zusätzliche Skip-Regel je Eintrag (z. B. Import-Echo-Guard). */
     protected function shouldSkip(Organization $organization, TimeEntry $entry): bool {
+        return false;
+    }
+
+    /**
+     * Spiegel-Export (Toggl, Clockify) statt Rückbuchung: der Eintrag bleibt
+     * lokal abrechenbar (`exported` bleibt false), dafür schließt JEDE
+     * bestehende Referenz des Plugins (importiert oder gepusht) ihn als
+     * Kandidaten aus — sonst liefe er dauerhaft als „skipped" durch jeden Lauf.
+     * Kandidaten sind nur Work-Einträge mit echten Start-/Endzeiten (kon-19).
+     */
+    protected function mirrorsEntries(): bool {
         return false;
     }
 
@@ -108,18 +130,16 @@ abstract class AbstractTimeEntryPushService {
         $errors = [];
 
         foreach ($this->candidates($organization, $from, $to) as $entry) {
-            if ($this->alreadyPushed($organization, $entry) || $this->shouldSkip($organization, $entry)) {
-                $skipped++;
-
-                continue;
-            }
-
             try {
-                $externalId = $this->createRemoteEntry($organization, $entry);
-
-                $this->recordPushed($organization, $entry, $externalId);
-                $this->markPushed($entry);
-                $pushed++;
+                if ($this->pushOne($organization, $entry)) {
+                    $pushed++;
+                } else {
+                    $skipped++;
+                }
+            } catch (LockTimeoutException) {
+                // Ein anderer Lauf (Outbox-Anlage) überträgt den Eintrag gerade
+                // und schreibt die Referenz — der nächste Batch prüft nach.
+                $skipped++;
             } catch (\Throwable $e) {
                 if ($this->shouldAbort($e)) {
                     // Drosselung: Lauf abbrechen, der Rest bleibt offen für den nächsten Durchgang.
@@ -148,14 +168,62 @@ abstract class AbstractTimeEntryPushService {
      * nach oben (Outbox-Retry-Semantik).
      *
      * @param  array<string, mixed>  $config
+     *
+     * @throws LockTimeoutException der Stunden-Batch überträgt den Eintrag gerade — die Outbox wiederholt nach dem Backoff und findet dann dessen Referenz
+     * @throws \GuzzleHttp\Exception\ConnectException|\Illuminate\Http\Client\ConnectionException Transportfehler des Clients — der Outbox-Dispatcher protokolliert sie ohne Retry
      */
     public function pushSingle(Organization $organization, array $config, TimeEntry $entry): bool {
         if ($this->prepareExport($organization, $config) !== null) {
             return false;
         }
 
+        return $this->pushOne($organization, $entry);
+    }
+
+    /**
+     * Eignung prüfen, anlegen und Referenz schreiben — unter der Sperre des
+     * Eintrags, damit nur ein Prozess postet. Wer sie nicht bekommt, lässt den
+     * Eintrag dem Halter. false = nicht geeignet (Drop).
+     *
+     * @throws LockTimeoutException
+     * @throws \GuzzleHttp\Exception\ConnectException|\Illuminate\Http\Client\ConnectionException aus `createRemoteEntry()`
+     */
+    private function pushOne(Organization $organization, TimeEntry $entry): bool {
+        $lock = self::lockFor($this->pluginId(), $organization, $entry);
+        if (! $lock->get()) {
+            throw new LockTimeoutException('Zeiteintrag #' . $entry->getKey() . ' wird gerade von einem anderen Lauf übertragen.');
+        }
+
+        try {
+            if (! $this->isEligible($organization, $entry) || $this->alreadyPushed($organization, $entry) || $this->shouldSkip($organization, $entry)) {
+                return false;
+            }
+
+            $externalId = $this->createRemoteEntry($organization, $entry);
+            $this->recordPushed($organization, $entry, $externalId);
+            $this->markPushed($entry);
+
+            return true;
+        } finally {
+            $lock->release();
+        }
+    }
+
+    /** Sperre je Plugin und Eintrag — Stunden-Batch und Outbox-Anlage teilen sie. */
+    public static function lockFor(string $pluginId, Organization $organization, TimeEntry $entry): Lock {
+        return Cache::lock('time-push:' . $pluginId . ':' . $organization->id . ':' . $entry->getKey(), self::LOCK_SECONDS);
+    }
+
+    /**
+     * Kandidaten-Regeln für genau einen Eintrag: Projekt-Mapping, exported,
+     * Minuten und die plugin-eigenen Referenz-Ausschlüsse aus
+     * {@see scopeCandidates()} — unter der Sperre erneut, nicht nur in der
+     * Kandidaten-Query des Laufs.
+     */
+    private function isEligible(Organization $organization, TimeEntry $entry): bool {
         $projectIds = $this->exportableProjectIds($organization);
-        $eligible = $this->scopeCandidates(
+
+        return $this->constrain(
             TimeEntry::query()
                 ->withoutGlobalScopes()
                 ->whereKey($entry->getKey())
@@ -164,25 +232,47 @@ abstract class AbstractTimeEntryPushService {
                 ->where('exported', false)
                 ->where('minutes', '>', 0)
         )->exists();
+    }
 
-        if (! $eligible || $this->alreadyPushed($organization, $entry) || $this->shouldSkip($organization, $entry)) {
-            return false;
+    /**
+     * Gemeinsame Kandidaten-Regeln des Spiegel-Exports vor der
+     * plugin-spezifischen Erweiterung ({@see scopeCandidates()}).
+     *
+     * @param  Builder<TimeEntry>  $query
+     * @return Builder<TimeEntry>
+     */
+    private function constrain(Builder $query): Builder {
+        if ($this->mirrorsEntries()) {
+            $query
+                ->whereNotNull('started_at')
+                ->whereNotNull('ended_at')
+                ->where('kind', TimeEntryKind::Work->value)
+                ->whereNotExists(function ($sub): void {
+                    $sub->from('external_references')
+                        ->whereColumn('external_references.referenceable_id', 'time_entries.id')
+                        ->where('external_references.referenceable_type', (new TimeEntry)->getMorphClass())
+                        ->where('external_references.plugin_id', $this->pluginId())
+                        ->whereIn('external_references.external_type', [
+                            MatchingTimeImportService::EXT_TYPE_ENTRY,
+                            self::EXT_TYPE_PUSHED,
+                        ]);
+                });
         }
 
-        $externalId = $this->createRemoteEntry($organization, $entry);
-        $this->recordPushed($organization, $entry, $externalId);
-        $this->markPushed($entry);
-
-        return true;
+        return $this->scopeCandidates($query);
     }
 
     /**
      * Nach erfolgreicher Remote-Anlage. Standard: als exportiert markieren
      * („Rückbuchung", Kimai/OpenProject) — der Eintrag verschwindet damit aus
-     * der lokalen Abrechnung. Spiegel-Exporte (Toggl) überschreiben als No-op;
-     * dann MUSS die Kandidaten-Query gepushte Einträge selbst ausschließen.
+     * der lokalen Abrechnung. Spiegel-Exporte ({@see mirrorsEntries()}) lassen
+     * ihn abrechenbar; ihre Kandidaten-Query schließt Gepushtes selbst aus.
      */
     protected function markPushed(TimeEntry $entry): void {
+        if ($this->mirrorsEntries()) {
+            return;
+        }
+
         $entry->forceFill(['exported' => true])->save();
     }
 
@@ -210,7 +300,7 @@ abstract class AbstractTimeEntryPushService {
             ->when($fromDate !== null, fn($q) => $q->whereDate('date', '>=', $fromDate))
             ->when($toDate !== null, fn($q) => $q->whereDate('date', '<=', $toDate));
 
-        return $this->scopeCandidates($query)->orderBy('date')->get();
+        return $this->constrain($query)->orderBy('date')->get();
     }
 
     protected function alreadyPushed(Organization $organization, TimeEntry $entry): bool {

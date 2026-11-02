@@ -287,11 +287,12 @@ return [
         'note_domain_typo' => 'Domain im Rechnungstext „:written“ statt „:domain“ (Tippfehler) — bitte prüfen',
         'no_lines' => 'Keine gespiegelten Rechnungspositionen im Fenster um den Periodenbeginn.',
         'line' => 'Rechnungsposition',
-        'line_hint' => 'Oben die Abo-Positionen des Empfängers im Zeitfenster der Periode, darunter alle übrigen; über die Suche finden Sie jede Rechnung an ihrer Nummer. Fehlt ein Artikel, stufen Sie ihn unter „Produkte“ als Abo-Produkt ein.',
+        'line_hint' => 'Oben die Abo-Positionen des Empfängers im Zeitfenster der Periode; „Alle Rechnungen anzeigen“ holt die übrigen dazu, über die Suche finden Sie dann jede Rechnung an ihrer Nummer. Fehlt ein Artikel, stufen Sie ihn unter „Produkte“ als Abo-Produkt ein.',
         'search' => 'Rechnung suchen (Nummer, Datum, Artikel)',
         'no_match' => 'Keine Rechnung passt zur Suche.',
         'group_window' => 'Im Zeitfenster der Periode',
         'group_other' => 'Weitere Rechnungen des Empfängers',
+        'show_all' => 'Alle Rechnungen des Empfängers anzeigen',
         'line_used' => 'bereits vergeben',
         'months_field' => 'Gedeckte Lizenzmonate',
         'months_hint' => 'Monatspreis-Position: Menge = Monate je Lizenz. Jahresposition: 12 je Stück.',
@@ -332,6 +333,8 @@ return [
             'line_missing' => 'Rechnungsposition nicht gefunden.',
             'exceeds' => 'Die Position hat nur noch :amount frei.',
             'exceeds_period' => 'Die Periode braucht nur noch :amount — mehr lässt sich ihr nicht zuordnen.',
+            'not_decidable' => 'Die Periode ist schon entschieden oder beginnt erst noch — verzichten oder strittig stellen geht nur bei fälligen, unentschiedenen Perioden.', // Sicherheitsaudit 2026-11-02, sec-03/sec-05
+            'not_confirmable' => 'Die Periode hat keinen offenen Vorschlag oder beginnt erst noch — es gibt nichts zu bestätigen.',
         ],
     ],
     'widget' => [
@@ -408,6 +411,8 @@ return [
         'error' => [
             'nothing_open' => 'Keine offenen Perioden mit Verkaufspreis für diesen Empfänger.',
             'all_planned' => 'Die offenen Perioden dieses Empfängers berechnet eine laufende Serienvorlage.',
+            'locked' => 'Für diesen Empfänger entsteht gerade ein Rechnungsentwurf — bitte kurz warten und die Seite neu laden.', // Sicherheitsaudit 2026-11-02, sec-01
+            'changed' => 'Die Perioden haben sich inzwischen geändert (anderer Entwurf oder Entscheidung) — bitte den Dialog neu öffnen.',
         ],
         'already_drafted' => 'Für diesen Empfänger steht bereits ein Entwurf aus (:reference vom :date). Erst in Lexoffice bzw. lokal abschließen oder die Periode entscheiden.', // Review 2026-09-10
         'no_target' => 'Für die Rechnungshoheit „:mode“ dieses Empfängers ist kein Entwurfsziel registriert — Plugin aktivieren oder die Hoheit des Kunden auf lokal stellen.', // Review 2026-09-11
@@ -1473,6 +1478,7 @@ return [
             'same_holder' => 'Der neue Halter ist der bisherige.',
             'after_end' => 'Der Stichtag liegt nach dem Ende des Abos (:date).',
             'nothing_free' => 'Ab dem Stichtag sind alle Lizenzen des Vertrags abgetreten oder schon über Rechnungen an den bisherigen Halter berechnet — die Übernahme an der jeweiligen Abtretung starten oder den Stichtag ändern.',
+            'billed_whole' => 'An :holder sind schon Perioden dieses Abos berechnet — das ganze Abo kann nicht wechseln. Stichtag ab :date wählen, dann bleiben die berechneten Perioden beim bisherigen Halter.', // Sicherheitsaudit 2026-11-02, sec-06
         ],
     ],
 ];

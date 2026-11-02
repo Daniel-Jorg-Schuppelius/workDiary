@@ -13,12 +13,11 @@ declare(strict_types=1);
 namespace App\Plugins\Glpi\Services;
 
 use App\Enums\Task\TaskStatus;
-use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Plugins\Glpi\Api\{GlpiClient, GlpiClientFactory};
 use App\Plugins\Glpi\GlpiPlugin;
 use App\Plugins\Glpi\Models\{GlpiConnection, GlpiProjectLink};
-use App\Plugins\Support\TaskSync\{AbstractTaskImportService, IncompleteRemoteReadException, RemoteTask, SelfHostedInstance};
+use App\Plugins\Support\TaskSync\{AbstractTaskImportService, IncompleteRemoteReadException, RemoteTask};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\Eloquent\Model;
@@ -130,13 +129,6 @@ class GlpiImportService extends AbstractTaskImportService {
             'url' => $baseUrl !== '' ? $baseUrl . '/front/ticket.form.php?id=' . $id : null,
             'project' => null,
         ], $issues);
-    }
-
-    public function sourceUrl(ExternalReference $reference): ?string {
-        $url = data_get($reference->payload, 'remote.url');
-        $baseUrl = (string) $this->connection((int) $reference->organization_id)?->source_url;
-
-        return is_string($url) && SelfHostedInstance::owns($baseUrl, $url) ? $url : null;
     }
 
     /**

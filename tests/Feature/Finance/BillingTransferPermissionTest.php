@@ -38,11 +38,17 @@ class BillingTransferPermissionTest extends TestCase {
     private function makeTransfer(TransferChannel $channel = TransferChannel::Time): BillingTransfer {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
 
-        return BillingTransfer::factory()->create([
+        $transfer = BillingTransfer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
             'channel' => $channel,
         ]);
+        // Die Kunden-Factory legt Standardprojekt samt Nutzer und Organisation an und
+        // verstellt dabei das Spatie-Team; der teamgebundene Rechte-Cache (perf-14)
+        // überdeckt das nicht mehr wie der frühere globale.
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
+
+        return $transfer;
     }
 
     public function test_admin_has_all_finance_permissions(): void {

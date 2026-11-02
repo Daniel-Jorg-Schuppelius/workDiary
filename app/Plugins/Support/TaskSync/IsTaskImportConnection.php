@@ -50,6 +50,12 @@ trait IsTaskImportConnection {
             && $this->getAttribute('disabled_at') === null;
     }
 
+    public function sourceUrl(): ?string {
+        $url = trim((string) $this->getAttribute('source_url'));
+
+        return $url !== '' ? $url : null;
+    }
+
     /** OAuth: Token an der Verbindung. Token-Plugins halten den Zugang in den Plugin-Einstellungen und geben false zurück. */
     protected function storesTokens(): bool {
         return true;

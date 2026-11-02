@@ -45,12 +45,20 @@ class AssetFinanceContractController extends Controller {
 
         $statusFilter = AssetFinanceStatus::tryFrom($request->string('status')->toString())?->value;
         $kindFilter = AssetFinanceKind::tryFrom($request->string('kind')->toString())?->value;
+        // Kachelfilter (ux-pattern-katalog §4): laufend bzw. Ende in sechs Monaten; die Kachelwerte bleiben stehen.
+        $show = $request->string('show')->toString();
+        if (! in_array($show, ['open', 'ending_soon'], true)) {
+            $show = '';
+        }
 
         return view('asset-finance.index', [
+            'show' => $show,
             'contracts' => AssetFinanceContract::query()
                 ->with(['responsible', 'contractAssets.asset', 'supplier'])
                 ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter))
                 ->when($kindFilter !== null, fn($q) => $q->where('kind', $kindFilter))
+                ->when($show !== '', fn($q) => $q->open())
+                ->when($show === 'ending_soon', fn($q) => $q->whereNotNull('ends_on')->where('ends_on', '<', \App\Support\Query\DateRange::dayAfter(now()->addMonths(6))))
                 ->orderByDesc('id')
                 ->paginate(25)
                 ->withQueryString(),

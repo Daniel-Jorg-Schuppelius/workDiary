@@ -267,6 +267,8 @@ class TogglFocusSourceTest extends TestCase {
         $trackOnly = $this->importedEntry($project, 'toggl:222', '2026-10-20 13:00:00', '2026-10-20 14:00:00');
         $goneInFocus = $this->importedEntry($project, 'focus:9100', '2026-10-20 15:00:00', '2026-10-20 16:00:00', ['workspace_id' => self::WS]);
         $this->fakeFocus([$this->row(9001, '2026-10-20T09:00:00Z', 2700)]);
+        // Referenzen jünger als der Abrufbeginn löscht kein Lauf (Karenz).
+        $this->travel(5)->minutes();
 
         $result = $this->import($config);
 

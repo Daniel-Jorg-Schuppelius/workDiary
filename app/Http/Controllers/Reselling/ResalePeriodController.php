@@ -59,8 +59,7 @@ class ResalePeriodController extends Controller {
         ];
         $query = ResalePeriod::query()
             ->with(['subscription.customer:id,name', 'subscription.foreignCustomer:id,name,customer_id', 'subscription.foreignCustomer.customer:id,name', 'links'])
-            ->where('starts_on', '<', DateRange::dayAfter($today))
-            ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false));
+            ->started($today);
         if ($filters['status'] === 'problems') {
             // Probleme = offen, teilweise, strittig — unbestätigte Vorschläge sind keine (Filter „proposed" als Stichprobe).
             $query->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value, PeriodStatus::Disputed->value]);
@@ -156,6 +155,11 @@ class ResalePeriodController extends Controller {
     }
 
     public function confirm(Request $request, ResalePeriod $period): RedirectResponse {
+        // Derselbe Guard wie in der Sammelaktion (Sicherheitsaudit 2026-11-02, sec-05): ohne offenen Vorschlag
+        // oder an einer bevorstehenden Periode gäbe es sonst eine „Entscheidung“ mit leerer Belegliste.
+        if (! $period->isConfirmable()) {
+            return back()->with('error', __('resale.link.error.not_confirmable'));
+        }
         $this->confirmPeriod($period, $request->user()?->id, (string) $request->input('note', ''));
 
         return back()->with('success', __('resale.link.flash.confirmed'));
@@ -177,7 +181,7 @@ class ResalePeriodController extends Controller {
         $periods = $this->selectedPeriods($request);
         $done = 0;
         foreach ($periods as $period) {
-            if (! $period->isProposedOnly() || $period->starts_on->greaterThan(ResalePeriod::today())) {
+            if (! $period->isConfirmable()) {
                 continue;
             }
             $this->confirmPeriod($period, $request->user()?->id, '');
@@ -195,25 +199,15 @@ class ResalePeriodController extends Controller {
         return view('finance.resale._bulk_waive_dialog', ['periods' => $periods]);
     }
 
-    /** Verzichten oder strittig stellen mit einem Grund für alle — je Periode dasselbe Audit wie einzeln. */
+    /** Verzichten oder strittig stellen mit einem Grund für alle — je Periode derselbe Weg und dasselbe Audit wie einzeln. */
     public function bulkWaive(BulkWaiveResalePeriodsRequest $request): RedirectResponse {
         $periods = ResalePeriod::query()->whereKey($request->periodIds())->get();
-        $event = $request->status() === PeriodStatus::Waived ? 'resale_period.waived' : 'resale_period.disputed';
         $done = 0;
         foreach ($periods as $period) {
-            // Entschieden = Nutzerentscheidung (decided_at); ein unbestätigter Vorschlag ist keine. Teilweise bleibt entscheidbar.
-            if (($period->decided_at !== null && $period->status !== PeriodStatus::Partial) || $period->starts_on->greaterThan(ResalePeriod::today())) {
+            if (! $period->isDecidable()) {
                 continue;
             }
-            // Vorschläge sind keine Entscheidung: sie gehen mit dem Verzicht weg (wie beim Zurücknehmen).
-            $period->links()->where('origin', LinkOrigin::Proposed->value)->delete();
-            $period->forceFill([
-                'status' => $request->status(),
-                'waived_reason' => $request->reason(),
-                'decided_by_user_id' => $request->user()?->id,
-                'decided_at' => now(),
-            ])->save();
-            $period->audit($event, ['reason' => $request->reason()]);
+            $this->linker->decide($period, $request->status(), $request->reason(), $request->user()?->id);
             $done++;
         }
         $skipped = $periods->count() - $done;
@@ -267,7 +261,7 @@ class ResalePeriodController extends Controller {
             'ids' => ['required', 'array', 'max:' . BulkWaiveResalePeriodsRequest::MAX_IDS],
             'ids.*' => ['string', 'max:64'],
         ]);
-        $ids = array_values(array_filter(array_map(static fn(string $sqid): ?int => Sqid::decode(ResalePeriod::class, $sqid), $data['ids'])));
+        $ids = Sqid::decodeMany(ResalePeriod::class, $data['ids']);
 
         return ResalePeriod::query()->whereKey($ids)->with('links')->orderBy('starts_on')->get();
     }
@@ -334,25 +328,22 @@ class ResalePeriodController extends Controller {
     }
 
     public function waive(WaiveResalePeriodRequest $request, ResalePeriod $period): RedirectResponse {
-        $period->forceFill([
-            'status' => $request->status(),
-            'waived_reason' => $request->reason(),
-            'decided_by_user_id' => $request->user()?->id,
-            'decided_at' => now(),
-        ])->save();
-        $event = $request->status() === PeriodStatus::Waived ? 'resale_period.waived' : 'resale_period.disputed';
-        $period->audit($event, ['reason' => $request->reason()]);
+        try {
+            $this->linker->decide($period, $request->status(), $request->reason(), $request->user()?->id);
+        } catch (\InvalidArgumentException|RuntimeException $e) {
+            // Entschieden oder bevorstehend: der Dialog zeigt den Grund (Sicherheitsaudit 2026-11-02, sec-03).
+            throw ValidationException::withMessages(['decision' => ErrorText::for($e)]);
+        }
 
         return redirect(url()->previous(route('finance.resale.periods.index')))->with('success', __('resale.link.flash.waived'));
     }
 
     public function reopen(ResalePeriod $period): RedirectResponse {
-        $previous = ['status' => $period->status->value, 'reason' => $period->waived_reason];
-        $period->forceFill(['status' => PeriodStatus::Open, 'waived_reason' => null, 'decided_by_user_id' => null, 'decided_at' => null])->save();
-        $period->links()->whereIn('origin', [LinkOrigin::Proposed->value, LinkOrigin::Auto->value])->delete();
-        $period->unsetRelation('links');
-        $this->linker->settle($period, null, null, false);
-        $period->audit('resale_period.reopened', $previous + ['status_now' => $period->status->value]);
+        try {
+            $this->linker->reopen($period);
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
 
         return back()->with('success', __('resale.link.flash.reopened'));
     }
@@ -362,14 +353,18 @@ class ResalePeriodController extends Controller {
      * Einstufung) des Empfängers im Fenster der Periode, je Position
      * Lizenzen × Monate und der noch freie Rest; verbrauchte Positionen
      * bleiben sichtbar, aber gesperrt. Support-Stunden und Hardware haben
-     * hier nichts verloren — sie waren die lange Liste.
+     * hier nichts verloren — sie waren die lange Liste. Alle übrigen Rechnungen
+     * des Empfängers (Suche nach Nummer, Pilot 2026-11-01) kommen erst mit
+     * `all=1` — sonst lädt jeder Dialog alle Rechnungen seit Beginn
+     * (Leistungsanalyse 2026-11-02, perfc-08).
      */
-    public function linkCreate(ResalePeriod $period): View {
+    public function linkCreate(Request $request, ResalePeriod $period): View {
         $organization = $this->currentOrganizationOrAbort(404);
+        $all = $request->boolean('all');
         $period->load(['subscription.customer', 'subscription.foreignCustomer.customer', 'links']);
         $billedTo = $period->subscription->billedTo();
         $hasSource = $billedTo !== null && $this->mirror->coversRecipient($organization, $billedTo);
-        $candidates = $billedTo === null ? ['window' => collect(), 'other' => collect()] : $this->mirror->candidatesFor($organization, $billedTo->id, $period);
+        $candidates = $billedTo === null ? ['window' => collect(), 'other' => collect()] : $this->mirror->candidatesFor($organization, $billedTo->id, $period, $all);
         // Bezüge an DIESER Periode zählen nicht: ein erneuter Bezug ersetzt sie; sie werden nur markiert.
         $consumed = $this->linker->consumed($candidates['window']->concat($candidates['other']), $period);
         $linked = $period->links->map(static fn(ResalePeriodLink $l): string => $l->mirrorIdentity())->all();
@@ -404,6 +399,7 @@ class ResalePeriodController extends Controller {
             'others' => $groups['other'],
             'needed' => $period->openMonths(),
             'hasSource' => $hasSource,
+            'all' => $all,
         ]);
     }
 

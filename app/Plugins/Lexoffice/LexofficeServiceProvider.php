@@ -106,6 +106,11 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
         // der Kern liest Lexoffice-Positionen nur noch über diese Quelle.
         $this->app->make(InvoiceMirror::class)
             ->register(new LexofficeInvoiceMirrorSource);
+        // Spiegel-, Vorlagen- und Kontaktänderungen verwerfen das Request-Memo des Registers und stempeln die
+        // Organisation (Leistungsanalyse 2026-11-02, perfc-01/05/11): Sync und Lesen im selben Prozess bleiben stimmig.
+        foreach ([\App\Plugins\Lexoffice\Models\LexofficeVoucher::class, \App\Plugins\Lexoffice\Models\LexofficeVoucherLine::class, \App\Plugins\Lexoffice\Models\LexofficeRecurringTemplate::class, \App\Models\Integration\ExternalReference::class] as $mirrorModel) {
+            $mirrorModel::observe(\App\Plugins\Lexoffice\Services\LexofficeMirrorCacheObserver::class);
+        }
 
         // Artikelkatalog (Phase 125, MVP-1025): Lexoffice-Artikel erreichen den Kern nur über diese Quelle.
         $this->app->make(ArticleCatalog::class)

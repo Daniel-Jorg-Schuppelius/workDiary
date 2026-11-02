@@ -42,10 +42,10 @@
             <x-kpi-tile :label="__('Plan')" :value="$fmt($totals['plan_minutes'])" tone="info" />
             <x-kpi-tile :label="__('Ist')" :value="$fmt($totals['actual_minutes'])" tone="primary" />
             <x-kpi-tile :label="__('Δ')" :value="$fmt($totals['delta_minutes'])" :tone="$totals['delta_minutes'] < 0 ? 'error' : 'success'" />
-            <x-kpi-tile :label="__('Warnungen')" :value="$totals['warnings']" :tone="$totals['warnings'] > 0 ? 'error' : 'neutral'" format="int" />
+            <x-kpi-tile :label="__('Warnungen')" :value="$totals['warnings']" :tone="$totals['warnings'] > 0 ? 'error' : 'neutral'" format="int" href="#plan-ist-presence-table" />
         </div>
 
-        <x-table table-sort="client">
+        <x-table table-sort="client" id="plan-ist-presence-table">
             <x-slot:head>
                 <tr>
                     <x-table.th sort type="date" default="asc">{{ __('Datum') }}</x-table.th>

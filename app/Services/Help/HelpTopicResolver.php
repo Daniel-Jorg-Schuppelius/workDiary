@@ -15,6 +15,9 @@ use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Support\Facades\App;
 
 class HelpTopicResolver {
+    /** Spalten ohne Text — reichen für Sichtbarkeit und Modulprüfung. */
+    private const LIGHT_COLUMNS = ['id', 'topic', 'locale', 'title', 'audience', 'modules', 'version'];
+
     public function __construct(
         private readonly FeatureFlagResolver $features,
     ) {}
@@ -36,13 +39,29 @@ class HelpTopicResolver {
     }
 
     /** @param \Closure(HelpTopic): bool $visible */
-    private function firstInChain(string $topic, ?string $preferredLocale, \Closure $visible): ?HelpTopic {
+    /**
+     * Sichtbarkeit ohne den Text zu laden (Leistungsanalyse 2026-11-02, perf-10):
+     * das Layout fragt je Seite nur, ob es ein Thema gibt — nicht, was darin steht.
+     */
+    public function topicVisibleFor(string $topic, ?User $user = null, ?string $preferredLocale = null): bool {
+        return $this->firstInChain($topic, $preferredLocale, fn(HelpTopic $row): bool => $this->isVisibleFor($row, $user), self::LIGHT_COLUMNS) !== null;
+    }
+
+    public function isReadableForPage(string $topic, ?string $preferredLocale = null): bool {
+        return $this->firstInChain($topic, $preferredLocale, fn(HelpTopic $row): bool => $this->modulesEnabled($row), self::LIGHT_COLUMNS) !== null;
+    }
+
+    /**
+     * @param  \Closure(HelpTopic): bool  $visible
+     * @param  list<string>  $columns
+     */
+    private function firstInChain(string $topic, ?string $preferredLocale, \Closure $visible, array $columns = ['*']): ?HelpTopic {
         $locales = $this->localeFallbackChain($preferredLocale);
 
         $candidates = HelpTopic::query()
             ->where('topic', $topic)
             ->whereIn('locale', $locales)
-            ->get()
+            ->get($columns)
             ->keyBy('locale');
 
         foreach ($locales as $locale) {

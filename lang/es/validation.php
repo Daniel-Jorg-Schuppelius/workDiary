@@ -2004,6 +2004,7 @@ return [
         'product_key' => 'Producto',
         'subscription_id' => 'Suscripción',
         'plan_key' => 'Plantilla recurrente',
+        'plan_position' => 'Posición de la plantilla',
         'line_position' => 'Línea de plantilla',
         'product_id' => 'Producto',
         'product_version' => 'Versión',

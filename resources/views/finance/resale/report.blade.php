@@ -16,7 +16,6 @@
 @section('nav-title', __('resale.title.menu'))
 
 @php
-    $money = static fn(float $v, \CommonToolkit\Enums\CurrencyCode $c): string => \CommonToolkit\ValueObjects\Money::ofFloat($v, $c, 2)->format();
     $tabs = [
         ['label' => __('resale.report_tabs.margin'), 'route' => 'finance.resale.report.index', 'routeIs' => 'finance.resale.report.index', 'icon' => 'trending_up'],
         ['label' => __('resale.report_tabs.renewals'), 'route' => 'finance.resale.report.renewals', 'routeIs' => 'finance.resale.report.renewals', 'icon' => 'event_repeat'],
@@ -91,11 +90,11 @@
                                 <td class="text-xs text-muted">{{ $row['currency']->value }}</td>
                                 <td class="text-right tabular-nums">{{ $row['periods'] }}</td>
                                 <td class="text-right tabular-nums {{ $row['open'] > 0 ? 'text-error' : '' }}">{{ $row['open'] }}</td>
-                                <td class="text-right tabular-nums whitespace-nowrap">{{ $money($row['expected_sale'], $row['currency']) }}</td>
-                                <td class="text-right tabular-nums whitespace-nowrap">{{ $money($row['billed'], $row['currency']) }}</td>
-                                <td class="text-right tabular-nums whitespace-nowrap">{{ $money($row['expected_purchase'], $row['currency']) }}</td>
-                                <td class="text-right tabular-nums whitespace-nowrap">{{ $row['with_actual'] > 0 ? $money($row['actual_purchase'], $row['currency']) : '—' }}@if ($row['with_actual'] > 0 && $row['with_actual'] < $row['periods'])<span class="block text-xs text-muted">{{ $row['with_actual'] }}/{{ $row['periods'] }}</span>@endif</td>
-                                <td class="text-right tabular-nums whitespace-nowrap {{ $row['margin'] < 0 ? 'text-error' : 'text-success' }}">{{ $money($row['margin'], $row['currency']) }}</td>
+                                <td class="text-right tabular-nums whitespace-nowrap">{{ $row['expected_sale']->format() }}</td>
+                                <td class="text-right tabular-nums whitespace-nowrap">{{ $row['billed']->format() }}</td>
+                                <td class="text-right tabular-nums whitespace-nowrap">{{ $row['expected_purchase']->format() }}</td>
+                                <td class="text-right tabular-nums whitespace-nowrap">{{ $row['with_actual'] > 0 ? $row['actual_purchase']->format() : '—' }}@if ($row['with_actual'] > 0 && $row['with_actual'] < $row['periods'])<span class="block text-xs text-muted">{{ $row['with_actual'] }}/{{ $row['periods'] }}</span>@endif</td>
+                                <td class="text-right tabular-nums whitespace-nowrap {{ $row['margin']->isNegative() ? 'text-error' : 'text-success' }}">{{ $row['margin']->format() }}</td>
                             </tr>
                         @empty
                             <x-table.empty :colspan="9" :title="__('resale.report.empty')" compact />

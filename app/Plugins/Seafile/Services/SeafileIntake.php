@@ -13,23 +13,21 @@ declare(strict_types=1);
 namespace App\Plugins\Seafile\Services;
 
 use App\Enums\CloudIntake\CloudIntakeItemStatus;
-use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem, CloudDocumentRoute};
+use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem};
 use App\Models\Document\DocumentVersion;
 use App\Models\Integration\ExternalReference;
 use App\Plugins\Seafile\Api\{SeafileClient, SeafileClientFactory};
 use App\Plugins\Seafile\Exceptions\SeafileInstanceChangedException;
 use App\Plugins\Seafile\{SeafileConfig, SeafilePlugin};
-use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeContainer, IntakeItem};
+use App\Plugins\Support\Intake\{AbstractCloudIntakeSource, IntakeAccount, IntakeChangePage, IntakeContainer, IntakeItem};
 use App\Plugins\Support\TaskSync\SelfHostedInstance;
 use App\Services\CloudIntake\StaleCheckpointException;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Enums\HashAlgorithm;
-use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use InvalidArgumentException;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
+use Throwable;
 
 /**
  * Seafile als lesende Quelle des Cloud-Dokumenteingangs (MVP-1346/1347).
@@ -43,11 +41,11 @@ use RuntimeException;
  * Identität einer Datei ist ihre Datei-ID (Inhalts-Hash): Umbenennen und
  * Verschieben ändern sie nicht, eine inhaltlich geänderte Datei ist ein neuer
  * Beleg. Abgänge meldet der Zyklusabschluss.
+ *
+ * @extends AbstractCloudIntakeSource<SeafileClient, array{fingerprint: string, oid: ?string, queue: ?list<string>, cycle_oid: ?string, seen: list<string>, overflow: bool}>
  */
-class SeafileIntake {
+class SeafileIntake extends AbstractCloudIntakeSource {
     public const EXT_TYPE_FILE = 'file';
-
-    private const CHECKPOINT_VERSION = 1;
 
     /** Seafile vergibt allen leeren Dateien dieselbe ID. */
     private const EMPTY_FILE_ID = '0000000000000000000000000000000000000000';
@@ -56,7 +54,7 @@ class SeafileIntake {
 
     public function account(CloudDocumentConnection $connection): IntakeAccount {
         $organizationId = (int) $connection->organization_id;
-        $baseUrl = $this->clients->baseUrl($organizationId) ?? throw new RuntimeException('Seafile ist nicht eingerichtet.');
+        $baseUrl = $this->requireBaseUrl($organizationId);
         $account = $this->clients->for($organizationId)->account();
         $email = $account['email'] ?? throw new RuntimeException('Seafile nennt kein Konto.');
 
@@ -193,15 +191,24 @@ class SeafileIntake {
         return SelfHostedInstance::owns($baseUrl, $url) ? $url : null;
     }
 
-    private function client(CloudDocumentConnection $connection): SeafileClient {
-        $organizationId = (int) $connection->organization_id;
-        $baseUrl = $this->clients->baseUrl($organizationId) ?? throw new RuntimeException('Seafile ist nicht eingerichtet.');
-        $account = (string) $connection->external_account_id;
-        if ($account !== '' && ! str_starts_with($account, SelfHostedInstance::key($baseUrl) . ':')) {
-            throw new SeafileInstanceChangedException('Die Plugin-Einstellungen zeigen auf eine andere Seafile-Instanz als diese Verbindung.');
-        }
+    protected function sourceName(): string {
+        return 'Seafile';
+    }
 
+    protected function configuredBaseUrl(int $organizationId): ?string {
+        return $this->clients->baseUrl($organizationId);
+    }
+
+    protected function clientFor(int $organizationId): SeafileClient {
         return $this->clients->for($organizationId);
+    }
+
+    protected function instanceChanged(): RuntimeException {
+        return new SeafileInstanceChangedException('Die Plugin-Einstellungen zeigen auf eine andere Seafile-Instanz als diese Verbindung.');
+    }
+
+    protected function invalidCheckpoint(?Throwable $cause = null): RuntimeException {
+        return new StaleCheckpointException('Seafile-Checkpoint ungültig.', 0, $cause);
     }
 
     private function repoId(CloudDocumentConnection $connection): string {
@@ -260,30 +267,11 @@ class SeafileIntake {
         return SeafileClient::path($root . '/' . $relative);
     }
 
-    /** Bibliothek, Stammordner und aktive Regeln — ändert sich das, beginnt ein neuer Zyklus ohne Abkürzung. */
-    private function fingerprint(CloudDocumentConnection $connection): string {
-        $routes = $connection->routes()->where('active', true)->orderBy('id')->get(['id', 'updated_at'])
-            ->map(static fn (CloudDocumentRoute $route): array => [$route->id, $route->updated_at?->format('U.u')])
-            ->all();
-
-        return (string) CryptoHelper::hash(JsonHelper::encode([$connection->container_id, $connection->root_folder_path, $routes]), HashAlgorithm::SHA256);
+    protected function emptyState(): array {
+        return ['fingerprint' => '', 'oid' => null, 'queue' => null, 'cycle_oid' => null, 'seen' => [], 'overflow' => false];
     }
 
-    /**
-     * @return array{fingerprint: string, oid: ?string, queue: ?list<string>, cycle_oid: ?string, seen: list<string>, overflow: bool}
-     */
-    private function decode(?string $checkpoint): array {
-        if ($checkpoint === null || $checkpoint === '') {
-            return ['fingerprint' => '', 'oid' => null, 'queue' => null, 'cycle_oid' => null, 'seen' => [], 'overflow' => false];
-        }
-        try {
-            $data = JsonHelper::decode($checkpoint);
-        } catch (InvalidArgumentException $e) {
-            throw new StaleCheckpointException('Seafile-Checkpoint ungültig.', 0, $e);
-        }
-        if (! is_array($data) || ($data['v'] ?? null) !== self::CHECKPOINT_VERSION) {
-            throw new StaleCheckpointException('Seafile-Checkpoint ungültig.');
-        }
+    protected function stateFrom(array $data): array {
         $strings = static fn (mixed $list): array => is_array($list) ? array_values(array_filter($list, 'is_string')) : [];
         $id = static fn (mixed $value): ?string => is_string($value) && $value !== '' ? $value : null;
 
@@ -295,10 +283,5 @@ class SeafileIntake {
             'seen' => $strings($data['seen'] ?? null),
             'overflow' => ($data['overflow'] ?? false) === true,
         ];
-    }
-
-    /** @param array{fingerprint: string, oid: ?string, queue: ?list<string>, cycle_oid: ?string, seen: list<string>, overflow: bool} $state */
-    private function encode(array $state): string {
-        return JsonHelper::encode(['v' => self::CHECKPOINT_VERSION] + $state);
     }
 }

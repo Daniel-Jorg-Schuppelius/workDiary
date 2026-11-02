@@ -54,6 +54,7 @@ refuels, energy costs and reimbursements per vehicle.
 - Tiles: **Vehicles**, **Σ km** (with the number of trips), **Refuels /
   charges** (with litres and kWh), **Energy costs** (with the total of the
   reimbursements) and **Ø €/km**.
+- Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
 - Charts: **Kilometres per vehicle (top 15)** and the kilometres over time.
 - Table per vehicle: **Vehicle**, **Powertrain**, **Trips**, **km**,
   **Reimbursement**, **Refuels**, **Litres**, **kWh**, **Energy costs**,
@@ -90,6 +91,7 @@ per trip type and the private share.
 - Tiles: **Trips** (with the number of locked ones), **Σ km**, the kilometres
   per trip type (**Business**, **Commute**, **Private**) and **Private share**
   (private kilometres in relation to all kilometres).
+- Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
 - Table: **Date**, **Start km**, **End km**, **km**, **Trip type**,
   **Destination**, **Purpose**, **Driver** and **Status** (**locked**,
   **open** or **reversed**, plus **signed** and **Cancellation trip**). The

@@ -287,11 +287,12 @@ return [
         'note_domain_typo' => 'Dominio scritto come «:written» invece di «:domain» nel testo della fattura (refuso), da verificare',
         'no_lines' => 'Nessuna riga di fattura specchiata nella finestra intorno all’inizio del periodo.',
         'line' => 'Riga di fattura',
-        'line_hint' => 'Prima le righe abbonamento del destinatario nella finestra del periodo, sotto tutte le altre; la ricerca trova ogni fattura dal suo numero. Se manca un articolo, lo classifichi come prodotto abbonamento sotto «Prodotti».',
+        'line_hint' => 'Prima le righe abbonamento del destinatario nella finestra del periodo; «Mostra tutte le fatture» aggiunge le altre, la ricerca trova poi ogni fattura dal suo numero. Se manca un articolo, lo classifichi come prodotto abbonamento sotto «Prodotti».',
         'search' => 'Cerca fattura (numero, data, articolo)',
         'no_match' => 'Nessuna fattura corrisponde alla ricerca.',
         'group_window' => 'Nella finestra del periodo',
         'group_other' => 'Altre fatture del destinatario',
+        'show_all' => 'Mostra tutte le fatture del destinatario',
         'line_used' => 'già consumata',
         'months_field' => 'Mesi di licenza coperti',
         'months_hint' => 'Riga a prezzo mensile: quantità = mesi per licenza. Riga annuale: 12 per unità.',
@@ -332,6 +333,8 @@ return [
             'line_missing' => 'Riga di fattura non trovata.',
             'exceeds' => 'La riga ha solo :amount ancora disponibili.',
             'exceeds_period' => 'Il periodo richiede ancora solo :amount: non è possibile assegnarne di più.',
+            'not_decidable' => 'Il periodo è già deciso o non è ancora iniziato: rinunciare o contestare è possibile solo per periodi scaduti non decisi.', // Sicherheitsaudit 2026-11-02, sec-03/sec-05
+            'not_confirmable' => 'Il periodo non ha una proposta aperta o non è ancora iniziato: non c’è nulla da confermare.',
         ],
     ],
     'widget' => [
@@ -408,6 +411,8 @@ return [
         'error' => [
             'nothing_open' => 'Nessun periodo aperto con prezzo di vendita per questo destinatario.',
             'all_planned' => 'I periodi aperti di questo destinatario sono fatturati da un modello ricorrente attivo.',
+            'locked' => 'Per questo destinatario è in corso la creazione di una bozza di fattura: attenda un momento e ricarichi la pagina.', // Sicherheitsaudit 2026-11-02, sec-01
+            'changed' => 'I periodi sono cambiati nel frattempo (altra bozza o decisione): riapra la finestra.',
         ],
         'already_drafted' => 'Per questo destinatario è già in sospeso una bozza (:reference del :date). Completarla prima in Lexoffice o localmente, oppure decidere il periodo.', // Review 2026-09-10
         'no_target' => 'Per la modalità di fatturazione «:mode» di questo destinatario non è registrata alcuna destinazione bozza — attivi il plugin o imposti il cliente sulla fatturazione locale.', // Review 2026-09-11
@@ -1473,6 +1478,7 @@ return [
             'same_holder' => 'Il nuovo titolare è quello precedente.',
             'after_end' => 'La data di decorrenza è successiva alla fine dell’abbonamento (:date).',
             'nothing_free' => 'Dalla data di decorrenza tutte le licenze del contratto sono cedute o già fatturate al titolare precedente: avviare il subentro sulla rispettiva cessione o modificare la data di decorrenza.',
+            'billed_whole' => 'Periodi di questo abbonamento sono già fatturati a :holder: l’intero abbonamento non può cambiare titolare. Scelga una data di decorrenza dal :date; i periodi fatturati restano così al titolare precedente.', // Sicherheitsaudit 2026-11-02, sec-06
         ],
     ],
 ];

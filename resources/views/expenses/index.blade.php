@@ -59,7 +59,8 @@
                         :tone="$totals['reimbursement_pending'] > 0 ? 'warning' : 'ghost'" />
             <x-kpi-tile :label="__('Offene Genehmigungen')"
                         :value="(string) $totals['pending']"
-                        :tone="$totals['pending'] > 0 ? 'warning' : 'ghost'" />
+                        :tone="$totals['pending'] > 0 ? 'warning' : 'ghost'"
+                        :href="route('expenses.index', ['status' => \App\Enums\Expense\ExpenseStatus::Pending->value])" :active="$statusFilter === \App\Enums\Expense\ExpenseStatus::Pending->value" />
         </div>
 
         <x-table :zebra="true" table-sort="server"

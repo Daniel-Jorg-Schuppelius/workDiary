@@ -168,6 +168,7 @@ return [
         'error' => [
             'in_run' => 'La facture est déjà dans un lot de paiement.',
             'outgoing' => 'Les documents sortants de la boîte des factures n’ont pas de retenue.',
+            'rejected' => 'Les documents rejetés n’ont pas de retenue.', // Sicherheitsaudit 2026-11-02, sec-07
             'amount' => 'Veuillez indiquer un pourcentage ou un montant supérieur à 0.',
             'exceeds' => 'Les retenues dépassent le montant de la facture.',
             'not_open' => 'Seules les retenues ouvertes peuvent être libérées.',

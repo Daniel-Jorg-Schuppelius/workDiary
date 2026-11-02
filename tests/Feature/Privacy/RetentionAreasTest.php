@@ -46,6 +46,8 @@ final class RetentionAreasTest extends TestCase {
             'customer_master' => [3, 3, 5],
             'time_records' => [2, 2, 5],
             'documents_general' => [3, 3, 5],
+            // Fernwartungssitzungen (perf-11)
+            'remote_pending_sessions' => [1, 1, 1],
         ];
 
         foreach ($expectedYears as $area => [$de, $at, $ch]) {

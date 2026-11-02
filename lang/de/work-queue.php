@@ -78,4 +78,5 @@ return [
         'all' => 'Alle anzeigen',
         'empty' => 'Zurzeit wartet kein Vorgang auf Sie.',
     ],
+    'overflow' => '{1} Ein weiterer Vorgang ist nicht aufgeführt: je Quelle zeigt der Vorrat höchstens :limit.|[2,*] :count weitere Vorgänge sind nicht aufgeführt: je Quelle zeigt der Vorrat höchstens :limit.',
 ];

@@ -185,6 +185,33 @@ final class IncomingInvoiceReassignmentTest extends TestCase {
         $this->assertSame($supplier->id, $transferred->refresh()->supplier_id);
     }
 
+    /** Sicherheitsaudit 2026-11-02, sec-07: abgelehnt ist endgültig — Zuordnung, Werte und Sammelzuordnung sind gesperrt. */
+    public function test_a_rejected_document_can_neither_be_assigned_nor_get_values(): void {
+        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Pinsel GmbH']);
+        $rejected = $this->incoming(['status' => IncomingEInvoiceStatus::Rejected, 'decided_at' => now(), 'decision_note' => 'Werbung']);
+        $open = $this->incoming([]);
+        $message = (string) __('Der Eingang ist als „keine Rechnung“ abgelegt — Zuordnung, Werte und Einbehalte lassen sich nicht mehr ändern.');
+
+        $this->post(route('finance.incoming-invoices.assign', $rejected), ['direction' => 'incoming', 'mode' => 'existing', 'party' => 'supplier:' . $supplier->sqid])
+            ->assertRedirect()->assertSessionHas('error', $message);
+        $this->post(route('finance.incoming-invoices.assign', $rejected), ['direction' => 'incoming', 'mode' => 'unassign'])
+            ->assertRedirect()->assertSessionHas('error', $message);
+        $this->post(route('finance.incoming-invoices.values', $rejected), [
+            'invoice_number' => 'RE-NEU', 'issue_date' => '2026-10-01', 'currency' => 'EUR', 'amount_gross' => '500.00',
+        ])->assertRedirect()->assertSessionHas('error', $message);
+        $rejected->refresh();
+        $this->assertNull($rejected->supplier_id);
+        $this->assertNotSame('RE-NEU', $rejected->invoice_number);
+        $this->assertSame(IncomingEInvoiceStatus::Rejected, $rejected->status);
+
+        // Sammelzuordnung: der abgelehnte Eingang wird mit Grund übersprungen, der offene zugeordnet.
+        $this->post(route('finance.incoming-invoices.bulk-assign'), ['ids' => [$rejected->sqid, $open->sqid], 'party' => 'supplier:' . $supplier->sqid])
+            ->assertRedirect()
+            ->assertSessionHas('warning', static fn (string $flash): bool => str_contains($flash, '1 Eingänge zugeordnet, 1 übersprungen.') && str_contains($flash, '1 × ' . $message));
+        $this->assertSame($supplier->id, $open->refresh()->supplier_id);
+        $this->assertNull($rejected->refresh()->supplier_id);
+    }
+
     public function test_the_rules_page_lists_parked_documents_and_moves_them_to_a_real_party(): void {
         $collective = app(CollectiveContacts::class)->supplier($this->organization);
         $open = $this->incoming(['supplier_id' => $collective->id, 'seller_name' => 'JTL-Software-GmbH', 'seller_vat_id' => 'DE257864472', 'match_kind' => IncomingInvoiceMatchKind::Manual]);

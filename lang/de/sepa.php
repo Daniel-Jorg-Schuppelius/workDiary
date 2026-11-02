@@ -168,6 +168,7 @@ return [
         'error' => [
             'in_run' => 'Die Rechnung steckt bereits in einem Zahllauf.',
             'outgoing' => 'Ausgangsbelege aus dem Rechnungspostfach haben keinen Einbehalt.',
+            'rejected' => 'Abgelehnte Eingänge haben keinen Einbehalt.', // Sicherheitsaudit 2026-11-02, sec-07
             'amount' => 'Bitte einen Prozentsatz oder Betrag größer 0 angeben.',
             'exceeds' => 'Die Einbehalte übersteigen den Rechnungsbetrag.',
             'not_open' => 'Nur offene Einbehalte lassen sich freigeben.',

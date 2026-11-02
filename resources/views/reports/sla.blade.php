@@ -46,10 +46,10 @@
     </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <x-kpi-tile :label="__('sla.report.total_tickets')" :value="$total_tickets" />
+        <x-kpi-tile :label="__('sla.report.total_tickets')" :value="$total_tickets" href="#sla-by-kind" />
         <x-kpi-tile :label="__('sla.report.violations')" :value="$violation_count"
-                    :tone="$violation_count > 0 ? 'error' : 'success'" />
-        <x-kpi-tile :label="__('sla.report.met')" :value="$met_count" tone="success" />
+                    :tone="$violation_count > 0 ? 'error' : 'success'" href="#sla-violations" />
+        <x-kpi-tile :label="__('sla.report.met')" :value="$met_count" tone="success" href="#sla-by-kind" />
         <x-kpi-tile :label="__('sla.report.compliance_rate')" :value="$pct($compliance_rate)"
                     :tone="$compliance_rate !== null && $compliance_rate < 0.9 ? 'warning' : 'neutral'" />
     </div>
@@ -63,7 +63,7 @@
     @endif
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <x-card>
+        <x-card id="sla-by-kind" class="scroll-mt-24">
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('sla.report.by_kind') }}</h3>
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -164,7 +164,7 @@
         @endif
     </x-card>
 
-    <x-card>
+    <x-card id="sla-violations" class="scroll-mt-24">
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('sla.report.violation_list') }}</h3>
         @if ($violations->isEmpty())
             <x-empty-state icon="verified"

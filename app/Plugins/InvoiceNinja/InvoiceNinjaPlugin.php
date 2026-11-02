@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\InvoiceNinja;
 
-use App\Plugins\{AbstractPlugin, PluginHealth};
+use App\Plugins\AbstractPlugin;
 use App\Plugins\InvoiceNinja\Api\InvoiceNinjaClientFactory;
-use App\Plugins\Support\ApiHealthProbe;
+use App\Plugins\Support\{ChecksConnectionHealth, SelfHostedSettings};
 
 /**
  * Invoice Ninja (Feature 176, Phase 158): Rechnungen, Gutschriften und
@@ -23,6 +23,8 @@ use App\Plugins\Support\ApiHealthProbe;
  * {@see \App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry}.
  */
 class InvoiceNinjaPlugin extends AbstractPlugin {
+    use ChecksConnectionHealth;
+
     public const ID = 'invoiceninja';
 
     public const SERVICE_PROVIDER = InvoiceNinjaServiceProvider::class;
@@ -40,11 +42,12 @@ class InvoiceNinjaPlugin extends AbstractPlugin {
     }
 
     public function settingsSchema(): array {
+        // Gehostet ist die Vorgabe, deshalb keine Pflicht-Basis-URL wie im Standardschema.
         return [
-            ['key' => 'base_url', 'label' => __('invoiceninja::invoiceninja.settings.base_url'), 'type' => 'text', 'default' => InvoiceNinjaConfig::HOSTED_URL, 'help' => __('invoiceninja::invoiceninja.settings.base_url_help')],
-            ['key' => 'api_token', 'label' => __('invoiceninja::invoiceninja.settings.api_token'), 'type' => 'password', 'required' => true, 'help' => __('invoiceninja::invoiceninja.settings.api_token_help')],
-            ['key' => 'pull_vouchers', 'label' => __('invoiceninja::invoiceninja.settings.pull_vouchers'), 'type' => 'boolean', 'default' => false, 'help' => __('invoiceninja::invoiceninja.settings.pull_vouchers_help')],
-            ['key' => 'allow_private_network', 'label' => __('invoiceninja::invoiceninja.settings.allow_private_network'), 'type' => 'boolean', 'default' => false, 'help' => __('invoiceninja::invoiceninja.settings.allow_private_network_help')],
+            SelfHostedSettings::field(self::ID, 'base_url', required: false, default: InvoiceNinjaConfig::HOSTED_URL),
+            SelfHostedSettings::field(self::ID, 'api_token', 'password'),
+            SelfHostedSettings::field(self::ID, 'pull_vouchers', 'boolean', required: false, default: false),
+            SelfHostedSettings::field(self::ID, 'allow_private_network', 'boolean', required: false, default: false),
         ];
     }
 
@@ -52,15 +55,11 @@ class InvoiceNinjaPlugin extends AbstractPlugin {
         return [];
     }
 
-    public function healthCheck(): PluginHealth {
-        $organization = $this->healthOrgContext();
-        if ($organization instanceof PluginHealth) {
-            return $organization;
-        }
-        if (! InvoiceNinjaConfig::isConfigured((int) $organization->id)) {
-            return PluginHealth::degraded((string) __('invoiceninja::invoiceninja.health.not_configured'), 'not_configured');
-        }
+    protected function healthConfigured(int $organizationId): bool {
+        return InvoiceNinjaConfig::isConfigured($organizationId);
+    }
 
-        return ApiHealthProbe::probe($this->name(), fn () => app(InvoiceNinjaClientFactory::class)->for((int) $organization->id)->probe());
+    protected function healthProbe(int $organizationId): void {
+        app(InvoiceNinjaClientFactory::class)->for($organizationId)->probe();
     }
 }

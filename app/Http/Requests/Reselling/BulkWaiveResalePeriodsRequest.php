@@ -39,7 +39,7 @@ class BulkWaiveResalePeriodsRequest extends BaseFormRequest {
         /** @var list<string> $ids */
         $ids = $this->validated('ids');
 
-        return array_values(array_filter(array_map(static fn(string $sqid): ?int => Sqid::decode(ResalePeriod::class, $sqid), $ids)));
+        return Sqid::decodeMany(ResalePeriod::class, $ids);
     }
 
     public function status(): PeriodStatus {

@@ -13,9 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Vikunja\Services;
 
 use App\Enums\Task\TaskStatus;
-use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
-use App\Plugins\Support\TaskSync\{AbstractTaskImportService, IncompleteRemoteReadException, RemoteTask, SelfHostedInstance};
+use App\Plugins\Support\TaskSync\{AbstractTaskImportService, IncompleteRemoteReadException, RemoteTask};
 use App\Plugins\Vikunja\Api\VikunjaClientFactory;
 use App\Plugins\Vikunja\Models\{VikunjaConnection, VikunjaProjectLink};
 use App\Plugins\Vikunja\VikunjaPlugin;
@@ -125,12 +124,5 @@ class VikunjaImportService extends AbstractTaskImportService {
             'url' => $baseUrl !== '' ? $baseUrl . '/tasks/' . $id : null,
             'project' => null,
         ], $issues);
-    }
-
-    public function sourceUrl(ExternalReference $reference): ?string {
-        $url = data_get($reference->payload, 'remote.url');
-        $baseUrl = (string) $this->connection((int) $reference->organization_id)?->source_url;
-
-        return is_string($url) && SelfHostedInstance::owns($baseUrl, $url) ? $url : null;
     }
 }

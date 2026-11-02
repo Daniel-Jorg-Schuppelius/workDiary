@@ -111,8 +111,9 @@ class RemoteTimeDeletionTest extends TestCase {
         return $result;
     }
 
-    private function window(): RemoteSyncWindow {
-        return new RemoteSyncWindow(CarbonImmutable::parse(self::FROM), CarbonImmutable::parse(self::TO));
+    private function window(?CarbonImmutable $fetchedAt = null): RemoteSyncWindow {
+        // Der Lauf begann nach dem Anlegen der Referenzen — sonst gälten sie als ungelesen.
+        return new RemoteSyncWindow(CarbonImmutable::parse(self::FROM), CarbonImmutable::parse(self::TO), $fetchedAt ?? CarbonImmutable::now()->addMinutes(5));
     }
 
     public function test_an_entry_the_full_run_no_longer_delivers_is_removed(): void {
@@ -174,5 +175,29 @@ class RemoteTimeDeletionTest extends TestCase {
 
         $this->assertSame(0, $result['removed']);
         $this->assertNotNull(TimeEntry::query()->find($outside->getKey()));
+    }
+
+    /**
+     * Befund 2026-11-02: Outbox-Anlage und Stunden-Push liefen in derselben
+     * Minute wie der Import; der hatte die eben gepushten Einträge nie gelesen
+     * und löschte sie als „drüben gelöscht“.
+     */
+    public function test_references_linked_since_the_fetch_began_are_left_alone(): void {
+        $old = $this->linkedEntry('toggl:10');
+        $justBefore = $this->linkedEntry('toggl:20');
+        $during = $this->linkedEntry('toggl:30');
+        $delivered = $this->stillDelivered('toggl:1');
+
+        $fetchedAt = CarbonImmutable::now()->subMinutes(2);
+        ExternalReference::query()->where('external_id', 'toggl:10')->update(['created_at' => $fetchedAt->subMinutes(10)]);
+        ExternalReference::query()->where('external_id', 'toggl:20')->update(['created_at' => $fetchedAt->subSeconds(30)]);
+
+        $result = $this->ingest([$delivered], $this->window($fetchedAt));
+
+        $this->assertSame(1, $result['removed']);
+        $this->assertDatabaseMissing('time_entries', ['id' => $old->id]);
+        $this->assertDatabaseHas('time_entries', ['id' => $justBefore->id]);
+        $this->assertDatabaseHas('time_entries', ['id' => $during->id]);
+        $this->assertDatabaseHas('external_references', ['external_id' => 'toggl:30']);
     }
 }

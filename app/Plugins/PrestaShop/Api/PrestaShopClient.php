@@ -17,7 +17,7 @@ use App\Plugins\PrestaShop\Exceptions\PrestaShopApiException;
 use App\Plugins\PrestaShop\PrestaShopPlugin;
 use App\Plugins\Support\{GuardsPluginApiResponses, PluginApiClient, PluginHttpFactory};
 use App\Plugins\Support\ShopOrders\RemoteOrder;
-use App\Plugins\Support\TaskSync\IncompleteRemoteReadException;
+use App\Plugins\Support\TaskSync\{IncompleteRemoteReadException, OffsetPage, RemotePages};
 use Generator;
 use Illuminate\Http\Client\Response;
 
@@ -60,7 +60,9 @@ class PrestaShopClient {
      */
     public function orderPages(string $fromLocal): Generator {
         $afterId = 0;
-        for ($page = 0; $page < $this->maxPages; $page++) {
+
+        // Keyset nach ID: die Seitennummer des Lesers zählt nur das Limit.
+        return RemotePages::offset(function () use ($fromLocal, &$afterId): OffsetPage {
             $orders = $this->list('orders', [
                 'display' => 'full',
                 'filter[date_upd]' => '[' . $fromLocal . ',2999-12-31 23:59:59]',
@@ -69,20 +71,17 @@ class PrestaShopClient {
                 'sort' => '[id_ASC]',
                 'limit' => '0,' . $this->pageSize,
             ]);
-            if ($orders !== []) {
-                yield $orders;
-            }
             if (count($orders) < $this->pageSize) {
-                return;
+                return new OffsetPage($orders !== [] ? [$orders] : [], false);
             }
             $lastId = end($orders)['id'] ?? null;
             if (! is_numeric($lastId) || (int) $lastId <= $afterId) {
                 throw new IncompleteRemoteReadException('invalid_response');
             }
             $afterId = (int) $lastId;
-        }
 
-        throw new IncompleteRemoteReadException('page_limit');
+            return new OffsetPage([$orders], true);
+        }, $this->maxPages);
     }
 
     /**

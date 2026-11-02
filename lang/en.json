@@ -11092,5 +11092,6 @@
     "Steuersatz hinzufügen": "Add tax rate",
     "Steuersatz entfernen": "Remove tax rate",
     "Netto und Steuer ergeben :sum, nicht das Brutto.": "Net and tax add up to :sum, not the gross amount.",
-    "Steuersätze": "Tax rates"
+    "Steuersätze": "Tax rates",
+    "Der Eingang ist als „keine Rechnung“ abgelegt — Zuordnung, Werte und Einbehalte lassen sich nicht mehr ändern.": "The document is filed as “not an invoice” — assignment, values and retentions can no longer be changed."
 }

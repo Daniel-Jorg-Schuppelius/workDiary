@@ -340,6 +340,40 @@ class RecurringPlanTest extends TestCase {
         $this->assertSame($position, $link->line_position);
         $this->assertSame(LinkOrigin::Manual, $link->origin);
         $this->actingAs($admin)->get(route('finance.resale.show', $subscription->sqid))->assertOk()->assertSee(__('resale.plan.planned_by', ['title' => 'Rechnung Exchange', 'date' => '18.10.2027']));
+        // Über den Editor angelegt (Sicherheitsaudit 2026-11-02, sec-04): bestätigt und mit Audit.
+        $this->assertNotNull($link->confirmed_at);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'resale_plan_link.saved', 'auditable_id' => $link->id]);
+    }
+
+    /** Sicherheitsaudit 2026-11-02, sec-04: „Abo aus Vorlage anlegen“ schreibt die Zuordnung nicht mehr am Editor vorbei. */
+    public function test_subscription_from_a_template_line_respects_the_free_licences_and_known_positions(): void {
+        $admin = $this->orgAdmin();
+        $this->fakeApi([$this->templateEntry('tpl-1')], $this->exchangeLines(2));
+        (new LexofficeRecurringTemplateSync($this->organization->id))->sync($this->organization);
+        $planTemplate = app(RecurringPlans::class)->templateByKey($this->organization, 'lexoffice:tpl-1');
+        $this->assertNotNull($planTemplate);
+        $position = $planTemplate->licenceLines()[0]->position;
+        $payload = [
+            'kind' => 'license', 'provider' => 'manual', 'label' => 'Exchange Online (Plan 1)', 'holder' => 'customer', 'customer_id' => $this->schub->sqid,
+            'starts_on' => '2025-10-18', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'sale_unit_price' => '47.40',
+            'plan_key' => 'lexoffice:tpl-1',
+        ];
+
+        // Die Position hat eine Lizenz (12 Monate): drei Lizenzen übersteigen sie, Position 99 gibt es nicht, ohne Position fehlt die Angabe.
+        $this->actingAs($admin)->post(route('finance.resale.store'), $payload + ['quantity' => 3, 'plan_position' => $position])
+            ->assertSessionHasErrors(['quantity' => __('resale.plan.error.quantity', ['free' => 1])]);
+        $this->actingAs($admin)->post(route('finance.resale.store'), $payload + ['quantity' => 1, 'plan_position' => 99])
+            ->assertSessionHasErrors(['plan_key' => __('resale.plan.error.line')]);
+        $this->actingAs($admin)->post(route('finance.resale.store'), $payload + ['quantity' => 1])->assertSessionHasErrors('plan_position');
+        $this->assertSame(0, ResaleSubscription::query()->where('provider', 'manual')->count(), 'kein Abo ohne gültige Zuordnung');
+        $this->assertSame(0, ResalePlanLink::query()->count());
+
+        // Eine Lizenz passt; das zweite Abo an derselben Position findet nichts mehr frei.
+        $this->actingAs($admin)->post(route('finance.resale.store'), $payload + ['quantity' => 1, 'plan_position' => $position])->assertSessionHasNoErrors();
+        $this->assertSame(1, (int) ResalePlanLink::query()->where('plan_key', 'lexoffice:tpl-1')->sum('quantity'));
+        $this->actingAs($admin)->post(route('finance.resale.store'), $payload + ['quantity' => 1, 'plan_position' => $position, 'external_id' => 'zweit'])
+            ->assertSessionHasErrors(['quantity' => __('resale.plan.error.quantity', ['free' => 0])]);
+        $this->assertSame(1, ResaleSubscription::query()->where('provider', 'manual')->count());
     }
 
     public function test_voucher_line_sync_stores_the_recurring_template_reference(): void {

@@ -21,8 +21,9 @@ use App\Models\Sales\ServiceOffering;
 use App\Models\Time\TimeEntry;
 use App\Services\ServiceTicket\SlaTimer;
 use Database\Factories\ServiceTicket\ServiceTicketFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
 
@@ -141,6 +142,18 @@ class ServiceTicket extends Model {
         'is_major' => 'boolean',
         'stakeholders' => 'array',
     ];
+
+    /**
+     * Offene Tickets — die eine Definition für Arbeitsvorrat, Cockpit, Kachel,
+     * Kennzahlen und Routing (Phase 160, Nachtrag gap-08): nicht gelöst, also
+     * auch wartend oder pausiert. SLA-Scans laufen bewusst bis zum Schließen.
+     *
+     * @param Builder<static> $query
+     */
+    #[Scope]
+    protected function open(Builder $query): void {
+        $query->whereIn('status', array_map(static fn (ServiceTicketStatus $s): string => $s->value, ServiceTicketStatus::openCases()));
+    }
 
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {

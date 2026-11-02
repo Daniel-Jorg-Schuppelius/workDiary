@@ -53,14 +53,14 @@
     </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <x-kpi-tile :label="__('user.employees')" :value="$totals['users']" />
-        <x-kpi-tile :label="__('Qualifikationen')" :value="$totals['qualifications']" />
-        <x-kpi-tile :label="__('Zuweisungen')" :value="$totals['assignments']" />
-        <x-kpi-tile :label="__('Laufen ab (≤30 T.)')" :value="$totals['expiring']" :tone="$totals['expiring'] > 0 ? 'warning' : 'neutral'" />
-        <x-kpi-tile :label="__('Abgelaufen')" :value="$totals['expired']" :tone="$totals['expired'] > 0 ? 'error' : 'neutral'" />
+        <x-kpi-tile :label="__('user.employees')" :value="$totals['users']" href="#qualifications-table" />
+        <x-kpi-tile :label="__('Qualifikationen')" :value="$totals['qualifications']" href="#qualifications-table" />
+        <x-kpi-tile :label="__('Zuweisungen')" :value="$totals['assignments']" href="#qualifications-table" />
+        <x-kpi-tile :label="__('Laufen ab (≤30 T.)')" :value="$totals['expiring']" :tone="$totals['expiring'] > 0 ? 'warning' : 'neutral'" href="#qualifications-table" />
+        <x-kpi-tile :label="__('Abgelaufen')" :value="$totals['expired']" :tone="$totals['expired'] > 0 ? 'error' : 'neutral'" href="#qualifications-table" />
     </div>
 
-    <x-card>
+    <x-card id="qualifications-table" class="scroll-mt-24">
         @if ($users->isEmpty() || $qualifications->isEmpty())
             <x-empty-state icon="workspace_premium" :title="__('Keine Qualifikations-Zuweisungen vorhanden.')" />
         @else

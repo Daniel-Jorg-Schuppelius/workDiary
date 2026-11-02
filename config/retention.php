@@ -126,6 +126,14 @@ return [
             'basis' => ['DE' => '§ 49 Abs. 4 PBefG (1 J.) / Art. 5 Abs. 1 lit. e DSGVO', 'AT' => 'Art. 5 DSGVO (Speicherbegrenzung)', 'CH' => 'DSG (Zweckbindung)'],
         ],
 
+        // Fernwartungssitzungen, die übernommen oder verworfen wurden (Leistungsanalyse
+        // 2026-11-02, perf-11): nach der Übernahme ist die Zeit am Zeiteintrag, der Rest
+        // ist Protokollrauschen mit Gerätekennung.
+        'remote_pending_sessions' => [
+            'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
+            'basis' => ['DE' => 'Art. 5 Abs. 1 lit. e DSGVO (Speicherbegrenzung)', 'AT' => 'Art. 5 DSGVO (Speicherbegrenzung)', 'CH' => 'DSG (Zweckbindung)'],
+        ],
+
         // ------- Große Personendaten-Bereiche (Feature 130, MVP-694 — H21) -------
 
         // Personalstammdaten ausgeschiedener Mitarbeiter: Anker ist der

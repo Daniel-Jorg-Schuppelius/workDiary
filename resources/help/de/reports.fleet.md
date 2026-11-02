@@ -56,6 +56,7 @@ Erstattungen je Fahrzeug.
 - Kacheln: **Fahrzeuge**, **Σ km** (mit der Zahl der Fahrten), **Tankungen /
   Ladungen** (mit Litern und kWh), **Energiekosten** (mit der Summe der
   Erstattungen) und **Ø €/km**.
+- Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
 - Diagramme: **Kilometer je Fahrzeug (Top 15)** und die Kilometer im Verlauf.
 - Tabelle je Fahrzeug: **Fahrzeug**, **Antrieb**, **Fahrten**, **km**,
   **Erstattung**, **Tankungen**, **Liter**, **kWh**, **Energiekosten**,
@@ -95,6 +96,7 @@ Fahrer, Summen je Fahrtart und den privaten Anteil.
   Fahrtart (**Betrieblich**, **Wohnung–Arbeitsstätte**, **Privat**) die
   Kilometer und **Privater Anteil** (private Kilometer im Verhältnis zu allen
   Kilometern).
+- Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
 - Tabelle: **Datum**, **Start-km**, **End-km**, **km**, **Fahrtart**,
   **Ziel**, **Zweck**, **Fahrer** und **Status** (**festgeschrieben**,
   **offen** oder **storniert**, dazu **unterschrieben** und

@@ -57,6 +57,7 @@ par véhicule.
 - Tuiles : **Véhicules**, **Σ km** (avec le nombre de trajets), **Pleins /
   recharges** (avec les litres et les kWh), **Coûts énergétiques** (avec le
   total des remboursements) et **Ø €/km**.
+- Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
 - Graphiques : **Kilomètres par véhicule (top 15)** et les kilomètres dans le
   temps.
 - Tableau par véhicule : **Véhicule**, **Motorisation**, **Trajets**, **km**,
@@ -99,6 +100,7 @@ destination, objet et conducteur, totaux par type de trajet et part privée.
   kilomètres par type de trajet (**Professionnel**, **Domicile–travail**,
   **Privé**) et **Part privée** (kilomètres privés rapportés à l’ensemble des
   kilomètres).
+- Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
 - Tableau : **Date**, **Km départ**, **Km fin**, **km**, **Type de trajet**,
   **Destination**, **Objet**, **Conducteur** et **Statut** (**verrouillé**,
   **ouvert** ou **contrepassé**, ainsi que **signé** et **Trajet

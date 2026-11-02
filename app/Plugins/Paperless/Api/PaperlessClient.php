@@ -16,7 +16,7 @@ use APIToolkit\API\Authentication\ApiKeyAuthentication;
 use App\Plugins\Paperless\Exceptions\PaperlessApiException;
 use App\Plugins\Paperless\PaperlessPlugin;
 use App\Plugins\Support\{GuardsPluginApiResponses, PluginApiClient, PluginHttpFactory};
-use App\Plugins\Support\TaskSync\IncompleteRemoteReadException;
+use App\Plugins\Support\TaskSync\{IncompleteRemoteReadException, OffsetPage, RemotePages};
 use Psr\Http\Message\StreamInterface;
 
 /**
@@ -116,32 +116,31 @@ class PaperlessClient {
     public function documentIds(array $filter): array {
         $ids = [];
         $count = null;
-        for ($page = 1; $page <= $this->maxIdPages; $page++) {
+        $pages = RemotePages::offset(function (int $page) use ($filter, &$count): OffsetPage {
             $body = $this->guard($this->api()->getResponse($this->url('/documents/'), $filter + [
                 'ordering' => 'id',
                 'page' => $page,
                 'page_size' => self::ID_PAGE_SIZE,
                 'fields' => 'id',
             ]), '/documents/');
-            if (! is_int($body['count'] ?? null) || ($count !== null && $body['count'] !== $count)) {
+            if (! is_int($body['count'] ?? null)) {
                 throw new IncompleteRemoteReadException('listing_changed');
             }
             $count = $body['count'];
-            foreach ($this->results($body) as $row) {
-                if (is_int($row['id'] ?? null)) {
-                    $ids[] = $row['id'];
-                }
-            }
-            if (($body['next'] ?? null) === null) {
-                if (count($ids) !== $count) {
-                    throw new IncompleteRemoteReadException('listing_changed');
-                }
 
-                return $ids;
+            return new OffsetPage($this->results($body), ($body['next'] ?? null) !== null, $count);
+        }, $this->maxIdPages);
+
+        foreach ($pages as $row) {
+            if (is_int($row['id'] ?? null)) {
+                $ids[] = $row['id'];
             }
         }
+        if (count($ids) !== $count) {
+            throw new IncompleteRemoteReadException('listing_changed');
+        }
 
-        throw new IncompleteRemoteReadException('page_limit');
+        return $ids;
     }
 
     /**

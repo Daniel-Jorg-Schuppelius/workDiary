@@ -72,6 +72,7 @@ e giri del periodo.
   attività scadute e il loro tasso di completamento (il riquadro cambia colore
   non appena un’attività è scaduta) e **Giri** con chilometri e durata
   pianificati.
+- Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
 - Grafici: **Ordini di servizio: creati vs. completati per settimana** e
   **Backlog per cliente (top 15)** con gli ordini di servizio ancora aperti
   per cliente. Con il diritto **Visualizza i report** un clic su una barra
@@ -108,6 +109,7 @@ registrazioni di tempo ripartite del periodo si distribuiscono su **Attività
 **Attività** e sulle dimensioni libere di **Dimensioni temporali**.
 
 - Riquadri: **Tempo ripartito** e il numero di **Dimensioni**.
+- Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
 - Una scheda per dimensione con **Destinazione**, **Minuti** (mostrati in ore
   e minuti) e **Registrazioni** (numero di registrazioni di tempo), in ordine
   decrescente di tempo.
@@ -128,6 +130,7 @@ procedura**.
 - Riquadri: **Deviazioni**, **Critiche**, **Quota con follow-up** (quota con
   un punto aperto o un ordine successivo) e **Ø ore fino alla decisione**
   (dalla creazione all’accettazione del rischio, solo deviazioni decise).
+- Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
 - Grafici: **Deviazioni per tipo**, le deviazioni nel tempo per gravità e
   **Procedure con più deviazioni (top 10)**.
 - Elenco: **Data**, **Procedura**, **Passo**, **Tipo**, **Gravità**,
@@ -168,6 +171,7 @@ lavoro cade nel periodo.
 - Grafici: **Valore di consumo per materiale (top 20)** e i costi del
   materiale nel tempo.
 - Riquadri: **Materiali**, **Utilizzi** e **Netto Σ**.
+- Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
 - Tabella **Consumo per materiale**: **SKU**, **Materiale**, **Unità**,
   **Quantità**, **Utilizzi** e **Netto**, in ordine decrescente di importo
   netto. Lo stesso materiale in unità diverse compare su righe separate; le
@@ -189,6 +193,7 @@ contano.
 - Riquadri: **Dipendenti**, **Reperibilità** (con il numero di turni),
   **Interventi attivi** (tempo di intervento con il numero di interventi) e
   **Quota attiva** (tempo di intervento rispetto al tempo di reperibilità).
+- Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
 - Grafici: **Reperibilità per collaboratore e settimana** come mappa di
   calore e gli interventi nel tempo.
 - Tabella per dipendente: **Turni**, **Reperibilità**, **Interventi**,
@@ -276,6 +281,7 @@ periodo a cui mancano indicazioni richieste dalle regole obbligatorie di
 
 - Riquadri: **Ordini con lacune**, **Lacune bloccanti** (regole bloccanti) e
   **Lacune minori** (avvisi).
+- Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
 - Grafici: gli ordini con lacune di classificazione nel tempo e
   **Classificazioni mancanti per cliente (top 15)**.
 - **Per dominio** e **Per fase**: dove si trovano le lacune e da quale fase

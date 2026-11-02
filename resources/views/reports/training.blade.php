@@ -35,10 +35,10 @@
     </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <x-kpi-tile :label="__('training.report.kpi.assignments')" :value="$report['totals']['assignments']" />
-        <x-kpi-tile :label="__('training.report.kpi.fulfilled')" :value="$report['totals']['fulfilled']" tone="success" />
-        <x-kpi-tile :label="__('training.report.kpi.due')" :value="$report['totals']['due']" :tone="$report['totals']['due'] > 0 ? 'warning' : 'neutral'" />
-        <x-kpi-tile :label="__('training.report.kpi.overdue')" :value="$report['totals']['overdue']" :tone="$report['totals']['overdue'] > 0 ? 'error' : 'neutral'" />
+        <x-kpi-tile :label="__('training.report.kpi.assignments')" :value="$report['totals']['assignments']" href="#training-table" />
+        <x-kpi-tile :label="__('training.report.kpi.fulfilled')" :value="$report['totals']['fulfilled']" tone="success" href="#training-table" />
+        <x-kpi-tile :label="__('training.report.kpi.due')" :value="$report['totals']['due']" :tone="$report['totals']['due'] > 0 ? 'warning' : 'neutral'" href="#training-table" />
+        <x-kpi-tile :label="__('training.report.kpi.overdue')" :value="$report['totals']['overdue']" :tone="$report['totals']['overdue'] > 0 ? 'error' : 'neutral'" href="#training-table" />
         <x-kpi-tile :label="__('training.report.kpi.rate')" :value="$report['totals']['rate'] . ' %'" />
     </div>
 
@@ -48,7 +48,7 @@
         </x-card>
     @else
         @foreach ([['by_team', 'byTeam'], ['by_role', 'byRole'], ['by_course', 'byCourse']] as [$labelKey, $dataKey])
-            <x-card>
+            <x-card id="training-table" class="scroll-mt-24">
                 <h3 class="mb-3 text-sm font-semibold">{{ __('training.report.' . $labelKey) }}</h3>
                 <x-table bare table-sort="client">
                     <x-slot:head>

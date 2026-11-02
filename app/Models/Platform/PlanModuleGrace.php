@@ -49,4 +49,41 @@ class PlanModuleGrace extends Model {
     public function organization(): BelongsTo {
         return $this->belongsTo(Organization::class);
     }
+
+    protected static function booted(): void {
+        $forget = static fn (self $grace): bool => \Illuminate\Support\Facades\Cache::forget(self::pendingCacheKey((int) $grace->organization_id));
+        static::saved($forget);
+        static::deleted($forget);
+    }
+
+    /**
+     * Löschvorwarnungen des App-Layouts (Leistungsanalyse 2026-11-02, perf-10):
+     * eine Abfrage je Seite, obwohl fast nie ein Downgrade anliegt — jetzt fünf
+     * Minuten je Organisation gecacht, Schreibwege entwerten den Schlüssel.
+     *
+     * @param  array<string, bool>  $purgeable  Module, deren Daten nach der Karenz gelöscht werden
+     * @return list<array{module: string, until: string}>  `until` als ISO-8601
+     */
+    public static function pendingPurgeItems(int $organizationId, array $purgeable): array {
+        $rows = \Illuminate\Support\Facades\Cache::remember(self::pendingCacheKey($organizationId), 300, static function () use ($organizationId): array {
+            return self::query()
+                ->where('organization_id', $organizationId)
+                ->whereNull('purged_at')
+                ->where('grace_until', '>', now())
+                ->orderBy('grace_until')
+                ->get(['module', 'grace_until'])
+                ->map(static fn (self $g): array => ['module' => (string) $g->module, 'until' => $g->grace_until->toIso8601String()])
+                ->all();
+        });
+
+        return array_values(array_filter($rows, static fn (array $row): bool => ($purgeable[$row['module']] ?? false) === true));
+    }
+
+    public static function forgetPending(int $organizationId): void {
+        \Illuminate\Support\Facades\Cache::forget(self::pendingCacheKey($organizationId));
+    }
+
+    private static function pendingCacheKey(int $organizationId): string {
+        return 'plan-grace:pending:' . $organizationId;
+    }
 }

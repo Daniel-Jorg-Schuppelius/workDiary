@@ -47,11 +47,20 @@
         </x-slot:actions>
 
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <x-kpi-tile :label="__('finance.datev.field.open_ready')" :value="$openCount" tone="warning" />
-            <x-kpi-tile :label="__('finance.datev.metric.draft')" :value="$draftCount" />
-            <x-kpi-tile :label="__('finance.datev.metric.exported')" :value="$exportedCount" tone="success" />
+            <x-kpi-tile :label="__('finance.datev.field.open_ready')" :value="$openCount" tone="warning" :href="$canCreate ? route('finance.datev.create') : null" data-entry-modal-trigger />
+            <x-kpi-tile :label="__('finance.datev.metric.draft')" :value="$draftCount" :href="route('finance.datev.index', ['status' => \App\Enums\Finance\DatevBatchStatus::Draft->value])" :active="$statusFilter === \App\Enums\Finance\DatevBatchStatus::Draft" />
+            <x-kpi-tile :label="__('finance.datev.metric.exported')" :value="$exportedCount" tone="success" :href="route('finance.datev.index', ['status' => \App\Enums\Finance\DatevBatchStatus::Exported->value])" :active="$statusFilter === \App\Enums\Finance\DatevBatchStatus::Exported" />
             <x-kpi-tile :label="__('finance.datev.metric.exported_total_year')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($exportedTotalYear, 2, withThousandsSeparator: true) . ' €'" />
         </div>
+
+        <x-filter-bar :action="route('finance.datev.index')" :reset="route('finance.datev.index')">
+            <select name="status" class="select select-sm select-bordered w-44 shrink-0" aria-label="{{ __('Status') }}">
+                <option value="">{{ __('Alle Status') }}</option>
+                @foreach (\App\Enums\Finance\DatevBatchStatus::cases() as $batchStatus)
+                    <option value="{{ $batchStatus->value }}" @selected($statusFilter === $batchStatus)>{{ $batchStatus->label() }}</option>
+                @endforeach
+            </select>
+        </x-filter-bar>
 
         <x-table scroll="flex">
             <x-slot:head>

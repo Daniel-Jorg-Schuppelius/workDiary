@@ -24,7 +24,7 @@
     </x-slot:actions>
 
     <div class="grid gap-4 sm:grid-cols-2">
-        <x-kpi-tile :label="__('print.orders.kpi.open')" :value="$openCount" />
+        <x-kpi-tile :label="__('print.orders.kpi.open')" :value="$openCount" :href="route('print-orders.index', ['show' => 'open'])" :active="$showOpen" />
     </div>
 
     <x-filter-bar :action="route('print-orders.index')" :reset="route('print-orders.index')">
@@ -34,6 +34,7 @@
                 <option value="{{ $s->value }}" @selected(request('status') === $s->value)>{{ $s->label() }}</option>
             @endforeach
         </select>
+        <x-filter-toggle name="show" value="open" :label="__('print.orders.kpi.open')" :checked="$showOpen" />
     </x-filter-bar>
 
 

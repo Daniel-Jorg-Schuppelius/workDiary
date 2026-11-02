@@ -1,7 +1,7 @@
 ---
 title: "Abonnements & licences"
 topic: finance.resale
-version: 11
+version: 12
 keywords:
     - Aperçu d’import
     - Actions groupées
@@ -24,6 +24,13 @@ modules:
 related:
     - roles.buchhaltung
     - glossary.core
+    - finance.resale.accounts
+    - finance.resale.reconcile
+    - finance.resale.board
+    - finance.resale.subscription
+    - finance.resale.periods
+    - finance.resale.plan
+    - finance.resale.reports
 ---
 
 Le **registre de revente** tient chaque prestation récurrente revendue comme
@@ -64,80 +71,6 @@ abonnements terminés et remplacés ne reçoivent plus de périodes.
 supprimé — passez-le à « terminé ». Droits : voir avec *Voir le registre de
 revente*, gérer avec *Gérer le registre de revente*.
 
-**Rapprochement par destinataire de facture :** lorsque des périodes restent
-ouvertes sans que l’on sache s’il manque une facture ou seulement le
-rattachement, utilisez le rapprochement (bouton dans la liste des
-abonnements, sur la page des périodes et sur le client). Par destinataire —
-le client avec ses clients finaux — il confronte les périodes échues de
-tous les abonnements aux lignes de licence de ses factures, en mois de
-licence par produit : *attendu* d’après les périodes, *facturé* d’après les
-lignes. Le constat dit quoi faire : « seulement non rattaché » (les lignes
-libres suffisent — rattacher), « jamais facturé » (plus de périodes que de
-lignes — facture de rattrapage via le brouillon ou renonciation) ou « sans
-période » (plus de lignes que de périodes — abonnement manquant dans le
-registre ou double facturation). Par période ouverte, les lignes du même
-produit sont listées avec leur distance au début de période : les libres
-avec rattachement, les consommées avec leur détenteur pour contrôle. La date de référence est la **période
-de prestation** de la facture, sinon la date de facture ; licences et mois
-sont affichés séparément (« 5 × 12 mois » = cinq licences pour un an). Plus
-trois pièges invisibles par abonnement : **facture à un autre client** (le
-compte fournisseur n’est pas le client, ou le client final est facturé
-directement au lieu du partenaire ; reconnu à un élément de nom commun) —
-la solution est « Détenteur → client » : l’abonnement passe à ce client et
-la proposition s’applique aussitôt. Les factures **annulées** près du début
-de période expliquent une période vide. Les abonnements de la **boîte de
-réception** dont la société apparaît dans les textes de facture attendent
-leur détenteur. Une ligne libre qui ne touche plus aucune période de son
-produit signale un contrat absent du registre (l’export fournisseur ne le
-connaît pas) : la ligne produit indique « Ligne sans abonnement à partir
-du … » et « Créer l’abonnement depuis la ligne » ouvre le dialogue avec
-article, quantité, début et prix issus de la facture. Le rattachement peut
-viser une période d’un autre abonnement du même destinataire — jamais une
-période d’un autre client.
-
-**Classeur de travail et tableau de rapprochement :** le rapprochement d’un
-destinataire est le classeur de travail : en haut les abonnements avec
-modification, reprise, cession de licences et retour, en dessous le tableau
-de rapprochement par produit. À gauche toutes les périodes par date avec
-prévu et couverture, à droite les lignes de facture : affectées avec leur
-période de prestation, pour les périodes ouvertes les lignes libres
-correspondantes, les factures à d’autres clients et les annulations. Les
-lignes sans période correspondante apparaissent sur une ligne propre « sans
-période » à leur date. Chaque facture libre ne figure qu’à la période qui
-lui correspond le mieux, et « Affecter … » l’affecte d’un clic ; la quantité
-est ce dont la période a encore besoin. Un décalage de quelques semaines
-entre la date de commande chez le fournisseur et la date de facture est
-normal et n’est pas affiché ; une facture groupée couvrant toute la période
-correspond. Les factures sans période correspondante apparaissent sur une
-ligne « sans période » avec « Créer l’abonnement » ou « Affecter à une autre
-période ». Les affectations douteuses demandent une confirmation avant
-l’enregistrement ; dans la boîte de dialogue de lien et dans l’affectation
-rapide de la page d’abonnement, vous les confirmez avec la case à cocher.
-Les liens qui ne correspondent pas dans le temps sont marqués en jaune —
-vérifiez-les et supprimez-les si nécessaire. « Traiter le prochain
-destinataire » dans la vue d’ensemble parcourt tous les destinataires avec
-un montant ouvert ; un destinataire est terminé lorsqu’aucune période échue
-n’est ouverte et qu’aucune constatation de modèle ne subsiste. Si le
-fournisseur renouvelle un abonnement sous forme de nouvelle commande,
-l’exécution des propositions abandonne la courte période résiduelle de
-l’ancienne commande et transfère ses liens à la première période de la
-nouvelle. La période résiduelle apparaît alors comme « Changement de commande »,
-pas comme un abandon : les factures du successeur couvrent la période.
-
-**Insolvabilité et reprise :** si une facture a été annulée parce que le
-client est insolvable, comptabilisez la période dans le tableau avec «
-Comptabiliser comme perte » — la boîte de dialogue de renonciation reprend
-le motif avec le numéro de facture. Si une autre société poursuit les
-licences, utilisez « Reprise » sur l’abonnement : nouveau titulaire et date
-d’effet. Si la date d’effet correspond au début de la première période
-ouverte, le nouveau titulaire est aussi facturé pour les périodes ouvertes ;
-si elle est plus tardive, le registre abandonne sur demande les périodes
-ouvertes antérieures comme créances irrécouvrables. Une date d’effet au
-début de l’abonnement transfère tout l’abonnement au nouveau titulaire,
-sinon une cession commence à la date d’effet. Si une facture va déjà à la
-société qui reprend, le tableau propose la reprise directement sur cette
-facture.
-
 **Quantités et couverture :** le registre ne laisse jamais affecter plus
 qu’il n’y en a. Vous affectez à une période au plus ce qu’elle a encore
 d’ouvert — aussi lors du déplacement d’un lien. Seules les licences ni
@@ -161,20 +94,6 @@ nouvel import met à jour les mêmes abonnements au lieu de les dupliquer. Le
 fournisseur vient de la colonne ou du dialogue ; un modèle CSV se trouve
 dans le dialogue d’import.
 
-**Céder des licences :** quand deux sociétés partagent les mêmes locaux et
-que la seconde utilise une partie des licences d’un contrat, cédez ces
-licences au niveau du contrat (« Céder des licences » : détenteur,
-quantité, période, prix de vente). Un abonnement distinct pour l’autre
-détenteur avec ses propres périodes apparaît ; le contrat planifie ses
-périodes avec le reste. Chaque détenteur se voit rattacher ses propres
-factures. Si un successeur remplace le contrat (import), la cession y
-continue. Un contrat avec cessions ne se supprime qu’une fois les cessions
-retirées. Un changement de détenteur dans le temps — une société se scinde
-et la nouvelle reprend les contrats — est aussi une cession : toutes les
-licences de l’ancienne période à l’ancien détenteur ; le rapprochement le
-propose sur une facture de l’autre client sous « Céder la période à … »,
-prérempli.
-
 **Boîte de réception :** les abonnements importés dont le registre ne peut
 pas encore rattacher la société à un titulaire arrivent dans la boîte de
 réception. Par société, vous décidez une fois : client, client final d’un
@@ -191,45 +110,6 @@ suivant rattache aussitôt la même société. Les lignes que l’import n’a p
 pu traiter (date illisible, quantité sans nombre, identifiant en double)
 restent comme constats sur l’import : le nombre dans le message, le détail
 dépliable dans la liste.
-
-**Périodes :** la page des périodes montre les périodes échues de tous les
-abonnements avec des tuiles de statut (ouverte, facturée, partielle,
-abandonnée, contestée). « Calculer les propositions » rapproche les périodes
-ouvertes des lignes de licences des factures miroir et crée des propositions ;
-vous les confirmez, rattachez une ligne à la main (uniquement des factures du
-même destinataire, uniquement des mois de licence libres) ou renoncez avec un
-motif (« geste commercial »).
-Dans la boîte de rattachement, les factures dans la fenêtre de la période
-viennent d’abord, puis toutes les autres du destinataire ; le champ de recherche
-trouve chacune par son numéro, et une facture déjà utilisée indique où elle est
-rattachée. Les listes des abonnements et des périodes cherchent aussi par numéro
-de facture. Les périodes décidées ne sont plus touchées par
-la planification ; « rouvrir » les rouvre. Si une facture rattachée est
-annulée plus tard dans Lexoffice, le prochain calcul met le lien à zéro mois,
-note l’annulation et rouvre la période pour que la facture de remplacement
-puisse être rattachée. Les abonnements de domaine sont couverts par les lignes
-qui nomment le domaine (par exemple « domaine .de avec gestion
-(lastkraft-logistik.de) »), quelle que soit la classification de l’article. Les
-domaines qu’un sous-revendeur règle via le portail du fournisseur sont
-couverts par le journal comptable du module domaines : une pièce par
-sous-utilisateur et par mois, numérotée « numéro client-MM-AAAA » (saisissez
-le numéro client sur la page du sous-utilisateur) ; le destinataire est le
-client du sous-utilisateur.
-
-**Brouillon de facture :** à partir de toutes les périodes ouvertes d’un
-destinataire de facture, un clic crée un brouillon — avec la facturation
-Lexoffice comme brouillon dans Lexoffice (rien n’est finalisé ; vous
-vérifiez et émettez là-bas), avec la facturation locale comme brouillon de
-facture local avec lignes et liens proposés. Une ligne par abonnement et
-période, client final dans la description, quantité en mois pour les
-articles mensuels. Les périodes mémorisent le brouillon : un second clic
-n’en crée pas un deuxième mais nomme le brouillon en attente avec numéro et
-date ; ce n’est que lorsque le brouillon est devenu facture ou que la
-période est décidée qu’elles sont de nouveau libres ; jusque-là, elles affichent « En brouillon ».
-Le dialogue ne liste
-que les destinataires avec périodes ouvertes et prix de vente et indique en
-dessous ce qui est déjà dans un brouillon. La création requiert le droit
-*Créer des brouillons de facture à partir des périodes*.
 
 **Facturation récurrente :** avec la facturation locale, le registre peut
 créer lui-même les brouillons chaque jour. L’interrupteur se trouve sur la
@@ -261,26 +141,13 @@ l’import a quand même lieu et l’écart est signalé. La page d’achat filt
 par fournisseur, source, période et terme de recherche ; une affectation se
 libère toujours en bloc par pièce.
 
-**Rapport de marge :** par produit et par destinataire de facture figurent
-les périodes échues de la plage avec la vente prévue (quantité × prix de
-vente), le facturé (montants HT des liens de facture, propositions
-incluses), l’achat prévu (prix fournisseur × quantité) et l’achat réel issu
-des pièces d’achat. Marge = facturé − achat ; l’achat réel compte dès que
-chaque période de la ligne en a un, sinon l’achat prévu. Les montants ne
-sont jamais additionnés entre devises — avec plusieurs devises, il y a une
-ligne par devise et un avertissement. Export en CSV, XLSX ou PDF ; la
-proposition de facture (périodes ouvertes avec mois de licence ouverts et
-montant) en CSV ou XLSX.
-
-**Contrôle des prix :** par produit, l’achat selon le contrat, le prix
-catalogue et le prix conseillé de la dernière liste de prix importée face
-aux prix de vente des abonnements (minimum, médiane, maximum). Indications :
-« vente sous l’achat », « vente sous le prix conseillé », « contrat plus
-cher que le catalogue », « pas de prix de vente ».
-
 **Classification des produits :** la liste présente tous les articles du
 catalogue d’articles — les articles actifs du fichier articles et ceux des
-logiciels comptables connectés comme Lexoffice, avec leur source. Le
+logiciels comptables connectés comme Lexoffice, avec leur source. easybill,
+sevDesk, Invoice Ninja, Akaunting et InvoicePlane livrent aussi leurs
+articles : la récupération des pièces les lit avant les pièces, et les lignes
+reflétées portent alors l’article de la source au lieu de son seul
+identifiant. Le
 registre reconnaît au nom lesquels sont des produits d’abonnement. Par
 article, vous pouvez forcer : « produit d’abonnement » impose la
 reconnaissance, « jamais une ligne d’abonnement » écarte les prestations
@@ -322,14 +189,6 @@ d’aucun modèle récurrent et n’entrent dans aucun brouillon de facture du
 registre ; le classeur de travail et la page d’abonnement indiquent le
 sous-utilisateur.
 
-**Renouvellements et abonnements sans facture :** le rapport
-« Renouvellements » montre quels abonnements se renouvellent ou prennent fin
-sur la période (tuiles 30, 60, 90 jours) : le renouvellement est le début de
-la prochaine période planifiée, pour les abonnements résiliés c’est la fin
-qui compte. « Sans facture » liste les abonnements dont la plus ancienne
-période échue ouverte remonte à plus de N jours (60 par défaut), avec
-périodes ouvertes et montant ouvert. Les deux en CSV ou XLSX.
-
 **Tuile du tableau de bord :** la tuile « Périodes d’abonnement ouvertes »
 (groupe Finances, désactivée par défaut) montre les périodes ouvertes avec
 montant ouvert, les propositions non confirmées et les abonnements sans
@@ -356,50 +215,6 @@ rattache ces liens via numéro de facture et ligne de licence ; ce qui n’est
 pas univoque est seulement listé (--dry-run montre à l’avance ce qui se
 passerait).
 
-**Compte de licences :** Un compte porte le nom de son détenteur ; si la
-facture va à un partenaire, celui-ci est indiqué à côté (« via Nordlicht Systems »),
-et les modèles récurrents du partenaire n'apparaissent que dans le compte du
-client final auquel ils sont affectés. L'onglet *Comptes de licences* montre par compte
-fournisseur (numéro client chez le fournisseur, prédécesseurs d'un changement
-de fournisseur inclus) combien de licences par produit sont en cours, qui
-les détient et quelle année de licence est facturée — en grille produit ×
-détenteur × année avec numéro de facture ou « manque ». Si plusieurs sociétés
-détiennent des licences du même compte, tenez la **répartition** par produit
-(« Nordufer Tank 5 × Exchange à partir du 18.10.2025 ») : les autres
-détenteurs remplissent d'abord le contrat à la plus grande quantité, puis par
-début ; le titulaire du contrat garde le reste. Les cessions par contrat en
-découlent, suivent chaque modification et passent au successeur lors d'un
-changement de fournisseur ; les cessions manuelles restent possibles à titre
-d'exception. La planification reprend aussi les contrats remplacés et
-terminés des trois dernières années pour qu'une répartition ultérieure change
-encore leur cible. Les **points à vérifier sur les liens** montrent les lignes
-couvrant plus de mois de licence qu'elles n'en ont (surréservées) et les liens
-dont la période de prestation ne correspond pas à la période — avec
-« Déplacer vers … » sur la bonne période du même abonnement ou « Détacher » ;
-le dialogue de lien et l'affectation rapide préviennent avant avec ⚠.
-
-**Modèles récurrents (plan) :** Si un programme de comptabilité émet les
-factures, les factures récurrentes y naissent comme modèles récurrents. Le
-registre les reflète (Lexoffice : chaque jour et après la synchronisation des
-pièces, en lecture seule) et montre dans le compte de licences, par modèle,
-statut, rythme, prochaine exécution et les lignes de licence avec les
-abonnements qu'elles facturent. L'affectation abonnement ↔ ligne de modèle est
-proposée par le traitement — d'abord via la facture que le modèle a créée en
-dernier et qui est affectée à une période, sinon via même destinataire,
-article et quantité (avec plusieurs clients finaux d'un partenaire seulement
-s'ils sont nommés) : vous confirmez,
-affectez à la main ou retirez. Les périodes facturées par un modèle actif
-sont exclues de la proposition de facture ; ce qui se termine avant sa première
-exécution y reste. Les anciennes années peuvent ainsi être facturées même si le
-modèle existe déjà. Les **contrôles stock ↔ plan**
-signalent avant la facture : abonnement sans modèle, modèle sans abonnement
-(« Créer un abonnement depuis le modèle » reprend article, quantité, rythme et
-prix), quantité différente, modèle qui continue après la fin de l'abonnement,
-modèle en pause ou terminé alors que l'abonnement court, prochaine exécution à
-plus de sept jours du début de période, dernière exécution échouée — dans la
-tuile, le résumé hebdomadaire et la file de travail. Chaque facture reflétée
-porte la référence à son modèle.
-
 **Vue d’ensemble et onglets :** L’entrée « Abonnements & licences » est une
 **liste de tâches en quatre groupes** — Facturer (prestation échue sans
 facture, seulement après 21 jours de délai et jamais tant qu’un modèle
@@ -422,29 +237,6 @@ comptes de licences, le rapprochement, le stock de licences et un lot, elles
 filtrent la liste ; dans le classeur de travail d’un destinataire, elles
 filtrent le tableau de rapprochement sur les produits concernés, et un second
 clic sur la tuile active y supprime le filtre.
-
-**Propositions sûres et incertaines :** Le calcul de propositions (chaque
-heure et après chaque import) confirme lui-même les correspondances sûres —
-une pièce dont la date de facture se situe au plus 14 jours avant à 45 jours
-après le début de période et qui couvre entièrement la période avec le bon
-nombre de licences ; la confirmation figure dans le journal comme
-« confirmée automatiquement ». Tout le reste reste une proposition et porte
-« incertaine » avec la raison dans l’info-bulle. Les propositions valent sans
-confirmation : la page des périodes affiche par défaut « Problèmes
-seulement » (ouvert, partiel, contesté) ; les propositions non confirmées
-se consultent comme sondage via le filtre et l’état de la vue d’ensemble. Un clic sur le
-numéro de pièce ouvre la pièce : lignes, période de prestation, texte de
-facture, consommation par ligne et comparaison avec la période (date dans la
-fenêtre, prestation, article) — vous voyez ainsi avant de confirmer si la
-facture appartient à la période.
-
-**Actions groupées :** Sur la page des périodes, sélectionnez des lignes
-via les cases et confirmez toutes les propositions d’un coup, renoncez avec
-un motif pour toutes (« Renoncer / contester … ») ou faites créer un
-brouillon par destinataire de facture de la sélection. Les périodes
-décidées et à venir sont ignorées et comptées ; chaque période reçoit la
-même entrée de journal que pour l’action individuelle. Il n’y a pas de
-présélection.
 
 **Classification des produits avec filtre :** La classification n’affiche
 par défaut que les produits d’abonnement et les articles avec abonnements ou

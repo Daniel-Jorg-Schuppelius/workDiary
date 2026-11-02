@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket\Management;
 
-use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
 use App\Models\ServiceTicket\{ServiceTicket, SlaViolation};
@@ -47,11 +46,7 @@ final class SlaKpiSource implements ManagementKpiSource {
             ->whereBetween('breached_at', [$from->startOfDay(), $to->endOfDay()])
             ->when($excluded !== [], fn ($q) => $q->whereDoesntHave('serviceTicket', fn ($t) => $t->whereIn('customer_id', $excluded)))
             ->count();
-        $unresolved = array_map(
-            static fn (ServiceTicketStatus $s): string => $s->value,
-            array_values(array_filter(ServiceTicketStatus::cases(), static fn (ServiceTicketStatus $s): bool => ! $s->isResolved())),
-        );
-        $open = ServiceTicket::query()->where('organization_id', $organization->id)->whereIn('status', $unresolved)->count();
+        $open = ServiceTicket::query()->where('organization_id', $organization->id)->open()->count();
 
         return [
             new ManagementKpi(__('cockpit.tickets.title'), (string) $open, url: route('service-tickets.index')),

@@ -178,6 +178,7 @@ return [
             'sync_articles' => 'Synchroniser les articles Lexoffice',
             'sync_contacts' => 'Synchroniser les contacts Lexoffice',
             'sync_vouchers' => 'Synchroniser les pièces Lexoffice',
+            'sync_vouchers_full' => 'Synchronisation complète des pièces Lexoffice (quotidienne)',
         ],
         'location' => ['purge_points' => 'Purger les points de localisation bruts', 'close_stale_visits' => 'Clôturer les visites de site orphelines'],
         'mail' => ['poll' => 'Relever la boîte mail entrante'],

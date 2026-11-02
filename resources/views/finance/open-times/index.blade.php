@@ -32,18 +32,21 @@
         </x-slot:actions>
 
         <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-            <x-kpi-tile :label="__('finance.open_times.kpi.count')" :value="$totals['count']" format="int" />
+            <x-kpi-tile :label="__('finance.open_times.kpi.count')" :value="$totals['count']" format="int" href="#open-times-list" />
             <x-kpi-tile :label="__('finance.open_times.kpi.minutes')" :value="\App\Support\Formats::duration($totals['minutes'])" format="raw" />
             <x-kpi-tile :label="__('finance.open_times.kpi.amount')"
                         :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['amount'], 2, withThousandsSeparator: true) . ' €'"
                         format="raw" tone="primary"
                         :hint="__('finance.open_times.kpi.amount_hint')" />
+            {{-- Nachzügler und Liegenbleiber zählen ohne Zeitraum, deshalb schaltet der Link auf „Alle“ (ux-pattern-katalog §4). --}}
             <x-kpi-tile :label="__('finance.open_times.kpi.late')" :value="$lateCount" format="int"
                         :tone="$lateCount > 0 ? 'warning' : 'neutral'"
-                        :hint="__('finance.open_times.kpi.late_hint')" />
+                        :hint="__('finance.open_times.kpi.late_hint')"
+                        :href="route('finance.open-times.index', array_merge(array_filter($filters), ['all' => 1, 'show' => 'late']))" :active="$filters['show'] === 'late'" />
             <x-kpi-tile :label="__('finance.open_times.kpi.stale', ['days' => $staleAfterDays])" :value="$staleCount" format="int"
                         :tone="$staleCount > 0 ? 'warning' : 'neutral'"
-                        :hint="__('finance.open_times.kpi.stale_hint')" />
+                        :hint="__('finance.open_times.kpi.stale_hint')"
+                        :href="route('finance.open-times.index', array_merge(array_filter($filters), ['all' => 1, 'show' => 'stale']))" :active="$filters['show'] === 'stale'" />
         </div>
 
         @if ($ledgerManagedCount > 0)
@@ -112,6 +115,13 @@
             @if ($filters['all'])
                 <input type="hidden" name="all" value="1">
             @endif
+            <x-filter-field :label="__('Filter')" for="open-times-show" class="min-w-44">
+                <select id="open-times-show" name="show" class="select select-sm select-bordered w-full">
+                    <option value="">{{ __('Alle') }}</option>
+                    <option value="late" @selected($filters['show'] === 'late')>{{ __('finance.open_times.kpi.late') }}</option>
+                    <option value="stale" @selected($filters['show'] === 'stale')>{{ __('finance.open_times.kpi.stale', ['days' => $staleAfterDays]) }}</option>
+                </select>
+            </x-filter-field>
         </x-filter-bar>
 
         @if ($outsideRangeCount > 0)
@@ -153,7 +163,7 @@
             </x-card>
         @endif
 
-        <x-table scroll="flex">
+        <x-table scroll="flex" id="open-times-list">
             <x-slot:head>
                 <tr>
                     <th>{{ __('finance.open_times.column.date') }}</th>

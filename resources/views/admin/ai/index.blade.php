@@ -27,10 +27,10 @@
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <x-kpi-tile :label="__('ai.field.usage_llm')"
                     :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((int) ($usage['llm']->used_units ?? 0), 0, withThousandsSeparator: true)"
-                    tone="info" :hint="__('ai.field.usage_period', ['period' => now()->format('m/Y')])" />
+                    tone="info" :hint="__('ai.field.usage_period', ['period' => now()->format('m/Y')])" :href="route('admin.ai.usage')" />
         <x-kpi-tile :label="__('ai.field.usage_translation')"
                     :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((int) ($usage['translation']->used_units ?? 0), 0, withThousandsSeparator: true)"
-                    tone="info" :hint="__('ai.field.usage_period', ['period' => now()->format('m/Y')])" />
+                    tone="info" :hint="__('ai.field.usage_period', ['period' => now()->format('m/Y')])" :href="route('admin.ai.usage')" />
     </div>
 
     {{-- Provider-Verbindungen --}}

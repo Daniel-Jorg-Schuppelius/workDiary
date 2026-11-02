@@ -80,6 +80,7 @@ Lexoffice.
   - **Unbillte Zeit**: abrechenbare Zeiteinträge des Zeitraums, die noch
     über keinen Abrechnungsweg verbraucht wurden, mit Zahl der Einträge und
     dem voraussichtlichen Erlös aus den gespeicherten Beträgen.
+- Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
 - Diagramme: abrechenbare und nicht abrechenbare Stunden im Verlauf sowie
   **Umsatz je Kunde (Top 15)** aus lokalen Rechnungen und den aus dem
   Buchhaltungsprogramm gespiegelten Belegen. Ein Klick auf einen Kunden
@@ -133,6 +134,7 @@ gerechnet mit Bruttobeträgen nach dem Belegdatum.
   **Top-Verursacher (Top 15)**.
 - Kacheln: **Summe (Brutto)**, **Mitarbeiter**, **Kategorien** und
   **Monate**.
+- Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
 - Tabelle mit einer Zeile je **Mitarbeiter** und **Kategorie**, einer Spalte
   je Monat und der **Summe**, darunter **Top-Kategorien**.
 
@@ -199,6 +201,7 @@ Administratoren und mit dem Recht **Alle Zeiteinträge sehen**.
   **Artikel mit Umsatz** (auch Artikel des Buchhaltungsprogramms, die keinem
   Artikel des eigenen Artikelstamms zugeordnet sind) und **Anteil ohne
   Artikelbezug** (Positionen ohne gewählten Artikel).
+- Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
 - Diagramm der umsatzstärksten Artikel; wie viele es zeigt, legen Sie mit
   **Top-N im Diagramm** fest (3 bis 50, Vorgabe 10). Es zeigt auch Artikel
   des Buchhaltungsprogramms ohne Zuordnung zum eigenen Artikelstamm, diese

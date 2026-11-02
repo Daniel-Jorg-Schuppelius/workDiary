@@ -28,8 +28,10 @@ final class ExpenseApprovalWorkItemSource implements WorkItemSource {
 
     public function __construct(private readonly FeatureFlagResolver $features) {}
 
+    public const KEY = 'expense_approval';
+
     public function key(): string {
-        return 'expense_approval';
+        return self::KEY;
     }
 
     public function label(): string {

@@ -26,11 +26,16 @@
     @include('asset-finance._tabs')
 
     <div class="grid gap-4 sm:grid-cols-2">
-        <x-kpi-tile :label="__('Laufende Verträge')" :value="$openCount" />
-        <x-kpi-tile :label="__('Enden in ≤ 6 Monaten')" :value="$endingSoonCount" />
+        <x-kpi-tile :label="__('Laufende Verträge')" :value="$openCount" :href="route('asset-finance.index', ['show' => 'open'])" :active="$show === 'open'" />
+        <x-kpi-tile :label="__('Enden in ≤ 6 Monaten')" :value="$endingSoonCount" :href="route('asset-finance.index', ['show' => 'ending_soon'])" :active="$show === 'ending_soon'" />
     </div>
 
     <x-filter-bar :action="route('asset-finance.index')" :reset="route('asset-finance.index')">
+        <select name="show" class="select select-sm select-bordered w-52 shrink-0" aria-label="{{ __('Filter') }}">
+            <option value="">{{ __('Alle') }}</option>
+            <option value="open" @selected($show === 'open')>{{ __('Laufende Verträge') }}</option>
+            <option value="ending_soon" @selected($show === 'ending_soon')>{{ __('Enden in ≤ 6 Monaten') }}</option>
+        </select>
         <select name="status" class="select select-sm select-bordered w-44 shrink-0" aria-label="{{ __('Status') }}">
             <option value="">{{ __('Alle Status') }}</option>
             @foreach (\App\Enums\AssetFinance\AssetFinanceStatus::cases() as $s)

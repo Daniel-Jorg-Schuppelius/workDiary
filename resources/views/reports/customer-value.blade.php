@@ -59,7 +59,7 @@
                     :hint="__('unter 1500 unkritisch, über 2500 hoch')" />
         <x-kpi-tile :label="__('Gefährdete A-Kunden')" :value="count($riskRows)"
                     :tone="count($riskRows) > 0 ? 'warning' : 'success'"
-                    :hint="__('hoher Erlös, aber seit :days Tagen ohne Leistung', ['days' => $riskDays])" />
+                    :hint="__('hoher Erlös, aber seit :days Tagen ohne Leistung', ['days' => $riskDays])" href="#customer-value-risk" />
     </div>
 
     <div class="chart-grid grid gap-3 xl:grid-cols-2">
@@ -73,7 +73,7 @@
     <x-charts.bar-h :title="__('Kunden je Segment')" :unit="__('Kunden')" :series="$segmentSeries" :x-label="__('Segment')" :y-label="__('Kunden')"
                     :note="__('Klick auf ein Segment filtert die Kundenliste unten auf genau diese Kunden.')" />
 
-    <x-card class="mt-4">
+    <x-card class="mt-4" id="customer-value-risk" class="scroll-mt-24">
         <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Gefährdete A-Kunden') }}</h2>
         @if (count($riskRows) === 0)
             <x-empty-state icon="check_circle" :title="__('Kein A-Kunde ist seit :days Tagen ohne Leistung — gut so.', ['days' => $riskDays])" compact />

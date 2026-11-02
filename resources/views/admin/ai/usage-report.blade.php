@@ -30,12 +30,12 @@
                         :tone="$b['percent'] !== null && $b['percent'] >= 90 ? 'warning' : 'info'"
                         :hint="$b['limit'] !== null
                             ? __('ai.usage.of_limit', ['limit' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((int) $b['limit'], 0, withThousandsSeparator: true), 'percent' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $b['percent'], 1)])
-                            : __('ai.usage.unlimited')" />
+                            : __('ai.usage.unlimited')" href="#usage-months" />
         @endforeach
     </div>
 
     {{-- Monatsverlauf (12 Monate) --}}
-    <x-card :title="__('ai.usage.months')" padding="p-0">
+    <x-card :title="__('ai.usage.months')" padding="p-0" id="usage-months" class="scroll-mt-24">
         <x-table bare :caption="__('ai.usage.months')">
             <x-slot:head>
                 <tr>

@@ -1,7 +1,7 @@
 ---
 title: "Helpdesk & Service Desk"
 topic: helpdesk.overview
-version: 2
+version: 3
 keywords:
     - système de tickets
     - créer un ticket
@@ -65,6 +65,18 @@ d'étape (par défaut : commercial → Comptabilité, technique → Chef d'équi
 RH → Gestion du personnel). Approuver, refuser, poser une question et
 déléguer ont le même effet que sur le dossier ; un refus clôt le tour,
 l'auto-approbation reste bloquée.
+
+**Services métier et carte des services :** Un ticket peut porter un service
+métier (par exemple « e-mail » ou « serveur de comptabilité ») et une offre de
+service du catalogue ; les tickets peuvent ensuite être filtrés, routés et
+évalués dans les rapports selon ces critères. La carte des services montre
+comment les services métier dépendent les uns des autres : pour chaque service,
+de quoi il dépend, qui en a besoin et qui serait touché en cas de panne — avec
+les tickets ouverts de ces services. Les dépendances se gèrent sur le service
+métier (sélection multiple) ; un cycle est refusé. Sur le ticket, la carte
+« Impact » indique quels autres services métier une panne du service signalé
+toucherait et combien de tickets y sont ouverts — l'incident peut ainsi être
+priorisé avant l'arrivée des signalements consécutifs.
 
 **Satisfaction & rapports :** Après la clôture, le client peut donner une
 courte évaluation dans le portail — une par ticket. Les rapports montrent

@@ -18,10 +18,8 @@ use App\Enums\Reselling\PeriodStatus;
 use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
-use App\Support\Query\DateRange;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 
 /** Reselling-Register (Feature 152, MVP-765): offene Abrechnungsperioden, unbestätigte Vorschläge, Abos ohne Halter. */
 class ResalePeriodsWidget extends Widget {
@@ -63,9 +61,9 @@ class ResalePeriodsWidget extends Widget {
 
     public function render(User $user): View|string {
         $today = ResalePeriod::today();
-        $due = ResalePeriod::query()->where('starts_on', '<', DateRange::dayAfter($today))
-            ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false));
-        $open = (clone $due)->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])->with('links')->get();
+        // Fälligkeit nur über die Scopes des Modells (Konsolidierung 2026-11-02, kon-02).
+        $due = ResalePeriod::query()->started($today);
+        $open = ResalePeriod::query()->due($today)->with('links')->get();
 
         // Offener Betrag: Teilperioden nur anteilig (openAmount), je Währung summiert.
         /** @var array<string, Money> $amounts */
@@ -84,8 +82,8 @@ class ResalePeriodsWidget extends Widget {
             'openAmount' => implode(' · ', array_map(static fn(Money $m): string => $m->withScale(2)->format(), array_values($amounts))),
             'proposed' => (clone $due)->where('status', PeriodStatus::Billed->value)->whereNull('decided_at')->whereHas('links')->count(),
             'unassigned' => ResaleSubscription::query()->awaitingHolder()->count(),
-            // Feature 185 (MVP-1412): Befunde Bestand ↔ Serienvorlagen.
-            'planIssues' => $user->organization !== null ? count(app(\App\Services\Reselling\Plan\PlanAudit::class)->findings($user->organization)) : 0,
+            // Feature 185 (MVP-1412): Befunde Bestand ↔ Serienvorlagen — aus dem 60-s-Zähler (perfc-05), nicht je Dashboard neu gerechnet.
+            'planIssues' => $user->organization !== null ? (int) array_sum(app(\App\Services\Reselling\Plan\PlanAudit::class)->countByKind($user->organization)) : 0,
         ]);
     }
 }

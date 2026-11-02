@@ -47,20 +47,22 @@ final class PlanLinkEditor {
 
     /**
      * Lizenzen der Vorlagenposition, die noch keinem anderen Abo zugeordnet sind — die bisherige
-     * Zuordnung dieses Abos zählt nicht, weil die neue sie ersetzt.
+     * Zuordnung dieses Abos zählt nicht, weil die neue sie ersetzt; ohne Abo (noch anzulegen,
+     * sec-04) zählen alle bestehenden Zuordnungen.
      *
      * @throws \InvalidArgumentException Vorlage oder Position unbekannt
      */
-    public function freeLicences(Organization $organization, ResaleSubscription $subscription, string $planKey, int $position): int {
+    public function freeLicences(Organization $organization, ?ResaleSubscription $subscription, string $planKey, int $position): int {
         $template = $this->plans->templateByKey($organization, $planKey);
         $line = $template?->line($position);
         if ($template === null || $line === null) {
             throw new \InvalidArgumentException((string) __('resale.plan.error.line'));
         }
+        $ownId = $subscription?->id;
         $taken = (int) ResalePlanLink::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->where('plan_key', $planKey)->where('line_position', $position)
-            ->where('subscription_id', '!=', $subscription->id)
+            ->when($ownId !== null, static fn($q) => $q->where('subscription_id', '!=', $ownId))
             ->sum('quantity');
 
         return max(0, (int) round($line->licences($template->intervalMonths())) - $taken);

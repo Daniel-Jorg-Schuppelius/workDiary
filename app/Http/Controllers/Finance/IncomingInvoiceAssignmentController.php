@@ -108,6 +108,10 @@ class IncomingInvoiceAssignmentController extends Controller {
         if ($incoming->transferred_at !== null) {
             return back()->with('error', __('Der Eingang ist bereits an die Buchhaltung übergeben — die Zuordnung ist dort zu ändern.'));
         }
+        // Abgelehnt ist endgültig (kein Übergang aus `Rejected`): nichts mehr zuordnen oder aufheben (Sicherheitsaudit 2026-11-02, sec-07).
+        if ($incoming->status === IncomingEInvoiceStatus::Rejected) {
+            return back()->with('error', __('Der Eingang ist als „keine Rechnung“ abgelegt — Zuordnung, Werte und Einbehalte lassen sich nicht mehr ändern.'));
+        }
 
         $applyToOpen = (bool) ($data['apply_to_open'] ?? false);
         if ($data['mode'] === 'not_invoice') {
@@ -189,6 +193,9 @@ class IncomingInvoiceAssignmentController extends Controller {
         if ($incoming->transferred_at !== null) {
             return back()->with('error', __('Der Eingang ist bereits an die Buchhaltung übergeben — die Zuordnung ist dort zu ändern.'));
         }
+        if ($incoming->status === IncomingEInvoiceStatus::Rejected) {
+            return back()->with('error', __('Der Eingang ist als „keine Rechnung“ abgelegt — Zuordnung, Werte und Einbehalte lassen sich nicht mehr ändern.'));
+        }
         // Steuersätze je Zeile (Satz, Netto, Steuer); leere Zeilen des Dialogs fallen vor der Prüfung weg.
         $taxRows = IncomingInvoiceTaxBreakdown::filled((array) $request->input('tax_breakdown', []));
         $request->merge(['tax_breakdown' => $taxRows]);
@@ -268,7 +275,7 @@ class IncomingInvoiceAssignmentController extends Controller {
             return redirect()->toList('finance.incoming-invoices.index')
                 ->with('open_dialog', route('finance.incoming-invoices.bulk-assign.confirm', ['party' => $party, 'ids' => array_values($data['ids'])]));
         }
-        $ids = array_values(array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(IncomingEInvoice::class, $sqid), $data['ids'])));
+        $ids = Sqid::decodeMany(IncomingEInvoice::class, $data['ids']);
         $incomings = IncomingEInvoice::query()->whereKey($ids)->get();
         if ($party === 'new') {
             return $this->bulkCreate($incomings, $actor);
@@ -287,6 +294,8 @@ class IncomingInvoiceAssignmentController extends Controller {
                     $reason = (string) __('Eingangsbelege gehören zu Lieferanten, Ausgangsbelege zu Kunden.');
                 } elseif ($incoming->transferred_at !== null) {
                     $reason = (string) __('Der Eingang ist bereits an die Buchhaltung übergeben — die Zuordnung ist dort zu ändern.');
+                } elseif ($incoming->status === IncomingEInvoiceStatus::Rejected) {
+                    $reason = (string) __('Der Eingang ist als „keine Rechnung“ abgelegt — Zuordnung, Werte und Einbehalte lassen sich nicht mehr ändern.');
                 } else {
                     $this->matcher->assign($incoming, $party, IncomingInvoiceMatchKind::Manual, $actor);
                     $assigned++;
@@ -320,7 +329,7 @@ class IncomingInvoiceAssignmentController extends Controller {
             'ids' => ['required', 'array', 'max:200'],
             'ids.*' => ['string', 'max:64'],
         ]);
-        $ids = array_values(array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(IncomingEInvoice::class, $sqid), $data['ids'])));
+        $ids = Sqid::decodeMany(IncomingEInvoice::class, $data['ids']);
         $incomings = IncomingEInvoice::query()->whereKey($ids)->whereNull('transferred_at')
             ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)->get();
 
@@ -365,6 +374,9 @@ class IncomingInvoiceAssignmentController extends Controller {
                 try {
                     if ($incoming->transferred_at !== null) {
                         throw new RuntimeException((string) __('Der Eingang ist bereits an die Buchhaltung übergeben — die Zuordnung ist dort zu ändern.'));
+                    }
+                    if ($incoming->status === IncomingEInvoiceStatus::Rejected) {
+                        throw new RuntimeException((string) __('Der Eingang ist als „keine Rechnung“ abgelegt — Zuordnung, Werte und Einbehalte lassen sich nicht mehr ändern.'));
                     }
                     $this->matcher->assign($incoming, $party, IncomingInvoiceMatchKind::Manual, $actor);
                     $assigned++;
@@ -426,7 +438,7 @@ class IncomingInvoiceAssignmentController extends Controller {
             'ids' => ['required', 'array', 'max:200'],
             'ids.*' => ['string', 'max:64'],
         ]);
-        $ids = array_values(array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(IncomingEInvoice::class, $sqid), $data['ids'])));
+        $ids = Sqid::decodeMany(IncomingEInvoice::class, $data['ids']);
         $recognized = 0;
         $unchanged = 0;
         $skipped = 0;
@@ -453,7 +465,7 @@ class IncomingInvoiceAssignmentController extends Controller {
             'ids' => ['required', 'array', 'max:200'],
             'ids.*' => ['string', 'max:64'],
         ]);
-        $ids = array_values(array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(IncomingEInvoice::class, $sqid), $data['ids'])));
+        $ids = Sqid::decodeMany(IncomingEInvoice::class, $data['ids']);
         $checked = 0;
         $skipped = 0;
         foreach (IncomingEInvoice::query()->whereKey($ids)->get() as $incoming) {

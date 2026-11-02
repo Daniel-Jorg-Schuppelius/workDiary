@@ -37,11 +37,11 @@
         <x-kpi-tile :label="__('Genehmigt gesamt')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['approved'], 2, withThousandsSeparator: true) . ' €'" />
         <x-kpi-tile :label="__('Gebunden')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['committed'], 2, withThousandsSeparator: true) . ' €'" />
         <x-kpi-tile :label="__('Ist-Kosten')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['actual'], 2, withThousandsSeparator: true) . ' €'" />
-        <x-kpi-tile :label="__('Offene Freigaben / Abweichungen')" :value="$openApprovals . ' / ' . $openDeviations" />
+        <x-kpi-tile :label="__('Offene Freigaben / Abweichungen')" :value="$openApprovals . ' / ' . $openDeviations" href="#investments-pipeline" />
     </div>
 
     <div class="grid gap-4 lg:grid-cols-2">
-        <x-card>
+        <x-card id="investments-pipeline" class="scroll-mt-24">
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Pipeline') }}</h3>
             @if (empty($pipeline))
                 <x-empty-state icon="trending_up" :title="__('Keine Investitionen.')" />

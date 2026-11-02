@@ -90,7 +90,9 @@ class OpenProjectImportService {
     public function importTimes(Organization $organization, array $config, OpenProjectApiClient $client, CarbonImmutable $from, CarbonImmutable $to): array {
         // Ungefilterter Lauf über alle Benutzer — fehlende Einträge sind in
         // OpenProject gelöscht.
-        return $this->ingest($organization, $client->fetchTimeEntries($from, $to), $config, new RemoteSyncWindow($from, $to));
+        $fetchedAt = CarbonImmutable::now();
+
+        return $this->ingest($organization, $client->fetchTimeEntries($from, $to), $config, new RemoteSyncWindow($from, $to, $fetchedAt));
     }
 
     /**

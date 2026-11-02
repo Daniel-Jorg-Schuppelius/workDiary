@@ -12,8 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Register;
 
-use App\Enums\Reselling\PeriodStatus;
-use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
+use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
@@ -26,7 +25,7 @@ use Illuminate\Database\Eloquent\Builder;
  * berechnet laut Bezügen, Soll-Einkauf, Ist-Einkauf, Marge. Beträge werden
  * nie über Währungen hinweg summiert: je Schlüssel und Währung eine Zeile.
  *
- * @phpstan-type MarginRow array{label: string, currency: CurrencyCode, periods: int, open: int, expected_sale: float, expected_purchase: float, actual_purchase: float, with_actual: int, billed: float, margin: float}
+ * @phpstan-type MarginRow array{label: string, currency: CurrencyCode, periods: int, open: int, expected_sale: Money, expected_purchase: Money, actual_purchase: Money, with_actual: int, billed: Money, margin: Money}
  */
 final class ResaleMarginReport {
     /**
@@ -48,15 +47,16 @@ final class ResaleMarginReport {
             $subscription = $period->subscription;
             $currency = $period->currency;
             $currencies[$currency->value] = $currency;
+            $zero = Money::zero($currency, 2);
             $actual = $period->actualPurchase();
             $delta = [
                 'periods' => 1,
-                'open' => in_array($period->status, [PeriodStatus::Open, PeriodStatus::Partial], true) ? 1 : 0,
-                'expected_sale' => $period->expected_sale?->toFloat() ?? 0.0,
-                'expected_purchase' => $period->expected_purchase?->toFloat() ?? 0.0,
-                'actual_purchase' => $actual ?? 0.0,
+                'open' => in_array($period->status, ResalePeriod::dueStatuses(), true) ? 1 : 0,
+                'expected_sale' => $period->expected_sale ?? $zero,
+                'expected_purchase' => $period->expected_purchase ?? $zero,
+                'actual_purchase' => $actual ?? $zero,
                 'with_actual' => $actual === null ? 0 : 1,
-                'billed' => (float) $period->links->sum(static fn(ResalePeriodLink $l): float => $l->amount?->toFloat() ?? 0.0),
+                'billed' => $period->actualSale() ?? $zero,
             ];
             $productLabel = $subscription->productLabel() ?? $subscription->label;
             $recipient = $subscription->billedTo()->name ?? (string) __('resale.holder.unassigned');
@@ -89,6 +89,7 @@ final class ResaleMarginReport {
             (string) __('resale.report.margin'),
         ];
         $rows = [];
+        $decimal = static fn(Money $amount): string => $amount->format(withSymbol: false, withThousandsSeparator: false);
         foreach ([['by_product', (string) __('resale.report.by_product')], ['by_recipient', (string) __('resale.report.by_recipient')]] as [$block, $blockLabel]) {
             foreach ($report[$block] as $row) {
                 $rows[] = [
@@ -97,11 +98,11 @@ final class ResaleMarginReport {
                     $row['currency']->value,
                     $row['periods'],
                     $row['open'],
-                    self::decimal($row['expected_sale'], $row['currency']),
-                    self::decimal($row['billed'], $row['currency']),
-                    self::decimal($row['expected_purchase'], $row['currency']),
-                    $row['with_actual'] > 0 ? self::decimal($row['actual_purchase'], $row['currency']) : '',
-                    self::decimal($row['margin'], $row['currency']),
+                    $decimal($row['expected_sale']),
+                    $decimal($row['billed']),
+                    $decimal($row['expected_purchase']),
+                    $row['with_actual'] > 0 ? $decimal($row['actual_purchase']) : '',
+                    $decimal($row['margin']),
                 ];
             }
         }
@@ -130,17 +131,18 @@ final class ResaleMarginReport {
 
     /**
      * @param  array<string, MarginRow>  $target
-     * @param  array{periods: int, open: int, expected_sale: float, expected_purchase: float, actual_purchase: float, with_actual: int, billed: float}  $delta
+     * @param  array{periods: int, open: int, expected_sale: Money, expected_purchase: Money, actual_purchase: Money, with_actual: int, billed: Money}  $delta
      */
     private static function add(array &$target, string $key, string $label, CurrencyCode $currency, array $delta): void {
-        $row = $target[$key] ?? ['label' => $label, 'currency' => $currency, 'periods' => 0, 'open' => 0, 'expected_sale' => 0.0, 'expected_purchase' => 0.0, 'actual_purchase' => 0.0, 'with_actual' => 0, 'billed' => 0.0, 'margin' => 0.0];
+        $zero = Money::zero($currency, 2);
+        $row = $target[$key] ?? ['label' => $label, 'currency' => $currency, 'periods' => 0, 'open' => 0, 'expected_sale' => $zero, 'expected_purchase' => $zero, 'actual_purchase' => $zero, 'with_actual' => 0, 'billed' => $zero, 'margin' => $zero];
         $row['periods'] += $delta['periods'];
         $row['open'] += $delta['open'];
         $row['with_actual'] += $delta['with_actual'];
-        $row['expected_sale'] += $delta['expected_sale'];
-        $row['expected_purchase'] += $delta['expected_purchase'];
-        $row['actual_purchase'] += $delta['actual_purchase'];
-        $row['billed'] += $delta['billed'];
+        $row['expected_sale'] = $row['expected_sale']->plus($delta['expected_sale']);
+        $row['expected_purchase'] = $row['expected_purchase']->plus($delta['expected_purchase']);
+        $row['actual_purchase'] = $row['actual_purchase']->plus($delta['actual_purchase']);
+        $row['billed'] = $row['billed']->plus($delta['billed']);
         $target[$key] = $row;
     }
 
@@ -154,15 +156,12 @@ final class ResaleMarginReport {
     private static function finish(array $rows): array {
         foreach ($rows as &$row) {
             $purchase = $row['periods'] > 0 && $row['with_actual'] === $row['periods'] ? $row['actual_purchase'] : $row['expected_purchase'];
-            $row['margin'] = round($row['billed'] - $purchase, 2);
+            $row['margin'] = $row['billed']->minus($purchase);
         }
         unset($row);
-        usort($rows, static fn(array $a, array $b): int => $b['expected_sale'] <=> $a['expected_sale'] ?: strcmp($a['label'], $b['label']));
+        // Anzeigeordnung über alle Währungen hinweg (je Zeile eine Währung): Zahlenvergleich, kein Money-Vergleich.
+        usort($rows, static fn(array $a, array $b): int => $b['expected_sale']->getDecimal()->compareTo($a['expected_sale']->getDecimal()) ?: strcmp($a['label'], $b['label']));
 
         return $rows;
-    }
-
-    private static function decimal(float $value, CurrencyCode $currency): string {
-        return Money::ofFloat($value, $currency, 2)->format(withSymbol: false, withThousandsSeparator: false);
     }
 }

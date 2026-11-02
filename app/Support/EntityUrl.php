@@ -21,6 +21,7 @@ use App\Models\Project\Project;
 use App\Models\Protocol\Protocol;
 use App\Models\Safety\SafetyEvent;
 use App\Models\Sales\Lead;
+use App\Models\ServiceTicket\ServiceTicket;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Throwable;
@@ -67,6 +68,7 @@ final class EntityUrl {
                 Lead::class => route('leads.show', Sqid::encode(Lead::class, $id)),
                 LearningEnrollment::class => route('learning.my.show', Sqid::encode(LearningEnrollment::class, $id)),
                 ManufacturingOrder::class => route('manufacturing-orders.show', Sqid::encode(ManufacturingOrder::class, $id)),
+                ServiceTicket::class => route('service-tickets.show', Sqid::encode(ServiceTicket::class, $id)),
                 default => null,
             };
         } catch (Throwable) {

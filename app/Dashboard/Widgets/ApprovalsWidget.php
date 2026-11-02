@@ -55,7 +55,7 @@ class ApprovalsWidget extends Widget {
     }
 
     public function availableFor(User $user): bool {
-        return $user->isAdmin();
+        return $this->service->canApprove($user);
     }
 
     public function render(User $user): View|string {

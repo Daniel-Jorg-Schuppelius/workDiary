@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\ShopOrders;
 
-/** Geprüfte Verbindung eines Shops (eine je Organisation), siehe {@see IsShopConnection}. */
-interface ShopConnection {
-    public function isReady(): bool;
+use App\Plugins\Support\Contracts\ReadyConnection;
 
+/** Geprüfte Verbindung eines Shops (eine je Organisation), siehe {@see IsShopConnection}. */
+interface ShopConnection extends ReadyConnection {
     public function isImportConfirmed(): bool;
 
     public function sourceId(): ?string;

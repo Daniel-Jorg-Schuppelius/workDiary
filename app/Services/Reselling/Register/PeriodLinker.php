@@ -14,7 +14,9 @@ namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink};
+use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
+use App\Services\Reselling\Register\Concerns\LocksResalePeriods;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -27,6 +29,9 @@ use Illuminate\Support\Facades\DB;
  * die Quelle seines Morph-Typs aufgelöst.
  */
 final class PeriodLinker {
+    use AssertsStatusTransition;
+    use LocksResalePeriods;
+
     private readonly InvoiceMirror $mirror;
 
     public function __construct(?InvoiceMirror $mirror = null) {
@@ -245,13 +250,18 @@ final class PeriodLinker {
      * zeigt auf dieselbe Rechnung: dann wurde der Entwurf zur Rechnung.
      */
     public function settle(ResalePeriod $period, ?int $userId, ?string $note, bool $decided = true): void {
+        $this->lockAndRefresh($period);
         $period->load('links');
         $attributes = ['note' => $note !== null && $note !== '' ? $note : $period->note];
         // Verzicht und Einspruch sind Nutzerentscheidungen: ein Bezug, der dort gelöst
         // oder ergänzt wird, kippt sie nicht still — erst „Zurücknehmen" öffnet die Periode.
         if (! in_array($period->status, [PeriodStatus::Waived, PeriodStatus::Disputed], true)) {
+            $status = $period->statusFromCoverage($period->coveredMonths());
+            if ($status !== $period->status) {
+                $this->assertStatusTransition($period->status, $status);
+            }
             $attributes += [
-                'status' => $period->statusFromCoverage($period->coveredMonths()),
+                'status' => $status,
                 'decided_by_user_id' => $decided ? $userId : null,
                 'decided_at' => $decided ? now() : null,
             ];
@@ -260,5 +270,63 @@ final class PeriodLinker {
             $attributes += ['draft_reference' => null, 'draft_created_at' => null];
         }
         $period->forceFill($attributes)->save();
+    }
+
+    /**
+     * Verzichten oder strittig stellen — der eine Weg für Einzel- und
+     * Sammelaktion, Übernahme und Tafel (Sicherheitsaudit 2026-11-02, sec-03):
+     * nur fällige Perioden ohne Nutzerentscheidung; Vorschläge sind keine
+     * Entscheidung und gehen mit dem Verzicht weg. Schreibt das Audit.
+     *
+     * @throws \InvalidArgumentException Periode schon entschieden oder bevorstehend
+     * @throws \RuntimeException Statuswechsel laut Vertrag nicht erlaubt
+     */
+    public function decide(ResalePeriod $period, PeriodStatus $decision, string $reason, ?int $userId): void {
+        if (! in_array($decision, [PeriodStatus::Waived, PeriodStatus::Disputed], true)) {
+            throw new \InvalidArgumentException((string) __('resale.link.error.not_decidable'));
+        }
+        $reason = mb_substr(trim($reason), 0, 255);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($period, $decision, $reason, $userId): void {
+            $this->lockAndRefresh($period);
+            if (! $period->isDecidable()) {
+                throw new \InvalidArgumentException((string) __('resale.link.error.not_decidable'));
+            }
+            if ($period->status !== $decision) {
+                $this->assertStatusTransition($period->status, $decision);
+            }
+            $period->links()->where('origin', LinkOrigin::Proposed->value)->delete();
+            $period->unsetRelation('links');
+            $period->forceFill([
+                'status' => $decision,
+                'waived_reason' => $reason,
+                'decided_by_user_id' => $userId,
+                'decided_at' => now(),
+            ])->save();
+        });
+        $period->audit($decision === PeriodStatus::Waived ? 'resale_period.waived' : 'resale_period.disputed', ['reason' => $reason]);
+    }
+
+    /**
+     * Entscheidung zurücknehmen: Periode wieder offen, Vorschläge und
+     * automatische Bezüge weg, Status aus der Restdeckung (bestätigte und
+     * manuelle Bezüge bleiben). Schreibt das Audit.
+     *
+     * @throws \RuntimeException Statuswechsel laut Vertrag nicht erlaubt
+     */
+    public function reopen(ResalePeriod $period): void {
+        $previous = \Illuminate\Support\Facades\DB::transaction(function () use ($period): array {
+            $this->lockAndRefresh($period);
+            $previous = ['status' => $period->status->value, 'reason' => $period->waived_reason];
+            if ($period->status !== PeriodStatus::Open) {
+                $this->assertStatusTransition($period->status, PeriodStatus::Open);
+            }
+            $period->forceFill(['status' => PeriodStatus::Open, 'waived_reason' => null, 'decided_by_user_id' => null, 'decided_at' => null])->save();
+            $period->links()->whereIn('origin', [LinkOrigin::Proposed->value, LinkOrigin::Auto->value])->delete();
+            $period->unsetRelation('links');
+            $this->settle($period, null, null, false);
+
+            return $previous;
+        });
+        $period->audit('resale_period.reopened', $previous + ['status_now' => $period->status->value]);
     }
 }

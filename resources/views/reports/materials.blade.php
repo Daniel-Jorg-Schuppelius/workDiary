@@ -47,12 +47,12 @@
     </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <x-kpi-tile :label="__('Materialien')" :value="$totals['materials']" />
-        <x-kpi-tile :label="__('Verwendungen')" :value="$totals['usage_count']" />
+        <x-kpi-tile :label="__('Materialien')" :value="$totals['materials']" href="#materials-table" />
+        <x-kpi-tile :label="__('Verwendungen')" :value="$totals['usage_count']" href="#materials-table" />
         <x-kpi-tile :label="__('Netto Σ')" :value="$eur($totals['line_total_net'])" />
     </div>
 
-    <x-card>
+    <x-card id="materials-table" class="scroll-mt-24">
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Verbrauch pro Material') }}</h3>
         @if (empty($rows))
             <x-empty-state icon="inventory_2" :title="__('Im Zeitraum wurden keine Materialien verbucht.')" />

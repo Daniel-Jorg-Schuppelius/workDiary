@@ -78,4 +78,5 @@ return [
         'all' => 'Mostra tutto',
         'empty' => 'Al momento nessun elemento La attende.',
     ],
+    'overflow' => '{1} Un altro elemento non è elencato: la coda mostra al massimo :limit per fonte.|[2,*] :count altri elementi non sono elencati: la coda mostra al massimo :limit per fonte.',
 ];

@@ -46,6 +46,11 @@ class DisposalJobController extends Controller {
         Gate::authorize('viewAny', DisposalJob::class);
 
         $statusFilter = DisposalJobStatus::tryFrom($request->string('status')->toString())?->value;
+        // Kachelfilter (ux-pattern-katalog §4): offen bzw. im laufenden Jahr abgeschlossen; die Kachelwerte bleiben stehen.
+        $show = $request->string('show')->toString();
+        if (! in_array($show, ['open', 'completed_year'], true)) {
+            $show = '';
+        }
         $customerId = $request->filled('customer_id')
             ? Sqid::decodeOrNumeric(Customer::class, $request->input('customer_id'))
             : null;
@@ -55,11 +60,14 @@ class DisposalJobController extends Controller {
                 ->with(['customer', 'site', 'responsible'])
                 ->withCount('items')
                 ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter))
+                ->when($show === 'open', fn($q) => $q->open())
+                ->when($show === 'completed_year', fn($q) => $q->where('status', DisposalJobStatus::Completed->value)->whereBetween('completed_at', [now()->startOfYear(), now()->endOfYear()]))
                 ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
                 ->when($request->boolean('hazardous'), fn($q) => $q->whereHas('items', fn($i) => $i->where('is_hazardous', true)))
                 ->orderByDesc('id')
                 ->paginate(25)
                 ->withQueryString(),
+            'show' => $show,
             'openCount' => DisposalJob::query()->open()->count(),
             'hazardousOpenCount' => DisposalJob::query()->open()
                 ->whereHas('items', fn($q) => $q->where('is_hazardous', true))->count(),

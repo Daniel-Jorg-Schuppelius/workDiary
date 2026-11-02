@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Vikunja\Http\Controllers;
 
-use App\Plugins\Support\TaskSync\{SelfHostedInstance, TokenTaskImportAdminController};
+use App\Plugins\Support\TaskSync\TokenTaskImportAdminController;
 use App\Plugins\Vikunja\Api\VikunjaClientFactory;
 use App\Plugins\Vikunja\Models\{VikunjaConnection, VikunjaProjectLink};
 use App\Plugins\Vikunja\Services\VikunjaImportService;
@@ -42,16 +42,10 @@ class VikunjaAdminController extends TokenTaskImportAdminController {
     }
 
     protected function verifyConnection(int $organizationId): array {
-        $baseUrl = (string) VikunjaConfig::resolve($organizationId)['base_url'];
-        $account = app(VikunjaClientFactory::class)->for($organizationId)->account();
-
-        return [
-            'source_id' => SelfHostedInstance::key($baseUrl),
-            'source_name' => SelfHostedInstance::name($baseUrl) . ($account['version'] !== null ? ' · ' . $account['version'] : ''),
-            'source_url' => $baseUrl,
-            'account_id' => $account['id'],
-            'account_name' => $account['name'],
-        ];
+        return $this->selfHostedIdentity(
+            (string) VikunjaConfig::resolve($organizationId)['base_url'],
+            app(VikunjaClientFactory::class)->for($organizationId)->account(),
+        );
     }
 
     protected function providerName(): string {

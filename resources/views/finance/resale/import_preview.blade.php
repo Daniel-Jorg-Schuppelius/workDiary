@@ -75,7 +75,7 @@
                             <tr>
                                 <x-table.th>{{ __('resale.import.preview.col.change') }}</x-table.th>
                                 <x-table.th>{{ __('resale.field.label') }}</x-table.th>
-                                <x-table.th>{{ __('resale.field.company') }}</x-table.th>
+                                <x-table.th>{{ __('resale.field.company_name') }}</x-table.th>
                                 <x-table.th class="text-right">{{ __('resale.field.quantity') }}</x-table.th>
                                 <x-table.th>{{ __('resale.field.starts_on') }}</x-table.th>
                                 <x-table.th>{{ __('resale.field.status') }}</x-table.th>

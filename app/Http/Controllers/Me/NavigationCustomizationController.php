@@ -60,6 +60,7 @@ class NavigationCustomizationController extends Controller {
         $hidden = array_values(array_diff($allowed, $visible));
 
         $user->setPreference(NavigationRegistry::PREFERENCE_HIDDEN, $hidden);
+        NavigationRegistry::bumpUserStamp($user);
 
         return redirect()->route('me.navigation.customize')
             ->with('status', __('scope.customize.saved'));
@@ -79,6 +80,7 @@ class NavigationCustomizationController extends Controller {
             static fn(string $key): bool => $key !== (string) $data['key']
         ));
         $user->setPreference(NavigationRegistry::PREFERENCE_HIDDEN, $hidden);
+        NavigationRegistry::bumpUserStamp($user);
 
         return back()->with('status', __('scope.customize.unhidden'));
     }

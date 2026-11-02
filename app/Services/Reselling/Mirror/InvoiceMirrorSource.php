@@ -56,6 +56,17 @@ interface InvoiceMirrorSource {
     public function voidedLines(Organization $organization, ?array $recipientCustomerIds): Collection;
 
     /**
+     * Alle Positionen gültiger Belege ab `$from`, die aus einer dieser Serienvorlagen
+     * entstanden ({@see MirrorLine::$planKey}) — über den Vorlagenbezug des Belegs, nicht
+     * über eine Volllast aller Zeilen (Leistungsanalyse 2026-11-02, perfc-04). Quellen
+     * ohne Vorlagenbezug liefern eine leere Sammlung.
+     *
+     * @param  list<string>  $planKeys
+     * @return Collection<int, MirrorLine>
+     */
+    public function planLines(Organization $organization, array $planKeys, CarbonImmutable $from): Collection;
+
+    /**
      * Lizenzpositionen gültiger Gutschriften — negative Bezüge nur von Hand.
      *
      * @param  list<int>  $recipientCustomerIds

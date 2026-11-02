@@ -47,7 +47,7 @@
                     :hint="__('Offene Vorgänge mit abgelaufener Frist')"
                     :href="route('tenders.index', ['open_only' => 1])" />
         <x-kpi-tile :label="__('Abgaben in 14 Tagen')" :value="$deadlines['week']['count'] + $deadlines['fortnight']['count']"
-                    tone="warning" :hint="__('Nächste zwei Wochen')" />
+                    tone="warning" :hint="__('Nächste zwei Wochen')" :href="route('tenders.index', ['open_only' => 1])" />
         <x-kpi-tile :label="__('Trefferquote')" :value="$decision['win_rate'] !== null ? $decision['win_rate'] . ' %' : '—'"
                     tone="primary" format="raw"
                     :hint="__(':won gewonnen / :lost verloren', ['won' => $decision['won'], 'lost' => $decision['lost']])" />

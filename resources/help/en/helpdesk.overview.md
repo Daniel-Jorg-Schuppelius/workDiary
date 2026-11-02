@@ -1,7 +1,7 @@
 ---
 title: "Helpdesk & service desk"
 topic: helpdesk.overview
-version: 2
+version: 3
 keywords:
     - ticket system
     - create ticket
@@ -61,6 +61,17 @@ contract negotiations, the role the organization assigns to the step kind
 Administration). Approving, rejecting, asking a question and delegating
 have the same effect as on the record; a rejection ends the round, and
 self-approval stays blocked.
+
+**Business services and service map:** A ticket can carry a business service
+(such as "email" or "accounting server") and a service offering from the
+service catalogue; tickets can then be filtered, routed and reported by them.
+The service map shows how business services depend on each other: for each
+service, what it depends on, who needs it and who would be affected by an
+outage — together with the open tickets of those services. Dependencies are
+maintained on the business service (multiple selection); a cycle is rejected.
+On the ticket, the "Impact" card shows which other business services an
+outage of the reported service would hit and how many tickets are open there —
+so an incident can be prioritised before the follow-up reports arrive.
 
 **Satisfaction & reports:** After closure, the customer can leave a short
 rating in the portal — one per ticket. Reports show volume per queue,

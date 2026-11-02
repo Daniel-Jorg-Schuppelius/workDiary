@@ -16,9 +16,11 @@ use App\Enums\Reselling\{LinkOrigin, PeriodStatus, SubscriptionKind};
 use App\Models\Customer\ForeignCustomer;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
+use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Platform\Catalog\ArticleCatalog;
-use App\Services\Reselling\Marketplace\{MarketplaceCompany, NameTokenMatcher, ProductNameMatcher};
+use App\Services\Reselling\Marketplace\{NameTokenMatcher, ProductNameMatcher};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
+use App\Services\Reselling\Register\Concerns\LocksResalePeriods;
 use App\Settings\SettingScope;
 use App\Support\Query\DateRange;
 use App\Support\Setting;
@@ -45,6 +47,9 @@ use RuntimeException;
  * wird aus der Restdeckung neu bewertet.
  */
 final class LinkProposer {
+    use AssertsStatusTransition;
+    use LocksResalePeriods;
+
     public const WINDOW_BEFORE = 90;
     public const WINDOW_AFTER = 730;
 
@@ -287,6 +292,8 @@ final class LinkProposer {
             // Laufstempel ist Systemzustand, keine Einstellung des Nutzers: ohne Modell-Events,
             // sonst stünde stündlich eine „settings geändert“-Zeile im Audit der Organisation.
             Organization::withoutEvents(static fn() => Setting::set(self::SETTING_LAST_RUN, CarbonImmutable::now()->toIso8601String(), SettingScope::Organization, $organization, null));
+            // Ohne Modell-Events stempelt der Lauf die Reselling-Caches selbst (Leistungsanalyse 2026-11-02).
+            ResaleCacheStamp::bump((int) $organization->id);
         } finally {
             $lock->release();
         }
@@ -351,7 +358,11 @@ final class LinkProposer {
             ->with('links')
             ->get();
         foreach ($periods as $period) {
+            $this->lockAndRefresh($period);
             $status = $period->statusFromCoverage($period->coveredMonths());
+            if ($status !== $period->status) {
+                $this->assertStatusTransition($period->status, $status);
+            }
             $attributes = ['status' => $status];
             if ($status !== PeriodStatus::Billed) {
                 $attributes += ['decided_at' => null, 'decided_by_user_id' => null];
@@ -379,8 +390,10 @@ final class LinkProposer {
             ->with('links')
             ->get();
         foreach ($periods as $period) {
+            $this->lockAndRefresh($period);
             $status = $period->statusFromCoverage($period->coveredMonths());
             if ($period->status !== $status) {
+                $this->assertStatusTransition($period->status, $status);
                 $period->forceFill(['status' => $status])->save();
             }
         }
@@ -533,6 +546,7 @@ final class LinkProposer {
         foreach ($states as $state) {
             $result['periods']++;
             $period = $state['period'];
+            $this->lockAndRefresh($period);
             $status = $period->statusFromCoverage($state['covered']);
             if ($status === PeriodStatus::Billed) {
                 $result['linked']++;
@@ -540,6 +554,7 @@ final class LinkProposer {
                 $result['partial']++;
             }
             if ($period->status !== $status) {
+                $this->assertStatusTransition($period->status, $status);
                 $period->forceFill(['status' => $status])->save();
             }
             if ($status === PeriodStatus::Billed && $this->autoConfirm($state, $linesByIdentity)) {
@@ -576,7 +591,7 @@ final class LinkProposer {
         }
         $termMonths = $period->termMonths();
         $product = $this->productKeys[$subscription->id] ?? $subscription->productKey();
-        $mentionKeys = $subscription->foreignCustomer !== null ? $this->mentionKeys($subscription->foreignCustomer) : null;
+        $foreign = $subscription->foreignCustomer;
 
         $candidates = [];
         foreach ($lines as $line) {
@@ -598,7 +613,7 @@ final class LinkProposer {
             if (! $this->matchesProduct($subscription, $line)) {
                 continue;
             }
-            $mentions = $mentionKeys !== null && $this->mentions($mentionKeys, $line->text() . ' ' . (string) $line->voucherText);
+            $mentions = $foreign !== null && NameTokenMatcher::mentionedIn($foreign->name, $line->text() . ' ' . (string) $line->voucherText, self::mentionKeys($foreign));
             $distance = abs($date->diffInDays($period->starts_on));
             if ($nearestOnly && ($nearest[$identity] ?? null) !== $index) {
                 continue;
@@ -789,13 +804,6 @@ final class LinkProposer {
      * @return array<string, int|null>
      */
     private function nearestPeriods(array $states, Collection $lines, array $recipientBySubscription): array {
-        /** @var array<int, array{tokens: list<string>, squashed: list<string>}|null> $mentionKeys */
-        $mentionKeys = [];
-        foreach ($states as $state) {
-            $subscription = $state['subscription'];
-            $mentionKeys[$subscription->id] ??= $subscription->foreignCustomer !== null ? $this->mentionKeys($subscription->foreignCustomer) : null;
-        }
-
         $nearest = [];
         foreach ($lines as $line) {
             $identity = $line->identity();
@@ -813,10 +821,10 @@ final class LinkProposer {
                     continue;
                 }
                 $period = $state['period'];
-                $keys = $mentionKeys[$state['subscription']->id] ?? null;
+                $foreign = $state['subscription']->foreignCustomer;
                 $matching[$index] = [
                     'distance' => (int) abs($date->diffInDays($period->starts_on)),
-                    'mentioned' => $keys !== null && $this->mentions($keys, $text),
+                    'mentioned' => $foreign !== null && NameTokenMatcher::mentionedIn($foreign->name, $text, self::mentionKeys($foreign)),
                     'holder' => $state['subscription']->foreign_customer_id !== null ? 'f' . $state['subscription']->foreign_customer_id : 'c' . $state['subscription']->customer_id,
                 ];
                 if (! $date->lessThan($period->starts_on) && ! $date->greaterThan($period->ends_on)) {
@@ -844,66 +852,14 @@ final class LinkProposer {
     }
 
     /**
-     * Suchschlüssel eines Endkunden für die Nennung im Belegtext: Kern-Tokens
-     * des Namens, der Name ohne Leerzeichen („Hof 24" ↔ „Hof24") und der
-     * Matchcode des Fremdkunden. Der Reseller schreibt den Endkunden meist
-     * verkürzt in den Schlusstext („Vielen Dank … M365 Hof24").
+     * Weitere Schreibweisen des Endkunden für {@see NameTokenMatcher::mentionedIn()}:
+     * Firma laut Anbieter und Matchcode — der Reseller schreibt den Endkunden
+     * meist verkürzt in den Schlusstext („Vielen Dank … M365 STBK").
      *
-     * @return array{tokens: list<string>, squashed: list<string>}
+     * @return list<string|null>
      */
-    private function mentionKeys(ForeignCustomer $foreign): array {
-        $squashed = [];
-        foreach ([$foreign->name, $foreign->company, $foreign->matchcode] as $candidate) {
-            $key = self::squash((string) $candidate);
-            if (mb_strlen($key) >= 4) {
-                $squashed[] = $key;
-            }
-        }
-        // Auch der Name ohne Rechtsform („Hof 24 GmbH" → „hof24").
-        $core = self::squash(implode(' ', NameTokenMatcher::withoutLegalForm($foreign->name)));
-        if (mb_strlen($core) >= 4) {
-            $squashed[] = $core;
-        }
-
-        return ['tokens' => NameTokenMatcher::significantTokens($foreign->name), 'squashed' => array_values(array_unique($squashed))];
-    }
-
-    /**
-     * Nennt der Text den Endkunden? Alle Kern-Tokens des Namens als Wörter
-     * (mindestens eines mit ≥ 4 Zeichen) — oder die leerzeichenfreie Form von
-     * Name, Firma oder Matchcode als Teil des leerzeichenfreien Textes.
-     *
-     * @param  array{tokens: list<string>, squashed: list<string>}  $keys
-     */
-    private function mentions(array $keys, string $text): bool {
-        $words = array_flip(explode(' ', MarketplaceCompany::normalizeName($text)));
-        if ($keys['tokens'] !== []) {
-            $long = false;
-            $all = true;
-            foreach ($keys['tokens'] as $token) {
-                if (! isset($words[$token])) {
-                    $all = false;
-                    break;
-                }
-                $long = $long || mb_strlen($token) >= 4;
-            }
-            if ($all && $long) {
-                return true;
-            }
-        }
-        $flat = self::squash($text);
-        foreach ($keys['squashed'] as $key) {
-            if (str_contains($flat, $key)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /** Normalisiert und entfernt alles außer Buchstaben und Ziffern. */
-    private static function squash(string $value): string {
-        return str_replace(' ', '', MarketplaceCompany::normalizeName($value));
+    private static function mentionKeys(ForeignCustomer $foreign): array {
+        return [$foreign->company, $foreign->matchcode];
     }
 
     /**

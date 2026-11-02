@@ -16,7 +16,7 @@ use APIToolkit\API\Authentication\OAuth2\OAuth2ClientCredentialsAuthentication;
 use App\Plugins\Shopware\Exceptions\ShopwareApiException;
 use App\Plugins\Shopware\ShopwarePlugin;
 use App\Plugins\Support\{GuardsPluginApiResponses, PluginApiClient, PluginHttpFactory};
-use App\Plugins\Support\TaskSync\IncompleteRemoteReadException;
+use App\Plugins\Support\TaskSync\{IncompleteRemoteReadException, OffsetPage, RemotePages};
 use Carbon\CarbonImmutable;
 use Generator;
 
@@ -58,8 +58,7 @@ class ShopwareClient {
     public function orders(CarbonImmutable $since): Generator {
         $from = $since->utc()->format('Y-m-d H:i:s.v');
         $seen = 0;
-        $lastTotal = null;
-        for ($page = 1; $page <= $this->maxPages; $page++) {
+        $pages = RemotePages::offset(function (int $page) use ($from, &$seen): OffsetPage {
             $body = $this->guard($this->api()->postJson($this->url('/search/order'), [
                 'page' => $page,
                 'limit' => $this->pageSize,
@@ -93,27 +92,20 @@ class ShopwareClient {
             if (! is_array($orders) || ! array_is_list($orders) || ! is_int($total)) {
                 throw new IncompleteRemoteReadException('invalid_response');
             }
-            // Fällt eine Bestellung vor der Seitengrenze weg, rückt eine andere unbemerkt nach vorn.
-            if ($lastTotal !== null && $total < $lastTotal) {
+            $seen += count(array_filter($orders, 'is_array'));
+            // Eine leere Seite vor der Gesamtzahl: etwas ist über die Seitengrenze gerückt.
+            if ($orders === [] && $seen < $total) {
                 throw new IncompleteRemoteReadException('listing_changed');
             }
-            $lastTotal = $total;
-            foreach ($orders as $order) {
-                if (is_array($order)) {
-                    $seen++;
 
-                    yield $order;
-                }
-            }
-            if ($seen >= $total) {
-                return;
-            }
-            if ($orders === []) {
-                throw new IncompleteRemoteReadException('listing_changed');
+            return new OffsetPage($orders, $seen < $total, $total);
+        }, $this->maxPages);
+
+        foreach ($pages as $order) {
+            if (is_array($order)) {
+                yield $order;
             }
         }
-
-        throw new IncompleteRemoteReadException('page_limit');
     }
 
     /**

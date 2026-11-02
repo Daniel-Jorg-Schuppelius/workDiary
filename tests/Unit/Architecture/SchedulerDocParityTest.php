@@ -10,6 +10,7 @@
 
 namespace Tests\Unit\Architecture;
 
+use App\Scheduling\SchedulerRegisterDocument;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 
@@ -24,9 +25,36 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
  * Zusätzlich gilt die Plugin-Zusicherung aus Feature 060 (Polling = verlässliche
  * Quelle) für zammad/github/gitlab:sync. Fehlt das Schwester-Repo (CI, frischer
  * Klon), prüft der Test nur die feste Liste.
+ *
+ * Umgekehrte Richtung (Vollscan 2026-11-02, gap-03): 18 neue Scheduler-Befehle
+ * standen in keiner Betriebsseite. Das Register `konventionen/scheduler-register.md`
+ * wird aus der Registry erzeugt (`scheduler:doc`) und muss dem Generatorstand
+ * entsprechen — wie `modules:check` das Modulregister prüft.
  */
 class SchedulerDocParityTest extends TestCase {
     use ScansSourceTree;
+
+    public function test_scheduler_register_matches_registry(): void {
+        $register = $this->repoRoot() . '/' . SchedulerRegisterDocument::RELATIVE_PATH;
+        if (! is_file($register)) {
+            // Ohne Schwester-Repo gibt es kein Register zu vergleichen (CI, frischer Klon).
+            $this->addToAssertionCount(1);
+
+            return;
+        }
+
+        /** @var array{jobs: array<string, array<string, mixed>>} $config */
+        $config = require $this->repoRoot() . '/config/scheduler.php';
+        /** @var array{job: array<string, mixed>} $lang */
+        $lang = require $this->repoRoot() . '/lang/de/scheduler.php';
+        $rendered = SchedulerRegisterDocument::fromConfig($config['jobs'], $lang['job'])->render();
+
+        $this->assertSame(
+            SchedulerRegisterDocument::generatedPart($rendered),
+            SchedulerRegisterDocument::generatedPart((string) file_get_contents($register)),
+            'konventionen/scheduler-register.md ist veraltet — php artisan scheduler:doc ausführen (Registry, Versatz, Plugin-Bindung, Vorprüfung oder Job-Name geändert).',
+        );
+    }
 
     /** @var list<string> Signaturen, die laut Feature-Doku geplant sein müssen */
     private const DOCUMENTED_COMMANDS = [

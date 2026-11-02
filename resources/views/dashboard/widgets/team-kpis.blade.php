@@ -9,8 +9,8 @@
   Kachel „Team-Kennzahlen" (nur Admins) — Daten: TeamKpisWidget.
 --}}
 <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
-    <x-kpi-tile :label="__('Offen (Team)')" :value="$kpi['open_entries'] ?? 0" tone="info" />
-    <x-kpi-tile :label="__('In Bearbeitung (Team)')" :value="$kpi['progress_entries'] ?? 0" tone="info" />
-    <x-kpi-tile :label="__('Heute archiviert')" :value="$kpi['archived_today'] ?? 0" tone="info" />
-    <x-kpi-tile :label="__('Mitarbeitende')" :value="$kpi['user_count'] ?? 0" tone="info" />
+    <x-kpi-tile :label="__('Offen (Team)')" :value="$kpi['open_entries'] ?? 0" tone="info" :href="route('diary.index', ['status' => 'open'])" />
+    <x-kpi-tile :label="__('In Bearbeitung (Team)')" :value="$kpi['progress_entries'] ?? 0" tone="info" :href="route('diary.index', ['status' => \App\Enums\Diary\Status::InProgress->value])" />
+    <x-kpi-tile :label="__('Heute archiviert')" :value="$kpi['archived_today'] ?? 0" tone="info" :href="route('diary.index', ['archived' => 1])" />
+    <x-kpi-tile :label="__('Mitarbeitende')" :value="$kpi['user_count'] ?? 0" tone="info" :href="route('org.members.index')" />
 </div>

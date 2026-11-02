@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\PrestaShop;
 
-use App\Plugins\Support\PluginSettingsResolver;
+use App\Plugins\Support\{PluginSettingsResolver, SelfHostedConfig};
 use App\Support\Tz;
 
 /** PrestaShop-Zugang je Organisation aus den Plugin-Einstellungen. */
@@ -20,15 +20,14 @@ final class PrestaShopConfig {
     /** @return array{base_url: ?string, api_key: ?string, shop_timezone: ?string, page_size: int, max_pages: int} */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(PrestaShopPlugin::ID, $organizationId);
-        $baseUrl = $r->string('base_url', trim: true);
         $timezone = $r->string('shop_timezone', trim: true);
 
         return [
-            'base_url' => $baseUrl !== null ? rtrim($baseUrl, '/') : null,
+            'base_url' => SelfHostedConfig::baseUrl($r),
             'api_key' => $r->string('api_key', trim: true),
             'shop_timezone' => $timezone !== null && Tz::isValid($timezone) ? $timezone : null,
-            'page_size' => max(1, min(500, (int) config('plugins.prestashop.page_size', 100))),
-            'max_pages' => max(1, (int) config('plugins.prestashop.max_pages', 200)),
+            'page_size' => SelfHostedConfig::pageSize(PrestaShopPlugin::ID, 100, cap: 500),
+            'max_pages' => SelfHostedConfig::maxPages(PrestaShopPlugin::ID, 200),
         ];
     }
 

@@ -12,11 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Register;
 
-use App\Enums\Reselling\{PeriodStatus, SubscriptionStatus};
+use App\Enums\Reselling\SubscriptionStatus;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResaleAccountAllocation, ResalePeriod, ResalePlanLink, ResaleSubscription};
 use App\Services\Reselling\Plan\{PlanLine, PlanSection, PlanTemplate, TemplateExecution};
-use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Collection;
@@ -48,8 +47,7 @@ final class LicenseAccountOverview {
         $groups = $this->accounts->groups($organization);
         $openBySubscription = ResalePeriod::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
-            ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
-            ->where('starts_on', '<', DateRange::dayAfter($reference))
+            ->due($reference)
             ->selectRaw('subscription_id, COUNT(*) AS n')
             ->groupBy('subscription_id')
             ->pluck('n', 'subscription_id');
@@ -132,10 +130,8 @@ final class LicenseAccountOverview {
                 $year = (int) $period->starts_on->format('Y');
                 $years[$year] = true;
                 $cells[$year][] = ['period' => $period, 'vouchers' => array_values(array_unique(array_filter($period->links->pluck('voucher_number')->all())))];
-                if (! $subscription->is_own_holding && in_array($period->status, [PeriodStatus::Open, PeriodStatus::Partial], true) && ! $period->starts_on->greaterThan($reference)) {
-                    $due[] = $period;
-                }
             }
+            $due = [...$due, ...$subscription->duePeriods($reference)->all()];
             $rows[] = ['subscription' => $subscription, 'product' => $subscription->productName(), 'holder' => $subscription->holderLabel(), 'cells' => $cells];
         }
         ksort($years);
@@ -185,7 +181,7 @@ final class LicenseAccountOverview {
         $rows = [];
         foreach ($group->contracts() as $contract) {
             $key = $contract->productKey();
-            $rows[$key] ??= ['expected_purchase' => null, 'actual_purchase' => null, 'expected_sale' => null, 'margin' => null, 'with_actual' => 0, 'periods' => 0, 'purchase' => 0.0, 'currency' => $contract->currency];
+            $rows[$key] ??= ['expected_purchase' => null, 'actual_purchase' => null, 'expected_sale' => null, 'margin' => null, 'with_actual' => 0, 'periods' => 0, 'purchase' => Money::zero($contract->currency, 2), 'currency' => $contract->currency];
             foreach ($contract->periods as $period) {
                 // Fällig und in den letzten zwölf Monaten (noch) laufend.
                 if ($period->starts_on->greaterThan($reference) || $period->ends_on->lessThan($since)) {
@@ -199,9 +195,12 @@ final class LicenseAccountOverview {
                 }
                 if ($actual !== null) {
                     $rows[$key]['with_actual']++;
-                    $rows[$key]['actual_purchase'] = ($rows[$key]['actual_purchase'] ?? Money::zero($contract->currency))->plus(Money::ofFloat($actual, $contract->currency, 2));
+                    $rows[$key]['actual_purchase'] = ($rows[$key]['actual_purchase'] ?? Money::zero($contract->currency))->plus($actual);
                 }
-                $rows[$key]['purchase'] += $actual ?? $expected?->toFloat() ?? 0.0;
+                $purchase = $actual ?? $expected;
+                if ($purchase !== null) {
+                    $rows[$key]['purchase'] = $rows[$key]['purchase']->plus($purchase);
+                }
                 if (! $contract->is_own_holding && $period->expected_sale !== null) {
                     $rows[$key]['expected_sale'] = ($rows[$key]['expected_sale'] ?? Money::zero($period->expected_sale->getCurrency()))->plus($period->expected_sale);
                 }
@@ -217,7 +216,7 @@ final class LicenseAccountOverview {
                 'expected_purchase' => $row['expected_purchase'],
                 'actual_purchase' => $row['actual_purchase'],
                 'expected_sale' => $sale,
-                'margin' => $sale !== null ? $sale->minus(Money::ofFloat($row['purchase'], $sale->getCurrency(), 2)) : null,
+                'margin' => $sale !== null ? $sale->minus($row['purchase']) : null,
                 'with_actual' => $row['with_actual'],
                 'periods' => $row['periods'],
             ];

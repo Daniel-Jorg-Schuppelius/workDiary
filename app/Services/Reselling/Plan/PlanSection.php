@@ -77,7 +77,7 @@ final class PlanSection {
         }
         unset($entry);
 
-        return ['available' => true, 'templates' => $templates, 'findings' => $this->audit->findings($organization, $subscriptionIds), 'vouchers' => $this->noteVouchers($organization, $links, $shown, $recipientIds)];
+        return ['available' => true, 'templates' => $templates, 'findings' => $this->audit->findings($organization, $subscriptionIds, null, $subscriptions), 'vouchers' => $this->noteVouchers($organization, $links, $shown, $recipientIds)];
     }
 
     /**

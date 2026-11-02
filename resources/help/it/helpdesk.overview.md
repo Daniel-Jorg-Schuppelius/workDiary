@@ -1,7 +1,7 @@
 ---
 title: "Helpdesk e service desk"
 topic: helpdesk.overview
-version: 2
+version: 3
 keywords:
     - sistema di ticket
     - aprire un ticket
@@ -65,6 +65,18 @@ Contabilità, tecnica → Capo team, risorse umane → Gestione del personale).
 Approvare, respingere, chiedere chiarimenti e delegare hanno lo stesso
 effetto che nella pratica; un rifiuto chiude il turno e
 l'auto-approvazione resta bloccata.
+
+**Servizi di business e mappa dei servizi:** un ticket può portare un
+servizio di business (per esempio «e-mail» o «server contabilità») e
+un'offerta di servizio del catalogo; i ticket si possono poi filtrare,
+instradare e valutare nei report in base a essi. La mappa dei servizi mostra
+come i servizi di business dipendono l'uno dall'altro: per ogni servizio, da
+cosa dipende, chi ne ha bisogno e chi sarebbe coinvolto in caso di guasto —
+insieme ai ticket aperti di quei servizi. Le dipendenze si curano sul servizio
+di business (selezione multipla); un ciclo viene rifiutato. Sul ticket la
+scheda «Impatto» mostra quali altri servizi di business colpirebbe un guasto
+del servizio segnalato e quanti ticket vi sono aperti — così un'anomalia si
+può prioritizzare prima che arrivino le segnalazioni successive.
 
 **Soddisfazione e report:** dopo la chiusura, il cliente può lasciare
 nel portale una breve valutazione — una per ticket. I report mostrano

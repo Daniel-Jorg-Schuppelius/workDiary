@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Concerns;
 
+use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -25,5 +26,18 @@ trait ResolvesPortalUser {
         abort_unless($user instanceof User && $user->customer_id !== null, 403);
 
         return $user;
+    }
+
+    /**
+     * Kunde des Portalkontos: vorhanden und in der Organisation des Kontos,
+     * sonst 403 — eine Antwort für alle Portalflächen (Konsolidierungs-Audit
+     * 2026-11-02, kon-13).
+     */
+    protected function portalCustomer(): Customer {
+        $user = $this->portalUser();
+        $customer = $user->customer;
+        abort_unless($customer instanceof Customer && (int) $customer->organization_id === (int) $user->organization_id, 403);
+
+        return $customer;
     }
 }

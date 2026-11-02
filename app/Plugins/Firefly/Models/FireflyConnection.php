@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Firefly\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
+use App\Plugins\Support\Contracts\ReadyConnection;
 use App\Plugins\Support\OAuthConnectionStatus;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -38,7 +39,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $disabled_at
  * @property Carbon|null $connected_at
  */
-class FireflyConnection extends Model {
+class FireflyConnection extends Model implements ReadyConnection {
     use Auditable;
     use BelongsToOrganization;
     use HasConnectionHealth;

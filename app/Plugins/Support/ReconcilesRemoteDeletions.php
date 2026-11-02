@@ -43,6 +43,10 @@ trait ReconcilesRemoteDeletions {
             ->forPlugin($organization, $this->pluginId(), $externalType)
             ->where('referenceable_type', (new TimeEntry)->getMorphClass())
             ->whereNotIn('external_id', $seenKeys)
+            // Was erst nach dem Abrufbeginn verknüpft wurde (Outbox-Anlage und
+            // Stunden-Push in derselben Minute), hat dieser Lauf nie gelesen —
+            // sonst löschte er es als „drüben gelöscht“ (Befund 2026-11-02).
+            ->where('created_at', '<', $window->deletionCutoff())
             ->whereIn('referenceable_id', TimeEntry::query()->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->whereBetween('date', DateRange::days($window->from, $window->to))

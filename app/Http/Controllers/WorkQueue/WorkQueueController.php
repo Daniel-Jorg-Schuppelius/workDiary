@@ -75,6 +75,8 @@ class WorkQueueController extends Controller {
             ),
             'sources' => $sources,
             'now' => $now,
+            // Über die Obergrenze je Quelle hinaus nur gezählt (perfc-06).
+            'overflow' => (int) array_sum($queue->overflowFor($viewer, $this->currentOrganization(), $sources)),
             'filters' => ['category' => $category->value ?? '', 'source' => $source, 'mine' => $mine],
             'sort' => $sort,
             'dir' => $dir,

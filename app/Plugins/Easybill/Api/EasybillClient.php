@@ -195,6 +195,31 @@ class EasybillClient {
         return ['content' => $body, 'mime' => (string) ($response->header('Content-Type') ?: 'application/octet-stream')];
     }
 
+    // ── Artikel ─────────────────────────────────────────────────────────
+
+    /**
+     * Eine Seite des Artikelstamms (`GET /positions`, Feature 185, gap-09):
+     * `Position` mit `id`, `type` (PRODUCT/SERVICE/TEXT), `number`,
+     * `description`, `unit`, `vat_percent`, `sale_price` in Cent, `price_type`
+     * (BRUTTO/NETTO), `archived`; Umschlag `page`/`pages`/`limit`/`total`.
+     *
+     * @return array{rows: list<array<string, mixed>>, pages: int, total: ?int}
+     */
+    public function positions(int $page, int $limit): array {
+        $body = (array) $this->guard(
+            $this->api()->requestResponse('get', $this->baseUrl . '/positions', ['query' => ['page' => $page, 'limit' => $limit]]),
+            '/positions',
+        );
+        $pages = $body['pages'] ?? null;
+        $total = $body['total'] ?? null;
+
+        return [
+            'rows' => array_values(array_filter($this->rows($body), 'is_array')),
+            'pages' => is_numeric($pages) ? (int) $pages : $page,
+            'total' => is_numeric($total) ? (int) $total : null,
+        ];
+    }
+
     // ── Intern ──────────────────────────────────────────────────────────
 
     /**

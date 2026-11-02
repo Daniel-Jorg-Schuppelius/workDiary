@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Reselling;
 
 use App\Casts\MoneyCast;
-use App\Enums\Reselling\{BillingFrequency, PeriodStatus, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
+use App\Enums\Reselling\{BillingFrequency, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Contract\Contract;
 use App\Models\Customer\{Customer, ForeignCustomer};
@@ -25,7 +25,7 @@ use App\Services\Reselling\Marketplace\ProductNameMatcher;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
-use Illuminate\Database\Eloquent\{Builder, Model};
+use Illuminate\Database\Eloquent\{Builder, Collection, Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 /**
@@ -706,13 +706,27 @@ class ResaleSubscription extends Model {
         return $this->purchase_unit_price === null ? null : DocumentTotalsCalculator::lineNet($this->quantity, $this->purchase_unit_price);
     }
 
-    /** Offene Perioden mit erreichtem Beginn (Stichtag in Ortszeit) — das, was noch nicht berechnet ist. */
-    public function openPeriodCount(): int {
+    /**
+     * Fällige, nicht entschiedene Perioden dieses Abos — dieselbe Regel wie
+     * {@see ResalePeriod::scopeDue()} auf den geladenen Perioden; eigener
+     * Bestand wird nie berechnet und hat nie fällige Perioden.
+     *
+     * @return Collection<int, ResalePeriod>
+     */
+    public function duePeriods(?CarbonImmutable $reference = null, bool $withPartial = true): Collection {
         if ($this->is_own_holding) {
-            return 0; // eigener Bestand wird nie berechnet (wie ResalePeriod::scopeDue)
+            return $this->periods->take(0);
         }
-        $today = ResalePeriod::today();
+        $reference ??= ResalePeriod::today();
+        $statuses = ResalePeriod::dueStatuses($withPartial);
 
-        return $this->periods->filter(static fn(ResalePeriod $p): bool => $p->status === PeriodStatus::Open && ! $p->starts_on->greaterThan($today))->count();
+        return $this->periods
+            ->filter(static fn(ResalePeriod $p): bool => in_array($p->status, $statuses, true) && ! $p->starts_on->greaterThan($reference))
+            ->values();
+    }
+
+    /** Zahl der fälligen Perioden ({@see duePeriods()}) — das, was noch nicht berechnet ist. */
+    public function openPeriodCount(): int {
+        return $this->duePeriods()->count();
     }
 }

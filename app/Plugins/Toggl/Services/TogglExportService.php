@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Plugins\Toggl\Services;
 
-use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
@@ -24,7 +23,6 @@ use App\Plugins\Toggl\Exceptions\TogglApiException;
 use App\Plugins\Toggl\Support\TogglQuotaGuard;
 use App\Plugins\Toggl\TogglPlugin;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -32,7 +30,7 @@ use Illuminate\Support\Facades\Cache;
  * Sitzungen) nach Toggl ({@see AbstractTimeEntryPushService}-Skelett).
  *
  * Anders als Kimai/OpenProject ist das SPIEGELUNG, kein „Rückbuchen":
- * {@see markPushed()} ist ein No-op — die Einträge bleiben lokal abrechenbar
+ * {@see mirrorsEntries()} — die Einträge bleiben lokal abrechenbar
  * (`exported` bleibt false) und über die zusätzlich geschriebene
  * `entry`-Reference writeback-fähig. Der Duplikat-Schutz gegen das
  * Import-Echo des stündlichen Syncs: nach dem POST wird neben der
@@ -90,25 +88,8 @@ class TogglExportService extends AbstractTimeEntryPushService {
         return array_keys($this->projectMap);
     }
 
-    protected function scopeCandidates(Builder $query): Builder {
-        return $query
-            ->whereNotNull('started_at')
-            ->whereNotNull('ended_at')
-            ->where('kind', TimeEntryKind::Work->value)
-            // Import-Echo + Push-Idempotenz auf Query-Ebene: JEDE bestehende
-            // Toggl-Referenz (importiert ODER gepusht) schließt aus — nötig,
-            // weil markPushed() hier exported nicht setzt und die Einträge
-            // sonst dauerhaft als „skipped" durch jeden Lauf liefen.
-            ->whereNotExists(function ($sub): void {
-                $sub->from('external_references')
-                    ->whereColumn('external_references.referenceable_id', 'time_entries.id')
-                    ->where('external_references.referenceable_type', (new TimeEntry)->getMorphClass())
-                    ->where('external_references.plugin_id', TogglPlugin::ID)
-                    ->whereIn('external_references.external_type', [
-                        MatchingTimeImportService::EXT_TYPE_ENTRY,
-                        self::EXT_TYPE_PUSHED,
-                    ]);
-            });
+    protected function mirrorsEntries(): bool {
+        return true;
     }
 
     protected function shouldSkip(Organization $organization, TimeEntry $entry): bool {
@@ -145,10 +126,6 @@ class TogglExportService extends AbstractTimeEntryPushService {
     }
 
     /** Spiegelung statt Rückbuchung: lokal bleibt der Eintrag abrechenbar. */
-    protected function markPushed(TimeEntry $entry): void {
-        // bewusst kein exported=true — siehe Klassen-Docblock.
-    }
-
     protected function isExpectedFailure(\Throwable $e): bool {
         return $e instanceof TogglApiException;
     }

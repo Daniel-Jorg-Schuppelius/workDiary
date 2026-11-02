@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\SevDesk\Console;
 
 use App\Models\Platform\Organization;
-use App\Plugins\SevDesk\Services\{SevDeskInvoiceNumberPull, SevDeskVoucherPullService};
+use App\Plugins\SevDesk\Services\{SevDeskArticleCatalogSource, SevDeskInvoiceNumberPull, SevDeskVoucherPullService};
 use App\Plugins\SevDesk\SevDeskPlugin;
 use App\Plugins\Support\Console\ChecksPluginSwitch;
+use App\Services\Finance\Accounting\Articles\ArticleMirror;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -32,7 +33,7 @@ class SevDeskPullVouchersCommand extends Command {
 
     protected $description = 'Spiegelt sevDesk-Belege in die Belegliste (Feature 122).';
 
-    public function handle(SevDeskVoucherPullService $pull, SevDeskInvoiceNumberPull $numbers): int {
+    public function handle(SevDeskVoucherPullService $pull, SevDeskInvoiceNumberPull $numbers, SevDeskArticleCatalogSource $articles, ArticleMirror $mirror): int {
         $orgOption = $this->option('organization');
         $pages = max(1, (int) $this->option('pages'));
         $totals = ['read' => 0, 'created' => 0, 'updated' => 0];
@@ -47,6 +48,10 @@ class SevDeskPullVouchersCommand extends Command {
                 continue;
             }
             try {
+                // Artikelkatalog vor den Belegen (gap-09): Positionen tragen so gleich den Katalogschlüssel.
+                if ($articles->isConfigured((int) $organization->id)) {
+                    $mirror->sync((int) $organization->id, $articles);
+                }
                 $result = $pull->pull((int) $organization->id, $pages);
                 foreach ($totals as $key => $value) {
                     $totals[$key] = $value + $result[$key];

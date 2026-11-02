@@ -32,9 +32,9 @@
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <x-kpi-tile :label="__('Befunde gesamt')" :value="$summary['total']" tone="primary" format="int"
                     :href="route('reports.arbzg-compliance')" />
-        <x-kpi-tile :label="__('Betroffene Mitarbeitende')" :value="$summary['employees']" tone="info" format="int" />
-        <x-kpi-tile :label="__('Offen (ohne Korrektur)')" :value="$openCount" :tone="$openCount > 0 ? 'error' : 'success'" format="int" />
-        <x-kpi-tile :label="__('Mit genehmigter Korrektur')" :value="$correctedCount" tone="success" format="int" />
+        <x-kpi-tile :label="__('Betroffene Mitarbeitende')" :value="$summary['employees']" tone="info" format="int" href="#compliance-by-team" />
+        <x-kpi-tile :label="__('Offen (ohne Korrektur)')" :value="$openCount" :tone="$openCount > 0 ? 'error' : 'success'" format="int" :href="route('reports.arbzg-compliance')" />
+        <x-kpi-tile :label="__('Mit genehmigter Korrektur')" :value="$correctedCount" tone="success" format="int" :href="route('reports.arbzg-compliance')" />
     </div>
 
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -79,7 +79,7 @@
         </x-table>
     </x-card>
 
-    <x-card :title="__('Befunde je Team')" icon="groups">
+    <x-card :title="__('Befunde je Team')" icon="groups" id="compliance-by-team" class="scroll-mt-24">
         @if ($byTeam === [])
             <x-empty-state icon="verified" :title="__('Keine Befunde im Zeitraum.')" compact />
         @else

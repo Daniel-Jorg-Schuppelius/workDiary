@@ -137,6 +137,11 @@ class LexofficeArticleSync {
                     continue;
                 }
 
+                // Gleiche Lexoffice-Version und lokal nichts geändert: nichts zu schreiben (perf-07).
+                if (! $existing->is_dirty && $attrs['external_version'] !== null && (int) $existing->external_version === (int) $attrs['external_version']) {
+                    continue;
+                }
+
                 if ($existing->is_dirty && $this->policy === LexofficeMatchPolicy::ManualReview) {
                     $local = $this->comparable($existing);
                     $remote = $this->comparable((new LexofficeArticle)->fill(array_intersect_key($attrs, array_flip(self::DIFF_FIELDS))));
