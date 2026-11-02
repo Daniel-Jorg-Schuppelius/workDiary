@@ -34,8 +34,8 @@
         </x-slot:toolbar>
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <x-kpi-tile :label="__('Räume')" :value="$kpis['rooms']" tone="primary" />
-            <x-kpi-tile :label="__('Aktiv')" :value="$kpis['active_rooms']" tone="success" />
+            <x-kpi-tile :label="__('Räume')" :value="$kpis['rooms']" tone="primary" href="#floor-rooms" />
+            <x-kpi-tile :label="__('Aktiv')" :value="$kpis['active_rooms']" tone="success" href="#floor-rooms" />
             <x-kpi-tile :label="__('NGF (m²)')" :value="$kpis['net_area']" tone="info" format="decimal" />
             <x-kpi-tile :label="__('Kapazität Σ')" :value="$kpis['capacity']" tone="secondary" />
         </div>
@@ -55,7 +55,7 @@
             </x-detail-grid>
         </x-card>
 
-        <x-card :title="__('Räume') . ' (' . $rooms->count() . ')'" padding="p-0">
+        <x-card :title="__('Räume') . ' (' . $rooms->count() . ')'" padding="p-0" id="floor-rooms" class="scroll-mt-24">
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger

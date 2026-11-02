@@ -81,8 +81,8 @@
         $ownTimesHint = $seesAllTimes ? '' : ' · ' . __('nur eigene Zeiten');
     @endphp
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <x-kpi-tile :label="__('Projekte')" :value="$projects->count()" tone="neutral" />
-        <x-kpi-tile :label="__('Erfasste Zeit')" :value="$timeRange" tone="neutral"
+        <x-kpi-tile :label="__('Projekte')" :value="$projects->count()" tone="neutral" href="#customer-projects" />
+        <x-kpi-tile :label="__('Erfasste Zeit')" :value="$timeRange" tone="neutral" href="#customer-time"
                     :hint="$statsRangeLabel . ' · ' . __('gesamt :value', ['value' => $timeTotal]) . $ownTimesHint" />
         {{-- Umsatz = tatsächlich fakturiert (Belege des Buchhaltungsprogramms + lokale
              Rechnungen); der kalkulatorische Wert aus erfassten Zeiten × Satz nur
@@ -222,7 +222,7 @@
         $topForeign = $foreignByHours->take(10);
         $restForeign = $foreignByHours->slice(10)->values();
     @endphp
-    <x-card x-data="tabs('projects')" data-tab-allowed="projects,foreign">
+    <x-card x-data="tabs('projects')" data-tab-allowed="projects,foreign" id="customer-projects" class="scroll-mt-24">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div role="tablist" class="tabs tabs-box tabs-sm">
                 <button role="tab" class="tab" :class="tabClass('projects')" @click="setTab('projects')">
@@ -316,7 +316,7 @@
 
     {{-- Auswertung pro Kunde --}}
     @isset($statsTotal)
-        <x-card x-data="tabs('month')">
+        <x-card x-data="tabs('month')" id="customer-time" class="scroll-mt-24">
             <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
                     <x-icon name="analytics" class="text-muted" /> {{ __('Auswertung') }}

@@ -118,6 +118,7 @@ class RedmineTimeImportService {
         $counters = self::emptyCounters();
         $prefix = 'redmine:' . $connection->sourceId() . ':' . $link->sourceProjectId() . ':';
         $seen = [];
+        $fetchedAt = CarbonImmutable::now();
         $rows = $client->timeEntries($link->sourceProjectId(), $from->toDateString(), $to->toDateString());
 
         foreach ($rows as $row) {
@@ -137,7 +138,7 @@ class RedmineTimeImportService {
 
         // Ein unlesbarer Eintrag macht das Fenster unvollständig — dann nichts als gelöscht werten.
         if ($counters['failed'] === 0) {
-            $counters['removed'] = $this->reconcileRemoteDeletions($organization, $seen, new RemoteSyncWindow($from, $to), self::EXT_TYPE_ENTRY, $prefix);
+            $counters['removed'] = $this->reconcileRemoteDeletions($organization, $seen, new RemoteSyncWindow($from, $to, $fetchedAt), self::EXT_TYPE_ENTRY, $prefix);
         }
 
         return $counters;

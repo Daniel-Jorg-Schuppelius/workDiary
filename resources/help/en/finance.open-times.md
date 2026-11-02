@@ -63,5 +63,7 @@ Features:
    including non-billable entries. The action is available to
    administration and accounting and cannot be undone with a click.
 
+Clicking a warning tile filters the list to those entries and switches to "All"; the filter bar offers the same value.
+
 The page is visible to roles with the permission "view all time
 entries" (by default accounting, management, and administration).

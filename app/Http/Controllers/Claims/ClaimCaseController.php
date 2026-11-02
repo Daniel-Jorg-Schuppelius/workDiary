@@ -41,11 +41,15 @@ class ClaimCaseController extends Controller {
         Gate::authorize('viewAny', ClaimCase::class);
 
         $statusFilter = ClaimStatus::tryFrom($request->string('status')->toString())?->value;
+        // Kachel „Offene Fälle“ (ux-pattern-katalog §4): offen sind vier Status, die die Status-Auswahl einzeln kennt.
+        $showOpen = $request->string('show')->toString() === 'open';
 
         return view('claims.index', [
+            'showOpen' => $showOpen,
             'cases' => ClaimCase::query()
                 ->with(['customer', 'responsible'])
                 ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter))
+                ->when($showOpen, fn($q) => $q->open())
                 ->when($request->filled('overdue'), fn($q) => $q->overdue())
                 ->orderByDesc('id')
                 ->paginate(25)

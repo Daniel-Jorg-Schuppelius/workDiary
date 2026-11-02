@@ -87,6 +87,8 @@ class TogglImportService extends MatchingTimeImportService {
             return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'unresolved_users' => 0, 'updated' => 0, 'conflicts' => 0, 'removed' => 0, 'adopted' => 0, 'incomplete' => false];
         }
 
+        $fetchedAt = CarbonImmutable::now();
+
         // Workspace-Namen für die Inbox-Anzeige (Gruppen sind je Workspace getrennt).
         $workspaceNames = [];
         foreach ($client->workspaces() as $workspace) {
@@ -125,7 +127,7 @@ class TogglImportService extends MatchingTimeImportService {
             // Reports-Pagination still ab (429/Timeout/Rechte), gälte alles
             // Ungelieferte fälschlich als drüben gelöscht — Massenlöschung
             // lokaler Zeiten (passiert am 01./02.08.2026: 50+44 Einträge).
-            RemoteSyncWindow::whenComplete($client->isFetchComplete(), $from, $to),
+            RemoteSyncWindow::whenComplete($client->isFetchComplete(), $from, $to, $fetchedAt),
             // Unvollständig heißt auch (MVP-509): die Workspace-Benutzerliste kann
             // gefehlt haben — Einträge ohne E-Mail sind dann klärungsbedürftig,
             // keine scheinbar korrekten Hauptbenutzer-Buchungen.

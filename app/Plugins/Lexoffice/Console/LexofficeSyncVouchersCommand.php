@@ -24,7 +24,8 @@ class LexofficeSyncVouchersCommand extends Command {
     use ChecksPluginSwitch;
     use IteratesOrganizations;
 
-    protected $signature = 'lexoffice:sync-vouchers ' . self::ORGANIZATION_OPTION;
+    protected $signature = 'lexoffice:sync-vouchers ' . self::ORGANIZATION_OPTION . '
+        {--full : Vollabgleich je verknüpftem Kontakt mit Archivierung verschwundener Belege (sonst nur Änderungen seit dem letzten Lauf)}';
 
     protected $description = 'Synchronisiert Lexoffice-Belege (voucherlist) pro verknüpftem Kontakt in die lokale Tabelle `lexoffice_vouchers`.';
 
@@ -58,8 +59,8 @@ class LexofficeSyncVouchersCommand extends Command {
                 Cache::lock(LexofficeConfig::apiLockKey((int) $org->id), 1800)->block(LexofficeConfig::API_LOCK_WAIT_SCHEDULED, function () use ($org): void {
                     $this->info("Sync Lexoffice-Belege für Organisation #{$org->id} ({$org->name})...");
                     try {
-                        $result = (new LexofficeVoucherSync($org->id))->sync($org);
-                        $this->line("  Kontakte: {$result['contacts']}, created: {$result['created']}, updated: {$result['updated']}, archived: {$result['archived']}, Positionen: {$result['lines']}");
+                        $result = (new LexofficeVoucherSync($org->id))->sync($org, (bool) $this->option('full'));
+                        $this->line("  Lauf: {$result['mode']}, Kontakte: {$result['contacts']}, created: {$result['created']}, updated: {$result['updated']}, archived: {$result['archived']}, Positionen: {$result['lines']}");
                         if (isset($result['lines_error'])) {
                             // Positions-Sync (Feature 152) ist nur gemeldet — der Belegsync steht.
                             $this->warn("  Positionen: {$result['lines_error']}");

@@ -101,6 +101,32 @@ CREATE TABLE `accounting_accounts` (
   CONSTRAINT `accounting_accounts_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `accounting_articles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `accounting_articles` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `plugin_id` varchar(32) NOT NULL,
+  `external_id` varchar(128) NOT NULL,
+  `number` varchar(128) DEFAULT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` text DEFAULT NULL,
+  `unit_name` varchar(32) DEFAULT NULL,
+  `net_unit_price` decimal(12,4) DEFAULT NULL,
+  `currency` char(3) NOT NULL DEFAULT 'EUR',
+  `vat_rate` decimal(5,2) DEFAULT NULL,
+  `kind` varchar(16) NOT NULL DEFAULT 'service',
+  `archived_at` timestamp NULL DEFAULT NULL,
+  `synced_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `acc_article_org_plugin_ext_uq` (`organization_id`,`plugin_id`,`external_id`),
+  KEY `acc_article_org_plugin_number_idx` (`organization_id`,`plugin_id`,`number`),
+  CONSTRAINT `accounting_articles_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `accounting_budget_releases`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -16029,6 +16055,7 @@ CREATE TABLE `lexoffice_vouchers` (
   `voucher_date` date DEFAULT NULL,
   `due_date` date DEFAULT NULL,
   `paid_date` date DEFAULT NULL,
+  `paid_date_checked_at` timestamp NULL DEFAULT NULL,
   `total_amount` decimal(14,2) DEFAULT NULL,
   `open_amount` decimal(14,2) DEFAULT NULL,
   `net_amount` decimal(15,2) DEFAULT NULL,
@@ -28445,4 +28472,6 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1041,'2027_04_01_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1042,'2027_04_01_200000_add_observed_properties_to_domain_provider_connections',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1043,'2027_04_01_210000_add_invoice_number_to_domain_accounting_entries',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1044,'2027_04_01_220000_add_provider_details_to_domain_tables',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1045,'2027_04_01_230000_add_price_class_to_resale_price_catalog',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1045,'2027_04_01_230000_add_price_class_to_resale_price_catalog',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1046,'2027_04_02_100000_add_paid_date_checked_at_to_lexoffice_vouchers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1047,'2027_04_02_110000_create_accounting_articles_table',1);

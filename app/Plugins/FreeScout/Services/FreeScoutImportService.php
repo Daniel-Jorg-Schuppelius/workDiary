@@ -13,12 +13,11 @@ declare(strict_types=1);
 namespace App\Plugins\FreeScout\Services;
 
 use App\Enums\Task\TaskStatus;
-use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Plugins\FreeScout\Api\{FreeScoutClient, FreeScoutClientFactory};
 use App\Plugins\FreeScout\FreeScoutPlugin;
 use App\Plugins\FreeScout\Models\{FreeScoutConnection, FreeScoutProjectLink};
-use App\Plugins\Support\TaskSync\{AbstractTaskImportService, IncompleteRemoteReadException, RemoteTask, SelfHostedInstance};
+use App\Plugins\Support\TaskSync\{AbstractTaskImportService, IncompleteRemoteReadException, RemoteTask};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\Eloquent\Model;
@@ -118,13 +117,6 @@ class FreeScoutImportService extends AbstractTaskImportService {
             'url' => $baseUrl !== '' ? $baseUrl . '/conversation/' . $id : null,
             'project' => null,
         ], $issues);
-    }
-
-    public function sourceUrl(ExternalReference $reference): ?string {
-        $url = data_get($reference->payload, 'remote.url');
-        $baseUrl = (string) $this->connection((int) $reference->organization_id)?->source_url;
-
-        return is_string($url) && SelfHostedInstance::owns($baseUrl, $url) ? $url : null;
     }
 
     /**

@@ -23,10 +23,10 @@
 
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <x-kpi-tile :label="__('Verträge gesamt')" :value="$contractCount" />
-        <x-kpi-tile :label="__('Laufend')" :value="$openCount" />
-        <x-kpi-tile :label="__('Offene Fristen')" :value="$openDeadlines" />
-        <x-kpi-tile :label="__('Versäumte Fristen')" :value="$missedDeadlines" />
+        <x-kpi-tile :label="__('Verträge gesamt')" :value="$contractCount" :href="route('asset-finance.index')" />
+        <x-kpi-tile :label="__('Laufend')" :value="$openCount" :href="route('asset-finance.index', ['show' => 'open'])" />
+        <x-kpi-tile :label="__('Offene Fristen')" :value="$openDeadlines" :href="route('asset-finance.deadlines.index')" />
+        <x-kpi-tile :label="__('Versäumte Fristen')" :value="$missedDeadlines" :href="route('asset-finance.deadlines.index', ['status' => 'missed'])" />
     </div>
 
     <div class="grid gap-4 sm:grid-cols-3">

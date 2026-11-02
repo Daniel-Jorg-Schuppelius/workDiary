@@ -16,7 +16,7 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('damage.subtitle')">
     <div class="grid gap-4 sm:grid-cols-3">
-        <x-kpi-tile :label="__('damage.kpi.open')" :value="$openCount" />
+        <x-kpi-tile :label="__('damage.kpi.open')" :value="$openCount" :href="route('damage-cases.index', ['show' => 'open'])" :active="$showOpen" />
         <x-kpi-tile :label="__('damage.kpi.open_estimate')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($openEstimate, 2, withThousandsSeparator: true)" />
         <x-kpi-tile :label="__('damage.kpi.settled')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($settledTotal, 2, withThousandsSeparator: true)" />
     </div>
@@ -40,6 +40,7 @@
                 <option value="{{ $type }}" @selected(request('subject_type') === $type)>{{ __('damage.subject_type.' . $type) }}</option>
             @endforeach
         </select>
+        <x-filter-toggle name="show" value="open" :label="__('damage.kpi.open')" :checked="$showOpen" />
     </x-filter-bar>
 
     <x-table scroll="flex">

@@ -33,6 +33,8 @@ final class LicenseArticleClassifier {
 
     public function flush(): void {
         $this->roles = [];
+        // Spiegelzeilen und Leseseiten im Request-Memo tragen die Einstufung je Zeile — mit ihr weg.
+        app(ResaleRequestMemo::class)->forget();
     }
 
     /** Ohne Artikel (kein Katalogschlüssel) nie ein Abo-Produkt. */

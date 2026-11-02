@@ -50,7 +50,6 @@ return [
         'app/Http/Controllers/Club/ClubFeeAccountController.php',
         'app/Http/Controllers/Club/ClubFeeRunController.php',
         'app/Http/Controllers/Finance/ExchangeRateController.php',
-        'app/Http/Controllers/Reselling/ResaleSubscriptionController.php',
         'app/Http/Controllers/Time/DayCloseController.php',
         'app/Http/Requests/Reselling/ResalePurchaseStoreRequest.php',
         'app/Http/Requests/Time/QuickTimeEntryRequest.php',

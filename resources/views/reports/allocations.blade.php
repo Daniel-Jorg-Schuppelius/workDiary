@@ -26,11 +26,11 @@
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <x-kpi-tile :label="__('reporting.allocations.total')" :value="$fmtMin($totalMinutes)" />
-        <x-kpi-tile :label="__('reporting.allocations.dimensions')" :value="count($groups)" />
+        <x-kpi-tile :label="__('reporting.allocations.dimensions')" :value="count($groups)" href="#allocation-groups" />
     </div>
 
     @if ($groups === [])
-        <x-card>
+        <x-card id="allocation-groups" class="scroll-mt-24">
             <x-empty-state icon="call_split"
                            :title="__('reporting.allocations.empty')" />
         </x-card>

@@ -109,6 +109,7 @@ class LexofficeVoucher extends Model {
         'service_starts_on' => 'date',
         'service_ends_on' => 'date',
         'lines_synced_at' => 'datetime',
+        'paid_date_checked_at' => 'datetime',
         'categories_synced_at' => 'datetime',
         'lines_sync_failed_at' => 'datetime',
         'lines_sync_attempts' => 'integer',

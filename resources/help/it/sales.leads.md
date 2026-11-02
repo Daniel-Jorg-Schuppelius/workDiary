@@ -1,7 +1,7 @@
 ---
 title: "Lead"
 topic: sales.leads
-version: 3
+version: 4
 keywords:
     - potenziali clienti
     - prospect
@@ -60,3 +60,16 @@ I lead hanno campi personalizzati (Amministrazione › Campi personalizzati),
 tag e allegati. Con l'anonimizzazione dopo il termine di cancellazione vengono
 eliminati anche allegati, campi personalizzati e tag. I documenti della
 gestione documentale si collegano solo al cliente.
+
+## Cockpit
+
+La scheda lead è il cockpit del potenziale cliente: intestazione con stato,
+origine e tag, sotto contatto e fabbisogno, le note di comunicazione con
+richiamo, i campi personalizzati, gli allegati, le offerte create dal lead e
+la cronologia. «Offerta dal lead» crea un'offerta con i dati di contatto; le
+offerte compaiono con il loro stato nella scheda, e la valutazione dei lead
+le conta per origine e conversione. Come per cliente, fornitore e progetto, i
+pannelli degli altri moduli mostrano solo ciò che esiste per il lead — un
+modulo senza dati sul lead non compare. La cronologia elenca le voci di audit
+del lead, offerte incluse; le prenotazioni di appuntamenti sono collegate al
+lead aperto.

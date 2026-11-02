@@ -55,6 +55,9 @@ class NavigationRegistry {
      */
     public const BADGE_TTL = 60;
 
+    /** Menü je Nutzer (perf-13); Rechte-, Modul- und Ausblende-Änderungen wechseln den Schlüssel sofort. */
+    public const MENU_TTL = 60;
+
     public function __construct(
         private readonly FeatureFlagResolver $features,
         private readonly NavGate $gate,
@@ -96,6 +99,69 @@ class NavigationRegistry {
                 'pluginPanelRoutes' => [],
             ];
         }
+
+        // Der Aufbau kostete jede Seite ≈ 200 ms und zwölf Abfragen (Leistungsanalyse
+        // 2026-11-02, perf-13); er hängt nur an Nutzer, Organisation, Rechten, Modulen,
+        // Fokus, Sprache und den Ausblendungen — alles im Schlüssel. Die aktive
+        // Markierung ist das Einzige, was je Seite wechselt.
+        $data = Cache::remember(
+            $this->menuCacheKey($user, $isLegacyMode, $indexRoute, $focusKey),
+            self::MENU_TTL,
+            fn (): array => $this->buildUncached($user, $isLegacyMode, $indexRoute, $focusKey),
+        );
+        if (! $isLegacyMode) {
+            $data['sidebarSections'] = $this->markActiveItem($data['sidebarSections']);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Cache-Schlüssel des Menüs: Rechteversion (Team-Cache), Modulstand und die
+     * Stempel aus Ausblendungen (je Nutzer) und Plugin-Zuständen (global).
+     */
+    public function menuCacheKey(User $user, bool $isLegacyMode, string $indexRoute, ?string $focusKey): string {
+        $permissionVersion = (int) Cache::get(\App\Support\Permissions\TeamScopedPermissionRegistrar::versionKey(), 1);
+
+        return implode(':', [
+            'nav-menu', 1, (int) $user->id, (int) (OrganizationContext::currentId() ?? 0), $isLegacyMode ? 'legacy' : 'new',
+            $indexRoute, $focusKey ?? '-', app()->getLocale(), $permissionVersion,
+            substr((string) \CommonToolkit\Helper\Data\CryptoHelper::hash(\CommonToolkit\Helper\Data\JsonHelper::encode($this->features->all())), 0, 16),
+            self::stamp('user:' . $user->id), self::stamp('global'),
+        ]);
+    }
+
+    /** Ausblendungen eines Nutzers haben sich geändert (NavigationCustomizationController). */
+    public static function bumpUserStamp(User $user): void {
+        self::bump('user:' . $user->id);
+    }
+
+    /** Plugin-Zustände haben sich geändert (PluginSetting/PluginState). */
+    public static function bumpGlobalStamp(): void {
+        self::bump('global');
+    }
+
+    private static function stamp(string $scope): int {
+        return (int) Cache::get('nav-menu:stamp:' . $scope, 0);
+    }
+
+    private static function bump(string $scope): void {
+        Cache::forever('nav-menu:stamp:' . $scope, self::stamp($scope) + 1);
+    }
+
+    /**
+     * @return array{
+     *     mainNavItems: list<array<string, mixed>>,
+     *     manageNavItems: list<array<string, mixed>>,
+     *     adminNavItems: list<array<string, mixed>>,
+     *     userNavItems: list<array<string, mixed>>,
+     *     sidebarSections: list<array<string, mixed>>,
+     *     createGroups: list<array<string, mixed>>,
+     *     pluginPanelItems: list<array<string, mixed>>,
+     *     pluginPanelRoutes: list<string>,
+     * }
+     */
+    private function buildUncached(User $user, bool $isLegacyMode, string $indexRoute, ?string $focusKey): array {
 
         $hidden = $isLegacyMode ? [] : $this->hiddenNavKeys($user);
         // Arbeitsbereich-Filter nur im neuen Modus; `null` lässt alles unberührt.
@@ -146,7 +212,7 @@ class NavigationRegistry {
             'manageNavItems' => $manageNavItems,
             'adminNavItems' => $adminNavItems,
             'userNavItems' => $this->userNavItems($isLegacyMode),
-            'sidebarSections' => $isLegacyMode ? [] : $this->markActiveItem($this->applyFocus($sidebar, $focusKeep)),
+            'sidebarSections' => $isLegacyMode ? [] : $this->applyFocus($sidebar, $focusKeep),
             'createGroups' => $isLegacyMode ? [] : $this->applyFocusCreateGroups($this->filterCreateGroups($this->createGroupsBlueprint(), $hidden), $focusKeep, $focusCreate),
             'pluginPanelItems' => $pluginPanelItems,
             'pluginPanelRoutes' => $pluginPanelRoutes,
@@ -765,8 +831,8 @@ class NavigationRegistry {
                     Gate::allows('viewAny', \App\Models\Club\ClubResource::class)
                         ? ['route' => 'club.resources.index', 'label' => __('club.nav.resources'), 'icon' => 'stadium', 'modal' => false, 'matches' => ['club.resources.*']]
                         : null,
-                    // Pferde (MVP-854): nur wenn der Verein Pferde führt.
-                    Gate::allows('viewAny', \App\Models\Club\ClubHorse::class) && \App\Models\Club\ClubHorse::query()->exists()
+                    // Pferde (MVP-854): nur wenn der Verein Pferde führt — Flag 60 s je Organisation (perfc-10).
+                    Gate::allows('viewAny', \App\Models\Club\ClubHorse::class) && $this->clubHasHorses()
                         ? ['route' => 'club.horses.index', 'label' => __('club.nav.horses'), 'icon' => 'bedroom_baby', 'modal' => false, 'matches' => ['club.horses.*']]
                         : null,
                     $clubAdmin ? ['route' => 'club.attendance.index', 'label' => __('club.nav.attendance'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['club.attendance.*']] : null,
@@ -825,10 +891,12 @@ class NavigationRegistry {
         $showLearning = Gate::allows('viewAny', \App\Models\Learning\LearningCourse::class)
             || ($user?->can(\App\Enums\User\Permission::LearningGrade->value) ?? false);
         // „Meine Schulungen" erscheint, sobald eine eigene Einschreibung
-        // besteht — unabhängig von Recht und Lizenzstufe (Pflichtweg).
-        $hasOwnLearning = $user !== null && \App\Models\Learning\LearningEnrollment::query()
-            ->where('user_id', $user->id)
-            ->exists();
+        // besteht — unabhängig von Recht und Lizenzstufe (Pflichtweg); Flag 60 s je Nutzer (perfc-10).
+        $hasOwnLearning = $user !== null && (bool) Cache::remember(
+            'nav-flag:own-learning:' . (int) $user->id,
+            self::BADGE_TTL,
+            static fn (): bool => \App\Models\Learning\LearningEnrollment::query()->where('user_id', $user->id)->exists(),
+        );
         if ($showLearning || $hasOwnLearning) {
             $sidebarSections[] = [
                 'key' => 'learning',
@@ -1721,6 +1789,20 @@ class NavigationRegistry {
         }
 
         return $patterns;
+    }
+
+    /** Führt der Verein Pferde? Flag 60 s je Organisation (Leistungsanalyse 2026-11-02, perfc-10); die Abfrage läuft unter dem Org-Scope. */
+    private function clubHasHorses(): bool {
+        $organizationId = OrganizationContext::currentId() ?? Auth::user()?->organization_id;
+        if ($organizationId === null) {
+            return false;
+        }
+
+        return (bool) Cache::remember(
+            'nav-flag:club-horses:' . (int) $organizationId,
+            self::BADGE_TTL,
+            static fn (): bool => \App\Models\Club\ClubHorse::query()->exists(),
+        );
     }
 
     /** Zähler „Zuzuordnen“ im Rechnungseingang (Feature 163, MVP-1110). */

@@ -16,7 +16,7 @@ use App\Plugins\Kanboard\Api\KanboardClientFactory;
 use App\Plugins\Kanboard\{KanboardConfig, KanboardPlugin};
 use App\Plugins\Kanboard\Models\{KanboardConnection, KanboardProjectLink};
 use App\Plugins\Kanboard\Services\KanboardImportService;
-use App\Plugins\Support\TaskSync\{SelfHostedInstance, TokenTaskImportAdminController};
+use App\Plugins\Support\TaskSync\TokenTaskImportAdminController;
 
 /**
  * Kanboard-Verbindungsseite (MVP-1341): „Verbindung prüfen“ liest die Instanz
@@ -42,16 +42,10 @@ class KanboardAdminController extends TokenTaskImportAdminController {
     }
 
     protected function verifyConnection(int $organizationId): array {
-        $baseUrl = (string) KanboardConfig::resolve($organizationId)['base_url'];
-        $account = app(KanboardClientFactory::class)->for($organizationId)->account();
-
-        return [
-            'source_id' => SelfHostedInstance::key($baseUrl),
-            'source_name' => SelfHostedInstance::name($baseUrl) . ($account['version'] !== null ? ' · ' . $account['version'] : ''),
-            'source_url' => $baseUrl,
-            'account_id' => $account['id'],
-            'account_name' => $account['name'],
-        ];
+        return $this->selfHostedIdentity(
+            (string) KanboardConfig::resolve($organizationId)['base_url'],
+            app(KanboardClientFactory::class)->for($organizationId)->account(),
+        );
     }
 
     protected function providerName(): string {

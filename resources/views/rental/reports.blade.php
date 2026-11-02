@@ -29,14 +29,14 @@
 
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <x-kpi-tile :label="__('Verleihvorgänge')" :value="$caseCount" />
+        <x-kpi-tile :label="__('Verleihvorgänge')" :value="$caseCount" :href="route('rental.index')" />
         <x-kpi-tile :label="__('Auslastung')" :value="$utilization . ' %'" />
         <x-kpi-tile :label="__('Umsatz (Positionen)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($revenueTotal, 2, withThousandsSeparator: true) . ' €'" />
-        <x-kpi-tile :label="__('Schadensfälle')" :value="$damageCount" />
+        <x-kpi-tile :label="__('Schadensfälle')" :value="$damageCount" :href="route('damage-cases.index', ['subject_type' => \App\Support\MorphMap::alias(\App\Models\Rental\RentalCase::class)])" />
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <x-kpi-tile :label="__('Überfällige Rückgaben')" :value="$overdueCount" />
+        <x-kpi-tile :label="__('Überfällige Rückgaben')" :value="$overdueCount" :href="route('rental.index', ['overdue' => 1])" />
         <x-kpi-tile :label="__('Belegte Gerätetage')" :value="$rentedDays" />
         <x-kpi-tile :label="__('Wartungs-/Reinigungsblockaden')" :value="$maintenanceBlocked" />
     </div>

@@ -16,6 +16,13 @@
 @section('content')
 <x-index-page overflow="clip" back-route="sustainability.index" :back-label="__('Nachhaltigkeit')"
               :subtitle="__('Alle ESG-Bewertungen der Organisation mit Version, Status und Ergebnis.')">
+    @if ($critical)
+        {{-- Kachelfilter ohne Filterleiste: der Hinweis nennt ihn und bietet den Rückweg (ux-pattern-katalog §4). --}}
+        <p class="flex-none text-sm text-muted">
+            {{ __('Filter') }}: {{ __('Kritische Bewertungen (rot)') }}
+            · <a href="{{ route('sustainability.assessments.index') }}" class="link link-hover">{{ __('Alle anzeigen') }}</a>
+        </p>
+    @endif
     <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm" table-sort="server"
              :route="route('sustainability.assessments.index')" :current-sort="$sort" :current-dir="$dir"
              :sort-params="request()->except(['sort', 'dir', 'page'])">

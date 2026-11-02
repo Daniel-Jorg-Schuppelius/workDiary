@@ -34,12 +34,13 @@
         </x-filter-bar>
 
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <x-kpi-tile :label="__('Reisen im Zeitraum')" :value="(string) $totals['count']" />
+            <x-kpi-tile :label="__('Reisen im Zeitraum')" :value="(string) $totals['count']" :href="route('per-diem-trips.index')" />
             <x-kpi-tile :label="__('Pauschalen-Summe')"
                         :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['amount'], 2, withThousandsSeparator: true) . ' €'" />
             <x-kpi-tile :label="__('Offene Reisen')"
                         :value="(string) $totals['open']"
-                        :tone="$totals['open'] > 0 ? 'warning' : 'ghost'" />
+                        :tone="$totals['open'] > 0 ? 'warning' : 'ghost'"
+                        :href="route('per-diem-trips.index', ['status' => \App\Enums\Expense\PerDiemTripStatus::Draft->value])" :active="$statusFilter === \App\Enums\Expense\PerDiemTripStatus::Draft->value" />
         </div>
 
         <x-table :zebra="true" table-sort="server"

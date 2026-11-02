@@ -22,7 +22,7 @@
     </x-slot:actions>
 
     <div class="grid gap-4 sm:grid-cols-2">
-        <x-kpi-tile :label="__('recall.kpi.active')" :value="$activeCount" />
+        <x-kpi-tile :label="__('recall.kpi.active')" :value="$activeCount" :href="route('recalls.index', ['status' => \App\Enums\Inventory\RecallStatus::Active->value])" :active="request('status') === \App\Enums\Inventory\RecallStatus::Active->value" />
     </div>
 
     <x-filter-bar :action="route('recalls.index')" :reset="route('recalls.index')">

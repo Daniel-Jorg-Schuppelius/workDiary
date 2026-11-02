@@ -20,6 +20,7 @@ use App\Plugins\Support\MatchingTimeImportService;
 use App\Plugins\Toggl\Services\{TogglExportService, TogglImportService, TogglOutboxDispatcher};
 use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\Concerns\WithOrganization;
@@ -434,5 +435,87 @@ class TogglPushTest extends TestCase {
 
         $this->assertSame(1, $result['pushed']);
         $fake->assertSent(fn ($request): bool => (string) $request->getUri() === self::CREATE_URL && $request->getMethod() === 'POST');
+    }
+
+    /**
+     * Befund 2026-11-02: Stunden-Batch und Outbox-Anlage liefen zur vollen Stunde
+     * gleichzeitig; beide sahen noch keine Referenz und legten denselben Eintrag
+     * zweimal in Toggl an. Die Sperre je Eintrag lässt nur einen posten.
+     */
+    public function test_batch_leaves_a_locked_entry_to_the_other_process(): void {
+        $config = $this->config();
+        $entry = $this->timeEntry($this->mappedProject());
+        $fake = FakePluginHttp::fake([
+            self::CREATE_URL => FakePluginHttp::response($this->createdResponse(), 200),
+        ]);
+
+        $lock = TogglExportService::lockFor(TogglPlugin::ID, $this->organization, $entry);
+        $this->assertTrue($lock->get());
+        try {
+            $result = $this->service()->exportPending($this->organization, $config);
+        } finally {
+            $lock->release();
+        }
+
+        $this->assertSame(['pushed' => 0, 'skipped' => 1, 'failed' => 0, 'errors' => []], $result);
+        $fake->assertNothingSent();
+
+        // Freigegeben: der nächste Lauf überträgt.
+        $this->assertSame(1, $this->service()->exportPending($this->organization, $config)['pushed']);
+        $fake->assertSentCount(1);
+    }
+
+    public function test_outbox_create_is_retried_while_the_batch_holds_the_lock(): void {
+        $this->config();
+        $entry = $this->timeEntry($this->mappedProject());
+        $outbox = IntegrationOutboxEntry::query()->where('operation', TogglOutboxDispatcher::OP_ENTRY_CREATE)->firstOrFail();
+        $fake = FakePluginHttp::fake([
+            self::CREATE_URL => FakePluginHttp::response($this->createdResponse(), 200),
+        ]);
+
+        $lock = TogglExportService::lockFor(TogglPlugin::ID, $this->organization, $entry);
+        $this->assertTrue($lock->get());
+        try {
+            app(TogglOutboxDispatcher::class)->dispatch($outbox);
+            $this->fail('Solange der Batch die Sperre hält, muss die Outbox-Anlage in die Queue-Wiederholung gehen.');
+        } catch (LockTimeoutException) {
+            // Queue-Wiederholung: nach dem Backoff findet der Re-Check die Referenz des Halters.
+        } finally {
+            $lock->release();
+        }
+
+        $fake->assertNothingSent();
+    }
+
+    public function test_an_outbox_create_arriving_during_the_batch_post_does_not_post_again(): void {
+        $config = $this->config();
+        $entry = $this->timeEntry($this->mappedProject());
+        $outbox = IntegrationOutboxEntry::query()->where('operation', TogglOutboxDispatcher::OP_ENTRY_CREATE)->firstOrFail();
+        $concurrent = null;
+
+        $fake = FakePluginHttp::fake([
+            // Während der POST des Batches läuft, trifft die Outbox-Anlage desselben Eintrags ein.
+            self::CREATE_URL => function () use ($outbox, &$concurrent) {
+                try {
+                    app(TogglOutboxDispatcher::class)->dispatch($outbox);
+                    $concurrent = 'pushed';
+                } catch (LockTimeoutException) {
+                    $concurrent = 'deferred';
+                }
+
+                return FakePluginHttp::response($this->createdResponse(), 200);
+            },
+        ]);
+
+        $result = $this->service()->exportPending($this->organization, $config);
+
+        $this->assertSame(1, $result['pushed']);
+        $this->assertSame('deferred', $concurrent);
+        $fake->assertSentCount(1);
+        $this->assertSame(1, ExternalReference::query()
+            ->where('plugin_id', TogglPlugin::ID)
+            ->where('external_type', TogglExportService::EXT_TYPE_PUSHED)
+            ->where('referenceable_id', $entry->getKey())
+            ->count());
     }
 }

@@ -82,16 +82,23 @@
                 </select>
             </x-filter-field>
 
+            <x-filter-field :label="__('Filter')" for="ev-show" class="min-w-40">
+                <select id="ev-show" name="show" class="select select-sm select-bordered w-full" data-autosubmit>
+                    <option value="">{{ __('Alle') }}</option>
+                    <option value="upcoming" @selected(request('show') === 'upcoming')>{{ __('Anstehend') }}</option>
+                    <option value="today" @selected(request('show') === 'today')>{{ __('Heute') }}</option>
+                </select>
+            </x-filter-field>
             <x-filter-toggle name="only_mandatory" id="ev-only-mandatory"
                              :label="__('Nur Pflicht')"
                              :checked="(bool) request('only_mandatory')" data-autosubmit />
         </x-filter-bar>
 
         <div class="grid grid-cols-1 gap-3 flex-none sm:grid-cols-2 lg:grid-cols-4">
-            <x-kpi-tile :label="__('Anstehend')"         :value="$counts['upcoming']  ?? 0" tone="primary" />
-            <x-kpi-tile :label="__('Heute')"             :value="$counts['today']     ?? 0" tone="info" />
-            <x-kpi-tile :label="__('Pflichtschulungen')" :value="$counts['mandatory'] ?? 0" tone="warning" />
-            <x-kpi-tile :label="__('Gesamt')"            :value="$counts['total']     ?? 0" tone="neutral" />
+            <x-kpi-tile :label="__('Anstehend')"         :value="$counts['upcoming']  ?? 0" tone="primary" :href="route('events.index', ['show' => 'upcoming'])" :active="request('show') === 'upcoming' && ! request()->boolean('only_mandatory')" />
+            <x-kpi-tile :label="__('Heute')"             :value="$counts['today']     ?? 0" tone="info" :href="route('events.index', ['show' => 'today'])" :active="request('show') === 'today'" />
+            <x-kpi-tile :label="__('Pflichtschulungen')" :value="$counts['mandatory'] ?? 0" tone="warning" :href="route('events.index', ['show' => 'upcoming', 'only_mandatory' => 1])" :active="request('show') === 'upcoming' && request()->boolean('only_mandatory')" />
+            <x-kpi-tile :label="__('Gesamt')"            :value="$counts['total']     ?? 0" tone="neutral" :href="route('events.index')" />
         </div>
 
         <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm" table-sort="server"

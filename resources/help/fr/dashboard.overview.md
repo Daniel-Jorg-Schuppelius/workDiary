@@ -32,6 +32,8 @@ personne disposant de droits d'analyse voit d'autres tuiles que
 quelqu'un qui n'en a pas. Les tuiles masquées n'interrogent plus les
 données : un tableau de bord rangé se charge donc aussi plus vite.
 
+Les tuiles de comptage des widgets d’indicateurs mènent au journal des ordres avec le filtre d’état correspondant, aux services et à la liste des membres.
+
 ## Prérequis
 
 - Un compte utilisateur connecté ; aucun droit particulier n'est

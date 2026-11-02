@@ -40,14 +40,14 @@
     </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <x-kpi-tile :label="__('user.employees')" :value="$totals['users']" />
+        <x-kpi-tile :label="__('user.employees')" :value="$totals['users']" href="#sickness-table" />
         <x-kpi-tile :label="__('Werktage krank')" :value="$totals['sick_workdays']" :hint="$totals['sick_calendar_days'] . ' ' . __('Kalendertage')" />
         <x-kpi-tile :label="__('Krankheitsfälle')" :value="$totals['episodes']" :hint="$totals['follow_ups'] . ' ' . __('Folge')" />
         <x-kpi-tile :label="__('Mit AU')" :value="$totals['with_au']" :hint="'/ ' . $totals['episodes'] . ' ' . __('Fälle')" />
         <x-kpi-tile :label="__('Anspruch ausgeschöpft')" :value="$totals['exhausted']" :tone="$totals['exhausted'] > 0 ? 'error' : 'neutral'" />
     </div>
 
-    <x-card>
+    <x-card id="sickness-table" class="scroll-mt-24">
         @if (empty($rows))
             <x-empty-state icon="sick" :title="__('Keine Krankheitsdaten im gewählten Zeitraum.')" />
         @else

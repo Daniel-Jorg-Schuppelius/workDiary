@@ -45,6 +45,13 @@ class SqidHelperTest extends TestCase {
         $this->assertSame(99, Sqid::decodeOrNumeric(Customer::class, '0', 99));
     }
 
+    public function test_decode_many_keeps_valid_ids_in_order_and_drops_the_rest(): void {
+        $this->assertSame([42, 7], Sqid::decodeMany(Customer::class, [$this->encode(42), '', 'not-a-sqid!', null, ['x'], $this->encode(7)]));
+        $this->assertSame([], Sqid::decodeMany(Customer::class, []));
+        // Sqid eines fremden Modells zählt nicht, Duplikate bleiben (die Abfrage dedupliziert über whereKey).
+        $this->assertSame([3, 3], Sqid::decodeMany(Customer::class, [app(SqidEncoder::class)->encode(\App\Models\Platform\User::class, 5), $this->encode(3), $this->encode(3)]));
+    }
+
     public function test_decode_or_numeric_does_not_cross_decode_other_models(): void {
         $sqid = app(SqidEncoder::class)->encode(\App\Models\Platform\User::class, 5);
 

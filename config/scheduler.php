@@ -26,6 +26,11 @@ return [
     // via Settings-Registry (scheduler.retention_days) übersteuerbar.
     'retention_days' => (int) env('SCHEDULER_RUNS_RETENTION_DAYS', 30),
 
+    // Plugin-gebundene Jobs ohne irgendwo aktives Plugin gar nicht anmelden
+    // (Leistungsanalyse 2026-11-02, perf-01); Tests schalten es ab, um die
+    // vollständige Registry zu prüfen.
+    'skip_inactive_plugins' => (bool) env('SCHEDULER_SKIP_INACTIVE_PLUGINS', true),
+
     // Betriebsfenster des Servers in app.schedule_timezone, z. B. 08:00/00:00
     // für einen Server, der um Mitternacht abschaltet. Tageszeit-Jobs außerhalb
     // rücken an den Fensterbeginn (App\Scheduling\OperatingWindow); leer =
@@ -205,6 +210,7 @@ return [
         // --- Angriffserkennung: Schwellwert-Auswertung (Feature 096, MVP-445) ---
         'security.evaluate' => [
             'command' => 'security:evaluate',
+            'guard' => \App\Scheduling\Guards\SecurityEventsPending::class,
             'cadence' => ['type' => 'everyFiveMinutes'],
             'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes', 'everyThirtyMinutes', 'hourly'],
             'criticality' => 'core',
@@ -218,6 +224,7 @@ return [
             'allowed' => ['everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'core',
             'expected_runtime_minutes' => 2,
+            'stagger' => false, // der Wächter bleibt auf der vollen Stunde, er urteilt über die anderen
         ],
         // --- GoBD-Integritätsnachweis (Bauturbo A17, MVP-335) ---
         // Rechnet alle Audit-Hash-Ketten (config/audit.php) nach; Exit-Code 1
@@ -235,6 +242,7 @@ return [
         // Eintrag lief der Abruf nie automatisch.
         'mail.poll' => [
             'command' => 'mail:poll',
+            'guard' => \App\Scheduling\Guards\MailboxesConfigured::class,
             'cadence' => ['type' => 'everyFiveMinutes'],
             'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes', 'everyThirtyMinutes', 'hourly'],
             'criticality' => 'core',
@@ -517,6 +525,7 @@ return [
         // --- Kern (minütlich/viertelstündlich) ---
         'chat.send_reminders' => [
             'command' => 'chat:send-reminders',
+            'guard' => \App\Scheduling\Guards\ChatRemindersDue::class,
             'cadence' => ['type' => 'everyMinute'],
             'allowed' => ['everyMinute', 'everyFiveMinutes'],
             'criticality' => 'core',
@@ -525,6 +534,7 @@ return [
         ],
         'chat.send_scheduled' => [
             'command' => 'chat:send-scheduled',
+            'guard' => \App\Scheduling\Guards\ScheduledMessagesDue::class,
             'cadence' => ['type' => 'everyMinute'],
             'allowed' => ['everyMinute', 'everyFiveMinutes'],
             'criticality' => 'core',
@@ -582,6 +592,7 @@ return [
         ],
         'events.dispatch_reminders' => [
             'command' => 'events:dispatch-reminders',
+            'guard' => \App\Scheduling\Guards\EventRemindersDue::class,
             'cadence' => ['type' => 'everyFiveMinutes'],
             'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes'],
             'criticality' => 'core',
@@ -589,6 +600,7 @@ return [
         ],
         'tickets.scan_sla_breaches' => [
             'command' => 'tickets:scan-sla-breaches',
+            'guard' => \App\Scheduling\Guards\SlaDeadlinesPending::class,
             'cadence' => ['type' => 'everyFiveMinutes'],
             'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes'],
             'criticality' => 'core',
@@ -634,6 +646,7 @@ return [
         ],
         'whistleblowing.scan' => [
             'command' => 'whistleblowing:scan',
+            'guard' => \App\Scheduling\Guards\WhistleblowingScanPending::class,
             'cadence' => ['type' => 'everyFiveMinutes'],
             'allowed' => ['everyMinute', 'everyFiveMinutes', 'everyFifteenMinutes'],
             'criticality' => 'core',
@@ -1071,6 +1084,7 @@ return [
         // Verbindungen, die ein Webhook gemeldet hat — ohne Flag passiert nichts.
         'cloud-intake.wake' => [
             'command' => 'cloud-intake:wake',
+            'guard' => \App\Scheduling\Guards\CloudIntakeConnectionsExist::class,
             'plugin' => 'dropbox,google-drive,msgraph,nextcloud',
             'cadence' => ['type' => 'everyFiveMinutes'],
             'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes'],
@@ -1364,6 +1378,15 @@ return [
             'plugin' => 'lexoffice',
             'cadence' => ['type' => 'hourly'],
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 5, // inkrementell seit perf-05; der Volllauf ist ein eigener Job
+        ],
+        // Volllauf je Kontakt mit Archivierung verschwundener Belege (perf-05): einmal täglich statt stündlich.
+        'lexoffice.sync_vouchers_full' => [
+            'command' => 'lexoffice:sync-vouchers --full',
+            'plugin' => 'lexoffice',
+            'cadence' => ['type' => 'dailyAt', 'time' => '05:50'],
+            'allowed' => ['dailyAt', 'weeklyOn'],
             'criticality' => 'integration',
             'expected_runtime_minutes' => 15,
         ],

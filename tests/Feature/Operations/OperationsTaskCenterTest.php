@@ -178,7 +178,8 @@ class OperationsTaskCenterTest extends TestCase {
     }
 
     public function test_watchdog_overdue_creates_task_and_success_resolves_it(): void {
-        $this->travelTo(now()->startOfHour()->addMinutes(45));
+        // 45 Minuten nach dem versetzten Stundenslot des Jobs (Leistungsanalyse 2026-11-02, perf-01).
+        $this->travelTo(now()->startOfHour()->addMinutes(\App\Scheduling\JobOffset::minutes('toggl.import', \App\Scheduling\CadenceType::Hourly) + 45));
         // toggl.import ist plugin-gebunden (config/scheduler.php: plugin => 'toggl').
         // Der Watchdog meldet Überfälligkeit NUR, wenn das Plugin irgendwo aktiv ist
         // (sonst reines Rauschen auf Instanzen ohne Toggl). Precondition explizit

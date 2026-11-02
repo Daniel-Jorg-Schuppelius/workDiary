@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Reselling;
 
 use App\Enums\Contract\ContractPartnerType;
-use App\Enums\Reselling\{BillingFrequency, CompanyMappingMode, ImportStatus, LinkOrigin};
+use App\Enums\Reselling\{BillingFrequency, CompanyMappingMode, ImportStatus};
 use App\Enums\Reselling\{PeriodStatus, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
@@ -29,18 +29,18 @@ use App\Services\Platform\Catalog\ArticleCatalog;
 use App\Services\Reselling\Contracts\DomainHolderWriter;
 use App\Services\Reselling\Marketplace\MarketplaceCompany;
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine, MirrorVoucher};
-use App\Services\Reselling\Plan\{PlanLine, RecurringPlans};
+use App\Services\Reselling\Plan\{PlanLine, PlanLinkEditor, RecurringPlans};
 use App\Services\Reselling\Register\{DomainSubscriptionSync, HolderResolver, HolderTakeover, LicenceAssignments, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodLinker, PeriodPlanner, RecipientReconciler, ResaleOverview};
 use App\Support\{CsvExport, ErrorText, Sqid, UrlSafety};
-use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
-use Carbon\Exceptions\InvalidFormatException;
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Enums\DateTimeFormat;
+use CommonToolkit\Helper\Data\{DateHelper, JsonHelper};
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\{Builder, Collection};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{DB, Gate, Log, Storage};
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -145,10 +145,8 @@ class ResaleSubscriptionController extends Controller {
         $organization = $this->currentOrganizationOrAbort(404);
         $this->mirror->preload($organization, $subscription->periods->flatMap(static fn(ResalePeriod $p) => $p->links));
         $today = ResalePeriod::today();
-        // Ziele der Schnellzuordnung: noch nicht entschieden oder teilweise gedeckt, Beginn erreicht.
-        $openPeriods = $subscription->periods
-            ->filter(static fn(ResalePeriod $p): bool => (! $p->status->isDecided() || $p->status === PeriodStatus::Partial) && ! $p->starts_on->greaterThan($today))
-            ->values();
+        // Ziele der Schnellzuordnung: fällige, nicht entschiedene Perioden.
+        $openPeriods = $subscription->duePeriods($today);
 
         $plans = app(RecurringPlans::class);
         $planLinks = ResalePlanLink::query()->where('subscription_id', $subscription->id)->get()
@@ -313,25 +311,26 @@ class ResaleSubscriptionController extends Controller {
         return $line->articleIsLicence ? SubscriptionKind::License : SubscriptionKind::Other;
     }
 
-    public function store(SaveResaleSubscriptionRequest $request, PeriodPlanner $planner): RedirectResponse {
-        $subscription = ResaleSubscription::query()->create($request->subscriptionAttributes() + [
-            'organization_id' => $this->currentOrganizationId(),
-            'created_by_user_id' => $request->user()?->id,
-        ]);
-        $planner->sync($subscription);
-        // Aus einer Vorlagenposition angelegt: die Zuordnung gleich festhalten (Feature 185, MVP-1413).
-        $planKey = trim((string) $request->input('plan_key', ''));
-        if ($planKey !== '') {
-            ResalePlanLink::query()->create([
-                'organization_id' => $subscription->organization_id,
-                'subscription_id' => $subscription->id,
-                'plan_key' => mb_substr($planKey, 0, 120),
-                'line_position' => max(0, (int) $request->input('plan_position', 0)),
-                'quantity' => $subscription->quantity,
-                'origin' => LinkOrigin::Manual,
-                'confirmed_at' => now(),
-                'created_by' => $request->user()?->id,
-            ]);
+    public function store(SaveResaleSubscriptionRequest $request, PeriodPlanner $planner, PlanLinkEditor $planLinks): RedirectResponse {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $planKey = $request->planKey();
+        try {
+            $subscription = DB::transaction(function () use ($request, $planner, $planLinks, $organization, $planKey): ResaleSubscription {
+                $subscription = ResaleSubscription::query()->create($request->subscriptionAttributes() + [
+                    'organization_id' => $organization->id,
+                    'created_by_user_id' => $request->user()?->id,
+                ]);
+                $planner->sync($subscription);
+                // Aus einer Vorlagenposition angelegt: die Zuordnung gleich festhalten (Feature 185, MVP-1413) — über den
+                // Editor, der die freien Lizenzen der Position prüft und das Audit schreibt (Sicherheitsaudit 2026-11-02, sec-04).
+                if ($planKey !== null) {
+                    $planLinks->save($organization, $subscription, $planKey, $request->planPosition(), $subscription->quantity, $request->user()?->id);
+                }
+
+                return $subscription;
+            });
+        } catch (\InvalidArgumentException $e) {
+            throw ValidationException::withMessages(['quantity' => ErrorText::for($e)]);
         }
 
         return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.flash.created'));
@@ -440,16 +439,21 @@ class ResaleSubscriptionController extends Controller {
     public function transferStore(TransferResaleSubscriptionRequest $request, ResaleSubscription $subscription, LicenceAssignments $assignments, LinkProposer $proposer): RedirectResponse {
         $quantity = (int) $request->validated('quantity');
         $salePrice = $request->validated('sale_unit_price');
-        $assignment = $assignments->create(
-            $subscription,
-            $request->holder(),
-            $quantity,
-            (string) $request->validated('starts_on'),
-            $request->validated('ends_on') ?: $subscription->ends_on?->toDateString(),
-            is_numeric($salePrice) ? (string) $salePrice : null,
-            $request->validated('note') ?: null,
-            $request->user()?->id,
-        );
+        try {
+            $assignment = $assignments->create(
+                $subscription,
+                $request->holder(),
+                $quantity,
+                (string) $request->validated('starts_on'),
+                $request->validated('ends_on') ?: $subscription->ends_on?->toDateString(),
+                is_numeric($salePrice) ? (string) $salePrice : null,
+                $request->validated('note') ?: null,
+                $request->user()?->id,
+            );
+        } catch (\InvalidArgumentException $e) {
+            // Unter der Sperre war weniger frei als im Validator (Sicherheitsaudit 2026-11-02, sec-02).
+            throw ValidationException::withMessages(['quantity' => ErrorText::for($e)]);
+        }
 
         $redirect = $this->backToCaller($subscription)->with('success', __('resale.transfer.flash.created', ['quantity' => $quantity, 'holder' => $assignment->holderLabel()]));
         try {
@@ -474,8 +478,7 @@ class ResaleSubscriptionController extends Controller {
             'subscription' => $subscription->load(['customer', 'foreignCustomer', 'parent']),
             'from' => $from,
             'whole' => HolderTakeover::isWhole($subscription, $from),
-            'openPeriods' => $subscription->periods()->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
-                ->where('starts_on', '<', DateRange::dayAfter(ResalePeriod::today()))->orderBy('starts_on')->get(),
+            'openPeriods' => $subscription->periods()->due()->orderBy('starts_on')->get(),
             'customerDefault' => $customerId !== null ? Sqid::encode(Customer::class, $customerId) : '',
         ] + $this->holderPicker());
     }
@@ -483,7 +486,11 @@ class ResaleSubscriptionController extends Controller {
     public function takeoverStore(TakeoverResaleSubscriptionRequest $request, ResaleSubscription $subscription, HolderTakeover $takeover, LinkProposer $proposer): RedirectResponse {
         $from = $request->takeoverDate();
         $before = $subscription->holderLabel();
-        $result = $takeover->apply($subscription, $request->holder(), $from, $request->boolean('waive_before'), $request->validated('note') ?: null, $request->user()?->id);
+        try {
+            $result = $takeover->apply($subscription, $request->holder(), $from, $request->boolean('waive_before'), $request->validated('note') ?: null, $request->user()?->id);
+        } catch (\InvalidArgumentException $e) {
+            throw ValidationException::withMessages(['starts_on' => ErrorText::for($e)]);
+        }
         $redirect = $this->backToCaller($subscription)->with('success', __('resale.takeover.flash', [
             'holder' => $before, 'customer' => $result['subscription']->holderLabel(), 'date' => $from->format('d.m.Y'), 'waived' => $result['waived'],
         ]));
@@ -831,7 +838,7 @@ class ResaleSubscriptionController extends Controller {
             'ids' => ['required', 'array', 'max:' . BulkAssignResaleHolderRequest::MAX_IDS],
             'ids.*' => ['string', 'max:64'],
         ]);
-        $ids = array_values(array_filter(array_map(static fn(string $sqid): ?int => Sqid::decode(ResaleSubscription::class, $sqid), $data['ids'])));
+        $ids = Sqid::decodeMany(ResaleSubscription::class, $data['ids']);
 
         return ResaleSubscription::query()->whereKey($ids)->orderBy('label')->get();
     }
@@ -847,22 +854,14 @@ class ResaleSubscriptionController extends Controller {
     }
 
     /**
-     * ISO-Datum aus der Query (die Links des Abgleichs), alles andere gilt als
+     * Datum aus der Query (die Links des Abgleichs), alles andere gilt als
      * nicht angegeben — `parse('x')` wäre „heute", Überläufe wie 2025-13-45
-     * würden still weitergerechnet, deshalb Format + Rundlauf-Prüfung.
+     * rechnete Carbon still weiter. Nur ein reines Datum, kein Zeitstempel.
      */
     private function queryDate(Request $request, string $key): ?CarbonImmutable {
-        $value = trim((string) $request->query($key, ''));
-        if ($value === '') {
-            return null;
-        }
-        try {
-            $date = CarbonImmutable::createFromFormat('!Y-m-d', $value);
-        } catch (InvalidFormatException) {
-            return null;
-        }
+        $iso = DateHelper::normalizeToIso(trim((string) $request->query($key, '')), DateTimeFormat::ISO);
 
-        return $date !== null && $date->toDateString() === $value ? $date : null;
+        return $iso !== null && strlen($iso) === 10 ? CarbonImmutable::parse($iso) : null;
     }
 
     private function contractsEnabled(): bool {

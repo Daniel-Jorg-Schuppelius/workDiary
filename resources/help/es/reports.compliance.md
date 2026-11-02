@@ -54,6 +54,7 @@ para los administradores; a todos los demás se les deniega el acceso.
   activos** (personas con al menos una entrada) y **Tipos de entidad** (tipos
   de objeto distintos). También estos dos cuentan todas las entradas del
   período, no solo las listas top 20.
+- Un clic en un mosaico de recuento lleva a la tabla o lista que cuenta; los mosaicos de sumas y cuotas no tienen destino.
 - Gráficos: **Eventos a lo largo del tiempo**, **Principales actores (top
   15)** y los eventos a lo largo del tiempo por tipo de evento.
 - Tablas: **Por evento**, **Por tipo de entidad (Top 20)**, **Por usuario
@@ -84,6 +85,7 @@ conducción y descanso.
 - Mosaicos: **Total de hallazgos** (un clic abre el informe detallado),
   **Empleados afectados**, **Abierto (sin corrección)** y **Con corrección
   aprobada** (hallazgos en días con una corrección de tiempo aprobada).
+- Un clic en un mosaico de recuento lleva a la tabla o lista que cuenta; los mosaicos de sumas y cuotas no tienen destino.
 - Un mosaico por tipo de infracción con el número; un clic abre el informe
   detallado filtrado por ese tipo.
 - Gráficos: hallazgos abiertos a lo largo del tiempo y hallazgos a lo largo
@@ -106,6 +108,7 @@ pasa a **Resuelto**; si vuelve a producirse, vuelve a **Abierto**.
 
 - Mosaicos por estado: **Abierto**, **Confirmado**, **Resuelto** y
   **Aceptado**, contados en toda la organización. Un clic filtra la lista.
+- Un clic en un mosaico de recuento lleva a la tabla o lista que cuenta; los mosaicos de sumas y cuotas no tienen destino.
 - Gráfico **Hallazgos nuevos vs. confirmados por mes** para los últimos 24
   meses con datos.
 - Lista: **Empleado**, **Fecha**, **Tipo**, **Valor**, **Umbral**,

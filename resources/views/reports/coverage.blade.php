@@ -42,16 +42,16 @@
     </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <x-kpi-tile :label="__('Schichttypen')" :value="$totals['shift_types']" :hint="$daySpan . ' ' . __('Tage')" />
+        <x-kpi-tile :label="__('Schichttypen')" :value="$totals['shift_types']" :hint="$daySpan . ' ' . __('Tage')" href="#coverage-by-type" />
         <x-kpi-tile :label="__('Soll (Personentage)')" :value="$totals['required']" />
         <x-kpi-tile :label="__('Ist (Personentage)')" :value="$totals['scheduled']"
                     :hint="($totals['gap'] > 0 ? '+' : '') . $totals['gap']" />
         <x-kpi-tile :label="__('Erfüllung')" :value="$totals['fill_rate'] !== null ? $pct($totals['fill_rate']) : '–'" />
         <x-kpi-tile :label="__('Tage mit Unterdeckung')" :value="$totals['days_under']"
-                    :tone="$totals['days_under'] > 0 ? 'error' : 'neutral'" />
+                    :tone="$totals['days_under'] > 0 ? 'error' : 'neutral'" href="#coverage-underfilled" />
     </div>
 
-    <x-card>
+    <x-card id="coverage-by-type" class="scroll-mt-24">
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Pro Schichttyp') }}</h3>
         @if (empty($rows))
             <x-empty-state icon="shield_person" :title="__('Keine Soll-Vorgaben oder Plan-Einträge im gewählten Zeitraum.')" />
@@ -104,7 +104,7 @@
     </x-card>
 
     @if (! empty($underfilled))
-        <x-card>
+        <x-card id="coverage-underfilled" class="scroll-mt-24">
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-error/80">
                 {{ __('Tage mit Unterdeckung') }}
                 <span class="text-muted">({{ count($underfilled) }})</span>

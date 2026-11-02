@@ -12,16 +12,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\CustomerPortal;
 
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{ResolvesGlobalDateRange, ResolvesPortalUser};
 use App\Http\Controllers\Controller;
 use App\Models\Calendar\AppointmentRequest;
-use App\Models\Platform\User;
 use App\Models\Sales\BookableService;
 use App\Services\Appointments\{AppointmentRequestService, AppointmentSlotService};
 use App\Support\{ErrorText, SqidEncoder};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -34,10 +32,10 @@ use RuntimeException;
  */
 class AppointmentController extends Controller {
     use ResolvesGlobalDateRange;
+    use ResolvesPortalUser;
 
     public function index(AppointmentSlotService $slots, Request $request, SqidEncoder $sqids): View {
-        /** @var User $portalUser */
-        $portalUser = Auth::guard('customer')->user();
+        $portalUser = $this->portalUser();
 
         $services = BookableService::query()
             ->withoutGlobalScopes()
@@ -79,10 +77,8 @@ class AppointmentController extends Controller {
     }
 
     public function store(Request $request, AppointmentRequestService $service, SqidEncoder $sqids): RedirectResponse {
-        /** @var User $portalUser */
-        $portalUser = Auth::guard('customer')->user();
-        $customer = $portalUser->customer;
-        abort_if($customer === null, 404);
+        $portalUser = $this->portalUser();
+        $customer = $this->portalCustomer();
 
         $data = $request->validate([
             'service' => ['required', 'string'],
@@ -108,8 +104,7 @@ class AppointmentController extends Controller {
     }
 
     public function cancel(AppointmentRequest $appointmentRequest, AppointmentRequestService $service): RedirectResponse {
-        /** @var User $portalUser */
-        $portalUser = Auth::guard('customer')->user();
+        $portalUser = $this->portalUser();
         abort_unless($appointmentRequest->organization_id === (int) $portalUser->organization_id, 404);
 
         try {
@@ -123,8 +118,7 @@ class AppointmentController extends Controller {
 
     /** Vorgeschlagenen Ersatztermin annehmen (MVP-1287). */
     public function acceptProposal(AppointmentRequest $appointmentRequest, AppointmentRequestService $service): RedirectResponse {
-        /** @var User $portalUser */
-        $portalUser = Auth::guard('customer')->user();
+        $portalUser = $this->portalUser();
         abort_unless($appointmentRequest->organization_id === (int) $portalUser->organization_id, 404);
 
         try {
@@ -137,8 +131,7 @@ class AppointmentController extends Controller {
     }
 
     public function declineProposal(AppointmentRequest $appointmentRequest, AppointmentRequestService $service): RedirectResponse {
-        /** @var User $portalUser */
-        $portalUser = Auth::guard('customer')->user();
+        $portalUser = $this->portalUser();
         abort_unless($appointmentRequest->organization_id === (int) $portalUser->organization_id, 404);
 
         try {

@@ -70,7 +70,7 @@
         </x-filter-bar>
 
         <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <x-kpi-tile :label="__('customer_portal.time.kpi_year', ['year' => $year])" :value="$hours($kpis['year_minutes'])" format="text" tone="primary" />
+            <x-kpi-tile :label="__('customer_portal.time.kpi_year', ['year' => $year])" :value="$hours($kpis['year_minutes'])" format="text" tone="primary" :href="route('customer.time-entries.index', ['year' => $year])" />
             <x-kpi-tile :label="__('customer_portal.time.kpi_filtered')" :value="$hours($kpis['filtered_minutes'])" format="text" tone="info" />
             <x-kpi-tile :label="__('customer_portal.time.kpi_entries')" :value="$kpis['entries']" />
             <x-kpi-tile :label="__('customer_portal.time.kpi_projects')" :value="$kpis['projects']" />

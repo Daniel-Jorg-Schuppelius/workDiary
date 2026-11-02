@@ -287,11 +287,12 @@ return [
         'note_domain_typo' => 'Dominio escrito como «:written» en lugar de «:domain» en el texto de la factura (error tipográfico); compruébelo',
         'no_lines' => 'No hay líneas de factura reflejadas en la ventana alrededor del inicio del periodo.',
         'line' => 'Línea de factura',
-        'line_hint' => 'Primero las líneas de suscripción del destinatario dentro de la ventana del periodo, debajo todas las demás; la búsqueda encuentra cualquier factura por su número. Si falta un artículo, clasifíquelo como producto de suscripción en «Productos».',
+        'line_hint' => 'Primero las líneas de suscripción del destinatario dentro de la ventana del periodo; «Mostrar todas las facturas» añade las demás y la búsqueda encuentra entonces cualquier factura por su número. Si falta un artículo, clasifíquelo como producto de suscripción en «Productos».',
         'search' => 'Buscar factura (número, fecha, artículo)',
         'no_match' => 'Ninguna factura coincide con la búsqueda.',
         'group_window' => 'Dentro de la ventana del periodo',
         'group_other' => 'Otras facturas del destinatario',
+        'show_all' => 'Mostrar todas las facturas del destinatario',
         'line_used' => 'ya consumida',
         'months_field' => 'Meses de licencia cubiertos',
         'months_hint' => 'Línea con precio mensual: cantidad = meses por licencia. Línea anual: 12 por unidad.',
@@ -332,6 +333,8 @@ return [
             'line_missing' => 'Línea de factura no encontrada.',
             'exceeds' => 'La línea solo tiene :amount disponibles.',
             'exceeds_period' => 'El periodo solo necesita :amount más; no se le puede asignar más.',
+            'not_decidable' => 'El periodo ya está decidido o aún no ha comenzado; renunciar o disputar solo es posible en periodos vencidos sin decidir.', // Sicherheitsaudit 2026-11-02, sec-03/sec-05
+            'not_confirmable' => 'El periodo no tiene propuesta abierta o aún no ha comenzado; no hay nada que confirmar.',
         ],
     ],
     'widget' => [
@@ -408,6 +411,8 @@ return [
         'error' => [
             'nothing_open' => 'No hay periodos abiertos con precio de venta para este destinatario.',
             'all_planned' => 'Los periodos abiertos de este destinatario los factura una plantilla periódica activa.',
+            'locked' => 'Ahora mismo se está creando un borrador de factura para este destinatario; espere un momento y recargue la página.', // Sicherheitsaudit 2026-11-02, sec-01
+            'changed' => 'Los periodos han cambiado entretanto (otro borrador o una decisión); vuelva a abrir el diálogo.',
         ],
         'already_drafted' => 'Ya hay un borrador pendiente para este destinatario (:reference del :date). Termínelo primero en Lexoffice o localmente, o decida el periodo.', // Review 2026-09-10
         'no_target' => 'Para el modo de facturación «:mode» de este destinatario no hay registrado ningún destino de borrador — active el plugin o ponga al cliente en facturación local.', // Review 2026-09-11
@@ -1473,6 +1478,7 @@ return [
             'same_holder' => 'El nuevo titular es el anterior.',
             'after_end' => 'La fecha efectiva es posterior al fin de la suscripción (:date).',
             'nothing_free' => 'A partir de la fecha efectiva todas las licencias del contrato están cedidas o ya facturadas al titular anterior: iniciar el traspaso en la cesión correspondiente o cambiar la fecha efectiva.',
+            'billed_whole' => 'Ya hay periodos de esta suscripción facturados a :holder; la suscripción entera no puede cambiar de titular. Elija una fecha efectiva a partir del :date; los periodos facturados se quedan entonces con el titular anterior.', // Sicherheitsaudit 2026-11-02, sec-06
         ],
     ],
 ];

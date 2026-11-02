@@ -52,6 +52,18 @@ class DomainController extends Controller {
         if (($days = (int) $request->query('expiry_within', 0)) > 0) {
             $query->whereNotNull('expiration_at')->where('expiration_at', '<=', Carbon::now()->addDays($days));
         }
+        // Kachelfilter (ux-pattern-katalog §4): dieselben Mengen wie metrics(); die Kachelwerte bleiben stehen.
+        $show = (string) $request->query('show', '');
+        match ($show) {
+            'risky' => $query->whereIn('renewal_mode', [DomainRenewalMode::Autoexpire->value, DomainRenewalMode::Autodelete->value]),
+            'unmapped' => $query->whereNull('customer_id')->where('is_own_holding', false)
+                ->where(function ($q): void {
+                    $q->whereNull('reseller_account_id')
+                        ->orWhereDoesntHave('resellerAccount', fn($r) => $r->whereNotNull('customer_id'));
+                }),
+            'sync_issues' => $query->whereIn('sync_status', [DomainSyncStatus::Conflict->value, DomainSyncStatus::Unknown->value]),
+            default => $show = '',
+        };
 
         $domains = $query->orderBy('external_domain')->paginate(25)->withQueryString();
 
@@ -65,7 +77,7 @@ class DomainController extends Controller {
         return view('domain.index', [
             'domains' => $domains,
             'metrics' => $this->metrics(),
-            'filters' => $request->only(['q', 'customer', 'sync', 'renewal_mode', 'tld', 'expiry_within']),
+            'filters' => $request->only(['q', 'customer', 'sync', 'renewal_mode', 'tld', 'expiry_within']) + ['show' => $show],
             'registerConnections' => $connections,
             'registerCustomers' => $connections->isNotEmpty() ? Customer::query()->orderBy('name')->get(['id', 'name']) : collect(),
         ]);

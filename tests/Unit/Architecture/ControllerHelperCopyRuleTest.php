@@ -24,12 +24,18 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
  * (ResolvesCurrentOrganization). Gemeldet werden Methoden, deren Rumpf nur
  * den angemeldeten Nutzer auflöst oder nur die Organisation eines
  * Datensatzes vergleicht — eigene Rechteprüfungen bleiben erlaubt.
+ *
+ * Konsolidierungs-Audit 2026-11-02 (kon-12, kon-13): auch die Inline-Form
+ * zählt — `abort_unless(… ->canManageBilling() …, 403)` statt
+ * `authorizeBilling()` und „Kunde des Portalkontos“ mit eigenem Abbruch
+ * statt `portalCustomer()` (nur in Portal-Controllern).
  */
 class ControllerHelperCopyRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad → Begründung */
-    private const ALLOW_LIST = [];
+    private const ALLOW_LIST = [
+    ];
 
     private const METHOD = '/^    (?:private|protected|public) function (\w+)\(([^)]*)\): (\??[\\\\\w]+) \{\n(.*?)^    \}$/sm';
 
@@ -38,6 +44,14 @@ class ControllerHelperCopyRuleTest extends TestCase {
         . 'return \$\1(?: instanceof User \? \$\1 : (?:null|abort\(\d+\)))?;$~';
 
     private const SAME_ORG = '~^abort_unless\((?:\(int\) )?\$\w+->organization_id === (?:\(int\) )?[^,;]+, \d+\);$~';
+
+    /** @var array<string, string> Baustein → Inline-Kopie im Quelltext (unabhängig vom Methodenrumpf) */
+    private const INLINE = [
+        'authorizeBilling()' => '~abort_unless\((?:Auth::user\(\)|auth\(\)->user\(\)|\$request->user\(\)|\$\w+)\??->canManageBilling\(\)(?: \?\? false)?, 403\);~',
+        'portalCustomer()' => '~\$\w+ = \$\w+->customer;\s*abort_(?:if|unless)\(\$\w+ (?:=== null|instanceof Customer)[^;]*\);'
+            . '|\$\w+->customer \?\? abort\(\d+\)'
+            . '|\$\w+->customer instanceof Customer \? \$\w+->customer : abort\(\d+\)~',
+    ];
 
     public function test_controllers_use_the_shared_helpers_instead_of_copies(): void {
         $violations = [];
@@ -63,6 +77,14 @@ class ControllerHelperCopyRuleTest extends TestCase {
                     $violations[] = sprintf('%s — %s() statt %s', $relative, $name, $copy);
                 }
             }
+            foreach (self::INLINE as $helper => $pattern) {
+                if ($helper === 'portalCustomer()' && ! str_contains($relative, 'Portal/')) {
+                    continue;
+                }
+                if (preg_match($pattern, $source, $match, PREG_OFFSET_CAPTURE) === 1) {
+                    $violations[] = sprintf('%s:%d — %s statt %s', $relative, $this->lineOf($source, (int) $match[0][1]), trim((string) preg_replace('/\s+/', ' ', $match[0][0])), $helper);
+                }
+            }
         }
 
         sort($violations);
@@ -82,5 +104,19 @@ class ControllerHelperCopyRuleTest extends TestCase {
         $this->assertSame(1, preg_match(self::SAME_ORG, 'abort_unless((int) $rule->organization_id === (int) $this->currentOrganizationOrAbort()->id, 404);'));
         $this->assertSame(1, preg_match(self::SAME_ORG, 'abort_unless($survey->organization_id === $this->orgId(), 404);'));
         $this->assertSame(0, preg_match(self::SAME_ORG, 'abort_unless($item->isOpen(), 422);'));
+
+        $billing = static fn (string $source): bool => preg_match(self::INLINE['authorizeBilling()'], $source) === 1;
+        $this->assertTrue($billing('abort_unless(Auth::user()?->canManageBilling() ?? false, 403);'));
+        $this->assertTrue($billing('abort_unless($request->user()?->canManageBilling() ?? false, 403);'));
+        $this->assertTrue($billing('abort_unless($actor->canManageBilling(), 403);'));
+        $this->assertFalse($billing("abort_unless(\$admin->canManageBilling() && \$modules->isActiveFor(\$organization, 'module.finance'), 403);"), 'eigene Kombination mit Modulprüfung');
+        $this->assertFalse($billing("'canManage' => \$user->canManageBilling(),"));
+
+        $portal = static fn (string $source): bool => preg_match(self::INLINE['portalCustomer()'], $source) === 1;
+        $this->assertTrue($portal('$customer = $user->customer; abort_if($customer === null, 404);'));
+        $this->assertTrue($portal("\$customer = \$user->customer;\n        abort_unless(\$customer instanceof Customer && (int) \$customer->organization_id === (int) \$user->organization_id, 403);"));
+        $this->assertTrue($portal('$customer = $user->customer ?? abort(404);'));
+        $this->assertTrue($portal('return $user instanceof User && $user->customer instanceof Customer ? $user->customer : abort(403);'));
+        $this->assertFalse($portal('$assets = $user->customer !== null ? $this->visibility->assetsFor($user->customer) : collect();'), 'optionaler Kunde ohne Abbruch');
     }
 }

@@ -43,6 +43,11 @@ class PassengerRideController extends Controller {
 
         $statusFilter = RideStatus::tryFrom($request->string('status')->toString())?->value;
         $modeFilter = RideOperationMode::tryFrom($request->string('mode')->toString())?->value;
+        // Kachelfilter (ux-pattern-katalog §4): offen bzw. Rückgabenachweis fehlt; die Kachelwerte bleiben stehen.
+        $show = $request->string('show')->toString();
+        if (! in_array($show, ['open', 'return_proof'], true)) {
+            $show = '';
+        }
 
         $rides = PassengerRide::query()
             ->with(['driver', 'vehicle', 'tariff'])
@@ -52,12 +57,16 @@ class PassengerRideController extends Controller {
             })
             ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter))
             ->when($modeFilter !== null, fn($q) => $q->where('operation_mode', $modeFilter))
+            ->when($show === 'open', fn($q) => $q->open())
+            ->when($show === 'return_proof', fn($q) => $q->where('operation_mode', RideOperationMode::RentalCar->value)
+                ->where('status', RideStatus::Completed->value)->whereNull('returned_to_base_at'))
             ->orderByDesc('id')
             ->paginate(25)
             ->withQueryString();
 
         return view('passenger.rides.index', [
             'rides' => $rides,
+            'show' => $show,
             'openCount' => PassengerRide::query()->open()->count(),
             'returnProofCount' => PassengerRide::query()
                 ->where('operation_mode', RideOperationMode::RentalCar->value)

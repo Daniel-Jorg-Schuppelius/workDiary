@@ -56,6 +56,8 @@ class PrintOrderController extends Controller {
         [$from, $to] = $this->globalDateRangeBounds();
 
         $statusFilter = PrintOrderStatus::tryFrom($request->string('status')->toString())?->value;
+        // Kachel „offen“ (ux-pattern-katalog §4): alle Status außer ausgegeben und storniert.
+        $showOpen = $request->string('show')->toString() === 'open';
         $orders = PrintOrder::query()
             ->with(['manufacturingOrder.article', 'documentVersion'])
             // Offene Aufträge immer zeigen; geschlossene nur im globalen Zeitraum.
@@ -63,12 +65,14 @@ class PrintOrderController extends Controller {
                 $query->open()->orWhereBetween('created_at', [$from, $to]);
             })
             ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter))
+            ->when($showOpen, fn($q) => $q->open())
             ->orderByDesc('id')
             ->paginate(25)
             ->withQueryString();
 
         return view('print.orders.index', [
             'orders' => $orders,
+            'showOpen' => $showOpen,
             'openCount' => PrintOrder::query()->open()->count(),
         ]);
     }

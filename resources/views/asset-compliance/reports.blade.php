@@ -31,17 +31,17 @@
 
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <x-kpi-tile :label="__('Prüfpflichten')" :value="$assignmentCount" />
-        <x-kpi-tile :label="__('Überfällig')" :value="$overdueCount" />
-        <x-kpi-tile :label="__('Gesperrt (Prüfwesen)')" :value="$blockedCount" />
+        <x-kpi-tile :label="__('Prüfpflichten')" :value="$assignmentCount" :href="route('asset-compliance.index')" />
+        <x-kpi-tile :label="__('Überfällig')" :value="$overdueCount" :href="route('asset-compliance.index', ['show' => 'overdue'])" />
+        <x-kpi-tile :label="__('Gesperrt (Prüfwesen)')" :value="$blockedCount" :href="route('asset-compliance.index') . '#compliance-blocks'" />
         <x-kpi-tile :label="__('Prüfquote')" :value="$passRate !== null ? $passRate . ' %' : '—'" />
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <x-kpi-tile :label="__('Prüfungen im Zeitraum')" :value="$inspectionCount" />
-        <x-kpi-tile :label="__('Nicht bestanden')" :value="$failedCount" />
+        <x-kpi-tile :label="__('Prüfungen im Zeitraum')" :value="$inspectionCount" href="#inspections-by-inspector" />
+        <x-kpi-tile :label="__('Nicht bestanden')" :value="$failedCount" href="#failed-inspections" />
         <x-kpi-tile :label="__('Zertifikate')" :value="$certificateCount" />
-        <x-kpi-tile :label="__('Bald fällig')" :value="$dueSoonCount" />
+        <x-kpi-tile :label="__('Bald fällig')" :value="$dueSoonCount" :href="route('asset-compliance.index', ['show' => 'due_soon'])" />
     </div>
 
     {{-- Prüfkosten (MVP-291; Vollaudit 2026-07, M33). --}}
@@ -67,7 +67,7 @@
             </x-table>
         </x-card>
 
-        <x-card :title="__('Prüfungen nach Prüfer (Top 10)')" padding="p-0">
+        <x-card :title="__('Prüfungen nach Prüfer (Top 10)')" padding="p-0" id="inspections-by-inspector" class="scroll-mt-24">
             <x-table bare>
                 <x-slot:head><tr><th>{{ __('Prüfer') }}</th><th class="text-right">{{ __('Prüfungen') }}</th></tr></x-slot:head>
                 @forelse ($byInspector as $inspector => $count)
@@ -82,7 +82,7 @@
         </x-card>
     </div>
 
-    <x-card :title="__('Abweichungen (nicht bestanden)')" padding="p-0">
+    <x-card :title="__('Abweichungen (nicht bestanden)')" padding="p-0" id="failed-inspections" class="scroll-mt-24">
         <x-table bare>
             <x-slot:head><tr><th>{{ __('Asset') }}</th><th>{{ __('Zeitpunkt') }}</th><th>{{ __('Bemerkung') }}</th></tr></x-slot:head>
             @forelse ($deviations as $row)

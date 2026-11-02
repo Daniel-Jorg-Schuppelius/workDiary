@@ -12,17 +12,16 @@ declare(strict_types=1);
 
 namespace App\Plugins\Leantime;
 
-use App\Plugins\Support\PluginSettingsResolver;
+use App\Plugins\Support\{PluginSettingsResolver, SelfHostedConfig};
 
 /** Leantime-Zugang je Organisation aus den Plugin-Einstellungen. */
 final class LeantimeConfig {
     /** @return array{base_url: ?string, api_key: ?string} */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(LeantimePlugin::ID, $organizationId);
-        $baseUrl = $r->string('base_url', trim: true);
 
         return [
-            'base_url' => $baseUrl !== null ? rtrim($baseUrl, '/') : null,
+            'base_url' => SelfHostedConfig::baseUrl($r),
             'api_key' => $r->string('api_key', trim: true),
         ];
     }

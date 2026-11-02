@@ -35,12 +35,12 @@
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <x-kpi-tile :label="__('Summe (Brutto)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($grandTotal, 2, withThousandsSeparator: true) . ' €'" />
-        <x-kpi-tile :label="__('user.employees')" :value="count($totalsPerUser)" />
-        <x-kpi-tile :label="__('Kategorien')" :value="count($totalsPerCategory)" />
-        <x-kpi-tile :label="__('Monate')" :value="count($months)" />
+        <x-kpi-tile :label="__('user.employees')" :value="count($totalsPerUser)" href="#expenses-matrix" />
+        <x-kpi-tile :label="__('Kategorien')" :value="count($totalsPerCategory)" href="#expenses-categories" />
+        <x-kpi-tile :label="__('Monate')" :value="count($months)" href="#expenses-matrix" />
     </div>
 
-    <x-card class="overflow-x-auto">
+    <x-card class="overflow-x-auto" id="expenses-matrix" class="scroll-mt-24">
         @if (empty($rows))
             <x-empty-state icon="receipt_long"
                            :title="__('Keine Spesen im gewählten Zeitraum.')" />
@@ -93,7 +93,7 @@
     </x-card>
 
     @if (! empty($totalsPerCategory))
-        <x-card>
+        <x-card id="expenses-categories" class="scroll-mt-24">
             <h3 class="font-['Space_Grotesk'] text-lg font-semibold mb-3">{{ __('Top-Kategorien') }}</h3>
             <div class="grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 @php arsort($totalsPerCategory); @endphp

@@ -66,7 +66,7 @@
 
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <x-kpi-tile :label="__('Ausgaben gesamt')" :value="$eur($concentration['totalSpend'])" tone="primary" />
-        <x-kpi-tile :label="__('Aktive Lieferanten')" :value="$concentration['activeSuppliers']" tone="info" />
+        <x-kpi-tile :label="__('Aktive Lieferanten')" :value="$concentration['activeSuppliers']" tone="info" href="#suppliers-table" />
         <x-kpi-tile :label="__('Top-5-Anteil')" :value="$concentration['top5Share'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($concentration['top5Share'], 1) . ' %' : '–'"
                     :tone="($concentration['top5Share'] ?? 0) > 60 ? 'warning' : 'neutral'"
                     :hint="__('Klumpenrisiko ab ~60 %')" />
@@ -122,7 +122,7 @@
     <x-charts.bar-h :title="__('Offener Betrag je Lieferant (Top 15)')" unit="€" :series="$openSeries" :x-label="__('Lieferant')" :y-label="__('Offener Betrag')"
                     :note="__('Offene Verbindlichkeiten aus nicht vollständig bezahlten Einkaufsbelegen.')" />
 
-    <x-card class="mt-4">
+    <x-card class="mt-4" id="suppliers-table" class="scroll-mt-24">
         <div class="mb-3 text-xs text-muted">{{ __('Zeitraum') }}: {{ $label }}</div>
 
         @if ($rows->isEmpty())

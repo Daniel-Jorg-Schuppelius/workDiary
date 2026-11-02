@@ -61,14 +61,14 @@
 
     <div class="grid gap-3 grid-cols-2 sm:grid-flow-col sm:auto-cols-fr">
         <x-kpi-tile :label="__('reporting.presence_emergency.group_present')"
-                    :value="count($snapshot['present']) + count($snapshot['present_unmapped'])" tone="success" />
-        <x-kpi-tile :label="__('reporting.presence_emergency.group_off_site')" :value="count($snapshot['off_site'])" tone="info" />
-        <x-kpi-tile :label="__('reporting.presence_emergency.group_absent')" :value="count($snapshot['absent'])" />
+                    :value="count($snapshot['present']) + count($snapshot['present_unmapped'])" tone="success" href="#pe-present" />
+        <x-kpi-tile :label="__('reporting.presence_emergency.group_off_site')" :value="count($snapshot['off_site'])" tone="info" href="#pe-off-site" />
+        <x-kpi-tile :label="__('reporting.presence_emergency.group_absent')" :value="count($snapshot['absent'])" href="#pe-absent" />
         <x-kpi-tile :label="__('reporting.presence_emergency.group_unaccounted')" :value="count($snapshot['unaccounted'])"
-                    :tone="count($snapshot['unaccounted']) > 0 ? 'warning' : 'neutral'" />
+                    :tone="count($snapshot['unaccounted']) > 0 ? 'warning' : 'neutral'" href="#pe-unaccounted" />
     </div>
 
-    <x-card :title="__('reporting.presence_emergency.group_present')">
+    <x-card :title="__('reporting.presence_emergency.group_present')" id="pe-present" class="scroll-mt-24">
         @if ($snapshot['present'] === [])
             <p class="text-sm text-muted">{{ __('reporting.presence_emergency.empty_group') }}</p>
         @else
@@ -117,7 +117,7 @@
         </x-card>
     @endif
 
-    <x-card :title="__('reporting.presence_emergency.group_off_site')">
+    <x-card :title="__('reporting.presence_emergency.group_off_site')" id="pe-off-site" class="scroll-mt-24">
         @if ($snapshot['off_site'] === [])
             <p class="text-sm text-muted">{{ __('reporting.presence_emergency.empty_group') }}</p>
         @else
@@ -140,7 +140,7 @@
         @endif
     </x-card>
 
-    <x-card :title="__('reporting.presence_emergency.group_absent')">
+    <x-card :title="__('reporting.presence_emergency.group_absent')" id="pe-absent" class="scroll-mt-24">
         @if ($snapshot['absent'] === [])
             <p class="text-sm text-muted">{{ __('reporting.presence_emergency.empty_group') }}</p>
         @else
@@ -161,7 +161,7 @@
         @endif
     </x-card>
 
-    <x-card :title="__('reporting.presence_emergency.group_unaccounted')">
+    <x-card :title="__('reporting.presence_emergency.group_unaccounted')" id="pe-unaccounted" class="scroll-mt-24">
         <p class="mb-2 text-sm text-muted">{{ __('reporting.presence_emergency.unaccounted_hint') }}</p>
         @if ($snapshot['unaccounted'] === [])
             <p class="text-sm text-muted">{{ __('reporting.presence_emergency.empty_group') }}</p>

@@ -15,6 +15,7 @@ namespace App\Services\Reselling\Plan;
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\ResalePlanLink;
+use App\Services\Reselling\Register\ResaleRequestMemo;
 use Illuminate\Support\Collection;
 
 /**
@@ -51,17 +52,26 @@ final class RecurringPlans {
         return false;
     }
 
-    /** @return Collection<int, PlanTemplate> */
+    /**
+     * Serienvorlagen aller verfügbaren Quellen — je Request einmal geladen
+     * ({@see ResaleRequestMemo}, nicht im Singleton; Leistungsanalyse 2026-11-02,
+     * perfc-05): Plan-Befunde, Vorlagenblock und Überblick fragen sie mehrfach.
+     * Ein Vorlagen-Sync im selben Prozess vergisst `plan-templates`.
+     *
+     * @return Collection<int, PlanTemplate>
+     */
     public function templatesFor(Organization $organization): Collection {
-        $templates = collect();
-        foreach ($this->sources as $source) {
-            if (! $source->availableFor($organization)) {
-                continue;
+        return app(ResaleRequestMemo::class)->remember('plan-templates:' . $organization->id, function () use ($organization): Collection {
+            $templates = collect();
+            foreach ($this->sources as $source) {
+                if (! $source->availableFor($organization)) {
+                    continue;
+                }
+                $templates = $templates->merge($source->templatesFor($organization));
             }
-            $templates = $templates->merge($source->templatesFor($organization));
-        }
 
-        return $templates->values();
+            return $templates->values();
+        });
     }
 
     public function templateByKey(Organization $organization, string $key): ?PlanTemplate {

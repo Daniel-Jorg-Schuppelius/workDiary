@@ -28,4 +28,9 @@ return [
         'delivery_title' => 'Bon de livraison',
         'transfer_marker' => 'Référence de transfert :marker',
     ],
+    'vouchers' => [
+        'sync_now' => 'Synchroniser les pièces maintenant',
+        'sync_confirm' => "Synchroniser maintenant les pièces avec Lexoffice ? L'exécution récupère en arrière-plan les pièces nouvelles et modifiées ; la synchronisation complète quotidienne n'est pas concernée.",
+        'sync_hint' => "Récupère en arrière-plan les pièces Lexoffice nouvelles et modifiées — le pendant manuel de la synchronisation planifiée des pièces.",
+    ],
 ];

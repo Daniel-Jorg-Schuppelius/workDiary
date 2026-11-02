@@ -39,8 +39,7 @@ class RentalRequestController extends Controller {
 
     public function index(Request $request): View {
         $user = $this->portalUser();
-        $customer = $user->customer;
-        abort_if($customer === null, 404);
+        $customer = $this->portalCustomer();
 
         [$from, $to] = $this->rangeFromQuery($request);
 
@@ -82,8 +81,7 @@ class RentalRequestController extends Controller {
 
     public function store(Request $request): RedirectResponse {
         $user = $this->portalUser();
-        $customer = $user->customer;
-        abort_if($customer === null, 404);
+        $customer = $this->portalCustomer();
 
         $data = $request->validate([
             'subject' => ['required', 'string', 'max:80'],

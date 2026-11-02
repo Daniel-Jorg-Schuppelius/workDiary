@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Akaunting;
 
-use App\Plugins\{AbstractPlugin, PluginHealth};
+use App\Plugins\AbstractPlugin;
 use App\Plugins\Akaunting\Api\AkauntingClientFactory;
-use App\Plugins\Support\ApiHealthProbe;
+use App\Plugins\Support\{ChecksConnectionHealth, SelfHostedSettings};
 
 /**
  * Akaunting (Feature 176, Phase 158): Rechnungen und Lieferantenrechnungen
@@ -23,6 +23,8 @@ use App\Plugins\Support\ApiHealthProbe;
  * {@see \App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry}.
  */
 class AkauntingPlugin extends AbstractPlugin {
+    use ChecksConnectionHealth;
+
     public const ID = 'akaunting';
 
     public const SERVICE_PROVIDER = AkauntingServiceProvider::class;
@@ -40,29 +42,23 @@ class AkauntingPlugin extends AbstractPlugin {
     }
 
     public function settingsSchema(): array {
-        return [
-            ['key' => 'base_url', 'label' => __('akaunting::akaunting.settings.base_url'), 'type' => 'text', 'required' => true, 'help' => __('akaunting::akaunting.settings.base_url_help')],
-            ['key' => 'email', 'label' => __('akaunting::akaunting.settings.email'), 'type' => 'text', 'required' => true, 'help' => __('akaunting::akaunting.settings.email_help')],
-            ['key' => 'password', 'label' => __('akaunting::akaunting.settings.password'), 'type' => 'password', 'required' => true],
-            ['key' => 'company_id', 'label' => __('akaunting::akaunting.settings.company_id'), 'type' => 'number', 'default' => 1, 'help' => __('akaunting::akaunting.settings.company_id_help')],
-            ['key' => 'pull_vouchers', 'label' => __('akaunting::akaunting.settings.pull_vouchers'), 'type' => 'boolean', 'default' => false, 'help' => __('akaunting::akaunting.settings.pull_vouchers_help')],
-            ['key' => 'allow_private_network', 'label' => __('akaunting::akaunting.settings.allow_private_network'), 'type' => 'boolean', 'default' => false, 'help' => __('akaunting::akaunting.settings.allow_private_network_help')],
-        ];
+        return SelfHostedSettings::schema(self::ID, [
+            SelfHostedSettings::field(self::ID, 'email'),
+            SelfHostedSettings::field(self::ID, 'password', 'password', help: false),
+            SelfHostedSettings::field(self::ID, 'company_id', 'number', required: false, default: 1),
+            SelfHostedSettings::field(self::ID, 'pull_vouchers', 'boolean', required: false, default: false),
+        ]);
     }
 
     public function capabilities(): array {
         return [];
     }
 
-    public function healthCheck(): PluginHealth {
-        $organization = $this->healthOrgContext();
-        if ($organization instanceof PluginHealth) {
-            return $organization;
-        }
-        if (! AkauntingConfig::isConfigured((int) $organization->id)) {
-            return PluginHealth::degraded((string) __('akaunting::akaunting.health.not_configured'), 'not_configured');
-        }
+    protected function healthConfigured(int $organizationId): bool {
+        return AkauntingConfig::isConfigured($organizationId);
+    }
 
-        return ApiHealthProbe::probe($this->name(), fn () => app(AkauntingClientFactory::class)->for((int) $organization->id)->probe());
+    protected function healthProbe(int $organizationId): void {
+        app(AkauntingClientFactory::class)->for($organizationId)->probe();
     }
 }

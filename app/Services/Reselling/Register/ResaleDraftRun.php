@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Register;
 
-use App\Enums\Reselling\PeriodStatus;
 use App\Models\Customer\Customer;
 use App\Models\Finance\BillingTransfer;
 use App\Models\Invoicing\Invoice;
@@ -21,7 +20,6 @@ use App\Models\Reselling\ResalePeriod;
 use App\Services\Billing\BillingModeResolver;
 use App\Settings\SettingsRegistry;
 use App\Support\OrganizationContext;
-use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\{Cache, Log};
@@ -145,11 +143,9 @@ final class ResaleDraftRun {
      * @return list<Customer>
      */
     private function recipients(CarbonImmutable $dueBy): array {
-        $periods = ResalePeriod::query()
-            ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
+        $periods = ResalePeriod::query()->due($dueBy)
             ->whereNull('draft_reference')
-            ->where('starts_on', '<', DateRange::dayAfter($dueBy))
-            ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false)->notBilledByProvider())
+            ->whereHas('subscription', static fn(Builder $s) => $s->notBilledByProvider())
             ->with(['subscription.customer', 'subscription.foreignCustomer.customer'])
             ->get();
 

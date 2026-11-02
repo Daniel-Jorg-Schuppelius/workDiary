@@ -81,12 +81,18 @@ class ResaleInvoiceSearchTest extends TestCase {
         $this->actingAs($admin)->post(route('finance.resale.periods.link.store', $p2026->sqid), ['line_id' => Sqid::encode(LexofficeVoucherLine::class, $late->id), 'months' => '12'])
             ->assertSessionHasNoErrors();
 
-        // Dialog der Periode 2025/26: die Rechnung von 2026 liegt außerhalb des Fensters, steht aber durchsuchbar darunter
-        // und sagt, wo sie hängt.
+        // Dialog der Periode 2025/26: die Rechnung von 2026 liegt im Fenster und sagt, wo sie hängt; die von 2024 liegt
+        // davor — der Dialog lädt zuerst nur das Fenster und bietet „Alle anzeigen“ (perfc-08), erst dann steht sie
+        // durchsuchbar darunter.
         $this->actingAs($admin)->get(route('finance.resale.periods.link.create', $p2025->sqid))->assertOk()
-            ->assertSee(__('resale.link.search'))->assertSee(__('resale.link.group_other'))
+            ->assertSee(__('resale.link.search'))->assertSee(__('resale.link.show_all'))
+            ->assertSee(route('finance.resale.periods.link.create', [$p2025->sqid, 'all' => 1]), false)
             ->assertSee('data-haystack="re/2026/0952', false)
-            ->assertSee(trim(__('resale.board.line_taken', ['periods' => ''])));
+            ->assertSee(trim(__('resale.board.line_taken', ['periods' => ''])))
+            ->assertDontSee(__('resale.link.group_other'))->assertDontSee('data-haystack="re/2024/0951', false);
+        $this->actingAs($admin)->get(route('finance.resale.periods.link.create', [$p2025->sqid, 'all' => 1]))->assertOk()
+            ->assertSee(__('resale.link.group_other'))->assertDontSee(__('resale.link.show_all'))
+            ->assertSee('data-haystack="re/2026/0952', false)->assertSee('data-haystack="re/2024/0951', false);
         $this->actingAs($admin)->get(route('finance.resale.periods.link.create', $p2024->sqid))->assertOk()
             ->assertSee(__('resale.link.group_window'))->assertSee('data-haystack="re/2024/0951', false);
 

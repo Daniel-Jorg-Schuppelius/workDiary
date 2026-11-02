@@ -15,6 +15,7 @@ namespace App\Console\Commands\Finance;
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
 use App\Models\Finance\AccountingVoucher;
 use App\Models\Platform\Organization;
+use App\Services\Finance\Accounting\Articles\ArticleMirror;
 use App\Services\Finance\Accounting\Vouchers\{LineAwareVoucherPuller, VoucherMirror};
 use App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry;
 use Illuminate\Console\Command;
@@ -41,7 +42,7 @@ class PullAccountingVouchersCommand extends Command {
 
     protected $description = 'Spiegelt Belege der angebundenen Buchhaltungssysteme in die Belegliste (Feature 122).';
 
-    public function handle(VoucherPullerRegistry $registry): int {
+    public function handle(VoucherPullerRegistry $registry, ArticleMirror $articles): int {
         $pluginOption = trim((string) $this->option('plugin'));
         $orgOption = $this->option('organization');
         $pages = max(1, (int) $this->option('pages'));
@@ -64,6 +65,20 @@ class PullAccountingVouchersCommand extends Command {
             ->get();
 
         foreach ($organizations as $organization) {
+            // Artikelkatalog vor den Belegen (gap-09): so tragen neue Positionen gleich den Katalogschlüssel.
+            foreach ($articles->sources() as $source) {
+                if (($pluginOption !== '' && $source->pluginId() !== $pluginOption) || ! $source->isConfigured((int) $organization->id)) {
+                    continue;
+                }
+                try {
+                    $result = $articles->sync((int) $organization->id, $source);
+                    $this->line(sprintf('Org %d · %s: %d Artikel gelesen, %d neu, %d aktualisiert, %d archiviert, %d Positionen verknüpft', $organization->id, $source->pluginId(), $result['read'], $result['created'], $result['updated'], $result['archived'], $result['relinked']));
+                } catch (Throwable $e) {
+                    $this->error(sprintf('Org %d · %s: Artikel nicht vollständig gelesen (%s)', $organization->id, $source->pluginId(), class_basename($e)));
+                    report($e);
+                    $failed++;
+                }
+            }
             foreach ($registry->configuredFor((int) $organization->id) as $puller) {
                 if ($pluginOption !== '' && $puller->pluginId() !== $pluginOption) {
                     continue;

@@ -26,11 +26,16 @@
     @include('passenger._tabs')
 
     <div class="grid gap-4 sm:grid-cols-2">
-        <x-kpi-tile :label="__('passenger.rides.kpi.open')" :value="$openCount" />
-        <x-kpi-tile :label="__('passenger.rides.kpi.return_proof_missing')" :value="$returnProofCount" />
+        <x-kpi-tile :label="__('passenger.rides.kpi.open')" :value="$openCount" :href="route('passenger-rides.index', ['show' => 'open'])" :active="$show === 'open'" />
+        <x-kpi-tile :label="__('passenger.rides.kpi.return_proof_missing')" :value="$returnProofCount" :href="route('passenger-rides.index', ['show' => 'return_proof'])" :active="$show === 'return_proof'" />
     </div>
 
     <x-filter-bar :action="route('passenger-rides.index')" :reset="route('passenger-rides.index')">
+        <select name="show" class="select select-sm select-bordered w-56 shrink-0" aria-label="{{ __('Filter') }}">
+            <option value="">{{ __('Alle') }}</option>
+            <option value="open" @selected($show === 'open')>{{ __('passenger.rides.kpi.open') }}</option>
+            <option value="return_proof" @selected($show === 'return_proof')>{{ __('passenger.rides.kpi.return_proof_missing') }}</option>
+        </select>
         <select name="status" class="select select-sm select-bordered w-44 shrink-0" aria-label="{{ __('Status') }}">
             <option value="">{{ __('Alle Status') }}</option>
             @foreach (\App\Enums\Passenger\RideStatus::cases() as $s)

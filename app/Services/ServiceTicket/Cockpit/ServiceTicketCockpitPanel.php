@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket\Cockpit;
 
-use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\ServiceTicket\ServiceTicket;
@@ -42,13 +41,9 @@ final class ServiceTicketCockpitPanel implements CockpitPanel {
         if (! $this->features->routeEnabled('service-tickets.show') || ! $gate->allows('viewAny', ServiceTicket::class)) {
             return null;
         }
-        $unresolved = array_map(
-            static fn (ServiceTicketStatus $s): string => $s->value,
-            array_values(array_filter(ServiceTicketStatus::cases(), static fn (ServiceTicketStatus $s): bool => ! $s->isResolved())),
-        );
         $tickets = ServiceTicket::query()
             ->where('customer_id', $subject->getKey())
-            ->whereIn('status', $unresolved)
+            ->open()
             ->orderBy('resolution_due_at')
             ->get()
             ->filter(fn (ServiceTicket $t): bool => $gate->allows('view', $t))

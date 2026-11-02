@@ -32,6 +32,8 @@ ha diritti di analisi vede riquadri diversi da chi non li ha. I
 riquadri nascosti non interrogano più i dati: una dashboard ordinata
 si carica quindi anche più in fretta.
 
+I riquadri di conteggio dei widget di indicatori portano al registro ordini con il filtro di stato corrispondente, ai servizi e all’elenco dei membri.
+
 ## Prerequisiti
 
 - Un account utente connesso; non servono diritti particolari.

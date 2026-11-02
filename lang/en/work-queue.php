@@ -78,4 +78,5 @@ return [
         'all' => 'Show all',
         'empty' => 'No item is waiting for you at the moment.',
     ],
+    'overflow' => '{1} One more item is not listed: the queue shows at most :limit per source.|[2,*] :count more items are not listed: the queue shows at most :limit per source.',
 ];

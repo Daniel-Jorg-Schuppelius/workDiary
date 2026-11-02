@@ -63,6 +63,7 @@ class PlanModuleService {
                 ->whereNull('purged_at')
                 ->delete();
         }
+        PlanModuleGrace::forgetPending((int) $organization->id); // Massenlöschung feuert keine Modell-Events
     }
 
     /**

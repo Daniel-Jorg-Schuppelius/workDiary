@@ -55,6 +55,7 @@ administrateurs ; l’accès est refusé à tous les autres.
   actifs** (personnes ayant au moins une entrée) et **Types d’entités** (types
   d’objets distincts). Ces deux tuiles comptent elles aussi toutes les
   entrées de la période, pas seulement les listes top 20.
+- Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
 - Graphiques : **Événements dans le temps**, **Principaux acteurs (top 15)**
   et les événements dans le temps par type d’événement.
 - Tableaux : **Par événement**, **Par type d’entité (top 20)**, **Par
@@ -86,6 +87,7 @@ et de repos s’y ajoutent.
   **Collaborateurs concernés**, **Ouvert (sans correction)** et **Avec
   correction approuvée** (constats des jours avec une correction de temps
   approuvée).
+- Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
 - Une tuile par type d’infraction avec le nombre ; un clic ouvre le rapport
   détaillé filtré sur ce type.
 - Graphiques : constats ouverts dans le temps et constats dans le temps par
@@ -109,6 +111,7 @@ rapprochement, il passe à **Résolu** ; s’il réapparaît, il repasse à
 
 - Tuiles par statut : **Ouvert**, **Acquitté**, **Résolu** et **Accepté**,
   comptées sur toute l’organisation. Un clic filtre la liste.
+- Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
 - Graphique **Constats nouveaux vs acquittés par mois** pour les 24 derniers
   mois comportant des données.
 - Liste : **Employé**, **Date**, **Type**, **Valeur**, **Seuil**, **Gravité**

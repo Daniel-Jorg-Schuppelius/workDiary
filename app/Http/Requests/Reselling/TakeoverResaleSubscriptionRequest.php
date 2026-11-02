@@ -83,6 +83,12 @@ class TakeoverResaleSubscriptionRequest extends BaseFormRequest {
 
                 return;
             }
+            // Ganzer Wechsel nur ohne berechnete Perioden des bisherigen Halters (Sicherheitsaudit 2026-11-02, sec-06).
+            if (HolderTakeover::billedBeforeWhole($subscription, $from)) {
+                $validator->errors()->add('starts_on', (string) __('resale.takeover.error.billed_whole', ['holder' => $subscription->holderLabel(), 'date' => HolderTakeover::defaultFrom($subscription)->format('d.m.Y')]));
+
+                return;
+            }
             if (HolderTakeover::quantityFrom($subscription, $from) <= 0) {
                 $validator->errors()->add('starts_on', (string) __('resale.takeover.error.nothing_free'));
             }

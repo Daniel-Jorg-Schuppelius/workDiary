@@ -1,7 +1,7 @@
 ---
 title: "Conflictos de Lexoffice"
 topic: admin.lexoffice
-version: 5
+version: 6
 keywords:
     - Lexware Office
     - conflicto de sincronización
@@ -69,7 +69,11 @@ contacto se vincula, la siguiente sincronización los asigna. Un cliente solo
 se asigna a comprobantes de venta y un proveedor solo a comprobantes de
 compra, aunque un contacto esté vinculado a ambos. La sincronización de
 líneas guarda además el importe neto y, en un abono, su referencia a la
-factura.
+factura. La ejecución se inicia manualmente en la **configuración de
+Lexoffice** (Plugins → Lexoffice) con **Sincronizar comprobantes ahora**:
+obtiene en segundo plano los comprobantes nuevos y modificados, la
+sincronización completa diaria se mantiene; el botón requiere el permiso
+**Sincronizar los justificantes con Lexoffice** y credenciales guardadas.
 
 Permiso: la Bandeja de conciliación está abierta a los administradores
 y al rol **Contabilidad**.

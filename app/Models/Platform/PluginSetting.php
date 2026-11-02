@@ -49,6 +49,16 @@ class PluginSetting extends Model {
     ];
 
     protected static function booted(): void {
+        // Plugin ein-/ausgeschaltet oder umkonfiguriert: Menü-Cache aller Nutzer entwerten (perf-13).
+        $bump = static function (): void {
+            try {
+                \App\Services\Navigation\NavigationRegistry::bumpGlobalStamp();
+            } catch (\Throwable) {
+                // Cache-Invalidierung darf nie werfen.
+            }
+        };
+        static::saved($bump);
+        static::deleted($bump);
         // Suchspalte beim Schreiben pflegen (Sicherheitsscan 2026-08-23,
         // S-57). Bewusst hier und nicht an den Schreibstellen: eine abgeleitete
         // Spalte, die jeder Aufrufer selbst setzen muss, veraltet an der

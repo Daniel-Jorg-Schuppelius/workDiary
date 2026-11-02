@@ -1,7 +1,7 @@
 ---
 title: "Conflitti Lexoffice"
 topic: admin.lexoffice
-version: 5
+version: 6
 keywords:
     - Lexware Office
     - conflitto di sincronizzazione
@@ -68,6 +68,10 @@ successivo li assegna. Un cliente viene impostato solo sui documenti di
 vendita e un fornitore solo sui documenti di acquisto, anche se un contatto
 è collegato a entrambi. Il sync delle righe memorizza inoltre l'importo
 netto e, per una nota di credito, il suo riferimento alla fattura.
+L'esecuzione si avvia manualmente nelle **impostazioni Lexoffice** (Plugin →
+Lexoffice) con **Sincronizza documenti adesso**: recupera in background i
+documenti nuovi e modificati, il sync completo giornaliero resta attivo; il
+pulsante richiede il permesso **Sincronizza i giustificativi con Lexoffice** e credenziali salvate.
 
 Autorizzazione: la Inbox di riconciliazione è accessibile agli
 amministratori e al ruolo **Contabilità**.

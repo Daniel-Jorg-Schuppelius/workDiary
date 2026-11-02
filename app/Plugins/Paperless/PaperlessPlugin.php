@@ -19,7 +19,7 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{DocumentIntakeOrigins, DocumentIntakeSource, IntakeSourceConnector, LinksExternalRecords, PluginCapability};
 use App\Plugins\Paperless\Api\PaperlessClientFactory;
 use App\Plugins\Paperless\Services\PaperlessIntake;
-use App\Plugins\Support\ApiHealthProbe;
+use App\Plugins\Support\{ApiHealthProbe, SelfHostedSettings};
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
 use App\Support\Ui\UiAction;
 use Illuminate\Database\Eloquent\Model;
@@ -50,11 +50,7 @@ class PaperlessPlugin extends AbstractPlugin implements DocumentIntakeOrigins, D
     }
 
     public function settingsSchema(): array {
-        return [
-            ['key' => 'base_url', 'label' => __('paperless::paperless.settings.base_url'), 'type' => 'text', 'required' => true, 'help' => __('paperless::paperless.settings.base_url_help')],
-            ['key' => 'api_token', 'label' => __('paperless::paperless.settings.api_token'), 'type' => 'password', 'required' => true, 'help' => __('paperless::paperless.settings.api_token_help')],
-            ['key' => 'allow_private_network', 'label' => __('paperless::paperless.settings.allow_private_network'), 'type' => 'boolean', 'default' => false, 'help' => __('paperless::paperless.settings.allow_private_network_help')],
-        ];
+        return SelfHostedSettings::schema(self::ID, [SelfHostedSettings::field(self::ID, 'api_token', 'password')]);
     }
 
     public function capabilities(): array {

@@ -113,8 +113,18 @@ class LateTimeEntryDetector {
      * @param  Builder<TimeEntry>  $openQuery  Query über offene Einträge (exported=false).
      */
     public function countLateInQuery(Builder $openQuery): int {
-        return (clone $openQuery)
-            ->reorder()
+        return $this->whereLate(clone $openQuery)->reorder()->count();
+    }
+
+    /**
+     * Engt eine Query über offene Einträge auf Nachzügler ein — dieselbe
+     * Bedingung wie countLateInQuery(), für die Kachel „Nachzügler“ der Arbeitsliste.
+     *
+     * @param  Builder<TimeEntry>  $openQuery
+     * @return Builder<TimeEntry>
+     */
+    public function whereLate(Builder $openQuery): Builder {
+        return $openQuery
             ->whereNotNull('time_entries.date')
             ->whereExists(function ($sub): void {
                 $sub->selectRaw('1')
@@ -125,7 +135,6 @@ class LateTimeEntryDetector {
                     ->whereNotIn('invoices.status', [InvoiceStatus::Draft, InvoiceStatus::Cancelled])
                     ->whereNotNull('invoice_items.service_date')
                     ->whereColumn('invoice_items.service_date', '>=', 'time_entries.date');
-            })
-            ->count();
+            });
     }
 }

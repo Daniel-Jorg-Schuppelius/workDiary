@@ -18,20 +18,21 @@
 <div class="flex flex-col gap-4">
     {{-- KPI-Kacheln --}}
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {{-- Kacheln führen auf den Reiter mit den Zeilen dahinter (ux-pattern-katalog §4). --}}
         <x-kpi-tile :label="__('Offene Aufgaben')"
                     :value="$openTasks + $inProgTasks"
-                    tone="primary" />
+                    tone="primary" :href="route('projects.show', [$project, 'tab' => 'tasks'])" />
         <x-kpi-tile :label="__('Gesamtstunden')"
                     :value="$totalHours"
                     :hint="$seesAllTimes ? null : __('nur eigene Zeiten')"
-                    format="text" />
+                    format="text" :href="route('projects.show', [$project, 'tab' => 'time'])" />
         <x-kpi-tile :label="__('Erledigte Aufgaben')"
                     :value="$doneTasks"
-                    tone="success" />
+                    tone="success" :href="route('projects.show', [$project, 'tab' => 'tasks', 'status' => \App\Enums\Task\TaskStatus::Done->value])" />
         <x-kpi-tile :label="__('Nächster Milestone')"
                     :value="$nextMilestone ? \CommonToolkit\Helper\Data\StringHelper::truncate($nextMilestone->title, 28) : __('—')"
                     :hint="$nextMilestone?->due_date?->fdate() ?: ($nextMilestone ? __('kein Datum') : null)"
-                    format="text" />
+                    format="text" :href="$nextMilestone ? '#project-milestones' : null" />
     </div>
 
     {{-- Wirtschaftlichkeit im Kopfzeitraum (Feature 182): dieselben Zahlen wie die
@@ -58,7 +59,7 @@
 
     {{-- Milestones --}}
     @if ($milestones->isNotEmpty())
-        <x-card padding="p-0">
+        <x-card padding="p-0" id="project-milestones" class="scroll-mt-24">
             <header class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3">
                 <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Milestones') }}</span>
                 @can('create', \App\Models\Project\Milestone::class)

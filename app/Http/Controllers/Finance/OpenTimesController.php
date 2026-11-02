@@ -52,7 +52,8 @@ class OpenTimesController extends Controller {
         $this->authorizeView($request);
 
         $filters = $this->filters($request);
-        $query = $this->baseQuery($filters);
+        // Kachelfilter (ux-pattern-katalog §4) nur auf die Liste; die Warn-KPIs bleiben über der Grundmenge stehen.
+        $query = $this->applyShow($this->baseQuery($filters), $filters['show']);
 
         $entries = (clone $query)
             ->with(['project.customer:id,name,slug', 'user:id,name'])
@@ -80,7 +81,7 @@ class OpenTimesController extends Controller {
         // gemeldet statt lautlos ausgeblendet (Link schaltet auf „Alle").
         $outsideRangeCount = $filters['all']
             ? 0
-            : max(0, (clone $unranged)->reorder()->count() - $totals['count']);
+            : max(0, $this->applyShow(clone $unranged, $filters['show'])->reorder()->count() - $totals['count']);
 
         return view('finance.open-times.index', [
             'entries' => $entries,
@@ -228,10 +229,12 @@ class OpenTimesController extends Controller {
     }
 
     /**
-     * @return array{customer:string, project:string, user:string, from:string, to:string, billable:string, all:bool}
+     * @return array{customer:string, project:string, user:string, from:string, to:string, billable:string, all:bool, show:string}
      */
     private function filters(Request $request): array {
         $billable = (string) $request->query('billable', 'yes');
+
+        $show = (string) $request->query('show', '');
 
         return [
             'customer' => (string) $request->query('customer', ''),
@@ -241,16 +244,29 @@ class OpenTimesController extends Controller {
             'to' => (string) $request->query('to', ''),
             'billable' => in_array($billable, ['yes', 'no', 'all'], true) ? $billable : 'yes',
             'all' => $request->boolean('all'),
+            'show' => in_array($show, ['late', 'stale'], true) ? $show : '',
         ];
     }
 
     /**
-     * @param  array{customer:string, project:string, user:string, from:string, to:string, billable:string, all:bool}  $filters
+     * @param  Builder<TimeEntry>  $query
+     * @return Builder<TimeEntry>
+     */
+    private function applyShow(Builder $query, string $show): Builder {
+        return match ($show) {
+            'late' => $this->lateDetector->whereLate($query),
+            'stale' => $query->where('time_entries.date', '<', now()->subDays(self::STALE_AFTER_DAYS)->toDateString()),
+            default => $query,
+        };
+    }
+
+    /**
+     * @param  array{customer:string, project:string, user:string, from:string, to:string, billable:string, all:bool, show:string}  $filters
      */
     private function hasActiveFilters(array $filters): bool {
         return $filters['customer'] !== '' || $filters['project'] !== '' || $filters['user'] !== ''
             || $filters['from'] !== '' || $filters['to'] !== '' || $filters['billable'] !== 'yes'
-            || $filters['all'];
+            || $filters['all'] || $filters['show'] !== '';
     }
 
     /**
@@ -258,7 +274,7 @@ class OpenTimesController extends Controller {
      * Begrenzung auf; explizite from/to-Filter (auch einseitig) haben als
      * Bookmark-Override Vorrang; sonst gilt die Header-Zeitauswahl.
      *
-     * @param  array{customer:string, project:string, user:string, from:string, to:string, billable:string, all:bool}  $filters
+     * @param  array{customer:string, project:string, user:string, from:string, to:string, billable:string, all:bool, show:string}  $filters
      * @return array{from: ?string, to: ?string}
      */
     private function effectiveRange(array $filters): array {
@@ -283,7 +299,7 @@ class OpenTimesController extends Controller {
      * Left-Joins nur fürs Sortieren — Einträge ohne Projekt (z. B. Verwaltung)
      * bleiben sichtbar, gerade sie rutschen sonst durch.
      *
-     * @param  array{customer:string, project:string, user:string, from:string, to:string, billable:string, all:bool}  $filters
+     * @param  array{customer:string, project:string, user:string, from:string, to:string, billable:string, all:bool, show:string}  $filters
      * @return Builder<TimeEntry>
      */
     private function baseQuery(array $filters, bool $withDateRange = true): Builder {

@@ -226,28 +226,7 @@
                             @endif
                         </td>
                         <td class="align-top text-right">
-                            @if ($canManage && ! $row['upcoming'])
-                                <div class="flex justify-end gap-0.5">
-                                    @if ($period->isProposedOnly())
-                                        <form method="POST" action="{{ route('finance.resale.periods.confirm', $period->sqid) }}">
-                                            @csrf
-                                            <x-icon-btn icon="task_alt" size="xs" tone="success" type="submit" :title="__('resale.link.action.confirm')" />
-                                        </form>
-                                    @endif
-                                    @if ($period->status !== \App\Enums\Reselling\PeriodStatus::Waived)
-                                        <x-icon-btn icon="add_link" size="xs" tone="ghost" data-entry-modal-trigger :href="route('finance.resale.periods.link.create', $period->sqid)" :title="__('resale.link.action.link')" />
-                                    @endif
-                                    @if (! $period->status->isDecided() || $period->status === \App\Enums\Reselling\PeriodStatus::Partial)
-                                        <x-icon-btn icon="do_not_disturb_on" size="xs" tone="ghost" data-entry-modal-trigger :href="route('finance.resale.periods.waive.create', $period->sqid)" :title="__('resale.link.action.waive')" />
-                                    @endif
-                                    @if ($period->status->isDecided())
-                                        <form method="POST" action="{{ route('finance.resale.periods.reopen', $period->sqid) }}">
-                                            @csrf
-                                            <x-icon-btn icon="undo" size="xs" tone="ghost" type="submit" :title="__('resale.link.action.reopen')" />
-                                        </form>
-                                    @endif
-                                </div>
-                            @endif
+                            @include('finance.resale._period_actions', ['period' => $period, 'upcoming' => $row['upcoming'], 'dense' => true])
                         </td>
                     </tr>
                 @else

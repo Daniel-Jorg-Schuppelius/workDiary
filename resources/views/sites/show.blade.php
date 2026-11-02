@@ -38,8 +38,8 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <x-kpi-tile :label="__('Gebäude')" :value="$kpis['buildings']" tone="primary"
                         :href="route('buildings.index', ['site' => $site->sqid])" />
-            <x-kpi-tile :label="__('Geschosse')" :value="$kpis['floors']" tone="info" />
-            <x-kpi-tile :label="__('Räume')" :value="$kpis['rooms']" tone="success" />
+            <x-kpi-tile :label="__('Geschosse')" :value="$kpis['floors']" tone="info" href="#site-buildings" />
+            <x-kpi-tile :label="__('Räume')" :value="$kpis['rooms']" tone="success" href="#site-buildings" />
             <x-kpi-tile :label="__('BGF (m²)')" :value="$kpis['gross_area']" tone="secondary" format="decimal" />
         </div>
 
@@ -68,7 +68,7 @@
             </x-detail-grid>
         </x-card>
 
-        <x-card :title="__('Gebäude') . ' (' . $buildings->count() . ')'" padding="p-0">
+        <x-card :title="__('Gebäude') . ' (' . $buildings->count() . ')'" padding="p-0" id="site-buildings" class="scroll-mt-24">
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger

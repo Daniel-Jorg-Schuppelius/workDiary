@@ -6,25 +6,50 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
-  Neuer Halter: Kunde oder Fremdkunde eines Kunden (Abtretung, Übernahme).
-  Erwartet $customers, $foreignByCustomer (ProvidesHolderPicker), $mode
-  (customer|foreign) und $customerDefault (Sqid oder leer).
+  Halterwahl: Modus, Kunde, Fremdkunde des Kunden (Alpine `resaleHolderPicker`)
+  — eine Stelle für Zuordnung, Sammelzuordnung, Aufteilung, Abtretung und
+  Übernahme (Konsolidierungs-Audit 2026-11-02, kon-11). Erwartet $customers,
+  $foreignByCustomer (ProvidesHolderPicker), $mode (gewählter Modus, schon mit
+  old()) und $customerDefault (Sqid oder leer); optional $modes (angebotene
+  Modi, Standard customer|foreign), $foreignDefault, $modeLabel, $modeHint und
+  $modeHints (Modus → Hinweis unter der Auswahl). Ohne Modus „own“ ist der
+  Kunde Pflicht.
 --}}
+@php
+    $modes = $modes ?? ['customer', 'foreign'];
+    $foreignDefault = $foreignDefault ?? '';
+    $modeLabel = $modeLabel ?? __('resale.transfer.mode');
+    $modeHint = $modeHint ?? null;
+    $modeHints = $modeHints ?? [];
+    $modeLabels = [
+        'customer' => __('resale.inbox.mode_customer'),
+        'partner' => __('resale.inbox.mode_partner'),
+        'foreign' => __('resale.inbox.mode_foreign'),
+        'own' => __('resale.holder.own'),
+    ];
+    $customerValue = (string) old('customer_id', $customerDefault);
+@endphp
     <div class="space-y-3" x-data="resaleHolderPicker"
          data-map="{{ json_encode($foreignByCustomer, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE) }}"
          data-holder="{{ $mode }}"
-         data-customer="{{ old('customer_id', $customerDefault) }}"
-         data-foreign="{{ old('foreign_customer_id', '') }}">
-        <x-select-field name="mode" :label="__('resale.transfer.mode')" x-model="holder">
-            <option value="customer" @selected($mode === 'customer')>{{ __('resale.inbox.mode_customer') }}</option>
-            <option value="foreign" @selected($mode === 'foreign')>{{ __('resale.inbox.mode_foreign') }}</option>
-        </x-select-field>
-        <x-select-field name="customer_id" :label="__('resale.inbox.customer')" x-model="customer" required>
-            <option value="">—</option>
-            @foreach ($customers as $customer)
-                <option value="{{ $customer->sqid }}" @selected(old('customer_id', $customerDefault) === $customer->sqid)>{{ $customer->name }}</option>
+         data-customer="{{ $customerValue }}"
+         data-foreign="{{ old('foreign_customer_id', $foreignDefault) }}">
+        <x-select-field name="mode" :label="$modeLabel" :hint="$modeHint" x-model="holder">
+            @foreach ($modes as $option)
+                <option value="{{ $option }}" @selected($mode === $option)>{{ $modeLabels[$option] }}</option>
             @endforeach
         </x-select-field>
+        @foreach ($modeHints as $option => $hint)
+            <p class="text-xs text-muted" x-show="holder === '{{ $option }}'">{{ $hint }}</p>
+        @endforeach
+        <div x-show="needsCustomer()">
+            <x-select-field name="customer_id" :label="__('resale.inbox.customer')" x-model="customer" :required="! in_array('own', $modes, true)">
+                <option value="">—</option>
+                @foreach ($customers as $customer)
+                    <option value="{{ $customer->sqid }}" @selected($customerValue === $customer->sqid)>{{ $customer->name }}</option>
+                @endforeach
+            </x-select-field>
+        </div>
         <div x-show="showForeign()">
             <x-select-field name="foreign_customer_id" :label="__('resale.inbox.foreign')" x-model="foreign">
                 <option value="">—</option>

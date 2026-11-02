@@ -66,15 +66,23 @@ class PostingInboxController extends Controller {
                 && $this->journal->awaitsSecondPerson($item['entry'], $actor),
         ]);
 
+        // Kachelfilter nach Zustand (ux-pattern-katalog §4): die Zählung bleibt über allen Zeilen stehen.
+        $counts = $items->groupBy('state')->map->count();
+        $state = (string) $request->query('state', '');
+        if (! $counts->has($state)) {
+            $state = '';
+        }
+
         return view('finance.accounting.inbox', [
-            'items' => $items,
+            'items' => $state === '' ? $items : $items->where('state', $state)->values(),
+            'state' => $state,
             'kinds' => PostingSourceKind::cases(),
             'selectedKind' => $kind,
             'includePosted' => $request->boolean('include_posted'),
             'canPrepare' => Gate::allows(Permission::AccountingLedgerPrepare->value),
             'canPost' => Gate::allows(Permission::AccountingLedgerPost->value),
             'fourEyes' => $this->inbox->fourEyesEnabled(),
-            'counts' => $items->groupBy('state')->map->count(),
+            'counts' => $counts,
         ]);
     }
 

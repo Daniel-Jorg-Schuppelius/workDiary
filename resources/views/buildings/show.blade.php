@@ -36,7 +36,7 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <x-kpi-tile :label="__('Geschosse')" :value="$kpis['floors']" tone="primary"
                         :href="route('floors.index', ['building' => $building->sqid])" />
-            <x-kpi-tile :label="__('Räume')" :value="$kpis['rooms']" tone="info" />
+            <x-kpi-tile :label="__('Räume')" :value="$kpis['rooms']" tone="info" href="#building-floors" />
             <x-kpi-tile :label="__('BGF (m²)')" :value="$kpis['gross_area']" tone="secondary" format="decimal" />
             <x-kpi-tile :label="__('NGF Räume (m²)')" :value="$kpis['net_area']" tone="success" format="decimal" />
         </div>
@@ -55,7 +55,7 @@
             </x-detail-grid>
         </x-card>
 
-        <x-card :title="__('Geschosse') . ' (' . $floors->count() . ')'" padding="p-0">
+        <x-card :title="__('Geschosse') . ' (' . $floors->count() . ')'" padding="p-0" id="building-floors" class="scroll-mt-24">
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger

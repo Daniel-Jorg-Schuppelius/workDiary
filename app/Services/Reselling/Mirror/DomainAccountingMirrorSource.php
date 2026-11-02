@@ -65,6 +65,10 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
         return collect();
     }
 
+    public function planLines(Organization $organization, array $planKeys, CarbonImmutable $from): Collection {
+        return collect();
+    }
+
     public function creditNoteLines(Organization $organization, array $recipientCustomerIds, ?CarbonImmutable $from = null): Collection {
         return collect();
     }

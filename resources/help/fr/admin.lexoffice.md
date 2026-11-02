@@ -1,7 +1,7 @@
 ---
 title: "Conflits Lexoffice"
 topic: admin.lexoffice
-version: 5
+version: 6
 keywords:
     - Lexware Office
     - conflit de synchronisation
@@ -68,7 +68,12 @@ reprises – d'abord sans client ni fournisseur ; dès que le contact est
 rattaché, la synchronisation suivante les affecte. Un client n'est attribué
 qu'aux pièces de vente et un fournisseur qu'aux pièces d'achat, même si un
 contact est rattaché aux deux. La synchronisation des lignes enregistre en
-outre le montant net et, pour un avoir, sa référence à la facture.
+outre le montant net et, pour un avoir, sa référence à la facture. Vous
+lancez l'exécution manuellement dans les **paramètres Lexoffice** (Plugins →
+Lexoffice) avec **Synchroniser les pièces maintenant** : elle récupère en
+arrière-plan les pièces nouvelles et modifiées, la synchronisation complète
+quotidienne est conservée ; le bouton exige le droit **Synchroniser les
+justificatifs avec Lexoffice** et des identifiants enregistrés.
 
 Autorisation : la Boîte de rapprochement est ouverte aux administrateurs
 et au rôle **Comptabilité**.

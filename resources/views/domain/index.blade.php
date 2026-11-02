@@ -59,10 +59,10 @@
     @endif
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <x-kpi-tile :label="__('domain.metric.expiring_90')" :value="$metrics['expiring_90']" />
-        <x-kpi-tile :label="__('domain.metric.risky')" :value="$metrics['risky']" />
-        <x-kpi-tile :label="__('domain.metric.unmapped')" :value="$metrics['unmapped']" />
-        <x-kpi-tile :label="__('domain.metric.sync_issues')" :value="$metrics['sync_issues']" />
+        <x-kpi-tile :label="__('domain.metric.expiring_90')" :value="$metrics['expiring_90']" :href="route('domains.index', ['expiry_within' => 90])" :active="(string) ($filters['expiry_within'] ?? '') === '90'" />
+        <x-kpi-tile :label="__('domain.metric.risky')" :value="$metrics['risky']" :href="route('domains.index', ['show' => 'risky'])" :active="$filters['show'] === 'risky'" />
+        <x-kpi-tile :label="__('domain.metric.unmapped')" :value="$metrics['unmapped']" :href="route('domains.index', ['show' => 'unmapped'])" :active="$filters['show'] === 'unmapped'" />
+        <x-kpi-tile :label="__('domain.metric.sync_issues')" :value="$metrics['sync_issues']" :href="route('domains.index', ['show' => 'sync_issues'])" :active="$filters['show'] === 'sync_issues'" />
     </div>
 
     <x-filter-bar :action="route('domains.index')" :reset="route('domains.index')">
@@ -73,6 +73,14 @@
         <x-filter-field :label="__('domain.filter.tld')" for="dom-tld" class="shrink-0">
             <input id="dom-tld" type="text" name="tld" value="{{ $filters['tld'] ?? '' }}" class="input input-sm input-bordered w-28"
                    placeholder="{{ __('domain.filter.tld') }}" aria-label="{{ __('domain.filter.tld') }}">
+        </x-filter-field>
+        <x-filter-field :label="__('Filter')" for="dom-show" class="shrink-0">
+            <select id="dom-show" name="show" class="select select-sm select-bordered w-44" aria-label="{{ __('Filter') }}">
+                <option value="">{{ __('Alle') }}</option>
+                @foreach (['risky', 'unmapped', 'sync_issues'] as $key)
+                    <option value="{{ $key }}" @selected($filters['show'] === $key)>{{ __('domain.metric.' . $key) }}</option>
+                @endforeach
+            </select>
         </x-filter-field>
         <x-filter-field :label="__('domain.field.status')" for="dom-sync" class="shrink-0">
             <select id="dom-sync" name="sync" class="select select-sm select-bordered w-40" aria-label="{{ __('domain.field.status') }}">

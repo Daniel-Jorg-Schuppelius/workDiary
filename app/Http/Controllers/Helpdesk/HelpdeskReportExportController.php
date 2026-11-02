@@ -189,7 +189,7 @@ class HelpdeskReportExportController extends Controller {
         // Identische Bandgrenzen wie agingHistogram(): min ≤ Alter < max.
         /** @var LengthAwarePaginator<int, array<string, mixed>> $rows */
         $rows = ServiceTicket::query()
-            ->whereIn('status', HelpdeskMetricsService::openStatuses())
+            ->open()
             ->whereNotNull('reported_at')
             ->when($min > 0, fn($query) => $query->where('reported_at', '<=', $now->copy()->subDays($min)))
             ->when($max !== null, fn($query) => $query->where('reported_at', '>', $now->copy()->subDays((int) $max)))

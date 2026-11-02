@@ -33,7 +33,7 @@ class IncomingRetentionController extends Controller {
 
     public function form(IncomingEInvoice $incoming): View {
         $this->authorizeBilling();
-        abort_if($incoming->paid_in_run_id !== null || $incoming->direction === DocumentDirection::Outgoing, 404);
+        abort_if($incoming->paid_in_run_id !== null || $incoming->direction === DocumentDirection::Outgoing || $incoming->status === \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected, 404);
 
         return view('finance.incoming-invoices._retention_dialog', ['incoming' => $incoming]);
     }

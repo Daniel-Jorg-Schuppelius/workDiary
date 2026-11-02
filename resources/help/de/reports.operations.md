@@ -70,6 +70,7 @@ Service), Tasks und Touren im Zeitraum.
   **Servicezeit Σ**, **Tasks** mit der Zahl der überfälligen Tasks und ihrer
   Abschlussquote (die Kachel färbt sich, sobald ein Task überfällig ist) sowie
   **Touren** mit Plan-Kilometern und Plan-Dauer.
+- Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
 - Diagramme: **Service-Aufträge: erstellt vs. erledigt je Woche** und
   **Backlog je Kunde (Top 15)** mit den noch offenen Service-Aufträgen je
   Kunde. Mit dem Recht **Auswertungen einsehen** öffnet ein Klick auf einen
@@ -106,6 +107,7 @@ Zeiteinträge des Zeitraums auf **Aufgaben**, **Assets**, **Projekte**,
 freien Dimensionen aus **Zeit-Dimensionen** verteilt sind.
 
 - Kacheln: **Aufgeteilte Zeit** und die Zahl der **Dimensionen**.
+- Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
 - Je Dimension eine Karte mit **Ziel**, **Minuten** (als Stunden und
   Minuten) und **Einträge** (Zahl der Zeiteinträge), absteigend nach Zeit.
 - Datenbasis sind ausschließlich die Aufteilungs-Anteile. Nicht aufgeteilte
@@ -126,6 +128,7 @@ einsehen**.
   (Anteil mit offenem Punkt oder Folgeauftrag) und **Ø Stunden bis
   Entscheidung** (von der Anlage bis zur Risikoakzeptanz, nur entschiedene
   Abweichungen).
+- Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
 - Diagramme: **Abweichungen je Typ**, die Abweichungen im Verlauf nach
   Schweregrad und **Prozeduren mit den meisten Abweichungen (Top 10)**.
 - Liste: **Datum**, **Prozedur**, **Schritt**, **Typ**, **Schweregrad**,
@@ -167,6 +170,7 @@ Stundenzetteln, deren Arbeitstag im Zeitraum liegt.
 - Diagramme: **Verbrauchswert je Material (Top 20)** und die Materialkosten
   im Verlauf.
 - Kacheln: **Materialien**, **Verwendungen** und **Netto Σ**.
+- Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
 - Tabelle **Verbrauch pro Material**: **SKU**, **Material**, **Einheit**,
   **Menge**, **Verwendungen** und **Netto**, absteigend nach Nettobetrag.
   Dasselbe Material in verschiedenen Einheiten steht in getrennten Zeilen;
@@ -188,6 +192,7 @@ archivierte Einträge zählen nicht.
 - Kacheln: **Mitarbeiter**, **Bereitschaft** (mit Zahl der Schichten),
   **Aktiv-Einsätze** (Einsatzzeit mit Zahl der Einsätze) und **Aktiv-Anteil**
   (Einsatzzeit im Verhältnis zur Bereitschaftszeit).
+- Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
 - Diagramme: **Bereitschaft je Mitarbeiter und Woche** als Wärmekarte und
   die Einsätze im Verlauf.
 - Tabelle je Mitarbeiter: **Schichten**, **Bereitschaft**, **Einsätze**,
@@ -273,6 +278,7 @@ fehlen. Menüpunkt und Seite verlangen das Recht **Auswertungen einsehen**.
 
 - Kacheln: **Aufträge mit Lücken**, **Harte Lücken** (blockierende Regeln)
   und **Weiche Lücken** (Hinweise).
+- Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
 - Diagramme: Aufträge mit Klassifikationslücken im Verlauf und **Fehlende
   Klassifikationen je Kunde (Top 15)**.
 - **Nach Domäne** und **Nach Phase**: wo die Lücken liegen und ab welcher

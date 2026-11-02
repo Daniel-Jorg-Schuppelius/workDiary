@@ -34,9 +34,9 @@
     </x-slot:toolbar>
 
     <div class="grid gap-4 sm:grid-cols-3">
-        <x-kpi-tile :label="__('inspection_round.kpi_done')" :value="$done . ' / ' . $items->count()" />
-        <x-kpi-tile :label="__('inspection_round.kpi_missing')" :value="$items->count() - $done" />
-        <x-kpi-tile :label="__('inspection_round.kpi_overdue')" :value="$overdue" />
+        <x-kpi-tile :label="__('inspection_round.kpi_done')" :value="$done . ' / ' . $items->count()" href="#round-items" />
+        <x-kpi-tile :label="__('inspection_round.kpi_missing')" :value="$items->count() - $done" href="#round-items" />
+        <x-kpi-tile :label="__('inspection_round.kpi_overdue')" :value="$overdue" href="#round-items" />
     </div>
 
     @if ($canInspect)
@@ -60,7 +60,7 @@
         </x-card>
     @endif
 
-    <x-card padding="p-0">
+    <x-card padding="p-0" id="round-items" class="scroll-mt-24">
         <x-table bare>
             <x-slot:head>
                 <tr>

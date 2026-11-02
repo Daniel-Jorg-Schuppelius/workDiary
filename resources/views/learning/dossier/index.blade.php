@@ -75,16 +75,16 @@
          (ein Nachweis laeuft mittendrin ab oder beginnt erst spaeter),
          rot = im Zeitraum gar nicht gedeckt. --}}
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <x-kpi-tile icon="groups" :label="__('learning.field.people')" :value="$summary['people']" />
+        <x-kpi-tile icon="groups" :label="__('learning.field.people')" :value="$summary['people']" href="#dossier-people" />
         <x-kpi-tile icon="verified" :label="__('learning.field.ready')" :value="$summary['ready']"
-                    :tone="$summary['tone']" />
+                    :tone="$summary['tone']" href="#dossier-people" />
         <x-kpi-tile icon="timelapse" :label="__('learning.field.partial')" :value="$summary['partial']"
-                    :tone="$summary['partial'] > 0 ? 'warning' : 'success'" />
+                    :tone="$summary['partial'] > 0 ? 'warning' : 'success'" href="#dossier-people" />
         <x-kpi-tile icon="event_busy" :label="__('learning.field.uncovered')" :value="$summary['expired']"
-                    :tone="$summary['expired'] > 0 ? 'error' : 'success'" />
+                    :tone="$summary['expired'] > 0 ? 'error' : 'success'" href="#dossier-people" />
         <x-kpi-tile icon="pending_actions" :label="__('learning.field.open_obligations')"
                     :value="$summary['open_obligations']"
-                    :tone="$summary['open_obligations'] > 0 ? 'warning' : 'success'" />
+                    :tone="$summary['open_obligations'] > 0 ? 'warning' : 'success'" href="#dossier-people" />
     </div>
 
     @if (! $named)
@@ -98,7 +98,7 @@
              deshalb im Badge, die Farbe ist nur die Zusammenfassung. --}}
         <p class="text-xs text-muted">{{ __('learning.help.coverage_legend') }}</p>
 
-        <x-table scroll="flex" hover :caption="__('learning.title.dossier')">
+        <x-table scroll="flex" hover :caption="__('learning.title.dossier')" id="dossier-people">
             <x-slot:head>
                 <tr>
                     <th>{{ __('learning.field.person') }}</th>

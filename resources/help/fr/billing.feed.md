@@ -47,6 +47,8 @@ conservés lorsque vous changez d'onglet.
 **Indicateurs :** les tuiles portent sur l'ensemble filtré, pas seulement sur
 la page affichée – par devise et sans conversion.
 
+Un clic sur **En cours** filtre les pièces en cours (un second clic retire le filtre) ; les tuiles de totaux n’ont pas de cible.
+
 - **Produits**, **Charges (externes)** et **Solde** comparent les documents
   sortants et entrants.
 - **Mes notes de frais** indique vos propres notes de frais et la part encore

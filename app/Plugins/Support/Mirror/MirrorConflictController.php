@@ -12,12 +12,11 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Mirror;
 
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Models\Integration\IntegrationInboxItem;
-use App\Models\Platform\User;
 use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 use Throwable;
 
 /**
@@ -32,6 +31,8 @@ use Throwable;
  * Ziel und Plugin; die Meldungen liegen unter `<plugin>::<plugin>.conflict.flash.*`.
  */
 abstract class MirrorConflictController extends Controller {
+    use AuthorizesOrganizationManagement;
+
     public function __construct(private readonly DocumentConflictResolver $resolver) {}
 
     abstract protected function target(): MirrorTarget;
@@ -65,9 +66,7 @@ abstract class MirrorConflictController extends Controller {
     }
 
     private function guard(IntegrationInboxItem $item): void {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->canManageBilling(), 403);
+        $user = $this->authorizeBilling();
         abort_unless($item->organization_id === $user->organization_id, 404);
         abort_unless($item->plugin_id === $this->pluginId() && $item->case_type === IntegrationInboxItem::CASE_CONFLICT, 404);
         abort_unless($item->isOpen(), 422);

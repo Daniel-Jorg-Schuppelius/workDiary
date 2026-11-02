@@ -75,8 +75,8 @@
     </x-filter-bar>
 
     <div class="grid gap-3 grid-cols-2 sm:grid-cols-4">
-        <x-kpi-tile :label="__('procedure.report.kpi.total')" :value="$result['total']" tone="primary" />
-        <x-kpi-tile :label="__('procedure.report.kpi.critical')" :value="$result['bySeverity']['critical'] ?? 0" tone="error" />
+        <x-kpi-tile :label="__('procedure.report.kpi.total')" :value="$result['total']" tone="primary" href="#deviation-rows" />
+        <x-kpi-tile :label="__('procedure.report.kpi.critical')" :value="$result['bySeverity']['critical'] ?? 0" tone="error" :href="route('reports.procedure-deviations', array_merge(request()->query(), ['severity' => 'critical']))" :active="request('severity') === 'critical'" />
         <x-kpi-tile :label="__('procedure.report.kpi.follow_up_rate')" :value="$result['followUpRate'] !== null ? $fmt($result['followUpRate']) . ' %' : '–'"
                     tone="info" :hint="__('procedure.report.kpi.follow_up_hint', ['count' => $result['followUpCount']])" />
         <x-kpi-tile :label="__('procedure.report.kpi.decision_hours')" :value="$fmt($result['avgDecisionHours'])"
@@ -93,7 +93,7 @@
                     :x-label="__('procedure.report.col.template')" :y-label="__('procedure.report.unit')"
                     :note="__('procedure.report.chart.top_templates_note')" />
 
-    <x-card class="mt-4">
+    <x-card class="mt-4" id="deviation-rows" class="scroll-mt-24">
         <div class="mb-3 text-xs text-muted">{{ __('Zeitraum') }}: {{ $label }}</div>
 
         @if ($rows === [])

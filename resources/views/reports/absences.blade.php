@@ -53,7 +53,7 @@
     </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <x-kpi-tile :label="__('user.employees')" :value="$totals['users']" />
+        <x-kpi-tile :label="__('user.employees')" :value="$totals['users']" href="#absences-table" />
         <x-kpi-tile :label="__('Urlaub (Werktage)')" :value="$totals['vacation_days']" :hint="$totals['pending_days'] . ' ' . __('ausstehend')" />
         @if ($showsSick)
             <x-kpi-tile :label="__('Krank')" :value="$totals['sick_days']" />
@@ -63,7 +63,7 @@
                     :tone="$totals['flex_change_minutes'] < 0 ? 'error' : ($totals['flex_change_minutes'] > 0 ? 'success' : 'neutral')" />
     </div>
 
-    <x-card>
+    <x-card id="absences-table" class="scroll-mt-24">
         @if (empty($rows))
             <x-empty-state icon="event_busy" :title="__('Keine Abwesenheits- oder Flex-Daten im gewählten Zeitraum.')" />
         @else

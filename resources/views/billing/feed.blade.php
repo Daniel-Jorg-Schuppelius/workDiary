@@ -176,6 +176,8 @@
                  Fälligkeit). Ohne „davon" liest man zwei Töpfe und addiert sie. --}}
             <x-kpi-tile class="min-w-40 flex-1" :label="__('billing.feed.kpi.open')"
                         :value="$money($sum['open']) . ' ' . $sum['currency']" format="raw" tone="info"
+                        :active="$filters['state'] === 'open'"
+                        :href="route('billing.feed', ['tab' => $tab, 'state' => $filters['state'] === 'open' ? null : 'open'] + $queryBase)"
                         :hint="trans_choice('billing.feed.kpi.open_count', $sum['openCount'], ['count' => $sum['openCount']])" />
             <x-kpi-tile class="min-w-40 flex-1" :label="__('billing.feed.kpi.overdue')"
                         :value="$money($sum['overdue']) . ' ' . $sum['currency']" format="raw" tone="error"

@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace App\Plugins\SevDesk;
 
-use App\Plugins\SevDesk\Services\{SevDeskTarget, SevDeskVoucherPullService};
+use App\Plugins\SevDesk\Services\{SevDeskArticleCatalogSource, SevDeskTarget, SevDeskVoucherPullService};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry;
 use App\Services\Finance\Targets\FacturationTargetRegistry;
+use App\Services\Platform\Catalog\ArticleCatalog;
 
 /**
  * Bootet das sevDesk-Plugin (MVP-125): hängt die plugin-eigenen
@@ -41,6 +42,8 @@ class SevDeskServiceProvider extends PluginServiceProviderBase {
 
         // Beleg-Rückabruf (MVP-1031): der Kern kennt die Anbindung nur über die Registry.
         $this->app->make(VoucherPullerRegistry::class)->register(SevDeskVoucherPullService::class);
+        // Artikelkatalog (Feature 185, gap-09): sevDesk-Artikel erreichen den Kern nur über diese Quelle.
+        $this->app->make(ArticleCatalog::class)->register($this->app->make(SevDeskArticleCatalogSource::class));
 
         // Zugehörige Belege (MVP-1158).
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Billing\Contracts\DocumentRelationSource::class, \App\Plugins\SevDesk\Services\SevDeskRelationSource::class);

@@ -287,11 +287,12 @@ return [
         'note_domain_typo' => 'Domain written as “:written” instead of “:domain” in the invoice text (typo) — please check',
         'no_lines' => 'No mirrored invoice line items in the window around the period start.',
         'line' => 'Invoice line item',
-        'line_hint' => 'First the recipient’s subscription lines within the period window, below them all others; the search finds any invoice by its number. If an article is missing, classify it as a subscription product under “Products”.',
+        'line_hint' => 'First the recipient’s subscription lines within the period window; “Show all invoices” adds the others, and the search then finds any invoice by its number. If an article is missing, classify it as a subscription product under “Products”.',
         'search' => 'Search invoice (number, date, article)',
         'no_match' => 'No invoice matches the search.',
         'group_window' => 'Within the period window',
         'group_other' => 'Other invoices of the recipient',
+        'show_all' => 'Show all invoices of the recipient',
         'line_used' => 'already consumed',
         'months_field' => 'Covered licence months',
         'months_hint' => 'Monthly-priced line: quantity = months per licence. Annual line: 12 per unit.',
@@ -332,6 +333,8 @@ return [
             'line_missing' => 'Invoice line item not found.',
             'exceeds' => 'The line has only :amount left.',
             'exceeds_period' => 'The period only needs :amount more — no more can be assigned to it.',
+            'not_decidable' => 'The period is already decided or has not started yet — waiving or disputing is only possible for due, undecided periods.', // Sicherheitsaudit 2026-11-02, sec-03/sec-05
+            'not_confirmable' => 'The period has no open proposal or has not started yet — there is nothing to confirm.',
         ],
     ],
     'widget' => [
@@ -408,6 +411,8 @@ return [
         'error' => [
             'nothing_open' => 'No open periods with a sale price for this recipient.',
             'all_planned' => 'The open periods of this recipient are billed by an active recurring template.',
+            'locked' => 'An invoice draft for this recipient is being created right now — please wait a moment and reload the page.', // Sicherheitsaudit 2026-11-02, sec-01
+            'changed' => 'The periods have changed in the meantime (another draft or a decision) — please reopen the dialog.',
         ],
         'already_drafted' => 'A draft is already pending for this recipient (:reference from :date). Finish it in Lexoffice or locally first, or decide the period.', // Review 2026-09-10
         'no_target' => 'No draft target is registered for this recipient\'s billing mode “:mode” — enable the plugin or set the customer\'s billing mode to local.', // Review 2026-09-11
@@ -1473,6 +1478,7 @@ return [
             'same_holder' => 'The new holder is the previous one.',
             'after_end' => 'The effective date is after the end of the subscription (:date).',
             'nothing_free' => 'From the effective date all licences of the contract are assigned or already invoiced to the previous holder — start the takeover at the respective assignment or change the effective date.',
+            'billed_whole' => 'Periods of this subscription are already invoiced to :holder — the whole subscription cannot change hands. Choose an effective date from :date; the invoiced periods then stay with the previous holder.', // Sicherheitsaudit 2026-11-02, sec-06
         ],
     ],
 ];

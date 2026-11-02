@@ -38,12 +38,12 @@
     </x-filter-bar>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <x-kpi-tile :label="__('Ausgestellt + Bezahlt (Σ Brutto)')" :value="$eur($totalIssuedPaid)" />
+        <x-kpi-tile :label="__('Ausgestellt + Bezahlt (Σ Brutto)')" :value="$eur($totalIssuedPaid)" :href="route('billing.feed')" />
         <x-kpi-tile :label="__('Offene Forderungen')" :value="$eur($aging['open_total'])"
                     :tone="$aging['buckets']['30_plus']['count'] > 0 ? 'error' : 'neutral'"
-                    :hint="$aging['buckets']['30_plus']['count'] . ' ' . __('> 30 Tage')" />
+                    :hint="$aging['buckets']['30_plus']['count'] . ' ' . __('> 30 Tage')" :href="route('billing.feed', ['state' => 'open'])" />
         <x-kpi-tile :label="__('Unbillte Zeit')" :value="$fmtMin($unbilled['minutes'])"
-                    :hint="$unbilled['count'] . ' ' . __('Einträge') . ' · ' . $eur($unbilled['projected_revenue'])" />
+                    :hint="$unbilled['count'] . ' ' . __('Einträge') . ' · ' . $eur($unbilled['projected_revenue'])" :href="route('finance.open-times.index')" />
     </div>
 
     {{-- Feature 002: Diagramme (Abrechenbarkeit je Monat + Umsatz-Pareto) --}}

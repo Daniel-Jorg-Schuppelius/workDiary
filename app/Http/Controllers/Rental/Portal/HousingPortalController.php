@@ -30,7 +30,7 @@ class HousingPortalController extends Controller {
 
     public function index(Request $request, RentalRequestService $requests, RentalBillingService $billing): View {
         $user = $this->portalUser();
-        $customer = $user->customer ?? abort(404);
+        $customer = $this->portalCustomer();
         $data = $request->validate([
             'arrival' => ['nullable', 'required_with:departure', 'date_format:Y-m-d'],
             'departure' => ['nullable', 'required_with:arrival', 'date_format:Y-m-d', 'after:arrival'],
@@ -64,7 +64,7 @@ class HousingPortalController extends Controller {
 
     public function store(Request $request, RentalRequestService $requests, RentalTenancyService $tenancies, RentalAvailabilityService $availability): RedirectResponse {
         $user = $this->portalUser();
-        $customer = $user->customer ?? abort(404);
+        $customer = $this->portalCustomer();
         $today = CarbonImmutable::now(Tz::ofOrganization($user->organization ?? abort(404)))->toDateString();
         $data = $request->validate([
             'profile_id' => ['required', 'string', 'max:80'],

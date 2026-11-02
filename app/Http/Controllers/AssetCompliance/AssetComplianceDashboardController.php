@@ -36,7 +36,7 @@ class AssetComplianceDashboardController extends Controller {
         private readonly AssetBlockService $blocks,
     ) {}
 
-    public function index(): View {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', AssetComplianceProfile::class);
 
         $assignments = AssetComplianceAssignment::query()
@@ -51,10 +51,25 @@ class AssetComplianceDashboardController extends Controller {
             ->latest('blocked_from')
             ->get();
 
+        $dueSoon = $assignments->filter(fn ($a) => $a->isDueSoon())->values();
+        $overdue = $assignments->filter(fn ($a) => $a->isOverdue())->values();
+        // Die Kacheln filtern die Pflichtenliste; die Zahlen bleiben über der Grundmenge stehen (ux-pattern-katalog §4).
+        $show = $request->string('show')->toString();
+        $listed = match ($show) {
+            'due_soon' => $dueSoon,
+            'overdue' => $overdue,
+            default => $assignments,
+        };
+        if ($listed === $assignments) {
+            $show = '';
+        }
+
         return view('asset-compliance.index', [
-            'dueSoon' => $assignments->filter(fn ($a) => $a->isDueSoon())->values(),
-            'overdue' => $assignments->filter(fn ($a) => $a->isOverdue())->values(),
+            'dueSoon' => $dueSoon,
+            'overdue' => $overdue,
             'assignments' => $assignments,
+            'listed' => $listed,
+            'show' => $show,
             'activeBlocks' => $activeBlocks,
             'statusByAsset' => $assignments->pluck('asset')->filter()->unique('id')
                 ->mapWithKeys(fn (Asset $asset) => [$asset->id => $this->service->statusFor($asset)]),

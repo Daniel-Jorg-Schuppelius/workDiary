@@ -65,6 +65,65 @@ final class NameTokenMatcher {
     }
 
     /**
+     * Nennt der Text den Namen (Konsolidierungs-Audit 2026-11-02, kon-01)?
+     * Alle Kern-Tokens des Namens stehen als Wörter im Text, mindestens eines
+     * mit ≥ 4 Zeichen („Lizenzen für Muster“ nennt „Muster GmbH“) — oder die
+     * leerzeichenfreie Form des Namens (mit und ohne Rechtsform) bzw. eines
+     * Alias (Firma, Matchcode) steht als Wort oder Wortfolge im Text („M365
+     * Hof24“ und „Hof 24“ nennen „Hof 24 GmbH“, „STBK“ den Matchcode). Kein
+     * Teilwort: „Mustermann“ nennt „Muster GmbH“ nicht.
+     *
+     * @param  list<string|null>  $aliases  weitere Schreibweisen (Firma laut Anbieter, Matchcode)
+     */
+    public static function mentionedIn(string $name, string $text, array $aliases = []): bool {
+        $words = explode(' ', MarketplaceCompany::normalizeName($text));
+        $tokens = self::significantTokens($name);
+        if ($tokens !== [] && array_diff($tokens, $words) === []) {
+            foreach ($tokens as $token) {
+                if (mb_strlen($token) >= 4) {
+                    return true;
+                }
+            }
+        }
+        $keys = [];
+        foreach ([$name, implode(' ', self::withoutLegalForm($name)), ...$aliases] as $candidate) {
+            $key = str_replace(' ', '', MarketplaceCompany::normalizeName((string) $candidate));
+            if (mb_strlen($key) >= 4) {
+                $keys[$key] = true;
+            }
+        }
+        foreach (array_keys($keys) as $key) {
+            if (self::wordRunEquals($words, (string) $key)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Ist der Schlüssel ein Wort des Textes oder eine Folge aufeinanderfolgender
+     * Wörter ohne Leerzeichen („hof24“ = „hof“ + „24“)?
+     *
+     * @param  list<string>  $words
+     */
+    private static function wordRunEquals(array $words, string $key): bool {
+        $length = strlen($key);
+        $count = count($words);
+        for ($start = 0; $start < $count; $start++) {
+            $run = '';
+            for ($i = $start; $i < $count && strlen($run) < $length; $i++) {
+                $run .= $words[$i];
+            }
+            if ($run === $key) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Wie {@see matches()} auf schon zerlegten Namen — für viele Vergleiche gegen dieselben Texte.
      *
      * @param  list<string>  $tokensA

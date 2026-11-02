@@ -22,4 +22,8 @@ return [
     // Talentpool nur mit ausdrücklicher, widerruflicher Einwilligung
     // (Art. 6 Abs. 1 lit. a DSGVO), Praxis-Befristung 1–2 Jahre.
     'talent_pool_months' => (int) env('APPLICATIONS_TALENT_POOL_MONTHS', 18),
+
+    // Bekanntmachungen des eVergabe-Abrufs nach Fristende ohne Treffer in einem
+    // Suchprofil löschen (Leistungsanalyse 2026-11-02, perf-11: 170 MB Volltexte).
+    'tender_notice_retention_days' => (int) env('TENDER_NOTICE_RETENTION_DAYS', 365),
 ];

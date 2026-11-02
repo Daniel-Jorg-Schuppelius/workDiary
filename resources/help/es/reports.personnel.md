@@ -72,6 +72,8 @@ especial y no pagado; según la duración del período se calcula por día, por
 semana o por trimestre. **Vacaciones restantes por empleado (top 15)** muestra
 los saldos restantes más altos.
 
+Un clic en un recuadro de recuento lleva a la tabla o lista que cuenta; los recuadros de sumas y cuotas no tienen destino.
+
 Los filtros **Área** (**Solo propios** o **Equipo completo** para todas las
 personas de la organización), **Empleado**, **Equipo** y **Estado** los ven
 los administradores y las personas con el permiso **Ver todas las solicitudes
@@ -130,6 +132,8 @@ Recuadros: **Empleados**, **Días laborables de baja** con los días naturales,
 (por día, semana o trimestre según el período) y el mapa de calor **Días de
 baja por empleado y mes**.
 
+Un clic en un recuadro de recuento lleva a la tabla o lista que cuenta; los recuadros de sumas y cuotas no tienen destino.
+
 Filtros como en **Vacaciones y flex**: **Área**, **Empleado** y **Equipo** –
 aquí para los administradores y las personas con el permiso **Ver las bajas por
 enfermedad**; las demás solo ven su propia fila. Esta página no ofrece
@@ -149,6 +153,7 @@ la matriz ni en los mosaicos, gráficos y exportación.
   gris **sin asignación**. La leyenda está debajo de la matriz.
 - Recuadros: **Empleados**, **Cualificaciones**, **Asignaciones**, **Vencen
   (≤30 d.)** y **Caducado**.
+- Un clic en un recuadro de recuento lleva a la tabla o lista que cuenta; los recuadros de sumas y cuotas no tienen destino.
 - Gráficos: **Titulares por cualificación (top 15)** y **Asignaciones por
   cualificación según estado** para las doce cualificaciones más frecuentes.
 
@@ -167,6 +172,7 @@ de seguridad ocurridos en el período de la cabecera.
 
 - Recuadros: **Eventos totales**, **Abiertos** (todos los no cerrados),
   **Cerrados** y **Críticos** (gravedad crítica).
+- Un clic en un recuadro de recuento lleva a la tabla o lista que cuenta; los recuadros de sumas y cuotas no tienen destino.
 - Gráficos: **Eventos por mes** con la segunda serie **de ellos cerrados** y
   **Eventos por mes por estado**, apilados según **Notificado**, **En
   investigación**, **Medidas definidas** y **Cerrado**; por día, semana o

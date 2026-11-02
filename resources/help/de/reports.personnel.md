@@ -70,6 +70,8 @@ Kacheln: **Mitarbeiter**, **Urlaub (Werktage)** mit den ausstehenden Tagen,
 Unbezahlt; je nach Länge des Zeitraums heißt es je Tag, je Woche oder je
 Quartal. **Resturlaub je Mitarbeiter (Top 15)** zeigt die höchsten Reste.
 
+Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
+
 Die Filter **Bereich** (**Nur eigene** oder **Gesamtes Team** für alle
 Personen der Organisation), **Mitarbeiter**, **Team** und **Status** sehen
 Administratoren und Personen mit dem Recht **Alle Urlaubsanträge sehen**; alle
@@ -128,6 +130,8 @@ ausgeschöpft**. Diagramme: **Kranktage je Monat** mit Medianlinie (je nach
 Zeitraum je Tag, Woche oder Quartal) und die Heatmap **Kranktage je Mitarbeiter
 und Monat**.
 
+Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
+
 Filter wie bei **Urlaub & Flex**: **Bereich**, **Mitarbeiter** und **Team** –
 hier für Administratoren und Personen mit dem Recht **Krankmeldungen
 einsehen**; alle anderen sehen nur ihre eigene Zeile. Diese Seite bietet keinen
@@ -147,6 +151,7 @@ Matrix noch in Kacheln, Diagrammen und Export.
   **abgelaufen**, grau **keine Zuweisung**. Die Legende steht unter der Matrix.
 - Kacheln: **Mitarbeiter**, **Qualifikationen**, **Zuweisungen**, **Laufen ab
   (≤30 T.)** und **Abgelaufen**.
+- Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
 - Diagramme: **Träger je Qualifikation (Top 15)** und **Zuweisungen je
   Qualifikation nach Status** für die zwölf häufigsten Qualifikationen.
 
@@ -165,6 +170,7 @@ Sicherheitsereignisse aus, die im Zeitraum der Kopfzeile eingetreten sind.
 
 - Kacheln: **Ereignisse gesamt**, **Offen** (alle nicht geschlossenen),
   **Geschlossen** und **Kritisch** (Schweregrad Kritisch).
+- Ein Klick auf eine Zählkachel springt zu der Tabelle oder Liste, die sie zählt; Summen- und Quotenkacheln bleiben ohne Ziel.
 - Diagramme: **Ereignisse je Monat** mit der zweiten Reihe **davon
   geschlossen** und **Ereignisse je Monat nach Status**, gestapelt nach
   **Gemeldet**, **In Untersuchung**, **Maßnahmen definiert** und

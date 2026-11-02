@@ -66,6 +66,8 @@ Funciones:
    reservada a administración y contabilidad y no se puede deshacer
    con un clic.
 
+Un clic en una ficha de aviso filtra la lista a esas entradas y cambia a «Todo»; la barra de filtros ofrece el mismo valor.
+
 La página es visible para los roles con el permiso «ver todos los
 registros de tiempo» (por defecto contabilidad, dirección y
 administración).

@@ -16,7 +16,7 @@ use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Plugins\Firefly\Exceptions\FireflyApiException;
 use App\Plugins\Firefly\FireflyPlugin;
 use App\Plugins\Support\{GuardsPluginApiResponses, PluginApiClient, PluginHttpFactory};
-use App\Plugins\Support\TaskSync\IncompleteRemoteReadException;
+use App\Plugins\Support\TaskSync\{IncompleteRemoteReadException, OffsetPage, RemotePages};
 use Carbon\CarbonImmutable;
 use Generator;
 
@@ -59,7 +59,7 @@ class FireflyClient {
     public function transactionGroups(CarbonImmutable $from, CarbonImmutable $to): Generator {
         $total = null;
         $journals = [];
-        for ($page = 1; $page <= $this->maxPages; $page++) {
+        $pages = RemotePages::offset(function (int $page) use ($from, $to, &$total): OffsetPage {
             $body = $this->guard($this->api()->getResponse($this->url('/transactions'), [
                 'type' => 'all',
                 'start' => $from->toDateString(),
@@ -69,32 +69,30 @@ class FireflyClient {
             ]), '/transactions');
             $groups = $body['data'] ?? null;
             $count = data_get($body, 'meta.pagination.total');
-            if (! is_array($groups) || ! array_is_list($groups) || ! is_numeric($count) || ($total !== null && (int) $count !== $total)) {
+            if (! is_array($groups) || ! array_is_list($groups) || ! is_numeric($count)) {
                 throw new IncompleteRemoteReadException('listing_changed');
             }
             $total = (int) $count;
-            foreach ($groups as $group) {
-                if (is_array($group)) {
-                    foreach ((array) data_get($group, 'attributes.transactions', []) as $split) {
-                        if (is_array($split) && is_scalar($split['transaction_journal_id'] ?? null)) {
-                            $journals[(string) $split['transaction_journal_id']] = true;
-                        }
+            $totalPages = data_get($body, 'meta.pagination.total_pages');
+
+            return new OffsetPage($groups, $groups !== [] && is_numeric($totalPages) && $page < (int) $totalPages, $total);
+        }, $this->maxPages);
+
+        foreach ($pages as $group) {
+            if (is_array($group)) {
+                foreach ((array) data_get($group, 'attributes.transactions', []) as $split) {
+                    if (is_array($split) && is_scalar($split['transaction_journal_id'] ?? null)) {
+                        $journals[(string) $split['transaction_journal_id']] = true;
                     }
-
-                    yield $group;
-                }
-            }
-            $pages = data_get($body, 'meta.pagination.total_pages');
-            if ($groups === [] || ! is_numeric($pages) || $page >= (int) $pages) {
-                if (count($journals) !== $total) {
-                    throw new IncompleteRemoteReadException('listing_changed');
                 }
 
-                return;
+                yield $group;
             }
         }
-
-        throw new IncompleteRemoteReadException('page_limit');
+        // Jede Buchung genau einmal gesehen — sonst hat sich die Liste beim Blättern verschoben.
+        if (count($journals) !== $total) {
+            throw new IncompleteRemoteReadException('listing_changed');
+        }
     }
 
     /** Leseprobe (Healthcheck). */

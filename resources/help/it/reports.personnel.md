@@ -70,6 +70,8 @@ speciale e non pagato; a seconda della durata del periodo è calcolato al
 giorno, a settimana o per trimestre. **Ferie residue per collaboratore (top
 15)** mostra i residui più alti.
 
+Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
+
 I filtri **Area** (**Solo i propri** o **Tutto il team** per tutte le persone
 dell'organizzazione), **Dipendente**, **Team** e **Stato** sono visibili agli
 amministratori e alle persone con il permesso **Visualizza tutte le richieste
@@ -130,6 +132,8 @@ certificato** e **Diritto esaurito**. Grafici: **Giorni di malattia al mese**
 con linea della mediana (al giorno, a settimana o per trimestre a seconda del
 periodo) e la heatmap **Giorni di malattia per collaboratore e mese**.
 
+Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
+
 Filtri come in **Ferie e flex**: **Area**, **Dipendente** e **Team** – qui per
 gli amministratori e le persone con il permesso **Visualizza i congedi per
 malattia**; tutti gli altri vedono solo la propria riga. Questa pagina non
@@ -150,6 +154,7 @@ grafici e nell’esportazione.
   matrice.
 - Riquadri: **Dipendenti**, **Qualifiche**, **Assegnazioni**, **In scadenza
   (≤30 g)** e **Scaduto**.
+- Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
 - Grafici: **Titolari per qualifica (top 15)** e **Assegnazioni per qualifica
   secondo lo stato** per le dodici qualifiche più frequenti.
 
@@ -168,6 +173,7 @@ sicurezza avvenuti nel periodo dell'intestazione.
 
 - Riquadri: **Eventi totali**, **Aperti** (tutti quelli non chiusi), **Chiusi**
   e **Critici** (gravità critica).
+- Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
 - Grafici: **Eventi al mese** con la seconda serie **di cui chiusi** ed **Eventi
   al mese per stato**, impilati secondo **Segnalato**, **In indagine**,
   **Misure definite** e **Chiuso**; al giorno, a settimana o per trimestre a

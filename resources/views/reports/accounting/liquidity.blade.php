@@ -24,13 +24,13 @@
         </x-slot:actions>
 
         <div class="grid gap-3 sm:grid-cols-4">
-            <x-kpi-tile :label="__('accounting.reports.kpi.cash')" :value="$cash_total" />
-            <x-kpi-tile :label="__('accounting.reports.kpi.receivable')" :value="$receivable" />
-            <x-kpi-tile :label="__('accounting.reports.kpi.payable')" :value="$payable" />
-            <x-kpi-tile :label="__('accounting.reports.kpi.forecast')" :value="$forecast" />
+            <x-kpi-tile :label="__('accounting.reports.kpi.cash')" :value="$cash_total" href="#liquidity-balances" />
+            <x-kpi-tile :label="__('accounting.reports.kpi.receivable')" :value="$receivable" href="#liquidity-aging-receivable" />
+            <x-kpi-tile :label="__('accounting.reports.kpi.payable')" :value="$payable" href="#liquidity-aging-payable" />
+            <x-kpi-tile :label="__('accounting.reports.kpi.forecast')" :value="$forecast" :href="route('reports.accounting.liquidity-forecast')" />
         </div>
 
-        <x-card :title="__('accounting.reports.section.balances')" icon="account_balance">
+        <x-card :title="__('accounting.reports.section.balances')" icon="account_balance" id="liquidity-balances" class="scroll-mt-24">
             <x-table :bare="true">
                 <x-slot:head>
                     <tr>
@@ -55,7 +55,7 @@
 
         <div class="grid gap-4 lg:grid-cols-2">
             @foreach ([['buckets' => $receivableAging, 'key' => 'receivable'], ['buckets' => $payableAging, 'key' => 'payable']] as $aging)
-                <x-card :title="__('accounting.reports.aging.' . $aging['key'])" icon="schedule">
+                <x-card :title="__('accounting.reports.aging.' . $aging['key'])" icon="schedule" id="liquidity-aging-{{ $aging['key'] }}" class="scroll-mt-24">
                     <x-table :bare="true">
                         @foreach (['not_due', 'd30', 'd60', 'd90', 'd90plus'] as $bucket)
                             <tr>

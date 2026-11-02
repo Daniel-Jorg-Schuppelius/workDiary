@@ -1,7 +1,7 @@
 ---
 title: "Subscriptions & Licences"
 topic: finance.resale
-version: 11
+version: 12
 keywords:
     - Import preview
     - Bulk actions
@@ -25,6 +25,13 @@ modules:
 related:
     - roles.buchhaltung
     - glossary.core
+    - finance.resale.accounts
+    - finance.resale.reconcile
+    - finance.resale.board
+    - finance.resale.subscription
+    - finance.resale.periods
+    - finance.resale.plan
+    - finance.resale.reports
 ---
 
 The **resale register** keeps every resold recurring service as a
@@ -62,72 +69,6 @@ subscriptions get no new periods.
 to “ended”. Permissions: view with *View resale register*, manage with
 *Manage resale register*.
 
-**Reconciliation per invoice recipient:** When periods stay open and it is
-unclear whether an invoice is missing or merely the assignment, use the
-reconciliation (button in the subscription list, on the periods page and
-on the customer). Per recipient — the customer including their end
-customers — it sets the due periods of all subscriptions against the
-licence lines of their invoices, in licence months per product: *required*
-from the periods, *invoiced* from the lines. The finding tells you what to
-do: "merely unassigned" (free lines suffice — assign), "never invoiced"
-(more periods than lines — create a catch-up invoice via the draft or
-waive the period) or "without period" (more lines than periods — a
-subscription is missing in the register or something was billed twice).
-Per open period the lines of the same product are listed with their
-distance from the period start: free ones with assignment, consumed ones
-with their holder for review. The reference date is the invoice's
-**service period**, else the invoice date; licences and months are shown
-separately ("5 × 12 mo." = five licences for one year). Plus three traps
-invisible per subscription: **invoice to a different customer** (the
-provider account is not the customer, or the end customer is billed
-directly instead of via the partner; recognised by a shared name part) —
-the fix is "Holder → customer": the subscription moves to that customer and
-the proposal run applies immediately. **Voided** invoices near the period
-start explain an empty period. **Inbox** subscriptions whose company
-appears in invoice texts to this recipient are waiting for their holder. A
-free line that no longer hits any period of its product means the contract
-is missing in the register (the provider export does not know it): the
-product row says "Line without subscription from …" and "Create subscription
-from line" opens the subscription dialog with article, quantity, start and
-price taken from the invoice. Assignment may target a period of another
-subscription of the same recipient — never a period of a different customer.
-
-**Workbook and reconciliation board:** The reconciliation of a recipient is
-the workbook: at the top the subscriptions with edit, takeover, transfer
-licences and return, below that the reconciliation board per product. On the
-left all periods in date order with target and coverage, on the right the
-invoice lines: linked ones with their service period, for open periods the
-fitting free ones, invoices to other customers and voided ones. Lines
-without a fitting period appear as their own row “without period” at their
-date. Each free invoice sits only at the period it fits best, and “Assign …”
-assigns it with one click; the amount is what the period still needs. An
-offset of a few weeks between the provider’s order date and the invoice date
-is normal and not shown; a collective invoice that covers the whole period
-fits. Invoices without a fitting period appear as a row “without period”
-with “Create subscription” or “Assign to another period”. Doubtful
-assignments ask before saving; in the link dialog and in the quick
-assignment on the subscription page you confirm them with the checkbox.
-Links that do not fit in time are marked yellow — check them and unlink them
-if needed. “Work on the next recipient” in the overview leads through all
-recipients with an open amount; a recipient is done when no due period is
-open and no template finding remains. If the provider renews a subscription
-as a new order, the proposal run waives the short remaining period of the
-old order and moves its links to the first period of the new one. The remaining period
-then shows as “Order change”, not as a waiver: the successor’s invoices cover
-the time.
-
-**Insolvency and takeover:** If an invoice was voided because the customer
-is insolvent, record the period on the board with “Record as bad debt” — the
-waiver dialog has the reason with the invoice number prefilled. If another
-company continues the licences, use “Takeover” on the subscription: new
-holder and effective date. If the effective date is at the start of the
-first open period, the new holder is also billed for the open periods; if it
-is later, the register optionally waives the open periods before it as bad
-debt. An effective date at the subscription start moves the whole
-subscription to the new holder, otherwise an assignment starts on the
-effective date. If an invoice already goes to the successor company, the
-board offers the takeover directly at that invoice.
-
 **Quantities and coverage:** The register never lets you assign more than
 there is. You assign at most what a period still has open — also when moving
 a link. Only licences that are neither transferred nor already invoiced to
@@ -149,19 +90,6 @@ product and start, so a repeated import updates the same subscriptions
 instead of duplicating them. The provider comes from the column or the
 dialog; a CSV template is available in the import dialog.
 
-**Transferring licences:** When two companies share premises and the second
-one uses part of the licences of a contract, transfer those licences at the
-contract ("Transfer licences": holder, quantity, period, sale price). A
-separate subscription for the other holder with its own billing periods
-appears; the contract plans its periods with the remainder. Each holder
-gets its own invoices assigned. When a successor replaces the contract
-(import), the transfer continues there. A contract with transfers can only
-be deleted once the transfers are gone. A holder change over time — a
-company splits and the new one takes over the contracts — is a transfer
-too: all licences for the old period to the former holder; the
-reconciliation offers this at an invoice of the other customer as
-"Transfer period to …", prefilled.
-
 **Inbox:** Imported subscriptions whose company the register cannot assign
 to a holder yet land in the inbox. Per company you decide once: customer,
 end customer of a partner (foreign customer) or own holding — the suggestion
@@ -176,39 +104,6 @@ decision is remembered; the next import assigns the same company at once.
 Lines the import could not process (unreadable date, quantity without a
 number, duplicate identifier) are kept as findings on the import: the count
 in the message, the details expandable in the list.
-
-**Periods:** The period page shows the due periods of all subscriptions with
-status tiles (open, billed, partial, waived, disputed). "Compute proposals"
-matches the open periods against the licence lines of the mirrored invoices
-and creates proposals; you confirm them, link a line by hand (only invoices of
-the same recipient, only free licence months) or waive with a reason
-("goodwill").
-In the link dialog the invoices within the period window come first, below them
-all other invoices of the recipient; the search field finds any by its number,
-and a used one names where it is linked. The subscription and period lists also
-search by invoice number. Decided periods are no longer touched by planning; "reopen"
-opens them again. If a linked invoice is later voided in Lexoffice, the next
-run sets the link to zero months, notes the cancellation and reopens the
-period so the replacement invoice can be linked. Domain subscriptions are
-covered by lines that name the domain (such as ".de domain incl. management
-(lastkraft-logistik.de)"), regardless of the article’s product classification.
-Domains a subreseller settles through the provider portal are covered by the
-domain plugin’s accounting journal: one voucher per subuser and month,
-numbered “customer number-MM-YYYY” (enter the customer number on the subuser’s
-page); the recipient is the subuser’s customer.
-
-**Invoice draft:** From all open periods of an invoice recipient a draft is
-created with one click — with Lexoffice invoicing as a draft in Lexoffice
-(nothing is finalised; you review and issue there), with local invoicing as
-a local invoice draft with lines and proposed links. One line per
-subscription and period, end customer in the description, quantity in
-months for monthly articles. The periods remember the draft: a second click
-does not create a second one but names the pending draft with number and
-date; only when the draft became an invoice or the period is decided are
-they free again; until then they show “In draft” instead of “missing” or
-“Open”. The dialog lists only recipients with open periods and a
-sale price and names below what is already in a draft. Creating requires
-the right *Create invoice drafts from periods*.
 
 **Recurring invoicing:** With local invoicing the register can create the
 drafts itself every day. The switch is on the *Product classification*
@@ -238,24 +133,12 @@ difference is shown as a notice. The purchase page filters by provider,
 source, date range and search term; an allocation is always released as a
 whole per document.
 
-**Margin report:** Per product and per invoice recipient the due periods of
-the range are shown with expected sale (quantity × sale price), billed (net
-amounts of the invoice links, proposals included), expected purchase
-(provider price × quantity) and actual purchase from the purchase entries.
-Margin = billed − purchase; the actual purchase counts as soon as every
-period of the row has one, otherwise the expected purchase. Amounts are
-never summed across currencies — with several currencies there is one row
-per currency and a notice. Export as CSV, XLSX or PDF; the invoice proposal
-(open periods with open licence months and amount) as CSV or XLSX.
-
-**Price check:** Per product the purchase per contract, catalogue price and
-RRP from the last imported price list against the sale prices of the
-subscriptions (minimum, median, maximum). Flags: "sale below purchase",
-"sale below RRP", "contract above catalogue", "no sale price".
-
 **Product classification:** The list shows every article of the article
 catalogue — the active articles of the article master and the articles of
-connected accounting systems such as Lexoffice, with their source. Which of
+connected accounting systems such as Lexoffice, with their source. easybill,
+sevDesk, Invoice Ninja, Akaunting and InvoicePlane deliver their articles
+too: the voucher pull reads them before the vouchers, and mirrored lines
+then carry the source's article instead of only its identifier. Which of
 them are subscription products, the register detects by name. Per article
 you can override: "subscription product" forces detection, "never a
 subscription line" keeps services with a product name in the text
@@ -293,13 +176,6 @@ periods. These domains need no recurring template and never go into an
 invoice draft of the register; the workbook and the subscription page name
 the subuser.
 
-**Renewals and subscriptions without invoice:** The "Renewals" report shows
-which subscriptions renew or end in the range (tiles 30, 60, 90 days):
-renewal is the start of the next planned period, for cancelled
-subscriptions the end counts. "Without invoice" lists subscriptions whose
-oldest open due period is older than N days (default 60), with open periods
-and open amount. Both as CSV or XLSX.
-
 **Dashboard tile:** The tile "Open subscription periods" (group Finance, off
 by default) shows open periods with open amount, unconfirmed proposals and
 subscriptions without holder and leads to the respective page.
@@ -321,45 +197,6 @@ period counts as uncovered). The command `lexoffice:repair-resale-links`
 re-attaches such links via invoice number and licence line; what is not
 unambiguous is only listed (--dry-run shows beforehand what would happen).
 
-**License account:** An account is named after its holder; if the invoice
-goes to a partner, the partner is shown next to it (“via Nordlicht Systems”), and
-the partner's recurring templates appear only in the end-customer account
-they are assigned to. The *License accounts* tab shows per provider account
-(customer number at the provider, including predecessors of a provider
-change) how many licences per product are running, who holds them and which
-licence year is invoiced — as a grid product × holder × year with invoice
-number or "missing". If several companies hold licences of the same account,
-maintain the **allocation** per product ("Nordufer Tank 5 × Exchange from
-18.10.2025"): other holders fill the contract with the largest quantity
-first, then by start; the contract holder keeps the rest. Per-contract
-transfers are derived from this, follow every change and move to the
-successor on a provider change; manual transfers remain possible as an
-exception. The schedule also replans superseded and ended contracts of the
-last three years so a later allocation still changes their target.
-**Findings on links** show lines covering more licence months than they have
-(overbooked) and links whose service period does not meet the period — with
-"Move to …" onto the matching period of the same subscription or "Unlink";
-the link dialog and the quick assignment warn beforehand with ⚠.
-
-**Recurring templates (plan):** If an accounting program issues the invoices,
-recurring invoices are created there as recurring templates. The register
-mirrors them (Lexoffice: daily and after the voucher sync, read-only) and shows
-per template in the license account its status, rhythm, next run and the
-licence lines with the subscriptions they invoice. The subscription ↔ template
-line assignment is proposed by the run — first via the invoice the template
-last created that is assigned to a period, otherwise via same recipient,
-article and quantity (with several end customers of a partner only when
-named) — you confirm, assign manually or
-remove. Periods billed by a running template are left out of the invoice proposal;
-whatever ends before its first execution stays in. Old years can thus still
-be billed after the template has been created. **Checks stock ↔ plan** report before the invoice: subscription
-without template, template without subscription ("Create subscription from
-template" takes over article, quantity, rhythm and price), differing quantity,
-template running past the subscription end, template paused or ended while the
-subscription runs, next run more than seven days off the period start, last run
-failed — in the tile, the weekly digest and the work queue. Every mirrored
-invoice carries the reference to its template.
-
 **Overview and tabs:** The entry page “Subscriptions & Licences” is a
 **task list in four groups** — Invoice (due service without invoice, only
 after 21 days of grace and never while an active recurring template still
@@ -379,26 +216,6 @@ The tiles above the lists lead to what they count: on licence accounts,
 reconciliation, licence stock and in a batch they filter the list, in a
 recipient’s workbook they filter the reconciliation board to the affected
 products; there a second click on the active tile removes the filter again.
-
-**Sure and unsure proposals:** The proposal run (hourly and after every
-import) confirms sure matches itself — one voucher whose invoice date lies
-at most 14 days before to 45 days after the period start and which fully
-covers the period with the matching licence count; the confirmation appears
-in the log as “confirmed automatically”. Everything else stays a proposal
-and carries “unsure” with the reason in the tooltip. Proposals are valid without
-confirmation: the periods page shows “Problems only” (open, partial,
-disputed) by default; unconfirmed proposals are reached as a spot check via
-the filter and the state in the overview. Clicking the voucher number
-opens the voucher: lines, service period, invoice text, consumption per line
-and the comparison with the period (date within the window, service,
-article) — so you can see before confirming whether the invoice belongs to
-the period.
-
-**Bulk actions:** On the periods page you select rows via the checkboxes
-and confirm all proposals at once, waive with one reason for all (“Waive /
-dispute …”) or have a draft created per invoice recipient of the selection.
-Decided and upcoming periods are skipped and counted; every period gets the
-same log entry as with the single action. There is no preselection.
 
 **Product classification with filter:** The classification shows by default
 only subscription products and articles with subscriptions or template

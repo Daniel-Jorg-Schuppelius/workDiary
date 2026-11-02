@@ -64,7 +64,7 @@
                     :hint="__('unter 1500 unkritisch, über 2500 hoch')" />
         <x-kpi-tile :label="__('Kritische A-Lieferanten')" :value="count($riskRows)"
                     :tone="count($riskRows) > 0 ? 'warning' : 'success'"
-                    :hint="__('Ausgabenanteil ab :share %', ['share' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($riskShare, 0)])" />
+                    :hint="__('Ausgabenanteil ab :share %', ['share' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($riskShare, 0)])" href="#supplier-value-risk" />
     </div>
 
     <div class="chart-grid grid gap-3 xl:grid-cols-2">
@@ -78,7 +78,7 @@
     <x-charts.bar-h :title="__('Lieferanten je Segment')" :unit="__('Lieferanten')" :series="$segmentSeries" :x-label="__('Segment')" :y-label="__('Lieferanten')"
                     :note="__('Klick auf ein Segment filtert die Lieferantenliste unten auf genau diese Lieferanten.')" />
 
-    <x-card class="mt-4">
+    <x-card class="mt-4" id="supplier-value-risk" class="scroll-mt-24">
         <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Kritische A-Lieferanten (Klumpenrisiko)') }}</h2>
         @if (count($riskRows) === 0)
             <x-empty-state icon="check_circle" :title="__('Kein Lieferant überschreitet den eingestellten Ausgabenanteil — gute Streuung.')" compact />

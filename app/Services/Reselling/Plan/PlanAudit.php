@@ -16,10 +16,11 @@ use App\Enums\Reselling\{PeriodStatus, SubscriptionStatus};
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResalePlanLink, ResaleSubscription};
-use App\Services\Reselling\Register\{LicenseAccounts, ResaleDraftRun};
+use App\Services\Reselling\Register\{LicenseAccounts, ResaleCacheStamp, ResaleDraftRun};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Prüfregeln Bestand ↔ Plan (Feature 185, MVP-1412): vor der Rechnung
@@ -58,6 +59,9 @@ final class PlanAudit {
     /** Toleranz zwischen nächster Ausführung der Vorlage und Periodenbeginn. */
     private const EXECUTION_TOLERANCE_DAYS = 7;
 
+    /** Lebensdauer der Befundzähler im Cache (Sekunden). */
+    private const COUNT_TTL = 60;
+
     public function __construct(
         private readonly RecurringPlans $plans,
         private readonly LicenseAccounts $accounts,
@@ -80,18 +84,21 @@ final class PlanAudit {
 
     /**
      * Alle Befunde der Organisation; `$subscriptionIds` grenzt auf ein Konto ein
-     * (Vorlagen zählen dann nur, wenn sie dessen Empfänger betreffen).
+     * (Vorlagen zählen dann nur, wenn sie dessen Empfänger betreffen). Eine Seite,
+     * die ihre Abos schon geladen hat (Lizenzkonto, Arbeitsmappe), reicht sie als
+     * `$loaded` herein — sonst lädt das Register sie (Leistungsanalyse 2026-11-02, perfc-04).
      *
      * @param  list<int>|null  $subscriptionIds
+     * @param  Collection<int, ResaleSubscription>|null  $loaded  vorgeladene Abos (mit Halter, Katalogartikel, Anbieterabrechnung)
      * @return list<Finding>
      */
-    public function findings(Organization $organization, ?array $subscriptionIds = null, ?CarbonImmutable $reference = null): array {
+    public function findings(Organization $organization, ?array $subscriptionIds = null, ?CarbonImmutable $reference = null, ?Collection $loaded = null): array {
         if (! $this->plans->availableFor($organization)) {
             return [];
         }
         $reference ??= ResalePeriod::today();
         $templates = $this->plans->templatesFor($organization)->keyBy(static fn(PlanTemplate $t): string => $t->key);
-        $subscriptions = $this->accounts->subscriptions($organization)
+        $subscriptions = ($loaded ?? $this->accounts->subscriptions($organization))
             ->filter(static fn(ResaleSubscription $s): bool => $s->hasHolder() && ! $s->is_own_holding && $s->status !== SubscriptionStatus::Superseded)
             ->when($subscriptionIds !== null, static fn(Collection $c) => $c->whereIn('id', $subscriptionIds ?? []))
             ->values();
@@ -186,11 +193,28 @@ final class PlanAudit {
         return $findings;
     }
 
-    /** @return array<string, int> Art → Anzahl */
+    /**
+     * Befunde je Art — 60 s im Cache je Organisation (nur Zahlen), weil Dashboard-Kachel,
+     * Arbeitsvorrat und Überblick sie auf jeder Seite fragen (perfc-05); der Org-Stempel
+     * verwirft sie bei Zuordnung, Vorlagen-Sync und jeder Registeränderung.
+     *
+     * @return array<string, int> Art → Anzahl
+     */
     public function countByKind(Organization $organization): array {
+        $key = ResaleCacheStamp::key('plan-findings', 1, (int) $organization->id, ResalePeriod::today()->toDateString());
+        $cached = Cache::get($key);
+        if (! is_array($cached)) {
+            $cached = [];
+            foreach ($this->findings($organization) as $finding) {
+                $cached[$finding['kind']] = ($cached[$finding['kind']] ?? 0) + 1;
+            }
+            Cache::put($key, $cached, self::COUNT_TTL);
+        }
         $counts = [];
-        foreach ($this->findings($organization) as $finding) {
-            $counts[$finding['kind']] = ($counts[$finding['kind']] ?? 0) + 1;
+        foreach ($cached as $kind => $count) {
+            if (is_string($kind) && is_int($count)) {
+                $counts[$kind] = $count;
+            }
         }
 
         return $counts;

@@ -49,10 +49,10 @@
         <x-kpi-tile :label="__('Plan')" :value="$fmtH($summary['totals']['plan_minutes'])" tone="info" />
         <x-kpi-tile :label="__('Ist')" :value="$fmtH($summary['totals']['actual_minutes'])" tone="primary" />
         <x-kpi-tile :label="__('Differenz')" :value="$fmtH($summary['totals']['delta_minutes'])" :tone="$summary['totals']['delta_minutes'] < 0 ? 'warning' : 'success'" />
-        <x-kpi-tile :label="__('Warnungen')" :value="$summary['totals']['warnings']" :tone="$summary['totals']['warnings'] > 0 ? 'error' : 'neutral'" format="int" />
+        <x-kpi-tile :label="__('Warnungen')" :value="$summary['totals']['warnings']" :tone="$summary['totals']['warnings'] > 0 ? 'error' : 'neutral'" format="int" href="#plan-ist-summary-table" />
     </div>
 
-    <x-card :title="$scope === 'team' ? ($team?->name ?? '') : __('Alle Mitarbeitenden')" icon="groups">
+    <x-card :title="$scope === 'team' ? ($team?->name ?? '') : __('Alle Mitarbeitenden')" icon="groups" id="plan-ist-summary-table" class="scroll-mt-24">
         @if ($summary['rows'] === [])
             <x-empty-state icon="groups" :title="__('Keine Mitarbeitenden im gewählten Bereich.')" />
         @else

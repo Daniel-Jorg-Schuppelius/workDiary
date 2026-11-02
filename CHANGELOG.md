@@ -8,8 +8,224 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-02
+
+Erste versionierte Freigabe nach 168 Phasen: alles, was bis zum
+2026-11-02 unter „Unreleased“ stand. Das automatisierte Release-Gate
+(Feature 051, `composer security:gate`) ist am 2026-11-02 gelaufen; den
+Git-Tag setzt und veröffentlicht der Inhaber.
+
+### Hinweise zum Update
+
+- Neue Umgebungsvariablen (alle in `.env.example`): `SCHEDULER_SKIP_INACTIVE_PLUGINS`
+  (Vorgabe `true` — plugin-gebundene Scheduler-Jobs ohne irgendwo aktives
+  Plugin werden nicht angemeldet), `TENDER_NOTICE_RETENTION_DAYS` (Vorgabe
+  365, Löschung alter Bekanntmachungen ohne Treffer),
+  `INVOICING_QUOTE_VALIDITY_DAYS` (Vorgabe 30, Bindefrist für Angebote).
+- Migrationen von Kern und Plugins laufen mit `migrate`; `modules:cache` und
+  `morph-map:generate` sind Teil von `deploy.sh`.
+- Nach dem Deploy einmalig: `scripts/artisan.sh permissions:own-actions-report`
+  (gestrichene Rechte ohne Funktion), `scripts/artisan.sh resale:propose`
+  (Domain-Vorlagen im Plan-Abgleich), bei Bedarf
+  `scripts/artisan.sh lexoffice:sync-vouchers --full` und
+  `scripts/artisan.sh resale:import-incoming --since=<datum>` — Abschnitt
+  „Manuelle Befehle“ in `betrieb/server-cron-queue.md` des Doku-Repositorys.
+- Scheduler: Takt-Jobs laufen jetzt mit Minutenversatz; ein Monitoring, das
+  Läufe zur vollen Stunde erwartet, folgt dem erzeugten Scheduler-Register
+  (`konventionen/scheduler-register.md`).
+- Datenbankserver und PHP-CLI: Empfehlungen für `my.cnf` (Pufferpool,
+  `table_open_cache`, Definition-Cache, Slow-Log) und OPcache auf der
+  Kommandozeile stehen in der Leistungsanalyse 2026-11-02 — Betreiberschritte.
+
 ### Added
 
+- Vollscan 2026-11-02, Behebung (Protokoll `chronik/audits/vollscan-2026-11-02-behebung.md`
+  im Doku-Repository), neu:
+  - **Katalogquellen für fünf Buchhaltungsprogramme:** Die Produkt-Einstufung
+    des Reselling-Registers führt auch die Artikel von easybill, sevDesk,
+    Invoice Ninja, Akaunting und InvoicePlane; der Belegabruf liest sie vor den
+    Belegen, gespiegelte Positionen tragen den Artikel der Quelle statt nur
+    seiner Kennung.
+  - **Aufbewahrung:** Bereich „Fernwartung — wartende Sitzungen“ (ein Jahr,
+    Beitrag des Fernwartungs-Plugins) und Löschung von
+    Ausschreibungs-Bekanntmachungen ohne Treffer nach Fristende
+    (`TENDER_NOTICE_RETENTION_DAYS`).
+  - **Scheduler:** täglicher Lexoffice-Vollabgleich als eigener Job
+    (`lexoffice.sync_vouchers_full`, 05:50), Betriebsaufgabe „Scheduler-Job
+    schlägt wiederholt fehl“ ab drei Fehlern in Folge, Scheduler-Register
+    `scheduler:doc` (`konventionen/scheduler-register.md`: Schlüssel, Befehl,
+    Kadenz samt Versatz, Plugin-Bindung, Vorprüfung, Kritikalität, Laufzeit,
+    Hintergrund) mit Gate `SchedulerDocParityTest`.
+  - **CHANGELOG-Gate** `ChangelogCoverageRuleTest`: Jede im Feature-Register
+    als umgesetzt geführte MVP-Nummer steht in dieser Datei.
+  - **Hilfe:** Servicelandkarte im Helpdesk-Thema, Kapitel „Cockpit“ bei den
+    Leads, Reselling-Hilfe in sieben Themen je Seite (Lizenzkonten, Abgleich,
+    Abgleichstafel, Abo, Perioden, Serienvorlagen, Berichte) mit
+    „Nachberechnung und Vorausplanung“ und „Passung“.
+  - **Lexoffice:** „Belege jetzt abgleichen“ im Einstellungsdialog des Plugins
+    (Slot `plugin-settings.actions` des Plugin-Dialogs; inkrementeller Lauf im
+    Hintergrund, nur mit Recht und Zugangsdaten) — die Route
+    `lexoffice.vouchers.sync` hat damit einen Einstieg (gap-12); Hilfe ×5.
+  - **Browser-Tests:** `tests/e2e/dialog-followup.spec.ts` (Folgedialog
+    „Arbeitszeit-Modell“ aus dem Mitarbeiter-Dialog: Speichern, Abbrechen und
+    Escape kehren in die Ursprungsmaske zurück, GitHub #106, gap-05) und
+    `tests/e2e/resale.spec.ts` (Mappe → Schnellzuordnung → lokaler
+    Rechnungsentwurf, Abo-Import bis zur Vorschau, Zählkacheln filtern die
+    Tafel; gap-11/lk-38).
+- Reselling und Domains, Pilot-Nachträge 2026-10-27 bis 2026-11-02 (Features
+  185, 152, 083):
+  - Lizenzkonten-Übersicht mit höchstens fünf Produktzeilen und Domains als
+    Summe; Domain-Abos werden über Positionen gedeckt, die die Domain nennen,
+    unabhängig von der Produkt-Einstufung des Artikels.
+  - Sammelrechnungen tragen den Zeitraum je Position im Text; die Zyklusregel
+    des Vorschlagslaufs greift nur bei Geschwister-Abos.
+  - Buchungsjournal des Domainportals als Belegquelle: je Subuser und Monat ein
+    Beleg „Kundennummer-MM-JJJJ“ an dessen Kunden, die Domain als Position,
+    Buchungstyp und Quelle benannt. Preisstaffeln des Portals als
+    Berechnungsgrundlage: `domain:sync-prices` spiegelt Einkauf und
+    Klassenpreise aller Zonen in den Preiskatalog, Domain-Abos bekommen den
+    Verkaufspreis aus der Klasse des Subusers bzw. der benannten Klasse, der
+    Monatsbeleg rechnet zum Klassenpreis.
+  - DomainReselling-Plugin gegen die API-Referenz abgeglichen: toleranter
+    Feldzugriff (Wissensdatenbank und Live-Gateway schreiben Eigenschaften
+    verschieden), belegter Vertrag je Befehl (`domain:contract`,
+    `domain:prices`), Live-Vertrag mit Rechnungskennung, Subuser und
+    Statusereignis je Ereignis, Kontakte und Subuser-Felder vollständig.
+  - IDN-Domains tragen die lesbare Form als Bezeichnung („onlinehändler-…“
+    statt „xn--…“) auf Seiten, in Listen und auf Rechnungspositionen; die
+    Anbieter-Kennung bleibt Punycode, der Vergleich mit Rechnungs- und
+    Vorlagentexten kennt beide Schreibweisen.
+  - Abgleich: Domainrechnungen an andere Empfänger mit Halterwechsel,
+    Domainnamen mit Tippfehler als unsicherer Vorschlag mit Notiz, gleiche
+    Positionen desselben Belegs als eine Zeile mit Anzahl, Rechnungen über
+    ihre Nummer finden (Bezug-Dialog, Abo- und Periodenliste).
+  - Abo-Seite und Perioden: Periodenzeile zeigt unter dem Soll das Ist laut
+    Bezügen; Kacheln „Planbare Abos“ und „Offene Perioden“ sowie alle
+    Zählkacheln des Reselling-Moduls führen zu dem, was sie zählen; der
+    Abtretungs-Dialog zeigt die freie Menge je Zeitabschnitt und begrenzt das
+    Mengenfeld; Perioden im Rechnungsentwurf zeigen „Im Entwurf“ statt „fehlt“
+    oder „Offen“.
+  - Lizenzkonto: Vorlagenpositionen, Zuordnungsauswahl und Befunde nennen
+    zuerst das Abo, dann Halter und Kennung; Zebra je Vorlagenblock; die
+    Zuordnungsauswahl erscheint nur, solange Lizenzen der Position frei sind;
+    Lizenzjahre-Matrix mit einzeiligen Abzeichen und angepinnter erster Spalte.
+  - „Halter zuordnen“ am Hinweis ohne Halter, Partnervorschlag im Posteingang,
+    Suche nach Firma laut Anbieter, Bestellungswechsel statt Verzicht,
+    Vorlagenbefunde je Art gruppiert.
+  - Lexoffice meldet bei einem Kontakt ohne genau eine Rechnungsadresse
+    (HTTP 406 beim Rechnungsentwurf), was zu tun ist, statt rohes JSON.
+- Reselling: ruhige Abgleichstafel und Rücknahme (Phase 168, Feature 185,
+  MVP-1459–1462): Jede freie Rechnung steht nur bei der Periode, zu der sie am
+  besten passt, Zuordnen ist ein Knopf mit der Menge, die die Periode noch
+  braucht, und Passungshinweise erscheinen nur, wenn eine Rückfrage nötig ist
+  (eine Sammelrechnung über die ganze Periode passt). Rechnungen ohne passende
+  Periode stehen als Zeile „ohne Periode“ mit „Abo anlegen“ oder „Einer
+  anderen Periode zuordnen“. Die Rücknahme der letzten Abtretung stellt
+  entschiedene Vertragsperioden wieder her. Nachtrag: Die Schnellzuordnung der
+  Abo-Seite rechnet in Lizenzen der Periode statt der Rechnungsposition.
+- Reselling: Mengen- und Deckungsgrenzen (Phase 167, Feature 185,
+  MVP-1452–1458): Nirgends lässt sich mehr zuordnen, als da ist — Zuordnen
+  höchstens bis zum offenen Bedarf der Periode (auch beim Verschieben, in einer
+  Transaktion), Aufteilungen und Stummel beachten berechnete Lizenzen,
+  Vorlagenpositionen und Rechnungspositionen von Stücklizenzen sind nicht
+  überbuchbar (Befund „Vorlagenposition überbucht“ für Altbestand), teilweise
+  durch eine Serienvorlage gedeckte Abos kommen mit dem Rest in den
+  Rechnungsvorschlag, eine Abtretung an den eigenen Halter wird abgelehnt und
+  als Altfall mit Rücknahme gezeigt.
+- Reselling: Abgleichstafel, Passung und Übernahme (Phase 166, Feature 185,
+  MVP-1447–1451): Die Arbeitsmappe zeigt je Produkt Perioden und
+  Rechnungspositionen auf einem Zeitstrahl (ersetzt vier Karten); jede
+  Position trägt eine Passung zur Periode, fragliche Zuordnungen verlangen
+  eine Bestätigung — in Mappe, Bezug-Dialog und Schnellzuordnung. Die
+  Zyklusregel des Vorschlagslaufs zählt nur gleichzeitig laufende Abos; beim
+  Bestellungswechsel wandern die Bezüge der kurzen Restperiode an die erste
+  Periode des Nachfolgers. Für Insolvenzen: Übernahme ab Stichtag durch einen
+  neuen Halter und „Als Ausfall verbuchen“ an stornierten Rechnungen; Verzicht
+  mit Gründen zur Auswahl. Nachtrag: Abtretbar ist nur, was im Zeitraum nicht
+  schon über Rechnungen an den Halter berechnet ist.
+- Reselling: Arbeitsmappe je Rechnungsempfänger (Phase 165, Feature 185,
+  MVP-1443–1446): Der Abgleich eines Empfängers beginnt mit seinen Abos
+  (Bearbeiten, Abtreten, Rücknahme in der Zeile), führt die Serienvorlagen mit
+  Zuordnung und kehrt aus jedem Dialog auf die aufrufende Seite zurück. Die
+  Arbeitsliste sortiert Empfänger nach offenem Betrag, „Fertig“ heißt keine
+  fällige Periode ohne Entscheidung und kein Vorlagenbefund, „Nächsten
+  Empfänger abarbeiten“ führt aus Überblick und Liste hindurch. Domains im
+  Subuser-Konto rechnet das Domainportal ab (MVP-1446): kein Befund „Abo ohne
+  Serienvorlage“, nie im Rechnungsentwurf oder Serienlauf des Registers.
+- Reselling: Nachberechnung und Serienweg (Phase 164, Feature 185,
+  MVP-1436–1442): Der Rechnungsvorschlag bündelt zusammenhängende offene
+  Perioden eines Abos zu einer Position (Menge in Jahren oder Monaten,
+  Zeitraum vom ersten Beginn bis zum letzten Ende) und kennt einen Stichtag
+  für Vorauszahlungen (+1/+2/+3 Jahre); der tägliche Lauf behält gestempelte
+  Perioden. Der Serienlauf gilt auch bei externer Rechnungshoheit
+  (`resale:draft-external`, monatlich am Ersten, Schalter und Vorlauf im
+  Dialog „Abrechnung“) als Übergabe an das Buchhaltungsprogramm des
+  Empfängers; der Plan-Abgleich meldet „Abo ohne Serienvorlage“ nicht, wenn
+  der Serienlauf den Empfänger deckt. Die Seite „Vorlagen-Vorschlag“ nennt je
+  Empfänger die Abos ohne Serienvorlage mit Artikel, Menge, Preis, Intervall
+  und erster Ausführung. Nachtrag: Serienvorlagen zeigen den Ausführungsstand
+  aus dem Belegspiegel (bezahlt, offen, fehlt) samt Meldung des Programms —
+  die Lexoffice-API kennt keinen Versandstatus; Domain-Artikel gelten als
+  Abo-Artikel, Domain-Abos werden Vorlagenpositionen nur bei exakter Nennung
+  der Domain zugeordnet.
+- Reselling: Ausnahmen statt Bestätigungen (Phase 163, Features 152 und 185,
+  MVP-1429–1434; MVP-1435 verworfen): Vorschläge gelten ohne Bestätigung, die
+  Periodenseite zeigt standardmäßig „Nur Probleme“; eine fällige Periode wird
+  erst nach 21 Tagen Karenz zur Aufgabe und nie, solange eine laufende
+  Serienvorlage sie noch berechnet; Rechnungspositionen ohne Abo lassen sich
+  ignorieren oder als Abo anlegen; der Überblick ist eine Aufgabenliste in
+  vier Gruppen (Berechnen, Zuordnen, Plan prüfen, Anbieterstand) mit Zähler,
+  Betrag und Sprung auf die Fläche; Zuordnungen Abo ↔ Vorlagenposition aus
+  dem Rechnungsbezug gelten sofort. Die vier Reiter mit Menü (MVP-1435) nahm
+  der Inhaber nach dem ersten Blick zurück. Belegansicht: „Zugeordnet“ nennt
+  je Ziel die Lizenzmonate, Positionen zeigen die Aufteilung aus dem
+  Leistungszeitraum.
+- Reselling: Pilot auf den Produktionsdaten (Nachbesserung 2026-10-27,
+  Feature 185): Ein Lizenzkonto heißt nach seinem Halter, geht die Rechnung an
+  einen Partner, steht er dabei; Serienvorlagen des Partners erscheinen nur im
+  zugeordneten Endkunden-Konto; die Zuordnung einer Vorlage läuft über die
+  Rechnung, die sie erzeugt hat; Kunde und Fremdkunde gleichen Namens landen
+  im Posteingang statt in einer geratenen Zuordnung. Dazu: Halter in der
+  Abo-Liste in einem Schritt zuordnen (Domains schreiben in die
+  Domainverwaltung durch) und die Belegansicht hinter dem Rechnungsbezug mit
+  Vergleich zur Periode.
+- Lizenzkonto, Abrechnungsplan-Abgleich und Reselling-Arbeitsfläche
+  (Phase 162, Feature 185, MVP-1399–1428): Das Reselling-Register zeigt je
+  Anbieterkonto, wer wie viele Lizenzen hält und welches Lizenzjahr berechnet
+  ist (Raster Produkt × Halter × Jahr), mit Aufteilung je Produkt und
+  Nachplanung abgelöster Verträge (MVP-1399–1403). Sofortmaßnahmen:
+  vollständige Reiterleiste, Abrechnungs-Einstellung als Dialog, stündlicher
+  Vorschlagslauf mit Selbstbestätigung sicherer Treffer, Domains im Register,
+  Artikel in Entwürfen (MVP-1404–1408). Lexoffice-Serienvorlagen als
+  Plan-Quelle mit Zuordnung Abo ↔ Vorlagenposition und Prüfregeln
+  Bestand ↔ Plan (MVP-1409–1413). Arbeitsfläche: Überblick als
+  Aufgabenliste, Sammelaktionen, Produkt-Einstufung mit Filter, Import mit
+  Diff-Vorschau (MVP-1414–1418). Einkauf aus dem Rechnungseingang:
+  Lieferantenzuordnung je Anbieter, positionsgenaue oder anteilige Übernahme
+  zugeordneter Eingangsrechnungen, Marge mit Ist-Einkauf (MVP-1419–1421).
+  Ein Weg zu allen Buchhaltungsprogrammen: Abo-Perioden als Übergabequelle
+  über den Übergabedienst (MVP-1422–1423). Belegspiegel mit Positionen und
+  Serienvorlagen auch aus easybill, Invoice Ninja und sevDesk, Positionen aus
+  Akaunting und InvoicePlane (MVP-1424–1426). Stücklizenzen mit Bezug auf
+  ihre Rechnungsposition, Prüffall „verkauft ohne Rechnung“, Kundenportal
+  „Meine Abos“ (MVP-1427–1428).
+- Branchenprofil „Vermieter“ (Feature 042, 2026-10-26): Wohnungen und
+  Ferienwohnungen als Mietprofil eines Assets im Verleihmodul (Dauer- oder
+  Ferienvermietung, Portalbeschreibung, Gästezahl, Mindestaufenthalt, An- und
+  Abreisezeit), Mietverhältnisse der Dauervermietung mit Kaltmiete,
+  Nebenkosten und Kaution als Verwaltungsdaten (keine Mietabrechnung),
+  Belegung unter der Sperre des Objekts mit Reinigungspuffer, Ferienanfragen
+  und „Wohnung mieten“ im Kundenportal; das Profil bringt Abläufe (Übergabe,
+  Abnahme, Gästewechsel), ein Übergabeprotokoll, Vertragsvorlagen und eigene
+  Felder der Wohnung mit; Musterbranche in Demo und Blueprint.
+- Rechnungseingang (Feature 163, 2026-10-25/26): Mehrere Steuersätze je
+  Beleg erfassen (eine Zeile je Satz; Netto + Steuer muss das Brutto auf den
+  Cent treffen; Kleinbetragsrechnung aus dem Brutto) und erkennen
+  (Steuerzeilen und Steuertabellen der PDF-Erkennung); Lexoffice bucht daraus
+  je Satz eine Position. Einbehalte an der Eingangsrechnung werden im Dialog
+  angelegt, die Karte zeigt sie als Zeilenliste. Das Original steht neben den
+  Werten in voller Höhe, „Werte korrigieren“ öffnet die Erfassung mit
+  Vorbelegung, TIFF-Scans erscheinen in der Vorschau als PDF.
 - Shop- und Belegspiegel nach Entscheidung des Inhabers (Nachtrag Phase 158):
   - **Erstattungen:** Shop-Bestellungen zeigen „davon erstattet“, die
     Bestellsumme bleibt wie im Shop. Die Beträge kommen aus `refunds[]`
@@ -91,6 +307,26 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
     Nachträglich getaggte Dokumente werden ebenfalls erkannt, und Dokument
     bzw. Eingangsrechnung verlinken als Herkunft zurück zum
     Paperless-Original.
+- Überblicks- und Aggregationsschicht (Phase 160, Features 179–184,
+  MVP-1360–1382): **Zentraler Arbeitsvorrat** (`arbeitsvorrat`) mit
+  Genehmigungen, Urlaub, Reisekosten, Monatsabschluss, Preisänderungen,
+  Lernzeiten, Eingängen, Rechnungsnachfragen, Aufträgen, offenen Punkten,
+  Aufgaben, Tickets und Erinnerungen — eigene Anträge erscheinen nie
+  (MVP-1360–1363). **Globale Suche** über alle Domänen: neu Lieferanten,
+  Leads, Rechnungen, Eingangsrechnungen, Verträge, Artikel, Aufgaben und
+  Bestellungen (MVP-1364–1367). **Fremddaten im Überblick:** Etsy-, Billbee-
+  und Shop-Bestellungen sowie Belege des Buchhaltungsprogramms in Suche und
+  Cockpit, Herkunfts-Abzeichen an übernommenen Aufgaben (MVP-1368–1370).
+  **Entitäts-Cockpits** für Kunde, Lieferant, Projekt, Lead und Asset mit
+  Panels der Module (Tickets, Verträge, Vereinbarungen, Gewährleistung,
+  Umfragen, Bestellungen, Nachweise, Domains, Abos); Leads mit eigenen
+  Feldern, Schlagworten und Anhängen (MVP-1371–1375). **Aktivitäts-Feed** je
+  Objekt und als Seite `aktivitaet` (MVP-1376–1378). **Leitungssicht** mit
+  Kennzahlen aus Finanzen, Betrieb, Vertrieb, Service und Qualität, PDF und
+  wöchentlichem Leitungsbericht per E-Mail (MVP-1379–1382). Dazu zwei
+  Entscheidungen des Inhabers: keine Entscheidung über den eigenen Antrag
+  (außer als einzige berechtigte Person, mit Audit), Team-Rechte zeigen nur
+  die eigenen Teams.
 - Jira- und Asana-Plugins (Phase 157, Feature 169, MVP-1304–1312): Vorgänge
   ausgewählter Jira-Cloud-Projekte bzw. Aufgaben ausgewählter Asana-Projekte
   kommen als Aufgaben in WorkDiary-Projekte, nur lesend. Anmeldung über die
@@ -271,7 +507,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Angebot und Annahme; Vorlagen für Druckaufträge und IT-Anfragen.
 
 - Rechnungseingang: Belegvorlagen mit Anker, Vorlagenseite und Probelauf
-  (Phase 155, MVP-1252–1254). Eine Zone kennt jetzt ihre Beschriftung als
+  (Phase 155, MVP-1252–1255; 1255 = Texte ×5, Hilfe ×5 und Tests). Eine Zone
+  kennt jetzt ihre Beschriftung als
   Anker („Gesamt EUR inkl. MwSt.“) und liest den Wert daneben, auf welcher
   Seite und in welcher Höhe er auch steht; der Editor erkennt die Beschriftung
   im gezeichneten Kästchen als Anker, das Kästchen bleibt wie gezeichnet und
@@ -1886,6 +2123,69 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Changed
 
+- **Zählkacheln führen zu dem, was sie zählen** (Vollscan 2026-11-02, gap-06):
+  237 Kacheln in Listen, Detailseiten, Berichten und auf dem Dashboard sind
+  jetzt Links auf die gezählte Menge — Listenroute mit dem Filter der Kachel
+  (neue Filter `show=…` für Assets, Verträge, Reklamationen, Krisen,
+  Schadenfälle, Entsorgung, Domains, Termine, Buchungseingang, DATEV-Stapel,
+  offene Zeiten, Bürgschaften, Fahrgastfahrten, Druck, Verleih,
+  Gewährleistung, Bestellliste, Bewertungen, Prüfwesen; Auftragsbuch mit den
+  Statusgruppen „In Bearbeitung“ und „Offen“), auf Berichtsseiten der
+  Sprung zur Drilldown-Tabelle; die aktive Kachel ist markiert. Summen,
+  Quoten und Messwerte bleiben ohne Ziel und sind im Gate
+  `KpiTileTargetRuleTest` begründet; Hilfe ×5.
+- **Leistung** (Leistungsanalyse 2026-11-02 gegen die Produktion, Behebung
+  vom selben Tag):
+  - Scheduler: Takt-Jobs tragen einen festen Minutenversatz aus ihrem
+    Schlüssel (Stundentakt Minute 2–57, Viertel-, Halb- und
+    Fünf-Minuten-Takt versetzt; nur der Wächter bleibt auf der vollen Stunde)
+    — vorher starteten zur vollen Stunde 68 Prozesse gleichzeitig.
+    Plugin-gebundene Jobs ohne irgendwo aktives Plugin werden nicht mehr
+    angemeldet; acht Jobs (Chat-Erinnerungen, Cloud-Eingang,
+    Sicherheitsereignisse, Mail-Abruf, Terminerinnerungen, SLA-Scan,
+    Hinweisgeber-Scan) prüfen vorab, ob es etwas zu tun gibt, und ein
+    übersprungener Slot gilt dem Wächter als erfüllt. Der Wächter schließt
+    verwaiste Läufe nach dem Sechsfachen der erwarteten Laufzeit als
+    fehlgeschlagen.
+  - Lexoffice: Der stündliche Belegabgleich liest nur noch Änderungen seit
+    dem letzten Lauf; der Vollabgleich je Kontakt mit Archivierung läuft
+    täglich (05:50) oder von Hand mit `lexoffice:sync-vouchers --full`.
+    Belege ohne Zahlungsdatum werden erst nach sieben Tagen erneut gefragt;
+    Kontakte und Artikel mit unveränderter Lexoffice-Version werden nicht
+    neu verglichen (Kontaktnummer und Konfliktprüfung bleiben).
+  - Rechte-Cache je Team und Version statt eines Neuaufbaus und Schreibens
+    des gesamten Rechte-Blobs bei jedem Request; Menü je Nutzer 60 Sekunden
+    gecacht (Schlüssel aus Nutzer, Organisation, Modus, Sprache, Rechten,
+    Modulstand und Plugin-Stempel); der Downgrade-Hinweis wird fünf Minuten
+    je Organisation gecacht; die Kontexthilfe prüft die Sichtbarkeit eines
+    Themas, ohne seinen Text zu laden.
+- **Konsolidierung** (Audit 2026-11-02): eine Regel für die Nennung eines
+  Namens in Rechnungs- und Vorlagentexten (`NameTokenMatcher`),
+  Perioden-Scopes „begonnen“/„fällig“ an elf Stellen, gemeinsame Basis für
+  Token-Dokumenteingänge (Paperless, Seafile) und für Cloud-Eingangsquellen,
+  gemeinsame Verbindungsprüfung und Aufgabenlink der Aufgabenimporte,
+  gemeinsame Einstellungen selbst gehosteter Systeme und Shops (46 Kopien
+  weniger), Seitenweises Lesen über `RemotePages::offset()` (neun
+  Schleifen), Teilstücke für Periodenaktionen und Halterwahl,
+  `authorizeBilling()` an 17 und `portalCustomer()` an elf Stellen, Sqids
+  gesammelt dekodiert, Periodenlabel und Margenbericht über die Wertobjekte
+  für Datum und Geld.
+- Toolkit-First- und Wiederverwendungs-Konsolidierung (Phase 161, Feature
+  052, MVP-1390–1398): Import-Specs prüfen Länder- und Währungscodes gegen
+  die Enums statt per Muster (der Rechnungsimport nahm „XYZ“ an und buchte
+  still in EUR); 59 Nutzer-Auflöser, 14 Portal-Auflöser und 29
+  Organisationsprüfungen in Controllern laufen über gemeinsame Bausteine;
+  Namensverkettungen, Leerwerte, Enum-Regeln, URL-Schemata, Kürzungen und
+  Temp-Verzeichnisse über das php-common-toolkit v2.14; Anmelde- und
+  Infokarten als Komponenten (Golden-DOM ohne Abweichung); neue Gates
+  `ControllerHelperCopyRuleTest` und `EnumValidationRuleTest`.
+- Plugin-Healthchecks laufen alle über die gemeinsame Probe (Befund
+  Microsoft Graph 2026-10-19): Netzfehler, 5xx und 429 gelten als
+  „eingeschränkt“, übrige 4xx als „fehlgeschlagen“, mit Ursachenkette in der
+  Plugin-Fehler-Inbox.
+- Menü: neuer Bereich „Onlinedienste“ (Abos & Lizenzen, Domains, Reseller,
+  Domain-Berichte); das Reselling-Register verlässt „Vertrieb & Abrechnung“,
+  der Bereich „Domains“ geht darin auf.
 - Ticket anlegen: Kunde, Projekt und Asset werden ausgewählt statt als
   Nummer eingetippt.
 - Der Genehmigungs-Eingang gehört zum Kernmodul „Freigaben“ statt zum
@@ -1938,6 +2238,33 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- Reselling: Die Spaltenüberschrift „Firma laut Anbieter“ der
+  Abo-Importvorschau zeigte den rohen Sprachschlüssel (Vollscan 2026-11-02,
+  gap-04).
+- Dashboard: Die Kachel „Offene Genehmigungen“ und der Genehmigungs-Stack der
+  Finanzkachel zählen jetzt wie der Arbeitsvorrat — nach Zuständigkeit der
+  Quellen statt Admin-Rolle, eigene Anträge nie; Genehmigende ohne Admin-Rolle
+  sahen die Kachel nicht, Admins zählten ihre eigenen Anträge mit (Vollscan
+  2026-11-02, gap-08). Tickets: „offen“ ist ein Scope (`ServiceTicket::open()`,
+  nicht gelöst) für Arbeitsvorrat, Cockpit, Kachel, Kennzahlen, Alterung und
+  Routing — das Routing zählte angenommene und abgelehnte Tickets als Last;
+  `EntityUrl` kennt die Ticketseite.
+- Reselling und Domains (Pilot 2026-10-27 bis 2026-11-02): Der
+  Domain-Fristen-Scan zählte ein künftiges Lebenszyklusdatum des Anbieters
+  als gescheiterte Verlängerung; Domain-Abos begannen am Registrierungstag
+  statt am Ablauf-Jahrestag bzw. Laufzeitende (Transfers verloren die
+  Vorjahre, der Planer legte um Tage verschobene Jahresperioden doppelt an);
+  der Abo-Import kam über die Oberfläche nie an (der Dialog sendete als
+  Eingabeformular, die Vorschau verwarf der Dialog-Host mit einem Reload —
+  Gate `DialogFormViewResponseRuleTest`); die Schnellzuordnung rechnete in
+  Lizenzen der Rechnungsposition statt der Periode, sodass der Rest einer
+  Mehrjahresposition nicht buchbar war; der Rechnungsvorschlag ließ Abos mit
+  neuer Serienvorlage ganz aus, auch Jahre vor der ersten Ausführung; der
+  Übergabe-Dialog aus der Liste nahm fest das Datei-Paket statt des
+  Fakturierungswegs des Kunden; das Buchungsjournal des Domainportals schrieb
+  seit August leere Zeilen, der Ereignisabruf las seit August keine
+  Ereignisse (Parametername), Verfügbarkeitsprüfung und Kontakt-Snapshots
+  waren falsch adressiert.
 - Belegfluss: Ein Filter, den keine Belegquelle bedient (etwa Herkunft
   „lokal“ bei nur gespiegelten Belegen), brach mit einem Fehler ab, weil die
   leere Ersatzmenge eine Spalte zu wenig hatte.
@@ -2370,6 +2697,19 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Security
 
+- **Sicherheitsaudit 2026-11-02** (Reselling-Integrität unter
+  Nebenläufigkeit, kein hoher Befund): Rechnungsentwurf und Übergabe laufen
+  unter einer Sperre je Empfänger und prüfen die Perioden unter Zeilensperre
+  neu (ein zweiter Klick meldet den laufenden Entwurf, statt einen zweiten
+  anzulegen); Abtretung und Übernahme prüfen die freie Menge unter der Sperre
+  des Vertrags; der Periodenstatus folgt einem Übergangsvertrag im Enum, jede
+  Statusänderung läuft über den gemeinsamen Weg mit Guard; Bestätigen braucht
+  einen offenen Vorschlag, Verzichten eine fällige unentschiedene Periode —
+  einzeln wie gesammelt; Plan-Zuordnungen werden in einer Transaktion mit
+  geprüfter Position gespeichert; eine Übernahme mit berechneten Perioden vor
+  dem Stichtag wird abgelehnt; abgelehnte Eingangsrechnungen lassen sich nicht
+  mehr zuordnen, bewerten oder mit Einbehalt versehen. `symfony/mime`
+  8.1.7 → 8.1.10.
 - Zeiterfassung: Die Monatssperre beim Buchen prüfte eine `user_id` aus der
   Eingabe statt des Eigentümers — mit der ID eines Kollegen ließ sich in den
   eigenen freigegebenen Monat buchen, und beim Bearbeiten fremder Einträge

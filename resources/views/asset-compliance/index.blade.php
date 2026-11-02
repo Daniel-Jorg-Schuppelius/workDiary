@@ -19,10 +19,10 @@
     <x-validation-errors />
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <x-kpi-tile :label="__('Prüfpflichten aktiv')" :value="$assignments->count()" />
-        <x-kpi-tile :label="__('Bald fällig')" :value="$dueSoon->count()" />
-        <x-kpi-tile :label="__('Überfällig')" :value="$overdue->count()" />
-        <x-kpi-tile :label="__('Aktive Sperren')" :value="$activeBlocks->count()" />
+        <x-kpi-tile :label="__('Prüfpflichten aktiv')" :value="$assignments->count()" :href="route('asset-compliance.index')" />
+        <x-kpi-tile :label="__('Bald fällig')" :value="$dueSoon->count()" :href="route('asset-compliance.index', ['show' => 'due_soon'])" :active="$show === 'due_soon'" />
+        <x-kpi-tile :label="__('Überfällig')" :value="$overdue->count()" :href="route('asset-compliance.index', ['show' => 'overdue'])" :active="$show === 'overdue'" />
+        <x-kpi-tile :label="__('Aktive Sperren')" :value="$activeBlocks->count()" href="#compliance-blocks" />
     </div>
 
     <x-card :title="__('Prüfpflichten (nach Fälligkeit)')" padding="p-0">
@@ -36,7 +36,7 @@
                     <th>{{ __('Verantwortlich') }}</th>
                 </tr>
             </x-slot:head>
-            @forelse ($assignments as $assignment)
+            @forelse ($listed as $assignment)
                 <tr>
                     <td>{{ $assignment->asset->name ?? '—' }}</td>
                     <td>{{ $assignment->profile->name ?? '—' }}
@@ -63,7 +63,7 @@
         </x-table>
     </x-card>
 
-    <x-card :title="__('Aktive Sperren & Ausnahmefreigaben (D12)')" padding="p-0">
+    <x-card :title="__('Aktive Sperren & Ausnahmefreigaben (D12)')" padding="p-0" id="compliance-blocks" class="scroll-mt-24">
         <x-table bare>
             <x-slot:head>
                 <tr>

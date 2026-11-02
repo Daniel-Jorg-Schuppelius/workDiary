@@ -1,7 +1,7 @@
 ---
 title: "Abos & Lizenzen"
 topic: finance.resale
-version: 11
+version: 12
 keywords:
     - Import-Vorschau
     - Sammelaktionen
@@ -25,6 +25,13 @@ modules:
 related:
     - roles.buchhaltung
     - glossary.core
+    - finance.resale.accounts
+    - finance.resale.reconcile
+    - finance.resale.board
+    - finance.resale.subscription
+    - finance.resale.periods
+    - finance.resale.plan
+    - finance.resale.reports
 ---
 
 Das **Reselling-Register** führt jede weiterverkaufte wiederkehrende Leistung
@@ -63,72 +70,6 @@ Beendete und abgelöste Abos bekommen keine neuen Perioden.
 setzen Sie es auf „beendet". Rechte: Sehen mit *Reselling-Register sehen*,
 Pflegen mit *Reselling-Register pflegen*.
 
-**Abgleich je Rechnungsempfänger:** Wenn Perioden offen bleiben und unklar
-ist, ob eine Rechnung fehlt oder nur die Zuordnung, hilft der Abgleich
-(Schaltfläche in der Abo-Liste, auf der Periodenseite und am Kunden). Er
-stellt je Empfänger — Kunde samt seiner Endkunden — die fälligen Perioden
-aller Abos den Lizenzpositionen seiner Rechnungen gegenüber, in
-Lizenzmonaten je Produkt: *Soll* aus den Perioden, *Abgerechnet* aus den
-Positionen. Der Befund sagt, was zu tun ist: „nur nicht zugeordnet" (freie
-Positionen reichen — zuordnen), „nie abgerechnet" (mehr Perioden als
-Positionen — Rechnung nachholen über den Entwurf oder Periode verzichten)
-oder „ohne Periode" (mehr Positionen als Perioden — Abo fehlt im Register
-oder Doppelabrechnung). Je offener Periode stehen die Positionen desselben
-Produkts mit Abstand zum Periodenbeginn: freie mit Zuordnung, bereits
-vergebene mit ihrem Halter zur Kontrolle. Bezugsdatum ist der
-**Leistungszeitraum** der Rechnung, sonst das Rechnungsdatum; Lizenzen und
-Monate stehen getrennt („5 × 12 Mon." = fünf Lizenzen für ein Jahr). Dazu
-drei Fallen, die je Abo unsichtbar wären: **Rechnung an einen anderen
-Kunden** (das Anbieter-Konto ist nicht der Kunde, oder der Endkunde wird
-direkt statt über den Partner berechnet; erkannt am gemeinsamen
-Namensbestandteil) — die Lösung ist „Halter → Kunde": das Abo wechselt zu
-diesem Kunden und der Vorschlagslauf greift sofort. **Stornierte**
-Rechnungen nahe am Periodenbeginn zeigen, warum eine Periode leer ist. Abos
-aus dem **Posteingang**, deren Firma im Rechnungstext an diesen Empfänger
-steht, warten auf ihren Halter. Trifft eine freie Position keine Periode
-ihres Produkts mehr, fehlt der Vertrag im Register (der Anbieter-Export kennt
-ihn nicht): die Produktzeile sagt „Position ohne Abo ab …", und „Abo aus
-Position anlegen" öffnet den Abo-Dialog mit Artikel, Menge, Beginn und Preis
-aus der Rechnung. Die Zuordnung darf eine Periode eines anderen Abos
-desselben Empfängers treffen — nie eine Periode eines fremden Kunden.
-
-**Arbeitsmappe und Abgleichstafel:** Der Abgleich eines Empfängers ist die
-Arbeitsmappe: oben die Abos mit Bearbeiten, Übernahme, Lizenzen abtreten und
-Rücknahme, darunter je Produkt die Abgleichstafel. Links stehen alle
-Perioden in Datumsfolge mit Soll und Deckung, rechts die
-Rechnungspositionen: zugeordnete mit ihrem Leistungszeitraum, bei offenen
-Perioden die passenden freien, Rechnungen an andere Kunden und Stornos.
-Positionen ohne passende Periode stehen als eigene Zeile „ohne Periode“ an
-ihrem Datum. Jede freie Rechnung steht nur bei der Periode, zu der sie
-zeitlich am besten passt, und „… zuordnen“ ordnet sie mit einem Klick zu;
-die Menge ist, was die Periode noch braucht. Ein Versatz von einigen Wochen
-zwischen Bestelldatum beim Anbieter und Rechnungsdatum ist normal und wird
-nicht angezeigt; eine Sammelrechnung, die die Periode ganz umfasst, passt.
-Rechnungen ohne passende Periode stehen als Zeile „ohne Periode“ mit „Abo
-anlegen“ oder „Einer anderen Periode zuordnen“. Fragliche Zuordnungen fragen
-vor dem Speichern nach; im Bezug-Dialog und in der Schnellzuordnung der
-Abo-Seite bestätigen Sie sie mit dem Häkchen. Bezüge, die zeitlich nicht
-passen, sind gelb markiert — prüfen Sie sie und lösen Sie sie bei Bedarf.
-„Nächsten Empfänger abarbeiten“ im Überblick führt durch alle Empfänger mit
-offenem Betrag; fertig ist ein Empfänger ohne fällige offene Periode und
-ohne Vorlagenbefund. Verlängert der Anbieter ein Abo als neue Bestellung,
-verzichtet der Vorschlagslauf die kurze Restperiode der alten Bestellung und
-gibt ihre Bezüge an die erste Periode der neuen. Die Restperiode steht dann als
-„Bestellungswechsel“ da, nicht als Verzicht: Die Rechnungen des Nachfolgers
-decken die Zeit.
-
-**Insolvenz und Übernahme:** Wurde eine Rechnung storniert, weil der Kunde
-insolvent ist, verbuchen Sie die Periode in der Tafel mit „Als Ausfall
-verbuchen“ — der Verzicht-Dialog hat den Grund mit der Belegnummer
-vorbelegt. Führt eine andere Firma die Lizenzen weiter, nutzen Sie
-„Übernahme“ am Abo: neuer Halter und Stichtag. Liegt der Stichtag am Beginn
-der ersten offenen Periode, rechnet der neue Halter auch die offenen
-Perioden ab; liegt er später, verzichtet das Register die offenen Perioden
-davor auf Wunsch als Forderungsausfall. Ein Stichtag am Abo-Beginn gibt das
-ganze Abo an den neuen Halter, sonst entsteht ab dem Stichtag eine
-Abtretung. Geht eine Rechnung schon an die nachfolgende Firma, bietet die
-Tafel die Übernahme direkt an dieser Rechnung an.
-
 **Mengen und Deckung:** Das Register lässt nirgends mehr zuordnen, als da
 ist. Einer Periode ordnen Sie höchstens zu, was sie noch offen hat — auch
 beim Verschieben eines Bezugs. Abtreten, aufteilen und übernehmen lassen
@@ -151,19 +92,6 @@ sie aus Firma, Produkt und Beginn, sodass ein erneuter Import dieselben Abos
 aktualisiert statt zu verdoppeln. Der Anbieter kommt aus der Spalte oder
 aus dem Dialog; eine CSV-Vorlage liegt im Import-Dialog.
 
-**Lizenzen abtreten:** Sitzen zwei Firmen im selben Haus und nutzt die
-zweite einen Teil der Lizenzen eines Vertrags, treten Sie diese Lizenzen am
-Vertrag ab („Lizenzen abtreten": Halter, Menge, Zeitraum, Verkaufspreis).
-Es entsteht ein eigenes Abo für den anderen Halter mit eigenen
-Abrechnungsperioden; der Vertrag plant seine Perioden mit dem Rest. Jeder
-Halter bekommt seine eigenen Rechnungen zugeordnet. Löst ein Nachfolger den
-Vertrag ab (Import), läuft die Abtretung dort weiter. Ein Vertrag mit
-Abtretungen lässt sich erst löschen, wenn die Abtretungen weg sind. Auch
-ein Halterwechsel im Zeitverlauf — eine Firma wird aufgespalten, die neue
-übernimmt die Verträge — ist eine Abtretung: alle Lizenzen für den alten
-Zeitraum an den früheren Halter; der Abgleich bietet das an einer Rechnung
-des anderen Kunden als „Periode an … abtreten" vorbelegt an.
-
 **Posteingang:** Importierte Abos, deren Firma das Register noch keinem
 Halter zuordnen kann, landen im Posteingang. Je Firma entscheiden Sie einmal:
 Kunde, Endkunde eines Partners (Fremdkunde) oder eigener Bestand — der
@@ -177,41 +105,6 @@ Entscheidung wird gemerkt, der nächste Import ordnet dieselbe Firma sofort
 zu. Zeilen, die der Import nicht verarbeiten konnte (unlesbares Datum, Menge
 ohne Zahl, doppelte Kennung), stehen als Befunde am Import: die Anzahl in
 der Meldung, die Einzelheiten aufklappbar in der Liste.
-
-**Perioden:** Die Periodenseite zeigt die fälligen Perioden aller Abos mit
-Status-Kacheln (offen, berechnet, teilweise, verzichtet, strittig).
-„Vorschläge berechnen" gleicht die offenen Perioden mit den Lizenzpositionen
-der gespiegelten Rechnungen ab und legt Vorschläge an; Sie bestätigen sie,
-ordnen von Hand eine Position zu (nur Rechnungen desselben Empfängers, nur
-freie Lizenzmonate) oder verzichten mit Grund („Kulanz").
-Im Zuordnen-Dialog stehen oben die Rechnungen im Zeitfenster der Periode,
-darunter alle übrigen des Empfängers; das Suchfeld findet jede an ihrer Nummer,
-und eine vergebene nennt, wo sie hängt. Auch Abo- und Periodenliste suchen nach
-Rechnungsnummer. Entschiedene
-Perioden fasst die Planung nicht mehr an; „Zurücknehmen" öffnet sie wieder.
-Wird eine zugeordnete Rechnung später in Lexoffice storniert, setzt der
-nächste Lauf den Bezug auf null Monate, vermerkt den Storno und öffnet die
-Periode wieder, damit die Ersatzrechnung zugeordnet werden kann. Domain-Abos
-deckt der Lauf über Positionen, die den Domainnamen nennen (etwa „.de-Domain
-inkl. Verwaltung (lastkraft-logistik.de)“), unabhängig von der Produkt-Einstufung
-des Artikels. Domains, die ein Subreseller über das Anbieterportal abrechnet,
-deckt das Buchungsjournal des Domain-Plugins: je Subuser und Monat ein Beleg
-„Kundennummer-MM-JJJJ“ (die Kundennummer tragen Sie auf der Seite des Subusers
-ein), Empfänger ist dessen Kunde.
-
-**Rechnungsentwurf:** Aus allen offenen Perioden eines Rechnungsempfängers
-entsteht per Klick ein Entwurf — bei Lexoffice-Rechnungshoheit als Entwurf
-in Lexoffice (nichts wird abgeschlossen; Sie prüfen und stellen dort aus),
-bei lokaler Rechnungshoheit als lokaler Rechnungsentwurf mit Positionen und
-vorgeschlagenen Bezügen. Eine Position je Abo und Zeitraum, Endkunde in der
-Beschreibung, Menge in Monaten bei Monatsartikeln. Die Perioden merken sich
-den Entwurf: ein zweiter Klick legt keinen zweiten an, sondern nennt den
-ausstehenden mit Nummer und Datum; erst wenn der Entwurf zur Rechnung wurde
-oder die Periode entschieden ist, sind sie wieder frei; bis dahin zeigen sie
-„Im Entwurf“ statt „fehlt“ oder „Offen“. Der Dialog listet
-nur Empfänger mit offenen Perioden und Verkaufspreis und nennt darunter, was
-schon im Entwurf steht. Das Anlegen braucht das Recht *Rechnungsentwürfe aus
-Perioden erzeugen*.
 
 **Serienrechnung:** Bei lokaler Rechnungshoheit kann das Register die
 Entwürfe täglich selbst anlegen. Der Schalter steht auf der Seite
@@ -242,25 +135,12 @@ der Unterschied als Hinweis gezeigt. Die Einkaufsseite filtert nach
 Anbieter, Quelle, Zeitraum und Suchbegriff; eine Zuteilung lösen Sie immer
 als Ganzes je Beleg.
 
-**Margenbericht:** Je Produkt und je Rechnungsempfänger stehen die
-fälligen Perioden des Zeitraums mit Soll-Verkauf (Menge × Verkaufspreis),
-Berechnet (Nettobeträge der Rechnungsbezüge, Vorschläge eingeschlossen),
-Soll-Einkauf (Anbieterpreis × Menge) und Ist-Einkauf aus den
-Einkaufsbelegen. Marge = Berechnet − Einkauf; der Ist-Einkauf zählt, sobald
-jede Periode der Zeile einen hat, sonst der Soll-Einkauf. Beträge werden nie
-über Währungen hinweg summiert — bei mehreren Währungen gibt es je Währung
-eine Zeile und einen Hinweis. Export als CSV, XLSX oder PDF; der
-Rechnungsvorschlag (offene Perioden mit offenen Lizenzmonaten und Betrag)
-als CSV oder XLSX.
-
-**Preisprüfung:** Je Produkt Einkauf laut Vertrag, Katalogpreis und UVP aus
-der zuletzt importierten Preisliste gegen die Verkaufspreise der Abos
-(Minimum, Median, Maximum). Hinweise: „Verkauf unter Einkauf", „Verkauf
-unter UVP", „Vertrag teurer als Katalog", „Kein Verkaufspreis".
-
 **Produkt-Einstufung:** Die Liste führt alle Artikel des Artikelkatalogs —
 die aktiven Artikel des Artikelstamms und die Artikel angebundener
-Buchhaltungsprogramme wie Lexoffice, mit ihrer Quelle. Welche davon
+Buchhaltungsprogramme wie Lexoffice, mit ihrer Quelle. Auch easybill,
+sevDesk, Invoice Ninja, Akaunting und InvoicePlane liefern ihre Artikel:
+der Belegabruf liest sie vor den Belegen, und gespiegelte Positionen tragen
+dann den Artikel der Quelle statt nur seiner Kennung. Welche davon
 Abo-Produkte sind, erkennt das Register am Namen. Je Artikel können Sie
 übersteuern: „Abo-Produkt" erzwingt die Erkennung, „Nie Abo-Position" hält
 Dienstleistungen mit einem Produktnamen im Text (Wartung an Exchange) aus
@@ -296,13 +176,6 @@ Subuser Monatsrechnungen, die das Buchungsjournal den Perioden zuordnet.
 Diese Domains brauchen keine Serienvorlage und kommen in keinen
 Rechnungsentwurf des Registers; Mappe und Abo-Seite nennen den Subuser.
 
-**Verlängerungen und Abos ohne Rechnung:** Der Bericht „Verlängerungen"
-zeigt, welche Abos sich im Zeitraum verlängern oder enden (Kacheln 30, 60,
-90 Tage): Verlängerung ist der Beginn der nächsten geplanten Periode, bei
-gekündigten Abos zählt das Ende. „Ohne Rechnung" listet Abos, deren älteste
-offene fällige Periode länger als N Tage zurückliegt (Vorgabe 60), mit
-offenen Perioden und offenem Betrag. Beide als CSV oder XLSX.
-
 **Dashboard-Kachel:** Die Kachel „Offene Abo-Perioden" (Gruppe Finanzen,
 standardmäßig aus) zeigt offene Perioden mit offenem Betrag, unbestätigte
 Vorschläge und Abos ohne Halter und führt auf die jeweilige Seite.
@@ -325,46 +198,6 @@ neuen Positions-IDs neu aufgebaut, zeigen bestätigte Bezüge ins Leere
 Lizenzposition wieder an; was nicht eindeutig ist, wird nur gelistet
 (--dry-run zeigt vorab, was passieren würde).
 
-**Lizenzkonto:** Ein Konto heißt nach seinem Halter; geht die Rechnung an
-einen Partner, steht er dabei („über Nordlicht Systems“), und Serienvorlagen des
-Partners erscheinen nur in dem Endkunden-Konto, dem sie zugeordnet sind. Der
-Reiter *Lizenzkonten* zeigt je Anbieterkonto (Kundennummer
-beim Anbieter, Vorgänger eines Anbieterwechsels eingeschlossen), wie viele
-Lizenzen je Produkt laufen, wer sie hält und welches Lizenzjahr berechnet ist
-— als Raster Produkt × Halter × Jahr mit Rechnungsnummer oder „fehlt“. Halten
-mehrere Firmen Lizenzen desselben Kontos, pflegen Sie die **Aufteilung** je
-Produkt („Nordufer Tank 5 × Exchange ab 18.10.2025“): fremde Halter füllen
-zuerst den Vertrag mit der größten Menge, dann nach Beginn, der Vertragshalter
-behält den Rest. Die Abtretungen je Vertrag entstehen daraus, folgen jeder
-Änderung und wandern beim Anbieterwechsel auf den Nachfolger; manuelle
-Abtretungen bleiben als Ausnahme möglich. Der Zeitplan plant auch abgelöste
-und beendete Verträge der letzten drei Jahre nach, damit eine spätere
-Aufteilung ihr Soll noch ändert. **Prüffälle an Bezügen** zeigen Positionen,
-die mehr Lizenzmonate decken, als sie haben (überbucht), und Bezüge, deren
-Leistungszeitraum die Periode nicht trifft — mit „Auf … verschieben“ auf die
-passende Periode desselben Abos oder „Bezug lösen“; der Bezugsdialog und die
-Schnellzuordnung warnen vorab mit ⚠.
-
-**Serienvorlagen (Plan):** Führt ein Buchhaltungsprogramm die Rechnungen,
-entstehen wiederkehrende Rechnungen dort als Serienvorlagen. Das Register
-spiegelt sie (Lexoffice: täglich und nach dem Belegsync, nur lesend) und zeigt
-im Lizenzkonto je Vorlage Status, Rhythmus, nächste Ausführung und die
-Lizenzpositionen mit den Abos, die sie berechnen. Die Zuordnung Abo ↔
-Vorlagenposition schlägt der Lauf vor — zuerst über die Rechnung, die die
-Vorlage zuletzt erzeugt hat und die einer Periode zugeordnet ist, sonst über
-gleichen Empfänger, Artikel und Menge (bei mehreren Endkunden eines Partners
-nur mit Nennung) — Sie bestätigen, ordnen von Hand zu
-oder lösen. Perioden, die eine laufende Vorlage berechnet, lässt
-der Rechnungsvorschlag aus; was vor ihrer ersten Ausführung endet, bleibt drin.
-So lassen sich alte Jahre auch dann nachberechnen, wenn die Vorlage schon
-angelegt ist. **Prüfregeln Bestand ↔ Plan** melden vor der Rechnung:
-Abo ohne Vorlage, Vorlage ohne Abo („Abo aus Vorlage anlegen“ übernimmt
-Artikel, Menge, Rhythmus und Preis), abweichende Menge, Vorlage läuft nach dem
-Abo-Ende weiter, Vorlage pausiert oder beendet bei laufendem Abo, nächste
-Ausführung mehr als sieben Tage neben dem Periodenbeginn, letzte Ausführung
-fehlgeschlagen — in der Kachel, im Wochen-Digest und im Arbeitsvorrat. Jede
-gespiegelte Rechnung trägt den Verweis auf ihre Vorlage.
-
 **Überblick und Reiter:** Der Einstieg „Abos & Lizenzen“ ist eine
 **Aufgabenliste in vier Gruppen** — Berechnen (fällige Leistung ohne
 Rechnung, erst nach 21 Tagen Karenz und nie, solange eine aktive
@@ -384,28 +217,6 @@ Die Kacheln über den Listen führen zu dem, was sie zählen: Auf Lizenzkonten,
 Abgleich, Lizenzbestand und in einer Charge filtern sie die Liste, in der
 Arbeitsmappe eines Empfängers die Abgleichstafel auf die betroffenen Produkte;
 dort hebt ein zweiter Klick auf die aktive Kachel den Filter wieder auf.
-
-**Sichere und unsichere Vorschläge:** Der Vorschlagslauf (stündlich und
-nach jedem Import) bestätigt sichere Treffer selbst — ein Beleg, dessen
-Rechnungsdatum höchstens 14 Tage vor bis 45 Tage nach dem Periodenbeginn
-liegt und der die Periode mit passender Lizenzzahl voll deckt; die
-Bestätigung steht im Protokoll als „automatisch bestätigt“. Alles andere
-bleibt Vorschlag und trägt „unsicher“ mit dem Grund im Tooltip. Vorschläge gelten ohne
-Bestätigung: Die Periodenseite zeigt standardmäßig „Nur Probleme“ (offen,
-teilweise, strittig), unbestätigte Vorschläge erreichen Sie als Stichprobe
-über den Filter und den Stand im Überblick. Ein Klick auf die
-Belegnummer öffnet den Beleg: Positionen, Leistungszeitraum, Rechnungstext,
-Verbrauch je Position und der Vergleich zur Periode (Datum im Fenster,
-Leistung, Artikel) — so sehen Sie vor der Bestätigung, ob die Rechnung zum
-Zeitraum gehört.
-
-**Sammelaktionen:** Auf der Periodenseite wählen Sie Zeilen über die
-Kästchen und bestätigen alle Vorschläge auf einmal, verzichten mit einem
-Grund für alle („Verzichten / strittig …“) oder lassen je
-Rechnungsempfänger der Auswahl einen Entwurf anlegen. Entschiedene und
-bevorstehende Perioden überspringt die Aktion und nennt die Zahl; jede
-Periode bekommt denselben Protokolleintrag wie bei der Einzelaktion. Es
-gibt keine Vorauswahl.
 
 **Produkt-Einstufung mit Filter:** Die Einstufung zeigt standardmäßig nur
 Abo-Produkte und Artikel mit Abos oder Vorlagenpositionen; „Alle Artikel“

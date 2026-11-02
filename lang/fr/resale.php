@@ -287,11 +287,12 @@ return [
         'note_domain_typo' => 'Domaine écrit « :written » au lieu de « :domain » dans le texte de la facture (faute de frappe), à vérifier',
         'no_lines' => 'Aucune ligne de facture miroir dans la fenêtre autour du début de période.',
         'line' => 'Ligne de facture',
-        'line_hint' => 'D’abord les lignes d’abonnement du destinataire dans la fenêtre de la période, puis toutes les autres ; la recherche trouve chaque facture par son numéro. S’il manque un article, classez-le comme produit d’abonnement sous « Produits ».',
+        'line_hint' => 'D’abord les lignes d’abonnement du destinataire dans la fenêtre de la période ; « Afficher toutes les factures » ajoute les autres, la recherche trouve alors chaque facture par son numéro. S’il manque un article, classez-le comme produit d’abonnement sous « Produits ».',
         'search' => 'Rechercher une facture (numéro, date, article)',
         'no_match' => 'Aucune facture ne correspond à la recherche.',
         'group_window' => 'Dans la fenêtre de la période',
         'group_other' => 'Autres factures du destinataire',
+        'show_all' => 'Afficher toutes les factures du destinataire',
         'line_used' => 'déjà consommée',
         'months_field' => 'Mois de licence couverts',
         'months_hint' => 'Ligne au prix mensuel : quantité = mois par licence. Ligne annuelle : 12 par unité.',
@@ -332,6 +333,8 @@ return [
             'line_missing' => 'Ligne de facture introuvable.',
             'exceeds' => 'La ligne n’a plus que :amount de disponible.',
             'exceeds_period' => 'La période n’a plus besoin que de :amount — impossible d’en affecter davantage.',
+            'not_decidable' => 'La période est déjà décidée ou n’a pas encore commencé — renoncer ou contester n’est possible que pour les périodes échues non décidées.', // Sicherheitsaudit 2026-11-02, sec-03/sec-05
+            'not_confirmable' => 'La période n’a pas de proposition ouverte ou n’a pas encore commencé — il n’y a rien à confirmer.',
         ],
     ],
     'widget' => [
@@ -408,6 +411,8 @@ return [
         'error' => [
             'nothing_open' => 'Aucune période ouverte avec prix de vente pour ce destinataire.',
             'all_planned' => 'Les périodes ouvertes de ce destinataire sont facturées par un modèle récurrent actif.',
+            'locked' => 'Un brouillon de facture est en cours de création pour ce destinataire — patientez un instant et rechargez la page.', // Sicherheitsaudit 2026-11-02, sec-01
+            'changed' => 'Les périodes ont changé entre-temps (autre brouillon ou décision) — rouvrez la boîte de dialogue.',
         ],
         'already_drafted' => 'Un brouillon est déjà en attente pour ce destinataire (:reference du :date). Finalisez-le d’abord dans Lexoffice ou localement, ou décidez la période.', // Review 2026-09-10
         'no_target' => 'Aucune cible de brouillon n’est enregistrée pour le mode de facturation « :mode » de ce destinataire — activez le plugin ou passez le client en facturation locale.', // Review 2026-09-11
@@ -1473,6 +1478,7 @@ return [
             'same_holder' => 'Le nouveau titulaire est l’ancien.',
             'after_end' => 'La date d’effet est postérieure à la fin de l’abonnement (:date).',
             'nothing_free' => 'À partir de la date d’effet, toutes les licences du contrat sont cédées ou déjà facturées à l’ancien titulaire — lancer la reprise sur la cession concernée ou modifier la date d’effet.',
+            'billed_whole' => 'Des périodes de cet abonnement sont déjà facturées à :holder — l’abonnement entier ne peut pas changer de titulaire. Choisissez une date d’effet à partir du :date ; les périodes facturées restent alors chez l’ancien titulaire.', // Sicherheitsaudit 2026-11-02, sec-06
         ],
     ],
 ];

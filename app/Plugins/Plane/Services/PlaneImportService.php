@@ -13,12 +13,11 @@ declare(strict_types=1);
 namespace App\Plugins\Plane\Services;
 
 use App\Enums\Task\TaskStatus;
-use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Plugins\Plane\Api\PlaneClientFactory;
 use App\Plugins\Plane\Models\{PlaneConnection, PlaneProjectLink};
 use App\Plugins\Plane\PlanePlugin;
-use App\Plugins\Support\TaskSync\{AbstractTaskImportService, IncompleteRemoteReadException, RemoteTask, SelfHostedInstance};
+use App\Plugins\Support\TaskSync\{AbstractTaskImportService, IncompleteRemoteReadException, RemoteTask};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\Eloquent\Model;
@@ -138,13 +137,6 @@ class PlaneImportService extends AbstractTaskImportService {
             'url' => $workspaceUrl !== '' ? $workspaceUrl . '/projects/' . $projectId . '/issues/' . $id : null,
             'project' => null,
         ], $issues);
-    }
-
-    public function sourceUrl(ExternalReference $reference): ?string {
-        $url = data_get($reference->payload, 'remote.url');
-        $workspaceUrl = (string) $this->connection((int) $reference->organization_id)?->source_url;
-
-        return is_string($url) && SelfHostedInstance::owns($workspaceUrl, $url) ? $url : null;
     }
 
     /**

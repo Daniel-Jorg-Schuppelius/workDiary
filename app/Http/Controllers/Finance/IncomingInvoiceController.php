@@ -16,7 +16,7 @@ use App\Enums\Billing\DocumentDirection;
 use App\Enums\Document\DocumentType;
 use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceRecognition, IncomingInvoiceTransferStatus};
 use App\Exceptions\IncomingInvoiceDecisionException;
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{AuthorizesOrganizationManagement, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\FixedAsset;
 use App\Models\Customer\Customer;
@@ -40,6 +40,7 @@ use Illuminate\View\View;
  * Faktura-Programm); die Detailseite parst das Original bei jedem Aufruf.
  */
 class IncomingInvoiceController extends Controller {
+    use AuthorizesOrganizationManagement;
     use ResolvesGlobalDateRange;
 
     public function __construct(
@@ -117,13 +118,12 @@ class IncomingInvoiceController extends Controller {
 
     /** Abgelehnte Eingänge endgültig löschen (Sammelaktion, MVP-1212): Beleg, Dokument, Dateien — es bleibt der Audit-Eintrag. */
     public function bulkDiscard(Request $request): RedirectResponse {
-        $actor = $this->authUser();
-        abort_unless($actor->canManageBilling(), 403);
+        $actor = $this->authorizeBilling();
         $data = $request->validate([
             'ids' => ['required', 'array', 'max:200'],
             'ids.*' => ['string', 'max:64'],
         ]);
-        $ids = array_values(array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(IncomingEInvoice::class, $sqid), $data['ids'])));
+        $ids = Sqid::decodeMany(IncomingEInvoice::class, $data['ids']);
         $deleted = 0;
         $skipped = 0;
         foreach (IncomingEInvoice::query()->whereKey($ids)->where('status', IncomingEInvoiceStatus::Rejected->value)->get() as $incoming) {
@@ -295,7 +295,7 @@ class IncomingInvoiceController extends Controller {
      * idempotenten Vermerk nach fachlicher Freigabe (MVP-168).
      */
     public function transfer(IncomingEInvoice $incoming): RedirectResponse {
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $this->authorizeBilling();
         $back = redirect()->route('finance.incoming-invoices.show', $incoming->document);
 
         $organization = $incoming->organization;
@@ -334,7 +334,7 @@ class IncomingInvoiceController extends Controller {
      */
     /** Treffer ohne Rechnungsnummer als denselben Beleg übernehmen (MVP-1146). */
     public function linkTransferCandidate(IncomingEInvoice $incoming, string $target): RedirectResponse {
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $this->authorizeBilling();
         $this->transfers->linkCandidate($this->candidateJournal($incoming, $target), $this->authUser());
 
         return redirect()->route('finance.incoming-invoices.show', $incoming->document)->with('success', __('Mit dem vorhandenen Beleg verknüpft.'));
@@ -342,7 +342,7 @@ class IncomingInvoiceController extends Controller {
 
     /** Anderer Beleg: im Ziel neu anlegen, ohne erneute unscharfe Suche (MVP-1146). */
     public function dismissTransferCandidate(IncomingEInvoice $incoming, string $target): RedirectResponse {
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $this->authorizeBilling();
         $this->transfers->dismissCandidate($this->candidateJournal($incoming, $target), $this->authUser());
 
         return redirect()->route('finance.incoming-invoices.show', $incoming->document)->with('success', __('Übergabe als neuer Beleg angestoßen.'));
@@ -357,7 +357,7 @@ class IncomingInvoiceController extends Controller {
      * gesperrten Eingang frei und stößt die Übergabe an, sofern Ziele bestehen.
      */
     public function clearDuplicate(IncomingEInvoice $incoming): RedirectResponse {
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $this->authorizeBilling();
         $back = redirect()->route('finance.incoming-invoices.show', $incoming->document);
         if (! $incoming->isPossibleDuplicate()) {
             return $back;
@@ -375,7 +375,7 @@ class IncomingInvoiceController extends Controller {
     }
 
     public function decide(Request $request, \App\Models\Invoicing\IncomingEInvoice $incoming): RedirectResponse {
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $this->authorizeBilling();
 
         $data = $request->validate([
             'decision' => ['required', 'in:approved,rejected,question,payment_released'],
@@ -409,12 +409,12 @@ class IncomingInvoiceController extends Controller {
      * bleibt mit Grund stehen — eine Freigabe lässt sich nicht zurücknehmen.
      */
     public function bulkApprove(Request $request, IncomingInvoiceTransferGate $gate): RedirectResponse {
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $this->authorizeBilling();
         $data = $request->validate([
             'ids' => ['required', 'array', 'max:200'],
             'ids.*' => ['string', 'max:64'],
         ]);
-        $ids = array_values(array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(IncomingEInvoice::class, $sqid), $data['ids'])));
+        $ids = Sqid::decodeMany(IncomingEInvoice::class, $data['ids']);
         $actor = $this->authUser();
         $done = 0;
         /** @var array<string, int> $skipped */

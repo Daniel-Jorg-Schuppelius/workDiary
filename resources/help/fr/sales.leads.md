@@ -1,7 +1,7 @@
 ---
 title: "Leads"
 topic: sales.leads
-version: 3
+version: 4
 keywords:
     - prospects
     - prospection
@@ -61,3 +61,16 @@ personnalisés), des étiquettes et des pièces jointes. Lors de l'anonymisation
 après le délai de suppression, pièces jointes, champs personnalisés et
 étiquettes sont supprimés aussi. Les documents de la gestion documentaire ne
 sont rattachés qu'au client.
+
+## Cockpit
+
+La fiche lead est le cockpit du prospect : en-tête avec statut, source et
+étiquettes, en dessous contact et besoin, les notes de communication avec
+rappel, les champs personnalisés, les pièces jointes, les devis créés à partir
+du lead et l'historique. « Devis à partir du lead » crée un devis avec les
+coordonnées ; les devis figurent avec leur statut dans la fiche, et
+l'évaluation des leads les compte par source et conversion. Comme pour le
+client, le fournisseur et le projet, les panneaux des autres modules ne
+montrent que ce qui existe pour le lead — un module sans données pour ce lead
+n'apparaît pas. L'historique liste les entrées d'audit du lead, devis compris ;
+les réservations de rendez-vous sont rattachées au lead ouvert.

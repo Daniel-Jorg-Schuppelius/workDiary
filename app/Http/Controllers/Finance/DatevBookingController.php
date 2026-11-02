@@ -41,14 +41,18 @@ class DatevBookingController extends Controller {
         private readonly DatevBookingService $service,
     ) {}
 
-    public function index(): View {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', DatevBookingBatch::class);
 
+        // Kachelfilter nach Stapelstatus (ux-pattern-katalog §4); die Kachelwerte bleiben stehen.
+        $statusFilter = DatevBatchStatus::tryFrom($request->string('status')->toString());
         $batches = DatevBookingBatch::query()
             ->with(['creator:id,name', 'journal' => fn ($q) => $q->whereIn('event', DatevBookingService::TRANSMISSION_EVENTS)])
             ->withCount('sources')
+            ->when($statusFilter !== null, fn ($q) => $q->where('status', $statusFilter))
             ->orderByDesc('created_at')
-            ->paginate(25);
+            ->paginate(25)
+            ->withQueryString();
 
         // Kennzahl: buchungsreife, noch nicht exportierte Belege im laufenden Monat.
         $org = $this->currentOrganizationOrUserOrganization();
@@ -67,6 +71,7 @@ class DatevBookingController extends Controller {
 
         return view('finance.datev.index', [
             'batches' => $batches,
+            'statusFilter' => $statusFilter,
             'transmissions' => $batches->getCollection()->mapWithKeys(fn (DatevBookingBatch $batch): array => [$batch->id => $this->service->transmissionStatus($batch)]),
             'openCount' => $openCount,
             'draftCount' => $draftCount,
@@ -184,8 +189,9 @@ class DatevBookingController extends Controller {
             return back()->withErrors(['status' => $e->getMessage()]);
         }
 
+        // Die Liste ist seit dem Kachelfilter filterbar (Status), der Rücksprung nimmt den Zustand mit.
         return redirect()
-            ->route('finance.datev.index')
+            ->toList('finance.datev.index')
             ->with('success', __('finance.datev.flash.discarded'));
     }
 

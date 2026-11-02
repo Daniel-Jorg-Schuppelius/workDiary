@@ -33,6 +33,8 @@ con derechos de análisis ve mosaicos distintos que alguien sin ellos.
 Los mosaicos ocultos dejan de consultar datos: un panel ordenado
 también carga más rápido.
 
+Los mosaicos de recuento de los widgets de indicadores llevan al libro de órdenes con el filtro de estado correspondiente, a los servicios y a la lista de miembros.
+
 ## Requisitos
 
 - Una cuenta de usuario con sesión iniciada; no hacen falta derechos

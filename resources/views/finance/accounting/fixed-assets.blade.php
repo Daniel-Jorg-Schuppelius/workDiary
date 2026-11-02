@@ -34,8 +34,8 @@
         <x-accounting.sovereignty-note />
 
         <div class="grid gap-3 sm:grid-cols-3">
-            <x-kpi-tile :label="__('accounting.fixed_assets.kpi.active')" :value="$activeCount" />
-            <x-kpi-tile :label="__('accounting.fixed_assets.kpi.total')" :value="$assets->count()" />
+            <x-kpi-tile :label="__('accounting.fixed_assets.kpi.active')" :value="$activeCount" :href="route('finance.accounting.fixed-assets.index', ['status' => \App\Enums\Finance\FixedAssetStatus::Active->value])" :active="request('status') === \App\Enums\Finance\FixedAssetStatus::Active->value" />
+            <x-kpi-tile :label="__('accounting.fixed_assets.kpi.total')" :value="$assets->count()" :href="route('finance.accounting.fixed-assets.index')" />
             <x-kpi-tile :label="__('accounting.fixed_assets.kpi.book_value_year', ['year' => $currentYear])"
                         :value="$bookValueTotal->format()" format="raw" />
         </div>

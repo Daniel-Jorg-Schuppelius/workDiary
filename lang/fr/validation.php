@@ -2004,6 +2004,7 @@ return [
         'product_key' => 'Produit',
         'subscription_id' => 'Abonnement',
         'plan_key' => 'Modèle récurrent',
+        'plan_position' => 'Position du modèle',
         'line_position' => 'Ligne du modèle',
         'product_id' => 'Produit',
         'product_version' => 'Version',

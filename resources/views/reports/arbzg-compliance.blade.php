@@ -79,11 +79,11 @@
 
     <div class="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
         <x-kpi-tile :label="__('compliance.report.kpi.total')" :value="$summary['total']"
-                    :tone="$summary['total'] > 0 ? 'error' : 'success'" />
-        <x-kpi-tile :label="__('compliance.report.kpi.employees')" :value="$summary['employees']" />
+                    :tone="$summary['total'] > 0 ? 'error' : 'success'" href="#arbzg-findings" />
+        <x-kpi-tile :label="__('compliance.report.kpi.employees')" :value="$summary['employees']" href="#arbzg-findings" />
         @foreach ($kinds as $kind)
             <x-kpi-tile :label="__('compliance.report.kind.' . $kind)" :value="$summary['by_kind'][$kind] ?? 0"
-                        :tone="($summary['by_kind'][$kind] ?? 0) > 0 ? 'warning' : 'neutral'" />
+                        :tone="($summary['by_kind'][$kind] ?? 0) > 0 ? 'warning' : 'neutral'" :href="route('reports.arbzg-compliance', array_merge(request()->query(), ['kind' => $kind]))" :active="request('kind') === $kind" />
         @endforeach
     </div>
 
@@ -100,7 +100,7 @@
         @endif
     </x-card>
 
-    <x-card>
+    <x-card id="arbzg-findings" class="scroll-mt-24">
         @if (empty($rows))
             <x-empty-state icon="verified"
                            :title="__('compliance.report.empty')" />

@@ -88,6 +88,24 @@ final class InvoiceMirror {
     }
 
     /**
+     * Positionen der Belege aus diesen Serienvorlagen ab `$from` über alle Quellen (perfc-04).
+     *
+     * @param  list<string>  $planKeys
+     * @return Collection<int, MirrorLine>
+     */
+    public function planLines(Organization $organization, array $planKeys, CarbonImmutable $from): Collection {
+        if ($planKeys === []) {
+            return collect();
+        }
+        $lines = collect();
+        foreach ($this->sources as $source) {
+            $lines = $lines->merge($source->planLines($organization, $planKeys, $from));
+        }
+
+        return $lines->values();
+    }
+
+    /**
      * @param  list<int>  $recipientCustomerIds
      * @return Collection<int, MirrorLine>
      */
@@ -173,19 +191,23 @@ final class InvoiceMirror {
      * Kandidaten für eine Periode: Lizenzpositionen des Empfängers im Fenster
      * der Periode (−90 Tage, Fensterende je Position, Leistungszeitraum) und —
      * damit der Dialog jede Rechnung über ihre Nummer findet (Pilot 2026-11-01) —
-     * alle übrigen; jeweils neueste Rechnung zuerst.
+     * mit `$all` auch alle übrigen; jeweils neueste Rechnung zuerst. Ohne `$all`
+     * liest die Quelle nur ab dem Fensterbeginn (Belegdatum oder Leistungsende),
+     * statt alle Rechnungen des Empfängers seit Beginn (Leistungsanalyse
+     * 2026-11-02, perfc-08); `other` bleibt dann leer.
      *
      * @return array{window: Collection<int, MirrorLine>, other: Collection<int, MirrorLine>}
      */
-    public function candidatesFor(Organization $organization, int $recipientCustomerId, ResalePeriod $period): array {
+    public function candidatesFor(Organization $organization, int $recipientCustomerId, ResalePeriod $period, bool $all = false): array {
         $subscription = $period->subscription;
+        $from = $all ? null : $period->starts_on->subDays(LinkProposer::WINDOW_BEFORE);
         $lines = $subscription->kind === SubscriptionKind::Domain
-            ? $this->linesMentioningDomains($organization, [$recipientCustomerId], [$subscription->label])
-            : $this->linesFor($organization, [$recipientCustomerId]);
+            ? $this->linesMentioningDomains($organization, [$recipientCustomerId], [$subscription->label], $from)
+            : $this->linesFor($organization, [$recipientCustomerId], $from);
         $sorted = $lines->sortBy([static fn(MirrorLine $a, MirrorLine $b): int => ($b->voucherDate <=> $a->voucherDate) ?: ($a->position <=> $b->position)]);
         $inWindow = static fn(MirrorLine $line): bool => LinkProposer::inWindow($period, $line);
 
-        return ['window' => $sorted->filter($inWindow)->values(), 'other' => $sorted->reject($inWindow)->values()];
+        return ['window' => $sorted->filter($inWindow)->values(), 'other' => $all ? $sorted->reject($inWindow)->values() : collect()];
     }
 
     /**

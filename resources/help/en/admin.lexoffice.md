@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice Conflicts"
 topic: admin.lexoffice
-version: 5
+version: 6
 keywords:
     - Lexware Office
     - sync conflict
@@ -68,7 +68,11 @@ customer or supplier are mirrored too – initially without customer and
 supplier; once the contact is linked, the next sync assigns them. A customer
 is set only on sales documents and a supplier only on purchase documents,
 even if a contact is linked as both. The line sync also stores the net
-amount and, for a credit note, its reference to the invoice.
+amount and, for a credit note, its reference to the invoice. You start the
+run manually in the **Lexoffice settings** (Plugins → Lexoffice) with **Sync
+vouchers now**: it fetches new and changed vouchers in the background, the
+daily full sync stays in place; the button needs the **Sync vouchers with Lexoffice**
+permission and stored credentials.
 
 Permission: the Mapping Inbox is open to administrators and the
 **Accounting** role.

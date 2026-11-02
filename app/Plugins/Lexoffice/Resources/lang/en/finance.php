@@ -28,4 +28,9 @@ return [
         'delivery_title' => 'Delivery note',
         'transfer_marker' => 'Transfer reference :marker',
     ],
+    'vouchers' => [
+        'sync_now' => 'Sync vouchers now',
+        'sync_confirm' => "Sync vouchers with Lexoffice now? The run fetches new and changed vouchers in the background; the daily full sync is not affected.",
+        'sync_hint' => "Fetches new and changed Lexoffice vouchers in the background — the manual counterpart of the scheduled voucher sync.",
+    ],
 ];

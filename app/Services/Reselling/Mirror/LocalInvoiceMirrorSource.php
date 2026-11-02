@@ -90,6 +90,10 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
         return $this->licenceLines($organization, $this->invoiceQuery($organization, $recipientCustomerIds, null, null, self::KIND_VOIDED));
     }
 
+    public function planLines(Organization $organization, array $planKeys, CarbonImmutable $from): Collection {
+        return collect(); // lokale Rechnungen entstehen nicht aus Serienvorlagen eines Buchhaltungsprogramms
+    }
+
     public function creditNoteLines(Organization $organization, array $recipientCustomerIds, ?CarbonImmutable $from = null): Collection {
         if ($recipientCustomerIds === []) {
             return collect();

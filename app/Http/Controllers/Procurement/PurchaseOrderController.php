@@ -20,7 +20,7 @@ use App\Models\Inventory\Warehouse;
 use App\Models\Procurement\{PurchaseOrder, PurchaseOrderAdvice, PurchaseOrderLine};
 use App\Models\Supplier\Supplier;
 use App\Services\Procurement\{AdviceService, DespatchAdviceImportService, GoodsReceiptService, ProcurementSuggestionService, PurchaseOrderExportService, PurchaseOrderPdfRenderer, PurchaseOrderService, UglInvoiceReconciler};
-use App\Support\{ErrorText, SqidEncoder};
+use App\Support\{ErrorText, Sqid, SqidEncoder};
 use CommonToolkit\Helper\FileSystem\File;
 use ERechnungToolkit\Parsers\UglInvoiceParser;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -47,11 +47,16 @@ class PurchaseOrderController extends Controller {
     public function index(Request $request): View {
         $this->canView();
         $status = $request->string('status')->toString() ?: 'all';
+        // Kacheln der Lieferantenseite (ux-pattern-katalog §4) filtern die Liste auf den Lieferanten.
+        $supplierId = $request->filled('supplier') ? Sqid::decodeOrNumeric(Supplier::class, $request->string('supplier')->toString()) : null;
+        $supplierFilter = $supplierId !== null ? Supplier::query()->find($supplierId) : null;
 
         $range = $this->globalDateRange();
         $orders = PurchaseOrder::query()
             ->with('supplier')
-            ->when($status !== 'all', fn ($q) => $q->where('status', $status))
+            ->when($status === 'open', fn ($q) => $q->whereIn('status', [PurchaseOrderStatus::Draft, PurchaseOrderStatus::Ordered, PurchaseOrderStatus::PartiallyReceived]))
+            ->when($status !== 'all' && $status !== 'open', fn ($q) => $q->where('status', $status))
+            ->when($supplierFilter, fn ($q, Supplier $supplier) => $q->where('supplier_id', $supplier->id))
             ->whereBetween('created_at', [$range['from']->startOfDay(), $range['to']->endOfDay()])
             ->latest()
             ->paginate(25)
@@ -60,6 +65,7 @@ class PurchaseOrderController extends Controller {
         return view('purchase-orders.index', [
             'orders' => $orders,
             'status' => $status,
+            'supplierFilter' => $supplierFilter,
             'statuses' => PurchaseOrderStatus::cases(),
         ]);
     }

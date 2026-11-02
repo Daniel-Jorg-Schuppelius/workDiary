@@ -77,7 +77,7 @@ class BulkAssignResaleHolderRequest extends BaseFormRequest {
         /** @var list<string> $ids */
         $ids = $this->validated('ids');
 
-        return array_values(array_filter(array_map(static fn(string $sqid): ?int => Sqid::decode(ResaleSubscription::class, $sqid), $ids)));
+        return Sqid::decodeMany(ResaleSubscription::class, $ids);
     }
 
     /**

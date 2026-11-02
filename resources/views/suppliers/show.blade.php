@@ -55,8 +55,8 @@
     @if (($procurementStats ?? null) !== null)
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <x-kpi-tile :label="__('Artikel (Bezugsquellen)')" :value="$procurementStats['articles']" tone="neutral" />
-            <x-kpi-tile :label="__('Bestellungen')" :value="$procurementStats['orders']" tone="neutral" />
-            <x-kpi-tile :label="__('Offene Bestellungen')" :value="$procurementStats['open_orders']" tone="neutral" />
+            <x-kpi-tile :label="__('Bestellungen')" :value="$procurementStats['orders']" tone="neutral" :href="route('purchase-orders.index', ['supplier' => $supplier->sqid])" />
+            <x-kpi-tile :label="__('Offene Bestellungen')" :value="$procurementStats['open_orders']" tone="neutral" :href="route('purchase-orders.index', ['supplier' => $supplier->sqid, 'status' => 'open'])" />
         </div>
     @endif
 

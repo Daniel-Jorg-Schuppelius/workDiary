@@ -71,6 +71,7 @@ Service), tâches et tournées de la période.
   **Temps de service Σ**, **Commandes** avec le nombre de commandes en retard et
   leur taux de clôture (la tuile change de couleur dès qu’une tâche est en
   retard) ainsi que **Tournées** avec les kilomètres et la durée planifiés.
+- Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
 - Graphiques : **Ordres de service : créés vs terminés par semaine** et
   **Backlog par client (top 15)** avec les commandes de service encore
   ouvertes par client. Avec le droit **Voir les rapports**, un clic sur une
@@ -107,6 +108,7 @@ temps réparties de la période se distribuent sur **Commandes**, **Actifs**,
 les dimensions libres issues de **Dimensions de temps**.
 
 - Tuiles : **Temps réparti** et le nombre de **Dimensions**.
+- Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
 - Une carte par dimension avec **Cible**, **Minutes** (affichées en heures et
   minutes) et **Saisies** (nombre de saisies de temps), triée par temps
   décroissant.
@@ -126,6 +128,7 @@ menu apparaît avec le droit **Voir les écarts de procédure**.
 - Tuiles : **Écarts**, **Critiques**, **Part avec suivi** (part avec un point
   ouvert ou un ordre de suivi) et **Ø heures jusqu’à la décision** (de la
   création à l’acceptation du risque, uniquement les écarts décidés).
+- Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
 - Graphiques : **Écarts par type**, les écarts dans le temps par gravité et
   **Procédures avec le plus d’écarts (top 10)**.
 - Liste : **Date**, **Procédure**, **Étape**, **Type**, **Gravité**, **Suivi**
@@ -166,6 +169,7 @@ la journée de travail se situe dans la période.
 - Graphiques : **Valeur de consommation par matériau (top 20)** et les coûts
   de matériel dans le temps.
 - Tuiles : **Matériels**, **Utilisations** et **Net Σ**.
+- Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
 - Tableau **Consommation par matériel** : **SKU**, **Matériel**, **Unité**,
   **Quantité**, **Utilisations** et **Net**, trié par montant net
   décroissant. Un même matériel dans des unités différentes figure sur des
@@ -189,6 +193,7 @@ archivées ne comptent pas.
   **Interventions actives** (temps d’intervention avec le nombre
   d’interventions) et **Part active** (temps d’intervention rapporté au temps
   d’astreinte).
+- Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
 - Graphiques : **Astreinte par collaborateur et semaine** sous forme de carte
   de chaleur et les interventions dans le temps.
 - Tableau par employé : **Services**, **Astreinte**, **Interventions**,
@@ -278,6 +283,7 @@ exigent le droit **Voir les rapports**.
 
 - Tuiles : **Commandes avec lacunes**, **Lacunes bloquantes** (règles
   bloquantes) et **Écarts mineurs** (avertissements).
+- Un clic sur une tuile de comptage mène au tableau ou à la liste qu’elle compte ; les tuiles de totaux et de quotas n’ont pas de cible.
 - Graphiques : les commandes avec lacunes de classification dans le temps et
   **Classifications manquantes par client (top 15)**.
 - **Par domaine** et **Par phase** : où se trouvent les lacunes et à partir de

@@ -47,6 +47,8 @@ contiene algo. La búsqueda y los filtros se mantienen al cambiar de pestaña.
 **Indicadores:** los mosaicos se calculan sobre todo el conjunto filtrado, no
 solo sobre la página visible – por moneda y sin conversión.
 
+Un clic en **Pendiente** filtra los documentos pendientes (un segundo clic quita el filtro); los mosaicos de sumas no tienen destino.
+
 - **Ingresos**, **Gasto (externo)** y **Saldo** comparan documentos emitidos
   y recibidos.
 - **Mis gastos** indica sus propios gastos y la parte que sigue en revisión.

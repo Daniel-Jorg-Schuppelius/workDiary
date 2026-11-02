@@ -12,10 +12,6 @@
 --}}
 @extends('reports.pdf.layout')
 
-@php
-    $money = static fn(float $v, \CommonToolkit\Enums\CurrencyCode $c): string => \CommonToolkit\ValueObjects\Money::ofFloat($v, $c, 2)->format();
-@endphp
-
 @section('pdf-title', __('resale.margin.pdf_title'))
 @section('pdf-heading', __('resale.margin.pdf_title'))
 @section('pdf-meta'){{ __('resale.margin.subtitle', ['from' => $from->fdate(), 'to' => $to->fdate()]) }} · {{ __('resale.report.subtitle', ['date' => $today->fdate()]) }}@endsection
@@ -47,11 +43,11 @@
                         <td>{{ $row['currency']->value }}</td>
                         <td class="num">{{ $row['periods'] }}</td>
                         <td class="num">{{ $row['open'] }}</td>
-                        <td class="num">{{ $money($row['expected_sale'], $row['currency']) }}</td>
-                        <td class="num">{{ $money($row['billed'], $row['currency']) }}</td>
-                        <td class="num">{{ $money($row['expected_purchase'], $row['currency']) }}</td>
-                        <td class="num">{{ $row['with_actual'] > 0 ? $money($row['actual_purchase'], $row['currency']) : '–' }}@if ($row['with_actual'] > 0 && $row['with_actual'] < $row['periods']) ({{ $row['with_actual'] }}/{{ $row['periods'] }})@endif</td>
-                        <td class="num {{ $row['margin'] < 0 ? 'neg' : 'pos' }}">{{ $money($row['margin'], $row['currency']) }}</td>
+                        <td class="num">{{ $row['expected_sale']->format() }}</td>
+                        <td class="num">{{ $row['billed']->format() }}</td>
+                        <td class="num">{{ $row['expected_purchase']->format() }}</td>
+                        <td class="num">{{ $row['with_actual'] > 0 ? $row['actual_purchase']->format() : '–' }}@if ($row['with_actual'] > 0 && $row['with_actual'] < $row['periods']) ({{ $row['with_actual'] }}/{{ $row['periods'] }})@endif</td>
+                        <td class="num {{ $row['margin']->isNegative() ? 'neg' : 'pos' }}">{{ $row['margin']->format() }}</td>
                     </tr>
                 @empty
                     <tr><td colspan="9">{{ __('resale.report.empty') }}</td></tr>

@@ -1303,19 +1303,12 @@
                     // purgebare Module (aufbewahrungspflichtige bleiben dauerhaft erhalten).
                     $_graceItems = [];
                     if (app()->bound('currentOrganization')) {
+                        // Gecacht je Organisation (perf-10); aufbewahrungspflichtige Module filtert das Modell.
                         $_purgeable = (array) config('plans.purgeable_on_downgrade', []);
-                        foreach (\App\Models\Platform\PlanModuleGrace::query()
-                            ->where('organization_id', app('currentOrganization')->id)
-                            ->whereNull('purged_at')
-                            ->where('grace_until', '>', now())
-                            ->orderBy('grace_until')
-                            ->get() as $_g) {
-                            if (($_purgeable[$_g->module] ?? false) !== true) {
-                                continue; // aufbewahrungspflichtig → keine Loeschung, kein Hinweis
-                            }
+                        foreach (\App\Models\Platform\PlanModuleGrace::pendingPurgeItems((int) app('currentOrganization')->id, $_purgeable) as $_g) {
                             $_graceItems[] = [
-                                'label' => __((string) (app(\App\Services\Licensing\ModuleCatalog::class)->labels()[$_g->module] ?? $_g->module)),
-                                'until' => $_g->grace_until,
+                                'label' => __((string) (app(\App\Services\Licensing\ModuleCatalog::class)->labels()[$_g['module']] ?? $_g['module'])),
+                                'until' => \Carbon\CarbonImmutable::parse($_g['until']),
                             ];
                         }
                     }

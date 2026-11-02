@@ -178,6 +178,7 @@ return [
             'sync_articles' => 'Sync Lexoffice articles',
             'sync_contacts' => 'Sync Lexoffice contacts',
             'sync_vouchers' => 'Sync Lexoffice vouchers',
+            'sync_vouchers_full' => 'Full Lexoffice voucher sync (daily)',
         ],
         'location' => ['purge_points' => 'Purge raw location points', 'close_stale_visits' => 'Close stale location visits'],
         'mail' => ['poll' => 'Poll mail intake'],

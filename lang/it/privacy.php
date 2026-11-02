@@ -29,6 +29,7 @@ return [
         'driver_license_checks' => 'Controlli della patente',
         'documents_invoice' => 'Fatture (DMS)',
         'passenger_rides' => 'Fascicoli delle corse (dati di luogo e passeggeri)',
+        'remote_pending_sessions' => 'Sessioni di assistenza remota (importate/scartate)',
         'employee_records' => 'Anagrafica del personale (dipendenti cessati)',
         'portal_accounts' => 'Accessi al portale (disattivati)',
         'personnel_files' => 'Fascicoli del personale (dipendenti cessati)',

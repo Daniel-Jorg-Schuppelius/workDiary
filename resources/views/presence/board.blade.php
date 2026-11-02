@@ -20,14 +20,14 @@
     </x-slot:toolbar>
 
     <div class="grid gap-3 grid-cols-2 sm:grid-cols-4">
-        <x-kpi-tile :label="__('Anwesend')" :value="count($snapshot['present']) + count($snapshot['present_unmapped'])" format="int" tone="success" />
-        <x-kpi-tile :label="__('Außer Haus')" :value="count($snapshot['off_site'])" format="int" tone="info" />
-        <x-kpi-tile :label="__('Abwesend')" :value="count($snapshot['absent'])" format="int" tone="neutral" />
+        <x-kpi-tile :label="__('Anwesend')" :value="count($snapshot['present']) + count($snapshot['present_unmapped'])" format="int" tone="success" href="#presence-present" />
+        <x-kpi-tile :label="__('Außer Haus')" :value="count($snapshot['off_site'])" format="int" tone="info" href="#presence-off-site" />
+        <x-kpi-tile :label="__('Abwesend')" :value="count($snapshot['absent'])" format="int" tone="neutral" href="#presence-absent" />
         <x-kpi-tile :label="__('Nicht eingestempelt')" :value="count($snapshot['unaccounted'])" format="int" tone="warning" />
     </div>
 
     <div class="grid gap-3 lg:grid-cols-2">
-        <x-card>
+        <x-card id="presence-present" class="scroll-mt-24">
             <h3 class="font-semibold mb-2 inline-flex items-center gap-1.5">
                 <span class="inline-block w-2.5 h-2.5 rounded-full bg-success"></span>{{ __('Anwesend') }}
             </h3>
@@ -57,7 +57,7 @@
         </x-card>
 
         <div class="space-y-3">
-            <x-card>
+            <x-card id="presence-off-site" class="scroll-mt-24">
                 <h3 class="font-semibold mb-2 inline-flex items-center gap-1.5">
                     <span class="inline-block w-2.5 h-2.5 rounded-full bg-info"></span>{{ __('Außer Haus / Einsatz') }}
                 </h3>
@@ -73,7 +73,7 @@
                 </ul>
             </x-card>
 
-            <x-card>
+            <x-card id="presence-absent" class="scroll-mt-24">
                 <h3 class="font-semibold mb-2 inline-flex items-center gap-1.5">
                     <span class="inline-block w-2.5 h-2.5 rounded-full bg-base-content/40"></span>{{ __('Abwesend') }}
                 </h3>

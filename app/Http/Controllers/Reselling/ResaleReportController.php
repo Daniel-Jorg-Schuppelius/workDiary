@@ -25,7 +25,6 @@ use App\Services\Reselling\Register\{DomainSubscriptionSync, LicenseArticleClass
 use App\Settings\SettingScope;
 use App\Support\{CsvExport, Setting, XlsxExport};
 use App\Support\ErrorText;
-use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Money;
@@ -357,10 +356,8 @@ class ResaleReportController extends Controller {
         $drafts->planAhead($until);
         /** @var array<int, array{customer: Customer, periods: int, net: Money, drafted: int, draft_reference: string|null, draft_created_at: CarbonImmutable|null}> $recipients */
         $recipients = [];
-        $periods = ResalePeriod::query()
-            ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
-            ->where('starts_on', '<', DateRange::dayAfter($until))
-            ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false)->notBilledByProvider())
+        $periods = ResalePeriod::query()->due($until)
+            ->whereHas('subscription', static fn(Builder $s) => $s->notBilledByProvider())
             ->with(['subscription.customer:id,name,currency', 'subscription.foreignCustomer:id,name,customer_id', 'subscription.foreignCustomer.customer:id,name,currency', 'links'])
             ->get();
         foreach ($periods as $period) {
@@ -431,10 +428,7 @@ class ResaleReportController extends Controller {
      */
     private function proposalRows(): array {
         $today = ResalePeriod::today();
-        $periods = ResalePeriod::query()
-            ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
-            ->where('starts_on', '<', DateRange::dayAfter($today))
-            ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false))
+        $periods = ResalePeriod::query()->due($today)
             ->with(['subscription.customer:id,name', 'subscription.foreignCustomer:id,name,customer_id', 'subscription.foreignCustomer.customer:id,name', 'links'])
             ->get();
         ResaleSubscription::withCatalogArticles($periods->map(static fn (ResalePeriod $period): ResaleSubscription => $period->subscription));

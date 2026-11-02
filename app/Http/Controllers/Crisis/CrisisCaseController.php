@@ -41,11 +41,15 @@ class CrisisCaseController extends Controller {
         Gate::authorize('viewAny', CrisisCase::class);
 
         $statusFilter = CrisisCaseStatus::tryFrom($request->string('status')->toString());
+        // Kachel „Aktive Krisen“ (ux-pattern-katalog §4): aktiv sind mehrere Status, die die Status-Auswahl einzeln kennt.
+        $showActive = $request->string('show')->toString() === 'active';
 
         return view('crisis.index', [
+            'showActive' => $showActive,
             'cases' => CrisisCase::query()
                 ->with('responsible')
                 ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter))
+                ->when($showActive, fn($q) => $q->whereIn('status', CrisisCaseStatus::active()))
                 ->orderByDesc('id')
                 ->paginate(25)
                 ->withQueryString(),

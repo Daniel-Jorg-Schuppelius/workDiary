@@ -28,4 +28,9 @@ return [
         'delivery_title' => 'Albarán',
         'transfer_marker' => 'Referencia de traspaso :marker',
     ],
+    'vouchers' => [
+        'sync_now' => 'Sincronizar comprobantes ahora',
+        'sync_confirm' => "¿Sincronizar ahora los comprobantes con Lexoffice? La ejecución obtiene en segundo plano los comprobantes nuevos y modificados; la sincronización completa diaria no se ve afectada.",
+        'sync_hint' => "Obtiene en segundo plano los comprobantes nuevos y modificados de Lexoffice: el equivalente manual de la sincronización de comprobantes programada.",
+    ],
 ];

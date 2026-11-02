@@ -28,4 +28,9 @@ return [
         'delivery_title' => 'Documento di trasporto',
         'transfer_marker' => 'Riferimento di trasferimento :marker',
     ],
+    'vouchers' => [
+        'sync_now' => 'Sincronizza documenti adesso',
+        'sync_confirm' => "Sincronizzare adesso i documenti con Lexoffice? L'esecuzione recupera in background i documenti nuovi e modificati; il sync completo giornaliero non viene toccato.",
+        'sync_hint' => "Recupera in background i documenti Lexoffice nuovi e modificati: la controparte manuale del sync documenti pianificato.",
+    ],
 ];

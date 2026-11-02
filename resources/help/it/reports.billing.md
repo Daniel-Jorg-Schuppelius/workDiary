@@ -80,6 +80,7 @@ InvoicePlane. Le righe – e quindi i contributi a **Fatturato per prodotto**
   - **Tempo non fatturato**: registrazioni di tempo fatturabili del periodo
     non ancora utilizzate da alcun percorso di fatturazione, con il numero di
     registrazioni e il ricavo previsto dagli importi memorizzati.
+- Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
 - Grafici: ore fatturabili e non fatturabili nel tempo e **Fatturato per
   cliente (top 15)** dalle fatture locali e dai documenti rispecchiati dal
   programma di contabilità. Un clic su un cliente apre **Clienti e progetti**
@@ -131,6 +132,7 @@ alla data della spesa.
   categorie maggiori singolarmente e il resto raggruppato, e **Principali
   generatori (top 15)**.
 - Riquadri: **Totale (lordo)**, **Dipendenti**, **Categorie** e **mesi**.
+- Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
 - Tabella con una riga per **Dipendente** e **Categoria**, una colonna per
   mese e il **Totale**, seguita da **Categorie principali**.
 
@@ -201,6 +203,7 @@ tempo**.
   contabilità non collegati ad alcun articolo della propria anagrafica
   articoli) e **Quota senza riferimento articolo** (righe senza articolo
   selezionato).
+- Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
 - Grafico degli articoli con il fatturato più alto; quanti ne mostra lo
   stabilisce con **Top N nel grafico** (da 3 a 50, predefinito 10). Mostra
   anche gli articoli del programma di contabilità non collegati alla propria

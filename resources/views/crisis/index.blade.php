@@ -34,9 +34,9 @@
     @include('crisis._tabs')
 
     <div class="grid gap-4 sm:grid-cols-3">
-        <x-kpi-tile :label="__('Aktive Krisen')" :value="$activeCount" />
+        <x-kpi-tile :label="__('Aktive Krisen')" :value="$activeCount" :href="route('crisis.index', ['show' => 'active'])" :active="$showActive" />
         <x-kpi-tile :label="__('Überfällige Maßnahmen')" :value="$overdueActions" />
-        <x-kpi-tile :label="__('Übungen fällig (30 Tage)')" :value="$openDecisionsExercises" />
+        <x-kpi-tile :label="__('Übungen fällig (30 Tage)')" :value="$openDecisionsExercises" :href="route('crisis.exercises.index')" />
     </div>
 
     <x-filter-bar :action="route('crisis.index')" :reset="route('crisis.index')">
@@ -46,6 +46,7 @@
                 <option value="{{ $value }}" @selected(($filters['status'] ?? '') === $value)>{{ $label }}</option>
             @endforeach
         </select>
+        <x-filter-toggle name="show" value="active" :label="__('Aktive Krisen')" :checked="$showActive" />
     </x-filter-bar>
 
 

@@ -68,6 +68,10 @@ final class AccountingVoucherMirrorSource implements InvoiceMirrorSource {
         return $this->licenceLines($organization, $query->get());
     }
 
+    public function planLines(Organization $organization, array $planKeys, CarbonImmutable $from): Collection {
+        return collect(); // der allgemeine Belegspiegel trägt keinen Vorlagenbezug am Beleg
+    }
+
     public function creditNoteLines(Organization $organization, array $recipientCustomerIds, ?CarbonImmutable $from = null): Collection {
         if ($recipientCustomerIds === []) {
             return collect();
@@ -162,9 +166,12 @@ final class AccountingVoucherMirrorSource implements InvoiceMirrorSource {
             ->orderByDesc('accounting_voucher_lines.id')
             ->limit(self::UNLINKED_SCAN)
             ->get();
-        $lines = $this->licenceLines($organization, $rows);
+        // Zählen über die Einstufung je Zeile; nur die gezeigten werden Spiegelzeilen — der Überblick
+        // fragt mit `limit 1` nur die Zahl (Leistungsanalyse 2026-11-02, perfc-07).
+        $classifier = app(LicenseArticleClassifier::class);
+        $licence = $rows->filter(static fn(AccountingVoucherLine $line): bool => $classifier->isLicense((int) $line->organization_id, $line->article_ref, $line->name));
 
-        return ['total' => $lines->count(), 'lines' => $lines->take($limit)->values()];
+        return ['total' => $licence->count(), 'lines' => $this->map($organization, $licence->take($limit)->values())->values()];
     }
 
     public function linesByIds(Organization $organization, array $ids): Collection {

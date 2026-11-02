@@ -21,6 +21,8 @@ use App\Models\Platform\User;
 use App\Models\Schedule\ScheduledShift;
 use App\Models\Travel\{Expense, PerDiemTrip};
 use App\Services\Onboarding\OnboardingChecklistResolver;
+use App\Services\WorkQueue\Contracts\WorkItemSource;
+use App\Services\WorkQueue\WorkQueue;
 use App\Support\MorphMap;
 use App\Support\{OrganizationContext, Setting};
 use App\Support\Query\DateRange;
@@ -38,6 +40,16 @@ use Illuminate\Support\Collection;
  * würde ein Queue-Worker Daten des ersten Nutzers weiterreichen.
  */
 class DashboardService {
+    /**
+     * Schlüssel der Genehmigungsquellen des Arbeitsvorrats (`WorkItemSource::key()`
+     * von Spesen und Urlaub). Als Zeichenkette, nicht als Klassenkonstante: die
+     * Quellen liegen in Feature-Modulen, das Dashboard darf sie nicht kennen
+     * (Modulgrenze); der Schlüssel ist der stabile Vertrag des Erweiterungspunkts.
+     */
+    private const EXPENSE_APPROVAL_SOURCE = 'expense_approval';
+
+    private const VACATION_APPROVAL_SOURCE = 'vacation_approval';
+
     /** @var array<string, mixed> */
     private array $memo = [];
 
@@ -45,6 +57,7 @@ class DashboardService {
 
     public function __construct(
         private readonly OnboardingChecklistResolver $onboardingResolver,
+        private readonly WorkQueue $workQueue,
     ) {}
 
     /**
@@ -348,30 +361,57 @@ class DashboardService {
     }
 
     /**
-     * Was an Spesen und Urlaubsanträgen auf eine Entscheidung wartet — nur
-     * für Genehmigende, sonst null.
+     * Was an Spesen und Urlaubsanträgen auf eine Entscheidung dieses Nutzers
+     * wartet — gezählt wie im Arbeitsvorrat (Feature 179): nach Zuständigkeit
+     * der Quelle, eigene Anträge nie. Ist keine der beiden Quellen für den
+     * Nutzer verfügbar, null; eine fehlende Quelle zählt 0.
      *
      * @return array{expenses:int, vacations:int}|null
      */
     public function approverPending(User $user): ?array {
         return $this->remember('approverPending', $user, function () use ($user): ?array {
-            if (! $user->isAdmin()) {
+            $sources = $this->approvalSources($user);
+            $organization = OrganizationContext::current() ?? $user->organization;
+            if ($sources === [] || $organization === null) {
                 return null;
             }
 
-            $orgId = OrganizationContext::currentId() ?? $user->organization_id;
-
-            return [
-                'expenses' => Expense::query()
-                    ->where('organization_id', $orgId)
-                    ->where('status', ExpenseStatus::Pending)
-                    ->count(),
-                'vacations' => Vacation::query()
-                    ->where('organization_id', $orgId)
-                    ->where('status', VacationStatus::Pending)
-                    ->count(),
+            $counts = ['expenses' => 0, 'vacations' => 0];
+            $keys = [
+                self::EXPENSE_APPROVAL_SOURCE => 'expenses',
+                self::VACATION_APPROVAL_SOURCE => 'vacations',
             ];
+            foreach ($this->workQueue->itemsFor($user, $organization, $sources) as $item) {
+                if (isset($keys[$item->source])) {
+                    $counts[$keys[$item->source]]++;
+                }
+            }
+            // Über die Obergrenze je Quelle hinaus zählt der Vorrat nur noch.
+            foreach ($this->workQueue->overflowFor($user, $organization, $sources) as $source => $rest) {
+                if (isset($keys[$source])) {
+                    $counts[$keys[$source]] += $rest;
+                }
+            }
+
+            return $counts;
         });
+    }
+
+    /** Ob der Nutzer irgendwo Spesen oder Urlaub entscheidet (Kachel „Offene Genehmigungen“). */
+    public function canApprove(User $user): bool {
+        return $this->approvalSources($user) !== [];
+    }
+
+    /**
+     * Die beiden Genehmigungsquellen des Arbeitsvorrats, soweit für den Nutzer verfügbar.
+     *
+     * @return array<string, WorkItemSource>
+     */
+    private function approvalSources(User $user): array {
+        return $this->remember('approvalSources', $user, fn (): array => array_intersect_key(
+            $this->workQueue->sourcesFor($user),
+            [self::EXPENSE_APPROVAL_SOURCE => true, self::VACATION_APPROVAL_SOURCE => true],
+        ));
     }
 
     /**

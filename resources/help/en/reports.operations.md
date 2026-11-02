@@ -69,6 +69,7 @@ tasks and tours in the period.
   **Service time Σ**, **Orders** with the number of overdue orders and their
   completion rate (the tile changes colour as soon as a task is overdue), and
   **Tours** with planned kilometres and planned duration.
+- Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
 - Charts: **Service orders: created vs. completed per week** and **Backlog per
   customer (top 15)** with the service orders still open per customer.
   With the **View reports** permission, clicking a bar opens the customer's
@@ -103,6 +104,7 @@ are distributed across **Orders**, **Assets**, **Projects**, **Cost centers**,
 dimensions**.
 
 - Tiles: **Allocated time** and the number of **Dimensions**.
+- Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
 - One card per dimension with **Target**, **Minutes** (shown as hours and
   minutes) and **Entries** (number of time entries), sorted by time in
   descending order.
@@ -122,6 +124,7 @@ item appears with the **View procedure deviations** permission.
 - Tiles: **Deviations**, **Critical**, **Share with follow-up** (share with an
   open issue or a follow-up order) and **Avg. hours to decision** (from
   creation to risk acceptance, decided deviations only).
+- Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
 - Charts: **Deviations by type**, the deviations over time by severity, and
   **Procedures with the most deviations (top 10)**.
 - List: **Date**, **Procedure**, **Step**, **Type**, **Severity**,
@@ -161,6 +164,7 @@ in the period.
 - Charts: **Consumption value per material (top 20)** and the material costs
   over time.
 - Tiles: **Materials**, **Usages** and **Net Σ**.
+- Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
 - Table **Consumption per material**: **SKU**, **Material**, **Unit**,
   **Quantity**, **Usages** and **Net**, sorted by net amount in descending
   order. The same material in different units appears in separate rows; lines
@@ -180,6 +184,7 @@ archived entries do not count.
 - Tiles: **Employees**, **Standby** (with the number of shifts), **Active
   assignments** (assignment time with the number of assignments) and **Active
   share** (assignment time in relation to standby time).
+- Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
 - Charts: **On-call time per employee and week** as a heat map and the
   assignments over time.
 - Table per employee: **Shifts**, **Standby**, **Assignments**, **Assignment
@@ -264,6 +269,7 @@ The menu item and the page require the **View reports** permission.
 
 - Tiles: **Orders with gaps**, **Hard gaps** (blocking rules) and **Soft gaps**
   (hints).
+- Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
 - Charts: orders with classification gaps over time and **Missing
   classifications per customer (top 15)**.
 - **By domain** and **By phase**: where the gaps are and from which phase on

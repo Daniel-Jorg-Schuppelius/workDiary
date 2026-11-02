@@ -53,6 +53,7 @@ everyone else is denied access.
   with at least one entry) and **Entity types** (distinct object types). These
   two also count across all entries in the period, not just the top 20
   lists.
+- Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
 - Charts: **Events over time**, **Top actors (top 15)** and the events over
   time by event type.
 - Tables: **By event**, **By entity type (top 20)**, **By user (top 20)** and
@@ -80,6 +81,7 @@ switched on, the driving and rest time findings are added.
 - Tiles: **Total findings** (a click opens the detail report), **Affected
   employees**, **Open (without correction)** and **With approved correction**
   (findings on days with an approved time correction).
+- Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
 - One tile per violation type with the count; a click opens the detail
   report filtered to this type.
 - Charts: open findings over time and findings over time by violation type.
@@ -101,6 +103,7 @@ returns to **Open**.
 
 - Tiles per status: **Open**, **Acknowledged**, **Resolved** and **Accepted**,
   counted across the whole organization. A click filters the list.
+- Clicking a count tile jumps to the table or list it counts; total and ratio tiles have no target.
 - Chart **New vs. acknowledged findings per month** for the last 24 months
   with data.
 - List: **Employee**, **Date**, **Type**, **Value**, **Threshold**,

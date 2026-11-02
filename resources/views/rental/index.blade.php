@@ -26,8 +26,8 @@
     @include('rental._tabs')
 
     <div class="grid gap-4 sm:grid-cols-2">
-        <x-kpi-tile :label="__('Offene Verleihvorgänge')" :value="$openCount" />
-        <x-kpi-tile :label="__('Überfällige Rückgaben')" :value="$overdueCount" />
+        <x-kpi-tile :label="__('Offene Verleihvorgänge')" :value="$openCount" :href="route('rental.index', ['show' => 'open'])" :active="$showOpen" />
+        <x-kpi-tile :label="__('Überfällige Rückgaben')" :value="$overdueCount" :href="route('rental.index', ['overdue' => 1])" :active="request()->filled('overdue')" />
     </div>
 
     <x-filter-bar :action="route('rental.index')" :reset="route('rental.index')">
@@ -43,6 +43,7 @@
                 <option value="{{ $c->sqid }}" @selected(request('customer_id') === $c->sqid)>{{ $c->name }}</option>
             @endforeach
         </select>
+        <x-filter-toggle name="show" value="open" :label="__('Offene Verleihvorgänge')" :checked="$showOpen" />
         <label class="label cursor-pointer gap-2 shrink-0">
             <input type="checkbox" name="overdue" value="1" class="checkbox checkbox-sm" @checked(request()->filled('overdue'))>
             <span class="label-text text-sm">{{ __('nur überfällige') }}</span>

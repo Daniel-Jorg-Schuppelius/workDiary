@@ -1,7 +1,7 @@
 ---
 title: "Leads"
 topic: sales.leads
-version: 3
+version: 4
 keywords:
     - Interessenten
     - Akquise
@@ -62,3 +62,15 @@ Leads tragen eigene Felder (Verwaltung › Eigene Felder), Schlagworte und
 Anhänge. Bei der Anonymisierung nach der Löschfrist gehen Anhänge, eigene
 Felder und Schlagworte mit. Dokumente des Dokumentenmanagements hängen erst am
 Kunden.
+
+## Cockpit
+
+Die Lead-Akte ist das Cockpit des Interessenten: Kopf mit Status, Quelle und
+Schlagworten, darunter Kontakt und Bedarf, die Kommunikationsnotizen mit
+Wiedervorlage, eigene Felder, Anhänge, die Angebote aus dem Lead und der
+Verlauf. „Angebot aus dem Lead“ legt ein Angebot mit den Kontaktdaten an;
+die Angebote stehen mit Status in der Akte, und die Lead-Auswertung zählt sie
+je Quelle und Konversion. Wie bei Kunde, Lieferant und Projekt zeigen die
+Panels anderer Module nur, was zum Lead vorliegt — ein Modul ohne Daten zum
+Lead erscheint nicht. Der Verlauf führt die Audit-Einträge des Leads samt
+seiner Angebote; Terminbuchungen hängen am offenen Lead.

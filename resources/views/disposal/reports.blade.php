@@ -14,14 +14,14 @@
 @section('content')
 <x-index-page :subtitle="__('Entsorgte Mengen abgeschlossener Entsorgungsakten je Kunde, Periode und AVV-Abfallschlüssel — Zeitraum aus dem Kopfbereich.')">
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <x-kpi-tile :label="__('Abgeschlossene Vorgänge')" :value="$jobCount" />
+        <x-kpi-tile :label="__('Abgeschlossene Vorgänge')" :value="$jobCount" href="#disposal-by-customer" />
         <x-kpi-tile :label="__('Entsorgte Geräte')" :value="$deviceCount" />
         <x-kpi-tile :label="__('Gesamtgewicht')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totalWeight, 1, withThousandsSeparator: true) . ' kg'" />
         <x-kpi-tile :label="__('Davon gefährlich')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($hazardousWeight, 1, withThousandsSeparator: true) . ' kg'" />
     </div>
 
     <div class="grid gap-4 lg:grid-cols-2">
-        <x-card :title="__('Mengen je Kunde')" padding="p-0">
+        <x-card :title="__('Mengen je Kunde')" padding="p-0" id="disposal-by-customer" class="scroll-mt-24">
             <x-table bare>
                 <x-slot:head><tr><th>{{ __('Kunde') }}</th><th class="text-right">{{ __('Vorgänge') }}</th><th class="text-right">{{ __('Geräte') }}</th><th class="text-right">{{ __('Gewicht (kg)') }}</th><th class="text-right">{{ __('Gefährlich (kg)') }}</th></tr></x-slot:head>
                 @forelse ($byCustomer as $customer => $row)

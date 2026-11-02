@@ -265,6 +265,13 @@ class ResaleHttpReviewTest extends TestCase {
         // Ungültige Query-Daten: kein 500, Vorbelegung fällt auf den Vertrag zurück.
         $this->actingAs($admin)->get(route('finance.resale.transfer.create', ['subscription' => $contract->sqid, 'starts_on' => 'x', 'ends_on' => '??', 'quantity' => 'abc']))
             ->assertOk()->assertSee('2025-01-01');
+        // Datum aus der Query nur als gültiges ISO-Datum (kon-17): Überläufe, Kurzformen und Zeitstempel gelten als nicht angegeben.
+        foreach (['2025-13-45', '2025-02-30', '2025-1-5', '2025-02-28T10:00:00Z'] as $bad) {
+            $this->actingAs($admin)->get(route('finance.resale.transfer.create', ['subscription' => $contract->sqid, 'starts_on' => $bad]))
+                ->assertOk()->assertSee('2025-01-01')->assertDontSee($bad);
+        }
+        $this->actingAs($admin)->get(route('finance.resale.transfer.create', ['subscription' => $contract->sqid, 'starts_on' => '2025-02-28']))
+            ->assertOk()->assertSee('2025-02-28');
 
         // Abtretung 01.07.2025 – 31.12.2025 über 5; danach eine ab 01.01.2025 offen über 5: am Starttag frei (9),
         // aber ab Juli nur 4 — die Prüfung gilt für die ganze Laufzeit (B8).

@@ -1,7 +1,7 @@
 ---
 title: "Abbonamenti e licenze"
 topic: finance.resale
-version: 11
+version: 12
 keywords:
     - Anteprima importazione
     - Azioni di massa
@@ -24,6 +24,13 @@ modules:
 related:
     - roles.buchhaltung
     - glossary.core
+    - finance.resale.accounts
+    - finance.resale.reconcile
+    - finance.resale.board
+    - finance.resale.subscription
+    - finance.resale.periods
+    - finance.resale.plan
+    - finance.resale.reports
 ---
 
 Il **registro di rivendita** tiene ogni servizio ricorrente rivenduto come
@@ -62,76 +69,6 @@ abbonamenti terminati e sostituiti non ricevono nuovi periodi.
 — lo imposti su «terminato». Permessi: vedere con *Vedere il registro di
 rivendita*, gestire con *Gestire il registro di rivendita*.
 
-**Riconciliazione per destinatario fattura:** quando periodi restano aperti
-e non è chiaro se manca una fattura o solo l’assegnazione, usi la
-riconciliazione (pulsante nell’elenco abbonamenti, nella pagina periodi e
-sul cliente). Per destinatario — il cliente con i suoi clienti finali —
-confronta i periodi scaduti di tutti gli abbonamenti con le righe licenza
-delle sue fatture, in mesi licenza per prodotto: *dovuto* dai periodi,
-*fatturato* dalle righe. L’esito dice cosa fare: «solo non assegnato» (le
-righe libere bastano — assegnare), «mai fatturato» (più periodi che righe —
-fattura di recupero tramite bozza o rinuncia al periodo) oppure «senza
-periodo» (più righe che periodi — manca un abbonamento nel registro o
-doppia fatturazione). Per ogni periodo aperto sono elencate le righe dello
-stesso prodotto con la distanza dall’inizio periodo: le libere con
-assegnazione, le consumate con il loro titolare per controllo. La data di
-riferimento è il **periodo di prestazione** della fattura, altrimenti la
-data fattura; licenze e mesi sono mostrati separati («5 × 12 mesi» = cinque
-licenze per un anno). Inoltre tre trappole invisibili per abbonamento:
-**fattura a un altro cliente** (l’account del fornitore non è il cliente,
-oppure il cliente finale è fatturato direttamente invece che tramite il
-partner; riconosciuto da una parte di nome comune) — la soluzione è
-«Titolare → cliente»: l’abbonamento passa a quel cliente e la proposta si
-applica subito. Le fatture **stornate** vicino all’inizio periodo spiegano
-un periodo vuoto. Gli abbonamenti della **posta in arrivo** la cui azienda
-compare nei testi fattura attendono il titolare. Una riga libera che non
-tocca più alcun periodo del suo prodotto segnala un contratto assente nel
-registro (l’export del fornitore non lo conosce): la riga prodotto dice
-«Riga senza abbonamento dal …» e «Crea abbonamento dalla riga» apre il
-dialogo con articolo, quantità, inizio e prezzo presi dalla fattura.
-L’assegnazione può colpire un periodo di un altro abbonamento dello stesso
-destinatario — mai un periodo di un altro cliente.
-
-**Cartella di lavoro e tavola di riconciliazione:** la riconciliazione di un
-destinatario è la cartella di lavoro: in alto gli abbonamenti con modifica,
-subentro, cessione di licenze e restituzione, sotto la tavola di
-riconciliazione per prodotto. A sinistra tutti i periodi in ordine di data
-con previsto e copertura, a destra le righe di fattura: quelle collegate con
-il periodo di servizio, per i periodi aperti quelle libere corrispondenti,
-fatture ad altri clienti e annullamenti. Le righe senza periodo adatto
-compaiono come riga propria «senza periodo» alla loro data. Ogni fattura
-libera compare solo al periodo che le corrisponde meglio e «Assegna …» la
-assegna con un clic; la quantità è ciò di cui il periodo ha ancora bisogno.
-Uno sfasamento di alcune settimane tra la data d’ordine presso il fornitore
-e la data della fattura è normale e non viene mostrato; una fattura
-cumulativa che copre l’intero periodo corrisponde. Le fatture senza periodo
-adatto compaiono in una riga «senza periodo» con «Crea abbonamento» o
-«Assegna a un altro periodo». Le assegnazioni dubbie chiedono conferma prima
-del salvataggio; nella finestra di collegamento e nell’assegnazione rapida
-della pagina dell’abbonamento Lei le conferma con la casella. I collegamenti
-che non corrispondono temporalmente sono evidenziati in giallo: li verifichi
-e li scolleghi se necessario. «Elaborare il prossimo destinatario» nella
-panoramica guida attraverso tutti i destinatari con importo aperto; un
-destinatario è completato quando non resta alcun periodo scaduto aperto né
-alcun rilievo sui modelli. Se il fornitore rinnova un abbonamento come nuovo
-ordine, l’esecuzione delle proposte rinuncia al breve periodo residuo del
-vecchio ordine e sposta i suoi collegamenti al primo periodo del nuovo. Il
-periodo residuo compare allora come «Cambio d’ordine», non come rinuncia: le
-fatture del successore coprono quel tempo.
-
-**Insolvenza e subentro:** se una fattura è stata annullata perché il
-cliente è insolvente, registri il periodo nella tavola con «Registrare come
-perdita»: la finestra di rinuncia propone il motivo con il numero della
-fattura. Se un’altra azienda prosegue le licenze, usi «Subentro»
-sull’abbonamento: nuovo titolare e data di decorrenza. Se la data di
-decorrenza coincide con l’inizio del primo periodo aperto, al nuovo titolare
-vengono fatturati anche i periodi aperti; se è successiva, il registro
-rinuncia su richiesta ai periodi aperti precedenti come crediti inesigibili.
-Una data di decorrenza all’inizio dell’abbonamento passa l’intero
-abbonamento al nuovo titolare, altrimenti dalla data di decorrenza nasce una
-cessione. Se una fattura va già all’azienda subentrante, la tavola offre il
-subentro direttamente su quella fattura.
-
 **Quantità e copertura:** il registro non consente mai di assegnare più di
 quanto ci sia. A un periodo Lei assegna al massimo ciò che ha ancora aperto,
 anche spostando un collegamento. Si possono cedere, ripartire o rilevare
@@ -154,18 +91,6 @@ viene derivato da azienda, prodotto e inizio, così un nuovo import aggiorna
 gli stessi abbonamenti invece di duplicarli. Il fornitore viene dalla
 colonna o dal dialogo; un modello CSV è nel dialogo di import.
 
-**Cedere licenze:** se due aziende condividono la sede e la seconda usa una
-parte delle licenze di un contratto, ceda quelle licenze sul contratto
-(«Cedere licenze»: titolare, quantità, periodo, prezzo di vendita). Nasce un
-abbonamento separato per l’altro titolare con periodi propri; il contratto
-pianifica i suoi periodi con il resto. Ogni titolare riceve le proprie
-fatture assegnate. Se un successore sostituisce il contratto (import), la
-cessione prosegue lì. Un contratto con cessioni si elimina solo dopo aver
-rimosso le cessioni. Anche un cambio di titolare nel tempo — un’azienda si
-scinde e la nuova rileva i contratti — è una cessione: tutte le licenze del
-vecchio periodo al titolare precedente; la riconciliazione lo propone su una
-fattura dell’altro cliente come «Cedere il periodo a …», precompilato.
-
 **Posta in arrivo:** gli abbonamenti importati la cui azienda il registro
 non riesce ancora ad assegnare a un titolare finiscono nella posta in
 arrivo. Per azienda decide una volta: cliente, cliente finale di un partner
@@ -180,40 +105,6 @@ successivo assegna subito la stessa azienda. Le righe che l’import non ha
 potuto elaborare (data illeggibile, quantità senza numero, identificativo
 duplicato) restano come rilievi sull’import: il numero nel messaggio, i
 dettagli espandibili nell’elenco.
-
-**Periodi:** la pagina dei periodi mostra i periodi scaduti di tutti gli
-abbonamenti con riquadri di stato (aperto, fatturato, parziale, rinunciato,
-contestato). «Calcola proposte» confronta i periodi aperti con le righe di
-licenza delle fatture rispecchiate e crea proposte; Lei le conferma, collega a
-mano una riga (solo fatture dello stesso destinatario, solo mesi di licenza
-liberi) oppure rinuncia con un motivo («cortesia»).
-Nella finestra di collegamento compaiono prima le fatture nella finestra del
-periodo, sotto tutte le altre del destinatario; il campo di ricerca trova
-ciascuna dal suo numero, e una già usata indica dove è collegata. Anche gli
-elenchi di abbonamenti e periodi cercano per numero di fattura. I periodi decisi non
-vengono più toccati dalla pianificazione; «riapri» li riapre. Se una fattura
-collegata viene poi stornata in Lexoffice, l’esecuzione successiva azzera i
-mesi del collegamento, annota lo storno e riapre il periodo, così la fattura
-sostitutiva può essere collegata. Gli abbonamenti di dominio sono coperti
-dalle righe che nominano il dominio (ad esempio «dominio .de incl. gestione
-(lastkraft-logistik.de)»), indipendentemente dalla classificazione dell’articolo.
-I domini che un subrivenditore regola tramite il portale del fornitore sono
-coperti dal giornale contabile del modulo domini: un documento per sottoutente
-e mese, numerato «numero cliente-MM-AAAA» (inserisca il numero cliente nella
-pagina del sottoutente); il destinatario è il cliente del sottoutente.
-
-**Bozza di fattura:** da tutti i periodi aperti di un destinatario fattura
-nasce con un clic una bozza — con fatturazione Lexoffice come bozza in
-Lexoffice (nulla viene finalizzato; verifica ed emette lì), con
-fatturazione locale come bozza di fattura locale con righe e collegamenti
-proposti. Una riga per abbonamento e periodo, cliente finale nella
-descrizione, quantità in mesi per gli articoli mensili. I periodi ricordano
-la bozza: un secondo clic non ne crea una seconda ma indica quella in
-sospeso con numero e data; solo quando la bozza è diventata fattura o il
-periodo è deciso tornano liberi; fino ad allora mostrano «In bozza». La finestra elenca solo destinatari con
-periodi aperti e prezzo di vendita e indica sotto ciò che è già in una
-bozza. La creazione richiede il diritto *Creare bozze di fattura dai
-periodi*.
 
 **Fatturazione ricorrente:** con la fatturazione locale il registro può
 creare da solo le bozze ogni giorno. L’interruttore si trova nella pagina
@@ -244,26 +135,13 @@ pagina non letta), l’import avviene comunque e la differenza viene
 segnalata. La pagina acquisti filtra per fornitore, fonte, periodo e testo
 di ricerca; un’assegnazione si scioglie sempre per intero per documento.
 
-**Report margine:** per prodotto e per destinatario fattura compaiono i
-periodi scaduti dell’intervallo con vendita prevista (quantità × prezzo di
-vendita), fatturato (importi netti dei collegamenti fattura, proposte
-incluse), acquisto previsto (prezzo fornitore × quantità) e acquisto
-effettivo dai documenti di acquisto. Margine = fatturato − acquisto;
-l’acquisto effettivo conta non appena ogni periodo della riga ne ha uno,
-altrimenti l’acquisto previsto. Gli importi non vengono mai sommati tra
-valute — con più valute c’è una riga per valuta e un avviso. Esportazione
-in CSV, XLSX o PDF; la proposta di fattura (periodi aperti con mesi di
-licenza aperti e importo) in CSV o XLSX.
-
-**Verifica prezzi:** per prodotto l’acquisto secondo contratto, il prezzo di
-listino e il prezzo consigliato dell’ultimo listino importato a confronto
-con i prezzi di vendita degli abbonamenti (minimo, mediana, massimo).
-Avvisi: «vendita sotto acquisto», «vendita sotto prezzo consigliato»,
-«contratto più caro del listino», «nessun prezzo di vendita».
-
 **Classificazione prodotti:** l’elenco mostra tutti gli articoli del
 catalogo articoli — gli articoli attivi dell’anagrafica articoli e quelli
 dei programmi di contabilità collegati come Lexoffice, con la loro origine.
+Anche easybill, sevDesk, Invoice Ninja, Akaunting e InvoicePlane forniscono
+i loro articoli: il recupero dei documenti li legge prima dei documenti, e
+le righe specchiate portano poi l’articolo dell’origine invece del solo
+identificativo.
 Quali siano prodotti in abbonamento il registro lo riconosce dal nome. Per
 articolo può forzare: «prodotto in abbonamento» impone il riconoscimento,
 «mai riga di abbonamento» tiene fuori da proposte, elenchi fatture e «righe
@@ -304,14 +182,6 @@ registrazioni assegna ai periodi. Questi domini non richiedono alcun modello
 ricorrente e non entrano mai in una bozza di fattura del registro; la
 cartella di lavoro e la pagina dell’abbonamento indicano il subutente.
 
-**Rinnovi e abbonamenti senza fattura:** il report «Rinnovi» mostra quali
-abbonamenti si rinnovano o terminano nel periodo (riquadri 30, 60, 90
-giorni): il rinnovo è l’inizio del prossimo periodo pianificato, per gli
-abbonamenti disdetti conta la fine. «Senza fattura» elenca gli abbonamenti
-il cui periodo scaduto aperto più vecchio risale a più di N giorni fa
-(predefinito 60), con periodi aperti e importo aperto. Entrambi in CSV o
-XLSX.
-
 **Riquadro dashboard:** il riquadro «Periodi di abbonamento aperti» (gruppo
 Finanze, disattivato per impostazione predefinita) mostra periodi aperti
 con importo aperto, proposte non confermate e abbonamenti senza titolare e
@@ -337,48 +207,6 @@ collegamenti tramite numero fattura e riga di licenza; ciò che non è
 univoco viene solo elencato (--dry-run mostra in anticipo cosa
 accadrebbe).
 
-**Conto licenze:** Un conto porta il nome del suo intestatario; se la fattura
-va a un partner, questo è indicato accanto («tramite Nordlicht Systems»), e i
-modelli ricorrenti del partner compaiono solo nel conto del cliente finale a
-cui sono assegnati. La scheda *Conti licenze* mostra per conto fornitore
-(numero cliente presso il fornitore, predecessori di un cambio fornitore
-inclusi) quante licenze per prodotto sono attive, chi le detiene e quale anno
-di licenza è fatturato, come griglia prodotto × intestatario × anno con numero
-di fattura o «manca». Se più aziende detengono licenze dello stesso conto,
-curate la **ripartizione** per prodotto («Nordufer Tank 5 × Exchange dal
-18.10.2025»): gli altri intestatari riempiono prima il contratto con la
-quantità maggiore, poi per inizio; l'intestatario del contratto tiene il
-resto. Le cessioni per contratto ne derivano, seguono ogni modifica e passano
-al successore in caso di cambio fornitore; le cessioni manuali restano
-possibili come eccezione. La pianificazione ricalcola anche i contratti
-sostituiti e terminati degli ultimi tre anni, così una ripartizione successiva
-ne cambia ancora l'obiettivo. I **casi da verificare sui collegamenti**
-mostrano righe che coprono più mesi di licenza di quanti ne abbiano
-(sovrassegnate) e collegamenti il cui periodo di prestazione non coincide con
-il periodo, con «Sposta su …» sul periodo giusto dello stesso abbonamento o
-«Scollega»; la finestra di collegamento e l'assegnazione rapida avvisano prima
-con ⚠.
-
-**Modelli ricorrenti (piano):** Se un programma di contabilità emette le
-fatture, le fatture ricorrenti nascono lì come modelli ricorrenti. Il registro
-li specchia (Lexoffice: ogni giorno e dopo la sincronizzazione dei documenti,
-in sola lettura) e mostra nel conto licenze per modello stato, ritmo, prossima
-esecuzione e le righe di licenza con gli abbonamenti che fatturano.
-L'assegnazione abbonamento ↔ riga del modello è proposta dall'elaborazione —
-prima tramite la fattura che il modello ha creato per ultima ed è assegnata a
-un periodo, altrimenti tramite stesso destinatario, articolo e quantità (con
-più clienti finali di un partner solo se nominati): confermate, assegnate a mano o rimuovete. I periodi fatturati
-da un modello attivo restano fuori dalla proposta di fattura; ciò che termina
-prima della sua prima esecuzione vi rimane. Così gli anni passati si possono
-fatturare anche se il modello esiste già. I
-**controlli dotazione ↔ piano** segnalano prima della fattura: abbonamento senza
-modello, modello senza abbonamento («Crea abbonamento dal modello» riprende
-articolo, quantità, ritmo e prezzo), quantità diversa, modello che continua
-oltre la fine dell'abbonamento, modello in pausa o terminato con abbonamento
-attivo, prossima esecuzione a più di sette giorni dall'inizio periodo, ultima
-esecuzione fallita: nel riquadro, nel riepilogo settimanale e nella coda di
-lavoro. Ogni fattura specchiata porta il riferimento al suo modello.
-
 **Panoramica e schede:** La pagina iniziale «Abbonamenti e licenze» è un
 **elenco di attività in quattro gruppi**: Fatturare (prestazione scaduta
 senza fattura, solo dopo 21 giorni di tolleranza e mai finché un modello
@@ -400,28 +228,6 @@ nella riconciliazione, nella dotazione di licenze e in un lotto filtrano
 l’elenco; nella cartella di lavoro di un destinatario filtrano la tavola di
 riconciliazione sui prodotti interessati, e lì un secondo clic sul riquadro
 attivo rimuove il filtro.
-
-**Proposte sicure e incerte:** L’esecuzione delle proposte (ogni ora e dopo
-ogni importazione) conferma da sola le corrispondenze sicure — un documento
-la cui data fattura è al massimo 14 giorni prima o 45 giorni dopo l’inizio
-del periodo e che copre il periodo per intero con il numero di licenze
-corretto; la conferma compare nel registro come «confermata
-automaticamente». Tutto il resto resta proposta e porta «incerta» con il
-motivo nel suggerimento. Le proposte valgono senza conferma:
-la pagina dei periodi mostra per impostazione predefinita «Solo problemi»
-(aperto, parziale, contestato); le proposte non confermate si consultano
-come campione tramite il filtro e lo stato della panoramica. Un clic sul numero del
-documento apre il documento: righe, periodo di prestazione, testo fattura,
-consumo per riga e il confronto con il periodo (data nella finestra,
-prestazione, articolo); così vedete prima di confermare se la fattura
-appartiene al periodo.
-
-**Azioni di massa:** Nella pagina dei periodi selezionate le righe con le
-caselle e confermate tutte le proposte in una volta, rinunciate con un
-motivo per tutte («Rinuncia / contesta …») o fate creare una bozza per
-destinatario fattura della selezione. I periodi decisi e futuri vengono
-saltati e contati; ogni periodo riceve la stessa voce di registro
-dell’azione singola. Non c’è preselezione.
 
 **Classificazione prodotti con filtro:** La classificazione mostra per
 impostazione predefinita solo i prodotti in abbonamento e gli articoli con

@@ -1,7 +1,7 @@
 ---
 title: "Helpdesk & Service Desk"
 topic: helpdesk.overview
-version: 2
+version: 3
 keywords:
     - Ticketsystem
     - Ticket erstellen
@@ -62,6 +62,18 @@ der Stufenart zuordnet (Vorgabe: kaufmännisch → Buchhaltung, fachlich →
 Teamleitung, HR → Personalverwaltung). Genehmigen, Ablehnen, Rückfrage und
 Delegation wirken wie an der Akte; eine Ablehnung beendet die Runde, die
 Selbstfreigabe bleibt gesperrt.
+
+**Fachdienste und Servicelandkarte:** Ein Ticket kann einen Fachdienst
+(etwa „E-Mail“ oder „Buchhaltungsserver“) und ein Serviceangebot aus dem
+Servicekatalog tragen; danach lassen sich Tickets filtern, routen und im
+Bericht auswerten. Die Servicelandkarte zeigt, welche Fachdienste voneinander
+abhängen: je Fachdienst, wovon er abhängt, wer ihn braucht und wer bei einem
+Ausfall mitbetroffen wäre — samt der offenen Tickets dieser Dienste.
+Abhängigkeiten pflegen Sie am Fachdienst (Mehrfachauswahl); ein Kreis wird
+abgewiesen. Am Ticket zeigt die Karte „Auswirkung“, welche anderen Fachdienste
+ein Ausfall des gemeldeten Dienstes trifft und wie viele Tickets dort offen
+sind — so lässt sich eine Störung priorisieren, bevor die Folgemeldungen
+eintreffen.
 
 **Zufriedenheit & Berichte:** Nach Abschluss kann der Kunde im Portal eine
 Kurzbewertung abgeben — eine je Ticket. Die Berichte zeigen Volumen je

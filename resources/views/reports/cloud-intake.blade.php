@@ -26,12 +26,12 @@
     </x-slot:toolbar>
 
     <div class="grid gap-4 sm:grid-cols-4">
-        <x-kpi-tile :label="__('cloud_intake.report.kpi.total')" :value="$total" />
-        <x-kpi-tile :label="__('cloud_intake.report.kpi.imported')" :value="$byStatus['imported'] ?? 0" tone="success" />
+        <x-kpi-tile :label="__('cloud_intake.report.kpi.total')" :value="$total" href="#cloud-intake-items" />
+        <x-kpi-tile :label="__('cloud_intake.report.kpi.imported')" :value="$byStatus['imported'] ?? 0" tone="success" href="#cloud-intake-items" />
         <x-kpi-tile :label="__('cloud_intake.report.kpi.inbox')" :value="$byStatus['inbox'] ?? 0"
-                    :tone="($byStatus['inbox'] ?? 0) > 0 ? 'warning' : 'neutral'" />
+                    :tone="($byStatus['inbox'] ?? 0) > 0 ? 'warning' : 'neutral'" href="#cloud-intake-items" />
         <x-kpi-tile :label="__('cloud_intake.report.kpi.rejected')" :value="$byStatus['rejected'] ?? 0"
-                    :tone="($byStatus['rejected'] ?? 0) > 0 ? 'error' : 'success'" />
+                    :tone="($byStatus['rejected'] ?? 0) > 0 ? 'error' : 'success'" href="#cloud-intake-items" />
     </div>
 
     <div class="chart-grid grid gap-3 xl:grid-cols-2">
@@ -93,7 +93,7 @@
         @endif
     </x-card>
 
-    <x-card>
+    <x-card id="cloud-intake-items" class="scroll-mt-24">
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('cloud_intake.report.section.items') }}</h3>
         @if (empty($rows))
             <p class="text-sm text-muted">{{ __('cloud_intake.report.empty.items') }}</p>

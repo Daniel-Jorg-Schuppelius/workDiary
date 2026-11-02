@@ -18,16 +18,17 @@ use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\{Organization, User};
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Billing\BillingModeResolver;
+use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Finance\{BillingTransferException, BillingTransferService};
 use App\Services\Finance\Targets\FacturationTargetRegistry;
 use App\Services\Reselling\Draft\{DraftResult, InvoiceDraftTarget, InvoiceDraftTargets, LocalInvoiceDraftTarget};
+use App\Services\Reselling\Register\Concerns\LocksResalePeriods;
 use App\Support\{ErrorText, Tz};
-use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\DateTimeFormat;
 use CommonToolkit\Helper\Data\DateHelper;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{Cache, DB};
 use RuntimeException;
 
 /**
@@ -48,11 +49,17 @@ use RuntimeException;
  * @phpstan-type DraftSummary array{draft_id: string, lines: int, net: float, periods: int, local: bool, target: string, url: string|null, transfer_id?: int}
  */
 final class ResaleInvoiceDraftService {
+    use AssertsStatusTransition;
+    use LocksResalePeriods;
+
     /** @var array<int, array<int, list<array{quantity: int, from: CarbonImmutable|null}>>> Organisation → Abo → Anteile aktiver Serienvorlagen; je Auswahl neu geladen ({@see pendingPeriodsFor()}) */
     private array $plannedByOrganization = [];
 
     /** Weiter als so viele Jahre reicht kein Stichtag — Vorauszahlungen darüber hinaus sind keine Praxis. */
     public const MAX_LEAD_YEARS = 5;
+
+    /** Länger hält kein Entwurf die Sperre je Empfänger — die Übergabe an ein Fremdsystem eingerechnet. */
+    private const LOCK_SECONDS = 120;
 
     public function __construct(
         private readonly BillingModeResolver $billingModes,
@@ -145,12 +152,10 @@ final class ResaleInvoiceDraftService {
         $this->plannedByOrganization[(int) $recipient->organization_id] = $shares;
         $planned = $automatic ? array_keys($shares) : [];
 
-        return ResalePeriod::query()
-            ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
-            ->where('starts_on', '<', DateRange::dayAfter($reference))
+        return ResalePeriod::query()->due($reference)
             ->when($planned !== [], static fn($q) => $q->whereNotIn('subscription_id', $planned))
             // Domains im Subuser-Konto berechnet das Domainportal (MVP-1446) — nie ein zweites Mal über das Register.
-            ->whereHas('subscription', fn($s) => $s->where('is_own_holding', false)->where($this->holderScope($recipient))->notBilledByProvider())
+            ->whereHas('subscription', fn($s) => $s->where($this->holderScope($recipient))->notBilledByProvider())
             ->with(['subscription.foreignCustomer', 'links'])
             ->orderBy('starts_on');
     }
@@ -251,8 +256,69 @@ final class ResaleInvoiceDraftService {
         if (! $mode->isExternal()) {
             return $this->draftLocal($organization, $recipient, $user, $reference, $automatic);
         }
+        $target = $this->transferTargetFor($recipient);
 
-        return $this->transfer($organization, $recipient, $this->transferTargetFor($recipient), $user, $reference, $automatic);
+        return $this->locked($organization, $recipient, fn(): array => $this->transfer($organization, $recipient, $target, $user, $reference, $automatic));
+    }
+
+    /**
+     * Ein Entwurf je Empfänger zur Zeit (Sicherheitsaudit 2026-11-02, sec-01):
+     * Doppelklick, zweiter Tab und Serienlauf lesen sonst beide die
+     * ungestempelten Perioden, bevor der erste stempelt — lokal zwei
+     * Rechnungsnummern, extern zwei Belege. Belegte Sperre = fachlicher
+     * Abbruch (RuntimeException ohne Ursache, 422 im Dialog).
+     *
+     * @template T
+     *
+     * @param  \Closure(): T  $work
+     * @return T
+     *
+     * @throws RuntimeException Sperre belegt
+     */
+    private function locked(Organization $organization, Customer $recipient, \Closure $work): mixed {
+        $lock = Cache::lock('resale:draft:' . $organization->id . ':' . $recipient->id, self::LOCK_SECONDS);
+        if (! $lock->get()) {
+            throw new RuntimeException((string) __('resale.draft.error.locked'));
+        }
+        try {
+            return $work();
+        } finally {
+            $lock->release();
+        }
+    }
+
+    /**
+     * Zeilen unter Sperre neu lesen, bevor gestempelt wird: wer zwischen Auswahl
+     * und Transaktion einen Stempel oder eine Entscheidung bekam, fliegt raus —
+     * der ganze Entwurf bricht ab, kein halber (sec-01).
+     *
+     * @param  list<DraftEntry>  $entries
+     *
+     * @throws RuntimeException Periode inzwischen im Entwurf oder entschieden
+     */
+    private function assertStillOpen(array $entries): void {
+        $ids = [];
+        foreach ($entries as $entry) {
+            foreach ($entry['periods'] as $period) {
+                $ids[] = (int) $period->id;
+            }
+        }
+        if ($ids === []) {
+            return;
+        }
+        $rows = ResalePeriod::query()->withoutGlobalScopes()->whereKey($ids)->lockForUpdate()->get();
+        foreach ($rows as $row) {
+            if ((string) $row->draft_reference !== '') {
+                $date = $row->draft_created_at !== null ? (string) Tz::toLocal($row->draft_created_at)?->format('d.m.Y') : '';
+                throw new RuntimeException((string) __('resale.draft.already_drafted', ['reference' => (string) $row->draft_reference, 'date' => $date]));
+            }
+            if (! in_array($row->status, [PeriodStatus::Open, PeriodStatus::Partial], true)) {
+                throw new RuntimeException((string) __('resale.draft.error.changed'));
+            }
+        }
+        if ($rows->count() !== count(array_unique($ids))) {
+            throw new RuntimeException((string) __('resale.draft.error.changed'));
+        }
     }
 
     /**
@@ -312,6 +378,8 @@ final class ResaleInvoiceDraftService {
                 $to = $to === null || $ends > $to ? $ends : $to;
             }
         }
+        // Kurz gesperrt nachgelesen; die Zeilensperre endet vor dem Aufruf des Fremdsystems, die Sperre je Empfänger hält weiter.
+        DB::transaction(fn() => $this->assertStillOpen($entries));
         try {
             $transfer = $this->transfers->createDraft($recipient, TransferChannel::Resale, $target, ['from' => $from, 'to' => $to], $periodIds, $user);
             $transfer = $this->transfers->confirm($transfer, $user);
@@ -353,7 +421,7 @@ final class ResaleInvoiceDraftService {
             throw new RuntimeException((string) __('resale.draft.no_target', ['mode' => LocalInvoiceDraftTarget::KEY]));
         }
 
-        return $this->draftWith($target, $organization, $recipient, $user, $reference, $automatic);
+        return $this->locked($organization, $recipient, fn(): array => $this->draftWith($target, $organization, $recipient, $user, $reference, $automatic));
     }
 
     /**
@@ -388,6 +456,7 @@ final class ResaleInvoiceDraftService {
         $reference ??= ResalePeriod::today();
 
         return DB::transaction(function () use ($target, $organization, $recipient, $user, $reference, $entries): array {
+            $this->assertStillOpen($entries);
             $result = $target->draft($organization, $recipient, $entries, $user, $reference);
             $today = Tz::now()->toDateString();
             foreach ($entries as $entry) {
@@ -412,6 +481,7 @@ final class ResaleInvoiceDraftService {
      * @param  DraftLine  $line  Position, zu der die Periode gehört — ihr Anteil daran wird der Bezugsbetrag
      */
     private function stamp(Organization $organization, Customer $recipient, ?User $user, ResalePeriod $period, array $line, DraftResult $result, string $today): void {
+        $this->lockAndRefresh($period);
         $attributes = ['draft_reference' => $result->reference, 'draft_created_at' => now()];
         $morphId = $result->morphIdFor((int) $period->id);
         if ($morphId !== null && $result->morphClass !== null) {
@@ -432,6 +502,9 @@ final class ResaleInvoiceDraftService {
                 'note' => $result->label,
                 'created_by_user_id' => $user?->id,
             ]);
+            if ($period->status !== PeriodStatus::Billed) {
+                $this->assertStatusTransition($period->status, PeriodStatus::Billed);
+            }
             $attributes['status'] = PeriodStatus::Billed;
         }
         $period->appendNote($result->label);

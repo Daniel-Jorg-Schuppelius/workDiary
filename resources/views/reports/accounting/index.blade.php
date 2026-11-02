@@ -18,10 +18,10 @@
 @section('content')
     <x-index-page :subtitle="__('accounting.reports.subtitle')">
         <div class="grid gap-3 sm:grid-cols-4">
-            <x-kpi-tile :label="__('accounting.reports.kpi.cash')" :value="$liquidity['cash_total']" />
-            <x-kpi-tile :label="__('accounting.reports.kpi.receivable')" :value="$liquidity['receivable']" />
-            <x-kpi-tile :label="__('accounting.reports.kpi.payable')" :value="$liquidity['payable']" />
-            <x-kpi-tile :label="__('accounting.reports.kpi.findings')" :value="count($quality['findings'])" />
+            <x-kpi-tile :label="__('accounting.reports.kpi.cash')" :value="$liquidity['cash_total']" :href="route('reports.accounting.liquidity')" />
+            <x-kpi-tile :label="__('accounting.reports.kpi.receivable')" :value="$liquidity['receivable']" :href="route('reports.accounting.liquidity')" />
+            <x-kpi-tile :label="__('accounting.reports.kpi.payable')" :value="$liquidity['payable']" :href="route('reports.accounting.liquidity')" />
+            <x-kpi-tile :label="__('accounting.reports.kpi.findings')" :value="count($quality['findings'])" :href="route('reports.accounting.quality')" />
         </div>
 
         @if ($quality['findings'] !== [])

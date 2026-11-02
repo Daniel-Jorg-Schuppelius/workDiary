@@ -53,7 +53,7 @@
         </x-slot:toolbar>
 
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <x-kpi-tile :label="__('Tage')" :value="(string) $trip->days->count()" />
+            <x-kpi-tile :label="__('Tage')" :value="(string) $trip->days->count()" href="#trip-days" />
             <x-kpi-tile :label="__('Pauschale gesamt')"
                         :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $trip->totalAmount(), 2, withThousandsSeparator: true) . ' €'" tone="success" />
             <x-kpi-tile :label="__('Land')" :value="$trip->country" />
@@ -82,7 +82,7 @@
             </p>
         </x-card>
 
-        <x-card :title="__('Tage & Mahlzeitenkürzung')" icon="restaurant_menu" padding="p-0">
+        <x-card :title="__('Tage & Mahlzeitenkürzung')" icon="restaurant_menu" padding="p-0" id="trip-days" class="scroll-mt-24">
             <x-table bare table-sort="client">
                 <x-slot:head>
                     <tr>

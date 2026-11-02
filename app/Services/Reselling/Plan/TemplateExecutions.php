@@ -47,7 +47,8 @@ final class TemplateExecutions {
         $since = ResalePeriod::today()->subMonths(self::LOOKBACK_MONTHS);
         /** @var array<string, array<string, array{number: string|null, date: CarbonImmutable|null, paid: bool, line: MirrorLine}>> $vouchers Vorlage → Beleg → Stand */
         $vouchers = [];
-        foreach ($this->mirror->linesFor($organization, null, $since, null, false) as $line) {
+        // Nur die Belege dieser Vorlagen (Vorlagenbezug am Beleg), nicht alle Zeilen der Organisation (perfc-04).
+        foreach ($this->mirror->planLines($organization, array_keys($wanted), $since) as $line) {
             /** @var MirrorLine $line */
             if ($line->planKey === null || ! isset($wanted[$line->planKey]) || $line->isCreditNote
                 || in_array($line->voucherStatus, [MirrorLine::STATUS_VOIDED, MirrorLine::STATUS_DRAFT], true)) {

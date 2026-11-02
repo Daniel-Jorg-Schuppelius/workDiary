@@ -14,7 +14,7 @@ namespace App\Console\Commands\Scheduling;
 
 use App\Enums\Scheduling\JobRunStatus;
 use App\Models\Platform\{ScheduledJobOverride, ScheduledJobRun, ScheduledJobState};
-use App\Scheduling\{JobRegistry, SchedulerRegistrar};
+use App\Scheduling\{JobRegistry, PluginBinding, SchedulerRegistrar};
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use Cron\CronExpression;
@@ -34,18 +34,22 @@ use Illuminate\Support\Facades\Log;
 class SchedulerWatchdogCommand extends Command {
     private const GRACE_MINUTES = 15;
 
+    private const FAILURE_STREAK = 3;
+
     protected $signature = 'scheduler:watchdog {--fail : Exit-Code 1, wenn überfällige Jobs gefunden wurden}';
 
     protected $description = 'Prüft Registry-Jobs auf Überfälligkeit und räumt alte Laufnachweise ab';
 
     public function handle(JobRegistry $registry, SchedulerRegistrar $registrar): int {
         // Command-Instanzen werden im Container wiederverwendet (Tests, schedule:work) — Plugin-Cache gilt nur pro Lauf.
-        $this->pluginActiveCache = [];
+        PluginBinding::reset();
         // Fälligkeit in der Zeitzone des Zeitplans berechnen — sonst gilt ein
         // „22:10"-Job um 22:10 UTC als fällig, obwohl er 22:10 Ortszeit meint.
         $now = CarbonImmutable::now((string) config('app.schedule_timezone', config('app.timezone')));
         $overrides = ScheduledJobOverride::systemMap();
         $overdue = [];
+
+        $this->closeStaleRuns($registry, $now);
 
         foreach ($registry->all() as $key => $definition) {
             if ($key === SchedulerRegistrar::WATCHDOG_KEY) {
@@ -61,6 +65,8 @@ class SchedulerWatchdogCommand extends Command {
                 // Beleg — der Scheduler-Heartbeat deckt den Totalausfall ab.
                 continue;
             }
+
+            $this->reportFailureStreak($definition, $state);
 
             $cadence = $registrar->resolvedCadence($definition);
             $cron = new CronExpression($cadence->cronExpression());
@@ -80,7 +86,7 @@ class SchedulerWatchdogCommand extends Command {
             if ($state->overdue_notified_at !== null && $state->overdue_notified_at->greaterThanOrEqualTo($due)) {
                 continue; // bereits für diesen Soll-Lauf gemeldet
             }
-            if ($this->runInProgressSince($key, $dueUtc)) {
+            if ($this->runSince($key, $dueUtc, JobRunStatus::Running)) {
                 // Der Lauf dieses Soll-Slots ist noch unterwegs: Hintergrund-
                 // jobs melden ihren Erfolg erst über schedule:finish, und ein
                 // verspäteter Tick startet sie erst jenseits der Frist. Ein
@@ -88,7 +94,12 @@ class SchedulerWatchdogCommand extends Command {
                 // Slot schützt bewusst nicht (started_at >= $due).
                 continue;
             }
-            if (! $this->pluginActive($definition)) {
+            if ($this->runSince($key, $dueUtc, JobRunStatus::Skipped)) {
+                // Vorprüfung (perf-02), Überlappungssperre oder Wartungsfenster
+                // haben den Slot bewusst ausgelassen — kein Ausfall.
+                continue;
+            }
+            if ($this->gatedByInactivePlugin($definition)) {
                 // Plugin-gebundener Job, dessen Plugin nirgends aktiviert ist: läuft bewusst nicht — eine
                 // Überfälligkeits-Meldung wäre Rauschen (z. B. Lexoffice/JTL auf Instanzen ohne diese Anbindungen).
                 continue;
@@ -137,41 +148,77 @@ class SchedulerWatchdogCommand extends Command {
         return ($this->option('fail') && $overdue !== []) ? self::FAILURE : self::SUCCESS;
     }
 
-    /** @var array<string, bool> Ergebnis-Cache je Plugin-Bindung (Lauf-Lebensdauer). */
-    private array $pluginActiveCache = [];
-
-    /**
-     * Ist die Plugin-Bindung des Jobs erfüllt? Ohne Bindung immer true;
-     * '*' = mindestens ein Plugin aktiv; Kommaliste = eines der genannten.
-     */
-    private function pluginActive(\App\Scheduling\JobDefinition $definition): bool {
-        $binding = $definition->plugin;
-        if ($binding === null || $binding === '') {
-            return true;
-        }
-
-        return $this->pluginActiveCache[$binding] ??= (function () use ($binding): bool {
-            if ($binding === '*') {
-                return \App\Models\Platform\PluginSetting::anyPluginEnabled();
-            }
-
-            foreach (explode(',', $binding) as $pluginId) {
-                if (\App\Models\Platform\PluginSetting::enabledAnywhere(trim($pluginId))) {
-                    return true;
-                }
-            }
-
-            return false;
-        })();
-    }
-
-    /** Läuft für diesen Job bereits ein Lauf des aktuellen Soll-Slots? */
-    private function runInProgressSince(string $jobKey, CarbonImmutable $due): bool {
+    /** Gibt es für diesen Job einen Lauf des aktuellen Soll-Slots im genannten Zustand? */
+    private function runSince(string $jobKey, CarbonImmutable $due, JobRunStatus $status): bool {
         return ScheduledJobRun::query()
             ->where('job_key', $jobKey)
-            ->where('status', JobRunStatus::Running)
+            ->where('status', $status)
             ->where('started_at', '>=', $due)
             ->exists();
+    }
+
+    /**
+     * Läufe, deren Prozess ohne Abschluss verschwand (OOM, Neustart, SIGKILL),
+     * blieben für immer `running` und verfälschten Laufzeiten und Überfälligkeit
+     * (Leistungsanalyse 2026-11-02, perf-04). Nach dem Sechsfachen der erwarteten
+     * Laufzeit plus Puffer gilt der Lauf als gescheitert.
+     */
+    private function closeStaleRuns(JobRegistry $registry, CarbonImmutable $now): void {
+        foreach ($registry->all() as $key => $definition) {
+            $limit = $now->utc()->subMinutes($definition->expectedRuntimeMinutes * 6 + self::GRACE_MINUTES);
+            $stale = ScheduledJobRun::query()
+                ->where('job_key', $key)
+                ->where('status', JobRunStatus::Running)
+                ->where('started_at', '<', $limit)
+                ->get();
+            foreach ($stale as $run) {
+                $run->update([
+                    'finished_at' => $now->utc(),
+                    'status' => JobRunStatus::Failed,
+                    'duration_ms' => (int) $run->started_at->diffInMilliseconds($now, true),
+                ]);
+                Log::warning('scheduler.run_abandoned', ['job' => $key, 'started_at' => $run->started_at->toIso8601String()]);
+                $this->warn("Lauf ohne Abschluss geschlossen: {$key} (gestartet {$run->started_at->toIso8601String()})");
+            }
+        }
+    }
+
+    /**
+     * Fehlerserien (perf-04): Ein Job, der dreimal in Folge scheitert, läuft
+     * weiter pünktlich und war dem Überfälligkeits-Wächter unsichtbar. Der
+     * Dedupe-Schlüssel trägt die Serienlänge, damit jede weitere Verdopplung
+     * erneut meldet, nicht jeder Lauf.
+     */
+    private function reportFailureStreak(\App\Scheduling\JobDefinition $definition, ScheduledJobState $state): void {
+        $failures = (int) $state->consecutive_failures;
+        if ($failures < self::FAILURE_STREAK || $this->gatedByInactivePlugin($definition)) {
+            return;
+        }
+        if ($failures !== self::FAILURE_STREAK && ($failures & ($failures - 1)) !== 0) {
+            return;
+        }
+
+        app(\App\Services\Operations\OperationsAlertService::class)
+            ->report(new \App\Services\Operations\OperationsSignal(
+                type: \App\Enums\Operations\OperationsTaskType::SchedulerFailing,
+                dedupeKey: 'scheduler_failing:' . $definition->key . ':' . $failures,
+                severity: $definition->criticality === \App\Scheduling\JobCriticality::Core
+                    ? \App\Enums\Operations\OperationsTaskSeverity::Critical
+                    : \App\Enums\Operations\OperationsTaskSeverity::Warning,
+                titleKey: 'operations.task.scheduler_failing',
+                params: [
+                    'job' => ['key' => 'scheduler.job.' . $definition->key, 'fallback' => $definition->key],
+                    'failures' => $failures,
+                    'last' => $state->last_started_at?->toIso8601String() ?? '',
+                ],
+                linkRoute: 'admin.scheduler.index',
+            ));
+        $this->warn("Fehlerserie: {$definition->key} ({$failures}× in Folge)");
+    }
+
+    /** Dieselbe Regel wie im Registrar: ohne den Schalter meldet der Registrar auch Jobs inaktiver Plugins an, dann urteilt der Wächter mit. */
+    private function gatedByInactivePlugin(\App\Scheduling\JobDefinition $definition): bool {
+        return (bool) config('scheduler.skip_inactive_plugins', true) && ! PluginBinding::active($definition->plugin);
     }
 
     private function purgeOldRuns(CarbonImmutable $now): void {

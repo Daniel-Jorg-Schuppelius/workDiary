@@ -143,7 +143,7 @@ class CustomerIntakeQuoteService {
                     $itemIds = null;
                     if ($itemSqids !== []) {
                         // Nur Sqids, kein numerischer Fallback; nur Positionen dieses Angebots.
-                        $requested = array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(QuoteItem::class, $sqid), $itemSqids));
+                        $requested = Sqid::decodeMany(QuoteItem::class, $itemSqids);
                         $itemIds = $quote->items()->whereIn('id', $requested)->pluck('id')->map(static fn ($id): int => (int) $id)->all();
                     }
                     $decided = $this->quotes->accept($quote, $itemIds, null, $signature);

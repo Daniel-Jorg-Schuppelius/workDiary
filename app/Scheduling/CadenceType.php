@@ -37,6 +37,17 @@ enum CadenceType: string implements HasLabel {
         return __('scheduler.cadence.' . $this->value);
     }
 
+    /** Taktlänge in Minuten; Tages- und Cron-Kadenzen zählen als 1 (kein Versatz). */
+    public function intervalMinutes(): int {
+        return match ($this) {
+            self::EveryFiveMinutes => 5,
+            self::EveryFifteenMinutes => 15,
+            self::EveryThirtyMinutes => 30,
+            self::Hourly => 60,
+            default => 1,
+        };
+    }
+
     public function needsTime(): bool {
         return in_array($this, [self::DailyAt, self::WeeklyOn, self::MonthlyOn], true);
     }

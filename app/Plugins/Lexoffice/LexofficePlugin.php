@@ -310,6 +310,17 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
             return view('lexoffice::customers._push_all')->render();
         }
 
+        // Einstellungsdialog (gap-12): Beleg-Sync von Hand anstoßen — nur mit Recht und Zugangsdaten.
+        if ($slot === 'plugin-settings.actions' && $context instanceof self) {
+            $user = auth()->user();
+
+            return $user instanceof User
+                && $user->can(Permission::VoucherLexofficeSync->value)
+                && app(LexofficeClientFactory::class)->isConfigured($user->organization_id)
+                ? view('lexoffice::admin._voucher_sync')->render()
+                : null;
+        }
+
         if (($slot === 'customer-show.panels' && $context instanceof Customer) || ($slot === 'supplier-show.panels' && $context instanceof Supplier)) {
             $contactRef = ExternalReference::query()
                 ->forPlugin((int) $context->organization_id, self::ID, self::EXT_TYPE_CONTACT)

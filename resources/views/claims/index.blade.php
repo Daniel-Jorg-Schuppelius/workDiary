@@ -26,8 +26,8 @@
     </x-slot:actions>
 
     <div class="grid gap-4 sm:grid-cols-2">
-        <x-kpi-tile :label="__('Offene Fälle')" :value="$openCount" />
-        <x-kpi-tile :label="__('Überfällig')" :value="$overdueCount" />
+        <x-kpi-tile :label="__('Offene Fälle')" :value="$openCount" :href="route('claims.index', ['show' => 'open'])" :active="$showOpen" />
+        <x-kpi-tile :label="__('Überfällig')" :value="$overdueCount" :href="route('claims.index', ['overdue' => 1])" :active="request()->filled('overdue')" />
     </div>
 
     <x-filter-bar :action="route('claims.index')" :reset="route('claims.index')">
@@ -37,6 +37,7 @@
                 <option value="{{ $s->value }}" @selected(request('status') === $s->value)>{{ $s->label() }}</option>
             @endforeach
         </select>
+        <x-filter-toggle name="show" value="open" :label="__('Offene Fälle')" :checked="$showOpen" />
         <label class="label cursor-pointer gap-2 shrink-0">
             <input type="checkbox" name="overdue" value="1" class="checkbox checkbox-sm" @checked(request()->filled('overdue'))>
             <span class="label-text text-sm">{{ __('nur überfällige') }}</span>

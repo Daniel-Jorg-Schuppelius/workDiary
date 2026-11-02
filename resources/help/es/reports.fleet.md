@@ -55,6 +55,7 @@ viajes, repostajes, costes de energía y reembolsos por vehículo.
 - Mosaicos: **Vehículos**, **Σ km** (con el número de viajes), **Repostajes /
   cargas** (con litros y kWh), **Costes de energía** (con el total de los
   reembolsos) y **Media €/km**.
+- Un clic en un mosaico de recuento lleva a la tabla o lista que cuenta; los mosaicos de sumas y cuotas no tienen destino.
 - Gráficos: **Kilómetros por vehículo (top 15)** y los kilómetros a lo largo
   del tiempo.
 - Tabla por vehículo: **Vehículo**, **Propulsión**, **Viajes**, **km**,
@@ -97,6 +98,7 @@ proporción privada.
   kilómetros por tipo de trayecto (**Profesional**, **Domicilio–trabajo**,
   **Privado**) y **Proporción privada** (kilómetros privados en relación con
   todos los kilómetros).
+- Un clic en un mosaico de recuento lleva a la tabla o lista que cuenta; los mosaicos de sumas y cuotas no tienen destino.
 - Tabla: **Fecha**, **Km inicial**, **Km final**, **km**, **Tipo de
   trayecto**, **Destino**, **Finalidad**, **Conductor** y **Estado**
   (**bloqueado**, **abierto** o **anulado**, además de **firmado** y

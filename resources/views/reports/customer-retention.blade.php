@@ -45,9 +45,9 @@
                     :hint="__('aktive Kunden des Vorjahres, die auch im Berichtsjahr aktiv sind')" />
         <x-kpi-tile :label="__('Ø Kundenalter (Jahre)')" :value="$kpis['avgCustomerAgeYears'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($kpis['avgCustomerAgeYears'], 1) : '–'" />
         <x-kpi-tile :label="__('Aktive Kunden (Ende)')" :value="$kpis['endActive']" />
-        <x-kpi-tile :label="__('Neukunden')" :value="$kpis['newCount']" :tone="$kpis['newCount'] > 0 ? 'success' : 'neutral'" />
+        <x-kpi-tile :label="__('Neukunden')" :value="$kpis['newCount']" :tone="$kpis['newCount'] > 0 ? 'success' : 'neutral'" href="#neukunden" />
         <x-kpi-tile :label="__('Verlorene Kunden')" :value="$kpis['lostCount']" :tone="$kpis['lostCount'] > 0 ? 'warning' : 'success'"
-                    :hint="__('seit :days Tagen ohne Leistung', ['days' => $lostDays])" />
+                    :hint="__('seit :days Tagen ohne Leistung', ['days' => $lostDays])" href="#verloren" />
     </div>
 
     <div class="chart-grid grid gap-3 xl:grid-cols-2">

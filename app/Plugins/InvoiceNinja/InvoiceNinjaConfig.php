@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\InvoiceNinja;
 
-use App\Plugins\Support\PluginSettingsResolver;
+use App\Plugins\Support\{PluginSettingsResolver, SelfHostedConfig};
 
 /** Invoice-Ninja-Zugang je Organisation aus den Plugin-Einstellungen (gehostet: invoicing.co). */
 final class InvoiceNinjaConfig {
@@ -21,14 +21,13 @@ final class InvoiceNinjaConfig {
     /** @return array{base_url: string, api_token: ?string, pull_vouchers: bool, enabled: bool, page_size: int} */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(InvoiceNinjaPlugin::ID, $organizationId);
-        $baseUrl = $r->string('base_url', trim: true);
 
         return [
-            'base_url' => rtrim($baseUrl ?? self::HOSTED_URL, '/'),
+            'base_url' => SelfHostedConfig::baseUrl($r) ?? self::HOSTED_URL,
             'api_token' => $r->string('api_token', trim: true),
             'pull_vouchers' => $r->bool('pull_vouchers', false),
             'enabled' => $r->enabled(),
-            'page_size' => max(1, min(500, (int) config('plugins.invoiceninja.page_size', 100))),
+            'page_size' => SelfHostedConfig::pageSize(InvoiceNinjaPlugin::ID, 100, cap: 500),
         ];
     }
 

@@ -31,6 +31,8 @@ depends on your permissions and the enabled modules — someone with
 reporting rights sees different tiles than someone without. Hidden
 tiles stop querying data, so a tidy dashboard also loads faster.
 
+The count tiles of the key-figure widgets lead to the order book with the matching status filter, to the duties and to the member list.
+
 ## Requirements
 
 - A signed-in user account; no special rights are needed.

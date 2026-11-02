@@ -10,18 +10,17 @@
 
 namespace App\Plugins\Lexoffice\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
-use App\Models\Platform\User;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 
 /** Alte Adresse der Lexoffice-Konflikte: leitet in die Zuordnungs-Inbox (MVP-103), dort werden sie aufgelöst. */
 class LexofficeConflictInboxController extends Controller {
+    use AuthorizesOrganizationManagement;
+
     public function index(): RedirectResponse {
-        /** @var User $admin */
-        $admin = Auth::user();
-        abort_unless($admin->canManageBilling(), 403);
+        $this->authorizeBilling();
 
         return redirect()->route('admin.integration.inbox', ['plugin' => LexofficePlugin::ID, 'case' => 'conflict']);
     }

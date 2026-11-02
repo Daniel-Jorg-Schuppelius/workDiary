@@ -9,8 +9,8 @@
   Kachel „Persönliche Kennzahlen" — Daten: App\Dashboard\Widgets\PersonalKpisWidget.
 --}}
 <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
-    <x-kpi-tile :label="__('Meine offenen Einträge')" :value="$kpi['open_entries'] ?? 0" />
-    <x-kpi-tile :label="__('In Bearbeitung')" :value="$kpi['progress_entries'] ?? 0" />
-    <x-kpi-tile :label="__('Anstehende Schichten')" :value="$kpi['upcoming_shifts'] ?? 0" />
-    <x-kpi-tile :label="__('Anstehende Notdienste')" :value="$kpi['upcoming_emergencies'] ?? 0" />
+    <x-kpi-tile :label="__('Meine offenen Einträge')" :value="$kpi['open_entries'] ?? 0" :href="route('diary.index', ['mine' => 1, 'status' => 'open'])" />
+    <x-kpi-tile :label="__('In Bearbeitung')" :value="$kpi['progress_entries'] ?? 0" :href="route('diary.index', ['mine' => 1, 'status' => \App\Enums\Diary\Status::InProgress->value])" />
+    <x-kpi-tile :label="__('Anstehende Schichten')" :value="$kpi['upcoming_shifts'] ?? 0" :href="route('shifts.index')" />
+    <x-kpi-tile :label="__('Anstehende Notdienste')" :value="$kpi['upcoming_emergencies'] ?? 0" :href="route('duties.index', ['tab' => 'notdienst'])" />
 </div>

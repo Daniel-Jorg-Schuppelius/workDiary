@@ -39,6 +39,10 @@ class IncomingRetentionService {
         if ($invoice->direction === \App\Enums\Billing\DocumentDirection::Outgoing) {
             throw new RuntimeException((string) __('sepa.retention.error.outgoing'));
         }
+        // Abgelehnt ist endgültig — ein Einbehalt änderte die Werte eines abgelegten Belegs (Sicherheitsaudit 2026-11-02, sec-07).
+        if ($invoice->status === \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected) {
+            throw new RuntimeException((string) __('sepa.retention.error.rejected'));
+        }
         $gross = (string) ($invoice->amount_gross?->getAmount() ?? '0');
         if ($percent !== null) {
             $amount = NumberHelper::percentOfPrecise($gross, $percent, 2);

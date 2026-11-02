@@ -29,6 +29,7 @@ return [
         'driver_license_checks' => 'Controles del permiso de conducir',
         'documents_invoice' => 'Facturas (DMS)',
         'passenger_rides' => 'Expedientes de trayectos (datos de lugar y pasajeros)',
+        'remote_pending_sessions' => 'Sesiones de asistencia remota (importadas/descartadas)',
         'employee_records' => 'Datos maestros de personal (empleados que causaron baja)',
         'portal_accounts' => 'Accesos al portal (desactivados)',
         'personnel_files' => 'Expedientes de personal (empleados que causaron baja)',

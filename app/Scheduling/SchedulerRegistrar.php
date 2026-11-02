@@ -44,10 +44,18 @@ class SchedulerRegistrar {
         $window = $this->operatingWindow();
         $watchdog = null;
 
+        $skipInactive = (bool) config('scheduler.skip_inactive_plugins', true);
+
         foreach ($this->registry->all() as $definition) {
             $override = $overrides[$definition->key] ?? null;
             if ($override !== null && $override['enabled'] === false) {
                 continue; // pausiert (MVP-176) — Sichtbarkeit über die Adminseite
+            }
+            // Plugin-gebundene Jobs ohne irgendwo aktives Plugin bekommen keinen
+            // Prozess (Leistungsanalyse 2026-11-02, perf-01: ~25 Syncs je Stunde
+            // für nie konfigurierte Plugins); der Wächter urteilt gleich.
+            if ($skipInactive && ! PluginBinding::active($definition->plugin)) {
+                continue;
             }
 
             // Der Wächter urteilt über den Erfolg der anderen Jobs. Stünde er
@@ -89,6 +97,10 @@ class SchedulerRegistrar {
             $event->skip(static fn(): bool => \App\Models\Asset\MaintenanceWindow::systemActiveNow());
         }
 
+        if ($definition->guard !== null) {
+            $event->when(fn(): bool => $this->guardAllows($definition));
+        }
+
         if ($definition->withoutOverlapping) {
             $event->withoutOverlapping($this->lockMinutes($definition));
         }
@@ -97,6 +109,19 @@ class SchedulerRegistrar {
         }
         if ($definition->runInBackground) {
             $event->runInBackground();
+        }
+    }
+
+    /** Vorprüfung (perf-02); ein Fehler in der Prüfung lässt den Job laufen, nie stillstehen. */
+    private function guardAllows(JobDefinition $definition): bool {
+        try {
+            $guard = app((string) $definition->guard);
+
+            return ! $guard instanceof Contracts\JobGuard || $guard->shouldRun();
+        } catch (\Throwable $e) {
+            Log::warning('scheduler.guard_failed', ['job' => $definition->key, 'message' => $e->getMessage()]);
+
+            return true;
         }
     }
 
@@ -148,6 +173,11 @@ class SchedulerRegistrar {
 
     /** @param array<string, mixed>|null $overrideCadence */
     private function resolveCadence(JobDefinition $definition, ?array $overrideCadence): Cadence {
+        return $this->staggered($definition, $this->chooseCadence($definition, $overrideCadence));
+    }
+
+    /** @param array<string, mixed>|null $overrideCadence */
+    private function chooseCadence(JobDefinition $definition, ?array $overrideCadence): Cadence {
         try {
             if ($overrideCadence !== null) {
                 $cadence = Cadence::fromArray($overrideCadence);
@@ -169,5 +199,15 @@ class SchedulerRegistrar {
 
             return $definition->defaultCadence;
         }
+    }
+
+    /** Versatz der Takt-Kadenzen aus dem Job-Key (perf-01); Überrides tragen keinen Versatz, er gilt für beide. */
+    private function staggered(JobDefinition $definition, Cadence $cadence): Cadence {
+        if (! $definition->stagger) {
+            return $cadence;
+        }
+        $offset = JobOffset::minutes($definition->key, $cadence->type);
+
+        return $offset === 0 ? $cadence : $cadence->withOffset($offset);
     }
 }

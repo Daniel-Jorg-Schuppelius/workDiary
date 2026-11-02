@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Register;
 
-use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
+use App\Enums\Reselling\PeriodStatus;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Support\Query\DateRange;
@@ -39,9 +39,22 @@ final class HolderTakeover {
 
     private readonly LicenceAssignments $assignments;
 
-    public function __construct(?PeriodPlanner $planner = null, ?LicenceAssignments $assignments = null) {
+    private readonly PeriodLinker $linker;
+
+    public function __construct(?PeriodPlanner $planner = null, ?LicenceAssignments $assignments = null, ?PeriodLinker $linker = null) {
         $this->planner = $planner ?? new PeriodPlanner;
         $this->assignments = $assignments ?? new LicenceAssignments($this->planner);
+        $this->linker = $linker ?? new PeriodLinker;
+    }
+
+    /**
+     * Beim ganzen Wechsel dürfen keine Perioden an den bisherigen Halter
+     * berechnet sein — deren Bezüge zeigten sonst auf Rechnungen eines
+     * anderen Empfängers (Sicherheitsaudit 2026-11-02, sec-06). Dann gilt
+     * ein Stichtag ab der ersten offenen Periode ({@see defaultFrom()}).
+     */
+    public static function billedBeforeWhole(ResaleSubscription $subscription, CarbonImmutable $from): bool {
+        return self::isWhole($subscription, $from) && $subscription->billedPeriodsBetween($subscription->starts_on, null) !== [];
     }
 
     /** Lizenzen, die ab dem Stichtag an den neuen Halter gehen (0: am Vertrag schon alles abgetreten). */
@@ -91,15 +104,25 @@ final class HolderTakeover {
     }
 
     /**
+     * Läuft unter der Zeilensperre des Abos; Menge und berechnete Perioden
+     * werden dort erneut geprüft (Sicherheitsaudit 2026-11-02, sec-02/sec-06).
+     *
      * @param  array{customer: Customer, foreign: ForeignCustomer|null}  $holder
      * @return array{subscription: ResaleSubscription, whole: bool, waived: int}
+     *
+     * @throws \InvalidArgumentException ganzer Wechsel trotz berechneter Perioden; mehr Lizenzen, als frei sind
      */
     public function apply(ResaleSubscription $subscription, array $holder, CarbonImmutable $from, bool $waiveBefore, ?string $note, ?int $userId): array {
         $before = ['customer_id' => $subscription->customer_id, 'foreign_customer_id' => $subscription->foreign_customer_id, 'label' => $subscription->holderLabel()];
         $newLabel = $holder['foreign'] !== null ? $holder['foreign']->name : $holder['customer']->name;
 
         return DB::transaction(function () use ($subscription, $holder, $from, $waiveBefore, $note, $userId, $before, $newLabel): array {
+            ResaleSubscription::query()->withoutGlobalScopes()->whereKey($subscription->getKey())->lockForUpdate()->get(['id']);
+            $subscription->refresh();
             $whole = self::isWhole($subscription, $from);
+            if ($whole && self::billedBeforeWhole($subscription, $from)) {
+                throw new \InvalidArgumentException((string) __('resale.takeover.error.billed_whole', ['holder' => $before['label'], 'date' => self::defaultFrom($subscription)->format('d.m.Y')]));
+            }
             if ($whole) {
                 $subscription->forceFill([
                     'customer_id' => $holder['foreign'] === null ? $holder['customer']->id : null,
@@ -122,10 +145,10 @@ final class HolderTakeover {
             if ($waiveBefore && ! $whole) {
                 $reason = (string) __('resale.takeover.reason', ['holder' => $before['label'], 'customer' => $newLabel, 'date' => $from->format('d.m.Y')]);
                 foreach (self::openBefore($subscription, $from) as $period) {
-                    // Vorschläge sind keine Entscheidung: sie gehen mit dem Verzicht weg (wie im Sammelverzicht).
-                    $period->links()->where('origin', LinkOrigin::Proposed->value)->delete();
-                    $period->forceFill(['status' => PeriodStatus::Waived, 'waived_reason' => mb_substr($reason, 0, 255), 'decided_by_user_id' => $userId, 'decided_at' => now()])->save();
-                    $period->audit('resale_period.waived', ['reason' => $reason]);
+                    if (! $period->isDecidable()) {
+                        continue; // offen, aber schon entschieden (Altbestand) — bleibt wie der Sammelverzicht es ließe
+                    }
+                    $this->linker->decide($period, PeriodStatus::Waived, $reason, $userId);
                     $waived++;
                 }
             }

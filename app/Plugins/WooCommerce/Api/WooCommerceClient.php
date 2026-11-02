@@ -14,7 +14,7 @@ namespace App\Plugins\WooCommerce\Api;
 
 use APIToolkit\API\Authentication\BasicAuthentication;
 use App\Plugins\Support\{GuardsPluginApiResponses, PluginApiClient, PluginHttpFactory};
-use App\Plugins\Support\TaskSync\IncompleteRemoteReadException;
+use App\Plugins\Support\TaskSync\{IncompleteRemoteReadException, OffsetPage, RemotePages};
 use App\Plugins\WooCommerce\Exceptions\WooCommerceApiException;
 use App\Plugins\WooCommerce\WooCommercePlugin;
 use Carbon\CarbonImmutable;
@@ -62,8 +62,7 @@ class WooCommerceClient {
      * @return Generator<int, array<string, mixed>>
      */
     public function orders(CarbonImmutable $since): Generator {
-        $lastTotal = null;
-        for ($page = 1; $page <= $this->maxPages; $page++) {
+        $pages = RemotePages::offset(function (int $page) use ($since): OffsetPage {
             $response = $this->api()->getResponse($this->url('/orders'), [
                 'modified_after' => $since->utc()->format('Y-m-d\TH:i:s'),
                 'dates_are_gmt' => 'true',
@@ -76,26 +75,19 @@ class WooCommerceClient {
             if (! array_is_list($orders)) {
                 throw new IncompleteRemoteReadException('invalid_response');
             }
-            // Wandert eine Bestellung vor der Seitengrenze in den Papierkorb, rückt eine andere unbemerkt nach vorn.
+            // Wandert eine Bestellung vor der Seitengrenze in den Papierkorb, rückt eine andere unbemerkt nach vorn — die Gesamtzahl verrät es.
             $total = $response->header('X-WP-Total');
-            if (is_numeric($total)) {
-                if ($lastTotal !== null && (int) $total < $lastTotal) {
-                    throw new IncompleteRemoteReadException('listing_changed');
-                }
-                $lastTotal = (int) $total;
-            }
-            foreach ($orders as $order) {
-                if (is_array($order) && ($order['status'] ?? null) !== 'checkout-draft') {
-                    yield $order;
-                }
-            }
-            $pages = $response->header('X-WP-TotalPages');
-            if ($orders === [] || (is_numeric($pages) ? $page >= (int) $pages : count($orders) < $this->pageSize)) {
-                return;
+            $totalPages = $response->header('X-WP-TotalPages');
+            $more = $orders !== [] && (is_numeric($totalPages) ? $page < (int) $totalPages : count($orders) >= $this->pageSize);
+
+            return new OffsetPage($orders, $more, is_numeric($total) ? (int) $total : null);
+        }, $this->maxPages);
+
+        foreach ($pages as $order) {
+            if (is_array($order) && ($order['status'] ?? null) !== 'checkout-draft') {
+                yield $order;
             }
         }
-
-        throw new IncompleteRemoteReadException('page_limit');
     }
 
     /**

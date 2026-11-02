@@ -182,6 +182,8 @@ class AppServiceProvider extends ServiceProvider {
         // fragen je Zeile — Ergebnis je Request/Job einmal.
         $this->app->scoped(\App\Services\Approval\SelfApproval::class);
         $this->app->scoped(\App\Services\Users\TeamScope::class);
+        // Eigene Arbeitsbereiche je Request einmal (Leistungsanalyse 2026-11-02, perfc-10).
+        $this->app->scoped(\App\Services\Navigation\NavFocusService::class);
 
         // Tätigkeitsrecherche (Feature 153): Kontext-, Wort- und Synonym-Memos
         // leben pro Request/Job; der Indexer bündelt Änderungen bis zum Commit.
@@ -270,6 +272,9 @@ class AppServiceProvider extends ServiceProvider {
         $this->app->singleton(\App\Services\Platform\Catalog\ArticleCatalog::class);
         // Einstufungs-Cache je Request/Job (MVP-1025); Spiegelquellen holen ihn zur Laufzeit.
         $this->app->scoped(\App\Services\Reselling\Register\LicenseArticleClassifier::class);
+        // Request-Memo des Registers (Leistungsanalyse 2026-11-02, perfc-01/04/05/11): Spiegelzeilen,
+        // Serienvorlagen, Kontaktkarte und Lizenzkonten je Request bzw. Job einmal — nie im Singleton.
+        $this->app->scoped(\App\Services\Reselling\Register\ResaleRequestMemo::class);
 
         // Belegspiegel des Reselling-Registers (Feature 152, Review 2026-09-10):
         // Singleton mit der lokalen Rechnungsquelle; die Lexoffice-Quelle
@@ -385,6 +390,11 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     public function boot(): void {
+        // Rechte-Cache je Team statt für alle Mandanten (Leistungsanalyse 2026-11-02, perf-14).
+        // Spatie bindet sein Singleton erst in boot(); App-Provider booten danach, also hier.
+        $this->app->forgetInstance(\Spatie\Permission\PermissionRegistrar::class);
+        $this->app->singleton(\Spatie\Permission\PermissionRegistrar::class, \App\Support\Permissions\TeamScopedPermissionRegistrar::class);
+
         // Objekte liest kein Cache-Store zurück (`cache.serializable_classes`); ein
         // Treffer würde sonst still zur __PHP_Incomplete_Class (Befund 2026-10-20).
         \Illuminate\Support\Facades\Cache::handleUnserializableClassUsing(static function (string $key, ?string $class): void {
@@ -556,6 +566,14 @@ class AppServiceProvider extends ServiceProvider {
         // Vereinstermine (MVP-843): Serienvorkommen erben Details des Masters.
         \App\Models\Calendar\Event::observe(\App\Observers\EventOccurrenceObserver::class);
         \App\Models\Invoicing\InvoiceItem::observe(\App\Observers\InvoiceItemObserver::class);
+        // Reselling-Caches (Leistungsanalyse 2026-11-02): jede Änderung am Register stempelt die Organisation.
+        foreach ([
+            \App\Models\Reselling\ResaleSubscription::class, \App\Models\Reselling\ResalePeriod::class, \App\Models\Reselling\ResalePeriodLink::class,
+            \App\Models\Reselling\ResalePlanLink::class, \App\Models\Reselling\ResaleIgnoredLine::class, \App\Models\Reselling\ResaleAccountAllocation::class,
+            \App\Models\Reselling\ResaleLicenseAssignment::class,
+        ] as $resaleModel) {
+            $resaleModel::observe(\App\Observers\ResaleCacheStampObserver::class);
+        }
 
         // Carbon-Anzeige-Macros (Logik in App\Support\CarbonFmt): orgTz/fdate/
         // fdatetime/ftime. Auf allen Carbon-Varianten registriert (Eloquent-Casts

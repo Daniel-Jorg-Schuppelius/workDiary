@@ -27,6 +27,9 @@ final readonly class Cadence {
         public ?string $time = null,      // "HH:MM" für dailyAt/weeklyOn/monthlyOn
         public ?int $day = null,          // Wochentag 0-6 (weeklyOn) bzw. Monatstag 1-31 (monthlyOn)
         public ?string $expression = null, // roher Cron-Ausdruck (nur Type Cron)
+        // Minutenversatz der Takt-Kadenzen (Leistungsanalyse 2026-11-02, perf-01):
+        // nicht Teil der gespeicherten Form, der Registrar leitet ihn aus dem Job-Key ab.
+        public int $offset = 0,
     ) {
         if ($type->needsTime() && !is_string($time)) {
             throw new InvalidArgumentException("Kadenz {$type->value} braucht eine Uhrzeit (HH:MM).");
@@ -37,6 +40,13 @@ final readonly class Cadence {
         if ($type === CadenceType::Cron && !is_string($expression)) {
             throw new InvalidArgumentException('Kadenz cron braucht einen Ausdruck.');
         }
+        if ($offset < 0 || $offset >= $type->intervalMinutes()) {
+            throw new InvalidArgumentException("Versatz {$offset} passt nicht zur Kadenz {$type->value}.");
+        }
+    }
+
+    public function withOffset(int $offset): self {
+        return new self($this->type, $this->time, $this->day, $this->expression, $offset);
     }
 
     /** @param array<string, mixed> $data */
@@ -83,15 +93,24 @@ final readonly class Cadence {
 
         return match ($this->type) {
             CadenceType::EveryMinute => '* * * * *',
-            CadenceType::EveryFiveMinutes => '*/5 * * * *',
-            CadenceType::EveryFifteenMinutes => '*/15 * * * *',
-            CadenceType::EveryThirtyMinutes => '*/30 * * * *',
-            CadenceType::Hourly => '0 * * * *',
+            CadenceType::EveryFiveMinutes => $this->everyMinutes(5),
+            CadenceType::EveryFifteenMinutes => $this->everyMinutes(15),
+            CadenceType::EveryThirtyMinutes => $this->everyMinutes(30),
+            CadenceType::Hourly => "{$this->offset} * * * *",
             CadenceType::DailyAt => "{$minute} {$hour} * * *",
             CadenceType::WeeklyOn => "{$minute} {$hour} * * {$this->day}",
             CadenceType::MonthlyOn => "{$minute} {$hour} {$this->day} * *",
             CadenceType::Cron => (string) $this->expression,
         };
+    }
+
+    /** Ohne Versatz der Cron-Schritt (Stern/n), sonst die Minutenliste o,o+n,… — Cron kennt keinen versetzten Schritt. */
+    private function everyMinutes(int $interval): string {
+        if ($this->offset === 0) {
+            return "*/{$interval} * * * *";
+        }
+
+        return implode(',', range($this->offset, 59, $interval)) . ' * * * *';
     }
 
     /** @return array{0: int, 1: int} */

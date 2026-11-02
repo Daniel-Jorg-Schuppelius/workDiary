@@ -13,11 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\Glpi\Api;
 
 use APIToolkit\API\Authentication\ApiKeyAuthentication;
-use APIToolkit\API\Pagination\CursorPage;
 use App\Plugins\Glpi\Exceptions\GlpiApiException;
 use App\Plugins\Glpi\GlpiPlugin;
 use App\Plugins\Support\{GuardsPluginApiResponses, PluginApiClient, PluginHttpFactory};
-use App\Plugins\Support\TaskSync\{IncompleteRemoteReadException, RemotePages};
+use App\Plugins\Support\TaskSync\{IncompleteRemoteReadException, OffsetPage, RemotePages};
 use CommonToolkit\Helper\Data\StringHelper;
 use Generator;
 use Throwable;
@@ -94,11 +93,11 @@ class GlpiClient {
      */
     public function tickets(string $entityId, ?string $modifiedFrom = null): Generator {
         $this->activate($entityId);
-        $total = null;
+        $from = 0;
 
-        return RemotePages::all(function (?string $start) use ($entityId, $modifiedFrom, &$total): CursorPage {
+        // Der Offset folgt der gelieferten Menge, nicht der Seitennummer: GLPI kappt `range` an seinem list_limit.
+        return RemotePages::offset(function () use ($entityId, $modifiedFrom, &$from): OffsetPage {
             $this->activate($entityId);
-            $from = (int) ($start ?? 0);
             $response = $this->api()->getResponse($this->url('/Ticket'), [
                 'range' => $from . '-' . ($from + $this->pageSize - 1),
                 'sort' => $modifiedFrom === null ? 'id' : 'date_mod',
@@ -110,13 +109,10 @@ class GlpiClient {
             if (! is_array($items) || ! array_is_list($items)) {
                 throw new IncompleteRemoteReadException('invalid_response');
             }
-            // „0-49/200“: weiter, solange das Ende vor der Gesamtzahl liegt. Schrumpft die
-            // Gesamtzahl beim Blättern, rücken Tickets über die Seitengrenze — kein vollständiges Lesen.
+            // „0-49/200“: weiter, solange das Ende vor der Gesamtzahl liegt.
             $more = false;
+            $total = null;
             if (preg_match('#^\s*\d+-(\d+)/(\d+)\s*$#', (string) $response->header('Content-Range'), $m) === 1) {
-                if ($total !== null && (int) $m[2] < $total) {
-                    throw new IncompleteRemoteReadException('listing_changed');
-                }
                 $total = (int) $m[2];
                 $more = (int) $m[1] + 1 < $total;
             }
@@ -124,8 +120,9 @@ class GlpiClient {
             if ($modifiedFrom !== null && is_array($last) && is_string($last['date_mod'] ?? null) && strcmp($last['date_mod'], $modifiedFrom) < 0) {
                 $more = false;
             }
+            $from += count($items);
 
-            return new CursorPage($items, $more && $items !== [] ? (string) ($from + count($items)) : null);
+            return new OffsetPage($items, $more && $items !== [], $total);
         }, $this->maxPages);
     }
 

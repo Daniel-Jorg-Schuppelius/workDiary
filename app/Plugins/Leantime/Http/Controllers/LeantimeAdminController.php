@@ -16,7 +16,7 @@ use App\Plugins\Leantime\Api\LeantimeClientFactory;
 use App\Plugins\Leantime\{LeantimeConfig, LeantimePlugin};
 use App\Plugins\Leantime\Models\{LeantimeConnection, LeantimeProjectLink};
 use App\Plugins\Leantime\Services\LeantimeImportService;
-use App\Plugins\Support\TaskSync\{SelfHostedInstance, TokenTaskImportAdminController};
+use App\Plugins\Support\TaskSync\TokenTaskImportAdminController;
 
 /**
  * Leantime-Verbindungsseite (MVP-1344): „Verbindung prüfen“ liest die Instanz
@@ -42,16 +42,10 @@ class LeantimeAdminController extends TokenTaskImportAdminController {
     }
 
     protected function verifyConnection(int $organizationId): array {
-        $baseUrl = (string) LeantimeConfig::resolve($organizationId)['base_url'];
-        $account = app(LeantimeClientFactory::class)->for($organizationId)->account();
-
-        return [
-            'source_id' => SelfHostedInstance::key($baseUrl),
-            'source_name' => SelfHostedInstance::name($baseUrl) . ($account['version'] !== null ? ' · ' . $account['version'] : ''),
-            'source_url' => $baseUrl,
-            'account_id' => $account['id'],
-            'account_name' => $account['name'],
-        ];
+        return $this->selfHostedIdentity(
+            (string) LeantimeConfig::resolve($organizationId)['base_url'],
+            app(LeantimeClientFactory::class)->for($organizationId)->account(),
+        );
     }
 
     protected function providerName(): string {

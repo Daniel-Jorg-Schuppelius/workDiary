@@ -34,34 +34,13 @@
         @endforeach
     </x-select-field>
 
-    <div class="space-y-3" x-data="resaleHolderPicker"
-         data-map="{{ json_encode($foreignByCustomer, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE) }}"
-         data-holder="{{ $mode }}"
-         data-customer="{{ old('customer_id', $customerSqid) }}"
-         data-foreign="{{ old('foreign_customer_id', $foreignSqid) }}">
-        <x-select-field name="mode" :label="__('resale.account.allocation.holder')" x-model="holder">
-            <option value="customer" @selected($mode === 'customer')>{{ __('resale.inbox.mode_customer') }}</option>
-            <option value="foreign" @selected($mode === 'foreign')>{{ __('resale.inbox.mode_foreign') }}</option>
-            <option value="own" @selected($mode === 'own')>{{ __('resale.holder.own') }}</option>
-        </x-select-field>
-        <div x-show="holder !== 'own'">
-            <x-select-field name="customer_id" :label="__('resale.inbox.customer')" x-model="customer">
-                <option value="">—</option>
-                @foreach ($customers as $customer)
-                    <option value="{{ $customer->sqid }}" @selected(old('customer_id', $customerSqid) === $customer->sqid)>{{ $customer->name }}</option>
-                @endforeach
-            </x-select-field>
-        </div>
-        <div x-show="showForeign()">
-            <x-select-field name="foreign_customer_id" :label="__('resale.inbox.foreign')" x-model="foreign">
-                <option value="">—</option>
-                <template x-for="fc in options()" :key="fc.sqid">
-                    <option :value="fc.sqid" x-text="fc.name"></option>
-                </template>
-            </x-select-field>
-        </div>
-        <p class="text-xs text-warning" x-show="noForeign()">{{ __('resale.dialog.no_foreign_customers') }}</p>
-    </div>
+    @include('finance.resale._holder_picker', [
+        'mode' => $mode,
+        'modes' => ['customer', 'foreign', 'own'],
+        'modeLabel' => __('resale.account.allocation.holder'),
+        'customerDefault' => $customerSqid,
+        'foreignDefault' => $foreignSqid,
+    ])
 
     <x-input-field name="quantity" type="number" min="1" :label="__('resale.account.allocation.quantity')" :value="old('quantity', (string) ($allocation?->quantity ?? 1))" required />
     <x-date-range layout="split" from-name="valid_from" to-name="valid_until" form-control size=""

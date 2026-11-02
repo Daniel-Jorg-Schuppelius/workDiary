@@ -43,9 +43,10 @@
                     <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
                         <x-kpi-tile :label="__('customer_portal.insights.kpi_hours', ['year' => $year])" :value="$hours($time['minutes'])" format="text" tone="primary" :href="route('customer.time-entries.index', ['year' => $year])" />
                         <x-kpi-tile :label="__('customer_portal.insights.kpi_hours_prev', ['year' => $year - 1])" :value="$time['previous_minutes'] !== null ? $hours($time['previous_minutes']) : '—'" format="text"
-                                    :hint="$change !== null ? __('customer_portal.insights.kpi_change', ['percent' => ($change > 0 ? '+' : '') . $change]) : null" />
-                        <x-kpi-tile :label="__('customer_portal.time.kpi_entries')" :value="$time['entries']" />
-                        <x-kpi-tile :label="__('customer_portal.time.kpi_projects')" :value="$time['projects']" />
+                                    :hint="$change !== null ? __('customer_portal.insights.kpi_change', ['percent' => ($change > 0 ? '+' : '') . $change]) : null"
+                                    :href="route('customer.time-entries.index', ['year' => $year - 1])" />
+                        <x-kpi-tile :label="__('customer_portal.time.kpi_entries')" :value="$time['entries']" :href="route('customer.time-entries.index', ['year' => $year])" />
+                        <x-kpi-tile :label="__('customer_portal.time.kpi_projects')" :value="$time['projects']" :href="route('customer.time-entries.index', ['year' => $year])" />
                     </div>
                     <div class="grid gap-4 lg:grid-cols-2">
                         <x-charts.bar :title="__('customer_portal.insights.chart_hours_month')" :unit="__('customer_portal.insights.unit_hours')" :series="$time['monthly']"
@@ -72,12 +73,13 @@
                             <x-kpi-tile :label="__('customer_portal.insights.kpi_invoice_count', ['year' => $year])" :value="$block['count']" tone="primary"
                                         :hint="$block['credit'] > 0 ? __('customer_portal.insights.kpi_credit', ['amount' => $money($block['credit'], $block['currency'])]) : null"
                                         :href="route('customer.invoices.index', ['year' => $year])" />
-                            <x-kpi-tile :label="__('customer_portal.insights.kpi_invoice_gross')" :value="$money($block['gross'], $block['currency'])" format="text" />
+                            <x-kpi-tile :label="__('customer_portal.insights.kpi_invoice_gross')" :value="$money($block['gross'], $block['currency'])" format="text" :href="route('customer.invoices.index', ['year' => $year])" />
                             <x-kpi-tile :label="__('customer_portal.insights.kpi_open')" :value="$money($block['open'], $block['currency'])" format="text" :tone="$block['open'] > 0 ? 'warning' : 'success'"
                                         :hint="trans_choice('customer_portal.insights.kpi_open_count', $block['open_count'], ['count' => $block['open_count']])"
                                         :href="route('customer.invoices.index', ['status' => 'open'])" />
                             <x-kpi-tile :label="__('customer_portal.insights.kpi_overdue')" :value="$money($block['overdue'], $block['currency'])" format="text" :tone="$block['overdue_count'] > 0 ? 'error' : 'neutral'"
-                                        :hint="trans_choice('customer_portal.insights.kpi_open_count', $block['overdue_count'], ['count' => $block['overdue_count']])" />
+                                        :hint="trans_choice('customer_portal.insights.kpi_open_count', $block['overdue_count'], ['count' => $block['overdue_count']])"
+                                        :href="route('customer.invoices.index', ['status' => 'open'])" />
                         </div>
                         <div class="grid gap-4 lg:grid-cols-2">
                             <x-charts.bar :title="__('customer_portal.insights.chart_invoices_month')" :unit="$block['currency']" :series="$block['monthly']"
@@ -123,10 +125,10 @@
                         @php($currency = $billing['last']['currency'] ?? '€')
                         <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
                             <x-kpi-tile :label="__('customer-billing.gross_value')" :value="$money($billing['last']['gross_value'], $currency)" format="text" :hint="$billing['last']['label']" :href="$billing['last']['url']" />
-                            <x-kpi-tile :label="__('customer-billing.payments_total')" :value="$money($billing['last']['payments_total'], $currency)" format="text" tone="success" />
-                            <x-kpi-tile :label="__('customer-billing.carry_in')" :value="$money($billing['last']['carry_in'], $currency)" format="text" />
+                            <x-kpi-tile :label="__('customer-billing.payments_total')" :value="$money($billing['last']['payments_total'], $currency)" format="text" tone="success" :href="$billing['last']['url']" />
+                            <x-kpi-tile :label="__('customer-billing.carry_in')" :value="$money($billing['last']['carry_in'], $currency)" format="text" :href="$billing['last']['url']" />
                             <x-kpi-tile :label="__('customer-billing.balance')" :value="$money($billing['last']['balance'], $currency)" format="text" tone="primary"
-                                        :hint="$billing['last']['locked'] ? null : __('customer-billing.provisional')" />
+                                        :hint="$billing['last']['locked'] ? null : __('customer-billing.provisional')" :href="$billing['last']['url']" />
                         </div>
                     @endif
                     <x-charts.line :title="__('customer_portal.insights.chart_balance')" :unit="$billing['last']['currency'] ?? '€'" :series="$billing['series']"
@@ -139,7 +141,7 @@
                     <h2 id="insights-tickets" class="flex items-center gap-2 text-lg font-semibold"><x-icon name="confirmation_number" class="text-muted" />{{ __('customer_portal.insights.section_tickets') }}</h2>
                     <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
                         <x-kpi-tile :label="__('customer_portal.insights.kpi_opened', ['year' => $year])" :value="$tickets['opened']" tone="primary" :href="route('customer.tickets.index')" />
-                        <x-kpi-tile :label="__('customer_portal.insights.kpi_resolved', ['year' => $year])" :value="$tickets['resolved']" tone="success" />
+                        <x-kpi-tile :label="__('customer_portal.insights.kpi_resolved', ['year' => $year])" :value="$tickets['resolved']" tone="success" :href="route('customer.tickets.index')" />
                         <x-kpi-tile :label="__('customer_portal.insights.kpi_avg_days')" :value="$tickets['average_days'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($tickets['average_days'], 1) : '—'" format="text"
                                     :hint="$tickets['average_days'] === null ? __('customer_portal.insights.avg_days_hint', ['min' => 5]) : null" />
                     </div>

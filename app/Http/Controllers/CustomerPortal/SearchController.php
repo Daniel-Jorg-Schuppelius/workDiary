@@ -14,19 +14,17 @@ namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\CustomerPortal\PortalCapability;
 use App\Enums\Invoicing\InvoiceStatus;
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
-use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Document\Document;
 use App\Models\Invoicing\Invoice;
-use App\Models\Platform\User;
 use App\Models\ServiceTicket\ServiceTicket;
 use App\Services\Billing\Contracts\ExternalRevenue;
 use App\Services\Billing\Dto\{ExternalInvoice, ExternalInvoiceQuery};
 use App\Services\CustomerPortal\PortalVisibility;
 use App\Support\Tz;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -34,15 +32,15 @@ use Illuminate\View\View;
  * Kunde freigegeben bekommen hat, mit derselben Sichtbarkeit wie die Listen.
  */
 class SearchController extends Controller {
+    use ResolvesPortalUser;
+
     private const LIMIT = 10;
 
     public function __construct(private readonly PortalVisibility $visibility) {}
 
     public function index(Request $request): View {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-        $customer = $user->customer;
-        abort_unless($customer instanceof Customer, 403);
+        $user = $this->portalUser();
+        $customer = $this->portalCustomer();
         $q = trim((string) $request->query('q', ''));
         $groups = [];
 

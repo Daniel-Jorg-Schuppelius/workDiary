@@ -12,17 +12,16 @@ declare(strict_types=1);
 
 namespace App\Plugins\Seafile;
 
-use App\Plugins\Support\PluginSettingsResolver;
+use App\Plugins\Support\{PluginSettingsResolver, SelfHostedConfig};
 
 /** Seafile-Zugang des Dokumenteingangs je Organisation (Plugin-Einstellungen) und Betreiberwerte. */
 final class SeafileConfig {
     /** @return array{base_url: ?string, api_token: ?string, scan_folder_budget: int, max_reconcile_files: int} */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(SeafilePlugin::ID, $organizationId);
-        $baseUrl = $r->string('base_url', trim: true);
 
         return [
-            'base_url' => $baseUrl !== null ? rtrim($baseUrl, '/') : null,
+            'base_url' => SelfHostedConfig::baseUrl($r),
             'api_token' => $r->string('api_token', trim: true),
             'scan_folder_budget' => max(1, (int) config('plugins.seafile.scan_folder_budget', 50)),
             'max_reconcile_files' => max(0, (int) config('plugins.seafile.max_reconcile_files', 5000)),

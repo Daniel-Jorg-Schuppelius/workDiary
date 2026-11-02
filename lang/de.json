@@ -60,5 +60,6 @@
     ":count weiterer offener Eingang automatisch zugeordnet.|:count weitere offene Eingänge automatisch zugeordnet.": ":count weiterer offener Eingang automatisch zugeordnet.|:count weitere offene Eingänge automatisch zugeordnet.",
     ":count bereits übergebener Eingang bleibt am Sammelkontakt.|:count bereits übergebene Eingänge bleiben am Sammelkontakt.": ":count bereits übergebener Eingang bleibt am Sammelkontakt.|:count bereits übergebene Eingänge bleiben am Sammelkontakt.",
     ":count Eingang|:count Eingänge": ":count Eingang|:count Eingänge",
-    ":count Eingang umgehängt.|:count Eingänge umgehängt.": ":count Eingang umgehängt.|:count Eingänge umgehängt."
+    ":count Eingang umgehängt.|:count Eingänge umgehängt.": ":count Eingang umgehängt.|:count Eingänge umgehängt.",
+    "Der Eingang ist als „keine Rechnung“ abgelegt — Zuordnung, Werte und Einbehalte lassen sich nicht mehr ändern.": "Der Eingang ist als „keine Rechnung“ abgelegt — Zuordnung, Werte und Einbehalte lassen sich nicht mehr ändern."
 }

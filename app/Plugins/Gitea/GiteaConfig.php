@@ -12,20 +12,19 @@ declare(strict_types=1);
 
 namespace App\Plugins\Gitea;
 
-use App\Plugins\Support\PluginSettingsResolver;
+use App\Plugins\Support\{PluginSettingsResolver, SelfHostedConfig};
 
 /** Gitea-/Forgejo-Zugang je Organisation aus den Plugin-Einstellungen (selbst gehostet, keine Vorgabe-Instanz). */
 final class GiteaConfig {
     /** @return array{base_url: ?string, api_token: ?string, page_size: int, max_pages: int} */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(GiteaPlugin::ID, $organizationId);
-        $baseUrl = $r->string('base_url', trim: true);
 
         return [
-            'base_url' => $baseUrl !== null ? rtrim($baseUrl, '/') : null,
+            'base_url' => SelfHostedConfig::baseUrl($r),
             'api_token' => $r->string('api_token', trim: true),
-            'page_size' => max(1, min(50, (int) config('plugins.gitea.page_size', 50))),
-            'max_pages' => max(1, (int) config('plugins.gitea.max_pages', 100)),
+            'page_size' => SelfHostedConfig::pageSize(GiteaPlugin::ID, 50, cap: 50),
+            'max_pages' => SelfHostedConfig::maxPages(GiteaPlugin::ID, 100),
         ];
     }
 

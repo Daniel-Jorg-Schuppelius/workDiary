@@ -15,6 +15,7 @@ namespace App\Services\Reselling\Register;
 use App\Enums\Reselling\{BillingFrequency, PeriodStatus};
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Services\Billing\DocumentTotalsCalculator;
+use App\Services\Concerns\AssertsStatusTransition;
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +40,8 @@ use Illuminate\Support\Facades\DB;
  * anteilig nach Monaten), danach gelten die Periodengrenzen des Vertrags.
  */
 final class PeriodPlanner {
+    use AssertsStatusTransition;
+
     public const HORIZON_DAYS = 90;
 
     /**
@@ -253,7 +256,7 @@ final class PeriodPlanner {
                     if (($assignmentsChanged || $subscription->assignments->isNotEmpty()) && $period->quantity !== $quantity) {
                         $period->fill(['quantity' => $quantity, 'expected_purchase' => $expectedPurchase, 'expected_sale' => $expectedSale]);
                         if (in_array($period->status, [PeriodStatus::Open, PeriodStatus::Partial, PeriodStatus::Billed], true)) {
-                            $period->status = $period->statusFromCoverage($period->coveredMonths());
+                            $period->status = $this->coverageStatus($period);
                         }
                         $period->save();
                         $result['updated']++;
@@ -275,7 +278,7 @@ final class PeriodPlanner {
                     'currency' => $subscription->currency,
                 ]);
                 // Erst nach dem Füllen: der Status hängt an der neuen Menge.
-                $period->status = $period->statusFromCoverage($period->coveredMonths());
+                $period->status = $this->coverageStatus($period);
                 if ($period->isDirty()) {
                     $period->save();
                     $result['updated']++;
@@ -348,5 +351,15 @@ final class PeriodPlanner {
         }
 
         return $amount->withScale(2);
+    }
+
+    /** Status aus der Deckung — Wechsel laut Statusvertrag geprüft (MVP-872). */
+    private function coverageStatus(ResalePeriod $period): PeriodStatus {
+        $status = $period->statusFromCoverage($period->coveredMonths());
+        if ($status !== $period->status) {
+            $this->assertStatusTransition($period->status, $status);
+        }
+
+        return $status;
     }
 }

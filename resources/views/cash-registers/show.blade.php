@@ -29,8 +29,8 @@
 
     <div class="grid grid-cols-1 gap-3 flex-none sm:grid-cols-3">
         <x-kpi-tile :label="__('Saldo')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($balance, 2, withThousandsSeparator: true) . ' ' . $register->currency->value" tone="neutral" />
-        <x-kpi-tile :label="__('Letzter Tagesabschluss')" :value="$lastClosing?->fdate() ?? '—'" tone="neutral" />
-        <x-kpi-tile :label="__('Buchungen')" :value="$entries->total()" tone="neutral" />
+        <x-kpi-tile :label="__('Letzter Tagesabschluss')" :value="$lastClosing?->fdate() ?? '—'" tone="neutral" :href="$closings->isNotEmpty() ? '#register-closings' : null" />
+        <x-kpi-tile :label="__('Buchungen')" :value="$entries->total()" tone="neutral" href="#register-entries" />
     </div>
 
     <x-filter-bar :action="route('cash-registers.show', $register)" :reset="route('cash-registers.show', $register)">
@@ -49,7 +49,7 @@
     </x-filter-bar>
 
     @if ($closings->isNotEmpty())
-        <x-card :title="__('Tagesabschlüsse (letzte 10)')" class="flex-none">
+        <x-card :title="__('Tagesabschlüsse (letzte 10)')" class="flex-none scroll-mt-24" id="register-closings">
             <x-table size="sm" :zebra="true">
                 <x-slot:head>
                     <tr>
@@ -73,7 +73,7 @@
         </x-card>
     @endif
 
-    <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm">
+    <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm" id="register-entries">
         <x-slot:head>
             <tr>
                 <th>{{ __('Beleg-Nr.') }}</th>

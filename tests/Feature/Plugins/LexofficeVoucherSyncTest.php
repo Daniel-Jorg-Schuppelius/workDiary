@@ -181,7 +181,8 @@ class LexofficeVoucherSyncTest extends TestCase {
         $this->assertSame(2, $first['created']);
 
         // Zweiter Lauf: v2 verschwindet → wird archiviert, v1 nur aktualisiert.
-        $second = (new LexofficeVoucherSync($this->organization->id))->sync($this->organization);
+        // Archivieren tut nur der Volllauf (perf-05); stündlich läuft der Änderungsfilter.
+        $second = (new LexofficeVoucherSync($this->organization->id))->sync($this->organization, full: true);
         $this->assertSame(0, $second['created']);
         $this->assertSame(1, $second['updated']);
         $this->assertSame(1, $second['archived']);

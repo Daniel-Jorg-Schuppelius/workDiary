@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\CustomerPortal\PortalTimeDetail;
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
@@ -22,7 +23,7 @@ use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\DateHelper;
 use Illuminate\Database\Eloquent\{Builder, Collection, Model};
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -36,14 +37,13 @@ use Illuminate\View\View;
  * Integrationsdaten sind nie Portalinhalt.
  */
 class TimeEntryController extends Controller {
+    use ResolvesPortalUser;
+
     /** @var list<string> Sortierschlüssel der Einzelzeilen. */
     private const SORTS = ['date', 'minutes', 'project', 'user'];
 
     public function index(Request $request, PortalVisibility $visibility, PortalTimeEntries $portalTimes): View {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-        $customer = $user->customer;
-        abort_if($customer === null, 404);
+        $customer = $this->portalCustomer();
 
         $detail = $visibility->timeDetail($customer);
         abort_if($detail === PortalTimeDetail::None, 404);

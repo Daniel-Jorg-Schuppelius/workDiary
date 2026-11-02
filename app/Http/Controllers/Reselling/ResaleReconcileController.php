@@ -216,8 +216,9 @@ class ResaleReconcileController extends Controller {
         if ($line === null || $line->recipientCustomerId !== $customer->id) {
             abort(404);
         }
+        // Kein Fälligkeitsfilter: eine Vorausrechnung darf auch eine bevorstehende Periode decken.
         $periods = ResalePeriod::query()
-            ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
+            ->whereIn('status', array_map(static fn (PeriodStatus $s): string => $s->value, ResalePeriod::dueStatuses()))
             ->whereHas('subscription', static fn ($s) => $s->forCustomer($customer)->where('is_own_holding', false))
             ->with(['subscription', 'links'])
             ->orderBy('starts_on')

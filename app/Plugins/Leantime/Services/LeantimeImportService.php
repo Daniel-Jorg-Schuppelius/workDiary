@@ -13,12 +13,11 @@ declare(strict_types=1);
 namespace App\Plugins\Leantime\Services;
 
 use App\Enums\Task\TaskStatus;
-use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Plugins\Leantime\Api\LeantimeClientFactory;
 use App\Plugins\Leantime\LeantimePlugin;
 use App\Plugins\Leantime\Models\{LeantimeConnection, LeantimeProjectLink};
-use App\Plugins\Support\TaskSync\{AbstractTaskImportService, IncompleteRemoteReadException, RemoteTask, SelfHostedInstance};
+use App\Plugins\Support\TaskSync\{AbstractTaskImportService, IncompleteRemoteReadException, RemoteTask};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\Eloquent\Model;
@@ -141,13 +140,6 @@ class LeantimeImportService extends AbstractTaskImportService {
             'url' => $baseUrl !== '' ? $baseUrl . '/dashboard/home#/tickets/showTicket/' . $id : null,
             'project' => is_string($raw['projectName'] ?? null) && $raw['projectName'] !== '' ? $raw['projectName'] : null,
         ], $issues);
-    }
-
-    public function sourceUrl(ExternalReference $reference): ?string {
-        $url = data_get($reference->payload, 'remote.url');
-        $baseUrl = (string) $this->connection((int) $reference->organization_id)?->source_url;
-
-        return is_string($url) && SelfHostedInstance::owns($baseUrl, $url) ? $url : null;
     }
 
     /** Leantime-Zeitpunkt („Y-m-d H:i:s“ in UTC) mit Zone; Leantimes Leerdaten und Leeres sind kein Zeitpunkt. */

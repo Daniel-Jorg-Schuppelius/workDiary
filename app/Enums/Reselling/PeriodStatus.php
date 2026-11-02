@@ -12,15 +12,21 @@ declare(strict_types=1);
 
 namespace App\Enums\Reselling;
 
-use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Concerns\{HasOptions, HasTransitions};
+use App\Enums\Contracts\HasStatusTransitions;
 
 /**
  * Zustand einer erwarteten Abrechnungsperiode. Entschiedene Zustände
  * (berechnet, teilweise, verzichtet, strittig) überlebt jede Neuplanung.
+ *
+ * Übergänge (MVP-872, Sicherheitsaudit 2026-11-02, sec-03): offen, teilweise
+ * und berechnet folgen der Deckung und lassen sich verzichten oder strittig
+ * stellen; verzichtet und strittig sind Nutzerentscheidungen, aus denen nur
+ * „Zurücknehmen“ (→ offen) führt.
  */
-enum PeriodStatus: string implements HasLabel {
+enum PeriodStatus: string implements HasStatusTransitions {
     use HasOptions;
+    use HasTransitions;
 
     case Open = 'open';
     case Billed = 'billed';
@@ -50,5 +56,17 @@ enum PeriodStatus: string implements HasLabel {
      */
     public function isDecided(): bool {
         return $this !== self::Open;
+    }
+
+    /**
+     * @return list<self>
+     */
+    public function allowedTransitions(): array {
+        return match ($this) {
+            self::Open => [self::Billed, self::Partial, self::Waived, self::Disputed],
+            self::Partial => [self::Open, self::Billed, self::Waived, self::Disputed],
+            self::Billed => [self::Open, self::Partial, self::Waived, self::Disputed],
+            self::Waived, self::Disputed => [self::Open],
+        };
     }
 }

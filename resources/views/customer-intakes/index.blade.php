@@ -16,8 +16,8 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('customer_intake.subtitle')">
     <div class="grid gap-4 sm:grid-cols-2">
-        <x-kpi-tile :label="__('customer_intake.kpi.open')" :value="$openCount" />
-        <x-kpi-tile :label="__('customer_intake.kpi.awaiting')" :value="$awaitingCount" />
+        <x-kpi-tile :label="__('customer_intake.kpi.open')" :value="$openCount" :href="route('customer-intakes.index', ['show' => 'open'])" :active="$showOpen" />
+        <x-kpi-tile :label="__('customer_intake.kpi.awaiting')" :value="$awaitingCount" :href="route('customer-intakes.index', ['status' => \App\Enums\Customer\IntakeStatus::AwaitingCustomer->value])" :active="$status === \App\Enums\Customer\IntakeStatus::AwaitingCustomer->value" />
     </div>
 
     <x-filter-bar :action="route('customer-intakes.index')" :reset="route('customer-intakes.index')">
@@ -33,6 +33,7 @@
                 <option value="{{ $k->value }}" @selected(request('kind') === $k->value)>{{ $k->label() }}</option>
             @endforeach
         </select>
+        <x-filter-toggle name="show" value="open" :label="__('customer_intake.kpi.open')" :checked="$showOpen" />
         <x-filter-toggle name="mine" :label="__('customer_intake.filter.mine')" :checked="request()->boolean('mine')" />
     </x-filter-bar>
 

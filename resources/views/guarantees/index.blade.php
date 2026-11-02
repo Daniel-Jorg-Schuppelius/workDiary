@@ -27,15 +27,22 @@
         </x-slot:actions>
 
         <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+            @php($activeStatus = \App\Enums\Guarantee\GuaranteeStatus::Active->value)
             <x-kpi-tile :label="__('guarantee.kpi.issued')" :value="$activeIssued" format="int"
-                        :hint="__('guarantee.kpi.issued_hint')" />
+                        :hint="__('guarantee.kpi.issued_hint')"
+                        :href="route('guarantees.index', ['direction' => \App\Enums\Guarantee\GuaranteeDirection::Issued->value, 'status' => $activeStatus])"
+                        :active="$filters['direction'] === \App\Enums\Guarantee\GuaranteeDirection::Issued->value && $filters['status'] === $activeStatus && $filters['show'] === ''" />
             <x-kpi-tile :label="__('guarantee.kpi.received')" :value="$activeReceived" format="int"
-                        :hint="__('guarantee.kpi.received_hint')" />
+                        :hint="__('guarantee.kpi.received_hint')"
+                        :href="route('guarantees.index', ['direction' => \App\Enums\Guarantee\GuaranteeDirection::Received->value, 'status' => $activeStatus])"
+                        :active="$filters['direction'] === \App\Enums\Guarantee\GuaranteeDirection::Received->value && $filters['status'] === $activeStatus && $filters['show'] === ''" />
             <x-kpi-tile :label="__('guarantee.kpi.expiring')" :value="$expiringSoon" format="int"
-                        :tone="$expiringSoon > 0 ? 'warning' : 'neutral'" />
+                        :tone="$expiringSoon > 0 ? 'warning' : 'neutral'"
+                        :href="route('guarantees.index', ['status' => $activeStatus, 'show' => 'expiring'])" :active="$filters['show'] === 'expiring'" />
             <x-kpi-tile :label="__('guarantee.kpi.return_due')" :value="$returnDue" format="int"
                         :tone="$returnDue > 0 ? 'warning' : 'neutral'"
-                        :hint="__('guarantee.kpi.return_due_hint')" />
+                        :hint="__('guarantee.kpi.return_due_hint')"
+                        :href="route('guarantees.index', ['status' => $activeStatus, 'show' => 'return_due'])" :active="$filters['show'] === 'return_due'" />
         </div>
 
         <x-filter-bar :action="route('guarantees.index')" :reset="route('guarantees.index')">
@@ -53,6 +60,13 @@
                     @foreach (\App\Enums\Guarantee\GuaranteeStatus::cases() as $st)
                         <option value="{{ $st->value }}" @selected($filters['status'] === $st->value)>{{ $st->label() }}</option>
                     @endforeach
+                </select>
+            </x-filter-field>
+            <x-filter-field :label="__('Filter')" for="g-show" class="min-w-44">
+                <select id="g-show" name="show" class="select select-sm select-bordered w-full">
+                    <option value="">{{ __('finance.filter.all') }}</option>
+                    <option value="expiring" @selected($filters['show'] === 'expiring')>{{ __('guarantee.kpi.expiring') }}</option>
+                    <option value="return_due" @selected($filters['show'] === 'return_due')>{{ __('guarantee.kpi.return_due') }}</option>
                 </select>
             </x-filter-field>
         </x-filter-bar>

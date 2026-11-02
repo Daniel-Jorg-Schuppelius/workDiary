@@ -236,4 +236,21 @@ final class TenderNoticeImporter {
 
         return null;
     }
+    /**
+     * Bekanntmachungen, deren Frist länger als die Aufbewahrung zurückliegt und
+     * die kein Suchprofil getroffen haben (perf-11); ohne Frist zählt das
+     * Veröffentlichungsdatum. Treffer bleiben, sie hängen an Bewerbungen.
+     */
+    public function pruneExpired(?int $days = null): int {
+        $days ??= max(30, (int) config('applications.tender_notice_retention_days', 365));
+        $cutoff = now()->subDays($days);
+
+        return TenderNotice::query()
+            ->whereDoesntHave('matches')
+            ->where(static function ($q) use ($cutoff): void {
+                $q->where('submission_deadline', '<', $cutoff)
+                    ->orWhere(static fn ($q2) => $q2->whereNull('submission_deadline')->where('published_on', '<', $cutoff->toDateString()));
+            })
+            ->delete();
+    }
 }

@@ -12,20 +12,19 @@ declare(strict_types=1);
 
 namespace App\Plugins\FreeScout;
 
-use App\Plugins\Support\PluginSettingsResolver;
+use App\Plugins\Support\{PluginSettingsResolver, SelfHostedConfig};
 
 /** FreeScout-Zugang je Organisation aus den Plugin-Einstellungen. */
 final class FreeScoutConfig {
     /** @return array{base_url: ?string, api_key: ?string, page_size: int, max_pages: int} */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(FreeScoutPlugin::ID, $organizationId);
-        $baseUrl = $r->string('base_url', trim: true);
 
         return [
-            'base_url' => $baseUrl !== null ? rtrim($baseUrl, '/') : null,
+            'base_url' => SelfHostedConfig::baseUrl($r),
             'api_key' => $r->string('api_key', trim: true),
-            'page_size' => max(1, min(100, (int) config('plugins.freescout.page_size', 50))),
-            'max_pages' => max(1, (int) config('plugins.freescout.max_pages', 100)),
+            'page_size' => SelfHostedConfig::pageSize(FreeScoutPlugin::ID, 50, cap: 100),
+            'max_pages' => SelfHostedConfig::maxPages(FreeScoutPlugin::ID, 100),
         ];
     }
 

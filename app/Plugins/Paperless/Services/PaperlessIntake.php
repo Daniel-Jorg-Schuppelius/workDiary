@@ -13,22 +13,20 @@ declare(strict_types=1);
 namespace App\Plugins\Paperless\Services;
 
 use App\Enums\CloudIntake\CloudIntakeItemStatus;
-use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem, CloudDocumentRoute};
+use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem};
 use App\Models\Document\DocumentVersion;
 use App\Models\Integration\ExternalReference;
 use App\Plugins\Paperless\Api\{PaperlessClient, PaperlessClientFactory};
 use App\Plugins\Paperless\Exceptions\PaperlessInstanceChangedException;
 use App\Plugins\Paperless\{PaperlessConfig, PaperlessPlugin};
-use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeContainer, IntakeItem};
+use App\Plugins\Support\Intake\{AbstractCloudIntakeSource, IntakeAccount, IntakeChangePage, IntakeContainer, IntakeItem};
 use App\Plugins\Support\TaskSync\SelfHostedInstance;
 use App\Services\CloudIntake\StaleCheckpointException;
-use CommonToolkit\Enums\HashAlgorithm;
-use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use InvalidArgumentException;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
+use Throwable;
 
 /**
  * Paperless-ngx als lesende Quelle des Cloud-Dokumenteingangs (MVP-1315/1316).
@@ -40,11 +38,11 @@ use RuntimeException;
  * erneut, ihre Revision ist die Prüfsumme des Originals. Der Checkpoint führt
  * die Warteschlange des laufenden Zyklus und die bereits ausgewerteten IDs;
  * ändern sich Quelle, Stammordner oder Regeln, wird alles neu ausgewertet.
+ *
+ * @extends AbstractCloudIntakeSource<PaperlessClient, array{since: ?string, fingerprint: string, seen: list<int>, queue: ?list<int>, next: ?string}>
  */
-class PaperlessIntake {
+class PaperlessIntake extends AbstractCloudIntakeSource {
     public const EXT_TYPE_DOCUMENT = 'document';
-
-    private const CHECKPOINT_VERSION = 1;
 
     /** Container-Präfix → Filter der Dokumentliste. */
     private const FILTERS = ['tag' => 'tags__id__all', 'correspondent' => 'correspondent__id', 'type' => 'document_type__id'];
@@ -53,7 +51,7 @@ class PaperlessIntake {
 
     public function account(CloudDocumentConnection $connection): IntakeAccount {
         $organizationId = (int) $connection->organization_id;
-        $baseUrl = $this->clients->baseUrl($organizationId) ?? throw new RuntimeException('Paperless-ngx ist nicht eingerichtet.');
+        $baseUrl = $this->requireBaseUrl($organizationId);
         $user = $this->clients->for($organizationId)->currentUser();
 
         return new IntakeAccount(
@@ -149,15 +147,24 @@ class PaperlessIntake {
         return $baseUrl . '/documents/' . $documentId . '/details';
     }
 
-    private function client(CloudDocumentConnection $connection): PaperlessClient {
-        $organizationId = (int) $connection->organization_id;
-        $baseUrl = $this->clients->baseUrl($organizationId) ?? throw new RuntimeException('Paperless-ngx ist nicht eingerichtet.');
-        $account = (string) $connection->external_account_id;
-        if ($account !== '' && ! str_starts_with($account, SelfHostedInstance::key($baseUrl) . ':')) {
-            throw new PaperlessInstanceChangedException('Die Plugin-Einstellungen zeigen auf eine andere Paperless-Instanz als diese Verbindung.');
-        }
+    protected function sourceName(): string {
+        return 'Paperless-ngx';
+    }
 
+    protected function configuredBaseUrl(int $organizationId): ?string {
+        return $this->clients->baseUrl($organizationId);
+    }
+
+    protected function clientFor(int $organizationId): PaperlessClient {
         return $this->clients->for($organizationId);
+    }
+
+    protected function instanceChanged(): RuntimeException {
+        return new PaperlessInstanceChangedException('Die Plugin-Einstellungen zeigen auf eine andere Paperless-Instanz als diese Verbindung.');
+    }
+
+    protected function invalidCheckpoint(?Throwable $cause = null): RuntimeException {
+        return new StaleCheckpointException('Paperless-Checkpoint ungültig.', 0, $cause);
     }
 
     /** @return array<string, string> */
@@ -293,30 +300,11 @@ class PaperlessIntake {
         return $extension !== '' ? $title . '.' . $extension : $title;
     }
 
-    /** Quelle, Stammordner und aktive Regeln — ändert sich das, wird neu ausgewertet. */
-    private function fingerprint(CloudDocumentConnection $connection): string {
-        $routes = $connection->routes()->where('active', true)->orderBy('id')->get(['id', 'updated_at'])
-            ->map(static fn (CloudDocumentRoute $route): array => [$route->id, $route->updated_at?->format('U.u')])
-            ->all();
-
-        return (string) CryptoHelper::hash(JsonHelper::encode([$connection->container_id, $connection->root_folder_path, $routes]), HashAlgorithm::SHA256);
+    protected function emptyState(): array {
+        return ['since' => null, 'fingerprint' => '', 'seen' => [], 'queue' => null, 'next' => null];
     }
 
-    /**
-     * @return array{since: ?string, fingerprint: string, seen: list<int>, queue: ?list<int>, next: ?string}
-     */
-    private function decode(?string $checkpoint): array {
-        if ($checkpoint === null || $checkpoint === '') {
-            return ['since' => null, 'fingerprint' => '', 'seen' => [], 'queue' => null, 'next' => null];
-        }
-        try {
-            $data = JsonHelper::decode($checkpoint);
-        } catch (InvalidArgumentException $e) {
-            throw new StaleCheckpointException('Paperless-Checkpoint ungültig.', 0, $e);
-        }
-        if (! is_array($data) || ($data['v'] ?? null) !== self::CHECKPOINT_VERSION) {
-            throw new StaleCheckpointException('Paperless-Checkpoint ungültig.');
-        }
+    protected function stateFrom(array $data): array {
         $ids = static fn (mixed $list): array => is_array($list) ? array_values(array_filter($list, 'is_int')) : [];
         $timestamp = static fn (mixed $value): ?string => is_string($value) && $value !== '' ? $value : null;
 
@@ -327,10 +315,5 @@ class PaperlessIntake {
             'queue' => is_array($data['queue'] ?? null) ? $ids($data['queue']) : null,
             'next' => $timestamp($data['next'] ?? null),
         ];
-    }
-
-    /** @param array{since: ?string, fingerprint: string, seen: list<int>, queue: ?list<int>, next: ?string} $state */
-    private function encode(array $state): string {
-        return JsonHelper::encode(['v' => self::CHECKPOINT_VERSION] + $state);
     }
 }

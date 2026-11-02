@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Enums\Invoicing\InvoiceStatus;
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Models\Invoicing\Invoice;
 use App\Services\Invoicing\{DunningException, DunningService};
@@ -31,10 +32,11 @@ use Illuminate\View\View;
  * NIE — gemahnt wird dort, wo der Beleg geführt wird (z. B. Lexoffice).
  */
 class DunningRunController extends Controller {
+    use AuthorizesOrganizationManagement;
     public function __construct(private readonly DunningService $dunning) {}
 
     public function index(Request $request): View {
-        abort_unless($request->user()?->canManageBilling() ?? false, 403);
+        $this->authorizeBilling();
 
         [$candidates, $waiting, $blocked] = $this->partition();
 
@@ -57,7 +59,7 @@ class DunningRunController extends Controller {
 
     /** Sammelmahnung: je Rechnung Stufen-Defaults + Mail; Fehler einzeln sammeln. */
     public function run(Request $request): RedirectResponse {
-        abort_unless($request->user()?->canManageBilling() ?? false, 403);
+        $this->authorizeBilling();
 
         $data = $request->validate([
             'ids' => ['required', 'array', 'min:1'],

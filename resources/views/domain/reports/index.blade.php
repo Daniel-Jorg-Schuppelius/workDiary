@@ -17,7 +17,7 @@
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         @foreach ($corridors as $days => $count)
-            <x-kpi-tile :label="__('domain.reports.expiry_corridor', ['days' => $days])" :value="$count" />
+            <x-kpi-tile :label="__('domain.reports.expiry_corridor', ['days' => $days])" :value="$count" :href="route('domains.index', ['expiry_within' => $days])" />
         @endforeach
     </div>
 

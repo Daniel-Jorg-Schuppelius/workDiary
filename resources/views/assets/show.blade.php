@@ -92,7 +92,7 @@
             <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <x-kpi-tile :label="__('Offene Issues')" :value="$openIssueTotal" :tone="$openIssueTotal > 0 ? 'warning' : 'neutral'" />
                 <x-kpi-tile :label="__('Kritisch')" :value="$criticalIssueTotal" :tone="$criticalIssueTotal > 0 ? 'error' : 'neutral'" />
-                <x-kpi-tile :label="__('Defektprotokolle')" :value="$defectProtocolTotal" :tone="$defectProtocolTotal > 0 ? 'warning' : 'neutral'" />
+                <x-kpi-tile :label="__('Defektprotokolle')" :value="$defectProtocolTotal" :tone="$defectProtocolTotal > 0 ? 'warning' : 'neutral'" href="#asset-protocols" />
                 <x-kpi-tile :label="__('Verknüpfungen sichtbar')" :value="$linkedTotal" tone="neutral" />
             </div>
         </x-card>
@@ -549,7 +549,7 @@
         </x-card>
 
         {{-- ── Protokolle ───────────────────────────────────────────────────── --}}
-        <x-card :title="__('Protokolle')" icon="description" :count="$visibleCounts['protocols']">
+        <x-card :title="__('Protokolle')" icon="description" :count="$visibleCounts['protocols']" id="asset-protocols" class="scroll-mt-24">
             <x-slot:actions>
                 @can('create', \App\Models\Protocol\Protocol::class)
                     <x-icon-btn icon="note_add" size="sm" data-entry-modal-trigger :href="route('protocols.create', ['subject_kind' => 'asset', 'subject' => $asset->sqid])" show-label>{{ __('protocol.title.create') }}</x-icon-btn>

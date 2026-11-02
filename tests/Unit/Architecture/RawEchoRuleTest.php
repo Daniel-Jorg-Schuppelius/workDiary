@@ -57,6 +57,7 @@ class RawEchoRuleTest extends TestCase {
         'resources/views/plugins/oauth-popup-result.blade.php' => 'json_encode der eigenen Herkunft und des Status.',
         // Plugin-Slots (das Plugin verantwortet sein Markup)
         'resources/views/events/_form_dialog.blade.php' => 'Plugin-Slot.',
+        'resources/views/admin/plugins/_form_dialog.blade.php' => 'Plugin-Slot „plugin-settings.actions“ (gap-12, Vollscan 2026-11-02).',
         'resources/views/attendances/index.blade.php' => 'Plugin-Slot.',
         'resources/views/invoices/show.blade.php' => 'Plugin-Slot.',
         'resources/views/assets/show.blade.php' => 'Plugin-Slot.',

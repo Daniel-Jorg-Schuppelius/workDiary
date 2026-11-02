@@ -21,13 +21,21 @@
     @include('purchase-orders._tabs')
 
     {{-- Tab-Strip über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}
-    <x-tab-nav :items="collect([['label' => __('Alle'), 'route' => 'purchase-orders.index', 'active' => $status === 'all']])
+    @php($supplierParams = $supplierFilter !== null ? ['supplier' => $supplierFilter->sqid] : [])
+    <x-tab-nav :items="collect([['label' => __('Alle'), 'route' => 'purchase-orders.index', 'params' => $supplierParams, 'active' => $status === 'all']])
         ->concat(collect($statuses)->map(fn($st) => [
             'label' => $st->label(),
             'route' => 'purchase-orders.index',
-            'params' => ['status' => $st->value],
+            'params' => ['status' => $st->value] + $supplierParams,
             'active' => $status === $st->value,
         ]))->all()" />
+    @if ($supplierFilter !== null)
+        {{-- Kachelfilter der Lieferantenseite: der Hinweis nennt ihn und bietet den Rückweg (ux-pattern-katalog §4). --}}
+        <p class="flex-none text-sm text-muted">
+            {{ __('Filter') }}: {{ $supplierFilter->name }}
+            · <a href="{{ route('purchase-orders.index', $status !== 'all' ? ['status' => $status] : []) }}" class="link link-hover">{{ __('Alle anzeigen') }}</a>
+        </p>
+    @endif
 
     @if ($orders->total() === 0)
         <x-empty-state framed icon="shopping_cart"

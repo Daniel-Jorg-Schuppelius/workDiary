@@ -11092,5 +11092,6 @@
     "Steuersatz hinzufügen": "Añadir tipo impositivo",
     "Steuersatz entfernen": "Quitar tipo impositivo",
     "Netto und Steuer ergeben :sum, nicht das Brutto.": "Neto e impuesto suman :sum, no el bruto.",
-    "Steuersätze": "Tipos impositivos"
+    "Steuersätze": "Tipos impositivos",
+    "Der Eingang ist als „keine Rechnung“ abgelegt — Zuordnung, Werte und Einbehalte lassen sich nicht mehr ändern.": "El documento está archivado como «no es factura»; la asignación, los valores y las retenciones ya no se pueden cambiar."
 }

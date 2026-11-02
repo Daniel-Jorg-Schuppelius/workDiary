@@ -44,7 +44,9 @@ interface VoucherReader {
     /**
      * Positionen der Rechnungen aus `ip_invoice_items` (Feature 185, MVP-1425):
      * `invoice_id`, `item_id`, `item_order`, `item_name`, `item_description`,
-     * `item_quantity`, `item_price` (Spalten laut `000_1.0.0.sql`).
+     * `item_quantity`, `item_price` (Spalten laut `000_1.0.0.sql`), dazu
+     * `item_product_id` (seit 1.4.7) und `item_product_unit` (seit 1.5.0) für
+     * den Artikelbezug der Katalogquelle (gap-09).
      *
      * @param  list<int>  $invoiceIds
      * @return list<array<string, mixed>>

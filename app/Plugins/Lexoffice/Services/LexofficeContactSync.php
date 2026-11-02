@@ -163,7 +163,15 @@ class LexofficeContactSync {
             // Bereits verknüpft: ein evtl. noch offenes Staging-Item ist erledigt.
             $this->resolveUnmatchedInbox($organization, $morphClass, $externalId, $record);
             $this->bump($kind, 'matched');
-            if ($this->applyRemote($record, $remote, $policy, $externalId)) {
+            // Unveränderte Lexoffice-Version: kein Abgleich von Feldern, Adressen und
+            // Ansprechpartnern (perf-07) — nur die Kontaktnummer (lokal kann sie frei
+            // geworden sein) und die Konfliktprüfung darunter bleiben.
+            if ($this->unchangedSince($existingRef, $remote)) {
+                if ($this->applyContactNumber($record, $remote)) {
+                    $record->save();
+                    $this->bump($kind, 'updated');
+                }
+            } elseif ($this->applyRemote($record, $remote, $policy, $externalId)) {
                 $this->bump($kind, 'updated');
             }
             // Konflikt-Erfassung ist unabhängig vom (Metadaten-)Update: auch wenn
@@ -533,6 +541,18 @@ class LexofficeContactSync {
     /**
      * @param  array<string, mixed>  $remote
      */
+    /**
+     * Lexoffice zählt `version` bei jeder Änderung hoch; gleicher Stand wie im Schnappschuss = nichts zu tun.
+     *
+     * @param  array<string, mixed>  $remote
+     */
+    private function unchangedSince(ExternalReference $reference, array $remote): bool {
+        $known = $reference->payload['version'] ?? null;
+
+        return $known !== null && isset($remote['version']) && (int) $known === (int) $remote['version'] && $reference->synced_at !== null;
+    }
+
+    /** @param  array<string, mixed>  $remote */
     private function touchSnapshot(Model $record, array $remote, string $externalId): void {
         ExternalReference::query()
             ->forPlugin((int) $record->getAttribute('organization_id'), LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)

@@ -51,7 +51,7 @@
         @endunless
 
         <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-            <x-kpi-tile :label="__('Fahrten')" :value="$totals['trips']" :hint="$totals['locked'] . ' ' . __('festgeschrieben')" />
+            <x-kpi-tile :label="__('Fahrten')" :value="$totals['trips']" :hint="$totals['locked'] . ' ' . __('festgeschrieben')" href="#logbook-trips" />
             <x-kpi-tile :label="__('Σ km')" :value="$num($totals['km']) . ' km'" />
             @foreach (\App\Enums\Travel\TripKind::cases() as $kind)
                 <x-kpi-tile :label="$kind->label()" :value="$num($totals['by_kind'][$kind->value]) . ' km'" />
@@ -59,7 +59,7 @@
             <x-kpi-tile :label="__('Privater Anteil')" :value="$totals['private_share'] !== null ? $num($totals['private_share'], 1) . ' %' : '–'" />
         </div>
 
-        <x-card>
+        <x-card id="logbook-trips" class="scroll-mt-24">
             @if (empty($rows))
                 <x-empty-state icon="menu_book" :title="__('Keine Fahrten im gewählten Zeitraum.')" />
             @else

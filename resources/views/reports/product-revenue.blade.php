@@ -40,7 +40,7 @@
         <x-kpi-tile :label="__('Nettoumsatz gesamt')" :value="$eur($total)" />
         <x-kpi-tile :label="__('reporting.product_revenue.external_net')" :value="$eur($externalNet)"
                     :hint="__('reporting.product_revenue.external_net_hint')" />
-        <x-kpi-tile :label="__('Artikel mit Umsatz')" :value="$articleCount" />
+        <x-kpi-tile :label="__('Artikel mit Umsatz')" :value="$articleCount" href="#product-revenue-table" />
         <x-kpi-tile :label="__('Anteil ohne Artikelbezug')" :value="$withoutShare !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($withoutShare, 1) . ' %' : '–'"
                     :tone="($withoutShare ?? 0) > 50 ? 'warning' : 'neutral'"
                     :hint="__('Positionen ohne Artikel — Picker in Rechnung/Angebot pflegen.')" />
@@ -75,7 +75,7 @@
         </x-card>
     @endif
 
-    <x-table scroll="flex" :zebra="true" table-sort="client">
+    <x-table scroll="flex" :zebra="true" table-sort="client" id="product-revenue-table">
         <x-slot:head>
             <tr>
                 <x-table.th sort type="string">{{ __('Artikelnummer') }}</x-table.th>

@@ -55,6 +55,7 @@ con viaggi, rifornimenti, costi energetici e rimborsi per veicolo.
 - Riquadri: **Veicoli**, **Σ km** (con il numero di viaggi), **Rifornimenti /
   ricariche** (con litri e kWh), **Costi energetici** (con il totale dei
   rimborsi) e **Media €/km**.
+- Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
 - Grafici: **Chilometri per veicolo (top 15)** e i chilometri nel tempo.
 - Tabella per veicolo: **Veicolo**, **Propulsione**, **Viaggi**, **km**,
   **Rimborso**, **Rifornimenti**, **Litri**, **kWh**, **Costi energetici**,
@@ -93,6 +94,7 @@ destinazione, scopo e conducente, totali per tipo di viaggio e quota privata.
 - Riquadri: **Viaggi** (con il numero di viaggi bloccati), **Σ km**, i
   chilometri per tipo di viaggio (**Aziendale**, **Casa–lavoro**, **Privato**)
   e **Quota privata** (chilometri privati rispetto a tutti i chilometri).
+- Un clic su un riquadro di conteggio porta alla tabella o all’elenco che conta; i riquadri di somme e quote non hanno destinazione.
 - Tabella: **Data**, **Km inizio**, **Km fine**, **km**, **Tipo di viaggio**,
   **Destinazione**, **Scopo**, **Conducente** e **Stato** (**bloccato**,
   **aperto** o **stornato**, oltre a **firmato** e **Viaggio di storno**). La

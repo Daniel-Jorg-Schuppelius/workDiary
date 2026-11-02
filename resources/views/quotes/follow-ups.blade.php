@@ -22,15 +22,16 @@
             <x-icon-btn icon="percent" tone="outline" size="sm" :href="route('quotes.win-rate')" show-label>{{ __('quotes.win_rate.link') }}</x-icon-btn>
         </x-slot:actions>
         <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+            {{-- Kacheln springen auf den Abschnitt mit den Zeilen dahinter; leer gibt es keinen (ux-pattern-katalog §4). --}}
             <x-kpi-tile :label="__('quotes.follow_up.kpi.due')" :value="$due->count()" format="int"
-                        :tone="$due->isNotEmpty() ? 'warning' : 'success'" />
-            <x-kpi-tile :label="__('quotes.follow_up.kpi.upcoming')" :value="$upcoming->count()" format="int" />
+                        :tone="$due->isNotEmpty() ? 'warning' : 'success'" :href="$due->isNotEmpty() ? '#follow-up-due' : null" />
+            <x-kpi-tile :label="__('quotes.follow_up.kpi.upcoming')" :value="$upcoming->count()" format="int" :href="$upcoming->isNotEmpty() ? '#follow-up-upcoming' : null" />
             <x-kpi-tile :label="__('quotes.follow_up.kpi.expiring', ['days' => $expiringDays])" :value="$expiring->count()" format="int"
                         :tone="$expiring->isNotEmpty() ? 'error' : 'neutral'"
-                        :hint="__('quotes.follow_up.kpi.expiring_hint')" />
+                        :hint="__('quotes.follow_up.kpi.expiring_hint')" :href="$expiring->isNotEmpty() ? '#follow-up-expiring' : null" />
             <x-kpi-tile :label="__('quotes.follow_up.kpi.untracked')" :value="$untracked->count()" format="int"
                         :tone="$untracked->isNotEmpty() ? 'warning' : 'neutral'"
-                        :hint="__('quotes.follow_up.kpi.untracked_hint')" />
+                        :hint="__('quotes.follow_up.kpi.untracked_hint')" :href="$untracked->isNotEmpty() ? '#follow-up-untracked' : null" />
         </div>
 
         <x-filter-bar :action="route('quotes.follow-ups.index')" :reset="$mine ? route('quotes.follow-ups.index') : null">
@@ -44,7 +45,7 @@
             ['key' => 'untracked', 'rows' => $untracked, 'date' => null, 'tone' => null],
         ] as $section)
             @continue($section['rows']->isEmpty())
-            <x-card>
+            <x-card id="follow-up-{{ $section['key'] }}" class="scroll-mt-24">
                 <h2 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">
                     {{ __('quotes.follow_up.section.' . $section['key']) }}
                 </h2>

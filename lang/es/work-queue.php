@@ -78,4 +78,5 @@ return [
         'all' => 'Ver todo',
         'empty' => 'En este momento no hay ningún elemento esperándole.',
     ],
+    'overflow' => '{1} Un elemento más no aparece: la cola muestra como máximo :limit por fuente.|[2,*] :count elementos más no aparecen: la cola muestra como máximo :limit por fuente.',
 ];

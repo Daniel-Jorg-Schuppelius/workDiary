@@ -225,6 +225,8 @@ class RedmineImportTest extends TestCase {
         $this->serve([], [$this->timeEntry(5001, 3, 1.0, $today), $this->timeEntry(5002, 3, 2.0, $today)]);
         app(RedmineImportService::class)->importTimes($this->organization);
         $this->assertSame(2, TimeEntry::query()->count());
+        // Referenzen jünger als der Abrufbeginn löscht kein Lauf (Karenz).
+        $this->travel(5)->minutes();
 
         $this->serve([], [$this->timeEntry(5001, 3, 1.25, $today)]);
         $counters = app(PluginManager::class)->find(RedminePlugin::ID)?->importTimeEntries($this->organization);

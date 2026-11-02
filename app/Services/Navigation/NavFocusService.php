@@ -67,8 +67,13 @@ class NavFocusService {
         return str_starts_with($key, self::PERSONAL_PREFIX);
     }
 
+    /** @var array<int, list<UserWorkspace>> Nutzer → eigene Arbeitsbereiche, je Request einmal (scoped gebunden) */
+    private array $personal = [];
+
     /**
-     * Eigene Arbeitsbereiche der Person (leer ohne Person).
+     * Eigene Arbeitsbereiche der Person (leer ohne Person) — je Request einmal
+     * geladen; Layout, Fokuswahl und Schlüsselsuche fragten bis zu viermal
+     * (Leistungsanalyse 2026-11-02, perfc-10).
      *
      * @return list<UserWorkspace>
      */
@@ -77,7 +82,12 @@ class NavFocusService {
             return [];
         }
 
-        return array_values(UserWorkspace::query()->forUser($user)->get()->all());
+        return $this->personal[(int) $user->id] ??= array_values(UserWorkspace::query()->forUser($user)->get()->all());
+    }
+
+    /** Memo vergessen — nach dem Anlegen, Ändern oder Löschen eines Arbeitsbereichs im selben Request. */
+    public function forgetPersonal(): void {
+        $this->personal = [];
     }
 
     /** Eigener Arbeitsbereich zum Schlüssel — nur der eigene, nie ein fremder. */

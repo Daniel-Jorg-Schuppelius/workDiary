@@ -26,7 +26,7 @@
     @include('passenger._tabs')
 
     <div class="grid gap-4 sm:grid-cols-2">
-        <x-kpi-tile :label="__('passenger.settlements.kpi.open')" :value="$openCount" />
+        <x-kpi-tile :label="__('passenger.settlements.kpi.open')" :value="$openCount" :href="route('passenger-settlements.index', ['status' => \App\Enums\Passenger\ShiftSettlementStatus::Open->value])" :active="request('status') === \App\Enums\Passenger\ShiftSettlementStatus::Open->value" />
     </div>
 
     <x-filter-bar :action="route('passenger-settlements.index')" :reset="route('passenger-settlements.index')">

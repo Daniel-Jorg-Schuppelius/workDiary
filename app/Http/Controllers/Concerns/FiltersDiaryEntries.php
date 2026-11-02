@@ -39,6 +39,8 @@ trait FiltersDiaryEntries {
             // Status zusammenfassen) — sonst Einzelstatus wie bisher (numerisch).
             $statusGroups = [
                 'progress' => [1, 4],       // In Bearbeitung (InProgress, Accepted)
+                'active' => [1, 3, 4, 5],   // Kachel „In Bearbeitung“ des Auftragsbuchs (progress + alert)
+                'open' => [2, 3],           // Dashboard-Kachel „offene Einträge“ (Open, Problem)
                 'alert' => [3, 5],          // Probleme (WaitingCustomer, WaitingMaterial)
                 'done' => [-1, 6, 7],       // Erledigt (Done, AcceptedFinal, Invoiced)
             ];

@@ -29,10 +29,12 @@
         <div class="grid gap-3 sm:grid-cols-2">
             <x-kpi-tile :label="__('Offen')"
                         :value="(string) ($counts[\App\Enums\Expense\ExpenseStatus::Pending->value] ?? 0)"
-                        :tone="($counts[\App\Enums\Expense\ExpenseStatus::Pending->value] ?? 0) > 0 ? 'warning' : 'ghost'" />
+                        :tone="($counts[\App\Enums\Expense\ExpenseStatus::Pending->value] ?? 0) > 0 ? 'warning' : 'ghost'"
+                        :href="route('expense-approvals.inbox', ['status' => \App\Enums\Expense\ExpenseStatus::Pending->value])" :active="$statusEnum === \App\Enums\Expense\ExpenseStatus::Pending" />
             <x-kpi-tile :label="__('Genehmigt, wartet auf Erstattung')"
                         :value="(string) ($counts[\App\Enums\Expense\ExpenseStatus::Approved->value] ?? 0)"
-                        tone="info" />
+                        tone="info"
+                        :href="route('expense-approvals.inbox', ['status' => \App\Enums\Expense\ExpenseStatus::Approved->value])" :active="$statusEnum === \App\Enums\Expense\ExpenseStatus::Approved" />
         </div>
 
         @php($bulkEnabled = $statusEnum === \App\Enums\Expense\ExpenseStatus::Pending && $expenses->isNotEmpty())

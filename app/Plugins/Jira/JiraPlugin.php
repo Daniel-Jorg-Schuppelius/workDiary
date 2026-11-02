@@ -14,13 +14,12 @@ namespace App\Plugins\Jira;
 
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
-use App\Models\Project\Task;
-use App\Plugins\{AbstractPlugin, PluginHealth};
+use App\Plugins\AbstractPlugin;
 use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer, TaskSyncer};
 use App\Plugins\Jira\Api\JiraClientFactory;
 use App\Plugins\Jira\Models\JiraConnection;
 use App\Plugins\Jira\Services\JiraImportService;
-use App\Plugins\Support\ApiHealthProbe;
+use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink};
 
 /**
  * Jira-Cloud-Aufgabenimport (Feature 169, Phase 157): ausgewählte Projekte
@@ -29,6 +28,8 @@ use App\Plugins\Support\ApiHealthProbe;
  * Herausgebers; Abgleich alle 15 Minuten, Vollabgleich täglich.
  */
 class JiraPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
+    use ChecksConnectionHealth, RendersTaskLink;
+
     public const ID = 'jira';
 
     public const SERVICE_PROVIDER = JiraServiceProvider::class;
@@ -64,37 +65,24 @@ class JiraPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRen
         return ['route' => 'admin.jira.index', 'label' => 'Jira', 'icon' => 'bug_report'];
     }
 
-    public function healthCheck(): PluginHealth {
-        $organization = $this->healthOrgContext();
-        if ($organization instanceof PluginHealth) {
-            return $organization;
-        }
-        if (! JiraConfig::isConfigured()) {
-            return PluginHealth::degraded((string) __('jira::jira.health.not_configured'), 'not_configured');
-        }
-        $connection = JiraConnection::query()->where('organization_id', $organization->id)->first();
-        if (! $connection instanceof JiraConnection || ! $connection->isReady()) {
-            return PluginHealth::degraded((string) __('jira::jira.health.not_connected'), 'not_connected');
-        }
+    protected function healthConfigured(int $organizationId): bool {
+        return JiraConfig::isConfigured();
+    }
 
-        return ApiHealthProbe::probe('Jira', fn () => app(JiraClientFactory::class)->for((int) $organization->id)->probe());
+    protected function healthConnectionModel(): string {
+        return JiraConnection::class;
+    }
+
+    protected function healthProbe(int $organizationId): void {
+        app(JiraClientFactory::class)->for($organizationId)->probe();
     }
 
     public function externalRecordUrl(ExternalReference $reference): ?string {
         return $reference->plugin_id === self::ID ? app(JiraImportService::class)->sourceUrl($reference) : null;
     }
 
-    public function renderActions(string $slot, mixed $context = null): ?string {
-        if ($slot !== 'task-dialog.links' || ! $context instanceof Task || ! $this->isEnabled()) {
-            return null;
-        }
-        $reference = ExternalReference::query()
-            ->forPlugin($context->organization_id, self::ID, self::EXT_TYPE_ISSUE)
-            ->forReferenceable($context)
-            ->first();
-        $url = $reference !== null ? $this->externalRecordUrl($reference) : null;
-
-        return $url !== null ? view('plugins.task-import._link', ['url' => $url, 'label' => (string) __('jira::jira.task_link')])->render() : null;
+    protected function taskLinkType(): string {
+        return self::EXT_TYPE_ISSUE;
     }
 
     /** Cloud-ID aus den zugänglichen Ressourcen (UUID-Form, sonst nichts in Pfade). */

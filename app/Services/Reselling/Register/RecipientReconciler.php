@@ -20,8 +20,10 @@ use App\Services\Reselling\Marketplace\{MarketplaceCompany, NameTokenMatcher, Pr
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
 use App\Services\Reselling\Plan\PlanAudit;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Abgleich je Rechnungsempfänger (Feature 152): stellt die fälligen Perioden
@@ -38,6 +40,11 @@ use Illuminate\Support\Collection;
  * Halter im Posteingang. Positionen kommen aus allen Spiegelquellen
  * ({@see InvoiceMirror}); `contact` ist der Empfängerschlüssel der Quelle.
  *
+ * Der Belegspiegel der Organisation wird je Request einmal geladen
+ * ({@see ResaleRequestMemo}) und in Lizenz- und Domainzeilen geteilt; die
+ * Übersicht und die Belegtexte liegen 60 s im Cache unter dem Org-Stempel
+ * ({@see ResaleCacheStamp}) — Leistungsanalyse 2026-11-02, perfc-01/03/09.
+ *
  * @phpstan-type LineRow array{line: MirrorLine, product: string, months: float, licences: float, per_licence: float, linked: float, free: float, periods: list<string>, recipient: string|null, recipient_id: int|null, contact: string, gap: bool}
  * @phpstan-type Candidate array{row: LineRow, distance: int, count: int, rows: list<LineRow>, group_free: float, group_licences: float}
  * @phpstan-type PeriodRow array{period: ResalePeriod, subscription: ResaleSubscription, required: float, covered: float, needed: float, product: string, candidates: list<Candidate>, taken: list<Candidate>, foreign: list<Candidate>, voided: list<Candidate>}
@@ -45,27 +52,107 @@ use Illuminate\Support\Collection;
  * @phpstan-type InboxHint array{company: string, subscriptions: list<ResaleSubscription>, mentions: int}
  * @phpstan-type ProductRow array{key: string, label: string, term: int, subscriptions: int, periods: int, required: float, covered: float, invoiced: float, free: float, missing: float, surplus: float, gap_since: CarbonImmutable|null}
  * @phpstan-type OverviewRow array{customer: Customer|null, name: string, subscriptions: int, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, lines: int, open_amount: Money|null, findings: int, done: bool}
+ * @phpstan-type CachedOverviewRow array{customer_id: int|null, name: string, subscriptions: int, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, lines: int, open_amount: array{amount: string, currency: string}|null, findings: int, done: bool}
+ * @phpstan-type VoucherText array{recipient: int, date: string|null, ends: string|null, text: string}
  */
 final class RecipientReconciler {
+    /** Lebensdauer der Übersicht und der Belegtexte im Cache (Sekunden); der Org-Stempel verwirft früher. */
+    public const CACHE_TTL = 60;
+
     private readonly InvoiceMirror $mirror;
 
     private readonly PeriodLinker $linker;
 
     private readonly PlanAudit $planAudit;
 
-    public function __construct(?InvoiceMirror $mirror = null, ?PeriodLinker $linker = null, private readonly ProductNameMatcher $matcher = new ProductNameMatcher(), ?PlanAudit $planAudit = null) {
+    private readonly ResaleRequestMemo $memo;
+
+    public function __construct(?InvoiceMirror $mirror = null, ?PeriodLinker $linker = null, private readonly ProductNameMatcher $matcher = new ProductNameMatcher(), ?PlanAudit $planAudit = null, ?ResaleRequestMemo $memo = null) {
         $this->mirror = $mirror ?? app(InvoiceMirror::class);
         $this->linker = $linker ?? new PeriodLinker($this->mirror);
         $this->planAudit = $planAudit ?? app(PlanAudit::class);
+        $this->memo = $memo ?? app(ResaleRequestMemo::class);
+    }
+
+    /**
+     * Alle Positionen gültiger Rechnungen der Organisation (ohne Lizenzfilter), je Request einmal geladen.
+     *
+     * @return Collection<int, MirrorLine>
+     */
+    private function allLines(Organization $organization): Collection {
+        return $this->memo->remember('mirror-lines:all:' . $organization->id, fn(): Collection => $this->mirror->linesFor($organization, null, licenceOnly: false));
+    }
+
+    /**
+     * Lizenzpositionen der Organisation — aus derselben Ladung, in PHP getrennt (die Quellen
+     * entscheiden die Einstufung je Zeile, {@see MirrorLine::$articleIsLicence}).
+     *
+     * @return Collection<int, MirrorLine>
+     */
+    private function licenceLines(Organization $organization): Collection {
+        return $this->memo->remember('mirror-lines:licence:' . $organization->id, fn(): Collection => $this->allLines($organization)->filter(static fn(MirrorLine $line): bool => $line->articleIsLicence)->values());
+    }
+
+    /** @return Collection<int, MirrorLine> */
+    private function voidedLines(Organization $organization): Collection {
+        return $this->memo->remember('mirror-lines:voided:' . $organization->id, fn(): Collection => $this->mirror->voidedLines($organization, null));
     }
 
     /**
      * Alle Rechnungsempfänger mit Abos oder Lizenzpositionen, Probleme zuerst.
+     * 60 s im Cache je Organisation und Stichtag (nur Arrays); Liste, „Nächster"
+     * und die Position in der Mappe teilen sich das Ergebnis.
      *
      * @return list<OverviewRow>
      */
     public function overview(Organization $organization, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
+        $key = ResaleCacheStamp::key('reconcile-overview', 1, (int) $organization->id, $reference->toDateString());
+        $cached = Cache::get($key);
+        if (! is_array($cached)) {
+            $cached = $this->overviewRows($organization, $reference);
+            Cache::put($key, $cached, self::CACHE_TTL);
+        }
+        $customerIds = [];
+        foreach ($cached as $row) {
+            if (is_array($row) && is_int($row['customer_id'] ?? null)) {
+                $customerIds[] = $row['customer_id'];
+            }
+        }
+        $customers = $customerIds === [] ? collect() : Customer::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereIn('id', $customerIds)->get(['id', 'name'])->keyBy('id');
+        $rows = [];
+        foreach ($cached as $row) {
+            if (! is_array($row) || ! array_key_exists('customer_id', $row)) {
+                continue;
+            }
+            /** @var CachedOverviewRow $row */
+            $amount = $row['open_amount'];
+            $rows[] = [
+                'customer' => $row['customer_id'] !== null ? $customers->get($row['customer_id']) : null,
+                'name' => $row['name'],
+                'subscriptions' => $row['subscriptions'],
+                'open' => $row['open'],
+                'partial' => $row['partial'],
+                'proposed' => $row['proposed'],
+                'free' => $row['free'],
+                'missing' => $row['missing'],
+                'surplus' => $row['surplus'],
+                'lines' => $row['lines'],
+                'open_amount' => $amount !== null ? Money::of($amount['amount'], CurrencyCode::tryFrom($amount['currency']) ?? CurrencyCode::Euro) : null,
+                'findings' => $row['findings'],
+                'done' => $row['done'],
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Übersicht ohne Cache: Zeilen in Cache-Form (Kunden-ID statt Modell, Betrag als Zahl und Währung).
+     *
+     * @return list<CachedOverviewRow>
+     */
+    private function overviewRows(Organization $organization, CarbonImmutable $reference): array {
         $subscriptions = ResaleSubscription::withCatalogArticles($this->subscriptions($organization)->with('periods.links')->get());
         /** @var array<int, Collection<int, ResaleSubscription>> $byCustomer */
         $byCustomer = [];
@@ -76,7 +163,7 @@ final class RecipientReconciler {
                 $byCustomer[$billedTo->id]->push($subscription);
             }
         }
-        $lines = $this->mirror->linesFor($organization, null);
+        $lines = $this->licenceLines($organization);
         /** @var array<int|string, Collection<int, MirrorLine>> $linesByRecipient Kunden-ID oder Empfängerschlüssel der Quelle */
         $linesByRecipient = [];
         foreach ($lines as $line) {
@@ -107,8 +194,9 @@ final class RecipientReconciler {
             $firstLine = $recipientLines->first();
             $name = $customer !== null ? $customer->name : ($firstLine !== null ? (string) $firstLine->recipientName : '');
             $findings = is_int($key) ? ($findingsByRecipient[$key] ?? 0) : 0;
+            $openAmount = self::openAmount($byCustomer[$key] ?? collect(), $reference);
             $rows[] = [
-                'customer' => $customer,
+                'customer_id' => $customer?->id,
                 'name' => $name !== '' ? $name : '—',
                 'subscriptions' => ($byCustomer[$key] ?? collect())->count(),
                 'open' => $analysis['open'],
@@ -118,14 +206,14 @@ final class RecipientReconciler {
                 'missing' => $analysis['missing'],
                 'surplus' => $analysis['surplus'],
                 'lines' => $recipientLines->count(),
-                'open_amount' => self::openAmount($byCustomer[$key] ?? collect(), $reference),
+                'open_amount' => $openAmount !== null ? ['amount' => $openAmount->getAmount(), 'currency' => $openAmount->getCurrency()->value] : null,
                 'findings' => $findings,
                 // Fertig = keine fällige Periode ohne Entscheidung und kein Vorlagenbefund (Entscheidung des Inhabers 2026-10-31).
                 'done' => $analysis['open'] + $analysis['partial'] === 0 && $findings === 0,
             ];
         }
         // Offener Betrag zuerst (Entscheidung 2026-10-31), dann offene Perioden, Befunde, freie Positionen, Name.
-        usort($rows, static fn(array $a, array $b): int => (($b['open_amount']?->toFloat() ?? 0.0) <=> ($a['open_amount']?->toFloat() ?? 0.0))
+        usort($rows, static fn(array $a, array $b): int => (((float) ($b['open_amount']['amount'] ?? 0.0)) <=> ((float) ($a['open_amount']['amount'] ?? 0.0)))
             ?: (($b['open'] + $b['partial']) <=> ($a['open'] + $a['partial']))
             ?: ($b['findings'] <=> $a['findings'])
             ?: ($b['free'] <=> $a['free'])
@@ -151,10 +239,7 @@ final class RecipientReconciler {
     private static function openAmount(Collection $subscriptions, CarbonImmutable $reference): ?Money {
         $sum = null;
         foreach ($subscriptions as $subscription) {
-            foreach ($subscription->periods as $period) {
-                if (! in_array($period->status, [PeriodStatus::Open, PeriodStatus::Partial], true) || $period->starts_on->greaterThan($reference)) {
-                    continue;
-                }
+            foreach ($subscription->duePeriods($reference) as $period) {
                 $amount = $period->openAmount();
                 if ($amount === null) {
                     continue;
@@ -179,34 +264,26 @@ final class RecipientReconciler {
         $reference ??= ResalePeriod::today();
         $all = ResaleSubscription::withCatalogArticles($this->subscriptions($organization)->with(['periods.links', 'periods.subscription'])->get());
         $subscriptions = $all->filter(static fn(ResaleSubscription $s): bool => $s->billedTo()?->id === $customer->id)->values();
-        // Alle Lizenzpositionen der Organisation: eigene tragen die Bilanz, fremde
-        // zeigen Rechnungen an Schwesterfirmen, stornierte den Grund einer Lücke.
-        $lines = collect();
-        $others = collect();
-        foreach ($this->mirror->linesFor($organization, null) as $line) {
-            if ($line->recipientCustomerId === $customer->id) {
-                $lines->push($line);
-            } else {
-                $others->push($line);
-            }
-        }
         // Domain-Abos: ihre Rechnungen laufen über Artikel ohne Lizenz-Einstufung, der Domainname
         // steht im Positionstext — dazu die Positionen aller Empfänger, die eine Domain des Kunden
         // nennen. Fremde Empfänger darunter sind der häufigste Grund für offene Domain-Perioden
         // (Befund 2026-10-30: Domains beim Steuerbüro, Rechnungen seit 2023 an den Inhaber privat).
-        $domains = array_values($subscriptions->filter(static fn(ResaleSubscription $s): bool => $s->kind === SubscriptionKind::Domain)
-            ->map(static fn(ResaleSubscription $s): string => $s->label)->all());
-        if ($domains !== []) {
-            $known = $lines->merge($others)->map(static fn(MirrorLine $line): string => $line->identity())->flip();
-            foreach ($this->mirror->linesMentioningDomains($organization, null, $domains) as $line) {
-                if ($known->has($line->identity())) {
-                    continue;
-                }
-                if ($line->recipientCustomerId === $customer->id) {
-                    $lines->push($line);
-                } else {
-                    $others->push($line);
-                }
+        $domains = array_values(array_unique(array_filter(array_map(
+            static fn(ResaleSubscription $s): string => mb_strtolower(trim($s->label)),
+            $subscriptions->filter(static fn(ResaleSubscription $s): bool => $s->kind === SubscriptionKind::Domain)->all(),
+        ))));
+        // Eine Ladung aller Positionen der Organisation (perfc-01): Lizenzpositionen tragen die Bilanz —
+        // eigene, fremde (Rechnungen an Schwesterfirmen) —, die übrigen zählen nur, wenn sie eine Domain nennen.
+        $lines = collect();
+        $others = collect();
+        foreach ($this->allLines($organization) as $line) {
+            if (! $line->articleIsLicence && ! self::mentionsAnyDomain($line, $domains)) {
+                continue;
+            }
+            if ($line->recipientCustomerId === $customer->id) {
+                $lines->push($line);
+            } else {
+                $others->push($line);
             }
         }
         // Verwandte Empfänger: Name teilt ein Kern-Token mit dem Empfänger, den
@@ -217,7 +294,7 @@ final class RecipientReconciler {
         foreach ($subscriptions as $subscription) {
             $relatedKeys += self::holderTokens($subscription);
         }
-        $allVoided = $this->mirror->voidedLines($organization, null);
+        $allVoided = $this->voidedLines($organization);
         $recipientTokens = $this->recipientTokens($others->merge($allVoided), $customer->id);
         $voided = $allVoided->filter(static fn(MirrorLine $line): bool => $line->recipientCustomerId === $customer->id
             || array_intersect_key($recipientTokens[$line->recipientKey] ?? [], $relatedKeys) !== [])->values();
@@ -227,6 +304,21 @@ final class RecipientReconciler {
 
         return ['subscriptions' => $subscriptions, 'has_source' => $this->mirror->coversRecipient($organization, $customer), 'pending' => $pending, 'inbox' => $inbox, 'credit_notes' => $this->creditNoteRows($organization, $customer)]
             + $this->analyze($subscriptions, $lines, $linkedMonths, $reference, $others, $voided, $recipientTokens, $baseTokens, $customer->id);
+    }
+
+    /**
+     * Nennt die Position eine der Domains — exakt oder mit Tippfehler (wie {@see InvoiceMirror::linesMentioningDomains()})?
+     *
+     * @param  list<string>  $domains  klein geschrieben
+     */
+    private static function mentionsAnyDomain(MirrorLine $line, array $domains): bool {
+        foreach ($domains as $domain) {
+            if ($line->mentionsDomain($domain) || $line->mentionsDomainLoosely($domain, $domains)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -301,6 +393,8 @@ final class RecipientReconciler {
     /**
      * Umgekehrte Richtung für den Posteingang (Pilot 2026-11-01): je Firma ohne Halter die Rechnungsempfänger,
      * in deren Rechnungstexten sie steht — meist der Partner, der den Endkunden abrechnet. Meiste Belege zuerst.
+     * Die Belegtexte (je Beleg: Empfänger, Datum, Leistungsende, Text) liegen 60 s im Cache (perfc-09);
+     * das Fenster ab `$from` (Belegdatum oder Leistungsende) greift auf dem Cache-Stand.
      *
      * @param  list<string>  $companies
      * @return array<string, list<array{customer: Customer, vouchers: int}>> Firma → Empfänger
@@ -309,17 +403,14 @@ final class RecipientReconciler {
         if ($companies === []) {
             return [];
         }
-        /** @var array<string, array{recipient: int, text: string}> $texts */
-        $texts = [];
-        foreach ($this->mirror->linesFor($organization, null, $from) as $line) {
-            if ($line->recipientCustomerId === null) {
+        $fromDay = $from->toDateString();
+        $tokens = [];
+        foreach ($this->voucherTexts($organization) as $voucher => $entry) {
+            if (($entry['date'] === null || $entry['date'] < $fromDay) && ($entry['ends'] === null || $entry['ends'] < $fromDay)) {
                 continue;
             }
-            $voucher = $line->sourceKey . ':' . $line->voucherKey;
-            $texts[$voucher] ??= ['recipient' => $line->recipientCustomerId, 'text' => trim((string) $line->voucherText)];
-            $texts[$voucher]['text'] .= ' ' . $line->text();
+            $tokens[$voucher] = ['recipient' => $entry['recipient'], 'tokens' => NameTokenMatcher::significantTokens($entry['text'])];
         }
-        $tokens = array_map(static fn(array $entry): array => ['recipient' => $entry['recipient'], 'tokens' => NameTokenMatcher::significantTokens($entry['text'])], $texts);
         /** @var array<string, array<int, int>> $counts */
         $counts = [];
         /** @var array<int, int> $ids */
@@ -346,6 +437,41 @@ final class RecipientReconciler {
         }
 
         return $result;
+    }
+
+    /**
+     * Rechnungstexte je Beleg (Belegtext + Positionstexte) der Lizenzrechnungen mit bekanntem
+     * Empfänger — nur Skalare, 60 s je Organisation unter dem Org-Stempel.
+     *
+     * @return array<string, VoucherText> Quelle:Beleg → Eintrag
+     */
+    private function voucherTexts(Organization $organization): array {
+        $key = ResaleCacheStamp::key('voucher-texts', 1, (int) $organization->id);
+        $cached = Cache::get($key);
+        if (! is_array($cached)) {
+            $cached = [];
+            foreach ($this->licenceLines($organization) as $line) {
+                if ($line->recipientCustomerId === null) {
+                    continue;
+                }
+                $voucher = $line->sourceKey . ':' . $line->voucherKey;
+                $cached[$voucher] ??= ['recipient' => $line->recipientCustomerId, 'date' => $line->voucherDate?->toDateString(), 'ends' => null, 'text' => trim((string) $line->voucherText)];
+                $cached[$voucher]['text'] .= ' ' . $line->text();
+                $ends = $line->serviceTo?->toDateString();
+                if ($ends !== null && ($cached[$voucher]['ends'] === null || $ends > $cached[$voucher]['ends'])) {
+                    $cached[$voucher]['ends'] = $ends;
+                }
+            }
+            Cache::put($key, $cached, self::CACHE_TTL);
+        }
+        $texts = [];
+        foreach ($cached as $voucher => $entry) {
+            if (is_array($entry) && is_int($entry['recipient'] ?? null) && is_string($entry['text'] ?? null)) {
+                $texts[(string) $voucher] = ['recipient' => $entry['recipient'], 'date' => is_string($entry['date'] ?? null) ? $entry['date'] : null, 'ends' => is_string($entry['ends'] ?? null) ? $entry['ends'] : null, 'text' => $entry['text']];
+            }
+        }
+
+        return $texts;
     }
 
     /**
@@ -403,9 +529,9 @@ final class RecipientReconciler {
      *
      * @param  array<int, string>  $productBySubscription
      * @param  Collection<int, ResaleSubscription>  $subscriptions
+     * @param  list<string>  $domains  Domains der Abos (Tippfehler-Erkennung), einmal je Analyse berechnet
      */
-    private function lineProductKey(MirrorLine $line, array $productBySubscription, Collection $subscriptions): string {
-        $domains = array_values($subscriptions->filter(static fn(ResaleSubscription $s): bool => $s->kind === SubscriptionKind::Domain)->map(static fn(ResaleSubscription $s): string => $s->label)->all());
+    private function lineProductKey(MirrorLine $line, array $productBySubscription, Collection $subscriptions, array $domains): string {
         foreach ($subscriptions as $subscription) {
             if (isset($productBySubscription[$subscription->id]) && LinkProposer::matchesProductOf($subscription, $line, $this->matcher, $domains)) {
                 return $productBySubscription[$subscription->id];
@@ -476,7 +602,16 @@ final class RecipientReconciler {
             $productBySubscription[$subscription->id] = $key;
             $labels[$key] ??= $subscription->productName();
         }
-        $productOf = fn(MirrorLine $line): string => $this->lineProductKey($line, $productBySubscription, $subscriptions);
+        // Domains einmal je Analyse; gleiche Positionen (Artikel, Text, Einstufung) bekommen den Schlüssel
+        // nur einmal berechnet — der Abgleich je Abo (Namensmatch) ist der teure Teil (perfc-03).
+        $domains = array_values($subscriptions->filter(static fn(ResaleSubscription $s): bool => $s->kind === SubscriptionKind::Domain)->map(static fn(ResaleSubscription $s): string => $s->label)->all());
+        /** @var array<string, string> $productKeys Zeilensignatur → Produktschlüssel */
+        $productKeys = [];
+        $productOf = function (MirrorLine $line) use (&$productKeys, $productBySubscription, $subscriptions, $domains): string {
+            $signature = implode("\x1f", [(string) $line->articleKey, $line->articleIsLicence ? '1' : '0', (string) $line->articleName, $line->name, (string) $line->description]);
+
+            return $productKeys[$signature] ??= $this->lineProductKey($line, $productBySubscription, $subscriptions, $domains);
+        };
 
         /** @var list<LineRow> $lineRows */
         $lineRows = [];
@@ -517,6 +652,22 @@ final class RecipientReconciler {
             $own = $ownCustomerId !== null && $line->recipientCustomerId === $ownCustomerId;
             $recipient = trim((string) $line->recipientName);
             $voidedRows[] = ['line' => $line, 'product' => $productOf($line), 'months' => $split['licences'] * $split['months'], 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => 0.0, 'free' => 0.0, 'periods' => [], 'recipient' => $own || $recipient === '' ? null : $recipient, 'recipient_id' => null, 'contact' => $line->recipientKey, 'gap' => false];
+        }
+        // Je Produkt gruppiert: die Periodenschleife sieht nur die Zeilen ihres Produkts (perfc-03).
+        /** @var array<string, list<LineRow>> $lineRowsByProduct */
+        $lineRowsByProduct = [];
+        foreach ($lineRows as $lineRow) {
+            $lineRowsByProduct[$lineRow['product']][] = $lineRow;
+        }
+        /** @var array<string, list<LineRow>> $otherRowsByProduct */
+        $otherRowsByProduct = [];
+        foreach ($otherRows as $lineRow) {
+            $otherRowsByProduct[$lineRow['product']][] = $lineRow;
+        }
+        /** @var array<string, list<LineRow>> $voidedRowsByProduct */
+        $voidedRowsByProduct = [];
+        foreach ($voidedRows as $lineRow) {
+            $voidedRowsByProduct[$lineRow['product']][] = $lineRow;
         }
 
         /** @var array<string, int> $subscriptionCount */
@@ -564,10 +715,7 @@ final class RecipientReconciler {
 
         foreach ($periodRows as $index => $row) {
             $start = $row['period']->starts_on;
-            foreach ($lineRows as $lineRow) {
-                if ($lineRow['product'] !== $row['product']) {
-                    continue;
-                }
+            foreach ($lineRowsByProduct[$row['product']] ?? [] as $lineRow) {
                 // Bezug = Beginn des Leistungszeitraums, sonst Rechnungsdatum; nur im Fenster der
                 // Periode (bei Mehrperioden-Positionen verlängert) — oder der Leistungszeitraum
                 // deckt den Periodenbeginn.
@@ -587,10 +735,7 @@ final class RecipientReconciler {
             /** @var array<string, float> $sumsByContact */
             $sumsByContact = [];
             if ($row['required'] > 12.001) {
-                foreach ($otherRows as $lineRow) {
-                    if ($lineRow['product'] !== $row['product']) {
-                        continue;
-                    }
+                foreach ($otherRowsByProduct[$row['product']] ?? [] as $lineRow) {
                     $date = LicenseMonths::referenceDate($lineRow['line']);
                     if ($date === null || abs($date->diffInDays($start)) > LinkProposer::WINDOW_BEFORE) {
                         continue;
@@ -601,11 +746,8 @@ final class RecipientReconciler {
             // Summe = ganze Periode (nicht nur der Rest), dicht am Periodenbeginn — sonst
             // trifft jede Firma mit zufällig gleich vielen Lizenzen.
             $formerHolders = array_keys(array_filter($sumsByContact, static fn(float $sum): bool => abs($sum - $row['required']) < 0.001));
-            foreach ([['foreign', $otherRows], ['voided', $voidedRows]] as [$bucket, $rows]) {
+            foreach ([['foreign', $otherRowsByProduct[$row['product']] ?? []], ['voided', $voidedRowsByProduct[$row['product']] ?? []]] as [$bucket, $rows]) {
                 foreach ($rows as $lineRow) {
-                    if ($lineRow['product'] !== $row['product']) {
-                        continue;
-                    }
                     $date = LicenseMonths::referenceDate($lineRow['line']);
                     if ($date === null || ! LinkProposer::inWindow($row['period'], $lineRow['line'])) {
                         continue;

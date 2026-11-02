@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace App\Plugins\Akaunting;
 
-use App\Plugins\Akaunting\Services\{AkauntingVoucherLinks, AkauntingVoucherPullService};
+use App\Plugins\Akaunting\Services\{AkauntingArticleCatalogSource, AkauntingVoucherLinks, AkauntingVoucherPullService};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
 use App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry;
+use App\Services\Platform\Catalog\ArticleCatalog;
 
 class AkauntingServiceProvider extends PluginServiceProviderBase {
     protected function pluginId(): string {
@@ -27,5 +28,7 @@ class AkauntingServiceProvider extends PluginServiceProviderBase {
         $this->app->make(VoucherPullerRegistry::class)->register(AkauntingVoucherPullService::class);
         // Link zum Original im Belegfluss.
         $this->app->make(DocumentFeedSourceRegistry::class)->register(new AkauntingVoucherLinks);
+        // Artikelkatalog (Feature 185, gap-09): Artikel erreichen den Kern nur über diese Quelle.
+        $this->app->make(ArticleCatalog::class)->register($this->app->make(AkauntingArticleCatalogSource::class));
     }
 }

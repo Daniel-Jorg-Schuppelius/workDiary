@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Invoicing;
 use App\Enums\Finance\MandateStatus;
 use App\Enums\Invoicing\{InvoiceDeliveryFormat, InvoiceStatus};
 use App\Enums\User\Permission;
-use App\Http\Controllers\Concerns\SplitsRecipientLists;
+use App\Http\Controllers\Concerns\{AuthorizesOrganizationManagement, SplitsRecipientLists};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Invoicing\SaveInvoiceItemRequest;
 use App\Mail\InvoiceMail;
@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\{Auth, DB, Gate, Mail};
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class InvoiceController extends Controller {
+    use AuthorizesOrganizationManagement;
     use SplitsRecipientLists;
 
     public function create(Request $request): View {
@@ -321,7 +322,7 @@ class InvoiceController extends Controller {
 
     /** Mahn-Dialog (MVP-163, UI-Nacharbeit): Stufe + optionaler Mailversand. */
     public function dunForm(\Illuminate\Http\Request $request, Invoice $invoice): View {
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $this->authorizeBilling();
         abort_unless($invoice->isOverdue() && (int) $invoice->dunning_level < 3 && ! $invoice->isDunningBlocked(), 422);
         $invoice->load('customer');
 
@@ -381,7 +382,7 @@ class InvoiceController extends Controller {
     public function dun(Request $request, Invoice $invoice): RedirectResponse {
         // Mahnen betrifft AUSGESTELLTE Rechnungen — die issue-Policy (nur
         // draft) passt nicht; Maßstab ist das Abrechnungsrecht.
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $this->authorizeBilling();
 
         $data = $request->validate([
             'send_mail' => ['nullable', 'boolean'],
@@ -416,14 +417,14 @@ class InvoiceController extends Controller {
 
     /** Dialog „Mahnsperre setzen" (MVP-874): Grund ist Pflicht. */
     public function dunningBlockForm(Invoice $invoice): View {
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $this->authorizeBilling();
 
         return view('invoices._dunning_block_dialog', ['invoice' => $invoice, 'isDialog' => true]);
     }
 
     /** Mahnsperre setzen (Feature 127, MVP-691/874): gesperrte Rechnungen bleiben im Mahnlauf und im Einzeldialog außen vor. */
     public function blockDunning(Request $request, Invoice $invoice, DunningService $dunning): RedirectResponse {
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $this->authorizeBilling();
         $data = $request->validate(['reason' => ['required', 'string', 'max:255']]);
         $dunning->block($invoice, (string) $data['reason'], $request->user() ?? abort(401));
 
@@ -431,7 +432,7 @@ class InvoiceController extends Controller {
     }
 
     public function unblockDunning(Request $request, Invoice $invoice, DunningService $dunning): RedirectResponse {
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $this->authorizeBilling();
         $dunning->unblock($invoice, $request->user() ?? abort(401));
 
         return back()->with('status', __('finance.dunning.flash_unblocked', ['nr' => (string) $invoice->number]));
@@ -464,7 +465,7 @@ class InvoiceController extends Controller {
      * Vermerk mit Pflichtnote — der festgeschriebene Beleg bleibt unverändert.
      */
     public function documentObjection(Request $request, Invoice $invoice): RedirectResponse {
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $this->authorizeBilling();
 
         if (! $invoice->isCreditNote()) {
             return back()->with('error', __('Ein Widerspruch ist nur bei Gutschriften dokumentierbar.'));
