@@ -175,13 +175,18 @@ class ResalePeriod extends Model {
 
     /** Erwarteter Verkauf der offenen Monate: Soll × offen/benötigt (null ohne Verkaufspreis). */
     public function openAmount(): ?Money {
+        return $this->amountForMonths($this->openMonths());
+    }
+
+    /** Anteil am Soll-Verkauf für so viele Lizenzmonate. */
+    public function amountForMonths(float $months): ?Money {
         $sale = $this->expected_sale;
         $required = $this->requiredMonths();
         if ($sale === null || $required <= 0.0) {
             return null;
         }
 
-        return $sale->times($this->openMonths())->dividedBy($required)->withScale(2);
+        return $sale->times($months)->dividedBy($required)->withScale(2);
     }
 
     /** Status aus der Deckung: voll = berechnet, etwas = teilweise, nichts = offen (Toleranz 0,001). */

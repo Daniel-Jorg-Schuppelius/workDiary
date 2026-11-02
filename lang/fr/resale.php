@@ -406,6 +406,7 @@ return [
         ],
         'error' => [
             'nothing_open' => 'Aucune période ouverte avec prix de vente pour ce destinataire.',
+            'all_planned' => 'Les périodes ouvertes de ce destinataire sont facturées par un modèle récurrent actif.',
         ],
         'already_drafted' => 'Un brouillon est déjà en attente pour ce destinataire (:reference du :date). Finalisez-le d’abord dans Lexoffice ou localement, ou décidez la période.', // Review 2026-09-10
         'no_target' => 'Aucune cible de brouillon n’est enregistrée pour le mode de facturation « :mode » de ce destinataire — activez le plugin ou passez le client en facturation locale.', // Review 2026-09-11

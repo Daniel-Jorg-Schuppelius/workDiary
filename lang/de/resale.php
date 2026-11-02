@@ -406,6 +406,7 @@ return [
         ],
         'error' => [
             'nothing_open' => 'Keine offenen Perioden mit Verkaufspreis für diesen Empfänger.',
+            'all_planned' => 'Die offenen Perioden dieses Empfängers berechnet eine laufende Serienvorlage.',
         ],
         'already_drafted' => 'Für diesen Empfänger steht bereits ein Entwurf aus (:reference vom :date). Erst in Lexoffice bzw. lokal abschließen oder die Periode entscheiden.', // Review 2026-09-10
         'no_target' => 'Für die Rechnungshoheit „:mode“ dieses Empfängers ist kein Entwurfsziel registriert — Plugin aktivieren oder die Hoheit des Kunden auf lokal stellen.', // Review 2026-09-11

@@ -387,8 +387,10 @@ proposée par le traitement — d'abord via la facture que le modèle a créée 
 dernier et qui est affectée à une période, sinon via même destinataire,
 article et quantité (avec plusieurs clients finaux d'un partenaire seulement
 s'ils sont nommés) : vous confirmez,
-affectez à la main ou retirez. Les périodes d'un abonnement avec modèle actif
-sont exclues de la proposition de facture. Les **contrôles stock ↔ plan**
+affectez à la main ou retirez. Les périodes facturées par un modèle actif
+sont exclues de la proposition de facture ; ce qui se termine avant sa première
+exécution y reste. Les anciennes années peuvent ainsi être facturées même si le
+modèle existe déjà. Les **contrôles stock ↔ plan**
 signalent avant la facture : abonnement sans modèle, modèle sans abonnement
 (« Créer un abonnement depuis le modèle » reprend article, quantité, rythme et
 prix), quantité différente, modèle qui continue après la fin de l'abonnement,

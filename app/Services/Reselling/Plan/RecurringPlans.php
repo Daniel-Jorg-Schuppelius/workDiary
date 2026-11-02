@@ -121,30 +121,33 @@ final class RecurringPlans {
     }
 
     /**
-     * Zugeordnete Lizenzen aktiver Vorlagen je Abo (Phase 167, MVP-1455): voll gedeckte Abos
-     * berechnet die Vorlage, bei teilweise gedeckten bleibt der Rest für den Rechnungsvorschlag.
+     * Zugeordnete Lizenzen aktiver Vorlagen je Abo samt Beginn der Vorlage (Phase 167, MVP-1455): voll
+     * gedeckte Perioden berechnet die Vorlage, bei teilweise gedeckten bleibt der Rest für den
+     * Rechnungsvorschlag. Der Beginn zählt, weil eine Vorlage nichts berechnet, was vor ihrer ersten
+     * Ausführung endet (Pilot 2026-11-02).
      *
-     * @return array<int, int> Abo → Lizenzen
+     * @return array<int, list<array{quantity: int, from: \Carbon\CarbonImmutable|null}>> Abo → Anteile
      */
-    public function plannedQuantities(Organization $organization): array {
+    public function plannedShares(Organization $organization): array {
         if (! $this->availableFor($organization)) {
             return [];
         }
+        /** @var array<string, \Carbon\CarbonImmutable|null> $active */
         $active = [];
         foreach ($this->templatesFor($organization) as $template) {
             if ($template->isActive()) {
-                $active[] = $template->key;
+                $active[$template->key] = $template->startsOn;
             }
         }
         if ($active === []) {
             return [];
         }
-        $quantities = [];
-        foreach (ResalePlanLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereIn('plan_key', $active)->get(['subscription_id', 'quantity']) as $link) {
-            $quantities[(int) $link->subscription_id] = ($quantities[(int) $link->subscription_id] ?? 0) + (int) $link->quantity;
+        $shares = [];
+        foreach (ResalePlanLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereIn('plan_key', array_keys($active))->get(['subscription_id', 'plan_key', 'quantity']) as $link) {
+            $shares[(int) $link->subscription_id][] = ['quantity' => (int) $link->quantity, 'from' => $active[$link->plan_key]];
         }
 
-        return $quantities;
+        return $shares;
     }
 
     /**

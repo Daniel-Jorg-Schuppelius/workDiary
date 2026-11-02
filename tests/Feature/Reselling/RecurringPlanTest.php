@@ -23,6 +23,7 @@ use App\Services\Reselling\Plan\{PlanAudit, PlanLinkProposer, PlanWorkItemSource
 use App\Services\Reselling\Register\{LicenseAccounts, PeriodPlanner, ResaleDraftRun, ResaleInvoiceDraftService, ResaleOverview};
 use App\Settings\SettingScope;
 use App\Support\Setting;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Concerns\WithOrganization;
@@ -462,6 +463,51 @@ class RecurringPlanTest extends TestCase {
         $zahlenwerkIds = array_values(array_map('intval', $groups['qualityhosting:CNL00022']->subscriptions->pluck('id')->all()));
         $this->assertArrayNotHasKey(PlanAudit::PLAN_WITHOUT_SUBSCRIPTION, $kinds($audit->findings($this->organization, $zahlenwerkIds)));
         $this->assertSame(1, $kinds($audit->findings($this->organization))[PlanAudit::PLAN_WITHOUT_SUBSCRIPTION] ?? 0, 'tpl-m organisationsweit');
+    }
+
+    /** Pilot 2026-11-02: eine neue Vorlage berechnet erst ab ihrer ersten Ausführung — die Jahre davor bleiben im Rechnungsvorschlag. */
+    public function test_draft_bills_the_years_before_the_first_execution_of_a_new_template(): void {
+        $subscription = $this->subscription('CNLCON00111', 'Exchange Online Plan 1', 1, '2023-11-01', 'lex:' . $this->exchange->id);
+        $sync = function (string $startDate, string $next): void {
+            $entry = array_replace_recursive($this->templateEntry('tpl-neu', 'ACTIVE', $next), ['recurringTemplateSettings' => ['startDate' => $startDate . 'T00:00:00.000+02:00']]);
+            $this->fakeApi([$entry], $this->exchangeLines(1));
+            (new LexofficeRecurringTemplateSync($this->organization->id))->sync($this->organization);
+        };
+        $sync('2026-11-01', '2026-11-01');
+        ResalePlanLink::query()->create(['organization_id' => $this->organization->id, 'subscription_id' => $subscription->id, 'plan_key' => 'lexoffice:tpl-neu', 'line_position' => 1, 'quantity' => 1, 'origin' => LinkOrigin::Confirmed]);
+        $drafts = app(ResaleInvoiceDraftService::class);
+
+        // Drei Jahre liegen vor der ersten Ausführung: eine Position „36 Monate“, ohne Hinweis auf die Vorlage.
+        $entries = $drafts->openEntries($this->schub);
+        $this->assertCount(1, $entries);
+        $this->assertSame(36.0, $entries[0]['line']['quantity']);
+        $this->assertStringContainsString('01.11.2023 – 31.10.2026', $entries[0]['line']['description']);
+        $this->assertCount(0, $drafts->openPeriodsFor($this->schub, null, automatic: true), 'der automatische Serienlauf lässt das Abo weiter ganz aus');
+
+        // Das Jahr ab der ersten Ausführung gehört der Vorlage, auch mit späterem Stichtag.
+        $later = $drafts->openEntries($this->schub, CarbonImmutable::parse('2026-12-01'));
+        $this->assertSame(36.0, $later[0]['line']['quantity']);
+        $this->assertSame(0.0, $drafts->draftableMonths($subscription->periods()->where('starts_on', '2026-11-01')->firstOrFail()));
+
+        // Der Dialog zählt dasselbe wie der Entwurf: drei Perioden, drei Jahresbeträge.
+        $admin = $this->orgAdmin();
+        $this->actingAs($admin)->get(route('finance.resale.periods.draft.create'))->assertOk()
+            ->assertSee(trans_choice('resale.periods.open_count', 3, ['count' => 3]))
+            ->assertSee('142,20');
+
+        // Beginnt die Vorlage mitten im Abo, bleibt nur die Zeit davor im Entwurf.
+        $sync('2025-12-01', '2026-12-01');
+        $this->assertSame(24.0, app(ResaleInvoiceDraftService::class)->openEntries($this->schub)[0]['line']['quantity'], 'die Periode bis 31.10.2026 enthält die erste Ausführung');
+
+        // Alles gehört der Vorlage: kein Angebot im Dialog und eine Meldung, die das sagt.
+        $sync('2023-11-01', '2026-11-01');
+        $this->actingAs($admin)->get(route('finance.resale.periods.draft.create'))->assertOk()->assertDontSee($this->schub->sqid);
+        try {
+            app(ResaleInvoiceDraftService::class)->openEntries($this->schub);
+            $this->fail('kein Entwurf erwartet');
+        } catch (\RuntimeException $e) {
+            $this->assertSame(__('resale.draft.error.all_planned'), $e->getMessage());
+        }
     }
 
     /** Plan deckt (Phase 163, MVP-1431): steht die Ausführung der zugeordneten Vorlage für die Periode noch bevor, ist sie geplant, nicht offen. */

@@ -367,8 +367,10 @@ esecuzione e le righe di licenza con gli abbonamenti che fatturano.
 L'assegnazione abbonamento ↔ riga del modello è proposta dall'elaborazione —
 prima tramite la fattura che il modello ha creato per ultima ed è assegnata a
 un periodo, altrimenti tramite stesso destinatario, articolo e quantità (con
-più clienti finali di un partner solo se nominati): confermate, assegnate a mano o rimuovete. I periodi di un
-abbonamento con modello attivo restano fuori dalla proposta di fattura. I
+più clienti finali di un partner solo se nominati): confermate, assegnate a mano o rimuovete. I periodi fatturati
+da un modello attivo restano fuori dalla proposta di fattura; ciò che termina
+prima della sua prima esecuzione vi rimane. Così gli anni passati si possono
+fatturare anche se il modello esiste già. I
 **controlli dotazione ↔ piano** segnalano prima della fattura: abbonamento senza
 modello, modello senza abbonamento («Crea abbonamento dal modello» riprende
 articolo, quantità, ritmo e prezzo), quantità diversa, modello che continua

@@ -48,7 +48,7 @@ use RuntimeException;
  * @phpstan-type DraftSummary array{draft_id: string, lines: int, net: float, periods: int, local: bool, target: string, url: string|null, transfer_id?: int}
  */
 final class ResaleInvoiceDraftService {
-    /** @var array<int, array<int, int>> Organisation → Abo → Lizenzen aktiver Serienvorlagen; je Auswahl neu geladen ({@see pendingPeriodsFor()}) */
+    /** @var array<int, array<int, list<array{quantity: int, from: CarbonImmutable|null}>>> Organisation → Abo → Anteile aktiver Serienvorlagen; je Auswahl neu geladen ({@see pendingPeriodsFor()}) */
     private array $plannedByOrganization = [];
 
     /** Weiter als so viele Jahre reicht kein Stichtag — Vorauszahlungen darüber hinaus sind keine Praxis. */
@@ -74,7 +74,7 @@ final class ResaleInvoiceDraftService {
             $this->planAhead($reference, $recipient);
         }
 
-        return $this->withCatalogArticles($this->pendingPeriodsFor($recipient, $reference, $automatic)->whereNull('draft_reference')->get());
+        return $this->withCatalogArticles($this->withoutPlanned($this->pendingPeriodsFor($recipient, $reference, $automatic)->whereNull('draft_reference')->get()));
     }
 
     /**
@@ -114,7 +114,23 @@ final class ResaleInvoiceDraftService {
      * @return Collection<int, ResalePeriod>
      */
     public function draftedPeriodsFor(Customer $recipient, ?CarbonImmutable $reference = null): Collection {
-        return $this->withCatalogArticles($this->pendingPeriodsFor($recipient, $reference)->whereNotNull('draft_reference')->get());
+        return $this->withCatalogArticles($this->withoutPlanned($this->pendingPeriodsFor($recipient, $reference)->whereNotNull('draft_reference')->get()));
+    }
+
+    /**
+     * Ohne Perioden, die eine laufende Serienvorlage ganz berechnet.
+     *
+     * @param  Collection<int, ResalePeriod>  $periods
+     * @return Collection<int, ResalePeriod>
+     */
+    private function withoutPlanned(Collection $periods): Collection {
+        return $periods->reject(fn(ResalePeriod $period): bool => $this->isFullyPlanned($period))->values();
+    }
+
+    private function isFullyPlanned(ResalePeriod $period): bool {
+        $planned = $this->plannedLicences($period);
+
+        return $planned > 0 && $planned >= $period->subscription->quantity;
     }
 
     /**
@@ -123,18 +139,11 @@ final class ResaleInvoiceDraftService {
     private function pendingPeriodsFor(Customer $recipient, ?CarbonImmutable $reference, bool $automatic = false): \Illuminate\Database\Eloquent\Builder {
         $reference ??= ResalePeriod::today();
 
-        // Perioden, deren Abo eine laufende Serienvorlage ganz berechnet (Feature 185, MVP-1411), gehören nicht in den Entwurf;
-        // bei teilweiser Deckung kommt der Rest in den Rechnungsvorschlag, der automatische Serienlauf lässt ihn aus (MVP-1455).
-        $quantities = $recipient->organization !== null ? $this->plans->plannedQuantities($recipient->organization) : [];
-        $this->plannedByOrganization[(int) $recipient->organization_id] = $quantities;
-        $planned = [];
-        if ($quantities !== []) {
-            foreach (ResaleSubscription::query()->whereKey(array_keys($quantities))->get(['id', 'quantity']) as $subscription) {
-                if ($automatic || $quantities[$subscription->id] >= $subscription->quantity) {
-                    $planned[] = (int) $subscription->id;
-                }
-            }
-        }
+        // Was eine laufende Serienvorlage ganz berechnet (Feature 185, MVP-1411), gehört nicht in den Entwurf — das entscheidet
+        // {@see withoutPlanned()} je Periode. Der automatische Serienlauf lässt jedes Abo mit Vorlage ganz aus (MVP-1455).
+        $shares = $recipient->organization !== null ? $this->plans->plannedShares($recipient->organization) : [];
+        $this->plannedByOrganization[(int) $recipient->organization_id] = $shares;
+        $planned = $automatic ? array_keys($shares) : [];
 
         return ResalePeriod::query()
             ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
@@ -181,17 +190,26 @@ final class ResaleInvoiceDraftService {
     }
 
     /**
-     * Lizenzen aktiver Serienvorlagen für das Abo der Periode — auch ohne vorherige Auswahl
-     * (Positionen einer Übergabe entstehen später aus den Perioden-IDs).
+     * Lizenzen aktiver Serienvorlagen für diese Periode — auch ohne vorherige Auswahl
+     * (Positionen einer Übergabe entstehen später aus den Perioden-IDs). Endet die Periode
+     * vor der ersten Ausführung einer Vorlage (Toleranz wie im Überblick), berechnet diese
+     * sie nie: Sie zählt nicht, die Nachberechnung bleibt im Entwurf (Pilot 2026-11-02).
      */
     private function plannedLicences(ResalePeriod $period): int {
         $organizationId = (int) $period->organization_id;
         if (! isset($this->plannedByOrganization[$organizationId])) {
             $organization = Organization::query()->withoutGlobalScopes()->find($organizationId);
-            $this->plannedByOrganization[$organizationId] = $organization !== null ? $this->plans->plannedQuantities($organization) : [];
+            $this->plannedByOrganization[$organizationId] = $organization !== null ? $this->plans->plannedShares($organization) : [];
+        }
+        $nextStart = $period->ends_on->addDay()->subDays(ResaleOverview::PLAN_TOLERANCE_DAYS);
+        $licences = 0;
+        foreach ($this->plannedByOrganization[$organizationId][(int) $period->subscription_id] ?? [] as $share) {
+            if ($share['from'] === null || $share['from']->lessThan($nextStart)) {
+                $licences += $share['quantity'];
+            }
         }
 
-        return $this->plannedByOrganization[$organizationId][(int) $period->subscription_id] ?? 0;
+        return $licences;
     }
 
     /**
@@ -208,6 +226,9 @@ final class ResaleInvoiceDraftService {
         if ($drafted !== null) {
             $date = $drafted->draft_created_at !== null ? (string) Tz::toLocal($drafted->draft_created_at)?->format('d.m.Y') : '';
             throw new RuntimeException((string) __('resale.draft.already_drafted', ['reference' => (string) $drafted->draft_reference, 'date' => $date]));
+        }
+        if (! $automatic && $this->pendingPeriodsFor($recipient, $reference)->whereNull('draft_reference')->get()->contains(fn(ResalePeriod $period): bool => $this->isFullyPlanned($period))) {
+            throw new RuntimeException((string) __('resale.draft.error.all_planned'));
         }
 
         throw new RuntimeException((string) __('resale.draft.error.nothing_open'));

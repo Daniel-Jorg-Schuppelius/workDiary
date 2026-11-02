@@ -353,8 +353,10 @@ Vorlagenposition schlägt der Lauf vor — zuerst über die Rechnung, die die
 Vorlage zuletzt erzeugt hat und die einer Periode zugeordnet ist, sonst über
 gleichen Empfänger, Artikel und Menge (bei mehreren Endkunden eines Partners
 nur mit Nennung) — Sie bestätigen, ordnen von Hand zu
-oder lösen. Perioden eines Abos mit laufender Vorlage lässt der
-Rechnungsvorschlag aus. **Prüfregeln Bestand ↔ Plan** melden vor der Rechnung:
+oder lösen. Perioden, die eine laufende Vorlage berechnet, lässt
+der Rechnungsvorschlag aus; was vor ihrer ersten Ausführung endet, bleibt drin.
+So lassen sich alte Jahre auch dann nachberechnen, wenn die Vorlage schon
+angelegt ist. **Prüfregeln Bestand ↔ Plan** melden vor der Rechnung:
 Abo ohne Vorlage, Vorlage ohne Abo („Abo aus Vorlage anlegen“ übernimmt
 Artikel, Menge, Rhythmus und Preis), abweichende Menge, Vorlage läuft nach dem
 Abo-Ende weiter, Vorlage pausiert oder beendet bei laufendem Abo, nächste

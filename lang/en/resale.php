@@ -406,6 +406,7 @@ return [
         ],
         'error' => [
             'nothing_open' => 'No open periods with a sale price for this recipient.',
+            'all_planned' => 'The open periods of this recipient are billed by an active recurring template.',
         ],
         'already_drafted' => 'A draft is already pending for this recipient (:reference from :date). Finish it in Lexoffice or locally first, or decide the period.', // Review 2026-09-10
         'no_target' => 'No draft target is registered for this recipient\'s billing mode “:mode” — enable the plugin or set the customer\'s billing mode to local.', // Review 2026-09-11

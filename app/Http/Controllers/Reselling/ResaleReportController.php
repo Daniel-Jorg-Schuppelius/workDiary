@@ -374,9 +374,11 @@ class ResaleReportController extends Controller {
                 $entry['draft_reference'] ??= $period->draft_reference;
                 $entry['draft_created_at'] ??= $period->draft_created_at;
             } else {
-                // Ohne Verkaufspreis oder ohne offene Monate entsteht keine Position (ResaleInvoiceDraftService::lineFor).
-                $amount = $period->openAmount();
-                if ($amount !== null && $period->openMonths() > 0.001) {
+                // Dieselbe Regel wie ResaleInvoiceDraftService::lineFor: ohne Verkaufspreis, ohne offene Monate oder ganz
+                // über eine Serienvorlage entsteht keine Position — sonst böte der Dialog an, was der Entwurf ablehnt.
+                $months = $drafts->draftableMonths($period);
+                $amount = $period->amountForMonths($months);
+                if ($amount !== null && $period->subscription->sale_unit_price !== null && $months > 0.001) {
                     $entry['periods']++;
                     if ($amount->isSameCurrency($entry['net'])) {
                         $entry['net'] = $entry['net']->plus($amount);
