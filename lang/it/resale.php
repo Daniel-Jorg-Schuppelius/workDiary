@@ -406,6 +406,7 @@ return [
         ],
         'error' => [
             'nothing_open' => 'Nessun periodo aperto con prezzo di vendita per questo destinatario.',
+            'all_planned' => 'I periodi aperti di questo destinatario sono fatturati da un modello ricorrente attivo.',
         ],
         'already_drafted' => 'Per questo destinatario è già in sospeso una bozza (:reference del :date). Completarla prima in Lexoffice o localmente, oppure decidere il periodo.', // Review 2026-09-10
         'no_target' => 'Per la modalità di fatturazione «:mode» di questo destinatario non è registrata alcuna destinazione bozza — attivi il plugin o imposti il cliente sulla fatturazione locale.', // Review 2026-09-11

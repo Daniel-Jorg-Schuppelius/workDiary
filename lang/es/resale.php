@@ -406,6 +406,7 @@ return [
         ],
         'error' => [
             'nothing_open' => 'No hay periodos abiertos con precio de venta para este destinatario.',
+            'all_planned' => 'Los periodos abiertos de este destinatario los factura una plantilla periódica activa.',
         ],
         'already_drafted' => 'Ya hay un borrador pendiente para este destinatario (:reference del :date). Termínelo primero en Lexoffice o localmente, o decida el periodo.', // Review 2026-09-10
         'no_target' => 'Para el modo de facturación «:mode» de este destinatario no hay registrado ningún destino de borrador — active el plugin o ponga al cliente en facturación local.', // Review 2026-09-11

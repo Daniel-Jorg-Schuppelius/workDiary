@@ -371,8 +371,10 @@ estado, ritmo, próxima ejecución y las posiciones de licencia con las
 suscripciones que facturan. La asignación suscripción ↔ posición la propone la
 ejecución — primero por la factura que la plantilla creó por última vez y que
 está asignada a un periodo, si no por mismo destinatario, artículo y cantidad
-(con varios clientes finales de un socio solo si se nombran): usted confirma, asigna a mano o quita. Los periodos de una
-suscripción con plantilla activa quedan fuera de la propuesta de factura. Las
+(con varios clientes finales de un socio solo si se nombran): usted confirma, asigna a mano o quita. Los periodos que
+factura una plantilla activa quedan fuera de la propuesta de factura; lo que
+termina antes de su primera ejecución permanece. Así los años antiguos pueden
+facturarse aunque la plantilla ya exista. Las
 **comprobaciones existencias ↔ plan** avisan antes de la factura: suscripción
 sin plantilla, plantilla sin suscripción («Crear suscripción desde la plantilla»
 toma artículo, cantidad, ritmo y precio), cantidad distinta, plantilla que sigue

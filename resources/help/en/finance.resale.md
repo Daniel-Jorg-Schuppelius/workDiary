@@ -349,8 +349,9 @@ line assignment is proposed by the run — first via the invoice the template
 last created that is assigned to a period, otherwise via same recipient,
 article and quantity (with several end customers of a partner only when
 named) — you confirm, assign manually or
-remove. Periods of a subscription with a running template are left out of the
-invoice proposal. **Checks stock ↔ plan** report before the invoice: subscription
+remove. Periods billed by a running template are left out of the invoice proposal;
+whatever ends before its first execution stays in. Old years can thus still
+be billed after the template has been created. **Checks stock ↔ plan** report before the invoice: subscription
 without template, template without subscription ("Create subscription from
 template" takes over article, quantity, rhythm and price), differing quantity,
 template running past the subscription end, template paused or ended while the
