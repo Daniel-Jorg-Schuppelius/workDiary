@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "884013c3a5d9d95541999730549a20c1",
+    "content-hash": "11cddc0006ffc9e868ad2b1cf2200db8",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -13533,26 +13533,49 @@
         },
         {
             "name": "zammad/zammad-api-client-php",
-            "version": "2.3.3",
+            "version": "v3.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zammad/zammad-api-client-php.git",
-                "reference": "8c89e46006604c72e242cc7b7e866ac086700874"
+                "reference": "0c70fa882ed5c1242991169bbd25a729427961da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zammad/zammad-api-client-php/zipball/8c89e46006604c72e242cc7b7e866ac086700874",
-                "reference": "8c89e46006604c72e242cc7b7e866ac086700874",
+                "url": "https://api.github.com/repos/zammad/zammad-api-client-php/zipball/0c70fa882ed5c1242991169bbd25a729427961da",
+                "reference": "0c70fa882ed5c1242991169bbd25a729427961da",
                 "shasum": ""
             },
             "require": {
-                "guzzlehttp/guzzle": "^7",
-                "php": ">=7.2"
+                "guzzlehttp/guzzle": "^7.10",
+                "guzzlehttp/psr7": "^2.7",
+                "php": ">=8.1",
+                "psr/http-client": "^1.0",
+                "psr/http-factory": "^1.0",
+                "psr/log": "^3.0"
             },
             "require-dev": {
-                "phpunit/phpunit": ">=5.7 <9"
+                "league/openapi-psr7-validator": "^0.22",
+                "mockery/mockery": "^1.6",
+                "phpstan/phpstan": "^1.12",
+                "phpunit/phpunit": "^11.0",
+                "squizlabs/php_codesniffer": "^4.0"
+            },
+            "suggest": {
+                "illuminate/support": "Laravel ServiceProvider integration",
+                "symfony/cache": "PSR-6/16 cache for response caching",
+                "symfony/dependency-injection": "Symfony DI container integration",
+                "symfony/http-client": "Alternative PSR-18 transport",
+                "symfony/http-kernel": "Symfony Bundle integration",
+                "symfony/serializer": "Alternative DTO hydration (replaces manual fromArray)"
             },
             "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "ZammadAPIClient\\Bridge\\LaravelServiceProvider"
+                    ]
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "ZammadAPIClient\\": "src/"
@@ -13569,17 +13592,20 @@
                     "homepage": "https://zammad.com"
                 }
             ],
-            "description": "Zammad API client for PHP",
+            "description": "PSR-compliant Zammad API client for PHP 8.1+",
             "homepage": "https://github.com/zammad/zammad-api-client-php",
             "keywords": [
                 "api",
+                "psr-17",
+                "psr-18",
+                "ticketing",
                 "zammad"
             ],
             "support": {
                 "issues": "https://github.com/zammad/zammad-api-client-php/issues",
-                "source": "https://github.com/zammad/zammad-api-client-php/tree/2.3.3"
+                "source": "https://github.com/zammad/zammad-api-client-php/tree/v3.1.0"
             },
-            "time": "2026-07-22T10:45:16+00:00"
+            "time": "2026-10-02T14:41:17+00:00"
         },
         {
             "name": "zircote/swagger-php",
