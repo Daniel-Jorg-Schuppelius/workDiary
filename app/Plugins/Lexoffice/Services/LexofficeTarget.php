@@ -105,6 +105,10 @@ class LexofficeTarget implements FacturationTarget {
             // Abbruch nach dem Senden: der Entwurf kann angelegt sein — der nächste Lauf sucht ihn.
             throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_outcome_unclear'));
         } catch (ApiException $e) {
+            // Die Anschrift des Entwurfs kommt aus dem Kontakt: dort muss genau eine Rechnungsadresse stehen — das kann nur der Nutzer beheben.
+            if (preg_match('/exactly one billing address, but (\d+) addresses/', (string) $e->getContent(), $found) === 1) {
+                throw new RuntimeException((string) __('lexoffice::finance.error.contact_billing_address', ['customer' => $transfer->customer->name, 'count' => (int) $found[1]]));
+            }
             throw new RuntimeException(sprintf(
                 'Lexoffice invoice draft failed: HTTP %d %s',
                 $e->getCode(),

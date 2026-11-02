@@ -16,6 +16,7 @@ return [
         'lexoffice_dunning_not_invoice' => 'Eine Mahnung kann nur zu einer Rechnung erstellt werden.',
         'lexoffice_not_configured' => 'Lexoffice ist für diese Organisation nicht konfiguriert (API-Key fehlt).',
         'lexoffice_outcome_unclear' => 'Ausgang der Lexoffice-Übergabe unklar (Zeitüberschreitung nach dem Senden) — nicht blind wiederholen; der nächste Lauf sucht den Entwurf über den Quellmarker.',
+        'contact_billing_address' => 'Der Kontakt „:customer“ braucht in Lexoffice genau eine Rechnungsadresse, hat aber :count. Bitte die Adresse dort korrigieren und die Übergabe wiederholen.',
         'lexoffice_oc_no_customer' => 'Fertigungsauftrag ohne Kunde kann nicht als Auftragsbestätigung übergeben werden.',
         'lexoffice_oc_not_linked' => 'Mit diesem Fertigungsauftrag ist keine Lexoffice-Auftragsbestätigung verknüpft.',
         'lexoffice_quote_no_customer' => 'Fertigungsauftrag ohne Kunde kann nicht als Angebot übergeben werden.',

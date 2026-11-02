@@ -16,6 +16,7 @@ return [
         'lexoffice_dunning_not_invoice' => 'Un sollecito può essere creato solo per una fattura.',
         'lexoffice_not_configured' => 'Lexoffice non è configurato per questa organizzazione (chiave API mancante).',
         'lexoffice_outcome_unclear' => 'Esito del trasferimento a Lexoffice incerto (timeout dopo l\'invio): non ripetere alla cieca; la prossima esecuzione cerca la bozza tramite il marcatore di origine.',
+        'contact_billing_address' => 'Il contatto «:customer» deve avere esattamente un indirizzo di fatturazione in Lexoffice, ma ne ha :count. Corregga l’indirizzo lì e ripeta il trasferimento.',
         'lexoffice_oc_no_customer' => 'Un ordine di produzione senza cliente non può essere trasmesso come conferma d\'ordine.',
         'lexoffice_oc_not_linked' => 'Nessuna conferma d\'ordine Lexoffice è collegata a questo ordine di produzione.',
         'lexoffice_quote_no_customer' => 'Un ordine di produzione senza cliente non può essere trasmesso come offerta.',
