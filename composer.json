@@ -31,7 +31,7 @@
         "league/flysystem-aws-s3-v3": "^3.35",
         "league/flysystem-ftp": "^3.31",
         "league/flysystem-sftp-v3": "^3.33",
-        "minishlink/web-push": "^10.0",
+        "minishlink/web-push": "^11.0",
         "mstilkerich/carddavclient": "^1.4",
         "onelogin/php-saml": "^4.3.2",
         "opis/json-schema": "^2.6",
