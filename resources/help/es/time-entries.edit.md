@@ -1,7 +1,7 @@
 ---
 title: "Editar un registro de tiempo"
 topic: time-entries.edit
-version: 2
+version: 3
 keywords:
     - corregir horas
     - cambiar registro
@@ -15,6 +15,9 @@ keywords:
     - ajustar horas
     - tiempo administrativo
     - registrar tiempo interno
+    - tiempo de máquina
+    - duración de varios días
+    - lectura de disco
 audience: []
 related:
     - time-entries.start
@@ -97,3 +100,24 @@ El diálogo indica entonces el motivo; los comentarios siguen siendo posibles.
 administrativo para sí misma. El rol **Administrador** también puede editar y
 eliminar registros de otras personas y registros bloqueados; el diálogo indica
 entonces que está editando como administrador.
+
+## Tiempo de máquina
+
+Si un dispositivo o proceso sigue funcionando sin usted, por ejemplo la
+lectura de un disco duro defectuoso durante dos días, regístrelo como
+**Tipo** → **Tiempo de máquina** en lugar de trabajo:
+
+- La duración puede llegar a **31 días**, en modo duración también más de 24
+  horas (por ejemplo `51:37`) o como **Desde / Hasta** a lo largo de varios
+  días. Los registros de tipo trabajo, desplazamiento y guardia siguen
+  limitados a 24 horas.
+- El tiempo de máquina **no cuenta como su tiempo de trabajo**: queda fuera
+  del horario flexible, el control de pausas, la exportación de nómina, los
+  pagos, las cuotas SLA y el tiempo de trabajo de un parte de horas. Las
+  listas de proyecto lo muestran en una línea «de los cuales tiempo de
+  máquina» y con una etiqueta en el registro.
+- Se factura a la **tarifa horaria tiempo de máquina** de la organización
+  (Ajustes → Valores por defecto de facturas); una **regla de facturación**
+  del proyecto para el tipo tiempo de máquina tiene prioridad y puede fijar
+  un precio fijo o un servicio propio. Las condiciones de cliente y las
+  tarifas de personas no se aplican.

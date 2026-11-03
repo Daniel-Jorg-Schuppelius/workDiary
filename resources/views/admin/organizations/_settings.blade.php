@@ -128,6 +128,14 @@
                            :placeholder="__('settings.placeholder_default', ['value' => (string) (config('invoicing.default_hourly_rate') ?? '—')])"
                            :hint="__('settings.invoicing.default_hourly_rate_hint')" />
 
+            {{-- Stundensatz für Gerätelaufzeit (Feature 193). --}}
+            <x-input-field name="settings[invoicing][machine_hourly_rate]" type="number" min="0" max="10000" step="0.01"
+                           :label="__('settings.invoicing.machine_hourly_rate')"
+                           error="settings.invoicing.machine_hourly_rate" inputmode="decimal"
+                           :value="old('settings.invoicing.machine_hourly_rate', data_get($stored, 'invoicing.machine_hourly_rate', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) (config('invoicing.machine_hourly_rate') ?? '—')])"
+                           :hint="__('settings.invoicing.machine_hourly_rate_hint')" />
+
             {{-- Kalkulationsstundensatz Montage (Feature 107, MVP-602). --}}
             <x-input-field name="settings[invoicing][assembly_hourly_rate]" type="number" min="0" max="10000" step="0.01"
                            :label="__('settings.invoicing.assembly_hourly_rate')"

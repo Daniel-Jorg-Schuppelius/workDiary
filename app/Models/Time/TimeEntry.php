@@ -378,6 +378,34 @@ class TimeEntry extends Model {
         return $this->belongsTo(TravelLog::class);
     }
 
+    /** Gerätelaufzeit (Feature 193): Laufzeit eines Geräts oder Prozesses, keine Zeit einer Person. */
+    public function isMachineTime(): bool {
+        return $this->kind === TimeEntryKind::Machine;
+    }
+
+    /** Vor dem ersten Laden trägt ein neues Modell noch keine Art; die Spalte fällt auf Arbeit zurück. */
+    public function isPersonTime(): bool {
+        return ($this->kind ?? TimeEntryKind::Work)->isPersonTime();
+    }
+
+    /**
+     * Nur Zeit von Personen — Gleitzeit, Pausen, Lohn, Auszahlung, SLA-Kontingent rechnen damit.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<TimeEntry>  $query
+     * @return \Illuminate\Database\Eloquent\Builder<TimeEntry>
+     */
+    public function scopePersonTime(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder {
+        return $query->where('time_entries.kind', '!=', TimeEntryKind::Machine->value);
+    }
+
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder<TimeEntry>  $query
+     * @return \Illuminate\Database\Eloquent\Builder<TimeEntry>
+     */
+    public function scopeMachineTime(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder {
+        return $query->where('time_entries.kind', TimeEntryKind::Machine->value);
+    }
+
     public function isProjectWork(): bool {
         return $this->activity_type === TimeEntryActivityType::Project;
     }

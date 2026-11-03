@@ -35,6 +35,14 @@ class TimeEntryFactory extends Factory {
         ];
     }
 
+    /** Gerätelaufzeit (Feature 193): mehrtägig erlaubt, keine Zeit einer Person. */
+    public function machine(): static {
+        return $this->state(fn (array $attributes): array => [
+            'kind' => TimeEntryKind::Machine->value,
+            'minutes' => 2 * 1440 + 3 * 60 + 37,
+        ]);
+    }
+
     /**
      * State: non-project administrative work (no project_id).
      */

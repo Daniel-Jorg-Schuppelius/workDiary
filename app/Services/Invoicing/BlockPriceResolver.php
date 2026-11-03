@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Customer\Customer;
 use App\Models\Time\TimeEntry;
 use App\Services\Billing\OrganizationDefaultRateResolver;
@@ -34,6 +35,9 @@ use App\Services\Billing\OrganizationDefaultRateResolver;
  *
  * Punkt 3 vor 4: ist eine Leistung ausgewählt, kennt die App deren Preis;
  * erst ohne Leistung greift der Standarderlös.
+ *
+ * Gerätelaufzeit (Feature 193) überspringt den Kundensatz und nimmt in Stufe 4
+ * den Gerätesatz der Organisation: beides sind Personensätze, kein Gerätepreis.
  */
 class BlockPriceResolver {
     public function __construct(
@@ -63,7 +67,8 @@ class BlockPriceResolver {
             return new BlockPrice(round($entryRate, 2), BlockPrice::SOURCE_ENTRY);
         }
 
-        $customerRate = $customer?->hourly_rate?->toFloat();
+        $isMachine = $block->kind === TimeEntryKind::Machine;
+        $customerRate = $isMachine ? null : $customer?->hourly_rate?->toFloat();
         if ($customerRate !== null && $customerRate > 0.0) {
             return new BlockPrice(round($customerRate, 2), BlockPrice::SOURCE_CUSTOMER);
         }
@@ -73,7 +78,9 @@ class BlockPriceResolver {
         }
 
         $organizationId ??= $primaryEntry?->organization_id !== null ? (int) $primaryEntry->organization_id : null;
-        $orgRate = $this->organizationRates->hourlyRateFor($organizationId);
+        $orgRate = $isMachine
+            ? $this->organizationRates->machineHourlyRateFor($organizationId)
+            : $this->organizationRates->hourlyRateFor($organizationId);
         if ($orgRate !== null && $orgRate > 0.0) {
             return new BlockPrice(round($orgRate, 2), BlockPrice::SOURCE_ORG_DEFAULT);
         }

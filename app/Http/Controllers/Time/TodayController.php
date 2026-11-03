@@ -84,7 +84,8 @@ class TodayController extends Controller {
 
             return 0;
         });
-        $entriesMinutes = (int) $entries->sum('minutes');
+        // Gerätelaufzeit läuft ohne die Person und füllt keine Stempelzeit.
+        $entriesMinutes = (int) $entries->filter(fn (TimeEntry $e): bool => $e->isPersonTime())->sum('minutes');
         $untrackedMinutes = max(0, $attendanceMinutes - $entriesMinutes);
 
         // Group entries by activity for breakdown

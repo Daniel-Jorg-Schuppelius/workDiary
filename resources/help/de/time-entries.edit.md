@@ -1,7 +1,7 @@
 ---
 title: "Zeiteintrag bearbeiten"
 topic: time-entries.edit
-version: 2
+version: 3
 keywords:
     - Zeit korrigieren
     - Zeitbuchung ändern
@@ -15,6 +15,9 @@ keywords:
     - Änderungsprotokoll
     - Verwaltungszeit
     - interne Zeit erfassen
+    - Gerätelaufzeit
+    - Laufzeit über mehrere Tage
+    - Platte auslesen
 audience: []
 related:
     - time-entries.start
@@ -100,3 +103,22 @@ Der Dialog nennt dann den Grund; Kommentare bleiben weiterhin möglich.
 **Berechtigung:** Erfassen darf jede angemeldete Person für sich selbst. Die
 Rolle **Administrator** darf auch fremde und gesperrte Einträge bearbeiten
 und löschen; der Dialog weist dann darauf hin, dass Sie als Admin bearbeiten.
+
+## Gerätelaufzeit
+
+Läuft ein Gerät oder ein Prozess ohne Sie weiter, etwa das Auslesen einer
+defekten Festplatte über zwei Tage, erfassen Sie das als **Art** →
+**Gerätelaufzeit** statt als Arbeit:
+
+- Die Dauer darf bis zu **31 Tage** betragen, im Dauer-Modus auch über 24
+  Stunden (zum Beispiel `51:37`) oder als **Von / Bis** über mehrere Tage.
+  Einträge der Art Arbeit, Anfahrt und Bereitschaft bleiben auf 24 Stunden
+  begrenzt.
+- Gerätelaufzeit zählt **nicht als Ihre Arbeitszeit**: Sie fließt nicht in
+  Gleitzeit, Pausenprüfung, Lohnexport, Auszahlung, SLA-Kontingent oder in
+  die Arbeitszeit eines Stundenzettels. Projektlisten zeigen sie als
+  eigene Zeile „davon Gerätelaufzeit“ und mit Kennzeichen am Eintrag.
+- Abgerechnet wird zum **Stundensatz Gerätelaufzeit** der Organisation
+  (Einstellungen → Rechnungs-Defaults); eine **Abrechnungsregel** am Projekt
+  für die Art Gerätelaufzeit geht vor und kann einen Festpreis oder eine
+  eigene Leistung nennen. Kundenkonditionen und Personensätze gelten nicht.

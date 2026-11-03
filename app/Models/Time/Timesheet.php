@@ -184,7 +184,8 @@ class Timesheet extends Model {
 
     public function recalcTotals(): void {
         $this->loadMissing(['entries', 'materialUsages']);
-        $minutes = (int) $this->entries->sum('minutes');
+        // Arbeitszeit des Zettels ist Personenzeit; Gerätelaufzeit (Feature 193) steht nur in den Zeilen.
+        $minutes = (int) $this->entries->filter(fn (TimeEntry $e): bool => $e->isPersonTime())->sum('minutes');
         // Collection-sum kann VO-Attribute nicht addieren — Betrag je Zeile entnehmen.
         $material = (float) $this->materialUsages->sum(fn (MaterialUsage $u): float => $u->line_total_net?->toFloat() ?? 0.0);
         $this->totals_minutes = $minutes;
@@ -202,7 +203,7 @@ class Timesheet extends Model {
      */
     public function getTotalWorkMinutesAttribute(): int {
         if ($this->relationLoaded('entries')) {
-            return (int) $this->entries->sum('minutes');
+            return (int) $this->entries->filter(fn (TimeEntry $e): bool => $e->isPersonTime())->sum('minutes');
         }
 
         return (int) $this->entries_total_minutes;

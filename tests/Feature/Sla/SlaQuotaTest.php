@@ -112,6 +112,22 @@ final class SlaQuotaTest extends TestCase {
         $this->assertSame('2026-06', $usage['period_key']);
     }
 
+    /** Feature 193: das Kontingent sind Personenstunden — Gerätelaufzeit verbraucht es nicht. */
+    public function test_machine_runtime_does_not_consume_the_quota(): void {
+        $this->billableEntry(300, '2026-06-10', projectId: $this->project->id);
+        TimeEntry::factory()->machine()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->worker->id,
+            'project_id' => $this->project->id,
+            'date' => '2026-06-11',
+            'billable' => true,
+        ]);
+
+        $usage = app(SlaQuotaService::class)->usage($this->contract, $this->quota, Carbon::parse('2026-06-15'));
+
+        $this->assertSame(300, $usage['consumed_minutes']);
+    }
+
     public function test_below_threshold_is_not_flagged(): void {
         $this->billableEntry(300, '2026-06-10', projectId: $this->project->id); // 50 %
 

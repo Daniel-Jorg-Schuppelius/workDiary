@@ -8,6 +8,26 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ## [Unreleased]
 
+### Added
+
+- **Gerätelaufzeit als Eintragsart** (Feature 193, Phase 169, MVP-1463–1466):
+  Laufzeit eines Geräts oder Prozesses, etwa das Auslesen einer defekten
+  Platte über zwei Tage, als eigene Art neben Arbeit, Anfahrt und
+  Bereitschaft im Projektzeit- und Stundenzettel-Dialog. Bis 31 Tage je
+  Eintrag (Personenzeit bleibt bei 24 Stunden), zählt nicht zu Gleitzeit,
+  Pausenprüfung, Lohnexport, Auszahlung, SLA-Kontingent und der Arbeitszeit
+  eines Stundenzettels. Abrechnung zum neuen Stundensatz Gerätelaufzeit der
+  Organisation (Einstellung `invoicing.machine_hourly_rate`,
+  `INVOICING_MACHINE_HOURLY_RATE`) oder über eine Projekt-Abrechnungsregel
+  für die Art; eigener Block in Übergabe und Rechnung. Projektzeiten mit
+  Filter „Art“, Kennzeichen und Summe „davon Gerätelaufzeit“, Kachel am
+  Projekt; Hilfe ×5.
+
+### Changed
+
+- Übergabe- und Rechnungsblöcke nennen die Art als Bezeichnung
+  („[Anfahrt]“ statt „[travel]“).
+
 ## [1.0.0] - 2026-11-02
 
 Erste versionierte Freigabe nach 168 Phasen: alles, was bis zum

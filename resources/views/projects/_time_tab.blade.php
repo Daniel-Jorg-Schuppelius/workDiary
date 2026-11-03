@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Tab: Zeiterfassung — erwartet: $project, $timeEntries, $totalMinutes, $rangeMinutes, $rangeLabel, $myMinutes, $seesAllTimes --}}
+{{-- Tab: Zeiterfassung — erwartet: $project, $timeEntries, $totalMinutes, $rangeMinutes, $rangeLabel, $myMinutes, $machineMinutes, $seesAllTimes --}}
 @php
     $fmt = fn (int $min): string => \App\Support\Formats::duration($min, 'clock');
     $viewer = auth()->user();
@@ -26,13 +26,27 @@
     {{-- Summary — Standard-KPI-Kacheln wie auf der Kunden-Detailseite --}}
     {{-- Ohne Sicht auf alle Zeiten zählen beide Summen nur die eigenen; die
          dritte Kachel wäre dann doppelt. --}}
-    <div class="grid grid-cols-1 gap-3 {{ $seesAllTimes ? 'sm:grid-cols-3' : 'sm:grid-cols-2' }}">
+    @php
+        $machineMinutes = (int) ($machineMinutes ?? 0);
+        $tileCols = match (($seesAllTimes ? 3 : 2) + ($machineMinutes > 0 ? 1 : 0)) {
+            4 => 'sm:grid-cols-4',
+            3 => 'sm:grid-cols-3',
+            default => 'sm:grid-cols-2',
+        };
+    @endphp
+    <div class="grid grid-cols-1 gap-3 {{ $tileCols }}">
         <x-kpi-tile :label="__('Gesamt')" :value="$fmt($totalMinutes)" tone="neutral"
                     :hint="$seesAllTimes ? null : __('nur eigene Zeiten')" />
         <x-kpi-tile :label="$rangeLabel" :value="$fmt($rangeMinutes)" tone="neutral"
                     :hint="$seesAllTimes ? null : __('nur eigene Zeiten')" />
         @if ($seesAllTimes)
             <x-kpi-tile :label="__('Meine Stunden')" :value="$fmt($myMinutes)" :hint="$rangeLabel" tone="neutral" />
+        @endif
+        @if ($machineMinutes > 0)
+            {{-- Gerätelaufzeit (Feature 193): in „Gesamt“ enthalten, hier gesondert und gefiltert erreichbar. --}}
+            <x-kpi-tile :label="\App\Enums\TimeEntry\TimeEntryKind::Machine->label()" :value="$fmt($machineMinutes)" tone="secondary"
+                        :hint="__('in Gesamt enthalten')"
+                        :href="route('projects.times', ['project' => $project->sqid, 'kind' => \App\Enums\TimeEntry\TimeEntryKind::Machine->value])" />
         @endif
     </div>
 

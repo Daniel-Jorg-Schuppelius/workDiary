@@ -106,6 +106,9 @@ return [
     // Standard-Erlös je Stunde (MVP-482): greift erst, wenn weder Eintrag,
     // Kondition, Mitarbeiter, Tätigkeit, Projekt noch Kunde einen Satz setzen.
     'invoicing.default_hourly_rate' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:10000'],
+    // Stundensatz für Gerätelaufzeit (Feature 193): Satz je Laufzeitstunde eines
+    // Geräts oder Prozesses; nie der Personensatz. Leer = 0,00 € mit Meldung.
+    'invoicing.machine_hourly_rate' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:10000'],
     // Kalkulationsstundensatz Montage (Feature 107, MVP-602): bewertet die
     // Artikel-Montagezeit im VK-Vorschlag; Rückfall default_hourly_rate.
     'invoicing.assembly_hourly_rate' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:10000'],

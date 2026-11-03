@@ -33,10 +33,21 @@ final class TimesheetTimeEntryEnumsTest extends TestCase {
     }
 
     public function test_time_entry_kind_values(): void {
-        $this->assertSame(['work', 'travel', 'standby'], TimeEntryKind::values());
+        $this->assertSame(['work', 'travel', 'standby', 'machine'], TimeEntryKind::values());
         $this->assertNotEmpty(TimeEntryKind::Work->label());
         $this->assertNotEmpty(TimeEntryKind::Travel->label());
         $this->assertNotEmpty(TimeEntryKind::Standby->label());
+        $this->assertNotEmpty(TimeEntryKind::Machine->label());
         $this->assertArrayHasKey('travel', TimeEntryKind::options());
+    }
+
+    /** Feature 193: nur Gerätelaufzeit ist keine Personenzeit und darf 31 Tage dauern. */
+    public function test_time_entry_kind_person_time_and_limits(): void {
+        $this->assertFalse(TimeEntryKind::Machine->isPersonTime());
+        $this->assertSame(31 * 1440, TimeEntryKind::Machine->maxMinutes());
+        foreach ([TimeEntryKind::Work, TimeEntryKind::Travel, TimeEntryKind::Standby] as $kind) {
+            $this->assertTrue($kind->isPersonTime(), $kind->value);
+            $this->assertSame(1440, $kind->maxMinutes(), $kind->value);
+        }
     }
 }

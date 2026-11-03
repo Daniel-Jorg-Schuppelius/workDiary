@@ -95,6 +95,18 @@ class CoreTimeComplianceTest extends TestCase {
         $this->assertSame(360, $core['threshold']); // 09:00–15:00
     }
 
+    /** Feature 193: Gerätelaufzeit ist keine Zeit einer Person — keine Rahmen-, Kern- oder Pausenregel. */
+    public function test_machine_runtime_has_no_core_time_or_break_violations(): void {
+        $entry = $this->makeEntry([
+            'kind' => \App\Enums\TimeEntry\TimeEntryKind::Machine->value,
+            'started_at' => '2030-01-02 05:00:00',
+            'ended_at' => '2030-01-04 08:37:00',
+            'minutes' => 3097,
+        ]);
+
+        $this->assertSame([], app(CoreTimeValidator::class)->structuredViolations($this->user, $entry));
+    }
+
     public function test_scan_command_records_core_time_findings(): void {
         // Innerhalb des Scan-Fensters (90 Tage): gestern, Beginn vor Rahmenzeit.
         $day = Carbon::now()->subDay()->toDateString();

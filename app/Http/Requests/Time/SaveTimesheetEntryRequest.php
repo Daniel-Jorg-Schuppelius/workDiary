@@ -95,7 +95,8 @@ class SaveTimesheetEntryRequest extends BaseFormRequest {
             // führt zusätzlich `kind` (Reisezeit/Bereitschaft) — genau die
             // Zeilen, die der Lohnexport zur Exportzeit neu rechnet.
             'date' => ['nullable', 'date', new \App\Rules\NotInLockedMonth($this->timesheetOwner())],
-            'minutes' => ['nullable', 'integer', 'min:0', 'max:1440'],
+            // Je Art begrenzt: 24 h je Person, 31 Tage je Gerätelaufzeit (Feature 193).
+            'minutes' => ['nullable', 'integer', 'min:0', 'max:' . $this->kind()->maxMinutes()],
             'break_minutes' => ['nullable', 'integer', 'min:0', 'max:480'],
             'kind' => ['nullable', Rule::enum(TimeEntryKind::class)],
             'task_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tasks')],
@@ -104,6 +105,12 @@ class SaveTimesheetEntryRequest extends BaseFormRequest {
             'tag_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization('tags')],
             'new_tags' => ['nullable', 'string', 'max:500'],
         ];
+    }
+
+    private function kind(): TimeEntryKind {
+        $value = $this->input('kind');
+
+        return (is_string($value) ? TimeEntryKind::tryFrom($value) : null) ?? TimeEntryKind::Work;
     }
 
     public function withValidator(Validator $validator): void {

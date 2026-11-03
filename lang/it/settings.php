@@ -82,6 +82,8 @@ return [
         'billing_grouping_gap_minutes_hint' => 'Le registrazioni entro questo intervallo vengono unite in un blocco in fatturazione. Vuoto = nessun raggruppamento.',
         'default_hourly_rate' => 'Tariffa oraria predefinita (ricavo)',
         'default_hourly_rate_hint' => 'Vale quando né la registrazione, né la condizione cliente, né il collaboratore, né l’attività, né il progetto, né il cliente impostano una tariffa. Vuoto = i tempi senza tariffa restano a 0,00 €.',
+        'machine_hourly_rate' => 'Tariffa oraria tempo macchina (ricavo)',
+        'machine_hourly_rate_hint' => 'Tariffa per ora di funzionamento di un dispositivo o processo, ad esempio la lettura di un disco. Vale per le registrazioni di tipo «Tempo macchina»; una regola di fatturazione del progetto ha la precedenza. Vuoto = i tempi senza tariffa restano a 0,00 €.',
         'assembly_hourly_rate' => 'Tariffa oraria di calcolo montaggio',
         'assembly_hourly_rate_hint' => 'Valuta il tempo di montaggio dell\'articolo nella proposta di PV; vuoto = tariffa standard.',
         'default_service_article' => 'Prestazione predefinita (articolo)',

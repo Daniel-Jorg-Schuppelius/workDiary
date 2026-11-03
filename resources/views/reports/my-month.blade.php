@@ -20,6 +20,7 @@
         'work' => 'primary',
         'travel' => 'info',
         'standby' => 'warning',
+        'machine' => 'secondary',
     ];
 @endphp
 

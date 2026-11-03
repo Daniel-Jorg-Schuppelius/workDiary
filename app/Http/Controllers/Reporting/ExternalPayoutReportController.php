@@ -77,6 +77,7 @@ class ExternalPayoutReportController extends Controller {
             if ($model === CompensationModel::NachZeitaufwand) {
                 $minutes = (int) TimeEntry::query()
                     ->where('user_id', $user->id)
+                    ->personTime()
                     ->whereBetween('date', DateRange::days($from, $to))
                     ->sum('minutes');
                 $rate = ($user->compensation_rate?->toFloat() ?? 0.0);

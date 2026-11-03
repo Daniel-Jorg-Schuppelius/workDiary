@@ -49,6 +49,14 @@ return [
         : null,
 
     /*
+     * Stundensatz für Gerätelaufzeit (Feature 193): Laufzeit eines Geräts
+     * oder Prozesses, etwa das Auslesen einer Platte. null = kein Satz.
+     */
+    'machine_hourly_rate' => env('INVOICING_MACHINE_HOURLY_RATE') !== null
+        ? (float) env('INVOICING_MACHINE_HOURLY_RATE')
+        : null,
+
+    /*
      * Kalkulationsstundensatz für Montagezeiten (Feature 107, MVP-602):
      * bewertet articles.assembly_minutes im Verkaufspreisvorschlag.
      * null = Rückfall auf default_hourly_rate.
