@@ -14,7 +14,11 @@ use App\Enums\Diary\{LocationMode, Mode, Priority};
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use App\Models\Classification\EntryType;
+use App\Models\Customer\Customer;
 use App\Rules\IsoCountryCode;
+use App\Support\{SqidEncoder, Tz};
+use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\ValueObjects\Duration;
 use Illuminate\Validation\Rule;
 
@@ -23,6 +27,10 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
 
     /** Geplante Dauer als Stunden:Minuten, z. B. 1:30 oder 12:00. */
     private const PLANNED_DURATION_PATTERN = '/^\d{1,3}:[0-5]\d$/';
+
+    private ?EntryType $entryType = null;
+
+    private bool $entryTypeResolved = false;
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
@@ -84,6 +92,16 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
         // datetime-local Von/Bis (Wanduhrzeit) in aktiver Anzeige-Zeitzone → UTC.
         // due_date/window_*_date sind reine Datumsfelder und bleiben unverändert.
         $this->mergeOrgLocalToUtc(['start_at', 'end_at']);
+
+        // Fordert der Typ Einsatzort oder Einsatzdatum, gilt ohne eigene Angabe die
+        // Kundenanschrift bzw. der Tag des Beginns, sonst heute (Pilot 2026-11-03).
+        $type = $this->resolveEntryType();
+        if ($type?->requires_address && $this->isBlank('address_line') && $this->isBlank('address_zip') && $this->isBlank('address_city')) {
+            $this->mergeCustomerAddress();
+        }
+        if ($type?->requires_schedule && $this->isBlank('scheduled_for')) {
+            $this->merge(['scheduled_for' => $this->defaultScheduledFor()]);
+        }
 
         // Geplante Dauer (E13) als Stunden:Minuten; leer = ableiten (Zeitfenster/Termin).
         // Ohne das Feld im Request bleibt der gespeicherte Wert unberührt.
@@ -167,17 +185,71 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
     }
 
     private function resolveEntryType(): ?EntryType {
-        $raw = $this->input('entry_type_id');
-        if (! $raw) {
-            return null;
+        if (! $this->entryTypeResolved) {
+            $id = $this->decodeId(EntryType::class, $this->input('entry_type_id'));
+            $this->entryType = $id !== null ? EntryType::query()->find($id) : null;
+            $this->entryTypeResolved = true;
         }
 
-        // rules() läuft VOR der Sqid-Dekodierung in validationData(): Formulare senden Sqids (nur Altbestand/intern
-        // numerische IDs). Ohne Dekodierung wäre der Typ hier nicht auffindbar und die requires_*-Pflichten liefen ins Leere.
-        $id = is_string($raw) && ! ctype_digit($raw)
-            ? app(\App\Support\SqidEncoder::class)->decode(EntryType::class, $raw)
-            : (int) $raw;
+        return $this->entryType;
+    }
 
-        return $id ? EntryType::query()->find($id) : null;
+    /**
+     * prepareForValidation() und rules() laufen VOR der Sqid-Dekodierung in validationData(): Formulare senden Sqids
+     * (nur Altbestand/intern numerische IDs). Ohne Dekodierung wären Typ und Kunde hier nicht auffindbar.
+     *
+     * @param class-string $class
+     */
+    private function decodeId(string $class, mixed $raw): ?int {
+        if (is_int($raw)) {
+            return $raw > 0 ? $raw : null;
+        }
+        if (! is_string($raw) || $raw === '') {
+            return null;
+        }
+        $id = ctype_digit($raw) ? (int) $raw : app(SqidEncoder::class)->decode($class, $raw);
+
+        return $id !== null && $id > 0 ? $id : null;
+    }
+
+    private function isBlank(string $key): bool {
+        $value = $this->input($key);
+
+        return ! is_string($value) || trim($value) === '';
+    }
+
+    /** Einsatzort aus der Kundenanschrift; Koordinaten nur als Paar, ein fremder Kunde fällt am Scope durch. */
+    private function mergeCustomerAddress(): void {
+        $customerId = $this->decodeId(Customer::class, $this->input('customer_id'));
+        $customer = $customerId !== null ? Customer::query()->find($customerId) : null;
+        if (! $customer instanceof Customer || StringHelper::trimToNull($customer->address_street) === null) {
+            return;
+        }
+        $country = is_string($customer->country) && strlen($customer->country) === 2 ? strtoupper($customer->country) : null;
+        $hasCoordinates = $customer->address_lat !== null && $customer->address_lng !== null;
+
+        $this->merge([
+            'address_line' => $customer->address_street,
+            'address_zip' => $customer->address_zip,
+            'address_city' => $customer->address_city,
+            'address_country' => $country,
+            'address_lat' => $hasCoordinates ? $customer->address_lat : null,
+            'address_lng' => $hasCoordinates ? $customer->address_lng : null,
+        ]);
+    }
+
+    /** Tag des Beginns (Ortszeit) bei festem Zeitraum, sonst heute. */
+    private function defaultScheduledFor(): string {
+        $start = $this->input('start_at');
+        if ($this->input('mode') === Mode::Fixed->value && is_string($start) && trim($start) !== '') {
+            try {
+                // start_at liegt nach mergeOrgLocalToUtc() in UTC; das Einsatzdatum ist der Ortstag.
+                return CarbonImmutable::parse(trim($start), 'UTC')->setTimezone(Tz::current())->toDateString();
+            } catch (\Throwable) {
+                // Ungültiger Beginn: die 'date'-Regel meldet ihn.
+            }
+        }
+
+        return Tz::now()->toDateString();
     }
 }

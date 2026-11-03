@@ -1,7 +1,7 @@
 ---
 title: "Creare una commessa"
 topic: diary-entries.create
-version: 4
+version: 5
 keywords:
     - nuova commessa
     - nuovo incarico
@@ -46,11 +46,16 @@ i suoi passaggi di stato tracciano il ciclo di vita della commessa.
    **progetto**.
 3. Scelga il **tipo di voce** e descriva il **contenuto** in una o due
    frasi.
-4. Facoltativo: indichi la **Durata prevista (HH:MM)** nella sezione
+4. Se il tipo di voce richiede un **indirizzo**, è precompilato con
+   l'indirizzo del cliente scelto — lo modifichi solo se il luogo
+   d'intervento è diverso. La **Data** nella sezione **Appuntamento e
+   tempo di servizio** è preimpostata su oggi, o sul giorno dell'inizio per
+   un periodo fisso; se resta vuota, al salvataggio vale lo stesso valore.
+5. Facoltativo: indichi la **Durata prevista (HH:MM)** nella sezione
    **Periodo**, ad es. 1:30. Se il campo resta vuoto vale la durata dell’intervento di un ordine pianificato, altrimenti la durata
    della finestra oraria o dell’appuntamento. È il piano in **Piano/effettivo**,
    **Analisi dei tipi di ordine** e **Capacità del personale**.
-5. I passaggi di stato avvengono poi nella **finestra di dettaglio** —
+6. I passaggi di stato avvengono poi nella **finestra di dettaglio** —
    nessun aggiornamento di massa dalla lista.
 
 ![Lista di lavoro del registro commesse con contatori di stato e voci](media/auftraege/arbeitsliste.png)

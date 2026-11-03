@@ -1,7 +1,7 @@
 ---
 title: "Créer une commande"
 topic: diary-entries.create
-version: 4
+version: 5
 keywords:
     - nouvelle commande
     - nouvelle intervention
@@ -47,11 +47,17 @@ statut tracent le cycle de vie de la commande.
    échéant.
 3. Choisissez le **type d'entrée** et décrivez le **contenu** en une à
    deux phrases.
-4. En option : indiquez la **Durée prévue (HH:MM)** dans la section
+4. Si le type d'entrée exige une **adresse**, elle est préremplie avec
+   l'adresse du client choisi — ne la modifiez que si le lieu
+   d'intervention diffère. La **Date** de la section **Date et temps de
+   service** est préremplie avec le jour même, ou avec le jour du début
+   pour une période fixe ; laissée vide, la même valeur s'applique à
+   l'enregistrement.
+5. En option : indiquez la **Durée prévue (HH:MM)** dans la section
    **Période**, par ex. 1:30. Si le champ reste vide, la durée d’intervention d’une commande planifiée, sinon la durée du créneau ou du
    rendez-vous s'applique. Elle sert de plan dans **Plan/réel**, **Analyse des
    types de commande** et **Capacité du personnel**.
-5. Les transitions de statut passent ensuite par la **fenêtre de
+6. Les transitions de statut passent ensuite par la **fenêtre de
    détail** — pas de mise à jour en masse depuis la liste.
 
 ![Liste de travail du journal des commandes avec compteurs de statut et entrées](media/auftraege/arbeitsliste.png)

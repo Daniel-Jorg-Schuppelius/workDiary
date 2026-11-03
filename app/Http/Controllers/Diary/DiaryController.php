@@ -441,7 +441,9 @@ class DiaryController extends Controller {
         $flagsMap = $types->mapWithKeys(fn(EntryType $t) => [$t->sqid => $t->flagsArray()])->all();
 
         /** @var Collection<int, Customer> $customers */
-        $customers = Customer::query()->orderBy('name')->limit(500)->get(['id', 'name', 'company']);
+        // Anschrift und Koordinaten belegen den Einsatzort eines fordernden Typs vor (Pilot 2026-11-03).
+        $customers = Customer::query()->orderBy('name')->limit(500)
+            ->get(['id', 'name', 'company', 'address_street', 'address_zip', 'address_city', 'country', 'address_lat', 'address_lng']);
 
         /** @var Collection<int, Tour> $tours */
         $tours = Tour::query()

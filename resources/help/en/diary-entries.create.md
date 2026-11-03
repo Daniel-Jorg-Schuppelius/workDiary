@@ -1,7 +1,7 @@
 ---
 title: "Creating an order"
 topic: diary-entries.create
-version: 4
+version: 5
 keywords:
     - new order
     - new job
@@ -47,11 +47,16 @@ transitions map the order lifecycle traceably.
    applicable.
 3. Choose the **entry type** and describe the **content** in one or
    two sentences.
-4. Optionally enter the **Planned duration (HH:MM)** in the **Period** section,
+4. If the entry type requires an **address**, it is prefilled with the
+   selected customer's address — change it only if the site differs. The
+   **Date** in **Date & service time** defaults to today, or to the day of
+   the start for a fixed period; left empty, the same default applies when
+   saving.
+5. Optionally enter the **Planned duration (HH:MM)** in the **Period** section,
    e.g. 1:30. If the field stays empty, the service duration of a dispatched order, otherwise the length of the time slot or the
    duration of the appointment applies. It is the plan in **Plan/actual**, the
    **Order-type analysis** and **Staff capacity**.
-5. Status transitions then run through the **detail modal** — no bulk
+6. Status transitions then run through the **detail modal** — no bulk
    update from the list.
 
 ![Order book work list with status counters and entries](media/auftraege/arbeitsliste.png)
