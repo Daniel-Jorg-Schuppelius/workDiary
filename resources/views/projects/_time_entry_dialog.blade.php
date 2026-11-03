@@ -69,6 +69,16 @@
                 </div>
             </div>
 
+            {{-- Art (Feature 193): Gerätelaufzeit läuft ohne Person, bis 31 Tage, Abrechnung zum Gerätesatz. --}}
+            <div class="md:col-span-2">
+                <x-select-field name="kind" :label="__('Art')"
+                                :hint="__('Gerätelaufzeit (z. B. Auslesen einer Platte) läuft ohne Person: bis zu 31 Tage, zählt nicht als Arbeitszeit, Abrechnung zum Gerätesatz.')">
+                    @foreach (\App\Enums\TimeEntry\TimeEntryKind::cases() as $kindOption)
+                        <option value="{{ $kindOption->value }}" @selected(old('kind', $entry?->kind?->value ?? \App\Enums\TimeEntry\TimeEntryKind::Work->value) === $kindOption->value)>{{ $kindOption->label() }}</option>
+                    @endforeach
+                </x-select-field>
+            </div>
+
             {{-- Dauer-Modus: nur Datum + HH:MM --}}
             <div class="fieldset" data-time-mode-pane="duration">
                 <label for="date" class="fieldset-label">{{ __('Datum') }}</label>
@@ -82,7 +92,7 @@
                 <label for="time-entry-duration-hhmm" class="fieldset-label">{{ __('Dauer (HH:MM)') }}</label>
                 <input id="time-entry-duration-hhmm" type="text" data-time-hhmm
                        class="input input-bordered w-full"
-                       pattern="^\d{1,2}:[0-5]\d$"
+                       pattern="^\d{1,3}:[0-5]\d$"
                        placeholder="1:30"
                        value="{{ $hh }}:{{ $mm }}">
                 @error('minutes')<p class="text-error text-sm">{{ $message }}</p>@enderror

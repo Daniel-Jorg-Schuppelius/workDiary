@@ -82,6 +82,8 @@ return [
         'billing_grouping_gap_minutes_hint' => 'Entries within this gap are merged into one block when billing. Empty = no grouping.',
         'default_hourly_rate' => 'Default hourly rate (revenue)',
         'default_hourly_rate_hint' => 'Applies when neither entry, customer agreement, employee, activity, project nor customer sets a rate. Empty = entries without a rate stay at 0.00.',
+        'machine_hourly_rate' => 'Hourly rate for equipment runtime (revenue)',
+        'machine_hourly_rate_hint' => 'Rate per runtime hour of a device or process, e.g. reading out a disk. Applies to entries of the kind “Equipment runtime”; a billing rule on the project takes precedence. Empty = runtimes without a rate stay at 0.00.',
         'assembly_hourly_rate' => 'Assembly costing rate',
         'assembly_hourly_rate_hint' => 'Values the article assembly time in the sale price suggestion; empty = default hourly rate.',
         'default_service_article' => 'Default service (article)',

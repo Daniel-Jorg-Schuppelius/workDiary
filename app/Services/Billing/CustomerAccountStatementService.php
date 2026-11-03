@@ -465,9 +465,12 @@ class CustomerAccountStatementService {
                 'id' => $entry->id,
                 'date' => $entry->date?->toDateString(),
                 'weekday' => $entry->date?->translatedFormat('l'),
-                'category' => $category instanceof \App\Models\Classification\ActivityCategory
-                    ? $category->label
-                    : TimeEntry::activityLabel($entry->activity_type),
+                // Gerätelaufzeit (Feature 193) steht unter ihrer Art, nicht unter der Tätigkeit einer Person.
+                'category' => $entry->isMachineTime()
+                    ? $entry->kind->label()
+                    : ($category instanceof \App\Models\Classification\ActivityCategory
+                        ? $category->label
+                        : TimeEntry::activityLabel($entry->activity_type)),
                 'start' => $localStart?->format('H:i'),
                 'end' => $localEnd?->format('H:i'),
                 'minutes' => (int) $entry->minutes,

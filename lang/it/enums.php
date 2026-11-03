@@ -362,6 +362,7 @@ return [
             'work' => 'Lavoro',
             'travel' => 'Trasferta',
             'standby' => 'Reperibilità',
+            'machine' => 'Tempo macchina',
         ],
     ],
     'expense' => [

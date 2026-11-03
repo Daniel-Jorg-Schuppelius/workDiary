@@ -30,6 +30,7 @@
     $colspan = 4 + (int) $showDate + (int) $showProject + (int) $showUser + (int) $canReassign;
     $editPolicy = app(\App\Services\Timekeeping\TimeEntryEditPolicy::class);
     $listQuery = request()->except(['page', 'group']);
+    $kindTone = ['travel' => 'info', 'standby' => 'warning', 'machine' => 'secondary'];
 @endphp
 <x-index-page overflow="clip" :subtitle="__('Zeiteinträge aller Projekte im gewählten Zeitraum.')">
     @include('projects._list_tabs')
@@ -83,6 +84,15 @@
             </x-filter-field>
         @endif
 
+        <x-filter-field :label="__('Art')" for="project-times-kind" class="min-w-36">
+            <select id="project-times-kind" name="kind" class="select select-sm select-bordered w-full">
+                <option value="">{{ __('Alle Arten') }}</option>
+                @foreach (\App\Enums\TimeEntry\TimeEntryKind::cases() as $kindOption)
+                    <option value="{{ $kindOption->value }}" @selected($filters['kind'] === $kindOption->value)>{{ $kindOption->label() }}</option>
+                @endforeach
+            </select>
+        </x-filter-field>
+
         <x-filter-field :label="__('Abrechenbar')" for="project-times-billable" class="min-w-36">
             <select id="project-times-billable" name="billable" class="select select-sm select-bordered w-full">
                 <option value="">{{ __('Abrechenbar und nicht abrechenbar') }}</option>
@@ -99,6 +109,9 @@
             <span><span class="font-semibold tabular-nums">{{ $totals['count'] }}</span> {{ __('Einträge') }}</span>
             <span><span class="font-semibold tabular-nums">{{ $fmt($totals['minutes']) }}</span> {{ __('gesamt') }}</span>
             <span><span class="font-semibold tabular-nums">{{ $fmt($totals['billable']) }}</span> {{ __('abrechenbar') }}</span>
+            @if ($totals['machine'] > 0)
+                <span><span class="font-semibold tabular-nums">{{ $fmt($totals['machine']) }}</span> {{ __('davon Gerätelaufzeit') }}</span>
+            @endif
             <span><span class="font-semibold tabular-nums">{{ $totals['projects'] }}</span> {{ __('Projekte mit Zeiten') }}</span>
         </div>
         <div class="flex items-center gap-2">
@@ -236,6 +249,9 @@
                     <td class="whitespace-nowrap text-right font-medium tabular-nums">
                         @if (! $entry->billable)
                             <x-status-badge tone="warning" size="xs" class="mr-1">{{ __('nicht abrechenbar') }}</x-status-badge>
+                        @endif
+                        @if ($entry->kind !== \App\Enums\TimeEntry\TimeEntryKind::Work)
+                            <x-status-badge :tone="$kindTone[$entry->kind->value] ?? 'ghost'" size="xs" class="mr-1">{{ $entry->kind->label() }}</x-status-badge>
                         @endif
                         {{ $entry->hoursFormatted() }}
                     </td>

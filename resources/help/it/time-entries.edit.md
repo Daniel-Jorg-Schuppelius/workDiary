@@ -1,7 +1,7 @@
 ---
 title: "Modificare una registrazione di tempo"
 topic: time-entries.edit
-version: 2
+version: 3
 keywords:
     - correggere le ore
     - cambiare registrazione
@@ -15,6 +15,9 @@ keywords:
     - sistemare orario
     - tempo amministrativo
     - registrare tempo interno
+    - tempo macchina
+    - durata su più giorni
+    - lettura disco
 audience: []
 related:
     - time-entries.start
@@ -98,3 +101,23 @@ La finestra indica allora il motivo; i commenti restano possibili.
 per sé. Il ruolo **Amministratore** può modificare ed eliminare anche le
 registrazioni di altre persone e quelle bloccate; la finestra segnala allora
 che sta modificando come admin.
+
+## Tempo macchina
+
+Se un dispositivo o un processo continua senza di lei, ad esempio la lettura
+di un disco rigido difettoso per due giorni, lo registri come **Tipo** →
+**Tempo macchina** invece che come lavoro:
+
+- La durata può arrivare a **31 giorni**, in modalità durata anche oltre le
+  24 ore (ad esempio `51:37`) oppure come **Da / A** su più giorni. Le
+  registrazioni di tipo lavoro, viaggio e reperibilità restano limitate a
+  24 ore.
+- Il tempo macchina **non conta come suo orario di lavoro**: è escluso da
+  orario flessibile, controllo pause, export paghe, pagamenti, quote SLA e
+  dall'orario di lavoro di un foglio ore. Le liste progetto lo mostrano in
+  una riga «di cui tempo macchina» e con un contrassegno sulla registrazione.
+- Viene fatturato alla **tariffa oraria tempo macchina** dell'organizzazione
+  (Impostazioni → Valori predefiniti fatture); una **regola di fatturazione**
+  del progetto per il tipo tempo macchina ha la precedenza e può indicare un
+  prezzo fisso o una prestazione propria. Condizioni cliente e tariffe delle
+  persone non valgono.

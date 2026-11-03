@@ -30,6 +30,7 @@ class TimeEntryObserver {
                 $entry->project_id !== null => TimeEntryActivityType::Project,
                 $entry->kind === TimeEntryKind::Travel => TimeEntryActivityType::Travel,
                 $entry->kind === TimeEntryKind::Standby => TimeEntryActivityType::Standby,
+                $entry->kind === TimeEntryKind::Machine => TimeEntryActivityType::Other,
                 default => TimeEntryActivityType::Admin,
             };
         }

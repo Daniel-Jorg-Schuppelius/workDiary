@@ -1,7 +1,7 @@
 ---
 title: "Edit a time entry"
 topic: time-entries.edit
-version: 2
+version: 3
 keywords:
     - correct time
     - change time entry
@@ -15,6 +15,9 @@ keywords:
     - change log
     - administrative time
     - record internal time
+    - equipment runtime
+    - runtime over several days
+    - read out disk
 audience: []
 related:
     - time-entries.start
@@ -99,3 +102,21 @@ The dialog then states the reason; comments remain possible.
 themselves. The **Administrator** role may also edit and delete other people's
 entries and locked entries; the dialog then points out that you are editing as
 admin.
+
+## Equipment runtime
+
+If a device or process keeps running without you, for example reading out a
+defective hard disk over two days, record it as **Type** → **Equipment
+runtime** instead of work:
+
+- The duration may be up to **31 days**, in duration mode also beyond 24
+  hours (for example `51:37`) or as **From / To** across several days.
+  Entries of the types work, travel and standby stay limited to 24 hours.
+- Equipment runtime does **not count as your working time**: it is excluded
+  from flexitime, break checks, payroll export, payouts, SLA quotas and the
+  working time of a timesheet. Project lists show it as a separate line
+  “of which equipment runtime” and with a badge on the entry.
+- It is billed at the organisation's **hourly rate for equipment runtime**
+  (Settings → Invoice defaults); a **billing rule** on the project for the
+  type equipment runtime takes precedence and may name a fixed price or its
+  own service. Customer agreements and person rates do not apply.

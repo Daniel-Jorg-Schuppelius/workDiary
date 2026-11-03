@@ -11,6 +11,7 @@
 namespace Tests\Feature\Time;
 
 use App\Enums\Project\ProjectStatus;
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
@@ -133,6 +134,86 @@ class TimeEntryTest extends TestCase {
             ->assertSessionHasErrors(['ended_at']);
 
         $this->assertDatabaseMissing('time_entries', ['description' => 'Eine Woche am Stück']);
+    }
+
+    /** Feature 193: Gerätelaufzeit (z. B. Auslesen einer Platte) darf über mehrere Tage laufen. */
+    public function test_machine_runtime_may_span_several_days(): void {
+        $this->actingAs($this->user)
+            ->post(route('projects.time-entries.store', $this->project), [
+                'kind' => TimeEntryKind::Machine->value,
+                'started_at' => '2030-01-15T08:00',
+                'ended_at' => '2030-01-17T11:37',
+                'description' => 'Platte ausgelesen',
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $entry = TimeEntry::query()->where('description', 'Platte ausgelesen')->sole();
+        $this->assertSame(TimeEntryKind::Machine, $entry->kind);
+        $this->assertSame(2 * 1440 + 3 * 60 + 37, (int) $entry->minutes);
+        $this->assertSame('2030-01-15', $entry->date?->toDateString());
+    }
+
+    public function test_machine_runtime_over_24_hours_in_duration_mode(): void {
+        $this->actingAs($this->user)
+            ->post(route('projects.time-entries.store', $this->project), [
+                'kind' => TimeEntryKind::Machine->value,
+                'date' => '2030-01-15',
+                'minutes' => 3097,
+                'description' => 'Platte ausgelesen (Dauer)',
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('time_entries', ['description' => 'Platte ausgelesen (Dauer)', 'minutes' => 3097, 'kind' => 'machine']);
+    }
+
+    public function test_work_entry_over_24_hours_is_rejected_in_duration_mode(): void {
+        $this->actingAs($this->user)
+            ->from(route('projects.time-entries.create', $this->project))
+            ->post(route('projects.time-entries.store', $this->project), [
+                'date' => '2030-01-15',
+                'minutes' => 3097,
+                'description' => 'Zu lange Arbeit',
+            ])
+            ->assertSessionHasErrors(['minutes']);
+
+        $this->assertDatabaseMissing('time_entries', ['description' => 'Zu lange Arbeit']);
+    }
+
+    public function test_machine_runtime_longer_than_31_days_is_rejected(): void {
+        $this->actingAs($this->user)
+            ->from(route('projects.time-entries.create', $this->project))
+            ->post(route('projects.time-entries.store', $this->project), [
+                'kind' => TimeEntryKind::Machine->value,
+                'started_at' => '2030-01-01T08:00',
+                'ended_at' => '2030-02-02T08:00',
+                'description' => 'Laufzeit zu lang',
+            ])
+            ->assertSessionHasErrors(['ended_at']);
+
+        $this->assertDatabaseMissing('time_entries', ['description' => 'Laufzeit zu lang']);
+    }
+
+    /** Ohne Angabe der Art behält ein Eintrag beim Bearbeiten seine Art. */
+    public function test_update_without_kind_keeps_the_entry_kind(): void {
+        $entry = TimeEntry::factory()->machine()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'date' => '2030-01-15',
+        ]);
+
+        $this->actingAs($this->user)
+            ->put(route('projects.time-entries.update', [$this->project, $entry]), [
+                'date' => '2030-01-15',
+                'minutes' => 3000,
+                'description' => 'Nachgetragen',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(TimeEntryKind::Machine, $entry->fresh()->kind);
+        $this->assertSame(3000, (int) $entry->fresh()->minutes);
     }
 
     public function test_owner_can_update_time_entry(): void {

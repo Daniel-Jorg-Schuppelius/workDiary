@@ -362,6 +362,7 @@ return [
             'work' => 'Work',
             'travel' => 'Travel',
             'standby' => 'Standby',
+            'machine' => 'Equipment runtime',
         ],
     ],
     'expense' => [

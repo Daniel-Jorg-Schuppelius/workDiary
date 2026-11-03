@@ -20,8 +20,24 @@ enum TimeEntryKind: string implements HasLabel {
     case Travel = 'travel';
     case Standby = 'standby';
 
+    /** Laufzeit eines Geräts oder Prozesses (Feature 193): keine Zeit einer Person. */
+    case Machine = 'machine';
+
     public function label(): string {
         return (string) __('enums.time_entry.kind.' . $this->value);
+    }
+
+    /**
+     * Zeit einer Person — zählt zu Gleitzeit, Pausen, Lohn, Auszahlung und
+     * SLA-Kontingent. Gerätelaufzeit ist es nicht.
+     */
+    public function isPersonTime(): bool {
+        return $this !== self::Machine;
+    }
+
+    /** Längste Dauer eines Eintrags: 24 h je Person, 31 Tage je Gerätelaufzeit. */
+    public function maxMinutes(): int {
+        return $this === self::Machine ? 31 * 1440 : 1440;
     }
 
     /**

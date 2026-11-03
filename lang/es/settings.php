@@ -82,6 +82,8 @@ return [
         'billing_grouping_gap_minutes_hint' => 'Las entradas separadas como máximo por este intervalo se agrupan en un bloque al facturar. Vacío = sin agrupación.',
         'default_hourly_rate' => 'Tarifa horaria estándar (ingreso)',
         'default_hourly_rate_hint' => 'Se aplica cuando ni la entrada, ni la condición de cliente, ni el empleado, ni la actividad, ni el proyecto, ni el cliente fijan una tarifa. Vacío = los tiempos sin tarifa quedan en 0,00 €.',
+        'machine_hourly_rate' => 'Tarifa horaria tiempo de máquina (ingreso)',
+        'machine_hourly_rate_hint' => 'Tarifa por hora de funcionamiento de un dispositivo o proceso, por ejemplo la lectura de un disco. Se aplica a las entradas del tipo «Tiempo de máquina»; una regla de facturación del proyecto tiene prioridad. Vacío = los tiempos sin tarifa quedan en 0,00 €.',
         'assembly_hourly_rate' => 'Tarifa de cálculo de montaje',
         'assembly_hourly_rate_hint' => 'Valora el tiempo de montaje del artículo en la propuesta de PV; vacío = tarifa estándar.',
         'default_service_article' => 'Servicio estándar (artículo)',

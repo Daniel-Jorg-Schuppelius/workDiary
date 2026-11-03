@@ -10,6 +10,7 @@
 
 namespace App\Services\Billing;
 
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Billing\CustomerBillingRate;
 use App\Models\Time\TimeEntry;
 
@@ -130,13 +131,18 @@ class RateCalculator {
      */
     public function compute(TimeEntry $entry): array {
         $hours = ((int) $entry->minutes) / 60.0;
-        $agreementRate = $this->resolveAgreementRate($entry);
+        // Gerätelaufzeit (Feature 193): eigener Gerätesatz (Eintrag, sonst Organisation),
+        // keine Kundenkondition, keine Anfahrt, keine Personenkosten.
+        $isMachine = $entry->kind === TimeEntryKind::Machine;
+        $agreementRate = $isMachine ? null : $this->resolveAgreementRate($entry);
         $billable = $this->isBillable($entry);
-        $travelMinutes = $this->resolveTravelMinutes($entry, $billable);
+        $travelMinutes = $isMachine ? 0 : $this->resolveTravelMinutes($entry, $billable);
+        $organizationId = $entry->organization_id !== null ? (int) $entry->organization_id : null;
 
-        $hourly = $this->resolveHourlyRate($entry, $agreementRate);
-        $effectiveHourly = $hourly ?? app(OrganizationDefaultRateResolver::class)
-            ->hourlyRateFor($entry->organization_id !== null ? (int) $entry->organization_id : null);
+        $hourly = $isMachine ? $entry->hourly_rate?->toFloat() : $this->resolveHourlyRate($entry, $agreementRate);
+        $effectiveHourly = $hourly ?? ($isMachine
+            ? app(OrganizationDefaultRateResolver::class)->machineHourlyRateFor($organizationId)
+            : app(OrganizationDefaultRateResolver::class)->hourlyRateFor($organizationId));
 
         if ($entry->fixed_rate !== null) {
             $revenue = $billable ? $entry->fixed_rate->toFloat() : 0.0;
@@ -146,7 +152,7 @@ class RateCalculator {
             $revenue = ($effectiveHourly !== null && $billable) ? round($billedHours * $effectiveHourly, 2) : 0.0;
         }
 
-        $internalHourly = $this->resolveInternalRate($entry);
+        $internalHourly = $isMachine ? null : $this->resolveInternalRate($entry);
         $internal = $internalHourly !== null ? round($hours * $internalHourly, 2) : 0.0;
 
         return [

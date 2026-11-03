@@ -4839,9 +4839,10 @@
                                         "nullable": true
                                     },
                                     "minutes": {
+                                        "description": "Höchstens 1440 (24 h); bei kind=machine bis 44640 (31 Tage)",
                                         "type": "integer",
                                         "nullable": true,
-                                        "maximum": 1440,
+                                        "maximum": 44640,
                                         "minimum": 0
                                     },
                                     "break_minutes": {
@@ -4856,7 +4857,8 @@
                                         "enum": [
                                             "work",
                                             "travel",
-                                            "standby"
+                                            "standby",
+                                            "machine"
                                         ]
                                     },
                                     "task_id": {
@@ -4978,9 +4980,10 @@
                                         "nullable": true
                                     },
                                     "minutes": {
+                                        "description": "Höchstens 1440 (24 h); bei kind=machine bis 44640 (31 Tage)",
                                         "type": "integer",
                                         "nullable": true,
-                                        "maximum": 1440,
+                                        "maximum": 44640,
                                         "minimum": 0
                                     },
                                     "break_minutes": {
@@ -4995,7 +4998,8 @@
                                         "enum": [
                                             "work",
                                             "travel",
-                                            "standby"
+                                            "standby",
+                                            "machine"
                                         ]
                                     },
                                     "task_id": {

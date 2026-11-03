@@ -137,6 +137,32 @@ class TimesheetTest extends TestCase {
         ]);
     }
 
+    /** Feature 193: Gerätelaufzeit steht auf dem Zettel, zählt aber nicht zur Arbeitszeit. */
+    public function test_machine_runtime_is_not_counted_as_timesheet_work_minutes(): void {
+        $ts = $this->makeTimesheet();
+        $ts->entries()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'date' => $ts->work_date,
+            'minutes' => 90,
+            'kind' => TimeEntryKind::Work->value,
+        ]);
+        $ts->entries()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'date' => $ts->work_date,
+            'minutes' => 3097,
+            'kind' => TimeEntryKind::Machine->value,
+        ]);
+
+        $fresh = $ts->fresh(['entries']);
+        $this->assertSame(90, (int) $fresh->totals_minutes);
+        $this->assertSame(90, (int) $fresh->total_work_minutes);
+        $this->assertCount(2, $fresh->entries);
+    }
+
     public function test_entry_recalculates_totals(): void {
         $ts = $this->makeTimesheet();
         $ts->entries()->create([

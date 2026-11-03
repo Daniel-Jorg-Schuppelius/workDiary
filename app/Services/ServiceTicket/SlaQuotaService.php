@@ -75,6 +75,8 @@ class SlaQuotaService {
             ->withoutGlobalScope(OrganizationScope::class)
             ->where('organization_id', $contract->organization_id)
             ->where('billable', true)
+            // Das Kontingent sind Personenstunden; Gerätelaufzeit (Feature 193) verbraucht es nicht.
+            ->personTime()
             ->whereBetween('date', DateRange::days($start, $end));
 
         if ($contract->customer_id !== null) {

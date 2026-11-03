@@ -44,6 +44,7 @@ final class ReportsOverviewService {
         /** @var Collection<int, TimeEntry> $entries */
         $entries = TimeEntry::query()
             ->where('user_id', $user->id)
+            ->personTime()
             ->whereBetween('date', DateRange::days($from, $to))
             ->get(['date', 'minutes', 'project_id']);
 

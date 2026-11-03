@@ -29,7 +29,7 @@ use App\Support\Setting;
  * Queue-Job — ein langlebiger Worker rechnet so nie mit einem veralteten Satz.
  */
 class OrganizationDefaultRateResolver {
-    /** @var array<int, float|null> Request-/Job-Cache je organization_id. */
+    /** @var array<string, float|null> Request-/Job-Cache je Schlüssel und organization_id. */
     private array $cache = [];
 
     public function flush(): void {
@@ -37,19 +37,29 @@ class OrganizationDefaultRateResolver {
     }
 
     public function hourlyRateFor(?int $organizationId): ?float {
+        return $this->rateFor($organizationId, 'default_hourly_rate');
+    }
+
+    /** Stundensatz für Gerätelaufzeit (Feature 193): eigener Satz, nie der Personensatz. */
+    public function machineHourlyRateFor(?int $organizationId): ?float {
+        return $this->rateFor($organizationId, 'machine_hourly_rate');
+    }
+
+    private function rateFor(?int $organizationId, string $key): ?float {
         if ($organizationId === null) {
             // Eintrag ohne Mandantenbezug: nur der ambiente Kontext bleibt.
-            return self::toRate(Setting::get('invoicing.default_hourly_rate'));
+            return self::toRate(Setting::get('invoicing.' . $key));
         }
 
-        if (! array_key_exists($organizationId, $this->cache)) {
+        $cacheKey = $key . ':' . $organizationId;
+        if (! array_key_exists($cacheKey, $this->cache)) {
             $organization = Organization::query()->withoutGlobalScopes()->find($organizationId);
-            $this->cache[$organizationId] = $organization instanceof Organization
-                ? self::toRate($organization->invoicingSettings()['default_hourly_rate'] ?? null)
+            $this->cache[$cacheKey] = $organization instanceof Organization
+                ? self::toRate($organization->invoicingSettings()[$key] ?? null)
                 : null;
         }
 
-        return $this->cache[$organizationId];
+        return $this->cache[$cacheKey];
     }
 
     /** Leerer String/0 zählt als „kein Standardsatz" — sonst würde 0,00 € als gepflegter Satz gelten. */

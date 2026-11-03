@@ -63,7 +63,7 @@ class ProjectTimeOverviewTest extends TestCase {
         $response->assertSee('Alpha-im-Juni');
         $response->assertSee('Beta-am-Monatsletzten');
         $response->assertDontSee('Alpha-im-Mai');
-        $response->assertViewHas('totals', ['count' => 2, 'minutes' => 240, 'billable' => 240, 'projects' => 2]);
+        $response->assertViewHas('totals', ['count' => 2, 'minutes' => 240, 'billable' => 240, 'machine' => 0, 'projects' => 2]);
         $response->assertViewHas('groups', fn(Collection $groups): bool => $groups->count() === 2);
     }
 
@@ -297,6 +297,38 @@ class ProjectTimeOverviewTest extends TestCase {
      * @param  array<string, mixed>  $query
      * @return TestResponse<\Illuminate\Http\Response>
      */
+    /** Feature 193: Gerätelaufzeit steckt in „gesamt“, steht gesondert und lässt sich nach Art filtern. */
+    public function test_machine_runtime_is_summed_separately_and_filterable(): void {
+        $this->createEntry($this->alpha, '2026-06-10', 'Alpha-Arbeit');
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->alpha->id,
+            'user_id' => $this->admin->id,
+            'date' => '2026-06-12',
+            'minutes' => 3097,
+            'kind' => TimeEntryKind::Machine->value,
+            'billable' => true,
+            'description' => 'Platte-ausgelesen',
+        ]);
+
+        $response = $this->overview($this->admin);
+        $response->assertOk();
+        $response->assertSee('Platte-ausgelesen');
+        $response->assertSee(TimeEntryKind::Machine->label());
+        $response->assertSee(__('davon Gerätelaufzeit'));
+        $response->assertViewHas('totals', ['count' => 2, 'minutes' => 3217, 'billable' => 3217, 'machine' => 3097, 'projects' => 1]);
+
+        $filtered = $this->overview($this->admin, ['kind' => TimeEntryKind::Machine->value]);
+        $filtered->assertOk();
+        $filtered->assertSee('Platte-ausgelesen');
+        $filtered->assertDontSee('Alpha-Arbeit');
+        $filtered->assertViewHas('totals', fn(array $totals): bool => $totals['count'] === 1 && $totals['machine'] === 3097);
+
+        // Unbekannte Art zählt als kein Filter.
+        $this->overview($this->admin, ['kind' => 'rakete'])
+            ->assertViewHas('totals', fn(array $totals): bool => $totals['count'] === 2);
+    }
+
     private function overview(User $viewer, array $query = []): TestResponse {
         return $this->actingAs($viewer)
             ->withSession($this->dateRangeMonth(2026, 6))

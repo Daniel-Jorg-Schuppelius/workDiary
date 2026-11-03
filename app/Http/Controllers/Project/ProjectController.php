@@ -213,8 +213,11 @@ class ProjectController extends Controller {
             ->sum('minutes');
         $myMinutes = $project->timeEntries()
             ->where('user_id', Auth::id())
+            ->personTime()
             ->whereBetween('date', $rangeDateBounds)
             ->sum('minutes');
+        // Gerätelaufzeit (Feature 193) steckt in „Gesamt“, bekommt aber eine eigene Kachel.
+        $machineMinutes = $project->timeEntries()->visibleTo($viewer)->machineTime()->sum('minutes');
 
         // Nächster Milestone für Übersicht
         $nextMilestone = $project->milestones()
@@ -266,6 +269,7 @@ class ProjectController extends Controller {
             'economics' => $economics,
             'economicsUrl' => route('reports.economics', ['project' => $project->sqid, 'from' => $rangeFrom->toDateString(), 'to' => $rangeTo->toDateString()]),
             'myMinutes' => (int) $myMinutes,
+            'machineMinutes' => (int) $machineMinutes,
             'seesAllTimes' => $seesAllTimes,
             'nextMilestone' => $nextMilestone,
             'timesheets' => $project->timesheets()

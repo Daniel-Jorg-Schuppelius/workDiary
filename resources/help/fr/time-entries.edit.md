@@ -1,7 +1,7 @@
 ---
 title: "Modifier une saisie de temps"
 topic: time-entries.edit
-version: 2
+version: 3
 keywords:
     - corriger un temps
     - changer une saisie
@@ -15,6 +15,9 @@ keywords:
     - historique des modifications
     - temps administratif
     - saisir du temps interne
+    - temps machine
+    - durée sur plusieurs jours
+    - lecture de disque
 audience: []
 related:
     - time-entries.start
@@ -101,3 +104,24 @@ possibles.
 administratif pour elle-même. Le rôle **Administrateur** peut aussi modifier
 et supprimer les saisies d'autres personnes et les saisies verrouillées ; la
 boîte de dialogue signale alors que vous modifiez en tant qu'administrateur.
+
+## Temps machine
+
+Si un appareil ou un processus continue sans vous, par exemple la lecture
+d'un disque dur défectueux pendant deux jours, saisissez-le comme **Type** →
+**Temps machine** au lieu de travail :
+
+- La durée peut atteindre **31 jours**, en mode durée aussi au-delà de 24
+  heures (par exemple `51:37`) ou comme **De / À** sur plusieurs jours. Les
+  saisies de type travail, déplacement et astreinte restent limitées à
+  24 heures.
+- Le temps machine **ne compte pas comme votre temps de travail** : il est
+  exclu de l'horaire variable, du contrôle des pauses, de l'export paie, des
+  versements, des quotas SLA et du temps de travail d'une feuille d'heures.
+  Les listes de projet l'affichent sur une ligne « dont temps machine » et
+  avec un badge sur la saisie.
+- Il est facturé au **taux horaire temps machine** de l'organisation
+  (Paramètres → Valeurs par défaut des factures) ; une **règle de
+  facturation** du projet pour le type temps machine prime et peut indiquer
+  un prix fixe ou une prestation propre. Les conditions client et les taux
+  des personnes ne s'appliquent pas.

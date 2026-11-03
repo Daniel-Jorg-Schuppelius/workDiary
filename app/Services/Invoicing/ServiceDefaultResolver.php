@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Platform\Organization;
 use App\Models\Project\{Project, ProjectBillingRule};
 use App\Plugins\Support\PluginOrgContext;
@@ -64,6 +65,11 @@ class ServiceDefaultResolver {
         $rule = $project?->resolveBillingRule($kind);
         if ($rule instanceof ProjectBillingRule) {
             return $this->fromRule($organizationId, $rule);
+        }
+        // Die Standardleistung der Organisation beschreibt Personenzeit; eine
+        // Gerätelaufzeit (Feature 193) bekommt ihre Leistung nur über eine Projektregel.
+        if ($kind === TimeEntryKind::Machine->value) {
+            return null;
         }
 
         return $this->fromOrganization($organizationId);

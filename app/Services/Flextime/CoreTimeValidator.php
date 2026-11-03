@@ -50,7 +50,8 @@ class CoreTimeValidator {
      * @return list<array{kind: string, message: string, value: int, threshold: int}>
      */
     public function structuredViolations(User $user, TimeEntry $entry): array {
-        if (! $entry->started_at || ! $entry->ended_at) {
+        // Gerätelaufzeit (Feature 193) ist keine Zeit einer Person: weder Rahmen-, Kern- noch Pausenregel.
+        if (! $entry->started_at || ! $entry->ended_at || ! $entry->isPersonTime()) {
             return [];
         }
 

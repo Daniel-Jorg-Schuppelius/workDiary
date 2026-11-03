@@ -91,7 +91,7 @@ final class BillingBlock {
      */
     public function displayName(\App\Models\Finance\BillingTransfer $transfer, bool $withDescription = false): string {
         $projectName = $this->project?->name ?: (string) __('Leistung');
-        $kindSuffix = $this->kind !== null ? ' [' . $this->kind->value . ']' : '';
+        $kindSuffix = $this->kind !== null ? ' [' . $this->kind->label() . ']' : '';
 
         $from = $this->firstStart?->format('d.m.Y') ?? $transfer->period_from?->format('d.m.Y');
         $to = $this->lastEnd?->format('d.m.Y') ?? $transfer->period_to?->format('d.m.Y');

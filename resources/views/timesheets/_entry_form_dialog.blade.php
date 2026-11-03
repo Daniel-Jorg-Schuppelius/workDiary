@@ -76,7 +76,7 @@
             <label class="fieldset-label" for="ts-entry-hhmm">{{ __('Dauer (HH:MM)') }}</label>
             <input type="text" data-time-hhmm id="ts-entry-hhmm"
                    class="input input-bordered w-full"
-                   pattern="^\d{1,2}:[0-5]\d$"
+                   pattern="^\d{1,3}:[0-5]\d$"
                    placeholder="1:30"
                    @error('minutes') aria-invalid="true" aria-describedby="ts-entry-hhmm-error" @enderror
                    value="{{ $hh }}:{{ $mm }}">
@@ -84,9 +84,9 @@
         </div>
 
         <x-select-field name="kind" :label="__('Art')">
-            <option value="work" @selected(old('kind', $entryKind) === 'work')>{{ __('Arbeit') }}</option>
-            <option value="travel" @selected(old('kind', $entryKind) === 'travel')>{{ __('Anfahrt') }}</option>
-            <option value="standby" @selected(old('kind', $entryKind) === 'standby')>{{ __('Bereitschaft') }}</option>
+            @foreach (\App\Enums\TimeEntry\TimeEntryKind::cases() as $kindOption)
+                <option value="{{ $kindOption->value }}" @selected(old('kind', $entryKind ?? 'work') === $kindOption->value)>{{ $kindOption->label() }}</option>
+            @endforeach
         </x-select-field>
     </x-form-group>
 

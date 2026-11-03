@@ -42,7 +42,7 @@ class WorkTimeSummarySection extends AbstractSubjectSection {
         $orgId = (int) $u->organization_id;
 
         $minutes = (int) TimeEntry::query()->withoutGlobalScopes()
-            ->where('organization_id', $orgId)->where('user_id', $u->id)->sum('minutes');
+            ->where('organization_id', $orgId)->where('user_id', $u->id)->personTime()->sum('minutes');
 
         return ['families' => [
             $this->family(

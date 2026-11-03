@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Project;
 
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\Classification\Tag;
@@ -108,10 +109,11 @@ class ProjectTimeOverviewController extends Controller {
     }
 
     /**
-     * @return array{q: string, customer: string, project: string, user: string, tag: string, billable: string}
+     * @return array{q: string, customer: string, project: string, user: string, tag: string, billable: string, kind: string}
      */
     private function filters(Request $request, bool $seesAll): array {
         $billable = $this->scalar($request, 'billable');
+        $kind = $this->scalar($request, 'kind');
 
         return [
             'q' => $this->scalar($request, 'q'),
@@ -120,6 +122,7 @@ class ProjectTimeOverviewController extends Controller {
             'user' => $seesAll ? $this->scalar($request, 'user') : '',
             'tag' => $this->scalar($request, 'tag'),
             'billable' => in_array($billable, ['yes', 'no'], true) ? $billable : '',
+            'kind' => TimeEntryKind::tryFrom($kind) !== null ? $kind : '',
         ];
     }
 
@@ -127,7 +130,7 @@ class ProjectTimeOverviewController extends Controller {
      * Zeiteinträge mit Projekt im Header-Zeitraum — ohne Sortierung, damit
      * Liste, Kennzahlen und Gruppensummen dieselbe Menge zählen.
      *
-     * @param  array{q: string, customer: string, project: string, user: string, tag: string, billable: string}  $filters
+     * @param  array{q: string, customer: string, project: string, user: string, tag: string, billable: string, kind: string}  $filters
      * @return Builder<TimeEntry>
      */
     private function baseQuery(array $filters, User $viewer): Builder {
@@ -147,6 +150,7 @@ class ProjectTimeOverviewController extends Controller {
             ->when($customerId !== null, fn(Builder $q) => $q->whereHas('project', fn(Builder $p) => $p->where('customer_id', $customerId)))
             ->when($tagId !== null, fn(Builder $q) => $q->whereHas('tags', fn(Builder $t) => $t->whereKey($tagId)))
             ->when($filters['billable'] !== '', fn(Builder $q) => $q->where('time_entries.billable', $filters['billable'] === 'yes'))
+            ->when($filters['kind'] !== '', fn(Builder $q) => $q->where('time_entries.kind', $filters['kind']))
             ->when($search !== '', fn(Builder $q) => $q->where(function (Builder $s) use ($search): void {
                 $s->whereLikeEscaped('time_entries.description', $search)
                     ->orWhereHas('project', fn(Builder $p) => $p->whereLikeEscaped('name', $search))
@@ -211,12 +215,14 @@ class ProjectTimeOverviewController extends Controller {
 
     /**
      * @param  Builder<TimeEntry>  $query
-     * @return array{count: int, minutes: int, billable: int, projects: int}
+     * @return array{count: int, minutes: int, billable: int, machine: int, projects: int}
      */
     private function totals(Builder $query): array {
         $row = $query->toBase()
             ->selectRaw('COUNT(*) as entry_count, COALESCE(SUM(time_entries.minutes), 0) as minutes_sum')
             ->selectRaw('COALESCE(SUM(CASE WHEN time_entries.billable = 1 THEN time_entries.minutes ELSE 0 END), 0) as billable_sum')
+            // Gerätelaufzeit (Feature 193) steckt in „gesamt“ und wird gesondert genannt.
+            ->selectRaw('COALESCE(SUM(CASE WHEN time_entries.kind = ? THEN time_entries.minutes ELSE 0 END), 0) as machine_sum', [TimeEntryKind::Machine->value])
             ->selectRaw('COUNT(DISTINCT time_entries.project_id) as project_count')
             ->first();
 
@@ -224,6 +230,7 @@ class ProjectTimeOverviewController extends Controller {
             'count' => (int) ($row->entry_count ?? 0),
             'minutes' => (int) ($row->minutes_sum ?? 0),
             'billable' => (int) ($row->billable_sum ?? 0),
+            'machine' => (int) ($row->machine_sum ?? 0),
             'projects' => (int) ($row->project_count ?? 0),
         ];
     }

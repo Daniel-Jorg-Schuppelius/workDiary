@@ -222,6 +222,94 @@ class TransferPositionBuildTest extends TestCase {
         $this->assertSame(BlockPrice::SOURCE_SERVICE, $position->price_source);
     }
 
+    private function setOrgMachineRate(float $rate): void {
+        $this->organization->update(['settings' => array_replace_recursive(
+            (array) $this->organization->settings,
+            ['invoicing' => ['machine_hourly_rate' => $rate]],
+        )]);
+        app(OrganizationDefaultRateResolver::class)->flush();
+    }
+
+    /** @param array<string, mixed> $attributes */
+    private function machineEntry(array $attributes = []): TimeEntry {
+        return $this->entry(array_merge([
+            'kind' => TimeEntryKind::Machine->value,
+            'started_at' => '2030-04-01 08:00:00',
+            'ended_at' => '2030-04-03 11:37:00',
+            'minutes' => 3097,
+            'description' => 'Platte ausgelesen',
+        ], $attributes));
+    }
+
+    /** Feature 193: Gerätelaufzeit überspringt Kundensatz, Standardleistung und Standarderlös der Personenzeit. */
+    public function test_geraetelaufzeit_bleibt_ohne_geraetesatz_unbepreist(): void {
+        $this->customer->update(['hourly_rate' => '95.00']);
+        $this->setOrgDefaultRate(90.0);
+        $this->setOrgDefaultService('lex:' . $this->article()->id);
+        $this->machineEntry();
+
+        $position = app(BillingPositionBuilder::class)->build($this->draft())->first();
+
+        $this->assertSame(0.0, $position->unitPriceFloat());
+        $this->assertSame(BlockPrice::SOURCE_NONE, $position->price_source);
+        $this->assertNull($position->article_ref);
+        $this->assertSame(TimeEntryKind::Machine->value, $position->kind);
+        $this->assertStringContainsString(TimeEntryKind::Machine->label(), (string) $position->name);
+        $this->assertStringNotContainsString('IT-Dienstleistung', (string) $position->name);
+    }
+
+    public function test_geraetelaufzeit_rechnet_mit_dem_geraetesatz_der_organisation(): void {
+        $this->customer->update(['hourly_rate' => '95.00']);
+        $this->setOrgDefaultRate(90.0);
+        $this->machineEntry();
+        // Satz erst NACH der Erfassung gepflegt: der rate-Snapshot ist 0.
+        $this->setOrgMachineRate(20.0);
+
+        $position = app(BillingPositionBuilder::class)->build($this->draft())->first();
+
+        $this->assertSame(20.0, $position->unitPriceFloat());
+        $this->assertSame(BlockPrice::SOURCE_ORG_DEFAULT, $position->price_source);
+        $this->assertSame(51.617, $position->quantityFloat());
+        $this->assertSame(1032.34, $position->amountFloat());
+    }
+
+    public function test_geraetelaufzeit_bildet_einen_eigenen_block_neben_der_arbeit(): void {
+        $this->setOrgDefaultRate(90.0);
+        $this->setOrgMachineRate(20.0);
+        $this->entry();
+        $this->machineEntry();
+
+        $positions = app(BillingPositionBuilder::class)->build($this->draft());
+
+        $this->assertCount(2, $positions);
+        $this->assertEqualsCanonicalizing([TimeEntryKind::Work->value, TimeEntryKind::Machine->value], $positions->pluck('kind')->all());
+        $byKind = $positions->keyBy('kind');
+        $this->assertSame(90.0, $byKind[TimeEntryKind::Work->value]->unitPriceFloat());
+        $this->assertSame(20.0, $byKind[TimeEntryKind::Machine->value]->unitPriceFloat());
+    }
+
+    public function test_projektregel_fuer_geraetelaufzeit_liefert_leistung_und_preis(): void {
+        $flat = $this->article(['external_id' => 'art-3', 'name' => 'Datenrettung', 'unit_name' => 'Stunde', 'net_unit_price' => '35.0000']);
+        $this->machineEntry();
+        ProjectBillingRule::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'applies_to_kind' => TimeEntryKind::Machine->value,
+            'article_ref' => 'lex:' . $flat->id,
+            'item_type' => 'service',
+            'net_unit_price' => 30.0,
+            'priority' => 0,
+        ]);
+        app(ServiceDefaultResolver::class)->flush();
+
+        $position = app(BillingPositionBuilder::class)->build($this->draft())->first();
+
+        $this->assertSame('lex:' . $flat->id, $position->article_ref);
+        $this->assertSame('Datenrettung', $position->name);
+        $this->assertSame(30.0, $position->unitPriceFloat());
+        $this->assertSame(BlockPrice::SOURCE_SERVICE, $position->price_source);
+    }
+
     public function test_bestaetigen_friert_die_positionen_ein(): void {
         $this->entry();
         $this->setOrgDefaultRate(90.0);

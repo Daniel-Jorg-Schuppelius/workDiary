@@ -10,6 +10,7 @@
 
 namespace App\Http\Requests\Time;
 
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use Illuminate\Validation\Rule;
@@ -33,15 +34,19 @@ class SaveTimeEntryRequest extends BaseFormRequest {
         // Range-Modus: Von/Bis sind vorhanden → date/minutes optional, weil
         // der Model-Hook sie aus started_at/ended_at − break_minutes ableitet.
         $isRange = $this->filled('started_at') && $this->filled('ended_at');
+        $kind = $this->kind();
 
         return [
             // Kein Anlegen in einem freigegebenen Monat (Sicherheitsscan
             // 2026-08-23, S-32) — dafür gibt es den Zeitkorrektur-Antrag.
             'date' => [$isRange ? 'nullable' : 'required', 'date', new \App\Rules\NotInLockedMonth($this->targetUser())],
-            'minutes' => [$isRange ? 'nullable' : 'required', 'integer', 'min:1', 'max:1440'],
+            'kind' => ['required', Rule::enum(TimeEntryKind::class)],
+            // Je Art begrenzt (24 h je Person, 31 Tage je Gerätelaufzeit, Feature 193) —
+            // sonst ließen sich Personenzeiten über Tage buchen.
+            'minutes' => [$isRange ? 'nullable' : 'required', 'integer', 'min:1', 'max:' . $kind->maxMinutes()],
             'started_at' => ['nullable', 'date'],
-            // Zeitraum höchstens 24 h wie im Dauer-Modus (max:1440) — sonst ließen sich Einträge über Tage buchen.
-            'ended_at' => array_filter(['nullable', 'date', 'after:started_at', $this->rangeLimit()]),
+            // Zeitraum mit derselben Grenze wie der Dauer-Modus.
+            'ended_at' => array_filter(['nullable', 'date', 'after:started_at', $this->rangeLimit($kind)]),
             'break_minutes' => ['nullable', 'integer', 'min:0', 'max:600'],
             'task_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tasks')],
             'diary_entry_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('diary_entries')],
@@ -83,6 +88,11 @@ class SaveTimeEntryRequest extends BaseFormRequest {
         if ($this->input('break_minutes') === '') {
             $this->merge(['break_minutes' => null]);
         }
+        // Ohne Angabe bleibt die Art des Eintrags, neu ist Arbeit — nie NULL in die Spalte.
+        if ($this->input('kind') === null || $this->input('kind') === '') {
+            $entry = $this->route('time_entry');
+            $this->merge(['kind' => $entry instanceof \App\Models\Time\TimeEntry ? $entry->kind->value : TimeEntryKind::Work->value]);
+        }
 
         // Die datetime-local-Eingaben (Wanduhrzeit ohne Zeitzone) werden in der
         // aktiven Anzeige-Zeitzone interpretiert und zur Speicherung nach UTC
@@ -95,6 +105,7 @@ class SaveTimeEntryRequest extends BaseFormRequest {
     public function attributes(): array {
         return [
             'date' => __('Datum'),
+            'kind' => __('Art'),
             'minutes' => __('Dauer'),
             'started_at' => __('Von'),
             'ended_at' => __('Bis'),
@@ -106,19 +117,30 @@ class SaveTimeEntryRequest extends BaseFormRequest {
 
     /** @return array<string, string> */
     public function messages(): array {
+        $limit = $this->kind() === TimeEntryKind::Machine
+            ? __('Eine Gerätelaufzeit darf höchstens 31 Tage umfassen.')
+            : __('Ein Zeiteintrag darf höchstens 24 Stunden umfassen.');
+
         return [
             'ended_at.after' => __('„Bis" muss nach „Von" liegen.'),
-            'ended_at.before_or_equal' => __('Ein Zeiteintrag darf höchstens 24 Stunden umfassen.'),
+            'ended_at.before_or_equal' => $limit,
+            'minutes.max' => $limit,
         ];
     }
 
-    private function rangeLimit(): ?string {
+    private function kind(): TimeEntryKind {
+        $value = $this->input('kind');
+
+        return (is_string($value) ? TimeEntryKind::tryFrom($value) : null) ?? TimeEntryKind::Work;
+    }
+
+    private function rangeLimit(TimeEntryKind $kind): ?string {
         $start = $this->input('started_at');
         if (! is_string($start) || $start === '' || ! $this->filled('ended_at')) {
             return null;
         }
         try {
-            return 'before_or_equal:' . \Carbon\CarbonImmutable::parse($start)->addDay()->format('Y-m-d H:i:s');
+            return 'before_or_equal:' . \Carbon\CarbonImmutable::parse($start)->addMinutes($kind->maxMinutes())->format('Y-m-d H:i:s');
         } catch (\Throwable) {
             return null;
         }

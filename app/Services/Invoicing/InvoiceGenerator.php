@@ -553,7 +553,7 @@ class InvoiceGenerator {
         }
 
         $projectName = $block->project?->name ?: (string) __('Leistung');
-        $kindSuffix = $block->kind !== null ? ' [' . $block->kind->value . ']' : '';
+        $kindSuffix = $block->kind !== null ? ' [' . $block->kind->label() . ']' : '';
         $from = $block->firstStart;
         $to = $block->lastEnd;
 
