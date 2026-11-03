@@ -1389,6 +1389,8 @@ return [
             'imports' => 'Last import per provider',
             'none' => 'no import',
             'age' => ':days days ago',
+            'retired' => 'no running subscriptions',
+            'retired_hint' => 'All subscriptions of this provider have ended or been replaced — no new import is expected.',
             'empty' => 'No providers with file import.',
         ],
     ],

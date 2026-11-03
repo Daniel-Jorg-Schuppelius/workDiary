@@ -45,6 +45,33 @@ class ResaleOverviewTest extends TestCase {
         return $subscription;
     }
 
+    /** Pilot 2026-11-03: ein abgelöster Anbieter ohne laufende Abos hat keinen Stand, der veralten könnte. */
+    public function test_provider_without_running_subscriptions_is_not_stale(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
+        $this->subscription(['customer_id' => $customer->id, 'provider' => 'telekom_marketplace', 'status' => 'ended', 'starts_on' => '2024-08-05', 'ends_on' => '2026-08-04']);
+        $this->subscription(['customer_id' => $customer->id, 'provider' => 'telekom_marketplace', 'status' => 'superseded', 'starts_on' => '2023-08-05', 'ends_on' => '2024-08-04']);
+        ResaleImport::query()->create([
+            'organization_id' => $this->organization->id, 'provider' => 'telekom_marketplace', 'kind' => ResaleImport::KIND_PURCHASES,
+            'file_name' => 'purchases.csv', 'status' => 'done', 'rows_total' => 2,
+        ])->forceFill(['created_at' => '2026-07-20 08:00:00'])->save();
+
+        $overview = app(ResaleOverview::class)->build($this->organization);
+        $this->assertArrayNotHasKey('stale_imports', array_column($overview['tasks'], null, 'key'));
+        $this->assertSame([], app(ResaleOverview::class)->staleProviders($this->organization));
+        $this->assertFalse($overview['imports'][0]['stale']);
+        $this->assertTrue($overview['imports'][0]['retired']);
+        $this->actingAs($this->orgAdmin())->get(route('finance.resale.index'))->assertOk()
+            ->assertSee(__('resale.overview.state.retired'))
+            ->assertSee('purchases.csv')
+            ->assertDontSee(__('resale.overview.state.age', ['days' => 46]));
+
+        // Läuft wieder ein Abo beim Anbieter, zählt der Stand wieder.
+        $this->subscription(['customer_id' => $customer->id, 'provider' => 'telekom_marketplace']);
+        $again = app(ResaleOverview::class)->build($this->organization);
+        $this->assertSame(1, array_column($again['tasks'], null, 'key')['stale_imports']['count']);
+        $this->assertFalse($again['imports'][0]['retired']);
+    }
+
     public function test_overview_lists_tasks_with_counts_and_provider_state(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         $this->subscription(['customer_id' => $customer->id]); // zwei fällige offene Perioden (2025, 2026)

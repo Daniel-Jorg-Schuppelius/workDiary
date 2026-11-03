@@ -247,7 +247,9 @@ del fornitore — un prezzo inserito a mano resta — e scrive una riga di
 catalogo dalla data del file (data nel nome come «2026-10-26_Export.xlsx»,
 altrimenti il giorno dell’importazione). Se l’ultima importazione di un
 fornitore ha più di 30 giorni, la panoramica lo segnala e il riepilogo
-settimanale lo ricorda.
+settimanale lo ricorda. Un fornitore senza abbonamenti in corso, ad esempio
+dopo un cambio, mostra «nessun abbonamento in corso» e non è considerato
+obsoleto.
 
 **Acquisti dalla posta fatture:** Nella scheda Acquisti, con «Associa
 fornitori» collegate un fornitore dell’anagrafica al provider (il nome offre

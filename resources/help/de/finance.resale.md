@@ -234,7 +234,9 @@ nach, solange er dem letzten Anbieterpreis entspricht — ein von Hand
 gepflegter Preis bleibt — und schreibt eine Katalogzeile ab dem Stand der
 Datei (Datum im Dateinamen wie „2026-10-26_Export.xlsx“, sonst der
 Importtag). Liegt der letzte Import eines Anbieters länger als 30 Tage
-zurück, zeigt der Überblick das an und der Wochen-Digest erinnert.
+zurück, zeigt der Überblick das an und der Wochen-Digest erinnert. Ein Anbieter
+ohne laufende Abos, etwa nach einem Wechsel, steht dort als „keine laufenden
+Abos“ und gilt nicht als veraltet.
 
 **Einkauf aus dem Rechnungseingang:** Ordnen Sie im Einkauf-Reiter unter
 „Lieferanten zuordnen“ einem Lieferanten des Stamms den Anbieter zu (der

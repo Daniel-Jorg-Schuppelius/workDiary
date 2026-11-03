@@ -1389,6 +1389,8 @@ return [
             'imports' => 'Última importación por proveedor',
             'none' => 'sin importación',
             'age' => 'hace :days días',
+            'retired' => 'sin suscripciones en curso',
+            'retired_hint' => 'Todas las suscripciones de este proveedor han terminado o se han sustituido: no se espera ninguna importación nueva.',
             'empty' => 'Ningún proveedor con importación de archivo.',
         ],
     ],

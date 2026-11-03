@@ -128,7 +128,9 @@
                                 <div class="text-xs text-muted">{{ __('resale.overview.state.none') }}</div>
                             @endif
                         </div>
-                        @if ($state['age'] !== null)
+                        @if ($state['retired'])
+                            <x-status-badge size="xs" outline :label="__('resale.overview.state.retired')" :title="__('resale.overview.state.retired_hint')" />
+                        @elseif ($state['age'] !== null)
                             <x-status-badge size="xs" :tone="$state['stale'] ? 'warning' : 'success'" :label="__('resale.overview.state.age', ['days' => $state['age']])" />
                         @endif
                     </div>

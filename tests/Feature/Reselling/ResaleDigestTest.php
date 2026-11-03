@@ -127,7 +127,9 @@ class ResaleDigestTest extends TestCase {
 
     public function test_stale_provider_export_counts_and_is_mentioned(): void {
         Notification::fake();
-        // Letzter Quality-Hosting-Import vor 46 Tagen (Feature 185, MVP-1418); ohne Import zählt ein Anbieter nicht.
+        // Letzter Quality-Hosting-Import vor 46 Tagen (Feature 185, MVP-1418); ohne Import oder ohne laufendes Abo zählt ein Anbieter nicht.
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $this->subscription(['customer_id' => $customer->id, 'starts_on' => '2027-06-01']);
         \App\Models\Reselling\ResaleImport::query()->create([
             'organization_id' => $this->organization->id, 'provider' => 'qualityhosting', 'kind' => \App\Models\Reselling\ResaleImport::KIND_CONTRACTS,
             'file_name' => '2026-07-20_Export.xlsx', 'status' => 'done', 'rows_total' => 3,
