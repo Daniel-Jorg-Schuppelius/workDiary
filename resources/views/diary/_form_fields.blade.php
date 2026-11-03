@@ -53,6 +53,8 @@
         $defaultMode = \App\Enums\Diary\Mode::Fixed->value;
     }
     $defaultLocation = old('location_mode', $entry?->location_mode?->value ?? \App\Enums\Diary\LocationMode::Onsite->value);
+    // Einsatzdatum (Termin & Servicezeit): neu angelegt mit dem Tag des Beginns, sonst mit heute (Pilot 2026-11-03).
+    $defaultScheduledFor = $isEdit ? null : (is_string($prefillStartAt) && $prefillStartAt !== '' ? substr($prefillStartAt, 0, 10) : \App\Support\Tz::now()->toDateString());
 @endphp
 
 <div
@@ -61,6 +63,9 @@
     data-flags-map='@json($entryTypeFlags)'
     data-flags='@json($initialFlags)'
     data-mode="{{ $defaultMode }}"
+    data-fixed-mode="{{ \App\Enums\Diary\Mode::Fixed->value }}"
+    data-is-edit="{{ $isEdit ? '1' : '0' }}"
+    data-scheduled-default="{{ $defaultScheduledFor ?? '' }}"
     class="space-y-4"
 >
 
@@ -226,10 +231,13 @@
      stand der Block hinter x-if="requiresCustomer" — damit war ein Kunde
      bei nicht-fordernden Typen nie zuweisbar und Bestandswerte unsichtbar. --}}
 <x-form-group :legend="__('Kunde & Zuweisung')" icon="badge" tone="secondary" cols="2">
-    <x-select-field name="customer_id" :label="__('Kunde')" x-bind:required="requiresCustomer">
+    {{-- Die Option trägt die Kundenanschrift: sie belegt den Einsatzort vor, solange er leer ist oder noch den übernommenen Stand hat. --}}
+    <x-select-field name="customer_id" :label="__('Kunde')" x-bind:required="requiresCustomer" x-on:change="onCustomerChange()">
         <option value="">—</option>
         @foreach ($customerOptions as $c)
-            <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $entry?->customer_id ?? $prefillCustomerId)) === $c->sqid)>
+            <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $entry?->customer_id ?? $prefillCustomerId)) === $c->sqid)
+                    data-address-line="{{ $c->address_street }}" data-address-zip="{{ $c->address_zip }}" data-address-city="{{ $c->address_city }}"
+                    data-address-country="{{ $c->country }}" data-address-lat="{{ $c->address_lat }}" data-address-lng="{{ $c->address_lng }}">
                 {{ $c->name }}@if ($c->company) — {{ $c->company }}@endif
             </option>
         @endforeach
@@ -272,7 +280,7 @@
 {{-- Termin / Zeitfenster / Servicedauer --}}
 <template x-if="requiresSchedule">
     <x-form-group :legend="__('Termin & Servicezeit')" icon="event" tone="info" cols="3">
-        <x-input-field name="scheduled_for" type="date" :label="__('Datum')" :value="old('scheduled_for', optional($entry?->scheduled_for)->format('Y-m-d'))" />
+        <x-input-field name="scheduled_for" type="date" :label="__('Datum')" :value="old('scheduled_for', optional($entry?->scheduled_for)->format('Y-m-d') ?? $defaultScheduledFor)" />
 
         <x-input-field name="time_window_start" type="time" :label="__('Zeitfenster ab')" :value="old('time_window_start', $entry?->time_window_start)" />
 
@@ -314,7 +322,8 @@
         <input type="hidden" name="address_lng" value="{{ old('address_lng', $entry?->address_lng) }}" data-geocode-lng="address">
         <p class="text-xs text-muted md:col-span-2" data-geocode-status="address"
            data-hit="{{ __('Koordinaten aus der Adresse ermittelt.') }}"
-           data-miss="{{ __('Adresse nicht gefunden — ohne eigene Koordinaten gilt die Kundenadresse.') }}">
+           data-miss="{{ __('Adresse nicht gefunden — ohne eigene Koordinaten gilt die Kundenadresse.') }}"
+           data-customer="{{ __('Anschrift des Kunden übernommen — bei abweichendem Einsatzort anpassen.') }}">
             @if (old('address_lat', $entry?->address_lat) !== null && old('address_lat', $entry?->address_lat) !== '')
                 {{ __('Koordinaten aus der Adresse ermittelt.') }}
             @else

@@ -1,7 +1,7 @@
 ---
 title: "Crear una orden"
 topic: diary-entries.create
-version: 4
+version: 5
 keywords:
     - nueva orden
     - nuevo trabajo
@@ -47,11 +47,16 @@ y estado. La entrada ancla actas, tiempos y la facturación posterior
    **proyecto**.
 3. Elija el **tipo de entrada** y describa el **contenido** en una o
    dos frases.
-4. Opcional: indique la **Duración prevista (HH:MM)** en la sección
+4. Si el tipo de entrada exige una **dirección**, se rellena con la
+   dirección del cliente elegido — cámbiela solo si el lugar de
+   intervención difiere. La **Fecha** de la sección **Cita y tiempo de
+   servicio** viene con el día de hoy, o con el día del inicio en un
+   período fijo; si queda vacía, al guardar se aplica el mismo valor.
+5. Opcional: indique la **Duración prevista (HH:MM)** en la sección
    **Período**, p. ej. 1:30. Si el campo queda vacío, se aplica la duración del servicio de una orden planificada; si no, la duración
    de la franja horaria o de la cita. Es el plan en **Plan/real**, **Análisis de
    tipos de orden** y **Capacidad de personal**.
-5. Las transiciones de estado pasan después por la **ventana de
+6. Las transiciones de estado pasan después por la **ventana de
    detalle** — sin actualización masiva desde la lista.
 
 ![Lista de trabajo del libro de órdenes con contadores de estado y entradas](media/auftraege/arbeitsliste.png)

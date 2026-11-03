@@ -8,6 +8,7 @@
 import { clearHtml, setHtml, trustedServerHtml } from "../lib/html.js";
 import { getJson, patchJson, postJson, request } from "../lib/http.js";
 import { __ } from "../i18n.js";
+import { ADDRESS_FIELDS, ADDRESS_INPUT_NAMES, customerAddressFromDataset, mergeCustomerAddress } from "../lib/customer-address.js";
 
 /** @typedef {HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement} FormControl */
 
@@ -503,12 +504,32 @@ export function registerAlpineComponents(Alpine) {
         /** @type {EntryTypeFlags} */
         flags: {},
         mode: "",
+        fixedMode: "",
+        isEdit: false,
+        /** Vorbelegung des Einsatzdatums; nur dieser Stand folgt dem Beginn. */
+        scheduledDefault: "",
+        /** @type {Partial<Record<string, string>> | null} zuletzt aus dem Kunden übernommener Einsatzort */
+        customerAddress: null,
         init() {
-            const d = this.$el.dataset;
+            const root = this.$el;
+            const d = root.dataset;
             this.entryTypeId = d.entryType || "";
             this.flagsMap = JSON.parse(d.flagsMap || "{}");
             this.flags = JSON.parse(d.flags || "{}");
             this.mode = d.mode || "";
+            this.fixedMode = d.fixedMode || "";
+            this.isEdit = d.isEdit === "1";
+            this.scheduledDefault = d.scheduledDefault || "";
+            root.addEventListener("change", (event) => {
+                if (event.target instanceof HTMLInputElement && event.target.name === "start_at") this.syncScheduledFor();
+            });
+            this.$watch("mode", () => this.syncScheduledFor());
+            if (!this.isEdit) {
+                this.$nextTick(() => {
+                    this.applyCustomerAddress();
+                    this.syncScheduledFor();
+                });
+            }
         },
         onTypeChange() {
             const id = String(this.entryTypeId || "0");
@@ -523,6 +544,60 @@ export function registerAlpineComponents(Alpine) {
                 default_priority: null,
                 default_status: 2,
             };
+            // Adress- und Terminblock entstehen erst mit den Flags (x-if).
+            this.$nextTick(() => {
+                this.applyCustomerAddress();
+                this.syncScheduledFor();
+            });
+        },
+        onCustomerChange() {
+            this.applyCustomerAddress();
+        },
+        /**
+         * @param {string} name
+         * @returns {HTMLInputElement | HTMLSelectElement | null}
+         */
+        field(name) {
+            const el = this.$root.querySelector(`[name="${name}"]`);
+            return el instanceof HTMLInputElement || el instanceof HTMLSelectElement ? el : null;
+        },
+        // Einsatzort aus der Kundenanschrift (Pilot 2026-11-03): nur leere oder noch
+        // übernommene Felder; mit Kundenkoordinaten entfällt die Geokodierung.
+        applyCustomerAddress() {
+            const select = this.field("customer_id");
+            const line = this.field("address_line");
+            if (!(select instanceof HTMLSelectElement) || !line) return;
+            const incoming = customerAddressFromDataset(select.selectedOptions[0]?.dataset);
+            /** @type {Partial<Record<string, string>>} */
+            const current = {};
+            for (const key of ADDRESS_FIELDS) current[key] = this.field(ADDRESS_INPUT_NAMES[key])?.value ?? "";
+            const { values, applied } = mergeCustomerAddress(current, incoming, this.customerAddress);
+            if (!applied) return;
+            for (const key of ADDRESS_FIELDS) {
+                const input = this.field(ADDRESS_INPUT_NAMES[key]);
+                if (input) input.value = values[key] ?? "";
+            }
+            this.customerAddress = incoming ? values : null;
+            const status = this.$root.querySelector('[data-geocode-status="address"]');
+            if (incoming && values.lat !== "") {
+                if (status instanceof HTMLElement) status.textContent = status.dataset.customer || "";
+                return;
+            }
+            if (!incoming && status instanceof HTMLElement) status.textContent = "";
+            // Ohne Kundenkoordinaten läuft die Geokodierung wie bei eigener Eingabe.
+            line.dispatchEvent(new Event("change", { bubbles: true }));
+        },
+        // Das Einsatzdatum folgt dem Tag des Beginns, solange es nur die Vorbelegung trägt.
+        syncScheduledFor() {
+            const target = this.field("scheduled_for");
+            const start = this.field("start_at");
+            if (!target || !start || this.mode !== this.fixedMode || start.value.length < 10) return;
+            if (target.value !== "" && target.value !== this.scheduledDefault) return;
+            const date = start.value.slice(0, 10);
+            // Flatpickr führt das sichtbare Zweitfeld; ein roher value bliebe dort unsichtbar.
+            if (target._flatpickr) target._flatpickr.setDate(date, false, "Y-m-d");
+            else target.value = date;
+            this.scheduledDefault = date;
         },
         get hasEntryType() {
             return this.entryTypeId !== "0" && this.entryTypeId !== "";
