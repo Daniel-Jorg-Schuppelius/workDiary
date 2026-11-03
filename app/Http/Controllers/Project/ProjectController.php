@@ -219,6 +219,18 @@ class ProjectController extends Controller {
         // Gerätelaufzeit (Feature 193) steckt in „Gesamt“, bekommt aber eine eigene Kachel.
         $machineMinutes = $project->timeEntries()->visibleTo($viewer)->machineTime()->sum('minutes');
 
+        // Sollzeiten je Person (Feature 194): Soll der sichtbaren Personen im Kopfzeitraum, offene Befunde.
+        $targetResolver = app(\App\Services\Project\TimeTargets\ProjectTimeTargetResolver::class);
+        $subjectIds = $targetResolver->subjectUserIds($project);
+        $targetUserIds = $seesAllTimes ? $subjectIds : array_values(array_intersect([(int) $viewer->id], $subjectIds));
+        $targetMinutes = $targetUserIds === [] ? null : array_sum(array_map(
+            'array_sum',
+            $targetResolver->targetsFor($project, $targetUserIds, CarbonImmutable::parse($rangeFrom->toDateString()), CarbonImmutable::parse($rangeTo->toDateString())),
+        ));
+        $shortfallsQuery = $project->timeShortfalls()->whereIn('user_id', $targetUserIds)->with('user:id,name')->orderByDesc('date')->orderBy('user_id');
+        $openShortfalls = (clone $shortfallsQuery)->unresolved()->count();
+        $showAllShortfalls = request()->query('show') === 'shortfalls';
+        $shortfalls = ($showAllShortfalls ? (clone $shortfallsQuery) : (clone $shortfallsQuery)->unresolved())->limit(100)->get();
         // Nächster Milestone für Übersicht
         $nextMilestone = $project->milestones()
             ->where('is_completed', false)
@@ -270,6 +282,11 @@ class ProjectController extends Controller {
             'economicsUrl' => route('reports.economics', ['project' => $project->sqid, 'from' => $rangeFrom->toDateString(), 'to' => $rangeTo->toDateString()]),
             'myMinutes' => (int) $myMinutes,
             'machineMinutes' => (int) $machineMinutes,
+            'targetMinutes' => $targetMinutes,
+            'openShortfalls' => $openShortfalls,
+            'shortfalls' => $shortfalls,
+            'showAllShortfalls' => $showAllShortfalls,
+            'canManageTargets' => $viewer->isAdmin() || $viewer->can(Permission::ProjectTargetsManage->value),
             'seesAllTimes' => $seesAllTimes,
             'nextMilestone' => $nextMilestone,
             'timesheets' => $project->timesheets()

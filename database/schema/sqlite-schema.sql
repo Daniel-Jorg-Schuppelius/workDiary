@@ -197,7 +197,7 @@ CREATE TABLE IF NOT EXISTS "on_call_shifts"(
   "created_at" datetime,
   "updated_at" datetime,
   "organization_id" integer,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
 CREATE INDEX "on_call_shifts_is_archived_index" on "on_call_shifts"(
@@ -228,8 +228,8 @@ CREATE TABLE IF NOT EXISTS "emergency_assignments"(
   "created_at" datetime,
   "updated_at" datetime,
   "organization_id" integer,
-  foreign key("on_call_shift_id") references on_call_shifts("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
+  foreign key("on_call_shift_id") references "on_call_shifts"("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
 CREATE INDEX "emergency_assignments_is_archived_index" on "emergency_assignments"(
@@ -264,7 +264,7 @@ CREATE TABLE IF NOT EXISTS "shift_types"(
   "organization_id" integer,
   "on_call_start_time" varchar,
   "on_call_end_time" varchar,
-  foreign key("created_by") references users("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
 CREATE INDEX "idx_shift_types_org" on "shift_types"("organization_id");
@@ -282,8 +282,8 @@ CREATE TABLE IF NOT EXISTS "holidays"(
   "recurrence_week" integer,
   "recurrence_month" integer,
   "organization_id" integer,
-  foreign key("updated_by") references users("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
+  foreign key("updated_by") references "users"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
 CREATE INDEX "holidays_is_recurring_date_index" on "holidays"(
@@ -301,7 +301,7 @@ CREATE TABLE IF NOT EXISTS "tags"(
   "updated_at" datetime,
   "organization_id" integer,
   "name_i18n" text,
-  foreign key("created_by") references users("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
 CREATE INDEX "idx_tags_org" on "tags"("organization_id");
@@ -320,11 +320,11 @@ CREATE TABLE IF NOT EXISTS "scheduled_shifts"(
   "updated_at" datetime,
   "organization_id" integer,
   "duty_plan_id" integer,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("shift_type_id") references shift_types("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("updated_by") references users("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("shift_type_id") references "shift_types"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("updated_by") references "users"("id") on delete set null on update no action,
   foreign key("duty_plan_id") references "duty_plans"("id") on delete set null
 );
 CREATE INDEX "idx_scheduled_shifts_org" on "scheduled_shifts"(
@@ -657,10 +657,10 @@ CREATE TABLE IF NOT EXISTS "timesheets"(
   "entries_total_minutes" integer not null default '0',
   "untracked_minutes" integer not null default '0',
   "magic_token_hash" varchar,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("signature_attachment_id") references attachments("id") on delete set null on update no action,
-  foreign key("locked_by") references users("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("signature_attachment_id") references "attachments"("id") on delete set null on update no action,
+  foreign key("locked_by") references "users"("id") on delete set null on update no action,
   foreign key("project_id") references "projects"("id") on delete set null
 );
 CREATE INDEX "timesheets_project_id_work_date_index" on "timesheets"(
@@ -1290,12 +1290,12 @@ CREATE TABLE IF NOT EXISTS "tasks"(
   "color" varchar,
   "archived_at" datetime,
   "start_date" date,
-  foreign key("assigned_to") references users("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("parent_task_id") references tasks("id") on delete cascade on update no action,
-  foreign key("milestone_id") references milestones("id") on delete set null on update no action,
-  foreign key("project_id") references projects("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action
+  foreign key("assigned_to") references "users"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("parent_task_id") references "tasks"("id") on delete cascade on update no action,
+  foreign key("milestone_id") references "milestones"("id") on delete set null on update no action,
+  foreign key("project_id") references "projects"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action
 );
 CREATE INDEX "tasks_archived_at_index" on "tasks"("archived_at");
 CREATE INDEX "tasks_assigned_to_index" on "tasks"("assigned_to");
@@ -1360,7 +1360,7 @@ CREATE TABLE IF NOT EXISTS "attachments"(
   "media_height" integer,
   "media_error" varchar,
   "media_processed_at" datetime,
-  foreign key("user_id") references users("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete set null on update no action,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
 CREATE INDEX "attachments_attachable_meta_idx" on "attachments"(
@@ -1385,8 +1385,8 @@ CREATE TABLE IF NOT EXISTS "event_reminders"(
   "created_at" datetime,
   "updated_at" datetime,
   "organization_id" integer,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("event_id") references events("id") on delete cascade on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("event_id") references "events"("id") on delete cascade on update no action,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
 CREATE INDEX "event_reminders_event_id_remind_at_index" on "event_reminders"(
@@ -1414,7 +1414,7 @@ CREATE TABLE IF NOT EXISTS "push_subscriptions"(
   "created_at" datetime,
   "updated_at" datetime,
   "organization_id" integer,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
 CREATE UNIQUE INDEX "push_subscriptions_endpoint_unique" on "push_subscriptions"(
@@ -1440,7 +1440,7 @@ CREATE TABLE IF NOT EXISTS "flex_balances"(
   "created_at" datetime,
   "updated_at" datetime,
   "organization_id" integer,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
 CREATE UNIQUE INDEX "flex_balances_user_id_year_month_unique" on "flex_balances"(
@@ -1470,8 +1470,8 @@ CREATE TABLE IF NOT EXISTS "per_diem_days"(
   "created_at" datetime,
   "updated_at" datetime,
   "organization_id" integer,
-  foreign key("per_diem_rate_id") references per_diem_rates("id") on delete set null on update no action,
-  foreign key("per_diem_trip_id") references per_diem_trips("id") on delete cascade on update no action,
+  foreign key("per_diem_rate_id") references "per_diem_rates"("id") on delete set null on update no action,
+  foreign key("per_diem_trip_id") references "per_diem_trips"("id") on delete cascade on update no action,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
 CREATE INDEX "per_diem_days_date_index" on "per_diem_days"("date");
@@ -1494,8 +1494,8 @@ CREATE TABLE IF NOT EXISTS "event_user"(
   "created_at" datetime,
   "updated_at" datetime,
   "organization_id" integer,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("event_id") references events("id") on delete cascade on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("event_id") references "events"("id") on delete cascade on update no action,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
 CREATE INDEX "event_user_certificate_expires_at_index" on "event_user"(
@@ -1523,7 +1523,7 @@ CREATE TABLE IF NOT EXISTS "automation_rule_runs"(
   "log" text,
   "ran_at" datetime not null default(CURRENT_TIMESTAMP),
   "organization_id" integer,
-  foreign key("rule_id") references automation_rules("id") on delete cascade on update no action,
+  foreign key("rule_id") references "automation_rules"("id") on delete cascade on update no action,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
 CREATE INDEX "automation_runs_rule_time_idx" on "automation_rule_runs"(
@@ -1910,9 +1910,9 @@ CREATE TABLE IF NOT EXISTS "material_usages"(
   "organization_id" integer,
   "asset_id" integer,
   "billed" tinyint(1) not null default '0',
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("timesheet_id") references timesheets("id") on delete cascade on update no action,
-  foreign key("material_id") references materials("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("timesheet_id") references "timesheets"("id") on delete cascade on update no action,
+  foreign key("material_id") references "materials"("id") on delete set null on update no action,
   foreign key("asset_id") references "assets"("id") on delete set null
 );
 CREATE INDEX "idx_material_usages_org" on "material_usages"("organization_id");
@@ -2560,8 +2560,8 @@ CREATE TABLE IF NOT EXISTS "isms_risks"(
   "updated_at" datetime,
   "deleted_at" datetime,
   "isms_scope_id" integer,
-  foreign key("owner_user_id") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("owner_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("isms_scope_id") references "isms_scopes"("id") on delete set null
 );
 CREATE UNIQUE INDEX "isms_risks_org_no_uq" on "isms_risks"(
@@ -3553,8 +3553,8 @@ CREATE TABLE IF NOT EXISTS "comments"(
   "commentable_id" integer,
   "organization_id" integer,
   "external_participant_id" integer,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
   foreign key("external_participant_id") references "external_participants"("id") on delete set null
 );
 CREATE INDEX "comments_commentable_type_commentable_id_index" on "comments"(
@@ -4025,10 +4025,10 @@ CREATE TABLE IF NOT EXISTS "stock_valuation_layers"(
   "updated_at" datetime,
   "stock_lot_id" integer,
   "best_before" date,
-  foreign key("source_movement_id") references stock_movements("id") on delete set null on update no action,
-  foreign key("warehouse_id") references warehouses("id") on delete cascade on update no action,
-  foreign key("article_variant_id") references article_variants("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("source_movement_id") references "stock_movements"("id") on delete set null on update no action,
+  foreign key("warehouse_id") references "warehouses"("id") on delete cascade on update no action,
+  foreign key("article_variant_id") references "article_variants"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("stock_lot_id") references "stock_lots"("id") on delete set null
 );
 CREATE INDEX "stock_val_layers_fifo_idx" on "stock_valuation_layers"(
@@ -4168,8 +4168,8 @@ CREATE TABLE IF NOT EXISTS "manufacturing_order_reports"(
   "created_at" datetime,
   "updated_at" datetime,
   "stock_lot_id" integer,
-  foreign key("reported_by") references users("id") on delete set null on update no action,
-  foreign key("manufacturing_order_id") references manufacturing_orders("id") on delete cascade on update no action,
+  foreign key("reported_by") references "users"("id") on delete set null on update no action,
+  foreign key("manufacturing_order_id") references "manufacturing_orders"("id") on delete cascade on update no action,
   foreign key("stock_lot_id") references "stock_lots"("id") on delete set null
 );
 CREATE INDEX "manufacturing_order_reports_manufacturing_order_id_index" on "manufacturing_order_reports"(
@@ -4227,17 +4227,17 @@ CREATE TABLE IF NOT EXISTS "manufacturing_orders"(
   "parameters" text,
   "reservation_mode" varchar,
   "reservation_applied_at" datetime,
-  foreign key("subcontract_purchase_order_id") references purchase_orders("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("article_id") references articles("id") on delete cascade on update no action,
-  foreign key("article_variant_id") references article_variants("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("project_id") references projects("id") on delete set null on update no action,
-  foreign key("responsible_user_id") references users("id") on delete set null on update no action,
-  foreign key("warehouse_id") references warehouses("id") on delete set null on update no action,
-  foreign key("procedure_template_version_id") references procedure_template_versions("id") on delete set null on update no action,
-  foreign key("procedure_run_id") references procedure_runs("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
+  foreign key("subcontract_purchase_order_id") references "purchase_orders"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("article_id") references "articles"("id") on delete cascade on update no action,
+  foreign key("article_variant_id") references "article_variants"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("project_id") references "projects"("id") on delete set null on update no action,
+  foreign key("responsible_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("warehouse_id") references "warehouses"("id") on delete set null on update no action,
+  foreign key("procedure_template_version_id") references "procedure_template_versions"("id") on delete set null on update no action,
+  foreign key("procedure_run_id") references "procedure_runs"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
   foreign key("work_center_id") references "work_centers"("id") on delete set null
 );
 CREATE UNIQUE INDEX "manufacturing_orders_org_number_unique" on "manufacturing_orders"(
@@ -4851,8 +4851,8 @@ CREATE TABLE IF NOT EXISTS "time_export_lines"(
   "surcharge_rule_id" integer,
   "wage_type_code" varchar,
   "percentage" numeric,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("time_export_id") references time_exports("id") on delete cascade on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("time_export_id") references "time_exports"("id") on delete cascade on update no action,
   foreign key("surcharge_rule_id") references "surcharge_rules"("id") on delete set null
 );
 CREATE INDEX "tel_export_user_idx" on "time_export_lines"(
@@ -4894,11 +4894,11 @@ CREATE TABLE IF NOT EXISTS "pricing_change_alerts"(
   "updated_at" datetime,
   "type" varchar not null default 'margin',
   "impacts" text,
-  foreign key("acknowledged_by") references users("id") on delete set null on update no action,
-  foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
-  foreign key("article_id") references articles("id") on delete cascade on update no action,
-  foreign key("supplier_catalog_item_id") references supplier_catalog_items("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action
+  foreign key("acknowledged_by") references "users"("id") on delete set null on update no action,
+  foreign key("supplier_id") references "suppliers"("id") on delete set null on update no action,
+  foreign key("article_id") references "articles"("id") on delete cascade on update no action,
+  foreign key("supplier_catalog_item_id") references "supplier_catalog_items"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action
 );
 CREATE INDEX "pca_org_status_idx" on "pricing_change_alerts"(
   "organization_id",
@@ -5266,11 +5266,11 @@ CREATE TABLE IF NOT EXISTS "rooms"(
   "usage_type" varchar not null default('office'),
   "net_area_m2" numeric,
   "cleaning_profile_id" integer,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("floor_id") references floors("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("updated_by") references users("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("floor_id") references "floors"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("updated_by") references "users"("id") on delete set null on update no action,
   foreign key("cleaning_profile_id") references "cleaning_profiles"("id") on delete set null
 );
 CREATE INDEX "rooms_idx_floor" on "rooms"("floor_id");
@@ -5420,9 +5420,9 @@ CREATE TABLE IF NOT EXISTS "remote_pending_sessions"(
   "updated_at" datetime,
   "alias" varchar,
   "asset_id" integer,
-  foreign key("resolved_by") references users("id") on delete set null on update no action,
-  foreign key("time_entry_id") references time_entries("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("resolved_by") references "users"("id") on delete set null on update no action,
+  foreign key("time_entry_id") references "time_entries"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
   foreign key("asset_id") references "assets"("id") on delete set null
 );
 CREATE INDEX "rps_group_idx" on "remote_pending_sessions"(
@@ -5706,10 +5706,11 @@ CREATE TABLE IF NOT EXISTS "projects"(
   "billing_increment_minutes" integer,
   "billing_grouping_gap_minutes" integer,
   "keywords" text,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("parent_id") references projects("id") on delete set null on update no action,
+  "bills_target_time" tinyint(1) not null default '0',
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("parent_id") references "projects"("id") on delete set null on update no action,
   foreign key("foreign_customer_id") references "foreign_customers"("id") on delete set null
 );
 CREATE INDEX "idx_projects_org" on "projects"("organization_id");
@@ -5787,7 +5788,7 @@ CREATE TABLE IF NOT EXISTS "plugin_errors"(
   "error_hash" varchar,
   "occurrences" integer not null default '1',
   "last_occurred_at" datetime,
-  foreign key("acknowledged_by") references users("id") on delete set null on update no action,
+  foreign key("acknowledged_by") references "users"("id") on delete set null on update no action,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
 CREATE INDEX "plugin_errors_phase_occurred_at_index" on "plugin_errors"(
@@ -5921,11 +5922,11 @@ CREATE TABLE IF NOT EXISTS "chat_messages"(
   "deleted_at" datetime,
   "quoted_id" integer,
   "forwarded_from_user_id" integer,
-  foreign key("pinned_by") references users("id") on delete set null on update no action,
-  foreign key("parent_id") references chat_messages("id") on delete cascade on update no action,
-  foreign key("user_id") references users("id") on delete set null on update no action,
-  foreign key("channel_id") references chat_channels("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("pinned_by") references "users"("id") on delete set null on update no action,
+  foreign key("parent_id") references "chat_messages"("id") on delete cascade on update no action,
+  foreign key("user_id") references "users"("id") on delete set null on update no action,
+  foreign key("channel_id") references "chat_channels"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("quoted_id") references "chat_messages"("id") on delete set null,
   foreign key("forwarded_from_user_id") references "users"("id") on delete set null
 );
@@ -6196,7 +6197,7 @@ CREATE TABLE IF NOT EXISTS "whistleblowing_cases"(
   "legal_hold_at" datetime,
   "created_at" datetime,
   "updated_at" datetime,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action
 );
 CREATE UNIQUE INDEX "whistleblowing_cases_access_code_lookup_unique" on "whistleblowing_cases"(
   "access_code_lookup"
@@ -6689,9 +6690,9 @@ CREATE TABLE IF NOT EXISTS "privacy_incidents"(
   "authority_report_type" varchar,
   "authority_report_reference" varchar,
   "authority_case_number" varchar,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("assigned_user_id") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("assigned_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("controller_customer_id") references "customers"("id") on delete set null
 );
 CREATE UNIQUE INDEX "pinc_org_number_unique" on "privacy_incidents"(
@@ -6774,19 +6775,19 @@ CREATE TABLE IF NOT EXISTS "diary_entries"(
   "cancelled_at" datetime,
   "cancelled_by_user_id" integer,
   "cancellation_reason" text,
-  foreign key("dispatch_override_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("asset_id") references assets("id") on delete set null on update no action,
-  foreign key("tour_id") references tours("id") on delete set null on update no action,
-  foreign key("assigned_user_id") references users("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("entry_type_id") references entry_types("id") on delete set null on update no action,
-  foreign key("project_id") references projects("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("on_call_shift_id") references on_call_shifts("id") on delete set null on update no action,
-  foreign key("emergency_assignment_id") references emergency_assignments("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("recurrence_rule_id") references recurrence_rules("id") on delete set null on update no action,
-  foreign key("planned_by_user_id") references users("id") on delete set null on update no action,
+  foreign key("dispatch_override_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("asset_id") references "assets"("id") on delete set null on update no action,
+  foreign key("tour_id") references "tours"("id") on delete set null on update no action,
+  foreign key("assigned_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("entry_type_id") references "entry_types"("id") on delete set null on update no action,
+  foreign key("project_id") references "projects"("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("on_call_shift_id") references "on_call_shifts"("id") on delete set null on update no action,
+  foreign key("emergency_assignment_id") references "emergency_assignments"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("recurrence_rule_id") references "recurrence_rules"("id") on delete set null on update no action,
+  foreign key("planned_by_user_id") references "users"("id") on delete set null on update no action,
   foreign key("accepted_by_user_id") references "users"("id") on delete set null,
   foreign key("completed_by_user_id") references "users"("id") on delete set null,
   foreign key("accepted_final_by") references "users"("id") on delete set null,
@@ -6988,8 +6989,8 @@ CREATE TABLE IF NOT EXISTS "location_points"(
   "processed_at" datetime,
   "created_at" datetime,
   "updated_at" datetime,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action
 );
 CREATE INDEX "lp_idx_org_user_time" on "location_points"(
   "organization_id",
@@ -7061,9 +7062,9 @@ CREATE TABLE IF NOT EXISTS "procedure_material_requirements"(
   "active" tinyint(1) not null default('1'),
   "created_at" datetime,
   "updated_at" datetime,
-  foreign key("article_variant_id") references article_variants("id") on delete set null on update no action,
-  foreign key("article_id") references articles("id") on delete cascade on update no action,
-  foreign key("procedure_template_version_id") references procedure_template_versions("id") on delete cascade on update no action
+  foreign key("article_variant_id") references "article_variants"("id") on delete set null on update no action,
+  foreign key("article_id") references "articles"("id") on delete cascade on update no action,
+  foreign key("procedure_template_version_id") references "procedure_template_versions"("id") on delete cascade on update no action
 );
 CREATE UNIQUE INDEX "proc_mat_req_position_unique" on "procedure_material_requirements"(
   "procedure_template_version_id",
@@ -7087,10 +7088,10 @@ CREATE TABLE IF NOT EXISTS "manufacturing_order_materials"(
   "created_at" datetime,
   "updated_at" datetime,
   "actual_cost" numeric not null default('0'),
-  foreign key("stock_reservation_id") references stock_reservations("id") on delete set null on update no action,
-  foreign key("article_variant_id") references article_variants("id") on delete set null on update no action,
-  foreign key("article_id") references articles("id") on delete cascade on update no action,
-  foreign key("manufacturing_order_id") references manufacturing_orders("id") on delete cascade on update no action
+  foreign key("stock_reservation_id") references "stock_reservations"("id") on delete set null on update no action,
+  foreign key("article_variant_id") references "article_variants"("id") on delete set null on update no action,
+  foreign key("article_id") references "articles"("id") on delete cascade on update no action,
+  foreign key("manufacturing_order_id") references "manufacturing_orders"("id") on delete cascade on update no action
 );
 CREATE INDEX "manufacturing_order_materials_manufacturing_order_id_index" on "manufacturing_order_materials"(
   "manufacturing_order_id"
@@ -7623,8 +7624,8 @@ CREATE TABLE IF NOT EXISTS "maintenance_plans"(
   "sla_contract_id" integer,
   "is_contractual" tinyint(1) not null default '0',
   "due_action" varchar not null default 'none',
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("asset_id") references assets("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("asset_id") references "assets"("id") on delete cascade on update no action,
   foreign key("sla_contract_id") references "sla_contracts"("id") on delete set null
 );
 CREATE INDEX "maintenance_plans_idx_due" on "maintenance_plans"(
@@ -7717,8 +7718,8 @@ CREATE TABLE IF NOT EXISTS "external_participants"(
   "revoked_at" datetime,
   "created_at" datetime,
   "external_contact_id" integer,
-  foreign key("invited_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("invited_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("external_contact_id") references "external_contacts"("id") on delete set null
 );
 CREATE INDEX "ext_part_org_expires_idx" on "external_participants"(
@@ -8010,9 +8011,9 @@ CREATE TABLE IF NOT EXISTS "isms_audits"(
   "updated_at" datetime,
   "deleted_at" datetime,
   "isms_audit_program_id" integer,
-  foreign key("lead_auditor_user_id") references users("id") on delete set null on update no action,
-  foreign key("isms_scope_id") references isms_scopes("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("lead_auditor_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("isms_scope_id") references "isms_scopes"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("isms_audit_program_id") references "isms_audit_programs"("id") on delete set null
 );
 CREATE UNIQUE INDEX "isms_audit_org_no_uq" on "isms_audits"(
@@ -8551,9 +8552,9 @@ CREATE TABLE IF NOT EXISTS "zammad_connections"(
   "service_queue_id" integer,
   "is_limited_to_mapped_groups" tinyint(1) not null default '0',
   "allow_private_network" tinyint(1) not null default '0',
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("default_project_id") references projects("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("default_project_id") references "projects"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("service_queue_id") references "service_queues"("id") on delete set null
 );
 CREATE INDEX "zammadconn_org_idx" on "zammad_connections"("organization_id");
@@ -10685,7 +10686,7 @@ CREATE TABLE IF NOT EXISTS "document_render_profiles"(
   "document_family" varchar,
   "is_customer_specific" tinyint(1) not null default '0',
   "page_format" varchar not null default 'a4_portrait',
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("active_version_id") references "document_render_profile_versions"("id") on delete set null
 );
 CREATE INDEX "drp_org_status_idx" on "document_render_profiles"(
@@ -10984,10 +10985,10 @@ CREATE TABLE IF NOT EXISTS "isms_supplier_assessments"(
   "updated_at" datetime,
   "deleted_at" datetime,
   "processing_agreement_id" integer,
-  foreign key("owner_user_id") references users("id") on delete set null on update no action,
-  foreign key("isms_scope_id") references isms_scopes("id") on delete set null on update no action,
-  foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("owner_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("isms_scope_id") references "isms_scopes"("id") on delete set null on update no action,
+  foreign key("supplier_id") references "suppliers"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("processing_agreement_id") references "privacy_processing_agreements"("id") on delete set null
 );
 CREATE UNIQUE INDEX "isms_supplier_org_no_uq" on "isms_supplier_assessments"(
@@ -11026,8 +11027,8 @@ CREATE TABLE IF NOT EXISTS "documents"(
   "hr_category" varchar,
   "retention_until" date,
   "is_ack_required" tinyint(1) not null default '0',
-  foreign key("created_by_user_id") references users("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by_user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("customer_released_by") references "users"("id") on delete set null
 );
 CREATE INDEX "documents_documentable_idx" on "documents"(
@@ -11154,14 +11155,14 @@ CREATE TABLE IF NOT EXISTS "asset_finance_contracts"(
   "asset_value_amount" numeric,
   "is_special_lease" tinyint(1) not null default '0',
   "classification_snapshot" text,
-  foreign key("closed_by") references users("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("responsible_user_id") references users("id") on delete set null on update no action,
-  foreign key("purchase_order_id") references purchase_orders("id") on delete set null on update no action,
-  foreign key("project_id") references projects("id") on delete set null on update no action,
-  foreign key("cost_center_id") references cost_centers("id") on delete set null on update no action,
-  foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("closed_by") references "users"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("responsible_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("purchase_order_id") references "purchase_orders"("id") on delete set null on update no action,
+  foreign key("project_id") references "projects"("id") on delete set null on update no action,
+  foreign key("cost_center_id") references "cost_centers"("id") on delete set null on update no action,
+  foreign key("supplier_id") references "suppliers"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("contract_id") references "contracts"("id") on delete set null
 );
 CREATE UNIQUE INDEX "af_contracts_org_number_unique" on "asset_finance_contracts"(
@@ -11251,12 +11252,12 @@ CREATE TABLE IF NOT EXISTS "assets"(
   "acquired_on" date,
   "acquired_from_supplier_id" integer,
   "product_id" integer,
-  foreign key("acquired_from_supplier_id") references suppliers("id") on delete set null on update no action,
-  foreign key("foreign_customer_id") references foreign_customers("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("room_id") references rooms("id") on delete set null on update no action,
-  foreign key("sla_contract_id") references sla_contracts("id") on delete set null on update no action,
+  foreign key("acquired_from_supplier_id") references "suppliers"("id") on delete set null on update no action,
+  foreign key("foreign_customer_id") references "foreign_customers"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("room_id") references "rooms"("id") on delete set null on update no action,
+  foreign key("sla_contract_id") references "sla_contracts"("id") on delete set null on update no action,
   foreign key("product_id") references "products"("id") on delete set null
 );
 CREATE INDEX "assets_idx_customer" on "assets"("customer_id", "status");
@@ -12216,9 +12217,9 @@ CREATE TABLE IF NOT EXISTS "sla_contracts"(
   "is_ola" tinyint(1) not null default('0'),
   "ola_team_id" integer,
   "project_id" integer,
-  foreign key("ola_team_id") references teams("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
+  foreign key("ola_team_id") references "teams"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
   foreign key("project_id") references "projects"("id") on delete set null
 );
 CREATE INDEX "sla_contracts_idx_lookup" on "sla_contracts"(
@@ -12531,14 +12532,14 @@ CREATE TABLE IF NOT EXISTS "passenger_rides"(
   "created_at" datetime,
   "updated_at" datetime,
   "anonymized_at" datetime,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("tariff_id") references passenger_fare_tariffs("id") on delete set null on update no action,
-  foreign key("concession_id") references passenger_concessions("id") on delete set null on update no action,
-  foreign key("vehicle_id") references vehicles("id") on delete set null on update no action,
-  foreign key("driver_user_id") references users("id") on delete set null on update no action,
-  foreign key("accepted_by") references users("id") on delete set null on update no action,
-  foreign key("diary_entry_id") references diary_entries("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("tariff_id") references "passenger_fare_tariffs"("id") on delete set null on update no action,
+  foreign key("concession_id") references "passenger_concessions"("id") on delete set null on update no action,
+  foreign key("vehicle_id") references "vehicles"("id") on delete set null on update no action,
+  foreign key("driver_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("accepted_by") references "users"("id") on delete set null on update no action,
+  foreign key("diary_entry_id") references "diary_entries"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("shift_settlement_id") references "passenger_shift_settlements"("id") on delete set null,
   foreign key("follow_up_ride_id") references "passenger_rides"("id") on delete set null
 );
@@ -12586,10 +12587,10 @@ CREATE TABLE IF NOT EXISTS "passenger_shift_settlements"(
   "created_at" datetime,
   "updated_at" datetime,
   "cash_entry_id" integer,
-  foreign key("closed_by") references users("id") on delete set null on update no action,
-  foreign key("vehicle_id") references vehicles("id") on delete set null on update no action,
-  foreign key("driver_user_id") references users("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("closed_by") references "users"("id") on delete set null on update no action,
+  foreign key("vehicle_id") references "vehicles"("id") on delete set null on update no action,
+  foreign key("driver_user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("cash_entry_id") references "cash_entries"("id") on delete set null
 );
 CREATE UNIQUE INDEX "pss_org_driver_date_unique" on "passenger_shift_settlements"(
@@ -12631,11 +12632,11 @@ CREATE TABLE IF NOT EXISTS "customer_account_payments"(
   "deleted_at" datetime,
   "source_reference" varchar,
   "customer_billing_statement_id" integer,
-  foreign key("created_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("payment_allocation_id") references payment_allocations("id") on delete set null on update no action,
-  foreign key("bank_transaction_id") references bank_transactions("id") on delete set null on update no action,
-  foreign key("customer_billing_agreement_id") references customer_billing_agreements("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("payment_allocation_id") references "payment_allocations"("id") on delete set null on update no action,
+  foreign key("bank_transaction_id") references "bank_transactions"("id") on delete set null on update no action,
+  foreign key("customer_billing_agreement_id") references "customer_billing_agreements"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("customer_billing_statement_id") references "customer_billing_statements"("id") on delete set null
 );
 CREATE INDEX "idx_cap_agr_date" on "customer_account_payments"(
@@ -12709,10 +12710,10 @@ CREATE TABLE IF NOT EXISTS "billing_transfers"(
   "correction_reason" varchar,
   "intro_text" text,
   "closing_text" text,
-  foreign key("created_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("external_reference_id") references external_references("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("external_reference_id") references "external_references"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("corrects_transfer_id") references "billing_transfers"("id") on delete set null
 );
 CREATE INDEX "bt_channel_status_idx" on "billing_transfers"(
@@ -12787,10 +12788,10 @@ CREATE TABLE IF NOT EXISTS "domain_projections"(
   "provider_updated_at" datetime,
   "renewal_period" integer,
   "details" text,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("reseller_account_id") references domain_reseller_accounts("id") on delete set null on update no action,
-  foreign key("connection_id") references domain_provider_connections("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("reseller_account_id") references "domain_reseller_accounts"("id") on delete set null on update no action,
+  foreign key("connection_id") references "domain_provider_connections"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("foreign_customer_id") references "foreign_customers"("id") on delete set null
 );
 CREATE INDEX "dp_org_customer_idx" on "domain_projections"(
@@ -12868,8 +12869,8 @@ CREATE TABLE IF NOT EXISTS "email_connections"(
   "sync_cursor" text,
   "mailbox_address" varchar,
   "subscription_resource" varchar,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action
 );
 CREATE INDEX "emailconn_org_idx" on "email_connections"("organization_id");
 CREATE TABLE IF NOT EXISTS "msgraph_contact_connections"(
@@ -12986,8 +12987,8 @@ CREATE TABLE IF NOT EXISTS "audit_logs"(
   "organization_id" integer,
   "prev_hash" varchar,
   "hash" varchar,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete set null on update no action
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete set null on update no action
 );
 CREATE INDEX "audit_logs_auditable_type_auditable_id_index" on "audit_logs"(
   "auditable_type",
@@ -13012,7 +13013,7 @@ CREATE TABLE IF NOT EXISTS "bank_accounts"(
   "created_at" datetime,
   "updated_at" datetime,
   "deleted_at" datetime,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action
 );
 CREATE INDEX "bank_accounts_org_active_idx" on "bank_accounts"(
   "organization_id",
@@ -13053,8 +13054,8 @@ CREATE TABLE IF NOT EXISTS "cloud_document_connections"(
   "server_url" varchar,
   "username" varchar,
   "subscription_resource_id" varchar,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("created_by_user_id") references users("id") on delete set null on update no action
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("created_by_user_id") references "users"("id") on delete set null on update no action
 );
 CREATE INDEX "cdc_org_provider_idx" on "cloud_document_connections"(
   "organization_id",
@@ -13070,9 +13071,9 @@ CREATE TABLE IF NOT EXISTS "cost_center_rules"(
   "created_at" datetime,
   "updated_at" datetime,
   "cost_center_id" integer,
-  foreign key("team_id") references teams("id") on delete cascade on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("team_id") references "teams"("id") on delete cascade on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("cost_center_id") references "cost_centers"("id") on delete set null
 );
 CREATE INDEX "ccr_org_prio_idx" on "cost_center_rules"(
@@ -13253,9 +13254,9 @@ CREATE TABLE IF NOT EXISTS "vacations"(
   "organization_id" integer,
   "first_approved_by" integer,
   "first_approved_at" datetime,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("decided_by") references users("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("decided_by") references "users"("id") on delete set null on update no action,
   foreign key("first_approved_by") references "users"("id") on delete set null
 );
 CREATE INDEX "idx_vacations_org" on "vacations"("organization_id");
@@ -13327,8 +13328,8 @@ CREATE TABLE IF NOT EXISTS "users"(
   "portal_pending_email" varchar,
   "portal_pending_email_requested_at" datetime,
   "calendar_feed_token_hash" varchar,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
   foreign key("deputy_user_id") references "users"("id") on delete set null
 );
 CREATE INDEX "idx_users_org" on "users"("organization_id");
@@ -13363,9 +13364,9 @@ CREATE TABLE IF NOT EXISTS "duty_plans"(
   "approved_at" datetime,
   "approved_by" integer,
   "archive_snapshot" text,
-  foreign key("updated_by") references users("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("updated_by") references "users"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("submitted_by") references "users"("id") on delete set null,
   foreign key("approved_by") references "users"("id") on delete set null
 );
@@ -13528,9 +13529,9 @@ CREATE TABLE IF NOT EXISTS "import_value_mappings"(
   "updated_at" datetime,
   "classification_id" integer,
   "user_id" integer,
-  foreign key("classification_id") references classifications("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("tag_id") references tags("id") on delete cascade on update no action,
+  foreign key("classification_id") references "classifications"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("tag_id") references "tags"("id") on delete cascade on update no action,
   foreign key("user_id") references "users"("id") on delete cascade
 );
 CREATE UNIQUE INDEX "ivm_unique" on "import_value_mappings"(
@@ -13627,10 +13628,10 @@ CREATE TABLE IF NOT EXISTS "articles"(
   "customs_tariff_number" varchar,
   "origin_country" varchar,
   "net_weight_kg" numeric,
-  foreign key("product_id") references products("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("default_procedure_template_version_id") references procedure_template_versions("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
+  foreign key("product_id") references "products"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("default_procedure_template_version_id") references "procedure_template_versions"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
   foreign key("sales_discount_group_id") references "sales_discount_groups"("id") on delete set null
 );
 CREATE UNIQUE INDEX "articles_org_gtin_unique" on "articles"(
@@ -13902,9 +13903,9 @@ CREATE TABLE IF NOT EXISTS "gaeb_imports"(
   "stored_path" varchar,
   "package_name" varchar,
   "application_opportunity_id" integer,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("bill_of_quantity_id") references bill_of_quantities("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("bill_of_quantity_id") references "bill_of_quantities"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("application_opportunity_id") references "application_opportunities"("id") on delete set null
 );
 CREATE INDEX "gimp_org_status_idx" on "gaeb_imports"(
@@ -14142,7 +14143,7 @@ CREATE TABLE IF NOT EXISTS "cost_elements"(
   "created_at" datetime,
   "updated_at" datetime,
   "article_id" integer,
-  foreign key("cost_element_catalog_id") references cost_element_catalogs("id") on delete cascade on update no action,
+  foreign key("cost_element_catalog_id") references "cost_element_catalogs"("id") on delete cascade on update no action,
   foreign key("article_id") references "articles"("id") on delete set null
 );
 CREATE INDEX "costel_cat_code_idx" on "cost_elements"(
@@ -14804,9 +14805,9 @@ CREATE TABLE IF NOT EXISTS "customer_circulars"(
   "approved_by" integer,
   "approved_at" datetime,
   "is_template" tinyint(1) not null default '0',
-  foreign key("sent_by") references users("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("sent_by") references "users"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("approved_by") references "users"("id") on delete set null
 );
 CREATE INDEX "circular_org_status_idx" on "customer_circulars"(
@@ -14833,11 +14834,11 @@ CREATE TABLE IF NOT EXISTS "asset_components"(
   "created_at" datetime,
   "updated_at" datetime,
   "stock_serial_id" integer,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("replaced_by_id") references asset_components("id") on delete set null on update no action,
-  foreign key("article_id") references articles("id") on delete set null on update no action,
-  foreign key("asset_id") references assets("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("replaced_by_id") references "asset_components"("id") on delete set null on update no action,
+  foreign key("article_id") references "articles"("id") on delete set null on update no action,
+  foreign key("asset_id") references "assets"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("stock_serial_id") references "stock_serials"("id") on delete set null
 );
 CREATE INDEX "asset_comp_org_asset_status_idx" on "asset_components"(
@@ -14995,7 +14996,7 @@ CREATE TABLE IF NOT EXISTS "accounting_accounts"(
   "deductible_percent" numeric not null default '100',
   "bwa_group" varchar,
   "is_cost_center_required" tinyint(1) not null default '0',
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("default_tax_code_id") references "accounting_tax_codes"("id") on delete set null
 );
 CREATE UNIQUE INDEX "acc_account_org_no_uq" on "accounting_accounts"(
@@ -15147,13 +15148,13 @@ CREATE TABLE IF NOT EXISTS "accounting_entries"(
   "posted_at" datetime,
   "created_at" datetime,
   "updated_at" datetime,
-  foreign key("posted_by") references users("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("reversed_by_entry_id") references accounting_entries("id") on delete set null on update no action,
-  foreign key("reverses_entry_id") references accounting_entries("id") on delete set null on update no action,
-  foreign key("accounting_period_id") references accounting_periods("id") on delete cascade on update no action,
-  foreign key("accounting_fiscal_year_id") references accounting_fiscal_years("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action
+  foreign key("posted_by") references "users"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("reversed_by_entry_id") references "accounting_entries"("id") on delete set null on update no action,
+  foreign key("reverses_entry_id") references "accounting_entries"("id") on delete set null on update no action,
+  foreign key("accounting_period_id") references "accounting_periods"("id") on delete cascade on update no action,
+  foreign key("accounting_fiscal_year_id") references "accounting_fiscal_years"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action
 );
 CREATE INDEX "acc_entry_org_date_idx" on "accounting_entries"(
   "organization_id",
@@ -15391,9 +15392,9 @@ CREATE TABLE IF NOT EXISTS "document_dispatches"(
   "updated_at" datetime,
   "document_kind" varchar,
   "document_id" integer,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("invoice_id") references invoices("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("invoice_id") references "invoices"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action
 );
 CREATE INDEX "invd_document_idx" on "document_dispatches"(
   "document_kind",
@@ -15519,10 +15520,10 @@ CREATE TABLE IF NOT EXISTS "vehicles"(
   "commute_distance_km" integer,
   "acquired_on" date,
   "is_externally_chargeable" tinyint(1) not null default '0',
-  foreign key("updated_by") references users("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("default_user_id") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("updated_by") references "users"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("default_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
   foreign key("asset_id") references "assets"("id") on delete set null
 );
 CREATE INDEX "vehicles_default_user_id_index" on "vehicles"("default_user_id");
@@ -15558,8 +15559,8 @@ CREATE TABLE IF NOT EXISTS "quote_items"(
   "line_kind" varchar not null default 'item',
   "unit_cost_amount" numeric,
   "calculation" text,
-  foreign key("quote_id") references quotes("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("quote_id") references "quotes"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("article_id") references "articles"("id") on delete set null
 );
 CREATE TABLE IF NOT EXISTS "warehouses"(
@@ -15578,8 +15579,8 @@ CREATE TABLE IF NOT EXISTS "warehouses"(
   "site_id" integer,
   "vehicle_id" integer,
   "team_id" integer,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
   foreign key("site_id") references "sites"("id") on delete set null,
   foreign key("vehicle_id") references "vehicles"("id") on delete set null,
   foreign key("team_id") references "teams"("id") on delete set null
@@ -15634,12 +15635,12 @@ CREATE TABLE IF NOT EXISTS "stock_movements"(
   "stock_lot_id" integer,
   "stock_serial_id" integer,
   "bin_id" integer,
-  foreign key("stock_serial_id") references stock_serials("id") on delete set null on update no action,
-  foreign key("stock_lot_id") references stock_lots("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("article_variant_id") references article_variants("id") on delete cascade on update no action,
-  foreign key("warehouse_id") references warehouses("id") on delete cascade on update no action,
-  foreign key("actor_user_id") references users("id") on delete set null on update no action,
+  foreign key("stock_serial_id") references "stock_serials"("id") on delete set null on update no action,
+  foreign key("stock_lot_id") references "stock_lots"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("article_variant_id") references "article_variants"("id") on delete cascade on update no action,
+  foreign key("warehouse_id") references "warehouses"("id") on delete cascade on update no action,
+  foreign key("actor_user_id") references "users"("id") on delete set null on update no action,
   foreign key("bin_id") references "warehouse_bins"("id") on delete restrict
 );
 CREATE INDEX "stock_mov_bucket_idx" on "stock_movements"(
@@ -15681,10 +15682,10 @@ CREATE TABLE IF NOT EXISTS "stock_reservations"(
   "created_at" datetime,
   "updated_at" datetime,
   "bin_id" integer,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("warehouse_id") references warehouses("id") on delete cascade on update no action,
-  foreign key("article_variant_id") references article_variants("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("warehouse_id") references "warehouses"("id") on delete cascade on update no action,
+  foreign key("article_variant_id") references "article_variants"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
   foreign key("bin_id") references "warehouse_bins"("id") on delete set null
 );
 CREATE INDEX "stock_reservations_organization_id_index" on "stock_reservations"(
@@ -15728,12 +15729,12 @@ CREATE TABLE IF NOT EXISTS "accounting_entry_lines"(
   "created_at" datetime,
   "updated_at" datetime,
   "cost_center_id" integer,
-  foreign key("asset_id") references assets("id") on delete set null on update no action,
-  foreign key("project_id") references projects("id") on delete set null on update no action,
-  foreign key("accounting_tax_code_id") references accounting_tax_codes("id") on delete set null on update no action,
-  foreign key("accounting_account_id") references accounting_accounts("id") on delete restrict on update no action,
-  foreign key("accounting_entry_id") references accounting_entries("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("asset_id") references "assets"("id") on delete set null on update no action,
+  foreign key("project_id") references "projects"("id") on delete set null on update no action,
+  foreign key("accounting_tax_code_id") references "accounting_tax_codes"("id") on delete set null on update no action,
+  foreign key("accounting_account_id") references "accounting_accounts"("id") on delete restrict on update no action,
+  foreign key("accounting_entry_id") references "accounting_entries"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("cost_center_id") references "cost_centers"("id") on delete set null
 );
 CREATE INDEX "acc_line_cp_idx" on "accounting_entry_lines"(
@@ -16085,8 +16086,8 @@ CREATE TABLE IF NOT EXISTS "notification_dispatch_log"(
   "error_code" varchar,
   "segments" integer not null default '0',
   "status_at" datetime,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("acknowledged_by") references users("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("acknowledged_by") references "users"("id") on delete set null on update no action,
   foreign key("recipient_user_id") references "users"("id") on delete set null
 );
 CREATE INDEX "notif_dispatch_event_idx" on "notification_dispatch_log"(
@@ -16499,9 +16500,9 @@ CREATE TABLE IF NOT EXISTS "learning_units"(
   "registration_lead_hours" integer,
   "cancellation_lead_hours" integer,
   "is_preview" tinyint(1) not null default '0',
-  foreign key("learning_section_id") references learning_sections("id") on delete cascade on update no action,
-  foreign key("learning_course_id") references learning_courses("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("learning_section_id") references "learning_sections"("id") on delete cascade on update no action,
+  foreign key("learning_course_id") references "learning_courses"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("event_id") references "events"("id") on delete set null
 );
 CREATE INDEX "lrn_unit_course_pos_idx" on "learning_units"(
@@ -16764,11 +16765,11 @@ CREATE TABLE IF NOT EXISTS "learning_time_sessions"(
   "approved_by_user_id" integer,
   "approved_at" datetime,
   "approval_note" varchar,
-  foreign key("attendance_id") references attendances("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("learning_unit_id") references learning_units("id") on delete set null on update no action,
-  foreign key("learning_enrollment_id") references learning_enrollments("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("attendance_id") references "attendances"("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("learning_unit_id") references "learning_units"("id") on delete set null on update no action,
+  foreign key("learning_enrollment_id") references "learning_enrollments"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("approved_by_user_id") references "users"("id") on delete set null
 );
 CREATE INDEX "lrn_time_enr_open_idx" on "learning_time_sessions"(
@@ -16801,12 +16802,12 @@ CREATE TABLE IF NOT EXISTS "safety_instructions"(
   "training_course_id" integer,
   "training_course_version_id" integer,
   "asset_id" integer,
-  foreign key("training_course_version_id") references training_course_versions("id") on delete set null on update no action,
-  foreign key("training_course_id") references training_courses("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("hazard_assessment_id") references hazard_assessments("id") on delete set null on update no action,
-  foreign key("instructor_user_id") references users("id") on delete set null on update no action,
-  foreign key("created_by_user_id") references users("id") on delete set null on update no action,
+  foreign key("training_course_version_id") references "training_course_versions"("id") on delete set null on update no action,
+  foreign key("training_course_id") references "training_courses"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("hazard_assessment_id") references "hazard_assessments"("id") on delete set null on update no action,
+  foreign key("instructor_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("created_by_user_id") references "users"("id") on delete set null on update no action,
   foreign key("asset_id") references "assets"("id") on delete set null
 );
 CREATE INDEX "safety_instr_org_held_idx" on "safety_instructions"(
@@ -16854,7 +16855,7 @@ CREATE TABLE IF NOT EXISTS "learning_issuer_keys"(
   "revoked_at" datetime,
   "created_at" datetime,
   "updated_at" datetime,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action
 );
 CREATE INDEX "lrn_issuer_key_active_idx" on "learning_issuer_keys"(
   "organization_id",
@@ -16882,8 +16883,8 @@ CREATE TABLE IF NOT EXISTS "media_renditions"(
   "source" varchar not null default 'manual',
   "reviewed_at" datetime,
   "reviewed_by" integer,
-  foreign key("attachment_id") references attachments("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("attachment_id") references "attachments"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("reviewed_by") references "users"("id") on delete set null
 );
 CREATE INDEX "media_rend_org_idx" on "media_renditions"("organization_id");
@@ -16962,9 +16963,9 @@ CREATE TABLE IF NOT EXISTS "customers"(
   "contact_first_name" varchar,
   "contact_middle_names" varchar,
   "contact_last_name" varchar,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("document_render_profile_id") references document_render_profiles("id") on delete set null on update no action
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("document_render_profile_id") references "document_render_profiles"("id") on delete set null on update no action
 );
 CREATE INDEX "cust_org_mobile_e164_idx" on "customers"(
   "organization_id",
@@ -17035,8 +17036,8 @@ CREATE TABLE IF NOT EXISTS "suppliers"(
   "contact_middle_names" varchar,
   "contact_last_name" varchar,
   "self_billing_agreed_on" date,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action
 );
 CREATE INDEX "supp_org_mobile_e164_idx" on "suppliers"(
   "organization_id",
@@ -17282,11 +17283,11 @@ CREATE TABLE IF NOT EXISTS "resale_purchase_entries"(
   "updated_at" datetime,
   "document_type" varchar,
   "document_id" integer,
-  foreign key("created_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("domain_accounting_entry_id") references domain_accounting_entries("id") on delete set null on update no action,
-  foreign key("period_id") references resale_periods("id") on delete set null on update no action,
-  foreign key("subscription_id") references resale_subscriptions("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action
+  foreign key("created_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("domain_accounting_entry_id") references "domain_accounting_entries"("id") on delete set null on update no action,
+  foreign key("period_id") references "resale_periods"("id") on delete set null on update no action,
+  foreign key("subscription_id") references "resale_subscriptions"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action
 );
 CREATE INDEX "resale_purchase_doc_idx" on "resale_purchase_entries"(
   "organization_id",
@@ -17677,7 +17678,7 @@ CREATE TABLE IF NOT EXISTS "learning_questions"(
   "updated_at" datetime,
   "learning_question_category_id" integer,
   "title" varchar,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("learning_question_category_id") references "learning_question_categories"("id") on delete set null
 );
 CREATE INDEX "lrn_q_org_cat_idx" on "learning_questions"(
@@ -17787,14 +17788,14 @@ CREATE TABLE IF NOT EXISTS "learning_courses"(
   "available_from" date,
   "available_until" date,
   "max_enrollments" integer,
-  foreign key("exam_for_course_id") references learning_courses("id") on delete set null on update no action,
-  foreign key("competency_id") references competencies("id") on delete set null on update no action,
-  foreign key("owner_user_id") references users("id") on delete set null on update no action,
-  foreign key("article_id") references articles("id") on delete set null on update no action,
-  foreign key("training_course_id") references training_courses("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("qualification_id") references qualifications("id") on delete set null on update no action,
-  foreign key("asset_id") references assets("id") on delete set null on update no action,
+  foreign key("exam_for_course_id") references "learning_courses"("id") on delete set null on update no action,
+  foreign key("competency_id") references "competencies"("id") on delete set null on update no action,
+  foreign key("owner_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("article_id") references "articles"("id") on delete set null on update no action,
+  foreign key("training_course_id") references "training_courses"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("qualification_id") references "qualifications"("id") on delete set null on update no action,
+  foreign key("asset_id") references "assets"("id") on delete set null on update no action,
   foreign key("category_id") references "learning_course_categories"("id") on delete set null
 );
 CREATE UNIQUE INDEX "lrn_course_org_code_uq" on "learning_courses"(
@@ -17865,9 +17866,9 @@ CREATE TABLE IF NOT EXISTS "survey_invitations"(
   "created_at" datetime,
   "updated_at" datetime,
   "learning_course_id" integer,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("survey_id") references surveys("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("survey_id") references "surveys"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("learning_course_id") references "learning_courses"("id") on delete set null
 );
 CREATE INDEX "survey_inv_org_email_idx" on "survey_invitations"(
@@ -18811,12 +18812,12 @@ CREATE TABLE IF NOT EXISTS "club_member_grades"(
   "created_at" datetime,
   "updated_at" datetime,
   "club_exam_candidate_id" integer,
-  foreign key("revoked_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("confirmed_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("club_grade_id") references club_grades("id") on delete cascade on update no action,
-  foreign key("club_grading_system_id") references club_grading_systems("id") on delete cascade on update no action,
-  foreign key("club_member_id") references club_members("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("revoked_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("confirmed_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("club_grade_id") references "club_grades"("id") on delete cascade on update no action,
+  foreign key("club_grading_system_id") references "club_grading_systems"("id") on delete cascade on update no action,
+  foreign key("club_member_id") references "club_members"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("club_exam_candidate_id") references "club_exam_candidates"("id") on delete set null
 );
 CREATE INDEX "club_member_grades_member_sys_idx" on "club_member_grades"(
@@ -19055,8 +19056,8 @@ CREATE TABLE IF NOT EXISTS "club_fee_accounts"(
   "updated_at" datetime,
   "user_id" integer,
   "sepa_mandate_id" integer,
-  foreign key("customer_id") references customers("id") on delete restrict on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("customer_id") references "customers"("id") on delete restrict on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("user_id") references "users"("id") on delete set null,
   foreign key("sepa_mandate_id") references "sepa_mandates"("id") on delete set null
 );
@@ -19097,12 +19098,12 @@ CREATE TABLE IF NOT EXISTS "club_fee_claims"(
   "collection_attempts" integer not null default '0',
   "collection_blocked_at" datetime,
   "collection_block_reason" varchar,
-  foreign key("cancelled_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("corrects_claim_id") references club_fee_claims("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete restrict on update no action,
-  foreign key("club_fee_account_id") references club_fee_accounts("id") on delete restrict on update no action,
-  foreign key("club_fee_run_id") references club_fee_runs("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("cancelled_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("corrects_claim_id") references "club_fee_claims"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete restrict on update no action,
+  foreign key("club_fee_account_id") references "club_fee_accounts"("id") on delete restrict on update no action,
+  foreign key("club_fee_run_id") references "club_fee_runs"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("payment_run_item_id") references "payment_run_items"("id") on delete set null
 );
 CREATE INDEX "club_fee_claims_account_status_idx" on "club_fee_claims"(
@@ -19167,7 +19168,7 @@ CREATE TABLE IF NOT EXISTS "club_departments"(
   "updated_at" datetime,
   "deleted_at" datetime,
   "club_sport_profile_id" integer,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("club_sport_profile_id") references "club_sport_profiles"("id") on delete set null
 );
 CREATE INDEX "club_dep_org_sort_idx" on "club_departments"(
@@ -19197,12 +19198,12 @@ CREATE TABLE IF NOT EXISTS "club_groups"(
   "is_team" tinyint(1) not null default '0',
   "club_sport_profile_id" integer,
   "age_class" varchar,
-  foreign key("max_grade_id") references club_grades("id") on delete set null on update no action,
-  foreign key("min_grade_id") references club_grades("id") on delete set null on update no action,
-  foreign key("club_grading_system_id") references club_grading_systems("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("club_department_id") references club_departments("id") on delete set null on update no action,
-  foreign key("leader_user_id") references users("id") on delete set null on update no action,
+  foreign key("max_grade_id") references "club_grades"("id") on delete set null on update no action,
+  foreign key("min_grade_id") references "club_grades"("id") on delete set null on update no action,
+  foreign key("club_grading_system_id") references "club_grading_systems"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("club_department_id") references "club_departments"("id") on delete set null on update no action,
+  foreign key("leader_user_id") references "users"("id") on delete set null on update no action,
   foreign key("club_sport_profile_id") references "club_sport_profiles"("id") on delete set null
 );
 CREATE INDEX "club_group_org_dep_name_idx" on "club_groups"(
@@ -19748,15 +19749,15 @@ CREATE TABLE IF NOT EXISTS "invoice_items"(
   "labour_share_percent" numeric,
   "line_kind" varchar not null default 'item',
   "unit_cost_amount" numeric,
-  foreign key("settled_invoice_id") references invoices("id") on delete set null on update no action,
-  foreign key("material_usage_id") references material_usages("id") on delete set null on update no action,
-  foreign key("expense_id") references expenses("id") on delete set null on update no action,
-  foreign key("invoice_id") references invoices("id") on delete cascade on update no action,
-  foreign key("time_entry_id") references time_entries("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("tour_id") references tours("id") on delete set null on update no action,
-  foreign key("rental_charge_id") references rental_charges("id") on delete set null on update no action,
-  foreign key("article_id") references articles("id") on delete set null on update no action,
+  foreign key("settled_invoice_id") references "invoices"("id") on delete set null on update no action,
+  foreign key("material_usage_id") references "material_usages"("id") on delete set null on update no action,
+  foreign key("expense_id") references "expenses"("id") on delete set null on update no action,
+  foreign key("invoice_id") references "invoices"("id") on delete cascade on update no action,
+  foreign key("time_entry_id") references "time_entries"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("tour_id") references "tours"("id") on delete set null on update no action,
+  foreign key("rental_charge_id") references "rental_charges"("id") on delete set null on update no action,
+  foreign key("article_id") references "articles"("id") on delete set null on update no action,
   foreign key("article_variant_id") references "article_variants"("id") on delete set null,
   foreign key("stock_delivery_id") references "stock_deliveries"("id") on delete set null
 );
@@ -19786,12 +19787,12 @@ CREATE TABLE IF NOT EXISTS "stock_deliveries"(
   "updated_at" datetime,
   "invoice_item_id" integer,
   "export_reason" varchar,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("warehouse_id") references warehouses("id") on delete cascade on update no action,
-  foreign key("article_variant_id") references article_variants("id") on delete cascade on update no action,
-  foreign key("manufacturing_order_id") references manufacturing_orders("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("warehouse_id") references "warehouses"("id") on delete cascade on update no action,
+  foreign key("article_variant_id") references "article_variants"("id") on delete cascade on update no action,
+  foreign key("manufacturing_order_id") references "manufacturing_orders"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
   foreign key("invoice_item_id") references "invoice_items"("id") on delete set null
 );
 CREATE INDEX "stock_deliveries_manufacturing_order_id_index" on "stock_deliveries"(
@@ -19902,10 +19903,10 @@ CREATE TABLE IF NOT EXISTS "protocols"(
   "weather_snapshot_id" integer,
   "template_id" integer,
   "template_version" integer,
-  foreign key("weather_snapshot_id") references weather_snapshots("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("supersedes_id") references protocols("id") on delete set null on update no action,
-  foreign key("created_by_user_id") references users("id") on delete cascade on update no action,
+  foreign key("weather_snapshot_id") references "weather_snapshots"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("supersedes_id") references "protocols"("id") on delete set null on update no action,
+  foreign key("created_by_user_id") references "users"("id") on delete cascade on update no action,
   foreign key("template_id") references "protocol_templates"("id") on delete set null
 );
 CREATE INDEX "protocols_org_type_status_idx" on "protocols"(
@@ -19973,15 +19974,15 @@ CREATE TABLE IF NOT EXISTS "rental_cases"(
   "created_at" datetime,
   "updated_at" datetime,
   "contract_signing_revision_id" integer,
-  foreign key("closed_by") references users("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("rental_rate_card_id") references rental_rate_cards("id") on delete set null on update no action,
-  foreign key("responsible_user_id") references users("id") on delete set null on update no action,
-  foreign key("site_id") references sites("id") on delete set null on update no action,
-  foreign key("diary_entry_id") references diary_entries("id") on delete set null on update no action,
-  foreign key("project_id") references projects("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("closed_by") references "users"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("rental_rate_card_id") references "rental_rate_cards"("id") on delete set null on update no action,
+  foreign key("responsible_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("site_id") references "sites"("id") on delete set null on update no action,
+  foreign key("diary_entry_id") references "diary_entries"("id") on delete set null on update no action,
+  foreign key("project_id") references "projects"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("contract_signing_revision_id") references "contract_signing_revisions"("id") on delete set null
 );
 CREATE INDEX "rental_cases_org_customer_idx" on "rental_cases"(
@@ -20041,7 +20042,7 @@ CREATE TABLE IF NOT EXISTS "procedure_step_defs"(
   "created_at" datetime,
   "updated_at" datetime,
   "library_step_id" integer,
-  foreign key("procedure_template_version_id") references procedure_template_versions("id") on delete cascade on update no action,
+  foreign key("procedure_template_version_id") references "procedure_template_versions"("id") on delete cascade on update no action,
   foreign key("library_step_id") references "procedure_library_steps"("id") on delete set null
 );
 CREATE UNIQUE INDEX "procedure_step_defs_code_uniq" on "procedure_step_defs"(
@@ -20147,7 +20148,7 @@ CREATE TABLE IF NOT EXISTS "materials"(
   "created_at" datetime,
   "updated_at" datetime,
   "article_id" integer,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
   foreign key("article_id") references "articles"("id") on delete set null
 );
 CREATE INDEX "materials_external_provider_external_id_index" on "materials"(
@@ -20233,9 +20234,9 @@ CREATE TABLE IF NOT EXISTS "shipments"(
   "updated_at" datetime,
   "is_return" tinyint(1) not null default '0',
   "claim_rma_return_id" integer,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("stock_delivery_id") references stock_deliveries("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("stock_delivery_id") references "stock_deliveries"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("claim_rma_return_id") references "claim_rma_returns"("id") on delete set null
 );
 CREATE INDEX "shipment_org_status_idx" on "shipments"(
@@ -20257,11 +20258,11 @@ CREATE TABLE IF NOT EXISTS "asset_inspection_schedules"(
   "created_at" datetime,
   "updated_at" datetime,
   "diary_entry_id" integer,
-  foreign key("external_contact_id") references external_contacts("id") on delete set null on update no action,
-  foreign key("inspector_user_id") references users("id") on delete set null on update no action,
-  foreign key("asset_id") references assets("id") on delete cascade on update no action,
-  foreign key("asset_compliance_assignment_id") references asset_compliance_assignments("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("external_contact_id") references "external_contacts"("id") on delete set null on update no action,
+  foreign key("inspector_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("asset_id") references "assets"("id") on delete cascade on update no action,
+  foreign key("asset_compliance_assignment_id") references "asset_compliance_assignments"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("diary_entry_id") references "diary_entries"("id") on delete set null
 );
 CREATE INDEX "ac_schedules_org_status_idx" on "asset_inspection_schedules"(
@@ -20734,13 +20735,13 @@ CREATE TABLE IF NOT EXISTS "investment_cases"(
   "currency" varchar,
   "strategic_objective_id" integer,
   "deferred_from_status" varchar,
-  foreign key("submitter_user_id") references users("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("project_id") references projects("id") on delete set null on update no action,
-  foreign key("cost_center_id") references cost_centers("id") on delete set null on update no action,
-  foreign key("responsible_user_id") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("investment_program_id") references investment_programs("id") on delete set null on update no action,
+  foreign key("submitter_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("project_id") references "projects"("id") on delete set null on update no action,
+  foreign key("cost_center_id") references "cost_centers"("id") on delete set null on update no action,
+  foreign key("responsible_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("investment_program_id") references "investment_programs"("id") on delete set null on update no action,
   foreign key("strategic_objective_id") references "strategic_objectives"("id") on delete set null
 );
 CREATE INDEX "inv_org_status_idx" on "investment_cases"(
@@ -20787,14 +20788,14 @@ CREATE TABLE IF NOT EXISTS "contracts"(
   "indexation_base_period_on" date,
   "indexation_threshold_percent" numeric,
   "indexation_pass_through_percent" numeric,
-  foreign key("cost_center_id") references cost_centers("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
-  foreign key("document_id") references documents("id") on delete set null on update no action,
-  foreign key("responsible_user_id") references users("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("closed_by") references users("id") on delete set null on update no action,
+  foreign key("cost_center_id") references "cost_centers"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("supplier_id") references "suppliers"("id") on delete set null on update no action,
+  foreign key("document_id") references "documents"("id") on delete set null on update no action,
+  foreign key("responsible_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("closed_by") references "users"("id") on delete set null on update no action,
   foreign key("employee_user_id") references "users"("id") on delete set null,
   foreign key("job_application_id") references "job_applications"("id") on delete set null
 );
@@ -20847,8 +20848,8 @@ CREATE TABLE IF NOT EXISTS "crisis_continuity_impacts"(
   "created_at" datetime,
   "updated_at" datetime,
   "crisis_business_process_id" integer,
-  foreign key("crisis_case_id") references crisis_cases("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("crisis_case_id") references "crisis_cases"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("crisis_business_process_id") references "crisis_business_processes"("id") on delete set null
 );
 CREATE TABLE IF NOT EXISTS "rental_rate_rules"(
@@ -21214,9 +21215,9 @@ CREATE TABLE IF NOT EXISTS "medical_checkups"(
   "updated_at" datetime,
   "deleted_at" datetime,
   "medical_checkup_occasion_id" integer,
-  foreign key("created_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("medical_checkup_occasion_id") references "medical_checkup_occasions"("id") on delete set null
 );
 CREATE INDEX "medical_checkup_org_user_idx" on "medical_checkups"(
@@ -21310,9 +21311,9 @@ CREATE TABLE IF NOT EXISTS "commission_rules"(
   "annual_cap_amount" numeric,
   "liability_days" integer,
   "is_partial_accrual" tinyint(1) not null default '0',
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("commission_agent_id") references "commission_agents"("id") on delete set null
 );
 CREATE INDEX "comm_rule_org_active_idx" on "commission_rules"(
@@ -21396,17 +21397,17 @@ CREATE TABLE IF NOT EXISTS "invoices"(
   "bill_of_quantity_id" integer,
   "sales_agent_id" integer,
   "is_labour_cost_disclosed" tinyint(1),
-  foreign key("bill_of_quantity_id") references bill_of_quantities("id") on delete set null on update no action,
-  foreign key("quote_id") references quotes("id") on delete set null on update no action,
-  foreign key("foreign_customer_id") references foreign_customers("id") on delete set null on update no action,
-  foreign key("parent_invoice_id") references invoices("id") on delete set null on update no action,
-  foreign key("cancelled_by") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete cascade on update no action,
-  foreign key("project_id") references projects("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("approved_by") references users("id") on delete set null on update no action,
-  foreign key("sales_user_id") references users("id") on delete set null on update no action,
+  foreign key("bill_of_quantity_id") references "bill_of_quantities"("id") on delete set null on update no action,
+  foreign key("quote_id") references "quotes"("id") on delete set null on update no action,
+  foreign key("foreign_customer_id") references "foreign_customers"("id") on delete set null on update no action,
+  foreign key("parent_invoice_id") references "invoices"("id") on delete set null on update no action,
+  foreign key("cancelled_by") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete cascade on update no action,
+  foreign key("project_id") references "projects"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("approved_by") references "users"("id") on delete set null on update no action,
+  foreign key("sales_user_id") references "users"("id") on delete set null on update no action,
   foreign key("sales_agent_id") references "commission_agents"("id") on delete set null
 );
 CREATE INDEX "invoices_org_status_idx" on "invoices"(
@@ -21462,10 +21463,10 @@ CREATE TABLE IF NOT EXISTS "open_issues"(
   "created_at" datetime,
   "updated_at" datetime,
   "deleted_at" datetime,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("assignee_user_id") references users("id") on delete set null on update no action,
-  foreign key("closed_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("created_by_user_id") references users("id") on delete cascade on update no action
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("assignee_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("closed_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("created_by_user_id") references "users"("id") on delete cascade on update no action
 );
 CREATE INDEX "open_issues_assignee_idx" on "open_issues"(
   "assignee_user_id",
@@ -21523,9 +21524,9 @@ CREATE TABLE IF NOT EXISTS "procedure_documentations"(
   "submitter_user_id" integer,
   "submitted_at" datetime,
   "review_note" varchar,
-  foreign key("created_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("published_by") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("published_by") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("submitter_user_id") references "users"("id") on delete set null
 );
 CREATE INDEX "procedure_docs_org_status_idx" on "procedure_documentations"(
@@ -21585,11 +21586,11 @@ CREATE TABLE IF NOT EXISTS "fixed_assets"(
   "disposal_proceeds_amount" numeric,
   "declining_rate" numeric,
   "fixed_asset_class_id" integer,
-  foreign key("created_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("depreciation_account_id") references accounting_accounts("id") on delete restrict on update no action,
-  foreign key("asset_account_id") references accounting_accounts("id") on delete restrict on update no action,
-  foreign key("asset_id") references assets("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("depreciation_account_id") references "accounting_accounts"("id") on delete restrict on update no action,
+  foreign key("asset_account_id") references "accounting_accounts"("id") on delete restrict on update no action,
+  foreign key("asset_id") references "assets"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("fixed_asset_class_id") references "fixed_asset_classes"("id") on delete set null
 );
 CREATE UNIQUE INDEX "fixed_assets_org_no_uq" on "fixed_assets"(
@@ -21648,9 +21649,9 @@ CREATE TABLE IF NOT EXISTS "safety_events"(
   "updated_at" datetime,
   "deleted_at" datetime,
   "hazard_assessment_id" integer,
-  foreign key("closed_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("reported_by_user_id") references users("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("closed_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("reported_by_user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("hazard_assessment_id") references "hazard_assessments"("id") on delete set null
 );
 CREATE INDEX "safety_events_kind_idx" on "safety_events"(
@@ -21742,13 +21743,13 @@ CREATE TABLE IF NOT EXISTS "payment_run_items"(
   "updated_at" datetime,
   "incoming_invoice_retention_id" integer,
   "invoice_id" integer,
-  foreign key("incoming_invoice_retention_id") references incoming_invoice_retentions("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("payment_run_id") references payment_runs("id") on delete cascade on update no action,
-  foreign key("incoming_einvoice_id") references incoming_einvoices("id") on delete set null on update no action,
-  foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("sepa_mandate_id") references sepa_mandates("id") on delete set null on update no action,
+  foreign key("incoming_invoice_retention_id") references "incoming_invoice_retentions"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("payment_run_id") references "payment_runs"("id") on delete cascade on update no action,
+  foreign key("incoming_einvoice_id") references "incoming_einvoices"("id") on delete set null on update no action,
+  foreign key("supplier_id") references "suppliers"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("sepa_mandate_id") references "sepa_mandates"("id") on delete set null on update no action,
   foreign key("invoice_id") references "invoices"("id") on delete set null
 );
 CREATE UNIQUE INDEX "payment_run_item_invoice_unique" on "payment_run_items"(
@@ -21993,15 +21994,15 @@ CREATE TABLE IF NOT EXISTS "resale_subscriptions"(
   "article_ref" varchar,
   "provider_account" varchar,
   "provider_unit_price" numeric,
-  foreign key("parent_id") references resale_subscriptions("id") on delete set null on update no action,
-  foreign key("created_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("domain_projection_id") references domain_projections("id") on delete set null on update no action,
-  foreign key("contract_id") references contracts("id") on delete set null on update no action,
-  foreign key("successor_id") references resale_subscriptions("id") on delete set null on update no action,
-  foreign key("foreign_customer_id") references foreign_customers("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("import_id") references resale_imports("id") on delete set null on update no action
+  foreign key("parent_id") references "resale_subscriptions"("id") on delete set null on update no action,
+  foreign key("created_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("domain_projection_id") references "domain_projections"("id") on delete set null on update no action,
+  foreign key("contract_id") references "contracts"("id") on delete set null on update no action,
+  foreign key("successor_id") references "resale_subscriptions"("id") on delete set null on update no action,
+  foreign key("foreign_customer_id") references "foreign_customers"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("import_id") references "resale_imports"("id") on delete set null on update no action
 );
 CREATE INDEX "resale_subs_org_article_ref_idx" on "resale_subscriptions"(
   "organization_id",
@@ -22049,10 +22050,10 @@ CREATE TABLE IF NOT EXISTS "customer_billing_statements"(
   "updated_at" datetime,
   "retainer_invoice_id" integer,
   "travel_minutes" integer not null default('0'),
-  foreign key("locked_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("customer_billing_agreement_id") references customer_billing_agreements("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("retainer_invoice_id") references invoices("id") on delete set null on update no action
+  foreign key("locked_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("customer_billing_agreement_id") references "customer_billing_agreements"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("retainer_invoice_id") references "invoices"("id") on delete set null on update no action
 );
 CREATE INDEX "idx_cbs_org_period" on "customer_billing_statements"(
   "organization_id",
@@ -22472,8 +22473,8 @@ CREATE TABLE IF NOT EXISTS "stock_lots"(
   "blocked_at" datetime,
   "blocked_by_user_id" integer,
   "merged_into_lot_id" integer,
-  foreign key("article_variant_id") references article_variants("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("article_variant_id") references "article_variants"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("blocked_by_user_id") references "users"("id") on delete set null,
   foreign key("merged_into_lot_id") references "stock_lots"("id") on delete set null
 );
@@ -22499,9 +22500,9 @@ CREATE TABLE IF NOT EXISTS "patrol_runs"(
   "updated_at" datetime,
   "abort_reason" varchar,
   "aborted_by_user_id" integer,
-  foreign key("started_by") references users("id") on delete set null on update no action,
-  foreign key("patrol_route_id") references patrol_routes("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("started_by") references "users"("id") on delete set null on update no action,
+  foreign key("patrol_route_id") references "patrol_routes"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("aborted_by_user_id") references "users"("id") on delete set null
 );
 CREATE INDEX "patrol_runs_org_route_idx" on "patrol_runs"(
@@ -22657,19 +22658,19 @@ CREATE TABLE IF NOT EXISTS "print_orders"(
   "customer_approved_file_hash" varchar,
   "customer_declined_at" datetime,
   "customer_decline_reason" text,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("shipment_id") references shipments("id") on delete set null on update no action,
-  foreign key("issued_by") references users("id") on delete set null on update no action,
-  foreign key("qc_by") references users("id") on delete set null on update no action,
-  foreign key("production_started_by") references users("id") on delete set null on update no action,
-  foreign key("asset_id") references assets("id") on delete set null on update no action,
-  foreign key("approved_by") references users("id") on delete set null on update no action,
-  foreign key("preflight_overridden_by") references users("id") on delete set null on update no action,
-  foreign key("preflight_by") references users("id") on delete set null on update no action,
-  foreign key("document_version_id") references document_versions("id") on delete set null on update no action,
-  foreign key("document_id") references documents("id") on delete set null on update no action,
-  foreign key("manufacturing_order_id") references manufacturing_orders("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("shipment_id") references "shipments"("id") on delete set null on update no action,
+  foreign key("issued_by") references "users"("id") on delete set null on update no action,
+  foreign key("qc_by") references "users"("id") on delete set null on update no action,
+  foreign key("production_started_by") references "users"("id") on delete set null on update no action,
+  foreign key("asset_id") references "assets"("id") on delete set null on update no action,
+  foreign key("approved_by") references "users"("id") on delete set null on update no action,
+  foreign key("preflight_overridden_by") references "users"("id") on delete set null on update no action,
+  foreign key("preflight_by") references "users"("id") on delete set null on update no action,
+  foreign key("document_version_id") references "document_versions"("id") on delete set null on update no action,
+  foreign key("document_id") references "documents"("id") on delete set null on update no action,
+  foreign key("manufacturing_order_id") references "manufacturing_orders"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("customer_approval_user_id") references "users"("id") on delete set null
 );
 CREATE UNIQUE INDEX "prord_mo_unique" on "print_orders"(
@@ -22728,10 +22729,10 @@ CREATE TABLE IF NOT EXISTS "sick_leaves"(
   "created_at" datetime,
   "updated_at" datetime,
   "continuation_of_id" integer,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("follow_up_for_id") references sick_leaves("id") on delete set null on update no action,
-  foreign key("recorded_by") references users("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("follow_up_for_id") references "sick_leaves"("id") on delete set null on update no action,
+  foreign key("recorded_by") references "users"("id") on delete set null on update no action,
   foreign key("continuation_of_id") references "sick_leaves"("id") on delete set null
 );
 CREATE INDEX "sick_leaves_follow_up_for_id_index" on "sick_leaves"(
@@ -22801,14 +22802,14 @@ CREATE TABLE IF NOT EXISTS "invoice_commissions"(
   "document_id" integer,
   "document_number" varchar,
   "customer_id" integer,
-  foreign key("commission_agent_id") references commission_agents("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("invoice_id") references invoices("id") on delete cascade on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("commission_rule_id") references commission_rules("id") on delete set null on update no action,
-  foreign key("lead_id") references leads("id") on delete set null on update no action,
-  foreign key("settlement_run_id") references commission_settlement_runs("id") on delete set null on update no action,
-  foreign key("reversal_of_id") references invoice_commissions("id") on delete set null on update no action,
+  foreign key("commission_agent_id") references "commission_agents"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("invoice_id") references "invoices"("id") on delete cascade on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("commission_rule_id") references "commission_rules"("id") on delete set null on update no action,
+  foreign key("lead_id") references "leads"("id") on delete set null on update no action,
+  foreign key("settlement_run_id") references "commission_settlement_runs"("id") on delete set null on update no action,
+  foreign key("reversal_of_id") references "invoice_commissions"("id") on delete set null on update no action,
   foreign key("customer_id") references "customers"("id") on delete set null
 );
 CREATE INDEX "inv_comm_invoice_user_idx" on "invoice_commissions"(
@@ -22867,9 +22868,9 @@ CREATE TABLE IF NOT EXISTS "lexoffice_vouchers"(
   "sales_agent_id" integer,
   "recurring_template_id" varchar,
   "paid_date_checked_at" datetime,
-  foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("supplier_id") references "suppliers"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("sales_user_id") references "users"("id") on delete set null,
   foreign key("sales_agent_id") references "commission_agents"("id") on delete set null
 );
@@ -22927,9 +22928,9 @@ CREATE TABLE IF NOT EXISTS "accounting_vouchers"(
   "foreign_amount" numeric,
   "foreign_currency" varchar,
   "lines_synced_at" datetime,
-  foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("supplier_id") references "suppliers"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("sales_user_id") references "users"("id") on delete set null,
   foreign key("sales_agent_id") references "commission_agents"("id") on delete set null
 );
@@ -22968,8 +22969,8 @@ CREATE TABLE IF NOT EXISTS "incoming_einvoice_transfers"(
   "candidate_label" varchar,
   "candidate_dismissed_user_id" integer,
   "candidate_dismissed_at" datetime,
-  foreign key("incoming_einvoice_id") references incoming_einvoices("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("incoming_einvoice_id") references "incoming_einvoices"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("candidate_dismissed_user_id") references "users"("id") on delete set null
 );
 CREATE INDEX "incoming_einv_transfer_org_status_idx" on "incoming_einvoice_transfers"(
@@ -23121,17 +23122,17 @@ CREATE TABLE IF NOT EXISTS "travel_logs"(
   "co_driver_user_id" integer,
   "is_ferry_or_train" tinyint(1) not null default('0'),
   "tour_id" integer,
-  foreign key("co_driver_user_id") references users("id") on delete set null on update no action,
-  foreign key("vehicle_id") references vehicles("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("project_id") references projects("id") on delete set null on update no action,
-  foreign key("task_id") references tasks("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("attendance_id") references attendances("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("updated_by") references users("id") on delete set null on update no action,
-  foreign key("corrects_travel_log_id") references travel_logs("id") on delete set null on update no action,
+  foreign key("co_driver_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("vehicle_id") references "vehicles"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("project_id") references "projects"("id") on delete set null on update no action,
+  foreign key("task_id") references "tasks"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("attendance_id") references "attendances"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("updated_by") references "users"("id") on delete set null on update no action,
+  foreign key("corrects_travel_log_id") references "travel_logs"("id") on delete set null on update no action,
   foreign key("tour_id") references "tours"("id") on delete set null
 );
 CREATE INDEX "travel_logs_customer_id_index" on "travel_logs"("customer_id");
@@ -23177,11 +23178,11 @@ CREATE TABLE IF NOT EXISTS "tours"(
   "route_legs" text,
   "planned_start_at" datetime,
   "start_site_id" integer,
-  foreign key("updated_by") references users("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("vehicle_id") references vehicles("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("updated_by") references "users"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("vehicle_id") references "vehicles"("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
   foreign key("start_site_id") references "sites"("id") on delete set null
 );
 CREATE INDEX "tours_organization_id_tour_date_index" on "tours"(
@@ -23290,12 +23291,12 @@ CREATE TABLE IF NOT EXISTS "customer_geofences"(
   "tour_id" integer,
   "diary_entry_id" integer,
   "valid_on" date,
-  foreign key("updated_by") references users("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("project_id") references projects("id") on delete set null on update no action,
-  foreign key("site_id") references sites("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("updated_by") references "users"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("project_id") references "projects"("id") on delete set null on update no action,
+  foreign key("site_id") references "sites"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("tour_id") references "tours"("id") on delete set null,
   foreign key("diary_entry_id") references "diary_entries"("id") on delete set null
 );
@@ -23327,13 +23328,13 @@ CREATE TABLE IF NOT EXISTS "location_pending_entries"(
   "created_at" datetime,
   "updated_at" datetime,
   "diary_entry_id" integer,
-  foreign key("resolved_by") references users("id") on delete set null on update no action,
-  foreign key("time_entry_id") references time_entries("id") on delete set null on update no action,
-  foreign key("project_id") references projects("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("location_visit_id") references location_visits("id") on delete cascade on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("resolved_by") references "users"("id") on delete set null on update no action,
+  foreign key("time_entry_id") references "time_entries"("id") on delete set null on update no action,
+  foreign key("project_id") references "projects"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("location_visit_id") references "location_visits"("id") on delete cascade on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("diary_entry_id") references "diary_entries"("id") on delete set null
 );
 CREATE INDEX "lpe_idx_org_user_status" on "location_pending_entries"(
@@ -23494,17 +23495,17 @@ CREATE TABLE IF NOT EXISTS "incoming_einvoices"(
   "duplicate_cleared_user_id" integer,
   "duplicate_cleared_at" datetime,
   "template_id" integer,
-  foreign key("duplicate_cleared_user_id") references users("id") on delete set null on update no action,
-  foreign key("duplicate_of_id") references incoming_einvoices("id") on delete set null on update no action,
-  foreign key("creditor_iban_confirmed_by") references users("id") on delete set null on update no action,
-  foreign key("paid_in_run_id") references payment_runs("id") on delete set null on update no action,
-  foreign key("decided_by") references users("id") on delete set null on update no action,
-  foreign key("document_id") references documents("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("transferred_by") references users("id") on delete set null on update no action,
-  foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("matched_user_id") references users("id") on delete set null on update no action,
+  foreign key("duplicate_cleared_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("duplicate_of_id") references "incoming_einvoices"("id") on delete set null on update no action,
+  foreign key("creditor_iban_confirmed_by") references "users"("id") on delete set null on update no action,
+  foreign key("paid_in_run_id") references "payment_runs"("id") on delete set null on update no action,
+  foreign key("decided_by") references "users"("id") on delete set null on update no action,
+  foreign key("document_id") references "documents"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("transferred_by") references "users"("id") on delete set null on update no action,
+  foreign key("supplier_id") references "suppliers"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("matched_user_id") references "users"("id") on delete set null on update no action,
   foreign key("template_id") references "incoming_invoice_templates"("id") on delete set null
 );
 CREATE INDEX "inc_einv_org_due_idx" on "incoming_einvoices"(
@@ -23559,10 +23560,10 @@ CREATE TABLE IF NOT EXISTS "procedure_step_runs"(
   "wait_until" datetime,
   "second_person_requested_at" datetime,
   "second_person_requester_user_id" integer,
-  foreign key("second_person_user_id") references users("id") on delete set null on update no action,
-  foreign key("executed_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("procedure_step_def_id") references procedure_step_defs("id") on delete restrict on update no action,
-  foreign key("procedure_run_id") references procedure_runs("id") on delete cascade on update no action,
+  foreign key("second_person_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("executed_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("procedure_step_def_id") references "procedure_step_defs"("id") on delete restrict on update no action,
+  foreign key("procedure_run_id") references "procedure_runs"("id") on delete cascade on update no action,
   foreign key("second_person_requester_user_id") references "users"("id") on delete set null
 );
 CREATE INDEX "procedure_step_runs_run_idx" on "procedure_step_runs"(
@@ -23623,17 +23624,17 @@ CREATE TABLE IF NOT EXISTS "service_tickets"(
   "workaround" text,
   "business_service_id" integer,
   "service_offering_id" integer,
-  foreign key("incident_lead_id") references users("id") on delete set null on update no action,
-  foreign key("queue_id") references service_queues("id") on delete set null on update no action,
-  foreign key("assigned_to_user_id") references users("id") on delete set null on update no action,
-  foreign key("reported_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("sla_contract_id") references sla_contracts("id") on delete set null on update no action,
-  foreign key("project_id") references projects("id") on delete set null on update no action,
-  foreign key("asset_id") references assets("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("diary_entry_id") references diary_entries("id") on delete set null on update no action,
-  foreign key("wait_owner_id") references users("id") on delete set null on update no action,
+  foreign key("incident_lead_id") references "users"("id") on delete set null on update no action,
+  foreign key("queue_id") references "service_queues"("id") on delete set null on update no action,
+  foreign key("assigned_to_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("reported_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("sla_contract_id") references "sla_contracts"("id") on delete set null on update no action,
+  foreign key("project_id") references "projects"("id") on delete set null on update no action,
+  foreign key("asset_id") references "assets"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("diary_entry_id") references "diary_entries"("id") on delete set null on update no action,
+  foreign key("wait_owner_id") references "users"("id") on delete set null on update no action,
   foreign key("business_service_id") references "business_services"("id") on delete set null,
   foreign key("service_offering_id") references "service_offerings"("id") on delete set null
 );
@@ -23713,19 +23714,19 @@ CREATE TABLE IF NOT EXISTS "time_entries"(
   "billing_travel_manual" tinyint(1) not null default('0'),
   "customer_visible_at" datetime,
   "service_ticket_id" integer,
-  foreign key("customer_billing_rate_id") references customer_billing_rates("id") on delete set null on update no action,
-  foreign key("diary_entry_id") references diary_entries("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("task_id") references tasks("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("timesheet_id") references timesheets("id") on delete set null on update no action,
-  foreign key("project_id") references projects("id") on delete set null on update no action,
-  foreign key("activity_category_id") references activity_categories("id") on delete set null on update no action,
-  foreign key("attendance_id") references attendances("id") on delete set null on update no action,
-  foreign key("travel_log_id") references travel_logs("id") on delete set null on update no action,
-  foreign key("manufacturing_order_id") references manufacturing_orders("id") on delete set null on update no action,
-  foreign key("rework_reason_classification_id") references classifications("id") on delete set null on update no action,
-  foreign key("goodwill_reason_classification_id") references classifications("id") on delete set null on update no action,
+  foreign key("customer_billing_rate_id") references "customer_billing_rates"("id") on delete set null on update no action,
+  foreign key("diary_entry_id") references "diary_entries"("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("task_id") references "tasks"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("timesheet_id") references "timesheets"("id") on delete set null on update no action,
+  foreign key("project_id") references "projects"("id") on delete set null on update no action,
+  foreign key("activity_category_id") references "activity_categories"("id") on delete set null on update no action,
+  foreign key("attendance_id") references "attendances"("id") on delete set null on update no action,
+  foreign key("travel_log_id") references "travel_logs"("id") on delete set null on update no action,
+  foreign key("manufacturing_order_id") references "manufacturing_orders"("id") on delete set null on update no action,
+  foreign key("rework_reason_classification_id") references "classifications"("id") on delete set null on update no action,
+  foreign key("goodwill_reason_classification_id") references "classifications"("id") on delete set null on update no action,
   foreign key("service_ticket_id") references "service_tickets"("id") on delete set null
 );
 CREATE INDEX "te_diary_entry_idx" on "time_entries"("diary_entry_id");
@@ -23794,12 +23795,12 @@ CREATE TABLE IF NOT EXISTS "appointment_requests"(
   "proposed_end_at" datetime,
   "proposal_note" varchar,
   "proposer_user_id" integer,
-  foreign key("portal_user_id") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("assigned_user_id") references users("id") on delete set null on update no action,
-  foreign key("diary_entry_id") references diary_entries("id") on delete set null on update no action,
-  foreign key("decided_by") references users("id") on delete set null on update no action,
+  foreign key("portal_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("assigned_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("diary_entry_id") references "diary_entries"("id") on delete set null on update no action,
+  foreign key("decided_by") references "users"("id") on delete set null on update no action,
   foreign key("proposer_user_id") references "users"("id") on delete set null
 );
 CREATE INDEX "apreq_org_status_idx" on "appointment_requests"(
@@ -23845,12 +23846,12 @@ CREATE TABLE IF NOT EXISTS "quotes"(
   "external_invoice_number" varchar,
   "lead_id" integer,
   "viewed_at" datetime,
-  foreign key("follow_up_user_id") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("customer_id") references customers("id") on delete cascade on update no action,
-  foreign key("project_id") references projects("id") on delete set null on update no action,
-  foreign key("previous_version_id") references quotes("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
+  foreign key("follow_up_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("customer_id") references "customers"("id") on delete cascade on update no action,
+  foreign key("project_id") references "projects"("id") on delete set null on update no action,
+  foreign key("previous_version_id") references "quotes"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
   foreign key("lead_id") references "leads"("id") on delete set null
 );
 CREATE UNIQUE INDEX "qte_org_no_ver_unique" on "quotes"(
@@ -23934,9 +23935,9 @@ CREATE TABLE IF NOT EXISTS "invoice_retentions"(
   "updated_at" datetime,
   "base_kind" varchar not null default('gross'),
   "warranty_period_id" integer,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("invoice_id") references invoices("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("invoice_id") references "invoices"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("warranty_period_id") references "warranty_periods"("id") on delete set null
 );
 CREATE INDEX "inv_ret_invoice_status_idx" on "invoice_retentions"(
@@ -23974,15 +23975,15 @@ CREATE TABLE IF NOT EXISTS "guarantees"(
   "created_at" datetime,
   "updated_at" datetime,
   "warranty_period_id" integer,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("responsible_user_id") references users("id") on delete set null on update no action,
-  foreign key("invoice_retention_id") references invoice_retentions("id") on delete set null on update no action,
-  foreign key("contract_id") references contracts("id") on delete set null on update no action,
-  foreign key("project_id") references projects("id") on delete set null on update no action,
-  foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("issuer_supplier_id") references suppliers("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("responsible_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("invoice_retention_id") references "invoice_retentions"("id") on delete set null on update no action,
+  foreign key("contract_id") references "contracts"("id") on delete set null on update no action,
+  foreign key("project_id") references "projects"("id") on delete set null on update no action,
+  foreign key("supplier_id") references "suppliers"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("issuer_supplier_id") references "suppliers"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
   foreign key("warranty_period_id") references "warranty_periods"("id") on delete set null
 );
 CREATE INDEX "guarantees_org_direction_idx" on "guarantees"(
@@ -25155,6 +25156,76 @@ CREATE INDEX "acc_article_org_plugin_number_idx" on "accounting_articles"(
   "plugin_id",
   "number"
 );
+CREATE TABLE IF NOT EXISTS "project_time_targets"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "project_id" integer not null,
+  "user_id" integer,
+  "site_id" integer,
+  "weekday" integer,
+  "specific_date" date,
+  "target_minutes" integer not null,
+  "valid_from" date,
+  "valid_until" date,
+  "note" text,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("project_id") references "projects"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade,
+  foreign key("site_id") references "sites"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE INDEX "ptt_project_user_weekday_idx" on "project_time_targets"(
+  "project_id",
+  "user_id",
+  "weekday"
+);
+CREATE INDEX "ptt_project_user_date_idx" on "project_time_targets"(
+  "project_id",
+  "user_id",
+  "specific_date"
+);
+CREATE TABLE IF NOT EXISTS "project_time_shortfalls"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "project_id" integer not null,
+  "user_id" integer not null,
+  "date" date not null,
+  "target_minutes" integer not null,
+  "booked_minutes" integer not null,
+  "shortfall_minutes" integer not null,
+  "tolerance_minutes" integer not null default '0',
+  "status" varchar not null default 'open',
+  "acknowledged_by" integer,
+  "acknowledged_at" datetime,
+  "resolved_at" datetime,
+  "notified_at" datetime,
+  "note" text,
+  "billed_minutes" integer,
+  "billed_at" datetime,
+  "billing_transfer_position_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("project_id") references "projects"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade,
+  foreign key("acknowledged_by") references "users"("id") on delete set null,
+  foreign key("billing_transfer_position_id") references "billing_transfer_positions"("id") on delete set null
+);
+CREATE UNIQUE INDEX "pts_project_user_date_uq" on "project_time_shortfalls"(
+  "project_id",
+  "user_id",
+  "date"
+);
+CREATE INDEX "pts_org_status_date_idx" on "project_time_shortfalls"(
+  "organization_id",
+  "status",
+  "date"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -26165,41 +26236,42 @@ INSERT INTO migrations VALUES(1006,'2027_03_31_130100_add_viewed_at_to_quotes_ta
 INSERT INTO migrations VALUES(1007,'2027_03_31_130200_add_warranty_period_to_retentions_and_guarantees',1);
 INSERT INTO migrations VALUES(1008,'2027_03_31_130300_add_is_template_to_customer_circulars_table',1);
 INSERT INTO migrations VALUES(1009,'2027_03_31_140000_add_provisional_and_chain_to_bank_statements_table',1);
-INSERT INTO migrations VALUES(1010,'2027_03_31_150000_add_preamble_to_bill_of_quantities_table',2);
-INSERT INTO migrations VALUES(1011,'2027_03_31_160000_add_bid_comment_permission_to_bill_of_quantities_table',3);
-INSERT INTO migrations VALUES(1012,'2027_03_31_170000_create_jira_tables',4);
-INSERT INTO migrations VALUES(1013,'2027_03_31_170100_create_asana_tables',4);
-INSERT INTO migrations VALUES(1014,'2027_03_31_170200_create_gitea_tables',5);
-INSERT INTO migrations VALUES(1015,'2027_03_31_170300_create_redmine_tables',5);
-INSERT INTO migrations VALUES(1016,'2027_03_31_170400_create_woocommerce_tables',6);
-INSERT INTO migrations VALUES(1017,'2027_03_31_170500_create_shopware_tables',6);
-INSERT INTO migrations VALUES(1018,'2027_03_31_170600_create_prestashop_tables',6);
-INSERT INTO migrations VALUES(1019,'2027_03_31_170700_create_firefly_tables',7);
-INSERT INTO migrations VALUES(1020,'2027_03_31_170800_create_vikunja_tables',8);
-INSERT INTO migrations VALUES(1021,'2027_03_31_170900_create_kanboard_tables',8);
-INSERT INTO migrations VALUES(1022,'2027_03_31_171000_create_plane_tables',8);
-INSERT INTO migrations VALUES(1023,'2027_03_31_171100_create_taiga_tables',8);
-INSERT INTO migrations VALUES(1024,'2027_03_31_171200_create_leantime_tables',8);
-INSERT INTO migrations VALUES(1025,'2027_03_31_171300_create_freescout_tables',8);
-INSERT INTO migrations VALUES(1026,'2027_03_31_171400_create_glpi_tables',8);
-INSERT INTO migrations VALUES(1027,'2027_03_31_171500_add_refunds_and_deletions_to_woocommerce_orders',9);
-INSERT INTO migrations VALUES(1028,'2027_03_31_171600_add_refunds_and_deletions_to_shopware_orders',9);
-INSERT INTO migrations VALUES(1029,'2027_03_31_171700_add_refunds_deletions_and_timezone_to_prestashop',9);
-INSERT INTO migrations VALUES(1030,'2027_03_31_171800_add_foreign_amount_to_firefly_transactions',9);
-INSERT INTO migrations VALUES(1031,'2027_03_31_171900_add_source_deletion_and_foreign_amount_to_accounting_vouchers',9);
-INSERT INTO migrations VALUES(1032,'2027_04_01_100000_add_housing_rentals',10);
-INSERT INTO migrations VALUES(1033,'2027_04_01_110000_add_license_accounts_to_resale',11);
-INSERT INTO migrations VALUES(1034,'2027_04_01_120000_create_resale_plan_links_table',11);
-INSERT INTO migrations VALUES(1035,'2027_04_01_130000_add_recurring_templates_to_lexoffice',11);
-INSERT INTO migrations VALUES(1036,'2027_04_01_140000_add_provider_unit_price_to_resale_subscriptions',11);
-INSERT INTO migrations VALUES(1037,'2027_04_01_150000_create_resale_provider_suppliers_table',11);
-INSERT INTO migrations VALUES(1038,'2027_04_01_160000_create_accounting_voucher_lines_table',11);
-INSERT INTO migrations VALUES(1039,'2027_04_01_170000_add_invoice_link_to_resale_license_assignments',11);
-INSERT INTO migrations VALUES(1040,'2027_04_01_180000_create_resale_ignored_lines_table',12);
-INSERT INTO migrations VALUES(1041,'2027_04_01_190000_add_provider_customer_number_and_invoice_period_to_domain_tables',13);
-INSERT INTO migrations VALUES(1042,'2027_04_01_200000_add_observed_properties_to_domain_provider_connections',14);
-INSERT INTO migrations VALUES(1043,'2027_04_01_210000_add_invoice_number_to_domain_accounting_entries',15);
-INSERT INTO migrations VALUES(1044,'2027_04_01_220000_add_provider_details_to_domain_tables',16);
-INSERT INTO migrations VALUES(1045,'2027_04_01_230000_add_price_class_to_resale_price_catalog',17);
-INSERT INTO migrations VALUES(1046,'2027_04_02_100000_add_paid_date_checked_at_to_lexoffice_vouchers',18);
-INSERT INTO migrations VALUES(1047,'2027_04_02_110000_create_accounting_articles_table',18);
+INSERT INTO migrations VALUES(1010,'2027_03_31_150000_add_preamble_to_bill_of_quantities_table',1);
+INSERT INTO migrations VALUES(1011,'2027_03_31_160000_add_bid_comment_permission_to_bill_of_quantities_table',1);
+INSERT INTO migrations VALUES(1012,'2027_03_31_170000_create_jira_tables',1);
+INSERT INTO migrations VALUES(1013,'2027_03_31_170100_create_asana_tables',1);
+INSERT INTO migrations VALUES(1014,'2027_03_31_170200_create_gitea_tables',1);
+INSERT INTO migrations VALUES(1015,'2027_03_31_170300_create_redmine_tables',1);
+INSERT INTO migrations VALUES(1016,'2027_03_31_170400_create_woocommerce_tables',1);
+INSERT INTO migrations VALUES(1017,'2027_03_31_170500_create_shopware_tables',1);
+INSERT INTO migrations VALUES(1018,'2027_03_31_170600_create_prestashop_tables',1);
+INSERT INTO migrations VALUES(1019,'2027_03_31_170700_create_firefly_tables',1);
+INSERT INTO migrations VALUES(1020,'2027_03_31_170800_create_vikunja_tables',1);
+INSERT INTO migrations VALUES(1021,'2027_03_31_170900_create_kanboard_tables',1);
+INSERT INTO migrations VALUES(1022,'2027_03_31_171000_create_plane_tables',1);
+INSERT INTO migrations VALUES(1023,'2027_03_31_171100_create_taiga_tables',1);
+INSERT INTO migrations VALUES(1024,'2027_03_31_171200_create_leantime_tables',1);
+INSERT INTO migrations VALUES(1025,'2027_03_31_171300_create_freescout_tables',1);
+INSERT INTO migrations VALUES(1026,'2027_03_31_171400_create_glpi_tables',1);
+INSERT INTO migrations VALUES(1027,'2027_03_31_171500_add_refunds_and_deletions_to_woocommerce_orders',1);
+INSERT INTO migrations VALUES(1028,'2027_03_31_171600_add_refunds_and_deletions_to_shopware_orders',1);
+INSERT INTO migrations VALUES(1029,'2027_03_31_171700_add_refunds_deletions_and_timezone_to_prestashop',1);
+INSERT INTO migrations VALUES(1030,'2027_03_31_171800_add_foreign_amount_to_firefly_transactions',1);
+INSERT INTO migrations VALUES(1031,'2027_03_31_171900_add_source_deletion_and_foreign_amount_to_accounting_vouchers',1);
+INSERT INTO migrations VALUES(1032,'2027_04_01_100000_add_housing_rentals',1);
+INSERT INTO migrations VALUES(1033,'2027_04_01_110000_add_license_accounts_to_resale',1);
+INSERT INTO migrations VALUES(1034,'2027_04_01_120000_create_resale_plan_links_table',1);
+INSERT INTO migrations VALUES(1035,'2027_04_01_130000_add_recurring_templates_to_lexoffice',1);
+INSERT INTO migrations VALUES(1036,'2027_04_01_140000_add_provider_unit_price_to_resale_subscriptions',1);
+INSERT INTO migrations VALUES(1037,'2027_04_01_150000_create_resale_provider_suppliers_table',1);
+INSERT INTO migrations VALUES(1038,'2027_04_01_160000_create_accounting_voucher_lines_table',1);
+INSERT INTO migrations VALUES(1039,'2027_04_01_170000_add_invoice_link_to_resale_license_assignments',1);
+INSERT INTO migrations VALUES(1040,'2027_04_01_180000_create_resale_ignored_lines_table',1);
+INSERT INTO migrations VALUES(1041,'2027_04_01_190000_add_provider_customer_number_and_invoice_period_to_domain_tables',1);
+INSERT INTO migrations VALUES(1042,'2027_04_01_200000_add_observed_properties_to_domain_provider_connections',1);
+INSERT INTO migrations VALUES(1043,'2027_04_01_210000_add_invoice_number_to_domain_accounting_entries',1);
+INSERT INTO migrations VALUES(1044,'2027_04_01_220000_add_provider_details_to_domain_tables',1);
+INSERT INTO migrations VALUES(1045,'2027_04_01_230000_add_price_class_to_resale_price_catalog',1);
+INSERT INTO migrations VALUES(1046,'2027_04_02_100000_add_paid_date_checked_at_to_lexoffice_vouchers',1);
+INSERT INTO migrations VALUES(1047,'2027_04_02_110000_create_accounting_articles_table',1);
+INSERT INTO migrations VALUES(1048,'2027_04_02_120000_create_project_time_targets_tables',1);

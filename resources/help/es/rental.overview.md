@@ -1,7 +1,7 @@
 ---
 title: "Alquiler de equipos"
 topic: rental.overview
-version: 3
+version: 4
 keywords:
     - arrendador
     - apartamento vacacional
@@ -38,6 +38,7 @@ impiden de forma visible.
 
 **Expediente de alquiler:** cada operación recibe un número (VER-…); la
 versión de la tarifa aplicada se congela como instantánea.
+La persona de contacto se rellena desde el cliente al elegirlo y sigue siendo editable.
 
 **Entrega y devolución:** protocolos separados documentan estado,
 accesorios, contadores, fotos y firma; la devolución lleva la decisión

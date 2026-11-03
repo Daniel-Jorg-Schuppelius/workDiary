@@ -1,7 +1,7 @@
 ---
 title: "Fahrten, Spesen & Pauschalen"
 topic: travel-expenses.manage
-version: 3
+version: 4
 keywords:
     - Reisekostenabrechnung
     - Spesenabrechnung
@@ -57,7 +57,7 @@ erfassten Fahrten finden Sie unter **Reisen & Spesen** → **Fahrtenbuch**.
   Fahrzeugtyps. Dazu kommen **Tachostand Beginn (km)**, **Tachostand Ende
   (km)**, **Start (Uhrzeit)** und **Ende (Uhrzeit)**; endet die Fahrt nach
   Mitternacht, tragen Sie einfach die kleinere Uhrzeit ein.
-- **Zuordnung:** **Projekt (optional)**, **Kunde (optional)** und **Zweck**.
+- **Zuordnung:** **Projekt (optional)**, **Kunde (optional)** und **Zweck**. Mit der Kundenwahl ist das Ziel aus der Kundenanschrift vorbelegt, bei der Verpflegungspauschale Ort und Land; eigene Eingaben bleiben stehen.
 - **Optionen & Notizen:** **Hin- und Rückfahrt (verdoppelt km)**,
   **Erstattungsfähig** (vorbelegt) und **Notizen**.
 

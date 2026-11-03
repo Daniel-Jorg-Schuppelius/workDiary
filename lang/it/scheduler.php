@@ -94,6 +94,7 @@ return [
     // Nomi leggibili dei job (chiavi registry, annidate per via della notazione a punti);
     // aggiungere i nuovi job qui in tutte le lingue — altrimenti fallback = chiave.
     'job' => [
+        'projects' => ['check-time-targets' => 'Verificare i tempi obiettivo di progetto rispetto al tempo registrato'],
         'surveys' => ['scheduled' => 'Inviare sondaggi a intervallo fisso'],
         'demo' => [
             'prune' => 'Eliminare le organizzazioni demo dopo il periodo di conservazione',

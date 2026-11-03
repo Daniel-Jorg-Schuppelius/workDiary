@@ -39,6 +39,16 @@ return [
     'operating_window_end' => env('SCHEDULER_OPERATING_WINDOW_END'),
 
     'jobs' => [
+        // --- Projekt-Sollzeiten: Vortag und Nachlauf gegen das Soll je Person (Feature 194, MVP-1468) ---
+        // Nach Mitternacht aller Zeitzonen der Mandanten, vor dem Arbeitsbeginn der Projektleitung.
+        'projects.check-time-targets' => [
+            'command' => 'projects:check-time-targets',
+            'cadence' => ['type' => 'dailyAt', 'time' => '06:10'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 5,
+        ],
+
         // --- Reklamations-Fristeneskalation (Feature 072, MVP-255) ---
         'claims.escalate' => [
             'command' => 'claims:escalate',

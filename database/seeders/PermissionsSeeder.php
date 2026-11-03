@@ -382,6 +382,7 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProjectCreate,
             PermissionEnum::ProjectUpdate,
             PermissionEnum::ProjectArchive,
+            PermissionEnum::ProjectTargetsManage,
             PermissionEnum::TaskManage,
             PermissionEnum::MilestoneManage,
             PermissionEnum::TimeEntryViewAny,

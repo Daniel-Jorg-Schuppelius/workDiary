@@ -36,7 +36,8 @@
         @endforeach
     </x-select-field>
     <x-input-field name="from_address" :label="__('Von (Adresse)')" data-travel-geocode :value="old('from_address', $src?->from_address)" :span="2" />
-    <x-input-field name="to_address" :label="__('Nach (Adresse)')" data-travel-geocode :value="old('to_address', $src?->to_address)" :span="2" />
+    <x-input-field name="to_address" :label="__('Nach (Adresse)')" data-travel-geocode :value="old('to_address', $src?->to_address)" :span="2"
+                   data-prefill-from="customer_id" data-prefill-key="to-address" :data-prefill-on-load="$src === null" />
 </x-form-group>
 
 @if ($correcting ?? null)
@@ -78,7 +79,9 @@
     <x-select-field name="customer_id" :label="__('Kunde (optional)')">
         <option value="">—</option>
         @foreach ($customers as $c)
-            <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $src?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
+            {{-- Ziel aus der Kundenanschrift (Projektion), Pilot 2026-11-03 --}}
+            <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $src?->customer_id)) === $c->sqid)
+                    data-prefill-to-address="{{ implode(', ', array_filter([$c->address_street, trim(($c->address_zip ?? '') . ' ' . ($c->address_city ?? ''))])) }}">{{ $c->name }}</option>
         @endforeach
     </x-select-field>
     <x-input-field name="purpose" :label="__('Zweck')" :value="old('purpose', $src?->purpose)" :span="2" />

@@ -1,7 +1,7 @@
 ---
 title: "Kunden & Lieferanten"
 topic: contacts.manage
-version: 11
+version: 12
 keywords:
     - Vorschau als Kunde
     - Startpasswort
@@ -66,6 +66,7 @@ Nacharbeit funktionieren.
    vollständig — sie steuern Faktura und Buchhaltungsübergabe.
 4. Verknüpfen Sie Projekte, Standorte und Vereinbarungen, sobald sie
    entstehen.
+   Ein neuer Standort übernimmt Anschrift, Land und Koordinaten des gewählten Kunden als Vorschlag.
 
 ![Kundenliste mit Nummern, Kontaktdaten, Stundensätzen und Projektzahl](media/kunden/kundenliste.png)
 *Die Kundenliste: Stammdaten, Stundensatz und verknüpfte Projekte je Geschäftspartner.*

@@ -17,7 +17,7 @@
 <x-index-page overflow="clip" :subtitle="__('E-Mail-Vorlagen für den Belegversand (Rechnung, Angebot, AB, Bestellung, Lieferschein) verwalten.')">
     <x-slot:actions>
         <x-icon-btn icon="add" tone="primary" size="sm"
-                    :href="route('admin.invoice-mail-templates.create')"
+                    :href="route('admin.invoice-mail-templates.create')" data-entry-modal-trigger
                     show-label>{{ __('Neues Template') }}</x-icon-btn>
     </x-slot:actions>
 
@@ -70,7 +70,7 @@
                 </td>
                 <td class="text-right">
                     <x-icon-btn icon="edit" size="xs"
-                                :href="route('admin.invoice-mail-templates.edit', $tpl)"/>
+                                :href="route('admin.invoice-mail-templates.edit', $tpl)" data-entry-modal-trigger/>
                     <x-action-form :action="route('admin.invoice-mail-templates.destroy', $tpl)" method="DELETE"
                           :confirm="__('Template wirklich löschen?')"
                           confirm-tone="error"

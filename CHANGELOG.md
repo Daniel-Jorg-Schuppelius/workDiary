@@ -10,6 +10,17 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- **Projekt-Sollzeiten je Person** (Feature 194, Phase 170, MVP-1467–1471):
+  Soll je Person und Tag am Projekt (Projektvorgabe je Wochentag,
+  Personenzeilen, Ausnahmen je Datum, Gültigkeit) im Raster „Sollzeiten
+  pflegen“ am Zeitreiter; nächtlicher Abgleich `projects:check-time-targets`
+  mit Befunden unter Soll (Toleranz `project.target_tolerance_minutes`),
+  Meldung an die Projektleitung, Vorgang im Arbeitsvorrat, weiche Warnung im
+  Tagesabschluss, Kennzahl der Leitungssicht, Frühwarnung bei Häufung,
+  Plan/Ist-Sicht „Projekt je Person“; Projekte mit „Vereinbarte Stunden
+  abrechnen“ ergänzen in der Übergabe die fehlende Zeit als Position
+  „Vereinbarte Einsatzzeit“, Nachbuchungen auf berechnete Tage sind nicht
+  abrechenbar. Recht `project.targets.manage`, Hilfe ×5.
 - **Gerätelaufzeit als Eintragsart** (Feature 193, Phase 169, MVP-1463–1466):
   Laufzeit eines Geräts oder Prozesses, etwa das Auslesen einer defekten
   Platte über zwei Tage, als eigene Art neben Arbeit, Anfahrt und

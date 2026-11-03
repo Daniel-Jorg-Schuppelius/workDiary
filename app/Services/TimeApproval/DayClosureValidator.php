@@ -49,6 +49,9 @@ class DayClosureValidator {
 
     public const CHECK_WORKTIME_OVERRUN = 'worktime.overrun';
 
+    /** Projekt-Sollzeit unterschritten (Feature 194) — weiche Warnung, der Nachtlauf schreibt den Befund. */
+    public const CHECK_PROJECT_TARGET_SHORTFALL = 'project.target_shortfall';
+
     /**
      * @param  list<array{after_minutes:int, required_minutes:int}>  $breakRules  gesetzliche Pausenregeln
      *                                                                            (z. B. ArbZG §4: 30 min ab 6h, 45 min ab 9h), vgl. BreakRuleEvaluator::rules()
@@ -218,6 +221,7 @@ class DayClosureValidator {
             self::CHECK_BALANCE_THRESHOLD => (string) __('day-close.check.balance.threshold', ['hours' => NumberHelper::toGermanFormat(((int) ($meta['balance'] ?? 0)) / 60, 1, withThousandsSeparator: true)]),
             self::CHECK_ENTRY_MISSING_COMMENT => (string) __('day-close.check.entry.missing_comment', ['count' => $meta['count'] ?? 0]),
             self::CHECK_WORKTIME_OVERRUN => (string) __('day-close.check.worktime.overrun', ['minutes' => $meta['minutes'] ?? 0]),
+            self::CHECK_PROJECT_TARGET_SHORTFALL => (string) __('day-close.check.project.target_shortfall', ['project' => $meta['project'] ?? '', 'target' => $meta['target'] ?? 0, 'booked' => $meta['booked'] ?? 0, 'missing' => $meta['missing'] ?? 0]),
             default => (string) __('day-close.check.unknown', ['code' => $issue['code']]),
         };
     }

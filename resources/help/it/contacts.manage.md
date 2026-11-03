@@ -1,7 +1,7 @@
 ---
 title: "Clienti & fornitori"
 topic: contacts.manage
-version: 11
+version: 12
 keywords:
     - Anteprima come cliente
     - Password iniziale
@@ -64,6 +64,7 @@ funzionano senza rilavorazioni.
 3. Completi dati di pagamento e fatturazione e gli identificativi
    esterni — guidano fatturazione e consegna contabile.
 4. Colleghi progetti, sedi e accordi man mano che nascono.
+   Una nuova sede riprende come proposta indirizzo, paese e coordinate del cliente scelto.
 
 ![Elenco clienti con numeri, contatti, tariffe orarie e numero di progetti](media/kunden/kundenliste.png)
 *L’elenco clienti: anagrafica, tariffa oraria e progetti collegati per partner.*

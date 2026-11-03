@@ -438,6 +438,17 @@
                              :checked="(string) old('settings.project.keyword_matching.enabled', data_get($stored, 'project.keyword_matching.enabled', config('project.keyword_matching.enabled') ? '1' : '0')) === '1'"
                              :hint="__('settings.time_import.keyword_matching_hint')" />
         </x-form-group>
+
+        {{-- PROJEKT-SOLLZEITEN (Feature 194): Toleranz für Befunde unter Soll. --}}
+        <x-form-group :legend="__('settings.project_targets.heading')" icon="flag" tone="info" cols="2" compact
+                      :description="__('settings.project_targets.description')">
+            <x-input-field name="settings[project][target_tolerance_minutes]" type="number" min="0" max="480" step="1"
+                           :label="__('settings.project_targets.tolerance_minutes')"
+                           error="settings.project.target_tolerance_minutes" inputmode="numeric"
+                           :value="old('settings.project.target_tolerance_minutes', data_get($stored, 'project.target_tolerance_minutes', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => '15'])"
+                           :hint="__('settings.project_targets.tolerance_minutes_hint')" />
+        </x-form-group>
     </div>
 
     {{-- UPLOADS --}}

@@ -12,6 +12,8 @@ namespace App\Http\Requests\Travel;
 
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
+use App\Models\Customer\Customer;
+use CommonToolkit\Helper\Data\StringHelper;
 
 class SavePerDiemTripRequest extends BaseFormRequest {
     use DecodesSqidInputs, ParsesOrgLocalDateTimes;
@@ -20,6 +22,17 @@ class SavePerDiemTripRequest extends BaseFormRequest {
         $this->mergeOrgLocalToUtc(['started_at', 'ended_at']);
         if ($this->filled('country')) {
             $this->merge(['country' => $this->string('country')->upper()->value()]);
+        }
+        // Ohne Ort gilt der Ort des gewählten Kunden, das Land nur ohne eigene Angabe (Pilot 2026-11-03).
+        if (! $this->filled('location')) {
+            $customerId = $this->decodedInputId('customer_id', Customer::class);
+            $customer = $customerId !== null ? Customer::query()->find($customerId) : null;
+            if ($customer instanceof Customer && StringHelper::trimToNull($customer->address_city) !== null) {
+                $this->merge(['location' => $customer->address_city]);
+                if (! $this->filled('country') && is_string($customer->country) && strlen($customer->country) === 2) {
+                    $this->merge(['country' => strtoupper($customer->country)]);
+                }
+            }
         }
     }
 

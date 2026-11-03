@@ -55,7 +55,7 @@ class InvoiceMailTemplateController extends Controller {
     public function create(): View {
         $this->authorizeBilling();
 
-        return view('admin.invoice-mail-templates.form', [
+        return view('admin.invoice-mail-templates._form_dialog', [
             'template' => new InvoiceMailTemplate(['is_default' => false]),
             'kinds' => InvoiceMailTemplate::supportedKinds(),
             'variablesByKind' => $this->variablesByKind(),
@@ -84,7 +84,7 @@ class InvoiceMailTemplateController extends Controller {
     public function edit(InvoiceMailTemplate $invoiceMailTemplate): View {
         $this->authorizeBilling();
 
-        return view('admin.invoice-mail-templates.form', [
+        return view('admin.invoice-mail-templates._form_dialog', [
             'template' => $invoiceMailTemplate,
             'kinds' => InvoiceMailTemplate::supportedKinds(),
             'variablesByKind' => $this->variablesByKind(),

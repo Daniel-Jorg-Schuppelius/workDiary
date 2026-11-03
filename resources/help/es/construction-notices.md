@@ -1,7 +1,7 @@
 ---
 title: "Aviso de impedimento y de reparos (VOB/B)"
 topic: construction-notices
-version: 1
+version: 2
 keywords:
     - impedimento en obra
     - retraso de obra
@@ -42,6 +42,8 @@ Cliente, proyecto, lugar y —si se ha registrado— la **instantánea
 meteorológica** se toman de la entrada de diario. Sobre todo en impedimentos
 por causas climáticas, unas condiciones documentadas en el momento de los
 hechos marcan la diferencia entre una afirmación y una prueba.
+
+Al elegir el cliente se rellena el **correo del destinatario** desde la ficha del cliente; una dirección propia se mantiene.
 
 ## La impresión queda congelada
 

@@ -702,6 +702,8 @@ return [
         'products' => \App\Models\Article\Product::class,
         'project_billing_rules' => \App\Models\Project\ProjectBillingRule::class,
         'project_merge_dismissals' => \App\Models\Project\ProjectMergeDismissal::class,
+        'project_time_shortfalls' => \App\Models\Project\ProjectTimeShortfall::class,
+        'project_time_targets' => \App\Models\Project\ProjectTimeTarget::class,
         'projects' => \App\Models\Project\Project::class,
         'protocol_events' => \App\Models\Protocol\ProtocolEvent::class,
         'protocol_item_photos' => \App\Models\Protocol\ProtocolItemPhoto::class,

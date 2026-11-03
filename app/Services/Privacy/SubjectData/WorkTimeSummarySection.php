@@ -54,6 +54,14 @@ class WorkTimeSummarySection extends AbstractSubjectSection {
                 columns: ['date' => __('Datum'), 'started_at' => __('Beginn'), 'ended_at' => __('Ende'), 'minutes' => __('Minuten'), 'description' => __('Beschreibung')],
             ),
             $this->family(
+                'project_time_shortfalls',
+                __('Befunde unter Projekt-Soll'),
+                \App\Models\Project\ProjectTimeShortfall::query()->withoutGlobalScopes()->where('organization_id', $orgId)->where('user_id', $u->id),
+                'date',
+                [],
+                columns: ['date' => __('Datum'), 'project_id' => __('Projekt'), 'target_minutes' => __('Soll'), 'booked_minutes' => __('Gebucht'), 'shortfall_minutes' => __('Fehlend'), 'status' => __('Status')],
+            ),
+            $this->family(
                 'vacations',
                 __('Urlaubsanträge'),
                 Vacation::query()->withoutGlobalScopes()->where('organization_id', $orgId)->where('user_id', $u->id),

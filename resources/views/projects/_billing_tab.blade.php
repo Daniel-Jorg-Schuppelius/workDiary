@@ -61,6 +61,12 @@
                                placeholder="{{ __('Erben (aktuell: :min)', ['min' => $effectiveGap]) }}" />
             </div>
 
+            {{-- Abrechnung nach Soll (Feature 194, MVP-1470). --}}
+            <x-checkbox-field name="bills_target_time" tone="info"
+                              :label="__('Vereinbarte Stunden abrechnen')"
+                              :checked="(bool) old('bills_target_time', $project->bills_target_time)"
+                              :hint="__('Fehlt einer Person Zeit zum Projekt-Soll, ergänzt die Übergabe die Differenz als Position „Vereinbarte Einsatzzeit“. Mehrzeit bleibt wie gebucht.')" />
+
             <div class="flex justify-end">
                 <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('Taktung speichern') }}</x-button>
             </div>

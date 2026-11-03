@@ -3571,6 +3571,10 @@ Route::middleware('auth')->group(function () {
         Route::put('time-entries/{timeEntry}/allocations', [\App\Http\Controllers\Time\TimeAllocationController::class, 'update'])->name('time-entries.allocations.update');
         Route::resource('projects.billing-rules', ProjectBillingRuleController::class)->except(['index', 'show']);
         Route::patch('projects/{project}/billing-settings', [ProjectBillingRuleController::class, 'updateSettings'])->name('projects.billing-settings.update');
+        // Sollzeiten je Person (Feature 194, MVP-1467).
+        Route::get('projects/{project}/time-targets', [\App\Http\Controllers\Project\ProjectTimeTargetController::class, 'edit'])->name('projects.time-targets.edit');
+        Route::put('projects/{project}/time-targets', [\App\Http\Controllers\Project\ProjectTimeTargetController::class, 'update'])->name('projects.time-targets.update');
+        Route::post('projects/{project}/time-shortfalls/{shortfall}/acknowledge', [\App\Http\Controllers\Project\ProjectTimeTargetController::class, 'acknowledge'])->name('projects.time-shortfalls.acknowledge');
         // Projektstufe der Satzhierarchie (MVP-482) — eigene Route, damit das
         // Taktungsformular die Sätze nicht mit leeren Werten überschreibt.
         Route::patch('projects/{project}/rates', [ProjectBillingRuleController::class, 'updateRates'])->name('projects.rates.update');
@@ -5170,6 +5174,8 @@ Route::middleware('auth')->group(function () {
             ->name('reports.plan-ist.shifts');
         Route::get('reports/plan-ist/projects', [\App\Http\Controllers\Reporting\PlanIstReportController::class, 'projects'])
             ->name('reports.plan-ist.projects');
+        Route::get('reports/plan-ist/project-persons', [\App\Http\Controllers\Reporting\PlanIstReportController::class, 'projectPersons'])
+            ->name('reports.plan-ist.project-persons');
         Route::get('reports/plan-ist/sites', [\App\Http\Controllers\Reporting\PlanIstReportController::class, 'sites'])
             ->name('reports.plan-ist.sites');
 

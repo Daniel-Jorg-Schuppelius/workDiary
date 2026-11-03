@@ -94,6 +94,9 @@ return [
     // The 7 consistency checks from §4 — key = check code
     // (DayClosureValidator), dots in the code map to nesting.
     'check' => [
+        'project' => [
+            'target_shortfall' => 'Project :project: target :target min, booked :booked min — :missing min missing.',
+        ],
         'attendance' => [
             'missing_close' => 'The time clock is still open — please clock out.',
         ],

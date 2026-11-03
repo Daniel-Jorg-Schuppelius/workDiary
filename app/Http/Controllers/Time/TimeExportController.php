@@ -87,7 +87,7 @@ class TimeExportController extends Controller {
 
         $now = now();
 
-        return view('exports.create', [
+        return view('exports._form_dialog', [
             'profiles' => $this->availableProfiles(),
             'defaultYear' => (int) $now->copy()->subMonthNoOverflow()->format('Y'),
             'defaultMonth' => (int) $now->copy()->subMonthNoOverflow()->format('n'),

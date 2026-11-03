@@ -1,7 +1,7 @@
 ---
 title: "Gérer les projets"
 topic: projects.manage
-version: 4
+version: 5
 keywords:
     - créer un projet
     - gestion de projet
@@ -85,6 +85,20 @@ Pour une migration de serveurs, le projet « Migration DC » est créé
 avec durée, taux horaire et deux responsables. Les techniciens
 saisissent leurs temps directement sur le projet ; en fin de mois, la
 vue de détail montre d'un coup d'œil ce qui reste facturable.
+
+## Temps cibles par personne
+
+Convenez avec le client d’un temps d’intervention par personne et par jour et gérez-le dans
+l’onglet Temps sous **Gérer les temps cibles** : une **valeur par défaut du projet** par jour
+de semaine s’applique à toutes les personnes assignables, une ligne personnelle prime, une
+**exception à une date** prime sur le jour de semaine ; congés, maladie et jours fériés mettent
+la cible à zéro. Le contrôle nocturne compare la cible au temps saisi et signale les écarts
+au-delà de la tolérance (réglage d’organisation, 15 minutes par défaut) aux responsables du
+projet, dans la file de travail et dans la clôture de journée de la personne ; les constats
+figurent dans l’onglet Temps, où ils peuvent être **confirmés**, et une saisie tardive les
+résout. Avec **Facturer les heures convenues** dans l’onglet Facturation, le transfert ajoute
+le temps manquant comme position « Temps d’intervention convenu » ; une saisie ultérieure sur
+ce jour n’est alors plus facturable.
 
 ## Erreurs fréquentes
 

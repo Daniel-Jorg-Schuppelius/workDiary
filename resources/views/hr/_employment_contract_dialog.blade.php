@@ -21,7 +21,7 @@
     <p class="mb-3 text-sm opacity-70">{{ __('hr.employment.intro') }}</p>
     <x-form-group :legend="__('hr.employment.title')" icon="draw" tone="primary" cols="2">
         <x-input-field name="title" :label="__('hr.employment.field.title')" :value="old('title', __('hr.employment.default_title', ['name' => $name]))" required span="2" />
-        <x-input-field name="starts_on" type="date" :label="__('hr.employment.field.starts_on')" :value="old('starts_on')" required />
+        <x-input-field name="starts_on" type="date" :label="__('hr.employment.field.starts_on')" :value="old('starts_on', now()->orgTz()->toDateString())" required />
         <x-input-field name="email" type="email" :label="__('hr.employment.field.email')" :value="old('email', $email)" required />
         <x-textarea-field name="declaration_text" :label="__('hr.employment.field.declaration_text')" rows="2" required span="2">{{ old('declaration_text', __('hr.employment.default_declaration')) }}</x-textarea-field>
         <div class="md:col-span-2">

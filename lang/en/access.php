@@ -317,6 +317,7 @@ return [
         'project.delete' => 'Delete project',
         'project.archive' => 'Archive project',
         'project.billing.manage' => 'Manage project billing rules',
+        'project.targets.manage' => 'Manage project target times',
         'project.import' => 'Import projects',
         'task.manage' => 'Manage tasks',
         'milestone.manage' => 'Manage milestones',

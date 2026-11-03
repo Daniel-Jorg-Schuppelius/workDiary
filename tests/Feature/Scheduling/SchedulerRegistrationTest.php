@@ -36,6 +36,8 @@ class SchedulerRegistrationTest extends TestCase {
         // Neu mit MVP-058 (kein Alt-Eintrag): Betriebsaufgaben-Sync.
         // Neu mit Feature 072 (MVP-255): Reklamations-Fristeneskalation.
         'claims:escalate' => ['15 7 * * *', true, true],
+        // Projekt-Sollzeiten gegen gebuchte Zeit (Feature 194, MVP-1468).
+        'projects:check-time-targets' => ['10 6 * * *', true, true],
         // Umfragen im festen Abstand (MVP-1293).
         'surveys:send-scheduled' => ['30 9 * * *', true, true],
         'operations:scan' => ['34 * * * *', true, true],

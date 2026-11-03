@@ -1,7 +1,7 @@
 ---
 title: "Avis d’entrave et réserves (VOB/B)"
 topic: construction-notices
-version: 1
+version: 2
 keywords:
     - entrave au chantier
     - retard de chantier
@@ -42,6 +42,8 @@ Le client, le projet, le lieu et — s’il est saisi — l’**instantané mét
 sont repris de l’entrée de journal. Pour les entraves liées aux intempéries
 en particulier, des conditions documentées au moment des faits font la
 différence entre une affirmation et une preuve.
+
+Le choix du client préremplit l’**e-mail du destinataire** à partir de la fiche client ; une adresse saisie reste.
 
 ## L’impression est figée
 

@@ -227,7 +227,7 @@ class PerDiemTripController extends Controller {
 
         return [
             'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            'customers' => Customer::query()->orderBy('name')->get(['id', 'name', 'address_city', 'country']),
             'travelLogs' => TravelLog::query()
                 ->where('user_id', $userId)
                 ->orderByDesc('started_at')

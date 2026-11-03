@@ -1,7 +1,7 @@
 ---
 title: "Clients & fournisseurs"
 topic: contacts.manage
-version: 11
+version: 12
 keywords:
     - Aperçu en tant que client
     - Mot de passe initial
@@ -66,6 +66,7 @@ fonctionnent sans reprise.
    identifiants externes — ils pilotent la facturation et la remise
    comptable.
 4. Reliez projets, sites et accords au fur et à mesure.
+   Un nouveau site reprend l’adresse, le pays et les coordonnées du client choisi comme proposition.
 
 ![Liste des clients avec numéros, coordonnées, taux horaires et nombre de projets](media/kunden/kundenliste.png)
 *La liste des clients : données de base, taux horaire et projets liés par partenaire.*

@@ -165,6 +165,12 @@ return [
         'keyword_matching' => 'Zeiten anhand von Schlüsselwörtern dem Projekt zuordnen',
         'keyword_matching_hint' => 'Enthält der Text einer importierten Zeit den Namen oder ein Schlüsselwort eines Projekts desselben Kunden, wird sie dort gebucht statt im Standardprojekt bzw. in der Zuordnungs-Inbox. Nur eindeutige Treffer buchen.',
     ],
+    'project_targets' => [
+        'heading' => 'Projekt-Sollzeiten',
+        'description' => 'Wann eine Person unter dem Soll eines Projekttags gemeldet wird.',
+        'tolerance_minutes' => 'Toleranz (Minuten)',
+        'tolerance_minutes_hint' => 'Fehlen höchstens so viele Minuten zum Soll, gibt es keinen Befund. Leer = 15 Minuten.',
+    ],
     'einvoice' => [
         'heading' => 'E-Rechnung (XRechnung)',
         'description' => 'Verkäuferdaten für XRechnung-Ausgaben (EN 16931) lokal erstellter Rechnungen. Firmenname leer = Organisationsname.',

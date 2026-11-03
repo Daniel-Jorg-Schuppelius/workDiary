@@ -20134,6 +20134,78 @@ CREATE TABLE `project_team` (
   CONSTRAINT `project_team_team_id_foreign` FOREIGN KEY (`team_id`) REFERENCES `teams` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `project_time_shortfalls`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `project_time_shortfalls` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `project_id` bigint(20) unsigned NOT NULL,
+  `user_id` bigint(20) unsigned NOT NULL,
+  `date` date NOT NULL,
+  `target_minutes` smallint(5) unsigned NOT NULL,
+  `booked_minutes` int(10) unsigned NOT NULL,
+  `shortfall_minutes` smallint(5) unsigned NOT NULL,
+  `tolerance_minutes` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `status` varchar(16) NOT NULL DEFAULT 'open',
+  `acknowledged_by` bigint(20) unsigned DEFAULT NULL,
+  `acknowledged_at` timestamp NULL DEFAULT NULL,
+  `resolved_at` timestamp NULL DEFAULT NULL,
+  `notified_at` timestamp NULL DEFAULT NULL,
+  `note` text DEFAULT NULL,
+  `billed_minutes` smallint(5) unsigned DEFAULT NULL,
+  `billed_at` timestamp NULL DEFAULT NULL,
+  `billing_transfer_position_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `pts_project_user_date_uq` (`project_id`,`user_id`,`date`),
+  KEY `project_time_shortfalls_user_id_foreign` (`user_id`),
+  KEY `project_time_shortfalls_acknowledged_by_foreign` (`acknowledged_by`),
+  KEY `project_time_shortfalls_billing_transfer_position_id_foreign` (`billing_transfer_position_id`),
+  KEY `pts_org_status_date_idx` (`organization_id`,`status`,`date`),
+  CONSTRAINT `project_time_shortfalls_acknowledged_by_foreign` FOREIGN KEY (`acknowledged_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `project_time_shortfalls_billing_transfer_position_id_foreign` FOREIGN KEY (`billing_transfer_position_id`) REFERENCES `billing_transfer_positions` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `project_time_shortfalls_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `project_time_shortfalls_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `project_time_shortfalls_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `project_time_targets`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `project_time_targets` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `project_id` bigint(20) unsigned NOT NULL,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `site_id` bigint(20) unsigned DEFAULT NULL,
+  `weekday` tinyint(3) unsigned DEFAULT NULL,
+  `specific_date` date DEFAULT NULL,
+  `target_minutes` smallint(5) unsigned NOT NULL,
+  `valid_from` date DEFAULT NULL,
+  `valid_until` date DEFAULT NULL,
+  `note` text DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `updated_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `project_time_targets_organization_id_foreign` (`organization_id`),
+  KEY `project_time_targets_user_id_foreign` (`user_id`),
+  KEY `project_time_targets_site_id_foreign` (`site_id`),
+  KEY `project_time_targets_created_by_foreign` (`created_by`),
+  KEY `project_time_targets_updated_by_foreign` (`updated_by`),
+  KEY `ptt_project_user_weekday_idx` (`project_id`,`user_id`,`weekday`),
+  KEY `ptt_project_user_date_idx` (`project_id`,`user_id`,`specific_date`),
+  CONSTRAINT `project_time_targets_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `project_time_targets_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `project_time_targets_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `project_time_targets_site_id_foreign` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `project_time_targets_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `project_time_targets_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `project_user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -20174,6 +20246,7 @@ CREATE TABLE `projects` (
   `billing_increment_minutes` smallint(5) unsigned DEFAULT NULL,
   `billing_grouping_gap_minutes` smallint(5) unsigned DEFAULT NULL,
   `billable` tinyint(1) DEFAULT NULL,
+  `bills_target_time` tinyint(1) NOT NULL DEFAULT 0,
   `weather_auto_fetch` tinyint(1) DEFAULT NULL,
   `global_activities` tinyint(1) NOT NULL DEFAULT 1,
   `status` varchar(16) NOT NULL DEFAULT 'active',
@@ -28475,3 +28548,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1044,'2027_04_01_2
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1045,'2027_04_01_230000_add_price_class_to_resale_price_catalog',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1046,'2027_04_02_100000_add_paid_date_checked_at_to_lexoffice_vouchers',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1047,'2027_04_02_110000_create_accounting_articles_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1048,'2027_04_02_120000_create_project_time_targets_tables',1);

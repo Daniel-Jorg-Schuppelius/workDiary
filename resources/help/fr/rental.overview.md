@@ -1,7 +1,7 @@
 ---
 title: "Location de matériel"
 topic: rental.overview
-version: 3
+version: 4
 keywords:
     - bailleur
     - location de vacances
@@ -38,6 +38,7 @@ bloqués sont empêchés de manière visible.
 
 **Dossier de location :** chaque opération reçoit un numéro (VER-…) ;
 la version de la grille tarifaire appliquée est figée en instantané.
+L’interlocuteur est prérempli depuis la fiche client au choix du client et reste modifiable.
 
 **Remise & retour :** des protocoles distincts documentent état,
 accessoires, compteurs, photos et signature ; le retour porte la décision

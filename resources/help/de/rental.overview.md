@@ -1,7 +1,7 @@
 ---
 title: "Geräte- & Maschinenverleih"
 topic: rental.overview
-version: 3
+version: 4
 keywords:
     - Vermieter
     - Ferienwohnung
@@ -43,6 +43,7 @@ verhindert (gemeinsames Sperrmodell).
 Zeitraum, Übergabe-/Rückgabeort und Verantwortliche. Die angewendete
 Preislisten-Version wird als Snapshot eingefroren — spätere Preisänderungen
 bewerten alte Fälle nicht um.
+Der Ansprechpartner ist mit der Kundenwahl aus dem Kunden vorbelegt und bleibt änderbar.
 
 **Übergabe & Rücknahme:** Getrennte Protokolle dokumentieren Zustand,
 Zubehör, Zählerstand/Betriebsstunden, Fotos und Unterschrift. Die

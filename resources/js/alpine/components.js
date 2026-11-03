@@ -8,7 +8,7 @@
 import { clearHtml, setHtml, trustedServerHtml } from "../lib/html.js";
 import { getJson, patchJson, postJson, request } from "../lib/http.js";
 import { __ } from "../i18n.js";
-import { ADDRESS_FIELDS, ADDRESS_INPUT_NAMES, customerAddressFromDataset, mergeCustomerAddress } from "../lib/customer-address.js";
+import { ADDRESS_FIELDS, ADDRESS_INPUT_NAMES, customerAddressFromDataset, mergePrefill } from "../lib/option-prefill.js";
 
 /** @typedef {HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement} FormControl */
 
@@ -128,6 +128,34 @@ export function registerAlpineComponents(Alpine) {
         /** @param {string} name */
         tabClass(name) {
             return this.tab === name ? "tab-active" : "";
+        },
+    }));
+
+    // Sollzeiten-Raster am Projekt (Feature 194): ein Wert auf die markierten
+    // Personen und Wochentage schreiben; CSP-Build, deshalb ohne $event.
+    Alpine.data("timeTargetGrid", () => ({
+        applyToSelected() {
+            const root = this.$root;
+            const valueInput = root.querySelector("[data-ttg-value]");
+            const value = valueInput instanceof HTMLInputElement ? valueInput.value.trim() : "";
+            const days = Array.from(root.querySelectorAll("[data-ttg-day]:checked")).map((el) =>
+                el instanceof HTMLInputElement ? el.dataset.ttgDay ?? "" : "",
+            );
+            root.querySelectorAll("tr[data-ttg-row]").forEach((row) => {
+                const box = row.querySelector("[data-ttg-member]");
+                if (!(box instanceof HTMLInputElement) || !box.checked) return;
+                days.forEach((day) => {
+                    const cell = row.querySelector(`input[data-ttg-cell="${day}"]`);
+                    if (cell instanceof HTMLInputElement) cell.value = value;
+                });
+            });
+        },
+        toggleAll() {
+            const all = this.$root.querySelector("[data-ttg-all]");
+            const on = all instanceof HTMLInputElement && all.checked;
+            this.$root.querySelectorAll("[data-ttg-member]").forEach((el) => {
+                if (el instanceof HTMLInputElement) el.checked = on;
+            });
         },
     }));
 
@@ -571,7 +599,7 @@ export function registerAlpineComponents(Alpine) {
             /** @type {Partial<Record<string, string>>} */
             const current = {};
             for (const key of ADDRESS_FIELDS) current[key] = this.field(ADDRESS_INPUT_NAMES[key])?.value ?? "";
-            const { values, applied } = mergeCustomerAddress(current, incoming, this.customerAddress);
+            const { values, applied } = mergePrefill(current, incoming, this.customerAddress, ["line", "zip", "city"]);
             if (!applied) return;
             for (const key of ADDRESS_FIELDS) {
                 const input = this.field(ADDRESS_INPUT_NAMES[key]);

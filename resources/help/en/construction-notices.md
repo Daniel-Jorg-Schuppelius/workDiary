@@ -1,7 +1,7 @@
 ---
 title: "Notice of hindrance and notice of concern (VOB/B)"
 topic: construction-notices
-version: 1
+version: 2
 keywords:
     - hindrance notice
     - obstruction notice
@@ -43,6 +43,8 @@ Customer, project, location and — where recorded — the **weather snapshot**
 are taken from the diary entry. Especially for weather-related hindrances,
 documented conditions at the time of the event are the difference between an
 assertion and evidence.
+
+Choosing a customer pre-fills the **recipient e-mail** from the customer record; an address you entered yourself stays.
 
 ## The printout is frozen
 

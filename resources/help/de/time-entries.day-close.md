@@ -1,7 +1,7 @@
 ---
 title: "Tagesabschluss"
 topic: time-entries.day-close
-version: 4
+version: 5
 keywords:
     - Tag abschließen
     - Feierabend
@@ -47,6 +47,8 @@ Anwesenheit (mehr als 5 Minuten) oder eine unterschrittene Pflichtpause.
 ⚠-Hinweise blockieren nicht, etwa ein Tagessaldo über ±2 Stunden, mehr als
 10 Stunden Netto-Arbeitszeit, eine Anwesenheitslücke ohne Pause oder
 abrechnungsrelevante Buchungen ohne Kommentar.
+
+⚠ **Unter Soll in einem Projekt** ist eine weiche Warnung aus den Projekt-Sollzeiten (Soll, gebucht, fehlend je Projekt); sie blockiert den Abschluss nicht. Den Befund führt der nächtliche Abgleich am Projekt, eine Nachbuchung erledigt ihn.
 
 Nach dem Abschluss ist der Tag für Sie gesperrt. Brauchen Sie eine
 Änderung, beantragen Sie über **Korrektur anfordern** (Begründung, mind.

@@ -1,7 +1,7 @@
 ---
 title: "Chiusura giornaliera"
 topic: time-entries.day-close
-version: 4
+version: 5
 keywords:
     - chiudere la giornata
     - fine giornata
@@ -46,6 +46,8 @@ non imputata (oltre 5 minuti) o pausa obbligatoria non rispettata. Le
 segnalazioni ⚠ non bloccano, ad esempio un saldo giornaliero oltre ±2
 ore, più di 10 ore di lavoro netto, un’interruzione della presenza senza
 pausa o registrazioni fatturabili senza commento.
+
+⚠ **Sotto obiettivo in un progetto** è un avviso non bloccante dei tempi obiettivo di progetto (obiettivo, registrato, mancante per progetto). Il controllo notturno registra il rilievo sul progetto; una registrazione tardiva lo risolve.
 
 Dopo la chiusura la giornata è bloccata per Lei. Se Le serve una
 modifica, richieda un’approvazione tramite **Richiedi correzione**

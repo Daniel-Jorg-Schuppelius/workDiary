@@ -274,7 +274,7 @@ class TravelLogController extends Controller {
 
         return [
             'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            'customers' => Customer::query()->orderBy('name')->get(['id', 'name', 'address_street', 'address_zip', 'address_city']),
             'vehicles' => TravelLogVehicle::cases(),
             'fleetVehicles' => Vehicle::query()->active()->forUser((int) $user->id)->orderBy('label')->orderBy('license_plate')->get(),
             'tripKinds' => TripKind::cases(),

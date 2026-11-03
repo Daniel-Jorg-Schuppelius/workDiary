@@ -242,6 +242,11 @@ return [
         ],
     ],
     'project' => [
+        'shortfall-status' => [
+            'open' => 'Abierto',
+            'acknowledged' => 'Confirmado',
+            'resolved' => 'Resuelto',
+        ],
         'status' => [
             'active' => 'Activo',
             'paused' => 'En pausa',

@@ -1,7 +1,7 @@
 ---
 title: "Viaggi, spese e diarie"
 topic: travel-expenses.manage
-version: 3
+version: 4
 keywords:
     - nota spese
     - rimborso spese
@@ -52,7 +52,7 @@ viaggio**. Tutti i viaggi registrati si trovano in **Trasferte e spese** →
   (ora)** e **Fine (ora)**; se il viaggio termina dopo mezzanotte, inserisca
   semplicemente l'ora minore.
 - **Assegnazione:** **Progetto (facoltativo)**, **Cliente (facoltativo)** e
-  **Scopo**.
+  **Scopo**. Scegliendo il cliente la destinazione viene precompilata dall’indirizzo del cliente, per le indennità luogo e paese; le proprie immissioni restano.
 - **Opzioni e note:** **Andata e ritorno (raddoppia i km)**, **Rimborsabile**
   (preselezionato) e **Note**.
 

@@ -30,7 +30,7 @@
             <div class="flex flex-col">
                 <label class="fieldset-label" for="effectiveness-due">{{ __('Frist Wirksamkeitsprüfung') }}</label>
                 <input id="effectiveness-due" type="datetime-local" name="effectiveness_check_due_at"
-                       value="{{ old('effectiveness_check_due_at') }}"
+                       value="{{ old('effectiveness_check_due_at', now()->orgTz()->addDays(30)->format('Y-m-d\TH:i')) }}"
                        required class="input input-sm input-bordered" />
             </div>
         </template>

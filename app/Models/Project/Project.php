@@ -101,6 +101,7 @@ class Project extends Model implements CustomFieldSubject {
         'billing_increment_minutes',
         'billing_grouping_gap_minutes',
         'billable',
+        'bills_target_time',
         'weather_auto_fetch',
         'global_activities',
     ];
@@ -118,6 +119,7 @@ class Project extends Model implements CustomFieldSubject {
         'billing_increment_minutes' => 'integer',
         'billing_grouping_gap_minutes' => 'integer',
         'billable' => 'boolean',
+        'bills_target_time' => 'boolean',
         'weather_auto_fetch' => 'boolean',
         'global_activities' => 'boolean',
         'is_default' => 'boolean',
@@ -318,6 +320,24 @@ class Project extends Model implements CustomFieldSubject {
      */
     public function members(): \Illuminate\Database\Eloquent\Relations\BelongsToMany {
         return $this->belongsToMany(User::class, 'project_user')->withTimestamps();
+    }
+
+    /**
+     * Sollzeiten je Person und Projektvorgabe (Feature 194).
+     *
+     * @return HasMany<ProjectTimeTarget, $this>
+     */
+    public function timeTargets(): HasMany {
+        return $this->hasMany(ProjectTimeTarget::class);
+    }
+
+    /**
+     * Tagesbefunde unter Soll (Feature 194).
+     *
+     * @return HasMany<ProjectTimeShortfall, $this>
+     */
+    public function timeShortfalls(): HasMany {
+        return $this->hasMany(ProjectTimeShortfall::class);
     }
 
     /**

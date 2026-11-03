@@ -1,7 +1,7 @@
 ---
 title: "Cierre del día"
 topic: time-entries.day-close
-version: 4
+version: 5
 keywords:
     - cerrar el día
     - fin de jornada
@@ -45,6 +45,8 @@ imputada (más de 5 minutos) o pausa obligatoria no cumplida. Las
 indicaciones ⚠ no bloquean, por ejemplo un saldo diario de más de ±2
 horas, más de 10 horas de trabajo neto, una interrupción de la presencia
 sin pausa o registros facturables sin comentario.
+
+⚠ **Bajo objetivo en un proyecto** es una advertencia no bloqueante de los tiempos objetivo del proyecto (objetivo, registrado, faltante por proyecto). La comprobación nocturna registra el hallazgo en el proyecto; un registro tardío lo resuelve.
 
 Tras el cierre, el día queda bloqueado para usted. Si necesita un cambio,
 solicite una autorización mediante **Solicitar corrección** (motivo de al

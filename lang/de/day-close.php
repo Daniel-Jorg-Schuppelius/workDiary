@@ -94,6 +94,9 @@ return [
     // Die 7 Konsistenzprüfungen aus §4 — Schlüssel = Check-Code
     // (DayClosureValidator), Punkte im Code werden als Verschachtelung abgebildet.
     'check' => [
+        'project' => [
+            'target_shortfall' => 'Projekt :project: Soll :target Min., gebucht :booked Min. — es fehlen :missing Min.',
+        ],
         'attendance' => [
             'missing_close' => 'Die Stempeluhr ist noch offen — bitte ausstempeln.',
         ],

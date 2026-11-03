@@ -35,6 +35,7 @@ return [
         'message' => 'Zurzeit wartet kein Vorgang auf Sie.',
     ],
     'source' => [
+        'project_target' => 'Projekt-Sollzeiten',
         'resale_plan' => 'Abos & Lizenzen: Serienvorlagen',
         'approval' => 'Freigabeketten',
         'vacation_approval' => 'Urlaubsanträge',

@@ -41,7 +41,7 @@
                         <td><x-status-badge :tone="$inquiry->status->tone()" size="xs">{{ $inquiry->status->label() }}</x-status-badge></td>
                         <td class="text-right whitespace-nowrap">
                             @if ($inquiry->communicationNote !== null)
-                                <x-icon-btn icon="chat" tone="ghost" size="sm" :href="route('communication-notes.show', $inquiry->communicationNote)" :label="__('invoicing.inquiries.action.note')" />
+                                <x-icon-btn icon="chat" tone="ghost" size="sm" :href="route('communication-notes.show', $inquiry->communicationNote)" data-entry-modal-trigger :label="__('invoicing.inquiries.action.note')" />
                             @endif
                             @can('update', $inquiry)
                                 @if ($inquiry->isOpen())

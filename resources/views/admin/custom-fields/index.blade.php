@@ -45,7 +45,7 @@
                 </td>
                 <td class="text-right whitespace-nowrap">
                     <div class="flex justify-end gap-1">
-                        <x-icon-btn icon="edit" size="sm" tone="primary" :href="route('admin.custom-fields.edit', $row['alias'])" data-modal-url :title="__('fields.custom.edit')" />
+                        <x-icon-btn icon="edit" size="sm" tone="primary" :href="route('admin.custom-fields.edit', $row['alias'])" data-entry-modal-trigger :title="__('fields.custom.edit')" />
                         @if ($definition !== null)
                             <x-action-form :action="route('admin.custom-fields.toggle', $row['alias'])" method="PATCH">
                                 <x-icon-btn :icon="$definition->is_active ? 'visibility_off' : 'visibility'" size="sm" tone="ghost" type="submit"

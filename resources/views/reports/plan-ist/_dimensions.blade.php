@@ -22,6 +22,7 @@
         $canOrg ? ['route' => 'reports.plan-ist.organization', 'label' => __('Organisation')] : null,
         $canOrg ? ['route' => 'reports.plan-ist.shifts', 'label' => __('Schichten')] : null,
         $canOrg ? ['route' => 'reports.plan-ist.projects', 'label' => __('Projekte')] : null,
+        $canOrg ? ['route' => 'reports.plan-ist.project-persons', 'label' => __('Projekt je Person')] : null,
         $canOrg ? ['route' => 'reports.plan-ist.sites', 'label' => __('Standorte')] : null,
     ]));
 @endphp

@@ -84,6 +84,16 @@ class TimeExportControllerTest extends TestCase {
         $this->assertSame(1, $export->rows_count);
     }
 
+    /** Das Anlegen ist ein Dialog-Fragment (Dialog-Standard, 2026-11-03), kein Vollseiten-Formular. */
+    public function test_create_renders_the_dialog_fragment(): void {
+        $admin = $this->makeAdmin();
+
+        $response = $this->actingAs($admin)->get(route('exports.create'));
+
+        $response->assertOk()->assertViewIs('exports._form_dialog')->assertSee('data-entry-form', false);
+        $response->assertDontSee('layouts.app');
+    }
+
     public function test_store_redirects_back_with_error_when_no_closure(): void {
         $admin = $this->makeAdmin();
 

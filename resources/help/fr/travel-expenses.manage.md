@@ -1,7 +1,7 @@
 ---
 title: "Trajets, frais & indemnités forfaitaires"
 topic: travel-expenses.manage
-version: 3
+version: 4
 keywords:
     - notes de frais
     - frais de déplacement
@@ -54,7 +54,7 @@ groupe **Planification**, **Carnet de trajets** ouvre la boîte de dialogue
   (heure)** ; si le trajet se termine après minuit, saisissez simplement l'heure
   la plus petite.
 - **Attribution :** **Projet (facultatif)**, **Client (facultatif)** et
-  **Objet**.
+  **Objet**. Le choix du client préremplit la destination à partir de l’adresse du client, et pour les indemnités le lieu et le pays ; vos saisies restent.
 - **Options et notes :** **Aller-retour (double les km)**, **Remboursable**
   (présélectionné) et **Notes**.
 

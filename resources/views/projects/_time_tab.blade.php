@@ -6,7 +6,8 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Tab: Zeiterfassung — erwartet: $project, $timeEntries, $totalMinutes, $rangeMinutes, $rangeLabel, $myMinutes, $machineMinutes, $seesAllTimes --}}
+{{-- Tab: Zeiterfassung — erwartet: $project, $timeEntries, $totalMinutes, $rangeMinutes, $rangeLabel, $myMinutes, $machineMinutes, $seesAllTimes,
+     $targetMinutes, $openShortfalls, $shortfalls, $showAllShortfalls, $canManageTargets --}}
 @php
     $fmt = fn (int $min): string => \App\Support\Formats::duration($min, 'clock');
     $viewer = auth()->user();
@@ -49,6 +50,72 @@
                         :href="route('projects.times', ['project' => $project->sqid, 'kind' => \App\Enums\TimeEntry\TimeEntryKind::Machine->value])" />
         @endif
     </div>
+
+    {{-- Sollzeiten je Person (Feature 194): Soll im Zeitraum, Befunde unter Soll, Pflege. --}}
+    @php
+        $targetMinutes = $targetMinutes ?? null;
+        $openShortfalls = (int) ($openShortfalls ?? 0);
+        $shortfalls = $shortfalls ?? collect();
+        $canManageTargets = (bool) ($canManageTargets ?? false);
+        $shortfallsUrl = route('projects.show', ['project' => $project, 'tab' => 'time', 'show' => 'shortfalls']);
+    @endphp
+    @if ($canManageTargets || $targetMinutes !== null)
+        <x-card :title="__('Sollzeiten')" icon="flag" :count="$openShortfalls > 0 ? $openShortfalls : null">
+            <x-slot:actions>
+                @if ($canManageTargets)
+                    <x-icon-btn icon="edit_calendar" size="sm" data-entry-modal-trigger
+                                :href="route('projects.time-targets.edit', $project)" show-label>{{ __('Sollzeiten pflegen') }}</x-icon-btn>
+                @endif
+            </x-slot:actions>
+            @if ($targetMinutes !== null)
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <x-kpi-tile :label="__('Soll im Zeitraum')" :value="$fmt((int) $targetMinutes)" :hint="$rangeLabel" tone="neutral" :href="$shortfallsUrl" />
+                    <x-kpi-tile :label="__('Offene Unterschreitungen')" :value="$openShortfalls" :tone="$openShortfalls > 0 ? 'warning' : 'success'" :href="$shortfallsUrl" />
+                </div>
+            @else
+                <x-empty-state compact icon="flag" :title="__('Noch keine Sollzeiten hinterlegt.')" />
+            @endif
+            @if ($shortfalls->isNotEmpty())
+                <x-table class="mt-3">
+                    <x-slot:head>
+                        <tr>
+                            <th>{{ __('Datum') }}</th>
+                            <th>{{ __('Person') }}</th>
+                            <th class="text-right">{{ __('Soll') }}</th>
+                            <th class="text-right">{{ __('Gebucht') }}</th>
+                            <th class="text-right">{{ __('Fehlend') }}</th>
+                            <th>{{ __('Status') }}</th>
+                            <th class="text-right"></th>
+                        </tr>
+                    </x-slot:head>
+                    @foreach ($shortfalls as $shortfall)
+                        <tr>
+                            <td class="whitespace-nowrap">{{ $shortfall->date->fdate() }}</td>
+                            <td>{{ $shortfall->user?->name }}</td>
+                            <td class="text-right">{{ $fmt((int) $shortfall->target_minutes) }}</td>
+                            <td class="text-right">{{ $fmt((int) $shortfall->booked_minutes) }}</td>
+                            <td class="text-right">{{ $fmt((int) $shortfall->shortfall_minutes) }}</td>
+                            <td><x-status-badge :tone="$shortfall->status->tone()">{{ $shortfall->status->label() }}</x-status-badge></td>
+                            <td class="text-right whitespace-nowrap">
+                                @if ($canManageTargets && $shortfall->status === \App\Enums\Project\ShortfallStatus::Open)
+                                    <x-action-form :action="route('projects.time-shortfalls.acknowledge', [$project, $shortfall])">
+                                        <x-icon-btn icon="done" size="xs" tone="ghost" type="submit" :title="__('Befund bestätigen')" />
+                                    </x-action-form>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </x-table>
+                <div class="mt-2 text-xs">
+                    @if ($showAllShortfalls ?? false)
+                        <a class="link link-hover" href="{{ route('projects.show', ['project' => $project, 'tab' => 'time']) }}">{{ __('Nur offene') }}</a>
+                    @else
+                        <a class="link link-hover" href="{{ $shortfallsUrl }}">{{ __('Alle anzeigen') }}</a>
+                    @endif
+                </div>
+            @endif
+        </x-card>
+    @endif
 
     {{-- Tabelle — Standard-Karte; Leerzustand kommt aus x-table --}}
     <x-card :title="__('Zeiteinträge')" icon="schedule" :count="$timeEntries->total()">
@@ -148,8 +215,8 @@
                                 <x-status-badge tone="info" size="xs" class="ml-1" :title="__('Im Kundenportal veröffentlicht')">{{ __('Portal') }}</x-status-badge>
                             @endif
                         </td>
-                        <td class="text-xs text-base-content/70">{{ $entry->task->title ?? '—' }}</td>
-                        <td class="max-w-xs text-xs text-base-content/70">
+                        <td class="text-xs text-muted">{{ $entry->task->title ?? '—' }}</td>
+                        <td class="max-w-xs text-xs text-muted">
                             <span class="block truncate">{{ $entry->description }}</span>
                             @if ($entry->tags->isNotEmpty())
                                 <span class="mt-0.5 flex flex-wrap gap-1">

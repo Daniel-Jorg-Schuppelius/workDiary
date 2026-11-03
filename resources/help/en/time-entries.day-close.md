@@ -1,7 +1,7 @@
 ---
 title: "Daily close"
 topic: time-entries.day-close
-version: 4
+version: 6
 keywords:
     - close the day
     - end of day
@@ -46,6 +46,10 @@ How to proceed:
 not block, for example a day balance beyond ±2 hours, more than 10 hours
 of net working time, an attendance gap without a break or billable
 bookings without a comment.
+
+⚠ **Below target in a project** is a soft warning from the project target times (target, booked, missing per project); it does not block the close. The nightly check records the finding on the project, a late booking resolves it.
+
+⚠ **Below target in a project** is a soft warning from the project target times (target, booked, missing per project); it does not block the close. The nightly check records the finding on the project, a late booking resolves it.
 
 After closing, the day is locked for you. If you need a change, request
 approval via **Request correction** (reason, at least 20 characters).

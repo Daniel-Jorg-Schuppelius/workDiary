@@ -26,10 +26,11 @@
         <x-select-field name="customer_id" :label="__('Kunde')" required>
             <option value="">{{ __('-- Kunde wählen --') }}</option>
             @foreach ($customers as $c)
-                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', $rental?->customer?->sqid) === $c->sqid)>{{ $c->name }}</option>
+                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', $rental?->customer?->sqid) === $c->sqid) data-prefill-contact-name="{{ $c->contact_name }}">{{ $c->name }}</option>
             @endforeach
         </x-select-field>
-        <x-input-field name="contact_name" :label="__('Ansprechpartner (optional)')" :value="old('contact_name', $rental?->contact_name)" />
+        <x-input-field name="contact_name" :label="__('Ansprechpartner (optional)')" :value="old('contact_name', $rental?->contact_name)"
+                       data-prefill-from="customer_id" data-prefill-key="contact-name" :data-prefill-on-load="$rental === null" />
         <x-date-range class="md:col-span-2" layout="split" form-control required
                       from-name="starts_at" to-name="ends_at" type="datetime-local"
                       :from-label="__('Beginn')" :to-label="__('Ende')"
