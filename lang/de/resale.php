@@ -1389,6 +1389,8 @@ return [
             'imports' => 'Letzter Import je Anbieter',
             'none' => 'kein Import',
             'age' => 'vor :days Tagen',
+            'retired' => 'keine laufenden Abos',
+            'retired_hint' => 'Alle Abos dieses Anbieters sind beendet oder abgelöst — es wird kein neuer Import erwartet.',
             'empty' => 'Keine Anbieter mit Datei-Import.',
         ],
     ],

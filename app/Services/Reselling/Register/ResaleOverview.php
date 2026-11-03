@@ -38,7 +38,7 @@ use Illuminate\Support\Facades\Cache;
  * Anbieterstand und letzter Lauf sind billig und bleiben live.
  *
  * @phpstan-type Task array{group: string, key: string, tone: string, icon: string, title: string, detail: string|null, count: int, url: string, dialog: bool, manage: bool}
- * @phpstan-type ImportState array{provider: SubscriptionProvider, last: ResaleImport|null, age: int|null, stale: bool}
+ * @phpstan-type ImportState array{provider: SubscriptionProvider, last: ResaleImport|null, age: int|null, stale: bool, retired: bool}
  * @phpstan-type Counters array{active: int, open: int, open_amounts: list<array{amount: string, currency: string}>, grace: int, planned: int, proposed: int, unassigned: int, unlinked: int, allocation_conflicts: int, link_findings: array<string, int>, plan_findings: array<string, int>, unbilled_licenses: int, renewals: int}
  */
 final class ResaleOverview {
@@ -201,7 +201,8 @@ final class ResaleOverview {
 
     /**
      * Anbieter, deren letzter Import älter als {@see IMPORT_STALE_DAYS} Tage ist.
-     * Ohne jeden Import zählt ein Anbieter nicht — Bestand von Hand hat keinen Export.
+     * Ohne jeden Import zählt ein Anbieter nicht — Bestand von Hand hat keinen Export —,
+     * ohne laufende Abos auch nicht: Ein abgelöster Anbieter liefert keinen neuen Stand.
      *
      * @return list<SubscriptionProvider>
      */
@@ -227,16 +228,14 @@ final class ResaleOverview {
             ->get()
             ->unique(static fn(ResaleImport $i): string => $i->provider->value)
             ->keyBy(static fn(ResaleImport $i): string => $i->provider->value);
-        $providers = ResaleSubscription::query()->withoutGlobalScopes()
+        $running = ResaleSubscription::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->planning()
             ->whereNotIn('provider', [SubscriptionProvider::DomainReselling->value, SubscriptionProvider::Manual->value])
             ->distinct()
             ->pluck('provider')
-            ->map(static fn($p): string => $p instanceof SubscriptionProvider ? $p->value : (string) $p)
-            ->merge($latest->keys())
-            ->unique()
-            ->values();
+            ->map(static fn($p): string => $p instanceof SubscriptionProvider ? $p->value : (string) $p);
+        $providers = $running->merge($latest->keys())->unique()->values();
         foreach ($providers as $value) {
             $provider = SubscriptionProvider::tryFrom($value);
             if ($provider === null) {
@@ -245,7 +244,8 @@ final class ResaleOverview {
             /** @var ResaleImport|null $last */
             $last = $latest->get($value);
             $age = $last === null ? null : (int) $last->created_at->startOfDay()->diffInDays($reference->startOfDay());
-            $rows[] = ['provider' => $provider, 'last' => $last, 'age' => $age, 'stale' => $age !== null && $age > self::IMPORT_STALE_DAYS];
+            $retired = ! $running->contains($value);
+            $rows[] = ['provider' => $provider, 'last' => $last, 'age' => $age, 'stale' => ! $retired && $age !== null && $age > self::IMPORT_STALE_DAYS, 'retired' => $retired];
         }
         usort($rows, static fn(array $a, array $b): int => ($b['stale'] <=> $a['stale']) ?: strcmp($a['provider']->label(), $b['provider']->label()));
 

@@ -256,7 +256,9 @@ dernier prix fournisseur — un prix saisi à la main est conservé — et écri
 une ligne de catalogue à la date du fichier (date dans le nom du fichier
 comme « 2026-10-26_Export.xlsx », sinon le jour de l’import). Si le dernier
 import d’un fournisseur date de plus de 30 jours, la vue d’ensemble le
-signale et le résumé hebdomadaire le rappelle.
+signale et le résumé hebdomadaire le rappelle. Un fournisseur sans abonnement
+en cours, par exemple après un changement, affiche « aucun abonnement en
+cours » et n’est pas considéré comme obsolète.
 
 **Achats depuis la boîte de factures :** Dans l’onglet Achats, « Associer
 des fournisseurs » relie un fournisseur de la base au prestataire (le nom

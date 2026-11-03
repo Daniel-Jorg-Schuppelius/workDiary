@@ -1389,6 +1389,8 @@ return [
             'imports' => 'Ultima importazione per fornitore',
             'none' => 'nessuna importazione',
             'age' => ':days giorni fa',
+            'retired' => 'nessun abbonamento in corso',
+            'retired_hint' => 'Tutti gli abbonamenti di questo fornitore sono terminati o sostituiti: non è atteso alcun nuovo import.',
             'empty' => 'Nessun fornitore con importazione da file.',
         ],
     ],

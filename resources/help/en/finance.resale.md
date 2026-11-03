@@ -233,7 +233,9 @@ purchase price as long as it equals the last provider price — a manually
 maintained price stays — and writes a catalogue line as of the file date
 (date in the file name such as “2026-10-26_Export.xlsx”, otherwise the import
 day). If a provider’s last import is older than 30 days, the overview shows
-it and the weekly digest reminds you.
+it and the weekly digest reminds you. A provider without running
+subscriptions, for example after a switch, shows “no running subscriptions”
+and does not count as outdated.
 
 **Purchases from the invoice inbox:** In the purchasing tab, use “Map
 suppliers” to map a supplier of the master data to the provider (the name

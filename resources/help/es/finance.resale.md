@@ -249,7 +249,9 @@ mientras coincida con el último precio del proveedor — un precio introducido
 a mano se mantiene — y escribe una línea de catálogo con fecha del archivo
 (fecha en el nombre como «2026-10-26_Export.xlsx», si no el día de la
 importación). Si la última importación de un proveedor tiene más de 30
-días, el resumen lo indica y el resumen semanal lo recuerda.
+días, el resumen lo indica y el resumen semanal lo recuerda. Un proveedor sin
+suscripciones en curso, por ejemplo tras un cambio, muestra «sin suscripciones
+en curso» y no se considera desactualizado.
 
 **Compras desde la bandeja de facturas:** En la pestaña Compras, con
 «Asignar proveedores» vincule un suministrador del maestro al proveedor (el
