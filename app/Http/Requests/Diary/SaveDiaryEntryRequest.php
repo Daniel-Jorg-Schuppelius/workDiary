@@ -16,7 +16,7 @@ use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use App\Models\Classification\EntryType;
 use App\Models\Customer\Customer;
 use App\Rules\IsoCountryCode;
-use App\Support\{SqidEncoder, Tz};
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\ValueObjects\Duration;
@@ -186,30 +186,12 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
 
     private function resolveEntryType(): ?EntryType {
         if (! $this->entryTypeResolved) {
-            $id = $this->decodeId(EntryType::class, $this->input('entry_type_id'));
+            $id = $this->decodedInputId('entry_type_id', EntryType::class);
             $this->entryType = $id !== null ? EntryType::query()->find($id) : null;
             $this->entryTypeResolved = true;
         }
 
         return $this->entryType;
-    }
-
-    /**
-     * prepareForValidation() und rules() laufen VOR der Sqid-Dekodierung in validationData(): Formulare senden Sqids
-     * (nur Altbestand/intern numerische IDs). Ohne Dekodierung wären Typ und Kunde hier nicht auffindbar.
-     *
-     * @param class-string $class
-     */
-    private function decodeId(string $class, mixed $raw): ?int {
-        if (is_int($raw)) {
-            return $raw > 0 ? $raw : null;
-        }
-        if (! is_string($raw) || $raw === '') {
-            return null;
-        }
-        $id = ctype_digit($raw) ? (int) $raw : app(SqidEncoder::class)->decode($class, $raw);
-
-        return $id !== null && $id > 0 ? $id : null;
     }
 
     private function isBlank(string $key): bool {
@@ -220,7 +202,7 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
 
     /** Einsatzort aus der Kundenanschrift; Koordinaten nur als Paar, ein fremder Kunde fällt am Scope durch. */
     private function mergeCustomerAddress(): void {
-        $customerId = $this->decodeId(Customer::class, $this->input('customer_id'));
+        $customerId = $this->decodedInputId('customer_id', Customer::class);
         $customer = $customerId !== null ? Customer::query()->find($customerId) : null;
         if (! $customer instanceof Customer || StringHelper::trimToNull($customer->address_street) === null) {
             return;

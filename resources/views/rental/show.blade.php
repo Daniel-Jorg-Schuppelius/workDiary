@@ -75,7 +75,8 @@
                         <summary class="cursor-pointer text-sm font-medium">{{ __('Laufzeit verlängern') }}</summary>
                         <form method="POST" action="{{ route('rental.extend', $case) }}" class="mt-2 flex flex-wrap items-end gap-2">
                             @csrf
-                            <x-input-field name="ends_at" type="datetime-local" :label="__('Neues Ende')" required />
+                            <x-input-field name="ends_at" type="datetime-local" :label="__('Neues Ende')" required
+                                           :value="old('ends_at', $case->ends_at?->orgTz()->format('Y-m-d\TH:i'))" />
                             <x-input-field name="reason" :label="__('Grund')" />
                             <x-button type="submit" tone="plain">{{ __('Verlängern') }}</x-button>
                         </form>

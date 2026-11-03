@@ -94,6 +94,7 @@ return [
     // Readable job names (registry keys, nested because of dot notation);
     // add new registry jobs here in all locales — otherwise fallback = key.
     'job' => [
+        'projects' => ['check-time-targets' => 'Check project target times against booked time'],
         'surveys' => ['scheduled' => 'Send surveys at a fixed interval'],
         'demo' => [
             'prune' => 'Delete demo organizations after the retention period',

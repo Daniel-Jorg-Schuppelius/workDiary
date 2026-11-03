@@ -94,6 +94,7 @@ return [
     // Noms lisibles des tâches (clés registry, imbriquées à cause de la notation à points) ;
     // ajouter les nouvelles tâches ici dans toutes les langues — sinon repli = clé.
     'job' => [
+        'projects' => ['check-time-targets' => 'Vérifier les temps cibles de projet par rapport au temps saisi'],
         'surveys' => ['scheduled' => 'Envoyer les enquêtes à intervalle fixe'],
         'demo' => [
             'prune' => 'Supprimer les organisations de démonstration après le délai de conservation',

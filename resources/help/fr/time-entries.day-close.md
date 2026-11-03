@@ -1,7 +1,7 @@
 ---
 title: "Clôture de journée"
 topic: time-entries.day-close
-version: 4
+version: 5
 keywords:
     - clôturer la journée
     - fin de journée
@@ -48,6 +48,8 @@ respectée. Les remarques ⚠ ne bloquent pas, par exemple un solde
 journalier au-delà de ±2 heures, plus de 10 heures de travail net, une
 interruption de présence sans pause ou des imputations facturables sans
 commentaire.
+
+⚠ **Sous la cible dans un projet** est un avertissement non bloquant issu des temps cibles de projet (cible, saisi, manquant par projet). Le contrôle nocturne enregistre le constat sur le projet, une saisie tardive le résout.
 
 Après la clôture, la journée est verrouillée pour vous. Si vous avez
 besoin d’une modification, demandez une validation via **Demander une

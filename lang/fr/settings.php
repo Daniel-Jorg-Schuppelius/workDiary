@@ -162,6 +162,12 @@ return [
         'keyword_matching' => 'Affecter les temps aux projets par mot-clé',
         'keyword_matching_hint' => 'Si le texte d’un temps importé contient le nom ou un mot-clé d’un projet du même client, il y est imputé au lieu du projet par défaut ou de la boîte d’affectation. Seules les correspondances univoques sont imputées.',
     ],
+    'project_targets' => [
+        'heading' => 'Temps cibles de projet',
+        'description' => 'Quand une personne est signalée sous la cible d’une journée de projet.',
+        'tolerance_minutes' => 'Tolérance (minutes)',
+        'tolerance_minutes_hint' => 'S’il manque au plus ce nombre de minutes par rapport à la cible, aucun constat n’est créé. Vide = 15 minutes.',
+    ],
     'einvoice' => [
         'heading' => 'Facture électronique (XRechnung)',
         'description' => 'Données vendeur pour la sortie XRechnung (EN 16931) des factures créées localement. Nom d\'entreprise vide = nom de l\'organisation.',

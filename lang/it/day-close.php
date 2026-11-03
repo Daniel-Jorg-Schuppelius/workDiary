@@ -94,6 +94,9 @@ return [
     // I 7 controlli di coerenza del §4 — chiave = codice del controllo
     // (DayClosureValidator), i punti nel codice diventano annidamento.
     'check' => [
+        'project' => [
+            'target_shortfall' => 'Progetto :project: obiettivo :target min, registrato :booked min — mancano :missing min.',
+        ],
         'attendance' => [
             'missing_close' => 'Il timbracartellino è ancora aperto — si prega di timbrare l\'uscita.',
         ],

@@ -1,7 +1,7 @@
 ---
 title: "Clientes & proveedores"
 topic: contacts.manage
-version: 11
+version: 12
 keywords:
     - Vista previa como cliente
     - Contraseña inicial
@@ -64,6 +64,7 @@ del registro de tiempos a la entrega DATEV — funcionan sin retrabajo.
 3. Complete datos de pago y facturación e identificadores externos —
    dirigen la facturación y la entrega contable.
 4. Vincule proyectos, ubicaciones y acuerdos según vayan surgiendo.
+   Una nueva ubicación toma como propuesta la dirección, el país y las coordenadas del cliente elegido.
 
 ![Lista de clientes con números, datos de contacto, tarifas horarias y número de proyectos](media/kunden/kundenliste.png)
 *La lista de clientes: datos maestros, tarifa horaria y proyectos vinculados por socio.*

@@ -29,7 +29,7 @@
     <x-slot:actions>
         @can('create', App\Models\Time\TimeExport::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
-                        :href="route('exports.create')"
+                        :href="route('exports.create')" data-entry-modal-trigger
                         show-label>{{ __('Export erstellen') }}</x-icon-btn>
         @endcan
     </x-slot:actions>

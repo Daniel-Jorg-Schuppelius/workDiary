@@ -1,7 +1,7 @@
 ---
 title: "Viajes, gastos y dietas"
 topic: travel-expenses.manage
-version: 3
+version: 4
 keywords:
     - nota de gastos
     - gastos de viaje
@@ -53,7 +53,7 @@ viajes**.
   si el viaje termina después de medianoche, introduzca simplemente la hora
   menor.
 - **Asignación:** **Proyecto (opcional)**, **Cliente (opcional)** y
-  **Finalidad**.
+  **Finalidad**. Al elegir el cliente se rellena el destino con su dirección, y en las dietas el lugar y el país; sus propias entradas se mantienen.
 - **Opciones y notas:** **Ida y vuelta (duplica km)**, **Reembolsable**
   (preseleccionado) y **Notas**.
 

@@ -1,37 +1,37 @@
 {{--
-  Created on   : Mon May 25 2026
+  Created on   : Tue Nov 03 2026
   Author       : Daniel Jörg Schuppelius
   Author Uri   : https://schuppelius.org
-  Filename     : form.blade.php
+  Filename     : _form_dialog.blade.php
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-@extends('layouts.app')
+{{-- Variablen: $template (Model, ggf. ungespeichert), $kinds, $variablesByKind --}}
+@php
+    $isEdit = $template->exists;
+    $currentKind = old('document_kind', $template->document_kind);
+@endphp
 
-@section('title', $template->exists ? __('Template bearbeiten') : __('Neues Template'))
-@section('nav-title', __('Mail-Template'))
+<x-modal
+    :title="$isEdit ? __('Template bearbeiten') : __('Neues Template')"
+    :eyebrow="__('Mail-Template')"
+    icon="mail"
+    tone="primary"
+    size="wide"
+    :action="$isEdit ? route('admin.invoice-mail-templates.update', $template) : route('admin.invoice-mail-templates.store')"
+    :method="$isEdit ? 'PUT' : 'POST'"
+    :form-data="['data-entry-form' => '']"
+    :submit-label="__('Speichern')">
 
-@section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :title="$template->exists ? __('Template bearbeiten') : __('Neues Template')"
-                        back-route="admin.invoice-mail-templates.index" :back-label="__('Zurück')">
-        </x-page-toolbar>
-    </x-slot:toolbar>
-
-    <form method="POST"
-          action="{{ $template->exists ? route('admin.invoice-mail-templates.update', $template) : route('admin.invoice-mail-templates.store') }}"
-          class="space-y-4">
-        @csrf
-        @if ($template->exists) @method('PUT') @endif
-
+    {{-- Die Variablen-Doku folgt der gewählten Belegart (reveal, CSP-Build). --}}
+    <div class="space-y-4" x-data="reveal(@js($currentKind))">
         <x-input-field name="name" :label="__('Name')" required maxlength="120"
                        :value="old('name', $template->name)" />
 
         {{-- Feature 128 (MVP-692): Vorlagen gelten je Belegart. --}}
-        <x-select-field name="document_kind" :label="__('Belegart')" required>
+        <x-select-field name="document_kind" :label="__('Belegart')" required x-model="value">
             @foreach ($kinds as $kind)
-                <option value="{{ $kind->value }}" @selected(old('document_kind', $template->document_kind) === $kind->value)>{{ $kind->label() }}</option>
+                <option value="{{ $kind->value }}" @selected($currentKind === $kind->value)>{{ $kind->label() }}</option>
             @endforeach
         </x-select-field>
 
@@ -54,8 +54,8 @@
 
         {{-- Platzhalter-Doku je Belegart (Feature 128). --}}
         @foreach ($variablesByKind as $kindValue => $kindDoc)
-            <details class="text-sm" @if (old('document_kind', $template->document_kind) === $kindValue) open @endif>
-                <summary class="cursor-pointer text-base-content/70">{{ __('Verfügbare Variablen') }}: {{ $kindDoc['label'] }}</summary>
+            <details class="text-sm" x-bind:open="is(@js($kindValue))" @if ($currentKind === $kindValue) open @endif>
+                <summary class="cursor-pointer text-muted">{{ __('Verfügbare Variablen') }}: {{ $kindDoc['label'] }}</summary>
                 <ul class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
                     @foreach ($kindDoc['variables'] as $key => $label)
                         <li><code>&#123;&#123;{{ $key }}&#125;&#125;</code> – {{ $label }}</li>
@@ -63,11 +63,5 @@
                 </ul>
             </details>
         @endforeach
-
-        <div class="flex justify-end gap-2 pt-2">
-            <x-button :href="route('admin.invoice-mail-templates.index')" tone="ghost" size="md">{{ __('Abbrechen') }}</x-button>
-            <x-button type="submit" tone="primary" size="md">{{ __('Speichern') }}</x-button>
-        </div>
-    </form>
-</x-page-shell>
-@endsection
+    </div>
+</x-modal>

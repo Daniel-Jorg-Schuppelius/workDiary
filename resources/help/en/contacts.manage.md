@@ -1,7 +1,7 @@
 ---
 title: "Customers & suppliers"
 topic: contacts.manage
-version: 11
+version: 12
 keywords:
     - Preview as customer
     - Start password
@@ -63,6 +63,7 @@ to the DATEV handover — work without rework.
 3. Complete payment and billing data as well as external identifiers —
    they drive invoicing and the accounting handover.
 4. Link projects, sites and agreements as they come into being.
+   A new site takes address, country and coordinates of the chosen customer as a proposal.
 
 ![Customer list with numbers, contact data, hourly rates and project count](media/kunden/kundenliste.png)
 *The customer list: master data, hourly rate and linked projects per business partner.*

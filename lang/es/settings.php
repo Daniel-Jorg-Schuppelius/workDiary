@@ -162,6 +162,12 @@ return [
         'keyword_matching' => 'Asignar tiempos a proyectos por palabra clave',
         'keyword_matching_hint' => 'Si el texto de un tiempo importado contiene el nombre o una palabra clave de un proyecto del mismo cliente, se registra allí en lugar del proyecto estándar o de la bandeja de asignación. Solo se registran las coincidencias inequívocas.',
     ],
+    'project_targets' => [
+        'heading' => 'Tiempos objetivo del proyecto',
+        'description' => 'Cuándo se notifica a una persona por debajo del objetivo de un día de proyecto.',
+        'tolerance_minutes' => 'Tolerancia (minutos)',
+        'tolerance_minutes_hint' => 'Si faltan como máximo estos minutos para el objetivo, no hay hallazgo. Vacío = 15 minutos.',
+    ],
     'einvoice' => [
         'heading' => 'Factura electrónica (XRechnung)',
         'description' => 'Datos del vendedor para la salida XRechnung (EN 16931) de facturas creadas localmente. Nombre de empresa vacío = nombre de la organización.',

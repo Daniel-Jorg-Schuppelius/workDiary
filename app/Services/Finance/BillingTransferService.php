@@ -12,10 +12,11 @@ namespace App\Services\Finance;
 
 use App\Enums\Finance\{TransferChannel, TransferStatus, TransferTarget};
 use App\Models\Customer\Customer;
-use App\Models\Finance\{BillingTransfer, BillingTransferEvent, BillingTransferItem};
+use App\Models\Finance\{BillingTransfer, BillingTransferEvent, BillingTransferItem, BillingTransferPosition};
 use App\Models\Integration\ExternalReference;
 use App\Models\Material\MaterialUsage;
 use App\Models\Platform\User;
+use App\Models\Project\ProjectTimeShortfall;
 use App\Models\Time\TimeEntry;
 use App\Modules\ModuleRegistry;
 use App\Services\Concerns\ResolvesActorId;
@@ -492,13 +493,51 @@ class BillingTransferService {
 
         $this->excludeReserved($query, TimeEntry::class);
 
-        return $query->orderBy('date')->get()->map(fn(TimeEntry $entry): array => [
+        $entries = $query->orderBy('date')->get()->map(fn(TimeEntry $entry): array => [
             'type' => MorphMap::alias(TimeEntry::class),
             'id' => (int) $entry->id,
             'date' => $entry->date?->toDateString(),
             'quantity' => round(((int) $entry->minutes) / 60, 2),
             'amount' => round(($entry->rate?->toFloat() ?? 0.0), 2),
             // Zeit-Positionen tragen keine Material-Felder (einheitliche Snapshot-Shape).
+            'unit' => null,
+            'unit_price' => null,
+            'tax_rate' => null,
+            'cost_position' => null,
+        ])->values();
+
+        return $entries->concat($this->collectTargetTopUpSources($customer, $period))->values();
+    }
+
+    /**
+     * Auffüllungen auf das Projekt-Soll (Feature 194, MVP-1470): offene oder
+     * bestätigte Tagesbefunde der Kundenprojekte mit Abrechnung nach Soll,
+     * im Zeitraum, noch nicht berechnet und nicht reserviert. Der Preis
+     * entsteht erst in der Position (BlockPriceResolver).
+     *
+     * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $period
+     * @return Collection<int, array{type: string, id: int, date: string, quantity: float, amount: float, unit: null, unit_price: null, tax_rate: null, cost_position: null}>
+     */
+    private function collectTargetTopUpSources(Customer $customer, array $period): Collection {
+        $query = ProjectTimeShortfall::query()
+            ->unresolved()
+            ->whereNull('billed_minutes')
+            ->where('shortfall_minutes', '>', 0)
+            ->whereHas('project', fn($q) => $q->where('customer_id', $customer->id)->where('bills_target_time', true));
+        if (! empty($period['from'])) {
+            $query->where('date', '>=', Carbon::parse($period['from'])->toDateString());
+        }
+        if (! empty($period['to'])) {
+            $query->where('date', '<', DateRange::dayAfter(Carbon::parse($period['to'])));
+        }
+        $this->excludeReserved($query, ProjectTimeShortfall::class);
+
+        return $query->orderBy('date')->get()->map(fn(ProjectTimeShortfall $shortfall): array => [
+            'type' => MorphMap::alias(ProjectTimeShortfall::class),
+            'id' => (int) $shortfall->id,
+            'date' => $shortfall->date->toDateString(),
+            'quantity' => round(((int) $shortfall->shortfall_minutes) / 60, 2),
+            'amount' => 0.0,
             'unit' => null,
             'unit_price' => null,
             'tax_rate' => null,
@@ -554,7 +593,7 @@ class BillingTransferService {
      * confirmed|transferred reserviert/verbraucht sind (Schutz gegen
      * Doppelverbrauch — zusätzlich zu exported/billed).
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<TimeEntry>|\Illuminate\Database\Eloquent\Builder<MaterialUsage>  $query
+     * @param  \Illuminate\Database\Eloquent\Builder<TimeEntry>|\Illuminate\Database\Eloquent\Builder<MaterialUsage>|\Illuminate\Database\Eloquent\Builder<ProjectTimeShortfall>  $query
      * @param  class-string  $sourceType
      */
     private function excludeReserved($query, string $sourceType): void {
@@ -606,6 +645,21 @@ class BillingTransferService {
                 if ($usage !== null && (bool) $usage->billed !== $consumed) {
                     $usage->billed = $consumed;
                     $usage->saveQuietly();
+                    $changed++;
+                }
+            } elseif (MorphMap::is($item->source_type, ProjectTimeShortfall::class)) {
+                // Auffüllung auf Soll (Feature 194): berechnet heißt Minuten, Zeitpunkt und Position am Befund.
+                $shortfall = ProjectTimeShortfall::query()->find($item->source_id);
+                if ($shortfall !== null && ($shortfall->billed_minutes !== null) !== $consumed) {
+                    $position = $consumed
+                        ? $transfer->positions()->where('source_kind', BillingTransferPosition::KIND_TARGET)->get()
+                            ->first(fn(BillingTransferPosition $p): bool => in_array((int) $shortfall->id, $p->source_ids ?? [], true))
+                        : null;
+                    $shortfall->forceFill([
+                        'billed_minutes' => $consumed ? (int) $shortfall->shortfall_minutes : null,
+                        'billed_at' => $consumed ? now() : null,
+                        'billing_transfer_position_id' => $position?->id,
+                    ])->saveQuietly();
                     $changed++;
                 }
             }

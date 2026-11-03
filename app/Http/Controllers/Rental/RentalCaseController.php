@@ -62,7 +62,7 @@ class RentalCaseController extends Controller {
             'showOpen' => $showOpen,
             'openCount' => RentalCase::query()->open()->count(),
             'overdueCount' => RentalCase::query()->where('status', RentalCaseStatus::Overdue->value)->count(),
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            'customers' => Customer::query()->orderBy('name')->get(['id', 'name', 'contact_name']),
         ]);
     }
 
@@ -91,7 +91,7 @@ class RentalCaseController extends Controller {
         Gate::authorize('create', RentalCase::class);
 
         return view('rental._form_dialog', [
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            'customers' => Customer::query()->orderBy('name')->get(['id', 'name', 'contact_name']),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'rateCards' => RentalRateCard::query()->active()->orderBy('name')->get(['id', 'name', 'version']),
@@ -106,7 +106,7 @@ class RentalCaseController extends Controller {
 
         return view('rental._form_dialog', [
             'rental' => $rental,
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            'customers' => Customer::query()->orderBy('name')->get(['id', 'name', 'contact_name']),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'rateCards' => RentalRateCard::query()->active()->orderBy('name')->get(['id', 'name', 'version']),

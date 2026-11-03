@@ -576,6 +576,8 @@ return [
     'Takeoff' => 'Métré',
     'TakeoffLine' => 'Ligne de métré',
     'Task' => 'Tâche',
+    'ProjectTimeTarget' => 'Temps cible de projet',
+    'ProjectTimeShortfall' => 'Sous-réalisation de projet',
     'TaxRule' => 'Règle fiscale',
     'Team' => 'Équipe',
     'TechnicalMeasure' => 'Mesure technique et organisationnelle',

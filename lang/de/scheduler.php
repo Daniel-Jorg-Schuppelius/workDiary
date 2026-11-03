@@ -94,6 +94,7 @@ return [
     // Lesbare Job-Namen (Registry-Keys, geschachtelt wegen Punkt-Notation);
     // neue Registry-Jobs hier in allen Locales ergänzen — sonst Fallback = Key.
     'job' => [
+        'projects' => ['check-time-targets' => 'Projekt-Sollzeiten gegen gebuchte Zeit prüfen'],
         'surveys' => ['scheduled' => 'Umfragen im festen Abstand versenden'],
         'demo' => [
             'prune' => 'Demo-Organisationen nach Aufbewahrungsfrist löschen',

@@ -27,7 +27,7 @@
 
     <x-input-field name="cutoff" type="date" required
                    :label="__('finance.open_times.mark_billed.cutoff')"
-                   :value="old('cutoff', '')" />
+                   :value="old('cutoff', now()->orgTz()->toDateString())" />
 
     <div>
         <label class="label" for="mark-billed-customer">

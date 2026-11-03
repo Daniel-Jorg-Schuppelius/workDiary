@@ -50,6 +50,7 @@ class DayCloseService {
         private readonly FlexCalculator $flex,
         private readonly BreakRuleEvaluator $breakRules,
         private readonly MonthClosureService $monthClosures,
+        private readonly \App\Services\Project\TimeTargets\ProjectTimeShortfallDetector $projectTargets,
     ) {}
 
     /** Validator mit den konfigurierten gesetzlichen Pausenregeln. */
@@ -206,6 +207,14 @@ class DayCloseService {
 
         $validator = $this->makeValidator();
         $issues = $validator->validate($attendanceData, $entryData, $target);
+        // Projekt-Sollzeiten (Feature 194): Unterschreitung je Projekt als weiche Warnung.
+        foreach ($this->projectTargets->previewForUser($user, $day) as $shortfall) {
+            $issues[] = [
+                'code' => DayClosureValidator::CHECK_PROJECT_TARGET_SHORTFALL,
+                'severity' => DayClosureValidator::SEVERITY_WARNING,
+                'meta' => ['project' => (string) $shortfall['project']->name, 'target' => $shortfall['target'], 'booked' => $shortfall['booked'], 'missing' => $shortfall['missing']],
+            ];
+        }
         $agg = $validator->aggregate($attendanceData, $entryData);
 
         return [

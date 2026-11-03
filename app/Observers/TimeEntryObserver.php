@@ -12,7 +12,9 @@ namespace App\Observers;
 
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Events\Time\{TimeEntryBillingChanged, TimeEntryCreated};
+use App\Models\Project\ProjectTimeShortfall;
 use App\Models\Time\TimeEntry;
+use App\Support\Query\DateRange;
 
 /**
  * TimeEntry-Lebenszyklus: Auftrags-Start aus dem ersten Zeiteintrag und
@@ -23,6 +25,18 @@ use App\Models\Time\TimeEntry;
  */
 class TimeEntryObserver {
     public function saving(TimeEntry $entry): void {
+        // Abrechnung nach Soll (Feature 194, MVP-1470): ist die Auffüllung des Tages schon
+        // berechnet, bleibt eine Nachbuchung nicht abrechenbar — sonst zahlt der Kunde doppelt.
+        if (! $entry->exists && $entry->billable && $entry->project_id !== null && $entry->user_id !== null && $entry->date !== null
+            && $entry->isPersonTime()
+            && ProjectTimeShortfall::query()->where('project_id', $entry->project_id)->where('user_id', $entry->user_id)
+                ->whereBetween('date', DateRange::days($entry->date, $entry->date))->whereNotNull('billed_minutes')->exists()) {
+            $entry->billable = false;
+            $marker = (string) __('[Soll berechnet]');
+            if (! str_contains((string) $entry->description, $marker)) {
+                $entry->description = trim($marker . ' ' . (string) $entry->description);
+            }
+        }
 
         // Default activity_type from kind / project presence.
         if (empty($entry->activity_type)) {

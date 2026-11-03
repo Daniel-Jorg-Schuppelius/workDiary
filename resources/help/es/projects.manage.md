@@ -1,7 +1,7 @@
 ---
 title: "Gestionar proyectos"
 topic: projects.manage
-version: 4
+version: 5
 keywords:
     - crear proyecto
     - gestión de proyectos
@@ -82,6 +82,20 @@ Para una migración de servidores nace el proyecto «Migración CPD» con
 duración, tarifa horaria y dos responsables. Los técnicos registran
 sus tiempos directamente en el proyecto; a fin de mes la vista de
 detalle muestra de un vistazo qué queda facturable.
+
+## Tiempos objetivo por persona
+
+Acuerde con el cliente un tiempo de servicio por persona y día y gestiónelo en la pestaña de
+tiempos en **Gestionar tiempos objetivo**: un **valor predeterminado del proyecto** por día de
+la semana se aplica a todas las personas asignables, una fila personal tiene prioridad, una
+**excepción en una fecha** prevalece sobre el día de la semana; vacaciones, enfermedad y
+festivos ponen el objetivo a cero. La comprobación nocturna compara el objetivo con el tiempo
+registrado y notifica los déficits por encima de la tolerancia (ajuste de la organización,
+15 minutos por defecto) a la dirección del proyecto, a la cola de trabajo y al cierre diario de
+la persona; los hallazgos se muestran en la pestaña de tiempos, donde pueden **confirmarse**, y
+un registro tardío los resuelve. Con **Facturar las horas acordadas** en la pestaña de
+facturación, la transferencia añade el tiempo que falta como posición «Tiempo de servicio
+acordado»; un registro posterior de ese día deja de ser facturable.
 
 ## Errores habituales
 

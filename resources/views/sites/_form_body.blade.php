@@ -19,7 +19,10 @@
         <select name="customer_id" required class="select select-bordered w-full @error('customer_id') select-error @enderror">
             <option value="">{{ __('— bitte wählen —') }}</option>
             @foreach ($customers as $c)
-                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $site?->customer_id ?? \App\Support\Sqid::decode(\App\Models\Customer\Customer::class, request('customer'))) ) === $c->sqid)>{{ $c->name }}</option>
+                {{-- Anschrift und Koordinaten belegen den Standort vor (Projektion), Pilot 2026-11-03 --}}
+                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $site?->customer_id ?? \App\Support\Sqid::decode(\App\Models\Customer\Customer::class, request('customer'))) ) === $c->sqid)
+                        data-prefill-address-street="{{ $c->address_street }}" data-prefill-address-zip="{{ $c->address_zip }}" data-prefill-address-city="{{ $c->address_city }}"
+                        data-prefill-country="{{ strtoupper((string) $c->country) }}" data-prefill-geo-lat="{{ $c->address_lat }}" data-prefill-geo-lng="{{ $c->address_lng }}">{{ $c->name }}</option>
             @endforeach
         </select>
     </x-input-field>
@@ -36,10 +39,14 @@
 </x-form-group>
 
 <x-form-group :legend="__('Adresse')" icon="home" tone="info" cols="2">
-    <x-input-field name="address_street" :label="__('Straße / Hausnr.')" :value="old('address_street', $site?->address_street)" maxlength="160" :span="2" />
-    <x-input-field name="address_zip" :label="__('PLZ')" :value="old('address_zip', $site?->address_zip)" maxlength="16" />
-    <x-input-field name="address_city" :label="__('Ort')" :value="old('address_city', $site?->address_city)" maxlength="120" />
-    <x-input-field name="country" :label="__('Land (ISO-2)')" :value="old('country', $site?->country)" maxlength="2" class="uppercase" />
+    <x-input-field name="address_street" :label="__('Straße / Hausnr.')" :value="old('address_street', $site?->address_street)" maxlength="160" :span="2"
+                   data-prefill-from="customer_id" data-prefill-key="address-street" data-prefill-guard :data-prefill-on-load="$site === null" />
+    <x-input-field name="address_zip" :label="__('PLZ')" :value="old('address_zip', $site?->address_zip)" maxlength="16"
+                   data-prefill-from="customer_id" data-prefill-key="address-zip" data-prefill-guard />
+    <x-input-field name="address_city" :label="__('Ort')" :value="old('address_city', $site?->address_city)" maxlength="120"
+                   data-prefill-from="customer_id" data-prefill-key="address-city" data-prefill-guard />
+    <x-input-field name="country" :label="__('Land (ISO-2)')" :value="old('country', $site?->country)" maxlength="2" class="uppercase"
+                   data-prefill-from="customer_id" data-prefill-key="country" />
     {{-- MVP-513 P0 (Feature 103): Feiertagsregelung am Einsatzort für Zuschläge. --}}
     <div class="fieldset">
         <label class="fieldset-label" for="site-holiday-provider">{{ __('Feiertags-Region') }}</label>
@@ -58,8 +65,10 @@
 </x-form-group>
 
 <x-form-group :legend="__('Geo-Koordinaten')" icon="my_location" tone="ghost" cols="2">
-    <x-input-field name="geo_lat" type="number" :label="__('Breitengrad')" step="0.0000001" min="-90" max="90" :value="old('geo_lat', $site?->geo_lat)" />
-    <x-input-field name="geo_lng" type="number" :label="__('Längengrad')" step="0.0000001" min="-180" max="180" :value="old('geo_lng', $site?->geo_lng)" />
+    <x-input-field name="geo_lat" type="number" :label="__('Breitengrad')" step="0.0000001" min="-90" max="90" :value="old('geo_lat', $site?->geo_lat)"
+                   data-prefill-from="customer_id" data-prefill-key="geo-lat" />
+    <x-input-field name="geo_lng" type="number" :label="__('Längengrad')" step="0.0000001" min="-180" max="180" :value="old('geo_lng', $site?->geo_lng)"
+                   data-prefill-from="customer_id" data-prefill-key="geo-lng" />
 </x-form-group>
 
 <x-form-group :legend="__('Notizen')" icon="description" tone="ghost">

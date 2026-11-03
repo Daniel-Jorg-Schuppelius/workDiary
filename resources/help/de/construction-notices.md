@@ -1,7 +1,7 @@
 ---
 title: "Behinderungs- und Bedenkenanzeige (VOB/B)"
 topic: construction-notices
-version: 1
+version: 2
 keywords:
     - Behinderungsanzeige
     - Bedenkenanmeldung
@@ -45,6 +45,8 @@ Aus dem Tagebucheintrag werden Kunde, Projekt, Ort und — sofern erfasst —
 der **Wetter-Schnappschuss** übernommen. Gerade bei witterungsbedingten
 Behinderungen ist die dokumentierte Wetterlage zum Zeitpunkt des Ereignisses
 der Unterschied zwischen Behauptung und Nachweis.
+
+Mit der Kundenwahl ist die **Empfänger-E-Mail** aus dem Kunden vorbelegt; eine eigene Adresse bleibt stehen.
 
 ## Der Ausdruck friert ein
 

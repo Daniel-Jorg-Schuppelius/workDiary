@@ -1,7 +1,7 @@
 ---
 title: "Travel logs, expenses & allowances"
 topic: travel-expenses.manage
-version: 3
+version: 4
 keywords:
     - travel expenses
     - expense report
@@ -56,7 +56,7 @@ listed under **Trips & expenses** → **Logbook**.
   (km)**, **Start (time)** and **End (time)**; if the trip ends after midnight,
   simply enter the smaller time.
 - **Assignment:** **Project (optional)**, **Customer (optional)** and
-  **Purpose**.
+  **Purpose**. Choosing a customer pre-fills the destination from the customer address, and for per diems the place and country; your own entries stay.
 - **Options & notes:** **Round trip (doubles km)**, **Reimbursable**
   (preselected) and **Notes**.
 

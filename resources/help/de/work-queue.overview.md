@@ -1,7 +1,7 @@
 ---
 title: "Arbeitsvorrat"
 topic: work-queue.overview
-version: 1
+version: 2
 keywords:
     - Arbeitsvorrat
     - Offene Vorgänge
@@ -19,6 +19,8 @@ Freigabeketten), Eingänge (Zuordnungs-Inbox samt E-Mail-Klärfällen,
 Rechnungseingang, Rechnungsnachfragen), Ihnen zugewiesene Aufgaben (offene
 Punkte, Aufträge, Projektaufgaben, Service-Tickets) und Erinnerungen
 (liegengebliebene eigene Entwürfe, Chat-Erinnerungen).
+
+**Projekt-Sollzeiten:** Liegen Personen in einem Projekt unter ihrer Sollzeit, erscheint je Projekt ein Vorgang mit der Zahl der offenen Befunde; wer nicht alle Zeiten sieht, sieht nur die eigenen Tage. Erledigt wird er am Zeitreiter des Projekts durch Bestätigen oder Nachbuchung.
 
 **Nur lesen, dort bearbeiten:** Der Vorrat zeigt die Vorgänge und verlinkt
 auf die Seite, auf der Sie sie erledigen. Er hat keinen eigenen Status; ist

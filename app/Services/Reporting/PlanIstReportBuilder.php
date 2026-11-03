@@ -329,6 +329,90 @@ class PlanIstReportBuilder {
     }
 
     /**
+     * Projekt je Person (Feature 194, MVP-1469): Soll aus den Projekt-Sollzeiten,
+     * Ist aus der gebuchten Personenzeit, Tage unter Soll aus den Befunden,
+     * Aufenthalt aus Standortbesuchen in einem Geofence des Projekts (Beleg,
+     * kein Maßstab; null ohne Geofence).
+     *
+     * @return array{
+     *   rows: list<array{project_id:int, project:string, user_id:int, user:string, plan_minutes:int, actual_minutes:int, delta_minutes:int, shortfall_days:int, open_days:int, visit_minutes:int|null}>,
+     *   totals: array{plan_minutes:int, actual_minutes:int, delta_minutes:int, shortfall_days:int, open_days:int}
+     * }
+     */
+    public function projectPersonsFor(CarbonImmutable $from, CarbonImmutable $to, ?int $projectId = null): array {
+        $resolver = app(\App\Services\Project\TimeTargets\ProjectTimeTargetResolver::class);
+        $fromDate = $from->toDateString();
+        $toDate = $to->toDateString();
+        $rows = [];
+        $totals = ['plan_minutes' => 0, 'actual_minutes' => 0, 'delta_minutes' => 0, 'shortfall_days' => 0, 'open_days' => 0];
+        $projects = \App\Models\Project\Project::query()
+            ->whereHas('timeTargets')
+            ->when($projectId !== null, static fn ($q) => $q->whereKey($projectId))
+            ->orderBy('name')
+            ->get();
+        foreach ($projects as $project) {
+            $userIds = $resolver->subjectUserIds($project);
+            if ($userIds === []) {
+                continue;
+            }
+            $targets = $resolver->targetsFor($project, $userIds, $from, $to);
+            $actuals = TimeEntry::query()
+                ->where('project_id', $project->id)
+                ->whereIn('user_id', $userIds)
+                ->personTime()
+                ->whereBetween('date', DateRange::days($from, $to))
+                ->groupBy('user_id')
+                ->selectRaw('user_id, COALESCE(SUM(minutes), 0) AS total_minutes')
+                ->toBase()
+                ->get()
+                ->keyBy(static fn (object $row): int => (int) $row->user_id);
+            $shortfalls = \App\Models\Project\ProjectTimeShortfall::query()
+                ->where('project_id', $project->id)
+                ->whereBetween('date', DateRange::days($from, $to))
+                ->get(['user_id', 'status']);
+            $hasGeofence = \App\Models\Location\CustomerGeofence::query()->where('project_id', $project->id)->exists();
+            $visits = $hasGeofence
+                ? \App\Models\Location\LocationVisit::query()
+                    ->whereIn('user_id', $userIds)
+                    ->whereHas('geofence', static fn ($q) => $q->where('project_id', $project->id))
+                    ->whereBetween('entered_at', [$from->startOfDay(), $to->endOfDay()])
+                    ->groupBy('user_id')
+                    ->selectRaw('user_id, COALESCE(SUM(duration_min), 0) AS visit_minutes')
+                    ->toBase()
+                    ->get()
+                    ->keyBy(static fn (object $row): int => (int) $row->user_id)
+                : collect();
+            $names = User::query()->whereIn('id', $userIds)->pluck('name', 'id');
+            foreach ($userIds as $userId) {
+                $plan = array_sum($targets[$userId] ?? []);
+                $actual = (int) ($actuals->get($userId)->total_minutes ?? 0);
+                if ($plan === 0 && $actual === 0) {
+                    continue;
+                }
+                $own = $shortfalls->where('user_id', $userId);
+                $row = [
+                    'project_id' => (int) $project->id,
+                    'project' => (string) $project->name,
+                    'user_id' => $userId,
+                    'user' => (string) ($names[$userId] ?? ''),
+                    'plan_minutes' => $plan,
+                    'actual_minutes' => $actual,
+                    'delta_minutes' => $plan - $actual,
+                    'shortfall_days' => $own->count(),
+                    'open_days' => $own->where('status', '!=', \App\Enums\Project\ShortfallStatus::Resolved)->count(),
+                    'visit_minutes' => $hasGeofence ? (int) ($visits->get($userId)->visit_minutes ?? 0) : null,
+                ];
+                $rows[] = $row;
+                foreach (['plan_minutes', 'actual_minutes', 'delta_minutes', 'shortfall_days', 'open_days'] as $key) {
+                    $totals[$key] += $row[$key];
+                }
+            }
+        }
+
+        return ['rows' => $rows, 'totals' => $totals];
+    }
+
+    /**
      * Projekt-Plan/Ist (§2.2, MVP-333): Soll aus der geplanten Dauer
      * (`effectivePlannedMinutes()`) der im Zeitraum überlappenden Aufträge (overlappingDateRange-Scope),
      * Ist aus TimeEntry-Minuten je Projekt; Projekte ohne geplante Aufträge

@@ -1,7 +1,7 @@
 ---
 title: "Noleggio attrezzature"
 topic: rental.overview
-version: 3
+version: 4
 keywords:
     - locatore
     - casa vacanze
@@ -37,6 +37,7 @@ impediti in modo visibile.
 
 **Pratica di noleggio:** ogni operazione riceve un numero (VER-…); la
 versione del listino applicata viene congelata come snapshot.
+Il referente viene precompilato dal cliente al momento della scelta e resta modificabile.
 
 **Consegna e restituzione:** protocolli separati documentano stato,
 accessori, contatori, foto e firma; la restituzione porta la decisione

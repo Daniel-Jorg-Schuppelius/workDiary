@@ -94,6 +94,7 @@ return [
     // Nombres legibles de los trabajos (claves del registro, anidadas por la notación de puntos);
     // añadir los nuevos trabajos aquí en todos los idiomas — si no, respaldo = clave.
     'job' => [
+        'projects' => ['check-time-targets' => 'Comprobar los tiempos objetivo del proyecto frente al tiempo registrado'],
         'surveys' => ['scheduled' => 'Enviar encuestas a intervalo fijo'],
         'demo' => [
             'prune' => 'Eliminar organizaciones de demostración tras el plazo de conservación',

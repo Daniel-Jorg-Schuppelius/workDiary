@@ -317,6 +317,7 @@ return [
         'project.delete' => 'Projekt löschen',
         'project.archive' => 'Projekt archivieren',
         'project.billing.manage' => 'Projekt-Abrechnungsregeln verwalten',
+        'project.targets.manage' => 'Projekt-Sollzeiten pflegen',
         'project.import' => 'Projekte importieren',
         'task.manage' => 'Aufgaben verwalten',
         'milestone.manage' => 'Meilensteine verwalten',

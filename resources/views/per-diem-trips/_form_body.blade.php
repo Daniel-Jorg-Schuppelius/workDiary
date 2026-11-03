@@ -19,12 +19,13 @@
 @endif
 
 <x-form-group :legend="__('Reise')" icon="restaurant_menu" tone="primary" cols="2">
-    <x-select-field name="country" :label="__('Land')" required class="uppercase">
+    <x-select-field name="country" :label="__('Land')" required class="uppercase" data-prefill-from="customer_id" data-prefill-key="country">
         @foreach ($countries as $iso)
             <option value="{{ $iso }}" @selected(old('country', $trip?->country ?? 'DE') === $iso)>{{ $iso }}</option>
         @endforeach
     </x-select-field>
-    <x-input-field name="location" :label="__('Ort / Tätigkeitsstätte')" required maxlength="255" :value="old('location', $trip?->location)" :placeholder="__('z. B. Frankfurt am Main')" />
+    <x-input-field name="location" :label="__('Ort / Tätigkeitsstätte')" required maxlength="255" :value="old('location', $trip?->location)" :placeholder="__('z. B. Frankfurt am Main')"
+                   data-prefill-from="customer_id" data-prefill-key="location" data-prefill-guard :data-prefill-on-load="$trip === null" />
     <x-input-field name="purpose" :label="__('Zweck')" required span="2" maxlength="255" :value="old('purpose', $trip?->purpose)" :placeholder="__('z. B. Workshop, Onsite-Termin, Schulung …')" />
     <x-date-range layout="split" grid-class="contents" form-control size="" type="datetime-local"
                   from-name="started_at" to-name="ended_at"
@@ -45,7 +46,9 @@
     <x-select-field name="customer_id" :label="__('Kunde')">
         <option value="">—</option>
         @foreach ($customers as $c)
-            <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $trip?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
+            {{-- Ort und Land aus der Kundenanschrift (Projektion), Pilot 2026-11-03 --}}
+            <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $trip?->customer_id)) === $c->sqid)
+                    data-prefill-location="{{ $c->address_city }}" data-prefill-country="{{ strtoupper((string) $c->country) }}">{{ $c->name }}</option>
         @endforeach
     </x-select-field>
     <x-select-field name="travel_log_id" :label="__('Bezug zum Fahrtenbuch')" span="2">

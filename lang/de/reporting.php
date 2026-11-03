@@ -184,6 +184,11 @@ return [
             'detail' => 'Woche ab :week: :percent % der Kapazität verplant.',
             'recommendation' => 'Empfehlung: Aufträge verschieben oder umverteilen, Vertretungen und Fremdpersonal prüfen oder eine Stelle ausschreiben.',
         ],
+        'project_target' => [
+            'title' => 'Sollzeiten unterschritten im Projekt :name',
+            'detail' => ':count Personen-Tage unter Soll in den letzten :days Tagen.',
+            'recommendation' => 'Empfehlung: Befunde am Zeitreiter prüfen, Nachbuchungen anstoßen oder das Soll anpassen.',
+        ],
         'recurring_tickets' => [
             'title' => 'Wiederkehrende Tickets: :name',
             'detail' => ':count Tickets in :days Tagen.',
@@ -241,6 +246,8 @@ return [
             'conversion' => 'Konversion :value (:count)',
             'nps' => 'NPS',
             'nps_hint' => 'aus :count Bewertungen',
+            'project_target' => 'Tage unter Soll',
+            'project_target_hint' => 'offen oder bestätigt, :total im Zeitraum',
         ],
         'digest' => [
             'subject' => 'Leitungsbericht :organization · :range',

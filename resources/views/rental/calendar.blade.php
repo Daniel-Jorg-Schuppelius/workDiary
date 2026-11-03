@@ -85,8 +85,11 @@
                         @endif
                     @endforeach
                 </x-select-field>
-                <x-input-field name="starts_at" type="datetime-local" :label="__('Beginn')" required />
-                <x-input-field name="ends_at" type="datetime-local" :label="__('Ende')" required />
+                {{-- Vorgabe: jetzt zur vollen Stunde, ein Tag Dauer (Pilot 2026-11-03). --}}
+                <x-input-field name="starts_at" type="datetime-local" :label="__('Beginn')" required
+                               :value="old('starts_at', now()->orgTz()->startOfHour()->format('Y-m-d\TH:i'))" />
+                <x-input-field name="ends_at" type="datetime-local" :label="__('Ende')" required
+                               :value="old('ends_at', now()->orgTz()->startOfHour()->addDay()->format('Y-m-d\TH:i'))" />
                 <x-input-field name="note" :label="__('Notiz')" maxlength="255" />
                 <x-button type="submit">{{ __('Eintragen') }}</x-button>
             </form>

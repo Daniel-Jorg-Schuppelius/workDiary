@@ -576,6 +576,8 @@ return [
     'Takeoff' => 'Misurazione',
     'TakeoffLine' => 'Riga di misurazione',
     'Task' => 'Attività',
+    'ProjectTimeTarget' => 'Tempo obiettivo del progetto',
+    'ProjectTimeShortfall' => 'Scostamento di tempo del progetto',
     'TaxRule' => 'Regola fiscale',
     'Team' => 'Team',
     'TechnicalMeasure' => 'Misura tecnico-organizzativa',

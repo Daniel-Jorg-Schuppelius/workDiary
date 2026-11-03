@@ -60,7 +60,7 @@
             <select id="cn-form-customer" name="customer_id" class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($customers as $customer)
-                    <option value="{{ $customer->sqid }}" @selected(old('customer_id', $notice?->customer_id) == $customer->id)>{{ $customer->name ?: $customer->company }}</option>
+                    <option value="{{ $customer->sqid }}" @selected(old('customer_id', $notice?->customer_id) == $customer->id) data-prefill-recipient-email="{{ $customer->email }}">{{ $customer->name ?: $customer->company }}</option>
                 @endforeach
             </select>
         </div>
@@ -81,7 +81,8 @@
                        :value="old('recipient_name', $notice->recipient_name ?? '')" />
         <x-input-field name="recipient_email" type="email" maxlength="190"
                        :label="__('construction.field.recipient_email')"
-                       :value="old('recipient_email', $notice->recipient_email ?? '')" />
+                       :value="old('recipient_email', $notice->recipient_email ?? '')"
+                       data-prefill-from="customer_id" data-prefill-key="recipient-email" :data-prefill-on-load="$notice === null" />
     </div>
 
     <x-textarea-field name="facts" rows="6" required

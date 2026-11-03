@@ -184,6 +184,11 @@ return [
             'detail' => 'Semana desde :week: :percent % de la capacidad planificada.',
             'recommendation' => 'Recomendación: aplazar o redistribuir órdenes, revisar suplentes y personal externo o publicar una vacante.',
         ],
+        'project_target' => [
+            'title' => 'Tiempos objetivo no alcanzados en el proyecto :name',
+            'detail' => ':count días-persona por debajo del objetivo en los últimos :days días.',
+            'recommendation' => 'Recomendación: revisar los hallazgos en la pestaña de tiempos, pedir registros tardíos o ajustar el objetivo.',
+        ],
         'recurring_tickets' => [
             'title' => 'Tickets recurrentes: :name',
             'detail' => ':count tickets en :days días.',
@@ -241,6 +246,8 @@ return [
             'conversion' => 'Conversión :value (:count)',
             'nps' => 'NPS',
             'nps_hint' => 'de :count valoraciones',
+            'project_target' => 'Días bajo objetivo',
+            'project_target_hint' => 'abiertos o confirmados, :total en el período',
         ],
         'digest' => [
             'subject' => 'Informe de dirección :organization · :range',

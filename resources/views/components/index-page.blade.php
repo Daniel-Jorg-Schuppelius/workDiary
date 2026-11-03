@@ -53,7 +53,7 @@
         <x-index-page :subtitle="__('Kunden des Mandanten :org verwalten.', ['org' => $org->name])">
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
-                            :href="route('customers.create')"
+                            :href="route('customers.create')" data-entry-modal-trigger
                             show-label>{{ __('Kunde anlegen') }}</x-icon-btn>
             </x-slot:actions>
 

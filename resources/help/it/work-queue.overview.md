@@ -1,7 +1,7 @@
 ---
 title: "Coda di lavoro"
 topic: work-queue.overview
-version: 1
+version: 2
 keywords:
     - Coda di lavoro
     - Elementi aperti
@@ -20,6 +20,8 @@ assegnazione con i chiarimenti e-mail, fatture in entrata, richieste su
 fatture), attività assegnate a Lei (punti aperti, ordini, attività di
 progetto, ticket di servizio) e promemoria (Sue bozze in sospeso, promemoria
 chat).
+
+**Tempi obiettivo di progetto:** se delle persone in un progetto sono sotto il loro tempo obiettivo, compare un elemento per progetto con il numero di rilievi aperti; senza il diritto di vedere tutti i tempi vede solo i propri giorni. Si risolve nella scheda tempi del progetto confermando o registrando in ritardo.
 
 **Consultare qui, elaborare lì:** La coda mostra gli elementi e rimanda alla
 pagina in cui li elabora. Non ha uno stato proprio; un elemento completato

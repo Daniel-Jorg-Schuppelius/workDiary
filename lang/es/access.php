@@ -296,6 +296,7 @@ return [
         'project.delete' => 'Eliminar un proyecto',
         'project.archive' => 'Archivar un proyecto',
         'project.billing.manage' => 'Gestionar las reglas de facturación de proyecto',
+        'project.targets.manage' => 'Gestionar los tiempos objetivo del proyecto',
         'project.import' => 'Importar proyectos',
         'task.manage' => 'Gestionar las tareas',
         'milestone.manage' => 'Gestionar los hitos',

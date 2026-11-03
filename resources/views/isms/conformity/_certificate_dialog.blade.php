@@ -32,7 +32,7 @@
         <x-input-field name="certificate_no" :label="__('isms.field.certificate_no')" required maxlength="120"
                        :value="old('certificate_no')" />
         <x-input-field name="issued_on" type="date" :label="__('isms.field.issued_on')" required
-                       :value="old('issued_on')" />
+                       :value="old('issued_on', now()->orgTz()->toDateString())" />
         <x-textarea-field name="scope_description" :label="__('isms.field.scope_description')" required rows="3" maxlength="10000"
                           span="2"
                           placeholder="{{ __('isms.hint.certificate_scope') }}"

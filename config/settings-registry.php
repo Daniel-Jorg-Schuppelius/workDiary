@@ -250,6 +250,8 @@ return [
     'timesheet.edit_window_days' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'nullable|min:0|max:365'],
     // Schlüsselwort-Zuordnung importierter Zeiten (MVP-483)
     'project.keyword_matching.enabled' => ['type' => 'boolean', 'scopes' => ['system', 'organization'], 'fallback' => true],
+    // Toleranz der Projekt-Sollzeiten (Feature 194): Minuten unter Soll, die noch keinen Befund ergeben.
+    'project.target_tolerance_minutes' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'nullable|min:0|max:480', 'fallback' => 15],
 
     // --- Reselling-Register (Feature 152, Serienlauf 2026-09-11) ---
     // Serienrechnung bei lokaler Rechnungshoheit: resale:draft-local legt je

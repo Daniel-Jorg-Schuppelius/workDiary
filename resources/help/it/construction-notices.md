@@ -1,7 +1,7 @@
 ---
 title: "Denuncia di impedimento e riserve (VOB/B)"
 topic: construction-notices
-version: 1
+version: 2
 keywords:
     - impedimento lavori
     - ritardo del cantiere
@@ -42,6 +42,8 @@ Cliente, commessa, luogo e — se rilevata — l’**istantanea meteo** vengono
 ripresi dalla voce di diario. Soprattutto per gli impedimenti dovuti al
 tempo, le condizioni documentate al momento dei fatti sono la differenza tra
 un’affermazione e una prova.
+
+Scegliendo il cliente l’**e-mail del destinatario** viene precompilata dalla scheda cliente; un indirizzo inserito resta.
 
 ## La stampa è congelata
 

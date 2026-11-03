@@ -176,6 +176,8 @@ enum Permission: string implements HasLabel {
     case ProjectArchive = 'project.archive';
     case ProjectManageBilling = 'project.billing.manage';
     case ProjectImport = 'project.import';
+    /** Sollzeiten je Person am Projekt pflegen und Befunde bestätigen (Feature 194). */
+    case ProjectTargetsManage = 'project.targets.manage';
     case TaskManage = 'task.manage';
     case MilestoneManage = 'milestone.manage';
 

@@ -44,6 +44,8 @@ final class ProjectManifest extends Manifest {
             'project_billing_rules',
             'project_merge_dismissals',
             'project_team',
+            'project_time_shortfalls',
+            'project_time_targets',
             'project_user',
             'projects',
             'task_user',
@@ -74,6 +76,16 @@ final class ProjectManifest extends Manifest {
             ],
             \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
                 \App\Services\Project\WorkQueue\TaskWorkItemSource::class,
+                \App\Services\Project\WorkQueue\ProjectTimeShortfallWorkItemSource::class,
+            ],
+            \App\Services\Reporting\Contracts\ManagementKpiSource::class => [
+                \App\Services\Project\Management\ProjectTimeShortfallKpiSource::class,
+            ],
+            \App\Services\Reporting\Contracts\EarlyWarningSource::class => [
+                \App\Services\Project\EarlyWarnings\ProjectTimeShortfallWarningSource::class,
+            ],
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Project\Demo\ProjectTargetsDemoBlock::class,
             ],
             \App\Services\Mcp\Contracts\McpTool::class => [
                 \App\Services\Project\Mcp\ProjectsTool::class,

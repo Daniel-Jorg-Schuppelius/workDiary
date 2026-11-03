@@ -1,7 +1,7 @@
 ---
 title: "Cola de trabajo"
 topic: work-queue.overview
-version: 1
+version: 2
 keywords:
     - Cola de trabajo
     - Elementos abiertos
@@ -20,6 +20,8 @@ asignación con las aclaraciones de correo, facturas recibidas, consultas
 sobre facturas), tareas asignadas a usted (puntos abiertos, pedidos, tareas
 de proyecto, tickets de servicio) y recordatorios (sus borradores
 pendientes, recordatorios de chat).
+
+**Tiempos objetivo del proyecto:** si hay personas de un proyecto por debajo de su tiempo objetivo, aparece un elemento por proyecto con el número de hallazgos abiertos; sin el derecho de ver todos los tiempos solo ve sus propios días. Se resuelve en la pestaña de tiempos del proyecto confirmando o registrando tarde.
 
 **Consultar aquí, tramitar allí:** La cola muestra los elementos y enlaza
 con la página donde los tramita. No tiene estado propio; cuando un elemento

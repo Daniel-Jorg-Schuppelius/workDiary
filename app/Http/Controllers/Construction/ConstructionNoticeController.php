@@ -81,7 +81,7 @@ class ConstructionNoticeController extends Controller {
         return view('construction-notices._form_dialog', [
             'notice' => $notice,
             'kind' => $kind,
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name', 'company']),
+            'customers' => Customer::query()->orderBy('name')->get(['id', 'name', 'company', 'email']),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
             'sites' => Site::query()->where('organization_id', $organizationId)->orderBy('name')->get(['id', 'name']),
             'diaryEntries' => DiaryEntry::query()->orderByDesc('start_at')->limit(200)->get(['id', 'title', 'start_at']),

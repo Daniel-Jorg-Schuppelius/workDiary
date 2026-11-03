@@ -1,7 +1,7 @@
 ---
 title: "Equipment rental"
 topic: rental.overview
-version: 3
+version: 4
 keywords:
     - landlord
     - holiday apartment
@@ -40,6 +40,7 @@ inspection-overdue devices are visibly prevented.
 **Rental file:** Each case gets its own number (VER-…), customer, period
 and responsibilities. The applied rate-card version is frozen as a
 snapshot — later price changes never revalue old cases.
+The contact person is pre-filled from the customer when you choose one and stays editable.
 
 **Handover & return:** Separate reports document condition, accessories,
 meter readings, photos and signature. The return carries the follow-up

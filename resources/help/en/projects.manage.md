@@ -1,7 +1,7 @@
 ---
 title: "Managing projects"
 topic: projects.manage
-version: 4
+version: 5
 keywords:
     - create project
     - project management
@@ -80,6 +80,18 @@ For a server migration the project "Migration DC" is created with
 duration, hourly rate and two responsible people. Technicians book
 their time directly onto the project; at the end of the month the
 detail view shows at a glance what is billable and open.
+
+## Target times per person
+
+Agree a service time per person and day with the customer and maintain it on the time tab
+under **Manage target times**: a **project default** per weekday applies to all assignable
+people, a personal row takes precedence, an **exception on a date** beats the weekday;
+vacation, sickness and public holidays set the target to zero. The nightly check compares the
+target with the booked time and reports shortfalls above the tolerance (organization setting,
+default 15 minutes) to the project leads, to the work queue and to the person's day close; the
+findings are listed on the time tab, where they can be **acknowledged**, and a late booking
+resolves them. With **Bill agreed hours** on the billing tab, the transfer adds the missing time
+as a position “Agreed service time”; a later booking on that day is then not billable.
 
 ## Common mistakes
 

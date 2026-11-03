@@ -13,17 +13,19 @@ declare(strict_types=1);
 namespace App\Services\Finance;
 
 use App\Enums\Finance\TransferChannel;
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Customer\ForeignCustomer;
 use App\Models\Finance\{BillingTransfer, BillingTransferPosition};
 use App\Models\Material\MaterialUsage;
-use App\Models\Project\Project;
+use App\Models\Project\{Project, ProjectTimeShortfall};
 use App\Models\Time\TimeEntry;
 use App\Modules\ModuleRegistry;
 use App\Services\Billing\DocumentTotalsCalculator;
 use App\Services\Finance\Contracts\TransferSource;
 use App\Services\Invoicing\{BillableTimeAggregator, BlockPrice, BlockPriceResolver, ServiceDefaultResolver, TextCorrectionService};
-use App\Support\MorphMap;
-use CommonToolkit\Helper\Data\StringHelper;
+use App\Services\Invoicing\BillingBlock;
+use App\Support\{CarbonFmt, MorphMap};
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -65,7 +67,7 @@ class BillingPositionBuilder {
      */
     public function build(BillingTransfer $transfer): Collection {
         return match ($transfer->channel) {
-            TransferChannel::Time => $this->buildTimePositions($transfer),
+            TransferChannel::Time => $this->buildTimePositions($transfer)->concat($this->buildTargetTopUpPositions($transfer))->values(),
             TransferChannel::Material => $this->buildMaterialPositions($transfer),
             default => $this->sourceFor($transfer->channel)->positions($transfer),
         };
@@ -167,6 +169,72 @@ class BillingPositionBuilder {
                 'price_source' => $price->source,
                 'service_from' => $from,
                 'service_to' => $to,
+            ]));
+        }
+
+        return $positions;
+    }
+
+    /**
+     * Auffüllung auf das Projekt-Soll (Feature 194, MVP-1470): je Befund eine
+     * Position „Vereinbarte Einsatzzeit“ mit Person und Datum; Menge ist die
+     * fehlende Zeit, Preis über den BlockPriceResolver wie bei einem Zeitblock
+     * ohne Einträge (Projektregel, Kundensatz, Standardleistung, Org-Standard).
+     *
+     * @return Collection<int, BillingTransferPosition>
+     */
+    private function buildTargetTopUpPositions(BillingTransfer $transfer): Collection {
+        $ids = $transfer->items->where('source_type', MorphMap::alias(ProjectTimeShortfall::class))->pluck('source_id')->all();
+        $positions = new Collection;
+        if ($ids === []) {
+            return $positions;
+        }
+        $shortfalls = ProjectTimeShortfall::query()
+            ->whereIn('id', $ids)
+            ->with(['user:id,name', 'project.parent', 'project.customer', 'project.foreignCustomer'])
+            ->orderBy('date')
+            ->orderBy('user_id')
+            ->get();
+        // Die Nummerierung schließt an die Zeitpositionen an.
+        $index = $transfer->items->where('source_type', MorphMap::alias(TimeEntry::class))->isNotEmpty()
+            ? $this->buildTimePositions($transfer)->count()
+            : 0;
+        foreach ($shortfalls as $shortfall) {
+            $minutes = (int) $shortfall->shortfall_minutes;
+            if ($minutes <= 0) {
+                continue;
+            }
+            $project = $shortfall->project;
+            $block = new BillingBlock($project, TimeEntryKind::Work, [], 0, $minutes, $minutes, $minutes, 0.0, null, null, null);
+            $service = $this->services->resolve($transfer->organization, $project, TimeEntryKind::Work->value);
+            $price = $this->prices->resolve($block, null, $transfer->customer, $service, (int) $transfer->organization_id);
+            $hours = $block->billedHours();
+            $date = $shortfall->date->toDateString();
+            $positions->push(new BillingTransferPosition([
+                'organization_id' => $transfer->organization_id,
+                'billing_transfer_id' => $transfer->id,
+                'position' => ++$index,
+                'source_kind' => BillingTransferPosition::KIND_TARGET,
+                'project_id' => $project->id,
+                'kind' => TimeEntryKind::Work->value,
+                'source_ids' => [(int) $shortfall->id],
+                'primary_source_id' => (int) $shortfall->id,
+                'name' => (string) __('Vereinbarte Einsatzzeit') . ' — ' . $shortfall->user->name . ', ' . CarbonFmt::fdate($shortfall->date),
+                'description' => (string) __('Soll :target h, gebucht :booked h — Auffüllung :missing h', [
+                    'target' => NumberHelper::toGermanFormat($shortfall->target_minutes / 60, 2),
+                    'booked' => NumberHelper::toGermanFormat($shortfall->booked_minutes / 60, 2),
+                    'missing' => NumberHelper::toGermanFormat($minutes / 60, 2),
+                ]),
+                'quantity' => round($hours, 3),
+                'unit_name' => $service?->unitName ?: $this->timeUnit($transfer),
+                'unit_price' => round($price->rate, 4),
+                'vat_rate' => $service?->vatRate,
+                'amount' => DocumentTotalsCalculator::lineNet($hours, $price->rate)->withScale(2)->toFloat(),
+                'article_ref' => $service?->articleRef,
+                'service_source' => $service?->source,
+                'price_source' => $price->source,
+                'service_from' => $date,
+                'service_to' => $date,
             ]));
         }
 

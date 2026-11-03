@@ -184,6 +184,11 @@ return [
             'detail' => 'Week from :week: :percent % of capacity planned.',
             'recommendation' => 'Recommendation: postpone or redistribute orders, check deputies and external staff, or advertise a position.',
         ],
+        'project_target' => [
+            'title' => 'Target times missed in project :name',
+            'detail' => ':count person-days below target in the last :days days.',
+            'recommendation' => 'Recommendation: review the findings on the time tab, trigger late bookings or adjust the target.',
+        ],
         'recurring_tickets' => [
             'title' => 'Recurring tickets: :name',
             'detail' => ':count tickets in :days days.',
@@ -241,6 +246,8 @@ return [
             'conversion' => 'Conversion :value (:count)',
             'nps' => 'NPS',
             'nps_hint' => 'from :count ratings',
+            'project_target' => 'Days below target',
+            'project_target_hint' => 'open or acknowledged, :total in the period',
         ],
         'digest' => [
             'subject' => 'Management report :organization · :range',

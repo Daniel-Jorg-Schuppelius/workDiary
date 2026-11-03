@@ -1,7 +1,7 @@
 ---
 title: "Work queue"
 topic: work-queue.overview
-version: 1
+version: 2
 keywords:
     - Work queue
     - Open items
@@ -19,6 +19,8 @@ approval chains), inboxes (assignment inbox including e-mail clarifications,
 incoming invoices, invoice inquiries), tasks assigned to you (open issues,
 orders, project tasks, service tickets) and reminders (your own drafts left
 open, chat reminders).
+
+**Project target times:** If people in a project are below their target time, one item per project shows the number of open findings; without the right to see all times you only see your own days. It is resolved on the project's time tab by acknowledging or booking late.
 
 **Read here, process there:** The queue lists the items and links to the
 page where you complete them. It has no status of its own; once an item is

@@ -1,7 +1,7 @@
 ---
 title: "File de travail"
 topic: work-queue.overview
-version: 1
+version: 2
 keywords:
     - File de travail
     - Éléments ouverts
@@ -20,6 +20,8 @@ d'affectation avec les clarifications d'e-mails, factures entrantes, demandes
 sur factures), tâches qui vous sont attribuées (points ouverts, commandes,
 tâches de projet, tickets de service) et rappels (vos brouillons en attente,
 rappels de chat).
+
+**Temps cibles de projet :** si des personnes d’un projet sont sous leur temps cible, un élément par projet indique le nombre de constats ouverts ; sans le droit de voir tous les temps, vous ne voyez que vos propres jours. Il se résout dans l’onglet Temps du projet, par confirmation ou saisie tardive.
 
 **Consulter ici, traiter là-bas :** La file affiche les éléments et renvoie
 à la page où vous les traitez. Elle n'a pas de statut propre ; un élément

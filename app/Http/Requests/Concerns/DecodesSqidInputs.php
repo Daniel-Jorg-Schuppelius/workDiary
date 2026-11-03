@@ -54,6 +54,26 @@ trait DecodesSqidInputs {
     }
 
     /**
+     * Numerische ID eines Sqid-Felds schon vor validationData() — für Vorbelegungen in
+     * prepareForValidation() und typabhängige Regeln. Formulare senden Sqids, Altbestand
+     * und API numerische IDs; Unbekanntes ergibt null.
+     *
+     * @param class-string $modelClass
+     */
+    protected function decodedInputId(string $field, string $modelClass): ?int {
+        $raw = $this->input($field);
+        if (is_int($raw)) {
+            return $raw > 0 ? $raw : null;
+        }
+        if (! is_string($raw) || $raw === '') {
+            return null;
+        }
+        $id = ctype_digit($raw) ? (int) $raw : app(SqidEncoder::class)->decode($modelClass, $raw);
+
+        return $id !== null && $id > 0 ? $id : null;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function validationData(): array {

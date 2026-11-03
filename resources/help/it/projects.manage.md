@@ -1,7 +1,7 @@
 ---
 title: "Gestire i progetti"
 topic: projects.manage
-version: 4
+version: 5
 keywords:
     - creare progetto
     - gestione progetti
@@ -83,6 +83,20 @@ Per una migrazione server nasce il progetto «Migrazione CED» con
 durata, tariffa oraria e due responsabili. I tecnici registrano i
 tempi direttamente sul progetto; a fine mese la vista di dettaglio
 mostra a colpo d'occhio cosa resta fatturabile.
+
+## Tempi obiettivo per persona
+
+Concordi con il cliente un tempo di intervento per persona e giorno e lo gestisca nella scheda
+tempi sotto **Gestire i tempi obiettivo**: un **valore predefinito del progetto** per giorno
+della settimana vale per tutte le persone assegnabili, una riga personale ha la precedenza,
+un’**eccezione in una data** prevale sul giorno della settimana; ferie, malattia e festivi
+azzerano l’obiettivo. Il controllo notturno confronta l’obiettivo con il tempo registrato e
+segnala gli scostamenti oltre la tolleranza (impostazione dell’organizzazione, 15 minuti di
+default) ai responsabili del progetto, nella coda di lavoro e nella chiusura giornaliera della
+persona; i rilievi sono elencati nella scheda tempi, dove possono essere **confermati**, e una
+registrazione tardiva li risolve. Con **Fatturare le ore concordate** nella scheda fatturazione
+il trasferimento aggiunge il tempo mancante come posizione «Tempo di intervento concordato»;
+una registrazione successiva su quel giorno non è più fatturabile.
 
 ## Errori tipici
 

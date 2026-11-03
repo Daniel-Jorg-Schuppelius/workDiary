@@ -16,6 +16,7 @@ import "flatpickr/dist/flatpickr.min.css";
 import { German } from "flatpickr/dist/l10n/de.js";
 import weekSelect from "flatpickr/dist/plugins/weekSelect/weekSelect.js";
 import { bindPushToggle } from "./push.js";
+import { mergePrefill, valuesFromDataset } from "./lib/option-prefill.js";
 import { registerServiceWorker, bindInstallPrompt } from "./pwa.js";
 import { initOfflineSync } from "./offline-sync.js";
 import { initVideoPositions } from "./video-position.js";
@@ -1000,15 +1001,76 @@ document.addEventListener("click", (event) => {
             });
         });
     };
+
+    // Vorbelegung aus der Elternauswahl für Eingabefelder: ein Feld mit
+    // `data-prefill-from="<name des Eltern-Selects>"` und `data-prefill-key="<schlüssel>"`
+    // übernimmt beim Eltern-Wechsel `data-prefill-<schlüssel>` der gewählten
+    // <option>. Felder derselben Eltern bilden eine Gruppe; belegt wird nur,
+    // wenn die Wächterfelder (`data-prefill-guard`, sonst alle) leer sind oder
+    // noch den zuletzt übernommenen Stand tragen — eigene Eingaben bleiben.
+    // `data-prefill-on-load` belegt schon beim Laden (neue Datensätze).
+    // Entscheidungslogik: resources/js/lib/option-prefill.js.
+    /** @param {ParentNode} root */
+    const bindPrefillFromParent = (root) => {
+        if (!root) return;
+        /** @type {Map<HTMLSelectElement, Array<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>>} */
+        const groups = new Map();
+        root.querySelectorAll("[data-prefill-from]").forEach((el) => {
+            if (!(el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement)) return;
+            if (el.dataset.prefillBound === "1") return;
+            const scope = el.closest("form") || root;
+            const parent = scope.querySelector(`select[name="${el.dataset.prefillFrom}"]`);
+            if (!(parent instanceof HTMLSelectElement)) return;
+            el.dataset.prefillBound = "1";
+            const fields = groups.get(parent) ?? [];
+            fields.push(el);
+            groups.set(parent, fields);
+        });
+        groups.forEach((fields, parent) => {
+            /** @type {Record<string, string>} */
+            const keys = {};
+            fields.forEach((field) => {
+                const key = field.dataset.prefillKey ?? field.name;
+                keys[field.name] = "prefill" + key.replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase());
+            });
+            const guard = fields.filter((field) => field.hasAttribute("data-prefill-guard")).map((field) => field.name);
+            /** @type {Partial<Record<string, string>> | null} */
+            let previous = null;
+            const apply = () => {
+                const incoming = valuesFromDataset(parent.selectedOptions[0]?.dataset, keys);
+                /** @type {Record<string, string>} */
+                const current = {};
+                fields.forEach((field) => {
+                    current[field.name] = field.value;
+                });
+                const { values, applied } = mergePrefill(current, incoming, previous, guard.length > 0 ? guard : undefined);
+                if (!applied) return;
+                fields.forEach((field) => {
+                    const next = values[field.name];
+                    if (next === undefined || field.value === next) return;
+                    // Ein Select übernimmt nur Werte, die es als Option kennt.
+                    if (field instanceof HTMLSelectElement && next !== "" && !Array.from(field.options).some((opt) => opt.value === next)) return;
+                    field.value = next;
+                    field.dispatchEvent(new Event("input", { bubbles: true }));
+                    field.dispatchEvent(new Event("change", { bubbles: true }));
+                });
+                previous = incoming ? values : null;
+            };
+            parent.addEventListener("change", apply);
+            if (fields.some((field) => field.hasAttribute("data-prefill-on-load"))) apply();
+        });
+    };
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", () => {
             bindDependentSelects(document);
             bindDefaultFromParent(document);
+            bindPrefillFromParent(document);
             initDialogForms(document);
         });
     } else {
         bindDependentSelects(document);
         bindDefaultFromParent(document);
+        bindPrefillFromParent(document);
         initDialogForms(document);
     }
 
@@ -1027,6 +1089,7 @@ document.addEventListener("click", (event) => {
         );
         bindDependentSelects(root);
         bindDefaultFromParent(root);
+        bindPrefillFromParent(root);
         // Inline-<script>-Tags aus AJAX-Inhalten führt der Browser nicht aus.
         // Stattdessen binden wir hier die Listener für bekannte Form-Bausteine.
         bindRangeLinks(root);
@@ -1600,16 +1663,18 @@ document.addEventListener("click", (event) => {
         }
     };
 
-    document.addEventListener(
-        "blur",
-        (event) => {
-            const target = event.target;
-            if (!(target instanceof HTMLInputElement)) return;
-            if (!target.matches("input[data-travel-geocode]")) return;
-            geocodeAddressInput(target);
-        },
-        true,
-    );
+    // blur für eigene Eingaben; change für Werte, die die Vorbelegung setzt (kein Fokus).
+    /** @param {Event} event */
+    const geocodeTravelInput = (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLInputElement)) return;
+        if (!target.matches("input[data-travel-geocode]")) return;
+        // Eigene Eingaben lösen change noch mit Fokus aus; die kodiert erst der blur.
+        if (event.type === "change" && document.activeElement === target) return;
+        geocodeAddressInput(target);
+    };
+    document.addEventListener("blur", geocodeTravelInput, true);
+    document.addEventListener("change", geocodeTravelInput);
 
     // Adresse aus Teilfeldern → versteckte Koordinaten (MVP-1170): Felder mit
     // data-geocode-part="<gruppe>", Ziele data-geocode-lat/-lng="<gruppe>",

@@ -162,6 +162,12 @@ return [
         'keyword_matching' => 'Assign time to projects by keyword',
         'keyword_matching_hint' => 'If the text of an imported entry contains the name or a keyword of a project of the same customer, it is booked there instead of the default project or the assignment inbox. Only unambiguous matches are booked.',
     ],
+    'project_targets' => [
+        'heading' => 'Project target times',
+        'description' => 'When a person is reported below the target of a project day.',
+        'tolerance_minutes' => 'Tolerance (minutes)',
+        'tolerance_minutes_hint' => 'If no more than this many minutes are missing from the target, there is no finding. Empty = 15 minutes.',
+    ],
     'einvoice' => [
         'heading' => 'E-invoice (XRechnung)',
         'description' => 'Seller details for XRechnung output (EN 16931) of locally created invoices. Empty company name = organisation name.',

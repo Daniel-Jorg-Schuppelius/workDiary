@@ -94,6 +94,9 @@ return [
     // Las 7 comprobaciones de coherencia del §4 — clave = código de la
     // comprobación (DayClosureValidator), los puntos del código se anidan.
     'check' => [
+        'project' => [
+            'target_shortfall' => 'Proyecto :project: objetivo :target min, registrado :booked min — faltan :missing min.',
+        ],
         'attendance' => [
             'missing_close' => 'El reloj de fichaje sigue abierto — por favor, fiche la salida.',
         ],

@@ -181,6 +181,25 @@ class PlanIstReportController extends Controller {
         ]);
     }
 
+    /** Projekt je Person (Feature 194, MVP-1469): Soll aus den Projekt-Sollzeiten, Ist aus der Personenzeit, Befunde, Aufenthalt als Beleg. */
+    public function projectPersons(Request $request): View {
+        $this->authorizeExtendedDimensions();
+
+        [$from, $to] = $this->range($request);
+        $projectId = \App\Support\Sqid::decode(\App\Models\Project\Project::class, (string) $request->query('project', ''));
+        $report = $this->builder->projectPersonsFor($from, $to, $projectId);
+
+        return view('reports.plan-ist.project-persons', [
+            'rows' => $this->paginateRows($request, $report['rows']),
+            'allRows' => $report['rows'],
+            'totals' => $report['totals'],
+            'from' => $from,
+            'to' => $to,
+            'projectId' => $projectId,
+            'projects' => \App\Models\Project\Project::query()->whereHas('timeTargets')->orderBy('name')->get(['id', 'name']),
+        ]);
+    }
+
     /** Standort-Dimension (MVP-333): Ist-Verteilung ortsbasiert erfasster Zeiten (bewusst ohne Solldaten). */
     public function sites(Request $request): View {
         $this->authorizeExtendedDimensions();

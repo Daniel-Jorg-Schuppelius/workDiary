@@ -70,6 +70,9 @@ class UserAnonymizationService {
         // Kontakt-Morphs (Adressen/Bankverbindungen) vollständig entfernen.
         $member->addresses()->delete();
         $member->bankAccounts()->delete();
+        // Projekt-Sollzeiten und Befunde unter Soll (Feature 194) tragen den Personenbezug.
+        \App\Models\Project\ProjectTimeTarget::query()->withoutGlobalScopes()->where('user_id', $member->id)->delete();
+        \App\Models\Project\ProjectTimeShortfall::query()->withoutGlobalScopes()->where('user_id', $member->id)->delete();
 
         // Avatar/Foto inkl. abgelegter Datei.
         $this->imageUploader->delete($member, Attachment::META_AVATAR);

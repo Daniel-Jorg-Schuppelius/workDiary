@@ -26,6 +26,8 @@ class SaveProjectBillingSettingsRequest extends FormRequest {
             'billing_grouping_gap_minutes' => $this->input('billing_grouping_gap_minutes') === null
                 || $this->input('billing_grouping_gap_minutes') === ''
                 ? null : $this->input('billing_grouping_gap_minutes'),
+            // Abrechnung nach Soll (Feature 194): ein fehlendes Kästchen heißt aus.
+            'bills_target_time' => $this->boolean('bills_target_time'),
         ]);
     }
 
@@ -34,6 +36,7 @@ class SaveProjectBillingSettingsRequest extends FormRequest {
         return [
             'billing_increment_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
             'billing_grouping_gap_minutes' => ['nullable', 'integer', 'min:0', 'max:1440'],
+            'bills_target_time' => ['required', 'boolean'],
         ];
     }
 }

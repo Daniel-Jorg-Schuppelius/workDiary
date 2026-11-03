@@ -576,6 +576,8 @@ return [
     'Takeoff' => 'Aufmaß',
     'TakeoffLine' => 'Aufmaßzeile',
     'Task' => 'Aufgabe',
+    'ProjectTimeTarget' => 'Projekt-Sollzeit',
+    'ProjectTimeShortfall' => 'Projekt-Unterschreitung',
     'TaxRule' => 'Steuerregel',
     'Team' => 'Team',
     'TechnicalMeasure' => 'Technisch-organisatorische Maßnahme',

@@ -61,6 +61,9 @@ class BillingTransferPosition extends Model implements DocumentLine {
 
     public const KIND_MATERIAL = 'material';
 
+    /** Auffüllung auf das Projekt-Soll (Feature 194, MVP-1470): vereinbarte, nicht gebuchte Einsatzzeit. */
+    public const KIND_TARGET = 'target';
+
     protected $fillable = [
         'organization_id',
         'billing_transfer_id',

@@ -576,6 +576,8 @@ return [
     'Takeoff' => 'Takeoff',
     'TakeoffLine' => 'Takeoff line',
     'Task' => 'Task',
+    'ProjectTimeTarget' => 'Project target time',
+    'ProjectTimeShortfall' => 'Project time shortfall',
     'TaxRule' => 'Tax rule',
     'Team' => 'Team',
     'TechnicalMeasure' => 'Technical/organizational measure',

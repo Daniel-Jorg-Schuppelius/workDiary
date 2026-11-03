@@ -94,6 +94,9 @@ return [
     // Les 7 contrôles de cohérence du §4 — clé = code du contrôle
     // (DayClosureValidator), les points du code deviennent une imbrication.
     'check' => [
+        'project' => [
+            'target_shortfall' => 'Projet :project : cible :target min, saisi :booked min — il manque :missing min.',
+        ],
         'attendance' => [
             'missing_close' => 'La pointeuse est encore ouverte — veuillez dépointer.',
         ],

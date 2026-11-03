@@ -1,7 +1,7 @@
 ---
 title: "Projekte verwalten"
 topic: projects.manage
-version: 4
+version: 5
 keywords:
     - Projekt anlegen
     - Projektmanagement
@@ -83,6 +83,19 @@ Für einen Serverumzug entsteht das Projekt „Migration RZ" mit Laufzeit,
 Stundensatz und zwei Verantwortlichen. Die Techniker buchen ihre Zeiten
 direkt auf das Projekt; am Monatsende zeigt die Detailansicht auf einen
 Blick, was abrechenbar offen ist.
+
+## Sollzeiten je Person
+
+Vereinbaren Sie mit dem Kunden eine Einsatzzeit je Person und Tag, pflegen Sie sie am
+Zeitreiter unter **Sollzeiten pflegen**: eine **Projektvorgabe** je Wochentag gilt für alle
+zuweisbaren Personen, eine Personenzeile geht vor, eine **Ausnahme an einem Datum** vor dem
+Wochentag; Urlaub, Krankheit und Feiertage setzen das Soll auf null. Der nächtliche Abgleich
+vergleicht das Soll mit der gebuchten Zeit und meldet Unterschreitungen über der Toleranz
+(Organisationseinstellung, Vorgabe 15 Minuten) an die Projektleitung, in den Arbeitsvorrat
+und in den Tagesabschluss der Person; die Befunde stehen am Zeitreiter und lassen sich dort
+**bestätigen**, eine Nachbuchung erledigt sie. Mit **Vereinbarte Stunden abrechnen** im
+Abrechnungsreiter ergänzt die Übergabe die fehlende Zeit als Position „Vereinbarte
+Einsatzzeit“; eine spätere Nachbuchung auf diesen Tag ist dann nicht abrechenbar.
 
 ## Typische Fehler
 
