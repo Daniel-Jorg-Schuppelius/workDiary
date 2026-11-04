@@ -9,10 +9,12 @@
  */
 
 /*
- | Fernwartung (AnyDesk + TeamViewer). Verbindungs-Reports werden über die am
- | Asset hinterlegte Geräte-ID dem Kunden-Standardprojekt als TimeEntry
- | zugeordnet. Eingehängt vom RemoteSupportServiceProvider unter
- | `plugins.remote-support`. ENV dient nur als Fallback für Konsolen-/Test-Kontexte.
+ | Fernwartung (AnyDesk, TeamViewer, RustDesk, Splashtop, pcvisit).
+ | Verbindungs-Reports werden über die am Asset hinterlegte Geräte-ID dem
+ | Kunden-Standardprojekt als TimeEntry zugeordnet. Eingehängt vom
+ | RemoteSupportServiceProvider unter `plugins.remote-support`. ENV dient nur
+ | als Fallback für Konsolen-/Test-Kontexte; die Anbieter und ihre Schlüssel
+ | nennt App\Plugins\RemoteSupport\Providers\RemoteProviders.
  */
 return [
     'enabled' => env('REMOTE_SUPPORT_ENABLED', false),
@@ -42,5 +44,37 @@ return [
         'enabled' => env('TEAMVIEWER_ENABLED', false),
         'api_key' => env('TEAMVIEWER_API_KEY'),
         'base_url' => env('TEAMVIEWER_BASE_URL', 'https://webapi.teamviewer.com/api/v1'),
+    ],
+
+    // Der kostenlose RustDesk-Server speichert keine Verbindungen; Sitzungen
+    // liefert Server Pro (flavor "pro", API-Token) oder der Open-Source-
+    // API-Server rustdesk-api (flavor "api_server", Anmeldung je Lauf).
+    'rustdesk' => [
+        'enabled' => env('RUSTDESK_ENABLED', false),
+        'flavor' => env('RUSTDESK_FLAVOR', 'pro'),
+        'base_url' => env('RUSTDESK_BASE_URL'),
+        'api_token' => env('RUSTDESK_API_TOKEN'),
+        'username' => env('RUSTDESK_USERNAME'),
+        'password' => env('RUSTDESK_PASSWORD'),
+        // Serverzeitzone des Open-Source-API-Servers (created_at ohne Zone); leer = Organisation.
+        'timezone' => env('RUSTDESK_TIMEZONE'),
+    ],
+
+    // Splashtop Open API (nur Splashtop Enterprise); Region bestimmt den Server.
+    'splashtop' => [
+        'enabled' => env('SPLASHTOP_ENABLED', false),
+        'region' => env('SPLASHTOP_REGION', 'eu'),
+        'api_token' => env('SPLASHTOP_API_TOKEN'),
+        'team_id' => env('SPLASHTOP_TEAM_ID'),
+        'service_kinds' => env('SPLASHTOP_SERVICE_KINDS', 'unattended_remote,attended_remote'),
+    ],
+
+    // pcvisit GraphQL: der Integrator-Token gehört dem Betreiber (vergibt
+    // pcvisit an den Softwarehersteller), der Nutzer-Token der Organisation.
+    'pcvisit' => [
+        'enabled' => env('PCVISIT_ENABLED', false),
+        'user_token' => env('PCVISIT_USER_TOKEN'),
+        'integrator_token' => env('PCVISIT_INTEGRATOR_TOKEN'),
+        'endpoint' => env('PCVISIT_ENDPOINT', 'https://app.pcvisit.de/graphql'),
     ],
 ];

@@ -1,10 +1,14 @@
 ---
 title: "Soporte remoto"
 topic: admin.remote-support
-version: 3
+version: 4
 keywords:
     - AnyDesk
     - TeamViewer
+    - RustDesk
+    - Splashtop
+    - pcvisit
+    - token de API
     - acceso remoto
     - sesión remota
     - asistencia remota
@@ -21,12 +25,14 @@ related:
     - assets.fleet
 ---
 
-El mantenimiento remoto recoge los informes de sesión de AnyDesk y
-TeamViewer y los convierte en entradas de tiempo. Las sesiones se
-asignan a un dispositivo (activo, p. ej. puesto de trabajo, servidor,
-portátil) mediante el ID de equipo (ID de AnyDesk/TeamViewer). Con
-**Importar sesiones** puede además cargar sesiones de AnyDesk a través
-de la importación central.
+El mantenimiento remoto recoge los informes de sesión de AnyDesk,
+TeamViewer, RustDesk, Splashtop y pcvisit y los convierte en entradas de
+tiempo. Las sesiones se asignan a un dispositivo (activo, p. ej. puesto
+de trabajo, servidor, portátil) mediante el ID de equipo del proveedor.
+Con **Importar sesiones** puede además cargar exportaciones de sesiones
+(AnyDesk, RustDesk Server Pro) a través de la importación central; la
+fila de cabecera indica el proveedor y una columna **Proveedor** tiene
+prioridad.
 
 La página **Mantenimiento remoto – conexiones sin asignar** tiene dos
 pestañas; el campo de búsqueda encuentra ID de equipo, alias, equipo o
@@ -59,6 +65,43 @@ Pestaña **Asignar sesiones** (dispositivos de varios clientes):
 - **Contabilizar selección internamente** registra las sesiones sin
   cliente en el proyecto de mantenimiento interno.
 - **Descartar los marcados** descarta sesiones individuales.
+
+Configurar proveedores (ajustes del plugin de la organización, un
+interruptor por proveedor):
+
+- **AnyDesk**: ID de licencia y contraseña de API de la licencia; el ID
+  de equipo es el ID de AnyDesk del ordenador.
+- **TeamViewer**: token de script con permiso para informes de conexión;
+  el ID de equipo es el ID de TeamViewer.
+- **RustDesk**: el servidor RustDesk gratuito no guarda conexiones. Las
+  sesiones solo las entrega un servidor API que los clientes hayan
+  registrado en «Servidor API». En **Server Pro** introduzca la dirección
+  de la consola web y un token de API (Configuración → Tokens → Crear,
+  permiso «Audit Log»); en el **servidor API de código abierto**
+  (rustdesk-api) la dirección con el puerto más el usuario y la contraseña
+  de un administrador, y la zona horaria del servidor solo si no funciona
+  en la zona de la organización. Si el servidor está en su propia red,
+  active **Permitir direcciones de red privadas**. El ID de equipo es el
+  ID de RustDesk del ordenador (sin espacios). Las conexiones aún en
+  curso se recogen cuando terminan.
+- **Splashtop**: token de API de la consola web (Configuración de la
+  cuenta → Web API Tokens; solo propietarios del equipo y
+  superadministradores, la Open API forma parte de Splashtop Enterprise).
+  Elija la región de su cuenta; el ID de equipo se obtiene del token. Los
+  tipos de sesión se eligen separados por comas (predeterminado:
+  desatendido y SOS). El ID de equipo es el UUID de equipo de Splashtop;
+  la bandeja muestra el nombre del ordenador junto a él. Otros planes usan
+  la exportación CSV de la página de registros a través de la importación
+  central.
+- **pcvisit**: token de API de usuario de la pcvisit Web App
+  (configuración de la cuenta) y un token de integrador que pcvisit
+  concede al fabricante del software (ajuste del operador; introdúzcalo
+  por organización solo con acuerdo propio). Se recogen las sesiones
+  cerradas con la duración registrada en pcvisit; el ID de equipo es el
+  ID de equipo de pcvisit y el cliente final figura en la nota.
+
+Si un proveedor falla, los demás siguen funcionando; el aviso aparece en
+el estado del plugin y en el resultado de la importación.
 
 Seguridad y riesgos:
 

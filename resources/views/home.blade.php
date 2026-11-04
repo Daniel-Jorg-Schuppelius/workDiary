@@ -113,7 +113,7 @@
         ['icon' => 'local_shipping',  'title' => __('Handel & Versand'),         'items' => ['JTL-Wawi', 'Billbee', 'Etsy', 'DHL', 'UPS', 'FedEx']],
         ['icon' => 'task_alt',        'title' => __('Zeit, Aufgaben & Tickets'), 'items' => ['Toggl', 'Clockify', 'Kimai', 'Todoist', 'OpenProject', 'GitHub', 'GitLab', 'Zammad']],
         ['icon' => 'cloud',           'title' => __('Kalender & Cloud'),         'items' => ['Microsoft 365', 'SharePoint', 'Google Calendar', 'Google Drive', 'Dropbox', 'Nextcloud', 'Calendly', 'CalDAV', 'CardDAV', 'WebDAV', 'S3']],
-        ['icon' => 'forum',           'title' => __('Kommunikation & Ortung'),   'items' => ['Microsoft Teams', 'Mattermost', 'sipgate', 'FRITZ!Box', 'seven.io', 'IMAP', 'TeamViewer', 'AnyDesk', 'OwnTracks', 'Traccar']],
+        ['icon' => 'forum',           'title' => __('Kommunikation & Ortung'),   'items' => ['Microsoft Teams', 'Mattermost', 'sipgate', 'FRITZ!Box', 'seven.io', 'IMAP', 'TeamViewer', 'AnyDesk', 'RustDesk', 'Splashtop', 'pcvisit', 'OwnTracks', 'Traccar']],
         ['icon' => 'auto_awesome',    'title' => __('KI & Übersetzung'),         'items' => ['OpenAI', 'Anthropic', 'Gemini', 'Azure OpenAI', 'Ollama', 'DeepL', 'Azure Translator', 'LibreTranslate']],
     ];
 

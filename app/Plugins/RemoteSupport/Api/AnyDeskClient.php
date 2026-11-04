@@ -27,12 +27,14 @@ use Carbon\CarbonImmutable;
 class AnyDeskClient implements RemoteProvider {
     public const ID = 'anydesk';
 
+    public const DEFAULT_BASE_URL = 'https://v1.api.anydesk.com:8081';
+
     private ?PluginApiClient $api = null;
 
     public function __construct(
         private readonly ?string $licenseId,
         private readonly ?string $apiPassword,
-        private readonly string $baseUrl = 'https://v1.api.anydesk.com:8081',
+        private readonly string $baseUrl = self::DEFAULT_BASE_URL,
     ) {}
 
     public function id(): string {

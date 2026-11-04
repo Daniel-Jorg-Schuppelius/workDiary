@@ -667,7 +667,7 @@ class RemoteSupportSuggestionService {
         // Namen der Geräte, die bereits eine Fernwartungs-ID tragen.
         $refs = ExternalReference::query()
             ->forPlugin($organization, RemoteSupportPlugin::ID)
-            ->whereIn('external_type', array_values(RemoteDeviceRegistry::DEVICE_TYPES))
+            ->whereIn('external_type', array_values(RemoteDeviceRegistry::deviceTypes()))
             ->where('referenceable_type', (new Asset)->getMorphClass())
             ->pluck('referenceable_id');
 
@@ -721,7 +721,7 @@ class RemoteSupportSuggestionService {
             return [null, null];
         }
 
-        $deviceType = RemoteDeviceRegistry::DEVICE_TYPES[$provider] ?? null;
+        $deviceType = RemoteDeviceRegistry::deviceTypes()[$provider] ?? null;
         if ($deviceType === null) {
             return [null, null];
         }

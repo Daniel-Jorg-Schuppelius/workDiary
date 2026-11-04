@@ -66,7 +66,7 @@ return [
             ['zertifikat', 'certificate', 'ssl', 'tls'],
             ['dns', 'nameserver', 'mx-record'],
             ['wlan', 'wifi', 'access point', 'unifi'],
-            ['fernwartung', 'anydesk', 'teamviewer'],
+            ['fernwartung', 'anydesk', 'teamviewer', 'rustdesk', 'splashtop', 'pcvisit'],
             ['spam', 'phishing', 'spamfilter'],
         ],
     ],

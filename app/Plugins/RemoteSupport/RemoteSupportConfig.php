@@ -11,6 +11,7 @@
 namespace App\Plugins\RemoteSupport;
 
 use App\Models\Platform\PluginSetting;
+use App\Plugins\RemoteSupport\Providers\RemoteProviders;
 use App\Plugins\Support\PluginOrgContext;
 use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 
@@ -20,11 +21,15 @@ use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
  *   1. plugin_settings (verschlüsselt) der gebundenen Organisation
  *   2. config('plugins.remote-support.*') als Fallback (ENV / config-only)
  *
- * @phpstan-type ProviderConfig array{enabled: bool, license_id: ?string, api_key: ?string, base_url: string}
+ * Je Anbieter des Registers ({@see RemoteProviders}) entsteht ein Teil-Array
+ * `<id>` mit `enabled` und den Schlüsseln seiner Definition: Org-Einstellung
+ * `<id>_<key>` vor `plugins.remote-support.<id>.<key>` vor der Vorgabe.
+ *
+ * @phpstan-type ProviderConfig array<string, mixed>
  */
 class RemoteSupportConfig {
     /**
-     * @return array{enabled: bool, sync_window_days: int, default_billable: bool, default_user_id: ?int, anydesk: ProviderConfig, teamviewer: ProviderConfig}
+     * @return array<string, mixed>  `enabled`, `sync_window_days`, `default_billable`, `default_user_id` und je Anbieter ein ProviderConfig
      */
     public static function resolve(?int $organizationId = null): array {
         $enabled = (bool) config('plugins.remote-support.enabled', false);
@@ -32,21 +37,9 @@ class RemoteSupportConfig {
         $defaultBillable = (bool) config('plugins.remote-support.default_billable', true);
         $defaultUserId = NumberHelper::toIntOrNull(config('plugins.remote-support.default_user_id'));
 
-        $anydesk = [
-            'enabled' => (bool) config('plugins.remote-support.anydesk.enabled', false),
-            'license_id' => StringHelper::trimToNull(config('plugins.remote-support.anydesk.license_id')),
-            'api_key' => StringHelper::trimToNull(config('plugins.remote-support.anydesk.api_key')),
-            'base_url' => (string) config('plugins.remote-support.anydesk.base_url', 'https://v1.api.anydesk.com:8081'),
-        ];
-        $teamviewer = [
-            'enabled' => (bool) config('plugins.remote-support.teamviewer.enabled', false),
-            'license_id' => null,
-            'api_key' => StringHelper::trimToNull(config('plugins.remote-support.teamviewer.api_key')),
-            'base_url' => (string) config('plugins.remote-support.teamviewer.base_url', 'https://webapi.teamviewer.com/api/v1'),
-        ];
-
         $organizationId ??= PluginOrgContext::currentId();
 
+        $s = [];
         if ($organizationId !== null) {
             $row = PluginSetting::query()
                 ->withoutGlobalScopes()
@@ -56,7 +49,7 @@ class RemoteSupportConfig {
 
             if ($row !== null) {
                 $enabled = (bool) $row->enabled;
-                $s = $row->settings ?? [];
+                $s = is_array($row->settings) ? $row->settings : [];
 
                 if (isset($s['sync_window_days'])) {
                     $syncWindowDays = (int) $s['sync_window_days'];
@@ -67,29 +60,35 @@ class RemoteSupportConfig {
                 if (NumberHelper::toIntOrNull($s['default_user_id'] ?? null) !== null) {
                     $defaultUserId = NumberHelper::toIntOrNull($s['default_user_id']);
                 }
-
-                $anydesk['enabled'] = (bool) ($s['anydesk_enabled'] ?? $anydesk['enabled']);
-                $anydesk['license_id'] = StringHelper::trimToNull($s['anydesk_license_id'] ?? null) ?? $anydesk['license_id'];
-                $anydesk['api_key'] = StringHelper::trimToNull($s['anydesk_api_key'] ?? null) ?? $anydesk['api_key'];
-                if (! empty($s['anydesk_base_url'])) {
-                    $anydesk['base_url'] = (string) $s['anydesk_base_url'];
-                }
-
-                $teamviewer['enabled'] = (bool) ($s['teamviewer_enabled'] ?? $teamviewer['enabled']);
-                $teamviewer['api_key'] = StringHelper::trimToNull($s['teamviewer_api_key'] ?? null) ?? $teamviewer['api_key'];
-                if (! empty($s['teamviewer_base_url'])) {
-                    $teamviewer['base_url'] = (string) $s['teamviewer_base_url'];
-                }
             }
         }
 
-        return [
+        $config = [
             'enabled' => $enabled,
             'sync_window_days' => max(1, $syncWindowDays),
             'default_billable' => $defaultBillable,
             'default_user_id' => $defaultUserId,
-            'anydesk' => $anydesk,
-            'teamviewer' => $teamviewer,
         ];
+
+        foreach (RemoteProviders::all() as $id => $definition) {
+            $prefix = 'plugins.remote-support.' . $id . '.';
+            $provider = [
+                'enabled' => (bool) ($s[$id . '_enabled'] ?? config($prefix . 'enabled', false)),
+            ];
+            foreach ($definition->configFields as $field) {
+                $own = $s[$id . '_' . $field['key']] ?? null;
+                $fallback = config($prefix . $field['key']);
+                $provider[$field['key']] = match ($field['cast']) {
+                    'bool' => $own !== null ? (bool) $own : (bool) ($fallback ?? $field['default']),
+                    'int' => NumberHelper::toIntOrNull($own) ?? NumberHelper::toIntOrNull($fallback) ?? $field['default'],
+                    default => StringHelper::trimToNull(is_scalar($own) ? (string) $own : null)
+                        ?? StringHelper::trimToNull(is_scalar($fallback) ? (string) $fallback : null)
+                        ?? $field['default'],
+                };
+            }
+            $config[$id] = $provider;
+        }
+
+        return $config;
     }
 }

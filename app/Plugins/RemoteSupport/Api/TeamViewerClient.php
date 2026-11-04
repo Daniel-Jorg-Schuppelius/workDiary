@@ -26,13 +26,15 @@ use Carbon\CarbonImmutable;
 class TeamViewerClient implements RemoteProvider {
     public const ID = 'teamviewer';
 
+    public const DEFAULT_BASE_URL = 'https://webapi.teamviewer.com/api/v1';
+
     private const MAX_PAGES = 200;
 
     private ?PluginApiClient $api = null;
 
     public function __construct(
         private readonly ?string $apiKey,
-        private readonly string $baseUrl = 'https://webapi.teamviewer.com/api/v1',
+        private readonly string $baseUrl = self::DEFAULT_BASE_URL,
     ) {}
 
     public function id(): string {

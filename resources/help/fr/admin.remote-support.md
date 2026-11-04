@@ -1,10 +1,14 @@
 ---
 title: "Télémaintenance"
 topic: admin.remote-support
-version: 3
+version: 4
 keywords:
     - AnyDesk
     - TeamViewer
+    - RustDesk
+    - Splashtop
+    - pcvisit
+    - jeton d'API
     - accès à distance
     - session à distance
     - assistance à distance
@@ -21,12 +25,14 @@ related:
     - assets.fleet
 ---
 
-La télémaintenance reprend les rapports de session d'AnyDesk et de
-TeamViewer et les transforme en saisies de temps. Les sessions sont
-rattachées à un appareil (actif, par ex. poste de travail, serveur,
-ordinateur portable) via l'ID d'appareil (ID AnyDesk/TeamViewer). Avec
-**Importer les sessions**, vous pouvez en outre importer les sessions
-AnyDesk via l'import central.
+La télémaintenance reprend les rapports de session d'AnyDesk,
+TeamViewer, RustDesk, Splashtop et pcvisit et les transforme en saisies
+de temps. Les sessions sont rattachées à un appareil (actif, par ex.
+poste de travail, serveur, ordinateur portable) via l'ID d'appareil du
+fournisseur. Avec **Importer les sessions**, vous pouvez en outre
+importer des exports de sessions (AnyDesk, RustDesk Server Pro) via
+l'import central ; la ligne d'en-tête révèle le fournisseur, une colonne
+**Fournisseur** a la priorité.
 
 La page **Télémaintenance – connexions non affectées** comporte deux
 onglets ; le champ de recherche trouve l'ID d'appareil, l'alias,
@@ -60,6 +66,44 @@ Onglet **Attribuer les sessions** (appareils multi-clients) :
   client au projet de maintenance interne.
 - **Rejeter les éléments sélectionnés** rejette des sessions
   individuelles.
+
+Configurer les fournisseurs (paramètres du plugin de l'organisation, un
+interrupteur par fournisseur) :
+
+- **AnyDesk** : ID de licence et mot de passe API de la licence ; l'ID
+  d'appareil est l'ID AnyDesk de l'ordinateur.
+- **TeamViewer** : jeton de script avec autorisation pour les rapports
+  de connexion ; l'ID d'appareil est l'ID TeamViewer.
+- **RustDesk** : le serveur RustDesk gratuit n'enregistre pas les
+  connexions. Les sessions ne proviennent que d'un serveur API que les
+  clients ont saisi sous « Serveur API ». Pour **Server Pro**, saisissez
+  l'adresse de la console web et un jeton d'API (Paramètres → Tokens →
+  Créer, autorisation « Audit Log ») ; pour le **serveur API open
+  source** (rustdesk-api), l'adresse avec le port ainsi que le nom
+  d'utilisateur et le mot de passe d'un administrateur, le fuseau horaire
+  du serveur seulement s'il ne tourne pas dans le fuseau de
+  l'organisation. Si le serveur est sur votre propre réseau, activez
+  **Autoriser les adresses de réseau privé**. L'ID d'appareil est l'ID
+  RustDesk de l'ordinateur (sans espaces). Les connexions encore en cours
+  sont reprises après leur fin.
+- **Splashtop** : jeton d'API de la console web (Paramètres du compte →
+  Web API Tokens ; propriétaires d'équipe et super-administrateurs
+  uniquement, l'Open API fait partie de Splashtop Enterprise). Choisissez
+  la région de votre compte ; l'ID d'équipe est déterminé à partir du
+  jeton. Les types de session se choisissent séparés par des virgules
+  (par défaut : sans surveillance et SOS). L'ID d'appareil est l'UUID
+  d'ordinateur Splashtop ; la boîte de réception affiche le nom de
+  l'ordinateur à côté. Les autres formules utilisent l'export CSV de la
+  page des journaux via l'import central.
+- **pcvisit** : jeton d'API utilisateur de la pcvisit Web App (paramètres
+  du compte) et un jeton d'intégrateur que pcvisit attribue à l'éditeur du
+  logiciel (paramètre de l'exploitant ; à saisir par organisation
+  seulement avec votre propre accord). Les sessions terminées sont
+  reprises avec la durée enregistrée dans pcvisit ; l'ID d'appareil est
+  l'ID d'ordinateur pcvisit, le client final figure dans la note.
+
+Si un fournisseur tombe en panne, les autres continuent ; le message
+apparaît dans l'état du plugin et dans le résultat de l'import.
 
 Sécurité et risques :
 

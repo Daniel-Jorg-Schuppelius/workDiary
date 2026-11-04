@@ -12,27 +12,30 @@ namespace App\Plugins\RemoteSupport\Services;
 
 use App\Models\Asset\Asset;
 use App\Models\Integration\{ExternalReference, ExternalReferenceAlias};
-use App\Plugins\RemoteSupport\Api\{AnyDeskClient, TeamViewerClient};
 use App\Plugins\RemoteSupport\Models\RemotePendingSession;
+use App\Plugins\RemoteSupport\Providers\RemoteProviders;
 use App\Plugins\RemoteSupport\RemoteSupportPlugin;
 
 /**
- * Geräte-Identität des Fernwartungs-Plugins: pflegt die AnyDesk-/TeamViewer-IDs
- * am Asset über die external_references-Tabelle ({@see setRemoteId()} /
+ * Geräte-Identität des Fernwartungs-Plugins: pflegt die Geräte-IDs der Anbieter
+ * (Register {@see RemoteProviders}) am Asset über die external_references-Tabelle ({@see setRemoteId()} /
  * {@see forgetRemoteId()}) und überführt bei Duplikaten IDs + Pending-Sitzungen
  * auf das Zielgerät ({@see mergeRemoteDevice()}).
  */
 class RemoteDeviceRegistry {
-    /** Provider-Kennung → external_type des Geräte-Links. */
-    public const DEVICE_TYPES = [
-        AnyDeskClient::ID => 'anydesk_id',
-        TeamViewerClient::ID => 'teamviewer_id',
-    ];
+    /**
+     * Provider-Kennung → external_type des Geräte-Links (`<id>_id`).
+     *
+     * @return array<string, string>
+     */
+    public static function deviceTypes(): array {
+        return RemoteProviders::deviceTypes();
+    }
 
     /**
      * Asset-Unterkategorien (category_code), die eine Fernwartungs-ID tragen
      * können. Nur für diese Geräte wird das Panel angeboten und nur ihnen lassen
-     * sich offene Verbindungen zuweisen (AnyDesk/TeamViewer gibt es auch für
+     * sich offene Verbindungen zuweisen (Fernwartungs-Clients gibt es auch für
      * Tablets und Smartphones).
      *
      * @var list<string>
@@ -177,7 +180,7 @@ class RemoteDeviceRegistry {
 
         $primaries = ExternalReference::query()
             ->forPlugin($source->organization_id, RemoteSupportPlugin::ID)
-            ->whereIn('external_type', array_values(self::DEVICE_TYPES))
+            ->whereIn('external_type', array_values(self::deviceTypes()))
             ->forReferenceable($source)
             ->get();
 
@@ -213,7 +216,7 @@ class RemoteDeviceRegistry {
             ->withoutGlobalScopes()
             ->where('organization_id', $source->organization_id)
             ->where('plugin_id', RemoteSupportPlugin::ID)
-            ->whereIn('external_type', array_values(self::DEVICE_TYPES))
+            ->whereIn('external_type', array_values(self::deviceTypes()))
             ->where('referenceable_type', $source->getMorphClass())
             ->where('referenceable_id', $source->getKey())
             ->update(['referenceable_id' => $target->getKey()]);
@@ -229,6 +232,6 @@ class RemoteDeviceRegistry {
 
     /** external_type des Geräte-Links für einen Provider (auch für den Importer). */
     public static function deviceType(string $provider): string {
-        return self::DEVICE_TYPES[$provider] ?? throw new \InvalidArgumentException("Unknown remote provider: {$provider}");
+        return RemoteProviders::find($provider)?->deviceType() ?? throw new \InvalidArgumentException("Unknown remote provider: {$provider}");
     }
 }
