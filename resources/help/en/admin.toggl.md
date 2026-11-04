@@ -1,7 +1,7 @@
 ---
 title: "Toggl Import"
 topic: admin.toggl
-version: 4
+version: 5
 keywords:
     - Toggl Track
     - import time entries
@@ -17,6 +17,7 @@ keywords:
     - Toggl 2.0
     - Toggl Focus
     - live sync
+    - create Toggl projects
 audience:
     - admin
 related:
@@ -115,3 +116,13 @@ Webhook (optional):
   from the new Toggl.
 - You choose the default user of single-user mode in the plugin settings
   under **Book times for user** from the list of users.
+- **Create missing Toggl projects**: times are transferred only into
+  projects that have a counterpart in Toggl. Projects linked only by name
+  receive their Toggl ID automatically once a day since 4 November 2026; if
+  the counterpart is missing altogether (for example a customer's default
+  project that remote support sessions book into), the times stay behind and
+  the project appears as a notice in the integration inbox. With **Create
+  missing Toggl projects** the transfer creates client and project in Toggl
+  itself (customer name as Toggl client, project name as Toggl project;
+  existing ones are matched by name), and the times follow in the next run.
+  Older backlog is caught up with `toggl:push --days=90`.

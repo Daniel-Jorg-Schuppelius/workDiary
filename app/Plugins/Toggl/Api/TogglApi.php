@@ -89,4 +89,23 @@ interface TogglApi extends RemoteTimeWriter {
         bool $billable,
         array $tags = [],
     ): array;
+
+    /**
+     * Legt einen Kunden im Workspace an (Nachtrag 2026-11-04: fehlende
+     * Gegenstücke beim Übertragen anlegen).
+     *
+     * @return array{id: int, name: string}
+     *
+     * @throws TogglApiException bei Nicht-2xx oder Antwort ohne ID
+     */
+    public function createClient(int $workspaceId, string $name): array;
+
+    /**
+     * Legt ein Projekt im Workspace an, optional unter einem Kunden.
+     *
+     * @return array{id: int, name: string, client_id: ?int}
+     *
+     * @throws TogglApiException bei Nicht-2xx oder Antwort ohne ID
+     */
+    public function createProject(int $workspaceId, string $name, ?int $clientId): array;
 }

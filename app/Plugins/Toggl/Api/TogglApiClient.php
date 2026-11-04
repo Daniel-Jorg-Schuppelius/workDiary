@@ -791,6 +791,54 @@ class TogglApiClient implements TogglApi {
         return (array) $response->json();
     }
 
+    /**
+     * `POST /workspaces/{id}/clients` mit `name` (Referenz v9, Felder
+     * `external_reference`, `name`, `notes`; der Workspace steht im Pfad).
+     */
+    public function createClient(int $workspaceId, string $name): array {
+        $response = $this->api()->postJson(
+            $this->baseUrl . '/workspaces/' . $workspaceId . '/clients',
+            ['name' => $name],
+            ['timeout' => 20],
+        );
+        if (! $response->successful()) {
+            throw new TogglApiException('Toggl-Kunde nicht angelegt (HTTP ' . $response->status() . ')', $response->status());
+        }
+        $id = $response->json('id');
+        if (! is_numeric($id)) {
+            throw new TogglApiException('Toggl-Antwort ohne Kunden-ID');
+        }
+
+        return ['id' => (int) $id, 'name' => (string) ($response->json('name') ?? $name)];
+    }
+
+    /**
+     * `POST /workspaces/{id}/projects` (Referenz v9: `name`, `active`,
+     * `is_private`, `client_id`; `billable` ist ein Premium-Feld und wird
+     * nicht gesendet, wie bei den Zeiteinträgen).
+     */
+    public function createProject(int $workspaceId, string $name, ?int $clientId): array {
+        $payload = ['name' => $name, 'active' => true, 'is_private' => false];
+        if ($clientId !== null) {
+            $payload['client_id'] = $clientId;
+        }
+        $response = $this->api()->postJson(
+            $this->baseUrl . '/workspaces/' . $workspaceId . '/projects',
+            $payload,
+            ['timeout' => 20],
+        );
+        if (! $response->successful()) {
+            throw new TogglApiException('Toggl-Projekt nicht angelegt (HTTP ' . $response->status() . ')', $response->status());
+        }
+        $id = $response->json('id');
+        if (! is_numeric($id)) {
+            throw new TogglApiException('Toggl-Antwort ohne Projekt-ID');
+        }
+        $remoteClient = $response->json('client_id');
+
+        return ['id' => (int) $id, 'name' => (string) ($response->json('name') ?? $name), 'client_id' => is_numeric($remoteClient) ? (int) $remoteClient : $clientId];
+    }
+
     private function api(): PluginApiClient {
         if ($this->api === null) {
             $this->api = app(PluginHttpFactory::class)->client('toggl', $this->baseUrl, $this->requestInterval);

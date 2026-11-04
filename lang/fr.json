@@ -11138,5 +11138,6 @@
     "Vereinbarte Stunden abrechnen": "Facturer les heures convenues",
     "Fehlt einer Person Zeit zum Projekt-Soll, ergänzt die Übergabe die Differenz als Position „Vereinbarte Einsatzzeit“. Mehrzeit bleibt wie gebucht.": "Si une personne n’atteint pas la cible du projet, le transfert ajoute la différence comme position « Temps d’intervention convenu ». Le temps supplémentaire reste tel que saisi.",
     "[Soll berechnet]": "[Cible facturée]",
-    "Befunde unter Projekt-Soll": "Constats sous la cible de projet"
+    "Befunde unter Projekt-Soll": "Constats sous la cible de projet",
+    "Projekt ohne Gegenstück in :plugin — Zeiten nicht übertragen": "Projet sans équivalent dans :plugin — temps non transférés"
 }

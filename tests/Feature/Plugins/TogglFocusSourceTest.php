@@ -417,4 +417,41 @@ class TogglFocusSourceTest extends TestCase {
                 && ($body['project_id'] ?? null) === 31;
         });
     }
+
+    /** Nachtrag 2026-11-04: fehlende Gegenstücke entstehen auch im neuen Toggl (Kunde ohne, Projekt mit Organisationspfad). */
+    public function test_export_creates_missing_focus_client_and_project(): void {
+        $config = $this->enable(['export_enabled' => true, 'export_create_projects' => true]);
+        $project = $this->project('Acme', 'Website');
+        TimeEntry::query()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $project->id,
+            'user_id' => $this->dev->id,
+            'date' => '2026-10-20',
+            'started_at' => CarbonImmutable::parse('2026-10-20 10:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-10-20 11:00:00'),
+            'kind' => TimeEntryKind::Work,
+            'description' => 'Fernwartung',
+        ]);
+        $clientsUrl = self::FOCUS . '/workspaces/' . self::WS . '/clients';
+        $projectsUrl = self::FOCUS . '/organizations/' . self::ORG . '/workspaces/' . self::WS . '/projects';
+        $fake = FakePluginHttp::fake([
+            $clientsUrl . '*' => static fn (RequestInterface $r) => $r->getMethod() === 'POST'
+                ? FakePluginHttp::response(['id' => 41, 'name' => 'Acme', 'workspace_id' => self::WS], 201)
+                : FakePluginHttp::response(['data' => [], 'page' => 1, 'per_page' => 100]),
+            $projectsUrl . '*' => static fn (RequestInterface $r) => $r->getMethod() === 'POST'
+                ? FakePluginHttp::response(['id' => 31, 'name' => 'Website', 'client_id' => 41], 201)
+                : FakePluginHttp::response(['data' => [], 'page' => 1, 'per_page' => 100]),
+            self::ENTRIES_URL => FakePluginHttp::response(['id' => 9500, 'start' => '2026-10-20T10:00:00Z', 'duration' => 3600, 'description' => 'Fernwartung', 'project_id' => 31, 'billable' => false], 201),
+        ]);
+
+        $result = (new TogglExportService)->exportPending($this->organization, $config);
+
+        $this->assertSame(1, $result['pushed']);
+        $posts = array_values(array_filter($fake->recorded(), static fn (array $r): bool => $r['request']->getMethod() === 'POST'));
+        $this->assertSame([$clientsUrl, $projectsUrl, self::ENTRIES_URL], array_map(static fn (array $r): string => (string) $r['request']->getUri(), $posts));
+        $this->assertSame(['name' => 'Acme'], json_decode((string) $posts[0]['request']->getBody(), true));
+        $this->assertSame(['name' => 'Website', 'private' => false, 'client_id' => 41], json_decode((string) $posts[1]['request']->getBody(), true));
+        $this->assertDatabaseHas('external_references', ['plugin_id' => TogglPlugin::ID, 'external_type' => 'focus_project_id', 'referenceable_id' => $project->id, 'external_id' => '31']);
+        $this->assertDatabaseHas('external_references', ['plugin_id' => TogglPlugin::ID, 'external_type' => 'focus_client_id', 'referenceable_id' => $project->customer_id, 'external_id' => '41']);
+    }
 }

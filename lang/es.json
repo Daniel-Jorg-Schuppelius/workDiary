@@ -11138,5 +11138,6 @@
     "Vereinbarte Stunden abrechnen": "Facturar las horas acordadas",
     "Fehlt einer Person Zeit zum Projekt-Soll, ergänzt die Übergabe die Differenz als Position „Vereinbarte Einsatzzeit“. Mehrzeit bleibt wie gebucht.": "Si a una persona le falta tiempo para el objetivo del proyecto, la transferencia añade la diferencia como posición «Tiempo de servicio acordado». El tiempo extra se mantiene como se registró.",
     "[Soll berechnet]": "[Objetivo facturado]",
-    "Befunde unter Projekt-Soll": "Hallazgos bajo el objetivo del proyecto"
+    "Befunde unter Projekt-Soll": "Hallazgos bajo el objetivo del proyecto",
+    "Projekt ohne Gegenstück in :plugin — Zeiten nicht übertragen": "Proyecto sin equivalente en :plugin: tiempos no transferidos"
 }
