@@ -11,14 +11,14 @@
 @section('nav-title', __('Fernwartung – Inbox'))
 
 @section('content')
-<x-index-page :subtitle="__('Diese AnyDesk-/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weisen Sie jede ID einem bestehenden Gerät zu oder legen Sie ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht. Bei Mehrkundengeräten bleiben sie offen und werden im Reiter „Sitzungen zuordnen“ je Kunde gebucht; Sitzungen eigener Geräte ohne Kunden buchen auf das interne Wartungsprojekt.')">
+<x-index-page :subtitle="__('Diese Geräte-IDs tauchten in den Reports der Fernwartung auf, sind aber keinem Gerät zugeordnet. Weisen Sie jede ID einem bestehenden Gerät zu oder legen Sie ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht. Bei Mehrkundengeräten bleiben sie offen und werden im Reiter „Sitzungen zuordnen“ je Kunde gebucht; Sitzungen eigener Geräte ohne Kunden buchen auf das interne Wartungsprojekt.')">
     <x-slot:actions>
         <x-button tone="primary" :href="route('admin.imports.create', ['entity' => \App\Enums\Import\ImportEntity::RemoteSessions->value])">{{ __('Sitzungen importieren') }}</x-button>
     </x-slot:actions>
 
     <x-slot:note>
         <x-icon name="upload_file" class="align-middle" />
-        {{ __('AnyDesk-Sitzungen werden im zentralen Import-Wizard eingelesen.') }}
+        {{ __('Sitzungsexporte (AnyDesk, RustDesk Server Pro) werden im zentralen Import-Wizard eingelesen.') }}
     </x-slot:note>
 
     <x-filter-bar class="mb-3" :reset="route('admin.remote-support.pending.index')">
@@ -103,7 +103,7 @@
 
                         <div class="mb-3 pr-10">
                             <div class="flex flex-wrap items-center gap-2">
-                                <x-status-badge tone="neutral" size="md">{{ ucfirst($group->provider) }}</x-status-badge>
+                                <x-status-badge tone="neutral" size="md">{{ \App\Plugins\RemoteSupport\Providers\RemoteProviders::label($group->provider) }}</x-status-badge>
                                 <span class="font-mono text-base font-semibold">{{ $group->remote_id }}</span>
                                 @if ($group->alias)
                                     <span class="inline-flex items-center gap-1 text-sm font-medium text-base-content/80">
@@ -332,7 +332,7 @@
                                         – {{ \Illuminate\Support\Carbon::parse($session->ended_at)->orgTz()->isoFormat('HH:mm') }}
                                     </td>
                                     <td class="text-right text-sm">{{ $session->minutes() }}</td>
-                                    <td class="text-sm">{{ ucfirst($session->provider) }}</td>
+                                    <td class="text-sm">{{ \App\Plugins\RemoteSupport\Providers\RemoteProviders::label($session->provider) }}</td>
                                     <td class="text-sm text-base-content/70">{{ $session->note }}</td>
                                     <td>
                                         @if ($rowSug !== null)

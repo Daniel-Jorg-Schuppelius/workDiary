@@ -17,9 +17,9 @@ use App\Models\Asset\Asset;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
-use App\Plugins\RemoteSupport\Api\{AnyDeskClient, TeamViewerClient};
 use App\Plugins\RemoteSupport\Enums\RemotePendingSessionStatus;
 use App\Plugins\RemoteSupport\Models\RemotePendingSession;
+use App\Plugins\RemoteSupport\Providers\RemoteProviders;
 use App\Plugins\RemoteSupport\Services\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSupportSuggestionService};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Services\Asset\AssetService;
@@ -41,8 +41,6 @@ use Illuminate\View\View;
  */
 class RemoteSupportPendingController extends Controller {
     use ResolvesPluginOrgContext;
-
-    private const PROVIDERS = [AnyDeskClient::ID, TeamViewerClient::ID];
 
     public function __construct(
         private readonly RemotePendingAssignmentService $service,
@@ -175,7 +173,7 @@ class RemoteSupportPendingController extends Controller {
         ]);
 
         $validated = $request->validate([
-            'provider' => ['required', 'string', 'in:' . implode(',', self::PROVIDERS)],
+            'provider' => ['required', 'string', 'in:' . implode(',', RemoteProviders::ids())],
             'remote_id' => ['required', 'string', 'max:191'],
             'asset_id' => ['required', 'integer'],
             'shared_remote' => ['sometimes', 'boolean'],
@@ -219,7 +217,7 @@ class RemoteSupportPendingController extends Controller {
         ]);
 
         $validated = $request->validate([
-            'provider' => ['required', 'string', 'in:' . implode(',', self::PROVIDERS)],
+            'provider' => ['required', 'string', 'in:' . implode(',', RemoteProviders::ids())],
             'remote_id' => ['required', 'string', 'max:191'],
             'name' => ['required', 'string', 'max:191'],
             'customer_id' => ['nullable', 'integer'],
@@ -383,7 +381,7 @@ class RemoteSupportPendingController extends Controller {
         $admin = $this->admin();
 
         $validated = $request->validate([
-            'provider' => ['required', 'string', 'in:' . implode(',', self::PROVIDERS)],
+            'provider' => ['required', 'string', 'in:' . implode(',', RemoteProviders::ids())],
             'remote_id' => ['required', 'string', 'max:191'],
         ]);
 

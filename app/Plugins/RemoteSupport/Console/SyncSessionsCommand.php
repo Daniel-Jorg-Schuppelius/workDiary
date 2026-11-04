@@ -18,7 +18,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
 /**
- * Holt die AnyDesk-/TeamViewer-Verbindungen je Organisation und legt neue
+ * Holt die Fernwartungs-Verbindungen aller aktiven Anbieter je Organisation und legt neue
  * Sitzungen als TimeEntry im Standardprojekt des zugeordneten Kunden an.
  * Läuft sowohl stündlich im Scheduler als auch manuell aus der Admin-UI.
  */
@@ -29,7 +29,7 @@ class SyncSessionsCommand extends Command {
     protected $signature = 'remote:sync-sessions ' . self::ORGANIZATION_OPTION . '
         {--days= : Zeitfenster rückwirkend in Tagen (überschreibt die Einstellung)}';
 
-    protected $description = 'Importiert AnyDesk-/TeamViewer-Verbindungen als Zeiteinträge (Standardprojekt des Kunden).';
+    protected $description = 'Importiert Fernwartungs-Verbindungen (AnyDesk, TeamViewer, RustDesk, Splashtop, pcvisit) als Zeiteinträge (Standardprojekt des Kunden).';
 
     public function handle(RemoteSessionImporter $service): int {
         $organizations = $this->organizationsToProcess();
@@ -58,6 +58,9 @@ class SyncSessionsCommand extends Command {
             try {
                 $result = $service->import($org, $config, $from, $to);
                 $this->line("  created: {$result['created']}, linked: {$result['linked']}, skipped: {$result['skipped']}, unmatched: {$result['unmatched']}");
+                if ($result['errors'] > 0) {
+                    $this->error("  Anbieter mit Fehler: {$result['error']}");
+                }
             } catch (\Throwable $e) {
                 $this->error("  Fehler: {$e->getMessage()}");
             }

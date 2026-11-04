@@ -17,21 +17,21 @@ use App\Models\Platform\{Organization, User};
 use App\Models\Time\TimeEntry;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{NavigationContributor, Plugin, PluginCapability, ProvidesRemoteSessions, SlotRenderer, TimeImporter};
-use App\Plugins\RemoteSupport\Api\{AnyDeskClient, TeamViewerClient};
 use App\Plugins\RemoteSupport\Enums\RemotePendingSessionStatus;
 use App\Plugins\RemoteSupport\Models\RemotePendingSession;
-use App\Plugins\RemoteSupport\Providers\RemoteProvider;
+use App\Plugins\RemoteSupport\Providers\{RemoteProvider, RemoteProviderDefinition, RemoteProviders};
 use App\Plugins\RemoteSupport\Services\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSessionImporter};
-use App\Plugins\Support\ApiHealthProbe;
+use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
 use App\Services\Navigation\NavigationRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\{Cache, Route};
 
 /**
- * Fernwartungs-Plugin (AnyDesk + TeamViewer).
+ * Fernwartungs-Plugin (AnyDesk, TeamViewer, RustDesk, Splashtop, pcvisit —
+ * Register {@see RemoteProviders}).
  *
- * - Hinterlegt je Gerät (Asset) die AnyDesk-/TeamViewer-ID in external_references.
- * - Importiert die Verbindungs-Reports beider Dienste und legt je Sitzung einen
+ * - Hinterlegt je Gerät (Asset) die Geräte-ID des Anbieters in external_references.
+ * - Importiert die Verbindungs-Reports der Dienste und legt je Sitzung einen
  *   TimeEntry im Standardprojekt des zugeordneten Kunden an (TIME_IMPORT).
  *
  * Plugin-Id ist "remote-support". Pro Organisation konfigurierbar über
@@ -51,7 +51,7 @@ class RemoteSupportPlugin extends AbstractPlugin implements NavigationContributo
     }
 
     public function description(): string {
-        return __('Speichert AnyDesk-/TeamViewer-IDs an Geräten und importiert Verbindungen als Zeiteinträge im Standardprojekt des Kunden.');
+        return __('Speichert die Geräte-IDs von AnyDesk, TeamViewer, RustDesk, Splashtop und pcvisit an Geräten und importiert Verbindungen als Zeiteinträge im Standardprojekt des Kunden.');
     }
 
     public function capabilities(): array {
@@ -104,14 +104,10 @@ class RemoteSupportPlugin extends AbstractPlugin implements NavigationContributo
             ['key' => 'default_billable', 'label' => __('Importierte Sitzungen abrechenbar'), 'type' => 'boolean', 'default' => true],
             ['key' => 'default_user_id', 'label' => __('Zeiten buchen für Benutzer'), 'type' => 'user', 'help' => __('Optional. Leer = Organisations-Owner bzw. erster Benutzer.')],
 
-            ['key' => 'anydesk_enabled', 'label' => __('AnyDesk aktiv'), 'type' => 'boolean', 'default' => false],
-            ['key' => 'anydesk_license_id', 'label' => __('AnyDesk Lizenz-ID'), 'type' => 'text', 'help' => __('Numerische Lizenz-ID (z. B. 1438129266231705) — nicht der Lizenz-Schlüssel aus Buchstaben/Ziffern.')],
-            ['key' => 'anydesk_api_key', 'label' => __('AnyDesk API-Passwort'), 'type' => 'password', 'help' => __('API-Passwort der AnyDesk-Lizenz (Request-Signierung).')],
-            ['key' => 'anydesk_base_url', 'label' => __('AnyDesk API-Basis-URL'), 'type' => 'text', 'default' => 'https://v1.api.anydesk.com:8081'],
+            ...array_merge(...array_map(static fn (RemoteProviderDefinition $d): array => $d->settingsSchema(), array_values(RemoteProviders::all()))),
 
-            ['key' => 'teamviewer_enabled', 'label' => __('TeamViewer aktiv'), 'type' => 'boolean', 'default' => false],
-            ['key' => 'teamviewer_api_key', 'label' => __('TeamViewer Script-Token'), 'type' => 'password', 'help' => __('Script-Token mit Connection-Report-Berechtigung.')],
-            ['key' => 'teamviewer_base_url', 'label' => __('TeamViewer API-Basis-URL'), 'type' => 'text', 'default' => 'https://webapi.teamviewer.com/api/v1'],
+            // Ein Schlüssel für das ganze Plugin: nur selbst gehostete Server (RustDesk) stehen im LAN.
+            ['key' => 'allow_private_network', 'label' => __('Private Netzadressen erlauben'), 'type' => 'boolean', 'default' => false, 'help' => __('Nur für einen selbst gehosteten RustDesk-Server im eigenen Netz (10.x, 192.168.x, …). Cloud-Dienste brauchen das nicht.')],
         ];
     }
 
@@ -121,7 +117,7 @@ class RemoteSupportPlugin extends AbstractPlugin implements NavigationContributo
      */
     public function healthCheck(): PluginHealth {
         $config = RemoteSupportConfig::resolve();
-        $providers = array_filter(app(RemoteSessionImporter::class)->providersFor($config), fn($p) => $p->isConfigured());
+        $providers = array_filter(app(RemoteSessionImporter::class)->providersFor($config, PluginOrgContext::currentId()), fn ($p) => $p->isConfigured());
 
         if ($providers === []) {
             return PluginHealth::degraded(__('Kein Fernwartungs-Anbieter konfiguriert.'));
@@ -129,7 +125,7 @@ class RemoteSupportPlugin extends AbstractPlugin implements NavigationContributo
 
         $results = array_map(
             static fn (RemoteProvider $provider): PluginHealth => ApiHealthProbe::probe(
-                RemoteSessionImporter::PROVIDER_TAG_LABELS[$provider->id()] ?? ucfirst($provider->id()),
+                RemoteProviders::label($provider->id()),
                 fn () => $provider->probe(),
             ),
             array_values($providers),
@@ -177,8 +173,12 @@ class RemoteSupportPlugin extends AbstractPlugin implements NavigationContributo
 
         return view('remote-support::_panel', [
             'asset' => $context,
-            'anydeskIds' => $devices->remoteIds($context, AnyDeskClient::ID),
-            'teamviewerIds' => $devices->remoteIds($context, TeamViewerClient::ID),
+            'providers' => array_map(static fn (RemoteProviderDefinition $d): array => [
+                'id' => $d->id,
+                'label' => $d->label,
+                'placeholder' => $d->placeholder,
+                'ids' => $devices->remoteIds($context, $d->id),
+            ], array_values(RemoteProviders::all())),
             'pendingCount' => (int) $pendingCount,
             // Ziele für „Fernwartungsdaten übertragen" (Duplikat-Bereinigung).
             'mergeTargets' => \App\Models\Asset\Asset::query()

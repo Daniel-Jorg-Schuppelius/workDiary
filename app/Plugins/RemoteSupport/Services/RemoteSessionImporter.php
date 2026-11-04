@@ -18,16 +18,18 @@ use App\Models\Integration\{ExternalReference, ExternalReferenceAlias};
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
-use App\Plugins\RemoteSupport\Api\{AnyDeskClient, TeamViewerClient};
+use App\Plugins\PluginErrorRecorder;
 use App\Plugins\RemoteSupport\Enums\RemotePendingSessionStatus;
+use App\Plugins\RemoteSupport\Exceptions\RemoteProviderException;
 use App\Plugins\RemoteSupport\Models\RemotePendingSession;
-use App\Plugins\RemoteSupport\Providers\{RemoteProvider, RemoteSession};
+use App\Plugins\RemoteSupport\Providers\{RemoteProvider, RemoteProviders, RemoteSession};
 use App\Plugins\RemoteSupport\{RemoteSupportConfig, RemoteSupportPlugin};
 use App\Plugins\Support\PersistsTimeImportInbox;
 use App\Services\Integration\ProjectKeywordMatcher;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\DateHelper;
+use Throwable;
 
 /**
  * Import & Buchung des Fernwartungs-Plugins: ruft die Verbindungs-Reports der
@@ -46,14 +48,10 @@ class RemoteSessionImporter {
 
     /**
      * Statt Provider-Präfix in der Beschreibung („Anydesk — …") tragen
-     * importierte Einträge Tags: Anbieter-Tag + generisches Remote-Tag —
-     * damit bleibt die Beschreibung sauber und die Filterung möglich.
+     * importierte Einträge Tags: Anbieter-Tag (Bezeichnung aus dem Register)
+     * + generisches Remote-Tag — damit bleibt die Beschreibung sauber und die
+     * Filterung möglich.
      */
-    public const PROVIDER_TAG_LABELS = [
-        AnyDeskClient::ID => 'AnyDesk',
-        TeamViewerClient::ID => 'TeamViewer',
-    ];
-
     public const REMOTE_TAG = 'Remote';
 
     protected function pluginId(): string {
@@ -66,22 +64,23 @@ class RemoteSessionImporter {
     }
 
     /**
-     * Baut die aktiven, konfigurierten Provider-Clients aus der Config.
+     * Baut die aktiven Provider-Clients aus der Config — je Anbieter des
+     * Registers, dessen Schalter gesetzt ist.
      *
      * @param  array<string, mixed>  $config  Ergebnis von {@see RemoteSupportConfig::resolve()}
      * @return array<int, RemoteProvider>
      */
-    public function providersFor(array $config): array {
+    public function providersFor(array $config, ?int $organizationId = null): array {
         $providers = [];
-
-        $ad = $config['anydesk'];
-        if ($ad['enabled']) {
-            $providers[] = new AnyDeskClient($ad['license_id'], $ad['api_key'], $ad['base_url']);
-        }
-
-        $tv = $config['teamviewer'];
-        if ($tv['enabled']) {
-            $providers[] = new TeamViewerClient($tv['api_key'], $tv['base_url']);
+        foreach (RemoteProviders::all() as $id => $definition) {
+            $providerConfig = $config[$id] ?? null;
+            if (! is_array($providerConfig) || empty($providerConfig['enabled'])) {
+                continue;
+            }
+            $provider = $definition->make($providerConfig, $organizationId);
+            if ($provider !== null) {
+                $providers[] = $provider;
+            }
         }
 
         return $providers;
@@ -91,22 +90,47 @@ class RemoteSessionImporter {
      * Ruft die Verbindungs-Reports aller aktiven Provider für die Organisation
      * im Fenster [$from, $to] ab und legt je neuer Session einen TimeEntry an.
      *
+     * Ein ausgefallener Anbieter stoppt die anderen nicht: sein Fehler wird
+     * gezählt (`errors`), als Text mitgegeben (`error`) und im
+     * Plugin-Fehlerrekorder festgehalten; was er bis zum Abbruch geliefert
+     * hat (Seitenlimit), wird gebucht.
+     *
      * @param  array<string, mixed>  $config  Ergebnis von {@see RemoteSupportConfig::resolve()}
-     * @return array{created: int, linked: int, skipped: int, unmatched: int, pending: int}
+     * @return array{created: int, linked: int, skipped: int, unmatched: int, pending: int, errors: int, error: string}
      */
     public function import(Organization $organization, array $config, CarbonImmutable $from, CarbonImmutable $to): array {
         $sessions = [];
-        foreach ($this->providersFor($config) as $provider) {
+        $errors = [];
+        foreach ($this->providersFor($config, (int) $organization->id) as $provider) {
             if (! $provider->isConfigured()) {
                 continue;
             }
 
-            foreach ($provider->fetchSessions($from, $to) as $session) {
-                $sessions[] = $session;
+            try {
+                foreach ($provider->fetchSessions($from, $to) as $session) {
+                    $sessions[] = $session;
+                }
+            } catch (RemoteProviderException $e) {
+                foreach ($e->sessions() as $session) {
+                    $sessions[] = $session;
+                }
+                $errors[] = $this->recordProviderError($organization, $provider, $e);
+            } catch (Throwable $e) {
+                $errors[] = $this->recordProviderError($organization, $provider, $e);
             }
         }
 
-        return $this->importSessions($organization, $config, $sessions);
+        $result = $this->importSessions($organization, $config, $sessions);
+        $result['errors'] = count($errors);
+        $result['error'] = implode(' · ', $errors);
+
+        return $result;
+    }
+
+    private function recordProviderError(Organization $organization, RemoteProvider $provider, Throwable $e): string {
+        app(PluginErrorRecorder::class)->record(RemoteSupportPlugin::ID, 'sync:' . $provider->id(), $e, [], (int) $organization->id);
+
+        return sprintf('%s: %s', RemoteProviders::label($provider->id()), $e->getMessage());
     }
 
     /**
@@ -357,7 +381,7 @@ class RemoteSessionImporter {
      */
     public function applyRemoteTags(Organization $organization, TimeEntry $entry, string $provider): void {
         $ids = [];
-        foreach ([self::PROVIDER_TAG_LABELS[$provider] ?? ucfirst($provider), self::REMOTE_TAG] as $name) {
+        foreach ([RemoteProviders::label($provider), self::REMOTE_TAG] as $name) {
             $ids[] = Tag::findOrCreateByNameForOrganization($name, (int) $organization->id)->id;
         }
 

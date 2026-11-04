@@ -14,8 +14,8 @@ namespace App\Plugins\RemoteSupport\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Models\Platform\Organization;
-use App\Plugins\RemoteSupport\Api\AnyDeskClient;
-use App\Plugins\RemoteSupport\Providers\RemoteSession;
+use App\Plugins\RemoteSupport\Api\{AnyDeskClient, RustDeskProClient};
+use App\Plugins\RemoteSupport\Providers\{RemoteProviders, RemoteSession};
 use App\Plugins\RemoteSupport\RemoteSupportConfig;
 use App\Plugins\RemoteSupport\Services\RemoteSessionImporter;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
@@ -27,8 +27,11 @@ use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
 use CommonToolkit\Helper\Data\{DateHelper, StringHelper};
 
 /**
- * CSV-Import-Spezifikation für Fernwartungs-Sitzungen (AnyDesk-Export), eingebunden
- * in den zentralen Import-Wizard (MVP-049).
+ * CSV-Import-Spezifikation für Fernwartungs-Sitzungen (AnyDesk-Export und
+ * Verbindungsexport von RustDesk Server Pro), eingebunden in den zentralen
+ * Import-Wizard (MVP-049). Den Anbieter erkennt {@see normalize()} an der
+ * Kopfzeile (RustDesk: Spalten „Controlled Device“/„Gesteuertes Gerät“ und
+ * „Type“); eine Spalte `provider` überstimmt die Erkennung.
  *
  * Anders als die Stammdaten-Specs upsertet sie keine Entität, sondern reicht jede
  * Zeile als {@see RemoteSession} an den {@see RemoteSessionImporter} weiter: bekannte
@@ -37,7 +40,9 @@ use CommonToolkit\Helper\Data\{DateHelper, StringHelper};
  *
  * Den AnyDesk-Eigenheiten — Excel-`sep=`-Vorzeile und das Datumsformat
  * „d.m.Y, H:i:s" — wird in {@see preprocessRaw()} bzw. {@see normalize()} begegnet;
- * die deutschen/englischen Spaltennamen löst {@see headerAliases()} auf.
+ * RustDesk Pro exportiert `toLocaleString()` des Browsers (deutsch
+ * „d.m.Y, H:i:s", englisch „m/d/Y, h:i:s A", ISO); die deutschen/englischen
+ * Spaltennamen beider Exporte löst {@see headerAliases()} auf.
  */
 class RemoteSessionSpec extends AbstractEntitySpec {
     /** @var array<int, array<string, mixed>> Org-ID → aufgelöste Plugin-Config */
@@ -53,7 +58,7 @@ class RemoteSessionSpec extends AbstractEntitySpec {
     }
 
     public function columns(): array {
-        return ['session_id', 'remote_id', 'alias', 'start', 'end', 'note'];
+        return ['session_id', 'remote_id', 'alias', 'start', 'end', 'note', 'provider', 'kind', 'controller'];
     }
 
     public function requiredColumns(): array {
@@ -80,6 +85,19 @@ class RemoteSessionSpec extends AbstractEntitySpec {
             'Kommentar' => 'note',
             'Comment' => 'note',
             'Bemerkung' => 'note',
+            'Anbieter' => 'provider',
+            'Provider' => 'provider',
+            // RustDesk Server Pro, Verbindungsprotokoll „Export as csv“ (englisch und deutsch).
+            'Controlled Device' => 'remote_id',
+            'Gesteuertes Gerät' => 'remote_id',
+            'Controlling Side' => 'controller',
+            'Steuernde Seite' => 'controller',
+            'Start Time' => 'start',
+            'End Time' => 'end',
+            'Note' => 'note',
+            'Notiz' => 'note',
+            'Type' => 'kind',
+            'Typ' => 'kind',
         ];
     }
 
@@ -92,14 +110,57 @@ class RemoteSessionSpec extends AbstractEntitySpec {
     }
 
     public function normalize(array $row): array {
+        $provider = $this->detectProvider($row);
+        $remoteId = $this->trimmedString($row['remote_id'] ?? null);
+        if ($provider === RustDeskProClient::ID && $remoteId !== null) {
+            $remoteId = RustDeskProClient::normalizeId($remoteId);
+        }
+
+        // RustDesk nennt die Art der Verbindung und die steuernde Seite; beides wandert in die Notiz.
+        $note = $this->trimmedString($row['note'] ?? null);
+        if ($provider === RustDeskProClient::ID) {
+            $kind = $this->trimmedString($row['kind'] ?? null);
+            $controller = $this->trimmedString($row['controller'] ?? null);
+            $parts = array_filter([
+                $kind !== null && ! in_array(strtolower($kind), ['normal', 'remote desktop', 'fernzugriff', '-'], true) ? $kind : null,
+                $note,
+                $controller,
+            ]);
+            $note = $parts !== [] ? implode(' · ', $parts) : null;
+        }
+
         return [
+            'provider' => $provider,
             'session_id' => $this->trimmedString($row['session_id'] ?? null),
-            'remote_id' => $this->trimmedString($row['remote_id'] ?? null),
+            'remote_id' => $remoteId,
             'alias' => $this->trimmedString($row['alias'] ?? null),
-            'note' => $this->trimmedString($row['note'] ?? null),
+            'note' => $note,
             'started_at' => $this->parseDate($row['start'] ?? null),
             'ended_at' => $this->parseDate($row['end'] ?? null),
         ];
+    }
+
+    /**
+     * Anbieter der Zeile: ausdrückliche Spalte `provider` (Kennung oder
+     * Bezeichnung), sonst die Kopfzeile — ein RustDesk-Pro-Export trägt die
+     * Spalten „Controlling Side“ und „Type“; alles andere ist AnyDesk wie bisher.
+     *
+     * @param  array<string, mixed>  $row
+     */
+    private function detectProvider(array $row): string {
+        $explicit = strtolower((string) ($this->trimmedString($row['provider'] ?? null) ?? ''));
+        if ($explicit !== '') {
+            foreach (RemoteProviders::all() as $id => $definition) {
+                if ($explicit === $id || $explicit === strtolower($definition->label)) {
+                    return $id;
+                }
+            }
+        }
+
+        // Der Zeilenleser liefert jede Spalte der Spec, auch leer: entscheidend ist ein Wert.
+        return $this->trimmedString($row['kind'] ?? null) !== null || $this->trimmedString($row['controller'] ?? null) !== null
+            ? RustDeskProClient::ID
+            : AnyDeskClient::ID;
     }
 
     public function validateRow(array $row, Organization $organization): array {
@@ -140,10 +201,10 @@ class RemoteSessionSpec extends AbstractEntitySpec {
             ? (string) $row['alias']
             : null;
 
-        // AnyDesk exportiert Ortszeit: gebucht wird UTC, der Ersatzschlüssel oben bleibt auf der Wanduhr (Re-Import).
+        // AnyDesk und RustDesk exportieren Ortszeit: gebucht wird UTC, der Ersatzschlüssel oben bleibt auf der Wanduhr (Re-Import).
         $tz = Tz::ofOrganization($organization);
         $session = new RemoteSession(
-            provider: AnyDeskClient::ID,
+            provider: (string) ($row['provider'] ?? AnyDeskClient::ID),
             sessionId: $sessionId,
             remoteId: $remoteId,
             startedAt: $start->shiftTimezone($tz)->utc(),
@@ -165,7 +226,17 @@ class RemoteSessionSpec extends AbstractEntitySpec {
         }
 
         // AnyDesk exportiert „d.m.Y, H:i:s“ — das Komma kennt das Toolkit nicht.
-        $iso = DateHelper::normalizeToIso(str_replace(', ', ' ', $value), DateTimeFormat::DE);
+        $value = str_replace(', ', ' ', $value);
+        $iso = DateHelper::normalizeToIso($value, DateTimeFormat::DE);
+
+        // RustDesk Pro exportiert `toLocaleString()` des Browsers — englisch „11/4/2026 2:15:57 PM“.
+        if ($iso === null && preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{1,2}):(\d{2}):(\d{2}) ?(AM|PM)$/i', $value, $m) === 1) {
+            $hour = (int) $m[4] % 12 + (strtoupper($m[7]) === 'PM' ? 12 : 0);
+            $iso = sprintf('%04d-%02d-%02d %02d:%s:%s', (int) $m[3], (int) $m[1], (int) $m[2], $hour, $m[5], $m[6]);
+            if (! DateHelper::isDateTime($iso)) {
+                return null;
+            }
+        }
 
         // Nur Wanduhrzeit mit Uhrzeit (`Y-m-d H:i:s`): kein reines Datum, kein Offset.
         return $iso === null || strlen($iso) !== 19 ? null : CarbonImmutable::parse($iso);

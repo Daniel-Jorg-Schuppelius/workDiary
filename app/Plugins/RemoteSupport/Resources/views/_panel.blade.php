@@ -9,7 +9,7 @@
 {{--
     Fernwartungs-Panel für die Asset-Detailansicht. Wird über
     PluginManager::renderSlot('asset-show.aside', $asset) eingebunden.
-    Erwartet: $asset, $anydeskId, $teamviewerId
+    Erwartet: $asset, $providers (id, label, placeholder, ids je Anbieter), $pendingCount, $mergeTargets
 --}}
 <x-card>
     <div class="flex flex-wrap items-center justify-between gap-2">
@@ -33,9 +33,11 @@
     </div>
 
     <div class="mt-3 grid gap-3 md:grid-cols-2">
-        @foreach ([['anydesk', 'AnyDesk', $anydeskIds], ['teamviewer', 'TeamViewer', $teamviewerIds]] as [$provider, $label, $ids])
+        @foreach ($providers as $providerRow)
+            @php($provider = $providerRow['id'])
+            @php($ids = $providerRow['ids'])
             <div class="rounded-box border border-base-300 p-3">
-                <div class="mb-2 font-medium">{{ $label }}</div>
+                <div class="mb-2 font-medium">{{ $providerRow['label'] }}</div>
 
                 {{-- Ein Gerät kann mehrere IDs tragen (Neuinstallation, Zweitinstanz). --}}
                 @if ($ids !== [])
@@ -60,7 +62,7 @@
                     <label class="form-control flex-1">
                         <span class="label-text text-xs">{{ $ids === [] ? __('Geräte-ID') : __('Weitere Geräte-ID') }}</span>
                         <input type="text" name="remote_id" required
-                               placeholder="{{ __('z. B. 123 456 789') }}"
+                               placeholder="{{ __('z. B. :example', ['example' => $providerRow['placeholder']]) }}"
                                class="input input-sm input-bordered">
                     </label>
                     <x-button type="submit">{{ __('Hinzufügen') }}</x-button>
@@ -85,7 +87,7 @@
     </form>
 
     {{-- Duplikat-Bereinigung: IDs + Pending-Sitzungen auf ein anderes Gerät überführen. --}}
-    @if (($mergeTargets ?? collect())->isNotEmpty() && ($anydeskIds !== [] || $teamviewerIds !== []))
+    @if (($mergeTargets ?? collect())->isNotEmpty() && collect($providers)->contains(fn (array $p): bool => $p['ids'] !== []))
         <form method="POST" action="{{ route('assets.remote-support.merge', $asset) }}" class="mt-3"
               data-confirm-dialog
               data-confirm-message="{{ __('Alle Geräte-IDs und offenen Sitzungen dieses Geräts auf das gewählte Gerät übertragen?') }}">

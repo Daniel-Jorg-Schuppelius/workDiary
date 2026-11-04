@@ -13,7 +13,7 @@ namespace App\Plugins\RemoteSupport\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
 use App\Models\Platform\Organization;
-use App\Plugins\RemoteSupport\Api\{AnyDeskClient, TeamViewerClient};
+use App\Plugins\RemoteSupport\Providers\RemoteProviders;
 use App\Plugins\RemoteSupport\RemoteSupportConfig;
 use App\Plugins\RemoteSupport\Services\{RemoteDeviceRegistry, RemoteSessionImporter};
 use App\Support\Sqid;
@@ -26,8 +26,6 @@ use Illuminate\Support\Facades\Gate;
  * setzen/entfernen und den manuellen Verbindungs-Import auslösen.
  */
 class RemoteSupportAssetController extends Controller {
-    private const PROVIDERS = [AnyDeskClient::ID, TeamViewerClient::ID];
-
     public function __construct(
         private readonly RemoteDeviceRegistry $devices,
         private readonly RemoteSessionImporter $importer,
@@ -37,7 +35,7 @@ class RemoteSupportAssetController extends Controller {
         Gate::authorize('update', $asset);
 
         $validated = $request->validate([
-            'provider' => ['required', 'string', 'in:' . implode(',', self::PROVIDERS)],
+            'provider' => ['required', 'string', 'in:' . implode(',', RemoteProviders::ids())],
             'remote_id' => ['required', 'string', 'max:191'],
         ]);
 
@@ -48,7 +46,7 @@ class RemoteSupportAssetController extends Controller {
 
     public function forgetId(Request $request, Asset $asset, string $provider): RedirectResponse {
         Gate::authorize('update', $asset);
-        abort_unless(in_array($provider, self::PROVIDERS, true), 404);
+        abort_unless(in_array($provider, RemoteProviders::ids(), true), 404);
 
         $remoteId = trim((string) $request->input('remote_id', ''));
         $this->devices->forgetRemoteId($asset, $provider, $remoteId !== '' ? $remoteId : null);
@@ -116,6 +114,9 @@ class RemoteSupportAssetController extends Controller {
         $to = CarbonImmutable::now();
         $from = $to->subDays(max(1, (int) $config['sync_window_days']));
         $result = $this->importer->import($organization, $config, $from, $to);
+        if ($result['errors'] > 0) {
+            return back()->with('error', __('Mindestens ein Anbieter konnte nicht gelesen werden: :error', ['error' => $result['error']]));
+        }
 
         return back()->with('status', __(':created neue, :linked mit vorhandenen Zeiten verknüpft, :skipped vorhandene, :unmatched ohne Gerät, :pending zur Zuordnung.', [
             'created' => $result['created'],

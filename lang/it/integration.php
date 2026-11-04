@@ -106,6 +106,9 @@ return [
         'work_package' => 'Pacchetto di lavoro',
         'anydesk_id' => 'ID AnyDesk',
         'teamviewer_id' => 'ID TeamViewer',
+        'rustdesk_id' => 'ID RustDesk',
+        'splashtop_id' => 'UUID computer Splashtop',
+        'pcvisit_id' => 'ID computer pcvisit',
     ],
     'outbox' => [
         'status' => [

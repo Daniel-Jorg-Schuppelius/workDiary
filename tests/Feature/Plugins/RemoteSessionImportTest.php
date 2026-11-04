@@ -20,7 +20,7 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\ImportRun;
 use App\Models\Platform\User;
 use App\Models\Time\TimeEntry;
-use App\Plugins\RemoteSupport\Api\AnyDeskClient;
+use App\Plugins\RemoteSupport\Api\{AnyDeskClient, RustDeskProClient};
 use App\Plugins\RemoteSupport\Enums\RemotePendingSessionStatus;
 use App\Plugins\RemoteSupport\Models\RemotePendingSession;
 use App\Plugins\RemoteSupport\Services\RemoteDeviceRegistry;
@@ -53,8 +53,25 @@ class RemoteSessionImportTest extends TestCase {
         ]) . "\n";
     }
 
-    private function preflight(User $admin): ImportRun {
-        $file = UploadedFile::fake()->createWithContent('sessions.csv', $this->anydeskCsv());
+    /** Verbindungsprotokoll von RustDesk Server Pro, „Export as csv“ mit englischer Konsole (Datum per toLocaleString). */
+    private function rustdeskCsvEn(): string {
+        return implode("\n", [
+            'Type,Controlled Device,Controlling Side,Start Time,End Time,Duration,Authentication,Note',
+            '"Normal","123 456 789","TECH-NB (203.0.113.5)","11/2/2026, 10:00:00 AM","11/2/2026, 10:45:00 AM","45m","Permanent Password","Drucker eingerichtet"',
+            '"File Transfer","987 654 321","TECH-NB (203.0.113.5)","11/2/2026, 1:00:00 PM","11/2/2026, 1:05:00 PM","5m","Permanent Password",""',
+        ]) . "\n";
+    }
+
+    /** Derselbe Export aus einer deutschen Konsole: übersetzte Spaltenköpfe, deutsches Datum. */
+    private function rustdeskCsvDe(): string {
+        return implode("\n", [
+            'Type,Gesteuertes Gerät,Steuernde Seite,Startzeit,Endzeit,Duration,Authentication,Note',
+            '"Normal","123456789","TECH-NB","2.11.2026, 10:00:00","2.11.2026, 10:45:00","45m","Permanentes Passwort","Drucker eingerichtet"',
+        ]) . "\n";
+    }
+
+    private function preflight(User $admin, ?string $csv = null): ImportRun {
+        $file = UploadedFile::fake()->createWithContent('sessions.csv', $csv ?? $this->anydeskCsv());
 
         $this->actingAs($admin)
             ->post(route('admin.imports.preflight'), [
@@ -131,6 +148,63 @@ class RemoteSessionImportTest extends TestCase {
 
         $this->assertSame(1, TimeEntry::query()->count());
         $this->assertSame(1, RemotePendingSession::query()->count());
+    }
+
+    public function test_rustdesk_pro_export_is_detected_by_header_and_booked(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'category_code' => 'workstation',
+            'customer_id' => $customer->id,
+        ]);
+        (new RemoteDeviceRegistry)->setRemoteId($asset, RustDeskProClient::ID, '123456789');
+
+        $run = $this->preflight($this->orgAdmin(), $this->rustdeskCsvEn());
+        app()->call([new ProcessCsvImportJob($run->id), 'handle']);
+        $run->refresh();
+
+        $this->assertSame(ImportRunState::Succeeded, $run->state);
+        $this->assertSame(1, $run->rows_created);
+        $this->assertSame(1, $run->rows_skipped);
+
+        $entry = TimeEntry::query()->where('project_id', $asset->customer->defaultProject()->id)->first();
+        $this->assertNotNull($entry);
+        $this->assertSame(45, $entry->minutes);
+        // Ortszeit Berlin (Winterzeit) → UTC.
+        $this->assertSame('2026-11-02 09:00:00', $entry->getRawOriginal('started_at'));
+        $this->assertStringContainsString('Drucker eingerichtet', (string) $entry->description);
+        $this->assertStringContainsString('TECH-NB', (string) $entry->description);
+        $this->assertEqualsCanonicalizing(['Remote', 'RustDesk'], $entry->tags()->pluck('name')->all());
+
+        $this->assertDatabaseHas('remote_pending_sessions', [
+            'organization_id' => $this->organization->id,
+            'provider' => 'rustdesk',
+            'remote_id' => '987654321',
+            'status' => RemotePendingSessionStatus::Open->value,
+        ]);
+    }
+
+    public function test_rustdesk_pro_export_with_german_headers_is_detected(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'category_code' => 'workstation',
+            'customer_id' => $customer->id,
+        ]);
+        (new RemoteDeviceRegistry)->setRemoteId($asset, RustDeskProClient::ID, '123456789');
+
+        $run = $this->preflight($this->orgAdmin(), $this->rustdeskCsvDe());
+        app()->call([new ProcessCsvImportJob($run->id), 'handle']);
+        $run->refresh();
+
+        $this->assertSame(ImportRunState::Succeeded, $run->state);
+        $this->assertSame(1, $run->rows_created);
+        $entry = TimeEntry::query()->firstOrFail();
+        $this->assertSame(45, $entry->minutes);
+        $this->assertSame('2026-11-02 09:00:00', $entry->getRawOriginal('started_at'));
+        $this->assertEqualsCanonicalizing(['Remote', 'RustDesk'], $entry->tags()->pluck('name')->all());
     }
 
     public function test_preflight_fails_without_device_id_column(): void {
