@@ -1,7 +1,7 @@
 ---
 title: "Toggl-Import"
 topic: admin.toggl
-version: 4
+version: 5
 keywords:
     - Toggl Track
     - Zeiten importieren
@@ -18,6 +18,7 @@ keywords:
     - Toggl 2.0
     - Toggl Focus
     - Live-Synchronisation
+    - Toggl-Projekte anlegen
 audience:
     - admin
 related:
@@ -124,3 +125,14 @@ Webhook (optional):
 - Den Standard-Benutzer des Einbenutzer-Modus wählen Sie in den
   Plugin-Einstellungen unter **Zeiten buchen für Benutzer** aus der Liste
   der Benutzer.
+- **Fehlende Toggl-Projekte anlegen**: Übertragen wird nur in Projekte, die
+  in Toggl ein Gegenstück haben. Projekte, die nur über ihren Namen
+  verknüpft sind, bekommen ihre Toggl-ID seit dem 4. November 2026 einmal
+  täglich automatisch nachgetragen; fehlt das Gegenstück ganz (etwa das
+  Standardprojekt eines Kunden, in das Fernwartungssitzungen buchen), bleiben
+  die Zeiten liegen und das Projekt erscheint als Hinweis in der
+  Integrations-Inbox. Mit **Fehlende Toggl-Projekte anlegen** legt die
+  Übertragung Kunde und Projekt in Toggl selbst an (Kundenname als
+  Toggl-Kunde, Projektname als Toggl-Projekt; vorhandene werden am Namen
+  erkannt), danach gehen die Zeiten im nächsten Lauf nach. Den Rückstand
+  älterer Zeiten holt `toggl:push --days=90` nach.

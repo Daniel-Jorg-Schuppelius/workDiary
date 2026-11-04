@@ -46,7 +46,7 @@ class TogglConfig {
     ];
 
     /**
-     * @return array{enabled: bool, source: TogglSource, api_token: ?string, base_url: string, workspace_id: ?int, focus_api_key: ?string, focus_base_url: string, accounts_url: string, focus_organization_id: ?int, focus_workspace_id: ?int, api_plan: ?string, request_interval: float, writeback: bool, sync_window_days: int, default_billable: bool, default_user_id: ?int, single_user_mode: bool, export_enabled: bool}
+     * @return array{enabled: bool, source: TogglSource, api_token: ?string, base_url: string, workspace_id: ?int, focus_api_key: ?string, focus_base_url: string, accounts_url: string, focus_organization_id: ?int, focus_workspace_id: ?int, api_plan: ?string, request_interval: float, writeback: bool, sync_window_days: int, default_billable: bool, default_user_id: ?int, single_user_mode: bool, export_enabled: bool, export_create_projects: bool}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(TogglPlugin::ID, $organizationId);
@@ -85,6 +85,9 @@ class TogglConfig {
             // Spiegelung workDiary → Toggl (lokal erfasste Zeiten anlegen).
             // Bewusst standardmäßig aus — sie erzeugt Daten im Fremdsystem.
             'export_enabled' => $r->bool('export_enabled', false),
+            // Fehlende Gegenstücke (Kunde, Projekt) beim Übertragen in Toggl
+            // anlegen — bewusst aus, weil es Stammdaten im Fremdsystem erzeugt.
+            'export_create_projects' => $r->bool('export_create_projects', false),
         ];
     }
 }

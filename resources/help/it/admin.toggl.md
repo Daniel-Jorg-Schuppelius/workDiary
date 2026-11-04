@@ -1,7 +1,7 @@
 ---
 title: "Importazione Toggl"
 topic: admin.toggl
-version: 4
+version: 5
 keywords:
     - Toggl Track
     - importare tempi
@@ -17,6 +17,7 @@ keywords:
     - Toggl 2.0
     - Toggl Focus
     - sincronizzazione in tempo reale
+    - creare progetti Toggl
 audience:
     - admin
 related:
@@ -101,3 +102,14 @@ Webhook (facoltativo):
 - L'utente predefinito della modalità utente singolo si sceglie nelle
   impostazioni del plugin alla voce **Registra i tempi per l’utente**,
   dall'elenco degli utenti.
+- **Creare i progetti Toggl mancanti**: i tempi vengono trasferiti solo in
+  progetti con un corrispettivo in Toggl. I progetti collegati solo tramite
+  il nome ricevono automaticamente il loro ID Toggl una volta al giorno dal 4
+  novembre 2026; se il corrispettivo manca del tutto (ad esempio il progetto
+  predefinito di un cliente in cui vengono registrate le sessioni di
+  manutenzione remota), i tempi restano in sospeso e il progetto compare come
+  avviso nella posta delle integrazioni. Con **Creare i progetti Toggl
+  mancanti** il trasferimento crea da sé cliente e progetto in Toggl (nome
+  cliente come cliente Toggl, nome progetto come progetto Toggl; quelli
+  esistenti vengono riconosciuti dal nome) e i tempi seguono al ciclo
+  successivo. L'arretrato più vecchio si recupera con `toggl:push --days=90`.

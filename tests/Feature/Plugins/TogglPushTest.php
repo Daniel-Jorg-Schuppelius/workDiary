@@ -10,9 +10,11 @@
 
 namespace Tests\Feature\Plugins;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Classification\Tag;
-use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
+use App\Models\Customer\Customer;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry};
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
@@ -22,7 +24,7 @@ use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\{Cache, Queue};
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
@@ -207,6 +209,199 @@ class TogglPushTest extends TestCase {
 
         $this->assertSame(0, $result['pushed']);
         $fake->assertNotSent(fn ($request): bool => $request->getMethod() === 'POST');
+    }
+
+    private const CLIENTS_URL = 'https://api.track.toggl.com/api/v9/workspaces/4711/clients';
+
+    private const PROJECTS_URL = 'https://api.track.toggl.com/api/v9/workspaces/4711/projects';
+
+    /** Projekt ohne Toggl-Gegenstück beim Kunden „Musterkunde GmbH“. */
+    private function unmappedCustomerProject(string $name = 'Wartung'): Project {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Musterkunde GmbH']);
+
+        return Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => $name,
+            'is_default' => false,
+        ]);
+    }
+
+    /** Nachtrag 2026-11-04: der stille Verwurf wird zum Inbox-Hinweis je Projekt. */
+    public function test_unmapped_project_leaves_a_notice_in_the_inbox(): void {
+        $config = $this->config();
+        $project = $this->unmappedCustomerProject();
+        $this->timeEntry($project);
+        $this->mappedProject();
+
+        $fake = FakePluginHttp::fake([
+            self::CLIENTS_URL . '*' => FakePluginHttp::response([], 200),
+            self::PROJECTS_URL . '*' => FakePluginHttp::response([], 200),
+        ]);
+
+        $result = $this->service()->exportPending($this->organization, $config);
+
+        $this->assertSame(0, $result['pushed']);
+        $fake->assertNotSent(fn ($request): bool => $request->getMethod() === 'POST');
+        $item = IntegrationInboxItem::query()->where('dedupe_key', TogglPlugin::ID . '-project-unmapped:' . $project->id)->firstOrFail();
+        $this->assertSame(IntegrationInboxStatus::Open, $item->status);
+        $this->assertSame(IntegrationInboxItem::REASON_PROJECT_UNMAPPED, $item->remote_snapshot['reason']);
+        $this->assertSame('Musterkunde GmbH · Wartung', $item->display_subtitle);
+        $this->assertStringContainsString('Projekt ohne Gegenstück', (string) $item->displayTitleText('Toggl'));
+
+        // Zweiter Lauf: derselbe Hinweis, keine zweite Zeile (eindeutiger Schlüssel).
+        $this->service()->exportPending($this->organization, $config);
+        $this->assertSame(1, IntegrationInboxItem::query()->where('plugin_id', TogglPlugin::ID)->count());
+    }
+
+    public function test_unmapped_project_is_matched_by_name_without_creating(): void {
+        $config = $this->config();
+        $project = $this->unmappedCustomerProject();
+        $entry = $this->timeEntry($project);
+
+        $fake = FakePluginHttp::fake([
+            self::CLIENTS_URL . '*' => FakePluginHttp::response([['id' => 5, 'name' => 'Musterkunde GmbH', 'archived' => false]], 200),
+            self::PROJECTS_URL . '*' => FakePluginHttp::response([
+                ['id' => 77, 'name' => 'Wartung', 'client_id' => 6, 'workspace_id' => 4711, 'active' => true],
+                ['id' => 78, 'name' => 'Wartung', 'client_id' => 5, 'workspace_id' => 4711, 'active' => true],
+            ], 200),
+            self::CREATE_URL => FakePluginHttp::response($this->createdResponse() + ['project_id' => 78], 200),
+        ]);
+
+        // Namenssuche ist auch ohne Anlage erlaubt: das Projekt existiert drüben bereits.
+        $result = $this->service()->exportPending($this->organization, $config);
+
+        $this->assertSame(1, $result['pushed']);
+        $fake->assertNotSent(fn ($request): bool => $request->getMethod() === 'POST' && str_ends_with((string) $request->getUri(), '/projects'));
+        $fake->assertSent(function ($request): bool {
+            $body = (array) json_decode((string) $request->getBody(), true);
+
+            return (string) $request->getUri() === self::CREATE_URL && ($body['project_id'] ?? null) === 78;
+        });
+        $this->assertDatabaseHas('external_references', ['plugin_id' => TogglPlugin::ID, 'external_type' => 'project_id', 'referenceable_id' => $project->id, 'external_id' => '78']);
+        $this->assertDatabaseHas('external_references', ['plugin_id' => TogglPlugin::ID, 'external_type' => 'client_id', 'referenceable_id' => $project->customer_id, 'external_id' => '5']);
+        $this->assertDatabaseHas('external_references', ['plugin_id' => TogglPlugin::ID, 'external_type' => 'project', 'referenceable_id' => $project->id, 'external_id' => 'musterkunde gmbh|wartung']);
+        $this->assertDatabaseHas('external_references', ['plugin_id' => TogglPlugin::ID, 'external_type' => 'pushed_entry', 'referenceable_id' => $entry->id]);
+    }
+
+    public function test_create_projects_setting_creates_client_and_project_once(): void {
+        $config = $this->config(['export_create_projects' => true]);
+        $project = $this->unmappedCustomerProject();
+        $this->timeEntry($project);
+        $this->timeEntry($project, ['started_at' => CarbonImmutable::parse('2026-05-27 10:00:00'), 'ended_at' => CarbonImmutable::parse('2026-05-27 11:00:00'), 'date' => '2026-05-27']);
+
+        $fake = FakePluginHttp::fake([
+            self::CLIENTS_URL . '*' => function ($request) {
+                return $request->getMethod() === 'POST'
+                    ? FakePluginHttp::response(['id' => 5, 'name' => 'Musterkunde GmbH', 'wid' => 4711], 200)
+                    : FakePluginHttp::response([], 200);
+            },
+            self::PROJECTS_URL . '*' => function ($request) {
+                return $request->getMethod() === 'POST'
+                    ? FakePluginHttp::response(['id' => 78, 'name' => 'Wartung', 'client_id' => 5, 'workspace_id' => 4711, 'active' => true], 200)
+                    : FakePluginHttp::response([], 200);
+            },
+            self::CREATE_URL => FakePluginHttp::response($this->createdResponse() + ['project_id' => 78], 200),
+        ]);
+
+        $result = $this->service()->exportPending($this->organization, $config);
+
+        $this->assertSame(2, $result['pushed']);
+        $posts = array_values(array_filter($fake->recorded(), fn (array $r): bool => $r['request']->getMethod() === 'POST'));
+        $this->assertSame([self::CLIENTS_URL, self::PROJECTS_URL, self::CREATE_URL, self::CREATE_URL], array_map(fn (array $r): string => (string) $r['request']->getUri(), $posts), 'Kunde und Projekt genau einmal, dann beide Einträge');
+        $clientBody = (array) json_decode((string) $posts[0]['request']->getBody(), true);
+        $this->assertSame(['name' => 'Musterkunde GmbH'], $clientBody);
+        $projectBody = (array) json_decode((string) $posts[1]['request']->getBody(), true);
+        $this->assertSame(['name' => 'Wartung', 'active' => true, 'is_private' => false, 'client_id' => 5], $projectBody);
+        $this->assertDatabaseHas('external_references', ['plugin_id' => TogglPlugin::ID, 'external_type' => 'project_id', 'referenceable_id' => $project->id, 'external_id' => '78']);
+        $this->assertDatabaseMissing('integration_inbox_items', ['dedupe_key' => TogglPlugin::ID . '-project-unmapped:' . $project->id]);
+    }
+
+    public function test_failed_creation_keeps_the_entry_and_reopens_the_notice(): void {
+        $config = $this->config(['export_create_projects' => true]);
+        $project = $this->unmappedCustomerProject();
+        $this->timeEntry($project);
+
+        FakePluginHttp::fake([
+            self::CLIENTS_URL . '*' => function ($request) {
+                return $request->getMethod() === 'POST' ? FakePluginHttp::response(['error' => 'forbidden'], 403) : FakePluginHttp::response([], 200);
+            },
+            self::PROJECTS_URL . '*' => FakePluginHttp::response([], 200),
+        ]);
+
+        $result = $this->service()->exportPending($this->organization, $config);
+
+        $this->assertSame(0, $result['pushed']);
+        $this->assertSame(0, $result['failed']);
+        $item = IntegrationInboxItem::query()->where('dedupe_key', TogglPlugin::ID . '-project-unmapped:' . $project->id)->firstOrFail();
+        $this->assertStringContainsString('HTTP 403', (string) ($item->remote_snapshot['local']['description'] ?? ''));
+
+        // Verworfen bleibt verworfen; erledigt wird beim nächsten Fehlen wieder geöffnet.
+        $item->forceFill(['status' => IntegrationInboxStatus::Dismissed])->save();
+        $this->service()->exportPending($this->organization, $config);
+        $this->assertSame(IntegrationInboxStatus::Dismissed, $item->fresh()->status);
+        $item->forceFill(['status' => IntegrationInboxStatus::ResolvedLinked])->save();
+        $this->service()->exportPending($this->organization, $config);
+        $this->assertSame(IntegrationInboxStatus::Open, $item->fresh()->status);
+        $this->assertSame(1, IntegrationInboxItem::query()->where('plugin_id', TogglPlugin::ID)->count());
+    }
+
+    public function test_notice_is_resolved_once_the_project_transfers(): void {
+        $config = $this->config();
+        $project = $this->unmappedCustomerProject();
+        $this->timeEntry($project);
+        FakePluginHttp::fake([self::CLIENTS_URL . '*' => FakePluginHttp::response([], 200), self::PROJECTS_URL . '*' => FakePluginHttp::response([], 200)]);
+        $this->service()->exportPending($this->organization, $config);
+        $this->assertDatabaseHas('integration_inbox_items', ['dedupe_key' => TogglPlugin::ID . '-project-unmapped:' . $project->id, 'status' => IntegrationInboxStatus::Open->value]);
+
+        // Der Admin legt das Projekt drüben an; die Namenssuche findet es beim nächsten Lauf.
+        FakePluginHttp::fake([
+            self::CLIENTS_URL . '*' => FakePluginHttp::response([['id' => 5, 'name' => 'Musterkunde GmbH', 'archived' => false]], 200),
+            self::PROJECTS_URL . '*' => FakePluginHttp::response([['id' => 78, 'name' => 'wartung', 'client_id' => 5, 'workspace_id' => 4711, 'active' => true]], 200),
+            self::CREATE_URL => FakePluginHttp::response($this->createdResponse() + ['project_id' => 78], 200),
+        ]);
+        $result = $this->service()->exportPending($this->organization, $config);
+
+        $this->assertSame(1, $result['pushed']);
+        $this->assertDatabaseHas('integration_inbox_items', ['dedupe_key' => TogglPlugin::ID . '-project-unmapped:' . $project->id, 'status' => IntegrationInboxStatus::ResolvedLinked->value]);
+    }
+
+    public function test_id_backfill_runs_once_a_day_before_the_push(): void {
+        $config = $this->config();
+        $project = Project::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Wartung', 'is_default' => false]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Musterkunde GmbH']);
+        $project->forceFill(['customer_id' => $customer->id])->save();
+        // Nur über den Namen verknüpft (Stand vieler Prod-Projekte) — ohne ID überträgt der Push nichts.
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => 'project',
+            'referenceable_type' => $project->getMorphClass(),
+            'referenceable_id' => $project->id,
+            'external_id' => 'musterkunde gmbh|wartung',
+            'synced_at' => now(),
+        ]);
+        $this->timeEntry($project);
+        $listCalls = 0;
+
+        FakePluginHttp::fake([
+            self::CLIENTS_URL . '*' => FakePluginHttp::response([['id' => 5, 'name' => 'Musterkunde GmbH', 'archived' => false]], 200),
+            self::PROJECTS_URL . '*' => function () use (&$listCalls) {
+                $listCalls++;
+
+                return FakePluginHttp::response([['id' => 78, 'name' => 'Wartung', 'client_id' => 5, 'workspace_id' => 4711, 'active' => true]], 200);
+            },
+            self::CREATE_URL => FakePluginHttp::response($this->createdResponse() + ['project_id' => 78], 200),
+        ]);
+
+        $first = $this->service()->exportPending($this->organization, $config);
+        $this->assertSame(1, $first['pushed']);
+        $this->assertDatabaseHas('external_references', ['plugin_id' => TogglPlugin::ID, 'external_type' => 'project_id', 'referenceable_id' => $project->id, 'external_id' => '78']);
+        $this->assertTrue(Cache::has(TogglImportService::idBackfillKey($this->organization, \App\Plugins\Toggl\Enums\TogglSource::Track)));
+
+        $callsAfterFirst = $listCalls;
+        $this->service()->exportPending($this->organization, $config);
+        $this->assertSame($callsAfterFirst, $listCalls, 'die Nachfüllung läuft am selben Tag nicht noch einmal');
     }
 
     public function test_export_disabled_reports_error_and_sends_nothing(): void {
@@ -458,11 +653,12 @@ class TogglPushTest extends TestCase {
         }
 
         $this->assertSame(['pushed' => 0, 'skipped' => 1, 'failed' => 0, 'errors' => []], $result);
-        $fake->assertNothingSent();
+        // Der Batch füllt vorab IDs nach (GET); gepostet wird unter fremder Sperre nichts.
+        $fake->assertNotSent(fn ($request): bool => $request->getMethod() === 'POST');
 
         // Freigegeben: der nächste Lauf überträgt.
         $this->assertSame(1, $this->service()->exportPending($this->organization, $config)['pushed']);
-        $fake->assertSentCount(1);
+        $this->assertCount(1, array_filter($fake->recorded(), fn (array $r): bool => $r['request']->getMethod() === 'POST'));
     }
 
     public function test_outbox_create_is_retried_while_the_batch_holds_the_lock(): void {
@@ -511,7 +707,8 @@ class TogglPushTest extends TestCase {
 
         $this->assertSame(1, $result['pushed']);
         $this->assertSame('deferred', $concurrent);
-        $fake->assertSentCount(1);
+        // Der Batch füllt vorab IDs nach (GET); gepostet wird genau einmal.
+        $this->assertCount(1, array_filter($fake->recorded(), fn (array $r): bool => $r['request']->getMethod() === 'POST'));
         $this->assertSame(1, ExternalReference::query()
             ->where('plugin_id', TogglPlugin::ID)
             ->where('external_type', TogglExportService::EXT_TYPE_PUSHED)

@@ -457,6 +457,55 @@ class TogglFocusApiClient implements TogglApi {
     }
 
     /**
+     * `POST /workspaces/{id}/clients` mit `name` (Referenz des neuen Toggl:
+     * Felder `name`, `address`, `contact_email`, `currency`, `internal_reference`;
+     * Antwort 201 ohne dokumentierte Felder — die ID muss trotzdem kommen).
+     */
+    public function createClient(int $workspaceId, string $name): array {
+        $response = $this->api()->postJson($this->baseUrl . '/workspaces/' . $workspaceId . '/clients', ['name' => $name], ['timeout' => 20]);
+        if (! $response->successful()) {
+            throw new TogglApiException('Toggl-Kunde nicht angelegt (HTTP ' . $response->status() . ')', $response->status());
+        }
+        $id = $response->json('id') ?? $response->json('data.id');
+        if (! is_numeric($id)) {
+            throw new TogglApiException('Toggl-Antwort ohne Kunden-ID');
+        }
+
+        return ['id' => (int) $id, 'name' => (string) ($response->json('name') ?? $name)];
+    }
+
+    /**
+     * `POST /organizations/{org}/workspaces/{id}/projects` (Referenz des neuen
+     * Toggl: `name`, `client_id`, `private`, …; ohne `private` erbt das Projekt
+     * die Workspace-Vorgabe — gesendet wird `false`, damit alle buchen können).
+     */
+    public function createProject(int $workspaceId, string $name, ?int $clientId): array {
+        $organizationId = $this->organizationFor($workspaceId);
+        if ($organizationId === null) {
+            throw new TogglApiException('Toggl-Organisation zum Workspace ' . $workspaceId . ' nicht ermittelbar');
+        }
+        $payload = ['name' => $name, 'private' => false];
+        if ($clientId !== null) {
+            $payload['client_id'] = $clientId;
+        }
+        $response = $this->api()->postJson(
+            $this->baseUrl . '/organizations/' . $organizationId . '/workspaces/' . $workspaceId . '/projects',
+            $payload,
+            ['timeout' => 20],
+        );
+        if (! $response->successful()) {
+            throw new TogglApiException('Toggl-Projekt nicht angelegt (HTTP ' . $response->status() . ')', $response->status());
+        }
+        $id = $response->json('id') ?? $response->json('data.id');
+        if (! is_numeric($id)) {
+            throw new TogglApiException('Toggl-Antwort ohne Projekt-ID');
+        }
+        $remoteClient = $response->json('client_id') ?? $response->json('client.id');
+
+        return ['id' => (int) $id, 'name' => (string) ($response->json('name') ?? $name), 'client_id' => is_numeric($remoteClient) ? (int) $remoteClient : $clientId];
+    }
+
+    /**
      * Alle Zeilen einer seitenweisen Liste (`data` + `page`/`per_page`).
      *
      * @param  array<string, mixed>  $query

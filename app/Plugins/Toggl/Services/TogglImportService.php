@@ -24,6 +24,7 @@ use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\{Cache, Log};
 
 /**
  * Toggl-Zeitimport auf der gemeinsamen {@see MatchingTimeImportService}-
@@ -115,6 +116,10 @@ class TogglImportService extends MatchingTimeImportService {
         // über die gemerkten Namen nachtragen — Rückschreiben und Übertragung brauchen sie.
         if ($this->hasIdReferences($organization, $source->other()) && ! $this->hasIdReferences($organization, $source)) {
             $this->backfillIdReferences($organization, $client);
+        } else {
+            // Nachtrag 2026-11-04: Projekte, die nur über ihren Namen verknüpft
+            // sind, bekommen ihre ID sonst nie — und ohne ID überträgt der Push nichts.
+            $this->backfillIdReferencesDaily($organization, $client);
         }
         $adopted = $this->adoptOtherSourceEntries($organization, $source, $entries);
 
@@ -429,6 +434,44 @@ class TogglImportService extends MatchingTimeImportService {
             ->orderBy('external_type')
             ->orderBy('external_id')
             ->get();
+    }
+
+    /** Cache-Marke der täglichen ID-Nachfüllung; Import und Übertragung teilen sie. */
+    public static function idBackfillKey(Organization $organization, TogglSource $source): string {
+        return 'toggl:idbackfill:1:' . $source->value . ':' . $organization->id;
+    }
+
+    /**
+     * {@see backfillIdReferences()} höchstens einmal je Tag und Quelle. Ein
+     * Fehler gibt die Marke frei, damit der nächste Lauf es erneut versucht.
+     */
+    public function backfillIdReferencesDaily(Organization $organization, TogglApi $client): void {
+        $key = self::idBackfillKey($organization, $client->source());
+        if (! Cache::add($key, 1, 86400)) {
+            return;
+        }
+
+        try {
+            $this->backfillIdReferences($organization, $client);
+        } catch (\Throwable $e) {
+            Cache::forget($key);
+            Log::warning('Toggl: ID-Nachfüllung fehlgeschlagen.', ['organization_id' => $organization->id, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Merkt nach einer Anlage oder Namenssuche durch die Übertragung die
+     * stabilen IDs von Projekt und Kunde samt Namensschlüssel des Projekts —
+     * gleiche Schreibweise wie der Import, damit beide Wege dasselbe finden.
+     */
+    public function rememberProjectMapping(Organization $organization, TogglSource $source, Project $project, int $togglProjectId, ?string $clientName, ?int $togglClientId): void {
+        $this->rememberReference($organization, $source->projectIdType(), (string) $togglProjectId, $project);
+        $this->rememberReference($organization, self::EXT_TYPE_PROJECT, $this->projectKey($clientName, (string) $project->name), $project);
+
+        $clientTarget = $project->foreignCustomer ?? $project->customer;
+        if ($togglClientId !== null && $clientTarget !== null) {
+            $this->rememberReference($organization, $source->clientIdType(), (string) $togglClientId, $clientTarget);
+        }
     }
 
     /**

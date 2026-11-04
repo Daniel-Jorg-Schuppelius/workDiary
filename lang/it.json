@@ -11138,5 +11138,6 @@
     "Vereinbarte Stunden abrechnen": "Fatturare le ore concordate",
     "Fehlt einer Person Zeit zum Projekt-Soll, ergänzt die Übergabe die Differenz als Position „Vereinbarte Einsatzzeit“. Mehrzeit bleibt wie gebucht.": "Se a una persona manca tempo rispetto all’obiettivo del progetto, il trasferimento aggiunge la differenza come posizione «Tempo di intervento concordato». Il tempo in più resta come registrato.",
     "[Soll berechnet]": "[Obiettivo fatturato]",
-    "Befunde unter Projekt-Soll": "Rilievi sotto l’obiettivo di progetto"
+    "Befunde unter Projekt-Soll": "Rilievi sotto l’obiettivo di progetto",
+    "Projekt ohne Gegenstück in :plugin — Zeiten nicht übertragen": "Progetto senza corrispettivo in :plugin — tempi non trasferiti"
 }
