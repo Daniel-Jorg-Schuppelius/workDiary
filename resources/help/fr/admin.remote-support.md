@@ -1,7 +1,7 @@
 ---
 title: "Télémaintenance"
 topic: admin.remote-support
-version: 4
+version: 5
 keywords:
     - AnyDesk
     - TeamViewer
@@ -101,6 +101,18 @@ interrupteur par fournisseur) :
   seulement avec votre propre accord). Les sessions terminées sont
   reprises avec la durée enregistrée dans pcvisit ; l'ID d'appareil est
   l'ID d'ordinateur pcvisit, le client final figure dans la note.
+
+Les connexions sont regroupées en une seule intervention : si une
+connexion vers le même appareil commence dans le délai **Regrouper les
+connexions jusqu'à (minutes)** (30 par défaut) après la fin de la
+précédente, elle prolonge cette saisie de temps ; les reconnexions et
+l'attente pendant une mise à jour ne deviennent donc pas une série de
+saisies isolées. La note de la connexion suivante complète la
+description ; si elle désigne un autre projet par mot-clé, une saisie
+distincte est créée. Les saisies exportées et les mois clôturés ne sont
+jamais prolongés. Une connexion de moins d'une minute est comptée comme
+une minute ; la durée réelle reste sur le justificatif de session. 0
+désactive le regroupement.
 
 Si un fournisseur tombe en panne, les autres continuent ; le message
 apparaît dans l'état du plugin et dans le résultat de l'import.

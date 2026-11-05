@@ -1,7 +1,7 @@
 ---
 title: "Soporte remoto"
 topic: admin.remote-support
-version: 4
+version: 5
 keywords:
     - AnyDesk
     - TeamViewer
@@ -99,6 +99,17 @@ interruptor por proveedor):
   por organización solo con acuerdo propio). Se recogen las sesiones
   cerradas con la duración registrada en pcvisit; el ID de equipo es el
   ID de equipo de pcvisit y el cliente final figura en la nota.
+
+Las conexiones se agrupan en una sola intervención: si una conexión al
+mismo equipo comienza dentro del plazo **Agrupar conexiones hasta
+(minutos)** (valor predeterminado 30) tras el fin de la anterior,
+prolonga ese registro de tiempo; así las reconexiones y la espera
+durante una actualización no se convierten en muchos registros sueltos.
+La nota de la conexión siguiente completa la descripción; si nombra
+otro proyecto por palabra clave, se crea un registro propio. Los
+registros exportados y los meses cerrados nunca se prolongan. Una
+conexión de menos de un minuto se registra como un minuto; la duración
+real queda en el comprobante de la sesión. 0 desactiva la agrupación.
 
 Si un proveedor falla, los demás siguen funcionando; el aviso aparece en
 el estado del plugin y en el resultado de la importación.

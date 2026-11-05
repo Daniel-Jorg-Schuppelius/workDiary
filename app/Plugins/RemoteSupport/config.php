@@ -40,6 +40,11 @@ return [
     // Buchungsbeginn vorziehen — schützt vor Tippfehlern wie „+100h".
     'note_extra_max_minutes' => (int) env('REMOTE_SUPPORT_NOTE_EXTRA_MAX_MINUTES', 480),
 
+    // Beginnt eine Verbindung desselben Geräts höchstens N Minuten nach dem
+    // Ende eines Fernwartungs-Eintrags, verlängert sie ihn (Reconnects,
+    // Wartezeit bei Updates) statt einen neuen anzulegen; 0 = aus.
+    'merge_gap_minutes' => (int) env('REMOTE_SUPPORT_MERGE_GAP_MINUTES', 30),
+
     'teamviewer' => [
         'enabled' => env('TEAMVIEWER_ENABLED', false),
         'api_key' => env('TEAMVIEWER_API_KEY'),

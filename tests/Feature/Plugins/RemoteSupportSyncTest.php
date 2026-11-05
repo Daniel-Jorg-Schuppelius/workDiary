@@ -930,7 +930,7 @@ class RemoteSupportSyncTest extends TestCase {
         $this->devices()->setRemoteId($asset, TeamViewerClient::ID, '444555666');
         $this->assertSame(['111222333', '444555666'], $this->devices()->remoteIds($asset, TeamViewerClient::ID));
 
-        foreach ([['111222333', 'tv-mid-1', '10:00', '10:30'], ['444555666', 'tv-mid-2', '11:00', '11:30']] as [$rid, $sid, $from, $to]) {
+        foreach ([['111222333', 'tv-mid-1', '10:00', '10:30'], ['444555666', 'tv-mid-2', '13:00', '13:30']] as [$rid, $sid, $from, $to]) {
             $session = new RemoteSession(
                 provider: TeamViewerClient::ID,
                 sessionId: $sid,
@@ -941,7 +941,8 @@ class RemoteSupportSyncTest extends TestCase {
             $this->importer()->importSessions($this->organization, $config, [$session]);
         }
 
-        // Beide IDs matchen dasselbe Gerät → beide Sitzungen gebucht.
+        // Beide IDs matchen dasselbe Gerät → beide Sitzungen gebucht (Abstand über der
+        // Verkettungs-Toleranz, sonst ginge die zweite im ersten Eintrag auf).
         $this->assertSame(2, TimeEntry::query()->count());
 
         // Gezieltes Entfernen einer ID lässt die andere stehen.

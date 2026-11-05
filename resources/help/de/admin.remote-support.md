@@ -1,7 +1,7 @@
 ---
 title: "Fernwartung"
 topic: admin.remote-support
-version: 4
+version: 5
 keywords:
     - AnyDesk
     - TeamViewer
@@ -97,6 +97,18 @@ ein Schalter):
   bei eigener Vereinbarung eintragen). Übernommen werden abgeschlossene
   Sitzungen mit der in pcvisit erfassten Dauer; Geräte-ID ist die
   Computer-ID aus pcvisit, der Endkunde steht in der Notiz.
+
+Verbindungen werden zu einem Vorgang zusammengefasst: Beginnt eine
+Verbindung desselben Geräts innerhalb der Frist **Verbindungen
+zusammenfassen bis (Minuten)** (Vorgabe 30) nach dem Ende der vorigen,
+verlängert sie deren Zeiteintrag – so werden Reconnects und die
+Wartezeit während eines Updates nicht zu lauter Einzelbuchungen. Die
+Notiz der Folgeverbindung ergänzt die Beschreibung; nennt sie per
+Schlüsselwort ein anderes Projekt, entsteht ein eigener Eintrag.
+Exportierte Einträge und abgeschlossene Monate werden nie verlängert.
+Eine Verbindung unter einer Minute wird als eine Minute gebucht; die
+echte Dauer bleibt am Sitzungsnachweis. 0 schaltet das Zusammenfassen
+ab.
 
 Fällt ein Anbieter aus, laufen die anderen weiter; die Meldung erscheint
 im Plugin-Status und im Importergebnis.

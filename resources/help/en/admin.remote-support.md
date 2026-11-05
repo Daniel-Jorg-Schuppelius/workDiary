@@ -1,7 +1,7 @@
 ---
 title: "Remote Support"
 topic: admin.remote-support
-version: 4
+version: 5
 keywords:
     - AnyDesk
     - TeamViewer
@@ -94,6 +94,17 @@ per provider):
   agreement). Finished sessions are taken over with the duration recorded
   in pcvisit; the device ID is the computer ID from pcvisit, the end
   customer is in the note.
+
+Connections are combined into one job: if a connection to the same
+device starts within **Combine connections up to (minutes)** (default
+30) after the previous one ended, it extends that time entry – so
+reconnects and the waiting time during an update do not become a
+series of separate bookings. The note of the follow-up connection is
+added to the description; if it names another project by keyword, a
+separate entry is created. Exported entries and closed months are
+never extended. A connection shorter than one minute is booked as one
+minute; the actual duration stays with the session record. 0 switches
+combining off.
 
 If one provider fails, the others keep running; the message appears in
 the plugin status and in the import result.

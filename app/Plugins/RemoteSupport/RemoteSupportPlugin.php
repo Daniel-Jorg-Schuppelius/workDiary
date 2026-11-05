@@ -103,6 +103,7 @@ class RemoteSupportPlugin extends AbstractPlugin implements NavigationContributo
             ['key' => 'sync_window_days', 'label' => __('Sync-Zeitfenster (Tage)'), 'type' => 'text', 'default' => '2', 'help' => __('Wie viele Tage rückwirkend pro Lauf abgefragt werden.')],
             ['key' => 'default_billable', 'label' => __('Importierte Sitzungen abrechenbar'), 'type' => 'boolean', 'default' => true],
             ['key' => 'default_user_id', 'label' => __('Zeiten buchen für Benutzer'), 'type' => 'user', 'help' => __('Optional. Leer = Organisations-Owner bzw. erster Benutzer.')],
+            ['key' => 'merge_gap_minutes', 'label' => __('Verbindungen zusammenfassen bis (Minuten)'), 'type' => 'text', 'default' => '30', 'help' => __('Beginnt eine Verbindung desselben Geräts innerhalb dieser Frist nach dem Ende der vorigen, verlängert sie deren Zeiteintrag statt einen neuen anzulegen. 0 schaltet das Zusammenfassen ab.')],
 
             ...array_merge(...array_map(static fn (RemoteProviderDefinition $d): array => $d->settingsSchema(), array_values(RemoteProviders::all()))),
 
