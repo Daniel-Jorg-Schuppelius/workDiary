@@ -10,7 +10,7 @@
 
 namespace App\Plugins\RemoteSupport;
 
-use App\Plugins\RemoteSupport\Console\{RetagEntriesCommand, SyncSessionsCommand};
+use App\Plugins\RemoteSupport\Console\{MergeSessionsCommand, RetagEntriesCommand, SyncSessionsCommand};
 use App\Plugins\RemoteSupport\Services\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSessionImporter, RemoteSupportGroupBooker};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Integration\InboxGroupBookerRegistry;
@@ -45,6 +45,7 @@ class RemoteSupportServiceProvider extends PluginServiceProviderBase {
         $this->commands([
             SyncSessionsCommand::class,
             RetagEntriesCommand::class,
+            MergeSessionsCommand::class,
         ]);
     }
 }

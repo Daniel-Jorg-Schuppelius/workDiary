@@ -122,6 +122,7 @@ class RemotePendingAssignmentService {
             ->where('status', RemotePendingSessionStatus::Open)
             ->where('provider', $provider)
             ->where('remote_id', $remoteId)
+            ->orderBy('started_at')->orderBy('id')
             ->get();
 
         // Mehrkundengeräte: nichts automatisch buchen. Offene Sitzungen
@@ -190,7 +191,7 @@ class RemotePendingAssignmentService {
             }
 
             $config = RemoteSupportConfig::resolve($organization->id);
-            [$entry, $wasLinked] = $this->importer->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable']);
+            [$entry, $wasLinked] = $this->importer->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable'], mergeGapMinutes: RemoteSessionImporter::mergeGapMinutes($config));
             $row->update([
                 'status' => RemotePendingSessionStatus::Imported,
                 'time_entry_id' => $entry?->id,
@@ -354,7 +355,7 @@ class RemotePendingAssignmentService {
         }
 
         $config = RemoteSupportConfig::resolve($organization->id);
-        [$entry] = $this->importer->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable'], $project);
+        [$entry] = $this->importer->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable'], $project, RemoteSessionImporter::mergeGapMinutes($config));
         $row->update([
             'status' => RemotePendingSessionStatus::Imported,
             'time_entry_id' => $entry?->id,

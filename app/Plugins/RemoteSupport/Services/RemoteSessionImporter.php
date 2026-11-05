@@ -155,7 +155,14 @@ class RemoteSessionImporter {
             return ['created' => 0, 'linked' => 0, 'skipped' => 0, 'unmatched' => 0, 'pending' => 0];
         }
 
-        foreach ($sessions as $session) {
+        // Chronologisch buchen: Anbieter liefern die neueste Verbindung zuerst,
+        // die Verkettung ({@see precedingRemoteEntry()}) braucht aber den
+        // Vorgänger, bevor die Folgeverbindung kommt.
+        $ordered = collect($sessions)
+            ->sortBy(static fn (RemoteSession $s): string => $s->startedAt->utc()->format('Y-m-d H:i:s') . ' ' . $s->sessionId)
+            ->values();
+
+        foreach ($ordered as $session) {
             match ($this->bookSession($organization, $config, $session, $userId)) {
                 'created' => $created++,
                 'linked' => $linked++,
@@ -206,9 +213,19 @@ class RemoteSessionImporter {
             return 'pending';
         }
 
-        [, $linked] = $this->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable']);
+        [, $linked] = $this->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable'], mergeGapMinutes: self::mergeGapMinutes($config));
 
         return $linked ? 'linked' : 'created';
+    }
+
+    /**
+     * Toleranz der Verkettung: Org-Einstellung aus {@see RemoteSupportConfig::resolve()},
+     * sonst die Plugin-Vorgabe; 0 schaltet die Verkettung ab.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function mergeGapMinutes(array $config): int {
+        return max(0, (int) ($config['merge_gap_minutes'] ?? config('plugins.remote-support.merge_gap_minutes', 30)));
     }
 
     /**
@@ -277,11 +294,13 @@ class RemoteSessionImporter {
 
     /**
      * Public, weil die Pending-Zuordnung Sitzungen mit identischer Semantik
-     * materialisiert (Überlappungs-Verknüpfung, Lead-Fenster, Zeit-Kürzel).
+     * materialisiert (Überlappungs-Verknüpfung, Lead-Fenster, Verkettung,
+     * Zeit-Kürzel).
      *
+     * @param  ?int  $mergeGapMinutes  Toleranz der Verkettung; null = Plugin-Vorgabe ({@see mergeGapMinutes()})
      * @return array{0: ?TimeEntry, 1: bool}  [Eintrag, true = nur an vorhandene Zeit verknüpft]
      */
-    public function createTimeEntry(Organization $organization, Asset $asset, RemoteSession $session, int $userId, bool $billable, ?Project $project = null): array {
+    public function createTimeEntry(Organization $organization, Asset $asset, RemoteSession $session, int $userId, bool $billable, ?Project $project = null, ?int $mergeGapMinutes = null): array {
         // Bei Mehrkundengeräten wird das Zielprojekt explizit übergeben; sonst
         // entscheidet die Sitzungsnotiz (Schlüsselwort-Zuordnung, MVP-483) und
         // erst danach das Projekt des Fremdkunden (Endkunden), das
@@ -290,6 +309,9 @@ class RemoteSessionImporter {
         $project ??= app(ProjectKeywordMatcher::class)
             ->match($organization, $asset->foreignCustomer ?? $asset->customer, (string) $session->note)
             ?->project;
+        // Ein ausdrücklich gewähltes Projekt (Mehrkundengerät, Schlüsselwort)
+        // bindet die Verkettung an denselben Eintrag; das Standardprojekt nicht.
+        $chosenProjectId = $project?->id;
         $project ??= $asset->foreignCustomer?->defaultProjectOrCreate()
             ?? $asset->customer?->defaultProjectOrCreate()
             ?? $this->internalMaintenanceProject($organization);
@@ -310,13 +332,18 @@ class RemoteSessionImporter {
             ? $this->precedingCallEntry($organization, $session, $userId, (int) $project->customer_id)
             : null;
 
+        // Verkettung: Reconnects und Wartezeiten (Update läuft, Techniker
+        // trennt und kommt wieder) sind ein Vorgang — eine Verbindung
+        // desselben Geräts ≤ merge_gap_minutes nach dem Ende eines
+        // Fernwartungs-Eintrags verlängert ihn statt neu zu buchen. Kommt die
+        // frühere Verbindung später an (CSV-Export neueste zuerst), zieht sie
+        // den Beginn des schon gebuchten Nachfolgers vor.
+        $gapMinutes = $mergeGapMinutes ?? self::mergeGapMinutes([]);
+        $covering ??= $this->adjacentRemoteEntry($organization, $asset, $session, $userId, $project, $chosenProjectId, $gapMinutes, following: false);
+        $covering ??= $this->adjacentRemoteEntry($organization, $asset, $session, $userId, $project, $chosenProjectId, $gapMinutes, following: true);
+
         if ($covering !== null) {
-            // Telefonat-Einträge werden bis zum Sitzungsende verlängert (eine
-            // Abrechnung für Anruf + Fernwartung); fremd erfasste Zeiten
-            // bleiben autoritativ und werden nie verändert.
-            $this->extendCallEntryEnd($organization, $covering, $session);
-            $this->rememberSessionReference($organization, $session, $covering, $asset, linked: true);
-            $this->applyRemoteTags($organization, $covering, $session->provider);
+            $this->absorbSession($organization, $covering, $session, $asset);
 
             return [$covering, true];
         }
@@ -344,7 +371,7 @@ class RemoteSessionImporter {
             'date' => $startedAt->setTimezone(Tz::ofOrganization($organization))->toDateString(),
             // Eloquent speichert die Wanduhr des Offsets (TeamViewer liefert ISO mit Offset): UTC erzwingen.
             'started_at' => $startedAt->utc(),
-            'ended_at' => $session->endedAt->utc(),
+            'ended_at' => self::minimumEnd($startedAt, $session->endedAt)->utc(),
             'kind' => TimeEntryKind::Work,
             'description' => $description,
         ];
@@ -564,24 +591,173 @@ class RemoteSessionImporter {
     }
 
     /**
-     * Zieht das Ende eines Telefonat-Eintrags auf das Sitzungsende vor
-     * (Anruf → Fernwartung = eine Abrechnung). Greift nur bei
-     * FritzBox-Telefonat-Einträgen; exportierte Einträge und abgeschlossene
-     * Monate werden nie modifiziert (dann bleibt es bei der Verknüpfung).
+     * Fernwartungs-Eintrag desselben Benutzers, Kunden und Geräts, der
+     * höchstens $gapMinutes vor dem Sitzungsbeginn endete (Vorgänger) bzw.
+     * höchstens $gapMinutes nach dem Sitzungsende begann (Nachfolger, wenn die
+     * frühere Verbindung später ankommt): die Verbindung ist ein Reconnect
+     * oder die Rückkehr nach einer Wartezeit. Nur erweiterbare Einträge zählen
+     * (nicht exportiert, Monat offen); ein ausdrücklich gewähltes Projekt der
+     * Sitzung muss das des Nachbarn sein — eine Notiz mit Schlüsselwort auf
+     * ein anderes Projekt ist ein eigener Vorgang.
      */
-    private function extendCallEntryEnd(Organization $organization, TimeEntry $entry, RemoteSession $session): void {
-        if ($entry->ended_at === null || $session->endedAt->getTimestamp() <= $entry->ended_at->getTimestamp()) {
-            return;
+    private function adjacentRemoteEntry(Organization $organization, Asset $asset, RemoteSession $session, int $userId, Project $project, ?int $chosenProjectId, int $gapMinutes, bool $following): ?TimeEntry {
+        if ($gapMinutes === 0) {
+            return null;
         }
-        if ((bool) $entry->exported || ! $this->isCallEntry($organization, $entry)) {
-            return;
+
+        $candidates = TimeEntry::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('user_id', $userId)
+            ->where('exported', false)
+            ->when(
+                $following,
+                static fn ($q) => $q
+                    ->where('started_at', '>=', $session->endedAt)
+                    ->where('started_at', '<=', $session->endedAt->addMinutes($gapMinutes))
+                    ->orderBy('started_at'),
+                static fn ($q) => $q
+                    ->where('ended_at', '>=', $session->startedAt->subMinutes($gapMinutes))
+                    ->where('ended_at', '<=', $session->startedAt)
+                    ->orderByDesc('ended_at'),
+            )
+            ->when(
+                $chosenProjectId !== null,
+                static fn ($q) => $q->where('project_id', $chosenProjectId),
+                static fn ($q) => $q->whereIn('project_id', Project::query()
+                    ->withoutGlobalScopes()
+                    ->where('organization_id', $organization->id)
+                    ->when(
+                        $project->customer_id !== null,
+                        static fn ($p) => $p->where('customer_id', $project->customer_id),
+                        static fn ($p) => $p->whereKey($project->id),
+                    )
+                    ->select('id')),
+            )
+            ->get();
+
+        foreach ($candidates as $entry) {
+            if ($this->isRemoteEntryOfAsset($organization, $entry, $asset) && ! $this->extensionLocked($organization, $entry, $session)) {
+                return $entry;
+            }
         }
-        if ($this->extensionLocked($organization, $entry, $session)) {
+
+        return null;
+    }
+
+    /** Trägt der Eintrag die Primärreferenz einer Sitzung dieses Geräts? */
+    private function isRemoteEntryOfAsset(Organization $organization, TimeEntry $entry, Asset $asset): bool {
+        $reference = ExternalReference::query()
+            ->forPlugin($organization, RemoteSupportPlugin::ID, self::EXT_TYPE_SESSION)
+            ->forReferenceable($entry)
+            ->first();
+
+        return $reference !== null && (int) ($reference->payload['asset_id'] ?? 0) === (int) $asset->id;
+    }
+
+    /**
+     * Hängt eine Sitzung an einen vorhandenen Eintrag: Ende verlängern,
+     * Notiz in die Beschreibung, Sitzung als Nachweis verknüpfen, Tags setzen.
+     * Public, weil der Nachlauf `remote:merge-sessions` den Bestand mit
+     * derselben Semantik verkettet.
+     */
+    public function absorbSession(Organization $organization, TimeEntry $entry, RemoteSession $session, Asset $asset): void {
+        $this->extendEntryEnd($organization, $entry, $session, $asset);
+        $this->rememberSessionReference($organization, $session, $entry, $asset, linked: true);
+        $this->applyRemoteTags($organization, $entry, $session->provider);
+    }
+
+    /**
+     * Zieht das Ende eines Eintrags auf das Sitzungsende (Anruf → Fernwartung
+     * bzw. Reconnect = eine Abrechnung). Greift nur bei Telefonat-Einträgen
+     * und Fernwartungs-Einträgen desselben Geräts; fremd erfasste Zeiten
+     * bleiben autoritativ, exportierte Einträge und abgeschlossene Monate
+     * werden nie modifiziert (dann bleibt es bei der Verknüpfung). Die Notiz
+     * der Sitzung ergänzt die Beschreibung eines Fernwartungs-Eintrags.
+     */
+    private function extendEntryEnd(Organization $organization, TimeEntry $entry, RemoteSession $session, Asset $asset): void {
+        if ((bool) $entry->exported || $this->extensionLocked($organization, $entry, $session)) {
             return;
         }
 
-        $entry->ended_at = \Illuminate\Support\Carbon::instance($session->endedAt);
-        $entry->save(); // minutes rechnet der saving-Hook neu
+        $remote = $this->isRemoteEntryOfAsset($organization, $entry, $asset);
+        if (! $remote && ! $this->isCallEntry($organization, $entry)) {
+            return;
+        }
+
+        $dirty = false;
+        if ($entry->ended_at !== null && $session->endedAt->getTimestamp() > $entry->ended_at->getTimestamp()) {
+            $entry->ended_at = \Illuminate\Support\Carbon::instance($session->endedAt);
+            $dirty = true;
+        }
+
+        // Nur Fernwartungs-Einträge wandern auch nach vorn: ein Telefonat hat
+        // seinen Beginn vom Anruf.
+        if ($remote && $entry->started_at !== null && $session->startedAt->getTimestamp() < $entry->started_at->getTimestamp()) {
+            $entry->started_at = \Illuminate\Support\Carbon::instance($session->startedAt->utc());
+            $entry->date = \Illuminate\Support\Carbon::instance($session->startedAt->setTimezone(Tz::ofOrganization($organization)));
+            $dirty = true;
+        }
+
+        if ($remote) {
+            $merged = self::mergeNoteIntoDescription((string) $entry->description, $session->note);
+            if ($merged !== (string) $entry->description) {
+                $entry->description = $merged;
+                $dirty = true;
+            }
+        }
+
+        if ($dirty) {
+            $entry->save(); // minutes rechnet der saving-Hook neu
+        }
+    }
+
+    /**
+     * Notiz einer Folgeverbindung in die Beschreibung „Gerät (Notiz)“: der
+     * Platzhalter ohne Notiz wird ersetzt, eine andere Notiz mit „ · “
+     * angehängt, eine schon enthaltene nicht wiederholt.
+     */
+    public static function mergeNoteIntoDescription(string $description, ?string $note): string {
+        $note = trim((string) $note);
+        if ($note === '' || str_contains(mb_strtolower($description), mb_strtolower($note))) {
+            return $description;
+        }
+
+        $placeholder = '(' . __('Fernwartungssitzung') . ')';
+        if (str_ends_with($description, $placeholder)) {
+            return substr($description, 0, -strlen($placeholder)) . '(' . $note . ')';
+        }
+
+        if (str_ends_with($description, ')')) {
+            return substr($description, 0, -1) . ' · ' . $note . ')';
+        }
+
+        return $description . ' (' . $note . ')';
+    }
+
+    /**
+     * Darf der Eintrag bis $until verlängert werden? Exportierte Einträge und
+     * abgeschlossene Monate (Eintrags- und Zieltag) bleiben unverändert.
+     */
+    public function canExtend(Organization $organization, TimeEntry $entry, CarbonImmutable $until): bool {
+        if ((bool) $entry->exported) {
+            return false;
+        }
+
+        $probe = new RemoteSession('probe', 'probe', 'probe', $until, $until);
+
+        return ! $this->extensionLocked($organization, $entry, $probe);
+    }
+
+    /**
+     * Eine Verbindung unter einer Minute wird als eine Minute gebucht: der
+     * Observer rundet Minuten ab, und ein Eintrag mit 0 Minuten ist in Liste
+     * und Abrechnung wertlos. Die echte Dauer bleibt am Sitzungsnachweis.
+     */
+    public static function minimumEnd(CarbonImmutable $startedAt, CarbonImmutable $endedAt): CarbonImmutable {
+        $floor = $startedAt->addMinute();
+
+        return $endedAt < $floor ? $floor : $endedAt;
     }
 
     /** Trägt der Eintrag eine FritzBox-Anruf-Referenz (Primär oder Alias)? */
@@ -611,6 +787,7 @@ class RemoteSessionImporter {
         $closure = app(\App\Services\TimeApproval\MonthClosureService::class);
 
         return ($entry->started_at !== null && $closure->isPeriodLockedForUser($user, CarbonImmutable::instance($entry->started_at)->setTimezone($tz)))
+            || $closure->isPeriodLockedForUser($user, $session->startedAt->setTimezone($tz))
             || $closure->isPeriodLockedForUser($user, $session->endedAt->setTimezone($tz));
     }
 

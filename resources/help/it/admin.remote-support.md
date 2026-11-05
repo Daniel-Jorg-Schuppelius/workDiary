@@ -1,7 +1,7 @@
 ---
 title: "Assistenza remota"
 topic: admin.remote-support
-version: 4
+version: 5
 keywords:
     - AnyDesk
     - TeamViewer
@@ -98,6 +98,18 @@ interruttore per fornitore):
   con un proprio accordo). Vengono acquisite le sessioni chiuse con la
   durata registrata in pcvisit; l'ID dispositivo è l'ID computer di
   pcvisit, il cliente finale è nella nota.
+
+Le connessioni vengono riunite in un unico intervento: se una
+connessione allo stesso dispositivo inizia entro il termine **Riunisci
+connessioni fino a (minuti)** (predefinito 30) dopo la fine della
+precedente, prolunga quella registrazione di tempo; così riconnessioni
+e attese durante un aggiornamento non diventano tante registrazioni
+separate. La nota della connessione successiva integra la descrizione;
+se indica un altro progetto tramite parola chiave, nasce una
+registrazione a sé. Le registrazioni esportate e i mesi chiusi non
+vengono mai prolungati. Una connessione sotto il minuto viene registrata
+come un minuto; la durata reale resta sulla prova della sessione. 0
+disattiva il raggruppamento.
 
 Se un fornitore non risponde, gli altri continuano; il messaggio compare
 nello stato del plugin e nel risultato dell'importazione.

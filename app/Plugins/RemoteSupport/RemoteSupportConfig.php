@@ -29,13 +29,14 @@ use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
  */
 class RemoteSupportConfig {
     /**
-     * @return array<string, mixed>  `enabled`, `sync_window_days`, `default_billable`, `default_user_id` und je Anbieter ein ProviderConfig
+     * @return array<string, mixed>  `enabled`, `sync_window_days`, `default_billable`, `default_user_id`, `merge_gap_minutes` und je Anbieter ein ProviderConfig
      */
     public static function resolve(?int $organizationId = null): array {
         $enabled = (bool) config('plugins.remote-support.enabled', false);
         $syncWindowDays = (int) config('plugins.remote-support.sync_window_days', 2);
         $defaultBillable = (bool) config('plugins.remote-support.default_billable', true);
         $defaultUserId = NumberHelper::toIntOrNull(config('plugins.remote-support.default_user_id'));
+        $mergeGapMinutes = (int) config('plugins.remote-support.merge_gap_minutes', 30);
 
         $organizationId ??= PluginOrgContext::currentId();
 
@@ -60,6 +61,9 @@ class RemoteSupportConfig {
                 if (NumberHelper::toIntOrNull($s['default_user_id'] ?? null) !== null) {
                     $defaultUserId = NumberHelper::toIntOrNull($s['default_user_id']);
                 }
+                if (NumberHelper::toIntOrNull($s['merge_gap_minutes'] ?? null) !== null) {
+                    $mergeGapMinutes = (int) NumberHelper::toIntOrNull($s['merge_gap_minutes']);
+                }
             }
         }
 
@@ -68,6 +72,7 @@ class RemoteSupportConfig {
             'sync_window_days' => max(1, $syncWindowDays),
             'default_billable' => $defaultBillable,
             'default_user_id' => $defaultUserId,
+            'merge_gap_minutes' => max(0, $mergeGapMinutes),
         ];
 
         foreach (RemoteProviders::all() as $id => $definition) {
