@@ -60,7 +60,7 @@ class ResaleVoucherDialogTest extends TestCase {
             'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR', 'sale_unit_price' => '47.40',
         ]);
         (new PeriodPlanner)->sync($subscription);
-        $period = $subscription->periods()->where('starts_on', '2026-07-04')->firstOrFail();
+        $period = $subscription->periods()->whereDate('starts_on', '2026-07-04')->firstOrFail();
         $voucher = LexofficeVoucher::create([
             'organization_id' => $this->organization->id, 'external_id' => 'v-9006', 'contact_external_id' => 'c-lastkraft', 'voucher_type' => 'invoice',
             'voucher_status' => 'paid', 'voucher_number' => 'RE/2026/9006', 'voucher_date' => '2026-07-04', 'total_amount' => 56.41, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),

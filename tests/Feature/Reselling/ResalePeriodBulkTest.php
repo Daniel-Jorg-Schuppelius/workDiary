@@ -89,7 +89,7 @@ class ResalePeriodBulkTest extends TestCase {
         $subscription = $this->subscription();
         $this->voucherLine('RE/2025/9010', '2025-10-06');
         (new LinkProposer)->propose($this->organization);
-        $period = $subscription->periods()->where('starts_on', '2025-08-05')->firstOrFail()->load('links');
+        $period = $subscription->periods()->whereDate('starts_on', '2025-08-05')->firstOrFail()->load('links');
         $this->assertTrue($period->isProposedOnly(), 'außerhalb des Fensters: kein sicherer Treffer, keine automatische Bestätigung');
 
         return $period;

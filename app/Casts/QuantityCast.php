@@ -11,6 +11,7 @@
 namespace App\Casts;
 
 use CommonToolkit\ValueObjects\Quantity;
+use Illuminate\Contracts\Database\Eloquent\ComparesCastableAttributes;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -26,7 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @extends ValueObjectCast<Quantity>
  */
-class QuantityCast extends ValueObjectCast {
+class QuantityCast extends ValueObjectCast implements ComparesCastableAttributes {
     /** Einheit für Altbestand ohne gesetzte Einheit — {@see Quantity} lässt keine leere zu. */
     private const FALLBACK_UNIT = 'Stk';
 
@@ -79,5 +80,9 @@ class QuantityCast extends ValueObjectCast {
         $related = $model->getRelation($relation);
 
         return $related instanceof Model ? $related->getAttribute($column) : null;
+    }
+
+    public function compare(Model $model, string $key, mixed $firstValue, mixed $secondValue): bool {
+        return $this->canonical($model, $firstValue) === $this->canonical($model, $secondValue);
     }
 }

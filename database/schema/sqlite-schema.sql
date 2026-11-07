@@ -12973,33 +12973,6 @@ CREATE TABLE IF NOT EXISTS "organization_sso_domains"(
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("created_by") references "users"("id") on delete set null
 );
-CREATE TABLE IF NOT EXISTS "audit_logs"(
-  "id" integer primary key autoincrement not null,
-  "user_id" integer,
-  "event" varchar not null,
-  "auditable_type" varchar not null,
-  "auditable_id" integer not null,
-  "changes" text,
-  "ip" varchar,
-  "user_agent" varchar,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "organization_id" integer,
-  "prev_hash" varchar,
-  "hash" varchar,
-  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
-  foreign key("user_id") references "users"("id") on delete set null on update no action
-);
-CREATE INDEX "audit_logs_auditable_type_auditable_id_index" on "audit_logs"(
-  "auditable_type",
-  "auditable_id"
-);
-CREATE INDEX "audit_logs_event_created_at_index" on "audit_logs"(
-  "event",
-  "created_at"
-);
-CREATE INDEX "audit_logs_hash_index" on "audit_logs"("hash");
-CREATE INDEX "idx_audit_logs_org" on "audit_logs"("organization_id");
 CREATE TABLE IF NOT EXISTS "bank_accounts"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -15842,10 +15815,6 @@ CREATE UNIQUE INDEX "weatherwarn_entry_day_threshold_uq" on "weather_warnings"(
 CREATE INDEX "weatherwarn_org_date_idx" on "weather_warnings"(
   "organization_id",
   "forecast_date"
-);
-CREATE INDEX "audit_logs_org_created_idx" on "audit_logs"(
-  "organization_id",
-  "created_at"
 );
 CREATE INDEX "gobd_exports_org_status_idx" on "gobd_exports"(
   "organization_id",
@@ -25372,6 +25341,35 @@ CREATE INDEX "isd_external_position_idx" on "invoice_supporting_documents"(
   "external_invoice_id",
   "position"
 );
+CREATE TABLE IF NOT EXISTS "audit_logs"(
+  "id" integer primary key autoincrement not null,
+  "user_id" integer,
+  "event" varchar not null,
+  "auditable_type" varchar not null,
+  "auditable_id" integer not null,
+  "changes" text,
+  "ip" varchar,
+  "user_agent" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "organization_id" integer,
+  "prev_hash" varchar,
+  "hash" varchar
+);
+CREATE INDEX "audit_logs_auditable_type_auditable_id_index" on "audit_logs"(
+  "auditable_type",
+  "auditable_id"
+);
+CREATE INDEX "audit_logs_event_created_at_index" on "audit_logs"(
+  "event",
+  "created_at"
+);
+CREATE INDEX "audit_logs_hash_index" on "audit_logs"("hash");
+CREATE INDEX "audit_logs_org_created_idx" on "audit_logs"(
+  "organization_id",
+  "created_at"
+);
+CREATE INDEX "idx_audit_logs_org" on "audit_logs"("organization_id");
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -26424,3 +26422,4 @@ INSERT INTO migrations VALUES(1048,'2027_04_02_120000_create_project_time_target
 INSERT INTO migrations VALUES(1049,'2027_04_03_100000_create_invoice_supporting_documents_table',2);
 INSERT INTO migrations VALUES(1050,'2027_04_03_110000_add_einvoice_recipient_profile_to_customers',2);
 INSERT INTO migrations VALUES(1051,'2027_04_03_120000_create_external_invoices_tables',2);
+INSERT INTO migrations VALUES(1052,'2027_04_03_130000_drop_audit_log_foreign_keys_on_sqlite',3);

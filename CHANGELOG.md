@@ -54,6 +54,22 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 - Übergabe- und Rechnungsblöcke nennen die Art als Bezeichnung
   („[Anfahrt]“ statt „[travel]“).
 
+### Fixed
+
+- Unter SQLite (CI, kleine Installationen): Storno ausgestellter Rechnungen,
+  Übertragung nach easybill und sevDesk und der Artikelspiegel meldeten bei
+  unverändertem Steuersatz oder unveränderter Menge eine Änderung;
+  Basiszinssätze, Liquiditäts-Snapshots, Gleitzeitberechtigungen und
+  Demo-Sollzeitbefunde konnten doppelt entstehen; der GAEB-Export brach am
+  Steuersatz ab; die Suche ließ den letzten Tag des Zeitraums weg; der
+  Demo-Purge löschte die Organisation aus dem Audit-Eintrag.
+- Nightly auf MariaDB lief wegen eines veralteten Testpfads gar nicht.
+
+### Security
+
+- Symfony-Komponenten auf 8.1.10/8.1.11 (11 Hinweise in filesystem,
+  http-foundation, http-kernel, routing, serializer und yaml).
+
 ## [1.0.0] - 2026-11-02
 
 Erste versionierte Freigabe nach 168 Phasen: alles, was bis zum

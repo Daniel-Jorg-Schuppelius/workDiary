@@ -22,3 +22,9 @@ paths = [
   '''(^|/)lang/''',
   '''\.gitleaks\.toml$''',
 ]
+# Werte, die die generische Regel wegen Schlüsselwort und Entropie meldet,
+# obwohl sie kein Geheimnis sind (Abgleich gegen den gefundenen Wert).
+regexes = [
+  # Zeichensatz der Startpasswörter im Kundenportal (PortalAccessService::START_PASSWORD_ALPHABET).
+  '''ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789''',
+]

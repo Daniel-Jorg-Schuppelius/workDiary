@@ -54,7 +54,7 @@ class BaseInterestRateService {
             }
             $previous = $rate;
             $row = BaseInterestRate::query()->updateOrCreate(
-                ['valid_from' => $month . '-01'],
+                ['valid_from' => CarbonImmutable::parse($month . '-01')],
                 ['rate' => $rate, 'source' => self::SOURCE],
             );
             if ($row->wasRecentlyCreated || $row->wasChanged('rate')) {

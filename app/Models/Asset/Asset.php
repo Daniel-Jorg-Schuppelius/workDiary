@@ -113,6 +113,8 @@ class Asset extends Model implements CustomFieldSubject {
         'next_inspection_on' => 'date',
         'custom' => 'array',
         'acquired_on' => 'date',
+        'location_lat' => 'decimal:7',
+        'location_lng' => 'decimal:7',
     ];
 
     /**

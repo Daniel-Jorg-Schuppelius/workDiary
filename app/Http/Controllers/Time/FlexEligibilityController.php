@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Time\FlexEligibility;
 use App\Support\SortableQuery;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -70,7 +71,7 @@ class FlexEligibilityController extends Controller {
         FlexEligibility::query()->updateOrCreate(
             [
                 'user_id' => $user->id,
-                'valid_from' => $data['valid_from'],
+                'valid_from' => CarbonImmutable::parse($data['valid_from'])->startOfDay(),
             ],
             [
                 'organization_id' => $this->currentOrganization()->id,

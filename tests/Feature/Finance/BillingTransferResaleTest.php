@@ -78,7 +78,7 @@ class BillingTransferResaleTest extends TestCase {
         $this->assertSame(2, $transfer->positions()->count(), 'beim Bestätigen eingefroren');
 
         // Zeitraumfilter und Auswahl: nur die 2025er Periode.
-        $period2025 = $subscription->periods()->where('starts_on', '2025-08-05')->firstOrFail();
+        $period2025 = $subscription->periods()->whereDate('starts_on', '2025-08-05')->firstOrFail();
         $rows = app(ResalePeriodTransferSource::class)->collect($this->customer, ['from' => '2025-01-01', 'to' => '2025-12-31'], null);
         $this->assertSame([], $rows->all(), 'bestätigte Übergabe hält die Perioden — keine Quelle mehr frei');
 

@@ -112,6 +112,15 @@ abstract class ValueObjectCast implements CastsAttributes {
         return $vo === null ? $raw : $this->toStorage($vo);
     }
 
+    /**
+     * Kanonische Spaltenform für den Dirty-Vergleich numerischer Casts: SQLite
+     * liefert DECIMAL als Zahl (`19`), MariaDB als String (`19.00`).
+     */
+    protected function canonical(Model $model, mixed $value): ?string {
+        $raw = $this->read($value);
+
+        return $raw === null ? null : $this->storeScalar(trim($raw), $model, $model->getAttributes());
+    }
     protected function hasOption(string $option): bool {
         return in_array($option, $this->options, true);
     }

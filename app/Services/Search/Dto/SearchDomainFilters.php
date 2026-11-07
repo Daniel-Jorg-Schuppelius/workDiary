@@ -25,8 +25,9 @@ final readonly class SearchDomainFilters {
     ) {}
 
     /**
-     * Zeitraum auf einer Spalte, ohne `whereDate` (indexfreundlich):
-     * Zeitstempel halboffen, DATE-Spalten tageweise.
+     * Zeitraum auf einer Spalte, ohne `whereDate` (indexfreundlich). Die
+     * Obergrenze ist immer halboffen: der date-Cast speichert `Y-m-d 00:00:00`,
+     * und SQLite vergleicht Strings.
      *
      * @param  Builder<covariant \Illuminate\Database\Eloquent\Model>  $query
      */
@@ -35,9 +36,7 @@ final readonly class SearchDomainFilters {
             $query->where($column, '>=', $dateColumn ? DateRange::day($this->from) : DateRange::dayStart($this->from));
         }
         if ($this->to !== null) {
-            $dateColumn
-                ? $query->where($column, '<=', DateRange::day($this->to))
-                : $query->where($column, '<', DateRange::dayAfter($this->to));
+            $query->where($column, '<', DateRange::dayAfter($this->to));
         }
     }
 }

@@ -28704,3 +28704,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1048,'2027_04_02_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1049,'2027_04_03_100000_create_invoice_supporting_documents_table',2);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1050,'2027_04_03_110000_add_einvoice_recipient_profile_to_customers',2);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1051,'2027_04_03_120000_create_external_invoices_tables',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1052,'2027_04_03_130000_drop_audit_log_foreign_keys_on_sqlite',3);

@@ -11,6 +11,7 @@
 namespace App\Casts;
 
 use CommonToolkit\ValueObjects\Decimal;
+use Illuminate\Contracts\Database\Eloquent\ComparesCastableAttributes;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -21,7 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @extends ValueObjectCast<Decimal>
  */
-class DecimalCast extends ValueObjectCast {
+class DecimalCast extends ValueObjectCast implements ComparesCastableAttributes {
     /**
      * @param  array<string, mixed>  $attributes
      */
@@ -37,5 +38,9 @@ class DecimalCast extends ValueObjectCast {
     protected function toStorage(object $value): string {
         /** @var Decimal $value */
         return $value->getValue();
+    }
+
+    public function compare(Model $model, string $key, mixed $firstValue, mixed $secondValue): bool {
+        return $this->canonical($model, $firstValue) === $this->canonical($model, $secondValue);
     }
 }
