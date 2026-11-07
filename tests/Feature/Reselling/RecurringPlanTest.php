@@ -456,7 +456,7 @@ class RecurringPlanTest extends TestCase {
             'external_article_id' => self::ARTICLE, 'lexoffice_article_id' => $this->exchange->id, 'name' => 'Exchange Online (Plan 1)',
             'quantity' => 12, 'unit_name' => 'Monat', 'unit_net' => '3.95', 'total_net' => '47.40', 'tax_rate' => 19, 'currency' => 'EUR',
         ]);
-        $period = $badhausSubscription->periods()->where('starts_on', '2026-10-18')->firstOrFail();
+        $period = $badhausSubscription->periods()->whereDate('starts_on', '2026-10-18')->firstOrFail();
         ResalePeriodLink::query()->create([
             'organization_id' => $this->organization->id, 'period_id' => $period->id, 'subscription_id' => $badhausSubscription->id, 'linkable_type' => $voucherLine->getMorphClass(), 'linkable_id' => $voucherLine->id,
             'voucher_number' => 'RE/2026/1140', 'voucher_date' => '2026-10-18', 'quantity' => 1, 'months' => 12, 'currency' => 'EUR', 'origin' => 'auto', 'confirmed_at' => now(),
@@ -521,7 +521,7 @@ class RecurringPlanTest extends TestCase {
         // Das Jahr ab der ersten Ausführung gehört der Vorlage, auch mit späterem Stichtag.
         $later = $drafts->openEntries($this->schub, CarbonImmutable::parse('2026-12-01'));
         $this->assertSame(36.0, $later[0]['line']['quantity']);
-        $this->assertSame(0.0, $drafts->draftableMonths($subscription->periods()->where('starts_on', '2026-11-01')->firstOrFail()));
+        $this->assertSame(0.0, $drafts->draftableMonths($subscription->periods()->whereDate('starts_on', '2026-11-01')->firstOrFail()));
 
         // Der Dialog zählt dasselbe wie der Entwurf: drei Perioden, drei Jahresbeträge.
         $admin = $this->orgAdmin();

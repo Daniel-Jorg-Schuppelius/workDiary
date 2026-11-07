@@ -53,7 +53,7 @@ final class ProjectTargetsDemoBlock implements DemoBlock {
         $yesterday = CarbonImmutable::now(Tz::ofOrganization($context->organization))->subDay();
         if ($yesterday->isWeekday()) {
             ProjectTimeShortfall::query()->firstOrCreate(
-                ['project_id' => $project->id, 'user_id' => $first->id, 'date' => $yesterday->toDateString()],
+                ['project_id' => $project->id, 'user_id' => $first->id, 'date' => $yesterday->startOfDay()],
                 [
                     'organization_id' => $context->organization->id,
                     'target_minutes' => 480, 'booked_minutes' => 390, 'shortfall_minutes' => 90, 'tolerance_minutes' => 15,

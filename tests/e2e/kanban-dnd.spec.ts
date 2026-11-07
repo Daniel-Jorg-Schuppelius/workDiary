@@ -27,18 +27,16 @@ import { STATUS } from "./helpers";
 /**
  * Legt einen terminierten Auftrag von heute an (landet in „Geplant").
  *
- * Bewusst über das Formular-Fragment `/diary/create?date=…` statt über den
- * Modal-Dialog: Das Fragment kommt ohne Layout und damit ohne Alpine/Flatpickr;
- * `start_at` bleibt ein natives datetime-local mit dem vorbelegten Datum. Über
- * den Dialog wäre das Feld ein von Flatpickr verstecktes Hidden-Input — dort
- * ist nur noch das lokalisierte Alt-Feld beschreibbar, und der Spec würde am
- * Datumsformat hängen statt am Kanban.
+ * Über das Formular `/diary/create?date=…`. Flatpickr versteckt `start_at` und
+ * `end_at`; beschrieben wird das sichtbare Zweitfeld daneben (deutsches
+ * Format, Tab übernimmt), wie in diary-entry-defaults.spec.ts.
  */
 async function createOrderForToday(page: Page): Promise<string> {
     const marker = `E2E-Kanban-${Date.now()}`;
     const today = new Date();
     const pad = (value: number) => String(value).padStart(2, "0");
     const isoDay = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+    const deDay = `${pad(today.getDate())}.${pad(today.getMonth() + 1)}.${today.getFullYear()}`;
 
     await page.goto(`/diary/create?date=${isoDay}`);
 
@@ -52,9 +50,12 @@ async function createOrderForToday(page: Page): Promise<string> {
     // (Europe/Berlin −2 h) im VORTAG — am Monatsersten fiel die Karte damit
     // aus dem „Dieser Monat"-Fenster (dokumentierte UTC-Schnittsemantik von
     // DateRange::whereTimestampBetween, kein App-Bug). Erst am 01.09. rot.
-    await form.locator('input[name="start_at"]').fill(`${isoDay}T09:00`);
+    await form.locator("#start_at + input").fill(`${deDay} 09:00`);
+    await form.locator("#start_at + input").press("Tab");
     // „Terminiert" verlangt auch ein Ende.
-    await form.locator('input[name="end_at"]').fill(`${isoDay}T17:00`);
+    await form.locator("#end_at + input").fill(`${deDay} 17:00`);
+    await form.locator("#end_at + input").press("Tab");
+    await expect(form.locator('input[name="start_at"]')).toHaveValue(`${isoDay}T09:00`);
     await form
         .locator('textarea[name="content"]')
         .fill(`${marker} — Kanban-Zug per Pointer/Tastatur.`);

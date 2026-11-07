@@ -125,7 +125,7 @@ jobs:
             tests/Feature/Console \
             tests/Feature/Plugins/PluginSchemaLifecycleTest.php \
             tests/Feature/Plugins/PluginSchemaCommandsTest.php \
-            tests/Feature/AuditChainRepairMigrationTest.php \
+            tests/Feature/Audit/AuditChainRepairMigrationTest.php \
             --log-junit "${{ runner.temp }}/junit-nightly.xml"
 
       - name: Fail on unexpected skips (nur mit financial-formats)

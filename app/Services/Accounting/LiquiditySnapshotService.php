@@ -44,7 +44,7 @@ final class LiquiditySnapshotService {
         ], $data['buckets']);
 
         return LiquidityForecastSnapshot::query()->updateOrCreate(
-            ['organization_id' => $organization->id, 'taken_on' => $asOf->startOfWeek(CarbonInterface::MONDAY)->toDateString()],
+            ['organization_id' => $organization->id, 'taken_on' => $asOf->startOfWeek(CarbonInterface::MONDAY)],
             ['opening_balance' => $data['opening_balance'], 'weeks' => $weeks],
         );
     }

@@ -57,6 +57,7 @@ class DeliveryNoteItem extends Model implements AuditsChanges {
     /** @var array<string, string> */
     protected $casts = [
         'line_kind' => DocumentLineKind::class,
+        'quantity' => 'decimal:4',
     ];
 
     /** @return BelongsTo<DeliveryNote, $this> */

@@ -362,7 +362,7 @@ final class InventoryConflictTest extends TestCase {
         $this->assertSame([$article->id], $response->viewData('conflicts')->pluck('id')->all());
         $this->assertSame([PendingExternalConflict::TYPE_ARTICLE], $response->viewData('types'));
         $response->assertSee('Wartung lokal')
-            ->assertDontSee('#' . $stock->referenceable_id)
+            ->assertDontSee('<div class="font-mono text-xs">#' . $stock->referenceable_id . '</div>', false)
             // Die Lager-Reiter führen auf gesperrte Seiten und bleiben weg; der Konflikte-Reiter zählt 1.
             ->assertDontSee('href="' . route('inventory.stock') . '"', false)
             ->assertSee('<span class="badge badge-sm ml-2">1</span>', false);

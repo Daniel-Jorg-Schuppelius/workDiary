@@ -199,7 +199,7 @@ class IncomingProviderInvoiceTest extends TestCase {
     public function test_licence_account_shows_expected_and_actual_purchase_and_margin(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         $subscription = $this->subscription(['customer_id' => $customer->id, 'provider_account' => 'CNL00007', 'quantity' => 2, 'purchase_unit_price' => '187.92', 'sale_unit_price' => '247.20']);
-        $period = $subscription->periods()->where('starts_on', '2025-09-03')->firstOrFail();
+        $period = $subscription->periods()->whereDate('starts_on', '2025-09-03')->firstOrFail();
         ResalePurchaseEntry::query()->create([
             'organization_id' => $this->organization->id, 'subscription_id' => $subscription->id, 'period_id' => $period->id, 'provider' => 'qualityhosting',
             'source' => ResalePurchaseEntry::SOURCE_PROVIDER_INVOICE, 'document_number' => '31970000', 'entry_date' => '2025-09-03', 'description' => 'Rechnung', 'net_amount' => '380.00', 'currency' => 'EUR', 'raw_hash' => 'h1',

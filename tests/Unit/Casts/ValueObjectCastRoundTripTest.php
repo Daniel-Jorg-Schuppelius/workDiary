@@ -155,6 +155,26 @@ class ValueObjectCastRoundTripTest extends TestCase {
         $this->assertFalse($cast->compare($model, 'amount', 'kein-betrag', '0.00'));
     }
 
+    /** Dasselbe für Prozent, Menge und Dezimal: ein unveränderter Steuersatz einer ausgestellten Rechnung ist sonst eine verbotene Änderung. */
+    public function test_numeric_casts_treat_sqlite_number_and_decimal_string_as_equal(): void {
+        $model = new class extends Model {
+            protected $guarded = [];
+
+            protected $casts = ['tax_rate' => PercentageCast::class . ':2', 'quantity' => QuantityCast::class . ':unit,4', 'factor' => DecimalCast::class . ':6'];
+        };
+
+        $model->setRawAttributes(['tax_rate' => 19, 'quantity' => 2.5, 'unit' => 'h', 'factor' => 1], true);
+        $model->fill(['tax_rate' => '19.00', 'quantity' => '2.5000', 'factor' => '1.000000']);
+        $this->assertFalse($model->isDirty(), 'Zahl aus SQLite = Dezimalstring des Casts');
+
+        $model->fill(['tax_rate' => '7.00']);
+        $this->assertTrue($model->isDirty('tax_rate'));
+
+        $cast = new PercentageCast('2');
+        $this->assertTrue($cast->compare($model, 'tax_rate', null, ''));
+        $this->assertFalse($cast->compare($model, 'tax_rate', null, '0.00'));
+    }
+
     /**
      * Wertobjekt-Audit 2026-09-19: Numerische Casts schrieben unlesbaren
      * Rohtext („19.00 %" vor 2.0, „abc") still in DECIMAL-Spalten. Jetzt lesen

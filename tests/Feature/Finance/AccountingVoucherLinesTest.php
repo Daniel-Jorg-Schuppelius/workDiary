@@ -117,7 +117,7 @@ class AccountingVoucherLinesTest extends TestCase {
         // Vorschlagslauf: die Rechnung vom 03.09. deckt das Lizenzjahr 2026/27 — sicherer Treffer, automatisch bestätigt.
         $result = (new LinkProposer)->propose($this->organization);
         $this->assertSame(1, $result['auto_confirmed']);
-        $period = $subscription->periods()->where('starts_on', '2026-09-03')->firstOrFail();
+        $period = $subscription->periods()->whereDate('starts_on', '2026-09-03')->firstOrFail();
         $this->assertSame(PeriodStatus::Billed, $period->status);
         $link = ResalePeriodLink::query()->where('period_id', $period->id)->firstOrFail();
         $this->assertSame(LinkOrigin::Auto, $link->origin);

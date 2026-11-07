@@ -30,7 +30,7 @@ declare(strict_types=1);
 $appDir = dirname(__DIR__);
 $all = false;
 
-foreach (array_slice($argv, 1) as $arg) {
+foreach (array_slice($_SERVER['argv'] ?? [], 1) as $arg) {
     if ($arg === '--all') {
         $all = true;
     } elseif (str_starts_with($arg, '--app-dir=')) {

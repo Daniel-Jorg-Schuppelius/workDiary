@@ -124,6 +124,8 @@ class BoqItem extends Model implements DocumentLine {
         'not_applicable' => 'boolean',
         'free_quantity' => 'boolean',
         'hourly_item' => 'boolean',
+        'discount_percent' => 'decimal:6',
+        'vat_rate' => 'decimal:2',
     ];
 
     /** @return BelongsTo<BillOfQuantity, $this> */

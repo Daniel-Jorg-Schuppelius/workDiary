@@ -86,7 +86,7 @@ final class ContractIndexationTest extends TestCase {
 
     public function test_only_the_platform_operator_approves_values(): void {
         app(PriceIndexService::class)->ingest(self::CSV);
-        $value = PriceIndexValue::query()->where('period_on', '2026-06-01')->sole();
+        $value = PriceIndexValue::query()->whereDate('period_on', '2026-06-01')->sole();
 
         $this->actingAs($this->admin)->get(route('contracts.price-index.index'))->assertOk()->assertSeeText('06/2026');
         $this->actingAs($this->admin)->post(route('contracts.price-index.approve', $value))->assertForbidden();
@@ -95,7 +95,7 @@ final class ContractIndexationTest extends TestCase {
         $this->actingAs($operator)->post(route('contracts.price-index.approve', $value))->assertSessionHas('success');
         $this->assertSame(PriceIndexStatus::Approved, $value->fresh()->status);
         $this->actingAs($operator)->post(route('contracts.price-index.store'), ['period' => '2026-07', 'value' => '125.0'])->assertSessionHas('success');
-        $this->assertSame(PriceIndexStatus::Approved, PriceIndexValue::query()->where('period_on', '2026-07-01')->sole()->status);
+        $this->assertSame(PriceIndexStatus::Approved, PriceIndexValue::query()->whereDate('period_on', '2026-07-01')->sole()->status);
     }
 
     /** Konsolidierungs-Audit 2026-10, k1-03: der Faktor wird nicht mehr bei sechs Stellen abgeschnitten. */

@@ -16,7 +16,8 @@ test("Login → Moduswechsel (mode/new) → Dashboard erreichbar", async ({ page
     await page.goto("/login");
     await page.fill('input[name="username"]', "test@example.com");
     await page.fill('input[name="password"]', "password");
-    await page.click('button[type="submit"]');
+    // Der Sprachumschalter im Kopf hat eigene Submit-Buttons.
+    await page.click('form:has(input[name="password"]) button[type="submit"]');
     await page.waitForURL((url) => !url.pathname.startsWith("/login"));
 
     // work_mode-Falle: frischer Login kann im Legacy-Modus landen —

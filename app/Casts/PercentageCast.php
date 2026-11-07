@@ -11,6 +11,7 @@
 namespace App\Casts;
 
 use CommonToolkit\ValueObjects\Percentage;
+use Illuminate\Contracts\Database\Eloquent\ComparesCastableAttributes;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -23,7 +24,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @extends ValueObjectCast<Percentage>
  */
-class PercentageCast extends ValueObjectCast {
+class PercentageCast extends ValueObjectCast implements ComparesCastableAttributes {
     /**
      * @param  array<string, mixed>  $attributes
      */
@@ -39,5 +40,9 @@ class PercentageCast extends ValueObjectCast {
     protected function toStorage(object $value): string {
         /** @var Percentage $value */
         return $value->getNumericValue();
+    }
+
+    public function compare(Model $model, string $key, mixed $firstValue, mixed $secondValue): bool {
+        return $this->canonical($model, $firstValue) === $this->canonical($model, $secondValue);
     }
 }

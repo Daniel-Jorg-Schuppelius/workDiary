@@ -47,7 +47,8 @@ test("Suche liefert Treffer mit Hervorhebung und stabilen Artikel-Links", async 
 });
 
 test("Leere Suche zeigt Leerzustand mit Zurücksetzen und Drawer-Absprung", async ({ page }) => {
-    await page.goto("/hilfe?q=xyzzy-gibt-es-nicht");
+    // Nur Kunstwörter: echte Wörter und ihre Stämme liefern Teiltreffer (etwa „nicht“).
+    await page.goto("/hilfe?q=xyzzy-qwrtz");
 
     await expect(page.getByText("Keine passenden Hilfethemen gefunden.")).toBeVisible();
 
