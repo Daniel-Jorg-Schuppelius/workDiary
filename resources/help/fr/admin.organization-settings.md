@@ -1,7 +1,7 @@
 ---
 title: "Organisation et paramètres"
 topic: admin.organization-settings
-version: 3
+version: 4
 keywords:
     - paramètres de l'entreprise
     - réglages du locataire
@@ -338,6 +338,17 @@ Trois champs agissent en outre sur toutes les factures créées localement :
   § 19 UStG (régime des petites entreprises). » ; la XRechnung reçoit la
   catégorie de taxe E (exonérée). La case prime sur **Taux de TVA par défaut
   (%)** et l'autoliquidation.
+
+## Facture électronique : pièces et destinataires
+
+Règles pour les pièces justificatives dans la facture électronique :
+
+- **Profil de destinataire des clients sans réglage propre** : « Administration publique » n’envoie par e-mail que le XML, exige l’identifiant d’acheminement, limite à 10 Mo et joint automatiquement le justificatif de prestations. La fiche client peut différer.
+- **Personnes dans le justificatif de prestations** : nom complet, initiales ou aucune personne.
+- **Joindre le justificatif pour tous les clients**, **Joindre les feuilles d’heures signées** et **Joindre aussi les temps en CSV** : ce qui est joint automatiquement à l’émission.
+- **Factures reçues : plus grande pièce intégrée (Mo)** : les pièces jointes plus grandes des factures électroniques reçues ne sont notées que par leur nom.
+- **Canal d’envoi en cas de facturation externe** : si un système de facturation gère la facture, avec « WorkDiary envoie », WorkDiary l’envoie avec les justificatifs.
+- **L’envoi automatique dans le système de facturation est désactivé** : votre déclaration que le système de facturation n’envoie pas de lui-même. Sans elle, WorkDiary demande pour chaque facture.
 
 ## Comptabilité : principe des quatre yeux
 

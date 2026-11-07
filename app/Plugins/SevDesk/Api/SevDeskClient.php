@@ -337,6 +337,48 @@ class SevDeskClient {
         return $this->object($body);
     }
 
+    /**
+     * `GET /Invoice/{id}/getXml` (Feature 196): XRechnung einer E-Rechnung, im
+     * Feld `objects` als Zeichenkette. Null, wenn sevDesk keine liefert (400).
+     */
+    public function invoiceXml(string $invoiceId): ?string {
+        $response = $this->api()->requestResponse('get', $this->baseUrl . '/Invoice/' . rawurlencode($invoiceId) . '/getXml');
+        if ($response->status() === 400) {
+            return null;
+        }
+        $xml = $this->guard($response, '/Invoice/{id}/getXml')['objects'] ?? null;
+
+        return is_string($xml) && trim($xml) !== '' ? $xml : null;
+    }
+
+    /**
+     * `GET /Invoice/{id}/getPdf` (Feature 196) mit `preventSendBy=true`: ohne
+     * den Schalter kann sevDesk den Abruf als Versand verbuchen. Bei einer
+     * E-Rechnung (`propertyIsEInvoice`) trägt das PDF die XML (ZUGFeRD).
+     *
+     * @return array{content: string, mime: string, filename: string}|null
+     */
+    public function invoicePdf(string $invoiceId): ?array {
+        $response = $this->api()->requestResponse('get', $this->baseUrl . '/Invoice/' . rawurlencode($invoiceId) . '/getPdf', ['query' => ['download' => 'true', 'preventSendBy' => 'true']]);
+        if ($response->status() === 400) {
+            return null;
+        }
+        $body = $this->object($this->guard($response, '/Invoice/{id}/getPdf'));
+        $content = (string) ($body['content'] ?? '');
+        if ($content === '') {
+            return null;
+        }
+        if (($body['base64encoded'] ?? true) !== false) {
+            $content = (string) base64_decode($content, true);
+        }
+
+        return $content === '' ? null : [
+            'content' => $content,
+            'mime' => (string) ($body['mimeType'] ?? 'application/pdf'),
+            'filename' => (string) ($body['filename'] ?? ''),
+        ];
+    }
+
     // ── Artikel ─────────────────────────────────────────────────────────
 
     /**

@@ -1,7 +1,7 @@
 ---
 title: "Organización y configuración"
 topic: admin.organization-settings
-version: 3
+version: 4
 keywords:
     - configuración de la empresa
     - ajustes del inquilino
@@ -333,6 +333,17 @@ Además, tres campos influyen en todas las facturas creadas localmente:
   pequeñas empresas).»; la XRechnung recibe la categoría fiscal E (exenta).
   La marca prevalece sobre **Tipo impositivo predeterminado (%)** y la
   inversión del sujeto pasivo.
+
+## Factura electrónica: documentos y destinatarios
+
+Reglas para los documentos justificativos en la factura electrónica:
+
+- **Perfil de destinatario para clientes sin indicación propia**: «Administración pública» envía por correo solo el XML, exige el identificador de enrutamiento, limita a 10 MB y adjunta automáticamente el justificante de servicios. La ficha del cliente puede diferir.
+- **Personas en el justificante de servicios**: nombre completo, iniciales o sin personas.
+- **Adjuntar el justificante a todos los clientes**, **Adjuntar hojas de horas firmadas** y **Adjuntar además los tiempos en CSV**: lo que se adjunta automáticamente al emitir.
+- **Facturas recibidas: documento incrustado más grande (MB)**: los anexos mayores de las facturas electrónicas recibidas solo se anotan por su nombre.
+- **Vía de envío con facturación externa**: si un sistema de facturación gestiona la factura, con «WorkDiary envía» WorkDiary la entrega con justificantes.
+- **El envío automático en el sistema de facturación está desactivado**: su declaración de que el sistema de facturación no envía por sí mismo. Sin ella, WorkDiary pregunta en cada factura.
 
 ## Contabilidad: principio de los cuatro ojos
 

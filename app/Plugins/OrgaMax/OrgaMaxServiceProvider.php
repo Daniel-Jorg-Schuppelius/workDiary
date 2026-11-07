@@ -53,5 +53,7 @@ class OrgaMaxServiceProvider extends PluginServiceProviderBase {
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Invoicing\Contracts\IncomingPartyLookup::class, \App\Plugins\OrgaMax\Services\OrgaMaxIncomingPartyLookup::class);
         // Phase 145 (MVP-1161/1164/1166): Angebot, AB und Rechnung nummeriert orgaMAX beim Festschreiben.
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Numbering\Contracts\DocumentIssuer::class, \App\Plugins\OrgaMax\Services\OrgaMaxDocumentIssuer::class);
+        // Rechnungen mit Nachweisen durch WorkDiary zustellen, das Fakturasystem führt (Feature 196).
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Finance\Contracts\ExternalInvoiceProvider::class, \App\Plugins\OrgaMax\Services\OrgaMaxExternalInvoiceProvider::class);
     }
 }

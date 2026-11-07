@@ -1590,4 +1590,11 @@ return [
         'updated' => 'Tenancy updated',
         'withdrawn' => 'Tenancy request withdrawn',
     ],
+    'externalInvoice' => [
+        'reconciled' => 'Difference to provider invoice confirmed',
+        'originalStored' => 'Original of provider invoice stored',
+        'packaged' => 'Delivery version created',
+        'sent' => 'Provider invoice delivered',
+        'deliveryResolved' => 'Delivery outcome recorded',
+    ],
 ];

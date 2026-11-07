@@ -187,6 +187,15 @@
                         <x-detail-grid.row :label="__('Netto')">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($summary['net'] ?? 0), 2, withThousandsSeparator: true) }} {{ $summary['currency'] }}</x-detail-grid.row>
                         <x-detail-grid.row :label="__('Steuer')">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($summary['tax'] ?? 0), 2, withThousandsSeparator: true) }} {{ $summary['currency'] }}</x-detail-grid.row>
                         <x-detail-grid.row :label="__('Brutto')">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($summary['gross'] ?? 0), 2, withThousandsSeparator: true) }} {{ $summary['currency'] }}</x-detail-grid.row>
+                        {{-- Leistungszeitpunkt und Objektkennung (Feature 196). --}}
+                        @if (! empty($summary['invoicing_period']))
+                            <x-detail-grid.row :label="__('invoicing.incoming_documents.period')">{{ $summary['invoicing_period']['from'] ?? '…' }} – {{ $summary['invoicing_period']['to'] ?? '…' }}</x-detail-grid.row>
+                        @elseif (! empty($summary['delivery_date']))
+                            <x-detail-grid.row :label="__('invoicing.incoming_documents.delivery_date')">{{ $summary['delivery_date'] }}</x-detail-grid.row>
+                        @endif
+                        @if (! empty($summary['invoiced_object']))
+                            <x-detail-grid.row :label="__('invoicing.incoming_documents.invoiced_object')">{{ $summary['invoiced_object'] }}</x-detail-grid.row>
+                        @endif
                     </x-detail-grid>
                 </x-card>
 
@@ -263,6 +272,7 @@
                 @if ($incoming->attachments->isNotEmpty())
                     <x-attachments-section :attachments="$incoming->attachments" details />
                 @endif
+                @include('finance.incoming-invoices._supporting_documents', ['incoming' => $incoming])
             @endif
 
             {{-- Eingangs-Validierung (MVP-166): getrennt von Original/Feldern. --}}

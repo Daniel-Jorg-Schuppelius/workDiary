@@ -1,7 +1,7 @@
 ---
 title: "Organizzazione e impostazioni"
 topic: admin.organization-settings
-version: 3
+version: 4
 keywords:
     - impostazioni aziendali
     - impostazioni del tenant
@@ -331,6 +331,17 @@ Tre campi agiscono inoltre su tutte le fatture create localmente:
   (regime delle piccole imprese).»; la XRechnung riceve la categoria fiscale
   E (esente). La spunta prevale su **Aliquota fiscale predefinita (%)** e sul
   reverse charge.
+
+## Fattura elettronica: documenti e destinatari
+
+Regole per i documenti giustificativi nella fattura elettronica:
+
+- **Profilo destinatario per clienti senza impostazione propria**: «Pubblica amministrazione» invia via e-mail solo l’XML, richiede l’identificativo di instradamento, limita a 10 MB e allega automaticamente l’attestazione delle prestazioni. L’anagrafica cliente può differire.
+- **Persone nell’attestazione delle prestazioni**: nome completo, iniziali o nessuna persona.
+- **Allegare l’attestazione per tutti i clienti**, **Allegare i fogli ore firmati** e **Allegare anche i tempi in CSV**: ciò che viene allegato automaticamente all’emissione.
+- **Fatture in entrata: documento incorporato più grande (MB)**: gli allegati più grandi delle fatture elettroniche in entrata vengono annotati solo per nome.
+- **Canale di invio con fatturazione esterna**: se un sistema di fatturazione gestisce la fattura, con «WorkDiary invia» WorkDiary la consegna con i giustificativi.
+- **L’invio automatico nel sistema di fatturazione è disattivato**: la Sua dichiarazione che il sistema di fatturazione non invia da sé. Senza di essa, WorkDiary chiede per ogni fattura.
 
 ## Contabilità: principio dei quattro occhi
 

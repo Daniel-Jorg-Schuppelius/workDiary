@@ -169,6 +169,25 @@ class LexofficeVoucherFileService {
         ];
     }
 
+    /**
+     * Datei einer Ausgangsrechnung im gewünschten Format (Feature 196): `application/xml`
+     * liefert die XRechnung, `application/pdf` das PDF (bei EN16931 mit eingebetteter XML).
+     * Null, wenn der Beleg diese Fassung nicht hat (Entwurf 409, Format 406, fehlt 404).
+     */
+    public function invoiceFile(string $externalId, string $accept): ?FileContent {
+        if (! $this->isConfigured()) {
+            throw new LexofficeNotConfiguredException();
+        }
+
+        try {
+            return (new InvoicesEndpoint($this->client()))->downloadContent(new ID($externalId), $accept);
+        } catch (ApiException $e) {
+            $this->assertLookupMiss($e);
+
+            return null;
+        }
+    }
+
     private function fetchFile(LexofficeVoucher $voucher): FileContent {
         $endpoint = self::SALES_DOCUMENT_ENDPOINTS[(string) ($voucher->voucher_type ?? '')] ?? null;
 

@@ -69,6 +69,12 @@ class SaveCustomerRequest extends BaseFormRequest {
             // Peppol-Empfängerkennung (Feature 066, MVP-734): `<ICD>:<Kennung>`.
             'peppol_participant_id' => ['nullable', 'string', 'max:64', new \App\Rules\PeppolParticipantId],
             'delivery_format' => ['nullable', \Illuminate\Validation\Rule::enum(\App\Enums\Invoicing\InvoiceDeliveryFormat::class)],
+            // Empfängerprofil der E-Rechnung (Feature 196): leer = Vorgabe der Organisation.
+            'einvoice_recipient_profile' => ['nullable', \Illuminate\Validation\Rule::enum(\App\Enums\Invoicing\EInvoiceRecipientProfile::class)],
+            'einvoice_attach_activity_report' => ['nullable', 'in:0,1'],
+            'einvoice_attachment_limit_mb' => ['nullable', 'integer', 'min:1', 'max:100'],
+            // Versandweg extern ausgestellter Rechnungen (Feature 196): leer = Vorgabe der Organisation.
+            'einvoice_dispatch_route' => ['nullable', \Illuminate\Validation\Rule::enum(\App\Enums\Invoicing\ExternalDispatchRoute::class)],
             // Zahlungsbedingungen (MVP-996): leer = Vorgabe der Organisation.
             'payment_terms_days' => ['nullable', 'integer', 'min:0', 'max:365'],
             'skonto_percent' => ['nullable', 'numeric', 'min:0.01', 'max:100', 'required_with:skonto_days'],
@@ -110,6 +116,15 @@ class SaveCustomerRequest extends BaseFormRequest {
                 $this->request->remove('billing_mode');
             } elseif ($this->input('billing_mode') === '') {
                 $this->merge(['billing_mode' => null]);
+            }
+        }
+
+        // Versandweg externer Rechnungen (Feature 196): identische finance.config-Härtung.
+        if ($this->has('einvoice_dispatch_route')) {
+            if ($this->user()?->can(\App\Enums\User\Permission::FinanceConfig->value) !== true) {
+                $this->request->remove('einvoice_dispatch_route');
+            } elseif ($this->input('einvoice_dispatch_route') === '') {
+                $this->merge(['einvoice_dispatch_route' => null]);
             }
         }
 

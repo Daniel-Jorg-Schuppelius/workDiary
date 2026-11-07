@@ -821,6 +821,7 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Privacy\JointControllerAgreement::class, \App\Policies\Privacy\JointControllerAgreementPolicy::class);
         Gate::policy(\App\Models\Privacy\ComplianceFinding::class, \App\Policies\Privacy\ComplianceFindingPolicy::class);
         Gate::policy(\App\Models\Finance\BillingTransfer::class, \App\Policies\Finance\BillingTransferPolicy::class);
+        Gate::policy(\App\Models\Finance\ExternalInvoice::class, \App\Policies\Finance\ExternalInvoicePolicy::class);
         Gate::policy(\App\Models\Finance\BankAccount::class, \App\Policies\Finance\BankAccountPolicy::class);
         Gate::policy(\App\Models\Finance\BankStatement::class, \App\Policies\Finance\BankStatementPolicy::class);
         Gate::policy(\App\Models\Finance\BankTransaction::class, \App\Policies\Finance\BankTransactionPolicy::class);

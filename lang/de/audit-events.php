@@ -1590,4 +1590,11 @@ return [
         'updated' => 'Mietverhältnis geändert',
         'withdrawn' => 'Mietanfrage zurückgenommen',
     ],
+    'externalInvoice' => [
+        'reconciled' => 'Abweichung zur Anbieterrechnung bestätigt',
+        'originalStored' => 'Original der Anbieterrechnung gesichert',
+        'packaged' => 'Versandfassung erstellt',
+        'sent' => 'Anbieterrechnung zugestellt',
+        'deliveryResolved' => 'Zustellausgang festgehalten',
+    ],
 ];

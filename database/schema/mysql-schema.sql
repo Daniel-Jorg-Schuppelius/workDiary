@@ -8948,6 +8948,10 @@ CREATE TABLE `customers` (
   `peppol_participant_id` varchar(64) DEFAULT NULL,
   `peppol_scheme` varchar(40) DEFAULT NULL,
   `delivery_format` varchar(24) DEFAULT NULL,
+  `einvoice_recipient_profile` varchar(32) DEFAULT NULL,
+  `einvoice_attach_activity_report` tinyint(1) DEFAULT NULL,
+  `einvoice_attachment_limit_mb` tinyint(3) unsigned DEFAULT NULL,
+  `einvoice_dispatch_route` varchar(16) DEFAULT NULL,
   `payment_terms_days` smallint(5) unsigned DEFAULT NULL,
   `skonto_percent` decimal(5,2) DEFAULT NULL,
   `skonto_days` smallint(5) unsigned DEFAULT NULL,
@@ -10909,6 +10913,110 @@ CREATE TABLE `external_contacts` (
   PRIMARY KEY (`id`),
   KEY `ext_contact_org_email_idx` (`organization_id`,`email`),
   CONSTRAINT `external_contacts_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `external_invoice_packages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `external_invoice_packages` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `external_invoice_id` bigint(20) unsigned NOT NULL,
+  `kind` varchar(16) NOT NULL DEFAULT 'initial',
+  `format` varchar(16) NOT NULL,
+  `channel` varchar(20) NOT NULL,
+  `recipient` varchar(500) NOT NULL,
+  `storage_path` varchar(255) NOT NULL,
+  `files` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`files`)),
+  `sha256` char(64) NOT NULL,
+  `original_sha256` char(64) DEFAULT NULL,
+  `evidence` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`evidence`)),
+  `report` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`report`)),
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `external_invoice_packages_organization_id_foreign` (`organization_id`),
+  KEY `external_invoice_packages_created_by_foreign` (`created_by`),
+  KEY `ext_inv_pkg_invoice_created_idx` (`external_invoice_id`,`created_at`),
+  CONSTRAINT `external_invoice_packages_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `external_invoice_packages_external_invoice_id_foreign` FOREIGN KEY (`external_invoice_id`) REFERENCES `external_invoices` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `external_invoice_packages_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `external_invoice_positions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `external_invoice_positions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `external_invoice_id` bigint(20) unsigned NOT NULL,
+  `billing_transfer_id` bigint(20) unsigned NOT NULL,
+  `billing_transfer_position_id` bigint(20) unsigned NOT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ext_inv_pos_position_unique` (`billing_transfer_position_id`),
+  KEY `external_invoice_positions_organization_id_foreign` (`organization_id`),
+  KEY `external_invoice_positions_billing_transfer_id_foreign` (`billing_transfer_id`),
+  KEY `external_invoice_positions_created_by_foreign` (`created_by`),
+  KEY `ext_inv_pos_invoice_transfer_idx` (`external_invoice_id`,`billing_transfer_id`),
+  CONSTRAINT `external_invoice_positions_billing_transfer_id_foreign` FOREIGN KEY (`billing_transfer_id`) REFERENCES `billing_transfers` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `external_invoice_positions_billing_transfer_position_id_foreign` FOREIGN KEY (`billing_transfer_position_id`) REFERENCES `billing_transfer_positions` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `external_invoice_positions_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `external_invoice_positions_external_invoice_id_foreign` FOREIGN KEY (`external_invoice_id`) REFERENCES `external_invoices` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `external_invoice_positions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `external_invoices`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `external_invoices` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `customer_id` bigint(20) unsigned DEFAULT NULL,
+  `plugin_id` varchar(64) NOT NULL,
+  `external_id` varchar(128) NOT NULL,
+  `external_number` varchar(64) DEFAULT NULL,
+  `remote_status_code` varchar(32) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'unknown',
+  `kind` varchar(16) NOT NULL DEFAULT 'invoice',
+  `issued_on` date DEFAULT NULL,
+  `currency` char(3) NOT NULL DEFAULT 'EUR',
+  `net_amount` decimal(15,2) DEFAULT NULL,
+  `gross_amount` decimal(15,2) DEFAULT NULL,
+  `lines` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`lines`)),
+  `lines_hash` char(64) DEFAULT NULL,
+  `original_format` varchar(16) DEFAULT NULL,
+  `original_path` varchar(255) DEFAULT NULL,
+  `original_mime` varchar(100) DEFAULT NULL,
+  `original_sha256` char(64) DEFAULT NULL,
+  `original_fetched_at` timestamp NULL DEFAULT NULL,
+  `provider_send_state` varchar(16) NOT NULL DEFAULT 'unknown',
+  `provider_sent_at` timestamp NULL DEFAULT NULL,
+  `reconciled_hash` char(64) DEFAULT NULL,
+  `reconciled_at` timestamp NULL DEFAULT NULL,
+  `reconciled_by` bigint(20) unsigned DEFAULT NULL,
+  `note` varchar(500) DEFAULT NULL,
+  `synced_at` timestamp NULL DEFAULT NULL,
+  `sync_error` varchar(500) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `updated_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ext_inv_org_plugin_ext_unique` (`organization_id`,`plugin_id`,`external_id`),
+  KEY `external_invoices_customer_id_foreign` (`customer_id`),
+  KEY `external_invoices_reconciled_by_foreign` (`reconciled_by`),
+  KEY `external_invoices_created_by_foreign` (`created_by`),
+  KEY `external_invoices_updated_by_foreign` (`updated_by`),
+  KEY `ext_inv_org_customer_idx` (`organization_id`,`customer_id`),
+  CONSTRAINT `external_invoices_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `external_invoices_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `external_invoices_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `external_invoices_reconciled_by_foreign` FOREIGN KEY (`reconciled_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `external_invoices_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `external_participant_events`;
@@ -13116,6 +13224,50 @@ CREATE TABLE `invoice_sender_rules` (
   CONSTRAINT `invoice_sender_rules_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE,
   CONSTRAINT `invoice_sender_rules_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `invoice_sender_rules_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `invoice_supporting_documents`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `invoice_supporting_documents` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `invoice_id` bigint(20) unsigned DEFAULT NULL,
+  `external_invoice_id` bigint(20) unsigned DEFAULT NULL,
+  `attachment_id` bigint(20) unsigned DEFAULT NULL,
+  `position` smallint(5) unsigned NOT NULL DEFAULT 1,
+  `kind` varchar(32) NOT NULL,
+  `reference` varchar(64) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `external_url` varchar(2048) DEFAULT NULL,
+  `filename` varchar(255) DEFAULT NULL,
+  `filename_key` varchar(255) DEFAULT NULL,
+  `mime` varchar(128) DEFAULT NULL,
+  `size` int(10) unsigned NOT NULL DEFAULT 0,
+  `sha256` char(64) DEFAULT NULL,
+  `is_embedded` tinyint(1) NOT NULL DEFAULT 1,
+  `frozen_at` timestamp NULL DEFAULT NULL,
+  `transferred_at` timestamp NULL DEFAULT NULL,
+  `transfer_note` varchar(500) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `updated_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `isd_invoice_filename_key_unique` (`invoice_id`,`filename_key`),
+  UNIQUE KEY `isd_external_filename_key_unique` (`external_invoice_id`,`filename_key`),
+  KEY `invoice_supporting_documents_organization_id_foreign` (`organization_id`),
+  KEY `invoice_supporting_documents_attachment_id_foreign` (`attachment_id`),
+  KEY `invoice_supporting_documents_created_by_foreign` (`created_by`),
+  KEY `invoice_supporting_documents_updated_by_foreign` (`updated_by`),
+  KEY `isd_invoice_position_idx` (`invoice_id`,`position`),
+  KEY `isd_external_position_idx` (`external_invoice_id`,`position`),
+  CONSTRAINT `invoice_supporting_documents_attachment_id_foreign` FOREIGN KEY (`attachment_id`) REFERENCES `attachments` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `invoice_supporting_documents_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `invoice_supporting_documents_external_invoice_id_foreign` FOREIGN KEY (`external_invoice_id`) REFERENCES `external_invoices` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `invoice_supporting_documents_invoice_id_foreign` FOREIGN KEY (`invoice_id`) REFERENCES `invoices` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `invoice_supporting_documents_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `invoice_supporting_documents_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `invoices`;
@@ -28549,3 +28701,6 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1045,'2027_04_01_2
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1046,'2027_04_02_100000_add_paid_date_checked_at_to_lexoffice_vouchers',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1047,'2027_04_02_110000_create_accounting_articles_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1048,'2027_04_02_120000_create_project_time_targets_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1049,'2027_04_03_100000_create_invoice_supporting_documents_table',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1050,'2027_04_03_110000_add_einvoice_recipient_profile_to_customers',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1051,'2027_04_03_120000_create_external_invoices_tables',2);

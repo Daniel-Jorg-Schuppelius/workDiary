@@ -18,10 +18,11 @@ use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Builders\ERechnungDocumentBuilder;
-use ERechnungToolkit\Entities\{Document, PaymentTerms, TaxSubtotal, TaxTotal};
+use ERechnungToolkit\Entities\{Document, PaymentTerms, Period, TaxSubtotal, TaxTotal};
 use ERechnungToolkit\Enums\{ERechnungProfile, InvoiceType, PaymentMeansCode, TaxCategory, UnitCode};
 use ERechnungToolkit\Generators\ZugferdPdfGenerator;
-use Illuminate\Support\Str;
+use ERechnungToolkit\Validators\DocumentRulesValidator;
+use Illuminate\Support\{Carbon, Str};
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -90,9 +91,10 @@ class XRechnungGenerator {
             $errors[] = (string) __('invoicing.einvoice.error.no_items');
         }
 
-        // BT-10: BuyerReference ist nur in der XRechnung Pflicht.
+        // BT-10: BuyerReference ist in der XRechnung und für Behördenempfänger Pflicht (Feature 196).
+        $recipient = app(RecipientProfiles::class)->for($customer, $invoice->organization);
         if ($this->buyerReference($invoice) === '') {
-            if ($profile->isXRechnung()) {
+            if ($profile->isXRechnung() || $recipient->buyerReferenceRequired()) {
                 $errors[] = (string) __('invoicing.einvoice.error.missing_buyer_reference');
             } else {
                 $warnings[] = (string) __('invoicing.einvoice.error.missing_buyer_reference');
@@ -191,7 +193,82 @@ class XRechnungGenerator {
             $warnings[] = (string) __('invoicing.einvoice.warning.missing_due_date');
         }
 
-        return ['errors' => $errors, 'warnings' => $warnings];
+        // § 14 Abs. 4 Nr. 6 UStG: ohne Leistungsdatum gilt das Rechnungsdatum (UStAE 14.5 Abs. 16).
+        if ($this->servicePeriod($invoice) === [null, null]) {
+            $warnings[] = (string) __('invoicing.einvoice.warning.service_date_fallback');
+        }
+
+        [$documentErrors, $documentWarnings] = $this->supportingDocumentFindings($invoice, $profile);
+
+        return ['errors' => [...$errors, ...$documentErrors], 'warnings' => [...$warnings, ...$documentWarnings]];
+    }
+
+    /**
+     * Unterlagen, Zeiträume und Größe (Feature 196): Regeln des Toolkits am
+     * fertigen Datenmodell, dann die Größe der erzeugten XML gegen die Grenze
+     * des Empfängers.
+     *
+     * @return array{0: list<string>, 1: list<string>}
+     */
+    private function supportingDocumentFindings(Invoice $invoice, ERechnungProfile $profile): array {
+        $errors = [];
+        $warnings = [];
+        $profiles = app(RecipientProfiles::class);
+        $recipient = $profiles->for($invoice->customer, $invoice->organization);
+        $documents = $invoice->supportingDocuments()->with('attachment')->get();
+
+        if ($documents->isEmpty()) {
+            if ($invoice->status !== InvoiceStatus::Draft
+                && $profiles->attachesActivityReport($invoice->customer, $invoice->organization)
+                && app(\App\Services\Invoicing\ActivityReportPdfRenderer::class)->hasEntries($invoice)) {
+                $warnings[] = (string) __('invoicing.einvoice.warning.activity_report_missing');
+            }
+
+            return [$errors, $warnings];
+        }
+
+        $service = app(SupportingDocumentService::class);
+        $issuer = $service->externalIssuer($invoice);
+        if ($issuer !== null) {
+            $warnings[] = (string) __('invoicing.supporting_documents.transfer.unsupported', ['program' => app(\App\Services\Numbering\NumberAuthority::class)->sourceLabel($issuer)]);
+        }
+        foreach ($documents as $document) {
+            if ($document->is_embedded && $service->content($document) === null) {
+                $errors[] = (string) __('invoicing.supporting_documents.error.integrity', ['reference' => $document->reference]);
+            }
+        }
+        if ($errors !== []) {
+            return [$errors, $warnings];
+        }
+
+        try {
+            $built = $this->buildDocument($invoice, $profile);
+        } catch (\Throwable) {
+            return [$errors, $warnings]; // die übrigen Preflight-Befunde erklären den Fehlschlag
+        }
+
+        foreach ((new DocumentRulesValidator)->validate($built)->getMessages() as $message) {
+            $text = (string) __('invoicing.einvoice.rule_violation', ['code' => $message->getCode(), 'text' => $message->getText()]);
+            if ($message->isError()) {
+                $errors[] = $text;
+            } elseif ($message->getSeverity() === \ERechnungToolkit\Enums\ValidationSeverity::WARNING || $recipient === \App\Enums\Invoicing\EInvoiceRecipientProfile::PublicSector) {
+                $warnings[] = $text;
+            }
+        }
+
+        $size = strlen($profile->isXRechnung() && $this->syntaxFor($invoice) !== XRechnungSyntax::Cii ? $built->toUblXml() : $built->toCiiXml());
+        $limit = $profiles->limitBytes($invoice->customer, $invoice->organization);
+        $sizes = [
+            'size' => NumberHelper::formatBytes($size, 1),
+            'limit' => NumberHelper::formatBytes($limit, 0),
+        ];
+        if ($size > $limit) {
+            $errors[] = (string) __('invoicing.einvoice.error.too_large', $sizes);
+        } elseif ($size >= (int) ($limit * 0.8)) {
+            $warnings[] = (string) __('invoicing.einvoice.warning.near_limit', $sizes);
+        }
+
+        return [$errors, $warnings];
     }
 
     /**
@@ -262,6 +339,7 @@ class XRechnungGenerator {
      * Betragstreue gegenüber den Invoice-Feldern sichert der Preflight.
      */
     private function buildDocument(Invoice $invoice, ERechnungProfile $profile): Document {
+        $invoice->loadMissing(['items.timeEntries']);
         $seller = $this->sellerData($invoice);
         $customer = $invoice->customer;
         $currency = $invoice->currency ?? CurrencyCode::Euro;
@@ -344,6 +422,31 @@ class XRechnungGenerator {
             $builder->withBuyerReference($buyerReference);
         }
 
+        // Leistungszeitpunkt (§ 14 Abs. 4 Nr. 6 UStG): ein Tag als BT-72, mehrere als BG-14;
+        // ohne Angabe gilt das Rechnungsdatum (UStAE 14.5 Abs. 16).
+        [$serviceFrom, $serviceTo] = $this->servicePeriod($invoice);
+        if ($serviceFrom === null || $serviceTo === null) {
+            $builder->withDeliveryDate(new \DateTimeImmutable($issuedOn->toDateString()));
+        } elseif ($serviceFrom->isSameDay($serviceTo)) {
+            $builder->withDeliveryDate(new \DateTimeImmutable($serviceFrom->toDateString()));
+        } else {
+            $builder->withInvoicingPeriod(new \DateTimeImmutable($serviceFrom->toDateString()), new \DateTimeImmutable($serviceTo->toDateString()));
+        }
+
+        // Rechnungsbegründende Unterlagen (BG-24, Feature 196) und der Hinweis darauf im Rechnungstext.
+        $supportingDocuments = app(SupportingDocumentService::class)->forEInvoice($invoice);
+        foreach ($supportingDocuments as $supportingDocument) {
+            $builder->addSupportingDocument($supportingDocument);
+        }
+        if ($supportingDocuments !== []) {
+            $builder->addNote((string) __('invoicing.einvoice.note_supporting_documents', [
+                'list' => implode(', ', array_map(
+                    static fn (\ERechnungToolkit\Entities\SupportingDocument $d): string => trim($d->getReference() . ' ' . ($d->getDescription() ?? '')),
+                    $supportingDocuments,
+                )),
+            ]));
+        }
+
         // BT-22: Arbeitskosten nach § 35a EStG (MVP-1053), wie auf dem PDF.
         $labourCosts = $invoice->disclosedLabourCosts();
         if ($labourCosts !== null && ! $labourCosts['gross']->isZero()) {
@@ -361,6 +464,7 @@ class XRechnungGenerator {
             }
         }
 
+        $objectIdentifiers = $this->lineObjectIdentifiers($invoice);
         $lineNo = 0;
         foreach ($invoice->pricedItems() as $item) {
             // BT-153 (Name) ist Pflicht; lange Beschreibungen wandern
@@ -385,6 +489,9 @@ class XRechnungGenerator {
                 taxCategory: $itemCategory,
                 taxPercent: $itemRate,
                 itemDescription: mb_strlen($description) > 100 ? $description : null,
+                note: $this->lineNote($item),
+                period: $this->linePeriod($item),
+                objectIdentifier: $objectIdentifiers[$item->id] ?? null,
             );
             $lineDiscount = ($item->unit_price?->withScale(2) ?? Money::zero($currency))
                 ->times((float) $item->quantity)
@@ -538,6 +645,97 @@ class XRechnungGenerator {
      * EN-16931-konform). Die Wortliste liegt im erechnung-toolkit (≥ v0.11.1,
      * Vollscan 2026-08-23 C8) — vorher fielen m/kg/Tag fälschlich auf C62.
      */
+    /**
+     * Leistungszeitraum über alle Positionen: Zeitraum (Feature 152) oder Leistungsdatum.
+     *
+     * @return array{0: ?Carbon, 1: ?Carbon}
+     */
+    private function servicePeriod(Invoice $invoice): array {
+        $dates = [];
+        foreach ($invoice->pricedItems() as $item) {
+            $period = $this->linePeriod($item);
+            foreach ([$period?->getStart(), $period?->getEnd()] as $date) {
+                if ($date !== null) {
+                    $dates[] = Carbon::instance($date)->startOfDay();
+                }
+            }
+        }
+        if ($dates === []) {
+            return [null, null];
+        }
+        usort($dates, static fn (Carbon $a, Carbon $b): int => $a <=> $b);
+
+        return [$dates[0], $dates[count($dates) - 1]];
+    }
+
+    /** Positionszeitraum (BG-26): Zeitraum der Position, sonst ihr Leistungsdatum als ein Tag. */
+    private function linePeriod(InvoiceItem $item): ?Period {
+        if ($item->service_from !== null) {
+            $to = $item->service_to ?? $item->service_from;
+
+            return Period::between(new \DateTimeImmutable($item->service_from->toDateString()), new \DateTimeImmutable($to->toDateString()));
+        }
+
+        return $item->service_date !== null ? Period::day(new \DateTimeImmutable($item->service_date->toDateString())) : null;
+    }
+
+    /** Positionsnotiz (BT-127) für gebündelte Zeiten: Anzahl der Einsätze und ihr Zeitraum. */
+    private function lineNote(InvoiceItem $item): ?string {
+        $entries = $item->relationLoaded('timeEntries') ? $item->timeEntries : $item->timeEntries()->get();
+        if ($entries->count() < 2) {
+            return null;
+        }
+        $days = $entries->map(static fn ($e): ?Carbon => $e->started_at ?? $e->date)->filter()->sort()->values();
+        if ($days->isEmpty()) {
+            return (string) __('invoicing.einvoice.line_note_entries_count', ['count' => $entries->count()]);
+        }
+
+        return (string) __('invoicing.einvoice.line_note_entries', [
+            'count' => $entries->count(),
+            'from' => \App\Support\CarbonFmt::fdate($days->first()),
+            'to' => \App\Support\CarbonFmt::fdate($days->last()),
+        ]);
+    }
+
+    /**
+     * Objektkennung je Position (BT-128): die Nummer der Aufgabe im Fremdsystem
+     * (etwa ein Ticket), wenn alle Zeiten der Position an derselben Aufgabe hängen.
+     *
+     * @return array<int, string> Positions-ID => Kennung
+     */
+    private function lineObjectIdentifiers(Invoice $invoice): array {
+        $taskByItem = [];
+        foreach ($invoice->pricedItems() as $item) {
+            $entries = $item->relationLoaded('timeEntries') ? $item->timeEntries : $item->timeEntries()->get();
+            $taskIds = $entries->pluck('task_id')->filter()->unique()->values();
+            if ($entries->isNotEmpty() && $taskIds->count() === 1 && $entries->every(static fn ($e): bool => $e->task_id !== null)) {
+                $taskByItem[$item->id] = (int) $taskIds->first();
+            }
+        }
+        if ($taskByItem === []) {
+            return [];
+        }
+
+        $references = \App\Models\Integration\ExternalReference::query()
+            ->where('referenceable_type', (new \App\Models\Project\Task)->getMorphClass())
+            ->whereIn('referenceable_id', array_values(array_unique($taskByItem)))
+            ->orderBy('id')
+            ->get()
+            ->unique('referenceable_id')
+            ->keyBy('referenceable_id');
+
+        $identifiers = [];
+        foreach ($taskByItem as $itemId => $taskId) {
+            $reference = $references->get($taskId);
+            $value = $reference !== null ? trim((string) ($reference->external_number ?? $reference->external_id)) : '';
+            if ($value !== '') {
+                $identifiers[$itemId] = Str::limit($value, 100, '');
+            }
+        }
+
+        return $identifiers;
+    }
+
     private function unitCode(string $unit): UnitCode {
         return UnitCode::fromText($unit, UnitCode::UNIT_H87) ?? UnitCode::PIECE;
     }

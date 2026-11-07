@@ -1,7 +1,7 @@
 ---
 title: "Mis facturas"
 topic: customer-portal.invoices
-version: 6
+version: 7
 keywords:
     - ver facturas
     - listado de facturas
@@ -83,3 +83,9 @@ En cuanto el proveedor de pagos confirma el pago, este se registra en la factura
 - La página sirve para consultar. Solo su proveedor emite, modifica o cancela facturas.
 - Aclare las preguntas sobre una factura directamente con su proveedor.
 - Si su proveedor le factura mediante una cuenta de facturación, encontrará el resumen mensual en **Facturación**.
+
+## Documentos de la factura
+
+Si la factura tiene documentos justificativos, como un justificante de
+servicios, cada documento tiene su propio icono de descarga junto al PDF. Son
+los mismos archivos que van incrustados en la factura electrónica.

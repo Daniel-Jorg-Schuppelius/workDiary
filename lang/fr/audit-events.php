@@ -1590,4 +1590,11 @@ return [
         'updated' => 'Bail modifié',
         'withdrawn' => 'Demande de bail retirée',
     ],
+    'externalInvoice' => [
+        'reconciled' => 'Écart avec la facture du prestataire confirmé',
+        'originalStored' => 'Original de la facture du prestataire enregistré',
+        'packaged' => 'Version d’envoi créée',
+        'sent' => 'Facture du prestataire envoyée',
+        'deliveryResolved' => 'Issue de l’envoi consignée',
+    ],
 ];

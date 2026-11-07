@@ -1,7 +1,7 @@
 ---
 title: "Rechnungseingang"
 topic: finance.incoming-invoices
-version: 6
+version: 7
 keywords:
     - Mehrere Steuersätze
     - Eingangsrechnung
@@ -322,3 +322,21 @@ Aufruf ändert nichts.
 **XML-Download:** Das Rechnungs-XML lässt sich jederzeit aus dem Original
 extrahieren (bei ZUGFeRD aus dem PDF-Anhang). Jeder Abruf wird mit Prüfsumme
 als Nachweis protokolliert.
+
+## Eingebettete Unterlagen
+
+Trägt eine eingehende E-Rechnung rechnungsbegründende Unterlagen – etwa einen
+Leistungsnachweis als PDF –, legt WorkDiary sie als Begleitdateien am Eingang ab
+und zeigt sie in der Karte **Eingebettete Unterlagen**. Jede Datei durchläuft
+dieselbe Virenprüfung wie das Original; WorkDiary vergleicht den angegebenen
+Typ mit dem Inhalt und markiert Abweichungen und passwortgeschützte PDFs.
+Unterlagen über der Grenze (Organisation, Vorgabe 15 MB je Datei, 50 MB
+zusammen) werden nur mit Namen vermerkt. Führt die Rechnung einen Link auf eine
+extern abgelegte Unterlage, zeigt WorkDiary ihn an, ruft ihn aber nie selbst
+ab; Plattformen halten solche Dateien oft nur 60 Tage bereit.
+
+In der Zusammenfassung stehen zusätzlich Leistungszeitraum oder Leistungsdatum
+und eine Objektkennung, wenn die Rechnung sie trägt. Für Eingänge, die vor
+dieser Funktion empfangen wurden, löst der Befehl
+`php artisan incoming-invoices:extract-documents --dry-run` die Unterlagen
+nach (erst als Trockenlauf, dann ohne die Option).

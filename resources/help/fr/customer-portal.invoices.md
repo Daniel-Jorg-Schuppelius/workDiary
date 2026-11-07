@@ -1,7 +1,7 @@
 ---
 title: "Mes factures"
 topic: customer-portal.invoices
-version: 6
+version: 7
 keywords:
     - consulter les factures
     - liste des factures
@@ -83,3 +83,9 @@ Dès que le prestataire de paiement confirme le paiement, celui-ci est enregistr
 - La page sert à la consultation. Seul votre prestataire émet, modifie ou annule des factures.
 - Clarifiez les questions sur une facture directement avec votre prestataire.
 - Si votre prestataire vous facture via un compte de facturation, vous trouvez l'aperçu mensuel sous **Facturation**.
+
+## Pièces de la facture
+
+Si la facture a des pièces justificatives, comme un justificatif de
+prestations, chaque pièce a sa propre icône de téléchargement à côté du PDF. Ce
+sont les mêmes fichiers que ceux intégrés à la facture électronique.

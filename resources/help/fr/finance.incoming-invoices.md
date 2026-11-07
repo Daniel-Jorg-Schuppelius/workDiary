@@ -1,7 +1,7 @@
 ---
 title: "Factures reçues"
 topic: finance.incoming-invoices
-version: 6
+version: 7
 keywords:
     - plusieurs taux de TVA
     - facture fournisseur
@@ -347,3 +347,20 @@ la validation ; un second appel ne change rien.
 **Téléchargement XML :** Le XML de la facture peut être extrait de l’original
 à tout moment (pour ZUGFeRD, de la pièce jointe PDF). Chaque téléchargement
 est enregistré avec une somme de contrôle comme justificatif.
+
+## Pièces intégrées
+
+Si une facture électronique reçue porte des pièces justificatives – par exemple
+un justificatif de prestations en PDF –, WorkDiary les enregistre comme fichiers
+d’accompagnement de l’entrée et les affiche dans la carte **Pièces intégrées**.
+Chaque fichier passe le même contrôle antivirus que l’original ; WorkDiary
+compare le type indiqué au contenu et signale les écarts et les PDF protégés par
+mot de passe. Les pièces au-delà de la limite (organisation, par défaut 15 Mo
+par fichier, 50 Mo au total) ne sont notées que par leur nom. Si la facture
+porte un lien vers une pièce externe, WorkDiary l’affiche mais ne l’ouvre jamais
+de lui-même ; les plateformes ne conservent souvent ces fichiers que 60 jours.
+
+Le résumé indique aussi la période ou la date de prestation et un identifiant
+d’objet si la facture les porte. Pour les factures reçues avant cette fonction,
+la commande `php artisan incoming-invoices:extract-documents --dry-run`
+extrait les pièces après coup (d’abord à blanc, puis sans l’option).

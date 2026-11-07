@@ -15,7 +15,7 @@ use App\Enums\Invoicing\{InvoiceDeliveryFormat, InvoiceStatus};
 use App\Enums\Numbering\NumberScope;
 use App\Models\Classification\Tag;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, DisclosesLabourCosts, HasSqid};
-use App\Models\Contracts\HasDocumentLines;
+use App\Models\Contracts\{HasDocumentLines, SupportingDocumentCarrier};
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Document\{Document, DocumentDispatch};
 use App\Models\Gaeb\BillOfQuantity;
@@ -87,7 +87,7 @@ use Illuminate\Support\Carbon;
  *
  * @phpstan-import-type Totals from \App\Services\Billing\DocumentTotalsCalculator
  */
-class Invoice extends Model implements HasDocumentLines {
+class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarrier {
     use Auditable;
     use BelongsToOrganization;
     use DisclosesLabourCosts;
@@ -289,6 +289,36 @@ class Invoice extends Model implements HasDocumentLines {
     /** @return MorphMany<Document, $this> */
     public function documents(): MorphMany {
         return $this->morphMany(Document::class, 'documentable');
+    }
+
+    /**
+     * Rechnungsbegründende Unterlagen (BG-24, Feature 196) in Ausgabereihenfolge.
+     *
+     * @return HasMany<InvoiceSupportingDocument, $this>
+     */
+    public function supportingDocuments(): HasMany {
+        return $this->hasMany(InvoiceSupportingDocument::class)->orderBy('position')->orderBy('id');
+    }
+
+    public function supportingReferenceNumber(): string {
+        return (string) $this->number;
+    }
+
+    /** Unterlagen entstehen nur am Entwurf; die Ausstellung friert sie ein. */
+    public function supportingDocumentsLockedReason(): ?string {
+        return $this->status === InvoiceStatus::Draft ? null : (string) __('invoicing.supporting_documents.error.not_draft');
+    }
+
+    public function carrierOrganizationId(): int {
+        return (int) $this->organization_id;
+    }
+
+    public function carrierCustomer(): ?\App\Models\Customer\Customer {
+        return $this->customer;
+    }
+
+    public function carrierOrganization(): ?\App\Models\Platform\Organization {
+        return $this->organization;
     }
 
     /** @return HasMany<InvoiceItem, $this> */
@@ -515,6 +545,11 @@ class Invoice extends Model implements HasDocumentLines {
                 $invoice->skonto_percent = $customer->skonto_percent;
                 $invoice->skonto_days = $customer->skonto_days;
             }
+        });
+
+        // Die Zeilen der Unterlagen räumt der Fremdschlüssel ab, ihre Dateien nicht (Feature 196).
+        static::deleting(function (self $invoice): void {
+            app(\App\Services\Invoicing\EInvoice\SupportingDocumentService::class)->purgeFiles($invoice);
         });
 
         // Ausstellungs-Unveränderlichkeit (MVP-162): Anker ist der beim offiziellen Ausstellen eingefrorene Partei-Snapshot

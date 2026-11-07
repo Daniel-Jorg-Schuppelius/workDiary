@@ -429,6 +429,8 @@ class OrganizationLifecycleService {
         'datev_booking_batches' => ['path' => 'file_path'],
         'dictations' => ['path' => 'audio_path', 'disk' => 'audio_disk'],
         'export_runs' => ['path' => 'storage_path'],
+        'external_invoice_packages' => ['path' => 'storage_path', 'dir' => true],
+        'external_invoices' => ['path' => 'original_path'],
         'gaeb_imports' => ['path' => 'stored_path'],
         'gobd_exports' => ['path' => 'file_path'],
         'import_runs' => ['path' => 'storage_path'],

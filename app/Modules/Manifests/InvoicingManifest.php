@@ -57,6 +57,7 @@ final class InvoicingManifest extends Manifest {
             'invoice_schedule_items',
             'invoice_schedule_runs',
             'invoice_schedules',
+            'invoice_supporting_documents',
             'invoices',
             'online_payments',
             'peppol_participant_lookups',

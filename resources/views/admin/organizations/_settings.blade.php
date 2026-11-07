@@ -280,6 +280,61 @@
                              :hint="__('settings.einvoice.small_business_hint')" />
         </x-form-group>
 
+        {{-- Rechnungsbegründende Unterlagen und Empfängerprofil (Feature 196). --}}
+        <x-form-group :legend="__('settings.einvoice.documents_heading')" icon="attach_file" tone="info" cols="2" compact
+                      :description="__('settings.einvoice.documents_description')">
+            @php $profileDefault = old('settings.einvoice.recipient_profile_default', data_get($stored, 'einvoice.recipient_profile_default', '')); @endphp
+            <x-select-field name="settings[einvoice][recipient_profile_default]" :label="__('settings.einvoice.recipient_profile_default')"
+                            error="settings.einvoice.recipient_profile_default" :hint="__('settings.einvoice.recipient_profile_default_hint')">
+                <option value="" @selected($profileDefault === '')>{{ __('settings.placeholder_default', ['value' => \App\Enums\Invoicing\EInvoiceRecipientProfile::Standard->label()]) }}</option>
+                @foreach (\App\Enums\Invoicing\EInvoiceRecipientProfile::options() as $value => $label)
+                    <option value="{{ $value }}" @selected($profileDefault === $value)>{{ $label }}</option>
+                @endforeach
+            </x-select-field>
+            @php $personDisplay = old('settings.einvoice.activity_report_person_display', data_get($stored, 'einvoice.activity_report_person_display', '')); @endphp
+            <x-select-field name="settings[einvoice][activity_report_person_display]" :label="__('settings.einvoice.activity_report_person_display')"
+                            error="settings.einvoice.activity_report_person_display" :hint="__('settings.einvoice.activity_report_person_display_hint')">
+                <option value="" @selected($personDisplay === '')>{{ __('settings.placeholder_default', ['value' => \App\Enums\Invoicing\ActivityReportPersonDisplay::FullName->label()]) }}</option>
+                @foreach (\App\Enums\Invoicing\ActivityReportPersonDisplay::options() as $value => $label)
+                    <option value="{{ $value }}" @selected($personDisplay === $value)>{{ $label }}</option>
+                @endforeach
+            </x-select-field>
+            <x-checkbox-field name="settings[einvoice][attach_activity_report]" tone="info"
+                              :label="__('settings.einvoice.attach_activity_report')"
+                              error="settings.einvoice.attach_activity_report"
+                              :checked="(string) old('settings.einvoice.attach_activity_report', (int) (bool) data_get($stored, 'einvoice.attach_activity_report', false)) === '1'"
+                              :hint="__('settings.einvoice.attach_activity_report_hint')" />
+            <x-checkbox-field name="settings[einvoice][activity_report_include_signed_timesheets]" tone="info"
+                              :label="__('settings.einvoice.activity_report_include_signed_timesheets')"
+                              error="settings.einvoice.activity_report_include_signed_timesheets"
+                              :checked="(string) old('settings.einvoice.activity_report_include_signed_timesheets', (int) (bool) data_get($stored, 'einvoice.activity_report_include_signed_timesheets', true)) === '1'"
+                              :hint="__('settings.einvoice.activity_report_include_signed_timesheets_hint')" />
+            <x-checkbox-field name="settings[einvoice][activity_report_csv]" tone="info"
+                              :label="__('settings.einvoice.activity_report_csv')"
+                              error="settings.einvoice.activity_report_csv"
+                              :checked="(string) old('settings.einvoice.activity_report_csv', (int) (bool) data_get($stored, 'einvoice.activity_report_csv', false)) === '1'"
+                              :hint="__('settings.einvoice.activity_report_csv_hint')" />
+            <x-input-field name="settings[einvoice][incoming_attachment_limit_mb]" type="number" min="1" max="50"
+                           :label="__('settings.einvoice.incoming_attachment_limit_mb')"
+                           error="settings.einvoice.incoming_attachment_limit_mb"
+                           :value="old('settings.einvoice.incoming_attachment_limit_mb', data_get($stored, 'einvoice.incoming_attachment_limit_mb', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => '15'])"
+                           :hint="__('settings.einvoice.incoming_attachment_limit_mb_hint')" />
+            @php $dispatchRoute = old('settings.einvoice.external_dispatch_route', data_get($stored, 'einvoice.external_dispatch_route', '')); @endphp
+            <x-select-field name="settings[einvoice][external_dispatch_route]" :label="__('settings.einvoice.external_dispatch_route')"
+                            error="settings.einvoice.external_dispatch_route" :hint="__('settings.einvoice.external_dispatch_route_hint')">
+                <option value="" @selected($dispatchRoute === '')>{{ __('settings.placeholder_default', ['value' => \App\Enums\Invoicing\ExternalDispatchRoute::Provider->label()]) }}</option>
+                @foreach (\App\Enums\Invoicing\ExternalDispatchRoute::options() as $value => $label)
+                    <option value="{{ $value }}" @selected($dispatchRoute === $value)>{{ $label }}</option>
+                @endforeach
+            </x-select-field>
+            <x-checkbox-field name="settings[einvoice][provider_send_disabled]" tone="info"
+                              :label="__('settings.einvoice.provider_send_disabled')"
+                              error="settings.einvoice.provider_send_disabled"
+                              :checked="(string) old('settings.einvoice.provider_send_disabled', (int) (bool) data_get($stored, 'einvoice.provider_send_disabled', false)) === '1'"
+                              :hint="__('settings.einvoice.provider_send_disabled_hint')" />
+        </x-form-group>
+
         {{-- BUCHHALTUNG: Vier-Augen-Prinzip für Festschreiben, Direktbuchungen und Zahlungsläufe. --}}
         <x-form-group :legend="__('settings.accounting.heading')" icon="verified_user" tone="info" compact>
             <x-checkbox-field name="settings[finance][accounting_four_eyes]" tone="info"

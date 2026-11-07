@@ -1,7 +1,7 @@
 ---
 title: "Faktura-Übergabe"
 topic: finance.transfers
-version: 4
+version: 5
 keywords:
     - Lexoffice-Übergabe
     - Zeiten an Lexoffice
@@ -17,6 +17,9 @@ keywords:
     - Faktura-Export
     - zugehörige Belege
     - Belegkette
+    - Rechnung beim Anbieter
+    - Nachweise versenden
+    - Versandakte
 audience: []
 modules:
     - module.finance
@@ -86,3 +89,33 @@ sein Gegenstück dort mit der Nummer des Programms. Bezüge, die das Programm
 selbst meldet, etwa ein in Lexoffice angelegter Abschlag, erscheinen ebenfalls.
 Die Spalte **Bezug** sagt, was der Beleg für diesen ist; „über …“ nennt den
 Beleg, über den der Zusammenhang besteht.
+
+## Rechnung beim Anbieter: Nachweise und Versand durch WorkDiary
+
+Führt Lexware Office, sevDesk, easybill oder orgaMAX die Rechnung, bleiben
+Nummer und Inhalt dort. WorkDiary kann die festgeschriebene Rechnung trotzdem
+mit Leistungsnachweisen ausstatten und zustellen, ohne eigene Rechnung.
+
+1. Schreiben Sie den Entwurf im Fakturasystem fest.
+2. Klicken Sie im Übergabenachweis in der Karte **Rechnung beim Anbieter**
+   auf **Rechnung aus … abrufen**. WorkDiary holt Nummer, Stand und das
+   Original und ordnet die Positionen der Übergabe zu. Für geteilte,
+   gebündelte oder direkt im Fakturasystem angelegte Rechnungen nutzen Sie
+   **Weitere Rechnung zuordnen**.
+3. Weichen die Positionen beim Anbieter ab, bestätigen Sie die Abweichung
+   auf der Rechnungsseite mit einer Begründung. Ohne Bestätigung sperrt der
+   Versand.
+4. Erzeugen oder laden Sie Nachweise in der Karte **Rechnungsbegründende
+   Unterlagen** hoch und klicken Sie auf **Zustellen**.
+
+WorkDiary ergänzt das Original in seinem Format: ein PDF geht unverändert
+mit den Nachweisen als Beilagen, eine XRechnung trägt sie eingebettet, ein
+ZUGFeRD-PDF wird mit ergänzter XML neu geschrieben. Signierte Originale
+werden nie verändert. Die **Versandakte** hält jede Fassung mit Hashes,
+Nachweisen und Zustellversuchen. **Wiederholen** sendet dieselben Dateien;
+bleibt ein Versuch ohne Rückmeldung, klären Sie mit dem Empfänger, ob er
+ankam. Später erstellte Nachweise gehen über **Nachweise nachsenden**.
+
+Voraussetzung ist der Versandweg „WorkDiary stellt zu“ im Kundenstamm oder
+in den Organisationseinstellungen. Schalten Sie dann den automatischen
+Versand im Fakturasystem ab, sonst erhält der Kunde die Rechnung zweimal.

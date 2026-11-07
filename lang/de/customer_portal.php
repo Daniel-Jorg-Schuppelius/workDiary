@@ -42,6 +42,7 @@ return [
     ],
     'invoices' => [
         'pdf_label' => 'Rechnung :number als PDF herunterladen',
+        'supporting_document_label' => 'Unterlage „:name“ zur Rechnung :number herunterladen',
         'document_unavailable' => 'Das Dokument liegt im Buchhaltungsprogramm noch nicht vor. Bitte versuchen Sie es später erneut.',
     ],
 

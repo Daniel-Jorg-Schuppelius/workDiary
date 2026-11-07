@@ -1,7 +1,7 @@
 ---
 title: "My Invoices"
 topic: customer-portal.invoices
-version: 6
+version: 7
 keywords:
     - view invoices
     - invoice list
@@ -85,3 +85,9 @@ As soon as the payment provider confirms the payment, it is recorded against the
 - The page is for viewing. Only your contractor issues, changes or cancels invoices.
 - Please clarify questions about an invoice directly with your contractor.
 - If your contractor bills you through a billing account, you find the monthly overview under **Billing**.
+
+## Documents of the invoice
+
+If the invoice has supporting documents, such as an activity report, each
+document has its own download icon next to the PDF. They are the same files
+that are embedded in the e-invoice.

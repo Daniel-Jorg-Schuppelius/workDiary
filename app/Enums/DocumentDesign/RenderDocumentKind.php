@@ -62,6 +62,9 @@ enum RenderDocumentKind: string implements HasLabel {
     // Abschlussnachweis einer unterzeichneten Kundenvereinbarung (Feature 157,
     // MVP-822): Parteien, Fassungskennung, Dateihashes, Methoden, Zeitpunkte.
     case SigningCertificate = 'signing_certificate';
+    // Leistungsnachweis zu einer Rechnung (Feature 196, MVP-1485): die abgerechneten
+    // Zeiten je Position, eingebettet als Unterlage der E-Rechnung (BG-24).
+    case ActivityReport = 'activity_report';
 
     public function label(): string {
         return match ($this) {
@@ -85,6 +88,7 @@ enum RenderDocumentKind: string implements HasLabel {
             self::ConstructionConcernNotice => __('construction.kind.concern'),
             self::Certificate => __('learning.pdf.certificate_kind'),
             self::SigningCertificate => __('contract-signing.certificate.kind'),
+            self::ActivityReport => __('enums.document_design.render_document_kind.activity_report'),
         };
     }
 
@@ -97,7 +101,7 @@ enum RenderDocumentKind: string implements HasLabel {
             self::Protocol, self::ManufacturingRecord, self::Timesheet,
             self::Form, self::Report, self::CaseFile,
             self::ConstructionObstructionNotice, self::ConstructionConcernNotice,
-            self::Certificate, self::SigningCertificate => RenderDocumentFamily::Evidence,
+            self::Certificate, self::SigningCertificate, self::ActivityReport => RenderDocumentFamily::Evidence,
             self::Label => RenderDocumentFamily::Special,
         };
     }
@@ -153,6 +157,8 @@ enum RenderDocumentKind: string implements HasLabel {
             self::ProformaInvoice, self::Dunning, self::FeeNotice => self::Invoice,
             self::CaseFile, self::ConstructionObstructionNotice,
             self::ConstructionConcernNotice, self::Certificate, self::SigningCertificate => self::Report,
+            // Ohne eigene Variante sieht der Nachweis aus wie der Stundenzettel.
+            self::ActivityReport => self::Timesheet,
             default => null,
         };
     }
@@ -223,7 +229,7 @@ enum RenderDocumentKind: string implements HasLabel {
                 InformationBlock::DocumentMeta,
                 InformationBlock::CompanyIdentity,
             ],
-            self::Timesheet, self::Form, self::Report, self::CaseFile => [
+            self::Timesheet, self::Form, self::Report, self::CaseFile, self::ActivityReport => [
                 InformationBlock::DocumentMeta,
             ],
             // Foermliche Schreiben an den Auftraggeber: ohne Anschrift und

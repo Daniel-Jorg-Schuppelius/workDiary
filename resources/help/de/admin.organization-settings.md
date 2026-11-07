@@ -1,7 +1,7 @@
 ---
 title: "Organisation und Einstellungen"
 topic: admin.organization-settings
-version: 3
+version: 4
 keywords:
     - Firmeneinstellungen
     - Mandanteneinstellungen
@@ -309,6 +309,17 @@ Drei Felder wirken darüber hinaus auf alle lokal erstellten Rechnungen:
   gemäß § 19 UStG (Kleinunternehmerregelung).“; die XRechnung erhält die
   Steuerkategorie E (steuerbefreit). Der Haken hat Vorrang vor
   **Standard-Steuersatz (%)** und Reverse Charge.
+
+## E-Rechnung: Unterlagen und Empfänger
+
+Regeln für rechnungsbegründende Unterlagen in der E-Rechnung:
+
+- **Empfängerprofil für Kunden ohne eigene Angabe**: „Öffentlicher Auftraggeber (Behörde)“ schickt per Mail nur die XML, verlangt die Leitweg-ID, begrenzt auf 10 MB und legt den Leistungsnachweis automatisch bei. Der Kundenstamm kann abweichen.
+- **Personen im Leistungsnachweis**: voller Name, Initialen oder keine Personen.
+- **Leistungsnachweis allen Kunden beilegen**, **Unterschriebene Stundenzettel beilegen** und **Zeiten zusätzlich als CSV beilegen**: was bei der Ausstellung automatisch beiliegt.
+- **Rechnungseingang: größte eingebettete Unterlage (MB)**: größere Anhänge eingehender E-Rechnungen werden nur mit Namen vermerkt.
+- **Versandweg bei externer Rechnungshoheit**: Führt ein Fakturasystem die Rechnung, stellt mit „WorkDiary stellt zu“ WorkDiary sie mit Nachweisen zu.
+- **Automatischer Versand im Fakturasystem ist abgeschaltet**: Ihre Erklärung, dass das Fakturasystem nicht selbst versendet. Ohne sie fragt WorkDiary bei jeder Rechnung nach.
 
 ## Buchhaltung: Vier-Augen-Prinzip
 

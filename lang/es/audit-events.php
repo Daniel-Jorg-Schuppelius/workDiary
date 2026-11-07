@@ -1590,4 +1590,11 @@ return [
         'updated' => 'Arrendamiento actualizado',
         'withdrawn' => 'Solicitud de alquiler retirada',
     ],
+    'externalInvoice' => [
+        'reconciled' => 'Diferencia con la factura del proveedor confirmada',
+        'originalStored' => 'Original de la factura del proveedor guardado',
+        'packaged' => 'Versión de envío creada',
+        'sent' => 'Factura del proveedor entregada',
+        'deliveryResolved' => 'Resultado del envío registrado',
+    ],
 ];

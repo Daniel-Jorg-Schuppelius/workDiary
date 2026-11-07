@@ -10,6 +10,21 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- **Rechnungsbegründende Unterlagen in der E-Rechnung** (Feature 196,
+  Phase 172, MVP-1483–1489): Leistungsnachweis aus den abgerechneten Zeiten
+  (PDF, Personen mit vollem Namen, Kürzel oder ohne) und hochgeladene Unterlagen
+  gehen eingebettet als BG-24 in XRechnung (UBL/CII), Peppol und ZUGFeRD mit;
+  Leistungszeitraum je Rechnung und Position, Objektkennungen, Prüfung von
+  BR-52, BR-CL-24, BR-DE-22 und den Größengrenzen der Empfänger.
+  Empfängerprofil je Kunde (Behörde: Nachweis automatisch, nur XML), Mail und
+  Kundenportal mit denselben Dateien. Der Rechnungseingang löst eingebettete
+  Unterlagen und legt sie am Eingang ab (Nachlauf
+  `incoming-invoices:extract-documents`). Extern ausgestellte Rechnungen
+  (Lexware Office, sevDesk, easybill, orgaMAX) übernimmt WorkDiary
+  festgeschrieben vom Anbieter, gleicht sie mit der Übergabe ab, ergänzt sie
+  ohne Neuerzeugung um die Unterlagen und stellt sie selbst zu (E-Mail oder
+  Peppol, unveränderliche Versandakte, Nachsendung); Versandweg je Kunde und
+  Organisation. Hilfe ×5; Toolkits erechnung 0.21.0 und pdf 0.31.0.
 - **Projekt-Sollzeiten je Person** (Feature 194, Phase 170, MVP-1467–1471):
   Soll je Person und Tag am Projekt (Projektvorgabe je Wochentag,
   Personenzeilen, Ausnahmen je Datum, Gültigkeit) im Raster „Sollzeiten

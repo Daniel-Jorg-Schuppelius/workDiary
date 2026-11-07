@@ -181,11 +181,55 @@
                                 :href="route('finance.transfers.download', $transfer)"
                                 show-label>{{ __('finance.action.download') }}</x-icon-btn>
                 @endif
+                @if ($transfer->items->contains(fn ($item): bool => \App\Support\MorphMap::is((string) $item->source_type, \App\Models\Time\TimeEntry::class)))
+                    <x-icon-btn icon="fact_check" tone="outline" size="sm"
+                                :href="route('finance.transfers.activity-report', $transfer)"
+                                show-label>{{ __('finance.action.activity_report') }}</x-icon-btn>
+                @endif
             </div>
         </div>
 
         <x-validation-errors class="mt-3" />
     </x-card>
+
+    {{-- Rechnung beim Anbieter (Feature 196): das Fakturasystem führt, WorkDiary stattet sie mit
+         Nachweisen aus und stellt sie auf Wunsch zu. --}}
+    @if ($externalProvider !== null || $externalInvoices->isNotEmpty())
+        <x-card :title="__('finance.external_invoice.transfer.heading')" icon="receipt_long" padding="p-0">
+            <x-slot:actions>
+                @if ($externalProvider !== null)
+                    @can('markTransferred', $transfer)
+                        <x-action-form :action="route('finance.transfers.external-invoice', $transfer)">
+                            <x-icon-btn icon="cloud_sync" size="sm" type="submit" show-label>{{ __('finance.external_invoice.action.fetch', ['program' => $externalProvider->label()]) }}</x-icon-btn>
+                        </x-action-form>
+                        @if ($freeExternalPositions > 0)
+                            <x-icon-btn icon="add_link" size="sm" data-entry-modal-trigger :href="route('finance.transfers.external-invoice.link.form', $transfer)" show-label>{{ __('finance.external_invoice.action.link') }}</x-icon-btn>
+                        @endif
+                    @endcan
+                @endif
+            </x-slot:actions>
+            <x-table>
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('finance.external_invoice.field.number') }}</th>
+                        <th>{{ __('finance.external_invoice.field.status') }}</th>
+                        <th>{{ __('finance.external_invoice.field.issued_on') }}</th>
+                        <th class="text-right">{{ __('finance.external_invoice.field.gross') }}</th>
+                    </tr>
+                </x-slot:head>
+                @forelse ($externalInvoices as $externalInvoice)
+                    <tr>
+                        <td><a class="link" href="{{ route('finance.external-invoices.show', $externalInvoice) }}">{{ $externalInvoice->displayNumber() }}</a></td>
+                        <td><x-status-badge :tone="$externalInvoice->status->tone()" size="sm">{{ $externalInvoice->status->label() }}</x-status-badge></td>
+                        <td class="tabular-nums">{{ $externalInvoice->issued_on?->fdate() ?? '—' }}</td>
+                        <td class="text-right tabular-nums">{{ $externalInvoice->gross_amount !== null ? \CommonToolkit\ValueObjects\Decimal::of((string) $externalInvoice->gross_amount, 2)->format() : '—' }}</td>
+                    </tr>
+                @empty
+                    <x-table.empty icon="receipt_long" :colspan="4" :title="__('finance.external_invoice.transfer.empty')" compact />
+                @endforelse
+            </x-table>
+        </x-card>
+    @endif
 
     {{-- Rechnungstexte des Belegs (MVP-491): gehen als Einleitung und
          Schlussbemerkung ans Ziel. --}}

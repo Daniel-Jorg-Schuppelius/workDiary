@@ -248,6 +248,13 @@ class IncomingEInvoiceService {
             'creditor_bic' => $document->getPayee()?->getBic() ?? $document->getSeller()->getBic(),
             'discount_percent' => $document->getPaymentTerms()?->getDiscountPercent(),
             'discount_days' => $document->getPaymentTerms()?->getDiscountDays(),
+            // Feature 196: Leistungszeitraum (BG-14), Lieferdatum (BT-72) und Objektkennung (BT-18).
+            'invoicing_period' => $document->getInvoicingPeriod() === null || $document->getInvoicingPeriod()->isEmpty() ? null : [
+                'from' => $document->getInvoicingPeriod()->getStart()?->format('Y-m-d'),
+                'to' => $document->getInvoicingPeriod()->getEnd()?->format('Y-m-d'),
+            ],
+            'delivery_date' => $document->getDeliveryDate()?->format('Y-m-d'),
+            'invoiced_object' => $document->getInvoicedObjectIdentifier(),
         ];
     }
 
@@ -647,6 +654,11 @@ class IncomingEInvoiceService {
             ...\App\Models\Invoicing\IncomingEInvoice::columnsFromSummary($summary),
         ]);
 
+        // Eingebettete Unterlagen (BG-24, Feature 196) als Begleitdateien des Eingangs.
+        if ($recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured) {
+            $this->storeSupportingDocuments($incoming, $contents, $mime, (int) $actor->id);
+        }
+
         $document->audit('document.einvoice_received', [
             'number' => $summary['number'],
             'seller' => $summary['seller'],
@@ -663,6 +675,26 @@ class IncomingEInvoiceService {
         app(IncomingInvoiceMatcher::class)->autoAssign($incoming);
 
         return ['incoming' => $incoming, 'document' => $document];
+    }
+
+    /**
+     * Eingebettete Unterlagen einer strukturierten E-Rechnung ablegen und in der
+     * Zusammenfassung vermerken. true, wenn etwas zu vermerken war.
+     */
+    public function storeSupportingDocuments(\App\Models\Invoicing\IncomingEInvoice $incoming, string $contents, ?string $mime, ?int $actorId): bool {
+        $xml = $this->extractXml($contents, $mime);
+        if ($xml === null) {
+            return false;
+        }
+        $block = app(IncomingSupportingDocuments::class)->extract($incoming, $xml, self::contentKind($contents, $mime) === 'pdf' ? $contents : null, $actorId);
+        $incoming->forceFill(['summary' => [
+            ...(array) $incoming->summary,
+            'supporting_documents' => $block['documents'],
+            'supporting_notices' => $block['notices'],
+            'pdf_attachments' => $block['pdf_attachments'],
+        ]])->save();
+
+        return $block['documents'] !== [] || $block['pdf_attachments'] !== [] || $block['notices'] !== [];
     }
 
     /**

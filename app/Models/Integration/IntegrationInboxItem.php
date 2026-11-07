@@ -70,6 +70,9 @@ class IntegrationInboxItem extends Model {
     /** Zeit-Übertragung: das lokale Projekt hat drüben kein Projekt (Nachtrag 2026-11-04). */
     public const REASON_PROJECT_UNMAPPED = 'project_unmapped';
 
+    /** Rechnungsbegründende Unterlagen gehen nicht an das ausstellende Programm (Feature 196). */
+    public const REASON_SUPPORTING_DOCUMENTS = 'supporting_documents_not_transferred';
+
     public const CASE_CONFLICT = 'conflict';
     public const CASE_AMBIGUOUS = 'ambiguous';
 
@@ -150,6 +153,7 @@ class IntegrationInboxItem extends Model {
                 'remote_changed_after_export' => (string) __('Zeiteintrag extern geändert (bereits abgerechnet)'),
                 'remote_deleted_after_export' => (string) __('Zeiteintrag extern gelöscht (bereits abgerechnet)'),
                 self::REASON_PROJECT_UNMAPPED => (string) __('Projekt ohne Gegenstück in :plugin — Zeiten nicht übertragen', ['plugin' => $pluginName ?? ucfirst((string) $this->plugin_id)]),
+                self::REASON_SUPPORTING_DOCUMENTS => (string) __('invoicing.supporting_documents.inbox_title', ['plugin' => $pluginName ?? ucfirst((string) $this->plugin_id)]),
                 self::REASON_NUMBER_TAKEN => (string) __('numbering.conflict.title', [
                     'number' => (string) (($this->remote_snapshot ?? [])['number'] ?? ''),
                     'program' => $pluginName ?? ucfirst((string) $this->plugin_id),

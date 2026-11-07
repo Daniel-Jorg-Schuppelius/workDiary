@@ -1,7 +1,7 @@
 ---
 title: "Factures & pièces"
 topic: invoices.manage
-version: 11
+version: 12
 keywords:
     - créer une facture
     - établir une facture
@@ -23,6 +23,11 @@ keywords:
     - transmettre la facture à Lexoffice
     - numéro provisoire
     - demande sur facture
+    - justificatif de prestations
+    - feuille d’heures
+    - pièces justificatives
+    - administration publique
+    - Leitweg-ID
 audience: []
 modules:
     - module.vertrieb
@@ -192,3 +197,52 @@ La liste de travail **Demandes sur factures** (bouton dans le flux des
 documents) affiche les demandes ouvertes et répondues de toutes les factures
 et de tous les documents ; **Marquer comme répondue** clôt une demande,
 **Rouvrir** la ramène. Les deux figurent dans l'historique de la facture.
+
+## Pièces justificatives et justificatif de prestations
+
+Les feuilles d’heures et justificatifs de prestations voyagent intégrés à la
+facture électronique : dans la XRechnung, dans le PDF ZUGFeRD et via Peppol.
+Les administrations et le fisc l’exigent : une pièce jointe séparée ou un lien
+ne fait pas partie de la facture. La carte **Pièces justificatives** de la page
+de facture propose trois voies tant que la facture est un brouillon :
+
+- **Créer le justificatif de prestations** produit un PDF à partir des temps
+  facturés : par position la date, la personne, l’heure, la durée et
+  l’activité, avec les validations des feuilles d’heures signées. Sur demande,
+  les feuilles signées et un tableau CSV s’y ajoutent (organisation, section
+  **Facture électronique : pièces et destinataires**).
+- **Ajouter une pièce** accepte votre propre fichier : PDF, PNG, JPEG, CSV, XLSX
+  ou ODS sans mot de passe. Les destinataires n’acceptent pas d’autres formats.
+- **Ajouter un lien** sert seulement aux portails, comme les grandes annexes
+  d’OZG-RE. Sur le plan fiscal, un lien ne remplace pas une pièce intégrée.
+
+WorkDiary nomme les fichiers lui-même (`nachweis-1-…`) pour qu’ils soient
+uniques. **Émettre** fige les pièces ; un justificatif généré est recréé avec le
+numéro définitif. Ensuite, les pièces ne peuvent plus être modifiées ni
+retirées. Un envoi en PDF joint les pièces comme fichiers séparés au même courriel.
+
+La facture électronique indique la date de prestation dans sa partie
+structurée : la date ou la période des positions, sinon la date de facture. La
+description des prestations reste dans les positions ; le justificatif la
+complète.
+
+### Clients publics
+
+Dans la fiche client, réglez le **profil de destinataire de la facture
+électronique** sur « Administration publique ». Alors :
+
+- La Leitweg-ID (référence de l’acheteur) est obligatoire.
+- Par courriel ne part que la XRechnung, sans PDF à côté ; la boîte d’envoi ne
+  propose que ces formats. L’envoi électronique émet d’abord le brouillon pour
+  que le XML porte les pièces figées.
+- Le justificatif de prestations est joint automatiquement à l’émission si la
+  facture porte des temps.
+- La facture électronique avec pièces peut peser au plus 10 Mo ; le contrôle le
+  signale au-delà. La limite se règle par client, de même que l’envoi du
+  justificatif toujours ou jamais.
+
+Si un logiciel de comptabilité attribue le numéro, les pièces restent dans
+WorkDiary : WorkDiary ne les transmet pas à Lexoffice, sevDesk, easybill ou
+orgaMAX. Qui envoie la facture depuis le logiciel les y joint à la main ; la
+boîte des intégrations le rappelle. Le transfert propose **Justificatif de
+prestations** au téléchargement.
