@@ -105,6 +105,8 @@ class AttachmentPolicy {
             $parent instanceof \App\Models\Ideas\IdeaNode => $parent->map,
             // Begleitdateien eines Rechnungseingangs (MVP-1107): Rechte des Originals.
             $parent instanceof \App\Models\Invoicing\IncomingEInvoice => $parent->document,
+            // Rechnungsbegründende Unterlagen (Feature 196): Rechte der lokalen oder externen Rechnung.
+            $parent instanceof \App\Models\Invoicing\InvoiceSupportingDocument => $parent->carrier(),
             default => null,
         };
 

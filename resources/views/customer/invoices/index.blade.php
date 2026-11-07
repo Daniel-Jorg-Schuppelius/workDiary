@@ -58,6 +58,10 @@
                 <td class="text-right whitespace-nowrap">
                     <x-icon-btn icon="picture_as_pdf" :href="$row['pdf']"
                                 :label="__('customer_portal.invoices.pdf_label', ['number' => $row['number']])" />
+                    @foreach ($row['documents'] ?? [] as $document)
+                        <x-icon-btn icon="attach_file" :href="$document['url']"
+                                    :label="__('customer_portal.invoices.supporting_document_label', ['number' => $row['number'], 'name' => $document['name']])" />
+                    @endforeach
                     @if ($row['invoice'] !== null && $payLinks->has($row['invoice']->id))
                         <x-button :href="$payLinks->get($row['invoice']->id)">{{ __('payments.portal.pay') }}</x-button>
                     @endif

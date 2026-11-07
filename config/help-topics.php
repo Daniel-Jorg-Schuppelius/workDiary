@@ -710,6 +710,8 @@ return [
         // Finance & Zeitexport
         'finance.open-times.*' => 'finance.open-times',
         'finance.transfers.*' => 'finance.transfers',
+        // Rechnung beim Anbieter mit Nachweisen und Versandakte (Feature 196).
+        'finance.external-invoices.*' => 'finance.transfers',
         'finance.reconciliation.*' => 'finance.reconciliation',
         'finance.resale.licenses.*' => 'finance.license-stock',
         // Reselling-Hilfe je Seite (Vollscan 2026-11-02, gap-10): Lizenzkonten, Abgleich

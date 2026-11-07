@@ -39,6 +39,8 @@ final class PdfGeneratorInventory {
         'app/Services/Invoicing/QuotePdfRenderer.php' => ['quote'],
         'app/Services/Invoicing/OrderConfirmationPdfRenderer.php' => ['order_confirmation'],
         'app/Services/Invoicing/DunningPdfRenderer.php' => ['dunning'],
+        // Leistungsnachweis zur Rechnung (Feature 196, MVP-1485): eingebettet als Unterlage der E-Rechnung.
+        'app/Services/Invoicing/ActivityReportPdfRenderer.php' => ['activity_report'],
         // Kundenvereinbarungen (Feature 157, MVP-822): Abschlussnachweis der unterzeichneten Fassung.
         'app/Services/Contract/SigningCertificatePdfRenderer.php' => ['signing_certificate'],
         // Einkauf/Logistik

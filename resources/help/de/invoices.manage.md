@@ -1,7 +1,7 @@
 ---
 title: "Rechnungen & Belege"
 topic: invoices.manage
-version: 11
+version: 12
 keywords:
     - Rechnung erstellen
     - Rechnung schreiben
@@ -22,6 +22,12 @@ keywords:
     - Rechnung an Lexoffice übertragen
     - Entwurfsnummer
     - Rechnungsnachfrage
+    - Leistungsnachweis
+    - Stundennachweis
+    - rechnungsbegründende Unterlagen
+    - Behörde
+    - Leitweg-ID
+    - OZG-RE
 audience: []
 modules:
     - module.vertrieb
@@ -188,3 +194,52 @@ Die Arbeitsliste **Rechnungsnachfragen** (Schaltfläche im Belegfluss) zeigt
 offene und beantwortete Nachfragen aller Rechnungen und Belege; **Als
 beantwortet markieren** schließt eine Nachfrage, **Wieder öffnen** holt sie
 zurück. Beides steht in der Historie der Rechnung.
+
+## Rechnungsbegründende Unterlagen und Leistungsnachweis
+
+Stunden- und Leistungsnachweise gehen eingebettet in der E-Rechnung mit – in
+der XRechnung, im ZUGFeRD-PDF und über Peppol. So verlangen es Behörden und
+das Finanzamt: Ein loser Mail-Anhang oder ein Link gehört nicht zur Rechnung.
+Die Karte **Rechnungsbegründende Unterlagen** auf der Rechnungsseite bietet im
+Entwurf drei Wege:
+
+- **Leistungsnachweis erzeugen** baut aus den abgerechneten Zeiten ein PDF: je
+  Position Datum, Person, Uhrzeit, Dauer und Tätigkeit, dazu die Freigaben
+  unterschriebener Stundenzettel. Auf Wunsch kommen die unterschriebenen
+  Stundenzettel und eine CSV-Tabelle dazu (Organisation, Abschnitt
+  **E-Rechnung: Unterlagen und Empfänger**).
+- **Unterlage hinzufügen** nimmt eine eigene Datei: PDF, PNG, JPEG, CSV, XLSX
+  oder ODS ohne Passwortschutz. Andere Formate nehmen Rechnungsempfänger nicht an.
+- **Link hinzufügen** ist nur für Portale gedacht, etwa die „Großen Anlagen“
+  der OZG-RE. Steuerlich ersetzt ein Link keinen eingebetteten Anhang.
+
+Dateinamen vergibt WorkDiary selbst (`nachweis-1-…`), damit sie eindeutig
+sind. Mit **Stellen** werden die Unterlagen festgeschrieben; ein erzeugter
+Nachweis entsteht dabei neu mit der endgültigen Rechnungsnummer. Danach lassen
+sich Unterlagen weder ändern noch entfernen. Wer per PDF versendet, bekommt die
+Unterlagen als eigene Dateien in derselben Mail.
+
+Die E-Rechnung nennt den Leistungszeitpunkt im strukturierten Teil: das
+Leistungsdatum oder den Zeitraum der Positionen, sonst das Rechnungsdatum. Die
+Leistungsbeschreibung bleibt in den Positionen; der Nachweis ergänzt sie.
+
+### Behördenkunden
+
+Im Kundenstamm stellen Sie das **Empfängerprofil der E-Rechnung** auf
+„Öffentlicher Auftraggeber (Behörde)“. Dann gilt:
+
+- Die Leitweg-ID (Käuferreferenz) ist Pflicht.
+- Per E-Mail geht nur die XRechnung, ohne PDF daneben; der Versanddialog bietet
+  nur diese Formate an. Elektronischer Versand stellt einen Entwurf zuerst,
+  damit die XML die festgeschriebenen Unterlagen trägt.
+- Der Leistungsnachweis wird beim Stellen automatisch beigelegt, wenn die
+  Rechnung Zeiten trägt.
+- Die E-Rechnung mit Unterlagen darf höchstens 10 MB groß sein; die
+  E-Rechnungs-Prüfung meldet, wenn es mehr wird. Je Kunde lässt sich die
+  Grenze ändern, ebenso, ob ein Nachweis immer oder nie beiliegt.
+
+Vergibt ein Buchhaltungsprogramm die Nummer, bleiben die Unterlagen in
+WorkDiary: An Lexoffice, sevDesk, easybill oder orgaMAX überträgt WorkDiary
+sie nicht. Wer die E-Rechnung aus dem Programm verschickt, hängt sie dort von
+Hand an; die Integrations-Inbox erinnert daran. Am Übergabenachweis steht dafür
+**Leistungsnachweis** zum Herunterladen.

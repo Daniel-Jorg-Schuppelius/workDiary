@@ -1,7 +1,7 @@
 ---
 title: "Incoming invoices"
 topic: finance.incoming-invoices
-version: 6
+version: 7
 keywords:
     - several tax rates
     - supplier invoice
@@ -313,3 +313,21 @@ as evidence after approval; a second call changes nothing.
 **XML download:** The invoice XML can be extracted from the original at any
 time (for ZUGFeRD from the PDF attachment). Every download is logged with a
 checksum as evidence.
+
+## Embedded documents
+
+If an incoming e-invoice carries supporting documents – such as an activity
+report as PDF –, WorkDiary stores them as companion files of the incoming
+invoice and shows them in the card **Embedded documents**. Every file goes
+through the same virus check as the original; WorkDiary compares the declared
+type with the content and flags differences and password-protected PDFs.
+Documents above the limit (organisation, default 15 MB per file, 50 MB in
+total) are only recorded by name. If the invoice carries a link to an
+externally stored document, WorkDiary shows it but never fetches it itself;
+platforms often keep such files for 60 days only.
+
+The summary also shows the service period or date of supply and an object
+identifier when the invoice carries them. For invoices received before this
+feature, the command
+`php artisan incoming-invoices:extract-documents --dry-run` extracts the
+documents afterwards (first as a dry run, then without the option).

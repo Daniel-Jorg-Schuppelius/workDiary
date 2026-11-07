@@ -103,6 +103,8 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
                 ->name('invoices.external');
             // Rechnungsdokument (MVP-1097): dasselbe PDF wie intern, nur Ausgestelltes.
             Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
+            // Rechnungsbegründende Unterlagen der E-Rechnung (Feature 196), nur eingefrorene.
+            Route::get('/invoices/{invoice}/unterlagen/{document}', [InvoiceController::class, 'supportingDocument'])->name('invoices.supporting-documents.download');
             // Abrechnungskonto (Feature 098): Monatsübersicht + Monatsdetail, nur
             // für Kunden mit aktivem Konto-Modus-Abrechnungsprofil (sonst 404).
             Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');

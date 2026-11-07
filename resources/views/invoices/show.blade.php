@@ -632,6 +632,9 @@
         </x-table>
     </x-card>
 
+    {{-- Rechnungsbegründende Unterlagen der E-Rechnung (Feature 196). --}}
+    @include('invoices._supporting_documents', ['carrier' => $invoice, 'routePrefix' => 'invoices.supporting-documents'])
+
     <div class="grid gap-2 text-sm text-base-content/70 sm:grid-cols-3">
         <div>{{ __('Zahlungsziel: :days Tage', ['days' => (int) ($invoice->payment_terms_days ?? 14) ]) }}@if ($invoice->due_on) · {{ __('fällig am :date', ['date' => $invoice->due_on->fdate()]) }}@endif</div>
         @if ($invoice->approved_at)

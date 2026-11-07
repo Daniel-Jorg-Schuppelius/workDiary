@@ -1,7 +1,7 @@
 ---
 title: "Fatture & documenti"
 topic: invoices.manage
-version: 11
+version: 12
 keywords:
     - creare fattura
     - emettere fattura
@@ -23,6 +23,11 @@ keywords:
     - trasmettere fattura a Lexoffice
     - numero provvisorio
     - richiesta sulla fattura
+    - attestazione delle prestazioni
+    - foglio ore
+    - documenti giustificativi
+    - pubblica amministrazione
+    - Leitweg-ID
 audience: []
 modules:
     - module.vertrieb
@@ -194,3 +199,51 @@ L'elenco di lavoro **Richieste sulle fatture** (pulsante nel flusso dei
 documenti) mostra le richieste aperte e risposte di tutte le fatture e di
 tutti i documenti; **Contrassegna come risposta** chiude una richiesta,
 **Riapri** la riporta. Entrambe compaiono nella cronologia della fattura.
+
+## Documenti giustificativi e attestazione delle prestazioni
+
+Fogli ore e attestazioni delle prestazioni viaggiano incorporati nella fattura
+elettronica: nella XRechnung, nel PDF ZUGFeRD e tramite Peppol. Così lo
+richiedono le amministrazioni e il fisco: un allegato e-mail separato o un link
+non fa parte della fattura. La scheda **Documenti giustificativi** della pagina
+della fattura offre tre vie finché la fattura è una bozza:
+
+- **Crea attestazione delle prestazioni** genera un PDF dai tempi fatturati: per
+  posizione data, persona, orario, durata e attività, con le approvazioni dei
+  fogli ore firmati. Su richiesta si aggiungono i fogli firmati e una tabella
+  CSV (organizzazione, sezione **Fattura elettronica: documenti e destinatari**).
+- **Aggiungi documento** accetta un file proprio: PDF, PNG, JPEG, CSV, XLSX o ODS
+  senza password. I destinatari non accettano altri formati.
+- **Aggiungi link** serve solo per i portali, come i grandi allegati di OZG-RE.
+  Ai fini fiscali un link non sostituisce un allegato incorporato.
+
+WorkDiary assegna i nomi dei file (`nachweis-1-…`) perché siano univoci.
+**Emetti** fissa i documenti; un’attestazione generata viene ricreata con il
+numero definitivo. Dopo, i documenti non si possono più modificare né rimuovere.
+Con l’invio in PDF i documenti vanno come file separati nella stessa e-mail.
+
+La fattura elettronica indica il momento della prestazione nella parte
+strutturata: la data o il periodo delle posizioni, altrimenti la data della
+fattura. La descrizione delle prestazioni resta nelle posizioni;
+l’attestazione la integra.
+
+### Clienti della pubblica amministrazione
+
+Nella scheda del cliente impostare il **profilo destinatario della fattura
+elettronica** su «Pubblica amministrazione». Allora:
+
+- La Leitweg-ID (riferimento dell’acquirente) è obbligatoria.
+- Via e-mail parte solo la XRechnung, senza PDF accanto; il dialogo d’invio
+  offre solo questi formati. L’invio elettronico emette prima la bozza, così
+  l’XML porta i documenti fissati.
+- L’attestazione delle prestazioni viene allegata automaticamente all’emissione
+  se la fattura contiene tempi.
+- La fattura elettronica con documenti può pesare al massimo 10 MB; il
+  controllo lo segnala oltre. Il limite si cambia per cliente, come pure se
+  l’attestazione va sempre o mai allegata.
+
+Se un programma di contabilità assegna il numero, i documenti restano in
+WorkDiary: WorkDiary non li trasmette a Lexoffice, sevDesk, easybill o orgaMAX.
+Chi invia la fattura dal programma li allega lì a mano; la casella delle
+integrazioni lo ricorda. Il trasferimento offre **Attestazione delle
+prestazioni** da scaricare.

@@ -242,6 +242,8 @@ class AttachmentController extends Controller {
         // Portal-Rückfragen (MVP-712): Text UND Anhänge sind nach dem Absenden
         // Nachweis — auch intern nicht löschbar.
         abort_if($attachment->attachable instanceof \App\Models\Customer\CustomerQuery, 403);
+        // Unterlagen der E-Rechnung (Feature 196) entfernt nur ihr eigener Weg: er prüft Entwurf und Einfrieren.
+        abort_if($attachment->attachable instanceof \App\Models\Invoicing\InvoiceSupportingDocument, 403);
 
         Gate::authorize('delete', $attachment);
 

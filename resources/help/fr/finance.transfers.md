@@ -1,7 +1,7 @@
 ---
 title: "Transfert de facturation"
 topic: finance.transfers
-version: 4
+version: 5
 keywords:
     - transfert vers Lexoffice
     - transfert DATEV
@@ -14,6 +14,9 @@ keywords:
     - lignes de facture
     - documents liés
     - chaîne de documents
+    - facture chez le prestataire
+    - envoyer des justificatifs
+    - dossier d’envoi
 audience: []
 modules:
     - module.finance
@@ -86,3 +89,34 @@ transmissions. Si un logiciel de comptabilité a repris un document, son
 logiciel lui-même, par exemple un acompte créé dans Lexoffice, apparaissent
 aussi. La colonne **Lien** indique ce que le document représente pour
 celui-ci ; « via … » nomme le document par lequel le lien existe.
+
+## Facture chez le prestataire : justificatifs et envoi par WorkDiary
+
+Si Lexware Office, sevDesk, easybill ou orgaMAX gèrent la facture, le numéro
+et le contenu y restent. WorkDiary peut tout de même joindre des
+justificatifs de prestations à la facture finalisée et l’envoyer, sans
+facture propre.
+
+1. Finalisez le brouillon dans le système de facturation.
+2. Dans le justificatif de transfert, cliquez sur **Récupérer la facture
+   depuis …** dans la carte **Facture chez le prestataire**. WorkDiary
+   récupère le numéro, l’état et l’original et affecte les positions du
+   transfert. Pour les factures scindées, regroupées ou créées directement
+   dans le système de facturation, utilisez **Affecter une autre facture**.
+3. Si les positions chez le prestataire diffèrent, confirmez l’écart sur la
+   page de la facture avec un motif. Sans confirmation, l’envoi est bloqué.
+4. Créez ou téléversez des justificatifs dans la carte **Pièces
+   justificatives** et cliquez sur **Envoyer**.
+
+WorkDiary complète l’original dans son format : un PDF part inchangé avec les
+justificatifs en pièces jointes, une XRechnung les porte intégrés, un PDF
+ZUGFeRD est réécrit avec le XML complété. Les originaux signés ne sont jamais
+modifiés. Le **dossier d’envoi** conserve chaque version avec empreintes,
+justificatifs et tentatives d’envoi. **Réessayer** envoie les mêmes
+fichiers ; si une tentative reste sans réponse, vérifiez avec le destinataire
+s’il l’a reçue. Les justificatifs créés plus tard partent via **Envoyer des
+justificatifs complémentaires**.
+
+Cela suppose le canal d’envoi « WorkDiary envoie » dans la fiche client ou
+les paramètres de l’organisation. Désactivez alors l’envoi automatique dans
+le système de facturation, sinon le client reçoit la facture deux fois.

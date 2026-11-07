@@ -16963,6 +16963,10 @@ CREATE TABLE IF NOT EXISTS "customers"(
   "contact_first_name" varchar,
   "contact_middle_names" varchar,
   "contact_last_name" varchar,
+  "einvoice_recipient_profile" varchar,
+  "einvoice_attach_activity_report" tinyint(1),
+  "einvoice_attachment_limit_mb" integer,
+  "einvoice_dispatch_route" varchar,
   foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
   foreign key("created_by") references "users"("id") on delete set null on update no action,
   foreign key("document_render_profile_id") references "document_render_profiles"("id") on delete set null on update no action
@@ -25226,6 +25230,148 @@ CREATE INDEX "pts_org_status_date_idx" on "project_time_shortfalls"(
   "status",
   "date"
 );
+CREATE TABLE IF NOT EXISTS "external_invoices"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "customer_id" integer,
+  "plugin_id" varchar not null,
+  "external_id" varchar not null,
+  "external_number" varchar,
+  "remote_status_code" varchar,
+  "status" varchar not null default 'unknown',
+  "kind" varchar not null default 'invoice',
+  "issued_on" date,
+  "currency" varchar not null default 'EUR',
+  "net_amount" numeric,
+  "gross_amount" numeric,
+  "lines" text,
+  "lines_hash" varchar,
+  "original_format" varchar,
+  "original_path" varchar,
+  "original_mime" varchar,
+  "original_sha256" varchar,
+  "original_fetched_at" datetime,
+  "provider_send_state" varchar not null default 'unknown',
+  "provider_sent_at" datetime,
+  "reconciled_hash" varchar,
+  "reconciled_at" datetime,
+  "reconciled_by" integer,
+  "note" varchar,
+  "synced_at" datetime,
+  "sync_error" varchar,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete set null,
+  foreign key("reconciled_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "ext_inv_org_plugin_ext_unique" on "external_invoices"(
+  "organization_id",
+  "plugin_id",
+  "external_id"
+);
+CREATE INDEX "ext_inv_org_customer_idx" on "external_invoices"(
+  "organization_id",
+  "customer_id"
+);
+CREATE TABLE IF NOT EXISTS "external_invoice_positions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "external_invoice_id" integer not null,
+  "billing_transfer_id" integer not null,
+  "billing_transfer_position_id" integer not null,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("external_invoice_id") references "external_invoices"("id") on delete cascade,
+  foreign key("billing_transfer_id") references "billing_transfers"("id") on delete cascade,
+  foreign key("billing_transfer_position_id") references "billing_transfer_positions"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "ext_inv_pos_invoice_transfer_idx" on "external_invoice_positions"(
+  "external_invoice_id",
+  "billing_transfer_id"
+);
+CREATE UNIQUE INDEX "ext_inv_pos_position_unique" on "external_invoice_positions"(
+  "billing_transfer_position_id"
+);
+CREATE TABLE IF NOT EXISTS "external_invoice_packages"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "external_invoice_id" integer not null,
+  "kind" varchar not null default 'initial',
+  "format" varchar not null,
+  "channel" varchar not null,
+  "recipient" varchar not null,
+  "storage_path" varchar not null,
+  "files" text not null,
+  "sha256" varchar not null,
+  "original_sha256" varchar,
+  "evidence" text,
+  "report" text,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("external_invoice_id") references "external_invoices"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "ext_inv_pkg_invoice_created_idx" on "external_invoice_packages"(
+  "external_invoice_id",
+  "created_at"
+);
+CREATE TABLE IF NOT EXISTS "invoice_supporting_documents"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "invoice_id" integer,
+  "attachment_id" integer,
+  "position" integer not null default('1'),
+  "kind" varchar not null,
+  "reference" varchar not null,
+  "description" varchar,
+  "external_url" varchar,
+  "filename" varchar,
+  "filename_key" varchar,
+  "mime" varchar,
+  "size" integer not null default('0'),
+  "sha256" varchar,
+  "is_embedded" tinyint(1) not null default('1'),
+  "frozen_at" datetime,
+  "transferred_at" datetime,
+  "transfer_note" varchar,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "external_invoice_id" integer,
+  foreign key("updated_by") references "users"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("attachment_id") references "attachments"("id") on delete set null on update no action,
+  foreign key("invoice_id") references "invoices"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("external_invoice_id") references "external_invoices"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "isd_invoice_filename_key_unique" on "invoice_supporting_documents"(
+  "invoice_id",
+  "filename_key"
+);
+CREATE INDEX "isd_invoice_position_idx" on "invoice_supporting_documents"(
+  "invoice_id",
+  "position"
+);
+CREATE UNIQUE INDEX "isd_external_filename_key_unique" on "invoice_supporting_documents"(
+  "external_invoice_id",
+  "filename_key"
+);
+CREATE INDEX "isd_external_position_idx" on "invoice_supporting_documents"(
+  "external_invoice_id",
+  "position"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -26275,3 +26421,6 @@ INSERT INTO migrations VALUES(1045,'2027_04_01_230000_add_price_class_to_resale_
 INSERT INTO migrations VALUES(1046,'2027_04_02_100000_add_paid_date_checked_at_to_lexoffice_vouchers',1);
 INSERT INTO migrations VALUES(1047,'2027_04_02_110000_create_accounting_articles_table',1);
 INSERT INTO migrations VALUES(1048,'2027_04_02_120000_create_project_time_targets_tables',1);
+INSERT INTO migrations VALUES(1049,'2027_04_03_100000_create_invoice_supporting_documents_table',2);
+INSERT INTO migrations VALUES(1050,'2027_04_03_110000_add_einvoice_recipient_profile_to_customers',2);
+INSERT INTO migrations VALUES(1051,'2027_04_03_120000_create_external_invoices_tables',2);

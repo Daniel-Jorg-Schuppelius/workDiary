@@ -1,7 +1,7 @@
 ---
 title: "Invoices & documents"
 topic: invoices.manage
-version: 11
+version: 12
 keywords:
     - create invoice
     - write invoice
@@ -23,6 +23,11 @@ keywords:
     - transfer invoice to Lexoffice
     - draft number
     - invoice inquiry
+    - activity report
+    - timesheet
+    - supporting documents
+    - public authority
+    - routing ID
 audience: []
 modules:
     - module.vertrieb
@@ -182,3 +187,50 @@ The **Invoice inquiries** work list (button in the document flow) shows open
 and answered inquiries of all invoices and documents; **Mark as answered**
 closes an inquiry, **Reopen** brings it back. Both appear in the invoice
 history.
+
+## Supporting documents and activity report
+
+Timesheets and activity reports travel embedded in the e-invoice – in the
+XRechnung, in the ZUGFeRD PDF and over Peppol. Public authorities and the tax
+office require this: a separate email attachment or a link is not part of the
+invoice. The card **Supporting documents** on the invoice page offers three
+ways while the invoice is a draft:
+
+- **Create activity report** builds a PDF from the invoiced times: per item the
+  date, person, time, duration and activity, plus the approvals of signed
+  timesheets. If you like, the signed timesheets and a CSV table are added
+  (organisation, section **E-invoice: documents and recipients**).
+- **Add document** takes your own file: PDF, PNG, JPEG, CSV, XLSX or ODS without
+  password protection. Invoice recipients do not accept other formats.
+- **Add link** is meant for portals only, such as the large attachments of
+  OZG-RE. For tax purposes a link does not replace an embedded attachment.
+
+WorkDiary names the files itself (`nachweis-1-…`) so that they are unique.
+**Issue** fixes the documents; a generated report is created again with the
+final invoice number. After that, documents can neither be changed nor
+removed. Sending by PDF puts the documents as separate files into the same email.
+
+The e-invoice states the time of supply in its structured part: the date of
+supply or the period of the items, otherwise the invoice date. The description
+of services stays in the items; the report adds to it.
+
+### Public authority customers
+
+In the customer record, set the **E-invoice recipient profile** to “Public
+authority”. Then:
+
+- The routing ID (buyer reference) is required.
+- Email carries only the XRechnung, no PDF next to it; the send dialog only
+  offers these formats. Electronic sending issues a draft first so that the XML
+  carries the fixed documents.
+- The activity report is attached automatically on issue when the invoice
+  carries times.
+- The e-invoice with documents may be at most 10 MB; the e-invoice check reports
+  when it gets larger. The limit can be changed per customer, as can whether a
+  report is always or never attached.
+
+If an accounting program assigns the number, the documents stay in WorkDiary:
+WorkDiary does not transfer them to Lexoffice, sevDesk, easybill or orgaMAX.
+Whoever sends the e-invoice from the program attaches them there by hand; the
+integration inbox reminds you. The billing transfer offers **Activity report**
+for download.

@@ -95,6 +95,21 @@ class InvoiceMail extends Mailable implements ShouldQueue {
             $payloads[] = $bytes;
         }
 
+        // Nur PDF (Feature 196): ohne XML gehen die eingefrorenen Unterlagen als eigene Dateien mit;
+        // XRechnung und ZUGFeRD tragen sie eingebettet.
+        if ($this->deliveryFormat === InvoiceDeliveryFormat::Pdf) {
+            $service = app(\App\Services\Invoicing\EInvoice\SupportingDocumentService::class);
+            foreach ($this->invoice->supportingDocuments()->with('attachment')->get() as $document) {
+                $content = $document->is_embedded && $document->isFrozen() ? $service->content($document) : null;
+                if ($content === null || $document->filename === null) {
+                    continue;
+                }
+                $attachments[] = Attachment::fromData(static fn(): string => $content, $document->filename)
+                    ->withMime((string) $document->mime);
+                $payloads[] = $content;
+            }
+        }
+
         if ($this->deliveryFormat->needsXRechnung()) {
             $xml = app(\App\Services\Invoicing\EInvoice\XRechnungGenerator::class)->generate($electronicInvoice, $this->deliveryFormat->xrechnungSyntax());
             $attachments[] = Attachment::fromData(static fn(): string => $xml, 'XRechnung_' . $number . '.xml')

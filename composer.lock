@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "884013c3a5d9d95541999730549a20c1",
+    "content-hash": "e137d944119ecc4dd379e8bcf725d3e5",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -878,16 +878,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-erechnung-toolkit",
-            "version": "v0.20.1",
+            "version": "v0.21.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit.git",
-                "reference": "7b4c63b7ce85adf2059336454f79c132217a00c6"
+                "reference": "2116ad53c05648bba4af4576dafda077cb88f453"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/zipball/7b4c63b7ce85adf2059336454f79c132217a00c6",
-                "reference": "7b4c63b7ce85adf2059336454f79c132217a00c6",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/zipball/2116ad53c05648bba4af4576dafda077cb88f453",
+                "reference": "2116ad53c05648bba4af4576dafda077cb88f453",
                 "shasum": ""
             },
             "require": {
@@ -899,14 +899,14 @@
                 "psr/http-factory": "^1.0"
             },
             "require-dev": {
-                "daniel-jorg-schuppelius/php-pdf-toolkit": "^0.8.0 || ^0.22.0",
+                "daniel-jorg-schuppelius/php-pdf-toolkit": "^0.8.0 || ^0.22.0 || ^0.25.0 || ^0.27.0 || ^0.31.0",
                 "laravel/pint": "^1.27",
                 "nyholm/psr7": "^1.8",
                 "phpstan/phpstan": "^2.1",
                 "phpunit/phpunit": "^11.3"
             },
             "suggest": {
-                "daniel-jorg-schuppelius/php-pdf-toolkit": "Required for ZUGFeRD/Factur-X PDF generation with embedded XML invoices",
+                "daniel-jorg-schuppelius/php-pdf-toolkit": "Required for ZUGFeRD/Factur-X PDF generation with embedded XML invoices; 0.31 or newer also embeds the supporting documents as PDF/A-3 files",
                 "ext-openssl": "Required to read certificate details of Peppol SMP endpoints (SmpEndpoint::getCertificateInfo())",
                 "psr/http-client-implementation": "A PSR-18 client (e.g. guzzlehttp/guzzle) for Peppol SMP lookups via Psr18SmpClient"
             },
@@ -950,20 +950,20 @@
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/issues",
                 "source": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit"
             },
-            "time": "2026-10-22T20:48:15+00:00"
+            "time": "2026-11-07T21:43:00+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",
-            "version": "v0.27.1",
+            "version": "v0.31.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit.git",
-                "reference": "0eed633c28c2bc0c077fd06c94c9017ab13b9548"
+                "reference": "f80702174b9ecca81e981e1d0c4763d3966cd5df"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-pdf-toolkit/zipball/0eed633c28c2bc0c077fd06c94c9017ab13b9548",
-                "reference": "0eed633c28c2bc0c077fd06c94c9017ab13b9548",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-pdf-toolkit/zipball/f80702174b9ecca81e981e1d0c4763d3966cd5df",
+                "reference": "f80702174b9ecca81e981e1d0c4763d3966cd5df",
                 "shasum": ""
             },
             "require": {
@@ -1007,7 +1007,7 @@
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit/issues",
                 "source": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit"
             },
-            "time": "2026-10-19T08:18:12+00:00"
+            "time": "2026-11-07T21:37:37+00:00"
         },
         {
             "name": "darkaonline/l5-swagger",

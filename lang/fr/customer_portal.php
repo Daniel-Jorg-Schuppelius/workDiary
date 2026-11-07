@@ -42,6 +42,7 @@ return [
     ],
     'invoices' => [
         'pdf_label' => 'Télécharger la facture :number au format PDF',
+        'supporting_document_label' => 'Télécharger la pièce « :name » de la facture :number',
         'document_unavailable' => 'Le document n’est pas encore disponible dans le logiciel comptable. Veuillez réessayer plus tard.',
     ],
 

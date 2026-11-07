@@ -51,5 +51,7 @@ class SevDeskServiceProvider extends PluginServiceProviderBase {
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Invoicing\Contracts\IncomingPartyLookup::class, \App\Plugins\SevDesk\Services\SevDeskIncomingPartyLookup::class);
         // Phase 145 (MVP-1166/1167): Rechnung und Storno nummeriert sevDesk beim Ausstellen.
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Numbering\Contracts\DocumentIssuer::class, \App\Plugins\SevDesk\Services\SevDeskDocumentIssuer::class);
+        // Rechnungen mit Nachweisen durch WorkDiary zustellen, das Fakturasystem führt (Feature 196).
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Finance\Contracts\ExternalInvoiceProvider::class, \App\Plugins\SevDesk\Services\SevDeskExternalInvoiceProvider::class);
     }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Facturas & documentos"
 topic: invoices.manage
-version: 11
+version: 12
 keywords:
     - crear factura
     - emitir factura
@@ -23,6 +23,11 @@ keywords:
     - transferir factura a Lexoffice
     - número provisional
     - consulta sobre factura
+    - justificante de servicios
+    - hoja de horas
+    - documentos justificativos
+    - administración pública
+    - Leitweg-ID
 audience: []
 modules:
     - module.vertrieb
@@ -191,3 +196,52 @@ La lista de trabajo **Consultas sobre facturas** (botón en el flujo de
 documentos) muestra las consultas abiertas y respondidas de todas las
 facturas y documentos; **Marcar como respondida** cierra una consulta,
 **Reabrir** la recupera. Ambas constan en el historial de la factura.
+
+## Documentos justificativos y justificante de servicios
+
+Las hojas de horas y los justificantes de servicios viajan incrustados en la
+factura electrónica: en la XRechnung, en el PDF ZUGFeRD y por Peppol. Así lo
+exigen las administraciones y Hacienda: un anexo de correo suelto o un enlace
+no forma parte de la factura. La tarjeta **Documentos justificativos** de la
+página de la factura ofrece tres vías mientras la factura es un borrador:
+
+- **Crear justificante de servicios** genera un PDF a partir de los tiempos
+  facturados: por posición la fecha, la persona, la hora, la duración y la
+  actividad, además de las conformidades de las hojas de horas firmadas. Si lo
+  desea, se añaden las hojas firmadas y una tabla CSV (organización, sección
+  **Factura electrónica: documentos y destinatarios**).
+- **Añadir documento** admite un archivo propio: PDF, PNG, JPEG, CSV, XLSX u ODS
+  sin contraseña. Los destinatarios no aceptan otros formatos.
+- **Añadir enlace** solo sirve para portales, como los anexos grandes de OZG-RE.
+  A efectos fiscales un enlace no sustituye a un anexo incrustado.
+
+WorkDiary asigna los nombres de archivo (`nachweis-1-…`) para que sean únicos.
+**Emitir** fija los documentos; un justificante generado se crea de nuevo con el
+número definitivo. Después no se pueden cambiar ni quitar. Si envía en PDF, los
+documentos van como archivos propios en el mismo correo.
+
+La factura electrónica indica el momento de la prestación en su parte
+estructurada: la fecha o el periodo de las posiciones; si no, la fecha de la
+factura. La descripción de los servicios sigue en las posiciones; el
+justificante la complementa.
+
+### Clientes de la administración pública
+
+En la ficha del cliente, ponga el **perfil de destinatario de la factura
+electrónica** en «Administración pública». Entonces:
+
+- La Leitweg-ID (referencia del comprador) es obligatoria.
+- Por correo solo va la XRechnung, sin PDF al lado; el diálogo de envío solo
+  ofrece estos formatos. El envío electrónico emite antes el borrador para que
+  el XML lleve los documentos fijados.
+- El justificante de servicios se adjunta automáticamente al emitir si la
+  factura contiene tiempos.
+- La factura electrónica con documentos puede ocupar como máximo 10 MB; la
+  comprobación avisa si es mayor. El límite se puede cambiar por cliente, igual
+  que si el justificante se adjunta siempre o nunca.
+
+Si un programa de contabilidad asigna el número, los documentos se quedan en
+WorkDiary: WorkDiary no los transfiere a Lexoffice, sevDesk, easybill ni
+orgaMAX. Quien envíe la factura desde el programa los adjunta allí a mano; la
+bandeja de integraciones lo recuerda. El traspaso ofrece **Justificante de
+servicios** para descargar.

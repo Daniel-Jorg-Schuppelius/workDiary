@@ -198,10 +198,17 @@ class FinanceTransferController extends Controller {
         ]);
 
         $positions = $this->transferPositions($transfer);
+        // Rechnung beim Anbieter (Feature 196): Nachweise und Versand trotz externer Rechnungshoheit.
+        $externalInvoices = \App\Models\Finance\ExternalInvoice::query()
+            ->whereIn('id', \App\Models\Finance\ExternalInvoicePosition::query()->where('billing_transfer_id', $transfer->id)->select('external_invoice_id'))
+            ->orderBy('id')->get();
 
         return view('finance.transfers.show', [
             'transfer' => $transfer,
             'positions' => $positions,
+            'externalInvoices' => $externalInvoices,
+            'externalProvider' => $transfer->status === TransferStatus::Transferred ? app(\App\Services\Finance\ExternalInvoices\ExternalInvoiceProviders::class)->forTransfer($transfer) : null,
+            'freeExternalPositions' => $transfer->status === TransferStatus::Transferred ? count(app(\App\Services\Finance\ExternalInvoices\ExternalInvoiceService::class)->freePositionIds($transfer)) : 0,
             // Summe der entstehenden Positionen: bei gesetzter Taktung liegt sie
             // über der Quellsumme des Transfers (die den Nachweis abbildet).
             'positionTotals' => [
@@ -373,6 +380,19 @@ class FinanceTransferController extends Controller {
         }
 
         return back()->with('success', __('finance.flash.cancelled'));
+    }
+
+    /** Leistungsnachweis der übergebenen Zeiten (Feature 196): dieselbe Vorlage wie an der Rechnung. */
+    public function activityReport(BillingTransfer $transfer): \Symfony\Component\HttpFoundation\Response {
+        Gate::authorize('view', $transfer);
+
+        $pdf = app(\App\Services\Invoicing\ActivityReportPdfRenderer::class)->outputForTransfer($transfer);
+        abort_if($pdf === null, 404);
+
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="leistungsnachweis-uebergabe-' . $transfer->getKey() . '.pdf"',
+        ]);
     }
 
     /** Download des Datei-Übergabepakets (Gate-geprüft, Pfad-sicher). */

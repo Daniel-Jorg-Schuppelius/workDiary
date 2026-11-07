@@ -307,6 +307,18 @@ return [
     'einvoice.account_holder' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'max:200'],
     'einvoice.payment_terms_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:0|max:365'],
     'einvoice.small_business' => ['type' => 'boolean', 'scopes' => ['organization']],
+    // Rechnungsbegründende Unterlagen und Empfängerprofil (Feature 196, MVP-1486). Die Grenzen
+    // je Profil stehen in config/einvoice-profiles.php, der Kunde kann sie überschreiben.
+    'einvoice.recipient_profile_default' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['standard', 'public_sector'], 'fallback' => 'standard'],
+    'einvoice.attach_activity_report' => ['type' => 'boolean', 'scopes' => ['organization']],
+    'einvoice.activity_report_include_signed_timesheets' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => true],
+    'einvoice.activity_report_csv' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    'einvoice.activity_report_person_display' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['full_name', 'initials', 'none'], 'fallback' => 'full_name'],
+    // Rechnungseingang (MVP-1487): je eingebettete Unterlage, gesamt 50 MB und 200 Dateien fest.
+    'einvoice.incoming_attachment_limit_mb' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:1|max:50', 'fallback' => 15],
+    // Externe Rechnungshoheit (Feature 196): wer stellt zu, und ist der automatische Versand im Fakturasystem abgeschaltet?
+    'einvoice.external_dispatch_route' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['provider', 'workdiary'], 'fallback' => 'provider'],
+    'einvoice.provider_send_disabled' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
 
     // --- Benachrichtigungen (config/notifications.php) ---
     'notifications.push.body_truncate' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:20|max:500'],

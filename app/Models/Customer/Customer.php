@@ -78,6 +78,10 @@ use Illuminate\Support\Carbon;
  * @property string|null $peppol_participant_id
  * @property string|null $peppol_scheme
  * @property \App\Enums\Invoicing\InvoiceDeliveryFormat|null $delivery_format
+ * @property \App\Enums\Invoicing\EInvoiceRecipientProfile|null $einvoice_recipient_profile
+ * @property bool|null $einvoice_attach_activity_report
+ * @property int|null $einvoice_attachment_limit_mb
+ * @property \App\Enums\Invoicing\ExternalDispatchRoute|null $einvoice_dispatch_route
  * @property int<0, max>|null $payment_terms_days
  * @property \CommonToolkit\ValueObjects\Percentage|null $skonto_percent
  * @property int<0, max>|null $skonto_days
@@ -163,6 +167,11 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
         'peppol_participant_id',
         'peppol_scheme',
         'delivery_format',
+        // Empfängerprofil der E-Rechnung (Feature 196): null = Vorgabe der Organisation.
+        'einvoice_recipient_profile',
+        'einvoice_attach_activity_report',
+        'einvoice_attachment_limit_mb',
+        'einvoice_dispatch_route',
         // Zahlungsbedingungen als Vorgabe für neue Rechnungen (MVP-996).
         'payment_terms_days',
         'skonto_percent',
@@ -193,6 +202,10 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
         'billing_mode' => \App\Enums\Finance\BillingMode::class,
         // Kunden-Default fürs E-Rechnungs-Ausgabeformat (NULL = PDF).
         'delivery_format' => \App\Enums\Invoicing\InvoiceDeliveryFormat::class,
+        'einvoice_recipient_profile' => \App\Enums\Invoicing\EInvoiceRecipientProfile::class,
+        'einvoice_attach_activity_report' => 'boolean',
+        'einvoice_attachment_limit_mb' => 'integer',
+        'einvoice_dispatch_route' => \App\Enums\Invoicing\ExternalDispatchRoute::class,
         'payment_terms_days' => 'integer',
         'skonto_percent' => PercentageCast::class . ':2',
         'skonto_days' => 'integer',

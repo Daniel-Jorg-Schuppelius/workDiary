@@ -1087,6 +1087,12 @@ class InvoiceController extends Controller {
         if ($invoice->isProforma() && $deliveryFormat->isElectronic()) {
             return back()->withInput()->with('error', __('invoice-import.error.proforma'));
         }
+        // Behördenempfänger (Feature 196): genau eine XRechnungs-Datei je Mail, kein PDF daneben.
+        $invoice->loadMissing(['customer', 'organization']);
+        $recipientProfile = app(\App\Services\Invoicing\EInvoice\RecipientProfiles::class)->for($invoice->customer, $invoice->organization);
+        if ($recipientProfile->xmlOnlyMail() && ! in_array($deliveryFormat, [InvoiceDeliveryFormat::XRechnung, InvoiceDeliveryFormat::XRechnungCii], true)) {
+            return back()->withInput()->with('error', __('invoicing.recipient_profile.error.xml_only'));
+        }
         if ($deliveryFormat->isElectronic()) {
             $invoice->loadMissing(['items', 'customer']);
             // Der Queue-Job sieht nach markSent() den gestellten Datensatz. Für
@@ -1123,7 +1129,8 @@ class InvoiceController extends Controller {
         if (\App\Services\Numbering\NumberSequenceService::isDraft($invoice->number) && ! $issuer->wouldIssue($invoice)) {
             return back()->withInput()->with('error', __('numbering.issue.issue_first', ['document' => $invoice->documentLabel()]));
         }
-        if ($issuer->wouldIssue($invoice) && \App\Services\Numbering\NumberSequenceService::isDraft($invoice->number)) {
+        // Elektronisch erst ausstellen (Feature 196): die XML trägt die Unterlagen, die erst die Ausstellung erzeugt und einfriert.
+        if ($issuer->wouldIssue($invoice) && (\App\Services\Numbering\NumberSequenceService::isDraft($invoice->number) || $deliveryFormat->isElectronic())) {
             try {
                 $issuer->issue($invoice);
             } catch (InvoiceIssueException $e) {

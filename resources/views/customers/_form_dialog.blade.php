@@ -85,7 +85,7 @@
     </x-form-group>
 
     <x-form-group-collapsible :legend="__('Abrechnung & Darstellung')" icon="payments" tone="warning" cols="2"
-                              :fields="['currency', 'document_locale', 'hourly_rate', 'internal_rate', 'billable', 'buyer_reference', 'peppol_participant_id', 'payment_terms_days', 'skonto_percent', 'skonto_days', 'delivery_format', 'billing_mode', 'debtor_no', 'invoice_text']"
+                              :fields="['currency', 'document_locale', 'hourly_rate', 'internal_rate', 'billable', 'buyer_reference', 'peppol_participant_id', 'payment_terms_days', 'skonto_percent', 'skonto_days', 'delivery_format', 'einvoice_recipient_profile', 'einvoice_attach_activity_report', 'einvoice_attachment_limit_mb', 'einvoice_dispatch_route', 'billing_mode', 'debtor_no', 'invoice_text']"
                               :values="$billingValues">
         <x-select-field name="currency" :label="__('Währung')" required>
             <x-currency-options :selected="old('currency', $customer?->currency?->value ?? 'EUR')" />
@@ -126,12 +126,34 @@
              (iso6523-actorid-upis) und ist deshalb kein Formularfeld. --}}
         <x-input-field name="peppol_participant_id" :label="__('peppol.field.participant_id')" maxlength="64"
                        :value="old('peppol_participant_id', $customer?->peppol_participant_id)" :hint="__('peppol.field.participant_id_hint')" />
+        {{-- Empfängerprofil der E-Rechnung (Feature 196): Behörden lesen nur die XML und verlangen eingebettete Unterlagen. --}}
+        <x-select-field name="einvoice_recipient_profile" :label="__('invoicing.recipient_profile.label')" :hint="__('invoicing.recipient_profile.hint')">
+            <option value="">{{ __('invoicing.recipient_profile.inherit') }}</option>
+            @foreach (\App\Enums\Invoicing\EInvoiceRecipientProfile::options() as $value => $label)
+                <option value="{{ $value }}" @selected(old('einvoice_recipient_profile', $customer?->einvoice_recipient_profile?->value) === $value)>{{ $label }}</option>
+            @endforeach
+        </x-select-field>
+        @php $attachReport = old('einvoice_attach_activity_report', $customer?->einvoice_attach_activity_report === null ? '' : ($customer->einvoice_attach_activity_report ? '1' : '0')); @endphp
+        <x-select-field name="einvoice_attach_activity_report" :label="__('invoicing.recipient_profile.attach_label')" :hint="__('invoicing.recipient_profile.attach_hint')">
+            <option value="" @selected((string) $attachReport === '')>{{ __('invoicing.recipient_profile.attach_inherit') }}</option>
+            <option value="1" @selected((string) $attachReport === '1')>{{ __('invoicing.recipient_profile.attach_yes') }}</option>
+            <option value="0" @selected((string) $attachReport === '0')>{{ __('invoicing.recipient_profile.attach_no') }}</option>
+        </x-select-field>
+        <x-input-field name="einvoice_attachment_limit_mb" type="number" min="1" max="100" :label="__('invoicing.recipient_profile.limit_label')"
+                       :value="old('einvoice_attachment_limit_mb', $customer?->einvoice_attachment_limit_mb)" :hint="__('invoicing.recipient_profile.limit_hint')" />
 
         @can(\App\Enums\User\Permission::FinanceConfig->value)
             <x-select-field name="billing_mode" :label="__('finance.field.billing_mode')" :hint="__('finance.field.billing_mode_hint')">
                 <option value="">{{ __('finance.field.billing_mode_inherit') }}</option>
                 @foreach (\App\Enums\Finance\BillingMode::options() as $value => $label)
                     <option value="{{ $value }}" @selected(old('billing_mode', $customer?->billing_mode?->value) === $value)>{{ $label }}</option>
+                @endforeach
+            </x-select-field>
+            {{-- Versandweg bei externer Rechnungshoheit (Feature 196): das Fakturasystem führt, WorkDiary kann zustellen. --}}
+            <x-select-field name="einvoice_dispatch_route" :label="__('finance.external_invoice.route.label')" :hint="__('finance.external_invoice.route.hint')">
+                <option value="">{{ __('finance.external_invoice.route.inherit') }}</option>
+                @foreach (\App\Enums\Invoicing\ExternalDispatchRoute::options() as $value => $label)
+                    <option value="{{ $value }}" @selected(old('einvoice_dispatch_route', $customer?->einvoice_dispatch_route?->value) === $value)>{{ $label }}</option>
                 @endforeach
             </x-select-field>
 

@@ -1,7 +1,7 @@
 ---
 title: "Fatture ricevute"
 topic: finance.incoming-invoices
-version: 6
+version: 7
 keywords:
     - più aliquote
     - fattura fornitore
@@ -339,3 +339,21 @@ l’approvazione; una seconda chiamata non cambia nulla.
 **Download XML:** l’XML della fattura può essere estratto dall’originale in
 qualsiasi momento (per ZUGFeRD dall’allegato PDF). Ogni download viene
 registrato con una somma di controllo come prova.
+
+## Documenti incorporati
+
+Se una fattura elettronica in entrata contiene documenti giustificativi – ad
+esempio un’attestazione delle prestazioni in PDF –, WorkDiary li salva come file
+di accompagnamento dell’entrata e li mostra nella scheda **Documenti
+incorporati**. Ogni file passa lo stesso controllo antivirus dell’originale;
+WorkDiary confronta il tipo indicato con il contenuto e segnala differenze e PDF
+protetti da password. I documenti oltre il limite (organizzazione, predefinito
+15 MB per file, 50 MB in totale) vengono annotati solo per nome. Se la fattura
+contiene un link a un documento esterno, WorkDiary lo mostra ma non lo apre mai
+da solo; le piattaforme conservano spesso questi file solo 60 giorni.
+
+Il riepilogo mostra inoltre periodo o data della prestazione e un identificativo
+dell’oggetto se la fattura li contiene. Per le fatture ricevute prima di questa
+funzione, il comando
+`php artisan incoming-invoices:extract-documents --dry-run` estrae i
+documenti in seguito (prima come prova, poi senza l’opzione).

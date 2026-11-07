@@ -13,7 +13,7 @@ namespace App\Http\Controllers\CustomerPortal;
 use App\Enums\Invoicing\InvoiceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Integration\ExternalReference;
-use App\Models\Invoicing\Invoice;
+use App\Models\Invoicing\{Invoice, InvoiceSupportingDocument};
 use App\Models\Platform\User;
 use App\Services\Billing\BillingModeResolver;
 use App\Services\Billing\Contracts\ExternalRevenue;
@@ -46,6 +46,7 @@ class InvoiceController extends Controller {
             ->where('status', '!=', InvoiceStatus::Draft)
             ->orderByDesc('issued_on')
             ->orderByDesc('id')
+            ->with(['supportingDocuments' => static fn ($q) => $q->whereNotNull('frozen_at')->where('is_embedded', true)])
             ->get();
 
         $rows = $local->map(static fn (Invoice $invoice): array => [
@@ -57,6 +58,11 @@ class InvoiceController extends Controller {
             'total' => $invoice->total?->toFloat() ?? 0.0,
             'currency' => $invoice->currency->value,
             'pdf' => route('customer.invoices.pdf', $invoice),
+            // Rechnungsbegründende Unterlagen (Feature 196): der Kunde hat sie mit der E-Rechnung ohnehin erhalten.
+            'documents' => $invoice->supportingDocuments->map(static fn (InvoiceSupportingDocument $document): array => [
+                'url' => route('customer.invoices.supporting-documents.download', [$invoice, $document]),
+                'name' => (string) ($document->description ?: $document->filename),
+            ])->all(),
         ])->all();
         foreach ($this->externalInvoices($user) as $invoice) {
             $rows[] = [
@@ -180,6 +186,29 @@ class InvoiceController extends Controller {
         return response($renderer->output($invoice), 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="rechnung-' . $number . '.pdf"',
+        ]);
+    }
+
+    /** Eingefrorene Unterlage einer ausgestellten Rechnung des eigenen Kunden (Feature 196). */
+    public function supportingDocument(Invoice $invoice, InvoiceSupportingDocument $document): SymfonyResponse {
+        /** @var User $user */
+        $user = Auth::guard('customer')->user();
+
+        abort_unless(
+            (int) $invoice->customer_id === (int) $user->customer_id
+            && (int) $invoice->organization_id === (int) $user->organization_id
+            && $invoice->status !== InvoiceStatus::Draft
+            && (int) $document->invoice_id === (int) $invoice->id
+            && $document->isFrozen()
+            && $document->is_embedded,
+            404,
+        );
+        $content = app(\App\Services\Invoicing\EInvoice\SupportingDocumentService::class)->content($document);
+        abort_if($content === null, 404);
+
+        return response($content, 200, [
+            'Content-Type' => (string) $document->mime,
+            'Content-Disposition' => 'attachment; filename="' . (string) $document->filename . '"',
         ]);
     }
 

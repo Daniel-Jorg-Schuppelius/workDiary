@@ -1,7 +1,7 @@
 ---
 title: "Facturas recibidas"
 topic: finance.incoming-invoices
-version: 6
+version: 7
 keywords:
     - varios tipos impositivos
     - factura de proveedor
@@ -336,3 +336,22 @@ llamada no cambia nada.
 **Descarga de XML:** El XML de la factura puede extraerse del original en
 cualquier momento (en ZUGFeRD, del adjunto PDF). Cada descarga se registra
 con una suma de verificación como prueba.
+
+## Documentos incrustados
+
+Si una factura electrónica recibida lleva documentos justificativos –por
+ejemplo, un justificante de servicios en PDF–, WorkDiary los guarda como
+archivos acompañantes de la entrada y los muestra en la tarjeta **Documentos
+incrustados**. Cada archivo pasa la misma comprobación antivirus que el
+original; WorkDiary compara el tipo indicado con el contenido y marca
+diferencias y PDF protegidos con contraseña. Los documentos por encima del
+límite (organización, por defecto 15 MB por archivo, 50 MB en total) solo se
+anotan por su nombre. Si la factura lleva un enlace a un documento externo,
+WorkDiary lo muestra pero nunca lo abre por sí mismo; las plataformas suelen
+conservar estos archivos solo 60 días.
+
+El resumen muestra además el periodo o la fecha de prestación y un
+identificador del objeto si la factura los contiene. Para las facturas recibidas
+antes de esta función, el comando
+`php artisan incoming-invoices:extract-documents --dry-run` extrae los
+documentos después (primero como prueba, luego sin la opción).

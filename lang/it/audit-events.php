@@ -1590,4 +1590,11 @@ return [
         'updated' => 'Locazione modificata',
         'withdrawn' => 'Richiesta di locazione ritirata',
     ],
+    'externalInvoice' => [
+        'reconciled' => 'Differenza con la fattura del fornitore confermata',
+        'originalStored' => 'Originale della fattura del fornitore salvato',
+        'packaged' => 'Versione di invio creata',
+        'sent' => 'Fattura del fornitore consegnata',
+        'deliveryResolved' => 'Esito dell’invio registrato',
+    ],
 ];

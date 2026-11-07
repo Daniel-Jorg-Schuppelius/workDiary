@@ -149,6 +149,9 @@ final class InvoiceIssueService {
             ],
         ]);
 
+        // Rechnungsbegründende Unterlagen (Feature 196): mit der endgültigen Nummer erzeugen und einfrieren.
+        app(\App\Services\Invoicing\EInvoice\SupportingDocumentService::class)->prepareForIssue($invoice, auth()->user() instanceof \App\Models\Platform\User ? auth()->user() : null);
+
         // Feature 160 (MVP-858): reservierte Fertigungsauslieferungen gelten als abgerechnet.
         app(DeliveryInvoicingService::class)->markInvoiced($invoice);
 

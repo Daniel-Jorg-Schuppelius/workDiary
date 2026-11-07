@@ -1,7 +1,7 @@
 ---
 title: "Trasferimento fatturazione"
 topic: finance.transfers
-version: 4
+version: 5
 keywords:
     - trasferimento a Lexoffice
     - trasferimento DATEV
@@ -14,6 +14,9 @@ keywords:
     - righe di fattura
     - documenti collegati
     - catena dei documenti
+    - fattura presso il fornitore
+    - inviare giustificativi
+    - fascicolo di invio
 audience: []
 modules:
     - module.finance
@@ -87,3 +90,35 @@ collegamenti segnalati dal programma stesso, per esempio un acconto creato in
 Lexoffice. La colonna **Relazione** indica che cosa è il documento rispetto a
 questo; «tramite …» nomina il documento attraverso cui esiste il
 collegamento.
+
+## Fattura presso il fornitore: giustificativi e invio tramite WorkDiary
+
+Se Lexware Office, sevDesk, easybill o orgaMAX gestiscono la fattura, numero
+e contenuto restano lì. WorkDiary può comunque aggiungere le attestazioni
+delle prestazioni alla fattura finalizzata e consegnarla, senza una fattura
+propria.
+
+1. Finalizzi la bozza nel sistema di fatturazione.
+2. Nel riepilogo di trasferimento, faccia clic su **Recupera fattura da …**
+   nella scheda **Fattura presso il fornitore**. WorkDiary recupera numero,
+   stato e originale e assegna le posizioni del trasferimento. Per fatture
+   suddivise, raggruppate o create direttamente nel sistema di fatturazione,
+   usi **Assegna un’altra fattura**.
+3. Se le posizioni presso il fornitore differiscono, confermi la differenza
+   nella pagina della fattura con una motivazione. Senza conferma l’invio è
+   bloccato.
+4. Generi o carichi i giustificativi nella scheda **Documenti
+   giustificativi** e faccia clic su **Consegna**.
+
+WorkDiary integra l’originale nel suo formato: un PDF parte invariato con i
+giustificativi come allegati, una XRechnung li contiene incorporati, un PDF
+ZUGFeRD viene riscritto con l’XML integrato. Gli originali firmati non
+vengono mai modificati. Il **fascicolo di invio** conserva ogni versione con
+hash, giustificativi e tentativi di invio. **Riprova** invia gli stessi file;
+se un tentativo resta senza risposta, verifichi con il destinatario se è
+arrivato. I giustificativi creati in seguito partono con **Invia
+giustificativi successivi**.
+
+Serve il canale di invio «WorkDiary invia» nell’anagrafica cliente o nelle
+impostazioni dell’organizzazione. Disattivi quindi l’invio automatico nel
+sistema di fatturazione, altrimenti il cliente riceve la fattura due volte.

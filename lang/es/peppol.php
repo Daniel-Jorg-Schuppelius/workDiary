@@ -32,6 +32,7 @@ return [
         'validation' => 'La factura no cumple las reglas Peppol comprobadas: :messages',
         'transport' => 'El punto de acceso no aceptó el envío: :message',
         'not_issued' => 'Solo las facturas emitidas pueden entregarse por Peppol.',
+        'too_large' => 'La factura electrónica ocupa :size; para este destinatario se admiten como máximo :limit.',
         'external_billing' => 'La facturación pertenece a un sistema externo — WorkDiary no entrega facturas para este cliente.',
         'proforma' => 'Las facturas pro forma no son facturas electrónicas y no van por Peppol.',
     ],

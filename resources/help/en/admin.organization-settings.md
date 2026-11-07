@@ -1,7 +1,7 @@
 ---
 title: "Organization and settings"
 topic: admin.organization-settings
-version: 3
+version: 4
 keywords:
     - company settings
     - tenant settings
@@ -301,6 +301,17 @@ Three fields also affect all locally created invoices:
   VAT and carry the note “No VAT in accordance with § 19 UStG (German small
   business scheme).”; the XRechnung receives tax category E (exempt). The tick
   takes precedence over **Default tax rate (%)** and reverse charge.
+
+## E-invoice: documents and recipients
+
+Rules for supporting documents in the e-invoice:
+
+- **Recipient profile for customers without their own setting**: “Public authority” sends only the XML by e-mail, requires the routing ID, limits to 10 MB and attaches the activity report automatically. The customer record can differ.
+- **People in the activity report**: full name, initials or no people.
+- **Attach the activity report for all customers**, **Attach signed timesheets** and **Also attach the times as CSV**: what is attached automatically on issue.
+- **Incoming invoices: largest embedded document (MB)**: larger attachments of incoming e-invoices are only recorded by name.
+- **Dispatch route with external invoicing authority**: if an invoicing system keeps the invoice, “WorkDiary delivers” has WorkDiary deliver it with evidence.
+- **Automatic sending in the invoicing system is switched off**: your declaration that the invoicing system does not send by itself. Without it, WorkDiary asks for every invoice.
 
 ## Accounting: four-eyes principle
 

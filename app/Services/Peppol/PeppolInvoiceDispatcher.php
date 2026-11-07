@@ -15,12 +15,14 @@ namespace App\Services\Peppol;
 use App\Enums\Document\DocumentDispatchStatus;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Enums\Invoicing\InvoiceStatus;
+use App\Models\Customer\Customer;
 use App\Models\Document\DocumentDispatch;
 use App\Models\Invoicing\Invoice;
 use App\Plugins\Contracts\PeppolTransportProvider;
 use App\Plugins\PluginManager;
 use App\Services\Billing\BillingModeResolver;
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;
+use Closure;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use ERechnungToolkit\Contracts\{AccessPointClientInterface, ValidatorInterface};
 use ERechnungToolkit\Peppol\{BisValidator, DocumentTypeId, Sbdh, TransportReceipt};
@@ -52,6 +54,9 @@ use RuntimeException;
  * Zustellversuch hat stattgefunden und gehört ins Protokoll.
  */
 class PeppolInvoiceDispatcher {
+    /** Empfehlung des Bundes für Peppol-Nachrichten an die OZG-RE. */
+    public const MAX_PAYLOAD_BYTES = 100 * 1024 * 1024;
+
     public function __construct(
         private readonly PeppolParticipantService $participants,
         private readonly XRechnungGenerator $generator,
@@ -96,6 +101,50 @@ class PeppolInvoiceDispatcher {
             throw new RuntimeException((string) __('peppol.error.not_issued'));
         }
 
+        // Erst nach den Transportprüfungen erzeugen: ohne Access Point bleibt die Meldung „nicht eingerichtet“.
+        $dispatch = $this->sendUbl($organizationId, $customer, function () use ($invoice): string {
+            try {
+                // Peppol BIS Billing 3.0 ist UBL — unabhängig vom Zustellformat (MVP-805).
+                return $this->generator->generate($invoice, \App\Enums\Invoicing\XRechnungSyntax::Ubl);
+            } catch (ValidationException $e) {
+                // Preflight des Generators: fachliche Pflichtfelder fehlen. Nach
+                // außen bleibt es EINE Fehlerart — der Aufrufer soll nicht zwei
+                // Ausnahmetypen unterscheiden müssen.
+                throw new RuntimeException(
+                    (string) __('invoicing.einvoice.error_intro') . ' ' . implode(' ', $e->validator->errors()->all()),
+                    0,
+                    $e,
+                );
+            }
+        }, [
+            'invoice_id' => $invoice->id,
+            'document_kind' => RenderDocumentKind::Invoice->value,
+            'document_id' => $invoice->id,
+            'format' => 'xrechnung_ubl',
+            'limit' => app(\App\Services\Invoicing\EInvoice\RecipientProfiles::class)->limitBytes($invoice->customer, $invoice->organization),
+        ]);
+        $receipt = $dispatch->meta ?? [];
+
+        $invoice->audit('invoice.peppolSent', [
+            'participant' => $dispatch->recipient,
+            'message_id' => $receipt['message_id'] ?? null,
+            'transport_status' => $receipt['transport_status'] ?? null,
+            'dispatch_id' => $dispatch->id,
+        ]);
+
+        return $dispatch;
+    }
+
+    /**
+     * Fertige, im Haus erzeugte oder ergänzte UBL über Peppol senden (Feature 196:
+     * auch extern ausgestellte Rechnungen). Prüfung, Auflösung, Umschlag und
+     * Zustellnachweis wie beim Rechnungsversand.
+     *
+     * @param  array{invoice_id?: int|null, document_kind: string, document_id: int, format: string, limit: int}  $target
+     *
+     * @throws RuntimeException mit einer für die Oberfläche gedachten Meldung
+     */
+    public function sendUbl(int $organizationId, Customer $customer, Closure|string $ubl, array $target): DocumentDispatch {
         $plugin = $this->plugin();
         $client = $plugin?->peppolAccessPoint($organizationId);
         if ($plugin === null || ! $client instanceof AccessPointClientInterface) {
@@ -114,19 +163,15 @@ class PeppolInvoiceDispatcher {
                 ? __('peppol.error.no_participant', ['customer' => (string) $customer->name])
                 : __('peppol.error.invalid_participant', ['customer' => (string) $customer->name, 'value' => $raw])));
         }
+        $ubl = $ubl instanceof Closure ? $ubl() : $ubl;
 
-        try {
-            // Peppol BIS Billing 3.0 ist UBL — unabhängig vom Zustellformat (MVP-805).
-            $ubl = $this->generator->generate($invoice, \App\Enums\Invoicing\XRechnungSyntax::Ubl);
-        } catch (ValidationException $e) {
-            // Preflight des Generators: fachliche Pflichtfelder fehlen. Nach
-            // außen bleibt es EINE Fehlerart — der Aufrufer soll nicht zwei
-            // Ausnahmetypen unterscheiden müssen.
-            throw new RuntimeException(
-                (string) __('invoicing.einvoice.error_intro') . ' ' . implode(' ', $e->validator->errors()->all()),
-                0,
-                $e,
-            );
+        // Peppol kennt keine Obergrenze; der Bund empfiehlt höchstens 100 MB, der Empfänger setzt die eigene (Feature 196).
+        $limit = min(self::MAX_PAYLOAD_BYTES, $target['limit']);
+        if (strlen($ubl) > $limit) {
+            throw new RuntimeException((string) __('peppol.error.too_large', [
+                'size' => \CommonToolkit\Helper\Data\NumberHelper::formatBytes(strlen($ubl), 1),
+                'limit' => \CommonToolkit\Helper\Data\NumberHelper::formatBytes($limit, 0),
+            ]));
         }
 
         $validation = $this->validator->validate($ubl);
@@ -161,7 +206,7 @@ class PeppolInvoiceDispatcher {
         try {
             $receipt = $client->send($envelope);
         } catch (RuntimeException $e) {
-            $this->record($invoice, $receiver->canonical(), $ubl, null, [
+            $this->record($organizationId, $target, $receiver->canonical(), $ubl, null, [
                 'instance_identifier' => $sbdh->getInstanceIdentifier(),
                 'error_message' => mb_substr($e->getMessage(), 0, 500),
             ], DocumentDispatchStatus::Failed);
@@ -169,18 +214,11 @@ class PeppolInvoiceDispatcher {
             throw new RuntimeException((string) __('peppol.error.transport', ['message' => $e->getMessage()]), 0, $e);
         }
 
-        $dispatch = $this->record($invoice, $receiver->canonical(), $ubl, $receipt, [
+        $dispatch = $this->record($organizationId, $target, $receiver->canonical(), $ubl, $receipt, [
             'instance_identifier' => $sbdh->getInstanceIdentifier(),
             'document_type' => $documentType->canonical(),
             'validator_scenario' => $validation->getScenarioName() ?? BisValidator::SCENARIO,
         ], $receipt->isSuccess() ? DocumentDispatchStatus::Sent : ($receipt->getStatus()->isFinal() ? DocumentDispatchStatus::Failed : DocumentDispatchStatus::Queued));
-
-        $invoice->audit('invoice.peppolSent', [
-            'participant' => $receiver->canonical(),
-            'message_id' => $receipt->getMessageId(),
-            'transport_status' => $receipt->getStatus()->value,
-            'dispatch_id' => $dispatch->id,
-        ]);
 
         return $dispatch;
     }
@@ -193,9 +231,10 @@ class PeppolInvoiceDispatcher {
     }
 
     /**
+     * @param  array{invoice_id?: int|null, document_kind: string, document_id: int, format: string, limit: int}  $target
      * @param  array<string, mixed>  $meta
      */
-    private function record(Invoice $invoice, string $recipient, string $ubl, ?TransportReceipt $receipt, array $meta, DocumentDispatchStatus $status): DocumentDispatch {
+    private function record(int $organizationId, array $target, string $recipient, string $ubl, ?TransportReceipt $receipt, array $meta, DocumentDispatchStatus $status): DocumentDispatch {
         if ($receipt !== null) {
             $meta += [
                 'message_id' => $receipt->getMessageId(),
@@ -208,12 +247,12 @@ class PeppolInvoiceDispatcher {
         }
 
         return DocumentDispatch::query()->create([
-            'organization_id' => $invoice->organization_id,
-            'invoice_id' => $invoice->id,
-            'document_kind' => RenderDocumentKind::Invoice->value,
-            'document_id' => $invoice->id,
+            'organization_id' => $organizationId,
+            'invoice_id' => $target['invoice_id'] ?? null,
+            'document_kind' => $target['document_kind'],
+            'document_id' => $target['document_id'],
             'channel' => DocumentDispatch::CHANNEL_PEPPOL,
-            'format' => 'xrechnung_ubl',
+            'format' => $target['format'],
             'status' => $status,
             'recipient' => $recipient,
             'sha256' => CryptoHelper::hash($ubl),

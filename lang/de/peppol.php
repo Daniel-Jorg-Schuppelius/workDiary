@@ -32,6 +32,7 @@ return [
         'validation' => 'Die Rechnung erfüllt die geprüften Peppol-Regeln nicht: :messages',
         'transport' => 'Der Access Point hat den Versand nicht angenommen: :message',
         'not_issued' => 'Nur gestellte Rechnungen lassen sich über Peppol zustellen.',
+        'too_large' => 'Die E-Rechnung ist :size groß; für diesen Empfänger gelten höchstens :limit.',
         'external_billing' => 'Die Fakturierung liegt bei einem externen System — WorkDiary stellt für diesen Kunden keine Rechnung zu.',
         'proforma' => 'Pro-forma-Rechnungen sind keine E-Rechnungen und gehen nicht über Peppol.',
     ],

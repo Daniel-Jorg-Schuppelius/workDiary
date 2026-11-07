@@ -1,7 +1,7 @@
 ---
 title: "Transferencia a facturación"
 topic: finance.transfers
-version: 4
+version: 5
 keywords:
     - traspaso a Lexoffice
     - traspaso a DATEV
@@ -14,6 +14,9 @@ keywords:
     - líneas de factura
     - documentos relacionados
     - cadena de documentos
+    - factura en el proveedor
+    - enviar justificantes
+    - expediente de envío
 audience: []
 modules:
     - module.finance
@@ -84,3 +87,36 @@ contraparte aparece allí con el número del programa. También aparecen las
 relaciones que comunica el propio programa, por ejemplo un anticipo creado en
 Lexoffice. La columna **Relación** indica qué es el documento respecto a este;
 «a través de …» nombra el documento por el que existe la relación.
+
+## Factura en el proveedor: justificantes y envío por WorkDiary
+
+Si Lexware Office, sevDesk, easybill u orgaMAX gestionan la factura, el
+número y el contenido permanecen allí. Aun así, WorkDiary puede añadir
+justificantes de servicios a la factura finalizada y entregarla, sin emitir
+una factura propia.
+
+1. Finalice el borrador en el sistema de facturación.
+2. En el justificante de transferencia, pulse **Obtener factura de …** en la
+   tarjeta **Factura en el proveedor**. WorkDiary obtiene número, estado y el
+   original y asigna las posiciones de la transferencia. Para facturas
+   divididas, agrupadas o creadas directamente en el sistema de facturación,
+   utilice **Asignar otra factura**.
+3. Si las posiciones del proveedor difieren, confirme la diferencia en la
+   página de la factura con un motivo. Sin confirmación, el envío queda
+   bloqueado.
+4. Genere o suba justificantes en la tarjeta **Documentos justificativos** y
+   pulse **Entregar**.
+
+WorkDiary completa el original en su formato: un PDF se envía sin cambios
+con los justificantes como anexos, una XRechnung los lleva incrustados y un
+PDF ZUGFeRD se reescribe con el XML completado. Los originales firmados nunca
+se modifican. El **expediente de envío** conserva cada versión con hashes,
+justificantes e intentos de envío. **Reintentar** envía los mismos archivos;
+si un intento no recibe respuesta, compruebe con el destinatario si llegó.
+Los justificantes creados después se envían con **Enviar justificantes
+después**.
+
+Es necesaria la vía de envío «WorkDiary envía» en la ficha del cliente o en
+los ajustes de la organización. Desactive entonces el envío automático en el
+sistema de facturación; de lo contrario, el cliente recibirá la factura dos
+veces.

@@ -178,11 +178,12 @@ class EasybillClient {
     /**
      * Binärabruf GET /documents/{id}/download — liefert je file_format_config
      * PDF (ZUGFeRD) oder XML (XRechnung); Format meldet der Content-Type.
+     * `$accept` wählt laut OpenAPI das Format (`application/xml` = XRechnung).
      *
      * @return array{content: string, mime: string}|null
      */
-    public function downloadFile(string $documentId): ?array {
-        $response = $this->api()->requestResponse('get', $this->baseUrl . '/documents/' . rawurlencode($documentId) . '/download');
+    public function downloadFile(string $documentId, ?string $accept = null): ?array {
+        $response = $this->api()->requestResponse('get', $this->baseUrl . '/documents/' . rawurlencode($documentId) . '/download', $accept === null ? [] : ['headers' => ['Accept' => $accept]]);
         if (! $response->successful()) {
             return null;
         }

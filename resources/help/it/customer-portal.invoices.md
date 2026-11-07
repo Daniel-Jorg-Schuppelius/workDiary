@@ -1,7 +1,7 @@
 ---
 title: "Le mie fatture"
 topic: customer-portal.invoices
-version: 6
+version: 7
 keywords:
     - visualizzare le fatture
     - elenco fatture
@@ -83,3 +83,9 @@ Non appena il fornitore di pagamento conferma il pagamento, questo viene registr
 - La pagina serve alla consultazione. Solo il Suo fornitore emette, modifica o annulla le fatture.
 - Chiarisca eventuali domande su una fattura direttamente con il Suo fornitore.
 - Se il Suo fornitore La fattura tramite un conto di fatturazione, trova il riepilogo mensile in **Fatturazione**.
+
+## Documenti della fattura
+
+Se la fattura ha documenti giustificativi, come un’attestazione delle
+prestazioni, ogni documento ha una propria icona di download accanto al PDF.
+Sono gli stessi file incorporati nella fattura elettronica.

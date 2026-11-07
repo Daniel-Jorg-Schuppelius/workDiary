@@ -1,7 +1,7 @@
 ---
 title: "Meine Rechnungen"
 topic: customer-portal.invoices
-version: 6
+version: 7
 keywords:
     - Rechnungen ansehen
     - Rechnungsübersicht
@@ -85,3 +85,9 @@ Sobald der Zahlungsanbieter die Zahlung bestätigt, wird sie bei der Rechnung ve
 - Die Seite dient der Einsicht. Rechnungen stellt, ändert oder storniert nur Ihr Auftragnehmer.
 - Fragen zu einer Rechnung klären Sie direkt mit Ihrem Auftragnehmer.
 - Rechnet Ihr Auftragnehmer Sie über ein Abrechnungskonto ab, finden Sie die Monatsübersicht unter **Abrechnung**.
+
+## Unterlagen zur Rechnung
+
+Hat die Rechnung rechnungsbegründende Unterlagen, etwa einen Leistungsnachweis,
+steht neben dem PDF je Unterlage ein eigenes Symbol zum Herunterladen. Es sind
+dieselben Dateien, die in der E-Rechnung eingebettet sind.

@@ -32,7 +32,7 @@ use App\Http\Controllers\Fleet\{EnergyLogController, VehicleController};
 use App\Http\Controllers\Help\HelpController;
 use App\Http\Controllers\Hr\QualificationController;
 use App\Http\Controllers\Integration\SyncCommandController;
-use App\Http\Controllers\Invoicing\{InvoiceController, InvoiceScheduleController};
+use App\Http\Controllers\Invoicing\{InvoiceController, InvoiceScheduleController, InvoiceSupportingDocumentController};
 use App\Http\Controllers\Isms\PublicAuditPackageController;
 use App\Http\Controllers\KeyHandover\KeyHandoverController;
 use App\Http\Controllers\Licensing\LicenseController;
@@ -2284,6 +2284,15 @@ Route::middleware('auth')->group(function () {
         // Feature 160 (MVP-858): Fertigungsauslieferungen in den Entwurf übernehmen.
         Route::get('invoices/{invoice}/auslieferungen', [InvoiceController::class, 'deliveriesForm'])->name('invoices.deliveries.form');
         Route::post('invoices/{invoice}/auslieferungen', [InvoiceController::class, 'attachDeliveries'])->name('invoices.deliveries.attach');
+        // Rechnungsbegründende Unterlagen der E-Rechnung (Feature 196, MVP-1485).
+        Route::get('invoices/{invoice}/unterlagen/hochladen', [InvoiceSupportingDocumentController::class, 'uploadForm'])->name('invoices.supporting-documents.upload.form');
+        Route::post('invoices/{invoice}/unterlagen/hochladen', [InvoiceSupportingDocumentController::class, 'upload'])->name('invoices.supporting-documents.upload');
+        Route::get('invoices/{invoice}/unterlagen/link', [InvoiceSupportingDocumentController::class, 'linkForm'])->name('invoices.supporting-documents.link.form');
+        Route::post('invoices/{invoice}/unterlagen/link', [InvoiceSupportingDocumentController::class, 'link'])->name('invoices.supporting-documents.link');
+        Route::post('invoices/{invoice}/unterlagen/leistungsnachweis', [InvoiceSupportingDocumentController::class, 'generate'])->name('invoices.supporting-documents.generate');
+        Route::post('invoices/{invoice}/unterlagen/{document}/verschieben', [InvoiceSupportingDocumentController::class, 'move'])->name('invoices.supporting-documents.move');
+        Route::get('invoices/{invoice}/unterlagen/{document}/download', [InvoiceSupportingDocumentController::class, 'download'])->name('invoices.supporting-documents.download');
+        Route::delete('invoices/{invoice}/unterlagen/{document}', [InvoiceSupportingDocumentController::class, 'destroy'])->name('invoices.supporting-documents.destroy');
 
         // ── Bekanntmachungs-Radar (Feature 108, MVP-629/630) ──
         // Eigener Pfad, nicht in der tenders-Gruppe: dort fängt `{opportunity}`
@@ -3032,10 +3041,42 @@ Route::middleware('auth')->group(function () {
             // Korrektur-Übergabe zu einem übergebenen Nachweis (MVP-490).
             Route::post('{transfer}/korrigieren', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'correct'])->name('correct');
             Route::get('{transfer}/download', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'download'])->name('download');
+            // Leistungsnachweis der übergebenen Zeiten zum Hochladen im Buchhaltungsprogramm (Feature 196).
+            Route::get('{transfer}/leistungsnachweis', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'activityReport'])->name('activity-report');
+            // Extern ausgestellte Rechnung zum Nachweis: abrufen, weitere zuordnen (Feature 196).
+            Route::post('{transfer}/externe-rechnung', [\App\Http\Controllers\Finance\ExternalInvoiceController::class, 'storeForTransfer'])->name('external-invoice');
+            Route::get('{transfer}/externe-rechnung/zuordnen', [\App\Http\Controllers\Finance\ExternalInvoiceController::class, 'linkForm'])->name('external-invoice.link.form');
+            Route::post('{transfer}/externe-rechnung/zuordnen', [\App\Http\Controllers\Finance\ExternalInvoiceController::class, 'link'])->name('external-invoice.link');
             // Eingefrorene Positionen prüfen/bearbeiten (MVP-487/488).
             Route::patch('{transfer}/positionen/{position}', [\App\Http\Controllers\Finance\TransferPositionController::class, 'update'])->name('positions.update');
             Route::post('{transfer}/positionen/{position}/ki-text', [\App\Http\Controllers\Finance\TransferPositionController::class, 'suggest'])->name('positions.suggest');
             Route::post('{transfer}/positionen/ki-text', [\App\Http\Controllers\Finance\TransferPositionController::class, 'suggestAll'])->name('positions.suggest-all');
+        });
+
+        // ── Extern ausgestellte Rechnungen mit Nachweisen und WorkDiary-Versand (Feature 196) ──
+        Route::prefix('finanzen/externe-rechnungen')->name('finance.external-invoices.')->group(function (): void {
+            $c = \App\Http\Controllers\Finance\ExternalInvoiceController::class;
+            $d = \App\Http\Controllers\Finance\ExternalInvoiceDocumentController::class;
+            Route::post('versand/{package}/wiederholen', [$c, 'retry'])->name('packages.retry');
+            Route::post('versand/{package}/erneut', [$c, 'redeliver'])->name('packages.redeliver');
+            Route::post('versand/{package}/klaeren', [$c, 'resolve'])->name('packages.resolve');
+            Route::get('versand/{package}/datei/{index}', [$c, 'packageFile'])->whereNumber('index')->name('packages.file');
+            Route::get('{externalInvoice}', [$c, 'show'])->name('show');
+            Route::post('{externalInvoice}/abrufen', [$c, 'refresh'])->name('refresh');
+            Route::post('{externalInvoice}/original', [$c, 'refetchOriginal'])->name('original.refetch');
+            Route::get('{externalInvoice}/original', [$c, 'original'])->name('original');
+            Route::delete('{externalInvoice}/zuordnung/{position}', [$c, 'unassign'])->name('unassign');
+            Route::post('{externalInvoice}/abgleich', [$c, 'reconcile'])->name('reconcile');
+            Route::get('{externalInvoice}/versenden', [$c, 'sendForm'])->name('send.form');
+            Route::post('{externalInvoice}/versenden', [$c, 'send'])->name('send');
+            Route::get('{externalInvoice}/nachweise/hochladen', [$d, 'uploadForm'])->name('documents.upload.form');
+            Route::post('{externalInvoice}/nachweise/hochladen', [$d, 'upload'])->name('documents.upload');
+            Route::get('{externalInvoice}/nachweise/link', [$d, 'linkForm'])->name('documents.link.form');
+            Route::post('{externalInvoice}/nachweise/link', [$d, 'link'])->name('documents.link');
+            Route::post('{externalInvoice}/nachweise/leistungsnachweis', [$d, 'generate'])->name('documents.generate');
+            Route::post('{externalInvoice}/nachweise/{document}/verschieben', [$d, 'move'])->name('documents.move');
+            Route::get('{externalInvoice}/nachweise/{document}/download', [$d, 'download'])->name('documents.download');
+            Route::delete('{externalInvoice}/nachweise/{document}', [$d, 'destroy'])->name('documents.destroy');
         });
 
         // ── Offene Zeiten (MVP-460): Buchhaltungs-Arbeitsliste unabgerechneter

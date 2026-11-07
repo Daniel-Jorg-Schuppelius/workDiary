@@ -83,6 +83,8 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Numbering\Contracts\DocumentIssuer::class, \App\Plugins\Lexoffice\Services\LexofficeDocumentIssuer::class);
         // Zugehörige Belege (MVP-1158).
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Billing\Contracts\DocumentRelationSource::class, \App\Plugins\Lexoffice\Services\LexofficeRelationSource::class);
+        // Rechnungen mit Nachweisen durch WorkDiary zustellen, Lexware Office führt (Feature 196).
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Finance\Contracts\ExternalInvoiceProvider::class, \App\Plugins\Lexoffice\Services\LexofficeExternalInvoiceProvider::class);
 
         // Material-Suche (MVP-1033) mit den Zugangsdaten der aktuellen Organisation.
         $this->app->make(MaterialProviderRegistry::class)->register('lexoffice', static function (): ?LexofficeMaterialProvider {

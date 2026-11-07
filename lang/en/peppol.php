@@ -32,6 +32,7 @@ return [
         'validation' => 'The invoice does not satisfy the checked Peppol rules: :messages',
         'transport' => 'The access point did not accept the transmission: :message',
         'not_issued' => 'Only issued invoices can be delivered over Peppol.',
+        'too_large' => 'The e-invoice is :size; this recipient accepts at most :limit.',
         'external_billing' => 'Invoicing is owned by an external system — WorkDiary does not deliver invoices for this customer.',
         'proforma' => 'Pro forma invoices are not e-invoices and are not sent over Peppol.',
     ],

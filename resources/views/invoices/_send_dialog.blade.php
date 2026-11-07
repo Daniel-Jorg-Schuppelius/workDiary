@@ -23,9 +23,18 @@
             {{ __('invoice-import.mail_hint') }}
         </div>
 
-        <x-select-field name="delivery_format" :label="__('invoice-import.delivery_format')" required>
-            @foreach (\App\Enums\Invoicing\InvoiceDeliveryFormat::cases() as $format)
-                <option value="{{ $format->value }}" @selected(old('delivery_format', $invoice->delivery_format->value) === $format->value)>{{ $format->label() }}</option>
+        @php
+            // Behördenempfänger (Feature 196): nur reine XRechnung, kein PDF daneben.
+            $xmlOnly = app(\App\Services\Invoicing\EInvoice\RecipientProfiles::class)->for($invoice->customer, $invoice->organization)->xmlOnlyMail();
+            $sendFormats = $xmlOnly
+                ? [\App\Enums\Invoicing\InvoiceDeliveryFormat::XRechnung, \App\Enums\Invoicing\InvoiceDeliveryFormat::XRechnungCii]
+                : \App\Enums\Invoicing\InvoiceDeliveryFormat::cases();
+            $selectedFormat = old('delivery_format', in_array($invoice->delivery_format, $sendFormats, true) ? $invoice->delivery_format->value : $sendFormats[0]->value);
+        @endphp
+        <x-select-field name="delivery_format" :label="__('invoice-import.delivery_format')" required
+                        :hint="$xmlOnly ? __('invoicing.recipient_profile.xml_only_hint') : null">
+            @foreach ($sendFormats as $format)
+                <option value="{{ $format->value }}" @selected($selectedFormat === $format->value)>{{ $format->label() }}</option>
             @endforeach
         </x-select-field>
 
