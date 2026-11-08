@@ -212,7 +212,7 @@
 
     <x-card x-data="ideaEditor('idea-editor-config')">
         <div class="flex flex-wrap items-center gap-2 mb-3">
-            <div role="tablist" class="tabs tabs-boxed tabs-sm">
+            <div role="tablist" class="tabs tabs-box tabs-sm">
                 <button type="button" role="tab" class="tab" :class="view === 'outline' ? 'tab-active' : ''"
                         x-on:click="view = 'outline'">{{ __('ideas.editor.outline') }}</button>
                 <button type="button" role="tab" class="tab" :class="view === 'canvas' ? 'tab-active' : ''"
