@@ -64,6 +64,15 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   („[Anfahrt]“ statt „[travel]“).
 - Entwicklung: Jede Klassenkonstante nennt ihren Typ (PHP 8.3), Gate
   `TypedClassConstantRuleTest`.
+- Zammad: Anbindung über zammad-api-client-php 3.2. Über `http://` spricht
+  sie nur Hosts an, für die die Anbindung private Netze freigibt. Ein
+  HTTP-Fehler beim Abruf bricht den Import ab, statt ihn still unvollständig
+  zu beenden.
+- Abhängigkeiten: spatie/laravel-permission 8.5, minishlink/web-push 11
+  (Push-Versand weiter ohne Weiterleitungen und mit gebundenen Adressen),
+  npm-Gruppe mit 15 Paketen (u. a. Playwright 1.64, Chart.js 4.6,
+  material-symbols 0.48 mit neu erzeugter Icon-Schrift), setup-php 2.40 in
+  der CI.
 
 ### Fixed
 

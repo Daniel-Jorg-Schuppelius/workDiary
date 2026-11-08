@@ -16,20 +16,19 @@ use App\Plugins\Support\PluginApiException;
 use App\Plugins\Zammad\Contracts\ZammadGateway;
 use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Support\UrlSafety;
-use CommonToolkit\Helper\Data\NumberHelper;
 use Throwable;
-use ZammadAPIClient\Client;
-use ZammadAPIClient\Client\Response;
-use ZammadAPIClient\Resource\Ticket;
+use ZammadAPIClient\Core\{Auth, ConnectionConfig};
+use ZammadAPIClient\Exceptions\{AuthenticationException, BadRequestException, ForbiddenException, NotFoundException, RateLimitException, ServerErrorException, ValidationException, ZammadException};
+use ZammadAPIClient\ZammadClient;
 
 /**
- * Adapter auf den offiziellen `zammad/zammad-api-client-php` (Feature 060,
- * MVP-129). Token-Auth (`Authorization: Token token=…`) über die Basis-URL der
- * Anbindung. Bewusst dünn: normalisiert Tickets in einfache Arrays, damit die
+ * Adapter auf den offiziellen `zammad/zammad-api-client-php` 3.x (Feature 060,
+ * MVP-129). Token-Auth über die Basis-URL der Anbindung (`/api/v1` hängt das
+ * SDK an). Bewusst dünn: normalisiert Tickets in einfache Arrays, damit die
  * Importlogik providerneutral und testbar bleibt.
  */
 class ZammadClientGateway implements ZammadGateway {
-    public function __construct(private readonly Client $client) {}
+    public function __construct(private readonly ZammadClient $client) {}
 
     public static function forConnection(ZammadConnection $connection): self {
         // SSRF-Schutz (Whitebox-Befund 2026-07): öffentlich routbar, außer die
@@ -42,37 +41,37 @@ class ZammadClientGateway implements ZammadGateway {
             (string) __('zammad::zammad.guard.private_hint'),
         );
 
-        return new self(new Client([
-            'url' => $connection->base_url,
-            'http_token' => $connection->api_token,
-        ]));
+        // Das SDK schickt den Token nicht über http:// an fremde Hosts; im freigegebenen LAN ist http üblich.
+        return new self(ZammadClient::create(
+            (string) $connection->base_url,
+            Auth::token((string) $connection->api_token),
+            new ConnectionConfig(allowInsecureHttp: $connection->allowsPrivateNetwork()),
+        ));
     }
 
     public function listTickets(?int $groupId = null, int $page = 1, int $perPage = 100): array {
-        $result = (new Ticket($this->client))->all($page, $perPage);
-        $tickets = is_array($result) ? $result : [];
+        // expand=true liefert Status, Kunde und Organisation als Klarwerte; das DTO legt sie in customFields ab.
+        $tickets = $this->client->ticket()->allPage($page, $perPage, ['expand' => 'true']);
 
         $out = [];
         foreach ($tickets as $ticket) {
-            if (! $ticket instanceof Ticket || $ticket->hasError()) {
+            if ($ticket->id === null) {
                 continue;
             }
-            $gid = NumberHelper::toIntOrNull($ticket->getValue('group_id'));
-            if ($groupId !== null && $gid !== $groupId) {
+            if ($groupId !== null && $ticket->group_id !== $groupId) {
                 continue;
             }
-            $state = $ticket->getValue('state');
+            $state = $ticket->customFields['state'] ?? null;
             $out[] = [
-                'id' => (int) $ticket->getValue('id'),
-                'number' => (string) $ticket->getValue('number'),
-                'title' => (string) $ticket->getValue('title'),
-                'group_id' => $gid,
+                'id' => $ticket->id,
+                'number' => (string) $ticket->number,
+                'title' => $ticket->title,
+                'group_id' => $ticket->group_id,
                 'state' => is_string($state) && $state !== '' ? $state : null,
-                'customer_id' => NumberHelper::toIntOrNull($ticket->getValue('customer_id')),
-                // Expandierte Klarwerte (der Client sendet immer expand=true) für
-                // den Kundenvorschlag (Rang 21).
-                'customer' => $this->stringValue($ticket->getValue('customer')),
-                'organization' => $this->stringValue($ticket->getValue('organization')),
+                'customer_id' => $ticket->customer_id,
+                // Für den Kundenvorschlag (Rang 21).
+                'customer' => $this->stringValue($ticket->customFields['customer'] ?? null),
+                'organization' => $this->stringValue($ticket->customFields['organization'] ?? null),
             ];
         }
 
@@ -80,59 +79,54 @@ class ZammadClientGateway implements ZammadGateway {
     }
 
     /**
-     * Health-Ping: eine Seite mit einem Ticket abrufen. Ein Array (auch leer)
-     * heißt „erreichbar + Token gültig"; das Self-Objekt mit Fehler oder eine
-     * Exception (Netz/Auth) heißt „nicht erreichbar".
+     * Health-Ping: eine Seite mit einem Ticket abrufen. Eine Antwort (auch leer)
+     * heißt „erreichbar + Token gültig"; HTTP-Fehler werden zur PluginApiException
+     * mit Status, Netzfehler bleiben die Exception des SDK.
      */
     public function probe(): void {
-        $result = (new Ticket($this->client))->all(1, 1);
-        if ($result instanceof Ticket && $result->hasError()) {
-            // Das SDK hält den Fehler am Ergebnis fest, den Status nur an der letzten Antwort
-            // (deklariert als `@return objects`, daher erst prüfen).
-            /** @var mixed $response */
-            $response = $this->client->getLastResponse();
-            $status = $response instanceof Response ? (int) $response->getStatusCode() : 0;
+        try {
+            $this->client->ticket()->allPage(1, 1);
+        } catch (ZammadException $e) {
+            $status = self::httpStatus($e);
+            if ($status === 0) {
+                throw $e;
+            }
 
-            throw new PluginApiException(sprintf('Zammad /tickets antwortete mit HTTP %d.', $status), $status, '/tickets');
+            throw new PluginApiException(sprintf('Zammad /tickets antwortete mit HTTP %d.', $status), $status, '/tickets', previous: $e);
         }
     }
 
     public function updateTicketState(int $ticketId, ?string $state, ?string $note): bool {
-        if (($state === null || $state === '') && ($note === null || $note === '')) {
+        $changes = [];
+        if ($state !== null && $state !== '') {
+            $changes['state'] = $state;
+        }
+        if ($note !== null && $note !== '') {
+            // Interne Notiz als `article`-Objekt am Ticket-Update — keine
+            // Kundenkommunikation aus WorkDiary heraus (internal = true).
+            $changes['article'] = [
+                'body' => $note,
+                'type' => 'note',
+                'internal' => true,
+            ];
+        }
+        if ($changes === []) {
             return true; // nichts zu tun
         }
 
         try {
-            $ticket = (new Ticket($this->client))->get($ticketId);
-            if (! $ticket instanceof Ticket || $ticket->hasError()) {
-                return false;
-            }
-
-            if ($state !== null && $state !== '') {
-                $ticket->setValue('state', $state);
-            }
-            if ($note !== null && $note !== '') {
-                // Interne Notiz als `article`-Objekt am Ticket-Update — keine
-                // Kundenkommunikation aus WorkDiary heraus (internal = true).
-                $ticket->setValue('article', [
-                    'body' => $note,
-                    'type' => 'note',
-                    'internal' => true,
-                ]);
-            }
-
-            // save() liefert bei Erfolg die Ressource ($this), sonst false.
-            return $ticket->save() !== false;
+            $this->client->ticket()->patch($ticketId, $changes);
         } catch (Throwable) {
             return false;
         }
+
+        return true;
     }
 
     public function accountTime(int $ticketId, float $timeUnit): bool {
-        // Der offizielle Client kennt keine TimeAccounting-Ressource → roher,
-        // authentifizierter POST (Auth/JSON setzt der Client selbst).
+        // Das SDK kennt keine TimeAccounting-Ressource → roher, authentifizierter POST.
         try {
-            $response = $this->client->post("tickets/{$ticketId}/time_accountings", [
+            $this->client->getHandler()->post("tickets/{$ticketId}/time_accountings", [
                 'ticket_id' => $ticketId,
                 'time_unit' => (string) $timeUnit,
             ]);
@@ -140,13 +134,21 @@ class ZammadClientGateway implements ZammadGateway {
             return false;
         }
 
-        if ($response->hasError()) {
-            return false;
-        }
+        return true;
+    }
 
-        $code = (int) $response->getStatusCode();
-
-        return $code >= 200 && $code < 300;
+    /** Die Exceptions des SDK tragen keinen Status; die Klasse steht für ihn. */
+    private static function httpStatus(ZammadException $e): int {
+        return match (true) {
+            $e instanceof BadRequestException => 400,
+            $e instanceof AuthenticationException => 401,
+            $e instanceof ForbiddenException => 403,
+            $e instanceof NotFoundException => 404,
+            $e instanceof ValidationException => 422,
+            $e instanceof RateLimitException => 429,
+            $e instanceof ServerErrorException => 500,
+            default => 0,
+        };
     }
 
     /** Expandierter Zammad-Wert (customer-Login/organization-Name) als String. */

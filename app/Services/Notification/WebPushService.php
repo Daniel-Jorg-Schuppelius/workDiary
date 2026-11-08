@@ -13,6 +13,7 @@ namespace App\Services\Notification;
 use App\Models\Platform\{PushSubscription, User};
 use App\Support\UrlSafety;
 use CommonToolkit\Helper\Data\JsonHelper;
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 use Minishlink\WebPush\{Subscription, WebPush};
 
@@ -129,7 +130,14 @@ class WebPushService {
         // Keine Weiterleitungen (Sicherheitsscan 2026-08-23, S-48): der
         // Endpunkt kommt vom Client. Folgte der Server einer Weiterleitung,
         // wäre die geprüfte Zieladresse wertlos — umgeleitet würde erst nach
-        // der Prüfung.
+        // der Prüfung. Ab web-push 11 trägt der übergebene PSR-18-Client diese
+        // Optionen; 30 s war die Vorgabe der Bibliothek bis 10.
+        $client = new Client(array_filter([
+            'timeout' => 30,
+            'allow_redirects' => false,
+            'curl' => $pins !== [] ? [CURLOPT_RESOLVE => $pins] : null,
+        ], static fn ($value): bool => $value !== null));
+
         return $this->webPush = new WebPush([
             'VAPID' => [
                 'subject' => config('webpush.subject'),
@@ -138,9 +146,6 @@ class WebPushService {
             ],
         ], [
             'TTL' => config('webpush.ttl'),
-        ], null, array_filter([
-            'allow_redirects' => false,
-            'curl' => $pins !== [] ? [CURLOPT_RESOLVE => $pins] : null,
-        ], static fn ($value): bool => $value !== null));
+        ], $client);
     }
 }
