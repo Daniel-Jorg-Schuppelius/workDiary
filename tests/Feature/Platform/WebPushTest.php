@@ -33,6 +33,25 @@ class WebPushTest extends TestCase {
         Config::set('webpush.private_key', 'GCpBG_ivebc2Sm61xQtqkwBOWhzQrvJmBnaSoXE7PMs');
     }
 
+    /** S-48/ssrf-5: Ab web-push 11 trägt der übergebene Client Weiterleitungsverbot, Adressbindung und Timeout. */
+    public function test_push_client_keeps_redirects_off_and_pins_the_endpoints(): void {
+        $service = new class extends \App\Services\Notification\WebPushService {
+            /** @param list<string> $pins */
+            public function client(array $pins): ?\Minishlink\WebPush\WebPush {
+                return $this->webPush($pins);
+            }
+        };
+
+        $webPush = $service->client(['push.example.org:443:203.0.113.7']);
+        $this->assertNotNull($webPush);
+        $client = (fn () => $this->client)->call($webPush);
+        $this->assertInstanceOf(\GuzzleHttp\Client::class, $client);
+
+        $this->assertFalse($client->getConfig('allow_redirects'));
+        $this->assertSame([CURLOPT_RESOLVE => ['push.example.org:443:203.0.113.7']], $client->getConfig('curl'));
+        $this->assertSame(30, $client->getConfig('timeout'));
+    }
+
     public function test_vapid_endpoint_returns_public_key(): void {
         $user = User::factory()->user()->create();
         $this->actingAs($user)->getJson(route('push.vapid'))

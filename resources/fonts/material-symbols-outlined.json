@@ -1,9 +1,9 @@
 {
     "package": "material-symbols",
-    "version": "0.47.2",
+    "version": "0.48.3",
     "license": "Apache-2.0",
     "notice": "Abgeleitet von material-symbols-outlined.woff2 (Google Material Symbols): Achsen GRAD/opsz festgesetzt, wght auf 400–700 begrenzt (scripts/build-icon-font.py).",
-    "source_sha256": "167a5e473546503fdbeff71cd607455adba816e3d99f8e25b27bfafecb20fe4a",
+    "source_sha256": "c126361daaf865d1359bd639657e3456f1dbf51d9e2242724924c529fa5e22f4",
     "limits": {
         "GRAD": 0,
         "opsz": 24,
