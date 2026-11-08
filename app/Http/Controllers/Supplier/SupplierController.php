@@ -35,7 +35,7 @@ class SupplierController extends Controller {
     use ParsesIndexQuery;
     use ResolvesGlobalDateRange;
 
-    private const ALLOWED_SORTS = ['name', 'number', 'company', 'created_at'];
+    private const array ALLOWED_SORTS = ['name', 'number', 'company', 'created_at'];
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Supplier::class);

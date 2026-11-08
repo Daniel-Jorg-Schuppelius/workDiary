@@ -31,7 +31,7 @@ use Illuminate\View\View;
  * über eine erneute Anmeldung beim Identitätsanbieter.
  */
 class ConfirmPasswordController extends Controller {
-    private const MAX_ATTEMPTS = 5;
+    private const int MAX_ATTEMPTS = 5;
 
     public function show(Request $request): View|RedirectResponse {
         if (RecentAuthentication::isRecent($request)) {

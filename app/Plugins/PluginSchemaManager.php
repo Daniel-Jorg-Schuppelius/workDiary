@@ -33,7 +33,7 @@ use Throwable;
  * gelaufene Migrationen werden nicht erneut ausgeführt.
  */
 class PluginSchemaManager {
-    private const LOCK_SECONDS = 300;
+    private const int LOCK_SECONDS = 300;
 
     public function needsUpgrade(Plugin $plugin): bool {
         if ($plugin->migrationsPath() === null) {

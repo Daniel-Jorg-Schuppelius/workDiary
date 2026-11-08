@@ -27,11 +27,11 @@ use App\Plugins\Vikunja\Services\VikunjaImportService;
 class VikunjaPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
     use ChecksConnectionHealth, RendersTaskLink;
 
-    public const ID = 'vikunja';
+    public const string ID = 'vikunja';
 
-    public const SERVICE_PROVIDER = VikunjaServiceProvider::class;
+    public const string SERVICE_PROVIDER = VikunjaServiceProvider::class;
 
-    public const EXT_TYPE_TASK = 'task';
+    public const string EXT_TYPE_TASK = 'task';
 
     public function name(): string {
         return 'Vikunja';

@@ -77,7 +77,7 @@ class ResalePeriod extends Model {
     ];
 
     /** Höchstlänge der Bemerkungsspalte (string 255). */
-    private const NOTE_LIMIT = 255;
+    private const int NOTE_LIMIT = 255;
 
     protected $casts = [
         'starts_on' => 'immutable_date',

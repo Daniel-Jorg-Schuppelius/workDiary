@@ -40,14 +40,14 @@ use Carbon\CarbonImmutable;
  * nur Overrides (E2).
  */
 class ModuleScopeService {
-    public const SETTING_PROFILE = 'scope_profile';
+    public const string SETTING_PROFILE = 'scope_profile';
 
-    public const MODE_LIMITED = 'limited';
+    public const string MODE_LIMITED = 'limited';
 
-    public const MODE_FULL = 'full';
+    public const string MODE_FULL = 'full';
 
     /** Override-Grund für Lizenzzuwachs, der noch nicht gewählt wurde. */
-    public const REASON_GROWTH = 'scope:growth';
+    public const string REASON_GROWTH = 'scope:growth';
 
     public function __construct(
         private readonly ModuleStatusResolver $status,
@@ -192,7 +192,7 @@ class ModuleScopeService {
      * Die Verfügbarkeit prüft die Seite selbst — der Plattformdienst darf das
      * Kernmodul Billing nicht aufrufen (Modulgrenze).
      */
-    public const REQUIRES_FINANCIAL_FORMATS = ['module.finance'];
+    public const array REQUIRES_FINANCIAL_FORMATS = ['module.finance'];
 
     /**
      * Übersicht für „Funktionsumfang erweitern" (§7.2): je Modul ein Zustand

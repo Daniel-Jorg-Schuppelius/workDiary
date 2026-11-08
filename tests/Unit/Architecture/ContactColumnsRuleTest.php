@@ -24,13 +24,13 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class ContactColumnsRuleTest extends TestCase {
     use ScansSourceTree;
 
-    private const COLUMN = '/^(?:address_)?(?:street|zip|postal_code|city)$/';
+    private const string COLUMN = '/^(?:address_)?(?:street|zip|postal_code|city)$/';
 
     /** Migrationen nach diesem Zeitstempel dürfen keine Adressspalten mehr anlegen (die Umzugsmigration selbst stellt sie in down() wieder her). */
-    private const CUTOFF = '2027_02_24_140000';
+    private const string CUTOFF = '2027_02_24_140000';
 
     /** @var array<string, string> Tabelle → Grund */
-    private const TABLES_ALLOWED = [
+    private const array TABLES_ALLOWED = [
         'contact_addresses' => 'Der Satellit selbst.',
         'customers' => 'Projektion der Primäradresse (ContactDetailsProjectionObserver) für Listen und Lexoffice-Abgleich.',
         'suppliers' => 'Projektion der Primäradresse (ContactDetailsProjectionObserver).',

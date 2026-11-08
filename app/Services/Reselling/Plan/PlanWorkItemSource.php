@@ -25,7 +25,7 @@ use App\Services\WorkQueue\Dto\WorkItem;
  * die das Register pflegen dürfen.
  */
 final class PlanWorkItemSource implements WorkItemSource {
-    private const ROUTE = 'finance.resale.accounts.index';
+    private const string ROUTE = 'finance.resale.accounts.index';
 
     public function __construct(
         private readonly FeatureFlagResolver $features,

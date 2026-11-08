@@ -40,7 +40,7 @@ use App\Support\MorphMap;
  * ist Nach-MVP).
  */
 class JtlArticleImporter {
-    public const DEVIATION_ITEMS_LIST = 'items_list_unavailable: GET /v2/items fehlt (Wawi < v2.1) — Artikelsync deaktiviert, GraphQL-Fallback Nach-MVP.';
+    public const string DEVIATION_ITEMS_LIST = 'items_list_unavailable: GET /v2/items fehlt (Wawi < v2.1) — Artikelsync deaktiviert, GraphQL-Fallback Nach-MVP.';
 
     public function __construct(private readonly JtlGatewayFactory $gateways) {}
 

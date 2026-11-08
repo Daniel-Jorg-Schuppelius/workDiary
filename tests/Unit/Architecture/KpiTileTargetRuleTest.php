@@ -38,7 +38,7 @@ class KpiTileTargetRuleTest extends TestCase {
      *
      * @var array<string, array{0: int, 1: string}>
      */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         'resources/views/admin/ui-patterns.blade.php' => [4, 'Musterseite mit Beispielwerten.'],
         'resources/views/articles/calculation/scheme.blade.php' => [2, 'Kalkulationsparameter (Lohn, Stundensatz) ohne Zeilen.'],
         'resources/views/articles/calculation/show.blade.php' => [4, 'Kalkulationsergebnis (Kosten, Preis, Lohnanteil) ohne Zeilen.'],

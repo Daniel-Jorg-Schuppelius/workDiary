@@ -29,7 +29,7 @@ class PluginClientFactoryRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Datei => Grund */
-    private const ALLOWED = [
+    private const array ALLOWED = [
         'app/Plugins/PhoneDirectory/Services/PhoneDirectoryResolver.php' => 'Einzige HTTP-Stelle des Plugins: Abfrage einer frei konfigurierten Verzeichnis-URL, kein API-Client.',
     ];
 

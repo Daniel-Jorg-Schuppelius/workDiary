@@ -27,13 +27,13 @@ use Illuminate\Support\Facades\DB;
  * „Idee“ mit Herkunft; geprüft und bewertet wird wie gewohnt in der Akte.
  */
 class InvestmentProposalService extends OrganizationAccessToken {
-    public const HASH_KEY = 'investment_proposal_token_hash';
+    public const string HASH_KEY = 'investment_proposal_token_hash';
 
-    public const HINT_KEY = 'investment_proposal_token_hint';
+    public const string HINT_KEY = 'investment_proposal_token_hint';
 
-    public const ISSUED_KEY = 'investment_proposal_token_issued_at';
+    public const string ISSUED_KEY = 'investment_proposal_token_issued_at';
 
-    public const ENABLED_KEY = 'investment_proposal_enabled';
+    public const string ENABLED_KEY = 'investment_proposal_enabled';
 
     public function __construct(private readonly NotificationDispatcher $notifier) {}
 

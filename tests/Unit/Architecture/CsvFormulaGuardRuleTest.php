@@ -38,7 +38,7 @@ class CsvFormulaGuardRuleTest extends TestCase {
      *
      * @var array<string, string>
      */
-    private const EXCEPTIONS = [
+    private const array EXCEPTIONS = [
         'app/Console/Commands/ExportAuditLog.php' => 'GoBD-Ausleitung: die Bytes sind über den head_hash kryptografisch gebunden. Ein vorangestellter Apostroph zerstörte genau den Nachweis, den die Datei erbringen soll.',
         'app/Services/TimeExport/Profiles/GenericCsvProfile.php' => 'Lohnexport per SFTP an ein Lohnsystem; payload_hash weist den ausgelieferten Stand nach. Geänderte Bytes hieße geänderte Lohndaten.',
         'app/Services/TimeExport/Profiles/DatevLodasProfile.php' => 'Lohnimportdatei für DATEV LODAS, kein Tabellendokument; payload_hash weist den Stand nach. Ein Apostroph vor negativen Stunden („-2,00") verfälschte die Lohndaten.',

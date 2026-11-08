@@ -35,14 +35,14 @@ use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper, StringHelper};
  */
 final class DomainSubscriptionSync {
     /** Präfix in `resale_subscriptions.sync_status`: zuletzt aus der Projektion gespiegelter Halter. */
-    public const MIRRORED_HOLDER_PREFIX = 'p:';
+    public const string MIRRORED_HOLDER_PREFIX = 'p:';
 
     /**
      * Preisstaffel (Benutzerklasse des Domainportals) für Domains im eigenen Konto, die der Inhaber selbst
      * berechnet (Entscheidung 2026-10-30: eigene Klasse im Portal, hier nur benannt); Subuser-Domains nehmen die
      * Klasse ihres Subusers.
      */
-    public const SETTING_DIRECT_PRICE_CLASS = 'resale.domain_direct_price_class';
+    public const string SETTING_DIRECT_PRICE_CLASS = 'resale.domain_direct_price_class';
 
     public static function directPriceClass(Organization $organization): ?string {
         $value = app(SettingsRegistry::class)->effective(self::SETTING_DIRECT_PRICE_CLASS, $organization)->value;
@@ -75,7 +75,7 @@ final class DomainSubscriptionSync {
      * von ein bis drei Tagen (muster-gmbh.de 25.01./23.01.) und Registry-Zyklen, die bei einem
      * Transfer kurz vor dem Transfertag liegen.
      */
-    public const START_TOLERANCE_DAYS = 45;
+    public const int START_TOLERANCE_DAYS = 45;
 
     /**
      * Abstand, ab dem der gemeldete Ablauf kein Laufzeitende ist: der Live-Gateway meldet für
@@ -83,7 +83,7 @@ final class DomainSubscriptionSync {
      * Registrierungs-Jahrestag (Prod 2026-10-29: 7 von 7, Abstand 304–335 Tage; die
      * Gnadenfristen der gTLD-Registries liegen bei 41–44 Tagen).
      */
-    public const STALE_EXPIRATION_GAP_DAYS = 90;
+    public const int STALE_EXPIRATION_GAP_DAYS = 90;
 
     /**
      * Laufzeitende der Domain: der Ablauf — oder die Finalisierung, wenn sie erst lange nach

@@ -36,7 +36,7 @@ class AgileReportExportController extends Controller {
     use RendersReportPdf;
     use WritesReportCsv;
 
-    private const CSV_METRICS = ['burndown', 'velocity', 'throughput', 'blocked', 'cfd', 'quality'];
+    private const array CSV_METRICS = ['burndown', 'velocity', 'throughput', 'blocked', 'cfd', 'quality'];
 
     public function __construct(private readonly AgileMetricsService $metrics) {}
 

@@ -26,10 +26,10 @@ use CommonToolkit\Helper\Data\StringHelper;
  * (`stockEnabled`) werden als Material gebucht.
  */
 class SevDeskArticleCatalogSource extends AccountingArticleCatalogSource {
-    public const PREFIX = 'sd';
+    public const string PREFIX = 'sd';
 
     /** Seiten je Lauf (Limit bis 1000 je Seite laut API): darüber ist das Lesen unvollständig. */
-    private const MAX_PAGES = 20;
+    private const int MAX_PAGES = 20;
 
     public function __construct(private readonly SevDeskClientFactory $clients) {}
 

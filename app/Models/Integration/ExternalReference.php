@@ -38,7 +38,7 @@ class ExternalReference extends Model {
     use HasSqid;
 
     /** Kontakt-Verknüpfung; alle Kontakt-Plugins nutzen diesen Typwert. */
-    public const TYPE_CONTACT = 'contact';
+    public const string TYPE_CONTACT = 'contact';
 
     protected $fillable = [
         'organization_id',

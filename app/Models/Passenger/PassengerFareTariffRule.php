@@ -40,9 +40,9 @@ class PassengerFareTariffRule extends Model {
 
     use HasSqid;
 
-    public const KIND_SURCHARGE = 'surcharge';
+    public const string KIND_SURCHARGE = 'surcharge';
 
-    public const KIND_DISCOUNT = 'discount';
+    public const string KIND_DISCOUNT = 'discount';
 
     protected $fillable = [
         'organization_id',

@@ -21,16 +21,16 @@ use CommonToolkit\Helper\Data\StringHelper;
  * und Produkt-Adresse vergibt der Großhändler, sie stehen nicht im Standard.
  */
 final readonly class OpenMasterdataConfig {
-    public const GRANT_PASSWORD = 'password';
+    public const string GRANT_PASSWORD = 'password';
 
-    public const GRANT_CLIENT_CREDENTIALS = 'client_credentials';
+    public const string GRANT_CLIENT_CREDENTIALS = 'client_credentials';
 
     /** Datenpakete in einem Parameter (`a|b`) oder je Paket ein Parameter. */
-    public const PACKAGES_PIPE = 'pipe';
+    public const string PACKAGES_PIPE = 'pipe';
 
-    public const PACKAGES_EXPLODED = 'exploded';
+    public const string PACKAGES_EXPLODED = 'exploded';
 
-    public const DEFAULT_SCOPE = 'openMasterdata';
+    public const string DEFAULT_SCOPE = 'openMasterdata';
 
     public function __construct(
         public string $tokenUrl,

@@ -28,9 +28,9 @@ use Illuminate\Support\Collection;
  * @phpstan-type Finding array{kind: string, line: MirrorLine, link: ResalePeriodLink|null, links: list<ResalePeriodLink>, period: ResalePeriod|null, suggested: ResalePeriod|null, excess: float}
  */
 final class LinkAudit {
-    public const OVERBOOKED = 'overbooked';
+    public const string OVERBOOKED = 'overbooked';
 
-    public const MISMATCH = 'mismatch';
+    public const string MISMATCH = 'mismatch';
 
     private readonly InvoiceMirror $mirror;
 

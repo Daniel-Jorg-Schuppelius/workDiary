@@ -29,7 +29,7 @@ class AttachmentCarrierPolicyRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Modellpfad unter app/Models (ohne .php) → Begründung für org-weiten Zugriff */
-    private const ORG_WIDE = [
+    private const array ORG_WIDE = [
         'Communication/CustomerCircular' => 'Rundschreiben (MVP-1285): der Anhang geht an alle Empfänger, im Haus sichtbar wie das Rundschreiben.',
         'Construction/ConstructionNotice' => 'Bautagebuch-Mitteilung: org-weit einsehbar wie das Bauvorhaben.',
         'Guarantee/Guarantee' => 'Gewährleistungsfall: org-weit einsehbar (keine personenbezogenen Anlagen).',

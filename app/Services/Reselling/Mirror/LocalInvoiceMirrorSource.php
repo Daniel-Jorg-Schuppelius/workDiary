@@ -47,15 +47,15 @@ use Illuminate\Support\Facades\Route;
  * (`serviceTo` leer, Lizenzmonate aus Menge/Einheit).
  */
 final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
-    public const KEY = 'local';
+    public const string KEY = 'local';
 
-    private const KIND_INVOICE = 'invoice';
+    private const string KIND_INVOICE = 'invoice';
 
-    private const KIND_VOIDED = 'voided';
+    private const string KIND_VOIDED = 'voided';
 
-    private const KIND_CREDIT_NOTE = 'creditnote';
+    private const string KIND_CREDIT_NOTE = 'creditnote';
 
-    private const NOT_INVOICES = [Invoice::TYPE_CREDIT_NOTE, Invoice::TYPE_CANCELLATION, Invoice::TYPE_PROFORMA];
+    private const array NOT_INVOICES = [Invoice::TYPE_CREDIT_NOTE, Invoice::TYPE_CANCELLATION, Invoice::TYPE_PROFORMA];
 
     public function __construct(
         private readonly ProductNameMatcher $matcher = new ProductNameMatcher(),

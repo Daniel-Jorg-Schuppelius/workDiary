@@ -42,7 +42,7 @@ class OpenProjectImportService {
     use PersistsTimeImportInbox;
     use ReconcilesRemoteDeletions;
 
-    public const EXT_TYPE_ENTRY = 'entry';
+    public const string EXT_TYPE_ENTRY = 'entry';
 
     public function __construct(private readonly OpenProjectStructureSync $structure) {}
 

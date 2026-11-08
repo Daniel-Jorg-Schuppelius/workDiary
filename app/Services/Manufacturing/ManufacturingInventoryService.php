@@ -33,7 +33,7 @@ use RuntimeException;
  * werden zudem die Ist-Materialkosten aus dem Bewertungsverfahren erfasst.
  */
 class ManufacturingInventoryService {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     public function __construct(
         private readonly ReservationService $reservations,

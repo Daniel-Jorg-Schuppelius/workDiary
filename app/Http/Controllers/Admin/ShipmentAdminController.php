@@ -32,7 +32,7 @@ class ShipmentAdminController extends Controller {
     use AuthorizesOrganizationManagement;
 
     /** Zugangsdaten-Schlüssel im verschlüsselten credentials-Array. */
-    private const CREDENTIAL_KEYS = ['username', 'password', 'api_key', 'returns_receiver_id'];
+    private const array CREDENTIAL_KEYS = ['username', 'password', 'api_key', 'returns_receiver_id'];
 
     public function index(Request $request, ShippingProviderRegistry $registry): View {
         $admin = $this->admin();

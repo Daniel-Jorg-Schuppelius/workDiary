@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\DB;
  */
 class RecurringInvoiceService {
     /** Sicherheitsgrenze für Nachholläufe je Plan und Aufruf. */
-    private const MAX_CATCHUP_RUNS = 24;
+    private const int MAX_CATCHUP_RUNS = 24;
 
     public function __construct(
         private readonly InvoiceGenerator $generator,

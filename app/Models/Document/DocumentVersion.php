@@ -49,7 +49,7 @@ class DocumentVersion extends Model {
 
     use HasSqid;
 
-    public const UPDATED_AT = null;
+    public const ?string UPDATED_AT = null;
 
     protected $fillable = [
         'document_id',

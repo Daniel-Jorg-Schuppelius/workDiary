@@ -29,7 +29,7 @@ final class GithubWebhookTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const SECRET = 'whsec-github';
+    private const string SECRET = 'whsec-github';
 
     protected function setUp(): void {
         parent::setUp();

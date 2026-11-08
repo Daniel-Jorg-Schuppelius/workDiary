@@ -28,10 +28,10 @@ use Illuminate\Support\Facades\{Cache, Log};
  * dann gelten die config-Defaults.
  */
 class SchedulerRegistrar {
-    public const HEARTBEAT_NAME = 'scheduler.heartbeat';
+    public const string HEARTBEAT_NAME = 'scheduler.heartbeat';
 
     /** Selbstüberwachung — wird bewusst als letzter Job eingehängt. */
-    public const WATCHDOG_KEY = 'scheduler.watchdog';
+    public const string WATCHDOG_KEY = 'scheduler.watchdog';
 
     private ?OperatingWindow $window = null;
 

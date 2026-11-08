@@ -32,9 +32,9 @@ use Throwable;
  * Healthcheck läuft deshalb per Organisation ({@see isPerOrganization()}).
  */
 class SevenIoPlugin extends AbstractPlugin implements SmsProvider {
-    public const ID = 'sevenio';
+    public const string ID = 'sevenio';
 
-    public const SERVICE_PROVIDER = SevenIoServiceProvider::class;
+    public const string SERVICE_PROVIDER = SevenIoServiceProvider::class;
 
     public function name(): string {
         return 'seven.io';

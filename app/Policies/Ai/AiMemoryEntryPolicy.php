@@ -25,7 +25,7 @@ use App\Policies\PermissionPolicy;
 class AiMemoryEntryPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::AiManage,
         'view' => P::AiManage,
         'create' => P::AiManage,

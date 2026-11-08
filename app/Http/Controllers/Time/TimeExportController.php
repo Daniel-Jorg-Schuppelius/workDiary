@@ -32,7 +32,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * Zeit-Exporten auf Basis genehmigter Monatsfreigaben.
  */
 class TimeExportController extends Controller {
-    private const ALLOWED_SORTS = ['period_year', 'profile', 'status', 'rows_count', 'created_at'];
+    private const array ALLOWED_SORTS = ['period_year', 'profile', 'status', 'rows_count', 'created_at'];
 
     public function __construct(private readonly TimeExportService $service) {}
 

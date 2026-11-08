@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\{Builder, Model};
  */
 class ProjectMatchProfile extends AbstractMatchProfile {
     /** Schwelle für die Namens-Ähnlichkeit. */
-    public const FUZZY_THRESHOLD = 0.86;
+    public const float FUZZY_THRESHOLD = 0.86;
 
     public function targetType(): string {
         return Project::class;

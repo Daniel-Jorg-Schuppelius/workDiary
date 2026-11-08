@@ -37,7 +37,7 @@ class QueryController extends Controller {
     use ValidatesUploadedFiles;
 
     /** Obergrenze je Rückfrage — identisch zum Portal-Ticket. */
-    public const MAX_FILES = 5;
+    public const int MAX_FILES = 5;
 
     public function __construct(
         private readonly PortalQuerySubjects $subjects,

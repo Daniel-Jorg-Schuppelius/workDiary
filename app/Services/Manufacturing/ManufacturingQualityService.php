@@ -25,7 +25,7 @@ use Illuminate\Support\Collection;
  * @phpstan-type QualityMetrics array{produced: numeric-string, good: numeric-string, scrap: numeric-string, rework: numeric-string, yield: numeric-string, scrap_rate: numeric-string, rework_rate: numeric-string}
  */
 class ManufacturingQualityService {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     /** @return QualityMetrics */
     public function metricsFor(ManufacturingOrder $order): array {

@@ -63,12 +63,12 @@ class DatevBookingService {
     use AssertsValidatedTransition;
     use ResolvesActorId;
 
-    public const DISK = ExportRunner::DISK;
+    public const string DISK = ExportRunner::DISK;
 
     /** Journal-Ereignisse der Übermittlung (MVP-1277), siehe {@see DatevTransmissionStatus::event()}. */
-    public const TRANSMISSION_EVENTS = ['transmitted', 'confirmed', 'rejected'];
+    public const array TRANSMISSION_EVENTS = ['transmitted', 'confirmed', 'rejected'];
 
-    public const BASE_PATH = 'exports/finance/datev';
+    public const string BASE_PATH = 'exports/finance/datev';
 
     public function __construct(
         private readonly BillingModeResolver $billingModeResolver = new BillingModeResolver(),

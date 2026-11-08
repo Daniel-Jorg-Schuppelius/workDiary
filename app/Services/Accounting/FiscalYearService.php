@@ -29,7 +29,7 @@ use Illuminate\Validation\ValidationException;
  */
 class FiscalYearService {
     /** Monatsperioden; abweichende Rhythmen (Quartal) sind bewusst nicht im ersten Schnitt. */
-    public const PERIOD_LENGTH_MONTHS = 1;
+    public const int PERIOD_LENGTH_MONTHS = 1;
 
     /**
      * Legt ein Geschäftsjahr ab `$startsOn` mit zwölf Monatsperioden an.

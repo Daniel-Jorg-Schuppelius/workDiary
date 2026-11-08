@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Gate;
  * Aktivitäts-Feeds — mit dem Recht des Audit-Protokolls wie die Seite.
  */
 class TeamActivityWidget extends Widget {
-    private const DAYS = 14;
+    private const int DAYS = 14;
 
     public function __construct(private readonly ActivityFeedService $feed) {}
 

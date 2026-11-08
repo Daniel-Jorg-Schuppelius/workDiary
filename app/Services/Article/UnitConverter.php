@@ -25,7 +25,7 @@ use RuntimeException;
  */
 class UnitConverter {
     /** Nachkommastellen der internen Bestandsführung (Basiseinheit). */
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     /** Rechnet eine Menge in der angegebenen Einheit in die Basiseinheit um. */
     public function toBase(Article $article, string $quantity, string $unitCode): string {

@@ -72,7 +72,7 @@ class ChecksConnectionHealthTest extends TestCase {
         return new class extends AbstractPlugin {
             use ChecksConnectionHealth;
 
-            public const ID = 'kon-probe';
+            public const string ID = 'kon-probe';
 
             public bool $configured = true;
 

@@ -33,7 +33,7 @@ class DomainContractCommand extends Command {
      *
      * @var array<string, array<string, list<string>>>
      */
-    public const EXPECTED = [
+    public const array EXPECTED = [
         'querydomainlist' => ['Domain' => ['domain', 'object'], 'Subuser' => ['user', 'domainuser', 'subuser'], 'Status' => ['status', 'domainstatus'], 'Verlängerungsmodus' => ['renewalmode', 'domainrenewalmode'], 'Ablauf' => ['expirationdate', 'registrationexpirationdate', 'domainregistrationexpirationdate']],
         'statusdomain' => ['Status' => ['status'], 'Verlängerungsmodus' => ['renewalmode'], 'Ablauf' => ['expirationdate', 'registrationexpirationdate'], 'Failure-Datum' => ['failuredate'], 'Preis' => ['renewalprice', 'price'], 'Inhaberkontakt' => ['ownercontact', 'ownercontact0']],
         'queryuserlist' => ['Subuser' => ['user', 'username', 'subuser'], 'Übergeordnet' => ['parentuser', 'parent', 'userparent'], 'Klasse' => ['useruserclass', 'userclass', 'class'], 'Saldo' => ['useraccountcurrent', 'balance', 'accountbalance', 'userbalance'], 'Währung' => ['useraccountcurrency', 'currency', 'usercurrency', 'accountcurrency'], 'Kundennummer' => ['userid', 'customernumber', 'customerid']],
@@ -54,7 +54,7 @@ class DomainContractCommand extends Command {
      *
      * @var array<string, list<string>>
      */
-    public const CONSUMED = [
+    public const array CONSUMED = [
         'querydomainlist' => ['registrar', 'domainregistrar', 'domainrepository', 'paiddate', 'accountingdate', 'domainaccountingdate', 'paiduntildate', 'domainpaiduntildate', 'failuredate', 'domainfailuredate', 'finalizationdate', 'domainfinalizationdate', 'registrationdate', 'createddate', 'domaincreateddate', 'nextaction', 'domainnextaction', 'nextactiondate', 'domainnextactiondate', 'updateddate', 'domainupdateddate', 'renewalperiod', 'domainrenewalperiod', 'domainexpirationdate', 'ownercontact', 'ownercontact0', 'domainownercontact', 'registrant', 'registrantcontact', 'ownerhandle', 'admincontact', 'domainadmincontact', 'techcontact', 'domaintechcontact', 'billingcontact', 'domainbillingcontact', 'nameserver', 'nameserver0', 'nameserver1', 'nameserver2', 'nameserver3', 'nameserver4', 'nameserver5', 'dnssec', 'idndomain', 'domainidn', 'wps', 'xwhoisprivacy', 'whoisprivacy', 'domainsubclass', 'subclass', 'transfermode', 'domaintransfermode', 'rgpstatus', 'createdby', 'domaincreatedby', 'updatedby', 'domainupdatedby', 'comment', 'domaincomment', 'iregcreated', 'transferlock'],
         'statusdomain' => ['registrar', 'nextaction', 'nextactiondate', 'transferlock', 'registrationdate', 'createddate', 'paiddate', 'accountingdate', 'paiduntildate', 'finalizationdate', 'currency', 'renewalcurrency', 'revision', 'roid', 'updateddate', 'renewalperiod', 'nameserver', 'admincontact', 'techcontact', 'billingcontact', 'dnssec', 'transfermode', 'rgpstatus', 'repository', 'createdby', 'updatedby', 'comment', 'domain', 'zone'],
         'queryuserlist' => ['useractive', 'active', 'status', 'userstatus', 'depth', 'userdepth', 'level', 'useraccountcredit', 'credit', 'useraccountvat', 'vatrate', 'useremail', 'email', 'usercomment', 'comment', 'usercreateddate', 'createddate', 'lastlogin', 'userlastlogin'],
@@ -71,7 +71,7 @@ class DomainContractCommand extends Command {
      *
      * @var list<string>
      */
-    public const IGNORED = [
+    public const array IGNORED = [
         'count', 'first', 'last', 'limit', 'total', 'column', 'sum', 'sumprice', 'sumvatprice', 'openingbalance', 'openingbalanceprice', 'openingbalancevatprice', 'eventscount', 'eventstotal',
         'userpassword', 'twofactorsecret', 'domainauth', 'contactauth', 'auth', 'userindex', 'userupdateddate', 'contactupdatedby', 'contactcreatedby',
     ];

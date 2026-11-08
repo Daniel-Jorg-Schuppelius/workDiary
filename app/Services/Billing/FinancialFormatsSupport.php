@@ -35,7 +35,7 @@ final class FinancialFormatsSupport {
     /**
      * Sentinel-Klasse aus dem Paket. Ist sie ladbar, ist das Paket installiert.
      */
-    private const SENTINEL = '\\CommonToolkit\\FinancialFormats\\Generators\\DATEV\\DatevDocumentGenerator';
+    private const string SENTINEL = '\\CommonToolkit\\FinancialFormats\\Generators\\DATEV\\DatevDocumentGenerator';
 
     private static ?bool $available = null;
 

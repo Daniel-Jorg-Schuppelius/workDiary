@@ -26,10 +26,10 @@ use Throwable;
  * injizierbar (Guzzle) — im Test über `MockHandler` ersetzt.
  */
 class OpenMeteoProvider implements WeatherProvider {
-    private const ENDPOINT = 'https://api.open-meteo.com/v1/forecast';
+    private const string ENDPOINT = 'https://api.open-meteo.com/v1/forecast';
 
     /** Open-Meteo liefert bis zu 16 Tage; für die Disposition reicht eine Woche (MVP-716). */
-    public const MAX_FORECAST_DAYS = 7;
+    public const int MAX_FORECAST_DAYS = 7;
 
     public function __construct(private readonly PluginApiClient $http) {}
 

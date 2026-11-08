@@ -31,7 +31,7 @@ class MinimumWageSeeder extends Seeder {
      *
      * @var array<string, array<string, string>>
      */
-    public const HISTORY = [
+    public const array HISTORY = [
         'DE' => [
             '2015-01-01' => '8.50',
             '2017-01-01' => '8.84',
@@ -49,7 +49,7 @@ class MinimumWageSeeder extends Seeder {
         ],
     ];
 
-    public const DEFAULT_COUNTRY = 'DE';
+    public const string DEFAULT_COUNTRY = 'DE';
 
     public function run(): void {
         Organization::query()->orderBy('id')->get()->each(function (Organization $org): void {

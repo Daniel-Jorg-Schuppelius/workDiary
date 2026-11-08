@@ -28,7 +28,7 @@ use Illuminate\Http\Client\Response;
  */
 class OpenProjectApiClient implements RemoteTimeWriter {
     /** Elemente pro Seite bei Sammel-Abfragen. */
-    public const PAGE_SIZE = 200;
+    public const int PAGE_SIZE = 200;
 
     private ?PluginApiClient $api = null;
 

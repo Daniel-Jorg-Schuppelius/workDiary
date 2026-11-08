@@ -30,7 +30,7 @@ use OneLogin\Saml2\{AuthnRequest, Response, Settings, Utils};
  * x509certMulti für Zertifikatsrotation. SLO ist bewusst SP-lokal.
  */
 class SamlClient {
-    private const REPLAY_TTL_SECONDS = 600;
+    private const int REPLAY_TTL_SECONDS = 600;
 
     /**
      * Startet SP-initiiertes Login: Redirect-URL zum IdP + AuthnRequest-ID,

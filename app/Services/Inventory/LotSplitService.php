@@ -33,12 +33,12 @@ use RuntimeException;
 class LotSplitService {
     use AssertsStatusTransition;
 
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     /** Idempotenzschlüssel der Umbuchungen; {@see ExternalStockMirror} spiegelt sie nicht. */
-    public const MERGE_KEY_PREFIX = 'lot-merge:';
+    public const string MERGE_KEY_PREFIX = 'lot-merge:';
 
-    public const SPLIT_KEY_PREFIX = 'lot-split:';
+    public const string SPLIT_KEY_PREFIX = 'lot-split:';
 
     public function __construct(
         private readonly LotStockReader $lotStock,

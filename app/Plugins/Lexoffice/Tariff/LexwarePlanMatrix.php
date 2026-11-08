@@ -22,10 +22,10 @@ use App\Plugins\Lexoffice\Enums\{LexwareCoverage, LexwareFeature, LexwarePlan};
  * Sonderfälle in Views.
  */
 final class LexwarePlanMatrix {
-    public const VERSION = '2025-09';
+    public const string VERSION = '2025-09';
 
     /** @var list<string> Öffentliche Quellen des Standes. */
-    public const SOURCES = [
+    public const array SOURCES = [
         'https://www.lexware.de/preise/',
         'https://www.lexware.de/funktionen/serienrechnungen/',
         'https://help.lexware.de/de-form/articles/548863-alles-rund-um-public-api',
@@ -36,7 +36,7 @@ final class LexwarePlanMatrix {
      *
      * @var array<string, array{s: LexwareCoverage, m: LexwareCoverage, l: LexwareCoverage, xl: LexwareCoverage}>
      */
-    private const MATRIX = [
+    private const array MATRIX = [
         'invoices' => ['s' => LexwareCoverage::Supplement, 'm' => LexwareCoverage::Lexware, 'l' => LexwareCoverage::Lexware, 'xl' => LexwareCoverage::Lexware],
         'quotes' => ['s' => LexwareCoverage::Supplement, 'm' => LexwareCoverage::Lexware, 'l' => LexwareCoverage::Lexware, 'xl' => LexwareCoverage::Lexware],
         'dunning' => ['s' => LexwareCoverage::Supplement, 'm' => LexwareCoverage::Lexware, 'l' => LexwareCoverage::Lexware, 'xl' => LexwareCoverage::Lexware],

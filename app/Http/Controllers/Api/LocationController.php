@@ -28,14 +28,14 @@ use OpenApi\Attributes as OA;
  */
 class LocationController extends Controller {
     /** Punkte je Anfrage — der Rest wird verworfen, nicht abgelehnt (Offline-Puffer). */
-    public const MAX_POINTS_PER_REQUEST = 1000;
+    public const int MAX_POINTS_PER_REQUEST = 1000;
 
-    public const MODULE = 'module.standorterfassung';
+    public const string MODULE = 'module.standorterfassung';
 
-    public const OPT_IN_PREFERENCE = 'location_tracking_enabled';
+    public const string OPT_IN_PREFERENCE = 'location_tracking_enabled';
 
     /** Toleranz für Geräteuhren, die vorgehen. */
-    public const MAX_FUTURE_MINUTES = 5;
+    public const int MAX_FUTURE_MINUTES = 5;
 
     public function __construct(
         private readonly LocationIngestService $ingest,

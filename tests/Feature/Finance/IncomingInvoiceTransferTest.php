@@ -252,9 +252,9 @@ final class IncomingInvoiceTransferTest extends TestCase {
 }
 
 final class FakeTransferTarget implements IncomingInvoiceTransferTarget {
-    public const KEY = 'fake-ledger';
+    public const string KEY = 'fake-ledger';
 
-    public const LABEL = 'Testbuchhaltung';
+    public const string LABEL = 'Testbuchhaltung';
 
     public bool $enabled = true;
 

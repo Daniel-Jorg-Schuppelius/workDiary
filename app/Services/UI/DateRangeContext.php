@@ -19,30 +19,30 @@ use Illuminate\Contracts\Session\Session;
  * survives navigation between pages.
  */
 class DateRangeContext {
-    public const PRESET_TODAY = 'today';
+    public const string PRESET_TODAY = 'today';
 
-    public const PRESET_THIS_WEEK = 'this_week';
+    public const string PRESET_THIS_WEEK = 'this_week';
 
-    public const PRESET_THIS_MONTH = 'this_month';
+    public const string PRESET_THIS_MONTH = 'this_month';
 
-    public const PRESET_LAST_MONTH = 'last_month';
+    public const string PRESET_LAST_MONTH = 'last_month';
 
-    public const PRESET_THIS_QUARTER = 'this_quarter';
+    public const string PRESET_THIS_QUARTER = 'this_quarter';
 
-    public const PRESET_LAST_QUARTER = 'last_quarter';
+    public const string PRESET_LAST_QUARTER = 'last_quarter';
 
-    public const PRESET_THIS_YEAR = 'this_year';
+    public const string PRESET_THIS_YEAR = 'this_year';
 
-    public const PRESET_LAST_7_DAYS = 'last_7_days';
+    public const string PRESET_LAST_7_DAYS = 'last_7_days';
 
-    public const PRESET_LAST_30_DAYS = 'last_30_days';
+    public const string PRESET_LAST_30_DAYS = 'last_30_days';
 
-    public const PRESET_LAST_90_DAYS = 'last_90_days';
+    public const string PRESET_LAST_90_DAYS = 'last_90_days';
 
-    public const PRESET_CUSTOM = 'custom';
+    public const string PRESET_CUSTOM = 'custom';
 
     /** @var array<int, string> */
-    public const PRESETS = [
+    public const array PRESETS = [
         self::PRESET_TODAY,
         self::PRESET_THIS_WEEK,
         self::PRESET_THIS_MONTH,
@@ -56,11 +56,11 @@ class DateRangeContext {
         self::PRESET_CUSTOM,
     ];
 
-    private const KEY_PRESET = 'ui.daterange.preset';
+    private const string KEY_PRESET = 'ui.daterange.preset';
 
-    private const KEY_FROM = 'ui.daterange.from';
+    private const string KEY_FROM = 'ui.daterange.from';
 
-    private const KEY_TO = 'ui.daterange.to';
+    private const string KEY_TO = 'ui.daterange.to';
 
     public function __construct(private readonly Session $session) {}
 

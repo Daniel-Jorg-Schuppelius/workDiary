@@ -29,7 +29,7 @@ final class GitlabWebhookTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const TOKEN = 'whtok-gitlab';
+    private const string TOKEN = 'whtok-gitlab';
 
     protected function setUp(): void {
         parent::setUp();

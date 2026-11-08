@@ -38,7 +38,7 @@ class DpiaStep extends Model {
     use BelongsToOrganization;
 
     /** Feste Schrittfolge des Workflows (Position = Index). */
-    public const STEPS = ['description', 'necessity', 'risks', 'mitigations', 'approval'];
+    public const array STEPS = ['description', 'necessity', 'risks', 'mitigations', 'approval'];
 
     protected $table = 'privacy_dpia_steps';
 

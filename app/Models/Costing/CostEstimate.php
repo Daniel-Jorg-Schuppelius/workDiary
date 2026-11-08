@@ -52,17 +52,17 @@ class CostEstimate extends Model implements HasDocumentLines {
     use HasSqid;
 
     /** Die vier HOAI-Stufen, in der Reihenfolge des Vorhabens. */
-    public const STAGE_ESTIMATE = 'estimate';
-    public const STAGE_CALCULATION = 'calculation';
-    public const STAGE_QUOTE = 'quote';
-    public const STAGE_FINAL = 'final';
+    public const string STAGE_ESTIMATE = 'estimate';
+    public const string STAGE_CALCULATION = 'calculation';
+    public const string STAGE_QUOTE = 'quote';
+    public const string STAGE_FINAL = 'final';
 
-    public const STAGES = [self::STAGE_ESTIMATE, self::STAGE_CALCULATION, self::STAGE_QUOTE, self::STAGE_FINAL];
+    public const array STAGES = [self::STAGE_ESTIMATE, self::STAGE_CALCULATION, self::STAGE_QUOTE, self::STAGE_FINAL];
 
     /** Woher die Zahlen stammen — eine fremde Datei ist etwas anderes als eigene Ableitung. */
-    public const SOURCE_IMPORT = 'x51_import';
-    public const SOURCE_DERIVED = 'derived';
-    public const SOURCE_MANUAL = 'manual';
+    public const string SOURCE_IMPORT = 'x51_import';
+    public const string SOURCE_DERIVED = 'derived';
+    public const string SOURCE_MANUAL = 'manual';
 
     protected $table = 'cost_estimates';
 

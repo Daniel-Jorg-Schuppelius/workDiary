@@ -41,7 +41,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class ComponentsController extends Controller {
     use RequiresPlatformOperator;
 
-    private const SBOM_DIR = 'sbom';
+    private const string SBOM_DIR = 'sbom';
 
     public function index(
         PluginManager $plugins,

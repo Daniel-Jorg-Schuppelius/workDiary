@@ -27,7 +27,7 @@ final class LeasingDocumentExtractionTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const TEXT = "Leasingvertrag Nr. LV-2026-117\nLeasingbeginn: 01.10.2026\nDie Laufzeit beträgt 36 Monate.\nLeasingrate: 489,90 EUR monatlich zzgl. USt.\nLeasingsonderzahlung: 5.000,00 EUR\nKalkulierter Restwert: 12.345,67 EUR\nKaufoption zu 12.000,00 EUR zum Vertragsende.";
+    private const string TEXT = "Leasingvertrag Nr. LV-2026-117\nLeasingbeginn: 01.10.2026\nDie Laufzeit beträgt 36 Monate.\nLeasingrate: 489,90 EUR monatlich zzgl. USt.\nLeasingsonderzahlung: 5.000,00 EUR\nKalkulierter Restwert: 12.345,67 EUR\nKaufoption zu 12.000,00 EUR zum Vertragsende.";
 
     private User $admin;
 

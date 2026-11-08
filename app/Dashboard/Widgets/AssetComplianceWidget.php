@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Gate;
  * „überfällig" ist, entscheiden danach die Toleranzen des Modells.
  */
 class AssetComplianceWidget extends Widget {
-    private const WINDOW_DAYS = 90;
+    private const int WINDOW_DAYS = 90;
 
     public function key(): string {
         return 'asset-compliance';

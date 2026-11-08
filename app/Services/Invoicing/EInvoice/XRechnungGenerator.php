@@ -58,11 +58,11 @@ class XRechnungGenerator {
      * Seit php-erechnung-toolkit v0.1.12 die korrekte 3.0-Kennung
      * `urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0`.
      */
-    public const CUSTOMIZATION_ID = ERechnungProfile::XRECHNUNG->value;
+    public const string CUSTOMIZATION_ID = ERechnungProfile::XRECHNUNG->value;
 
-    public const PROFILE_ID = 'urn:fdc:peppol.eu:2017:poacc:billing:01:1.0';
+    public const string PROFILE_ID = 'urn:fdc:peppol.eu:2017:poacc:billing:01:1.0';
 
-    private const DEFAULT_PAYMENT_TERMS_DAYS = 14;
+    private const int DEFAULT_PAYMENT_TERMS_DAYS = 14;
 
     /**
      * Prüft alle Pflichtangaben für eine E-Rechnung. Fehler verhindern die

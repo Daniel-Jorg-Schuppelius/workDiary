@@ -29,7 +29,7 @@ final class CalendlyWebhookTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const SIGNING_KEY = 'test-signing-key';
+    private const string SIGNING_KEY = 'test-signing-key';
 
     private CalendlyWebhookSubscription $subscription;
 

@@ -31,9 +31,9 @@ use Throwable;
  * E-Mail→AAD-ID 24 h je Org; Presence-Batch 60 s je Org.
  */
 class MsgraphPresenceService {
-    private const PRESENCE_TTL_SECONDS = 60;
+    private const int PRESENCE_TTL_SECONDS = 60;
 
-    private const ID_TTL_SECONDS = 86400;
+    private const int ID_TTL_SECONDS = 86400;
 
     /**
      * Presence je E-Mail (lowercase) — leer, wenn Verbindung/Scope fehlen.

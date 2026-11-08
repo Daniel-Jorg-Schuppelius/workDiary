@@ -43,21 +43,21 @@ use Illuminate\Support\Facades\Cache;
  */
 final class ResaleOverview {
     /** Ab diesem Alter gilt der Anbieterstand als veraltet (Übersicht und Digest). */
-    public const IMPORT_STALE_DAYS = 30;
+    public const int IMPORT_STALE_DAYS = 30;
 
-    public const RENEWAL_DAYS = 30;
+    public const int RENEWAL_DAYS = 30;
 
     /** Karenz (Phase 163, MVP-1430): eine fällige Periode wird erst nach so vielen Tagen zur Aufgabe. */
-    public const GRACE_DAYS = 21;
+    public const int GRACE_DAYS = 21;
 
     /** Toleranz vor dem Periodenbeginn, in der die nächste Ausführung der Serienvorlage noch „für diese Periode“ zählt. */
-    public const PLAN_TOLERANCE_DAYS = 7;
+    public const int PLAN_TOLERANCE_DAYS = 7;
 
     /** Aufgabengruppen des Überblicks in Anzeigereihenfolge (Phase 163, MVP-1433). */
-    public const GROUPS = ['berechnen', 'zuordnen', 'plan', 'anbieter'];
+    public const array GROUPS = ['berechnen', 'zuordnen', 'plan', 'anbieter'];
 
     /** Lebensdauer der Zähler im Cache (Sekunden). */
-    public const CACHE_TTL = 60;
+    public const int CACHE_TTL = 60;
 
     public function __construct(
         private readonly LicenseAccountOverview $accounts,

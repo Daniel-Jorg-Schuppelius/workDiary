@@ -23,9 +23,9 @@ use App\Services\Routing\Solver\Contracts\TourSolver;
  * Vorwärtslauf über die Sequenz, damit Pausen und Fenster exakt eingehen.
  */
 final class HeuristicTourSolver implements TourSolver {
-    public const WAITING_WEIGHT = 0.5;
+    public const float WAITING_WEIGHT = 0.5;
 
-    private const MAX_IMPROVEMENT_PASSES = 20;
+    private const int MAX_IMPROVEMENT_PASSES = 20;
 
     public function name(): string {
         return 'heuristic';

@@ -28,9 +28,9 @@ use RuntimeException;
  * auseinanderlaufen. Löschungen werden nie weitergegeben.
  */
 class MsgraphOutboxDispatcher implements IntegrationOutboxDispatcher {
-    public const OP_TODO_TASK_CREATE = 'todo-task.create';
+    public const string OP_TODO_TASK_CREATE = 'todo-task.create';
 
-    public const OP_TODO_TASK_UPDATE = 'todo-task.update';
+    public const string OP_TODO_TASK_UPDATE = 'todo-task.update';
 
     public function pluginId(): string {
         return \App\Plugins\Msgraph\MsgraphPlugin::ID;

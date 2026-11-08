@@ -34,7 +34,7 @@ final class PhoneDirectoryTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const LOOKUP_URL = 'https://directory.example/lookup';
+    private const string LOOKUP_URL = 'https://directory.example/lookup';
 
     private User $owner;
 

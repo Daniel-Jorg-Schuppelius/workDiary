@@ -29,7 +29,7 @@ use RuntimeException;
  * abgeleitet (teilweise/vollständig geliefert).
  */
 class GoodsReceiptService {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     public function __construct(
         private readonly InventoryValuationManager $valuation,

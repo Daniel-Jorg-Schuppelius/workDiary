@@ -44,9 +44,9 @@ class CrisisCase extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const CATEGORIES = ['it_outage', 'security', 'privacy', 'safety', 'infrastructure', 'supply', 'other'];
+    public const array CATEGORIES = ['it_outage', 'security', 'privacy', 'safety', 'infrastructure', 'supply', 'other'];
 
-    public const SEVERITIES = ['minor', 'major', 'critical'];
+    public const array SEVERITIES = ['minor', 'major', 'critical'];
 
     protected $fillable = [
         'organization_id', 'title', 'category', 'severity', 'status',

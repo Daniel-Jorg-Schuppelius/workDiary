@@ -42,7 +42,7 @@ class CardDavAdminController extends Controller {
     use ResolvesPluginOrgContext;
 
     /** Session-Key der zuletzt entdeckten Adressbücher (Discovery-Ergebnis). */
-    private const SESSION_BOOKS = 'carddav_addressbooks';
+    private const string SESSION_BOOKS = 'carddav_addressbooks';
 
     public function index(): View {
         $admin = $this->admin();

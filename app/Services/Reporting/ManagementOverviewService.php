@@ -24,7 +24,7 @@ use Throwable;
  * Module für einen Betrachter — Seite, PDF und E-Mail nutzen dieselben Zahlen.
  */
 final class ManagementOverviewService {
-    public const GROUPS = ['finance', 'operations', 'sales', 'service', 'quality'];
+    public const array GROUPS = ['finance', 'operations', 'sales', 'service', 'quality'];
 
     public function __construct(private readonly ModuleRegistry $modules) {}
 

@@ -40,7 +40,7 @@ use RuntimeException;
  */
 class PurchaseOrderExportService {
     /** GS1 GTIN scheme identifier (ISO/IEC 6523). */
-    private const GTIN_SCHEME = '0160';
+    private const string GTIN_SCHEME = '0160';
 
     /**
      * Ob der Bestell-Zweig des Toolkits verfügbar ist (Order-Klassen vorhanden).

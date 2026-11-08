@@ -17,11 +17,11 @@ use App\Models\Platform\Organization;
 
 /** Anschreiben-/Mahntexte und Portal-Antwortübersetzung per KI; Null-Bindung wirft AiUnavailableException. */
 interface CoveringTextSuggester {
-    public const CAPABILITY_MAIL_TEXT = 'invoicing.mail_text';
+    public const string CAPABILITY_MAIL_TEXT = 'invoicing.mail_text';
 
-    public const CAPABILITY_DUNNING_TEXT = 'invoicing.dunning_text';
+    public const string CAPABILITY_DUNNING_TEXT = 'invoicing.dunning_text';
 
-    public const CAPABILITY_ANSWER_TRANSLATE = 'portal.answer_translate';
+    public const string CAPABILITY_ANSWER_TRANSLATE = 'portal.answer_translate';
 
     public function suggestMailText(Invoice $invoice): string;
 

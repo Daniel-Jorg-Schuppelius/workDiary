@@ -57,7 +57,7 @@ class ProcedureDocumentation extends Model {
     use HasSqid;
 
     /** Freitext-Pflichtteile nach GoBD Rz. 151 ff. (Reihenfolge = Dokument). */
-    public const TEXT_FIELDS = [
+    public const array TEXT_FIELDS = [
         'general_description',
         'user_documentation',
         'technical_documentation',

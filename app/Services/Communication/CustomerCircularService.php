@@ -35,7 +35,7 @@ use Throwable;
  */
 class CustomerCircularService {
     /** Org-Einstellung „Versand braucht eine zweite Freigabe" (Feature 119). */
-    public const APPROVAL_SETTING = 'communication.circular_approval';
+    public const string APPROVAL_SETTING = 'communication.circular_approval';
 
     public function __construct(private readonly CommunicationNoteService $notes) {}
 

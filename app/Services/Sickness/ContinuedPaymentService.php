@@ -31,7 +31,7 @@ use Illuminate\Database\Eloquent\Collection;
  *    Ohne Verweis beginnt jeder Fall mit vollem Anspruch.
  */
 class ContinuedPaymentService {
-    private const NEW_ENTITLEMENT_AFTER_MONTHS = 12;
+    private const int NEW_ENTITLEMENT_AFTER_MONTHS = 12;
 
     public function statusFor(User $user, ?CarbonInterface $reference = null): ContinuedPaymentStatus {
         $ref = CarbonImmutable::parse(($reference ?? CarbonImmutable::now())->toDateString());

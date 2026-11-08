@@ -27,11 +27,11 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSett
 class GlpiPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
     use ChecksConnectionHealth, RendersTaskLink;
 
-    public const ID = 'glpi';
+    public const string ID = 'glpi';
 
-    public const SERVICE_PROVIDER = GlpiServiceProvider::class;
+    public const string SERVICE_PROVIDER = GlpiServiceProvider::class;
 
-    public const EXT_TYPE_TICKET = 'ticket';
+    public const string EXT_TYPE_TICKET = 'ticket';
 
     public function name(): string {
         return 'GLPI';

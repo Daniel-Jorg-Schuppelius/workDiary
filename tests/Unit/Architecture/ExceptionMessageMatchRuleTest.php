@@ -27,13 +27,13 @@ class ExceptionMessageMatchRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad → Begründung */
-    private const ALLOW_LIST = [];
+    private const array ALLOW_LIST = [];
 
     /** Textfunktion, in deren Argumenten (bis zwei Klammerebenen tief) eine getMessage()-Rückgabe steckt. */
-    private const PATTERN_FUNCTION = '/\b(?:str_contains|str_starts_with|str_ends_with|stripos|strpos|mb_stripos|mb_strpos|preg_match|in_array|Str::(?:contains|containsAll|startsWith|endsWith|is|isMatch))\s*\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*?getMessage\(\)/';
+    private const string PATTERN_FUNCTION = '/\b(?:str_contains|str_starts_with|str_ends_with|stripos|strpos|mb_stripos|mb_strpos|preg_match|in_array|Str::(?:contains|containsAll|startsWith|endsWith|is|isMatch))\s*\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*?getMessage\(\)/';
 
     /** Direkter Vergleich einer Meldung mit einem String-Literal, auch in Yoda-Schreibweise. */
-    private const PATTERN_COMPARE = '/getMessage\(\)\s*(?:===|!==|==|!=)\s*[\'"]|[\'"]\s*(?:===|!==|==|!=)\s*\$\w+(?:->\w+(?:\(\))?)*->getMessage\(\)/';
+    private const string PATTERN_COMPARE = '/getMessage\(\)\s*(?:===|!==|==|!=)\s*[\'"]|[\'"]\s*(?:===|!==|==|!=)\s*\$\w+(?:->\w+(?:\(\))?)*->getMessage\(\)/';
 
     public function test_error_handling_reacts_to_exception_classes_not_message_texts(): void {
         $files = [

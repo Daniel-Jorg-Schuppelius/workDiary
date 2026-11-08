@@ -51,7 +51,7 @@ class ResaleAccountAllocation extends Model {
     use HasSqid;
 
     /** Präfix in `resale_subscriptions.sync_status` einer abgeleiteten Abtretung. */
-    public const DERIVED_PREFIX = 'alloc:';
+    public const string DERIVED_PREFIX = 'alloc:';
 
     protected $table = 'resale_account_allocations';
 

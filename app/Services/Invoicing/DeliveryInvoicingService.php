@@ -34,7 +34,7 @@ use Illuminate\Validation\ValidationException;
  * wird hier nie gebucht.
  */
 class DeliveryInvoicingService {
-    public const TARGET_LOCAL = 'workdiary';
+    public const string TARGET_LOCAL = 'workdiary';
 
     /**
      * Abrechenbare und blockierte Auslieferungen des Rechnungskunden im Zeitraum

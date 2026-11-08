@@ -29,7 +29,7 @@ use Illuminate\View\View;
  * Wissensarchiv, Ideenlandkarten, Sammlungen) bleiben unverändert.
  */
 class KnowledgeHubController extends Controller {
-    private const PER_PAGE = 24;
+    private const int PER_PAGE = 24;
 
     public function __construct(
         private readonly KnowledgeHubService $hub,

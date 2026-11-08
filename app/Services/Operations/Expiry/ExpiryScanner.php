@@ -37,7 +37,7 @@ use Illuminate\Support\Facades\{DB, Log};
  */
 class ExpiryScanner {
     /** @var list<string> Aufgabentypen, die dieser Scanner verantwortet */
-    private const MANAGED_TYPES = [
+    private const array MANAGED_TYPES = [
         'license_expiring',
         'license_limit_near',
         'credential_expiring',

@@ -34,7 +34,7 @@ class DeviationRecorder {
     // Zentraler Event-Schreiber (Vollaudit 2026-07, N38).
     use \App\Services\Procedure\Concerns\RecordsProcedureRunEvents;
 
-    public const MIN_REASON_LENGTH = 20;
+    public const int MIN_REASON_LENGTH = 20;
 
     public function __construct(
         private readonly OpenIssueService $openIssues,

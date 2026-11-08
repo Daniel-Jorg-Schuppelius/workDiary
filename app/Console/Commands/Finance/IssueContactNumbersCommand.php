@@ -32,7 +32,7 @@ class IssueContactNumbersCommand extends Command {
     use IteratesOrganizations;
 
     /** Obergrenze je Organisation und Lauf; Lexoffice erlaubt zwei Anfragen je Sekunde. */
-    private const BATCH = 200;
+    private const int BATCH = 200;
 
     protected $signature = 'accounting:issue-contact-numbers ' . self::ORGANIZATION_OPTION;
 

@@ -37,7 +37,7 @@ use Illuminate\Support\{Carbon, Str};
  * und den Schlüssel — es fehlt die Proof-Suite, nicht das Modell.
  */
 class LearningCredentialService {
-    public const ALGORITHM = 'ed25519';
+    public const string ALGORITHM = 'ed25519';
 
     /** Schlüssel der Organisation holen oder anlegen. */
     public function keyFor(Organization $organization): LearningIssuerKey {

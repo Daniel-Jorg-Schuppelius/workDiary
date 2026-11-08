@@ -31,9 +31,9 @@ class PlaneClient {
     use GuardsPluginApiResponses;
 
     /** Plane Cloud trennt API- und App-Host; Links zeigen auf die App. */
-    private const CLOUD_API_HOST = 'api.plane.so';
+    private const string CLOUD_API_HOST = 'api.plane.so';
 
-    private const CLOUD_APP_URL = 'https://app.plane.so';
+    private const string CLOUD_APP_URL = 'https://app.plane.so';
 
     private ?PluginApiClient $api = null;
 

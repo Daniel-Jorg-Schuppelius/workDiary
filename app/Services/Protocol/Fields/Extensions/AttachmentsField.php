@@ -22,7 +22,7 @@ use App\Services\Fields\FieldDefinition;
  * gegen die Foto-Tabelle.
  */
 class AttachmentsField implements FieldExtension {
-    public const KEY = 'protocol.attachments';
+    public const string KEY = 'protocol.attachments';
 
     public function key(): string {
         return self::KEY;

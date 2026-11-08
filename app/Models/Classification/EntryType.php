@@ -50,15 +50,15 @@ class EntryType extends Model {
 
     use HasSqid;
 
-    public const SLUG_GENERAL = 'general';
+    public const string SLUG_GENERAL = 'general';
 
-    public const SLUG_SERVICE = 'service';
+    public const string SLUG_SERVICE = 'service';
 
-    public const SLUG_CARE_VISIT = 'care_visit';
+    public const string SLUG_CARE_VISIT = 'care_visit';
 
-    public const SLUG_IT_TICKET = 'it_ticket';
+    public const string SLUG_IT_TICKET = 'it_ticket';
 
-    public const SLUG_HVAC_JOB = 'hvac_job';
+    public const string SLUG_HVAC_JOB = 'hvac_job';
 
     protected $fillable = [
         'organization_id',

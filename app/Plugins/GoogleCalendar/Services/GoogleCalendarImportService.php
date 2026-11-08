@@ -42,7 +42,7 @@ use Throwable;
  * eigenen PUTs erscheinen in der Änderungsliste ebenfalls.
  */
 class GoogleCalendarImportService {
-    private const MAX_PAGES = 500;
+    private const int MAX_PAGES = 500;
 
     public function __construct(private readonly CalendarImportStager $series) {}
 

@@ -25,7 +25,7 @@ use Jose\Component\Core\JWKSet;
  * — so übersteht eine Rotation der Gegenseite den Cache.
  */
 final class LearningLtiRemoteKeys {
-    private const TTL_SECONDS = 600;
+    private const int TTL_SECONDS = 600;
 
     public function __construct(private readonly PluginHttpFactory $http) {}
 

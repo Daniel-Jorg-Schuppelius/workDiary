@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Gate;
 
 /** Offene Vertragspflichten und -fristen der nächsten Wochen. */
 class ContractDeadlinesWidget extends Widget {
-    private const WINDOW_DAYS = 60;
+    private const int WINDOW_DAYS = 60;
 
     public function key(): string {
         return 'contract-deadlines';

@@ -54,12 +54,12 @@ use Throwable;
  */
 abstract class AbstractTaskImportService extends AbstractTaskSyncService {
     /** Überlappung des Delta-Laufs mit dem letzten Aufholpunkt. */
-    public const OVERLAP_MINUTES = 10;
+    public const int OVERLAP_MINUTES = 10;
 
-    private const LOCK_SECONDS = 1800;
+    private const int LOCK_SECONDS = 1800;
 
     /** Höchstzahl der Vorschauzeilen. */
-    public const PREVIEW_LIMIT = 200;
+    public const int PREVIEW_LIMIT = 200;
 
     /** @return class-string<TConnection> */
     abstract protected function connectionModel(): string;

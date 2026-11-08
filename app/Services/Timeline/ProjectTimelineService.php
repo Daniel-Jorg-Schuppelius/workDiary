@@ -28,7 +28,7 @@ use Carbon\CarbonImmutable;
  * (Projekte können groß werden).
  */
 class ProjectTimelineService {
-    private const PER_SOURCE_CAP = 100;
+    private const int PER_SOURCE_CAP = 100;
 
     /**
      * @return array{items: list<TimelineItem>, hasMore: bool}

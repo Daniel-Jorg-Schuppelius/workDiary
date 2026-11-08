@@ -34,10 +34,10 @@ use CommonToolkit\Helper\Data\StringHelper;
  */
 final class SmsText {
     /** Nutzlast eines GSM-7-Segments. */
-    public const LIMIT_GSM7 = 160;
+    public const int LIMIT_GSM7 = 160;
 
     /** Nutzlast eines UCS-2-Segments (sobald ein Zeichen außerhalb GSM-7 liegt). */
-    public const LIMIT_UCS2 = 70;
+    public const int LIMIT_UCS2 = 70;
 
     /**
      * GSM 03.38 Basiszeichensatz + Erweiterungstabelle, ohne Steuerzeichen
@@ -47,7 +47,7 @@ final class SmsText {
      * Die Erweiterungszeichen kosten zwei Septette; das ist hier bewusst nicht
      * mitgezählt — die Kürzung liegt dadurch auf der sicheren Seite, nie darüber.
      */
-    private const GSM7_BASE = '@£$¥èéùìòÇØøÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !"#¤%&\'()*+,-./0123456789:;<=>?'
+    private const string GSM7_BASE = '@£$¥èéùìòÇØøÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !"#¤%&\'()*+,-./0123456789:;<=>?'
         . '¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà'
         . '^{}\\[~]|€';
 

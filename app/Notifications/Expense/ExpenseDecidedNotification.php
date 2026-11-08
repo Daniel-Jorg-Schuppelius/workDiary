@@ -22,9 +22,9 @@ use Illuminate\Notifications\Messages\MailMessage;
  * Ablehnungsgrund und einen Link zur Spese.
  */
 class ExpenseDecidedNotification extends DirectNotification {
-    private const TITLE_KEY = 'Spese :status: :amount';
+    private const string TITLE_KEY = 'Spese :status: :amount';
 
-    private const MESSAGE_KEY = 'Ihre Spese wurde :status.';
+    private const string MESSAGE_KEY = 'Ihre Spese wurde :status.';
 
     /**
      * @param  list<string>  $channels

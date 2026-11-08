@@ -62,7 +62,7 @@ use Throwable;
  */
 final class BankStatementParser {
     /** Fallback-Währung für Formate ohne Währungsangabe (QIF/QXF). */
-    private const FALLBACK_CURRENCY = 'EUR';
+    private const string FALLBACK_CURRENCY = 'EUR';
 
     /**
      * Inhaltsbasierte Formaterkennung (nie anhand der Dateiendung) über das

@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Collection;
  */
 final class ProviderSuppliers {
     /** Namensbestandteile (klein) je Anbieter für den Vorschlag. */
-    private const HINTS = [
+    private const array HINTS = [
         'domainreselling' => ['united-domains', 'united domains', 'udag'],
         'qualityhosting' => ['qualityhosting', 'quality hosting', 'quality-hosting'],
         'telekom_marketplace' => ['telekom'],

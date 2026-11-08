@@ -26,12 +26,12 @@ class PermitController extends Controller {
     use ParsesIndexQuery;
     use ResolvesCurrentOrganization;
 
-    private const ALLOWED_SORTS = ['title', 'authority', 'status', 'valid_until'];
+    private const array ALLOWED_SORTS = ['title', 'authority', 'status', 'valid_until'];
 
     /** Nachweis-Dokument: erlaubte Endungen/MIME (Teilmenge des AttachmentControllers). */
-    private const EVIDENCE_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png', 'docx'];
+    private const array EVIDENCE_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png', 'docx'];
 
-    private const EVIDENCE_MIMES = [
+    private const array EVIDENCE_MIMES = [
         'application/pdf',
         'image/jpeg',
         'image/png',

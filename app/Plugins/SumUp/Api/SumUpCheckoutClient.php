@@ -26,7 +26,7 @@ use RuntimeException;
 /** SumUp Checkouts API mit gehostetem Checkout. */
 class SumUpCheckoutClient {
     /** Ein gehosteter Checkout gilt 30 Minuten. */
-    private const SESSION_MINUTES = 30;
+    private const int SESSION_MINUTES = 30;
 
     private ?PluginApiClient $api = null;
 

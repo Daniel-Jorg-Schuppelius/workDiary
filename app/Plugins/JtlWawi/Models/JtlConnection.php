@@ -62,9 +62,9 @@ class JtlConnection extends Model {
     use HasFactory;
     use HasPrivateNetworkOptIn;
 
-    public const MODE_ON_PREMISE = 'on_premise';
+    public const string MODE_ON_PREMISE = 'on_premise';
 
-    public const MODE_CLOUD = 'cloud';
+    public const string MODE_CLOUD = 'cloud';
 
     protected $table = 'jtl_connections';
 

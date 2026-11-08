@@ -32,13 +32,13 @@ final class DamageCaseService {
     use AssertsStatusTransition;
 
     /** Felder, die ohne Statuswechsel gepflegt werden. */
-    public const EDITABLE = [
+    public const array EDITABLE = [
         'kind', 'title', 'description', 'occurred_at', 'reported_at', 'insurer_name', 'policy_number',
         'claim_number', 'estimated_amount', 'deductible_amount', 'currency', 'responsible_user_id',
     ];
 
     /** Aktenarten mit Schadensfällen (MVP-920), Reihenfolge für Filter und Anzeige. */
-    public const SUBJECTS = [
+    public const array SUBJECTS = [
         \App\Models\Rental\RentalCase::class,
         \App\Models\AssetFinance\AssetFinanceContract::class,
         \App\Models\Claims\ClaimCase::class,

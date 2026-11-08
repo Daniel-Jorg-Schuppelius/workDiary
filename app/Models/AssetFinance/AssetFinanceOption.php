@@ -34,7 +34,7 @@ class AssetFinanceOption extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const KINDS = ['purchase', 'extension', 'early_termination'];
+    public const array KINDS = ['purchase', 'extension', 'early_termination'];
 
     protected $fillable = [
         'organization_id', 'asset_finance_contract_id', 'kind',

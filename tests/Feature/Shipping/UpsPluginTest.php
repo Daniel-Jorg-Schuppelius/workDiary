@@ -36,9 +36,9 @@ class UpsPluginTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const TOKEN_URL = 'https://wwwcie.ups.com/security/v1/oauth/token';
+    private const string TOKEN_URL = 'https://wwwcie.ups.com/security/v1/oauth/token';
 
-    private const SHIP_URL = 'https://wwwcie.ups.com/api/shipments/v2409/ship*';
+    private const string SHIP_URL = 'https://wwwcie.ups.com/api/shipments/v2409/ship*';
 
     protected function setUp(): void {
         parent::setUp();

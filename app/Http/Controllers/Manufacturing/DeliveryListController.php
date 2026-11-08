@@ -24,7 +24,7 @@ use Illuminate\View\View;
 class DeliveryListController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public const SHIPPING_FILTERS = ['all', 'open', 'shipped'];
+    public const array SHIPPING_FILTERS = ['all', 'open', 'shipped'];
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', ManufacturingOrder::class);

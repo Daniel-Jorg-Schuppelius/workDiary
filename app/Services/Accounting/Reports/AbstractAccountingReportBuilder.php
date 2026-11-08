@@ -33,20 +33,20 @@ use Illuminate\Support\Facades\DB;
  */
 abstract class AbstractAccountingReportBuilder {
     /** Zustände, die in eine Auswertung eingehen. */
-    protected const POSTED = [AccountingEntryStatus::Posted->value, AccountingEntryStatus::Reversed->value];
+    protected const array POSTED = [AccountingEntryStatus::Posted->value, AccountingEntryStatus::Reversed->value];
 
     /** Vergleichsmodi der Ergebnisberichte (Feature 142, MVP-709). */
-    public const COMPARE_NONE = 'none';
+    public const string COMPARE_NONE = 'none';
 
-    public const COMPARE_PREVIOUS_YEAR = 'previous_year';
+    public const string COMPARE_PREVIOUS_YEAR = 'previous_year';
 
-    public const COMPARE_PREVIOUS_MONTH = 'previous_month';
+    public const string COMPARE_PREVIOUS_MONTH = 'previous_month';
 
-    public const COMPARE_MONTHS = 'months';
+    public const string COMPARE_MONTHS = 'months';
 
-    public const COMPARE_BUDGET = 'budget';
+    public const string COMPARE_BUDGET = 'budget';
 
-    public const COMPARE_MODES = [
+    public const array COMPARE_MODES = [
         self::COMPARE_NONE,
         self::COMPARE_PREVIOUS_YEAR,
         self::COMPARE_PREVIOUS_MONTH,

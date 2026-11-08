@@ -32,7 +32,7 @@ final class QualityHostingContractsReader {
     use OpensXlsxDocuments;
     use ParsesImportValues;
 
-    private const REQUIRED = [
+    private const array REQUIRED = [
         'kundennummer',
         'kunde',
         'produktname',
@@ -45,9 +45,9 @@ final class QualityHostingContractsReader {
     ];
 
     /** @var list<string> Kannspalten (leer, wenn sie fehlen) */
-    private const OPTIONAL = ['partner-kundennummer', 'vertragslaufzeit', 'preis pro lizenz (vertragslaufzeit)'];
+    private const array OPTIONAL = ['partner-kundennummer', 'vertragslaufzeit', 'preis pro lizenz (vertragslaufzeit)'];
 
-    private const END_PATTERN = '/(gek(?:ü|ue)ndigt|beendet|endet|l(?:ä|ae)uft aus|bis zum)[^0-9]*(\d{1,2}\.\d{1,2}\.\d{4})/iu';
+    private const string END_PATTERN = '/(gek(?:ü|ue)ndigt|beendet|endet|l(?:ä|ae)uft aus|bis zum)[^0-9]*(\d{1,2}\.\d{1,2}\.\d{4})/iu';
 
     public function read(string $file, ?string $displayName = null): PurchasesImport {
         $name = $displayName ?? basename($file);

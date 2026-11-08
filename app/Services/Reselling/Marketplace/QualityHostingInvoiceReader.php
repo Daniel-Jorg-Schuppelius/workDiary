@@ -32,19 +32,19 @@ use Throwable;
  * Dublette verwirft (Review 2026-09-10, A7/B18).
  */
 final class QualityHostingInvoiceReader {
-    private const MONTHS = ['januar' => 1, 'februar' => 2, 'märz' => 3, 'maerz' => 3, 'april' => 4, 'mai' => 5, 'juni' => 6, 'juli' => 7, 'august' => 8, 'september' => 9, 'oktober' => 10, 'november' => 11, 'dezember' => 12, 'january' => 1, 'february' => 2, 'march' => 3, 'may' => 5, 'june' => 6, 'july' => 7, 'october' => 10, 'december' => 12];
+    private const array MONTHS = ['januar' => 1, 'februar' => 2, 'märz' => 3, 'maerz' => 3, 'april' => 4, 'mai' => 5, 'juni' => 6, 'juli' => 7, 'august' => 8, 'september' => 9, 'oktober' => 10, 'november' => 11, 'dezember' => 12, 'january' => 1, 'february' => 2, 'march' => 3, 'may' => 5, 'june' => 6, 'july' => 7, 'october' => 10, 'december' => 12];
 
     /** Positionszeile: Pos Menge Beschreibung Einzelpreis Gesamt. */
-    private const POSITION = '/^(\d+)\s+(\d+(?:[.,]\d+)?)\s+(.+?)\s+(-?[\d.]+,\d{2,5})\s+(-?[\d.]+,\d{2})$/u';
+    private const string POSITION = '/^(\d+)\s+(\d+(?:[.,]\d+)?)\s+(.+?)\s+(-?[\d.]+,\d{2,5})\s+(-?[\d.]+,\d{2})$/u';
 
-    private const COMPANY = '/^(?:Endkunde|End customer|End Customer):\s+(.+)$/u';
+    private const string COMPANY = '/^(?:Endkunde|End customer|End Customer):\s+(.+)$/u';
 
-    private const CONTRACT = '/(?:Vertrag|Contract):\s*(\S+)/u';
+    private const string CONTRACT = '/(?:Vertrag|Contract):\s*(\S+)/u';
 
-    private const CONTRACT_LINE = '/^(?:Vertrag|Contract):\s*(\S+)/u';
+    private const string CONTRACT_LINE = '/^(?:Vertrag|Contract):\s*(\S+)/u';
 
     /** Ende des Detailblocks einer Position bzw. einer umgebrochenen Beschreibung. */
-    private const BLOCK_END = '/^(?:\d+\s+\d|Total|Dienst:|Service:|Vertrag:|Contract:|Grundgeb|Base fee|Basic fee)/u';
+    private const string BLOCK_END = '/^(?:\d+\s+\d|Total|Dienst:|Service:|Vertrag:|Contract:|Grundgeb|Base fee|Basic fee)/u';
 
     /**
      * Text zuerst zeilenausgerichtet aus dem Textlayer, dann der entzifferte

@@ -37,7 +37,7 @@ class PurchaseEntriesTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const INVOICE_TEXT = <<<'TXT'
+    private const string INVOICE_TEXT = <<<'TXT'
 QualityHosting GmbH- Postbox 791407 - D-11516 Berlin
 Rechnung
 Rechnungsnr. 31970911 Kundennr. 95229
@@ -66,7 +66,7 @@ Vertrag: CNLCON00062
 Total EUR ohne MwSt. 336,05
 TXT;
 
-    private const CREDIT_TEXT = <<<'TXT'
+    private const string CREDIT_TEXT = <<<'TXT'
 Storno zu Rechnung Seite 1
 Gutschriftsnr. 7006872 Kundennr. 95229
 Gutschriftsdatum 2. Juni 2026

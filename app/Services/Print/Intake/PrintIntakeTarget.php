@@ -37,7 +37,7 @@ use Illuminate\Validation\ValidationException;
  */
 class PrintIntakeTarget implements IntakeHandoverTarget {
     /** Lizenz der Fertigung, an der jeder Druckauftrag hängt. */
-    private const MANUFACTURING_MODULE = 'module.lager';
+    private const string MANUFACTURING_MODULE = 'module.lager';
 
     public function __construct(
         private readonly PrintOrderService $orders,

@@ -34,7 +34,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class UseAnonymousPortalSession {
     /** Suffix am regulären Cookie-Namen; eigener Name ⇒ eigene Sitzungszeile. */
-    public const SUFFIX = '_portal';
+    public const string SUFFIX = '_portal';
 
     public function __construct(private readonly SessionManager $manager) {}
 

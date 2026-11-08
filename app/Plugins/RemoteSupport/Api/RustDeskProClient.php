@@ -32,16 +32,16 @@ use CommonToolkit\Helper\Data\StringHelper;
  * je Datensatz selbst und liest bis zur Seitenobergrenze.
  */
 class RustDeskProClient implements RemoteProvider {
-    public const ID = 'rustdesk';
+    public const string ID = 'rustdesk';
 
-    public const FLAVOR = 'pro';
+    public const string FLAVOR = 'pro';
 
-    public const PAGE_SIZE = 100;
+    public const int PAGE_SIZE = 100;
 
-    public const MAX_PAGES = 200;
+    public const int MAX_PAGES = 200;
 
     /** `conn_type` der Konsole; 0 ist der Fernzugriff, alles andere trägt seine Art in der Notiz. */
-    public const CONN_TYPES = [1 => 'file', 2 => 'port', 3 => 'camera', 4 => 'terminal'];
+    public const array CONN_TYPES = [1 => 'file', 2 => 'port', 3 => 'camera', 4 => 'terminal'];
 
     private ?PluginApiClient $api = null;
 

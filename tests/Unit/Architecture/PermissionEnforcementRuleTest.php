@@ -45,7 +45,7 @@ class PermissionEnforcementRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** Dateien, die Rechte nur DEFINIEREN oder VERGEBEN, nicht auswerten. */
-    private const DEFINITION_ONLY = [
+    private const array DEFINITION_ONLY = [
         'app/Enums/User/Permission.php',
         'database/seeders/PermissionsSeeder.php',
     ];
@@ -58,7 +58,7 @@ class PermissionEnforcementRuleTest extends TestCase {
      *
      * @var list<string>
      */
-    private const BASELINE = [
+    private const array BASELINE = [
         'CustomerLexofficeSync', 'CustomerPortalAccess', 'CustomerPortalDiaryView',
         'CustomerPortalInvoiceView', 'CustomerPortalOpenIssueView', 'CustomerPortalTimeEntryView',
         'DomainInvoiceDownload', 'DomainInvoiceView', 'SupplierLexofficeSync',

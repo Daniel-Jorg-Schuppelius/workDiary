@@ -39,7 +39,7 @@ class JobApplicationInterview extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const MODES = ['onsite', 'remote', 'phone'];
+    public const array MODES = ['onsite', 'remote', 'phone'];
 
     protected $fillable = [
         'organization_id', 'job_application_id', 'scheduled_at', 'mode',

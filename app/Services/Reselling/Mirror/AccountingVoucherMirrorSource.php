@@ -36,10 +36,10 @@ use Illuminate\Support\Collection;
  * datum ist das einzige Datum (kein Leistungszeitraum im Spiegel).
  */
 final class AccountingVoucherMirrorSource implements InvoiceMirrorSource {
-    public const KEY = 'accounting';
+    public const string KEY = 'accounting';
 
     /** Kandidaten für „ohne Bezug“: jüngste Positionen, die geprüft werden, bevor das Limit greift. */
-    private const UNLINKED_SCAN = 500;
+    private const int UNLINKED_SCAN = 500;
 
     public function __construct(
         private readonly BillingModeResolver $billingModes,

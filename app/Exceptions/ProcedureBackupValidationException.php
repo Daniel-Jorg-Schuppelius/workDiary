@@ -18,19 +18,19 @@ use RuntimeException;
  * Checksum-Mismatch, fehlende URI bei storage=external).
  */
 class ProcedureBackupValidationException extends RuntimeException {
-    public const CODE = 'procedure.backupInvalid';
+    public const string CODE = 'procedure.backupInvalid';
 
-    public const REASON_TOO_SMALL = 'tooSmall';
+    public const string REASON_TOO_SMALL = 'tooSmall';
 
-    public const REASON_TOO_OLD = 'tooOld';
+    public const string REASON_TOO_OLD = 'tooOld';
 
-    public const REASON_CHECKSUM_MISMATCH = 'checksumMismatch';
+    public const string REASON_CHECKSUM_MISMATCH = 'checksumMismatch';
 
-    public const REASON_MISSING_EXTERNAL_REF = 'missingExternalRef';
+    public const string REASON_MISSING_EXTERNAL_REF = 'missingExternalRef';
 
-    public const REASON_MISSING_ATTACHMENT = 'missingAttachment';
+    public const string REASON_MISSING_ATTACHMENT = 'missingAttachment';
 
-    public const REASON_NOT_VERIFIED = 'notVerified';
+    public const string REASON_NOT_VERIFIED = 'notVerified';
 
     public function __construct(public readonly string $reason, string $message = '') {
         parent::__construct($message !== '' ? $message : sprintf('Backup proof invalid: %s', $reason));

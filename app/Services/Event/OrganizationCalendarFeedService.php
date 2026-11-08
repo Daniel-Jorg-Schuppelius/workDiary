@@ -20,13 +20,13 @@ use App\Support\Auth\OrganizationAccessToken;
  * Sitzung ab; ohne Token gibt es keinen Feed — die Freischaltung IST der Token.
  */
 class OrganizationCalendarFeedService extends OrganizationAccessToken {
-    public const HASH_KEY = 'calendar_feed_token_hash';
+    public const string HASH_KEY = 'calendar_feed_token_hash';
 
-    public const HINT_KEY = 'calendar_feed_token_hint';
+    public const string HINT_KEY = 'calendar_feed_token_hint';
 
-    public const ISSUED_KEY = 'calendar_feed_token_issued_at';
+    public const string ISSUED_KEY = 'calendar_feed_token_issued_at';
 
-    protected const TOKEN_LENGTH = 48;
+    protected const int TOKEN_LENGTH = 48;
 
-    protected const ACTIVE_ONLY = true;
+    protected const bool ACTIVE_ONLY = true;
 }

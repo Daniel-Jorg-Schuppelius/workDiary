@@ -38,7 +38,7 @@ use Illuminate\Support\Facades\{Auth, Storage};
 class ImportController extends Controller {
     use ResolvesCurrentOrganization;
 
-    private const ALLOWED_SORTS = ['id', 'entity', 'input_filename', 'state', 'rows_total', 'created_at'];
+    private const array ALLOWED_SORTS = ['id', 'entity', 'input_filename', 'state', 'rows_total', 'created_at'];
 
     public function __construct(private readonly CsvPreflightAnalyzer $analyzer) {}
 

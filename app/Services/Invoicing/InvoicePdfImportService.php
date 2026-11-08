@@ -39,12 +39,12 @@ use Throwable;
  */
 class InvoicePdfImportService {
     /** Capability-Key des KI-Fallbacks (Registrierung: config/ai.php). */
-    public const AI_CAPABILITY = 'invoicing.document_extraction';
+    public const string AI_CAPABILITY = 'invoicing.document_extraction';
 
     /** ZIP-Bomb-Grenzen für OOXML (DOCX/XLSX). */
-    private const OFFICE_MAX_ENTRIES = 5000;
+    private const int OFFICE_MAX_ENTRIES = 5000;
 
-    private const OFFICE_MAX_BYTES = 64 * 1024 * 1024;
+    private const int OFFICE_MAX_BYTES = 64 * 1024 * 1024;
 
     /**
      * `$structured = false` überspringt den E-Rechnungs-Zweig — für Aufrufer,
@@ -708,7 +708,7 @@ class InvoicePdfImportService {
     }
 
     /** Felder, die Lesetext, zeilentreuer Text und Paarungen füllen (MVP-1215). */
-    private const MERGE_FIELDS = ['number', 'issued_on', 'due_on', 'net', 'tax', 'gross', 'tax_rate', 'buyer_reference'];
+    private const array MERGE_FIELDS = ['number', 'issued_on', 'due_on', 'net', 'tax', 'gross', 'tax_rate', 'buyer_reference'];
 
     /**
      * Beschriftungen für Kopf-/Wertezeilen und Blockpaarung (MVP-1215):
@@ -717,7 +717,7 @@ class InvoicePdfImportService {
      *
      * @var list<array{0: string, 1: string}>
      */
-    private const PAIR_LABELS = [
+    private const array PAIR_LABELS = [
         ['Liefer(?:ungs)?datum\s*\/\s*Rechnungsdatum', 'issued_on'],
         ['Rechnungs?\s*[-.\/]?\s*(?:Nummer|Nr\.?)', 'number'],
         ['Beleg\s*[-.]?\s*(?:nummer|Nr\.?)', 'number'],
@@ -918,7 +918,7 @@ class InvoicePdfImportService {
         ];
     }
 
-    private const TAX_LABEL = '(?:Umsatzsteuer|Mehrwertsteuer|MwSt|USt(?!\s*-?\s*Id)|VAT)';
+    private const string TAX_LABEL = '(?:Umsatzsteuer|Mehrwertsteuer|MwSt|USt(?!\s*-?\s*Id)|VAT)';
 
     /**
      * Rechnungen mit mehreren Steuersätzen: Steuerzeilen je Satz sammeln und,
@@ -1106,7 +1106,7 @@ class InvoicePdfImportService {
     }
 
     /** Kennung einer Rechnung: mindestens eine Ziffer, Buchstaben, Ziffern und ._/- (MVP-1251). */
-    private const ID_PATTERN = '(?=[A-Z0-9._\/-]*\d)[A-Z0-9][A-Z0-9._\/-]{1,63}';
+    private const string ID_PATTERN = '(?=[A-Z0-9._\/-]*\d)[A-Z0-9][A-Z0-9._\/-]{1,63}';
 
     private function mentionsInvoiceNumberLabel(string $text): bool {
         return preg_match('/Rechnungs?\s*[-.\/]?\s*(?:Nummer|Nr\.?)|Beleg\s*[-.]?\s*(?:nummer|Nr\.?)|\b(?:Re|Rg|RE)\.?\s*-?\s*Nr\.?|Invoice\s*(?:Number|No\.?|ID|#)/iu', $text) === 1;

@@ -32,7 +32,7 @@ final class TimeEntryPolicyTest extends TestCase {
     use WithOrganization;
 
     /** Eigene Zeiten verlangen seit lk-06 die timeEntry-Rechte. */
-    private const OWN_TIME = [P::TimeEntryViewOwn, P::TimeEntryCreate, P::TimeEntryUpdate, P::TimeEntryDelete];
+    private const array OWN_TIME = [P::TimeEntryViewOwn, P::TimeEntryCreate, P::TimeEntryUpdate, P::TimeEntryDelete];
 
     private TimeEntryPolicy $policy;
 

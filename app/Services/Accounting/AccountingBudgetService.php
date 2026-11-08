@@ -42,9 +42,9 @@ use Illuminate\Validation\ValidationException;
 class AccountingBudgetService {
     use \App\Services\Concerns\AssertsStatusTransition;
 
-    public const MODE_YEAR = 'year';
+    public const string MODE_YEAR = 'year';
 
-    public const MODE_MONTHS = 'months';
+    public const string MODE_MONTHS = 'months';
 
     public function __construct(
         private readonly FiscalCalendar $calendar,

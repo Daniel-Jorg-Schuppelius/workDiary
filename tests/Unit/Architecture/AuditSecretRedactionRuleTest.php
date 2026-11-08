@@ -36,7 +36,7 @@ use Tests\TestCase;
  */
 class AuditSecretRedactionRuleTest extends TestCase {
     /** Namensmuster für Geheimnisse, die kein Cast als solche ausweist. */
-    private const SECRET_PATTERN = '/(_token|_secret|api_key|license_key|private_key|_password)$/';
+    private const string SECRET_PATTERN = '/(_token|_secret|api_key|license_key|private_key|_password)$/';
 
     public function test_verschluesselte_und_geheime_felder_stehen_nie_als_wert_im_protokoll(): void {
         $violations = [];

@@ -47,10 +47,10 @@ use RuntimeException;
  */
 final class LexofficeIncomingInvoiceTarget implements IncomingInvoiceTransferTarget {
     /** Buchungskategorie je Lieferant bzw. Kunde (ExternalReference). */
-    public const EXT_TYPE_POSTING_CATEGORY = 'posting_category';
+    public const string EXT_TYPE_POSTING_CATEGORY = 'posting_category';
 
     /** Steuersätze, die Lexware für Belege annimmt (Kochbuch Buchhaltung). */
-    private const TAX_RATES = [0.0, 5.0, 7.0, 16.0, 19.0];
+    private const array TAX_RATES = [0.0, 5.0, 7.0, 16.0, 19.0];
 
     public function key(): string {
         return LexofficePlugin::ID;

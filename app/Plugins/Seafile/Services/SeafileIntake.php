@@ -45,10 +45,10 @@ use Throwable;
  * @extends AbstractCloudIntakeSource<SeafileClient, array{fingerprint: string, oid: ?string, queue: ?list<string>, cycle_oid: ?string, seen: list<string>, overflow: bool}>
  */
 class SeafileIntake extends AbstractCloudIntakeSource {
-    public const EXT_TYPE_FILE = 'file';
+    public const string EXT_TYPE_FILE = 'file';
 
     /** Seafile vergibt allen leeren Dateien dieselbe ID. */
-    private const EMPTY_FILE_ID = '0000000000000000000000000000000000000000';
+    private const string EMPTY_FILE_ID = '0000000000000000000000000000000000000000';
 
     public function __construct(private readonly SeafileClientFactory $clients) {}
 

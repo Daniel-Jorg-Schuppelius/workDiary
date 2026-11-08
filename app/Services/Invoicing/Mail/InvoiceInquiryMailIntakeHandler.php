@@ -32,13 +32,13 @@ use App\Support\EntityUrl;
  * bleibt ein Inbox-Klärfall, den der Annotator mit den Kandidaten markiert.
  */
 final class InvoiceInquiryMailIntakeHandler implements MailIntakeAnnotator, MailIntakeHandler {
-    public const RESULT = 'invoice_inquiry';
+    public const string RESULT = 'invoice_inquiry';
 
-    public const REVIEW_MULTIPLE = 'multiple';
+    public const string REVIEW_MULTIPLE = 'multiple';
 
-    public const REVIEW_SENDER_UNKNOWN = 'sender_unknown';
+    public const string REVIEW_SENDER_UNKNOWN = 'sender_unknown';
 
-    public const REVIEW_NO_CUSTOMER = 'no_customer';
+    public const string REVIEW_NO_CUSTOMER = 'no_customer';
 
     public function __construct(
         private readonly InvoiceInquiryMatcher $matcher,

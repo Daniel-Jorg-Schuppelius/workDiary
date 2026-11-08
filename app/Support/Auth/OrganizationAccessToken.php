@@ -29,19 +29,19 @@ use Illuminate\Support\Str;
  *   ohne ist der Token selbst die Freischaltung.
  */
 abstract class OrganizationAccessToken {
-    public const HASH_KEY = '';
+    public const string HASH_KEY = '';
 
-    public const HINT_KEY = '';
+    public const string HINT_KEY = '';
 
-    public const ISSUED_KEY = '';
+    public const string ISSUED_KEY = '';
 
     /** Leer = keine gesonderte Freischaltung. */
-    public const ENABLED_KEY = '';
+    public const string ENABLED_KEY = '';
 
-    protected const TOKEN_LENGTH = 40;
+    protected const int TOKEN_LENGTH = 40;
 
     /** Nur aktive Organisationen auflösen. */
-    protected const ACTIVE_ONLY = false;
+    protected const bool ACTIVE_ONLY = false;
 
     /** Stellt einen neuen Token aus und gibt ihn EINMAL im Klartext zurück. */
     public function issue(Organization $organization): string {

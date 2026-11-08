@@ -25,12 +25,12 @@ use Illuminate\Support\Facades\{Log, Mail};
  * verändert nie den gespeicherten Eingang oder eine Entscheidung.
  */
 class CustomerIntakeNotifier {
-    public const SUBMITTED = 'submitted';
-    public const QUESTION = 'question';
-    public const QUOTE = 'quote';
-    public const REJECTED = 'rejected';
-    public const HANDED_OVER = 'handed_over';
-    public const PRINT_APPROVAL = 'print_approval';
+    public const string SUBMITTED = 'submitted';
+    public const string QUESTION = 'question';
+    public const string QUOTE = 'quote';
+    public const string REJECTED = 'rejected';
+    public const string HANDED_OVER = 'handed_over';
+    public const string PRINT_APPROVAL = 'print_approval';
 
     public function __construct(private readonly NotificationDispatcher $notifications) {}
 

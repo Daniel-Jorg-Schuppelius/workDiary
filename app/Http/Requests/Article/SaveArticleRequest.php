@@ -35,7 +35,7 @@ class SaveArticleRequest extends BaseFormRequest {
     ];
 
     /** @var list<string> */
-    private const FLAGS = [
+    private const array FLAGS = [
         'stockable', 'purchasable', 'sellable', 'manufacturable',
         'batch_required', 'serial_required', 'shelf_life_required',
     ];

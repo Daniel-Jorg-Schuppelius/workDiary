@@ -35,7 +35,7 @@ class AuditActivityReportController extends Controller {
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
-    private const RECENT_LIMIT = 100;
+    private const int RECENT_LIMIT = 100;
 
     public function index(Request $request): View|SymfonyResponse {
         abort_unless($this->viewerIsAdmin(), 403);

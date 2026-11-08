@@ -35,7 +35,7 @@ use Illuminate\Validation\ValidationException;
  * Sperrzeiten, Asset-Sperren und Einweisungsfreigaben, bevor sie entsteht.
  */
 class ClubResourceService implements RoomBlockingSource {
-    public const ASSET_CONTEXT = 'club-booking';
+    public const string ASSET_CONTEXT = 'club-booking';
 
     public function __construct(
         private readonly RoomBookingService $rooms,

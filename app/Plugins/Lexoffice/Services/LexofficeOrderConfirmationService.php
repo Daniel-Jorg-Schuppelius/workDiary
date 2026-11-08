@@ -21,7 +21,7 @@ use Lexoffice\Entities\Documents\OrderConfirmations\OrderConfirmation;
  * {@see LexofficeOrderDocumentService}.
  */
 class LexofficeOrderConfirmationService extends LexofficeOrderDocumentService {
-    public const EXT_TYPE_ORDER_CONFIRMATION = 'order_confirmation';
+    public const string EXT_TYPE_ORDER_CONFIRMATION = 'order_confirmation';
 
     protected function endpointPath(): string {
         return 'order-confirmations';

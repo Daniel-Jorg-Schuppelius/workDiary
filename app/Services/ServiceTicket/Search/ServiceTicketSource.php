@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\{Builder, Model};
 /** Tickets samt Lösung, Workaround und Konversation (Mail-HTML als Text). */
 final class ServiceTicketSource extends AbstractSearchSource {
     /** Obergrenze der eingelesenen Nachrichten je Ticket. */
-    private const MAX_MESSAGES = 200;
+    private const int MAX_MESSAGES = 200;
 
     public function type(): SearchSourceType {
         return SearchSourceType::ServiceTicket;

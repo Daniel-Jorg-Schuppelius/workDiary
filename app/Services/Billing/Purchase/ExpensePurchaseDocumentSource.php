@@ -32,13 +32,13 @@ use Illuminate\Support\Facades\{Gate, Route};
 final class ExpensePurchaseDocumentSource implements PurchaseDocumentSource {
     use ResolvesPurchaseDocuments;
 
-    private const DOCUMENT_MODEL = Expense::class;
+    private const string DOCUMENT_MODEL = Expense::class;
 
-    public const KEY = 'expense';
+    public const string KEY = 'expense';
 
-    public const NUMBER_PREFIX = 'AUS-';
+    public const string NUMBER_PREFIX = 'AUS-';
 
-    private const EXCLUDED = [ExpenseStatus::Draft, ExpenseStatus::Rejected, ExpenseStatus::Cancelled];
+    private const array EXCLUDED = [ExpenseStatus::Draft, ExpenseStatus::Rejected, ExpenseStatus::Cancelled];
 
     public function key(): string {
         return self::KEY;

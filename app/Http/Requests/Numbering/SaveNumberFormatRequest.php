@@ -25,7 +25,7 @@ class SaveNumberFormatRequest extends BaseFormRequest {
     use ResolvesCurrentOrganization;
 
     /** Formatfelder einer Zeile. */
-    public const FIELDS = ['prefix', 'prefix_separator', 'include_year', 'year_separator', 'padding', 'reset_per_year', 'starts_at', 'source'];
+    public const array FIELDS = ['prefix', 'prefix_separator', 'include_year', 'year_separator', 'padding', 'reset_per_year', 'starts_at', 'source'];
 
     /** @return array<string, array<int, mixed>> */
     public function rules(): array {

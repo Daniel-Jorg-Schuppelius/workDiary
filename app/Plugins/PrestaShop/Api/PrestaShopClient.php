@@ -33,7 +33,7 @@ class PrestaShopClient {
     use GuardsPluginApiResponses;
 
     /** Höchstzahl Gutschriften je Abfrage; mehr deutet auf ein abgeschnittenes Ergebnis. */
-    private const SLIP_LIMIT = 1000;
+    private const int SLIP_LIMIT = 1000;
 
     private ?PluginApiClient $api = null;
 

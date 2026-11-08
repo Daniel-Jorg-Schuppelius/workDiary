@@ -37,7 +37,7 @@ class OpenIssueController extends Controller {
      *
      * @var array<string, class-string<Model>>
      */
-    public const SUBJECT_MAP = [
+    public const array SUBJECT_MAP = [
         'diary' => DiaryEntry::class,
         'project' => Project::class,
         'customer' => Customer::class,

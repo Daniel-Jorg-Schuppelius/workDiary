@@ -34,7 +34,7 @@ use CommonToolkit\ValueObjects\{Money, Percentage};
  */
 class DocumentTotalsCalculator {
     /** Zwischenskala für Anteile, damit erst die Gruppensumme auf Cent rundet. */
-    private const SHARE_SCALE = 8;
+    private const int SHARE_SCALE = 8;
 
     public static function lineNet(
         string|int|float $quantity,

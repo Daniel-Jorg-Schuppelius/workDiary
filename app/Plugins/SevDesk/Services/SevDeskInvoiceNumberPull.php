@@ -23,7 +23,7 @@ use App\Plugins\SevDesk\SevDeskPlugin;
  */
 final class SevDeskInvoiceNumberPull {
     /** Bezahlt (1000) ändert sich nicht mehr. */
-    private const FINAL_STATUS = '1000';
+    private const string FINAL_STATUS = '1000';
 
     public function __construct(private readonly SevDeskClientFactory $clients) {}
 

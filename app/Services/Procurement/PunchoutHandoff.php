@@ -33,13 +33,13 @@ use Illuminate\Support\Str;
  * der Absprung erzeugt wurde.
  */
 final class PunchoutHandoff {
-    private const HOOK_PREFIX = 'procurement.punchout-hook:';
+    private const string HOOK_PREFIX = 'procurement.punchout-hook:';
 
-    private const RESULT_PREFIX = 'procurement.punchout-result:';
+    private const string RESULT_PREFIX = 'procurement.punchout-result:';
 
-    private const HOOK_TTL_HOURS = 2;
+    private const int HOOK_TTL_HOURS = 2;
 
-    private const RESULT_TTL_MINUTES = 15;
+    private const int RESULT_TTL_MINUTES = 15;
 
     public function issueHook(SupplierCatalogSource $source, Warehouse $warehouse, User $user): string {
         $token = Str::random(40);

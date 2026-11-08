@@ -45,17 +45,17 @@ class Organization extends Model {
 
     use HasSqid;
 
-    public const PLAN_FREE = 'free';
+    public const string PLAN_FREE = 'free';
 
-    public const PLAN_PRO = 'pro';
+    public const string PLAN_PRO = 'pro';
 
-    public const PLAN_ENTERPRISE = 'enterprise';
+    public const string PLAN_ENTERPRISE = 'enterprise';
 
-    public const COMPLIANCE_OFF = 'off';
+    public const string COMPLIANCE_OFF = 'off';
 
-    public const COMPLIANCE_WARN = 'warn';
+    public const string COMPLIANCE_WARN = 'warn';
 
-    public const COMPLIANCE_BLOCK = 'block';
+    public const string COMPLIANCE_BLOCK = 'block';
 
     /** @var list<string> */
     public static array $complianceModes = [
@@ -65,7 +65,7 @@ class Organization extends Model {
     ];
 
     /** Default-Compliance-Settings (ArbZG-Standard + Stempel-Plausibilität, MVP-519). */
-    public const COMPLIANCE_DEFAULTS = [
+    public const array COMPLIANCE_DEFAULTS = [
         'mode' => self::COMPLIANCE_WARN,
         'max_hours_day' => 10,
         'min_rest_hours' => 11,

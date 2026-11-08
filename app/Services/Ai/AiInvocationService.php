@@ -35,7 +35,7 @@ use Throwable;
  */
 class AiInvocationService implements AiInvoker {
     /** Cache-Art je Ergebnisklasse: kurze Schlüssel statt Klassennamen im Cache. */
-    private const RESULT_KINDS = [
+    private const array RESULT_KINDS = [
         'text' => AiTextResult::class,
         'classification' => AiClassificationResult::class,
         'find' => AiFindResult::class,

@@ -36,17 +36,17 @@ use Illuminate\Validation\ValidationException;
  */
 class VatFilingProfileResolver {
     /** § 18 Abs. 2 S. 2 UStG — ab dieser Vorjahressteuer monatlich (seit 2025). */
-    public const MONTHLY_THRESHOLD = '9000.00';
+    public const string MONTHLY_THRESHOLD = '9000.00';
 
     /** § 18 Abs. 2 S. 3 UStG — bis hierhin Befreiung möglich (seit 2025). */
-    public const ANNUAL_THRESHOLD = '2000.00';
+    public const string ANNUAL_THRESHOLD = '2000.00';
 
     /**
      * Bis einschließlich dieses Besteuerungszeitraums ist der Zwang zur
      * monatlichen Abgabe für Neugründer ausgesetzt (§ 18 Abs. 2 S. 4 UStG).
      * Ab 2027 greift er wieder.
      */
-    public const FOUNDER_RULE_SUSPENDED_THROUGH = 2026;
+    public const int FOUNDER_RULE_SUSPENDED_THROUGH = 2026;
 
     public function __construct(private readonly AccountingEventRecorder $events) {}
 

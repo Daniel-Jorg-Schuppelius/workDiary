@@ -39,7 +39,7 @@ class TicketController extends Controller {
     use ValidatesUploadedFiles;
 
     /** Aus diesen Status darf der Kunde wiedereröffnen; „Geschlossen“ bleibt dem Team vorbehalten. */
-    private const REOPENABLE = [ServiceTicketStatus::Done, ServiceTicketStatus::Accepted];
+    private const array REOPENABLE = [ServiceTicketStatus::Done, ServiceTicketStatus::Accepted];
 
     public function index(): View {
         $user = $this->portalUser();

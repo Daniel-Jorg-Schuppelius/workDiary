@@ -28,7 +28,7 @@ use Illuminate\Support\Carbon;
  * Änderung der Einstellungen erhöht die Version und steht im Audit-Log.
  */
 class LearningConfigurationPdfRenderer {
-    public const RETENTION_AREAS = ['learning_records', 'learning_certificates'];
+    public const array RETENTION_AREAS = ['learning_records', 'learning_certificates'];
 
     public function __construct(
         private readonly LearningGamificationService $gamification,

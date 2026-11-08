@@ -30,11 +30,11 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink};
 class AsanaPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
     use ChecksConnectionHealth, RendersTaskLink;
 
-    public const ID = 'asana';
+    public const string ID = 'asana';
 
-    public const SERVICE_PROVIDER = AsanaServiceProvider::class;
+    public const string SERVICE_PROVIDER = AsanaServiceProvider::class;
 
-    public const EXT_TYPE_TASK = 'task';
+    public const string EXT_TYPE_TASK = 'task';
 
     public function name(): string {
         return 'Asana';

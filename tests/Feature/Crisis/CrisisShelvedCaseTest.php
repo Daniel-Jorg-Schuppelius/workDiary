@@ -37,7 +37,7 @@ final class CrisisShelvedCaseTest extends TestCase {
     use WithOrganization;
 
     /** Schreibende crisis.*-Routen ohne Aktenbezug: Anlage, Stabsrollen, BIA-Register, Übungen, Statusseite. */
-    private const CASE_FREE = [
+    private const array CASE_FREE = [
         'crisis.store', 'crisis.roles.store',
         'crisis.bia.store', 'crisis.bia.import', 'crisis.bia.update',
         'crisis.exercises.store', 'crisis.exercises.document',
@@ -45,7 +45,7 @@ final class CrisisShelvedCaseTest extends TestCase {
     ];
 
     /** Anwesenheit im Krisenraum ist Lese-Telemetrie (90 s, kein Akteninhalt, kein Audit) und bleibt an `view` gebunden. */
-    private const READ_BOUND = ['crisis.room.heartbeat'];
+    private const array READ_BOUND = ['crisis.room.heartbeat'];
 
     private User $admin;
 

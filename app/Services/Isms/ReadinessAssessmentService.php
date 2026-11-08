@@ -39,10 +39,10 @@ use App\Models\Isms\{IsmsScope, IsmsSecurityIncident, IsmsVulnerability};
  */
 class ReadinessAssessmentService {
     /** Ampel: grün ab diesem Score (gut). */
-    public const SCORE_GREEN = 80;
+    public const int SCORE_GREEN = 80;
 
     /** Ampel: gelb ab diesem Score (teilweise); darunter rot. */
-    public const SCORE_AMBER = 50;
+    public const int SCORE_AMBER = 50;
 
     public function __construct(
         private readonly ReadinessService $readiness,

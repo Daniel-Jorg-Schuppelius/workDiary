@@ -40,9 +40,9 @@ class AgileBoard extends Model {
     /** @var class-string<AgileEvent> Journal des Trägers (MVP-864) */
     protected static string $journalClass = AgileEvent::class;
 
-    public const METHOD_KANBAN = 'kanban';
+    public const string METHOD_KANBAN = 'kanban';
 
-    public const METHOD_SCRUM = 'scrum';
+    public const string METHOD_SCRUM = 'scrum';
 
     protected $fillable = [
         'organization_id',

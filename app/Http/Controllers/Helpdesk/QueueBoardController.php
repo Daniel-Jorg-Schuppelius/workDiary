@@ -32,7 +32,7 @@ use Illuminate\View\View;
  */
 class QueueBoardController extends Controller {
     /** Obergrenze der geladenen Karten (Board bleibt bedienbar). */
-    private const MAX_TICKETS = 300;
+    private const int MAX_TICKETS = 300;
 
     public function __construct(private readonly ServiceTicketService $tickets) {}
 

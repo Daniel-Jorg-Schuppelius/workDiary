@@ -38,7 +38,7 @@ class CommandTestCoverageTest extends TestCase {
      *
      * @var list<string>
      */
-    private const REGISTRY_ONLY = [
+    private const array REGISTRY_ONLY = [
         'tests/Unit/Architecture/',
         'tests/Feature/Scheduling/SchedulerRegistrationTest.php',
     ];
@@ -48,7 +48,7 @@ class CommandTestCoverageTest extends TestCase {
      *
      * @var array<class-string, string>
      */
-    private const BASELINE = [];
+    private const array BASELINE = [];
 
     public function test_every_console_command_has_a_referencing_test(): void {
         $uncovered = $this->uncoveredCommands();

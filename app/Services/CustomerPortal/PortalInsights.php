@@ -41,13 +41,13 @@ use Illuminate\Support\Facades\DB;
  */
 final class PortalInsights {
     /** Mehr Projekte als das wandern in „Sonstige“. */
-    private const TOP_PROJECTS = 10;
+    private const int TOP_PROJECTS = 10;
 
     /** Bänder im Monat-nach-Projekt-Diagramm (die Komponente hat fünf Füllungen). */
-    private const STACK_BANDS = 4;
+    private const int STACK_BANDS = 4;
 
     /** Unter so vielen gelösten Tickets bleibt die mittlere Lösungszeit ein Hinweis statt einer Zahl. */
-    private const MIN_RESOLVED_FOR_AVERAGE = 5;
+    private const int MIN_RESOLVED_FOR_AVERAGE = 5;
 
     /** @var array<int, list<InvoiceRow>> Belege je Kunde, einmal je Request */
     private array $invoiceRows = [];

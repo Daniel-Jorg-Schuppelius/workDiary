@@ -19,7 +19,7 @@ use App\Policies\PermissionPolicy;
 class SlaViolationPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::SlaViewAny,
         'view' => P::SlaViewAny,
         'acknowledge' => P::SlaManage,

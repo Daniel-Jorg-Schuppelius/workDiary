@@ -25,7 +25,7 @@ use Illuminate\Support\Collection;
  * (mindestens 20 Zeichen) und auditiert.
  */
 class AssetBlockService {
-    public const MIN_EXCEPTION_REASON_LENGTH = 20;
+    public const int MIN_EXCEPTION_REASON_LENGTH = 20;
 
     public function block(
         Asset $asset,

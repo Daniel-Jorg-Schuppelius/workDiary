@@ -36,25 +36,25 @@ use Illuminate\Support\Facades\Cache;
  * `comment_for_dev`; `TryAgainLater` nennt dort die Wartezeit.
  */
 class PcvisitClient implements RemoteProvider {
-    public const ID = 'pcvisit';
+    public const string ID = 'pcvisit';
 
-    public const DEFAULT_ENDPOINT = 'https://app.pcvisit.de/graphql';
+    public const string DEFAULT_ENDPOINT = 'https://app.pcvisit.de/graphql';
 
-    public const PAGE_SIZE = 100;
+    public const int PAGE_SIZE = 100;
 
-    public const MAX_PAGES = 200;
+    public const int MAX_PAGES = 200;
 
     /** Sitzungen ohne Zielgerät (etwa reine Beratung) tragen diesen Platzhalter nicht — sie fallen weg. */
-    public const STATE_CLOSED = 'SessionClosed';
+    public const string STATE_CLOSED = 'SessionClosed';
 
-    private const JWT_CACHE_PREFIX = 'remote-support:pcvisit:jwt:1:';
+    private const string JWT_CACHE_PREFIX = 'remote-support:pcvisit:jwt:1:';
 
     /** Das JWT gilt bis kurz vor `exp`; ohne lesbares `exp` eine knappe Stunde. */
-    private const JWT_SAFETY_SECONDS = 60;
+    private const int JWT_SAFETY_SECONDS = 60;
 
-    private const JWT_DEFAULT_TTL_SECONDS = 3000;
+    private const int JWT_DEFAULT_TTL_SECONDS = 3000;
 
-    private const QUERY_JWT = <<<'GRAPHQL'
+    private const string QUERY_JWT = <<<'GRAPHQL'
         query GetJWT($userApiToken: UserApiToken!, $integratorApiToken: IntegratorApiToken!) {
           SiRetrieveSignedJwt(userApiToken: $userApiToken, integratorApiToken: $integratorApiToken) {
             __typename
@@ -64,7 +64,7 @@ class PcvisitClient implements RemoteProvider {
         }
         GRAPHQL;
 
-    private const QUERY_HISTORY = <<<'GRAPHQL'
+    private const string QUERY_HISTORY = <<<'GRAPHQL'
         query GetWorkHistory($company: CustomerUuid!, $timeFrame: TimeFrame, $pagination: Pagination) {
           AcQuerySessionsHistory(company: $company, timeFrame: $timeFrame, pagination: $pagination) {
             __typename

@@ -38,12 +38,12 @@ use Carbon\CarbonImmutable;
  */
 class CustomerValueReportBuilder {
     /** Segmentnamen dieses Reports zu den Stufen von {@see ReportStatistics::rfmSegment()}. */
-    private const SEGMENTS = ['inactive' => 'inactive', 'new' => 'new', 'top' => 'champion', 'lapsed' => 'at_risk', 'regular' => 'loyal', 'occasional' => 'potential'];
+    private const array SEGMENTS = ['inactive' => 'inactive', 'new' => 'new', 'top' => 'champion', 'lapsed' => 'at_risk', 'regular' => 'loyal', 'occasional' => 'potential'];
 
     /** HHI-Ampelschwellen (Marktkonzentrations-Konvention). */
-    public const HHI_MODERATE = 1500;
+    public const int HHI_MODERATE = 1500;
 
-    public const HHI_HIGH = 2500;
+    public const int HHI_HIGH = 2500;
 
     public function __construct(private readonly ExternalRevenue $externalRevenue) {}
 

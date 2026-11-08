@@ -29,7 +29,7 @@ use Throwable;
  */
 class ContactMasterDataPusher {
     /** Felder, deren Änderung eine Übertragung rechtfertigt. */
-    private const PUSHED_FIELDS = [
+    private const array PUSHED_FIELDS = [
         'name', 'company', 'vat_id', 'tax_number', 'email', 'phone', 'mobile',
         'address_street', 'address_zip', 'address_city', 'country',
     ];

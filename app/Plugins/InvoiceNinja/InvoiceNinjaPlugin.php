@@ -25,9 +25,9 @@ use App\Plugins\Support\{ChecksConnectionHealth, SelfHostedSettings};
 class InvoiceNinjaPlugin extends AbstractPlugin {
     use ChecksConnectionHealth;
 
-    public const ID = 'invoiceninja';
+    public const string ID = 'invoiceninja';
 
-    public const SERVICE_PROVIDER = InvoiceNinjaServiceProvider::class;
+    public const string SERVICE_PROVIDER = InvoiceNinjaServiceProvider::class;
 
     public function name(): string {
         return 'Invoice Ninja';

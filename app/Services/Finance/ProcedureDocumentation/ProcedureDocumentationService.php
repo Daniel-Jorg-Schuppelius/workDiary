@@ -37,7 +37,7 @@ final class ProcedureDocumentationService {
     use AssertsStatusTransition;
     use AssignsSequentialNo;
 
-    public const STORAGE_PREFIX = 'procedure-documentation/';
+    public const string STORAGE_PREFIX = 'procedure-documentation/';
 
     public function __construct(
         private readonly ProcedureDocumentationBuilder $builder,

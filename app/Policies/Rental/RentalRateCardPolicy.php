@@ -23,7 +23,7 @@ use App\Policies\PermissionPolicy;
 class RentalRateCardPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::RentalViewAny,
         'view' => P::RentalView,
         'create' => P::RentalRates,

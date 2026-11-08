@@ -22,7 +22,7 @@ use Tests\TestCase;
 final class LayoutValidationErrorsTest extends TestCase {
     use RefreshDatabase;
 
-    private const MESSAGE = 'Statuswechsel ist nicht mehr möglich.';
+    private const string MESSAGE = 'Statuswechsel ist nicht mehr möglich.';
 
     /**
      * Die Sitzung serialisiert als JSON; der Fehler-Bag liegt dort in seiner

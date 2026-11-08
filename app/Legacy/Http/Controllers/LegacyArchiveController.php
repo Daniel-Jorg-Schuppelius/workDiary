@@ -28,20 +28,20 @@ use Illuminate\View\View;
 class LegacyArchiveController extends Controller {
     use RequiresLegacyAdmin;
 
-    private const SORTABLE_DIARY = [
+    private const array SORTABLE_DIARY = [
         'mitarbeiter' => 'user',
         'status' => 'gelesen',
         'von' => 'von',
         'bis' => 'bis',
     ];
 
-    private const SORTABLE_DUTY = [
+    private const array SORTABLE_DUTY = [
         'mitarbeiter' => 'user',
         'von' => 'von',
         'bis' => 'bis',
     ];
 
-    private const SORTABLE_VACATION = [
+    private const array SORTABLE_VACATION = [
         'mitarbeiter' => 'user_id',
         'typ' => 'type',
         'status' => 'status',

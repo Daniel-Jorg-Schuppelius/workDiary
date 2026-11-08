@@ -27,7 +27,7 @@ use Illuminate\Support\Collection;
  * (`platform_billing.*`). Erzeugt keine Rechnung.
  */
 class TenantBillingService {
-    private const GIB = 1073741824;
+    private const int GIB = 1073741824;
 
     public function __construct(
         private readonly OperationsMetricsService $metrics,

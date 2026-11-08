@@ -27,11 +27,11 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSett
 class LeantimePlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
     use ChecksConnectionHealth, RendersTaskLink;
 
-    public const ID = 'leantime';
+    public const string ID = 'leantime';
 
-    public const SERVICE_PROVIDER = LeantimeServiceProvider::class;
+    public const string SERVICE_PROVIDER = LeantimeServiceProvider::class;
 
-    public const EXT_TYPE_TICKET = 'ticket';
+    public const string EXT_TYPE_TICKET = 'ticket';
 
     public function name(): string {
         return 'Leantime';

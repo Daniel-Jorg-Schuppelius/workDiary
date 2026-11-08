@@ -30,13 +30,13 @@ use Illuminate\Support\Facades\{DB, Schema};
  * zu bilden. Herleitung: Umsetzungsplan Phase 105.
  */
 return new class extends Migration {
-    private const MARK = 'utc_migrated_mvp824';
+    private const string MARK = 'utc_migrated_mvp824';
 
-    private const PLUGINS = ['toggl', 'kimai', 'clockify'];
+    private const array PLUGINS = ['toggl', 'kimai', 'clockify'];
 
-    private const LOCKED_MONTHS = ['submitted', 'approved', 'locked'];
+    private const array LOCKED_MONTHS = ['submitted', 'approved', 'locked'];
 
-    private const TOLERANCE_SECONDS = 5;
+    private const int TOLERANCE_SECONDS = 5;
 
     /** @var array<int, string> */
     private array $zones = [];

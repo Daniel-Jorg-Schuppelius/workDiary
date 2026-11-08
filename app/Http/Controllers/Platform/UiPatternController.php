@@ -20,7 +20,7 @@ use Illuminate\View\View;
 class UiPatternController extends Controller {
     use RequiresPlatformOperator;
 
-    public const TONES = ['primary', 'success', 'warning', 'error', 'info', 'ghost'];
+    public const array TONES = ['primary', 'success', 'warning', 'error', 'info', 'ghost'];
 
     public function index(): View {
         $this->assertPlatformOperator();

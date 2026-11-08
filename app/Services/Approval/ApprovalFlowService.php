@@ -29,18 +29,18 @@ use Illuminate\Validation\ValidationException;
  * TimeCorrectionService). Ablehnung ist auf jeder Stufe final.
  */
 class ApprovalFlowService {
-    public const TYPE_VACATION = 'vacation';
+    public const string TYPE_VACATION = 'vacation';
 
-    public const TYPE_OVERTIME = 'overtime';
+    public const string TYPE_OVERTIME = 'overtime';
 
-    public const TYPE_TIME_CORRECTION = 'time_correction';
+    public const string TYPE_TIME_CORRECTION = 'time_correction';
 
     /**
      * Typen, bei denen die einzige berechtigte Person den eigenen Antrag
      * freigeben darf (Entscheidung 2026-10-23) — Zeitkorrektur und Überstunden
      * bleiben ausnahmslos gesperrt.
      */
-    private const SOLE_DECIDER_PERMISSION = [
+    private const array SOLE_DECIDER_PERMISSION = [
         self::TYPE_VACATION => Permission::VacationApprove,
     ];
 

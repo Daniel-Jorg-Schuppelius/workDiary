@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\{Crypt, DB, Schema};
  */
 return new class extends Migration {
     /** Tabelle => Spalten. */
-    private const COLUMNS = [
+    private const array COLUMNS = [
         'customers' => ['bank_iban', 'bank_bic', 'bank_account_holder'],
         'suppliers' => ['bank_iban', 'bank_bic', 'bank_account_holder'],
         'sick_leaves' => ['au_number', 'doctor_name', 'note'],

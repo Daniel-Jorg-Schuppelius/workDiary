@@ -32,9 +32,9 @@ use Illuminate\Support\Facades\Log;
  * liefert 1 bei Befunden (CI/Monitoring).
  */
 class SchedulerWatchdogCommand extends Command {
-    private const GRACE_MINUTES = 15;
+    private const int GRACE_MINUTES = 15;
 
-    private const FAILURE_STREAK = 3;
+    private const int FAILURE_STREAK = 3;
 
     protected $signature = 'scheduler:watchdog {--fail : Exit-Code 1, wenn überfällige Jobs gefunden wurden}';
 

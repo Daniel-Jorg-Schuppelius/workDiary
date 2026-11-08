@@ -28,7 +28,7 @@ class JointControllerAgreementController extends Controller {
     use ManagesAgreementLinks;
 
     /** @var list<string> */
-    private const MATRIX_KEYS = ['information_duties', 'data_subject_rights', 'incidents', 'authority_contact'];
+    private const array MATRIX_KEYS = ['information_duties', 'data_subject_rights', 'incidents', 'authority_contact'];
 
     public function index(): View {
         Gate::authorize('viewAny', JointControllerAgreement::class);

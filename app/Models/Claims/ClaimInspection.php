@@ -34,7 +34,7 @@ class ClaimInspection extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const RESULTS = ['defect_confirmed', 'no_defect_found', 'misuse', 'transport_damage', 'inconclusive'];
+    public const array RESULTS = ['defect_confirmed', 'no_defect_found', 'misuse', 'transport_damage', 'inconclusive'];
 
     protected $fillable = [
         'organization_id', 'claim_rma_return_id', 'result', 'findings',

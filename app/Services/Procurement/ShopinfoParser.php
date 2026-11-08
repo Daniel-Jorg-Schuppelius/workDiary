@@ -25,7 +25,7 @@ use SimpleXMLElement;
  */
 class ShopinfoParser {
     /** Shopinfo-Spaltentyp (uppercase) => internes Zielfeld. */
-    private const TYPE_MAP = [
+    private const array TYPE_MAP = [
         'ARTICLE_NUMBER' => 'external_no',
         'ARTICLENO' => 'external_no',
         'SUPPLIER_AID' => 'external_no',

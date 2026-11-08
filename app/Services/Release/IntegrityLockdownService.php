@@ -46,12 +46,12 @@ use Illuminate\Support\Facades\Storage;
  * gültige Baseline oder manuelles `up` — beides auditiert.
  */
 class IntegrityLockdownService {
-    public const MODE_OFF = 'off';
+    public const string MODE_OFF = 'off';
 
-    public const MODE_CONFIRMED = 'confirmed';
+    public const string MODE_CONFIRMED = 'confirmed';
 
     /** Mindestzahl konsekutiver Abweichungsläufe. */
-    public const CONSECUTIVE_RUNS = 2;
+    public const int CONSECUTIVE_RUNS = 2;
 
     public function armed(): bool {
         return (string) config('integrity.lockdown.mode', self::MODE_OFF) === self::MODE_CONFIRMED;

@@ -25,7 +25,7 @@ enum WorkItemUrgency: string implements HasLabel {
     case Open = 'open';
 
     /** Tage ab heute, in denen ein Vorgang als „bald fällig“ gilt. */
-    public const SOON_DAYS = 3;
+    public const int SOON_DAYS = 3;
 
     public static function for(?CarbonImmutable $dueAt, CarbonImmutable $now): self {
         return match (true) {

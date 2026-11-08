@@ -32,13 +32,13 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class EnforceSupportImpersonation {
     /** Immer erreichbar: Sitzung beenden / Abmelden. */
-    private const ALLOWED_ROUTES = [
+    private const array ALLOWED_ROUTES = [
         'admin.support.impersonate.stop',
         'logout',
     ];
 
     /** Harte Sperren (Routenname enthält einen dieser Bausteine). */
-    private const BLOCKED_ROUTE_PARTS = [
+    private const array BLOCKED_ROUTE_PARTS = [
         'password',
         'two-factor',
         'webauthn',
@@ -71,7 +71,7 @@ class EnforceSupportImpersonation {
      * Sperre still (genau so entstand die 2FA-Luecke). Der Pfad ist die
      * stabilere Groesse, deshalb beide Wege.
      */
-    private const BLOCKED_PATH_PARTS = [
+    private const array BLOCKED_PATH_PARTS = [
         'two-factor',
         'zwei-faktor',
         'password',

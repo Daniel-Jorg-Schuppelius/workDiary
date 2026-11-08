@@ -28,7 +28,7 @@ class PeppolPluginTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const AP_BASE = 'https://ap.example.test/v1';
+    private const string AP_BASE = 'https://ap.example.test/v1';
 
     protected function setUp(): void {
         parent::setUp();

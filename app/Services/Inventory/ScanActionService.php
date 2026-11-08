@@ -27,7 +27,7 @@ use RuntimeException;
  * Umlagerung nimmt ihre Chargen mit (E4).
  */
 class ScanActionService {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     public function __construct(
         private readonly BarcodeResolver $resolver,

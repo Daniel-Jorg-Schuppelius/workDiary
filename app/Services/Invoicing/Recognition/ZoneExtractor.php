@@ -32,13 +32,13 @@ use PDFToolkit\Entities\WordBox;
  */
 final class ZoneExtractor {
     /** Anteil der Worthöhe, innerhalb dessen zwei Wörter eine Zeile bilden */
-    private const ROW_TOLERANCE = 0.6;
+    private const float ROW_TOLERANCE = 0.6;
 
-    private const MARGIN_X = 0.01;
+    private const float MARGIN_X = 0.01;
 
-    private const MARGIN_Y = 0.004;
+    private const float MARGIN_Y = 0.004;
 
-    public const PATTERN_MAX_LENGTH = 200;
+    public const int PATTERN_MAX_LENGTH = 200;
 
     /**
      * @param  array<string, mixed>  $zone
@@ -144,7 +144,7 @@ final class ZoneExtractor {
     }
 
     /** Größte Lücke zwischen zwei Wörtern derselben Beschriftung (Anteil der Seitenbreite); eine Spaltenlücke ist breiter. */
-    private const WORD_GAP = 0.02;
+    private const float WORD_GAP = 0.02;
 
     /**
      * Beschriftungswörter links eines Wertes in derselben Zeile (für gelernte

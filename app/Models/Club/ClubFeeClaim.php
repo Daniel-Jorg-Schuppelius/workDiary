@@ -67,11 +67,11 @@ class ClubFeeClaim extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const KIND_CLAIM = 'claim';
+    public const string KIND_CLAIM = 'claim';
 
-    public const KIND_CORRECTION = 'correction';
+    public const string KIND_CORRECTION = 'correction';
 
-    public const DOCUMENT_KIND = 'fee_notice';
+    public const string DOCUMENT_KIND = 'fee_notice';
 
     protected $fillable = [
         'organization_id', 'club_fee_run_id', 'club_fee_account_id', 'customer_id', 'sequence', 'number', 'kind', 'corrects_claim_id',

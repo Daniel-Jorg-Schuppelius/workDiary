@@ -32,7 +32,7 @@ use App\Plugins\Support\GitIssueImport\AbstractGitIssueImporter;
  */
 class GitlabIssueImporter extends AbstractGitIssueImporter {
     /** Settings-Schlüssel des Polling-Aufholpunkts (GitLab `updated_after`). */
-    public const CHECKPOINT_KEY = 'updated_after_checkpoint';
+    public const string CHECKPOINT_KEY = 'updated_after_checkpoint';
 
     private string $projectId = '';
 

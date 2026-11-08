@@ -34,7 +34,7 @@ use Illuminate\Validation\ValidationException;
  */
 class LearningContentService {
     /** Feldbild je Blocktyp — was nicht hier steht, wird verworfen. */
-    private const FIELDS = [
+    private const array FIELDS = [
         'heading' => ['text'],
         'text' => ['text'],
         'callout' => ['text', 'tone'],
@@ -55,15 +55,15 @@ class LearningContentService {
         'divider' => [],
     ];
 
-    public const GALLERY_MAX_IMAGES = 12;
+    public const int GALLERY_MAX_IMAGES = 12;
 
-    public const ACCORDION_MAX_SECTIONS = 20;
+    public const int ACCORDION_MAX_SECTIONS = 20;
 
-    public const TABLE_MAX_ROWS = 50;
+    public const int TABLE_MAX_ROWS = 50;
 
-    public const TABLE_MAX_COLUMNS = 8;
+    public const int TABLE_MAX_COLUMNS = 8;
 
-    public const QUESTION_MAX_OPTIONS = 8;
+    public const int QUESTION_MAX_OPTIONS = 8;
 
     /**
      * Block anhängen.

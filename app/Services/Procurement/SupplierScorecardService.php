@@ -45,7 +45,7 @@ use Illuminate\Support\Collection;
  */
 class SupplierScorecardService {
     /** Formeländerungen erhöhen die Version (Nachweis/Reproduzierbarkeit). */
-    public const METRIC_VERSION = 2;
+    public const int METRIC_VERSION = 2;
 
     /**
      * Dokumentierte Standardgewichte des Gesamt-Scores. Konfigurierbar je
@@ -54,7 +54,7 @@ class SupplierScorecardService {
      *
      * @var array<string, float>
      */
-    public const DEFAULT_WEIGHTS = [
+    public const array DEFAULT_WEIGHTS = [
         'ontime' => 0.35,
         'complaints' => 0.30,
         'quality' => 0.20,
@@ -64,7 +64,7 @@ class SupplierScorecardService {
     ];
 
     /** Als „ordered" (tatsächlich bestellt) zählende Bestellstatus. */
-    private const ORDERED_STATUSES = [
+    private const array ORDERED_STATUSES = [
         PurchaseOrderStatus::Ordered->value,
         PurchaseOrderStatus::PartiallyReceived->value,
         PurchaseOrderStatus::Received->value,

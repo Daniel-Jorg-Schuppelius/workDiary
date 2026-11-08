@@ -45,7 +45,7 @@ final class CollectableTypes {
      *
      * @var array<string, array{class: class-string<Model>, module: string|null, icon: string, list: array{route: string, filters: list<string>}|null}>
      */
-    public const TYPES = [
+    public const array TYPES = [
         'note' => ['class' => CommunicationNote::class, 'module' => null, 'icon' => 'sticky_note_2', 'list' => ['route' => 'communication-notes.index', 'filters' => ['q', 'tag', 'customer']]],
         'idea_map' => ['class' => IdeaMap::class, 'module' => 'module.ideas', 'icon' => 'emoji_objects', 'list' => ['route' => 'ideas.index', 'filters' => []]],
         'knowledge_article' => ['class' => KnowledgeArticle::class, 'module' => 'module.knowledge', 'icon' => 'school', 'list' => ['route' => 'knowledge.index', 'filters' => ['q', 'tag', 'collection']]],
@@ -66,7 +66,7 @@ final class CollectableTypes {
      *
      * @var list<string>
      */
-    public const SHARED_FILTERS = ['q', 'tag', 'collection', 'customer'];
+    public const array SHARED_FILTERS = ['q', 'tag', 'collection', 'customer'];
 
     public function __construct(
         private readonly FeatureFlagResolver $modules,

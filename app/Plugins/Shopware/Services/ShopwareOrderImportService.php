@@ -38,7 +38,7 @@ use Illuminate\Database\Eloquent\Model;
  * @extends AbstractShopOrderImportService<ShopwareOrder, ShopwareConnection>
  */
 class ShopwareOrderImportService extends AbstractShopOrderImportService {
-    private const STATUSES = [
+    private const array STATUSES = [
         'open' => ShopOrderStatus::Open,
         'in_progress' => ShopOrderStatus::Processing,
         'completed' => ShopOrderStatus::Completed,

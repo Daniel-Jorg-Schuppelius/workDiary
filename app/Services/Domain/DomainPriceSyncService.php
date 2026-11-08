@@ -34,7 +34,7 @@ use RuntimeException;
  * behalten. Zonen, die das Portal nicht mehr nennt, bleiben unberührt.
  */
 final class DomainPriceSyncService {
-    public const TERM_MONTHS = 12;
+    public const int TERM_MONTHS = 12;
 
     public function __construct(private readonly DomainProviderResolver $resolver) {}
 

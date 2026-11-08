@@ -40,7 +40,7 @@ class CloudIntakeReportController extends Controller {
     use WritesReportCsv;
 
     /** Zeilenobergrenze der Detailtabelle (Bericht, kein Protokollersatz). */
-    private const ROW_LIMIT = 500;
+    private const int ROW_LIMIT = 500;
 
     public function index(Request $request): View|Response {
         $user = $request->user();

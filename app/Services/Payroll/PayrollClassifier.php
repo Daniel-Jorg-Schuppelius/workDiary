@@ -21,7 +21,7 @@ use CommonToolkit\Helper\Data\NumberHelper;
  */
 class PayrollClassifier {
     /** Obergrenze Übergangsbereich (Midijob) in EUR/Monat (§ 20 Abs. 2 SGB IV). */
-    public const MIDIJOB_UPPER = 2000.0;
+    public const float MIDIJOB_UPPER = 2000.0;
 
     public function __construct(private readonly MinimumWageService $minimumWages = new MinimumWageService) {}
 

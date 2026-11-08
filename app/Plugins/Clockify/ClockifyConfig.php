@@ -20,9 +20,9 @@ use App\Plugins\Support\PluginSettingsResolver;
  * @phpstan-type ClockifySettings array{enabled: bool, default_billable: bool, default_user_id: ?int, single_user_mode: bool, api_key: ?string, workspace_id: ?string, base_url: string, reports_base_url: string, sync_window_days: int, writeback: bool, export_enabled: bool}
  */
 class ClockifyConfig {
-    public const DEFAULT_BASE_URL = 'https://api.clockify.me/api';
+    public const string DEFAULT_BASE_URL = 'https://api.clockify.me/api';
 
-    public const DEFAULT_REPORTS_BASE_URL = 'https://reports.api.clockify.me/v1';
+    public const string DEFAULT_REPORTS_BASE_URL = 'https://reports.api.clockify.me/v1';
 
     /**
      * @return array{enabled: bool, default_billable: bool, default_user_id: ?int, single_user_mode: bool, api_key: ?string, workspace_id: ?string, base_url: string, reports_base_url: string, sync_window_days: int, writeback: bool, export_enabled: bool}

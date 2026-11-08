@@ -35,7 +35,7 @@ class MsgraphMailClient implements GraphSubscriptionClient {
     use Concerns\ManagesGraphSubscriptions, ReadsGraphAccount;
 
     /** Chunk-Größe der Anhangs-Upload-Session: Vielfaches von 320 KiB (Graph-Vorgabe). */
-    public const UPLOAD_CHUNK_SIZE = 10 * 320 * 1024;
+    public const int UPLOAD_CHUNK_SIZE = 10 * 320 * 1024;
 
     private PluginApiClient $api;
 
@@ -147,9 +147,9 @@ class MsgraphMailClient implements GraphSubscriptionClient {
     //    freigegebene Postfächer MVP-1141 — braucht Mail.ReadWrite bzw. .Shared) ──
 
     /** Feste Graph-Ordnernamen, die als erstes Pfadsegment direkt als ID gelten. */
-    private const WELL_KNOWN_FOLDERS = ['inbox', 'archive', 'deleteditems', 'drafts', 'junkemail', 'sentitems', 'msgfolderroot'];
+    private const array WELL_KNOWN_FOLDERS = ['inbox', 'archive', 'deleteditems', 'drafts', 'junkemail', 'sentitems', 'msgfolderroot'];
 
-    private const MESSAGE_FIELDS = 'id,internetMessageId,subject,from,receivedDateTime,body,hasAttachments,internetMessageHeaders';
+    private const string MESSAGE_FIELDS = 'id,internetMessageId,subject,from,receivedDateTime,body,hasAttachments,internetMessageHeaders';
 
     /**
      * Eine Seite der Delta-Abfrage eines Ordners (nur neu hinzugekommene

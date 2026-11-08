@@ -24,7 +24,7 @@ use CommonToolkit\Helper\Data\NumberHelper;
  */
 final class LogbookRules {
     /** Zulässige Abweichung Tacho-Differenz ↔ erfasste Distanz. */
-    public const PLAUSIBILITY_TOLERANCE = 0.05;
+    public const float PLAUSIBILITY_TOLERANCE = 0.05;
 
     /**
      * Feldbezogene Verstöße für den Logbook-Modus; leer = zulässig.

@@ -30,12 +30,12 @@ class UrlSinkRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad-Präfix → Begründung */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         'resources/js/lib/html.js' => 'Definiert sameOriginPath() selbst.',
         'resources/js/layout.js' => 'Folgt der href-Eigenschaft eines Ankers der Seite nach dem Bestätigungsdialog — dieselbe Navigation, die der Klick ohnehin ausgelöst hätte.',
     ];
 
-    private const WINDOW = 10;
+    private const int WINDOW = 10;
 
     public function test_navigation_targets_pass_through_same_origin_path(): void {
         $violations = [];

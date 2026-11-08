@@ -30,12 +30,12 @@ use Illuminate\Validation\ValidationException;
  * @implements \IteratorAggregate<int, FieldDefinition>
  */
 final class FieldSchema implements \Countable, \IteratorAggregate {
-    public const MAX_FIELDS = 50;
+    public const int MAX_FIELDS = 50;
 
-    public const KEY_PATTERN = '/^[a-z][a-z0-9_]{0,59}$/';
+    public const string KEY_PATTERN = '/^[a-z][a-z0-9_]{0,59}$/';
 
     /** Zulässige Operatoren der Sichtbarkeits-Bedingung. */
-    public const CONDITION_OPS = ['eq', 'ne', 'in', 'filled'];
+    public const array CONDITION_OPS = ['eq', 'ne', 'in', 'filled'];
 
     /** @var list<FieldDefinition> */
     private array $fields;

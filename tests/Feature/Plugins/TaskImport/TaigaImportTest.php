@@ -41,11 +41,11 @@ class TaigaImportTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const API = 'https://api.taiga.io';
+    private const string API = 'https://api.taiga.io';
 
-    private const APP = 'https://tree.taiga.io';
+    private const string APP = 'https://tree.taiga.io';
 
-    private const PROJECT = '310';
+    private const string PROJECT = '310';
 
     private User $admin;
 

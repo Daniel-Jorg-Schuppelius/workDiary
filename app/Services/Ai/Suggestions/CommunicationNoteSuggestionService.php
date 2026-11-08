@@ -40,18 +40,18 @@ use Illuminate\Validation\ValidationException;
 class CommunicationNoteSuggestionService {
     use DecidesSuggestions;
 
-    public const CAPABILITY = 'communication.note_structure';
+    public const string CAPABILITY = 'communication.note_structure';
 
-    public const FIELD_SUBJECT = 'subject';
+    public const string FIELD_SUBJECT = 'subject';
 
-    public const FIELD_RESULT = 'result';
+    public const string FIELD_RESULT = 'result';
 
-    public const FIELD_NEXT_ACTION = 'next_action';
+    public const string FIELD_NEXT_ACTION = 'next_action';
 
-    public const FIELD_NEXT_ACTION_DUE_AT = 'next_action_due_at';
+    public const string FIELD_NEXT_ACTION_DUE_AT = 'next_action_due_at';
 
     /** Zielschema — abschließend; der Adapter liefert nur diese Felder. */
-    private const SCHEMA = [
+    private const array SCHEMA = [
         self::FIELD_SUBJECT => 'Kurzer sachlicher Betreff des Gesprächs, höchstens 120 Zeichen.',
         self::FIELD_RESULT => 'Ergebnis bzw. Fazit des Gesprächs in einem Satz; null, wenn der Verlauf keines nennt.',
         self::FIELD_NEXT_ACTION => 'Vereinbarte Folgeaktion in einem Satz; null, wenn keine vereinbart wurde.',

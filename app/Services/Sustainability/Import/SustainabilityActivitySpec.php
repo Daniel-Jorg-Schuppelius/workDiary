@@ -32,11 +32,11 @@ use Throwable;
 class SustainabilityActivitySpec extends AbstractEntitySpec {
     use ParsesLocalDateTime;
 
-    private const QUALITY_ALIASES = [
+    private const array QUALITY_ALIASES = [
         'gemessen' => 'measured', 'messung' => 'measured', 'berechnet' => 'calculated', 'geschätzt' => 'estimated', 'geschaetzt' => 'estimated', 'schätzung' => 'estimated',
     ];
 
-    private const DEFAULT_UNITS = [
+    private const array DEFAULT_UNITS = [
         'kwh' => 'kWh', 'l' => 'l', 'kg' => 'kg', 'm3' => 'm³', 'eur' => 'EUR', 'car' => 'km', 'truck' => 'km',
     ];
 

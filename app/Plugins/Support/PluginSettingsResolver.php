@@ -66,7 +66,7 @@ final class PluginSettingsResolver {
      * Für sie greift der Config-/ENV-Rückfall nur, wenn der Betreiber ihn
      * ausdrücklich zulässt ({@see secretFallbackAllowed()}).
      */
-    private const SECRET_KEY_PATTERN = '/(^|_)(api_key|api_token|api_secret|api_password|token|secret|password|key|keystring)$/';
+    private const string SECRET_KEY_PATTERN = '/(^|_)(api_key|api_token|api_secret|api_password|token|secret|password|key|keystring)$/';
 
     /**
      * Geheimnisse, die zur App-Registrierung des BETREIBERS gehören und
@@ -87,7 +87,7 @@ final class PluginSettingsResolver {
      *
      * @var array<string, list<string>>
      */
-    private const INSTANCE_SECRET_KEYS = [
+    private const array INSTANCE_SECRET_KEYS = [
         'msgraph' => ['client_secret'],
         'sharepoint' => ['client_secret'],
         'google_calendar' => ['client_secret'],

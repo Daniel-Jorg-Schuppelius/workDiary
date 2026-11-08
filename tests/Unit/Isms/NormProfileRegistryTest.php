@@ -23,7 +23,7 @@ use Tests\TestCase;
  */
 class NormProfileRegistryTest extends TestCase {
     /** Erwartete Profile + Anzahl Referenzen (27 HLS; 27001 zusätzlich 93 Annex A; NIST CSF 6 Funktionen + 22 Kategorien). */
-    private const EXPECTED_PROFILES = [
+    private const array EXPECTED_PROFILES = [
         'iso27001-2022' => 120,
         'iso27701-2025' => 27,
         'iso9001-2015' => 27,

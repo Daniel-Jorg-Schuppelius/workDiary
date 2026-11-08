@@ -37,7 +37,7 @@ final class TalentPoolReadmissionTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const CONSENT_MESSAGE = 'Die Talentpool-Einwilligung fehlt oder ist abgelaufen — die Akte kann nicht wieder aufgenommen werden.';
+    private const string CONSENT_MESSAGE = 'Die Talentpool-Einwilligung fehlt oder ist abgelaufen — die Akte kann nicht wieder aufgenommen werden.';
 
     private User $admin;
 

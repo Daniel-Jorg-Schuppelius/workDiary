@@ -27,7 +27,7 @@ use App\Plugins\Support\GitIssueImport\AbstractGitIssueImporter;
  */
 class GithubIssueImporter extends AbstractGitIssueImporter {
     /** Settings-Schlüssel des Polling-Aufholpunkts (GitHub `since`). */
-    public const CHECKPOINT_KEY = 'since_checkpoint';
+    public const string CHECKPOINT_KEY = 'since_checkpoint';
 
     private string $owner = '';
 

@@ -41,12 +41,12 @@ class FixedAssetService {
     use AssignsSequentialNo;
 
     /** Felder, die nach der ersten Festbuchung nicht mehr änderbar sind. */
-    private const VALUE_FIELDS = ['acquired_on', 'acquisition_cost', 'residual_value', 'useful_life_months', 'depreciation_method', 'declining_rate', 'currency'];
+    private const array VALUE_FIELDS = ['acquired_on', 'acquisition_cost', 'residual_value', 'useful_life_months', 'depreciation_method', 'declining_rate', 'currency'];
 
     /** Sonder-AfA § 7g: zusammen höchstens 40 % der Anschaffungskosten, in fünf Jahren (MVP-981). */
-    private const SPECIAL_MAX_PERCENT = '40';
+    private const string SPECIAL_MAX_PERCENT = '40';
 
-    private const SPECIAL_YEARS = 5;
+    private const int SPECIAL_YEARS = 5;
 
     public function __construct(
         private readonly DepreciationAdapter $adapter,

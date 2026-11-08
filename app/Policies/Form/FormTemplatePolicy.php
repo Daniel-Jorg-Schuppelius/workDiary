@@ -26,7 +26,7 @@ use App\Policies\PermissionPolicy;
 class FormTemplatePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::FormTemplateViewAny,
         'view' => P::FormTemplateViewAny,
         'create' => P::FormTemplateManage,

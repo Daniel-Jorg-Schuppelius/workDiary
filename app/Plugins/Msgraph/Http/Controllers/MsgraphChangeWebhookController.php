@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class MsgraphChangeWebhookController extends Controller {
     /** Debounce je Träger — Graph schickt Bursts, ein Lauf genügt. */
-    private const DEBOUNCE_SECONDS = 60;
+    private const int DEBOUNCE_SECONDS = 60;
 
     public function __invoke(Request $request): Response {
         // Subscription-Validierung (Graph sendet POST mit validationToken).

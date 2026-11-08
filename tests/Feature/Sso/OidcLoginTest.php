@@ -34,7 +34,7 @@ final class OidcLoginTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const ISSUER = 'https://idp.example';
+    private const string ISSUER = 'https://idp.example';
 
     private JWK $idpKey;
     private SsoConnection $connection;

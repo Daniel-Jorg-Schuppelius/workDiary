@@ -51,7 +51,7 @@ class DocumentZipImportTest extends TestCase {
         $this->asset = Asset::factory()->create(['organization_id' => $this->organization->id, 'asset_no' => 'AS-1']);
     }
 
-    private const PDF = "%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n";
+    private const string PDF = "%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n";
 
     /** @param array<string, string> $files */
     private function zip(string $manifest, array $files = []): string {

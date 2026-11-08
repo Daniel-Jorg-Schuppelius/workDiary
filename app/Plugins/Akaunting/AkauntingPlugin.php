@@ -25,9 +25,9 @@ use App\Plugins\Support\{ChecksConnectionHealth, SelfHostedSettings};
 class AkauntingPlugin extends AbstractPlugin {
     use ChecksConnectionHealth;
 
-    public const ID = 'akaunting';
+    public const string ID = 'akaunting';
 
-    public const SERVICE_PROVIDER = AkauntingServiceProvider::class;
+    public const string SERVICE_PROVIDER = AkauntingServiceProvider::class;
 
     public function name(): string {
         return 'Akaunting';

@@ -31,7 +31,7 @@ use Illuminate\View\View;
 class WorkQueueController extends Controller {
     use ResolvesCurrentOrganization;
 
-    private const SORTS = ['urgency', 'due', 'title', 'source'];
+    private const array SORTS = ['urgency', 'due', 'title', 'source'];
 
     public function __invoke(Request $request, WorkQueue $queue): View {
         $viewer = $this->authUser();

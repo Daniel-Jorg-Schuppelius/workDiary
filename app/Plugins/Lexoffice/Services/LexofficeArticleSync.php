@@ -52,7 +52,7 @@ use RuntimeException;
  */
 class LexofficeArticleSync {
     /** Inhaltsfelder, die Konflikterkennung und Konflikt-Schnappschuss vergleichen. */
-    private const DIFF_FIELDS = ['name', 'article_number', 'gtin', 'description', 'note', 'type', 'unit_name', 'net_unit_price', 'gross_unit_price', 'currency', 'vat_rate', 'leading_price'];
+    private const array DIFF_FIELDS = ['name', 'article_number', 'gtin', 'description', 'note', 'type', 'unit_name', 'net_unit_price', 'gross_unit_price', 'currency', 'vat_rate', 'leading_price'];
 
     private LexofficeMatchPolicy $policy = LexofficeMatchPolicy::LexofficeWins;
 

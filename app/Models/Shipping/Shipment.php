@@ -50,7 +50,7 @@ class Shipment extends Model {
     use HasSqid;
 
     /** meta_type des Label-Attachments. */
-    public const LABEL_META = 'shipping_label';
+    public const string LABEL_META = 'shipping_label';
 
     protected $table = 'shipments';
 

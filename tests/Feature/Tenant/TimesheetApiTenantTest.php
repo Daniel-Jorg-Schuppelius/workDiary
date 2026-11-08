@@ -35,7 +35,7 @@ use Tests\TestCase;
 class TimesheetApiTenantTest extends TestCase {
     use RefreshDatabase;
 
-    private const MARKER = 'ZZ-TSB-LEAK-KUNDE';
+    private const string MARKER = 'ZZ-TSB-LEAK-KUNDE';
 
     private Organization $orgA;
 

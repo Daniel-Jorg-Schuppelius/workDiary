@@ -19,11 +19,11 @@ use Illuminate\Database\Eloquent\Model;
  * Ergebnis eines {@see IntegrationResolver}-Laufs.
  */
 final class ResolveOutcome {
-    public const LINKED = 'linked';       // bestehendem lokalen Datensatz zugeordnet
-    public const CREATED = 'created';     // neu angelegt (Opt-in)
-    public const STAGED = 'staged';       // unmatched-Inbox-Item
-    public const CONFLICT = 'conflict';   // conflict-Inbox-Item (Feld-Abweichung)
-    public const AMBIGUOUS = 'ambiguous'; // ambiguous-Inbox-Item (mehrere Kandidaten)
+    public const string LINKED = 'linked';       // bestehendem lokalen Datensatz zugeordnet
+    public const string CREATED = 'created';     // neu angelegt (Opt-in)
+    public const string STAGED = 'staged';       // unmatched-Inbox-Item
+    public const string CONFLICT = 'conflict';   // conflict-Inbox-Item (Feld-Abweichung)
+    public const string AMBIGUOUS = 'ambiguous'; // ambiguous-Inbox-Item (mehrere Kandidaten)
 
     private function __construct(
         public readonly string $type,

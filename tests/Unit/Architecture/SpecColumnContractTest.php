@@ -28,7 +28,7 @@ class SpecColumnContractTest extends TestCase {
      *
      * @var array<class-string, class-string>
      */
-    private const PAIRS = [
+    private const array PAIRS = [
         \App\Services\Export\Specs\CustomerExportSpec::class => \App\Services\Customer\Import\CustomerSpec::class,
         \App\Services\Export\Specs\MaterialExportSpec::class => \App\Services\Material\Import\MaterialSpec::class,
         \App\Services\Export\Specs\ProjectExportSpec::class => \App\Services\Project\Import\ProjectSpec::class,

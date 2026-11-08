@@ -22,7 +22,7 @@ use PHPUnit\Framework\TestCase;
  * ausgestellten Rechnungen per Fremdschlüssel mit (Vollscan 2026-10-21).
  */
 final class PartyDeletionCascadeRuleTest extends TestCase {
-    private const ROOT = __DIR__ . '/../../..';
+    private const string ROOT = __DIR__ . '/../../..';
 
     public function test_every_cascade_onto_a_party_is_classified(): void {
         $cascades = $this->cascadesFromDump();

@@ -31,10 +31,10 @@ use RuntimeException;
  * ausdrücklicher Freigabe möglich. Alle Beträge dezimal (bcmath).
  */
 class InventoryLedger {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     /** Schlüsselpräfix mehrteiliger Abgänge ohne eigenen Schlüssel: hält die Teile für {@see issueOf()} zusammen. */
-    public const ISSUE_GROUP_PREFIX = 'issue:';
+    public const string ISSUE_GROUP_PREFIX = 'issue:';
 
     /** @var array<int, \App\Enums\Inventory\InventoryMode|null> */
     private array $modeCache = [];

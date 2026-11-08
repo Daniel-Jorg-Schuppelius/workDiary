@@ -27,7 +27,7 @@ use Illuminate\Support\Str;
  */
 final class CareerFormState {
     /** Gültigkeitsfenster des Formulars (Sekunden). */
-    public const TTL = 7200;
+    public const int TTL = 7200;
 
     public static function issue(int $postingId, int $issuedAt): string {
         $nonce = Str::random(32);

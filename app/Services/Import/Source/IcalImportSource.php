@@ -45,7 +45,7 @@ use Throwable;
  */
 final class IcalImportSource implements ImportSource {
     /** Obergrenze je Serie, damit eine fehlerhafte Regel den Import nicht aufbläht. */
-    private const MAX_OCCURRENCES = 1000;
+    private const int MAX_OCCURRENCES = 1000;
 
     /**
      * @param  list<string>  $categoryAllowlist  normalisierte (lowercase) Kategorien; leer = keine Einschränkung

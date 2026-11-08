@@ -31,7 +31,7 @@ use Illuminate\Support\Facades\Cache;
 class ScheduledJobOverride extends Model {
     use Auditable;
 
-    public const CACHE_KEY = 'scheduler.overrides.system';
+    public const string CACHE_KEY = 'scheduler.overrides.system';
 
     protected $table = 'scheduled_job_overrides';
 

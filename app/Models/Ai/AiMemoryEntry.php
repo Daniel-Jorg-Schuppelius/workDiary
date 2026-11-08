@@ -53,12 +53,12 @@ class AiMemoryEntry extends Model {
 
     use HasSqid;
 
-    public const ORIGIN_MANUAL = 'manual';
+    public const string ORIGIN_MANUAL = 'manual';
 
-    public const ORIGIN_LEARNED = 'learned';
+    public const string ORIGIN_LEARNED = 'learned';
 
     /** Ausgelieferte Default-Regel (Feature 084 MVP-404, Vollaudit 2026-07 M35) — editierbar wie manuelle Einträge. */
-    public const ORIGIN_DEFAULT = 'default';
+    public const string ORIGIN_DEFAULT = 'default';
 
     protected $fillable = [
         'organization_id',

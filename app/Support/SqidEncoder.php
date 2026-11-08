@@ -32,7 +32,7 @@ final class SqidEncoder {
      * riesigen Zahl (gemessen: kleinster Fehltreffer 6,8·10¹² bei rund einer
      * Million Proben, 2026-09-28); Auto-Increment-IDs erreichen diesen Bereich nicht.
      */
-    public const MAX_ID = 999_999_999_999;
+    public const int MAX_ID = 999_999_999_999;
 
     /** @var array<class-string, Sqids> */
     private array $encoders = [];

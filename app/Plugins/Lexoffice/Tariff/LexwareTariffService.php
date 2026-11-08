@@ -28,9 +28,9 @@ use Carbon\CarbonImmutable;
  * Belege, laufende lokale Serien und Nummernkreise bleiben unberührt.
  */
 class LexwareTariffService {
-    public const CHANNEL_MANUAL = 'manual';
+    public const string CHANNEL_MANUAL = 'manual';
 
-    public const CHANNEL_API = 'api';
+    public const string CHANNEL_API = 'api';
 
     public function profile(): LexwareTariffProfile {
         $features = [];

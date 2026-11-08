@@ -27,7 +27,7 @@ use CommonToolkit\ValueObjects\Money;
  * Planung ergibt, auch wenn eine Jahres-AfA noch nicht gebucht ist.
  */
 final class FixedAssetScheduleBuilder {
-    public const COLUMNS = ['cost_start', 'additions', 'disposals', 'cost_end', 'dep_start', 'dep_year', 'dep_disposals', 'dep_end', 'book_start', 'book_end'];
+    public const array COLUMNS = ['cost_start', 'additions', 'disposals', 'cost_end', 'dep_start', 'dep_year', 'dep_disposals', 'dep_end', 'book_start', 'book_end'];
 
     public function __construct(private readonly DepreciationCalculator $calculator) {}
 

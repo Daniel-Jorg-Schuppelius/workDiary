@@ -38,7 +38,7 @@ class LearningCheckInController extends Controller {
     ) {}
 
     /** Sitzungsschlüssel des Einmal-Nachweises je Einheit (signed-1). */
-    private const NONCE_KEY = 'learning.checkin.nonce';
+    private const string NONCE_KEY = 'learning.checkin.nonce';
 
     public function show(Request $request, LearningUnit $unit): View {
         [$enrollment, $event] = $this->context($unit);

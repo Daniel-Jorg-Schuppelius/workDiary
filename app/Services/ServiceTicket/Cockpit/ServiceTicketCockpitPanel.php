@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Gate;
 
 /** Ungelöste Tickets des Kunden (Feature 010); vertrauliche nur, wo die Ticket-Policy sie zeigt. */
 final class ServiceTicketCockpitPanel implements CockpitPanel {
-    private const LIMIT = 10;
+    private const int LIMIT = 10;
 
     public function __construct(private readonly FeatureFlagResolver $features) {}
 

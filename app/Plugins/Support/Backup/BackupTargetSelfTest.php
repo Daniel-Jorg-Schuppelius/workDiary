@@ -26,7 +26,7 @@ use RuntimeException;
  * eine Datei gelesen oder gelöscht zu haben.
  */
 final class BackupTargetSelfTest {
-    public const PAYLOAD = 'workdiary-selftest';
+    public const string PAYLOAD = 'workdiary-selftest';
 
     /** @throws RuntimeException wenn das Ziel die Probe nicht besteht */
     public function run(BackupTarget $target, BackupTargetConnection $connection, string $folder): void {

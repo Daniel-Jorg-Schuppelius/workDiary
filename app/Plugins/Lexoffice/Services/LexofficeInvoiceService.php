@@ -40,11 +40,11 @@ use RuntimeException;
  */
 class LexofficeInvoiceService {
     /** Gilt für jeden übertragenen lokalen Beleg, auch Korrekturen; die Ressource steht in `payload._resource`. */
-    public const EXT_TYPE_INVOICE = 'invoice';
+    public const string EXT_TYPE_INVOICE = 'invoice';
 
-    public const RESOURCE_INVOICES = 'invoices';
+    public const string RESOURCE_INVOICES = 'invoices';
 
-    public const RESOURCE_CREDIT_NOTES = 'credit-notes';
+    public const string RESOURCE_CREDIT_NOTES = 'credit-notes';
 
     private ?Client $client = null;
 

@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class KeyHandoverController extends Controller {
-    private const ALLOWED_SORTS = ['occurred_at', 'direction', 'person_name', 'expected_return_at'];
+    private const array ALLOWED_SORTS = ['occurred_at', 'direction', 'person_name', 'expected_return_at'];
 
     public function __construct(private readonly KeyHandoverService $service) {}
 

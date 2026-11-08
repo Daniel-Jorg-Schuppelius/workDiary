@@ -26,9 +26,9 @@ use App\Models\Platform\Organization;
  *    (Aufrufer prüfen {@see mayWrite()} vor dem Write).
  */
 class DataOwnershipResolver {
-    public const NATIVE = 'native';
+    public const string NATIVE = 'native';
 
-    private const SETTINGS_KEY = 'data_ownership';
+    private const string SETTINGS_KEY = 'data_ownership';
 
     public function ownerFor(Organization $organization, DataDomain $domain): string {
         $map = (array) data_get((array) ($organization->settings ?? []), self::SETTINGS_KEY, []);

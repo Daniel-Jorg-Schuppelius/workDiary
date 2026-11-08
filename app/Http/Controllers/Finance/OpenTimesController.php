@@ -44,7 +44,7 @@ class OpenTimesController extends Controller {
     use ResolvesGlobalDateRange;
 
     /** Ab diesem Alter (Tage seit Leistungsdatum) gilt ein offener Eintrag als überfällig. */
-    public const STALE_AFTER_DAYS = 45;
+    public const int STALE_AFTER_DAYS = 45;
 
     public function __construct(private readonly LateTimeEntryDetector $lateDetector) {}
 

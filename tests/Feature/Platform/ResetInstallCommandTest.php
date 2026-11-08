@@ -34,7 +34,7 @@ class ResetInstallCommandTest extends TestCase {
     use RefreshDatabase;
 
     /** Cache-Pfade, die `optimize:clear`/`clear-compiled` löschen würde. */
-    private const CACHE_PATH_ENV = [
+    private const array CACHE_PATH_ENV = [
         'APP_SERVICES_CACHE' => 'services.php',
         'APP_PACKAGES_CACHE' => 'packages.php',
         'APP_CONFIG_CACHE' => 'config.php',

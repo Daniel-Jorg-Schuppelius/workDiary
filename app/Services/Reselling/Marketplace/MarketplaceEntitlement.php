@@ -24,11 +24,11 @@ use CommonToolkit\ValueObjects\Money;
  * nennt; sonst leitet der `UnitPriceCatalog` sie aus der Gebühr ab.
  */
 final readonly class MarketplaceEntitlement {
-    public const SOURCE_TELEKOM = 'telekom';
+    public const string SOURCE_TELEKOM = 'telekom';
 
-    public const SOURCE_QUALITYHOSTING = 'qualityhosting';
+    public const string SOURCE_QUALITYHOSTING = 'qualityhosting';
 
-    public const SOURCE_GENERIC = 'generic';
+    public const string SOURCE_GENERIC = 'generic';
 
     public function __construct(
         public MarketplaceCompany $company,

@@ -27,9 +27,9 @@ use Illuminate\Database\Eloquent\{Builder, Model};
  */
 class KnowledgeHubService {
     /** Kandidaten je Typ (zuletzt geändert zuerst) — der Einstieg ist Übersicht, keine Volltextsuche. */
-    public const CANDIDATES_PER_TYPE = 150;
+    public const int CANDIDATES_PER_TYPE = 150;
 
-    public const TAG_FACET_LIMIT = 15;
+    public const int TAG_FACET_LIMIT = 15;
 
     public function __construct(
         private readonly CollectableTypes $types,

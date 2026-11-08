@@ -30,10 +30,10 @@ use Illuminate\Http\Client\Response;
 class ClockifyApiClient implements RemoteTimeWriter {
     use GuardsPluginApiResponses, StartStopFingerprint;
 
-    public const PAGE_SIZE = 1000;
+    public const int PAGE_SIZE = 1000;
 
     /** Projekte-Endpunkt erlaubt maximal 200 je Seite. */
-    public const PROJECT_PAGE_SIZE = 200;
+    public const int PROJECT_PAGE_SIZE = 200;
 
     private ?PluginApiClient $api = null;
 

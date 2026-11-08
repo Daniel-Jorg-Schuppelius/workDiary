@@ -40,10 +40,10 @@ use Throwable;
  */
 class SharepointDriveClient implements RemoteFileGateway {
     /** Graph-Grenze für den einfachen Upload; darüber Upload-Session (Chunks). */
-    public const SIMPLE_UPLOAD_LIMIT = 4 * 1024 * 1024;
+    public const int SIMPLE_UPLOAD_LIMIT = 4 * 1024 * 1024;
 
     /** Chunk-Größe der Upload-Session: Vielfaches von 320 KiB (Graph-Vorgabe). */
-    public const CHUNK_SIZE = 10 * 320 * 1024;
+    public const int CHUNK_SIZE = 10 * 320 * 1024;
 
     private PluginApiClient $api;
 

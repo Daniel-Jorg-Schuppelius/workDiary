@@ -40,9 +40,9 @@ class GlpiImportTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const BASE = 'https://glpi.example.test';
+    private const string BASE = 'https://glpi.example.test';
 
-    private const ENTITY = '3';
+    private const string ENTITY = '3';
 
     private User $admin;
 

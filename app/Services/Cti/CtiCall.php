@@ -21,9 +21,9 @@ use Illuminate\Support\Carbon;
  * arbeitet nur hiermit.
  */
 final class CtiCall {
-    public const INBOUND = 'inbound';
+    public const string INBOUND = 'inbound';
 
-    public const OUTBOUND = 'outbound';
+    public const string OUTBOUND = 'outbound';
 
     public function __construct(
         public readonly string $callId,

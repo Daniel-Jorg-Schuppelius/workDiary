@@ -51,10 +51,10 @@ use RuntimeException;
  */
 class LexofficeExpenseLinkProvider implements ExpenseLinkProvider {
     /** Tage Toleranz zwischen Auslagendatum und Belegdatum im Vorschlag. */
-    public const MATCH_DAYS = 14;
+    public const int MATCH_DAYS = 14;
 
     /** Cent-Toleranz beim Betragsvergleich (Rundung fremder Systeme). */
-    public const MATCH_CENTS = 2;
+    public const int MATCH_CENTS = 2;
 
     public function label(): ?string {
         return 'Lexoffice';

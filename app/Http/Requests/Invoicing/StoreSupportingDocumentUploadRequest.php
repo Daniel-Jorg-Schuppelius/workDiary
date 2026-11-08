@@ -17,7 +17,7 @@ use App\Http\Requests\BaseFormRequest;
 /** Unterlage zur E-Rechnung hochladen (Feature 196); den Typ prüft der Dienst am Inhalt. */
 class StoreSupportingDocumentUploadRequest extends BaseFormRequest {
     /** Größte Einzeldatei: die engste Plattformgrenze (10 MB für alle Anhänge) passt sonst schon allein nicht. */
-    public const MAX_KB = 10240;
+    public const int MAX_KB = 10240;
 
     /** @return array<string, array<int, string>> */
     public function rules(): array {

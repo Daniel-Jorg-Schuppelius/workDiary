@@ -38,7 +38,7 @@ class ContactNumberIssuingTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const LEX_ID = '7a1b2c3d-1111-4222-8333-944455556666';
+    private const string LEX_ID = '7a1b2c3d-1111-4222-8333-944455556666';
 
     private User $admin;
 

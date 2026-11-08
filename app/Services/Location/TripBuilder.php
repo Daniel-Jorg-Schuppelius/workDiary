@@ -26,10 +26,10 @@ use CommonToolkit\Helper\Geo\GeoHelper;
  */
 class TripBuilder {
     /** Längste Lücke zwischen zwei Besuchen, die noch als eine Fahrt gilt. */
-    public const MAX_GAP_HOURS = 12;
+    public const int MAX_GAP_HOURS = 12;
 
     /** Kürzere Wege (z. B. Zonenwechsel im selben Gebäude) sind keine Fahrt. */
-    public const MIN_DISTANCE_KM = 0.3;
+    public const float MIN_DISTANCE_KM = 0.3;
 
     public function __construct(private readonly TrackDistanceSource $distances) {}
 

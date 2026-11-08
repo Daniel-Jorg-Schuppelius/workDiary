@@ -46,9 +46,9 @@ class DashboardService {
      * Quellen liegen in Feature-Modulen, das Dashboard darf sie nicht kennen
      * (Modulgrenze); der Schlüssel ist der stabile Vertrag des Erweiterungspunkts.
      */
-    private const EXPENSE_APPROVAL_SOURCE = 'expense_approval';
+    private const string EXPENSE_APPROVAL_SOURCE = 'expense_approval';
 
-    private const VACATION_APPROVAL_SOURCE = 'vacation_approval';
+    private const string VACATION_APPROVAL_SOURCE = 'vacation_approval';
 
     /** @var array<string, mixed> */
     private array $memo = [];

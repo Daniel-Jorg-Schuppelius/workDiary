@@ -34,14 +34,14 @@ use Illuminate\Support\Carbon;
  */
 class LearningGamificationService {
     /** Abzeichen: Schwelle → Schlüssel. Bewusst wenige, sonst wird es Kitsch. */
-    private const BADGES = [
+    private const array BADGES = [
         1 => 'first_course',
         5 => 'five_courses',
         10 => 'ten_courses',
     ];
 
     /** Längste betrachtete Serie — ein Jahr genügt für jede Anzeige. */
-    private const STREAK_WINDOW_DAYS = 366;
+    private const int STREAK_WINDOW_DAYS = 366;
 
     public function isEnabled(?Organization $organization): bool {
         return (bool) ($organization->settings['learning']['gamification']['enabled'] ?? false);

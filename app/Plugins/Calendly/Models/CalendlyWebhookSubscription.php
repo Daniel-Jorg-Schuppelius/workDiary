@@ -36,9 +36,9 @@ use Illuminate\Support\Carbon;
 class CalendlyWebhookSubscription extends Model {
     use BelongsToOrganization;
 
-    public const SCOPE_ORGANIZATION = 'organization';
+    public const string SCOPE_ORGANIZATION = 'organization';
 
-    public const SCOPE_USER = 'user';
+    public const string SCOPE_USER = 'user';
 
     protected $table = 'calendly_webhook_subscriptions';
 

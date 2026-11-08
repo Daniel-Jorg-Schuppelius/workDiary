@@ -60,7 +60,7 @@ class EmailConnection extends Model {
     use HasSqid;
 
     /** Klassisches IMAP-Postfach (Zugangsdaten am Datensatz). */
-    public const TRANSPORT_IMAP = 'imap';
+    public const string TRANSPORT_IMAP = 'imap';
 
     /** Tabellenname explizit (defensiv, konsistent zur Migration). */
     protected $table = 'email_connections';

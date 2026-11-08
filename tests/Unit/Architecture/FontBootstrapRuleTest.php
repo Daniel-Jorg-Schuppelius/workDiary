@@ -28,13 +28,13 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class FontBootstrapRuleTest extends TestCase {
     use ScansSourceTree;
 
-    private const PARTIAL = 'resources/views/partials/font-bootstrap.blade.php';
+    private const string PARTIAL = 'resources/views/partials/font-bootstrap.blade.php';
 
-    private const INCLUDE = '~@include\(\s*[\'"]partials\.font-bootstrap[\'"]~';
+    private const string INCLUDE = '~@include\(\s*[\'"]partials\.font-bootstrap[\'"]~';
 
-    private const ICONS_OFF = '~@include\(\s*[\'"]partials\.font-bootstrap[\'"]\s*,\s*\[\s*[\'"]icons[\'"]\s*=>\s*false~';
+    private const string ICONS_OFF = '~@include\(\s*[\'"]partials\.font-bootstrap[\'"]\s*,\s*\[\s*[\'"]icons[\'"]\s*=>\s*false~';
 
-    private const ICON_USE = '~<x-icon\b|<x-icon-btn\b|\s:?icon(?:-trailing)?\s*=|material-symbols-~';
+    private const string ICON_USE = '~<x-icon\b|<x-icon-btn\b|\s:?icon(?:-trailing)?\s*=|material-symbols-~';
 
     public function test_standalone_documents_bootstrap_fonts(): void {
         $violations = [];

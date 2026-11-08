@@ -30,7 +30,7 @@ use CommonToolkit\Helper\Data\NumberHelper;
  */
 final class DecimalQty {
     /** Kanonische Mengen-/Wertskala der bcmath-Pfade (ehem. 7× SCALE=4). */
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     /**
      * Betrag (immer >= 0) als kanonischer Dezimalstring.

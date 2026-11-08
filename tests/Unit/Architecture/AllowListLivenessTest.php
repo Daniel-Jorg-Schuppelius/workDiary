@@ -27,7 +27,7 @@ use Throwable;
  */
 class AllowListLivenessTest extends TestCase {
     /** Namen, die eine Ausnahmeliste kennzeichnen. */
-    private const LIST_NAME = '/^(?:[A-Z_]*ALLOW(?:ED|_?LIST)?|[A-Z_]*_ALLOW|WHITELIST|EXCEPTIONS|ORG_WIDE|NOT_A_[A-Z_]+|[A-Z_]*_EXEMPT)$/';
+    private const string LIST_NAME = '/^(?:[A-Z_]*ALLOW(?:ED|_?LIST)?|[A-Z_]*_ALLOW|WHITELIST|EXCEPTIONS|ORG_WIDE|NOT_A_[A-Z_]+|[A-Z_]*_EXEMPT)$/';
 
     /**
      * Listen, die den Geltungsbereich eines Gates festlegen, statt einzelne
@@ -35,7 +35,7 @@ class AllowListLivenessTest extends TestCase {
      *
      * @var array<string, string>
      */
-    private const SCOPE = [
+    private const array SCOPE = [
         'AlpineCspExpressionRuleTest::ALLOW_LIST' => 'Legacy- und Vendor-Views liegen außerhalb der Konvention.',
         'InlineEventHandlerRuleTest::ALLOW_LIST' => 'Legacy- und Vendor-Views liegen außerhalb der Konvention.',
         'RawStatusOutputRuleTest::ALLOW_LIST' => 'Legacy- und Vendor-Views liegen außerhalb der Konvention.',
@@ -52,7 +52,7 @@ class AllowListLivenessTest extends TestCase {
      *
      * @var array<string, string>
      */
-    private const KEPT = [];
+    private const array KEPT = [];
 
     /** @var list<string> */
     private static array $messages = [];
@@ -104,9 +104,9 @@ class AllowListLivenessTest extends TestCase {
         $source = (string) file_get_contents($file);
         $copy = $gate . '__ohne_' . $constant;
 
-        $source = (string) preg_replace('/(const ' . $constant . ' = )\[.*?\n    \];/s', '$1[];', $source, 1, $replaced);
+        $source = (string) preg_replace('/(const (?:array )?' . $constant . ' = )\[.*?\n    \];/s', '$1[];', $source, 1, $replaced);
         if ($replaced !== 1) {
-            $source = (string) preg_replace('/(const ' . $constant . ' = )\[[^\]]*\];/s', '$1[];', $source, 1, $replaced);
+            $source = (string) preg_replace('/(const (?:array )?' . $constant . ' = )\[[^\]]*\];/s', '$1[];', $source, 1, $replaced);
         }
         if ($replaced !== 1) {
             return null;

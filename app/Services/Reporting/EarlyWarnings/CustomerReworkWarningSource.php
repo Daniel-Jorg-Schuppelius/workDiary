@@ -25,7 +25,7 @@ use Carbon\CarbonImmutable;
  */
 final class CustomerReworkWarningSource implements EarlyWarningSource {
     /** Unter einer Stunde erfasster Zeit ist ein Anteil nicht aussagekräftig. */
-    private const MIN_MINUTES = 60;
+    private const int MIN_MINUTES = 60;
 
     public function __construct(
         private readonly EconomicsReportBuilder $economics,

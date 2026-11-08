@@ -33,14 +33,14 @@ class RawDigestRuleTest extends TestCase {
      *
      * @var array<string, string>
      */
-    private const WHITELIST = [
+    private const array WHITELIST = [
         // Byte-genaue Kompatibilität zum Altsystem (Legacy-Klartext-/Hash-
         // Passwortpfade); wird mit dem Legacy-Modul abgelöst, nicht migriert.
         'app/Legacy/' => 'Legacy-Passwort-Pfade: Altsystem-Kompatibilität, bewusst nicht auf CryptoHelper migriert (C1).',
     ];
 
     /** Verbotene feste Digest-Aufrufe (Substring, Wortgrenze davor). */
-    private const BANNED_SUBSTRINGS = [
+    private const array BANNED_SUBSTRINGS = [
         "hash('sha256'",
         'hash("sha256"',
         "hash('sha1'",

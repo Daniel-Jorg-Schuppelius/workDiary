@@ -26,25 +26,25 @@ use App\Services\Reselling\Mirror\MirrorLine;
  * Zuordnen eine Bestätigung (Entscheidung des Inhabers 2026-10-31).
  */
 final class LineFit {
-    public const EXACT = 'exact';
+    public const string EXACT = 'exact';
 
-    public const SHIFTED = 'shifted';
+    public const string SHIFTED = 'shifted';
 
-    public const OVERLAP = 'overlap';
+    public const string OVERLAP = 'overlap';
 
     /** Ohne Leistungszeitraum: Rechnungsdatum weit vom Periodenbeginn. */
-    public const FAR = 'far';
+    public const string FAR = 'far';
 
-    public const OUTSIDE = 'outside';
+    public const string OUTSIDE = 'outside';
 
-    public const ELSEWHERE = 'elsewhere';
+    public const string ELSEWHERE = 'elsewhere';
 
-    public const UNKNOWN = 'unknown';
+    public const string UNKNOWN = 'unknown';
 
     /** Eine andere Periode gilt erst als besser, wenn sie mindestens so viele Tage näher liegt. */
-    private const BETTER_MARGIN_DAYS = 7;
+    private const int BETTER_MARGIN_DAYS = 7;
 
-    private const RANK = [self::EXACT => 0, self::SHIFTED => 1, self::UNKNOWN => 2, self::FAR => 3, self::OVERLAP => 3, self::ELSEWHERE => 4, self::OUTSIDE => 5];
+    private const array RANK = [self::EXACT => 0, self::SHIFTED => 1, self::UNKNOWN => 2, self::FAR => 3, self::OVERLAP => 3, self::ELSEWHERE => 4, self::OUTSIDE => 5];
 
     private function __construct(
         public readonly string $kind,

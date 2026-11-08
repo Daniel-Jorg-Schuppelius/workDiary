@@ -31,9 +31,9 @@ use SimpleXMLElement;
  * Rückgabe des Parsers: verschachtelte `['title', 'note', 'children']`.
  */
 class IdeaMapImportService {
-    private const MAX_NODES = 5000;
+    private const int MAX_NODES = 5000;
 
-    private const MAX_DEPTH = 60;
+    private const int MAX_DEPTH = 60;
 
     public function import(Organization $organization, User $owner, string $content, ?string $filename = null): IdeaMap {
         $xml = XmlHelper::safeLoadString($content);

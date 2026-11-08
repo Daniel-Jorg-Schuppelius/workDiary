@@ -36,7 +36,7 @@ use Illuminate\Validation\ValidationException;
  */
 class LearningAccessService {
     /** Gültigkeitsdauer eines Zugangs in Tagen, wenn nichts anderes gesetzt ist. */
-    public const DEFAULT_VALID_DAYS = 30;
+    public const int DEFAULT_VALID_DAYS = 30;
 
     /**
      * Zugang ausstellen. Rückgabe ist der **Klartext-Token** — er lässt sich

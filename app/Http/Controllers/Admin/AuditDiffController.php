@@ -36,10 +36,10 @@ class AuditDiffController extends Controller {
     use ResolvesCurrentOrganization;
 
     /** Anzeige-Maskierung zusätzlich zur Schreib-Maskierung des Auditable-Traits. */
-    private const MASKED_PATTERNS = ['password', 'secret', 'token', 'tax_identification', 'social_security', 'recovery'];
+    private const array MASKED_PATTERNS = ['password', 'secret', 'token', 'tax_identification', 'social_security', 'recovery'];
 
     /** Timeline-Einträge je Seite. */
-    public const PER_PAGE = 25;
+    public const int PER_PAGE = 25;
 
     public function index(Request $request): View {
         $this->authorizeAdmin();

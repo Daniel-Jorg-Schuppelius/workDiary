@@ -52,20 +52,20 @@ class InvoiceSchedule extends Model implements HasDocumentLines {
     use HasFactory;
     use HasSqid;
 
-    public const UNIT_WEEK = 'week';
+    public const string UNIT_WEEK = 'week';
 
-    public const UNIT_MONTH = 'month';
+    public const string UNIT_MONTH = 'month';
 
-    public const UNIT_QUARTER = 'quarter';
+    public const string UNIT_QUARTER = 'quarter';
 
-    public const UNIT_YEAR = 'year';
+    public const string UNIT_YEAR = 'year';
 
     /** @var array<int, string> */
-    public const UNITS = [self::UNIT_WEEK, self::UNIT_MONTH, self::UNIT_QUARTER, self::UNIT_YEAR];
+    public const array UNITS = [self::UNIT_WEEK, self::UNIT_MONTH, self::UNIT_QUARTER, self::UNIT_YEAR];
 
-    public const MODE_PREVIOUS = 'previous';
+    public const string MODE_PREVIOUS = 'previous';
 
-    public const MODE_CURRENT = 'current';
+    public const string MODE_CURRENT = 'current';
 
     protected $fillable = [
         'organization_id',

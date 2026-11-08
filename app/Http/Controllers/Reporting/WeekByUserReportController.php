@@ -43,7 +43,7 @@ class WeekByUserReportController extends Controller {
     use WritesReportCsv;
 
     /** Maximalanzahl gleichzeitig gerenderter Wochen-Tabs. */
-    private const MAX_WEEKS = 12;
+    private const int MAX_WEEKS = 12;
 
     /** E10: Sicht „Nur eigene“. */
     protected function exportIsPersonal(Request $request): bool {

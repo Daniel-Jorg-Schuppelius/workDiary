@@ -23,11 +23,11 @@ use InvalidArgumentException;
  * Compliance-Scan ({@see \App\Services\Compliance\CoreTimeScanService}).
  */
 class CoreTimeValidator {
-    public const KIND_FRAME_TIME = 'frameTime';
+    public const string KIND_FRAME_TIME = 'frameTime';
 
-    public const KIND_CORE_TIME = 'coreTime';
+    public const string KIND_CORE_TIME = 'coreTime';
 
-    public const KIND_ENTRY_BREAK = 'entryBreakMissing';
+    public const string KIND_ENTRY_BREAK = 'entryBreakMissing';
 
     public function __construct(protected WorkScheduleResolver $resolver) {}
 

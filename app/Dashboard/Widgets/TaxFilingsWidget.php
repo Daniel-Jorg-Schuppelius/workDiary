@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Gate;
 
 /** Die nächsten Melde- und Abgabetermine (Umsatzsteuer, Zusammenfassung …). */
 class TaxFilingsWidget extends Widget {
-    private const WINDOW_DAYS = 45;
+    private const int WINDOW_DAYS = 45;
 
     public function key(): string {
         return 'tax-filings';

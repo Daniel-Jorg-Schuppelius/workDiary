@@ -19,7 +19,7 @@ use Illuminate\Http\JsonResponse;
  * `application/scim+json` und das standardisierte Fehler-Schema.
  */
 final class ScimResponse {
-    public const CONTENT_TYPE = 'application/scim+json';
+    public const string CONTENT_TYPE = 'application/scim+json';
 
     /**
      * @param  array<string, mixed>  $body

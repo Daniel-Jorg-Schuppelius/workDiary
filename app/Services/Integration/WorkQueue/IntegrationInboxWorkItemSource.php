@@ -25,7 +25,7 @@ use App\Services\WorkQueue\Dto\WorkItem;
  * E-Mail-Eingang mit seinen Klärfällen) — ein geteilter Eingang, daher gebündelt.
  */
 final class IntegrationInboxWorkItemSource implements WorkItemSource {
-    private const ROUTE = 'admin.integration.inbox';
+    private const string ROUTE = 'admin.integration.inbox';
 
     public function __construct(private readonly FeatureFlagResolver $features) {}
 

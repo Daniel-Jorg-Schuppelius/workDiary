@@ -46,7 +46,7 @@ use Throwable;
  * sieht nie Klartext — auch der eigene nicht.
  */
 class WebdavBackupClient {
-    private const DAV_NS = 'DAV:';
+    private const string DAV_NS = 'DAV:';
 
     private readonly string $base;
 

@@ -55,7 +55,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  */
 class Recall extends Model {
     /** Belegart im Versandnachweis (`document_dispatches`) für Kundenanschreiben (MVP-922). */
-    public const DOCUMENT_KIND = 'recall_notice';
+    public const string DOCUMENT_KIND = 'recall_notice';
 
     use Auditable;
     use BelongsToOrganization;

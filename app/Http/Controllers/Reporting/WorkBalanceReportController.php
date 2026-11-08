@@ -40,7 +40,7 @@ class WorkBalanceReportController extends Controller {
     use WritesReportCsv;
 
     /** Ab dieser Zeitraumlänge wird die Tagesserie wochenweise aggregiert. */
-    private const WEEKLY_THRESHOLD_DAYS = 62;
+    private const int WEEKLY_THRESHOLD_DAYS = 62;
 
     public function __construct(protected WorkBalanceCalculator $calc) {}
 

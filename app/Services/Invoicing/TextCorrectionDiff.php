@@ -24,9 +24,9 @@ use CommonToolkit\Helper\Data\StringHelper;
  * Dialog ({@see \App\Http\Controllers\Invoicing\TextCorrectionLearnController}).
  */
 final class TextCorrectionDiff {
-    private const MAX_CANDIDATES = 3;
+    private const int MAX_CANDIDATES = 3;
 
-    private const MAX_DISTANCE = 3;
+    private const int MAX_DISTANCE = 3;
 
     /** @return list<array{wrong: string, correct: string}> */
     public static function candidates(?string $old, ?string $new): array {

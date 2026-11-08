@@ -37,11 +37,11 @@ use Throwable;
  * {@see MultiStatus}); hier bleibt nur die Nextcloud-eigene href-Zuordnung.
  */
 class NextcloudWebdavClient {
-    private const DAV_NS = 'DAV:';
+    private const string DAV_NS = 'DAV:';
 
-    private const OC_NS = 'http://owncloud.org/ns';
+    private const string OC_NS = 'http://owncloud.org/ns';
 
-    private const OCS_SHARES = '/ocs/v2.php/apps/files_sharing/api/v1/shares';
+    private const string OCS_SHARES = '/ocs/v2.php/apps/files_sharing/api/v1/shares';
 
     private readonly string $server;
 

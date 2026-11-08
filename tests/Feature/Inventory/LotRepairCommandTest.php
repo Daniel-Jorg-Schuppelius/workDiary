@@ -30,7 +30,7 @@ final class LotRepairCommandTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const HEADERS = ['Organisation', 'Charge', 'Buchsaldo', 'Schichtrest', 'Differenz', 'Ergebnis'];
+    private const array HEADERS = ['Organisation', 'Charge', 'Buchsaldo', 'Schichtrest', 'Differenz', 'Ergebnis'];
 
     private InventoryLedger $ledger;
     private LotService $lots;

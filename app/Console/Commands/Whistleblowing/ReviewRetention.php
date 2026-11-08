@@ -28,7 +28,7 @@ class ReviewRetention extends Command {
 
     protected $description = 'Setzt faellige, abgeschlossene Faelle auf Aufbewahrungspruefung (keine Auto-Loeschung).';
 
-    private const CLOSED = [
+    private const array CLOSED = [
         'closed_substantiated', 'closed_unsubstantiated', 'closed_out_of_scope', 'closed_duplicate',
     ];
 

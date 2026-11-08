@@ -24,7 +24,7 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class OrganizationRoleLookupRuleTest extends TestCase {
     use ScansSourceTree;
 
-    private const PATTERNS = [
+    private const array PATTERNS = [
         '/\bRole::(?:findOrCreate|findByName)\s*\(/' => 'Role::findOrCreate/findByName',
         '/->(?:assignRole|syncRoles)\s*\(\s*(?:[\'"]|UserRole::|\[\s*[\'"])/' => 'assignRole/syncRoles mit Rollennamen',
         '/->(?:role|withoutRole)\(\s*(?!\))(?![^;]*OrganizationRoles::matching)/' => 'role()/withoutRole() ohne OrganizationRoles::matching',

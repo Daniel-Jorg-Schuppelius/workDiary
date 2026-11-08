@@ -22,7 +22,7 @@ use Illuminate\View\View;
 class FloorController extends Controller {
     use ParsesIndexQuery;
 
-    private const ALLOWED_SORTS = ['level', 'label', 'gross_area_m2'];
+    private const array ALLOWED_SORTS = ['level', 'label', 'gross_area_m2'];
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Floor::class);

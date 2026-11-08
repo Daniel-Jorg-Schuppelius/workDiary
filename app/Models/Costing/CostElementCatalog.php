@@ -42,8 +42,8 @@ class CostElementCatalog extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const SOURCE_IMPORT = 'x50_import';
-    public const SOURCE_MANUAL = 'manual';
+    public const string SOURCE_IMPORT = 'x50_import';
+    public const string SOURCE_MANUAL = 'manual';
 
     protected $table = 'cost_element_catalogs';
 

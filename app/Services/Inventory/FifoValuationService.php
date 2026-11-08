@@ -32,7 +32,7 @@ use Illuminate\Support\Facades\DB;
  * ({@see \App\Services\Inventory\InventoryValuationManager}).
  */
 class FifoValuationService implements InventoryValuationStrategy {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     public function __construct(private readonly InventoryLedger $ledger) {}
 

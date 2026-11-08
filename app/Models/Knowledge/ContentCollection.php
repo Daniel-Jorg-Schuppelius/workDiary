@@ -41,12 +41,12 @@ class ContentCollection extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const VISIBILITY_ORGANIZATION = 'organization';
+    public const string VISIBILITY_ORGANIZATION = 'organization';
 
-    public const VISIBILITY_PRIVATE = 'private';
+    public const string VISIBILITY_PRIVATE = 'private';
 
     /** Tiefe des Baums — tiefer ordnet niemand mehr, man sucht nur noch. */
-    public const MAX_DEPTH = 5;
+    public const int MAX_DEPTH = 5;
 
     protected $table = 'collections';
 

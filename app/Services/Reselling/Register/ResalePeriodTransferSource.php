@@ -34,7 +34,7 @@ use RuntimeException;
  * @phpstan-import-type SourceRow from TransferSource
  */
 final class ResalePeriodTransferSource implements TransferSource {
-    public const SOURCE_KIND = 'resale';
+    public const string SOURCE_KIND = 'resale';
 
     public function __construct(private readonly ResaleInvoiceDraftService $drafts) {}
 

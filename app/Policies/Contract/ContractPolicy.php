@@ -28,7 +28,7 @@ use App\Services\Hr\PersonnelFilePermissions as HR;
 class ContractPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::ContractViewAny,
         'view' => P::ContractView,
         'create' => P::ContractManage,

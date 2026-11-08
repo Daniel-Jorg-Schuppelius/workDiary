@@ -44,7 +44,7 @@ class RemoteSessionImporter {
         resolveBookingUserId as public;
     }
 
-    public const EXT_TYPE_SESSION = 'session';
+    public const string EXT_TYPE_SESSION = 'session';
 
     /**
      * Statt Provider-Präfix in der Beschreibung („Anydesk — …") tragen
@@ -52,7 +52,7 @@ class RemoteSessionImporter {
      * + generisches Remote-Tag — damit bleibt die Beschreibung sauber und die
      * Filterung möglich.
      */
-    public const REMOTE_TAG = 'Remote';
+    public const string REMOTE_TAG = 'Remote';
 
     protected function pluginId(): string {
         return RemoteSupportPlugin::ID;

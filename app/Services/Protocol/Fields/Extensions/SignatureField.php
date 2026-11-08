@@ -17,7 +17,7 @@ use App\Services\Fields\FieldDefinition;
 
 /** Unterschrift eines Protokollpunkts: Verweis `value_json.signature_id` auf die Signaturzeile. */
 class SignatureField implements FieldExtension {
-    public const KEY = 'protocol.signature';
+    public const string KEY = 'protocol.signature';
 
     public function key(): string {
         return self::KEY;

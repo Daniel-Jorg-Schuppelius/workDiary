@@ -33,7 +33,7 @@ class QualificationReportController extends Controller {
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
-    private const EXPIRY_WARN_DAYS = 30;
+    private const int EXPIRY_WARN_DAYS = 30;
 
     /** E10: Ohne Verwaltungsrecht zeigt die Matrix nur die eigene Zeile. */
     protected function exportIsPersonal(Request $request): bool {

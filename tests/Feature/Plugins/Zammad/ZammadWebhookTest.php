@@ -28,7 +28,7 @@ final class ZammadWebhookTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const SECRET = 'whsec-super';
+    private const string SECRET = 'whsec-super';
 
     protected function setUp(): void {
         parent::setUp();

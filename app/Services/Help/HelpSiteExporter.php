@@ -23,7 +23,7 @@ use CommonToolkit\Helper\FileSystem\{File, Folder};
  * entfallen.
  */
 final class HelpSiteExporter {
-    private const EXCERPT_LENGTH = 1500;
+    private const int EXCERPT_LENGTH = 1500;
 
     public function __construct(private readonly HelpCenterCatalog $catalog) {}
 

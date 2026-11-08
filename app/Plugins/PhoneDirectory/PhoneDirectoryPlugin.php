@@ -28,9 +28,9 @@ use App\Plugins\Support\PluginOrgContext;
  * liegt beim Betreiber (Versand der Anrufernummer an Dritte → AV-Vertrag).
  */
 class PhoneDirectoryPlugin extends AbstractPlugin implements SlotRenderer {
-    public const ID = 'phonedirectory';
+    public const string ID = 'phonedirectory';
 
-    public const SERVICE_PROVIDER = PhoneDirectoryServiceProvider::class;
+    public const string SERVICE_PROVIDER = PhoneDirectoryServiceProvider::class;
 
     public function name(): string {
         return (string) __('Telefonauskunft');

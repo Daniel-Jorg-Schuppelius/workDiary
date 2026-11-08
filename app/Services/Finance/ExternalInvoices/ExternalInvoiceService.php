@@ -32,9 +32,9 @@ use Throwable;
  * Positionen abgleichen. Nummer, Inhalt und Korrekturen bleiben beim Anbieter.
  */
 final class ExternalInvoiceService {
-    public const DISK = 'local';
+    public const string DISK = 'local';
 
-    private const FOLDER = 'external-invoices';
+    private const string FOLDER = 'external-invoices';
 
     public function __construct(
         private readonly ExternalInvoiceProviders $providers,

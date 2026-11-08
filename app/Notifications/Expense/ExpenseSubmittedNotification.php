@@ -16,9 +16,9 @@ use App\Support\NotificationText;
 use Illuminate\Notifications\Messages\MailMessage;
 
 class ExpenseSubmittedNotification extends DirectNotification {
-    private const TITLE_KEY = 'Neue Spese zur Genehmigung: :amount';
+    private const string TITLE_KEY = 'Neue Spese zur Genehmigung: :amount';
 
-    private const MESSAGE_KEY = ':owner hat eine neue Spese eingereicht.';
+    private const string MESSAGE_KEY = ':owner hat eine neue Spese eingereicht.';
 
     /**
      * @param  list<string>  $channels

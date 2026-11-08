@@ -40,7 +40,7 @@ use Illuminate\Database\Eloquent\Model;
 class ComponentUpdate extends Model {
     use Auditable;
 
-    public const CLASSIFICATIONS = ['normal', 'recommended', 'security', 'critical'];
+    public const array CLASSIFICATIONS = ['normal', 'recommended', 'security', 'critical'];
 
     protected $table = 'component_updates';
 

@@ -32,7 +32,7 @@ class UserGroupController extends Controller {
     use ParsesIndexQuery;
     use ResolvesCurrentOrganization;
 
-    private const ALLOWED_SORTS = ['name', 'slug', 'members_count', 'description'];
+    private const array ALLOWED_SORTS = ['name', 'slug', 'members_count', 'description'];
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', UserGroup::class);

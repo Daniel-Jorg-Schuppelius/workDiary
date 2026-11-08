@@ -27,7 +27,7 @@ use Illuminate\Support\Collection;
  * nicht zeitraumbasiert.
  */
 final class ReportsOverviewService {
-    private const TOP_PROJECTS = 10;
+    private const int TOP_PROJECTS = 10;
 
     /**
      * @return array{

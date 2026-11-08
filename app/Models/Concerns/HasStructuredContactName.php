@@ -30,7 +30,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 trait HasStructuredContactName {
     /** Teile, aus denen `contact_name` gebildet wird (ohne Anrede). */
-    public const CONTACT_NAME_PARTS = ['contact_title', 'contact_first_name', 'contact_middle_names', 'contact_last_name'];
+    public const array CONTACT_NAME_PARTS = ['contact_title', 'contact_first_name', 'contact_middle_names', 'contact_last_name'];
 
     public static function bootHasStructuredContactName(): void {
         static::saving(static function (self $model): void {

@@ -36,12 +36,12 @@ use Illuminate\Support\Facades\{Notification, Storage};
  * Ausschlüsse beim Traversieren.
  */
 class CodeIntegrityService {
-    public const STORAGE_PATH = 'release/integrity.json';
+    public const string STORAGE_PATH = 'release/integrity.json';
 
-    public const SCHEMA = 'workdiary.integrity-manifest/v1';
+    public const string SCHEMA = 'workdiary.integrity-manifest/v1';
 
     /** Pseudo-Paket für vendor-Root (autoload.php, composer/, bin/). */
-    private const AUTOLOADER_PACKAGE = 'composer-autoloader';
+    private const string AUTOLOADER_PACKAGE = 'composer-autoloader';
 
     /**
      * Baut das Integritäts-Manifest über den konfigurierten Scan-Umfang.

@@ -83,13 +83,13 @@ class TravelLog extends Model {
      * über normale save()-Wege nur noch diese Felder ändern — Korrekturen
      * laufen als Stornofahrt mit Referenz (corrects_travel_log_id) + Grund.
      */
-    public const MUTABLE_AFTER_LOCK = [
+    public const array MUTABLE_AFTER_LOCK = [
         'updated_at',
         'updated_by',
     ];
 
     /** Fahrer-Signatur (MVP-992): darf eine festgeschriebene Fahrt genau einmal ergänzen, nie ändern. */
-    public const SIGNATURE_FIELDS = [
+    public const array SIGNATURE_FIELDS = [
         'driver_signed_at',
         'driver_signature_path',
         'driver_signature_hash',

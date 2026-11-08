@@ -44,7 +44,7 @@ class AccountingEntry extends Model {
     protected static string $journalClass = AccountingEvent::class;
 
     /** Felder, die nach der Festschreibung noch geschrieben werden dürfen. */
-    private const POST_FREEZE_WRITABLE = ['status', 'reversed_by_entry_id', 'reversal_reason', 'updated_at'];
+    private const array POST_FREEZE_WRITABLE = ['status', 'reversed_by_entry_id', 'reversal_reason', 'updated_at'];
 
     protected $fillable = [
         'organization_id',

@@ -27,10 +27,10 @@ use Illuminate\View\View;
  * keine Hilfe.
  */
 class HelpController extends Controller {
-    public const PREFIX = 'customer-portal.';
+    public const string PREFIX = 'customer-portal.';
 
     /** Thema → Portalbereich; Themen ohne Eintrag gelten immer. */
-    public const CAPABILITIES = [
+    public const array CAPABILITIES = [
         'diary' => PortalCapability::Diary,
         'time' => PortalCapability::TimeEntries,
         'invoices' => PortalCapability::Invoices,

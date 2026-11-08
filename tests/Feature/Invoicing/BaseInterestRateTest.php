@@ -27,7 +27,7 @@ final class BaseInterestRateTest extends TestCase {
     use RefreshDatabase;
 
     /** Auszug im Format der Bundesbank-CSV (Kopfzeilen, Dezimalkomma, Bemerkungen). */
-    private const CSV = <<<'CSV'
+    private const string CSV = <<<'CSV'
         "";BBIN1.M.DE.BBK.BBKBAS2.EUR.ME;BBIN1.M.DE.BBK.BBKBAS2.EUR.ME_FLAGS
         "";Basiszinssatz gemäß BGB / Stand am Monatsende / SU0115;
         Einheit;% p.a.;

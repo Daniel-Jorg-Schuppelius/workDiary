@@ -33,7 +33,7 @@ final class PluginCommandSmokeTest extends TestCase {
      *
      * @var list<string>
      */
-    private const COMMANDS = [
+    private const array COMMANDS = [
         'billbee:sync',
         'caldav:publish',
         'calendly:backfill',

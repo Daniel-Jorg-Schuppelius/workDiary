@@ -19,7 +19,7 @@ use Tests\TestCase;
  * Hash- und dev-Kennzeichnung für Composer und NPM.
  */
 class SbomGeneratorTest extends TestCase {
-    private const COMPOSER_LOCK = <<<'JSON'
+    private const string COMPOSER_LOCK = <<<'JSON'
     {
         "packages": [
             {
@@ -39,7 +39,7 @@ class SbomGeneratorTest extends TestCase {
     }
     JSON;
 
-    private const PACKAGE_LOCK = <<<'JSON'
+    private const string PACKAGE_LOCK = <<<'JSON'
     {
         "lockfileVersion": 3,
         "packages": {

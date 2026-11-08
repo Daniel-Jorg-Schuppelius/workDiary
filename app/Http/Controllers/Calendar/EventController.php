@@ -31,7 +31,7 @@ class EventController extends Controller {
     use ParsesIndexQuery;
     use ResolvesGlobalDateRange;
 
-    private const ALLOWED_SORTS = ['title', 'event_type', 'started_at', 'status'];
+    private const array ALLOWED_SORTS = ['title', 'event_type', 'started_at', 'status'];
 
     public function __construct(
         private readonly EventService $events,

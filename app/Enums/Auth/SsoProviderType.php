@@ -31,7 +31,7 @@ enum SsoProviderType: string implements HasLabel {
     case Google = 'google';
 
     /** Fester Google-OIDC-Issuer (Discovery unter /.well-known/openid-configuration). */
-    public const GOOGLE_ISSUER = 'https://accounts.google.com';
+    public const string GOOGLE_ISSUER = 'https://accounts.google.com';
 
     public function label(): string {
         return match ($this) {

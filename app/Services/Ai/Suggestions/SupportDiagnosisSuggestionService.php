@@ -37,7 +37,7 @@ use Illuminate\Support\Str;
 class SupportDiagnosisSuggestionService {
     use DecidesSuggestions;
 
-    public const CAPABILITY = 'support.diagnose_explain';
+    public const string CAPABILITY = 'support.diagnose_explain';
 
     /**
      * Whitelist der Health-Checks aus {@see \App\Console\Commands\SystemHealthCommand}.
@@ -45,7 +45,7 @@ class SupportDiagnosisSuggestionService {
      *
      * @var list<string>
      */
-    public const ALLOWED_CHECKS = [
+    public const array ALLOWED_CHECKS = [
         'Datenbank',
         'Migrationen',
         'Storage',

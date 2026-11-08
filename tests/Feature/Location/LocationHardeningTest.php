@@ -39,12 +39,12 @@ class LocationHardeningTest extends TestCase {
 
     private CustomerGeofence $geofence;
 
-    private const LAT = 52.5200000;
+    private const float LAT = 52.5200000;
 
-    private const LNG = 13.4050000;
+    private const float LNG = 13.4050000;
 
     /** ≈ 1 m in Grad Breite. */
-    private const DEG_PER_M = 1 / 111_320;
+    private const float DEG_PER_M = 1 / 111_320;
 
     protected function setUp(): void {
         parent::setUp();

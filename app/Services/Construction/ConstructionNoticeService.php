@@ -40,7 +40,7 @@ class ConstructionNoticeService {
     use AssignsSequentialNo;
 
     /** Manuelle Zustellwege (Zugangsnachweis ausserhalb der E-Mail). */
-    public const DELIVERY_METHODS = ['registered_mail', 'courier', 'handover', 'fax', 'portal'];
+    public const array DELIVERY_METHODS = ['registered_mail', 'courier', 'handover', 'fax', 'portal'];
 
     public function __construct(private readonly WeatherService $weather) {}
 

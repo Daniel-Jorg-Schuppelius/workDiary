@@ -27,7 +27,7 @@ use PHPUnit\Framework\TestCase;
  * und/oder „virtual host", nicht „.htaccess".
  */
 final class HtaccessDirectiveRuleTest extends TestCase {
-    private const FORBIDDEN = [
+    private const array FORBIDDEN = [
         '<Directory', '<DirectoryMatch', '<Location', '<LocationMatch', '<VirtualHost', '<Proxy', '<ProxyMatch',
         'AllowOverride', 'AllowOverrideList', 'Alias', 'AliasMatch', 'ScriptAlias', 'ScriptAliasMatch',
         'DocumentRoot', 'ServerName', 'ServerAlias', 'ServerRoot', 'Listen', 'LoadModule', 'Include', 'IncludeOptional',

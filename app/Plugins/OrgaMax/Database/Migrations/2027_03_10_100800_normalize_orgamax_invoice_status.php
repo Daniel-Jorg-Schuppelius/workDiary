@@ -28,7 +28,7 @@ return new class extends Migration {
      *
      * @var list<string>
      */
-    private const KNOWN = ['draft', 'locked', 'partiallyPaid', 'paid', 'cancelled', 'unknown'];
+    private const array KNOWN = ['draft', 'locked', 'partiallyPaid', 'paid', 'cancelled', 'unknown'];
 
     public function up(): void {
         $found = DB::table('orgamax_invoices')->distinct()->orderBy('invoice_status')->pluck('invoice_status')->all();

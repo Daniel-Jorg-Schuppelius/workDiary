@@ -68,9 +68,9 @@ class ClaimCase extends Model implements DamageCaseSubject {
     use HasDamageCases;
     use HasSqid;
 
-    public const PRIORITIES = ['low', 'normal', 'high', 'urgent'];
+    public const array PRIORITIES = ['low', 'normal', 'high', 'urgent'];
 
-    public const SEVERITIES = ['minor', 'major', 'critical'];
+    public const array SEVERITIES = ['minor', 'major', 'critical'];
 
     protected $fillable = [
         'organization_id', 'number', 'status', 'source', 'priority', 'severity',

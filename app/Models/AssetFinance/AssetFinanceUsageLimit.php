@@ -35,7 +35,7 @@ class AssetFinanceUsageLimit extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const PERIODS = ['total', 'yearly'];
+    public const array PERIODS = ['total', 'yearly'];
 
     protected $fillable = [
         'organization_id', 'asset_finance_contract_id', 'kind', 'limit_value',

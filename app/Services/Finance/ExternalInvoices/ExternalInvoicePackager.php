@@ -40,7 +40,7 @@ use Throwable;
  * Positionen und Beträge gleich geblieben sind.
  */
 final class ExternalInvoicePackager {
-    private const FOLDER = 'external-invoices';
+    private const string FOLDER = 'external-invoices';
 
     public function __construct(private readonly SupportingDocumentService $documents) {}
 

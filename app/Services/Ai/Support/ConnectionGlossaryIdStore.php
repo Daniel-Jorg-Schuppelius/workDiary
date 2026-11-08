@@ -26,9 +26,9 @@ use TranslationToolkit\Contracts\Interfaces\GlossaryIdStoreInterface;
  * Auftrag erneut synchronisieren.
  */
 final class ConnectionGlossaryIdStore implements GlossaryIdStoreInterface {
-    private const ID_KEY = 'deepl_glossary_id';
+    private const string ID_KEY = 'deepl_glossary_id';
 
-    private const FINGERPRINT_KEY = 'deepl_glossary_fingerprint';
+    private const string FINGERPRINT_KEY = 'deepl_glossary_fingerprint';
 
     public function __construct(private readonly AiProviderConnection $connection) {}
 

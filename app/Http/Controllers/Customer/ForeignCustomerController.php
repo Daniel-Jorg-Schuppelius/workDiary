@@ -31,7 +31,7 @@ class ForeignCustomerController extends Controller {
     use ParsesIndexQuery;
     use WritesContactDetails;
 
-    private const ALLOWED_SORTS = ['name', 'company', 'created_at'];
+    private const array ALLOWED_SORTS = ['name', 'company', 'created_at'];
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', ForeignCustomer::class);

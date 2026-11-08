@@ -33,7 +33,7 @@ use RuntimeException;
  * überträgt es den Lieferschein dabei (MVP-1164).
  */
 final class DeliveryNoteService {
-    private const SCALE = 4;
+    private const int SCALE = 4;
 
     public function __construct(
         private readonly NumberSequenceService $numbers,

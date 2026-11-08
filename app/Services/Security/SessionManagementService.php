@@ -55,13 +55,13 @@ use Laravel\Sanctum\PersonalAccessToken;
  */
 class SessionManagementService {
     /** „Online jetzt": jünger als diese Schwelle (kurz, für Live-Sicht). */
-    public const ONLINE_MINUTES = 5;
+    public const int ONLINE_MINUTES = 5;
 
     /** Anzahl der jüngsten Fernwartungssitzungen in der read-only Historie. */
-    public const REMOTE_RECENT = 15;
+    public const int REMOTE_RECENT = 15;
 
     /** Nutzer je Seite der Admin-Ansicht. */
-    public const PER_PAGE = 20;
+    public const int PER_PAGE = 20;
 
     /**
      * Baut das je Nutzer gruppierte Aggregat für eine Organisation. Die

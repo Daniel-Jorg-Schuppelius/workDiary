@@ -30,17 +30,17 @@ use Illuminate\Support\Facades\Request;
  * external_participant_events nachweisbar protokolliert.
  */
 class ExternalParticipantService {
-    public const DEFAULT_TTL_DAYS = 14;
+    public const int DEFAULT_TTL_DAYS = 14;
 
-    public const MIN_TTL_DAYS = 1;
+    public const int MIN_TTL_DAYS = 1;
 
-    public const MAX_TTL_DAYS = 180;
-
-    /** @var list<string> */
-    public const UPLOAD_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'];
+    public const int MAX_TTL_DAYS = 180;
 
     /** @var list<string> */
-    public const UPLOAD_MIMES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+    public const array UPLOAD_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'];
+
+    /** @var list<string> */
+    public const array UPLOAD_MIMES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
 
     /**
      * Lädt einen Externen an ein Subject ein. Gibt den Klartext-Token zurück

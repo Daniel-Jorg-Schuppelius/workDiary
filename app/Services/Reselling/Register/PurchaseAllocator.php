@@ -39,7 +39,7 @@ use Illuminate\Support\Facades\DB;
  */
 final class PurchaseAllocator {
     /** Quelle, deren Hash-Basis aus der Zeit vor der Belegregistry nur die Beleg-ID trägt — bestehende Lexoffice-Zuteilungen bleiben Dubletten. */
-    private const LEGACY_HASH_SOURCE = 'lexoffice';
+    private const string LEGACY_HASH_SOURCE = 'lexoffice';
 
     /** @var array<int, Collection<int, ResaleSubscription>> Organisation → alle Abos (Gutschrift-Fallback), je Lauf einmal geladen */
     private array $subscriptions = [];

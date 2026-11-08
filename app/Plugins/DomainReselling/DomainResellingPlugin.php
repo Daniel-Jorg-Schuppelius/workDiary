@@ -32,10 +32,10 @@ use Throwable;
  * realer OT&E-/Produktivpilot bestanden ist (MVP-384/396).
  */
 class DomainResellingPlugin extends AbstractPlugin implements DomainRegistrar {
-    public const ID = 'domainreselling';
+    public const string ID = 'domainreselling';
 
     /** Von der Plugin-Discovery VOR der Instanziierung registriert. */
-    public const SERVICE_PROVIDER = DomainResellingServiceProvider::class;
+    public const string SERVICE_PROVIDER = DomainResellingServiceProvider::class;
 
     public function name(): string {
         return 'DomainReselling';
@@ -65,7 +65,7 @@ class DomainResellingPlugin extends AbstractPlugin implements DomainRegistrar {
     }
 
     /** Bounds der numerischen Betriebsparameter (key => [min, max]). */
-    private const BOUNDS = [
+    private const array BOUNDS = [
         'timeout' => [5, 120],
         'check_budget_per_hour' => [1, 5000],
         'check_cache_ttl' => [10, 86400],

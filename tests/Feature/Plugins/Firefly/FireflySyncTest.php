@@ -39,7 +39,7 @@ class FireflySyncTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const BASE = 'https://firefly.example.test';
+    private const string BASE = 'https://firefly.example.test';
 
     /** @var list<array<string, mixed>> */
     private array $groups = [];

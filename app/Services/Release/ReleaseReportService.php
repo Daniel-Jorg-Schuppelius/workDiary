@@ -25,7 +25,7 @@ use CommonToolkit\Helper\FileSystem\File;
  */
 final class ReleaseReportService {
     /** Stichworte für datenschutzrelevante Changelog-Einträge. */
-    private const PRIVACY_TERMS = ['datenschutz', 'dsgvo', 'personenbezog', 'auskunft', 'lösch', 'anonymis', 'verschlüssel', 'einwilligung', 'aufbewahr', 'privacy', 'gdpr'];
+    private const array PRIVACY_TERMS = ['datenschutz', 'dsgvo', 'personenbezog', 'auskunft', 'lösch', 'anonymis', 'verschlüssel', 'einwilligung', 'aufbewahr', 'privacy', 'gdpr'];
 
     public function __construct(private readonly SbomGenerator $sbom) {}
 

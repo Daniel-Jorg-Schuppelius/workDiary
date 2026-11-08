@@ -26,9 +26,9 @@ use Illuminate\Http\Request;
  * (Aufträge / Bereitschaft / Notdienst / Urlaub).
  */
 class LegacyDashboardService {
-    private const ALLOWED_TABS = ['auftraege', 'bereitschaft', 'notdienst', 'urlaub'];
+    private const array ALLOWED_TABS = ['auftraege', 'bereitschaft', 'notdienst', 'urlaub'];
 
-    private const SORTABLE = [
+    private const array SORTABLE = [
         'id' => 'id',
         'mitarbeiter' => 'user',
         'status' => 'gelesen',
@@ -38,14 +38,14 @@ class LegacyDashboardService {
     ];
 
     /** Sortierbare Spalten für Bereitschaft / Notdienst. */
-    private const SORTABLE_DUTY = [
+    private const array SORTABLE_DUTY = [
         'mitarbeiter' => 'user',
         'von' => 'von',
         'bis' => 'bis',
     ];
 
     /** Sortierbare Spalten für Urlaubsanträge. */
-    private const SORTABLE_VACATION = [
+    private const array SORTABLE_VACATION = [
         'mitarbeiter' => 'user_id',
         'typ' => 'type',
         'status' => 'status',

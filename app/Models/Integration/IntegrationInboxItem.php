@@ -56,31 +56,31 @@ class IntegrationInboxItem extends Model {
     use HasSqid;
 
     // Fall-Typen
-    public const CASE_UNMATCHED = 'unmatched';
+    public const string CASE_UNMATCHED = 'unmatched';
     /**
      * Marker im `remote_snapshot`: dieser Fall lässt sich nur zur Kenntnis
      * nehmen. Der lokale Datensatz ist festgeschrieben (abgerechnet/exportiert),
      * ein „Fremdstand übernehmen" wäre eine nachträgliche Belegänderung.
      */
-    public const RESOLUTION_ACKNOWLEDGE_ONLY = 'acknowledge_only';
+    public const string RESOLUTION_ACKNOWLEDGE_ONLY = 'acknowledge_only';
 
     /** Grund im `remote_snapshot`: Programmnummer gehört schon einem anderen Kontakt (MVP-1132). */
-    public const REASON_NUMBER_TAKEN = 'number_taken';
+    public const string REASON_NUMBER_TAKEN = 'number_taken';
 
     /** Zeit-Übertragung: das lokale Projekt hat drüben kein Projekt (Nachtrag 2026-11-04). */
-    public const REASON_PROJECT_UNMAPPED = 'project_unmapped';
+    public const string REASON_PROJECT_UNMAPPED = 'project_unmapped';
 
     /** Rechnungsbegründende Unterlagen gehen nicht an das ausstellende Programm (Feature 196). */
-    public const REASON_SUPPORTING_DOCUMENTS = 'supporting_documents_not_transferred';
+    public const string REASON_SUPPORTING_DOCUMENTS = 'supporting_documents_not_transferred';
 
-    public const CASE_CONFLICT = 'conflict';
-    public const CASE_AMBIGUOUS = 'ambiguous';
+    public const string CASE_CONFLICT = 'conflict';
+    public const string CASE_AMBIGUOUS = 'ambiguous';
 
     // Quelle des Imports (für csv-import)
-    public const PLUGIN_CSV = 'csv-import';
+    public const string PLUGIN_CSV = 'csv-import';
 
     /** Dedupe-Präfix der Fälle aus fehlgeschlagener Outbox-Zustellung. */
-    public const DEDUPE_OUTBOX_FAILED = 'outbox-failed:';
+    public const string DEDUPE_OUTBOX_FAILED = 'outbox-failed:';
 
     protected $fillable = [
         'organization_id',

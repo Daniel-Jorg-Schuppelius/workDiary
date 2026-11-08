@@ -20,9 +20,9 @@ use Illuminate\Support\Facades\Schema;
  * bewusst eingetragene andere Adresse bleibt.
  */
 return new class extends Migration {
-    private const OLD = 'https://api.lexoffice.io/v1';
+    private const string OLD = 'https://api.lexoffice.io/v1';
 
-    private const NEW = 'https://api.lexware.io/v1';
+    private const string NEW = 'https://api.lexware.io/v1';
 
     public function up(): void {
         $this->move(self::OLD, self::NEW);

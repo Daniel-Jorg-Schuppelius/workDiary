@@ -31,7 +31,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class TimeTrackingWebhookGate {
     /** Mindestabstand zwischen zwei angestoßenen Läufen je Organisation. */
-    public const DEBOUNCE_SECONDS = 120;
+    public const int DEBOUNCE_SECONDS = 120;
 
     /**
      * Organisation zu einem Workspace des Anbieters. Der Vergleich läuft über

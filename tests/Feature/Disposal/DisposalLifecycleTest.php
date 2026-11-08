@@ -41,7 +41,7 @@ final class DisposalLifecycleTest extends TestCase {
     use WithOrganization;
 
     /** 1×1-Pixel-PNG als data-URI (Canvas-Signatur-Muster). */
-    private const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+    private const string PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 
     private User $admin;
 

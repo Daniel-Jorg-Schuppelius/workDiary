@@ -41,7 +41,7 @@ class DataSubjectRequest extends Model implements ProvidesRecordDek {
     protected static string $journalClass = RequestEvent::class;
 
     /** Eingangskanal `channel` fuer Anfragen aus dem oeffentlichen Selbstmeldeportal (G11). */
-    public const CHANNEL_PORTAL = 'portal';
+    public const string CHANNEL_PORTAL = 'portal';
 
     protected $table = 'privacy_data_subject_requests';
 

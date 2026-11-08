@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $created_at
  */
 class DamageCaseEvent extends JournalEntry {
-    public const UPDATED_AT = null;
+    public const ?string UPDATED_AT = null;
 
     protected $fillable = ['damage_case_id', 'event', 'actor_user_id', 'payload'];
 

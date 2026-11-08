@@ -25,7 +25,7 @@ use RuntimeException;
 
 /** Beim Intake persistierte Mail-Anhänge ins DMS übernehmen (MVP-343), idempotent je Message-ID + Index. */
 class MailAttachmentsToDms {
-    public const DMS_EXTERNAL_TYPE = 'message-attachment';
+    public const string DMS_EXTERNAL_TYPE = 'message-attachment';
 
     public function __construct(
         private readonly DocumentService $documents,

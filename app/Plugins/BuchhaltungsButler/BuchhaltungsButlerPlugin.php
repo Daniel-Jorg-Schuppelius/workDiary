@@ -34,9 +34,9 @@ use App\Plugins\Support\ApiHealthProbe;
  * - Kein Rück-Sync (Buchungen/Zahlungen) im MVP — bewusste Grenze.
  */
 class BuchhaltungsButlerPlugin extends AbstractPlugin {
-    public const ID = 'buchhaltungsbutler';
+    public const string ID = 'buchhaltungsbutler';
 
-    public const SERVICE_PROVIDER = BuchhaltungsButlerServiceProvider::class;
+    public const string SERVICE_PROVIDER = BuchhaltungsButlerServiceProvider::class;
 
     public function name(): string {
         return 'BuchhaltungsButler';

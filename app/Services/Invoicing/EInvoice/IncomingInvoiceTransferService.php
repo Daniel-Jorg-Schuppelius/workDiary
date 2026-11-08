@@ -30,9 +30,9 @@ use Throwable;
  */
 class IncomingInvoiceTransferService {
     /** Sperre je Eingang: Übergabe und Aufheben der Zuordnung schließen einander aus. */
-    public const LOCK_PREFIX = 'incoming-invoice-transfer:';
+    public const string LOCK_PREFIX = 'incoming-invoice-transfer:';
 
-    public const MAX_ATTEMPTS = 5;
+    public const int MAX_ATTEMPTS = 5;
 
     public function __construct(
         private readonly IncomingInvoiceTransferGate $gate,

@@ -37,7 +37,7 @@ final class OrgaMaxDocumentIssuerTest extends TestCase {
     use OrgaMaxApiResponses;
     use RefreshDatabase;
 
-    private const API = 'https://api.orgamax.de/openapi/';
+    private const string API = 'https://api.orgamax.de/openapi/';
 
     private Organization $org;
 

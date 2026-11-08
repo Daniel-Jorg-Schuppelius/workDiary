@@ -41,10 +41,10 @@ use Illuminate\Support\Carbon;
  */
 class ZammadTicketImporter {
     /** Höchstwert der Zammad-API je Seite. */
-    public const PAGE_SIZE = 100;
+    public const int PAGE_SIZE = 100;
 
     /** Zammad-Status, die ein Ticket abschließen. */
-    private const CLOSED_STATES = ['closed', 'merged'];
+    private const array CLOSED_STATES = ['closed', 'merged'];
 
     public function __construct(private readonly EntityMatcher $matcher = new EntityMatcher, private readonly CustomerMatchProfile $profile = new CustomerMatchProfile) {}
 

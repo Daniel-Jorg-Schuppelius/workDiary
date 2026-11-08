@@ -22,9 +22,9 @@ use Tests\TestCase;
  * Rahmens je Komponente fest; die Sparkline bleibt ohne Rahmen.
  */
 class ChartFrameTest extends TestCase {
-    private const STAND = '2026-10-01 08:15:00';
+    private const string STAND = '2026-10-01 08:15:00';
 
-    private const FIGURE = '<figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">';
+    private const string FIGURE = '<figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">';
 
     /**
      * Je Komponente: Attribute, gefüllte Daten, leere Daten, Symbol des

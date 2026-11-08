@@ -26,7 +26,7 @@ use App\Policies\PermissionPolicy;
 class PassengerRidePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::PassengerViewAny,
         'view' => P::PassengerView,
         'create' => P::PassengerManage,

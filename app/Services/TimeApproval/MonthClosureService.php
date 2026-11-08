@@ -35,9 +35,9 @@ use Illuminate\Support\Facades\DB;
 class MonthClosureService {
     use GuardsApprovalWorkflow, ResolvesActorId;
 
-    public const REASON_MIN_LENGTH = 20;
+    public const int REASON_MIN_LENGTH = 20;
 
-    private const WORKFLOW_EXCEPTION = MonthClosureWorkflowException::class;
+    private const string WORKFLOW_EXCEPTION = MonthClosureWorkflowException::class;
 
     public function __construct(
         private readonly MonthTotalsSnapshotter $snapshotter,

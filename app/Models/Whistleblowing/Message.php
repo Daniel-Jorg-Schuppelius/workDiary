@@ -31,7 +31,7 @@ class Message extends Model implements ProvidesCaseDek {
 
     protected $table = 'whistleblowing_messages';
 
-    public const UPDATED_AT = null; // Nachrichten sind unveraenderlich
+    public const ?string UPDATED_AT = null; // Nachrichten sind unveraenderlich
 
     protected $fillable = [
         'organization_id',

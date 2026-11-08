@@ -22,9 +22,9 @@ use Illuminate\Notifications\Messages\MailMessage;
  * Befunde am Zeitreiter.
  */
 class ProjectTimeShortfallNotification extends DirectNotification {
-    private const TITLE_KEY = 'Unter Soll: :count Personen im Projekt :project am :date';
+    private const string TITLE_KEY = 'Unter Soll: :count Personen im Projekt :project am :date';
 
-    private const MESSAGE_KEY = 'Am :date lagen :count Personen im Projekt :project unter ihrer Sollzeit. Bitte die Befunde prüfen, bestätigen oder Nachbuchungen anstoßen.';
+    private const string MESSAGE_KEY = 'Am :date lagen :count Personen im Projekt :project unter ihrer Sollzeit. Bitte die Befunde prüfen, bestätigen oder Nachbuchungen anstoßen.';
 
     public function __construct(
         public readonly string $projectName,

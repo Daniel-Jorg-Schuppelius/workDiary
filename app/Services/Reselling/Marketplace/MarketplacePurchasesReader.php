@@ -35,7 +35,7 @@ final class MarketplacePurchasesReader {
     use NormalizesHeaders;
     use ParsesImportValues;
 
-    private const REQUIRED = [
+    private const array REQUIRED = [
         'owner company name',
         'company entitlement uuid',
         'edition name',
@@ -47,7 +47,7 @@ final class MarketplacePurchasesReader {
     ];
 
     /** @var list<string> Kannspalten (leer, wenn sie fehlen) */
-    private const OPTIONAL = [
+    private const array OPTIONAL = [
         'owner company id',
         'owner email',
         'owner company phone',

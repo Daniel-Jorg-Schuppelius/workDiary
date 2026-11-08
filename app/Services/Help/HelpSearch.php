@@ -29,39 +29,39 @@ use Illuminate\Support\Facades\{App, Cache};
  * @phpstan-type SearchField array{weight: float, texts?: list<string>, tokens?: list<string>}
  */
 final class HelpSearch {
-    public const WEIGHT_TITLE = 5.0;
-    public const WEIGHT_KEYWORDS = 4.0;
-    public const WEIGHT_HEADINGS = 2.0;
-    public const WEIGHT_BODY = 1.0;
+    public const float WEIGHT_TITLE = 5.0;
+    public const float WEIGHT_KEYWORDS = 4.0;
+    public const float WEIGHT_HEADINGS = 2.0;
+    public const float WEIGHT_BODY = 1.0;
 
-    private const LEVEL_EXACT = 1.0;
-    private const LEVEL_PREFIX = 0.8;
-    private const LEVEL_INFIX = 0.5;
+    private const float LEVEL_EXACT = 1.0;
+    private const float LEVEL_PREFIX = 0.8;
+    private const float LEVEL_INFIX = 0.5;
 
     /** Wortteil-Treffer (Komposita) erst ab dieser Länge, sonst trifft „an" fast alles. */
-    private const INFIX_MIN_LENGTH = 4;
+    private const int INFIX_MIN_LENGTH = 4;
 
-    private const TYPO_MIN_LENGTH = 4;
-    private const MAX_CORRECTIONS = 3;
-    private const CORRECTION_PENALTY = 0.9;
-    private const MAX_WORDS = 8;
+    private const int TYPO_MIN_LENGTH = 4;
+    private const int MAX_CORRECTIONS = 3;
+    private const float CORRECTION_PENALTY = 0.9;
+    private const int MAX_WORDS = 8;
 
     /** Ein Wort in mehr als diesem Anteil der Themen (mindestens COMMON_MIN) ist ein Füllwort und kein Muss. */
-    private const COMMON_SHARE = 0.4;
-    private const COMMON_MIN = 5;
+    private const float COMMON_SHARE = 0.4;
+    private const int COMMON_MIN = 5;
 
     /** Zuschlag (Anteil des Feldgewichts), wenn die Anfrage genau einem Titel oder Suchbegriff entspricht. */
-    private const EXACT_BONUS = 0.2;
+    private const float EXACT_BONUS = 0.2;
 
     /** Abschlag je Position eines Texts im Feld (höchstens zehnfach). */
-    private const POSITION_DECAY = 0.02;
+    private const float POSITION_DECAY = 0.02;
 
     /** Teiltreffer brauchen diesen Anteil der besten Wertung, sonst fallen sie weg. */
-    private const PARTIAL_CUTOFF = 0.5;
+    private const float PARTIAL_CUTOFF = 0.5;
 
-    private const SNIPPET_BEFORE = 60;
-    private const SNIPPET_AFTER = 120;
-    private const SNIPPET_LEAD = 160;
+    private const int SNIPPET_BEFORE = 60;
+    private const int SNIPPET_AFTER = 120;
+    private const int SNIPPET_LEAD = 160;
 
     public function __construct(
         private readonly HelpTopicResolver $resolver,

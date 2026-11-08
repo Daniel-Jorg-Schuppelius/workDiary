@@ -27,7 +27,7 @@ use Lexoffice\API\Client;
  */
 class LexofficeClientFactory {
     /** Versuche je Anfrage (Toolkit-Retry inkl. Retry-After); Lexoffice erlaubt nur 2 Anfragen je Sekunde. */
-    public const MAX_RETRIES = 5;
+    public const int MAX_RETRIES = 5;
 
     /**
      * SDK-Client mit Schlüssel, Basis-URL und Anfrageabstand der Organisation;

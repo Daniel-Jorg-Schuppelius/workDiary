@@ -28,7 +28,7 @@ use CommonToolkit\Helper\Geo\IpLocationHelper;
  */
 class KnownDeviceService {
     /** users.preferences-Schlüssel für das Opt-out (Default: aktiv). */
-    public const PREFERENCE_KEY = 'security_new_device_alert';
+    public const string PREFERENCE_KEY = 'security_new_device_alert';
 
     public function touch(User $user, ?string $userAgent, ?string $ip): void {
         $label = UserAgentHelper::shortLabel($userAgent);

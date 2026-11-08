@@ -40,7 +40,7 @@ use Throwable;
  */
 class GirocodeService {
     /** Kantenlänge der SVG-Grafik in Pixeln (Druckgröße bestimmt das CSS). */
-    private const SIZE_PX = 160;
+    private const int SIZE_PX = 160;
 
     public function __construct(
         private readonly RetentionService $retentions,

@@ -18,25 +18,25 @@ use RuntimeException;
  * `code` adressiert die Fehlerklasse fuer API-Konsumenten (HTTP 409).
  */
 class ProcedureSecondPersonException extends RuntimeException {
-    public const CODE_MISSING = 'procedure.secondPersonMissing';
+    public const string CODE_MISSING = 'procedure.secondPersonMissing';
 
-    public const CODE_SELF_NOT_ALLOWED = 'procedure.secondPersonSelfNotAllowed';
+    public const string CODE_SELF_NOT_ALLOWED = 'procedure.secondPersonSelfNotAllowed';
 
-    public const REASON_NOT_ASSIGNED = 'notAssigned';
+    public const string REASON_NOT_ASSIGNED = 'notAssigned';
 
-    public const REASON_NOT_SIGNED = 'notSigned';
+    public const string REASON_NOT_SIGNED = 'notSigned';
 
-    public const REASON_SELF_NOT_ALLOWED = 'selfNotAllowed';
+    public const string REASON_SELF_NOT_ALLOWED = 'selfNotAllowed';
 
-    public const REASON_ROLE_MISMATCH = 'roleMismatch';
+    public const string REASON_ROLE_MISMATCH = 'roleMismatch';
 
-    public const REASON_QUALIFICATION_MISSING = 'qualificationMissing';
+    public const string REASON_QUALIFICATION_MISSING = 'qualificationMissing';
 
-    public const REASON_ALREADY_ASSIGNED = 'alreadyAssigned';
+    public const string REASON_ALREADY_ASSIGNED = 'alreadyAssigned';
 
-    public const REASON_NOT_TAKER = 'notTaker';
+    public const string REASON_NOT_TAKER = 'notTaker';
 
-    public const REASON_NOT_REQUIRED = 'notRequired';
+    public const string REASON_NOT_REQUIRED = 'notRequired';
 
     public function __construct(
         public readonly string $errorCode,

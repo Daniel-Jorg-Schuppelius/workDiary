@@ -23,7 +23,7 @@ use CommonToolkit\Helper\FileSystem\{File, Files, Folder};
  */
 final class DependencyGraph {
     /** @var list<string> Schicht → Domänenordner darunter */
-    private const LAYERS = ['app/Services', 'app/Http/Controllers', 'app/Policies', 'app/Jobs', 'app/Listeners', 'app/Observers', 'app/Console/Commands', 'app/Plugins'];
+    private const array LAYERS = ['app/Services', 'app/Http/Controllers', 'app/Policies', 'app/Jobs', 'app/Listeners', 'app/Observers', 'app/Console/Commands', 'app/Plugins'];
 
     public function __construct(
         private readonly ModuleRegistry $registry,

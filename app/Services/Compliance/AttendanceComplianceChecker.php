@@ -51,95 +51,95 @@ use Carbon\CarbonImmutable;
  * bräuchte Gesundheitsdaten (Art. 9 DSGVO).
  */
 final class AttendanceComplianceChecker {
-    public const KIND_MAX_DAILY_HOURS = 'maxDailyHours';
+    public const string KIND_MAX_DAILY_HOURS = 'maxDailyHours';
 
-    public const KIND_REST_PERIOD = 'restPeriod';
+    public const string KIND_REST_PERIOD = 'restPeriod';
 
-    public const KIND_BREAK_MISSING = 'breakMissing';
+    public const string KIND_BREAK_MISSING = 'breakMissing';
 
-    public const KIND_MAX_WEEKLY_HOURS = 'maxWeeklyHours';
+    public const string KIND_MAX_WEEKLY_HOURS = 'maxWeeklyHours';
 
     /** MiLoG §17 / SchwarzArbG §2a: Erfassung > 7 Kalendertage nach der Leistung (MVP-695). */
-    public const KIND_LATE_RECORDING = 'lateRecording';
+    public const string KIND_LATE_RECORDING = 'lateRecording';
 
     /** ArbZG §3 S. 2: 6-Monats-/24-Wochen-Durchschnitt > 8 h je Werktag (MVP-696). */
-    public const KIND_SIX_MONTH_AVERAGE = 'sixMonthAverage';
+    public const string KIND_SIX_MONTH_AVERAGE = 'sixMonthAverage';
 
     /** ArbZG §6 Abs. 2: Nachtarbeit (> 2 h in der Nachtzeit 23–6) über 8 h netto (MVP-696). */
-    public const KIND_NIGHT_WORK = 'nightWork';
+    public const string KIND_NIGHT_WORK = 'nightWork';
 
     /** ArbZG §11 Abs. 3: kein Ersatzruhetag binnen 2 Wochen (So) bzw. 8 Wochen (Feiertag) (MVP-696). */
-    public const KIND_SUBSTITUTE_REST_DAY = 'substituteRestDay';
+    public const string KIND_SUBSTITUTE_REST_DAY = 'substituteRestDay';
 
     /** ArbZG §11 Abs. 1: weniger als 15 beschäftigungsfreie Sonntage im Kalenderjahr erreichbar (MVP-696). */
-    public const KIND_FREE_SUNDAYS = 'freeSundays';
+    public const string KIND_FREE_SUNDAYS = 'freeSundays';
 
     /** JArbSchG §8 Abs. 1 (MVP-1001): mehr als 8 h täglich. */
-    public const KIND_YOUTH_DAILY_HOURS = 'youthDailyHours';
+    public const string KIND_YOUTH_DAILY_HOURS = 'youthDailyHours';
 
     /** JArbSchG §8 Abs. 1: mehr als 40 h in der Woche. */
-    public const KIND_YOUTH_WEEKLY_HOURS = 'youthWeeklyHours';
+    public const string KIND_YOUTH_WEEKLY_HOURS = 'youthWeeklyHours';
 
     /** JArbSchG §11: 30 min Pause ab 4,5 h, 60 min ab 6 h Arbeitszeit. */
-    public const KIND_YOUTH_BREAK = 'youthBreak';
+    public const string KIND_YOUTH_BREAK = 'youthBreak';
 
     /** JArbSchG §13: 12 h Freizeit zwischen zwei Arbeitstagen. */
-    public const KIND_YOUTH_REST = 'youthRest';
+    public const string KIND_YOUTH_REST = 'youthRest';
 
     /** JArbSchG §14: Arbeit zwischen 20 und 6 Uhr. */
-    public const KIND_YOUTH_NIGHT = 'youthNight';
+    public const string KIND_YOUTH_NIGHT = 'youthNight';
 
     /** JArbSchG §15: mehr als 5 Arbeitstage in der Woche. */
-    public const KIND_YOUTH_FIVE_DAYS = 'youthFiveDays';
+    public const string KIND_YOUTH_FIVE_DAYS = 'youthFiveDays';
 
     /** JArbSchG §16/§17: Arbeit am Samstag oder Sonntag (Ausnahmen je Branche, daher Hinweis). */
-    public const KIND_YOUTH_WEEKEND = 'youthWeekend';
+    public const string KIND_YOUTH_WEEKEND = 'youthWeekend';
 
     /** @var list<string> */
-    public const YOUTH_KINDS = [
+    public const array YOUTH_KINDS = [
         self::KIND_YOUTH_DAILY_HOURS, self::KIND_YOUTH_WEEKLY_HOURS, self::KIND_YOUTH_BREAK, self::KIND_YOUTH_REST,
         self::KIND_YOUTH_NIGHT, self::KIND_YOUTH_FIVE_DAYS, self::KIND_YOUTH_WEEKEND,
     ];
 
     /** MiLoG §17 Abs. 1 / SchwarzArbG §2a: Aufzeichnungsfrist in Kalendertagen. */
-    public const RECORDING_DEADLINE_DAYS = 7;
+    public const int RECORDING_DEADLINE_DAYS = 7;
 
     /** ArbZG §3 S. 2: Ausgleichszeitraum 24 Wochen (Kalendertage). */
-    public const AVERAGE_WINDOW_DAYS = 168;
+    public const int AVERAGE_WINDOW_DAYS = 168;
 
     /** ArbZG §11 Abs. 3: Ersatzruhetag-Fenster für Feiertagsarbeit (8 Wochen). */
-    public const HOLIDAY_REST_WINDOW_DAYS = 56;
+    public const int HOLIDAY_REST_WINDOW_DAYS = 56;
 
     /** Mindest-Datenabdeckung, bevor der 24-Wochen-Durchschnitt bewertet wird. */
-    private const AVERAGE_MIN_OBSERVED_DAYS = 28;
+    private const int AVERAGE_MIN_OBSERVED_DAYS = 28;
 
     /** ArbZG §3: 8 h je Werktag (Mo–Sa) als Durchschnittsgrenze. */
-    private const AVERAGE_DAILY_MINUTES = 480;
+    private const int AVERAGE_DAILY_MINUTES = 480;
 
     /** JArbSchG §14: Nachtruhe 20–6 Uhr. */
-    private const YOUTH_NIGHT_START_HOUR = 20;
+    private const int YOUTH_NIGHT_START_HOUR = 20;
 
-    private const YOUTH_NIGHT_END_HOUR = 6;
+    private const int YOUTH_NIGHT_END_HOUR = 6;
 
-    private const YOUTH_DAILY_MINUTES = 480;
+    private const int YOUTH_DAILY_MINUTES = 480;
 
-    private const YOUTH_WEEKLY_MINUTES = 2400;
+    private const int YOUTH_WEEKLY_MINUTES = 2400;
 
-    private const YOUTH_REST_MINUTES = 720;
+    private const int YOUTH_REST_MINUTES = 720;
 
-    private const YOUTH_MAX_WORKDAYS = 5;
+    private const int YOUTH_MAX_WORKDAYS = 5;
 
     /** §2 Abs. 4 ArbZG: Nachtarbeit = mehr als 2 h innerhalb der Nachtzeit. */
-    private const NIGHT_WORK_MIN_MINUTES = 120;
+    private const int NIGHT_WORK_MIN_MINUTES = 120;
 
     /** §6 Abs. 2 ArbZG: 8 h; bis 10 h nur mit Monats-/4-Wochen-Ausgleich. */
-    private const NIGHT_MAX_DAILY_MINUTES = 480;
+    private const int NIGHT_MAX_DAILY_MINUTES = 480;
 
     /** ArbZG §11 Abs. 3: Ersatzruhetag-Fenster für Sonntagsarbeit (2 Wochen). */
-    private const SUNDAY_REST_WINDOW_DAYS = 14;
+    private const int SUNDAY_REST_WINDOW_DAYS = 14;
 
     /** ArbZG §11 Abs. 1: Mindestzahl beschäftigungsfreier Sonntage je Jahr. */
-    private const MIN_FREE_SUNDAYS_PER_YEAR = 15;
+    private const int MIN_FREE_SUNDAYS_PER_YEAR = 15;
 
     /**
      * @param  array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, night_start_hour?:int, night_end_hour?:int, rules:array<string,bool>}  $settings  z. B. Organization::complianceSettings()

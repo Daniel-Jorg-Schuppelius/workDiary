@@ -47,17 +47,17 @@ class DatanormImportService {
         private readonly DatanormParser $parser = new DatanormParser
     ) {}
 
-    public const MODE_SNAPSHOT = 'snapshot';
-    public const MODE_DELTA = 'delta';
+    public const string MODE_SNAPSHOT = 'snapshot';
+    public const string MODE_DELTA = 'delta';
 
     /** Schutzschranke Auto-Modus: ab so vielen Bestandsartikeln greift sie … */
-    private const DISCONTINUE_GUARD_MIN_ITEMS = 10;
+    private const int DISCONTINUE_GUARD_MIN_ITEMS = 10;
 
     /** … wenn der Lauf mehr als diesen Anteil des Bestands abkündigen würde. */
-    private const DISCONTINUE_GUARD_RATIO = 0.5;
+    private const float DISCONTINUE_GUARD_RATIO = 0.5;
 
     /** Schlüssel für vorgemerkte zukünftige DATPREIS-Preise in extra_attributes. */
-    public const PENDING_PRICE_KEY = 'datanorm_pending_price';
+    public const string PENDING_PRICE_KEY = 'datanorm_pending_price';
 
     /**
      * @param  string|null  $mode  {@see self::MODE_SNAPSHOT}/{@see self::MODE_DELTA}

@@ -24,7 +24,7 @@ use App\Plugins\Support\{MirrorsCreatedEntries, RemoteTimeWriter, TimeWritebackD
  * bleibt der Export ({@see OpenProjectExportService}).
  */
 class OpenProjectOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCreatedEntries {
-    public const OP_ENTRY_CREATE = 'openproject.entry.create';
+    public const string OP_ENTRY_CREATE = 'openproject.entry.create';
 
     public function pluginId(): string {
         return OpenProjectPlugin::ID;

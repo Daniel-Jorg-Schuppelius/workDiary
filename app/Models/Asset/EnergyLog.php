@@ -53,34 +53,34 @@ class EnergyLog extends Model {
 
     use HasSqid;
 
-    public const TYPE_FUEL = 'fuel';
+    public const string TYPE_FUEL = 'fuel';
 
-    public const TYPE_ELECTRIC = 'electric';
-
-    /** @var list<string> */
-    public const TYPES = [self::TYPE_FUEL, self::TYPE_ELECTRIC];
-
-    public const UNIT_LITER = 'liter';
-
-    public const UNIT_KWH = 'kwh';
+    public const string TYPE_ELECTRIC = 'electric';
 
     /** @var list<string> */
-    public const UNITS = [self::UNIT_LITER, self::UNIT_KWH];
+    public const array TYPES = [self::TYPE_FUEL, self::TYPE_ELECTRIC];
 
-    public const FUEL_DIESEL = 'diesel';
+    public const string UNIT_LITER = 'liter';
 
-    public const FUEL_PETROL = 'petrol';
-
-    public const FUEL_GAS = 'gas';
-
-    public const FUEL_CNG = 'cng';
-
-    public const FUEL_ADBLUE = 'adblue';
-
-    public const FUEL_OTHER = 'other';
+    public const string UNIT_KWH = 'kwh';
 
     /** @var list<string> */
-    public const FUEL_KINDS = [
+    public const array UNITS = [self::UNIT_LITER, self::UNIT_KWH];
+
+    public const string FUEL_DIESEL = 'diesel';
+
+    public const string FUEL_PETROL = 'petrol';
+
+    public const string FUEL_GAS = 'gas';
+
+    public const string FUEL_CNG = 'cng';
+
+    public const string FUEL_ADBLUE = 'adblue';
+
+    public const string FUEL_OTHER = 'other';
+
+    /** @var list<string> */
+    public const array FUEL_KINDS = [
         self::FUEL_DIESEL,
         self::FUEL_PETROL,
         self::FUEL_GAS,
@@ -89,16 +89,16 @@ class EnergyLog extends Model {
         self::FUEL_OTHER,
     ];
 
-    public const CHARGER_LEVEL1 = 'level1';
+    public const string CHARGER_LEVEL1 = 'level1';
 
-    public const CHARGER_LEVEL2 = 'level2';
+    public const string CHARGER_LEVEL2 = 'level2';
 
-    public const CHARGER_DC_FAST = 'dc_fast';
+    public const string CHARGER_DC_FAST = 'dc_fast';
 
-    public const CHARGER_OTHER = 'other';
+    public const string CHARGER_OTHER = 'other';
 
     /** @var list<string> */
-    public const CHARGER_TYPES = [
+    public const array CHARGER_TYPES = [
         self::CHARGER_LEVEL1,
         self::CHARGER_LEVEL2,
         self::CHARGER_DC_FAST,

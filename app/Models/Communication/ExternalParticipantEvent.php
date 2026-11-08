@@ -40,7 +40,7 @@ class ExternalParticipantEvent extends JournalEntry {
     // Append-only jetzt technisch erzwungen statt nur dokumentiert (Vollaudit 2026-07, M52).
 
     /** Append-only-Lebenszyklus: nur created_at (kein updated_at). */
-    public const UPDATED_AT = null;
+    public const ?string UPDATED_AT = null;
 
     protected $fillable = [
         'external_participant_id',

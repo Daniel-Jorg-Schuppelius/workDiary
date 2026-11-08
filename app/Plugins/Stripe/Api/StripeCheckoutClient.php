@@ -24,10 +24,10 @@ use RuntimeException;
 
 /** Stripe Checkout Sessions (REST, formularkodiert). */
 class StripeCheckoutClient {
-    private const LOCALES = ['de', 'en', 'es', 'fr', 'it'];
+    private const array LOCALES = ['de', 'en', 'es', 'fr', 'it'];
 
     /** Stripe erlaubt 30 Minuten bis 24 Stunden. */
-    private const SESSION_MINUTES = 60;
+    private const int SESSION_MINUTES = 60;
 
     private ?PluginApiClient $api = null;
 

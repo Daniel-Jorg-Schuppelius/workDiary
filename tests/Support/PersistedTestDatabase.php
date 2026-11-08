@@ -29,7 +29,7 @@ use Throwable;
  * frischen Aufbau; jeder Fehler hier degradiert nur zum normalen migrate:fresh.
  */
 final class PersistedTestDatabase {
-    public const MARKER_TABLE = 'testing_schema_state';
+    public const string MARKER_TABLE = 'testing_schema_state';
 
     private static ?string $fingerprint = null;
 
@@ -87,7 +87,7 @@ final class PersistedTestDatabase {
     }
 
     /** Max. gleichzeitige migrate:fresh-Neuaufbauten über alle Worker. */
-    private const REBUILD_SLOTS = 4;
+    private const int REBUILD_SLOTS = 4;
 
     /**
      * Drosselt parallele Neuaufbauten: 16 gleichzeitige Dump-Loads + ALTERs

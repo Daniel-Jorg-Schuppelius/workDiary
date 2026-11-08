@@ -39,7 +39,7 @@ use Illuminate\Support\Facades\Schema;
  */
 return new class extends Migration {
     /** Tabelle → [Indexname => Spalten]; Namen < 64 Zeichen, DB-weit eindeutig. */
-    private const INDEXES = [
+    private const array INDEXES = [
         'audit_logs' => ['audit_logs_org_created_idx' => ['organization_id', 'created_at']],
         'time_entries' => [
             'te_org_date_idx' => ['organization_id', 'date'],

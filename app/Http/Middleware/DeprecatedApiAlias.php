@@ -24,9 +24,9 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class DeprecatedApiAlias {
     /** Abschaltdatum der unversionierten Pfade (RFC 7231 HTTP-Date). */
-    public const SUNSET_DATE = '2027-08-31';
+    public const string SUNSET_DATE = '2027-08-31';
 
-    public const SUNSET_HTTP_DATE = 'Tue, 31 Aug 2027 00:00:00 GMT';
+    public const string SUNSET_HTTP_DATE = 'Tue, 31 Aug 2027 00:00:00 GMT';
 
     public function handle(Request $request, Closure $next): Response {
         $response = $next($request);

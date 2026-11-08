@@ -26,7 +26,7 @@ use Illuminate\Support\Str;
  */
 class CalendlySubscriptionManager {
     /** @var list<string> */
-    private const EVENTS = ['invitee.created', 'invitee.canceled'];
+    private const array EVENTS = ['invitee.created', 'invitee.canceled'];
 
     /** Stellt sicher, dass eine aktive Subscription existiert (legt sonst an). */
     public function ensure(CalendlyConnection $connection): ?CalendlyWebhookSubscription {

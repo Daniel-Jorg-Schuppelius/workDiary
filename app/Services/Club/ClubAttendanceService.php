@@ -35,7 +35,7 @@ use Illuminate\Validation\ValidationException;
  */
 class ClubAttendanceService {
     /** Selbst-Check-in öffnet so viele Minuten vor Beginn (MVP-1004). */
-    public const CHECKIN_LEAD_MINUTES = 60;
+    public const int CHECKIN_LEAD_MINUTES = 60;
 
     public function __construct(
         private readonly ClubEventService $clubEvents,

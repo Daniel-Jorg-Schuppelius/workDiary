@@ -32,7 +32,7 @@ use Throwable;
  * Lexoffice, der Pull-Sync ({@see LexofficeArticleSync}) hält den Cache aktuell.
  */
 class LexofficeArticleController extends Controller {
-    private const ALLOWED_SORTS = ['name', 'article_number', 'type', 'unit_name', 'net_unit_price', 'vat_rate', 'archived_at'];
+    private const array ALLOWED_SORTS = ['name', 'article_number', 'type', 'unit_name', 'net_unit_price', 'vat_rate', 'archived_at'];
 
     public function index(Request $request): View {
         $user = $this->authUser();

@@ -31,7 +31,7 @@ use Illuminate\Database\Eloquent\{Builder, Model};
  */
 class ArticleDuplicateMatchProfile extends ArticleMatchProfile {
     /** Etwas strenger als beim Kunden: Artikelnamen sind kürzer und ähnlicher. */
-    public const FUZZY_THRESHOLD = 0.90;
+    public const float FUZZY_THRESHOLD = 0.90;
 
     public function targetType(): string {
         return Article::class;

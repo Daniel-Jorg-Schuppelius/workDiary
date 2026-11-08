@@ -44,7 +44,7 @@ class AbsencesReportController extends Controller {
     use WritesReportCsv;
 
     /** Top-N-Kappung des Resturlaub-Balkendiagramms. */
-    private const REMAINING_TOP_N = 15;
+    private const int REMAINING_TOP_N = 15;
 
     public function __construct(
         private readonly HolidayService $holidayService,

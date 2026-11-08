@@ -31,13 +31,13 @@ class ContactDetailsWriter {
      *
      * @var list<string>
      */
-    public const INLINE_FIELDS = [
+    public const array INLINE_FIELDS = [
         'address_street', 'address_zip', 'address_city', 'country',
         'bank_account_holder', 'bank_iban', 'bank_bic', 'bank_name',
     ];
 
     /** Inline-Spalte → Schlüssel von {@see writeAddress}. */
-    private const ADDRESS_MAP = [
+    private const array ADDRESS_MAP = [
         'address_street' => 'street',
         'address_zip' => 'zip',
         'address_city' => 'city',
@@ -45,7 +45,7 @@ class ContactDetailsWriter {
     ];
 
     /** Inline-Spalte → Schlüssel von {@see writeBankAccount}. */
-    private const BANK_MAP = [
+    private const array BANK_MAP = [
         'bank_account_holder' => 'account_holder',
         'bank_iban' => 'iban',
         'bank_bic' => 'bic',

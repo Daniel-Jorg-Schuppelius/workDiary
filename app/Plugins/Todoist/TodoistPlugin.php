@@ -31,14 +31,14 @@ use App\Plugins\Todoist\Models\TodoistConnection;
  * Plugin-Id ist "todoist", per Organisation aktivierbar.
  */
 class TodoistPlugin extends AbstractPlugin implements \App\Plugins\Contracts\SlotRenderer, TaskSyncer {
-    public const ID = 'todoist';
+    public const string ID = 'todoist';
 
-    public const SERVICE_PROVIDER = TodoistServiceProvider::class;
+    public const string SERVICE_PROVIDER = TodoistServiceProvider::class;
 
     /** ExternalReference-Typen dieses Plugins. */
-    public const EXT_TYPE_TASK = 'task';
+    public const string EXT_TYPE_TASK = 'task';
 
-    public const EXT_TYPE_COLLABORATOR = 'collaborator';
+    public const string EXT_TYPE_COLLABORATOR = 'collaborator';
 
     public function name(): string {
         return 'Todoist';

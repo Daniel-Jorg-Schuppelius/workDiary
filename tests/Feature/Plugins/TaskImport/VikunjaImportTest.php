@@ -42,9 +42,9 @@ class VikunjaImportTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const BASE = 'https://todo.example.test';
+    private const string BASE = 'https://todo.example.test';
 
-    private const PROJECT = '12';
+    private const string PROJECT = '12';
 
     private User $admin;
 

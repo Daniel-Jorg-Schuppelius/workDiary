@@ -25,7 +25,7 @@ use Illuminate\Validation\ValidationException;
 
 /** Monatskurse für Fremdwährungsbelege (Feature 125, MVP-1012). */
 class ExchangeRateService {
-    public const DEFAULT_SOURCE = 'BMF';
+    public const string DEFAULT_SOURCE = 'BMF';
 
     public function rateFor(Organization $organization, CurrencyCode $currency, CarbonInterface $on): ?AccountingExchangeRate {
         $month = CarbonImmutable::instance($on)->startOfMonth();

@@ -24,7 +24,7 @@ class SaveWarehouseRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var list<string> */
-    private const FLAGS = ['is_default', 'active', 'blocked'];
+    private const array FLAGS = ['is_default', 'active', 'blocked'];
 
     /** @var array<string, class-string> Bezug (MVP-706) kommt als Sqid aus dem Formular. */
     protected array $sqidFields = [

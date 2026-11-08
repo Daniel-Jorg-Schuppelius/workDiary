@@ -35,7 +35,7 @@ use Illuminate\Database\Eloquent\Model;
  * @extends AbstractTaskImportService<GlpiProjectLink, GlpiConnection>
  */
 class GlpiImportService extends AbstractTaskImportService {
-    private const ZONE_MARGIN_HOURS = 14;
+    private const int ZONE_MARGIN_HOURS = 14;
 
     /** @var array<int, string> Basis-URL je Organisation, einmal je Dienstinstanz gelesen */
     private array $baseUrls = [];

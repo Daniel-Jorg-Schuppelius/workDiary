@@ -37,9 +37,9 @@ class ClockifyPushTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const CREATE_URL = 'https://api.clockify.me/api/v1/workspaces/ws1/time-entries';
+    private const string CREATE_URL = 'https://api.clockify.me/api/v1/workspaces/ws1/time-entries';
 
-    private const PROJECTS_URL = 'https://api.clockify.me/api/v1/workspaces/ws1/projects*';
+    private const string PROJECTS_URL = 'https://api.clockify.me/api/v1/workspaces/ws1/projects*';
 
     private User $user;
 

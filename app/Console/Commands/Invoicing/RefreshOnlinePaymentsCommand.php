@@ -23,7 +23,7 @@ use Illuminate\Console\Command;
  * verlorene Webhooks und Erstattungen, die nicht jeder Anbieter meldet.
  */
 class RefreshOnlinePaymentsCommand extends Command {
-    private const REFUND_WINDOW_DAYS = 120;
+    private const int REFUND_WINDOW_DAYS = 120;
 
     protected $signature = 'invoicing:online-payments-refresh';
 

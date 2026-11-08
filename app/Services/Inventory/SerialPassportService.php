@@ -17,13 +17,13 @@ use App\Support\Auth\OrganizationAccessToken;
  * Seite braucht Token UND Freischaltung.
  */
 class SerialPassportService extends OrganizationAccessToken {
-    public const HASH_KEY = 'serial_passport_token_hash';
+    public const string HASH_KEY = 'serial_passport_token_hash';
 
-    public const HINT_KEY = 'serial_passport_token_hint';
+    public const string HINT_KEY = 'serial_passport_token_hint';
 
-    public const ISSUED_KEY = 'serial_passport_token_issued_at';
+    public const string ISSUED_KEY = 'serial_passport_token_issued_at';
 
-    public const ENABLED_KEY = 'serial_passport_enabled';
+    public const string ENABLED_KEY = 'serial_passport_enabled';
 
     /** Der Klartext aus der Zeit vor S-44 verschwindet bei jeder Änderung mit. */
     protected function obsoleteKeys(): array {

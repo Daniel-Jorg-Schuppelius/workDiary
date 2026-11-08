@@ -29,7 +29,7 @@ use Orgamax\Entities\Invoices\Invoice;
  * Rechnungsdatensatz (`outstandingAmount`).
  */
 class OrgaMaxInvoiceProjector {
-    public const EXT_TYPE_INVOICE = 'orgamax_invoice';
+    public const string EXT_TYPE_INVOICE = 'orgamax_invoice';
 
     /** @return array{read: int, updated: int} */
     public function project(OrgaMaxConnection $connection, Client $client, int $offset, int $limit): array {

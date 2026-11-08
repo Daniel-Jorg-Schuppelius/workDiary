@@ -31,16 +31,16 @@ use Illuminate\Support\Collection;
  */
 class CsfReadinessService {
     /** Normprofil-Key des CSF-Katalogs. */
-    public const CSF_PROFILE_KEY = 'nist-csf-2-0';
+    public const string CSF_PROFILE_KEY = 'nist-csf-2-0';
 
     /** Crosswalk-Key CSF → ISO/IEC 27001. */
-    public const CROSSWALK_KEY = 'nist-csf-2-0--iso27001-2022';
+    public const string CROSSWALK_KEY = 'nist-csf-2-0--iso27001-2022';
 
     /** Ampel: ab dieser Quote grün. */
-    public const QUOTE_GREEN = 80;
+    public const int QUOTE_GREEN = 80;
 
     /** Ampel: ab dieser Quote gelb (darunter rot). */
-    public const QUOTE_AMBER = 40;
+    public const int QUOTE_AMBER = 40;
 
     public function __construct(
         private readonly NormProfileRegistry $profiles,

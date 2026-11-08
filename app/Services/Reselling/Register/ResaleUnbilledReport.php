@@ -26,7 +26,7 @@ use CommonToolkit\ValueObjects\Money;
  * @phpstan-type UnbilledRow array{subscription: ResaleSubscription, oldest: ResalePeriod, days: int, open_periods: int, open_amount: Money|null}
  */
 final class ResaleUnbilledReport {
-    public const DEFAULT_DAYS = 60;
+    public const int DEFAULT_DAYS = 60;
 
     /**
      * @return list<UnbilledRow>

@@ -38,9 +38,9 @@ class ContractSigningManifestItem extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const ROLE_CONTRACT = 'contract';
+    public const string ROLE_CONTRACT = 'contract';
 
-    public const ROLE_ATTACHMENT = 'attachment';
+    public const string ROLE_ATTACHMENT = 'attachment';
 
     protected $fillable = [
         'organization_id', 'revision_id', 'document_version_id', 'role', 'sort', 'original_name', 'sha256', 'size',

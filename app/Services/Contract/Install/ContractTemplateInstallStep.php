@@ -22,7 +22,7 @@ use App\Services\Classification\Contracts\ProfileInstallStep;
  * Vorhandene Vorlagen gleichen Namens bleiben unberührt.
  */
 final class ContractTemplateInstallStep implements ProfileInstallStep {
-    private const FIELDS = ['title', 'term_kind', 'min_term_months', 'auto_renew', 'renew_period_months', 'notice_period_days', 'value_period', 'indexation_method', 'note'];
+    private const array FIELDS = ['title', 'term_kind', 'min_term_months', 'auto_renew', 'renew_period_months', 'notice_period_days', 'value_period', 'indexation_method', 'note'];
 
     public function key(): string {
         return 'contract_templates';

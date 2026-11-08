@@ -30,9 +30,9 @@ use Illuminate\Support\Carbon;
 final class ProcedureRunBlockTracker {
     use Concerns\RecordsProcedureRunEvents;
 
-    public const REASON_CRITICAL_DEVIATION = 'criticalDeviationOpen';
+    public const string REASON_CRITICAL_DEVIATION = 'criticalDeviationOpen';
 
-    public const REASONS = [
+    public const array REASONS = [
         self::REASON_CRITICAL_DEVIATION,
         ProcedureStepBlockedException::REASON_WAIT_NOT_ELAPSED,
         ProcedureStepBlockedException::REASON_SECOND_PERSON_REQUIRED,

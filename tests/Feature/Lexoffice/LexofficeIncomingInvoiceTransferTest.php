@@ -35,17 +35,17 @@ final class LexofficeIncomingInvoiceTransferTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const API = 'https://api.lexware.io/v1';
+    private const string API = 'https://api.lexware.io/v1';
 
-    private const SELLER_VAT = 'DE123456789';
+    private const string SELLER_VAT = 'DE123456789';
 
-    private const CONTACT_ID = '3a1f5c6e-0d0b-4c47-9a2b-111111111111';
+    private const string CONTACT_ID = '3a1f5c6e-0d0b-4c47-9a2b-111111111111';
 
-    private const CATEGORY_DEFAULT = '16d04a28-2f3c-4b1a-9a4b-000000000001';
+    private const string CATEGORY_DEFAULT = '16d04a28-2f3c-4b1a-9a4b-000000000001';
 
-    private const CATEGORY_PARTY = '16d04a28-2f3c-4b1a-9a4b-000000000002';
+    private const string CATEGORY_PARTY = '16d04a28-2f3c-4b1a-9a4b-000000000002';
 
-    private const VOUCHER_ID = 'b2c3d4e5-0000-4000-8000-000000000001';
+    private const string VOUCHER_ID = 'b2c3d4e5-0000-4000-8000-000000000001';
 
     private User $admin;
 

@@ -18,7 +18,7 @@ use Illuminate\Http\{JsonResponse, Request};
 use Symfony\Component\HttpFoundation\Response;
 
 class HelpController extends Controller {
-    private const SEARCH_LIMIT = 20;
+    private const int SEARCH_LIMIT = 20;
 
     public function show(Request $request, HelpTopicResolver $resolver, HelpContextResolver $context, string $topic): JsonResponse {
         /** @var User|null $user */

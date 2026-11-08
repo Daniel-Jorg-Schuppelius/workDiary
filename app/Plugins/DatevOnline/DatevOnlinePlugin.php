@@ -23,9 +23,9 @@ use App\Plugins\DatevOnline\Models\DatevOnlineConnection;
  * DATEV Unternehmen online. Der EXTF-Dateiweg im Kern bleibt unverändert.
  */
 class DatevOnlinePlugin extends AbstractPlugin {
-    public const ID = 'datev-online';
+    public const string ID = 'datev-online';
 
-    public const SERVICE_PROVIDER = DatevOnlineServiceProvider::class;
+    public const string SERVICE_PROVIDER = DatevOnlineServiceProvider::class;
 
     public function name(): string {
         return 'DATEV-Online';

@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Model;
  * Rücksicht auf Schreibweise greifen.
  */
 final class IncomingInvoiceReceivedTrigger implements RuleTrigger {
-    public const KEY = 'incoming_invoice.received';
+    public const string KEY = 'incoming_invoice.received';
 
     public function key(): string {
         return self::KEY;

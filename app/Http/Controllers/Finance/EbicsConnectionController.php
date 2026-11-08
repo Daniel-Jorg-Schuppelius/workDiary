@@ -27,7 +27,7 @@ use Illuminate\View\View;
  * Schritt, Initialisierungsbrief, Auszugsabruf und Einreichung von Zahlläufen.
  */
 class EbicsConnectionController extends Controller {
-    private const IDENT = '/^[A-Za-z0-9][A-Za-z0-9,=]{0,34}$/';
+    private const string IDENT = '/^[A-Za-z0-9][A-Za-z0-9,=]{0,34}$/';
 
     public function show(BankAccount $bankAccount): View {
         Gate::authorize(P::FinanceConfig->value);

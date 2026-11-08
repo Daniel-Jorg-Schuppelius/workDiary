@@ -31,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 class ServiceTicketLink extends Model {
     use BelongsToOrganization;
 
-    public const KINDS = ['related', 'duplicate', 'parent', 'security', 'privacy'];
+    public const array KINDS = ['related', 'duplicate', 'parent', 'security', 'privacy'];
 
     protected $fillable = [
         'organization_id',

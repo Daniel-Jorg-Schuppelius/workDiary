@@ -27,7 +27,7 @@ use App\Models\Customer\Customer;
  */
 final class PortalNavigation {
     /** Gruppen der Leiste in Anzeigereihenfolge: Schlüssel => Symbol (Nachtrag Phase 154: keine Umbrüche). */
-    private const GROUPS = [
+    private const array GROUPS = [
         'orders' => 'menu_book',
         'finance' => 'payments',
         'service' => 'support_agent',

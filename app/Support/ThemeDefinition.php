@@ -31,10 +31,10 @@ use CommonToolkit\Helper\Data\ColorHelper;
  */
 final class ThemeDefinition {
     /** Pflicht-Hintergrundfarben (ohne diese ist das Theme ungültig). */
-    public const REQUIRED_COLORS = ['base-100', 'base-200', 'base-300', 'primary', 'secondary', 'accent', 'neutral'];
+    public const array REQUIRED_COLORS = ['base-100', 'base-200', 'base-300', 'primary', 'secondary', 'accent', 'neutral'];
 
     /** Status-Farben mit Fallback, falls der Admin sie nicht setzt. */
-    public const STATUS_DEFAULTS = [
+    public const array STATUS_DEFAULTS = [
         'info' => '#0ea5e9',
         'success' => '#16a34a',
         'warning' => '#f59e0b',
@@ -42,14 +42,14 @@ final class ThemeDefinition {
     ];
 
     /** Farben, für die ein `<name>-content`-Token existiert (abgeleitet, falls leer). */
-    private const CONTENT_BASES = ['primary', 'secondary', 'accent', 'neutral', 'info', 'success', 'warning', 'error'];
+    private const array CONTENT_BASES = ['primary', 'secondary', 'accent', 'neutral', 'info', 'success', 'warning', 'error'];
 
     /** Erlaubte Geometrie-Tokens (Werte gegen UNIT_PATTERN geprüft). */
-    private const GEOMETRY_KEYS = ['radius-box', 'radius-field', 'radius-selector', 'border'];
+    private const array GEOMETRY_KEYS = ['radius-box', 'radius-field', 'radius-selector', 'border'];
 
-    private const KEY_PATTERN = '/^[a-z0-9-]{1,32}$/';
+    private const string KEY_PATTERN = '/^[a-z0-9-]{1,32}$/';
 
-    private const UNIT_PATTERN = '/^(0|[0-9]{1,2}(\.[0-9]{1,3})?(rem|px))$/';
+    private const string UNIT_PATTERN = '/^(0|[0-9]{1,2}(\.[0-9]{1,3})?(rem|px))$/';
 
     /**
      * @param array<string, string> $colors normalisierte Farb-Tokens (ohne `--color-`-Präfix), inkl. abgeleiteter -content

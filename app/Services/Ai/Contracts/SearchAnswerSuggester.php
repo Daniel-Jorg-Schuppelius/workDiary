@@ -18,7 +18,7 @@ use App\Services\Search\ActivitySearchCriteria;
 
 /** KI-Antwort zur Tätigkeitssuche (Feature 153); Null-Bindung wirft AiUnavailableException. */
 interface SearchAnswerSuggester {
-    public const CAPABILITY = 'search.answer_summarize';
+    public const string CAPABILITY = 'search.answer_summarize';
 
     public function answer(User $user, Organization $organization, ActivitySearchCriteria $criteria, ?int $connectionId = null): AiTextSuggestion;
 }

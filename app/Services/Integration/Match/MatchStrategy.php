@@ -27,9 +27,9 @@ use Illuminate\Database\Eloquent\Builder;
  * Confidence-Stufen: exact > likely > fuzzy.
  */
 abstract class MatchStrategy {
-    public const EXACT = 'exact';
-    public const LIKELY = 'likely';
-    public const FUZZY = 'fuzzy';
+    public const string EXACT = 'exact';
+    public const string LIKELY = 'likely';
+    public const string FUZZY = 'fuzzy';
 
     public function __construct(
         public readonly string $confidence,

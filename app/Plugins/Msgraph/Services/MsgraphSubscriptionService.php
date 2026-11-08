@@ -42,20 +42,20 @@ use Illuminate\Support\{Carbon, Str};
  */
 class MsgraphSubscriptionService {
     /** Laufzeit Drive-Subscriptions (Graph-Limit driveItem: < 30 Tage). */
-    private const LIFETIME_DRIVE_DAYS = 29;
+    private const int LIFETIME_DRIVE_DAYS = 29;
 
     /** Laufzeit Outlook-Subscriptions (Events/Messages: < 7 Tage). */
-    private const LIFETIME_OUTLOOK_DAYS = 6;
+    private const int LIFETIME_OUTLOOK_DAYS = 6;
 
     /** Laufzeit To-Do-Subscriptions (todoTask: < 3 Tage). */
-    private const LIFETIME_TODO_DAYS = 2;
+    private const int LIFETIME_TODO_DAYS = 2;
 
     /** Erneuern, wenn weniger als so viele Tage Restlaufzeit bleiben. */
-    private const RENEW_THRESHOLD_DRIVE_DAYS = 3;
+    private const int RENEW_THRESHOLD_DRIVE_DAYS = 3;
 
-    private const RENEW_THRESHOLD_OUTLOOK_DAYS = 2;
+    private const int RENEW_THRESHOLD_OUTLOOK_DAYS = 2;
 
-    private const RENEW_THRESHOLD_TODO_DAYS = 1;
+    private const int RENEW_THRESHOLD_TODO_DAYS = 1;
 
     /**
      * Subscription der Dokumenteingangs-Verbindung sicherstellen.

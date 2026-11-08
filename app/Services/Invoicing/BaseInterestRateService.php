@@ -25,9 +25,9 @@ use Carbon\{CarbonImmutable, CarbonInterface};
  * Monatsendstand vom Vormonat abweicht.
  */
 class BaseInterestRateService {
-    public const SERIES_URL = 'https://api.statistiken.bundesbank.de/rest/data/BBIN1/M.DE.BBK.BBKBAS2.EUR.ME';
+    public const string SERIES_URL = 'https://api.statistiken.bundesbank.de/rest/data/BBIN1/M.DE.BBK.BBKBAS2.EUR.ME';
 
-    public const SOURCE = 'bundesbank';
+    public const string SOURCE = 'bundesbank';
 
     public function __construct(private readonly BundesbankSeries $series) {}
 

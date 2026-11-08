@@ -41,7 +41,7 @@ class AttendanceSpec extends AbstractEntitySpec implements HasMappableValues {
     use ParsesLocalDateTime;
     use ResolvesImportUsers;
 
-    private const EXTERNAL_TYPE = 'attendance';
+    private const string EXTERNAL_TYPE = 'attendance';
 
     public function __construct(private readonly DayCloseService $dayClose) {}
 

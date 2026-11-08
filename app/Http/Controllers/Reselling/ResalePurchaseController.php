@@ -39,14 +39,14 @@ class ResalePurchaseController extends Controller {
     use ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange;
 
-    private const PER_PAGE = 50;
+    private const int PER_PAGE = 50;
 
     /** Zuteilungsdialog: Eingangsbelege der letzten 36 Monate, höchstens 200. */
-    private const DOCUMENT_MONTHS = 36;
+    private const int DOCUMENT_MONTHS = 36;
 
-    private const DOCUMENT_LIMIT = 200;
+    private const int DOCUMENT_LIMIT = 200;
 
-    public const SOURCES = [ResalePurchaseEntry::SOURCE_PROVIDER_INVOICE, ResalePurchaseEntry::SOURCE_VOUCHER, ResalePurchaseEntry::SOURCE_DOMAIN, ResalePurchaseEntry::SOURCE_MANUAL];
+    public const array SOURCES = [ResalePurchaseEntry::SOURCE_PROVIDER_INVOICE, ResalePurchaseEntry::SOURCE_VOUCHER, ResalePurchaseEntry::SOURCE_DOMAIN, ResalePurchaseEntry::SOURCE_MANUAL];
 
     public function index(Request $request, PurchaseDocuments $documents): View {
         $organization = $this->currentOrganizationOrAbort(404);

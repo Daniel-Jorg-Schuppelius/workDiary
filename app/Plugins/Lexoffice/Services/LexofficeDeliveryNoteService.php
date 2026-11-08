@@ -40,7 +40,7 @@ use RuntimeException;
  * Lexware laut Referenz auch nicht — und verwürfe das Feld.
  */
 class LexofficeDeliveryNoteService {
-    public const EXT_TYPE_DELIVERY_NOTE = 'delivery_note';
+    public const string EXT_TYPE_DELIVERY_NOTE = 'delivery_note';
 
     public function __construct(private readonly DeliveryService $deliveries) {}
 

@@ -31,9 +31,9 @@ class FormSubmitterRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** Was als Absender gilt — Typangabe, Autosubmit, Skript oder eine Komponente mit eigenem Absendeknopf. */
-    private const SUBMITTER = '~type=["\']submit["\']|:type=|<button(?![^>]*\btype=)|<input[^>]*type="(?:submit|image)"|data-autosubmit|x-on:change|@change|requestSubmit|\.submit\(|x-on:submit|@submit|data-[a-z-]*submit|<x-modal|<x-action-form|<x-filter-bar~';
+    private const string SUBMITTER = '~type=["\']submit["\']|:type=|<button(?![^>]*\btype=)|<input[^>]*type="(?:submit|image)"|data-autosubmit|x-on:change|@change|requestSubmit|\.submit\(|x-on:submit|@submit|data-[a-z-]*submit|<x-modal|<x-action-form|<x-filter-bar~';
 
-    private const TYPELESS_BUTTON = '~<x-(?:button|icon-btn)\b(?![^>]*\btype=)(?![^>]*\bhref)(?![^>]*:href)~s';
+    private const string TYPELESS_BUTTON = '~<x-(?:button|icon-btn)\b(?![^>]*\btype=)(?![^>]*\bhref)(?![^>]*:href)~s';
 
     public function test_forms_with_component_buttons_have_a_submitter(): void {
         $violations = [];

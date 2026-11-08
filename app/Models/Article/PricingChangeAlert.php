@@ -43,9 +43,9 @@ class PricingChangeAlert extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
-    public const TYPE_MARGIN = 'margin';
+    public const string TYPE_MARGIN = 'margin';
 
-    public const TYPE_AVAILABILITY = 'availability';
+    public const string TYPE_AVAILABILITY = 'availability';
 
     protected $fillable = [
         'organization_id',

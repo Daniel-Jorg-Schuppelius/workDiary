@@ -33,7 +33,7 @@ use CommonToolkit\ValueObjects\{Money, Percentage};
  * Gerundet wird erst der Preis auf Cent; Einzelkosten bleiben vierstellig.
  */
 final class ServiceCalculationService {
-    private const COST_SCALE = 4;
+    private const int COST_SCALE = 4;
 
     /** Schema der Organisation; ohne gespeichertes Schema eines ohne Zuschläge (es wird beim Lesen nichts angelegt). */
     public function scheme(Organization $organization): CalculationScheme {

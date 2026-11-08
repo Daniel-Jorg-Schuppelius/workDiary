@@ -42,7 +42,7 @@ class TenderCompetitorBid extends Model {
     use HasSqid;
 
     /** Woher die Angabe stammt — beides sind amtliche Quellen, keine Gerüchte. */
-    public const SOURCES = ['opening', 'information_letter', 'other'];
+    public const array SOURCES = ['opening', 'information_letter', 'other'];
 
     protected $table = 'tender_competitor_bids';
 

@@ -33,60 +33,60 @@ use Carbon\CarbonImmutable;
  */
 final class DrivingTimeRules {
     /** Art. 6 Abs. 1 S. 1: tägliche Lenkzeit höchstens 9 h. */
-    public const DAILY_DRIVING_MINUTES = 540;
+    public const int DAILY_DRIVING_MINUTES = 540;
 
     /** Art. 6 Abs. 1 S. 2: höchstens zweimal pro Woche Verlängerung auf 10 h. */
-    public const DAILY_DRIVING_EXTENDED_MINUTES = 600;
+    public const int DAILY_DRIVING_EXTENDED_MINUTES = 600;
 
     /** Art. 6 Abs. 1 S. 2: Anzahl zulässiger 10-h-Tage je Woche. */
-    public const DAILY_DRIVING_EXTENSIONS_PER_WEEK = 2;
+    public const int DAILY_DRIVING_EXTENSIONS_PER_WEEK = 2;
 
     /** Art. 6 Abs. 2: wöchentliche Lenkzeit höchstens 56 h. */
-    public const WEEKLY_DRIVING_MINUTES = 3360;
+    public const int WEEKLY_DRIVING_MINUTES = 3360;
 
     /** Art. 6 Abs. 3: Lenkzeit in zwei aufeinanderfolgenden Wochen höchstens 90 h. */
-    public const FORTNIGHT_DRIVING_MINUTES = 5400;
+    public const int FORTNIGHT_DRIVING_MINUTES = 5400;
 
     /** Art. 7 S. 1: nach 4,5 h Lenkzeit ist eine Fahrtunterbrechung fällig. */
-    public const BREAK_AFTER_DRIVING_MINUTES = 270;
+    public const int BREAK_AFTER_DRIVING_MINUTES = 270;
 
     /** Art. 7 S. 1: Fahrtunterbrechung mindestens 45 min. */
-    public const BREAK_MINUTES = 45;
+    public const int BREAK_MINUTES = 45;
 
     /** Art. 7 S. 2: Aufteilung in erste Unterbrechung ≥ 15 min … */
-    public const BREAK_SPLIT_FIRST_MINUTES = 15;
+    public const int BREAK_SPLIT_FIRST_MINUTES = 15;
 
     /** Art. 7 S. 2: … gefolgt von einer zweiten Unterbrechung ≥ 30 min. */
-    public const BREAK_SPLIT_SECOND_MINUTES = 30;
+    public const int BREAK_SPLIT_SECOND_MINUTES = 30;
 
     /** Art. 4 lit. g / Art. 8 Abs. 2: regelmäßige tägliche Ruhezeit 11 h. */
-    public const DAILY_REST_MINUTES = 660;
+    public const int DAILY_REST_MINUTES = 660;
 
     /** Art. 4 lit. g: reduzierte tägliche Ruhezeit mindestens 9 h. */
-    public const DAILY_REST_REDUCED_MINUTES = 540;
+    public const int DAILY_REST_REDUCED_MINUTES = 540;
 
     /** Art. 8 Abs. 4: höchstens drei reduzierte tägliche Ruhezeiten zwischen zwei wöchentlichen Ruhezeiten. */
-    public const DAILY_REST_REDUCTIONS_PER_WEEK = 3;
+    public const int DAILY_REST_REDUCTIONS_PER_WEEK = 3;
 
     /** Art. 8 Abs. 2: tägliche Ruhezeit innerhalb von 24 h nach Ende der vorhergehenden Ruhezeit. */
-    public const DAILY_WINDOW_MINUTES = 1440;
+    public const int DAILY_WINDOW_MINUTES = 1440;
 
     /** Art. 4 lit. h / Art. 8 Abs. 6: regelmäßige wöchentliche Ruhezeit 45 h. */
-    public const WEEKLY_REST_MINUTES = 2700;
+    public const int WEEKLY_REST_MINUTES = 2700;
 
     /** Mehrfahrerbetrieb: tägliche Ruhezeit von 9 h binnen 30 h (Art. 8 Abs. 5). */
-    public const MULTI_MANNING_DAILY_REST_MINUTES = 540;
+    public const int MULTI_MANNING_DAILY_REST_MINUTES = 540;
 
-    public const MULTI_MANNING_WINDOW_MINUTES = 1800;
+    public const int MULTI_MANNING_WINDOW_MINUTES = 1800;
 
     /** Art. 4 lit. h: reduzierte wöchentliche Ruhezeit mindestens 24 h (Ausgleich bis Ende der dritten Folgewoche, Art. 8 Abs. 6). */
-    public const WEEKLY_REST_REDUCED_MINUTES = 1440;
+    public const int WEEKLY_REST_REDUCED_MINUTES = 1440;
 
-    public const REST_REGULAR = 'regular';
+    public const string REST_REGULAR = 'regular';
 
-    public const REST_REDUCED = 'reduced';
+    public const string REST_REDUCED = 'reduced';
 
-    public const REST_INSUFFICIENT = 'insufficient';
+    public const string REST_INSUFFICIENT = 'insufficient';
 
     /** Zulässige Tageslenkzeit, solange die Verlängerungen der Woche nicht verbraucht sind. */
     public static function dailyLimitMinutes(int $extensionsUsedInWeek): int {

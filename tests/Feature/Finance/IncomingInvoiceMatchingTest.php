@@ -34,9 +34,9 @@ final class IncomingInvoiceMatchingTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const SELLER_VAT = 'DE123456789';
+    private const string SELLER_VAT = 'DE123456789';
 
-    private const SELLER_IBAN = 'DE89370400440532013000';
+    private const string SELLER_IBAN = 'DE89370400440532013000';
 
     private User $admin;
 

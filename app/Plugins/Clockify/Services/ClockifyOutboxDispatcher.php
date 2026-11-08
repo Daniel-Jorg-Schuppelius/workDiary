@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Log;
  * stündlichen `clockify:push` — der bleibt als Backfill bestehen.
  */
 class ClockifyOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCreatedEntries {
-    public const OP_ENTRY_CREATE = 'clockify.entry.create';
+    public const string OP_ENTRY_CREATE = 'clockify.entry.create';
 
     public function pluginId(): string {
         return ClockifyPlugin::ID;

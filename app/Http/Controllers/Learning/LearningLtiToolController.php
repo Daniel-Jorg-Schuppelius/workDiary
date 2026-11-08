@@ -23,7 +23,7 @@ use Illuminate\Http\{RedirectResponse, Request, Response};
 final class LearningLtiToolController extends Controller {
     use RendersLtiAutoPost;
 
-    private const DEEP_LINKING_SESSION_KEY = 'learning.lti.tool.deep_linking';
+    private const string DEEP_LINKING_SESSION_KEY = 'learning.lti.tool.deep_linking';
 
     public function __construct(private readonly LearningLtiToolService $tool) {}
 

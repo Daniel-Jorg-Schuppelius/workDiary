@@ -32,7 +32,7 @@ class ClaimCaseLink extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const ROLES = ['affected', 'evidence', 'follow_up', 'financial', 'recourse'];
+    public const array ROLES = ['affected', 'evidence', 'follow_up', 'financial', 'recourse'];
 
     protected $fillable = [
         'organization_id', 'claim_case_id', 'linkable_type', 'linkable_id',

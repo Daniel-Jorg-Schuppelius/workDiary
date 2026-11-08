@@ -25,11 +25,11 @@ use CommonToolkit\Helper\Data\StringHelper;
  * ignoriert sonst Wörter unter drei Zeichen („AD") und seine Stoppwörter („it").
  */
 final class SearchTextNormalizer {
-    public const TOKEN_PREFIX = 'w';
+    public const string TOKEN_PREFIX = 'w';
 
-    public const MAX_TOKEN_LENGTH = 40;
+    public const int MAX_TOKEN_LENGTH = 40;
 
-    private const SEPARATORS = '._\-@\/:+#';
+    private const string SEPARATORS = '._\-@\/:+#';
 
     /**
      * Wortgruppen des Textes, je Gruppe die Teilwörter in Reihenfolge.

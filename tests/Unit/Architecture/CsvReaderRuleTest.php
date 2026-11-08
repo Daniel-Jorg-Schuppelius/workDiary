@@ -25,7 +25,7 @@ class CsvReaderRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad → Begründung / Nachzieh-Welle */
-    private const ALLOW_LIST = [];
+    private const array ALLOW_LIST = [];
 
     public function test_csv_is_read_through_the_toolkit(): void {
         $violations = [];

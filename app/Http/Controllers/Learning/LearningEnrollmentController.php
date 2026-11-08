@@ -40,7 +40,7 @@ use Illuminate\View\View;
  * fremden Kurses ist 404.
  */
 class LearningEnrollmentController extends Controller {
-    private const EXTERNALS_LIMIT = 500;
+    private const int EXTERNALS_LIMIT = 500;
 
     public function __construct(
         private readonly LearningEnrollmentService $enrollments,

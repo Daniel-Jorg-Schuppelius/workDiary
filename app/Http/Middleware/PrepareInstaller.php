@@ -39,7 +39,7 @@ use Throwable;
  */
 class PrepareInstaller {
     /** Secure-Cookie, das layouts/install auf einer https-Seite setzt. */
-    public const TLS_COOKIE = 'wd_install_tls';
+    public const string TLS_COOKIE = 'wd_install_tls';
 
     public function __construct(private readonly InstallationManager $installer) {}
 

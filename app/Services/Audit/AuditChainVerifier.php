@@ -26,15 +26,15 @@ use Illuminate\Support\Facades\DB;
  * Durchlauf führt deshalb einen Erwartungswert JE KETTE mit.
  */
 final class AuditChainVerifier {
-    public const REASON_PREV_HASH = 'prev_hash';
+    public const string REASON_PREV_HASH = 'prev_hash';
 
-    public const REASON_ROW_HASH = 'row_hash';
+    public const string REASON_ROW_HASH = 'row_hash';
 
     /** Kettenkopf passt nicht zur letzten Zeile — Zeilen am Ende entfernt. */
-    public const REASON_HEAD_HASH = 'head_hash';
+    public const string REASON_HEAD_HASH = 'head_hash';
 
     /** Zeilenzahl passt nicht zur festgehaltenen Kettenhöhe. */
-    public const REASON_HEIGHT = 'height';
+    public const string REASON_HEIGHT = 'height';
 
     /** @return array<string, class-string<HashChainable>> Tabelle → Modell */
     public function chains(): array {

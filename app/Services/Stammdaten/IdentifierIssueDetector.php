@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class IdentifierIssueDetector {
     /** Feld => Art des Identifikators. */
-    private const FIELDS = [
+    private const array FIELDS = [
         'vat_id' => 'vat',
         'tax_number' => 'tax_number',
         'tax_identification_number' => 'tax_id',

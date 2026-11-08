@@ -24,7 +24,7 @@ class DialogFragmentPageTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const NAVIGATION = ['Sec-Fetch-Dest' => 'document'];
+    private const array NAVIGATION = ['Sec-Fetch-Dest' => 'document'];
 
     protected function setUp(): void {
         parent::setUp();

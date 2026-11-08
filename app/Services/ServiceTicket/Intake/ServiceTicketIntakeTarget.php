@@ -35,9 +35,9 @@ use Illuminate\Support\Facades\Gate;
  * mit; die Kundensicht folgt dem Ticketstatus, nicht „erfüllt" des Requests.
  */
 class ServiceTicketIntakeTarget implements IntakeHandoverTarget {
-    private const HELPDESK = 'module.helpdesk';
+    private const string HELPDESK = 'module.helpdesk';
 
-    private const SERVICE_DESK = 'module.service_desk';
+    private const string SERVICE_DESK = 'module.service_desk';
 
     public function __construct(
         private readonly FeatureFlagResolver $features,

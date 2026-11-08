@@ -24,7 +24,7 @@ class RemoteSupportSplashtopTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const EU = 'https://webapi.splashtop.eu';
+    private const string EU = 'https://webapi.splashtop.eu';
 
     protected function setUp(): void {
         parent::setUp();

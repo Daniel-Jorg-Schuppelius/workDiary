@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\DB;
  * die Gutmenge optional sofort als Fertigerzeugnis ein.
  */
 class ManufacturingReportService {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     public function __construct(private readonly ManufacturingInventoryService $inventory) {}
 

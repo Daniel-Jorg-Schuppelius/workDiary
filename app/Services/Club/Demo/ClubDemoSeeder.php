@@ -32,17 +32,17 @@ use Illuminate\Support\Facades\DB;
  * Termine liegen relativ zum Seed-Tag, Namen und Mengen sind fest.
  */
 class ClubDemoSeeder implements DemoBlock {
-    private const TIMEZONE = 'Europe/Berlin';
+    private const string TIMEZONE = 'Europe/Berlin';
 
     /** Startpaket → [ISO-Wochentag, Startstunde Wanduhr]; Gruppen einer Sportart folgen im 90-Minuten-Takt. */
-    private const SCHEDULE = [
+    private const array SCHEDULE = [
         'kampfsport' => [1, 17], 'handball' => [1, 19], 'tischtennis' => [2, 18], 'basketball' => [2, 18],
         'hockey' => [3, 17], 'volleyball' => [3, 19], 'reiten' => [4, 15], 'tennis' => [4, 17],
         'fussball' => [5, 17], 'leichtathletik' => [5, 16], 'schiesssport' => [6, 10],
     ];
 
     /** Startpaket → Ressourcen, die die Trainings belegen (Reihenfolge = Gruppenreihenfolge, wird zyklisch genutzt). */
-    private const TRAINING_RESOURCES = [
+    private const array TRAINING_RESOURCES = [
         'kampfsport' => ['Dojo'], 'tischtennis' => ['Tischtennishalle'], 'hockey' => ['Kunstrasenplatz Hockey'], 'reiten' => ['Reithalle'],
         'fussball' => ['Rasenplatz 1', 'Kunstrasenplatz'], 'handball' => ['Sporthalle'], 'basketball' => [], 'volleyball' => ['Beachfeld'],
         'tennis' => ['Tennisplatz 1', 'Tennisplatz 2'], 'leichtathletik' => ['Laufbahn'], 'schiesssport' => ['Luftgewehrstand', 'Bogenhalle'],
@@ -52,7 +52,7 @@ class ClubDemoSeeder implements DemoBlock {
      * Fiktive Personen: Vorname, Nachname, Alter, Gruppen, optional E-Mail.
      * Familie Brandt teilt ein Familienkonto; Murat Yilmaz ist in zwei Abteilungen.
      */
-    private const PEOPLE = [
+    private const array PEOPLE = [
         ['Thomas', 'Brandt', 44, ['Fußball Erste Herren'], 'thomas.brandt@verein.demo.test'],
         ['Sabine', 'Brandt', 42, ['Volleyball Damen'], 'sabine.brandt@verein.demo.test'],
         ['Lena', 'Brandt', 9, ['Judo Kinder (6–9)', 'Fußball E-Jugend']],
@@ -123,7 +123,7 @@ class ClubDemoSeeder implements DemoBlock {
     ];
 
     /** Mannschaft → [Gegner der drei Spieltage, Wettbewerb, Spielort] */
-    private const MATCHES = [
+    private const array MATCHES = [
         'Fußball E-Jugend' => [['SG Nachbarort', 'JSG Flusstal', 'FC Beispielheim'], 'Kreisklasse E-Junioren', 'Rasenplatz 1'],
         'Fußball Erste Herren' => [['SV Musterhausen', 'TSV Beispieldorf', 'FC Beispielheim II'], 'Kreisliga A', 'Rasenplatz 1'],
         'TT Herren I' => [['TTC Beispielstadt', 'SV Musterhausen', 'TTF Flusstal'], 'Bezirksklasse', 'Tischtennishalle'],

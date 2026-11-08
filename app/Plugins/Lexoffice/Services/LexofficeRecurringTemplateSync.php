@@ -40,10 +40,10 @@ use Throwable;
  * Quelle: https://developers.lexware.io/docs/#recurring-templates-endpoint
  */
 final class LexofficeRecurringTemplateSync {
-    public const PAGE_SIZE = 250;
+    public const int PAGE_SIZE = 250;
 
     /** Mehr Seiten liest kein Lauf — die Liste wäre dann unvollständig, nichts wird beendet. */
-    private const MAX_PAGES = 20;
+    private const int MAX_PAGES = 20;
 
     private ?Client $client = null;
 

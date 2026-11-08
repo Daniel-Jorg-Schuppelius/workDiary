@@ -30,7 +30,7 @@ class SealCommand extends Command {
      *
      * @var list<string>
      */
-    private const SEALED_FILES = [
+    private const array SEALED_FILES = [
         'app/Services/Licensing/LicenseService.php',
         'app/Services/Licensing/LicenseSeal.php',
         'app/Services/Licensing/LicensePayload.php',

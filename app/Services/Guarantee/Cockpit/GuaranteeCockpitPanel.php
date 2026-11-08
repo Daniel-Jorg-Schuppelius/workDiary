@@ -26,9 +26,9 @@ use Illuminate\Database\Eloquent\Model;
 
 /** Laufende Bürgschaften (Feature 114) am Kunden, Lieferanten oder Projekt — sichtbar mit Abrechnungsrecht wie das Register. */
 final class GuaranteeCockpitPanel implements CockpitPanel {
-    private const LIMIT = 10;
+    private const int LIMIT = 10;
 
-    private const COLUMN = [Customer::class => 'customer_id', Supplier::class => 'supplier_id', Project::class => 'project_id'];
+    private const array COLUMN = [Customer::class => 'customer_id', Supplier::class => 'supplier_id', Project::class => 'project_id'];
 
     public function __construct(private readonly FeatureFlagResolver $features) {}
 

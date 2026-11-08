@@ -33,7 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class VikunjaImportService extends AbstractTaskImportService {
     /** Vikunja speichert „kein Fälligkeitsdatum“ als Nullzeitpunkt. */
-    private const NO_DATE = '0001-01-01';
+    private const string NO_DATE = '0001-01-01';
 
     /** @var array<int, string> Basis-URL je Organisation, einmal je Dienstinstanz gelesen */
     private array $baseUrls = [];

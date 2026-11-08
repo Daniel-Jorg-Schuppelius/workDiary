@@ -33,12 +33,12 @@ use RuntimeException;
 class LotService {
     use AssertsStatusTransition;
 
-    public const BLOCK_KEY_PREFIX = 'lot-block:';
+    public const string BLOCK_KEY_PREFIX = 'lot-block:';
 
-    public const RELEASE_KEY_PREFIX = 'lot-release:';
+    public const string RELEASE_KEY_PREFIX = 'lot-release:';
 
     /** Korrekturpaarung des Reparaturbefehls; {@see ExternalStockMirror} spiegelt sie nicht. */
-    public const REPAIR_KEY_PREFIX = 'lot-repair:';
+    public const string REPAIR_KEY_PREFIX = 'lot-repair:';
 
     public function __construct(
         private readonly FefoValuationService $fefo,

@@ -41,13 +41,13 @@ class ContentReference extends Model {
     use HasSqid;
 
     /** Wissensartikel „hat hier geholfen“ bzw. Ideenknoten auf bestehendes Ziel. */
-    public const KIND_LINKED = 'linked';
+    public const string KIND_LINKED = 'linked';
 
     /** Ideenknoten wurde in das Ziel überführt. */
-    public const KIND_CONVERTED = 'converted';
+    public const string KIND_CONVERTED = 'converted';
 
     /** Von Hand gesetzter Verweis zwischen Wissensinhalten. */
-    public const KIND_MENTIONED = 'mentioned';
+    public const string KIND_MENTIONED = 'mentioned';
 
     protected $table = 'content_references';
 

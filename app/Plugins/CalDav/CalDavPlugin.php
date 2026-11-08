@@ -38,9 +38,9 @@ use Throwable;
  * Termine ist bewusst zweite Ausbaustufe.
  */
 class CalDavPlugin extends AbstractPlugin implements CalendarPublisher {
-    public const ID = 'caldav';
+    public const string ID = 'caldav';
 
-    public const SERVICE_PROVIDER = CalDavServiceProvider::class;
+    public const string SERVICE_PROVIDER = CalDavServiceProvider::class;
 
     public function name(): string {
         return 'CalDAV';

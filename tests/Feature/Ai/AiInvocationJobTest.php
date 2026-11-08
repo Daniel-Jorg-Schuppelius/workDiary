@@ -31,7 +31,7 @@ class AiInvocationJobTest extends TestCase {
     use RegistersAiCapabilities;
     use WithOrganization;
 
-    private const CAPABILITY = 'test.formulate';
+    private const string CAPABILITY = 'test.formulate';
 
     protected function setUp(): void {
         parent::setUp();

@@ -22,7 +22,7 @@ use Illuminate\View\View;
 class ActivityCategoryController extends Controller {
     use ParsesIndexQuery;
 
-    private const ALLOWED_SORTS = ['sort_order', 'key', 'label', 'activity_type', 'counts_as_work', 'billable_default', 'active'];
+    private const array ALLOWED_SORTS = ['sort_order', 'key', 'label', 'activity_type', 'counts_as_work', 'billable_default', 'active'];
 
     public function index(\Illuminate\Http\Request $request): View {
         Gate::authorize('viewAny', ActivityCategory::class);

@@ -28,11 +28,11 @@ use Illuminate\Support\Str;
  * {@see LearningCourseService}.
  */
 class LearningOutlineParser {
-    public const MAX_SECTIONS = 20;
+    public const int MAX_SECTIONS = 20;
 
-    public const MAX_UNITS = 100;
+    public const int MAX_UNITS = 100;
 
-    private const TITLE_LIMIT = 180;
+    private const int TITLE_LIMIT = 180;
 
     /**
      * @return list<array{title: string, units: list<string>}>

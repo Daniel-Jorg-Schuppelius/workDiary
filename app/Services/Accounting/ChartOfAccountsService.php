@@ -30,7 +30,7 @@ use Illuminate\Validation\ValidationException;
  */
 class ChartOfAccountsService {
     /** Erwartete CSV-Spalten (Kopfzeile, unabhängig von der Reihenfolge). */
-    public const COLUMNS = ['number', 'name', 'type', 'normal_balance', 'is_open_item', 'datev_account'];
+    public const array COLUMNS = ['number', 'name', 'type', 'normal_balance', 'is_open_item', 'datev_account'];
 
     /** @param array<string, mixed> $data */
     public function create(Organization $organization, array $data): AccountingAccount {

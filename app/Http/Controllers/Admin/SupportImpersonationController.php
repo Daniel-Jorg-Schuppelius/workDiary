@@ -31,7 +31,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
 class SupportImpersonationController extends Controller {
     use ResolvesCurrentOrganization;
 
-    public const SESSION_KEY = 'support_impersonation';
+    public const string SESSION_KEY = 'support_impersonation';
 
     public function store(Request $request, User $user): RedirectResponse {
         Gate::authorize(Permission::UserImpersonate->value);

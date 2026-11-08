@@ -53,16 +53,16 @@ use RuntimeException;
  */
 final class GaebPackageIntakeService {
     /** Verzeichnis der abgelegten Paketdateien in der privaten Ablage. */
-    private const STORAGE_PREFIX = 'gaeb-packages';
+    private const string STORAGE_PREFIX = 'gaeb-packages';
 
     /** Was ein Paket an Einzeldateien enthalten darf, bevor abgebrochen wird. */
-    private const MAX_ENTRIES = 500;
+    private const int MAX_ENTRIES = 500;
 
     /** Obergrenze je Eintrag (entpackt) — GAEB-XML bleibt weit darunter. */
-    private const MAX_ENTRY_BYTES = 64 * 1024 * 1024;
+    private const int MAX_ENTRY_BYTES = 64 * 1024 * 1024;
 
     /** Obergrenze der Summe aller entpackten Einträge. */
-    private const MAX_UNCOMPRESSED_BYTES = 256 * 1024 * 1024;
+    private const int MAX_UNCOMPRESSED_BYTES = 256 * 1024 * 1024;
 
     public function __construct(
         private readonly DocumentService $documents,

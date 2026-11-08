@@ -42,7 +42,7 @@ class LexofficeVoucherFileService {
      *
      * @var array<string, class-string<DocumentEndpointAbstract>>
      */
-    private const SALES_DOCUMENT_ENDPOINTS = [
+    private const array SALES_DOCUMENT_ENDPOINTS = [
         'salesinvoice' => InvoicesEndpoint::class,
         'invoice' => InvoicesEndpoint::class,
         'downpaymentinvoice' => InvoicesEndpoint::class,
@@ -53,14 +53,14 @@ class LexofficeVoucherFileService {
         'deliverynote' => DeliveryNotesEndpoint::class,
     ];
 
-    private const DOWNLOAD_ACCEPT = 'application/pdf, image/png, image/jpeg, image/gif, image/tiff, application/xml, */*';
+    private const string DOWNLOAD_ACCEPT = 'application/pdf, image/png, image/jpeg, image/gif, image/tiff, application/xml, */*';
 
     /**
      * Belegtypen, die inline angezeigt werden dürfen. Alles andere wird zum
      * Download — auch `image/svg+xml`: SVG ist ein Dokument mit Skriptfähigkeit,
      * kein Bild im harmlosen Sinn.
      */
-    public const INLINE_CONTENT_TYPES = [
+    public const array INLINE_CONTENT_TYPES = [
         'application/pdf',
         'image/jpeg',
         'image/png',
@@ -69,7 +69,7 @@ class LexofficeVoucherFileService {
         'image/webp',
     ];
 
-    public const FALLBACK_CONTENT_TYPE = 'application/octet-stream';
+    public const string FALLBACK_CONTENT_TYPE = 'application/octet-stream';
 
     private ?Client $client = null;
 

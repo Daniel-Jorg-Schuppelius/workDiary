@@ -58,12 +58,12 @@ class LexofficeTarget implements FacturationTarget {
     use LoadsBillingSources;
     use ReconcilesByMarker;
 
-    public const EXT_TYPE_INVOICE = 'invoice';
+    public const string EXT_TYPE_INVOICE = 'invoice';
 
     /** Kurzform des Positions-Hashes: steht sichtbar auf dem Entwurf. */
-    public const MARKER_PREFIX = 'WD-';
+    public const string MARKER_PREFIX = 'WD-';
 
-    private const MARKER_HASH_LENGTH = 16;
+    private const int MARKER_HASH_LENGTH = 16;
 
     public function __construct(
         private readonly BillingPositionBuilder $positions,

@@ -33,7 +33,7 @@ class BranchProfileProcedureTemplateTest extends TestCase {
      *
      * @var array<string, int>
      */
-    private const PLACEHOLDER_BUDGET = [
+    private const array PLACEHOLDER_BUDGET = [
         'anlagenwartung' => 0,
         'bau-ausbau' => 0,
         'dachdecker' => 0,

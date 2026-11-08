@@ -31,7 +31,7 @@ final class SlaBusinessHoursTest extends TestCase {
     use WithOrganization;
 
     /** Mo–Fr 08:00–16:00 (480 Min./Tag). */
-    private const HOURS = [
+    private const array HOURS = [
         ['weekday' => 1, 'from' => '08:00', 'to' => '16:00'],
         ['weekday' => 2, 'from' => '08:00', 'to' => '16:00'],
         ['weekday' => 3, 'from' => '08:00', 'to' => '16:00'],

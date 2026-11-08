@@ -37,7 +37,7 @@ class ApplicationContractReview extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const SEVERITIES = ['info', 'important', 'blocker'];
+    public const array SEVERITIES = ['info', 'important', 'blocker'];
 
     protected $fillable = [
         'organization_id', 'negotiation_id', 'label', 'severity', 'status',

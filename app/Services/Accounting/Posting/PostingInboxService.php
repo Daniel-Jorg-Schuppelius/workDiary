@@ -39,7 +39,7 @@ use Illuminate\Validation\ValidationException;
  */
 class PostingInboxService {
     /** Org-Einstellung: Vorbereiter darf nicht selbst festschreiben. */
-    public const FOUR_EYES_KEY = 'finance.accounting_four_eyes';
+    public const string FOUR_EYES_KEY = 'finance.accounting_four_eyes';
 
     public function __construct(
         private readonly PostingSourceRegistry $registry,

@@ -32,7 +32,7 @@ use Throwable;
  */
 class DsarPortalIntakeService {
     /** Gueltigkeitsdauer des Adress-Bestaetigungslinks. */
-    public const CONFIRM_TTL_DAYS = 14;
+    public const int CONFIRM_TTL_DAYS = 14;
 
     public function __construct(
         private readonly DataSubjectRequestService $requests,

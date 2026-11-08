@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\{Builder, Model};
 class SupplierMatchProfile extends AbstractMatchProfile {
     use DisplaysPartyMatch;
 
-    public const FUZZY_THRESHOLD = 0.86;
+    public const float FUZZY_THRESHOLD = 0.86;
 
     public function targetType(): string {
         return Supplier::class;

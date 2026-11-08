@@ -19,7 +19,7 @@ namespace App\Services\Sustainability;
  */
 final class SustainabilityClaimChecker {
     /** Muster → Grund (Übersetzungsschlüssel unter sustainability.claim.reason). */
-    private const RULES = [
+    private const array RULES = [
         '/\b(klima|co2|co₂|carbon|climate|kohlenstoff)[\s-]*(neutral|positiv|positive|negativ|negative|kompensiert|compensated|offset)\w*/iu' => 'offset_neutrality',
         '/\bnet[\s-]*zero\b|\bnetto[\s-]*null\b/iu' => 'offset_neutrality',
         '/\b(umweltfreundlich|klimafreundlich|nachhaltig|grün|eco[\s-]*friendly|environmentally friendly|sustainable|green)\b/iu' => 'generic',

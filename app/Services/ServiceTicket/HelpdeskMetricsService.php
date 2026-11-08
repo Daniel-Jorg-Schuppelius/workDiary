@@ -37,7 +37,7 @@ use Illuminate\Support\Facades\DB;
  * Wissensartikel" (Feature 011): neue Incidents nach Artikel-Publikation.
  */
 class HelpdeskMetricsService {
-    public const METRIC_VERSION = 3;
+    public const int METRIC_VERSION = 3;
 
     /**
      * Altersbänder in Tagen: Label → [einschließende Untergrenze,
@@ -46,7 +46,7 @@ class HelpdeskMetricsService {
      *
      * @var array<string, array{0: int, 1: int|null}>
      */
-    public const AGING_BANDS = [
+    public const array AGING_BANDS = [
         '0-1' => [0, 1],
         '1-3' => [1, 3],
         '3-7' => [3, 7],

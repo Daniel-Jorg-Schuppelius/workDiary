@@ -30,7 +30,7 @@ use Tests\TestCase;
 class BlindIndexTest extends TestCase {
     use RefreshDatabase;
 
-    private const IBAN = 'DE89370400440532013000';
+    private const string IBAN = 'DE89370400440532013000';
 
     private function account(Organization $org, string $iban): BankAccount {
         $customer = Customer::factory()->create(['organization_id' => $org->id]);

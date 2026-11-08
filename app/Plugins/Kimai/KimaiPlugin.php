@@ -31,10 +31,10 @@ use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
  * Plugin-Id ist "kimai". Pro Organisation konfigurierbar über plugin_settings.
  */
 class KimaiPlugin extends AbstractPlugin implements TimeImporter {
-    public const ID = 'kimai';
+    public const string ID = 'kimai';
 
     /** Vom {@see \App\Providers\PluginServiceProvider} zur Provider-Registrierung ausgewertet. */
-    public const SERVICE_PROVIDER = KimaiServiceProvider::class;
+    public const string SERVICE_PROVIDER = KimaiServiceProvider::class;
 
     public function name(): string {
         return 'Kimai';

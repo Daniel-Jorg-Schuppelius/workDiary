@@ -30,11 +30,11 @@ use App\Models\Protocol\Protocol;
  * Zustellfehler wirft der {@see DocumentMirrorService} → Queue-Wiederholung.
  */
 class MirrorOutboxDispatcher implements IntegrationOutboxDispatcher {
-    public const OP_MIRROR = 'mirror_document';
+    public const string OP_MIRROR = 'mirror_document';
 
-    public const OP_MIRROR_INVOICE = 'mirror_invoice';
+    public const string OP_MIRROR_INVOICE = 'mirror_invoice';
 
-    public const OP_MIRROR_PROTOCOL = 'mirror_protocol';
+    public const string OP_MIRROR_PROTOCOL = 'mirror_protocol';
 
     public function __construct(private readonly MirrorTarget $target) {}
 

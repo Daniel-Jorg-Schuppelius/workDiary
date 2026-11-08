@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 final class PartyDeletionGuard {
     /** Belege und Vorgänge: solange eine Zeile existiert, bleibt die Partei. */
-    public const BLOCKING = [
+    public const array BLOCKING = [
         'customers' => [
             'invoices', 'quotes', 'order_confirmations', 'billing_transfers', 'sepa_mandates',
             'disposal_jobs', 'rental_cases', 'rental_requests', 'customer_billing_agreements',
@@ -40,7 +40,7 @@ final class PartyDeletionGuard {
     ];
 
     /** Zubehör der Partei ohne eigene Aufbewahrung: geht mit ihr. */
-    public const DELETED_WITH_PARTY = [
+    public const array DELETED_WITH_PARTY = [
         'customers' => [
             'ai_memory_entries', 'b2b_catalog_accesses', 'customer_circular_recipients', 'customer_geofences',
             'invoice_schedules', 'invoice_sender_rules', 'sales_discount_group_overrides', 'sites',

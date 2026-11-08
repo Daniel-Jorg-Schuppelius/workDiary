@@ -97,41 +97,41 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
 
     use HasSqid;
 
-    public const TYPE_INVOICE = 'invoice';
+    public const string TYPE_INVOICE = 'invoice';
 
-    public const TYPE_CREDIT_NOTE = 'credit_note';
+    public const string TYPE_CREDIT_NOTE = 'credit_note';
 
-    public const TYPE_CANCELLATION = 'cancellation';
+    public const string TYPE_CANCELLATION = 'cancellation';
 
-    public const TYPE_DOWN_PAYMENT = 'down_payment';
+    public const string TYPE_DOWN_PAYMENT = 'down_payment';
 
-    public const TYPE_PARTIAL = 'partial';
+    public const string TYPE_PARTIAL = 'partial';
 
-    public const TYPE_FINAL = 'final';
+    public const string TYPE_FINAL = 'final';
 
-    public const TYPE_PROFORMA = 'proforma';
+    public const string TYPE_PROFORMA = 'proforma';
 
     // Feature 098: monatliche Pauschale eines Retainer-Kunden, die an das
     // führende Buchhaltungsprogramm (Lexoffice) übergeben wird. Bewusst KEIN
     // TYPE_DOWN_PAYMENT: keine §14-Abs.-5-Anrechnung, kein lokaler Nummernkreis
     // (Lexoffice finalisiert), aus Bank-Reko/DATEV/Umsatzreport ausgeschlossen.
-    public const TYPE_RETAINER = 'retainer';
+    public const string TYPE_RETAINER = 'retainer';
 
     /** Zahlungsziel, wenn weder Beleg, Kunde noch Organisation eines nennen. */
-    public const DEFAULT_PAYMENT_TERMS_DAYS = 14;
+    public const int DEFAULT_PAYMENT_TERMS_DAYS = 14;
 
-    public const CATEGORY_SERVICE = 'service';
+    public const string CATEGORY_SERVICE = 'service';
 
-    public const CATEGORY_MATERIAL = 'material';
-
-    /** @var array<int, string> */
-    public const CATEGORIES = [self::CATEGORY_SERVICE, self::CATEGORY_MATERIAL];
+    public const string CATEGORY_MATERIAL = 'material';
 
     /** @var array<int, string> */
-    public const TYPES = [self::TYPE_INVOICE, self::TYPE_CREDIT_NOTE, self::TYPE_CANCELLATION, self::TYPE_DOWN_PAYMENT, self::TYPE_PARTIAL, self::TYPE_FINAL, self::TYPE_PROFORMA, self::TYPE_RETAINER];
+    public const array CATEGORIES = [self::CATEGORY_SERVICE, self::CATEGORY_MATERIAL];
+
+    /** @var array<int, string> */
+    public const array TYPES = [self::TYPE_INVOICE, self::TYPE_CREDIT_NOTE, self::TYPE_CANCELLATION, self::TYPE_DOWN_PAYMENT, self::TYPE_PARTIAL, self::TYPE_FINAL, self::TYPE_PROFORMA, self::TYPE_RETAINER];
 
     /** Ausgestellt und nicht storniert. */
-    public const ISSUED_STATUSES = [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid];
+    public const array ISSUED_STATUSES = [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid];
 
     /**
      * Ohne Umsatz (MVP-1114). Alle übrigen ausgestellten Belege zählen als
@@ -140,14 +140,14 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
      *
      * @var list<string>
      */
-    public const NON_REVENUE_TYPES = [self::TYPE_PROFORMA];
+    public const array NON_REVENUE_TYPES = [self::TYPE_PROFORMA];
 
     /**
      * Nach der Ausstellung fachlich unveränderlich (MVP-162) — nur diese
      * Felder dürfen sich über normale save()-Wege noch ändern.
      * (saveQuietly interner Abgleichspfade umgeht den Guard bewusst.)
      */
-    public const MUTABLE_AFTER_ISSUE = [
+    public const array MUTABLE_AFTER_ISSUE = [
         'status',
         'paid_on',
         'sent_at',

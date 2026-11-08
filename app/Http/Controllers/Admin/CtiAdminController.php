@@ -27,7 +27,7 @@ use Illuminate\View\View;
 class CtiAdminController extends Controller {
     use AuthorizesOrganizationManagement;
 
-    private const PROVIDERS = ['sipgate', 'placetel', 'starface', 'generic'];
+    private const array PROVIDERS = ['sipgate', 'placetel', 'starface', 'generic'];
 
     public function index(): View {
         $admin = $this->admin();

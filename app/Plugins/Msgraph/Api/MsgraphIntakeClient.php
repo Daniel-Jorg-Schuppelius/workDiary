@@ -64,7 +64,7 @@ class MsgraphIntakeClient implements GraphSubscriptionClient {
     }
 
     /** Obergrenze der Site-Treffer, deren Bibliotheken aufgelöst werden (je Site 1 Request). */
-    private const SITE_SEARCH_LIMIT = 5;
+    private const int SITE_SEARCH_LIMIT = 5;
 
     /**
      * Eigene Drives (OneDrive) als Container; mit `$search` zusätzlich die

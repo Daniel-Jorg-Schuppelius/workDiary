@@ -28,19 +28,19 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class FormalAddressRuleTest extends TestCase {
     use ScansSourceTree;
 
-    private const DE_PRONOUN = '(?:du|dich|dir|dein|deine|deinen|deinem|deiner|deines|euch|euer|eure|euren|eurem|eurer|eures)';
+    private const string DE_PRONOUN = '(?:du|dich|dir|dein|deine|deinen|deinem|deiner|deines|euch|euer|eure|euren|eurem|eurer|eures)';
 
-    private const DE_VERB = '(?:kannst|musst|hast|bist|willst|solltest|darfst|wirst|siehst|findest|brauchst|möchtest|weißt|bekommst|erhältst|gibst|nimmst|kriegst|änderst|klickst|wählst|legst|speicherst|trägst|arbeitest|buchst|lädst|meldest|bestätigst|erstellst|öffnest|gehst|kommst|stellst|hättest|wärst|würdest|könntest|müsstest)';
+    private const string DE_VERB = '(?:kannst|musst|hast|bist|willst|solltest|darfst|wirst|siehst|findest|brauchst|möchtest|weißt|bekommst|erhältst|gibst|nimmst|kriegst|änderst|klickst|wählst|legst|speicherst|trägst|arbeitest|buchst|lädst|meldest|bestätigst|erstellst|öffnest|gehst|kommst|stellst|hättest|wärst|würdest|könntest|müsstest)';
 
-    private const DE_IMPERATIVE = '(?:Wähle|Klicke|Gib|Lege|Leg|Prüfe|Nutze|Speichere|Trage|Füge|Öffne|Schließe|Melde|Lade|Bestätige|Ändere|Lösche|Erstelle|Setze|Aktiviere|Deaktiviere|Hinterlege|Ergänze|Beachte|Achte|Kontaktiere|Wende|Richte|Verknüpfe|Ordne|Markiere|Filtere|Exportiere|Importiere|Sende|Schicke|Scanne|Tippe|Ziehe|Gehe|Geh|Sieh|Schau|Lies|Nimm|Hilf|Vergiss|Erfasse|Bearbeite|Verwende|Wiederhole|Kopiere|Überprüfe|Vergib|Informiere|Drucke|Unterschreibe|Fülle|Entferne|Mach|Mache|Halte|Behalte|Definiere|Wechsle|Logge|Registriere|Pflege|Aktualisiere|Übernimm|Übertrage|Verschiebe|Sortiere|Gruppiere|Benenne|Erzeuge|Generiere|Rufe|Schreibe|Antworte|Beschreibe|Bewerte|Kläre|Probiere|Vergleiche|Beantworte|Reiche|Erteile|Verwirf|Fordere|Erneuere)';
+    private const string DE_IMPERATIVE = '(?:Wähle|Klicke|Gib|Lege|Leg|Prüfe|Nutze|Speichere|Trage|Füge|Öffne|Schließe|Melde|Lade|Bestätige|Ändere|Lösche|Erstelle|Setze|Aktiviere|Deaktiviere|Hinterlege|Ergänze|Beachte|Achte|Kontaktiere|Wende|Richte|Verknüpfe|Ordne|Markiere|Filtere|Exportiere|Importiere|Sende|Schicke|Scanne|Tippe|Ziehe|Gehe|Geh|Sieh|Schau|Lies|Nimm|Hilf|Vergiss|Erfasse|Bearbeite|Verwende|Wiederhole|Kopiere|Überprüfe|Vergib|Informiere|Drucke|Unterschreibe|Fülle|Entferne|Mach|Mache|Halte|Behalte|Definiere|Wechsle|Logge|Registriere|Pflege|Aktualisiere|Übernimm|Übertrage|Verschiebe|Sortiere|Gruppiere|Benenne|Erzeuge|Generiere|Rufe|Schreibe|Antworte|Beschreibe|Bewerte|Kläre|Probiere|Vergleiche|Beantworte|Reiche|Erteile|Verwirf|Fordere|Erneuere)';
 
-    private const DE_START = '(?:^|[.!?:;»„"(]\s*|\bbitte\s+|\bBitte\s+|\n\s*[-*]?\s*|\d\.\s+)';
+    private const string DE_START = '(?:^|[.!?:;»„"(]\s*|\bbitte\s+|\bBitte\s+|\n\s*[-*]?\s*|\d\.\s+)';
 
     /** Substantive, die nur mit typischem Objekt als Imperativ gelten („Weise jede ID zu"). */
-    private const DE_AMBIGUOUS = '(?:Weise|Teile|Suche|Starte|Lass|Zeige|Blende|Hole|Warte|Frage|Denk|Teste)\s+(?:den|die|das|dem|der|ein|eine|einen|einem|jede|jeden|jedes|sie|ihn|es|dich|dir|mich|uns|hier|oben|unten|zunächst|zuerst|dazu|bitte|einfach|auf|in|im)\b';
+    private const string DE_AMBIGUOUS = '(?:Weise|Teile|Suche|Starte|Lass|Zeige|Blende|Hole|Warte|Frage|Denk|Teste)\s+(?:den|die|das|dem|der|ein|eine|einen|einem|jede|jeden|jedes|sie|ihn|es|dich|dir|mich|uns|hier|oben|unten|zunächst|zuerst|dazu|bitte|einfach|auf|in|im)\b';
 
     /** @var array<string, string> */
-    private const ROMANCE_PRONOUN = [
+    private const array ROMANCE_PRONOUN = [
         // ton/ta/tes nur vor einem Wort — „Ton" allein ist der Farbton.
         'fr' => "(?<![\\w'’-])(?:tu|toi|te|tien|tienne)(?![\\w-])|(?<![\\w'’-])(?:ton|ta|tes)\\s+\\p{L}|\\b(?:as|es|peux|dois|veux|sais|vas|fais)-tu\\b|-toi\\b",
         // „ti“ nur klein — „TI“ ist die spanische Abkürzung für IT.

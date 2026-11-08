@@ -32,7 +32,7 @@ use Illuminate\Support\Facades\DB;
  * Organisation und Nutzer gescoped, damit der Job tenant-sicher läuft.
  */
 class VisitBuilder {
-    public const MAX_ACCURACY_M = 200;
+    public const int MAX_ACCURACY_M = 200;
 
     public function __construct(
         private readonly GeofenceMatcher $matcher,

@@ -31,7 +31,7 @@ use Illuminate\Validation\ValidationException;
  */
 class LearningCoursePortabilityService {
     /** Formatversion — ein Import prüft sie, statt blind zu raten. */
-    public const FORMAT_VERSION = 1;
+    public const int FORMAT_VERSION = 1;
 
     public function __construct(
         private readonly LearningCourseService $courses,

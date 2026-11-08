@@ -42,9 +42,9 @@ use RuntimeException;
 class DayCloseService {
     use GuardsApprovalWorkflow, ResolvesActorId;
 
-    public const REASON_MIN_LENGTH = 20;
+    public const int REASON_MIN_LENGTH = 20;
 
-    private const WORKFLOW_EXCEPTION = DayCloseWorkflowException::class;
+    private const string WORKFLOW_EXCEPTION = DayCloseWorkflowException::class;
 
     public function __construct(
         private readonly FlexCalculator $flex,

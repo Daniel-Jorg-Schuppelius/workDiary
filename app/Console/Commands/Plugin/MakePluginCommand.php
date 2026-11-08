@@ -66,9 +66,9 @@ use App\\Plugins\\Contracts\\SettingsField;
 use App\\Plugins\\PluginHealth;
 
 class {$studly}Plugin extends AbstractPlugin {
-    public const ID = '{$id}';
+    public const string ID = '{$id}';
 
-    public const SERVICE_PROVIDER = {$studly}ServiceProvider::class;
+    public const string SERVICE_PROVIDER = {$studly}ServiceProvider::class;
 
     public function name(): string {
         return '{$studly}';

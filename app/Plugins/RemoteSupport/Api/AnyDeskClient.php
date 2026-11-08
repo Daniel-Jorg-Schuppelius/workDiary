@@ -25,9 +25,9 @@ use Carbon\CarbonImmutable;
  * Client-ID (`to.cid`).
  */
 class AnyDeskClient implements RemoteProvider {
-    public const ID = 'anydesk';
+    public const string ID = 'anydesk';
 
-    public const DEFAULT_BASE_URL = 'https://v1.api.anydesk.com:8081';
+    public const string DEFAULT_BASE_URL = 'https://v1.api.anydesk.com:8081';
 
     private ?PluginApiClient $api = null;
 

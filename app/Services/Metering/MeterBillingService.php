@@ -39,7 +39,7 @@ use Illuminate\Support\Facades\DB;
  */
 class MeterBillingService {
     /** Sicherheitsgrenze für Nachholläufe je Vereinbarung und Aufruf. */
-    private const MAX_CATCHUP_RUNS = 24;
+    private const int MAX_CATCHUP_RUNS = 24;
 
     public function __construct(
         private readonly InvoiceGenerator $generator,

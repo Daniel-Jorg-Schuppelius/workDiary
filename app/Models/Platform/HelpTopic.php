@@ -34,7 +34,7 @@ class HelpTopic extends Model {
     use HasSqid;
 
     /** Obergrenze für `search_text` (TEXT-Spalte). */
-    private const SEARCH_TEXT_LIMIT = 60000;
+    private const int SEARCH_TEXT_LIMIT = 60000;
 
     protected $table = 'help_topics';
 

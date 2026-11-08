@@ -26,9 +26,9 @@ use Symfony\Component\HttpFoundation\Response;
  * damit Support Logeinträge einer konkreten Meldung zuordnen kann.
  */
 class AssignRequestId {
-    public const HEADER = 'X-Request-Id';
+    public const string HEADER = 'X-Request-Id';
 
-    public const CONTAINER_KEY = 'requestId';
+    public const string CONTAINER_KEY = 'requestId';
 
     public function handle(Request $request, Closure $next): Response {
         $incoming = (string) $request->headers->get(self::HEADER, '');

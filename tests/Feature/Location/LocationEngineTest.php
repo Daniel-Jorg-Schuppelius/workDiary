@@ -32,9 +32,9 @@ class LocationEngineTest extends TestCase {
     private CustomerGeofence $geofence;
 
     // Referenz-Mittelpunkt (Berlin Mitte).
-    private const LAT = 52.5200000;
+    private const float LAT = 52.5200000;
 
-    private const LNG = 13.4050000;
+    private const float LNG = 13.4050000;
 
     protected function setUp(): void {
         parent::setUp();

@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\DB;
  * Der interne Artikelstamm wird nie berührt.
  */
 class CatalogItemUpserter {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     public function __construct(private readonly ?PriceChangeAlertService $alerts = null) {}
 

@@ -36,12 +36,12 @@ use Tests\TestCase;
 class LoginRateLimiterMatrixTest extends TestCase {
     use RefreshDatabase;
 
-    private const IP1 = '198.51.100.7';
+    private const string IP1 = '198.51.100.7';
 
-    private const IP2 = '203.0.113.99';
+    private const string IP2 = '203.0.113.99';
 
     /** Login-Name = E-Mail (LegacyUserProvider löst Neu-System-Konten per E-Mail auf). */
-    private const ACCOUNT_X = 'limit.user.x@example.test';
+    private const string ACCOUNT_X = 'limit.user.x@example.test';
 
     private User $userX;
 

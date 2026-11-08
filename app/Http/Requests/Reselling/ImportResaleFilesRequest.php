@@ -25,10 +25,10 @@ use Illuminate\Validation\Rule;
  * Feldfehler und landet als 422 im Dialog (Review 2026-09-11).
  */
 class ImportResaleFilesRequest extends BaseFormRequest {
-    private const MAX_FILE_KB = 10240;
+    private const int MAX_FILE_KB = 10240;
 
     /** Formularfeld je Import-Art. */
-    public const FIELDS = [
+    public const array FIELDS = [
         ResaleImport::KIND_PURCHASES => 'telekom',
         ResaleImport::KIND_CONTRACTS => 'qualityhosting',
         ResaleImport::KIND_PRICELIST => 'pricelist',

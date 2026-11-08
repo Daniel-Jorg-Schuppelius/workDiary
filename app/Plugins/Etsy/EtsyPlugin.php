@@ -33,12 +33,12 @@ use Carbon\CarbonImmutable;
  *   Provider-Registry (Billbee-Muster).
  */
 class EtsyPlugin extends AbstractPlugin {
-    public const ID = 'etsy';
+    public const string ID = 'etsy';
 
-    public const SERVICE_PROVIDER = EtsyServiceProvider::class;
+    public const string SERVICE_PROVIDER = EtsyServiceProvider::class;
 
     /** Refresh-Token-Alter (Tage), ab dem der Healthcheck zur Neuverbindung rät. */
-    private const REFRESH_WARN_AFTER_DAYS = 80;
+    private const int REFRESH_WARN_AFTER_DAYS = 80;
 
     public function name(): string {
         return 'Etsy';

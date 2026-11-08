@@ -47,7 +47,7 @@ class IndexListPaginationTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const FILL = 'class="wd-surface min-h-0 flex flex-col lg:overflow-clip"';
+    private const string FILL = 'class="wd-surface min-h-0 flex flex-col lg:overflow-clip"';
 
     private User $admin;
 

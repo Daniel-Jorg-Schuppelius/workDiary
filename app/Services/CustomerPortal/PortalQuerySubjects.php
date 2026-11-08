@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class PortalQuerySubjects {
     /** Formular-Schlüssel → Modellklasse (zentrale Allowlist). */
-    public const TYPES = [
+    public const array TYPES = [
         'diary' => DiaryEntry::class,
         'time_entry' => TimeEntry::class,
         'document' => Document::class,

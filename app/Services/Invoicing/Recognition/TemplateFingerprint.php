@@ -21,7 +21,7 @@ use PDFToolkit\Entities\WordBox;
  * Lieferant stabil, Nummern und Beträge nicht. Ähnlichkeit nach Jaccard.
  */
 final class TemplateFingerprint {
-    public const MIN_SIMILARITY = 0.6;
+    public const float MIN_SIMILARITY = 0.6;
 
     /**
      * @param  list<WordBox>  $boxes
@@ -46,10 +46,10 @@ final class TemplateFingerprint {
     }
 
     /** Höchstens so viele Layout-Varianten merkt sich eine Vorlage zusätzlich zum ersten Fingerabdruck. */
-    public const MAX_VARIANTS = 5;
+    public const int MAX_VARIANTS = 5;
 
     /** Ab dieser Ähnlichkeit gilt ein Beleg als dieselbe Variante — eine neue wird nicht gemerkt. */
-    public const VARIANT_THRESHOLD = 0.8;
+    public const float VARIANT_THRESHOLD = 0.8;
 
     /**
      * Ähnlichkeit eines Belegs (`$a`, nur `tokens`) zu einer Vorlage (`$b`, `tokens` und seit Phase 155

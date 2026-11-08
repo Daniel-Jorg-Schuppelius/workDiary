@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\App;
 
 class HelpTopicResolver {
     /** Spalten ohne Text — reichen für Sichtbarkeit und Modulprüfung. */
-    private const LIGHT_COLUMNS = ['id', 'topic', 'locale', 'title', 'audience', 'modules', 'version'];
+    private const array LIGHT_COLUMNS = ['id', 'topic', 'locale', 'title', 'audience', 'modules', 'version'];
 
     public function __construct(
         private readonly FeatureFlagResolver $features,

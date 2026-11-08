@@ -23,7 +23,7 @@ use Illuminate\View\View;
 class OnCallShiftController extends Controller {
     use ManagesShiftLike;
 
-    private const MANAGE_PERMISSION = Permission::OnCallShiftManage;
+    private const Permission MANAGE_PERMISSION = Permission::OnCallShiftManage;
 
     public function create(Request $request): View {
         /** @var User $auth */

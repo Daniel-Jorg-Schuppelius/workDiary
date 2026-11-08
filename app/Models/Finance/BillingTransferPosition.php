@@ -57,12 +57,12 @@ class BillingTransferPosition extends Model implements DocumentLine {
     use HasSqid;
     use IsDocumentLine;
 
-    public const KIND_TIME = 'time';
+    public const string KIND_TIME = 'time';
 
-    public const KIND_MATERIAL = 'material';
+    public const string KIND_MATERIAL = 'material';
 
     /** Auffüllung auf das Projekt-Soll (Feature 194, MVP-1470): vereinbarte, nicht gebuchte Einsatzzeit. */
-    public const KIND_TARGET = 'target';
+    public const string KIND_TARGET = 'target';
 
     protected $fillable = [
         'organization_id',

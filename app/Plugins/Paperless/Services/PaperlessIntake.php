@@ -42,10 +42,10 @@ use Throwable;
  * @extends AbstractCloudIntakeSource<PaperlessClient, array{since: ?string, fingerprint: string, seen: list<int>, queue: ?list<int>, next: ?string}>
  */
 class PaperlessIntake extends AbstractCloudIntakeSource {
-    public const EXT_TYPE_DOCUMENT = 'document';
+    public const string EXT_TYPE_DOCUMENT = 'document';
 
     /** Container-Präfix → Filter der Dokumentliste. */
-    private const FILTERS = ['tag' => 'tags__id__all', 'correspondent' => 'correspondent__id', 'type' => 'document_type__id'];
+    private const array FILTERS = ['tag' => 'tags__id__all', 'correspondent' => 'correspondent__id', 'type' => 'document_type__id'];
 
     public function __construct(private readonly PaperlessClientFactory $clients) {}
 

@@ -25,7 +25,7 @@ use RuntimeException;
  * Erfassen kündigt nur an, das Vereinnahmen bucht Bestand.
  */
 class AdviceService {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     public function __construct(private readonly GoodsReceiptService $receipts) {}
 

@@ -39,7 +39,7 @@ class InvoiceNinjaArticleCatalogTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const NINJA = 'https://ninja.example.test';
+    private const string NINJA = 'https://ninja.example.test';
 
     protected function setUp(): void {
         parent::setUp();

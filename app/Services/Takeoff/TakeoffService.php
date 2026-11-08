@@ -32,7 +32,7 @@ use RuntimeException;
 final class TakeoffService {
     use AssertsStatusTransition;
 
-    private const SCALE = 1000;
+    private const int SCALE = 1000;
 
     public function __construct(private readonly GaebTakeoffCalculator $calculator) {}
 

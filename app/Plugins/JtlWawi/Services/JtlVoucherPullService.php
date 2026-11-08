@@ -52,7 +52,7 @@ use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, VoucherMirror, Vo
  */
 class JtlVoucherPullService implements VoucherPuller {
     /** Feldkandidaten je Zielwert (erster gefundener gewinnt). */
-    private const FIELDS = [
+    private const array FIELDS = [
         'id' => ['id', 'salesInvoiceId', 'invoiceId'],
         'number' => ['invoiceNumber', 'number', 'salesInvoiceNumber'],
         'date' => ['creationDate', 'invoiceDate', 'createdDate'],

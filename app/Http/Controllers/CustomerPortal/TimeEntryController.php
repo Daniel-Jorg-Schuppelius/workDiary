@@ -40,7 +40,7 @@ class TimeEntryController extends Controller {
     use ResolvesPortalUser;
 
     /** @var list<string> Sortierschlüssel der Einzelzeilen. */
-    private const SORTS = ['date', 'minutes', 'project', 'user'];
+    private const array SORTS = ['date', 'minutes', 'project', 'user'];
 
     public function index(Request $request, PortalVisibility $visibility, PortalTimeEntries $portalTimes): View {
         $customer = $this->portalCustomer();

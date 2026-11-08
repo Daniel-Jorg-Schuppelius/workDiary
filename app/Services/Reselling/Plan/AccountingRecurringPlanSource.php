@@ -35,7 +35,7 @@ use Illuminate\Support\Collection;
  * @phpstan-type PlanPayload array{status?: string, interval?: string, starts_on?: string|null, ends_on?: string|null, next_execution_on?: string|null, last_execution_on?: string|null, finalize?: bool, last_failed?: bool, last_error?: string|null, permalink?: string|null}
  */
 final class AccountingRecurringPlanSource implements RecurringPlanSource {
-    public const KEY = 'accounting';
+    public const string KEY = 'accounting';
 
     public function key(): string {
         return self::KEY;

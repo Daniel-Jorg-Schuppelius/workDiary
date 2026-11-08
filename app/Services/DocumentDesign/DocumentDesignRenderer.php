@@ -32,7 +32,7 @@ use RuntimeException;
  * eingefrorenen Snapshot.
  */
 class DocumentDesignRenderer {
-    public const GENERATOR_VERSION = 'document-design/1.0.0';
+    public const string GENERATOR_VERSION = 'document-design/1.0.0';
 
     public function __construct(private readonly RenderProfileService $profiles) {}
 

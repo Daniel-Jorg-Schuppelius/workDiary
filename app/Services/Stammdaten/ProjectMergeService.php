@@ -50,7 +50,7 @@ class ProjectMergeService extends AbstractEntityMergeService {
      *
      * @var array<string, string>
      */
-    private const PIVOT_TABLES = [
+    private const array PIVOT_TABLES = [
         'project_team' => 'team_id',
         'project_user' => 'user_id',
     ];
@@ -61,7 +61,7 @@ class ProjectMergeService extends AbstractEntityMergeService {
      *
      * @var array<string, array{0: string, 1: string}>
      */
-    private const MORPH_TABLES = [
+    private const array MORPH_TABLES = [
         'communication_notes' => ['notable_type', 'notable_id'],
         'attachments' => ['attachable_type', 'attachable_id'],
         'pending_external_conflicts' => ['referenceable_type', 'referenceable_id'],
@@ -72,7 +72,7 @@ class ProjectMergeService extends AbstractEntityMergeService {
      *
      * @var list<string>
      */
-    private const FILLABLE_FROM_SOURCE = [
+    private const array FILLABLE_FROM_SOURCE = [
         'number', 'description', 'invoice_text', 'color', 'foreign_customer_id',
         'hourly_rate', 'internal_rate', 'time_budget', 'budget', 'budget_type',
         'billing_increment_minutes', 'billing_grouping_gap_minutes',

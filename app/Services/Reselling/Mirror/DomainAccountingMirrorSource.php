@@ -43,7 +43,7 @@ use Illuminate\Support\Facades\Lang;
  * Belegansicht als Restposition „Weitere Posten des Portals“.
  */
 final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
-    public const KEY = 'domain-accounting';
+    public const string KEY = 'domain-accounting';
 
     public function key(): string {
         return self::KEY;

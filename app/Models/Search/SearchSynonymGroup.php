@@ -34,9 +34,9 @@ class SearchSynonymGroup extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const MAX_TERMS = 20;
+    public const int MAX_TERMS = 20;
 
-    public const MAX_TERM_LENGTH = 60;
+    public const int MAX_TERM_LENGTH = 60;
 
     protected $fillable = [
         'organization_id',

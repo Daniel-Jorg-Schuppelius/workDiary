@@ -40,9 +40,9 @@ use App\Plugins\Support\{ApiHealthProbe, OAuthConnectionStatus, PluginOrgContext
 class SharepointPlugin extends AbstractPlugin implements \App\Plugins\Contracts\InboxConflictActions {
     use \App\Plugins\Support\Mirror\MirrorConflictActions;
 
-    public const ID = 'sharepoint';
+    public const string ID = 'sharepoint';
 
-    public const SERVICE_PROVIDER = SharepointServiceProvider::class;
+    public const string SERVICE_PROVIDER = SharepointServiceProvider::class;
 
     public function name(): string {
         return 'SharePoint';

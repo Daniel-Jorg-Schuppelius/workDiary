@@ -35,10 +35,10 @@ use Illuminate\Database\Eloquent\Model;
  * @extends AbstractTaskImportService<LeantimeProjectLink, LeantimeConnection>
  */
 class LeantimeImportService extends AbstractTaskImportService {
-    private const TYPE_KEY = '_status_type';
+    private const string TYPE_KEY = '_status_type';
 
     /** So speichert Leantime ein geleertes Datum neben dem Nulldatum. */
-    private const EPOCH_EMPTY = '1969-12-31 00:00:00';
+    private const string EPOCH_EMPTY = '1969-12-31 00:00:00';
 
     /** @var array<int, string> Basis-URL je Organisation, einmal je Dienstinstanz gelesen */
     private array $baseUrls = [];

@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\{DB, Schema};
  * Referenzen werden vorher genullt — sie zeigten ins Leere. Nur MySQL.
  */
 return new class extends Migration {
-    private const FKS = [
+    private const array FKS = [
         ['appointment_requests', 'lead_id', 'leads', 'appt_req_lead_fk'],
         ['appointment_requests', 'bookable_service_id', 'bookable_services', 'appt_req_service_fk'],
         ['procedure_deviations', 'open_issue_id', 'open_issues', 'procdev_open_issue_fk'],

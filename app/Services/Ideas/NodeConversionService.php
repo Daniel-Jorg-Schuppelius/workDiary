@@ -42,7 +42,7 @@ use RuntimeException;
  */
 class NodeConversionService {
     /** @var array<string, class-string<Model>> Whitelist verlinkbarer Ziele. */
-    public const LINKABLE_MAP = [
+    public const array LINKABLE_MAP = [
         'customer' => Customer::class,
         'project' => Project::class,
         'diary' => DiaryEntry::class,

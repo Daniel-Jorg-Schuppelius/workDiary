@@ -41,7 +41,7 @@ use Illuminate\Support\Carbon;
 class DocumentTranslationSuggestionService {
     use DecidesSuggestions;
 
-    public const CAPABILITY = 'documents.item_translate';
+    public const string CAPABILITY = 'documents.item_translate';
 
     public function __construct(
         private readonly AiInvocationService $invocation,

@@ -43,7 +43,7 @@ class ConformityService {
      *
      * @var list<string>
      */
-    private const REQUIRED_CERTIFICATE_FIELDS = [
+    private const array REQUIRED_CERTIFICATE_FIELDS = [
         'certified_organization',
         'scope_description',
         'certification_body',

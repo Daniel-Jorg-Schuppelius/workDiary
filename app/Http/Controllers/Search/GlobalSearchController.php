@@ -29,9 +29,9 @@ use Illuminate\Support\Facades\Auth;
  * Wegweiser der Palette (MVP-1082): Aktionen, Seiten und Hilfethemen.
  */
 class GlobalSearchController extends Controller {
-    private const PER_TYPE_LIMIT = 5;
+    private const int PER_TYPE_LIMIT = 5;
 
-    private const HELP_LIMIT = 3;
+    private const int HELP_LIMIT = 3;
 
     public function __invoke(Request $request, GlobalSearchService $search, HelpSearch $help, FunctionFinder $finder, HelpCenterCatalog $catalog): JsonResponse {
         $data = $request->validate([

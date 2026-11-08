@@ -18,7 +18,7 @@ use Illuminate\Contracts\View\View;
 class BookmarksWidget extends Widget {
     /** Dashboard-Kachel zeigt nur die ersten Lesezeichen (nach sort_order); die
      *  vollständige Liste hat die Verwaltungsseite (bookmarks.index). */
-    private const PREVIEW_LIMIT = 10;
+    private const int PREVIEW_LIMIT = 10;
 
     public function key(): string {
         return 'bookmarks';

@@ -37,7 +37,7 @@ class InvestmentActual extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const SOURCES = ['manual', 'incoming_invoice', 'purchase_order', 'asset', 'project'];
+    public const array SOURCES = ['manual', 'incoming_invoice', 'purchase_order', 'asset', 'project'];
 
     protected $fillable = [
         'organization_id', 'investment_case_id', 'source', 'reference_type',

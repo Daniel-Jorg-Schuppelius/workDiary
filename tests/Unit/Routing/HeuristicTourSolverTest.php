@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 /** MVP-1175: Zeitfenster, Arbeitsfenster, Pausen, Qualifikation und Mehrfahrer-Zuordnung im eigenen Solver. */
 class HeuristicTourSolverTest extends TestCase {
-    private const H = 3600;
+    private const int H = 3600;
 
     /** Punkte auf einer Linie, 10 Minuten je Einheit, 10 km je Einheit. */
     private function lineMatrix(array $positions): CostMatrix {

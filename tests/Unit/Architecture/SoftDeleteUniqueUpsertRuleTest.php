@@ -28,7 +28,7 @@ class SoftDeleteUniqueUpsertRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad → Begründung */
-    private const ALLOW_LIST = [];
+    private const array ALLOW_LIST = [];
 
     public function test_upserts_on_soft_deleted_unique_models_include_trashed_rows(): void {
         $tables = $this->schemaTables();

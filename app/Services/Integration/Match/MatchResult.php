@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 final class MatchResult {
     /** @var array<string, int> */
-    private const RANK = [
+    private const array RANK = [
         MatchStrategy::FUZZY => 1,
         MatchStrategy::LIKELY => 2,
         MatchStrategy::EXACT => 3,

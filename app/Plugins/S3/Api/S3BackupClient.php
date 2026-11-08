@@ -40,7 +40,7 @@ use RuntimeException;
  */
 class S3BackupClient {
     /** Ab dieser Größe geht der Upload in Teilen (S3-Mindestteil: 5 MiB). */
-    private const MULTIPART_THRESHOLD = 16 * 1024 * 1024;
+    private const int MULTIPART_THRESHOLD = 16 * 1024 * 1024;
 
     private readonly S3Client $s3;
 

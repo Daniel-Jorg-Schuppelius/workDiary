@@ -88,7 +88,7 @@ class CalDavConnection extends Model implements ManagedPluginConnection, RemoteC
     ];
 
     /** Publish-Scopes dieser Anbindung; null/leer = nur Termine (rückwärtskompatibel). */
-    public const SCOPES = ['events', 'schedule'];
+    public const array SCOPES = ['events', 'schedule'];
 
     /** Betriebsbereit: aktiv geschaltet und vollständig konfiguriert. */
     public function isActive(): bool {

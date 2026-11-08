@@ -36,12 +36,12 @@ use Illuminate\Support\Str;
 class TimeCorrectionService {
     use GuardsApprovalWorkflow;
 
-    public const REASON_MIN_LENGTH = 20;
+    public const int REASON_MIN_LENGTH = 20;
 
-    private const WORKFLOW_EXCEPTION = TimeCorrectionWorkflowException::class;
+    private const string WORKFLOW_EXCEPTION = TimeCorrectionWorkflowException::class;
 
     /** @var list<string> Erlaubte Target-Typen für Items. */
-    public const ALLOWED_TARGETS = [TimeEntry::class, Attendance::class];
+    public const array ALLOWED_TARGETS = [TimeEntry::class, Attendance::class];
 
     /**
      * Felder, die eine Korrektur je Zieltyp setzen darf (Sicherheitsaudit
@@ -50,14 +50,14 @@ class TimeCorrectionService {
      *
      * @var array<class-string, list<string>>
      */
-    private const EDITABLE_FIELDS = [
+    private const array EDITABLE_FIELDS = [
         TimeEntry::class => ['date', 'started_at', 'ended_at', 'break_minutes', 'minutes', 'description', 'project_id', 'task_id', 'activity_category_id', 'kind', 'activity_type', 'billable'],
         // `source` wird beim Anwenden ohnehin auf Manual gesetzt.
         Attendance::class => ['date', 'started_at', 'ended_at', 'break_minutes_manual', 'duration_minutes', 'status', 'note', 'source'],
     ];
 
     /** Verweise, die in der Organisation des Antrags liegen müssen. */
-    private const ORGANIZATION_REFERENCES = ['project_id' => 'projects', 'task_id' => 'tasks', 'activity_category_id' => 'activity_categories'];
+    private const array ORGANIZATION_REFERENCES = ['project_id' => 'projects', 'task_id' => 'tasks', 'activity_category_id' => 'activity_categories'];
 
     public function __construct(
         private readonly MonthClosureService $monthClosures,

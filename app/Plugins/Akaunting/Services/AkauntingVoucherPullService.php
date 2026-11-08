@@ -37,7 +37,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class AkauntingVoucherPullService implements VoucherPuller {
     /** Belegart → Richtung und Pfad in der Akaunting-Oberfläche. */
-    private const TYPES = [
+    private const array TYPES = [
         'invoice' => ['direction' => DocumentDirection::Outgoing, 'path' => 'sales/invoices'],
         'bill' => ['direction' => DocumentDirection::Incoming, 'path' => 'purchases/bills'],
     ];

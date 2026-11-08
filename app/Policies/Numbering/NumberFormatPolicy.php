@@ -18,7 +18,7 @@ use App\Policies\PermissionPolicy;
 class NumberFormatPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::NumberFormatManage,
         'view' => P::NumberFormatManage,
         'manage' => P::NumberFormatManage,

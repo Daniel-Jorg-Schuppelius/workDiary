@@ -65,23 +65,23 @@ use Throwable;
  * IDEA-Referenzverifikation bleibt extern (Bauturbo Welle C).
  */
 class GdpduExportService {
-    private const CSV_DELIMITER = ';';
+    private const string CSV_DELIMITER = ';';
 
-    private const CSV_ENCLOSURE = '"';
+    private const string CSV_ENCLOSURE = '"';
 
     /**
      * Zeichensatz der CSV-Datendateien. CP1252 („ANSI") ist prüferseitig der
      * sicherste Weg (€ auf 0x80), Default. ISO-8859-15 (€ auf 0xA4) als Variante,
      * UTF-8 für Werkzeuge, die es sicher lesen.
      */
-    public const ENCODING_CP1252 = 'cp1252';
+    public const string ENCODING_CP1252 = 'cp1252';
 
-    public const ENCODING_ISO_8859_15 = 'iso-8859-15';
+    public const string ENCODING_ISO_8859_15 = 'iso-8859-15';
 
-    public const ENCODING_UTF8 = 'utf-8';
+    public const string ENCODING_UTF8 = 'utf-8';
 
     /** Auswahl → [mb-Zielcodierung, DTD-`<Encoding>`-Label]. */
-    private const ENCODINGS = [
+    private const array ENCODINGS = [
         self::ENCODING_CP1252 => ['Windows-1252', 'ANSI'],
         self::ENCODING_ISO_8859_15 => ['ISO-8859-15', 'ISO-8859-15'],
         self::ENCODING_UTF8 => ['UTF-8', 'UTF8'],

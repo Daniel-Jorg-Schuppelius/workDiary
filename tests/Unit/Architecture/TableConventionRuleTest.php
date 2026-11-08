@@ -37,10 +37,10 @@ use SplFileInfo;
  *      FLEX_TAIL_EXEMPT ist seit MVP-724 leer und bleibt es.
  */
 class TableConventionRuleTest extends TestCase {
-    private const MARKER = 'raw-table-ok';
+    private const string MARKER = 'raw-table-ok';
 
     /** Pfade (Regex auf den views-relativen Pfad), die R4 nicht unterliegen. */
-    private const RAW_TABLE_PATH_EXEMPT = [
+    private const array RAW_TABLE_PATH_EXEMPT = [
         '#^components/#',                    // x-table selbst rendert <table>
         '#^vendor/#',
         '#^legacy/#',                        // bewusst konservierte Alt-Ansichten
@@ -52,7 +52,7 @@ class TableConventionRuleTest extends TestCase {
     ];
 
     /** Dokumentierte Bestandsausnahmen zu R4 (Matrix/Raster/Dokument/Eigenlayout). */
-    private const RAW_TABLE_FILE_EXEMPT = [
+    private const array RAW_TABLE_FILE_EXEMPT = [
         'assets/dossier.blade.php',              // Druck-Dossier (window.print)
         'diary/_case_file_sections.blade.php',   // Druck-Akte (Datenteil für Bildschirm und PDF)
         'public/protocol-sign.blade.php',        // öffentliche Signaturseite
@@ -79,7 +79,7 @@ class TableConventionRuleTest extends TestCase {
      *
      * @var list<string>
      */
-    private const FLEX_TAIL_EXEMPT = [];
+    private const array FLEX_TAIL_EXEMPT = [];
 
     public function test_tables_follow_app_standard(): void {
         $root = dirname(__DIR__, 3);

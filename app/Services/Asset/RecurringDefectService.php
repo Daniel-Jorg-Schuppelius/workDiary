@@ -30,10 +30,10 @@ use Carbon\{CarbonImmutable, CarbonInterface};
  */
 class RecurringDefectService {
     /** Schwelle „Wiederholdefekt": Defekte im Fenster. */
-    public const THRESHOLD = 3;
+    public const int THRESHOLD = 3;
 
     /** Betrachtungsfenster in Monaten. */
-    public const WINDOW_MONTHS = 12;
+    public const int WINDOW_MONTHS = 12;
 
     /**
      * Pareto der Assets nach Defektzahl im Zeitraum [$from, $to], absteigend.

@@ -20,7 +20,7 @@ use CommonToolkit\Helper\Data\{StringHelper, TaxNumberHelper};
  */
 class GermanFederalStateResolver {
     /** @var array<int, string> */
-    private const UNAMBIGUOUS_PREFIXES = [
+    private const array UNAMBIGUOUS_PREFIXES = [
         1 => 'SN', 2 => 'SN', 3 => 'BB', 4 => 'SN', 6 => 'ST', 7 => 'TH', 8 => 'SN', 9 => 'SN',
         10 => 'BE', 11 => 'BE', 12 => 'BE', 13 => 'BE', 15 => 'BB', 16 => 'BB',
         18 => 'MV', 19 => 'MV', 20 => 'HH', 21 => 'HH', 22 => 'HH',

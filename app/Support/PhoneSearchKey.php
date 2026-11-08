@@ -26,7 +26,7 @@ use CommonToolkit\Helper\Data\PhoneNumberHelper;
  */
 final class PhoneSearchKey {
     /** Spaltenbreite der `*_e164`-Spalten. */
-    public const MAX_LENGTH = 24;
+    public const int MAX_LENGTH = 24;
 
     /** Nicht deutbare Eingaben ergeben null — geraten wird nichts. */
     public static function of(?string $value): ?string {

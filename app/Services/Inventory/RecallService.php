@@ -41,7 +41,7 @@ final class RecallService {
     use AssertsStatusTransition;
 
     /** Felder des Entwurfs. */
-    public const EDITABLE = [
+    public const array EDITABLE = [
         'kind', 'title', 'reason', 'customer_message', 'manufacturing_order_ids', 'delivered_from', 'delivered_until',
         'serial_numbers', 'is_blocking_stock',
     ];

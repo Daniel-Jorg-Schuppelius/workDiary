@@ -21,7 +21,7 @@ use Tests\TestCase;
 final class ReleaseReportTest extends TestCase {
     use RefreshDatabase;
 
-    private const CHANGELOG = "# Changelog\n\n## [Unreleased]\n\n### Added\n\n- Neue Funktion A.\n\n## [2.1.0] - 2026-09-01\n\n### Added\n\n- Auskunft nach DSGVO als PDF.\n- Rechnungen\n  mit zwei Zeilen.\n\n### Fixed\n\n- Löschfrist der Bewerbungen korrigiert.\n\n## [2.0.0]\n\n- Alt.\n";
+    private const string CHANGELOG = "# Changelog\n\n## [Unreleased]\n\n### Added\n\n- Neue Funktion A.\n\n## [2.1.0] - 2026-09-01\n\n### Added\n\n- Auskunft nach DSGVO als PDF.\n- Rechnungen\n  mit zwei Zeilen.\n\n### Fixed\n\n- Löschfrist der Bewerbungen korrigiert.\n\n## [2.0.0]\n\n- Alt.\n";
 
     public function test_report_collects_changes_privacy_and_advisories(): void {
         SecurityAdvisory::query()->create(['source' => 'osv', 'external_id' => 'GHSA-1', 'ecosystem' => 'Packagist', 'package' => 'acme/lib', 'installed_version' => '1.0.0', 'severity' => 'high', 'fixed_in' => '1.0.1']);

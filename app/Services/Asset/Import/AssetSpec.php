@@ -33,7 +33,7 @@ class AssetSpec extends AbstractEntitySpec {
     use ValidatesImportDates;
 
     /** @var list<string> */
-    private const DATE_COLUMNS = ['commissioned_on', 'decommissioned_on', 'warranty_until', 'next_maintenance_on', 'next_inspection_on', 'acquired_on'];
+    private const array DATE_COLUMNS = ['commissioned_on', 'decommissioned_on', 'warranty_until', 'next_maintenance_on', 'next_inspection_on', 'acquired_on'];
 
     public function entity(): ImportEntity {
         return ImportEntity::Assets;

@@ -53,12 +53,12 @@ class OrgaMaxConnection extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
-    public const MODE_PRIVATE = 'private';
+    public const string MODE_PRIVATE = 'private';
 
-    public const MODE_MARKETPLACE = 'marketplace';
+    public const string MODE_MARKETPLACE = 'marketplace';
 
     /** Capability-Schlüssel der Datenführerschafts-Matrix (MVP-305). */
-    public const CAPABILITIES = [
+    public const array CAPABILITIES = [
         'customers',
         'suppliers',
         'articles',

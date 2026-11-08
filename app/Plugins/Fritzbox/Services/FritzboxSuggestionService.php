@@ -35,11 +35,11 @@ use Illuminate\Database\Eloquent\Model;
  * Import auch die Telefonauskunft befragt — Signal 2 greift dann automatisch.
  */
 class FritzboxSuggestionService {
-    private const SUGGEST_THRESHOLD = 0.82;
+    private const float SUGGEST_THRESHOLD = 0.82;
 
-    private const MIN_OVERLAP_SECONDS = 60;
+    private const int MIN_OVERLAP_SECONDS = 60;
 
-    private const DOMINANT_SHARE = 0.7;
+    private const float DOMINANT_SHARE = 0.7;
 
     /**
      * @param  iterable<array<string, mixed>>  $groups

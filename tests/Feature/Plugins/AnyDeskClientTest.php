@@ -22,9 +22,9 @@ use Tests\TestCase;
  * Referenz-Implementierung github.com/anydesk/rest-api.
  */
 class AnyDeskClientTest extends TestCase {
-    private const LICENSE = 'BM5FFAH4A37D59N';
+    private const string LICENSE = 'BM5FFAH4A37D59N';
 
-    private const API_PASSWORD = 'geheimes-api-passwort';
+    private const string API_PASSWORD = 'geheimes-api-passwort';
 
     /** Prüft Header-Format und rechnet die HMAC mit dem Referenz-Algorithmus nach. */
     private function assertValidSignature(RequestInterface $request, string $method): bool {

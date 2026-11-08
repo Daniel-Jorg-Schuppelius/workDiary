@@ -39,9 +39,9 @@ use Illuminate\Support\Carbon;
 class AccessMediumHandover extends Model {
     use BelongsToOrganization;
 
-    public const DIRECTION_ISSUE = 'issue';
+    public const string DIRECTION_ISSUE = 'issue';
 
-    public const DIRECTION_RETURN = 'return';
+    public const string DIRECTION_RETURN = 'return';
 
     protected $fillable = [
         'organization_id', 'access_medium_id', 'direction', 'holder_user_id',

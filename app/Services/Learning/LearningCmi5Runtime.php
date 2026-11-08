@@ -26,7 +26,7 @@ use Illuminate\Support\{Carbon, Str};
  */
 final class LearningCmi5Runtime {
     /** Pfad des LRS unter der Anwendungs-URL. */
-    public const ENDPOINT_PATH = 'lrs/cmi5';
+    public const string ENDPOINT_PATH = 'lrs/cmi5';
 
     public function __construct(private readonly LearningEnrollmentService $enrollments) {}
 

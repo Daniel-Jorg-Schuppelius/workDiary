@@ -29,10 +29,10 @@ use App\Services\Numbering\Contracts\BillingRouteNumbers;
  */
 class NumberFormatOverview {
     /** Kreise, deren Nummer der Fakturierungsweg vergibt. */
-    public const BILLING_SCOPES = [NumberScope::Invoice, NumberScope::CreditNote, NumberScope::Cancellation];
+    public const array BILLING_SCOPES = [NumberScope::Invoice, NumberScope::CreditNote, NumberScope::Cancellation];
 
     /** Kreise, deren vergebende Stelle auf der Seite gewählt wird (MVP-1130, MVP-1160, MVP-1164, MVP-1165). */
-    public const SELECTABLE_SOURCE_SCOPES = [
+    public const array SELECTABLE_SOURCE_SCOPES = [
         NumberScope::Customer, NumberScope::Supplier, NumberScope::Quote, NumberScope::OrderConfirmation, NumberScope::DeliveryNote,
         NumberScope::Invoice, NumberScope::CreditNote, NumberScope::Cancellation,
     ];

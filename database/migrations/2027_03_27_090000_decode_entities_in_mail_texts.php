@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\{DB, Schema};
  * Verlorene Zeilenumbrüche kommen nicht zurück — das HTML ist nicht gespeichert.
  */
 return new class extends Migration {
-    private const ENTITY = '/&(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]*);/i';
+    private const string ENTITY = '/&(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]*);/i';
 
     public function up(): void {
         $this->decodeJsonBody('integration_inbox_items', 'remote_snapshot', fn (Builder $q) => $q->where('plugin_id', 'email'));

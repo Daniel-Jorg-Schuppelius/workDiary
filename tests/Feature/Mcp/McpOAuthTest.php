@@ -23,7 +23,7 @@ use Tests\TestCase;
 class McpOAuthTest extends TestCase {
     use RefreshDatabase;
 
-    private const REDIRECT = 'https://claude.ai/api/mcp/auth_callback';
+    private const string REDIRECT = 'https://claude.ai/api/mcp/auth_callback';
 
     private User $user;
 

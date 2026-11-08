@@ -44,7 +44,7 @@ use Illuminate\Support\Facades\{Gate, Route};
  * @phpstan-type VoucherContext array{customer_id: int|null, recipient_key: string, recipient_name: string|null, voucher_key: string, external_id: string, plan_key: string|null, number: string|null, date: CarbonImmutable|null, status: string, credit_note: bool, service_from: CarbonImmutable|null, service_to: CarbonImmutable|null, text: string|null, text_hint: string|null, permalink: string|null, preview_url: string|null}
  */
 final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
-    public const KEY = 'lexoffice';
+    public const string KEY = 'lexoffice';
 
     /**
      * Leseseite je Request: die Quelle lebt im Singleton-Spiegel, der

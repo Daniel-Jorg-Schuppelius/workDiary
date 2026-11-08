@@ -25,7 +25,7 @@ use App\Plugins\Support\{MirrorsCreatedEntries, RemoteTimeWriter, TimeWritebackD
  * `export_enabled`).
  */
 class KimaiOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCreatedEntries {
-    public const OP_ENTRY_CREATE = 'kimai.entry.create';
+    public const string OP_ENTRY_CREATE = 'kimai.entry.create';
 
     public function pluginId(): string {
         return KimaiPlugin::ID;

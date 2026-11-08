@@ -23,7 +23,7 @@ use PHPUnit\Framework\TestCase;
  * ein versehentlich committeter Verstoß auch in der Zahler-Umgebung rot wird.
  */
 class ComposerLockHygieneTest extends TestCase {
-    private const PRIVATE_PACKAGE = 'daniel-jorg-schuppelius/php-financial-formats';
+    private const string PRIVATE_PACKAGE = 'daniel-jorg-schuppelius/php-financial-formats';
 
     public function test_committed_lock_excludes_private_optional_package(): void {
         $root = dirname(__DIR__, 3);

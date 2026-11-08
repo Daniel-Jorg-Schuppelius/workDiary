@@ -23,7 +23,7 @@ use App\Services\Invoicing\EInvoice\XRechnungGenerator;
  */
 trait GeneratesIncomingEInvoices {
     /** USt-IdNr. der Organisation in ihrer Rolle als Rechnungsempfänger. */
-    protected const BUYER_VAT_ID = 'DE811907980';
+    protected const string BUYER_VAT_ID = 'DE811907980';
 
     /** @var array<string, mixed>|null */
     private ?array $fixtureSellerSettings = null;

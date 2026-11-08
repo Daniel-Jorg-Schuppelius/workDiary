@@ -39,7 +39,7 @@ use Throwable;
 class KnowledgeImportController extends Controller {
     use ResolvesCurrentOrganization;
 
-    public const SOURCE_OBSIDIAN = 'obsidian';
+    public const string SOURCE_OBSIDIAN = 'obsidian';
 
     public function __construct(private readonly KnowledgeImportService $imports) {}
 

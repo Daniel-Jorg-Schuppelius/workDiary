@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\DB;
 
 class OnboardingChecklistResolver {
     /** @var list<string> */
-    private const OPERATOR_ROLE_NAMES = [
+    private const array OPERATOR_ROLE_NAMES = [
         UserRole::User->value,
         UserRole::Teamleitung->value,
         UserRole::Aussendienst->value,
@@ -37,7 +37,7 @@ class OnboardingChecklistResolver {
     ];
 
     /** @var list<array{code:string, required:bool}> */
-    private const STEPS = [
+    private const array STEPS = [
         ['code' => 'org.profile', 'required' => true],
         ['code' => 'org.branch_profile', 'required' => true],
         // optional (Feature 081): ohne Auswahl gilt „Voller Umfang"

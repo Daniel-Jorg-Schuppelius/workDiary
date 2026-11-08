@@ -45,13 +45,13 @@ class TourStop extends Model {
 
     use HasSqid;
 
-    public const SOURCE_MANUAL = 'manual';
+    public const string SOURCE_MANUAL = 'manual';
 
-    public const SOURCE_GEOFENCE = 'geofence';
+    public const string SOURCE_GEOFENCE = 'geofence';
 
-    public const OUTCOME_DONE = 'done';
+    public const string OUTCOME_DONE = 'done';
 
-    public const OUTCOME_NOT_MET = 'not_met';
+    public const string OUTCOME_NOT_MET = 'not_met';
 
     protected $fillable = [
         'organization_id',

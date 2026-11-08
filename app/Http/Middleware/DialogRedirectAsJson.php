@@ -33,7 +33,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class DialogRedirectAsJson {
     /** Flash-Schlüssel des Layouts → Ton des Toasts. */
-    private const FLASH_TONES = ['success' => 'success', 'status' => 'success', 'error' => 'error', 'warning' => 'warning', 'info' => 'info'];
+    private const array FLASH_TONES = ['success' => 'success', 'status' => 'success', 'error' => 'error', 'warning' => 'warning', 'info' => 'info'];
 
     public function handle(Request $request, Closure $next): Response {
         $response = $next($request);

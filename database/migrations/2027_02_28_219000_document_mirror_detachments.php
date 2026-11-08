@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\{DB, Schema};
  * (`webdav_mirror_detached`, `sharepoint_mirror_detached`).
  */
 return new class extends Migration {
-    private const COLUMNS = ['webdav_mirror_detached' => 'webdav', 'sharepoint_mirror_detached' => 'sharepoint'];
+    private const array COLUMNS = ['webdav_mirror_detached' => 'webdav', 'sharepoint_mirror_detached' => 'sharepoint'];
 
     public function up(): void {
         Schema::create('document_mirror_detachments', function (Blueprint $table): void {

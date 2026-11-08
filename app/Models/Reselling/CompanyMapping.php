@@ -84,7 +84,7 @@ class CompanyMapping extends Model {
     }
 
     /** Ziel einer Zuordnung „eigener Bestand" ({@see target()}). */
-    public const TARGET_OWN = 'own';
+    public const string TARGET_OWN = 'own';
 
     /**
      * Ziel im Format der Zuordnungsdatei (`customer:<Sqid>`, `partner:<Sqid>`, UUID, `own`).

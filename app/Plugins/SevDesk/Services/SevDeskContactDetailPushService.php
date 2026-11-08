@@ -42,11 +42,11 @@ use App\Services\Finance\Accounting\ContactPushService;
  * Account zu verifizieren — sie unterscheiden sich je Mandant.
  */
 class SevDeskContactDetailPushService {
-    public const TYPE_ADDRESS = 'contact_address';
+    public const string TYPE_ADDRESS = 'contact_address';
 
-    public const TYPE_EMAIL = 'communication_way_email';
+    public const string TYPE_EMAIL = 'communication_way_email';
 
-    public const TYPE_PHONE = 'communication_way_phone';
+    public const string TYPE_PHONE = 'communication_way_phone';
 
     public function __construct(private readonly ContactPushService $contacts) {}
 

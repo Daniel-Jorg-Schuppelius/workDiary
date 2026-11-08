@@ -50,7 +50,7 @@ class HelpdeskReportExportController extends Controller {
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
-    private const CSV_METRICS = ['volume', 'times', 'compliance', 'waiting', 'aging', 'fcr', 'satisfaction', 'changes', 'problems', 'catalog', 'knowledge', 'trends', 'services'];
+    private const array CSV_METRICS = ['volume', 'times', 'compliance', 'waiting', 'aging', 'fcr', 'satisfaction', 'changes', 'problems', 'catalog', 'knowledge', 'trends', 'services'];
 
     public function __construct(private readonly HelpdeskMetricsService $metrics) {}
 

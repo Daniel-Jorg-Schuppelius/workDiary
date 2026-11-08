@@ -31,26 +31,26 @@ use CommonToolkit\Helper\Data\NumberHelper;
  *  list<array{code:string, severity:string, meta:array<string, int|string>}>.
  */
 class DayClosureValidator {
-    public const SEVERITY_BLOCKING = 'blocking'; // ⛔ — verhindert day.close
+    public const string SEVERITY_BLOCKING = 'blocking'; // ⛔ — verhindert day.close
 
-    public const SEVERITY_WARNING = 'warning';   // ⚠ — Hinweis, blockiert nicht
+    public const string SEVERITY_WARNING = 'warning';   // ⚠ — Hinweis, blockiert nicht
 
-    public const CHECK_ATTENDANCE_MISSING_CLOSE = 'attendance.missing_close';
+    public const string CHECK_ATTENDANCE_MISSING_CLOSE = 'attendance.missing_close';
 
-    public const CHECK_TIME_UNALLOCATED = 'time.unallocated_minutes';
+    public const string CHECK_TIME_UNALLOCATED = 'time.unallocated_minutes';
 
-    public const CHECK_BREAK_REQUIRED = 'break.required';
+    public const string CHECK_BREAK_REQUIRED = 'break.required';
 
-    public const CHECK_GAP_IN_ATTENDANCE = 'time.gap_in_attendance';
+    public const string CHECK_GAP_IN_ATTENDANCE = 'time.gap_in_attendance';
 
-    public const CHECK_BALANCE_THRESHOLD = 'balance.threshold';
+    public const string CHECK_BALANCE_THRESHOLD = 'balance.threshold';
 
-    public const CHECK_ENTRY_MISSING_COMMENT = 'entry.missing_comment';
+    public const string CHECK_ENTRY_MISSING_COMMENT = 'entry.missing_comment';
 
-    public const CHECK_WORKTIME_OVERRUN = 'worktime.overrun';
+    public const string CHECK_WORKTIME_OVERRUN = 'worktime.overrun';
 
     /** Projekt-Sollzeit unterschritten (Feature 194) — weiche Warnung, der Nachtlauf schreibt den Befund. */
-    public const CHECK_PROJECT_TARGET_SHORTFALL = 'project.target_shortfall';
+    public const string CHECK_PROJECT_TARGET_SHORTFALL = 'project.target_shortfall';
 
     /**
      * @param  list<array{after_minutes:int, required_minutes:int}>  $breakRules  gesetzliche Pausenregeln

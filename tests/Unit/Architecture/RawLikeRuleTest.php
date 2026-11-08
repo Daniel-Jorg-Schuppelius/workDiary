@@ -32,7 +32,7 @@ class RawLikeRuleTest extends TestCase {
      *
      * @var array<string, string>
      */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         // $marker = 'RET#' . $original->id — interne Kennung, kein Nutzer-Input.
         'app/Services/Finance/ReconciliationService.php' => 'Retouren-Marker aus der Beleg-ID, kein Nutzer-Input.',
         // $datePatterns entstehen aus geparsten Datumsangaben (Y-m-d-Fragmente).

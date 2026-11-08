@@ -24,14 +24,14 @@ use App\Plugins\JtlWawi\Models\JtlConnection;
  */
 class JtlScopePreflight {
     /** @var array<string, list<string>> Lese-Anforderungen: ein Scope je Gruppe genügt. */
-    private const READ_REQUIREMENTS = [
+    private const array READ_REQUIREMENTS = [
         'items.read' => ['items.read', 'all.read'],
         'warehouse.read' => ['warehouse.read', 'all.read'],
         'inventory.read' => ['inventory.read', 'inventories.read', 'all.read'],
     ];
 
     /** @var array<string, list<string>> Schreib-Anforderungen (nur für inventory_mode = external). */
-    private const WRITE_REQUIREMENTS = [
+    private const array WRITE_REQUIREMENTS = [
         'inventory.write' => ['inventory.write', 'inventories.write'],
     ];
 

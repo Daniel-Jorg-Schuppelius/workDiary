@@ -33,7 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * über beide Formate identisch, sodass die Dedup-Bindung stabil bleibt.
  */
 trait BindsTimeImportReference {
-    private const TIME_IMPORT_PLUGIN = 'time-import';
+    private const string TIME_IMPORT_PLUGIN = 'time-import';
 
     /**
      * Stabiler Idempotenz-Schlüssel: gesetzte Fremd-ID (`ext:…`) oder Hash des

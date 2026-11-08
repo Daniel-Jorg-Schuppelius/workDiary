@@ -23,11 +23,11 @@ use Carbon\CarbonImmutable;
  * scheitert (Prod 2026-10-31: 14 von 16 Fällen, Rechnungen teils bezahlt).
  */
 final readonly class TemplateExecution {
-    public const PAID = 'paid';
+    public const string PAID = 'paid';
 
-    public const OPEN = 'open';
+    public const string OPEN = 'open';
 
-    public const MISSING = 'missing';
+    public const string MISSING = 'missing';
 
     public function __construct(
         public string $state,

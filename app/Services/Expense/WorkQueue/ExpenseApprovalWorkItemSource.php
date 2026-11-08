@@ -24,11 +24,11 @@ use Illuminate\Support\Facades\Gate;
 
 /** Eingereichte Spesen anderer, über die der Nutzer entscheiden darf (ExpensePolicy::decide). */
 final class ExpenseApprovalWorkItemSource implements WorkItemSource {
-    private const ROUTE = 'expense-approvals.inbox';
+    private const string ROUTE = 'expense-approvals.inbox';
 
     public function __construct(private readonly FeatureFlagResolver $features) {}
 
-    public const KEY = 'expense_approval';
+    public const string KEY = 'expense_approval';
 
     public function key(): string {
         return self::KEY;

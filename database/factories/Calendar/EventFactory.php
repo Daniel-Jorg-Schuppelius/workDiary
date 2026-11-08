@@ -22,7 +22,8 @@ class EventFactory extends Factory {
     protected $model = Event::class;
 
     public function definition(): array {
-        $start = fake()->dateTimeBetween('-1 month', '+3 months');
+        // Nicht weiter zurück als 29 Tage: der öffentliche Feed zeigt Termine ab heute minus 30 Tagen (IcsFeedService).
+        $start = fake()->dateTimeBetween('-29 days', '+3 months');
         $end = (clone $start)->modify('+' . fake()->numberBetween(1, 8) . ' hours');
 
         return [

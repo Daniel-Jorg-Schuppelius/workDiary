@@ -38,7 +38,7 @@ use Illuminate\Support\Facades\{DB, Schema};
  * Statements/Mappings werden NIE überschrieben.
  */
 return new class extends Migration {
-    private const DEFAULT_SCOPE_NAME = 'Gesamtorganisation';
+    private const string DEFAULT_SCOPE_NAME = 'Gesamtorganisation';
 
     public function up(): void {
         if (! Schema::hasTable('isms_controls') || ! Schema::hasColumn('isms_controls', 'source')) {

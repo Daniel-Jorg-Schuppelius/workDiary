@@ -27,16 +27,16 @@ use Throwable;
  * Freigabe (VEU) erteilt der Zeichnungsberechtigte bei der Bank.
  */
 class EbicsPaymentSubmission {
-    public const EVENT_STARTED = 'ebics_payment_started';
+    public const string EVENT_STARTED = 'ebics_payment_started';
 
-    public const EVENT_SUBMITTED = 'ebics_payment_submitted';
+    public const string EVENT_SUBMITTED = 'ebics_payment_submitted';
 
-    public const EVENT_ABORTED = 'ebics_payment_aborted';
+    public const string EVENT_ABORTED = 'ebics_payment_aborted';
 
-    public const STATE_SUBMITTED = 'submitted';
+    public const string STATE_SUBMITTED = 'submitted';
 
     /** Übermittlung begonnen, aber weder Auftragsnummer noch ausdrückliche Ablehnung erhalten. */
-    public const STATE_UNCLEAR = 'unclear';
+    public const string STATE_UNCLEAR = 'unclear';
 
     public function __construct(
         private readonly EbicsGateway $gateway,

@@ -27,11 +27,11 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSett
 class PlanePlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
     use ChecksConnectionHealth, RendersTaskLink;
 
-    public const ID = 'plane';
+    public const string ID = 'plane';
 
-    public const SERVICE_PROVIDER = PlaneServiceProvider::class;
+    public const string SERVICE_PROVIDER = PlaneServiceProvider::class;
 
-    public const EXT_TYPE_WORK_ITEM = 'work_item';
+    public const string EXT_TYPE_WORK_ITEM = 'work_item';
 
     public function name(): string {
         return 'Plane';

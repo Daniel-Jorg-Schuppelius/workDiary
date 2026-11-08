@@ -22,7 +22,7 @@ use App\Policies\PermissionPolicy;
 class CostCenterRulePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::CostCenterRuleViewAny,
         'create' => P::CostCenterRuleManage,
         'update' => P::CostCenterRuleManage,

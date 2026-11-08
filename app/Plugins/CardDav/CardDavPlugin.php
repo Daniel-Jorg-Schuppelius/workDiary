@@ -31,9 +31,9 @@ use App\Plugins\Support\ApiHealthProbe;
  * der Push-Vertrag (workDiary → extern), dieses Plugin ist rein lesend.
  */
 class CardDavPlugin extends AbstractPlugin {
-    public const ID = 'carddav';
+    public const string ID = 'carddav';
 
-    public const SERVICE_PROVIDER = CardDavServiceProvider::class;
+    public const string SERVICE_PROVIDER = CardDavServiceProvider::class;
 
     public function name(): string {
         return 'CardDAV';

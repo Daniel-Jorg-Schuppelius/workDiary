@@ -46,9 +46,9 @@ use RuntimeException;
  * hängen an FacturationTarget-/Outbox-Verträgen.
  */
 class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
-    public const ID = 'orgamax';
+    public const string ID = 'orgamax';
 
-    public const SERVICE_PROVIDER = OrgaMaxServiceProvider::class;
+    public const string SERVICE_PROVIDER = OrgaMaxServiceProvider::class;
 
     public function name(): string {
         return 'orgaMAX Buchhaltung';

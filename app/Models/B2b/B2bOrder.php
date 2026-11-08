@@ -57,9 +57,9 @@ class B2bOrder extends Model {
 
     use HasSqid;
 
-    public const SOURCE_UPLOAD = 'upload';
-    public const SOURCE_MAIL = 'mail';
-    public const SOURCE_CLOUD = 'cloud';
+    public const string SOURCE_UPLOAD = 'upload';
+    public const string SOURCE_MAIL = 'mail';
+    public const string SOURCE_CLOUD = 'cloud';
 
     protected $fillable = [
         'organization_id',

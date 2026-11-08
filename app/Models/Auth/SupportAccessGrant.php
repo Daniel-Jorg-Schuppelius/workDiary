@@ -38,12 +38,12 @@ class SupportAccessGrant extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const SCOPE_READ_ONLY = 'read_only';
+    public const string SCOPE_READ_ONLY = 'read_only';
 
-    public const SCOPE_FULL = 'full';
+    public const string SCOPE_FULL = 'full';
 
     /** Obergrenze der Freigabedauer (Soll-Konzept §5.1). */
-    public const MAX_DURATION_DAYS = 7;
+    public const int MAX_DURATION_DAYS = 7;
 
     protected $fillable = [
         'organization_id',

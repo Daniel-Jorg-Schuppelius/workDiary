@@ -26,7 +26,7 @@ use CommonToolkit\Helper\Data\StringHelper;
  */
 class TogglCsvParser {
     /** Header-Aliasse (lowercase) → kanonischer Feldname. */
-    private const ALIASES = [
+    private const array ALIASES = [
         'client' => 'client',
         'project' => 'project',
         'description' => 'description',

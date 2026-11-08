@@ -38,9 +38,9 @@ class OpenSourceFakturaVoucherPullTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const NINJA = 'https://ninja.example.test';
+    private const string NINJA = 'https://ninja.example.test';
 
-    private const AKAUNTING = 'https://akaunting.example.test';
+    private const string AKAUNTING = 'https://akaunting.example.test';
 
     private User $admin;
 

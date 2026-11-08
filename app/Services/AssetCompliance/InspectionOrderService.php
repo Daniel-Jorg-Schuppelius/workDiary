@@ -34,7 +34,7 @@ use Illuminate\Validation\ValidationException;
 final class InspectionOrderService {
     use AssertsValidatedTransition;
 
-    public const LINK_DAYS = 90;
+    public const int LINK_DAYS = 90;
 
     public function __construct(
         private readonly AssetComplianceService $compliance,

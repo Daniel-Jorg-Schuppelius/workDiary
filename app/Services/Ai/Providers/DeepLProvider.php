@@ -35,7 +35,7 @@ class DeepLProvider extends AbstractTranslationAdapter {
      * DeepL-Glossare brauchen ein Sprachpaar. Ohne Angabe an der Anfrage
      * gilt Deutsch als Quellsprache, sonst bliebe das Glossar wirkungslos.
      */
-    private const DEFAULT_SOURCE_LANG = 'de';
+    private const string DEFAULT_SOURCE_LANG = 'de';
 
     protected function baseUrl(): string {
         return rtrim($this->connection->base_url ?: 'https://api.deepl.com', '/');

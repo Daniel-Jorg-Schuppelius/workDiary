@@ -21,9 +21,9 @@ use App\Models\Platform\{Organization, User};
  * {@see ProvidesZipImport}; der Import-Rahmen kennt kein Fachmodul.
  */
 interface ZipImporter {
-    public const MANIFEST = 'manifest.csv';
+    public const string MANIFEST = 'manifest.csv';
 
-    public const MAX_ZIP_KB = 51_200;
+    public const int MAX_ZIP_KB = 51_200;
 
     /** @return array{delimiter: string, prefix: string, entries: array<string, string>, headerIssues: list<\App\Services\Import\ValidationIssue>, rows: list<array{number: int, data: array<string, string>}>} */
     public function open(string $zipBinary): array;

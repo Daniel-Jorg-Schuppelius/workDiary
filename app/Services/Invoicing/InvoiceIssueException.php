@@ -14,23 +14,23 @@ use RuntimeException;
 
 /** Ausstellung abgelehnt — Grund als Code, damit Aufrufer gezielt reagieren (z. B. Validierungsbericht öffnen). */
 final class InvoiceIssueException extends RuntimeException {
-    public const REASON_PROFORMA = 'proforma';
+    public const string REASON_PROFORMA = 'proforma';
 
-    public const REASON_APPROVAL_MISSING = 'approval_missing';
+    public const string REASON_APPROVAL_MISSING = 'approval_missing';
 
-    public const REASON_EINVOICE_INVALID = 'einvoice_invalid';
+    public const string REASON_EINVOICE_INVALID = 'einvoice_invalid';
 
     /** Entwurf ohne Positionen (Feature 160). */
-    public const REASON_EMPTY = 'empty';
+    public const string REASON_EMPTY = 'empty';
 
     /** Der Sammelkunde (MVP-1109) erhält keine eigene Rechnung — er hat keine Anschrift. */
-    public const REASON_COLLECTIVE_CUSTOMER = 'collective_customer';
+    public const string REASON_COLLECTIVE_CUSTOMER = 'collective_customer';
 
     /** Entwurfsnummer: Die Nummer vergibt ein Buchhaltungsprogramm beim Übertragen (MVP-1153). */
-    public const REASON_DRAFT_NUMBER = 'draft_number';
+    public const string REASON_DRAFT_NUMBER = 'draft_number';
 
     /** Das vergebende Programm hat den Beleg nicht übernommen (MVP-1166). */
-    public const REASON_PROGRAM = 'program';
+    public const string REASON_PROGRAM = 'program';
 
     public function __construct(public readonly string $reason, string $message, ?\Throwable $previous = null) {
         parent::__construct($message, 0, $previous);

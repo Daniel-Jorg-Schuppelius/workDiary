@@ -51,10 +51,10 @@ use Throwable;
  */
 class OperationsMetricsService {
     /** Zeitraum (Tage) für die aggregierte Feature-Nutzung. */
-    public const USAGE_WINDOW_DAYS = 30;
+    public const int USAGE_WINDOW_DAYS = 30;
 
     /** Zeitraum (Tage) für die Plugin-Fehler-Auswertung. */
-    public const PLUGIN_ERROR_WINDOW_DAYS = 7;
+    public const int PLUGIN_ERROR_WINDOW_DAYS = 7;
 
     /**
      * Katalog aller Feature-Nutzungszähler (Metrik-Transparenz, MVP-337):
@@ -63,7 +63,7 @@ class OperationsMetricsService {
      * Beschreibung (lang: metrics.counter.<key>) — neue Zähler hier UND
      * in allen fünf metrics.php-Sprachdateien nachziehen.
      */
-    public const FEATURE_COUNTERS = [
+    public const array FEATURE_COUNTERS = [
         'communications.created',
         'documents.created',
         'forms.submitted',

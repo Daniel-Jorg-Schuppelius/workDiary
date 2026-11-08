@@ -36,7 +36,7 @@ use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
  */
 class ClockifyCsvParser {
     /** Header-Aliasse (lowercase, EN + DE defensiv) → kanonischer Feldname. */
-    private const ALIASES = [
+    private const array ALIASES = [
         'project' => 'project', 'projekt' => 'project',
         'client' => 'client', 'kunde' => 'client',
         'description' => 'description', 'beschreibung' => 'description',

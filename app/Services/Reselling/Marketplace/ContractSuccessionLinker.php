@@ -32,9 +32,9 @@ use Carbon\CarbonImmutable;
  * nächste Jahrestag.
  */
 final class ContractSuccessionLinker {
-    private const ANNIVERSARY_TOLERANCE_DAYS = 10;
+    private const int ANNIVERSARY_TOLERANCE_DAYS = 10;
 
-    private const START_SLACK_DAYS = 3;
+    private const int START_SLACK_DAYS = 3;
 
     public function __construct(
         private readonly ProductNameMatcher $matcher = new ProductNameMatcher(),

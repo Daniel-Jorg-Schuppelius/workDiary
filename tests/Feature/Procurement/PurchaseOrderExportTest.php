@@ -29,9 +29,9 @@ final class PurchaseOrderExportTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const ORDER_NS = 'urn:oasis:names:specification:ubl:schema:xsd:Order-2';
-    private const CAC_NS = 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2';
-    private const CBC_NS = 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2';
+    private const string ORDER_NS = 'urn:oasis:names:specification:ubl:schema:xsd:Order-2';
+    private const string CAC_NS = 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2';
+    private const string CBC_NS = 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2';
 
     private Supplier $supplier;
     private Article $article;

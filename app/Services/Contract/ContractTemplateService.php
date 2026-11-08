@@ -21,7 +21,7 @@ use Carbon\CarbonImmutable;
  */
 final class ContractTemplateService {
     /** Felder, die eine Vorlage in den Anlegedialog übernimmt. */
-    public const PRESET_FIELDS = ['title', 'term_kind', 'min_term_months', 'auto_renew', 'renew_period_months', 'notice_period_days', 'value_period', 'indexation_method'];
+    public const array PRESET_FIELDS = ['title', 'term_kind', 'min_term_months', 'auto_renew', 'renew_period_months', 'notice_period_days', 'value_period', 'indexation_method'];
 
     public function __construct(private readonly ContractService $contracts) {}
 

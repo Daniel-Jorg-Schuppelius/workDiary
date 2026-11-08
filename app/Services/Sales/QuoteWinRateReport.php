@@ -32,7 +32,7 @@ use Illuminate\Support\Collection;
  * Teilannahme der angenommene Teil.
  */
 final class QuoteWinRateReport {
-    public const GROUPS = ['customer', 'owner'];
+    public const array GROUPS = ['customer', 'owner'];
 
     /**
      * @return array{

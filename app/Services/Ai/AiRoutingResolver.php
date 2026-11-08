@@ -35,7 +35,7 @@ class AiRoutingResolver {
         private readonly ModuleStatusResolver $modules,
     ) {}
 
-    public const MODULE = 'module.ai';
+    public const string MODULE = 'module.ai';
 
     /**
      * Geordnete Kandidatenliste (erste Verbindung = primäres Routing,

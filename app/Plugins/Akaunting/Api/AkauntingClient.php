@@ -29,7 +29,7 @@ class AkauntingClient {
     use GuardsPluginApiResponses;
 
     /** Seiten, die der Löschabgleich je Art höchstens liest. */
-    private const MAX_ID_PAGES = 500;
+    private const int MAX_ID_PAGES = 500;
 
     private ?PluginApiClient $api = null;
 

@@ -32,7 +32,7 @@ use Throwable;
 class ChatAdminController extends Controller {
     use AuthorizesOrganizationManagement;
 
-    private const KINDS = [ChatWebhook::KIND_TEAMS, ChatWebhook::KIND_MATTERMOST];
+    private const array KINDS = [ChatWebhook::KIND_TEAMS, ChatWebhook::KIND_MATTERMOST];
 
     public function index(): View {
         $admin = $this->admin();

@@ -34,13 +34,13 @@ use Illuminate\Support\Facades\DB;
  * {@see ClassificationResolver} wird bei jeder Mutation invalidiert.
  */
 class ClassificationManager {
-    public const CODE_REGEX = '/^[a-z][a-z0-9_]{1,58}$/';
+    public const string CODE_REGEX = '/^[a-z][a-z0-9_]{1,58}$/';
 
-    public const MAX_LABEL_LENGTH = 180;
+    public const int MAX_LABEL_LENGTH = 180;
 
-    public const SORT_STEP = 10;
+    public const int SORT_STEP = 10;
 
-    public const IMPORT_MAX_ROWS = 1000;
+    public const int IMPORT_MAX_ROWS = 1000;
 
     /**
      * Registry für Referenz-Schutz beim Löschen.

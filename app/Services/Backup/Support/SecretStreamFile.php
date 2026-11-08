@@ -24,9 +24,9 @@ use SensitiveParameter;
  * Teil-Vertauschung die Entschlüsselung bricht.
  */
 class SecretStreamFile {
-    private const MAGIC = 'WDB1';
+    private const string MAGIC = 'WDB1';
 
-    private const CHUNK_SIZE = 1_048_576; // 1 MiB Klartext je Chunk
+    private const int CHUNK_SIZE = 1_048_576; // 1 MiB Klartext je Chunk
 
     public function encrypt(string $plainPath, string $cipherPath, #[SensitiveParameter] string $key, string $additionalData): void {
         $in = File::openStream($plainPath, 'rb');

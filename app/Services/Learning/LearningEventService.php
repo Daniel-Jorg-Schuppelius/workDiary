@@ -40,10 +40,10 @@ use Illuminate\Validation\ValidationException;
  */
 class LearningEventService {
     /** Check-in öffnet eine halbe Stunde vor Beginn … */
-    public const CHECKIN_BEFORE_MINUTES = 30;
+    public const int CHECKIN_BEFORE_MINUTES = 30;
 
     /** … und schließt zwei Stunden nach Ende. */
-    public const CHECKIN_AFTER_MINUTES = 120;
+    public const int CHECKIN_AFTER_MINUTES = 120;
 
     public function __construct(
         private readonly LearningEnrollmentService $enrollments,

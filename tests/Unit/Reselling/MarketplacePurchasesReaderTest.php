@@ -18,7 +18,7 @@ use RuntimeException;
 use Tests\TestCase;
 
 class MarketplacePurchasesReaderTest extends TestCase {
-    private const FIXTURE = __DIR__ . '/../../Fixtures/Reselling/marketplace-purchases.csv';
+    private const string FIXTURE = __DIR__ . '/../../Fixtures/Reselling/marketplace-purchases.csv';
 
     public function test_reads_export_with_bom_nbsp_fees_and_two_digit_years(): void {
         $import = (new MarketplacePurchasesReader)->read(self::FIXTURE);

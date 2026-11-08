@@ -30,11 +30,11 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSett
 class GiteaPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
     use ChecksConnectionHealth, RendersTaskLink;
 
-    public const ID = 'gitea';
+    public const string ID = 'gitea';
 
-    public const SERVICE_PROVIDER = GiteaServiceProvider::class;
+    public const string SERVICE_PROVIDER = GiteaServiceProvider::class;
 
-    public const EXT_TYPE_ISSUE = 'issue';
+    public const string EXT_TYPE_ISSUE = 'issue';
 
     public function name(): string {
         return 'Gitea/Forgejo';

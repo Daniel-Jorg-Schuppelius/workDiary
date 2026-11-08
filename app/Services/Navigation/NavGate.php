@@ -32,7 +32,7 @@ class NavGate {
      *
      * @var array<string, class-string>
      */
-    private const MODELS = [
+    private const array MODELS = [
         'collections.*' => \App\Models\Knowledge\ContentCollection::class,
         'sustainability.*' => \App\Models\Sustainability\SustainabilityAssessment::class,
         'crisis.*' => \App\Models\Crisis\CrisisCase::class,

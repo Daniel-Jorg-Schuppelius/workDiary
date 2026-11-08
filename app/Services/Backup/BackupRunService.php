@@ -34,7 +34,7 @@ class BackupRunService {
     use \App\Services\Backup\Concerns\ResolvesBackupTarget;
 
     /** Sicherheitsaufschlag der Quota-Prüfung (Krypto-Overhead + Manifest). */
-    private const QUOTA_SAFETY_FACTOR = 1.05;
+    private const float QUOTA_SAFETY_FACTOR = 1.05;
 
     public function __construct(
         private readonly BackupSnapshotBuilder $builder,

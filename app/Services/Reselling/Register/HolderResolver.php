@@ -28,9 +28,9 @@ use Illuminate\Support\Collection;
  * neuen Lauf) — ein Import fragt sie je Position.
  */
 final class HolderResolver {
-    public const SOURCE_STORED = 'stored';
-    public const SOURCE_FOREIGN = 'foreign';
-    public const SOURCE_CUSTOMER = 'customer';
+    public const string SOURCE_STORED = 'stored';
+    public const string SOURCE_FOREIGN = 'foreign';
+    public const string SOURCE_CUSTOMER = 'customer';
 
     /** @var array<int, Collection<int, Customer>> Organisation → Kunden */
     private array $customers = [];

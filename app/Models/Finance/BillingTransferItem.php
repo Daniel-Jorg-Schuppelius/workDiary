@@ -47,7 +47,7 @@ class BillingTransferItem extends Model implements DocumentLine {
     use HasSqid;
     use IsDocumentLine;
 
-    public const UPDATED_AT = null;
+    public const ?string UPDATED_AT = null;
 
     protected $fillable = [
         'billing_transfer_id',

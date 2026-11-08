@@ -31,7 +31,7 @@ class AccountingArticleMirrorTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    public const PLUGIN = 'artikeltest';
+    public const string PLUGIN = 'artikeltest';
 
     /** @var list<MirroredArticle> */
     private array $remote = [];

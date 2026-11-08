@@ -23,14 +23,14 @@ use Carbon\CarbonImmutable;
  * andere Quellen bilden darauf ab.
  */
 final readonly class PlanTemplate {
-    public const STATUS_ACTIVE = 'ACTIVE';
+    public const string STATUS_ACTIVE = 'ACTIVE';
 
-    public const STATUS_PAUSED = 'PAUSED';
+    public const string STATUS_PAUSED = 'PAUSED';
 
-    public const STATUS_ENDED = 'ENDED';
+    public const string STATUS_ENDED = 'ENDED';
 
     /** Monate je Ausführung; Wochenrhythmen tragen 0 (keine Lizenzableitung). */
-    public const INTERVAL_MONTHS = ['WEEKLY' => 0, 'BIWEEKLY' => 0, 'MONTHLY' => 1, 'QUARTERLY' => 3, 'BIANNUALLY' => 6, 'ANNUALLY' => 12];
+    public const array INTERVAL_MONTHS = ['WEEKLY' => 0, 'BIWEEKLY' => 0, 'MONTHLY' => 1, 'QUARTERLY' => 3, 'BIANNUALLY' => 6, 'ANNUALLY' => 12];
 
     /**
      * @param  list<PlanLine>  $lines

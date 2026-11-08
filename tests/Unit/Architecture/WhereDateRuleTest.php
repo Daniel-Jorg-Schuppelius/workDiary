@@ -39,7 +39,7 @@ class WhereDateRuleTest extends TestCase {
      *
      * @var array<string, string>
      */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         // Das Altsystem-Modul wird abgelöst, nicht migriert; seine Abfragen
         // laufen gegen die Legacy-Verbindung mit eigenem Schema/Indexbild.
         'app/Legacy/' => 'Altsystem-Modul: wird abgelöst, nicht umgestellt (A8).',
@@ -50,7 +50,7 @@ class WhereDateRuleTest extends TestCase {
      *
      * @var array<string, int>
      */
-    private const BASELINE = [
+    private const array BASELINE = [
         'app/Console/Commands/Billing/ReapplyOpenRatesCommand.php' => 2,
         'app/Console/Commands/Billing/ReopenTimesCommand.php' => 2,
         'app/Console/Commands/Finance/CheckFilingObligationsCommand.php' => 1,

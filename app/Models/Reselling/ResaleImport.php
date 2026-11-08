@@ -47,13 +47,13 @@ class ResaleImport extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const DISK = 'local';
+    public const string DISK = 'local';
 
-    public const KIND_PURCHASES = 'purchases';
-    public const KIND_CONTRACTS = 'contracts';
-    public const KIND_PRICELIST = 'pricelist';
+    public const string KIND_PURCHASES = 'purchases';
+    public const string KIND_CONTRACTS = 'contracts';
+    public const string KIND_PRICELIST = 'pricelist';
 
-    public const KIND_GENERIC = 'generic';
+    public const string KIND_GENERIC = 'generic';
 
     protected $table = 'resale_imports';
 

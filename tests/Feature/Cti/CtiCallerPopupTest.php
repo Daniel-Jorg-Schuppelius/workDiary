@@ -36,7 +36,7 @@ final class CtiCallerPopupTest extends TestCase {
     private User $owner;
 
     /** Eigene Durchwahl, die der Mitarbeiter hinterlegt (= angerufene Nummer). */
-    private const EXTENSION = '+493088990011';
+    private const string EXTENSION = '+493088990011';
 
     protected function setUp(): void {
         parent::setUp();

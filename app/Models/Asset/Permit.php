@@ -52,7 +52,7 @@ class Permit extends Model {
     use Searchable;
 
     /** meta_type für das Nachweis-Dokument am Anhang. */
-    public const EVIDENCE_META = 'evidence';
+    public const string EVIDENCE_META = 'evidence';
 
     protected $fillable = [
         'organization_id',

@@ -21,7 +21,7 @@ class SlaTimer implements ServiceLevelResolver {
      * Anteil der Restzeit (relativ zur Gesamtfrist), unter dem ein Ticket als
      * „gefährdet" (atRisk) gilt. Spiegelt die Eskalationsschwelle sla.atRisk.
      */
-    public const AT_RISK_FRACTION = 0.20;
+    public const float AT_RISK_FRACTION = 0.20;
 
     /**
      * HolidayService wird bewusst lazy aufgelöst: der SlaTimer wird an einigen

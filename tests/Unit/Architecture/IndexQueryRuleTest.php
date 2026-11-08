@@ -26,7 +26,7 @@ class IndexQueryRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Datei => Grund */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         'app/Legacy/Http/Controllers/LegacyArchiveController.php' => 'Altsystem: je Tab eine eigene Spaltenzuordnung, Vorgabe und Richtung hängen am aktiven Tab.',
         'app/Legacy/Services/LegacyDashboardService.php' => 'Altsystem: je Tab eine eigene Spaltenzuordnung, Vorgabe und Richtung hängen am aktiven Tab.',
     ];

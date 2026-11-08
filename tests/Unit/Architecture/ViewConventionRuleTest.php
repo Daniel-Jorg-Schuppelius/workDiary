@@ -48,7 +48,7 @@ class ViewConventionRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> */
-    private const SKIP_PREFIXES = [
+    private const array SKIP_PREFIXES = [
         'resources/views/legacy/' => 'Legacy-Modul.',
         'resources/views/vendor/' => 'Fremd-Views.',
         'resources/views/components/' => 'Komponenten definieren die Konventionen.',
@@ -60,13 +60,13 @@ class ViewConventionRuleTest extends TestCase {
     ];
 
     /** @var array<string, string> V1 */
-    private const DATE_RANGE_ALLOW = [
+    private const array DATE_RANGE_ALLOW = [
         'resources/views/whistleblowing/public/portal.blade.php' => 'Öffentliches Portal-Layout ohne App-Komponenten (bewusst).',
         'resources/views/rental/calendar.blade.php' => 'Welle 4 (I6): starts_at/ends_at (datetime-local).',
     ];
 
     /** @var array<string, string> V2 */
-    private const HEADING_ALLOW = [
+    private const array HEADING_ALLOW = [
         'resources/views/dashboard/index.blade.php' => 'Begrüßungs-Hero des Dashboards (bewusst, ux-pattern-katalog).',
         'resources/views/chat/index.blade.php' => 'Chat-Kopf mit Kanalwechsel (Eigenlayout).',
         'resources/views/admin/document-design/editor.blade.php' => 'Welle 4 (I9): Editor-Kopf.',
@@ -76,17 +76,17 @@ class ViewConventionRuleTest extends TestCase {
     ];
 
     /** @var array<string, string> V3 */
-    private const SCROLL_FLEX_ALLOW = [];
+    private const array SCROLL_FLEX_ALLOW = [];
 
     /** @var array<string, string> V4 — 29 Altfälle, Welle 4 (I4): Block entfernen, Layout rendert den Flash */
-    private const FLASH_ALLOW = [];
+    private const array FLASH_ALLOW = [];
 
     /**
      * @var array<string, string> V5 — zweite, gleichzeitig sichtbare Liste derselben
      *      Seite: die stehende Fußzeile gehört genau einer Liste (<x-pagination>:
      *      ein `standing` je Aufruf), die andere blättert in ihrer Karte.
      */
-    private const INLINE_PAGINATION_ALLOW = [
+    private const array INLINE_PAGINATION_ALLOW = [
         'app/Plugins/OrgaMax/Resources/views/admin/index.blade.php' => 'Übergebene Aufträge blättern in der Karte; die stehende Fußzeile gehört der Rechnungs-Projektion (Konsolidierungs-Audit 2026-10, vierte Runde).',
     ];
 
@@ -94,29 +94,29 @@ class ViewConventionRuleTest extends TestCase {
      * @var array<string, string> V6 — bewusste Ausnahmen brauchen einen Grund,
      *      warum der Untertitel Markup tragen muss statt des Slots darunter.
      */
-    private const SUBTITLE_ALLOW = [];
+    private const array SUBTITLE_ALLOW = [];
 
     /** @var array<string, string> V10 — Rot als Alarmfarbe, nicht als Löschen */
-    private const DANGER_ALLOW = [
+    private const array DANGER_ALLOW = [
         'resources/views/crisis/show.blade.php' => 'Krise ausrufen ist die Hauptaktion der Seite, keine Löschung.',
         'resources/views/crisis/index.blade.php' => 'Krisenfall anlegen ist die Hauptaktion der Seite.',
     ];
 
     /** @var array<string, string> V12 — keine Aktionsmenüs, sondern Formulare im Popover */
-    private const DROPDOWN_ALLOW = [
+    private const array DROPDOWN_ALLOW = [
         'resources/views/admin/maintenance-windows/index.blade.php' => 'Verlängern mit Dauerfeld im Popover.',
         'resources/views/admin/operations/index.blade.php' => 'Delegieren/Ignorieren mit Begründung im Popover.',
         'resources/views/procedures/runs/show.blade.php' => 'Abbruch mit Pflichtbegründung im Popover.',
     ];
 
     /** @var array<string, string> V13 — Popover-Formulare im Kopf, ihr Auslöser ist ein <summary> */
-    private const RAW_BUTTON_ALLOW = [
+    private const array RAW_BUTTON_ALLOW = [
         'resources/views/contracts/show.blade.php' => 'Kündigen mit Pflichtbegründung im Popover.',
         'resources/views/asset-finance/show.blade.php' => 'Popover-Formulare mit Pflichtfeldern.',
     ];
 
     /** @var list<array{0: string, 1: string}> Von→Bis-Namenspaare (Teilstring-Ersetzung) */
-    private const RANGE_PAIRS = [
+    private const array RANGE_PAIRS = [
         ['from', 'to'],
         ['start', 'end'],
         ['started', 'ended'],

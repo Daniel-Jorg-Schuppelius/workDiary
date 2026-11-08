@@ -36,9 +36,9 @@ use Closure;
  * Kündigt {@see PluginCapability::CalendarPublish} an.
  */
 class GoogleCalendarPlugin extends AbstractPlugin implements CalendarPublisher {
-    public const ID = 'google_calendar';
+    public const string ID = 'google_calendar';
 
-    public const SERVICE_PROVIDER = GoogleCalendarServiceProvider::class;
+    public const string SERVICE_PROVIDER = GoogleCalendarServiceProvider::class;
 
     public function name(): string {
         return (string) __('google_calendar::google_calendar.title');

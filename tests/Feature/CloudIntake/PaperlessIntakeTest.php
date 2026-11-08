@@ -42,7 +42,7 @@ class PaperlessIntakeTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const BASE = 'https://paperless.example.test';
+    private const string BASE = 'https://paperless.example.test';
 
     /** @var array<int, array<string, mixed>> */
     private array $documents = [];

@@ -21,10 +21,10 @@ namespace App\Support;
  */
 final class PrintChartPalette {
     /** Druck-Serienfarben (unterscheidbar auch in Graustufen-Kopien). */
-    private const SERIES = ['#1d4ed8', '#7e22ce', '#0f766e', '#b45309', '#be185d'];
+    private const array SERIES = ['#1d4ed8', '#7e22ce', '#0f766e', '#b45309', '#be185d'];
 
     /** Basiston der Heat-Abstufung (Druck-Pendant zur Primary-Tönung). */
-    private const HEAT_BASE = [29, 78, 216]; // #1d4ed8
+    private const array HEAT_BASE = [29, 78, 216]; // #1d4ed8
 
     public static function series(int $index): string {
         return self::SERIES[$index % count(self::SERIES)];

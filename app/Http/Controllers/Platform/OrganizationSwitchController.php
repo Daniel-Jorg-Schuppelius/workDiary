@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Auth;
  * ausschließlich aus users.organization_id.
  */
 class OrganizationSwitchController extends Controller {
-    public const SESSION_KEY = 'active_organization_id';
+    public const string SESSION_KEY = 'active_organization_id';
 
     public function update(Request $request): RedirectResponse {
         /** @var User|null $user */

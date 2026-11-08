@@ -41,9 +41,9 @@ class SeafileIntakeTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const BASE = 'https://seafile.example.test';
+    private const string BASE = 'https://seafile.example.test';
 
-    private const REPO = 'aaaaaaaa-1111-4222-8333-444444444444';
+    private const string REPO = 'aaaaaaaa-1111-4222-8333-444444444444';
 
     private User $admin;
 

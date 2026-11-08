@@ -31,10 +31,10 @@ use RuntimeException;
  * Rechnung und Mahnung über die Beleg-Endpunkte des SDK mit einem Client.
  */
 class LexofficeDunningService {
-    public const EXT_TYPE_DUNNING = 'dunning';
+    public const string EXT_TYPE_DUNNING = 'dunning';
 
     /** Lexoffice-voucherType-Werte für Verkaufsrechnungen. */
-    private const INVOICE_TYPES = VoucherTypes::SALES_INVOICES;
+    private const array INVOICE_TYPES = VoucherTypes::SALES_INVOICES;
 
     /**
      * Erstellt eine Lexoffice-Mahnung zur überfälligen Rechnung.

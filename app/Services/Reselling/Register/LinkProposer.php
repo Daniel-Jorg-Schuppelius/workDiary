@@ -50,11 +50,11 @@ final class LinkProposer {
     use AssertsStatusTransition;
     use LocksResalePeriods;
 
-    public const WINDOW_BEFORE = 90;
-    public const WINDOW_AFTER = 730;
+    public const int WINDOW_BEFORE = 90;
+    public const int WINDOW_AFTER = 730;
 
     /** Sperre je Organisation: Scheduler und Buttons aus vier Views dürfen nicht gleichzeitig laufen. */
-    private const LOCK_SECONDS = 300;
+    private const int LOCK_SECONDS = 300;
 
     /**
      * Partnerkontakt mit mehreren Endkunden desselben Produkts: ohne Nennung
@@ -62,26 +62,26 @@ final class LinkProposer {
      * Belegdatum dicht am Periodenbeginn liegt (Reseller rechnet je Lizenz
      * eine Position „12 Monat" zum Jahrestag ab).
      */
-    public const SHARED_NEAREST_DAYS = 45;
+    public const int SHARED_NEAREST_DAYS = 45;
 
     /** Sicherer Treffer (Feature 185, MVP-1406): Bezugsdatum höchstens so viele Tage vor bzw. nach dem Periodenbeginn. */
-    public const SURE_BEFORE_DAYS = 14;
+    public const int SURE_BEFORE_DAYS = 14;
 
-    public const SURE_AFTER_DAYS = 45;
+    public const int SURE_AFTER_DAYS = 45;
 
     /** Abstand Periodenbeginn ↔ Zyklusbeginn der Position, den Anbieter- gegen Rechnungsdatum erklären. */
-    public const SERVICE_TOLERANCE_DAYS = 14;
+    public const int SERVICE_TOLERANCE_DAYS = 14;
 
     /** Org-Einstellung: Zeitpunkt des letzten Laufs (Übersicht „zuletzt abgeglichen"). */
-    public const SETTING_LAST_RUN = 'resale.last_proposal_run_at';
+    public const string SETTING_LAST_RUN = 'resale.last_proposal_run_at';
 
-    public const AUDIT_AUTO_CONFIRMED = 'resale_period.auto_confirmed';
+    public const string AUDIT_AUTO_CONFIRMED = 'resale_period.auto_confirmed';
 
-    private const PASS_NEAREST = 'nearest';
+    private const string PASS_NEAREST = 'nearest';
 
-    private const PASS_RESERVED = 'reserved';
+    private const string PASS_RESERVED = 'reserved';
 
-    private const PASS_FREE = 'free';
+    private const string PASS_FREE = 'free';
 
     /** @var array<string, array<int, true>> Position → Abos, an die sie in diesem Lauf schon hängt (Mehrjahres-Positionen bleiben beim Abo). */
     private array $linkedSubscriptions = [];

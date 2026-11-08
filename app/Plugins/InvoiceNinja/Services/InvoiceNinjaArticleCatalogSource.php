@@ -27,10 +27,10 @@ use CommonToolkit\Helper\Data\StringHelper;
  * als inaktiv geführt. Eine Einheit kennt das Produkt nicht.
  */
 class InvoiceNinjaArticleCatalogSource extends AccountingArticleCatalogSource {
-    public const PREFIX = 'inj';
+    public const string PREFIX = 'inj';
 
     /** Seiten je Lauf: darüber ist das Lesen unvollständig. */
-    private const MAX_PAGES = 50;
+    private const int MAX_PAGES = 50;
 
     public function __construct(private readonly InvoiceNinjaClientFactory $clients) {}
 

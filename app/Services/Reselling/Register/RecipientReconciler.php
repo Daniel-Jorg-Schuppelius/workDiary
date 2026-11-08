@@ -57,7 +57,7 @@ use Illuminate\Support\Facades\Cache;
  */
 final class RecipientReconciler {
     /** Lebensdauer der Übersicht und der Belegtexte im Cache (Sekunden); der Org-Stempel verwirft früher. */
-    public const CACHE_TTL = 60;
+    public const int CACHE_TTL = 60;
 
     private readonly InvoiceMirror $mirror;
 

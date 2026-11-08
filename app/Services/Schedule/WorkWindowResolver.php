@@ -23,9 +23,9 @@ use Carbon\CarbonImmutable;
  * Quelle für Lückenfüller und Tourvorschlag (MVP-1175).
  */
 class WorkWindowResolver {
-    public const DEFAULT_DAY_START = '08:00';
+    public const string DEFAULT_DAY_START = '08:00';
 
-    public const DEFAULT_DAY_END = '17:00';
+    public const string DEFAULT_DAY_END = '17:00';
 
     /** @return list<array{0: string, 1: string}> */
     public function windowsFor(User $user, CarbonImmutable $date): array {

@@ -53,10 +53,10 @@ class ResalePurchaseEntry extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const SOURCE_VOUCHER = 'voucher';
-    public const SOURCE_DOMAIN = 'domain_accounting';
-    public const SOURCE_MANUAL = 'manual';
-    public const SOURCE_PROVIDER_INVOICE = 'provider_invoice';
+    public const string SOURCE_VOUCHER = 'voucher';
+    public const string SOURCE_DOMAIN = 'domain_accounting';
+    public const string SOURCE_MANUAL = 'manual';
+    public const string SOURCE_PROVIDER_INVOICE = 'provider_invoice';
 
     protected $table = 'resale_purchase_entries';
 

@@ -41,12 +41,12 @@ class RedmineTimeImportService {
     use PersistsTimeImportInbox;
     use ReconcilesRemoteDeletions;
 
-    public const EXT_TYPE_ENTRY = 'entry';
+    public const string EXT_TYPE_ENTRY = 'entry';
 
-    public const EXT_TYPE_USER = 'user';
+    public const string EXT_TYPE_USER = 'user';
 
     /** Gruppen-Präfix der Fälle „Redmine-Benutzer zuordnen“. */
-    public const USER_GROUP_PREFIX = 'user:';
+    public const string USER_GROUP_PREFIX = 'user:';
 
     public function __construct(private readonly RedmineClientFactory $clients) {}
 

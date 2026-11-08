@@ -40,7 +40,7 @@ class CrisisCommunication extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const AUDIENCES = ['internal', 'customers', 'suppliers', 'authorities', 'dpa', 'insurer', 'public'];
+    public const array AUDIENCES = ['internal', 'customers', 'suppliers', 'authorities', 'dpa', 'insurer', 'public'];
 
     protected $fillable = [
         'organization_id', 'crisis_case_id', 'audience', 'subject', 'body',

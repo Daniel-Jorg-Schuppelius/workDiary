@@ -33,7 +33,7 @@ use Illuminate\Validation\ValidationException;
 final class SupplierQuestionnaireService {
     use AssertsValidatedTransition;
 
-    public const LINK_DAYS = 30;
+    public const int LINK_DAYS = 30;
 
     public function __construct(
         private readonly FieldValidator $validator,

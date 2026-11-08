@@ -13,7 +13,7 @@ namespace App\Services\Procedure\Automation;
 use App\Automation\Triggers\RuleTrigger;
 
 final class DeviationRecordedTrigger implements RuleTrigger {
-    public const KEY = 'procedure.deviationRecorded';
+    public const string KEY = 'procedure.deviationRecorded';
 
     public function key(): string {
         return self::KEY;

@@ -27,7 +27,7 @@ final class RemoteSyncWindow {
      * Referenzen, die kurz vor dem Abrufbeginn entstanden, gelten noch nicht als
      * fehlend — Uhrenabstand zwischen Prozessen und Nachlauf der Fremd-API.
      */
-    public const GRACE_SECONDS = 60;
+    public const int GRACE_SECONDS = 60;
 
     public function __construct(
         public readonly CarbonImmutable $from,

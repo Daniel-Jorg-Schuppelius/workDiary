@@ -28,12 +28,12 @@ use Throwable;
  * eine defekte Lieferung ersetzt die laufende Datenbank nie.
  */
 class GeoDatabaseUpdater {
-    public const SERVICE_ID = 'geoip';
+    public const string SERVICE_ID = 'geoip';
 
     /** Öffentliche Adresse, für die jede Stadt-/Länder-Datenbank einen Eintrag führt. */
-    public const PROBE_IP = '8.8.8.8';
+    public const string PROBE_IP = '8.8.8.8';
 
-    private const CHUNK_BYTES = 1 << 20;
+    private const int CHUNK_BYTES = 1 << 20;
 
     public function __construct(private readonly PluginHttpFactory $http) {}
 

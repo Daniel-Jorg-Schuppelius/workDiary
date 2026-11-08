@@ -44,11 +44,11 @@ use Illuminate\Support\Facades\{DB, Storage};
 class BankImportService {
     use ResolvesActorId;
 
-    private const STORAGE_DISK = 'local';
+    private const string STORAGE_DISK = 'local';
 
-    private const BASE_PATH = 'imports/bank';
+    private const string BASE_PATH = 'imports/bank';
 
-    private const BALANCE_TOLERANCE = 0.01;
+    private const float BALANCE_TOLERANCE = 0.01;
 
     public function __construct(private readonly BankStatementParser $parser) {}
 

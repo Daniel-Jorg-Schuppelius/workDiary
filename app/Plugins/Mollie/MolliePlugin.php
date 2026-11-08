@@ -27,9 +27,9 @@ use RuntimeException;
  * meldet auch Erstattungen und Rückbuchungen dorthin.
  */
 class MolliePlugin extends AbstractPlugin implements OnlinePaymentProvider {
-    public const ID = 'mollie';
+    public const string ID = 'mollie';
 
-    public const SERVICE_PROVIDER = MollieServiceProvider::class;
+    public const string SERVICE_PROVIDER = MollieServiceProvider::class;
 
     public function name(): string {
         return 'Mollie';

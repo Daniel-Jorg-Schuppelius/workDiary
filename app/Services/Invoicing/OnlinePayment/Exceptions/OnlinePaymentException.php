@@ -16,11 +16,11 @@ use RuntimeException;
 
 /** Rechnung ist gerade nicht online zahlbar; `reason` steuert die Seite für den Kunden. */
 final class OnlinePaymentException extends RuntimeException {
-    public const PAID = 'paid';
+    public const string PAID = 'paid';
 
-    public const NOT_PAYABLE = 'not_payable';
+    public const string NOT_PAYABLE = 'not_payable';
 
-    public const UNAVAILABLE = 'unavailable';
+    public const string UNAVAILABLE = 'unavailable';
 
     public function __construct(public readonly string $reason) {
         parent::__construct('Online-Zahlung nicht möglich: ' . $reason);

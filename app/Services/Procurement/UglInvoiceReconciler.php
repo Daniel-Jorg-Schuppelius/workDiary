@@ -29,7 +29,7 @@ use ERechnungToolkit\Entities\{OrderLine, UglInvoice};
  */
 class UglInvoiceReconciler {
     /** Mengen bleiben skalar — Beträge vergleicht Money exakt. */
-    private const QUANTITY_TOLERANCE = 0.01;
+    private const float QUANTITY_TOLERANCE = 0.01;
 
     /**
      * @return array{

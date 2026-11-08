@@ -24,9 +24,9 @@ use Throwable;
  * Regel scheiterte erst das INSERT (SQLSTATE 22007, UI-Fuzz 2026-09-21).
  */
 final class TimestampRange implements ValidationRule {
-    private const FIRST_DAY = '1970-01-02';
+    private const string FIRST_DAY = '1970-01-02';
 
-    private const LAST_DAY = '2038-01-18';
+    private const string LAST_DAY = '2038-01-18';
 
     public function validate(string $attribute, mixed $value, Closure $fail): void {
         if (! is_string($value) || trim($value) === '') {

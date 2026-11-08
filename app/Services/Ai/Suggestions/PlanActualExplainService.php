@@ -36,7 +36,7 @@ use Carbon\CarbonImmutable;
 class PlanActualExplainService {
     use DecidesSuggestions;
 
-    public const CAPABILITY = 'plan_actual.explain';
+    public const string CAPABILITY = 'plan_actual.explain';
 
     public function __construct(
         private readonly AiInvocationService $invocation,

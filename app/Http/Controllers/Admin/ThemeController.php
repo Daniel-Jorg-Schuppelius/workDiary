@@ -36,7 +36,7 @@ class ThemeController extends Controller {
     use ResolvesCurrentOrganization;
 
     /** Mindestkontrast neutral ↔ neutral-content (sonst werden .wd-badge-Flächen unlesbar). */
-    private const MIN_NEUTRAL_CONTRAST = 3.0;
+    private const float MIN_NEUTRAL_CONTRAST = 3.0;
 
     public function index(): View {
         $organization = $this->currentOrganization();

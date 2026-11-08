@@ -55,7 +55,7 @@ class RecurrenceRule extends Model {
     use HasSqid;
 
     /** @var list<string> */
-    public const WEEKDAY_CODES = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
+    public const array WEEKDAY_CODES = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
 
     protected $fillable = [
         'organization_id',

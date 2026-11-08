@@ -35,13 +35,13 @@ use Illuminate\Support\Facades\{Cache, Crypt, DB};
  * Bestände werden gezählt, nie als Restzähler geführt.
  */
 class LicenseStockService {
-    public const MAX_KEY_ROLES = 5;
+    public const int MAX_KEY_ROLES = 5;
 
-    public const MAX_BATCH_QUANTITY = 5000;
+    public const int MAX_BATCH_QUANTITY = 5000;
 
-    public const MAX_KEY_LENGTH = 500;
+    public const int MAX_KEY_LENGTH = 500;
 
-    private const IMPORT_TTL_MINUTES = 30;
+    private const int IMPORT_TTL_MINUTES = 30;
 
     /** @param  array{name: string, manufacturer?: string|null, key_labels: list<string|null>, reorder_level?: int|null, article_ref?: string|null, note?: string|null}  $data */
     public function saveProduct(Organization $organization, ?ResaleLicenseProduct $product, array $data, User $actor): ResaleLicenseProduct {

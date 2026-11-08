@@ -34,7 +34,7 @@ class StatusEnumCastRuleTest extends TestCase {
      *
      * @var list<string>
      */
-    private const BASELINE = [
+    private const array BASELINE = [
         // Billbee-Statuscode (Ganzzahl) aus der Bestell-API; Vorgabe 0 und Codes außerhalb von
         // BillbeeOrderState zeigt stateLabel() als „#<int>".
         'App\Plugins\Billbee\Models\BillbeeOrder',
@@ -55,7 +55,7 @@ class StatusEnumCastRuleTest extends TestCase {
      *
      * @var list<string>
      */
-    private const NAMED_COLUMNS_BASELINE = [
+    private const array NAMED_COLUMNS_BASELINE = [
         // Protokoll trägt Rohwerte: Status-Slugs (Status::slug(), das Enum selbst ist int-gestützt)
         // und Altwerte der Datenmigration 2026_08_14 (done/problem/open), die kein heutiger Fall kennt.
         'App\Models\Diary\DiaryEntryEvent::from_status',

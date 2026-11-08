@@ -37,7 +37,7 @@ class PrestaShopImportTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const BASE = 'https://presta.example.test';
+    private const string BASE = 'https://presta.example.test';
 
     /** @var list<array<string, mixed>> */
     private array $orders = [];

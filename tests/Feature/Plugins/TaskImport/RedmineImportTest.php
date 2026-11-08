@@ -43,7 +43,7 @@ class RedmineImportTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const BASE = 'https://redmine.example.test';
+    private const string BASE = 'https://redmine.example.test';
 
     private User $admin;
 

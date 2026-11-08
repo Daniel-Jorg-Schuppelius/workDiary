@@ -29,10 +29,10 @@ use Illuminate\Support\Facades\Route;
  */
 class StartPageResolver {
     /** Seiten ohne Menüeintrag, die jede Person im neuen System öffnen darf. */
-    private const WITHOUT_MENU_CHECK = ['dashboard', 'diary.index'];
+    private const array WITHOUT_MENU_CHECK = ['dashboard', 'diary.index'];
 
     /** Rollen, für die eine Organisation eine Startseite vorgeben kann (Kunden landen im Portal). */
-    public const CONFIGURABLE_ROLES = [
+    public const array CONFIGURABLE_ROLES = [
         UserRole::Admin,
         UserRole::Geschaeftsfuehrung,
         UserRole::Personalverwaltung,

@@ -35,7 +35,7 @@ class ArticleController extends Controller {
     use ResolvesCurrentOrganization;
     use SavesCustomFields;
 
-    private const ALLOWED_SORTS = ['name', 'number', 'created_at'];
+    private const array ALLOWED_SORTS = ['name', 'number', 'created_at'];
 
     public function __construct(
         private readonly ArticleService $articles,

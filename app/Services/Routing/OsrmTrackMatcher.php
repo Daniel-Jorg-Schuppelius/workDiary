@@ -20,7 +20,7 @@ use App\Services\Location\Contracts\TrackDistanceSource;
  */
 final class OsrmTrackMatcher implements TrackDistanceSource {
     /** OSRM begrenzt `/match` auf 100 Koordinaten je Anfrage. */
-    public const MAX_POINTS = 100;
+    public const int MAX_POINTS = 100;
 
     public function __construct(private readonly OsrmRouter $router) {}
 

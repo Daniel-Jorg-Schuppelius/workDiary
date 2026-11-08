@@ -29,8 +29,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * Die Header-Zeile bleibt ungeguarded (entwicklerkontrolliert).
  */
 final class CsvExport {
-    public const DELIMITER = ';';
-    public const EOL = "\r\n";
+    public const string DELIMITER = ';';
+    public const string EOL = "\r\n";
 
     /**
      * Präfixe des Formel-Guards. Bewusst OHNE Tab/CR, die die
@@ -41,7 +41,7 @@ final class CsvExport {
      *
      * @var list<string>
      */
-    public const FORMULA_PREFIXES = ['=', '+', '-', '@'];
+    public const array FORMULA_PREFIXES = ['=', '+', '-', '@'];
 
     /**
      * @param  list<string>  $header

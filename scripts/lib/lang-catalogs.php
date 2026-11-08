@@ -18,7 +18,7 @@ function langCatalogs(string $base): array {
     $plugins = [];
     foreach (glob($base . '/app/Plugins/*/Resources/lang', GLOB_ONLYDIR) ?: [] as $dir) {
         foreach (glob(dirname($dir, 2) . '/*Plugin.php') ?: [] as $class) {
-            if (preg_match("/const ID = '([^']+)'/", (string) file_get_contents($class), $m) === 1) {
+            if (preg_match("/const (?:string )?ID = '([^']+)'/", (string) file_get_contents($class), $m) === 1) {
                 $plugins[$m[1]] = $dir;
             }
         }

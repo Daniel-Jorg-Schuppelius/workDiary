@@ -30,7 +30,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  */
 class EnforceTenantStatus {
     /** Routen, die trotz Sperre erreichbar bleiben müssen (Aufhebung/Logout). */
-    private const ALLOWED_ROUTE_PREFIXES = [
+    private const array ALLOWED_ROUTE_PREFIXES = [
         'admin.license',
         'admin.tenants',
         'license.',

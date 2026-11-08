@@ -29,7 +29,7 @@ use PHPUnit\Framework\TestCase;
  * Fehler vor dem Deploy auffallen statt erst im Web-Installer auf dem Server.
  */
 class MigrationPortabilityTest extends TestCase {
-    private const IDENTIFIER_LIMIT = 64;
+    private const int IDENTIFIER_LIMIT = 64;
 
     /** @return list<string> alle Migrationsdateien (Kern und Plugins), sortiert nach Dateiname (= Ausführungsreihenfolge). */
     private function migrationFiles(): array {

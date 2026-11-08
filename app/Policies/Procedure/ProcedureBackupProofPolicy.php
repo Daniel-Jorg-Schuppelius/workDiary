@@ -22,7 +22,7 @@ use App\Policies\PermissionPolicy;
 class ProcedureBackupProofPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::ProcedureRunView,
         'view' => P::ProcedureRunView,
         'register' => P::ProcedureBackupRegister,

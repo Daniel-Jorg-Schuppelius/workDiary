@@ -20,9 +20,9 @@ use Illuminate\Http\UploadedFile;
  * Dateien je 10 MB.
  */
 class ResalePurchaseImportRequest extends BaseFormRequest {
-    public const MAX_FILES = 50;
+    public const int MAX_FILES = 50;
 
-    public const MAX_FILE_KB = 10240;
+    public const int MAX_FILE_KB = 10240;
 
     /**
      * @return array<string, list<mixed>>

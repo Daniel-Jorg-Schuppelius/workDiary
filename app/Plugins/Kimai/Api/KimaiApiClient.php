@@ -30,7 +30,7 @@ use Carbon\CarbonImmutable;
 class KimaiApiClient implements RemoteTimeWriter {
     use GuardsPluginApiResponses, StartStopFingerprint;
 
-    public const PAGE_SIZE = 500;
+    public const int PAGE_SIZE = 500;
 
     private ?PluginApiClient $api = null;
 

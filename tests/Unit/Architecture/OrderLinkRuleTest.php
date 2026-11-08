@@ -26,7 +26,7 @@ class OrderLinkRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Datei → Grund, warum der direkte Link dort stimmt. */
-    private const ALLOWED = [
+    private const array ALLOWED = [
         'resources/views/components/order-link.blade.php' => 'Der Baustein selbst.',
         'resources/views/diary/_entry_card.blade.php' => 'Details-Knopf steht hinter @can(\'view\').',
         'resources/views/diary/_timeline_panel.blade.php' => 'Innerhalb eines geöffneten Auftrags.',

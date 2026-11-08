@@ -38,15 +38,15 @@ use Laravel\Sanctum\PersonalAccessToken;
  */
 final class McpAuthorizationServer {
     /** @var list<string> */
-    public const SCOPES = [ApiAbility::McpRead->value, ApiAbility::McpWrite->value];
+    public const array SCOPES = [ApiAbility::McpRead->value, ApiAbility::McpWrite->value];
 
-    private const CODE_TTL_MINUTES = 10;
+    private const int CODE_TTL_MINUTES = 10;
 
-    private const ACCESS_TTL_MINUTES = 60;
+    private const int ACCESS_TTL_MINUTES = 60;
 
-    private const REFRESH_TTL_DAYS = 30;
+    private const int REFRESH_TTL_DAYS = 30;
 
-    private const LOOPBACK_HOSTS = ['localhost', '127.0.0.1', '::1'];
+    private const array LOOPBACK_HOSTS = ['localhost', '127.0.0.1', '::1'];
 
     public function enabledFor(Organization $organization): bool {
         return StringHelper::parseBool(app(SettingsRegistry::class)->effective('mcp.enabled', $organization)->value) ?? false;

@@ -69,7 +69,7 @@ class InvoiceSupportingDocument extends Model {
     use HasSqid;
 
     /** Felder, die nach dem Einfrieren noch geschrieben werden dürfen. */
-    public const MUTABLE_AFTER_FREEZE = ['transferred_at', 'transfer_note', 'updated_by', 'updated_at'];
+    public const array MUTABLE_AFTER_FREEZE = ['transferred_at', 'transfer_note', 'updated_by', 'updated_at'];
 
     protected $fillable = [
         'organization_id', 'invoice_id', 'external_invoice_id', 'attachment_id', 'position', 'kind', 'reference', 'description',

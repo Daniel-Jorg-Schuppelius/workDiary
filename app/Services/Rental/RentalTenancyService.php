@@ -34,7 +34,7 @@ class RentalTenancyService {
     use AssertsStatusTransition;
 
     /** Felder, die Leitung bzw. Formular setzen; Status und Zuordnung führt der Dienst. */
-    private const FIELDS = ['starts_on', 'ends_on', 'rent_amount', 'ancillary_amount', 'deposit_amount', 'note'];
+    private const array FIELDS = ['starts_on', 'ends_on', 'rent_amount', 'ancillary_amount', 'deposit_amount', 'note'];
 
     public function __construct(private readonly RentalAvailabilityService $availability) {}
 

@@ -40,13 +40,13 @@ class TogglFocusSourceTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const FOCUS = 'https://focus.toggl.com/api';
+    private const string FOCUS = 'https://focus.toggl.com/api';
 
-    private const ORG = 900;
+    private const int ORG = 900;
 
-    private const WS = 77;
+    private const int WS = 77;
 
-    private const ENTRIES_URL = self::FOCUS . '/organizations/' . self::ORG . '/workspaces/' . self::WS . '/time-entries';
+    private const string ENTRIES_URL = self::FOCUS . '/organizations/' . self::ORG . '/workspaces/' . self::WS . '/time-entries';
 
     private User $dev;
 

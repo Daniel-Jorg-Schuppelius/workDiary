@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\DB;
  * `(organization_id, <number-spalte>)` der Ziel-Tabelle geschützt.
  */
 class NumberSequenceService {
-    public const DRAFT_PREFIX = 'ENTWURF-';
+    public const string DRAFT_PREFIX = 'ENTWURF-';
 
     public function __construct(
         private readonly NumberAuthority $authority = new NumberAuthority(),

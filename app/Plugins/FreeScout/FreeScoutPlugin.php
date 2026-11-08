@@ -27,11 +27,11 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSett
 class FreeScoutPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
     use ChecksConnectionHealth, RendersTaskLink;
 
-    public const ID = 'freescout';
+    public const string ID = 'freescout';
 
-    public const SERVICE_PROVIDER = FreeScoutServiceProvider::class;
+    public const string SERVICE_PROVIDER = FreeScoutServiceProvider::class;
 
-    public const EXT_TYPE_CONVERSATION = 'conversation';
+    public const string EXT_TYPE_CONVERSATION = 'conversation';
 
     public function name(): string {
         return 'FreeScout';

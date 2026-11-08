@@ -26,7 +26,7 @@ class LexofficeConfig {
      * einen einzelnen Lauf sicher darunter. Die Sync-Läufe serialisieren sich
      * zusätzlich je Organisation über {@see apiLockKey()}.
      */
-    public const DEFAULT_REQUEST_INTERVAL = 0.5;
+    public const float DEFAULT_REQUEST_INTERVAL = 0.5;
 
     /**
      * @return array{api_key: ?string, base_url: string, defaults: array<string, mixed>, match_policy: string, create_missing_local: bool, webhook_secret: ?string, webhook_public_key: ?string, enabled: bool, request_interval: float, incoming_transfer: bool, incoming_default_category: ?string, outgoing_default_category: ?string}
@@ -59,10 +59,10 @@ class LexofficeConfig {
     }
 
     /** Geplante Läufe warten so lange aufeinander (Sekunden). */
-    public const API_LOCK_WAIT_SCHEDULED = 600;
+    public const int API_LOCK_WAIT_SCHEDULED = 600;
 
     /** Jobs und Aufrufe aus der Oberfläche warten nur kurz und weichen dann aus. */
-    public const API_LOCK_WAIT_SHORT = 5;
+    public const int API_LOCK_WAIT_SHORT = 5;
 
     /**
      * Sperrschlüssel, unter dem sich Lexoffice-Läufe einer Organisation

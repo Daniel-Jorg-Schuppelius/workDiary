@@ -26,9 +26,9 @@ use App\Plugins\WooCommerce\Models\WooCommerceConnection;
 class WooCommercePlugin extends AbstractPlugin {
     use ChecksConnectionHealth;
 
-    public const ID = 'woocommerce';
+    public const string ID = 'woocommerce';
 
-    public const SERVICE_PROVIDER = WooCommerceServiceProvider::class;
+    public const string SERVICE_PROVIDER = WooCommerceServiceProvider::class;
 
     public function name(): string {
         return 'WooCommerce';

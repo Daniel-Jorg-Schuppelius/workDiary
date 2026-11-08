@@ -43,15 +43,15 @@ class TodoistProjectLink extends Model implements TaskSyncLink {
     use HasFactory;
     use HasSqid;
 
-    public const KIND_PROJECT = 'project';
+    public const string KIND_PROJECT = 'project';
 
-    public const KIND_GLOBAL_KANBAN = 'global_kanban';
+    public const string KIND_GLOBAL_KANBAN = 'global_kanban';
 
-    public const MODE_TODOIST_TO_WORKDIARY = 'todoist_to_workdiary';
+    public const string MODE_TODOIST_TO_WORKDIARY = 'todoist_to_workdiary';
 
-    public const MODE_WORKDIARY_TO_TODOIST = 'workdiary_to_todoist';
+    public const string MODE_WORKDIARY_TO_TODOIST = 'workdiary_to_todoist';
 
-    public const MODE_BIDIRECTIONAL = 'bidirectional';
+    public const string MODE_BIDIRECTIONAL = 'bidirectional';
 
     protected $fillable = [
         'organization_id',

@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Gate;
 
 /** Beantragte Preisänderungen aus Margenregeln; der Antragsteller entscheidet nicht selbst. */
 final class PriceChangeWorkItemSource implements WorkItemSource {
-    private const ROUTE = 'pricing-margin-rules.approvals';
+    private const string ROUTE = 'pricing-margin-rules.approvals';
 
     public function __construct(private readonly FeatureFlagResolver $features) {}
 

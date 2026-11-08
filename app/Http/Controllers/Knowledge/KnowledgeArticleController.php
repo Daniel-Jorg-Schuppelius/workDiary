@@ -38,7 +38,7 @@ class KnowledgeArticleController extends Controller {
      *
      * @var array<string, class-string<Model>>
      */
-    private const LINKABLE_MAP = [
+    private const array LINKABLE_MAP = [
         'diary' => DiaryEntry::class,
         'asset' => Asset::class,
         'customer' => Customer::class,

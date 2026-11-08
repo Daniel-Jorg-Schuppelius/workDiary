@@ -42,7 +42,7 @@ class IncomingInvoiceAssignmentController extends Controller {
     use AuthorizesOrganizationManagement;
     use ResolvesCurrentOrganization;
 
-    private const MODES = ['existing', 'collective', 'new', 'adopt', 'not_invoice', 'unassign'];
+    private const array MODES = ['existing', 'collective', 'new', 'adopt', 'not_invoice', 'unassign'];
 
     public function __construct(
         private readonly IncomingInvoiceMatcher $matcher,

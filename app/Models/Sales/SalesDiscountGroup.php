@@ -38,9 +38,9 @@ class SalesDiscountGroup extends Model {
     // Audit 2026-08 (W3.3): Formulare/URLs tragen Sqids, nie rohe IDs.
     use HasSqid;
 
-    public const KIND_DISCOUNT = 'discount';
-    public const KIND_FACTOR = 'factor';
-    public const KIND_SURCHARGE = 'surcharge';
+    public const string KIND_DISCOUNT = 'discount';
+    public const string KIND_FACTOR = 'factor';
+    public const string KIND_SURCHARGE = 'surcharge';
 
     protected $fillable = [
         'organization_id',

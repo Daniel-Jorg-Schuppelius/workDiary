@@ -41,9 +41,9 @@ class GiteaImportTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const BASE = 'https://git.example.test';
+    private const string BASE = 'https://git.example.test';
 
-    private const REPO = '42';
+    private const string REPO = '42';
 
     private User $admin;
 

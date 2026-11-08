@@ -23,10 +23,10 @@ use Throwable;
  * (kurze TTL) abgelegt und per Mail an die hinterlegte Adresse gesendet.
  */
 class EmailOtpService {
-    private const TTL_SECONDS = 300;        // 5 Minuten Gültigkeit
-    private const MAX_VERIFY_ATTEMPTS = 5;  // Fehlversuche, bevor der Code invalidiert wird
-    private const RESEND_COOLDOWN = 30;     // Sekunden zwischen zwei Versänden
-    private const MAX_PER_HOUR = 5;         // Versände pro Stunde
+    private const int TTL_SECONDS = 300;        // 5 Minuten Gültigkeit
+    private const int MAX_VERIFY_ATTEMPTS = 5;  // Fehlversuche, bevor der Code invalidiert wird
+    private const int RESEND_COOLDOWN = 30;     // Sekunden zwischen zwei Versänden
+    private const int MAX_PER_HOUR = 5;         // Versände pro Stunde
 
     private function key(User $user): string {
         return '2fa:email:' . $user->getKey();

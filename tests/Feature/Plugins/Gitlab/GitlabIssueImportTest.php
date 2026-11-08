@@ -34,7 +34,7 @@ final class GitlabIssueImportTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const PROJECT_ID = '4242';
+    private const string PROJECT_ID = '4242';
 
     protected function setUp(): void {
         parent::setUp();

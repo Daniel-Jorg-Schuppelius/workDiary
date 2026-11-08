@@ -30,9 +30,9 @@ class TaigaClient {
     use GuardsPluginApiResponses;
 
     /** Taiga Cloud trennt API- und App-Host; Links zeigen auf die App. */
-    private const CLOUD_API_HOST = 'api.taiga.io';
+    private const string CLOUD_API_HOST = 'api.taiga.io';
 
-    private const CLOUD_APP_URL = 'https://tree.taiga.io';
+    private const string CLOUD_APP_URL = 'https://tree.taiga.io';
 
     private ?PluginApiClient $api = null;
 

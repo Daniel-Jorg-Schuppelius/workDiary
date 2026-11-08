@@ -28,7 +28,7 @@ use Illuminate\Support\{Carbon, Collection};
  * Ergebnisse tragen sie im DTO.
  */
 class AgileMetricsService {
-    public const METRIC_VERSION = 1;
+    public const int METRIC_VERSION = 1;
 
     /**
      * Velocity: done_points je abgeschlossenem Sprint desselben Boards

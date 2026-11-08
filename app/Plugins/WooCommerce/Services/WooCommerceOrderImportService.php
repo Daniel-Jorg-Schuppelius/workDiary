@@ -35,7 +35,7 @@ use Illuminate\Database\Eloquent\Model;
  * @extends AbstractShopOrderImportService<WooCommerceOrder, WooCommerceConnection>
  */
 class WooCommerceOrderImportService extends AbstractShopOrderImportService {
-    private const STATUSES = [
+    private const array STATUSES = [
         'pending' => ShopOrderStatus::Open,
         'on-hold' => ShopOrderStatus::Open,
         'processing' => ShopOrderStatus::Processing,

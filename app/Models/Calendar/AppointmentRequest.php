@@ -72,9 +72,9 @@ class AppointmentRequest extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const SOURCE_CALENDLY = 'calendly';
+    public const string SOURCE_CALENDLY = 'calendly';
 
-    public const SOURCE_PORTAL = 'portal';
+    public const string SOURCE_PORTAL = 'portal';
 
     protected $table = 'appointment_requests';
 

@@ -41,7 +41,7 @@ class ProtocolController extends Controller {
      *
      * @var array<string, class-string<Model>>
      */
-    public const SUBJECT_MAP = [
+    public const array SUBJECT_MAP = [
         'diary' => DiaryEntry::class,
         'project' => Project::class,
         'customer' => Customer::class,
@@ -49,7 +49,7 @@ class ProtocolController extends Controller {
     ];
 
     /** Punktarten im Dialog; Unterschrift, Prozedurschritt und interne Abnahme entstehen über ihre Abläufe. */
-    public const FORM_ITEM_TYPES = [
+    public const array FORM_ITEM_TYPES = [
         ProtocolItemType::Group, ProtocolItemType::Text, ProtocolItemType::Boolean, ProtocolItemType::Choice,
         ProtocolItemType::Multichoice, ProtocolItemType::Number, ProtocolItemType::Range, ProtocolItemType::Date,
         ProtocolItemType::DateTime, ProtocolItemType::Photo, ProtocolItemType::Defect, ProtocolItemType::MeasurementTimestamped,

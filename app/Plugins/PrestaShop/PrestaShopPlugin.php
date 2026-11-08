@@ -26,9 +26,9 @@ use App\Plugins\Support\ShopOrders\ShopOrderSettings;
 class PrestaShopPlugin extends AbstractPlugin {
     use ChecksConnectionHealth;
 
-    public const ID = 'prestashop';
+    public const string ID = 'prestashop';
 
-    public const SERVICE_PROVIDER = PrestaShopServiceProvider::class;
+    public const string SERVICE_PROVIDER = PrestaShopServiceProvider::class;
 
     public function name(): string {
         return 'PrestaShop';

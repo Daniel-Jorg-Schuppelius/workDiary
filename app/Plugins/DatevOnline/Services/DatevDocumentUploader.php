@@ -33,7 +33,7 @@ use Throwable;
  * {@see DatevOnlineIncomingInvoiceTarget} (MVP-1111).
  */
 class DatevDocumentUploader {
-    private const MAX_ATTEMPTS = 5;
+    private const int MAX_ATTEMPTS = 5;
 
     public function __construct(
         private readonly DatevOnlineClientFactory $clients,

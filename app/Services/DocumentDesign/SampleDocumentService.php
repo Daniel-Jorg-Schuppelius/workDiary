@@ -30,16 +30,16 @@ use RuntimeException;
  * ohne echte Belegdaten zu benötigen.
  */
 class SampleDocumentService {
-    public const SCENARIO_STANDARD = 'standard';
+    public const string SCENARIO_STANDARD = 'standard';
 
-    public const SCENARIO_LONG_TEXT = 'long_text';
+    public const string SCENARIO_LONG_TEXT = 'long_text';
 
-    public const SCENARIO_MANY_ROWS = 'many_rows';
+    public const string SCENARIO_MANY_ROWS = 'many_rows';
 
-    public const SCENARIO_MULTI_TAX = 'multi_tax';
+    public const string SCENARIO_MULTI_TAX = 'multi_tax';
 
     /** @var array<int, string> */
-    public const SCENARIOS = [self::SCENARIO_STANDARD, self::SCENARIO_LONG_TEXT, self::SCENARIO_MANY_ROWS, self::SCENARIO_MULTI_TAX];
+    public const array SCENARIOS = [self::SCENARIO_STANDARD, self::SCENARIO_LONG_TEXT, self::SCENARIO_MANY_ROWS, self::SCENARIO_MULTI_TAX];
 
     public function __construct(private readonly DocumentDesignRenderer $renderer) {}
 

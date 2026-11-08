@@ -30,13 +30,13 @@ class BackupCheckRestoreCommand extends Command {
 
     protected $description = 'Prüft Alter und Größe des letzten Backup-Heartbeats und protokolliert das Ergebnis.';
 
-    public const STATUS_OK = 'ok';
-    public const STATUS_WARN = 'warn';
-    public const STATUS_CRITICAL = 'critical';
+    public const string STATUS_OK = 'ok';
+    public const string STATUS_WARN = 'warn';
+    public const string STATUS_CRITICAL = 'critical';
 
-    public const EXIT_OK = 0;
-    public const EXIT_WARN = 1;
-    public const EXIT_CRITICAL = 2;
+    public const int EXIT_OK = 0;
+    public const int EXIT_WARN = 1;
+    public const int EXIT_CRITICAL = 2;
 
     public function handle(): int {
         $thresholds = (array) config('backup.thresholds_hours', ['warn' => 26, 'critical' => 72]);

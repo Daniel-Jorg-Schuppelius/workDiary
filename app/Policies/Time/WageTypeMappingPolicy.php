@@ -23,7 +23,7 @@ use App\Policies\PermissionPolicy;
 class WageTypeMappingPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::WageTypeMappingViewAny,
         'create' => P::WageTypeMappingManage,
         'update' => P::WageTypeMappingManage,

@@ -26,17 +26,17 @@ class DocumentLineContractRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Tabellen mit Menge, Preis und Steuersatz, die keine Belegposition sind */
-    private const NOT_A_LINE = [
+    private const array NOT_A_LINE = [
         'material_usages' => 'Quellposten der Zeiterfassung (wie TimeEntry): wird zur Rechnungsposition übernommen; der Zeilenbetrag läuft trotzdem über den Rechner.',
     ];
 
     /** @var array<string, string> Dateien, die Menge × Preis selbst multiplizieren dürfen */
-    private const MULTIPLICATION_ALLOWED = [
+    private const array MULTIPLICATION_ALLOWED = [
         'app/Services/Billing/DocumentTotalsCalculator.php' => 'Die Rechenstelle selbst.',
         'app/Plugins/InvoicePlane/Services/InvoicePlaneVoucherPullService.php' => 'Spiegelposition aus InvoicePlane (Feature 185): die Positionssumme liegt dort nur in ip_invoice_item_amounts; Fremdwert des Belegspiegels, keine Belegrechnung der App.',
     ];
 
-    private const MULTIPLICATION = '~(?ix)
+    private const string MULTIPLICATION = '~(?ix)
         (?: (?:quantity|qty|hours|units)\w*\)?\s*\*\s*\(?\s*(?:\(float\)\s*)?\$?[\w>-]*(?:unit_?price|price\b|rate\b) )
       | (?: (?:unit_?price|price|rate)\w*\)?\s*\*\s*\(?\s*(?:\(float\)\s*)?\$?[\w>-]*(?:quantity|qty|hours) )
       | (?: (?:unit_?price|price)\w*[^;\n]{0,40}->times\(\s*[^;)]*(?:quantity|qty) )

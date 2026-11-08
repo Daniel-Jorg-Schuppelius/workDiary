@@ -45,11 +45,11 @@ class EasybillTarget implements FacturationTarget {
     use ProjectsContactReference;
     use ReconcilesByMarker;
 
-    public const EXT_TYPE_INVOICE = 'easybill_invoice';
+    public const string EXT_TYPE_INVOICE = 'easybill_invoice';
 
-    public const EXT_TYPE_CUSTOMER = 'contact';
+    public const string EXT_TYPE_CUSTOMER = 'contact';
 
-    public const MARKER_PREFIX = 'workdiary:';
+    public const string MARKER_PREFIX = 'workdiary:';
 
     public function __construct(
         private readonly BillingPositionBuilder $positionBuilder,

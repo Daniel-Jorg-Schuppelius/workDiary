@@ -29,16 +29,16 @@ class FieldSchemaRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** Werte, die einen Erfassungs-Typkatalog verraten. */
-    private const TYPE_MARKERS = ['text', 'textarea', 'number', 'boolean', 'checkbox', 'select', 'choice', 'multichoice', 'date', 'datetime', 'photo', 'file', 'signature', 'scale'];
+    private const array TYPE_MARKERS = ['text', 'textarea', 'number', 'boolean', 'checkbox', 'select', 'choice', 'multichoice', 'date', 'datetime', 'photo', 'file', 'signature', 'scale'];
 
     /** @var array<string, string> Enums mit Feldtyp-Charakter außerhalb des Bausteins (Grund) */
-    private const ENUMS_ALLOWED = [
+    private const array ENUMS_ALLOWED = [
         'App\Enums\Procedure\ProcedureProofType' => 'Nachweisart eines Prozedurschritts (Fachtyp, keine Erfassungssemantik).',
         'App\Enums\Manufacturing\ParameterType' => 'Fertigungsparameter einer Stückliste (Fachtyp, keine Erfassungssemantik).',
     ];
 
     /** @var array<string, string> Modell::Spalte mit Schema-/Wertecharakter, die den Baustein anders als per Cast nutzen (Grund) */
-    private const JSON_COLUMNS_ALLOWED = [
+    private const array JSON_COLUMNS_ALLOWED = [
         'App\Models\Form\FormTemplate::fields' => 'FieldSchema::fromArray() im FormService und in den Views; Rohform bleibt für Dialog und Snapshot.',
         'App\Models\Form\FormSubmission::fields_snapshot' => 'Eingefrorene Definition — gelesen über FieldSchema::fromArray().',
         'App\Models\Form\FormSubmission::values' => 'FieldValues::fromArray(); Rohform für Sync und Export.',
@@ -49,10 +49,10 @@ class FieldSchemaRuleTest extends TestCase {
         'App\Models\Takeoff\TakeoffLine::values' => 'Messwerte bzw. Ausdruck einer REB-Formel (MVP-1058), keine Erfassungsfelder.',
     ];
 
-    private const SCHEMA_COLUMNS = ['fields', 'fields_snapshot', 'checklist', 'value_json', 'values', 'schema'];
+    private const array SCHEMA_COLUMNS = ['fields', 'fields_snapshot', 'checklist', 'value_json', 'values', 'schema'];
 
     /** @var array<string, string> Dateien, die auf Feldtypen verzweigen dürfen */
-    private const TYPE_SWITCH_ALLOWED = [
+    private const array TYPE_SWITCH_ALLOWED = [
         'app/Enums/Fields/' => 'Der Katalog selbst.',
         'app/Services/Fields/' => 'Der Baustein.',
         'app/Services/Protocol/Fields/' => 'Adapter Protokollpunkt → Feld (liest value_json).',

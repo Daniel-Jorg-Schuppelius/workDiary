@@ -50,10 +50,10 @@ use Throwable;
  */
 class SecurityOverviewService {
     /** Anzahl der jüngsten Einträge je Detailliste. */
-    public const RECENT_LIMIT = 10;
+    public const int RECENT_LIMIT = 10;
 
     /** Eine Session gilt als „aktiv", wenn sie jünger als dieser Zeitraum ist. */
-    public const SESSION_ACTIVE_MINUTES = 120;
+    public const int SESSION_ACTIVE_MINUTES = 120;
 
     /**
      * Sammelt alle Sicherheits-Kennzahlen. Jede Sektion ist gegen Fehler

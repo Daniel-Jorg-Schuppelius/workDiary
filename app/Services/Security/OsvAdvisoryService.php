@@ -27,12 +27,12 @@ use RuntimeException;
  * aktualisiert), werden als `resolved` markiert statt gelöscht.
  */
 class OsvAdvisoryService {
-    private const BASE_URL = 'https://api.osv.dev/v1';
+    private const string BASE_URL = 'https://api.osv.dev/v1';
 
     public function __construct(private readonly PluginHttpFactory $http) {}
 
     /** OSV-Limit: max. 1000 Queries je Batch; konservativ chunken. */
-    private const BATCH_SIZE = 500;
+    private const int BATCH_SIZE = 500;
 
     /**
      * @return array{checked: int, open: int, new: int, resolved: int}

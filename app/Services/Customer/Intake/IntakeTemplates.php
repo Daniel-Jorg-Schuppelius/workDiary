@@ -23,7 +23,7 @@ use App\Services\Fields\FieldSchema;
  * Auswahl, wo der Kunde die Angabe fachlich nicht kennen muss.
  */
 final class IntakeTemplates {
-    public const CONSULT = 'consult';
+    public const string CONSULT = 'consult';
 
     public function schema(IntakeKind $kind): FieldSchema {
         return FieldSchema::fromArray(match ($kind) {

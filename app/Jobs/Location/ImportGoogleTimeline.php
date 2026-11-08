@@ -34,7 +34,7 @@ final class ImportGoogleTimeline implements ShouldQueue {
     use Queueable;
     use SerializesModels;
 
-    public const CHUNK = 1000;
+    public const int CHUNK = 1000;
 
     public int $timeout = 1800;
 

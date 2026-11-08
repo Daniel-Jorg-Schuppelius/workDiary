@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /** Aktion „Keine Rechnung“ (Phase 150, MVP-1210): abgelehnt ablegen, Beleg und Original bleiben. */
 final class RejectIncomingInvoiceAction implements RuleAction {
-    public const TYPE = 'incoming_invoice.reject';
+    public const string TYPE = 'incoming_invoice.reject';
 
     public function __construct(private readonly IncomingInvoiceRules $rules) {}
 

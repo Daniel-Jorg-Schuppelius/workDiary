@@ -47,7 +47,7 @@ class GobdLockGuardRuleTest extends TestCase {
      *
      * @var array<int, string>
      */
-    private const QUIET_RECEIVERS = [
+    private const array QUIET_RECEIVERS = [
         'invoice',
         'transfer',
         'billingTransfer',
@@ -69,7 +69,7 @@ class GobdLockGuardRuleTest extends TestCase {
      *
      * @var array<int, string>
      */
-    private const BULK_WRITE_MARKERS = [
+    private const array BULK_WRITE_MARKERS = [
         '->update(',
         '->updateQuietly(',
         '->delete(',
@@ -83,7 +83,7 @@ class GobdLockGuardRuleTest extends TestCase {
      *
      * @var array<string, string>
      */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         // Zahlungsabgleich schreibt Zahl-/Abgleichsfelder auf AUSGESTELLTEN
         // Retainer-Voucher-Abgleich (Feature 098) markiert Pauschal-Rechnungen
         // nach Lexoffice-Rückmeldung als bezahlt — schreibt ausschließlich die

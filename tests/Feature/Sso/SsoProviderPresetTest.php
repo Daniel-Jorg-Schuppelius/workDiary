@@ -27,7 +27,7 @@ final class SsoProviderPresetTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const TENANT = '11111111-2222-3333-4444-555555555555';
+    private const string TENANT = '11111111-2222-3333-4444-555555555555';
 
     private User $admin;
 

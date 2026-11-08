@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
  * Jede Auflösung prüft die Organisation, ein fremder Bezug bleibt leer.
  */
 final class SearchContext {
-    private const MEMO_LIMIT = 5000;
+    private const int MEMO_LIMIT = 5000;
 
     /** @var array<string, Model|false> */
     private array $memo = [];

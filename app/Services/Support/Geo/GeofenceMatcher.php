@@ -24,7 +24,7 @@ class GeofenceMatcher {
      * @param iterable<CustomerGeofence> $geofences
      */
     /** Meter je Breitengrad; Längengrade schrumpfen mit dem Kosinus der Breite. */
-    private const METERS_PER_DEGREE = 111_320.0;
+    private const float METERS_PER_DEGREE = 111_320.0;
 
     /**
      * @param  iterable<int, CustomerGeofence>  $geofences

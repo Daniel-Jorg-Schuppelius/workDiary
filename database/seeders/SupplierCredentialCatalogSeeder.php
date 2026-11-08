@@ -24,7 +24,7 @@ use Illuminate\Database\Seeder;
  * ist damit Datenpflege, kein Release (Muster: Prüfmittel-Katalog).
  */
 class SupplierCredentialCatalogSeeder extends Seeder {
-    public const FRAME_VERSION = '2026-08';
+    public const string FRAME_VERSION = '2026-08';
 
     public function run(): void {
         $types = [

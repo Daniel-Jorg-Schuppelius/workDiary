@@ -37,7 +37,7 @@ use Illuminate\Validation\{Rule, ValidationException};
 class LicenseStockController extends Controller {
     use ResolvesCurrentOrganization;
 
-    public const MAX_IMPORT_KB = 2048;
+    public const int MAX_IMPORT_KB = 2048;
 
     public function __construct(
         private readonly LicenseStockService $stock,

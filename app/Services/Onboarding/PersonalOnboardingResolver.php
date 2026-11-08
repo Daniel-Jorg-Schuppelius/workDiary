@@ -27,14 +27,14 @@ use Illuminate\Support\Facades\Route;
  * Stand in den Nutzereinstellungen (`onboarding_personal`).
  */
 final class PersonalOnboardingResolver {
-    public const PREFERENCE = 'onboarding_personal';
+    public const string PREFERENCE = 'onboarding_personal';
 
     /**
      * Schritt → Rollen (leer = alle) und Ziel-Route.
      *
      * @var array<string, array{roles: list<UserRole>, route: string}>
      */
-    private const STEPS = [
+    private const array STEPS = [
         'profile.two_factor' => ['roles' => [], 'route' => 'account.2fa.show'],
         'profile.startpage' => ['roles' => [], 'route' => 'account.profile.edit'],
         'dashboard.customize' => ['roles' => [], 'route' => 'dashboard.customize'],

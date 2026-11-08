@@ -31,7 +31,7 @@ class EnumLabelContractTest extends TestCase {
      *
      * @var array<class-string, string>
      */
-    private const WHITELIST = [];
+    private const array WHITELIST = [];
 
     /**
      * Gescannte Wurzeln: Verzeichnis (relativ zum Repo) → Namespace-Präfix.
@@ -40,7 +40,7 @@ class EnumLabelContractTest extends TestCase {
      *
      * @var array<string, string>
      */
-    private const SCAN_ROOTS = [
+    private const array SCAN_ROOTS = [
         'app' => 'App\\',
     ];
 

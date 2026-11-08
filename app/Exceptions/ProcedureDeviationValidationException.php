@@ -13,23 +13,23 @@ namespace App\Exceptions;
 use RuntimeException;
 
 class ProcedureDeviationValidationException extends RuntimeException {
-    public const CODE_INVALID = 'procedure.deviationInvalid';
+    public const string CODE_INVALID = 'procedure.deviationInvalid';
 
-    public const CODE_REASON_TOO_SHORT = 'procedure.deviationReasonTooShort';
+    public const string CODE_REASON_TOO_SHORT = 'procedure.deviationReasonTooShort';
 
-    public const CODE_CRITICAL_OPEN = 'procedure.criticalDeviationOpen';
+    public const string CODE_CRITICAL_OPEN = 'procedure.criticalDeviationOpen';
 
-    public const REASON_REASON_TOO_SHORT = 'reasonTooShort';
+    public const string REASON_REASON_TOO_SHORT = 'reasonTooShort';
 
-    public const REASON_INVALID_TYPE = 'invalidType';
+    public const string REASON_INVALID_TYPE = 'invalidType';
 
-    public const REASON_INVALID_SEVERITY = 'invalidSeverity';
+    public const string REASON_INVALID_SEVERITY = 'invalidSeverity';
 
-    public const REASON_INVALID_ACTION = 'invalidAction';
+    public const string REASON_INVALID_ACTION = 'invalidAction';
 
-    public const REASON_ALREADY_RECORDED = 'alreadyRecorded';
+    public const string REASON_ALREADY_RECORDED = 'alreadyRecorded';
 
-    public const REASON_CRITICAL_NEEDS_ACTION = 'criticalNeedsAction';
+    public const string REASON_CRITICAL_NEEDS_ACTION = 'criticalNeedsAction';
 
     public function __construct(
         public readonly string $errorCode,

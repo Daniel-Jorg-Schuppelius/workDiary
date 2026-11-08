@@ -26,7 +26,7 @@ use Throwable;
  */
 class InstallController extends Controller {
     /** Reihenfolge der Wizard-Schritte für die Fortschrittsanzeige. */
-    private const STEPS = ['requirements', 'application', 'database', 'admin', 'mail', 'integrations', 'finish'];
+    private const array STEPS = ['requirements', 'application', 'database', 'admin', 'mail', 'integrations', 'finish'];
 
     public function __construct(private readonly InstallationManager $installer) {}
 

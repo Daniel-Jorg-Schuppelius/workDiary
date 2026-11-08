@@ -38,7 +38,7 @@ use Throwable;
  */
 class TodoistImportService extends AbstractTaskSyncService {
     /** Felder des gemeinsamen base-Snapshots (Konfliktbasis). */
-    public const SYNCED_FIELDS = ['title', 'description', 'status', 'priority', 'due_date', 'time_budget', 'assigned_to'];
+    public const array SYNCED_FIELDS = ['title', 'description', 'status', 'priority', 'due_date', 'time_budget', 'assigned_to'];
 
     /** @return array{created: int, updated: int, unchanged: int, conflicts: int, inbox: int, failed: int} */
     public function syncLink(TodoistProjectLink $link, TodoistConnection $connection): array {

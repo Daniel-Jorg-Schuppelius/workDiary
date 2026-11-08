@@ -20,7 +20,7 @@ namespace App\Services\Invoicing\Recognition;
  */
 final class ZoneFields {
     /** @var array<string, array{parse: string, result: string, column: string}> */
-    public const FIELDS = [
+    public const array FIELDS = [
         'invoice_number' => ['parse' => 'id', 'result' => 'number', 'column' => 'invoice_number'],
         'issue_date' => ['parse' => 'date', 'result' => 'issued_on', 'column' => 'issue_date'],
         'due_date' => ['parse' => 'date', 'result' => 'due_on', 'column' => 'due_date'],
@@ -31,7 +31,7 @@ final class ZoneFields {
     ];
 
     /** Seitenbereich einer Zone (Phase 155): feste Seite, erste, letzte oder jede Seite. */
-    public const SCOPES = ['page', 'first', 'last', 'any'];
+    public const array SCOPES = ['page', 'first', 'last', 'any'];
 
     public static function label(string $field): string {
         return match ($field) {

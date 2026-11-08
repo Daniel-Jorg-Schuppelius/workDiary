@@ -28,9 +28,9 @@ use CommonToolkit\Helper\Data\DateHelper;
  */
 final class LexofficeInvoiceParser {
     /** Monatsnamen deutsch/englisch (voll und gekürzt), aufgelöst über {@see Month::fromName()}. */
-    private const MONTH_NAMES = 'januar|january|jan|februar|february|feb|märz|maerz|march|mär|mar|april|apr|mai|may|juni|june|jun|juli|july|jul|august|aug|september|sept|sep|oktober|october|okt|oct|november|nov|dezember|december|dez|dec';
+    private const string MONTH_NAMES = 'januar|january|jan|februar|february|feb|märz|maerz|march|mär|mar|april|apr|mai|may|juni|june|jun|juli|july|jul|august|aug|september|sept|sep|oktober|october|okt|oct|november|nov|dezember|december|dez|dec';
 
-    private const RANGE_SEPARATOR = '\s*(?:-|–|—|bis|to|until)\s*';
+    private const string RANGE_SEPARATOR = '\s*(?:-|–|—|bis|to|until)\s*';
 
     /**
      * @param  array<string, mixed>  $invoice

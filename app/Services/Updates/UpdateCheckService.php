@@ -41,13 +41,13 @@ use RuntimeException;
  * requires}]}.
  */
 class UpdateCheckService {
-    public const MODE_DISABLED = 'disabled';
+    public const string MODE_DISABLED = 'disabled';
 
-    public const MODE_MANUAL = 'manual';
+    public const string MODE_MANUAL = 'manual';
 
-    public const MODE_AUTO = 'auto';
+    public const string MODE_AUTO = 'auto';
 
-    public const LAST_CHECK_CACHE_KEY = 'updates.last_check_at';
+    public const string LAST_CHECK_CACHE_KEY = 'updates.last_check_at';
 
     public function __construct(
         private readonly ReleaseManifestService $release,

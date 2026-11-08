@@ -29,16 +29,16 @@ use Carbon\{CarbonImmutable, CarbonInterface};
  *   3. The entry must not be `exported` (e.g. transmitted to lexoffice).
  */
 class TimeEntryEditPolicy {
-    public const REASON_WINDOW = 'window';
+    public const string REASON_WINDOW = 'window';
 
-    public const REASON_TIMESHEET_LOCKED = 'timesheet_locked';
+    public const string REASON_TIMESHEET_LOCKED = 'timesheet_locked';
 
-    public const REASON_TIMESHEET_SIGNED = 'timesheet_signed';
+    public const string REASON_TIMESHEET_SIGNED = 'timesheet_signed';
 
-    public const REASON_EXPORTED = 'exported';
+    public const string REASON_EXPORTED = 'exported';
 
     /** Der Monat des Eintrags ist für diesen Mitarbeiter freigegeben/gesperrt. */
-    public const REASON_MONTH_CLOSED = 'month_closed';
+    public const string REASON_MONTH_CLOSED = 'month_closed';
 
     public function windowDays(): int {
         $setting = Setting::get('timesheet.edit_window_days');

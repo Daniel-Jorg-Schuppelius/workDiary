@@ -47,7 +47,7 @@ class FixedAssetController extends Controller {
      *
      * @var array<string, class-string<IncomingEInvoice|Expense>>
      */
-    private const SOURCES = ['incoming' => IncomingEInvoice::class, 'expense' => Expense::class];
+    private const array SOURCES = ['incoming' => IncomingEInvoice::class, 'expense' => Expense::class];
 
     public function __construct(
         private readonly FixedAssetService $service,

@@ -32,7 +32,7 @@ class PurgeResolvedInboxItems extends Command {
     protected $description = 'Entfernt abgeschlossene Integrations-Inbox-Einträge, deren Auflösung älter als die Aufbewahrungsfrist ist.';
 
     /** Abgeschlossene (nicht mehr offene) Zustände, die gepurgt werden dürfen. */
-    private const RESOLVED_STATUSES = [
+    private const array RESOLVED_STATUSES = [
         IntegrationInboxStatus::ResolvedLinked,
         IntegrationInboxStatus::ResolvedCreated,
         IntegrationInboxStatus::ResolvedLocal,

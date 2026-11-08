@@ -41,9 +41,9 @@ class FreeScoutImportTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const BASE = 'https://support.example.test';
+    private const string BASE = 'https://support.example.test';
 
-    private const MAILBOX = '2';
+    private const string MAILBOX = '2';
 
     private User $admin;
 

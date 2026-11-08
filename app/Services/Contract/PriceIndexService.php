@@ -30,9 +30,9 @@ use CommonToolkit\Helper\Data\NumberHelper;
 class PriceIndexService {
     use AssertsStatusTransition;
 
-    public const SERIES_URL = 'https://api.statistiken.bundesbank.de/rest/data/BBDP1/M.DE.N.VPI.C.A00000.I20.A';
+    public const string SERIES_URL = 'https://api.statistiken.bundesbank.de/rest/data/BBDP1/M.DE.N.VPI.C.A00000.I20.A';
 
-    public const SOURCE = 'bundesbank';
+    public const string SOURCE = 'bundesbank';
 
     public function __construct(private readonly BundesbankSeries $series) {}
 

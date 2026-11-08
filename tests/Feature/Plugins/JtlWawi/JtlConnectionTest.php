@@ -31,7 +31,7 @@ final class JtlConnectionTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const BASE = 'https://192.168.10.20:5883/api/eazybusiness';
+    private const string BASE = 'https://192.168.10.20:5883/api/eazybusiness';
 
     private User $admin;
 

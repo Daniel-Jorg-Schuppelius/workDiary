@@ -25,7 +25,7 @@ use RuntimeException;
  * ausgeblendet, `post()` blockiert sichtbar statt still zu simulieren.
  */
 class ReadOnlyInventoryProvider implements InventoryProvider {
-    private const READ_CAPABILITIES = [
+    private const array READ_CAPABILITIES = [
         ProviderCapability::ReadStock,
         ProviderCapability::CheckAvailability,
     ];

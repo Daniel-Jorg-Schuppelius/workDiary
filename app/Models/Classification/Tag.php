@@ -71,7 +71,7 @@ class Tag extends Model {
     }
 
     /** name/slug sind varchar(255): Freitext-Schlagwörter (Kommaliste bis 500) liefen sonst über; Luft für „-2“. */
-    private const MAX_NAME = 191;
+    private const int MAX_NAME = 191;
 
     public static function findOrCreateByName(string $name, ?int $userId = null): self {
         $name = StringHelper::truncate(trim($name), self::MAX_NAME, '');

@@ -30,7 +30,7 @@ use Illuminate\Validation\ValidationException;
  * Gerät erhalten hat. Eine laufende Einschreibung bleibt, wie sie ist.
  */
 final class EnrollInCourseAction implements TargetedRuleAction {
-    public const TYPE = 'learning.enroll';
+    public const string TYPE = 'learning.enroll';
 
     public function __construct(private readonly LearningEnrollmentService $enrollments) {}
 

@@ -26,9 +26,9 @@ enum Status: int implements HasLabel {
     case Invoiced = 7;
     case Cancelled = 8;
 
-    public const Completed = self::Done;
-    public const Planned = self::Open;
-    public const WaitingCustomer = self::Problem;
+    public const self Completed = self::Done;
+    public const self Planned = self::Open;
+    public const self WaitingCustomer = self::Problem;
 
     public function label(): string {
         return (string) __('diary.status.' . $this->key());

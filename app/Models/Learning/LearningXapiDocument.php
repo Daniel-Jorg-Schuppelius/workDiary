@@ -34,9 +34,9 @@ class LearningXapiDocument extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
-    public const KIND_STATE = 'state';
+    public const string KIND_STATE = 'state';
 
-    public const KIND_AGENT_PROFILE = 'agent_profile';
+    public const string KIND_AGENT_PROFILE = 'agent_profile';
 
     protected $fillable = [
         'organization_id',

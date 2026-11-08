@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Gate;
 
 /** Projekt- und Auftragschat öffnen (MVP-1061) — legt den Kanal beim ersten Mal an. */
 class SubjectChatController extends Controller {
-    private const SUBJECTS = ['project' => Project::class, 'diary' => DiaryEntry::class];
+    private const array SUBJECTS = ['project' => Project::class, 'diary' => DiaryEntry::class];
 
     public function open(Request $request, string $type, string $id, SubjectChannelService $channels): RedirectResponse {
         $class = self::SUBJECTS[$type] ?? null;

@@ -13,7 +13,7 @@ namespace App\Services\Expense\Automation;
 use App\Automation\Triggers\RuleTrigger;
 
 final class ExpenseSubmittedTrigger implements RuleTrigger {
-    public const KEY = 'expense.submitted';
+    public const string KEY = 'expense.submitted';
 
     public function key(): string {
         return self::KEY;

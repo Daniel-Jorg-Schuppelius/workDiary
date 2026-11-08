@@ -53,9 +53,9 @@ class PassengerVehicleProfile extends Model {
 
     use HasSqid;
 
-    public const METER_TAXAMETER = 'taxameter';
+    public const string METER_TAXAMETER = 'taxameter';
 
-    public const METER_ODOMETER = 'wegstreckenzaehler';
+    public const string METER_ODOMETER = 'wegstreckenzaehler';
 
     protected $fillable = [
         'organization_id',

@@ -24,9 +24,9 @@ namespace App\Services\Auth\Sso;
  *   E-Mail-Account-Linking ist für Entra-Verbindungen deshalb gesperrt.
  */
 final class EntraIssuer {
-    private const HOSTS = ['login.microsoftonline.com', 'sts.windows.net'];
+    private const array HOSTS = ['login.microsoftonline.com', 'sts.windows.net'];
 
-    private const MULTI_TENANT_SEGMENTS = ['common', 'organizations', 'consumers'];
+    private const array MULTI_TENANT_SEGMENTS = ['common', 'organizations', 'consumers'];
 
     public static function isEntra(string $issuer): bool {
         $host = strtolower((string) parse_url($issuer, PHP_URL_HOST));

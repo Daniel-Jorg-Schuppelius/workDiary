@@ -55,7 +55,7 @@ use RuntimeException;
  * {@see DemoShowcaseSeeder}.
  */
 class DemoSeederService {
-    public const DEMO_FAKER_SEED = 42;
+    public const int DEMO_FAKER_SEED = 42;
 
     public function __construct(
         private readonly ?BranchProfileInstaller $branchProfiles = null,

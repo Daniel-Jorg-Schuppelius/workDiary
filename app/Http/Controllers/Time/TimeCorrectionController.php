@@ -36,7 +36,7 @@ use Illuminate\View\View;
 class TimeCorrectionController extends Controller {
     use ResolvesGlobalDateRange;
 
-    private const ALLOWED_SORTS = ['scope_date', 'status'];
+    private const array ALLOWED_SORTS = ['scope_date', 'status'];
 
     public function __construct(private readonly TimeCorrectionService $service) {}
 

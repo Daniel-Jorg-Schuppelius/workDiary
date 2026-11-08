@@ -19,9 +19,9 @@ use PHPUnit\Framework\TestCase;
  * hash_hmac/base64_encode aus Payload+Secret berechnet.
  */
 class WebhookSignatureTest extends TestCase {
-    private const PAYLOAD = '{"event":"issue.updated","id":42}';
+    private const string PAYLOAD = '{"event":"issue.updated","id":42}';
 
-    private const SECRET = 'wd-webhook-secret';
+    private const string SECRET = 'wd-webhook-secret';
 
     public function test_github_prefixed_sha256_hex_vector(): void {
         $signature = 'sha256=93e26aca1a9b0994380e1484abcda2acb403c67ba7da45270741f3645df28451';

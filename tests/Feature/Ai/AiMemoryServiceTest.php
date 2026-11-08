@@ -30,7 +30,7 @@ class AiMemoryServiceTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const CAPABILITY = 'test.formulate';
+    private const string CAPABILITY = 'test.formulate';
 
     protected function setUp(): void {
         parent::setUp();

@@ -25,7 +25,7 @@ use Illuminate\Support\{Carbon, Collection};
  * Zugriff beim nächsten Aufruf, weil die Liste jedes Mal neu berechnet wird.
  */
 class ClubPortalContext {
-    public const SESSION_KEY = 'club.my.member_id';
+    public const string SESSION_KEY = 'club.my.member_id';
 
     public function __construct(
         private readonly Session $session,

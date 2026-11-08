@@ -26,9 +26,9 @@ use Illuminate\Notifications\Messages\MailMessage;
  * Nutzer mit `reselling.manage`.
  */
 class ResalePeriodsDigestNotification extends DirectNotification {
-    private const TITLE_KEY = 'Abos & Lizenzen: :count Punkte warten auf Bearbeitung';
+    private const string TITLE_KEY = 'Abos & Lizenzen: :count Punkte warten auf Bearbeitung';
 
-    private const MESSAGE_KEY = ':due fällige Perioden (offen :amount), :proposed unbestätigte Vorschläge, :unassigned Abos ohne Halter, :renewals Verlängerungen oder Enden in :renewal_days Tagen, :stale Abos ohne Rechnung seit über :stale_days Tagen, :drafts Rechnungsentwürfe der letzten :draft_days Tage noch nicht abgeschlossen, :catalog Abos mit geändertem Katalog-Einkaufspreis. Bitte die Periodenseite „Abos & Lizenzen" prüfen.';
+    private const string MESSAGE_KEY = ':due fällige Perioden (offen :amount), :proposed unbestätigte Vorschläge, :unassigned Abos ohne Halter, :renewals Verlängerungen oder Enden in :renewal_days Tagen, :stale Abos ohne Rechnung seit über :stale_days Tagen, :drafts Rechnungsentwürfe der letzten :draft_days Tage noch nicht abgeschlossen, :catalog Abos mit geändertem Katalog-Einkaufspreis. Bitte die Periodenseite „Abos & Lizenzen" prüfen.';
 
     public function __construct(
         public readonly int $dueCount,

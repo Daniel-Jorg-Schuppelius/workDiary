@@ -38,7 +38,7 @@ class AiUsageReportController extends Controller {
     use ResolvesCurrentOrganization;
     use WritesReportCsv;
 
-    private const MONTHS = 12;
+    private const int MONTHS = 12;
 
     public function index(Request $request, AiBudgetService $budget): View|Response {
         Gate::authorize('viewAny', AiProviderConnection::class);

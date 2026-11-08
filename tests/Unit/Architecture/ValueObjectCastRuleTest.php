@@ -31,7 +31,7 @@ class ValueObjectCastRuleTest extends TestCase {
      *
      * @var array<int, string>
      */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
     ];
 
     /** Alle Cast-Klassen aus App\Casts, die in Models referenziert werden, müssen existieren. */

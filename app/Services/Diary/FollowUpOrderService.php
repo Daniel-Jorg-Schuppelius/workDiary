@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\{DB, Storage};
  */
 final class FollowUpOrderService {
     /** Obergrenze kopierter Anhänge je Folgeauftrag. */
-    private const ATTACHMENT_LIMIT = 20;
+    private const int ATTACHMENT_LIMIT = 20;
 
     public function __construct(
         private readonly ClassificationRequirementValidator $requirements,

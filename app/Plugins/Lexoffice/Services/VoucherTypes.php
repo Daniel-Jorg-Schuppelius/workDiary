@@ -32,7 +32,7 @@ final class VoucherTypes {
      *
      * @var list<string>
      */
-    public const REVENUE = ['invoice', 'salesinvoice', 'downpaymentinvoice'];
+    public const array REVENUE = ['invoice', 'salesinvoice', 'downpaymentinvoice'];
 
     /**
      * Erlösbelege inklusive der mindernden Gutschriften — für Aggregate, die
@@ -40,7 +40,7 @@ final class VoucherTypes {
      *
      * @var list<string>
      */
-    public const REVENUE_WITH_CREDITS = ['invoice', 'salesinvoice', 'downpaymentinvoice', 'creditnote', 'salescreditnote'];
+    public const array REVENUE_WITH_CREDITS = ['invoice', 'salesinvoice', 'downpaymentinvoice', 'creditnote', 'salescreditnote'];
 
     /**
      * Verkaufsrechnungen im engeren Sinn: mahnbar, als Kundenrechnung einer
@@ -48,7 +48,7 @@ final class VoucherTypes {
      *
      * @var list<string>
      */
-    public const SALES_INVOICES = ['invoice', 'salesinvoice'];
+    public const array SALES_INVOICES = ['invoice', 'salesinvoice'];
 
     /**
      * Einkaufsbelege im Lexoffice-Spiegel (`supplier_id` gesetzt); `voucher`
@@ -56,14 +56,14 @@ final class VoucherTypes {
      *
      * @var list<string>
      */
-    public const EXPENSES = ['purchaseinvoice', 'purchasecreditnote', 'voucher'];
+    public const array EXPENSES = ['purchaseinvoice', 'purchasecreditnote', 'voucher'];
 
     /**
      * Belegarten, die eine Ausgabe mindern.
      *
      * @var list<string>
      */
-    public const EXPENSE_CREDITS = ['purchasecreditnote'];
+    public const array EXPENSE_CREDITS = ['purchasecreditnote'];
 
     /**
      * Belegstatus ohne Geldwirkung — Entwurf ist noch nicht gebucht, Storno
@@ -71,14 +71,14 @@ final class VoucherTypes {
      *
      * @var list<string>
      */
-    public const IGNORED_STATUSES = ['draft', 'voided'];
+    public const array IGNORED_STATUSES = ['draft', 'voided'];
 
     /**
      * voucherType → [Richtung, Vorgangsart].
      *
      * @var array<string, array{DocumentDirection, DocumentKind}>
      */
-    private const MAP = [
+    private const array MAP = [
         'invoice' => [DocumentDirection::Outgoing, DocumentKind::Invoice],
         'salesinvoice' => [DocumentDirection::Outgoing, DocumentKind::Invoice],
         'downpaymentinvoice' => [DocumentDirection::Outgoing, DocumentKind::DownPayment],

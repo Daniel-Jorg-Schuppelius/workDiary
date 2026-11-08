@@ -29,9 +29,9 @@ class ScimUserController extends Controller {
     use GuardsScimRequests;
 
     /** Bulk-Limits (RFC 7644 §3.7) — bewusst klein, Entra/Okta senden ohnehin kein Bulk. */
-    public const MAX_OPERATIONS = 100;
+    public const int MAX_OPERATIONS = 100;
 
-    public const MAX_PAYLOAD_SIZE = 1048576; // 1 MiB
+    public const int MAX_PAYLOAD_SIZE = 1048576; // 1 MiB
 
     public function __construct(private readonly ScimUserService $service) {}
 

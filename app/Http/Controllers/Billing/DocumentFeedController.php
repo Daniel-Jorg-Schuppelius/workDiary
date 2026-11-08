@@ -45,7 +45,7 @@ class DocumentFeedController extends Controller {
      *
      * @var array<string, array{kinds: list<string>, directions: list<string>, icon: string, source: ?string}>
      */
-    public const TABS = [
+    public const array TABS = [
         'all' => ['kinds' => [], 'directions' => [], 'icon' => 'receipt_long', 'source' => null],
         'quotes' => ['kinds' => ['quote'], 'directions' => [], 'icon' => 'request_quote', 'source' => 'quote'],
         'outgoing' => ['kinds' => ['invoice', 'down_payment'], 'directions' => ['outgoing'], 'icon' => 'north_east', 'source' => null],

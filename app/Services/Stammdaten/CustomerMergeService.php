@@ -44,7 +44,7 @@ class CustomerMergeService extends AbstractEntityMergeService {
      *
      * @var array<string, array{0: string, 1: string}>
      */
-    private const MORPH_TABLES = [
+    private const array MORPH_TABLES = [
         'contact_addresses' => ['addressable_type', 'addressable_id'],
         'contact_bank_accounts' => ['accountable_type', 'accountable_id'],
         'communication_notes' => ['notable_type', 'notable_id'],
@@ -59,7 +59,7 @@ class CustomerMergeService extends AbstractEntityMergeService {
      *
      * @var list<string>
      */
-    private const FILLABLE_FROM_SOURCE = [
+    private const array FILLABLE_FROM_SOURCE = [
         'company', 'vat_id', 'tax_number',
         'contact_name', 'contact_persons', 'email', 'phone', 'mobile', 'fax',
         'homepage', 'address', 'address_street', 'address_zip', 'address_city',

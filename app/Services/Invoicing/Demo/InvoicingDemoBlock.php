@@ -50,7 +50,7 @@ final class InvoicingDemoBlock implements DemoBlock {
     }
 
     /** @var list<string> */
-    private const DEMO_INCOMING_KEYS = ['demo-incoming-assigned', 'demo-incoming-unrecognized'];
+    private const array DEMO_INCOMING_KEYS = ['demo-incoming-assigned', 'demo-incoming-unrecognized'];
 
     private static function demoSha(Organization $organization, string $key): string {
         return \CommonToolkit\Helper\Data\CryptoHelper::hash($organization->id . ':' . $key);

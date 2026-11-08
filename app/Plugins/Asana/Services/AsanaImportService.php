@@ -35,7 +35,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class AsanaImportService extends AbstractTaskImportService {
     /** Grenze des Vollabgleichs: liest auch alte erledigte Aufgaben. */
-    private const FULL_SINCE = '1970-01-01T00:00:00Z';
+    private const string FULL_SINCE = '1970-01-01T00:00:00Z';
 
     public function __construct(private readonly AsanaClientFactory $clients) {}
 

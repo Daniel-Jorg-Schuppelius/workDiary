@@ -35,7 +35,7 @@ final class EtsyWebhookTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const RAW_KEY = 'test-webhook-key';
+    private const string RAW_KEY = 'test-webhook-key';
 
     private EtsyConnection $connection;
 

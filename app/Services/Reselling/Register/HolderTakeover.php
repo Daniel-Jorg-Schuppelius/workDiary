@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\DB;
  *   Vertrag beginnt am Stichtag.
  */
 final class HolderTakeover {
-    public const AUDIT = 'resale_subscription.taken_over';
+    public const string AUDIT = 'resale_subscription.taken_over';
 
     private readonly PeriodPlanner $planner;
 

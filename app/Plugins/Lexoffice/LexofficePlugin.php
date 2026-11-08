@@ -49,19 +49,19 @@ use Throwable;
  * external_references table. The plugin id is "lexoffice".
  */
 class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\SupplierContactSyncer, ContactNumberIssuer, ContactSyncer, ContributesWhileInactive, NavigationContributor, PaymentSyncer, SlotRenderer, TimeExporter {
-    public const ID = 'lexoffice';
+    public const string ID = 'lexoffice';
 
-    public const SERVICE_PROVIDER = LexofficeServiceProvider::class;
+    public const string SERVICE_PROVIDER = LexofficeServiceProvider::class;
 
-    public const EXT_TYPE_CONTACT = 'contact';
+    public const string EXT_TYPE_CONTACT = 'contact';
 
-    public const EXT_TYPE_VOUCHER = 'voucher';
+    public const string EXT_TYPE_VOUCHER = 'voucher';
 
     /** Gegenbeleg zu einer gepushten Auslage (MVP-802). */
-    public const EXT_TYPE_COUNTER_VOUCHER = 'counter_voucher';
+    public const string EXT_TYPE_COUNTER_VOUCHER = 'counter_voucher';
 
     /** So lange weicht ein Lauf nach einer belegten API-Sperre aus, ohne je Kontakt erneut zu warten. */
-    private const API_BUSY_BACKOFF_SECONDS = 60;
+    private const int API_BUSY_BACKOFF_SECONDS = 60;
 
     /** @var array<int, CarbonImmutable> Organisation → bis wann die API-Sperre als belegt gilt */
     private array $apiBusyUntil = [];

@@ -29,7 +29,7 @@ use Illuminate\Support\Carbon;
 class TimeExportEvent extends JournalEntry {
     // Append-only jetzt technisch erzwungen statt nur dokumentiert (Vollaudit 2026-07, M52).
 
-    public const UPDATED_AT = null;
+    public const ?string UPDATED_AT = null;
 
     protected $fillable = [
         'time_export_id',

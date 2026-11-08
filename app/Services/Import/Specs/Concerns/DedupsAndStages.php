@@ -37,7 +37,7 @@ use Illuminate\Database\Eloquent\Model;
  * Plugin-Kennung für CSV-Bindungen/-Inbox.
  */
 trait DedupsAndStages {
-    private const CSV_PLUGIN = IntegrationInboxItem::PLUGIN_CSV;
+    private const string CSV_PLUGIN = IntegrationInboxItem::PLUGIN_CSV;
 
     /**
      * Optionaler Hook (Rang 58): wird nach jedem persistierten Datensatz mit

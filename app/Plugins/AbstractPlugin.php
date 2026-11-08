@@ -38,7 +38,7 @@ abstract class AbstractPlugin implements Plugin {
     use PluginDefaults;
 
     /** Jede konkrete Klasse überschreibt dies mit ihrer stabilen Plugin-ID. */
-    public const ID = '';
+    public const string ID = '';
 
     public function id(): string {
         return static::ID;

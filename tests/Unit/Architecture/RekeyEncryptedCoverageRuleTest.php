@@ -25,7 +25,7 @@ class RekeyEncryptedCoverageRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad → Begründung (transient/kein DB-Feld) */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         'app/Console/Commands/SecurityRekeyEncryptedCommand.php' => 'der Rekey selbst',
         'app/Console/Commands/EncryptExistingPii.php' => 'einmaliges Migrationswerkzeug — verschlüsselt Felder, die danach encrypted-Casts tragen',
         'app/Casts/ValueObjectCast.php' => 'generischer Cast; encrypted-Option derzeit von keinem Modell genutzt (sonst greift die Cast-Ableitung nicht — hier registrieren!)',

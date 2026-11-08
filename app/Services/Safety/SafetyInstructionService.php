@@ -107,7 +107,7 @@ class SafetyInstructionService {
      * gezeichnete Unterschrift kommt als Bildpfad (Datenmodell, kein UI im MVP).
      */
     /** Obergrenze für das PNG der Zeichenfläche (wie Stundenzettel und Entsorgung). */
-    public const SIGNATURE_MAX_BYTES = 1_000_000;
+    public const int SIGNATURE_MAX_BYTES = 1_000_000;
 
     /**
      * Gezeichnete Unterschrift (MVP-798, Befund P10-14): Methode und Feld gab es,

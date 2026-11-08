@@ -39,7 +39,7 @@ use Illuminate\Support\Carbon;
  */
 class InvoiceNinjaVoucherPullService implements VoucherPuller {
     /** Liste → Art, Richtung und mitzuladender Kontakt. */
-    private const ENTITIES = [
+    private const array ENTITIES = [
         'invoices' => ['type' => 'invoice', 'kind' => DocumentKind::Invoice, 'direction' => DocumentDirection::Outgoing, 'include' => 'client', 'sortable' => true],
         'credits' => ['type' => 'credit', 'kind' => DocumentKind::CreditNote, 'direction' => DocumentDirection::Outgoing, 'include' => 'client', 'sortable' => true],
         'expenses' => ['type' => 'expense', 'kind' => DocumentKind::Expense, 'direction' => DocumentDirection::Incoming, 'include' => 'vendor', 'sortable' => false],
@@ -48,10 +48,10 @@ class InvoiceNinjaVoucherPullService implements VoucherPuller {
     ];
 
     /** `frequency_id` laut `App\Models\RecurringInvoice` (FREQUENCY_*) → Rhythmus des Plans. */
-    private const FREQUENCIES = ['2' => 'WEEKLY', '3' => 'BIWEEKLY', '5' => 'MONTHLY', '7' => 'QUARTERLY', '9' => 'BIANNUALLY', '10' => 'ANNUALLY'];
+    private const array FREQUENCIES = ['2' => 'WEEKLY', '3' => 'BIWEEKLY', '5' => 'MONTHLY', '7' => 'QUARTERLY', '9' => 'BIANNUALLY', '10' => 'ANNUALLY'];
 
     /** Seiten, die ein Folgelauf für Ausgaben höchstens liest, bevor er als unvollständig abbricht (je `$pages`). */
-    private const UNSORTED_PAGES_FACTOR = 50;
+    private const int UNSORTED_PAGES_FACTOR = 50;
 
     /** @var array<string, ?string> Währung je Kundengruppe, einmal je Lauf gelesen */
     private array $groupCurrencies = [];

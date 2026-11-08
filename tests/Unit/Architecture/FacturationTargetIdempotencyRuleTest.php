@@ -27,7 +27,7 @@ class FacturationTargetIdempotencyRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<class-string, string> Klasse => Grund */
-    private const ALLOWED = [
+    private const array ALLOWED = [
         FileTarget::class => 'Schreibt ein Übergabepaket in den eigenen Speicher — kein Fremdsystem, keine Dublette möglich.',
     ];
 

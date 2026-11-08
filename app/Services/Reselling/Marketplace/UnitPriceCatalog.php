@@ -32,7 +32,7 @@ use CommonToolkit\ValueObjects\Money;
  * Währungen werden nie miteinander verglichen (Review 2026-09-10, E).
  */
 final class UnitPriceCatalog {
-    private const TOLERANCE_MINOR_PER_UNIT = 2;
+    private const int TOLERANCE_MINOR_PER_UNIT = 2;
 
     /** @var array<string, array<int, array{quantity: int, unit: Money}>> Edition|Währung → Gebühr (Minor) → Ableitung */
     private array $resolved = [];

@@ -28,7 +28,7 @@ class EventNamingRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var list<string> Bestand vor MVP-863 (Plugin-Lebenszyklus, Auth-Subscriber, Mail-Zustellung) */
-    private const ROOT_ALLOWLIST = [
+    private const array ROOT_ALLOWLIST = [
         'app/Events/PluginAutoDisabled.php',
         'app/Events/PluginHealthChanged.php',
         'app/Events/PluginRecovered.php',
@@ -39,7 +39,7 @@ class EventNamingRuleTest extends TestCase {
     ];
 
     /** @var array<string, string> Fachmodul-Listener ohne Modulgate, mit Grund */
-    private const UNGATED = [
+    private const array UNGATED = [
         'App\Listeners\Privacy\SeedDataProtectionRole' => 'Rollen entstehen unabhängig von der Modulaktivierung, sonst müsste eine spätere Freischaltung Rollen nachziehen.',
         'App\Listeners\Whistleblowing\SeedWhistleblowingRole' => 'wie SeedDataProtectionRole',
     ];

@@ -35,7 +35,7 @@ final class GoogleCalendarImportTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const EVENTS = 'https://www.googleapis.com/calendar/v3/calendars/primary/events*';
+    private const string EVENTS = 'https://www.googleapis.com/calendar/v3/calendars/primary/events*';
 
     protected function setUp(): void {
         parent::setUp();

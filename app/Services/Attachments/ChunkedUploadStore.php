@@ -30,11 +30,11 @@ use Illuminate\Validation\ValidationException;
  * unvollständiger Uploads räumt `uploads:prune-chunks` nach einem Tag ab.
  */
 class ChunkedUploadStore {
-    public const DIRECTORY = 'chunked-uploads';
+    public const string DIRECTORY = 'chunked-uploads';
 
-    private const CHUNK_BYTES = 4 * 1024 * 1024;
+    private const int CHUNK_BYTES = 4 * 1024 * 1024;
 
-    private const MAX_AGE_HOURS = 24;
+    private const int MAX_AGE_HOURS = 24;
 
     /**
      * @return array{token: string, chunk_size: int, chunks: int, received: list<int>}

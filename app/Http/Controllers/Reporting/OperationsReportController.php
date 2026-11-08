@@ -50,7 +50,7 @@ class OperationsReportController extends Controller {
      *
      * @var array<string, list<DiaryStatus>>
      */
-    private const STATUS_GROUPS = [
+    private const array STATUS_GROUPS = [
         'open' => [DiaryStatus::Planned, DiaryStatus::Accepted],
         'in_progress' => [DiaryStatus::InProgress],
         'problem' => [DiaryStatus::WaitingCustomer, DiaryStatus::WaitingMaterial],

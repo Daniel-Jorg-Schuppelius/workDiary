@@ -19,7 +19,7 @@ use Tests\TestCase;
 /** Gemeinsame Config- und Schema-Regeln der selbst gehosteten Quellen (Konsolidierung kon-05). */
 class SelfHostedSettingsTest extends TestCase {
     /** Organisation 0 löst nur Config auf — kein Datenbankzugriff. */
-    private const ORG = 0;
+    private const int ORG = 0;
 
     public function test_base_url_is_trimmed_without_trailing_slash_or_null(): void {
         config(['plugins.kon-probe.base_url' => '  https://tools.example.test/sub/  ']);

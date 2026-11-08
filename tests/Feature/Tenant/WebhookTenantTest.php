@@ -65,7 +65,7 @@ final class WebhookTenantTest extends TestCase {
      *
      * @var list<string>
      */
-    private const INBOUND_ENDPOINTS = [
+    private const array INBOUND_ENDPOINTS = [
         'api/webhooks/dropbox',
         'api/webhooks/etsy/{token}',
         'api/webhooks/google-drive',

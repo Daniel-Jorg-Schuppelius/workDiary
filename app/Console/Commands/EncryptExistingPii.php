@@ -27,7 +27,7 @@ class EncryptExistingPii extends Command {
     protected $description = 'Verschlüsselt vorhandene Klartext-PII-Felder (idempotent).';
 
     /** @var array<string, list<string>> */
-    private const TARGETS = [
+    private const array TARGETS = [
         'users' => ['tax_identification_number', 'social_security_number'],
         'contact_bank_accounts' => ['account_holder', 'iban', 'bic'],
         'contact_addresses' => ['street', 'supplement', 'zip', 'city'],

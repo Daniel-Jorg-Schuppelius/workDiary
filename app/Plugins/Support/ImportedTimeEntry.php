@@ -26,9 +26,9 @@ use CommonToolkit\Helper\Data\CryptoHelper;
  * nur über APIs mit und tragen ggf. das Export-Mapping des Plugins.
  */
 final class ImportedTimeEntry {
-    public const SOURCE_CSV = 'csv';
+    public const string SOURCE_CSV = 'csv';
 
-    public const SOURCE_API = 'api';
+    public const string SOURCE_API = 'api';
 
     /**
      * @param  list<string>  $tags

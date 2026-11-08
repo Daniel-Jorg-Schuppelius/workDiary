@@ -40,9 +40,9 @@ use RuntimeException;
  *   Intervall kommt aus dem Setting `rate_limit_per_minute`.
  */
 class EasybillPlugin extends AbstractPlugin implements ContactNumberIssuer, ContactSyncer {
-    public const ID = 'easybill';
+    public const string ID = 'easybill';
 
-    public const SERVICE_PROVIDER = EasybillServiceProvider::class;
+    public const string SERVICE_PROVIDER = EasybillServiceProvider::class;
 
     public function name(): string {
         return 'easybill';

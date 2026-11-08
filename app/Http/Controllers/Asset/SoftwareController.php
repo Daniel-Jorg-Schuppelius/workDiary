@@ -24,7 +24,7 @@ class SoftwareController extends Controller {
     use ParsesIndexQuery;
     use ResolvesCurrentOrganization;
 
-    private const ALLOWED_SORTS = ['name', 'vendor', 'kind', 'license_type', 'installations_count'];
+    private const array ALLOWED_SORTS = ['name', 'vendor', 'kind', 'license_type', 'installations_count'];
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Software::class);

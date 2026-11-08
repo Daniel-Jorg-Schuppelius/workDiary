@@ -32,7 +32,7 @@ class TogglApiWorkspaceImportTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const BASE = 'https://api.track.toggl.com/api/v9';
+    private const string BASE = 'https://api.track.toggl.com/api/v9';
 
     protected function setUp(): void {
         parent::setUp();

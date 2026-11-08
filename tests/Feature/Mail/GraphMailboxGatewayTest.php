@@ -36,7 +36,7 @@ final class GraphMailboxGatewayTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const GRAPH = 'https://graph.microsoft.com/v1.0';
+    private const string GRAPH = 'https://graph.microsoft.com/v1.0';
 
     protected function setUp(): void {
         parent::setUp();

@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Lang;
 
 /** Beleg aus dem allgemeinen Belegspiegel (Phase 139) als Knoten im Belegverbund (MVP-1158). */
 final class AccountingVoucherNode {
-    public const KIND = 'voucher';
+    public const string KIND = 'voucher';
 
     public static function of(AccountingVoucher $voucher): DocumentNode {
         $state = $voucher->voucher_state?->value;

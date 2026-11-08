@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Schema;
  * chat_webhooks/todoist_connections haben bereits eigene Felder.
  */
 return new class extends Migration {
-    private const TABLES = [
+    private const array TABLES = [
         'email_connections',
         'cti_connections',
         'carrier_connections',

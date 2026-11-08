@@ -25,13 +25,13 @@ use App\Services\Concerns\SeedsIsolatedPermissionSet;
 final class WhistleblowingPermissions {
     use SeedsIsolatedPermissionSet;
 
-    public const ROLE_MELDESTELLE = 'meldestelle';
+    public const string ROLE_MELDESTELLE = 'meldestelle';
 
     /** Trait-Vertrag ({@see SeedsIsolatedPermissionSet}). */
-    public const ROLE = self::ROLE_MELDESTELLE;
+    public const string ROLE = self::ROLE_MELDESTELLE;
 
     /** @var list<string> */
-    public const ALL = [
+    public const array ALL = [
         'whistleblowing.settings.manage',
         'whistleblowing.case.viewAny',
         'whistleblowing.case.view',

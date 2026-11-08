@@ -52,7 +52,7 @@ class ResaleSubscriptionController extends Controller {
     use ProvidesHolderPicker;
     use ResolvesCurrentOrganization;
 
-    private const PER_PAGE = 50;
+    private const int PER_PAGE = 50;
 
     public function __construct(private readonly InvoiceMirror $mirror, private readonly PeriodLinker $linker) {}
 

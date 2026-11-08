@@ -21,7 +21,7 @@ use Tests\TestCase;
  * ohne Nummer, Gutschrift-Erkennung nur im Kopf, Vertrag aus der Kopfzeile.
  */
 class QualityHostingInvoiceReaderTest extends TestCase {
-    private const ENGLISH_TEXT = <<<'TXT'
+    private const string ENGLISH_TEXT = <<<'TXT'
 QualityHosting GmbH- Postbox 791407 - D-11516 Berlin
 Invoice
 Invoice No. 31970912 Customer No. 95229
@@ -43,7 +43,7 @@ Service: CNLOUK
 Total EUR Excl. VAT 256,56
 TXT;
 
-    private const MISMATCH_TEXT = <<<'TXT'
+    private const string MISMATCH_TEXT = <<<'TXT'
 Rechnung
 Rechnungsnr. 31970913 Kundennr. 95229
 Rechnungsdatum 3. September 2026
@@ -55,7 +55,7 @@ Grundgebühr pro Einheit
 Total EUR ohne MwSt. 336,05
 TXT;
 
-    private const CREDIT_TEXT = <<<'TXT'
+    private const string CREDIT_TEXT = <<<'TXT'
 Storno zu Rechnung Seite 1
 Gutschriftsnr. 7006872 Kundennr. 95229
 Gutschriftsdatum 2. Juni 2026
@@ -67,7 +67,7 @@ Pos. Menge Beschreibung Rabatt % Einzelpreis Gesamtpreis
 Total EUR ohne MwSt. 250,00
 TXT;
 
-    private const INVOICE_WITH_STORNO_LINE = <<<'TXT'
+    private const string INVOICE_WITH_STORNO_LINE = <<<'TXT'
 Rechnung
 Rechnungsnr. 31970914 Kundennr. 95229
 Rechnungsdatum 3. September 2026

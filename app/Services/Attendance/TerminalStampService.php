@@ -34,9 +34,9 @@ use Throwable;
  *   Typ `stamp`) — ein erneut zugestelltes Ereignis erzeugt keinen zweiten Stempel.
  */
 class TerminalStampService {
-    public const PLUGIN_ID = 'terminal';
+    public const string PLUGIN_ID = 'terminal';
 
-    public const EXTERNAL_TYPE = 'stamp';
+    public const string EXTERNAL_TYPE = 'stamp';
 
     public function __construct(
         private readonly AttendanceClockService $clock,

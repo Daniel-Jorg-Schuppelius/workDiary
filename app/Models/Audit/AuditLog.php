@@ -37,14 +37,14 @@ class AuditLog extends Model implements HashChainable {
      * und nachträglich beim Löschverlangen
      * ({@see \App\Services\Audit\AuditRedactionService}).
      */
-    public const REDACTED = "\u{2022}\u{2022}\u{2022}";
+    public const string REDACTED = "\u{2022}\u{2022}\u{2022}";
 
     /**
      * Objektarten der Filter in Audit-Übersicht und Aktivitäts-Feed (Feature 183).
      *
      * @var array<string, class-string<Model>>
      */
-    public const FILTER_TYPES = [
+    public const array FILTER_TYPES = [
         'diary' => \App\Models\Diary\DiaryEntry::class,
         'comment' => \App\Models\Communication\Comment::class,
         'shift' => \App\Models\Diary\OnCallShift::class,

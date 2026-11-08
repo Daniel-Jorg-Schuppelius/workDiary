@@ -28,9 +28,9 @@ use RuntimeException;
  */
 class GoogleDriveBackupClient {
     /** Chunk-Größe: Vielfaches von 256 KiB (Google-Anforderung) — 8 MiB. */
-    private const CHUNK_SIZE = 8_388_608;
+    private const int CHUNK_SIZE = 8_388_608;
 
-    private const FOLDER_MIME = 'application/vnd.google-apps.folder';
+    private const string FOLDER_MIME = 'application/vnd.google-apps.folder';
 
     private \App\Plugins\Support\PluginApiClient $api;
 

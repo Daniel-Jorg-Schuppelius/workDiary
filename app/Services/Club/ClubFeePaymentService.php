@@ -40,7 +40,7 @@ use Illuminate\Validation\ValidationException;
 class ClubFeePaymentService {
     use AssertsStatusTransition;
 
-    public const MAX_DUNNING_LEVEL = 3;
+    public const int MAX_DUNNING_LEVEL = 3;
 
     public function __construct(
         private readonly ClubFeeService $fees,

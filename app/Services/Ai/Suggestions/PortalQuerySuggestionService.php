@@ -40,7 +40,7 @@ class PortalQuerySuggestionService implements PortalQuerySuggester {
     use DecidesSuggestions;
 
     /** @var list<string> */
-    private const RULES = [
+    private const array RULES = [
         'Zuerst die Rückfrage vollständig in die Zielsprache übertragen, dann in höchstens drei Sätzen zusammenfassen.',
         'Nur wiedergeben, was der Kunde gefragt hat — keine Antwort formulieren, keine Zusagen, keine Empfehlungen.',
         'Genannte Fristen, Termine, Mengen und Beanstandungen ausdrücklich benennen.',

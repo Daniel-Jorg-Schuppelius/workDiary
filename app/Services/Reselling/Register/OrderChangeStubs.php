@@ -33,16 +33,16 @@ final class OrderChangeStubs {
     use AssertsStatusTransition;
     use LocksResalePeriods;
 
-    public const AUDIT = 'resale_period.order_change';
+    public const string AUDIT = 'resale_period.order_change';
 
     /** Der Vorgänger darf bis so viele Tage vor dem Beginn des Nachfolgers enden … */
-    public const END_BEFORE_DAYS = 7;
+    public const int END_BEFORE_DAYS = 7;
 
     /** … und bis so viele Tage danach. */
-    public const END_AFTER_DAYS = 60;
+    public const int END_AFTER_DAYS = 60;
 
     /** Die Restperiode beginnt höchstens so viele Tage vor dem Nachfolger — sonst ist sie eine echte Periode. */
-    public const STUB_LEAD_DAYS = 60;
+    public const int STUB_LEAD_DAYS = 60;
 
     /**
      * Läuft im Vorschlagslauf ohne Modell-Events; die Audit-Einträge (Periode,

@@ -31,7 +31,7 @@ class ActivityFeedController extends Controller {
     use ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange;
 
-    private const PER_PAGE = 50;
+    private const int PER_PAGE = 50;
 
     public function __invoke(Request $request, ActivityFeedService $feed): View {
         Gate::authorize('viewAny', AuditLog::class);

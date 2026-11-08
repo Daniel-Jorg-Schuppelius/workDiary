@@ -22,9 +22,9 @@ use CommonToolkit\Helper\Data\CryptoHelper;
  * {@see \App\Plugins\Toggl\Services\TogglImportService} verarbeitet ausschließlich diese Struktur.
  */
 final class TogglEntry {
-    public const SOURCE_API = 'api';
+    public const string SOURCE_API = 'api';
 
-    public const SOURCE_CSV = 'csv';
+    public const string SOURCE_CSV = 'csv';
 
     public function __construct(
         /** Quelle: {@see self::SOURCE_API} | {@see self::SOURCE_CSV}. */

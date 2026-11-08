@@ -25,10 +25,10 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class RedirectTargetRuleTest extends TestCase {
     use ScansSourceTree;
 
-    private const TARGET_KEYS = '_?(?:back|back_url|return|return_to|return_url|redirect|redirect_to|redirect_url|next)';
+    private const string TARGET_KEYS = '_?(?:back|back_url|return|return_to|return_url|redirect|redirect_to|redirect_url|next)';
 
     /** @var array<string, string> Datei => Grund */
-    private const ALLOWED = [
+    private const array ALLOWED = [
         'app/Http/Controllers/Time/TimeEntryController.php' => '`return_to` wird nur mit einem festen Wert verglichen und wählt zwischen zwei Routen — kein Ziel aus der Eingabe.',
     ];
 

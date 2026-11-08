@@ -18,13 +18,13 @@ use App\Models\Platform\User;
 
 /** Positionstexte per KI (Feature Rechnungs-/Übergabepositionen); Null-Bindung wirft AiUnavailableException. */
 interface ItemTextSuggester {
-    public const CAPABILITY_ITEM = 'invoicing.item_text';
+    public const string CAPABILITY_ITEM = 'invoicing.item_text';
 
-    public const CAPABILITY_BLOCK = 'invoicing.block_text';
+    public const string CAPABILITY_BLOCK = 'invoicing.block_text';
 
-    public const CAPABILITY_TRANSLATE = 'invoicing.item_translate';
+    public const string CAPABILITY_TRANSLATE = 'invoicing.item_translate';
 
-    public const CAPABILITY_QUOTE_ITEM = 'quotes.item_text';
+    public const string CAPABILITY_QUOTE_ITEM = 'quotes.item_text';
 
     public function suggestForTransferPosition(BillingTransfer $transfer, BillingTransferPosition $position, ?User $user, ?int $connectionId = null): AiTextSuggestion;
 }

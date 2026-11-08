@@ -21,7 +21,7 @@ use App\Support\{BranchProfileFiles, OrganizationContext};
  * emission — nur Gruppen ab MIN_ORGANIZATIONS, keine Einzelwerte.
  */
 final class BranchEmissionBenchmarkService {
-    public const MIN_ORGANIZATIONS = 3;
+    public const int MIN_ORGANIZATIONS = 3;
 
     public function __construct(private readonly EmissionCalculationService $emissions) {}
 

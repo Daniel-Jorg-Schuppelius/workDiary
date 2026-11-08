@@ -39,11 +39,11 @@ class CommunicationNoteController extends Controller {
     use ResolvesCurrentOrganization;
 
     /** Ablage der zentralen Schnellerfassung (Feature 154). */
-    private const STORAGE_INTERNAL = 'internal';
+    private const string STORAGE_INTERNAL = 'internal';
 
-    private const STORAGE_CUSTOMER = 'customer';
+    private const string STORAGE_CUSTOMER = 'customer';
 
-    private const ALLOWED_SORTS = ['occurred_at', 'subject', 'type'];
+    private const array ALLOWED_SORTS = ['occurred_at', 'subject', 'type'];
 
     /**
      * Whitelist der erlaubten Bezugs-Typen. Verhindert, dass Aufrufer
@@ -51,7 +51,7 @@ class CommunicationNoteController extends Controller {
      *
      * @var array<string, class-string<Model>>
      */
-    private const NOTABLE_MAP = [
+    private const array NOTABLE_MAP = [
         'diary' => DiaryEntry::class,
         'customer' => Customer::class,
         'project' => Project::class,

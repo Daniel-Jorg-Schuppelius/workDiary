@@ -32,7 +32,7 @@ use CommonToolkit\Helper\Data\StringHelper;
  */
 class EtsyLedgerImportService {
     /** Payment-Batchgröße des Nachzugs (payment_ids ist Pflichtparameter). */
-    private const PAYMENT_BATCH = 25;
+    private const int PAYMENT_BATCH = 25;
 
     public function __construct(private readonly EtsyClientFactory $clients) {}
 

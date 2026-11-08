@@ -31,7 +31,7 @@ use Illuminate\Console\Command;
 class MeasureRecognitionCommand extends Command {
     use IteratesOrganizations;
 
-    private const FIELDS = ['number', 'issued_on', 'due_on', 'net', 'tax', 'gross'];
+    private const array FIELDS = ['number', 'issued_on', 'due_on', 'net', 'tax', 'gross'];
 
     protected $signature = 'incoming-invoices:measure-recognition ' . self::ORGANIZATION_OPTION . '
         {--limit=0 : Höchstens N Eingänge je Organisation (0 = alle)}

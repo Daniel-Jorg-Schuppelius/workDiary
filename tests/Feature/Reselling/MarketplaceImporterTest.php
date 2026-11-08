@@ -34,7 +34,7 @@ class MarketplaceImporterTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    public const FIXTURE = __DIR__ . '/../../Fixtures/Reselling/marketplace-purchases.csv';
+    public const string FIXTURE = __DIR__ . '/../../Fixtures/Reselling/marketplace-purchases.csv';
 
     /** @var list<string> */
     private array $tempFiles = [];

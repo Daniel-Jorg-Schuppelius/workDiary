@@ -25,7 +25,7 @@ use App\Support\Sqid;
  * Abo-Produkte dort.
  */
 final class LexofficeArticleCatalogSource implements ArticleCatalogSource {
-    public const PREFIX = 'lex';
+    public const string PREFIX = 'lex';
 
     public function prefix(): string {
         return self::PREFIX;

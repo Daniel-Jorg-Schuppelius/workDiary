@@ -21,7 +21,7 @@ namespace App\Services\Shipping;
  */
 final class ShipmentLabel {
     /** Erlaubte Label-Formate → MIME-Typ (Ablage als Attachment). */
-    public const MIME_BY_FORMAT = [
+    public const array MIME_BY_FORMAT = [
         'pdf' => 'application/pdf',
         'gif' => 'image/gif',
         'png' => 'image/png',

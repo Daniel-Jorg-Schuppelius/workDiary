@@ -19,7 +19,7 @@ use Datev\API\Online\OnlineService;
 
 /** Mandanten, auf die der angemeldete DATEV-Benutzer zugreifen darf. */
 class DatevClientDirectory {
-    private const MAX_PAGES = 10;
+    private const int MAX_PAGES = 10;
 
     public function __construct(private readonly DatevOnlineClientFactory $clients) {}
 

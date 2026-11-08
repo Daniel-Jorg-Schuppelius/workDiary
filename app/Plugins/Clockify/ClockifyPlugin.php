@@ -31,10 +31,10 @@ use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
  * Plugin-Id ist "clockify". Pro Organisation konfigurierbar über plugin_settings.
  */
 class ClockifyPlugin extends AbstractPlugin implements TimeImporter {
-    public const ID = 'clockify';
+    public const string ID = 'clockify';
 
     /** Vom {@see \App\Providers\PluginServiceProvider} zur Provider-Registrierung ausgewertet. */
-    public const SERVICE_PROVIDER = ClockifyServiceProvider::class;
+    public const string SERVICE_PROVIDER = ClockifyServiceProvider::class;
 
     public function name(): string {
         return 'Clockify';

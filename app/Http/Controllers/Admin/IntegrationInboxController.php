@@ -37,7 +37,7 @@ class IntegrationInboxController extends Controller {
     use AuthorizesOrganizationManagement;
 
     /** Obergrenze je Ziel-Typ in der „Zuordnen"-Auswahl (darüber: Suchfeld). */
-    private const ASSIGN_TARGET_LIMIT = 1000;
+    private const int ASSIGN_TARGET_LIMIT = 1000;
 
     public function index(Request $request, MatchProfileRegistry $registry, InboxGroupBookerRegistry $bookers): View {
         $user = $this->authorizeBilling();

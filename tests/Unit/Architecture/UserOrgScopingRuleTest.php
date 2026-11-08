@@ -50,7 +50,7 @@ class UserOrgScopingRuleTest extends TestCase {
      *
      * @var array<int, string>
      */
-    private const SCANNED_DIRS = [
+    private const array SCANNED_DIRS = [
         'app/Http/Controllers',
         'app/Services',
         'app/Support',
@@ -74,7 +74,7 @@ class UserOrgScopingRuleTest extends TestCase {
      *
      * @var array<int, string>
      */
-    private const ENTRY_PATTERNS = [
+    private const array ENTRY_PATTERNS = [
         'User::query(',
         'User::where(',
         'User::whereRaw(',
@@ -108,7 +108,7 @@ class UserOrgScopingRuleTest extends TestCase {
      *
      * @var array<int, string>
      */
-    private const SAFE_MARKERS = [
+    private const array SAFE_MARKERS = [
         'organization_id',
         'scopeForOrganization',
         '->forOrganization(',
@@ -123,7 +123,7 @@ class UserOrgScopingRuleTest extends TestCase {
      *
      * @var array<int, string>
      */
-    private const ID_BOUND_MARKERS = [
+    private const array ID_BOUND_MARKERS = [
         'whereKey',
         '->find',
         '::find',
@@ -139,7 +139,7 @@ class UserOrgScopingRuleTest extends TestCase {
      *
      * @var array<string, string>
      */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         // E-Mail ist die globale Login-Identität — Eindeutigkeits-/Dedup-Prüfungen
         // sind BEWUSST org-übergreifend (zwei Orgs dürfen keine Kollision haben).
         'app/Services/Applications/RecruitingService.php' => 'E-Mail-Eindeutigkeit vor Konto-Anlage aus Bewerbung (global, Login-Identität).',

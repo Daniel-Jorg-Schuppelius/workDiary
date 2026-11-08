@@ -24,7 +24,7 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class DockerArtifactsTest extends TestCase {
     use ScansSourceTree;
 
-    private const ARTIFACTS = [
+    private const array ARTIFACTS = [
         'Dockerfile',
         '.dockerignore',
         'compose.yml',
@@ -38,10 +38,10 @@ class DockerArtifactsTest extends TestCase {
     ];
 
     /** Pflicht-ENV mit Betriebscharakter (Heuristik): ohne sie startet kein Container sinnvoll. */
-    private const REQUIRED_KEY_PATTERN = '/^(APP_KEY|APP_URL|APP_ENV|DB_CONNECTION|DB_HOST|DB_PORT|DB_DATABASE|DB_USERNAME|DB_PASSWORD)$/';
+    private const string REQUIRED_KEY_PATTERN = '/^(APP_KEY|APP_URL|APP_ENV|DB_CONNECTION|DB_HOST|DB_PORT|DB_DATABASE|DB_USERNAME|DB_PASSWORD)$/';
 
     /** @var array<string, string> Schlüssel → wo er außerhalb von config/ gelesen wird */
-    private const READ_ELSEWHERE = [
+    private const array READ_ELSEWHERE = [
         'ERROR_TOOLKIT_LOG_CHANNEL' => 'vendor/dschuppelius/php-error-toolkit/config/error-toolkit.php',
         'TZ' => 'Betriebssystem/Container (tzdata)',
         'MARIADB_DATABASE' => 'compose.yml db-Service (mariadb-Image)',

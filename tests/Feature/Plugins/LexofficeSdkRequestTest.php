@@ -35,7 +35,7 @@ final class LexofficeSdkRequestTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const CONTACT_ID = '7c6b5a49-3827-4e16-9f05-e4d3c2b1a098';
+    private const string CONTACT_ID = '7c6b5a49-3827-4e16-9f05-e4d3c2b1a098';
 
     protected function setUp(): void {
         parent::setUp();

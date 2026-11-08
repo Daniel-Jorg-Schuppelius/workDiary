@@ -42,7 +42,7 @@ class TakeoffController extends Controller {
     use ResolvesCurrentOrganization;
 
     /** Trägerart in Formular und URL → Modell. */
-    public const CARRIERS = [
+    public const array CARRIERS = [
         'diary' => DiaryEntry::class,
         'project' => Project::class,
         'boq' => BillOfQuantity::class,

@@ -29,7 +29,7 @@ class RawSqlInterpolationRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Repo-relativer Pfad → Begründung */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         'app/Http/Controllers/Reporting/MonthByUserTeamReportController.php' => 'Datums-Ausdruck je Treiber, im Code gebildet.',
         'app/Services/Customer/CustomerTrendBuilder.php' => 'Jahres-/Monats-Ausdruck je Treiber, im Code gebildet.',
         'app/Services/Billing/DocumentFeedQuery.php' => 'Bedingung aus einer Klassenkonstante.',

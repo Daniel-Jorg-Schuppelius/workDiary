@@ -49,7 +49,7 @@ use Illuminate\Validation\ValidationException;
  * an und dedupliziert Schwachstellen über (identifier, affected_component).
  */
 class AdvisoryImportService {
-    private const STORAGE_DIR = 'isms/advisories';
+    private const string STORAGE_DIR = 'isms/advisories';
 
     public function __construct(
         private readonly VulnerabilityService $vulnerabilities,

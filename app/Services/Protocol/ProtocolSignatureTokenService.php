@@ -30,7 +30,7 @@ use RuntimeException;
  * Nutzung verbraucht.
  */
 class ProtocolSignatureTokenService {
-    public const DEFAULT_TTL_DAYS = 7;
+    public const int DEFAULT_TTL_DAYS = 7;
 
     public function __construct(private readonly ProtocolService $protocols) {}
 

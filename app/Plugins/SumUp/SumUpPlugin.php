@@ -27,9 +27,9 @@ use RuntimeException;
  * Statuswechsel an die Webhook-Adresse; der Stand kommt aus dem Checkout.
  */
 class SumUpPlugin extends AbstractPlugin implements OnlinePaymentProvider {
-    public const ID = 'sumup';
+    public const string ID = 'sumup';
 
-    public const SERVICE_PROVIDER = SumUpServiceProvider::class;
+    public const string SERVICE_PROVIDER = SumUpServiceProvider::class;
 
     public function name(): string {
         return 'SumUp';

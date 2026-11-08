@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Gate;
 
 /** Letzte Bestellungen beim Lieferanten (Einkauf) — Rechte wie die Bestellliste. */
 final class PurchaseOrderCockpitPanel implements CockpitPanel {
-    private const LIMIT = 10;
+    private const int LIMIT = 10;
 
     public function __construct(private readonly FeatureFlagResolver $features) {}
 

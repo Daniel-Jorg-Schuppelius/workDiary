@@ -37,11 +37,11 @@ class SustainabilityController extends Controller {
     use WritesReportCsv;
 
     /** Dashboard-Karten zeigen die jüngsten Einträge; die ganze Menge steht in den Listen. */
-    private const DASHBOARD_LIMIT = 10;
+    private const int DASHBOARD_LIMIT = 10;
 
-    private const ASSESSMENT_SORTS = ['subject' => 'subject_label', 'version' => 'version', 'status' => 'status', 'score' => 'total_score', 'assessed_at' => 'assessed_at', 'created' => 'id'];
+    private const array ASSESSMENT_SORTS = ['subject' => 'subject_label', 'version' => 'version', 'status' => 'status', 'score' => 'total_score', 'assessed_at' => 'assessed_at', 'created' => 'id'];
 
-    private const MEASURE_SORTS = ['title' => 'title', 'status' => 'status', 'due_on' => 'due_on', 'created' => 'id'];
+    private const array MEASURE_SORTS = ['title' => 'title', 'status' => 'status', 'due_on' => 'due_on', 'created' => 'id'];
 
     public function __construct(
         private readonly EmissionCalculationService $emissions,

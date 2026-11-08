@@ -51,7 +51,7 @@ use Throwable;
  */
 class MsgraphTodoSyncService extends AbstractTaskSyncService {
     /** Felder des gemeinsamen base-Snapshots (Konfliktbasis). */
-    public const SYNCED_FIELDS = ['title', 'description', 'status', 'priority', 'due_date'];
+    public const array SYNCED_FIELDS = ['title', 'description', 'status', 'priority', 'due_date'];
 
     /** @return array{created: int, updated: int, unchanged: int, conflicts: int, inbox: int, failed: int} */
     public function syncOrganization(Organization $organization): array {

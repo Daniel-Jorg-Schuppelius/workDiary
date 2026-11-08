@@ -55,9 +55,9 @@ use Throwable;
  */
 final class DatevBookingAdapter {
     /** Skontotyp (EXTF-Feld 94): 1 = Einkauf (Kreditor), 2 = Verkauf (Debitor). */
-    public const DISCOUNT_TYPE_PURCHASE = 1;
+    public const int DISCOUNT_TYPE_PURCHASE = 1;
 
-    public const DISCOUNT_TYPE_SALES = 2;
+    public const int DISCOUNT_TYPE_SALES = 2;
 
     /**
      * Erzeugt die DATEV-V700-CSV als String.

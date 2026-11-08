@@ -40,7 +40,7 @@ class TogglQuotaPauseTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const CREATE_URL = 'https://api.track.toggl.com/api/v9/workspaces/4711/time_entries';
+    private const string CREATE_URL = 'https://api.track.toggl.com/api/v9/workspaces/4711/time_entries';
 
     private User $user;
 

@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /** Gerät an eine Person oder ein Team ausgegeben (MVP-1273), etwa für die Geräteeinweisung. */
 final class AssetCheckedOutTrigger implements RuleTrigger {
-    public const KEY = 'asset.checkedOut';
+    public const string KEY = 'asset.checkedOut';
 
     public function key(): string {
         return self::KEY;

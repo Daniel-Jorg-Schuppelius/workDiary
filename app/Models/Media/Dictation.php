@@ -37,7 +37,7 @@ class Dictation extends Model {
     use HasSqid;
 
     /** Kontexte mit eigener Gliederung; Schlüssel = Feldnamen der Gliederung. */
-    public const CONTEXTS = [
+    public const array CONTEXTS = [
         'diary' => ['activity', 'work_done', 'defects'],
         'protocol' => ['note', 'defects'],
     ];

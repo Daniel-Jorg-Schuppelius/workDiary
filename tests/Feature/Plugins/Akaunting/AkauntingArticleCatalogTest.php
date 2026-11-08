@@ -38,7 +38,7 @@ class AkauntingArticleCatalogTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const AKAUNTING = 'https://akaunting.example.test';
+    private const string AKAUNTING = 'https://akaunting.example.test';
 
     protected function setUp(): void {
         parent::setUp();

@@ -39,7 +39,7 @@ final class DatabaseHealth {
      * sperrt nach einem einzelnen Abfragefehler die ganze Anwendung für 60 s
      * aus — und genau so entstanden die wandernden 503 in der Testsuite.
      */
-    private const CONNECTION_DRIVER_CODES = [
+    private const array CONNECTION_DRIVER_CODES = [
         1040, // Too many connections
         1042, // Unable to connect to any of the specified MySQL hosts
         1043, // Bad handshake

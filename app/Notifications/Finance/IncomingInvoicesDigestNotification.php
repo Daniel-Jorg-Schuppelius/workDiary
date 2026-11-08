@@ -18,9 +18,9 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 /** Täglicher Hinweis auf offene Zuordnungen im Rechnungseingang (Feature 163, MVP-1110); nur bei Befund. */
 class IncomingInvoicesDigestNotification extends DirectNotification {
-    private const TITLE_KEY = 'Rechnungseingang: :count Eingänge zuzuordnen';
+    private const string TITLE_KEY = 'Rechnungseingang: :count Eingänge zuzuordnen';
 
-    private const MESSAGE_KEY = 'Davon :unrecognized ohne erkannte Rechnungsdaten. Bitte die Arbeitsliste „Rechnungseingang“ prüfen.';
+    private const string MESSAGE_KEY = 'Davon :unrecognized ohne erkannte Rechnungsdaten. Bitte die Arbeitsliste „Rechnungseingang“ prüfen.';
 
     public function __construct(
         public readonly int $openCount,

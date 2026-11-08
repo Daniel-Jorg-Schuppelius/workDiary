@@ -38,14 +38,14 @@ use RuntimeException;
 class TourProposalService {
     use AssertsStatusTransition;
 
-    public const KIND_TOUR = 'tour';
+    public const string KIND_TOUR = 'tour';
 
-    public const KIND_REMAINDER = 'remainder';
+    public const string KIND_REMAINDER = 'remainder';
 
-    public const KIND_DAY = 'day';
+    public const string KIND_DAY = 'day';
 
     /** Aufträge je Tagesvorschlag. */
-    public const MAX_DAY_CANDIDATES = 200;
+    public const int MAX_DAY_CANDIDATES = 200;
 
     public function __construct(
         private readonly TourProblemBuilder $builder,

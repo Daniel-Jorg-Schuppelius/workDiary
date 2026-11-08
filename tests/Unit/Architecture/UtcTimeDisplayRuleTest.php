@@ -22,10 +22,10 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class UtcTimeDisplayRuleTest extends TestCase {
     use ScansSourceTree;
 
-    private const PATTERN = '~(?:->\w+_at\??|optional\(\$[^)]*_at\))->(?:(?:format|translatedFormat)\(\s*[\'"][^\'"]*H:i|isoFormat\(\s*[\'"][^\'"]*(?:LT|LLL|H:mm|HH:mm))~';
+    private const string PATTERN = '~(?:->\w+_at\??|optional\(\$[^)]*_at\))->(?:(?:format|translatedFormat)\(\s*[\'"][^\'"]*H:i|isoFormat\(\s*[\'"][^\'"]*(?:LT|LLL|H:mm|HH:mm))~';
 
     /** @var array<string, string> Pfad-Präfix → Begründung */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         // Fahrtenbuch bleibt Ortszeit (GoBD-Aufzeichnung, Entscheidung MVP-823).
         'resources/views/travel-logs/_form_body.blade.php' => 'Fahrtenbuch führt Ortszeit',
     ];

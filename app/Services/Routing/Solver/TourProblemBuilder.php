@@ -31,9 +31,9 @@ use Illuminate\Database\Eloquent\Collection;
  * mit 40 km/h (gekennzeichnet).
  */
 class TourProblemBuilder {
-    public const DEFAULT_SERVICE_MINUTES = 60;
+    public const int DEFAULT_SERVICE_MINUTES = 60;
 
-    private const FALLBACK_SPEED_MPS = 40_000 / 3600;
+    private const float FALLBACK_SPEED_MPS = 40_000 / 3600;
 
     public function __construct(
         private readonly OsrmRouter $router,

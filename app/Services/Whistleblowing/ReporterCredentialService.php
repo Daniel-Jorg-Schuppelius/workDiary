@@ -30,7 +30,7 @@ use SensitiveParameter;
  */
 class ReporterCredentialService {
     /** Verwechslungsarmes Alphabet (ohne 0/O/1/I). */
-    private const ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    private const string ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 
     public function generateCaseNumber(): string {
         return 'WD-' . $this->randomToken(4) . '-' . $this->randomToken(4);

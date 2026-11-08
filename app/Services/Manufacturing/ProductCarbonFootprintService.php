@@ -24,7 +24,7 @@ use CommonToolkit\Helper\Data\NumberHelper;
  * @phpstan-type FootprintLine array{article: Article, level: int, quantity: numeric-string, source: 'make'|'buy', factor: ?numeric-string, kg: ?numeric-string}
  */
 class ProductCarbonFootprintService {
-    private const SCALE = 4;
+    private const int SCALE = 4;
 
     public function __construct(private readonly MrpService $mrp) {}
 

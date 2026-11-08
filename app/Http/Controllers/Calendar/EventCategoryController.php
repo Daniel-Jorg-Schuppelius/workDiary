@@ -21,7 +21,7 @@ use Illuminate\View\View;
 class EventCategoryController extends Controller {
     use ParsesIndexQuery;
 
-    private const ALLOWED_SORTS = ['name', 'requires_certificate', 'certificate_valid_months', 'is_active'];
+    private const array ALLOWED_SORTS = ['name', 'requires_certificate', 'certificate_valid_months', 'is_active'];
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', EventCategory::class);

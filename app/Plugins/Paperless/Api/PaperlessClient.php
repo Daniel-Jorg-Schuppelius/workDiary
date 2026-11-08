@@ -28,10 +28,10 @@ use Psr\Http\Message\StreamInterface;
 class PaperlessClient {
     use GuardsPluginApiResponses;
 
-    private const ID_PAGE_SIZE = 250;
+    private const int ID_PAGE_SIZE = 250;
 
     /** Wählbare Quellen der Containerauswahl: Endpunkt → Container-Präfix. */
-    public const CONTAINER_KINDS = ['tags' => 'tag', 'correspondents' => 'correspondent', 'document_types' => 'type'];
+    public const array CONTAINER_KINDS = ['tags' => 'tag', 'correspondents' => 'correspondent', 'document_types' => 'type'];
 
     private ?PluginApiClient $api = null;
 

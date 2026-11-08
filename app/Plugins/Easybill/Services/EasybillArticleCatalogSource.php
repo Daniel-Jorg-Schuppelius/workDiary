@@ -28,10 +28,10 @@ use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
  * Nettopreis über den Steuersatz zurückgerechnet.
  */
 class EasybillArticleCatalogSource extends AccountingArticleCatalogSource {
-    public const PREFIX = 'eb';
+    public const string PREFIX = 'eb';
 
     /** Seiten je Lauf (Limit 1000 je Seite laut API): darüber ist das Lesen unvollständig. */
-    private const MAX_PAGES = 20;
+    private const int MAX_PAGES = 20;
 
     public function __construct(private readonly EasybillClientFactory $clients) {}
 

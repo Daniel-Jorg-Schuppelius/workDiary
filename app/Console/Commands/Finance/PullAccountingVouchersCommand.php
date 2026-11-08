@@ -33,7 +33,7 @@ use Throwable;
  */
 class PullAccountingVouchersCommand extends Command {
     /** Belege je Lauf und Anbieter, deren Positionen nachgeladen werden (Einzelabrufe). */
-    private const LINE_BATCH = 100;
+    private const int LINE_BATCH = 100;
 
     protected $signature = 'accounting:pull-vouchers
         {--plugin= : Nur dieses Buchhaltungssystem (sevdesk, easybill, invoiceplane, jtl_wawi)}

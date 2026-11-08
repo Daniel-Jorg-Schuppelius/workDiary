@@ -19,7 +19,7 @@ use App\Policies\PermissionPolicy;
 class ServiceTicketPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::ServiceTicketView,
         'view' => P::ServiceTicketView,
         'create' => P::ServiceTicketCreate,

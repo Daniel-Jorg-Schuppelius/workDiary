@@ -17,7 +17,7 @@ use App\Policies\PermissionPolicy;
 class ClassificationRequirementPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::ClassificationRequirementView,
         'view' => P::ClassificationRequirementView,
         'create' => P::ClassificationRequirementManage,

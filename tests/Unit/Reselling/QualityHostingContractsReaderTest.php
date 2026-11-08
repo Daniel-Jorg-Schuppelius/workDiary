@@ -22,7 +22,7 @@ use Tests\TestCase;
 class QualityHostingContractsReaderTest extends TestCase {
     use BuildsXlsxFixtures;
 
-    public const HEADERS = ['Kundennummer', 'Kunde', 'Produktname', 'Gekaufte Lizenzen', 'Preis pro Lizenz (Vertragslaufzeit)', 'Gesamtpreis (Vertragslaufzeit)', 'Preis pro Lizenz (pro Monat)', 'Gesamtpreis (pro Monat)', 'Vertragslaufzeit', 'Abrechnungsintervall', 'Vertragsnummer', 'Vertragsstart', 'Vertragsverlängerung', 'Vertragsstatus', 'Tarifnummer', 'Partner-Kundennummer'];
+    public const array HEADERS = ['Kundennummer', 'Kunde', 'Produktname', 'Gekaufte Lizenzen', 'Preis pro Lizenz (Vertragslaufzeit)', 'Gesamtpreis (Vertragslaufzeit)', 'Preis pro Lizenz (pro Monat)', 'Gesamtpreis (pro Monat)', 'Vertragslaufzeit', 'Abrechnungsintervall', 'Vertragsnummer', 'Vertragsstart', 'Vertragsverlängerung', 'Vertragsstatus', 'Tarifnummer', 'Partner-Kundennummer'];
 
     /**
      * Anonymisierter Export im Format des Partnerportals; Vertragsstart als

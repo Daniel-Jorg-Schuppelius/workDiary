@@ -23,7 +23,7 @@ use App\Services\WorkQueue\Dto\WorkItem;
  * Freigabe-Erinnerungen stehen schon als Spesen- und Urlaubsfreigaben im Vorrat.
  */
 final class DraftReminderWorkItemSource implements WorkItemSource {
-    private const KEYS = ['expense_drafts', 'per_diem_drafts'];
+    private const array KEYS = ['expense_drafts', 'per_diem_drafts'];
 
     public function __construct(private readonly ReminderService $reminders) {}
 

@@ -37,7 +37,7 @@ class ShopwareImportTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const BASE = 'https://shopware.example.test';
+    private const string BASE = 'https://shopware.example.test';
 
     /** @var list<array<string, mixed>> */
     private array $orders = [];

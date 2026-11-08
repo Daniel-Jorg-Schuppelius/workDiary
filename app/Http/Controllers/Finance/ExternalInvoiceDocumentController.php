@@ -28,7 +28,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * wie an der lokalen Rechnung; eingefroren wird mit der ersten Versandfassung.
  */
 class ExternalInvoiceDocumentController extends Controller {
-    private const ROUTES = 'finance.external-invoices.documents';
+    private const string ROUTES = 'finance.external-invoices.documents';
 
     public function __construct(private readonly SupportingDocumentService $documents) {}
 

@@ -15,7 +15,7 @@ use RuntimeException;
 
 /** Lesende Lexoffice-Kontaktquelle für den provider-neutralen Rufnummernabgleich. */
 final class LexofficePhoneContactSource implements ExternalPhoneContactSource {
-    private const PAGE_LIMIT = 100;
+    private const int PAGE_LIMIT = 100;
 
     public function id(): string {
         return LexofficePlugin::ID;

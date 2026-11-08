@@ -33,7 +33,7 @@ class WageTypeMapping extends Model {
     use HasSqid;
 
     /** Interne Standard-Lohnarten laut ../WorkDiary-Architecture/konzepte/zeit-export.md §5.1. */
-    public const STANDARD_WAGE_TYPES = [
+    public const array STANDARD_WAGE_TYPES = [
         'work.normal',
         'work.night',
         'work.sunday',

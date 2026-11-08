@@ -41,7 +41,7 @@ class ApplicationContractVersion extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const KINDS = ['draft', 'counter', 'final'];
+    public const array KINDS = ['draft', 'counter', 'final'];
 
     protected $fillable = [
         'organization_id', 'negotiation_id', 'version', 'approval_round', 'kind', 'summary',

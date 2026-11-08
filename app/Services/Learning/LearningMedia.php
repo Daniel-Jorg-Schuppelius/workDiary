@@ -24,7 +24,7 @@ use App\Services\Media\MediaPresenter;
  */
 final class LearningMedia {
     /** Benutzereinstellung der gewählten Videoqualität (MVP-1022). */
-    public const VIDEO_QUALITY_PREFERENCE = 'video_quality';
+    public const string VIDEO_QUALITY_PREFERENCE = 'video_quality';
 
     public function __construct(private readonly MediaPresenter $presenter) {}
 

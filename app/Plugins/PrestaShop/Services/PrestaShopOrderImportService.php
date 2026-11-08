@@ -40,7 +40,7 @@ use Illuminate\Database\Eloquent\Model;
  * @extends AbstractShopOrderImportService<PrestaShopOrder, PrestaShopConnection>
  */
 class PrestaShopOrderImportService extends AbstractShopOrderImportService {
-    private const TEMPLATES = [
+    private const array TEMPLATES = [
         'order_canceled' => ShopOrderStatus::Cancelled,
         'payment_error' => ShopOrderStatus::Cancelled,
         'refund' => ShopOrderStatus::Refunded,

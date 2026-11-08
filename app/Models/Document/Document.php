@@ -66,7 +66,7 @@ class Document extends Model {
     use SoftDeletes;
 
     /** Höchstzahl der Einträge im Dokumente-Panel einer Detailseite (MVP-817); darüber führt der Link in die Liste. */
-    public const PANEL_LIMIT = 25;
+    public const int PANEL_LIMIT = 25;
 
     protected $fillable = [
         'organization_id',

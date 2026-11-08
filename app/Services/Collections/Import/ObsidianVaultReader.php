@@ -32,9 +32,9 @@ use Symfony\Component\Yaml\Yaml;
  */
 class ObsidianVaultReader {
     /** Größere Dateien sind keine Notizen, sondern Anhänge oder Exporte. */
-    public const MAX_FILE_BYTES = 1_048_576;
+    public const int MAX_FILE_BYTES = 1_048_576;
 
-    private const MAX_PAGES = 500;
+    private const int MAX_PAGES = 500;
 
     /**
      * Schon übernommene Dateien (`$known`) werden nicht erneut geladen — sie

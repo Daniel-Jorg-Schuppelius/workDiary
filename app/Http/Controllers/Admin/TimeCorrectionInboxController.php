@@ -28,7 +28,7 @@ use Illuminate\View\View;
  * und stellt approve/reject/apply zur Verfügung.
  */
 class TimeCorrectionInboxController extends Controller {
-    private const ALLOWED_SORTS = ['scope_date', 'status'];
+    private const array ALLOWED_SORTS = ['scope_date', 'status'];
 
     public function __construct(private readonly TimeCorrectionService $service) {}
 

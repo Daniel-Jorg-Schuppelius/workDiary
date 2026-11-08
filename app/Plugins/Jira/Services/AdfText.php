@@ -20,13 +20,13 @@ namespace App\Plugins\Jira\Services;
  * unvollständig; die Grenzen gelten vor dem Abstieg.
  */
 final class AdfText {
-    private const MAX_DEPTH = 24;
+    private const int MAX_DEPTH = 24;
 
-    private const MAX_NODES = 5000;
+    private const int MAX_NODES = 5000;
 
-    private const MAX_CHARS = 20000;
+    private const int MAX_CHARS = 20000;
 
-    private const BLOCKS = ['paragraph', 'heading', 'blockquote', 'codeBlock'];
+    private const array BLOCKS = ['paragraph', 'heading', 'blockquote', 'codeBlock'];
 
     private int $nodes = 0;
 

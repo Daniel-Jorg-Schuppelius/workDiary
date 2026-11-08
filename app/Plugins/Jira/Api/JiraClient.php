@@ -30,7 +30,7 @@ class JiraClient {
     use GuardsPluginApiResponses;
 
     /** @var list<string> */
-    public const ISSUE_FIELDS = ['summary', 'description', 'status', 'duedate', 'project'];
+    public const array ISSUE_FIELDS = ['summary', 'description', 'status', 'duedate', 'project'];
 
     private ?PluginApiClient $api = null;
 

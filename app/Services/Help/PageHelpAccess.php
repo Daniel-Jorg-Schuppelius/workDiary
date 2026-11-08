@@ -23,9 +23,9 @@ use Illuminate\Http\Request;
  * nach erfolgreicher Antwort ({@see \App\Http\Middleware\RememberPageHelp}).
  */
 final class PageHelpAccess {
-    public const SESSION_KEY = 'help_page_topics';
+    public const string SESSION_KEY = 'help_page_topics';
 
-    private const REQUEST_KEY = 'help.page_topic';
+    private const string REQUEST_KEY = 'help.page_topic';
 
     public function mark(Request $request, string $topic): void {
         $request->attributes->set(self::REQUEST_KEY, $topic);

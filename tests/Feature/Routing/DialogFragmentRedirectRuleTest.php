@@ -32,7 +32,7 @@ class DialogFragmentRedirectRuleTest extends TestCase {
      *
      * @var array<string, string> "Controller-Datei => Route" → Grund
      */
-    private const ALLOWED = [
+    private const array ALLOWED = [
         'Platform/OrganizationController.php => admin.organizations.edit' => 'Org-Admin speichert im eigenen Organisations-Dialog',
         'Crisis/CrisisStatusPageController.php => crisis.status-page.edit' => 'Token-Aktionen im eigenen Dialog, neuer Link nur dort sichtbar',
         'Investments/InvestmentProposalController.php => investments.proposals.link' => 'Token-Aktionen im eigenen Dialog, neuer Link nur dort sichtbar',
@@ -68,7 +68,7 @@ class DialogFragmentRedirectRuleTest extends TestCase {
      *
      * @var array<string, string> "View => Route" → Grund
      */
-    private const LINK_ALLOWED = [
+    private const array LINK_ALLOWED = [
         'week/index.blade.php => diary.create' => 'URL-Vorlage für den Kalender, app.js öffnet den Dialog selbst',
         'week/index.blade.php => shifts.create' => 'URL-Vorlage für den Kalender, app.js öffnet den Dialog selbst',
         'week/index.blade.php => assignments.create' => 'URL-Vorlage für den Kalender, app.js öffnet den Dialog selbst',
@@ -80,7 +80,7 @@ class DialogFragmentRedirectRuleTest extends TestCase {
     ];
 
     /** Marker im Umfeld eines Links, die den Dialog-Host oder einen eigenen Öffner belegen. */
-    private const LINK_MARKERS = '/data-entry-modal-(?:trigger|autoopen|stack)|open_dialog|_dialog_url|\$dialogUrl|\?dialog=1|\'dialog\' => 1|\'modal\' => true'
+    private const string LINK_MARKERS = '/data-entry-modal-(?:trigger|autoopen|stack)|open_dialog|_dialog_url|\$dialogUrl|\?dialog=1|\'dialog\' => 1|\'modal\' => true'
         . '|<x-(?:collection-add-button|ui-action|entity-header|filter-bar|order-link|content-references|damage-cases-card|resale[.-]holder|billing\.document-relations|help-drawer|maintenance-banner)\b/';
 
     public function test_view_links_to_dialog_fragments_carry_the_modal_trigger(): void {

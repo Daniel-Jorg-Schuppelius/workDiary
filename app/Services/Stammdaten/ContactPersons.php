@@ -24,7 +24,7 @@ use CommonToolkit\Helper\Data\{PersonNameHelper, StringHelper};
  * dieselbe Regel wie beim Hauptansprechpartner.
  */
 final class ContactPersons {
-    private const NAME_PARTS = ['title', 'first_name', 'middle_names', 'last_name'];
+    private const array NAME_PARTS = ['title', 'first_name', 'middle_names', 'last_name'];
 
     /**
      * Vollständiger Eintrag oder null, wenn er weder Namen noch E-Mail oder

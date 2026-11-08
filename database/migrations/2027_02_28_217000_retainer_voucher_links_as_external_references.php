@@ -20,11 +20,11 @@ use Illuminate\Support\Facades\{DB, Schema};
  * als Fremdschlüssel auf die Plugin-Tabelle `lexoffice_vouchers`.
  */
 return new class extends Migration {
-    private const PLUGIN = 'lexoffice';
+    private const string PLUGIN = 'lexoffice';
 
-    private const TYPE = 'retainer_voucher';
+    private const string TYPE = 'retainer_voucher';
 
-    private const MORPH = 'customer_billing_statements';
+    private const string MORPH = 'customer_billing_statements';
 
     public function up(): void {
         $now = now();

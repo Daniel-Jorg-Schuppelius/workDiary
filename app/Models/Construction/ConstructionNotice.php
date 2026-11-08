@@ -95,7 +95,7 @@ class ConstructionNotice extends Model implements AuditsChanges {
     ];
 
     /** Die beiden Belegarten, die als VOB/B-Schreiben zulaessig sind. */
-    public const KINDS = [
+    public const array KINDS = [
         RenderDocumentKind::ConstructionObstructionNotice,
         RenderDocumentKind::ConstructionConcernNotice,
     ];

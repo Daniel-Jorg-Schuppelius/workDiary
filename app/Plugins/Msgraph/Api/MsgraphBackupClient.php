@@ -28,7 +28,7 @@ use RuntimeException;
  */
 class MsgraphBackupClient {
     /** Chunk-Größe: Vielfaches von 320 KiB (Graph-Anforderung) — 7,5 MiB. */
-    private const CHUNK_SIZE = 7_864_320;
+    private const int CHUNK_SIZE = 7_864_320;
 
     private \App\Plugins\Support\PluginApiClient $api;
 

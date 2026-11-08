@@ -18,10 +18,10 @@ namespace App\Services\Procurement\Dto;
  */
 final class OrderResponseData {
     /** Auftragsbestätigung auf eine Bestellung. */
-    public const CONFIRMATION = 'confirmation';
+    public const string CONFIRMATION = 'confirmation';
 
     /** Preisangebot auf eine Preisanfrage. */
-    public const OFFER = 'offer';
+    public const string OFFER = 'offer';
 
     /**
      * @param self::CONFIRMATION|self::OFFER $kind

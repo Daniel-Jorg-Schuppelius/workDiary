@@ -44,9 +44,9 @@ use Illuminate\Validation\ValidationException;
  */
 class LexofficeRetainerVouchers implements RetainerVoucherLinks {
     /** Belegarten, die als Kundenrechnung für eine Pauschale in Frage kommen. */
-    private const INVOICE_TYPES = VoucherTypes::SALES_INVOICES;
+    private const array INVOICE_TYPES = VoucherTypes::SALES_INVOICES;
 
-    public const EXT_TYPE = 'retainer_voucher';
+    public const string EXT_TYPE = 'retainer_voucher';
 
     public function __construct(
         private readonly CustomerAccountStatementService $statements,

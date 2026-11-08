@@ -39,8 +39,8 @@ use Carbon\CarbonImmutable;
  * Die Prüfung ist lesend und ohne Nebenwirkung; sie darf jederzeit laufen.
  */
 final class TenderSubmissionPreflight {
-    public const SEVERITY_BLOCKER = 'blocker';
-    public const SEVERITY_WARNING = 'warning';
+    public const string SEVERITY_BLOCKER = 'blocker';
+    public const string SEVERITY_WARNING = 'warning';
 
     /**
      * @return list<array{severity: string, code: string, message: string}>

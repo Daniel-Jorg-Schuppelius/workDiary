@@ -42,14 +42,14 @@ class DocumentSpec extends AbstractEntitySpec implements ProvidesZipImport {
     use ResolvesImportReferences;
     use ValidatesImportDates;
 
-    public const TARGET_CUSTOMER = 'customer';
+    public const string TARGET_CUSTOMER = 'customer';
 
-    public const TARGET_PROJECT = 'project';
+    public const string TARGET_PROJECT = 'project';
 
-    public const TARGET_ASSET = 'asset';
+    public const string TARGET_ASSET = 'asset';
 
     /** @var list<string> */
-    public const TARGET_TYPES = [self::TARGET_CUSTOMER, self::TARGET_PROJECT, self::TARGET_ASSET];
+    public const array TARGET_TYPES = [self::TARGET_CUSTOMER, self::TARGET_PROJECT, self::TARGET_ASSET];
 
     public function __construct(private readonly DocumentService $documents) {}
 

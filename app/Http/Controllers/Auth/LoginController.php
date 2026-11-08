@@ -25,7 +25,7 @@ class LoginController extends Controller {
 
     use ResolvesWorkMode;
 
-    private const MAX_LOGIN_ATTEMPTS = 5;
+    private const int MAX_LOGIN_ATTEMPTS = 5;
 
     public function showLoginForm(): View {
         return view('auth.login');

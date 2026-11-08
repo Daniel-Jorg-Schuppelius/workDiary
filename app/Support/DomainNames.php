@@ -21,7 +21,7 @@ namespace App\Support;
  * von der Domainverwaltung für die lesbare Anzeige — darum Plattform-Helfer.
  */
 final class DomainNames {
-    private const TOKEN = '/(?<![\p{L}\p{N}.-])((?:[\p{L}\p{N}](?:[\p{L}\p{N}-]*[\p{L}\p{N}])?\.)+[\p{L}]{2,})(?![\p{L}\p{N}-])/u';
+    private const string TOKEN = '/(?<![\p{L}\p{N}.-])((?:[\p{L}\p{N}](?:[\p{L}\p{N}-]*[\p{L}\p{N}])?\.)+[\p{L}]{2,})(?![\p{L}\p{N}-])/u';
 
     /**
      * Schreibweisen einer Domain: wie geführt und die jeweils andere IDN-Form — der

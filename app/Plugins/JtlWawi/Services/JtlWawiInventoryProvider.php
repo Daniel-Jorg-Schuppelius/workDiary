@@ -30,7 +30,7 @@ use App\Services\Inventory\{InventoryLedger, StockPosting};
  * Bestände und Buchungen laufen ausschließlich gegen den Kindartikel.
  */
 class JtlWawiInventoryProvider implements InventoryProvider {
-    public const PLUGIN_ID = 'jtl_wawi';
+    public const string PLUGIN_ID = 'jtl_wawi';
 
     public function __construct(
         private readonly Organization $organization,

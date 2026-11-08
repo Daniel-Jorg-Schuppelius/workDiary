@@ -34,9 +34,9 @@ use Illuminate\Support\Carbon;
  * zugestelltes Ereignis erzeugt keinen zweiten Eintrag.
  */
 class CtiCallService {
-    public const PLUGIN_ID = 'cti';
+    public const string PLUGIN_ID = 'cti';
 
-    public const EXTERNAL_TYPE = 'call';
+    public const string EXTERNAL_TYPE = 'call';
 
     public function __construct(private readonly CommunicationNoteService $notes) {}
 

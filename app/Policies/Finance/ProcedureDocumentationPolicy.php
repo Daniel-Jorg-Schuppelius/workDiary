@@ -22,7 +22,7 @@ use App\Policies\PermissionPolicy;
  * Admin); Modul-Gating `module.finance` über die `finance.*`-Routen.
  */
 class ProcedureDocumentationPolicy extends PermissionPolicy {
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => Permission::FinanceGobdExport,
         'view' => Permission::FinanceGobdExport,
         'create' => Permission::FinanceGobdExport,

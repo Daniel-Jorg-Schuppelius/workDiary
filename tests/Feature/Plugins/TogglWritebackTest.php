@@ -35,14 +35,14 @@ class TogglWritebackTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const WORKSPACE = 4711;
+    private const int WORKSPACE = 4711;
 
     /** So sieht der Idempotenz-Schlüssel wirklich aus — die nackte ID leitet die Rückrichtung daraus ab. */
-    private const ENTRY_KEY = 'toggl:123456';
+    private const string ENTRY_KEY = 'toggl:123456';
 
-    private const EXTERNAL_ID = '123456';
+    private const string EXTERNAL_ID = '123456';
 
-    private const BASE = 'https://api.track.toggl.com/api/v9';
+    private const string BASE = 'https://api.track.toggl.com/api/v9';
 
     protected function setUp(): void {
         parent::setUp();

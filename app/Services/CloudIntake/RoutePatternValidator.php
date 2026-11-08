@@ -24,7 +24,7 @@ use App\Models\CloudIntake\CloudDocumentRoute;
  */
 class RoutePatternValidator {
     /** Erlaubte Pfadvariablen (Konzept §Datenmodell). */
-    public const VARIABLES = [
+    public const array VARIABLES = [
         'customer_number',
         'project_number',
         'order_number',

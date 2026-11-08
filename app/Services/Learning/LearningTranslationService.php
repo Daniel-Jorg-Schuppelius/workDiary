@@ -43,16 +43,16 @@ use Illuminate\Validation\ValidationException;
  * eine andere Frage und würde die Prüfungsakte verfälschen.
  */
 class LearningTranslationService {
-    public const CAPABILITY = 'documents.item_translate';
+    public const string CAPABILITY = 'documents.item_translate';
 
     /** Blockarten mit übersetzbarem Text. Code bleibt Code (MVP-806). */
-    private const TRANSLATABLE_BLOCKS = ['heading', 'text', 'callout', 'checklist', 'audio', 'accordion', 'table', 'question'];
+    private const array TRANSLATABLE_BLOCKS = ['heading', 'text', 'callout', 'checklist', 'audio', 'accordion', 'table', 'question'];
 
     /**
      * Schlüssel, die eine freigegebene Übersetzung im Block ersetzt — Player
      * und Offline-Paket lesen dieselbe Liste.
      */
-    public const TRANSLATED_BLOCK_KEYS = ['text' => 1, 'items' => 1, 'sections' => 1, 'rows' => 1, 'options' => 1, 'explanation' => 1];
+    public const array TRANSLATED_BLOCK_KEYS = ['text' => 1, 'items' => 1, 'sections' => 1, 'rows' => 1, 'options' => 1, 'explanation' => 1];
 
     public function __construct(
         private readonly AiInvoker $invocation,

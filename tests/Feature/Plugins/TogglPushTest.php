@@ -39,7 +39,7 @@ class TogglPushTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const CREATE_URL = 'https://api.track.toggl.com/api/v9/workspaces/4711/time_entries';
+    private const string CREATE_URL = 'https://api.track.toggl.com/api/v9/workspaces/4711/time_entries';
 
     private User $user;
 
@@ -211,9 +211,9 @@ class TogglPushTest extends TestCase {
         $fake->assertNotSent(fn ($request): bool => $request->getMethod() === 'POST');
     }
 
-    private const CLIENTS_URL = 'https://api.track.toggl.com/api/v9/workspaces/4711/clients';
+    private const string CLIENTS_URL = 'https://api.track.toggl.com/api/v9/workspaces/4711/clients';
 
-    private const PROJECTS_URL = 'https://api.track.toggl.com/api/v9/workspaces/4711/projects';
+    private const string PROJECTS_URL = 'https://api.track.toggl.com/api/v9/workspaces/4711/projects';
 
     /** Projekt ohne Toggl-Gegenstück beim Kunden „Musterkunde GmbH“. */
     private function unmappedCustomerProject(string $name = 'Wartung'): Project {

@@ -43,11 +43,11 @@ use Throwable;
  * @phpstan-type Result array{kind: string, number: string, entries: int, net: float, unmatched: list<string>, duplicates: int, issues: list<string>, error: string|null, skipped: string|null}
  */
 class IncomingProviderInvoiceImport {
-    public const KIND_LINES = 'lines';
+    public const string KIND_LINES = 'lines';
 
-    public const KIND_DOMAINS = 'domains';
+    public const string KIND_DOMAINS = 'domains';
 
-    public const KIND_PRO_RATA = 'pro_rata';
+    public const string KIND_PRO_RATA = 'pro_rata';
 
     public function __construct(
         private readonly ProviderSuppliers $suppliers,

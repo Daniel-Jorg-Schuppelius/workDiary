@@ -31,12 +31,12 @@ use Jose\Component\Core\{JWK, JWKSet};
  */
 final class LearningLtiPlatformService {
     /** Hinweise leben nur so lange, wie ein Login-Ablauf dauert. */
-    private const HINT_TTL_SECONDS = 600;
+    private const int HINT_TTL_SECONDS = 600;
 
     /** Die Auswahl beim Tool darf dauern — eine Autorin blättert dort im Katalog. */
-    private const DEEP_LINKING_TTL_SECONDS = 1800;
+    private const int DEEP_LINKING_TTL_SECONDS = 1800;
 
-    private const CONTEXT_TYPE_COURSE = 'http://purl.imsglobal.org/vocab/lis/v2/course#CourseOffering';
+    private const string CONTEXT_TYPE_COURSE = 'http://purl.imsglobal.org/vocab/lis/v2/course#CourseOffering';
 
     public function __construct(
         private readonly LearningLtiKeyService $keys,

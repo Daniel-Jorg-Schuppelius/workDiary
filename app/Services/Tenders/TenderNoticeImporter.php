@@ -42,14 +42,14 @@ use RuntimeException;
  *    keine Änderung des alten.
  */
 final class TenderNoticeImporter {
-    private const BASE_URL = 'https://oeffentlichevergabe.de';
-    private const PATH = '/api/notice-exports';
+    private const string BASE_URL = 'https://oeffentlichevergabe.de';
+    private const string PATH = '/api/notice-exports';
 
     /** Mehr Einzeldateien enthält kein plausibles Tagespaket (C6-Guard). */
-    private const MAX_ENTRIES = 20_000;
+    private const int MAX_ENTRIES = 20_000;
 
     /** Obergrenze der entpackten Gesamtgröße — wird VOR dem Entpacken geprüft. */
-    private const MAX_UNCOMPRESSED_BYTES = 256 * 1024 * 1024;
+    private const int MAX_UNCOMPRESSED_BYTES = 256 * 1024 * 1024;
 
     private readonly PluginApiClient $client;
 

@@ -30,7 +30,7 @@ use Illuminate\Database\Eloquent\{Builder, Model};
  */
 class EventMatchProfile extends AbstractMatchProfile {
     /** Schwelle für die Titel-Ähnlichkeit. */
-    public const FUZZY_THRESHOLD = 0.86;
+    public const float FUZZY_THRESHOLD = 0.86;
 
     public function targetType(): string {
         return Event::class;

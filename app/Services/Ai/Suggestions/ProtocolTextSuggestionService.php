@@ -44,15 +44,15 @@ use CommonToolkit\Helper\Data\JsonHelper;
 class ProtocolTextSuggestionService {
     use DecidesSuggestions;
 
-    public const CAPABILITY_TEXT = 'protocols.item_text';
+    public const string CAPABILITY_TEXT = 'protocols.item_text';
 
-    public const CAPABILITY_CLASSIFY = 'protocols.item_classify';
+    public const string CAPABILITY_CLASSIFY = 'protocols.item_classify';
 
-    public const KIND_SEVERITY = 'severity';
+    public const string KIND_SEVERITY = 'severity';
 
-    public const KIND_CATEGORY = 'category';
+    public const string KIND_CATEGORY = 'category';
 
-    public const KIND_RESULT = 'result';
+    public const string KIND_RESULT = 'result';
 
     /**
      * Prompt-Grundsatz (Feature 143): Umformulieren ist erlaubt, Erfinden
@@ -60,7 +60,7 @@ class ProtocolTextSuggestionService {
      *
      * @var list<string>
      */
-    private const TEXT_RULES = [
+    private const array TEXT_RULES = [
         'Nur umformulieren: keine neuen Fakten, Mengen, Ursachen, Bewertungen oder Empfehlungen ergänzen.',
         'Sachlich, neutral und kundensichtbar formulieren; Fachbegriffe beibehalten.',
         'Unklare Angaben unverändert lassen statt zu interpretieren.',

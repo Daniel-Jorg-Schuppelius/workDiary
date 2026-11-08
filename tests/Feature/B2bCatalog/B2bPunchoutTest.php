@@ -30,7 +30,7 @@ class B2bPunchoutTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const HOOK_URL = 'https://procurement.example.test/oci/hook';
+    private const string HOOK_URL = 'https://procurement.example.test/oci/hook';
 
     protected function setUp(): void {
         parent::setUp();

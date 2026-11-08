@@ -36,12 +36,12 @@ class CatalogAssignmentRule extends Model {
     use HasSqid;
 
     /** Leistungsbereich der Position (StLB-Nummer) — die verlässlichste Grundlage. */
-    public const MATCH_WORK_CATEGORY = 'work_category';
+    public const string MATCH_WORK_CATEGORY = 'work_category';
 
     /** Wort im Kurztext — schwächer, aber oft die einzige Handhabe. */
-    public const MATCH_KEYWORD = 'keyword';
+    public const string MATCH_KEYWORD = 'keyword';
 
-    public const MATCH_TYPES = [self::MATCH_WORK_CATEGORY, self::MATCH_KEYWORD];
+    public const array MATCH_TYPES = [self::MATCH_WORK_CATEGORY, self::MATCH_KEYWORD];
 
     protected $table = 'catalog_assignment_rules';
 

@@ -53,7 +53,7 @@ class OperationsTask extends Model {
     use HasSqid;
 
     /** Cache-TTL des Nav-Badge-Zählers (Sekunden) — Fallback, falls kein Write-Event feuert. */
-    public const NAV_BADGE_TTL = 300;
+    public const int NAV_BADGE_TTL = 300;
 
     protected $table = 'operations_tasks';
 

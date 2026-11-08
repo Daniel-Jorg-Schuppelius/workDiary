@@ -39,7 +39,7 @@ class InvestmentDeviation extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const KINDS = ['budget', 'schedule', 'scope', 'cancellation'];
+    public const array KINDS = ['budget', 'schedule', 'scope', 'cancellation'];
 
     protected $fillable = [
         'organization_id', 'investment_case_id', 'kind', 'description',

@@ -39,7 +39,7 @@ class RequirementController extends Controller {
     use StreamsRegisterExport;
 
     /** Trennzeichen des kombinierten Norm-Filterwerts "norm|edition". */
-    private const NORM_FILTER_SEPARATOR = '|';
+    private const string NORM_FILTER_SEPARATOR = '|';
 
     public function __construct(
         private readonly RequirementService $service,

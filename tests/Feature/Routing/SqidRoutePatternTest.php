@@ -23,7 +23,7 @@ use Tests\TestCase;
  * explizit, statt sie still brechen zu lassen.
  */
 class SqidRoutePatternTest extends TestCase {
-    private const PROJECT_PATTERN = '/^[A-Za-z0-9]+$/';
+    private const string PROJECT_PATTERN = '/^[A-Za-z0-9]+$/';
 
     public function test_configured_alphabet_is_alphanumeric(): void {
         $alphabet = (string) config('sqids.alphabet');

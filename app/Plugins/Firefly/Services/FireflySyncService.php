@@ -39,7 +39,7 @@ use Throwable;
  * im vollständig gelesenen Fenster fehlt, entfällt aus dem Spiegel.
  */
 class FireflySyncService {
-    private const LOCK_SECONDS = 900;
+    private const int LOCK_SECONDS = 900;
 
     public function __construct(private readonly FireflyClientFactory $clients) {}
 

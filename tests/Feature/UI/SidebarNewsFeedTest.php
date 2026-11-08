@@ -22,7 +22,7 @@ use Tests\TestCase;
 class SidebarNewsFeedTest extends TestCase {
     use RefreshDatabase;
 
-    private const FEED_URL = 'https://news.example.test/feed.xml';
+    private const string FEED_URL = 'https://news.example.test/feed.xml';
 
     protected function setUp(): void {
         parent::setUp();

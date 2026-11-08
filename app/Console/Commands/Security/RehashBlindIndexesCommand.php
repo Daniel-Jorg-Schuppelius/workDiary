@@ -35,7 +35,7 @@ use Illuminate\Console\Command;
  */
 class RehashBlindIndexesCommand extends Command {
     /** Systemeinstellung mit dem Schlüsselabdruck des letzten vollständigen Laufs. */
-    public const MARKER_KEY = 'security.blind_index_rehashed_for';
+    public const string MARKER_KEY = 'security.blind_index_rehashed_for';
 
     protected $signature = 'security:rehash-blind-indexes
         {--dry-run : Nur zählen, nichts schreiben}
