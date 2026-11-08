@@ -8,6 +8,15 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ## [Unreleased]
 
+### Hinweise zum Update
+
+- Nach dem Deploy einmalig `scripts/artisan.sh incoming-invoices:extract-documents --dry-run`,
+  danach ohne Option: löst eingebettete Unterlagen (BG-24) aus dem Bestand des
+  Rechnungseingangs. Erst mit diesem Stand laufen lassen, jeder Eingang wird
+  nur einmal bearbeitet.
+- Für den WorkDiary-Versand extern ausgestellter Rechnungen Versandweg und
+  Erklärung zum Anbieterversand in den Organisationseinstellungen setzen.
+
 ### Added
 
 - **Rechnungsbegründende Unterlagen in der E-Rechnung** (Feature 196,
@@ -75,6 +84,14 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   oder einer extern ausgestellten; vorher ließ sich eine Unterlage an beiden
   oder an keiner speichern.
 - Demo-Daten: Der Sollzeitbefund am Freitag passte nicht zum halben Tagessoll.
+- ZUGFeRD-Download an der Rechnung und im Kundenportal scheiterte im
+  Webbetrieb: Unter PHP-FPM (Arbeitsverzeichnis `public/`) durfte TCPDF 7 das
+  Farbprofil für PDF/A nicht lesen. pdf-toolkit 0.31.1.
+- Rechnungseingang: Die Projektreferenz einer UBL-Gutschrift (Dokumentart 50)
+  kam als Unterlage ohne Inhalt an; die Ergänzung extern ausgestellter
+  Gutschriften zählte sie als vorhandene Kennung. erechnung-toolkit 0.21.2, das
+  außerdem Gutschriften mit Steuerdatum oder Projektreferenz schemakonform
+  schreibt und die XRechnung-Extension mit der Kennung des KoSIT-Szenarios.
 
 ### Security
 
