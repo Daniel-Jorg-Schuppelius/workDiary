@@ -62,6 +62,17 @@ test("Leere Suche zeigt Leerzustand mit Zurücksetzen und Drawer-Absprung", asyn
     await expect(page).toHaveURL(/\/hilfe$/);
 });
 
+test("Zuletzt angesehen verlinkt das besuchte Thema als Pfad der eigenen Seite", async ({ page }) => {
+    await page.goto("/hilfe/time-entries.start");
+    await expect(page.locator("article h2").first()).toBeVisible();
+
+    await page.goto("/hilfe");
+    const link = page.locator("[data-help-recent-list] a").first();
+    await expect(link).toHaveAttribute("href", "/hilfe/time-entries.start");
+    await link.click();
+    await expect(page).toHaveURL(/\/hilfe\/time-entries\.start$/);
+});
+
 test("Bereichsansicht listet Artikel und führt zur Themenseite", async ({ page }) => {
     await page.goto("/hilfe?bereich=zeit-personal");
 
