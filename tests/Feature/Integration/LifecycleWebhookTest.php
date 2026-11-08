@@ -81,7 +81,7 @@ final class LifecycleWebhookTest extends TestCase {
         $invoice = Invoice::query()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'number' => 'R2026-' . random_int(1000, 9999),
+            'number' => 'R2026-' . fake()->unique()->numberBetween(5000, 9999),
             'status' => InvoiceStatus::Draft,
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '19.00',

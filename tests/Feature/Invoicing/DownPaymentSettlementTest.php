@@ -58,7 +58,8 @@ final class DownPaymentSettlementTest extends TestCase {
         $invoice = Invoice::query()->create([
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
-            'number' => 'R2026-' . str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT),
+            // Über den fortlaufenden Nummern des Generators und je Test eindeutig, sonst gelegentlich UNIQUE-Verletzung.
+            'number' => 'R2026-' . fake()->unique()->numberBetween(5000, 9999),
             'status' => InvoiceStatus::Draft,
             'type' => Invoice::TYPE_INVOICE,
             // Produktivpfade setzen currency immer (Generator); ohne explizite

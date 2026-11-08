@@ -75,7 +75,8 @@ class DocumentLineKindTest extends TestCase {
         $invoice = Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
-            'number' => 'R2026-' . str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT),
+            // Über den fortlaufenden Nummern des Generators und je Test eindeutig, sonst gelegentlich UNIQUE-Verletzung.
+            'number' => 'R2026-' . fake()->unique()->numberBetween(5000, 9999),
             'status' => $status,
             'issued_on' => '2026-10-01',
             'due_on' => '2026-10-15',
