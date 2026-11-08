@@ -212,7 +212,8 @@ class ManualInvoiceItemTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'project_id' => $this->project->id,
-            'number' => 'R2030-' . str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT),
+            // Über den fortlaufenden Nummern des Generators und je Test eindeutig, sonst gelegentlich UNIQUE-Verletzung.
+            'number' => 'R2030-' . fake()->unique()->numberBetween(5000, 9999),
             'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',

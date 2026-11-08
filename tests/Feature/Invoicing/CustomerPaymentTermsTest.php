@@ -51,7 +51,7 @@ final class CustomerPaymentTermsTest extends TestCase {
     /** @param array<string, mixed> $attributes */
     private function draft(Customer $customer, array $attributes = []): Invoice {
         $invoice = Invoice::query()->create($attributes + [
-            'organization_id' => $this->org->id, 'customer_id' => $customer->id, 'number' => 'R-' . random_int(1000, 9999),
+            'organization_id' => $this->org->id, 'customer_id' => $customer->id, 'number' => 'R-' . fake()->unique()->numberBetween(1000, 9999),
             'status' => InvoiceStatus::Draft, 'type' => Invoice::TYPE_INVOICE, 'tax_rate' => '19.00',
         ]);
         $invoice->items()->create(['organization_id' => $this->org->id, 'description' => 'Leistung', 'quantity' => '1', 'unit' => 'h', 'unit_price' => '100.00', 'position' => 1]);

@@ -25,7 +25,7 @@ class DisposalJobFactory extends Factory {
     public function definition(): array {
         return [
             'organization_id' => Organization::factory(),
-            'number' => 'ENT-' . now()->format('Y') . '-' . str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT),
+            'number' => 'ENT-' . now()->format('Y') . '-' . fake()->unique()->numberBetween(5000, 9999),
             'status' => DisposalJobStatus::Draft->value,
             'customer_id' => Customer::factory(),
             'picked_up_on' => now()->toDateString(),
