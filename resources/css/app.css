@@ -353,11 +353,21 @@
     max-width: 100%;
     flex-wrap: nowrap;
     overflow-x: auto;
+    /* overflow-x: auto setzt y mit auf auto → sonst vertikaler Balken bei jedem Überstand. */
+    overflow-y: hidden;
     /* Ein Scroll-Container darf im Flex-Spaltenlayout der Seitenhülle auf 0 schrumpfen:
        Unterreiter (Berichte) kollabierten so zu einem Streifen in Scrollbalkenhöhe (Feature 185). */
     flex-shrink: 0;
     /* dezenter Touch-Scroll ohne sichtbare Leiste, solange nichts überläuft */
     scrollbar-width: thin;
+}
+
+/* DaisyUI gibt .tab flex-wrap: wrap bei fester Höhe: In der einzeiligen Leiste schrumpfte
+   der Reiter, Zähler-Badge oder zweites Label-Wort rutschten unter die Kante. Einzeilig
+   bleibt die Mindestbreite der Inhalt — die Leiste scrollt dann horizontal. */
+.tabs > .tab {
+    flex-wrap: nowrap;
+    white-space: nowrap;
 }
 
 /* ------------------------------------------------------------------ */
