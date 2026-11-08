@@ -132,6 +132,21 @@ class ZugferdTest extends TestCase {
         }
     }
 
+    /** PHP-FPM arbeitet in public/; TCPDF 7 muss das sRGB-Profil für PDF/A trotzdem lesen (pdf-toolkit ab 0.31.1). */
+    public function test_download_works_with_public_as_working_directory(): void {
+        $invoice = $this->makeInvoice();
+        $cwd = (string) getcwd();
+        chdir(public_path());
+        try {
+            $response = $this->actingAs($this->admin)->get(route('invoices.zugferd', $invoice));
+        } finally {
+            chdir($cwd);
+        }
+
+        $response->assertOk();
+        $this->assertStringStartsWith('%PDF', (string) $response->getContent());
+    }
+
     public function test_download_works_without_buyer_reference_unlike_xrechnung(): void {
         $this->customer->update(['buyer_reference' => null]);
         $invoice = $this->makeInvoice();
