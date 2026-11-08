@@ -11,6 +11,7 @@
 // bestehenden JSON-Endpunkt help.topics.feedback — dieselbe anonyme
 // HelpView-Schreibung wie im Drawer, nur an der Vollseiten-Karte.
 
+import { sameOriginPath } from "./lib/html.js";
 import { postJson } from "./lib/http.js";
 import { recentHelpTopics, rememberHelpTopic } from "./lib/help-recent.js";
 
@@ -91,10 +92,13 @@ function bindHelpCenterRecent() {
     if (!wrap || !list || template === "" || entries.length === 0) return;
 
     entries.forEach((entry) => {
+        // Die Vorlage ist DOM-Text: nur ein Pfad der eigenen Origin wird Link-Ziel (Code-Scanning #5).
+        const target = sameOriginPath(template.replace("recent.placeholder", encodeURIComponent(entry.topic)));
+        if (target === null) return;
         const item = document.createElement("li");
         const link = document.createElement("a");
         link.className = "link link-primary";
-        link.href = template.replace("recent.placeholder", encodeURIComponent(entry.topic));
+        link.href = target;
         link.textContent = entry.title;
         item.appendChild(link);
         list.appendChild(item);
