@@ -36,7 +36,8 @@ class FlexEligibilityController extends Controller {
         $query = FlexEligibility::query()->where('user_id', $user->id);
         [$sort, $dir] = SortableQuery::resolve($request, ['valid_from', 'valid_to', 'note'], 'valid_from', 'desc');
         if ($sort === 'valid_to') {
-            // Offene Perioden zählen als „bis auf Weiteres" und stehen hinter jedem Enddatum.
+            // Offen heißt „bis auf Weiteres": wie ein Enddatum nach allen anderen, aufsteigend also
+            // zuletzt, absteigend zuerst (die laufende Periode oben).
             $query->orderByRaw($dir === 'asc' ? 'valid_to IS NULL asc' : 'valid_to IS NULL desc');
         }
         $periods = $query

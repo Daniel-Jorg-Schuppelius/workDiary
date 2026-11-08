@@ -88,6 +88,10 @@ class InvoiceSupportingDocument extends Model {
 
     protected static function booted(): void {
         static::saving(function (self $document): void {
+            // Im Modell statt als CHECK: SQLite kann ihn nachträglich nur per Tabellenneubau.
+            if (($document->invoice_id === null) === ($document->external_invoice_id === null)) {
+                throw new \RuntimeException('Eine Unterlage gehört genau einer Rechnung: einer lokalen oder einer extern ausgestellten.');
+            }
             $document->filename_key = $document->filename !== null ? mb_strtolower($document->filename) : null;
         });
 

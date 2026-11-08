@@ -66,6 +66,15 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 - Nightly auf MariaDB lief wegen eines veralteten Testpfads gar nicht.
 
 ### Security
+- Peppol: Eine endgültig abgelehnte Zustellung galt als versendet; der Versuch
+  steht weiter im Protokoll, der Versand meldet jetzt den Fehler des
+  Zugangspunkts.
+- Basiszinssätze: Der Import entfernte Übergänge nicht, die die Bundesbank in
+  ihrer Reihe revidiert hat; im abgedeckten Zeitraum ist die Reihe maßgeblich.
+- Rechnungsbegründende Unterlagen gehören genau einer Rechnung, einer lokalen
+  oder einer extern ausgestellten; vorher ließ sich eine Unterlage an beiden
+  oder an keiner speichern.
+- Demo-Daten: Der Sollzeitbefund am Freitag passte nicht zum halben Tagessoll.
 
 - Symfony-Komponenten auf 8.1.10/8.1.11 (11 Hinweise in filesystem,
   http-foundation, http-kernel, routing, serializer und yaml).

@@ -38,9 +38,11 @@ class BaseInterestRateService {
 
     /**
      * Zeilen „JJJJ-MM;Satz;…" der Bundesbank-CSV (Dezimalkomma); Kopf- und
-     * Bemerkungszeilen werden übersprungen.
+     * Bemerkungszeilen werden übersprungen. Die Reihe ist für den Zeitraum, den
+     * sie abdeckt, maßgeblich: Übergänge darin, die sie nicht mehr enthält
+     * (revidierter Monat), werden entfernt.
      *
-     * @return int Anzahl neu angelegter oder geänderter Perioden
+     * @return int Anzahl neu angelegter, geänderter oder entfernter Perioden
      */
     public function ingest(string $csv): int {
         $months = BundesbankSeries::monthlyValues($csv);
@@ -48,11 +50,13 @@ class BaseInterestRateService {
 
         $changed = 0;
         $previous = null;
+        $transitions = [];
         foreach ($months as $month => $rate) {
             if ($rate === $previous) {
                 continue;
             }
             $previous = $rate;
+            $transitions[$month] = true;
             $row = BaseInterestRate::query()->updateOrCreate(
                 ['valid_from' => CarbonImmutable::parse($month . '-01')],
                 ['rate' => $rate, 'source' => self::SOURCE],
@@ -60,6 +64,18 @@ class BaseInterestRateService {
             if ($row->wasRecentlyCreated || $row->wasChanged('rate')) {
                 $changed++;
             }
+        }
+
+        if ($months !== []) {
+            // Vergleich in PHP: ein Datums-String gegen die DATE-Spalte träfe unter SQLite nie.
+            $obsolete = BaseInterestRate::query()
+                ->where('source', self::SOURCE)
+                ->where('valid_from', '>=', CarbonImmutable::parse(array_key_first($months) . '-01'))
+                ->where('valid_from', '<', CarbonImmutable::parse(array_key_last($months) . '-01')->addMonth())
+                ->get()
+                ->reject(static fn (BaseInterestRate $row): bool => isset($transitions[$row->valid_from->format('Y-m')]));
+            $obsolete->each->delete();
+            $changed += $obsolete->count();
         }
 
         return $changed;

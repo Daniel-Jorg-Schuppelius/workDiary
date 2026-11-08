@@ -52,11 +52,13 @@ final class ProjectTargetsDemoBlock implements DemoBlock {
         );
         $yesterday = CarbonImmutable::now(Tz::ofOrganization($context->organization))->subDay();
         if ($yesterday->isWeekday()) {
+            // Soll der ersten Person an diesem Tag: freitags gilt ihre eigene Zeile oben.
+            $target = $yesterday->dayOfWeekIso === 5 ? 240 : 480;
             ProjectTimeShortfall::query()->firstOrCreate(
                 ['project_id' => $project->id, 'user_id' => $first->id, 'date' => $yesterday->startOfDay()],
                 [
                     'organization_id' => $context->organization->id,
-                    'target_minutes' => 480, 'booked_minutes' => 390, 'shortfall_minutes' => 90, 'tolerance_minutes' => 15,
+                    'target_minutes' => $target, 'booked_minutes' => $target - 90, 'shortfall_minutes' => 90, 'tolerance_minutes' => 15,
                     'status' => ShortfallStatus::Open,
                 ],
             );
