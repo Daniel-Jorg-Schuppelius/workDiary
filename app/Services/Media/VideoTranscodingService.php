@@ -52,7 +52,7 @@ class VideoTranscodingService {
      *
      * @var array<string, int>
      */
-    public const VARIANTS = [
+    public const array VARIANTS = [
         '480p' => 480,
         '720p' => 720,
         '1080p' => 1080,
@@ -63,10 +63,10 @@ class VideoTranscodingService {
      * Zwei-Stunden-Video den Server für eine Stunde lahm — auf demselben
      * Rechner, auf dem die Anwendung läuft.
      */
-    public const MAX_DURATION_SECONDS = 3600;
+    public const int MAX_DURATION_SECONDS = 3600;
 
     /** Grobe Schätzung des Platzbedarfs je Ableitung, Anteil am Original. */
-    private const SIZE_FACTOR = [
+    private const array SIZE_FACTOR = [
         '480p' => 0.25,
         '720p' => 0.45,
         '1080p' => 0.80,

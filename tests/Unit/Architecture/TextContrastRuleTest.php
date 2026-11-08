@@ -39,7 +39,7 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class TextContrastRuleTest extends TestCase {
     use ScansSourceTree;
 
-    private const PATTERN = '~text-base-content/(?:30|40|50|60)\b~';
+    private const string PATTERN = '~text-base-content/(?:30|40|50|60)\b~';
 
     /**
      * Datei → Fundstellen. Seit MVP-724 leer (Welle 8, Paket 3): alle 430
@@ -49,7 +49,7 @@ class TextContrastRuleTest extends TestCase {
      *
      * @var array<string, int>
      */
-    private const BASELINE = [];
+    private const array BASELINE = [];
 
     public function test_views_do_not_add_low_contrast_text_classes(): void {
         $violations = [];

@@ -29,7 +29,7 @@ use App\Models\Platform\Organization;
  * Primärformat; Mapping wäre verlustbehaftet).
  */
 class VexExportService {
-    public const PRODUCT_ID = 'WORKDIARY';
+    public const string PRODUCT_ID = 'WORKDIARY';
 
     /** @return array<string, mixed> */
     public function generate(Organization $organization): array {

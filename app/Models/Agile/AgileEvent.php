@@ -33,10 +33,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AgileEvent extends JournalEntry {
     use BelongsToOrganization;
 
-    public const UPDATED_AT = null;
+    public const ?string UPDATED_AT = null;
 
     /** Fester Ereigniskatalog (getestet — nie freie Strings). */
-    public const CATALOG = [
+    public const array CATALOG = [
         'backlog.added', 'backlog.removed', 'backlog.reranked', 'column.moved',
         'sprint.item_added', 'sprint.item_removed', 'item.blocked',
         'item.unblocked', 'points.changed', 'sprint.started', 'sprint.completed',
@@ -60,7 +60,7 @@ class AgileEvent extends JournalEntry {
      * reproduzierbar, wenn die Ereignisse vollständig sind. Nicht
      * gelistete Events haben keine Pflichtfelder.
      */
-    public const REQUIRED_PAYLOAD = [
+    public const array REQUIRED_PAYLOAD = [
         'column.moved' => ['from', 'to'],
         'sprint.item_added' => ['added_after_start'],
         'item.blocked' => ['reason'],

@@ -26,11 +26,11 @@ use GuzzleHttp\Psr7\Response as Psr7Response;
 
 /** Gemeinsame Bausteine der Jira-/Asana-Tests (Phase 157): Verbindung, Zuordnung, Antwortformen, Token-Endpunkt. */
 trait TaskImportFixtures {
-    public const JIRA_CLOUD = 'a1b2c3d4-0000-4000-8000-000000000001';
+    public const string JIRA_CLOUD = 'a1b2c3d4-0000-4000-8000-000000000001';
 
-    public const JIRA_SITE = 'https://muster.atlassian.net';
+    public const string JIRA_SITE = 'https://muster.atlassian.net';
 
-    public const ASANA_WORKSPACE = '1200000000000001';
+    public const string ASANA_WORKSPACE = '1200000000000001';
 
     /** @var list<\Psr\Http\Message\RequestInterface> */
     protected array $tokenRequests = [];

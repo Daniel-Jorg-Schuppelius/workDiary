@@ -36,9 +36,9 @@ use Illuminate\Support\Facades\{Gate, Route};
 final class LexofficePurchaseDocumentSource implements PurchaseDocumentSource {
     use ResolvesPurchaseDocuments;
 
-    private const DOCUMENT_MODEL = LexofficeVoucher::class;
+    private const string DOCUMENT_MODEL = LexofficeVoucher::class;
 
-    public const KEY = 'lexoffice';
+    public const string KEY = 'lexoffice';
 
     public function key(): string {
         return self::KEY;

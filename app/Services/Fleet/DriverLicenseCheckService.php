@@ -23,7 +23,7 @@ use Carbon\{Carbon, CarbonInterface};
  * Aktivierung in Bestands-Organisationen).
  */
 class DriverLicenseCheckService {
-    public const DEFAULT_INTERVAL_MONTHS = 6;
+    public const int DEFAULT_INTERVAL_MONTHS = 6;
 
     /** Kontrolle dokumentieren; die nächste Fälligkeit folgt dem Org-Intervall. */
     public function record(User $driver, User $checker, CarbonInterface $checkedAt, ?string $licenseClasses = null, ?CarbonInterface $validUntil = null, ?string $note = null): DriverLicenseCheck {

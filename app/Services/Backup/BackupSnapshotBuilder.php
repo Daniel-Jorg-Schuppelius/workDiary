@@ -29,7 +29,7 @@ use Throwable;
  * Preflight prüft Binaries + Arbeitsverzeichnis VOR dem Lauf.
  */
 class BackupSnapshotBuilder {
-    private const PROCESS_TIMEOUT = 3600.0;
+    private const float PROCESS_TIMEOUT = 3600.0;
 
     /**
      * Prüft alle On-Premise-Voraussetzungen; wirft mit klarer Meldung.

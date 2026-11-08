@@ -19,10 +19,10 @@ use Tests\TestCase;
  * mehr erkennt als der bisherige Text und die Summen aufgehen.
  */
 final class InvoiceImportDecodedLayerTest extends TestCase {
-    private const DECODED = "Rechnungsnummer RE-2026-0815\nRechnungsdatum 03.09.2026\nNettobetrag 1.000,00 EUR\nUmsatzsteuer 19 % 190,00 EUR\nRechnungsbetrag 1.190,00 EUR";
+    private const string DECODED = "Rechnungsnummer RE-2026-0815\nRechnungsdatum 03.09.2026\nNettobetrag 1.000,00 EUR\nUmsatzsteuer 19 % 190,00 EUR\nRechnungsbetrag 1.190,00 EUR";
 
     /** Stabile Buchstabenvertauschung, wie sie ein Nachdruck ohne ToUnicode-Tabelle liefert. */
-    private const GARBLED = "Sqfgmtmdrmtoopq SQ-2026-0815\nSqfgmtmdrchwto 03.09.2026\nMqwwnxqwsch 1.000,00 QTS";
+    private const string GARBLED = "Sqfgmtmdrmtoopq SQ-2026-0815\nSqfgmtmdrchwto 03.09.2026\nMqwwnxqwsch 1.000,00 QTS";
 
     public function test_decoded_layer_wins_over_garbled_text(): void {
         $this->assertTrue($this->service()->prefersDecodedLayer(self::GARBLED, self::DECODED));

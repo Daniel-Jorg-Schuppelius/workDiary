@@ -30,9 +30,9 @@ use App\Support\MorphMap;
  * Änderungen während des Laufs kommen im nächsten Lauf erneut (idempotent).
  */
 class JtlStockChangePoller {
-    public const MARKER_PREFIX = 'workdiary:';
+    public const string MARKER_PREFIX = 'workdiary:';
 
-    private const MAX_REFRESH_PAIRS = 50;
+    private const int MAX_REFRESH_PAIRS = 50;
 
     public function __construct(
         private readonly JtlGatewayFactory $gateways,

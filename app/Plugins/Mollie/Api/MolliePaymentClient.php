@@ -25,7 +25,7 @@ use RuntimeException;
 
 /** Mollie Payments API v2. */
 class MolliePaymentClient {
-    private const LOCALES = ['de' => 'de_DE', 'en' => 'en_US', 'es' => 'es_ES', 'fr' => 'fr_FR', 'it' => 'it_IT'];
+    private const array LOCALES = ['de' => 'de_DE', 'en' => 'en_US', 'es' => 'es_ES', 'fr' => 'fr_FR', 'it' => 'it_IT'];
 
     private ?PluginApiClient $api = null;
 

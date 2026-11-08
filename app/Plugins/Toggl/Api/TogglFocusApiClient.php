@@ -32,13 +32,13 @@ use Illuminate\Http\Client\Response;
 class TogglFocusApiClient implements TogglApi {
     use StartStopFingerprint;
 
-    private const REPORT_PAGE_SIZE = 500;
+    private const int REPORT_PAGE_SIZE = 500;
 
     /** Höchstwert der Listen-Endpunkte laut Referenz. */
-    private const LIST_PAGE_SIZE = 100;
+    private const int LIST_PAGE_SIZE = 100;
 
     /** Spalten je Report-Zeile; Namen und Tags kommen mit, Stammdaten-Abrufe entfallen. */
-    private const REPORT_ATTRIBUTES = [
+    private const array REPORT_ATTRIBUTES = [
         'time_entry_id', 'description', 'start_utc', 'duration', 'effective_billable',
         'user_account_id', 'project_id', 'project_name', 'client_id', 'client_name', 'tag_names',
     ];

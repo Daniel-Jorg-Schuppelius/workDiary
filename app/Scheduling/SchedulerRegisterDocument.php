@@ -22,13 +22,13 @@ namespace App\Scheduling;
  * Chronik-Block am Seitenende pflegt das Wiki (`scripts/wiki-backlinks.php`).
  */
 final class SchedulerRegisterDocument {
-    public const RELATIVE_PATH = '../WorkDiary-Architecture/konventionen/scheduler-register.md';
+    public const string RELATIVE_PATH = '../WorkDiary-Architecture/konventionen/scheduler-register.md';
 
-    private const CHRONIK_START = '<!-- chronik:start -->';
+    private const string CHRONIK_START = '<!-- chronik:start -->';
 
-    private const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+    private const array WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 
-    private const CRITICALITY = [
+    private const array CRITICALITY = [
         'core' => 'Kernbetrieb',
         'integration' => 'Integration',
         'housekeeping' => 'Aufräumen',

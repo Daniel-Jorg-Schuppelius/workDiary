@@ -32,7 +32,7 @@ use Throwable;
  * Abfragen liefern allein die Statements der eigenen Einschreibung.
  */
 final class Cmi5LrsController extends Controller {
-    private const MAX_BODY_BYTES = 1048576;
+    private const int MAX_BODY_BYTES = 1048576;
 
     public function __construct(
         private readonly LearningCmi5RecordStore $records,

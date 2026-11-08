@@ -29,9 +29,9 @@ use Throwable;
  * Dieselbe Frage (Art und Fragetext) wird beim zweiten Lauf übersprungen.
  */
 class LearningQuestionSpec extends AbstractEntitySpec {
-    private const PROMPT_MAX = 2000;
+    private const int PROMPT_MAX = 2000;
 
-    private const TITLE_MAX = 180;
+    private const int TITLE_MAX = 180;
 
     public function __construct(
         private readonly LearningQuestionEditorService $editor,

@@ -49,9 +49,9 @@ class CashEntry extends Model implements HashChainable {
     use HashChained;
     use HasSqid;
 
-    public const DIRECTION_IN = 'in';
+    public const string DIRECTION_IN = 'in';
 
-    public const DIRECTION_OUT = 'out';
+    public const string DIRECTION_OUT = 'out';
 
     public $timestamps = false;
 

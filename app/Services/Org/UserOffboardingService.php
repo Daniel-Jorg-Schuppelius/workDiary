@@ -36,7 +36,7 @@ class UserOffboardingService {
      *
      * @var array<string, string> Tabelle => user-Spalte
      */
-    public const RETENTION_FK_TABLES = [
+    public const array RETENTION_FK_TABLES = [
         'attendances' => 'user_id',
         'time_entries' => 'user_id',
         'timesheets' => 'user_id',
@@ -59,7 +59,7 @@ class UserOffboardingService {
     ];
 
     /** Kern-Nachweise, die einen Hard-Delete ausschließen (Tabelle => Spalte). */
-    private const EVIDENCE_TABLES = [
+    private const array EVIDENCE_TABLES = [
         'time_entries' => 'user_id',
         'attendances' => 'user_id',
         'timesheets' => 'user_id',

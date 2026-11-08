@@ -37,7 +37,7 @@ class SystemSetting extends Model {
     // v2: Die Karte enthaelt seit dem Sicherheitsaudit 2026-09-13 KEINE
     // Klartextwerte sensibler Einstellungen mehr; der neue Schluessel laesst
     // Altbestaende im Cache verfallen, statt sie falsch zu lesen.
-    public const CACHE_KEY = 'system_settings.values.v2';
+    public const string CACHE_KEY = 'system_settings.values.v2';
 
     /** @var array<string, mixed>|null Anfrage-Memo fuer sensible Werte (nie im Cache). */
     private static ?array $sensitiveMemo = null;

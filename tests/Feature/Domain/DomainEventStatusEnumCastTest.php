@@ -31,7 +31,7 @@ final class DomainEventStatusEnumCastTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const ROW = ['eventid' => 'E-1', 'class' => 'DOMAIN', 'action' => 'EXPIRE', 'object' => 'x.de'];
+    private const array ROW = ['eventid' => 'E-1', 'class' => 'DOMAIN', 'action' => 'EXPIRE', 'object' => 'x.de'];
 
     private DomainProviderConnection $connection;
 

@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Builder;
  * die, für die man verantwortlich ist, in der Teamansicht alle.
  */
 class TenderCalendarSource implements CalendarEventSource {
-    private const COLOR = '#7c3aed';
+    private const string COLOR = '#7c3aed';
 
     public function __construct(private readonly FeatureFlagResolver $features) {}
 

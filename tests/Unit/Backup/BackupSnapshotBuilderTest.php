@@ -19,7 +19,7 @@ use Tests\TestCase;
  * SQLite-Dump + tar-Aufbau + Teil-Split — ohne Cloudzugriff.
  */
 class BackupSnapshotBuilderTest extends TestCase {
-    private const UUID = '01890a5d-ac96-774b-bcce-b302099a8058';
+    private const string UUID = '01890a5d-ac96-774b-bcce-b302099a8058';
 
     private string $workDir;
 

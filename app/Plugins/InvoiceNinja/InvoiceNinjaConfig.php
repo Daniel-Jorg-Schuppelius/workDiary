@@ -16,7 +16,7 @@ use App\Plugins\Support\{PluginSettingsResolver, SelfHostedConfig};
 
 /** Invoice-Ninja-Zugang je Organisation aus den Plugin-Einstellungen (gehostet: invoicing.co). */
 final class InvoiceNinjaConfig {
-    public const HOSTED_URL = 'https://invoicing.co';
+    public const string HOSTED_URL = 'https://invoicing.co';
 
     /** @return array{base_url: string, api_token: ?string, pull_vouchers: bool, enabled: bool, page_size: int} */
     public static function resolve(?int $organizationId = null): array {

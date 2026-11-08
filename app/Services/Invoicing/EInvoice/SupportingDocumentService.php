@@ -42,9 +42,9 @@ use PDFToolkit\Helper\{PDFMergeHelper, PDFSecurityHelper};
  */
 final class SupportingDocumentService {
     /** Strengste Plattformgrenze (Baden-Württemberg); Bund, Länder und Peppol erlauben 200. */
-    public const MAX_DOCUMENTS = 100;
+    public const int MAX_DOCUMENTS = 100;
 
-    private const STORAGE_FOLDER = 'invoice-supporting-documents';
+    private const string STORAGE_FOLDER = 'invoice-supporting-documents';
 
     public function __construct(
         private readonly FileAttacher $attacher,

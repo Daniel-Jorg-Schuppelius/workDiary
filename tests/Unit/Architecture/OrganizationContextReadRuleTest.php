@@ -31,10 +31,10 @@ class OrganizationContextReadRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad → Begründung */
-    private const ALLOW_LIST = [];
+    private const array ALLOW_LIST = [];
 
     /** Zeilen um die Lesung herum, in denen die Absicherung stehen darf. */
-    private const WINDOW = 6;
+    private const int WINDOW = 6;
 
     public function test_the_organization_context_is_never_read_unguarded(): void {
         $violations = [];

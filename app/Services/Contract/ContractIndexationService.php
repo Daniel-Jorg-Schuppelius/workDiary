@@ -35,7 +35,7 @@ class ContractIndexationService {
     use AssertsStatusTransition;
 
     /** Arbeitsskala: Produkte der Eingangswerte bleiben exakt, geteilt wird je Ergebnis nur einmal. */
-    private const SCALE = 12;
+    private const int SCALE = 12;
 
     public function __construct(
         private readonly PriceIndexService $index,

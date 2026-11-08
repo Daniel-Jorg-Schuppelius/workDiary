@@ -33,7 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @extends AbstractTaskImportService<PlaneProjectLink, PlaneConnection>
  */
 class PlaneImportService extends AbstractTaskImportService {
-    private const GROUP_KEY = '_state_group';
+    private const string GROUP_KEY = '_state_group';
 
     /** @var array<int, string> Workspace-Adresse je Organisation, einmal je Dienstinstanz gelesen */
     private array $workspaceUrls = [];

@@ -29,9 +29,9 @@ use Generator;
 class FreeScoutClient {
     use GuardsPluginApiResponses;
 
-    public const OPEN_STATUSES = 'active,pending';
+    public const string OPEN_STATUSES = 'active,pending';
 
-    public const ALL_STATUSES = 'active,pending,closed,spam';
+    public const string ALL_STATUSES = 'active,pending,closed,spam';
 
     private ?PluginApiClient $api = null;
 

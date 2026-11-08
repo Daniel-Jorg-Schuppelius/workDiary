@@ -41,12 +41,12 @@ class DhlPlugin extends AbstractPlugin implements ShippingProvider {
     // die Trait-Methode gewinnt automatisch gegen die geerbte aus AbstractPlugin.
     use ChecksCarrierHealth;
 
-    public const ID = 'dhl';
+    public const string ID = 'dhl';
 
-    public const SERVICE_PROVIDER = DhlServiceProvider::class;
+    public const string SERVICE_PROVIDER = DhlServiceProvider::class;
 
     /** Carrier-Schlüssel in `carrier_connections.carrier` und der Registry. */
-    public const CARRIER = 'dhl';
+    public const string CARRIER = 'dhl';
 
     public function name(): string {
         return 'DHL Paket';

@@ -28,7 +28,7 @@ final class ContractIndexationTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const CSV = <<<'CSV'
+    private const string CSV = <<<'CSV'
         "";BBDP1.M.DE.N.VPI.C.A00000.I20.A;BBDP1.M.DE.N.VPI.C.A00000.I20.A_FLAGS
         "";Verbraucherpreisindex / Deutschland / 2020 = 100;
         Einheit;2020 = 100;

@@ -24,12 +24,12 @@ use Illuminate\Support\Facades\DB;
  */
 class TicketRoutingService {
     // Vertrag, Fachdienst, Angebot, Sprache und Geschäftszeit seit MVP-1258.
-    private const CONDITION_KEYS = ['kind', 'priority', 'source', 'customer_id', 'queue_id', 'sla_contract_id', 'business_service_id', 'service_offering_id', 'locale', 'business_hours'];
+    private const array CONDITION_KEYS = ['kind', 'priority', 'source', 'customer_id', 'queue_id', 'sla_contract_id', 'business_service_id', 'service_offering_id', 'locale', 'business_hours'];
 
-    private const ACTION_KEYS = ['set_queue', 'set_priority', 'set_sla', 'set_team', 'assign'];
+    private const array ACTION_KEYS = ['set_queue', 'set_priority', 'set_sla', 'set_team', 'assign'];
 
     /** Zuweisung innerhalb des Teams der Queue: reihum oder an die Person mit den wenigsten offenen Tickets. */
-    public const ASSIGN_STRATEGIES = ['round_robin', 'least_loaded'];
+    public const array ASSIGN_STRATEGIES = ['round_robin', 'least_loaded'];
 
     /**
      * @return array<int, array{rule: TicketRoutingRule, matched: array<string, mixed>, actions: array<string, mixed>}>

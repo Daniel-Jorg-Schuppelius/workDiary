@@ -28,7 +28,7 @@ use Symfony\Component\HttpFoundation\Response;
  * Organisation, zu der die Sitzung gehört.
  */
 final class AuthenticateCmi5Session {
-    public const ATTRIBUTE = 'cmi5_session';
+    public const string ATTRIBUTE = 'cmi5_session';
 
     public function handle(Request $request, Closure $next): Response {
         if (preg_match('/^Basic\s+(\S+)$/D', (string) $request->headers->get('Authorization', ''), $match) !== 1) {

@@ -29,7 +29,7 @@ use Illuminate\Support\Str;
  * die Warnung auch nach Abschluss der Vorgänge nachvollziehbar bleibt.
  */
 class DocumentImpactScanner {
-    private const LIMIT = 20;
+    private const int LIMIT = 20;
 
     /**
      * @return array{purchase_orders: list<string>, boq_items: list<string>, manufacturing_orders: list<string>}

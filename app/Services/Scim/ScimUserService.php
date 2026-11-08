@@ -31,11 +31,11 @@ use Illuminate\Support\Facades\DB;
  * (Plugin `scim`, Typ `user`) geführt; die SCIM-`id` ist die WorkDiary-Sqid.
  */
 class ScimUserService {
-    public const PLUGIN_ID = 'scim';
+    public const string PLUGIN_ID = 'scim';
 
-    public const EXT_TYPE = 'user';
+    public const string EXT_TYPE = 'user';
 
-    private const SCHEMA = 'urn:ietf:params:scim:schemas:core:2.0:User';
+    private const string SCHEMA = 'urn:ietf:params:scim:schemas:core:2.0:User';
 
     /**
      * @param  array<string, mixed>  $payload

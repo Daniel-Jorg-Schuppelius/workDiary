@@ -31,7 +31,7 @@ use Throwable;
  * keine Weiterleitungen, Antwort ohne Entitäten und ohne Netzzugriff gelesen.
  */
 final class GuardedEbicsHttpClient implements HttpClientInterface {
-    private const TIMEOUT_SECONDS = 30.0;
+    private const float TIMEOUT_SECONDS = 30.0;
 
     public function post(string $url, Request $request): Response {
         $pin = UrlSafety::isPubliclyRoutableHttpUrl($url) ? UrlSafety::pinnedResolution($url) : null;

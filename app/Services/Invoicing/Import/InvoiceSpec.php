@@ -48,14 +48,14 @@ class InvoiceSpec extends AbstractEntitySpec {
     use ResolvesImportReferences;
     use ValidatesImportDates;
 
-    public const NUMBER_SOURCE = 'legacy_import';
+    public const string NUMBER_SOURCE = 'legacy_import';
 
-    public const NUMBER_PREFIX = 'ALT-';
+    public const string NUMBER_PREFIX = 'ALT-';
 
     /** Länge der Alt-Nummer so, dass Präfix + Nummer in `invoices.number` (64) passt. */
-    private const MAX_EXTERNAL_NUMBER = 60;
+    private const int MAX_EXTERNAL_NUMBER = 60;
 
-    private const DEFAULT_PAYMENT_TERMS_DAYS = 14;
+    private const int DEFAULT_PAYMENT_TERMS_DAYS = 14;
 
     public function entity(): ImportEntity {
         return ImportEntity::Invoices;

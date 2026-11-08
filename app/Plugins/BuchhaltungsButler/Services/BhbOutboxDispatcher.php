@@ -33,9 +33,9 @@ use RuntimeException;
  * fachlich tragende Inhalt.
  */
 class BhbOutboxDispatcher implements IntegrationOutboxDispatcher {
-    public const OP_RECEIPT_PUSH = 'receipt.push';
+    public const string OP_RECEIPT_PUSH = 'receipt.push';
 
-    public const EXT_TYPE_RECEIPT = 'receipt';
+    public const string EXT_TYPE_RECEIPT = 'receipt';
 
     public function pluginId(): string {
         return BuchhaltungsButlerPlugin::ID;

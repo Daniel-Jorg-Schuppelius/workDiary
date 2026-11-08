@@ -38,13 +38,13 @@ use App\Services\Timeline\{DiaryEntryTimelineService, TimelineItem};
 class CaseNarrativeSuggestionService {
     use DecidesSuggestions;
 
-    public const CAPABILITY = 'case.timeline_narrative';
+    public const string CAPABILITY = 'case.timeline_narrative';
 
     /** Obergrenze der eingespeisten Ereignisse (Budget + Prompt-Länge). */
-    public const MAX_EVENTS = 80;
+    public const int MAX_EVENTS = 80;
 
     /** @var list<string> */
-    private const RULES = [
+    private const array RULES = [
         'Nur die aufgeführten Ereignisse wiedergeben — keine Ursachen, Bewertungen, Schuldzuweisungen oder Empfehlungen ergänzen.',
         'Chronologisch erzählen, gebündelt nach Vorgängen; Zahlen und Termine wörtlich übernehmen.',
         'Höchstens acht Sätze; offene Punkte am Ende als eigenen Satz nennen.',

@@ -28,7 +28,7 @@ class OwnActionsReportCommand extends Command {
 
     protected $description = 'Listet aktive Mitarbeiterkonten, denen Rechte für eigene Zeiten, Stundenzettel, Urlaub, Stempeln oder Fahrten fehlen';
 
-    private const OWN_ACTIONS = [
+    private const array OWN_ACTIONS = [
         Permission::TimeEntryCreate,
         Permission::TimesheetCreate,
         Permission::VacationRequest,

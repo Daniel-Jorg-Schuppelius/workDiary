@@ -30,7 +30,7 @@ use Illuminate\Http\Client\Response;
  */
 class SevenIoSmsClient {
     /** Antwortcodes, die eine angenommene Nachricht bedeuten. */
-    private const ACCEPTED = ['100', '101'];
+    private const array ACCEPTED = ['100', '101'];
 
     private ?PluginApiClient $api = null;
 

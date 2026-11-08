@@ -22,7 +22,7 @@ use Illuminate\Contracts\View\View;
 
 /** Die dringendsten Vorgänge des Arbeitsvorrats (Feature 179, MVP-1363). */
 class WorkQueueWidget extends Widget {
-    private const LIMIT = 6;
+    private const int LIMIT = 6;
 
     public function __construct(private readonly WorkQueue $queue) {}
 

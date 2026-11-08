@@ -41,19 +41,19 @@ class PlaneImportTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const API = 'https://api.plane.so';
+    private const string API = 'https://api.plane.so';
 
-    private const WORKSPACE = 'https://app.plane.so/acme';
+    private const string WORKSPACE = 'https://app.plane.so/acme';
 
-    private const PROJECT = '6a3e2c1b-0d4f-4a5b-9c8d-7e6f5a4b3c2d';
+    private const string PROJECT = '6a3e2c1b-0d4f-4a5b-9c8d-7e6f5a4b3c2d';
 
-    private const S_BACKLOG = '11111111-1111-4111-8111-111111111111';
+    private const string S_BACKLOG = '11111111-1111-4111-8111-111111111111';
 
-    private const S_STARTED = '22222222-2222-4222-8222-222222222222';
+    private const string S_STARTED = '22222222-2222-4222-8222-222222222222';
 
-    private const S_DONE = '33333333-3333-4333-8333-333333333333';
+    private const string S_DONE = '33333333-3333-4333-8333-333333333333';
 
-    private const S_CANCELLED = '44444444-4444-4444-8444-444444444444';
+    private const string S_CANCELLED = '44444444-4444-4444-8444-444444444444';
 
     private User $admin;
 

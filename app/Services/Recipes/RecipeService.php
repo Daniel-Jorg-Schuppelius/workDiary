@@ -31,10 +31,10 @@ use Illuminate\Validation\ValidationException;
  * anderer Gewerke bleiben unberührt.
  */
 class RecipeService {
-    public const PROFILE_CODE = 'partyservice';
+    public const string PROFILE_CODE = 'partyservice';
 
     /** LMIV-Sonderfall: „keine" markiert eine geklärt allergenfreie Zutat. */
-    public const ALLERGEN_NONE = 'keine';
+    public const string ALLERGEN_NONE = 'keine';
 
     public function __construct(
         private readonly BomResolver $bom,

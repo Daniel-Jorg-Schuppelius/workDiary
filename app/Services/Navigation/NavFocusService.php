@@ -32,31 +32,31 @@ use Illuminate\Support\Facades\Auth;
  */
 class NavFocusService {
     /** Per-User-Preference (users.preferences) mit dem gewählten Arbeitsbereich. */
-    public const PREFERENCE_KEY = 'nav_focus';
+    public const string PREFERENCE_KEY = 'nav_focus';
 
     /** Session-Spiegel der Fokus-Wahl (überlebt bis zum nächsten Wechsel). */
-    public const SESSION_KEY = 'nav_focus';
+    public const string SESSION_KEY = 'nav_focus';
 
     /** Org-Einstellung (organizations.settings): Default-Arbeitsbereich. */
-    public const SETTING_DEFAULT = 'nav_focus_default';
+    public const string SETTING_DEFAULT = 'nav_focus_default';
 
     /** Org-Einstellung: Whitelist der angebotenen Arbeitsbereich-Schlüssel. */
-    public const SETTING_AVAILABLE = 'nav_focus_available';
+    public const string SETTING_AVAILABLE = 'nav_focus_available';
 
     /** Org-Einstellung: Label-Overrides (Schlüssel → eigener Anzeigename). */
-    public const SETTING_LABELS = 'nav_focus_labels';
+    public const string SETTING_LABELS = 'nav_focus_labels';
 
     /** Org-Einstellung: Zeitpunkt der Arbeitsbereich-Kuratierung (Onboarding). */
-    public const SETTING_CONFIGURED_AT = 'nav_focus_configured_at';
+    public const string SETTING_CONFIGURED_AT = 'nav_focus_configured_at';
 
     /**
      * Org-Einstellung: vorschlagender Arbeitsbereich je Rolle (Feature 165, E6).
      * Nur ein Vorschlag vor dem Org-Default — die persönliche Wahl gewinnt (D16).
      */
-    public const SETTING_ROLES = 'nav_focus_roles';
+    public const string SETTING_ROLES = 'nav_focus_roles';
 
     /** Schlüsselpräfix eines eigenen Arbeitsbereichs (`user:<sqid>`). */
-    public const PERSONAL_PREFIX = 'user:';
+    public const string PERSONAL_PREFIX = 'user:';
 
     /** Schlüssel eines eigenen Arbeitsbereichs. */
     public static function personalKey(UserWorkspace $workspace): string {

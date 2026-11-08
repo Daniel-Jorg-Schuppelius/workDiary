@@ -38,7 +38,7 @@ class AuditTranslationCoverageTest extends TestCase {
      *
      * @var list<string>
      */
-    private const IGNORED_EVENT_STRINGS = [
+    private const array IGNORED_EVENT_STRINGS = [
         'actor_user_id',
         'by_user_id',
         'expires_at',

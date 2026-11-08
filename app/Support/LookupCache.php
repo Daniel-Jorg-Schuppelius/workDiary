@@ -16,9 +16,9 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class LookupCache {
-    private const TAG_OPTIONS_KEY = 'lookup.tags.options';
+    private const string TAG_OPTIONS_KEY = 'lookup.tags.options';
 
-    private const USER_DROPDOWN_KEY = 'lookup.users.dropdown';
+    private const string USER_DROPDOWN_KEY = 'lookup.users.dropdown';
 
     /**
      * Tag-Optionen der AKTUELLEN Organisation. Der Cache-Key ist je

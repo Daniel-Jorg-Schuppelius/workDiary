@@ -22,7 +22,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * Numerische Werte werden als Number-Cells geschrieben, Floats mit DE-Format `#,##0.00`.
  */
 final class XlsxExport {
-    public const MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    public const string MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
     /**
      * @param  list<string>  $headers

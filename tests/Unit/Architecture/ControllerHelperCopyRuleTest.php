@@ -34,19 +34,19 @@ class ControllerHelperCopyRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad → Begründung */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
     ];
 
-    private const METHOD = '/^    (?:private|protected|public) function (\w+)\(([^)]*)\): (\??[\\\\\w]+) \{\n(.*?)^    \}$/sm';
+    private const string METHOD = '/^    (?:private|protected|public) function (\w+)\(([^)]*)\): (\??[\\\\\w]+) \{\n(.*?)^    \}$/sm';
 
-    private const RESOLVER = '~^\$(\w+) = (?:Auth::user\(\)|auth\(\)->user\(\)|Auth::guard\(\'customer\'\)->user\(\)); '
+    private const string RESOLVER = '~^\$(\w+) = (?:Auth::user\(\)|auth\(\)->user\(\)|Auth::guard\(\'customer\'\)->user\(\)); '
         . '(?:abort_(?:unless|if)\((?:\$\1 instanceof User|\$\1->customer_id === null)(?:, \d+)?\); )?'
         . 'return \$\1(?: instanceof User \? \$\1 : (?:null|abort\(\d+\)))?;$~';
 
-    private const SAME_ORG = '~^abort_unless\((?:\(int\) )?\$\w+->organization_id === (?:\(int\) )?[^,;]+, \d+\);$~';
+    private const string SAME_ORG = '~^abort_unless\((?:\(int\) )?\$\w+->organization_id === (?:\(int\) )?[^,;]+, \d+\);$~';
 
     /** @var array<string, string> Baustein → Inline-Kopie im Quelltext (unabhängig vom Methodenrumpf) */
-    private const INLINE = [
+    private const array INLINE = [
         'authorizeBilling()' => '~abort_unless\((?:Auth::user\(\)|auth\(\)->user\(\)|\$request->user\(\)|\$\w+)\??->canManageBilling\(\)(?: \?\? false)?, 403\);~',
         'portalCustomer()' => '~\$\w+ = \$\w+->customer;\s*abort_(?:if|unless)\(\$\w+ (?:=== null|instanceof Customer)[^;]*\);'
             . '|\$\w+->customer \?\? abort\(\d+\)'

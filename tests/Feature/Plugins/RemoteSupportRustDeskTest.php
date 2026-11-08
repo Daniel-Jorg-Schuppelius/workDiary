@@ -24,9 +24,9 @@ class RemoteSupportRustDeskTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const PRO = 'https://rustdesk.example.com';
+    private const string PRO = 'https://rustdesk.example.com';
 
-    private const OSS = 'https://rustdesk-api.example.com';
+    private const string OSS = 'https://rustdesk-api.example.com';
 
     protected function setUp(): void {
         parent::setUp();

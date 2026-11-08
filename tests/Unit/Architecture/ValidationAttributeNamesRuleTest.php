@@ -25,10 +25,10 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class ValidationAttributeNamesRuleTest extends TestCase {
     use ScansSourceTree;
 
-    private const LOCALES = ['de', 'en', 'fr', 'es', 'it'];
+    private const array LOCALES = ['de', 'en', 'fr', 'es', 'it'];
 
     /** Regelstrings, an denen ein Array als Regelsatz erkennbar ist. */
-    private const RULE_HINT = '/^(bail|nullable|required|sometimes|present|filled|missing|prohibited|exclude|string|integer|numeric|boolean|date|array|list|json|file|image|email|url|uuid|ulid|ip|mac|timezone|in:|not_in:|max:|min:|size:|between:|digits|decimal|regex:|not_regex:|mimes|mimetypes|extensions|dimensions|alpha|ascii|lowercase|uppercase|starts_with|ends_with|distinct|accepted|declined|confirmed|current_password|active_url|date_format|after|before|gt:|gte:|lt:|lte:|same:|different:|exists:|unique:|multiple_of|hex_color|enum)/';
+    private const string RULE_HINT = '/^(bail|nullable|required|sometimes|present|filled|missing|prohibited|exclude|string|integer|numeric|boolean|date|array|list|json|file|image|email|url|uuid|ulid|ip|mac|timezone|in:|not_in:|max:|min:|size:|between:|digits|decimal|regex:|not_regex:|mimes|mimetypes|extensions|dimensions|alpha|ascii|lowercase|uppercase|starts_with|ends_with|distinct|accepted|declined|confirmed|current_password|active_url|date_format|after|before|gt:|gte:|lt:|lte:|same:|different:|exists:|unique:|multiple_of|hex_color|enum)/';
 
     public function test_every_validated_field_has_a_display_name_in_all_locales(): void {
         $attributes = [];

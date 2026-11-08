@@ -39,9 +39,9 @@ use Psr\Http\Message\StreamInterface;
  *    eigene Verbindung mit eigenem Token, getrennt vom Eingang.
  */
 class SeafilePlugin extends AbstractPlugin implements BackupTarget, BackupTargetConnector, DocumentIntakeOrigins, DocumentIntakeSource, IntakeSourceConnector, LinksExternalRecords {
-    public const ID = 'seafile';
+    public const string ID = 'seafile';
 
-    public const SERVICE_PROVIDER = SeafileServiceProvider::class;
+    public const string SERVICE_PROVIDER = SeafileServiceProvider::class;
 
     public function name(): string {
         return 'Seafile';

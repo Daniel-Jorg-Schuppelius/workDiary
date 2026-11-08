@@ -21,9 +21,9 @@ use Illuminate\Notifications\Messages\MailMessage;
  * (timeEntry.viewAny bzw. Admin), analog zur Arbeitsliste.
  */
 class OpenTimesDigestNotification extends DirectNotification {
-    private const TITLE_KEY = 'Offene Zeiten: :count Einträge warten auf Abrechnung';
+    private const string TITLE_KEY = 'Offene Zeiten: :count Einträge warten auf Abrechnung';
 
-    private const MESSAGE_KEY = 'Davon :late Nachzügler in bereits abgerechneten Zeiträumen und :stale älter als :days Tage. Bitte die Arbeitsliste „Offene Zeiten" prüfen.';
+    private const string MESSAGE_KEY = 'Davon :late Nachzügler in bereits abgerechneten Zeiträumen und :stale älter als :days Tage. Bitte die Arbeitsliste „Offene Zeiten" prüfen.';
 
     public function __construct(
         public readonly int $openCount,

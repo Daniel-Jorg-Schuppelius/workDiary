@@ -16,11 +16,11 @@ namespace App\Services\Compliance;
  * Eine einzelne Compliance-Verletzung (z.B. Ruhezeit, Maximalstunden).
  */
 final class ComplianceViolation {
-    public const SEVERITY_INFO = 'info';
+    public const string SEVERITY_INFO = 'info';
 
-    public const SEVERITY_WARNING = 'warning';
+    public const string SEVERITY_WARNING = 'warning';
 
-    public const SEVERITY_ERROR = 'error';
+    public const string SEVERITY_ERROR = 'error';
 
     /**
      * @param  array<int, int>  $relatedShiftIds

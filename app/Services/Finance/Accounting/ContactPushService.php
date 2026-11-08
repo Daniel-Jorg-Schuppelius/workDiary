@@ -40,11 +40,11 @@ use Throwable;
  *    Lexoffice-Betrieb aufgetreten und hat später Fehl-Matches erzeugt.
  */
 class ContactPushService implements \App\Services\Stammdaten\Contracts\ContactPushTarget {
-    public const AUTHORITY_KEY = 'finance.master_data_authority';
+    public const string AUTHORITY_KEY = 'finance.master_data_authority';
 
-    public const AUTHORITY_WORKDIARY = 'workdiary';
+    public const string AUTHORITY_WORKDIARY = 'workdiary';
 
-    public const AUTHORITY_ACCOUNTING = 'accounting';
+    public const string AUTHORITY_ACCOUNTING = 'accounting';
 
     public function __construct(
         private readonly PluginManager $plugins,

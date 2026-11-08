@@ -23,7 +23,7 @@ use Illuminate\Support\{Collection, Str};
  * Topic in den Auffangbereich (Gate: HelpCenterCatalogTest).
  */
 class HelpCenterCatalog {
-    public const FALLBACK_KEY = 'weitere';
+    public const string FALLBACK_KEY = 'weitere';
 
     /**
      * Bereichsdefinitionen in Anzeige-Reihenfolge (ohne Topics).

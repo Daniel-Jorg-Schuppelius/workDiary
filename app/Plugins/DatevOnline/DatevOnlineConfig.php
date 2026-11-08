@@ -19,7 +19,7 @@ use App\Plugins\Support\PluginSettingsResolver;
  * (`login.datev.de/openid[sandbox]/.well-known/openid-configuration`).
  */
 class DatevOnlineConfig {
-    public const SCOPES = 'openid offline_access datev:accounting:clients datev:accounting:documents datev:accounting:extf-files-import';
+    public const string SCOPES = 'openid offline_access datev:accounting:clients datev:accounting:documents datev:accounting:extf-files-import';
 
     /** @return array{enabled: bool, client_id: string, client_secret: string, sandbox: bool, authorize_url: string, token_url: string, revoke_url: string, scopes: string} */
     public static function resolve(?int $organizationId = null): array {

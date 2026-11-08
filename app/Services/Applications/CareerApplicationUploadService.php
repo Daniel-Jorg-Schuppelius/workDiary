@@ -31,13 +31,13 @@ use Illuminate\Validation\ValidationException;
  * dessen Fall-/DMS-Bindung.
  */
 class CareerApplicationUploadService {
-    public const DISK = 'local';
-    public const MAX_FILES = 5;
-    public const MAX_BYTES = 5 * 1024 * 1024;      // je Datei
-    public const MAX_TOTAL_BYTES = 15 * 1024 * 1024; // gesamt
+    public const string DISK = 'local';
+    public const int MAX_FILES = 5;
+    public const int MAX_BYTES = 5 * 1024 * 1024;      // je Datei
+    public const int MAX_TOTAL_BYTES = 15 * 1024 * 1024; // gesamt
 
     /** @var array<string, list<string>> erlaubte MIME → erlaubte Endungen */
-    public const ALLOWED = [
+    public const array ALLOWED = [
         'application/pdf' => ['pdf'],
         'application/msword' => ['doc'],
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => ['docx'],

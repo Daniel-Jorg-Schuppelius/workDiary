@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Gate;
 
 /** Offene Leasing-/Finanzierungsfristen (Kündigung, Rückgabe, Verlängerung). */
 class LeasingDeadlinesWidget extends Widget {
-    private const WINDOW_DAYS = 90;
+    private const int WINDOW_DAYS = 90;
 
     public function key(): string {
         return 'leasing-deadlines';

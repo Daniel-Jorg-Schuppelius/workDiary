@@ -23,10 +23,10 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class ColumnNamingRuleTest extends TestCase {
     use ScansSourceTree;
 
-    private const CUTOFF = '2027_02_24_140000';
+    private const string CUTOFF = '2027_02_24_140000';
 
     /** @var array<string, string> verbotener Name → Konvention */
-    private const FORBIDDEN = [
+    private const array FORBIDDEN = [
         'created_by_user_id' => 'created_by',
         'updated_by_user_id' => 'updated_by',
         'notes' => 'note',
@@ -38,7 +38,7 @@ class ColumnNamingRuleTest extends TestCase {
     ];
 
     /** Methoden, deren erstes Argument keine neue Spalte ist. */
-    private const NOT_A_COLUMN = [
+    private const array NOT_A_COLUMN = [
         'index', 'unique', 'primary', 'foreign', 'fullText', 'spatialIndex', 'rawIndex',
         'dropColumn', 'dropIndex', 'dropUnique', 'dropForeign', 'dropPrimary', 'dropMorphs',
         'dropConstrainedForeignId', 'dropForeignIdFor', 'renameIndex', 'renameColumn',

@@ -30,19 +30,19 @@ use Illuminate\Validation\ValidationException;
  * außen als Aussperrfalle benutzen.
  */
 class TerminalPinService {
-    public const MIN_LENGTH = 6;
+    public const int MIN_LENGTH = 6;
 
-    public const MAX_LENGTH = 8;
+    public const int MAX_LENGTH = 8;
 
-    public const MAX_ATTEMPTS = 5;
+    public const int MAX_ATTEMPTS = 5;
 
-    public const LOCK_MINUTES = 15;
+    public const int LOCK_MINUTES = 15;
 
     /** Zweite Stufe: eine Stunde. */
-    public const LONG_LOCK_MINUTES = 60;
+    public const int LONG_LOCK_MINUTES = 60;
 
     /** Dritte Stufe und darüber: ein Tag — Raten wird damit sinnlos. */
-    public const MAX_LOCK_MINUTES = 1440;
+    public const int MAX_LOCK_MINUTES = 1440;
 
     private ?string $dummyHash = null;
 

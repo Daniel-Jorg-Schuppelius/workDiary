@@ -61,12 +61,12 @@ class ContractSignatureEvidence extends Model {
     // „evidence" ist im Pluralizer unzählbar — der Tabellenname trägt trotzdem das -s.
     protected $table = 'contract_signature_evidences';
 
-    public const VIA_LINK = 'link';
+    public const string VIA_LINK = 'link';
 
-    public const VIA_INTERNAL = 'internal';
+    public const string VIA_INTERNAL = 'internal';
 
     /** @var list<string> Die einzigen nachträglich beschreibbaren Spalten (Prüfentscheidung). */
-    private const REVIEW_COLUMNS = ['review_status', 'reviewed_by_user_id', 'reviewed_at', 'review_note', 'updated_at'];
+    private const array REVIEW_COLUMNS = ['review_status', 'reviewed_by_user_id', 'reviewed_at', 'review_note', 'updated_at'];
 
     protected $fillable = [
         'organization_id', 'revision_id', 'request_id', 'link_id', 'manifest_hash', 'party', 'method',

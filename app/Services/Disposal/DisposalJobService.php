@@ -42,7 +42,7 @@ use RuntimeException;
 class DisposalJobService {
     use AssertsStatusTransition;
 
-    public const SIGNATURE_MAX_BYTES = 1_000_000; // 1 MB für Canvas-PNG
+    public const int SIGNATURE_MAX_BYTES = 1_000_000; // 1 MB für Canvas-PNG
 
     public function __construct(
         private readonly NumberSequenceService $numbers,

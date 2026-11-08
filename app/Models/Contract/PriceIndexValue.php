@@ -35,7 +35,7 @@ use Illuminate\Support\Carbon;
 class PriceIndexValue extends Model {
     use HasSqid;
 
-    public const SERIES_VPI = 'vpi';
+    public const string SERIES_VPI = 'vpi';
 
     protected $fillable = ['series', 'period_on', 'value', 'source', 'status', 'approver_user_id', 'approved_at'];
 

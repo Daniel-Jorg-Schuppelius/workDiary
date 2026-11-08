@@ -28,7 +28,7 @@ use App\Policies\PermissionPolicy;
 class ClaimCasePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::ClaimViewAny,
         'view' => P::ClaimView,
         'create' => P::ClaimManage,

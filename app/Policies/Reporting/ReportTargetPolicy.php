@@ -21,7 +21,7 @@ use App\Policies\PermissionPolicy;
 class ReportTargetPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => Permission::ReportTargetManage,
         'view' => Permission::ReportTargetManage,
         'create' => Permission::ReportTargetManage,

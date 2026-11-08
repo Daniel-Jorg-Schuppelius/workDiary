@@ -32,7 +32,7 @@ class KimaiApiTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const BASE = 'https://kimai.test';
+    private const string BASE = 'https://kimai.test';
 
     private User $owner;
 

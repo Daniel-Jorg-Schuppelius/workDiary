@@ -32,7 +32,7 @@ use App\Services\Inventory\{InventoryLedger, StockPosting};
  * bleibt deshalb das lokale Journal (kein API-Read je Aufruf).
  */
 class BillbeeInventoryProvider implements InventoryProvider {
-    public const PLUGIN_ID = 'billbee';
+    public const string PLUGIN_ID = 'billbee';
 
     public function __construct(
         private readonly Organization $organization,

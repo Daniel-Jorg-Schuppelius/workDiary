@@ -28,7 +28,7 @@ class KanboardClient {
     use CallsJsonRpc;
     use GuardsPluginApiResponses;
 
-    private const APPLICATION_USER = 'jsonrpc';
+    private const string APPLICATION_USER = 'jsonrpc';
 
     private ?PluginApiClient $api = null;
 

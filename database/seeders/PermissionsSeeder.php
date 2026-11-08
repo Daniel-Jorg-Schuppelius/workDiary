@@ -33,7 +33,7 @@ class PermissionsSeeder extends Seeder {
      * abgedeckt durch andere Rechte oder ohne gebaute Funktion. Der Seeder
      * entfernt sie, damit der Rollen-Editor sie nicht mehr anbietet.
      */
-    private const RETIRED = [
+    private const array RETIRED = [
         'organization.view',
         'user.view',
         'user.rates.manage',

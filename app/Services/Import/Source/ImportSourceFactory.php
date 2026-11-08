@@ -28,7 +28,7 @@ use RuntimeException;
  * diesem Zeitpunkt bereits in CSV überführt (A13), sieht hier also wie CSV aus.
  */
 final class ImportSourceFactory {
-    private const DETECT_BYTES = 1024;
+    private const int DETECT_BYTES = 1024;
 
     /**
      * @param  array<string, mixed>  $options  Quellen-Optionen (z. B. iCal-`category_allowlist`)

@@ -30,7 +30,7 @@ class SchedulerRegistrationTest extends TestCase {
     use RefreshDatabase;
 
     /** @var array<string, array{0: string, 1: bool, 2: bool}> */
-    private const EXPECTED = [
+    private const array EXPECTED = [
         // Neu mit MVP-177 (kein Alt-Eintrag): Selbstüberwachung.
         'scheduler:watchdog' => ['0 * * * *', true, true],
         // Neu mit MVP-058 (kein Alt-Eintrag): Betriebsaufgaben-Sync.

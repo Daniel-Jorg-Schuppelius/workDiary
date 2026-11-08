@@ -38,14 +38,14 @@ use CommonToolkit\Helper\Data\NumberHelper;
  * @phpstan-type BwaRow array{kind: string, key: string, label: string, values: BwaValues, delta: numeric-string|null, delta_pct: numeric-string|null, account: AccountingAccount|null, group: BwaGroup|null, depth: int, emphasis: bool}
  */
 class BwaBuilder extends AbstractAccountingReportBuilder {
-    public const COL_ACTUAL = 'actual';
+    public const string COL_ACTUAL = 'actual';
 
-    public const COL_COMPARE = 'compare';
+    public const string COL_COMPARE = 'compare';
 
-    public const COL_TOTAL = 'total';
+    public const string COL_TOTAL = 'total';
 
     /** Zwischensummen in Berichtsreihenfolge: nach welchem Abschnitt sie stehen. */
-    private const SUBTOTALS_AFTER = [
+    private const array SUBTOTALS_AFTER = [
         'output' => ['total_output'],
         'material' => ['gross_profit'],
         'other_income' => ['operating_gross_profit'],

@@ -38,7 +38,7 @@ class RemoteSupportSessionChainTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const REMOTE_ID = '139711290';
+    private const string REMOTE_ID = '139711290';
 
     private User $owner;
 

@@ -26,15 +26,15 @@ use InvalidArgumentException;
  * die Verbindungen speichert — die Variante ist eine Einstellung.
  */
 final class RemoteProviders {
-    public const ANYDESK = AnyDeskClient::ID;
+    public const string ANYDESK = AnyDeskClient::ID;
 
-    public const TEAMVIEWER = TeamViewerClient::ID;
+    public const string TEAMVIEWER = TeamViewerClient::ID;
 
-    public const RUSTDESK = RustDeskProClient::ID;
+    public const string RUSTDESK = RustDeskProClient::ID;
 
-    public const SPLASHTOP = SplashtopClient::ID;
+    public const string SPLASHTOP = SplashtopClient::ID;
 
-    public const PCVISIT = PcvisitClient::ID;
+    public const string PCVISIT = PcvisitClient::ID;
 
     /** @var array<string, RemoteProviderDefinition>|null */
     private static ?array $definitions = null;

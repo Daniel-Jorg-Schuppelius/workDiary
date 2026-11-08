@@ -37,9 +37,9 @@ use RuntimeException;
  * Vorprüfung, nie stiller Verlust.
  */
 class JtlWawiOutboxDispatcher implements ExternalInventoryDispatcher {
-    public const MARKER_PREFIX = 'workdiary:';
+    public const string MARKER_PREFIX = 'workdiary:';
 
-    private const RECONCILE_MAX_PAGES = 10;
+    private const int RECONCILE_MAX_PAGES = 10;
 
     public function __construct(
         private readonly JtlGatewayFactory $gateways,

@@ -28,9 +28,9 @@ use PDFToolkit\Entities\WordBox;
  * ihren Anker: die Beschriftungswörter links des Wertes in derselben Zeile.
  */
 final class TemplateLearner {
-    private const MARGIN_X = 0.01;
+    private const float MARGIN_X = 0.01;
 
-    private const MARGIN_Y = 0.004;
+    private const float MARGIN_Y = 0.004;
 
     public function __construct(
         private readonly WordBoxSource $boxes,

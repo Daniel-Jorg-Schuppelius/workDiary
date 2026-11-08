@@ -33,7 +33,7 @@ class OpenApiDocsTest extends TestCase {
     use RefreshDatabase;
 
     /** Öffentliche Geräte-Ingest-Routen (Token im Pfad) — bewusst ohne Sanctum, im Dokument optional. */
-    private const INGEST_ROUTES = ['api.patrol.scan', 'api.location.ingest', 'api.cti.webhook', 'api.terminal.ingest'];
+    private const array INGEST_ROUTES = ['api.patrol.scan', 'api.location.ingest', 'api.cti.webhook', 'api.terminal.ingest'];
 
     public function test_swagger_docs_route_serves_json(): void {
         Artisan::call('l5-swagger:generate');

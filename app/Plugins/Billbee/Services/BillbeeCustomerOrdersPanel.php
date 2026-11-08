@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /** Billbee-Bestellungen des Kunden am Kunden-Cockpit (Feature 181, MVP-1370) — sichtbar wie die Bestellliste, also nur für Admins. */
 final class BillbeeCustomerOrdersPanel implements CockpitPanel {
-    private const LIMIT = 10;
+    private const int LIMIT = 10;
 
     public function __construct(private readonly PluginManager $plugins) {}
 

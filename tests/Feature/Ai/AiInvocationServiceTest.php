@@ -33,7 +33,7 @@ class AiInvocationServiceTest extends TestCase {
     use RegistersAiCapabilities;
     use WithOrganization;
 
-    private const CAPABILITY = 'test.formulate';
+    private const string CAPABILITY = 'test.formulate';
 
     private FakeAiProvider $fake;
 

@@ -36,13 +36,13 @@ use Illuminate\Support\Facades\Route;
 final class IncomingEInvoicePurchaseDocumentSource implements PurchaseDocumentSource {
     use ResolvesPurchaseDocuments;
 
-    private const DOCUMENT_MODEL = IncomingEInvoice::class;
+    private const string DOCUMENT_MODEL = IncomingEInvoice::class;
 
-    public const KEY = 'incoming_einvoice';
+    public const string KEY = 'incoming_einvoice';
 
-    public const NUMBER_PREFIX = 'ER-';
+    public const string NUMBER_PREFIX = 'ER-';
 
-    private const ACCEPTED = [IncomingEInvoiceStatus::Approved, IncomingEInvoiceStatus::PaymentReleased];
+    private const array ACCEPTED = [IncomingEInvoiceStatus::Approved, IncomingEInvoiceStatus::PaymentReleased];
 
     public function key(): string {
         return self::KEY;

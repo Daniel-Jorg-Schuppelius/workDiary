@@ -26,14 +26,14 @@ use CommonToolkit\Helper\Data\JsonHelper;
  * danach wie bei jeder anderen Quelle.
  */
 class OpenMasterdataService {
-    public const BY_SUPPLIER_PID = 'pid';
+    public const string BY_SUPPLIER_PID = 'pid';
 
-    public const BY_GTIN = 'gtin';
+    public const string BY_GTIN = 'gtin';
 
-    public const BY_MANUFACTURER = 'manufacturer';
+    public const string BY_MANUFACTURER = 'manufacturer';
 
     /** Datenpakete des Preisabgleichs — ohne Texte, Bilder und Dokumente. */
-    private const PRICE_PACKAGES = ['basic', 'additional', 'prices', 'logistics'];
+    private const array PRICE_PACKAGES = ['basic', 'additional', 'prices', 'logistics'];
 
     public function __construct(
         private readonly OpenMasterdataClient $client,

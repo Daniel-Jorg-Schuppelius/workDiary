@@ -33,7 +33,7 @@ use Throwable;
  */
 class InstallationManager {
     /** Unterstützte Datenbank-Treiber im Installer. */
-    public const DRIVERS = ['sqlite', 'mysql', 'pgsql'];
+    public const array DRIVERS = ['sqlite', 'mysql', 'pgsql'];
 
     private readonly string $lockPath;
 

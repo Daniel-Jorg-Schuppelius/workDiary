@@ -24,7 +24,7 @@ use Illuminate\Support\Carbon;
  */
 class CrisisRoomService {
     /** Wer innerhalb dieser Spanne keinen Herzschlag schickt, gilt als abwesend. */
-    public const PRESENCE_SECONDS = 90;
+    public const int PRESENCE_SECONDS = 90;
 
     /** @return list<array{name: string, seen: string}> */
     public function heartbeat(CrisisCase $case, User $user): array {

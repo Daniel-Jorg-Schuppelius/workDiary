@@ -19,7 +19,7 @@ use App\Support\Sqid;
 
 /** Der Artikelstamm als Katalogquelle `art` (MVP-1025), angemeldet über das Artikel-Manifest. */
 final class LocalArticleCatalogSource implements ArticleCatalogSource {
-    public const PREFIX = 'art';
+    public const string PREFIX = 'art';
 
     /** Artikelstamm-ID aus einem Katalogschlüssel, null für andere Quellen. */
     public static function idOf(?string $articleRef): ?int {

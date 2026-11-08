@@ -32,7 +32,7 @@ class AssetMergeService extends AbstractEntityMergeService {
      *
      * @var array<string, string>
      */
-    private const PIVOT_TABLES = [
+    private const array PIVOT_TABLES = [
         'change_asset' => 'change_id',
         'asset_finance_contract_assets' => 'asset_finance_contract_id',
         'rental_case_assets' => 'rental_case_id',
@@ -44,7 +44,7 @@ class AssetMergeService extends AbstractEntityMergeService {
      *
      * @var array<string, array{0: string, 1: string}>
      */
-    private const MORPH_TABLES = [
+    private const array MORPH_TABLES = [
         'communication_notes' => ['notable_type', 'notable_id'],
         'attachments' => ['attachable_type', 'attachable_id'],
         'pending_external_conflicts' => ['referenceable_type', 'referenceable_id'],
@@ -56,7 +56,7 @@ class AssetMergeService extends AbstractEntityMergeService {
      *
      * @var list<string>
      */
-    private const FILLABLE_FROM_SOURCE = [
+    private const array FILLABLE_FROM_SOURCE = [
         'manufacturer', 'model', 'product_id', 'serial_no', 'inventory_no',
         'customer_id', 'foreign_customer_id', 'room_id',
         'location_text', 'location_lat', 'location_lng',

@@ -37,9 +37,9 @@ class PeppolInboundTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const AP_BASE = 'https://ap.example.test/v1';
+    private const string AP_BASE = 'https://ap.example.test/v1';
 
-    private const OWN = '9930:DE123456789';
+    private const string OWN = '9930:DE123456789';
 
     private User $admin;
 

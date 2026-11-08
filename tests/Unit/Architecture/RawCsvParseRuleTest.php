@@ -24,7 +24,7 @@ class RawCsvParseRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad → Begründung */
-    private const ALLOW_LIST = [];
+    private const array ALLOW_LIST = [];
 
     public function test_csv_parsing_goes_through_the_toolkit(): void {
         $violations = [];

@@ -43,7 +43,7 @@ class WooCommerceImportTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const BASE = 'https://shop.example.test';
+    private const string BASE = 'https://shop.example.test';
 
     /** @var array<int, array<string, mixed>> */
     private array $orders = [];

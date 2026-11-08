@@ -36,7 +36,7 @@ final class QuoteTransferTest extends TestCase {
     use RefreshDatabase;
 
     /** Lexware vergibt UUIDs; isValid() der Belegadresse prüft darauf. */
-    private const LEXOFFICE_CONTACT = 'e5b7a6c4-1f2d-4c3b-9a8e-7d6c5b4a3f21';
+    private const string LEXOFFICE_CONTACT = 'e5b7a6c4-1f2d-4c3b-9a8e-7d6c5b4a3f21';
 
     private Organization $org;
 

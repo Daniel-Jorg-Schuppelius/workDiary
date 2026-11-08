@@ -39,25 +39,25 @@ use Illuminate\Validation\ValidationException;
  * keine Klartext- oder Admin-Startpasswörter per E-Mail.
  */
 class PortalAccessService {
-    public const STATE_INVITED = 'invited';
+    public const string STATE_INVITED = 'invited';
 
-    public const STATE_EXPIRED = 'expired';
+    public const string STATE_EXPIRED = 'expired';
 
-    public const STATE_ACTIVE = 'active';
+    public const string STATE_ACTIVE = 'active';
 
-    public const STATE_DEACTIVATED = 'deactivated';
+    public const string STATE_DEACTIVATED = 'deactivated';
 
     /** Konto mit Startpasswort (Phase 153, MVP-1232): bis zum Pflichtwechsel bei der ersten Anmeldung. */
-    public const STATE_PROVISIONAL = 'provisional';
+    public const string STATE_PROVISIONAL = 'provisional';
 
     /** Zeichen eines Startpassworts: diktier- und abtippbar, ohne 0/O, 1/l/I. */
-    private const START_PASSWORD_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    private const string START_PASSWORD_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
 
     /** Gültigkeit eines Einladungs-Links in Tagen. */
-    public const INVITE_TTL_DAYS = 7;
+    public const int INVITE_TTL_DAYS = 7;
 
     /** Gültigkeit eines „Passwort vergessen“-Links in Minuten (wie intern). */
-    public const PASSWORD_RESET_TTL_MINUTES = 60;
+    public const int PASSWORD_RESET_TTL_MINUTES = 60;
 
     public function __construct(
         private readonly UserSessionInvalidator $sessions,

@@ -33,9 +33,9 @@ use Illuminate\Support\Facades\Cache;
 final class ProjectTimeShortfallDetector {
     use AssertsStatusTransition;
 
-    public const SETTING_TOLERANCE = 'project.target_tolerance_minutes';
+    public const string SETTING_TOLERANCE = 'project.target_tolerance_minutes';
 
-    public const DEFAULT_TOLERANCE_MINUTES = 15;
+    public const int DEFAULT_TOLERANCE_MINUTES = 15;
 
     public function __construct(private readonly ProjectTimeTargetResolver $resolver) {}
 

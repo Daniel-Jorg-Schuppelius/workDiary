@@ -31,9 +31,9 @@ use Carbon\CarbonImmutable;
  * ENV/config dient nur als Fallback.
  */
 class TogglPlugin extends AbstractPlugin implements \App\Plugins\Contracts\InboxConflictActions, TimeImporter {
-    public const ID = 'toggl';
+    public const string ID = 'toggl';
 
-    public const SERVICE_PROVIDER = TogglServiceProvider::class;
+    public const string SERVICE_PROVIDER = TogglServiceProvider::class;
 
     public function name(): string {
         return 'Toggl';

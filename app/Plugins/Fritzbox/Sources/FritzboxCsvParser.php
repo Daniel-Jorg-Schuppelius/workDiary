@@ -30,7 +30,7 @@ use RuntimeException;
  */
 class FritzboxCsvParser {
     /** Header-Spalte → Feldname (DE + EN-Export). */
-    private const HEADER_ALIASES = [
+    private const array HEADER_ALIASES = [
         'Typ' => 'type',
         'Type' => 'type',
         'Datum' => 'date',

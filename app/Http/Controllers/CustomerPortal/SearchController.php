@@ -34,7 +34,7 @@ use Illuminate\View\View;
 class SearchController extends Controller {
     use ResolvesPortalUser;
 
-    private const LIMIT = 10;
+    private const int LIMIT = 10;
 
     public function __construct(private readonly PortalVisibility $visibility) {}
 

@@ -21,9 +21,9 @@ namespace App\Services\Invoicing;
  * Position ihre Werte hat.
  */
 final class ResolvedService {
-    public const SOURCE_PROJECT_RULE = 'project_rule';
+    public const string SOURCE_PROJECT_RULE = 'project_rule';
 
-    public const SOURCE_ORGANIZATION = 'organization';
+    public const string SOURCE_ORGANIZATION = 'organization';
 
     public function __construct(
         public readonly ?string $articleRef,

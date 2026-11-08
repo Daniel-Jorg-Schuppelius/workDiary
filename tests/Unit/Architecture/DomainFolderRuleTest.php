@@ -25,7 +25,7 @@ class DomainFolderRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, list<string>> Schichtordner → erlaubte Wurzeldateien (Basisklassen) */
-    private const LAYERS = [
+    private const array LAYERS = [
         'app/Models' => [],
         'app/Services' => [],
         'app/Http/Controllers' => ['Controller.php'],

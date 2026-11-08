@@ -30,15 +30,15 @@ use App\Support\OrganizationContext;
  * die Mitteilungen noch RESOLVED_DAYS sichtbar.
  */
 class CrisisStatusPageService extends OrganizationAccessToken implements PortalNoticeSource {
-    public const HASH_KEY = 'crisis_status_token_hash';
+    public const string HASH_KEY = 'crisis_status_token_hash';
 
-    public const HINT_KEY = 'crisis_status_token_hint';
+    public const string HINT_KEY = 'crisis_status_token_hint';
 
-    public const ISSUED_KEY = 'crisis_status_token_issued_at';
+    public const string ISSUED_KEY = 'crisis_status_token_issued_at';
 
-    public const ENABLED_KEY = 'crisis_status_enabled';
+    public const string ENABLED_KEY = 'crisis_status_enabled';
 
-    public const RESOLVED_DAYS = 7;
+    public const int RESOLVED_DAYS = 7;
 
     public function __construct(private readonly ModuleStatusResolver $modules) {}
 

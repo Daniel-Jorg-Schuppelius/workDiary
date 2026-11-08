@@ -39,10 +39,10 @@ use Throwable;
  * (keine Löschweitergabe, wie Todoist).
  */
 class CardDavContactImporter {
-    public const EXT_TYPE_CONTACT = 'contact';
+    public const string EXT_TYPE_CONTACT = 'contact';
 
     /** Quell-Kennung in der Inbox (`source`-Spalte). */
-    public const SOURCE = 'carddav';
+    public const string SOURCE = 'carddav';
 
     public function __construct(
         private readonly CardDavGatewayFactory $factory,

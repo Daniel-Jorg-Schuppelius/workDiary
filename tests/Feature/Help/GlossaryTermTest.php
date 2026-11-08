@@ -21,7 +21,7 @@ use Tests\TestCase;
  * allen fünf Sprachen.
  */
 class GlossaryTermTest extends TestCase {
-    private const NEW_KEYS = ['abnahme', 'prozedur', 'zeitkonto'];
+    private const array NEW_KEYS = ['abnahme', 'prozedur', 'zeitkonto'];
 
     public function test_x_term_renders_tooltip_for_new_glossary_keys(): void {
         foreach (self::NEW_KEYS as $key) {

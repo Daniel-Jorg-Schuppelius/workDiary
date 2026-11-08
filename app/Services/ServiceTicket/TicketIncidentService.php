@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class TicketIncidentService {
     /** Default-Matrix: [impact][urgency] → Priorität (1=low … 3=high). */
-    private const DEFAULT_MATRIX = [
+    private const array DEFAULT_MATRIX = [
         1 => [1 => 'low', 2 => 'low', 3 => 'normal'],
         2 => [1 => 'low', 2 => 'normal', 3 => 'high'],
         3 => [1 => 'normal', 2 => 'high', 3 => 'urgent'],

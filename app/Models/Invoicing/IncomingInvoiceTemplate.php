@@ -41,9 +41,9 @@ class IncomingInvoiceTemplate extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const SOURCE_MANUAL = 'manual';
+    public const string SOURCE_MANUAL = 'manual';
 
-    public const SOURCE_LEARNED = 'learned';
+    public const string SOURCE_LEARNED = 'learned';
 
     /** @var list<string> */
     protected $fillable = ['organization_id', 'supplier_id', 'name', 'fingerprint', 'zones', 'source', 'hits', 'last_matched_at', 'created_by'];

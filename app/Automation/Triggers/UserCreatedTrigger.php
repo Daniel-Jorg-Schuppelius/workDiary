@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /** Mitarbeitende Person angelegt (MVP-1273); Bedingungen sehen auch die Rollen. */
 final class UserCreatedTrigger implements RuleTrigger {
-    public const KEY = 'user.created';
+    public const string KEY = 'user.created';
 
     public function key(): string {
         return self::KEY;

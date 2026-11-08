@@ -32,15 +32,15 @@ use Throwable;
  */
 final class IncomingSupportingDocuments {
     /** Gesamtgrenze je Eingang (ZeRN Niedersachsen: 50 MB für alles). */
-    public const MAX_TOTAL_BYTES = 50 * 1024 * 1024;
+    public const int MAX_TOTAL_BYTES = 50 * 1024 * 1024;
 
     /** Bund, Länder und Peppol-Empfänger nennen 200 Anlagen je Rechnung. */
-    public const MAX_DOCUMENTS = 200;
+    public const int MAX_DOCUMENTS = 200;
 
-    public const META_TYPE = 'einvoice_supporting_document';
+    public const string META_TYPE = 'einvoice_supporting_document';
 
     /** Dateinamen der Rechnungs-XML in ZUGFeRD, Factur-X und XRechnung-PDF. */
-    private const INVOICE_XML_NAMES = ['factur-x.xml', 'zugferd-invoice.xml', 'xrechnung.xml', 'order-x.xml'];
+    private const array INVOICE_XML_NAMES = ['factur-x.xml', 'zugferd-invoice.xml', 'xrechnung.xml', 'order-x.xml'];
 
     public function __construct(
         private readonly FileAttacher $attacher,

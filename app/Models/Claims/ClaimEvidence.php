@@ -36,7 +36,7 @@ class ClaimEvidence extends Model {
 
     protected $table = 'claim_evidence';
 
-    public const KINDS = ['photo', 'protocol', 'document', 'serial', 'measurement', 'message', 'other'];
+    public const array KINDS = ['photo', 'protocol', 'document', 'serial', 'measurement', 'message', 'other'];
 
     protected $fillable = [
         'organization_id', 'claim_case_id', 'kind', 'title', 'note',

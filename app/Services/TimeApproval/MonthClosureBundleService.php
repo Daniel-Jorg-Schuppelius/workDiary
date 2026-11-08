@@ -41,11 +41,11 @@ use RuntimeException;
  * Attachment am MonthClosure (`meta_type=audit_bundle`), auditiert.
  */
 class MonthClosureBundleService {
-    public const META_TYPE = 'audit_bundle';
+    public const string META_TYPE = 'audit_bundle';
 
-    private const CSV_DELIMITER = ';';
+    private const string CSV_DELIMITER = ';';
 
-    private const CSV_ENCLOSURE = '"';
+    private const string CSV_ENCLOSURE = '"';
 
     /**
      * @return array{attachment: Attachment, filename: string, content: string, package_sha256: string, reused: bool}

@@ -33,9 +33,9 @@ class Cmi5ContentTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const APP = 'https://work.example.test';
+    private const string APP = 'https://work.example.test';
 
-    private const CONTENT = 'https://lerninhalte.example.test';
+    private const string CONTENT = 'https://lerninhalte.example.test';
 
     /** @var list<string> */
     private array $files = [];

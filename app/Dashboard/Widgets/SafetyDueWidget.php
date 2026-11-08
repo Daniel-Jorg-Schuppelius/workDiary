@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Gate;
  * Dashboard (Feature 132).
  */
 class SafetyDueWidget extends Widget {
-    private const WINDOW_DAYS = 60;
+    private const int WINDOW_DAYS = 60;
 
     public function key(): string {
         return 'safety-due';

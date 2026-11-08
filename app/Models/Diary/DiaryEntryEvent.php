@@ -34,7 +34,7 @@ class DiaryEntryEvent extends JournalEntry {
 
     use BelongsToOrganization;
 
-    public const UPDATED_AT = null;
+    public const ?string UPDATED_AT = null;
 
     protected $fillable = [
         'diary_entry_id',

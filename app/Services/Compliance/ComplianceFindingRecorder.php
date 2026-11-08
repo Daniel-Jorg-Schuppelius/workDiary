@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\DB;
  * Jeder Statuswechsel wird explizit in die Audit-Hash-Kette geschrieben.
  */
 final class ComplianceFindingRecorder {
-    public const CATEGORY = 'arbzg';
+    public const string CATEGORY = 'arbzg';
 
     /**
      * @param  array<int, list<AttendanceComplianceFinding>>  $findingsByUser  Befunde je user_id (aus {@see ComplianceScanService})

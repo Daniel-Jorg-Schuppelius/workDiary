@@ -50,7 +50,7 @@ class RawFormFieldRuleTest extends TestCase {
      *
      * @var array<string, int>
      */
-    private const BASELINE = [];
+    private const array BASELINE = [];
 
     /** Zählt label.fieldset-label ohne for=, die kein Control umschließen. */
     private function countUnlinkedLabels(string $source): int {

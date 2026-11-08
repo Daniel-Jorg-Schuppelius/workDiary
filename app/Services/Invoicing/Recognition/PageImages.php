@@ -23,9 +23,9 @@ use Illuminate\Support\Facades\Storage;
  * Phase 155 zusätzlich die letzte (E8) — Summen stehen vorn oder hinten.
  */
 final class PageImages {
-    public const DPI = 110;
+    public const int DPI = 110;
 
-    public const MAX_PAGES = 3;
+    public const int MAX_PAGES = 3;
 
     public function __construct(private readonly PageImageSource $renderer) {}
 

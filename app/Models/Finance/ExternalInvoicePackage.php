@@ -49,10 +49,10 @@ class ExternalInvoicePackage extends Model {
     use HasSqid;
 
     /** Belegart im Versandprotokoll (document_dispatches.document_kind). */
-    public const DOCUMENT_KIND = 'external_invoice';
+    public const string DOCUMENT_KIND = 'external_invoice';
 
     /** Zustellausgang offen: der Versuch kann angekommen sein, eine Wiederholung wartet auf Klärung. */
-    public const OUTCOME_UNCLEAR = 'unclear';
+    public const string OUTCOME_UNCLEAR = 'unclear';
 
     protected $fillable = [
         'organization_id', 'external_invoice_id', 'kind', 'format', 'channel', 'recipient', 'storage_path', 'files',

@@ -55,7 +55,7 @@ use RuntimeException;
  */
 class PeppolInvoiceDispatcher {
     /** Empfehlung des Bundes für Peppol-Nachrichten an die OZG-RE. */
-    public const MAX_PAYLOAD_BYTES = 100 * 1024 * 1024;
+    public const int MAX_PAYLOAD_BYTES = 100 * 1024 * 1024;
 
     public function __construct(
         private readonly PeppolParticipantService $participants,

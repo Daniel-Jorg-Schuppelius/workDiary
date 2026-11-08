@@ -39,9 +39,9 @@ class SustainabilityActivityRecord extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const ACTIVITY_CODES = ['electricity_kwh', 'heat_kwh', 'gas_kwh', 'diesel_l', 'petrol_l', 'km_car', 'km_truck', 'waste_kg', 'water_m3', 'material_kg', 'service_eur'];
+    public const array ACTIVITY_CODES = ['electricity_kwh', 'heat_kwh', 'gas_kwh', 'diesel_l', 'petrol_l', 'km_car', 'km_truck', 'waste_kg', 'water_m3', 'material_kg', 'service_eur'];
 
-    public const QUALITIES = ['measured', 'calculated', 'estimated'];
+    public const array QUALITIES = ['measured', 'calculated', 'estimated'];
 
     protected $fillable = [
         'organization_id', 'subject_type', 'subject_id', 'subject_label',

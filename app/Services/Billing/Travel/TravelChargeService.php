@@ -31,7 +31,7 @@ use Illuminate\Support\{Carbon, Collection};
  */
 class TravelChargeService {
     /** @var array<string, mixed> */
-    private const DEFAULTS = [
+    private const array DEFAULTS = [
         'enabled' => false,
         'mode' => 'flat',           // 'flat' | 'km'
         'flat_amount' => 0.0,

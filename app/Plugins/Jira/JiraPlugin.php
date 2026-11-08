@@ -30,11 +30,11 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink};
 class JiraPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
     use ChecksConnectionHealth, RendersTaskLink;
 
-    public const ID = 'jira';
+    public const string ID = 'jira';
 
-    public const SERVICE_PROVIDER = JiraServiceProvider::class;
+    public const string SERVICE_PROVIDER = JiraServiceProvider::class;
 
-    public const EXT_TYPE_ISSUE = 'issue';
+    public const string EXT_TYPE_ISSUE = 'issue';
 
     public function name(): string {
         return 'Jira';

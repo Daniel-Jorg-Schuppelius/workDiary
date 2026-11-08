@@ -29,10 +29,10 @@ use App\Plugins\Support\PluginOrgContext;
  * Plugin-Id ist "fritzbox". Pro Organisation konfigurierbar über plugin_settings.
  */
 class FritzboxPlugin extends AbstractPlugin {
-    public const ID = 'fritzbox';
+    public const string ID = 'fritzbox';
 
     /** Vom {@see \App\Providers\PluginServiceProvider} zur Provider-Registrierung ausgewertet. */
-    public const SERVICE_PROVIDER = FritzboxServiceProvider::class;
+    public const string SERVICE_PROVIDER = FritzboxServiceProvider::class;
 
     public function name(): string {
         return (string) __('FRITZ!Box-Anrufliste');

@@ -21,12 +21,12 @@ namespace App\Services\Reselling\Marketplace;
  * Zeichen (sonst träfe „GSR" jede Firma mit diesem Kürzel).
  */
 final class NameTokenMatcher {
-    private const LEGAL_FORMS = [
+    private const array LEGAL_FORMS = [
         'gmbh', 'co', 'kg', 'e', 'k', 'v', 'ug', 'ohg', 'mbb', 'ag', 'gbr', 'ltd', 'inc', 'se',
         'haftungsbeschraenkt', 'partnerschaftsgesellschaft',
     ];
 
-    private const GENERIC = [
+    private const array GENERIC = [
         ...self::LEGAL_FORMS,
         'und', 'and', 'gesellschaft',
         'service', 'services', 'berlin', 'haus', 'herr', 'frau', 'fam', 'familie',

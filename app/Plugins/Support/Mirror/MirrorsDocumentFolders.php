@@ -24,7 +24,7 @@ use Illuminate\Support\{Carbon, Str};
  */
 trait MirrorsDocumentFolders {
     /** Spiegelbare Quellen (Rang 19); null/leer = nur DMS-Dokumente (rückwärtskompatibel). */
-    public const SOURCES = ['document', 'invoice_pdf', 'protocol_pdf'];
+    public const array SOURCES = ['document', 'invoice_pdf', 'protocol_pdf'];
 
     /**
      * Ordnerabbild aus den zwei Formularspalten (Dokumenttyp, Pfad): nur

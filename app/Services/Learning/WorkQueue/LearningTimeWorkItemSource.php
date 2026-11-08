@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Gate;
 
 /** Lernzeiten zur Anerkennung, gebündelt je Lernendem (eine Zeile statt einer je Sitzung). */
 final class LearningTimeWorkItemSource implements WorkItemSource {
-    private const ROUTE = 'learning.time-approvals.index';
+    private const string ROUTE = 'learning.time-approvals.index';
 
     public function __construct(private readonly FeatureFlagResolver $features) {}
 

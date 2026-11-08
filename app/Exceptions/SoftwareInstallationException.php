@@ -13,9 +13,9 @@ namespace App\Exceptions;
 use RuntimeException;
 
 class SoftwareInstallationException extends RuntimeException {
-    public const CODE_OS_ALREADY_EXISTS = 'softwareInstallation.osAlreadyExists';
+    public const string CODE_OS_ALREADY_EXISTS = 'softwareInstallation.osAlreadyExists';
 
-    public const CODE_ORG_MISMATCH = 'softwareInstallation.organizationMismatch';
+    public const string CODE_ORG_MISMATCH = 'softwareInstallation.organizationMismatch';
 
     public function __construct(
         public readonly string $errorCode,

@@ -24,7 +24,7 @@ class GlobalTaskController extends Controller {
     use ParsesIndexQuery;
     use ResolvesCurrentOrganization;
 
-    private const ALLOWED_SORTS = ['title', 'status', 'priority', 'hourly_rate', 'time_budget', 'billable'];
+    private const array ALLOWED_SORTS = ['title', 'status', 'priority', 'hourly_rate', 'time_budget', 'billable'];
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Task::class);

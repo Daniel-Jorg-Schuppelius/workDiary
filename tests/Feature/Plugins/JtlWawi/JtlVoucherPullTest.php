@@ -34,7 +34,7 @@ final class JtlVoucherPullTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const BASE = 'https://wawi.example.test:5883/api/eazybusiness';
+    private const string BASE = 'https://wawi.example.test:5883/api/eazybusiness';
 
     protected function setUp(): void {
         parent::setUp();

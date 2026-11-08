@@ -42,17 +42,17 @@ class PluginError extends Model {
     use HasSqid;
     use MassPrunable;
 
-    public const PHASE_BOOT = 'boot';
+    public const string PHASE_BOOT = 'boot';
 
-    public const PHASE_RUNTIME = 'runtime';
+    public const string PHASE_RUNTIME = 'runtime';
 
-    public const PHASE_HEALTHCHECK = 'healthcheck';
+    public const string PHASE_HEALTHCHECK = 'healthcheck';
 
     /** Kompatibilitätsprüfung im geplanten Healthcheck-Lauf (Review 2026-08, A8). */
-    public const PHASE_COMPATIBILITY = 'compatibility';
+    public const string PHASE_COMPATIBILITY = 'compatibility';
 
     /** Manuell per Admin-Button ausgelöster Check — zählt nie für Auto-Disable (E-1). */
-    public const PHASE_MANUAL = 'manual';
+    public const string PHASE_MANUAL = 'manual';
 
     protected $fillable = [
         'plugin_id',

@@ -20,9 +20,9 @@ use Illuminate\Contracts\Support\Arrayable;
  * @implements Arrayable<string, mixed>
  */
 final class TimelineItem implements Arrayable {
-    public const VISIBILITY_INTERNAL = 'internal';
+    public const string VISIBILITY_INTERNAL = 'internal';
 
-    public const VISIBILITY_CUSTOMER = 'customer';
+    public const string VISIBILITY_CUSTOMER = 'customer';
 
     public function __construct(
         /** Stabile Kennung, z. B. "audit:1234" oder "time:99" (Anker/Idempotenz). */

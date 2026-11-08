@@ -36,12 +36,12 @@ use CommonToolkit\ValueObjects\Money;
  */
 class RecapitulativeStatementService {
     /** § 18a Abs. 1 S. 2 UStG. */
-    public const QUARTERLY_THRESHOLD = '50000.00';
+    public const string QUARTERLY_THRESHOLD = '50000.00';
 
     /** Kennziffer der innergemeinschaftlichen Lieferungen in der UStVA. */
-    public const FIELD = '41';
+    public const string FIELD = '41';
 
-    private const POSTED = [AccountingEntryStatus::Posted->value, AccountingEntryStatus::Reversed->value];
+    private const array POSTED = [AccountingEntryStatus::Posted->value, AccountingEntryStatus::Reversed->value];
 
     /**
      * Meldezeitraum eines Quartals: monatlich, sobald eine der letzten fünf

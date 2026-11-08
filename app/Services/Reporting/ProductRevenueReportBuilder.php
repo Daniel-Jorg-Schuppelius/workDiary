@@ -43,9 +43,9 @@ class ProductRevenueReportBuilder {
      * Positionen mit negativer Menge und mindern (MVP-990) — sonst zählte eine
      * stornierte Rechnung weiter voll, weil ihr Original ausgestellt bleibt.
      */
-    public const TYPES = [Invoice::TYPE_INVOICE, Invoice::TYPE_PARTIAL, Invoice::TYPE_FINAL, Invoice::TYPE_CREDIT_NOTE, Invoice::TYPE_CANCELLATION];
+    public const array TYPES = [Invoice::TYPE_INVOICE, Invoice::TYPE_PARTIAL, Invoice::TYPE_FINAL, Invoice::TYPE_CREDIT_NOTE, Invoice::TYPE_CANCELLATION];
 
-    public const SOURCE_LOCAL = 'local';
+    public const string SOURCE_LOCAL = 'local';
 
     /**
      * @return array{

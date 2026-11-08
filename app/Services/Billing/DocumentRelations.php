@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 final class DocumentRelations {
     /** Obergrenze, damit ein Abrechnungsplan mit vielen Läufen die Seite nicht flutet. */
-    public const LIMIT = 50;
+    public const int LIMIT = 50;
 
     public function __construct(private readonly ModuleRegistry $modules) {}
 

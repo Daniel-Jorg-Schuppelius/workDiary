@@ -28,10 +28,10 @@ use App\Plugins\Support\PluginSettingsResolver;
  * Token-Fluss umlenken oder Scopes eskalieren.
  */
 class CalendlyConfig {
-    public const DEFAULT_API_BASE = 'https://api.calendly.com';
+    public const string DEFAULT_API_BASE = 'https://api.calendly.com';
 
     /** Sentinel: Instanz-App aus der ENV erzwingen (kein Org-Overlay). */
-    public const INSTANCE = 0;
+    public const int INSTANCE = 0;
 
     /** @return array{client_id: string, client_secret: string, api_base: string, authorize_url: string, token_url: string, scopes: string, backfill_days_past: int, backfill_days_future: int} */
     public static function resolve(?int $organizationId = null): array {

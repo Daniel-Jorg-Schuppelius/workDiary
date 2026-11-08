@@ -30,7 +30,7 @@ class RawMorphClassLiteralRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad-Präfix → Begründung */
-    private const ALLOWLIST = [];
+    private const array ALLOWLIST = [];
 
     public function test_no_class_names_as_morph_values(): void {
         $violations = [];

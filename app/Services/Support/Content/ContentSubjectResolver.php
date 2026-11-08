@@ -47,7 +47,7 @@ class ContentSubjectResolver {
      *
      * @var list<class-string<Model>>
      */
-    public const CUSTOMER_CARRIERS = [Project::class, DiaryEntry::class, Asset::class, DisposalJob::class];
+    public const array CUSTOMER_CARRIERS = [Project::class, DiaryEntry::class, Asset::class, DisposalJob::class];
 
     public function resolve(Model $model): ContentSubject {
         $carrier = match (true) {

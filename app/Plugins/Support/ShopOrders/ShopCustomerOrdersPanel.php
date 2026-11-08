@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /** Shop-Bestellungen am Kunden-Cockpit (Feature 182), nur für Admins bei aktivem Plugin. */
 abstract class ShopCustomerOrdersPanel implements CockpitPanel {
-    private const LIMIT = 10;
+    private const int LIMIT = 10;
 
     public function __construct(private readonly PluginManager $plugins) {}
 

@@ -31,7 +31,7 @@ use RuntimeException;
  */
 final class BoqPricingService {
     /** Status, in denen ein LV noch bepreist werden darf. */
-    public const EDITABLE = [BoqItemStatus::Draft, BoqItemStatus::Imported];
+    public const array EDITABLE = [BoqItemStatus::Draft, BoqItemStatus::Imported];
 
     /**
      * Kostenart je EP-Anteil: Vorgabe aus dem LV-Kopf, ohne Vorgabe die vier

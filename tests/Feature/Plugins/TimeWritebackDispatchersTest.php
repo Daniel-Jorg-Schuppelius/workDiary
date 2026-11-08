@@ -36,9 +36,9 @@ class TimeWritebackDispatchersTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const START = '2026-07-01 09:00';
+    private const string START = '2026-07-01 09:00';
 
-    private const END = '2026-07-01 10:00';
+    private const string END = '2026-07-01 10:00';
 
     protected function setUp(): void {
         parent::setUp();

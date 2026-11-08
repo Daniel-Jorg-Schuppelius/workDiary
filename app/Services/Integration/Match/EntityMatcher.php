@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class EntityMatcher {
     /** Obergrenze für In-Memory-Fuzzy-Vergleich pro Lauf (Schutz vor O(n²)). */
-    private const FUZZY_CANDIDATE_CAP = 2000;
+    private const int FUZZY_CANDIDATE_CAP = 2000;
 
     /**
      * Findet lokale Kandidaten zu einem bereits ins lokale Schema gemappten

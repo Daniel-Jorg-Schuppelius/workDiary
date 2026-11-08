@@ -45,7 +45,7 @@ class IdeaMapSyncService {
     public function __construct(private readonly SqidEncoder $sqids) {}
 
     /** Felder, die aus dem Baum je Knoten übernommen werden. */
-    private const NODE_FIELDS = ['title', 'note', 'color', 'node_status', 'pos_x', 'pos_y', 'parent_id', 'sort_order'];
+    private const array NODE_FIELDS = ['title', 'note', 'color', 'node_status', 'pos_x', 'pos_y', 'parent_id', 'sort_order'];
 
     /**
      * @param  array<string, mixed>  $tree  Wurzelknoten mit rekursiven `children`

@@ -31,9 +31,9 @@ use RuntimeException;
  * nur in einer Zeile, die es nicht geben dürfte.
  */
 final class CatalogAssignmentService {
-    public const SOURCE_IMPORT = 'import';
-    public const SOURCE_MANUAL = 'manual';
-    public const SOURCE_RULE = 'rule';
+    public const string SOURCE_IMPORT = 'import';
+    public const string SOURCE_MANUAL = 'manual';
+    public const string SOURCE_RULE = 'rule';
 
     /**
      * Setzt die Zuordnung eines Elements für einen Katalog. Ein leerer Code

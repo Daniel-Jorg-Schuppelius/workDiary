@@ -35,7 +35,7 @@ class ClubMemberSpec extends AbstractEntitySpec {
     use ParsesLocalDateTime;
 
     /** @var array<string, string> Deutsche Schreibweisen der Mitgliedschaftsart. */
-    private const KIND_ALIASES = [
+    private const array KIND_ALIASES = [
         'aktiv' => 'active',
         'passiv' => 'passive',
         'foerdermitglied' => 'supporting',

@@ -25,7 +25,7 @@ use CommonToolkit\Helper\Data\NumberHelper;
  */
 final class AssetFinanceClassificationService {
     /** Richtwert der Geringwertigkeit (IFRS 16 B3–B8), keine Norm. */
-    public const LOW_VALUE_THRESHOLD = '5000.00';
+    public const string LOW_VALUE_THRESHOLD = '5000.00';
 
     /**
      * @return array{term_months: ?int, ratio: ?float, ifrs16: string, hgb: string, reasons: list<string>}

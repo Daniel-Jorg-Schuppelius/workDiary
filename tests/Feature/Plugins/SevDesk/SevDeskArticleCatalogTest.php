@@ -37,7 +37,7 @@ class SevDeskArticleCatalogTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const PARTS = 'https://my.sevdesk.de/api/v1/Part*';
+    private const string PARTS = 'https://my.sevdesk.de/api/v1/Part*';
 
     protected function setUp(): void {
         parent::setUp();

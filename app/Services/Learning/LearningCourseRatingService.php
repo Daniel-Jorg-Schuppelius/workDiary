@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\DB;
  * Einzelne zurückrechnen (dieselbe Schwelle wie die Kursanalyse).
  */
 class LearningCourseRatingService {
-    public const MIN_RESPONSES = 5;
+    public const int MIN_RESPONSES = 5;
 
     /**
      * @param  list<int>  $courseIds

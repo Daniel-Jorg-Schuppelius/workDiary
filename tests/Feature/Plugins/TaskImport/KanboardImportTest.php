@@ -41,9 +41,9 @@ class KanboardImportTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const BASE = 'https://kanban.example.test';
+    private const string BASE = 'https://kanban.example.test';
 
-    private const PROJECT = '4';
+    private const string PROJECT = '4';
 
     private User $admin;
 

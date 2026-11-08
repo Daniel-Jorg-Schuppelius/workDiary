@@ -30,7 +30,7 @@ final class HolidayRegions {
      * (`holidays.country.*`). Vollaudit 2026-07 (M10): Schweiz inkl. aller
      * 26 Kantone — DACH-Akzeptanzkriterium.
      */
-    private const REGIONS = [
+    private const array REGIONS = [
         'de' => [
             'Germany' => 'de_federal',
             'Germany\\BadenWurttemberg' => 'de_bw',

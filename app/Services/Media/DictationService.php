@@ -29,7 +29,7 @@ use Illuminate\Support\Str;
  * Maschine still.
  */
 final class DictationService {
-    private const DISK = 'local';
+    private const string DISK = 'local';
 
     public function __construct(
         private readonly SpeechTranscriber $transcriber,

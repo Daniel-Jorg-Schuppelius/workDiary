@@ -37,9 +37,9 @@ use Illuminate\Support\Facades\Log;
 class IntegrityAnchorService {
     use ResolvesBackupTarget;
 
-    public const FILE_NAME = 'integrity-anchor.json';
+    public const string FILE_NAME = 'integrity-anchor.json';
 
-    public const SCHEMA = 'workdiary.integrity-anchor/v1';
+    public const string SCHEMA = 'workdiary.integrity-anchor/v1';
 
     public function __construct(private readonly BackupNaming $naming) {}
 

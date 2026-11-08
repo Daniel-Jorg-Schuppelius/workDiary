@@ -27,9 +27,9 @@ class CustomerPortalPasswordChangeTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const CURRENT = 'Start-Pass-2026';
+    private const string CURRENT = 'Start-Pass-2026';
 
-    private const FRESH = 'Neues-Passwort-2026!';
+    private const string FRESH = 'Neues-Passwort-2026!';
 
     private User $portalUser;
 

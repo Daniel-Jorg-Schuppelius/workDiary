@@ -25,7 +25,7 @@ class RawRequestDateParseRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad → Begründung */
-    private const ALLOW_LIST = [];
+    private const array ALLOW_LIST = [];
 
     public function test_http_layer_guards_request_date_parsing(): void {
         $violations = [];

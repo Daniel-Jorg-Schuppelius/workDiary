@@ -42,10 +42,10 @@ use Illuminate\Support\Carbon;
  */
 class SevDeskVoucherPullService implements LineAwareVoucherPuller {
     /** Seitengröße des Abrufs; sevDesk liefert jüngste zuerst. */
-    private const PAGE_SIZE = 50;
+    private const int PAGE_SIZE = 50;
 
     /** sevDesk-Statuskatalog → normalisierter Belegzustand. */
-    private const STATES = [
+    private const array STATES = [
         '50' => AccountingVoucherState::Draft,
         '100' => AccountingVoucherState::Open,
         '750' => AccountingVoucherState::Open,
@@ -57,7 +57,7 @@ class SevDeskVoucherPullService implements LineAwareVoucherPuller {
      * 50 deaktivierte Serienrechnung, 100 Entwurf, 200 offen/fällig,
      * 750 teilweise bezahlt, 1000 bezahlt.
      */
-    private const INVOICE_STATES = [
+    private const array INVOICE_STATES = [
         '50' => AccountingVoucherState::Draft,
         '100' => AccountingVoucherState::Draft,
         '200' => AccountingVoucherState::Open,
@@ -66,7 +66,7 @@ class SevDeskVoucherPullService implements LineAwareVoucherPuller {
     ];
 
     /** Rechnungs-IDs mit Präfix, damit sie nicht mit Beleg-IDs (`/Voucher`) kollidieren. */
-    public const INVOICE_PREFIX = 'invoice:';
+    public const string INVOICE_PREFIX = 'invoice:';
 
     public function __construct(
         private readonly SevDeskClientFactory $clients,

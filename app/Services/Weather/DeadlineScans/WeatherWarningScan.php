@@ -44,7 +44,7 @@ use Illuminate\Support\Carbon;
  * kein Fehler.
  */
 class WeatherWarningScan extends AbstractDeadlineScan {
-    public const HORIZON_DAYS = 3;
+    public const int HORIZON_DAYS = 3;
 
     public function key(): string {
         return 'weather_warnings';

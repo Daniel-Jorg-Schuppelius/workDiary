@@ -27,7 +27,7 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class ChangelogCoverageRuleTest extends TestCase {
     use ScansSourceTree;
 
-    private const REGISTER = '/../WorkDiary-Architecture/features/README.md';
+    private const string REGISTER = '/../WorkDiary-Architecture/features/README.md';
 
     /**
      * Nummern, die beim Einführen des Gates (2026-11-02) im CHANGELOG fehlten:
@@ -37,7 +37,7 @@ class ChangelogCoverageRuleTest extends TestCase {
      *
      * @var list<int>
      */
-    private const BASELINE = [
+    private const array BASELINE = [
         117, 119, 437, 457, 458, 499, 500, 501, 502,
         542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561, 562, 563, 564, 565, 566, 567,
         600, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613, 650, 651, 652, 653,

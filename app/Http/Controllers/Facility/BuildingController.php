@@ -21,7 +21,7 @@ use Illuminate\View\View;
 class BuildingController extends Controller {
     use ParsesIndexQuery;
 
-    private const ALLOWED_SORTS = ['name', 'code', 'year_built', 'gross_area_m2'];
+    private const array ALLOWED_SORTS = ['name', 'code', 'year_built', 'gross_area_m2'];
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Building::class);

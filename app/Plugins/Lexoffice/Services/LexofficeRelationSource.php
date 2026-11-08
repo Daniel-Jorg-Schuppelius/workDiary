@@ -31,10 +31,10 @@ use Illuminate\Support\Facades\{Gate, Lang};
  * (`relatedVouchers`, etwa der in Lexoffice angelegte Abschlag).
  */
 final class LexofficeRelationSource implements DocumentRelationSource {
-    public const KIND = 'voucher';
+    public const string KIND = 'voucher';
 
     /** Referenztypen eines lokalen Belegs und die Belegart, die er in Lexoffice hat. */
-    private const COUNTERPARTS = [
+    private const array COUNTERPARTS = [
         LexofficeInvoiceService::EXT_TYPE_INVOICE => DocumentKind::Invoice,
         LexofficeQuotationService::EXT_TYPE_QUOTATION => DocumentKind::Quote,
         LexofficeOrderConfirmationService::EXT_TYPE_ORDER_CONFIRMATION => DocumentKind::OrderConfirmation,

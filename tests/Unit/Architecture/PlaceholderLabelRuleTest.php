@@ -54,7 +54,7 @@ class PlaceholderLabelRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, int> */
-    private const BASELINE = [];
+    private const array BASELINE = [];
 
     /**
      * Vollständigen Tag ab `<` lesen — Anführungszeichen respektierend.

@@ -50,13 +50,13 @@ use Illuminate\Validation\ValidationException;
 class PrintOrderService {
     use AssertsValidatedTransition;
     /** Branchenprofil-Code (Seed unter database/data/branchprofiles). */
-    public const PROFILE_CODE = 'druck-kopiershop';
+    public const string PROFILE_CODE = 'druck-kopiershop';
 
     /** Guard-Kontext für die Maschinen-Einsatzprüfung. */
-    public const ASSET_CONTEXT = 'print_production';
+    public const string ASSET_CONTEXT = 'print_production';
 
     /** Parameter, die der Kunde freigibt und die interne Freigabe übernehmen muss (MVP-1076). */
-    public const CUSTOMER_PARAMETERS = ['final_format', 'quantity', 'color_mode', 'material'];
+    public const array CUSTOMER_PARAMETERS = ['final_format', 'quantity', 'color_mode', 'material'];
 
     public function __construct(
         private readonly AssetUsageGuard $assetGuard,

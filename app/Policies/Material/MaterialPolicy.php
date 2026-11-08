@@ -17,7 +17,7 @@ use App\Policies\PermissionPolicy;
 class MaterialPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => true,
         'view' => true,
         'create' => Permission::MaterialManage,

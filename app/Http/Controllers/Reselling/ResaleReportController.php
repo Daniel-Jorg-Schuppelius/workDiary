@@ -49,7 +49,7 @@ class ResaleReportController extends Controller {
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
-    private const EXPORT_FORMATS = ['csv', 'xlsx'];
+    private const array EXPORT_FORMATS = ['csv', 'xlsx'];
 
     /** Margenbericht je Produkt und je Rechnungsempfänger — fällige Perioden mit Beginn im Zeitraum. */
     public function index(Request $request, ResaleMarginReport $margins): View {
@@ -161,7 +161,7 @@ class ResaleReportController extends Controller {
      * Abo-Produkte sind — erkannt über den Namen, vom Betreiber übersteuerbar
      * (nie Abo-Position / immer).
      */
-    public const PRODUCT_SCOPES = ['subscriptions', 'all', 'unclassified'];
+    public const array PRODUCT_SCOPES = ['subscriptions', 'all', 'unclassified'];
 
     /** Einstufung mit Filter (Feature 185, MVP-1417): Standard sind Abo-Produkte und Artikel mit Abos; dazu „in Vorlagen" aus der Plan-Quelle. */
     public function products(Request $request, LicenseArticleClassifier $classifier, ArticleCatalog $catalog, RecurringPlans $plans): View {

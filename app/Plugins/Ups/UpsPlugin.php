@@ -43,12 +43,12 @@ class UpsPlugin extends AbstractPlugin implements ShippingProvider {
     // die Trait-Methode gewinnt automatisch gegen die geerbte aus AbstractPlugin.
     use ChecksCarrierHealth;
 
-    public const ID = 'ups';
+    public const string ID = 'ups';
 
-    public const SERVICE_PROVIDER = UpsServiceProvider::class;
+    public const string SERVICE_PROVIDER = UpsServiceProvider::class;
 
     /** Carrier-Schlüssel in `carrier_connections.carrier` und der Registry. */
-    public const CARRIER = 'ups';
+    public const string CARRIER = 'ups';
 
     public function name(): string {
         return 'UPS';

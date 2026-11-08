@@ -30,7 +30,7 @@ use RuntimeException;
  * ({@see openCycle()}, E6) und die Scan-gestützte Erfassung ({@see recordByScan()}).
  */
 class StocktakeService {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     public function __construct(
         private readonly InventoryLedger $ledger,

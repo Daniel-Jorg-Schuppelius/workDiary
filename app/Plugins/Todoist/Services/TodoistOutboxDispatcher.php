@@ -32,9 +32,9 @@ use RuntimeException;
  * `data:delete`-Scope).
  */
 class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
-    public const OP_TASK_UPDATE = 'task.update';
+    public const string OP_TASK_UPDATE = 'task.update';
 
-    public const OP_TASK_CREATE = 'task.create';
+    public const string OP_TASK_CREATE = 'task.create';
 
     public function pluginId(): string {
         return TodoistPlugin::ID;

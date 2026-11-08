@@ -46,9 +46,9 @@ class OrgaMaxTarget implements FacturationTarget {
     use LoadsBillingSources;
     use ReconcilesByMarker;
 
-    public const EXT_TYPE_ORDER = 'orgamax_order';
+    public const string EXT_TYPE_ORDER = 'orgamax_order';
 
-    public const MARKER_PREFIX = 'workdiary:';
+    public const string MARKER_PREFIX = 'workdiary:';
 
     public function __construct(
         private readonly BillingPositionBuilder $positionBuilder,

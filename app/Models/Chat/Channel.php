@@ -44,8 +44,8 @@ class Channel extends Model {
         'is_archived' => 'boolean',
     ];
 
-    public const TYPES = ['channel', 'group', 'direct'];
-    public const VISIBILITIES = ['public', 'private'];
+    public const array TYPES = ['channel', 'group', 'direct'];
+    public const array VISIBILITIES = ['public', 'private'];
 
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo {

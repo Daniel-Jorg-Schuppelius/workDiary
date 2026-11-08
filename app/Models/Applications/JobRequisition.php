@@ -40,7 +40,7 @@ class JobRequisition extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const EMPLOYMENT_TYPES = ['full_time', 'part_time', 'apprentice', 'freelance'];
+    public const array EMPLOYMENT_TYPES = ['full_time', 'part_time', 'apprentice', 'freelance'];
 
     protected $fillable = [
         'organization_id', 'title', 'department', 'profile', 'headcount',

@@ -36,7 +36,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class RedirectIfInstalled {
     /** Session-Schlüssel des laufenden Wizard-Durchgangs. */
-    public const WIZARD_SESSION_KEY = 'install.wizard';
+    public const string WIZARD_SESSION_KEY = 'install.wizard';
 
     public function __construct(private readonly InstallationManager $installer) {}
 

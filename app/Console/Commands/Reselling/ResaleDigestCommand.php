@@ -35,13 +35,13 @@ class ResaleDigestCommand extends Command {
     use IteratesOrganizations;
 
     /** Vorlauf für „Verlängerung in Kürze" (Prozesse 6: 30 Tage). */
-    public const RENEWAL_DAYS = 30;
+    public const int RENEWAL_DAYS = 30;
 
     /** Rückschau für ausstehende Rechnungsentwürfe (Serienlauf: eine Digest-Woche). */
-    public const DRAFT_DAYS = 7;
+    public const int DRAFT_DAYS = 7;
 
     /** Rückschau für neue Katalogzeilen (Preisliste), deren Einkaufspreis vom Vertrag abweicht. */
-    public const CATALOG_DAYS = 7;
+    public const int CATALOG_DAYS = 7;
 
     protected $signature = 'resale:digest ' . self::ORGANIZATION_OPTION;
 

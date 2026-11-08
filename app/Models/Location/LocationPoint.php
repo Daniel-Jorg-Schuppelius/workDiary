@@ -31,13 +31,13 @@ use Illuminate\Support\Carbon;
 class LocationPoint extends Model {
     use BelongsToOrganization;
 
-    public const SOURCE_OWNTRACKS = 'owntracks';
+    public const string SOURCE_OWNTRACKS = 'owntracks';
 
-    public const SOURCE_TRACCAR = 'traccar';
+    public const string SOURCE_TRACCAR = 'traccar';
 
-    public const SOURCE_GOOGLE = 'google';
+    public const string SOURCE_GOOGLE = 'google';
 
-    public const SOURCE_BROWSER = 'browser';
+    public const string SOURCE_BROWSER = 'browser';
 
     protected $fillable = [
         'organization_id',

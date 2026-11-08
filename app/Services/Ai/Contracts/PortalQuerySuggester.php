@@ -18,7 +18,7 @@ use App\Models\Platform\User;
 
 /** Kundenanfrage per KI verstehen (Portal); Null-Bindung wirft AiUnavailableException. */
 interface PortalQuerySuggester {
-    public const CAPABILITY = 'portal.query_understand';
+    public const string CAPABILITY = 'portal.query_understand';
 
     public function understand(CustomerQuery $query, ?User $user, ?int $connectionId = null): AiTextSuggestion;
 }

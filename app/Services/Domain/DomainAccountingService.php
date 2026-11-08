@@ -37,12 +37,12 @@ class DomainAccountingService {
     use ReadsProviderFields;
 
     /** Erste Abfrage ab diesem Datum (Monatsrechnungen des Portals seit 2015). */
-    public const FIRST_DATE = '2015-01-01';
+    public const string FIRST_DATE = '2015-01-01';
 
     /** Folgeabgleich: so viele Tage vor der jüngsten Buchung erneut lesen (Nachbuchungen). */
-    public const OVERLAP_DAYS = 31;
+    public const int OVERLAP_DAYS = 31;
 
-    public const PAGE_SIZE = 1000;
+    public const int PAGE_SIZE = 1000;
 
     /**
      * Logische Felder → Kandidatenschlüssel (Wissensdatenbank mit Unterstrich, Live-Gateway ohne;
@@ -51,7 +51,7 @@ class DomainAccountingService {
      *
      * @var array<string, list<string>>
      */
-    private const FIELDS = [
+    private const array FIELDS = [
         'date' => ['accountingdate', 'date'],
         'type' => ['accountingtype', 'type'],
         'description' => ['accountingdescription', 'description'],
@@ -73,7 +73,7 @@ class DomainAccountingService {
      *
      * @var array<string, list<string>>
      */
-    private const EXTRA_FIELDS = [
+    private const array EXTRA_FIELDS = [
         'invoice_number' => ['accountinginvoiceid', 'invoiceid', 'invoice'],
         'reference' => ['accountingreference', 'reference'],
     ];

@@ -37,9 +37,9 @@ use Throwable;
  */
 class OnlinePaymentService {
     /** Eine Bezahlseite wird wiederverwendet, solange sie noch so lange gilt. */
-    private const REUSE_MARGIN_MINUTES = 5;
+    private const int REUSE_MARGIN_MINUTES = 5;
 
-    private const DEFAULT_CHECKOUT_MINUTES = 60;
+    private const int DEFAULT_CHECKOUT_MINUTES = 60;
 
     public function __construct(
         private readonly OnlinePaymentProviderResolver $providers,

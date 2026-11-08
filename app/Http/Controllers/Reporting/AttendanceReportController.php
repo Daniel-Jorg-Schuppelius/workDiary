@@ -40,7 +40,7 @@ class AttendanceReportController extends Controller {
     use WritesReportCsv;
 
     /** Ab dieser Zeitraumlänge wird die Zeitverlauf-Serie wochenweise aggregiert. */
-    private const WEEKLY_THRESHOLD_DAYS = 62;
+    private const int WEEKLY_THRESHOLD_DAYS = 62;
 
     /** E10: Sicht „Nur eigene“. */
     protected function exportIsPersonal(Request $request): bool {

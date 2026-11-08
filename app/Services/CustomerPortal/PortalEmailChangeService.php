@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\{Mail, URL};
  * interne Audit kennt den Grund. Deaktivierte Zugänge ändern nichts.
  */
 class PortalEmailChangeService {
-    public const TTL_HOURS = 24;
+    public const int TTL_HOURS = 24;
 
     /**
      * Startet die Änderung. Liefert true, wenn eine Bestätigungs-Mail

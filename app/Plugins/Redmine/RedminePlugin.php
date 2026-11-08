@@ -29,11 +29,11 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSett
 class RedminePlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer, TimeImporter {
     use ChecksConnectionHealth, RendersTaskLink;
 
-    public const ID = 'redmine';
+    public const string ID = 'redmine';
 
-    public const SERVICE_PROVIDER = RedmineServiceProvider::class;
+    public const string SERVICE_PROVIDER = RedmineServiceProvider::class;
 
-    public const EXT_TYPE_ISSUE = 'issue';
+    public const string EXT_TYPE_ISSUE = 'issue';
 
     public function name(): string {
         return 'Redmine';

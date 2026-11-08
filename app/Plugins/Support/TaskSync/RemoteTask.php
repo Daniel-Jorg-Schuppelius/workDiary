@@ -21,11 +21,11 @@ use App\Enums\Task\TaskStatus;
  * (`unknown_status`, `empty_title`, `description_incomplete`).
  */
 final readonly class RemoteTask {
-    public const UNKNOWN_STATUS = 'unknown_status';
+    public const string UNKNOWN_STATUS = 'unknown_status';
 
-    public const EMPTY_TITLE = 'empty_title';
+    public const string EMPTY_TITLE = 'empty_title';
 
-    public const DESCRIPTION_INCOMPLETE = 'description_incomplete';
+    public const string DESCRIPTION_INCOMPLETE = 'description_incomplete';
 
     /**
      * @param  array{title?: string, description?: ?string, status?: string, due_date?: ?string}  $fields

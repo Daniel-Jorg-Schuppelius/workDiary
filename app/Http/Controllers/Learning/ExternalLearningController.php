@@ -35,14 +35,14 @@ class ExternalLearningController extends Controller {
     use ChecksTenantPublicSurfaces;
 
     /** Session-Schlüssel der freigeschalteten Einschreibung; auch der LTI-Start legt sie hier ab. */
-    public const SESSION_KEY = 'learning.external_enrollment_id';
+    public const string SESSION_KEY = 'learning.external_enrollment_id';
 
     /**
      * Über LTI gestarteter Zugang: dort gibt es keinen Zugangslink, der Launch
      * der Plattform ist der Nachweis. Der Wert ist die Einschreibung, damit ein
      * alter Marker keine andere öffnet (Audit 2026-09-17, learning-ext-1).
      */
-    public const LTI_SESSION_KEY = 'learning.external.lti_enrollment';
+    public const string LTI_SESSION_KEY = 'learning.external.lti_enrollment';
 
     public function __construct(
         private readonly LearningAccessService $access,

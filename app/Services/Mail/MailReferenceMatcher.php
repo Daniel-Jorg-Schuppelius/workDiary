@@ -31,7 +31,7 @@ use App\Support\ReferenceTokens;
  */
 class MailReferenceMatcher {
     /** Kappe gegen extrem lange Mails (Signaturen, Verläufe). */
-    private const MAX_TOKENS = 60;
+    private const int MAX_TOKENS = 60;
 
     /**
      * Kunden-Kandidaten aus den im Text gefundenen Referenznummern.

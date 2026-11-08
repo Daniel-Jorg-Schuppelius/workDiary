@@ -42,9 +42,9 @@ class SmsChannelTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const SEVEN_SMS = 'https://gateway.seven.io/api/sms';
+    private const string SEVEN_SMS = 'https://gateway.seven.io/api/sms';
 
-    private const SIPGATE_SMS = 'https://api.sipgate.com/v2/sessions/sms';
+    private const string SIPGATE_SMS = 'https://api.sipgate.com/v2/sessions/sms';
 
     protected function setUp(): void {
         parent::setUp();

@@ -40,12 +40,12 @@ use Illuminate\Support\Collection;
  */
 class SupplierAnalysisReportBuilder {
     /** HHI-Ampelschwellen (Marktkonzentrations-Konvention, wie Kundenwert). */
-    public const HHI_MODERATE = 1500;
+    public const int HHI_MODERATE = 1500;
 
-    public const HHI_HIGH = 2500;
+    public const int HHI_HIGH = 2500;
 
     /** Als „offen" zählende Bestellstatus (aktuell laufend). */
-    private const OPEN_ORDER_STATUSES = [
+    private const array OPEN_ORDER_STATUSES = [
         PurchaseOrderStatus::Draft->value,
         PurchaseOrderStatus::Ordered->value,
         PurchaseOrderStatus::PartiallyReceived->value,

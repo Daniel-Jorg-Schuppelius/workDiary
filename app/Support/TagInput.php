@@ -22,7 +22,7 @@ use App\Models\Classification\Tag;
  */
 final class TagInput {
     /** Deckel für frei eingegebene neue Tag-Namen je Request. */
-    private const MAX_NEW_NAMES = 20;
+    private const int MAX_NEW_NAMES = 20;
 
     /**
      * Dekodiert `tag_ids[]` (opake Sqids aus dem Tag-Picker) zu numerischen

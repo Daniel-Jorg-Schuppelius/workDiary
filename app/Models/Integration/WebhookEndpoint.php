@@ -48,7 +48,7 @@ class WebhookEndpoint extends Model {
     use HasFactory;
 
     /** Aufeinanderfolgende Fehlversuche, ab denen der Endpunkt auto-deaktiviert wird. */
-    public const MAX_CONSECUTIVE_FAILURES = 10;
+    public const int MAX_CONSECUTIVE_FAILURES = 10;
 
     protected $fillable = [
         'organization_id',

@@ -33,7 +33,7 @@ class RawConfirmAttributeRuleTest extends TestCase {
      *
      * @var array<string, int>
      */
-    private const BASELINE = [];
+    private const array BASELINE = [];
 
     /** Zählt `data-confirm="…"` bzw. `data-confirm='…'` — nicht die `data-confirm-*`-Familie. */
     private function countRawConfirmAttributes(string $source): int {

@@ -43,9 +43,9 @@ use Illuminate\View\View;
 class SupplierScorecardController extends Controller {
     use ResolvesGlobalDateRange;
 
-    private const PER_PAGE = 25;
+    private const int PER_PAGE = 25;
 
-    private const DRILL_PER_PAGE = 50;
+    private const int DRILL_PER_PAGE = 50;
 
     public function __construct(private readonly SupplierScorecardService $service) {}
 

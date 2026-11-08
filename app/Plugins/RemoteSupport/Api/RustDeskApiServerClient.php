@@ -33,13 +33,13 @@ use Throwable;
  * führt das Modell nicht.
  */
 class RustDeskApiServerClient implements RemoteProvider {
-    public const ID = RustDeskProClient::ID;
+    public const string ID = RustDeskProClient::ID;
 
-    public const FLAVOR = 'api_server';
+    public const string FLAVOR = 'api_server';
 
-    public const PAGE_SIZE = 100;
+    public const int PAGE_SIZE = 100;
 
-    public const MAX_PAGES = 200;
+    public const int MAX_PAGES = 200;
 
     private ?PluginApiClient $api = null;
 

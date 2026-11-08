@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Support\Str;
 
 class MessageController extends Controller {
-    private const PAGE = 30;
+    private const int PAGE = 30;
     /** Cursor-paginierte Top-Level-Nachrichten eines Kanals (JSON mit gerendertem HTML). */
     public function index(Request $request, Channel $channel): JsonResponse {
         Gate::authorize('view', $channel);

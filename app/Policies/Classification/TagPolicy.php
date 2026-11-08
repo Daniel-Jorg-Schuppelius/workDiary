@@ -17,7 +17,7 @@ use App\Policies\PermissionPolicy;
 class TagPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => true,
         'view' => true,
         'create' => true, // Tags darf jeder eingeloggte User ad-hoc anlegen

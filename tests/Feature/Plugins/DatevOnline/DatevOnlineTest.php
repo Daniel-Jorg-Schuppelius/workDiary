@@ -36,11 +36,11 @@ final class DatevOnlineTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const CLIENTS = 'https://accounting-clients.api.datev.de/platform-sandbox/v2/clients';
+    private const string CLIENTS = 'https://accounting-clients.api.datev.de/platform-sandbox/v2/clients';
 
-    private const EXTF = 'https://accounting-extf-files.api.datev.de/platform-sandbox/v3/clients/29098-55003/extf-files';
+    private const string EXTF = 'https://accounting-extf-files.api.datev.de/platform-sandbox/v3/clients/29098-55003/extf-files';
 
-    private const DOCUMENTS = 'https://accounting-documents.api.datev.de/platform-sandbox/v2/clients/29098-55003/documents';
+    private const string DOCUMENTS = 'https://accounting-documents.api.datev.de/platform-sandbox/v2/clients/29098-55003/documents';
 
     private User $admin;
 

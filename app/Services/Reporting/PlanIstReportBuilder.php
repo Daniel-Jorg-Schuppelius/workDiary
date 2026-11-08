@@ -49,8 +49,8 @@ use Illuminate\Support\Collection;
  */
 class PlanIstReportBuilder {
     /** Schwellen aus §2.1, später konfigurierbar. */
-    private const LATE_START_THRESHOLD_MIN = 15;
-    private const HOURS_DIFF_THRESHOLD_PERCENT = 10;
+    private const int LATE_START_THRESHOLD_MIN = 15;
+    private const int HOURS_DIFF_THRESHOLD_PERCENT = 10;
 
     /**
      * Persönlicher Anwesenheits-Plan/Ist pro Tag im Zeitraum.

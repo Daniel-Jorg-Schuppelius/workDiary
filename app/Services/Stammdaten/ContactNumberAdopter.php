@@ -29,7 +29,7 @@ use Illuminate\Database\UniqueConstraintViolationException;
  * weiter, statt an der Unique-Verletzung abzubrechen.
  */
 final class ContactNumberAdopter {
-    private const DEDUPE_PREFIX = 'number-taken:';
+    private const string DEDUPE_PREFIX = 'number-taken:';
 
     /**
      * Nach dem Übertragen: Kontakt-Referenz mit ID und Programmnummer

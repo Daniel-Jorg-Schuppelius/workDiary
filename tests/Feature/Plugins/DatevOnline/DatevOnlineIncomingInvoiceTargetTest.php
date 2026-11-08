@@ -36,7 +36,7 @@ final class DatevOnlineIncomingInvoiceTargetTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const DOCUMENTS = 'https://accounting-documents.api.datev.de/platform-sandbox/v2/clients/29098-55003/documents';
+    private const string DOCUMENTS = 'https://accounting-documents.api.datev.de/platform-sandbox/v2/clients/29098-55003/documents';
 
     private User $admin;
 

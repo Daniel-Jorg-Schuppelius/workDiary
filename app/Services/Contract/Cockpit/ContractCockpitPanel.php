@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Gate;
  * AVV/NDA zeigt das eigene Panel.
  */
 final class ContractCockpitPanel implements CockpitPanel {
-    private const LIMIT = 10;
+    private const int LIMIT = 10;
 
     public function __construct(private readonly FeatureFlagResolver $features) {}
 

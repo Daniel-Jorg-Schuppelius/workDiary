@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\{Auth, DB, RateLimiter};
 use Illuminate\View\View;
 
 class LegacyCallcenterController extends Controller {
-    private const MAX_LOGIN_ATTEMPTS = 5;
+    private const int MAX_LOGIN_ATTEMPTS = 5;
 
     public function __construct(private readonly HolidayService $holidayService) {}
 

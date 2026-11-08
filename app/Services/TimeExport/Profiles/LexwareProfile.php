@@ -35,9 +35,9 @@ use CommonToolkit\Helper\Data\NumberHelper;
  * die Struktur genügt dem Import-Assistenten des Lohnbüros.
  */
 class LexwareProfile implements ExportProfile {
-    private const EOL = "\r\n";
+    private const string EOL = "\r\n";
 
-    private const DELIMITER = ';';
+    private const string DELIMITER = ';';
 
     /** Default-Lohnart für Normalstunden, wenn die Zeile keine eigene trägt. */
     private string $normalWageTypeCode;

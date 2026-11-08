@@ -41,7 +41,7 @@ class Change extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const OUTCOMES = ['successful', 'successful_with_issues', 'failed', 'rolled_back', 'cancelled'];
+    public const array OUTCOMES = ['successful', 'successful_with_issues', 'failed', 'rolled_back', 'cancelled'];
 
     protected $fillable = [
         'organization_id', 'title', 'change_type', 'reason', 'scope',

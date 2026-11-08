@@ -33,7 +33,7 @@ use Throwable;
 class ProjectSpec extends AbstractEntitySpec {
     use ValidatesImportDates;
 
-    private const DATE_COLUMNS = ['starts_on', 'ends_on'];
+    private const array DATE_COLUMNS = ['starts_on', 'ends_on'];
 
     public function entity(): ImportEntity {
         return ImportEntity::Projects;

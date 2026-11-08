@@ -36,7 +36,7 @@ use Throwable;
  * wird aber nie in Ausgabedokumente übernommen.
  */
 class LetterheadAssetService {
-    private const SIGNATURES = [
+    private const array SIGNATURES = [
         'pdf' => "%PDF-",
         'png' => "\x89PNG\x0D\x0A\x1A\x0A",
         'jpg' => "\xFF\xD8\xFF",

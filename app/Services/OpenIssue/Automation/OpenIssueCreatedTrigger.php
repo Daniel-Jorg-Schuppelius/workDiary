@@ -13,7 +13,7 @@ namespace App\Services\OpenIssue\Automation;
 use App\Automation\Triggers\RuleTrigger;
 
 final class OpenIssueCreatedTrigger implements RuleTrigger {
-    public const KEY = 'openIssue.created';
+    public const string KEY = 'openIssue.created';
 
     public function key(): string {
         return self::KEY;

@@ -23,7 +23,7 @@ use App\Services\DocumentDesign\DocumentDesignRenderer;
  * Bestell-Beleg mit Positionen, Einzel- und Summenpreis.
  */
 class PurchaseOrderPdfRenderer {
-    public const SCALE = 2;
+    public const int SCALE = 2;
 
     public function render(PurchaseOrder $order): string {
         $order->loadMissing(['supplier', 'warehouse', 'lines.article']);

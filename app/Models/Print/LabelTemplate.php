@@ -32,7 +32,7 @@ class LabelTemplate extends Model {
     use HasFactory;
     use HasSqid;
 
-    public const FIELDS = ['title', 'subtitle', 'code', 'code_type', 'lines'];
+    public const array FIELDS = ['title', 'subtitle', 'code', 'code_type', 'lines'];
 
     protected $fillable = [
         'organization_id',

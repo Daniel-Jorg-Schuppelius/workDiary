@@ -19,7 +19,7 @@ use Tests\TestCase;
 class ContractSuccessionLinkerTest extends TestCase {
     use BuildsEntitlements;
 
-    private const QH = MarketplaceEntitlement::SOURCE_QUALITYHOSTING;
+    private const string QH = MarketplaceEntitlement::SOURCE_QUALITYHOSTING;
 
     public function test_telekom_term_is_capped_at_the_successor_start(): void {
         $telekom = $this->entitlement('Microsoft 365 Business Premium', '1958.07', '2024-08-02', '2026-08-02');

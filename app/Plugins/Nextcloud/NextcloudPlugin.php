@@ -41,10 +41,10 @@ use Throwable;
  * Server-URL, Nutzer und verschlüsseltem App-Passwort.
  */
 class NextcloudPlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\IntakeSourceConnector, BackupTarget, DocumentIntakeSource {
-    public const ID = 'nextcloud';
+    public const string ID = 'nextcloud';
 
     /** Von der Plugin-Discovery VOR der Instanziierung registriert. */
-    public const SERVICE_PROVIDER = NextcloudServiceProvider::class;
+    public const string SERVICE_PROVIDER = NextcloudServiceProvider::class;
 
     public function name(): string {
         return 'Nextcloud';

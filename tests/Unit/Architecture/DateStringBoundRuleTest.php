@@ -38,7 +38,7 @@ class DateStringBoundRuleTest extends TestCase {
      *
      * @var array<string, string>
      */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         // Das Altsystem-Modul wird abgelöst, nicht migriert; seine Abfragen
         // laufen gegen die Legacy-Verbindung und nie gegen SQLite.
         'app/Legacy/' => 'Altsystem-Modul: wird abgelöst, nicht umgestellt.',
@@ -51,7 +51,7 @@ class DateStringBoundRuleTest extends TestCase {
      *
      * @var array<string, string> Regex → Kurzbeschreibung
      */
-    private const FORBIDDEN = [
+    private const array FORBIDDEN = [
         '/->(?:or)?[wW]hereBetween\s*\(.*(?:->toDateString\(\)|->format\(\'Y-m-d\'\))\s*\]/' => 'BETWEEN-Obergrenze als Y-m-d-String',
         '/\'(?:<=|>)\'\s*,\s*.*(?:->toDateString\(\)|->format\(\'Y-m-d\'\))/' => "'<='/'>' gegen Y-m-d-String",
         '/->(?:or)?[wW]here\s*\(\s*\'[A-Za-z0-9_.]+\'\s*,\s*[^\',\n][^,\n]*(?:->toDateString\(\)|->format\(\'Y-m-d\'\))\s*\)/' => 'Gleichheit gegen Y-m-d-String',

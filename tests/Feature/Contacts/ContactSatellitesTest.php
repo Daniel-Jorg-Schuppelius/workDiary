@@ -46,7 +46,7 @@ final class ContactSatellitesTest extends TestCase {
     }
 
     /** @var array<string, string> */
-    private const ADDRESS = ['address_street' => 'Hauptstraße 1', 'address_zip' => '12345', 'address_city' => 'Musterstadt'];
+    private const array ADDRESS = ['address_street' => 'Hauptstraße 1', 'address_zip' => '12345', 'address_city' => 'Musterstadt'];
 
     public function test_club_member_address_lives_in_the_satellite(): void {
         $this->assertFalse(Schema::hasColumn('club_members', 'street'));

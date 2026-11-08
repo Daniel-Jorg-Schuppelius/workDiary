@@ -29,7 +29,7 @@ use RuntimeException;
  */
 class DropboxBackupClient {
     /** 8 MiB je Append — Dropbox erlaubt bis 150 MB je Request. */
-    private const CHUNK_SIZE = 8_388_608;
+    private const int CHUNK_SIZE = 8_388_608;
 
     private \App\Plugins\Support\PluginApiClient $api;
 

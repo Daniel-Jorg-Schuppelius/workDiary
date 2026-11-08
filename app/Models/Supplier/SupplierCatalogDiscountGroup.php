@@ -34,9 +34,9 @@ class SupplierCatalogDiscountGroup extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
-    public const KIND_DISCOUNT = 'discount';
-    public const KIND_FACTOR = 'factor';
-    public const KIND_SURCHARGE = 'surcharge';
+    public const string KIND_DISCOUNT = 'discount';
+    public const string KIND_FACTOR = 'factor';
+    public const string KIND_SURCHARGE = 'surcharge';
 
     protected $fillable = [
         'organization_id',

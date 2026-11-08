@@ -33,7 +33,7 @@ use Lexoffice\API\Endpoints\Documents\InvoicesEndpoint;
  * Die API meldet nicht, ob Lexware Office die Rechnung selbst versandt hat.
  */
 final class LexofficeExternalInvoiceProvider implements ExternalInvoiceProvider {
-    private const PROFILE_XRECHNUNG = 'XRechnung';
+    private const string PROFILE_XRECHNUNG = 'XRechnung';
 
     public function key(): string {
         return LexofficePlugin::ID;

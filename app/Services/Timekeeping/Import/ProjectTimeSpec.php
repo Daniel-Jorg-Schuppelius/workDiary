@@ -51,7 +51,7 @@ class ProjectTimeSpec extends AbstractEntitySpec implements HasMappableValues, I
     use ParsesLocalDateTime;
     use ResolvesImportUsers;
 
-    private const EXTERNAL_TYPE = 'project-time';
+    private const string EXTERNAL_TYPE = 'project-time';
 
     public function __construct(private readonly MonthClosureService $monthClosures) {}
 

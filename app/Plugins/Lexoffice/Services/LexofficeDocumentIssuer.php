@@ -51,7 +51,7 @@ use RuntimeException;
  */
 final class LexofficeDocumentIssuer implements DocumentIssuer {
     /** Kreis => [Referenztyp, Lexoffice-Ressource, SDK-Endpunkt, SDK-Entität]. */
-    private const RESOURCES = [
+    private const array RESOURCES = [
         'quote' => [LexofficeQuotationService::EXT_TYPE_QUOTATION, 'quotations', QuotationsEndpoint::class, LexofficeQuotation::class],
         'order_confirmation' => [LexofficeOrderConfirmationService::EXT_TYPE_ORDER_CONFIRMATION, 'order-confirmations', OrderConfirmationsEndpoint::class, LexofficeOrderConfirmation::class],
         'delivery_note' => [LexofficeDeliveryNoteService::EXT_TYPE_DELIVERY_NOTE, 'delivery-notes', DeliveryNotesEndpoint::class, LexofficeDeliveryNote::class],

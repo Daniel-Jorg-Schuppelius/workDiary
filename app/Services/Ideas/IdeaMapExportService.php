@@ -30,7 +30,7 @@ use RuntimeException;
  * auditiert und laufen nur über die `export`-Ability (Eigentümer).
  */
 class IdeaMapExportService {
-    public const FORMAT = 'workdiary.idea-map.v1';
+    public const string FORMAT = 'workdiary.idea-map.v1';
 
     /** @return array<string, mixed> */
     public function toArray(IdeaMap $map): array {

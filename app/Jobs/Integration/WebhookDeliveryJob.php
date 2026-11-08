@@ -38,10 +38,10 @@ class WebhookDeliveryJob implements ShouldQueue {
     use SerializesModels;
 
     /** HTTP-Header der Signatur und Begleit-Metadaten. */
-    public const SIGNATURE_HEADER = 'X-WorkDiary-Signature';
-    public const TIMESTAMP_HEADER = 'X-WorkDiary-Timestamp';
-    public const EVENT_HEADER = 'X-WorkDiary-Event';
-    public const DELIVERY_HEADER = 'X-WorkDiary-Delivery';
+    public const string SIGNATURE_HEADER = 'X-WorkDiary-Signature';
+    public const string TIMESTAMP_HEADER = 'X-WorkDiary-Timestamp';
+    public const string EVENT_HEADER = 'X-WorkDiary-Event';
+    public const string DELIVERY_HEADER = 'X-WorkDiary-Delivery';
 
     /** Kurzer Timeout, damit ein hängender Empfänger die Queue nicht blockiert. */
     public int $timeout = 30;

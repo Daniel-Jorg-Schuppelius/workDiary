@@ -36,7 +36,7 @@ use CommonToolkit\Helper\Geo\GeoHelper;
  * Auftragsverlauf (DiaryEntryEvent) nachvollziehbar bleibt.
  */
 class GapFillSuggester implements FreeSlotSource {
-    private const AVERAGE_SPEED_KMH = 40.0;
+    private const float AVERAGE_SPEED_KMH = 40.0;
 
     public function __construct(
         private readonly QualificationGate $qualifications,

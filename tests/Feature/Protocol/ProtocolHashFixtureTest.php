@@ -31,7 +31,7 @@ use Tests\TestCase;
 class ProtocolHashFixtureTest extends TestCase {
     use RefreshDatabase;
 
-    private const FIXTURE = __DIR__ . '/../../Fixtures/protocols/hash-all-item-types.json';
+    private const string FIXTURE = __DIR__ . '/../../Fixtures/protocols/hash-all-item-types.json';
 
     public function test_canonical_form_and_hash_of_all_item_types_are_frozen(): void {
         $creator = User::factory()->user()->create();

@@ -33,7 +33,7 @@ final class PdfGeneratorInventory {
      *
      * @var array<string, array<int, string>>
      */
-    public const GENERATORS = [
+    public const array GENERATORS = [
         // Vertrieb/Fakturierung
         'app/Services/Invoicing/InvoicePdfRenderer.php' => ['invoice', 'credit_note', 'proforma_invoice'],
         'app/Services/Invoicing/QuotePdfRenderer.php' => ['quote'],
@@ -113,7 +113,7 @@ final class PdfGeneratorInventory {
      *
      * @var array<string, string>
      */
-    public const RAW_WRITER_CALLS = [
+    public const array RAW_WRITER_CALLS = [
         'app/Services/DocumentDesign/DocumentDesignRenderer.php' => 'Die Pipeline selbst.',
         'app/Services/DocumentDesign/SampleDocumentService.php' => 'Editor-Test-/Vorschaudokumente des Subsystems.',
         'app/Services/Invoicing/InvoicePdfRenderer.php' => 'Manuelle compose()-Pipeline: dasselbe HTML speist auch den ZUGFeRD-Pfad.',
@@ -129,7 +129,7 @@ final class PdfGeneratorInventory {
      *
      * @var array<int, string>
      */
-    public const PLANNED_KINDS = [];
+    public const array PLANNED_KINDS = [];
 
     /**
      * Alle Arten, die mindestens ein Generator (oder PLANNED_KINDS) trägt —

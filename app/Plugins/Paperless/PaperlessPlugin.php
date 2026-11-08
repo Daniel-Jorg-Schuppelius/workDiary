@@ -33,9 +33,9 @@ use Psr\Http\Message\StreamInterface;
  * Plugin-Einstellungen; die Verwaltung läuft über die Seite Cloud-Dokumenteingang.
  */
 class PaperlessPlugin extends AbstractPlugin implements DocumentIntakeOrigins, DocumentIntakeSource, IntakeSourceConnector, LinksExternalRecords {
-    public const ID = 'paperless';
+    public const string ID = 'paperless';
 
-    public const SERVICE_PROVIDER = PaperlessServiceProvider::class;
+    public const string SERVICE_PROVIDER = PaperlessServiceProvider::class;
 
     public function name(): string {
         return 'Paperless-ngx';

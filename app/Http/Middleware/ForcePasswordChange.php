@@ -20,7 +20,7 @@ class ForcePasswordChange {
     /**
      * Routen, die auch bei erzwungenem Passwortwechsel erreichbar sein müssen.
      */
-    private const ALLOWED_ROUTES = [
+    private const array ALLOWED_ROUTES = [
         'account.password.edit',
         'account.password.update',
         'account.profile.edit',
@@ -33,7 +33,7 @@ class ForcePasswordChange {
      * Portalkonten (Phase 153, MVP-1233): Pflichtwechsel nach einem
      * Startpasswort führt auf die Portal-Seite, nie auf die interne.
      */
-    private const CUSTOMER_ALLOWED_ROUTES = [
+    private const array CUSTOMER_ALLOWED_ROUTES = [
         'customer.password.change',
         'customer.password.change.update',
         'customer.logout',

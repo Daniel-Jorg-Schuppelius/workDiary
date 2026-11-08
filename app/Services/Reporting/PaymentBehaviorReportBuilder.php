@@ -36,7 +36,7 @@ use CommonToolkit\Helper\Data\NumberHelper;
  * due_on).
  */
 class PaymentBehaviorReportBuilder {
-    private const DSO_WINDOW_DAYS = 90;
+    private const int DSO_WINDOW_DAYS = 90;
 
     public function __construct(private readonly ExternalRevenue $externalInvoices) {}
 

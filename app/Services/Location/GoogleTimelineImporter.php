@@ -41,10 +41,10 @@ class GoogleTimelineImporter {
      * verschluckt der Trenner das Minus der westlichen Länge. /u ist Pflicht:
      * ohne Unicode-Modus wäre nur das zweite Byte des Gradzeichens optional.
      */
-    private const LAT_LNG = '/(-?\d+(?:\.\d+)?)\s*°?\s*,\s*(-?\d+(?:\.\d+)?)/u';
+    private const string LAT_LNG = '/(-?\d+(?:\.\d+)?)\s*°?\s*,\s*(-?\d+(?:\.\d+)?)/u';
 
     /** Schlüsselpaare, unter denen Koordinaten je nach Format stehen. */
-    private const COORD_KEYS = [
+    private const array COORD_KEYS = [
         ['latitudeE7', 'longitudeE7', 1e7],
         ['latE7', 'lngE7', 1e7],
         ['latitude', 'longitude', 1.0],

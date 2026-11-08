@@ -31,10 +31,10 @@ class QueueConsumerRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** Wird von jedem `queue:work` ohne `--queue` bedient. */
-    private const ALWAYS_CONSUMED = 'default';
+    private const string ALWAYS_CONSUMED = 'default';
 
     /** Betriebsartefakte, die einen Worker starten. */
-    private const WORKER_FILES = [
+    private const array WORKER_FILES = [
         'compose.yml',
         'scripts/cron.sh',
         'README.md',

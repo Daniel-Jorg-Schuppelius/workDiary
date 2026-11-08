@@ -20,8 +20,8 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class LicenseService {
-    private const CACHE_KEY = 'license:current';
-    private const STATUS_KEY = 'license:lastStatus';
+    private const string CACHE_KEY = 'license:current';
+    private const string STATUS_KEY = 'license:lastStatus';
 
     /**
      * Memo der Datei-Integritätsprüfung. Ohne Memo hasht jeder

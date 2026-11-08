@@ -24,7 +24,7 @@ use Illuminate\View\View;
 
 /** Arbeitsliste und Bearbeitung der Rechnungsnachfragen (Feature 166, MVP-1202). */
 class InvoiceInquiryController extends Controller {
-    private const STATUS_FILTERS = ['open', 'answered', 'all'];
+    private const array STATUS_FILTERS = ['open', 'answered', 'all'];
 
     public function index(Request $request, PluginManager $plugins): View {
         Gate::authorize('viewAny', InvoiceInquiry::class);

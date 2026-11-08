@@ -29,7 +29,7 @@ use Illuminate\Support\Str;
  * * DMS) erfolgt erst dort (MailToCommunicationNote, MailToServiceTicket, MailAttachmentsToDms).
  */
 class MailAttachmentStore {
-    public const DISK = 'local';
+    public const string DISK = 'local';
 
     /**
      * @return list<array<string, mixed>>  Metadaten je Anhang (`stored` = true|false)

@@ -33,7 +33,7 @@ use CommonToolkit\Helper\Data\StringHelper;
  */
 class KimaiCsvParser {
     /** Header-Aliasse (lowercase, EN + DE) → kanonischer Feldname. */
-    private const ALIASES = [
+    private const array ALIASES = [
         // Datum + Zeiten
         'date' => 'date', 'datum' => 'date',
         'from' => 'begin', 'begin' => 'begin', 'von' => 'begin', 'start' => 'begin',

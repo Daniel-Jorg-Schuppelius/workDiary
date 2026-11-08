@@ -27,10 +27,10 @@ use CommonToolkit\Helper\FileSystem\Folder;
  * steht in `settings.branch_profile_variants`.
  */
 final class BranchProfileVariantService {
-    public const SETTINGS_KEY = 'branch_profile_variants';
+    public const string SETTINGS_KEY = 'branch_profile_variants';
 
     /** Abschnitte, die kein Baustein-Katalog sind. */
-    private const HEAD = ['code', 'label', 'label_i18n', 'description', 'version', 'min_app_version'];
+    private const array HEAD = ['code', 'label', 'label_i18n', 'description', 'version', 'min_app_version'];
 
     public function __construct(private readonly BranchProfileInstaller $installer) {}
 

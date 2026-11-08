@@ -21,9 +21,9 @@ use Carbon\CarbonImmutable;
  */
 interface TaskImportLink extends TaskSyncLink {
     /** Grund einer Pause: von Hand oder durch Trennen der Verbindung (Wiederverbinden setzt fort). */
-    public const PAUSED_MANUAL = 'manual';
+    public const string PAUSED_MANUAL = 'manual';
 
-    public const PAUSED_DISCONNECTED = 'disconnected';
+    public const string PAUSED_DISCONNECTED = 'disconnected';
 
     public function sourceProjectId(): string;
 

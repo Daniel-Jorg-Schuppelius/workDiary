@@ -48,7 +48,7 @@ class IsmsAuditPackageToken extends Model {
     use HasSqid;
 
     /** Append-only-Lebenszyklus: nur created_at (kein updated_at). */
-    public const UPDATED_AT = null;
+    public const ?string UPDATED_AT = null;
 
     protected $fillable = [
         'isms_audit_package_id',

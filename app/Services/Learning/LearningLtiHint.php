@@ -24,11 +24,11 @@ use JsonException;
  * ein Login-Hinweis taugt deshalb nie als Deep-Linking-Zustand.
  */
 final class LearningLtiHint {
-    public const PURPOSE_LOGIN = 'login';
+    public const string PURPOSE_LOGIN = 'login';
 
-    public const PURPOSE_MESSAGE = 'message';
+    public const string PURPOSE_MESSAGE = 'message';
 
-    public const PURPOSE_DEEP_LINKING = 'deep_linking';
+    public const string PURPOSE_DEEP_LINKING = 'deep_linking';
 
     /**
      * @param  array<string, int|string>  $claims

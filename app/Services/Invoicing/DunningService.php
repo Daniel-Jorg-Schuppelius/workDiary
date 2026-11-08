@@ -36,10 +36,10 @@ use Illuminate\Support\Facades\{Auth, Mail};
  * KEIN neuer Beleg (Mahnstatus ist Lifecycle).
  */
 final class DunningService {
-    public const MAX_LEVEL = 3;
+    public const int MAX_LEVEL = 3;
 
     /** Zinsusance: taggenau auf Basis 365 Tage (act/365). */
-    public const INTEREST_DAY_BASIS = 365;
+    public const int INTEREST_DAY_BASIS = 365;
 
     public function __construct(
         private readonly RetentionService $retentions,

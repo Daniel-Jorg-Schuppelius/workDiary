@@ -26,7 +26,7 @@ use Throwable;
  */
 trait IteratesOrganizations {
     /** Wortgleiche Options-Definition des Skeletts — für Command-Signaturen. */
-    public const ORGANIZATION_OPTION = '{--organization= : ID oder Slug einer einzelnen Organisation, sonst alle}';
+    public const string ORGANIZATION_OPTION = '{--organization= : ID oder Slug einer einzelnen Organisation, sonst alle}';
 
     /**
      * Organisationen gemäß Einzel-Org-Option (leer/fehlend → alle).

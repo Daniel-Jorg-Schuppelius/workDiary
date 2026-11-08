@@ -35,9 +35,9 @@ use App\Models\Platform\Organization;
  * Idempotenz je Fälligkeit über eine ExternalReference am Ticket.
  */
 class MaintenanceDueService {
-    public const PLUGIN_ID = 'maintenance';
+    public const string PLUGIN_ID = 'maintenance';
 
-    public const EXTERNAL_TYPE = 'due';
+    public const string EXTERNAL_TYPE = 'due';
 
     /** @return bool Fälligkeit gemeldet (noch nicht behandelt) */
     public function handleDue(MaintenancePlan $plan): bool {

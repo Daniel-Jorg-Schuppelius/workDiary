@@ -30,9 +30,9 @@ class SupplierCredentialType extends Model {
     use Auditable;
     use HasSqid;
 
-    public const MODE_WARN = 'warn';
+    public const string MODE_WARN = 'warn';
 
-    public const MODE_BLOCK = 'block';
+    public const string MODE_BLOCK = 'block';
 
     protected $fillable = [
         'organization_id',

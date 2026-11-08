@@ -33,7 +33,7 @@ class CrisisMapPoint extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const KINDS = ['incident', 'assembly', 'closure', 'resource', 'other'];
+    public const array KINDS = ['incident', 'assembly', 'closure', 'resource', 'other'];
 
     protected $fillable = ['organization_id', 'crisis_case_id', 'label', 'kind', 'lat', 'lng', 'note', 'created_by'];
 

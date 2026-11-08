@@ -30,9 +30,9 @@ use Carbon\CarbonImmutable;
  *  - Für Approver: offene Pending-Urlaubsanträge älter 3 Tage (error)
  */
 class ReminderService {
-    private const DRAFT_AGE_DAYS = 7;
+    private const int DRAFT_AGE_DAYS = 7;
 
-    private const PENDING_AGE_DAYS = 3;
+    private const int PENDING_AGE_DAYS = 3;
 
     /**
      * @return list<ReminderItem>

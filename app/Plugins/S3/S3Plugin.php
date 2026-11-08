@@ -33,9 +33,9 @@ use Psr\Http\Message\StreamInterface;
  * Backupzielen; es gibt bewusst keine Konfiguration je Organisation.
  */
 class S3Plugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, BackupTarget {
-    public const ID = 's3';
+    public const string ID = 's3';
 
-    public const SERVICE_PROVIDER = S3ServiceProvider::class;
+    public const string SERVICE_PROVIDER = S3ServiceProvider::class;
 
     public function name(): string {
         return 'S3';

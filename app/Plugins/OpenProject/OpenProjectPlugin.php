@@ -33,9 +33,9 @@ use CommonToolkit\Helper\Data\WebLinkHelper;
  * plugin_settings; ENV/config dient nur als Fallback.
  */
 class OpenProjectPlugin extends AbstractPlugin implements TimeImporter {
-    public const ID = 'openproject';
+    public const string ID = 'openproject';
 
-    public const SERVICE_PROVIDER = OpenProjectServiceProvider::class;
+    public const string SERVICE_PROVIDER = OpenProjectServiceProvider::class;
 
     public function name(): string {
         return 'OpenProject';

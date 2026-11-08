@@ -28,9 +28,9 @@ use CommonToolkit\Helper\Data\{DateHelper, NumberHelper};
  * Arbeitet auf der anbieterneutralen {@see MirrorLine} (Spiegel-Abstraktion).
  */
 final class LicenseMonths {
-    private const MONTH_UNITS = ['monat', 'monate', 'month', 'months'];
-    private const YEAR_UNITS = ['jahr', 'jahre', 'year', 'years'];
-    private const MONTHLY_PRICE_LIMIT = 30.0;
+    private const array MONTH_UNITS = ['monat', 'monate', 'month', 'months'];
+    private const array YEAR_UNITS = ['jahr', 'jahre', 'year', 'years'];
+    private const float MONTHLY_PRICE_LIMIT = 30.0;
 
     /**
      * Leistungszeitraum der Position aus ihrem Text („… => stb-zahlenwerk.de =>

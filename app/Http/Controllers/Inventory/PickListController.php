@@ -30,7 +30,7 @@ class PickListController extends Controller {
     use ResolvesCurrentOrganization;
 
     /** @var array<string, class-string<Model>> Routen-Slug → Quellmodell */
-    public const SOURCES = [
+    public const array SOURCES = [
         'manufacturing-order' => ManufacturingOrder::class,
     ];
 

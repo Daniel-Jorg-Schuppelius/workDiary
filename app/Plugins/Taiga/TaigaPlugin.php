@@ -27,11 +27,11 @@ use App\Plugins\Taiga\Services\TaigaImportService;
 class TaigaPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
     use ChecksConnectionHealth, RendersTaskLink;
 
-    public const ID = 'taiga';
+    public const string ID = 'taiga';
 
-    public const SERVICE_PROVIDER = TaigaServiceProvider::class;
+    public const string SERVICE_PROVIDER = TaigaServiceProvider::class;
 
-    public const EXT_TYPE_USER_STORY = 'user_story';
+    public const string EXT_TYPE_USER_STORY = 'user_story';
 
     public function name(): string {
         return 'Taiga';

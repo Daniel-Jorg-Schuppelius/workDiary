@@ -47,7 +47,7 @@ class ProcessCsvImportJob implements ShouldQueue {
 
     public int $timeout = 600;
     public int $tries = 1;
-    public const CHUNK = 500;
+    public const int CHUNK = 500;
 
     public function __construct(public readonly int $importRunId) {}
 

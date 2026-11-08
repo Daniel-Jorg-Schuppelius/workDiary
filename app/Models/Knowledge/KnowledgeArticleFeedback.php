@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property bool $helpful
  */
 class KnowledgeArticleFeedback extends Model {
-    public const UPDATED_AT = null;
+    public const ?string UPDATED_AT = null;
 
     protected $table = 'knowledge_article_feedback';
 

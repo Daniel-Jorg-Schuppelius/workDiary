@@ -45,14 +45,14 @@ class OrganizationLifecycleService {
      * Zeit, die zwischen Deaktivierung und endgültigem Löschen liegen muss.
      * Override-bar via config('archive.purge_cooldown_hours').
      */
-    public const DEFAULT_COOLDOWN_HOURS = 24;
+    public const int DEFAULT_COOLDOWN_HOURS = 24;
 
     /**
      * Maximale Anzahl Pässe, die der Purge versucht, um zyklische FK-
      * Abhängigkeiten zu lösen. Bei unrealistisch vielen Pässen wird mit
      * einer Ausnahme abgebrochen (Transaction rollback'd dann sowieso).
      */
-    private const PURGE_MAX_PASSES = 25;
+    private const int PURGE_MAX_PASSES = 25;
 
     /**
      * Tabellen, die NICHT als "Mandantendaten" behandelt werden,
@@ -60,7 +60,7 @@ class OrganizationLifecycleService {
      *   - organizations selbst
      *   - der Audit-Trail (überdauert den Purge)
      */
-    private const PURGE_EXCLUDE_TABLES = [
+    private const array PURGE_EXCLUDE_TABLES = [
         'organizations',
         'organization_audit_logs',
         // Der revisionssichere Änderungs-Trail (Hash-Kette) überdauert den
@@ -421,7 +421,7 @@ class OrganizationLifecycleService {
      *
      * @var array<string, array{path: string|list<string>, disk?: string, default_disk?: string, dir?: bool}>
      */
-    private const FILE_POINTER_TABLES = [
+    private const array FILE_POINTER_TABLES = [
         'attachments' => ['path' => 'path', 'disk' => 'disk'],
         'bank_statements' => ['path' => 'file_path'],
         'billing_transfers' => ['path' => 'file_path'],

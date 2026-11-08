@@ -43,7 +43,7 @@ use App\Support\{CarbonFmt, OrganizationContext};
  * @phpstan-type SearchFilters array{domain?: string|null, from?: string|null, to?: string|null, person?: int|null, customer?: int|null}
  */
 class GlobalSearchService {
-    public const ACTIVITIES = 'activities';
+    public const string ACTIVITIES = 'activities';
 
     public function __construct(
         private readonly ActivitySearchService $activities,

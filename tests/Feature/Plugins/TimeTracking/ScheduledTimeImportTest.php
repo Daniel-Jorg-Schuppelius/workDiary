@@ -32,7 +32,7 @@ final class ScheduledTimeImportTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const KIMAI = 'https://kimai.test';
+    private const string KIMAI = 'https://kimai.test';
 
     protected function setUp(): void {
         parent::setUp();

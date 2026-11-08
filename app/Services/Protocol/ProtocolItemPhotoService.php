@@ -33,13 +33,13 @@ use RuntimeException;
  */
 class ProtocolItemPhotoService {
     /** Maximalgroesse je Foto-Upload (10 MB, MVP-023 §4.2). */
-    public const MAX_BYTES = 10 * 1024 * 1024;
+    public const int MAX_BYTES = 10 * 1024 * 1024;
 
     /** Maximale lange Kante nach Resize (MVP-023 Kriterium 8). */
-    public const MAX_EDGE_PX = 2560;
+    public const int MAX_EDGE_PX = 2560;
 
     /** Erlaubte Bild-MIMEs (MVP-023 §4.2). */
-    public const ALLOWED_MIMES = [
+    public const array ALLOWED_MIMES = [
         'image/jpeg',
         'image/png',
         'image/webp',

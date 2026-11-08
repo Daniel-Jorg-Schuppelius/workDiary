@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Collection;
  * zugewiesenen Aufträge; offene Stellen je Team als Hinweis.
  */
 final class CapacityPlanningService {
-    public const DEFAULT_WEEKS = 6;
+    public const int DEFAULT_WEEKS = 6;
 
     public function __construct(private readonly FlexCalculator $flex) {}
 

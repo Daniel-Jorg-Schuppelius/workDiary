@@ -56,7 +56,7 @@ class ApplicationOpportunity extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const KINDS = ['inquiry', 'tender', 'participation', 'framework', 'direct', 'recurring'];
+    public const array KINDS = ['inquiry', 'tender', 'participation', 'framework', 'direct', 'recurring'];
 
     protected $fillable = [
         'organization_id', 'title', 'kind', 'source', 'customer_id', 'project_id',

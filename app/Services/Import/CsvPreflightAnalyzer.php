@@ -40,11 +40,11 @@ use Throwable;
  * {@see ProcessCsvImportJob}.
  */
 class CsvPreflightAnalyzer {
-    public const PREVIEW_ROWS = 20;
-    public const MAX_ROWS = 50_000;
-    public const MAX_BYTES = 5 * 1024 * 1024;
-    public const DISK = 'local';
-    public const STORAGE_DIR = 'imports';
+    public const int PREVIEW_ROWS = 20;
+    public const int MAX_ROWS = 50_000;
+    public const int MAX_BYTES = 5 * 1024 * 1024;
+    public const string DISK = 'local';
+    public const string STORAGE_DIR = 'imports';
 
     public function __construct(
         private readonly EntitySpecRegistry $registry,

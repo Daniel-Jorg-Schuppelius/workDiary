@@ -252,7 +252,7 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
      * Pfade unter /projects. Ein Kunde „Intern" verlinkte sonst auf fremde
      * interne Projekte. Gate: ReservedCustomerSlugTest.
      */
-    public const RESERVED_SLUGS = ['intern', 'create', 'duplicates', 'times'];
+    public const array RESERVED_SLUGS = ['intern', 'create', 'duplicates', 'times'];
 
     /**
      * Liefert einen Slug, der innerhalb der angegebenen Organisation

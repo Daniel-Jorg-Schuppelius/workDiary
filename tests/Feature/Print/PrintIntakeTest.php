@@ -42,9 +42,9 @@ final class PrintIntakeTest extends TestCase {
     use WithOrganization;
     use WithPortalVisibility;
 
-    private const CONTENT_A = "%PDF-1.7\nFlyer Vorderseite";
+    private const string CONTENT_A = "%PDF-1.7\nFlyer Vorderseite";
 
-    private const CONTENT_B = "%PDF-1.7\nFlyer korrigiert";
+    private const string CONTENT_B = "%PDF-1.7\nFlyer korrigiert";
 
     private Customer $customer;
 

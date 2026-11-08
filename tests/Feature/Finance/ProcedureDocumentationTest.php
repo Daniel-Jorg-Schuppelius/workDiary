@@ -36,7 +36,7 @@ final class ProcedureDocumentationTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const SECTION_KEYS = ['system', 'accounting', 'numbering', 'roles', 'immutability', 'backup', 'interfaces', 'retention'];
+    private const array SECTION_KEYS = ['system', 'accounting', 'numbering', 'roles', 'immutability', 'backup', 'interfaces', 'retention'];
 
     private ProcedureDocumentationService $service;
 

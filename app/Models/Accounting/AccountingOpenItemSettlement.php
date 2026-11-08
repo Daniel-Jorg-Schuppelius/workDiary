@@ -32,7 +32,7 @@ class AccountingOpenItemSettlement extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const UPDATED_AT = null;
+    public const ?string UPDATED_AT = null;
 
     protected $fillable = [
         'organization_id',

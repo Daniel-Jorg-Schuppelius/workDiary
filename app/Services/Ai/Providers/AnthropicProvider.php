@@ -21,9 +21,9 @@ use App\Services\Ai\Dto\AiUsage;
  * wird `claude-opus-4-8` verwendet.
  */
 class AnthropicProvider extends AbstractLlmProvider {
-    public const DEFAULT_MODEL = 'claude-opus-4-8';
+    public const string DEFAULT_MODEL = 'claude-opus-4-8';
 
-    private const API_VERSION = '2023-06-01';
+    private const string API_VERSION = '2023-06-01';
 
     protected function baseUrl(): string {
         return rtrim($this->connection->base_url ?: 'https://api.anthropic.com', '/');

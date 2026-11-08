@@ -38,7 +38,7 @@ use Carbon\CarbonImmutable;
  */
 final class ReconcileBoard {
     /** Kennzahlen des Abgleichs, nach denen Liste und Tafel filtern (Kacheln, Pilot 2026-11-01). */
-    public const FOCUS = ['open', 'partial', 'proposed', 'free', 'missing', 'surplus'];
+    public const array FOCUS = ['open', 'partial', 'proposed', 'free', 'missing', 'surplus'];
 
     /**
      * Nur die Produkte, die zur Kennzahl beitragen; ihre Zeilen bleiben vollständig, damit der Zeitstrahl lesbar bleibt.

@@ -29,7 +29,7 @@ use App\Models\Platform\User;
  */
 class CrisisCasePolicy {
     /** @var list<string> */
-    private const WRITING_ABILITIES = ['update', 'approve', 'acknowledge'];
+    private const array WRITING_ABILITIES = ['update', 'approve', 'acknowledge'];
 
     public function before(User $user, string $ability, mixed ...$arguments): ?bool {
         $case = $arguments[0] ?? null;

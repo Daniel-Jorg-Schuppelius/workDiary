@@ -29,7 +29,7 @@ use App\Models\Project\Task;
  * Zustand. Remote-State-Setzen ist bei beiden APIs idempotent.
  */
 abstract class AbstractGitIssueWritebackDispatcher implements IntegrationOutboxDispatcher {
-    public const OP_SUFFIX_ISSUE_STATUS = '.issue.status';
+    public const string OP_SUFFIX_ISSUE_STATUS = '.issue.status';
 
     final public static function statusOperation(string $pluginId): string {
         return $pluginId . self::OP_SUFFIX_ISSUE_STATUS;

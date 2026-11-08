@@ -24,7 +24,7 @@ use App\Policies\PermissionPolicy;
 class CustomerQueryPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::ProtocolCustomerQueryManage,
         'view' => P::ProtocolCustomerQueryManage,
         'manage' => P::ProtocolCustomerQueryManage,

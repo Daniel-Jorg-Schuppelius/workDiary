@@ -27,10 +27,10 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * fertige Pfad ausgeliefert. CSP `img-src 'self'` bleibt unangetastet.
  */
 class HelpMediaController extends Controller {
-    private const ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'];
+    private const array ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'];
 
     /** Repo-Assets ändern sich nur mit dem Deploy — ein Tag Browser-Cache reicht. */
-    private const CACHE_SECONDS = 86400;
+    private const int CACHE_SECONDS = 86400;
 
     public function show(Request $request, string $path): BinaryFileResponse {
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));

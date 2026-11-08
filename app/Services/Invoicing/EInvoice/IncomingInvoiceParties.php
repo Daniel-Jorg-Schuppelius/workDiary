@@ -36,10 +36,10 @@ use Throwable;
  * (MVP-1225).
  */
 class IncomingInvoiceParties {
-    public const LOOKUP_TTL = 600;
+    public const int LOOKUP_TTL = 600;
 
     /** Freie Postfächer: gleiche Domain heißt dort nicht gleiche Firma. */
-    public const SHARED_MAIL_DOMAINS =['gmail.com', 'googlemail.com', 'web.de', 'gmx.de', 'gmx.net', 't-online.de', 'outlook.com', 'outlook.de', 'hotmail.com', 'hotmail.de', 'yahoo.com', 'yahoo.de', 'icloud.com', 'me.com', 'live.de', 'freenet.de', 'posteo.de', 'mail.de'];
+    public const array SHARED_MAIL_DOMAINS =['gmail.com', 'googlemail.com', 'web.de', 'gmx.de', 'gmx.net', 't-online.de', 'outlook.com', 'outlook.de', 'hotmail.com', 'hotmail.de', 'yahoo.com', 'yahoo.de', 'icloud.com', 'me.com', 'live.de', 'freenet.de', 'posteo.de', 'mail.de'];
 
     /** @var array<int, array{vat: string, tax_number: string, ibans: list<string>, emails: list<string>, domains: list<string>}> eigene Kennungen je Organisation, einmal je Anfrage */
     private array $ownMail = [];

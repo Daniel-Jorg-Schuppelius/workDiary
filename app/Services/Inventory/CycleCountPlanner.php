@@ -22,7 +22,7 @@ use App\Models\Inventory\{StockValuation, Warehouse};
  * ({@see StocktakeService::openCycle()}).
  */
 class CycleCountPlanner {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     /** @return array<int, string> variantId => 'A'|'B'|'C' */
     public function classify(Warehouse $warehouse): array {

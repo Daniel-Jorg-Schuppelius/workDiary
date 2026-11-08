@@ -27,7 +27,7 @@ enum HelpDeepLink: string {
     case ServerError = 'server-error';
     case AreaMaintenance = 'area-maintenance';
 
-    public const TOPIC = 'help.errors';
+    public const string TOPIC = 'help.errors';
 
     public function anchor(): string {
         return 'sec-' . $this->value;

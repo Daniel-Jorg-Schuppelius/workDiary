@@ -35,14 +35,14 @@ final class FileAttacher {
      *
      * @var list<string>
      */
-    public const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
+    public const array ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
 
     /**
      * Am Inhalt erkannte MIME-Typen (PHP Fileinfo, nicht der Client-Header).
      *
      * @var list<string>
      */
-    public const ALLOWED_MIMES = [
+    public const array ALLOWED_MIMES = [
         'image/jpeg',
         'image/png',
         'image/gif',

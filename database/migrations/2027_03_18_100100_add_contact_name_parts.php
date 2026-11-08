@@ -23,9 +23,9 @@ use Illuminate\Support\Facades\{DB, Schema};
  * dieselben Teile je Eintrag.
  */
 return new class extends Migration {
-    private const TABLES = ['customers', 'suppliers', 'foreign_customers', 'leads'];
+    private const array TABLES = ['customers', 'suppliers', 'foreign_customers', 'leads'];
 
-    private const PARTS = ['contact_salutation', 'contact_title', 'contact_first_name', 'contact_middle_names', 'contact_last_name'];
+    private const array PARTS = ['contact_salutation', 'contact_title', 'contact_first_name', 'contact_middle_names', 'contact_last_name'];
 
     public function up(): void {
         foreach (self::TABLES as $table) {

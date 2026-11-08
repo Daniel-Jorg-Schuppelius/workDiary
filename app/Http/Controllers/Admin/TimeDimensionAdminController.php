@@ -28,7 +28,7 @@ class TimeDimensionAdminController extends Controller {
     use AuthorizesOrganizationManagement;
 
     /** Dimensionstypen je Seite; die Werte eines Typs stehen vollständig darunter. */
-    public const PER_PAGE = 10;
+    public const int PER_PAGE = 10;
 
     public function index(): View {
         $admin = $this->admin();

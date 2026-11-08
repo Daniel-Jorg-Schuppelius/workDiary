@@ -53,15 +53,15 @@ use RoundingMode;
  */
 class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
     /** Quellen in Anzeigereihenfolge. */
-    public const SOURCES = ['receivables', 'payables', 'recurring', 'invoice_schedules', 'payment_runs', 'finance_rates', 'filings', 'plan'];
+    public const array SOURCES = ['receivables', 'payables', 'recurring', 'invoice_schedules', 'payment_runs', 'finance_rates', 'filings', 'plan'];
 
     /** Zulässige Horizonte in Wochen. */
-    public const HORIZONS = [13, 26];
+    public const array HORIZONS = [13, 26];
 
-    public const DEFAULT_WEEKS = 13;
+    public const int DEFAULT_WEEKS = 13;
 
     /** Rückschau für das Zahlungsverhalten. */
-    private const HISTORY_MONTHS = 12;
+    private const int HISTORY_MONTHS = 12;
 
     public function __construct(
         private readonly LiquidityBuilder $liquidity,

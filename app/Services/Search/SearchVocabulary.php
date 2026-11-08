@@ -24,12 +24,12 @@ use App\Models\Search\{SearchDocument, SearchTerm};
  * Neuaufbau schreibt jedes Wort nur einmal.
  */
 final class SearchVocabulary {
-    private const MIN_LENGTH = 3;
+    private const int MIN_LENGTH = 3;
 
-    private const MEMO_LIMIT = 50000;
+    private const int MEMO_LIMIT = 50000;
 
     /** Kandidaten-Obergrenze je Ähnlichkeitssuche (gleicher Anfangsbuchstabe, ähnliche Länge). */
-    private const CANDIDATE_LIMIT = 5000;
+    private const int CANDIDATE_LIMIT = 5000;
 
     /** @var array<int, array<string, true>> */
     private array $known = [];

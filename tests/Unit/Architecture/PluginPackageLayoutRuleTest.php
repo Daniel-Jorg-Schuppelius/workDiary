@@ -23,7 +23,7 @@ use PHPUnit\Framework\TestCase;
  */
 class PluginPackageLayoutRuleTest extends TestCase {
     /** Plattform-Ordner ohne Plugin-Paket. */
-    private const NOT_A_PLUGIN = ['Support', 'Contracts'];
+    private const array NOT_A_PLUGIN = ['Support', 'Contracts'];
 
     public function test_plugin_root_holds_only_plugin_provider_and_config(): void {
         $violations = [];

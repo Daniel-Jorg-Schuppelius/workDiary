@@ -26,7 +26,7 @@ class ModulesDepsCommand extends Command {
 
     protected $description = 'Zeigt Abhängigkeiten zwischen Modulen und Verstöße gegen die Modulregel (Plattform/Kern/Feature).';
 
-    public const BASELINE = 'tests/Unit/Architecture/baselines/module-boundaries.php';
+    public const string BASELINE = 'tests/Unit/Architecture/baselines/module-boundaries.php';
 
     public function handle(ModuleRegistry $registry): int {
         $graph = new DependencyGraph($registry, new BoundaryRules($registry), base_path());

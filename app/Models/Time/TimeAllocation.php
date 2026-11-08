@@ -51,7 +51,7 @@ class TimeAllocation extends Model {
      *
      * @var array<string, class-string<Model>>
      */
-    public const TYPES = [
+    public const array TYPES = [
         'project' => Project::class,
         'task' => Task::class,
         'cost_center' => CostCenter::class,

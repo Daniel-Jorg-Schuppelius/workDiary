@@ -26,12 +26,12 @@ use RuntimeException;
  * (Prozent) und hier ungeeignet.
  */
 class EurostatMinimumWageImporter {
-    public const DATA_URL = 'https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/earn_mw_cur';
+    public const string DATA_URL = 'https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/earn_mw_cur';
 
     public function __construct(private readonly PluginHttpFactory $http) {}
 
     /** Eurostat-geo-Aggregate, die keine einzelnen Länder sind. */
-    private const NON_COUNTRIES = ['EU', 'EA'];
+    private const array NON_COUNTRIES = ['EU', 'EA'];
 
     /**
      * Holt die Daten und schreibt sie in die Referenztabelle.

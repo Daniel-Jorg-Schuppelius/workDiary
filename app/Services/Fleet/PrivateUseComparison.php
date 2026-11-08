@@ -34,7 +34,7 @@ use CommonToolkit\ValueObjects\{Decimal, Money};
  */
 final class PrivateUseComparison {
     /** Listenpreisgrenze für 0,25 % bei reinen E-Fahrzeugen nach Anschaffung ab (§ 6 Abs. 1 Nr. 4 EStG). */
-    private const ELECTRIC_LIMITS = ['2019-01-01' => '40000', '2020-01-01' => '60000', '2024-01-01' => '70000', '2025-07-01' => '100000'];
+    private const array ELECTRIC_LIMITS = ['2019-01-01' => '40000', '2020-01-01' => '60000', '2024-01-01' => '70000', '2025-07-01' => '100000'];
 
     /**
      * @return array{currency: CurrencyCode, months: int, km_total: int, km_private: int, km_commute: int, energy: Money, other: Money, total_costs: Money, logbook: Money, factor: string|null, one_percent: Money|null, cheaper: string|null}

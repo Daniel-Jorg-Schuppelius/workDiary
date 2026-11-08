@@ -31,8 +31,8 @@ use Throwable;
  * (verlustfreier Round-Trip).
  */
 final class ExportRunner {
-    public const DISK = 'local';
-    private const BOM = \CommonToolkit\Helper\Data\StringHelper::BOM_UTF8;
+    public const string DISK = 'local';
+    private const string BOM = \CommonToolkit\Helper\Data\StringHelper::BOM_UTF8;
 
     /**
      * @param  array<string, mixed>  $filters

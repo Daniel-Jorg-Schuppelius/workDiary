@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\{DB, Schema};
  */
 return new class extends Migration {
     /** @var list<string> Tabellen mit der rounding-Spalte */
-    private const TABLES = ['procedure_material_requirements', 'manufacturing_order_materials'];
+    private const array TABLES = ['procedure_material_requirements', 'manufacturing_order_materials'];
 
     public function up(): void {
         foreach (self::TABLES as $table) {

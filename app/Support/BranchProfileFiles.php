@@ -20,7 +20,7 @@ use CommonToolkit\Helper\FileSystem\File;
  * Organisationseinstellungen (Sicherheitsaudit 2026-10-04, authz-b-1).
  */
 final class BranchProfileFiles {
-    public const CODE_PATTERN = '/^[a-z0-9-]+$/';
+    public const string CODE_PATTERN = '/^[a-z0-9-]+$/';
 
     public static function isValidCode(string $code): bool {
         return preg_match(self::CODE_PATTERN, $code) === 1;

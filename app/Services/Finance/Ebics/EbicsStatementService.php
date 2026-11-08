@@ -26,7 +26,7 @@ use Throwable;
  * Auszüge erkennt der Import am Datei-Abdruck und überspringt sie.
  */
 class EbicsStatementService {
-    private const MAX_DAYS_BACK = 30;
+    private const int MAX_DAYS_BACK = 30;
 
     public function __construct(
         private readonly EbicsGateway $gateway,

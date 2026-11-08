@@ -38,7 +38,7 @@ final class AccountingSymmetryTest extends TestCase {
     use RefreshDatabase;
     use WithPluginSecrets;
 
-    private const VOUCHERS = 'https://my.sevdesk.de/api/v1/Voucher*';
+    private const string VOUCHERS = 'https://my.sevdesk.de/api/v1/Voucher*';
 
     private Organization $org;
 

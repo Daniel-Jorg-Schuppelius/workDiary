@@ -62,9 +62,9 @@ class ProtocolSignatureToken extends Model {
         'decided_at' => 'datetime',
     ];
 
-    public const DECISION_APPROVED = 'approved';
+    public const string DECISION_APPROVED = 'approved';
 
-    public const DECISION_REJECTED = 'rejected';
+    public const string DECISION_REJECTED = 'rejected';
 
     /** @return BelongsTo<Protocol, $this> */
     public function protocol(): BelongsTo {

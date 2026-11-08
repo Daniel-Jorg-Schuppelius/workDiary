@@ -47,10 +47,10 @@ use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, MirroredVoucherLi
  * Spaltenbestand und Statuskatalog variieren zwischen 1.5.x und 1.6.x.
  */
 class InvoicePlaneVoucherPullService implements VoucherPuller {
-    public const PLUGIN_ID = 'invoiceplane';
+    public const string PLUGIN_ID = 'invoiceplane';
 
     /** InvoicePlane-Statuskatalog → normalisierter Belegzustand. */
-    private const STATES = [
+    private const array STATES = [
         1 => AccountingVoucherState::Draft,
         2 => AccountingVoucherState::Open,
         3 => AccountingVoucherState::Open,

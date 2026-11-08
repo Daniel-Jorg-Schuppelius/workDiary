@@ -34,7 +34,7 @@ use Illuminate\Session\DatabaseSessionHandler;
  */
 final class AnonymousStackSessionHandler extends DatabaseSessionHandler {
     /** Middleware-Gruppen ohne Herkunftsdaten in der Sitzung. */
-    private const ANONYMOUS_GROUPS = ['whistleblowing', 'dsar', 'careers'];
+    private const array ANONYMOUS_GROUPS = ['whistleblowing', 'dsar', 'careers'];
 
     /**
      * @param  array<mixed>  $payload

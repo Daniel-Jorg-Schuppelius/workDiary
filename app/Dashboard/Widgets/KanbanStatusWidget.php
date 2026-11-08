@@ -25,7 +25,7 @@ use Illuminate\Contracts\View\View;
  */
 class KanbanStatusWidget extends Widget {
     /** Spalten, die das Board als „in Arbeit" führt (ohne Abschluss-Status). */
-    private const ACTIVE_STATUSES = [
+    private const array ACTIVE_STATUSES = [
         Status::Planned,
         Status::Accepted,
         Status::InProgress,

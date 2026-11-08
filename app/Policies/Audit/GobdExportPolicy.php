@@ -23,7 +23,7 @@ use App\Policies\PermissionPolicy;
  * dient dem Menü (NavGate) und der Seite, `export` dem Download.
  */
 class GobdExportPolicy extends PermissionPolicy {
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => Permission::FinanceGobdExport,
         'export' => Permission::FinanceGobdExport,
     ];

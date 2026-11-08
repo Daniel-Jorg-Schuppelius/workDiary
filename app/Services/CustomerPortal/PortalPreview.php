@@ -29,28 +29,28 @@ use Symfony\Component\HttpFoundation\Response;
  * Recht je Request erzwingt {@see \App\Http\Middleware\EnforcePortalPreview}.
  */
 final class PortalPreview {
-    public const SESSION_KEY = 'portal_preview';
+    public const string SESSION_KEY = 'portal_preview';
 
-    public const REQUEST_ATTRIBUTE = 'portal_preview';
+    public const string REQUEST_ATTRIBUTE = 'portal_preview';
 
     /** Laufzeit einer Vorschau in Minuten; Verlängern heißt neu starten. */
-    public const TTL_MINUTES = 60;
+    public const int TTL_MINUTES = 60;
 
-    public const REASON_MANUAL = 'manual';
+    public const string REASON_MANUAL = 'manual';
 
-    public const REASON_REPLACED = 'replaced';
+    public const string REASON_REPLACED = 'replaced';
 
-    public const REASON_EXPIRED = 'expired';
+    public const string REASON_EXPIRED = 'expired';
 
-    public const REASON_ACTOR_CHANGED = 'actor_changed';
+    public const string REASON_ACTOR_CHANGED = 'actor_changed';
 
-    public const REASON_PERMISSION_LOST = 'permission_lost';
+    public const string REASON_PERMISSION_LOST = 'permission_lost';
 
-    public const REASON_ORGANIZATION_CHANGED = 'organization_changed';
+    public const string REASON_ORGANIZATION_CHANGED = 'organization_changed';
 
-    public const REASON_ACCOUNT_CHANGED = 'account_changed';
+    public const string REASON_ACCOUNT_CHANGED = 'account_changed';
 
-    public const REASON_ACCOUNT_DEACTIVATED = 'account_deactivated';
+    public const string REASON_ACCOUNT_DEACTIVATED = 'account_deactivated';
 
     /** @return array<string, mixed>|null */
     public function state(Request $request): ?array {

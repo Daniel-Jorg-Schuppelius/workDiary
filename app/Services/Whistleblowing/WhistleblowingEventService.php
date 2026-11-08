@@ -22,21 +22,21 @@ use App\Models\Whistleblowing\{CaseEvent, WhistleblowingCase};
  */
 class WhistleblowingEventService {
     // Fachliche Eventcodes (Abschnitt 9.6).
-    public const CASE_SUBMITTED = 'case.submitted';
-    public const CASE_VIEWED = 'case.viewed';
-    public const CASE_ASSIGNED = 'case.assigned';
-    public const CASE_ACKNOWLEDGED = 'case.acknowledged';
-    public const CASE_STATUS_CHANGED = 'case.status_changed';
-    public const MESSAGE_SENT_TO_REPORTER = 'message.sent_to_reporter';
-    public const MESSAGE_FROM_REPORTER = 'message.from_reporter';
-    public const ATTACHMENT_UPLOADED = 'attachment.uploaded';
-    public const ATTACHMENT_REJECTED = 'attachment.rejected';
-    public const CASE_EXPORTED = 'case.exported';
-    public const CASE_LEGAL_HOLD_SET = 'case.legal_hold_set';
-    public const CASE_DELETED = 'case.deleted';
-    public const EMERGENCY_ACCESS_GRANTED = 'emergency_access.granted';
-    public const CASE_CONFLICT_DECLARED = 'case.conflict_declared';
-    public const CASE_SUBJECT_ADDED = 'case.subject_added';
+    public const string CASE_SUBMITTED = 'case.submitted';
+    public const string CASE_VIEWED = 'case.viewed';
+    public const string CASE_ASSIGNED = 'case.assigned';
+    public const string CASE_ACKNOWLEDGED = 'case.acknowledged';
+    public const string CASE_STATUS_CHANGED = 'case.status_changed';
+    public const string MESSAGE_SENT_TO_REPORTER = 'message.sent_to_reporter';
+    public const string MESSAGE_FROM_REPORTER = 'message.from_reporter';
+    public const string ATTACHMENT_UPLOADED = 'attachment.uploaded';
+    public const string ATTACHMENT_REJECTED = 'attachment.rejected';
+    public const string CASE_EXPORTED = 'case.exported';
+    public const string CASE_LEGAL_HOLD_SET = 'case.legal_hold_set';
+    public const string CASE_DELETED = 'case.deleted';
+    public const string EMERGENCY_ACCESS_GRANTED = 'emergency_access.granted';
+    public const string CASE_CONFLICT_DECLARED = 'case.conflict_declared';
+    public const string CASE_SUBJECT_ADDED = 'case.subject_added';
 
     /**
      * @param array<string, scalar|null> $metadata minimiert, ohne Meldeinhalte

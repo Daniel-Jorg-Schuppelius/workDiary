@@ -38,13 +38,13 @@ use Illuminate\Support\Carbon;
 class ClubNotification extends Model {
     use BelongsToOrganization;
 
-    public const KIND_REMINDER = 'reminder';
+    public const string KIND_REMINDER = 'reminder';
 
-    public const KIND_RESCHEDULED = 'rescheduled';
+    public const string KIND_RESCHEDULED = 'rescheduled';
 
-    public const KIND_CANCELLED = 'cancelled';
+    public const string KIND_CANCELLED = 'cancelled';
 
-    public const KIND_PROMOTED = 'promoted';
+    public const string KIND_PROMOTED = 'promoted';
 
     protected $fillable = [
         'organization_id',

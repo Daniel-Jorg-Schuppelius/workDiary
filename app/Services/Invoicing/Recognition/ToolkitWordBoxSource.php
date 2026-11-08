@@ -27,7 +27,7 @@ use Throwable;
  * Ergebnis bleibt ungespeichert, damit ein kurzer OCR-Ausfall nicht hängen bleibt.
  */
 final class ToolkitWordBoxSource implements WordBoxSource {
-    private const CACHE_PREFIX = 'word-boxes:1:';
+    private const string CACHE_PREFIX = 'word-boxes:1:';
 
     public function boxesFor(string $pdfPath): array {
         try {

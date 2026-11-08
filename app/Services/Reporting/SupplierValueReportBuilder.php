@@ -33,12 +33,12 @@ use Illuminate\Support\Collection;
  */
 class SupplierValueReportBuilder {
     /** Segmentnamen dieses Reports zu den Stufen von {@see ReportStatistics::rfmSegment()}. */
-    private const SEGMENTS = ['inactive' => 'dormant', 'new' => 'new', 'top' => 'strategic', 'lapsed' => 'lapsed', 'regular' => 'core', 'occasional' => 'occasional'];
+    private const array SEGMENTS = ['inactive' => 'dormant', 'new' => 'new', 'top' => 'strategic', 'lapsed' => 'lapsed', 'regular' => 'core', 'occasional' => 'occasional'];
 
     /** HHI-Ampelschwellen (Marktkonzentrations-Konvention, wie Kundenwert). */
-    public const HHI_MODERATE = 1500;
+    public const int HHI_MODERATE = 1500;
 
-    public const HHI_HIGH = 2500;
+    public const int HHI_HIGH = 2500;
 
     public function __construct(private readonly ExternalPurchases $purchases) {}
 

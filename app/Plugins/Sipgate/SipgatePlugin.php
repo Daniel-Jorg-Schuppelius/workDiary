@@ -32,9 +32,9 @@ use Throwable;
  * Scope „sessions:sms:write"; Konfiguration je Organisation.
  */
 class SipgatePlugin extends AbstractPlugin implements SmsProvider {
-    public const ID = 'sipgate';
+    public const string ID = 'sipgate';
 
-    public const SERVICE_PROVIDER = SipgateServiceProvider::class;
+    public const string SERVICE_PROVIDER = SipgateServiceProvider::class;
 
     public function name(): string {
         return 'sipgate';

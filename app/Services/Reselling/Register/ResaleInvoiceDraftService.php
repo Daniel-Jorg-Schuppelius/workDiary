@@ -56,10 +56,10 @@ final class ResaleInvoiceDraftService {
     private array $plannedByOrganization = [];
 
     /** Weiter als so viele Jahre reicht kein Stichtag — Vorauszahlungen darüber hinaus sind keine Praxis. */
-    public const MAX_LEAD_YEARS = 5;
+    public const int MAX_LEAD_YEARS = 5;
 
     /** Länger hält kein Entwurf die Sperre je Empfänger — die Übergabe an ein Fremdsystem eingerechnet. */
-    private const LOCK_SECONDS = 120;
+    private const int LOCK_SECONDS = 120;
 
     public function __construct(
         private readonly BillingModeResolver $billingModes,

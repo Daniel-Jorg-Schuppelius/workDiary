@@ -40,9 +40,9 @@ class RecurringPlanTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const CONTACT = '7c6b5a49-3827-4e16-9f05-e4d3c2b1a098';
+    private const string CONTACT = '7c6b5a49-3827-4e16-9f05-e4d3c2b1a098';
 
-    private const ARTICLE = '9d6e1f32-5b8a-4c7d-9e0f-1a2b3c4d5e6f';
+    private const string ARTICLE = '9d6e1f32-5b8a-4c7d-9e0f-1a2b3c4d5e6f';
 
     private LexofficeArticle $exchange;
 

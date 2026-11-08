@@ -40,17 +40,17 @@ use Throwable;
  * den Perioden-Stempel (`draft_reference`).
  */
 final class ResaleDraftRun {
-    public const SETTING_ENABLED = 'resale.auto_local_drafts';
+    public const string SETTING_ENABLED = 'resale.auto_local_drafts';
 
-    public const SETTING_LEAD_DAYS = 'resale.auto_local_drafts_lead_days';
+    public const string SETTING_LEAD_DAYS = 'resale.auto_local_drafts_lead_days';
 
-    public const SETTING_EXTERNAL_ENABLED = 'resale.auto_external_drafts';
+    public const string SETTING_EXTERNAL_ENABLED = 'resale.auto_external_drafts';
 
-    public const SETTING_EXTERNAL_LEAD_DAYS = 'resale.auto_external_drafts_lead_days';
+    public const string SETTING_EXTERNAL_LEAD_DAYS = 'resale.auto_external_drafts_lead_days';
 
-    public const AUDIT_EVENT = 'invoice.resale_auto_drafted';
+    public const string AUDIT_EVENT = 'invoice.resale_auto_drafted';
 
-    private const LOCK_SECONDS = 300;
+    private const int LOCK_SECONDS = 300;
 
     public function __construct(
         private readonly ResaleInvoiceDraftService $drafts,

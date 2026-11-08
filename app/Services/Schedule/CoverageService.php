@@ -34,7 +34,7 @@ use Illuminate\Support\Facades\DB;
  */
 class CoverageService implements StaffingCoverage {
     /** Status, die als "tatsächlich besetzt" zählen. */
-    private const ACTUAL_STATUSES = [
+    private const array ACTUAL_STATUSES = [
         ScheduledShiftStatus::Published->value,
         ScheduledShiftStatus::Confirmed->value,
     ];

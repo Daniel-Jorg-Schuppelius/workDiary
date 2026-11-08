@@ -511,10 +511,10 @@ class RenderProfileService {
      * (MVP-650-Feinschliff: Layout in fachlich benannte Einstellungsgruppen
      * aufgefächert — Herkunft/Reset gelten je Einstellung statt en bloc).
      */
-    public const OVERRIDE_SECTIONS = ['margins', 'address', 'blocked_areas', 'footer', 'typography', 'assets', 'block_rules', 'table_style', 'content_texts'];
+    public const array OVERRIDE_SECTIONS = ['margins', 'address', 'blocked_areas', 'footer', 'typography', 'assets', 'block_rules', 'table_style', 'content_texts'];
 
     /** Layout-Untergruppen, die der frühere Sammel-Override 'layout' abdeckte. */
-    public const LAYOUT_SECTIONS = ['margins', 'address', 'blocked_areas', 'footer', 'typography'];
+    public const array LAYOUT_SECTIONS = ['margins', 'address', 'blocked_areas', 'footer', 'typography'];
 
     /** @return array<int, string>|null */
     private function sanitizeOverrideSections(mixed $raw): ?array {
@@ -553,7 +553,7 @@ class RenderProfileService {
      *
      * @var array<string, string>
      */
-    public const FONT_FAMILIES = [
+    public const array FONT_FAMILIES = [
         'dejavu-sans' => 'DejaVu Sans',
         'dejavu-serif' => 'DejaVu Serif',
         'dejavu-mono' => 'DejaVu Sans Mono',

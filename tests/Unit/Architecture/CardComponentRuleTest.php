@@ -34,10 +34,10 @@ use SplFileInfo;
  * wird mit `raw-card-ok` auf derselben oder der Zeile davor markiert.
  */
 final class CardComponentRuleTest extends TestCase {
-    private const MARKER = 'raw-card-ok';
+    private const string MARKER = 'raw-card-ok';
 
     /** Pfade (Regex auf den views-relativen Pfad), die nicht geprüft werden. */
-    private const PATH_EXEMPT = [
+    private const array PATH_EXEMPT = [
         '#^components/#',
         '#^vendor/#',
         '#(^|/)pdf/#i',

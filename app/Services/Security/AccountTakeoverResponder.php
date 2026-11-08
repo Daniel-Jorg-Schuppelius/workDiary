@@ -32,9 +32,9 @@ use Illuminate\Validation\ValidationException;
  * Passkeys fallen mit, weil sie ohne Passwort anmelden.
  */
 final class AccountTakeoverResponder {
-    public const SOURCE_SECURITY_EVENT = 'security_event';
-    public const SOURCE_ORGANIZATION_ADMIN = 'organization_admin';
-    public const SOURCE_SELF = 'self';
+    public const string SOURCE_SECURITY_EVENT = 'security_event';
+    public const string SOURCE_ORGANIZATION_ADMIN = 'organization_admin';
+    public const string SOURCE_SELF = 'self';
 
     public function __construct(
         private readonly UserSessionInvalidator $sessions,

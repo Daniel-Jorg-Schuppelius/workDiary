@@ -38,7 +38,7 @@ class SurveyQuestion extends Model {
     use HasFactory;
     use HasSqid;
 
-    public const TYPES = ['nps', 'scale', 'choice', 'text'];
+    public const array TYPES = ['nps', 'scale', 'choice', 'text'];
 
     protected $fillable = [
         'organization_id', 'survey_id', 'type', 'label', 'options',

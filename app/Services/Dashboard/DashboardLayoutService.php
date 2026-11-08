@@ -36,20 +36,20 @@ use Illuminate\Support\Facades\DB;
  * hat, damit spätere Änderungen an der Klassen-Vorgabe durchschlagen.
  */
 class DashboardLayoutService {
-    public const SETTINGS_GROUP = 'dashboard';
+    public const string SETTINGS_GROUP = 'dashboard';
 
-    public const SETTINGS_KEY = 'default_layout';
+    public const string SETTINGS_KEY = 'default_layout';
 
-    public const SETTINGS_TABS_KEY = 'tabs';
+    public const string SETTINGS_TABS_KEY = 'tabs';
 
     /** Vorgaben je Rolle (MVP-910): Rolle → {layout, tabs}. */
-    public const SETTINGS_ROLES_KEY = 'role_layouts';
+    public const string SETTINGS_ROLES_KEY = 'role_layouts';
 
     /** Präferenz-Schlüssel der nutzereigenen Bereichsliste. */
-    public const PREFERENCE_TABS_KEY = 'dashboard_tabs';
+    public const string PREFERENCE_TABS_KEY = 'dashboard_tabs';
 
     /** Obergrenze für Bereiche — mehr wird zur unübersichtlichen Leiste. */
-    public const MAX_TABS = 8;
+    public const int MAX_TABS = 8;
 
     public function __construct(private readonly WidgetRegistry $registry) {}
 

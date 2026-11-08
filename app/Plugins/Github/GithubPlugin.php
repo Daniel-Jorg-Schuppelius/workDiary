@@ -39,12 +39,12 @@ use Throwable;
  *   das Polling schließt die Lücke.
  */
 class GithubPlugin extends AbstractPlugin implements LinksExternalRecords, TaskSyncer {
-    public const ID = 'github';
+    public const string ID = 'github';
 
-    public const SERVICE_PROVIDER = GithubServiceProvider::class;
+    public const string SERVICE_PROVIDER = GithubServiceProvider::class;
 
     /** ExternalReference-Typ dieses Plugins. */
-    public const EXT_TYPE_ISSUE = 'issue';
+    public const string EXT_TYPE_ISSUE = 'issue';
 
     public function name(): string {
         return 'GitHub Issues';

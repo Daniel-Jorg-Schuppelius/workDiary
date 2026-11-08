@@ -42,10 +42,10 @@ use RuntimeException;
  * dazukommt.
  */
 class LearningJwtCredentialService {
-    public const ALGORITHM = 'rs256';
+    public const string ALGORITHM = 'rs256';
 
     /** 2048 Bit ist die Untergrenze, die Prüfer heute noch akzeptieren. */
-    private const KEY_BITS = 2048;
+    private const int KEY_BITS = 2048;
 
     public function __construct(
         private readonly LearningCredentialService $credentials,

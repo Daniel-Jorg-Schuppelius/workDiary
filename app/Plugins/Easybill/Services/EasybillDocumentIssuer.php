@@ -38,11 +38,11 @@ use RuntimeException;
  * nicht.
  */
 final class EasybillDocumentIssuer implements DocumentIssuer {
-    public const EXT_TYPE_OFFER = 'easybill_offer';
+    public const string EXT_TYPE_OFFER = 'easybill_offer';
 
-    public const EXT_TYPE_ORDER = 'easybill_order';
+    public const string EXT_TYPE_ORDER = 'easybill_order';
 
-    public const EXT_TYPE_DELIVERY = 'easybill_delivery';
+    public const string EXT_TYPE_DELIVERY = 'easybill_delivery';
 
     public function pluginId(): string {
         return EasybillPlugin::ID;

@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\{DB, Schema};
  */
 return new class extends Migration {
     /** @var list<string> Muss mit BelongsToOrganization::ORG_REQUIRED_TABLES übereinstimmen. */
-    private const TABLES = ['invoices', 'time_entries', 'customers', 'tasks', 'suppliers', 'articles', 'timesheets'];
+    private const array TABLES = ['invoices', 'time_entries', 'customers', 'tasks', 'suppliers', 'articles', 'timesheets'];
 
     public function up(): void {
         if (DB::connection()->getDriverName() === 'sqlite') {

@@ -37,10 +37,10 @@ use Throwable;
  */
 class GoogleDriveSubscriptionService {
     /** Kanal-Laufzeit; Google deckelt `changes.watch` bei ~24 Stunden. */
-    private const LIFETIME_SECONDS = 82800; // 23 h
+    private const int LIFETIME_SECONDS = 82800; // 23 h
 
     /** Neu anlegen, wenn weniger als so viele Minuten Restlaufzeit bleiben. */
-    private const RENEW_THRESHOLD_MINUTES = 180;
+    private const int RENEW_THRESHOLD_MINUTES = 180;
 
     /** Push-Kanal der Verbindung sicherstellen; wirft bei API-Fehlern. */
     public function ensure(CloudDocumentConnection $connection): void {

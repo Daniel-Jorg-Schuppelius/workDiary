@@ -35,7 +35,7 @@ class JtlCloudTokenService {
      * Sicherheitsfenster vor Token-Ablauf in Sekunden — entspricht dem
      * bisherigen hasValidCloudToken()-Fenster (2 Minuten).
      */
-    private const EXPIRY_LEEWAY_SECONDS = 120;
+    private const int EXPIRY_LEEWAY_SECONDS = 120;
 
     public function __construct(private readonly PluginHttpFactory $http) {}
 

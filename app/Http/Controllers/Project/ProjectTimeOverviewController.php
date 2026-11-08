@@ -35,9 +35,9 @@ class ProjectTimeOverviewController extends Controller {
     use ResolvesGlobalDateRange;
 
     /** Gruppierung → Spalte, die die Gruppe bildet. */
-    private const GROUP_COLUMNS = ['project' => 'project_id', 'day' => 'date', 'user' => 'user_id'];
+    private const array GROUP_COLUMNS = ['project' => 'project_id', 'day' => 'date', 'user' => 'user_id'];
 
-    private const SORTS = ['date', 'project', 'user', 'minutes', 'task', 'description'];
+    private const array SORTS = ['date', 'project', 'user', 'minutes', 'task', 'description'];
 
     public function __invoke(Request $request): View {
         Gate::authorize('viewAny', Project::class);

@@ -38,7 +38,7 @@ final class PrivateNetworkOptInTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const PRIVATE_URL = 'http://10.0.0.5/remote.php/dav';
+    private const string PRIVATE_URL = 'http://10.0.0.5/remote.php/dav';
 
     protected function setUp(): void {
         parent::setUp();

@@ -19,7 +19,7 @@ use App\Policies\PermissionPolicy;
 class MaintenancePlanPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::AssetView,
         'view' => P::AssetView,
         'create' => P::AssetUpdate,

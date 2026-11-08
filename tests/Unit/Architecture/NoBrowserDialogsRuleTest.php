@@ -26,10 +26,10 @@ use SplFileInfo;
  * `browser-dialog-ok` freigegeben — analog zur trustedServerHtml-Begründung.
  */
 class NoBrowserDialogsRuleTest extends TestCase {
-    private const MARKER = 'browser-dialog-ok';
+    private const string MARKER = 'browser-dialog-ok';
 
     /** Native Dialog-Aufrufe: bare `alert(` sowie `window.alert(` (nicht `foo.prompt(`). */
-    private const PATTERN = '/(?:\bwindow\s*\.\s*(?:alert|confirm|prompt)\s*\()|(?<![\w.])(?:alert|confirm|prompt)\s*\(/';
+    private const string PATTERN = '/(?:\bwindow\s*\.\s*(?:alert|confirm|prompt)\s*\()|(?<![\w.])(?:alert|confirm|prompt)\s*\(/';
 
     public function test_no_native_browser_dialogs_in_frontend(): void {
         $root = dirname(__DIR__, 3);

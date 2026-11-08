@@ -35,11 +35,11 @@ use Illuminate\Support\Str;
  * hat keine Quellspalte, und der Marker überlebt Titeländerungen.
  */
 final class ResaleContractObligationSync {
-    public const MARKER_PREFIX = 'resale:';
+    public const string MARKER_PREFIX = 'resale:';
 
-    public const DEFAULT_NOTICE_DAYS = 30;
+    public const int DEFAULT_NOTICE_DAYS = 30;
 
-    public const WARN_DAYS_BEFORE = 14;
+    public const int WARN_DAYS_BEFORE = 14;
 
     public function __construct(private readonly PeriodPlanner $planner, private readonly ContractObligationSink $contracts) {}
 

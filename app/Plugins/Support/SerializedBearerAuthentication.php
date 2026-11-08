@@ -26,9 +26,9 @@ use Illuminate\Support\Facades\Cache;
  * ({@see self::lock()}), damit kein verspäteter Refresh Tokens zurückschreibt.
  */
 final class SerializedBearerAuthentication extends OAuth2BearerAuthentication {
-    private const LOCK_SECONDS = 60;
+    private const int LOCK_SECONDS = 60;
 
-    private const WAIT_SECONDS = 30;
+    private const int WAIT_SECONDS = 30;
 
     public function __construct(private readonly Model $connection, OAuth2AuthorizationCodeGrant $grant) {
         parent::__construct(new ConnectionTokenStore($connection), $grant);

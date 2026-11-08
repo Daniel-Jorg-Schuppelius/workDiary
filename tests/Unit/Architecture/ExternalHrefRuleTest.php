@@ -27,7 +27,7 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class ExternalHrefRuleTest extends TestCase {
     use ScansSourceTree;
 
-    private const PATTERN = '/\bhref\s*=\s*"\{\{\s*\$[^}]*?(?:->|\[\')(?:[a-z]+_url|permalink|website|homepage)(?:\'\])?\s*(?:\?\?[^}]*)?\}\}"/';
+    private const string PATTERN = '/\bhref\s*=\s*"\{\{\s*\$[^}]*?(?:->|\[\')(?:[a-z]+_url|permalink|website|homepage)(?:\'\])?\s*(?:\?\?[^}]*)?\}\}"/';
 
     public function test_addresses_from_records_are_linked_through_the_external_link_component(): void {
         $violations = [];

@@ -39,7 +39,7 @@ final class GenericSubscriptionReader {
     use ParsesImportValues;
 
     /** @var array<string, list<string>> Zielspalte → erkannte Überschriften (normalisiert) */
-    private const COLUMNS = [
+    private const array COLUMNS = [
         'id' => ['kennung', 'id', 'vertrag', 'vertragsnummer', 'vertragsnr', 'contract', 'contract id', 'entitlement', 'subscription', 'subscription id', 'abo', 'abo-id', 'abo id'],
         'company' => ['firma', 'kunde', 'unternehmen', 'company', 'customer', 'endkunde', 'halter'],
         'product' => ['produkt', 'product', 'edition', 'artikel', 'lizenz', 'license', 'licence', 'leistung', 'bezeichnung'],
@@ -57,15 +57,15 @@ final class GenericSubscriptionReader {
         'currency' => ['währung', 'waehrung', 'currency'],
     ];
 
-    private const REQUIRED = ['company', 'product', 'start'];
+    private const array REQUIRED = ['company', 'product', 'start'];
 
     /** Stückpreise mit vier, Summen mit zwei Nachkommastellen (B19). */
-    private const UNIT_SCALE = 4;
+    private const int UNIT_SCALE = 4;
 
-    private const TOTAL_SCALE = 2;
+    private const int TOTAL_SCALE = 2;
 
     /** „Einkaufspreis (EUR)" / „Preis (netto)" → „einkaufspreis" / „preis" — das Toolkit kennt keinen Einheiten-Zusatz. */
-    private const UNIT_SUFFIX = '/\s*\((?:eur|€|netto|net)\)$/u';
+    private const string UNIT_SUFFIX = '/\s*\((?:eur|€|netto|net)\)$/u';
 
     /**
      * @param  int  $maxRows  Datenzeilen je XLSX-Blatt; darüber bricht der Import ab (kein stilles Kürzen)

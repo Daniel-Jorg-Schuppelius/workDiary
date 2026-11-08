@@ -27,7 +27,7 @@ use ERechnungToolkit\Enums\{GaebChangeOrderInitiator, GaebChangeOrderPhase, Gaeb
  */
 class BoqDocumentFactory {
     /** Beträge mit der Skala der Modelle: GAEB-Einheitspreise tragen 1/10 Cent. */
-    private const PRICE_SCALE = 4;
+    private const int PRICE_SCALE = 4;
 
     public function __construct(private readonly TakeoffService $takeoffs) {}
 

@@ -32,9 +32,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SlaClockSegment extends Model {
     use BelongsToOrganization;
 
-    public const TARGET_REACTION = 'reaction';
+    public const string TARGET_REACTION = 'reaction';
 
-    public const TARGET_RESOLUTION = 'resolution';
+    public const string TARGET_RESOLUTION = 'resolution';
 
     protected $fillable = [
         'organization_id',

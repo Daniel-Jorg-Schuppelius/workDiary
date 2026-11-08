@@ -57,7 +57,7 @@ class SchedulerDocParityTest extends TestCase {
     }
 
     /** @var list<string> Signaturen, die laut Feature-Doku geplant sein müssen */
-    private const DOCUMENTED_COMMANDS = [
+    private const array DOCUMENTED_COMMANDS = [
         'whistleblowing:deadlines',
         'whistleblowing:retention-review',
         'whistleblowing:scan',

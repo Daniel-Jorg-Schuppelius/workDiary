@@ -24,7 +24,7 @@ use Tests\TestCase;
 final class IpBanTest extends TestCase {
     use RefreshDatabase;
 
-    private const IP = '203.0.113.7';
+    private const string IP = '203.0.113.7';
 
     protected function setUp(): void {
         parent::setUp();

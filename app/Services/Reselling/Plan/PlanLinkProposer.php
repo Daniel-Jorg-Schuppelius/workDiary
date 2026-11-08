@@ -32,7 +32,7 @@ use Illuminate\Support\Facades\DB;
  */
 final class PlanLinkProposer {
     /** Rechnungen, in denen eine Vorlage schon berechnet hat, zählen bis zu dieser Rückschau (zwei Jahreszyklen, auch nach einer fehlgeschlagenen Ausführung). */
-    public const INVOICE_LOOKBACK_MONTHS = 25;
+    public const int INVOICE_LOOKBACK_MONTHS = 25;
 
     public function __construct(
         private readonly RecurringPlans $plans,

@@ -278,13 +278,13 @@ class QualificationDossierService {
     }
 
     /** Nachweis deckt jeden Tag des Zeitraums. */
-    public const COVERAGE_FULL = 'full';
+    public const string COVERAGE_FULL = 'full';
 
     /** Nachweis deckt einen Teil des Zeitraums — er beginnt spaeter oder laeuft vorher ab. */
-    public const COVERAGE_PARTIAL = 'partial';
+    public const string COVERAGE_PARTIAL = 'partial';
 
     /** Nachweis deckt keinen einzigen Tag des Zeitraums. */
-    public const COVERAGE_NONE = 'none';
+    public const string COVERAGE_NONE = 'none';
 
     /**
      * Deckung eines Gueltigkeitsintervalls ueber den betrachteten Zeitraum.

@@ -49,11 +49,11 @@ class PeppolDispatchTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const SMP_BASE = 'https://smp.example.test';
+    private const string SMP_BASE = 'https://smp.example.test';
 
-    private const AP_BASE = 'https://ap.example.test/v1';
+    private const string AP_BASE = 'https://ap.example.test/v1';
 
-    private const RECEIVER = '9930:DE987654321';
+    private const string RECEIVER = '9930:DE987654321';
 
     private static int $invoiceNo = 0;
 

@@ -25,7 +25,7 @@ use App\Enums\Dashboard\WidgetWidth;
  * davon ab, was vorher eingeschaltet war.
  */
 class DashboardPresets {
-    public const CLASSIC = 'classic';
+    public const string CLASSIC = 'classic';
 
     public function __construct(private readonly WidgetRegistry $registry) {}
 

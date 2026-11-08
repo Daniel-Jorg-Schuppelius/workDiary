@@ -174,7 +174,7 @@ class SurveyService {
     }
 
     /** Auslöser-Spalten am Fragebogen (Ticket, Kurs, Auftrag). */
-    public const TRIGGERS = ['trigger_on_ticket_close', 'trigger_on_course_completion', 'trigger_on_order_completion'];
+    public const array TRIGGERS = ['trigger_on_ticket_close', 'trigger_on_course_completion', 'trigger_on_order_completion'];
 
     /**
      * Lädt zu allen aktiven Fragebögen mit diesem Auslöser ein (MVP-1293).

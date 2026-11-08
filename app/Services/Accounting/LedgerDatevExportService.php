@@ -35,7 +35,7 @@ use CommonToolkit\ValueObjects\Money;
  */
 class LedgerDatevExportService {
     /** Spaltenköpfe der Übergabedatei. */
-    public const HEADERS = [
+    public const array HEADERS = [
         'Umsatz', 'Soll_Haben', 'Konto', 'Gegenkonto', 'Belegdatum',
         'Belegfeld', 'Buchungstext', 'Journalnummer', 'Steuerkennzeichen',
     ];

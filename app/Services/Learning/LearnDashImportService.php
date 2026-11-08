@@ -45,14 +45,14 @@ use Throwable;
  */
 class LearnDashImportService {
     /** Obergrenzen für die entpackten .ld-Dateien eines Exports (ZIP-Bomben-Schutz). */
-    private const MAX_UNPACKED_BYTES = 512 * 1024 * 1024;
+    private const int MAX_UNPACKED_BYTES = 512 * 1024 * 1024;
 
-    private const MAX_ENTRIES = 5000;
+    private const int MAX_ENTRIES = 5000;
 
     /** ProQuiz-Kopf: „WPQ" + 10 Ziffern, danach Base64 (JSON oder serialize). */
-    private const PROQUIZ_HEADER = 13;
+    private const int PROQUIZ_HEADER = 13;
 
-    private const ANSWER_KINDS = [
+    private const array ANSWER_KINDS = [
         'single' => LearningQuestionKind::Single,
         'multiple' => LearningQuestionKind::Multiple,
         'free_answer' => LearningQuestionKind::ShortText,

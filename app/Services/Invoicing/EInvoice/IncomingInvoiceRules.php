@@ -28,10 +28,10 @@ use Illuminate\Database\Eloquent\Collection;
  */
 class IncomingInvoiceRules {
     /** Priorität der Ausschlüsse aus dem Dialog: vor Nutzerregeln (Standard 100). */
-    public const EXCLUSION_PRIORITY = 50;
+    public const int EXCLUSION_PRIORITY = 50;
 
     /** @var array<string, string> Bedingungsfeld → Textschlüssel */
-    public const FIELD_LABELS = [
+    public const array FIELD_LABELS = [
         'seller_name_key' => 'Verkäufer',
         'buyer_name_key' => 'Käufer',
         'party_name_key' => 'Gegenpartei',
@@ -52,7 +52,7 @@ class IncomingInvoiceRules {
     ];
 
     /** @var array<string, string> Operator → Textschlüssel */
-    public const OP_LABELS = [
+    public const array OP_LABELS = [
         '=' => 'ist', '==' => 'ist', '!=' => 'ist nicht', '<>' => 'ist nicht',
         '<' => 'kleiner als', '<=' => 'höchstens', '>' => 'größer als', '>=' => 'mindestens',
         'in' => 'ist eines von', 'not_in' => 'ist keines von',

@@ -22,7 +22,7 @@ use Tests\TestCase;
  * erlaubt, die Schema-Reihenfolge bleibt verbindlich.
  */
 class HelpArticleSchemaTest extends TestCase {
-    private const LOCALES = ['de', 'en', 'fr', 'it', 'es'];
+    private const array LOCALES = ['de', 'en', 'fr', 'it', 'es'];
 
     public function test_process_articles_carry_the_schema_sections_in_order(): void {
         $loader = new HelpTopicLoader(HelpTopicLoader::defaultPath());

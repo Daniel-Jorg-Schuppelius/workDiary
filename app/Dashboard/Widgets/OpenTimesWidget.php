@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Gate;
  */
 class OpenTimesWidget extends Widget {
     /** Ab wann eine offene Zeit als Altbestand gilt (wie in der Arbeitsliste). */
-    private const STALE_AFTER_DAYS = 45;
+    private const int STALE_AFTER_DAYS = 45;
 
     public function key(): string {
         return 'open-times';

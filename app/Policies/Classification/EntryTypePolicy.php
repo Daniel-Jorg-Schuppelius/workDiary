@@ -17,7 +17,7 @@ use App\Policies\PermissionPolicy;
 class EntryTypePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => Permission::EntryTypeManage,
         'view' => Permission::EntryTypeManage,
         'create' => Permission::EntryTypeManage,

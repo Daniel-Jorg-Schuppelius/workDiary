@@ -34,10 +34,10 @@ use Illuminate\Validation\ValidationException;
  */
 class CustomFieldService {
     /** Listenspalten je Träger — mehr sprengt die Übersicht (Welle 4.6). */
-    public const MAX_LIST_COLUMNS = 3;
+    public const int MAX_LIST_COLUMNS = 3;
 
     /** @var list<class-string<Model>> Träger, die eigene Felder erlauben */
-    public const SUBJECTS = [Customer::class, Supplier::class, Lead::class, DiaryEntry::class, Asset::class, Article::class, Project::class];
+    public const array SUBJECTS = [Customer::class, Supplier::class, Lead::class, DiaryEntry::class, Asset::class, Article::class, Project::class];
 
     /** @var array<string, FieldSchema> Schema je „org:alias" für die Dauer eines Requests */
     private array $schemas = [];

@@ -34,7 +34,7 @@ class SafetyEventController extends Controller {
      *
      * @var array<string, class-string<Model>>
      */
-    private const SUBJECT_MAP = [
+    private const array SUBJECT_MAP = [
         'diary' => DiaryEntry::class,
         'asset' => \App\Models\Asset\Asset::class,
         'room' => \App\Models\Facility\Room::class,

@@ -16,21 +16,21 @@ use RuntimeException;
  * Validierungs- und Schutz-Fehler bei der Klassifikationspflege (MVP-031).
  */
 class ClassificationValidationException extends RuntimeException {
-    public const CODE_INVALID_CODE = 'classification.invalidCode';
+    public const string CODE_INVALID_CODE = 'classification.invalidCode';
 
-    public const CODE_INVALID_LABEL = 'classification.invalidLabel';
+    public const string CODE_INVALID_LABEL = 'classification.invalidLabel';
 
-    public const CODE_INVALID_COLOR = 'classification.invalidColor';
+    public const string CODE_INVALID_COLOR = 'classification.invalidColor';
 
-    public const CODE_DUPLICATE = 'classification.duplicate';
+    public const string CODE_DUPLICATE = 'classification.duplicate';
 
-    public const CODE_REFERENCED = 'classification.referencedByEntities';
+    public const string CODE_REFERENCED = 'classification.referencedByEntities';
 
-    public const CODE_PLATFORM_PROTECTED = 'classification.platformDefaultProtected';
+    public const string CODE_PLATFORM_PROTECTED = 'classification.platformDefaultProtected';
 
-    public const CODE_IMPORT_TOO_LARGE = 'classification.importTooLarge';
+    public const string CODE_IMPORT_TOO_LARGE = 'classification.importTooLarge';
 
-    public const CODE_IMPORT_INVALID = 'classification.importInvalid';
+    public const string CODE_IMPORT_INVALID = 'classification.importInvalid';
 
     public function __construct(
         public readonly string $errorCode,

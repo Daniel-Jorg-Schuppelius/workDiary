@@ -34,7 +34,7 @@ class SustainabilityCriterion extends Model {
 
     protected $table = 'sustainability_criteria';
 
-    public const DIMENSIONS = ['environment', 'social', 'governance'];
+    public const array DIMENSIONS = ['environment', 'social', 'governance'];
 
     protected $fillable = ['organization_id', 'dimension', 'label', 'description', 'weight', 'active'];
 

@@ -22,9 +22,9 @@ use Illuminate\Support\Str;
  * des Punkts (hash-kanonisch, unverändert).
  */
 class DefectField implements FieldExtension {
-    public const KEY = 'protocol.defect';
+    public const string KEY = 'protocol.defect';
 
-    public const SEVERITIES = ['low', 'medium', 'high', 'critical'];
+    public const array SEVERITIES = ['low', 'medium', 'high', 'critical'];
 
     public function key(): string {
         return self::KEY;

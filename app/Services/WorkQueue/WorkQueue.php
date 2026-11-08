@@ -36,11 +36,11 @@ use Throwable;
  */
 final class WorkQueue {
     /** Höchstzahl je Quelle; darüber zählt der Vorrat nur noch. */
-    public const SOURCE_LIMIT = 200;
+    public const int SOURCE_LIMIT = 200;
 
-    private const CACHE_TTL = 60;
+    private const int CACHE_TTL = 60;
 
-    private const CACHE_VERSION = 1;
+    private const int CACHE_VERSION = 1;
 
     public function __construct(private readonly ModuleRegistry $modules) {}
 

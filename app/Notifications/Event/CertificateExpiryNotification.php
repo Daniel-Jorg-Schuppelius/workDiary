@@ -16,9 +16,9 @@ use Carbon\CarbonInterface;
 use Illuminate\Notifications\Messages\MailMessage;
 
 class CertificateExpiryNotification extends DirectNotification {
-    private const TITLE_KEY = 'Zertifikat läuft in :days Tagen ab';
+    private const string TITLE_KEY = 'Zertifikat läuft in :days Tagen ab';
 
-    private const MESSAGE_KEY = 'Ihr Zertifikat für „:title" läuft am :date ab.';
+    private const string MESSAGE_KEY = 'Ihr Zertifikat für „:title" läuft am :date ab.';
 
     public function __construct(
         public readonly int $eventId,

@@ -22,11 +22,11 @@ use App\Services\Ai\Dto\AiCapability;
  * Vorschlag weiter.
  */
 class AiUnavailableException extends AiException {
-    public const REASON_MODULE_INACTIVE = 'module_inactive';
-    public const REASON_CAPABILITY_DISABLED = 'capability_disabled';
-    public const REASON_NO_CONNECTION = 'no_connection';
-    public const REASON_CONNECTION_NOT_ALLOWED = 'connection_not_allowed';
-    public const REASON_ALL_FAILED = 'all_failed';
+    public const string REASON_MODULE_INACTIVE = 'module_inactive';
+    public const string REASON_CAPABILITY_DISABLED = 'capability_disabled';
+    public const string REASON_NO_CONNECTION = 'no_connection';
+    public const string REASON_CONNECTION_NOT_ALLOWED = 'connection_not_allowed';
+    public const string REASON_ALL_FAILED = 'all_failed';
 
     private function __construct(
         public readonly string $reason,

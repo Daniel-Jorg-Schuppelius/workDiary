@@ -21,15 +21,15 @@ use App\Plugins\Lexoffice\Enums\{LexwareCoverage, LexwareFeature};
  * und Backend fragen dieselbe Auflösung — nie verstreute if-Ketten.
  */
 final class FeatureAvailability {
-    public const STATE_LEXWARE = 'lexware';
+    public const string STATE_LEXWARE = 'lexware';
 
-    public const STATE_AVAILABLE = 'available';
+    public const string STATE_AVAILABLE = 'available';
 
-    public const STATE_SETUP_REQUIRED = 'setup_required';
+    public const string STATE_SETUP_REQUIRED = 'setup_required';
 
-    public const STATE_CHECK_AVAILABILITY = 'check_availability';
+    public const string STATE_CHECK_AVAILABILITY = 'check_availability';
 
-    public const STATE_PLANNED = 'planned';
+    public const string STATE_PLANNED = 'planned';
 
     /**
      * @param array<string, string> $actionParameters

@@ -35,13 +35,13 @@ final class QualityHostingPriceListReader {
     use OpensXlsxDocuments;
     use ParsesImportValues;
 
-    private const REQUIRED = ['produkttarif', 'vertragslaufzeit in monaten', 'zahlungsintervall', 'preis pro zahlungsintervall'];
+    private const array REQUIRED = ['produkttarif', 'vertragslaufzeit in monaten', 'zahlungsintervall', 'preis pro zahlungsintervall'];
 
     /** @var list<string> Kannspalten (leer, wenn sie fehlen) */
-    private const OPTIONAL = ['preis pro monat', 'gültig ab', 'hersteller-uvp pro monat', 'hersteller-uvp pro zahlungsintervall', 'offer-key'];
+    private const array OPTIONAL = ['preis pro monat', 'gültig ab', 'hersteller-uvp pro monat', 'hersteller-uvp pro zahlungsintervall', 'offer-key'];
 
     /** Stückpreise (je Monat/Intervall) mit vier Nachkommastellen (B19). */
-    private const UNIT_SCALE = 4;
+    private const int UNIT_SCALE = 4;
 
     public function read(string $file, ?string $displayName = null): PriceList {
         $name = $displayName ?? basename($file);

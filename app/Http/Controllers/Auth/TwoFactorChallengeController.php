@@ -30,16 +30,16 @@ class TwoFactorChallengeController extends Controller {
 
     use SendsEmailOtpChallenge;
 
-    private const MAX_ATTEMPTS = 5;
+    private const int MAX_ATTEMPTS = 5;
 
     /**
      * Zusätzlicher Zähler je Konto — unabhängig von der Adresse. Der
      * Nutzer+IP-Zähler allein ließ verteiltes Raten des sechsstelligen Codes zu,
      * sobald das Passwort bekannt war (Sicherheitsaudit 2026-09-17, 2fa-1).
      */
-    private const MAX_USER_ATTEMPTS = 10;
+    private const int MAX_USER_ATTEMPTS = 10;
 
-    private const USER_DECAY_SECONDS = 900;
+    private const int USER_DECAY_SECONDS = 900;
 
     public function __construct(
         private readonly TwoFactorService $twoFactor,

@@ -34,7 +34,7 @@ use InvalidArgumentException;
  */
 final class CarrierTokenCache {
     /** Sicherheitsfenster: so viele Sekunden vor Ablauf fällt der Eintrag aus dem Cache. */
-    private const EXPIRY_LEEWAY_SECONDS = 60;
+    private const int EXPIRY_LEEWAY_SECONDS = 60;
 
     /** Liefert den abgelegten Token oder null (nichts gecacht, abgelaufen oder nicht entschlüsselbar). */
     public function get(CarrierConnection $connection): ?OAuth2Token {

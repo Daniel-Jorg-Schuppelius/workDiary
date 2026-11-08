@@ -35,7 +35,7 @@ use PDOException;
  */
 final class MariaDbSnapshotIsolation {
     /** Erste Version je Zweig, die die Variable kennt; ab {@see INTRODUCED_ALL_BRANCHES} jeder Zweig. */
-    private const INTRODUCED = [
+    private const array INTRODUCED = [
         '10.6' => '10.6.18',
         '10.11' => '10.11.8',
         '11.0' => '11.0.6',
@@ -43,7 +43,7 @@ final class MariaDbSnapshotIsolation {
         '11.2' => '11.2.4',
     ];
 
-    private const INTRODUCED_ALL_BRANCHES = '11.4.2';
+    private const string INTRODUCED_ALL_BRANCHES = '11.4.2';
 
     /**
      * MariaDB-Version aus der Versionskennung des Handshakes

@@ -23,7 +23,7 @@ use Illuminate\Database\Seeder;
  * sind Datenpflege (frame_version), kein Release.
  */
 class AssetComplianceCatalogSeeder extends Seeder {
-    public const FRAME_VERSION = '2026-07';
+    public const string FRAME_VERSION = '2026-07';
 
     public function run(): void {
         $profiles = [

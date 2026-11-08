@@ -60,7 +60,7 @@ class InvestmentCase extends Model {
     use HasFactory;
     use HasSqid;
 
-    public const CATEGORIES = ['replacement', 'expansion', 'project', 'machine', 'it', 'infrastructure', 'inventory', 'compliance'];
+    public const array CATEGORIES = ['replacement', 'expansion', 'project', 'machine', 'it', 'infrastructure', 'inventory', 'compliance'];
 
     protected $fillable = [
         'organization_id', 'title', 'category', 'reason', 'objective', 'urgency',

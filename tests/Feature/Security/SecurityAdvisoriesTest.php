@@ -29,7 +29,7 @@ final class SecurityAdvisoriesTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const VULN_ID = 'GHSA-test-1234';
+    private const string VULN_ID = 'GHSA-test-1234';
 
     /** Steuert das Fake-Verhalten — Http::fake-Callbacks stapeln sich, daher
      *  EIN Callback, der diese Properties zur Laufzeit liest. */

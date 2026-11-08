@@ -45,7 +45,7 @@ class ClubResource extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const MAX_DEPTH = 4;
+    public const int MAX_DEPTH = 4;
 
     protected $fillable = [
         'organization_id', 'parent_id', 'room_id', 'asset_id', 'name', 'kind', 'capacity', 'setup_minutes', 'teardown_minutes',

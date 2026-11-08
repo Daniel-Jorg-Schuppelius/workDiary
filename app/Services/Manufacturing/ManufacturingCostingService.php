@@ -40,7 +40,7 @@ use CommonToolkit\Helper\Data\NumberHelper;
  * @phpstan-type ArticleCosting array{orders: list<ArticleCostingOrder>, groups: list<ArticleCostingGroup>, order_count: int, planned_material: numeric-string, actual_material: numeric-string, labor: numeric-string, total: numeric-string, planned_minutes: int, actual_minutes: int, good: numeric-string, scrap: numeric-string, unit_cost_avg: numeric-string, unit_cost_min: ?numeric-string, unit_cost_max: ?numeric-string, deviation_abs: numeric-string, deviation_pct: ?numeric-string, minutes_deviation: int, quality: array{produced: numeric-string, good: numeric-string, scrap: numeric-string, rework: numeric-string, yield: numeric-string, scrap_rate: numeric-string, rework_rate: numeric-string}}
  */
 class ManufacturingCostingService {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     public function __construct(private readonly ManufacturingQualityService $quality) {}
 

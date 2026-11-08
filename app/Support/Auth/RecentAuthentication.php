@@ -25,7 +25,7 @@ use Illuminate\Http\Request;
  * ({@see \Illuminate\Auth\Middleware\RequirePassword}, `auth.password_timeout`).
  */
 final class RecentAuthentication {
-    public const SESSION_KEY = 'auth.password_confirmed_at';
+    public const string SESSION_KEY = 'auth.password_confirmed_at';
 
     /** Sekunden, die eine Anmeldung/Bestätigung als „frisch" gilt. */
     public static function timeout(): int {

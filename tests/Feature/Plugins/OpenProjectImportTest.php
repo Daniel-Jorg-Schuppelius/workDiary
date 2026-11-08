@@ -28,7 +28,7 @@ class OpenProjectImportTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const BASE = 'https://op.example.test/api/v3';
+    private const string BASE = 'https://op.example.test/api/v3';
 
     protected function setUp(): void {
         parent::setUp();

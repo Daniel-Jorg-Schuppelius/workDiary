@@ -19,7 +19,7 @@ use Tests\TestCase;
 class BackupHeartbeatEndpointTest extends TestCase {
     use RefreshDatabase;
 
-    private const TOKEN = 'TEST-HEARTBEAT-TOKEN-1234567890ABCDEF';
+    private const string TOKEN = 'TEST-HEARTBEAT-TOKEN-1234567890ABCDEF';
 
     protected function setUp(): void {
         parent::setUp();

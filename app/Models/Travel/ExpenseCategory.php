@@ -43,21 +43,21 @@ class ExpenseCategory extends Model {
     use HasFactory;
     use HasSqid;
 
-    public const SLUG_MEALS = 'meals';
+    public const string SLUG_MEALS = 'meals';
 
-    public const SLUG_LODGING = 'lodging';
+    public const string SLUG_LODGING = 'lodging';
 
-    public const SLUG_HOSPITALITY = 'hospitality';
+    public const string SLUG_HOSPITALITY = 'hospitality';
 
-    public const SLUG_TICKETS = 'tickets';
+    public const string SLUG_TICKETS = 'tickets';
 
-    public const SLUG_PARKING = 'parking';
+    public const string SLUG_PARKING = 'parking';
 
-    public const SLUG_SUPPLIES = 'supplies';
+    public const string SLUG_SUPPLIES = 'supplies';
 
-    public const SLUG_TELECOM = 'telecom';
+    public const string SLUG_TELECOM = 'telecom';
 
-    public const SLUG_OTHER = 'other';
+    public const string SLUG_OTHER = 'other';
 
     protected $fillable = [
         'organization_id',

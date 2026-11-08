@@ -38,7 +38,7 @@ use Illuminate\Support\Facades\{DB, Schema};
  */
 return new class extends Migration {
     /** @var list<array{0: string, 1: string, 2: string}> Tabelle, Spalte, FK-Name */
-    private const EVIDENCE_FKS = [
+    private const array EVIDENCE_FKS = [
         ['protocols', 'created_by_user_id', 'protocols_created_by_user_id_foreign'],
         ['documents', 'created_by_user_id', 'documents_created_by_user_id_foreign'],
         ['disposal_jobs', 'created_by_user_id', 'disposal_jobs_created_by_user_id_foreign'],

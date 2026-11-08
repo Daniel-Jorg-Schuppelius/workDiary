@@ -33,7 +33,7 @@ class OrgIdFromUserRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad → Begründung / Nachzieh-Welle */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         // Fachlich korrekt: Kontaktdaten gehören zur Org des BEARBEITETEN Users.
         'app/Http/Controllers/Concerns/ManagesUserContactDetails.php' => 'Adresse/Bank des bearbeiteten Users — dessen Org ist die richtige.',
         // Portal-Gast: eigener Guard ohne Admin-Override, Org des Portal-Users ist die richtige.

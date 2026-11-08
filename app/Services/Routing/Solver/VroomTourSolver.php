@@ -28,7 +28,7 @@ use GuzzleHttp\Exception\ConnectException;
  */
 final class VroomTourSolver implements TourSolver {
     /** Unerreichbar: VROOM kennt kein INF, ein Tag an Sekunden reicht als Sperre. */
-    private const UNREACHABLE = 86_400 * 7;
+    private const int UNREACHABLE = 86_400 * 7;
 
     /** @param array<string, mixed> $config base_url, timeout */
     public function __construct(

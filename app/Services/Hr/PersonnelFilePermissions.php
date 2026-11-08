@@ -25,21 +25,21 @@ use App\Services\Concerns\SeedsIsolatedPermissionSet;
 final class PersonnelFilePermissions {
     use SeedsIsolatedPermissionSet;
 
-    public const ROLE_PERSONALAKTE = 'personalakte';
+    public const string ROLE_PERSONALAKTE = 'personalakte';
 
     /** Trait-Vertrag ({@see SeedsIsolatedPermissionSet}). */
-    public const ROLE = self::ROLE_PERSONALAKTE;
+    public const string ROLE = self::ROLE_PERSONALAKTE;
 
-    public const VIEW_ANY = 'hrFile.viewAny';
+    public const string VIEW_ANY = 'hrFile.viewAny';
 
-    public const CREATE = 'hrFile.create';
+    public const string CREATE = 'hrFile.create';
 
-    public const UPDATE = 'hrFile.update';
+    public const string UPDATE = 'hrFile.update';
 
-    public const DELETE = 'hrFile.delete';
+    public const string DELETE = 'hrFile.delete';
 
     /** @var list<string> */
-    public const ALL = [
+    public const array ALL = [
         self::VIEW_ANY,
         self::CREATE,
         self::UPDATE,

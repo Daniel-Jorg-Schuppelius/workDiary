@@ -16,7 +16,7 @@ use App\Policies\PermissionPolicy;
 class ExpenseCategoryPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => true, // Kategorienliste lesen dürfen alle (z. B. Select)
         'view' => true,
         'create' => false, // Verwaltung nur Admin (before-Hook)

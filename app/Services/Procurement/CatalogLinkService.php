@@ -30,7 +30,7 @@ use RuntimeException;
  */
 class CatalogLinkService {
     /** Schwelle des Namens-Fuzzy (wie {@see \App\Services\Integration\Match\FuzzyField}). */
-    private const FUZZY_THRESHOLD = 0.86;
+    private const float FUZZY_THRESHOLD = 0.86;
 
     /**
      * Verknüpft verbindlich und pflegt die Bezugsquelle des Lieferanten.

@@ -22,7 +22,7 @@ use App\Policies\PermissionPolicy;
 class EmployeeDraftPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::RecruitingViewAny,
         'view' => P::RecruitingView,
         'update' => P::RecruitingManage,

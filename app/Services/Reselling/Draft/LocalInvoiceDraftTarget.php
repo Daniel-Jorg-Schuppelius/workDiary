@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\{DB, Route};
  * vorgeschlagenen Verknüpfungen an. Gilt bei lokaler Rechnungshoheit.
  */
 final class LocalInvoiceDraftTarget implements InvoiceDraftTarget {
-    public const KEY = 'local';
+    public const string KEY = 'local';
 
     public function __construct(
         private readonly TaxResolver $taxes,

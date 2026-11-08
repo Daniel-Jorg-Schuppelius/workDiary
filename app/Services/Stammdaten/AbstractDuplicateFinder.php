@@ -27,12 +27,12 @@ use Illuminate\Support\Collection;
  */
 abstract class AbstractDuplicateFinder {
     /** Stufen entsprechen {@see MatchStrategy}; Konstanten für UI/Tests. */
-    public const CONF_EXACT = MatchStrategy::EXACT;
-    public const CONF_LIKELY = MatchStrategy::LIKELY;
-    public const CONF_FUZZY = MatchStrategy::FUZZY;
+    public const string CONF_EXACT = MatchStrategy::EXACT;
+    public const string CONF_LIKELY = MatchStrategy::LIKELY;
+    public const string CONF_FUZZY = MatchStrategy::FUZZY;
 
     /** @var array<string, int> */
-    protected const RANK = [
+    protected const array RANK = [
         MatchStrategy::FUZZY => 1,
         MatchStrategy::LIKELY => 2,
         MatchStrategy::EXACT => 3,

@@ -41,7 +41,7 @@ use Illuminate\Support\Facades\{DB, Storage};
  * Änderung wirkt nur auf künftige Versuche.
  */
 class LearningQuestionEditorService {
-    public const ATTACHMENT_FOLDER = 'learning-questions';
+    public const string ATTACHMENT_FOLDER = 'learning-questions';
 
     public function __construct(
         private readonly FileAttacher $attacher,

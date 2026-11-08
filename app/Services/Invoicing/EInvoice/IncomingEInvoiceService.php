@@ -34,7 +34,7 @@ use Throwable;
  */
 class IncomingEInvoiceService {
     /** Kleinere Bilder sind Logos oder Signaturbilder, keine fotografierten Belege. */
-    private const MIN_IMAGE_BYTES = 20_000;
+    private const int MIN_IMAGE_BYTES = 20_000;
 
     /**
      * Versucht, Dateiinhalt als E-Rechnung zu parsen. `null`, wenn es keine
@@ -493,7 +493,7 @@ class IncomingEInvoiceService {
     }
 
     /** Felder, die eine erkannte Begleitdatei an einer strukturierten Leitdatei ergänzen darf (MVP-1247). */
-    private const COMPANION_FIELDS = ['number', 'seller', 'seller_vat', 'issue_date', 'due_date', 'creditor_iban', 'creditor_bic'];
+    private const array COMPANION_FIELDS = ['number', 'seller', 'seller_vat', 'issue_date', 'due_date', 'creditor_iban', 'creditor_bic'];
 
     /**
      * Leere Felder der strukturierten Leitdatei aus der erkannten Begleitdatei

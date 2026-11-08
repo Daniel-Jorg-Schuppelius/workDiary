@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 final class SearchContextObserver {
     /** @var array<class-string<Model>, array{column: string, attributes: list<string>}> */
-    private const WATCHED = [
+    private const array WATCHED = [
         Project::class => ['column' => 'project_id', 'attributes' => ['name', 'number', 'description', 'keywords', 'customer_id', 'foreign_customer_id']],
         ForeignCustomer::class => ['column' => 'foreign_customer_id', 'attributes' => ['name', 'number', 'company', 'matchcode', 'contact_name', 'customer_id']],
         Customer::class => ['column' => 'customer_id', 'attributes' => ['name', 'number', 'company']],

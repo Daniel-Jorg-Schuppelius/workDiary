@@ -46,16 +46,16 @@ class DocumentDispatch extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const CHANNEL_EMAIL = 'email';
+    public const string CHANNEL_EMAIL = 'email';
 
-    public const CHANNEL_DOWNLOAD = 'download';
+    public const string CHANNEL_DOWNLOAD = 'download';
 
-    public const CHANNEL_PEPPOL = 'peppol';
+    public const string CHANNEL_PEPPOL = 'peppol';
 
-    public const CHANNEL_STORAGE = 'storage';
+    public const string CHANNEL_STORAGE = 'storage';
     // Zugangsnachweis ausserhalb der App (Einschreiben, Bote, persoenliche
     // Uebergabe, Fax) — Details stehen in `meta` (H23, MVP-728).
-    public const CHANNEL_MANUAL = 'manual';
+    public const string CHANNEL_MANUAL = 'manual';
 
     protected $fillable = [
         'organization_id', 'invoice_id', 'document_kind', 'document_id',

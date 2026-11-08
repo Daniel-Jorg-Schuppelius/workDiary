@@ -44,7 +44,7 @@ final class SharepointMirrorTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const GRAPH = 'https://graph.microsoft.com/v1.0';
+    private const string GRAPH = 'https://graph.microsoft.com/v1.0';
 
     private User $user;
 

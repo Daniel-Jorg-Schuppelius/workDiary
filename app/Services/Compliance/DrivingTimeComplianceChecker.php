@@ -28,32 +28,32 @@ use Carbon\CarbonImmutable;
  *  list<array{started_at: CarbonImmutable, ended_at: CarbonImmutable}>
  */
 final class DrivingTimeComplianceChecker {
-    public const CATEGORY = 'drivingTime';
+    public const string CATEGORY = 'drivingTime';
 
     /** Art. 6 Abs. 1: Tageslenkzeit > 9 h (bzw. > 10 h / dritte Verlängerung). */
-    public const KIND_DAILY_DRIVING = 'dailyDriving';
+    public const string KIND_DAILY_DRIVING = 'dailyDriving';
 
     /** Art. 6 Abs. 2: Wochenlenkzeit > 56 h. */
-    public const KIND_WEEKLY_DRIVING = 'weeklyDriving';
+    public const string KIND_WEEKLY_DRIVING = 'weeklyDriving';
 
     /** Art. 6 Abs. 3: Doppelwoche > 90 h. */
-    public const KIND_FORTNIGHT_DRIVING = 'fortnightDriving';
+    public const string KIND_FORTNIGHT_DRIVING = 'fortnightDriving';
 
     /** Art. 7: Lenkzeit > 4,5 h ohne gültige Fahrtunterbrechung. */
-    public const KIND_BREAK_MISSING = 'drivingBreakMissing';
+    public const string KIND_BREAK_MISSING = 'drivingBreakMissing';
 
     /** Art. 8 Abs. 2/4: tägliche Ruhezeit < 9 h bzw. vierte Reduzierung der Woche. */
-    public const KIND_DAILY_REST = 'dailyRest';
+    public const string KIND_DAILY_REST = 'dailyRest';
 
     /** Art. 8 Abs. 6: wöchentliche Ruhezeit < 24 h bzw. zweimal reduziert in Folge. */
-    public const KIND_WEEKLY_REST = 'weeklyRest';
+    public const string KIND_WEEKLY_REST = 'weeklyRest';
 
     /** Vorlauf in Tagen, den der Aufrufer vor `from` laden muss (Doppelwoche + Wochenruhezeit). */
-    public const LOOKBACK_DAYS = 21;
+    public const int LOOKBACK_DAYS = 21;
 
-    public const ROLE_DRIVER = 'driver';
+    public const string ROLE_DRIVER = 'driver';
 
-    public const ROLE_CO_DRIVER = 'co_driver';
+    public const string ROLE_CO_DRIVER = 'co_driver';
 
     /** @return list<string> */
     public static function kinds(): array {

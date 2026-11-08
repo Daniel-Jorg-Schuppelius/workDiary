@@ -31,7 +31,7 @@ use Throwable;
  * registriert"), nur Transportfehler werfen.
  */
 final class SmpHttpClient implements SmpHttpClientInterface {
-    public const SERVICE_ID = 'peppol-smp';
+    public const string SERVICE_ID = 'peppol-smp';
 
     public function get(string $url): SmpResponse {
         try {

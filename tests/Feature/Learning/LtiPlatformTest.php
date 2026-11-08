@@ -35,7 +35,7 @@ class LtiPlatformTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const REDIRECT = 'https://tool.example.org/lti/launch';
+    private const string REDIRECT = 'https://tool.example.org/lti/launch';
 
     private static ?JWK $toolKey = null;
 

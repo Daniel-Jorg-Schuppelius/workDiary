@@ -45,18 +45,18 @@ use Psr\Http\Message\StreamInterface;
  * Kalender-Verbindung getrennte {@see CloudDocumentConnection}s.
  */
 class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\ContactSyncer, \App\Plugins\Contracts\DocumentIntakeSubscriptions, \App\Plugins\Contracts\IntakeSourceConnector, \App\Plugins\Contracts\SlotRenderer, \App\Plugins\Contracts\TaskSyncer, BackupTarget, CalendarPublisher, DocumentIntakeSource {
-    public const ID = 'msgraph';
+    public const string ID = 'msgraph';
 
     /** Wert in `email_connections.transport` für Graph-Postfächer (Feature 102). */
-    public const MAIL_TRANSPORT = 'msgraph';
+    public const string MAIL_TRANSPORT = 'msgraph';
 
-    public const SERVICE_PROVIDER = MsgraphServiceProvider::class;
+    public const string SERVICE_PROVIDER = MsgraphServiceProvider::class;
 
     /** ExternalReference-Typ des Kontakt-Pushs (Schnitt D). */
-    public const EXT_TYPE_CONTACT = 'contact';
+    public const string EXT_TYPE_CONTACT = 'contact';
 
     /** ExternalReference-Typ des To-Do-Syncs (Schnitt E). */
-    public const EXT_TYPE_TODO_TASK = 'todo_task';
+    public const string EXT_TYPE_TODO_TASK = 'todo_task';
 
     public function name(): string {
         return 'Microsoft 365';

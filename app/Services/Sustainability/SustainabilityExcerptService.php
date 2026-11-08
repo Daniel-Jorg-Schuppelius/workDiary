@@ -29,15 +29,15 @@ use CommonToolkit\Helper\Data\NumberHelper;
  * Konformitäts- oder Klimaneutralitätsbehauptung.
  */
 class SustainabilityExcerptService extends OrganizationAccessToken implements PortalNoticeSource {
-    public const HASH_KEY = 'sustainability_excerpt_token_hash';
+    public const string HASH_KEY = 'sustainability_excerpt_token_hash';
 
-    public const HINT_KEY = 'sustainability_excerpt_token_hint';
+    public const string HINT_KEY = 'sustainability_excerpt_token_hint';
 
-    public const ISSUED_KEY = 'sustainability_excerpt_token_issued_at';
+    public const string ISSUED_KEY = 'sustainability_excerpt_token_issued_at';
 
-    public const ENABLED_KEY = 'sustainability_excerpt_enabled';
+    public const string ENABLED_KEY = 'sustainability_excerpt_enabled';
 
-    public const PUBLISH_KEY = 'sustainability_excerpt';
+    public const string PUBLISH_KEY = 'sustainability_excerpt';
 
     public function __construct(private readonly ModuleStatusResolver $modules) {}
 

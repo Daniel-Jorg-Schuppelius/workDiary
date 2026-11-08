@@ -27,7 +27,7 @@ class RawEchoRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Repo-relativer Pfad → Begründung */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         // Vom Server erzeugtes, nicht nutzerbestimmtes Markup
         'resources/views/components/status-badge.blade.php' => 'Icon-Markup aus dem eigenen Icon-Satz.',
         'resources/views/components/empty-state.blade.php' => 'Icon-Markup aus dem eigenen Icon-Satz.',

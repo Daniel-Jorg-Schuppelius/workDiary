@@ -34,16 +34,16 @@ use Illuminate\Support\Str;
  * kein laufender Abgleich.
  */
 class KnowledgeImportService {
-    public const TARGET_NOTE = 'note';
+    public const string TARGET_NOTE = 'note';
 
-    public const TARGET_ARTICLE = 'knowledge_article';
+    public const string TARGET_ARTICLE = 'knowledge_article';
 
     /** Obergrenze neuer Inhalte je Lauf; ein weiterer Lauf setzt fort. */
-    public const MAX_DOCUMENTS = 300;
+    public const int MAX_DOCUMENTS = 300;
 
-    private const NOTE_BODY_MAX = 8000;
+    private const int NOTE_BODY_MAX = 8000;
 
-    private const ARTICLE_PROBLEM_MAX = 10000;
+    private const int ARTICLE_PROBLEM_MAX = 10000;
 
     public function __construct(
         private readonly ContentCollectionService $collections,

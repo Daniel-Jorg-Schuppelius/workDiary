@@ -47,11 +47,11 @@ class SevDeskTarget implements FacturationTarget {
     use ProjectsContactReference;
     use ReconcilesByMarker;
 
-    public const EXT_TYPE_INVOICE = 'sevdesk_invoice';
+    public const string EXT_TYPE_INVOICE = 'sevdesk_invoice';
 
-    public const EXT_TYPE_CONTACT = 'contact';
+    public const string EXT_TYPE_CONTACT = 'contact';
 
-    public const MARKER_PREFIX = 'workdiary:';
+    public const string MARKER_PREFIX = 'workdiary:';
 
     public function __construct(
         private readonly BillingPositionBuilder $positionBuilder,

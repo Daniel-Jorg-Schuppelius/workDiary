@@ -34,7 +34,7 @@ class PluginSchemaLifecycleTest extends TestCase {
     use MigratedWithoutTransaction;
 
     /** Migrationsdatei aus tests/Fixtures/plugin-migrations (ohne .php). */
-    private const PROBE_MIGRATION = '2026_01_01_000000_create_wd_schema_probe_table';
+    private const string PROBE_MIGRATION = '2026_01_01_000000_create_wd_schema_probe_table';
 
     protected function tearDown(): void {
         // Ohne Transaktion überlebt jeder Schreibvorgang den Test — die drei

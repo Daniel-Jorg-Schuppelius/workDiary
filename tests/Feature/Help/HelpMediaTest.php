@@ -27,7 +27,7 @@ class HelpMediaTest extends TestCase {
     private string $mediaRoot;
 
     /** 1×1-PNG (67 Bytes) als kleinstmögliche echte Bilddatei. */
-    private const PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+    private const string PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
     protected function setUp(): void {
         parent::setUp();

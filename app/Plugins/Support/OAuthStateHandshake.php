@@ -24,7 +24,7 @@ use Illuminate\Support\Str;
  * (Prefix aus dem Aufrufer).
  */
 final class OAuthStateHandshake {
-    private const STATE_TTL_SECONDS = 600;
+    private const int STATE_TTL_SECONDS = 600;
 
     public function __construct(private readonly string $cachePrefix) {}
 

@@ -66,7 +66,7 @@ class PluginBootIsolationTest extends TestCase {
 final class BootDupPluginA implements Plugin {
     use PluginDefaults;
 
-    public const ID = 'wd-dup-test';
+    public const string ID = 'wd-dup-test';
 
     public function id(): string {
         return self::ID;
@@ -100,7 +100,7 @@ final class BootDupPluginA implements Plugin {
 final class BootDupPluginB implements Plugin {
     use PluginDefaults;
 
-    public const ID = 'wd-dup-test';
+    public const string ID = 'wd-dup-test';
 
     public function id(): string {
         return self::ID;
@@ -134,7 +134,7 @@ final class BootDupPluginB implements Plugin {
 final class BootBoomPlugin implements Plugin {
     use PluginDefaults;
 
-    public const ID = 'wd-boom-test';
+    public const string ID = 'wd-boom-test';
 
     public function __construct() {
         throw new \RuntimeException('constructor boom');

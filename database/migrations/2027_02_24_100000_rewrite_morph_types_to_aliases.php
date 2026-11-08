@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\{DB, Schema};
  */
 return new class extends Migration {
     /** @var list<array{0: string, 1: string}> Tabelle, Typspalte — Stand des Schemas am 2026-09-23 */
-    private const COLUMNS = [
+    private const array COLUMNS = [
         ['accounting_entries', 'source_type'],
         ['accounting_entry_lines', 'counterparty_type'],
         ['accounting_migration_items', 'referenceable_type'],

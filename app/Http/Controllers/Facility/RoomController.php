@@ -27,7 +27,7 @@ class RoomController extends Controller {
 
     use ResolvesGlobalDateRange;
 
-    private const ALLOWED_SORTS = ['name', 'code', 'capacity', 'is_active'];
+    private const array ALLOWED_SORTS = ['name', 'code', 'capacity', 'is_active'];
 
     public function index(Request $request, RoomBookingService $bookings): View {
         Gate::authorize('viewAny', Room::class);

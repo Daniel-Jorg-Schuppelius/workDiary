@@ -27,7 +27,7 @@ class JournalContractRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Fachobjekte, die nur so heißen — kein Journal */
-    private const NOT_A_JOURNAL = [
+    private const array NOT_A_JOURNAL = [
         'App\Models\Calendar\Event' => 'Kalendertermin.',
         'App\Models\Safety\SafetyEvent' => 'Arbeitsschutz-Ereignis mit eigenem Lebenszyklus (Feature 132).',
         'App\Models\Domain\DomainEvent' => 'Domain-Vorgang (Feature 083), bearbeitbar.',

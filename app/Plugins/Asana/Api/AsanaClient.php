@@ -29,7 +29,7 @@ use Generator;
 class AsanaClient {
     use GuardsPluginApiResponses;
 
-    public const TASK_FIELDS = 'gid,name,notes,completed,due_on,due_at,permalink_url,workspace.gid,memberships.project.gid';
+    public const string TASK_FIELDS = 'gid,name,notes,completed,due_on,due_at,permalink_url,workspace.gid,memberships.project.gid';
 
     private ?PluginApiClient $api = null;
 

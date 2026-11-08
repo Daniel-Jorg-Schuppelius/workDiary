@@ -36,7 +36,7 @@ use Illuminate\Support\Facades\{DB, Storage};
  */
 class ReleaseManifestService {
     /** Speicher-Pfad (relativ zur local-Disk) für das erzeugte Manifest. */
-    public const STORAGE_PATH = 'release/release.json';
+    public const string STORAGE_PATH = 'release/release.json';
 
     public function __construct(
         private readonly PluginManager $plugins,

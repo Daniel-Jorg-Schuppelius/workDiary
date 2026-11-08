@@ -28,7 +28,7 @@ use Symfony\Component\HttpFoundation\Response;
  * schicken keine, Dialog-fetches kommen als ajax() mit `?dialog=1`.
  */
 class RenderDialogFragmentAsPage {
-    private const FRAGMENT_VIEW = '/(^|[.\/])_[\w-]*dialog[\w-]*$/';
+    private const string FRAGMENT_VIEW = '/(^|[.\/])_[\w-]*dialog[\w-]*$/';
 
     public function handle(Request $request, Closure $next): Response {
         $response = $next($request);

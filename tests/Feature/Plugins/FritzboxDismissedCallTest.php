@@ -37,7 +37,7 @@ class FritzboxDismissedCallTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const NUMBER = '+492219567000';
+    private const string NUMBER = '+492219567000';
 
     private User $owner;
 

@@ -32,9 +32,9 @@ use Throwable;
  * ISO-Zeitstempel.
  */
 final class SidebarNewsFeedService {
-    public const CACHE_KEY = 'ui.news_feed.payload';
+    public const string CACHE_KEY = 'ui.news_feed.payload';
 
-    private const MAX_BODY_BYTES = 524_288;
+    private const int MAX_BODY_BYTES = 524_288;
 
     public function __construct(private readonly \App\Plugins\Support\PluginHttpFactory $http) {}
 

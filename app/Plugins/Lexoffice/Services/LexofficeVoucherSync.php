@@ -44,10 +44,10 @@ class LexofficeVoucherSync {
     private ?Client $client = null;
 
     /** Rechnungen, deren Positionen je Sync-Lauf nachgeladen werden (Ratenlimit). */
-    private const LINES_PER_RUN = 100;
+    private const int LINES_PER_RUN = 100;
 
     /** Nach so vielen Tagen wird ein Beleg ohne Zahlungsdatum erneut bei Lexoffice gefragt (perf-06). */
-    private const PAID_DATE_RECHECK_DAYS = 7;
+    private const int PAID_DATE_RECHECK_DAYS = 7;
 
     /** @param  int|null  $organizationId  null = gebundene Organisation bzw. Einzelplatz-Konfiguration */
     public function __construct(

@@ -19,26 +19,26 @@ use App\Plugins\Toggl\Enums\TogglSource;
  * config('plugins.toggl.*') — Lookup/Cast im {@see PluginSettingsResolver} (C10).
  */
 class TogglConfig {
-    public const DEFAULT_BASE_URL = 'https://api.track.toggl.com/api/v9';
+    public const string DEFAULT_BASE_URL = 'https://api.track.toggl.com/api/v9';
 
     /** API des neuen Toggl (vormals Toggl 2.0 / Focus). */
-    public const DEFAULT_FOCUS_BASE_URL = 'https://focus.toggl.com/api';
+    public const string DEFAULT_FOCUS_BASE_URL = 'https://focus.toggl.com/api';
 
     /** Kontodienst: listet Organisationen und Workspaces eines Schlüssels. */
-    public const DEFAULT_ACCOUNTS_URL = 'https://accounts.toggl.com';
+    public const string DEFAULT_ACCOUNTS_URL = 'https://accounts.toggl.com';
 
     /**
      * Toggls Burst-Limit (Leaky Bucket, HTTP 429) ist tarifunabhängig:
      * „sicheres Fenster" laut API-Doku 1 Request/Sekunde pro Token+IP.
      */
-    public const DEFAULT_REQUEST_INTERVAL = 1.0;
+    public const float DEFAULT_REQUEST_INTERVAL = 1.0;
 
     /**
      * Tarifgebundene Stunden-Quotas (gleitendes 60-Minuten-Fenster, HTTP 402;
      * gilt pro Benutzer und Organisation), gleichmäßig verteilt als
      * Mindestabstand in Sekunden: Free 30/h, Starter 240/h, Premium 600/h.
      */
-    public const PLAN_REQUEST_INTERVALS = [
+    public const array PLAN_REQUEST_INTERVALS = [
         'free' => 120.0,
         'starter' => 15.0,
         'premium' => 6.0,

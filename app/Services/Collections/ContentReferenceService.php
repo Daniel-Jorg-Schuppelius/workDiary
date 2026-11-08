@@ -32,7 +32,7 @@ use Illuminate\Validation\ValidationException;
  */
 class ContentReferenceService {
     /** Obergrenze der Auswahl je Typ im Dialog „Verweis setzen“. */
-    public const PICKER_LIMIT = 200;
+    public const int PICKER_LIMIT = 200;
 
     public function __construct(private readonly CollectableTypes $types) {}
 

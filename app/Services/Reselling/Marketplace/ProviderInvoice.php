@@ -35,7 +35,7 @@ final class ProviderInvoice {
     ) {}
 
     /** Toleranz zwischen Positionssumme und Nettobetrag des Belegs. */
-    public const TOTAL_TOLERANCE = 0.01;
+    public const float TOTAL_TOLERANCE = 0.01;
 
     /** Summe der Positionen (Gutschrift negativ). */
     public function linesTotal(): float {

@@ -30,7 +30,7 @@ class BulkAssignResaleHolderRequest extends BaseFormRequest {
     use DecodesSqidInputs;
     use ResolvesResaleHolder;
 
-    public const MAX_IDS = 200;
+    public const int MAX_IDS = 200;
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [

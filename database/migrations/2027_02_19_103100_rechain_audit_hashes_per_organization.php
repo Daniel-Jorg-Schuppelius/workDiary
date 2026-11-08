@@ -49,7 +49,7 @@ use Illuminate\Support\Facades\{DB, Log, Schema};
  * (migrate:fresh) bleibt sie aus (MVP-723).
  */
 return new class extends Migration {
-    private const CHUNK = 1000;
+    private const int CHUNK = 1000;
 
     /**
      * Zeiger-Risse der ALTEN Verkettung je Tabelle, die beim Beweisdurchlauf

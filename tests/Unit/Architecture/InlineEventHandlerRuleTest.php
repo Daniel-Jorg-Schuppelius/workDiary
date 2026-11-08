@@ -26,7 +26,7 @@ class InlineEventHandlerRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         'resources/views/legacy/' => 'Legacy-Modul ohne CSP-Nonce-Pflicht, wird abgelöst.',
         'resources/views/vendor/' => 'Fremd-Views (l5-swagger, Pagination-Vorlagen).',
     ];

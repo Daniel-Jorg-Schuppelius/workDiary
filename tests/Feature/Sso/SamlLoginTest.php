@@ -30,8 +30,8 @@ final class SamlLoginTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const IDP_ENTITY_ID = 'https://idp.example/saml';
-    private const IDP_SSO_URL = 'https://idp.example/saml/sso';
+    private const string IDP_ENTITY_ID = 'https://idp.example/saml';
+    private const string IDP_SSO_URL = 'https://idp.example/saml/sso';
 
     private SsoConnection $connection;
 

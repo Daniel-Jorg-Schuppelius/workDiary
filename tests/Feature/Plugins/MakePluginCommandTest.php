@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 class MakePluginCommandTest extends TestCase {
-    private const STUDLY = 'ZzMakeStub';
+    private const string STUDLY = 'ZzMakeStub';
 
     protected function tearDown(): void {
         File::deleteDirectory(app_path('Plugins/' . self::STUDLY));
@@ -33,7 +33,7 @@ class MakePluginCommandTest extends TestCase {
         $this->assertFileExists(base_path('tests/Feature/Plugins/' . self::STUDLY . '/' . self::STUDLY . 'PluginTest.php'));
 
         $stub = (string) file_get_contents($pluginFile);
-        $this->assertStringContainsString("public const ID = 'zz-make-stub';", $stub);
+        $this->assertStringContainsString("public const string ID = 'zz-make-stub';", $stub);
         // Frisch generierte Plugins dürfen nie still "ok" melden — Konvention
         // wie PluginDefaults::healthCheck() (Review 2026-08, A15/W0g).
         $this->assertStringContainsString("code: 'not_implemented'", $stub);

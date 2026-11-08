@@ -21,7 +21,7 @@ use App\Policies\PermissionPolicy;
 class PermitPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::PermitViewAny,
         'view' => P::PermitView,
         'create' => P::PermitCreate,

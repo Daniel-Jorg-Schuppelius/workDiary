@@ -42,12 +42,12 @@ use Throwable;
 class ClubMatchService {
     use AssertsStatusTransition;
 
-    public const DEFAULT_DURATION_MINUTES = 120;
+    public const int DEFAULT_DURATION_MINUTES = 120;
 
     /** Spalte „Heim/Auswärts“ im Spielplan-Import. */
-    private const HOME_WORDS = ['h', 'heim', 'home', 'ja', 'yes', '1', 'true', 'heimspiel'];
+    private const array HOME_WORDS = ['h', 'heim', 'home', 'ja', 'yes', '1', 'true', 'heimspiel'];
 
-    private const AWAY_WORDS = ['a', 'g', 'auswärts', 'auswaerts', 'away', 'gast', 'nein', 'no', '0', 'false'];
+    private const array AWAY_WORDS = ['a', 'g', 'auswärts', 'auswaerts', 'away', 'gast', 'nein', 'no', '0', 'false'];
 
     public function __construct(
         private readonly ClubEventService $events,

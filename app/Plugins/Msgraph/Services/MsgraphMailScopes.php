@@ -24,9 +24,9 @@ use CommonToolkit\Helper\Data\StringHelper;
  * deckt laut Microsoft das eigene und freigegebene Postfächer ab.
  */
 final class MsgraphMailScopes {
-    public const READ_WRITE = 'Mail.ReadWrite';
+    public const string READ_WRITE = 'Mail.ReadWrite';
 
-    public const READ_WRITE_SHARED = 'Mail.ReadWrite.Shared';
+    public const string READ_WRITE_SHARED = 'Mail.ReadWrite.Shared';
 
     /** @return list<string> */
     public static function intakeScopesFor(?int $organizationId): array {

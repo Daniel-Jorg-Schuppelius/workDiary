@@ -37,7 +37,7 @@ class ZammadAdminController extends Controller {
     use ManagesPluginConnection;
     use ResolvesPluginOrgContext;
 
-    private const HELPDESK_MODULE = 'module.helpdesk';
+    private const string HELPDESK_MODULE = 'module.helpdesk';
 
     public function index(): View {
         $admin = $this->admin();

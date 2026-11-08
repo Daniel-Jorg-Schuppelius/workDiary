@@ -33,9 +33,9 @@ use App\Plugins\Support\ApiHealthProbe;
  * Plugin-Klassen-Interfaces).
  */
 class JtlWawiPlugin extends AbstractPlugin {
-    public const ID = 'jtl_wawi';
+    public const string ID = 'jtl_wawi';
 
-    public const SERVICE_PROVIDER = JtlWawiServiceProvider::class;
+    public const string SERVICE_PROVIDER = JtlWawiServiceProvider::class;
 
     public function name(): string {
         return 'JTL-Wawi';

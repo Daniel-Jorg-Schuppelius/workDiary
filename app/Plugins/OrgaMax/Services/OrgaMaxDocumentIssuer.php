@@ -41,12 +41,12 @@ use RuntimeException;
  * Gutschrift, Storno und Lieferschein kann orgaMAX per API nicht anlegen.
  */
 final class OrgaMaxDocumentIssuer implements DocumentIssuer {
-    public const EXT_TYPE_OFFER = 'orgamax_offer';
+    public const string EXT_TYPE_OFFER = 'orgamax_offer';
 
-    public const EXT_TYPE_ORDER_CONFIRMATION = 'orgamax_order_confirmation';
+    public const string EXT_TYPE_ORDER_CONFIRMATION = 'orgamax_order_confirmation';
 
     /** Eigener Typ: `orgamax_invoice` gehört dem Rechnungsspiegel (OrgaMaxInvoiceProjector). */
-    public const EXT_TYPE_INVOICE = 'orgamax_issued_invoice';
+    public const string EXT_TYPE_INVOICE = 'orgamax_issued_invoice';
 
     public function pluginId(): string {
         return OrgaMaxPlugin::ID;

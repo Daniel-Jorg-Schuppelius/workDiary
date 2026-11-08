@@ -32,13 +32,13 @@ class LtiToolTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const ISSUER = 'https://lms.example.org';
+    private const string ISSUER = 'https://lms.example.org';
 
-    private const CLIENT = 'workdiary-client';
+    private const string CLIENT = 'workdiary-client';
 
-    private const DEPLOYMENT = 'deployment-1';
+    private const string DEPLOYMENT = 'deployment-1';
 
-    private const JWKS = 'https://lms.example.org/jwks';
+    private const string JWKS = 'https://lms.example.org/jwks';
 
     private static ?JWK $platformKey = null;
 

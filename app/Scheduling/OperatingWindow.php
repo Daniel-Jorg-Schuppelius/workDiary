@@ -26,10 +26,10 @@ use CommonToolkit\Helper\Data\StringHelper;
  * Kadenzen bleiben unverändert. Uhrzeiten gelten in app.schedule_timezone.
  */
 final readonly class OperatingWindow {
-    private const DAY = 1440;
+    private const int DAY = 1440;
 
     /** Zeitraum ab Fensterbeginn, in den die Ruhezeit gestaucht wird. */
-    private const SPREAD_MINUTES = 120;
+    private const int SPREAD_MINUTES = 120;
 
     private function __construct(
         public int $start, // Minute des Tages, ab der der Server läuft

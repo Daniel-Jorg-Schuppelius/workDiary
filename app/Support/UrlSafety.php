@@ -354,7 +354,7 @@ final class UrlSafety {
      *
      * @var list<string>
      */
-    private const EXTRA_BLOCKED_RANGES = [
+    private const array EXTRA_BLOCKED_RANGES = [
         '100.64.0.0/10',   // CGNAT (RFC 6598), u. a. Alibaba-Metadaten
         '198.18.0.0/15',   // Benchmarking (RFC 2544)
         '192.0.0.0/24',    // IETF-Protokollzuweisungen (RFC 6890)

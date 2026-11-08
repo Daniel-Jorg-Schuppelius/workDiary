@@ -68,7 +68,7 @@ final class QualificationGate {
     }
 
     /** Vorwarnfenster der Matrix: „läuft ab", wenn valid_until < Stichtag + 30 Tage. */
-    public const EXPIRING_DAYS = 30;
+    public const int EXPIRING_DAYS = 30;
 
     /**
      * Status je geforderter Qualifikation für einen Mitarbeitenden am

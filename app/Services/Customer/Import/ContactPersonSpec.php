@@ -36,12 +36,12 @@ use Throwable;
 class ContactPersonSpec extends AbstractEntitySpec {
     use ResolvesImportReferences;
 
-    public const PARTY_CUSTOMER = 'customer';
+    public const string PARTY_CUSTOMER = 'customer';
 
-    public const PARTY_SUPPLIER = 'supplier';
+    public const string PARTY_SUPPLIER = 'supplier';
 
     /** Deckel der Formular-Validierung ({@see \App\Http\Requests\Concerns\PartyFormFields}). */
-    public const MAX_PERSONS = 20;
+    public const int MAX_PERSONS = 20;
 
     public function entity(): ImportEntity {
         return ImportEntity::ContactPersons;

@@ -38,7 +38,7 @@ class RawIconRuleTest extends TestCase {
      *
      * @var array<string, int>
      */
-    private const ALLOWED = [
+    private const array ALLOWED = [
         // Standalone-Fehlerseite: rendert bewusst ohne Layout/Komponenten-Kette
         // (greift auch, wenn der Container halb kaputt ist) und bringt ihr CSS inline mit.
         'resources/views/errors/_page.blade.php' => 1,
@@ -51,13 +51,13 @@ class RawIconRuleTest extends TestCase {
      * Rohe Material-Symbol-Spans (Element, nicht Prop-String). Alle Varianten:
      * -rounded/-sharp sind nicht gebündelt und zeigen dauerhaft den Namen als Text.
      */
-    private const RAW_SPAN = '~<span\b[^>]*\bmaterial-(?:symbols|icons)-~';
+    private const string RAW_SPAN = '~<span\b[^>]*\bmaterial-(?:symbols|icons)-~';
 
     /** Icon-Markup als Prop-String statt bloßem Namen. */
-    private const ICON_PROP_MARKUP = '~\bicon\s*=\s*([\'"])\s*<~';
+    private const string ICON_PROP_MARKUP = '~\bicon\s*=\s*([\'"])\s*<~';
 
     /** Inline-SVG (Icons gehören in x-icon, Diagramme in components/charts). */
-    private const INLINE_SVG = '~<svg\b~';
+    private const string INLINE_SVG = '~<svg\b~';
 
     public function test_views_use_the_icon_components(): void {
         $violations = [];

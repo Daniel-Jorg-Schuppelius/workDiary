@@ -24,11 +24,11 @@ use Illuminate\Support\Collection;
  */
 final class ClaimPatternDetector {
     /** Regel → Gruppenschlüssel je Fall (null = Fall passt nicht zur Regel). */
-    public const RULES = ['lot', 'article_defect', 'article_cause', 'supplier_defect', 'entry_type_cause'];
+    public const array RULES = ['lot', 'article_defect', 'article_cause', 'supplier_defect', 'entry_type_cause'];
 
-    public const DEFAULT_THRESHOLD = 3;
+    public const int DEFAULT_THRESHOLD = 3;
 
-    public const DEFAULT_WINDOW_DAYS = 90;
+    public const int DEFAULT_WINDOW_DAYS = 90;
 
     /**
      * @return list<array{rule: string, key: string, label: string, count: int, case_ids: list<int>, case_numbers: list<string>, first_case_id: int}>

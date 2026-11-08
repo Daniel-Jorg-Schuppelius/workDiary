@@ -29,7 +29,7 @@ namespace App\Services\Whistleblowing;
  */
 final class WhistleblowingMetadataScrubber {
     /** Bildtypen, die sich verlustfrei genug neu kodieren lassen. */
-    private const SUPPORTED = ['image/jpeg', 'image/png', 'image/webp'];
+    private const array SUPPORTED = ['image/jpeg', 'image/png', 'image/webp'];
 
     public function supports(?string $mime): bool {
         return in_array(mb_strtolower(trim((string) $mime)), self::SUPPORTED, true);

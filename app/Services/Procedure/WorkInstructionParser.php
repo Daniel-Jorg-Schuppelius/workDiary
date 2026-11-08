@@ -24,9 +24,9 @@ use CommonToolkit\Helper\Data\StringHelper;
  * Bestätigung — die Person prüft alles in der Vorschau.
  */
 final class WorkInstructionParser {
-    public const MAX_STEPS = 60;
+    public const int MAX_STEPS = 60;
 
-    private const LABEL_MAX = 180;
+    private const int LABEL_MAX = 180;
 
     /**
      * @return array{title: ?string, steps: list<array{label: string, description: ?string, step_type: string}>}

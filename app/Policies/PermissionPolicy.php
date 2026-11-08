@@ -28,7 +28,7 @@ abstract class PermissionPolicy {
      *
      * @var array<string, Permission|bool>
      */
-    protected const ABILITIES = [];
+    protected const array ABILITIES = [];
 
     public function viewAny(User $user): bool {
         return $this->allows($user, 'viewAny');

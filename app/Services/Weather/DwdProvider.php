@@ -41,14 +41,14 @@ use Throwable;
  * injizierbar (Guzzle) — im Test über `MockHandler` ersetzt.
  */
 class DwdProvider implements WeatherProvider {
-    public const BASE = 'https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/daily/kl';
-    private const STATIONS_CACHE_KEY = 'weather.dwd.stations.v1';
-    private const STATIONS_CACHE_DAYS = 7; // Liste ist groß und ändert sich selten.
-    private const RECENT_WINDOW_DAYS = 500; // recent-ZIPs decken ca. die letzten 1,5 Jahre ab.
-    private const STATION_VALIDITY_SLACK_DAYS = 10; // bis_datum hinkt dem Messbetrieb einige Tage hinterher.
-    private const MISSING = -999.0; // DWD-Fehlwert.
+    public const string BASE = 'https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/daily/kl';
+    private const string STATIONS_CACHE_KEY = 'weather.dwd.stations.v1';
+    private const int STATIONS_CACHE_DAYS = 7; // Liste ist groß und ändert sich selten.
+    private const int RECENT_WINDOW_DAYS = 500; // recent-ZIPs decken ca. die letzten 1,5 Jahre ab.
+    private const int STATION_VALIDITY_SLACK_DAYS = 10; // bis_datum hinkt dem Messbetrieb einige Tage hinterher.
+    private const float MISSING = -999.0; // DWD-Fehlwert.
 
-    public const DEFAULT_MAX_STATION_KM = 30;
+    public const int DEFAULT_MAX_STATION_KM = 30;
 
     public function __construct(private readonly PluginApiClient $http) {}
 

@@ -41,10 +41,10 @@ class PendingExternalConflict extends Model {
     use HasFactory;
 
     /** Endgültig gescheiterte Spiegelung einer Lagerbewegung (MVP-072). */
-    public const TYPE_INVENTORY_OUTBOX = 'inventory_outbox';
+    public const string TYPE_INVENTORY_OUTBOX = 'inventory_outbox';
 
     /** Lokal geänderter Artikel, dessen Stand im Fremdsystem abweicht. */
-    public const TYPE_ARTICLE = 'article';
+    public const string TYPE_ARTICLE = 'article';
 
     protected $fillable = [
         'organization_id',

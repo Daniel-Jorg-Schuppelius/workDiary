@@ -26,7 +26,7 @@ use Tests\TestCase;
  */
 class DialogFormViewResponseRuleTest extends TestCase {
     /** @var array<string, string> "View-Datei => Route" → Grund */
-    private const ALLOWED = [];
+    private const array ALLOWED = [];
 
     public function test_entry_dialog_forms_do_not_post_to_actions_that_render_a_page(): void {
         $found = [];

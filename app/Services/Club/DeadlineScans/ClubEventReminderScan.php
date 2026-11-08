@@ -27,7 +27,7 @@ use Carbon\CarbonImmutable;
  */
 class ClubEventReminderScan extends AbstractDeadlineScan {
     /** Vorlauf in Stunden; der Scan läuft täglich, das Fenster deckt einen Lauf ab. */
-    public const LEAD_HOURS = 24;
+    public const int LEAD_HOURS = 24;
 
     public function __construct(
         private readonly ClubMemberNotifier $notifier,

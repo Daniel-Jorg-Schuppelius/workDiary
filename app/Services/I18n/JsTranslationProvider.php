@@ -26,7 +26,7 @@ class JsTranslationProvider {
      *
      * @var list<string>
      */
-    private const EXPOSED_GROUPS = ['js'];
+    private const array EXPOSED_GROUPS = ['js'];
 
     public function __construct(private readonly Translator $translator) {}
 

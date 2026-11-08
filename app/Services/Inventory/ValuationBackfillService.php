@@ -23,7 +23,7 @@ use Illuminate\Support\Carbon;
  * Schicht existiert. Idempotent – ein erneuter Lauf legt nichts doppelt an.
  */
 class ValuationBackfillService {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     public function backfill(Organization $organization): int {
         $created = 0;

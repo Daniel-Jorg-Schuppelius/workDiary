@@ -22,13 +22,13 @@ use App\Support\NotificationText;
  * Nur Datenbank-Kanal: eine Mail je Untertitelspur wäre Lärm.
  */
 class SubtitleTranscribedNotification extends DirectNotification {
-    private const TITLE_OK = 'Untertitel erzeugt';
+    private const string TITLE_OK = 'Untertitel erzeugt';
 
-    private const TITLE_FAILED = 'Untertitel fehlgeschlagen';
+    private const string TITLE_FAILED = 'Untertitel fehlgeschlagen';
 
-    private const MESSAGE_OK = 'Für „:file" liegt eine maschinelle Untertitelspur (:locale) bereit. Sie zählt erst nach Durchsicht.';
+    private const string MESSAGE_OK = 'Für „:file" liegt eine maschinelle Untertitelspur (:locale) bereit. Sie zählt erst nach Durchsicht.';
 
-    private const MESSAGE_FAILED = 'Für „:file" ließ sich keine Untertitelspur erzeugen: :reason';
+    private const string MESSAGE_FAILED = 'Für „:file" ließ sich keine Untertitelspur erzeugen: :reason';
 
     public function __construct(
         public readonly string $fileName,

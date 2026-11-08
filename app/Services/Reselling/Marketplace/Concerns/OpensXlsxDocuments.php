@@ -26,7 +26,7 @@ use Throwable;
  */
 trait OpensXlsxDocuments {
     /** Abo-, Vertrags- und Preislisten haben Hunderte Zeilen, keine Zehntausende. */
-    protected const XLSX_MAX_ROWS = 50_000;
+    protected const int XLSX_MAX_ROWS = 50_000;
 
     /**
      * @param  string  $unreadableKey  Übersetzungsschlüssel mit :file und :reason für sonstige Parserfehler

@@ -61,7 +61,7 @@ use RuntimeException;
  */
 class SubjectDataExporter {
     /** Ablage-Präfix der DEK-verschlüsselten Exportdateien (private Disk). */
-    public const STORAGE_PREFIX = 'privacy/exports/';
+    public const string STORAGE_PREFIX = 'privacy/exports/';
 
     public function __construct(private readonly PrivacyEventService $events) {}
 

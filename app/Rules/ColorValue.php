@@ -23,7 +23,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
  * Reine Hex-Felder nutzen weiter {@see HexColor}.
  */
 final class ColorValue implements ValidationRule {
-    private const PATTERN = '/\A(?:#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|[A-Za-z][A-Za-z0-9-]*)\z/';
+    private const string PATTERN = '/\A(?:#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|[A-Za-z][A-Za-z0-9-]*)\z/';
 
     public function validate(string $attribute, mixed $value, Closure $fail): void {
         if (! is_string($value) || preg_match(self::PATTERN, $value) !== 1) {

@@ -26,7 +26,7 @@ use CommonToolkit\Helper\Data\{CurrencyHelper, NumberHelper};
  */
 class InvoiceLineDetector {
     /** @var array<string, list<string>> Spaltenlabels (deutsch/englisch, klein). */
-    private const COLUMN_LABELS = [
+    private const array COLUMN_LABELS = [
         'position' => ['pos', 'pos.', 'position', 'nr', 'nr.', '#'],
         'description' => ['bezeichnung', 'beschreibung', 'artikel', 'leistung', 'text', 'description', 'item', 'produkt', 'tätigkeit'],
         'quantity' => ['menge', 'anzahl', 'qty', 'quantity', 'stunden', 'std'],
@@ -37,7 +37,7 @@ class InvoiceLineDetector {
     ];
 
     /** Zeilen, deren erste Textzelle so beginnt, beenden den Positionsblock. */
-    private const SUMMARY_PREFIXES = [
+    private const array SUMMARY_PREFIXES = [
         'summe', 'zwischensumme', 'gesamt', 'netto', 'brutto', 'umsatzsteuer',
         'mehrwertsteuer', 'mwst', 'ust', 'übertrag', 'total', 'subtotal', 'vat',
         'zahlbetrag', 'rechnungsbetrag', 'skonto',

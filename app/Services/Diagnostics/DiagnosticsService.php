@@ -30,10 +30,10 @@ use Throwable;
  * Fehlermeldung zurückgegeben, wenn ein Check unerwartet wirft.
  */
 class DiagnosticsService {
-    public const SECTIONS = ['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'connections', 'operations', 'storage', 'backup', 'security', 'terminals', 'ocr'];
+    public const array SECTIONS = ['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'connections', 'operations', 'storage', 'backup', 'security', 'terminals', 'ocr'];
 
     /** OCR-Kette der Belegerkennung (MVP-1289): Programm → Aufgabe. */
-    public const OCR_TOOLS = [
+    public const array OCR_TOOLS = [
         'tesseract' => 'Texterkennung in Bildern',
         'ocrmypdf' => 'Texterkennung in gescannten PDF',
         'pdftoppm' => 'Seiten als Bild für die Texterkennung',
@@ -41,21 +41,21 @@ class DiagnosticsService {
     ];
 
     /** Warnschwelle: aktives Terminal ohne Kontakt seit … Stunden gilt als „stale". */
-    public const TERMINAL_STALE_HOURS = 24;
+    public const int TERMINAL_STALE_HOURS = 24;
 
     /** Warnschwelle für das Alter der SBOM (Feature 051). */
-    public const SBOM_STALE_DAYS = 30;
+    public const int SBOM_STALE_DAYS = 30;
 
     /** DB-IP erscheint monatlich — zwei ausgefallene Läufe sind ein Befund. */
-    public const GEOIP_STALE_DAYS = 70;
+    public const int GEOIP_STALE_DAYS = 70;
 
     /**
      * Cache-Key für den Scheduler-Heartbeat. Wird von einem geplanten Job
      * (z. B. einem No-Op-Closure im Console-Kernel) gesetzt.
      */
-    public const SCHEDULER_HEARTBEAT_KEY = 'scheduler.heartbeat';
+    public const string SCHEDULER_HEARTBEAT_KEY = 'scheduler.heartbeat';
 
-    public const QUEUE_WORKER_HEARTBEAT_KEY = 'queue.worker.heartbeat';
+    public const string QUEUE_WORKER_HEARTBEAT_KEY = 'queue.worker.heartbeat';
 
     public function __construct(
         private readonly LicenseService $licenses,

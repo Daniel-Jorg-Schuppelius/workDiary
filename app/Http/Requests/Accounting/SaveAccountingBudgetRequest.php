@@ -33,7 +33,7 @@ class SaveAccountingBudgetRequest extends FormRequest {
      * oder schlichte Dezimalzahl (1500.50 / 1500,50 / 1500) — „12.000" allein
      * wäre zweideutig und wird abgelehnt. Der Service kanonisiert.
      */
-    private const AMOUNT = 'regex:/^-?(\d{1,3}(\.\d{3})+,\d{1,2}|\d{1,15}([.,]\d{1,2})?)$/';
+    private const string AMOUNT = 'regex:/^-?(\d{1,3}(\.\d{3})+,\d{1,2}|\d{1,15}([.,]\d{1,2})?)$/';
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [

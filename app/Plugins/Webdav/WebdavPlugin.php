@@ -40,9 +40,9 @@ use Psr\Http\Message\StreamInterface;
 class WebdavPlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\InboxConflictActions, BackupTarget {
     use \App\Plugins\Support\Mirror\MirrorConflictActions;
 
-    public const ID = 'webdav';
+    public const string ID = 'webdav';
 
-    public const SERVICE_PROVIDER = WebdavServiceProvider::class;
+    public const string SERVICE_PROVIDER = WebdavServiceProvider::class;
 
     public function name(): string {
         return 'WebDAV';

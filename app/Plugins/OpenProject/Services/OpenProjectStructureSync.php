@@ -35,11 +35,11 @@ use Illuminate\Support\Facades\Auth;
  * Import in der Inbox).
  */
 class OpenProjectStructureSync {
-    public const EXT_TYPE_PROJECT = 'project';
+    public const string EXT_TYPE_PROJECT = 'project';
 
-    public const EXT_TYPE_WORK_PACKAGE = 'work_package';
+    public const string EXT_TYPE_WORK_PACKAGE = 'work_package';
 
-    public const EXT_TYPE_USER = 'user';
+    public const string EXT_TYPE_USER = 'user';
 
     /**
      * Gleicht alle OpenProject-Projekte mit workDiary-Projekten ab.

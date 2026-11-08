@@ -30,7 +30,7 @@ use Illuminate\Support\Collection;
  * Katalogschlüssel (`lex:<id>`), Lizenzposition laut Einstufung.
  */
 final class LexofficeRecurringPlanSource implements RecurringPlanSource {
-    public const KEY = 'lexoffice';
+    public const string KEY = 'lexoffice';
 
     public function key(): string {
         return self::KEY;

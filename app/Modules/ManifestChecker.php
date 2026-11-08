@@ -35,14 +35,14 @@ use Illuminate\Support\Str;
  */
 final class ManifestChecker {
     /** @var list<string> Schichtordner, deren Unterordner Domänen sind */
-    private const LAYERS = ['app/Models', 'app/Services', 'app/Http/Controllers', 'app/Policies', 'app/Http/Requests', 'database/factories'];
+    private const array LAYERS = ['app/Models', 'app/Services', 'app/Http/Controllers', 'app/Policies', 'app/Http/Requests', 'database/factories'];
 
     /**
      * Technische Unterordner, die keine Domäne sind — Name → Begründung.
      *
      * @var array<string, string>
      */
-    public const FOLDER_EXCEPTIONS = [
+    public const array FOLDER_EXCEPTIONS = [
         'Concerns' => 'Traits, keine Domäne.',
         'Contracts' => 'Interfaces, keine Domäne.',
         'Scopes' => 'Query-Scopes, keine Domäne.',

@@ -23,7 +23,7 @@ use Tests\TestCase;
 final class PageFillMarkerTest extends TestCase {
     use RefreshDatabase;
 
-    private const MAIN = 'class="wd-surface min-h-0 flex flex-col lg:overflow-clip"';
+    private const string MAIN = 'class="wd-surface min-h-0 flex flex-col lg:overflow-clip"';
 
     public function test_list_page_with_the_marker_fills_the_viewport(): void {
         $admin = User::factory()->admin()->create();

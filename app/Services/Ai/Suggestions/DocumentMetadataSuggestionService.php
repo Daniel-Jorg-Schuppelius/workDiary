@@ -45,18 +45,18 @@ use Throwable;
 class DocumentMetadataSuggestionService {
     use DecidesSuggestions;
 
-    public const CAPABILITY = 'dms.classify_extract';
+    public const string CAPABILITY = 'dms.classify_extract';
 
-    public const FIELD_TYPE = 'document_type';
+    public const string FIELD_TYPE = 'document_type';
 
-    public const FIELD_TITLE = 'title';
+    public const string FIELD_TITLE = 'title';
 
-    public const FIELD_VALID_FROM = 'valid_from';
+    public const string FIELD_VALID_FROM = 'valid_from';
 
-    public const FIELD_VALID_UNTIL = 'valid_until';
+    public const string FIELD_VALID_UNTIL = 'valid_until';
 
     /** Zeichen-Obergrenze des Dokumenttexts im Prompt (Budget + Kontextfenster). */
-    public const MAX_TEXT_CHARACTERS = 12000;
+    public const int MAX_TEXT_CHARACTERS = 12000;
 
     public function __construct(
         private readonly AiInvocationService $invocation,

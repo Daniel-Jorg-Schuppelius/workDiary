@@ -45,7 +45,7 @@ final class DocumentNumber {
      *
      * @var array<string, array{decimal: string, thousands: string, symbol_before: bool}>
      */
-    private const CONVENTIONS = [
+    private const array CONVENTIONS = [
         'de' => ['decimal' => ',', 'thousands' => '.', 'symbol_before' => false],
         'en' => ['decimal' => '.', 'thousands' => ',', 'symbol_before' => true],
         'fr' => ['decimal' => ',', 'thousands' => "\u{00A0}", 'symbol_before' => false],

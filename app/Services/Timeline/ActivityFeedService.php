@@ -26,7 +26,7 @@ use Illuminate\Support\Collection;
  */
 final class ActivityFeedService {
     /** Puffer je Quelle für Rauschfilter und Zusammenführung. */
-    private const BUFFER = 4;
+    private const int BUFFER = 4;
 
     /**
      * Änderungen und Journal-Ereignisse eines Objekts; sichtbar für alle, die

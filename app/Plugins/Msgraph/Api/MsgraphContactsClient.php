@@ -31,7 +31,7 @@ use RuntimeException;
 class MsgraphContactsClient {
     use ReadsGraphAccount;
 
-    private const MAX_CONTACT_PAGES = 100;
+    private const int MAX_CONTACT_PAGES = 100;
 
     private PluginApiClient $api;
 

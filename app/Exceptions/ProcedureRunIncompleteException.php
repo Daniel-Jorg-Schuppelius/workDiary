@@ -18,7 +18,7 @@ use RuntimeException;
  * fehlender Schritt-IDs (MVP-026 §4).
  */
 class ProcedureRunIncompleteException extends RuntimeException {
-    public const CODE = 'procedure.runIncomplete';
+    public const string CODE = 'procedure.runIncomplete';
 
     /**
      * @param  list<int>  $missingStepRunIds

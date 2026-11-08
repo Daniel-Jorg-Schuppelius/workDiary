@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\DB;
  * (gemeinsames Sperrmodell, D12) werden sichtbar verhindert.
  */
 class RentalAvailabilityService {
-    public const USAGE_CONTEXT = 'rental';
+    public const string USAGE_CONTEXT = 'rental';
 
     public function __construct(private readonly AssetUsageGuard $guard) {}
 

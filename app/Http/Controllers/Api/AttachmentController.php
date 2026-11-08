@@ -23,7 +23,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AttachmentController extends Controller {
     /** Dieselben Träger wie im Web — eine Liste für beide Wege (Konsolidierungs-Audit 2026-10, k3-7). */
-    private const TYPE_MAP = WebAttachmentController::TYPE_MAP;
+    private const array TYPE_MAP = WebAttachmentController::TYPE_MAP;
 
     #[OA\Post(
         path: '/attachments/{type}/{id}',

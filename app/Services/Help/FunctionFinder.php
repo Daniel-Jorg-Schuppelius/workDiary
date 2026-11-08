@@ -23,7 +23,7 @@ use App\Services\Navigation\NavigationPages;
  */
 final class FunctionFinder {
     /** Bedienaktionen der Befehlspalette (Schlüssel → Symbol); ausgeführt in global-search.js. */
-    public const ACTIONS = [
+    public const array ACTIONS = [
         'theme' => 'dark_mode',
         'shortcuts' => 'keyboard',
         'help' => 'help',

@@ -34,14 +34,14 @@ use Throwable;
  * Einkaufskatalog; Gültigkeiten schließen sich je Produkt lückenlos an.
  */
 final class MarketplaceImporter {
-    public const CHANGE_NEW = 'new';
+    public const string CHANGE_NEW = 'new';
 
-    public const CHANGE_CHANGED = 'changed';
+    public const string CHANGE_CHANGED = 'changed';
 
-    public const CHANGE_UNCHANGED = 'unchanged';
+    public const string CHANGE_UNCHANGED = 'unchanged';
 
     /** Vergleichsfelder der Vorschau in Anzeigereihenfolge; `other` = nur Hash-Felder (Bezeichnung, Intervall, Laufzeit). */
-    public const CHANGE_FIELDS = ['quantity', 'price', 'status', 'starts_on', 'ends_on', 'other'];
+    public const array CHANGE_FIELDS = ['quantity', 'price', 'status', 'starts_on', 'ends_on', 'other'];
 
     public function __construct(
         private readonly MarketplacePurchasesReader $telekomReader,

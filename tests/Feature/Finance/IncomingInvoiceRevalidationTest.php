@@ -32,7 +32,7 @@ use Tests\TestCase;
 class IncomingInvoiceRevalidationTest extends TestCase {
     use RefreshDatabase, WithOrganization;
 
-    private const UBL = <<<'XML'
+    private const string UBL = <<<'XML'
         <?xml version="1.0" encoding="UTF-8"?>
         <Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
           <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0</cbc:CustomizationID>
@@ -75,9 +75,9 @@ class IncomingInvoiceRevalidationTest extends TestCase {
         XML;
 
     /** Validierung, wie sie der Empfang vor dem 18.10.2026 ohne Validator schrieb. */
-    private const STALE = ['schema_checked' => true, 'schema_errors' => [], 'kosit_available' => false, 'kosit_valid' => null, 'kosit_errors' => []];
+    private const array STALE = ['schema_checked' => true, 'schema_errors' => [], 'kosit_available' => false, 'kosit_valid' => null, 'kosit_errors' => []];
 
-    private const JUDGED = ['schema_checked' => true, 'schema_errors' => [], 'kosit_applicable' => true, 'kosit_available' => true, 'kosit_valid' => true, 'kosit_scenario' => 'EN16931 XRechnung (UBL Invoice)', 'kosit_errors' => []];
+    private const array JUDGED = ['schema_checked' => true, 'schema_errors' => [], 'kosit_applicable' => true, 'kosit_available' => true, 'kosit_valid' => true, 'kosit_scenario' => 'EN16931 XRechnung (UBL Invoice)', 'kosit_errors' => []];
 
     private User $admin;
 

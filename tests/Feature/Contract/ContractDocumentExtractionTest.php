@@ -28,7 +28,7 @@ final class ContractDocumentExtractionTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const TEXT = "Wartungsvertrag Heizungsanlage\n§ 2 Vertragsbeginn: 01.10.2026\n§ 3 Die Mindestlaufzeit beträgt 24 Monate. Der Vertrag verlängert sich stillschweigend um jeweils ein Jahr, wenn er nicht mit einer Frist von drei Monaten gekündigt wird.\n§ 4 Die Vergütung beträgt 1.250,00 EUR monatlich zzgl. USt.";
+    private const string TEXT = "Wartungsvertrag Heizungsanlage\n§ 2 Vertragsbeginn: 01.10.2026\n§ 3 Die Mindestlaufzeit beträgt 24 Monate. Der Vertrag verlängert sich stillschweigend um jeweils ein Jahr, wenn er nicht mit einer Frist von drei Monaten gekündigt wird.\n§ 4 Die Vergütung beträgt 1.250,00 EUR monatlich zzgl. USt.";
 
     private User $admin;
 

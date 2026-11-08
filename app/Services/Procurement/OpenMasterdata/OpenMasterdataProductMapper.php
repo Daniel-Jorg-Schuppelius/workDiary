@@ -22,13 +22,13 @@ use CommonToolkit\Helper\Data\{NumberHelper, WebLinkHelper};
  */
 class OpenMasterdataProductMapper {
     /** Felder, die ein reiner Preis- und Verfügbarkeitsabgleich nachführt. */
-    public const PRICE_FIELDS = ['external_no', 'purchase_price', 'list_price', 'currency', 'price_unit_amount', 'price_type', 'unit', 'lead_time_days', 'availability', 'discount_group', 'pack_size'];
+    public const array PRICE_FIELDS = ['external_no', 'purchase_price', 'list_price', 'currency', 'price_unit_amount', 'price_type', 'unit', 'lead_time_days', 'availability', 'discount_group', 'pack_size'];
 
-    private const PICTURE_MAIN = 'B_';
+    private const string PICTURE_MAIN = 'B_';
 
-    private const DOCUMENT_PREFERENCE = ['DB', 'TI', 'MA'];
+    private const array DOCUMENT_PREFERENCE = ['DB', 'TI', 'MA'];
 
-    private const LIST_LIMIT = 20;
+    private const int LIST_LIMIT = 20;
 
     /** @return array<string, mixed> */
     public function toRecord(OpenMasterdataProduct $product): array {

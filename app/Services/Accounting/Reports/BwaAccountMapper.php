@@ -36,12 +36,12 @@ use CommonToolkit\Helper\Data\StringHelper;
  * je Konto korrigierbar.
  */
 final class BwaAccountMapper {
-    public const SCHEME_SKR03 = 'skr03';
+    public const string SCHEME_SKR03 = 'skr03';
 
-    public const SCHEME_SKR04 = 'skr04';
+    public const string SCHEME_SKR04 = 'skr04';
 
     /** @var list<array{int, int, BwaGroup}> */
-    private const SKR03 = [
+    private const array SKR03 = [
         [2000, 2099, BwaGroup::NeutralExpense],
         [2100, 2199, BwaGroup::InterestExpense],
         [2200, 2299, BwaGroup::IncomeTaxes],
@@ -66,7 +66,7 @@ final class BwaAccountMapper {
     ];
 
     /** @var list<array{int, int, BwaGroup}> */
-    private const SKR04 = [
+    private const array SKR04 = [
         [4000, 4799, BwaGroup::Revenue],
         [4800, 4829, BwaGroup::InventoryChange],
         [4830, 4999, BwaGroup::OtherOperatingIncome],

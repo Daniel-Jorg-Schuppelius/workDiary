@@ -39,7 +39,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class WeatherService {
     /** Cache-Dauer der Tagesvorhersage je Koordinate/Provider. */
-    public const FORECAST_CACHE_MINUTES = 180;
+    public const int FORECAST_CACHE_MINUTES = 180;
 
     public function __construct(private readonly WeatherProvider $provider) {}
 

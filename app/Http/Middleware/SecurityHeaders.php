@@ -57,7 +57,7 @@ class SecurityHeaders {
      * Chromium-Issue 40328564). Für ein Dokument ist diese Liste zugleich
      * enger als die Seiten-CSP: keine Skripte, kein Nachladen, keine Formulare.
      */
-    public const DOCUMENT_CSP = "default-src 'none'; object-src 'self'; frame-src 'self'; img-src 'self'; style-src 'unsafe-inline'; frame-ancestors 'self'; base-uri 'none'; form-action 'none'";
+    public const string DOCUMENT_CSP = "default-src 'none'; object-src 'self'; frame-src 'self'; img-src 'self'; style-src 'unsafe-inline'; frame-ancestors 'self'; base-uri 'none'; form-action 'none'";
 
     private function isDocumentResponse(Response $response): bool {
         $type = strtolower(trim(explode(';', (string) $response->headers->get('Content-Type', ''), 2)[0]));

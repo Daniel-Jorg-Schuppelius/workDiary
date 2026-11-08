@@ -25,7 +25,7 @@ use Illuminate\Contracts\Hashing\Hasher;
  */
 class LegacyBridge {
     /** Name der Legacy-DB-Verbindung (für DatabaseHealth-Prüfungen). */
-    public const CONNECTION = LegacyConnectivity::CONNECTION;
+    public const string CONNECTION = LegacyConnectivity::CONNECTION;
 
     /** Legacy-Admin-Status (Legacy-ID ≤ 3 oder Fallback-Admin-Liste). */
     public static function isLegacyAdmin(?User $user): bool {

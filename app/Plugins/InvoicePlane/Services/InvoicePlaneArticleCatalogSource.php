@@ -25,7 +25,7 @@ use CommonToolkit\Helper\Data\StringHelper;
  * Aktiv-Kennzeichen führt InvoicePlane nicht — alle Artikel gelten als aktiv.
  */
 class InvoicePlaneArticleCatalogSource extends AccountingArticleCatalogSource {
-    public const PREFIX = 'ipl';
+    public const string PREFIX = 'ipl';
 
     public function pluginId(): string {
         return InvoicePlaneVoucherPullService::PLUGIN_ID;

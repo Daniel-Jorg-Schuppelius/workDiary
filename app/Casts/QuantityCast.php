@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class QuantityCast extends ValueObjectCast implements ComparesCastableAttributes {
     /** Einheit für Altbestand ohne gesetzte Einheit — {@see Quantity} lässt keine leere zu. */
-    private const FALLBACK_UNIT = 'Stk';
+    private const string FALLBACK_UNIT = 'Stk';
 
     /**
      * @param  array<string, mixed>  $attributes

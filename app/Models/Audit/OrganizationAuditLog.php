@@ -42,13 +42,13 @@ use Illuminate\Support\Carbon;
 class OrganizationAuditLog extends Model implements HashChainable {
     use HashChained;
 
-    public const ACTION_DEACTIVATE = 'deactivate';
+    public const string ACTION_DEACTIVATE = 'deactivate';
 
-    public const ACTION_REACTIVATE = 'reactivate';
+    public const string ACTION_REACTIVATE = 'reactivate';
 
-    public const ACTION_EXPORT = 'export';
+    public const string ACTION_EXPORT = 'export';
 
-    public const ACTION_PURGE = 'purge';
+    public const string ACTION_PURGE = 'purge';
 
     /** @var list<string> */
     public static array $actions = [

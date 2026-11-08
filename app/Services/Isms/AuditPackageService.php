@@ -45,13 +45,13 @@ use RuntimeException;
 class AuditPackageService {
     use AssignsSequentialNo;
 
-    public const DISK = \App\Services\Export\ExportRunner::DISK;
+    public const string DISK = \App\Services\Export\ExportRunner::DISK;
 
-    public const BASE_PATH = 'isms/audit-packages';
+    public const string BASE_PATH = 'isms/audit-packages';
 
-    public const MIN_TOKEN_DAYS = 1;
+    public const int MIN_TOKEN_DAYS = 1;
 
-    public const MAX_TOKEN_DAYS = 90;
+    public const int MAX_TOKEN_DAYS = 90;
 
     /**
      * Legt ein Auditpaket als Entwurf an (Vergabe der laufenden Nummer

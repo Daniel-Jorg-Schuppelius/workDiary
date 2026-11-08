@@ -45,9 +45,9 @@ class TextCorrection extends Model {
 
     use HasSqid;
 
-    public const ORIGIN_MANUAL = 'manual';
+    public const string ORIGIN_MANUAL = 'manual';
 
-    public const ORIGIN_LEARNED = 'learned';
+    public const string ORIGIN_LEARNED = 'learned';
 
     protected $fillable = [
         'organization_id',

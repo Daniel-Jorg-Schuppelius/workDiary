@@ -27,11 +27,11 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSett
 class KanboardPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
     use ChecksConnectionHealth, RendersTaskLink;
 
-    public const ID = 'kanboard';
+    public const string ID = 'kanboard';
 
-    public const SERVICE_PROVIDER = KanboardServiceProvider::class;
+    public const string SERVICE_PROVIDER = KanboardServiceProvider::class;
 
-    public const EXT_TYPE_TASK = 'task';
+    public const string EXT_TYPE_TASK = 'task';
 
     public function name(): string {
         return 'Kanboard';

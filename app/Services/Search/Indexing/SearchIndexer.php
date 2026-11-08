@@ -32,7 +32,7 @@ use Illuminate\Support\Facades\DB;
  */
 final class SearchIndexer {
     /** Spalten, über die Kontextänderungen (Umbenennen/Umhängen) nachgezogen werden. */
-    public const CONTEXT_COLUMNS = ['project_id', 'foreign_customer_id', 'customer_id'];
+    public const array CONTEXT_COLUMNS = ['project_id', 'foreign_customer_id', 'customer_id'];
 
     /** @var array<string, int> */
     private array $versions = [];

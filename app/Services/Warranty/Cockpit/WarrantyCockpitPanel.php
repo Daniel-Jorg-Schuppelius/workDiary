@@ -27,9 +27,9 @@ use Illuminate\Support\Facades\Gate;
 
 /** Offene Gewährleistungsfristen (Feature 115) am Kunden, Lieferanten oder Projekt — sichtbar wie die Fristenliste. */
 final class WarrantyCockpitPanel implements CockpitPanel {
-    private const LIMIT = 10;
+    private const int LIMIT = 10;
 
-    private const COLUMN = [Customer::class => 'customer_id', Supplier::class => 'supplier_id', Project::class => 'project_id'];
+    private const array COLUMN = [Customer::class => 'customer_id', Supplier::class => 'supplier_id', Project::class => 'project_id'];
 
     public function __construct(private readonly FeatureFlagResolver $features) {}
 

@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Model;
  * die ein Mensch per Regel zu Nicht-Rechnungen erklärt hat.
  */
 final class DiscardIncomingInvoiceAction implements RuleAction {
-    public const TYPE = 'incoming_invoice.discard';
+    public const string TYPE = 'incoming_invoice.discard';
 
     public function __construct(private readonly IncomingEInvoiceService $invoices) {}
 

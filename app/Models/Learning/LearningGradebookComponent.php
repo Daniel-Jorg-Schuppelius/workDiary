@@ -39,11 +39,11 @@ class LearningGradebookComponent extends Model {
 
     use HasSqid;
 
-    public const KIND_QUIZ = 'quiz';
+    public const string KIND_QUIZ = 'quiz';
 
-    public const KIND_ASSIGNMENT = 'assignment';
+    public const string KIND_ASSIGNMENT = 'assignment';
 
-    public const KIND_MANUAL = 'manual';
+    public const string KIND_MANUAL = 'manual';
 
     protected $fillable = [
         'organization_id',

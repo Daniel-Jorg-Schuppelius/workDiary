@@ -33,7 +33,7 @@ class IndexListLayoutRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Bereiche außerhalb der Konvention */
-    private const SKIP_PREFIXES = [
+    private const array SKIP_PREFIXES = [
         'resources/views/legacy/' => 'Legacy-Modul.',
         'resources/views/vendor/' => 'Fremd-Views.',
         'resources/views/components/' => 'Komponenten definieren die Konventionen.',
@@ -41,10 +41,10 @@ class IndexListLayoutRuleTest extends TestCase {
     ];
 
     /** Ein Grund für alle Portal-Listen: das Layout trägt die Voll-Höhe-Mechanik nicht. */
-    private const PORTAL_LAYOUT = 'Kundenportal: customer.layout ist ein schlichtes Scroll-Layout ohne Voll-Höhe-Rahmen (kein wd-page-fill, kein main-class) — scroll="flex" griffe dort nicht; geblättert wird stehend.';
+    private const string PORTAL_LAYOUT = 'Kundenportal: customer.layout ist ein schlichtes Scroll-Layout ohne Voll-Höhe-Rahmen (kein wd-page-fill, kein main-class) — scroll="flex" griffe dort nicht; geblättert wird stehend.';
 
     /** @var array<string, string> L1: Listen, die bewusst nicht paginieren — Pfad => Grund */
-    private const UNPAGINATED_ALLOW = [
+    private const array UNPAGINATED_ALLOW = [
         'resources/views/finance/resale/accounts/index.blade.php' => 'Lizenzkonten (Feature 185): eine Zeile je Anbieterkonto, in PHP über Ablösungsketten gruppiert und Probleme zuerst sortiert — wenige Dutzend, keine wachsende Liste.',
         'resources/views/helpdesk/service-map/index.blade.php' => 'Servicelandkarte: alle Fachdienste auf einer Seite, weil jede Zeile auf andere verweist (hängt ab von, wird benötigt von) — geblättert zerrisse die Abhängigkeiten.',
         'app/Plugins/JtlWawi/Resources/views/admin/index.blade.php' => 'Einrichtungsseite: die Zähler des letzten Abgleichs und die Lager der angebundenen JTL-Wawi (eine Handvoll), je Zeile mit Zuordnungsformular — keine wachsende Liste.',
@@ -102,7 +102,7 @@ class IndexListLayoutRuleTest extends TestCase {
     ];
 
     /** @var array<string, string> L2: Listen, die bewusst mit der Seite fließen — Pfad => Grund */
-    private const PAGE_FLOW_ALLOW = [
+    private const array PAGE_FLOW_ALLOW = [
         'resources/views/rental/housing/index.blade.php' => 'Belegungsübersicht mit Wohnungsbestand und Mietverhältnissen: beide Tabellen scrollen als gemeinsame Seite, damit keine die andere verdrängt.',
         'app/Plugins/DatevOnline/Resources/views/admin/index.blade.php' => 'Verbindungsseite aus vier Karten: Mandantenwahl, Belegbilder, Buchungsstapel (geblättert) und zuletzt übertragene Belege.',
         'app/Plugins/Etsy/Resources/views/admin/index.blade.php' => 'Verbindungskarte über dem Bestellspiegel, darunter die Ledger-Summen je Buchungsart — zwei Tabellen.',

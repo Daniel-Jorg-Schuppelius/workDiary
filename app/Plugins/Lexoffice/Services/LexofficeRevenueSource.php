@@ -38,10 +38,10 @@ use Illuminate\Support\Str;
  */
 class LexofficeRevenueSource implements ExternalRevenueSource {
     /** Gespiegelte Belege mit Positionen; nur Lexoffice-eigene Belege tragen welche. */
-    private const PRODUCT_VOUCHER_TYPES = ['invoice', 'creditnote'];
+    private const array PRODUCT_VOUCHER_TYPES = ['invoice', 'creditnote'];
 
     /** `paidoff` = Gutschrift vollständig zurückgezahlt (Lexware-Doku). */
-    private const PAID_STATUSES = ['paid', 'paidoff'];
+    private const array PAID_STATUSES = ['paid', 'paidoff'];
 
     public function key(): string {
         return LexofficePlugin::ID;

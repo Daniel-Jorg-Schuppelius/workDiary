@@ -30,7 +30,7 @@ use PDFToolkit\Entities\WordBox;
  */
 final class TemplateRecognizer {
     /** Belegarten, für die keine Vorlage füllt: Kopf und Fuß gleichen der Rechnung, der Inhalt nicht. */
-    public const BLOCKED_KINDS = ['reminder', 'delivery_note', 'order_confirmation', 'quote', 'shipping_label'];
+    public const array BLOCKED_KINDS = ['reminder', 'delivery_note', 'order_confirmation', 'quote', 'shipping_label'];
 
     public function __construct(
         private readonly WordBoxSource $boxes,

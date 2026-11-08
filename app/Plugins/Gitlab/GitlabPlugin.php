@@ -41,12 +41,12 @@ use Throwable;
  *   wiederholten Fehlern selbst, das Polling schließt jede Lücke.
  */
 class GitlabPlugin extends AbstractPlugin implements LinksExternalRecords, TaskSyncer {
-    public const ID = 'gitlab';
+    public const string ID = 'gitlab';
 
-    public const SERVICE_PROVIDER = GitlabServiceProvider::class;
+    public const string SERVICE_PROVIDER = GitlabServiceProvider::class;
 
     /** ExternalReference-Typ dieses Plugins. */
-    public const EXT_TYPE_ISSUE = 'issue';
+    public const string EXT_TYPE_ISSUE = 'issue';
 
     public function name(): string {
         return 'GitLab Issues';

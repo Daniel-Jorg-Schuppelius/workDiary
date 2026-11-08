@@ -26,7 +26,7 @@ use Illuminate\Validation\Validator;
  * eine Gültigkeit. Personen kommen als Sqid und müssen zuweisbar sein.
  */
 class SaveProjectTimeTargetsRequest extends BaseFormRequest {
-    private const CLOCK = '/^(?:[0-9]|1[0-9]|2[0-4]):[0-5][0-9]$/';
+    private const string CLOCK = '/^(?:[0-9]|1[0-9]|2[0-4]):[0-5][0-9]$/';
 
     public function authorize(): bool {
         return $this->user()?->can(Permission::ProjectTargetsManage->value) === true;

@@ -38,11 +38,11 @@ class ContactAddress extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
-    public const KIND_BILLING = 'billing';
+    public const string KIND_BILLING = 'billing';
 
-    public const KIND_SHIPPING = 'shipping';
+    public const string KIND_SHIPPING = 'shipping';
 
-    public const KIND_DEFAULT = 'default';
+    public const string KIND_DEFAULT = 'default';
 
     protected $fillable = [
         'organization_id',

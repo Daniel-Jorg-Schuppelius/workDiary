@@ -26,7 +26,7 @@ use Illuminate\Support\Collection;
  * Kalender-Plugin eine Unterklasse mit seiner Kennung.
  */
 abstract class CalendarSeriesGroupBooker implements InboxGroupBooker {
-    private const PREVIEW = 10;
+    private const int PREVIEW = 10;
 
     public function __construct(private readonly InboxActionService $actions) {}
 

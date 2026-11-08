@@ -49,11 +49,11 @@ class Attachment extends Model {
     use HasSqid;
 
     /** Spezialrollen-Diskriminator (siehe meta_type-Spalte). */
-    public const META_LOGO = 'logo';
+    public const string META_LOGO = 'logo';
 
-    public const META_LOGO_DARK = 'logo_dark';
+    public const string META_LOGO_DARK = 'logo_dark';
 
-    public const META_AVATAR = 'avatar';
+    public const string META_AVATAR = 'avatar';
 
     protected $fillable = [
         'organization_id',

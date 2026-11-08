@@ -38,12 +38,12 @@ use Throwable;
  * Feature 055) — bewusst einbahnig (Import); Konflikt-/Inbox-Zähler bleiben 0.
  */
 class ZammadPlugin extends AbstractPlugin implements TaskSyncer {
-    public const ID = 'zammad';
+    public const string ID = 'zammad';
 
-    public const SERVICE_PROVIDER = ZammadServiceProvider::class;
+    public const string SERVICE_PROVIDER = ZammadServiceProvider::class;
 
     /** ExternalReference-Typ dieses Plugins. */
-    public const EXT_TYPE_TICKET = 'ticket';
+    public const string EXT_TYPE_TICKET = 'ticket';
 
     public function name(): string {
         return 'Zammad';

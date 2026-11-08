@@ -35,13 +35,13 @@ use Illuminate\Support\Facades\{Log, Mail};
  * Kundendaten) und stellt sie gemäß Betriebsmodell zu.
  */
 class ProblemReportService {
-    public const DIAG_MODE_ASK = 'ask';
+    public const string DIAG_MODE_ASK = 'ask';
 
-    public const DIAG_MODE_ALWAYS = 'always';
+    public const string DIAG_MODE_ALWAYS = 'always';
 
-    public const DIAG_MODE_NEVER = 'never';
+    public const string DIAG_MODE_NEVER = 'never';
 
-    private const LOG_EXCERPT_LINES = 40;
+    private const int LOG_EXCERPT_LINES = 40;
 
     public function __construct(
         private readonly NumberSequenceService $numbers,

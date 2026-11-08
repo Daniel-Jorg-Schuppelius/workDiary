@@ -28,10 +28,10 @@ use DateTimeInterface;
  */
 final class CalendarImportStager {
     /** Obergrenze je Serie, damit eine tägliche Serie die Inbox nicht flutet. */
-    public const MAX_OCCURRENCES = 60;
+    public const int MAX_OCCURRENCES = 60;
 
     /** Toleranz zwischen unserem Schreibvorgang und dem Änderungsstempel der Gegenseite. */
-    private const ECHO_TOLERANCE_SECONDS = 120;
+    private const int ECHO_TOLERANCE_SECONDS = 120;
 
     /**
      * Unsere eigenen Schreibvorgänge erscheinen in der Änderungsliste der

@@ -43,12 +43,12 @@ class FedexPlugin extends AbstractPlugin implements ShippingProvider {
     // die Trait-Methode gewinnt automatisch gegen die geerbte aus AbstractPlugin.
     use ChecksCarrierHealth;
 
-    public const ID = 'fedex';
+    public const string ID = 'fedex';
 
-    public const SERVICE_PROVIDER = FedexServiceProvider::class;
+    public const string SERVICE_PROVIDER = FedexServiceProvider::class;
 
     /** Carrier-Schlüssel in `carrier_connections.carrier` und der Registry. */
-    public const CARRIER = 'fedex';
+    public const string CARRIER = 'fedex';
 
     public function name(): string {
         return 'FedEx';

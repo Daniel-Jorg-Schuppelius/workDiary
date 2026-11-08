@@ -31,7 +31,7 @@ use RuntimeException;
  * Wareneingang gegen die Bestellung erfolgt im {@see GoodsReceiptService}.
  */
 class PurchaseOrderService {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     public function __construct(
         private readonly NumberSequenceService $numbers,

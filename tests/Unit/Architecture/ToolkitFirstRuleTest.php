@@ -32,7 +32,7 @@ class ToolkitFirstRuleTest extends TestCase {
      *
      * @var array<string, array{0: string, 1: string, 2: array<string, string>}>
      */
-    private const RULES = [
+    private const array RULES = [
         'json-encode' => [
             '/(?<![\w>:$])(?<!\w\\\\)(?<!function\s)json_encode\s*\(/',
             'CommonToolkit\Helper\Data\JsonHelper::encode($data, $flags) — wirft bei Fehlern statt still "" zu liefern',
@@ -177,7 +177,7 @@ class ToolkitFirstRuleTest extends TestCase {
      *
      * @var array<string, array{0: string, 1: string}>
      */
-    private const SHRINKING_RULES = [
+    private const array SHRINKING_RULES = [
         'bc-math' => [
             '/(?<![\w>:$])(?<!\w\\\\)(?<!function\s)bc(?:add|sub|mul|div|comp|mod|pow|sqrt)\s*\(/',
             'Money / Percentage / Decimal (Wertobjekte des common-toolkits) bzw. NumberHelper::roundPrecise',

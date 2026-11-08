@@ -31,9 +31,9 @@ class SevDeskVoucherPullTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const VOUCHERS = 'https://my.sevdesk.de/api/v1/Voucher*';
+    private const string VOUCHERS = 'https://my.sevdesk.de/api/v1/Voucher*';
 
-    private const INVOICES = 'https://my.sevdesk.de/api/v1/Invoice*';
+    private const string INVOICES = 'https://my.sevdesk.de/api/v1/Invoice*';
 
     protected function setUp(): void {
         parent::setUp();

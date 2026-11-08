@@ -40,7 +40,7 @@ class RemoteDeviceRegistry {
      *
      * @var list<string>
      */
-    public const REMOTE_CATEGORY_CODES = ['workstation', 'server', 'notebook', 'tablet', 'smartphone'];
+    public const array REMOTE_CATEGORY_CODES = ['workstation', 'server', 'notebook', 'tablet', 'smartphone'];
 
     /**
      * Hinterlegt eine Geräte-ID additiv: ein Gerät kann mehrere IDs je

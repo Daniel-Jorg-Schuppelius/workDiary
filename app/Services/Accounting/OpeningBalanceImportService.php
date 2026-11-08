@@ -33,7 +33,7 @@ use Illuminate\Validation\ValidationException;
  */
 class OpeningBalanceImportService {
     /** Erwartete CSV-Spalten. */
-    public const COLUMNS = ['account', 'debit', 'credit'];
+    public const array COLUMNS = ['account', 'debit', 'credit'];
 
     public function __construct(
         private readonly JournalService $journal,

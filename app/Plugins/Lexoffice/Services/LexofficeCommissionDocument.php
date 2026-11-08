@@ -27,7 +27,7 @@ use Illuminate\Support\Carbon;
  */
 final class LexofficeCommissionDocument implements CommissionDocument {
     /** `paidoff` = Gutschrift vollständig zurückgezahlt (Lexware-Doku). */
-    private const PAID_STATUSES = ['paid', 'paidoff'];
+    private const array PAID_STATUSES = ['paid', 'paidoff'];
 
     public function __construct(public readonly LexofficeVoucher $voucher) {}
 

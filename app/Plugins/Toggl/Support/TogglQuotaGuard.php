@@ -24,10 +24,10 @@ use Throwable;
  * stündliche `toggl:push`-Backfill nach Ablauf der Pause nach.
  */
 class TogglQuotaGuard {
-    private const CACHE_KEY = 'toggl:quota-pause:';
+    private const string CACHE_KEY = 'toggl:quota-pause:';
 
     /** Fallback, wenn die Antwort keine Reset-Angabe trägt (Toggl: 1h-Fenster). */
-    private const DEFAULT_PAUSE_SECONDS = 3600;
+    private const int DEFAULT_PAUSE_SECONDS = 3600;
 
     /** Pausiert die Zustellung der Org bis zum Quota-Reset; gibt die Dauer zurück. */
     public static function pauseFromException(int $organizationId, Throwable $exception): int {

@@ -37,7 +37,7 @@ class SecurityAdvisory extends Model {
     use HasSqid;
 
     /** Schweregrade in absteigender Ordnung (für Sortierung/Gate). */
-    public const SEVERITIES = ['critical', 'high', 'medium', 'low', 'unknown'];
+    public const array SEVERITIES = ['critical', 'high', 'medium', 'low', 'unknown'];
 
     protected $fillable = [
         'source',

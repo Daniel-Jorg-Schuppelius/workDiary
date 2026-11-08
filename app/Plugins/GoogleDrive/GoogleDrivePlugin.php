@@ -32,10 +32,10 @@ use Throwable;
  * blockiert (P10/Welle C).
  */
 class GoogleDrivePlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\IntakeSourceConnector, BackupTarget, DocumentIntakeSource, DocumentIntakeSubscriptions {
-    public const ID = 'google-drive';
+    public const string ID = 'google-drive';
 
     /** Von der Plugin-Discovery VOR der Instanziierung registriert. */
-    public const SERVICE_PROVIDER = GoogleDriveServiceProvider::class;
+    public const string SERVICE_PROVIDER = GoogleDriveServiceProvider::class;
 
     public function name(): string {
         return 'Google Drive';

@@ -30,7 +30,7 @@ use CommonToolkit\Helper\Data\NumberHelper;
  * Steuerberatung.
  */
 class VatFieldBreakdownService {
-    private const POSTED = [AccountingEntryStatus::Posted->value, AccountingEntryStatus::Reversed->value];
+    private const array POSTED = [AccountingEntryStatus::Posted->value, AccountingEntryStatus::Reversed->value];
 
     /**
      * @return array{fields: list<array<string, mixed>>, unclear: list<string>}

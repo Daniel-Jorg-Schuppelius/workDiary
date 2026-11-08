@@ -40,11 +40,11 @@ class LeantimeImportTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const BASE = 'https://lt.example.test';
+    private const string BASE = 'https://lt.example.test';
 
-    private const PROJECT = '8';
+    private const string PROJECT = '8';
 
-    private const LABELS = [
+    private const array LABELS = [
         '3' => ['name' => 'Neu', 'statusType' => 'NEW'],
         '1' => ['name' => 'Blockiert', 'statusType' => 'INPROGRESS'],
         '4' => ['name' => 'In Arbeit', 'statusType' => 'INPROGRESS'],

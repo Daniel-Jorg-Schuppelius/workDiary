@@ -38,7 +38,7 @@ class SearchAnswerSuggestionService implements SearchAnswerSuggester {
     use DecidesSuggestions;
 
     /** @var list<string> */
-    private const RULES = [
+    private const array RULES = [
         'Beantworte ausschließlich aus den aufgeführten Einträgen, was wann bei welchem Kunden gemacht wurde — nichts ergänzen, nichts bewerten.',
         'Nenne je Vorgang das Datum und die Kundenkennung genau so, wie sie in den Einträgen stehen (z. B. „Kunde A").',
         'Fasse zusammengehörige Einträge zu einem Vorgang zusammen; höchstens acht Sätze.',

@@ -27,13 +27,13 @@ class AlpineCspExpressionRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         'resources/views/legacy/' => 'Legacy-Modul, wird abgelöst.',
         'resources/views/vendor/' => 'Fremd-Views.',
     ];
 
     /** @var list<array{0: string, 1: string}> Muster → Beschreibung */
-    private const BANNED = [
+    private const array BANNED = [
         ['/=>/', 'Arrow-Funktion (=>)'],
         ['/\?\?/', 'Nullish-Coalescing (??)'],
         ['/\?\./', 'Optional-Chaining (?.)'],

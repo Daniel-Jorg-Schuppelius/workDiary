@@ -29,7 +29,7 @@ use ERechnungToolkit\Generators\GaebWriter;
  */
 class BoqExportService {
     /** Festes Datum im GAEBInfo, damit derselbe LV-Stand denselben Hash ergibt. */
-    private const EXPORT_DATE = '2026-01-01';
+    private const string EXPORT_DATE = '2026-01-01';
 
     public function __construct(
         private readonly BoqDocumentFactory $documents,

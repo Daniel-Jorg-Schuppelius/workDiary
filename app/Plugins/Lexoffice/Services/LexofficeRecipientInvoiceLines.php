@@ -33,11 +33,11 @@ use Illuminate\Support\Collection;
  * ihres Leistungszeitraums dort liegt (36-Monats-Rechnung von 2024 deckt 2026).
  */
 final class LexofficeRecipientInvoiceLines {
-    private const KIND_INVOICE = 'invoice';
+    private const string KIND_INVOICE = 'invoice';
 
-    private const KIND_VOIDED = 'voided';
+    private const string KIND_VOIDED = 'voided';
 
-    private const KIND_CREDIT_NOTE = 'creditnote';
+    private const string KIND_CREDIT_NOTE = 'creditnote';
 
     /** @var array<int, list<int>> Organisation → IDs der Abo-Artikel (je Instanz gemerkt) */
     private array $licenseArticleIds = [];

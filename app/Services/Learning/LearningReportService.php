@@ -30,7 +30,7 @@ use App\Models\Platform\Organization;
  */
 class LearningReportService {
     /** Mindestzahl Einschreibungen, ab der eine Quote ausgewiesen wird. */
-    public const MIN_GROUP = 5;
+    public const int MIN_GROUP = 5;
 
     /**
      * @param  list<int>|null  $courseIds  Trainer-Scoping (MVP-786): nur diese Kurse

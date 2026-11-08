@@ -27,7 +27,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  */
 class BrandingLogoController extends Controller {
     /** Ein neues Logo ist ein neuer Anhang mit neuer URL — die alte darf dauerhaft gecacht bleiben. */
-    private const CACHE_SECONDS = 31536000;
+    private const int CACHE_SECONDS = 31536000;
 
     public function __invoke(string $logo): BinaryFileResponse {
         $id = app(SqidEncoder::class)->decode(Attachment::class, $logo);

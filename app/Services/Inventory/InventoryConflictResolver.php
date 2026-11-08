@@ -37,7 +37,7 @@ use RuntimeException;
  * {@see ArticleConflictHandler} des meldenden Plugins) oder verwerfen.
  */
 class InventoryConflictResolver {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     public function __construct(private readonly InventoryLedger $ledger, private readonly ModuleRegistry $registry) {}
 

@@ -25,7 +25,7 @@ use Tests\TestCase;
 final class ProcedureImportTest extends TestCase {
     use RefreshDatabase;
 
-    private const TEXT = "Arbeitsanweisung Filterwechsel\n1. Anlage abschalten\nHauptschalter auf 0 und gegen Wiedereinschalten sichern.\n2. Filter tauschen\n3) Differenzdruck messen und notieren\nSchritt 4: Foto vom neuen Filter\n- Abnahme durch Kunden unterschreiben lassen";
+    private const string TEXT = "Arbeitsanweisung Filterwechsel\n1. Anlage abschalten\nHauptschalter auf 0 und gegen Wiedereinschalten sichern.\n2. Filter tauschen\n3) Differenzdruck messen und notieren\nSchritt 4: Foto vom neuen Filter\n- Abnahme durch Kunden unterschreiben lassen";
 
     public function test_parser_splits_numbered_steps_and_guesses_the_type(): void {
         $parsed = app(WorkInstructionParser::class)->parse(self::TEXT);

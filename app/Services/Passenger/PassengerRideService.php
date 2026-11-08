@@ -42,10 +42,10 @@ use Illuminate\Validation\ValidationException;
 class PassengerRideService {
     use AssertsValidatedTransition;
     /** Name der Pflicht-Qualifikation (Seed im Branchenprofil). */
-    public const DRIVER_QUALIFICATION = 'Fahrerlaubnis zur Fahrgastbeförderung (P-Schein)';
+    public const string DRIVER_QUALIFICATION = 'Fahrerlaubnis zur Fahrgastbeförderung (P-Schein)';
 
     /** Branchenprofil-Code (Seed unter database/data/branchprofiles). */
-    public const PROFILE_CODE = 'taxi-mietwagen';
+    public const string PROFILE_CODE = 'taxi-mietwagen';
 
     /**
      * Fahrtannahme (Gate „Fahrtannahme", Konzept §6).

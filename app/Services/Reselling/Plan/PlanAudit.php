@@ -32,35 +32,35 @@ use Illuminate\Support\Facades\Cache;
  * @phpstan-type Finding array{kind: string, subscription: ResaleSubscription|null, template: PlanTemplate|null, line: PlanLine|null, params: array<string, string|int>}
  */
 final class PlanAudit {
-    public const SUBSCRIPTION_WITHOUT_PLAN = 'subscription_without_plan';
+    public const string SUBSCRIPTION_WITHOUT_PLAN = 'subscription_without_plan';
 
-    public const PLAN_WITHOUT_SUBSCRIPTION = 'plan_without_subscription';
+    public const string PLAN_WITHOUT_SUBSCRIPTION = 'plan_without_subscription';
 
-    public const QUANTITY_MISMATCH = 'quantity_mismatch';
+    public const string QUANTITY_MISMATCH = 'quantity_mismatch';
 
-    public const PLAN_AFTER_END = 'plan_after_end';
+    public const string PLAN_AFTER_END = 'plan_after_end';
 
-    public const PLAN_PAUSED = 'plan_paused';
+    public const string PLAN_PAUSED = 'plan_paused';
 
-    public const PLAN_MISSING = 'plan_missing';
+    public const string PLAN_MISSING = 'plan_missing';
 
-    public const NEXT_EXECUTION_OFF = 'next_execution_off';
+    public const string NEXT_EXECUTION_OFF = 'next_execution_off';
 
-    public const LAST_FAILED = 'last_failed';
+    public const string LAST_FAILED = 'last_failed';
 
     /** Vorlagenposition mehr Lizenzen zugeordnet, als sie berechnet (Phase 167, MVP-1454). */
-    public const LINE_OVERBOOKED = 'line_overbooked';
+    public const string LINE_OVERBOOKED = 'line_overbooked';
 
-    public const KINDS = [
+    public const array KINDS = [
         self::SUBSCRIPTION_WITHOUT_PLAN, self::PLAN_WITHOUT_SUBSCRIPTION, self::QUANTITY_MISMATCH, self::PLAN_AFTER_END,
         self::PLAN_PAUSED, self::PLAN_MISSING, self::NEXT_EXECUTION_OFF, self::LAST_FAILED, self::LINE_OVERBOOKED,
     ];
 
     /** Toleranz zwischen nächster Ausführung der Vorlage und Periodenbeginn. */
-    private const EXECUTION_TOLERANCE_DAYS = 7;
+    private const int EXECUTION_TOLERANCE_DAYS = 7;
 
     /** Lebensdauer der Befundzähler im Cache (Sekunden). */
-    private const COUNT_TTL = 60;
+    private const int COUNT_TTL = 60;
 
     public function __construct(
         private readonly RecurringPlans $plans,

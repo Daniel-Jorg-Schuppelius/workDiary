@@ -30,7 +30,7 @@ class CustomerMatchProfile extends AbstractMatchProfile {
     use DisplaysPartyMatch;
 
     /** Schwelle für die Namens-/Firmen-Ähnlichkeit. */
-    public const FUZZY_THRESHOLD = 0.86;
+    public const float FUZZY_THRESHOLD = 0.86;
 
     public function targetType(): string {
         return Customer::class;

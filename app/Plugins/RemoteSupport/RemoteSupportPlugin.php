@@ -38,9 +38,9 @@ use Illuminate\Support\Facades\{Cache, Route};
  * plugin_settings; ENV dient nur als Fallback.
  */
 class RemoteSupportPlugin extends AbstractPlugin implements NavigationContributor, ProvidesRemoteSessions, SlotRenderer, TimeImporter {
-    public const ID = 'remote-support';
+    public const string ID = 'remote-support';
 
-    public const SERVICE_PROVIDER = RemoteSupportServiceProvider::class;
+    public const string SERVICE_PROVIDER = RemoteSupportServiceProvider::class;
 
     public function name(): string {
         return (string) __('Fernwartung');

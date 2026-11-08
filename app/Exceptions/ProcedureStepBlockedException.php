@@ -18,26 +18,26 @@ use RuntimeException;
  * (MVP-026 §3).
  */
 class ProcedureStepBlockedException extends RuntimeException {
-    public const CODE = 'procedure.stepBlocked';
+    public const string CODE = 'procedure.stepBlocked';
 
-    public const REASON_PREVIOUS_STEP_INCOMPLETE = 'previousStepIncomplete';
+    public const string REASON_PREVIOUS_STEP_INCOMPLETE = 'previousStepIncomplete';
 
-    public const REASON_RUN_NOT_ACTIVE = 'runNotActive';
+    public const string REASON_RUN_NOT_ACTIVE = 'runNotActive';
 
-    public const REASON_STEP_ALREADY_FINAL = 'stepAlreadyFinal';
+    public const string REASON_STEP_ALREADY_FINAL = 'stepAlreadyFinal';
 
-    public const REASON_MISSING_QUALIFICATION = 'missingQualification';
+    public const string REASON_MISSING_QUALIFICATION = 'missingQualification';
 
-    public const REASON_MISSING_ROLE = 'missingRole';
+    public const string REASON_MISSING_ROLE = 'missingRole';
 
-    public const REASON_SECOND_PERSON_REQUIRED = 'secondPersonRequired';
+    public const string REASON_SECOND_PERSON_REQUIRED = 'secondPersonRequired';
 
-    public const REASON_BACKUP_NOT_VERIFIED = 'backupNotVerified';
+    public const string REASON_BACKUP_NOT_VERIFIED = 'backupNotVerified';
 
-    public const REASON_PRIOR_BACKUP_MISSING = 'backupMissingOrExpired';
+    public const string REASON_PRIOR_BACKUP_MISSING = 'backupMissingOrExpired';
 
     /** Serverseitige Warte-/Trockenzeit noch nicht abgelaufen (MVP-064). */
-    public const REASON_WAIT_NOT_ELAPSED = 'waitNotElapsed';
+    public const string REASON_WAIT_NOT_ELAPSED = 'waitNotElapsed';
 
     public function __construct(
         public readonly string $reason,

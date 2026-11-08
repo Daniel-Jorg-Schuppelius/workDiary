@@ -25,13 +25,13 @@ use CommonToolkit\Helper\Data\{DateHelper, NumberHelper, StringHelper};
  * automatische Vertragsauslegung.
  */
 final class ContractTextAnalyzer {
-    private const DATE = '(\d{1,2}\.\s?\d{1,2}\.\s?\d{2,4})';
+    private const string DATE = '(\d{1,2}\.\s?\d{1,2}\.\s?\d{2,4})';
 
-    private const AMOUNT = '(\d{1,3}(?:\.\d{3})*,\d{2}|\d+(?:,\d{2})?)';
+    private const string AMOUNT = '(\d{1,3}(?:\.\d{3})*,\d{2}|\d+(?:,\d{2})?)';
 
-    private const COUNT = '(\d{1,3}|eine[nm]?|ein|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|elf|zwölf|vierundzwanzig|sechsunddreißig)';
+    private const string COUNT = '(\d{1,3}|eine[nm]?|ein|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|elf|zwölf|vierundzwanzig|sechsunddreißig)';
 
-    private const WORDS = ['ein' => 1, 'eine' => 1, 'einen' => 1, 'einem' => 1, 'zwei' => 2, 'drei' => 3, 'vier' => 4, 'fünf' => 5, 'sechs' => 6, 'sieben' => 7, 'acht' => 8, 'neun' => 9, 'zehn' => 10, 'elf' => 11, 'zwölf' => 12, 'vierundzwanzig' => 24, 'sechsunddreißig' => 36];
+    private const array WORDS = ['ein' => 1, 'eine' => 1, 'einen' => 1, 'einem' => 1, 'zwei' => 2, 'drei' => 3, 'vier' => 4, 'fünf' => 5, 'sechs' => 6, 'sieben' => 7, 'acht' => 8, 'neun' => 9, 'zehn' => 10, 'elf' => 11, 'zwölf' => 12, 'vierundzwanzig' => 24, 'sechsunddreißig' => 36];
 
     /**
      * @return array{fields: array<string, mixed>, hints: list<array{field: string, snippet: string}>}

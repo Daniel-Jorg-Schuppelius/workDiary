@@ -45,15 +45,15 @@ use Throwable;
  * das Vorzeichen des Bezugs setzt PeriodLinker::attach() über den Belegtyp.
  */
 final class LexofficeVoucherLineSync {
-    public const VOUCHER_TYPES = ['invoice', 'creditnote'];
+    public const array VOUCHER_TYPES = ['invoice', 'creditnote'];
 
     /** Backoff nach n Fehlschlägen: 2^n Stunden, ab 8 Versuchen fest 7 Tage. */
-    public const MAX_BACKOFF_HOURS = 168;
+    public const int MAX_BACKOFF_HOURS = 168;
 
-    private const BACKOFF_STEPS = 7;
+    private const int BACKOFF_STEPS = 7;
 
     /** Erfolg löscht den Fehlermarker. */
-    private const CLEARED_FAILURE = ['lines_sync_failed_at' => null, 'lines_sync_attempts' => 0];
+    private const array CLEARED_FAILURE = ['lines_sync_failed_at' => null, 'lines_sync_attempts' => 0];
 
     private ?Client $client = null;
 

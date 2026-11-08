@@ -30,7 +30,7 @@ class PlatformScopeSeparationTest extends TestCase {
     use RefreshDatabase;
 
     /** Seiten, die die ganze Installation zeigen oder steuern. */
-    private const PLATFORM_PAGES = [
+    private const array PLATFORM_PAGES = [
         'admin.scheduler.index',
         'admin.metrics.index',
         'admin.backup.status',

@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Storage;
  */
 class BasicPreflightProvider implements PreflightProvider {
     /** Für den Druck annehmbare Dateitypen. */
-    private const SUPPORTED_MIMES = [
+    private const array SUPPORTED_MIMES = [
         'application/pdf',
         'image/jpeg',
         'image/png',

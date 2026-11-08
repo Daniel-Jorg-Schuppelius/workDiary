@@ -45,7 +45,7 @@ class LearningTimeService {
      * Zeit — eine falsche Angabe in den Zeitkonten, nicht bloß eine
      * ungenaue Statistik.
      */
-    public const IDLE_CUTOFF_MINUTES = 15;
+    public const int IDLE_CUTOFF_MINUTES = 15;
 
     public function __construct(
         private readonly LearningWorkTimeClassifier $classifier,

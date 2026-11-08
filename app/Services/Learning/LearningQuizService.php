@@ -35,7 +35,7 @@ use Illuminate\Validation\ValidationException;
  */
 class LearningQuizService {
     /** Nachfrist nach Ablauf, in der eine Formularabgabe noch zählt (der Countdown löst sie aus). */
-    public const SUBMIT_GRACE_SECONDS = 30;
+    public const int SUBMIT_GRACE_SECONDS = 30;
 
     public function __construct(
         private readonly LearningAnswerGrader $grader,

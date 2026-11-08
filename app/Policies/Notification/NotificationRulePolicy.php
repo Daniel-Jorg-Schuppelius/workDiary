@@ -21,7 +21,7 @@ use App\Policies\PermissionPolicy;
 class NotificationRulePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::NotificationRuleViewAny,
         'update' => P::NotificationRuleUpdate,
     ];

@@ -36,13 +36,13 @@ class RawStatusOutputRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Repo-relativer Pfad → Begründung */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         'resources/views/legacy/' => 'Altoberfläche, eigener Rückbauplan.',
         'resources/views/vendor/' => 'Ansichten eines Fremdpakets (l5-swagger).',
     ];
 
     /** Spalten mit Zahl statt Code. */
-    private const NUMERIC_COLUMNS = ['http_status'];
+    private const array NUMERIC_COLUMNS = ['http_status'];
 
     public function test_status_codes_are_not_rendered_raw(): void {
         $column = '([a-z_]*_status|status|state)';

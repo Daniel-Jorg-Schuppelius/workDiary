@@ -29,13 +29,13 @@ use CommonToolkit\ValueObjects\Money;
  * `voided` (storniert). Bei Gutschriften ist nur {@see $totalNet} negativ.
  */
 final readonly class MirrorLine {
-    public const STATUS_ISSUED = 'issued';
+    public const string STATUS_ISSUED = 'issued';
 
-    public const STATUS_PAID = 'paid';
+    public const string STATUS_PAID = 'paid';
 
-    public const STATUS_DRAFT = 'draft';
+    public const string STATUS_DRAFT = 'draft';
 
-    public const STATUS_VOIDED = 'voided';
+    public const string STATUS_VOIDED = 'voided';
 
     public function __construct(
         public string $sourceKey,

@@ -24,7 +24,7 @@ use Illuminate\Mail\Events\MessageSent;
  * abgelegt. Fehlschläge setzt {@see \App\Mail\InvoiceMail::failed()}.
  */
 class RecordInvoiceMailDelivery {
-    public const HEADER = 'X-WorkDiary-Dispatch';
+    public const string HEADER = 'X-WorkDiary-Dispatch';
 
     public function handle(MessageSent $event): void {
         $header = $event->message->getHeaders()->get(self::HEADER);

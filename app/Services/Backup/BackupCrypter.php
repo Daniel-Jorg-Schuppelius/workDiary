@@ -26,7 +26,7 @@ use SensitiveParameter;
  * Gegenstück: {@see BackupDecrypter}.
  */
 class BackupCrypter {
-    public const COMMIT_VERSION = 1;
+    public const int COMMIT_VERSION = 1;
 
     public function __construct(
         private readonly BackupKeyring $keyring,

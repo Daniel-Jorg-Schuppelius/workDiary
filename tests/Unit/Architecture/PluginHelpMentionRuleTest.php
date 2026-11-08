@@ -33,7 +33,7 @@ class PluginHelpMentionRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** Verzeichnisse unter app/Plugins, die kein Plugin sind. */
-    private const NOT_A_PLUGIN = ['Contracts', 'Support'];
+    private const array NOT_A_PLUGIN = ['Contracts', 'Support'];
 
     /**
      * Verzeichnisname → Schreibweisen, unter denen die Erweiterung in der
@@ -43,7 +43,7 @@ class PluginHelpMentionRuleTest extends TestCase {
      *
      * @var array<string, list<string>>
      */
-    private const SPELLINGS = [
+    private const array SPELLINGS = [
         'BuchhaltungsButler' => ['buchhaltungsbutler'],
         'CalDav' => ['caldav'],
         'CardDav' => ['carddav'],

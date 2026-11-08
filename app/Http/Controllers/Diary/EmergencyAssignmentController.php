@@ -24,7 +24,7 @@ use Illuminate\View\View;
 class EmergencyAssignmentController extends Controller {
     use ManagesShiftLike;
 
-    private const MANAGE_PERMISSION = Permission::EmergencyAssignmentManage;
+    private const Permission MANAGE_PERMISSION = Permission::EmergencyAssignmentManage;
 
     public function create(Request $request): View {
         /** @var User $auth */

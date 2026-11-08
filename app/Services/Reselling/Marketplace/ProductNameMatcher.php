@@ -22,13 +22,13 @@ namespace App\Services\Reselling\Marketplace;
  * Rechnung frei setzt.
  */
 final class ProductNameMatcher {
-    private const STOPWORDS = [
+    private const array STOPWORDS = [
         'microsoft', 'ms', 'for', 'no', 'eea', 'ohne', 'the', 'and', 'und', 'fuer',
         'lizenz', 'lizenzen', 'license', 'licence', 'jahreslizenz', 'monatslizenz', 'abo', 'abonnement',
     ];
 
     /** @var array<string, list<string>> normalisierte Edition → Kurzschreibweisen (normalisiert) */
-    private const ALIASES = [
+    private const array ALIASES = [
         'exchange online plan 1' => ['exchange online', 'exchange plan 1', 'exo plan 1', 'exchange p1'],
         'microsoft 365 business standard' => ['m365 business standard', 'o365 business standard', 'business standard'],
         'microsoft 365 business premium' => ['m365 business premium', 'o365 business premium', 'business premium'],
@@ -39,7 +39,7 @@ final class ProductNameMatcher {
     ];
 
     /** Eigene Dienstleistungen, die trotz „Business"/„Microsoft" im Text keine Lizenzposition sind. */
-    private const SERVICE_HINTS = [
+    private const array SERVICE_HINTS = [
         'support', 'stunde', 'stunden', 'wartung', 'beratung', 'einrichtung', 'schulung', 'entwicklung',
         'pauschale', 'anfahrt', 'fernwartung', 'migration', 'installation', 'datev', 'betreuung',
     ];
@@ -50,13 +50,13 @@ final class ProductNameMatcher {
      * Business-Rechner); seine Microsoft-Positionen tragen immer „Microsoft 365",
      * „M365", „Exchange Online" oder „Teams Essentials" im Namen.
      */
-    private const MICROSOFT_HINTS = [
+    private const array MICROSOFT_HINTS = [
         'microsoft', 'm365', 'o365', 'office 365', 'exchange online', 'teams essentials',
         'apps for business', 'sharepoint', 'onedrive', 'azure',
     ];
 
     /** Domain-Artikel (MVP-1442): Serienvorlagen für Domains tragen „Top-Level-Domain“ mit der Domain im Positionstext. */
-    private const DOMAIN_HINTS = ['domain', 'domains', 'top level', 'tld'];
+    private const array DOMAIN_HINTS = ['domain', 'domains', 'top level', 'tld'];
 
     public static function normalize(string $text): string {
         return MarketplaceCompany::matchKey($text);

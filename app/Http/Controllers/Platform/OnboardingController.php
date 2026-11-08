@@ -25,7 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class OnboardingController extends Controller {
     /** @var list<string> */
-    private const HARD_REQUIRED_STEP_CODES = [
+    private const array HARD_REQUIRED_STEP_CODES = [
         'org.profile',
         'roles.check',
         'customer.first',
@@ -33,7 +33,7 @@ class OnboardingController extends Controller {
     ];
 
     /** @var array<string, string> */
-    private const STEP_ROUTES = [
+    private const array STEP_ROUTES = [
         'org.profile' => 'account.profile.edit',
         'org.branch_profile' => 'admin.branch-profiles.index',
         // Feature 165: Einrichtungsdialog statt Modulliste (Dialog-Route

@@ -28,7 +28,7 @@ use Jose\Component\Core\JWK;
  */
 final class LearningLtiKeyService {
     /** So lange bleibt ein zurückgezogener Schlüssel in der JWKS; kein Token lebt länger. */
-    public const RETIRED_GRACE_HOURS = 24;
+    public const int RETIRED_GRACE_HOURS = 24;
 
     /** Der signierende Schlüssel; beim ersten Bedarf wird er angelegt. */
     public function active(): LearningLtiKey {

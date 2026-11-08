@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Gate;
  * Übergabe, mögliche Dubletten) — gebündelt, sichtbar wie die Liste selbst.
  */
 final class IncomingInvoiceWorkItemSource implements WorkItemSource {
-    private const ROUTE = 'finance.incoming-invoices.index';
+    private const string ROUTE = 'finance.incoming-invoices.index';
 
     public function __construct(private readonly FeatureFlagResolver $features) {}
 

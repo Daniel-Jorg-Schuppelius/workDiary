@@ -29,9 +29,9 @@ use Illuminate\Support\Facades\{DB, Schema};
  */
 return new class extends Migration {
     /** Ein per now() gesetztes Wartungsende liegt so nah an updated_at. */
-    private const NOW_TOLERANCE_SECONDS = 5;
+    private const int NOW_TOLERANCE_SECONDS = 5;
 
-    private const CALENDAR_PLUGINS = ['caldav', 'google_calendar', 'msgraph'];
+    private const array CALENDAR_PLUGINS = ['caldav', 'google_calendar', 'msgraph'];
 
     /** @var array<int, string> */
     private array $zones = [];

@@ -26,7 +26,7 @@ use App\Policies\PermissionPolicy;
 class DomainResellerAccountPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::DomainViewAny,
         'view' => P::DomainView,
         'assignCustomer' => P::DomainCustomerAssign,

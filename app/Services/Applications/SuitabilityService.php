@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Collection;
  * Hilfe zur Auswahl, keine automatische Entscheidung.
  */
 final class SuitabilityService {
-    public const SUBJECT_KIND = 'job';
+    public const string SUBJECT_KIND = 'job';
 
     /** @return Collection<int, CompetencyRequirement> */
     public function requirements(JobRequisition $requisition): Collection {

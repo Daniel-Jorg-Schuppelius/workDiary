@@ -17,7 +17,7 @@ use App\Policies\PermissionPolicy;
 class AuditLogPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => Permission::AuditLogView,
         'view' => Permission::AuditLogView,
     ];

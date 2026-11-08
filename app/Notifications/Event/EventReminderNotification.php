@@ -17,9 +17,9 @@ use App\Support\{NotificationText, Tz};
 use Illuminate\Notifications\Messages\MailMessage;
 
 class EventReminderNotification extends DirectNotification {
-    private const TITLE_KEY = 'Erinnerung: :title';
+    private const string TITLE_KEY = 'Erinnerung: :title';
 
-    private const MESSAGE_KEY = 'Beginn: :when';
+    private const string MESSAGE_KEY = 'Beginn: :when';
 
     /**
      * @param  list<string>  $channels  e.g. ['mail', 'database']

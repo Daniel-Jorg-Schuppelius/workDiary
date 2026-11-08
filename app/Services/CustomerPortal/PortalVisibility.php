@@ -30,18 +30,18 @@ use App\Settings\SettingsRegistry;
  */
 class PortalVisibility {
     /** Zeit-Scope „nur veröffentlichte Einträge" (Standard). */
-    public const TIME_SCOPE_PUBLISHED = 'published';
+    public const string TIME_SCOPE_PUBLISHED = 'published';
 
     /** Kompatibilitäts-Scope „alle kundenbezogenen Zeiten" (bewusste Wahl). */
-    public const TIME_SCOPE_ALL = 'all';
+    public const string TIME_SCOPE_ALL = 'all';
 
     /** Jahresgrenze der Portalzeiten (MVP-1237): 0 = unbegrenzt, Obergrenze wie die Registry. */
-    public const TIME_YEARS_UNLIMITED = 0;
+    public const int TIME_YEARS_UNLIMITED = 0;
 
-    public const TIME_YEARS_MAX = 50;
+    public const int TIME_YEARS_MAX = 50;
 
     /** Registry-Schlüssel des Organisationsstandards. */
-    public const TIME_YEARS_SETTING = 'customer_portal.time_entry_years';
+    public const string TIME_YEARS_SETTING = 'customer_portal.time_entry_years';
 
     public function __construct(
         private readonly FeatureFlagResolver $features,

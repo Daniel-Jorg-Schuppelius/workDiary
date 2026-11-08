@@ -26,7 +26,7 @@ use Illuminate\View\View;
 class KanbanController extends Controller {
     use ResolvesGlobalDateRange;
 
-    private const MAX_ENTRIES = 200;
+    private const int MAX_ENTRIES = 200;
 
     /**
      * Spalten-Reihenfolge: Status-Code => Konfiguration

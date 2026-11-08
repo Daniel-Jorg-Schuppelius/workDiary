@@ -27,14 +27,14 @@ use Tests\TestCase;
  */
 class PublicTokenRouteTenantLockRuleTest extends TestCase {
     /** Middleware, die die Sperre selbst prüft. */
-    private const LOCKING_MIDDLEWARE = [
+    private const array LOCKING_MIDDLEWARE = [
         \App\Http\Middleware\AuthenticateScim::class,
         \App\Http\Middleware\B2bCatalog\ResolveB2bCatalogOrganization::class,
         \App\Http\Middleware\Careers\ResolveCareerPortal::class,
     ];
 
     /** @var array<string, string> URI => Grund */
-    private const ALLOWED = [
+    private const array ALLOWED = [
         'password/reset/{token}' => 'Kontofunktion vor der Anmeldung; die angemeldete Oberfläche sperrt EnforceTenantStatus.',
         'zahlen/{token}' => 'Entscheidung des Inhabers vom 2026-10-04: der Zahlungslink bleibt bei gesperrtem Mandanten offen.',
         'zahlen/{token}/fertig' => 'Rücksprung des Zahlungslinks, siehe `zahlen/{token}`.',

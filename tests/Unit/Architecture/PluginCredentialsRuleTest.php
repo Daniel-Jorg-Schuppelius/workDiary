@@ -26,16 +26,16 @@ class PluginCredentialsRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** Geltungsbereich: hier gehören Zugangsdaten hin. */
-    private const CREDENTIAL_HOMES = ['/Config\.php$/', '#/Api/#', '/AdminController\.php$/', '#/Database/Migrations/#'];
+    private const array CREDENTIAL_HOMES = ['/Config\.php$/', '#/Api/#', '/AdminController\.php$/', '#/Database/Migrations/#'];
 
-    private const PATTERNS = [
+    private const array PATTERNS = [
         '/\$config\[[\'"](?:api_key|api_token|api_secret|api_password|api_client|client_secret|access_token|refresh_token|token|token_id|password|secret)[\'"]\]/' => 'Geheimnis aus der Konfiguration gelesen',
         '/\b\w+Client::fromConfig\(/' => 'Client aus Rohwerten gebaut',
         '/forgetInstance\(/' => 'Dienst-Singleton verworfen',
     ];
 
     /** Lexoffice zusätzlich: Dienste nehmen nur die Organisation (Scheduler-Befund 2026-10-17). */
-    private const LEXOFFICE_PATTERNS = [
+    private const array LEXOFFICE_PATTERNS = [
         '/\$\w+\[\'(?:api_key|base_url|request_interval)\'\]/' => 'Zugangsdaten aus der Konfiguration gelesen',
         '/\$(?:apiKey|baseUrl|requestInterval)\b/' => 'Zugangsdaten als Parameter oder Feld',
         '/new\s+(?:\\\\?Lexoffice\\\\API\\\\)?Client\s*\(/' => 'SDK-Client direkt gebaut',

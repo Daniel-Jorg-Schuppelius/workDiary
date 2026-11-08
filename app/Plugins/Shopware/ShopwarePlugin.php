@@ -26,9 +26,9 @@ use App\Plugins\Support\ShopOrders\ShopOrderSettings;
 class ShopwarePlugin extends AbstractPlugin {
     use ChecksConnectionHealth;
 
-    public const ID = 'shopware';
+    public const string ID = 'shopware';
 
-    public const SERVICE_PROVIDER = ShopwareServiceProvider::class;
+    public const string SERVICE_PROVIDER = ShopwareServiceProvider::class;
 
     public function name(): string {
         return 'Shopware';

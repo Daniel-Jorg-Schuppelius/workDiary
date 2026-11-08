@@ -24,11 +24,11 @@ use Carbon\CarbonImmutable;
  * Gematcht wird das Asset später über das Feld `deviceid` (TeamViewer-ID).
  */
 class TeamViewerClient implements RemoteProvider {
-    public const ID = 'teamviewer';
+    public const string ID = 'teamviewer';
 
-    public const DEFAULT_BASE_URL = 'https://webapi.teamviewer.com/api/v1';
+    public const string DEFAULT_BASE_URL = 'https://webapi.teamviewer.com/api/v1';
 
-    private const MAX_PAGES = 200;
+    private const int MAX_PAGES = 200;
 
     private ?PluginApiClient $api = null;
 

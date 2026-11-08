@@ -26,17 +26,17 @@ use RuntimeException;
  */
 class CatalogCsvImportService {
     /** Pflicht-Zielfelder im Mapping. */
-    private const REQUIRED = ['external_no', 'name'];
+    private const array REQUIRED = ['external_no', 'name'];
 
     /** Felder, die direkt am Katalogartikel gespeichert werden. */
-    private const FIELDS = [
+    private const array FIELDS = [
         'external_no', 'manufacturer_no', 'manufacturer', 'brand', 'gtin', 'category',
         'classification_system', 'classification_code',
         'name', 'description', 'product_url', 'image_url', 'datasheet_url', 'purchase_price', 'list_price', 'currency',
         'pack_size', 'base_qty', 'availability', 'lead_time_days',
     ];
 
-    private const DECIMAL_FIELDS = ['purchase_price', 'list_price', 'pack_size', 'base_qty'];
+    private const array DECIMAL_FIELDS = ['purchase_price', 'list_price', 'pack_size', 'base_qty'];
 
     public function __construct(private readonly CatalogItemUpserter $upserter = new CatalogItemUpserter()) {}
 

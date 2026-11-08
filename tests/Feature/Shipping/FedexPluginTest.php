@@ -35,9 +35,9 @@ class FedexPluginTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const TOKEN_URL = 'https://apis-sandbox.fedex.com/oauth/token';
+    private const string TOKEN_URL = 'https://apis-sandbox.fedex.com/oauth/token';
 
-    private const SHIP_URL = 'https://apis-sandbox.fedex.com/ship/v1/shipments';
+    private const string SHIP_URL = 'https://apis-sandbox.fedex.com/ship/v1/shipments';
 
     protected function setUp(): void {
         parent::setUp();

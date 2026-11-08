@@ -38,7 +38,7 @@ use CommonToolkit\Helper\Data\NumberHelper;
  * nicht ab → Saldo 0.
  */
 class JtlStockReader {
-    private const MAX_PAGES = 50;
+    private const int MAX_PAGES = 50;
 
     public function __construct(
         private readonly JtlGatewayFactory $gateways,

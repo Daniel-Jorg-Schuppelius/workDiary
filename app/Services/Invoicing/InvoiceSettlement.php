@@ -33,7 +33,7 @@ use Illuminate\Support\Carbon;
  * Der Bankabgleich übergibt seine beleggenaue Skonto-Untergrenze selbst.
  */
 final class InvoiceSettlement {
-    private const TOLERANCE = 0.005;
+    private const float TOLERANCE = 0.005;
 
     public function __construct(private readonly RetentionService $retentions) {}
 

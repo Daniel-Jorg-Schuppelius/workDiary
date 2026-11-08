@@ -31,8 +31,8 @@ use CommonToolkit\Helper\Data\NumberHelper;
  * @phpstan-type MrpLine array{article_id: int, variant_id: int|null, level: int, gross: numeric-string, available: numeric-string, net: numeric-string, source: 'make'|'buy'}
  */
 class MrpService {
-    public const SCALE = 4;
-    public const MAX_DEPTH = 20;
+    public const int SCALE = 4;
+    public const int MAX_DEPTH = 20;
 
     public function __construct(
         private readonly BomResolver $bom,

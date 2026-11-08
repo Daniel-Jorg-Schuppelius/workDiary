@@ -22,9 +22,9 @@ use Carbon\CarbonImmutable;
 
 /** Frühwarnung (Feature 194, MVP-1469): Häufung offener Befunde unter Soll je Projekt in den letzten sieben Tagen. */
 final class ProjectTimeShortfallWarningSource implements EarlyWarningSource {
-    public const DAYS = 7;
+    public const int DAYS = 7;
 
-    public const THRESHOLD = 3;
+    public const int THRESHOLD = 3;
 
     public function key(): string {
         return 'project_target';

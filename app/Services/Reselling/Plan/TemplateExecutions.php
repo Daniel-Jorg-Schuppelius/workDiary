@@ -25,9 +25,9 @@ use Carbon\CarbonImmutable;
  * letzten Ausführung liefert Lexoffice trotz Doku nicht mit.
  */
 final class TemplateExecutions {
-    public const LOOKBACK_MONTHS = 15;
+    public const int LOOKBACK_MONTHS = 15;
 
-    private const WINDOW_DAYS = 14;
+    private const int WINDOW_DAYS = 14;
 
     public function __construct(private readonly InvoiceMirror $mirror) {}
 

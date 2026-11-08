@@ -29,7 +29,7 @@ class MetalQuotationController extends Controller {
     use ResolvesCurrentOrganization;
 
     /** Rohstoffmerker der DATANORM-Tabelle. */
-    private const METALS = ['CU', 'AL', 'AG', 'AU', 'MS', 'NI', 'PB', 'SN', 'ZN', 'W', 'CR', 'MG', 'PL'];
+    private const array METALS = ['CU', 'AL', 'AG', 'AU', 'MS', 'NI', 'PB', 'SN', 'ZN', 'W', 'CR', 'MG', 'PL'];
 
     public function index(): View {
         abort_unless((Auth::user()?->can(P::InventoryViewAny->value) ?? false) || (Auth::user()?->can(P::InventoryPost->value) ?? false), 403);

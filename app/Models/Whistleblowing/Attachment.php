@@ -31,7 +31,7 @@ class Attachment extends Model implements ProvidesCaseDek {
 
     protected $table = 'whistleblowing_attachments';
 
-    public const UPDATED_AT = null;
+    public const ?string UPDATED_AT = null;
 
     protected $fillable = [
         'organization_id',

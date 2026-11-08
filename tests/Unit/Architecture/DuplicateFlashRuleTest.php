@@ -25,10 +25,10 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class DuplicateFlashRuleTest extends TestCase {
     use ScansSourceTree;
 
-    private const PATTERN = '~session\(\s*[\'"](success|status|error|warning|info)[\'"]\s*\)~';
+    private const string PATTERN = '~session\(\s*[\'"](success|status|error|warning|info)[\'"]\s*\)~';
 
     /** @var array<string, string> Pfad-Präfix → Begründung */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         // Layout-Dateien außerhalb resources/views/layouts: SIND der zentrale Mechanismus.
         'resources/views/customer/layout.blade.php' => 'Portal-Layout, zentrale Flash-Stelle (role gesetzt)',
         // Guest-Layout rendert keine Flashes zentral — die Seite ist selbst zuständig.

@@ -26,10 +26,10 @@ use JsonException;
  * Wirkung, sobald das Paket ersetzt wird.
  */
 final class ScormContentToken {
-    public const KIND_SCORM = 'scorm';
+    public const string KIND_SCORM = 'scorm';
 
     /** cmi5 teilt den Inhalts-Host; der eigene Schlüsselzweck hält die Tokens getrennt. */
-    public const KIND_CMI5 = 'cmi5';
+    public const string KIND_CMI5 = 'cmi5';
 
     /**
      * @return non-empty-string

@@ -41,7 +41,7 @@ use RuntimeException;
  */
 final class ExternalInvoiceDispatchService {
     /** Ohne Rückmeldung gilt ein Zustellversuch danach als ungeklärt. */
-    public const UNCLEAR_AFTER_MINUTES = 30;
+    public const int UNCLEAR_AFTER_MINUTES = 30;
 
     public function __construct(
         private readonly ExternalInvoiceService $invoices,

@@ -31,11 +31,11 @@ use RuntimeException;
  * ist der Eintrag ein No-Op (erledigt).
  */
 class ZammadOutboxDispatcher implements IntegrationOutboxDispatcher {
-    public const OP_TICKET_RESOLVE = 'ticket.resolve';
+    public const string OP_TICKET_RESOLVE = 'ticket.resolve';
 
-    public const OP_TICKET_TIME = 'ticket.time';
+    public const string OP_TICKET_TIME = 'ticket.time';
 
-    public const EXT_TYPE_TIME = 'time_accounting';
+    public const string EXT_TYPE_TIME = 'time_accounting';
 
     public function pluginId(): string {
         return ZammadPlugin::ID;

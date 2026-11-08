@@ -25,7 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class RememberListUrl {
     /** Flache Map Routenname → URL; Punkt-Notation würde `a.b` und `a.b.c` ineinander schachteln. */
-    public const SESSION_KEY = 'list_urls';
+    public const string SESSION_KEY = 'list_urls';
 
     /**
      * URL der Liste samt gemerkter Filter. Die Erinnerung zählt nur, wenn der

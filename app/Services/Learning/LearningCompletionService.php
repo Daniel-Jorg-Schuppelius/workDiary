@@ -50,7 +50,7 @@ use Illuminate\Support\Facades\DB;
  */
 class LearningCompletionService {
     /** Nachweisart für gespiegelte Schulungszertifikate (Feature 117). */
-    public const SUPPLIER_CREDENTIAL_CODE = 'lms-schulung';
+    public const string SUPPLIER_CREDENTIAL_CODE = 'lms-schulung';
 
     public function __construct(
         private readonly NumberSequenceService $numbers,

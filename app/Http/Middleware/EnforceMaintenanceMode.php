@@ -30,7 +30,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class EnforceMaintenanceMode {
     /** Routen, die trotz Wartung erreichbar bleiben (An-/Abmeldung). */
-    private const ALLOWED_ROUTE_PREFIXES = [
+    private const array ALLOWED_ROUTE_PREFIXES = [
         'login',
         'logout',
         'password.',

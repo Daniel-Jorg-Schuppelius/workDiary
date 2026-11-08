@@ -38,7 +38,7 @@ class TimeAccountComparisonReportController extends Controller {
     use WritesReportCsv;
 
     /** Obergrenze dargestellter Perioden (ein Jahr in Wochen). */
-    private const MAX_PERIODS = 53;
+    private const int MAX_PERIODS = 53;
 
     /** E10: Ohne Admin zeigt der Bericht nur das eigene Konto. */
     protected function exportIsPersonal(Request $request): bool {

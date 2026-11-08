@@ -35,9 +35,9 @@ use RuntimeException;
  * $hidden-/encrypted-Regeln der Modelle).
  */
 final class ProcedureDocumentationBuilder {
-    public const SCHEMA = 'workdiary.procedure-documentation/v1';
+    public const string SCHEMA = 'workdiary.procedure-documentation/v1';
 
-    private const SECRET_KEY_PATTERN = '/secret|token|passw|api[_-]?key|apikey|private[_-]?key|credential|envelope/i';
+    private const string SECRET_KEY_PATTERN = '/secret|token|passw|api[_-]?key|apikey|private[_-]?key|credential|envelope/i';
 
     public function __construct(
         private readonly SystemSection $system,

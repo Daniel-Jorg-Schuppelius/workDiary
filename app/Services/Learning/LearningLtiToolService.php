@@ -35,14 +35,14 @@ use Jose\Component\Core\JWKSet;
  */
 final class LearningLtiToolService {
     /** Parameter in `target_link_uri` oder `custom`, der den Kurs nennt. */
-    public const COURSE_PARAMETER = 'kurs';
+    public const string COURSE_PARAMETER = 'kurs';
 
-    private const STATE_TTL_SECONDS = 600;
+    private const int STATE_TTL_SECONDS = 600;
 
     /** Die Auswahl darf dauern — eine Kursgestalterin blättert im Katalog. */
-    private const DEEP_LINKING_TTL_SECONDS = 1800;
+    private const int DEEP_LINKING_TTL_SECONDS = 1800;
 
-    private const STATE_CACHE_PREFIX = 'learning.lti.tool.state.';
+    private const string STATE_CACHE_PREFIX = 'learning.lti.tool.state.';
 
     public function __construct(
         private readonly LearningLtiRemoteKeys $remoteKeys,

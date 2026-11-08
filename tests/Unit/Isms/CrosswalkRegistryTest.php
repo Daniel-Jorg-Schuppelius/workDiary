@@ -23,7 +23,7 @@ use Tests\TestCase;
  * in der Zuordnung sofort auf. Unbekannte Keys und Schema-Verstöße werfen.
  */
 class CrosswalkRegistryTest extends TestCase {
-    private const CSF_KEY = 'nist-csf-2-0--iso27001-2022';
+    private const string CSF_KEY = 'nist-csf-2-0--iso27001-2022';
 
     private string $fixtureDir;
 

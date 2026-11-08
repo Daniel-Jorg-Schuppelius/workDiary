@@ -40,18 +40,18 @@ class CatalogRegistry extends Model {
     use HasSqid;
 
     /** Kostengruppen nach DIN 276 — die Ausgabe steckt in `edition`. */
-    public const KIND_COST_GROUP = 'cost_group';
+    public const string KIND_COST_GROUP = 'cost_group';
 
     /** Leistungsbereiche (STLB-Bau 000–098). */
-    public const KIND_WORK_CATEGORY = 'work_category';
+    public const string KIND_WORK_CATEGORY = 'work_category';
 
     /** Freie Listen der Organisation: Gebäude, Kostenträger, Kostenstelle, Raum. */
-    public const KIND_LOCALITY = 'locality';
-    public const KIND_COST_UNIT = 'cost_unit';
-    public const KIND_COST_CENTRE = 'cost_centre';
-    public const KIND_OTHER = 'other';
+    public const string KIND_LOCALITY = 'locality';
+    public const string KIND_COST_UNIT = 'cost_unit';
+    public const string KIND_COST_CENTRE = 'cost_centre';
+    public const string KIND_OTHER = 'other';
 
-    public const KINDS = [
+    public const array KINDS = [
         self::KIND_COST_GROUP, self::KIND_WORK_CATEGORY, self::KIND_LOCALITY,
         self::KIND_COST_UNIT, self::KIND_COST_CENTRE, self::KIND_OTHER,
     ];

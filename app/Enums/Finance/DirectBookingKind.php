@@ -33,7 +33,7 @@ enum DirectBookingKind: string implements HasLabel {
     /** Storno von Hand (E23); das automatische Storno bucht sofort. */
     case Reversal = 'reversal';
 
-    public const SNAPSHOT_KEY = 'direct_booking';
+    public const string SNAPSHOT_KEY = 'direct_booking';
 
     public static function of(AccountingEntry $entry): ?self {
         $snapshot = is_array($entry->snapshot) ? $entry->snapshot : [];

@@ -42,13 +42,13 @@ use RuntimeException;
 class ContractSigningService {
     use AssertsStatusTransition;
 
-    public const DEFAULT_TTL_DAYS = 7;
+    public const int DEFAULT_TTL_DAYS = 7;
 
-    public const DOWNLOAD_TTL_DAYS = 30;
+    public const int DOWNLOAD_TTL_DAYS = 30;
 
-    public const MAX_SIGNATURE_BYTES = 1_000_000;
+    public const int MAX_SIGNATURE_BYTES = 1_000_000;
 
-    public const DISK = 'local';
+    public const string DISK = 'local';
 
     public function __construct(
         private readonly NotificationDispatcher $notifier,

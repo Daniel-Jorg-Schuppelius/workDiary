@@ -42,7 +42,7 @@ class FindClearedValueObjectsCommand extends Command {
     protected $description = 'Listet Beträge/Sätze, die ein Update seit dem Wertobjekt-Umbau geleert hat (nur lesend).';
 
     /** @var array<class-string<Model>, list<string>> Felder, die die Formulare still leeren konnten. */
-    private const FIELDS = [
+    private const array FIELDS = [
         Customer::class => ['hourly_rate', 'internal_rate'],
         Article::class => ['default_purchase_price', 'default_sale_price'],
         Material::class => ['default_unit_price', 'tax_rate'],

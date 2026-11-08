@@ -29,7 +29,7 @@ use App\Plugins\Support\PluginSettingsResolver;
  */
 class TodoistConfig {
     /** Sentinel: Instanz-App aus der ENV erzwingen (kein Org-Overlay). */
-    public const INSTANCE = 0;
+    public const int INSTANCE = 0;
 
     /** @return array{client_id: string, client_secret: string, api_base: string, authorize_url: string, token_url: string, scopes: string} */
     public static function resolve(?int $organizationId = null): array {

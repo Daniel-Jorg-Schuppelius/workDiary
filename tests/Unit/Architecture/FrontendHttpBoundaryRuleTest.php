@@ -33,7 +33,7 @@ class FrontendHttpBoundaryRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad-Präfix → Begründung */
-    private const FETCH_ALLOW_LIST = [
+    private const array FETCH_ALLOW_LIST = [
         'resources/js/lib/http.js' => 'Die HTTP-Naht selbst.',
     ];
 

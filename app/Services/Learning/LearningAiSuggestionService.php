@@ -34,14 +34,14 @@ use Illuminate\Support\Str;
  * steht, wird nicht erfunden — der Prompt verlangt die Fundstelle.
  */
 class LearningAiSuggestionService {
-    public const CAPABILITY_OUTLINE = 'learning.course_outline';
+    public const string CAPABILITY_OUTLINE = 'learning.course_outline';
 
-    public const CAPABILITY_QUESTIONS = 'learning.question_draft';
+    public const string CAPABILITY_QUESTIONS = 'learning.question_draft';
 
-    public const CAPABILITY_TUTOR = 'learning.tutor';
+    public const string CAPABILITY_TUTOR = 'learning.tutor';
 
     /** Maximale Zeichenzahl des Kurskontexts — Kosten und Prompt-Grenze. */
-    private const CONTEXT_LIMIT = 12000;
+    private const int CONTEXT_LIMIT = 12000;
 
     public function __construct(
         private readonly AiInvoker $invocation,

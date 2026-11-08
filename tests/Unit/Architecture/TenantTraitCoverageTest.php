@@ -45,7 +45,7 @@ class TenantTraitCoverageTest extends TestCase {
      *
      * @var array<int, class-string>
      */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         Organization::class,
         User::class,
         UserGroup::class,

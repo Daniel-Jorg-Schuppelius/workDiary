@@ -38,20 +38,20 @@ use Illuminate\Database\Eloquent\Model;
  */
 class MatchingService {
     /** Cent-Toleranz für „Betrag passt" (Rundungsdifferenz). */
-    public const CENT_TOLERANCE = 0.02;
+    public const float CENT_TOLERANCE = 0.02;
 
     /** Maximaler Skontoabzug, der noch als Vollzahlung gilt (Prozent). */
-    public const SKONTO_PERCENT = 3.0;
+    public const float SKONTO_PERCENT = 3.0;
 
-    public const SCORE_REFERENCE = 60;
+    public const int SCORE_REFERENCE = 60;
 
-    public const SCORE_AMOUNT_EXACT = 30;
+    public const int SCORE_AMOUNT_EXACT = 30;
 
-    public const SCORE_AMOUNT_SKONTO = 18;
+    public const int SCORE_AMOUNT_SKONTO = 18;
 
-    public const SCORE_IBAN = 25;
+    public const int SCORE_IBAN = 25;
 
-    public const SCORE_DATE_NEAR = 10;
+    public const int SCORE_DATE_NEAR = 10;
 
     public function __construct(private readonly \App\Services\Invoicing\RetentionService $retentions) {}
 

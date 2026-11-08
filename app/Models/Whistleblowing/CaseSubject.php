@@ -31,7 +31,7 @@ class CaseSubject extends Model implements ProvidesCaseDek {
 
     protected $table = 'whistleblowing_case_subjects';
 
-    public const UPDATED_AT = null;
+    public const ?string UPDATED_AT = null;
 
     protected $fillable = [
         'organization_id', 'case_id', 'user_id', 'added_by', 'note_ciphertext',

@@ -28,7 +28,7 @@ use Lexoffice\Entities\EventSubscriptions\EventSubscription;
  */
 class LexofficeWebhookService {
     /** Abonnierte Events: Webhook ist nur Anstoß für gezielte Pull-Syncs. */
-    public const EVENTS = [
+    public const array EVENTS = [
         'contact.created',
         'contact.changed',
         'voucher.created',

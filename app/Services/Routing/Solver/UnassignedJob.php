@@ -14,15 +14,15 @@ namespace App\Services\Routing\Solver;
 
 /** Nicht einplanbarer Auftrag mit Grund. */
 final class UnassignedJob {
-    public const REASON_NO_QUALIFICATION = 'no_qualification';
+    public const string REASON_NO_QUALIFICATION = 'no_qualification';
 
-    public const REASON_TIME_WINDOW = 'time_window';
+    public const string REASON_TIME_WINDOW = 'time_window';
 
-    public const REASON_DAY_FULL = 'day_full';
+    public const string REASON_DAY_FULL = 'day_full';
 
-    public const REASON_UNREACHABLE = 'unreachable';
+    public const string REASON_UNREACHABLE = 'unreachable';
 
-    public const REASON_NO_COORDINATES = 'no_coordinates';
+    public const string REASON_NO_COORDINATES = 'no_coordinates';
 
     public function __construct(
         public readonly int $jobId,

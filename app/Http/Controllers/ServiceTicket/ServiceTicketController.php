@@ -23,7 +23,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ServiceTicketController extends Controller {
-    private const ALLOWED_SORTS = ['ticket_no', 'title', 'priority', 'status', 'resolution_due_at', 'reported_at'];
+    private const array ALLOWED_SORTS = ['ticket_no', 'title', 'priority', 'status', 'resolution_due_at', 'reported_at'];
 
     public function __construct(private readonly ServiceTicketService $tickets) {}
 

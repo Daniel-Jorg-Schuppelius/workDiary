@@ -32,7 +32,7 @@ class ClubDonationService {
     use AssignsSequentialNo;
 
     /** Freistellung durch Bescheid bzw. Anlage zum KSt-Bescheid oder Feststellung nach § 60a AO. */
-    public const EXEMPTION_KINDS = ['exemption_notice', 'assessment_60a'];
+    public const array EXEMPTION_KINDS = ['exemption_notice', 'assessment_60a'];
 
     /** @return array{tax_office: string, tax_number: string, exemption_kind: string, notice_date: string, assessment_period: string, purpose: string, signatory: string} */
     public function exemption(Organization $organization): array {

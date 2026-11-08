@@ -26,7 +26,7 @@ class WeekController extends Controller {
     use ResolvesGlobalDateRange;
 
     /** Maximalanzahl gleichzeitig gerenderter Wochen-Tabs. */
-    private const MAX_WEEKS = 12;
+    private const int MAX_WEEKS = 12;
 
     public function __invoke(Request $request, WeekViewService $service, HolidayService $holidays): View|RedirectResponse {
         // Backward-Compat: ?date=YYYY-MM-DD setzt den globalen Range auf die Woche und leitet auf die saubere URL um.

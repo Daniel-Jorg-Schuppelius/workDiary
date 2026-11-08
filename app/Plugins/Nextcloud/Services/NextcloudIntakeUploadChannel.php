@@ -32,7 +32,7 @@ use SensitiveParameter;
  * Plugin-Einstellungen — getrennt von Dokumenteingang und Backupziel.
  */
 class NextcloudIntakeUploadChannel implements IntakeUploadChannel {
-    public const KEY = 'nextcloud';
+    public const string KEY = 'nextcloud';
 
     public function __construct(private readonly NextcloudTransportFactory $transport) {}
 

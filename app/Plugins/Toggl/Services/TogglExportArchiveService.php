@@ -28,11 +28,11 @@ class TogglExportArchiveService {
      * an `ZipFile::extract()`, das seit common-toolkit v1.31.5 gegen die
      * deklarierte UND die tatsächliche Größe prüft.
      */
-    private const MAX_ENTRIES = 20000;
+    private const int MAX_ENTRIES = 20000;
 
-    private const MAX_TOTAL_BYTES = 2 * 1024 * 1024 * 1024;
+    private const int MAX_TOTAL_BYTES = 2 * 1024 * 1024 * 1024;
 
-    private const MAX_RATIO = 200;
+    private const int MAX_RATIO = 200;
 
     /**
      * Beschränkt einen vom Admin angegebenen Import-Pfad auf erlaubte

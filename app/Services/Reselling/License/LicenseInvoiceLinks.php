@@ -30,10 +30,10 @@ use Illuminate\Support\Collection;
  */
 final class LicenseInvoiceLinks {
     /** Verkauf ohne Rechnung gilt ab diesem Alter als Prüffall. */
-    public const UNBILLED_DAYS = 30;
+    public const int UNBILLED_DAYS = 30;
 
     /** Positionen um das Verkaufsdatum herum, die der Dialog anbietet. */
-    public const CANDIDATE_WINDOW_DAYS = 60;
+    public const int CANDIDATE_WINDOW_DAYS = 60;
 
     public function __construct(private readonly InvoiceMirror $mirror) {}
 

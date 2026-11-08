@@ -41,12 +41,12 @@ class ChatWebhook extends Model {
 
     use HasSqid;
 
-    public const KIND_TEAMS = 'teams';
+    public const string KIND_TEAMS = 'teams';
 
-    public const KIND_MATTERMOST = 'mattermost';
+    public const string KIND_MATTERMOST = 'mattermost';
 
     /** Auto-Deaktivierung nach so vielen aufeinanderfolgenden Fehlversuchen (0 = nie). */
-    public const AUTO_DISABLE_THRESHOLD = 10;
+    public const int AUTO_DISABLE_THRESHOLD = 10;
 
     protected $table = 'chat_webhooks';
 

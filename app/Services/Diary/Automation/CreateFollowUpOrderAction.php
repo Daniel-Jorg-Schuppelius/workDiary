@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Model;
  * im Dialog, der Grund steht dann im Regelprotokoll.
  */
 final class CreateFollowUpOrderAction implements RuleAction {
-    public const TYPE = 'diary.follow_up';
+    public const string TYPE = 'diary.follow_up';
 
     public function __construct(private readonly FollowUpOrderService $followUps) {}
 

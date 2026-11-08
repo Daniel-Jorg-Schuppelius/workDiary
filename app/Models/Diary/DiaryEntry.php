@@ -106,7 +106,7 @@ class DiaryEntry extends Model implements CustomFieldSubject {
     use Searchable;
 
     /** Spalten, aus denen {@see effectivePlannedMinutes()} die geplante Dauer liest. */
-    public const PLANNED_DURATION_COLUMNS = ['planned_minutes', 'service_minutes', 'time_window_start', 'time_window_end', 'start_at', 'end_at'];
+    public const array PLANNED_DURATION_COLUMNS = ['planned_minutes', 'service_minutes', 'time_window_start', 'time_window_end', 'start_at', 'end_at'];
 
     protected $fillable = [
         'organization_id',

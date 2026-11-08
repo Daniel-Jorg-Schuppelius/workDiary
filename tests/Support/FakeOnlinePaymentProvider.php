@@ -24,7 +24,7 @@ use RuntimeException;
 
 /** Zahlungsanbieter für Tests (MVP-1067): merkt sich Aufträge, der Stand wird im Test gesetzt. */
 final class FakeOnlinePaymentProvider extends AbstractPlugin implements OnlinePaymentProvider {
-    public const ID = 'fakepay';
+    public const string ID = 'fakepay';
 
     /** @var list<OnlinePaymentRequest> */
     public array $requests = [];

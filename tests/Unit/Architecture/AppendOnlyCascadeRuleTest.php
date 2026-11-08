@@ -28,7 +28,7 @@ class AppendOnlyCascadeRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Tabelle → Nachzieh-Welle */
-    private const ALLOW_LIST = [];
+    private const array ALLOW_LIST = [];
 
     public function test_append_only_tables_do_not_cascade_from_users(): void {
         $tables = $this->schemaTables();

@@ -22,20 +22,20 @@ namespace App\Support\Gobd;
  */
 final class GobdLockRegistry {
     /** Freeze-Guard im Modell (booted): nach Ausstellung/Finalisierung unveränderlich. */
-    public const MECHANISM_FREEZE = 'freeze';
+    public const string MECHANISM_FREEZE = 'freeze';
 
     /** AppendOnly-Trait: UPDATE/DELETE werfen auf Modell-Ebene. */
-    public const MECHANISM_APPEND_ONLY = 'append_only';
+    public const string MECHANISM_APPEND_ONLY = 'append_only';
 
     /** HashChainable: append-only UND SHA-256-Kette (audit:verify). */
-    public const MECHANISM_CHAIN = 'chain';
+    public const string MECHANISM_CHAIN = 'chain';
 
     /**
      * Kurzname → [Modell-Datei, Tabelle, Mechanismus].
      *
      * @var array<string, array{file: string, table: string, mechanism: string}>
      */
-    public const MODELS = [
+    public const array MODELS = [
         // Freeze nach Ausstellung/Finalisierung/Übergabe
         'Invoice' => ['file' => 'app/Models/Invoicing/Invoice.php', 'table' => 'invoices', 'mechanism' => self::MECHANISM_FREEZE],
         'DatevBookingBatch' => ['file' => 'app/Models/Finance/DatevBookingBatch.php', 'table' => 'datev_booking_batches', 'mechanism' => self::MECHANISM_FREEZE],

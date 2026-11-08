@@ -44,18 +44,18 @@ class MsgraphTaskListLink extends Model implements TaskSyncLink {
     use Auditable;
     use BelongsToOrganization;
 
-    public const KIND_PROJECT = 'project';
+    public const string KIND_PROJECT = 'project';
 
-    public const KIND_GLOBAL_KANBAN = 'global_kanban';
+    public const string KIND_GLOBAL_KANBAN = 'global_kanban';
 
-    public const MODE_TODO_TO_WORKDIARY = 'todo_to_workdiary';
+    public const string MODE_TODO_TO_WORKDIARY = 'todo_to_workdiary';
 
-    public const MODE_WORKDIARY_TO_TODO = 'workdiary_to_todo';
+    public const string MODE_WORKDIARY_TO_TODO = 'workdiary_to_todo';
 
-    public const MODE_BIDIRECTIONAL = 'bidirectional';
+    public const string MODE_BIDIRECTIONAL = 'bidirectional';
 
     /** Nach so vielen Tagen probiert der Import die Delta-Abfrage einer als delta-los markierten Liste erneut. */
-    public const DELTA_RETRY_DAYS = 30;
+    public const int DELTA_RETRY_DAYS = 30;
 
     protected $table = 'msgraph_task_list_links';
 

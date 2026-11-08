@@ -16,22 +16,22 @@ use RuntimeException;
 
 /** Abfrage beim Großhändler nicht möglich; `reason` ist der Textschlüssel unter `procurement.omd.error`. */
 final class OpenMasterdataException extends RuntimeException {
-    public const NOT_CONFIGURED = 'not_configured';
+    public const string NOT_CONFIGURED = 'not_configured';
 
-    public const NOT_FOUND = 'not_found';
+    public const string NOT_FOUND = 'not_found';
 
-    public const AMBIGUOUS = 'ambiguous';
+    public const string AMBIGUOUS = 'ambiguous';
 
     /** HTTP 950/951 der Fassung 1.x: Alternativ- oder Nachfolgeartikel, dessen Antwort der HTTP-Stapel nicht liest. */
-    public const REPLACED = 'replaced';
+    public const string REPLACED = 'replaced';
 
-    public const UNAUTHORIZED = 'unauthorized';
+    public const string UNAUTHORIZED = 'unauthorized';
 
-    public const RATE_LIMITED = 'rate_limited';
+    public const string RATE_LIMITED = 'rate_limited';
 
-    public const INVALID_RESPONSE = 'invalid_response';
+    public const string INVALID_RESPONSE = 'invalid_response';
 
-    public const FAILED = 'failed';
+    public const string FAILED = 'failed';
 
     public function __construct(public readonly string $reason, public readonly ?int $status = null) {
         parent::__construct('Open Masterdata: ' . $reason . ($status !== null ? ' (HTTP ' . $status . ')' : ''));

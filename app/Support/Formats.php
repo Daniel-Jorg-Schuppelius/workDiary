@@ -30,8 +30,8 @@ use Illuminate\Support\Facades\Auth;
  * im Datepicker (altFormat) – dasselbe Format.
  */
 final class Formats {
-    public const DATE_FALLBACK = 'd.m.Y';
-    public const TIME_FALLBACK = 'H:i';
+    public const string DATE_FALLBACK = 'd.m.Y';
+    public const string TIME_FALLBACK = 'H:i';
 
     /** PHP-Datumsformat für die Anzeige (z. B. "d.m.Y"). */
     public static function date(): string {

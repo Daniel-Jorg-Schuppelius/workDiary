@@ -35,7 +35,7 @@ class PasswordResetController extends Controller {
     }
 
     /** Mindestabstand zwischen zwei Reset-Mails an dieselbe Adresse. */
-    private const RESEND_COOLDOWN_MINUTES = 2;
+    private const int RESEND_COOLDOWN_MINUTES = 2;
 
     public function email(Request $request): RedirectResponse {
         $data = $request->validate(['email' => ['required', 'email', 'max:255']]);

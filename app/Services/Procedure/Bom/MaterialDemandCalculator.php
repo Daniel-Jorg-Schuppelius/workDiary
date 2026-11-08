@@ -30,9 +30,9 @@ use Illuminate\Support\Collection;
  * danach angewandt.
  */
 class MaterialDemandCalculator {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
-    private const WORK = 8;
+    private const int WORK = 8;
 
     /**
      * @param  Collection<int, ProcedureMaterialRequirement>  $bom

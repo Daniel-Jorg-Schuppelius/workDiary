@@ -26,7 +26,7 @@ final class AccountingProfileSection implements ProcedureSection {
     use FormatsSectionValues;
 
     /** Ab dieser Überdeckung der Vorlagenkonten gilt ein Kontenrahmen als erkannt. */
-    private const TEMPLATE_MATCH_RATIO = 0.5;
+    private const float TEMPLATE_MATCH_RATIO = 0.5;
 
     public function __construct(
         private readonly AccountingSovereigntyResolver $sovereignty,

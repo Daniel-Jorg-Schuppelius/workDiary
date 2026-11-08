@@ -31,7 +31,7 @@ use App\Services\Integration\{IntegrationOutboxDispatcherResolver, IntegrationOu
  */
 class TimeWritebackObserver {
     /** Felder, deren Änderung eine Rückschreibung auslöst. */
-    private const MIRRORED = ['description', 'started_at', 'ended_at', 'minutes', 'billable'];
+    private const array MIRRORED = ['description', 'started_at', 'ended_at', 'minutes', 'billable'];
 
     private static bool $suppressed = false;
 

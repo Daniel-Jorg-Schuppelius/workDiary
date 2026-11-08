@@ -45,7 +45,7 @@ use Illuminate\Support\Str;
  */
 class DiaryEntryTimelineService {
     /** Kanonische Filtergruppen (Ereignistypen) der Timeline. */
-    public const TYPES = [
+    public const array TYPES = [
         'status',
         'time',
         'comment',
@@ -65,7 +65,7 @@ class DiaryEntryTimelineService {
      * alle kundenbezogenen Quellen über die Aufträge des Kunden hinweg plus
      * kundendirekte Objekte (Rechnungen, Angebote, Versand).
      */
-    public const CUSTOMER_TYPES = [
+    public const array CUSTOMER_TYPES = [
         'order',
         'protocol',
         'communication',
@@ -79,7 +79,7 @@ class DiaryEntryTimelineService {
      * Lebenszyklus-Ereignisse der Protokolle; Item-/Foto-Events bleiben
      * bewusst draußen (Rauschen, vgl. Spec §7 Gruppierung).
      */
-    private const PROTOCOL_EVENTS = [
+    private const array PROTOCOL_EVENTS = [
         ProtocolEventType::Created,
         ProtocolEventType::RequestedReview,
         ProtocolEventType::ReturnedToDraft,

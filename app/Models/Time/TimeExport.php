@@ -62,7 +62,7 @@ class TimeExport extends Model {
      *
      * @var list<string>
      */
-    public const MUTABLE_AFTER_DELIVERY = [
+    public const array MUTABLE_AFTER_DELIVERY = [
         'delivery_note',
         'delivered_at',
         'delivered_by_user_id',

@@ -13,29 +13,29 @@ namespace App\Exceptions;
 use RuntimeException;
 
 class AssetValidationException extends RuntimeException {
-    public const CODE_INVALID_STATUS_TRANSITION = 'asset.invalidStatusTransition';
+    public const string CODE_INVALID_STATUS_TRANSITION = 'asset.invalidStatusTransition';
 
-    public const CODE_CUSTOMER_REQUIRED = 'asset.customerRequired';
+    public const string CODE_CUSTOMER_REQUIRED = 'asset.customerRequired';
 
-    public const CODE_CUSTOMER_FORBIDDEN = 'asset.customerForbidden';
+    public const string CODE_CUSTOMER_FORBIDDEN = 'asset.customerForbidden';
 
-    public const CODE_DECOMMISSION_DATE_REQUIRED = 'asset.decommissionDateRequired';
+    public const string CODE_DECOMMISSION_DATE_REQUIRED = 'asset.decommissionDateRequired';
 
-    public const CODE_ROOM_CUSTOMER_MISMATCH = 'asset.roomCustomerMismatch';
+    public const string CODE_ROOM_CUSTOMER_MISMATCH = 'asset.roomCustomerMismatch';
 
-    public const CODE_NOT_AVAILABLE = 'asset.notAvailableForCheckout';
+    public const string CODE_NOT_AVAILABLE = 'asset.notAvailableForCheckout';
 
-    public const CODE_ALREADY_CHECKED_OUT = 'asset.alreadyCheckedOut';
+    public const string CODE_ALREADY_CHECKED_OUT = 'asset.alreadyCheckedOut';
 
-    public const CODE_BLOCKED_BY_DEFECT = 'asset.blockedByDefect';
+    public const string CODE_BLOCKED_BY_DEFECT = 'asset.blockedByDefect';
 
-    public const CODE_ASSIGNMENT_TARGET_REQUIRED = 'asset.assignmentTargetRequired';
+    public const string CODE_ASSIGNMENT_TARGET_REQUIRED = 'asset.assignmentTargetRequired';
 
-    public const CODE_ASSIGNMENT_ALREADY_RETURNED = 'asset.assignmentAlreadyReturned';
+    public const string CODE_ASSIGNMENT_ALREADY_RETURNED = 'asset.assignmentAlreadyReturned';
 
-    public const CODE_DEFECT_RESOLUTION_NOTE_REQUIRED = 'asset.defectResolutionNoteRequired';
+    public const string CODE_DEFECT_RESOLUTION_NOTE_REQUIRED = 'asset.defectResolutionNoteRequired';
 
-    public const CODE_INVALID_DEFECT_TRANSITION = 'asset.invalidDefectTransition';
+    public const string CODE_INVALID_DEFECT_TRANSITION = 'asset.invalidDefectTransition';
 
     public function __construct(
         public readonly string $errorCode,

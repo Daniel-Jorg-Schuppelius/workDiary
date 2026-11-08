@@ -31,7 +31,7 @@ class OrglessUserDeniedTest extends TestCase {
     use RefreshDatabase;
 
     /** Route-Namen(-Präfixe), die ohne Organisation erreichbar bleiben müssen. */
-    private const EXEMPT_PREFIXES = ['logout', 'legacy.', 'install.'];
+    private const array EXEMPT_PREFIXES = ['logout', 'legacy.', 'install.'];
 
     protected function setUp(): void {
         parent::setUp();

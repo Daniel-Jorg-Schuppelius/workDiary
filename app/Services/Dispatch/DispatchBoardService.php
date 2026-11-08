@@ -41,7 +41,7 @@ use Illuminate\Support\Collection;
  */
 final class DispatchBoardService {
     /** Hoechstzahl geladener Auftraege (Schutz vor Riesen-Zeitraeumen). */
-    private const MAX_ENTRIES = 500;
+    private const int MAX_ENTRIES = 500;
 
     public function __construct(
         private readonly DispatchStatusResolver $resolver,

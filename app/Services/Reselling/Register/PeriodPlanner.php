@@ -42,7 +42,7 @@ use Illuminate\Support\Facades\DB;
 final class PeriodPlanner {
     use AssertsStatusTransition;
 
-    public const HORIZON_DAYS = 90;
+    public const int HORIZON_DAYS = 90;
 
     /**
      * Nähe, in der eine bestehende Jahresperiode als dieselbe wie ein neuer Slot gilt,
@@ -51,9 +51,9 @@ final class PeriodPlanner {
      * entschiedenen Periode eine zweite, offene. Jahresslots liegen 365 Tage auseinander,
      * die Nähe ist eindeutig; Monatsrhythmen bleiben beim exakten Datum.
      */
-    public const ADOPT_TOLERANCE_DAYS = 45;
+    public const int ADOPT_TOLERANCE_DAYS = 45;
 
-    private const MAX_PERIODS = 600;
+    private const int MAX_PERIODS = 600;
 
     /**
      * Geplante Perioden (Beginn, Ende). Eine Co-Term-Erstperiode trägt

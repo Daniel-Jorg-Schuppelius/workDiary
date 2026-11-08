@@ -33,9 +33,9 @@ class PeppolCustomerTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const SMP_BASE = 'https://smp.example.test';
+    private const string SMP_BASE = 'https://smp.example.test';
 
-    private const RECEIVER = '9930:DE987654321';
+    private const string RECEIVER = '9930:DE987654321';
 
     private User $admin;
 

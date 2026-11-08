@@ -26,7 +26,7 @@ use ERechnungToolkit\Enums\UnitCode;
  */
 final class UnitCodeMapper {
     /** DATANORM-Sonderfälle außerhalb von UN/ECE Rec 20. */
-    private const DATANORM_SPECIALS = ['stange' => 'STG', 'stg' => 'STG'];
+    private const array DATANORM_SPECIALS = ['stange' => 'STG', 'stg' => 'STG'];
 
     private function __construct() {
         // Statischer Helfer.

@@ -33,10 +33,10 @@ use Throwable;
  * strikt getrennt vom Dokumenteingang.
  */
 class DropboxPlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\IntakeSourceConnector, BackupTarget, DocumentIntakeSource {
-    public const ID = 'dropbox';
+    public const string ID = 'dropbox';
 
     /** Von der Plugin-Discovery VOR der Instanziierung registriert. */
-    public const SERVICE_PROVIDER = DropboxServiceProvider::class;
+    public const string SERVICE_PROVIDER = DropboxServiceProvider::class;
 
     public function name(): string {
         return 'Dropbox';

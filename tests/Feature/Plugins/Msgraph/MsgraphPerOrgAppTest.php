@@ -30,7 +30,7 @@ final class MsgraphPerOrgAppTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const ORG_TENANT = '11111111-2222-3333-4444-555555555555';
+    private const string ORG_TENANT = '11111111-2222-3333-4444-555555555555';
 
     protected function setUp(): void {
         parent::setUp();

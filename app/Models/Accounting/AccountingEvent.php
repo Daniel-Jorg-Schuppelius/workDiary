@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AccountingEvent extends HashChainedJournalEntry {
     protected static ?string $labelPrefix = 'audit-events';
 
-    public const UPDATED_AT = null;
+    public const ?string UPDATED_AT = null;
 
     protected $fillable = [
         'organization_id',

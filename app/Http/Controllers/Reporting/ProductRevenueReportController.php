@@ -35,7 +35,7 @@ class ProductRevenueReportController extends Controller {
     use ResolvesReportScope;
     use WritesReportCsv;
 
-    private const TOP_N_DEFAULT = 10;
+    private const int TOP_N_DEFAULT = 10;
 
     public function __construct(private readonly ProductRevenueReportBuilder $builder) {}
 

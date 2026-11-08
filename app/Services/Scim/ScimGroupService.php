@@ -29,7 +29,7 @@ use App\Support\SqidEncoder;
  * mitgeführt (`user_id = null`), damit Entra PATCHes nicht endlos wiederholt.
  */
 class ScimGroupService {
-    public const SCHEMA = 'urn:ietf:params:scim:schemas:core:2.0:Group';
+    public const string SCHEMA = 'urn:ietf:params:scim:schemas:core:2.0:Group';
 
     public function __construct(private readonly SqidEncoder $sqids) {}
 

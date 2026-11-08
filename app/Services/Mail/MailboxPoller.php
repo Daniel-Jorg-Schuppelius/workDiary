@@ -28,7 +28,7 @@ use Throwable;
  */
 final class MailboxPoller {
     /** Generische Typangaben, bei denen der Inhalt entscheidet (MVP-1142). */
-    private const GENERIC_MIMES = ['', 'application/octet-stream', 'application/binary', 'binary/octet-stream'];
+    private const array GENERIC_MIMES = ['', 'application/octet-stream', 'application/binary', 'binary/octet-stream'];
 
     public function __construct(
         private readonly MailboxGateway $gateway,

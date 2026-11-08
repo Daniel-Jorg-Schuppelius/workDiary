@@ -31,7 +31,7 @@ class B2bOrderGroupBooker implements InboxGroupBooker {
         return self::PLUGIN_ID;
     }
 
-    public const PLUGIN_ID = 'b2b-katalog';
+    public const string PLUGIN_ID = 'b2b-katalog';
 
     public function __construct(
         private readonly B2bOrderIntakeService $service,

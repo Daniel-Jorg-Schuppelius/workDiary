@@ -32,29 +32,29 @@ use Throwable;
  * (Sekunden; die Doku nennt keine Einheit, der Pilot bestätigt sie).
  */
 class SplashtopClient implements RemoteProvider {
-    public const ID = 'splashtop';
+    public const string ID = 'splashtop';
 
-    public const DEFAULT_REGION = 'eu';
+    public const string DEFAULT_REGION = 'eu';
 
-    public const REGIONS = [
+    public const array REGIONS = [
         'com' => 'https://webapi.splashtop.com',
         'eu' => 'https://webapi.splashtop.eu',
         'nr' => 'https://webapi.splashtop.nr',
     ];
 
-    public const DEFAULT_SERVICE_KINDS = 'unattended_remote,attended_remote';
+    public const string DEFAULT_SERVICE_KINDS = 'unattended_remote,attended_remote';
 
-    public const PAGE_SIZE = 500;
+    public const int PAGE_SIZE = 500;
 
-    public const MAX_PAGES = 200;
+    public const int MAX_PAGES = 200;
 
     /** Längstes Fenster einer Anfrage laut Doku. */
-    public const CHUNK_DAYS = 90;
+    public const int CHUNK_DAYS = 90;
 
     /** Frühester erlaubter Beginn laut Doku: ein Jahr zurück. */
-    public const MAX_AGE_DAYS = 365;
+    public const int MAX_AGE_DAYS = 365;
 
-    private const FIELDS = 'id,created_at,duration,srs_uuid,srs_name,service_kind,status,note,full_note,src_user_email';
+    private const string FIELDS = 'id,created_at,duration,srs_uuid,srs_name,service_kind,status,note,full_note,src_user_email';
 
     private ?PluginApiClient $api = null;
 

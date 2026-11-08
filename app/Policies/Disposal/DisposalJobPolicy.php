@@ -26,7 +26,7 @@ use App\Policies\PermissionPolicy;
 class DisposalJobPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::DisposalViewAny,
         'view' => P::DisposalView,
         'create' => P::DisposalManage,

@@ -13,9 +13,9 @@ namespace App\Exceptions;
 use RuntimeException;
 
 class ServiceTicketException extends RuntimeException {
-    public const CODE_INVALID_STATUS_TRANSITION = 'serviceTicket.invalidStatusTransition';
+    public const string CODE_INVALID_STATUS_TRANSITION = 'serviceTicket.invalidStatusTransition';
 
-    public const CODE_MISSING_ASSIGNEE = 'serviceTicket.missingAssignee';
+    public const string CODE_MISSING_ASSIGNEE = 'serviceTicket.missingAssignee';
 
     public function __construct(
         public readonly string $errorCode,

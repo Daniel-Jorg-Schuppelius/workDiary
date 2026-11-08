@@ -36,7 +36,7 @@ use Illuminate\Support\{Collection, Str};
  */
 class ActivityReportPdfRenderer {
     /** Obergrenze der Zeilen; darüber kürzt der Nachweis mit Hinweis. */
-    public const MAX_ENTRIES = 5000;
+    public const int MAX_ENTRIES = 5000;
 
     public function __construct(private readonly DocumentDesignRenderer $design) {}
 

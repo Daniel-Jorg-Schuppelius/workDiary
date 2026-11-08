@@ -43,11 +43,11 @@ class MaintenanceWindow extends Model {
     use Auditable;
     use HasSqid;
 
-    public const SCOPE_SYSTEM = 'system';
+    public const string SCOPE_SYSTEM = 'system';
 
-    public const SCOPE_ORGANIZATION = 'organization';
+    public const string SCOPE_ORGANIZATION = 'organization';
 
-    public const CACHE_KEY = 'maintenance.windows.open';
+    public const string CACHE_KEY = 'maintenance.windows.open';
 
     protected $table = 'maintenance_windows';
 

@@ -30,13 +30,13 @@ use Illuminate\Support\Carbon;
  *   eigenes Versions-/Tabellenmodell.
  */
 class RegisterExportService {
-    public const FORMATS = ['json', 'csv'];
+    public const array FORMATS = ['json', 'csv'];
 
-    public const REGISTER_RISKS = 'risks';
+    public const string REGISTER_RISKS = 'risks';
 
-    public const REGISTER_SOA = 'soa';
+    public const string REGISTER_SOA = 'soa';
 
-    public const REGISTER_CONTROLS = 'controls';
+    public const string REGISTER_CONTROLS = 'controls';
 
     // ── Registerstände (Spalten + Zeilen) ──────────────────────────────
 

@@ -25,10 +25,10 @@ use App\Services\Media\Contracts\DictationStructurer;
  * Kundennamen gehen maskiert hinaus; scheitert die KI, bleibt das Transkript.
  */
 final class DictationStructureService implements DictationStructurer {
-    public const CAPABILITY = 'dictation.structure';
+    public const string CAPABILITY = 'dictation.structure';
 
     /** Gliederung je Feld — abschließend, die KI liefert nur diese Felder. */
-    private const SCHEMA = [
+    private const array SCHEMA = [
         'activity' => 'Was zu tun war bzw. der Anlass des Einsatzes, sachlich in Fachsprache; null, wenn nicht genannt.',
         'work_done' => 'Die erledigten Arbeiten, sachlich in Fachsprache, gern als kurze Aufzählung; null, wenn nicht genannt.',
         'defects' => 'Festgestellte Mängel, Schäden oder offene Punkte; null, wenn keine genannt wurden.',

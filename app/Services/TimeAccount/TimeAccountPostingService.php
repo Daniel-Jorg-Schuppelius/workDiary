@@ -35,7 +35,7 @@ use Illuminate\Support\Str;
  */
 final class TimeAccountPostingService {
     /** Quell-Kennung der Kappungsbuchung beim Monatsabschluss. */
-    public const SOURCE_CAP = 'cap';
+    public const string SOURCE_CAP = 'cap';
 
     /**
      * @return array{posted: int, skipped: int, capped: int}

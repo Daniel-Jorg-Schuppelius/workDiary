@@ -34,10 +34,10 @@ use Illuminate\Support\Facades\{Cache, Log};
  */
 final class PhoneDirectoryResolver implements PhoneNumberResolver {
     /** Treffer selten wechselnd — lange halten (30 Tage). */
-    private const CACHE_TTL_HIT = 60 * 60 * 24 * 30;
+    private const int CACHE_TTL_HIT = 60 * 60 * 24 * 30;
 
     /** Nicht-Treffer kürzer halten (3 Tage), damit neue Einträge nachrücken. */
-    private const CACHE_TTL_MISS = 60 * 60 * 24 * 3;
+    private const int CACHE_TTL_MISS = 60 * 60 * 24 * 3;
 
     /** @var array<string, ?string> Lauf-Cache je Organisation+E.164 (aufgelöster Name). */
     private array $memo = [];

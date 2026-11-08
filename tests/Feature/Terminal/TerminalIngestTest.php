@@ -31,7 +31,7 @@ final class TerminalIngestTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const BADGE = 'AB12-CD34';
+    private const string BADGE = 'AB12-CD34';
 
     private string $token;
 

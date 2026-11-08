@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Storage;
  * (sie wird nur einmal geschrieben).
  */
 class ProtocolPdfRenderer {
-    public const DISK = 'local';
+    public const string DISK = 'local';
 
     public function __construct(private readonly ProtocolHasher $hasher) {}
 

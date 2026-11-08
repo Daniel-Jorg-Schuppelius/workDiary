@@ -33,7 +33,7 @@ use Illuminate\Support\Collection;
  */
 final class LicenseAccountOverview {
     /** Produktzeilen je Konto in der Übersicht; der Rest steht als „+ n weitere“, Domains nur als Summe (Pilot 2026-10-27: 68 Domainzeilen in einer Zeile). */
-    public const OVERVIEW_PRODUCT_LINES = 5;
+    public const int OVERVIEW_PRODUCT_LINES = 5;
 
     public function __construct(
         private readonly LicenseAccounts $accounts,

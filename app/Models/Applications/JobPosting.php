@@ -53,7 +53,7 @@ class JobPosting extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const CHANNELS = ['website', 'portal', 'agency', 'social', 'print', 'referral', 'other'];
+    public const array CHANNELS = ['website', 'portal', 'agency', 'social', 'print', 'referral', 'other'];
 
     protected $fillable = [
         'organization_id', 'job_requisition_id', 'channel', 'reference', 'url',

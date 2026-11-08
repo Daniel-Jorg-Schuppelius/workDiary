@@ -33,14 +33,14 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class EnforcePortalPreview {
     /** Auch lesend gesperrt: Seiten mit Anmeldemitteln des Kunden. */
-    private const BLOCKED_ROUTE_PREFIXES = [
+    private const array BLOCKED_ROUTE_PREFIXES = [
         'customer.2fa.',
         'customer.two-factor.',
         'customer.password.',
         'customer.profile.email.',
     ];
 
-    private const BLOCKED_PATH_PARTS = [
+    private const array BLOCKED_PATH_PARTS = [
         'two-factor',
         'zwei-faktor',
         'passwort',

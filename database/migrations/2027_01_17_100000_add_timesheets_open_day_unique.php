@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\{DB, Schema};
  */
 return new class extends Migration {
     /** @var array<int, string> */
-    private const OPEN_STATUS = ['draft', 'submitted'];
+    private const array OPEN_STATUS = ['draft', 'submitted'];
 
     public function up(): void {
         $this->guardAgainstExistingDuplicates();

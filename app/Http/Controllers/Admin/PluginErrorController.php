@@ -25,7 +25,7 @@ use Illuminate\View\View;
  * Autorisierung über das Route-Gate `manage-plugins`.
  */
 class PluginErrorController extends Controller {
-    private const ALLOWED_SORTS = ['occurred_at', 'plugin_id', 'phase', 'exception_class', 'message', 'acknowledged_at'];
+    private const array ALLOWED_SORTS = ['occurred_at', 'plugin_id', 'phase', 'exception_class', 'message', 'acknowledged_at'];
 
     public function index(Request $request, PluginManager $manager): View {
         $admin = $this->ensureAdmin($request);

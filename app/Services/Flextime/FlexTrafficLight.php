@@ -21,9 +21,9 @@ use App\Models\Platform\Organization;
  * `critical_minutes`; Defaults 20 h / 40 h.
  */
 final class FlexTrafficLight {
-    public const DEFAULT_WARN_MINUTES = 1200;
+    public const int DEFAULT_WARN_MINUTES = 1200;
 
-    public const DEFAULT_CRITICAL_MINUTES = 2400;
+    public const int DEFAULT_CRITICAL_MINUTES = 2400;
 
     public function __construct(private readonly ?Organization $organization) {}
 

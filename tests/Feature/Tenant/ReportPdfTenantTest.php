@@ -39,7 +39,7 @@ class ReportPdfTenantTest extends TestCase {
     use WithGlobalDateRange;
 
     /** Kennungen der Org-B-Fixtures — dürfen in Org-A-Exporten nie auftauchen. */
-    private const MARKERS = ['ZZLEAK-USER-B', 'ZZLEAK-CUST-B', 'ZZLEAK-PROJ-B'];
+    private const array MARKERS = ['ZZLEAK-USER-B', 'ZZLEAK-CUST-B', 'ZZLEAK-PROJ-B'];
 
     /**
      * Reporting-Routen mit `?export=pdf`-Zweig (RendersReportPdf-Trait).
@@ -50,7 +50,7 @@ class ReportPdfTenantTest extends TestCase {
      * org-gescopten Controller-Queries und werden hier bewusst nicht
      * einzeln aufgezählt.
      */
-    private const PDF_REPORT_ROUTES = [
+    private const array PDF_REPORT_ROUTES = [
         'reports.absences',
         'reports.arbzg-compliance',
         'reports.assets',

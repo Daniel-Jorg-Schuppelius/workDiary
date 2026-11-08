@@ -39,9 +39,9 @@ class SupplierCatalogImport extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
-    public const TRIGGER_MANUAL = 'manual';
+    public const string TRIGGER_MANUAL = 'manual';
 
-    public const TRIGGER_SCHEDULED = 'scheduled';
+    public const string TRIGGER_SCHEDULED = 'scheduled';
 
     protected $fillable = [
         'organization_id',

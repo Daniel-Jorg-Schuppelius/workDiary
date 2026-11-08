@@ -49,10 +49,10 @@ class IncomingInvoiceController extends Controller {
     ) {}
 
     /** Reiter der Arbeitsliste (MVP-1110/1111): benannte Filterzustände. */
-    public const TABS = ['assign', 'review', 'transfer', 'failed', 'duplicates', 'rejected', 'all'];
+    public const array TABS = ['assign', 'review', 'transfer', 'failed', 'duplicates', 'rejected', 'all'];
 
     /** Sortierbare Spalten → SQL-Spalte. */
-    private const SORTS = [
+    private const array SORTS = [
         'received_at' => 'received_at',
         'issue_date' => 'issue_date',
         'amount' => 'amount_gross',

@@ -27,11 +27,11 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 final class StatusCheckLockRuleTest extends TestCase {
     use ScansSourceTree;
 
-    private const CHECK = '/(canTransitionTo\(|assertStatusTransition\(|assertValidatedTransition\(|assertWorkflowTransition\(|ensureTransition\()/';
+    private const string CHECK = '/(canTransitionTo\(|assertStatusTransition\(|assertValidatedTransition\(|assertWorkflowTransition\(|ensureTransition\()/';
 
-    private const WRITE = '/(->update\(|->save\(\)|forceFill\(|->delete\(\))/';
+    private const string WRITE = '/(->update\(|->save\(\)|forceFill\(|->delete\(\))/';
 
-    private const LOCK = '/(lockForUpdate|Cache::lock|->block\(|lockAndAssert|lockAndRefresh|sharedLock)/';
+    private const string LOCK = '/(lockForUpdate|Cache::lock|->block\(|lockAndAssert|lockAndRefresh|sharedLock)/';
 
     public function test_status_checks_followed_by_writes_take_a_lock(): void {
         /** @var list<string> $baseline */

@@ -23,9 +23,9 @@ use App\Settings\SettingsRegistry;
  * vor System). Beleg- und Systemmails haben eigene Vorlagen und bleiben außen vor.
  */
 final class MailSignature {
-    public const FOOTER_KEY = 'communication.mail_footer';
+    public const string FOOTER_KEY = 'communication.mail_footer';
 
-    public const PREFERENCE = 'mail_signature';
+    public const string PREFERENCE = 'mail_signature';
 
     public function __construct(private readonly SettingsRegistry $registry) {}
 

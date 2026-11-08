@@ -44,7 +44,7 @@ class IncomingInvoiceTemplateController extends Controller {
     use AuthorizesOrganizationManagement;
 
     /** Höchstens so viele offene Eingänge prüft ein Probelauf — jeder kostet einen Wortboxen-Lauf. */
-    private const TRIAL_LIMIT = 30;
+    private const int TRIAL_LIMIT = 30;
 
     public function __construct(
         private readonly WordBoxSource $boxes,

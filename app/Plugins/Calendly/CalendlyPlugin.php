@@ -32,9 +32,9 @@ use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
  * -Secret sind installationsweit (ENV).
  */
 class CalendlyPlugin extends AbstractPlugin implements AppointmentSyncer {
-    public const ID = 'calendly';
+    public const string ID = 'calendly';
 
-    public const SERVICE_PROVIDER = CalendlyServiceProvider::class;
+    public const string SERVICE_PROVIDER = CalendlyServiceProvider::class;
 
     public function name(): string {
         return 'Calendly';

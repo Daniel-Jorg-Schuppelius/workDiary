@@ -33,12 +33,12 @@ use Throwable;
  * Zeilenfehler, nie ein Abbruch. Ergebnisse je Zeile als {@see ImportOutcome}.
  */
 final class DocumentZipImportService implements ZipImporter {
-    public const MAX_ENTRIES = 1_000;
+    public const int MAX_ENTRIES = 1_000;
 
     /** Entpackte Gesamtgröße — readEntries hält alle Inhalte im Speicher. */
-    public const MAX_UNPACKED_BYTES = 128 * 1024 * 1024;
+    public const int MAX_UNPACKED_BYTES = 128 * 1024 * 1024;
 
-    private const PREVIEW_ROWS = CsvPreflightAnalyzer::PREVIEW_ROWS;
+    private const int PREVIEW_ROWS = CsvPreflightAnalyzer::PREVIEW_ROWS;
 
     public function __construct(private readonly DocumentSpec $spec) {}
 

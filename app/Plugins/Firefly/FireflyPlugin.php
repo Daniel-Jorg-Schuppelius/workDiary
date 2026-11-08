@@ -28,9 +28,9 @@ use App\Plugins\Support\{ChecksConnectionHealth, SelfHostedSettings};
 class FireflyPlugin extends AbstractPlugin implements PaymentSyncer {
     use ChecksConnectionHealth;
 
-    public const ID = 'firefly';
+    public const string ID = 'firefly';
 
-    public const SERVICE_PROVIDER = FireflyServiceProvider::class;
+    public const string SERVICE_PROVIDER = FireflyServiceProvider::class;
 
     public function name(): string {
         return 'Firefly III';

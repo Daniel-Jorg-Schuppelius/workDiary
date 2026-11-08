@@ -28,10 +28,10 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class ForeignKeyCoverageTest extends TestCase {
     use ScansSourceTree;
 
-    private const EXCLUDED_PATTERN = '/(able_id$|external|plugin_id|end_to_end|remote_|^source_id$|^subject_id$|counterparty_id|_external_id|^provider_id$|^channel_id$|^message_id$|resource_id|subscription_id|^thread_id$|^tracking_id$|^session_id$|^request_id$|^object_id$|^record_id$|^item_id$|^entity_id$|^reference_id$|^primary_source_id$|^from_source_id$|^to_source_id$|^target_id$|^anchor_id$)/';
+    private const string EXCLUDED_PATTERN = '/(able_id$|external|plugin_id|end_to_end|remote_|^source_id$|^subject_id$|counterparty_id|_external_id|^provider_id$|^channel_id$|^message_id$|resource_id|subscription_id|^thread_id$|^tracking_id$|^session_id$|^request_id$|^object_id$|^record_id$|^item_id$|^entity_id$|^reference_id$|^primary_source_id$|^from_source_id$|^to_source_id$|^target_id$|^anchor_id$)/';
 
     /** @var list<string> table.column ohne FK — Stand 2026-08-23 (Welle 3, F12: appointment_requests/procedure_deviations zuerst) */
-    private const BASELINE = [
+    private const array BASELINE = [
         // Feature 185: Lexoffice-UUID der Serienvorlage am gespiegelten Beleg — Fremdkennung, der Spiegel der Vorlagen kann fehlen oder später kommen.
         'lexoffice_vouchers.recurring_template_id',
         // Phase 157/158: Kennungen in Fremdsystemen (Konto, Quellprojekt, Zeiteintrag), keine lokalen Zeilen.

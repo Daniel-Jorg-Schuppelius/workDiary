@@ -44,19 +44,19 @@ use Illuminate\Support\{Carbon, Collection};
  */
 class ReadinessService {
     /** Score-Schwelle der roten Matrix-Zone (score > 12 = hoch). */
-    public const HIGH_RISK_THRESHOLD = 12;
+    public const int HIGH_RISK_THRESHOLD = 12;
 
     /** Vorwarnfenster für Zertifikatsablauf/Überwachungstermine (Tage). */
-    public const CERTIFICATE_WINDOW_DAYS = 90;
+    public const int CERTIFICATE_WINDOW_DAYS = 90;
 
     /** Listenlimit „Top hohe Risiken". */
-    public const HIGH_RISK_LIMIT = 5;
+    public const int HIGH_RISK_LIMIT = 5;
 
     /** Listenlimit „Nachweislücken". */
-    public const EVIDENCE_GAP_LIMIT = 10;
+    public const int EVIDENCE_GAP_LIMIT = 10;
 
     /** Listenlimit der übrigen Drill-down-Listen. */
-    public const LIST_LIMIT = 5;
+    public const int LIST_LIMIT = 5;
 
     /**
      * Aggregiert alle Dashboard-Blöcke für einen Geltungsbereich.

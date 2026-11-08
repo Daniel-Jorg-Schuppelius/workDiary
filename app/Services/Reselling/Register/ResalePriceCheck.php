@@ -32,7 +32,7 @@ use Illuminate\Support\Collection;
  */
 final class ResalePriceCheck {
     /** Toleranz beim Vergleich Vertrag gegen Katalog (Cent-Rundung der Preislisten). */
-    private const TOLERANCE = 0.01;
+    private const float TOLERANCE = 0.01;
 
     /**
      * @return array{rows: list<PriceRow>, catalog_date: CarbonImmutable|null}

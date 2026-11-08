@@ -27,7 +27,7 @@ use App\Services\Numbering\Contracts\DocumentIssuer;
  * Quelle ist allein `number_formats.source`; der Kern kennt keine Plugins.
  */
 class NumberAuthority {
-    public const SOURCE_LOCAL = 'local';
+    public const string SOURCE_LOCAL = 'local';
 
     public function isExternal(Organization|int|null $organization, NumberScope $scope): bool {
         return $this->sourceFor($organization, $scope) !== self::SOURCE_LOCAL;

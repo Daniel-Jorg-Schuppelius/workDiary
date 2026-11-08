@@ -50,21 +50,21 @@ use Illuminate\Support\Str;
 class TogglExportImporter {
     use AttachesImportedTags;
 
-    public const MODE_SKIP = 'skip';
+    public const string MODE_SKIP = 'skip';
 
-    public const MODE_OWN = 'own';
+    public const string MODE_OWN = 'own';
 
-    public const MODE_CUSTOMER = 'customer';
+    public const string MODE_CUSTOMER = 'customer';
 
-    public const USER_PER_EMAIL = 'per_email';
+    public const string USER_PER_EMAIL = 'per_email';
 
     /** Wie {@see USER_PER_EMAIL}, aber unbekannte E-Mails legen ausdrücklich neue Benutzer an. */
-    public const USER_PER_EMAIL_CREATE = 'per_email_create';
+    public const string USER_PER_EMAIL_CREATE = 'per_email_create';
 
-    public const USER_SINGLE = 'single';
+    public const string USER_SINGLE = 'single';
 
     /** ExternalReference-Typ für gemerkte Endkunden-Zuordnungen (Toggl-Client → ForeignCustomer). */
-    public const EXT_TYPE_FOREIGN_CLIENT = 'foreign_client';
+    public const string EXT_TYPE_FOREIGN_CLIENT = 'foreign_client';
 
     /** @var array<string, Customer> lower(name) → Customer (Lauf-Cache) */
     private array $customerCache = [];

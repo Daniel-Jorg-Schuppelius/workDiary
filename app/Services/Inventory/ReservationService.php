@@ -30,7 +30,7 @@ use RuntimeException;
  * Entität ergänzt Lebenszyklus, Priorität und fachliche Quelle.
  */
 class ReservationService {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     public function __construct(private readonly InventoryLedger $ledger) {}
 

@@ -22,17 +22,17 @@ use CommonToolkit\Helper\Data\CryptoHelper;
  * unterdrückter/unparsbarer Rufnummer.
  */
 final class FritzboxCall {
-    public const TYPE_INCOMING = 1;
+    public const int TYPE_INCOMING = 1;
 
-    public const TYPE_MISSED = 2;
+    public const int TYPE_MISSED = 2;
 
-    public const TYPE_REJECTED = 3;
+    public const int TYPE_REJECTED = 3;
 
-    public const TYPE_OUTGOING = 4;
+    public const int TYPE_OUTGOING = 4;
 
-    public const DIR_IN = 'in';
+    public const string DIR_IN = 'in';
 
-    public const DIR_OUT = 'out';
+    public const string DIR_OUT = 'out';
 
     public function __construct(
         public readonly int $type,

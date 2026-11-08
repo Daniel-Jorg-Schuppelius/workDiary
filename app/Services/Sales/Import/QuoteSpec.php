@@ -37,7 +37,7 @@ class QuoteSpec extends AbstractEntitySpec {
     use ResolvesImportReferences;
     use ValidatesImportDates;
 
-    private const DEFAULT_TAX_RATE = '19.00';
+    private const string DEFAULT_TAX_RATE = '19.00';
 
     public function entity(): ImportEntity {
         return ImportEntity::Quotes;

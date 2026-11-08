@@ -21,7 +21,7 @@ use Tests\TestCase;
  * Recovery-Key) und Commit-Signatur.
  */
 class BackupCryptoTest extends TestCase {
-    private const UUID = '01890a5d-ac96-774b-bcce-b302099a8057';
+    private const string UUID = '01890a5d-ac96-774b-bcce-b302099a8057';
 
     private string $dir;
 

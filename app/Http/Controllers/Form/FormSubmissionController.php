@@ -44,7 +44,7 @@ class FormSubmissionController extends Controller {
      *
      * @var array<string, class-string<Model>>
      */
-    public const SUBJECT_MAP = [
+    public const array SUBJECT_MAP = [
         'diary' => DiaryEntry::class,
         'customer' => Customer::class,
         'asset' => Asset::class,

@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\{DB, Schema};
  */
 return new class extends Migration {
     /** @var array<string, string> Tabelle → Index-Präfix (Namen DB-weit eindeutig, max. 64) */
-    private const TABLES = [
+    private const array TABLES = [
         'customers' => 'cust',
         'foreign_customers' => 'fcust',
         'suppliers' => 'supp',

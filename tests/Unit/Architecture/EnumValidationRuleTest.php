@@ -23,7 +23,7 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class EnumValidationRuleTest extends TestCase {
     use ScansSourceTree;
 
-    private const PATTERN = '/(?:\'in:\'\s*\.\s*implode\(\s*\',\'\s*,\s*|Rule::in\(\s*)array_column\(\s*[\\\\\w]+::cases\(\)/';
+    private const string PATTERN = '/(?:\'in:\'\s*\.\s*implode\(\s*\',\'\s*,\s*|Rule::in\(\s*)array_column\(\s*[\\\\\w]+::cases\(\)/';
 
     public function test_enum_fields_validate_with_rule_enum(): void {
         $violations = [];

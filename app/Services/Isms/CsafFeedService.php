@@ -30,10 +30,10 @@ use Throwable;
  * Default-Provider: BSI WID (CERT-Bund).
  */
 class CsafFeedService {
-    public const DEFAULT_PROVIDER = 'https://wid.cert-bund.de/.well-known/csaf/provider-metadata.json';
+    public const string DEFAULT_PROVIDER = 'https://wid.cert-bund.de/.well-known/csaf/provider-metadata.json';
 
     /** Obergrenze je Pull — die neuesten Dokumente zuerst. */
-    public const DEFAULT_LIMIT = 20;
+    public const int DEFAULT_LIMIT = 20;
 
     public function __construct(
         private readonly AdvisoryImportService $importer,

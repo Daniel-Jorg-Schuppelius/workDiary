@@ -29,7 +29,7 @@ final class QuoteViewedAndSignatureTest extends TestCase {
     use WithOrganization;
 
     /** 1×1 Pixel, PNG. */
-    private const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+    private const string PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 
     /** @return array{0: Quote, 1: string, 2: User} */
     private function sentQuote(): array {

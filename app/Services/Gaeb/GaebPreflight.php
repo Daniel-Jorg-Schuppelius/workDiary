@@ -31,7 +31,7 @@ use ERechnungToolkit\Helper\Gaeb\GaebCalculator;
  */
 class GaebPreflight {
     /** Unterstützte GAEB-DA-XML-Hauptversion (Ziellinie 3.3; Beta 3.4 bewusst nicht). */
-    private const SUPPORTED_MAJOR = '3.';
+    private const string SUPPORTED_MAJOR = '3.';
 
     /**
      * Prüfung vor der Abgabe (MVP-619): nimmt vorweg, was ava-sign beim Reimport

@@ -18,7 +18,7 @@ use App\Policies\PermissionPolicy;
 class MeterReadingPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::MeterReadingView,
         'view' => P::MeterReadingView,
         'create' => P::MeterReadingRecord,

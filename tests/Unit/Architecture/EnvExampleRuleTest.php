@@ -23,14 +23,14 @@ class EnvExampleRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Schlüssel → wo er außerhalb von config/ gelesen wird */
-    private const READ_ELSEWHERE = [
+    private const array READ_ELSEWHERE = [
         'BCRYPT_ROUNDS' => 'vendor/laravel/framework/config/hashing.php',
         'ERROR_TOOLKIT_LOG_CHANNEL' => 'vendor/dschuppelius/php-error-toolkit/config/error-toolkit.php',
         'VITE_APP_NAME' => 'Vite-Client (import.meta.env), kein PHP-Leser',
     ];
 
     /** @var list<string> Framework-/Paketkonfiguration — dokumentiert das jeweilige Paket. */
-    private const FRAMEWORK_CONFIGS = [
+    private const array FRAMEWORK_CONFIGS = [
         'app.php', 'auth.php', 'broadcasting.php', 'cache.php', 'cors.php', 'database.php',
         'filesystems.php', 'hashing.php', 'logging.php', 'mail.php', 'queue.php', 'services.php',
         'session.php', 'view.php', 'sanctum.php', 'reverb.php', 'l5-swagger.php',

@@ -31,9 +31,9 @@ class PointerSortRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** `dragstart` sowie jedes `draggable`, das nicht ausdrücklich abschaltet; possessiv, damit `"false"` nicht über das Anführungszeichen durchrutscht. */
-    private const VIEW_PATTERN = '/\bdragstart\b|(?<![\w-])draggable\s*+=\s*+["\']?+(?!false\b)/i';
+    private const string VIEW_PATTERN = '/\bdragstart\b|(?<![\w-])draggable\s*+=\s*+["\']?+(?!false\b)/i';
 
-    private const JS_PATTERN = '/\bdragstart\b|(?<![\w-])draggable\s*+=(?!=)\s*+["\']?+(?!false\b)|setAttribute\(\s*["\']draggable["\']\s*,\s*+(?!["\']false\b)/';
+    private const string JS_PATTERN = '/\bdragstart\b|(?<![\w-])draggable\s*+=(?!=)\s*+["\']?+(?!false\b)|setAttribute\(\s*["\']draggable["\']\s*,\s*+(?!["\']false\b)/';
 
     public function test_lists_are_sorted_with_pointer_events_not_html5_drag_and_drop(): void {
         $violations = [];

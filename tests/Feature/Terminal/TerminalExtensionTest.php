@@ -26,7 +26,7 @@ final class TerminalExtensionTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const BADGE = 'EF56-GH78';
+    private const string BADGE = 'EF56-GH78';
 
     private AttendanceTerminal $terminal;
 

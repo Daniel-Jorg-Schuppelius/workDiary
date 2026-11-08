@@ -23,7 +23,7 @@ use App\Policies\PermissionPolicy;
 class DomainProviderConnectionPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::DomainProviderView,
         'view' => P::DomainProviderView,
         'create' => P::DomainProviderManage,

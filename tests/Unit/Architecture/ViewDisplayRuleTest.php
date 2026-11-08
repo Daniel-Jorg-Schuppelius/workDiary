@@ -32,7 +32,7 @@ class ViewDisplayRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> D1: Seiten mit eigenem Dokument und eigenem CSS */
-    private const OWN_ERROR_MARKUP = [
+    private const array OWN_ERROR_MARKUP = [
         'resources/views/layouts/install.blade.php' => 'Installer-Layout ohne App-Komponenten.',
         'resources/views/privacy/public/portal.blade.php' => 'Öffentliches Auskunftsportal mit eigenem CSS.',
         'resources/views/careers/layout.blade.php' => 'Karriereportal mit eigenem CSS.',
@@ -41,7 +41,7 @@ class ViewDisplayRuleTest extends TestCase {
         'resources/views/licensing/required.blade.php' => 'Lizenzseite außerhalb von layouts.app.',
     ];
 
-    private const NOT_A_SCREEN = '~^resources/views/(legacy|vendor|mail|emails|pdf|errors)/|/pdf/|/print/|(^|[/_-])pdf\.blade\.php$|[_-]pdf[_.-]|(^|[/_-])print\.blade\.php$|[_-]print[_.-]~';
+    private const string NOT_A_SCREEN = '~^resources/views/(legacy|vendor|mail|emails|pdf|errors)/|/pdf/|/print/|(^|[/_-])pdf\.blade\.php$|[_-]pdf[_.-]|(^|[/_-])print\.blade\.php$|[_-]print[_.-]~';
 
     public function test_validation_errors_use_the_component(): void {
         $violations = [];

@@ -49,14 +49,14 @@ use Throwable;
 abstract class AbstractShopOrderImportService {
     use ResolvesMarketplaceBuyer;
 
-    public const PREVIEW_LIMIT = 50;
+    public const int PREVIEW_LIMIT = 50;
 
-    private const LOCK_SECONDS = 1800;
+    private const int LOCK_SECONDS = 1800;
 
-    private const OVERLAP_MINUTES = 10;
+    private const int OVERLAP_MINUTES = 10;
 
     /** Bestell-IDs je Abfrage im Löschabgleich. */
-    private const RECONCILE_BATCH = 100;
+    private const int RECONCILE_BATCH = 100;
 
     public function __construct(
         protected readonly IntegrationResolver $resolver,

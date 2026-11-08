@@ -19,21 +19,21 @@ namespace App\Services\Invoicing;
  */
 final class BlockPrice {
     /** Satz aus den rate-Snapshots der Zeiten (enthält alle gepflegten Sätze). */
-    public const SOURCE_SNAPSHOT = 'snapshot';
+    public const string SOURCE_SNAPSHOT = 'snapshot';
 
     /** Stundensatz-Snapshot des primären Zeiteintrags. */
-    public const SOURCE_ENTRY = 'entry';
+    public const string SOURCE_ENTRY = 'entry';
 
-    public const SOURCE_CUSTOMER = 'customer';
+    public const string SOURCE_CUSTOMER = 'customer';
 
     /** Nettopreis der hinterlegten Standardleistung. */
-    public const SOURCE_SERVICE = 'service';
+    public const string SOURCE_SERVICE = 'service';
 
     /** Organisations-Standarderlös (MVP-482). */
-    public const SOURCE_ORG_DEFAULT = 'org_default';
+    public const string SOURCE_ORG_DEFAULT = 'org_default';
 
     /** Nichts auflösbar — die Position wäre 0,00 €. */
-    public const SOURCE_NONE = 'none';
+    public const string SOURCE_NONE = 'none';
 
     public function __construct(
         public readonly float $rate,

@@ -38,7 +38,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class B2bPunchoutController extends Controller {
     /** Lebensdauer einer Browse-Sitzung (Muster Feature-050-Absprung: 2 h). */
-    private const TOKEN_TTL_MINUTES = 120;
+    private const int TOKEN_TTL_MINUTES = 120;
 
     /** OCI-Einstieg: nur POST — Zugangsdaten gehören nie in URLs/Access-Logs. */
     public function punchout(Request $request): Response|RedirectResponse {

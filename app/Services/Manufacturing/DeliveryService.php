@@ -34,7 +34,7 @@ use Illuminate\Support\Facades\DB;
  * Markieren eines Faktura-Fehlers verändert die erfolgte Lagerbuchung nicht.
  */
 class DeliveryService {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     public function __construct(
         private readonly InventoryLedger $ledger,

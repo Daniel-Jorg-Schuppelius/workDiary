@@ -26,11 +26,11 @@ use Illuminate\Support\Collection;
  * wird erst durch die Person.
  */
 final class TimeBookingSuggester {
-    public const SOURCE_ORDER = 'order';
+    public const string SOURCE_ORDER = 'order';
 
-    public const SOURCE_DAY = 'day';
+    public const string SOURCE_DAY = 'day';
 
-    public const SOURCE_RECENT = 'recent';
+    public const string SOURCE_RECENT = 'recent';
 
     /**
      * @param  list<array{started_at: CarbonImmutable, ended_at: CarbonImmutable, minutes: int}>  $blocks

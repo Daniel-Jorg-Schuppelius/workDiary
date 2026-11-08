@@ -37,7 +37,7 @@ class EasybillArticleCatalogTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const POSITIONS = 'https://api.easybill.de/rest/v1/positions*';
+    private const string POSITIONS = 'https://api.easybill.de/rest/v1/positions*';
 
     protected function setUp(): void {
         parent::setUp();

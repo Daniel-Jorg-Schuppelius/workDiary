@@ -26,9 +26,9 @@ final class CatalogOpenMasterdataTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const TOKEN_URL = 'https://omd.example.com/oauth2/token';
+    private const string TOKEN_URL = 'https://omd.example.com/oauth2/token';
 
-    private const PRODUCT_URL = 'https://omd.example.com/openmasterdata/product/bySupplierPID';
+    private const string PRODUCT_URL = 'https://omd.example.com/openmasterdata/product/bySupplierPID';
 
     private User $admin;
 

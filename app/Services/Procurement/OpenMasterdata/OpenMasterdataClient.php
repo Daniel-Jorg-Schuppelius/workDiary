@@ -28,16 +28,16 @@ use Throwable;
  * Token liegt im Cache je Quelle und Anmeldung.
  */
 class OpenMasterdataClient {
-    public const SERVICE_ID = 'open-masterdata';
+    public const string SERVICE_ID = 'open-masterdata';
 
-    public const PACKAGES = ['basic', 'additional', 'prices', 'descriptions', 'logistics', 'sparepartlists', 'pictures', 'documents'];
+    public const array PACKAGES = ['basic', 'additional', 'prices', 'descriptions', 'logistics', 'sparepartlists', 'pictures', 'documents'];
 
     /** HTTP-Status mit vollständigem Produkt: Alternativ- bzw. Nachfolgeartikel. */
-    public const STATUS_ALTERNATIVE = 950;
+    public const int STATUS_ALTERNATIVE = 950;
 
-    public const STATUS_FOLLOWUP = 951;
+    public const int STATUS_FOLLOWUP = 951;
 
-    public const STATUS_AMBIGUOUS = 952;
+    public const int STATUS_AMBIGUOUS = 952;
 
     public function __construct(private readonly PluginHttpFactory $http) {}
 

@@ -22,7 +22,7 @@ use Tests\TestCase;
 class QualityHostingPriceListReaderTest extends TestCase {
     use BuildsXlsxFixtures;
 
-    private const HEADERS = ['Produkttarif', 'Vertragslaufzeit in Monaten', 'Zahlungsintervall', 'Gültig ab', 'Preis pro Monat', 'Hersteller-UVP pro Monat', 'Preis pro Zahlungsintervall', 'Hersteller-UVP pro Zahlungsintervall', 'Hersteller-Key', 'Offer-Key'];
+    private const array HEADERS = ['Produkttarif', 'Vertragslaufzeit in Monaten', 'Zahlungsintervall', 'Gültig ab', 'Preis pro Monat', 'Hersteller-UVP pro Monat', 'Preis pro Zahlungsintervall', 'Hersteller-UVP pro Zahlungsintervall', 'Hersteller-Key', 'Offer-Key'];
 
     public function test_reads_prices_with_cover_sheet_validity(): void {
         $path = sys_get_temp_dir() . '/qh-prices-' . uniqid() . '.xlsx';

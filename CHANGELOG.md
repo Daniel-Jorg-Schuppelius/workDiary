@@ -53,6 +53,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 - Übergabe- und Rechnungsblöcke nennen die Art als Bezeichnung
   („[Anfahrt]“ statt „[travel]“).
+- Entwicklung: Jede Klassenkonstante nennt ihren Typ (PHP 8.3), Gate
+  `TypedClassConstantRuleTest`.
 
 ### Fixed
 
@@ -64,8 +66,6 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Steuersatz ab; die Suche ließ den letzten Tag des Zeitraums weg; der
   Demo-Purge löschte die Organisation aus dem Audit-Eintrag.
 - Nightly auf MariaDB lief wegen eines veralteten Testpfads gar nicht.
-
-### Security
 - Peppol: Eine endgültig abgelehnte Zustellung galt als versendet; der Versuch
   steht weiter im Protokoll, der Versand meldet jetzt den Fehler des
   Zugangspunkts.
@@ -75,6 +75,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   oder einer extern ausgestellten; vorher ließ sich eine Unterlage an beiden
   oder an keiner speichern.
 - Demo-Daten: Der Sollzeitbefund am Freitag passte nicht zum halben Tagessoll.
+
+### Security
 
 - Symfony-Komponenten auf 8.1.10/8.1.11 (11 Hinweise in filesystem,
   http-foundation, http-kernel, routing, serializer und yaml).

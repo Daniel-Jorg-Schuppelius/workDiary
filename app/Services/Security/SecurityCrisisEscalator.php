@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Log;
  */
 class SecurityCrisisEscalator {
     /** Marker im `trigger_source`, über den die Entwarnung den Fall findet. */
-    public const TRIGGER_PREFIX = 'security:';
+    public const string TRIGGER_PREFIX = 'security:';
 
     /**
      * @param  array{key: string, event: string, scope: string, window_minutes: int, limit: int, crisis?: bool}  $rule

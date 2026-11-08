@@ -497,6 +497,13 @@ Belegfluss-Quelle anmeldet; der
 Kern greift dafür nicht ins Finanzmodul (Modulgrenze). Leseproben gegen
 Fremd-APIs laufen über `App\Plugins\Support\ApiHealthProbe`.
 
+## Klassenkonstanten mit Typ (2026-11-08)
+
+Jede Klassenkonstante nennt ihren Typ (PHP 8.3): `private const string X = …`,
+`const array`, `const int`, Enum-Werte mit Enum-Typ (im Enum selbst `self`),
+Eloquents `UPDATED_AT = null` als `?string`. Gate `TypedClassConstantRuleTest`
+(app, database, scripts, tests).
+
 ## Controller-Bausteine statt Helfer-Kopien (Phase 161)
 
 Angemeldeter Nutzer: `$this->authUser()` (Basis-Controller); Portal-Nutzer:

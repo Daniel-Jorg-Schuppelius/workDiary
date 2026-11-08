@@ -35,7 +35,7 @@ use Illuminate\View\View;
  */
 class ExternalParticipantController extends Controller {
     /** @var array<string, class-string<Model>> */
-    private const TYPE_MAP = [
+    private const array TYPE_MAP = [
         'diary' => DiaryEntry::class,
         'protocol' => Protocol::class,
         'document' => Document::class,

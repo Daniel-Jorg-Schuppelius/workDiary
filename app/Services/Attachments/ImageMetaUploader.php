@@ -24,9 +24,9 @@ use Illuminate\Validation\ValidationException;
  * wird der Vorgänger inkl. Datei vom Storage entfernt.
  */
 class ImageMetaUploader {
-    private const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
+    private const array IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
 
-    private const IMAGE_MIMES = [
+    private const array IMAGE_MIMES = [
         'image/jpeg',
         'image/png',
         'image/webp',

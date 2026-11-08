@@ -27,10 +27,10 @@ use CommonToolkit\Helper\Data\StringHelper;
  * Eine Nummer oder Einheit führt Akaunting am Artikel nicht.
  */
 class AkauntingArticleCatalogSource extends AccountingArticleCatalogSource {
-    public const PREFIX = 'aka';
+    public const string PREFIX = 'aka';
 
     /** Seiten je Lauf: darüber ist das Lesen unvollständig. */
-    private const MAX_PAGES = 50;
+    private const int MAX_PAGES = 50;
 
     public function __construct(private readonly AkauntingClientFactory $clients) {}
 

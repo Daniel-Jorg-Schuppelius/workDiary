@@ -21,7 +21,7 @@ use App\Policies\PermissionPolicy;
 class SurchargeRulePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::SurchargeRuleViewAny,
         'create' => P::SurchargeRuleManage,
         'update' => P::SurchargeRuleManage,

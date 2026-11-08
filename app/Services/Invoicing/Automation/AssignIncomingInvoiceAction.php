@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * `customer:<sqid>` — Eingangsbelege zu Lieferanten, Ausgangsbelege zu Kunden.
  */
 final class AssignIncomingInvoiceAction implements RuleAction {
-    public const TYPE = 'incoming_invoice.assign';
+    public const string TYPE = 'incoming_invoice.assign';
 
     public function __construct(private readonly IncomingInvoiceMatcher $matcher) {}
 

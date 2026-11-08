@@ -27,7 +27,7 @@ use Illuminate\View\View;
  */
 class McpOAuthController extends Controller {
     /** Parameter der Autorisierungsanfrage, die durch die Zustimmungsseite gereicht werden. */
-    private const AUTHORIZE_PARAMS = ['client_id', 'redirect_uri', 'response_type', 'code_challenge', 'code_challenge_method', 'scope', 'state', 'resource'];
+    private const array AUTHORIZE_PARAMS = ['client_id', 'redirect_uri', 'response_type', 'code_challenge', 'code_challenge_method', 'scope', 'state', 'resource'];
 
     public function __construct(private readonly McpAuthorizationServer $server) {}
 

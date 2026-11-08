@@ -56,22 +56,22 @@ class FritzboxImportService {
 
     public function __construct(private ?ExternalPhoneContactDirectory $contactDirectory = null) {}
 
-    public const EXT_TYPE_CALL = 'call';
+    public const string EXT_TYPE_CALL = 'call';
 
     /** MVP-534: verarbeitete Stempel-Anrufe (Idempotenz je Anruf-Schlüssel). */
-    public const EXT_TYPE_STAMP = 'stamp';
+    public const string EXT_TYPE_STAMP = 'stamp';
 
     /** MVP-534: Rufnummer → Benutzer („die Rufnummer wirkt als Ausweis"). */
-    public const EXT_TYPE_STAMP_NUMBER = 'stamp_number';
+    public const string EXT_TYPE_STAMP_NUMBER = 'stamp_number';
 
-    public const EXT_TYPE_NUMBER = 'number';
+    public const string EXT_TYPE_NUMBER = 'number';
 
-    public const EXT_TYPE_SHARED = 'shared_number';
+    public const string EXT_TYPE_SHARED = 'shared_number';
 
-    public const EXT_TYPE_IGNORED = 'ignored_number';
+    public const string EXT_TYPE_IGNORED = 'ignored_number';
 
     /** Vorschau-Zeilen je Inbox-Gruppe (Muster MatchingTimeImportService). */
-    private const GROUP_PREVIEW_LIMIT = 15;
+    private const int GROUP_PREVIEW_LIMIT = 15;
 
     protected function pluginId(): string {
         return FritzboxPlugin::ID;

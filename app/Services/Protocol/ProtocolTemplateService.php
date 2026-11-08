@@ -26,7 +26,7 @@ use Illuminate\Support\Collection;
  */
 final class ProtocolTemplateService {
     /** Konfigurationsschlüssel im value_json, die eine Vorlage übernimmt. */
-    public const CONFIG_KEYS = ['options', 'unit', 'min', 'max', 'min_length', 'max_length', 'min_count', 'max_count', 'min_per_phase', 'result_map', 'tolerance_min', 'tolerance_max'];
+    public const array CONFIG_KEYS = ['options', 'unit', 'min', 'max', 'min_length', 'max_length', 'min_count', 'max_count', 'min_per_phase', 'result_map', 'tolerance_min', 'tolerance_max'];
 
     /** @return Collection<int, ProtocolTemplate> */
     public function applicableFor(Model $subject): Collection {

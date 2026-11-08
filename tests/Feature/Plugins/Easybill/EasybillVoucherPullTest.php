@@ -35,7 +35,7 @@ class EasybillVoucherPullTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const DOCS = 'https://api.easybill.de/rest/v1/documents*';
+    private const string DOCS = 'https://api.easybill.de/rest/v1/documents*';
 
     protected function setUp(): void {
         parent::setUp();

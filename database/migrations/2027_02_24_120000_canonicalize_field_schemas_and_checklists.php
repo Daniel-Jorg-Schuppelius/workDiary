@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\DB;
  * gleich (Labels, Erledigt-Flags), nur die Form wird vereinheitlicht.
  */
 return new class extends Migration {
-    private const TYPE_ALIASES = ['select' => 'choice', 'checkbox' => 'boolean'];
+    private const array TYPE_ALIASES = ['select' => 'choice', 'checkbox' => 'boolean'];
 
     public function up(): void {
         $this->rewriteFieldTypes('form_templates', 'fields');

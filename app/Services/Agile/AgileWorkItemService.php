@@ -29,7 +29,7 @@ use RuntimeException;
  * Transaktion (fester Katalog).
  */
 class AgileWorkItemService {
-    private const RANK_STEP = 1000;
+    private const int RANK_STEP = 1000;
 
     /** Bestehende Projektaufgabe ins Backlog übernehmen (idempotent). */
     public function adopt(AgileBoard $board, Task $task, ?User $actor = null): AgileWorkItem {

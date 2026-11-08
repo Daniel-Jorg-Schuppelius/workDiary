@@ -32,9 +32,9 @@ use Illuminate\Database\Eloquent\Model;
  * ambiguous, sonst unmatched), Herkunftsnachweis im `remote_snapshot` (DoD 056).
  */
 class MailIntakeService {
-    public const PLUGIN_ID = 'email';
+    public const string PLUGIN_ID = 'email';
 
-    public const EXTERNAL_TYPE = 'message';
+    public const string EXTERNAL_TYPE = 'message';
 
     public function __construct(
         private readonly EntityMatcher $matcher,

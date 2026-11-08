@@ -22,7 +22,7 @@ use Illuminate\View\View;
 class SiteController extends Controller {
     use ParsesIndexQuery;
 
-    private const ALLOWED_SORTS = ['name', 'address_city', 'is_active'];
+    private const array ALLOWED_SORTS = ['name', 'address_city', 'is_active'];
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Site::class);

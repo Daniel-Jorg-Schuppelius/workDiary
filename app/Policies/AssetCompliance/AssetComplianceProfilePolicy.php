@@ -26,7 +26,7 @@ use App\Policies\PermissionPolicy;
 class AssetComplianceProfilePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::AssetComplianceViewAny,
         'view' => P::AssetComplianceView,
         'create' => P::AssetComplianceManage,

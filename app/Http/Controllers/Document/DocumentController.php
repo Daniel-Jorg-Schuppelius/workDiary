@@ -41,7 +41,7 @@ class DocumentController extends Controller {
      *
      * @var array<string, class-string<Model>>
      */
-    private const DOCUMENTABLE_MAP = [
+    private const array DOCUMENTABLE_MAP = [
         'customer' => Customer::class,
         'project' => Project::class,
         'diary' => DiaryEntry::class,

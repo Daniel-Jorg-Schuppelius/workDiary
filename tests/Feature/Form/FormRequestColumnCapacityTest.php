@@ -28,7 +28,7 @@ use Throwable;
  */
 class FormRequestColumnCapacityTest extends TestCase {
     /** Regeln, die ihren Wertebereich selbst festlegen. */
-    private const SELF_BOUNDED = ['boolean', 'date', 'uuid', 'ulid', 'ip', 'ipv4', 'ipv6', 'mac_address', 'timezone', 'accepted'];
+    private const array SELF_BOUNDED = ['boolean', 'date', 'uuid', 'ulid', 'ip', 'ipv4', 'ipv6', 'mac_address', 'timezone', 'accepted'];
 
     public function test_form_request_rules_fit_their_columns(): void {
         $schema = $this->schemaColumns();

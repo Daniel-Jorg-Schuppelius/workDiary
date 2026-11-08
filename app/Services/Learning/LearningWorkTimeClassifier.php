@@ -37,9 +37,9 @@ use Illuminate\Support\Carbon;
  * lernenden Person, aber sichtbar gekennzeichnet).
  */
 class LearningWorkTimeClassifier {
-    public const INSIDE = 'inside';
-    public const OUTSIDE = 'outside';
-    public const UNKNOWN = 'unknown';
+    public const string INSIDE = 'inside';
+    public const string OUTSIDE = 'outside';
+    public const string UNKNOWN = 'unknown';
 
     public function classify(User $user, Carbon $start, Carbon $end): string {
         if ($this->overlapsAttendance($user, $start, $end)) {

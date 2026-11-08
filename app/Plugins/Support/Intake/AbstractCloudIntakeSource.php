@@ -32,7 +32,7 @@ use Throwable;
  * @template TState of array<string, mixed>
  */
 abstract class AbstractCloudIntakeSource {
-    protected const CHECKPOINT_VERSION = 1;
+    protected const int CHECKPOINT_VERSION = 1;
 
     /** Name der Quelle in Fehlermeldungen. */
     abstract protected function sourceName(): string;

@@ -53,7 +53,7 @@ class AssetDefect extends Model {
     use SoftDeletes;
 
     /** meta_type der am Defekt hängenden Fotos/Belege. */
-    public const PHOTO_META = 'defect_photo';
+    public const string PHOTO_META = 'defect_photo';
 
     protected $fillable = [
         'organization_id',

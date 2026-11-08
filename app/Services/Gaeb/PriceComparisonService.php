@@ -36,7 +36,7 @@ final class PriceComparisonService {
      * Ab welchem Abstand zum nächstgünstigeren Angebot die Vergabeordnung eine
      * Aufklärung nahelegt — in der Praxis zehn Prozent.
      */
-    private const UNUSUALLY_LOW_PERCENT = 10.0;
+    private const float UNUSUALLY_LOW_PERCENT = 10.0;
 
     /**
      * @return array{

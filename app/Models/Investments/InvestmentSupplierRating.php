@@ -36,7 +36,7 @@ class InvestmentSupplierRating extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const CRITERIA = ['schedule_score', 'cost_score', 'quality_score'];
+    public const array CRITERIA = ['schedule_score', 'cost_score', 'quality_score'];
 
     protected $fillable = ['organization_id', 'investment_case_id', 'supplier_id', 'schedule_score', 'cost_score', 'quality_score', 'note', 'rated_by'];
 

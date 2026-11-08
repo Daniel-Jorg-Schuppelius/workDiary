@@ -43,7 +43,7 @@ class PlanGateCoverageRuleTest extends TestCase {
      *
      * @var array<string, string>
      */
-    private const EXCEPTIONS = [];
+    private const array EXCEPTIONS = [];
 
     /** Eine Ausnahme ohne Begründung ist ein Vergessen mit Alibi. */
     public function test_ausnahmen_sind_begruendet(): void {

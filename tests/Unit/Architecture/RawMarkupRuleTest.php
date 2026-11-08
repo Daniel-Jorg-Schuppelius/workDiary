@@ -48,7 +48,7 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 final class RawMarkupRuleTest extends TestCase {
     use ScansSourceTree;
 
-    public const RULES = [
+    public const array RULES = [
         'M1' => 'Abzeichen → <x-status-badge> (tone, size, outline; tone="plain" ohne Tonklasse)',
         'M2' => 'Knopf → <x-button> bzw. <x-icon-btn> (type="submit" ausschreiben, href mit :href binden)',
         'M3' => 'Detail-Liste → <x-detail-grid> mit <x-detail-grid.row> (layout="cells" Label über Wert, layout="split" Wert am rechten Rand)',
@@ -56,19 +56,19 @@ final class RawMarkupRuleTest extends TestCase {
         'M5' => 'Kartenoptik → <x-card> (as="…", padding="…")',
     ];
 
-    private const MARKER = 'raw-markup-ok:';
+    private const string MARKER = 'raw-markup-ok:';
 
-    private const NOT_A_SCREEN = '~^resources/views/(?:legacy|vendor|components|layouts|mail|emails|pdf|print|errors)/|/pdf/|/print/|(?:^|[/_-])pdf\.blade\.php$|(?:^|[/_-])print\.blade\.php$~';
+    private const string NOT_A_SCREEN = '~^resources/views/(?:legacy|vendor|components|layouts|mail|emails|pdf|print|errors)/|/pdf/|/print/|(?:^|[/_-])pdf\.blade\.php$|(?:^|[/_-])print\.blade\.php$~';
 
     /** Träger, deren Markup `<x-status-badge>` nicht rendert. */
-    private const BADGE_CARRIERS = ['a', 'button', 'summary', 'label', 'input', 'option'];
+    private const array BADGE_CARRIERS = ['a', 'button', 'summary', 'label', 'input', 'option'];
 
     /** Schwebende Flächen und Aufklapper sind keine Seitenkarten. */
-    private const FLOATING = ['dropdown-content', 'absolute', 'fixed', 'menu', 'collapse', 'modal-box'];
+    private const array FLOATING = ['dropdown-content', 'absolute', 'fixed', 'menu', 'collapse', 'modal-box'];
 
-    private const EMPTY_TEXT = '~^(?:Kein|Noch kein|Nichts|Bisher kein)~u';
+    private const string EMPTY_TEXT = '~^(?:Kein|Noch kein|Nichts|Bisher kein)~u';
 
-    private const EMPTY_KEY = '~^(?:[a-z0-9_-]+::)?[a-z0-9_]+(?:\.[a-z0-9_]+)*\.(?:empty|none|nothing|no_data|no_entries|no_results|[a-z0-9_]+_empty)$~';
+    private const string EMPTY_KEY = '~^(?:[a-z0-9_-]+::)?[a-z0-9_]+(?:\.[a-z0-9_]+)*\.(?:empty|none|nothing|no_data|no_entries|no_results|[a-z0-9_]+_empty)$~';
 
     /** @var array<string, array<string, list<int>>>|null Datei → Regel → Zeilen */
     private static ?array $found = null;

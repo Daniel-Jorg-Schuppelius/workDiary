@@ -48,7 +48,7 @@ class OrganizationSsoDomain extends Model {
     ];
 
     /** Name des DNS-TXT-Eintrags, mit dem eine Domain nachgewiesen wird. */
-    public const DNS_PREFIX = '_workdiary-sso';
+    public const string DNS_PREFIX = '_workdiary-sso';
 
     /**
      * Nur eine nachgewiesene Domain lenkt Anmeldungen (Sicherheitsscan

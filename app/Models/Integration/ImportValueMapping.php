@@ -26,13 +26,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ImportValueMapping extends Model {
     use BelongsToOrganization;
 
-    public const KIND_TAG = 'tag';
+    public const string KIND_TAG = 'tag';
 
-    public const KIND_CLASSIFICATION = 'classification';
+    public const string KIND_CLASSIFICATION = 'classification';
 
-    public const KIND_IGNORE = 'ignore';
+    public const string KIND_IGNORE = 'ignore';
 
-    public const KIND_USER = 'user';
+    public const string KIND_USER = 'user';
 
     protected $fillable = [
         'organization_id',

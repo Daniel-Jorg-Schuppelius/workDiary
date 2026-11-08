@@ -27,13 +27,13 @@ use App\Services\Concerns\SeedsIsolatedPermissionSet;
 final class DataProtectionPermissions {
     use SeedsIsolatedPermissionSet;
 
-    public const ROLE_DATENSCHUTZ = 'datenschutz';
+    public const string ROLE_DATENSCHUTZ = 'datenschutz';
 
     /** Trait-Vertrag ({@see SeedsIsolatedPermissionSet}). */
-    public const ROLE = self::ROLE_DATENSCHUTZ;
+    public const string ROLE = self::ROLE_DATENSCHUTZ;
 
     /** @var list<string> */
-    public const ALL = [
+    public const array ALL = [
         'dataprotection.view',
         'dataprotection.ropa.manage',   // VVT bearbeiten/versionieren
         'dataprotection.ropa.approve',  // VVT freigeben

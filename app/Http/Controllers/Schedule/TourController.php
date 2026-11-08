@@ -38,7 +38,7 @@ class TourController extends Controller {
     use ResolvesGlobalDateRange, ResolvesRequestedUser;
 
     /** Marker je Stammdaten-Layer der Karte; mehr wird gekürzt und angezeigt (MVP-1173). */
-    public const MAX_LAYER_MARKERS = 1000;
+    public const int MAX_LAYER_MARKERS = 1000;
 
     public function __construct(private readonly TourService $tours) {}
 

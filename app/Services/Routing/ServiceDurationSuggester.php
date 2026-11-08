@@ -21,11 +21,11 @@ use App\Services\Diary\Contracts\ServiceDurationSource;
  * fünf Werten. Nur Vorschlag — nie stilles Überschreiben.
  */
 class ServiceDurationSuggester implements ServiceDurationSource {
-    public const MIN_SAMPLES = 3;
+    public const int MIN_SAMPLES = 3;
 
-    public const MIN_CUSTOMER_SAMPLES = 5;
+    public const int MIN_CUSTOMER_SAMPLES = 5;
 
-    public const MAX_MINUTES = 12 * 60;
+    public const int MAX_MINUTES = 12 * 60;
 
     /** @return array{minutes: int, samples: int, scope: 'customer'|'type'}|null */
     public function suggest(?int $entryTypeId, ?int $customerId = null): ?array {

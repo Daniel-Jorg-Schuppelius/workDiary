@@ -33,7 +33,7 @@ use Illuminate\Validation\ValidationException;
  */
 class CustomerIntakeQuoteService {
     /** Lizenz der Angebote (Vertriebsmodul). */
-    public const MODULE = 'module.vertrieb';
+    public const string MODULE = 'module.vertrieb';
 
     public function __construct(
         private readonly QuoteService $quotes,

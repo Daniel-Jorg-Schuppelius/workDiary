@@ -25,7 +25,7 @@ use App\Policies\PermissionPolicy;
 class TextCorrectionPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::FinanceConfig,
         'view' => P::FinanceConfig,
         'create' => P::FinanceConfig,

@@ -26,11 +26,11 @@ use Carbon\CarbonImmutable;
  * @phpstan-type RenewalRow array{subscription: ResaleSubscription, date: CarbonImmutable, days: int, mode: string}
  */
 final class ResaleRenewalReport {
-    public const MODE_RENEWS = 'renews';
-    public const MODE_ENDS = 'ends';
+    public const string MODE_RENEWS = 'renews';
+    public const string MODE_ENDS = 'ends';
 
     /** @var list<int> Fristen der Kennzahlen-Kacheln (Tage ab Stichtag) */
-    public const BUCKETS = [30, 60, 90];
+    public const array BUCKETS = [30, 60, 90];
 
     public function __construct(private readonly PeriodPlanner $planner) {}
 

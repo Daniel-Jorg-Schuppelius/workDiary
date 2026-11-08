@@ -27,7 +27,7 @@ use SensitiveParameter;
  * Schlüsselmaterial verlässt diese Klasse nie in Logs/Exceptions.
  */
 class BackupKeyring {
-    private const SIGN_KDF_CONTEXT = 'workdiary-backup-sign-v1';
+    private const string SIGN_KDF_CONTEXT = 'workdiary-backup-sign-v1';
 
     /** Zufälliger Datenschlüssel für einen neuen Snapshot (secretstream). */
     public function generateDataKey(): string {

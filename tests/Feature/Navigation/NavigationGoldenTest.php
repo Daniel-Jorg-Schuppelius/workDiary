@@ -106,7 +106,7 @@ use Tests\TestCase;
 class NavigationGoldenTest extends TestCase {
     use RefreshDatabase;
 
-    private const FIXTURE = 'tests/Fixtures/navigation-golden.json';
+    private const string FIXTURE = 'tests/Fixtures/navigation-golden.json';
 
     public function test_navigation_matches_golden_snapshot(): void {
         $snapshot = [];

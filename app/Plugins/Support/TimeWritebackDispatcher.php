@@ -33,9 +33,9 @@ use App\Support\MorphMap;
  */
 abstract class TimeWritebackDispatcher implements IntegrationOutboxDispatcher {
     /** Operationen der Outbox — `<plugin>.time_entry.update|delete`. */
-    public const OP_SUFFIX_UPDATE = '.time_entry.update';
+    public const string OP_SUFFIX_UPDATE = '.time_entry.update';
 
-    public const OP_SUFFIX_DELETE = '.time_entry.delete';
+    public const string OP_SUFFIX_DELETE = '.time_entry.delete';
 
     final public static function updateOperation(string $pluginId): string {
         return $pluginId . self::OP_SUFFIX_UPDATE;
@@ -51,7 +51,7 @@ abstract class TimeWritebackDispatcher implements IntegrationOutboxDispatcher {
      * gilt auch drüben" — sie muss den Fingerabdruck-Riegel überstimmen, sonst
      * meldet der Rückkanal denselben Konflikt sofort wieder.
      */
-    private const OP_INBOX_KEEP_LOCAL = 'timeentry.update';
+    private const string OP_INBOX_KEEP_LOCAL = 'timeentry.update';
 
     /** Schreibzugang der Organisation; null = nicht konfiguriert/deaktiviert. */
     abstract protected function writer(int $organizationId): ?RemoteTimeWriter;

@@ -43,9 +43,9 @@ use RuntimeException;
  *   des Mandanten.
  */
 class SevDeskPlugin extends AbstractPlugin implements ContactNumberIssuer, ContactNumberPreview, ContactSyncer {
-    public const ID = 'sevdesk';
+    public const string ID = 'sevdesk';
 
-    public const SERVICE_PROVIDER = SevDeskServiceProvider::class;
+    public const string SERVICE_PROVIDER = SevDeskServiceProvider::class;
 
     public function name(): string {
         return 'sevDesk';

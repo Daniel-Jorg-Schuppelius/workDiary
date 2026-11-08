@@ -37,10 +37,10 @@ use Illuminate\Support\Facades\Cache;
  * andere gepostet hatte (Befund 2026-11-02: doppelte Toggl-Einträge).
  */
 abstract class AbstractTimeEntryPushService {
-    public const EXT_TYPE_PUSHED = 'pushed_entry';
+    public const string EXT_TYPE_PUSHED = 'pushed_entry';
 
     /** Haltedauer der Sperre je Eintrag: Drossel, POST-Timeout und Verbindungs-Retries des Toolkits. */
-    public const LOCK_SECONDS = 120;
+    public const int LOCK_SECONDS = 120;
 
     /** Plugin-Id, unter der die pushed-References abgelegt werden. */
     abstract protected function pluginId(): string;

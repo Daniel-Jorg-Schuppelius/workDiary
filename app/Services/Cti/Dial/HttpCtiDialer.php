@@ -30,7 +30,7 @@ use App\Plugins\Support\PluginHttpFactory;
  */
 class HttpCtiDialer implements CtiDialer {
     /** Standard-Basis-URLs, wenn an der Anbindung nichts hinterlegt ist. */
-    private const DEFAULT_BASE_URLS = [
+    private const array DEFAULT_BASE_URLS = [
         'sipgate' => 'https://api.sipgate.com/v2',
         'placetel' => 'https://api.placetel.de/v2',
     ];

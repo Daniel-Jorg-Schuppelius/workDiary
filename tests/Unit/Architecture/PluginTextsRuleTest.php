@@ -25,7 +25,7 @@ final class PluginTextsRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** Ordner unter app/Plugins, die zur Plattform gehören, nicht zu einem Plugin. */
-    private const PLATFORM = ['Support', 'Contracts'];
+    private const array PLATFORM = ['Support', 'Contracts'];
 
     /**
      * Kernschlüssel, die der Kern nur dynamisch liest und die deshalb trotz
@@ -33,7 +33,7 @@ final class PluginTextsRuleTest extends TestCase {
      *
      * @var array<string, string>
      */
-    private const ALLOWED = [];
+    private const array ALLOWED = [];
 
     public function test_texts_used_by_a_single_plugin_live_in_the_plugin(): void {
         $core = $this->repoRoot() . '/lang';

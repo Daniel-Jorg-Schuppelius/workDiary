@@ -20,7 +20,7 @@ use Illuminate\Validation\Rule;
 
 /** Mehrere Perioden mit einem Grund verzichten oder strittig stellen (Feature 185, MVP-1415). */
 class BulkWaiveResalePeriodsRequest extends BaseFormRequest {
-    public const MAX_IDS = 200;
+    public const int MAX_IDS = 200;
 
     /**
      * @return array<string, list<mixed>>

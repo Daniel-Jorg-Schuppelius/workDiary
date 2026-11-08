@@ -27,7 +27,7 @@ class PluginOverviewCoverageRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** Namensendungen technischer Modelle. */
-    private const TECHNICAL_SUFFIXES = [
+    private const array TECHNICAL_SUFFIXES = [
         'Connection' => 'Zugangsdaten und Verbindungszustand',
         'WebhookDelivery' => 'Zustellprotokoll eingehender Webhooks',
         'WebhookSubscription' => 'Webhook-Abonnement beim Anbieter',
@@ -36,7 +36,7 @@ class PluginOverviewCoverageRuleTest extends TestCase {
     ];
 
     /** Plugin-Modelle ohne eigenen Suchanschluss, Schlüssel `<Plugin>/<Modell>`. */
-    private const ALLOWLIST = [
+    private const array ALLOWLIST = [
         'CardDav/CardDavCard' => 'Spiegel der Adressbuchkarten; die Kontakte sind Kunden und Lieferanten mit eigener Suche',
         'DatevOnline/DatevOnlineTransfer' => 'Übertragungsjournal; die Belege stehen im Rechnungseingang',
         'Etsy/EtsyLedgerEntry' => 'Gebühren und Auszahlungen des Shopkontos; Summen auf der Etsy-Seite, gesucht wird die Bestellung',
@@ -51,7 +51,7 @@ class PluginOverviewCoverageRuleTest extends TestCase {
         'Lexoffice/LexofficeRecurringTemplateLine' => 'Positionen der Serienvorlage; sichtbar am Lizenzkonto',
     ];
 
-    private const COVERING_CONTRACTS = '/\b(?:implements\s[^{]*\b(?:SearchDomain|SearchSource|DocumentFeedSource)\b|extends\s+(?:AbstractSearchSource|ShopOrderSearchDomain)\b)/';
+    private const string COVERING_CONTRACTS = '/\b(?:implements\s[^{]*\b(?:SearchDomain|SearchSource|DocumentFeedSource)\b|extends\s+(?:AbstractSearchSource|ShopOrderSearchDomain)\b)/';
 
     public function test_every_plugin_model_is_searchable_or_named_as_technical(): void {
         $violations = [];

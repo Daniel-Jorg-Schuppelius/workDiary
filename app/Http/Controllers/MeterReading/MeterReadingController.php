@@ -22,7 +22,7 @@ use Illuminate\View\View;
 use InvalidArgumentException;
 
 class MeterReadingController extends Controller {
-    private const ALLOWED_SORTS = ['read_at', 'value', 'consumption', 'unit'];
+    private const array ALLOWED_SORTS = ['read_at', 'value', 'consumption', 'unit'];
 
     public function __construct(private readonly MeterReadingService $service) {}
 

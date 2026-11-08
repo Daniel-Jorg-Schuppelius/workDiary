@@ -34,7 +34,7 @@ class AssetController extends Controller {
 
     use SavesCustomFields;
 
-    private const ALLOWED_SORTS = ['asset_no', 'asset_class', 'name', 'serial_no', 'location_text', 'status'];
+    private const array ALLOWED_SORTS = ['asset_no', 'asset_class', 'name', 'serial_no', 'location_text', 'status'];
 
     public function __construct(private readonly AssetFormOptions $options) {}
 

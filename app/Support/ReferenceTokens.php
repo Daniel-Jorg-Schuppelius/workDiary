@@ -22,13 +22,13 @@ use CommonToolkit\Helper\Data\StringHelper;
  */
 final class ReferenceTokens {
     /** Buchstabenpräfix + Ziffern mit -/ Trennern („RE-2026-12“, „AB/3301“). */
-    private const PREFIXED = '/\b[A-Za-z]{0,5}[-\/]?\d{2,}(?:[-\/]\d+)*\b/u';
+    private const string PREFIXED = '/\b[A-Za-z]{0,5}[-\/]?\d{2,}(?:[-\/]\d+)*\b/u';
 
     /** Freiere Form mit Punkt und Unterstrich („B.2026.15“, „P_0012“), mit mindestens einer Ziffer. */
-    private const FREE = '/[\p{L}\d][\p{L}\d\-\/._]{2,38}[\p{L}\d]/u';
+    private const string FREE = '/[\p{L}\d][\p{L}\d\-\/._]{2,38}[\p{L}\d]/u';
 
     /** Präfix mit Leerzeichen vor der Nummer („RE 2026/0012“). */
-    private const SPACED = '/\b([A-Za-z]{1,5}) ([-\/]?\d{2,}(?:[-\/]\d+)*)\b/u';
+    private const string SPACED = '/\b([A-Za-z]{1,5}) ([-\/]?\d{2,}(?:[-\/]\d+)*)\b/u';
 
     /**
      * Kandidaten in Original- und Großschreibung; die Datenbank vergleicht die

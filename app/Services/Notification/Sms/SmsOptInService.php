@@ -37,10 +37,10 @@ use RuntimeException;
  */
 class SmsOptInService {
     /** Gültigkeit des Bestätigungscodes. */
-    public const CODE_TTL_MINUTES = 10;
+    public const int CODE_TTL_MINUTES = 10;
 
     /** Präferenz-Bag, in der auch mail_enabled/push_enabled/Ruhezeit liegen. */
-    private const BAG = 'notifications';
+    private const string BAG = 'notifications';
 
     public function __construct(private readonly SmsProviderResolver $providers) {}
 

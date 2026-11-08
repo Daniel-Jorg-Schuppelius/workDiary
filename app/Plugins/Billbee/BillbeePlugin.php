@@ -30,9 +30,9 @@ use App\Plugins\Support\ApiHealthProbe;
  *   Throttle 2 req/s (429 + Retry-After macht das Toolkit).
  */
 class BillbeePlugin extends AbstractPlugin {
-    public const ID = 'billbee';
+    public const string ID = 'billbee';
 
-    public const SERVICE_PROVIDER = BillbeeServiceProvider::class;
+    public const string SERVICE_PROVIDER = BillbeeServiceProvider::class;
 
     public function name(): string {
         return 'Billbee';

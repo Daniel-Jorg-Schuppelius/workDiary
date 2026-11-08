@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\DB;
  */
 final class VehicleReservationService {
     /** Kontext der Einsatzprüfung (D12) — Ausnahmefreigaben gelten je Kontext. */
-    public const USAGE_CONTEXT = 'vehicle_reservation';
+    public const string USAGE_CONTEXT = 'vehicle_reservation';
 
     /**
      * Reserviert ein Fahrzeug für ein Zeitfenster, optional an einen Auftrag

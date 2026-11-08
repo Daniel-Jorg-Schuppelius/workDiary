@@ -19,15 +19,15 @@ namespace App\Services\Compliance;
  * (Tage/Anzahl) liefert {@see unitFor()}.
  */
 final class AttendanceComplianceFinding {
-    public const SEVERITY_ERROR = 'error';
+    public const string SEVERITY_ERROR = 'error';
 
-    public const SEVERITY_WARNING = 'warning';
+    public const string SEVERITY_WARNING = 'warning';
 
-    public const UNIT_MINUTES = 'minutes';
+    public const string UNIT_MINUTES = 'minutes';
 
-    public const UNIT_DAYS = 'days';
+    public const string UNIT_DAYS = 'days';
 
-    public const UNIT_COUNT = 'count';
+    public const string UNIT_COUNT = 'count';
 
     /**
      * Einheit von value/threshold je Regel-Art — Standard sind Minuten;

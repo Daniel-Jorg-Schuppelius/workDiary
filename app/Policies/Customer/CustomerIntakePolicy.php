@@ -26,7 +26,7 @@ use App\Policies\PermissionPolicy;
 class CustomerIntakePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::CustomerPortalIntakeView,
         'view' => P::CustomerPortalIntakeView,
         'update' => P::CustomerPortalIntakeManage,

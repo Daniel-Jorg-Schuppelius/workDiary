@@ -25,7 +25,7 @@ use Tests\TestCase;
 class FormFieldsGoldenTest extends TestCase {
     use RefreshDatabase;
 
-    private const FIXTURE = 'tests/Fixtures/forms/field-names.json';
+    private const string FIXTURE = 'tests/Fixtures/forms/field-names.json';
 
     public function test_form_field_names_match_the_golden_fixture(): void {
         $org = Organization::factory()->enterprise()->create();

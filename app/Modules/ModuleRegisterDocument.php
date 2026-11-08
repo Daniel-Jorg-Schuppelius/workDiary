@@ -24,12 +24,12 @@ use Illuminate\Support\Str;
  * seit 2026-10-18): Prüfung und Neuschreiben lassen ihn unangetastet.
  */
 final class ModuleRegisterDocument {
-    public const RELATIVE_PATH = '../WorkDiary-Architecture/konventionen/modul-register.md';
+    public const string RELATIVE_PATH = '../WorkDiary-Architecture/konventionen/modul-register.md';
 
-    private const CHRONIK_START = '<!-- chronik:start -->';
+    private const string CHRONIK_START = '<!-- chronik:start -->';
 
     /** Gates, die den Modulschnitt und die Kernbausteine absichern (Phase 111). */
-    private const GATES = [
+    private const array GATES = [
         'ModuleManifestCoverageRuleTest' => 'jede Tabelle, jeder Ordner, jede Rechtegruppe genau einem Manifest',
         'DomainFolderRuleTest' => 'Klassen in Domänenordnern des Manifests',
         'ModuleBoundaryRuleTest' => 'Kanten nach `BoundaryRules`, Baseline nur schrumpfend',

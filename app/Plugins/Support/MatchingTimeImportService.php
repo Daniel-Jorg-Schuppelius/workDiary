@@ -44,30 +44,30 @@ abstract class MatchingTimeImportService {
     use PersistsTimeImportInbox;
     use ReconcilesRemoteDeletions;
 
-    public const EXT_TYPE_CLIENT = 'client';
+    public const string EXT_TYPE_CLIENT = 'client';
 
-    public const EXT_TYPE_PROJECT = 'project';
+    public const string EXT_TYPE_PROJECT = 'project';
 
-    public const EXT_TYPE_ENTRY = 'entry';
+    public const string EXT_TYPE_ENTRY = 'entry';
 
     /** Numerische Fremd-IDs (nur API-Quelle) — Grundlage des Export-Mappings. */
-    public const EXT_TYPE_CLIENT_ID = 'client_id';
+    public const string EXT_TYPE_CLIENT_ID = 'client_id';
 
-    public const EXT_TYPE_PROJECT_ID = 'project_id';
+    public const string EXT_TYPE_PROJECT_ID = 'project_id';
 
     /** Quell-E-Mail → Benutzer (gemerkte Zuordnung, z. B. abweichende Toggl-Adresse). */
-    public const EXT_TYPE_USER_EMAIL = 'user_email';
+    public const string EXT_TYPE_USER_EMAIL = 'user_email';
 
-    public const SUGGEST_THRESHOLD = 0.82;
+    public const float SUGGEST_THRESHOLD = 0.82;
 
     /** Max. Einträge der Gruppen-Vorschau in der Zuordnungs-Inbox. */
-    public const GROUP_PREVIEW_LIMIT = 15;
+    public const int GROUP_PREVIEW_LIMIT = 15;
 
     /** Gruppen-Präfix offener Benutzer-Zuordnungsfälle (MVP-509). */
-    public const PENDING_USER_GROUP_PREFIX = 'user|';
+    public const string PENDING_USER_GROUP_PREFIX = 'user|';
 
     /** Gruppen-Suffix, wenn die Quelle gar kein Benutzersignal liefert. */
-    public const PENDING_USER_NO_SIGNAL = '(ohne-signal)';
+    public const string PENDING_USER_NO_SIGNAL = '(ohne-signal)';
 
     /**
      * Effektive Plugin-Konfiguration der Organisation (für Inbox-Buchungen).

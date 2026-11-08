@@ -25,9 +25,9 @@ use Illuminate\Http\Request;
  * (Tagebuch / Bereitschaft / Notdienst / Urlaub).
  */
 class ArchiveSummaryService {
-    private const ALLOWED_TABS = ['diary', 'bereitschaft', 'notdienst', 'urlaub'];
+    private const array ALLOWED_TABS = ['diary', 'bereitschaft', 'notdienst', 'urlaub'];
 
-    private const ALLOWED_STATUS = ['all', '-1', '1', '2', '3'];
+    private const array ALLOWED_STATUS = ['all', '-1', '1', '2', '3'];
 
     /**
      * @return array<string,mixed>

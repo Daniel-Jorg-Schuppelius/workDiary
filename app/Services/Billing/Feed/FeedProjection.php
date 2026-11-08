@@ -23,7 +23,7 @@ final class FeedProjection {
      * Spalten der Feed-Zeile. Die Reihenfolge ist der UNION-Vertrag aller
      * {@see DocumentFeedSource}-Implementierungen.
      */
-    public const COLUMNS = [
+    public const array COLUMNS = [
         'source_type', 'source_id', 'link_id', 'origin', 'direction', 'kind',
         'sign', 'number', 'doc_date', 'due_on', 'state', 'is_archived',
         'contact_type', 'contact_id', 'contact_name', 'dunning_level',

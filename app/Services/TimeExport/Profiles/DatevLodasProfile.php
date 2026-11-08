@@ -40,9 +40,9 @@ use CommonToolkit\Helper\Data\NumberHelper;
  * des Lohnbüros ausreichend.
  */
 class DatevLodasProfile implements ExportProfile {
-    private const EOL = "\r\n";
+    private const string EOL = "\r\n";
 
-    private const DELIMITER = ';';
+    private const string DELIMITER = ';';
 
     /** Default-Lohnart für Normalstunden, wenn die Zeile keine eigene trägt. */
     private string $normalWageTypeCode;

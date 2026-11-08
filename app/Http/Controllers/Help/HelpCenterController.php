@@ -28,10 +28,10 @@ use Illuminate\Support\Facades\Cache;
  * Der Drawer-JSON-Endpunkt (HelpController) bleibt unverändert daneben.
  */
 class HelpCenterController extends Controller {
-    private const PER_PAGE = 20;
+    private const int PER_PAGE = 20;
 
     /** Passende Seiten über den Suchtreffern (MVP-1082). */
-    private const PAGE_LIMIT = 5;
+    private const int PAGE_LIMIT = 5;
 
     public function index(Request $request, HelpTopicResolver $resolver, HelpCenterCatalog $catalog, HelpSearch $search, FunctionFinder $finder): View {
         /** @var User|null $user */

@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
  */
 return new class extends Migration {
     /** Stand von Customer::RESERVED_SLUGS — bewusst als Kopie, Migrationen hängen nicht am App-Code. */
-    private const RESERVED = ['intern', 'create', 'duplicates', 'times'];
+    private const array RESERVED = ['intern', 'create', 'duplicates', 'times'];
 
     public function up(): void {
         $customers = DB::table('customers')->whereIn('slug', self::RESERVED)->orderBy('id')->get(['id', 'organization_id', 'slug']);

@@ -30,7 +30,7 @@ class PurgeFilePointerRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> "tabelle.spalte" => Grund */
-    private const NOT_A_LOCAL_FILE = [
+    private const array NOT_A_LOCAL_FILE = [
         'caldav_connections.calendar_path' => 'Pfad auf dem fremden CalDAV-Server.',
         'cloud_document_connections.root_folder_path' => 'Ordner beim Cloud-Anbieter.',
         'cloud_document_items.source_path' => 'Pfad beim Cloud-Anbieter.',
@@ -40,7 +40,7 @@ class PurgeFilePointerRuleTest extends TestCase {
     ];
 
     /** @var array<string, string> Tabellen ohne `organization_id` => wie ihre Dateien erfasst werden */
-    private const WITHOUT_ORGANIZATION_COLUMN = [
+    private const array WITHOUT_ORGANIZATION_COLUMN = [
         'document_versions' => 'Über `documents.organization_id` eingesammelt (`fileTargetsFor()`).',
         'protocol_signatures' => '`signature_image_path` wird nicht beschrieben; der Wert kam früher aus der Eingabe und darf nie ein Löschziel sein.',
     ];

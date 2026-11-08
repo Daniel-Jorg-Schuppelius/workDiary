@@ -35,7 +35,7 @@ class GenericImportTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const CSV = <<<'CSV'
+    private const string CSV = <<<'CSV'
     Kennung;Firma;Produkt;Menge;Beginn;Ende;Intervall;Laufzeit (Monate);Einkaufspreis;Verkaufspreis;Anbieter;Bestellnummer
     HST-4711;Hafen- und Schleppbetrieb M. Seewind GmbH & CO. KG;Hosted Exchange Postfach;4;01.03.2025;;jährlich;12;39,84;47,40;;B-1
     ;Nordufer Tank- und Service GmbH & Co. KG;Microsoft 365 Business Standard;2;15.03.2025;14.03.2027;monatlich;;10,70 €;12,13 €;Telekom Cloud Marketplace;

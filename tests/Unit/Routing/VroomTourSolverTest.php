@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 /** MVP-1178: VROOM bekommt Fahrer, Aufträge und unsere Matrix; die Antwort wird zum Plan; ohne Dienst rechnet die Heuristik. */
 class VroomTourSolverTest extends TestCase {
-    private const H = 3600;
+    private const int H = 3600;
 
     private function problem(): TourProblem {
         $matrix = new CostMatrix(

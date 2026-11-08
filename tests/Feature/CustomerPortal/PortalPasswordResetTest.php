@@ -33,9 +33,9 @@ class PortalPasswordResetTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const PASSWORD = 'Altes!Passwort2026';
+    private const string PASSWORD = 'Altes!Passwort2026';
 
-    private const NEW_PASSWORD = 'Neues!Passwort2026';
+    private const string NEW_PASSWORD = 'Neues!Passwort2026';
 
     private Customer $customer;
 

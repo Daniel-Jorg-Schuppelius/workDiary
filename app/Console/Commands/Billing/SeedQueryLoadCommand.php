@@ -54,10 +54,10 @@ class SeedQueryLoadCommand extends Command {
     protected $description = 'Legt einen Messdatensatz für Listen-/Zeitraumabfragen an und misst die Brennpunkte (MVP-722)';
 
     /** Sammel-Insert in Blöcken — ein Insert je Zeile wäre um Größenordnungen langsamer. */
-    private const CHUNK = 1000;
+    private const int CHUNK = 1000;
 
     /** Streuung der Messdaten über die letzten Jahre. */
-    private const SPREAD_DAYS = 1095;
+    private const int SPREAD_DAYS = 1095;
 
     /** @var list<int> */
     private array $organizationIds = [];

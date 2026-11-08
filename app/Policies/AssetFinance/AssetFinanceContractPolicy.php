@@ -26,7 +26,7 @@ use App\Policies\PermissionPolicy;
 class AssetFinanceContractPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::AssetFinanceViewAny,
         'view' => P::AssetFinanceView,
         'create' => P::AssetFinanceManage,

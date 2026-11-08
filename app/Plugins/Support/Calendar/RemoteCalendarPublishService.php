@@ -42,10 +42,10 @@ use Throwable;
  * einheitliche Auto-Disable-Schwelle (MVP-178) ein.
  */
 class RemoteCalendarPublishService {
-    public const EXTERNAL_TYPE = 'calendar_event';
+    public const string EXTERNAL_TYPE = 'calendar_event';
 
     /** Ergebnis eines Laufs ohne Verbindung. */
-    public const NO_COUNTS = ['published' => 0, 'deleted' => 0, 'unchanged' => 0, 'failed' => 0];
+    public const array NO_COUNTS = ['published' => 0, 'deleted' => 0, 'unchanged' => 0, 'failed' => 0];
 
     /**
      * Veröffentlicht nur über eine aktive Verbindung; scheitert der Aufbau des

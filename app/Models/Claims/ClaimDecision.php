@@ -34,7 +34,7 @@ class ClaimDecision extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const DECISIONS = ['accepted', 'rejected', 'goodwill', 'partial'];
+    public const array DECISIONS = ['accepted', 'rejected', 'goodwill', 'partial'];
 
     protected $fillable = [
         'organization_id', 'claim_case_id', 'decision', 'justification',

@@ -27,7 +27,7 @@ use Throwable;
  */
 class SupportReportBuilder {
     /** ENV-Schlüssel, deren Wert NIE im Bundle landen darf. Spec §2.3. */
-    private const SENSITIVE_ENV_KEYS = [
+    private const array SENSITIVE_ENV_KEYS = [
         'APP_KEY',
         'APP_DEBUG_KEY',
         'DB_PASSWORD',

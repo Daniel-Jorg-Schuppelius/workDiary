@@ -23,14 +23,14 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class UserFacingErrorTextRuleTest extends TestCase {
     use ScansSourceTree;
 
-    private const GENERIC = [
+    private const array GENERIC = [
         'Throwable', 'Exception', 'RuntimeException', 'InvalidArgumentException', 'LogicException', 'ErrorException',
         'DomainException', 'UnexpectedValueException', 'GuzzleException', 'TransferException', 'RequestException',
         'ConnectException', 'ClientException', 'ServerException', 'JsonException', 'ValueError', 'TypeError',
     ];
 
     /** @var array<string, string> Pfad → Begründung */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         'app/Http/Controllers/Admin/DiagnosticsController.php' => 'Diagnose für Betreiber: der technische Fehler ist dort der Zweck',
     ];
 

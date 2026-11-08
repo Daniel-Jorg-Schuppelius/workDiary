@@ -76,9 +76,9 @@ class ExternalInvoice extends Model implements SupportingDocumentCarrier {
 
     use HasSqid;
 
-    public const KIND_INVOICE = 'invoice';
+    public const string KIND_INVOICE = 'invoice';
 
-    public const KIND_CREDIT_NOTE = 'credit_note';
+    public const string KIND_CREDIT_NOTE = 'credit_note';
 
     protected $fillable = [
         'organization_id', 'customer_id', 'plugin_id', 'external_id', 'external_number', 'remote_status_code',

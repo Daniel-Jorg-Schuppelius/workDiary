@@ -35,7 +35,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class PaymentReconciliationController extends Controller {
     use ResolvesCurrentOrganization;
 
-    private const STORAGE_DISK = 'local';
+    private const string STORAGE_DISK = 'local';
 
     public function __construct(
         private readonly BankImportService $importService,

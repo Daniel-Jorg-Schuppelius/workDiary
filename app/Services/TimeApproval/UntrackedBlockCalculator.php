@@ -24,7 +24,7 @@ use Carbon\CarbonImmutable;
  * daher unberücksichtigt (die Aggregat-Kennzahl „unverteilt" deckt diese ab).
  */
 final class UntrackedBlockCalculator {
-    public const MIN_BLOCK_MINUTES = 5;
+    public const int MIN_BLOCK_MINUTES = 5;
 
     /**
      * @param  iterable<Attendance>  $attendances

@@ -23,7 +23,7 @@ use App\Services\Fields\FieldDefinition;
  * weiterhin `value_json = {value: …}`.
  */
 class ProcedureStepFields {
-    public const KEY = 'value';
+    public const string KEY = 'value';
 
     public function definition(ProcedureStepDef $def): ?FieldDefinition {
         $type = $def->step_type->fieldType();

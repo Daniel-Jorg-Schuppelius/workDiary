@@ -35,13 +35,13 @@ use Illuminate\Support\Facades\{Auth, Cache, Gate, Route};
  */
 class NavigationRegistry {
     /** Präfixe der stabilen Ausblende-Schlüssel (MVP-374). */
-    public const KEY_SECTION = 'section:';
-    public const KEY_GROUP = 'group:';
-    public const KEY_ITEM = 'item:';
-    public const KEY_CREATE = 'create:';
+    public const string KEY_SECTION = 'section:';
+    public const string KEY_GROUP = 'group:';
+    public const string KEY_ITEM = 'item:';
+    public const string KEY_CREATE = 'create:';
 
     /** Preference-Key der Per-User-Ausblendungen (users.preferences). */
-    public const PREFERENCE_HIDDEN = 'nav_hidden';
+    public const string PREFERENCE_HIDDEN = 'nav_hidden';
 
     /** Request-Memo für {@see localLedgerVisible()}. */
     private ?bool $localLedgerVisible = null;
@@ -53,10 +53,10 @@ class NavigationRegistry {
      * 2026-08-23, A7): die Layout-Baseline lag bei ~15 ungecachten Queries
      * je Seitenaufruf. Ein Badge darf eine Minute hinterherlaufen.
      */
-    public const BADGE_TTL = 60;
+    public const int BADGE_TTL = 60;
 
     /** Menü je Nutzer (perf-13); Rechte-, Modul- und Ausblende-Änderungen wechseln den Schlüssel sofort. */
-    public const MENU_TTL = 60;
+    public const int MENU_TTL = 60;
 
     public function __construct(
         private readonly FeatureFlagResolver $features,

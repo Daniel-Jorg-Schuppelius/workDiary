@@ -26,7 +26,7 @@ class ModuleOverrideWriteRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Datei => Grund */
-    private const ALLOWED = [
+    private const array ALLOWED = [
         'app/Services/Licensing/ModuleScopeService.php' => 'Die eine Schreibstelle des Org-Modulstatus.',
         'app/Http/Controllers/Admin/LicenseAdminController.php' => 'toggleFlag(): plattformweite Flags ohne Organisation (Plattform-Admin), kein Org-Umfang.',
     ];

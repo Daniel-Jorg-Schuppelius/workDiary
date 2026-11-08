@@ -32,10 +32,10 @@ use Illuminate\Support\Collection;
  * im regulären Tag-Input.
  */
 class ClassificationSuggestionService {
-    public const CAPABILITY = 'classification.tag_suggest';
+    public const string CAPABILITY = 'classification.tag_suggest';
 
     /** Obergrenze Katalogwerte je Aufruf (Prompt-Größe). */
-    private const CATALOG_LIMIT = 500;
+    private const int CATALOG_LIMIT = 500;
 
     public function __construct(
         private readonly AiInvocationService $invocation,

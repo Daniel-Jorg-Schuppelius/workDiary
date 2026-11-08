@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Cache;
  * greift das periodische Delta-Polling.
  */
 class IntakeWakeSignal {
-    private const TTL_SECONDS = 3600;
+    private const int TTL_SECONDS = 3600;
 
     public function signal(int $connectionId): void {
         Cache::put($this->key($connectionId), true, self::TTL_SECONDS);

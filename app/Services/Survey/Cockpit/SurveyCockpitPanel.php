@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Gate;
  * Antworten seiner Einladungen — dieselbe Formel wie die Umfrage-Auswertung.
  */
 final class SurveyCockpitPanel implements CockpitPanel {
-    private const LIMIT = 5;
+    private const int LIMIT = 5;
 
     public function __construct(private readonly FeatureFlagResolver $features) {}
 

@@ -54,7 +54,7 @@ class SsoConnection extends Model {
     use HasPrivateNetworkOptIn;
     use HasSqid;
 
-    public const DEFAULT_OIDC_SCOPES = 'openid profile email';
+    public const string DEFAULT_OIDC_SCOPES = 'openid profile email';
 
     protected $fillable = [
         'organization_id',

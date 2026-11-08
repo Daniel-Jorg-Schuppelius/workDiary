@@ -32,7 +32,7 @@ class LexofficeWebhookTest extends TestCase {
     use WithOrganization;
     use WithPluginSecrets;
 
-    private const SECRET = 'test-webhook-token-123456';
+    private const string SECRET = 'test-webhook-token-123456';
 
     protected function setUp(): void {
         parent::setUp();

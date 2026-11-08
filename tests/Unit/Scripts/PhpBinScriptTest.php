@@ -22,7 +22,7 @@ use Symfony\Component\Process\Process;
  */
 class PhpBinScriptTest extends TestCase {
     /** Container bringen genau ein PHP mit; backup.sh ruft kein PHP auf. */
-    private const SCRIPTS = ['deploy.sh', 'scripts/*.sh', 'scripts/lib/*.sh', 'tests/e2e/*.sh'];
+    private const array SCRIPTS = ['deploy.sh', 'scripts/*.sh', 'scripts/lib/*.sh', 'tests/e2e/*.sh'];
 
     private string $dir;
 

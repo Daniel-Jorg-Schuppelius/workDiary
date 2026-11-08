@@ -24,7 +24,7 @@ class RemoteSupportPcvisitTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const ENDPOINT = 'https://app.pcvisit.de/graphql';
+    private const string ENDPOINT = 'https://app.pcvisit.de/graphql';
 
     protected function setUp(): void {
         parent::setUp();

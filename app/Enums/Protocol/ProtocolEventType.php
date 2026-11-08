@@ -16,31 +16,31 @@ namespace App\Enums\Protocol;
  * Werte ergaenzen koennen, ohne dass alte Datensaetze migriert werden muessen.
  */
 final class ProtocolEventType {
-    public const Created = 'protocol.created';
-    public const ItemAdded = 'protocol.itemAdded';
-    public const ItemRemoved = 'protocol.itemRemoved';
-    public const ItemReordered = 'protocol.itemReordered';
-    public const ItemFilled = 'protocol.itemFilled';
-    public const RequestedReview = 'protocol.requestedReview';
-    public const ReturnedToDraft = 'protocol.returnedToDraft';
-    public const Signed = 'protocol.signed';
-    public const Archived = 'protocol.archived';
-    public const SupersededBy = 'protocol.supersededBy';
-    public const AttachmentAdded = 'protocol.attachmentAdded';
-    public const AttachmentRemoved = 'protocol.attachmentRemoved';
-    public const SignatureRequested = 'protocol.signatureRequested';
-    public const SignatureLinkOpened = 'protocol.signatureLinkOpened';
-    public const SignatureRejected = 'protocol.signatureRejected';
+    public const string Created = 'protocol.created';
+    public const string ItemAdded = 'protocol.itemAdded';
+    public const string ItemRemoved = 'protocol.itemRemoved';
+    public const string ItemReordered = 'protocol.itemReordered';
+    public const string ItemFilled = 'protocol.itemFilled';
+    public const string RequestedReview = 'protocol.requestedReview';
+    public const string ReturnedToDraft = 'protocol.returnedToDraft';
+    public const string Signed = 'protocol.signed';
+    public const string Archived = 'protocol.archived';
+    public const string SupersededBy = 'protocol.supersededBy';
+    public const string AttachmentAdded = 'protocol.attachmentAdded';
+    public const string AttachmentRemoved = 'protocol.attachmentRemoved';
+    public const string SignatureRequested = 'protocol.signatureRequested';
+    public const string SignatureLinkOpened = 'protocol.signatureLinkOpened';
+    public const string SignatureRejected = 'protocol.signatureRejected';
     // Widerruf externer Signatur-Links (Feature 012 MVP; Vollaudit 2026-07, M6).
-    public const SignatureLinkRevoked = 'protocol.signatureLinkRevoked';
-    public const CustomerQueryRaised = 'protocol.customerQueryRaised';
-    public const CustomerQueryAnswered = 'protocol.customerQueryAnswered';
-    public const PdfRendered = 'protocol.pdfRendered';
-    public const PdfDownloaded = 'protocol.pdfDownloaded';
+    public const string SignatureLinkRevoked = 'protocol.signatureLinkRevoked';
+    public const string CustomerQueryRaised = 'protocol.customerQueryRaised';
+    public const string CustomerQueryAnswered = 'protocol.customerQueryAnswered';
+    public const string PdfRendered = 'protocol.pdfRendered';
+    public const string PdfDownloaded = 'protocol.pdfDownloaded';
     // Abruf im Kundenportal (Phase 137, E17): eigener Eintrag als Download-Nachweis.
-    public const PortalPdfDownloaded = 'protocol.portalPdfDownloaded';
-    public const ItemPhotoAdded = 'protocol.item.photoAdded';
-    public const ItemPhotoRemoved = 'protocol.item.photoRemoved';
-    public const ItemPhotoReordered = 'protocol.item.photoReordered';
-    public const ItemPhotoUpdatedCaption = 'protocol.item.photoUpdatedCaption';
+    public const string PortalPdfDownloaded = 'protocol.portalPdfDownloaded';
+    public const string ItemPhotoAdded = 'protocol.item.photoAdded';
+    public const string ItemPhotoRemoved = 'protocol.item.photoRemoved';
+    public const string ItemPhotoReordered = 'protocol.item.photoReordered';
+    public const string ItemPhotoUpdatedCaption = 'protocol.item.photoUpdatedCaption';
 }

@@ -20,17 +20,17 @@ use App\Services\Search\SearchTextNormalizer;
  * und Tippfehler-Varianten — die zählen für die Relevanz schwächer.
  */
 final class SearchAlternative {
-    public const PREFIX = 'prefix';
+    public const string PREFIX = 'prefix';
 
-    public const EXACT = 'exact';
+    public const string EXACT = 'exact';
 
-    public const PHRASE = 'phrase';
+    public const string PHRASE = 'phrase';
 
-    public const ORIGIN_INPUT = 'input';
+    public const string ORIGIN_INPUT = 'input';
 
-    public const ORIGIN_SYNONYM = 'synonym';
+    public const string ORIGIN_SYNONYM = 'synonym';
 
-    public const ORIGIN_SIMILAR = 'similar';
+    public const string ORIGIN_SIMILAR = 'similar';
 
     /** @param  list<string>  $words */
     public function __construct(

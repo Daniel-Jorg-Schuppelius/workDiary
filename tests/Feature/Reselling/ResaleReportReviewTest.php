@@ -42,7 +42,7 @@ class ResaleReportReviewTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    public const INVOICE_TEXT = <<<'TXT'
+    public const string INVOICE_TEXT = <<<'TXT'
 QualityHosting GmbH- Postbox 791407 - D-11516 Berlin
 Rechnung
 Rechnungsnr. 31970911 Kundennr. 95229

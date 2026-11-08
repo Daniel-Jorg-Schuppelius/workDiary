@@ -47,7 +47,7 @@ use Illuminate\Support\Carbon;
  */
 class EasybillVoucherPullService implements VoucherPuller {
     /** Buchhalterisch relevante Dokumenttypen (Swagger-Enum `type`). */
-    private const TYPES = 'INVOICE,CREDIT,STORNO,STORNO_CREDIT';
+    private const string TYPES = 'INVOICE,CREDIT,STORNO,STORNO_CREDIT';
 
     public function __construct(
         private readonly EasybillClientFactory $clients,

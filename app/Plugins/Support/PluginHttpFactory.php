@@ -31,11 +31,11 @@ class PluginHttpFactory {
      * Etsy, Billbee, easybill, Clockify, BuchhaltungsButler) rechnen ihr
      * Intervall selbst aus und übergeben es explizit.
      */
-    public const DEFAULT_REQUEST_INTERVALS = [
+    public const array DEFAULT_REQUEST_INTERVALS = [
         'lexoffice' => 0.5, // 2 Anfragen je Sekunde und API-Schlüssel
     ];
 
-    public const MAX_REQUEST_INTERVAL = 5.0;
+    public const float MAX_REQUEST_INTERVAL = 5.0;
 
     /**
      * `$requestInterval` (Sekunden) drosselt aufeinanderfolgende Requests

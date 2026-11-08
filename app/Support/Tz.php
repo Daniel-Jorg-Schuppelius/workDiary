@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Auth;
  *   4. 'Europe/Berlin'
  */
 final class Tz {
-    public const FALLBACK = 'Europe/Berlin';
+    public const string FALLBACK = 'Europe/Berlin';
 
     /**
      * Liefert die aktuell gültige Anzeige-Zeitzone als IANA-Bezeichner.

@@ -27,9 +27,9 @@ use RuntimeException;
  * der Session samt Charge und Saldobuchung.
  */
 class StripePlugin extends AbstractPlugin implements OnlinePaymentProvider {
-    public const ID = 'stripe';
+    public const string ID = 'stripe';
 
-    public const SERVICE_PROVIDER = StripeServiceProvider::class;
+    public const string SERVICE_PROVIDER = StripeServiceProvider::class;
 
     public function name(): string {
         return 'Stripe';

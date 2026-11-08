@@ -42,10 +42,10 @@ use Throwable;
 class ImportMappingSuggestionService {
     use DecidesSuggestions;
 
-    public const CAPABILITY = 'import.column_mapping';
+    public const string CAPABILITY = 'import.column_mapping';
 
     /** Höchstzahl unbekannter Kopfzellen, für die gefragt wird (Budget). */
-    public const MAX_UNKNOWN_COLUMNS = 10;
+    public const int MAX_UNKNOWN_COLUMNS = 10;
 
     public function __construct(
         private readonly AiInvocationService $invocation,

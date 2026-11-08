@@ -41,7 +41,7 @@ class CustomerController extends Controller {
     use ResolvesGlobalDateRange;
     use SavesCustomFields;
 
-    private const ALLOWED_SORTS = ['name', 'number', 'company', 'created_at'];
+    private const array ALLOWED_SORTS = ['name', 'number', 'company', 'created_at'];
 
     public function index(Request $request, PluginManager $plugins): View {
         Gate::authorize('viewAny', Customer::class);

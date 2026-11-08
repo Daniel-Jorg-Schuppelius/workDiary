@@ -21,7 +21,7 @@ use Tests\TestCase;
 /** MVP-1021: monatliche Aktualisierung der lokalen IP-Geodatenbank. */
 final class GeoDatabaseUpdateTest extends TestCase {
     /** Build 2026-09-01, jede IPv4-Adresse → Berlin. */
-    private const FIXTURE = __DIR__ . '/../../Fixtures/geoip/test-city.mmdb';
+    private const string FIXTURE = __DIR__ . '/../../Fixtures/geoip/test-city.mmdb';
 
     private string $directory;
 

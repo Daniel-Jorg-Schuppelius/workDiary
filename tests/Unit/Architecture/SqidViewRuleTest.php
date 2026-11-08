@@ -29,7 +29,7 @@ class SqidViewRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad-Präfix → Begründung / Nachzieh-Welle */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         'resources/views/legacy/' => 'Legacy-Modul, wird abgelöst.',
         // I7 (Welle 4 Batch B, 2026-08-24): tours/edit, sales_discount_groups
         // und disposal/_handover_dialog sind auf Sqid umgestellt — Einträge raus.
@@ -51,7 +51,7 @@ class SqidViewRuleTest extends TestCase {
     ];
 
     /** Bezeichner, die keine Datenbank-ID sind: Kennungen von Fremdsystemen, Plugin-Schlüssel, Steuernummer. */
-    private const NOT_A_DATABASE_ID = ['external_id', 'remote_id', 'plugin_id', 'vat_id', 'client_id', 'deployment_id', 'manufacturer_id', 'request_id'];
+    private const array NOT_A_DATABASE_ID = ['external_id', 'remote_id', 'plugin_id', 'vat_id', 'client_id', 'deployment_id', 'manufacturer_id', 'request_id'];
 
     public function test_views_do_not_expose_raw_database_ids(): void {
         $violations = [];

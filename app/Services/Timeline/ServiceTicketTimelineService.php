@@ -32,7 +32,7 @@ use App\Support\MorphMap;
  */
 class ServiceTicketTimelineService {
     /** Kanonische Filtergruppen (Ereignistypen) der Ticket-Timeline. */
-    public const TYPES = [
+    public const array TYPES = [
         'message',
         'status',
         'sla',
@@ -43,7 +43,7 @@ class ServiceTicketTimelineService {
      * Fachliche Audit-Ereignisse fürs Status-Band; generische
      * created/updated-Logs bleiben bewusst draußen (Rauschen).
      */
-    private const AUDIT_EVENTS = [
+    private const array AUDIT_EVENTS = [
         'service_ticket.status_changed',
         'service_ticket.assigned',
         'service_ticket.waiting',

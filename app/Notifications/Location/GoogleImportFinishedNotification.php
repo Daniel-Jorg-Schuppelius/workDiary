@@ -15,9 +15,9 @@ use App\Support\NotificationText;
 
 /** Abschlussmeldung des Google-Standortverlauf-Imports im Hintergrund (MVP-1186). */
 class GoogleImportFinishedNotification extends DirectNotification {
-    private const TITLE_KEY = 'Standortverlauf importiert: :count Punkte';
+    private const string TITLE_KEY = 'Standortverlauf importiert: :count Punkte';
 
-    private const MESSAGE_KEY = 'Die Punkte sind verarbeitet; Vorschläge finden Sie im Prüf-Eingang der Standorterfassung.';
+    private const string MESSAGE_KEY = 'Die Punkte sind verarbeitet; Vorschläge finden Sie im Prüf-Eingang der Standorterfassung.';
 
     public function __construct(public readonly int $count) {
         parent::__construct(['database']);

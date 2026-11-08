@@ -43,17 +43,17 @@ class SchedulerController extends Controller {
 
     use ResolvesCurrentOrganization;
 
-    private const TEST_RUN_COOLDOWN_MINUTES = 5;
+    private const int TEST_RUN_COOLDOWN_MINUTES = 5;
 
-    private const SORTS = ['job', 'last_run', 'next_due', 'failures'];
+    private const array SORTS = ['job', 'last_run', 'next_due', 'failures'];
 
     /** Filterwert für Jobs ohne Laufnachweis (zugleich Übersetzungs-Key unter scheduler.state). */
-    private const STATUS_NEVER = 'never_ran';
+    private const string STATUS_NEVER = 'never_ran';
 
     /** Planquelle „vom Betriebsfenster verschoben“ — quer zu default/setting/override. */
-    private const SOURCE_SHIFTED = 'shifted';
+    private const string SOURCE_SHIFTED = 'shifted';
 
-    private const SOURCES = ['default', 'setting', 'override', self::SOURCE_SHIFTED];
+    private const array SOURCES = ['default', 'setting', 'override', self::SOURCE_SHIFTED];
 
     public function __construct(
         private readonly JobRegistry $registry,

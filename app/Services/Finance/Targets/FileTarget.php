@@ -37,11 +37,11 @@ use RuntimeException;
  * CSV-Header, eine Zeile je Quelle (Snapshot-Werte der Items), Summenzeile.
  */
 class FileTarget implements FacturationTarget {
-    public const DISK = \App\Services\Export\ExportRunner::DISK;
+    public const string DISK = \App\Services\Export\ExportRunner::DISK;
 
-    public const BASE_PATH = 'exports/finance';
+    public const string BASE_PATH = 'exports/finance';
 
-    private const BOM = TextHelper::BOM_UTF8;
+    private const string BOM = TextHelper::BOM_UTF8;
 
     public function __construct(
         private readonly BillingPositionBuilder $positions,

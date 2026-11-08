@@ -30,9 +30,9 @@ use Illuminate\Validation\Rule;
  * und Sammlung kamen mit MVP-812 (Feature 155) dazu.
  */
 final class ActivitySearchCriteria {
-    public const SORT_RELEVANCE = 'relevance';
+    public const string SORT_RELEVANCE = 'relevance';
 
-    public const SORT_DATE = 'date';
+    public const string SORT_DATE = 'date';
 
     /** @param  list<SearchSourceType>  $types */
     public function __construct(

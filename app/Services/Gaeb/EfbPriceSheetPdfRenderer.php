@@ -21,7 +21,7 @@ use InvalidArgumentException;
 
 /** EFB-Preisblätter 221 und 223 eines LV als PDF (MVP-1056). */
 final class EfbPriceSheetPdfRenderer {
-    public const FORMS = ['221', '223'];
+    public const array FORMS = ['221', '223'];
 
     public function __construct(private readonly EfbPriceSheetService $sheets) {}
 

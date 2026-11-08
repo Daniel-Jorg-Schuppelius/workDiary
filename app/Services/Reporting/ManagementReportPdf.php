@@ -25,7 +25,7 @@ use Carbon\CarbonImmutable;
  * Recht, Frühwarnungen nur mit dem Recht der Leitungssicht.
  */
 final class ManagementReportPdf {
-    public const VIEW = 'reports.pdf.management';
+    public const string VIEW = 'reports.pdf.management';
 
     public function __construct(
         private readonly ManagementOverviewService $overview,

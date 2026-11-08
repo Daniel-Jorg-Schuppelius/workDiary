@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\{DB, Schema};
  * SQLite (Dev) erzwingt FKs ohnehin nicht durchgängig.
  */
 return new class extends Migration {
-    private const FKS = [
+    private const array FKS = [
         ['protocol_events', 'actor_user_id', 'protocol_events_actor_user_id_foreign'],
         ['month_closure_events', 'actor_user_id', 'month_closure_events_actor_user_id_foreign'],
         ['disposal_job_events', 'actor_user_id', 'disposal_job_events_actor_user_id_foreign'],

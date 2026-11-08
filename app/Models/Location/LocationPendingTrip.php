@@ -48,9 +48,9 @@ class LocationPendingTrip extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const SOURCE_MATCH = 'match';
+    public const string SOURCE_MATCH = 'match';
 
-    public const SOURCE_TRACK = 'track';
+    public const string SOURCE_TRACK = 'track';
 
     protected $fillable = [
         'organization_id',

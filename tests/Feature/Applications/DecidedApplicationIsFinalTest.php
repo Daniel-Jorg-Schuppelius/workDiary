@@ -37,7 +37,7 @@ final class DecidedApplicationIsFinalTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const RETENTION = '2027-04-05';
+    private const string RETENTION = '2027-04-05';
 
     private User $admin;
 

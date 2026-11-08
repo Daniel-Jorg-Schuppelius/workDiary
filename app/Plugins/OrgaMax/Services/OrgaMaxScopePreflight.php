@@ -21,7 +21,7 @@ use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
  */
 class OrgaMaxScopePreflight {
     /** @var array<string, list<string>> Capability → benötigte Scopes. */
-    private const REQUIRED = [
+    private const array REQUIRED = [
         'customers' => ['customer:read'],
         'suppliers' => ['supplier:read'],
         'articles' => ['article:read'],

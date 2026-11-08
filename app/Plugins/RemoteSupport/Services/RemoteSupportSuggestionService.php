@@ -42,16 +42,16 @@ use Illuminate\Support\Collection;
  */
 class RemoteSupportSuggestionService {
     /** Eine Sitzung zählt für einen Kunden ab dieser Überlappung. */
-    private const MIN_OVERLAP_SECONDS = 60;
+    private const int MIN_OVERLAP_SECONDS = 60;
 
     /** Ein Kunde gilt als dominant ab diesem Anteil der gematchten Sitzungen. */
-    private const DOMINANT_SHARE = 0.7;
+    private const float DOMINANT_SHARE = 0.7;
 
     /** Mehrkundengerät: je Kunde mindestens so viele Sitzungen … */
-    private const SHARED_MIN_SESSIONS = 2;
+    private const int SHARED_MIN_SESSIONS = 2;
 
     /** … und mindestens dieser Anteil der gematchten Sitzungen. */
-    private const SHARED_MIN_SHARE = 0.25;
+    private const float SHARED_MIN_SHARE = 0.25;
 
     /**
      * Generische Geräte-/Standortwörter, die nie als Kundenkürzel gewertet
@@ -59,7 +59,7 @@ class RemoteSupportSuggestionService {
      *
      * @var list<string>
      */
-    private const TOKEN_STOPWORDS = [
+    private const array TOKEN_STOPWORDS = [
         'PC', 'NB', 'SRV', 'SERVER', 'DC', 'TS', 'RDP', 'VM', 'HOST', 'WIN',
         'LAPTOP', 'NOTEBOOK', 'DESKTOP', 'APP', 'SQL', 'NAS', 'BUERO', 'BÜRO',
         'KASSE', 'EMPFANG', 'LAGER', 'WERKSTATT', 'CHEF', 'INFO', 'ADMIN',
@@ -71,7 +71,7 @@ class RemoteSupportSuggestionService {
      *
      * @var list<string>
      */
-    private const NAME_STOPWORDS = [
+    private const array NAME_STOPWORDS = [
         'GMBH', 'MBH', 'AG', 'KG', 'UG', 'EK', 'OHG', 'GBR', 'CO', 'GEBR',
         'GEBRUEDER', 'GEBRÜDER', 'HAFTUNGSBESCHRAENKT', 'HAFTUNGSBESCHRÄNKT',
         'UND', 'DER', 'DIE', 'DAS', 'VON', 'ZUR', 'ZUM', 'INH', 'DR', 'ING',

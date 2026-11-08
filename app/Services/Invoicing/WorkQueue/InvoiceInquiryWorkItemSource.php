@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Gate;
 
 /** Unbeantwortete Rechnungsnachfragen aus E-Mails (Feature 166). */
 final class InvoiceInquiryWorkItemSource implements WorkItemSource {
-    private const ROUTE = 'invoices.inquiries.index';
+    private const string ROUTE = 'invoices.inquiries.index';
 
     public function __construct(private readonly FeatureFlagResolver $features) {}
 

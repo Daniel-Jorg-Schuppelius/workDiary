@@ -50,20 +50,20 @@ use Illuminate\Database\Eloquent\Model;
 class NotificationDispatchLog extends Model {
     use BelongsToOrganization;
 
-    public const STAGE_INITIAL = 'initial';
+    public const string STAGE_INITIAL = 'initial';
 
-    public const STAGE_ESCALATION = 'escalation';
+    public const string STAGE_ESCALATION = 'escalation';
 
     /** Eskalationsleiter Stufe 2/3 (MVP-331): eigene Dedup-Stufen je Regel. */
-    public const STAGE_ESCALATION2 = 'escalation2';
+    public const string STAGE_ESCALATION2 = 'escalation2';
 
-    public const STAGE_ESCALATION3 = 'escalation3';
+    public const string STAGE_ESCALATION3 = 'escalation3';
 
     /** Kanal-Marker der SMS-Zeilen (Feature 147). */
-    public const CHANNEL_SMS = 'sms';
+    public const string CHANNEL_SMS = 'sms';
 
     /** Stufen-Präfix der SMS-Zeilen — je Empfänger genau eine je Alarm. */
-    public const STAGE_SMS_PREFIX = 'sms:';
+    public const string STAGE_SMS_PREFIX = 'sms:';
 
     protected $table = 'notification_dispatch_log';
 

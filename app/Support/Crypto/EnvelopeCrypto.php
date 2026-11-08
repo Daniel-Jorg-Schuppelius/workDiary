@@ -30,8 +30,8 @@ use SensitiveParameter;
  * authentifiziert). Fail closed: ohne konfigurierten Schluessel verweigert der Dienst.
  */
 class EnvelopeCrypto {
-    private const KEY_BYTES = SODIUM_CRYPTO_SECRETBOX_KEYBYTES;     // 32
-    private const NONCE_BYTES = SODIUM_CRYPTO_SECRETBOX_NONCEBYTES; // 24
+    private const int KEY_BYTES = SODIUM_CRYPTO_SECRETBOX_KEYBYTES;     // 32
+    private const int NONCE_BYTES = SODIUM_CRYPTO_SECRETBOX_NONCEBYTES; // 24
 
     /**
      * @param  string  $keyConfigKey  Config-Pfad zum Modul-Schluessel (z. B. 'dataprotection.key')

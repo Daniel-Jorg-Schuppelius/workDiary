@@ -20,9 +20,9 @@ use Illuminate\Support\Str;
  * in system_settings, KEINE Kunden-/DB-Namen im Cloudziel.
  */
 class BackupNaming {
-    public const PSEUDONYM_KEY = 'backup.installation_pseudonym';
+    public const string PSEUDONYM_KEY = 'backup.installation_pseudonym';
 
-    public const COMMIT_NAME = 'commit.manifest';
+    public const string COMMIT_NAME = 'commit.manifest';
 
     /** Installations-Pseudonym; wird beim ersten Zugriff erzeugt. */
     public function pseudonym(): string {

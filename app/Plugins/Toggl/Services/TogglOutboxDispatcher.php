@@ -34,7 +34,7 @@ use Illuminate\Support\Facades\Log;
  * Push-Skelett lässt nur einen von beiden posten.
  */
 class TogglOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCreatedEntries {
-    public const OP_ENTRY_CREATE = 'toggl.entry.create';
+    public const string OP_ENTRY_CREATE = 'toggl.entry.create';
 
     public function pluginId(): string {
         return TogglPlugin::ID;

@@ -27,7 +27,7 @@ use CommonToolkit\Helper\Data\JsonHelper;
  * Invocation-Service wendet den Katalog erneut an).
  */
 abstract class AbstractLlmProvider extends AbstractHttpAiProvider implements LlmProviderInterface {
-    protected const MAX_OUTPUT_TOKENS = 1500;
+    protected const int MAX_OUTPUT_TOKENS = 1500;
 
     /** Providerspezifischer Chat-Aufruf: System- + Nutzer-Prompt → Text. */
     abstract protected function complete(string $system, string $user, bool $expectJson = false): Completion;

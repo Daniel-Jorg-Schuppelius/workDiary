@@ -33,7 +33,7 @@ class TogglApiClient implements TogglApi {
     use StartStopFingerprint;
 
     /** Maximale Historie (Jahre) beim „alles"-Import, falls kein Floor bestimmbar ist. */
-    public const MAX_HISTORY_YEARS = 12;
+    public const int MAX_HISTORY_YEARS = 12;
 
     private ?PluginApiClient $api = null;
 

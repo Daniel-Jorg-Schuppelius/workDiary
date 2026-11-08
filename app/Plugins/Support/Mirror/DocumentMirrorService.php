@@ -42,20 +42,20 @@ use RuntimeException;
  * - Transiente Zustellfehler werfen — die Outbox wiederholt sie.
  */
 class DocumentMirrorService {
-    public const EXTERNAL_TYPE = 'dms_object';
+    public const string EXTERNAL_TYPE = 'dms_object';
 
     /** Externer Typ = Quelle der Anbindung (`sources`). */
-    public const EXTERNAL_TYPE_INVOICE = 'invoice_pdf';
+    public const string EXTERNAL_TYPE_INVOICE = 'invoice_pdf';
 
-    public const EXTERNAL_TYPE_PROTOCOL = 'protocol_pdf';
+    public const string EXTERNAL_TYPE_PROTOCOL = 'protocol_pdf';
 
-    public const RESULT_MIRRORED = 'mirrored';
+    public const string RESULT_MIRRORED = 'mirrored';
 
-    public const RESULT_UNCHANGED = 'unchanged';
+    public const string RESULT_UNCHANGED = 'unchanged';
 
-    public const RESULT_CONFLICT = 'conflict';
+    public const string RESULT_CONFLICT = 'conflict';
 
-    public const RESULT_SKIPPED = 'skipped';
+    public const string RESULT_SKIPPED = 'skipped';
 
     /**
      * @param  bool  $force  Konfliktprüfung überspringen und die externe Datei

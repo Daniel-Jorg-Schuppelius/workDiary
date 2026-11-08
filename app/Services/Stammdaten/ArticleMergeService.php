@@ -41,7 +41,7 @@ class ArticleMergeService extends AbstractEntityMergeService {
      *
      * @var array<string, string>
      */
-    private const PIVOT_TABLES = [
+    private const array PIVOT_TABLES = [
         'article_supplies' => 'supplier_id',
         'article_price_tiers' => 'min_qty',
         'article_units' => 'code',
@@ -49,7 +49,7 @@ class ArticleMergeService extends AbstractEntityMergeService {
     ];
 
     /** @var array<string, array{0: string, 1: string}> */
-    private const MORPH_TABLES = [
+    private const array MORPH_TABLES = [
         'attachments' => ['attachable_type', 'attachable_id'],
         'communication_notes' => ['notable_type', 'notable_id'],
         'pending_external_conflicts' => ['referenceable_type', 'referenceable_id'],
@@ -61,7 +61,7 @@ class ArticleMergeService extends AbstractEntityMergeService {
      *
      * @var list<string>
      */
-    private const FILLABLE_FROM_SOURCE = [
+    private const array FILLABLE_FROM_SOURCE = [
         'description', 'category', 'subcategory', 'assembly_minutes',
         'copper_weight', 'copper_base_price', 'sales_discount_group_id',
         'valuation_method', 'serial_scheme', 'default_procedure_template_version_id',

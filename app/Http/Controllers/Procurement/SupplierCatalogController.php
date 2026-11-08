@@ -45,7 +45,7 @@ class SupplierCatalogController extends Controller {
     use ResolvesCurrentOrganization;
 
     /** Pflicht- und optionale Mapping-Zielfelder der Importmaske. */
-    private const MAPPING_FIELDS = [
+    private const array MAPPING_FIELDS = [
         'external_no', 'external_no_fallback', 'name', 'purchase_price', 'list_price', 'currency', 'gtin',
         'manufacturer_no', 'manufacturer', 'category', 'availability', 'lead_time_days',
     ];

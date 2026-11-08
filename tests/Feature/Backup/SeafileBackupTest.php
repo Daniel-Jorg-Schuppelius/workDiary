@@ -36,9 +36,9 @@ class SeafileBackupTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const BASE = 'https://seafile.example.test';
+    private const string BASE = 'https://seafile.example.test';
 
-    private const REPO = 'cccccccc-1111-4222-8333-444444444444';
+    private const string REPO = 'cccccccc-1111-4222-8333-444444444444';
 
     protected function setUp(): void {
         parent::setUp();

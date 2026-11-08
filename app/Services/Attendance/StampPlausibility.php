@@ -34,10 +34,10 @@ use Illuminate\Validation\ValidationException;
  */
 final class StampPlausibility {
     /** Wie weit ein Gerät vorgehen darf, bevor der Stempel als Zukunft gilt. */
-    public const MAX_CLOCK_SKEW_MINUTES = 10;
+    public const int MAX_CLOCK_SKEW_MINUTES = 10;
 
     /** Wie weit ein Gerät nachreichen darf (Offline-Fenster). */
-    public const MAX_BACKDATE_DAYS = 14;
+    public const int MAX_BACKDATE_DAYS = 14;
 
     public function __construct(private readonly DayCloseService $dayClose) {}
 

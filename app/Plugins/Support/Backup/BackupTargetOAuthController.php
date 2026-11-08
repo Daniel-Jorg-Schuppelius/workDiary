@@ -39,7 +39,7 @@ abstract class BackupTargetOAuthController extends Controller {
     use HandlesOAuthPopup;
 
     /** Backup-Ziele gelten installationsweit — der Handshake bindet an keine Organisation. */
-    private const INSTALLATION = 0;
+    private const int INSTALLATION = 0;
 
     abstract protected function provider(): BackupProvider;
 

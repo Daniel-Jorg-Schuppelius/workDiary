@@ -21,7 +21,7 @@ use App\Policies\PermissionPolicy;
 class IsmsSoftwareInstallationPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    protected const ABILITIES = [
+    protected const array ABILITIES = [
         'viewAny' => P::IsmsViewAny,
         'view' => P::IsmsView,
         'create' => P::IsmsManage,

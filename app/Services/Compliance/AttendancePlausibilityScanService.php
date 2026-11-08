@@ -34,19 +34,19 @@ use Illuminate\Support\Collection;
  * Acknowledge-Workflow der Verstoß-Historie.
  */
 final class AttendancePlausibilityScanService {
-    public const CATEGORY = 'plausibility';
+    public const string CATEGORY = 'plausibility';
 
     /** Geht-Stempelung fehlt (Anwesenheit über den Kalendertag hinaus offen). */
-    public const KIND_MISSING_CHECKOUT = 'missingCheckout';
+    public const string KIND_MISSING_CHECKOUT = 'missingCheckout';
 
     /** Stempelung an einem laut Arbeitszeitmodell/Dienstplan freien Tag. */
-    public const KIND_FREE_DAY_STAMP = 'freeDayStamp';
+    public const string KIND_FREE_DAY_STAMP = 'freeDayStamp';
 
     /** Stempelung trotz genehmigter ganztägiger Abwesenheit (Urlaub/Krank). */
-    public const KIND_ABSENCE_STAMP = 'absenceStamp';
+    public const string KIND_ABSENCE_STAMP = 'absenceStamp';
 
     /** Stempelzeit außerhalb der Rahmenzeit über der Bagatellgrenze. */
-    public const KIND_FRAME_TIME = 'attendanceFrameTime';
+    public const string KIND_FRAME_TIME = 'attendanceFrameTime';
 
     /**
      * @return array<int, list<AttendanceComplianceFinding>>  Befunde je user_id

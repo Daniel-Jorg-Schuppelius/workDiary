@@ -41,10 +41,10 @@ use RuntimeException;
 class ResalePeriodController extends Controller {
     use ResolvesCurrentOrganization;
 
-    private const PER_PAGE = 50;
+    private const int PER_PAGE = 50;
 
     /** Lizenzpositionen ohne Abo: mehr zeigt die Periodenseite nicht (C12). */
-    private const UNLINKED_LIMIT = 100;
+    private const int UNLINKED_LIMIT = 100;
 
     public function __construct(private readonly PeriodLinker $linker, private readonly InvoiceMirror $mirror) {}
 

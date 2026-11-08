@@ -32,7 +32,7 @@ use Illuminate\View\View;
 class BillingProfileController extends Controller {
     use ResolvesCurrentOrganization;
 
-    public const CONTACT_FIELDS = ['name', 'email', 'street', 'zip', 'city', 'country', 'vat_id', 'reference'];
+    public const array CONTACT_FIELDS = ['name', 'email', 'street', 'zip', 'city', 'country', 'vat_id', 'reference'];
 
     public function show(): View {
         $this->authorizeBilling();

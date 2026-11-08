@@ -34,7 +34,7 @@ class TourEvent extends JournalEntry {
     /** @var array<string, string|null> */
     protected static array $journalColumns = ['occurred_at' => 'occurred_at'];
 
-    public const UPDATED_AT = null;
+    public const ?string UPDATED_AT = null;
 
     protected $fillable = [
         'organization_id',

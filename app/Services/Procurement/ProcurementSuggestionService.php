@@ -28,7 +28,7 @@ use App\Services\Inventory\StockLevelService;
  * lassen sich je Lieferant Entwurfsbestellungen erzeugen.
  */
 class ProcurementSuggestionService {
-    public const SCALE = 4;
+    public const int SCALE = 4;
 
     public function __construct(
         private readonly StockLevelService $levels,

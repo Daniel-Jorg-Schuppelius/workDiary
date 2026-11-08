@@ -34,9 +34,9 @@ use Illuminate\View\View;
  * Suche. `?domain=` fokussiert eine Stammdaten-Gruppe (bis 200 Treffer).
  */
 class SearchController extends Controller {
-    private const LIMIT_ENTITIES = 10;
+    private const int LIMIT_ENTITIES = 10;
 
-    private const LIMIT_FOCUSED = 200;
+    private const int LIMIT_FOCUSED = 200;
 
     public function index(
         Request $request,

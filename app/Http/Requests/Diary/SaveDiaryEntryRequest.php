@@ -26,7 +26,7 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
     use DecodesSqidInputs, ParsesOrgLocalDateTimes;
 
     /** Geplante Dauer als Stunden:Minuten, z. B. 1:30 oder 12:00. */
-    private const PLANNED_DURATION_PATTERN = '/^\d{1,3}:[0-5]\d$/';
+    private const string PLANNED_DURATION_PATTERN = '/^\d{1,3}:[0-5]\d$/';
 
     private ?EntryType $entryType = null;
 

@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Cache;
  * Fehlversuche zählen nicht (keine IP in der Datenbank, HinSchG).
  */
 final class IpBanService {
-    private const COUNTED = [
+    private const array COUNTED = [
         SecurityEventType::AuthFailed, SecurityEventType::AuthLockout, SecurityEventType::TwoFactorFailed,
         SecurityEventType::ApiTokenInvalid, SecurityEventType::WebhookSignatureInvalid, SecurityEventType::SsoFailed,
     ];

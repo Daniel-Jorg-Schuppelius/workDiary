@@ -17,7 +17,7 @@ use Illuminate\Database\Seeder;
 
 class EntryTypeSeeder extends Seeder {
     /** Neutraler Grundstock für Orgs ohne (oder mit unbekanntem) Branchenprofil. */
-    public const DEFAULT_SLUGS = [EntryType::SLUG_GENERAL, EntryType::SLUG_SERVICE];
+    public const array DEFAULT_SLUGS = [EntryType::SLUG_GENERAL, EntryType::SLUG_SERVICE];
 
     public function run(): void {
         // deploy.sh seedet bei jedem Deploy — Orgs mit vorhandenen Typen

@@ -36,7 +36,7 @@ class TourPlanActualReportController extends Controller {
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
-    public const REPORT_CODE = 'tour-plan-actual';
+    public const string REPORT_CODE = 'tour-plan-actual';
 
     /** Der eigene Plan-Ist-Vergleich ist persönlich; die Sicht auf alle Fahrer braucht das Exportrecht. */
     protected function exportIsPersonal(Request $request): bool {

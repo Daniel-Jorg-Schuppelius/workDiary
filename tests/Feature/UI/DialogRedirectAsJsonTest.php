@@ -25,7 +25,7 @@ class DialogRedirectAsJsonTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const DIALOG = ['X-Entry-Dialog' => '1', 'Accept' => 'application/json'];
+    private const array DIALOG = ['X-Entry-Dialog' => '1', 'Accept' => 'application/json'];
 
     protected function setUp(): void {
         parent::setUp();

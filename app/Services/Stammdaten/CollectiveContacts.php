@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\DB;
  */
 class CollectiveContacts {
     /** Steuerkategorien (BT-151), bei denen Lexware einen echten Firmenkontakt verlangt. */
-    private const NAMED_CONTACT_CATEGORIES = ['AE', 'K', 'G'];
+    private const array NAMED_CONTACT_CATEGORIES = ['AE', 'K', 'G'];
 
     public function supplier(Organization $organization): Supplier {
         return DB::transaction(static function () use ($organization): Supplier {

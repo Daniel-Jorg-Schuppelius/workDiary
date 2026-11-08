@@ -26,7 +26,7 @@ class SchemaDumpFreshnessTest extends TestCase {
     use ScansSourceTree;
 
     /** Mehr als so viele fehlende Migrationen gelten als veralteter Dump. */
-    private const TOLERANCE = 0;
+    private const int TOLERANCE = 0;
 
     public function test_schema_dumps_contain_the_latest_migrations(): void {
         $migrations = array_map(

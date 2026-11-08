@@ -28,11 +28,11 @@ use Illuminate\Support\Facades\DB;
  *                    decommissioned_on gesetzt)
  */
 class AssetLifecycleService {
-    public const PHASE_IN_OPERATION = 'inOperation';
+    public const string PHASE_IN_OPERATION = 'inOperation';
 
-    public const PHASE_RETIRED = 'retired';
+    public const string PHASE_RETIRED = 'retired';
 
-    public const PHASE_DECOMMISSIONED = 'decommissioned';
+    public const string PHASE_DECOMMISSIONED = 'decommissioned';
 
     /**
      * Verzeichnet einen Eigentümerwechsel append-only (Feature 027 → Rang 49)

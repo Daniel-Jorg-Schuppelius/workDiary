@@ -51,7 +51,7 @@ class SeedAccountingLoadCommand extends Command {
     protected $description = 'Legt einen Messdatensatz der lokalen Buchhaltung an und misst die Kernberichte (MVP-683)';
 
     /** Sammel-Insert in Blöcken — ein Insert je Zeile wäre um Größenordnungen langsamer. */
-    private const CHUNK = 500;
+    private const int CHUNK = 500;
 
     public function handle(): int {
         if (app()->environment('production') && ! $this->option('force')) {

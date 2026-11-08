@@ -40,9 +40,9 @@ final class CalendlyOutboundTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private const EVENT_UUID = 'EV1';
+    private const string EVENT_UUID = 'EV1';
 
-    private const INVITEE_URI = 'https://api.calendly.com/scheduled_events/EV1/invitees/INV1';
+    private const string INVITEE_URI = 'https://api.calendly.com/scheduled_events/EV1/invitees/INV1';
 
     private User $admin;
 

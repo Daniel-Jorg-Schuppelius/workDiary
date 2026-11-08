@@ -36,7 +36,7 @@ use Illuminate\Support\Facades\DB;
  */
 class DocumentFeedQuery {
     /** Sortierbare Spalten der Projektion → Feed-Spalte. */
-    public const SORTS = [
+    public const array SORTS = [
         'number' => 'number',
         'date' => 'doc_date',
         'kind' => 'kind',

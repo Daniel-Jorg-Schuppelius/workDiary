@@ -27,7 +27,7 @@ class VariableRequireRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Datei → Herkunft des Pfadteils. */
-    private const ALLOWED = [
+    private const array ALLOWED = [
         'app/Support/BranchProfileFiles.php' => 'Zentraler Lader: Code gegen CODE_PATTERN geprüft, Verzeichnis fest.',
         'app/Http/Controllers/Admin/BranchProfileController.php' => 'Verzeichnisliste der mitgelieferten Profile.',
         'app/Services/Accounting/ChartOfAccountsTemplateService.php' => 'Verzeichnisliste der mitgelieferten Kontenrahmen.',

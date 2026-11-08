@@ -43,10 +43,10 @@ use Throwable;
  */
 class MsgraphMailTransport extends AbstractTransport {
     /** Interner Routing-Header (Org-ID); wird vor dem Versand entfernt. */
-    public const HEADER_ORGANIZATION = 'X-WorkDiary-Organization';
+    public const string HEADER_ORGANIZATION = 'X-WorkDiary-Organization';
 
     /** Graph-Inline-Anhangsgrenze (darüber verlangt Graph eine Upload-Session). */
-    public const INLINE_ATTACHMENT_LIMIT = 3 * 1024 * 1024;
+    public const int INLINE_ATTACHMENT_LIMIT = 3 * 1024 * 1024;
 
     public function __toString(): string {
         return 'msgraph://graph.microsoft.com';

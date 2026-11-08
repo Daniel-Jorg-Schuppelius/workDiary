@@ -33,12 +33,12 @@ use Illuminate\Database\Eloquent\{Builder, Collection};
  * Positionen und Belegdateien führt der Spiegel nicht.
  */
 final class AccountingVoucherRevenueSource implements ExternalRevenueSource {
-    public const KEY = 'accounting_vouchers';
+    public const string KEY = 'accounting_vouchers';
 
     /** sevDesk-Status vor MVP-731 (normalisierter Zustand fehlt in Altzeilen). */
-    private const LEGACY_STATES = ['50' => 'draft', '100' => 'open', '750' => 'open', '1000' => 'paid'];
+    private const array LEGACY_STATES = ['50' => 'draft', '100' => 'open', '750' => 'open', '1000' => 'paid'];
 
-    private const COLUMNS = ['id', 'plugin_id', 'customer_id', 'voucher_status', 'voucher_state', 'document_kind', 'voucher_number', 'voucher_date', 'due_date', 'paid_date', 'total_amount', 'net_amount', 'open_amount', 'currency'];
+    private const array COLUMNS = ['id', 'plugin_id', 'customer_id', 'voucher_status', 'voucher_state', 'document_kind', 'voucher_number', 'voucher_date', 'due_date', 'paid_date', 'total_amount', 'net_amount', 'open_amount', 'currency'];
 
     public function key(): string {
         return self::KEY;

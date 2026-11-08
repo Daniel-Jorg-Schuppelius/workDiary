@@ -36,9 +36,9 @@ use ERechnungToolkit\Enums\SmlZone;
  * Provider ist ein Pilotschritt.
  */
 class PeppolAccessPointPlugin extends AbstractPlugin implements PeppolTransportProvider {
-    public const ID = 'peppol-access-point';
+    public const string ID = 'peppol-access-point';
 
-    public const SERVICE_PROVIDER = PeppolAccessPointServiceProvider::class;
+    public const string SERVICE_PROVIDER = PeppolAccessPointServiceProvider::class;
 
     public function name(): string {
         return 'Peppol Access Point';

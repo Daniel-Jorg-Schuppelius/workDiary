@@ -22,7 +22,7 @@ use Lexoffice\Entities\Documents\Quotations\Quotation;
  * {@see LexofficeOrderDocumentService}.
  */
 class LexofficeQuotationService extends LexofficeOrderDocumentService {
-    public const EXT_TYPE_QUOTATION = 'quotation';
+    public const string EXT_TYPE_QUOTATION = 'quotation';
 
     protected function endpointPath(): string {
         return 'quotations';

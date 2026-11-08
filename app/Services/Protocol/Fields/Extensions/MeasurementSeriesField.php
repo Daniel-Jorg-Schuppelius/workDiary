@@ -20,7 +20,7 @@ use CommonToolkit\Helper\Data\NumberHelper;
  * Messreihe mit Zeitstempeln (`value_json.samples = [{value, at}, …]`).
  */
 class MeasurementSeriesField implements FieldExtension {
-    public const KEY = 'protocol.measurement';
+    public const string KEY = 'protocol.measurement';
 
     public function key(): string {
         return self::KEY;

@@ -34,7 +34,7 @@ class OrgScopedExistsRuleTest extends TestCase {
      *
      * @var array<int, string>
      */
-    private const ALLOW_LIST = [
+    private const array ALLOW_LIST = [
         // (aktuell leer — alle Fundstellen des Audits 2026-07-09 sind umgestellt)
     ];
 
@@ -43,7 +43,7 @@ class OrgScopedExistsRuleTest extends TestCase {
      *
      * @var array<string, string>
      */
-    private const UNIQUE_ALLOW_LIST = [
+    private const array UNIQUE_ALLOW_LIST = [
         'app/Http/Controllers/Platform/OrgMemberController.php:users' => 'Die E-Mail-Adresse ist die Anmeldekennung und installationsweit eindeutig.',
         'app/Http/Controllers/Platform/ProfileController.php:users' => 'Die E-Mail-Adresse ist die Anmeldekennung und installationsweit eindeutig.',
         'app/Http/Controllers/Auth/TenantRegistrationController.php:users' => 'Die E-Mail-Adresse ist die Anmeldekennung und installationsweit eindeutig.',
@@ -56,7 +56,7 @@ class OrgScopedExistsRuleTest extends TestCase {
      *
      * @var array<int, string>
      */
-    private const INDIRECTLY_SCOPED_TABLES = [
+    private const array INDIRECTLY_SCOPED_TABLES = [
         'protocol_items',
         'procedure_template_versions',
     ];

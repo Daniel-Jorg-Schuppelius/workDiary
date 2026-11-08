@@ -23,7 +23,7 @@ use App\Models\Platform\Organization;
  * 5000 Namen je Organisation.
  */
 final class CustomerNameMasker {
-    public const PLACEHOLDER = '[Kunde]';
+    public const string PLACEHOLDER = '[Kunde]';
 
     public function mask(Organization $organization, string $text): string {
         if (trim($text) === '') {

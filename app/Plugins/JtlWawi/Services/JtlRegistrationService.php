@@ -35,14 +35,14 @@ use RuntimeException;
  * (Abweichungsregister MVP-316).
  */
 class JtlRegistrationService {
-    private const STATUS_MAP = [
+    private const array STATUS_MAP = [
         0 => JtlRegistrationStatus::Pending,
         1 => JtlRegistrationStatus::Rejected,
         2 => JtlRegistrationStatus::Accepted,
     ];
 
     /** 1×1 transparentes PNG — die API-Doku führt appIcon als Registrierungsfeld. */
-    private const APP_ICON = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+    private const string APP_ICON = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 
     public function __construct(
         private readonly JtlGatewayFactory $gateways,

@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Cache;
  * Caches die Ergebnisliste pro (org, domain) für 60 Sekunden.
  */
 class ClassificationResolver {
-    public const CACHE_TTL_SECONDS = 60;
+    public const int CACHE_TTL_SECONDS = 60;
 
     public static function cacheKey(?int $organizationId, ClassificationDomain $domain): string {
         return sprintf('classifications.v1.%s.%s', $organizationId ?? 'platform', $domain->value);

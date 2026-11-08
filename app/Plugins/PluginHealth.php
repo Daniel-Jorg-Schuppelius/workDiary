@@ -23,11 +23,11 @@ use App\Enums\Plugin\PluginHealthStatus;
  *  - failing   : Plugin kann seine Hauptfunktion NICHT erfüllen (Auth, Netz, Config defekt)
  */
 final class PluginHealth {
-    public const STATUS_OK = PluginHealthStatus::Ok->value;
+    public const string STATUS_OK = PluginHealthStatus::Ok->value;
 
-    public const STATUS_DEGRADED = PluginHealthStatus::Degraded->value;
+    public const string STATUS_DEGRADED = PluginHealthStatus::Degraded->value;
 
-    public const STATUS_FAILING = PluginHealthStatus::Failing->value;
+    public const string STATUS_FAILING = PluginHealthStatus::Failing->value;
 
     public function __construct(
         public readonly string $status,

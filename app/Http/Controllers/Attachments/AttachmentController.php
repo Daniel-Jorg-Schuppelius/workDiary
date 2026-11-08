@@ -39,7 +39,7 @@ class AttachmentController extends Controller {
      * whereIn-Constraint hieraus ableitet (eine Wahrheit — Vollaudit 2026-07, M1:
      * supplier/knowledge/service-ticket liefen zuvor auf 404).
      */
-    public const TYPE_MAP = [
+    public const array TYPE_MAP = [
         'diary' => DiaryEntry::class,
         'comment' => Comment::class,
         'shift' => OnCallShift::class,

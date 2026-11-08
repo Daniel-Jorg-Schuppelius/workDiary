@@ -33,9 +33,9 @@ use Throwable;
  * PKCE-Erzeugung über das api-toolkit (toolkit-first).
  */
 class OidcClient {
-    private const DISCOVERY_TTL_SECONDS = 600;
-    private const JWKS_TTL_SECONDS = 600;
-    private const CLOCK_LEEWAY_SECONDS = 60;
+    private const int DISCOVERY_TTL_SECONDS = 600;
+    private const int JWKS_TTL_SECONDS = 600;
+    private const int CLOCK_LEEWAY_SECONDS = 60;
 
     public function __construct(private readonly PluginHttpFactory $http) {}
 

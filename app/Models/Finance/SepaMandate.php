@@ -46,7 +46,7 @@ class SepaMandate extends Model {
     use HasSqid;
 
     /** Nach 36 Monaten ohne Einzug verfällt ein Mandat (SEPA-Regelwerk). */
-    public const DORMANT_MONTHS = 36;
+    public const int DORMANT_MONTHS = 36;
 
     protected $fillable = [
         'organization_id', 'customer_id', 'reference', 'kind', 'status',
