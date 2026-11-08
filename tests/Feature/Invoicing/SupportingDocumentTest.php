@@ -178,6 +178,20 @@ class SupportingDocumentTest extends TestCase {
         $this->assertSame('nachweis-1-a.pdf', $remaining->first()->filename);
     }
 
+    public function test_a_document_belongs_to_exactly_one_carrier(): void {
+        $document = app(SupportingDocumentService::class)->addUpload($this->draft(), UploadedFile::fake()->createWithContent('a.pdf', "%PDF-1.4\n%%EOF\n"), null, $this->admin);
+
+        foreach ([['invoice_id' => null], ['external_invoice_id' => 999999]] as $carrier) {
+            try {
+                $document->fresh()->forceFill($carrier)->save();
+                $this->fail('Ohne oder mit zwei Trägern hätte das Speichern scheitern müssen.');
+            } catch (\RuntimeException $e) {
+                $this->assertStringContainsString('genau einer Rechnung', $e->getMessage());
+            }
+        }
+        $this->assertNotNull($document->fresh()->invoice_id);
+    }
+
     public function test_issue_freezes_documents_with_final_reference(): void {
         $invoice = $this->draftWithTimes();
         app(SupportingDocumentService::class)->generateActivityReport($invoice, $this->admin);

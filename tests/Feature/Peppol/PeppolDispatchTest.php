@@ -346,6 +346,26 @@ class PeppolDispatchTest extends TestCase {
         $this->assertSame(DocumentDispatchStatus::Failed, $dispatch->status, 'Ein abgelehnter Zustellversuch gehört trotzdem ins Protokoll.');
     }
 
+    /** Endgültige Ablehnung mit Nachrichtenkennung: protokolliert, aber als Fehler gemeldet, nicht als Versand. */
+    public function test_final_rejection_is_reported_as_an_error_not_as_sent(): void {
+        $this->fakeHttp(extra: [self::AP_BASE . '/outbox*' => FakePluginHttp::response([
+            'messageId' => 'MSG-2',
+            'status' => 'rejected',
+            'errorMessage' => 'Empfänger unbekannt',
+        ])]);
+        $invoice = $this->makeInvoice();
+
+        $this->actingAs($this->admin)
+            ->post(route('invoices.peppol.send', $invoice))
+            ->assertSessionHas('error', fn (string $message): bool => str_contains($message, 'Empfänger unbekannt'))
+            ->assertSessionMissing('status');
+
+        $dispatch = DocumentDispatch::query()->where('channel', DocumentDispatch::CHANNEL_PEPPOL)->sole();
+        $this->assertSame(DocumentDispatchStatus::Failed, $dispatch->status);
+        $this->assertSame('MSG-2', $dispatch->meta['message_id'] ?? null);
+        $this->assertDatabaseMissing('audit_logs', ['auditable_id' => $invoice->id, 'event' => 'invoice.peppolSent']);
+    }
+
     public function test_missing_credentials_yield_a_clear_message(): void {
         $this->fakeHttp();
         $this->configurePlugin(['base_url' => '', 'api_key' => '']);

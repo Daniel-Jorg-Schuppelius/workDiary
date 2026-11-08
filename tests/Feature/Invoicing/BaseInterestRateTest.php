@@ -63,6 +63,19 @@ final class BaseInterestRateTest extends TestCase {
         $this->assertSame(['2026-07-01', '2026-07-10', 1.52], [$periods[1]['from']->toDateString(), $periods[1]['to']->toDateString(), $periods[1]['rate']]);
     }
 
+    /** Die Reihe ist für ihren Zeitraum maßgeblich; ältere Zeilen außerhalb bleiben. */
+    public function test_revised_series_removes_transitions_it_no_longer_contains(): void {
+        BaseInterestRate::query()->create(['valid_from' => '2019-07-01', 'rate' => '-0.88', 'source' => BaseInterestRateService::SOURCE]);
+        $this->rates()->ingest(self::CSV);
+        $revised = str_replace(['2026-07;1,52;Bemerkung', '2026-08;1,52;', '2026-09;1,52;'], ['2026-07;1,27;', '2026-08;1,27;', '2026-09;1,27;'], self::CSV);
+
+        $this->assertSame(1, $this->rates()->ingest($revised));
+
+        $this->assertSame(['2019-07-01', '2022-11-01', '2023-01-01', '2026-04-01'], BaseInterestRate::query()->orderBy('valid_from')->get()->map(fn ($r) => $r->valid_from->toDateString())->all());
+        $this->assertSame(1.27, $this->rates()->rateOn(CarbonImmutable::parse('2026-08-15')));
+        $this->assertSame(0, $this->rates()->ingest($revised));
+    }
+
     public function test_default_interest_on_base_rate_is_calculated_per_period(): void {
         $this->rates()->ingest(self::CSV);
         $org = Organization::factory()->create();

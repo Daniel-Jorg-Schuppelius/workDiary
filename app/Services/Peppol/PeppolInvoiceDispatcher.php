@@ -220,6 +220,13 @@ class PeppolInvoiceDispatcher {
             'validator_scenario' => $validation->getScenarioName() ?? BisValidator::SCENARIO,
         ], $receipt->isSuccess() ? DocumentDispatchStatus::Sent : ($receipt->getStatus()->isFinal() ? DocumentDispatchStatus::Failed : DocumentDispatchStatus::Queued));
 
+        // Endgültig abgelehnt: der Versuch steht im Protokoll, der Aufrufer meldet den Fehler statt eines Versands.
+        if (! $receipt->isSuccess() && $receipt->isFinal()) {
+            throw new RuntimeException((string) __('peppol.error.transport', [
+                'message' => $receipt->getErrorMessage() ?? $receipt->getStatus()->value,
+            ]));
+        }
+
         return $dispatch;
     }
 
