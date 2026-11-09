@@ -183,7 +183,7 @@ class NavigationRegistry {
         [$adminNavItems, $manageNavItems, $pluginPanelItems, $pluginPanelRoutes] = $this->headerMenus($user, $isLegacyMode);
 
         $mainNavItems = array_values(array_filter(
-            $this->mainNavItems($isLegacyMode, $indexRoute),
+            $this->mainNavItems($user, $isLegacyMode, $indexRoute),
             fn(array $it): bool => $this->gate->allows(isset($it['route']) ? (string) $it['route'] : null)
         ));
         $manageNavItems = array_values(array_filter(
@@ -1903,12 +1903,16 @@ class NavigationRegistry {
      *
      * @return list<array<string, mixed>>
      */
-    private function mainNavItems(bool $isLegacyMode, string $indexRoute): array {
+    private function mainNavItems(User $user, bool $isLegacyMode, string $indexRoute): array {
         return $isLegacyMode
             ? [
                 ['route' => 'legacy.diary.week', 'label' => __('Wochenansicht'), 'icon' => 'calendar_view_week', 'modal' => false, 'matches' => ['legacy.diary.week']],
                 ['route' => $indexRoute, 'label' => __('Arbeitsliste'), 'icon' => 'list_alt', 'modal' => false, 'matches' => [$indexRoute, 'legacy.oncall.*', 'legacy.notdienst.*']],
                 ['route' => 'legacy.callcenter.notdienst', 'label' => __('Zentrale'), 'icon' => 'support_agent', 'modal' => false, 'matches' => ['legacy.callcenter.*', 'legacy.overview.*']],
+                // Support-Portal des Altsystems: wie dort nur für die Bürokonten (Legacy-Admins) und den Plattformbetrieb.
+                ...(LegacyBridge::isLegacyAdmin($user) || $user->isGlobalAdmin()
+                    ? [['route' => 'legacy.support.orders.index', 'label' => __('legacy_support.nav.orders'), 'icon' => 'support', 'modal' => false, 'matches' => ['legacy.support.orders.*', 'legacy.support.archive.*', 'legacy.support.mail.*']]]
+                    : []),
             ]
             : [
                 ['route' => $indexRoute, 'label' => __('Arbeitsliste'), 'icon' => 'list_alt', 'modal' => false, 'matches' => [$indexRoute, 'diary.*']],
@@ -1978,6 +1982,7 @@ class NavigationRegistry {
             // Wie LegacyUserAdminController: Legacy-Admin oder Plattformbetrieb, nicht jeder Org-Admin.
             if ($isLegacyMode && ($isLegacyAdmin || $isPlatformAdmin)) {
                 $manageNavItems[] = ['route' => 'legacy.users.index', 'label' => __('user.employees'), 'icon' => 'group', 'modal' => false];
+                $manageNavItems[] = ['route' => 'legacy.support.customers.index', 'label' => __('legacy_support.nav.customers'), 'icon' => 'badge', 'modal' => false];
             }
             if (! $isLegacyMode) {
                 $manageNavItems[] = ['route' => 'holidays.index', 'label' => __('Feiertage'), 'icon' => 'celebration', 'modal' => false];

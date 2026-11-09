@@ -59,6 +59,41 @@
                             </td>
                         </tr>
                     @endforeach
+                    @if ($stats['support'] !== null)
+                        @php $remaining = max(0, $stats['support']['legacy'] - $stats['support']['imported']); @endphp
+                        <tr>
+                            <td class="font-medium">
+                                {{ __('legacy_support.import.migration_label') }}
+                                <p class="text-xs font-normal text-muted">{{ __('legacy_support.import.migration_hint') }}</p>
+                            </td>
+                            <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($stats['support']['legacy'], 0, withThousandsSeparator: true) }}</td>
+                            <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($stats['support']['imported'], 0, withThousandsSeparator: true) }}</td>
+                            <td class="text-right" data-sort-value="{{ $remaining }}">
+                                @if ($remaining === 0)
+                                    <x-status-badge tone="success" size="sm">{{ __('Vollständig') }}</x-status-badge>
+                                @else
+                                    <span class="text-warning">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($remaining, 0, withThousandsSeparator: true) }}</span>
+                                @endif
+                            </td>
+                            <td class="text-right">
+                                <form method="POST" action="{{ route('admin.legacy-migration.run') }}" class="inline-flex items-center gap-2">
+                                    @csrf
+                                    <input type="hidden" name="type" value="support">
+                                    <select name="organization" class="select select-bordered select-sm w-48" aria-label="{{ __('legacy_support.import.target_organization') }}" required>
+                                        <option value="">{{ __('legacy_support.import.choose_organization') }}</option>
+                                        @foreach ($organizations as $organization)
+                                            <option value="{{ $organization->sqid }}">{{ $organization->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <x-icon-btn icon="download" tone="primary" size="sm" type="submit"
+                                                data-confirm-dialog
+                                                data-confirm-message="{{ __('legacy_support.import.confirm') }}"
+                                                data-confirm-label="{{ __('Importieren') }}"
+                                                show-label>{{ __('Importieren') }}</x-icon-btn>
+                                </form>
+                            </td>
+                        </tr>
+                    @endif
         </x-table>
 
         <form method="POST" action="{{ route('admin.legacy-migration.run') }}" class="inline">

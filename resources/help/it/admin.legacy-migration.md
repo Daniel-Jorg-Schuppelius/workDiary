@@ -1,7 +1,7 @@
 ---
 title: "Migrazione legacy"
 topic: admin.legacy-migration
-version: 1
+version: 2
 keywords:
     - vecchio sistema
     - sistema precedente
@@ -27,5 +27,16 @@ L'importazione si avvia per area ed esegue in background il comando
 `legacy:import`; i record già importati sono collegati tramite un
 identificativo legacy, quindi le esecuzioni ripetute non creano
 duplicati. La scrittura dipende dalla configurazione
-(`legacy_write_enabled`) e l'accesso richiede il permesso di
-consultazione dei log di audit.
+(`legacy_write_enabled`); la pagina è riservata alla gestione della
+piattaforma, perché il database del vecchio sistema appartiene all'intera
+installazione.
+
+Il **portale assistenza** viene trasferito in un'**organizzazione di
+destinazione** a scelta: gli accessi dei clienti vengono abbinati ai
+clienti esistenti per ragione sociale o creati come clienti; ordini e
+archivio diventano ticket di assistenza con numero KP-… e mantengono
+appuntamento, tecnico, risposta e nota interna. Le password non vengono
+trasferite; l'accesso al portale clienti si concede nel nuovo sistema
+tramite invito. Una nuova esecuzione aggiorna i ticket già trasferiti. Gli
+orari del vecchio sistema sono espressi in ora locale e vengono
+convertiti nell'importazione.

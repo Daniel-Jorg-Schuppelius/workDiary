@@ -172,7 +172,7 @@
                                     <td class="font-semibold whitespace-nowrap wd-pin-col">{{ __('Notdienst') }}</td>
                                     @foreach ($notdienstByDay as $item)
                                         <td class="text-center {{ $item['isToday'] ? 'bg-primary/10 font-semibold' : ($item['isHoliday'] ? 'bg-error/5' : '') }}"
-                                            @if ($item['user'] && $item['von'] && $item['bis']) title="{{ $item['von']->fdatetime() }} – {{ $item['bis']->fdatetime() }}" @endif>
+                                            @if ($item['user'] && $item['von'] && $item['bis']) title="{{ $item['von']->fdate() }} – {{ $item['bis']->fdate() }}" @endif>
                                             {{ $item['user'] ?: '–' }}
                                         </td>
                                     @endforeach
@@ -181,7 +181,7 @@
                                     <td class="font-semibold whitespace-nowrap wd-pin-col">{{ __('Bereitschaft') }}</td>
                                     @foreach ($bereitschaftByDay as $item)
                                         <td class="text-center {{ $item['isToday'] ? 'bg-primary/10 font-semibold' : ($item['isHoliday'] ? 'bg-error/5' : '') }}"
-                                            @if ($item['user'] && $item['von'] && $item['bis']) title="{{ $item['von']->fdatetime() }} – {{ $item['bis']->fdatetime() }}" @endif>
+                                            @if ($item['user'] && $item['von'] && $item['bis']) title="{{ $item['von']->fdate() }} – {{ $item['bis']->fdate() }}" @endif>
                                             {{ $item['user'] ?: '–' }}
                                         </td>
                                     @endforeach

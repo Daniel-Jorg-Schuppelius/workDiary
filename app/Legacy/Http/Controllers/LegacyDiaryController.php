@@ -15,7 +15,7 @@ use App\Legacy\Http\Concerns\RequiresLegacyAdmin;
 use App\Legacy\Http\Requests\SaveLegacyDiaryEntryRequest;
 use App\Legacy\Models\{LegacyDiaryEntry, LegacyNotdienst, LegacyOnCall, LegacyUser};
 use App\Legacy\Services\{LegacyDashboardService, LegacyWeekCalendarService};
-use App\Legacy\Support\LegacyRoleResolver;
+use App\Legacy\Support\{LegacyClock, LegacyRoleResolver};
 use App\Models\Platform\User;
 use App\Services\Calendar\HolidayService;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response};
@@ -223,7 +223,7 @@ class LegacyDiaryController extends Controller {
         };
 
         foreach ($entries as $entry) {
-            $entry->update(['gelesen' => $gelesen, 'aktuell' => now()]);
+            $entry->update(['gelesen' => $gelesen, 'aktuell' => LegacyClock::now()]);
         }
 
         return redirect()->route('legacy.diary.index')
@@ -247,7 +247,7 @@ class LegacyDiaryController extends Controller {
      */
     private function entryPayload(array $data, int $entryUserId, Request $request): array {
         return [
-            'aktuell' => now(),
+            'aktuell' => LegacyClock::now(),
             'user' => $entryUserId,
             'von' => $data['von'] ?? null,
             'bis' => $data['bis'] ?? null,

@@ -11,7 +11,7 @@
 namespace App\Legacy\Http\Concerns;
 
 use App\Legacy\Models\LegacyUser;
-use App\Legacy\Support\LegacyRoleResolver;
+use App\Legacy\Support\{LegacyClock, LegacyRoleResolver};
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -48,7 +48,7 @@ trait ManagesLegacyDutyCrud {
         }
 
         $countsQuery = (clone $query);
-        $today = now()->toDateString();
+        $today = LegacyClock::today()->toDateString();
         $counts = [
             'all' => (clone $countsQuery)->count(),
             'today' => (clone $countsQuery)->whereDate('von', '<=', $today)->whereDate('bis', '>=', $today)->count(),

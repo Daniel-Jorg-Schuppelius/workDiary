@@ -1,7 +1,7 @@
 ---
 title: "Altsystem (Legacy)"
 topic: legacy.overview
-version: 3
+version: 4
 keywords:
     - altes System
     - Vorgängersystem
@@ -16,6 +16,10 @@ keywords:
     - Altsystem-Benutzer
     - Zentrale
     - Legacy-Modus
+    - Support-Portal
+    - Portalkunden
+    - Kundenaufträge im Altsystem
+    - Mail-Hinweis
 related:
     - auth.login
     - admin.tenants
@@ -37,6 +41,8 @@ Der Bereich umfasst:
 - **Nutzerverwaltung**: Verwaltung der Altsystem-Benutzer.
 - **Callcenter**: Eigener Login mit Notdienstplan für den
   Callcenter-Zugang.
+- **Support-Portal**: Aufträge und Zugänge der Kunden aus dem Kundenportal
+  des Altsystems.
 
 Lese-Funktionen wie Wochen- und Archivansicht sind stets verfügbar.
 Schreibende Aktionen (Anlegen, Bearbeiten, Löschen) sowie die
@@ -84,3 +90,37 @@ Kopfzeile) unter **Personal** und listet die Benutzer des Altsystems mit
 **Berechtigung:** Die Seite **Mitarbeiter** öffnen Altsystem-Administratoren
 und der Plattformbetrieb; die Administratorrolle der Organisation allein
 genügt nicht.
+
+## Support-Portal
+
+**Support-Portal** in der Hauptnavigation des Legacy-Modus zeigt die Aufträge,
+die Kunden im Kundenportal des Altsystems erteilt haben:
+
+- Gefiltert wird nach **Jahr** (vorgewählt ist das jüngste Jahr mit Aufträgen),
+  **Kunde** und Suchtext; die Kacheln **Neu**, **Gesichtet**, **Termin
+  festgelegt**, **Termin verstrichen**, **Erledigt** und **Archiviert** filtern
+  die Liste.
+- **Bearbeiten** pflegt Kunde, Telefon, Objekt, Auftragstext, **Termin**,
+  **Mechaniker**, **Nachricht für den Kunden**, **Notiz intern**, **Dauer** und
+  **Status**. Ein neuer Termin setzt den Status auf **Termin festgelegt**, sofern
+  nicht erledigt oder archiviert gewählt ist. Die Nachricht sieht der Kunde, die
+  Notiz nicht.
+- **Auftrag anlegen** erfasst einen Auftrag für einen Kunden, etwa nach einem
+  Anruf.
+- **Mail-Hinweis** schaltet die Benachrichtigung bei neuen Kundenaufträgen und
+  legt den Empfänger fest.
+- **Archiv** listet archivierte Aufträge; **Archivieren** verschiebt Aufträge mit
+  dem Status **Archiviert** vor einem Stichtag dorthin. Kunden sehen sie danach
+  nicht mehr.
+
+**Portalkunden** im Verwaltungsmenü verwaltet die Zugänge der Kunden mit
+**Firma**, **Benutzername** und **Passwort** (4 bis 10 Zeichen). Kunden mit
+laufenden Aufträgen lassen sich nicht löschen.
+
+Kunden melden sich auf der eigenen Anmeldeseite des Kundenportals an, sehen nur
+ihre eigenen Aufträge mit Termin und Antworten, erteilen neue Aufträge und
+ändern ihr Passwort. Ist der Schreibzugriff auf das Altsystem aus, ist das
+Portal nur lesbar.
+
+**Berechtigung:** Support-Portal und Portalkunden öffnen Altsystem-Administratoren
+und der Plattformbetrieb.

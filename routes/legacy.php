@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-use App\Legacy\Http\Controllers\{LegacyAccountController, LegacyArchiveController, LegacyCallcenterController, LegacyDiaryController, LegacyMigrationController, LegacyNotdienstController, LegacyOnCallController, LegacyUserAdminController};
+use App\Legacy\Http\Controllers\{LegacyAccountController, LegacyArchiveController, LegacyCallcenterController, LegacyDiaryController, LegacyMigrationController, LegacyNotdienstController, LegacyOnCallController, LegacySupportArchiveController, LegacySupportCustomerController, LegacySupportMailSettingController, LegacySupportOrderController, LegacySupportPortalAuthController, LegacySupportPortalOrderController, LegacyUserAdminController};
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -43,6 +43,31 @@ Route::prefix('legacy/callcenter')->name('legacy.callcenter.')->group(function (
         ->name('notdienst');
 });
 
+// Support-Portal, Kundenseite: eigene Anmeldung gegen kp_user, ohne Konto im neuen System.
+Route::prefix('legacy/support-portal')->name('legacy.portal.')->group(function (): void {
+    Route::get('/', fn() => redirect()->route('legacy.portal.orders.index'))->name('home');
+    Route::get('login', [LegacySupportPortalAuthController::class, 'showLoginForm'])->name('login');
+    // IP-Limit wie beim Callcenter gegen Passwort-Spraying; der Controller drosselt je Name.
+    Route::post('login', [LegacySupportPortalAuthController::class, 'login'])
+        ->middleware('throttle:legacy-login')
+        ->name('login.submit');
+    Route::post('logout', [LegacySupportPortalAuthController::class, 'logout'])->name('logout');
+
+    Route::middleware('legacy.portal.auth')->group(function (): void {
+        Route::get('orders', [LegacySupportPortalOrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/create', [LegacySupportPortalOrderController::class, 'create'])->name('orders.create');
+        Route::get('orders/{order}', [LegacySupportPortalOrderController::class, 'show'])
+            ->whereNumber('order')
+            ->name('orders.show');
+        Route::get('password', [LegacySupportPortalAuthController::class, 'editPassword'])->name('password.edit');
+
+        Route::middleware('legacy.write')->group(function (): void {
+            Route::post('orders', [LegacySupportPortalOrderController::class, 'store'])->name('orders.store');
+            Route::put('password', [LegacySupportPortalAuthController::class, 'updatePassword'])->name('password.update');
+        });
+    });
+});
+
 // Authentifizierte Legacy-Routen
 Route::middleware('auth')->group(function (): void {
     // Admin-Migration-Dashboard (admin-only via Gate in Controller).
@@ -60,6 +85,17 @@ Route::middleware('auth')->group(function (): void {
         Route::get('legacy/archive/{entry}', [LegacyArchiveController::class, 'show'])
             ->whereNumber('entry')
             ->name('legacy.archive.show');
+
+        // Support-Portal, Bürosicht (Legacy-Admins und Plattformbetrieb, Prüfung im Controller).
+        Route::get('legacy/support/orders', [LegacySupportOrderController::class, 'index'])->name('legacy.support.orders.index');
+        Route::get('legacy/support/orders/{order}', [LegacySupportOrderController::class, 'show'])
+            ->whereNumber('order')
+            ->name('legacy.support.orders.show');
+        Route::get('legacy/support/customers', [LegacySupportCustomerController::class, 'index'])->name('legacy.support.customers.index');
+        Route::get('legacy/support/archive', [LegacySupportArchiveController::class, 'index'])->name('legacy.support.archive.index');
+        Route::get('legacy/support/archive/{order}', [LegacySupportArchiveController::class, 'show'])
+            ->whereNumber('order')
+            ->name('legacy.support.archive.show');
 
         // Schreib-Routen (nur wenn LEGACY_WRITE_ENABLED=true)
         Route::middleware('legacy.write')->group(function (): void {
@@ -88,6 +124,20 @@ Route::middleware('auth')->group(function (): void {
                 ->parameters(['notdienst' => 'notdienst']);
 
             Route::post('legacy/archive/run', [LegacyArchiveController::class, 'run'])->name('legacy.archive.run');
+
+            Route::resource('legacy/support/orders', LegacySupportOrderController::class)
+                ->except(['index', 'show'])
+                ->names('legacy.support.orders')
+                ->parameters(['orders' => 'order']);
+
+            Route::resource('legacy/support/customers', LegacySupportCustomerController::class)
+                ->except(['index', 'show'])
+                ->names('legacy.support.customers')
+                ->parameters(['customers' => 'customer']);
+
+            Route::post('legacy/support/archive/run', [LegacySupportArchiveController::class, 'run'])->name('legacy.support.archive.run');
+            Route::get('legacy/support/mail', [LegacySupportMailSettingController::class, 'edit'])->name('legacy.support.mail.edit');
+            Route::put('legacy/support/mail', [LegacySupportMailSettingController::class, 'update'])->name('legacy.support.mail.update');
         });
     });
 });

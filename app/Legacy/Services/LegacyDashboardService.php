@@ -14,7 +14,7 @@ namespace App\Legacy\Services;
 
 use App\Enums\Vacation\VacationStatus;
 use App\Legacy\Models\{LegacyDiaryEntry, LegacyNotdienst, LegacyOnCall, LegacyUser};
-use App\Legacy\Support\LegacyRoleResolver;
+use App\Legacy\Support\{LegacyClock, LegacyRoleResolver};
 use App\Models\Absence\Vacation;
 use App\Models\Platform\User;
 use App\Support\Sqid;
@@ -78,7 +78,7 @@ class LegacyDashboardService {
         $notdienstQuery = $this->buildLegacyDutyQuery(LegacyNotdienst::query(), $request, $canViewAll, $legacyUserId, $tab === 'notdienst' ? $sort : null, $dir);
         $vacationQuery = $this->buildVacationQuery($request, $currentUser, $vacationCanViewAll, $tab === 'urlaub' ? $sort : null, $dir);
 
-        $today = now()->toDateString();
+        $today = LegacyClock::today()->toDateString();
         $oncallCounts = $this->dutyCounts($oncallQuery, $today);
         $notdienstCounts = $this->dutyCounts($notdienstQuery, $today);
 

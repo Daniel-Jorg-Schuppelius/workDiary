@@ -56,7 +56,7 @@
 @endif
 
 <div class="mt-6 grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
-    <x-info-tile :label="__('Von')">{{ $entry->von?->fdatetime() ?? '—' }}</x-info-tile>
-    <x-info-tile :label="__('Bis')">{{ $entry->bis?->fdatetime() ?? '—' }}</x-info-tile>
-    <x-info-tile :label="__('Aktuell')">{{ $entry->aktuell?->fdatetime() ?? '—' }}</x-info-tile>
+    <x-info-tile :label="__('Von')">{{ \App\Legacy\Support\LegacyClock::format($entry->von) ?? '—' }}</x-info-tile>
+    <x-info-tile :label="__('Bis')">{{ \App\Legacy\Support\LegacyClock::format($entry->bis) ?? '—' }}</x-info-tile>
+    <x-info-tile :label="__('Aktuell')">{{ \App\Legacy\Support\LegacyClock::format($entry->aktuell) ?? '—' }}</x-info-tile>
 </div>

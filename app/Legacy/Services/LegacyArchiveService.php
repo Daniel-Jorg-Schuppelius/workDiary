@@ -10,13 +10,14 @@
 
 namespace App\Legacy\Services;
 
+use App\Legacy\Support\LegacyClock;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class LegacyArchiveService {
     /** @return array<string, mixed> */
     public function archiveOlderThanMonths(int $months, ?int $legacyUserId = null): array {
-        $cutoff = now()->subMonths($months)->startOfDay();
+        $cutoff = LegacyClock::now()->subMonths($months)->startOfDay();
 
         $movedDiary = $this->moveRows(
             sourceTable: 'tagebuch',

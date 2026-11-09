@@ -34,8 +34,8 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 class PasswordComparisonRuleTest extends TestCase {
     use ScansSourceTree;
 
-    /** Spalten, deren Wert ein Klartext-Passwort ist. */
-    private const array PASSWORD_COLUMNS = ['userpw', 'password', 'passwort', 'passwd'];
+    /** Spalten, deren Wert ein Klartext-Passwort ist (`passw`: Support-Portal, `kp_user`). */
+    private const array PASSWORD_COLUMNS = ['userpw', 'password', 'passwort', 'passwd', 'passw'];
 
     public function test_kein_passwortvergleich_in_der_where_bedingung(): void {
         $violations = [];

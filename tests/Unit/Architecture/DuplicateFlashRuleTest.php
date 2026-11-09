@@ -42,6 +42,7 @@ class DuplicateFlashRuleTest extends TestCase {
         'resources/views/account/_password_dialog.blade.php' => 'Dialogfragment: Hinweis zum erzwungenen Passwortwechsel im Dialog selbst',
         'resources/views/quotes/portal.blade.php' => 'eigenständige Angebotsseite ohne App-Layout',
         'resources/views/careers/layout.blade.php' => 'eigenes öffentliches Karriere-Layout, zentrale Flash-Stelle',
+        'resources/views/legacy/support/portal/' => 'Kundenseiten des Legacy-Support-Portals auf layouts.public/guest ohne zentralen Flash (role lokal)',
     ];
 
     public function test_views_do_not_render_layout_flashes_locally(): void {

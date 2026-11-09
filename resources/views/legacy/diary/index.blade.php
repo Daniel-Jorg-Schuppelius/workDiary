@@ -206,8 +206,8 @@
                                     <td>{{ optional($entry->author)->uname ?? __('Unbekannt') }}</td>
                                     <td class="max-w-md truncate" title="{{ $entry->inhalt ?? '' }}">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->inhalt ?? '', 120) }}</td>
                                     <td class="max-w-xs truncate" title="{{ $entry->antwort ?? '' }}">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->antwort ?? '', 80) }}</td>
-                                    <td>{{ $entry->von?->fdatetime() ?? '-' }}</td>
-                                    <td>{{ $entry->bis?->fdatetime() ?? '-' }}</td>
+                                    <td>{{ \App\Legacy\Support\LegacyClock::format($entry->von) ?? '-' }}</td>
+                                    <td>{{ \App\Legacy\Support\LegacyClock::format($entry->bis) ?? '-' }}</td>
                                     <td class="whitespace-nowrap text-right">
                                         <x-icon-btn icon="visibility"
                                                     data-entry-modal-trigger

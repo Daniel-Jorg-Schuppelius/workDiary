@@ -10,7 +10,7 @@
 
 namespace App\Legacy\Console\Commands;
 
-use App\Legacy\Models\{LegacyDiaryEntry, LegacyUser};
+use App\Legacy\Models\{LegacyDiaryEntry, LegacySupportArchivedOrder, LegacySupportCustomer, LegacySupportOrder, LegacyUser};
 use Illuminate\Console\Command;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -38,6 +38,10 @@ class LegacyImportPlanCommand extends Command {
                     ['Tagebuch-Einträge', (string) LegacyDiaryEntry::query()->count()],
                     ['Offene Einträge', (string) LegacyDiaryEntry::query()->where('gelesen', 2)->count()],
                     ['Problem-Einträge', (string) LegacyDiaryEntry::query()->where('gelesen', 3)->count()],
+                    ['Support-Portal: Kunden', (string) LegacySupportCustomer::query()->customers()->count()],
+                    ['Support-Portal: Aufträge', (string) LegacySupportOrder::query()->count()],
+                    ['Support-Portal: offene Aufträge', (string) LegacySupportOrder::query()->whereIn('status', LegacySupportOrder::OPEN_STATUSES)->count()],
+                    ['Support-Portal: Archiv', (string) LegacySupportArchivedOrder::query()->count()],
                 ]
             );
 

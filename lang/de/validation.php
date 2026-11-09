@@ -2899,6 +2899,20 @@ return [
         'siblings.further_percent' => 'Nachlass ab drittem Kind',
         'siblings.max_age' => 'Altersgrenze',
 
+        // Support-Portal des Altsystems (Spaltennamen von kp_user/kp_auftrag)
+        'auftrag' => 'Auftragstext',
+        'before' => 'Auftragsdatum vor',
+        'dauer' => 'Dauer',
+        'intern' => 'Notiz intern',
+        'kname' => 'Name',
+        'kunde' => 'Kunde',
+        'objekt' => 'Objekt',
+        'passw' => 'Passwort',
+        'telefon' => 'Telefon',
+        'termin' => 'Termin',
+        'usern' => 'Benutzername',
+        'wer' => 'Mechaniker',
+        'organization' => 'Organisation',
     ],
 
     'values' => [
