@@ -14,7 +14,7 @@
 @php
     /* @var \Carbon\Carbon $monday */
     /* @var \Carbon\Carbon $sunday */
-    $weekStart = $monday ?? now()->startOfWeek(\CommonToolkit\Enums\Weekday::MONDAY->value);
+    $weekStart = $monday ?? \App\Legacy\Support\LegacyClock::now()->startOfWeek(\CommonToolkit\Enums\Weekday::MONDAY->value);
     $dayAbbr = array_map(fn (\CommonToolkit\Enums\Weekday $d) => $d->getShortName('de'), [\CommonToolkit\Enums\Weekday::MONDAY, \CommonToolkit\Enums\Weekday::TUESDAY, \CommonToolkit\Enums\Weekday::WEDNESDAY, \CommonToolkit\Enums\Weekday::THURSDAY, \CommonToolkit\Enums\Weekday::FRIDAY, \CommonToolkit\Enums\Weekday::SATURDAY, \CommonToolkit\Enums\Weekday::SUNDAY]);
     $days    = collect(range(0, 6))->map(fn ($i) => $weekStart->copy()->addDays($i));
     $hours   = range(7, 20);
@@ -85,7 +85,7 @@
             @foreach ($days as $dayIndex => $day)
                 @php
                     $dateKey   = $day->format('Y-m-d');
-                    $isToday   = $day->isToday();
+                    $isToday   = $day->isSameDay(\App\Legacy\Support\LegacyClock::today());
                     $isSunday  = (int) $day->dayOfWeek === 0;
                     $isSaturday = (int) $day->dayOfWeek === 6;
                     $holidayName = isset($holidays) ? $holidays->nameFor($day) : null;

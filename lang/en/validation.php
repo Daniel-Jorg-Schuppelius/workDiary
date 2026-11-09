@@ -2933,6 +2933,20 @@ return [
         'siblings.further_percent' => 'discount from the third child',
         'siblings.max_age' => 'age limit',
 
+        // Support-Portal des Altsystems (Spaltennamen von kp_user/kp_auftrag)
+        'auftrag' => 'order description',
+        'before' => 'order date before',
+        'dauer' => 'duration',
+        'intern' => 'internal note',
+        'kname' => 'name',
+        'kunde' => 'customer',
+        'objekt' => 'site',
+        'passw' => 'password',
+        'telefon' => 'phone',
+        'termin' => 'appointment',
+        'usern' => 'username',
+        'wer' => 'technician',
+        'organization' => 'organization',
     ],
 
     'values' => [

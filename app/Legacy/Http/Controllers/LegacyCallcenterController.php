@@ -13,7 +13,7 @@ namespace App\Legacy\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Legacy\Http\Requests\LegacyCallcenterLoginRequest;
 use App\Legacy\Models\{LegacyDiaryEntry, LegacyNotdienst, LegacyOnCall};
-use App\Legacy\Support\LegacyRoleResolver;
+use App\Legacy\Support\{LegacyClock, LegacyRoleResolver};
 use App\Models\Platform\User;
 use App\Services\Calendar\HolidayService;
 use Carbon\Carbon;
@@ -95,7 +95,7 @@ class LegacyCallcenterController extends Controller {
 
     public function notdienstPlan(Request $request): View {
         $weekOffset = (int) $request->query('week', 0);
-        $today = Carbon::today();
+        $today = LegacyClock::today();
         $start = $today->copy()->subDay()->addWeeks($weekOffset);
         $days = collect(range(0, 6))->map(fn(int $offset) => $start->copy()->addDays($offset));
 

@@ -306,8 +306,8 @@
                             <td class="text-center">
                                 <span class="badge badge-sm {{ $badgeClass }}">{{ $entry->statusLabel() }}</span>
                             </td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->von?->fdatetime() ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->bis?->fdatetime() ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ \App\Legacy\Support\LegacyClock::format($entry->von) ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ \App\Legacy\Support\LegacyClock::format($entry->bis) ?? '—' }}</td>
                             <td class="text-sm">
                                 <a href="{{ route('legacy.archive.show', $entry) }}" data-entry-modal-trigger class="link link-hover">
                                     {{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->inhalt ?? '', 160) }}

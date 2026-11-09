@@ -10,8 +10,10 @@
 
 namespace App\Legacy\Console\Commands;
 
+use App\Legacy\Services\LegacySupportImportService;
+use App\Legacy\Support\LegacyClock;
 use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OnCallShift};
-use App\Models\Platform\User;
+use App\Models\Platform\{Organization, User};
 use CommonToolkit\Helper\Data\StringHelper as ToolkitStringHelper;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\{DB, Hash};
@@ -23,9 +25,11 @@ class LegacyImportCommand extends Command {
         {--diary : Nur Tagebuch-Einträge importieren}
         {--shifts : Nur Bereitschaften importieren}
         {--assignments : Nur Notdienste importieren}
-        {--fresh : Vorhandene Daten vor dem Import löschen}';
+        {--support : Nur das Support-Portal importieren (Kunden und Aufträge als Servicetickets, braucht --organization)}
+        {--organization= : Zielorganisation des Support-Portals (ID oder Kürzel); ohne sie überspringt der Gesamtlauf das Portal}
+        {--fresh : Vorhandene Daten vor dem Import löschen (gilt nicht für das Support-Portal)}';
 
-    protected $description = 'Importiert Benutzer, Tagebuch, Bereitschaften und Notdienste aus der Legacy-DB (idempotent).';
+    protected $description = 'Importiert Benutzer, Tagebuch, Bereitschaften, Notdienste und das Support-Portal aus der Legacy-DB (idempotent).';
 
     private string $legacyEncoding = 'latin1';
 
@@ -46,11 +50,31 @@ class LegacyImportCommand extends Command {
 
         $this->legacyEncoding = (string) config('database.connections.legacy.charset', 'latin1');
 
-        $any = $this->option('users') || $this->option('diary') || $this->option('shifts') || $this->option('assignments');
+        $any = $this->option('users') || $this->option('diary') || $this->option('shifts') || $this->option('assignments') || $this->option('support');
         $importUsers = $this->option('users') || ! $any;
         $importDiary = $this->option('diary') || ! $any;
         $importShifts = $this->option('shifts') || ! $any;
         $importAssignments = $this->option('assignments') || ! $any;
+
+        // Kunden und Tickets gehören einer Organisation; ohne Ziel kein Portal-Import.
+        $supportOrganization = null;
+        $rawOrganization = trim((string) $this->option('organization'));
+        if ($rawOrganization !== '') {
+            $supportOrganization = Organization::query()->withoutGlobalScopes()
+                ->where(fn($query) => $query->where('slug', $rawOrganization)
+                    ->when(ctype_digit($rawOrganization), fn($inner) => $inner->orWhere('id', (int) $rawOrganization)))
+                ->first();
+            if ($supportOrganization === null) {
+                $this->error("Organisation „{$rawOrganization}“ nicht gefunden.");
+
+                return self::FAILURE;
+            }
+        } elseif ($this->option('support')) {
+            $this->error('Für das Support-Portal bitte die Zielorganisation mit --organization=<ID|Kürzel> angeben.');
+
+            return self::FAILURE;
+        }
+        $importSupport = $supportOrganization !== null && ($this->option('support') || ! $any);
 
         if ($this->option('fresh') && $this->confirm('Wirklich alle vorhandenen Daten löschen vor dem Import?', false)) {
             if ($importAssignments) {
@@ -82,6 +106,11 @@ class LegacyImportCommand extends Command {
         }
         if ($importAssignments) {
             $this->importAssignments();
+        }
+        if ($importSupport) {
+            $this->importSupport($supportOrganization);
+        } elseif (! $any) {
+            $this->line('  Support-Portal übersprungen: --organization fehlt.');
         }
 
         $this->newLine();
@@ -254,6 +283,16 @@ class LegacyImportCommand extends Command {
         $this->line("  {$imported} Notdienste importiert, {$skipped} übersprungen.");
     }
 
+    private function importSupport(Organization $organization): void {
+        $this->info("Importiere Support-Portal nach „{$organization->name}“ ...");
+
+        $result = app(LegacySupportImportService::class)->import($organization);
+
+        $this->line("  Kunden: {$result['customers_created']} angelegt, {$result['customers_matched']} vorhandenen zugeordnet.");
+        $this->line("  Aufträge: {$result['tickets_created']} als Ticket angelegt, {$result['tickets_updated']} aktualisiert, {$result['tickets_skipped']} übersprungen (Ticketnummer belegt).");
+    }
+
+    /** Ortszeit des Altsystems als UTC-Wert für das neue System; Null-Daten entfallen. */
     private function dt(mixed $val): ?string {
         if ($val === null) {
             return null;
@@ -263,7 +302,11 @@ class LegacyImportCommand extends Command {
             return null;
         }
 
-        return $s;
+        try {
+            return LegacyClock::toUtc($s);
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     private function normalizeLegacyText(string $value): string {

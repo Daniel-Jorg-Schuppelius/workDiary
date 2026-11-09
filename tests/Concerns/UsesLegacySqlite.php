@@ -17,6 +17,8 @@ trait UsesLegacySqlite {
         Config::set('database.connections.legacy', [
             'driver' => 'sqlite',
             'database' => ':memory:',
+            // SQLite liefert UTF-8; ohne Angabe nähmen Importe die Vorgabe latin1 an.
+            'charset' => 'utf8',
             'prefix' => '',
             'foreign_key_constraints' => false,
         ]);
@@ -61,6 +63,45 @@ trait UsesLegacySqlite {
             $table->dateTime('aktuell')->nullable();
             $table->integer('gelesen')->nullable();
             $table->string('sms')->nullable();
+        });
+
+        // Support-Portal: Spalten und Vorgaben wie im Altsystem (NOT NULL mit Leerwert).
+        $schema->create('kp_user', function ($table): void {
+            $table->increments('id');
+            $table->string('kunde')->default('');
+            $table->string('usern', 10)->default('');
+            $table->string('passw', 10)->default('');
+        });
+
+        $supportOrderColumns = function ($table): void {
+            $table->unsignedInteger('kunde')->default(0);
+            $table->dateTime('datum')->default('0000-00-00 00:00:00');
+            $table->string('kname', 30)->default('');
+            $table->string('telefon', 30)->default('');
+            $table->string('objekt')->default('');
+            $table->text('auftrag')->default('');
+            $table->dateTime('termin')->default('2200-01-11 20:00:22');
+            $table->string('wer', 30)->default('');
+            $table->text('antwort')->default('');
+            $table->text('intern')->default('');
+            $table->string('dauer')->default('');
+            $table->integer('status')->default(0);
+        };
+
+        $schema->create('kp_auftrag', function ($table) use ($supportOrderColumns): void {
+            $table->increments('id');
+            $supportOrderColumns($table);
+        });
+
+        $schema->create('kp_archiv', function ($table) use ($supportOrderColumns): void {
+            $table->unsignedInteger('id')->default(0);
+            $supportOrderColumns($table);
+        });
+
+        $schema->create('email', function ($table): void {
+            $table->increments('id');
+            $table->string('email', 25)->default('');
+            $table->integer('schalt')->default(0);
         });
     }
 }

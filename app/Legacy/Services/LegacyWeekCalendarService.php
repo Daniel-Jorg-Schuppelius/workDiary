@@ -10,6 +10,7 @@
 
 namespace App\Legacy\Services;
 
+use App\Legacy\Support\LegacyClock;
 use Carbon\{Carbon, CarbonInterface};
 use CommonToolkit\Enums\Weekday;
 
@@ -18,13 +19,13 @@ class LegacyWeekCalendarService {
      * @return array{monday: Carbon, sunday: Carbon, weekOffset: int, selectedWeek: string}
      */
     public function resolveWindow(int $weekOffset, string $weekDate): array {
-        $baseMonday = Carbon::now()->startOfWeek(Weekday::MONDAY->value);
+        $baseMonday = LegacyClock::now()->startOfWeek(Weekday::MONDAY->value);
         $monday = $baseMonday->copy()->addWeeks($weekOffset);
 
         if (preg_match('/^(\d{4})-W(\d{2})$/', $weekDate, $matches) === 1) {
             $isoYear = (int) $matches[1];
             $isoWeek = (int) $matches[2];
-            $monday = Carbon::now()->setISODate($isoYear, $isoWeek, 1)->startOfDay();
+            $monday = LegacyClock::now()->setISODate($isoYear, $isoWeek, 1)->startOfDay();
             $weekOffset = (int) $baseMonday->diffInWeeks($monday, false);
         }
 

@@ -13,8 +13,9 @@ namespace App\Legacy\Http\Controllers;
 use App\Http\Controllers\Concerns\RequiresPlatformOperator;
 use App\Http\Controllers\Controller;
 use App\Legacy\Http\Requests\RunLegacyMigrationRequest;
+use App\Legacy\Services\LegacySupportImportService;
 use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OnCallShift};
-use App\Models\Platform\User;
+use App\Models\Platform\{Organization, User};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Artisan, DB};
@@ -34,25 +35,31 @@ class LegacyMigrationController extends Controller {
         return view('admin.legacy-migration', [
             'stats' => $this->stats(),
             'writeEnabled' => (bool) config('app.legacy_write_enabled'),
+            'organizations' => Organization::query()->withoutGlobalScopes()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
     public function run(RunLegacyMigrationRequest $request): RedirectResponse {
         $this->assertPlatformOperator();
-        $type = $request->validated()['type'];
-        $options = match ($type) {
+        $data = $request->validated();
+        $options = match ($data['type']) {
             'users' => ['--users' => true],
             'diary' => ['--diary' => true],
             'shifts' => ['--shifts' => true],
             'assignments' => ['--assignments' => true],
+            'support' => ['--support' => true, '--organization' => (string) $data['organization']],
             default => [],
         };
 
         try {
-            Artisan::call('legacy:import', $options);
+            $exitCode = Artisan::call('legacy:import', $options);
         } catch (\Throwable $e) {
             report($e);
 
+            return back()->with('error', __('Import fehlgeschlagen. Bitte die Log-Dateien prüfen.'));
+        }
+
+        if ($exitCode !== 0) {
             return back()->with('error', __('Import fehlgeschlagen. Bitte die Log-Dateien prüfen.'));
         }
 
@@ -61,7 +68,7 @@ class LegacyMigrationController extends Controller {
 
     /** @return array<string, mixed> */
     private function stats(): array {
-        $notConfigured = ['configured' => false, 'users' => null, 'diary' => null, 'shifts' => null, 'assignments' => null];
+        $notConfigured = ['configured' => false, 'users' => null, 'diary' => null, 'shifts' => null, 'assignments' => null, 'support' => null];
 
         if (! $this->isLegacyReachable()) {
             return $notConfigured;
@@ -85,7 +92,27 @@ class LegacyMigrationController extends Controller {
                 'legacy' => (int) DB::connection('legacy')->table('notdnst')->count(),
                 'imported' => EmergencyAssignment::whereNotNull('legacy_id')->count(),
             ],
+            'support' => $this->supportStats(),
         ];
+    }
+
+    /**
+     * Aufträge und Archiv des Support-Portals; null, wenn die Altdatenbank die
+     * Tabellen nicht hat (Installationen ohne Support-Portal).
+     *
+     * @return array{legacy: int, imported: int}|null
+     */
+    private function supportStats(): ?array {
+        try {
+            $legacy = DB::connection('legacy');
+
+            return [
+                'legacy' => (int) $legacy->table('kp_auftrag')->count() + (int) $legacy->table('kp_archiv')->count(),
+                'imported' => LegacySupportImportService::importedOrderCount(),
+            ];
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     private function isLegacyReachable(): bool {

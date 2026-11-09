@@ -2899,6 +2899,20 @@ return [
         'siblings.further_percent' => 'descuento a partir del tercer hijo',
         'siblings.max_age' => 'límite de edad',
 
+        // Support-Portal des Altsystems (Spaltennamen von kp_user/kp_auftrag)
+        'auftrag' => 'descripción del pedido',
+        'before' => 'fecha del pedido anterior al',
+        'dauer' => 'duración',
+        'intern' => 'nota interna',
+        'kname' => 'nombre',
+        'kunde' => 'cliente',
+        'objekt' => 'emplazamiento',
+        'passw' => 'contraseña',
+        'telefon' => 'teléfono',
+        'termin' => 'cita',
+        'usern' => 'nombre de usuario',
+        'wer' => 'técnico',
+        'organization' => 'organización',
     ],
 
     'values' => [

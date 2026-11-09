@@ -1,7 +1,7 @@
 ---
 title: "Legacy system"
 topic: legacy.overview
-version: 3
+version: 4
 keywords:
     - old system
     - previous system
@@ -15,6 +15,10 @@ keywords:
     - legacy users
     - legacy mode
     - legacy employees
+    - support portal
+    - portal customers
+    - legacy customer orders
+    - mail notice
 related:
     - auth.login
     - admin.tenants
@@ -36,6 +40,8 @@ The area covers:
 - **User administration**: Management of legacy users.
 - **Call center**: A separate login with the emergency duty plan for
   call center access.
+- **Support portal**: Customer orders and accounts from the customer
+  portal of the legacy system.
 
 Read functions such as the weekly and archive views are always
 available. Write actions (create, edit, delete) and changing the legacy
@@ -79,3 +85,36 @@ header) under **Personnel** and lists the users of the legacy system with
 **Permission:** the **Employees** page is open to legacy administrators and
 platform operations; the organization's administrator role alone is not
 enough.
+
+## Support portal
+
+**Support portal** in the main navigation of legacy mode shows the orders that
+customers placed in the customer portal of the legacy system:
+
+- Filter by **Year** (the most recent year with orders is preselected),
+  **Customer** and search text; the tiles **New**, **Viewed**, **Appointment
+  set**, **Appointment passed**, **Done** and **Archived** filter the list.
+- **Edit** maintains customer, phone, site, order description, **Appointment**,
+  **Technician**, **Message for the customer**, **Internal note**, **Duration**
+  and **Status**. A new appointment sets the status to **Appointment set**
+  unless done or archived is selected. The customer sees the message, not the
+  note.
+- **Create order** records an order for a customer, for example after a phone
+  call.
+- **Mail notice** switches the notification for new customer orders and sets
+  the recipient.
+- **Archive** lists archived orders; **Archive** moves orders with the status
+  **Archived** dated before a cut-off day there. Customers no longer see them
+  afterwards.
+
+**Portal customers** in the management menu maintains the customer accounts
+with **Company**, **Username** and **Password** (4 to 10 characters). Customers
+with open orders cannot be deleted.
+
+Customers sign in on the customer portal's own sign-in page, see only their own
+orders with appointment and replies, place new orders and change their
+password. If write access to the legacy system is off, the portal is
+read-only.
+
+**Permission:** Support portal and portal customers are open to legacy
+administrators and platform operations.

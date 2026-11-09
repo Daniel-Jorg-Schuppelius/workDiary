@@ -10,6 +10,7 @@
 
 namespace App\Legacy\Models;
 
+use App\Legacy\Support\LegacyClock;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -71,7 +72,7 @@ class LegacyDiaryEntry extends Model {
 
     #[Scope]
     protected function active(Builder $query): void {
-        $query->where('bis', '>=', now()->subDays(30));
+        $query->where('bis', '>=', LegacyClock::now()->subDays(30));
     }
 
     public function statusLabel(): string {

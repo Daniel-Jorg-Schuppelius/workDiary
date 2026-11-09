@@ -8,6 +8,40 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ## [Unreleased]
 
+### Hinzugefügt
+
+- Legacy-Bereich: Das Support-Portal des Altsystems ist nachgezogen. Das Büro
+  (Legacy-Admins und Plattformbetrieb) sieht die Kundenaufträge unter
+  „Support-Portal“ mit Jahr, Kunde, Suche und Statuskacheln, trägt Termin,
+  Mechaniker, Antwort und interne Notiz ein, legt Aufträge für Kunden an,
+  verwaltet die Kundenzugänge („Portalkunden“), archiviert erledigte Aufträge
+  und schaltet den Mail-Hinweis bei neuen Kundenaufträgen. Kunden melden sich
+  unter `/legacy/support-portal` mit ihrem Zugang an, sehen nur die eigenen
+  Aufträge, erteilen neue und ändern ihr Passwort. Schreiben folgt
+  `LEGACY_WRITE_ENABLED`; `legacy:import-plan` zählt die Bestände des Portals.
+- Legacy-Migration: Das Support-Portal lässt sich in eine Organisation
+  übernehmen (`legacy:import --support --organization=<ID|Kürzel>` oder Zeile
+  „Support-Portal“ im Migrations-Dashboard). Kundenzugänge werden Kunden,
+  Aufträge und Archiv Servicetickets `KP-<Nr.>` mit Termin, Mechaniker, Antwort
+  und interner Notiz; ohne SLA-Fristen, Routing und Webhooks, wiederholbar.
+  Passwörter werden nicht übernommen.
+
+### Behoben
+
+- Legacy-Bereich: Zeiten aus der Altdatenbank erschienen um eine Stunde (im
+  Sommer zwei) verschoben, „heute“ wechselte erst nach Mitternacht UTC, und
+  `aktuell` wurde in UTC geschrieben. Das Altsystem speichert Ortszeit; Anzeige,
+  Tagesgrenzen und Schreiben laufen jetzt in `APP_DISPLAY_TIMEZONE`.
+  `legacy:import` übernahm Ortszeit als UTC und rechnet jetzt um.
+
+### Hinweise zum Update
+
+- Wurden Tagebuch, Bereitschaft oder Notdienst schon mit `legacy:import`
+  übernommen, stehen diese Zeiten im neuen System um eine bis zwei Stunden zu
+  spät. Ein erneuter Lauf (`scripts/artisan.sh legacy:import --diary --shifts
+  --assignments`) korrigiert sie, überschreibt dabei aber wie bisher Änderungen,
+  die im neuen System an übernommenen Einträgen gemacht wurden.
+
 ## [1.1.0] - 2026-11-08
 
 Phasen 169–173 seit 1.0.0: Gerätelaufzeit, Projekt-Sollzeiten,

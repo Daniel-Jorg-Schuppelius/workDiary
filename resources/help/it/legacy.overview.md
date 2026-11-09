@@ -1,7 +1,7 @@
 ---
 title: "Sistema precedente (Legacy)"
 topic: legacy.overview
-version: 3
+version: 4
 keywords:
     - vecchio sistema
     - dati storici
@@ -14,6 +14,10 @@ keywords:
     - utenti del vecchio sistema
     - modalità legacy
     - centrale
+    - portale assistenza
+    - clienti del portale
+    - ordini clienti del vecchio sistema
+    - avviso e-mail
 related:
     - auth.login
     - admin.tenants
@@ -25,8 +29,8 @@ completamente trasferiti in WorkDiary. L'accesso è riservato agli utenti
 con un identificativo del sistema precedente e agli amministratori.
 Comprende il **diario** (vista settimanale e gestione delle voci), il
 **servizio di emergenza e reperibilità**, l'**archivio** in sola lettura,
-la **gestione utenti** del sistema precedente e un accesso **call
-center** dedicato. Le funzioni di lettura sono sempre disponibili; le
+la **gestione utenti** del sistema precedente, un accesso **call
+center** dedicato e il **portale assistenza** con ordini e accessi dei clienti. Le funzioni di lettura sono sempre disponibili; le
 azioni di scrittura e il cambio password sono attive solo se l'accesso
 in scrittura al sistema precedente è abilitato. Gli amministratori
 dispongono inoltre di un cruscotto di migrazione per importare i dati.
@@ -71,3 +75,38 @@ precedente con **Nome** e **E-mail**:
 **Autorizzazione:** la pagina **Dipendenti** è accessibile agli amministratori
 del sistema precedente e alla gestione della piattaforma; il solo ruolo di
 amministratore dell'organizzazione non basta.
+
+## Portale assistenza
+
+**Portale assistenza** nella navigazione principale della modalità legacy mostra
+gli ordini che i clienti hanno effettuato nel portale clienti del vecchio
+sistema:
+
+- Si filtra per **Anno** (è preselezionato l'anno più recente con ordini),
+  **Cliente** e testo di ricerca; le tessere **Nuovo**, **Visionato**,
+  **Appuntamento fissato**, **Appuntamento scaduto**, **Completato** e
+  **Archiviato** filtrano l'elenco.
+- **Modifica** gestisce cliente, telefono, sito, descrizione, **Appuntamento**,
+  **Tecnico**, **Messaggio per il cliente**, **Nota interna**, **Durata** e
+  **Stato**. Un nuovo appuntamento imposta lo stato su **Appuntamento fissato**,
+  salvo che sia scelto completato o archiviato. Il cliente vede il messaggio,
+  non la nota.
+- **Crea ordine** registra un ordine per un cliente, ad esempio dopo una
+  telefonata.
+- **Avviso via e-mail** attiva la notifica per i nuovi ordini dei clienti e
+  stabilisce il destinatario.
+- **Archivio** elenca gli ordini archiviati; **Archivia** vi sposta gli ordini
+  con stato **Archiviato** datati prima di un giorno di riferimento. In seguito
+  i clienti non li vedono più.
+
+**Clienti del portale** nel menu di gestione amministra gli accessi dei clienti
+con **Azienda**, **Nome utente** e **Password** (da 4 a 10 caratteri). I clienti
+con ordini in corso non si possono eliminare.
+
+I clienti accedono dalla pagina di accesso propria del portale clienti, vedono
+solo i propri ordini con appuntamento e risposte, effettuano nuovi ordini e
+cambiano la password. Se l'accesso in scrittura al vecchio sistema è
+disattivato, il portale è in sola lettura.
+
+**Autorizzazione:** portale assistenza e clienti del portale sono aperti agli
+amministratori del vecchio sistema e alla gestione della piattaforma.

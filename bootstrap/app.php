@@ -9,7 +9,7 @@
  */
 
 use App\Http\Middleware\{ApplyPortalPreview, AssignRequestId, AuthenticateScim, EnforceMaintenanceMode, EnforcePortalPreview, EnforceSupportImpersonation, EnforceTenantStatus, EnsureNewSystemAccess, EnsureValidLicense, ForcePasswordChange, HandleDatabaseUnavailable, PrepareInstaller, RedirectIfNotInstalled, RememberListUrl, RequireTwoFactorSetup, RequiresFeature, SecurityHeaders, SetLocale, SetOrganizationContext};
-use App\Legacy\Http\Middleware\{EnsureLegacyAccess, EnsureLegacyCallcenterAuthenticated, EnsureLegacyWriteAllowed};
+use App\Legacy\Http\Middleware\{EnsureLegacyAccess, EnsureLegacyCallcenterAuthenticated, EnsureLegacySupportCustomer, EnsureLegacyWriteAllowed};
 use App\Support\DatabaseHealth;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
@@ -291,6 +291,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToPriorityList(\Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class, ApplyPortalPreview::class);
         $middleware->alias([
             'legacy.callcenter.auth' => EnsureLegacyCallcenterAuthenticated::class,
+            'legacy.portal.auth' => EnsureLegacySupportCustomer::class,
             'legacy.write' => EnsureLegacyWriteAllowed::class,
             'access.legacy' => EnsureLegacyAccess::class,
             'access.new' => EnsureNewSystemAccess::class,
