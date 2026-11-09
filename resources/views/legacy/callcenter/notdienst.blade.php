@@ -11,8 +11,10 @@
 @section('title', __('Zentrale') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Zentrale'))
 
+@include('partials.page-fill')
+
 @section('content')
-    <div class="flex wd-fill-h flex-col gap-4">
+    <div class="flex min-h-0 grow basis-0 flex-col gap-4 overflow-x-clip overflow-y-auto">
         {{-- Kopfzeile: Login-Info / Wochennavigation --}}
         <div class="flex flex-none flex-wrap items-center gap-2">
             @if (! empty($callcenterUser))

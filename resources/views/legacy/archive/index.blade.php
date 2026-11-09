@@ -10,6 +10,8 @@
 @section('title', __('Archiv') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Archiv'))
 
+@include('partials.page-fill')
+
 @section('content')
     @php
         $legacyUsers = collect($users ?? []);
@@ -105,7 +107,7 @@
             );
     @endphp
 
-    <div class="flex wd-fill-h flex-col gap-4">
+    <div class="flex min-h-0 grow basis-0 flex-col gap-4 overflow-x-clip overflow-y-auto">
         {{-- Kopfzeile mit Modus-Badge, Tabs + Cross-Links --}}
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-3">
@@ -222,7 +224,7 @@
         </div>
 
         {{-- Tabellenbereich (scrollbar, sticky header) --}}
-        <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
+        <div class="flex-1 min-h-(--wd-table-min-h) overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
             @if ($activeTab === 'urlaub')
                 @php $p = array_merge($tabFilters, ['tab' => 'urlaub']); @endphp
                 <x-table table-sort="server" :route="route('legacy.archive.index')" :current-sort="$currentSort" :current-dir="$currentDir" :sort-params="$p" pin-rows bare scroll="none">

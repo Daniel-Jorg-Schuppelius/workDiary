@@ -10,6 +10,8 @@
 @section('title', \CommonToolkit\Helper\Data\StringHelper::truncate($entry->inhalt ?? '', 60) . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Eintrag') . ' #' . $entry->id)
 
+@include('partials.page-fill')
+
 @section('content')
     @php
         $weekAnchorDate = $entry->von ?? $entry->bis ?? $entry->aktuell;
@@ -23,8 +25,8 @@
             ];
         }
     @endphp
-    <div class="mx-auto flex wd-fill-h w-full max-w-3xl flex-col gap-4">
-        <div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
+    <div class="mx-auto flex min-h-0 w-full max-w-3xl grow basis-0 flex-col gap-4 overflow-x-clip overflow-y-auto">
+        <div class="min-h-(--wd-table-min-h) flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
             <article class="h-full overflow-auto p-6 md:p-8">
                 @include('legacy.diary._show_body', ['isDialog' => false])
             </article>

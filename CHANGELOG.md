@@ -33,6 +33,10 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   `aktuell` wurde in UTC geschrieben. Das Altsystem speichert Ortszeit; Anzeige,
   Tagesgrenzen und Schreiben laufen jetzt in `APP_DISPLAY_TIMEZONE`.
   `legacy:import` übernahm Ortszeit als UTC und rechnet jetzt um.
+- Legacy-Bereich: Wochenansicht, Archivwoche, Arbeitsliste, Archiv, Zentrale,
+  Eintragsdetail und Migrations-Dashboard zeigten zwei Scrollleisten, weil ihre
+  feste Höhe den Inhaltsbereich überragte. Sie füllen ihn jetzt wie die Seiten
+  des neuen Bereichs; die ungenutzte Regel `wd-fill-h` ist entfallen.
 
 ### Hinweise zum Update
 

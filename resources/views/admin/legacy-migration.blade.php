@@ -12,8 +12,10 @@
 @section('title', __('Legacy-Migration'))
 @section('nav-title', __('Legacy-Migration'))
 
+@include('partials.page-fill')
+
 @section('content')
-<div class="flex wd-fill-h flex-col gap-6 overflow-auto">
+<div class="flex min-h-0 grow basis-0 flex-col gap-6 overflow-auto">
     <div class="flex justify-end">
         @if ($writeEnabled)
             <x-status-badge tone="warning">{{ __('Legacy-Schreibzugriff aktiv') }}</x-status-badge>

@@ -10,6 +10,8 @@
 @section('title', __('Arbeitsliste') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Arbeitsliste'))
 
+@include('partials.page-fill')
+
 @section('content')
     @php
         $currentSort = $sort ?? 'bis';
@@ -22,7 +24,7 @@
             'urlaub'       => ['label' => __('Urlaub'),     'count' => $tabCounts['urlaub']],
         ];
     @endphp
-    <div class="flex wd-fill-h flex-col gap-4">
+    <div class="flex min-h-0 grow basis-0 flex-col gap-4 overflow-x-clip overflow-y-auto">
 
         {{-- Kopfzeile: Status-Badge + Tabs + Archiv-Link --}}
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -310,7 +312,7 @@
                     </div>
                 @endforeach
             </div>
-            <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
+            <div class="flex-1 min-h-(--wd-table-min-h) overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
                 @php $p = array_merge($filters, ['tab' => 'bereitschaft']); @endphp
                 <x-table table-sort="server" :route="route('legacy.diary.index')" :current-sort="$currentSort" :current-dir="$currentDir" :sort-params="$p" pin-rows bare scroll="none">
                     <x-slot:head>
@@ -388,7 +390,7 @@
                     </div>
                 @endforeach
             </div>
-            <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
+            <div class="flex-1 min-h-(--wd-table-min-h) overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
                 @php $p = array_merge($filters, ['tab' => 'notdienst']); @endphp
                 <x-table table-sort="server" :route="route('legacy.diary.index')" :current-sort="$currentSort" :current-dir="$currentDir" :sort-params="$p" pin-rows bare scroll="none">
                     <x-slot:head>
@@ -492,7 +494,7 @@
                     </div>
                 @endforeach
             </div>
-            <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
+            <div class="flex-1 min-h-(--wd-table-min-h) overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
                 @php $p = array_merge($filters, ['tab' => 'urlaub']); @endphp
                 <x-table table-sort="server" :route="route('legacy.diary.index')" :current-sort="$currentSort" :current-dir="$currentDir" :sort-params="$p" pin-rows bare scroll="none">
                     <x-slot:head>

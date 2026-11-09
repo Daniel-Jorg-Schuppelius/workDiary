@@ -10,6 +10,8 @@
 @section('title', 'Wochenansicht — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Wochenansicht'))
 
+@include('partials.page-fill')
+
 @section('content')
 @php
     /* @var \Carbon\Carbon $monday */
@@ -21,10 +23,9 @@
     $legacyUsers = collect($users ?? []);
 @endphp
 
-{{-- Füllt den Viewport, fällt aber nie unter --wd-content-min-h (zentral in
-     app.css). Bei kleinem Viewport/großer Schrift scrollt die Seite, statt den
-     Kalender zu zerquetschen. Gleiche Mechanik wie alle Legacy-Listen. --}}
-<div class="wd-fill-h flex flex-col gap-4">
+{{-- Füllt die Höhe von main (partials.page-fill); der Kalender scrollt in sich.
+     Nur wenn er seine Mindesthöhe nicht bekommt, scrollt die Seite. --}}
+<div class="flex min-h-0 grow basis-0 flex-col gap-4 overflow-x-clip overflow-y-auto">
 
 {{-- Toolbar --}}
 <div class="flex-none flex flex-wrap items-center justify-between gap-3 overflow-x-auto rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:flex-nowrap">
@@ -76,7 +77,7 @@
 </div>
 
 {{-- Card mit Scroll-Container --}}
-<div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
+<div class="min-h-(--wd-table-min-h) flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
     <div id="week-scroll" class="h-full overflow-auto">
         @php
             /* min-width: Zeitspalte (4.5rem) + N Benutzer × 6rem + letzte Spalte (4.5rem) */
