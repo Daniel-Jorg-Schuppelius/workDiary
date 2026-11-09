@@ -19,6 +19,7 @@ return [
         'action' => [
             'dun' => 'Reclamar',
             'open_original' => 'Abrir el original',
+            'original_pdf' => 'PDF original',
         ],
         'tab' => [
             'all' => 'Todos',
@@ -59,6 +60,8 @@ return [
             'deleted' => 'Eliminado en el origen',
         ],
         'foreign_amount' => 'Importe en una segunda moneda',
+        'original_pdf_failed' => ':program no ha entregado el PDF. Vuelva a intentarlo más tarde.',
+        'original_pdf_missing' => ':program no proporciona ningún PDF para este comprobante.',
         'scope' => [
             'mine' => 'Míos',
             'all' => 'Todos',
@@ -69,6 +72,9 @@ return [
             'due' => 'Vence',
             'open' => 'Pendiente',
         ],
+    ],
+    'party_documents' => [
+        'mirror_unlinked' => 'Ningún contacto de :program vinculado: los comprobantes aparecen aquí en cuanto la importación de comprobantes los asigna a esta parte (vínculo de contacto, número de cliente o nombre del proveedor).',
     ],
     'relations' => [
         'title' => 'Documentos relacionados (:count)',

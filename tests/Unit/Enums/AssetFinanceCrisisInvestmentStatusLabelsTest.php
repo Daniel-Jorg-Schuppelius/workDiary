@@ -72,14 +72,14 @@ final class AssetFinanceCrisisInvestmentStatusLabelsTest extends TestCase {
         $this->assertSame(['planned', 'paid', 'overdue'], $values(AssetFinanceRateScheduleStatus::cases()));
         $this->assertSame(['open', 'in_progress', 'done', 'cancelled'], CrisisActionStatus::values());
         $this->assertSame(['open', 'in_progress'], $values(CrisisActionStatus::pending()));
-        $this->assertSame(['prepared', 'reported', 'assessed', 'activated', 'in_progress', 'stabilized', 'recovery', 'all_clear', 'post_review', 'closed', 'discarded'], CrisisCaseStatus::values());
+        $this->assertSame(['reported', 'assessed', 'activated', 'in_progress', 'stabilized', 'recovery', 'all_clear', 'post_review', 'closed', 'discarded'], CrisisCaseStatus::values());
         $this->assertSame(['reported', 'assessed', 'activated', 'in_progress', 'stabilized', 'recovery'], $values(CrisisCaseStatus::active()));
         $this->assertSame(['assessed', 'in_progress', 'stabilized', 'recovery'], $values(CrisisCaseStatus::stages()));
         $this->assertSame(['all_clear', 'post_review', 'closed'], $values(CrisisCaseStatus::ended()));
         $this->assertSame(['draft', 'approved', 'sent'], $values(CrisisCommunicationStatus::cases()));
         $this->assertSame(['down', 'degraded', 'workaround', 'restored'], CrisisContinuityImpactStatus::values());
-        $this->assertSame(['draft', 'in_approval', 'approved', 'rejected', 'superseded'], $values(InvestmentBudgetRequestStatus::cases()));
-        $this->assertSame(['draft', 'in_approval'], $values(InvestmentBudgetRequestStatus::open()));
+        $this->assertSame(['in_approval', 'approved', 'rejected', 'superseded'], $values(InvestmentBudgetRequestStatus::cases()));
+        $this->assertSame(['in_approval'], $values(InvestmentBudgetRequestStatus::open()));
         $this->assertSame(['idea', 'screening', 'comparison', 'budget_request', 'in_approval', 'approved', 'rejected', 'deferred', 'in_progress', 'completed', 'cancelled', 'post_review'], InvestmentCaseStatus::values());
         $this->assertSame(['idea', 'screening', 'comparison', 'budget_request'], $values(InvestmentCaseStatus::planning()));
         $this->assertSame(['open', 'approved', 'rejected'], $values(InvestmentDeviationStatus::cases()));

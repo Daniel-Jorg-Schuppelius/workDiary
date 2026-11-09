@@ -15,6 +15,7 @@ namespace App\Plugins\InvoicePlane\Services;
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
 use App\Enums\Finance\AccountingVoucherState;
 use App\Plugins\InvoicePlane\Schema\VoucherReaderFactory;
+use App\Plugins\Support\PluginSettingsResolver;
 use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, MirroredVoucherLine, VoucherMirror, VoucherPuller};
 
 /**
@@ -67,14 +68,15 @@ class InvoicePlaneVoucherPullService implements VoucherPuller {
         return self::PLUGIN_ID;
     }
 
+    /** Modul eingeschaltet und freigegebene Verbindung — der allgemeine Abruf prüft den Schalter nicht selbst. */
     public function isConfigured(int $organizationId): bool {
-        return $this->readers->for($organizationId) !== null;
+        return PluginSettingsResolver::for(self::PLUGIN_ID, $organizationId)->enabled() && $this->readers->for($organizationId) !== null;
     }
 
     /** @return array{read: int, created: int, updated: int, skipped: int} */
     public function pull(int $organizationId, int $pages = 2): array {
         $counters = VoucherMirror::counters();
-        $reader = $this->readers->for($organizationId);
+        $reader = PluginSettingsResolver::for(self::PLUGIN_ID, $organizationId)->enabled() ? $this->readers->for($organizationId) : null;
         if ($reader === null) {
             return $counters;
         }

@@ -29,6 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $organization_id
  * @property int $asset_id
  * @property bool $is_rentable
+ * @property int|null $prepayment_percent Vorauszahlung der Direktbuchung in Prozent; null = Vorgabe der Organisation (MVP-1515)
  * @property string|null $group_code
  * @property int $buffer_before_hours
  * @property int $buffer_after_hours
@@ -47,7 +48,7 @@ class RentalProfile extends Model {
     protected $attributes = ['currency' => 'EUR'];
 
     protected $fillable = [
-        'organization_id', 'asset_id', 'is_rentable', 'portal_bookable', 'group_code',
+        'organization_id', 'asset_id', 'is_rentable', 'portal_bookable', 'prepayment_percent', 'group_code',
         'home_site_label', 'buffer_before_hours', 'buffer_after_hours',
         'requires_inspection', 'min_condition', 'accessories',
         'default_rate_card_id', 'notes',
@@ -59,6 +60,7 @@ class RentalProfile extends Model {
     protected $casts = [
         'is_rentable' => 'boolean',
         'portal_bookable' => 'boolean',
+        'prepayment_percent' => 'integer',
         'requires_inspection' => 'boolean',
         'buffer_before_hours' => 'integer',
         'buffer_after_hours' => 'integer',

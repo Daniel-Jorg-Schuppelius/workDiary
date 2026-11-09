@@ -1,7 +1,7 @@
 ---
 title: "Projekte verwalten"
 topic: projects.manage
-version: 5
+version: 6
 keywords:
     - Projekt anlegen
     - Projektmanagement
@@ -94,8 +94,12 @@ vergleicht das Soll mit der gebuchten Zeit und meldet Unterschreitungen über de
 (Organisationseinstellung, Vorgabe 15 Minuten) an die Projektleitung, in den Arbeitsvorrat
 und in den Tagesabschluss der Person; die Befunde stehen am Zeitreiter und lassen sich dort
 **bestätigen**, eine Nachbuchung erledigt sie. Mit **Vereinbarte Stunden abrechnen** im
-Abrechnungsreiter ergänzt die Übergabe die fehlende Zeit als Position „Vereinbarte
-Einsatzzeit“; eine spätere Nachbuchung auf diesen Tag ist dann nicht abrechenbar.
+Abrechnungsreiter ergänzen Übergabe und Rechnung die fehlende Zeit als Position „Vereinbarte
+Einsatzzeit“; die Rechnungsvorschau zeigt diese Auffüllungen mit an. Berechnet wird jede
+Auffüllung nur einmal, entweder in einer Rechnung oder in einer Übergabe; eine spätere
+Nachbuchung auf diesen Tag ist dann nicht abrechenbar. Ein Storno der Rechnung oder der
+Übergabe, das Entfernen der Position oder das Verwerfen des Entwurfs gibt die Auffüllung
+wieder frei.
 
 ## Typische Fehler
 

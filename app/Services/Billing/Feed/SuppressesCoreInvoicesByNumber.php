@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Billing\Feed;
 
+use Closure;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -19,11 +20,13 @@ use Illuminate\Support\Facades\DB;
  * Dublettenregel 1 (extern führt) für Spiegel, deren Belegnummer in einer
  * Spalte steht: eine lokale Rechnung, deren Nummer oder Programmnummer als
  * gespiegelter Beleg existiert, erscheint nur als Beleg (Lexoffice,
- * orgaMAX; Konsolidierungs-Audit 2026-10-21, ko-20).
+ * orgaMAX; Konsolidierungs-Audit 2026-10-21, ko-20). `$constrain` grenzt
+ * gemischte Spiegel ein (Richtung, Kunde; MVP-1495).
  */
 trait SuppressesCoreInvoicesByNumber {
-    private function suppressByMirroredNumber(Builder $invoices, string $table, string $numberColumn): void {
-        $invoices->whereNotExists(static function (Builder $sub) use ($table, $numberColumn): void {
+    /** @param  (Closure(Builder): void)|null  $constrain */
+    private function suppressByMirroredNumber(Builder $invoices, string $table, string $numberColumn, ?Closure $constrain = null): void {
+        $invoices->whereNotExists(static function (Builder $sub) use ($table, $numberColumn, $constrain): void {
             $sub->select(DB::raw(1))
                 ->from($table)
                 ->whereColumn($table . '.organization_id', 'invoices.organization_id')
@@ -31,6 +34,9 @@ trait SuppressesCoreInvoicesByNumber {
                     $q->whereColumn($table . '.' . $numberColumn, 'invoices.number')
                         ->orWhereColumn($table . '.' . $numberColumn, 'invoices.external_number');
                 });
+            if ($constrain !== null) {
+                $constrain($sub);
+            }
         });
     }
 }

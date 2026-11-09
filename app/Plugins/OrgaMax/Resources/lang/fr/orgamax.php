@@ -112,6 +112,7 @@ return [
     'error.intent_invalid' => 'Aucune intention de connexion valide — un iid étranger n’est pas lié. Redémarrez la connexion.',
     'error.nothing_to_confirm' => 'Aucune confirmation de compte en attente.',
     'error.not_connected' => 'orgaMAX n’est pas connecté ou est bloqué.',
+    'error.suppliers_led_by_orgamax' => 'orgaMAX pilote les fournisseurs : pour les transférer, activez la capacité « Fournisseurs » et choisissez « WorkDiary pilote » (administration orgaMAX).',
     'error.no_customer' => 'Le document n\'a pas de client et ne peut pas être transmis à orgaMAX.',
     'error.billing_capability_disabled' => 'La capacité de facturation n’est pas activée ou orgaMAX ne la pilote pas.',
     'error.customer_unmapped' => 'Le client « :customer » n’est pas associé à un client orgaMAX — associez-le via la boîte d’intégration.',

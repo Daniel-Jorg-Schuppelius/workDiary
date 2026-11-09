@@ -1,7 +1,7 @@
 ---
 title: "Notfall- & Krisenmanagement"
 topic: crisis.overview
-version: 1
+version: 2
 keywords:
     - Krisenstab
     - Notfallmanagement
@@ -42,6 +42,12 @@ Begründung fest.
 24 h/72 h/1 Monat, KRITIS unverzüglich) sind Katalogdaten — die
 Organisation kann sie überschreiben; die konkreten Termine laufen ab der
 Aktivierung.
+
+**Fehlmeldung verwerfen:** Stellt sich eine gemeldete Krise als Fehlalarm
+heraus, bevor jemand die Lage bewertet hat, verwirft „Fehlmeldung
+verwerfen“ die Akte mit Pflichtbegründung. Die Begründung steht im
+Auditverlauf, die Akte bleibt nur lesend erhalten. Nach der Bewertung wird
+nicht mehr verworfen, sondern entwarnt.
 
 **Kommunikation:** Entwurf, Freigabe (nie durch den Verfasser) und
 dokumentierte Aussendung bleiben getrennt nachvollziehbar.

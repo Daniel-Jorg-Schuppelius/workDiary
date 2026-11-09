@@ -1,7 +1,7 @@
 ---
 title: "Personnel : congés, maladie, qualifications, sécurité"
 topic: reports.personnel
-version: 7
+version: 8
 keywords:
     - absentéisme
     - congés restants
@@ -198,7 +198,7 @@ l'**Analyse de direction**.
 En haut figurent les **indicateurs** de tous les domaines pour la période
 choisie dans l'en-tête : finances (production totale et résultat de la BWA,
 point bas de la prévision de liquidité), exploitation (chiffre d'affaires,
-marge sur coûts variables, taux d'occupation), ventes (nouveaux leads,
+marge sur coûts variables, taux d'occupation, jours sous la cible), ventes (nouveaux leads,
 conversion), service (tickets ouverts, violations de SLA) et qualité (NPS).
 Chaque tuile n'apparaît qu'avec le droit du rapport correspondant et y mène —
 le même chiffre y figure. **PDF** télécharge le rapport de direction. Les
@@ -206,6 +206,14 @@ personnes disposant du droit **Recevoir le rapport de direction par e-mail**
 (direction et administration) le reçoivent aussi chaque lundi en PDF, du début
 du mois jusqu'à la veille ; « Tâches planifiées » permet de le décaler ou de
 le suspendre.
+
+La tuile **Jours sous la cible** du domaine exploitation compte les
+jours-personnes sous la cible du projet dans la période qui sont encore
+ouverts ou confirmés ; l'indication donne tous les constats et la tuile mène à
+l'onglet plan/réel **Projet par personne**. Elle n'apparaît que s'il existe
+des constats dans la période, et uniquement pour les administrateurs et les
+personnes disposant du droit **Consulter le rapport de présence
+(organisation)**.
 
 La carte **Problèmes récurrents** rassemble les alertes précoces des modules
 utilisés par votre organisation, regroupées par type :
@@ -221,6 +229,9 @@ utilisés par votre organisation, regroupées par type :
   par défaut trois tickets en 90 jours.
 - **Manques de personnel** : équipes dont le besoin planifié dépasse la capacité
   au cours des quatre prochaines semaines.
+- **Temps cibles non atteints** : projets comptant au moins trois
+  jours-personnes ouverts sous la cible au cours des sept derniers jours ;
+  l'entrée mène à l'onglet Temps du projet avec les constats.
 
 Chaque entrée indique le constat, un détail et une recommandation ; lorsque
 c'est possible, le titre mène au client, à l'objet ou au rapport concerné. Sans

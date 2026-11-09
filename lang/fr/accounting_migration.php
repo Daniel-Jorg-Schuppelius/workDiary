@@ -18,6 +18,7 @@ return [
     'plan_hint' => 'Un seul changement par organisation à la fois. L’analyse n’écrit dans aucun système externe.',
     'areas' => 'Domaines de données',
     'read_only' => 'historique seulement',
+    'articles_hint' => 'Les articles ne sont rapprochés qu’entre Lexoffice et orgaMAX ; sevDesk et easybill ne conservent aucun lien d’article.',
     'cutover_on' => 'Date de bascule',
     'cutover_hint' => 'À partir de ce jour, les nouvelles pièces de facturation naissent exclusivement dans le système cible ; le système source est bloqué pour cela.',
     'plan_submit' => 'Planifier le changement',

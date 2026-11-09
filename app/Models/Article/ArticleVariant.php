@@ -10,7 +10,7 @@
 
 namespace App\Models\Article;
 
-use App\Casts\MoneyCast;
+use App\Casts\{GtinCast, MoneyCast};
 use App\Enums\Article\ArticleStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Integration\ExternalArticleMapping;
@@ -64,6 +64,7 @@ class ArticleVariant extends Model {
         'is_default' => 'boolean',
         'purchase_price' => MoneyCast::class . ':currency,4',
         'sale_price' => MoneyCast::class . ':currency,4',
+        'gtin' => GtinCast::class,
     ];
 
     /** @return BelongsTo<Article, $this> */

@@ -11,6 +11,7 @@
 return [
     'plugin' => [
         'description' => 'Refleja entradas y salidas de Firefly III y las asigna a facturas o facturas recibidas mediante el número de documento del concepto. No se contabiliza nada en WorkDiary y no se escribe nada en Firefly III.',
+        'capability' => 'Conciliación de pagos',
     ],
     'page' => [
         'subtitle' => 'Movimientos de cuenta de Firefly III, asignados mediante números de documento del concepto; solo lectura.',

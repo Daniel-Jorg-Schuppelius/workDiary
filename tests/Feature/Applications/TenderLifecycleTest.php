@@ -112,6 +112,34 @@ final class TenderLifecycleTest extends TestCase {
     }
 
     /** Der Bearbeitungsstand lässt sich an der Akte setzen — solange sie offen ist und nur mit Führungsrecht. */
+    public function test_decided_file_is_archived_and_keeps_its_outcome_for_the_win_rate(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $won = ApplicationOpportunity::query()->create(['organization_id' => $this->organization->id, 'title' => 'Wartung Rathaus', 'kind' => 'tender', 'created_by' => $admin->id]);
+        $lost = ApplicationOpportunity::query()->create(['organization_id' => $this->organization->id, 'title' => 'Kita Nord', 'kind' => 'tender', 'created_by' => $admin->id]);
+        $open = ApplicationOpportunity::query()->create(['organization_id' => $this->organization->id, 'title' => 'Schulzentrum', 'kind' => 'tender', 'created_by' => $admin->id]);
+        $service = app(TenderService::class);
+        $service->decide($won->refresh(), 'won', null, $admin);
+        $service->decide($lost->refresh(), 'lost', 'Preis zu hoch', $admin);
+
+        $this->actingAs($admin)->get(route('tenders.show', $won))->assertOk()->assertSee('Akte ablegen');
+        $this->actingAs($admin)->post(route('tenders.archive', $won))->assertRedirect()->assertSessionHas('success', 'Akte abgelegt.');
+        $this->actingAs($admin)->post(route('tenders.archive', $lost))->assertSessionHas('success');
+        $this->actingAs($admin)->post(route('tenders.archive', $open))->assertSessionHas('error', 'Nur entschiedene Akten werden abgelegt.');
+
+        $this->assertSame([ApplicationOpportunityStatus::Archived, ApplicationOpportunityStatus::Won], [$won->fresh()->status, $won->fresh()->outcome()]);
+        $this->assertSame(ApplicationOpportunityStatus::Lost, $lost->fresh()->archived_outcome);
+        $this->assertSame(ApplicationOpportunityStatus::Captured, $open->fresh()->status);
+        $this->actingAs($admin)->get(route('tenders.show', $won))->assertOk()->assertSee('Entscheidung: ' . ApplicationOpportunityStatus::Won->label())->assertDontSee('Akte ablegen');
+
+        // Die Liste zeigt abgelegte Akten nur auf ausdrücklichen Filter.
+        $this->actingAs($admin)->get(route('tenders.index'))->assertOk()->assertSee('Schulzentrum')->assertDontSee('Wartung Rathaus');
+        $this->actingAs($admin)->get(route('tenders.index', ['status' => 'archived']))->assertOk()->assertSee('Wartung Rathaus')->assertDontSee('Schulzentrum');
+
+        // Trefferquote und Verlustgründe zählen die abgelegten Entscheidungen weiter.
+        $decision = $this->actingAs($admin)->get(route('tenders.cockpit'))->viewData('decision');
+        $this->assertSame([1, 1, 50.0, ['Preis zu hoch' => 1]], [$decision['won'], $decision['lost'], $decision['win_rate'], $decision['loss_reasons']]);
+    }
+
     public function test_working_status_is_set_from_the_file(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $opportunity = ApplicationOpportunity::query()->create([

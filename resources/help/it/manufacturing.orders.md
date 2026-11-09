@@ -1,7 +1,7 @@
 ---
 title: "Ordini di produzione"
 topic: manufacturing.orders
-version: 4
+version: 5
 keywords:
     - ordine di lavorazione
     - distinta base
@@ -47,6 +47,26 @@ centro di lavoro o lo affida in conto lavoro a un fornitore; la vista di
 pianificazione mostra l'MRP multilivello e gli indicatori di qualità.
 L'annullamento è irreversibile; creare, confermare e consegnare
 richiedono il permesso **Registra movimenti di magazzino**.
+
+## Completare, mettere in attesa, bloccare
+
+Un ordine in corso mostra nell’intestazione solo le azioni consentite dal
+suo stato:
+
+- **Completa**: chiude un ordine *in lavorazione*. È possibile solo dopo
+  aver dichiarato una **quantità buona**; altrimenti compare un avviso. Il
+  completamento registra la data di chiusura, congela l’**attestato di
+  produzione** e libera le prenotazioni di materiale non consumate. In
+  seguito l’ordine non è più modificabile e rientra nel **consuntivo**
+  dell’articolo.
+- **Metti in attesa**: sospende l’ordine, ad esempio finché arriva il
+  materiale.
+- **Blocca**: ferma l’ordine, ad esempio per un problema di qualità.
+- **Riprendi**: riporta un ordine in attesa o bloccato *in lavorazione*.
+  L’esecuzione della procedura avviata all’inizio prosegue.
+
+Completare, mettere in attesa, bloccare e riprendere richiedono il permesso
+**Registra movimenti di magazzino**.
 
 ## Spedizione sulla consegna
 

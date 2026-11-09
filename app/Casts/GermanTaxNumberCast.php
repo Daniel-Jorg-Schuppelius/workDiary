@@ -8,26 +8,34 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+declare(strict_types=1);
+
 namespace App\Casts;
 
+use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\ValueObjects\GermanTaxNumber;
-use Illuminate\Database\Eloquent\Model;
 
 /**
- * Steuernummer → {@see GermanTaxNumber}.
+ * Steuernummer. Die kanonische Form wäre die reine Ziffernfolge; sie verliert
+ * die Gliederung des Finanzamts (`151/815/08156`), die auf Belegen und in der
+ * Kundenakte erwartet wird. Gültige Nummern verlieren deshalb nur ihre
+ * Leerzeichen, Schrägstriche bleiben.
  *
- * @extends ValueObjectCast<GermanTaxNumber>
+ * @extends IdentifierCast<GermanTaxNumber>
  */
-class GermanTaxNumberCast extends ValueObjectCast {
-    /**
-     * @param  array<string, mixed>  $attributes
-     */
-    protected function toValueObject(string $raw, Model $model, array $attributes): ?GermanTaxNumber {
+class GermanTaxNumberCast extends IdentifierCast {
+    protected function toValueObject(string $raw): ?GermanTaxNumber {
         return GermanTaxNumber::tryFrom($raw);
     }
 
     protected function toStorage(object $value): string {
         /** @var GermanTaxNumber $value */
         return $value->getValue();
+    }
+
+    protected function normalise(string $raw): string {
+        $compact = StringHelper::removeWhitespace($raw, unicode: true);
+
+        return $compact !== '' && $this->toValueObject($compact) !== null ? $compact : $raw;
     }
 }

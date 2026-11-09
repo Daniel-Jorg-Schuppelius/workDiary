@@ -1,7 +1,7 @@
 ---
 title: "Asset e parco veicoli"
 topic: assets.fleet
-version: 2
+version: 3
 keywords:
     - gestione flotta
     - gestione veicoli
@@ -37,6 +37,16 @@ Prima dell'eliminazione o della dismissione, verifichi se sono
 collegati manutenzioni, pratiche, viaggi o documenti aperti. Lo storico
 critico dovrebbe essere archiviato e non andare perso a causa di
 sovrascritture.
+
+## Categorie
+
+Il campo «Categoria» offre le categorie informatiche generali e quelle della
+sua organizzazione. I profili di settore apportano categorie adatte, ad
+esempio videocamera per tubazioni e pressatrice nel settore termoidraulico o
+pulsossimetro e armadio per stupefacenti nell’assistenza. Gli amministratori
+creano le proprie categorie in Classificazioni, dominio «Categorie di asset».
+Una categoria disattivata non viene più proposta per i nuovi asset, ma resta
+su quelli che la hanno già.
 
 ## Assegnazione e restituzione
 

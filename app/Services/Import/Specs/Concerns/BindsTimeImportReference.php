@@ -33,7 +33,10 @@ use Illuminate\Database\Eloquent\Model;
  * über beide Formate identisch, sodass die Dedup-Bindung stabil bleibt.
  */
 trait BindsTimeImportReference {
-    private const string TIME_IMPORT_PLUGIN = 'time-import';
+    public const string TIME_IMPORT_PLUGIN = 'time-import';
+
+    /** Präfix des Schlüssels mit Fremd-ID; der Dauer-Sync (MVP-1516) erkennt daran Einmalimporte. */
+    public const string EXTERNAL_KEY_PREFIX = 'ext:';
 
     /**
      * Stabiler Idempotenz-Schlüssel: gesetzte Fremd-ID (`ext:…`) oder Hash des
@@ -43,7 +46,7 @@ trait BindsTimeImportReference {
         $externalId = $externalId !== null ? trim($externalId) : '';
 
         return $externalId !== ''
-            ? 'ext:' . $externalId
+            ? self::EXTERNAL_KEY_PREFIX . $externalId
             : 'nat:' . CryptoHelper::hash($naturalKey, HashAlgorithm::SHA1);
     }
 

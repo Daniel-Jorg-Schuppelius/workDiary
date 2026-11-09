@@ -1,7 +1,7 @@
 ---
 title: "Ordres de fabrication"
 topic: manufacturing.orders
-version: 4
+version: 5
 keywords:
     - ordre de production
     - nomenclature
@@ -46,6 +46,26 @@ poste de travail ou sous-traité à un fournisseur (crée une commande) ; la
 vue de planification montre le calcul des besoins multi-niveaux (MRP) et
 les indicateurs qualité. L'annulation est irréversible ; créer, déclarer et
 livrer exigent le droit **Enregistrer des mouvements de stock**.
+
+## Clôturer, mettre en attente, bloquer
+
+Un ordre en cours n’affiche dans l’en-tête que les actions que son statut
+autorise :
+
+- **Clôturer** : termine un ordre *en cours*. Ce n’est possible qu’une fois
+  une **quantité conforme** déclarée ; sinon un message s’affiche. La
+  clôture enregistre la date de fin, fige le **justificatif de fabrication**
+  et libère les réservations de matières non consommées. L’ordre ne peut
+  ensuite plus être modifié et entre dans le **calcul a posteriori** de
+  l’article.
+- **Mettre en attente** : interrompt l’ordre, par exemple jusqu’à l’arrivée
+  de la matière.
+- **Bloquer** : arrête l’ordre, par exemple en cas de problème de qualité.
+- **Reprendre** : remet un ordre en attente ou bloqué à l’état *en cours*.
+  L’exécution de procédure lancée au démarrage se poursuit.
+
+Clôturer, mettre en attente, bloquer et reprendre exigent le droit
+**Enregistrer des mouvements de stock**.
 
 ## Expédition sur la livraison
 

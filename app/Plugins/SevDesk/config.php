@@ -34,6 +34,10 @@ return [
     // sevDesk-Standardkatalog).
     'contact_category_id' => (int) env('SEVDESK_CONTACT_CATEGORY_ID', 3),
 
+    // Kategorie übertragener Lieferanten (MVP-1503): 2 = „Supplier“ laut
+    // API-Doku, Abschnitt „Contact Categories“.
+    'supplier_category_id' => (int) env('SEVDESK_SUPPLIER_CATEGORY_ID', 2),
+
     // Adress-/Kommunikationskataloge des Kontakt-Push (MVP-731). sevDesk
     // führt Adressen und Kommunikationswege als EIGENE Objekte mit eigenem
     // Endpunkt; beide verlangen Katalog-IDs des Accounts. Die Defaults sind

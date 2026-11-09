@@ -1659,8 +1659,6 @@ Route::middleware('auth')->group(function () {
         Route::get('inventory/conflicts', [\App\Http\Controllers\Inventory\InventoryConflictController::class, 'index'])->name('inventory.conflicts.index');
         Route::post('inventory/conflicts/{conflict}/keep-local', [\App\Http\Controllers\Inventory\InventoryConflictController::class, 'keepLocal'])->name('inventory.conflicts.keep-local');
         Route::post('inventory/conflicts/{conflict}/compensate', [\App\Http\Controllers\Inventory\InventoryConflictController::class, 'compensate'])->name('inventory.conflicts.compensate');
-        Route::post('inventory/conflicts/{conflict}/dismiss', [\App\Http\Controllers\Inventory\InventoryConflictController::class, 'dismiss'])->name('inventory.conflicts.dismiss');
-        Route::post('inventory/conflicts/{conflict}/adopt-remote', [\App\Http\Controllers\Inventory\InventoryConflictController::class, 'adoptRemote'])->name('inventory.conflicts.adopt-remote');
 
         // Etiketten-Layout-Designer (Feature 048, E5)
         Route::get('inventory/label-templates', [\App\Http\Controllers\Print\LabelTemplateController::class, 'index'])->name('inventory.label-templates.index');
@@ -1704,6 +1702,11 @@ Route::middleware('auth')->group(function () {
         Route::get('manufacturing-orders/{order}/deliveries/{delivery}/parcels/{parcel}/edit', [\App\Http\Controllers\Shipping\ShipmentParcelController::class, 'edit'])->name('manufacturing-orders.deliveries.parcels.edit');
         Route::put('manufacturing-orders/{order}/deliveries/{delivery}/parcels/{parcel}', [\App\Http\Controllers\Shipping\ShipmentParcelController::class, 'update'])->name('manufacturing-orders.deliveries.parcels.update');
         Route::delete('manufacturing-orders/{order}/deliveries/{delivery}/parcels/{parcel}', [\App\Http\Controllers\Shipping\ShipmentParcelController::class, 'destroy'])->name('manufacturing-orders.deliveries.parcels.destroy');
+        // Abschluss, Warten, Sperren, Wiederaufnahme (MVP-1493).
+        Route::post('manufacturing-orders/{order}/complete', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'complete'])->name('manufacturing-orders.complete');
+        Route::post('manufacturing-orders/{order}/wait', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'wait'])->name('manufacturing-orders.wait');
+        Route::post('manufacturing-orders/{order}/block', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'block'])->name('manufacturing-orders.block');
+        Route::post('manufacturing-orders/{order}/resume', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'resume'])->name('manufacturing-orders.resume');
         Route::post('manufacturing-orders/{order}/cancel', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'cancel'])->name('manufacturing-orders.cancel');
         Route::post('manufacturing-orders/{order}/subcontract', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'subcontract'])->name('manufacturing-orders.subcontract'); // E7 Fremdfertigung
 
@@ -2327,6 +2330,7 @@ Route::middleware('auth')->group(function () {
             Route::post('{opportunity}/submissionsergebnis', [\App\Http\Controllers\Applications\TenderController::class, 'addCompetitorBid'])->name('bids.store');
             Route::delete('{opportunity}/submissionsergebnis/{bid}', [\App\Http\Controllers\Applications\TenderController::class, 'removeCompetitorBid'])->name('bids.destroy');
             Route::post('{opportunity}/entscheiden', [\App\Http\Controllers\Applications\TenderController::class, 'decide'])->name('decide');
+            Route::post('{opportunity}/ablegen', [\App\Http\Controllers\Applications\TenderController::class, 'archive'])->name('archive'); // MVP-1517
             Route::post('{opportunity}/ueberfuehren', [\App\Http\Controllers\Applications\TenderController::class, 'transfer'])->name('transfer');
             Route::post('{opportunity}/anforderungen', [\App\Http\Controllers\Applications\TenderController::class, 'addRequirement'])->name('requirements.store');
             Route::put('{opportunity}/anforderungen/{requirement}', [\App\Http\Controllers\Applications\TenderController::class, 'updateRequirement'])->name('requirements.update');
@@ -2371,6 +2375,7 @@ Route::middleware('auth')->group(function () {
             Route::post('{application}/anonymisieren', [\App\Http\Controllers\Applications\JobApplicationController::class, 'anonymize'])->name('anonymize');
             Route::post('{application}/onboarding', [\App\Http\Controllers\Applications\JobApplicationController::class, 'createDraft'])->name('draft.store');
             Route::post('{application}/onboarding/{draft}/einladen', [\App\Http\Controllers\Applications\JobApplicationController::class, 'inviteDraft'])->name('draft.invite');
+            Route::post('{application}/onboarding/{draft}/verwerfen', [\App\Http\Controllers\Applications\JobApplicationController::class, 'discardDraft'])->name('draft.discard'); // MVP-1517
             Route::post('{application}/vertrag', [\App\Http\Controllers\Applications\ContractNegotiationController::class, 'storeForApplication'])->name('negotiations.store');
         });
         Route::prefix('vertragsverhandlungen')->name('applications.negotiations.')->group(function (): void {
@@ -2421,6 +2426,7 @@ Route::middleware('auth')->group(function () {
             Route::get('verbinden', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'create'])->name('create');
             Route::post('/', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'store'])->name('store');
             Route::post('{connection}/pruefen', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'test'])->name('test');
+            Route::get('{connection}/zugangsdaten', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'credentials'])->name('credentials');
             Route::post('{connection}/zugangsdaten', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'rotate'])->name('rotate');
             Route::post('{connection}/abgleich', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'sync'])->name('sync');
             Route::post('{connection}/pilot', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'confirmPilot'])->name('pilot');
@@ -2453,7 +2459,6 @@ Route::middleware('auth')->group(function () {
             Route::post('{connection}/pruefen', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'test'])->name('test');
             Route::post('{connection}/sperren', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'block'])->name('block');
             Route::post('{connection}/entsperren', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'unblock'])->name('unblock');
-            Route::post('{connection}/zugangsdaten', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'rotate'])->name('rotate');
             Route::delete('{connection}', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'destroy'])->name('destroy');
         });
 
@@ -2665,6 +2670,7 @@ Route::middleware('auth')->group(function () {
             Route::put('{contract}', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'update'])->name('update');
             Route::post('{contract}/aktivieren', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'activate'])->name('activate');
             Route::post('{contract}/kuendigen', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'terminate'])->name('terminate');
+            Route::post('{contract}/stornieren', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'cancel'])->name('cancel'); // MVP-1517
             Route::post('{contract}/abschliessen', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'close'])->name('close');
             Route::post('{contract}/konditionen', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'storeTerm'])->name('terms.store');
             Route::post('{contract}/fristen', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'storeDeadline'])->name('deadlines.store');
@@ -2870,6 +2876,8 @@ Route::middleware('auth')->group(function () {
             Route::post('{case}/status', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'updateStatus'])->name('status');
             Route::post('{case}/aktivieren', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'activate'])->name('activate');
             Route::post('{case}/entwarnen', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'allClear'])->name('all-clear');
+            Route::get('{case}/verwerfen', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'discardForm'])->name('discard.form'); // MVP-1517
+            Route::post('{case}/verwerfen', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'discard'])->name('discard'); // MVP-1517
             Route::post('{case}/schliessen', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'close'])->name('close');
             Route::post('{case}/stab', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'assignTeam'])->name('team.store');
             Route::delete('{case}/stab/{assignment}', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'removeTeam'])->name('team.destroy');
@@ -5511,6 +5519,16 @@ Route::middleware('auth')->group(function () {
         // Gespeicherte Spaltenzuordnungen (MVP-1020) — vor {import}, sonst fängt show den Pfad.
         Route::get('admin/imports/spaltenzuordnungen', [ImportController::class, 'columnMappings'])->name('admin.imports.column-mappings');
         Route::delete('admin/imports/spaltenzuordnungen/{columnMapping}', [ImportController::class, 'destroyColumnMapping'])->name('admin.imports.column-mappings.destroy');
+        // Kalender-Abos (MVP-1516) — ebenfalls vor {import}.
+        Route::controller(\App\Http\Controllers\Timekeeping\IcalSubscriptionController::class)->prefix('admin/imports/kalender-abos')->name('admin.imports.ical-subscriptions.')->group(function (): void {
+            Route::get('/', 'index')->name('index');
+            Route::get('neu', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+            Route::get('{icalSubscription}/bearbeiten', 'edit')->name('edit');
+            Route::put('{icalSubscription}', 'update')->name('update');
+            Route::delete('{icalSubscription}', 'destroy')->name('destroy');
+            Route::post('{icalSubscription}/abrufen', 'sync')->middleware('throttle:6,1')->name('sync');
+        });
         Route::get('admin/imports/{import}', [ImportController::class, 'show'])->name('admin.imports.show');
         Route::post('admin/imports/{import}/confirm', [ImportController::class, 'confirm'])->name('admin.imports.confirm');
         // Wert-Mapping unbekannter Tags/Kategorien (Rang 58).

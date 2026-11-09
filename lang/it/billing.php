@@ -19,6 +19,7 @@ return [
         'action' => [
             'dun' => 'Sollecita',
             'open_original' => 'Aprire l’originale',
+            'original_pdf' => 'PDF originale',
         ],
         'tab' => [
             'all' => 'Tutti',
@@ -59,6 +60,8 @@ return [
             'deleted' => 'Eliminato nell’origine',
         ],
         'foreign_amount' => 'Importo in una seconda valuta',
+        'original_pdf_failed' => ':program non ha fornito il PDF. Riprovi più tardi.',
+        'original_pdf_missing' => ':program non fornisce alcun PDF per questo documento.',
         'scope' => [
             'mine' => 'Le mie',
             'all' => 'Tutte',
@@ -69,6 +72,9 @@ return [
             'due' => 'Scadenza',
             'open' => 'Residuo',
         ],
+    ],
+    'party_documents' => [
+        'mirror_unlinked' => 'Nessun contatto :program collegato: i documenti compaiono qui non appena l’importazione dei documenti li assegna a questa parte (collegamento del contatto, numero cliente o nome del fornitore).',
     ],
     'relations' => [
         'title' => 'Documenti collegati (:count)',

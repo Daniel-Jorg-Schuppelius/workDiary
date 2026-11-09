@@ -1,7 +1,7 @@
 ---
 title: "Noleggio attrezzature"
 topic: rental.overview
-version: 4
+version: 5
 keywords:
     - locatore
     - casa vacanze
@@ -61,3 +61,26 @@ Il profilo **Locatori** consiglia il modulo locazioni. La vista degli appartamen
 Accettare una richiesta turistica crea una prenotazione confermata. La tariffa giornaliera rappresenta il prezzo per notte, con pulizia finale facoltativa. Capacità, soggiorno minimo e orari sono verificati. Pubblichi l’appartamento e abiliti le richieste per il cliente. Canoni e cauzioni sono dati amministrativi del MVP, senza fatturazione automatica.
 
 Il profilo include inoltre tre procedure (**Consegna appartamento**, **Verifica di riconsegna**, **Cambio ospiti**), il **verbale di consegna dell’appartamento** con letture dei contatori e chiavi, modelli di contratto per la locazione abitativa con e senza canone indicizzato e per le condizioni di affitto di una casa vacanze, con scadenze come il rendiconto annuale delle spese, e campi personalizzati dell’appartamento (superficie, vani, piano, animali, attestato energetico). Una locazione richiesta si conferma, rifiuta o annulla; una confermata si può annullare. Le locazioni annullate o rifiutate restano invariate.
+
+## Prenotazione diretta con pagamento anticipato online
+
+Se in «Organizzazione e impostazioni» è impostato un **Pagamento anticipato per
+prenotazione diretta** (o l’oggetto di noleggio ha una quota propria), la
+prenotazione diretta nel portale clienti porta alla pagina di pagamento del
+fornitore di pagamento:
+
+- La pratica viene riservata subito e trattiene l’attrezzatura fino al
+  **termine di pagamento**. Fino ad allora la prenotazione risulta **pagamento
+  in sospeso** in **Richieste di noleggio**.
+- Al ricevimento del pagamento (notifica del fornitore o ritorno del cliente) la
+  prenotazione viene **accettata**; solo allora Lei riceve la notifica.
+- Senza pagamento entro il termine la prenotazione **scade**, la pratica viene
+  annullata e l’attrezzatura torna libera. Se un pagamento arriva solo dopo,
+  WorkDiary non conferma nulla ma Glielo segnala per un rimborso o una nuova
+  prenotazione.
+- La pratica mostra il pagamento anticipato versato. Al trasferimento delle
+  posizioni di noleggio in fattura viene assegnato alla fattura e la copre. Se
+  un programma di contabilità gestisce le fatture, l’importo compare nel
+  registro del trasferimento; ne tenga conto lì. Nella casella di
+  contabilizzazione il pagamento anticipato diventa contabilizzabile solo con
+  la fattura.

@@ -1,7 +1,7 @@
 ---
 title: "Applications & tenders"
 topic: applications.overview
-version: 2
+version: 3
 keywords:
     - recruiting
     - applicant tracking
@@ -31,6 +31,11 @@ packages (snapshot with SHA-256 hash). Won tenders are transferred to a
 project in a controlled way; lost ones remain analysable with their loss
 reason.
 
+**Archiving a file:** A decided tender (won, lost, withdrawn) can be taken
+out of the list with “Archive file”. The decision stays on the file and
+keeps counting in the win rate and loss reasons; the status filter
+“Archived” shows archived files.
+
 **Job applications:** staffing need → posting → application case file with
 interviews, reviews and decision. Applicant data is stored encrypted and is
 only visible to the HR area (recruiting permissions). Rejections start the
@@ -41,6 +46,11 @@ A decision is final: interviews, appointment offers and further decisions
 are locked afterwards. Published postings are set to “Expired” every day
 once their expiry date or application deadline has passed; they can be
 published again with a new date or closed.
+
+**Discarding an employee draft:** If the hire falls through after all,
+“Discard draft” discards the draft. No account is created any more and the
+step is recorded in the audit log; a draft that has been invited can no
+longer be discarded.
 
 A decision also ends open interviews and appointment offers: planned
 interviews are marked as cancelled (the note is kept), appointment links not

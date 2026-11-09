@@ -33,4 +33,6 @@ return [
     'max_pages' => env('GITLAB_SYNC_MAX_PAGES', 10),
     // Status-Rückrichtung (Welle 1.4): erledigte Aufgabe schließt das Issue.
     'writeback' => (bool) env('GITLAB_WRITEBACK', false),
+    // Zeit-Rückkanal (MVP-1513): gebuchte Zeit je Eintrag einmal ans Issue.
+    'time_writeback' => (bool) env('GITLAB_TIME_WRITEBACK', false),
 ];

@@ -356,7 +356,7 @@ class DemoBlueprintProvider {
                     'comm_body' => 'Telefonat mit der Eventleitung zur finalen Gästezahl (120) und zu Sonderkost (vegan, glutenfrei) für 8 Personen.',
                 ],
                 'background_title' => 'Demo-Veranstaltung',
-                'procedure_code' => 'PS_HACCP_KUEHLKETTE',
+                'procedure_code' => 'PS_LIEFERUNG',
             ],
             DemoIndustry::DruckKopiershop => [
                 'customers' => [
@@ -602,7 +602,7 @@ class DemoBlueprintProvider {
                     'comm_body' => 'Telefonat mit den Angehörigen von Klient A zum Termin des Beratungsbesuchs.',
                 ],
                 'background_title' => 'Demo-Pflegeeinsatz',
-                'procedure_code' => 'PF_MEDIKAMENTENGABE',
+                'procedure_code' => 'AP_MEDIKAMENTENGABE',
             ],
             DemoIndustry::Shk => [
                 'customers' => [

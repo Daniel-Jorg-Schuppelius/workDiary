@@ -1,14 +1,13 @@
 ---
 title: "Produits & prestations Lexoffice"
 topic: articles.lexoffice
-version: 2
+version: 3
 keywords:
     - Lexware Office
     - articles Lexoffice
     - synchroniser les articles
     - catalogue produits
     - liste de prix
-    - conflit de synchronisation
     - import articles
     - services
     - taux de TVA
@@ -31,11 +30,7 @@ droits suffisants, la synchronisation peut être lancée manuellement et
 indique le nombre d'entrées créées, mises à jour ou archivées, à condition
 que Lexoffice soit configuré pour l'organisation.
 
-La stratégie de conflit des paramètres Lexoffice (Lexoffice gagne, local
-gagne, vérification manuelle) s'applique aussi à la synchronisation des
-articles : avec « vérification manuelle », les articles modifiés localement
-dont l'état diffère dans Lexoffice apparaissent comme conflits dans la liste
-des conflits du stock (Stock → Conflits). Vous y décidez, article par
-article, si l'état local est conservé, si l'état Lexoffice est repris ou si
-le conflit est rejeté. La synchronisation manuelle indique le nombre de
-nouveaux conflits.
+Lexoffice fait foi pour les articles : un état plus récent dans Lexoffice
+remplace la vue en lecture seule lors de la synchronisation, un état
+inchangé n'est pas réécrit. Il n'y a donc ni modifications locales ni
+conflits d'articles.

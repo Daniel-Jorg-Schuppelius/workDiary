@@ -144,8 +144,8 @@ class TenderCockpitController extends Controller {
 
         foreach (ApplicationOpportunity::query()
             ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
-            ->get(['status', 'estimated_value', 'loss_reason']) as $opportunity) {
-            $status = $opportunity->status;
+            ->get(['status', 'archived_outcome', 'estimated_value', 'loss_reason']) as $opportunity) {
+            $status = $opportunity->outcome();
             if ($status === ApplicationOpportunityStatus::Won) {
                 $counts['won']++;
                 $wonValue += (float) $opportunity->estimated_value;

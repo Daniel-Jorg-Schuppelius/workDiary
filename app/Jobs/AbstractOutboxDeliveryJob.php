@@ -89,16 +89,6 @@ abstract class AbstractOutboxDeliveryJob implements ShouldQueue {
     abstract protected function compensateEntry(Model $entry, string $reason): void;
 
     /**
-     * Vorprüfung vor der Zustellung (z. B. Modul-Gate); false → ohne
-     * Zustellung beenden, der Eintrag bleibt offen für später.
-     *
-     * @param TEntry $entry
-     */
-    protected function shouldDeliver(Model $entry): bool {
-        return true;
-    }
-
-    /**
      * Gemeinsamer Zustellablauf — die konkreten handle()-Methoden reichen ihre
      * typisiert injizierten Abhängigkeiten hierher durch.
      *
@@ -107,7 +97,7 @@ abstract class AbstractOutboxDeliveryJob implements ShouldQueue {
      */
     protected function deliver(OutboxTransitionService $outbox, AbstractPluginDispatcherResolver $resolver): void {
         $entry = $this->findEntry();
-        if ($entry === null || ! $this->shouldDeliver($entry)) {
+        if ($entry === null) {
             return;
         }
 

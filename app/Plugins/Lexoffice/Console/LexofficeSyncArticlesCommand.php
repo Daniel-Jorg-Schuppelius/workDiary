@@ -12,7 +12,6 @@ namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
-use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Plugins\Lexoffice\Services\LexofficeArticleSync;
 use App\Plugins\Support\Console\ChecksPluginSwitch;
@@ -24,8 +23,7 @@ class LexofficeSyncArticlesCommand extends Command {
     use ChecksPluginSwitch;
     use IteratesOrganizations;
 
-    protected $signature = 'lexoffice:sync-articles ' . self::ORGANIZATION_OPTION . '
-        {--policy= : Override für die Konflikt-Strategie (lexoffice_wins|local_wins|manual_review), sonst die Plugin-Einstellung}';
+    protected $signature = 'lexoffice:sync-articles ' . self::ORGANIZATION_OPTION;
 
     protected $description = 'Synchronisiert Lexoffice-Artikel (Services/Produkte) in die lokale Tabelle `lexoffice_articles`.';
 
@@ -38,8 +36,6 @@ class LexofficeSyncArticlesCommand extends Command {
         }
 
         foreach ($organizations as $org) {
-            $config = LexofficeConfig::resolve($org->id);
-
             // **`enabled` je Organisation prüfen** (Sicherheitsscan
             // 2026-08-23, S-28). Ohne diese Zeile lief der stündliche Sync
             // über ALLE Organisationen — und wenn der Betreiber einen
@@ -55,15 +51,12 @@ class LexofficeSyncArticlesCommand extends Command {
 
                 continue;
             }
-            // Die Konflikt-Strategie der Plugin-Einstellung gilt auch für Artikel (Entscheidung 2026-10-06).
-            $policy = LexofficeMatchPolicy::fromSetting((string) ($this->option('policy') ?: $config['match_policy']));
-
             try {
-                Cache::lock(LexofficeConfig::apiLockKey((int) $org->id), 1800)->block(LexofficeConfig::API_LOCK_WAIT_SCHEDULED, function () use ($org, $policy): void {
-                    $this->info("Sync Lexoffice-Artikel für Organisation #{$org->id} ({$org->name}) [policy={$policy->value}]...");
+                Cache::lock(LexofficeConfig::apiLockKey((int) $org->id), 1800)->block(LexofficeConfig::API_LOCK_WAIT_SCHEDULED, function () use ($org): void {
+                    $this->info("Sync Lexoffice-Artikel für Organisation #{$org->id} ({$org->name})...");
                     try {
-                        $result = (new LexofficeArticleSync($org->id))->withPolicy($policy)->sync($org);
-                        $this->line("  created: {$result['created']}, updated: {$result['updated']}, archived: {$result['archived']}, conflicts: {$result['conflicts']}");
+                        $result = (new LexofficeArticleSync($org->id))->sync($org);
+                        $this->line("  created: {$result['created']}, updated: {$result['updated']}, archived: {$result['archived']}");
                     } catch (\Throwable $e) {
                         $this->error("  Fehler: {$e->getMessage()}");
                     }

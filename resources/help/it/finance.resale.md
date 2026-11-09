@@ -1,7 +1,7 @@
 ---
 title: "Abbonamenti e licenze"
 topic: finance.resale
-version: 12
+version: 13
 keywords:
     - Anteprima importazione
     - Azioni di massa
@@ -125,7 +125,8 @@ proviene da tre fonti: (1) fatture e note di credito del fornitore in PDF
 (Quality Hosting, layout tedesco e inglese) — ogni riga indica contratto,
 cliente finale e durata, l’importo va esattamente al periodo; le righe di
 nota di credito senza contratto valgono per l’azienda. (2) Documenti in
-entrata dallo specchio documenti pro rata: per fatture cumulative senza
+entrata dallo specchio documenti (Lexoffice, sevDesk, Akaunting, Invoice
+Ninja e altri programmi; senza bozze, storni e documenti eliminati) pro rata: per fatture cumulative senza
 righe (Telekom) indica la quota del fornitore e il mese di prestazione,
 l’importo viene ripartito su tutti i periodi del mese, ponderato con il loro
 acquisto previsto mensile. (3) Registrazioni di dominio dalla gestione

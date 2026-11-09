@@ -29,6 +29,7 @@ return [
     'GiteaProjectLink' => 'Gitea-/Forgejo-Repository-Zuordnung',
     'GlpiConnection' => 'GLPI-Verbindung',
     'GlpiProjectLink' => 'GLPI-Entitätszuordnung',
+    'IcalSubscription' => 'Kalender-Abo',
     'JiraConnection' => 'Jira-Verbindung',
     'JiraProjectLink' => 'Jira-Projektzuordnung',
     'KanboardConnection' => 'Kanboard-Verbindung',

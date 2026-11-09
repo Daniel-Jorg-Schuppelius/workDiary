@@ -288,11 +288,12 @@ class RequirementIndexFilter {
     public function requiredDomainOptions(): array {
         $options = [];
         foreach (ClassificationDomain::cases() as $domain) {
-            if ($domain === ClassificationDomain::EntryType) {
+            // Asset-Kategorien hängen am Asset, nicht am Auftrag.
+            if ($domain === ClassificationDomain::EntryType || $domain === ClassificationDomain::AssetCategory) {
                 continue;
             }
 
-            $options[$domain->value] = $this->domainLabels()[$domain->value] ?? $domain->value;
+            $options[$domain->value] = $this->domainLabels()[$domain->value] ?? $domain->label();
         }
 
         return $options;

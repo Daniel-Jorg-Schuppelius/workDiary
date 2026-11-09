@@ -22,6 +22,11 @@
         <x-icon-btn icon="view_column" size="sm" placement="menu" data-entry-modal-trigger
                     :href="route('admin.imports.column-mappings')"
                     show-label>{{ __('import.columns.saved_title') }}</x-icon-btn>
+        @if (auth()->user()?->can('project-time.import') || auth()->user()?->can('attendance.import'))
+            <x-icon-btn icon="event_repeat" size="sm" placement="menu"
+                        :href="route('admin.imports.ical-subscriptions.index')"
+                        show-label>{{ __('import.ical_subscription.title') }}</x-icon-btn>
+        @endif
     </x-slot:actions>
 
     <x-filter-bar :action="route('admin.imports.index')" :reset="route('admin.imports.index')">

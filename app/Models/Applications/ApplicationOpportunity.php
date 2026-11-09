@@ -36,6 +36,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
  * @property int|null $quote_id
  * @property int|null $bill_of_quantity_id
  * @property ApplicationOpportunityStatus $status
+ * @property ApplicationOpportunityStatus|null $archived_outcome Entscheidung vor dem Ablegen
  * @property \Illuminate\Support\Carbon|null $question_deadline
  * @property \Illuminate\Support\Carbon|null $submission_deadline
  * @property \Illuminate\Support\Carbon|null $decision_expected_on
@@ -60,7 +61,7 @@ class ApplicationOpportunity extends Model {
 
     protected $fillable = [
         'organization_id', 'title', 'kind', 'source', 'customer_id', 'project_id',
-        'quote_id', 'bill_of_quantity_id', 'status', 'question_deadline',
+        'quote_id', 'bill_of_quantity_id', 'status', 'archived_outcome', 'question_deadline',
         'submission_deadline', 'decision_expected_on', 'estimated_value',
         'probability', 'risk_note', 'go_decision', 'go_decided_by', 'go_decided_at',
         'go_note', 'loss_reason', 'responsible_user_id', 'description', 'created_by',
@@ -74,6 +75,7 @@ class ApplicationOpportunity extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'status' => ApplicationOpportunityStatus::class,
+        'archived_outcome' => ApplicationOpportunityStatus::class,
         'question_deadline' => 'date',
         'submission_deadline' => 'date',
         'decision_expected_on' => 'date',
@@ -85,6 +87,7 @@ class ApplicationOpportunity extends Model {
         'participation_deadline' => 'date',
         'opening_at' => 'datetime',
         'binding_until' => 'date',
+        'estimated_value' => 'decimal:2',
     ];
 
     /** @return HasMany<ApplicationRequirement, $this> */
@@ -141,5 +144,10 @@ class ApplicationOpportunity extends Model {
 
     public function isOpen(): bool {
         return in_array($this->status, ApplicationOpportunityStatus::open(), true);
+    }
+
+    /** Stand für Auswertungen: eine abgelegte Akte zählt mit ihrer Entscheidung (MVP-1517). */
+    public function outcome(): ApplicationOpportunityStatus {
+        return $this->status === ApplicationOpportunityStatus::Archived && $this->archived_outcome !== null ? $this->archived_outcome : $this->status;
     }
 }

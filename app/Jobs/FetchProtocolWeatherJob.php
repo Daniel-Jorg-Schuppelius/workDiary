@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Jobs\Attributes\BelongsToModule;
 use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\Platform\Organization;
 use App\Models\Protocol\Protocol;
@@ -29,6 +30,7 @@ use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
  * {@see WeatherService} liefert bei fehlender Geo bzw. bereits verknüpftem
  * Snapshot ohne Seiteneffekt/Exception zurück.
  */
+#[BelongsToModule('protocol')]
 class FetchProtocolWeatherJob implements ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;

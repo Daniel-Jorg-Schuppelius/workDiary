@@ -266,13 +266,12 @@ return [
 
     'conflict' => [
         'title' => 'Konflikte mit Fremdsystemen',
-        'subtitle' => 'Gescheiterte Bestandsübertragungen und abweichende Artikel der angebundenen Fremdsysteme.',
+        'subtitle' => 'Gescheiterte Bestandsübertragungen an die angebundenen Fremdsysteme.',
         'empty' => 'Keine Konflikte für die aktuelle Auswahl.',
         'tab' => 'Konflikte',
-        'filter' => ['open' => 'Offen', 'all' => 'Alle', 'all_types' => 'Alle Arten'],
+        'filter' => ['open' => 'Offen', 'all' => 'Alle'],
         'type' => [
             'inventory_outbox' => 'Bestand',
-            'article' => 'Artikel',
         ],
         'col' => [
             'type' => 'Art',
@@ -282,50 +281,22 @@ return [
             'status' => 'Status',
             'actions' => 'Aktionen',
         ],
-        'field' => [
-            'name' => 'Bezeichnung',
-            'article_number' => 'Artikelnummer',
-            'gtin' => 'GTIN',
-            'description' => 'Beschreibung',
-            'note' => 'Notiz',
-            'type' => 'Artikelart',
-            'unit_name' => 'Einheit',
-            'net_unit_price' => 'Nettopreis',
-            'gross_unit_price' => 'Bruttopreis',
-            'currency' => 'Währung',
-            'vat_rate' => 'Steuersatz',
-            'leading_price' => 'Führender Preis',
-        ],
-        'diff' => 'lokal „:local“ · Fremdsystem „:remote“',
         'status' => [
             'open' => 'Offen',
             'resolved_local' => 'Lokal belassen',
-            'resolved_remote' => 'Extern übernommen',
             'compensated' => 'Kompensiert',
-            'dismissed' => 'Verworfen',
         ],
         'action' => [
             'compensate' => 'Gegenbuchung',
             'keep_local' => 'Lokal belassen',
-            'dismiss' => 'Verwerfen',
-            'adopt_remote' => ':system-Stand übernehmen',
-        ],
-        'confirm' => [
-            'dismiss' => 'Der Konflikt wird ohne Abgleich geschlossen. Der lokale Stand und der Stand im Fremdsystem bleiben unverändert; weicht der Artikel beim nächsten Abgleich weiter ab, entsteht ein neuer Konflikt.',
-            'keep_local_article' => 'Der Konflikt wird geschlossen, der lokale Stand bleibt. Beim nächsten Abgleich wird er an :system übertragen und überschreibt dort den abweichenden Stand.',
-            'adopt_remote' => 'Die abweichenden Felder werden mit dem Stand von :system überschrieben; die lokale Änderung geht verloren.',
         ],
         'flash' => [
             'kept_local' => 'Konflikt geschlossen — lokaler Bestand beibehalten.',
             'compensated' => 'Konflikt kompensiert — Gegenbuchung gebucht.',
-            'dismissed' => 'Konflikt verworfen — beide Stände bleiben unverändert.',
-            'adopted_remote' => 'Konflikt geschlossen — Stand des Fremdsystems übernommen.',
-            'kept_local_article' => 'Konflikt geschlossen — lokaler Artikelstand beibehalten; er wird beim nächsten Abgleich übertragen.',
         ],
         'error' => [
             'wrong_type' => 'Diese Aktion gibt es für diese Art von Konflikt nicht.',
             'already_resolved' => 'Der Konflikt ist bereits aufgelöst.',
-            'no_handler' => 'Für Konflikte des Plugins „:plugin“ steht kein Abgleich bereit — ist das Plugin aktiviert?',
         ],
     ],
 

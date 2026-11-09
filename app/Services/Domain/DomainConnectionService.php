@@ -13,7 +13,9 @@ namespace App\Services\Domain;
 use App\Enums\Domain\{DomainCapabilityArea, DomainConnectionStatus};
 use App\Models\Domain\DomainProviderConnection;
 use App\Plugins\Support\Domain\{DomainCapabilityMatrix, DomainProviderException};
+use App\Services\Concerns\AssertsStatusTransition;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
@@ -26,6 +28,8 @@ use Throwable;
  * (Rechnungen gesperrt), bis ein realer Pilot mehr belegt.
  */
 class DomainConnectionService {
+    use AssertsStatusTransition;
+
     public function __construct(private readonly DomainProviderResolver $resolver) {}
 
     /**
@@ -63,6 +67,58 @@ class DomainConnectionService {
 
             return false;
         }
+    }
+
+    /**
+     * Trennen (MVP-1491): Passwort geleert, Status `Disconnected`, kein Abgleich
+     * mehr. Projektionen, Befehlsjournal, Buchungen und Reselling-Bezüge bleiben —
+     * sie sind der Nachweis, wer was beim Anbieter geändert hat.
+     */
+    public function disconnect(DomainProviderConnection $connection): void {
+        DB::transaction(function () use ($connection): void {
+            $locked = DomainProviderConnection::query()->withoutGlobalScopes()->whereKey($connection->getKey())->lockForUpdate()->firstOrFail();
+            if ($locked->status === DomainConnectionStatus::Disconnected) {
+                return;
+            }
+            $this->assertStatusTransition($locked->status, DomainConnectionStatus::Disconnected);
+
+            $locked->forceFill([
+                'password' => null,
+                'status' => DomainConnectionStatus::Disconnected->value,
+                'last_error' => null,
+                'last_error_at' => null,
+                'consecutive_failures' => 0,
+                'disabled_at' => null,
+            ])->save();
+        });
+        $connection->refresh();
+    }
+
+    /**
+     * Neue Zugangsdaten (MVP-1492): leerer Login bzw. Subuser bleibt unverändert.
+     * Eine getrennte Verbindung geht über `Draft` zurück; der Vortest entscheidet
+     * über aktiv oder gesperrt.
+     */
+    public function replaceCredentials(DomainProviderConnection $connection, ?string $login, string $password, ?string $defaultUser): bool {
+        // Unter der Sperre schreiben, den Vortest (Fremdaufruf) danach.
+        DB::transaction(function () use ($connection, $login, $password, $defaultUser): void {
+            $locked = DomainProviderConnection::query()->withoutGlobalScopes()->whereKey($connection->getKey())->lockForUpdate()->firstOrFail();
+            $status = $locked->status;
+            if ($status === DomainConnectionStatus::Disconnected) {
+                $this->assertStatusTransition($status, DomainConnectionStatus::Draft);
+                $status = DomainConnectionStatus::Draft;
+            }
+
+            $locked->forceFill([
+                'login' => $login ?? $locked->login,
+                'password' => $password,
+                'default_user' => $defaultUser ?? $locked->default_user,
+                'status' => $status->value,
+            ])->save();
+        });
+        $connection->refresh();
+
+        return $this->test($connection);
     }
 
     /** Bestätigt einen bestandenen realen Pilot (hebt „Pilot offen" auf). */

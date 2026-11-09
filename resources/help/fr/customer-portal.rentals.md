@@ -1,7 +1,7 @@
 ---
 title: "Portail client – Location"
 topic: customer-portal.rentals
-version: 3
+version: 4
 keywords:
     - louer un logement
     - réserver une location de vacances
@@ -109,6 +109,18 @@ directement. La réservation apparaît sous **Mes demandes** avec le statut
 **Réservé directement** et comme opération de location avec le statut
 **Réservé**. Votre prestataire est notifié et vous envoie les documents de
 remise.
+
+### Avec acompte en ligne
+
+Si votre prestataire exige un acompte, la liste des appareils affiche
+**Acompte … %** à côté du prix. Après **Réserver directement**, vous arrivez
+sur la page de paiement du prestataire de paiement. L’appareil reste réservé
+pour vous jusqu’à l’échéance du paiement (**Mes demandes** indique **Paiement
+avant …**). La réservation n’est confirmée qu’à réception du paiement ; votre
+prestataire n’est informé qu’à ce moment-là. Si la page de paiement est
+indisponible, réessayez avec **Payer maintenant**. Sans paiement dans le
+délai, la réservation expire et l’appareil redevient libre. L’acompte est
+imputé sur la facture ultérieure.
 
 ## Conditions de location
 

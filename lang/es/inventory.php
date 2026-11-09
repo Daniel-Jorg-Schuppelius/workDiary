@@ -266,13 +266,12 @@ return [
 
     'conflict' => [
         'title' => 'Conflictos con sistemas externos',
-        'subtitle' => 'Transferencias de existencias fallidas y artículos divergentes de los sistemas externos conectados.',
+        'subtitle' => 'Transferencias de existencias fallidas a los sistemas externos conectados.',
         'empty' => 'No hay conflictos para la selección actual.',
         'tab' => 'Conflictos',
-        'filter' => ['open' => 'Abiertos', 'all' => 'Todos', 'all_types' => 'Todos los tipos'],
+        'filter' => ['open' => 'Abiertos', 'all' => 'Todos'],
         'type' => [
             'inventory_outbox' => 'Existencias',
-            'article' => 'Artículo',
         ],
         'col' => [
             'type' => 'Tipo',
@@ -282,50 +281,22 @@ return [
             'status' => 'Estado',
             'actions' => 'Acciones',
         ],
-        'field' => [
-            'name' => 'Denominación',
-            'article_number' => 'Número de artículo',
-            'gtin' => 'GTIN',
-            'description' => 'Descripción',
-            'note' => 'Nota',
-            'type' => 'Tipo de artículo',
-            'unit_name' => 'Unidad',
-            'net_unit_price' => 'Precio neto',
-            'gross_unit_price' => 'Precio bruto',
-            'currency' => 'Moneda',
-            'vat_rate' => 'Tipo impositivo',
-            'leading_price' => 'Precio de referencia',
-        ],
-        'diff' => 'local «:local» · sistema externo «:remote»',
         'status' => [
             'open' => 'Abierto',
             'resolved_local' => 'Mantenido local',
-            'resolved_remote' => 'Tomado externo',
             'compensated' => 'Compensado',
-            'dismissed' => 'Descartado',
         ],
         'action' => [
             'compensate' => 'Contraasiento',
             'keep_local' => 'Mantener local',
-            'dismiss' => 'Descartar',
-            'adopt_remote' => 'Adoptar el estado de :system',
-        ],
-        'confirm' => [
-            'dismiss' => 'El conflicto se cierra sin conciliación. El estado local y el estado en el sistema externo permanecen sin cambios; si el artículo sigue difiriendo en la próxima sincronización, se crea un nuevo conflicto.',
-            'keep_local_article' => 'El conflicto se cierra y el estado local se mantiene. En la próxima sincronización se transfiere a :system y sobrescribe allí el estado divergente.',
-            'adopt_remote' => 'Los campos divergentes se sobrescriben con el estado de :system; el cambio local se pierde.',
         ],
         'flash' => [
             'kept_local' => 'Conflicto cerrado — se mantienen las existencias locales.',
             'compensated' => 'Conflicto compensado — contraasiento registrado.',
-            'dismissed' => 'Conflicto descartado — ambos estados permanecen sin cambios.',
-            'adopted_remote' => 'Conflicto cerrado — estado del sistema externo adoptado.',
-            'kept_local_article' => 'Conflicto cerrado — se mantiene el estado local del artículo; se transferirá en la próxima sincronización.',
         ],
         'error' => [
             'wrong_type' => 'Esta acción no existe para este tipo de conflicto.',
             'already_resolved' => 'El conflicto ya está resuelto.',
-            'no_handler' => 'No hay conciliación disponible para los conflictos del plugin «:plugin» — ¿está activado el plugin?',
         ],
     ],
 

@@ -22,7 +22,7 @@ use App\Plugins\RemoteSupport\Models\RemotePendingSession;
 use App\Plugins\RemoteSupport\Providers\RemoteProviders;
 use App\Plugins\RemoteSupport\Services\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSupportSuggestionService};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
-use App\Services\Asset\AssetService;
+use App\Services\Asset\{AssetCategoryCatalog, AssetService};
 use App\Support\{Setting, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -118,8 +118,7 @@ class RemoteSupportPendingController extends Controller {
             })
             ->all();
 
-        $pool = (array) config('asset_categories', []);
-        $categories = array_intersect_key($pool, array_flip(RemoteDeviceRegistry::REMOTE_CATEGORY_CODES));
+        $categories = $this->remoteCategories($organization);
 
         return view('remote-support::pending.index', [
             'groups' => $groups,
@@ -222,7 +221,7 @@ class RemoteSupportPendingController extends Controller {
             'name' => ['required', 'string', 'max:191'],
             'customer_id' => ['nullable', 'integer'],
             'foreign_customer_id' => ['nullable', 'integer'],
-            'category_code' => ['required', 'string', 'in:' . implode(',', RemoteDeviceRegistry::REMOTE_CATEGORY_CODES)],
+            'category_code' => ['required', 'string', 'in:' . implode(',', array_keys($this->remoteCategories($this->organization($admin))))],
             'shared_remote' => ['sometimes', 'boolean'],
             'matchcode' => ['nullable', 'string', 'max:16'],
             'matchcode_scope' => ['nullable', 'string', 'in:customer,foreign'],
@@ -454,5 +453,18 @@ class RemoteSupportPendingController extends Controller {
         }
 
         return $message;
+    }
+
+    /**
+     * Fernwartbare Kategorien mit der Bezeichnung der Organisation; eine dort
+     * deaktivierte Kategorie entfällt (MVP-1508).
+     *
+     * @return array<string, string>
+     */
+    private function remoteCategories(Organization $organization): array {
+        return array_intersect_key(
+            app(AssetCategoryCatalog::class)->options((int) $organization->id),
+            array_flip(RemoteDeviceRegistry::REMOTE_CATEGORY_CODES),
+        );
     }
 }

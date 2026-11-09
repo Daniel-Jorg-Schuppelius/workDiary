@@ -1,7 +1,7 @@
 ---
 title: "Importing the FRITZ!Box call list"
 topic: admin.fritzbox
-version: 2
+version: 3
 keywords:
     - FRITZ!Box
     - call list
@@ -67,7 +67,8 @@ Under **Plugins**, open the **Configure** dialog for **FRITZ!Box call list**:
 - **Treat type 3 as outgoing**: only for lists from older FRITZ!OS versions
   that export outgoing calls as type 3.
 - **Match external contacts** (default: on): unknown numbers are also matched
-  against connected contact directories such as Lexoffice and Microsoft 365.
+  against connected contact directories such as Lexoffice, easybill,
+  orgaMAX and Microsoft 365.
 - **Stamp number: clock in**, **Stamp number: clock out** and **Stamp number:
   clock in/out**: your own phone numbers for phone stamping (see below).
 

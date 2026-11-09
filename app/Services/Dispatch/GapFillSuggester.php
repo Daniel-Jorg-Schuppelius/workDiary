@@ -192,6 +192,9 @@ class GapFillSuggester implements FreeSlotSource {
 
     /** Übernahme (bewusste Disponenten-Aktion): plant + protokolliert. */
     public function apply(DiaryEntry $entry, User $dispatcher, User $assignee, CarbonImmutable $date, string $startTime, int $durationMinutes): void {
+        // Ein Vorschlag kann veraltet sein — die Sperre (MVP-1514) gilt beim Übernehmen.
+        app(\App\Services\Schedule\QualificationEnforcement::class)->assertEntryAssignable($entry, (int) $assignee->id, $date);
+
         $entry->forceFill([
             'assigned_user_id' => $assignee->id,
             'scheduled_for' => $date->toDateString(),

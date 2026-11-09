@@ -13,19 +13,26 @@ declare(strict_types=1);
 namespace App\Plugins\SevDesk\Console;
 
 use App\Models\Platform\Organization;
+use App\Plugins\SevDesk\Services\Retainer\SevDeskRetainerVouchers;
 use App\Plugins\SevDesk\Services\{SevDeskArticleCatalogSource, SevDeskInvoiceNumberPull, SevDeskVoucherPullService};
 use App\Plugins\SevDesk\SevDeskPlugin;
 use App\Plugins\Support\Console\ChecksPluginSwitch;
 use App\Services\Finance\Accounting\Articles\ArticleMirror;
+use App\Services\Finance\Accounting\Vouchers\VoucherMirror;
 use Illuminate\Console\Command;
 use Throwable;
 
 /**
  * Beleg-Rückabruf aus sevDesk (Feature 122, MVP-611): spiegelt Belege, die
- * direkt in der Buchhaltung entstanden sind, in die Belegliste.
+ * direkt in der Buchhaltung entstanden sind, in die Belegliste. Der geplante
+ * Lauf für sevDesk — `accounting:pull-vouchers` kennt die Nummernrückmeldung
+ * (MVP-1158) nicht, deshalb lädt dieser auch die Positionen (MVP-1490).
  */
 class SevDeskPullVouchersCommand extends Command {
     use ChecksPluginSwitch;
+
+    /** Belege je Lauf, deren Positionen nachgeladen werden (Einzelabrufe `getPositions`). */
+    private const int LINE_BATCH = 100;
 
     protected $signature = 'sevdesk:pull-vouchers
         {--organization= : ID einer einzelnen Organisation, sonst alle}
@@ -33,10 +40,10 @@ class SevDeskPullVouchersCommand extends Command {
 
     protected $description = 'Spiegelt sevDesk-Belege in die Belegliste (Feature 122).';
 
-    public function handle(SevDeskVoucherPullService $pull, SevDeskInvoiceNumberPull $numbers, SevDeskArticleCatalogSource $articles, ArticleMirror $mirror): int {
+    public function handle(SevDeskVoucherPullService $pull, SevDeskInvoiceNumberPull $numbers, SevDeskArticleCatalogSource $articles, ArticleMirror $mirror, VoucherMirror $vouchers, SevDeskRetainerVouchers $retainers): int {
         $orgOption = $this->option('organization');
         $pages = max(1, (int) $this->option('pages'));
-        $totals = ['read' => 0, 'created' => 0, 'updated' => 0];
+        $totals = ['read' => 0, 'created' => 0, 'updated' => 0, 'lines' => 0];
         $failed = 0;
 
         $organizations = Organization::query()
@@ -53,21 +60,26 @@ class SevDeskPullVouchersCommand extends Command {
                     $mirror->sync((int) $organization->id, $articles);
                 }
                 $result = $pull->pull((int) $organization->id, $pages);
-                foreach ($totals as $key => $value) {
-                    $totals[$key] = $value + $result[$key];
+                foreach (['read', 'created', 'updated'] as $key) {
+                    $totals[$key] += $result[$key];
                 }
+                // Positionen nur im Einzelabruf (Umsatz je Produkt, Reselling-Bezüge).
+                $totals['lines'] += $vouchers->pullPendingLines($pull, (int) $organization->id, self::LINE_BATCH);
                 // Nummer und Status übergebener Rechnungsentwürfe (MVP-1158).
                 $numbers->pull((int) $organization->id);
+                // Zahlstand der Pauschalen (Feature 098, MVP-1505).
+                $retainers->reconcile($organization);
             } catch (Throwable) {
                 $failed++;
             }
         }
 
         $this->info(sprintf(
-            'sevDesk-Belege: %d gelesen, %d neu, %d aktualisiert, %d Fehler',
+            'sevDesk-Belege: %d gelesen, %d neu, %d aktualisiert, Positionen für %d Belege, %d Fehler',
             $totals['read'],
             $totals['created'],
             $totals['updated'],
+            $totals['lines'],
             $failed,
         ));
 

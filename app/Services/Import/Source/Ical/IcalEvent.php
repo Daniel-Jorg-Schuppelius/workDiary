@@ -35,6 +35,9 @@ final readonly class IcalEvent {
         public bool $allDay,
         public bool $transparent,
         public bool $recurring,
+        // Änderungsstand der Quelle (MVP-1516): SEQUENCE und LAST-MODIFIED, ohne DTSTAMP-Ersatz.
+        public int $sequence = 0,
+        public ?\DateTimeImmutable $lastModified = null,
     ) {}
 
     public function hasTime(): bool {

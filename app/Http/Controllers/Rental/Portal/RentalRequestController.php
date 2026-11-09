@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Rental\Portal;
 
 use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Rental\Portal\Concerns\HandlesRentalPrepayment;
 use App\Models\Asset\Asset;
 use App\Models\Rental\RentalRequest;
 use App\Services\Rental\{RentalBillingService, RentalRequestService};
@@ -30,6 +31,7 @@ use RuntimeException;
  * Preisangabe aus der Preisliste (MVP-916). Eigene Anfragen, eigener Kunde, sonst 404.
  */
 class RentalRequestController extends Controller {
+    use HandlesRentalPrepayment;
     use ResolvesPortalUser;
 
     public function __construct(
@@ -40,6 +42,7 @@ class RentalRequestController extends Controller {
     public function index(Request $request): View {
         $user = $this->portalUser();
         $customer = $this->portalCustomer();
+        $this->settlePrepaymentReturn($request, $user);
 
         [$from, $to] = $this->rangeFromQuery($request);
 
@@ -75,6 +78,8 @@ class RentalRequestController extends Controller {
             'availability' => $availability,
             'prices' => $prices,
             'direct' => $organization !== null && $this->service->directBookingEnabled($organization),
+            'prepaymentPercent' => (int) data_get($organization?->settings, 'rental.portal_prepayment_percent', 0),
+            'holdMinutes' => $organization !== null ? $this->service->holdMinutes($organization) : RentalRequestService::DEFAULT_HOLD_MINUTES,
             'requests' => $requests,
         ]);
     }
@@ -96,7 +101,7 @@ class RentalRequestController extends Controller {
         if (($data['booking'] ?? null) === 'direct') {
             abort_if($asset === null, 404);
             try {
-                $this->service->bookFromPortal(
+                $booking = $this->service->bookFromPortal(
                     $customer,
                     $user,
                     $asset,
@@ -106,6 +111,10 @@ class RentalRequestController extends Controller {
                 );
             } catch (RuntimeException $e) {
                 return back()->withInput()->with('error', ErrorText::for($e));
+            }
+
+            if ($booking->isAwaitingPayment()) {
+                return $this->prepaymentCheckout($booking, 'customer.rentals.requests.index');
             }
 
             return redirect()->route('customer.rentals.requests.index')->with('success', __('rental.portal.direct_booked'));
@@ -127,6 +136,18 @@ class RentalRequestController extends Controller {
 
         return redirect()->route('customer.rentals.requests.index')
             ->with('success', __('Verleih-Anfrage gesendet — wir prüfen die Verfügbarkeit und melden uns.'));
+    }
+
+    /** Bezahlseite einer unbezahlten Direktbuchung erneut öffnen (MVP-1515). */
+    public function pay(RentalRequest $rentalRequest): RedirectResponse {
+        $user = $this->portalUser();
+        abort_unless(
+            (int) $rentalRequest->organization_id === (int) $user->organization_id
+            && (int) $rentalRequest->customer_id === (int) $user->customer_id,
+            404,
+        );
+
+        return $this->prepaymentCheckout($rentalRequest, $rentalRequest->asset?->rentalProfile?->isHousing() === true ? 'customer.housing.index' : 'customer.rentals.requests.index');
     }
 
     public function withdraw(RentalRequest $rentalRequest): RedirectResponse {

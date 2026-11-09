@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Finance;
 
+use App\Casts\{BicCast, IbanCast};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Support\Crypto\BlindIndex;
 use Database\Factories\Finance\BankAccountFactory;
@@ -62,8 +63,8 @@ class BankAccount extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
-        'iban' => 'encrypted',
-        'bic' => 'encrypted',
+        'iban' => IbanCast::class . ':encrypted',
+        'bic' => BicCast::class . ':encrypted',
         'account_holder' => 'encrypted',
         'is_active' => 'boolean',
     ];

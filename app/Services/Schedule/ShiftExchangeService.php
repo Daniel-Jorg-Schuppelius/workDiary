@@ -187,6 +187,16 @@ class ShiftExchangeService {
             }
         }
 
+        // Qualifikationssperre (MVP-1514): gilt für beide Richtungen eines Tauschs.
+        $qualifications = app(QualificationEnforcement::class);
+        $blocked = $qualifications->shiftBlockMessage($this->reassignProxy($shift, $targetUserId))
+            ?? ($exchange->offeredShift !== null
+                ? $qualifications->shiftBlockMessage($this->reassignProxy($exchange->offeredShift, (int) $exchange->requested_by_user_id))
+                : null);
+        if ($blocked !== null) {
+            throw new ShiftExchangeException($blocked);
+        }
+
         DB::transaction(function () use ($exchange, $shift, $targetUserId, $decider): void {
             $shift->update(['user_id' => $targetUserId, 'updated_by' => $decider->id]);
 

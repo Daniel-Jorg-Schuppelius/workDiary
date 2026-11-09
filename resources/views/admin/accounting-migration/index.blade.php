@@ -53,6 +53,7 @@
                             @endunless
                         </label>
                     @endforeach
+                    <p class="text-xs text-muted">{{ __('accounting_migration.articles_hint') }}</p>
                 </fieldset>
 
                 <label class="form-control max-w-xs">

@@ -1,7 +1,7 @@
 ---
 title: "Organisation et paramètres"
 topic: admin.organization-settings
-version: 4
+version: 5
 keywords:
     - paramètres de l'entreprise
     - réglages du locataire
@@ -123,6 +123,18 @@ allemande sur le temps de travail (ArbZG) :
   graves le chevauchement, un repos trop court, un temps de travail journalier
   dépassé et un service pendant un congé approuvé ; les autres règles ne font
   qu'avertir.
+
+## Qualifications obligatoires
+
+**Qualification obligatoire manquante lors de l’affectation** détermine ce qui
+se passe lorsqu’il manque à une personne une qualification exigée par le type
+de poste ou l’intervention, ou lorsque sa qualification a expiré ou n’est pas
+encore valable le jour de l’intervention :
+
+- **Simple indication** (par défaut) : le planning et l’intervention signalent
+  le manque, l’enregistrement reste possible.
+- **Bloquer l’affectation** : l’affectation est refusée avec un message
+  d’erreur. Détails sous « Qualifications ».
 
 ## Modèle de temps de travail
 
@@ -403,6 +415,15 @@ elle-même est décrite dans « Connecter un assistant IA ».
 - **Autoriser la réservation directe dans le portail client** : les clients
   réservent immédiatement et de façon ferme les appareils disponibles ouverts
   au portail ; la direction est informée.
+- **Acompte en réservation directe (%)** (0–100, par défaut 0) : part du
+  prix TTC de la liste de prix que les clients paient d’avance en ligne via le
+  prestataire de paiement lors d’une réservation directe. La réservation n’est
+  confirmée qu’à réception du paiement ; l’acompte est imputé sur la facture.
+  Un objet de location peut avoir son propre taux (0 = aucun). Sans
+  prestataire de paiement configuré, seule la demande est alors possible.
+- **Délai de paiement de la réservation directe (minutes)** (10–1440, par
+  défaut 30) : durée pendant laquelle l’appareil reste réservé pour une
+  réservation impayée ; ensuite, la réservation est libérée.
 - **Rayon autour du lieu d'intervention (m)** (50–50 000, par défaut 500) : si
   la position signalée d'un appareil loué est plus éloignée du site de la
   location, l'écart est signalé. Sans site, les géorepérages du client

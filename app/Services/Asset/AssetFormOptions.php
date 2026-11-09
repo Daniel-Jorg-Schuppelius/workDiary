@@ -103,16 +103,6 @@ class AssetFormOptions {
     }
 
     /**
-     * @return array<string, string>
-     */
-    public function categoryOptions(): array {
-        /** @var array<string, string> $pool */
-        $pool = (array) config('asset_categories', []);
-
-        return $pool;
-    }
-
-    /**
      * Liefert die Sammlungen für den Facility-Picker.
      *
      * @return array{sites: Collection<int, Site>, buildings: Collection<int, Building>, floors: Collection<int, Floor>, rooms: Collection<int, Room>}

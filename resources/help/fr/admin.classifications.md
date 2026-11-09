@@ -1,7 +1,7 @@
 ---
 title: "Classifications & règles obligatoires"
 topic: admin.classifications
-version: 1
+version: 2
 keywords:
     - listes de valeurs
     - catégories
@@ -41,3 +41,12 @@ domaine, code, libellé). Les règles obligatoires lient un type de commande
 création, avant la clôture ou avant la signature — ainsi que le caractère
 bloquant ou indicatif, le nombre minimal/maximal de valeurs et une
 condition JSON.
+
+D’autres domaines arrivent avec les profils sectoriels, par exemple types de
+prestation, niveaux de dépendance et canaux de communication (soins), types
+d’événement (traiteur) et supports de charge (transport). Le domaine
+**Catégories d’actifs** complète les catégories informatiques générales du
+formulaire des actifs : une valeur de l’organisation avec un code propre y
+apparaît en plus, une valeur reprenant le code d’une catégorie générale en
+remplace le libellé, et une valeur désactivée la masque. Une catégorie
+utilisée par un actif peut seulement être désactivée, pas supprimée.

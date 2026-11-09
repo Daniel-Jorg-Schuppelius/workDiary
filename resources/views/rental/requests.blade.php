@@ -54,7 +54,7 @@
                 </td>
                 <td class="max-w-xs whitespace-pre-line text-sm">{{ $request->note ?? '—' }}</td>
                 <td>
-                    <x-status-badge size="md" outline :tone="$request->status->tone()">{{ $request->is_direct ? __('rental.portal.direct_status') : $request->status->label() }}</x-status-badge>
+                    <x-status-badge size="md" outline :tone="$request->status->tone()">{{ $request->is_direct && $request->status === \App\Enums\Rental\RentalRequestStatus::Accepted ? __('rental.portal.direct_status') : $request->status->label() }}</x-status-badge>
                     @if ($request->rentalCase !== null)
                         <a class="link link-hover block text-xs" href="{{ route('rental.show', $request->rentalCase) }}">{{ $request->rentalCase->number }}</a>
                     @elseif ($request->decline_reason)

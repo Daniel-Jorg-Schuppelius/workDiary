@@ -1,7 +1,7 @@
 ---
 title: "Viajes, gastos y dietas"
 topic: travel-expenses.manage
-version: 4
+version: 5
 keywords:
     - nota de gastos
     - gastos de viaje
@@ -64,6 +64,20 @@ traslada al vehículo de flota. Si el vehículo de flota está en **Modo libro d
 viajes**, los kilometrajes son obligatorios y el viaje se fija tras el fin del
 día. Cualquier persona con sesión iniciada puede registrar viajes si su
 organización usa el módulo; un viaje pertenece siempre a quien lo registró.
+
+## Vincular un gasto con un comprobante contable
+
+Si el mismo gasto ya figura como comprobante de entrada en la contabilidad,
+vincúlelo al gasto en el diálogo del comprobante. Se proponen comprobantes con
+el mismo importe bruto (con una diferencia máxima de dos céntimos) cuya fecha
+se aleja como máximo 14 días de la fecha del gasto. **Vincular** confirma que
+se trata de la misma operación: a partir de entonces solo cuenta el
+comprobante en el flujo de comprobantes. Un comprobante pertenece a un único
+gasto; el vínculo se elimina en el mismo diálogo.
+
+Funciona con Lexoffice y con cada programa cuyos comprobantes de entrada
+refleja WorkDiary (sevDesk, Akaunting, Invoice Ninja). La transferencia de un
+gasto como comprobante nuevo (abajo) solo existe para Lexoffice.
 
 ## Transferir un gasto a la contabilidad como comprobante
 

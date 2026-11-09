@@ -266,13 +266,12 @@ return [
 
     'conflict' => [
         'title' => 'Conflicts with external systems',
-        'subtitle' => 'Failed stock transfers and diverging articles of the connected external systems.',
+        'subtitle' => 'Failed stock transfers to the connected external systems.',
         'empty' => 'No conflicts for the current selection.',
         'tab' => 'Conflicts',
-        'filter' => ['open' => 'Open', 'all' => 'All', 'all_types' => 'All types'],
+        'filter' => ['open' => 'Open', 'all' => 'All'],
         'type' => [
             'inventory_outbox' => 'Stock',
-            'article' => 'Article',
         ],
         'col' => [
             'type' => 'Type',
@@ -282,50 +281,22 @@ return [
             'status' => 'Status',
             'actions' => 'Actions',
         ],
-        'field' => [
-            'name' => 'Name',
-            'article_number' => 'Article number',
-            'gtin' => 'GTIN',
-            'description' => 'Description',
-            'note' => 'Note',
-            'type' => 'Article type',
-            'unit_name' => 'Unit',
-            'net_unit_price' => 'Net price',
-            'gross_unit_price' => 'Gross price',
-            'currency' => 'Currency',
-            'vat_rate' => 'Tax rate',
-            'leading_price' => 'Leading price',
-        ],
-        'diff' => 'local “:local” · external system “:remote”',
         'status' => [
             'open' => 'Open',
             'resolved_local' => 'Kept local',
-            'resolved_remote' => 'Took external',
             'compensated' => 'Compensated',
-            'dismissed' => 'Dismissed',
         ],
         'action' => [
             'compensate' => 'Counter-booking',
             'keep_local' => 'Keep local',
-            'dismiss' => 'Dismiss',
-            'adopt_remote' => 'Take :system state',
-        ],
-        'confirm' => [
-            'dismiss' => 'The conflict is closed without reconciliation. The local state and the state in the external system remain unchanged; if the article still differs at the next synchronisation, a new conflict is created.',
-            'keep_local_article' => 'The conflict is closed and the local state stays. At the next synchronisation it is transferred to :system and overwrites the differing state there.',
-            'adopt_remote' => 'The differing fields are overwritten with the state from :system; the local change is lost.',
         ],
         'flash' => [
             'kept_local' => 'Conflict closed — local stock kept.',
             'compensated' => 'Conflict compensated — counter-booking posted.',
-            'dismissed' => 'Conflict dismissed — both states remain unchanged.',
-            'adopted_remote' => 'Conflict closed — state of the external system taken over.',
-            'kept_local_article' => 'Conflict closed — local article state kept; it will be transferred at the next synchronisation.',
         ],
         'error' => [
             'wrong_type' => 'This action is not available for this type of conflict.',
             'already_resolved' => 'The conflict has already been resolved.',
-            'no_handler' => 'No reconciliation is available for conflicts of the plugin “:plugin” — is the plugin enabled?',
         ],
     ],
 

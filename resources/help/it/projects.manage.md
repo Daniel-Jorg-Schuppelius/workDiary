@@ -1,7 +1,7 @@
 ---
 title: "Gestire i progetti"
 topic: projects.manage
-version: 5
+version: 6
 keywords:
     - creare progetto
     - gestione progetti
@@ -95,8 +95,11 @@ segnala gli scostamenti oltre la tolleranza (impostazione dell’organizzazione,
 default) ai responsabili del progetto, nella coda di lavoro e nella chiusura giornaliera della
 persona; i rilievi sono elencati nella scheda tempi, dove possono essere **confermati**, e una
 registrazione tardiva li risolve. Con **Fatturare le ore concordate** nella scheda fatturazione
-il trasferimento aggiunge il tempo mancante come posizione «Tempo di intervento concordato»;
-una registrazione successiva su quel giorno non è più fatturabile.
+il trasferimento e la fattura aggiungono il tempo mancante come posizione «Tempo di intervento
+concordato»; l’anteprima della fattura mostra anche queste integrazioni. Ogni integrazione viene
+fatturata una sola volta, in una fattura o in un trasferimento; una registrazione successiva su
+quel giorno non è più fatturabile. L’annullamento della fattura o del trasferimento, la
+rimozione della posizione o l’eliminazione della bozza libera di nuovo l’integrazione.
 
 ## Errori tipici
 

@@ -1,7 +1,7 @@
 ---
 title: "Importar la lista de llamadas de FRITZ!Box"
 topic: admin.fritzbox
-version: 2
+version: 3
 keywords:
     - FRITZ!Box
     - lista de llamadas
@@ -71,7 +71,7 @@ En **Plugins**, abra el diálogo **Configurar** de **Lista de llamadas de FRITZ!
   FRITZ!OS, que exportan las llamadas salientes como tipo 3.
 - **Comparar contactos externos** (por defecto: activado): los números
   desconocidos se comparan también con directorios de contactos conectados,
-  como Lexoffice y Microsoft 365.
+  como Lexoffice, easybill, orgaMAX y Microsoft 365.
 - **Número de fichaje: entrada**, **Número de fichaje: salida** y **Número de
   fichaje: entrada/salida**: sus números propios para el fichaje telefónico
   (véase más abajo).

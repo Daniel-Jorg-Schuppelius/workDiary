@@ -41,6 +41,18 @@
     </x-select-field>
 </x-form-group>
 
+{{-- MVP-1514: fehlende Pflichtqualifikation nur anzeigen oder die Zuweisung ablehnen. --}}
+<x-form-group :legend="__('settings.qualifications.heading')" icon="workspace_premium" tone="warning" cols="1">
+    @php
+        $qualificationMode = old('settings.qualifications.enforcement', data_get($organization?->settings, 'qualifications.enforcement', 'hint'));
+    @endphp
+    <x-select-field name="settings[qualifications][enforcement]" :label="__('settings.qualifications.enforcement')"
+                    error="settings.qualifications.enforcement" :hint="__('settings.qualifications.enforcement_hint')">
+        <option value="hint" @selected($qualificationMode !== 'block')>{{ __('settings.qualifications.mode_hint') }}</option>
+        <option value="block" @selected($qualificationMode === 'block')>{{ __('settings.qualifications.mode_block') }}</option>
+    </x-select-field>
+</x-form-group>
+
 <x-form-group :legend="__('Arbeitszeit-Modell')" icon="tune" tone="primary" cols="1"
               :description="__('Standard-Arbeitszeit-Typ für neue Mitarbeiter (pro Person überschreibbar).')">
     <div class="fieldset">

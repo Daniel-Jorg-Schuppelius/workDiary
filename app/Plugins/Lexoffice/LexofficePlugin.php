@@ -22,12 +22,12 @@ use App\Models\Platform\{Organization, PluginSetting, User};
 use App\Models\Supplier\Supplier;
 use App\Models\Time\TimeEntry;
 use App\Plugins\{AbstractPlugin, PluginHealth, PluginManager};
-use App\Plugins\Contracts\{ContactNumberIssuer, ContactSyncer, ContributesWhileInactive, NavigationContributor, PaymentSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
+use App\Plugins\Contracts\{ContactNumberIssuer, ContactSyncer, ContributesWhileInactive, NavigationContributor, Plugin, PluginCapability, SlotRenderer, TimeExporter};
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Enums\LexwareFeature;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiBusyException;
 use App\Plugins\Lexoffice\Models\LexofficePostingCategory;
-use App\Plugins\Lexoffice\Services\{LexofficeIncomingInvoiceTarget, LexofficeService, LexofficeVoucherSync, LexofficeWebhookService};
+use App\Plugins\Lexoffice\Services\{LexofficeIncomingInvoiceTarget, LexofficeService, LexofficeWebhookService};
 use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
 use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
 use App\Services\Stammdaten\ContactNumberAdopter;
@@ -48,7 +48,7 @@ use Throwable;
  * Mappings between local entities and Lexoffice ids are persisted in the
  * external_references table. The plugin id is "lexoffice".
  */
-class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\SupplierContactSyncer, ContactNumberIssuer, ContactSyncer, ContributesWhileInactive, NavigationContributor, PaymentSyncer, SlotRenderer, TimeExporter {
+class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\SupplierContactSyncer, ContactNumberIssuer, ContactSyncer, ContributesWhileInactive, NavigationContributor, SlotRenderer, TimeExporter {
     public const string ID = 'lexoffice';
 
     public const string SERVICE_PROVIDER = LexofficeServiceProvider::class;
@@ -140,30 +140,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
     public function capabilities(): array {
         return [
             PluginCapability::ContactSync,
-            PluginCapability::PaymentSync,
             PluginCapability::TimeExport,
-        ];
-    }
-
-    /**
-     * Zahlungsabgleich (Audit 2026-08, Welle 1.5): holt für als bezahlt
-     * gemeldete Belege das Zahldatum nach (`GET /payments/{id}`) — Grundlage
-     * für Zahldauer/DSO auch bei externer Rechnungshoheit. Die Capability
-     * bildet damit ab, was der VoucherSync ohnehin tut; SevDesk/Easybill/
-     * orgaMAX lesen KEINEN Zahlungsstatus zurück (dort ist
-     * `ReconcilesByMarker` reine Übergabe-Idempotenz) und deklarieren die
-     * Fähigkeit deshalb bewusst nicht.
-     *
-     * @return array<string, int|string>
-     */
-    public function syncPayments(Organization $organization): array {
-        if (! app(LexofficeClientFactory::class)->isConfigured((int) $organization->id)) {
-            return ['paid_dates' => 0, 'error' => (string) __('Lexoffice ist nicht konfiguriert.')];
-        }
-
-        return [
-            'paid_dates' => (new LexofficeVoucherSync((int) $organization->id))
-                ->enrichPaidDates((int) $organization->id),
         ];
     }
 

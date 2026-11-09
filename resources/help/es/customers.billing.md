@@ -1,7 +1,7 @@
 ---
 title: "Condiciones especiales & cuenta de cliente"
 topic: customers.billing
-version: 4
+version: 5
 keywords:
     - precios especiales
     - tarifa horaria del cliente
@@ -13,6 +13,8 @@ keywords:
     - cuota mensual
     - iguala mensual
     - Lexoffice
+    - sevDesk
+    - easybill
     - cierre mensual
 audience: []
 modules:
@@ -27,7 +29,7 @@ En la ficha del cliente se pueden definir **condiciones especiales**:
 tarifas horarias propias por actividad y tipo de día (laborable/fin de
 semana, definido mediante «días laborables por semana») y el método de
 liquidación — **cuenta de cliente** sin facturas con saldo corriente,
-**factura mensual** o **cuota fija** a través del programa contable (actualmente Lexoffice).
+**factura mensual** o **cuota fija** a través del programa contable (Lexoffice, sevDesk o easybill).
 
 Las condiciones incluyen también una **tarifa fija de desplazamiento**:
 cada registro de tiempo facturable aporta entonces x minutos
@@ -57,23 +59,32 @@ registros tardíos en meses cerrados se señalan — reabra el mes o cambie
 la fecha.
 
 En **modo de cuota fija**, el programa contable de la soberanía de
-facturación del cliente gestiona el documento y el pago — actualmente
-Lexoffice. La
-cuota mensual se indica sin IVA («anticipo mensual previsto»); el saldo
-local enfrenta horas × tarifa con la cuota pagada. Hay dos vías para el
-documento:
+facturación del cliente gestiona el documento y el pago: Lexoffice,
+sevDesk o easybill. La cuota mensual se indica sin IVA («anticipo mensual
+previsto»); el saldo local enfrenta horas × tarifa con la cuota pagada.
+Hay dos vías para el documento:
 
-- **Enviar cuota fija** crea la factura en Lexoffice (también cada mes y
-  de forma automática para el mes anterior).
-- **Vincular documento** engancha al mes una factura que ya creó en
-  Lexoffice. Si exactamente una factura del cliente coincide por mes e
+- **Enviar cuota fija** crea la factura en el programa (también cada mes
+  y de forma automática para el mes anterior). sevDesk asigna el número de
+  factura y después la lleva como enviada y abierta; easybill la finaliza
+  y la numera.
+- **Vincular documento** engancha al mes una factura que ya creó en el
+  programa. Si exactamente una factura del cliente coincide por mes e
   importe neto, esto ocurre automáticamente durante la sincronización de
   documentos.
 
 En cuanto hay un documento enganchado, «Enviar cuota fija» desaparece —
-de lo contrario surgiría un segundo documento en Lexoffice. El estado de
-pago vuelve con la sincronización y se registra **en neto** (Lexoffice
-trabaja en bruto).
+de lo contrario surgiría un segundo documento en el programa. El estado
+de pago vuelve con la sincronización y se registra **en neto** (los
+programas llevan el importe pendiente en bruto); los pagos parciales
+cuentan de forma proporcional. En sevDesk y easybill el estado de pago
+procede del espejo de documentos, es decir, de la consulta periódica de
+documentos; un documento anulado o eliminado en el programa revierte el
+pago registrado. Si el envío a sevDesk o easybill se
+interrumpe, la factura queda como borrador; un nuevo envío la continúa en lugar de crear un segundo
+documento en el programa. Los pagos procedentes del programa no se pueden
+anular a mano en el panel: eso se hace mediante el documento en el
+programa.
 
 Si las condiciones especiales se crearon después, los tiempos más
 antiguos aparecen al principio con 0,00 € en «total». **Recalcular** los

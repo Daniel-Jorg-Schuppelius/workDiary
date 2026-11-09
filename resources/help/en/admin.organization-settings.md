@@ -1,7 +1,7 @@
 ---
 title: "Organization and settings"
 topic: admin.organization-settings
-version: 4
+version: 5
 keywords:
     - company settings
     - tenant settings
@@ -113,6 +113,17 @@ Working Hours Act (ArbZG) react:
   violations are an overlap, a rest period that is too short, exceeded daily
   working time and a shift during approved vacation; the other rules only
   warn.
+
+## Required qualifications
+
+**Missing required qualification on assignment** determines what happens when
+a person lacks a qualification required by the shift type or the order, or
+when their qualification has expired or is not yet valid on the day of work:
+
+- **Hint only** (default): the shift plan and the order show the gap, saving
+  still works.
+- **Block assignment**: the assignment is rejected with an error message. See
+  “Qualifications” for details.
 
 ## Working time model
 
@@ -361,6 +372,15 @@ connection itself is described in “Connect AI assistant”.
 - **Allow direct booking in the customer portal**: customers reserve
   available equipment released for the portal immediately and bindingly; the
   managers are notified.
+- **Prepayment for direct booking (%)** (0–100, default 0): share of the
+  gross price from the price list that customers prepay online via the
+  payment provider when booking directly. The booking is only confirmed once
+  the payment has arrived; the prepayment is credited to the invoice. A rental
+  item can carry its own rate (0 = none). Without a configured payment
+  provider, only requests are possible then.
+- **Payment deadline for direct booking (minutes)** (10–1440, default 30): how
+  long the item stays reserved for an unpaid booking; after that the
+  reservation is released.
 - **Radius around the site (m)** (50–50,000, default 500): if the reported
   position of rented equipment is further away from the rental's site, the
   deviation is reported. Without a site, the customer's geofences apply.

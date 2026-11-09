@@ -70,6 +70,8 @@ class CustomerGeofence extends Model {
         'gap_merge_minutes' => 'integer',
         'is_active' => 'boolean',
         'valid_on' => 'date',
+        'center_lat' => 'decimal:7',
+        'center_lng' => 'decimal:7',
     ];
 
     /** @param Builder<CustomerGeofence> $query */

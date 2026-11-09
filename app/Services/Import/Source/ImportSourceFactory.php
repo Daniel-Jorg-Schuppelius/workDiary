@@ -59,6 +59,20 @@ final class ImportSourceFactory {
     }
 
     /**
+     * iCal-Quelle über abgerufenen Kalenderinhalt statt über eine Datei
+     * (Dauer-Sync, MVP-1516); Optionen wie bei {@see make()}.
+     *
+     * @param  array<string, mixed>  $options
+     */
+    public function icalFromContent(string $content, ImportEntity $entity, Organization $organization, array $options = []): IcalImportSource {
+        $mapper = $this->icalMapper($entity)
+            ?? throw new RuntimeException((string) __('import.error.ical.unsupportedEntity'));
+        $timezone = Tz::ofOrganization($organization);
+
+        return new IcalImportSource('', $mapper, $timezone, $this->categoryAllowlist($options), $this->recurrenceWindow($options, $timezone), $content);
+    }
+
+    /**
      * Prüft, ob die Datei ein iCalendar-Dokument ist (Kopfbytes enthalten
      * `BEGIN:VCALENDAR`).
      */

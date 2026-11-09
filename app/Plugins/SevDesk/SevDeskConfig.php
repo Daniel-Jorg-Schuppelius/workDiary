@@ -23,7 +23,7 @@ use App\Plugins\Support\PluginSettingsResolver;
  */
 class SevDeskConfig {
     /**
-     * @return array{api_key: ?string, base_url: string, default_vat_rate: float, tax_rule_id: int, contact_category_id: int, unity_piece_id: int, unity_hour_id: int, enabled: bool}
+     * @return array{api_key: ?string, base_url: string, default_vat_rate: float, tax_rule_id: int, contact_category_id: int, supplier_category_id: int, unity_piece_id: int, unity_hour_id: int, incoming_transfer: bool, incoming_account_id: ?int, outgoing_account_id: ?int, enabled: bool}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(SevDeskPlugin::ID, $organizationId);
@@ -34,8 +34,13 @@ class SevDeskConfig {
             'default_vat_rate' => $r->float('default_vat_rate', 19.0),
             'tax_rule_id' => (int) config('plugins.sevdesk.tax_rule_id', 1),
             'contact_category_id' => (int) config('plugins.sevdesk.contact_category_id', 3),
+            'supplier_category_id' => (int) config('plugins.sevdesk.supplier_category_id', 2),
             'unity_piece_id' => (int) config('plugins.sevdesk.unity_piece_id', 1),
             'unity_hour_id' => (int) config('plugins.sevdesk.unity_hour_id', 9),
+            // Rechnungseingang (Feature 163, MVP-1507): Schalter und Buchungskonto je Richtung.
+            'incoming_transfer' => $r->bool('incoming_transfer', false),
+            'incoming_account_id' => $r->intOrNull('incoming_account_id'),
+            'outgoing_account_id' => $r->intOrNull('outgoing_account_id'),
             'enabled' => $r->enabled(),
         ];
     }

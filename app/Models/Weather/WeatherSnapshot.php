@@ -67,5 +67,7 @@ class WeatherSnapshot extends Model {
         'wind_gust_kmh' => 'decimal:2',
         'weather_code' => 'integer',
         'raw' => 'array',
+        'geo_lat' => 'decimal:6',
+        'geo_lng' => 'decimal:6',
     ];
 }

@@ -177,5 +177,29 @@ final class RecruitingLifecycleTest extends TestCase {
 
         // Idempotent: zweite Einladung schlägt fehl.
         $this->actingAs($hr)->post(route('recruiting.applications.draft.invite', [$application, $draft]))->assertSessionHas('error');
+        // Ein eingeladener Entwurf lässt sich nicht mehr verwerfen.
+        $this->actingAs($hr)->post(route('recruiting.applications.draft.discard', [$application, $draft]))->assertSessionHas('error');
+        $this->assertSame(EmployeeDraftStatus::Invited, $draft->fresh()->status);
+    }
+
+    public function test_draft_is_discarded_without_an_account(): void {
+        $hr = $this->userWithRole(UserRole::Personalverwaltung->value);
+        $requisition = JobRequisition::query()->create(['organization_id' => $this->organization->id, 'title' => 'Disponent:in', 'status' => JobRequisitionStatus::Open]);
+        ['application' => $application] = app(RecruitingService::class)->intake([
+            'job_requisition_id' => $requisition->id, 'candidate_name' => 'Alex Probe', 'email' => 'alex.probe@example.test', 'source' => 'website',
+        ], $hr);
+        app(RecruitingService::class)->decide($application, 'accepted', null, $hr);
+        $draft = app(RecruitingService::class)->createEmployeeDraft($application->fresh(), $hr);
+        $this->actingAs($hr)->get(route('recruiting.applications.show', $application))->assertOk()->assertSee('Entwurf verwerfen');
+
+        $this->actingAs($hr)->post(route('recruiting.applications.draft.discard', [$application, $draft]))->assertSessionHas('success', 'Mitarbeiter-Entwurf verworfen.');
+
+        $this->assertSame(EmployeeDraftStatus::Discarded, $draft->fresh()->status);
+        $this->assertSame(1, $draft->auditLogs()->where('event', 'recruiting.draft_discarded')->count());
+        $this->actingAs($hr)->get(route('recruiting.applications.show', $application))->assertOk()
+            ->assertSee('Entwurf verworfen — ein Konto entsteht nicht.')->assertDontSee('Als Mitglied einladen');
+        // Verworfen ist endgültig: keine Einladung mehr, kein Konto.
+        $this->actingAs($hr)->post(route('recruiting.applications.draft.invite', [$application, $draft]))->assertSessionHas('error');
+        $this->assertSame(0, User::query()->where('email', 'alex.probe@example.test')->count());
     }
 }

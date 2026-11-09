@@ -136,6 +136,10 @@ class EnergyLog extends Model {
         'duration_minutes' => 'integer',
         'soc_before' => 'integer',
         'soc_after' => 'integer',
+        'quantity' => 'decimal:3',
+        'cost_total' => 'decimal:2',
+        'location_lat' => 'decimal:7',
+        'location_lng' => 'decimal:7',
     ];
 
     public static function booted(): void {

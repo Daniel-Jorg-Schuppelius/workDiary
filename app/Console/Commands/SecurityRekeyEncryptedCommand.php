@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Support\Crypto\EncryptedCasts;
 use CommonToolkit\Helper\FileSystem\{Files, Folder};
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\{Crypt, DB};
@@ -108,7 +109,7 @@ class SecurityRekeyEncryptedCommand extends Command {
         foreach (self::modelClasses() as $class) {
             $fields = [];
             foreach ((new $class)->getCasts() as $field => $cast) {
-                if (str_starts_with($cast, 'encrypted')) {
+                if (EncryptedCasts::covers($cast)) {
                     $fields[$field] = [];
                 }
             }

@@ -19,7 +19,7 @@ use App\Models\Article\Product;
 use App\Models\Asset\Asset;
 use App\Models\Classification\Tag;
 use App\Models\Platform\User;
-use App\Services\Asset\{AssetDetailAssembler, AssetFormOptions, AssetService};
+use App\Services\Asset\{AssetCategoryCatalog, AssetDetailAssembler, AssetFormOptions, AssetService};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -36,7 +36,10 @@ class AssetController extends Controller {
 
     private const array ALLOWED_SORTS = ['asset_no', 'asset_class', 'name', 'serial_no', 'location_text', 'status'];
 
-    public function __construct(private readonly AssetFormOptions $options) {}
+    public function __construct(
+        private readonly AssetFormOptions $options,
+        private readonly AssetCategoryCatalog $categories,
+    ) {}
 
     /**
      * Produkt-Auswahloptionen für den Typ-Picker (MVP-370, org-gescopt).
@@ -187,7 +190,7 @@ class AssetController extends Controller {
             'statusOptions' => $this->options->statusOptionsForCreate(),
             'customers' => $this->options->customerOptions(),
             'foreignCustomers' => $this->options->foreignCustomerOptions(),
-            'categoryOptions' => $this->options->categoryOptions(),
+            'categoryOptions' => $this->categories->options((int) Auth::user()?->organization_id),
             'products' => $this->productOptions(),
             'prefill' => $prefill,
             'allTags' => Tag::query()->orderBy('name')->get(),
@@ -245,7 +248,7 @@ class AssetController extends Controller {
             'statusOptions' => $this->options->statusOptions(),
             'customers' => $this->options->customerOptions(),
             'foreignCustomers' => $this->options->foreignCustomerOptions(),
-            'categoryOptions' => $this->options->categoryOptions(),
+            'categoryOptions' => $this->categories->options((int) $asset->organization_id, $asset->category_code),
             'products' => $this->productOptions(),
             'prefill' => $prefill,
             'allTags' => Tag::query()->orderBy('name')->get(),

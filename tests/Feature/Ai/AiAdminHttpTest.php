@@ -165,6 +165,52 @@ class AiAdminHttpTest extends TestCase {
         $this->assertNull($fresh->disabled_at, 'Reparatur muss die Auto-Abschaltung aufheben.');
     }
 
+    /** MVP-1492 (ul-04): der Schlüsseltausch hatte eine Route, aber kein Feld — ersetzen ging nur durch Löschen. */
+    public function test_edit_dialog_offers_a_new_key_and_keeps_the_old_one_when_left_empty(): void {
+        $connection = AiProviderConnection::factory()->create(['organization_id' => $this->organization->id, 'name' => 'ChatGPT']);
+
+        $this->actingAs($this->admin)->get(route('admin.ai.edit', $connection))->assertOk()
+            ->assertSee('Neuer API-Schlüssel')
+            ->assertSee('Leer lassen, um den bisherigen Schlüssel zu behalten.');
+        $this->actingAs($this->admin)->patch(route('admin.ai.update', $connection), ['name' => 'ChatGPT', 'api_key' => ''])
+            ->assertSessionHas('success', 'Verbindung aktualisiert und geprüft.');
+
+        $this->assertSame('test-key', $connection->fresh()?->api_key);
+    }
+
+    public function test_new_key_replaces_the_old_one_runs_the_preflight_and_keeps_the_routing(): void {
+        $connection = AiProviderConnection::factory()->create(['organization_id' => $this->organization->id, 'name' => 'ChatGPT']);
+        $setting = AiCapabilitySetting::query()->create(['organization_id' => $this->organization->id, 'capability' => self::CAPABILITY, 'enabled' => true, 'default_connection_id' => $connection->id]);
+
+        $this->actingAs($this->admin)->patch(route('admin.ai.update', $connection), ['name' => 'ChatGPT', 'api_key' => ' neuer-schluessel '])
+            ->assertRedirect(route('admin.ai.index'))
+            ->assertSessionHas('success', 'Schlüssel rotiert und Preflight bestanden.');
+
+        $connection->refresh();
+        $this->assertSame('neuer-schluessel', $connection->api_key);
+        $this->assertNotNull($connection->preflight_at, 'Vortest gelaufen');
+        $this->assertSame((int) $connection->id, (int) $setting->refresh()->default_connection_id, 'Routing je Fähigkeit bleibt');
+    }
+
+    public function test_failed_preflight_after_a_key_change_is_reported(): void {
+        $connection = AiProviderConnection::factory()->create(['organization_id' => $this->organization->id, 'name' => 'ChatGPT']);
+        FakeAiProviderFactory::current()->failFor($connection);
+
+        $this->actingAs($this->admin)->patch(route('admin.ai.update', $connection), ['name' => 'ChatGPT', 'api_key' => 'abgelaufen'])
+            ->assertSessionHas('error');
+
+        $this->assertStringStartsWith('Preflight fehlgeschlagen:', (string) session('error'));
+        $this->assertSame('abgelaufen', $connection->fresh()?->api_key);
+    }
+
+    public function test_key_change_requires_the_manage_permission(): void {
+        $connection = AiProviderConnection::factory()->create(['organization_id' => $this->organization->id, 'name' => 'ChatGPT']);
+        $stranger = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($stranger)->patch(route('admin.ai.update', $connection), ['name' => 'ChatGPT', 'api_key' => 'fremd'])->assertForbidden();
+        $this->assertSame('test-key', $connection->fresh()?->api_key);
+    }
+
     public function test_block_and_unblock_lifecycle(): void {
         $connection = AiProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
 

@@ -21,7 +21,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
  * eine Wahrheit statt verstreuter Regex-Kopien. Seit Vollscan 2026-08-23
  * (C18) über {@see BankHelper::hasBICFormat()}: Bank- und Ländercode (Position
  * 1–6) müssen Buchstaben sein — rein numerische „BICs" fielen vorher durch die
- * lose App-Regex und lesen über den strikten {@see \App\Casts\BicCast} als null.
+ * lose App-Regex, und der {@see \App\Casts\BicCast} speichert Ungültiges nur getrimmt.
  */
 final class Bic implements ValidationRule {
     public function validate(string $attribute, mixed $value, Closure $fail): void {

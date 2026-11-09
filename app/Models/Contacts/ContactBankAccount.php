@@ -10,6 +10,7 @@
 
 namespace App\Models\Contacts;
 
+use App\Casts\{BicCast, IbanCast};
 use App\Models\Concerns\BelongsToOrganization;
 use App\Support\Crypto\BlindIndex;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -57,8 +58,8 @@ class ContactBankAccount extends Model {
         'is_primary' => 'boolean',
         // PII at-rest verschlüsselt (Spalten als text, siehe Migration).
         'account_holder' => 'encrypted',
-        'iban' => 'encrypted',
-        'bic' => 'encrypted',
+        'iban' => IbanCast::class . ':encrypted',
+        'bic' => BicCast::class . ':encrypted',
     ];
 
     protected static function booted(): void {

@@ -520,8 +520,6 @@ CREATE TABLE IF NOT EXISTS "lexoffice_articles"(
   "gross_unit_price" numeric,
   "leading_price" varchar,
   "external_version" integer,
-  "is_dirty" tinyint(1) not null default '0',
-  "last_pushed_at" datetime,
   foreign key("organization_id") references "organizations"("id") on delete cascade
 );
 CREATE UNIQUE INDEX "lexoffice_articles_organization_id_external_id_unique" on "lexoffice_articles"(
@@ -8785,6 +8783,7 @@ CREATE TABLE IF NOT EXISTS "application_opportunities"(
   "participation_deadline" date,
   "opening_at" datetime,
   "binding_until" date,
+  "archived_outcome" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("customer_id") references "customers"("id") on delete set null,
   foreign key("project_id") references "projects"("id") on delete set null,
@@ -10016,6 +10015,7 @@ CREATE TABLE IF NOT EXISTS "rental_profiles"(
   "rent_amount" numeric,
   "ancillary_amount" numeric,
   "currency" varchar not null default 'EUR',
+  "prepayment_percent" integer,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("asset_id") references "assets"("id") on delete cascade,
   foreign key("default_rate_card_id") references "rental_rate_cards"("id") on delete set null
@@ -15776,6 +15776,9 @@ CREATE TABLE IF NOT EXISTS "rental_requests"(
   "updated_at" datetime,
   "is_direct" tinyint(1) not null default '0',
   "guests" integer,
+  "prepayment_amount" numeric,
+  "currency" varchar,
+  "payment_due_at" datetime,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("customer_id") references "customers"("id") on delete cascade,
   foreign key("portal_user_id") references "users"("id") on delete set null,
@@ -22304,34 +22307,6 @@ CREATE UNIQUE INDEX "invoice_payment_links_invoice_id_unique" on "invoice_paymen
 CREATE UNIQUE INDEX "invoice_payment_links_token_hash_unique" on "invoice_payment_links"(
   "token_hash"
 );
-CREATE TABLE IF NOT EXISTS "online_payments"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "invoice_id" integer not null,
-  "provider" varchar not null,
-  "provider_reference" varchar,
-  "status" varchar not null default 'open',
-  "gross_amount" numeric not null,
-  "fee_amount" numeric,
-  "refunded_amount" numeric not null default '0',
-  "currency" varchar not null,
-  "method" varchar,
-  "checkout_url" varchar,
-  "checkout_expires_at" datetime,
-  "paid_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("invoice_id") references "invoices"("id") on delete restrict
-);
-CREATE UNIQUE INDEX "online_payments_provider_provider_reference_unique" on "online_payments"(
-  "provider",
-  "provider_reference"
-);
-CREATE INDEX "online_payments_invoice_id_status_index" on "online_payments"(
-  "invoice_id",
-  "status"
-);
 CREATE TABLE IF NOT EXISTS "datev_online_connections"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -25183,6 +25158,7 @@ CREATE TABLE IF NOT EXISTS "project_time_shortfalls"(
   "billing_transfer_position_id" integer,
   "created_at" datetime,
   "updated_at" datetime,
+  "invoice_item_id" integer,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("project_id") references "projects"("id") on delete cascade,
   foreign key("user_id") references "users"("id") on delete cascade,
@@ -25370,6 +25346,101 @@ CREATE INDEX "audit_logs_org_created_idx" on "audit_logs"(
   "created_at"
 );
 CREATE INDEX "idx_audit_logs_org" on "audit_logs"("organization_id");
+CREATE INDEX "pts_invoice_item_idx" on "project_time_shortfalls"(
+  "invoice_item_id"
+);
+CREATE TABLE IF NOT EXISTS "ical_subscriptions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "user_id" integer,
+  "import_entity" varchar not null,
+  "name" varchar not null,
+  "url" text not null,
+  "category_allowlist" text,
+  "allow_private_network" tinyint(1) not null default '0',
+  "is_active" tinyint(1) not null default '1',
+  "http_etag" varchar,
+  "http_last_modified" varchar,
+  "last_synced_at" datetime,
+  "last_status" varchar,
+  "last_error" varchar,
+  "last_result" text,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE INDEX "ical_subscriptions_active_synced_idx" on "ical_subscriptions"(
+  "is_active",
+  "last_synced_at"
+);
+CREATE TABLE IF NOT EXISTS "ical_subscription_items"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "ical_subscription_id" integer not null,
+  "uid" text not null,
+  "uid_hash" varchar not null,
+  "sequence" integer not null default '0',
+  "source_modified_at" datetime,
+  "fingerprint" varchar not null,
+  "starts_at" datetime,
+  "seen_at" datetime,
+  "removed_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("ical_subscription_id") references "ical_subscriptions"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "ical_sub_items_sub_uid_unique" on "ical_subscription_items"(
+  "ical_subscription_id",
+  "uid_hash"
+);
+CREATE INDEX "ical_sub_items_sub_start_idx" on "ical_subscription_items"(
+  "ical_subscription_id",
+  "starts_at"
+);
+CREATE TABLE IF NOT EXISTS "online_payments"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "invoice_id" integer,
+  "provider" varchar not null,
+  "provider_reference" varchar,
+  "status" varchar not null default('open'),
+  "gross_amount" numeric not null,
+  "fee_amount" numeric,
+  "refunded_amount" numeric not null default('0'),
+  "currency" varchar not null,
+  "method" varchar,
+  "checkout_url" varchar,
+  "checkout_expires_at" datetime,
+  "paid_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "subject_type" varchar,
+  "subject_id" integer,
+  foreign key("invoice_id") references "invoices"("id") on delete restrict on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action
+);
+CREATE INDEX "online_payments_invoice_id_status_index" on "online_payments"(
+  "invoice_id",
+  "status"
+);
+CREATE UNIQUE INDEX "online_payments_provider_provider_reference_unique" on "online_payments"(
+  "provider",
+  "provider_reference"
+);
+CREATE INDEX "online_payments_subject_idx" on "online_payments"(
+  "subject_type",
+  "subject_id"
+);
+CREATE INDEX "rental_requests_status_due_idx" on "rental_requests"(
+  "status",
+  "payment_due_at"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -26423,3 +26494,12 @@ INSERT INTO migrations VALUES(1049,'2027_04_03_100000_create_invoice_supporting_
 INSERT INTO migrations VALUES(1050,'2027_04_03_110000_add_einvoice_recipient_profile_to_customers',2);
 INSERT INTO migrations VALUES(1051,'2027_04_03_120000_create_external_invoices_tables',2);
 INSERT INTO migrations VALUES(1052,'2027_04_03_130000_drop_audit_log_foreign_keys_on_sqlite',3);
+INSERT INTO migrations VALUES(1053,'2027_04_05_100000_restrict_domain_connection_evidence_fks',4);
+INSERT INTO migrations VALUES(1054,'2027_04_05_100100_rewrite_domain_command_subject_types',4);
+INSERT INTO migrations VALUES(1055,'2027_04_08_100000_add_invoice_item_to_project_time_shortfalls',4);
+INSERT INTO migrations VALUES(1056,'2027_04_08_100100_drop_write_back_from_lexoffice_articles',4);
+INSERT INTO migrations VALUES(1057,'2027_04_10_100000_create_ical_subscriptions_tables',4);
+INSERT INTO migrations VALUES(1058,'2027_04_10_110000_add_online_prepayments_to_rental_direct_booking',4);
+INSERT INTO migrations VALUES(1059,'2027_04_11_100000_correct_sevdesk_voucher_direction',4);
+INSERT INTO migrations VALUES(1060,'2027_04_11_100100_add_archived_outcome_to_application_opportunities',4);
+INSERT INTO migrations VALUES(1061,'2027_04_11_100200_retire_draft_status_of_postings_and_budget_requests',4);

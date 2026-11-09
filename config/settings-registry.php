@@ -214,10 +214,16 @@ return [
     'rental.require_signed_terms' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
     // Direktbuchung im Kundenportal (MVP-916): freie, freigegebene Geräte ohne Anfrage reservieren.
     'rental.portal_direct_booking' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    // Online-Vorauszahlung der Direktbuchung (MVP-1515): Anteil am Bruttopreis, 0 = keine; Mietobjekte können abweichen.
+    'rental.portal_prepayment_percent' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:100', 'fallback' => 0],
+    // So lange hält eine unbezahlte Direktbuchung das Gerät (Minuten).
+    'rental.prepayment_hold_minutes' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:10|max:1440', 'fallback' => 30],
     // Radius um den Einsatzort-Standort für die Geofence-Abweichung (MVP-975).
     'rental.geofence_radius_m' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:50|max:50000', 'fallback' => 500],
     // MVP-994: keine neue Fahrt mit einem Fahrzeug, dessen Pflichtprüfung (HU/UVV) überfällig ist.
     'fleet.block_trips_on_overdue_inspection' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    // MVP-1514: fehlende Pflichtqualifikation nur anzeigen oder die Zuweisung (Schicht, Auftrag, Tour) ablehnen.
+    'qualifications.enforcement' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['hint', 'block'], 'fallback' => 'hint'],
     // Reklamationsmuster (MVP-886): ab wie vielen gleichartigen Fällen in wie vielen Tagen.
     // Wiederkehrende Probleme (MVP-926): ab wie vielen Tickets je Kunde/Objekt in wie vielen Tagen.
     'reporting.recurring_tickets.threshold' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:2|max:50', 'fallback' => 3],

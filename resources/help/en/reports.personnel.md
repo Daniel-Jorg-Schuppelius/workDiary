@@ -1,7 +1,7 @@
 ---
 title: "Personnel: vacation, sickness, qualifications, safety"
 topic: reports.personnel
-version: 7
+version: 8
 keywords:
     - absence rates
     - remaining vacation
@@ -185,7 +185,7 @@ event register.
 
 At the top are the **key figures** of all areas for the period selected in the
 header: finance (total output and result from the BWA, lowest point of the
-liquidity forecast), operations (revenue, contribution margin, utilisation),
+liquidity forecast), operations (revenue, contribution margin, utilisation, days below target),
 sales (new leads, conversion), service (open tickets, SLA violations) and
 quality (NPS). Each tile only appears with the right for the corresponding
 report and leads there — it shows the same figure. **PDF** downloads the
@@ -193,6 +193,13 @@ management report. Anyone with the right **Receive management report by
 email** (management and administrators) also receives it every Monday as a
 PDF, covering the start of the month up to yesterday; the run can be
 rescheduled or paused under "Scheduled tasks".
+
+The tile **Days below target** under operations counts the person-days below
+the project target in the period that are still open or acknowledged; the hint
+gives all findings and the tile leads to the plan/actual tab **Project per
+person**. It only appears if there are findings in the period and only for
+administrators and people with the right **View presence report
+(organization)**.
 
 The card **Recurring problems** collects the early warnings of the modules your
 organization uses, grouped by type:
@@ -208,6 +215,9 @@ organization uses, grouped by type:
   tickets in 90 days.
 - **Staff shortages**: teams whose planned demand exceeds capacity in the next
   four weeks.
+- **Target times missed**: projects with at least three open person-days below
+  target in the last seven days; the entry leads to the project's time tab with
+  the findings.
 
 Each entry states the finding, a detail and a recommendation; where available,
 the title leads to the affected customer, object or report. Without findings

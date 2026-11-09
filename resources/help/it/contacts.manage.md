@@ -1,7 +1,7 @@
 ---
 title: "Clienti & fornitori"
 topic: contacts.manage
-version: 12
+version: 14
 keywords:
     - Anteprima come cliente
     - Password iniziale
@@ -106,6 +106,42 @@ Se un contatto ha perso tutti i metodi a due fattori e i codici di recupero, **R
 
 **Rimuovere un accesso:** un accesso che **non ha mai effettuato il login** (invito in sospeso o scaduto, password iniziale in attesa) si elimina definitivamente con **Elimina accesso** – non vi sono prove collegate. Se il contatto ha già effettuato il login, il record resta: disattivi l'accesso e scelga **Rimuovi accesso**. Nome, indirizzo e credenziali decadono, l'indirizzo e-mail torna disponibile per un nuovo invito, e conferme foto, domande e richieste restano come prova («Ex accesso al portale»). Entrambe le operazioni richiedono una conferma della password e vengono registrate sul cliente; gli accessi rimossi compaiono solo nella riga riepilogativa sotto l'elenco. Il controllo dei termini di conservazione (area **Accessi al portale**) propone gli accessi disattivati per la rimozione dopo un anno.
 
+## Fattura elettronica
+
+Nella finestra del cliente i campi della fattura elettronica si trovano nella
+sezione **Fatturazione e visualizzazione**:
+
+- **Formato e-fattura predefinito**: preimpostazione per le nuove fatture e per
+  l'importazione di file di questo cliente, ad esempio **XRechnung (XML)** o
+  **ZUGFeRD (PDF ibrido)**; **Nessuno standard (PDF)** mantiene il PDF.
+- **Leitweg-ID / riferimento acquirente (BT-10)**: dato obbligatorio della
+  XRechnung – per le amministrazioni la Leitweg-ID, altrimenti un riferimento
+  indicato dal cliente.
+- **Identificativo partecipante Peppol**: identificativo del destinatario per
+  l'invio tramite Peppol nella forma schema:identificativo, ad esempio con la
+  partita IVA o la Leitweg-ID; vuoto significa nessun invio Peppol a questo
+  cliente.
+- **Profilo destinatario della fattura elettronica**: **Pubblica
+  amministrazione** invia solo l'XML via e-mail, richiede la Leitweg-ID,
+  incorpora i documenti e allega automaticamente l'attestazione delle
+  prestazioni; **Standard** vale per tutti gli altri clienti, **Valore
+  dell’organizzazione** riprende l'impostazione dell'organizzazione.
+- **Allegare l’attestazione delle prestazioni**: **Secondo il profilo
+  destinatario**, **Sempre** o **Mai**; l'attestazione nasce all'emissione dai
+  tempi fatturati.
+- **Fattura elettronica più grande con documenti (MB)**: limite massimo per la
+  fattura elettronica con i documenti incorporati; se vuoto vale il limite del
+  profilo (standard 15 MB, amministrazione 10 MB).
+- **Canale di invio con fatturazione esterna**: se un sistema di fatturazione
+  gestisce numero e contenuto della fattura, la invia quel sistema oppure
+  WorkDiary invia la fattura con le attestazioni – in tal caso disattivi l'invio
+  automatico nel sistema di fatturazione. Vede questo campo solo con il permesso
+  **Gestire la configurazione finanziaria**.
+
+Come i documenti entrano nella fattura elettronica e cosa vale per i clienti
+della pubblica amministrazione lo descrive l'argomento di aiuto **Fatture &
+documenti**.
+
 ## Esempio pratico
 
 Un fornitore IT crea «Müller GmbH» con indirizzo di fatturazione,
@@ -132,6 +168,53 @@ dati di fatturazione e usare l'import CSV per grandi quantità.
 ## Fornitore: dati fiscali e autofatturazione
 
 Sul fornitore si registrano **partita IVA** e **codice fiscale**. Se la sua organizzazione fattura essa stessa le prestazioni di un fornitore, inserisca la data dell’**accordo di autofatturazione**; solo allora si possono emettere autofatture. La pagina del fornitore mostra l’accordo e le ultime autofatture.
+
+## Fatture e documenti nella scheda
+
+Oltre alle fatture create in WorkDiary, la scheda **Fatture e documenti**
+mostra i documenti dei programmi di contabilità collegati per il periodo
+dell’intestazione: Lexoffice, sevDesk, easybill, orgaMAX, Invoice Ninja,
+Akaunting, JTL-Wawi e InvoicePlane per clienti e fornitori. Un programma compare finché la sua importazione dei documenti è configurata per
+la Sua organizzazione; la colonna «Fonte» lo indica. I documenti vengono
+assegnati durante l’importazione tramite il collegamento del contatto, il
+numero cliente o il nome del fornitore; se manca il collegamento, la scheda
+vuota lo segnala. Dove il programma fornisce un PDF (fatture e note di
+credito sevDesk, easybill, fatture orgaMAX), **PDF originale** lo scarica
+direttamente. I documenti in
+entrata di questi programmi si possono inoltre assegnare come costi di
+materiale del cliente e negli acquisti di abbonamenti e licenze.
+
+## Trasferire i fornitori alla contabilità
+
+Se WorkDiary guida i dati anagrafici, i fornitori vengono trasferiti al
+programma di contabilità come i clienti: Lexoffice, sevDesk, easybill e
+orgaMAX. Il trasferimento avviene alla creazione, se il programma assegna il
+numero fornitore secondo i **Formati di numerazione**, e dopo modifiche a un
+fornitore già collegato. easybill e orgaMAX possono assegnare il numero
+fornitore; sevDesk crea un contatto della categoria «Fornitore» senza un
+proprio numero fornitore, quindi resta il numero di WorkDiary. orgaMAX accetta
+fornitori solo se nell’amministrazione orgaMAX è attiva la funzionalità
+«Fornitori» ed è impostato «WorkDiary guida»; altrimenti orgaMAX guida i
+fornitori e WorkDiary li collega soltanto.
+
+## Dati anagrafici dal programma di contabilità
+
+Se la titolarità dei dati anagrafici è impostata su «Guida la contabilità»,
+WorkDiary non trasferisce contatti. Clienti e fornitori arrivano invece dal
+programma: Lexoffice e orgaMAX tramite la propria sincronizzazione dei
+contatti, sevDesk ed easybill ogni ora secondo queste regole:
+
+- Un contatto già collegato assume lo stato del programma (nome, partita IVA,
+  codice fiscale; con easybill anche indirizzo, e-mail, telefono e referente).
+- Una corrispondenza sicura, ad esempio tramite partita IVA, viene collegata.
+- Tutto ciò che non è chiaro compare come caso da chiarire nella **Inbox di
+  riconciliazione**; non viene creato nulla.
+
+sevDesk indica il ruolo tramite la categoria del contatto: vengono importati
+«Cliente» e «Fornitore», non partner, potenziali clienti e referenti di
+un’azienda. easybill distingue tramite numero cliente e numero fornitore; un
+contatto con entrambi i numeri è cliente e fornitore. I contatti easybill
+archiviati restano esclusi.
 
 ## Cockpit cliente e fornitore
 

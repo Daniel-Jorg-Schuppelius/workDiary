@@ -159,6 +159,20 @@ class VacationEntitlementTest extends TestCase {
         ]);
     }
 
+    public function test_hr_role_manages_entitlements_by_default(): void {
+        $hr = User::factory()->personalverwaltung()->create(['organization_id' => $this->organization->id]);
+        $member = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($hr)->get(route('vacation-entitlements.index', ['year' => 2030]))->assertOk();
+        $this->actingAs($hr)->post(route('vacation-entitlements.store'), [
+            'user_id' => Sqid::encode(User::class, (int) $member->id),
+            'year' => 2030,
+            'entitled_days' => 30,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('vacation_entitlements', ['user_id' => $member->id, 'year' => 2030]);
+    }
+
     public function test_entitlement_of_other_organization_is_unreachable(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 

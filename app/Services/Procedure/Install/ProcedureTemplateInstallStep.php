@@ -17,7 +17,10 @@ use App\Models\Procedure\ProcedureTemplate;
 use App\Services\Classification\Contracts\ProfileInstallStep;
 use App\Services\Procedure\ProcedureTemplateService;
 
-/** Prozedurvorlagen eines Branchenprofils (MVP-710): idempotent, veröffentlichte Versionen bleiben unangetastet. */
+/**
+ * Prozedurvorlagen eines Branchenprofils (MVP-710): idempotent, veröffentlichte Versionen bleiben unangetastet.
+ * `supersedes` nennt Vorgänger-Codes, die mit dem Anlegen des Nachfolgers inaktiv werden.
+ */
 final class ProcedureTemplateInstallStep implements ProfileInstallStep {
     public function __construct(private readonly ProcedureTemplateService $templates) {}
 
@@ -103,6 +106,17 @@ final class ProcedureTemplateInstallStep implements ProfileInstallStep {
 
                 $service->syncSteps($version, $normalizedSteps);
                 $service->publish($version, $actor);
+
+                // Nachfolger einer Profilversion (MVP-1509): Vorgänger nur beim ersten Anlegen deaktivieren.
+                $superseded = array_values(array_filter((array) ($row['supersedes'] ?? []), 'is_string'));
+                if ($superseded !== []) {
+                    ProcedureTemplate::query()
+                        ->where('organization_id', $organization->id)
+                        ->whereIn('code', $superseded)
+                        ->where('active', true)
+                        ->get()
+                        ->each(static fn (ProcedureTemplate $old) => $old->update(['active' => false]));
+                }
 
                 $created++;
             }

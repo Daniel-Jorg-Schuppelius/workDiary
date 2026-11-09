@@ -14,7 +14,8 @@ return [
     'code' => 'sicherheitsdienst',
     'label' => 'Sicherheitsdienst und Objektschutz',
     'description' => 'Sicherheitsdienst und Objektschutz: Wachbuch, Revierfahrt, Kontrollgang, Alarmverfolgung, Zutritt und Schlüsselnachweis.',
-    'version' => 1,
+    // v2: Asset-Kategorien werden als Kategorien der Organisation installiert (MVP-1508).
+    'version' => 2,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
     'modules_recommended' => [
@@ -250,8 +251,7 @@ return [
         ],
     ],
     // 'protocol_templates': Codes aus database/data/protocol_templates.php (MVP-902).
-    // 'asset_categories' installiert der BranchProfileInstaller nicht (Kategorien
-    // stammen aus config('asset_categories')); sie dienen als Branchen-Taxonomie.
+    // 'asset_categories': Codes aus database/data/asset_categories.php (MVP-1508).
     'protocol_templates' => [
         ['code' => 'SD_WACHBUCH_EINTRAG'],
         ['code' => 'SD_REVIERBERICHT'],

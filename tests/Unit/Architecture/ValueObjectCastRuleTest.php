@@ -90,7 +90,8 @@ class ValueObjectCastRuleTest extends TestCase {
         foreach ($this->modelFiles() as $file) {
             $content = (string) file_get_contents($file);
 
-            if (preg_match_all('/[\'"]([a-z_0-9]+)[\'"]\s*=>\s*[A-Za-z]+Cast::class/', $content, $m)) {
+            // Kennungs-Casts (IdentifierCast) lesen als Text, nicht als Wertobjekt.
+            if (preg_match_all('/[\'"]([a-z_0-9]+)[\'"]\s*=>\s*(?!(?:Iban|Bic|VatNumber|GermanTaxNumber|GermanTaxId|Gtin)Cast\b)[A-Za-z]+Cast::class/', $content, $m)) {
                 foreach ($m[1] as $attribute) {
                     $viaValueObject[$attribute] = true;
                 }

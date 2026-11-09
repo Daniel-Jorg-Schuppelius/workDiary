@@ -1,7 +1,7 @@
 ---
 title: "Conectar DomainReselling"
 topic: admin.domain-provider
-version: 1
+version: 2
 keywords:
     - gestión de dominios
     - nombres de dominio
@@ -47,11 +47,23 @@ proyecciones locales. La sincronización es de solo lectura e idempotente.
 solo entonces la conexión puede pasar a producción. Mientras el piloto siga
 abierto, la comprobación de estado indica «piloto abierto».
 
-**Rotar credenciales y desconectar:** El usuario/contraseña pueden
-restablecerse en cualquier momento (rotación) sin volver a crear la
-conexión. Al desconectar se elimina la conexión; los datos de proyección ya
-leídos se conservan como evidencia.
+**Renovar credenciales:** El icono de llave abre el diálogo «Renovar
+credenciales». Introduzca una contraseña nueva; el usuario y el usuario
+predeterminado no cambian si deja los campos vacíos. WorkDiary comprueba de
+inmediato las credenciales nuevas — la conexión se mantiene con todos los
+dominios, asignaciones y justificantes.
 
-**Estados:** Una conexión está en *borrador*, *activa* o *bloqueada*. Las
-conexiones bloqueadas muestran un estado bloqueado visible en la
-comprobación de estado, nunca un fallo silencioso.
+**Desconectar:** «Desconectar» no borra nada. Se elimina la contraseña, el
+estado pasa a *desconectada* y ninguna sincronización, consulta de eventos
+ni comando llega ya al proveedor. Los dominios, contactos, zonas DNS, el
+diario de comandos (quién cambió qué en el proveedor), los asientos y los
+vínculos de dominio de sus suscripciones de reventa y líneas de compra se
+conservan como justificante. Para volver a conectar, guarde credenciales
+nuevas mediante «Renovar credenciales»; en cuanto se supera la
+comprobación, la conexión vuelve a estar activa.
+
+**Estados:** Una conexión está en *borrador*, *activa*, *bloqueada* o
+*desconectada*. Las conexiones bloqueadas muestran un estado visible de
+bloqueo en el control de estado — nunca un fallo silencioso. El control de
+estado no notifica una conexión desconectada como incidencia; está fuera de
+servicio de forma intencionada.

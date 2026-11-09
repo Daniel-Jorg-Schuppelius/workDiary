@@ -11,6 +11,7 @@
 return [
     'plugin' => [
         'description' => 'Spiegelt Ein- und Ausgänge aus Firefly III und ordnet sie über die Belegnummer im Verwendungszweck Rechnungen bzw. Eingangsrechnungen zu. Gebucht wird in WorkDiary nichts, und nach Firefly III wird nichts geschrieben.',
+        'capability' => 'Zahlungsabgleich',
     ],
     'page' => [
         'subtitle' => 'Kontobewegungen aus Firefly III, zugeordnet über Belegnummern im Verwendungszweck — nur lesend.',

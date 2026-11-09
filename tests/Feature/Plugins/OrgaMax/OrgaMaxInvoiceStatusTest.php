@@ -13,9 +13,6 @@ namespace Tests\Feature\Plugins\OrgaMax;
 use App\Models\Platform\User;
 use App\Plugins\OrgaMax\Enums\OrgaMaxInvoiceStatus;
 use App\Plugins\OrgaMax\Models\OrgaMaxInvoice;
-use App\Plugins\OrgaMax\Services\OrgaMaxDocumentFeedSource;
-use App\Services\Billing\DocumentFeedFilters;
-use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{DB, Log};
 use Orgamax\Enums\InvoiceState;
@@ -25,8 +22,9 @@ use Tests\TestCase;
 /**
  * Konsolidierungs-Audit 2026-10, vierte Runde: `orgamax_invoices.invoice_status`
  * ist auf das Plugin-Enum mit den SDK-Werten gecastet; Altwerte normalisiert
- * die Datenmigration 2027_03_10_100800 auf „unbekannt“. Leser (Scope „offen“,
- * Belegfluss-CASE) liefern dieselben Zustände wie vor dem Umbau.
+ * die Datenmigration 2027_03_10_100800 auf „unbekannt“. Der Scope „offen“
+ * liefert dieselben Zustände wie vor dem Umbau; den Belegfluss speist seit
+ * MVP-1501 der allgemeine Belegspiegel (OrgaMaxVoucherPullTest).
  */
 class OrgaMaxInvoiceStatusTest extends TestCase {
     use RefreshDatabase;
@@ -77,42 +75,6 @@ class OrgaMaxInvoiceStatusTest extends TestCase {
         // Unbekannt gilt als offen: lieber ein Wechsel-Blocker zu viel als ein übersehener Beleg.
         $this->assertSame(['inv-locked', 'inv-partiallyPaid', 'inv-unknown'], $open);
         $this->assertSame(6, OrgaMaxInvoice::query()->count());
-    }
-
-    public function test_feed_source_maps_states_like_before_the_cast(): void {
-        foreach (OrgaMaxInvoiceStatus::cases() as $status) {
-            $this->mirror($status);
-        }
-        $filters = new DocumentFeedFilters(
-            organizationId: (int) $this->organization->id,
-            userId: (int) $this->admin->id,
-            from: CarbonImmutable::parse('2026-01-01')->startOfDay(),
-            to: CarbonImmutable::parse('2026-12-31')->endOfDay(),
-            sources: ['voucher' => true],
-        );
-
-        $builder = (new OrgaMaxDocumentFeedSource)->builder($filters);
-        $this->assertNotNull($builder);
-        $rows = $builder->get()->keyBy('number');
-
-        // Stand vor dem Umbau: CASE über draft/cancelled/paid, alles andere „open“;
-        // Vorzeichen 0 nur für Entwurf und Storno; offener Betrag nur bei „open“.
-        $expected = [
-            'OM-draft' => ['draft', 0, 0.0],
-            'OM-locked' => ['open', 1, 119.0],
-            'OM-partiallyPaid' => ['open', 1, 119.0],
-            'OM-paid' => ['paid', 1, 0.0],
-            'OM-cancelled' => ['cancelled', 0, 0.0],
-            'OM-unknown' => ['open', 1, 119.0],
-        ];
-        $this->assertCount(count($expected), $rows);
-        foreach ($expected as $number => [$state, $sign, $openAmount]) {
-            $row = $rows->get($number);
-            $this->assertNotNull($row, $number);
-            $this->assertSame($state, $row->state, $number);
-            $this->assertSame($sign, (int) $row->sign, $number);
-            $this->assertEqualsWithDelta($openAmount, (float) $row->open_amount, 0.001, $number);
-        }
     }
 
     public function test_labels_are_translated_in_every_locale(): void {

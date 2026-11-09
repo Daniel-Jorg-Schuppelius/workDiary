@@ -60,6 +60,10 @@ return [
     'deliverynote' => 'Bon de livraison',
     'downpaymentinvoice' => 'Facture d\'acompte',
     'downpaymentdeduction' => 'Déduction d\'acompte',
+    'salesvoucher' => 'Pièce de recette',
+    'purchasevoucher' => 'Pièce d\'achat',
+    'cancellationinvoice' => 'Facture d\'annulation',
+    'dunningnotice' => 'Relance',
     'open' => 'Ouvert',
     'closed' => 'Fermé',
     'auto_closed' => 'Fermé automatiquement',
@@ -180,7 +184,6 @@ return [
     'completed' => 'Terminée',
 
     // Krisenmanagement (Feature 070)
-    'prepared' => 'Préparée',
     'reported' => 'Signalée',
     'assessed' => 'Évaluée',
     'activated' => 'Activée',

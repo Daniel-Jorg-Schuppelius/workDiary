@@ -48,6 +48,8 @@ class ProtocolItemPhoto extends Model {
         'phase' => ProtocolItemPhotoPhase::class,
         'taken_at' => 'datetime',
         'sort_order' => 'int',
+        'geo_lat' => 'decimal:6',
+        'geo_lng' => 'decimal:6',
     ];
 
     /** @return BelongsTo<ProtocolItem, $this> */

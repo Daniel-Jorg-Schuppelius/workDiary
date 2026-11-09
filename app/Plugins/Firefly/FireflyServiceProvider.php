@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Firefly;
 
 use App\Modules\ModuleRegistry;
+use App\Plugins\Support\Contracts\PluginCapabilitySource;
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Search\Contracts\SearchDomain;
 
@@ -27,5 +28,6 @@ class FireflyServiceProvider extends PluginServiceProviderBase {
 
     protected function bootPlugin(): void {
         $this->app->make(ModuleRegistry::class)->contribute(SearchDomain::class, Search\FireflyTransactionSearchDomain::class);
+        $this->app->make(ModuleRegistry::class)->contribute(PluginCapabilitySource::class, Services\FireflyCapabilitySource::class);
     }
 }

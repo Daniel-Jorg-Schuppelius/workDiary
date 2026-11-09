@@ -11,6 +11,7 @@
 return [
     'plugin' => [
         'description' => 'Reprend les entrées et sorties de Firefly III et les rattache aux factures ou factures entrantes via le numéro de pièce dans le libellé. Rien n’est comptabilisé dans WorkDiary et rien n’est écrit dans Firefly III.',
+        'capability' => 'Rapprochement des paiements',
     ],
     'page' => [
         'subtitle' => 'Mouvements de compte de Firefly III, rattachés via les numéros de pièce du libellé — en lecture seule.',

@@ -8,7 +8,38 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-08
+
+Phasen 169–173 seit 1.0.0: Gerätelaufzeit, Projekt-Sollzeiten,
+Fernwartungs-Anbieter, rechnungsbegründende Unterlagen in der E-Rechnung und
+der Lückenschluss aus dem Scan auf Umsetzungslücken vom 2026-11-08. `1.0.0`
+bezeichnet den Stand von Commit `29050e66d`; beide Git-Tags setzt und
+veröffentlicht der Inhaber.
+
 ### Hinweise zum Update
+
+- Phase 173 (Lückenschluss): `migrate` bringt Datenmigrationen mit — die
+  Richtung gespiegelter sevDesk-Belege wird korrigiert (frühere sevDesk-Umsatz-
+  und Einkaufszahlen ändern sich rückwirkend), Domain-Befehle bekommen den
+  Morph-Alias, Stellen- und Budgetanträge im Status „Entwurf“ werden
+  geschlossen bzw. in die Genehmigung gesetzt. Danach prüfen, ob
+  `invoice_commissions` auf sevDesk-Ausgabebelegen liegen.
+- orgaMAX spiegelt Belege jetzt in den gemeinsamen Belegspiegel: direkt nach
+  dem Deploy `scripts/artisan.sh orgamax:sync`, bei großem Bestand zusätzlich
+  einmal `scripts/artisan.sh accounting:pull-vouchers --plugin=orgamax --pages=50`.
+- Die Standardrollen bekommen beim Deploy neue Rechte (Buchhaltung:
+  orgaMAX-Aktionen; Personalverwaltung: Urlaubsansprüche; alle Mitarbeiter-
+  rollen: „KI nutzen“).
+- Neue Env-Schlüssel: `SEVDESK_SUPPLIER_CATEGORY_ID` (Vorgabe 2),
+  `GITLAB_TIME_WRITEBACK`. Für den Rechnungseingang an sevDesk je Organisation
+  den Schalter und die Buchungskonten in den Plugin-Einstellungen setzen.
+- Organisationen mit installiertem Branchenprofil sehen einen Update-Hinweis;
+  „Erneut anwenden“ bringt Asset-Kategorien und neue Vorlagen. Optional
+  `scripts/artisan.sh db:seed --class=ClassificationSeeder --force` für die
+  Plattform-Vorgaben der neuen Klassifikationsdomänen.
+- Optional `scripts/artisan.sh identifiers:audit --csv=<datei>`: listet
+  ungültige IBAN, BIC, USt-IdNr. und Steuernummern im Bestand (sie bleiben
+  lesbar).
 
 - Nach dem Deploy einmalig `scripts/artisan.sh incoming-invoices:extract-documents --dry-run`,
   danach ohne Option: löst eingebettete Unterlagen (BG-24) aus dem Bestand des
@@ -16,8 +47,48 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   nur einmal bearbeitet.
 - Für den WorkDiary-Versand extern ausgestellter Rechnungen Versandweg und
   Erklärung zum Anbieterversand in den Organisationseinstellungen setzen.
+- Fernwartung: `scripts/artisan.sh remote:merge-sessions --days=120 --dry-run`
+  prüfen, dann ohne `--dry-run` laufen lassen — verkettet bestehende
+  Verbindungsschnipsel derselben Person, desselben Kunden und Geräts und hebt
+  Einträge unter einer Minute auf eine Minute.
+- Toggl: Einstellung „Fehlende Toggl-Projekte anlegen“ nach Bedarf
+  einschalten, danach `scripts/artisan.sh toggl:push --days=90`.
 
 ### Added
+
+- **Buchhaltungs-Parität** (Phase 173, MVP-1495–1507): Belegliste in Kunden-
+  und Lieferantenakte, Einkaufsbelege für Reselling und Materialkosten,
+  Auslagen-Verknüpfung und Original-PDF für alle gespiegelten Programme;
+  orgaMAX als Belegspiegel mit Rechnungen, Positionen, Ausgaben und Katalog;
+  Kontakt-Rückweg für sevDesk und easybill bei „Buchhaltung führt“;
+  Lieferanten an sevDesk, easybill und orgaMAX; sevDesk-Gutschriften im
+  Spiegel; Pauschal-Modus mit sevDesk und easybill; Buchhaltungswechsel
+  zwischen Lexoffice, orgaMAX, sevDesk und easybill; Rechnungseingang an
+  sevDesk.
+- **Zugangsdaten erneuern** (MVP-1492) für KI-Verbindungen (Bearbeitungsdialog)
+  und Domain-Anbieter (auch zum Wiederverbinden).
+- **Fertigungsauftrag abschließen, warten, sperren, wieder aufnehmen**
+  (MVP-1493); der Abschluss füllt die Nachkalkulation.
+- **Soll-Auffüllung in der lokalen Rechnung** (MVP-1494) wie in der Übergabe.
+- **Materialsuche über den Artikelspiegel und Rufnummern aus easybill und
+  orgaMAX** (MVP-1500).
+- **GitLab: gebuchte Zeit zurückschreiben** (MVP-1513, Opt-in).
+- **Qualifikation: Sperre statt Hinweis** als Einstellung je Organisation
+  (MVP-1514).
+- **Verleih: Online-Vorauszahlung bei Direktbuchung** (MVP-1515) mit
+  Zahlungsfrist und Anrechnung auf die Rechnung.
+- **Kalender-Abos (iCal) als Dauer-Sync** (MVP-1516).
+- **Branchenprofile** (MVP-1508–1509): Asset-Kategorien der Profile werden
+  als Kategorien der Organisation installiert (Klassifikationsdomäne
+  „Asset-Kategorien“, Formular und Validierung lesen sie mit); Profile
+  Ambulante Pflege (v6) und Partyservice (v3) mit den Vorlagen, Domänen und
+  Pflichtregeln ihrer Profilseiten, Beratungsbesuch alle drei Monate als
+  Vertragsvorlage; Einzelvorlagen für SHK, Gebäudereinigung, Veranstalter,
+  Spedition, Steuerberater und Bau. Abgelöste Vorlagen werden beim erneuten
+  Anwenden deaktiviert, nie gelöscht.
+- Wege für bisher unerreichbare Zustände (MVP-1517): Leasing-Entwurf
+  stornieren, Krisenfall als Fehlmeldung verwerfen, Ausschreibungsakte
+  ablegen, Mitarbeiterentwurf verwerfen.
 
 - **Rechnungsbegründende Unterlagen in der E-Rechnung** (Feature 196,
   Phase 172, MVP-1483–1489): Leistungsnachweis aus den abgerechneten Zeiten
@@ -34,6 +105,23 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   ohne Neuerzeugung um die Unterlagen und stellt sie selbst zu (E-Mail oder
   Peppol, unveränderliche Versandakte, Nachsendung); Versandweg je Kunde und
   Organisation. Hilfe ×5; Toolkits erechnung 0.21.0 und pdf 0.31.0.
+- **Fernwartung: Splashtop, RustDesk und pcvisit** (Feature 195, Phase 171,
+  MVP-1472–1477): Anbieterregister als einzige Stelle, die Anbieter kennt;
+  Abruf über RustDesk Server Pro (Verbindungsprotokoll), den Open-Source-API-
+  Server, Splashtop Open API (abgeschlossene Sitzungen) und pcvisit (GraphQL);
+  CSV-Import erkennt den RustDesk-Pro-Export; Fehler eines Anbieters stoppen
+  die anderen nicht. Hilfe ×5.
+- **Fernwartung: Verbindungen verketten** (MVP-1480–1482): Eine erneute
+  Verbindung derselben Person zu Kunde und Gerät innerhalb der Toleranz
+  (Einstellung „Verbindungen zusammenfassen bis (Minuten)“, Vorgabe 30)
+  verlängert den bestehenden Zeiteintrag statt einen neuen anzulegen; Notiz
+  der Folgeverbindung geht in die Beschreibung; exportierte Einträge und
+  abgeschlossene Monate bleiben unberührt; neue Einträge dauern mindestens
+  eine Minute; Nachlauf `remote:merge-sessions`.
+- **Toggl: fehlende Projekte** (MVP-1478–1479): tägliche Nachfüllung der
+  Toggl-IDs für alle Projekte der Organisation, Hinweis in der
+  Integrations-Inbox für Projekte ohne Gegenstück, optional Anlage von Kunde
+  und Projekt in Toggl (Track und neues Toggl).
 - **Projekt-Sollzeiten je Person** (Feature 194, Phase 170, MVP-1467–1471):
   Soll je Person und Tag am Projekt (Projektvorgabe je Wochentag,
   Personenzeilen, Ausnahmen je Datum, Gültigkeit) im Raster „Sollzeiten
@@ -60,6 +148,23 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Changed
 
+- Belegspiegel von easybill, JTL-Wawi und InvoicePlane laufen stündlich,
+  sevDesk lädt die Positionen mit; abgeschaltete Plugins ziehen keine Belege
+  (MVP-1490).
+- Standardrollen (MVP-1510), Decimal-Casts für alle Dezimalspalten
+  (MVP-1511), Identifikator-Casts normalisieren IBAN, BIC, USt-IdNr.,
+  Steuernummer, Steuer-ID und GTIN beim Speichern (MVP-1512).
+- Klassifikations-Codes dürfen camelCase sein, damit sich mitgelieferte
+  Codes wie `accessPoint` in den Organisationseinstellungen überschreiben
+  lassen.
+- Queue-Jobs eines Fachmoduls laufen nicht mehr, wenn das Modul der
+  Organisation aus ist (MVP-1518).
+- Entfernt (MVP-1519): Lexoffice-Artikel-Rückschreiben und Artikelkonflikte
+  (wurden nie ausgelöst), Plugin-Fähigkeit „Zahlungsabgleich“ ohne Verbraucher;
+  Route `admin.ai.rotate` (Schlüssel im Bearbeitungsdialog). Gestrichen:
+  unerreichbare Zustände „Entwurf“/„in Erfüllung“ bei Service-Requests,
+  „Entwurf“ bei Stellen und Budgetanträgen, „vorbereitet“ bei Krisen.
+
 - Übergabe- und Rechnungsblöcke nennen die Art als Bezeichnung
   („[Anfahrt]“ statt „[travel]“).
 - Entwicklung: Jede Klassenkonstante nennt ihren Typ (PHP 8.3), Gate
@@ -75,6 +180,19 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   der CI.
 
 ### Fixed
+
+- Domain-Anbieter „Trennen“ löschte Befehlsjournal, Projektionen,
+  DNS-Zonen und Buchungen per Kaskade; es ist jetzt ein Statuswechsel, die
+  Nachweise bleiben (MVP-1491).
+- Belegfluss: lokale Rechnungen erschienen doppelt, wenn sevDesk oder easybill
+  die Nummer vergab; eingehende Spiegelbelege zählten negativ, Entwürfe und
+  Stornos mit (MVP-1495).
+- sevDesk: Ausgabebelege zählten als Umsatz (Richtung `creditDebit`
+  vertauscht), Fälligkeit war immer leer (MVP-1520).
+- Serienvorlagen bekamen im Spiegel nie Positionen; Domain-Befehle schrieben
+  den Klassennamen in die Typspalte; Lexoffice-Materialsuche scheiterte an
+  bereits vergebener Artikelnummer; Hinweisgeber-Hilfe beschrieb vorhandene
+  Funktionen als fehlend.
 
 - Unter SQLite (CI, kleine Installationen): Storno ausgestellter Rechnungen,
   Übertragung nach easybill und sevDesk und der Artikelspiegel meldeten bei

@@ -1,7 +1,7 @@
 ---
 title: "Gérer les projets"
 topic: projects.manage
-version: 5
+version: 6
 keywords:
     - créer un projet
     - gestion de projet
@@ -96,9 +96,12 @@ la cible à zéro. Le contrôle nocturne compare la cible au temps saisi et sign
 au-delà de la tolérance (réglage d’organisation, 15 minutes par défaut) aux responsables du
 projet, dans la file de travail et dans la clôture de journée de la personne ; les constats
 figurent dans l’onglet Temps, où ils peuvent être **confirmés**, et une saisie tardive les
-résout. Avec **Facturer les heures convenues** dans l’onglet Facturation, le transfert ajoute
-le temps manquant comme position « Temps d’intervention convenu » ; une saisie ultérieure sur
-ce jour n’est alors plus facturable.
+résout. Avec **Facturer les heures convenues** dans l’onglet Facturation, le transfert et la
+facture ajoutent le temps manquant comme position « Temps d’intervention convenu » ; l’aperçu
+de la facture affiche aussi ces compléments. Chaque complément n’est facturé qu’une fois, soit
+dans une facture, soit dans un transfert ; une saisie ultérieure sur ce jour n’est alors plus
+facturable. L’annulation de la facture ou du transfert, la suppression de la position ou
+l’abandon du brouillon libère à nouveau le complément.
 
 ## Erreurs fréquentes
 

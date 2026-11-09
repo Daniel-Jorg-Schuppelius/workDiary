@@ -14,7 +14,8 @@ return [
     'code' => 'bau-ausbau',
     'label' => 'Bau, Ausbau und Trockenbau',
     'description' => 'Bau, Ausbau und Trockenbau: Bautagesbericht, Aufmaß, Nachträge, Mängel und Teilabnahmen mit Gewerken und Genehmigungen.',
-    'version' => 3,
+    // v4: Tags GAEB und Leistungsverzeichnis nach der Profilseite (MVP-1509).
+    'version' => 4,
     // MVP-1053: Arbeitskosten nach § 35a EStG bei Privatkunden ausweisen; eigene Einstellungen bleiben.
     'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers'],
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
@@ -269,8 +270,7 @@ return [
         ],
     ],
     // 'protocol_templates': Codes aus database/data/protocol_templates.php (MVP-902).
-    // 'asset_categories' installiert der BranchProfileInstaller nicht (Kategorien
-    // stammen aus config('asset_categories')); sie dienen als Branchen-Taxonomie.
+    // 'asset_categories': Codes aus database/data/asset_categories.php (MVP-1508).
     'protocol_templates' => [
         ['code' => 'BAU_TAGESBERICHT'],
         ['code' => 'BAU_AUFMASSPROTOKOLL'],
@@ -306,6 +306,8 @@ return [
         '#wetter',
         '#fremdgewerk',
         '#abnahme',
+        '#gaeb',
+        '#leistungsverzeichnis',
     ],
 
     // Schulungsvorschläge (Feature 145): Pflichtunterweisungen des Bau-

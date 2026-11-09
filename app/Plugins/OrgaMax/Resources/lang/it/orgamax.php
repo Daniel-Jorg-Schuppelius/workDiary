@@ -112,6 +112,7 @@ return [
     'error.intent_invalid' => 'Nessun intento di connessione valido — un iid estraneo non viene associato. Riavvii la connessione.',
     'error.nothing_to_confirm' => 'Nessuna conferma account in sospeso.',
     'error.not_connected' => 'orgaMAX non è collegato o è bloccato.',
+    'error.suppliers_led_by_orgamax' => 'orgaMAX guida i fornitori: per trasferirli, attivi la funzionalità «Fornitori» e scelga «WorkDiary guida» (amministrazione orgaMAX).',
     'error.no_customer' => 'Il documento non ha un cliente e non può essere trasmesso a orgaMAX.',
     'error.billing_capability_disabled' => 'La capacità di fatturazione non è attiva o orgaMAX non la guida.',
     'error.customer_unmapped' => 'Il cliente ":customer" non è associato a un cliente orgaMAX — lo associ tramite la inbox di integrazione.',

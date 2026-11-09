@@ -214,7 +214,7 @@
                                             <span class="label-text text-xs font-medium text-base-content/70">{{ __('Kategorie') }}</span>
                                             <select name="category_code" required class="select select-sm select-bordered w-full">
                                                 @foreach ($categories as $code => $label)
-                                                    <option value="{{ $code }}" @selected($code === 'workstation')>{{ __($label) }}</option>
+                                                    <option value="{{ $code }}" @selected($code === 'workstation')>{{ $label }}</option>
                                                 @endforeach
                                             </select>
                                         </label>

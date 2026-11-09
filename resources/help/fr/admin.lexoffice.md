@@ -1,7 +1,7 @@
 ---
 title: "Conflits Lexoffice"
 topic: admin.lexoffice
-version: 6
+version: 7
 keywords:
     - Lexware Office
     - conflit de synchronisation
@@ -55,11 +55,9 @@ soigneusement les données comparées avant de décider. Rappelez-vous que,
 pour les factures, la souveraineté de facturation reste au programme
 externe – WorkDiary se contente de lui livrer les données.
 
-La stratégie de conflit s'applique aux contacts et aux articles. Les
-conflits d'articles n'apparaissent pas dans la Boîte de rapprochement,
-mais dans l'onglet **Conflits** du stock (**Stock** → **Conflits**) :
-vous y choisissez **Conserver local**, **Reprendre l'état Lexoffice**
-ou **Rejeter** — avec le droit **Gérer les articles**.
+La stratégie de conflit s'applique aux contacts. Lexoffice fait foi pour
+les articles : la synchronisation reprend chaque version plus récente de
+Lexoffice, il n'y a donc pas de conflits d'articles.
 
 Miroir des pièces : la synchronisation des pièces reprend en miroir les
 pièces Lexoffice dans WorkDiary. Les pièces de contacts Lexoffice qui ne

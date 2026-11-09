@@ -10,6 +10,7 @@
 
 namespace App\Services\Domain;
 
+use App\Enums\Domain\DomainConnectionStatus;
 use App\Models\Domain\DomainProviderConnection;
 use App\Plugins\Contracts\Domain\{DomainProviderAdapter, DomainRegistrarSettings};
 use App\Plugins\Contracts\{DomainRegistrar, Plugin};
@@ -26,7 +27,12 @@ use RuntimeException;
 class DomainProviderResolver {
     public function __construct(private readonly PluginManager $plugins) {}
 
+    /** @throws DomainActionException bei getrennter Verbindung (MVP-1491) — ohne Passwort kein Anbieteraufruf. */
     public function for(DomainProviderConnection $connection): DomainProviderAdapter {
+        if ($connection->status === DomainConnectionStatus::Disconnected) {
+            throw new DomainActionException((string) __('domain.flash.disconnected_connection'));
+        }
+
         return $this->registrar()->domainAdapter($connection);
     }
 

@@ -55,6 +55,8 @@ class SlaContractQuota extends Model {
         'period_kind' => SlaQuotaPeriod::class,
         'included_minutes' => 'int',
         'warn_threshold_pct' => 'int',
+        'overage_rate' => 'decimal:2',
+        'flat_fee' => 'decimal:2',
     ];
 
     /** @return BelongsTo<SlaContract, $this> */

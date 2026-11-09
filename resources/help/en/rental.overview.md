@@ -1,7 +1,7 @@
 ---
 title: "Equipment rental"
 topic: rental.overview
-version: 4
+version: 5
 keywords:
     - landlord
     - holiday apartment
@@ -65,3 +65,24 @@ Tenancies store the tenant, start, optional last rental day, monthly base rent, 
 Accepting an apartment holiday request immediately creates a firm reservation. Rate cards provide nightly prices as daily rates and optional final cleaning. Guest capacity, minimum stay and check-in times are checked. Publish the unit and grant the customer the rental requests capability for portal access. Monthly rents and deposits are administrative records in the MVP; rent and ancillary cost billing is not automatic.
 
 The profile also brings three procedures (**Apartment handover**, **Move-out inspection**, **Holiday apartment changeover**), the **apartment handover protocol** with meter readings and keys, contract templates for residential leases with and without index-linked rent and for holiday apartment rental terms with deadlines such as the annual service charge statement, and custom fields for the apartment (living area, rooms, floor, pets, energy certificate). You confirm, decline or cancel a requested tenancy; a confirmed one can be cancelled. Cancelled and declined tenancies stay unchanged.
+
+## Direct booking with online prepayment
+
+If **Prepayment for direct booking** is set under “Organization and settings”
+(or a rental item has its own rate), a direct booking in the customer portal
+leads to the payment page of the payment provider:
+
+- The rental case is reserved immediately and holds the item until the
+  **payment deadline**. Until then the booking shows **payment pending** under
+  **Rental requests**.
+- Once the payment arrives (provider notification or the customer’s return),
+  the booking is **accepted**; only now do you receive the notification.
+- Without payment by the deadline the booking **expires**, the rental case is
+  cancelled and the item is free again. If a payment only arrives afterwards,
+  WorkDiary confirms nothing but reports it to you for a refund or a new
+  booking.
+- The rental case shows the paid prepayment. When the rental items are
+  transferred to the invoice, it is assigned to the invoice and covers it. If an
+  accounting program manages the invoices, the amount appears in the transfer
+  log; take it into account there. In the posting inbox the prepayment only
+  becomes postable together with the invoice.

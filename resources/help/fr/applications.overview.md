@@ -1,7 +1,7 @@
 ---
 title: "Candidatures & appels d'offres"
 topic: applications.overview
-version: 2
+version: 3
 keywords:
     - recrutement
     - gestion des candidats
@@ -30,6 +30,12 @@ soumission versionnés (snapshot avec hachage SHA-256). Les appels d'offres
 gagnés sont transformés de manière contrôlée en projet ; les appels
 d'offres perdus restent exploitables avec leur motif de perte.
 
+**Archiver un dossier :** Un appel d'offres tranché (gagné, perdu, retiré)
+peut être retiré de la liste via « Archiver le dossier ». La décision reste
+sur le dossier et continue de compter dans le taux de réussite et les
+motifs de perte ; le filtre de statut « Archivé » affiche les dossiers
+archivés.
+
 **Candidatures de personnel :** Besoin de poste → publication → dossier de
 candidature avec entretiens, évaluations et décision. Les données des
 candidats sont stockées chiffrées et ne sont visibles que par le service
@@ -43,6 +49,11 @@ propositions de rendez-vous et nouvelles décisions sont ensuite bloqués.
 Les annonces publiées passent chaque jour à « Expirée » après la date
 d'expiration ou la date limite de candidature ; vous pouvez les republier
 avec une nouvelle date ou les clôturer.
+
+**Rejeter un brouillon de collaborateur :** Si l'embauche ne se fait
+finalement pas, « Rejeter le brouillon » rejette le brouillon. Aucun compte
+n'est alors plus créé, l'étape figure dans l'historique d'audit ; un
+brouillon déjà invité ne peut plus être rejeté.
 
 La décision met aussi fin aux entretiens et propositions de rendez-vous en
 cours : les entretiens planifiés sont marqués comme annulés (la note est

@@ -20,8 +20,6 @@ enum JobPostingStatus: string implements HasStatusTransitions {
     use HasOptions;
     use HasTransitions;
 
-    /** Spaltenvorgabe; der Code legt Veröffentlichungen gleich freigegeben an. */
-    case Draft = 'draft';
     case Published = 'published';
     case Paused = 'paused';
 
@@ -41,7 +39,7 @@ enum JobPostingStatus: string implements HasStatusTransitions {
      */
     public function allowedTransitions(): array {
         return match ($this) {
-            self::Draft, self::Expired => [self::Published, self::Closed],
+            self::Expired => [self::Published, self::Closed],
             self::Published => [self::Paused, self::Expired, self::Closed],
             self::Paused => [self::Published, self::Closed],
             self::Closed => [self::Published],

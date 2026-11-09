@@ -112,6 +112,7 @@ return [
     'error.intent_invalid' => 'Keine gültige Verbindungsabsicht — ein fremdes iid wird nicht gebunden. Bitte Verbindung neu starten.',
     'error.nothing_to_confirm' => 'Es wartet keine Kontobestätigung.',
     'error.not_connected' => 'orgaMAX ist nicht verbunden oder blockiert.',
+    'error.suppliers_led_by_orgamax' => 'Lieferanten führt orgaMAX: Für die Übertragung muss die Capability „Lieferanten“ aktiv sein und „WorkDiary führt“ gelten (orgaMAX-Verwaltung).',
     'error.no_customer' => 'Der Beleg hat keinen Kunden und lässt sich nicht an orgaMAX übertragen.',
     'error.billing_capability_disabled' => 'Die Faktura-Capability ist nicht aktiviert oder orgaMAX führt sie nicht.',
     'error.customer_unmapped' => 'Kunde „:customer" ist keinem orgaMAX-Kunden zugeordnet — Zuordnung über die Integrations-Inbox vornehmen.',

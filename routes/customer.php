@@ -187,6 +187,9 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
             Route::post('/rental-requests', [\App\Http\Controllers\Rental\Portal\RentalRequestController::class, 'store'])
                 ->middleware('throttle:12,1')->name('rentals.requests.store');
             Route::post('/rental-requests/{rentalRequest}/withdraw', [\App\Http\Controllers\Rental\Portal\RentalRequestController::class, 'withdraw'])->name('rentals.requests.withdraw');
+            // Online-Vorauszahlung der Direktbuchung (MVP-1515).
+            Route::post('/rental-requests/{rentalRequest}/bezahlen', [\App\Http\Controllers\Rental\Portal\RentalRequestController::class, 'pay'])
+                ->middleware('throttle:12,1')->name('rentals.requests.pay');
         });
 
         Route::middleware('portal.capability:assets')->group(function (): void {

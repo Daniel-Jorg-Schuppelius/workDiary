@@ -46,6 +46,7 @@ class OrderConfirmationItem extends Model implements DocumentLine {
         'discount_percent' => PercentageCast::class . ':2',
         'discount_amount' => MoneyCast::class,
         'tax_rate' => PercentageCast::class . ':2',
+        'quantity' => 'decimal:4',
     ];
 
     /** @return BelongsTo<OrderConfirmation, $this> */

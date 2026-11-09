@@ -115,6 +115,13 @@ return [
         'block_trips' => 'No new trip if a mandatory inspection is overdue',
         'block_trips_hint' => 'If the MOT, accident-prevention check or another mandatory inspection of the assigned asset is overdue or blocked, no trip can be recorded from today. Past trips remain recordable.',
     ],
+    'qualifications' => [
+        'heading' => 'Required qualifications',
+        'enforcement' => 'Missing required qualification on assignment',
+        'enforcement_hint' => 'Hint: the shift plan and the order show the missing qualification or one that is not valid on the day of work. Block: shift, shift swap, rotation, shift import, order, tour and gap suggestion reject the assignment; an existing assignment can only be confirmed with a reason.',
+        'mode_hint' => 'Hint only',
+        'mode_block' => 'Block assignment',
+    ],
     'payments' => [
         'heading' => 'Online payment',
         'description' => 'Payment link and QR code on the invoice, in the email and in the customer portal. Activate the payment provider (Stripe, Mollie or SumUp) as a plugin with its own credentials.',
@@ -149,6 +156,10 @@ return [
         'portal_direct_booking_hint' => 'Customers reserve available equipment released for the portal immediately; the managers are notified.',
         'geofence_radius' => 'Radius around the site (m)',
         'geofence_radius_hint' => 'If the reported position of rented equipment is further from the rental\'s site, the deviation is reported. Without a site, the customer\'s geofences apply.',
+        'prepayment_percent' => 'Prepayment for direct booking (%)',
+        'prepayment_percent_hint' => 'Share of the gross price from the price list, paid online via the payment provider. 0 = no prepayment; can differ per rental item. The booking is only confirmed once the payment has been received.',
+        'prepayment_hold_minutes' => 'Payment deadline for direct booking (minutes)',
+        'prepayment_hold_minutes_hint' => 'How long the item stays reserved for the unpaid booking (10–1440, default 30). After that the reservation is released.',
     ],
     'claims_pattern' => [
         'heading' => 'Claim patterns',

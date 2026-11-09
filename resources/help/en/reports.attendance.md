@@ -1,7 +1,7 @@
 ---
 title: "Attendance, plan/actual and coverage"
 topic: reports.attendance
-version: 7
+version: 8
 keywords:
     - attendance report
     - analyse clock-in times
@@ -74,7 +74,7 @@ person plus a total row.
 
 **Reports** → **Personal** → **Plan/actual** compares target and actual values
 in several views that you switch between using the tabs at the top of the
-page: **Attendance**, **Team**, **Organization**, **Shifts**, **Projects** and
+page: **Attendance**, **Team**, **Organization**, **Shifts**, **Projects**, **Project per person** and
 **Sites**. You only see the tabs you are authorised for.
 
 The period is not taken from the header here: set it in the filter bar with
@@ -141,6 +141,21 @@ With the team right this only works for members of your own teams.
   **without target data** – this is not an alarm. Time without a project is
   shown in the row **Without project**. Comparisons with time and money budgets
   are provided by **Profitability**.
+- **Project per person**: the plan is the target times of the projects per
+  person (time tab, **Manage target times**), the actual is the time the person
+  booked on the project; machine times do not count. Tiles **Plan**, **Actual**,
+  **Difference** and **Days below target** (open or acknowledged findings of the
+  nightly comparison; the hint gives all findings in the period), below them
+  the table **Project per person** with **Project**, **Person**, **Target (h)**,
+  **Booked (h)**, **Difference (h)** and **Days below target**. The difference
+  is target minus booked, missing time is highlighted in yellow; if findings
+  have already been resolved, the number of all findings follows the open days
+  in grey. If a project has a geofence, **On site (h)** shows the time the
+  person spent there according to location-based time tracking – as evidence
+  only, it counts neither towards the actual nor the difference. The field
+  **All projects** narrows the view to one project with target times. Without
+  target times in the period the page shows **No project target times in the
+  period.**
 - **Sites**: there is no target data for sites; the view only shows the actual
   distribution of time from location-based time tracking. Tiles **Actual**,
   **Site visits** and **People**, the chart **Actual times per site (top 15)**
@@ -149,7 +164,7 @@ With the team right this only works for members of your own teams.
   assigned site appear under **Without site assignment** with the note
   **Geofence without site**.
 
-Long tables in the **Projects** and **Sites** tabs are split into pages of 50
+Long tables in the **Projects**, **Project per person** and **Sites** tabs are split into pages of 50
 rows each; the charts, however, evaluate all rows, not just the page shown.
 
 ## Coverage
@@ -215,7 +230,7 @@ Filters: **Employee** and **Team**. Export: **PDF** in landscape with heatmap,
   the right **View attendance** see the whole organization.
 - **Plan/actual**: everyone sees the **Attendance** tab with their own days. The
   **Team** tab requires the right **View presence report (team)**, the tabs
-  **Organization**, **Shifts**, **Projects** and **Sites** the right **View
+  **Organization**, **Shifts**, **Projects**, **Project per person** and **Sites** the right **View
   presence report (organization)**. Administrators see all tabs. In the default
   setup the Team Lead role has the team right, Management the organization
   right and Personnel Administration both.

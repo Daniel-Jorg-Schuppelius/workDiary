@@ -91,6 +91,9 @@ final class AssetManifest extends Manifest {
             \App\Automation\Triggers\RuleTrigger::class => [
                 \App\Services\Asset\Automation\AssetCheckedOutTrigger::class,
             ],
+            \App\Services\Classification\Contracts\ProfileInstallStep::class => [
+                \App\Services\Asset\Install\AssetCategoryInstallStep::class,
+            ],
             \App\Services\Import\EntitySpec::class => [
                 \App\Services\Asset\Import\AssetSpec::class,
                 \App\Services\MeterReading\Import\MeterReadingSpec::class,

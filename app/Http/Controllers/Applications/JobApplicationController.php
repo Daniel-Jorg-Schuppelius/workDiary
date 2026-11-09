@@ -308,6 +308,19 @@ class JobApplicationController extends Controller {
         return back()->with('success', __('Mitarbeiter-Entwurf angelegt (kein Live-Konto).'));
     }
 
+    public function discardDraft(JobApplication $application, EmployeeDraft $draft): RedirectResponse {
+        Gate::authorize('invite', $draft);
+        abort_unless($draft->job_application_id === $application->id, 404);
+
+        try {
+            $this->recruiting->discardDraft($draft, $this->authUser());
+        } catch (\RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return back()->with('success', __('Mitarbeiter-Entwurf verworfen.'));
+    }
+
     public function inviteDraft(JobApplication $application, EmployeeDraft $draft): RedirectResponse {
         Gate::authorize('invite', $draft);
         abort_unless($draft->job_application_id === $application->id, 404);

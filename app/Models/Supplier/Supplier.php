@@ -10,6 +10,7 @@
 
 namespace App\Models\Supplier;
 
+use App\Casts\{BicCast, GermanTaxNumberCast, IbanCast, VatNumberCast};
 use App\Enums\Numbering\NumberScope;
 use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasCommunicationNotes, HasContactAndBankDetails, HasCustomFields, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasStructuredContactName, HasTags, Searchable};
 use App\Models\Contacts\ContactAddress;
@@ -140,9 +141,12 @@ class Supplier extends Model implements ContactDetailsHolder, ContactNameHolder,
         // Bankdaten sind eine Projektion des primären Bankkontos, das seit je
         // verschlüsselt liegt — flach zurückgeschrieben hob das die
         // Verschlüsselung auf (Sicherheitsscan S-21). Spalten als text.
-        'bank_iban' => 'encrypted',
-        'bank_bic' => 'encrypted',
+        'bank_iban' => IbanCast::class . ':encrypted',
+        'bank_bic' => BicCast::class . ':encrypted',
         'bank_account_holder' => 'encrypted',
+        // Kennungen: geschrieben kanonisch, gelesen Text (MVP-1512).
+        'vat_id' => VatNumberCast::class,
+        'tax_number' => GermanTaxNumberCast::class,
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'active' => 'boolean',
         'exclude_from_reports' => 'boolean',

@@ -1,7 +1,7 @@
 ---
 title: "Branchenprofile"
 topic: admin.branch-profiles
-version: 3
+version: 4
 keywords:
     - Branchenvorlage
     - Branchenpaket
@@ -79,6 +79,20 @@ Mehrere Profile, Hauptprofil und Deinstallation:
   Klassifikations-Domänen oder Module werden abgelehnt.
 - Auftragsarten sind in den aktivierbaren Sprachen hinterlegt; die Anzeige
   folgt der Sprache des Nutzers, das Quell-Label bleibt bearbeitbar.
+
+Asset-Kategorien und neue Profilversionen:
+
+- Die **Asset-Kategorien** eines Profils (z. B. Pressmaschine, Rohrkamera
+  bei SHK) werden als Kategorien Ihrer Organisation angelegt und stehen im
+  Asset-Formular neben den allgemeinen IT-Kategorien zur Auswahl. Vorhandene
+  eigene Kategorien gleichen Codes bleiben unverändert. Beim Deinstallieren
+  entfallen nur unbenutzte, unveränderte Kategorien, die kein anderes
+  installiertes Profil mitbringt.
+- Löst eine neue Profilversion eine Vorlage, Checkliste oder Kategorie ab,
+  wird beim Anwenden der Nachfolger angelegt und der Vorgänger
+  **deaktiviert**, nicht gelöscht oder umbenannt. Bestehende Aufträge und
+  Abläufe behalten ihren Bezug; einen Vorgänger, den Sie wieder aktivieren,
+  lässt jedes weitere Anwenden aktiv.
 
 Kundenspezifische Varianten:
 

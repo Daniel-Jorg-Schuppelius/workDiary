@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice Conflicts"
 topic: admin.lexoffice
-version: 6
+version: 7
 keywords:
     - Lexware Office
     - sync conflict
@@ -56,11 +56,9 @@ data carefully before deciding. Note that for invoices the billing
 authority rests with the external program – WorkDiary supplies data to
 it.
 
-The conflict strategy applies to contacts and articles. Article
-conflicts do not appear in the Mapping Inbox but in the **Conflicts**
-tab of the inventory (**Inventory** → **Conflicts**): there you choose
-**Keep local**, **Take Lexoffice state** or **Dismiss** — with the
-**Manage articles** permission.
+The conflict strategy applies to contacts. Lexoffice leads the articles:
+the article sync takes over every newer Lexoffice version, so there are no
+article conflicts.
 
 Voucher mirror: the voucher sync mirrors the Lexoffice vouchers into
 WorkDiary. Vouchers of Lexoffice contacts that are not yet linked to a

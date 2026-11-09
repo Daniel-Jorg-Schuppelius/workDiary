@@ -1,7 +1,7 @@
 ---
 title: "Conflictos de Lexoffice"
 topic: admin.lexoffice
-version: 6
+version: 7
 keywords:
     - Lexware Office
     - conflicto de sincronización
@@ -55,11 +55,9 @@ atención los datos comparados antes de decidir. Tenga en cuenta que, en
 las facturas, la soberanía de facturación reside en el programa
 externo: WorkDiary solo le suministra los datos.
 
-La estrategia de conflicto se aplica a contactos y artículos. Los
-conflictos de artículos no aparecen en la Bandeja de conciliación, sino
-en la pestaña **Conflictos** del inventario (**Inventario** →
-**Conflictos**): allí elige **Mantener local**, **Adoptar el estado de
-Lexoffice** o **Descartar**, con el permiso **Gestionar artículos**.
+La estrategia de conflicto se aplica a los contactos. Lexoffice manda en
+los artículos: la sincronización adopta cada versión más reciente de
+Lexoffice, por lo que no hay conflictos de artículos.
 
 Espejo de comprobantes: la sincronización de comprobantes refleja los
 comprobantes de Lexoffice en WorkDiary. También se reflejan los

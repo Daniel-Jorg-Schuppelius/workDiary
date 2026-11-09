@@ -1,7 +1,7 @@
 ---
 title: "Customer Portal – Rental"
 topic: customer-portal.rentals
-version: 3
+version: 4
 keywords:
     - rent an apartment
     - book a holiday apartment
@@ -103,6 +103,17 @@ device, provided it is free in the period; device groups cannot be booked
 directly. The booking appears under **My requests** with the status **Booked
 directly** and as a rental transaction with the status **Reserved**. Your
 contractor is notified and sends you the handover documents.
+
+### With online prepayment
+
+If your contractor requires a prepayment, the equipment list shows
+**Prepayment … %** next to the price. After **Book now** you are taken to the
+payment page of the payment provider. The item stays reserved for you until
+the payment deadline (**My requests** shows **Payment by …**). The booking is
+only confirmed once the payment has arrived; only then is your contractor
+notified. If the payment page is unavailable, try again with **Pay now**. If
+you do not pay by the deadline, the booking expires and the item becomes free
+again. The prepayment is credited to the later invoice.
 
 ## Rental terms
 

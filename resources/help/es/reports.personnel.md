@@ -1,7 +1,7 @@
 ---
 title: "Personal: vacaciones, enfermedad, cualificaciones, seguridad"
 topic: reports.personnel
-version: 7
+version: 8
 keywords:
     - absentismo
     - vacaciones restantes
@@ -193,7 +193,7 @@ registro de eventos de seguridad.
 Arriba aparecen los **indicadores** de todas las áreas en el periodo elegido
 en el encabezado: finanzas (producción total y resultado de la BWA, punto más
 bajo de la previsión de liquidez), operaciones (ingresos, margen de
-contribución, ocupación), ventas (leads nuevos, conversión), servicio (tickets
+contribución, ocupación, días bajo objetivo), ventas (leads nuevos, conversión), servicio (tickets
 abiertos, incumplimientos de SLA) y calidad (NPS). Cada tarjeta solo aparece
 con el permiso del análisis correspondiente y lleva a él, donde figura la
 misma cifra. **PDF** descarga el informe de dirección. Quien tenga el permiso
@@ -201,6 +201,13 @@ misma cifra. **PDF** descarga el informe de dirección. Quien tenga el permiso
 administración) lo recibe además cada lunes en PDF, desde el inicio del mes
 hasta ayer; la ejecución se puede reprogramar o pausar en «Tareas
 programadas».
+
+La tarjeta **Días bajo objetivo** del área de operaciones cuenta los
+días-persona por debajo del objetivo del proyecto en el periodo que siguen
+abiertos o confirmados; la indicación da todos los hallazgos y la tarjeta lleva
+a la pestaña de plan/real **Proyecto por persona**. Solo aparece si hay
+hallazgos en el periodo y solo para los administradores y las personas con el
+permiso **Ver informe de presencia (organización)**.
 
 La tarjeta **Problemas recurrentes** reúne las alertas tempranas de los módulos
 que utiliza su organización, agrupadas por tipo:
@@ -216,6 +223,9 @@ que utiliza su organización, agrupadas por tipo:
   defecto tres tickets en 90 días.
 - **Falta de personal**: equipos cuya demanda planificada supera la capacidad
   en las próximas cuatro semanas.
+- **Tiempos objetivo no alcanzados**: proyectos con al menos tres días-persona
+  abiertos por debajo del objetivo en los últimos siete días; la entrada lleva a
+  la pestaña de tiempo del proyecto con los hallazgos.
 
 Cada entrada indica el hallazgo, un detalle y una recomendación; cuando es
 posible, el título lleva al cliente, objeto o informe afectado. Sin hallazgos

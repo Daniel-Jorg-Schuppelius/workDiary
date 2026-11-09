@@ -18,6 +18,7 @@ use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
 use App\Models\Schedule\ScheduledShift;
 use App\Services\Compliance\{ComplianceReport, ComplianceViolation, ShiftComplianceService};
+use App\Services\Schedule\QualificationEnforcement;
 use Carbon\CarbonImmutable;
 
 /**
@@ -44,6 +45,7 @@ use Carbon\CarbonImmutable;
 final class DispatchConflictChecker {
     public function __construct(
         private readonly ShiftComplianceService $compliance = new ShiftComplianceService,
+        private readonly QualificationEnforcement $qualifications = new QualificationEnforcement,
     ) {}
 
     /**
@@ -80,6 +82,17 @@ final class DispatchConflictChecker {
         // 2) Überschneidung mit anderen Auftrags-Einsätzen desselben MA.
         foreach ($this->overlappingAssignments($entry, $userId, $start, $end) as $v) {
             $violations[] = $v;
+        }
+
+        // 3) Qualifikationssperre (MVP-1514): harter Konflikt, übersteuerbar nur mit Begründung.
+        $blocked = $this->qualifications->entryBlockMessage($entry, $userId, $start);
+        if ($blocked !== null) {
+            $violations[] = new ComplianceViolation(
+                code: 'qualification_missing',
+                severity: ComplianceViolation::SEVERITY_ERROR,
+                message: $blocked,
+                relatedShiftIds: [],
+            );
         }
 
         return new ComplianceReport($violations);

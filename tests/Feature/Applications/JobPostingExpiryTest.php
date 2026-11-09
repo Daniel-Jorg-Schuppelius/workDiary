@@ -81,7 +81,6 @@ final class JobPostingExpiryTest extends TestCase {
         $future = $this->posting(JobPostingStatus::Published, ['application_deadline' => '2026-10-06', 'expires_at' => '2026-12-31']);
         $paused = $this->posting(JobPostingStatus::Paused, ['expires_at' => '2026-10-01']);
         $closed = $this->posting(JobPostingStatus::Closed, ['expires_at' => '2026-10-01']);
-        $draft = $this->posting(JobPostingStatus::Draft, ['expires_at' => '2026-10-01']);
         $foreignPast = $this->posting(JobPostingStatus::Published, ['expires_at' => '2026-10-04'], $other);
         $foreignOpen = $this->posting(JobPostingStatus::Published, [], $other);
 
@@ -95,7 +94,6 @@ final class JobPostingExpiryTest extends TestCase {
         }
         $this->assertSame(JobPostingStatus::Paused, $this->statusOf($paused));
         $this->assertSame(JobPostingStatus::Closed, $this->statusOf($closed));
-        $this->assertSame(JobPostingStatus::Draft, $this->statusOf($draft));
 
         // Jede Zeile steht in der Kette ihrer eigenen Organisation.
         $audits = AuditLog::query()->withoutGlobalScopes()->where('event', 'recruiting.posting_expired')->get();

@@ -12,15 +12,17 @@
 
 @section('content')
 <x-index-page :subtitle="__('orgamax::orgamax.intro')">
-    <x-slot:actions>
-        <x-button :href="route('admin.integration.inbox', ['plugin' => 'orgamax'])" tone="ghost" size="sm">{{ __('orgamax::orgamax.to_inbox') }}@if ($openInboxCount > 0) ({{ $openInboxCount }})@endif</x-button>
-        @if ($connection?->isActive())
-            <form method="POST" action="{{ route('admin.orgamax.sync') }}">
-                @csrf
-                <x-button type="submit" tone="primary" size="sm">{{ __('orgamax::orgamax.action.sync_now') }}</x-button>
-            </form>
-        @endif
-    </x-slot:actions>
+    @if ($isAdmin)
+        <x-slot:actions>
+            <x-button :href="route('admin.integration.inbox', ['plugin' => 'orgamax'])" tone="ghost" size="sm">{{ __('orgamax::orgamax.to_inbox') }}@if ($openInboxCount > 0) ({{ $openInboxCount }})@endif</x-button>
+            @if ($connection?->isActive())
+                <form method="POST" action="{{ route('admin.orgamax.sync') }}">
+                    @csrf
+                    <x-button type="submit" tone="primary" size="sm">{{ __('orgamax::orgamax.action.sync_now') }}</x-button>
+                </form>
+            @endif
+        </x-slot:actions>
+    @endif
 
     <x-validation-errors first />
     @if (session('orgamax_callback_url'))
@@ -33,7 +35,8 @@
         </div>
     @endif
 
-    {{-- Plugin-Karte: Verbindung, Account, Scopes, Gesundheit --}}
+    {{-- Plugin-Karte: Verbindung, Account, Scopes, Gesundheit (nur Admin; die Buchhaltung sieht die Faktura-Karten) --}}
+    @if ($isAdmin)
     <x-card>
         <p class="text-xs text-muted">{{ __('orgamax::orgamax.erp_notice') }}</p>
 
@@ -99,9 +102,11 @@
             </form>
         @endif
     </x-card>
+    @endif
 
     @if ($connection !== null && $connection->status !== \App\Plugins\OrgaMax\Enums\OrgaMaxConnectionStatus::Disconnected)
         {{-- Capability-Matrix / Datenführerschaft --}}
+        @if ($isAdmin)
         <x-card>
             <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('orgamax::orgamax.capabilities.heading') }}</h2>
             <p class="mb-2 text-xs text-muted">{{ __('orgamax::orgamax.capabilities.hint') }}</p>
@@ -152,6 +157,7 @@
                 <x-button type="submit" tone="outline" class="mt-2">{{ __('orgamax::orgamax.capabilities.save') }}</x-button>
             </form>
         </x-card>
+        @endif
 
         {{-- Übergebene Aufträge --}}
         <x-card>
@@ -174,12 +180,14 @@
                             <td class="font-mono text-xs">{{ (string) data_get($order->payload, 'marker', '—') }}</td>
                             <td class="text-xs text-muted">{{ $order->synced_at?->fdatetime() ?? '—' }}</td>
                             <td class="text-right">
-                                <form method="POST" action="{{ route('admin.orgamax.invoices.convert') }}" class="inline"
-                                      data-confirm-dialog data-confirm-message="{{ __('orgamax::orgamax.invoice.convert_confirm') }}">
-                                    @csrf
-                                    <input type="hidden" name="order_id" value="{{ $order->external_id }}">
-                                    <x-button type="submit" tone="outline" size="xs">{{ __('orgamax::orgamax.invoice.convert') }}</x-button>
-                                </form>
+                                @if ($mayConvert)
+                                    <form method="POST" action="{{ route('admin.orgamax.invoices.convert') }}" class="inline"
+                                          data-confirm-dialog data-confirm-message="{{ __('orgamax::orgamax.invoice.convert_confirm') }}">
+                                        @csrf
+                                        <input type="hidden" name="order_id" value="{{ $order->external_id }}">
+                                        <x-button type="submit" tone="outline" size="xs">{{ __('orgamax::orgamax.invoice.convert') }}</x-button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                     @endforeach
@@ -227,11 +235,13 @@
                                     @if ($mayRecordPayment)
                                         <x-button tone="ghost" size="xs" icon="payments" data-open-dialog="orgamax-payment-{{ $loop->index }}">{{ __('orgamax::orgamax.invoice.payment') }}</x-button>
                                     @endif
-                                    <form method="POST" action="{{ route('admin.orgamax.invoices.lock', $projection->external_id) }}" class="inline"
-                                          data-confirm-dialog data-confirm-message="{{ __('orgamax::orgamax.invoice.lock_confirm') }}">
-                                        @csrf
-                                        <x-button type="submit" tone="error" size="xs" class="btn-outline">{{ __('orgamax::orgamax.invoice.lock') }}</x-button>
-                                    </form>
+                                    @if ($mayLock)
+                                        <form method="POST" action="{{ route('admin.orgamax.invoices.lock', $projection->external_id) }}" class="inline"
+                                              data-confirm-dialog data-confirm-message="{{ __('orgamax::orgamax.invoice.lock_confirm') }}">
+                                            @csrf
+                                            <x-button type="submit" tone="error" size="xs" class="btn-outline">{{ __('orgamax::orgamax.invoice.lock') }}</x-button>
+                                        </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

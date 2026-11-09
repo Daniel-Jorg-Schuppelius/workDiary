@@ -10,10 +10,12 @@
 
 namespace Tests\Feature\Finance;
 
+use App\Enums\Finance\AccountingVoucherState;
 use App\Enums\Finance\{BillingMode, TransferTarget};
 use App\Enums\Migration\AccountingMigrationItemStatus;
 use App\Enums\Migration\{AccountingMigrationStatus, MigrationDataArea, MigrationProvider};
 use App\Models\Customer\Customer;
+use App\Models\Finance\AccountingVoucher;
 use App\Models\Integration\ExternalReference;
 use App\Models\Migration\{AccountingMigrationEvent, AccountingMigrationItem, AccountingMigrationRun};
 use App\Models\Platform\{Organization, User};
@@ -402,5 +404,74 @@ class AccountingMigrationTest extends TestCase {
 
         $csv = $this->actingAs($this->admin)->get(route('admin.accounting-migration.report', $run->sqid))->assertOk()->streamedContent();
         $this->assertStringContainsString(';conflict;lex-2;', $csv);
+    }
+
+    public function test_sevdesk_to_easybill_reads_the_shared_mirror_and_matches_contacts(): void {
+        // Feature 110, MVP-1506: sevDesk und easybill gleichen über die Kontaktverknüpfung und den Belegspiegel ab.
+        $both = Customer::factory()->create(['organization_id' => $this->org->id, 'name' => 'Bäckerei Morgenrot']);
+        $sourceOnly = Customer::factory()->create(['organization_id' => $this->org->id, 'name' => 'Gärtnerei Lindenhof']);
+        foreach ([[$both, 'sevdesk', 'sd-1'], [$both, 'easybill', 'eb-1'], [$sourceOnly, 'sevdesk', 'sd-2']] as [$customer, $plugin, $id]) {
+            ExternalReference::create(['organization_id' => $this->org->id, 'plugin_id' => $plugin, 'external_type' => 'contact',
+                'referenceable_type' => $customer->getMorphClass(), 'referenceable_id' => $customer->getKey(), 'external_id' => $id]);
+        }
+        AccountingVoucher::factory()->create(['organization_id' => $this->org->id, 'plugin_id' => 'sevdesk', 'external_id' => 'invoice:1',
+            'voucher_number' => 'RE-SD-1', 'voucher_state' => AccountingVoucherState::Open, 'open_amount' => '119.00']);
+        AccountingVoucher::factory()->create(['organization_id' => $this->org->id, 'plugin_id' => 'sevdesk', 'external_id' => 'invoice:2',
+            'voucher_number' => 'RE-SD-2', 'voucher_state' => AccountingVoucherState::Paid, 'open_amount' => '0.00']);
+        AccountingVoucher::factory()->create(['organization_id' => $this->org->id, 'plugin_id' => 'sevdesk', 'external_id' => 'invoice:3',
+            'voucher_number' => 'Wartungsvertrag', 'voucher_state' => AccountingVoucherState::Draft, 'document_kind' => 'recurring_template']);
+        AccountingVoucher::factory()->create(['organization_id' => $this->org->id, 'plugin_id' => 'sevdesk', 'external_id' => 'invoice:4',
+            'voucher_number' => 'RE-SD-4', 'voucher_state' => AccountingVoucherState::Open, 'source_deleted_at' => now()]);
+        AccountingVoucher::factory()->create(['organization_id' => $this->org->id, 'plugin_id' => 'easybill', 'external_id' => '901',
+            'voucher_state' => AccountingVoucherState::Open]);
+
+        $run = $this->plan([MigrationDataArea::Customers, MigrationDataArea::Documents], '2026-09-01', MigrationProvider::SevDesk, MigrationProvider::Easybill);
+        $this->service()->analyze($run->refresh(), $this->admin);
+
+        $counters = $run->refresh()->counters;
+        $this->assertSame(['read' => 2, 'matched' => 1, 'pending' => 1, 'conflict' => 0], $counters['customers']);
+        $this->assertSame(['read' => 3, 'historic' => 3, 'open' => 1], $counters['documents'], 'Serienvorlage zählt nicht, gelöschte Belege sind nicht offen, easybill-Belege gehören nicht zur Quelle.');
+        $this->assertSame('eb-1', $run->items()->where('source_external_id', 'sd-1')->value('target_external_id'));
+        $this->assertSame(1, $run->items()->where('status', AccountingMigrationItemStatus::Pending)->count());
+        $this->assertSame(['RE-SD-1', 'RE-SD-2', 'RE-SD-4'], $run->items()->where('data_area', 'documents')->orderBy('id')->pluck('display_title')->all());
+        $this->assertStringContainsString('1 offene Altbelege', implode(' ', $this->service()->completionBlockers($run->refresh())));
+    }
+
+    public function test_the_cutover_switches_to_easybill_and_locks_sevdesk(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->org->id]);
+        $run = $this->plan([MigrationDataArea::Customers], now()->toDateString(), MigrationProvider::SevDesk, MigrationProvider::Easybill);
+        $this->service()->analyze($run->refresh(), $this->admin);
+
+        $this->assertSame([], $this->service()->startParallelRun($run->refresh(), $this->admin));
+        $this->assertSame([], $this->service()->cutover($run->refresh(), $this->admin));
+
+        $this->assertSame(BillingMode::Easybill->value, $this->org->refresh()->settings['billing_mode'] ?? null);
+        $guard = app(CutoverGuard::class);
+        $customer->refresh();
+        $this->assertSame(TransferTarget::SevDesk, $guard->blockedTarget($customer));
+        $this->assertFalse($guard->allowsTarget($customer, TransferTarget::SevDesk));
+        $this->assertTrue($guard->allowsTarget($customer, TransferTarget::Easybill));
+    }
+
+    public function test_articles_cannot_be_reconciled_with_sevdesk_or_easybill(): void {
+        try {
+            $this->plan([MigrationDataArea::Customers, MigrationDataArea::Articles], '2026-09-01', MigrationProvider::Lexoffice, MigrationProvider::SevDesk);
+            $this->fail('Artikel lassen sich mit sevDesk nicht abgleichen.');
+        } catch (RuntimeException $e) {
+            $this->assertSame('Den Bereich Artikel und Leistungen gleicht der Wechsel mit sevDesk nicht ab. Wählen Sie ihn ab.', $e->getMessage());
+        }
+        $this->assertNull($this->service()->openRunFor($this->org));
+
+        $this->actingAs($this->admin)->post(route('admin.accounting-migration.store'), [
+            'areas' => ['customers', 'documents'],
+            'cutover_on' => now()->addMonth()->toDateString(),
+            'source' => 'easybill',
+            'target' => 'sevdesk',
+        ])->assertSessionHasNoErrors()->assertRedirect();
+        $run = $this->service()->openRunFor($this->org);
+        $this->assertSame([MigrationProvider::Easybill, MigrationProvider::SevDesk], [$run?->source(), $run?->target()]);
+
+        $this->actingAs($this->admin)->post(route('admin.accounting-migration.store'), ['areas' => ['customers'], 'source' => 'billbee', 'target' => 'sevdesk'])
+            ->assertSessionHasErrors('source');
     }
 }

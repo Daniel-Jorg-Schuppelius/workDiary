@@ -31,14 +31,6 @@ enum PluginCapability: string implements HasLabel, PluginCapabilityContract {
     /** Kann Zeiten aus einem externen System importieren (z. B. Toggl, Fernwartung). */
     case TimeImport = 'time_import';
 
-    /**
-     * Kann Zahlungs-/Abgleichdaten zurücklesen (Zahldatum/Status aus dem
-     * Fremdsystem). Deklariert von Lexoffice; SevDesk/Easybill/orgaMAX lesen
-     * bewusst KEINEN Zahlungsstatus zurück (dort ist die Marker-Reconciliation
-     * reine Übergabe-Idempotenz).
-     */
-    case PaymentSync = 'payment_sync';
-
     /** Kann Aufgaben mit einem externen Aufgabensystem abgleichen (Feature 055). */
     case TaskSync = 'task_sync';
 
@@ -97,7 +89,6 @@ enum PluginCapability: string implements HasLabel, PluginCapabilityContract {
             self::ContactSync => __('enums.plugin.plugin_capability.contact_sync'),
             self::TimeExport => __('enums.plugin.plugin_capability.time_export'),
             self::TimeImport => __('enums.plugin.plugin_capability.time_import'),
-            self::PaymentSync => __('enums.plugin.plugin_capability.payment_sync'),
             self::TaskSync => __('enums.plugin.plugin_capability.task_sync'),
             self::CalendarPublish => __('enums.plugin.plugin_capability.calendar_publish'),
             self::ShippingProvider => __('enums.plugin.plugin_capability.shipping_provider'),
@@ -124,7 +115,6 @@ enum PluginCapability: string implements HasLabel, PluginCapabilityContract {
             self::ContactSync => ContactSyncer::class,
             self::TimeExport => TimeExporter::class,
             self::TimeImport => TimeImporter::class,
-            self::PaymentSync => PaymentSyncer::class,
             self::TaskSync => TaskSyncer::class,
             self::CalendarPublish => CalendarPublisher::class,
             self::ShippingProvider => ShippingProvider::class,

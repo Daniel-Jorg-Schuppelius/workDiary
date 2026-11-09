@@ -1,7 +1,7 @@
 ---
 title: "Flusso documenti"
 topic: billing.feed
-version: 4
+version: 5
 keywords:
     - fatture
     - preventivi
@@ -19,6 +19,7 @@ keywords:
 audience: []
 modules:
     - module.vertrieb
+    - module.finance
 related:
     - billing.chain
     - invoices.manage
@@ -87,6 +88,38 @@ sospeso.
 **Visibilità:** il flusso mostra solo ciò che i suoi permessi nelle singole
 aree già consentono. Senza il permesso sui preventivi, ad esempio, mancano la
 scheda e le relative righe.
+
+## Documenti doppi e originale
+
+**Prevale il sistema esterno:** se una fattura è stata trasmessa a un
+programma di contabilità o il programma ne ha assegnato il numero (Lexoffice,
+orgaMAX, sevDesk, easybill), compare una sola volta nell’elenco, come
+documento rispecchiato. Vale per ogni programma collegato non appena un
+documento in uscita porta lo stesso numero e appartiene allo stesso cliente:
+un’impresa assegna un numero di fattura una sola volta. Un documento con lo
+stesso numero ma di un altro cliente non sostituisce la Sua fattura; lo
+stesso vale per i documenti in entrata e per quelli eliminati nella fonte.
+
+**Spese:** quando un documento in entrata è collegato a una spesa, nei costi
+conta solo il documento – con Lexoffice come con sevDesk, Akaunting, Invoice
+Ninja e gli altri programmi con specchio dei documenti.
+
+**Totali:** i documenti in entrata rispecchiati contano nei costi, le note di
+credito li riducono; bozze e documenti stornati non contano.
+
+**Originale:** il numero di un documento rispecchiato apre l’originale nel
+programma, dove esiste un indirizzo (Invoice Ninja, Akaunting). Per le fatture
+e le note di credito sevDesk, i documenti easybill e le fatture orgaMAX,
+**PDF originale** a fine riga scarica il PDF direttamente dal programma; serve
+il diritto di visualizzare i documenti e, per il PDF orgaMAX, anche l’accesso
+all’amministrazione. I documenti sevDesk senza fattura (scontrino, documento
+del fornitore) e le spese orgaMAX non hanno PDF.
+
+**orgaMAX e sevDesk:** orgaMAX rispecchia fatture, fatture di acconto e spese;
+le spese compaiono come documenti in entrata nei costi. Le note di credito di
+sevDesk compaiono come note di credito in uscita e riducono il fatturato. I
+modelli ricorrenti di un programma non sono documenti e non compaiono nel
+flusso; fanno parte della riconciliazione di abbonamenti e licenze.
 
 ## Filtrare per progetto
 

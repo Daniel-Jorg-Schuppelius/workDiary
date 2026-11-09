@@ -129,10 +129,10 @@ class LexofficeDocumentFeedSource implements DocumentFeedSource, MarksLinkedExpe
 
     /** Bestätigte Auslagen-Zuordnung (MVP-551, {@see \App\Plugins\Lexoffice\Services\LexofficeExpenseLinkProvider}). */
     public function expenseLinkCriteria(): array {
-        return [
+        return [[
             'plugin_id' => LexofficePlugin::ID,
             'external_type' => LexofficePlugin::EXT_TYPE_VOUCHER,
-        ];
+        ]];
     }
 
     public function presents(\stdClass $row): bool {

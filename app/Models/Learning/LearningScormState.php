@@ -59,6 +59,7 @@ class LearningScormState extends Model {
     protected $casts = [
         'session_seconds' => 'integer',
         'last_commit_at' => 'datetime',
+        'score_scaled' => 'decimal:4',
     ];
 
     /** @return BelongsTo<LearningScormPackage, $this> */

@@ -353,7 +353,7 @@ class BranchProfileInstallerTest extends TestCase {
         }
     }
 
-    public function test_install_partyservice_profile_creates_expected_entries_and_publishes_haccp_procedure(): void {
+    public function test_install_partyservice_profile_creates_expected_entries_and_publishes_cold_chain_procedure(): void {
         $result = $this->installer->install($this->org, 'partyservice', $this->actor);
 
         $this->assertSame('partyservice', $result['profile_code']);
@@ -375,7 +375,7 @@ class BranchProfileInstallerTest extends TestCase {
 
         $template = ProcedureTemplate::query()
             ->where('organization_id', $this->org->id)
-            ->where('code', 'PS_HACCP_KUEHLKETTE')
+            ->where('code', 'PS_LIEFERUNG')
             ->first();
         $this->assertNotNull($template);
 
@@ -421,7 +421,7 @@ class BranchProfileInstallerTest extends TestCase {
             ->count());
     }
 
-    public function test_install_pflege_profile_creates_expected_entries_and_publishes_five_r_procedure(): void {
+    public function test_install_pflege_profile_creates_expected_entries_and_publishes_btm_procedure(): void {
         $result = $this->installer->install($this->org, 'pflege', $this->actor);
 
         $this->assertSame('pflege', $result['profile_code']);
@@ -441,11 +441,11 @@ class BranchProfileInstallerTest extends TestCase {
             'enforce_phase' => 'onCreate',
         ]);
 
-        // Die Medikamentengabe (5-R) wird veröffentlicht; die BtM-Kontrolle
-        // erzwingt eine zweite Person (Vier-Augen-Prinzip).
+        // Die BtM-Gabe wird veröffentlicht; die Gegenkontrolle erzwingt eine
+        // zweite Person (Vier-Augen-Prinzip).
         $template = ProcedureTemplate::query()
             ->where('organization_id', $this->org->id)
-            ->where('code', 'PF_MEDIKAMENTENGABE')
+            ->where('code', 'AP_BTM_GABE')
             ->first();
         $this->assertNotNull($template);
 

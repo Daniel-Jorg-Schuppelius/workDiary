@@ -1,7 +1,7 @@
 ---
 title: "orgaMAX accounting"
 topic: admin.orgamax
-version: 1
+version: 2
 keywords:
     - orgaMAX API
     - accounting integration
@@ -50,3 +50,16 @@ actions. Invoice number, status, payment and PDF visibly come from orgaMAX.
 Polling runs budgeted with checkpoints (hourly, configurable); "Sync now"
 respects the same limits. Expense/receipt hand-over stays blocked until the
 receipt pilot is confirmed.
+
+Document mirror: if billing or payments is active, the sync mirrors the
+orgaMAX invoices including their positions, and with the expenses capability
+also the expenses as incoming documents. They appear in the document feed, in
+the customer and supplier file, in revenue, open items and commissions and in
+the purchasing of subscriptions and licences; recurring templates appear in the
+subscriptions and licences reconciliation (the orgaMAX API provides no interval
+or next run). With the articles capability, the orgaMAX articles are part of
+the article catalogue. Data is only read — WorkDiary does not write expenses
+back.
+
+WorkDiary only transfers suppliers if the suppliers capability is active and
+“WorkDiary leads” is set; orgaMAX then assigns the supplier number.

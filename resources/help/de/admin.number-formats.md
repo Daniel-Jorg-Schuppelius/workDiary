@@ -1,7 +1,7 @@
 ---
 title: "Nummernformate"
 topic: admin.number-formats
-version: 6
+version: 7
 keywords:
     - Nummernkreis
     - Rechnungsnummer
@@ -65,7 +65,9 @@ leeres Feld bedeutet: kein Trenner. Vergebene Nummern bleiben unverändert.
 In der Spalte **Vergibt** wählen Sie für **Kunde** und **Lieferant**, ob
 WorkDiary die Nummer vergibt oder ein angebundenes Buchhaltungsprogramm.
 Zur Wahl stehen aktive Programme, die Nummern vergeben können: Lexoffice
-(Kunde und Lieferant), sevDesk und easybill (Kunde). orgaMAX vergibt keine Kundennummern für WorkDiary.
+(Kunde und Lieferant), easybill (Kunde und Lieferant), sevDesk (Kunde) und
+orgaMAX (Lieferant). orgaMAX vergibt keine Kundennummern für WorkDiary, sevDesk
+keine Lieferantennummern.
 
 Vergibt ein Programm, gilt:
 

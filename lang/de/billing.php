@@ -19,6 +19,7 @@ return [
         'action' => [
             'dun' => 'Mahnen',
             'open_original' => 'Im Original öffnen',
+            'original_pdf' => 'Original-PDF',
         ],
         'tab' => [
             'all' => 'Alle',
@@ -59,6 +60,8 @@ return [
             'deleted' => 'In Quelle gelöscht',
         ],
         'foreign_amount' => 'Betrag in zweiter Währung',
+        'original_pdf_failed' => ':program hat das PDF nicht geliefert. Bitte versuchen Sie es später erneut.',
+        'original_pdf_missing' => 'Zu diesem Beleg liefert :program kein PDF.',
         'scope' => [
             'mine' => 'Meine',
             'all' => 'Alle',
@@ -69,6 +72,9 @@ return [
             'due' => 'Fällig',
             'open' => 'Offen',
         ],
+    ],
+    'party_documents' => [
+        'mirror_unlinked' => 'Kein :program-Kontakt verknüpft — Belege erscheinen hier, sobald der Belegabruf sie dieser Partei zuordnet (Kontaktverknüpfung, Kundennummer oder Lieferantenname).',
     ],
     'relations' => [
         'title' => 'Zugehörige Belege (:count)',

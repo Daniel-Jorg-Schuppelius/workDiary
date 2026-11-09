@@ -260,6 +260,7 @@ return [
             'claim_pattern' => 'Claim patterns',
             'recurring_tickets' => 'Recurring tickets',
             'capacity' => 'Staff shortages',
+            'project_target' => 'Target times missed',
         ],
     ],
     'product_revenue' => [

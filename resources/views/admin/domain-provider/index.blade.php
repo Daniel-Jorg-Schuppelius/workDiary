@@ -55,21 +55,29 @@
                 <td class="text-right tabular-nums">{{ $connection->reseller_accounts_count }}</td>
                 <td class="text-right whitespace-nowrap">
                     @if ($canManage ?? false)
-                        <x-action-form :action="route('admin.domain-provider.test', $connection)">
-                            <x-icon-btn icon="wifi_tethering" size="xs" type="submit" :title="__('domain.action.test')" />
-                        </x-action-form>
-                        <x-action-form :action="route('admin.domain-provider.sync', $connection)">
-                            <x-icon-btn icon="sync" size="xs" type="submit" :title="__('domain.action.sync')" />
-                        </x-action-form>
-                        @unless ($connection->pilotConfirmed())
-                            <x-action-form :action="route('admin.domain-provider.pilot', $connection)">
-                                <x-icon-btn icon="verified" size="xs" type="submit" :title="__('domain.action.confirm_pilot')" />
+                        @php $disconnected = $connection->status === \App\Enums\Domain\DomainConnectionStatus::Disconnected; @endphp
+                        @unless ($disconnected)
+                            <x-action-form :action="route('admin.domain-provider.test', $connection)">
+                                <x-icon-btn icon="wifi_tethering" size="xs" type="submit" :title="__('domain.action.test')" />
+                            </x-action-form>
+                            <x-action-form :action="route('admin.domain-provider.sync', $connection)">
+                                <x-icon-btn icon="sync" size="xs" type="submit" :title="__('domain.action.sync')" />
+                            </x-action-form>
+                            @unless ($connection->pilotConfirmed())
+                                <x-action-form :action="route('admin.domain-provider.pilot', $connection)">
+                                    <x-icon-btn icon="verified" size="xs" type="submit" :title="__('domain.action.confirm_pilot')" />
+                                </x-action-form>
+                            @endunless
+                        @endunless
+                        <x-icon-btn icon="key" size="xs" data-entry-modal-trigger
+                                    :href="route('admin.domain-provider.credentials', $connection)"
+                                    :title="__('domain.action.credentials')" />
+                        @unless ($disconnected)
+                            <x-action-form :action="route('admin.domain-provider.destroy', $connection)" method="DELETE"
+                                           :confirm="__('domain.action.disconnect_confirm')" confirm-tone="error">
+                                <x-icon-btn icon="link_off" tone="error" size="xs" type="submit" :title="__('domain.action.disconnect')" />
                             </x-action-form>
                         @endunless
-                        <x-action-form :action="route('admin.domain-provider.destroy', $connection)" method="DELETE"
-                                       :confirm="__('domain.action.disconnect_confirm')" confirm-tone="error">
-                            <x-icon-btn icon="link_off" tone="error" size="xs" type="submit" :title="__('domain.action.disconnect')" />
-                        </x-action-form>
                     @endif
                 </td>
             </tr>

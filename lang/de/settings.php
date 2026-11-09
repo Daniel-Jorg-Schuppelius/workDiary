@@ -118,6 +118,13 @@ return [
         'block_trips' => 'Keine neue Fahrt bei überfälliger Pflichtprüfung',
         'block_trips_hint' => 'Ist die HU, UVV oder eine andere Pflichtprüfung des zugeordneten Assets überfällig oder gesperrt, lässt sich ab heute keine Fahrt mehr erfassen. Vergangene Fahrten bleiben dokumentierbar.',
     ],
+    'qualifications' => [
+        'heading' => 'Pflichtqualifikationen',
+        'enforcement' => 'Fehlende Pflichtqualifikation bei der Zuweisung',
+        'enforcement_hint' => 'Hinweis: Schichtplan und Auftrag zeigen die fehlende oder am Einsatztag ungültige Qualifikation an. Sperre: Schicht, Schichttausch, Rollplan, Schichtimport, Auftrag, Tour und Leerzeit-Vorschlag lehnen die Zuweisung ab; die Bestätigung eines bestehenden Einsatzes ist nur mit Begründung möglich.',
+        'mode_hint' => 'Nur Hinweis',
+        'mode_block' => 'Zuweisung sperren',
+    ],
     'payments' => [
         'heading' => 'Online-Zahlung',
         'description' => 'Zahlungslink und QR-Code auf Rechnung, Mail und im Kundenportal. Den Zahlungsanbieter (Stripe, Mollie oder SumUp) aktivieren Sie als Plugin mit eigenen Zugangsdaten.',
@@ -152,6 +159,10 @@ return [
         'portal_direct_booking_hint' => 'Kunden reservieren freie, fürs Portal freigegebene Geräte sofort verbindlich; die Leitung wird benachrichtigt.',
         'geofence_radius' => 'Radius um den Einsatzort (m)',
         'geofence_radius_hint' => 'Liegt die gemeldete Position eines verliehenen Geräts weiter vom Standort des Verleihs entfernt, wird die Abweichung gemeldet. Ohne Standort gelten die Geofences des Kunden.',
+        'prepayment_percent' => 'Vorauszahlung bei Direktbuchung (%)',
+        'prepayment_percent_hint' => 'Anteil am Bruttopreis aus der Preisliste, online über den Zahlungsanbieter. 0 = keine Vorauszahlung; am Mietobjekt abweichend einstellbar. Die Buchung gilt erst mit Zahlungseingang als bestätigt.',
+        'prepayment_hold_minutes' => 'Zahlungsfrist der Direktbuchung (Minuten)',
+        'prepayment_hold_minutes_hint' => 'So lange bleibt das Gerät für die unbezahlte Buchung reserviert (10–1440, Vorgabe 30). Danach wird die Reservierung freigegeben.',
     ],
     'claims_pattern' => [
         'heading' => 'Reklamationsmuster',

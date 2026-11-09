@@ -179,6 +179,40 @@ class ClassificationSeeder extends Seeder {
                 'industry' => 'Industrie',
                 'public' => 'Öffentliche Hand',
             ],
+            // Branchendomänen (MVP-1509); die Profile ergänzen eigene Werte.
+            ClassificationDomain::Leistungsart->value => [
+                'sgbVBehandlungspflege' => 'Behandlungspflege (SGB V)',
+                'sgbXIGrundpflege' => 'Grundpflege (SGB XI)',
+                'sgbXIBetreuung' => 'Betreuung (SGB XI)',
+                'sgbXIHauswirtschaft' => 'Hauswirtschaftliche Versorgung (SGB XI)',
+                'selbstzahler' => 'Selbstzahler',
+            ],
+            ClassificationDomain::Pflegegrad->value => [
+                'pg1' => 'Pflegegrad 1',
+                'pg2' => 'Pflegegrad 2',
+                'pg3' => 'Pflegegrad 3',
+                'pg4' => 'Pflegegrad 4',
+                'pg5' => 'Pflegegrad 5',
+            ],
+            ClassificationDomain::Kommunikation->value => [
+                'telefon' => 'Telefon',
+                'email' => 'E-Mail',
+                'post' => 'Post',
+                'persoenlich' => 'Persönliches Gespräch',
+                'video' => 'Videogespräch',
+            ],
+            ClassificationDomain::EventType->value => [
+                'firmenevent' => 'Firmenevent',
+                'privateFeier' => 'Private Feier',
+                'messe' => 'Messe',
+                'vereinsfest' => 'Vereinsfest',
+            ],
+            ClassificationDomain::LademittelType->value => [
+                'euroPalette' => 'Europalette',
+                'einwegPalette' => 'Einwegpalette',
+                'gitterbox' => 'Gitterbox',
+                'rollcontainer' => 'Rollcontainer',
+            ],
         ];
     }
 }

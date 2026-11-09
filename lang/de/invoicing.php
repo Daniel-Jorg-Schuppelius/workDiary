@@ -77,6 +77,7 @@ return [
         'empty' => 'Für die gewählten Filter gibt es keine abrechenbaren Zeiten oder Anfahrten.',
         'entry_count' => ':count Eintrag|:count Einträge',
         'travel' => '+ :count Anfahrt(en)',
+        'target_top_up' => '+ :count Auffüllung auf das Projekt-Soll|+ :count Auffüllungen auf das Projekt-Soll',
         'warning_late' => ':count Nachzügler: Leistungsdatum liegt in einem bereits abgerechneten Zeitraum.|:count Nachzügler: Leistungsdaten liegen in bereits abgerechneten Zeiträumen.',
         'column' => [
             'description' => 'Position',

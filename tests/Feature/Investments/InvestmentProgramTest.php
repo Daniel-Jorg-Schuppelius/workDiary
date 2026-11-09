@@ -61,7 +61,7 @@ final class InvestmentProgramTest extends TestCase {
         $this->assertSame(['2026' => '100000.00', '2027' => '50000.00'], $program->budgets()->pluck('budget_amount', 'year')->map(fn ($v): string => (string) $v)->mapWithKeys(fn ($v, $k): array => [(string) $k => $v])->all());
 
         $press = $this->case('Presse', ['investment_program_id' => $program->id, 'planned_year' => 2026], '80000.00', 'approved');
-        $this->case('Kran', ['investment_program_id' => $program->id, 'starts_on' => '2026-05-01'], '30000.00', 'draft');
+        $this->case('Kran', ['investment_program_id' => $program->id, 'starts_on' => '2026-05-01'], '30000.00', 'in_approval');
         $this->case('Rejected', ['investment_program_id' => $program->id, 'planned_year' => 2027], '999.00', 'rejected');
 
         $portfolio = app(InvestmentProgramService::class)->portfolio($program);

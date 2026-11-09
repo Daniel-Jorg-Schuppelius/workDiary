@@ -66,6 +66,9 @@ class MeterBillingAgreement extends Model {
         'end_on' => 'date',
         'interval_count' => 'integer',
         'status' => MeterBillingAgreementStatus::class,
+        'base_price' => 'decimal:2',
+        'unit_price' => 'decimal:4',
+        'free_units' => 'decimal:3',
     ];
 
     /** @var array<string, mixed> */

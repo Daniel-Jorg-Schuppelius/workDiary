@@ -115,6 +115,13 @@ return [
         'block_trips' => 'Nessun nuovo viaggio se un controllo obbligatorio è scaduto',
         'block_trips_hint' => 'Se la revisione, il controllo antinfortunistico o un altro controllo obbligatorio del cespite associato è scaduto o bloccato, da oggi non si possono registrare viaggi. I viaggi passati restano documentabili.',
     ],
+    'qualifications' => [
+        'heading' => 'Qualifiche obbligatorie',
+        'enforcement' => 'Qualifica obbligatoria mancante all’assegnazione',
+        'enforcement_hint' => 'Avviso: il piano turni e l’ordine mostrano la qualifica mancante o non valida nel giorno dell’intervento. Blocco: turno, scambio turno, rotazione, importazione turni, ordine, giro e proposta di slot rifiutano l’assegnazione; un’assegnazione esistente si può confermare solo con una motivazione.',
+        'mode_hint' => 'Solo avviso',
+        'mode_block' => 'Bloccare l’assegnazione',
+    ],
     'payments' => [
         'heading' => 'Pagamento online',
         'description' => 'Link di pagamento e codice QR sulla fattura, nell\'e-mail e nel portale clienti. Attivi il fornitore di pagamento (Stripe, Mollie o SumUp) come plugin con le proprie credenziali.',
@@ -149,6 +156,10 @@ return [
         'portal_direct_booking_hint' => 'I clienti prenotano subito i dispositivi liberi abilitati per il portale; la direzione viene informata.',
         'geofence_radius' => 'Raggio intorno al luogo d\'impiego (m)',
         'geofence_radius_hint' => 'Se la posizione segnalata di un\'attrezzatura noleggiata è più lontana dalla sede del noleggio, lo scostamento viene segnalato. Senza sede valgono i geofence del cliente.',
+        'prepayment_percent' => 'Pagamento anticipato per prenotazione diretta (%)',
+        'prepayment_percent_hint' => 'Quota del prezzo lordo dal listino, pagata online tramite il fornitore di pagamento. 0 = nessun anticipo; impostabile diversamente per oggetto di noleggio. La prenotazione è confermata solo al ricevimento del pagamento.',
+        'prepayment_hold_minutes' => 'Termine di pagamento della prenotazione diretta (minuti)',
+        'prepayment_hold_minutes_hint' => 'Per quanto tempo l’attrezzatura resta riservata alla prenotazione non pagata (10–1440, predefinito 30). Poi la prenotazione viene liberata.',
     ],
     'claims_pattern' => [
         'heading' => 'Schemi di reclami',

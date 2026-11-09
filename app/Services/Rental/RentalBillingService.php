@@ -12,11 +12,12 @@ declare(strict_types=1);
 
 namespace App\Services\Rental;
 
-use App\Enums\Invoicing\InvoiceStatus;
+use App\Enums\Invoicing\{InvoiceStatus, OnlinePaymentStatus};
 use App\Enums\Rental\{RentalChargeKind, RentalChargeStatus, RentalDepositStatus, RentalRateCardStatus};
-use App\Models\Invoicing\Invoice;
-use App\Models\Platform\User;
-use App\Models\Rental\{RentalCase, RentalCharge, RentalDeposit, RentalProfile, RentalRateCard};
+use App\Models\Customer\Customer;
+use App\Models\Invoicing\{Invoice, OnlinePayment};
+use App\Models\Platform\{Organization, User};
+use App\Models\Rental\{RentalCase, RentalCharge, RentalDeposit, RentalProfile, RentalRateCard, RentalRequest};
 use App\Services\Billing\{BillingModeResolver, DocumentTotalsCalculator};
 use App\Services\Invoicing\{InvoiceGenerator, TaxResolver};
 use App\Support\Tz;
@@ -84,6 +85,32 @@ class RentalBillingService {
         }
 
         return $total;
+    }
+
+    /**
+     * Online-Vorauszahlung einer Direktbuchung (MVP-1515): Anteil des
+     * Bruttopreises aus der Standard-Preisliste. Satz des Mietobjekts, sonst
+     * der Organisation; null ohne Vorauszahlung oder ohne Preis.
+     */
+    public function prepaymentAmount(RentalProfile $profile, Customer $customer, Carbon $from, Carbon $to): ?Money {
+        $organization = Organization::query()->withoutGlobalScopes()->find($profile->organization_id);
+        $percent = $profile->prepayment_percent ?? (int) data_get($organization?->settings, 'rental.portal_prepayment_percent', 0);
+        if ($percent <= 0 || ! $organization instanceof Organization) {
+            return null;
+        }
+
+        $net = $this->estimate($profile, $from, $to);
+        if ($net === null || ! $net->isPositive()) {
+            return null;
+        }
+
+        $rate = $this->taxes->resolve($organization, $customer)['rate'];
+        if (! is_numeric($rate)) {
+            throw new \UnexpectedValueException('Steuersatz für die Vorauszahlung nicht lesbar: ' . $rate);
+        }
+        $gross = $net->plusPercentage($rate);
+
+        return $gross->percentage(min(100, $percent))->withScale(2);
     }
 
     /**
@@ -234,6 +261,8 @@ class RentalBillingService {
                 $case->audit('rental.chargesTransferred', [
                     'mode' => $mode->value,
                     'count' => $charges->count(),
+                    // Die Buchhaltung rechnet die Vorauszahlung an; lokal gibt es keine Rechnung dafür.
+                    'prepaid' => $this->prepaidTotal($case)?->getAmount(),
                 ]);
 
                 return null;
@@ -278,10 +307,39 @@ class RentalBillingService {
             $invoice->recalculate();
             $invoice->save();
 
-            $case->audit('rental.chargesInvoiced', ['invoice' => $invoice->number, 'count' => $charges->count()]);
+            // Online-Vorauszahlung der Direktbuchung (MVP-1515) deckt die Rechnung mit.
+            $prepayments = $this->unassignedPrepayments($case);
+            foreach ($prepayments as $prepayment) {
+                $prepayment->forceFill(['invoice_id' => $invoice->id])->save();
+            }
+
+            $case->audit('rental.chargesInvoiced', ['invoice' => $invoice->number, 'count' => $charges->count(), 'prepayments' => $prepayments->count()]);
 
             return $invoice;
         });
+    }
+
+    /**
+     * Bezahlte, noch keiner Rechnung zugeordnete Vorauszahlungen der
+     * Buchungen dieser Akte.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, OnlinePayment>
+     */
+    public function unassignedPrepayments(RentalCase $case): \Illuminate\Database\Eloquent\Collection {
+        return OnlinePayment::query()->withoutGlobalScopes()
+            ->where('organization_id', $case->organization_id)
+            ->whereNull('invoice_id')
+            ->where('subject_type', (new RentalRequest)->getMorphClass())
+            ->whereIn('subject_id', RentalRequest::query()->withoutGlobalScopes()->where('rental_case_id', $case->id)->select('id'))
+            ->whereIn('status', [OnlinePaymentStatus::Paid->value, OnlinePaymentStatus::Refunded->value])
+            ->get();
+    }
+
+    /** Summe der noch nicht zugeordneten Vorauszahlungen abzüglich Erstattungen; null ohne Vorauszahlung. */
+    public function prepaidTotal(RentalCase $case): ?Money {
+        $prepayments = $this->unassignedPrepayments($case);
+
+        return $prepayments->isEmpty() ? null : Money::sum($prepayments->map(static fn (OnlinePayment $p): Money => $p->gross_amount->minus($p->refunded_amount)));
     }
 
     /**

@@ -8,21 +8,20 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+declare(strict_types=1);
+
 namespace App\Casts;
 
 use CommonToolkit\ValueObjects\VatNumber;
-use Illuminate\Database\Eloquent\Model;
 
 /**
- * USt-IdNr. → {@see VatNumber} (Länderpräfix + nationale Nummer).
+ * USt-IdNr.: gespeichert als Länderpräfix + nationale Nummer ohne Leerzeichen
+ * (`DE811907980`), gelesen Text.
  *
- * @extends ValueObjectCast<VatNumber>
+ * @extends IdentifierCast<VatNumber>
  */
-class VatNumberCast extends ValueObjectCast {
-    /**
-     * @param  array<string, mixed>  $attributes
-     */
-    protected function toValueObject(string $raw, Model $model, array $attributes): ?VatNumber {
+class VatNumberCast extends IdentifierCast {
+    protected function toValueObject(string $raw): ?VatNumber {
         return VatNumber::tryFrom($raw);
     }
 

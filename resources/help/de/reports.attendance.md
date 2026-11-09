@@ -1,7 +1,7 @@
 ---
 title: "Anwesenheit, Plan/Ist und Abdeckung"
 topic: reports.attendance
-version: 7
+version: 8
 keywords:
     - Anwesenheitsbericht
     - Stempelzeiten auswerten
@@ -77,7 +77,7 @@ Person und einer Gesamtzeile.
 
 **Auswertungen** → **Persönlich** → **Plan/Ist** vergleicht Soll und Ist in
 mehreren Sichten, die Sie über Reiter oben auf der Seite wechseln:
-**Anwesenheit**, **Team**, **Organisation**, **Schichten**, **Projekte** und
+**Anwesenheit**, **Team**, **Organisation**, **Schichten**, **Projekte**, **Projekt je Person** und
 **Standorte**. Sie sehen nur die Reiter, für die Sie berechtigt sind.
 
 Der Zeitraum wird hier nicht aus der Kopfzeile übernommen: Stellen Sie ihn in
@@ -145,6 +145,20 @@ dem Teamrecht geht das nur für Mitglieder Ihrer eigenen Teams.
   Solldaten** – das ist kein Alarm. Zeiten ohne Projekt stehen in der Zeile
   **Ohne Projekt**. Den Abgleich mit Zeit- und Geldbudgets liefert die
   **Wirtschaftlichkeit**.
+- **Projekt je Person**: Plan sind die Sollzeiten der Projekte je Person
+  (Zeitreiter, **Sollzeiten pflegen**), Ist ist die gebuchte Zeit der Person auf
+  dem Projekt; Maschinenzeiten zählen nicht. Kacheln **Plan**, **Ist**,
+  **Differenz** und **Tage unter Soll** (offene oder bestätigte Befunde des
+  nächtlichen Abgleichs; der Hinweis nennt alle Befunde im Zeitraum), darunter
+  die Tabelle **Projekt je Person** mit **Projekt**, **Person**, **Soll (h)**,
+  **Gebucht (h)**, **Differenz (h)** und **Tage unter Soll**. Die Differenz ist
+  Soll minus Gebucht, fehlende Zeit ist gelb markiert; sind Befunde schon
+  erledigt, folgt den offenen Tagen grau die Zahl aller Befunde. Hat ein Projekt
+  einen Geofence, zeigt **Aufenthalt (h)** die Zeit, die die Person laut
+  standortbasierter Zeiterfassung dort war – nur als Beleg, sie zählt weder zum
+  Ist noch zur Differenz. Das Feld **Alle Projekte** grenzt auf ein Projekt mit
+  Sollzeiten ein. Ohne Sollzeiten im Zeitraum steht **Keine
+  Projekt-Sollzeiten im Zeitraum.**
 - **Standorte**: Für Standorte gibt es keine Solldaten; die Sicht zeigt nur die
   Ist-Verteilung der Zeiten aus der standortbasierten Zeiterfassung. Kacheln
   **Ist**, **Ortsbesuche** und **Personen**, Diagramm **Ist-Zeiten je Standort
@@ -153,7 +167,7 @@ dem Teamrecht geht das nur für Mitglieder Ihrer eigenen Teams.
   Geofences ohne zugeordneten Standort stehen unter **Ohne Standort-Zuordnung**
   mit dem Hinweis **Geofence ohne Standort**.
 
-Lange Tabellen der Reiter **Projekte** und **Standorte** sind auf Seiten zu je
+Lange Tabellen der Reiter **Projekte**, **Projekt je Person** und **Standorte** sind auf Seiten zu je
 50 Zeilen verteilt; die Diagramme werten dagegen alle Zeilen aus, nicht nur
 die angezeigte Seite.
 
@@ -221,7 +235,7 @@ Heatmap, **CSV** und **Excel**.
   einsehen**.
 - **Plan/Ist**: Den Reiter **Anwesenheit** mit den eigenen Tagen sieht jede
   Person. Der Reiter **Team** braucht das Recht **Anwesenheitsbericht einsehen
-  (Team)**, die Reiter **Organisation**, **Schichten**, **Projekte** und
+  (Team)**, die Reiter **Organisation**, **Schichten**, **Projekte**, **Projekt je Person** und
   **Standorte** das Recht **Anwesenheitsbericht einsehen (Organisation)**.
   Administratoren sehen alle Reiter. In der Standardvergabe hat die Rolle
   Teamleitung das Teamrecht, die Geschäftsführung das Organisationsrecht und die

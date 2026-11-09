@@ -94,6 +94,8 @@ return [
     // Readable job names (registry keys, nested because of dot notation);
     // add new registry jobs here in all locales — otherwise fallback = key.
     'job' => [
+        'rental' => ['expire-prepayments' => 'Release unpaid direct rental bookings'],
+        'timekeeping' => ['ical-sync' => 'Read subscribed iCal calendars into time tracking'],
         'projects' => ['check-time-targets' => 'Check project target times against booked time'],
         'surveys' => ['scheduled' => 'Send surveys at a fixed interval'],
         'demo' => [
@@ -124,9 +126,10 @@ return [
         'billbee' => ['sync' => 'Billbee sync'],
         'caldav' => ['publish' => 'CalDAV calendar publish reconciliation', 'import' => 'CalDAV calendar reimport'],
         'carddav' => ['sync' => 'CardDAV sync'],
-        'sevdesk' => ['pull-vouchers' => 'Fetch sevDesk vouchers'],
+        'sevdesk' => ['pull-vouchers' => 'Fetch sevDesk vouchers', 'pull-contacts' => 'Import sevDesk contacts (accounting leads)'],
         'invoiceninja' => ['pull-vouchers' => 'Fetch Invoice Ninja documents'],
         'akaunting' => ['pull-vouchers' => 'Fetch Akaunting documents'],
+        'invoiceplane' => ['pull-vouchers' => 'Fetch InvoicePlane invoices'],
         'catalog' => ['fetch_due' => 'Fetch catalog sources', 'apply_pending_prices' => 'Activate scheduled price levels'],
         'tenders' => ['fetch_notices' => 'Fetch tender notices'],
         'chat' => [
@@ -151,7 +154,7 @@ return [
             'sync' => 'Domain inventory sync',
             'events' => 'Fetch domain events',
         ],
-        'easybill' => ['sync' => 'easybill document retrieval'],
+        'easybill' => ['sync' => 'easybill document files to the DMS', 'pull-vouchers' => 'Fetch easybill documents', 'pull-contacts' => 'Import easybill contacts (accounting leads)'],
         'etsy' => ['sync' => 'Etsy sync'],
         'google-calendar' => ['publish' => 'Google Calendar publish reconciliation', 'import' => 'Google Calendar reimport'],
         'google-drive' => ['subscriptions' => 'Renew Google Drive push channels'],
@@ -163,7 +166,7 @@ return [
         'platform' => ['usage_snapshot' => 'Record usage per tenant'],
         'contracts' => ['price_index_sync' => 'Sync consumer price index from the Bundesbank'],
         'invoicing' => ['recurring' => 'Generate recurring invoice drafts', 'base_rate_sync' => 'Sync base interest rate from the Bundesbank', 'online_payments_refresh' => 'Reconcile online payments with the payment provider', 'incoming_digest' => 'Notify about incoming invoices awaiting assignment', 'incoming_transfer' => 'Retry incoming invoice transfers'],
-        'jtl' => ['sync' => 'JTL Wawi sync'],
+        'jtl' => ['sync' => 'JTL Wawi sync', 'pull-vouchers' => 'Fetch JTL Wawi invoices'],
         'resale' => [
             'propose' => 'Resale subscriptions: propose invoice links, confirm sure matches',
             'sync_domains' => 'Resale subscriptions: adopt domains from domain management',

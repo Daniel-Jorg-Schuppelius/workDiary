@@ -165,7 +165,8 @@ class ClassificationSuggestionTest extends TestCase {
             ->assertJsonValidationErrors(['customer_id']);
         $this->assertSame(0, $this->fake->callCount());
 
-        $stranger = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        // Seit MVP-1510 haben alle Mitarbeiterrollen ai.use; der Anbieter-Support nicht.
+        $stranger = User::factory()->support()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($stranger)
             ->postJson(route('ai.suggest.tags'), ['text' => 'x'])
             ->assertForbidden();

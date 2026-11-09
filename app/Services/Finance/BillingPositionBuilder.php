@@ -22,10 +22,9 @@ use App\Models\Time\TimeEntry;
 use App\Modules\ModuleRegistry;
 use App\Services\Billing\DocumentTotalsCalculator;
 use App\Services\Finance\Contracts\TransferSource;
-use App\Services\Invoicing\{BillableTimeAggregator, BlockPrice, BlockPriceResolver, ServiceDefaultResolver, TextCorrectionService};
-use App\Services\Invoicing\BillingBlock;
-use App\Support\{CarbonFmt, MorphMap};
-use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
+use App\Services\Invoicing\{BillableTimeAggregator, BlockPrice, BlockPriceResolver, ServiceDefaultResolver, TargetTopUps, TextCorrectionService};
+use App\Support\MorphMap;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -46,6 +45,7 @@ class BillingPositionBuilder {
         private readonly BlockPriceResolver $prices,
         private readonly ServiceDefaultResolver $services,
         private readonly TextCorrectionService $corrections,
+        private readonly TargetTopUps $topUps,
     ) {}
 
     /**
@@ -177,9 +177,10 @@ class BillingPositionBuilder {
 
     /**
      * Auffüllung auf das Projekt-Soll (Feature 194, MVP-1470): je Befund eine
-     * Position „Vereinbarte Einsatzzeit“ mit Person und Datum; Menge ist die
-     * fehlende Zeit, Preis über den BlockPriceResolver wie bei einem Zeitblock
-     * ohne Einträge (Projektregel, Kundensatz, Standardleistung, Org-Standard).
+     * Position „Vereinbarte Einsatzzeit“ mit Person und Datum über
+     * {@see TargetTopUps::lines()}, dieselbe Bepreisung wie in der lokalen
+     * Rechnung. Hat eine Rechnung den Befund inzwischen berechnet, entfällt
+     * die Position.
      *
      * @return Collection<int, BillingTransferPosition>
      */
@@ -191,7 +192,7 @@ class BillingPositionBuilder {
         }
         $shortfalls = ProjectTimeShortfall::query()
             ->whereIn('id', $ids)
-            ->with(['user:id,name', 'project.parent', 'project.customer', 'project.foreignCustomer'])
+            ->whereNull('invoice_item_id')
             ->orderBy('date')
             ->orderBy('user_id')
             ->get();
@@ -199,40 +200,28 @@ class BillingPositionBuilder {
         $index = $transfer->items->where('source_type', MorphMap::alias(TimeEntry::class))->isNotEmpty()
             ? $this->buildTimePositions($transfer)->count()
             : 0;
-        foreach ($shortfalls as $shortfall) {
-            $minutes = (int) $shortfall->shortfall_minutes;
-            if ($minutes <= 0) {
-                continue;
-            }
-            $project = $shortfall->project;
-            $block = new BillingBlock($project, TimeEntryKind::Work, [], 0, $minutes, $minutes, $minutes, 0.0, null, null, null);
-            $service = $this->services->resolve($transfer->organization, $project, TimeEntryKind::Work->value);
-            $price = $this->prices->resolve($block, null, $transfer->customer, $service, (int) $transfer->organization_id);
-            $hours = $block->billedHours();
-            $date = $shortfall->date->toDateString();
+        foreach ($this->topUps->lines($shortfalls, $transfer->customer, $transfer->organization) as $line) {
+            $service = $line->service;
+            $date = $line->shortfall->date->toDateString();
             $positions->push(new BillingTransferPosition([
                 'organization_id' => $transfer->organization_id,
                 'billing_transfer_id' => $transfer->id,
                 'position' => ++$index,
                 'source_kind' => BillingTransferPosition::KIND_TARGET,
-                'project_id' => $project->id,
+                'project_id' => $line->shortfall->project_id,
                 'kind' => TimeEntryKind::Work->value,
-                'source_ids' => [(int) $shortfall->id],
-                'primary_source_id' => (int) $shortfall->id,
-                'name' => (string) __('Vereinbarte Einsatzzeit') . ' — ' . $shortfall->user->name . ', ' . CarbonFmt::fdate($shortfall->date),
-                'description' => (string) __('Soll :target h, gebucht :booked h — Auffüllung :missing h', [
-                    'target' => NumberHelper::toGermanFormat($shortfall->target_minutes / 60, 2),
-                    'booked' => NumberHelper::toGermanFormat($shortfall->booked_minutes / 60, 2),
-                    'missing' => NumberHelper::toGermanFormat($minutes / 60, 2),
-                ]),
-                'quantity' => round($hours, 3),
+                'source_ids' => [(int) $line->shortfall->id],
+                'primary_source_id' => (int) $line->shortfall->id,
+                'name' => $line->name,
+                'description' => $line->detail,
+                'quantity' => round($line->hours, 3),
                 'unit_name' => $service?->unitName ?: $this->timeUnit($transfer),
-                'unit_price' => round($price->rate, 4),
+                'unit_price' => round($line->price->rate, 4),
                 'vat_rate' => $service?->vatRate,
-                'amount' => DocumentTotalsCalculator::lineNet($hours, $price->rate)->withScale(2)->toFloat(),
+                'amount' => DocumentTotalsCalculator::lineNet($line->hours, $line->price->rate)->withScale(2)->toFloat(),
                 'article_ref' => $service?->articleRef,
                 'service_source' => $service?->source,
-                'price_source' => $price->source,
+                'price_source' => $line->price->source,
                 'service_from' => $date,
                 'service_to' => $date,
             ]));

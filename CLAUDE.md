@@ -164,15 +164,14 @@ Welle 4 leer; ein neuer Verstoß wird gelöst, nicht eingetragen.
   `ModuleRegistry::extensions(Interface::class)`; das Modul nennt seine Klassen
   in `extensions()`. Bestehend: `DeadlineScan`, `EntitySpec`, `SearchSource`,
   `DemoBlock`, `SyncCommandHandler`, `MailableDocumentProvider`,
-  `ProfileInstallStep`, `AllocationTargetHandler`, `InboxGroupBooker`,
+  `ProfileInstallStep` (optional mit `ProfileUninstallStep`), `AllocationTargetHandler`, `InboxGroupBooker`,
   `VehicleReservationGuard`, `ProjectEconomicsDimension`, `RoomBlockingSource`,
   `CloudIntakeHandler`, `RetentionPolicyProvider`, `MailIntakeHandler`,
   `MailIntakeAnnotator` (Klärfall-Markierung im Mail-Eingang, Feature 166),
   `OffboardingStep`, `OffboardingHandover` (Übergabe im Austritts-Dialog, etwa
   Ideenkarten), `NavigationCondition`, `PluginCapabilitySource`,
   `MirrorPdfRenderer`, `RuleAction`, `RuleTrigger` (Automationsregeln), `EarlyWarningSource`,
-  `PortalNoticeSource` (Hinweise im Kundenportal), `ArticleConflictHandler`
-  (Artikelkonflikt: Fremdstand übernehmen, Plugins tragen sich per `contribute()` ein),
+  `PortalNoticeSource` (Hinweise im Kundenportal),
   `ApprovalInboxSubject` (Gegenstand im Genehmigungs-Eingang; entschieden wird auf dem
   Weg des Gegenstands, Zuständigkeit über `ApprovalResponsibility`),
   `IncomingInvoiceTransferTarget` (Buchhaltungsziel des Rechnungseingangs; Tor, Journal
@@ -204,9 +203,14 @@ Welle 4 leer; ein neuer Verstoß wird gelöst, nicht eingetragen.
   `App\Events\<Domäne>` (Vergangenheitsform), Listener unter
   `App\Listeners\<Domäne>` in `listeners()`; Fachmodul-Listener erben
   `ModuleListener`; Konsistenz-Events synchron, Folgeprozesse
-  `ShouldDispatchAfterCommit`; Benachrichtigung über `NotifiesUsers` +
-  `NotificationBridge`. Observer nutzen nur ihr Modul oder die Plattform
+  `ShouldDispatchAfterCommit`; Benachrichtigungen direkt über den
+  `NotificationDispatcher` (Plattform). Observer nutzen nur ihr Modul oder die Plattform
   (Gate `ObserverModuleRuleTest`), Gate `EventNamingRuleTest`.
+  Queue-Jobs eines Fachmoduls implementieren `App\Jobs\Contracts\ModuleJob`
+  (`organizationId()`); die Middleware `EnsureModuleActive` (über
+  `Bus::pipeThrough`) beendet sie ohne Wirkung, wenn das Modul der
+  Organisation aus ist. Jobs direkt in `app/Jobs` nennen ihr Modul mit
+  `#[BelongsToModule]` (Gate `ModuleJobRuleTest`).
 
 `modules:check` prüft die Verdrahtung (Interface erfüllt, Contract genau
 einmal definiert/gebunden, Listener mit `handle()`).

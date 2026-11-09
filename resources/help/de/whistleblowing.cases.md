@@ -1,7 +1,7 @@
 ---
 title: "Meldestelle – Fallbearbeitung"
 topic: whistleblowing.cases
-version: 3
+version: 4
 keywords:
     - Hinweisgebersystem
     - HinSchG
@@ -62,15 +62,27 @@ Berechtigung können Sie
   erscheint in deren geschütztem Postfach.
 
 Anhänge, die die meldende Person hochlädt, werden verschlüsselt
-gespeichert; einen Download bietet die Fallakte derzeit nicht an.
+gespeichert und vor der Freigabe auf Schadsoftware geprüft. Die Karte
+**Anhänge** nennt je Datei Name und Größe; freigegebene Anhänge laden Sie über
+das Symbol **Herunterladen**. Sonst steht dort der Prüfstand: **In Prüfung**,
+solange das Ergebnis aussteht, **Abgewiesen** oder **Prüfung fehlgeschlagen** –
+diese Dateien gibt WorkDiary nicht heraus. Ohne eingerichteten Virenscanner
+bleiben Anhänge in Prüfung.
 
 **Vertraulichkeit und Konflikte**:
 
 - **Interessenkonflikt melden** (Begründung optional) sperrt Sie selbst
   für den Fall: Ihre Zuweisung endet sofort, und Sie können die Sperre
   nicht selbst aufheben.
-- Eine Markierung betroffener Personen oder eine Notfallfreigabe für
-  weitere Personen bietet die Fallakte derzeit nicht an.
+- **Betroffene Person markieren** sperrt eine Person über ihre
+  **Benutzer-ID** für den Fall (**Markieren**, Notiz optional); bestehende
+  Zuweisungen enden sofort.
+- **Notfallfreigabe** gibt einer nicht zugewiesenen Person befristet Zugriff,
+  standardmäßig vier Stunden (Benutzer-ID und Pflichtbegründung,
+  **Freigeben**). Freigeben darf nur eine andere Person.
+- **Fall exportieren** erzeugt ein mit AES-256 verschlüsseltes Paket
+  (Begründung und Passwort mit mindestens zwölf Zeichen, **Exportieren**);
+  geben Sie das Passwort getrennt vom Paket weiter.
 - Jeder Schritt am Fall wird manipulationssicher im Fallprotokoll
   festgehalten.
 

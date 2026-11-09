@@ -74,18 +74,38 @@ class EasybillClient {
     }
 
     /**
-     * POST /customers — projizierten Kunden anlegen.
+     * Eine Seite der Kundenliste (`GET /customers`, Umschlag `page`/`pages`/`limit`/`total`,
+     * `limit` bis 1000; Swagger-Fixture) — Grundlage des Rufnummernabgleichs (MVP-1500).
+     *
+     * @return array{rows: list<array<string, mixed>>, pages: int}
+     */
+    public function customers(int $page, int $limit): array {
+        $body = (array) $this->guard(
+            $this->api()->requestResponse('get', $this->baseUrl . '/customers', ['query' => ['page' => $page, 'limit' => $limit]]),
+            '/customers',
+        );
+        $pages = $body['pages'] ?? null;
+
+        return [
+            'rows' => array_values(array_filter($this->rows($body), 'is_array')),
+            'pages' => is_numeric($pages) ? (int) $pages : $page,
+        ];
+    }
+
+    /**
+     * POST /customers — projizierten Kunden oder Lieferanten anlegen. `$type`
+     * (`CUSTOMER`, `SUPPLIER`) erzwingt laut Doku ohne `number` bzw.
+     * `supplier_number` die Vergabe der nächsten Nummer (MVP-1131, MVP-1503).
      *
      * @param array<string, mixed> $payload
      * @return array<string, mixed>
      */
-    public function createCustomer(array $payload, bool $assignNumber = false): array {
+    public function createCustomer(array $payload, ?string $type = null): array {
         // 429/5xx-Retry gewollt (api-toolkit ≥2.9.2: POST-Retry ist Opt-in):
         // Dubletten fängt die Reconciliation über den external-id-Marker.
         $options = ['json' => $payload, 'retry_non_idempotent' => true];
-        if ($assignNumber) {
-            // Doku: ohne `number` erzwingt `type` die Vergabe der nächsten Kundennummer (MVP-1131).
-            $options['query'] = ['type' => 'CUSTOMER'];
+        if ($type !== null) {
+            $options['query'] = ['type' => $type];
         }
 
         return (array) $this->guard($this->api()->requestResponse('post', $this->baseUrl . '/customers', $options), '/customers');

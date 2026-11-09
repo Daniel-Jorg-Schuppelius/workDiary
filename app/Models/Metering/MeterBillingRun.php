@@ -41,6 +41,7 @@ class MeterBillingRun extends Model {
     protected $casts = [
         'period_start' => 'date',
         'period_end' => 'date',
+        'consumption' => 'decimal:3',
     ];
 
     /** @return BelongsTo<MeterBillingAgreement, $this> */

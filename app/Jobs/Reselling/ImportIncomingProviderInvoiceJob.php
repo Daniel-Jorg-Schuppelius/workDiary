@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Reselling;
 
+use App\Jobs\Contracts\ModuleJob;
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\User;
 use App\Services\Reselling\Register\IncomingProviderInvoiceImport;
@@ -27,7 +28,7 @@ use Illuminate\Support\Facades\Log;
  * (Feature 185, MVP-1420). Befund und Ergebnis stehen im Log; der Einkauf-
  * Reiter zeigt die Zeilen samt Herkunft.
  */
-final class ImportIncomingProviderInvoiceJob implements ShouldBeUniqueUntilProcessing, ShouldQueue {
+final class ImportIncomingProviderInvoiceJob implements ModuleJob, ShouldBeUniqueUntilProcessing, ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
@@ -39,6 +40,12 @@ final class ImportIncomingProviderInvoiceJob implements ShouldBeUniqueUntilProce
 
     public function uniqueId(): string {
         return (string) $this->incomingId;
+    }
+
+    public function organizationId(): ?int {
+        $id = IncomingEInvoice::query()->withoutGlobalScopes()->whereKey($this->incomingId)->value('organization_id');
+
+        return $id !== null ? (int) $id : null;
     }
 
     public function handle(IncomingProviderInvoiceImport $import): void {

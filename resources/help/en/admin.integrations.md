@@ -1,7 +1,7 @@
 ---
 title: "Managing integrations"
 topic: admin.integrations
-version: 5
+version: 6
 keywords:
     - interfaces
     - connectors
@@ -148,3 +148,21 @@ rather than storing credentials somewhere not intended for them.
 Calendar or Microsoft 365 appear in the inbox as single events within the
 import window, with moved and cancelled events handled correctly. A series
 can be created as appointments or dismissed at once as a group.
+
+## GitHub and GitLab: pushing back completion and time
+
+Tasks from GitHub and GitLab issues remain owned by the source system. You
+enable two return paths separately on the plugin card:
+
+- **Push back completion** (GitHub and GitLab): when the task is completed in
+  WorkDiary, WorkDiary closes the issue with a note; reopening the task reopens
+  the issue.
+- **Push back booked time** (GitLab only): each time entry you record for a
+  linked task is booked once by WorkDiary as time spent on the issue. A running
+  timer is booked with its duration when it stops. If you change or delete the
+  time entry afterwards, WorkDiary does not change the booking in GitLab:
+  GitLab does not return an ID for the individual booking. Correct the time
+  spent in GitLab in the issue's time tracking report. The token needs the
+  `api` scope.
+
+GitHub has no time tracking on issues, so only the completion path exists there.

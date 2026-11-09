@@ -550,6 +550,8 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
         // Die Zeilen der Unterlagen räumt der Fremdschlüssel ab, ihre Dateien nicht (Feature 196).
         static::deleting(function (self $invoice): void {
             app(\App\Services\Invoicing\EInvoice\SupportingDocumentService::class)->purgeFiles($invoice);
+            // Vorauszahlungen (MVP-1515) gehören ihrem Gegenstand und überleben den gelöschten Entwurf.
+            OnlinePayment::query()->withoutGlobalScopes()->where('invoice_id', $invoice->id)->whereNotNull('subject_type')->update(['invoice_id' => null]);
         });
 
         // Ausstellungs-Unveränderlichkeit (MVP-162): Anker ist der beim offiziellen Ausstellen eingefrorene Partei-Snapshot
@@ -701,6 +703,9 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
         $this->cancelled_by = $userId;
         $this->cancel_reason = $reason;
         $this->save();
+
+        // Feature 194: Storno von Entwurf oder Rechnung gibt die Auffüllung auf das Projekt-Soll frei, wie bei der Übergabe.
+        app(\App\Services\Invoicing\TargetTopUps::class)->releaseInvoiceItems($this->items()->pluck('id')->map(static fn($id): int => (int) $id)->all());
     }
 
     public function markSent(): void {

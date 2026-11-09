@@ -113,6 +113,7 @@ class RentalProfileController extends Controller {
             'asset_id' => ['required', 'integer', new ExistsInCurrentOrganization('assets')],
             'is_rentable' => ['sometimes', 'boolean'],
             'portal_bookable' => ['sometimes', 'boolean'],
+            'prepayment_percent' => ['nullable', 'integer', 'between:0,100'],
             'group_code' => ['nullable', 'string', 'max:60'],
             'home_site_label' => ['nullable', 'string', 'max:255'],
             'buffer_before_hours' => ['nullable', 'integer', 'min:0', 'max:720'],

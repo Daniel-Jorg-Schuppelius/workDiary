@@ -1,7 +1,7 @@
 ---
 title: "Leasing & asset contracts"
 topic: asset-finance.overview
-version: 1
+version: 2
 keywords:
     - lease agreement
     - lease payments
@@ -35,6 +35,10 @@ data with a separate permission.
 **Activation** freezes the terms as a snapshot and generates the planned
 rate schedule. **Deadlines** (termination, extension, purchase option,
 return, final inspection) warn ahead of time and escalate.
+
+**Cancelling a draft:** A draft created by mistake or twice is cancelled
+with a mandatory reason; it gets no rate schedule and stays readable as
+evidence. An activated contract is not cancelled but terminated.
 
 **Actuals are references only:** incoming invoices are linked to rate
 lines, meter readings feed usage limits — WorkDiary never posts anything.

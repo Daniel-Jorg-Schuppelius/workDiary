@@ -34,13 +34,23 @@ use Illuminate\Support\Facades\DB;
  * {@see ClassificationResolver} wird bei jeder Mutation invalidiert.
  */
 class ClassificationManager {
-    public const string CODE_REGEX = '/^[a-z][a-z0-9_]{1,58}$/';
+    // camelCase erlaubt: Pool- und Profilcodes (accessPoint, sturzAnamnese) müssen sich überschreiben lassen.
+    public const string CODE_REGEX = '/^[a-z][a-zA-Z0-9_]{1,58}$/';
 
     public const int MAX_LABEL_LENGTH = 180;
 
     public const int SORT_STEP = 10;
 
     public const int IMPORT_MAX_ROWS = 1000;
+
+    /**
+     * Fachspalten, die eine Klassifikation über den Code statt die ID tragen.
+     *
+     * @var array<string, list<array{table: string, column: string}>>
+     */
+    private const array CODE_REFERENCES = [
+        'asset_category' => [['table' => 'assets', 'column' => 'category_code']],
+    ];
 
     /**
      * Registry für Referenz-Schutz beim Löschen.
@@ -308,6 +318,15 @@ class ClassificationManager {
         foreach ($refs as $ref) {
             $exists = DB::table($ref['table'])->where($ref['column'], $classification->id)->exists();
             if ($exists) {
+                return true;
+            }
+        }
+
+        foreach (self::CODE_REFERENCES[$classification->domain->value] ?? [] as $ref) {
+            if ($classification->organization_id !== null && DB::table($ref['table'])
+                ->where('organization_id', $classification->organization_id)
+                ->where($ref['column'], $classification->code)
+                ->exists()) {
                 return true;
             }
         }

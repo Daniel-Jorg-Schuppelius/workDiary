@@ -16,7 +16,8 @@ return [
     'description' => 'Elektrohandwerk: Installation, E-Check, Messung, Wallbox und PV-Anschluss mit DGUV-V3-Prüfplänen und Qualifikationen.',
     // v2 (Feature 100): Entsorgungs-Modul empfohlen + AVV-Presets für
     // Kabel/Batterien (Altgeräte-Mitnahme von der Baustelle/beim Kunden).
-    'version' => 4,
+    // v5: Asset-Kategorien werden als Kategorien der Organisation installiert (MVP-1508).
+    'version' => 5,
     // MVP-1053: Arbeitskosten nach § 35a EStG bei Privatkunden ausweisen; eigene Einstellungen bleiben.
     'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers'],
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
@@ -324,8 +325,7 @@ return [
         ['code' => 'el_zutritt', 'kind' => 'accessRestriction', 'label' => 'Zutritt nur für Elektrofachkraft', 'level' => 'fachkraft', 'note' => 'Schalt-/Verteilerräume zutrittsbeschränkt.'],
     ],
     // 'protocol_templates': Codes aus database/data/protocol_templates.php (MVP-902).
-    // 'asset_categories' installiert der BranchProfileInstaller nicht (Kategorien
-    // stammen aus config('asset_categories')); sie dienen als Branchen-Taxonomie.
+    // 'asset_categories': Codes aus database/data/asset_categories.php (MVP-1508).
     'protocol_templates' => [
         ['code' => 'EL_PRUEFPROTOKOLL'],
         ['code' => 'EL_MESSPROTOKOLL'],

@@ -51,6 +51,7 @@ class SelfBillingCreditLine extends Model implements DocumentLine {
         'position' => 'integer',
         'unit_price' => MoneyCast::class . ':credit.currency,4',
         'tax_rate' => PercentageCast::class,
+        'quantity' => 'decimal:4',
     ];
 
     /** @return array<string, string|null> */

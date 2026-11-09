@@ -913,12 +913,20 @@ return [
     // Review 2026-09-11 (Einkauf)
     'purchase_document' => [
         'field' => 'Documento in entrata',
-        'hint' => 'Documenti di tutte le fonti degli ultimi 36 mesi — specchio Lexoffice, spese locali, fatture elettroniche ricevute; ✓ = già assegnato.',
+        'hint' => 'Documenti di tutte le fonti degli ultimi 36 mesi — specchi dei programmi di contabilità (Lexoffice, sevDesk, Akaunting, Invoice Ninja …), spese locali, fatture elettroniche ricevute; ✓ = già assegnato.',
         'sources_hint' => 'Fonti',
         'source' => [
             'lexoffice' => 'Lexoffice',
             'expense' => 'Spesa',
             'incoming_einvoice' => 'Fattura elettronica in entrata',
+            'accounting_voucher' => 'Programma di contabilità',
+            'sevdesk' => 'sevDesk',
+            'easybill' => 'easybill',
+            'orgamax' => 'orgaMAX',
+            'invoiceplane' => 'InvoicePlane',
+            'jtl_wawi' => 'JTL-Wawi',
+            'invoiceninja' => 'Invoice Ninja',
+            'akaunting' => 'Akaunting',
         ],
         'open' => 'Apri documento (:source)',
         'preview' => 'Vedi immagine del documento',

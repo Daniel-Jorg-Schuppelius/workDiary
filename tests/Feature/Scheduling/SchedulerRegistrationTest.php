@@ -38,6 +38,10 @@ class SchedulerRegistrationTest extends TestCase {
         'claims:escalate' => ['15 7 * * *', true, true],
         // Projekt-Sollzeiten gegen gebuchte Zeit (Feature 194, MVP-1468).
         'projects:check-time-targets' => ['10 6 * * *', true, true],
+        // Abonnierte iCal-Kalender (MVP-1516), stündlich mit Versatz.
+        'ical:sync' => ['30 * * * *', true, true],
+        // Unbezahlte Direktbuchungen im Verleih (MVP-1515), Fünf-Minuten-Takt mit Versatz.
+        'rental:expire-prepayments' => ['3,8,13,18,23,28,33,38,43,48,53,58 * * * *', true, true],
         // Umfragen im festen Abstand (MVP-1293).
         'surveys:send-scheduled' => ['30 9 * * *', true, true],
         'operations:scan' => ['34 * * * *', true, true],
@@ -174,8 +178,15 @@ class SchedulerRegistrationTest extends TestCase {
         'caldav:publish' => ['35 4 * * *', true, true],
         'caldav:import' => ['33 * * * *', true, true],
         'sevdesk:pull-vouchers' => ['5 5 * * *', true, true],
+        // Kontakt-Rückweg bei „Buchhaltung führt“ (MVP-1502).
+        'sevdesk:pull-contacts' => ['33 * * * *', true, true],
+        'easybill:pull-contacts' => ['15 * * * *', true, true],
         'accounting:pull-vouchers --plugin=invoiceninja' => ['20 * * * *', true, true],
         'accounting:pull-vouchers --plugin=akaunting' => ['44 * * * *', true, true],
+        // Belegspiegel easybill, JTL-Wawi und InvoicePlane (MVP-1490).
+        'accounting:pull-vouchers --plugin=easybill' => ['16 * * * *', true, true],
+        'accounting:pull-vouchers --plugin=jtl_wawi' => ['41 * * * *', true, true],
+        'accounting:pull-vouchers --plugin=invoiceplane' => ['42 * * * *', true, true],
         'msgraph:publish' => ['45 4 * * *', true, true],
         'google-calendar:publish' => ['55 4 * * *', true, true],
         'google-calendar:import' => ['15 * * * *', true, true],
@@ -222,7 +233,7 @@ class SchedulerRegistrationTest extends TestCase {
         'billbee:sync' => ['8,23,38,53 * * * *', true, true],
         // Neu mit Feature 101 (MVP-495/498): Etsy-Marktplatz-Sync.
         'etsy:sync' => ['4,19,34,49 * * * *', true, true],
-        // Neu mit Feature 093 (MVP-431): easybill-Beleg-Rückabruf.
+        // Neu mit Feature 093 (MVP-431): easybill-Belegdateien ins DMS.
         'easybill:sync' => ['35 * * * *', true, true],
         // Neu mit Feature 077 (MVP-313): orgaMAX-Projektions-Sync.
         'orgamax:sync' => ['16 * * * *', true, true],

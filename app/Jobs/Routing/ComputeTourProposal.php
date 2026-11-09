@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Routing;
 
+use App\Jobs\Contracts\ModuleJob;
 use App\Models\Diary\TourProposal;
 use App\Models\Platform\Organization;
 use App\Models\Scopes\OrganizationScope;
@@ -23,7 +24,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
 
 /** Rechnet einen Tourvorschlag (MVP-1176); je Vorschlag genau ein Lauf. */
-final class ComputeTourProposal implements ShouldBeUnique, ShouldQueue {
+final class ComputeTourProposal implements ModuleJob, ShouldBeUnique, ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
@@ -35,6 +36,12 @@ final class ComputeTourProposal implements ShouldBeUnique, ShouldQueue {
 
     public function uniqueId(): string {
         return (string) $this->proposalId;
+    }
+
+    public function organizationId(): ?int {
+        $id = TourProposal::query()->withoutGlobalScopes()->whereKey($this->proposalId)->value('organization_id');
+
+        return $id !== null ? (int) $id : null;
     }
 
     public function handle(TourProposalService $service): void {

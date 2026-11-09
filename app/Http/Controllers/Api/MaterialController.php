@@ -27,7 +27,7 @@ class MaterialController extends Controller {
         security: [['bearerAuth' => ['materials:read']]],
         parameters: [
             new OA\Parameter(name: 'q', in: 'query', required: false, description: 'Suchbegriff', schema: new OA\Schema(type: 'string')),
-            new OA\Parameter(name: 'provider', in: 'query', required: false, description: 'Provider-Schlüssel oder * für alle', schema: new OA\Schema(type: 'string', default: 'local')),
+            new OA\Parameter(name: 'provider', in: 'query', required: false, description: 'Quelle: `local` (Materialstamm), `lexoffice` (Lexoffice live), `accounting` (Artikelspiegel der Buchhaltungsprogramme sevDesk, easybill, orgaMAX, Invoice Ninja, Akaunting, InvoicePlane) oder `*` für alle eingerichteten. Externe Treffer werden als lokales Material mit `external_provider` angelegt.', schema: new OA\Schema(type: 'string', default: 'local')),
             new OA\Parameter(name: 'limit', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 25)),
         ],
         responses: [

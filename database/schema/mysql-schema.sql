@@ -1328,6 +1328,7 @@ CREATE TABLE `application_opportunities` (
   `quote_id` bigint(20) unsigned DEFAULT NULL,
   `bill_of_quantity_id` bigint(20) unsigned DEFAULT NULL,
   `status` varchar(20) NOT NULL DEFAULT 'captured',
+  `archived_outcome` varchar(20) DEFAULT NULL,
   `question_deadline` date DEFAULT NULL,
   `participation_deadline` date DEFAULT NULL,
   `submission_deadline` date DEFAULT NULL,
@@ -9896,7 +9897,7 @@ CREATE TABLE `domain_accounting_entries` (
   KEY `dae_domain_fk` (`domain_projection_id`),
   KEY `dae_customer_fk` (`customer_id`),
   KEY `dae_org_date_idx` (`organization_id`,`entry_date`),
-  CONSTRAINT `dae_connection_fk` FOREIGN KEY (`connection_id`) REFERENCES `domain_provider_connections` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `dae_connection_fk` FOREIGN KEY (`connection_id`) REFERENCES `domain_provider_connections` (`id`),
   CONSTRAINT `dae_customer_fk` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `dae_domain_fk` FOREIGN KEY (`domain_projection_id`) REFERENCES `domain_projections` (`id`) ON DELETE SET NULL,
   CONSTRAINT `dae_reseller_fk` FOREIGN KEY (`reseller_account_id`) REFERENCES `domain_reseller_accounts` (`id`) ON DELETE SET NULL,
@@ -9997,7 +9998,7 @@ CREATE TABLE `domain_events` (
   UNIQUE KEY `dev_org_conn_event_uq` (`organization_id`,`connection_id`,`external_event_id`),
   KEY `dev_connection_fk` (`connection_id`),
   KEY `dev_org_status_idx` (`organization_id`,`status`),
-  CONSTRAINT `dev_connection_fk` FOREIGN KEY (`connection_id`) REFERENCES `domain_provider_connections` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `dev_connection_fk` FOREIGN KEY (`connection_id`) REFERENCES `domain_provider_connections` (`id`),
   CONSTRAINT `domain_events_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -10030,7 +10031,7 @@ CREATE TABLE `domain_external_invoices` (
   KEY `dei_reseller_fk` (`reseller_account_id`),
   KEY `dei_customer_fk` (`customer_id`),
   KEY `dei_document_fk` (`document_id`),
-  CONSTRAINT `dei_connection_fk` FOREIGN KEY (`connection_id`) REFERENCES `domain_provider_connections` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `dei_connection_fk` FOREIGN KEY (`connection_id`) REFERENCES `domain_provider_connections` (`id`),
   CONSTRAINT `dei_customer_fk` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `dei_document_fk` FOREIGN KEY (`document_id`) REFERENCES `documents` (`id`) ON DELETE SET NULL,
   CONSTRAINT `dei_reseller_fk` FOREIGN KEY (`reseller_account_id`) REFERENCES `domain_reseller_accounts` (`id`) ON DELETE SET NULL,
@@ -10133,7 +10134,7 @@ CREATE TABLE `domain_provider_commands` (
   KEY `dpx_conn_cmd_idx` (`connection_id`,`command`),
   CONSTRAINT `domain_provider_commands_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `dpx_approver_fk` FOREIGN KEY (`approved_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `dpx_connection_fk` FOREIGN KEY (`connection_id`) REFERENCES `domain_provider_connections` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `dpx_connection_fk` FOREIGN KEY (`connection_id`) REFERENCES `domain_provider_connections` (`id`),
   CONSTRAINT `dpx_customer_fk` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `dpx_requester_fk` FOREIGN KEY (`requested_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -12027,6 +12028,66 @@ CREATE TABLE `holidays` (
   CONSTRAINT `holidays_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ical_subscription_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ical_subscription_items` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `ical_subscription_id` bigint(20) unsigned NOT NULL,
+  `uid` text NOT NULL,
+  `uid_hash` char(64) NOT NULL,
+  `sequence` int(10) unsigned NOT NULL DEFAULT 0,
+  `source_modified_at` timestamp NULL DEFAULT NULL,
+  `fingerprint` char(64) NOT NULL,
+  `starts_at` timestamp NULL DEFAULT NULL,
+  `seen_at` timestamp NULL DEFAULT NULL,
+  `removed_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ical_sub_items_sub_uid_unique` (`ical_subscription_id`,`uid_hash`),
+  KEY `ical_subscription_items_organization_id_foreign` (`organization_id`),
+  KEY `ical_sub_items_sub_start_idx` (`ical_subscription_id`,`starts_at`),
+  CONSTRAINT `ical_subscription_items_ical_subscription_id_foreign` FOREIGN KEY (`ical_subscription_id`) REFERENCES `ical_subscriptions` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ical_subscription_items_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ical_subscriptions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ical_subscriptions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `import_entity` varchar(40) NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `url` text NOT NULL,
+  `category_allowlist` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`category_allowlist`)),
+  `allow_private_network` tinyint(1) NOT NULL DEFAULT 0,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `http_etag` varchar(191) DEFAULT NULL,
+  `http_last_modified` varchar(64) DEFAULT NULL,
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_status` varchar(20) DEFAULT NULL,
+  `last_error` varchar(500) DEFAULT NULL,
+  `last_result` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_result`)),
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `updated_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ical_subscriptions_organization_id_foreign` (`organization_id`),
+  KEY `ical_subscriptions_user_id_foreign` (`user_id`),
+  KEY `ical_subscriptions_created_by_foreign` (`created_by`),
+  KEY `ical_subscriptions_updated_by_foreign` (`updated_by`),
+  KEY `ical_subscriptions_active_synced_idx` (`is_active`,`last_synced_at`),
+  CONSTRAINT `ical_subscriptions_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ical_subscriptions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ical_subscriptions_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ical_subscriptions_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `idea_map_shares`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -12605,7 +12666,7 @@ CREATE TABLE `investment_budget_requests` (
   `financing` varchar(12) NOT NULL DEFAULT 'cash',
   `payment_plan` text DEFAULT NULL,
   `note` varchar(1000) DEFAULT NULL,
-  `status` varchar(12) NOT NULL DEFAULT 'draft',
+  `status` varchar(12) NOT NULL DEFAULT 'in_approval',
   `snapshot` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`snapshot`)),
   `requested_by` bigint(20) unsigned DEFAULT NULL,
   `decided_at` timestamp NULL DEFAULT NULL,
@@ -14315,7 +14376,7 @@ CREATE TABLE `job_postings` (
   `url` varchar(500) DEFAULT NULL,
   `published_at` timestamp NULL DEFAULT NULL,
   `expires_at` date DEFAULT NULL,
-  `status` varchar(20) NOT NULL DEFAULT 'draft',
+  `status` varchar(20) NOT NULL DEFAULT 'closed',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -16011,8 +16072,6 @@ CREATE TABLE `lexoffice_articles` (
   `vat_rate` decimal(5,2) DEFAULT NULL,
   `leading_price` varchar(8) DEFAULT NULL,
   `synced_at` timestamp NULL DEFAULT NULL,
-  `is_dirty` tinyint(1) NOT NULL DEFAULT 0,
-  `last_pushed_at` timestamp NULL DEFAULT NULL,
   `archived_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -17629,7 +17688,9 @@ DROP TABLE IF EXISTS `online_payments`;
 CREATE TABLE `online_payments` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `organization_id` bigint(20) unsigned NOT NULL,
-  `invoice_id` bigint(20) unsigned NOT NULL,
+  `invoice_id` bigint(20) unsigned DEFAULT NULL,
+  `subject_type` varchar(60) DEFAULT NULL,
+  `subject_id` bigint(20) unsigned DEFAULT NULL,
   `provider` varchar(40) NOT NULL,
   `provider_reference` varchar(191) DEFAULT NULL,
   `status` varchar(20) NOT NULL DEFAULT 'open',
@@ -17647,6 +17708,7 @@ CREATE TABLE `online_payments` (
   UNIQUE KEY `online_payments_provider_provider_reference_unique` (`provider`,`provider_reference`),
   KEY `online_payments_organization_id_foreign` (`organization_id`),
   KEY `online_payments_invoice_id_status_index` (`invoice_id`,`status`),
+  KEY `online_payments_subject_idx` (`subject_type`,`subject_id`),
   CONSTRAINT `online_payments_invoice_id_foreign` FOREIGN KEY (`invoice_id`) REFERENCES `invoices` (`id`),
   CONSTRAINT `online_payments_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -20308,6 +20370,7 @@ CREATE TABLE `project_time_shortfalls` (
   `billed_minutes` smallint(5) unsigned DEFAULT NULL,
   `billed_at` timestamp NULL DEFAULT NULL,
   `billing_transfer_position_id` bigint(20) unsigned DEFAULT NULL,
+  `invoice_item_id` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -20316,11 +20379,13 @@ CREATE TABLE `project_time_shortfalls` (
   KEY `project_time_shortfalls_acknowledged_by_foreign` (`acknowledged_by`),
   KEY `project_time_shortfalls_billing_transfer_position_id_foreign` (`billing_transfer_position_id`),
   KEY `pts_org_status_date_idx` (`organization_id`,`status`,`date`),
+  KEY `pts_invoice_item_fk` (`invoice_item_id`),
   CONSTRAINT `project_time_shortfalls_acknowledged_by_foreign` FOREIGN KEY (`acknowledged_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `project_time_shortfalls_billing_transfer_position_id_foreign` FOREIGN KEY (`billing_transfer_position_id`) REFERENCES `billing_transfer_positions` (`id`) ON DELETE SET NULL,
   CONSTRAINT `project_time_shortfalls_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `project_time_shortfalls_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `project_time_shortfalls_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  CONSTRAINT `project_time_shortfalls_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `pts_invoice_item_fk` FOREIGN KEY (`invoice_item_id`) REFERENCES `invoice_items` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `project_time_targets`;
@@ -21374,6 +21439,7 @@ CREATE TABLE `rental_profiles` (
   `asset_id` bigint(20) unsigned NOT NULL,
   `is_rentable` tinyint(1) NOT NULL DEFAULT 1,
   `portal_bookable` tinyint(1) NOT NULL DEFAULT 0,
+  `prepayment_percent` tinyint(3) unsigned DEFAULT NULL,
   `group_code` varchar(60) DEFAULT NULL,
   `home_site_label` varchar(255) DEFAULT NULL,
   `buffer_before_hours` int(10) unsigned NOT NULL DEFAULT 0,
@@ -21515,6 +21581,9 @@ CREATE TABLE `rental_requests` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `guests` smallint(5) unsigned DEFAULT NULL,
+  `prepayment_amount` decimal(15,2) DEFAULT NULL,
+  `currency` char(3) DEFAULT NULL,
+  `payment_due_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `rental_requests_org_status_idx` (`organization_id`,`status`),
   KEY `rental_requests_customer_status_idx` (`customer_id`,`status`),
@@ -21523,6 +21592,7 @@ CREATE TABLE `rental_requests` (
   KEY `rental_req_decider_fk` (`decided_by`),
   KEY `rental_req_reservation_fk` (`rental_reservation_id`),
   KEY `rental_req_case_fk` (`rental_case_id`),
+  KEY `rental_requests_status_due_idx` (`status`,`payment_due_at`),
   CONSTRAINT `rental_req_asset_fk` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE SET NULL,
   CONSTRAINT `rental_req_case_fk` FOREIGN KEY (`rental_case_id`) REFERENCES `rental_cases` (`id`) ON DELETE SET NULL,
   CONSTRAINT `rental_req_customer_fk` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE,
@@ -28705,3 +28775,12 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1049,'2027_04_03_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1050,'2027_04_03_110000_add_einvoice_recipient_profile_to_customers',2);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1051,'2027_04_03_120000_create_external_invoices_tables',2);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1052,'2027_04_03_130000_drop_audit_log_foreign_keys_on_sqlite',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1053,'2027_04_05_100000_restrict_domain_connection_evidence_fks',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1054,'2027_04_05_100100_rewrite_domain_command_subject_types',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1055,'2027_04_08_100000_add_invoice_item_to_project_time_shortfalls',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1056,'2027_04_08_100100_drop_write_back_from_lexoffice_articles',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1057,'2027_04_10_100000_create_ical_subscriptions_tables',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1058,'2027_04_10_110000_add_online_prepayments_to_rental_direct_booking',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1059,'2027_04_11_100000_correct_sevdesk_voucher_direction',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1060,'2027_04_11_100100_add_archived_outcome_to_application_opportunities',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1061,'2027_04_11_100200_retire_draft_status_of_postings_and_budget_requests',4);

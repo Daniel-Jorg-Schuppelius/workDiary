@@ -13,15 +13,17 @@ declare(strict_types=1);
 namespace App\Services\Invoicing\OnlinePayment;
 
 use App\Enums\Invoicing\{InvoiceStatus, OnlinePaymentStatus};
-use App\Events\Invoicing\{InvoicePaymentReceived, InvoicePaymentReverted};
+use App\Events\Invoicing\{InvoicePaymentReceived, InvoicePaymentReverted, OnlinePrepaymentStatusChanged};
 use App\Models\Invoicing\{Invoice, OnlinePayment};
 use App\Models\Platform\Organization;
+use App\Plugins\Contracts\OnlinePaymentProvider;
 use App\Plugins\Support\Payments\{OnlinePaymentRequest, OnlinePaymentSnapshot};
 use App\Services\Invoicing\{DunningService, InvoiceSettlement};
 use App\Services\Invoicing\OnlinePayment\Exceptions\OnlinePaymentException;
 use App\Support\CanonicalUrl;
 use App\Support\{DocumentLocale, OrganizationContext};
 use CommonToolkit\ValueObjects\Money;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{DB, Log};
@@ -90,17 +92,88 @@ class OnlinePaymentService {
             'refunded_amount' => Money::zero($open->getCurrency()),
         ]);
 
+        return $this->openCheckout($payment, $provider, $organization, new OnlinePaymentRequest(
+            reference: (string) $payment->sqid,
+            amount: $open,
+            description: (string) __('payments.description', ['number' => (string) $invoice->number]),
+            // Der Aufruf ist anonym: Rücksprung und Webhook nie aus dem Host-Header bilden (pub-1).
+            returnUrl: CanonicalUrl::route('payments.done', $token),
+            webhookUrl: CanonicalUrl::route('payments.webhook', $provider->onlinePaymentProviderId()),
+            locale: DocumentLocale::for($invoice->customer, $organization),
+            customerEmail: $invoice->customer->email,
+        ));
+    }
+
+    /** Ist für die Organisation ein Zahlungsanbieter eingerichtet? */
+    public function available(Organization $organization): bool {
+        return $this->providers->forOrganization($organization) !== null;
+    }
+
+    /**
+     * Bezahlseite für eine Vorauszahlung vor der Rechnung (MVP-1515), etwa bei
+     * einer Direktbuchung. Gebunden an den Gegenstand; eine noch gültige Seite
+     * über denselben Betrag wird wiederverwendet.
+     *
+     * @throws OnlinePaymentException
+     */
+    public function prepaymentCheckoutUrl(Model $subject, Organization $organization, Money $amount, string $description, string $returnUrl, string $locale, ?string $customerEmail = null): string {
+        $provider = $this->providers->forOrganization($organization)
+            ?? throw new OnlinePaymentException(OnlinePaymentException::UNAVAILABLE);
+
+        $reusable = OnlinePayment::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('subject_type', $subject->getMorphClass())
+            ->where('subject_id', $subject->getKey())
+            ->where('provider', $provider->onlinePaymentProviderId())
+            ->where('status', OnlinePaymentStatus::Open->value)
+            ->whereNotNull('checkout_url')
+            ->where('checkout_expires_at', '>', now()->addMinutes(self::REUSE_MARGIN_MINUTES))
+            ->latest('id')
+            ->get()
+            ->first(static fn (OnlinePayment $payment): bool => $payment->gross_amount->compareTo($amount) === 0);
+        if ($reusable instanceof OnlinePayment) {
+            return (string) $reusable->checkout_url;
+        }
+
+        $payment = OnlinePayment::query()->create([
+            'organization_id' => $organization->id,
+            'subject_type' => $subject->getMorphClass(),
+            'subject_id' => $subject->getKey(),
+            'provider' => $provider->onlinePaymentProviderId(),
+            'status' => OnlinePaymentStatus::Open,
+            'currency' => $amount->getCurrency()->value,
+            'gross_amount' => $amount,
+            'refunded_amount' => Money::zero($amount->getCurrency()),
+        ]);
+
+        return $this->openCheckout($payment, $provider, $organization, new OnlinePaymentRequest(
+            reference: (string) $payment->sqid,
+            amount: $amount,
+            description: $description,
+            returnUrl: $returnUrl,
+            webhookUrl: CanonicalUrl::route('payments.webhook', $provider->onlinePaymentProviderId()),
+            locale: $locale,
+            customerEmail: $customerEmail,
+        ));
+    }
+
+    /** Offene Vorauszahlungen eines Gegenstands nachfragen — Rückkehr vom Anbieter und Fristablauf warten nicht auf den Webhook. */
+    public function refreshOpenFor(Model $subject): void {
+        OnlinePayment::query()->withoutGlobalScopes()
+            ->where('subject_type', $subject->getMorphClass())
+            ->where('subject_id', $subject->getKey())
+            ->where('status', OnlinePaymentStatus::Open->value)
+            ->whereNotNull('provider_reference')
+            ->latest('id')
+            ->limit(3)
+            ->get()
+            ->each(fn (OnlinePayment $payment) => $this->refresh($payment));
+    }
+
+    /** @throws OnlinePaymentException */
+    private function openCheckout(OnlinePayment $payment, OnlinePaymentProvider $provider, Organization $organization, OnlinePaymentRequest $request): string {
         try {
-            $checkout = $provider->createCheckout($organization, new OnlinePaymentRequest(
-                reference: (string) $payment->sqid,
-                amount: $open,
-                description: (string) __('payments.description', ['number' => (string) $invoice->number]),
-                // Der Aufruf ist anonym: Rücksprung und Webhook nie aus dem Host-Header bilden (pub-1).
-                returnUrl: CanonicalUrl::route('payments.done', $token),
-                webhookUrl: CanonicalUrl::route('payments.webhook', $provider->onlinePaymentProviderId()),
-                locale: DocumentLocale::for($invoice->customer, $organization),
-                customerEmail: $invoice->customer->email,
-            ));
+            $checkout = $provider->createCheckout($organization, $request);
         } catch (Throwable $e) {
             $payment->update(['status' => OnlinePaymentStatus::Failed]);
             report($e);
@@ -200,9 +273,12 @@ class OnlinePaymentService {
 
         if ($changed) {
             $payment->refresh();
-            $invoice = Invoice::query()->find($payment->invoice_id);
+            $invoice = $payment->invoice_id !== null ? Invoice::query()->find($payment->invoice_id) : null;
             if ($invoice instanceof Invoice) {
                 $this->syncInvoice($invoice, $payment);
+            }
+            if ($payment->subject_type !== null) {
+                OnlinePrepaymentStatusChanged::dispatch($payment);
             }
         }
     }

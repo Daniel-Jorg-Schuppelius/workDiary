@@ -1,7 +1,7 @@
 ---
 title: "Incoming invoices"
 topic: finance.incoming-invoices
-version: 7
+version: 8
 keywords:
     - several tax rates
     - supplier invoice
@@ -276,8 +276,8 @@ without the issuer’s tax identifier.
 (rejection only with a reason). Payment approval is only possible after
 approval. Every decision is logged with person and time.
 
-**Handover to accounting:** If Lexware Office or DATEV Unternehmen online is
-connected and the handover is switched on there, a document is handed over as
+**Handover to accounting:** If Lexware Office, sevDesk or DATEV Unternehmen
+online is connected and the handover is switched on there, a document is handed over as
 soon as its counterparty is known. Approval remains the prerequisite for
 payment, not for the handover. Beforehand the system checks: no unrecognised
 document without values, not rejected, addressed to us, not a copy of one of
@@ -293,6 +293,19 @@ charge, intra-community cases or third countries.
   the entered tax rates. Otherwise the voucher is sent without amounts and
   accounting adds them in Lexware.
 - DATEV Unternehmen online receives the original as a document image.
+- sevDesk receives the voucher as a draft with the original; accounting
+  confirms it there. sevDesk only accepts an XRechnung or ZUGFeRD file from
+  bookkeeping version 2.0; under 1.0 the PDF sent along is transferred. If a
+  voucher with the same number already exists there for the same contact, it
+  is only linked; without a number the handover suggests a voucher with the
+  same date and amount. If the contact is missing, the handover looks for an
+  unambiguous name match and otherwise creates one if WorkDiary leads the
+  master data. One item is created per tax rate (0, 7 or 19 %) with the
+  booking account for the direction from the plugin settings. Without a
+  booking account, in a foreign currency, with other rates and for reverse
+  charge, intra-community cases or exports the handover waits with a note:
+  record the voucher in sevDesk, and the next handover links it via the
+  invoice number.
 - If the invoice number is missing, the handover searches Lexware by contact,
   voucher date and amount. A match is not linked automatically: you choose
   “Link with this voucher” or “Different voucher – create new”.

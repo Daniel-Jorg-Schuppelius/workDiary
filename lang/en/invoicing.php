@@ -77,6 +77,7 @@ return [
         'empty' => 'No billable times or travel charges match the selected filters.',
         'entry_count' => ':count entry|:count entries',
         'travel' => '+ :count travel charge(s)',
+        'target_top_up' => '+ :count top-up to the project target|+ :count top-ups to the project target',
         'warning_late' => ':count late entry: service date falls into an already billed period.|:count late entries: service dates fall into already billed periods.',
         'column' => [
             'description' => 'Item',

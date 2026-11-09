@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Jobs\Attributes\BelongsToModule;
 use App\Models\Media\Dictation;
 use App\Services\Media\DictationService;
 use Illuminate\Bus\Queueable;
@@ -20,6 +21,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
 
 /** Diktat transkribieren und gliedern (MVP-1060) — auf der Medien-Queue wie die Untertitel. */
+#[BelongsToModule('media')]
 class TranscribeDictationJob implements ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;

@@ -123,6 +123,7 @@ final class ScheduleManifest extends Manifest {
             \App\Services\Reporting\Contracts\StaffingCoverage::class => \App\Services\Schedule\CoverageService::class,
             \App\Services\Diary\Contracts\ServiceDurationSource::class => \App\Services\Routing\ServiceDurationSuggester::class,
             \App\Services\Location\Contracts\TrackDistanceSource::class => \App\Services\Routing\OsrmTrackMatcher::class,
+            \App\Services\Diary\Contracts\AssignmentQualificationGuard::class => \App\Services\Schedule\QualificationEnforcement::class,
         ];
     }
 

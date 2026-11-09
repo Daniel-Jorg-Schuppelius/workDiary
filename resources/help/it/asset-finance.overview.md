@@ -1,7 +1,7 @@
 ---
 title: "Leasing e contratti asset"
 topic: asset-finance.overview
-version: 1
+version: 2
 keywords:
     - contratto di leasing
     - canoni di leasing
@@ -34,6 +34,11 @@ finanziari riservati con un permesso dedicato.
 **L'attivazione** congela le condizioni come snapshot e genera il piano
 rate. **Le scadenze** (recesso, proroga, opzione d'acquisto,
 restituzione) avvisano in anticipo ed escalano.
+
+**Annullare una bozza:** una bozza creata per errore o in doppio viene
+annullata con una motivazione obbligatoria; non riceve un piano delle rate
+e resta leggibile come prova. Un contratto attivato non si annulla, si
+disdice.
 
 **I valori effettivi sono solo riferimenti:** fatture passive collegate
 alle rate, contatori per i limiti d'uso — nessuna registrazione

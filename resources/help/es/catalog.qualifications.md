@@ -1,7 +1,7 @@
 ---
 title: "Cualificaciones"
 topic: catalog.qualifications
-version: 1
+version: 2
 keywords:
     - competencias
     - habilidades
@@ -26,3 +26,27 @@ cada cualificación y la ordenación por columnas ayuda con listas
 extensas. Las cualificaciones inactivas se conservan pero dejan de
 ofrecerse: marca como inactivas las entradas en desuso en lugar de
 borrarlas, para preservar el historial de asignaciones.
+
+## Cualificaciones obligatorias: aviso o bloqueo
+
+Las cualificaciones obligatorias se definen en el tipo de turno y en el
+encargo (zona «Cualificaciones» de la planificación). Una cualificación solo
+cuenta si es válida el día del servicio: si el día es anterior a «válida
+desde» o posterior a «válida hasta» de la asignación, se considera faltante.
+
+De forma predeterminada, el plan de turnos, el encargo y la matriz de
+cualificaciones solo avisan de la carencia. Si la organización cambia a
+**Bloquear la asignación** en «Organización y configuración», estas vías rechazan la
+asignación:
+
+- crear un turno o asignarlo a otra persona, otro tipo de turno u otro día,
+  incluso si se anula la comprobación de cumplimiento,
+- aprobar un intercambio de turno (en ambos sentidos),
+- importación de turnos; la rotación deja el servicio libre y lo cuenta como
+  omitido,
+- asignar un encargo a una persona, incluir un encargo en una ruta y aceptar
+  una propuesta de hueco.
+
+Las propuestas de asignación ya no muestran a las personas bloqueadas. Las
+asignaciones existentes se mantienen; un servicio así solo puede confirmarse
+en la planificación con una justificación, que queda registrada.

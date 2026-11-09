@@ -1,7 +1,7 @@
 ---
 title: "Fatture ricevute"
 topic: finance.incoming-invoices
-version: 7
+version: 8
 keywords:
     - più aliquote
     - fattura fornitore
@@ -297,8 +297,8 @@ rifiutato (il rifiuto solo con motivazione). L’autorizzazione al pagamento è
 possibile solo dopo l’approvazione. Ogni decisione viene registrata con
 persona e orario.
 
-**Consegna alla contabilità:** se Lexware Office o DATEV Unternehmen online è
-collegato e lì la consegna è attivata, un documento parte non appena la sua
+**Consegna alla contabilità:** se Lexware Office, sevDesk o DATEV Unternehmen
+online è collegato e lì la consegna è attivata, un documento parte non appena la sua
 controparte è nota. L’approvazione resta il presupposto del pagamento, non
 della consegna. Prima il sistema verifica: nessun documento non riconosciuto
 senza valori, non rifiutato, indirizzato a noi, non una copia di una propria
@@ -316,6 +316,20 @@ contabile, le operazioni intracomunitarie o i paesi terzi.
   giustificativo parte senza importi e la contabilità li completa in Lexware.
 - DATEV Unternehmen online riceve l’originale come immagine del
   giustificativo.
+- sevDesk riceve il giustificativo come bozza con l’originale; la
+  contabilità lo conferma lì. sevDesk accetta un file XRechnung o ZUGFeRD
+  solo dalla versione contabile 2.0; con la 1.0 viene inviato il PDF
+  allegato. Se lì esiste già un giustificativo con lo stesso numero per lo
+  stesso contatto, viene solo collegato; senza numero la consegna propone un
+  giustificativo con la stessa data e lo stesso importo. Se manca il
+  contatto, la consegna cerca una corrispondenza univoca per nome e
+  altrimenti lo crea, se WorkDiary gestisce i dati anagrafici. Per ogni
+  aliquota (0, 7 o 19 %) nasce una posizione con il conto contabile della
+  direzione indicato nelle impostazioni del plugin. Senza conto contabile, in
+  valuta estera, con altre aliquote e per inversione contabile, casi
+  intracomunitari o esportazioni la consegna attende con un avviso:
+  registrate allora il giustificativo in sevDesk, la consegna successiva lo
+  collega tramite il numero di fattura.
 - Se manca il numero di fattura, la consegna cerca in Lexware per contatto,
   data del giustificativo e importo. Una corrispondenza non viene collegata
   automaticamente: Lei sceglie «Collega a questo giustificativo» oppure «Altro

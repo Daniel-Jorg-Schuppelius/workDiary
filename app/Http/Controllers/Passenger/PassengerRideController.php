@@ -18,6 +18,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Fleet\Vehicle;
 use App\Models\Passenger\{PassengerFareTariff, PassengerRide};
 use App\Models\Platform\{Organization, User};
+use App\Plugins\Contracts\PassengerDispatchProvider;
+use App\Plugins\PluginManager;
 use App\Services\Passenger\PassengerRideService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -36,7 +38,7 @@ class PassengerRideController extends Controller {
 
     public function __construct(private readonly PassengerRideService $rides) {}
 
-    public function index(Request $request): View {
+    public function index(Request $request, PluginManager $plugins): View {
         Gate::authorize('viewAny', PassengerRide::class);
         $this->passengerOrganization();
         [$from, $to] = $this->globalDateRangeBounds();
@@ -64,8 +66,12 @@ class PassengerRideController extends Controller {
             ->paginate(25)
             ->withQueryString();
 
+        // „Angefragt“ setzt nur ein Vermittlungsanbieter; ohne ihn bliebe der Filterwert leer (MVP-1517).
+        $dispatch = $plugins->implementing(PassengerDispatchProvider::class)->isNotEmpty();
+
         return view('passenger.rides.index', [
             'rides' => $rides,
+            'statuses' => array_values(array_filter(RideStatus::cases(), static fn (RideStatus $status): bool => $dispatch || $status !== RideStatus::Requested)),
             'show' => $show,
             'openCount' => PassengerRide::query()->open()->count(),
             'returnProofCount' => PassengerRide::query()

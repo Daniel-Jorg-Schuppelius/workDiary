@@ -14,7 +14,7 @@
 @if ($blocked !== null)
     <div class="rounded-box border border-warning/40 bg-warning/5 px-3 py-2 text-sm">{{ $blocked }}</div>
 @elseif ($preview !== null)
-    @if ($preview['totals']['count'] === 0 && $preview['travel']['count'] === 0)
+    @if ($preview['totals']['count'] === 0 && $preview['travel']['count'] === 0 && $preview['target']['count'] === 0)
         <x-empty-state icon="receipt_long" :message="__('invoicing.preview.empty')" compact />
     @else
         <div class="space-y-3 rounded-box border border-base-300 bg-base-200/30 p-3">
@@ -25,6 +25,9 @@
                 <span class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($preview['totals']['amount'], 2, withThousandsSeparator: true) }} €</span>
                 @if ($preview['travel']['count'] > 0)
                     <span class="text-muted">{{ __('invoicing.preview.travel', ['count' => $preview['travel']['count']]) }}</span>
+                @endif
+                @if ($preview['target']['count'] > 0)
+                    <span class="text-muted">{{ trans_choice('invoicing.preview.target_top_up', $preview['target']['count'], ['count' => $preview['target']['count']]) }}</span>
                 @endif
             </div>
 

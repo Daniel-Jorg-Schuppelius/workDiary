@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\TimeExport\TimeExportStatus;
+use App\Jobs\Attributes\BelongsToModule;
 use App\Mail\TimeExportDeliveryMail;
 use App\Models\Time\{TimeExport, TimeExportDeliveryConfig};
 use App\Services\TimeExport\{TimeExportService, TimeExportSftpUploader};
@@ -42,6 +43,7 @@ use Throwable;
  * Die Export-Datei selbst wird nie mutiert (GoBD) — versendet werden exakt
  * die gespeicherten, gehashten Bytes.
  */
+#[BelongsToModule('time')]
 class DeliverTimeExportJob implements ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;

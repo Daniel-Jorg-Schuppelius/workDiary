@@ -17,7 +17,7 @@ use App\Models\Invoicing\Invoice;
 use App\Models\Material\MaterialUsage;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
-use App\Services\Billing\BillingModeResolver;
+use App\Services\Billing\{BillingModeResolver, DocumentTotalsCalculator};
 use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
@@ -29,6 +29,7 @@ class InvoiceGenerator {
     public function __construct(
         private readonly NumberSequenceService $numberSequence,
         private readonly TextCorrectionService $corrections,
+        private readonly TargetTopUps $targetTopUps,
     ) {}
 
     /**
@@ -85,7 +86,11 @@ class InvoiceGenerator {
             $charges = app(\App\Services\Billing\Travel\TravelChargeService::class)
                 ->chargesForRange($customer, $project, $range, $foreignCustomer, false);
 
-            if ($entries->isEmpty() && count($charges) === 0) {
+            // Auffüllung auf das Projekt-Soll (Feature 194), wie in der Übergabe.
+            $topUps = $this->targetTopUps->openQuery($customer, $range, $project, $foreignCustomer)
+                ->orderBy('date')->orderBy('user_id')->lockForUpdate()->get();
+
+            if ($entries->isEmpty() && count($charges) === 0 && $topUps->isEmpty()) {
                 throw \Illuminate\Validation\ValidationException::withMessages([
                     'customer_id' => (string) __('Für den gewählten Zeitraum gibt es keine abrechenbaren Zeiten oder Anfahrten.'),
                 ]);
@@ -148,6 +153,18 @@ class InvoiceGenerator {
             // Zeiten erneut (Whitebox 2026-07-10, G1).
             if ($billedEntryIds !== []) {
                 TimeEntry::query()->whereKey(array_unique($billedEntryIds))->update(['exported' => true]);
+            }
+
+            foreach ($this->targetTopUps->lines($topUps, $customer, $customer->organization) as $line) {
+                $item = $invoice->items()->create([
+                    'service_date' => $line->shortfall->date->toDateString(),
+                    'description' => $this->bookingLine($line->name . ' (' . $line->detail . ')', $line->shortfall->project->foreignCustomer, (int) $customer->organization_id),
+                    'quantity' => (string) $line->hours,
+                    'unit' => (string) __('invoicing.unit_hour'),
+                    'unit_price' => (string) $line->price->rate,
+                    'position' => ++$position,
+                ]);
+                $this->targetTopUps->markInvoiced($line->shortfall, $item);
             }
 
             // Anfahrten wurden oben unter Sperre geladen.
@@ -241,6 +258,7 @@ class InvoiceGenerator {
      *   entries: \Illuminate\Database\Eloquent\Collection<int, TimeEntry>,
      *   lines: list<array{description: string, hours: float, rate: float, amount: float, minutes: int, entry_ids: list<int>, project_name: string|null}>,
      *   travel: array{count: int, amount: float},
+     *   target: array{count: int, minutes: int, amount: float},
      *   totals: array{count: int, minutes: int, amount: float},
      *   warnings: array{late_count: int}
      * }
@@ -264,7 +282,7 @@ class InvoiceGenerator {
                 continue;
             }
 
-            $lineAmount = round($line['hours'] * $line['rate'], 2);
+            $lineAmount = DocumentTotalsCalculator::lineNet($line['hours'], $line['rate'])->withScale(2)->toFloat();
             $amount += $lineAmount;
             $lines[] = [
                 'description' => $line['description'],
@@ -277,6 +295,26 @@ class InvoiceGenerator {
             ];
         }
 
+        $target = ['count' => 0, 'minutes' => 0, 'amount' => 0.0];
+        $topUps = $this->targetTopUps->openQuery($customer, $range, $project, $foreignCustomer)->orderBy('date')->orderBy('user_id')->get();
+        foreach ($this->targetTopUps->lines($topUps, $customer, $customer->organization) as $topUp) {
+            $lineAmount = DocumentTotalsCalculator::lineNet($topUp->hours, $topUp->price->rate)->withScale(2)->toFloat();
+            $amount += $lineAmount;
+            $target['count']++;
+            $target['minutes'] += $topUp->minutes;
+            $target['amount'] += $lineAmount;
+            $lines[] = [
+                'description' => $this->bookingLine($topUp->name . ' (' . $topUp->detail . ')', $topUp->shortfall->project->foreignCustomer, (int) $customer->organization_id),
+                'hours' => $topUp->hours,
+                'rate' => $topUp->price->rate,
+                'amount' => $lineAmount,
+                'minutes' => $topUp->minutes,
+                'entry_ids' => [],
+                'project_name' => $topUp->shortfall->project->name,
+            ];
+        }
+        $target['amount'] = round($target['amount'], 2);
+
         $travelAmount = 0.0;
         foreach ($charges as $charge) {
             $travelAmount += $charge->amount();
@@ -286,6 +324,7 @@ class InvoiceGenerator {
             'entries' => $entries,
             'lines' => $lines,
             'travel' => ['count' => count($charges), 'amount' => round($travelAmount, 2)],
+            'target' => $target,
             'totals' => [
                 'count' => $entries->count(),
                 'minutes' => (int) $entries->sum('minutes'),

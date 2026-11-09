@@ -1,7 +1,7 @@
 ---
 title: "Manufacturing orders"
 topic: manufacturing.orders
-version: 4
+version: 5
 keywords:
     - production order
     - work order
@@ -53,6 +53,23 @@ planned occupancy time, or commissioned to a supplier as subcontracting
 multi-level material requirements explosion (MRP) for a finished good as
 well as quality metrics per article. Cancelling is irreversible;
 creating, reporting and delivering require the right **Post stock
+movements**.
+
+## Complete, wait, block
+
+A running order shows only the actions its status allows in the header:
+
+- **Complete**: finishes an order *in progress*. This is only possible once
+  a **good quantity** has been reported; otherwise a notice appears.
+  Completing records the completion date, freezes the **production record**
+  and releases unused material reservations. Afterwards the order can no
+  longer be changed and counts in the article's **post-calculation**.
+- **Set to waiting**: pauses the order, for example until material arrives.
+- **Block**: stops the order, for example because of a quality problem.
+- **Resume**: sets a waiting or blocked order back to *in progress*. The
+  procedure run from the start continues.
+
+Completing, waiting, blocking and resuming require the right **Post stock
 movements**.
 
 ## Shipping on the delivery

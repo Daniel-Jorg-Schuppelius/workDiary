@@ -1,7 +1,7 @@
 ---
 title: "Gestión de emergencias y crisis"
 topic: crisis.overview
-version: 1
+version: 2
 keywords:
     - comité de crisis
     - plan de emergencia
@@ -41,6 +41,13 @@ momento, la decisión y la justificación.
 (RGPD 72 h, NIS2 24 h/72 h/1 mes, KRITIS sin demora) son datos de
 catálogo — la organización puede sobrescribirlas; las fechas concretas
 corren a partir de la activación.
+
+**Descartar una falsa alarma:** Si una crisis notificada resulta ser una
+falsa alarma antes de que nadie haya evaluado la situación, «Descartar
+como falsa alarma» cierra el expediente con una justificación obligatoria.
+La justificación queda en el historial de auditoría y el expediente se
+conserva solo en lectura. Tras la evaluación ya no se descarta, sino que
+se da el fin de la alerta.
 
 **Comunicación:** El borrador, la aprobación (nunca por el redactor) y
 el envío documentado quedan trazables por separado.

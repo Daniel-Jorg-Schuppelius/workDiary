@@ -1,7 +1,7 @@
 ---
 title: "Sonderkonditionen & Abrechnungskonto"
 topic: customers.billing
-version: 4
+version: 5
 keywords:
     - Sonderpreise
     - Kundenstundensatz
@@ -14,6 +14,8 @@ keywords:
     - Saldo
     - Monatspauschale
     - Lexoffice
+    - sevDesk
+    - easybill
     - Monatsabschluss
     - Abschlag
 audience: []
@@ -29,7 +31,7 @@ An der Kundenakte lassen sich **Sonderkonditionen** hinterlegen: eigene
 Stundensätze je Tätigkeit und Tagtyp (Werktag/Wochenende, Definition über
 „Arbeitstage pro Woche") sowie der Abrechnungsweg — rechnungsloses
 **Kundenkonto** mit laufendem Saldo, **monatliche Rechnung** oder
-**Pauschale** über das Buchhaltungsprogramm (derzeit Lexoffice).
+**Pauschale** über das Buchhaltungsprogramm (Lexoffice, sevDesk oder easybill).
 
 Zu den Konditionen gehört auch eine **Anfahrtspauschale**: Jeder
 abrechenbare Zeiteintrag bringt dann zusätzlich x Minuten mit, bewertet
@@ -58,20 +60,30 @@ Monaten werden als Warnung angezeigt — Monat wiedereröffnen oder den
 Eintrag umdatieren.
 
 Im **Pauschal-Modus** führt das Buchhaltungsprogramm aus der
-Rechnungshoheit des Kunden Beleg und Zahlung — derzeit Lexoffice. Die
-Monatspauschale wird netto hinterlegt („Erwarteter Monatsabschlag"); der
-lokale Saldo stellt Stunden × Satz gegen die gezahlte Pauschale. Für den
-Beleg gibt es zwei Wege:
+Rechnungshoheit des Kunden Beleg und Zahlung: Lexoffice, sevDesk oder
+easybill. Die Monatspauschale wird netto hinterlegt („Erwarteter
+Monatsabschlag"); der lokale Saldo stellt Stunden × Satz gegen die gezahlte
+Pauschale. Für den Beleg gibt es zwei Wege:
 
-- **Pauschale senden** erzeugt die Rechnung in Lexoffice (monatlich auch
-  automatisch für den Vormonat).
+- **Pauschale senden** erzeugt die Rechnung im Programm (monatlich auch
+  automatisch für den Vormonat). sevDesk vergibt die Rechnungsnummer und
+  führt die Rechnung danach als versendet und offen; easybill stellt sie
+  fertig und nummeriert sie.
 - **Beleg verknüpfen** hängt eine Rechnung an den Monat, die Sie bereits
-  in Lexoffice erstellt haben. Passt genau eine Rechnung des Kunden nach
+  im Programm erstellt haben. Passt genau eine Rechnung des Kunden nach
   Monat und Nettobetrag, geschieht das beim Belege-Sync automatisch.
 
 Sobald ein Beleg am Monat hängt, entfällt „Pauschale senden" — sonst
-entstünde in Lexoffice ein zweiter Beleg. Der Zahlstatus fließt beim
-Belege-Sync zurück und wird **netto** verbucht (Lexoffice führt brutto).
+entstünde im Programm ein zweiter Beleg. Der Zahlstatus fließt beim
+Belege-Sync zurück und wird **netto** verbucht (die Programme führen den
+offenen Betrag brutto); Teilzahlungen zählen anteilig. Bei sevDesk und
+easybill kommt der Zahlstand aus dem Belegspiegel, also aus dem
+regelmäßigen Belegabruf; ein stornierter oder im Programm gelöschter Beleg
+nimmt die gebuchte Zahlung zurück. Bricht das Senden an sevDesk oder easybill ab,
+bleibt die Rechnung als Entwurf stehen; ein erneutes „Pauschale senden" setzt sie fort,
+statt im Programm einen zweiten Beleg anzulegen. Zahlungen aus dem Programm
+lassen sich am Panel nicht von Hand stornieren — das geschieht über den
+Beleg im Programm.
 
 Wurden Sonderkonditionen erst nachträglich angelegt, stehen ältere Zeiten
 zunächst mit 0,00 € in „Gesamt". **Neu berechnen** bewertet sie mit den

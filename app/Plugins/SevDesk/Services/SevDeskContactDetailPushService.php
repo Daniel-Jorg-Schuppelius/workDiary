@@ -14,6 +14,7 @@ namespace App\Plugins\SevDesk\Services;
 
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
+use App\Models\Supplier\Supplier;
 use App\Plugins\SevDesk\Api\SevDeskClient;
 use App\Plugins\SevDesk\SevDeskPlugin;
 use App\Services\Finance\Accounting\ContactPushService;
@@ -56,7 +57,7 @@ class SevDeskContactDetailPushService {
      *
      * @return array{address: bool, email: bool, phone: bool}
      */
-    public function push(SevDeskClient $client, Customer $customer, string $contactId): array {
+    public function push(SevDeskClient $client, Customer|Supplier $party, string $contactId): array {
         $pushed = ['address' => false, 'email' => false, 'phone' => false];
         if (trim($contactId) === '') {
             return $pushed;
@@ -64,14 +65,14 @@ class SevDeskContactDetailPushService {
 
         $contact = ['id' => $contactId, 'objectName' => 'Contact'];
 
-        $pushed['address'] = $this->pushAddress($client, $customer, $contact);
+        $pushed['address'] = $this->pushAddress($client, $party, $contact);
 
         $fields = $this->contacts->withoutOwnIdentity([
-            'email' => (string) ($customer->email ?? ''),
+            'email' => (string) ($party->email ?? ''),
         ]);
         $pushed['email'] = $this->pushCommunicationWay(
             $client,
-            $customer,
+            $party,
             $contact,
             self::TYPE_EMAIL,
             'EMAIL',
@@ -79,21 +80,21 @@ class SevDeskContactDetailPushService {
         );
         $pushed['phone'] = $this->pushCommunicationWay(
             $client,
-            $customer,
+            $party,
             $contact,
             self::TYPE_PHONE,
             'PHONE',
-            trim((string) ($customer->phone ?? '')),
+            trim((string) ($party->phone ?? '')),
         );
 
         return $pushed;
     }
 
     /** @param array{id: string, objectName: string} $contact */
-    private function pushAddress(SevDeskClient $client, Customer $customer, array $contact): bool {
-        $street = trim((string) ($customer->address_street ?? ''));
-        $zip = trim((string) ($customer->address_zip ?? ''));
-        $city = trim((string) ($customer->address_city ?? ''));
+    private function pushAddress(SevDeskClient $client, Customer|Supplier $party, array $contact): bool {
+        $street = trim((string) ($party->address_street ?? ''));
+        $zip = trim((string) ($party->address_zip ?? ''));
+        $city = trim((string) ($party->address_city ?? ''));
         if ($street === '' && $zip === '' && $city === '') {
             // Keine Anschrift ist kein Fehler — eine leere Adresse anzulegen
             // wäre einer.
@@ -109,18 +110,18 @@ class SevDeskContactDetailPushService {
             'category' => ['id' => (int) config('plugins.sevdesk.address_category_id', 47), 'objectName' => 'Category'],
         ], static fn ($value): bool => $value !== null);
 
-        $existing = $this->referenceId($customer, self::TYPE_ADDRESS);
+        $existing = $this->referenceId($party, self::TYPE_ADDRESS);
         $result = $existing !== null
             ? $client->updateContactAddress($existing, $payload)
             : $client->createContactAddress($payload);
 
-        return $this->remember($customer, self::TYPE_ADDRESS, (string) ($result['id'] ?? $existing ?? ''));
+        return $this->remember($party, self::TYPE_ADDRESS, (string) ($result['id'] ?? $existing ?? ''));
     }
 
     /** @param array{id: string, objectName: string} $contact */
     private function pushCommunicationWay(
         SevDeskClient $client,
-        Customer $customer,
+        Customer|Supplier $party,
         array $contact,
         string $externalType,
         string $type,
@@ -138,19 +139,19 @@ class SevDeskContactDetailPushService {
             'main' => true,
         ];
 
-        $existing = $this->referenceId($customer, $externalType);
+        $existing = $this->referenceId($party, $externalType);
         $result = $existing !== null
             ? $client->updateCommunicationWay($existing, $payload)
             : $client->createCommunicationWay($payload);
 
-        return $this->remember($customer, $externalType, (string) ($result['id'] ?? $existing ?? ''));
+        return $this->remember($party, $externalType, (string) ($result['id'] ?? $existing ?? ''));
     }
 
-    private function referenceId(Customer $customer, string $externalType): ?string {
+    private function referenceId(Customer|Supplier $party, string $externalType): ?string {
         $reference = ExternalReference::query()
-            ->forPlugin($customer->organization_id, SevDeskPlugin::ID, $externalType)
-            ->where('referenceable_type', $customer->getMorphClass())
-            ->where('referenceable_id', $customer->getKey())
+            ->forPlugin($party->organization_id, SevDeskPlugin::ID, $externalType)
+            ->where('referenceable_type', $party->getMorphClass())
+            ->where('referenceable_id', $party->getKey())
             ->first();
 
         $id = $reference instanceof ExternalReference ? trim((string) $reference->external_id) : '';
@@ -158,7 +159,7 @@ class SevDeskContactDetailPushService {
         return $id !== '' ? $id : null;
     }
 
-    private function remember(Customer $customer, string $externalType, string $externalId): bool {
+    private function remember(Customer|Supplier $party, string $externalType, string $externalId): bool {
         if (trim($externalId) === '') {
             return false;
         }
@@ -167,11 +168,11 @@ class SevDeskContactDetailPushService {
             [
                 'plugin_id' => SevDeskPlugin::ID,
                 'external_type' => $externalType,
-                'referenceable_type' => $customer->getMorphClass(),
-                'referenceable_id' => $customer->getKey(),
+                'referenceable_type' => $party->getMorphClass(),
+                'referenceable_id' => $party->getKey(),
             ],
             [
-                'organization_id' => $customer->organization_id,
+                'organization_id' => $party->organization_id,
                 'external_id' => $externalId,
                 'synced_at' => now(),
             ],

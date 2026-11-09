@@ -72,7 +72,7 @@ use Illuminate\Support\Facades\Storage;
  * @property string|null $creditor_bic
  * @property \Illuminate\Support\Carbon|null $creditor_iban_confirmed_at
  * @property int|null $creditor_iban_confirmed_by
- * @property float|null $discount_percent
+ * @property string|null $discount_percent
  * @property int|null $discount_days
  * @property int|null $paid_in_run_id
  */
@@ -136,6 +136,7 @@ class IncomingEInvoice extends Model {
         'creditor_bic' => 'encrypted',
         'creditor_iban_confirmed_at' => 'datetime',
         'duplicate_cleared_at' => 'datetime',
+        'discount_percent' => 'decimal:2',
     ];
 
     protected static function booted(): void {

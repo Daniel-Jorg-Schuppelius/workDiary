@@ -1,7 +1,7 @@
 ---
 title: "Leasing & Asset-Verträge"
 topic: asset-finance.overview
-version: 1
+version: 2
 keywords:
     - Leasingvertrag
     - Leasingraten
@@ -39,6 +39,11 @@ eingefroren und der Soll-Ratenplan über die Laufzeit erzeugt. Spätere
 **Fristenkalender:** Kündigung, Verlängerung, Kaufoption, Rückgabe,
 Endprüfung, Versicherung und Dokumentablauf mit Vorwarnzeit — fällige
 Fristen erzeugen Benachrichtigungen und Eskalationen.
+
+**Entwurf stornieren:** Ein falsch oder doppelt angelegter Entwurf wird
+mit Pflichtbegründung storniert; er erhält keinen Ratenplan und bleibt als
+Nachweis lesbar. Ein aktivierter Vertrag wird nicht storniert, sondern
+gekündigt.
 
 **Ist-Werte nur als Referenz:** Eingangsrechnungen werden Ratenzeilen
 zugeordnet, Zählerstände speisen Nutzungslimits — WorkDiary bucht nichts.

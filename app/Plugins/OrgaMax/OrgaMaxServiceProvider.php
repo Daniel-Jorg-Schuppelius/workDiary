@@ -13,11 +13,13 @@ declare(strict_types=1);
 namespace App\Plugins\OrgaMax;
 
 use App\Plugins\OrgaMax\Console\OrgaMaxSyncCommand;
-use App\Plugins\OrgaMax\Services\{OrgaMaxDocumentFeedSource, OrgaMaxOutboxDispatcher, OrgaMaxTarget};
+use App\Plugins\OrgaMax\Services\{OrgaMaxArticleCatalogSource, OrgaMaxOutboxDispatcher, OrgaMaxPhoneContactSource, OrgaMaxTarget, OrgaMaxVoucherLinks, OrgaMaxVoucherPullService};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
+use App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry;
 use App\Services\Finance\Targets\FacturationTargetRegistry;
 use App\Services\Integration\IntegrationOutboxDispatcherResolver;
+use App\Services\Platform\Catalog\ArticleCatalog;
 
 /**
  * Bootet das orgaMAX-Plugin (Feature 077): Routen, Views, Console-Command
@@ -31,6 +33,9 @@ class OrgaMaxServiceProvider extends PluginServiceProviderBase {
 
     protected function registerPlugin(): void {
         $this->commands([OrgaMaxSyncCommand::class]);
+        // Rufnummernabgleich (FRITZ!Box, CTI; MVP-1500).
+        $this->app->scoped(OrgaMaxPhoneContactSource::class);
+        $this->app->tag([OrgaMaxPhoneContactSource::class], 'external-phone-contact-sources');
     }
 
     protected function bootPlugin(): void {
@@ -42,10 +47,13 @@ class OrgaMaxServiceProvider extends PluginServiceProviderBase {
         $this->app->make(IntegrationOutboxDispatcherResolver::class)
             ->register($this->app->make(OrgaMaxOutboxDispatcher::class));
 
-        // Belegfluss-Quelle (Feature 105; Vollscan B9): der Kern kennt die
-        // Tabelle `orgamax_invoices` nur noch über diese Registrierung.
-        $this->app->make(DocumentFeedSourceRegistry::class)
-            ->register(new OrgaMaxDocumentFeedSource);
+        // Belegspiegel (MVP-1501): Rechnungen und Ausgaben erreichen Belegfluss, Akte,
+        // Umsatz, Einkauf und Planquelle über `accounting_vouchers`; `orgamax_invoices`
+        // bleibt der Plugin-Spiegel für Wechsel, Belegverbund und PDF.
+        $this->app->make(VoucherPullerRegistry::class)->register(OrgaMaxVoucherPullService::class);
+        $this->app->make(ArticleCatalog::class)->register($this->app->make(OrgaMaxArticleCatalogSource::class));
+        // Original-PDF gespiegelter Rechnungen in Belegfluss und Akte (MVP-670).
+        $this->app->make(DocumentFeedSourceRegistry::class)->register(new OrgaMaxVoucherLinks);
 
         // Zugehörige Belege (MVP-1158).
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Billing\Contracts\DocumentRelationSource::class, \App\Plugins\OrgaMax\Services\OrgaMaxRelationSource::class);

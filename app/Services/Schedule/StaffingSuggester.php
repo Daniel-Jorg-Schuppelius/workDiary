@@ -33,7 +33,10 @@ use Illuminate\Support\Collection;
  * Re-Check statt.
  */
 class StaffingSuggester {
-    public function __construct(private readonly ShiftComplianceService $compliance) {}
+    public function __construct(
+        private readonly ShiftComplianceService $compliance,
+        private readonly QualificationEnforcement $qualifications = new QualificationEnforcement,
+    ) {}
 
     /**
      * @return list<array{
@@ -74,16 +77,19 @@ class StaffingSuggester {
         $desired = $this->loadDesired($candidateIds, $day, $shiftType->id);
         $hoursByUser = $this->plannedHours($candidateIds, $day);
         $organization = Organization::query()->find($organizationId);
+        $blocksUnqualified = $requiredQualificationIds !== [] && $this->qualifications->blocks($organizationId);
 
         $results = [];
         foreach ($candidates as $user) {
-            $report = $this->compliance->check(
-                $this->buildProxyShift($organizationId, $shiftType->id, $user->id, $day, $start, $end),
-                $organization,
-            );
+            $proxy = $this->buildProxyShift($organizationId, $shiftType->id, $user->id, $day, $start, $end);
+            $report = $this->compliance->check($proxy, $organization);
 
             // ERROR-Verstöße disqualifizieren (Überschneidung/Ruhezeit/Urlaub …).
             if ($report->hasErrors()) {
+                continue;
+            }
+            // Bei Qualifikationssperre (MVP-1514) wäre die Zuweisung ohnehin abgelehnt.
+            if ($blocksUnqualified && $this->qualifications->shiftBlockMessage($proxy) !== null) {
                 continue;
             }
 

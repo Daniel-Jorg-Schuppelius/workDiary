@@ -9,6 +9,13 @@
  */
 
 return [
+    'import' => [
+        'ical_sync_status' => [
+            'ok' => 'Lu',
+            'not_modified' => 'Inchangé',
+            'failed' => 'Erreur',
+        ],
+    ],
     'ai' => [
         'family' => ['llm' => 'Modèle de langage (LLM)', 'translation' => 'Traduction'],
         'verb' => ['formulate' => 'Formuler', 'summarize' => 'Résumer', 'classify' => 'Classifier', 'explain' => 'Expliquer', 'find' => 'Rechercher', 'translate' => 'Traduire', 'extract' => 'Extraire'],
@@ -20,7 +27,7 @@ return [
     ],
     'domain' => [
         'environment' => ['ote' => 'OT&E (test/pilote)', 'production' => 'Production'],
-        'connection_status' => ['draft' => 'Brouillon', 'active' => 'Actif', 'blocked' => 'Bloqué'],
+        'connection_status' => ['draft' => 'Brouillon', 'active' => 'Actif', 'blocked' => 'Bloqué', 'disconnected' => 'Déconnecté'],
         'sync_status' => ['current' => 'À jour', 'stale' => 'Obsolète', 'pending' => 'En attente', 'conflict' => 'Conflit', 'unknown' => 'Incertain'],
         'renewal_mode' => ['autorenew' => 'Renouvellement auto', 'autoexpire' => 'Expiration auto', 'autodelete' => 'Suppression auto', 'renewonce' => 'Renouveler une fois'],
         'command_status' => ['draft' => 'Brouillon', 'approved' => 'Approuvé', 'pending' => 'En attente', 'confirmed' => 'Confirmé', 'failed' => 'Échoué', 'unknown' => 'Incertain', 'conflict' => 'Conflit'],
@@ -61,7 +68,7 @@ return [
             'hard' => 'Bloquant',
             'soft' => 'Avertissement',
         ],
-        'classification_domain' => ['entry_type' => 'Types de commande', 'activity' => 'Activités', 'defect_type' => 'Types d’erreur', 'root_cause' => 'Causes', 'result' => 'Résultats', 'priority' => 'Priorités', 'goodwill_reason' => 'Motifs de tolérance', 'rework_reason' => 'Motifs de reprise', 'product_group' => 'Groupes de produits', 'dienstmittel_type' => 'Types d’équipement', 'allergen' => 'Allergènes', 'trade' => 'Corps de métier', 'permit_type' => 'Types d\'autorisation', 'waste_code' => 'Code déchet (AVV/CED)', 'customer_group' => 'Groupes de clients'],
+        'classification_domain' => ['entry_type' => 'Types de commande', 'activity' => 'Activités', 'defect_type' => 'Types d’erreur', 'root_cause' => 'Causes', 'result' => 'Résultats', 'priority' => 'Priorités', 'goodwill_reason' => 'Motifs de tolérance', 'rework_reason' => 'Motifs de reprise', 'product_group' => 'Groupes de produits', 'dienstmittel_type' => 'Types d’équipement', 'allergen' => 'Allergènes', 'trade' => 'Corps de métier', 'permit_type' => 'Types d\'autorisation', 'waste_code' => 'Code déchet (AVV/CED)', 'customer_group' => 'Groupes de clients', 'leistungsart' => 'Types de prestation (soins)', 'pflegegrad' => 'Niveaux de dépendance', 'kommunikation' => 'Canaux de communication', 'event_type' => 'Types d’événement', 'lademittel_type' => 'Supports de charge', 'asset_category' => 'Catégories d’actifs'],
     ],
     'room_requirement_kind' => [
         'hygieneLevel' => 'Niveau d\'hygiène',
@@ -1293,7 +1300,7 @@ return [
         'agreement-mode' => [
             'account' => 'Compte client (sans facture)',
             'invoice' => 'Facture mensuelle',
-            'retainer' => 'Forfait (Lexoffice)',
+            'retainer' => 'Forfait (logiciel comptable)',
         ],
         'rate-day-type' => [
             'weekday' => 'Jour ouvrable',
@@ -1304,6 +1311,8 @@ return [
             'bank' => 'Banque',
             'import' => 'Import',
             'lexoffice' => 'Lexoffice',
+            'sevdesk' => 'sevDesk',
+            'easybill' => 'easybill',
         ],
     ],
     'finance' => [
@@ -2281,7 +2290,7 @@ return [
     ],
     'plugin' => [
         'plugin_health_status' => ['ok' => 'État OK', 'degraded' => 'État dégradé', 'failing' => 'État défaillant'],
-        'plugin_capability' => ['contact_sync' => 'Synchronisation des contacts', 'time_export' => 'Export du temps', 'time_import' => 'Import du temps', 'payment_sync' => 'Rapprochement des paiements', 'task_sync' => 'Synchronisation des tâches', 'calendar_publish' => 'Publication de calendrier', 'shipping_provider' => 'Prestataire d\'expédition', 'document_intake' => 'Réception de documents', 'backup_target' => 'Cible de sauvegarde', 'domain_registrar' => 'Bureau d\'enregistrement de domaines', 'appointment_sync' => 'Synchronisation des rendez-vous', 'sms_gateway' => 'Passerelle SMS', 'online_payment' => 'Paiement en ligne', 'peppol_transport' => 'Transport Peppol', 'fare_meter' => 'Import du taximètre', 'passenger_dispatch' => 'Intermédiation de courses', 'mobility_data' => 'Données de mobilité'],
+        'plugin_capability' => ['contact_sync' => 'Synchronisation des contacts', 'time_export' => 'Export du temps', 'time_import' => 'Import du temps', 'task_sync' => 'Synchronisation des tâches', 'calendar_publish' => 'Publication de calendrier', 'shipping_provider' => 'Prestataire d\'expédition', 'document_intake' => 'Réception de documents', 'backup_target' => 'Cible de sauvegarde', 'domain_registrar' => 'Bureau d\'enregistrement de domaines', 'appointment_sync' => 'Synchronisation des rendez-vous', 'sms_gateway' => 'Passerelle SMS', 'online_payment' => 'Paiement en ligne', 'peppol_transport' => 'Transport Peppol', 'fare_meter' => 'Import du taximètre', 'passenger_dispatch' => 'Intermédiation de courses', 'mobility_data' => 'Données de mobilité'],
     ],
     'privacy' => [
         'agreement_status' => ['draft' => 'Brouillon', 'active' => 'Active', 'terminated' => 'Résilié', 'expired' => 'Expiré'],
@@ -2310,14 +2319,14 @@ return [
         'rental_condition' => ['new' => 'Comme neuf', 'good' => 'Bon', 'used' => 'D\'occasion', 'worn' => 'Usé', 'damaged' => 'Endommagé'],
         'rental_deposit_status' => ['requested' => 'Demandé', 'received' => 'Reçu', 'refunded' => 'Remboursé', 'partially_retained' => 'Partiellement retenue', 'retained' => 'Retenu', 'waived' => 'Renoncé'],
         'rental_rate_card_status' => ['draft' => 'Brouillon', 'active' => 'Active', 'retired' => 'Remplacé'],
-        'rental_request_status' => ['requested' => 'demandé', 'accepted' => 'accepté', 'declined' => 'refusé', 'withdrawn' => 'retirée'],
+        'rental_request_status' => ['requested' => 'demandé', 'accepted' => 'accepté', 'declined' => 'refusé', 'withdrawn' => 'retirée', 'awaiting_payment' => 'paiement en attente', 'expired' => 'expirée'],
         'rental_reservation_kind' => ['soft' => 'Préréservation', 'hard' => 'Réservation', 'rental' => 'Location', 'maintenance' => 'Fenêtre de maintenance', 'cleaning' => 'Nettoyage', 'transport' => 'Transport/temps de préparation'],
         'rental_return_follow_up' => ['none' => 'Aucune suite', 'cleaning' => 'Nettoyage requis', 'repair' => 'Réparation requise', 'block' => 'Verrouiller', 'claim' => 'Ouvrir une réclamation'],
     ],
     'service_ticket' => [
         'change_status' => ['draft' => 'Brouillon', 'pending_approval' => 'En attente d\'approbation', 'approved' => 'Approuvé', 'implementing' => 'En cours de réalisation', 'done' => 'Terminé', 'cancelled' => 'Annulé'],
         'problem_status' => ['open' => 'Ouvert', 'analyzing' => 'En analyse', 'known_error' => 'Erreur connue', 'resolved' => 'Résolu', 'closed' => 'Fermé'],
-        'service_request_status' => ['draft' => 'Brouillon', 'pending_approval' => 'En attente d\'approbation', 'approved' => 'Approuvé', 'rejected' => 'Refusé', 'fulfilling' => 'En cours d\'exécution', 'done' => 'Terminé'],
+        'service_request_status' => ['pending_approval' => 'En attente d\'approbation', 'approved' => 'Approuvé', 'rejected' => 'Refusé', 'done' => 'Terminé'],
         'service_ticket_kind' => ['incident' => 'Incident', 'service_request' => 'Demande de service', 'question' => 'Question'],
         'service_ticket_priority' => ['low' => 'Faible', 'normal' => 'Normal', 'high' => 'Élevée', 'urgent' => 'Urgent'],
         'service_ticket_source' => ['manual' => 'Manuel', 'maintenance_plan' => 'Plan de maintenance', 'open_issue' => 'Points ouverts', 'email' => 'E-mail', 'customer_portal' => 'Portail client', 'api' => 'API'],

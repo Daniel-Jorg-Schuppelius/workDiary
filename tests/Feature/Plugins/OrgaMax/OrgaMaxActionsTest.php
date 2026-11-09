@@ -109,6 +109,44 @@ class OrgaMaxActionsTest extends TestCase {
         $before->assertNothingSent();
     }
 
+    public function test_accounting_role_sees_the_factura_actions_but_not_the_connection(): void {
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => OrgaMaxPlugin::ID,
+            'external_type' => \App\Plugins\OrgaMax\Services\OrgaMaxInvoiceProjector::EXT_TYPE_INVOICE,
+            'referenceable_type' => $this->organization->getMorphClass(),
+            'referenceable_id' => $this->organization->id,
+            'external_id' => 'inv-1',
+            'payload' => ['number' => 'RE-2030-001', 'status' => 'open'],
+            'synced_at' => Carbon::now(),
+        ]);
+        $accountant = User::factory()->buchhaltung()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($accountant)->get(route('admin.orgamax.index'))
+            ->assertOk()
+            ->assertSee('RE-2030-001')
+            ->assertSee('Finalisieren/Sperren')
+            ->assertDontSee('Verbindung trennen')
+            ->assertDontSee('Capability-Matrix &amp; Datenführerschaft', false);
+        $this->actingAs($accountant)->post(route('admin.orgamax.sync'))->assertForbidden();
+
+        $fake = FakePluginHttp::fake([
+            'https://api.orgamax.de/openapi/invoice/inv-1/lock*' => self::itemResponse(['id' => 'inv-1', 'number' => 'RE-2030-001']),
+        ]);
+        $this->actingAs($accountant)->post(route('admin.orgamax.invoices.lock', 'inv-1'))->assertRedirect()->assertSessionHas('success');
+        $fake->assertSentCount(1);
+
+        // Menüeintrag für die Buchhaltung; der Admin findet die Seite in der Verwaltung.
+        $plugin = app(OrgaMaxPlugin::class);
+        $this->assertSame('admin.orgamax.index', $plugin->navigationItems($accountant)['sales-billing'][0]['route'] ?? null);
+        $this->assertSame([], $plugin->navigationItems($this->admin));
+
+        // Ohne eines der Faktura-Rechte bleibt die Seite gesperrt.
+        $user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $this->assertSame([], $plugin->navigationItems($user));
+        $this->actingAs($user)->get(route('admin.orgamax.index'))->assertForbidden();
+    }
+
     public function test_send_enqueues_outbox_and_dispatcher_delivers(): void {
         // Fake VOR dem POST: der Sync-Queue-Worker stellt den Outbox-Eintrag
         // im selben Request zu.

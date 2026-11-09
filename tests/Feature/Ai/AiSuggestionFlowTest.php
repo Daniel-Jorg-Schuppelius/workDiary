@@ -303,6 +303,12 @@ class AiSuggestionFlowTest extends TestCase {
         $invoice = $this->draftInvoice();
         $item = $this->item($invoice);
         $stranger = User::factory()->buchhaltung()->create(['organization_id' => $this->organization->id]);
+        // Buchhaltung hat ai.use seit MVP-1510 über die Rolle.
+        foreach ($stranger->roles as $role) {
+            $role->revokePermissionTo(Permission::AiUse->value);
+        }
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        $stranger->refresh();
 
         $this->actingAs($stranger)
             ->post(route('ai.suggestions.invoice-item', [$invoice, $item]))

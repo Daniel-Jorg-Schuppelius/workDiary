@@ -1,7 +1,7 @@
 ---
 title: "Condizioni speciali & conto cliente"
 topic: customers.billing
-version: 4
+version: 5
 keywords:
     - prezzi speciali
     - tariffa oraria cliente
@@ -13,6 +13,8 @@ keywords:
     - canone mensile
     - forfait mensile
     - Lexoffice
+    - sevDesk
+    - easybill
     - chiusura mensile
 audience: []
 modules:
@@ -27,7 +29,7 @@ Nella scheda cliente si possono definire **condizioni speciali**:
 tariffe orarie proprie per attività e tipo di giorno (feriale/weekend,
 definito tramite «giorni lavorativi a settimana») e la modalità di
 conteggio — **conto cliente** senza fatture con saldo corrente,
-**fattura mensile** oppure **forfait** tramite il programma contabile (attualmente Lexoffice).
+**fattura mensile** oppure **forfait** tramite il programma contabile (Lexoffice, sevDesk o easybill).
 
 Tra le condizioni rientra anche un **forfait di trasferta**: ogni
 registrazione fatturabile porta con sé x minuti aggiuntivi, valorizzati
@@ -56,23 +58,31 @@ abbinamento). Le registrazioni tardive in mesi chiusi vengono segnalate —
 riaprire il mese o cambiare la data.
 
 In **modalità forfait** il programma contabile della sovranità di
-fatturazione del cliente gestisce documento e pagamento — attualmente
-Lexoffice. Il
-forfait mensile si indica al netto («acconto mensile previsto»); il
-saldo locale contrappone ore × tariffa al forfait pagato. Per il
-documento ci sono due strade:
+fatturazione del cliente gestisce documento e pagamento: Lexoffice,
+sevDesk o easybill. Il forfait mensile si indica al netto («acconto
+mensile previsto»); il saldo locale contrappone ore × tariffa al forfait
+pagato. Per il documento ci sono due strade:
 
-- **Invia forfait** crea la fattura in Lexoffice (anche mensilmente e in
-  automatico per il mese precedente).
-- **Collega documento** aggancia al mese una fattura già creata in
-  Lexoffice. Se esattamente una fattura del cliente coincide per mese e
+- **Invia forfait** crea la fattura nel programma (anche mensilmente e in
+  automatico per il mese precedente). sevDesk assegna il numero di fattura
+  e poi la tiene come inviata e aperta; easybill la finalizza e la numera.
+- **Collega documento** aggancia al mese una fattura già creata nel
+  programma. Se esattamente una fattura del cliente coincide per mese e
   importo netto, ciò avviene automaticamente durante la sincronizzazione
   dei documenti.
 
 Quando un documento è agganciato, «Invia forfait» scompare — altrimenti
-in Lexoffice nascerebbe un secondo documento. Lo stato di pagamento
-rientra con la sincronizzazione e viene registrato **al netto**
-(Lexoffice lavora al lordo).
+nel programma nascerebbe un secondo documento. Lo stato di pagamento
+rientra con la sincronizzazione e viene registrato **al netto** (i
+programmi tengono l’importo aperto al lordo); i pagamenti parziali
+contano in proporzione. Per sevDesk ed easybill lo stato di pagamento
+proviene dallo specchio dei documenti, cioè dal recupero periodico dei
+documenti; un documento annullato o eliminato nel programma storna il
+pagamento registrato. Se l’invio a sevDesk o easybill si
+interrompe, la fattura resta come bozza; un nuovo invio la prosegue invece di creare un secondo documento
+nel programma. I pagamenti provenienti dal programma non si possono
+annullare a mano nel pannello: avviene tramite il documento nel
+programma.
 
 Se le condizioni speciali sono state create solo in seguito, i tempi più
 vecchi compaiono dapprima con 0,00 € sotto «totale». **Ricalcola** li

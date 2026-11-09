@@ -43,7 +43,7 @@ class ClubFeeAssignment extends Model {
 
     protected $fillable = ['organization_id', 'club_fee_account_id', 'club_member_id', 'club_fee_tariff_id', 'valid_from', 'valid_to', 'discount_percent', 'discount_reason', 'review_required_at', 'review_note'];
 
-    protected $casts = ['valid_from' => 'date', 'valid_to' => 'date', 'review_required_at' => 'datetime'];
+    protected $casts = ['valid_from' => 'date', 'valid_to' => 'date', 'review_required_at' => 'datetime', 'discount_percent' => 'decimal:2'];
 
     /** @return BelongsTo<ClubFeeAccount, $this> */
     public function account(): BelongsTo {

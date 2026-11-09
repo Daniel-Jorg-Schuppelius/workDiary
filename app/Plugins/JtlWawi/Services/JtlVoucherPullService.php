@@ -19,6 +19,7 @@ use App\Plugins\JtlWawi\Enums\JtlConnectionStatus;
 use App\Plugins\JtlWawi\Exceptions\JtlApiException;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use App\Plugins\JtlWawi\Models\JtlConnection;
+use App\Plugins\Support\PluginSettingsResolver;
 use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, VoucherMirror, VoucherPuller};
 
 /**
@@ -76,15 +77,16 @@ class JtlVoucherPullService implements VoucherPuller {
         return JtlWawiPlugin::ID;
     }
 
+    /** Eingeschaltet und aktive Verbindung — der allgemeine Abruf prüft den Plugin-Schalter nicht selbst. */
     public function isConfigured(int $organizationId): bool {
-        return $this->connection($organizationId) instanceof JtlConnection;
+        return PluginSettingsResolver::for(JtlWawiPlugin::ID, $organizationId)->enabled() && $this->connection($organizationId) instanceof JtlConnection;
     }
 
     /** @return array{read: int, created: int, updated: int, skipped: int} */
     public function pull(int $organizationId, int $pages = 2): array {
         $counters = VoucherMirror::counters();
         $connection = $this->connection($organizationId);
-        if (! $connection instanceof JtlConnection) {
+        if (! $connection instanceof JtlConnection || ! PluginSettingsResolver::for(JtlWawiPlugin::ID, $organizationId)->enabled()) {
             return $counters;
         }
 

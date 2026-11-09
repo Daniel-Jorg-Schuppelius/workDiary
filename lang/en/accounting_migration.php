@@ -18,6 +18,7 @@ return [
     'plan_hint' => 'Only one migration per organization at a time. The analysis writes to no foreign system.',
     'areas' => 'Data areas',
     'read_only' => 'history only',
+    'articles_hint' => 'Articles are only reconciled between Lexoffice and orgaMAX; sevDesk and easybill keep no article link.',
     'cutover_on' => 'Cutover date',
     'cutover_hint' => 'From this day, new billing documents are created exclusively in the target system; the source system is blocked for them.',
     'plan_submit' => 'Plan migration',

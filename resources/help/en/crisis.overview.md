@@ -1,7 +1,7 @@
 ---
 title: "Emergency & crisis management"
 topic: crisis.overview
-version: 1
+version: 2
 keywords:
     - crisis team
     - emergency management
@@ -38,6 +38,12 @@ append-only; the decision log records time, decision and rationale.
 **Reporting deadlines:** deadline templates per category (GDPR 72 h,
 NIS2 24 h/72 h/1 month, KRITIS without delay) are catalogue data — the
 organisation can override them; concrete deadlines run from activation.
+
+**Discarding a false alarm:** If a reported crisis turns out to be a false
+alarm before anyone has assessed the situation, “Discard as false alarm”
+closes the file with a mandatory reason. The reason is kept in the audit
+log and the file stays read-only. Once assessed, a crisis is no longer
+discarded but given the all-clear.
 
 **Communication:** draft, approval (never by the author) and documented
 dissemination stay separately traceable.

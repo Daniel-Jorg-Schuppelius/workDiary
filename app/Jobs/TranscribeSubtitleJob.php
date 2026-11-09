@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Jobs\Attributes\BelongsToModule;
 use App\Models\Attachments\Attachment;
 use App\Models\Platform\User;
 use App\Notifications\Media\SubtitleTranscribedNotification;
@@ -28,6 +29,7 @@ use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
  * Whisper braucht auf der CPU ein Vielfaches der Spielzeit, und ein Lauf, der
  * an der Datei scheitert, scheitert beim zweiten Mal genauso.
  */
+#[BelongsToModule('media')]
 class TranscribeSubtitleJob implements ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;

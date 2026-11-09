@@ -1,7 +1,7 @@
 ---
 title: "Connecter DomainReselling"
 topic: admin.domain-provider
-version: 1
+version: 2
 keywords:
     - gestion des domaines
     - noms de domaine
@@ -50,11 +50,25 @@ pilote ; ce n'est qu'ensuite que la connexion peut passer en production.
 Tant que le pilote reste ouvert, le contrôle d'état indique « pilote
 ouvert ».
 
-**Renouveler les identifiants et déconnecter :** L'identifiant/mot de passe
-peuvent être réinitialisés à tout moment (rotation) sans recréer la
-connexion. La déconnexion supprime la connexion ; les données de projection
-déjà lues sont conservées comme preuve.
+**Renouveler les identifiants :** L’icône de clé ouvre la boîte de
+dialogue « Renouveler les identifiants ». Vous saisissez un nouveau mot de
+passe ; l’identifiant et l’utilisateur par défaut restent inchangés si vous
+laissez les champs vides. WorkDiary vérifie immédiatement les nouveaux
+identifiants — la connexion est conservée avec tous les domaines,
+affectations et justificatifs.
 
-**États :** Une connexion est en *brouillon*, *active* ou *bloquée*. Les
-connexions bloquées affichent un état bloqué visible dans le contrôle
-d'état, jamais une défaillance silencieuse.
+**Déconnecter :** « Déconnecter » ne supprime rien. Le mot de passe est
+retiré, le statut passe à *déconnecté*, et plus aucune synchronisation,
+récupération d’événements ou commande n’atteint le fournisseur. Les
+domaines, contacts, zones DNS, le journal des commandes (qui a modifié quoi
+chez le fournisseur), les écritures et les liens de domaine de vos
+abonnements de revente et lignes d’achat sont conservés comme justificatifs.
+Pour vous reconnecter, enregistrez de nouveaux identifiants via
+« Renouveler les identifiants » ; une fois la vérification réussie, la
+connexion est de nouveau active.
+
+**États :** Une connexion est en *brouillon*, *active*, *bloquée* ou
+*déconnectée*. Les connexions bloquées apparaissent clairement comme
+bloquées dans le contrôle de santé — jamais comme une erreur silencieuse. Le
+contrôle de santé ne signale pas une connexion déconnectée comme un
+incident ; elle est volontairement hors service.

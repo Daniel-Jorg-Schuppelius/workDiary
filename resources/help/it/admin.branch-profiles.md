@@ -1,7 +1,7 @@
 ---
 title: "Profili di settore"
 topic: admin.branch-profiles
-version: 3
+version: 4
 keywords:
     - modello di settore
     - mestiere
@@ -42,6 +42,18 @@ uso ed elimina le regole obbligatorie del profilo; i modelli restano. Un
 avviso di aggiornamento sulla scheda segnala una versione più recente;
 **Importa** accetta un profilo JSON dal catalogo. I tipi di incarico
 vengono mostrati nella lingua dell'utente.
+
+**Categorie di asset e nuove versioni:** le categorie di asset di un
+profilo (ad es. pressatrice, videocamera per tubazioni nel settore
+termoidraulico) vengono create come categorie della sua organizzazione e
+proposte nel modulo degli asset accanto alle categorie informatiche generali;
+le sue categorie con lo stesso codice restano invariate. La disinstallazione
+rimuove solo le categorie non usate e non modificate che nessun altro profilo
+installato apporta. Se una nuova versione del profilo sostituisce un modello,
+una lista di controllo o una categoria, l’applicazione crea il successore e
+**disattiva** il predecessore, senza eliminarlo né rinominarlo; commesse e
+procedure esistenti mantengono il riferimento, e un predecessore che lei
+riattiva resta attivo nelle applicazioni successive.
 
 **Varianti specifiche del cliente:** una variante si sovrappone a un profilo
 di settore – riprende il profilo base, omette elementi e ne aggiunge di

@@ -305,6 +305,8 @@ class AppServiceProvider extends ServiceProvider {
             $documents = new \App\Services\Billing\Purchase\PurchaseDocuments;
             $documents->register(new \App\Services\Billing\Purchase\ExpensePurchaseDocumentSource);
             $documents->register(new \App\Services\Billing\Purchase\IncomingEInvoicePurchaseDocumentSource);
+            // Eingehende Belege des allgemeinen Belegspiegels (MVP-1497): sevDesk, Akaunting, Invoice Ninja …
+            $documents->register(new \App\Services\Finance\Accounting\Vouchers\AccountingVoucherPurchaseDocumentSource);
 
             return $documents;
         });
@@ -325,7 +327,13 @@ class AppServiceProvider extends ServiceProvider {
         $this->app->singleton(\App\Services\Billing\RetainerChannelResolver::class);
         $this->app->singleton(\App\Services\Integration\InboxGroupBookerRegistry::class);
         $this->app->singleton(\App\Services\Finance\Targets\FacturationTargetRegistry::class);
-        $this->app->singleton(\App\Services\Material\MaterialProviderRegistry::class);
+        // Materialsuche (MVP-1033): lokal, dazu der Artikelspiegel der Buchhaltungsprogramme (MVP-1500).
+        $this->app->singleton(\App\Services\Material\MaterialProviderRegistry::class, static function (): \App\Services\Material\MaterialProviderRegistry {
+            $registry = new \App\Services\Material\MaterialProviderRegistry;
+            $registry->register('accounting', static fn (): ?\App\Services\Material\MaterialProviderInterface => \App\Services\Finance\Accounting\Articles\AccountingArticleMaterialProvider::forOrganization(\App\Plugins\Support\PluginOrgContext::currentId()));
+
+            return $registry;
+        });
         // Umsatz aus Buchhaltungsprogrammen (MVP-1034): Plugins tragen ihre Quelle ein; der
         // allgemeine Belegspiegel (sevDesk, easybill, JTL, InvoicePlane …) ist von Haus aus dabei (MVP-1127/1129).
         $this->app->singleton(\App\Services\Billing\ExternalRevenueSources::class, static function (): \App\Services\Billing\ExternalRevenueSources {
@@ -342,7 +350,18 @@ class AppServiceProvider extends ServiceProvider {
             return $sources;
         });
         $this->app->alias(\App\Services\Billing\ExternalPurchaseSources::class, \App\Services\Billing\Contracts\ExternalPurchases::class);
-        $this->app->singleton(\App\Services\Billing\PartyDocumentSources::class);
+        // Belegliste der Akte (MVP-1038): je Programm des allgemeinen Belegspiegels eine Quelle (MVP-1496,
+        // orgaMAX seit MVP-1501); Lexoffice führt eine eigene Spiegeltabelle und registriert seine Quelle im Plugin.
+        $this->app->singleton(\App\Services\Billing\PartyDocumentSources::class, static function (): \App\Services\Billing\PartyDocumentSources {
+            $sources = new \App\Services\Billing\PartyDocumentSources;
+            foreach (\App\Enums\Billing\DocumentOrigin::cases() as $origin) {
+                if (! in_array($origin, [\App\Enums\Billing\DocumentOrigin::Local, \App\Enums\Billing\DocumentOrigin::Lexoffice], true)) {
+                    $sources->register(new \App\Services\Finance\Accounting\Vouchers\AccountingVoucherPartyDocumentSource($origin));
+                }
+            }
+
+            return $sources;
+        });
         $this->app->singleton(\App\Services\Collections\Import\NotebookSources::class);
         $this->app->singleton(\App\Services\Mail\MailboxTransports::class);
         $this->app->singleton(\App\Services\Diagnostics\ConnectionHealthModels::class);
@@ -394,6 +413,17 @@ class AppServiceProvider extends ServiceProvider {
         // Spatie bindet sein Singleton erst in boot(); App-Provider booten danach, also hier.
         $this->app->forgetInstance(\Spatie\Permission\PermissionRegistrar::class);
         $this->app->singleton(\Spatie\Permission\PermissionRegistrar::class, \App\Support\Permissions\TeamScopedPermissionRegistrar::class);
+
+        // Auslagen ↔ Beleg für die Programme des allgemeinen Belegspiegels (MVP-1498). Erst nach den
+        // Plugins: ein Programm mit eigenem Anbieter (Lexoffice, mit Push) behält Vorrang und Eintrag.
+        $this->app->booted(static function (): void {
+            $resolver = app(\App\Services\Billing\ExpenseLinkProviderResolver::class);
+            foreach (\App\Enums\Billing\DocumentOrigin::cases() as $origin) {
+                if (! in_array($origin, [\App\Enums\Billing\DocumentOrigin::Local, \App\Enums\Billing\DocumentOrigin::Lexoffice], true) && ! $resolver->has($origin->value)) {
+                    $resolver->register($origin->value, static fn (): \App\Services\Billing\Contracts\ExpenseLinkProvider => new \App\Services\Finance\Accounting\Vouchers\AccountingVoucherExpenseLinkProvider($origin->value, $origin->label()));
+                }
+            }
+        });
 
         // Objekte liest kein Cache-Store zurück (`cache.serializable_classes`); ein
         // Treffer würde sonst still zur __PHP_Incomplete_Class (Befund 2026-10-20).
@@ -505,6 +535,9 @@ class AppServiceProvider extends ServiceProvider {
             }
             app()->forgetInstance('currentOrganization');
         });
+
+        // Modul-Gate jedes Jobs eines Fachmoduls vor seiner Wirkung (MVP-1518).
+        \Illuminate\Support\Facades\Bus::pipeThrough([\App\Jobs\Middleware\EnsureModuleActive::class]);
 
         // Queue-Worker-Heartbeat (Feature 067, MVP-177-Vorgriff): Cache-Key für
         // die Diagnose-Seite, im Worker-Loop gedrosselt geschrieben.

@@ -120,6 +120,7 @@ class HousingController extends Controller {
             'rental_mode' => ['required', Rule::enum(RentalMode::class)],
             'public_description' => ['nullable', 'string', 'max:4000'],
             'is_rentable' => ['required', 'boolean'], 'portal_bookable' => ['required', 'boolean'],
+            'prepayment_percent' => ['nullable', 'integer', 'between:0,100'],
             'max_guests' => ['required', 'integer', 'between:1,100'],
             'minimum_nights' => ['required', 'integer', 'between:1,365'],
             'check_in_time' => ['required', 'date_format:H:i'], 'check_out_time' => ['required', 'date_format:H:i'],

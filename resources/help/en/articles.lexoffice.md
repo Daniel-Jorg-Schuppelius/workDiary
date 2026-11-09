@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice products & services"
 topic: articles.lexoffice
-version: 2
+version: 3
 keywords:
     - Lexware Office
     - Lexoffice items
@@ -9,7 +9,6 @@ keywords:
     - product sync
     - product catalog
     - price list
-    - sync conflict
     - import items
     - service catalog
     - tax rate
@@ -36,10 +35,6 @@ With sufficient permission the sync can be triggered manually; it reports
 how many entries were created, updated or archived. This requires
 Lexoffice to be configured for the organisation.
 
-The conflict strategy from the Lexoffice settings (Lexoffice wins, local
-wins, manual review) also applies to the article sync: with “manual
-review”, locally changed articles whose state differs in Lexoffice end up
-as conflicts in the inventory conflict list (Inventory → Conflicts). There
-you decide per article whether the local state stays, the Lexoffice state
-is taken over or the conflict is dismissed. The manual sync reports the
-number of new conflicts.
+Lexoffice leads the articles: a newer state in Lexoffice overwrites the
+read-only view during the sync, an unchanged one is not rewritten. There
+are therefore no local changes and no article conflicts.

@@ -18,10 +18,13 @@ use App\Exceptions\RentalConflictException;
 use App\Mail\RentalRequestDecisionMail;
 use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
+use App\Models\Invoicing\OnlinePayment;
 use App\Models\Platform\{Organization, User};
-use App\Models\Rental\{RentalProfile, RentalRequest, RentalReservation};
+use App\Models\Rental\{RentalCase, RentalProfile, RentalRequest, RentalReservation};
+use App\Services\Concerns\AssertsStatusTransition;
+use App\Services\Invoicing\OnlinePayment\OnlinePaymentService;
 use App\Services\Notification\NotificationDispatcher;
-use App\Support\CarbonFmt;
+use App\Support\{CanonicalUrl, CarbonFmt, DocumentLocale};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{DB, Log, Mail};
@@ -37,10 +40,17 @@ use RuntimeException;
  * Es gibt keinen Weg von `requested` in den Kalender ohne `decided_by`.
  */
 class RentalRequestService {
+    use AssertsStatusTransition;
+
+    /** Haltezeit einer unbezahlten Direktbuchung, wenn die Organisation keine nennt (Minuten). */
+    public const int DEFAULT_HOLD_MINUTES = 30;
+
     public function __construct(
         private readonly RentalAvailabilityService $availability,
         private readonly RentalCaseService $cases,
         private readonly NotificationDispatcher $notifier,
+        private readonly RentalBillingService $billing,
+        private readonly OnlinePaymentService $payments,
     ) {}
 
     /**
@@ -101,7 +111,8 @@ class RentalRequestService {
      * Direktbuchung aus dem Portal (MVP-916): nur ein bestimmtes, freigegebenes
      * Gerät. Verleihakte und harte Reservierung entstehen sofort über die
      * bestehenden Schreibstellen; {@see RentalCaseService::reserve()} prüft
-     * Sperren und Doppelbuchung unter Sperre. Die Leitung wird benachrichtigt.
+     * Sperren und Doppelbuchung unter Sperre. Die Leitung wird benachrichtigt,
+     * bei Online-Vorauszahlung (MVP-1515) erst mit dem Zahlungseingang.
      *
      * @throws RuntimeException|RentalConflictException
      */
@@ -113,8 +124,14 @@ class RentalRequestService {
         $this->assertPortalRequest($customer, $asset, null, $from, $to, $guests);
         $note = $note !== null && trim($note) !== '' ? trim($note) : null;
 
-        $request = DB::transaction(function () use ($organization, $customer, $portalUser, $asset, $from, $to, $note, $guests): RentalRequest {
-            $profile = RentalProfile::query()->withoutGlobalScopes()->where('asset_id', $asset->id)->first();
+        // Vorauszahlung (MVP-1515): ohne Zahlungsanbieter keine verbindliche Direktbuchung.
+        $profile = RentalProfile::query()->withoutGlobalScopes()->where('asset_id', $asset->id)->first();
+        $prepayment = $profile instanceof RentalProfile ? $this->billing->prepaymentAmount($profile, $customer, $from, $to) : null;
+        if ($prepayment !== null && ! $this->payments->available($organization)) {
+            throw new RuntimeException((string) __('rental.prepayment.unavailable'));
+        }
+
+        $request = DB::transaction(function () use ($organization, $customer, $portalUser, $asset, $from, $to, $note, $guests, $profile, $prepayment): RentalRequest {
             $case = $this->cases->open($organization, $portalUser, [
                 'customer_id' => $customer->id,
                 'starts_at' => $from,
@@ -134,20 +151,162 @@ class RentalRequestService {
                 'starts_at' => $from,
                 'ends_at' => $to,
                 'note' => $note,
-                'status' => RentalRequestStatus::Accepted->value,
+                // Mit Vorauszahlung hält die Reservierung nur bis zur Zahlungsfrist.
+                'status' => $prepayment !== null ? RentalRequestStatus::AwaitingPayment->value : RentalRequestStatus::Accepted->value,
                 'is_direct' => true,
                 'guests' => $guests,
-                'decided_at' => Carbon::now(),
+                'decided_at' => $prepayment !== null ? null : Carbon::now(),
+                'prepayment_amount' => $prepayment,
+                'currency' => $prepayment?->getCurrency()->value,
+                'payment_due_at' => $prepayment !== null ? Carbon::now()->addMinutes($this->holdMinutes($organization)) : null,
                 'rental_reservation_id' => RentalReservation::query()->withoutGlobalScopes()->where('rental_case_id', $case->id)->value('id'),
                 'rental_case_id' => $case->id,
             ]);
-            $request->audit('rental.directBooked', ['rental_case_id' => $case->id, 'asset_id' => $asset->id, 'by_portal_user_id' => (int) $portalUser->id]);
+            $request->audit('rental.directBooked', ['rental_case_id' => $case->id, 'asset_id' => $asset->id, 'by_portal_user_id' => (int) $portalUser->id, 'prepayment' => $prepayment?->getAmount()]);
 
             return $request;
         });
-        $this->notifyRequested($request, $customer);
+        if ($prepayment === null) {
+            $this->notifyRequested($request, $customer);
+        }
 
         return $request;
+    }
+
+    /** Haltezeit unbezahlter Direktbuchungen der Organisation in Minuten. */
+    public function holdMinutes(Organization $organization): int {
+        $minutes = (int) data_get($organization->settings, 'rental.prepayment_hold_minutes', self::DEFAULT_HOLD_MINUTES);
+
+        return max(10, min(1440, $minutes > 0 ? $minutes : self::DEFAULT_HOLD_MINUTES));
+    }
+
+    /**
+     * Bezahlseite der Vorauszahlung (MVP-1515) — gleich nach der Buchung und
+     * erneut über „Jetzt bezahlen“, solange die Frist läuft.
+     *
+     * @throws RuntimeException|\App\Services\Invoicing\OnlinePayment\Exceptions\OnlinePaymentException
+     */
+    public function prepaymentCheckoutUrl(RentalRequest $request): string {
+        if (! $request->isAwaitingPayment() || $request->prepayment_amount === null) {
+            throw new RuntimeException((string) __('rental.prepayment.not_due'));
+        }
+        if ($request->payment_due_at !== null && $request->payment_due_at->isPast()) {
+            throw new RuntimeException((string) __('rental.prepayment.expired_error'));
+        }
+
+        $organization = Organization::query()->withoutGlobalScopes()->findOrFail($request->organization_id);
+        $customer = Customer::query()->withoutGlobalScopes()->findOrFail($request->customer_id);
+        $housing = $request->asset?->rentalProfile?->isHousing() === true;
+
+        return $this->payments->prepaymentCheckoutUrl(
+            $request,
+            $organization,
+            $request->prepayment_amount,
+            (string) __('rental.prepayment.description', [
+                'subject' => $request->subjectLabel(),
+                'from' => CarbonFmt::fdatetime($request->starts_at, \App\Support\Tz::ofOrganization($organization)),
+            ]),
+            CanonicalUrl::route($housing ? 'customer.housing.index' : 'customer.rentals.requests.index', ['zahlung' => $request->sqid]),
+            DocumentLocale::for($customer, $organization),
+            $request->portalUser?->email,
+        );
+    }
+
+    /**
+     * Zahlungseingang (MVP-1515): erst jetzt ist die Direktbuchung bestätigt.
+     * Eine Zahlung nach Fristablauf bestätigt nichts — die Leitung entscheidet.
+     */
+    public function confirmPrepaid(RentalRequest $request, OnlinePayment $payment): void {
+        $customer = Customer::query()->withoutGlobalScopes()->find($request->customer_id);
+
+        $outcome = DB::transaction(function () use ($request, $payment): string {
+            RentalRequest::query()->withoutGlobalScopes()->whereKey($request->id)->lockForUpdate()->firstOrFail();
+            $request->refresh();
+
+            if ($request->isAwaitingPayment()) {
+                $this->assertStatusTransition($request->status, RentalRequestStatus::Accepted);
+                $request->forceFill(['status' => RentalRequestStatus::Accepted->value, 'decided_at' => Carbon::now()])->save();
+                $request->audit('rental.prepaymentReceived', ['online_payment_id' => $payment->id, 'amount' => $payment->gross_amount->getAmount()]);
+
+                return 'confirmed';
+            }
+            if ($request->status === RentalRequestStatus::Accepted) {
+                return 'known'; // zweiter Webhook derselben Zahlung
+            }
+
+            $request->audit('rental.prepaymentLate', ['online_payment_id' => $payment->id, 'status' => $request->status->value]);
+
+            return 'late';
+        });
+
+        if (! $customer instanceof Customer || $outcome === 'known') {
+            return;
+        }
+        if ($outcome === 'confirmed') {
+            $this->notifyRequested($request, $customer);
+            DB::afterCommit(fn () => $this->notifyDecision($request));
+
+            return;
+        }
+
+        DB::afterCommit(fn () => $this->notifier->notify(NotificationEvent::RentalRequested, $request, null, [
+            'title' => (string) __('rental.prepayment.late_notification', ['customer' => $customer->name]),
+            'title_key' => 'rental.prepayment.late_notification',
+            'title_params' => ['customer' => $customer->name],
+            'message' => (string) __('rental.prepayment.late_message', ['subject' => $request->subjectLabel()]),
+            'message_key' => 'rental.prepayment.late_message',
+            'message_params' => ['subject' => $request->subjectLabel()],
+            'url' => route('rental.requests.index'),
+        ]));
+    }
+
+    /**
+     * Unbezahlte Direktbuchungen nach Fristablauf freigeben (MVP-1515). Vorher
+     * wird beim Anbieter nachgefragt — eine Zahlung ohne Webhook zählt noch.
+     */
+    public function expireUnpaid(): int {
+        $expired = 0;
+        RentalRequest::query()->withoutGlobalScopes()
+            ->where('status', RentalRequestStatus::AwaitingPayment->value)
+            ->where('payment_due_at', '<', Carbon::now())
+            ->orderBy('id')
+            ->each(function (RentalRequest $request) use (&$expired): void {
+                $this->payments->refreshOpenFor($request);
+                if ($this->expire($request->refresh())) {
+                    $expired++;
+                }
+            });
+
+        return $expired;
+    }
+
+    private function expire(RentalRequest $request): bool {
+        return DB::transaction(function () use ($request): bool {
+            RentalRequest::query()->withoutGlobalScopes()->whereKey($request->id)->lockForUpdate()->firstOrFail();
+            $request->refresh();
+            if (! $request->isAwaitingPayment()) {
+                return false; // inzwischen bezahlt oder zurückgenommen
+            }
+
+            $this->assertStatusTransition($request->status, RentalRequestStatus::Expired);
+            $request->forceFill(['status' => RentalRequestStatus::Expired->value])->save();
+            $this->releaseCase($request, 'rental.prepayment.expired_reason');
+            $request->audit('rental.prepaymentExpired', ['payment_due_at' => $request->payment_due_at?->toIso8601String()]);
+
+            return true;
+        });
+    }
+
+    /** Verleihakte und Reservierung einer nicht bestätigten Direktbuchung freigeben. */
+    private function releaseCase(RentalRequest $request, string $reasonKey): void {
+        $case = $request->rental_case_id !== null ? RentalCase::query()->withoutGlobalScopes()->find($request->rental_case_id) : null;
+        if (! $case instanceof RentalCase || ! $case->status->canTransitionTo(\App\Enums\Rental\RentalCaseStatus::Cancelled)) {
+            return;
+        }
+        $actor = $request->portalUser ?? User::query()->withoutGlobalScopes()->find($case->getAttribute('created_by'));
+        if ($actor instanceof User) {
+            $this->cases->cancel($case, $actor, (string) __($reasonKey));
+        }
     }
 
     /** Gemeinsame Prüfung für Anfrage und Direktbuchung (Default-Deny über das freigegebene Sortiment). */
@@ -296,11 +455,15 @@ class RentalRequestService {
             if ((int) $request->customer_id !== (int) $portalUser->customer_id) {
                 throw new RuntimeException((string) __('Diese Anfrage gehört nicht zu Ihrem Zugang.'));
             }
-            if (! $request->isOpen()) {
+            if (! $request->isOpen() && ! $request->isAwaitingPayment()) {
                 throw new RuntimeException((string) __('Diese Anfrage lässt sich nicht mehr zurücknehmen.'));
             }
 
+            $unpaid = $request->isAwaitingPayment();
             $request->forceFill(['status' => RentalRequestStatus::Withdrawn->value])->save();
+            if ($unpaid) {
+                $this->releaseCase($request, 'rental.prepayment.withdrawn_reason');
+            }
             $request->audit('rental.requestWithdrawn', ['by_portal_user_id' => (int) $portalUser->id]);
 
             return $request;

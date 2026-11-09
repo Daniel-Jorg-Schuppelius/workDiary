@@ -1,7 +1,7 @@
 ---
 title: "Personal: Urlaub, Krankheit, Qualifikation, Arbeitsschutz"
 topic: reports.personnel
-version: 7
+version: 8
 keywords:
     - Fehlzeiten
     - Resturlaub
@@ -190,7 +190,7 @@ bearbeiten Sie im Sicherheitsereignis-Register.
 
 Oben stehen die **Kennzahlen** aller Bereiche im Zeitraum der Kopfzeile:
 Finanzen (Gesamtleistung und Ergebnis aus der BWA, Tiefststand der
-Liquiditätsvorschau), Betrieb (Umsatz, Deckungsbeitrag, Auslastung), Vertrieb
+Liquiditätsvorschau), Betrieb (Umsatz, Deckungsbeitrag, Auslastung, Tage unter Soll), Vertrieb
 (neue Leads, Konversion), Service (offene Tickets, SLA-Verletzungen) und
 Qualität (NPS). Jede Kachel erscheint nur mit dem Recht der zugehörigen
 Auswertung und führt dorthin — dort steht dieselbe Zahl. **PDF** lädt den
@@ -198,6 +198,13 @@ Leitungsbericht herunter. Wer das Recht **Leitungsbericht per E-Mail
 erhalten** hat (Geschäftsführung und Administration), bekommt ihn außerdem
 montags als PDF, mit dem Zeitraum vom Monatsanfang bis gestern; der Lauf lässt
 sich unter „Geplante Aufgaben“ umstellen oder pausieren.
+
+Die Kachel **Tage unter Soll** im Bereich Betrieb zählt die Personen-Tage
+unter dem Projekt-Soll im Zeitraum, die noch offen oder bestätigt sind; der
+Hinweis nennt alle Befunde, die Kachel führt zum Plan/Ist-Reiter **Projekt je
+Person**. Sie erscheint nur, wenn es im Zeitraum Befunde gibt, und nur für
+Administratoren und Personen mit dem Recht **Anwesenheitsbericht einsehen
+(Organisation)**.
 
 Die Karte **Wiederkehrende Probleme** sammelt die Frühwarnungen der Module, die
 Ihre Organisation nutzt, gruppiert nach Art:
@@ -213,6 +220,9 @@ Ihre Organisation nutzt, gruppiert nach Art:
   standardmäßig drei Tickets in 90 Tagen.
 - **Personal-Engpässe**: Teams, deren geplanter Bedarf in den nächsten vier
   Wochen die Kapazität übersteigt.
+- **Sollzeiten unterschritten**: Projekte mit mindestens drei offenen
+  Personen-Tagen unter Soll in den letzten sieben Tagen; der Eintrag führt zum
+  Zeitreiter des Projekts mit den Befunden.
 
 Jeder Eintrag nennt den Befund, ein Detail und eine Empfehlung; der Titel führt,
 wo vorhanden, zum betroffenen Kunden, Objekt oder Bericht. Ohne Befund steht

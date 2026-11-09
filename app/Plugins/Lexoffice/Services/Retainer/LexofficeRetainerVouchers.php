@@ -115,7 +115,7 @@ class LexofficeRetainerVouchers implements RetainerVoucherLinks {
                 $voucher->external_id,
                 $this->netAmounts->paidNet($voucher, $paidGross, $total),
                 $paidOn,
-                (string) __('lexoffice::customer-billing.channel_payment_note', ['number' => (string) $voucher->voucher_number, 'system' => 'Lexoffice']),
+                (string) __('customer-billing.channel_payment_note', ['number' => (string) $voucher->voucher_number, 'system' => 'Lexoffice']),
                 $statement,
             );
 
@@ -236,7 +236,7 @@ class LexofficeRetainerVouchers implements RetainerVoucherLinks {
         $allowed = $voucher instanceof LexofficeVoucher && $organization !== null
             && $this->candidates($organization, $customerId, (int) $statement->id)->contains('id', $voucher->id);
         if (! $allowed) {
-            throw ValidationException::withMessages(['voucher' => __('lexoffice::customer-billing.voucher_not_found')]);
+            throw ValidationException::withMessages(['voucher' => __('customer-billing.voucher_not_found')]);
         }
 
         $this->attach($statement, $voucher);

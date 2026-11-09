@@ -74,6 +74,10 @@ return [
     'deliverynote'           => 'Lieferschein',
     'downpaymentinvoice'     => 'Abschlagsrechnung',
     'downpaymentdeduction'   => 'Abschlagsverrechnung',
+    'salesvoucher'           => 'Einnahmebeleg',
+    'purchasevoucher'        => 'Eingangsbeleg',
+    'cancellationinvoice'    => 'Stornorechnung',
+    'dunningnotice'          => 'Mahnung',
 
     // ServiceTicket status
     'open'         => 'Offen',
@@ -208,7 +212,6 @@ return [
     'completed' => 'Abgeschlossen',
 
     // Krisenmanagement (Feature 070)
-    'prepared' => 'Vorbereitet',
     'reported' => 'Gemeldet',
     'assessed' => 'Bewertet',
     'activated' => 'Aktiviert',

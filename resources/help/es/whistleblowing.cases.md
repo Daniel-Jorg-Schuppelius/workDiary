@@ -1,7 +1,7 @@
 ---
 title: "Canal de denuncias – Gestión de casos"
 topic: whistleblowing.cases
-version: 3
+version: 4
 keywords:
     - denunciante
     - canal ético
@@ -61,16 +61,28 @@ notas**. Según sus permisos, puede
 - enviar un **Mensaje a la persona denunciante** (**Enviar**); aparece
   en su buzón protegido.
 
-Los adjuntos que sube la persona denunciante se guardan cifrados; el
-expediente no ofrece por ahora una descarga.
+Los adjuntos que sube la persona denunciante se guardan cifrados y se
+analizan en busca de software malicioso antes de liberarlos. La tarjeta
+**Adjuntos** indica el nombre y el tamaño de cada archivo; los adjuntos
+liberados se descargan con el icono **Descargar**. En otro caso, la tarjeta
+muestra el estado del análisis: **Análisis pendiente** mientras falta el
+resultado, **Rechazado** o **Análisis fallido**; WorkDiary no entrega estos
+archivos. Sin un antivirus configurado, los adjuntos quedan pendientes.
 
 **Confidencialidad y conflictos**:
 
 - **Declarar conflicto de intereses** (justificación opcional) le
   bloquea a usted mismo para el caso: su asignación termina de inmediato
   y no puede levantar el bloqueo por sí mismo.
-- El expediente no ofrece por ahora marcar a personas afectadas ni un
-  acceso de emergencia para otras personas.
+- **Marcar a la persona afectada** bloquea a una persona para el caso por
+  su **ID de usuario** (**Marcar**, nota opcional); las asignaciones
+  existentes terminan de inmediato.
+- **Acceso de emergencia** da a una persona no asignada acceso temporal,
+  cuatro horas por defecto (ID de usuario y justificación obligatoria,
+  **Liberar**). Solo otra persona puede concederlo.
+- **Exportar caso** genera un paquete cifrado con AES-256 (justificación y
+  una contraseña de al menos doce caracteres, **Exportar**); entregue la
+  contraseña por separado del paquete.
 - Cada paso del caso queda registrado de forma inalterable en el
   registro del caso.
 

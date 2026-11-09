@@ -63,6 +63,10 @@ return [
     'deliverynote'           => 'Delivery note',
     'downpaymentinvoice'     => 'Down payment invoice',
     'downpaymentdeduction'   => 'Down payment deduction',
+    'salesvoucher'           => 'Income voucher',
+    'purchasevoucher'        => 'Purchase voucher',
+    'cancellationinvoice'    => 'Cancellation invoice',
+    'dunningnotice'          => 'Dunning notice',
 
     // ServiceTicket status
     'open'         => 'Open',
@@ -197,7 +201,6 @@ return [
     'completed' => 'Completed',
 
     // Krisenmanagement (Feature 070)
-    'prepared' => 'Prepared',
     'reported' => 'Reported',
     'assessed' => 'Assessed',
     'activated' => 'Activated',

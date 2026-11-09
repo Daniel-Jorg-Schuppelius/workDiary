@@ -34,5 +34,7 @@
         @foreach ($rateCards as $card)<option value="{{ $card->sqid }}" @selected((string) old('default_rate_card_id', $profile->defaultRateCard?->sqid) === $card->sqid)>{{ $card->name }}</option>@endforeach
     </x-select-field>
     <x-input-field class="input-sm" name="buffer_after_hours" type="number" min="0" max="720" required :label="__('housing.cleaning_buffer')" :value="old('buffer_after_hours', $profile->buffer_after_hours ?? 0)" />
+    {{-- MVP-1515: Vorauszahlung der Direktbuchung, leer = Vorgabe der Organisation. --}}
+    <x-input-field class="input-sm" name="prepayment_percent" type="number" min="0" max="100" :label="__('rental.prepayment.profile_percent')" :hint="__('rental.prepayment.profile_percent_hint')" :value="old('prepayment_percent', $profile->prepayment_percent)" />
 </x-form-group>
 <x-validation-errors />

@@ -22,6 +22,7 @@ final class IdentifierAuditModels {
         \App\Models\Supplier\Supplier::class,
         \App\Models\Platform\User::class,
         \App\Models\Finance\BankAccount::class,
+        \App\Models\Finance\SepaMandate::class,
         \App\Models\Contacts\ContactBankAccount::class,
         \App\Models\Article\Article::class,
         \App\Models\Article\ArticleVariant::class,

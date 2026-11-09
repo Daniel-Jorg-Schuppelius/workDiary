@@ -36,7 +36,7 @@
 
     <x-input-field name="name" :label="__('Name')" required maxlength="180" span="2" :value="old('name', $asset->name)" />
 
-    <x-select-field name="category_code" :label="__('Kategorie')">
+    <x-select-field name="category_code" :label="__('Kategorie')" :hint="__('Branchenkategorien bringt das Branchenprofil mit; eigene pflegt die Verwaltung unter Klassifikationen → Asset-Kategorien.')">
         <option value="">{{ __('— ohne Kategorie —') }}</option>
         @foreach ($categoryOptions as $code => $label)
             <option value="{{ $code }}" @selected(old('category_code', $asset->category_code) === $code)>{{ $label }}</option>

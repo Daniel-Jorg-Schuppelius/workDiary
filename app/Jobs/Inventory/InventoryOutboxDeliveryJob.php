@@ -16,21 +16,22 @@ use App\Contracts\Inventory\ExternalInventoryDispatcher;
 use App\Contracts\PluginDispatcher;
 use App\Enums\Integration\ExternalConflictStatus;
 use App\Jobs\AbstractOutboxDeliveryJob;
+use App\Jobs\Contracts\ModuleJob;
 use App\Models\Integration\PendingExternalConflict;
 use App\Models\Inventory\{InventoryOutboxEntry, StockMovement};
-use App\Models\Platform\Organization;
 use App\Services\Inventory\{ExternalInventoryDispatcherResolver, InventoryOutboxService};
-use App\Services\Licensing\ModuleStatusResolver;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**
  * Stellt einen Outbox-Eintrag an das externe Bestandssystem zu (Feature 048,
- * MVP-072). Ablauf im gemeinsamen Skelett (C14); hier nur Modul-Gate und die
- * Kompensation als {@see PendingExternalConflict} (lokale Bewegung bleibt).
+ * MVP-072). Ablauf im gemeinsamen Skelett (C14); hier nur die Kompensation
+ * als {@see PendingExternalConflict} (lokale Bewegung bleibt). Ist „Lager“ für
+ * die Organisation aus, endet der Job über das Modul-Gate der Queue
+ * (MVP-1518); der Eintrag bleibt offen.
  *
  * @extends AbstractOutboxDeliveryJob<InventoryOutboxEntry, ExternalInventoryDispatcher>
  */
-class InventoryOutboxDeliveryJob extends AbstractOutboxDeliveryJob {
+class InventoryOutboxDeliveryJob extends AbstractOutboxDeliveryJob implements ModuleJob {
     public function handle(InventoryOutboxService $outbox, ExternalInventoryDispatcherResolver $resolver): void {
         $this->deliver($outbox, $resolver);
     }
@@ -43,13 +44,10 @@ class InventoryOutboxDeliveryJob extends AbstractOutboxDeliveryJob {
         return app(InventoryOutboxService::class);
     }
 
-    /** @param InventoryOutboxEntry $entry */
-    protected function shouldDeliver(Model $entry): bool {
-        // MVP-052 §5: Modulstatus VOR der Wirkung prüfen — ist „Lager" für die Org
-        // deaktiviert, ohne Zustellung beenden (Eintrag bleibt offen, später erneut).
-        $org = Organization::query()->withoutGlobalScopes()->find($entry->organization_id);
+    public function organizationId(): ?int {
+        $id = InventoryOutboxEntry::query()->withoutGlobalScopes()->whereKey($this->entryId)->value('organization_id');
 
-        return $org === null || app(ModuleStatusResolver::class)->isActiveFor($org, 'module.lager');
+        return $id !== null ? (int) $id : null;
     }
 
     /**

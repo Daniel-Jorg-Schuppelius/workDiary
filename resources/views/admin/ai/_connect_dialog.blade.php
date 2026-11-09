@@ -8,7 +8,7 @@
 --}}
 {{-- Dialog: KI-Provider-Verbindung anlegen bzw. bearbeiten (Feature 025,
      MVP-400/493). Beim Bearbeiten sind Familie und Provider fest — sie
-     bestimmen den Adapter; Zugangsdaten laufen über „Zugangsdaten ersetzen". --}}
+     bestimmen den Adapter; ein neuer API-Schlüssel ersetzt den alten (MVP-1492). --}}
 @php $connection = $connection ?? null; @endphp
 <x-modal
     :title="$connection !== null ? __('ai.connect.title_edit') : __('ai.connect.title')"
@@ -62,14 +62,13 @@
             @error('base_url')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
-        @if ($connection === null)
         <div class="fieldset">
-            <label class="fieldset-label" for="ai-key">{{ __('ai.field.api_key') }}</label>
+            <label class="fieldset-label" for="ai-key">{{ $connection !== null ? __('ai.field.api_key_new') : __('ai.field.api_key') }}</label>
             <input id="ai-key" type="password" name="api_key" maxlength="2000" autocomplete="new-password"
                    class="input input-bordered w-full font-mono" placeholder="••••••••">
-            <p class="text-xs text-muted">{{ __('ai.field.api_key_help') }}</p>
+            <p class="text-xs text-muted">{{ $connection !== null ? __('ai.field.api_key_new_help') : __('ai.field.api_key_help') }}</p>
+            @error('api_key')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
-        @endif
 
         <div class="fieldset">
             <label class="fieldset-label" for="ai-model">{{ __('ai.field.model') }}</label>

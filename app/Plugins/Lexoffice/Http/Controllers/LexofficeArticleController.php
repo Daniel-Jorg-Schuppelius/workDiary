@@ -13,7 +13,6 @@ namespace App\Plugins\Lexoffice\Http\Controllers;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
-use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
 use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Plugins\Lexoffice\Models\LexofficeArticle;
 use App\Plugins\Lexoffice\Services\LexofficeArticleSync;
@@ -93,7 +92,6 @@ class LexofficeArticleController extends Controller {
         $user = $this->authUser();
         abort_unless($user->can(Permission::ArticleLexofficeSync->value), 403);
 
-        $config = LexofficeConfig::resolve($user->organization_id);
         if (! app(LexofficeClientFactory::class)->isConfigured($user->organization_id)) {
             return back()->with('error', __('Lexoffice ist für diese Organisation nicht konfiguriert.'));
         }
@@ -103,23 +101,15 @@ class LexofficeArticleController extends Controller {
             return back()->with('error', __('Keine Organisation zugeordnet.'));
         }
 
-        // Die Konflikt-Strategie der Plugin-Einstellung gilt auch für Artikel (Entscheidung 2026-10-06).
-        $policy = LexofficeMatchPolicy::fromSetting((string) $config['match_policy']);
-
         try {
             $result = Cache::lock(LexofficeConfig::apiLockKey((int) $organization->id), 1800)
-                ->block(LexofficeConfig::API_LOCK_WAIT_SHORT, static fn (): array => (new LexofficeArticleSync((int) $organization->id))
-                    ->withPolicy($policy)
-                    ->sync($organization));
+                ->block(LexofficeConfig::API_LOCK_WAIT_SHORT, static fn (): array => (new LexofficeArticleSync((int) $organization->id))->sync($organization));
 
             $summary = __('Sync abgeschlossen: :created neu, :updated aktualisiert, :archived archiviert.', [
                 'created' => $result['created'],
                 'updated' => $result['updated'],
                 'archived' => $result['archived'],
             ]);
-            if ($result['conflicts'] > 0) {
-                $summary .= ' ' . __('Konflikte zur manuellen Prüfung: :count.', ['count' => $result['conflicts']]);
-            }
 
             return back()->with('success', $summary);
         } catch (LockTimeoutException) {

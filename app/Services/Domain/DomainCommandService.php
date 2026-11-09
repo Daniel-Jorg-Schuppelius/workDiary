@@ -10,7 +10,7 @@
 
 namespace App\Services\Domain;
 
-use App\Enums\Domain\{DomainCapabilityArea, DomainProviderCommandStatus};
+use App\Enums\Domain\{DomainCapabilityArea, DomainConnectionStatus, DomainProviderCommandStatus};
 use App\Models\Domain\{DomainProviderCommand, DomainProviderConnection};
 use App\Models\Platform\User;
 use App\Plugins\Support\Domain\{DomainCapabilityBlockedException, DomainProviderException};
@@ -54,7 +54,7 @@ class DomainCommandService {
             'capability' => $area->value,
             'command' => $command,
             'target' => $target,
-            'subject_type' => $subject !== null ? $subject::class : null,
+            'subject_type' => $subject?->getMorphClass(),
             'subject_id' => $subject?->getKey(),
             'customer_id' => $customerId,
             // Redaktion: nie Passwort/Auth-Code in der gespeicherten Payload.
@@ -113,6 +113,10 @@ class DomainCommandService {
         }
         if ($command->requires_second_approval && ! $command->hasFourEyesApproval()) {
             throw new RuntimeException('Vier-Augen-Freigabe fehlt.');
+        }
+        // Vor dem Pending-Stempel: sonst bliebe der Befehl über eine getrennte Verbindung offen hängen (MVP-1491).
+        if ($command->providerConnection()->status === DomainConnectionStatus::Disconnected) {
+            throw new DomainActionException((string) __('domain.flash.disconnected_connection'));
         }
 
         $command->forceFill([

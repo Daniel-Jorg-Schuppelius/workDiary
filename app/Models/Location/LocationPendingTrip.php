@@ -81,6 +81,10 @@ class LocationPendingTrip extends Model {
         'point_count' => 'integer',
         'status' => LocationPendingTripStatus::class,
         'resolved_at' => 'datetime',
+        'from_lat' => 'decimal:7',
+        'from_lng' => 'decimal:7',
+        'to_lat' => 'decimal:7',
+        'to_lng' => 'decimal:7',
     ];
 
     /** @param Builder<LocationPendingTrip> $query */

@@ -2713,7 +2713,7 @@
                     {
                         "name": "provider",
                         "in": "query",
-                        "description": "Provider-Schlüssel oder * für alle",
+                        "description": "Quelle: `local` (Materialstamm), `lexoffice` (Lexoffice live), `accounting` (Artikelspiegel der Buchhaltungsprogramme sevDesk, easybill, orgaMAX, Invoice Ninja, Akaunting, InvoicePlane) oder `*` für alle eingerichteten. Externe Treffer werden als lokales Material mit `external_provider` angelegt.",
                         "required": false,
                         "schema": {
                             "type": "string",

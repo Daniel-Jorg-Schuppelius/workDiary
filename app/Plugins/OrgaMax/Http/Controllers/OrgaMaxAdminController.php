@@ -21,7 +21,7 @@ use App\Models\Platform\{Organization, User};
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
 use App\Plugins\OrgaMax\Models\{OrgaMaxConnection, OrgaMaxInvoice};
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
-use App\Plugins\OrgaMax\Services\{OrgaMaxConnectionService, OrgaMaxScopePreflight, OrgaMaxSyncService};
+use App\Plugins\OrgaMax\Services\{OrgaMaxConnectionService, OrgaMaxScopePreflight, OrgaMaxSyncService, OrgaMaxVoucherPullService};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Services\Integration\IntegrationOutboxService;
 use App\Support\ErrorText;
@@ -43,15 +43,24 @@ use Throwable;
 class OrgaMaxAdminController extends Controller {
     use ResolvesPluginOrgContext;
 
+    /** @var list<Permission> */
+    public const array FACTURA_PERMISSIONS = [
+        Permission::OrgamaxInvoiceConvert,
+        Permission::OrgamaxInvoiceLock,
+        Permission::OrgamaxInvoiceSend,
+        Permission::OrgamaxPaymentRecord,
+    ];
+
     public function __construct(
         private readonly OrgaMaxConnectionService $connections,
         private readonly OrgaMaxClientFactory $clients,
         private readonly IntegrationOutboxService $outbox,
     ) {}
 
+    /** Verbindung führt der Admin; die Faktura-Aktionen sieht, wer eines der Rechte `finance.orgamax.*` hat (ul-21). */
     public function index(): View {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
+        $viewer = $this->facturaUser();
+        $organization = $this->organization($viewer);
 
         $connection = OrgaMaxConnection::query()->where('organization_id', $organization->id)->first();
         $invoices = ExternalReference::query()
@@ -69,12 +78,15 @@ class OrgaMaxAdminController extends Controller {
             ->paginate(25, ['*'], 'orders_page')
             ->withQueryString();
 
-        $viewer = Auth::user();
+        $may = static fn(Permission $permission): bool => $viewer->isAdmin() || $viewer->can($permission->value);
 
         return view('orgamax::admin.index', [
-            'maySend' => $viewer instanceof User && ($viewer->isAdmin() || $viewer->can(Permission::OrgamaxInvoiceSend->value)),
+            'isAdmin' => $viewer->isAdmin(),
+            'mayConvert' => $may(Permission::OrgamaxInvoiceConvert),
+            'mayLock' => $may(Permission::OrgamaxInvoiceLock),
+            'maySend' => $may(Permission::OrgamaxInvoiceSend),
             'mayRecordPayment' => $connection !== null && $connection->capabilityLeader('payments') === 'workdiary'
-                && $viewer instanceof User && ($viewer->isAdmin() || $viewer->can(Permission::OrgamaxPaymentRecord->value)),
+                && $may(Permission::OrgamaxPaymentRecord),
             'connection' => $connection,
             'invoices' => $invoices,
             'orders' => $orders,
@@ -185,6 +197,9 @@ class OrgaMaxAdminController extends Controller {
 
         try {
             $counters = app(OrgaMaxSyncService::class)->run($connection);
+            // Belege im selben Budget (MVP-1501); Positionen lädt der geplante Lauf nach.
+            $pulled = app(OrgaMaxVoucherPullService::class)->pull((int) $connection->organization_id, max(1, (int) config('plugins.orgamax.sync_page_budget', 10)));
+            $counters += ['vouchers_read' => $pulled['read'], 'vouchers_created' => $pulled['created'], 'vouchers_updated' => $pulled['updated']];
         } catch (Throwable) {
             return back()->with('error', __('orgamax::orgamax.sync.failed'));
         }
@@ -305,8 +320,7 @@ class OrgaMaxAdminController extends Controller {
 
     /** Rechnungs-PDF-Projektion (Herkunft orgaMAX, Hash im Audit). */
     public function invoicePdf(string $externalId): Response {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
+        $organization = $this->organization($this->facturaUser());
         $connection = $this->connection($organization);
 
         try {
@@ -333,6 +347,16 @@ class OrgaMaxAdminController extends Controller {
     }
 
     // ── Guards ──────────────────────────────────────────────────────────
+
+    /** Admin oder Inhaber eines der Faktura-Rechte, sonst 403. */
+    private function facturaUser(): User {
+        $user = $this->authUser();
+        $permitted = $user->isAdmin() || array_any(self::FACTURA_PERMISSIONS, static fn(Permission $p): bool => $user->can($p->value));
+        abort_unless($permitted, 403);
+        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
+
+        return $user;
+    }
 
     private function permitted(Permission $permission): User {
         /** @var User $user */

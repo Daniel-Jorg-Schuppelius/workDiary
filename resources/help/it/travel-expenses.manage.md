@@ -1,7 +1,7 @@
 ---
 title: "Viaggi, spese e diarie"
 topic: travel-expenses.manage
-version: 4
+version: 5
 keywords:
     - nota spese
     - rimborso spese
@@ -64,6 +64,20 @@ registro viaggi**, i chilometraggi sono obbligatori e il viaggio viene bloccato 
 la fine della giornata. Chiunque abbia effettuato l'accesso può registrare
 viaggi, se la Sua organizzazione usa il modulo; un viaggio appartiene sempre
 alla persona che lo ha registrato.
+
+## Collegare una spesa a un documento contabile
+
+Se la stessa spesa è già registrata in contabilità come documento in entrata,
+lo colleghi alla spesa nella finestra del giustificativo. Vengono proposti i
+documenti con lo stesso importo lordo (con una tolleranza di due centesimi) la
+cui data si discosta al massimo di 14 giorni dalla data della spesa.
+**Collega** conferma che si tratta della stessa operazione: da quel momento nel
+flusso dei documenti conta solo il documento. Un documento appartiene a una
+sola spesa; il collegamento si rimuove nella stessa finestra.
+
+Funziona con Lexoffice e con ogni programma i cui documenti in entrata
+WorkDiary rispecchia (sevDesk, Akaunting, Invoice Ninja). La trasmissione di
+una spesa come nuovo documento (sotto) esiste solo per Lexoffice.
 
 ## Trasmettere una spesa alla contabilità come documento
 

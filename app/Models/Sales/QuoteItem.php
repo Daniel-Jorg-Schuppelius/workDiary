@@ -85,6 +85,7 @@ class QuoteItem extends Model implements DocumentLine {
         'calculation' => 'array',
         'discount_amount' => MoneyCast::class,
         'tax_rate' => PercentageCast::class . ':2',
+        'quantity' => 'decimal:2',
     ];
 
     /** @return BelongsTo<Quote, $this> */

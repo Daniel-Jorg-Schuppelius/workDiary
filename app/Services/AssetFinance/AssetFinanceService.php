@@ -245,6 +245,19 @@ class AssetFinanceService {
         return $contract;
     }
 
+    /** Entwurf stornieren (MVP-1517): ein falsch angelegter Entwurf endet mit Begründung, ohne Ratenplan. */
+    public function cancel(AssetFinanceContract $contract, User $actor, string $reason): AssetFinanceContract {
+        return DB::transaction(function () use ($contract, $actor, $reason): AssetFinanceContract {
+            $locked = AssetFinanceContract::query()->whereKey($contract->getKey())->lockForUpdate()->firstOrFail();
+            $this->assertStatusTransition($locked->status, AssetFinanceStatus::Cancelled);
+
+            $locked->forceFill(['status' => AssetFinanceStatus::Cancelled->value])->save();
+            $locked->audit('assetFinance.cancelled', ['reason' => $reason, 'by' => $actor->id]);
+
+            return $locked;
+        });
+    }
+
     public function close(AssetFinanceContract $contract, User $actor): AssetFinanceContract {
         $this->assertStatusTransition($contract->status, AssetFinanceStatus::Closed);
 

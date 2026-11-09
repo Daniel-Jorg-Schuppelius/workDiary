@@ -23,9 +23,9 @@ use Illuminate\View\View;
 
 /**
  * Zentrale Seite „DomainReselling-Verbindung" (Feature 083, MVP-385/394):
- * Verbindung anlegen (Zugangsdaten-Dialog), prüfen, Passwort rotieren, Pilot
- * bestätigen und trennen. Zugangsdaten liegen verschlüsselt und erscheinen nie
- * in URLs/Logs.
+ * Verbindung anlegen (Zugangsdaten-Dialog), prüfen, Zugangsdaten erneuern,
+ * Pilot bestätigen und trennen. Zugangsdaten liegen verschlüsselt und
+ * erscheinen nie in URLs/Logs. Trennen löscht nichts (MVP-1491).
  */
 class DomainProviderConnectionController extends Controller {
     use ResolvesCurrentOrganization;
@@ -91,29 +91,37 @@ class DomainProviderConnectionController extends Controller {
     public function test(DomainProviderConnection $connection, DomainConnectionService $service): RedirectResponse {
         Gate::authorize('update', $connection);
 
+        if ($connection->status === DomainConnectionStatus::Disconnected) {
+            return back()->with('error', __('domain.flash.disconnected_connection'));
+        }
         $ok = $service->test($connection);
 
         return back()->with($ok ? 'success' : 'error', $ok ? __('domain.flash.connection_ok') : __('domain.flash.connection_failed'));
+    }
+
+    /** Dialog „Zugangsdaten erneuern“ (MVP-1492), auch zum Wiederverbinden einer getrennten Verbindung. */
+    public function credentials(DomainProviderConnection $connection): View {
+        Gate::authorize('update', $connection);
+
+        return view('admin.domain-provider._credentials_dialog', ['connection' => $connection]);
     }
 
     public function rotate(Request $request, DomainProviderConnection $connection, DomainConnectionService $service): RedirectResponse {
         Gate::authorize('update', $connection);
 
         $data = $request->validate([
-            'login' => ['nullable', 'string', 'max:190'],
+            'login' => ['nullable', 'string', 'max:190', Rule::unique('domain_provider_connections', 'login')
+                ->where('organization_id', $this->currentOrganizationId())->where('endpoint', $connection->endpoint)->ignore($connection->getKey())],
             'password' => ['required', 'string', 'max:512'],
             'default_user' => ['nullable', 'string', 'max:190'],
         ]);
 
-        $connection->forceFill([
-            'login' => $data['login'] ?? $connection->login,
-            'password' => $data['password'],
-            'default_user' => $data['default_user'] ?? $connection->default_user,
-        ])->save();
+        $ok = $service->replaceCredentials($connection, $data['login'] ?? null, $data['password'], $data['default_user'] ?? null);
 
-        $service->test($connection);
-
-        return back()->with('success', __('domain.flash.credentials_rotated'));
+        return redirect()->toList('admin.domain-provider.index')->with(
+            $ok ? 'success' : 'error',
+            $ok ? __('domain.flash.credentials_rotated') : __('domain.flash.connection_failed'),
+        );
     }
 
     /** Sync auslösen (Reseller/Domains/Kontakte). */
@@ -137,10 +145,11 @@ class DomainProviderConnectionController extends Controller {
         return back()->with('success', __('domain.flash.pilot_confirmed'));
     }
 
-    public function destroy(DomainProviderConnection $connection): RedirectResponse {
+    /** Trennen statt Löschen (MVP-1491): Zugangsdaten weg, Nachweise bleiben. */
+    public function destroy(DomainProviderConnection $connection, DomainConnectionService $service): RedirectResponse {
         Gate::authorize('delete', $connection);
 
-        $connection->delete();
+        $service->disconnect($connection);
 
         return redirect()->toList('admin.domain-provider.index')->with('success', __('domain.flash.disconnected'));
     }

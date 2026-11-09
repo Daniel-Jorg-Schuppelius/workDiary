@@ -30,7 +30,7 @@ enum ApplicationOpportunityStatus: string implements HasStatusTransitions {
     case Lost = 'lost';
     case Withdrawn = 'withdrawn';
 
-    /** Im Schema vorgesehen, heute von keinem Code geschrieben. */
+    /** Entschiedene Akte abgelegt (MVP-1517); die Entscheidung hält `archived_outcome`. */
     case Archived = 'archived';
 
     /**
@@ -70,7 +70,8 @@ enum ApplicationOpportunityStatus: string implements HasStatusTransitions {
 
     /**
      * Eine offene Akte wechselt frei zwischen den Bearbeitungsständen; die
-     * erneute Abgabe (Status bleibt) prüft der Aufrufer selbst.
+     * erneute Abgabe (Status bleibt) prüft der Aufrufer selbst. Eine
+     * entschiedene Akte lässt sich nur noch ablegen.
      *
      * @return list<self>
      */
@@ -80,7 +81,8 @@ enum ApplicationOpportunityStatus: string implements HasStatusTransitions {
                 [...self::open(), self::Won, self::Lost, self::Withdrawn],
                 fn (self $target): bool => $target !== $this,
             )),
-            self::Won, self::Lost, self::Withdrawn, self::Archived => [],
+            self::Won, self::Lost, self::Withdrawn => [self::Archived],
+            self::Archived => [],
         };
     }
 }

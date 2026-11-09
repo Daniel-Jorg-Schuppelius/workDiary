@@ -63,6 +63,9 @@ class TimeAccount extends Model {
         'is_active' => 'boolean',
         'valid_from' => 'date',
         'valid_until' => 'date',
+        'warn_threshold' => 'decimal:2',
+        'critical_threshold' => 'decimal:2',
+        'cap_amount' => 'decimal:2',
     ];
 
     /** @return HasMany<TimeAccountRule, $this> */

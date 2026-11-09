@@ -1,13 +1,15 @@
 ---
 title: "Cambio di software contabile"
 topic: admin.accounting-migration
-version: 1
+version: 2
 keywords:
     - migrazione contabilità
     - migrare dati contabili
     - cambio fornitore
     - Lexoffice
     - orgaMAX
+    - sevDesk
+    - easybill
     - migrazione dati
     - simulazione
     - dry run
@@ -21,8 +23,9 @@ related:
 ---
 
 Il cambio di software contabile porta un'organizzazione da un sistema al
-successivo in modo controllato (primo percorso supportato: Lexoffice →
-orgaMAX). WorkDiary non copia ciecamente da un sistema all'altro: associa
+successivo in modo controllato. Origine e destinazione si scelgono
+liberamente tra Lexoffice, orgaMAX, sevDesk ed easybill, in entrambe le
+direzioni. WorkDiary non copia ciecamente da un sistema all'altro: associa
 entrambi i sistemi esterni agli stessi oggetti di business locali.
 
 Passi: pianificare (aree dati + data di switch, un solo cambio per
@@ -33,6 +36,21 @@ commutazione (dalla data di switch i nuovi documenti nascono esclusivamente
 nel sistema di destinazione; il push verso l'origine è bloccato
 tecnicamente e la commutazione resta bloccata finché esistono conflitti) →
 conclusione con protocollo CSV.
+
+Per sevDesk ed easybill:
+
+- I **dati anagrafici** vengono riconciliati tramite il collegamento dei
+  contatti: clienti e fornitori già collegati al programma (trasferimento,
+  invio del contatto o sincronizzazione dei contatti) contano come
+  assegnati.
+- Gli **articoli** non si possono riconciliare con sevDesk ed easybill,
+  perché WorkDiary rispecchia soltanto la loro anagrafica articoli senza
+  collegarla agli articoli locali. In tal caso deselezionate l’area.
+- Lo **storico dei documenti** proviene dallo specchio dei documenti.
+  Eseguite il recupero dei documenti prima dell’analisi e prima della
+  conclusione, così che i vecchi documenti aperti siano completi.
+- Le immagini dei documenti restano nel programma. Salvatele tramite la sua
+  esportazione prima della fine del contratto.
 
 Principi: i documenti finalizzati **non** vengono mai ricostruiti nel
 sistema di destinazione — restano consultabili come storico con numero,

@@ -32,10 +32,31 @@
                             <x-icon-btn placement="bar" icon="check_circle" tone="primary" size="sm" type="submit" show-label>{{ __('manufacturing.order.action.release') }}</x-icon-btn>
                         </form>
                     @endif
-                    @if (in_array($status, ['released', 'waiting', 'blocked'], true))
+                    @if ($status === 'released')
                         <form method="POST" action="{{ route('manufacturing-orders.start', $order) }}">@csrf
                             <x-icon-btn placement="bar" icon="play_arrow" tone="primary" size="sm" type="submit" show-label>{{ __('manufacturing.order.action.start') }}</x-icon-btn>
                         </form>
+                    @endif
+                    {{-- Abschluss, Warten, Sperren, Wiederaufnahme nur bei erlaubtem Übergang (MVP-1493). --}}
+                    @if ($order->status->canTransitionTo(\App\Enums\Manufacturing\ManufacturingOrderStatus::Completed))
+                        <x-action-form :action="route('manufacturing-orders.complete', $order)" :confirm="__('manufacturing.order.action.complete_confirm')">
+                            <x-icon-btn placement="bar" icon="task_alt" tone="primary" size="sm" type="submit" show-label>{{ __('manufacturing.order.action.complete') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                    @if (in_array($status, ['waiting', 'blocked'], true) && $order->status->canTransitionTo(\App\Enums\Manufacturing\ManufacturingOrderStatus::InProgress))
+                        <x-action-form :action="route('manufacturing-orders.resume', $order)">
+                            <x-icon-btn placement="bar" icon="play_arrow" tone="primary" size="sm" type="submit" show-label>{{ __('manufacturing.order.action.resume') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                    @if ($order->status->canTransitionTo(\App\Enums\Manufacturing\ManufacturingOrderStatus::Waiting))
+                        <x-action-form :action="route('manufacturing-orders.wait', $order)">
+                            <x-icon-btn placement="menu" icon="pause_circle" size="sm" type="submit" show-label>{{ __('manufacturing.order.action.wait') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                    @if ($order->status->canTransitionTo(\App\Enums\Manufacturing\ManufacturingOrderStatus::Blocked))
+                        <x-action-form :action="route('manufacturing-orders.block', $order)" :confirm="__('manufacturing.order.action.block_confirm')">
+                            <x-icon-btn placement="menu" icon="block" size="sm" type="submit" show-label>{{ __('manufacturing.order.action.block') }}</x-icon-btn>
+                        </x-action-form>
                     @endif
                     @if (in_array($status, ['released', 'in_progress'], true))
                         <form method="POST" action="{{ route('manufacturing-orders.reserve', $order) }}">@csrf

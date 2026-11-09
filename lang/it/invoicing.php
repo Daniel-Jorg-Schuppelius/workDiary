@@ -77,6 +77,7 @@ return [
         'empty' => 'Nessun tempo fatturabile o trasferta per i filtri selezionati.',
         'entry_count' => ':count registrazione|:count registrazioni',
         'travel' => '+ :count trasferta/e',
+        'target_top_up' => '+ :count integrazione all’obiettivo del progetto|+ :count integrazioni all’obiettivo del progetto',
         'warning_late' => ':count registrazione tardiva: la data di prestazione ricade in un periodo già fatturato.|:count registrazioni tardive: le date di prestazione ricadono in periodi già fatturati.',
         'column' => [
             'description' => 'Posizione',

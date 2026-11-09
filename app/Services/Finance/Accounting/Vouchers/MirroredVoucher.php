@@ -54,6 +54,14 @@ final readonly class MirroredVoucher {
         public bool $isCancellation = false,
         public ?string $cancelsExternalId = null,
         public ?string $contactExternalId = null,
+        /**
+         * Partei hinter `contactExternalId`, wenn das Programm Kunden und
+         * Lieferanten getrennt nummeriert (orgaMAX): dann zählt nur eine
+         * Referenz auf diese Partei, auch die des Stammdatenimports.
+         *
+         * @var class-string<\App\Models\Customer\Customer|\App\Models\Supplier\Supplier>|null
+         */
+        public ?string $contactParty = null,
         public ?string $supplierName = null,
         public ?string $customerNumber = null,
         public ?string $sourceChangedAt = null,

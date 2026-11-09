@@ -128,8 +128,8 @@ class ApplicationsReportController extends Controller {
         $won = 0;
         $decided = 0;
 
-        foreach (ApplicationOpportunity::query()->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->get(['status', 'estimated_value', 'loss_reason']) as $opportunity) {
-            $status = $opportunity->status;
+        foreach (ApplicationOpportunity::query()->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->get(['status', 'archived_outcome', 'estimated_value', 'loss_reason']) as $opportunity) {
+            $status = $opportunity->outcome();
             $pipeline[$status->value] ??= ['count' => 0, 'value' => 0.0];
             $pipeline[$status->value]['count']++;
             $pipeline[$status->value]['value'] += (float) $opportunity->estimated_value;

@@ -1,7 +1,7 @@
 ---
 title: "Presenza, piano/effettivo e copertura"
 topic: reports.attendance
-version: 7
+version: 8
 keywords:
     - report presenze
     - analizzare le timbrature
@@ -79,7 +79,7 @@ minuti per persona e una riga di totale.
 
 **Report** → **Personale** → **Piano/effettivo** confronta previsto ed effettivo
 in più viste, che si cambiano con le schede in alto nella pagina: **Presenza**,
-**Team**, **Organizzazione**, **Turni**, **Progetti** e **Siti**. Vede solo le
+**Team**, **Organizzazione**, **Turni**, **Progetti**, **Progetto per persona** e **Siti**. Vede solo le
 schede per cui dispone dei permessi.
 
 Qui il periodo non viene preso dall'intestazione: lo imposti nella barra dei
@@ -151,6 +151,22 @@ Suoi team.
   dati previsti** – non è un allarme. Il tempo senza progetto compare nella
   riga **Senza progetto**. I confronti con budget di tempo e di denaro li
   fornisce **Redditività**.
+- **Progetto per persona**: il previsto sono i tempi obiettivo dei progetti per
+  persona (scheda Tempi, **Gestire i tempi obiettivo**), l'effettivo il tempo
+  che la persona ha registrato sul progetto; i tempi macchina non contano.
+  Riquadri **Piano**, **Effettivo**, **Differenza** e **Giorni sotto obiettivo**
+  (riscontri aperti o confermati del confronto notturno; l'indicazione riporta
+  tutti i riscontri del periodo), sotto la tabella **Progetto per persona** con
+  **Progetto**, **Persona**, **Obiettivo (h)**, **Registrato (h)**, **Differenza
+  (h)** e **Giorni sotto obiettivo**. La differenza è l'obiettivo meno il
+  registrato, il tempo mancante è evidenziato in giallo; se alcuni riscontri
+  sono già risolti, dopo i giorni aperti compare in grigio il numero di tutti i
+  riscontri. Se un progetto ha un geofence, **Presenza in loco (h)** mostra il
+  tempo che la persona vi ha trascorso secondo la rilevazione dei tempi basata
+  sulla posizione – solo come prova, non conta né nell'effettivo né nella
+  differenza. Il campo **Tutti i progetti** limita la vista a un progetto con
+  tempi obiettivo. Senza tempi obiettivo nel periodo, la pagina mostra
+  **Nessun tempo obiettivo di progetto nel periodo.**
 - **Siti**: per i siti non esistono dati previsti; la vista mostra solo la
   distribuzione effettiva del tempo rilevato con la registrazione basata sulla
   posizione. Riquadri **Effettivo**, **Visite in loco** e **Persone**, grafico
@@ -159,7 +175,7 @@ Suoi team.
   (h)** e **Quota**. Le visite a geofence senza sede assegnata compaiono in
   **Senza assegnazione a una sede** con l'indicazione **Geofence senza sede**.
 
-Le tabelle lunghe delle schede **Progetti** e **Siti** sono suddivise in pagine
+Le tabelle lunghe delle schede **Progetti**, **Progetto per persona** e **Siti** sono suddivise in pagine
 da 50 righe ciascuna; i grafici invece valutano tutte le righe, non solo la
 pagina visualizzata.
 
@@ -230,7 +246,7 @@ heatmap, **CSV** ed **Excel**.
   organizzazione.
 - **Piano/effettivo**: la scheda **Presenza** con i propri giorni è visibile a
   tutti. La scheda **Team** richiede il permesso **Consultare il rapporto
-  presenze (team)**, le schede **Organizzazione**, **Turni**, **Progetti** e
+  presenze (team)**, le schede **Organizzazione**, **Turni**, **Progetti**, **Progetto per persona** e
   **Siti** il permesso **Consultare il rapporto presenze (organizzazione)**. Gli
   amministratori vedono tutte le schede. Nell'assegnazione standard il ruolo
   Capo team ha il permesso team, la Direzione il permesso organizzazione e la

@@ -1,7 +1,7 @@
 ---
 title: "Assets & fleet"
 topic: assets.fleet
-version: 2
+version: 3
 keywords:
     - fleet management
     - vehicle management
@@ -35,6 +35,15 @@ documents. Status changes should reflect the real lifecycle.
 Before deletion or retirement, check for linked maintenance, work
 items, journeys or documents. Preserve critical history through
 archiving instead of overwriting it.
+
+## Categories
+
+The "Category" field offers the general IT categories and your organisation's
+categories. Industry profiles bring suitable categories along, such as pipe
+inspection camera and press tool for HVAC or pulse oximeter and controlled
+drugs cabinet in care. Administrators create their own categories under
+Classifications in the "Asset categories" domain. A deactivated category is no
+longer offered for new assets but stays on assets that already carry it.
 
 ## Check-out and return
 

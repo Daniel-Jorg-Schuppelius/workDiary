@@ -90,6 +90,9 @@ class GobdLockGuardRuleTest extends TestCase {
         // MUTABLE_AFTER_ISSUE-Whitelist (status, paid_on); bewusste Umgehung des
         // Ausstellungs-Guards, dokumentiert in Invoice.php.
         'app/Plugins/Lexoffice/Services/Retainer/LexofficeRetainerVouchers.php' => 'Retainer-Zahlungsabgleich aktualisiert status/paid_on ausgestellter Pauschal-Rechnungen (dokumentierte Guard-Ausnahme).',
+        // Dieselbe Ausnahme für sevDesk und easybill (MVP-1505): Zahlstand aus dem Belegspiegel. Still, weil der
+        // Spiegel den Zahlungswechsel schon selbst meldet (VoucherMirror) — Provision und Webhook nicht doppelt.
+        'app/Services/Billing/Retainer/MirroredRetainerVouchers.php' => 'Retainer-Zahlungsabgleich aus dem Belegspiegel aktualisiert status/paid_on ausgestellter Pauschal-Rechnungen (dokumentierte Guard-Ausnahme, MVP-1505).',
         // Messdatensatz des Lastprofils (MVP-683): schreibt Buchungen per
         // Sammel-Insert, weil 30.000 Einzelbuchungen über den JournalService
         // die Messung selbst zum Engpass machen würden. Das Kommando ist ein

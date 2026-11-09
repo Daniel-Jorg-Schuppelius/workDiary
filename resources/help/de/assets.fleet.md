@@ -1,7 +1,7 @@
 ---
 title: "Assets & Fuhrpark"
 topic: assets.fleet
-version: 2
+version: 3
 keywords:
     - Fuhrparkverwaltung
     - Fahrzeugverwaltung
@@ -36,6 +36,16 @@ widerspiegeln.
 Vor Löschung oder Ausmusterung prüfen, ob offene Wartungen, Vorgänge,
 Fahrten oder Dokumente verknüpft sind. Kritische Historie sollte
 archiviert und nicht durch Überschreiben verloren gehen.
+
+## Kategorien
+
+Das Feld „Kategorie“ bietet die allgemeinen IT-Kategorien und die Kategorien
+Ihrer Organisation an. Branchenprofile bringen passende Kategorien mit, etwa
+Rohrkamera und Pressmaschine bei SHK oder Pulsoximeter und BtM-Schrank im
+Profil Ambulante Pflege. Eigene Kategorien legen Administratoren unter
+Klassifikationen in der Domäne „Asset-Kategorien“ an. Eine deaktivierte Kategorie wird für neue
+Assets nicht mehr angeboten, bleibt aber an Assets stehen, die sie schon
+tragen.
 
 ## Ausgabe und Rückgabe
 

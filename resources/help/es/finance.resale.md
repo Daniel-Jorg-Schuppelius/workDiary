@@ -1,7 +1,7 @@
 ---
 title: "Suscripciones y licencias"
 topic: finance.resale
-version: 12
+version: 13
 keywords:
     - Vista previa de importación
     - Acciones masivas
@@ -125,7 +125,9 @@ procede de tres fuentes: (1) facturas y abonos del proveedor en PDF
 (Quality Hosting, formato alemán e inglés) — cada posición nombra contrato,
 cliente final y plazo, el importe va exactamente al periodo; las posiciones
 de abono sin contrato corresponden a la empresa. (2) Comprobantes recibidos
-del espejo de comprobantes a prorrata: para facturas agrupadas sin
+del espejo de comprobantes (Lexoffice, sevDesk, Akaunting, Invoice Ninja y
+otros programas; sin borradores, anulaciones ni comprobantes eliminados) a
+prorrata: para facturas agrupadas sin
 posiciones (Telekom) indica la parte del proveedor y el mes de servicio,
 el importe se reparte entre todos los periodos del mes, ponderado con su
 compra prevista mensual. (3) Asientos de dominios de la gestión de

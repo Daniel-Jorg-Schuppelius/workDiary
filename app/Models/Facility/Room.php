@@ -78,6 +78,7 @@ class Room extends Model {
         'equipment' => 'array',
         'is_active' => 'boolean',
         'usage_type' => RoomUsageType::class,
+        'net_area_m2' => 'decimal:2',
     ];
 
     /** @return BelongsTo<Floor, $this> */

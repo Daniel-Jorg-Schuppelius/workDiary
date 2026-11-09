@@ -14,7 +14,8 @@ return [
     'code' => 'gebaeudereinigung',
     'label' => 'Gebäudereinigung',
     'description' => 'Gebäudereinigung: Unterhalts-, Grund-, Glas- und Sonderreinigung mit Reinigungsprofilen, Qualitätskontrolle und Reklamationen.',
-    'version' => 2,
+    // v3: Objektplan als Protokollvorlage (MVP-1509).
+    'version' => 3,
     // MVP-1053: Arbeitskosten nach § 35a EStG bei Privatkunden ausweisen; eigene Einstellungen bleiben.
     'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers'],
     // Vorschlag für den Standard-Arbeitsbereich (MVP-840); nur Default, kein Zwang.
@@ -251,10 +252,10 @@ return [
         ['code' => 'gr_fotopflicht', 'kind' => 'other', 'label' => 'Foto-/Abnahmepflicht', 'note' => 'Reinigung mit Foto- oder Abnahmenachweis dokumentieren.'],
     ],
     // 'protocol_templates': Codes aus database/data/protocol_templates.php (MVP-902).
-    // 'asset_categories' installiert der BranchProfileInstaller nicht (Kategorien
-    // stammen aus config('asset_categories')); sie dienen als Branchen-Taxonomie.
+    // 'asset_categories': Codes aus database/data/asset_categories.php (MVP-1508).
     'protocol_templates' => [
         ['code' => 'GR_REINIGUNGSNACHWEIS'],
+        ['code' => 'GR_OBJEKTPLAN'],
         ['code' => 'GR_QS_PROTOKOLL'],
         ['code' => 'GR_REKLAMATIONSBERICHT'],
         ['code' => 'GR_MATERIALVERBRAUCH'],

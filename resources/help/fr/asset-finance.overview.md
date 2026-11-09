@@ -1,7 +1,7 @@
 ---
 title: "Leasing et contrats d'actifs"
 topic: asset-finance.overview
-version: 1
+version: 2
 keywords:
     - crédit-bail
     - contrat de location
@@ -34,6 +34,11 @@ financières confidentielles avec un droit dédié.
 **L'activation** fige les conditions en instantané et génère l'échéancier
 prévisionnel. **Les échéances** (résiliation, prolongation, option
 d'achat, restitution) alertent à l'avance et escaladent.
+
+**Annuler un brouillon :** Un brouillon créé par erreur ou en double est
+annulé avec une justification obligatoire ; il ne reçoit pas d'échéancier
+et reste consultable comme justificatif. Un contrat activé n'est pas
+annulé mais résilié.
 
 **Le réel n'est que référencé :** factures fournisseurs liées aux
 échéances, compteurs alimentant les limites — aucune écriture comptable.

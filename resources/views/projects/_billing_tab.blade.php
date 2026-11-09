@@ -65,7 +65,7 @@
             <x-checkbox-field name="bills_target_time" tone="info"
                               :label="__('Vereinbarte Stunden abrechnen')"
                               :checked="(bool) old('bills_target_time', $project->bills_target_time)"
-                              :hint="__('Fehlt einer Person Zeit zum Projekt-Soll, ergänzt die Übergabe die Differenz als Position „Vereinbarte Einsatzzeit“. Mehrzeit bleibt wie gebucht.')" />
+                              :hint="__('Fehlt einer Person Zeit zum Projekt-Soll, ergänzen Übergabe und Rechnung die Differenz als Position „Vereinbarte Einsatzzeit“. Mehrzeit bleibt wie gebucht.')" />
 
             <div class="flex justify-end">
                 <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('Taktung speichern') }}</x-button>

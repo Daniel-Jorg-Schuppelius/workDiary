@@ -1,7 +1,7 @@
 ---
 title: "Organizzazione e impostazioni"
 topic: admin.organization-settings
-version: 4
+version: 5
 keywords:
     - impostazioni aziendali
     - impostazioni del tenant
@@ -122,6 +122,18 @@ di lavoro secondo la legge tedesca sull'orario di lavoro (ArbZG):
   il controllo nella finestra del turno. Sono gravi la sovrapposizione, un
   riposo troppo breve, l'orario giornaliero superato e un turno durante ferie
   approvate; le altre regole si limitano ad avvisare.
+
+## Qualifiche obbligatorie
+
+**Qualifica obbligatoria mancante all’assegnazione** stabilisce cosa succede
+quando a una persona manca una qualifica richiesta dal tipo di turno o
+dall’ordine, oppure quando la sua qualifica è scaduta o non ancora valida nel
+giorno dell’intervento:
+
+- **Solo avviso** (predefinito): il piano turni e l’ordine mostrano la
+  mancanza, il salvataggio resta possibile.
+- **Bloccare l’assegnazione**: l’assegnazione viene rifiutata con un
+  messaggio di errore. Dettagli in «Qualifiche».
 
 ## Modello orario di lavoro
 
@@ -394,6 +406,16 @@ l’assistente IA».
 - **Consentire la prenotazione diretta nel portale clienti**: i clienti
   prenotano subito e in modo vincolante i dispositivi liberi abilitati per il
   portale; la direzione viene informata.
+- **Pagamento anticipato per prenotazione diretta (%)** (0–100, predefinito
+  0): quota del prezzo lordo dal listino che i clienti pagano in anticipo
+  online tramite il fornitore di pagamento nella prenotazione diretta. La
+  prenotazione è confermata solo al ricevimento del pagamento; l’anticipo
+  viene imputato alla fattura. Un oggetto di noleggio può avere una propria
+  quota (0 = nessuna). Senza fornitore di pagamento configurato è possibile
+  solo la richiesta.
+- **Termine di pagamento della prenotazione diretta (minuti)** (10–1440,
+  predefinito 30): per quanto tempo l’attrezzatura resta riservata a una
+  prenotazione non pagata; poi la prenotazione viene liberata.
 - **Raggio intorno al luogo d'impiego (m)** (50–50 000, predefinito 500): se
   la posizione segnalata di un'attrezzatura noleggiata è più lontana dalla
   sede del noleggio, lo scostamento viene segnalato. Senza sede valgono i

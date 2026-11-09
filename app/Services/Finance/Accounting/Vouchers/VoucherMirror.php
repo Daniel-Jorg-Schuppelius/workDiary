@@ -20,6 +20,7 @@ use App\Models\Finance\{AccountingVoucher, AccountingVoucherLine};
 use App\Models\Integration\ExternalReference;
 use App\Models\Supplier\Supplier;
 use App\Services\Finance\Accounting\Articles\ArticleMirror;
+use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 
@@ -152,7 +153,7 @@ class VoucherMirror {
      * Altbestand und Erstläufe dürfen keine rückwirkenden Provisionen erzeugen.
      */
     private function announcePaymentChange(AccountingVoucher $row, AccountingVoucherState $stateBefore, mixed $openBefore): void {
-        $direction = $row->direction ?? ($row->voucher_type === 'C' ? DocumentDirection::Outgoing->value : null);
+        $direction = $row->direction ?? ($row->voucher_type === 'D' ? DocumentDirection::Outgoing->value : null);
         $kind = DocumentKind::tryFrom((string) $row->document_kind) ?? DocumentKind::Other;
         if ($direction !== DocumentDirection::Outgoing->value || $kind->sign() === 0 || in_array($kind, [DocumentKind::Cancellation, DocumentKind::DownPaymentDeduction], true)) {
             return;
@@ -172,6 +173,34 @@ class VoucherMirror {
         if ($event !== null) {
             event($event);
         }
+    }
+
+    /**
+     * Positionen nachladen (Feature 185, MVP-1424): ausgehende Rechnungen,
+     * Gutschriften und Serienvorlagen ohne `lines_synced_at`, jüngste zuerst,
+     * begrenzt je Lauf — der nächste Lauf macht weiter. Jeder Lauf eines
+     * {@see LineAwareVoucherPuller} ruft das nach `pull()` (MVP-1490).
+     *
+     * @return int Belege, deren Positionen gelesen wurden
+     */
+    public function pullPendingLines(LineAwareVoucherPuller $puller, int $organizationId, int $limit = 100): int {
+        $pending = AccountingVoucher::query()->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->where('plugin_id', $puller->pluginId())
+            ->whereNull('lines_synced_at')
+            ->whereNull('source_deleted_at')
+            // Serienvorlagen sind richtungsneutral, ihre Positionen braucht die Planquelle.
+            ->where(static fn ($query) => $query
+                ->where(static fn ($q) => $q->where('direction', DocumentDirection::Outgoing->value)->whereIn('document_kind', [DocumentKind::Invoice->value, DocumentKind::DownPayment->value, DocumentKind::CreditNote->value]))
+                ->orWhere('document_kind', DocumentKind::RecurringTemplate->value))
+            ->orderByDesc('voucher_date')->orderByDesc('id')
+            ->limit($limit)
+            ->get();
+        foreach ($pending as $voucher) {
+            $this->storeLines($organizationId, $puller->pluginId(), (string) $voucher->external_id, $puller->pullLines($organizationId, $voucher));
+        }
+
+        return $pending->count();
     }
 
     /**
@@ -270,9 +299,15 @@ class VoucherMirror {
     private function resolveContact(int $organizationId, string $pluginId, MirroredVoucher $voucher): array {
         $externalId = trim((string) $voucher->contactExternalId);
         if ($externalId !== '') {
+            $party = $voucher->contactParty;
+            // Getrennte Nummernkreise: der Stammdatenimport verknüpft unter `customer` bzw. `supplier`.
+            $types = $party === null ? [ExternalReference::TYPE_CONTACT] : [ExternalReference::TYPE_CONTACT, $party === Supplier::class ? 'supplier' : 'customer'];
+            $morph = $party !== null ? MorphMap::alias($party) : null;
             $reference = ExternalReference::query()
-                ->forPlugin($organizationId, $pluginId, 'contact')
+                ->forPlugin($organizationId, $pluginId)
+                ->whereIn('external_type', $types)
                 ->where('external_id', $externalId)
+                ->when($morph !== null, static fn ($query) => $query->where('referenceable_type', $morph))
                 ->first();
             if ($reference instanceof ExternalReference) {
                 if ($reference->referenceable_type === (new Customer())->getMorphClass()) {

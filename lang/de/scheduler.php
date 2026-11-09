@@ -94,6 +94,8 @@ return [
     // Lesbare Job-Namen (Registry-Keys, geschachtelt wegen Punkt-Notation);
     // neue Registry-Jobs hier in allen Locales ergänzen — sonst Fallback = Key.
     'job' => [
+        'rental' => ['expire-prepayments' => 'Unbezahlte Direktbuchungen im Verleih freigeben'],
+        'timekeeping' => ['ical-sync' => 'Abonnierte iCal-Kalender in die Zeiterfassung lesen'],
         'projects' => ['check-time-targets' => 'Projekt-Sollzeiten gegen gebuchte Zeit prüfen'],
         'surveys' => ['scheduled' => 'Umfragen im festen Abstand versenden'],
         'demo' => [
@@ -124,9 +126,10 @@ return [
         'billbee' => ['sync' => 'Billbee-Abgleich'],
         'caldav' => ['publish' => 'CalDAV-Kalender-Publish-Abgleich', 'import' => 'CalDAV-Kalender-Rückimport'],
         'carddav' => ['sync' => 'CardDAV-Abgleich'],
-        'sevdesk' => ['pull-vouchers' => 'sevDesk-Belege abrufen'],
+        'sevdesk' => ['pull-vouchers' => 'sevDesk-Belege abrufen', 'pull-contacts' => 'sevDesk-Kontakte übernehmen (Buchhaltung führt)'],
         'invoiceninja' => ['pull-vouchers' => 'Invoice-Ninja-Belege abrufen'],
         'akaunting' => ['pull-vouchers' => 'Akaunting-Belege abrufen'],
+        'invoiceplane' => ['pull-vouchers' => 'InvoicePlane-Rechnungen abrufen'],
         'catalog' => ['fetch_due' => 'Katalogquellen abrufen', 'apply_pending_prices' => 'Vorgemerkte Preisstände aktivieren'],
         'tenders' => ['fetch_notices' => 'Bekanntmachungen abrufen'],
         'chat' => [
@@ -151,7 +154,7 @@ return [
             'sync' => 'Domain-Bestandsabgleich',
             'events' => 'Domain-Ereignisse abrufen',
         ],
-        'easybill' => ['sync' => 'easybill-Belegabruf'],
+        'easybill' => ['sync' => 'easybill-Belegdateien ins DMS', 'pull-vouchers' => 'easybill-Belege abrufen', 'pull-contacts' => 'easybill-Kontakte übernehmen (Buchhaltung führt)'],
         'etsy' => ['sync' => 'Etsy-Abgleich'],
         'google-calendar' => ['publish' => 'Google-Kalender-Publish-Abgleich', 'import' => 'Google-Kalender-Rückimport'],
         'google-drive' => ['subscriptions' => 'Google-Drive-Push-Kanäle erneuern'],
@@ -163,7 +166,7 @@ return [
         'platform' => ['usage_snapshot' => 'Nutzungsstand je Mandant festhalten'],
         'contracts' => ['price_index_sync' => 'Verbraucherpreisindex von der Bundesbank abgleichen'],
         'invoicing' => ['recurring' => 'Wiederkehrende Rechnungsentwürfe erzeugen', 'base_rate_sync' => 'Basiszinssatz von der Bundesbank abgleichen', 'online_payments_refresh' => 'Online-Zahlungen mit dem Zahlungsanbieter abgleichen', 'incoming_digest' => 'Hinweis auf zuzuordnende Rechnungseingänge', 'incoming_transfer' => 'Übergaben des Rechnungseingangs wiederholen'],
-        'jtl' => ['sync' => 'JTL-Wawi-Abgleich'],
+        'jtl' => ['sync' => 'JTL-Wawi-Abgleich', 'pull-vouchers' => 'JTL-Wawi-Rechnungen abrufen'],
         'resale' => [
             'propose' => 'Reselling-Abos: Rechnungsbezüge vorschlagen, sichere Treffer bestätigen',
             'sync_domains' => 'Reselling-Abos: Domains aus der Domainverwaltung übernehmen',

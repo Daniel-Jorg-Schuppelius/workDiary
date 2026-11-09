@@ -1,7 +1,7 @@
 ---
 title: "Collegare DomainReselling"
 topic: admin.domain-provider
-version: 1
+version: 2
 keywords:
     - gestione domini
     - nomi a dominio
@@ -49,11 +49,23 @@ sola lettura e idempotente.
 solo allora la connessione può passare in produzione. Finché il pilota
 resta aperto, il controllo di stato segnala «pilota aperto».
 
-**Ruotare le credenziali e disconnettere:** Login/password possono essere
-reimpostati in qualsiasi momento (rotazione) senza ricreare la connessione.
-La disconnessione rimuove la connessione; i dati di proiezione già letti
-vengono conservati come prova.
+**Rinnovare le credenziali:** L’icona della chiave apre la finestra
+«Rinnova le credenziali». Inserisca una nuova password; login e utente
+predefinito restano invariati se lascia i campi vuoti. WorkDiary verifica
+subito le nuove credenziali — la connessione resta in essere con tutti i
+domini, le assegnazioni e le evidenze.
 
-**Stati:** Una connessione è in *bozza*, *attiva* o *bloccata*. Le
-connessioni bloccate mostrano uno stato bloccato visibile nel controllo di
-stato, mai un errore silenzioso.
+**Disconnettere:** «Disconnetti» non elimina nulla. La password viene
+rimossa, lo stato passa a *disconnessa* e nessuna sincronizzazione, lettura
+degli eventi o comando raggiunge più il fornitore. Domini, contatti, zone
+DNS, il registro dei comandi (chi ha modificato cosa presso il fornitore),
+le registrazioni e i collegamenti di dominio dei Suoi abbonamenti di
+rivendita e delle righe d’acquisto restano come evidenza. Per ricollegarsi
+salvi nuove credenziali tramite «Rinnova le credenziali»; superata la
+verifica, la connessione è di nuovo attiva.
+
+**Stati:** Una connessione è in *bozza*, *attiva*, *bloccata* o
+*disconnessa*. Le connessioni bloccate mostrano uno stato di blocco visibile
+nel controllo di salute — mai un errore silenzioso. Il controllo di salute
+non segnala una connessione disconnessa come guasto; è fuori servizio di
+proposito.

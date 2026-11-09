@@ -49,6 +49,25 @@ return [
             'expected_runtime_minutes' => 5,
         ],
 
+        // --- Abonnierte iCal-Kalender in die Zeiterfassung (Feature 094, MVP-1516) ---
+        // Stündlich mit Versatz aus dem Job-Key; nur vergangene Termine im Rückblick.
+        'timekeeping.ical-sync' => [
+            'command' => 'ical:sync',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
+
+        // --- Unbezahlte Direktbuchungen im Verleih freigeben (Feature 073, MVP-1515) ---
+        'rental.expire-prepayments' => [
+            'command' => 'rental:expire-prepayments',
+            'cadence' => ['type' => 'everyFiveMinutes'],
+            'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 1,
+        ],
+
         // --- Reklamations-Fristeneskalation (Feature 072, MVP-255) ---
         'claims.escalate' => [
             'command' => 'claims:escalate',
@@ -1189,11 +1208,30 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 10,
         ],
-        // Beleg-Rückabruf aus sevDesk (Feature 122, MVP-611).
+        // Beleg-Rückabruf aus sevDesk (Feature 122, MVP-611) samt Positionen und
+        // Nummernrückmeldung; deshalb kein `accounting:pull-vouchers --plugin=sevdesk` (MVP-1490).
         'sevdesk.pull-vouchers' => [
             'command' => 'sevdesk:pull-vouchers',
             'plugin' => 'sevdesk',
             'cadence' => ['type' => 'dailyAt', 'time' => '05:05'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
+        // Kontakt-Rückweg aus sevDesk und easybill (MVP-1502): nur bei „Buchhaltung führt“,
+        // sonst ohne API-Aufruf.
+        'sevdesk.pull-contacts' => [
+            'command' => 'sevdesk:pull-contacts',
+            'plugin' => 'sevdesk',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
+        'easybill.pull-contacts' => [
+            'command' => 'easybill:pull-contacts',
+            'plugin' => 'easybill',
+            'cadence' => ['type' => 'hourly'],
             'allowed' => ['hourly', 'dailyAt'],
             'criticality' => 'integration',
             'expected_runtime_minutes' => 10,
@@ -1211,6 +1249,33 @@ return [
         'akaunting.pull-vouchers' => [
             'command' => 'accounting:pull-vouchers --plugin=akaunting',
             'plugin' => 'akaunting',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
+        // Belegspiegel easybill, JTL-Wawi und InvoicePlane (MVP-1490): Umsatz,
+        // Kundenwert, Portal, offene Posten und Belegfluss lesen den Spiegel.
+        // Gate `VoucherPullerScheduleRuleTest`: jeder registrierte Puller hat einen Lauf.
+        'easybill.pull-vouchers' => [
+            'command' => 'accounting:pull-vouchers --plugin=easybill',
+            'plugin' => 'easybill',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
+        'jtl.pull-vouchers' => [
+            'command' => 'accounting:pull-vouchers --plugin=jtl_wawi',
+            'plugin' => 'jtl_wawi',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
+        'invoiceplane.pull-vouchers' => [
+            'command' => 'accounting:pull-vouchers --plugin=invoiceplane',
+            'plugin' => 'invoiceplane',
             'cadence' => ['type' => 'hourly'],
             'allowed' => ['hourly', 'dailyAt'],
             'criticality' => 'integration',
@@ -1426,7 +1491,8 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 10,
         ],
-        // --- easybill-Beleg-Rückabruf (Feature 093, MVP-431) ---
+        // --- easybill-Belegdateien (PDF/E-Rechnung) ins DMS (Feature 093, MVP-431);
+        // den Belegspiegel liest `easybill.pull-vouchers` ---
         'easybill.sync' => [
             'command' => 'easybill:sync',
             'plugin' => 'easybill',
@@ -1435,6 +1501,8 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 10,
         ],
+        // orgaMAX: Stammdaten, Artikelkatalog und Belegspiegel samt Positionen (MVP-1501);
+        // deshalb kein `accounting:pull-vouchers --plugin=orgamax`.
         'orgamax.sync' => [
             'command' => 'orgamax:sync',
             'plugin' => 'orgamax',

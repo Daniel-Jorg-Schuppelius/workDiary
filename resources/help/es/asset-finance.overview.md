@@ -1,7 +1,7 @@
 ---
 title: "Leasing y contratos de activos"
 topic: asset-finance.overview
-version: 1
+version: 2
 keywords:
     - contrato de leasing
     - cuotas de leasing
@@ -34,6 +34,11 @@ financieros confidenciales con un permiso propio.
 **La activación** congela las condiciones como instantánea y genera el
 plan de cuotas. **Los plazos** (rescisión, prórroga, opción de compra,
 devolución) avisan con antelación y escalan.
+
+**Anular un borrador:** Un borrador creado por error o por duplicado se
+anula con una justificación obligatoria; no recibe plan de cuotas y sigue
+legible como comprobante. Un contrato activado no se anula, sino que se
+rescinde.
 
 **Los valores reales solo se referencian:** facturas recibidas vinculadas
 a cuotas, contadores para límites de uso — sin contabilización.

@@ -656,6 +656,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::OvertimeDecide,
             PermissionEnum::FlexBalanceView,
             PermissionEnum::VacationViewAny,
+            // Urlaubskonto (MVP-413): Jahresansprüche pflegt die Personalverwaltung (ul-21).
+            PermissionEnum::VacationEntitlementsManage,
             PermissionEnum::SickLeaveViewAny,
             PermissionEnum::SickLeaveManage,
             PermissionEnum::ReportView,
@@ -772,6 +774,11 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::CloudIntakeRunPreview,
             PermissionEnum::VoucherViewAny,
             PermissionEnum::VoucherLexofficeSync,
+            // orgaMAX-Faktura (Feature 077, ul-21): Umwandeln, Sperren, Senden, Zahlung melden.
+            PermissionEnum::OrgamaxInvoiceConvert,
+            PermissionEnum::OrgamaxInvoiceLock,
+            PermissionEnum::OrgamaxInvoiceSend,
+            PermissionEnum::OrgamaxPaymentRecord,
             PermissionEnum::ProjectViewAny,
             PermissionEnum::ProjectView,
             // Projekte anlegen durfte die Buchhaltung schon vor lk-06 (ProjectPolicy).
@@ -1162,6 +1169,9 @@ class PermissionsSeeder extends Seeder {
         ];
         // MVP-936: Investitionen vorschlagen darf jede interne Rolle.
         $proposals = [PermissionEnum::InvestmentPropose];
+        // KI nutzen (ul-21) dürfen alle Mitarbeiterrollen; Support bleibt lesend, denn `ai.use`
+        // schreibt ins KI-Gedächtnis und verbraucht Budget. Anbieter und Budget steuert `ai.manage`.
+        $aiUse = [PermissionEnum::AiUse];
         $teamManage = [
             ...$teamRead,
             PermissionEnum::TeamCreate,
@@ -1200,13 +1210,13 @@ class PermissionsSeeder extends Seeder {
 
         return [
             UserRole::Admin->value => $all,
-            UserRole::Geschaeftsfuehrung->value => [...$proposals, ...$geschaeftsfuehrung, ...$ownWork],
-            UserRole::Personalverwaltung->value => [...$proposals, ...$personalverwaltung, ...$teamRead, ...$ownWork],
-            UserRole::Teamleitung->value => [...$proposals, ...$teamleitung, ...$foreignCustomerRead, ...$teamManage, ...$agileLead, ...$ownWork],
-            UserRole::Buchhaltung->value => [...$proposals, ...$buchhaltung, ...$teamRead, ...$ownWork],
-            UserRole::User->value => [...$proposals, ...$user, ...$foreignCustomerRead, ...$teamRead, ...$agileWork, ...$ownWork],
-            UserRole::Aussendienst->value => [...$proposals, ...$aussendienst, ...$foreignCustomerRead, ...$teamRead, ...$ownWork],
-            UserRole::Callcenter->value => [...$proposals, ...$callcenter, ...$foreignCustomerRead, ...$teamRead, ...$ownWork],
+            UserRole::Geschaeftsfuehrung->value => [...$proposals, ...$aiUse, ...$geschaeftsfuehrung, ...$ownWork],
+            UserRole::Personalverwaltung->value => [...$proposals, ...$aiUse, ...$personalverwaltung, ...$teamRead, ...$ownWork],
+            UserRole::Teamleitung->value => [...$proposals, ...$aiUse, ...$teamleitung, ...$foreignCustomerRead, ...$teamManage, ...$agileLead, ...$ownWork],
+            UserRole::Buchhaltung->value => [...$proposals, ...$aiUse, ...$buchhaltung, ...$teamRead, ...$ownWork],
+            UserRole::User->value => [...$proposals, ...$aiUse, ...$user, ...$foreignCustomerRead, ...$teamRead, ...$agileWork, ...$ownWork],
+            UserRole::Aussendienst->value => [...$proposals, ...$aiUse, ...$aussendienst, ...$foreignCustomerRead, ...$teamRead, ...$ownWork],
+            UserRole::Callcenter->value => [...$proposals, ...$aiUse, ...$callcenter, ...$foreignCustomerRead, ...$teamRead, ...$ownWork],
             UserRole::Support->value => [...$proposals, ...$support, ...$foreignCustomerRead, ...$teamRead, ...$ownView],
             UserRole::Kunde->value => $kunde,
         ];
