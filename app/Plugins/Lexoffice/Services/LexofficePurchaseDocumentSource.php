@@ -14,8 +14,9 @@ namespace App\Plugins\Lexoffice\Services;
 
 use App\Enums\User\Permission;
 use App\Models\Platform\Organization;
+use App\Models\Supplier\Supplier;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
-use App\Services\Billing\Purchase\{PurchaseDocument, PurchaseDocumentSource};
+use App\Services\Billing\Purchase\{PurchaseDocument, PurchaseDocumentSource, SupplierPurchaseOriginals};
 use App\Services\Billing\Purchase\ResolvesPurchaseDocuments;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
@@ -23,7 +24,7 @@ use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\{Gate, Route};
+use Illuminate\Support\Facades\{Gate, Route, Storage};
 
 /**
  * Lexoffice-Eingangsbelege als Quelle des Reselling-Registers (Feature 152,
@@ -33,7 +34,7 @@ use Illuminate\Support\Facades\{Gate, Route};
  * Der Formularschlüssel ist die Sqid des Belegs; bestehende Lexoffice-Sqids
  * bleiben gültig.
  */
-final class LexofficePurchaseDocumentSource implements PurchaseDocumentSource {
+final class LexofficePurchaseDocumentSource implements PurchaseDocumentSource, SupplierPurchaseOriginals {
     use ResolvesPurchaseDocuments;
 
     private const string DOCUMENT_MODEL = LexofficeVoucher::class;
@@ -61,6 +62,43 @@ final class LexofficePurchaseDocumentSource implements PurchaseDocumentSource {
         }
 
         return $this->map($builder->orderByDesc('voucher_date')->orderByDesc('id')->limit($limit)->get());
+    }
+
+    /** Belege ohne Kontakt in Lexoffice tragen nur den Namen — sie zählen bei gleichem Namen zum Lieferanten. */
+    public function forSupplier(Organization $organization, Supplier $supplier, CarbonImmutable $from): Collection {
+        $rows = $this->candidates($organization)
+            ->where('voucher_date', '>=', DateRange::day($from))
+            ->where(static fn(Builder $w) => $w->where('supplier_id', $supplier->id)
+                ->orWhere(static fn(Builder $n) => $n->whereNull('supplier_id')->whereNull('contact_external_id')->where('contact_name', (string) $supplier->name)))
+            ->orderBy('voucher_date')->orderBy('id')
+            ->get();
+
+        return $this->map($rows);
+    }
+
+    public function original(Organization $organization, PurchaseDocument $document): ?array {
+        $voucher = $this->query($organization)->whereKey($document->morphId)->first();
+        if ($voucher === null) {
+            return null;
+        }
+        $files = new LexofficeVoucherFileService((int) $organization->id);
+        if ($voucher->file_materialized_at === null && ! $files->isConfigured()) {
+            return null;
+        }
+        if (! $files->materialize($voucher) || $voucher->file_path === null) {
+            return null;
+        }
+        $file = $files->localFile($voucher);
+        if ($file === null) {
+            return null;
+        }
+
+        return [
+            'contents' => $file['body'],
+            'mime' => $file['content_type'],
+            'path' => Storage::disk('local')->path($voucher->file_path),
+            'name' => basename($voucher->file_path),
+        ];
     }
 
     public function toDocument(LexofficeVoucher $voucher, ?bool $canPreview = null): PurchaseDocument {

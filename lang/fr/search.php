@@ -197,6 +197,8 @@ return [
         'invoice_draft' => 'Brouillon de facture n° :id',
         'incoming_invoices' => 'Factures entrantes',
         'contracts' => 'Contrats',
+        'resale_subscriptions' => 'Abonnements et licences',
+        'resale_license_products' => 'Produits de licence',
         'articles' => 'Articles',
         'tasks' => 'Tâches',
         'purchase_orders' => 'Commandes fournisseurs',

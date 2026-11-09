@@ -171,6 +171,7 @@ return [
             'propose' => 'Reselling-Abos: Rechnungsbezüge vorschlagen, sichere Treffer bestätigen',
             'sync_domains' => 'Reselling-Abos: Domains aus der Domainverwaltung übernehmen',
             'sync_purchases' => 'Reselling-Abos: Domain-Buchungen als Einkaufsbelege übernehmen',
+            'import_incoming' => 'Reselling-Abos: Anbieterrechnungen aus Rechnungseingang und Buchhaltungsprogramm als Einkauf übernehmen',
             'sync_periods' => 'Reselling-Abos: Abrechnungsperioden vorrollen',
             'draft_local' => 'Reselling-Abos: Serienrechnung — lokale Rechnungsentwürfe aus fälligen Perioden',
             'draft_external' => 'Reselling-Abos: Serienrechnung — Übergaben an das Buchhaltungsprogramm aus fälligen Perioden (monatlich)',

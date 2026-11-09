@@ -366,6 +366,14 @@ return [
         'open_amount' => 'Offener Betrag',
     ],
     'prices' => [
+        'provider' => [
+            'title' => 'Anbieterpreis übernehmen',
+            'submit' => 'Übernehmen',
+            'hint' => 'Diese Abos folgen dem Anbieterpreis nicht mehr, weil ihr Einkaufspreis vom letzten Anbieterstand abweicht. Nach der Übernahme zieht der Import künftige Preisänderungen wieder selbst nach; offene Perioden bekommen das neue Soll, entschiedene behalten ihres.',
+            'empty' => 'Alle Einkaufspreise entsprechen dem Anbieterpreis.',
+            'action' => '{1} :count Anbieterpreis übernehmen|[2,*] :count Anbieterpreise übernehmen',
+            'flash' => '{0} Kein Einkaufspreis geändert.|{1} :count Einkaufspreis übernommen.|[2,*] :count Einkaufspreise übernommen.',
+        ],
         'title' => 'Preisprüfung',
         'subtitle' => 'Einkauf laut Vertrag, Katalogpreis gültig ab :date, UVP und Verkaufspreise je Produkt',
         'subtitle_no_catalog' => 'Einkauf laut Vertrag und Verkaufspreise je Produkt — noch keine Preisliste importiert',
@@ -1384,6 +1392,10 @@ return [
             'renewals' => 'Verlängerungen oder Enden in Kürze',
             'renewals_detail' => 'in den nächsten :days Tagen',
             'stale_imports' => 'Anbieterstand veraltet',
+            'purchase_suppliers' => 'Anbieter ohne Lieferant',
+            'purchase_suppliers_detail' => 'Rechnungen von :providers erreichen den Einkauf nicht; die Marge rechnet nur mit dem Soll.',
+            'provider_prices' => 'Einkaufspreis weicht vom Anbieterpreis ab',
+            'provider_prices_detail' => 'in der Preisprüfung übernehmen',
             'unbilled_licenses' => 'Stücklizenzen ohne Rechnung',
             'unbilled_licenses_detail' => 'verkauft vor mehr als :days Tagen',
         ],
@@ -1490,5 +1502,8 @@ return [
             'nothing_free' => 'Ab dem Stichtag sind alle Lizenzen des Vertrags abgetreten oder schon über Rechnungen an den bisherigen Halter berechnet — die Übernahme an der jeweiligen Abtretung starten oder den Stichtag ändern.',
             'billed_whole' => 'An :holder sind schon Perioden dieses Abos berechnet — das ganze Abo kann nicht wechseln. Stichtag ab :date wählen, dann bleiben die berechneten Perioden beim bisherigen Halter.', // Sicherheitsaudit 2026-11-02, sec-06
         ],
+    ],
+    'dsar' => [
+        'subscriptions' => 'Abos (Lizenzen, Domains, Hosting)',
     ],
 ];

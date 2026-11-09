@@ -256,6 +256,18 @@ shows expected and actual purchase and the margin of the last twelve months
 per product; the weekly digest reports subscriptions whose contract price
 differs from the last imported catalogue or provider price.
 
+**Invoices that exist only in the accounting software:** Once a day the
+register also reads the documents of the mapped suppliers from the
+accounting software (Lexoffice) when the provider delivers readable lines
+(Quality Hosting). The invoice inbox takes the lead: an invoice whose number
+purchasing already knows is not read again, and if it arrives in the inbox
+later, its origin then points to the inbox. Collective invoices (Telekom)
+are still distributed by hand via “Allocate incoming document”, because the
+accounting software only knows the document total. If a provider with
+running subscriptions has no supplier, the overview reports “Providers
+without supplier”. Domain bookings: the provider books a renewal a few days
+before the new term; it counts as the purchase of the year it pays for.
+
 **Invoice link on unit licenses:** When selling a license from stock you
 pick the invoice line from the accounting program that bills this license;
 the list shows the lines of the chosen customer around the sale date, with

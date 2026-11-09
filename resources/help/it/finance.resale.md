@@ -270,6 +270,19 @@ acquisto previsto ed effettivo e il margine degli ultimi dodici mesi; il
 riepilogo settimanale segnala gli abbonamenti il cui prezzo contrattuale si
 discosta dall’ultimo prezzo di catalogo o del provider importato.
 
+**Fatture presenti solo nel programma di contabilità:** Una volta al giorno
+il registro legge anche i documenti dei fornitori associati dal programma di
+contabilità (Lexoffice), quando il provider fornisce righe leggibili
+(Quality Hosting). La ricezione fatture prevale: una fattura il cui numero è
+già noto agli acquisti non viene riletta e, se arriva più tardi nella
+ricezione, la sua origine rimanda poi a questa. Le fatture cumulative
+(Telekom) si ripartiscono ancora a mano con «Assegna documento in entrata»,
+perché il programma di contabilità conosce solo il totale del documento. Se
+un provider con abbonamenti in corso non ha un fornitore, il riepilogo
+segnala «Provider senza fornitore». Registrazioni dei domini: il provider
+registra un rinnovo alcuni giorni prima del nuovo anno contrattuale; conta
+come acquisto dell’anno che paga.
+
 **Collegamento alla fattura per le licenze singole:** Quando vende una
 licenza dal magazzino sceglie la riga di fattura del programma di
 contabilità che fattura questa licenza; l’elenco mostra le righe del cliente

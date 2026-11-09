@@ -24,6 +24,14 @@
 @section('content')
     <x-index-page :title="__('resale.prices.title')" :subtitle="$catalogDate !== null ? __('resale.prices.subtitle', ['date' => $catalogDate->fdate()]) : __('resale.prices.subtitle_no_catalog')">
 
+        <x-slot:actions>
+            @if ($providerDeviations > 0)
+                @can('reselling.manage')
+                    <x-icon-btn icon="price_change" tone="primary" size="sm" data-entry-modal-trigger :href="route('finance.resale.prices.provider.create')" show-label>{{ trans_choice('resale.prices.provider.action', $providerDeviations, ['count' => $providerDeviations]) }}</x-icon-btn>
+                @endcan
+            @endif
+        </x-slot:actions>
+
         @include('finance.resale._tabs')
 
         <p class="text-xs text-muted mb-2">{{ __('resale.prices.hint') }}</p>

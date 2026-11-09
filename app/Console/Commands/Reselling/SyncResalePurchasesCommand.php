@@ -32,10 +32,10 @@ class SyncResalePurchasesCommand extends Command {
         }
         foreach ($query->orderBy('id')->get() as $organization) {
             $result = $allocator->syncDomainAccounting($organization);
-            if ($result['entries'] === 0 && $result['skipped'] === 0) {
+            if ($result['entries'] === 0 && $result['skipped'] === 0 && $result['updated'] === 0) {
                 continue;
             }
-            $this->info(sprintf('Organisation #%d (%s): %d Einkaufsbelege neu, %d übersprungen.', $organization->id, $organization->name, $result['entries'], $result['skipped']));
+            $this->info(sprintf('Organisation #%d (%s): %d Einkaufsbelege neu, %d berichtigt, %d übersprungen.', $organization->id, $organization->name, $result['entries'], $result['updated'], $result['skipped']));
         }
 
         return self::SUCCESS;

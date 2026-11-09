@@ -47,3 +47,8 @@ precio de catálogo y el PVP recomendado de la última lista de precios
 importada frente a los precios de venta de las suscripciones (mínimo,
 mediana, máximo). Avisos: «venta por debajo de compra», «venta por debajo
 del PVP», «contrato más caro que el catálogo», «sin precio de venta».
+Si el precio de compra de una suscripción ya no sigue el último precio del
+proveedor, la página ofrece «Adoptar el precio del proveedor»: el diálogo
+muestra el precio antiguo y el nuevo por suscripción; tras adoptarlo, la
+importación vuelve a seguir los cambios de precio y los periodos abiertos
+reciben el nuevo coste previsto.

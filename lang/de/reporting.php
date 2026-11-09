@@ -189,6 +189,11 @@ return [
             'detail' => ':count Personen-Tage unter Soll in den letzten :days Tagen.',
             'recommendation' => 'Empfehlung: Befunde am Zeitreiter prüfen, Nachbuchungen anstoßen oder das Soll anpassen.',
         ],
+        'resale_unbilled' => [
+            'title' => 'Abos ohne Rechnung: :name',
+            'detail' => ':count fällige Perioden, die älteste seit :days Tagen.',
+            'recommendation' => 'Empfehlung: in der Arbeitsmappe des Empfängers nachberechnen, eine Rechnung zuordnen oder bewusst verzichten.',
+        ],
         'recurring_tickets' => [
             'title' => 'Wiederkehrende Tickets: :name',
             'detail' => ':count Tickets in :days Tagen.',
@@ -248,6 +253,10 @@ return [
             'nps_hint' => 'aus :count Bewertungen',
             'project_target' => 'Tage unter Soll',
             'project_target_hint' => 'offen oder bestätigt, :total im Zeitraum',
+            'resale_open' => 'Abo-Perioden ohne Rechnung',
+            'resale_open_hint' => 'offen :amount',
+            'resale_margin' => 'Marge Abos & Lizenzen',
+            'resale_margin_hint' => ':periods Perioden, :actual mit Ist-Einkauf',
         ],
         'digest' => [
             'subject' => 'Leitungsbericht :organization · :range',
@@ -261,6 +270,7 @@ return [
             'recurring_tickets' => 'Wiederkehrende Tickets',
             'capacity' => 'Personal-Engpässe',
             'project_target' => 'Sollzeiten unterschritten',
+            'resale_unbilled' => 'Abos ohne Rechnung',
         ],
     ],
     'product_revenue' => [

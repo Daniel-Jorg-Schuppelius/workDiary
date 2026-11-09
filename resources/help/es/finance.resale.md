@@ -274,6 +274,19 @@ real y el margen de los últimos doce meses; el resumen semanal informa de
 suscripciones cuyo precio contractual difiere del último precio de catálogo
 o de proveedor importado.
 
+**Facturas que solo están en el programa de contabilidad:** Una vez al día
+el registro lee además los justificantes de los proveedores asignados desde
+el programa de contabilidad (Lexoffice) cuando el proveedor entrega
+posiciones legibles (Quality Hosting). La entrada de facturas manda: una
+factura cuyo número ya conoce compras no se vuelve a leer y, si llega más
+tarde a la entrada, su origen pasa a señalar a esta. Las facturas colectivas
+(Telekom) se siguen repartiendo a mano con «Asignar justificante de
+entrada», porque el programa de contabilidad solo conoce el total del
+justificante. Si un proveedor de servicios con suscripciones en curso no
+tiene proveedor, el resumen indica «Proveedores de servicios sin proveedor».
+Apuntes de dominios: el proveedor contabiliza una renovación unos días antes
+del nuevo año de contrato; cuenta como compra del año que paga.
+
 **Vínculo de factura en licencias por unidad:** Al vender una licencia
 del inventario elige la línea de factura del programa de contabilidad que
 factura esa licencia; la lista muestra las líneas del cliente elegido en

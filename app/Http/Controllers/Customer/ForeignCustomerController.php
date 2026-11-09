@@ -10,11 +10,13 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Exceptions\PartyDeletionBlockedException;
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, WritesContactDetails};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\SaveForeignCustomerRequest;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Project\Project;
+use App\Services\Stammdaten\PartyDeletionGuard;
 use App\Support\{Setting, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate};
@@ -151,6 +153,12 @@ class ForeignCustomerController extends Controller {
         if ($foreignCustomer->externalReferences()->exists()) {
             return redirect()->route('foreign-customers.show', $foreignCustomer)
                 ->with('error', __('Fremdkunde kann nicht gelöscht werden: Es existieren externe Referenzen. Bitte stattdessen archivieren.'));
+        }
+
+        try {
+            app(PartyDeletionGuard::class)->assertDeletable($foreignCustomer);
+        } catch (PartyDeletionBlockedException $e) {
+            return redirect()->route('foreign-customers.show', $foreignCustomer)->with('error', $e->getMessage());
         }
 
         $customer = $foreignCustomer->customer;

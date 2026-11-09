@@ -197,6 +197,8 @@ return [
         'invoice_draft' => 'Invoice draft #:id',
         'incoming_invoices' => 'Incoming invoices',
         'contracts' => 'Contracts',
+        'resale_subscriptions' => 'Subscriptions & licences',
+        'resale_license_products' => 'Licence products',
         'articles' => 'Articles',
         'tasks' => 'Tasks',
         'purchase_orders' => 'Purchase orders',

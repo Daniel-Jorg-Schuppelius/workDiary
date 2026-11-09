@@ -255,6 +255,19 @@ nach. Das Lizenzkonto zeigt je Produkt Soll- und Ist-Einkauf sowie die
 Marge der letzten zwölf Monate; der Wochen-Digest meldet Abos, deren
 Vertragspreis vom zuletzt importierten Katalog- oder Anbieterpreis abweicht.
 
+**Rechnungen, die nur im Buchhaltungsprogramm liegen:** Einmal täglich
+liest das Register die Belege der zugeordneten Lieferanten zusätzlich aus dem
+Buchhaltungsprogramm (Lexoffice), wenn der Anbieter lesbare Positionen
+liefert (Quality Hosting). Der Rechnungseingang führt: Eine Rechnung, deren
+Nummer der Einkauf schon kennt, wird nicht noch einmal gelesen, und kommt
+sie später im Rechnungseingang an, zeigt die Herkunft danach auf den
+Eingang. Sammelrechnungen (Telekom) verteilen Sie weiter von Hand über
+„Eingangsbeleg zuteilen“, weil das Buchhaltungsprogramm nur die Belegsumme
+kennt. Hat ein Anbieter mit laufenden Abos keinen Lieferanten, meldet der
+Überblick „Anbieter ohne Lieferant“. Domain-Buchungen: Der Anbieter bucht
+eine Verlängerung einige Tage vor dem neuen Laufzeitjahr; sie zählt als
+Einkauf des Jahres, das sie bezahlt.
+
 **Rechnungsbezug an Stücklizenzen:** Beim Verkauf einer Lizenz aus dem
 Lizenzbestand wählen Sie die Rechnungsposition aus dem Buchhaltungsprogramm,
 die diese Lizenz berechnet; die Liste zeigt die Positionen des gewählten

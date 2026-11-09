@@ -189,6 +189,11 @@ return [
             'detail' => ':count días-persona por debajo del objetivo en los últimos :days días.',
             'recommendation' => 'Recomendación: revisar los hallazgos en la pestaña de tiempos, pedir registros tardíos o ajustar el objetivo.',
         ],
+        'resale_unbilled' => [
+            'title' => 'Suscripciones sin factura: :name',
+            'detail' => ':count periodos vencidos, el más antiguo desde hace :days días.',
+            'recommendation' => 'Recomendación: facturar en el cuaderno del destinatario, asignar una factura o renunciar de forma deliberada.',
+        ],
         'recurring_tickets' => [
             'title' => 'Tickets recurrentes: :name',
             'detail' => ':count tickets en :days días.',
@@ -248,6 +253,10 @@ return [
             'nps_hint' => 'de :count valoraciones',
             'project_target' => 'Días bajo objetivo',
             'project_target_hint' => 'abiertos o confirmados, :total en el período',
+            'resale_open' => 'Periodos de suscripción sin factura',
+            'resale_open_hint' => 'pendiente :amount',
+            'resale_margin' => 'Margen de suscripciones y licencias',
+            'resale_margin_hint' => ':periods periodos, :actual con compra real',
         ],
         'digest' => [
             'subject' => 'Informe de dirección :organization · :range',
@@ -261,6 +270,7 @@ return [
             'recurring_tickets' => 'Tickets recurrentes',
             'capacity' => 'Falta de personal',
             'project_target' => 'Tiempos objetivo no alcanzados',
+            'resale_unbilled' => 'Suscripciones sin factura',
         ],
     ],
     'product_revenue' => [

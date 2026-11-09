@@ -366,6 +366,14 @@ return [
         'open_amount' => 'Importo aperto',
     ],
     'prices' => [
+        'provider' => [
+            'title' => 'Acquisire il prezzo del provider',
+            'submit' => 'Acquisisci',
+            'hint' => 'Questi abbonamenti non seguono più il prezzo del provider perché il loro prezzo di acquisto differisce dall’ultima esportazione. Dopo l’acquisizione l’importazione segue di nuovo le variazioni di prezzo; i periodi aperti ricevono il nuovo costo previsto, quelli decisi mantengono il proprio.',
+            'empty' => 'Tutti i prezzi di acquisto corrispondono al prezzo del provider.',
+            'action' => '{1} Acquisisci :count prezzo del provider|[2,*] Acquisisci :count prezzi del provider',
+            'flash' => '{0} Nessun prezzo di acquisto modificato.|{1} :count prezzo di acquisto acquisito.|[2,*] :count prezzi di acquisto acquisiti.',
+        ],
         'title' => 'Verifica prezzi',
         'subtitle' => 'Acquisto da contratto, prezzo di listino valido dal :date, prezzo consigliato e prezzi di vendita per prodotto',
         'subtitle_no_catalog' => 'Acquisto da contratto e prezzi di vendita per prodotto — nessun listino importato',
@@ -1384,6 +1392,10 @@ return [
             'renewals' => 'Rinnovi o scadenze imminenti',
             'renewals_detail' => 'nei prossimi :days giorni',
             'stale_imports' => 'Esportazione del fornitore obsoleta',
+            'purchase_suppliers' => 'Provider senza fornitore',
+            'purchase_suppliers_detail' => 'Le fatture di :providers non arrivano agli acquisti; il margine usa solo il costo previsto.',
+            'provider_prices' => 'Il prezzo di acquisto differisce dal prezzo del provider',
+            'provider_prices_detail' => 'da acquisire nel controllo prezzi',
             'unbilled_licenses' => 'Licenze singole senza fattura',
             'unbilled_licenses_detail' => 'vendute più di :days giorni fa',
         ],
@@ -1490,5 +1502,8 @@ return [
             'nothing_free' => 'Dalla data di decorrenza tutte le licenze del contratto sono cedute o già fatturate al titolare precedente: avviare il subentro sulla rispettiva cessione o modificare la data di decorrenza.',
             'billed_whole' => 'Periodi di questo abbonamento sono già fatturati a :holder: l’intero abbonamento non può cambiare titolare. Scelga una data di decorrenza dal :date; i periodi fatturati restano così al titolare precedente.', // Sicherheitsaudit 2026-11-02, sec-06
         ],
+    ],
+    'dsar' => [
+        'subscriptions' => 'Abbonamenti (licenze, domini, hosting)',
     ],
 ];

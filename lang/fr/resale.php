@@ -366,6 +366,14 @@ return [
         'open_amount' => 'Montant ouvert',
     ],
     'prices' => [
+        'provider' => [
+            'title' => 'Reprendre le prix du fournisseur',
+            'submit' => 'Reprendre',
+            'hint' => 'Ces abonnements ne suivent plus le prix du fournisseur, car leur prix d’achat diffère du dernier export. Après la reprise, l’import suit de nouveau les changements de prix ; les périodes ouvertes reçoivent le nouveau coût prévu, les périodes décidées conservent le leur.',
+            'empty' => 'Tous les prix d’achat correspondent au prix du fournisseur.',
+            'action' => '{1} Reprendre :count prix fournisseur|[2,*] Reprendre :count prix fournisseur',
+            'flash' => '{0} Aucun prix d’achat modifié.|{1} :count prix d’achat repris.|[2,*] :count prix d’achat repris.',
+        ],
         'title' => 'Contrôle des prix',
         'subtitle' => 'Achat selon contrat, prix catalogue valable à partir du :date, prix conseillé et prix de vente par produit',
         'subtitle_no_catalog' => 'Achat selon contrat et prix de vente par produit — aucune liste de prix importée',
@@ -1384,6 +1392,10 @@ return [
             'renewals' => 'Renouvellements ou fins prochains',
             'renewals_detail' => 'dans les :days prochains jours',
             'stale_imports' => 'Export fournisseur obsolète',
+            'purchase_suppliers' => 'Fournisseurs de services sans fournisseur',
+            'purchase_suppliers_detail' => 'Les factures de :providers n’arrivent pas aux achats ; la marge ne repose que sur le coût prévu.',
+            'provider_prices' => 'Le prix d’achat diffère du prix du fournisseur',
+            'provider_prices_detail' => 'à reprendre dans le contrôle des prix',
             'unbilled_licenses' => 'Licences à l’unité sans facture',
             'unbilled_licenses_detail' => 'vendues il y a plus de :days jours',
         ],
@@ -1490,5 +1502,8 @@ return [
             'nothing_free' => 'À partir de la date d’effet, toutes les licences du contrat sont cédées ou déjà facturées à l’ancien titulaire — lancer la reprise sur la cession concernée ou modifier la date d’effet.',
             'billed_whole' => 'Des périodes de cet abonnement sont déjà facturées à :holder — l’abonnement entier ne peut pas changer de titulaire. Choisissez une date d’effet à partir du :date ; les périodes facturées restent alors chez l’ancien titulaire.', // Sicherheitsaudit 2026-11-02, sec-06
         ],
+    ],
+    'dsar' => [
+        'subscriptions' => 'Abonnements (licences, domaines, hébergement)',
     ],
 ];

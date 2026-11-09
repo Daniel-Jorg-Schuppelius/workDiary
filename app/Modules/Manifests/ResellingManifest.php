@@ -93,6 +93,20 @@ final class ResellingManifest extends Manifest {
             ],
             \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
                 \App\Services\Reselling\Plan\PlanWorkItemSource::class,
+                \App\Services\Reselling\Register\ResaleWorkItemSource::class,
+            ],
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Reselling\Demo\ResaleDemoBlock::class,
+            ],
+            \App\Services\Reporting\Contracts\ManagementKpiSource::class => [
+                \App\Services\Reselling\Management\ResaleKpiSource::class,
+            ],
+            \App\Services\Reporting\Contracts\EarlyWarningSource::class => [
+                \App\Services\Reselling\EarlyWarnings\ResaleUnbilledWarningSource::class,
+            ],
+            \App\Services\Search\Contracts\SearchDomain::class => [
+                \App\Services\Reselling\Search\ResaleSubscriptionSearchDomain::class,
+                \App\Services\Reselling\Search\LicenseProductSearchDomain::class,
             ],
             // Abo-Perioden als Übergabekanal der Finanzen (Feature 185, MVP-1422).
             \App\Services\Finance\Contracts\TransferSource::class => [

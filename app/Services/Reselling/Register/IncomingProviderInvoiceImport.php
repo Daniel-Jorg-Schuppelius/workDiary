@@ -79,16 +79,35 @@ class IncomingProviderInvoiceImport {
         $document = $this->documents->toDocument($incoming);
 
         return match ($provider) {
-            SubscriptionProvider::QualityHosting => $this->importLines($organization, $incoming, $provider, $document, $user),
+            SubscriptionProvider::QualityHosting => $this->importLines($organization, $provider, $document, $this->storedOriginal($incoming), $user, leading: true),
             SubscriptionProvider::DomainReselling => $this->importDomains($organization, $incoming, $provider, $document, $user),
             default => $this->allocateProRata($organization, $incoming, $provider, $document, $user),
         };
     }
 
-    /** @return Result */
-    private function importLines(Organization $organization, IncomingEInvoice $incoming, SubscriptionProvider $provider, PurchaseDocument $document, ?User $user): array {
+    /**
+     * Beleg aus einem Buchhaltungsprogramm (kein Rechnungseingang): nur Anbieter mit
+     * lesbaren Positionen. Sammelrechnungen tragen dort keinen Nettobetrag des
+     * Reselling-Anteils und bleiben beim Zuteilungsdialog.
+     */
+    public static function readsMirrored(SubscriptionProvider $provider): bool {
+        return $provider === SubscriptionProvider::QualityHosting;
+    }
+
+    /**
+     * @param  array{contents: string, mime: ?string, path: string, name: string}|null  $original
+     * @return Result|null null = Anbieter ohne lesbare Positionen
+     */
+    public function importMirrored(Organization $organization, SubscriptionProvider $provider, PurchaseDocument $document, ?array $original, ?User $user = null): ?array {
+        return self::readsMirrored($provider) ? $this->importLines($organization, $provider, $document, $original, $user, leading: false) : null;
+    }
+
+    /**
+     * @param  array{contents: string, mime: ?string, path: string, name: string}|null  $original
+     * @return Result
+     */
+    private function importLines(Organization $organization, SubscriptionProvider $provider, PurchaseDocument $document, ?array $original, ?User $user, bool $leading): array {
         $result = $this->result(self::KIND_LINES, $document);
-        $original = $this->storedOriginal($incoming);
         if ($original === null) {
             $result['error'] = (string) __('resale.purchase.incoming.no_file');
 
@@ -99,7 +118,7 @@ class IncomingProviderInvoiceImport {
         } catch (Throwable $e) {
             $result['error'] = $e::class === RuntimeException::class ? $e->getMessage() : (string) __('resale.purchase.incoming.unreadable', ['number' => $document->number ?? '?']);
             if ($e::class !== RuntimeException::class) {
-                Log::warning('resale: Eingangsrechnung nicht lesbar', ['incoming_id' => $incoming->id, 'exception' => $e::class, 'message' => $e->getMessage()]);
+                Log::warning('resale: Eingangsrechnung nicht lesbar', ['document' => $document->identity(), 'exception' => $e::class, 'message' => $e->getMessage()]);
             }
 
             return $result;
@@ -109,7 +128,7 @@ class IncomingProviderInvoiceImport {
 
             return $result;
         }
-        $imported = $this->allocator->importProviderInvoice($organization, $invoice, $provider, $user, $original['name'], $document->currency, $document, keepUnmatched: true);
+        $imported = $this->allocator->importProviderInvoice($organization, $invoice, $provider, $user, $original['name'], $document->currency, $document, keepUnmatched: true, leading: $leading);
         $result['number'] = $invoice->number;
         $result['entries'] = $imported['matched'];
         $result['net'] = $imported['net'];

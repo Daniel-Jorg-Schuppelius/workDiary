@@ -171,6 +171,7 @@ return [
             'propose' => 'Abonnements de revente : proposer les liens de facture, confirmer les correspondances sûres',
             'sync_domains' => 'Abonnements de revente : reprendre les domaines de la gestion des domaines',
             'sync_purchases' => 'Abonnements de revente : reprendre les écritures de domaines comme achats',
+            'import_incoming' => 'Abonnements revendus : reprendre les factures des fournisseurs depuis la réception des factures et le logiciel comptable comme achats',
             'sync_periods' => 'Abonnements de revente : générer les périodes de facturation',
             'draft_local' => 'Abonnements de revente : facturation récurrente — brouillons de facture locaux à partir des périodes échues',
             'draft_external' => 'Abonnements de revente : facturation récurrente — transferts vers le logiciel de comptabilité à partir des périodes échues (mensuel)',

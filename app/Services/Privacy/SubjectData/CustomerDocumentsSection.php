@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy\SubjectData;
 
-use App\Models\Customer\Customer;
+use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
-use App\Models\Reselling\ResaleLicenseAssignment;
+use App\Models\Reselling\{ResaleLicenseAssignment, ResaleSubscription};
 use App\Models\Sales\Quote;
 use Illuminate\Database\Eloquent\Model;
 
@@ -61,6 +61,16 @@ class CustomerDocumentsSection extends AbstractSubjectSection {
                 ResaleLicenseAssignment::query()->withoutGlobalScopes()->where('organization_id', $orgId)->where('customer_id', $c->id),
                 'sold_on',
                 columns: ['sold_on' => __('resale.license.field.sold_on'), 'invoice_reference' => __('resale.license.field.invoice_reference'), 'ended_at' => __('resale.license.field.ended')],
+            ),
+            // Abos des Kunden und der Endkunden, die er als Partner hält: Produkt, Menge, Laufzeit.
+            $this->family(
+                'resale_subscriptions',
+                __('resale.dsar.subscriptions'),
+                ResaleSubscription::query()->withoutGlobalScopes()->where('organization_id', $orgId)
+                    ->where(static fn($q) => $q->where('customer_id', $c->id)
+                        ->orWhereIn('foreign_customer_id', ForeignCustomer::query()->withoutGlobalScopes()->where('customer_id', $c->id)->select('id'))),
+                'starts_on',
+                columns: ['starts_on' => __('resale.field.starts_on'), 'label' => __('resale.field.label'), 'quantity' => __('resale.field.quantity'), 'status' => __('Status'), 'ends_on' => __('resale.field.ends_on')],
             ),
             // Kundeneingänge aus dem Portal (Feature 162): Nummer, Betreff, Stand.
             $this->family(

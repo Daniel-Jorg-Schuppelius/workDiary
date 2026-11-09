@@ -366,6 +366,14 @@ return [
         'open_amount' => 'Open amount',
     ],
     'prices' => [
+        'provider' => [
+            'title' => 'Adopt provider price',
+            'submit' => 'Adopt',
+            'hint' => 'These subscriptions no longer follow the provider price because their purchase price differs from the latest provider export. After adopting, the import follows future price changes again; open periods get the new planned cost, decided ones keep theirs.',
+            'empty' => 'All purchase prices match the provider price.',
+            'action' => '{1} Adopt :count provider price|[2,*] Adopt :count provider prices',
+            'flash' => '{0} No purchase price changed.|{1} :count purchase price adopted.|[2,*] :count purchase prices adopted.',
+        ],
         'title' => 'Price check',
         'subtitle' => 'Purchase per contract, catalog price valid from :date, RRP and sale prices per product',
         'subtitle_no_catalog' => 'Purchase per contract and sale prices per product — no price list imported yet',
@@ -1384,6 +1392,10 @@ return [
             'renewals' => 'Renewals or ends soon',
             'renewals_detail' => 'within the next :days days',
             'stale_imports' => 'Provider export outdated',
+            'purchase_suppliers' => 'Providers without supplier',
+            'purchase_suppliers_detail' => 'Invoices from :providers do not reach purchasing; the margin uses planned costs only.',
+            'provider_prices' => 'Purchase price differs from provider price',
+            'provider_prices_detail' => 'adopt it in the price check',
             'unbilled_licenses' => 'Unit licenses without invoice',
             'unbilled_licenses_detail' => 'sold more than :days days ago',
         ],
@@ -1490,5 +1502,8 @@ return [
             'nothing_free' => 'From the effective date all licences of the contract are assigned or already invoiced to the previous holder — start the takeover at the respective assignment or change the effective date.',
             'billed_whole' => 'Periods of this subscription are already invoiced to :holder — the whole subscription cannot change hands. Choose an effective date from :date; the invoiced periods then stay with the previous holder.', // Sicherheitsaudit 2026-11-02, sec-06
         ],
+    ],
+    'dsar' => [
+        'subscriptions' => 'Subscriptions (licences, domains, hosting)',
     ],
 ];

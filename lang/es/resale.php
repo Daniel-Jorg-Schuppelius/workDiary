@@ -366,6 +366,14 @@ return [
         'open_amount' => 'Importe abierto',
     ],
     'prices' => [
+        'provider' => [
+            'title' => 'Adoptar el precio del proveedor',
+            'submit' => 'Adoptar',
+            'hint' => 'Estas suscripciones ya no siguen el precio del proveedor porque su precio de compra difiere de la última exportación. Tras adoptarlo, la importación vuelve a seguir los cambios de precio; los periodos abiertos reciben el nuevo coste previsto y los decididos conservan el suyo.',
+            'empty' => 'Todos los precios de compra coinciden con el precio del proveedor.',
+            'action' => '{1} Adoptar :count precio del proveedor|[2,*] Adoptar :count precios del proveedor',
+            'flash' => '{0} No se cambió ningún precio de compra.|{1} :count precio de compra adoptado.|[2,*] :count precios de compra adoptados.',
+        ],
         'title' => 'Comprobación de precios',
         'subtitle' => 'Compra según contrato, precio de catálogo válido desde :date, PVP y precios de venta por producto',
         'subtitle_no_catalog' => 'Compra según contrato y precios de venta por producto — aún sin lista de precios importada',
@@ -1384,6 +1392,10 @@ return [
             'renewals' => 'Renovaciones o finales próximos',
             'renewals_detail' => 'en los próximos :days días',
             'stale_imports' => 'Exportación del proveedor desactualizada',
+            'purchase_suppliers' => 'Proveedores de servicios sin proveedor',
+            'purchase_suppliers_detail' => 'Las facturas de :providers no llegan a compras; el margen solo usa el coste previsto.',
+            'provider_prices' => 'El precio de compra difiere del precio del proveedor',
+            'provider_prices_detail' => 'adoptarlo en la revisión de precios',
             'unbilled_licenses' => 'Licencias por unidad sin factura',
             'unbilled_licenses_detail' => 'vendidas hace más de :days días',
         ],
@@ -1490,5 +1502,8 @@ return [
             'nothing_free' => 'A partir de la fecha efectiva todas las licencias del contrato están cedidas o ya facturadas al titular anterior: iniciar el traspaso en la cesión correspondiente o cambiar la fecha efectiva.',
             'billed_whole' => 'Ya hay periodos de esta suscripción facturados a :holder; la suscripción entera no puede cambiar de titular. Elija una fecha efectiva a partir del :date; los periodos facturados se quedan entonces con el titular anterior.', // Sicherheitsaudit 2026-11-02, sec-06
         ],
+    ],
+    'dsar' => [
+        'subscriptions' => 'Suscripciones (licencias, dominios, alojamiento)',
     ],
 ];

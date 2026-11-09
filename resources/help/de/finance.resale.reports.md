@@ -45,3 +45,7 @@ offenen Perioden und offenem Betrag. Beide als CSV oder XLSX.
 der zuletzt importierten Preisliste gegen die Verkaufspreise der Abos
 (Minimum, Median, Maximum). Hinweise: „Verkauf unter Einkauf", „Verkauf
 unter UVP", „Vertrag teurer als Katalog", „Kein Verkaufspreis".
+Folgt der Einkaufspreis eines Abos dem letzten Anbieterpreis nicht mehr,
+bietet die Seite „Anbieterpreis übernehmen“ an: Der Dialog zeigt alten und
+neuen Preis je Abo; nach der Übernahme zieht der Import künftige
+Preisänderungen wieder selbst nach, offene Perioden bekommen das neue Soll.

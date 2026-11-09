@@ -37,6 +37,7 @@ return [
     'source' => [
         'project_target' => 'Projekt-Sollzeiten',
         'resale_plan' => 'Abos & Lizenzen: Serienvorlagen',
+        'resale' => 'Abos & Lizenzen',
         'approval' => 'Freigabeketten',
         'vacation_approval' => 'Urlaubsanträge',
         'expense_approval' => 'Spesen',

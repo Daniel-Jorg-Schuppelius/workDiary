@@ -171,6 +171,7 @@ return [
             'propose' => 'Abbonamenti in rivendita: proporre collegamenti fattura, confermare le corrispondenze sicure',
             'sync_domains' => 'Abbonamenti in rivendita: acquisire i domini dalla gestione domini',
             'sync_purchases' => 'Abbonamenti in rivendita: acquisire le registrazioni domini come acquisti',
+            'import_incoming' => 'Abbonamenti in rivendita: acquisire come acquisti le fatture dei fornitori dalla ricezione fatture e dal programma di contabilità',
             'sync_periods' => 'Abbonamenti in rivendita: generare i periodi di fatturazione',
             'draft_local' => 'Abbonamenti in rivendita: fatturazione ricorrente — bozze di fattura locali dai periodi scaduti',
             'draft_external' => 'Abbonamenti in rivendita: fatturazione ricorrente — trasferimenti al programma di contabilità dai periodi scaduti (mensile)',

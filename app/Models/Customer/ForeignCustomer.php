@@ -113,6 +113,11 @@ class ForeignCustomer extends Model implements ContactDetailsHolder, ContactName
         return $this->mapArchivedAtAuditEvent($event, $changes);
     }
 
+    protected static function booted(): void {
+        // Abos und Lizenzverkäufe verlören sonst still ihren Halter.
+        static::deleting(static fn(self $foreignCustomer) => app(\App\Services\Stammdaten\PartyDeletionGuard::class)->assertDeletable($foreignCustomer));
+    }
+
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);

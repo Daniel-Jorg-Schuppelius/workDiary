@@ -1384,6 +1384,15 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 2,
         ],
+        // Anbieterrechnungen als Einkauf (Phase 175): Rechnungseingang, danach Belege, die nur im
+        // Buchhaltungsprogramm liegen; nach dem täglichen Volllauf des Belegspiegels.
+        'resale.import_incoming' => [
+            'command' => 'resale:import-incoming --days=60',
+            'cadence' => ['type' => 'dailyAt', 'time' => '06:15'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 3,
+        ],
         // Vorschlagslauf (Feature 185, MVP-1406): stündlich um :20, nach dem Lexoffice-Belegspiegel (:00); sichere Treffer werden bestätigt.
         'resale.propose' => [
             'command' => 'resale:propose',

@@ -189,6 +189,11 @@ return [
             'detail' => ':count person-days below target in the last :days days.',
             'recommendation' => 'Recommendation: review the findings on the time tab, trigger late bookings or adjust the target.',
         ],
+        'resale_unbilled' => [
+            'title' => 'Subscriptions without invoice: :name',
+            'detail' => ':count due periods, the oldest for :days days.',
+            'recommendation' => 'Recommendation: bill them in the recipient’s workbook, link an invoice or waive deliberately.',
+        ],
         'recurring_tickets' => [
             'title' => 'Recurring tickets: :name',
             'detail' => ':count tickets in :days days.',
@@ -248,6 +253,10 @@ return [
             'nps_hint' => 'from :count ratings',
             'project_target' => 'Days below target',
             'project_target_hint' => 'open or acknowledged, :total in the period',
+            'resale_open' => 'Subscription periods without invoice',
+            'resale_open_hint' => 'open :amount',
+            'resale_margin' => 'Margin subscriptions & licences',
+            'resale_margin_hint' => ':periods periods, :actual with actual purchase',
         ],
         'digest' => [
             'subject' => 'Management report :organization · :range',
@@ -261,6 +270,7 @@ return [
             'recurring_tickets' => 'Recurring tickets',
             'capacity' => 'Staff shortages',
             'project_target' => 'Target times missed',
+            'resale_unbilled' => 'Subscriptions without invoice',
         ],
     ],
     'product_revenue' => [

@@ -47,3 +47,8 @@ catalogue et le prix conseillé de la dernière liste de prix importée face
 aux prix de vente des abonnements (minimum, médiane, maximum). Indications :
 « vente sous l’achat », « vente sous le prix conseillé », « contrat plus
 cher que le catalogue », « pas de prix de vente ».
+Si le prix d’achat d’un abonnement ne suit plus le dernier prix du
+fournisseur, la page propose « Reprendre le prix du fournisseur » : la
+boîte de dialogue affiche l’ancien et le nouveau prix par abonnement ; après
+la reprise, l’import suit de nouveau les changements de prix et les périodes
+ouvertes reçoivent le nouveau coût prévu.

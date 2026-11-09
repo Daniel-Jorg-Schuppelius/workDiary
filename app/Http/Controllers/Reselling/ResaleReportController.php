@@ -21,9 +21,9 @@ use App\Models\Customer\Customer;
 use App\Models\Reselling\{ResaleArticleClassification, ResalePeriod, ResalePlanLink, ResaleSubscription};
 use App\Services\Platform\Catalog\{ArticleCatalog, CatalogArticle};
 use App\Services\Reselling\Plan\RecurringPlans;
-use App\Services\Reselling\Register\{DomainSubscriptionSync, LicenseArticleClassifier, ResaleDraftRun, ResaleInvoiceDraftService, ResaleMarginReport, ResalePriceCheck, ResaleRenewalReport, ResaleUnbilledReport};
+use App\Services\Reselling\Register\{DomainSubscriptionSync, LicenseArticleClassifier, PeriodPlanner, ResaleDraftRun, ResaleInvoiceDraftService, ResaleMarginReport, ResalePriceCheck, ResaleRenewalReport, ResaleUnbilledReport};
 use App\Settings\SettingScope;
-use App\Support\{CsvExport, Setting, XlsxExport};
+use App\Support\{CsvExport, Setting, Sqid, XlsxExport};
 use App\Support\ErrorText;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -153,7 +153,20 @@ class ResaleReportController extends Controller {
         $today = ResalePeriod::today();
         $result = $check->build($today);
 
-        return view('finance.resale.prices', ['rows' => $result['rows'], 'today' => $today, 'catalogDate' => $result['catalog_date']]);
+        return view('finance.resale.prices', ['rows' => $result['rows'], 'today' => $today, 'catalogDate' => $result['catalog_date'], 'providerDeviations' => $check->providerDeviations()->count()]);
+    }
+
+    /** Dialog: Abos, deren Einkaufspreis dem letzten Anbieterpreis nicht mehr folgt. */
+    public function providerPricesCreate(ResalePriceCheck $check): View {
+        return view('finance.resale._provider_price_dialog', ['subscriptions' => $check->providerDeviations()]);
+    }
+
+    public function providerPricesStore(Request $request, ResalePriceCheck $check, PeriodPlanner $planner): RedirectResponse {
+        $data = $request->validate(['ids' => ['required', 'array', 'min:1'], 'ids.*' => ['string', 'max:32']]);
+        $ids = array_filter(array_map(static fn(string $sqid): ?int => Sqid::decode(ResaleSubscription::class, $sqid), $data['ids']));
+        $done = $check->adoptProviderPrices($check->providerDeviations()->whereIn('id', $ids)->values(), $planner);
+
+        return redirect()->route('finance.resale.prices')->with('success', trans_choice('resale.prices.provider.flash', $done, ['count' => $done]));
     }
 
     /**

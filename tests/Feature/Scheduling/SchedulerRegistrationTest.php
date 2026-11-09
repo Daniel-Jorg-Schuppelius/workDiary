@@ -219,6 +219,8 @@ class SchedulerRegistrationTest extends TestCase {
         'domain:refresh-details' => ['5 5 * * *', true, true],
         'lexoffice:sync-recurring-templates' => ['40 5 * * *', true, true],
         'resale:sync-purchases' => ['20 5 * * *', true, true],
+        // Phase 175: Anbieterrechnungen aus Rechnungseingang und Buchhaltungsprogramm als Einkauf.
+        'resale:import-incoming --days=60' => ['15 6 * * *', true, true],
         // Serienrechnung bei lokaler Rechnungshoheit (Feature 152, 2026-09-11).
         'resale:draft-local' => ['20 6 * * *', true, true],
         // Serienlauf nach außen (Feature 185, MVP-1438): monatlich am Ersten.

@@ -171,6 +171,7 @@ return [
             'propose' => 'Resale subscriptions: propose invoice links, confirm sure matches',
             'sync_domains' => 'Resale subscriptions: adopt domains from domain management',
             'sync_purchases' => 'Resale subscriptions: adopt domain accounting entries as purchases',
+            'import_incoming' => 'Resale subscriptions: import provider invoices from the invoice inbox and the accounting software as purchases',
             'sync_periods' => 'Resale subscriptions: roll billing periods forward',
             'draft_local' => 'Resale subscriptions: recurring invoicing — local invoice drafts from due periods',
             'draft_external' => 'Resale subscriptions: recurring invoicing — transfers to the accounting program from due periods (monthly)',

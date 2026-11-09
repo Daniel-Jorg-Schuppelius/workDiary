@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Stammdaten;
 
 use App\Exceptions\PartyDeletionBlockedException;
-use App\Models\Customer\Customer;
+use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Supplier\Supplier;
 use App\Support\{EntityType, MorphMap};
 use Illuminate\Database\Eloquent\Model;
@@ -51,11 +51,24 @@ final class PartyDeletionGuard {
         ],
     ];
 
+    /**
+     * Vorgänge, deren Fremdschlüssel beim Löschen auf null fällt oder sperrt: Abos
+     * verlören still ihren Halter, der Lizenzverkauf bricht mit einem Datenbankfehler.
+     */
+    public const array HOLDING = [
+        'customers' => ['resale_subscriptions', 'resale_license_assignments', 'resale_account_allocations'],
+        'foreign_customers' => ['resale_subscriptions', 'resale_license_assignments', 'resale_account_allocations'],
+    ];
+
     /** @return list<string> Bezeichnungen der vorhandenen Belegarten */
-    public function blockers(Customer|Supplier $party): array {
-        $column = $party instanceof Customer ? 'customer_id' : 'supplier_id';
+    public function blockers(Customer|Supplier|ForeignCustomer $party): array {
+        $column = match (true) {
+            $party instanceof Customer => 'customer_id',
+            $party instanceof ForeignCustomer => 'foreign_customer_id',
+            default => 'supplier_id',
+        };
         $found = [];
-        foreach (self::BLOCKING[$party->getTable()] ?? [] as $alias) {
+        foreach ([...(self::BLOCKING[$party->getTable()] ?? []), ...(self::HOLDING[$party->getTable()] ?? [])] as $alias) {
             $class = MorphMap::classFor($alias);
             if (! is_string($class) || ! is_a($class, Model::class, true)) {
                 continue;
@@ -68,7 +81,7 @@ final class PartyDeletionGuard {
         return $found;
     }
 
-    public function assertDeletable(Customer|Supplier $party): void {
+    public function assertDeletable(Customer|Supplier|ForeignCustomer $party): void {
         $blockers = $this->blockers($party);
         if ($blockers !== []) {
             throw new PartyDeletionBlockedException($blockers);

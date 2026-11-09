@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\{LicenseAssignmentEnd, LicenseUnitStatus};
+use App\Exceptions\PartyDeletionBlockedException;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\User;
@@ -243,7 +244,8 @@ final class LicenseStockServiceTest extends TestCase {
         $this->assertSame($target->id, $sale->fresh()?->customer_id);
         $this->assertSame(1, $this->totals()['sold']);
 
-        $this->expectException(QueryException::class);
+        // Seit Phase 175 sperrt der Löschschutz der Partei, bevor der Fremdschlüssel greift.
+        $this->expectException(PartyDeletionBlockedException::class);
         $target->forceDelete();
     }
 

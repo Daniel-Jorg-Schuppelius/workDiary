@@ -197,6 +197,8 @@ return [
         'invoice_draft' => 'Rechnungsentwurf #:id',
         'incoming_invoices' => 'Eingangsrechnungen',
         'contracts' => 'Verträge',
+        'resale_subscriptions' => 'Abos & Lizenzen',
+        'resale_license_products' => 'Lizenzprodukte',
         'articles' => 'Artikel',
         'tasks' => 'Aufgaben',
         'purchase_orders' => 'Bestellungen',

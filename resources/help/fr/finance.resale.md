@@ -280,6 +280,20 @@ ainsi que la marge des douze derniers mois ; le résumé hebdomadaire signale
 les abonnements dont le prix contractuel diffère du dernier prix de
 catalogue ou de prestataire importé.
 
+**Factures présentes uniquement dans le logiciel comptable :** Une fois par
+jour, le registre lit aussi les pièces des fournisseurs associés dans le
+logiciel comptable (Lexoffice) lorsque le fournisseur livre des lignes
+lisibles (Quality Hosting). La réception des factures prime : une facture
+dont le numéro est déjà connu des achats n’est pas relue, et si elle arrive
+plus tard dans la réception, son origine renvoie ensuite à celle-ci. Les
+factures collectives (Telekom) restent à répartir à la main via « Affecter
+un justificatif entrant », car le logiciel comptable ne connaît que le total
+de la pièce. Si un fournisseur de services avec des abonnements en cours n’a
+pas de fournisseur, la vue d’ensemble signale « Fournisseurs de services
+sans fournisseur ». Écritures de domaines : le fournisseur comptabilise un
+renouvellement quelques jours avant la nouvelle année de contrat ; il compte
+comme achat de l’année qu’il paie.
+
 **Lien de facture sur les licences à l’unité :** Lors de la vente d’une
 licence du stock, vous choisissez la ligne de facture du logiciel comptable
 qui facture cette licence ; la liste montre les lignes du client choisi

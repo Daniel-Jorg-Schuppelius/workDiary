@@ -235,7 +235,7 @@ TXT;
         app(DomainSubscriptionSync::class)->sync($this->organization);
         DomainAccountingEntry::query()->create([
             'organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_user' => 'reseller', 'accounting_id' => 'acc-1', 'domain_projection_id' => $projection->id,
-            'entry_date' => '2026-03-16', 'type' => 'RENEWAL', 'description' => 'badhaus.de', 'reference' => 'INV-1', 'quantity' => 1, 'net_amount' => 8.87, 'currency' => 'EUR', 'raw_hash' => 'h1',
+            'entry_date' => '2026-03-16', 'type' => 'RENEWAL', 'description' => 'badhaus.de', 'reference' => 'INV-1', 'quantity' => 1, 'net_amount' => -8.87, 'currency' => 'EUR', 'raw_hash' => 'h1',
         ]);
         $this->artisan('resale:sync-purchases', ['--org' => $this->organization->id])->expectsOutputToContain('1 Einkaufsbelege neu')->assertSuccessful();
         $domainEntry = ResalePurchaseEntry::query()->where('source', ResalePurchaseEntry::SOURCE_DOMAIN)->firstOrFail();
@@ -346,14 +346,14 @@ TXT;
         $this->assertSame(['2024-03-15', '2025-03-15', '2026-03-15'], $subscription->periods()->get()->map(static fn($p) => $p->starts_on->toDateString())->all());
         $entry = static fn(string $id, string $date, string $hash): DomainAccountingEntry => DomainAccountingEntry::query()->create([
             'organization_id' => $connection->organization_id, 'connection_id' => $connection->id, 'external_user' => 'reseller', 'accounting_id' => $id, 'domain_projection_id' => $projection->id,
-            'entry_date' => $date, 'type' => 'CREATE', 'description' => 'badhaus.de', 'reference' => 'INV-' . $id, 'quantity' => 1, 'net_amount' => 4.50, 'currency' => 'EUR', 'raw_hash' => $hash,
+            'entry_date' => $date, 'type' => 'CREATE', 'description' => 'badhaus.de', 'reference' => 'INV-' . $id, 'quantity' => 1, 'net_amount' => -4.50, 'currency' => 'EUR', 'raw_hash' => $hash,
         ]);
         $entry('acc-before', '2023-12-01', 'h-before'); // vor der Registrierung
         $entry('acc-after', '2028-06-01', 'h-after'); // nach dem Planungshorizont
         $entry('acc-inside', '2025-06-01', 'h-inside');
 
         $result = app(PurchaseAllocator::class)->syncDomainAccounting($this->organization);
-        $this->assertSame(['entries' => 3, 'skipped' => 0], $result);
+        $this->assertSame(['entries' => 3, 'skipped' => 0, 'updated' => 0], $result);
         $rows = ResalePurchaseEntry::query()->where('source', ResalePurchaseEntry::SOURCE_DOMAIN)->orderBy('entry_date')->get();
         $this->assertSame([$subscription->id, $subscription->id, $subscription->id], $rows->pluck('subscription_id')->all());
         $this->assertNull($rows[0]->period_id, 'vor der ersten Periode');
@@ -363,10 +363,54 @@ TXT;
         $this->assertSame('CREATE badhaus.de', $rows[0]->description);
 
         // Idempotent: derselbe Lauf importiert nichts doppelt — auch die periodenlosen nicht.
-        $this->assertSame(['entries' => 0, 'skipped' => 3], app(PurchaseAllocator::class)->syncDomainAccounting($this->organization));
+        $this->assertSame(['entries' => 0, 'skipped' => 3, 'updated' => 0], app(PurchaseAllocator::class)->syncDomainAccounting($this->organization));
         $this->assertSame(3, ResalePurchaseEntry::query()->count());
         $this->assertSame('4.50', $subscription->periods()->get()[1]->load('purchases')->actualPurchase()?->getAmount(), 'nur der Eintrag in der Periode zählt zum Ist-Einkauf');
         $this->assertNull($subscription->periods()->get()[0]->load('purchases')->actualPurchase());
+    }
+
+    public function test_domain_renewal_booked_before_the_new_term_belongs_to_the_period_it_pays(): void {
+        // Befund Produktion 2026-11-09: Der Anbieter bucht die Verlängerung einige Tage vor dem neuen Laufzeitjahr;
+        // nach dem Buchungstag hing sie an der auslaufenden Periode, die bezahlte Periode blieb ohne Einkauf.
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $projection = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_domain' => 'badhaus.de', 'domain_hash' => DomainProjection::hashFor('badhaus.de'),
+            'customer_id' => $customer->id, 'registration_at' => '2024-03-15', 'expiration_at' => '2027-03-15', 'renewal_price' => '8.87',
+        ]);
+        app(DomainSubscriptionSync::class)->sync($this->organization);
+        $subscription = ResaleSubscription::query()->where('external_id', 'badhaus.de')->firstOrFail();
+        $periods = $subscription->periods()->orderBy('starts_on')->get();
+        $entry = static fn(string $id, string $date, string $type): DomainAccountingEntry => DomainAccountingEntry::query()->create([
+            'organization_id' => $connection->organization_id, 'connection_id' => $connection->id, 'external_user' => 'reseller', 'accounting_id' => $id, 'domain_projection_id' => $projection->id,
+            'entry_date' => $date, 'type' => $type, 'description' => 'badhaus.de', 'reference' => 'INV-' . $id, 'quantity' => 1, 'net_amount' => -8.87, 'currency' => 'EUR', 'raw_hash' => 'h-' . $id,
+        ]);
+        $entry('add', '2024-03-15', 'ADD_DOMAIN');
+        $early = $entry('renew-early', '2025-03-08', 'RENEW_DOMAIN_ANNUAL'); // sieben Tage vor dem zweiten Jahr
+        $entry('renew-late', '2026-03-20', 'RENEW_DOMAIN_ANNUAL'); // nach dem Beginn: Periode des Buchungstags
+        $entry('zone', '2025-03-08', 'DNSZONE_INTERNAL'); // keine Verlängerung: Periode des Buchungstags
+        $entry('renew-far', '2025-12-01', 'RENEW_DOMAIN_ANNUAL'); // weiter als der Vorlauf vor der nächsten Periode
+
+        // Bestand nach alter Regel: die frühe Verlängerung hängt an der auslaufenden Periode.
+        ResalePurchaseEntry::query()->create([
+            'organization_id' => $this->organization->id, 'subscription_id' => $subscription->id, 'period_id' => $periods[0]->id, 'provider' => SubscriptionProvider::DomainReselling,
+            'source' => ResalePurchaseEntry::SOURCE_DOMAIN, 'domain_accounting_entry_id' => $early->id, 'document_number' => 'INV-renew-early', 'entry_date' => '2025-03-08',
+            'description' => 'RENEW_DOMAIN_ANNUAL badhaus.de', 'net_amount' => '-8.87', 'currency' => 'EUR', // altes Vorzeichen des Journals
+            'raw_hash' => (string) \CommonToolkit\Helper\Data\CryptoHelper::hash('domain|' . $early->id . '|' . $early->raw_hash),
+        ]);
+
+        $allocator = app(PurchaseAllocator::class);
+        $this->assertSame(['entries' => 4, 'skipped' => 0, 'updated' => 1], $allocator->syncDomainAccounting($this->organization));
+        $start = static fn(string $number): ?string => ResalePurchaseEntry::query()->where('document_number', 'INV-' . $number)->firstOrFail()->period?->starts_on->toDateString();
+        $this->assertSame('2024-03-15', $start('add'));
+        $this->assertSame('2025-03-15', $start('renew-early'), 'Verlängerung gehört dem Jahr, das sie bezahlt');
+        $this->assertSame('8.87', ResalePurchaseEntry::query()->where('document_number', 'INV-renew-early')->firstOrFail()->net_amount->getAmount(), 'Belastung des Journals ist positiver Einkauf');
+        $this->assertSame('17.74', $periods[1]->fresh()->load('purchases')->actualPurchase()?->getAmount(), 'frühe und späte Verlängerung des zweiten Jahres');
+        $this->assertSame('2026-03-15', $start('renew-late'));
+        $this->assertSame('2024-03-15', $start('zone'));
+        $this->assertSame('2025-03-15', $start('renew-far'));
+        $this->assertSame(['entries' => 0, 'skipped' => 5, 'updated' => 0], $allocator->syncDomainAccounting($this->organization));
+        $this->assertSame(5, ResalePurchaseEntry::query()->count());
     }
 
     public function test_legacy_credit_note_hash_with_position_zero_still_counts_as_duplicate(): void {

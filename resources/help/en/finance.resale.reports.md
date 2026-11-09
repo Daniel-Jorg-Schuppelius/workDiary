@@ -44,3 +44,7 @@ and open amount. Both as CSV or XLSX.
 RRP from the last imported price list against the sale prices of the
 subscriptions (minimum, median, maximum). Flags: "sale below purchase",
 "sale below RRP", "contract above catalogue", "no sale price".
+If the purchase price of a subscription no longer follows the latest
+provider price, the page offers “Adopt provider price”: the dialog shows the
+old and new price per subscription; after adopting, the import follows
+future price changes again and open periods get the new planned cost.

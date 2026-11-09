@@ -197,6 +197,8 @@ return [
         'invoice_draft' => 'Bozza di fattura n. :id',
         'incoming_invoices' => 'Fatture in entrata',
         'contracts' => 'Contratti',
+        'resale_subscriptions' => 'Abbonamenti e licenze',
+        'resale_license_products' => 'Prodotti di licenza',
         'articles' => 'Articoli',
         'tasks' => 'Attività',
         'purchase_orders' => 'Ordini di acquisto',

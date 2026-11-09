@@ -171,6 +171,7 @@ return [
             'propose' => 'Suscripciones de reventa: proponer vínculos de factura, confirmar coincidencias seguras',
             'sync_domains' => 'Suscripciones de reventa: adoptar dominios de la gestión de dominios',
             'sync_purchases' => 'Suscripciones de reventa: adoptar asientos de dominios como compras',
+            'import_incoming' => 'Suscripciones de reventa: importar como compras las facturas de proveedores desde la entrada de facturas y el programa de contabilidad',
             'sync_periods' => 'Suscripciones de reventa: generar los periodos de facturación',
             'draft_local' => 'Suscripciones de reventa: facturación recurrente — borradores de factura locales de los periodos vencidos',
             'draft_external' => 'Suscripciones de reventa: facturación recurrente — traspasos al programa de contabilidad de los periodos vencidos (mensual)',

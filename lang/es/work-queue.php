@@ -37,6 +37,7 @@ return [
     'source' => [
         'project_target' => 'Tiempos objetivo del proyecto',
         'resale_plan' => 'Suscripciones y licencias: plantillas periódicas',
+        'resale' => 'Suscripciones y licencias',
         'approval' => 'Cadenas de aprobación',
         'vacation_approval' => 'Solicitudes de vacaciones',
         'expense_approval' => 'Gastos',

@@ -47,3 +47,8 @@ listino e il prezzo consigliato dell’ultimo listino importato a confronto
 con i prezzi di vendita degli abbonamenti (minimo, mediana, massimo).
 Avvisi: «vendita sotto acquisto», «vendita sotto prezzo consigliato»,
 «contratto più caro del listino», «nessun prezzo di vendita».
+Se il prezzo di acquisto di un abbonamento non segue più l’ultimo prezzo
+del provider, la pagina offre «Acquisire il prezzo del provider»: la
+finestra mostra il prezzo vecchio e quello nuovo per abbonamento; dopo
+l’acquisizione l’importazione segue di nuovo le variazioni di prezzo e i
+periodi aperti ricevono il nuovo costo previsto.

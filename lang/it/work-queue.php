@@ -37,6 +37,7 @@ return [
     'source' => [
         'project_target' => 'Tempi obiettivo del progetto',
         'resale_plan' => 'Abbonamenti e licenze: modelli ricorrenti',
+        'resale' => 'Abbonamenti e licenze',
         'approval' => 'Catene di approvazione',
         'vacation_approval' => 'Richieste di ferie',
         'expense_approval' => 'Note spese',

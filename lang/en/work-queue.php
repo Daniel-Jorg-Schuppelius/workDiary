@@ -37,6 +37,7 @@ return [
     'source' => [
         'project_target' => 'Project target times',
         'resale_plan' => 'Subscriptions & licences: recurring templates',
+        'resale' => 'Subscriptions & licences',
         'approval' => 'Approval chains',
         'vacation_approval' => 'Leave requests',
         'expense_approval' => 'Expenses',

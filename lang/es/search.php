@@ -197,6 +197,8 @@ return [
         'invoice_draft' => 'Borrador de factura n.º :id',
         'incoming_invoices' => 'Facturas recibidas',
         'contracts' => 'Contratos',
+        'resale_subscriptions' => 'Suscripciones y licencias',
+        'resale_license_products' => 'Productos de licencia',
         'articles' => 'Artículos',
         'tasks' => 'Tareas',
         'purchase_orders' => 'Pedidos de compra',

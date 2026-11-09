@@ -3148,6 +3148,9 @@ Route::middleware('auth')->group(function () {
                 Route::post('perioden/sammel/bestaetigen', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'bulkConfirm'])->name('periods.bulk.confirm');
                 Route::get('perioden/sammel/verzichten', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'bulkWaiveCreate'])->name('periods.bulk.waive.create');
                 Route::post('perioden/sammel/verzichten', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'bulkWaive'])->name('periods.bulk.waive');
+                // Einkaufspreise dem Anbieterpreis nachziehen (Phase 175).
+                Route::get('preise/anbieterpreis', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'providerPricesCreate'])->name('prices.provider.create');
+                Route::post('preise/anbieterpreis', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'providerPricesStore'])->name('prices.provider.store');
                 // Positionen ohne Abo bewusst ausblenden (Phase 163, MVP-1432) — feste Pfade vor {period}.
                 Route::post('perioden/positionen/ignorieren', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'ignoreLine'])->name('periods.unlinked.ignore');
                 Route::delete('perioden/positionen/{ignored}', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'restoreLine'])->name('periods.unlinked.restore');

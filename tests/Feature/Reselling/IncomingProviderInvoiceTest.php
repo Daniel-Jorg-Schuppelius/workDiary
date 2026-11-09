@@ -214,4 +214,64 @@ class IncomingProviderInvoiceTest extends TestCase {
         // Marge: Soll-Verkauf 2 × 2 × 247,20 = 988,80 − (380,00 + 375,84) = 232,96
         $page->assertSee('232,96');
     }
+
+    public function test_invoice_known_only_to_the_accounting_software_fills_the_gap_and_the_inbox_takes_the_lead(): void {
+        // Phase 175: Die Anbieterrechnung liegt nur in Lexoffice (Beleg ohne Kontakt, Name wie der Lieferant) —
+        // der Tageslauf liest sie aus dem gesicherten Belegbild; kommt sie später im Rechnungseingang an, führt der.
+        \Illuminate\Support\Facades\Storage::fake('local');
+        ResaleProviderSupplier::query()->create(['organization_id' => $this->organization->id, 'supplier_id' => $this->supplier->id, 'provider' => SubscriptionProvider::QualityHosting]);
+        $subscription = $this->subscription();
+        $voucher = \App\Plugins\Lexoffice\Models\LexofficeVoucher::create([
+            'organization_id' => $this->organization->id, 'external_id' => 'v-31970999', 'voucher_type' => 'purchaseinvoice', 'voucher_status' => 'paid',
+            'voucher_number' => '31970999', 'voucher_date' => '2026-09-03', 'total_amount' => 223.62, 'currency' => 'EUR', 'archived' => false,
+            'contact_name' => 'Qualityhosting AG',
+        ]);
+        $voucher->forceFill(['file_path' => 'lexoffice-vouchers/1/1.pdf', 'file_materialized_at' => now()])->save();
+        \Illuminate\Support\Facades\Storage::disk('local')->put('lexoffice-vouchers/1/1.pdf', '%PDF-1.4');
+        // Beleg eines anderen Lieferanten gleichen Tags: bleibt außen vor.
+        \App\Plugins\Lexoffice\Models\LexofficeVoucher::create([
+            'organization_id' => $this->organization->id, 'external_id' => 'v-other', 'voucher_type' => 'purchaseinvoice', 'voucher_status' => 'paid',
+            'voucher_number' => 'X-77', 'voucher_date' => '2026-09-03', 'total_amount' => 10, 'currency' => 'EUR', 'archived' => false, 'contact_name' => 'Bürobedarf Müller',
+        ]);
+        $this->app->instance('resale.test.import.deps', [
+            app(ProviderSuppliers::class), app(\App\Services\Reselling\Register\PurchaseAllocator::class), app(\App\Services\Reselling\Marketplace\QualityHostingInvoiceReader::class),
+            app(\App\Services\Billing\Purchase\IncomingEInvoicePurchaseDocumentSource::class), app(\App\Services\Invoicing\EInvoice\IncomingEInvoiceService::class),
+        ]);
+        $this->bindImport(new ProviderInvoice('31970999', CarbonImmutable::parse('2026-09-03'), false, '95229', [
+            new ProviderInvoiceLine(1, 1.0, 'Microsoft 365 Business Premium', 187.92, 187.92, 'CNLCON00156', 'CNL00007', 'Badhaus Bäder GmbH', CarbonImmutable::parse('2026-09-03'), CarbonImmutable::parse('2027-09-02')),
+        ], 187.92));
+
+        $this->assertSame(0, Artisan::call('resale:import-incoming', ['--days' => 60]));
+        $entry = ResalePurchaseEntry::query()->sole();
+        $this->assertSame($subscription->id, $entry->subscription_id);
+        $this->assertSame($voucher->getMorphClass(), $entry->document_type, 'Herkunft ist der Beleg des Buchhaltungsprogramms');
+        $this->assertSame($voucher->id, $entry->document_id);
+        $this->assertSame('2026-09-03', $entry->period?->starts_on->toDateString());
+
+        // Zweiter Lauf: die Rechnungsnummer ist bekannt, der Beleg wird nicht noch einmal gelesen.
+        $this->assertSame([], app(\App\Services\Reselling\Register\MirroredProviderInvoiceImport::class)->run($this->organization, CarbonImmutable::parse('2026-07-01')));
+        $this->assertSame(1, ResalePurchaseEntry::query()->count());
+
+        // Dieselbe Rechnung im Rechnungseingang: keine zweite Zeile, die Herkunft wechselt zum Eingang.
+        $incoming = $this->incoming('31970999', '2026-09-03', '187.92');
+        $result = app(IncomingProviderInvoiceImport::class)->import($incoming);
+        $this->assertSame(1, $result['duplicates'] ?? 0);
+        $this->assertSame(1, ResalePurchaseEntry::query()->count());
+        $this->assertSame($incoming->getMorphClass(), $entry->fresh()->document_type);
+        $this->assertSame($incoming->id, $entry->fresh()->document_id);
+    }
+
+    public function test_collective_invoices_in_the_accounting_software_are_not_distributed_automatically(): void {
+        // Telekom-Sammelrechnung: der Spiegel kennt nur die Belegsumme samt Telefonie — kein automatischer Einkauf.
+        $telekom = Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Telekom Deutschland GmbH']);
+        ResaleProviderSupplier::query()->create(['organization_id' => $this->organization->id, 'supplier_id' => $telekom->id, 'provider' => SubscriptionProvider::TelekomMarketplace]);
+        $this->subscription(['provider' => 'telekom_marketplace', 'external_id' => 'T-1']);
+        \App\Plugins\Lexoffice\Models\LexofficeVoucher::create([
+            'organization_id' => $this->organization->id, 'external_id' => 'v-telekom', 'voucher_type' => 'purchaseinvoice', 'voucher_status' => 'paid', 'supplier_id' => $telekom->id,
+            'voucher_number' => '726 039 1495', 'voucher_date' => '2026-09-01', 'total_amount' => 2043.55, 'currency' => 'EUR', 'archived' => false, 'contact_name' => 'Telekom Deutschland GmbH',
+        ]);
+
+        $this->assertSame([], app(\App\Services\Reselling\Register\MirroredProviderInvoiceImport::class)->run($this->organization, CarbonImmutable::parse('2026-07-01')));
+        $this->assertSame(0, ResalePurchaseEntry::query()->count());
+    }
 }

@@ -10,6 +10,16 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinzugefügt
 
+- Abos & Lizenzen (Phase 175, MVP-1534–1540): Anbieterrechnungen, die
+  nur im Buchhaltungsprogramm liegen, werden täglich als Einkauf übernommen
+  (Lexoffice, Anbieter mit lesbaren Positionen; der Rechnungseingang führt,
+  Dubletten über die Rechnungsnummer; Job `resale.import_incoming`). Der
+  Überblick meldet Anbieter ohne zugeordneten Lieferanten und Abos, deren
+  Einkaufspreis dem Anbieterpreis nicht mehr folgt; die Preisprüfung übernimmt
+  den Anbieterpreis je Abo. Das Register speist Arbeitsvorrat, globale Suche
+  (Abos, Lizenzprodukte), Leitungssicht (Perioden ohne Rechnung, Marge),
+  Frühwarnung (Empfänger ab 90 Tagen ohne Rechnung), die Auskunft nach Art. 15
+  und den Demo-Mandanten.
 - Legacy-Bereich: Das Support-Portal des Altsystems ist nachgezogen. Das Büro
   (Legacy-Admins und Plattformbetrieb) sieht die Kundenaufträge unter
   „Support-Portal“ mit Jahr, Kunde, Suche und Statuskacheln, trägt Termin,
@@ -28,6 +38,15 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Behoben
 
+- Abos & Lizenzen: Der Domain-Einkauf hing an der auslaufenden Periode, weil
+  der Anbieter die Verlängerung einige Tage vor dem neuen Laufzeitjahr bucht,
+  und trug das negative Vorzeichen des Buchungsjournals; der Margenbericht
+  rechnete damit zu hoch. `resale:sync-purchases` ordnet Verlängerungen der
+  bezahlten Periode zu, führt den Einkauf positiv und berichtigt den Bestand
+  beim nächsten Lauf (`MVP-1534`).
+- Abos & Lizenzen: Ein Kunde oder Fremdkunde mit Abos, Lizenzverkäufen oder
+  Kontoaufteilungen ließ sich löschen; die Abos verloren dabei ihren Halter.
+  Löschen ist jetzt gesperrt (`MVP-1537`).
 - Legacy-Bereich: Zeiten aus der Altdatenbank erschienen um eine Stunde (im
   Sommer zwei) verschoben, „heute“ wechselte erst nach Mitternacht UTC, und
   `aktuell` wurde in UTC geschrieben. Das Altsystem speichert Ortszeit; Anzeige,

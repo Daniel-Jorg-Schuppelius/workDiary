@@ -37,6 +37,7 @@ return [
     'source' => [
         'project_target' => 'Temps cibles de projet',
         'resale_plan' => 'Abonnements et licences : modèles récurrents',
+        'resale' => 'Abonnements et licences',
         'approval' => 'Circuits de validation',
         'vacation_approval' => 'Demandes de congé',
         'expense_approval' => 'Notes de frais',

@@ -41,6 +41,9 @@ final class PurchaseAllocator {
     /** Quelle, deren Hash-Basis aus der Zeit vor der Belegregistry nur die Beleg-ID trägt — bestehende Lexoffice-Zuteilungen bleiben Dubletten. */
     private const string LEGACY_HASH_SOURCE = 'lexoffice';
 
+    /** Vorlauf, mit dem der Domain-Anbieter eine Verlängerung vor dem neuen Laufzeitjahr bucht (Produktion: 0–10 Tage). */
+    public const int DOMAIN_RENEWAL_LEAD_DAYS = 21;
+
     /** @var array<int, Collection<int, ResaleSubscription>> Organisation → alle Abos (Gutschrift-Fallback), je Lauf einmal geladen */
     private array $subscriptions = [];
 
@@ -137,9 +140,10 @@ final class PurchaseAllocator {
      *
      * @param  PurchaseDocument|null  $document  Herkunft (Eingangsrechnung, Feature 185) als Morph an jeder Zeile
      * @param  bool  $keepUnmatched  Positionen ohne Abo als Einkauf ohne Abo behalten (Prüffall im Einkauf-Reiter) statt nur zu melden
+     * @param  bool  $leading  führende Quelle (Rechnungseingang): schon aus einer anderen Quelle übernommene Zeilen zeigen danach auf diesen Beleg
      * @return array{lines: int, matched: int, unmatched: list<string>, duplicates: int, net: float, issues: list<string>}
      */
-    public function importProviderInvoice(Organization $organization, ProviderInvoice $invoice, SubscriptionProvider $provider, ?User $user = null, ?string $fileName = null, CurrencyCode $currency = CurrencyCode::Euro, ?PurchaseDocument $document = null, bool $keepUnmatched = false): array {
+    public function importProviderInvoice(Organization $organization, ProviderInvoice $invoice, SubscriptionProvider $provider, ?User $user = null, ?string $fileName = null, CurrencyCode $currency = CurrencyCode::Euro, ?PurchaseDocument $document = null, bool $keepUnmatched = false, bool $leading = false): array {
         $result = ['lines' => count($invoice->lines), 'matched' => 0, 'unmatched' => [], 'duplicates' => 0, 'net' => 0.0, 'issues' => array_map('strval', $invoice->issues)];
         $consistency = $invoice->consistencyIssue();
         if ($consistency !== null) {
@@ -150,7 +154,7 @@ final class PurchaseAllocator {
         $byContract = $subscriptions->filter(static fn(ResaleSubscription $s): bool => $s->external_id !== null)->keyBy(static fn(ResaleSubscription $s): string => mb_strtoupper((string) $s->external_id));
         $entryDate = $invoice->date ?? ResalePeriod::today();
 
-        DB::transaction(function () use ($organization, $invoice, $provider, $user, $fileName, $currency, $document, $keepUnmatched, $all, $subscriptions, $byContract, $entryDate, &$result): void {
+        DB::transaction(function () use ($organization, $invoice, $provider, $user, $fileName, $currency, $document, $keepUnmatched, $leading, $all, $subscriptions, $byContract, $entryDate, &$result): void {
             foreach ($invoice->lines as $line) {
                 $subscription = null;
                 if ($line->contract !== null) {
@@ -188,9 +192,12 @@ final class PurchaseAllocator {
                 $duplicate = ResalePurchaseEntry::query()->withoutGlobalScopes()->where('organization_id', $organization->id)
                     ->where(static fn($q) => $q->where('raw_hash', $hash)
                         ->orWhere(static fn($legacy) => $legacy->where('raw_hash', $legacyHash)->where('net_amount', NumberHelper::toUSFormat($line->total, 2))))
-                    ->exists();
-                if ($duplicate) {
+                    ->first();
+                if ($duplicate !== null) {
                     $result['duplicates']++;
+                    if ($leading && $document !== null && ($duplicate->document_type !== $document->morphClass || $duplicate->document_id !== $document->morphId)) {
+                        $duplicate->forceFill(['document_type' => $document->morphClass, 'document_id' => $document->morphId])->save();
+                    }
 
                     continue;
                 }
@@ -238,12 +245,16 @@ final class PurchaseAllocator {
 
     /**
      * Domain-Buchungsjournal (083) → Einkaufsbeleg je Domain-Abo und Periode.
+     * Der Anbieter bucht eine Verlängerung wenige Tage vor dem neuen Laufzeitjahr;
+     * sie gehört der Periode, die sie bezahlt. Das Journal führt Belastungen
+     * negativ, der Einkauf positiv. Vorhandene Belege rücken nach, wenn Regel
+     * oder Periodengrenzen sich geändert haben.
      *
-     * @return array{entries: int, skipped: int}
+     * @return array{entries: int, skipped: int, updated: int}
      */
     public function syncDomainAccounting(Organization|int $organization): array {
         $organizationId = $organization instanceof Organization ? $organization->id : $organization;
-        $result = ['entries' => 0, 'skipped' => 0];
+        $result = ['entries' => 0, 'skipped' => 0, 'updated' => 0];
         $subscriptions = ResaleSubscription::query()->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
             ->where('provider', SubscriptionProvider::DomainReselling->value)
@@ -260,6 +271,16 @@ final class PurchaseAllocator {
             ->whereNotNull('entry_date')
             ->orderBy('entry_date')
             ->get();
+        $periods = ResalePeriod::query()->withoutGlobalScopes()
+            ->whereIn('subscription_id', $subscriptions->pluck('id')->all())
+            ->orderBy('starts_on')
+            ->get(['id', 'subscription_id', 'starts_on', 'ends_on'])
+            ->groupBy('subscription_id');
+        $existing = ResalePurchaseEntry::query()->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->where('source', ResalePurchaseEntry::SOURCE_DOMAIN)
+            ->get()
+            ->keyBy('raw_hash');
         foreach ($entries as $entry) {
             /** @var ResaleSubscription|null $subscription */
             $subscription = $subscriptions->get($entry->domain_projection_id);
@@ -268,18 +289,22 @@ final class PurchaseAllocator {
 
                 continue;
             }
+            $date = CarbonImmutable::instance($entry->entry_date);
+            $period = self::domainPeriodFor($periods->get($subscription->id) ?? collect(), $date, (string) $entry->type);
             $hash = (string) CryptoHelper::hash('domain|' . $entry->id . '|' . $entry->raw_hash);
-            if (ResalePurchaseEntry::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->where('raw_hash', $hash)->exists()) {
-                $result['skipped']++;
+            /** @var ResalePurchaseEntry|null $known */
+            $known = $existing->get($hash);
+            $net = Money::of((string) $entry->net_amount, $entry->currency ?? CurrencyCode::Euro, 2)->negated();
+            if ($known !== null) {
+                if ($known->subscription_id === $subscription->id && ($known->period_id !== $period?->id || ! $known->net_amount->equals($net))) {
+                    $known->forceFill(['period_id' => $period?->id, 'net_amount' => $net])->save();
+                    $result['updated']++;
+                } else {
+                    $result['skipped']++;
+                }
 
                 continue;
             }
-            $date = CarbonImmutable::instance($entry->entry_date);
-            $period = ResalePeriod::query()->withoutGlobalScopes()
-                ->where('subscription_id', $subscription->id)
-                ->where('starts_on', '<', DateRange::dayAfter($date))
-                ->where('ends_on', '>=', DateRange::day($date))
-                ->first();
             ResalePurchaseEntry::query()->create([
                 'organization_id' => $organizationId,
                 'subscription_id' => $subscription->id,
@@ -290,13 +315,32 @@ final class PurchaseAllocator {
                 'document_number' => $entry->reference,
                 'entry_date' => $date->toDateString(),
                 'description' => mb_substr(trim((string) $entry->type . ' ' . (string) $entry->description), 0, 255),
-                'net_amount' => (string) $entry->net_amount,
-                'currency' => $entry->currency !== null ? $entry->currency->value : 'EUR',
+                'net_amount' => $net,
+                'currency' => $net->getCurrency()->value,
                 'raw_hash' => $hash,
             ]);
             $result['entries']++;
         }
 
         return $result;
+    }
+
+    /**
+     * Periode einer Domain-Buchung: Verlängerungen (auch ihre Rücknahme) gehen an
+     * die Periode, die bis zu {@see DOMAIN_RENEWAL_LEAD_DAYS} Tage nach der Buchung
+     * beginnt, alles andere an die Periode des Buchungstags.
+     *
+     * @param  Collection<int, ResalePeriod>  $periods  aufsteigend nach Beginn
+     */
+    private static function domainPeriodFor(Collection $periods, CarbonImmutable $date, string $type): ?ResalePeriod {
+        if (str_contains(strtoupper($type), 'RENEW')) {
+            $latest = $date->addDays(self::DOMAIN_RENEWAL_LEAD_DAYS);
+            $upcoming = $periods->first(static fn(ResalePeriod $p): bool => $p->starts_on->gt($date) && $p->starts_on->lte($latest));
+            if ($upcoming !== null) {
+                return $upcoming;
+            }
+        }
+
+        return $periods->first(static fn(ResalePeriod $p): bool => $p->starts_on->lte($date) && $p->ends_on->gte($date));
     }
 }

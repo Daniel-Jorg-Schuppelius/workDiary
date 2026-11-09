@@ -112,6 +112,44 @@ final class ResalePriceCheck {
         return $count;
     }
 
+    /**
+     * Planbare Abos, deren Einkaufspreis nicht dem letzten Anbieterpreis folgt.
+     * Der Import zieht den Abo-Preis nur nach, solange beide gleich sind; nach
+     * einer verpassten Änderung bliebe das Abo für immer beim alten Preis.
+     *
+     * @return Collection<int, ResaleSubscription>
+     */
+    public function providerDeviations(): Collection {
+        // Vergleich in PHP: SQLite vergleicht DECIMAL-Spalten als Text.
+        return ResaleSubscription::query()->planning()->where('is_own_holding', false)
+            ->whereNotNull('provider_unit_price')->whereNotNull('purchase_unit_price')
+            ->with(['customer:id,name', 'foreignCustomer:id,name,customer_id'])
+            ->orderBy('label')->orderBy('starts_on')
+            ->get()
+            ->reject(static fn(ResaleSubscription $s): bool => MarketplaceImporter::purchaseFollowsProvider($s))
+            ->values();
+    }
+
+    /**
+     * Anbieterpreis als Einkaufspreis übernehmen; offene Perioden folgen, entschiedene behalten ihr Soll.
+     *
+     * @param  Collection<int, ResaleSubscription>  $subscriptions
+     */
+    public function adoptProviderPrices(Collection $subscriptions, PeriodPlanner $planner): int {
+        $done = 0;
+        foreach ($subscriptions as $subscription) {
+            if ($subscription->provider_unit_price === null) {
+                continue;
+            }
+            $subscription->purchase_unit_price = $subscription->provider_unit_price;
+            $subscription->save();
+            $planner->sync($subscription);
+            $done++;
+        }
+
+        return $done;
+    }
+
     /** Produktname des Abos: Katalogartikel, sonst die Bezeichnung. */
     private static function labelOf(ResaleSubscription $subscription): string {
         return $subscription->productName();
