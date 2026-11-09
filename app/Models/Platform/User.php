@@ -160,11 +160,12 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
 
     /**
      * Darf alle Legacy-Daten (Diary, Bereitschaft, Notdienst, Urlaub, Archiv,
-     * Callcenter, Wochenkalender) lesend einsehen — unabhängig vom eigenen User.
-     * Schreibrechte sind davon NICHT betroffen (siehe `isAdmin()` / Policies).
+     * Callcenter, Wochenkalender) lesend einsehen — unabhängig vom eigenen User:
+     * wer das Altsystem verwaltet (Legacy-Admin, Plattformbetrieb) und die
+     * Buchhaltung. Schreibrechte sind davon NICHT betroffen (siehe `isAdmin()` / Policies).
      */
     public function canViewAllLegacyData(): bool {
-        return LegacyBridge::isLegacyAdmin($this) || $this->hasRole(UserRole::Buchhaltung->value);
+        return LegacyBridge::canManageLegacy($this) || $this->hasRole(UserRole::Buchhaltung->value);
     }
 
     /**

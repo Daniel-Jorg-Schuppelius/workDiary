@@ -39,31 +39,29 @@ trait UsesLegacySqlite {
             $table->string('userpw');
         });
 
-        $schema->create('bereit', function ($table): void {
-            $table->increments('id');
-            $table->unsignedInteger('user');
-            $table->date('von');
-            $table->date('bis');
-        });
+        // Laufende Tabellen und ihr Archiv (a_*) haben dieselben Spalten.
+        foreach (['bereit', 'notdnst', 'a_bereit', 'a_notdnst'] as $dutyTable) {
+            $schema->create($dutyTable, function ($table): void {
+                $table->increments('id');
+                $table->unsignedInteger('user');
+                $table->date('von');
+                $table->date('bis');
+            });
+        }
 
-        $schema->create('notdnst', function ($table): void {
-            $table->increments('id');
-            $table->unsignedInteger('user');
-            $table->date('von');
-            $table->date('bis');
-        });
-
-        $schema->create('tagebuch', function ($table): void {
-            $table->increments('id');
-            $table->unsignedInteger('user')->nullable();
-            $table->text('inhalt')->nullable();
-            $table->text('antwort')->nullable();
-            $table->dateTime('von')->nullable();
-            $table->dateTime('bis')->nullable();
-            $table->dateTime('aktuell')->nullable();
-            $table->integer('gelesen')->nullable();
-            $table->string('sms')->nullable();
-        });
+        foreach (['tagebuch', 'a_tagebuch'] as $diaryTable) {
+            $schema->create($diaryTable, function ($table): void {
+                $table->increments('id');
+                $table->unsignedInteger('user')->nullable();
+                $table->text('inhalt')->nullable();
+                $table->text('antwort')->nullable();
+                $table->dateTime('von')->nullable();
+                $table->dateTime('bis')->nullable();
+                $table->dateTime('aktuell')->nullable();
+                $table->integer('gelesen')->nullable();
+                $table->string('sms')->nullable();
+            });
+        }
 
         // Support-Portal: Spalten und Vorgaben wie im Altsystem (NOT NULL mit Leerwert).
         $schema->create('kp_user', function ($table): void {

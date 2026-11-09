@@ -32,6 +32,11 @@ class LegacyBridge {
         return LegacyRoleResolver::isAdmin($user);
     }
 
+    /** Verwaltung des Altsystems: Legacy-Admin oder Plattformbetrieb. */
+    public static function canManageLegacy(?User $user): bool {
+        return LegacyRoleResolver::canManage($user);
+    }
+
     /**
      * Best-Effort-Arbeit gegen die Legacy-DB: der Callback läuft nur, wenn die
      * legacy-Verbindung konfiguriert und nicht als down markiert ist; sonst

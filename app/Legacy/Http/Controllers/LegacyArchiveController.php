@@ -99,7 +99,7 @@ class LegacyArchiveController extends Controller {
 
     public function index(Request $request): View {
         $legacyUserId = LegacyRoleResolver::resolveLegacyUserId(Auth::user());
-        $isAdmin = LegacyRoleResolver::isAdmin(Auth::user());
+        $isAdmin = LegacyRoleResolver::canManage(Auth::user());
 
         $tab = (string) $request->query('tab', 'auftraege');
         if (! in_array($tab, ['auftraege', 'bereitschaft', 'notdienst', 'urlaub'], true)) {
@@ -349,6 +349,6 @@ class LegacyArchiveController extends Controller {
         $user = Auth::user();
         $legacyUserId = LegacyRoleResolver::resolveLegacyUserId($user);
 
-        return $user->canViewAllLegacyData() || $user->isGlobalAdmin() || ($legacyUserId > 0 && $entryUserId === $legacyUserId);
+        return $user->canViewAllLegacyData() || ($legacyUserId > 0 && $entryUserId === $legacyUserId);
     }
 }

@@ -53,7 +53,7 @@
 
     <div class="flex flex-wrap items-center gap-3 md:flex-nowrap md:shrink-0">
         {{-- Cross-Link --}}
-        @if (\App\Legacy\Support\LegacyRoleResolver::isAdmin(Auth::user()))
+        @if (\App\Legacy\Support\LegacyRoleResolver::canManage(Auth::user()))
             <a href="{{ route('legacy.archive.week', ['week_date' => $selectedWeek ?? $monday->format('o-\\WW')]) }}" class="btn btn-sm btn-ghost">{{ __('Archivwoche') }}</a>
         @endif
 

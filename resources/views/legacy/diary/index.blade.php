@@ -48,14 +48,14 @@
                                     show-label>{{ __('Neuer Eintrag') }}</x-icon-btn>
                     @endif
                 @elseif ($tab === 'bereitschaft')
-                    @if ($isAdmin)
+                    @if ($canManageDuties)
                         <x-icon-btn icon="add" tone="outline" size="sm"
                                     data-entry-modal-trigger
                                     :href="route('legacy.oncall.create')"
                                     show-label>{{ __('Neue Bereitschaft') }}</x-icon-btn>
                     @endif
                 @elseif ($tab === 'notdienst')
-                    @if ($isAdmin)
+                    @if ($canManageDuties)
                         <x-icon-btn icon="add" tone="outline" size="sm"
                                     data-entry-modal-trigger
                                     :href="route('legacy.notdienst.create')"
@@ -329,7 +329,7 @@
                             <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->von?->fdate() ?? '-' }}</td>
                             <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->bis?->fdate() ?? '-' }}</td>
                             <td class="text-right whitespace-nowrap">
-                                @if ($isAdmin)
+                                @if ($canManageDuties)
                                     <x-icon-btn icon="edit"
                                                 data-entry-modal-trigger
                                                 :href="route('legacy.oncall.edit', $item)"
@@ -407,7 +407,7 @@
                             <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->von?->fdate() ?? '-' }}</td>
                             <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->bis?->fdate() ?? '-' }}</td>
                             <td class="text-right whitespace-nowrap">
-                                @if ($isAdmin)
+                                @if ($canManageDuties)
                                     <x-icon-btn icon="edit"
                                                 data-entry-modal-trigger
                                                 :href="route('legacy.notdienst.edit', $item)"

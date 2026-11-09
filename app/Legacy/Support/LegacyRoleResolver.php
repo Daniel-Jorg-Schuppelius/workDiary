@@ -61,4 +61,14 @@ class LegacyRoleResolver {
     public static function isAdmin(?User $authUser): bool {
         return self::isAdminByLegacyId($authUser);
     }
+
+    /**
+     * Verwaltung des Altsystems (Mitarbeiter, Dienste, Archiv, Support-Portal):
+     * Legacy-Admin oder Plattformbetrieb. Die org-lokale admin-Rolle reicht
+     * nicht, die Altdatenbank gehört der Installation. Tagebuch-Einträge bleiben
+     * an ein Legacy-Konto gebunden ({@see isAdmin()}).
+     */
+    public static function canManage(?User $authUser): bool {
+        return self::isAdmin($authUser) || ($authUser instanceof User && $authUser->isGlobalAdmin());
+    }
 }
