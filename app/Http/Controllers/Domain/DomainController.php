@@ -14,7 +14,7 @@ use App\Enums\Domain\{DomainRenewalMode, DomainSyncStatus};
 use App\Http\Controllers\Controller;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Domain\{DomainProjection, DomainProviderConnection};
-use App\Services\Domain\{DomainCustomerMappingService, DomainInvoiceService, DomainSyncService};
+use App\Services\Domain\{DomainActionException, DomainCustomerMappingService, DomainInvoiceService, DomainSyncService};
 use App\Support\Sqid;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -126,7 +126,11 @@ class DomainController extends Controller {
     public function refresh(DomainProjection $domain, DomainSyncService $sync): RedirectResponse {
         Gate::authorize('view', $domain);
 
-        $sync->refreshDomain($domain);
+        try {
+            $sync->refreshDomain($domain);
+        } catch (DomainActionException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return back()->with('success', __('domain.flash.refreshed'));
     }

@@ -340,6 +340,16 @@ class DiaryController extends Controller {
         $tagIds = $this->extractTagIds($request);
         $newTagNames = $this->extractNewTagNames($request);
 
+        // Qualifikationssperre (MVP-1514) für eine neue Zuweisung, Stichtag ist der geplante Beginn.
+        $assignee = $data['assigned_user_id'] ?? null;
+        if ($assignee !== null && (int) $assignee !== (int) $diary->assigned_user_id) {
+            app(\App\Services\Diary\Contracts\AssignmentQualificationGuard::class)->assertEntryAssignable(
+                $diary,
+                (int) $assignee,
+                ! empty($data['start_at']) ? \Carbon\CarbonImmutable::parse((string) $data['start_at']) : null,
+            );
+        }
+
         $diary->update($data);
         $diary->syncTagsFromInput($tagIds, $newTagNames);
         $diary->syncCustomFields($custom);

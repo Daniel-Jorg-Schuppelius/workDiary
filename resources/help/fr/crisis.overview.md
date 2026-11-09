@@ -1,7 +1,7 @@
 ---
 title: "Gestion des urgences & des crises"
 topic: crisis.overview
-version: 1
+version: 2
 keywords:
     - cellule de crise
     - plan d'urgence
@@ -41,6 +41,12 @@ moment, la décision et la justification.
 72 h, NIS2 24 h/72 h/1 mois, KRITIS sans délai) sont des données de
 catalogue — l'organisation peut les surcharger ; les échéances concrètes
 courent à partir de l'activation.
+
+**Rejeter une fausse alerte :** Si une crise signalée s'avère être une
+fausse alerte avant que quiconque n'ait évalué la situation, « Rejeter
+comme fausse alerte » clôt le dossier avec une justification obligatoire.
+La justification figure dans l'historique d'audit, le dossier reste en
+lecture seule. Après l'évaluation, on ne rejette plus : on lève l'alerte.
 
 **Communication :** Le brouillon, la validation (jamais par le rédacteur)
 et la diffusion documentée restent traçables séparément.

@@ -41,6 +41,16 @@
                             <x-button type="submit" tone="ghost">{{ __('Abschließen') }}</x-button>
                         </form>
                     @endif
+                    @if ($contract->status === \App\Enums\AssetFinance\AssetFinanceStatus::Draft)
+                        <details class="inline-block text-left" data-toolbar-placement="danger">
+                            <summary class="btn btn-sm btn-ghost text-error">{{ __('Entwurf stornieren') }}</summary>
+                            <form method="POST" action="{{ route('asset-finance.cancel', $contract) }}" class="mt-2 flex items-end gap-2 rounded-box border border-base-300 p-3">
+                                @csrf
+                                <x-input-field name="reason" :label="__('Begründung (Pflicht)')" required />
+                                <x-button type="submit" tone="error">{{ __('Stornieren') }}</x-button>
+                            </form>
+                        </details>
+                    @endif
                     @if ($contract->status->isOpen() && $contract->status !== \App\Enums\AssetFinance\AssetFinanceStatus::Draft)
                         <details class="inline-block text-left" data-toolbar-placement="danger">
                             <summary class="btn btn-sm btn-ghost text-error">{{ __('Kündigen') }}</summary>

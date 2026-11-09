@@ -16,8 +16,9 @@ use APIToolkit\Exceptions\ApiException;
 use App\Enums\Numbering\NumberScope;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
+use App\Models\Supplier\Supplier;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{ContactNumberIssuer, ContactNumberPreview, ContactSyncer, Plugin, PluginCapability};
+use App\Plugins\Contracts\{ContactNumberIssuer, ContactNumberPreview, ContactSyncer, Plugin, PluginCapability, SupplierContactSyncer};
 use App\Plugins\SevDesk\Api\{SevDeskClient, SevDeskClientFactory};
 use App\Plugins\Support\ApiHealthProbe;
 use App\Services\Finance\Accounting\ContactPushService;
@@ -42,7 +43,7 @@ use RuntimeException;
  *   GET /Tools/bookkeepingSystemVersion und erneuert den Versions-Cache
  *   des Mandanten.
  */
-class SevDeskPlugin extends AbstractPlugin implements ContactNumberIssuer, ContactNumberPreview, ContactSyncer {
+class SevDeskPlugin extends AbstractPlugin implements ContactNumberIssuer, ContactNumberPreview, ContactSyncer, SupplierContactSyncer {
     public const string ID = 'sevdesk';
 
     public const string SERVICE_PROVIDER = SevDeskServiceProvider::class;
@@ -134,6 +135,45 @@ class SevDeskPlugin extends AbstractPlugin implements ContactNumberIssuer, Conta
         return $contactId;
     }
 
+    /**
+     * Lieferanten-Push (MVP-1503): ein Kontakt der Kategorie „Lieferant“ (ID 2
+     * laut Doku „Contact Categories“), Anschrift und Kommunikationswege wie beim
+     * Kunden. sevDesk führt am Kontakt nur `customerNumber`; eine
+     * Lieferantennummer ist nicht belegt, die Nummer bleibt deshalb lokal.
+     */
+    public function pushSupplierContact(Supplier $supplier): string {
+        \App\Services\Stammdaten\CollectiveContacts::assertPushable($supplier);
+        $organizationId = (int) $supplier->organization_id;
+        $client = app(SevDeskClientFactory::class)->for($organizationId);
+
+        $existingId = (string) ExternalReference::query()
+            ->forPlugin($organizationId, self::ID, ExternalReference::TYPE_CONTACT)
+            ->forReferenceable($supplier)
+            ->value('external_id');
+
+        $fields = app(ContactPushService::class)->withoutOwnIdentity(['vat_id' => (string) ($supplier->vat_id ?? '')]);
+        $payload = array_filter([
+            'objectName' => 'Contact',
+            'mapAll' => true,
+            'name' => (string) $supplier->name,
+            'vatNumber' => ($fields['vat_id'] ?? '') !== '' ? $fields['vat_id'] : null,
+            'category' => ['id' => SevDeskConfig::resolve($organizationId)['supplier_category_id'], 'objectName' => 'Category'],
+        ], static fn ($value): bool => $value !== null);
+
+        $result = $existingId !== ''
+            ? $client->updateContact($existingId, $payload)
+            : $client->createContact($payload);
+        $contactId = (string) ($result['id'] ?? $existingId);
+        if ($contactId === '') {
+            throw new RuntimeException('sevDesk supplier push returned no id.');
+        }
+
+        app(Services\SevDeskContactDetailPushService::class)->push($client, $supplier, $contactId);
+        app(ContactNumberAdopter::class)->linked($supplier, self::ID, $contactId, null);
+
+        return $contactId;
+    }
+
     public function issuableNumberScopes(): array {
         return [NumberScope::Customer];
     }
@@ -191,6 +231,9 @@ class SevDeskPlugin extends AbstractPlugin implements ContactNumberIssuer, Conta
             ['key' => 'api_key', 'label' => __('API-Token'), 'type' => 'password', 'required' => true, 'help' => __('Benutzergebundener API-Token aus dem sevDesk-Account (Einstellungen → Benutzer).')],
             ['key' => 'base_url', 'label' => __('API-Basis-URL'), 'type' => 'text', 'default' => 'https://my.sevdesk.de/api/v1'],
             ['key' => 'default_vat_rate', 'label' => __('Standard-USt %'), 'type' => 'text', 'default' => '19'],
+            ['key' => 'incoming_transfer', 'label' => __('sevdesk::incoming.settings.transfer'), 'type' => 'boolean', 'default' => false, 'help' => __('sevdesk::incoming.settings.transfer_help')],
+            ['key' => 'incoming_account_id', 'label' => __('sevdesk::incoming.settings.incoming_account'), 'type' => 'text', 'help' => __('sevdesk::incoming.settings.account_help')],
+            ['key' => 'outgoing_account_id', 'label' => __('sevdesk::incoming.settings.outgoing_account'), 'type' => 'text', 'help' => __('sevdesk::incoming.settings.account_help')],
         ];
     }
 

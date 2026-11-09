@@ -17,7 +17,8 @@ return [
     // v2 (Feature 100): Entsorgungs-Modul empfohlen + AVV-Presets für
     // Datenträger/Batterien (Altgeräte-Rücknahme beim Kunden).
     // v3: Default-Eintragstypen (Struktur-Typen) ans Profil gekoppelt.
-    'version' => 3,
+    // v4: Asset-Kategorien werden als Kategorien der Organisation installiert (MVP-1508).
+    'version' => 4,
     // Vorschlag für den Standard-Arbeitsbereich (MVP-840); nur Default, kein Zwang.
     'nav_focus_default' => 'service',
     // Default-Struktur-Typen (EntryTypeSeeder::profiles()) — nicht die
@@ -281,8 +282,7 @@ return [
         ['code' => 'it_pruefung', 'kind' => 'technicalInspection', 'label' => 'Technische Prüfung (USV/Klima)', 'level' => 'jährlich'],
     ],
     // 'protocol_templates': Codes aus database/data/protocol_templates.php (MVP-902).
-    // 'asset_categories' installiert der BranchProfileInstaller nicht (Kategorien
-    // stammen aus config('asset_categories')); sie dienen als Branchen-Taxonomie.
+    // 'asset_categories': Codes aus database/data/asset_categories.php (MVP-1508).
     'protocol_templates' => [
         ['code' => 'IT_CHANGE_PROTOCOL'],
         ['code' => 'IT_INCIDENT_REPORT'],

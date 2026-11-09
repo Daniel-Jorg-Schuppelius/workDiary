@@ -11,7 +11,7 @@
 namespace App\Services\Invoicing;
 
 use App\Enums\Invoicing\InvoiceStatus;
-use App\Models\Invoicing\Invoice;
+use App\Models\Invoicing\{Invoice, OnlinePayment};
 use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\Invoicing\EInvoice\EInvoiceValidationService;
 use App\Services\Numbering\{DocumentIssuers, NumberAuthority, NumberSequenceService};
@@ -154,6 +154,11 @@ final class InvoiceIssueService {
 
         // Feature 160 (MVP-858): reservierte Fertigungsauslieferungen gelten als abgerechnet.
         app(DeliveryInvoicingService::class)->markInvoiced($invoice);
+
+        // Eine dem Entwurf zugeordnete Vorauszahlung (MVP-1515) deckt die Rechnung ab der Ausstellung.
+        if (OnlinePayment::settledSumFor($invoice) > 0) {
+            app(InvoiceSettlement::class)->sync($invoice, now()->startOfDay());
+        }
 
         // Lifecycle-Webhook (MVP-718): invoice.issued an der Service-Schreibstelle.
         $this->lifecycleWebhooks->invoiceIssued($invoice);

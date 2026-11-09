@@ -8,22 +8,20 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+declare(strict_types=1);
+
 namespace App\Casts;
 
 use CommonToolkit\ValueObjects\GermanTaxId;
-use Illuminate\Database\Eloquent\Model;
 
 /**
- * Steuerliche Identifikationsnummer → {@see GermanTaxId} (11-stellig,
- * mit Prüfziffer). In der Personalakte verschlüsselt abgelegt.
+ * Steuerliche Identifikationsnummer (11-stellig, mit Prüfziffer), gespeichert
+ * als Ziffernfolge. In der Personalakte verschlüsselt abgelegt.
  *
- * @extends ValueObjectCast<GermanTaxId>
+ * @extends IdentifierCast<GermanTaxId>
  */
-class GermanTaxIdCast extends ValueObjectCast {
-    /**
-     * @param  array<string, mixed>  $attributes
-     */
-    protected function toValueObject(string $raw, Model $model, array $attributes): ?GermanTaxId {
+class GermanTaxIdCast extends IdentifierCast {
+    protected function toValueObject(string $raw): ?GermanTaxId {
         return GermanTaxId::tryFrom($raw);
     }
 

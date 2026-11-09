@@ -16,8 +16,9 @@ use App\Enums\Numbering\NumberScope;
 use App\Enums\Stammdaten\ContactSalutation;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
+use App\Models\Supplier\Supplier;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{ContactNumberIssuer, ContactSyncer, Plugin, PluginCapability};
+use App\Plugins\Contracts\{ContactNumberIssuer, ContactSyncer, Plugin, PluginCapability, SupplierContactSyncer};
 use App\Plugins\Easybill\Api\{EasybillClient, EasybillClientFactory};
 use App\Plugins\Support\ApiHealthProbe;
 use App\Services\Finance\Accounting\ContactPushService;
@@ -39,7 +40,7 @@ use RuntimeException;
  * - Rate-Limits sind tarifabhängig (PLUS 10, BUSINESS 60 req/min) — das
  *   Intervall kommt aus dem Setting `rate_limit_per_minute`.
  */
-class EasybillPlugin extends AbstractPlugin implements ContactNumberIssuer, ContactSyncer {
+class EasybillPlugin extends AbstractPlugin implements ContactNumberIssuer, ContactSyncer, SupplierContactSyncer {
     public const string ID = 'easybill';
 
     public const string SERVICE_PROVIDER = EasybillServiceProvider::class;
@@ -96,36 +97,11 @@ class EasybillPlugin extends AbstractPlugin implements ContactNumberIssuer, Cont
             }
         }
 
-        // Eigene USt-IdNr./E-Mail nie an einen Fremdkontakt (MVP-611).
-        $fields = app(ContactPushService::class)->withoutOwnIdentity([
-            'vat_id' => (string) ($customer->vat_id ?? ''),
-            'email' => (string) ($customer->email ?? ''),
-        ]);
-
-        // Hauptansprechpartner in die Namensfelder des easybill-Kunden (MVP-1138).
-        $contact = ContactPersons::primaryOf($customer);
-
-        $payload = array_filter([
-            'company_name' => (string) $customer->name,
-            'number' => $number !== '' ? $number : null,
-            'salutation' => match ($contact['salutation'] ?? null) {
-                ContactSalutation::Mr->value => 1,
-                ContactSalutation::Ms->value => 2,
-                default => null,
-            },
-            'title' => $contact['title'] ?? null,
-            'first_name' => PersonNameHelper::join(['first_name' => $contact['first_name'] ?? null, 'middle_names' => $contact['middle_names'] ?? null]) ?: null,
-            'last_name' => $contact['last_name'] ?? null,
-            'street' => (string) ($customer->address_street ?? '') ?: null,
-            'zip_code' => (string) ($customer->address_zip ?? '') ?: null,
-            'city' => (string) ($customer->address_city ?? '') ?: null,
-            'vat_identifier' => ($fields['vat_id'] ?? '') !== '' ? $fields['vat_id'] : null,
-            'emails' => ($fields['email'] ?? '') !== '' ? [$fields['email']] : null,
-        ], static fn ($value): bool => $value !== null);
+        $payload = self::partyPayload($customer) + array_filter(['number' => $number !== '' ? $number : null]);
 
         $result = $existingId !== ''
             ? $client->updateCustomer($existingId, $payload)
-            : $client->createCustomer($payload, $issues);
+            : $client->createCustomer($payload, $issues ? 'CUSTOMER' : null);
 
         $customerId = (string) ($result['id'] ?? $existingId);
         if ($customerId === '') {
@@ -136,18 +112,83 @@ class EasybillPlugin extends AbstractPlugin implements ContactNumberIssuer, Cont
         return $customerId;
     }
 
+    /**
+     * Lieferanten-Push (MVP-1503): easybill führt Lieferanten als Kunden mit
+     * `supplier_number`. Angelegt wird immer mit `type=SUPPLIER`; ohne Nummer
+     * vergibt easybill dann die nächste Lieferantennummer (Swagger: „omitting
+     * supplier_number but providing … SUPPLIER will generate a supplier_number“),
+     * ohne `type` entstünde eine Kundennummer. Einen Nummernfilter für
+     * Lieferanten dokumentiert `GET /customers` nicht; verknüpft wird nur über
+     * die Kontaktreferenz.
+     */
+    public function pushSupplierContact(Supplier $supplier): string {
+        \App\Services\Stammdaten\CollectiveContacts::assertPushable($supplier);
+        $client = app(EasybillClientFactory::class)->for((int) $supplier->organization_id);
+        $number = self::transferableNumber($supplier);
+
+        $existingId = (string) ExternalReference::query()
+            ->forPlugin($supplier->organization_id, self::ID, ExternalReference::TYPE_CONTACT)
+            ->forReferenceable($supplier)
+            ->value('external_id');
+
+        $payload = self::partyPayload($supplier) + array_filter(['supplier_number' => $number !== '' ? $number : null]);
+        $result = $existingId !== ''
+            ? $client->updateCustomer($existingId, $payload)
+            : $client->createCustomer($payload, 'SUPPLIER');
+
+        $supplierId = (string) ($result['id'] ?? $existingId);
+        if ($supplierId === '') {
+            throw new RuntimeException('easybill supplier push returned no id.');
+        }
+        app(ContactNumberAdopter::class)->linked($supplier, self::ID, $supplierId, (string) ($result['supplier_number'] ?? $number));
+
+        return $supplierId;
+    }
+
     public function issuableNumberScopes(): array {
-        return [NumberScope::Customer];
+        return [NumberScope::Customer, NumberScope::Supplier];
+    }
+
+    /**
+     * Stammsatz eines Kunden oder Lieferanten für `POST`/`PUT /customers`:
+     * Hauptansprechpartner in den Namensfeldern (MVP-1138), eigene USt-IdNr.
+     * und E-Mail nie an einen Fremdkontakt (MVP-611).
+     *
+     * @return array<string, mixed>
+     */
+    private static function partyPayload(Customer|Supplier $party): array {
+        $fields = app(ContactPushService::class)->withoutOwnIdentity([
+            'vat_id' => (string) ($party->vat_id ?? ''),
+            'email' => (string) ($party->email ?? ''),
+        ]);
+        $contact = ContactPersons::primaryOf($party);
+
+        return array_filter([
+            'company_name' => (string) $party->name,
+            'salutation' => match ($contact['salutation'] ?? null) {
+                ContactSalutation::Mr->value => 1,
+                ContactSalutation::Ms->value => 2,
+                default => null,
+            },
+            'title' => $contact['title'] ?? null,
+            'first_name' => PersonNameHelper::join(['first_name' => $contact['first_name'] ?? null, 'middle_names' => $contact['middle_names'] ?? null]) ?: null,
+            'last_name' => $contact['last_name'] ?? null,
+            'street' => (string) ($party->address_street ?? '') ?: null,
+            'zip_code' => (string) ($party->address_zip ?? '') ?: null,
+            'city' => (string) ($party->address_city ?? '') ?: null,
+            'vat_identifier' => ($fields['vat_id'] ?? '') !== '' ? $fields['vat_id'] : null,
+            'emails' => ($fields['email'] ?? '') !== '' ? [$fields['email']] : null,
+        ], static fn ($value): bool => $value !== null);
     }
 
     /**
      * Nummer, die nach easybill geht: keine Entwurfsnummer und keine, wenn
      * easybill selbst vergibt (MVP-1131).
      */
-    private static function transferableNumber(Customer $customer): string {
-        return (string) $customer->number_source === self::ID || NumberSequenceService::isDraft($customer->number)
+    private static function transferableNumber(Customer|Supplier $party): string {
+        return (string) $party->number_source === self::ID || NumberSequenceService::isDraft($party->number)
             ? ''
-            : trim((string) $customer->number);
+            : trim((string) $party->number);
     }
 
     /**

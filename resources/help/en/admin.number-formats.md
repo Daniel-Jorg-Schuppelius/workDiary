@@ -1,7 +1,7 @@
 ---
 title: "Number Formats"
 topic: admin.number-formats
-version: 6
+version: 7
 keywords:
     - number range
     - invoice number
@@ -62,8 +62,9 @@ no separator. Numbers already assigned stay unchanged.
 In the **Assigned by** column you choose for **Customer** and **Supplier**
 whether WorkDiary assigns the number or a connected accounting program.
 Active programs that can assign numbers are offered: Lexoffice (customer and
-supplier), sevDesk and easybill (customer). orgaMAX does not assign customer numbers
-for WorkDiary.
+supplier), easybill (customer and supplier), sevDesk (customer) and orgaMAX
+(supplier). orgaMAX does not assign customer numbers for WorkDiary, sevDesk no
+supplier numbers.
 
 If a program assigns the numbers:
 

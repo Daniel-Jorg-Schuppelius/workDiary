@@ -1,7 +1,7 @@
 ---
 title: "Alquiler de equipos"
 topic: rental.overview
-version: 4
+version: 5
 keywords:
     - arrendador
     - apartamento vacacional
@@ -62,3 +62,25 @@ El perfil **Arrendadores** recomienda el módulo de alquiler. La vista utiliza e
 Aceptar una solicitud vacacional crea una reserva firme. La tarifa diaria representa el precio por noche y la limpieza final es opcional. Se comprueban capacidad, estancia mínima y horarios. Publique la vivienda y habilite las solicitudes para el cliente. Alquileres y fianzas son datos administrativos del MVP, sin facturación automática.
 
 El perfil incluye además tres procedimientos (**Entrega de vivienda**, **Inspección de salida**, **Cambio de huéspedes**), el **acta de entrega de la vivienda** con lecturas de contadores y llaves, plantillas de contrato para el arrendamiento de vivienda con y sin renta indexada y para las condiciones de alquiler de un apartamento vacacional, con plazos como la liquidación anual de gastos, y campos propios de la vivienda (superficie, habitaciones, planta, mascotas, certificado energético). Un arrendamiento solicitado se confirma, rechaza o cancela; uno confirmado se puede cancelar. Los arrendamientos cancelados o rechazados no se modifican.
+
+## Reserva directa con pago anticipado en línea
+
+Si en «Organización y configuración» está definido un **Pago anticipado en la
+reserva directa** (o el objeto de alquiler tiene un porcentaje propio), la
+reserva directa en el portal de clientes lleva a la página de pago del
+proveedor de pagos:
+
+- El expediente se reserva de inmediato y retiene el equipo hasta el **plazo de
+  pago**. Hasta entonces la reserva figura como **pago pendiente** en
+  **Solicitudes de alquiler**.
+- Al recibir el pago (aviso del proveedor o regreso del cliente), la reserva
+  queda **aceptada**; solo entonces recibe usted el aviso.
+- Sin pago dentro del plazo, la reserva **caduca**, el expediente se cancela y
+  el equipo vuelve a quedar libre. Si un pago llega después, WorkDiary no
+  confirma nada, sino que se lo comunica para un reembolso o una nueva
+  reserva.
+- El expediente muestra el pago anticipado abonado. Al traspasar las posiciones
+  de alquiler a la factura, se asigna a la factura y la cubre. Si un programa de
+  contabilidad gestiona las facturas, el importe consta en el registro del
+  traspaso; téngalo en cuenta allí. En la bandeja de contabilización, el pago
+  anticipado solo se puede contabilizar junto con la factura.

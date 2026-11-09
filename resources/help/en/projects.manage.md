@@ -1,7 +1,7 @@
 ---
 title: "Managing projects"
 topic: projects.manage
-version: 5
+version: 6
 keywords:
     - create project
     - project management
@@ -90,8 +90,11 @@ vacation, sickness and public holidays set the target to zero. The nightly check
 target with the booked time and reports shortfalls above the tolerance (organization setting,
 default 15 minutes) to the project leads, to the work queue and to the person's day close; the
 findings are listed on the time tab, where they can be **acknowledged**, and a late booking
-resolves them. With **Bill agreed hours** on the billing tab, the transfer adds the missing time
-as a position “Agreed service time”; a later booking on that day is then not billable.
+resolves them. With **Bill agreed hours** on the billing tab, the transfer and the invoice add
+the missing time as a position “Agreed service time”; the invoice preview lists these top-ups as
+well. Each top-up is billed only once, either in an invoice or in a transfer; a later booking on
+that day is then not billable. Cancelling the invoice or the transfer, removing the position or
+discarding the draft releases the top-up again.
 
 ## Common mistakes
 

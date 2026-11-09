@@ -1,7 +1,7 @@
 ---
 title: "Perfiles sectoriales"
 topic: admin.branch-profiles
-version: 3
+version: 4
 keywords:
     - plantilla sectorial
     - oficio
@@ -43,6 +43,17 @@ y borra las reglas obligatorias del perfil; las plantillas se conservan.
 Un aviso de actualización en la tarjeta indica una versión más reciente;
 **Importar** acepta un perfil JSON del catálogo. Los tipos de encargo se
 muestran en el idioma del usuario.
+
+**Categorías de activos y nuevas versiones:** las categorías de activos de
+un perfil (p. ej. prensadora, cámara de inspección en climatización) se crean
+como categorías de su organización y se ofrecen en el formulario de activos
+junto a las categorías informáticas generales; sus propias categorías con el
+mismo código no cambian. La desinstalación solo elimina las categorías sin
+uso ni cambios que ningún otro perfil instalado aporte. Si una nueva versión
+del perfil sustituye una plantilla, lista de control o categoría, al aplicarla
+se crea la sucesora y la anterior se **desactiva**, sin borrarla ni
+renombrarla; los pedidos y procesos existentes conservan su referencia, y una
+anterior que usted reactive sigue activa en las siguientes aplicaciones.
 
 **Variantes específicas del cliente:** una variante se superpone a un perfil
 sectorial – adopta el perfil base, omite elementos y añade los propios, sin

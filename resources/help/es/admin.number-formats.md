@@ -1,7 +1,7 @@
 ---
 title: "Formatos de numeración"
 topic: admin.number-formats
-version: 6
+version: 7
 keywords:
     - serie de numeración
     - número de factura
@@ -58,8 +58,9 @@ no cambian.
 En la columna **Asignado por** elige para **Cliente** y **Proveedor** si
 WorkDiary asigna el número o un programa de contabilidad conectado. Se
 ofrecen los programas activos que pueden asignar números: Lexoffice
-(cliente y proveedor), sevDesk y easybill (cliente). orgaMAX no asigna números de cliente
-números para WorkDiary.
+(cliente y proveedor), easybill (cliente y proveedor), sevDesk (cliente) y
+orgaMAX (proveedor). orgaMAX no asigna números de cliente para WorkDiary, ni
+sevDesk números de proveedor.
 
 Si un programa asigna los números:
 

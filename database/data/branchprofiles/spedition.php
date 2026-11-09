@@ -14,7 +14,8 @@ return [
     'code' => 'spedition',
     'label' => 'Spedition und Transportlogistik',
     'description' => 'Spedition und Transportlogistik: Transportauftrag, Disposition, Beladung, Zustellung, Lenk- und Ruhezeiten, Ladungssicherung und Schäden.',
-    'version' => 2,
+    // v3: Lademittel-Domäne, Tätigkeiten, Kategorien und Tags nach der Profilseite (MVP-1509).
+    'version' => 3,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
     'modules_recommended' => [
@@ -56,6 +57,8 @@ return [
             ['code' => 'scannen', 'label' => 'Scannen'],
             ['code' => 'dokumentieren', 'label' => 'Dokumentieren'],
             ['code' => 'palettenTauschen', 'label' => 'Palettentausch'],
+            ['code' => 'reinigen', 'label' => 'Reinigen'],
+            ['code' => 'kontrollieren', 'label' => 'Kontrollieren'],
         ],
         'defect_type' => [
             ['code' => 'lieferverzug', 'label' => 'Lieferverzug'],
@@ -111,6 +114,14 @@ return [
             ['code' => 'hubwagen', 'label' => 'Hubwagen'],
             ['code' => 'scanner', 'label' => 'Scanner'],
             ['code' => 'spanngurt', 'label' => 'Spanngurt'],
+        ],
+        'lademittel_type' => [
+            ['code' => 'euroPalette', 'label' => 'Europalette'],
+            ['code' => 'einwegPalette', 'label' => 'Einwegpalette'],
+            ['code' => 'gitterbox', 'label' => 'Gitterbox'],
+            ['code' => 'rollcontainer', 'label' => 'Rollcontainer'],
+            ['code' => 'behaelter', 'label' => 'Behälter'],
+            ['code' => 'wechselbruecke', 'label' => 'Wechselbrücke'],
         ],
         // Genehmigungsarten (Auswahl/Filter je Eintrag). Status, Frist und
         // Nachweis werden im Genehmigungs-Register (Permit) geführt.
@@ -361,8 +372,7 @@ return [
         ],
     ],
     // 'protocol_templates': Codes aus database/data/protocol_templates.php (MVP-902).
-    // 'asset_categories' installiert der BranchProfileInstaller nicht (Kategorien
-    // stammen aus config('asset_categories')); sie dienen als Branchen-Taxonomie.
+    // 'asset_categories': Codes aus database/data/asset_categories.php (MVP-1508).
     'protocol_templates' => [
         ['code' => 'SP_ABHOLBELEG'],
         ['code' => 'SP_LADUNGSSICHERUNG'],
@@ -385,6 +395,11 @@ return [
         'scanner',
         'telematikgeraet',
         'spanngurt',
+        'antirutschmatte',
+        'sperrbalken',
+        'ladebordwand',
+        'tankkarte',
+        'mautbox',
     ],
     'tags_seed' => [
         '#express',
@@ -397,6 +412,9 @@ return [
         '#schaden',
         '#retoure',
         '#subunternehmer',
+        '#nachtfahrt',
+        '#fixtermin',
+        '#messenah',
     ],
 
     // Schulungsvorschläge (Feature 145): Pflichtschulungen im Güterverkehr.

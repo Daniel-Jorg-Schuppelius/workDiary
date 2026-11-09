@@ -19,6 +19,7 @@ return [
         'action' => [
             'dun' => 'Send reminder',
             'open_original' => 'Open original',
+            'original_pdf' => 'Original PDF',
         ],
         'tab' => [
             'all' => 'All',
@@ -59,6 +60,8 @@ return [
             'deleted' => 'Deleted in source',
         ],
         'foreign_amount' => 'Amount in second currency',
+        'original_pdf_failed' => ':program did not return the PDF. Please try again later.',
+        'original_pdf_missing' => ':program provides no PDF for this document.',
         'scope' => [
             'mine' => 'Mine',
             'all' => 'All',
@@ -69,6 +72,9 @@ return [
             'due' => 'Due',
             'open' => 'Open',
         ],
+    ],
+    'party_documents' => [
+        'mirror_unlinked' => 'No :program contact linked — documents appear here once the document import assigns them to this party (contact link, customer number or supplier name).',
     ],
     'relations' => [
         'title' => 'Related documents (:count)',

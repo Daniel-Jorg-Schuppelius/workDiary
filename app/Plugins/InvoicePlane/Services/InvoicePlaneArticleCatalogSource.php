@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\InvoicePlane\Services;
 
 use App\Plugins\InvoicePlane\Schema\{ProductReader, VoucherReaderFactory};
+use App\Plugins\Support\PluginSettingsResolver;
 use App\Plugins\Support\TaskSync\{OffsetPage, RemotePages};
 use App\Services\Finance\Accounting\Articles\{AccountingArticleCatalogSource, MirroredArticle};
 use App\Services\Finance\Accounting\Vouchers\VoucherMirror;
@@ -40,7 +41,7 @@ class InvoicePlaneArticleCatalogSource extends AccountingArticleCatalogSource {
     }
 
     public function isConfigured(int $organizationId): bool {
-        return $this->reader($organizationId) instanceof ProductReader;
+        return PluginSettingsResolver::for(InvoicePlaneVoucherPullService::PLUGIN_ID, $organizationId)->enabled() && $this->reader($organizationId) instanceof ProductReader;
     }
 
     /** Fabrik erst zur Aufrufzeit: die Quelle lebt ab dem Booten, die Bridge wird später gebunden (Tests, Pilot). */

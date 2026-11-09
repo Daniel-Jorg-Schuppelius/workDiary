@@ -17,7 +17,7 @@ use App\Models\Facility\{CleaningProfile, RoomRequirementTemplate};
 use App\Models\Platform\{Organization, User};
 use App\Models\ServiceTicket\SlaContract;
 use App\Modules\ModuleRegistry;
-use App\Services\Classification\Contracts\ProfileInstallStep;
+use App\Services\Classification\Contracts\{ProfileInstallStep, ProfileUninstallStep};
 use App\Support\{BranchProfileFiles, MorphMap};
 use Database\Seeders\EntryTypeSeeder;
 use Illuminate\Support\Arr;
@@ -143,6 +143,7 @@ class BranchProfileInstaller {
                     'active' => true,
                 ]);
                 $created['classifications']++;
+                $updated['classifications'] += $this->retireSuperseded($organization, (string) $domain, $row);
             }
         }
 
@@ -691,9 +692,10 @@ class BranchProfileInstaller {
      * Deinstalliert ein Profil (MVP-839, P12-09) — entfernt nur, was niemand
      * benutzt: Klassifikationen mit Verweisen werden deaktiviert, unbenutzte
      * gelöscht; Pflichtregeln des Profils fallen weg; Tags ohne Verwendung
-     * fallen weg. Vorlagen (Prozeduren, Wartungspläne, SLA, Reinigung,
-     * Raumanforderungen, Software, Qualifikationen, Schulungen, Datenschutz)
-     * bleiben als Stammdaten der Organisation erhalten. Danach ist der Code
+     * fallen weg; Modulschritte mit {@see ProfileUninstallStep} räumen ihren
+     * Abschnitt selbst auf (Asset-Kategorien). Vorlagen (Prozeduren, Wartungspläne,
+     * SLA, Reinigung, Raumanforderungen, Software, Qualifikationen, Schulungen,
+     * Datenschutz) bleiben als Stammdaten der Organisation erhalten. Danach ist der Code
      * nicht mehr registriert; war er Hauptprofil, rückt das nächste nach.
      *
      * @return array{profile_code: string, removed: array<string, int>, deactivated: array<string, int>, kept: list<string>, primary: ?string}
@@ -709,6 +711,7 @@ class BranchProfileInstaller {
         $removed = ['classifications' => 0, 'classification_requirements' => 0, 'tags' => 0];
         $deactivated = ['classifications' => 0];
         $keptTags = 0;
+        $keptBySteps = [];
 
         /** @var array<string, list<array<string, mixed>>> $classificationDomains */
         $classificationDomains = (array) Arr::get($profile, 'classifications', []);
@@ -774,6 +777,18 @@ class BranchProfileInstaller {
             $removed['tags']++;
         }
 
+        $remainingCodes = array_values(array_diff($organization->installedBranchProfileCodes(), [$profileCode]));
+        foreach ($this->steps() as $step) {
+            if (! $step instanceof ProfileUninstallStep) {
+                continue;
+            }
+            $result = $step->uninstall($organization, (array) Arr::get($profile, $step->key(), []), $remainingCodes);
+            $removed[$step->key()] = $result['removed'];
+            if ($result['kept'] > 0) {
+                $keptBySteps[] = $step->key() . '_kept';
+            }
+        }
+
         $kept = [];
         foreach (['procedure_templates', 'maintenance_plans_seed', 'sla_contracts_seed', 'cleaning_profiles_seed', 'room_requirement_templates_seed', 'software_seed', 'qualifications_seed', 'training_suggestions', 'dataprotection_requirements_seed'] as $key) {
             if ((array) Arr::get($profile, $key, []) !== []) {
@@ -783,6 +798,7 @@ class BranchProfileInstaller {
         if ($keptTags > 0) {
             $kept[] = 'tags_in_use';
         }
+        array_push($kept, ...$keptBySteps);
 
         $settings = is_array($organization->settings) ? $organization->settings : [];
         $versions = is_array($settings['branch_profile_versions'] ?? null) ? $settings['branch_profile_versions'] : [];
@@ -824,6 +840,30 @@ class BranchProfileInstaller {
             'kept' => $kept,
             'primary' => $primary === '' ? null : $primary,
         ];
+    }
+
+    /**
+     * Profilversionen lösen Codes ab, statt sie umzubenennen (MVP-1509): Erst wenn
+     * der Nachfolger neu entsteht, wird der Vorgänger deaktiviert. Verweise bleiben
+     * gültig, und ein vom Nutzer wieder aktivierter Vorgänger bleibt beim nächsten
+     * Anwenden aktiv, weil der Nachfolger dann schon existiert.
+     *
+     * @param  array<string, mixed>  $row
+     */
+    private function retireSuperseded(Organization $organization, string $domain, array $row): int {
+        $codes = array_values(array_filter((array) ($row['supersedes'] ?? []), 'is_string'));
+        if ($codes === []) {
+            return 0;
+        }
+
+        return Classification::query()
+            ->where('organization_id', $organization->id)
+            ->where('domain', $domain)
+            ->whereIn('code', $codes)
+            ->where('active', true)
+            ->get()
+            ->each(static fn (Classification $old) => $old->update(['active' => false, 'deprecated_at' => now()]))
+            ->count();
     }
 
     /**

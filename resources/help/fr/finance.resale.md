@@ -1,7 +1,7 @@
 ---
 title: "Abonnements & licences"
 topic: finance.resale
-version: 12
+version: 13
 keywords:
     - Aperçu d’import
     - Actions groupées
@@ -131,7 +131,8 @@ trois sources : (1) factures et avoirs fournisseur en PDF (Quality Hosting,
 mise en page allemande et anglaise) — chaque ligne nomme le contrat, le
 client final et la durée, le montant va exactement à la période ; les lignes
 d’avoir sans contrat appartiennent à la société. (2) Pièces reçues du miroir
-des pièces au prorata : pour les factures groupées sans lignes (Telekom),
+des pièces (Lexoffice, sevDesk, Akaunting, Invoice Ninja et autres
+logiciels ; sans brouillons, annulations ni pièces supprimées) au prorata : pour les factures groupées sans lignes (Telekom),
 vous indiquez la part du fournisseur et le mois de prestation, le montant
 est réparti sur toutes les périodes du mois, pondéré par leur achat prévu
 mensuel. (3) Écritures de domaines de la gestion des domaines,

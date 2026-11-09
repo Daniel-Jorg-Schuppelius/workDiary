@@ -40,6 +40,11 @@
         <x-input-field name="buffer_after_hours" id="profile-edit-buffer-after" type="number" min="0" max="720" required
                        :label="__('Puffer nach Verleih (Stunden, z. B. Reinigung)')"
                        :value="old('buffer_after_hours', $profile->buffer_after_hours)" />
+        {{-- MVP-1515: Vorauszahlung der Direktbuchung, leer = Vorgabe der Organisation. --}}
+        <x-input-field name="prepayment_percent" id="profile-edit-prepayment" type="number" min="0" max="100"
+                       :label="__('rental.prepayment.profile_percent')"
+                       :hint="__('rental.prepayment.profile_percent_hint')"
+                       :value="old('prepayment_percent', $profile->prepayment_percent)" />
     </div>
 
     <div class="grid gap-1">

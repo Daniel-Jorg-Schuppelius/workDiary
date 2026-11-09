@@ -79,6 +79,8 @@ class LetterheadAsset extends Model {
         'status' => LetterheadAssetStatus::class,
         'review_notes' => 'array',
         'size' => 'integer',
+        'width_mm' => 'decimal:2',
+        'height_mm' => 'decimal:2',
     ];
 
     /** @return BelongsTo<User, $this> */

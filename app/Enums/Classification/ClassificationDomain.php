@@ -37,6 +37,14 @@ enum ClassificationDomain: string implements HasLabel {
     case WasteCode = 'waste_code';
     // Kundengruppe (MVP-949): Segment für Auswertungen wie den ESG-Vergleich.
     case CustomerGroup = 'customer_group';
+    // Branchenprofile Pflege, Partyservice, Spedition, Steuerberater (MVP-1509).
+    case Leistungsart = 'leistungsart';
+    case Pflegegrad = 'pflegegrad';
+    case Kommunikation = 'kommunikation';
+    case EventType = 'event_type';
+    case LademittelType = 'lademittel_type';
+    // Asset-Kategorien je Organisation zusätzlich zu config('asset_categories') (MVP-1508).
+    case AssetCategory = 'asset_category';
 
     /** Anzeigename der Domäne (Label-Helfer, nie rohen Enum-Wert in Views). */
     public function label(): string {
@@ -56,6 +64,12 @@ enum ClassificationDomain: string implements HasLabel {
             self::PermitType => (string) __('enums.classification.classification_domain.permit_type'),
             self::WasteCode => (string) __('enums.classification.classification_domain.waste_code'),
             self::CustomerGroup => (string) __('enums.classification.classification_domain.customer_group'),
+            self::Leistungsart => (string) __('enums.classification.classification_domain.leistungsart'),
+            self::Pflegegrad => (string) __('enums.classification.classification_domain.pflegegrad'),
+            self::Kommunikation => (string) __('enums.classification.classification_domain.kommunikation'),
+            self::EventType => (string) __('enums.classification.classification_domain.event_type'),
+            self::LademittelType => (string) __('enums.classification.classification_domain.lademittel_type'),
+            self::AssetCategory => (string) __('enums.classification.classification_domain.asset_category'),
         };
     }
 }

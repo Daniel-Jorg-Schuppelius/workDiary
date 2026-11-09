@@ -97,7 +97,7 @@ class PurchaseDocumentSourceTest extends TestCase {
 
     public function test_registry_merges_local_sources_and_lexoffice_newest_first_and_resolves_keys(): void {
         $registry = app(PurchaseDocuments::class);
-        $this->assertSame(['expense', 'incoming_einvoice', 'lexoffice'], array_map(static fn(PurchaseDocumentSource $s): string => $s->key(), $registry->sources()), 'Kern registriert Ausgaben und E-Rechnungen, das Plugin Lexoffice');
+        $this->assertSame(['expense', 'incoming_einvoice', 'accounting_voucher', 'lexoffice'], array_map(static fn(PurchaseDocumentSource $s): string => $s->key(), $registry->sources()), 'Kern registriert Ausgaben, E-Rechnungen und den Belegspiegel, das Plugin Lexoffice');
         $this->assertSame((new Expense)->getMorphClass(), $registry->source('expense')?->morphClass());
         $this->assertSame('lexoffice', $registry->sourceFor((new LexofficeVoucher)->getMorphClass())?->key());
 

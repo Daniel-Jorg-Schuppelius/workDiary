@@ -260,6 +260,7 @@ return [
             'claim_pattern' => 'Reklamationsmuster',
             'recurring_tickets' => 'Wiederkehrende Tickets',
             'capacity' => 'Personal-Engpässe',
+            'project_target' => 'Sollzeiten unterschritten',
         ],
     ],
     'product_revenue' => [

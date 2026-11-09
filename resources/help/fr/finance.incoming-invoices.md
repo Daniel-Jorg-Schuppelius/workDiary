@@ -1,7 +1,7 @@
 ---
 title: "Factures reçues"
 topic: finance.incoming-invoices
-version: 7
+version: 8
 keywords:
     - plusieurs taux de TVA
     - facture fournisseur
@@ -307,8 +307,8 @@ refusé (refus uniquement avec motif). La libération du paiement n’est
 possible qu’après validation. Chaque décision est enregistrée avec la
 personne et l’heure.
 
-**Transfert à la comptabilité :** Si Lexware Office ou DATEV Unternehmen
-online est connecté et que le transfert y est activé, un document part dès que
+**Transfert à la comptabilité :** Si Lexware Office, sevDesk ou DATEV
+Unternehmen online est connecté et que le transfert y est activé, un document part dès que
 sa contrepartie est connue. La validation reste la condition du paiement, non
 du transfert. Auparavant, le système vérifie : pas de document non reconnu
 sans valeurs, pas de refus, adressé à nous, pas de copie d’une de vos propres
@@ -324,6 +324,20 @@ les opérations intracommunautaires ou les pays tiers.
   issue de la facture électronique ou des taux saisis. Sinon, le justificatif
   part sans montants et la comptabilité les complète dans Lexware.
 - DATEV Unternehmen online reçoit l’original comme image de justificatif.
+- sevDesk reçoit le justificatif en brouillon avec l’original ; la
+  comptabilité le confirme sur place. sevDesk n’accepte un fichier XRechnung
+  ou ZUGFeRD qu’à partir de la version comptable 2.0 ; en 1.0, c’est le PDF
+  joint qui est transmis. Si un justificatif portant le même numéro existe
+  déjà pour le même contact, il est seulement lié ; sans numéro, le
+  transfert propose un justificatif de même date et de même montant. Si le
+  contact manque, le transfert cherche une correspondance de nom univoque et
+  en crée un sinon, lorsque WorkDiary gère les données de base. Une position
+  est créée par taux de TVA (0, 7 ou 19 %) avec le compte comptable du sens
+  défini dans les paramètres du plugin. Sans compte comptable, en devise
+  étrangère, avec d’autres taux et pour l’autoliquidation, les opérations
+  intracommunautaires ou les exportations, le transfert attend avec une
+  remarque : saisissez alors le justificatif dans sevDesk, le transfert
+  suivant le lie via le numéro de facture.
 - Si le numéro de facture manque, le transfert recherche dans Lexware par
   contact, date du justificatif et montant. Une correspondance n’est pas liée
   automatiquement : vous choisissez « Lier à ce justificatif » ou « Autre

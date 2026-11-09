@@ -94,6 +94,8 @@ return [
     // Noms lisibles des tâches (clés registry, imbriquées à cause de la notation à points) ;
     // ajouter les nouvelles tâches ici dans toutes les langues — sinon repli = clé.
     'job' => [
+        'rental' => ['expire-prepayments' => 'Libérer les réservations directes de location impayées'],
+        'timekeeping' => ['ical-sync' => 'Lire les calendriers iCal abonnés dans le suivi du temps'],
         'projects' => ['check-time-targets' => 'Vérifier les temps cibles de projet par rapport au temps saisi'],
         'surveys' => ['scheduled' => 'Envoyer les enquêtes à intervalle fixe'],
         'demo' => [
@@ -124,9 +126,10 @@ return [
         'billbee' => ['sync' => 'Synchronisation Billbee'],
         'caldav' => ['publish' => 'Rapprochement de publication du calendrier CalDAV', 'import' => 'Réimport de l’agenda CalDAV'],
         'carddav' => ['sync' => 'Synchronisation CardDAV'],
-        'sevdesk' => ['pull-vouchers' => 'Récupérer les pièces sevDesk'],
+        'sevdesk' => ['pull-vouchers' => 'Récupérer les pièces sevDesk', 'pull-contacts' => 'Reprendre les contacts sevDesk (la comptabilité dirige)'],
         'invoiceninja' => ['pull-vouchers' => 'Récupérer les documents Invoice Ninja'],
         'akaunting' => ['pull-vouchers' => 'Récupérer les documents Akaunting'],
+        'invoiceplane' => ['pull-vouchers' => 'Récupérer les factures InvoicePlane'],
         'catalog' => ['fetch_due' => 'Récupérer les sources de catalogue', 'apply_pending_prices' => 'Activer les niveaux de prix programmés'],
         'tenders' => ['fetch_notices' => 'Récupérer les avis de marché'],
         'chat' => [
@@ -151,7 +154,7 @@ return [
             'sync' => 'Synchronisation des domaines',
             'events' => 'Récupérer les événements de domaine',
         ],
-        'easybill' => ['sync' => 'Récupération de documents easybill'],
+        'easybill' => ['sync' => 'Fichiers de documents easybill vers la GED', 'pull-vouchers' => 'Récupérer les documents easybill', 'pull-contacts' => 'Reprendre les contacts easybill (la comptabilité dirige)'],
         'etsy' => ['sync' => 'Synchronisation Etsy'],
         'google-calendar' => ['publish' => 'Rapprochement de publication du calendrier Google', 'import' => 'Réimport de Google Agenda'],
         'google-drive' => ['subscriptions' => 'Renouveler les canaux push Google Drive'],
@@ -163,7 +166,7 @@ return [
         'platform' => ['usage_snapshot' => 'Enregistrer l’utilisation par client'],
         'contracts' => ['price_index_sync' => 'Synchroniser l’indice des prix à la consommation depuis la Bundesbank'],
         'invoicing' => ['recurring' => 'Générer les brouillons de factures récurrentes', 'base_rate_sync' => 'Synchroniser le taux de base de la Bundesbank', 'online_payments_refresh' => 'Rapprocher les paiements en ligne avec le prestataire de paiement', 'incoming_digest' => 'Signaler les factures reçues à attribuer', 'incoming_transfer' => 'Relancer les transmissions des factures reçues'],
-        'jtl' => ['sync' => 'Synchronisation JTL Wawi'],
+        'jtl' => ['sync' => 'Synchronisation JTL Wawi', 'pull-vouchers' => 'Récupérer les factures JTL Wawi'],
         'resale' => [
             'propose' => 'Abonnements de revente : proposer les liens de facture, confirmer les correspondances sûres',
             'sync_domains' => 'Abonnements de revente : reprendre les domaines de la gestion des domaines',

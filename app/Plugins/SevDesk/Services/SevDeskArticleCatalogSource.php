@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\SevDesk\Services;
 
 use App\Plugins\SevDesk\Api\SevDeskClientFactory;
-use App\Plugins\SevDesk\SevDeskPlugin;
+use App\Plugins\SevDesk\{SevDeskConfig, SevDeskPlugin};
 use App\Plugins\Support\TaskSync\{OffsetPage, RemotePages};
 use App\Services\Finance\Accounting\Articles\{AccountingArticleCatalogSource, MirroredArticle};
 use App\Services\Finance\Accounting\Vouchers\VoucherMirror;
@@ -45,8 +45,9 @@ class SevDeskArticleCatalogSource extends AccountingArticleCatalogSource {
         return 'sevDesk';
     }
 
+    /** Eingeschaltet und Zugang hinterlegt — der allgemeine Abruf prüft den Plugin-Schalter nicht selbst. */
     public function isConfigured(int $organizationId): bool {
-        return $this->clients->isConfigured($organizationId);
+        return SevDeskConfig::resolve($organizationId)['enabled'] && $this->clients->isConfigured($organizationId);
     }
 
     public function fetch(int $organizationId): array {

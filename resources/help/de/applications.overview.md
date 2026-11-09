@@ -1,7 +1,7 @@
 ---
 title: "Bewerbungen & Ausschreibungen"
 topic: applications.overview
-version: 2
+version: 3
 keywords:
     - Recruiting
     - Bewerbermanagement
@@ -31,6 +31,11 @@ Einreichungspaketen (Snapshot mit SHA-256-Hash). Gewonnene Ausschreibungen
 werden kontrolliert in ein Projekt überführt; verlorene bleiben mit
 Verlustgrund auswertbar.
 
+**Akte ablegen:** Eine entschiedene Ausschreibung (gewonnen, verloren,
+zurückgezogen) lässt sich über „Akte ablegen“ aus der Liste nehmen. Die
+Entscheidung bleibt an der Akte und zählt weiter in Trefferquote und
+Verlustgründen; abgelegte Akten zeigt der Statusfilter „Archiviert“.
+
 **Personalbewerbungen:** Stellenbedarf → Veröffentlichung → Bewerbungsakte
 mit Gesprächen, Bewertungen und Entscheidung. Bewerberdaten sind
 verschlüsselt gespeichert und nur für den Personalbereich (recruiting-Rechte)
@@ -43,6 +48,11 @@ und weitere Entscheidungen sind danach gesperrt. Veröffentlichte Anzeigen
 werden nach Ablaufdatum oder Bewerbungsschluss täglich auf „Abgelaufen“
 gesetzt; sie lassen sich mit neuem Datum erneut veröffentlichen oder
 schließen.
+
+**Mitarbeiter-Entwurf verwerfen:** Kommt die Einstellung doch nicht
+zustande, verwirft „Entwurf verwerfen“ den Entwurf. Ein Konto entsteht dann
+nicht mehr, der Schritt steht im Auditverlauf; ein eingeladener Entwurf
+lässt sich nicht mehr verwerfen.
 
 Mit der Entscheidung enden offene Gespräche und Terminangebote: geplante
 Gespräche werden als storniert markiert (die Notiz bleibt), noch nicht

@@ -17,6 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection, AiUsagePeriod};
 use App\Services\Ai\{AiCapabilityRegistry, AiConnectionTester};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -25,8 +26,8 @@ use Illuminate\View\View;
 
 /**
  * Admin-Seite „KI-Dienste" (Feature 025, MVP-400): Provider-Verbindungen
- * anlegen, testen, sperren und rotieren; dazu Capability-Matrix und
- * Monatsverbrauch. Alle Aktionen sind auditiert (Auditable am Model),
+ * anlegen, testen, sperren und den Schlüssel im Bearbeiten-Dialog tauschen;
+ * dazu Capability-Matrix und Monatsverbrauch. Alle Aktionen sind auditiert (Auditable am Model),
  * der API-Schlüssel verlässt den Server nie.
  */
 class AiConnectionController extends Controller {
@@ -115,7 +116,7 @@ class AiConnectionController extends Controller {
         );
     }
 
-    /** Bearbeiten-Dialog: Name, Modell, Basis-URL — Zugangsdaten laufen über rotate(). */
+    /** Bearbeiten-Dialog: Name, Modell, Basis-URL und optional ein neuer API-Schlüssel (MVP-1492). */
     public function edit(AiProviderConnection $connection): View {
         Gate::authorize('update', $connection);
 
@@ -135,7 +136,10 @@ class AiConnectionController extends Controller {
             'name' => ['required', 'string', 'max:120', Rule::unique('ai_provider_connections', 'name')->where('organization_id', $this->currentOrganizationId())->ignore($connection->getKey())],
             'base_url' => ['nullable', 'string', 'max:500', 'url'],
             'model' => ['nullable', 'string', 'max:120'],
+            // Leer = Schlüssel unverändert; sonst Tausch ohne Neuanlage (das Routing je Fähigkeit bleibt).
+            'api_key' => ['nullable', 'string', 'max:2000'],
         ]);
+        $newKey = StringHelper::trimToNull($data['api_key'] ?? null);
 
         if ($connection->provider->requiresModel() && trim((string) ($data['model'] ?? '')) === '') {
             return back()->withInput()->withErrors(['model' => __('ai.error.model_required')]);
@@ -149,13 +153,17 @@ class AiConnectionController extends Controller {
             'last_error_at' => null,
             'consecutive_failures' => 0,
             'disabled_at' => null,
-        ])->save();
+        ] + ($newKey !== null ? ['api_key' => $newKey] : []))->save();
 
         $ok = $tester->test($connection);
 
         return redirect()->route('admin.ai.index')->with(
             $ok ? 'success' : 'error',
-            $ok ? __('ai.flash.connection_updated') : __('ai.flash.preflight_failed', ['error' => (string) $connection->fresh()?->last_error]),
+            match (true) {
+                ! $ok => __('ai.flash.preflight_failed', ['error' => (string) $connection->fresh()?->last_error]),
+                $newKey !== null => __('ai.flash.rotated'),
+                default => __('ai.flash.connection_updated'),
+            },
         );
     }
 
@@ -186,23 +194,6 @@ class AiConnectionController extends Controller {
         $connection->forceFill(['status' => AiConnectionStatus::Draft])->save();
 
         return back()->with('success', __('ai.flash.unblocked'));
-    }
-
-    /** Schlüsselrotation: neuer Schlüssel + sofortiger Preflight. */
-    public function rotate(Request $request, AiProviderConnection $connection, AiConnectionTester $tester): RedirectResponse {
-        Gate::authorize('update', $connection);
-
-        $data = $request->validate([
-            'api_key' => ['required', 'string', 'max:2000'],
-        ]);
-
-        $connection->forceFill(['api_key' => $data['api_key']])->save();
-        $ok = $tester->test($connection);
-
-        return back()->with(
-            $ok ? 'success' : 'error',
-            $ok ? __('ai.flash.rotated') : __('ai.flash.preflight_failed', ['error' => (string) $connection->fresh()?->last_error]),
-        );
     }
 
     public function destroy(AiProviderConnection $connection): RedirectResponse {

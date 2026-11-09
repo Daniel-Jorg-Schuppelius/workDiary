@@ -13,8 +13,9 @@
 
     Sections:
       title    Seitentitel (optional; „– <App>" hängt das Layout an)
-      nav      Sprunglinks im Header (optional)
-      content  Seiteninhalt (Pflicht)
+      nav            Sprunglinks im Header (optional)
+      header-action  ersetzt „Anmelden" im Header (optional, etwa Abmelden einer Portal-Sitzung)
+      content        Seiteninhalt (Pflicht)
 --}}
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" data-theme="{{ config('theme.auto.dark') }}" class="motion-safe:scroll-smooth">
@@ -44,6 +45,9 @@
         <x-guest-header>
             @hasSection('nav')
                 <x-slot:nav>@yield('nav')</x-slot:nav>
+            @endif
+            @hasSection('header-action')
+                <x-slot:actions>@yield('header-action')</x-slot:actions>
             @endif
         </x-guest-header>
 

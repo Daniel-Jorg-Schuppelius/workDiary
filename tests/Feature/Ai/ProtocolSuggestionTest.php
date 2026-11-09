@@ -393,7 +393,13 @@ class ProtocolSuggestionTest extends TestCase {
     public function test_user_without_ai_permission_is_forbidden(): void {
         $protocol = $this->draftProtocol();
         $item = $this->textItem($protocol);
+        // ai.use steckt direkt am Nutzer und seit MVP-1510 auch in der Rolle.
         $this->user->revokePermissionTo(Permission::AiUse->value);
+        foreach ($this->user->roles as $role) {
+            $role->revokePermissionTo(Permission::AiUse->value);
+        }
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        $this->user->refresh();
 
         $this->actingAs($this->user)
             ->post(route('ai.suggestions.protocol-item', $item))

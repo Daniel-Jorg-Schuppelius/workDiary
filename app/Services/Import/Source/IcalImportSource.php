@@ -57,6 +57,8 @@ final class IcalImportSource implements ImportSource {
         private readonly string $timezone,
         private readonly array $categoryAllowlist = [],
         private readonly ?array $recurrenceWindow = null,
+        // Abgerufener Kalender (MVP-1516) statt einer gespeicherten Datei.
+        private readonly ?string $content = null,
     ) {}
 
     public function headerIssues(EntitySpec $spec): array {
@@ -64,14 +66,35 @@ final class IcalImportSource implements ImportSource {
     }
 
     public function rows(EntitySpec $spec): iterable {
+        $number = 0;
+        foreach ($this->items() as [$event, $issue]) {
+            yield $issue !== null ? SourceRow::warning(++$number, $issue) : SourceRow::data(++$number, $this->mapper->toRow($event));
+        }
+    }
+
+    /**
+     * Übernehmbare Termine mit ihrer Zeile — für den Dauer-Sync (MVP-1516), der
+     * je Termin den Änderungsstand der Quelle braucht. Hinweiszeilen entfallen.
+     *
+     * @return iterable<array{0: IcalEvent, 1: array<string, mixed>}>
+     */
+    public function eventRows(): iterable {
+        foreach ($this->items() as [$event, $issue]) {
+            if ($issue === null) {
+                yield [$event, $this->mapper->toRow($event)];
+            }
+        }
+    }
+
+    /** @return iterable<array{0: IcalEvent, 1: ValidationIssue|null}> */
+    private function items(): iterable {
         try {
-            $document = ICalendarParser::fromString(ToolkitFile::read($this->absolutePath));
+            $document = ICalendarParser::fromString($this->content ?? ToolkitFile::read($this->absolutePath));
         } catch (Throwable $e) {
             throw new \RuntimeException((string) __('import.error.format.parse', ['reason' => $e->getMessage()]), 0, $e);
         }
 
         // Serie und ihre abweichenden Einzeltermine teilen die UID.
-        $number = 0;
         foreach ($document->getSeries() as $group) {
             $master = null;
             foreach ($group as $event) {
@@ -82,7 +105,7 @@ final class IcalImportSource implements ImportSource {
 
             if ($master === null || $this->recurrenceWindow === null) {
                 foreach ($group as $event) {
-                    yield from $this->emit($this->extract($event), $number);
+                    yield from $this->emit($this->extract($event));
                 }
 
                 continue;
@@ -90,42 +113,43 @@ final class IcalImportSource implements ImportSource {
 
             $occurrences = $this->occurrences($group);
             if ($occurrences === []) {
-                yield SourceRow::warning(++$number, $this->skip('import.error.ical.recurringOutside', $this->extract($master)));
+                $outside = $this->extract($master);
+                yield [$outside, $this->skip('import.error.ical.recurringOutside', $outside)];
             }
             foreach ($occurrences as $occurrence) {
-                yield from $this->emit($occurrence, $number);
+                yield from $this->emit($occurrence);
             }
         }
     }
 
-    /** @return iterable<SourceRow> */
-    private function emit(IcalEvent $event, int &$number): iterable {
+    /** @return iterable<array{0: IcalEvent, 1: ValidationIssue|null}> */
+    private function emit(IcalEvent $event): iterable {
         if ($event->allDay) {
-            yield SourceRow::warning(++$number, $this->skip('import.error.ical.allDay', $event));
+            yield [$event, $this->skip('import.error.ical.allDay', $event)];
 
             return;
         }
         if (! $event->hasTime()) {
-            yield SourceRow::warning(++$number, $this->skip('import.error.ical.noTime', $event));
+            yield [$event, $this->skip('import.error.ical.noTime', $event)];
 
             return;
         }
         if ($this->categoryAllowlist !== [] && ! $this->matchesAllowlist($event)) {
-            yield SourceRow::warning(++$number, $this->skip('import.error.ical.category', $event));
+            yield [$event, $this->skip('import.error.ical.category', $event)];
 
             return;
         }
         if ($this->mapper->skipsTransparent() && $event->transparent) {
-            yield SourceRow::warning(++$number, $this->skip('import.error.ical.transparent', $event));
+            yield [$event, $this->skip('import.error.ical.transparent', $event)];
 
             return;
         }
         if ($event->recurring) {
             // Ohne Auflösungszeitraum: Basisinstanz importieren, Hinweis melden.
-            yield SourceRow::warning(++$number, $this->skip('import.error.ical.recurring', $event));
+            yield [$event, $this->skip('import.error.ical.recurring', $event)];
         }
 
-        yield SourceRow::data(++$number, $this->mapper->toRow($event));
+        yield [$event, null];
     }
 
     /**
@@ -160,6 +184,8 @@ final class IcalImportSource implements ImportSource {
                 allDay: $base->allDay,
                 transparent: $base->transparent,
                 recurring: false,
+                sequence: $base->sequence,
+                lastModified: $base->lastModified,
             );
         }
 
@@ -226,6 +252,9 @@ final class IcalImportSource implements ImportSource {
             allDay: $allDay,
             transparent: $event->isTransparent(),
             recurring: $event->has('RRULE'),
+            sequence: max(0, (int) ($event->getText('SEQUENCE') ?? 0)),
+            // Nur LAST-MODIFIED: der Ersatz DTSTAMP ändert sich bei vielen Diensten mit jedem Abruf.
+            lastModified: $event->has('LAST-MODIFIED') ? $event->getLastModified() : null,
         );
     }
 

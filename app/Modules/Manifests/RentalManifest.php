@@ -116,6 +116,10 @@ final class RentalManifest extends Manifest {
             \App\Events\Asset\AssetPositionRecorded::class => [
                 \App\Listeners\Rental\CheckRentalGeofence::class,
             ],
+            // MVP-1515: Zahlungseingang bestätigt die Direktbuchung.
+            \App\Events\Invoicing\OnlinePrepaymentStatusChanged::class => [
+                \App\Listeners\Rental\ConfirmPrepaidRentalBooking::class,
+            ],
         ];
     }
 }

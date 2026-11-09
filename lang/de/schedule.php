@@ -11,6 +11,7 @@
 return [
     'qualification' => [
         'missing' => 'Fehlende Pflichtqualifikation',
+        'blocked' => 'Zuweisung gesperrt: :user fehlt am :date die Pflichtqualifikation :qualifications (nicht vorhanden, abgelaufen oder noch nicht gültig).',
     ],
     'availability' => [
         'title' => 'Verfügbarkeit & Wunschdienste',

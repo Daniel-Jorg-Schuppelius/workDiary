@@ -1,7 +1,7 @@
 ---
 title: "Kundenportal – Verleih"
 topic: customer-portal.rentals
-version: 3
+version: 4
 keywords:
     - Wohnung mieten
     - Ferienwohnung buchen
@@ -110,6 +110,18 @@ gibt es keine Direktbuchung. Die Buchung erscheint unter **Meine Anfragen**
 mit dem Status **Direkt gebucht** und als Verleihvorgang mit dem Status
 **Reserviert**. Ihr Auftragnehmer wird benachrichtigt und schickt Ihnen die
 Unterlagen zur Übergabe.
+
+### Mit Online-Vorauszahlung
+
+Verlangt Ihr Auftragnehmer eine Vorauszahlung, steht in der Geräteliste
+**Vorauszahlung … %** beim Preis. Nach **Direkt buchen** gelangen Sie zur
+Bezahlseite des Zahlungsanbieters. Das Gerät bleibt für Sie reserviert, bis
+die Zahlungsfrist abläuft (unter **Meine Anfragen** steht **Zahlung bis …**).
+Bestätigt ist die Buchung erst mit dem Zahlungseingang; erst dann wird Ihr
+Auftragnehmer benachrichtigt. Ist die Bezahlseite gerade nicht erreichbar,
+versuchen Sie es mit **Jetzt bezahlen** erneut. Zahlen Sie nicht bis zur Frist,
+verfällt die Buchung und das Gerät wird wieder frei. Die Vorauszahlung wird auf
+die spätere Rechnung angerechnet.
 
 ## Mietbedingungen
 

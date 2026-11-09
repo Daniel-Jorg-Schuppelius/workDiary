@@ -1,7 +1,7 @@
 ---
 title: "orgaMAX comptabilité"
 topic: admin.orgamax
-version: 1
+version: 2
 keywords:
     - API orgaMAX
     - intégration comptable
@@ -50,3 +50,18 @@ visiblement d'orgaMAX.
 Le polling est budgété avec points de contrôle (horaire, configurable) ;
 « Synchroniser maintenant » respecte les mêmes limites. Le transfert des
 dépenses/justificatifs reste bloqué jusqu'à la validation du pilote receipt.
+
+Miroir des pièces : si la facturation ou les paiements sont actifs, la
+synchronisation reflète les factures orgaMAX avec leurs positions et, avec la
+capacité dépenses, aussi les dépenses comme pièces entrantes. Elles
+apparaissent dans le flux des pièces, dans le dossier client et fournisseur,
+dans le chiffre d'affaires, les postes ouverts et les commissions ainsi que
+dans les achats d'abonnements et de licences ; les modèles récurrents figurent
+dans le rapprochement des abonnements et licences (l'API orgaMAX ne fournit ni
+rythme ni prochaine exécution). Avec la capacité articles, les articles
+orgaMAX font partie du catalogue d'articles. Les données sont seulement lues —
+WorkDiary ne réécrit pas les dépenses.
+
+WorkDiary ne transfère les fournisseurs que si la capacité fournisseurs est
+active et que « WorkDiary pilote » est choisi ; orgaMAX attribue alors le
+numéro fournisseur.

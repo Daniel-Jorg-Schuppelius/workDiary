@@ -169,8 +169,10 @@ final class ExternalPhoneContactDirectory {
     }
 
     private function resolveTarget(Organization $organization, ExternalPhoneContact $contact): Customer|ForeignCustomer|null {
+        // `customer` verknüpft der orgaMAX-Stammdatenimport (MVP-1500), `contact` jede Übertragung.
         $targets = ExternalReference::query()
-            ->forPlugin($organization, $contact->providerId, 'contact')
+            ->forPlugin($organization, $contact->providerId)
+            ->whereIn('external_type', [ExternalReference::TYPE_CONTACT, 'customer'])
             ->forExternalId($contact->externalId)
             ->with('referenceable')
             ->get()

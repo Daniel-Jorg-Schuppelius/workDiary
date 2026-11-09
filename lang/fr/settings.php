@@ -115,6 +115,13 @@ return [
         'block_trips' => 'Aucun nouveau trajet si un contrôle obligatoire est en retard',
         'block_trips_hint' => 'Si le contrôle technique, la vérification de sécurité ou un autre contrôle obligatoire de l’actif associé est en retard ou bloqué, aucun trajet ne peut être saisi à partir d’aujourd’hui. Les trajets passés restent enregistrables.',
     ],
+    'qualifications' => [
+        'heading' => 'Qualifications obligatoires',
+        'enforcement' => 'Qualification obligatoire manquante lors de l’affectation',
+        'enforcement_hint' => 'Indication : le planning et l’intervention affichent la qualification manquante ou non valable le jour de l’intervention. Blocage : poste, échange de poste, roulement, import de postes, intervention, tournée et proposition de créneau refusent l’affectation ; une affectation existante ne peut être confirmée qu’avec une justification.',
+        'mode_hint' => 'Simple indication',
+        'mode_block' => 'Bloquer l’affectation',
+    ],
     'payments' => [
         'heading' => 'Paiement en ligne',
         'description' => 'Lien de paiement et QR code sur la facture, dans l\'e-mail et dans le portail client. Activez le prestataire de paiement (Stripe, Mollie ou SumUp) comme plugin avec ses propres identifiants.',
@@ -149,6 +156,10 @@ return [
         'portal_direct_booking_hint' => 'Les clients réservent immédiatement les appareils disponibles ouverts au portail ; la direction est informée.',
         'geofence_radius' => 'Rayon autour du lieu d\'intervention (m)',
         'geofence_radius_hint' => 'Si la position signalée d\'un appareil loué est plus éloignée du site de la location, l\'écart est signalé. Sans site, les géorepérages du client s\'appliquent.',
+        'prepayment_percent' => 'Acompte en réservation directe (%)',
+        'prepayment_percent_hint' => 'Part du prix TTC de la liste de prix, payée en ligne via le prestataire de paiement. 0 = pas d’acompte ; réglable différemment par objet de location. La réservation n’est confirmée qu’à réception du paiement.',
+        'prepayment_hold_minutes' => 'Délai de paiement de la réservation directe (minutes)',
+        'prepayment_hold_minutes_hint' => 'Durée pendant laquelle l’appareil reste réservé pour la réservation impayée (10–1440, par défaut 30). Ensuite, la réservation est libérée.',
     ],
     'claims_pattern' => [
         'heading' => 'Schémas de réclamations',

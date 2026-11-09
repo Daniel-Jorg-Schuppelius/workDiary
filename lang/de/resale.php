@@ -913,12 +913,20 @@ return [
     // Review 2026-09-11 (Einkauf)
     'purchase_document' => [
         'field' => 'Eingangsbeleg',
-        'hint' => 'Belege aller Quellen der letzten 36 Monate — Lexoffice-Spiegel, lokale Ausgaben, eingegangene E-Rechnungen; ✓ = bereits zugeteilt.',
+        'hint' => 'Belege aller Quellen der letzten 36 Monate — Spiegel der Buchhaltungsprogramme (Lexoffice, sevDesk, Akaunting, Invoice Ninja …), lokale Ausgaben, eingegangene E-Rechnungen; ✓ = bereits zugeteilt.',
         'sources_hint' => 'Quellen',
         'source' => [
             'lexoffice' => 'Lexoffice',
             'expense' => 'Ausgabe',
             'incoming_einvoice' => 'Eingangs-E-Rechnung',
+            'accounting_voucher' => 'Buchhaltungsprogramm',
+            'sevdesk' => 'sevDesk',
+            'easybill' => 'easybill',
+            'orgamax' => 'orgaMAX',
+            'invoiceplane' => 'InvoicePlane',
+            'jtl_wawi' => 'JTL-Wawi',
+            'invoiceninja' => 'Invoice Ninja',
+            'akaunting' => 'Akaunting',
         ],
         'open' => 'Beleg öffnen (:source)',
         'preview' => 'Belegbild ansehen',

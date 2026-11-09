@@ -1,7 +1,7 @@
 ---
 title: "Connect DomainReselling"
 topic: admin.domain-provider
-version: 1
+version: 2
 keywords:
     - domain management
     - manage domains
@@ -47,10 +47,20 @@ local projections. The sync is read-only and idempotent.
 only then can the connection be switched to production. While the pilot is
 open, the health check reports "pilot open".
 
-**Rotate credentials & disconnect:** Login/password can be reset at any time
-(rotation) without recreating the connection. Disconnecting removes the
-connection; the projection data already read is kept as evidence.
+**Renew credentials:** The key icon opens the “Renew credentials” dialog.
+Enter a new password; login and default user stay unchanged if you leave
+the fields empty. WorkDiary checks the new credentials straight away — the
+connection remains in place with all domains, assignments and evidence.
 
-**States:** A connection is *draft*, *active* or *blocked*. Blocked
-connections surface a visible blocked state in the health check — never a
-silent misfire.
+**Disconnect:** “Disconnect” deletes nothing. The password is removed, the
+status changes to *disconnected*, and no synchronisation, event polling or
+command reaches the provider any more. Domains, contacts, DNS zones, the
+command journal (who changed what at the provider), the bookings and the
+domain links of your reselling subscriptions and purchase lines are kept as
+evidence. To reconnect, store new credentials via “Renew credentials”; once
+the check passes, the connection is active again.
+
+**States:** A connection is *draft*, *active*, *blocked* or
+*disconnected*. Blocked connections surface a visible blocked state in the
+health check — never a silent misfire. The health check does not report a
+disconnected connection as a fault; it is deliberately out of service.

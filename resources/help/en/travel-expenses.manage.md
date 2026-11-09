@@ -1,7 +1,7 @@
 ---
 title: "Travel logs, expenses & allowances"
 topic: travel-expenses.manage
-version: 4
+version: 5
 keywords:
     - travel expenses
     - expense report
@@ -67,6 +67,20 @@ vehicle. If the fleet vehicle is in **Logbook mode**, odometer readings are
 required and the trip is locked after the end of the day. Anyone signed in can
 record trips as long as your organization uses the module; a trip always
 belongs to the person who recorded it.
+
+## Linking an expense to an accounting document
+
+If the same expense is already recorded as an incoming document in
+accounting, link it to the expense in the receipt dialog. Suggestions are
+documents with the same gross amount (to within two cents) whose document date
+is at most 14 days away from the expense date. **Link** confirms that it is the
+same transaction: from then on only the document counts in the document flow.
+A document belongs to exactly one expense; you remove the link in the same
+dialog.
+
+This works with Lexoffice and with every program whose incoming documents
+WorkDiary mirrors (sevDesk, Akaunting, Invoice Ninja). Pushing an expense as a
+new document (below) is available for Lexoffice only.
 
 ## Pushing an expense to accounting as a voucher
 

@@ -1,7 +1,7 @@
 ---
 title: "Classifications & Requirement Rules"
 topic: admin.classifications
-version: 1
+version: 2
 keywords:
     - value lists
     - categories
@@ -45,3 +45,11 @@ phase the entry is mandatory – on creation, before completion or before
 signature – and whether the rule is blocking or merely a hint. Minimum and
 maximum count, multi-selection and a JSON condition control when and how many
 values are required.
+
+Further domains come with the industry profiles, such as service types, care
+levels and communication channels (care), event types (catering) and load
+carriers (freight forwarding). The **asset categories** domain extends the
+general IT categories of the asset form: an organisation value with its own
+code appears there in addition, one with the code of a general category
+replaces its label, and a deactivated one hides it. A category used by an
+asset can only be deactivated, not deleted.

@@ -70,11 +70,11 @@ class AccountingMigrationController extends Controller {
 
         $data = $request->validate([
             'areas' => ['required', 'array', 'min:1'],
-            'areas.*' => ['string', 'in:customers,suppliers,articles,documents'],
+            'areas.*' => ['string', Rule::enum(MigrationDataArea::class)],
             'cutover_on' => ['nullable', 'date', 'after_or_equal:today'],
             // Richtung ist frei wählbar (MVP-653): Quelle ≠ Ziel.
-            'source' => ['required', 'string', 'in:lexoffice,orgamax'],
-            'target' => ['required', 'string', 'in:lexoffice,orgamax', 'different:source'],
+            'source' => ['required', 'string', Rule::enum(MigrationProvider::class)],
+            'target' => ['required', 'string', Rule::enum(MigrationProvider::class), 'different:source'],
         ]);
 
         $areas = array_values(array_filter(array_map(

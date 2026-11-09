@@ -1,7 +1,7 @@
 ---
 title: "Organisation und Einstellungen"
 topic: admin.organization-settings
-version: 4
+version: 5
 keywords:
     - Firmeneinstellungen
     - Mandanteneinstellungen
@@ -114,6 +114,18 @@ Arbeitszeitgesetz (ArbZG) reagieren:
   Schichtdialog bewusst. Hart sind Überlappung, unterschrittene
   Mindestruhezeit, überschrittene Tagesarbeitszeit und eine Schicht in
   genehmigtem Urlaub; die übrigen Regeln warnen nur.
+
+## Pflichtqualifikationen
+
+**Fehlende Pflichtqualifikation bei der Zuweisung** legt fest, was geschieht,
+wenn einer Person eine Qualifikation fehlt, die der Schichttyp oder der Auftrag
+verlangt, oder wenn ihre Qualifikation am Einsatztag abgelaufen bzw. noch nicht
+gültig ist:
+
+- **Nur Hinweis** (Vorgabe): Schichtplan und Auftrag zeigen die Lücke an,
+  gespeichert wird trotzdem.
+- **Zuweisung sperren**: Die Zuweisung wird mit einer Fehlermeldung
+  abgelehnt. Mehr dazu unter „Qualifikationen“.
 
 ## Arbeitszeit-Modell
 
@@ -369,6 +381,15 @@ nicht erneuern. Die Anbindung selbst beschreibt „KI-Assistent verbinden“.
 - **Direktbuchung im Kundenportal erlauben**: Kunden reservieren freie, fürs
   Portal freigegebene Geräte sofort verbindlich; die Leitung wird
   benachrichtigt.
+- **Vorauszahlung bei Direktbuchung (%)** (0–100, ab Werk 0): Anteil am
+  Bruttopreis aus der Preisliste, den Kunden bei der Direktbuchung online über
+  den Zahlungsanbieter vorauszahlen. Bestätigt ist die Buchung erst mit dem
+  Zahlungseingang; die Vorauszahlung wird auf die Rechnung angerechnet. Am
+  Mietobjekt lässt sich ein eigener Satz hinterlegen (0 = keine). Ohne
+  eingerichteten Zahlungsanbieter ist dann nur die Anfrage möglich.
+- **Zahlungsfrist der Direktbuchung (Minuten)** (10–1440, Vorgabe 30): so
+  lange bleibt das Gerät für eine unbezahlte Buchung reserviert; danach wird
+  die Reservierung freigegeben.
 - **Radius um den Einsatzort (m)** (50–50 000, Vorgabe 500): Liegt die
   gemeldete Position eines verliehenen Geräts weiter vom Standort des
   Verleihs entfernt, wird die Abweichung gemeldet. Ohne Standort gelten die

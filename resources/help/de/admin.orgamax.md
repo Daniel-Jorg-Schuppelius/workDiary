@@ -1,7 +1,7 @@
 ---
 title: "orgaMAX Buchhaltung"
 topic: admin.orgamax
-version: 1
+version: 2
 keywords:
     - orgaMAX Schnittstelle
     - orgaMAX API
@@ -53,3 +53,15 @@ sichtbar aus orgaMAX.
 Polling läuft budgetiert mit Checkpoints (stündlich, konfigurierbar);
 „Jetzt synchronisieren" respektiert dieselben Limits. Die Ausgaben-/Beleg-
 Übergabe bleibt bis zum bestätigten Receipt-Pilot blockiert.
+
+Belegspiegel: Ist Faktura oder Zahlungen aktiv, spiegelt der Abgleich die
+orgaMAX-Rechnungen samt Positionen, mit der Capability Ausgaben auch die
+Ausgaben als Eingangsbelege. Sie erscheinen im Belegfluss, in der Akte von
+Kunde und Lieferant, in Umsatz, offenen Posten und Provisionen sowie im Einkauf
+von Abos und Lizenzen; Wiederholungsvorlagen stehen im Abgleich der Abos und
+Lizenzen (Rhythmus und nächste Ausführung führt die orgaMAX-API nicht). Mit der
+Capability Artikel stehen die orgaMAX-Artikel im Artikelkatalog. Gelesen wird
+nur — WorkDiary schreibt die Ausgaben nicht zurück.
+
+Lieferanten überträgt WorkDiary nur, wenn die Capability Lieferanten aktiv ist
+und „WorkDiary führt“ gilt; orgaMAX vergibt dann die Lieferantennummer.

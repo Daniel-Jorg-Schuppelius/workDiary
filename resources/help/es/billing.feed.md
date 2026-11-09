@@ -1,7 +1,7 @@
 ---
 title: "Flujo de documentos"
 topic: billing.feed
-version: 4
+version: 5
 keywords:
     - facturas
     - presupuestos
@@ -19,6 +19,7 @@ keywords:
 audience: []
 modules:
     - module.vertrieb
+    - module.finance
 related:
     - billing.chain
     - invoices.manage
@@ -86,6 +87,40 @@ pendiente.
 **Visibilidad:** el flujo solo muestra lo que sus permisos en cada área ya
 permiten. Si le falta el permiso de presupuestos, por ejemplo, faltan la
 pestaña y sus filas.
+
+## Comprobantes duplicados y original
+
+**Manda el sistema externo:** si una factura se transfirió a un programa de
+contabilidad o el programa asignó su número (Lexoffice, orgaMAX, sevDesk,
+easybill), aparece una sola vez en la lista, como comprobante reflejado. Esto
+vale para cada programa conectado en cuanto un comprobante de salida lleva el
+mismo número y pertenece al mismo cliente: una empresa asigna cada número de
+factura una sola vez. Un comprobante con el mismo número pero de otro cliente
+no desplaza su factura; tampoco los comprobantes de entrada ni los eliminados
+en el origen.
+
+**Gastos:** en cuanto un comprobante de entrada está vinculado a un gasto,
+solo cuenta el comprobante en los gastos, tanto con Lexoffice como con
+sevDesk, Akaunting, Invoice Ninja y los demás programas con espejo de
+comprobantes.
+
+**Totales:** los comprobantes de entrada reflejados cuentan como gasto, los
+abonos lo reducen; los borradores y los comprobantes anulados no cuentan.
+
+**Original:** el número de un comprobante reflejado abre el original en el
+programa cuando existe una dirección para ello (Invoice Ninja, Akaunting). En
+las facturas y abonos de sevDesk, los documentos de easybill y las facturas
+de orgaMAX, **PDF original** al final de la fila descarga el PDF directamente
+del programa; para ello necesita el derecho de ver comprobantes y, para el PDF
+de orgaMAX, además el acceso a la administración. Los comprobantes de sevDesk
+sin factura (ticket de caja, comprobante de proveedor) y los gastos de orgaMAX
+no tienen PDF.
+
+**orgaMAX y sevDesk:** orgaMAX refleja facturas, facturas de anticipo y
+gastos; los gastos figuran como comprobantes de entrada en el gasto. Los abonos
+de sevDesk figuran como abonos salientes y reducen la facturación. Las
+plantillas recurrentes de un programa no son comprobantes y no aparecen en el
+flujo; forman parte de la conciliación de suscripciones y licencias.
 
 ## Filtrar por proyecto
 

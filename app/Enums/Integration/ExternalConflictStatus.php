@@ -15,19 +15,13 @@ namespace App\Enums\Integration;
 use App\Enums\Concerns\{HasOptions, HasTransitions};
 use App\Enums\Contracts\HasStatusTransitions;
 
-/** Stand eines Konflikts mit einem Fremdsystem: offen, bis er auf eine der vier Arten aufgelöst ist. */
+/** Stand eines Konflikts mit einem Fremdsystem: offen, bis er lokal belassen oder kompensiert ist. */
 enum ExternalConflictStatus: string implements HasStatusTransitions {
     use HasOptions;
     use HasTransitions;
 
     case Open = 'open';
     case ResolvedLocal = 'resolved_local';
-
-    /** Stand des Fremdsystems in den lokalen Artikel übernommen (Artikelkonflikte). */
-    case ResolvedRemote = 'resolved_remote';
-
-    /** Zur Kenntnis genommen und ohne Abgleich geschlossen (Artikelkonflikte). */
-    case Dismissed = 'dismissed';
 
     /** Durch fachliche Gegenbuchung ausgeglichen (Inventory-Outbox, MVP-072). */
     case Compensated = 'compensated';
@@ -40,15 +34,15 @@ enum ExternalConflictStatus: string implements HasStatusTransitions {
         return match ($this) {
             self::Open => 'warning',
             self::Compensated => 'info',
-            self::ResolvedLocal, self::ResolvedRemote, self::Dismissed => 'success',
+            self::ResolvedLocal => 'success',
         };
     }
 
     /** @return list<self> */
     public function allowedTransitions(): array {
         return match ($this) {
-            self::Open => [self::ResolvedLocal, self::ResolvedRemote, self::Compensated, self::Dismissed],
-            self::ResolvedLocal, self::ResolvedRemote, self::Dismissed, self::Compensated => [],
+            self::Open => [self::ResolvedLocal, self::Compensated],
+            self::ResolvedLocal, self::Compensated => [],
         };
     }
 }

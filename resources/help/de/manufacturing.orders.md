@@ -1,7 +1,7 @@
 ---
 title: "Fertigungsaufträge"
 topic: manufacturing.orders
-version: 4
+version: 5
 keywords:
     - Produktionsauftrag
     - Stückliste
@@ -53,6 +53,25 @@ Lieferanten vergeben (erzeugt eine Bestellung). Die Planungssicht zeigt
 für ein Erzeugnis die mehrstufige Materialbedarfsauflösung (MRP) sowie
 Qualitätskennzahlen je Artikel. Stornieren ist nicht umkehrbar; Anlegen,
 Rückmelden und Ausliefern erfordern das Recht **Lagerbewegungen buchen**.
+
+## Abschließen, warten, sperren
+
+Ein laufender Auftrag zeigt in der Kopfzeile nur die Aktionen, die sein
+Status erlaubt:
+
+- **Abschließen**: beendet einen Auftrag *in Arbeit*. Das geht erst, wenn
+  eine **Gutmenge** zurückgemeldet ist; sonst erscheint ein Hinweis. Der
+  Abschluss hält das Abschlussdatum fest, friert den **Fertigungsnachweis**
+  ein und gibt nicht verbrauchte Materialreservierungen frei. Danach ist der
+  Auftrag unveränderlich und zählt in der **Nachkalkulation** des Artikels.
+- **Auf Warten setzen**: unterbricht den Auftrag, etwa bis Material
+  eintrifft.
+- **Sperren**: hält den Auftrag an, etwa bei einem Qualitätsproblem.
+- **Wieder aufnehmen**: setzt einen wartenden oder gesperrten Auftrag
+  zurück auf *in Arbeit*. Der Prozedurlauf vom Start läuft weiter.
+
+Abschließen, Warten, Sperren und Wiederaufnehmen erfordern das Recht
+**Lagerbewegungen buchen**.
 
 ## Versand an der Auslieferung
 

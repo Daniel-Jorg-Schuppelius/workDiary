@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Rental\Portal;
 use App\Enums\Rental\RentalMode;
 use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Rental\Portal\Concerns\HandlesRentalPrepayment;
 use App\Models\Rental\{RentalProfile, RentalRequest, RentalTenancy};
 use App\Services\Rental\{RentalAvailabilityService, RentalBillingService, RentalRequestService, RentalTenancyService};
 use App\Support\{ErrorText, Sqid, Tz};
@@ -26,11 +27,13 @@ use Illuminate\View\View;
 
 /** Wohnungen im Kundenportal: Ferienaufenthalt oder Dauervermietung anfragen (Branchenprofil Vermieter). */
 class HousingPortalController extends Controller {
+    use HandlesRentalPrepayment;
     use ResolvesPortalUser;
 
     public function index(Request $request, RentalRequestService $requests, RentalBillingService $billing): View {
         $user = $this->portalUser();
         $customer = $this->portalCustomer();
+        $this->settlePrepaymentReturn($request, $user);
         $data = $request->validate([
             'arrival' => ['nullable', 'required_with:departure', 'date_format:Y-m-d'],
             'departure' => ['nullable', 'required_with:arrival', 'date_format:Y-m-d', 'after:arrival'],
@@ -54,6 +57,8 @@ class HousingPortalController extends Controller {
             'profiles' => $profiles,
             'availability' => $availability, 'prices' => $prices,
             'direct' => $user->organization !== null && $requests->directBookingEnabled($user->organization),
+            'prepaymentPercent' => (int) data_get($user->organization?->settings, 'rental.portal_prepayment_percent', 0),
+            'holdMinutes' => $user->organization !== null ? $requests->holdMinutes($user->organization) : RentalRequestService::DEFAULT_HOLD_MINUTES,
             'tenancies' => RentalTenancy::query()->withoutGlobalScopes()->where('organization_id', $user->organization_id)
                 ->where('customer_id', $customer->id)->with('asset:id,name')->orderByDesc('id')->paginate(10, ['*'], 'tenancies_page')->withQueryString(),
             'requests' => RentalRequest::query()->withoutGlobalScopes()->where('organization_id', $user->organization_id)
@@ -93,7 +98,10 @@ class HousingPortalController extends Controller {
                 $asset = $profile->asset ?? abort(404);
                 $availability->assertAvailable($asset, $from, $to);
                 if (($data['booking'] ?? null) === 'direct') {
-                    $requests->bookFromPortal($customer, $user, $asset, $from, $to, $data['note'] ?? null, (int) $data['guests']);
+                    $booking = $requests->bookFromPortal($customer, $user, $asset, $from, $to, $data['note'] ?? null, (int) $data['guests']);
+                    if ($booking->isAwaitingPayment()) {
+                        return $this->prepaymentCheckout($booking, 'customer.housing.index');
+                    }
                 } else {
                     $requests->requestFromPortal($customer, $user, $asset, null, $from, $to, $data['note'] ?? null, (int) $data['guests']);
                 }

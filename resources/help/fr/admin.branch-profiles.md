@@ -1,7 +1,7 @@
 ---
 title: "Profils de branche"
 topic: admin.branch-profiles
-version: 3
+version: 4
 keywords:
     - modèle sectoriel
     - corps de métier
@@ -42,6 +42,18 @@ utilisées et efface les règles obligatoires du profil ; les modèles sont
 conservés. Un indicateur de mise à jour sur la carte signale une version
 plus récente ; **Importer** accepte un profil JSON du catalogue. Les types
 d'intervention s'affichent dans la langue de l'utilisateur.
+
+**Catégories d’actifs et nouvelles versions :** les catégories d’actifs
+d’un profil (par ex. sertisseuse, caméra d’inspection pour le génie
+climatique) sont créées comme catégories de votre organisation et proposées
+dans le formulaire des actifs à côté des catégories informatiques générales ;
+vos propres catégories de même code restent inchangées. La désinstallation ne
+supprime que les catégories inutilisées et non modifiées qu’aucun autre profil
+installé n’apporte. Si une nouvelle version du profil remplace un modèle, une
+liste de contrôle ou une catégorie, l’application crée le successeur et
+**désactive** le prédécesseur, sans le supprimer ni le renommer ; les
+commandes et déroulements existants conservent leur lien, et un prédécesseur
+que vous réactivez reste actif lors des applications suivantes.
 
 **Variantes spécifiques au client :** une variante se superpose à un profil
 sectoriel – elle reprend le profil de base, retire des éléments et ajoute les

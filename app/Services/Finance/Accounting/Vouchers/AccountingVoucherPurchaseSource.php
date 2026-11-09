@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Accounting\Vouchers;
 
-use App\Enums\Billing\{DocumentDirection, DocumentKind};
+use App\Enums\Billing\DocumentKind;
 use App\Enums\Finance\AccountingVoucherState;
 use App\Models\Finance\AccountingVoucher;
 use App\Services\Billing\Contracts\ExternalPurchaseSource;
@@ -33,7 +33,7 @@ final class AccountingVoucherPurchaseSource implements ExternalPurchaseSource {
     }
 
     public function purchases(?CarbonInterface $from, ?CarbonInterface $to, ?array $supplierIds = null): array {
-        $query = $this->purchaseVouchers()
+        $query = AccountingVoucher::query()->purchases()
             ->whereNotNull('accounting_vouchers.supplier_id')
             ->where('accounting_vouchers.archived', false)
             ->when($supplierIds !== null, static fn (Builder $q) => $q->whereIn('accounting_vouchers.supplier_id', $supplierIds ?? []));
@@ -64,7 +64,7 @@ final class AccountingVoucherPurchaseSource implements ExternalPurchaseSource {
 
     public function openPayables(int $organizationId, string $today): array {
         $result = ['open' => 0.0, 'overdue' => 0.0, 'count' => 0];
-        $vouchers = $this->purchaseVouchers()
+        $vouchers = AccountingVoucher::query()->purchases()
             ->where('accounting_vouchers.organization_id', $organizationId)
             ->where(static fn (Builder $q) => $q->whereNull('accounting_vouchers.document_kind')->orWhere('accounting_vouchers.document_kind', '!=', DocumentKind::CreditNote->value))
             ->get(['voucher_status', 'voucher_state', 'due_date', 'total_amount', 'open_amount']);
@@ -84,27 +84,5 @@ final class AccountingVoucherPurchaseSource implements ExternalPurchaseSource {
         }
 
         return $result;
-    }
-
-    /**
-     * Eingehende Belege ohne Entwürfe, Stornos und Stornodokumente.
-     *
-     * @return Builder<AccountingVoucher>
-     */
-    private function purchaseVouchers(): Builder {
-        $kinds = [DocumentKind::Invoice->value, DocumentKind::Expense->value, DocumentKind::Other->value, DocumentKind::CreditNote->value];
-
-        return AccountingVoucher::query()
-            ->whereNotNull('accounting_vouchers.voucher_date')
-            ->whereNull('accounting_vouchers.source_deleted_at')
-            ->where(static fn (Builder $q) => $q
-                ->where('accounting_vouchers.direction', DocumentDirection::Incoming->value)
-                ->orWhere(static fn (Builder $w) => $w->whereNull('accounting_vouchers.direction')->where('accounting_vouchers.voucher_type', 'D')))
-            ->where(static fn (Builder $q) => $q->whereNull('accounting_vouchers.document_kind')->orWhereIn('accounting_vouchers.document_kind', $kinds))
-            ->where(static fn (Builder $q) => $q
-                ->whereIn('accounting_vouchers.voucher_state', [AccountingVoucherState::Open->value, AccountingVoucherState::Paid->value])
-                ->orWhere(static fn (Builder $w) => $w->whereNull('accounting_vouchers.voucher_state')->where(static fn (Builder $x) => $x
-                    ->whereNull('accounting_vouchers.voucher_status')
-                    ->orWhere('accounting_vouchers.voucher_status', '!=', '50'))));
     }
 }

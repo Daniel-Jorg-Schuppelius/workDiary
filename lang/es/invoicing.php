@@ -77,6 +77,7 @@ return [
         'empty' => 'No hay tiempos facturables ni desplazamientos para los filtros seleccionados.',
         'entry_count' => ':count registro|:count registros',
         'travel' => '+ :count desplazamiento(s)',
+        'target_top_up' => '+ :count complemento al objetivo del proyecto|+ :count complementos al objetivo del proyecto',
         'warning_late' => ':count registro tardío: la fecha de prestación cae en un período ya facturado.|:count registros tardíos: las fechas de prestación caen en períodos ya facturados.',
         'column' => [
             'description' => 'Posición',

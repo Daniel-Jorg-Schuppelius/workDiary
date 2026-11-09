@@ -162,13 +162,9 @@ final class CrisisStatusEnumCastTest extends TestCase {
         $this->actingAs($this->admin)->post(route('crisis.review.store', $case), ['summary' => 'Verlauf'])->assertSessionHas('status');
         $this->assertSame(CrisisCaseStatus::PostReview, $case->fresh()->status);
 
-        // Aus „bewertet“ lässt sich ebenfalls aktivieren, aus „vorbereitet“ weder aktivieren noch entwarnen.
+        // Aus „bewertet“ lässt sich ebenfalls aktivieren.
         $assessed = $this->crisis(CrisisCaseStatus::Assessed);
         $this->actingAs($this->admin)->post(route('crisis.activate', $assessed))->assertSessionHas('status');
-        $prepared = $this->crisis(CrisisCaseStatus::Prepared);
-        $this->actingAs($this->admin)->post(route('crisis.activate', $prepared))->assertSessionHas('error');
-        $this->actingAs($this->admin)->post(route('crisis.all-clear', $prepared))->assertSessionHas('error');
-        $this->assertSame(CrisisCaseStatus::Prepared, $prepared->fresh()->status);
     }
 
     public function test_a_file_worked_without_alarm_can_still_be_activated_once(): void {
@@ -195,7 +191,7 @@ final class CrisisStatusEnumCastTest extends TestCase {
     public function test_manual_status_accepts_exactly_the_stages(): void {
         $case = $this->crisis(CrisisCaseStatus::Activated);
 
-        // „Verworfen“ hat keinen Knopf und ist deshalb auch kein Ziel der Statuspflege.
+        // „Verworfen“ hat eine eigene Aktion mit Begründung und ist kein Ziel der Statuspflege.
         foreach (['prepared', 'reported', 'activated', 'all_clear', 'post_review', 'closed', 'discarded', 'unbekannt', ''] as $rejected) {
             $this->actingAs($this->admin)->post(route('crisis.status', $case), ['status' => $rejected])->assertSessionHasErrors('status');
         }
@@ -228,8 +224,7 @@ final class CrisisStatusEnumCastTest extends TestCase {
         }
 
         $this->assertSame([
-            'prepared' => [],
-            'reported' => ['assessed', 'in_progress', 'stabilized', 'recovery', 'all_clear', 'activated'],
+            'reported' => ['assessed', 'in_progress', 'stabilized', 'recovery', 'all_clear', 'activated', 'discarded'],
             'assessed' => ['in_progress', 'stabilized', 'recovery', 'all_clear', 'activated'],
             // Einmal aktiviert, nie wieder „bewertet“: sonst ließe sich erneut aktivieren und die Meldefristen begännen von vorn.
             // „aktiviert“ bleibt aus den Lagezuständen erreichbar — ob die Akte schon aktiviert war, prüft canBeActivated().
@@ -245,7 +240,7 @@ final class CrisisStatusEnumCastTest extends TestCase {
     }
 
     public function test_manual_status_is_refused_wherever_the_file_hides_the_selection(): void {
-        foreach ([CrisisCaseStatus::Closed, CrisisCaseStatus::Discarded, CrisisCaseStatus::AllClear, CrisisCaseStatus::PostReview, CrisisCaseStatus::Prepared] as $locked) {
+        foreach ([CrisisCaseStatus::Closed, CrisisCaseStatus::Discarded, CrisisCaseStatus::AllClear, CrisisCaseStatus::PostReview] as $locked) {
             $case = $this->crisis($locked);
             $this->assertPageLacks('action="' . route('crisis.status', $case) . '"', $this->page(route('crisis.show', $case)));
             $entries = $case->auditLogs()->count();

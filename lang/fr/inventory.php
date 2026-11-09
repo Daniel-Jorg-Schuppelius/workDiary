@@ -266,13 +266,12 @@ return [
 
     'conflict' => [
         'title' => 'Conflits avec les systèmes externes',
-        'subtitle' => 'Transferts de stock échoués et articles divergents des systèmes externes connectés.',
+        'subtitle' => 'Transferts de stock échoués vers les systèmes externes connectés.',
         'empty' => 'Aucun conflit pour la sélection actuelle.',
         'tab' => 'Conflits',
-        'filter' => ['open' => 'Ouverts', 'all' => 'Tous', 'all_types' => 'Tous les types'],
+        'filter' => ['open' => 'Ouverts', 'all' => 'Tous'],
         'type' => [
             'inventory_outbox' => 'Stock',
-            'article' => 'Article',
         ],
         'col' => [
             'type' => 'Type',
@@ -282,50 +281,22 @@ return [
             'status' => 'Statut',
             'actions' => 'Actions',
         ],
-        'field' => [
-            'name' => 'Désignation',
-            'article_number' => 'Numéro d\'article',
-            'gtin' => 'GTIN',
-            'description' => 'Description',
-            'note' => 'Note',
-            'type' => 'Type d\'article',
-            'unit_name' => 'Unité',
-            'net_unit_price' => 'Prix net',
-            'gross_unit_price' => 'Prix brut',
-            'currency' => 'Devise',
-            'vat_rate' => 'Taux de TVA',
-            'leading_price' => 'Prix de référence',
-        ],
-        'diff' => 'local « :local » · système externe « :remote »',
         'status' => [
             'open' => 'Ouvert',
             'resolved_local' => 'Local conservé',
-            'resolved_remote' => 'Externe repris',
             'compensated' => 'Compensé',
-            'dismissed' => 'Rejeté',
         ],
         'action' => [
             'compensate' => 'Contre-écriture',
             'keep_local' => 'Conserver local',
-            'dismiss' => 'Rejeter',
-            'adopt_remote' => 'Reprendre l\'état :system',
-        ],
-        'confirm' => [
-            'dismiss' => 'Le conflit est clôturé sans rapprochement. L\'état local et l\'état dans le système externe restent inchangés ; si l\'article diffère encore lors de la prochaine synchronisation, un nouveau conflit est créé.',
-            'keep_local_article' => 'Le conflit est clôturé et l\'état local est conservé. Lors de la prochaine synchronisation, il est transmis à :system et y écrase l\'état divergent.',
-            'adopt_remote' => 'Les champs divergents sont écrasés par l\'état de :system ; la modification locale est perdue.',
         ],
         'flash' => [
             'kept_local' => 'Conflit clôturé — stock local conservé.',
             'compensated' => 'Conflit compensé — contre-écriture enregistrée.',
-            'dismissed' => 'Conflit rejeté — les deux états restent inchangés.',
-            'adopted_remote' => 'Conflit clôturé — état du système externe repris.',
-            'kept_local_article' => 'Conflit clôturé — état local de l\'article conservé ; il sera transmis lors de la prochaine synchronisation.',
         ],
         'error' => [
             'wrong_type' => 'Cette action n\'existe pas pour ce type de conflit.',
             'already_resolved' => 'Le conflit est déjà résolu.',
-            'no_handler' => 'Aucun rapprochement n\'est disponible pour les conflits du plugin « :plugin » — le plugin est-il activé ?',
         ],
     ],
 

@@ -13,12 +13,16 @@ declare(strict_types=1);
 namespace App\Plugins\OrgaMax;
 
 use APIToolkit\Entities\ID;
+use App\Enums\Numbering\NumberScope;
 use App\Enums\Stammdaten\ContactSalutation;
+use App\Enums\User\Permission;
 use App\Exceptions\ContactNumberTakenException;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
+use App\Models\Platform\User;
+use App\Models\Supplier\Supplier;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability};
+use App\Plugins\Contracts\{ContactNumberIssuer, ContactSyncer, NavigationContributor, Plugin, PluginCapability, SupplierContactSyncer};
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
 use App\Plugins\OrgaMax\Enums\OrgaMaxConnectionStatus;
 use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
@@ -27,9 +31,10 @@ use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Numbering\NumberSequenceService;
 use App\Services\Stammdaten\{ContactIdentity, ContactNumberAdopter, ContactPersons};
 use CommonToolkit\Helper\Data\PersonNameHelper;
-use Orgamax\API\Endpoints\CustomersEndpoint;
+use Orgamax\API\Endpoints\{CustomersEndpoint, SuppliersEndpoint};
 use Orgamax\API\Endpoints\Settings\AccountSettingEndpoint;
 use Orgamax\Entities\Customers\{ContactPerson as OrgaMaxContactPerson, ContactPersons as OrgaMaxContactPersons, Customer as OrgaMaxCustomer, CustomerDefaultAddress};
+use Orgamax\Entities\Suppliers\Supplier as OrgaMaxSupplier;
 use RuntimeException;
 
 /**
@@ -45,7 +50,7 @@ use RuntimeException;
  * eigene {@see \App\Plugins\Contracts\PluginCapability} — die Fähigkeiten
  * hängen an FacturationTarget-/Outbox-Verträgen.
  */
-class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
+class OrgaMaxPlugin extends AbstractPlugin implements ContactNumberIssuer, ContactSyncer, NavigationContributor, SupplierContactSyncer {
     public const string ID = 'orgamax';
 
     public const string SERVICE_PROVIDER = OrgaMaxServiceProvider::class;
@@ -81,6 +86,19 @@ class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
             'label' => __('orgaMAX Buchhaltung'),
             'icon' => 'calculator',
         ];
+    }
+
+    /** Die Faktura-Aktionen erreicht auch, wer kein Admin ist, aber eines der Rechte `finance.orgamax.*` hat (ul-21). */
+    public function navigationItems(User $user): array {
+        if ($user->isAdmin() || ! array_any(Http\Controllers\OrgaMaxAdminController::FACTURA_PERMISSIONS, static fn (Permission $p): bool => $user->can($p->value))) {
+            return [];
+        }
+
+        return ['sales-billing' => [['route' => 'admin.orgamax.index', 'label' => __('orgaMAX Buchhaltung'), 'icon' => 'calculator', 'modal' => false, 'matches' => ['admin.orgamax.*']]]];
+    }
+
+    public function navigationMatches(): array {
+        return [];
     }
 
     /** @return array<int, array<string, mixed>> Eigenes Admin-Panel statt Auto-Form. */
@@ -214,6 +232,87 @@ class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
         app(ContactNumberAdopter::class)->linked($customer, self::ID, $createdId, (string) ($created?->getNumber() ?? $number));
 
         return $createdId;
+    }
+
+    /**
+     * Lieferanten-Push (MVP-1503) über `POST /supplier` bzw. `PUT /supplier/{id}`.
+     * Lieferanten führt orgaMAX (Feature 077, Datenführerschaft je Capability):
+     * geschrieben wird nur, wenn die Capability „Lieferanten“ aktiv ist und
+     * WorkDiary führt. Die Lieferantennummer vergibt orgaMAX selbst
+     * (`SupplierData.number` „auto assigned during creation“); die Anschrift geht
+     * nur beim Anlegen mit, weil die API für `PUT` keine Adress-ID-Regel belegt.
+     */
+    public function pushSupplierContact(Supplier $supplier): string {
+        \App\Services\Stammdaten\CollectiveContacts::assertPushable($supplier);
+        $connection = OrgaMaxConnection::query()->where('organization_id', $supplier->organization_id)->first();
+        if (! $connection instanceof OrgaMaxConnection || ! $connection->isActive()) {
+            throw new RuntimeException((string) __('orgamax::orgamax.error.not_connected'));
+        }
+        if (! $connection->capabilityEnabled('suppliers') || $connection->capabilityLeader('suppliers') !== 'workdiary') {
+            throw new RuntimeException((string) __('orgamax::orgamax.error.suppliers_led_by_orgamax'));
+        }
+
+        $endpoint = new SuppliersEndpoint(app(OrgaMaxClientFactory::class)->for($connection));
+        // Der Stammdatenimport verknüpft unter `supplier`, der Push unter `contact`.
+        $existingId = (string) ExternalReference::query()
+            ->forPlugin($supplier->organization_id, self::ID)
+            ->whereIn('external_type', [ExternalReference::TYPE_CONTACT, 'supplier'])
+            ->forReferenceable($supplier)
+            ->value('external_id');
+
+        $fields = app(ContactPushService::class)->withoutOwnIdentity(['email' => (string) ($supplier->email ?? '')]);
+        $data = array_filter([
+            'name' => (string) $supplier->name,
+            'email' => ($fields['email'] ?? '') !== '' ? (string) $fields['email'] : null,
+            'phone1' => trim((string) ($supplier->phone ?? '')) ?: null,
+            'mobile' => trim((string) ($supplier->mobile ?? '')) ?: null,
+        ], static fn ($value): bool => $value !== null);
+
+        if ($existingId !== '') {
+            $endpoint->update(new ID($existingId), new OrgaMaxSupplier($data));
+            app(ContactNumberAdopter::class)->linked($supplier, self::ID, $existingId, null);
+
+            return $existingId;
+        }
+
+        $data['addresses'] = [array_filter([
+            'companyName' => (string) $supplier->name,
+            'kind' => 'company',
+            'street' => trim((string) ($supplier->address_street ?? '')) ?: null,
+            'zipCode' => trim((string) ($supplier->address_zip ?? '')) ?: null,
+            'city' => trim((string) ($supplier->address_city ?? '')) ?: null,
+            'isDefault' => true,
+        ], static fn ($value): bool => $value !== null)];
+        $contact = ContactPersons::primaryOf($supplier);
+        if ($contact !== null && ($contact['last_name'] ?? null) !== null) {
+            $data['contactPersons'] = [array_filter([
+                'salutation' => match ($contact['salutation']) {
+                    ContactSalutation::Mr->value => 'Herr',
+                    ContactSalutation::Ms->value => 'Frau',
+                    default => null,
+                },
+                'title' => $contact['title'],
+                'firstName' => PersonNameHelper::join(['first_name' => $contact['first_name'], 'middle_names' => $contact['middle_names']]) ?: null,
+                'lastName' => $contact['last_name'],
+                'email' => $contact['email'],
+                'phone1' => $contact['phone'],
+                'isMainContact' => true,
+            ], static fn ($value): bool => $value !== null)];
+        }
+
+        $created = $endpoint->create(new OrgaMaxSupplier($data))->getData();
+        $createdId = (string) ($created?->getId() ?? '');
+        if ($createdId === '') {
+            throw new RuntimeException('orgaMAX supplier push returned no id.');
+        }
+        app(ContactNumberAdopter::class)->linked($supplier, self::ID, $createdId, $created?->getNumber() !== null ? (string) $created->getNumber() : null);
+
+        return $createdId;
+    }
+
+    /** Lieferantennummern vergibt orgaMAX beim Anlegen; Kundennummern sagt die Doku nicht zu (Phase 141, E3). */
+    public function issuableNumberScopes(): array {
+        return [NumberScope::Supplier];
     }
 
     public function settingsSchema(): array {

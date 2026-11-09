@@ -28,6 +28,9 @@ class InvoicePlaneServiceProvider extends ServiceProvider {
         // Ohne Pilotinstanz gibt es keinen InvoicePlane-Leser — und damit
         // keinen erfundenen Beleg (Feature 086).
         $this->app->bind(VoucherReaderFactory::class, NullVoucherReaderFactory::class);
+        // Ohne Plugin-Klasse gibt es keine plugin_settings-Zeile: der Modulschalter
+        // gilt so auch für die Plugin-Bindung des Zeitplans und den Puller (MVP-1490).
+        config(['plugins.invoiceplane.enabled' => (bool) config('invoiceplane.enabled')]);
     }
 
     public function boot(): void {

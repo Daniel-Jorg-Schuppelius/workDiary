@@ -10,7 +10,7 @@
 
 namespace App\Models\Platform;
 
-use App\Casts\MoneyCast;
+use App\Casts\{GermanTaxIdCast, MoneyCast};
 use App\Enums\User\{CompensationModel, Permission, UserRole};
 use App\Legacy\LegacyBridge;
 use App\Legacy\Models\LegacyUser;
@@ -322,7 +322,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
         'two_factor_recovery_codes' => 'encrypted:array',
         'two_factor_confirmed_at' => 'datetime',
         // Sensible Personenkennungen at-rest verschlüsselt (Spalten als text).
-        'tax_identification_number' => 'encrypted',
+        'tax_identification_number' => GermanTaxIdCast::class . ':encrypted',
         'social_security_number' => 'encrypted',
         'must_change_password' => 'boolean',
         'is_new_system' => 'boolean',

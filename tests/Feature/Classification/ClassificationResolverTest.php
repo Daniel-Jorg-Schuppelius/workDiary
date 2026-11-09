@@ -37,6 +37,10 @@ class ClassificationResolverTest extends TestCase {
 
     public function test_seeder_creates_platform_defaults_for_all_domains(): void {
         foreach (ClassificationDomain::cases() as $domain) {
+            // Der Plattform-Pool der Asset-Kategorien ist config('asset_categories') (MVP-1508).
+            if ($domain === ClassificationDomain::AssetCategory) {
+                continue;
+            }
             $count = Classification::query()
                 ->whereNull('organization_id')
                 ->where('domain', $domain->value)

@@ -29,6 +29,7 @@ return [
     'GiteaProjectLink' => 'Association de dépôt Gitea/Forgejo',
     'GlpiConnection' => 'Connexion GLPI',
     'GlpiProjectLink' => 'Association d’entité GLPI',
+    'IcalSubscription' => 'Abonnement de calendrier',
     'JiraConnection' => 'Connexion Jira',
     'JiraProjectLink' => 'Association de projet Jira',
     'KanboardConnection' => 'Connexion Kanboard',

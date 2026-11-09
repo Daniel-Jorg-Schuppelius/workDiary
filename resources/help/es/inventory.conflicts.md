@@ -1,7 +1,7 @@
 ---
-title: "Conflictos con sistemas externos (existencias y artículos)"
+title: "Conflictos con sistemas externos (existencias)"
 topic: inventory.conflicts
-version: 3
+version: 4
 keywords:
     - discrepancia de stock
     - diferencia de inventario
@@ -9,11 +9,8 @@ keywords:
     - sincronización fallida
     - ERP
     - asiento de compensación
-    - conflicto de artículo
     - conciliar existencias
     - datos no coinciden
-    - Lexware Office
-    - Lexoffice
 audience:
     - admin
     - geschaeftsfuehrung
@@ -52,29 +49,11 @@ existencias. Nunca se borra a posteriori ni se revierte técnicamente; el
 diario de almacén permanece sin lagunas y cada decisión se registra con
 persona y momento.
 
-**Conflictos de artículos:** La misma lista muestra los artículos
-modificados localmente cuyo estado difiere en el sistema externo conectado
-(por ejemplo, Lexware Office) — con la estrategia de conflicto del plugin
-en «Revisión manual». Para cada conflicto se muestran el artículo, los
-campos divergentes y ambos valores, uno junto al otro. Tres vías:
-*Mantener local* cierra el conflicto; el estado local se mantiene y se
-transfiere al sistema externo en la próxima sincronización. *Adoptar el
-estado del sistema externo* (por ejemplo «Adoptar el estado de Lexoffice»)
-obtiene el artículo de nuevo desde el sistema externo y sobrescribe el
-cambio local. *Descartar* cierra el conflicto sin conciliación — ambos
-estados permanecen como están; si el artículo sigue difiriendo en la
-próxima sincronización, se crea un nuevo conflicto.
-
 **Permisos y filtros:** La pestaña «Conflictos» de la barra de pestañas
 del almacén muestra el número de conflictos abiertos. Para consultar basta
-el permiso de lectura de existencias o el de lectura de artículos; sin
-permiso de existencias solo ve conflictos de artículos, sin permiso de
-artículos solo conflictos de existencias. La resolución depende del tipo:
-los conflictos de existencias requieren el permiso de contabilización,
-porque la compensación es una contabilización real de almacén; los
-conflictos de artículos requieren el permiso de gestión de artículos. La
-lista puede filtrarse por conflictos abiertos o todos y por tipo
-(existencias, artículo).
+el permiso de lectura de existencias; la resolución requiere el permiso de
+contabilización, porque la compensación es una contabilización real de
+almacén. La lista puede filtrarse por conflictos abiertos o todos.
 
 Los conflictos abiertos deben revisarse con prontitud: mientras existan,
 las existencias locales y externas divergen — con consecuencias para

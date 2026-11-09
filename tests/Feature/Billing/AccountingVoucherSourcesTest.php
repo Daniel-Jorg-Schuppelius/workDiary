@@ -62,7 +62,9 @@ final class AccountingVoucherSourcesTest extends TestCase {
         $this->voucher('EB-1');
         $this->voucher('EB-2', ['voucher_state' => AccountingVoucherState::Paid, 'open_amount' => '0.00']);
         $this->voucher('EB-GS', ['document_kind' => DocumentKind::CreditNote->value, 'total_amount' => '23.80', 'net_amount' => '20.00']);
-        $this->voucher('SD-1', ['plugin_id' => 'sevdesk', 'direction' => null, 'document_kind' => null, 'voucher_state' => null, 'voucher_type' => 'C', 'voucher_status' => '100']);
+        // Altzeilen ohne Richtung: sevDesk D = Einnahme zählt, C = Ausgabe nicht (MVP-1520).
+        $this->voucher('SD-1', ['plugin_id' => 'sevdesk', 'direction' => null, 'document_kind' => null, 'voucher_state' => null, 'voucher_type' => 'D', 'voucher_status' => '100']);
+        $this->voucher('SD-EXPENSE', ['plugin_id' => 'sevdesk', 'direction' => null, 'document_kind' => null, 'voucher_state' => null, 'voucher_type' => 'C', 'voucher_status' => '100']);
         $this->voucher('EB-STORNO', ['document_kind' => DocumentKind::Cancellation->value]);
         $this->voucher('EB-VOID', ['voucher_state' => AccountingVoucherState::Cancelled]);
         $this->voucher('EB-DRAFT', ['voucher_state' => AccountingVoucherState::Draft]);

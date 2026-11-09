@@ -182,6 +182,8 @@ return [
         'base_url_help' => 'Nur für lokale/kompatible Endpunkte (Ollama, OpenAI-kompatibel, LibreTranslate, Azure). Nur Host bzw. Versionspräfix angeben (z. B. https://host/v1), keine vollständige Endpunkt-URL.',
         'api_key' => 'API-Schlüssel',
         'api_key_help' => 'Wird verschlüsselt gespeichert, erscheint nie in Logs, Audit oder Supportberichten.',
+        'api_key_new' => 'Neuer API-Schlüssel',
+        'api_key_new_help' => 'Leer lassen, um den bisherigen Schlüssel zu behalten. Ein neuer Schlüssel ersetzt den alten sofort und wird gleich geprüft; Zuordnungen je Fähigkeit bleiben bestehen.',
         'model' => 'Modell/Deployment',
         'model_help' => 'Modellname bzw. Azure-Deployment; leer = Provider-Default.',
         'is_local' => 'Als lokale Verbindung einstufen (On-Premise)',

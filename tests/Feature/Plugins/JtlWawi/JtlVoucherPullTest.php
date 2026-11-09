@@ -14,11 +14,12 @@ use App\Enums\Billing\{DocumentDirection, DocumentKind};
 use App\Enums\Finance\AccountingVoucherState;
 use App\Models\Finance\AccountingVoucher;
 use App\Plugins\JtlWawi\Enums\JtlConnectionStatus;
+use App\Plugins\JtlWawi\JtlWawiPlugin;
 use App\Plugins\JtlWawi\Models\JtlConnection;
 use App\Plugins\JtlWawi\Services\JtlVoucherPullService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -33,6 +34,7 @@ use Tests\TestCase;
 final class JtlVoucherPullTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private const string BASE = 'https://wawi.example.test:5883/api/eazybusiness';
 
@@ -49,6 +51,7 @@ final class JtlVoucherPullTest extends TestCase {
             'api_key' => 'KEY-TEST',
             'status' => JtlConnectionStatus::Active,
         ]);
+        $this->pluginSecret(JtlWawiPlugin::ID, []);
     }
 
     /** @return array<string, mixed> */
@@ -117,5 +120,17 @@ final class JtlVoucherPullTest extends TestCase {
 
         $this->assertSame(0, $result['read']);
         $fake->assertNothingSent();
+    }
+
+    public function test_switched_off_plugin_mirrors_nothing_despite_an_active_connection(): void {
+        // MVP-1490: der geplante `accounting:pull-vouchers` prüft den Schalter nicht selbst.
+        $this->pluginSecret(JtlWawiPlugin::ID, [])->forceFill(['enabled' => false])->save();
+        $fake = FakePluginHttp::fake([self::BASE . '/*' => FakePluginHttp::response($this->fixture())]);
+
+        $this->assertFalse(app(JtlVoucherPullService::class)->isConfigured((int) $this->organization->id));
+        $this->artisan('accounting:pull-vouchers', ['--plugin' => JtlWawiPlugin::ID])->assertSuccessful();
+
+        $fake->assertNothingSent();
+        $this->assertSame(0, AccountingVoucher::query()->count());
     }
 }

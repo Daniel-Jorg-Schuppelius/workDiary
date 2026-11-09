@@ -1,7 +1,7 @@
 ---
 title: "FRITZ!Box-Anrufliste importieren"
 topic: admin.fritzbox
-version: 2
+version: 3
 keywords:
     - FRITZ!Box
     - Anrufliste
@@ -70,8 +70,8 @@ Unter **Plugins** öffnen Sie bei **FRITZ!Box-Anrufliste** den Dialog
 - **Typ 3 als ausgehend werten**: nur für Listen älterer FRITZ!OS-Versionen,
   die ausgehende Anrufe als Typ 3 exportieren.
 - **Externe Kontakte abgleichen** (Standard: an): Unbekannte Nummern werden
-  zusätzlich mit verbundenen Kontaktverzeichnissen wie Lexoffice und
-  Microsoft 365 abgeglichen.
+  zusätzlich mit verbundenen Kontaktverzeichnissen wie Lexoffice, easybill,
+  orgaMAX und Microsoft 365 abgeglichen.
 - **Stempel-Rufnummer: Kommen**, **Stempel-Rufnummer: Gehen** und
   **Stempel-Rufnummer: Kommen/Gehen**: eigene Rufnummern für das
   Telefonstempeln (siehe unten).

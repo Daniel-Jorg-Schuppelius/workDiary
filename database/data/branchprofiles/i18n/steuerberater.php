@@ -68,7 +68,18 @@ return [
         'lohnsteuer' => ['en' => 'Wage tax', 'es' => 'Retención salarial', 'fr' => 'Impôt sur les salaires', 'it' => 'Ritenuta sui salari'],
         'sozialversicherung' => ['en' => 'Social security', 'es' => 'Seguridad social', 'fr' => 'Sécurité sociale', 'it' => 'Previdenza sociale'],
         'jahresabschluss' => ['en' => 'Annual financial statements', 'es' => 'Cierre anual', 'fr' => 'Comptes annuels', 'it' => 'Bilancio d\'esercizio'],
+        'eur' => ['en' => 'Cash-basis accounting (EÜR)', 'es' => 'Contabilidad de caja (EÜR)', 'fr' => 'Comptabilité de trésorerie (EÜR)', 'it' => 'Contabilità per cassa (EÜR)'],
         'fibu' => ['en' => 'Financial accounting', 'es' => 'Contabilidad', 'fr' => 'Comptabilité', 'it' => 'Contabilità'],
         'lohn' => ['en' => 'Payroll', 'es' => 'Nómina', 'fr' => 'Paie', 'it' => 'Paghe'],
+    ],
+    'kommunikation' => [
+        'telefon' => ['en' => 'Phone', 'es' => 'Teléfono', 'fr' => 'Téléphone', 'it' => 'Telefono'],
+        'email' => ['en' => 'Email', 'es' => 'Correo electrónico', 'fr' => 'E-mail', 'it' => 'E-mail'],
+        'postEingang' => ['en' => 'Incoming mail', 'es' => 'Correo entrante', 'fr' => 'Courrier entrant', 'it' => 'Posta in arrivo'],
+        'postAusgang' => ['en' => 'Outgoing mail', 'es' => 'Correo saliente', 'fr' => 'Courrier sortant', 'it' => 'Posta in uscita'],
+        'mandantenportal' => ['en' => 'Client portal', 'es' => 'Portal de clientes', 'fr' => 'Portail client', 'it' => 'Portale clienti'],
+        'datev' => ['en' => 'DATEV', 'es' => 'DATEV', 'fr' => 'DATEV', 'it' => 'DATEV'],
+        'elster' => ['en' => 'ELSTER', 'es' => 'ELSTER', 'fr' => 'ELSTER', 'it' => 'ELSTER'],
+        'behoerde' => ['en' => 'Authority', 'es' => 'Administración', 'fr' => 'Administration', 'it' => 'Autorità'],
     ],
 ];

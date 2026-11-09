@@ -79,6 +79,8 @@ final class InvoicePlaneVoucherPullTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
+        // Modulschalter `invoiceplane.enabled`; der Provider spiegelt ihn beim Booten hierhin.
+        config(['plugins.invoiceplane.enabled' => true]);
     }
 
     public function test_maps_invoices_and_credit_notes_from_the_ip_schema(): void {
@@ -124,6 +126,17 @@ final class InvoicePlaneVoucherPullTest extends TestCase {
 
     public function test_without_a_reader_nothing_is_mirrored(): void {
         $this->app->instance(VoucherReaderFactory::class, new NullVoucherReaderFactory());
+
+        $service = app(InvoicePlaneVoucherPullService::class);
+
+        $this->assertFalse($service->isConfigured((int) $this->organization->id));
+        $this->assertSame(0, $service->pull((int) $this->organization->id)['read']);
+        $this->assertSame(0, AccountingVoucher::query()->count());
+    }
+
+    public function test_switched_off_module_mirrors_nothing_despite_a_reader(): void {
+        $this->bindReader($this->rows());
+        config(['plugins.invoiceplane.enabled' => false]);
 
         $service = app(InvoicePlaneVoucherPullService::class);
 

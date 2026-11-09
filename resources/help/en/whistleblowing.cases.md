@@ -1,7 +1,7 @@
 ---
 title: "Reporting office – case handling"
 topic: whistleblowing.cases
-version: 3
+version: 4
 keywords:
     - whistleblowing
     - whistleblower
@@ -59,16 +59,28 @@ permissions you can
 - send a **Message to the reporting person** (**Send**); it appears in
   their protected mailbox.
 
-Attachments uploaded by the reporting person are stored encrypted; the
-case file currently does not offer a download.
+Attachments uploaded by the reporting person are stored encrypted and
+checked for malware before they are released. The **Attachments** card
+shows the name and size of each file; you download released attachments
+with the **Download** icon. Otherwise the card shows the scan state:
+**Scan pending** while the result is outstanding, **Rejected** or **Scan
+failed** – WorkDiary does not hand out these files. Without a configured
+virus scanner, attachments stay pending.
 
 **Confidentiality and conflicts**:
 
 - **Declare conflict of interest** (justification optional) locks you
   out of the case: your assignment ends immediately, and you cannot lift
   the lock yourself.
-- The case file currently does not offer marking affected persons or an
-  emergency release for further persons.
+- **Mark person concerned** locks a person out of the case by their
+  **User ID** (**Mark**, note optional); existing assignments end
+  immediately.
+- **Emergency access** gives a person who is not assigned temporary
+  access, four hours by default (user ID and mandatory reason,
+  **Release**). Only another person may grant it.
+- **Export case** creates an AES-256 encrypted package (reason and a
+  password of at least twelve characters, **Export**); pass the password
+  on separately from the package.
 - Every step on the case is recorded tamper-proof in the case log.
 
 **Deletion**: when a case is in status “Retention review”, the

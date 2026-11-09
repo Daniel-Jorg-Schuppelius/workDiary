@@ -10,11 +10,10 @@
 
 namespace App\Casts;
 
+use App\Casts\Concerns\EncryptsAtRest;
 use App\Exceptions\UnparseableValueObjectException;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 
 /**
@@ -26,20 +25,15 @@ use Illuminate\Support\Str;
  * Altbestandssatz genug, um eine Liste unrenderbar zu machen.
  *
  * Mit der Option `encrypted` übernimmt der Cast zusätzlich die
- * Ver-/Entschlüsselung, weil Laravel Casts nicht stapeln kann:
- * `'iban' => IbanCast::class . ':encrypted'`.
+ * Ver-/Entschlüsselung ({@see EncryptsAtRest}). Kennungen (IBAN, USt-IdNr. …)
+ * lesen dagegen als Text: {@see IdentifierCast}.
  *
  * @template TValue of object
  *
  * @implements CastsAttributes<TValue, TValue|string|null>
  */
 abstract class ValueObjectCast implements CastsAttributes {
-    /** @var array<array-key, string> */
-    protected array $options;
-
-    public function __construct(string ...$options) {
-        $this->options = $options;
-    }
+    use EncryptsAtRest;
 
     /**
      * Rohwert → Value Object; `null`, wenn der Wert die Prüfung nicht besteht.
@@ -94,8 +88,8 @@ abstract class ValueObjectCast implements CastsAttributes {
 
     /**
      * Nicht deutbare Skalare beim Schreiben ablehnen statt roh durchreichen.
-     * Für Kennungen (IBAN, USt-IdNr. …) bewusst aus: Altbestand und Importe
-     * dürfen Ungültiges tragen, geprüft wird im Form-Request.
+     * Standard aus: Altbestand und Importe dürfen Ungültiges tragen, geprüft
+     * wird im Form-Request.
      */
     protected function rejectsUnparseable(): bool {
         return false;
@@ -121,9 +115,6 @@ abstract class ValueObjectCast implements CastsAttributes {
 
         return $raw === null ? null : $this->storeScalar(trim($raw), $model, $model->getAttributes());
     }
-    protected function hasOption(string $option): bool {
-        return in_array($option, $this->options, true);
-    }
 
     /** Erste rein numerische Option — die Nachkommastellen der Spalte. */
     protected function scaleOption(): ?int {
@@ -134,31 +125,5 @@ abstract class ValueObjectCast implements CastsAttributes {
         }
 
         return null;
-    }
-
-    /** Spaltenwert → Klartext; `null` bei leer. */
-    protected function read(mixed $value): ?string {
-        if ($value === null || $value === '') {
-            return null;
-        }
-
-        $raw = (string) $value;
-        if (!$this->hasOption('encrypted')) {
-            return $raw;
-        }
-
-        try {
-            $plain = Crypt::decryptString($raw);
-        } catch (DecryptException) {
-            // Altbestand vor der Verschlüsselung: Klartext durchreichen.
-            return $raw;
-        }
-
-        return $plain === '' ? null : $plain;
-    }
-
-    /** Klartext → Spaltenwert. */
-    protected function write(string $plain): string {
-        return $this->hasOption('encrypted') ? Crypt::encryptString($plain) : $plain;
     }
 }

@@ -19,6 +19,7 @@
                 {{ __("values.{$opportunity->kind}") }}
                 @if ($opportunity->customer) · {{ $opportunity->customer->name }} @endif
                 @if ($opportunity->submission_deadline) · {{ __('Abgabefrist: :date', ['date' => $opportunity->submission_deadline->fdate()]) }} @endif
+                @if ($opportunity->archived_outcome !== null) · {{ __('Entscheidung: :outcome', ['outcome' => $opportunity->archived_outcome->label()]) }} @endif
             </div>
             <x-slot:actions>
                 @can('update', $opportunity)
@@ -41,6 +42,13 @@
                         {{-- Über den Assistenten: geprüft wird vor der Abgabe, nicht danach. --}}
                         <x-icon-btn placement="bar" icon="outbox" tone="primary" size="sm" :href="route('tenders.submit-wizard', $opportunity)" show-label
                                     :title="__('Prüfen, ausgeben und Einreichung dokumentieren')">{{ __('Abgabe vorbereiten') }}</x-icon-btn>
+                    @endif
+                    @if ($opportunity->status->canTransitionTo(\App\Enums\Applications\ApplicationOpportunityStatus::Archived))
+                        <x-action-form :action="route('tenders.archive', $opportunity)"
+                              :confirm="__('Akte ablegen? Sie verschwindet aus der Liste, die Entscheidung bleibt für die Auswertung erhalten.')"
+                              confirm-icon="inventory_2" confirm-tone="primary" :confirm-label="__('Ablegen')">
+                            <x-icon-btn placement="bar" icon="inventory_2" size="sm" type="submit" show-label>{{ __('Akte ablegen') }}</x-icon-btn>
+                        </x-action-form>
                     @endif
                     @if ($opportunity->status === \App\Enums\Applications\ApplicationOpportunityStatus::Won)
                         <x-action-form :action="route('tenders.transfer', $opportunity)"

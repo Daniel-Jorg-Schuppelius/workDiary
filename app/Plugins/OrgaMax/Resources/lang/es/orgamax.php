@@ -112,6 +112,7 @@ return [
     'error.intent_invalid' => 'Sin intención de conexión válida — un iid ajeno no se vincula. Reinicie la conexión.',
     'error.nothing_to_confirm' => 'No hay confirmación de cuenta pendiente.',
     'error.not_connected' => 'orgaMAX no está conectado o está bloqueado.',
+    'error.suppliers_led_by_orgamax' => 'orgaMAX lidera los proveedores: para transferirlos, active la capacidad «Proveedores» y elija «WorkDiary lidera» (administración de orgaMAX).',
     'error.no_customer' => 'El documento no tiene cliente y no se puede transferir a orgaMAX.',
     'error.billing_capability_disabled' => 'La capacidad de facturación no está activada u orgaMAX no la lidera.',
     'error.customer_unmapped' => 'El cliente «:customer» no está asignado a un cliente orgaMAX — asígnelo mediante la bandeja de integración.',

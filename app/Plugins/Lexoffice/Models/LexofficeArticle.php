@@ -31,8 +31,6 @@ use Illuminate\Support\Carbon;
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property \CommonToolkit\ValueObjects\Percentage|null $vat_rate
  * @property ?Carbon $synced_at
- * @property bool $is_dirty
- * @property ?Carbon $last_pushed_at
  * @property ?Carbon $archived_at
  * @property \CommonToolkit\ValueObjects\Money|null $gross_unit_price
  * @property string|null $gtin
@@ -57,8 +55,6 @@ class LexofficeArticle extends Model {
         'vat_rate',
         'leading_price',
         'synced_at',
-        'is_dirty',
-        'last_pushed_at',
         'archived_at',
     ];
 
@@ -70,8 +66,6 @@ class LexofficeArticle extends Model {
         'gross_unit_price' => MoneyCast::class . ':currency,4',
         'vat_rate' => PercentageCast::class . ':2',
         'synced_at' => 'datetime',
-        'is_dirty' => 'boolean',
-        'last_pushed_at' => 'datetime',
         'archived_at' => 'datetime',
     ];
 

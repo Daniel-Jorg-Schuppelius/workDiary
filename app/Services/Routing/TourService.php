@@ -106,6 +106,8 @@ class TourService implements InspectionTourPlanner {
                     'tour_position' => $position++,
                 ];
                 if ($entry->assigned_user_id === null) {
+                    // Qualifikationssperre (MVP-1514): Stichtag ist der Tourtag.
+                    app(\App\Services\Schedule\QualificationEnforcement::class)->assertEntryAssignable($entry, (int) $tour->user_id, $tour->tour_date !== null ? \Carbon\CarbonImmutable::parse((string) $tour->tour_date) : null, 'order_ids');
                     $attrs['assigned_user_id'] = $tour->user_id;
                 }
                 if ($entry->status === DiaryStatus::Open) {

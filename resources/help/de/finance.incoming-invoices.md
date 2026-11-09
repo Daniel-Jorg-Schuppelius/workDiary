@@ -1,7 +1,7 @@
 ---
 title: "Rechnungseingang"
 topic: finance.incoming-invoices
-version: 7
+version: 8
 keywords:
     - Mehrere Steuersätze
     - Eingangsrechnung
@@ -283,8 +283,8 @@ abgelehnt (Ablehnung nur mit Begründung). Erst nach fachlicher Freigabe ist
 die Zahlungsfreigabe möglich. Jede Entscheidung wird mit Person und Zeitpunkt
 protokolliert.
 
-**Übergabe an die Buchhaltung:** Ist Lexware Office oder DATEV Unternehmen
-online angebunden und die Übergabe dort eingeschaltet, geht ein Eingang los,
+**Übergabe an die Buchhaltung:** Ist Lexware Office, sevDesk oder DATEV
+Unternehmen online angebunden und die Übergabe dort eingeschaltet, geht ein Eingang los,
 sobald seine Gegenpartei feststeht. Die fachliche Freigabe bleibt
 Voraussetzung der Zahlung, nicht der Übergabe. Vorher prüft das System: kein
 Klärfall ohne Werte, nicht abgelehnt, an uns adressiert, keine Kopie einer
@@ -300,6 +300,19 @@ innergemeinschaftlichen Fällen oder Drittland.
   E-Rechnung bzw. den erfassten Steuersätzen. Sonst geht der Beleg ohne
   Beträge hinaus, und die Buchhaltung ergänzt sie in Lexware.
 - DATEV Unternehmen online erhält das Original als Belegbild.
+- sevDesk erhält den Beleg als Entwurf mit dem Original; die Buchhaltung
+  bestätigt ihn dort. Eine XRechnung oder ZUGFeRD-Datei nimmt sevDesk erst
+  ab der Buchhaltungsversion 2.0 an, unter 1.0 geht das mitgeschickte PDF
+  hinüber. Liegt dort schon ein Beleg mit derselben Nummer beim selben
+  Kontakt, wird er nur verknüpft; ohne Nummer schlägt die Übergabe einen
+  Beleg mit gleichem Datum und Betrag vor. Fehlt der Kontakt, sucht die
+  Übergabe einen eindeutigen Namenstreffer und legt sonst einen an, wenn
+  workDiary die Stammdaten führt. Je Steuersatz (0, 7 oder 19 %) entsteht
+  eine Position mit dem Buchungskonto der Richtung aus den
+  Plugin-Einstellungen. Ohne Buchungskonto, bei Fremdwährung, bei anderen
+  Sätzen und bei Reverse Charge, innergemeinschaftlichen Fällen oder Ausfuhr
+  wartet die Übergabe mit Hinweis: Erfassen Sie den Beleg dann in sevDesk,
+  die nächste Übergabe verknüpft ihn über die Rechnungsnummer.
 - Fehlt die Rechnungsnummer, sucht die Übergabe in Lexware nach Kontakt,
   Belegdatum und Betrag. Ein Treffer wird nicht automatisch verknüpft: Sie
   wählen „Mit diesem Beleg verknüpfen“ oder „Anderer Beleg – neu anlegen“.

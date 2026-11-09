@@ -10,33 +10,23 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
-use APIToolkit\Entities\ID;
 use APIToolkit\Exceptions\ApiException;
-use App\Enums\Integration\ExternalArticleSyncStatus;
-use App\Enums\Integration\{ExternalConflictStatus, IntegrationInboxStatus};
+use App\Enums\Integration\{ExternalArticleSyncStatus, IntegrationInboxStatus};
 use App\Models\Article\ArticleVariant;
-use App\Models\Integration\{ExternalArticleMapping, IntegrationInboxItem, PendingExternalConflict};
+use App\Models\Integration\{ExternalArticleMapping, IntegrationInboxItem};
 use App\Models\Platform\Organization;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
-use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
 use App\Plugins\Lexoffice\Exceptions\{LexofficeApiException, LexofficeNotConfiguredException};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\LexofficeArticle;
 use App\Services\Inventory\VariantMatcher;
 use App\Support\MorphMap;
-use CommonToolkit\ValueObjects\{Money, Percentage};
 use Lexoffice\API\Client;
 use Lexoffice\API\Endpoints\ArticlesEndpoint;
-use Lexoffice\Entities\Articles\Article;
-use RuntimeException;
 
 /**
  * Synchronisiert Lexoffice-Artikel (Services/Produkte) in die lokale Tabelle
- * `lexoffice_articles` und unterstützt bidirektionalen Sync:
- *  - sync(): Pull mit optionaler {@see LexofficeMatchPolicy} für Konflikte
- *  - adoptRemote(): einzelnen Artikel frisch aus Lexoffice übernehmen (Konfliktauflösung)
- *  - push(): einzelnen lokalen Artikel (POST/PUT) zu Lexoffice senden
- *  - pushAllDirty(): alle als is_dirty markierten Artikel pushen
+ * `lexoffice_articles` (nur lesend; Lexoffice führt den Artikel).
  *
  * Zusätzlich verknüpft sync() jeden Lexoffice-Artikel über den
  * {@see VariantMatcher} (SKU/Artikelnummer primär, eindeutige GTIN als
@@ -51,11 +41,6 @@ use RuntimeException;
  * Quelle: https://developers.lexware.io/docs/#articles-endpoint
  */
 class LexofficeArticleSync {
-    /** Inhaltsfelder, die Konflikterkennung und Konflikt-Schnappschuss vergleichen. */
-    private const array DIFF_FIELDS = ['name', 'article_number', 'gtin', 'description', 'note', 'type', 'unit_name', 'net_unit_price', 'gross_unit_price', 'currency', 'vat_rate', 'leading_price'];
-
-    private LexofficeMatchPolicy $policy = LexofficeMatchPolicy::LexofficeWins;
-
     private ?Client $client = null;
 
     /** @param  int|null  $organizationId  null = gebundene Organisation bzw. Einzelplatz-Konfiguration */
@@ -67,15 +52,8 @@ class LexofficeArticleSync {
         return $this->client ??= app(LexofficeClientFactory::class)->for($this->organizationId);
     }
 
-    public function withPolicy(LexofficeMatchPolicy $policy): self {
-        $clone = clone $this;
-        $clone->policy = $policy;
-
-        return $clone;
-    }
-
     /**
-     * @return array{created: int, updated: int, archived: int, conflicts: int, linked: int, ambiguous: int}
+     * @return array{created: int, updated: int, archived: int, linked: int, ambiguous: int}
      */
     public function sync(Organization $organization): array {
         if (! app(LexofficeClientFactory::class)->isConfigured($this->organizationId)) {
@@ -85,7 +63,6 @@ class LexofficeArticleSync {
         $seen = [];
         $created = 0;
         $updated = 0;
-        $conflicts = 0;
         $linked = 0;
         $ambiguous = 0;
         $page = 0;
@@ -137,30 +114,8 @@ class LexofficeArticleSync {
                     continue;
                 }
 
-                // Gleiche Lexoffice-Version und lokal nichts geändert: nichts zu schreiben (perf-07).
-                if (! $existing->is_dirty && $attrs['external_version'] !== null && (int) $existing->external_version === (int) $attrs['external_version']) {
-                    continue;
-                }
-
-                if ($existing->is_dirty && $this->policy === LexofficeMatchPolicy::ManualReview) {
-                    $local = $this->comparable($existing);
-                    $remote = $this->comparable((new LexofficeArticle)->fill(array_intersect_key($attrs, array_flip(self::DIFF_FIELDS))));
-                    $diff = array_keys(array_filter($local, static fn (?string $value, string $field): bool => (string) $value !== (string) $remote[$field], ARRAY_FILTER_USE_BOTH));
-                    if ($diff !== []) {
-                        $this->recordArticleConflict($existing, $local, $remote + ['external_version' => $attrs['external_version']], $external, $organization, $diff);
-                        $conflicts++;
-                    }
-
-                    continue;
-                }
-
-                if ($existing->is_dirty && $this->policy === LexofficeMatchPolicy::LocalWins) {
-                    // Lokale Änderungen warten auf Push: nur Versions-Snapshot aktualisieren.
-                    $existing->forceFill([
-                        'external_version' => $attrs['external_version'],
-                        'synced_at' => now(),
-                    ])->save();
-
+                // Gleiche Lexoffice-Version: nichts zu schreiben (perf-07).
+                if ($attrs['external_version'] !== null && (int) $existing->external_version === (int) $attrs['external_version']) {
                     continue;
                 }
 
@@ -183,7 +138,6 @@ class LexofficeArticleSync {
             'created' => $created,
             'updated' => $updated,
             'archived' => (int) $archived,
-            'conflicts' => $conflicts,
             'linked' => $linked,
             'ambiguous' => $ambiguous,
         ];
@@ -267,100 +221,6 @@ class LexofficeArticleSync {
     }
 
     /**
-     * Sendet einen lokalen Artikel zu Lexoffice. Wenn external_id leer ist
-     * wird POST verwendet (Neuanlage), sonst PUT (Update). Lokale `is_dirty`
-     * wird zurückgesetzt und external_version wird aus der Antwort übernommen.
-     */
-    public function push(LexofficeArticle $article): void {
-        if (! app(LexofficeClientFactory::class)->isConfigured($this->organizationId)) {
-            throw new LexofficeNotConfiguredException();
-        }
-
-        // Die Preis-Entität des SDK sendet einen fehlenden Steuersatz als 0 % — ohne Satz geht kein Artikel hinüber.
-        if ($article->vat_rate === null) {
-            throw new RuntimeException('Lexoffice article ' . ($article->external_id ?: $article->name) . ' has no tax rate.');
-        }
-
-        $payload = $this->articleToPayload($article);
-        $articles = new ArticlesEndpoint($this->client());
-
-        try {
-            if ($article->external_id === '') {
-                $resource = $articles->create(Article::fromArray($payload));
-            } else {
-                // Beim PUT muss die aktuelle Version mitgesendet werden (optimistic locking).
-                $version = $article->external_version ?? $this->fetchRemoteVersion($article->external_id);
-                $payload['version'] = $version;
-                $payload['id'] = $article->external_id;
-                $resource = $articles->update(new ID($article->external_id), Article::fromArray($payload));
-            }
-        } catch (ApiException $e) {
-            throw new RuntimeException('Lexoffice articles push failed: ' . $e->getCode() . ' ' . $e->getContent(), 0, $e);
-        }
-
-        $body = $resource->toArray();
-        $article->forceFill([
-            'external_id' => (string) ($body['id'] ?? $article->external_id),
-            'external_version' => isset($body['version']) ? (int) $body['version'] : ($article->external_version + 1),
-            'is_dirty' => false,
-            'last_pushed_at' => now(),
-            'synced_at' => now(),
-        ])->save();
-    }
-
-    /**
-     * Holt einen Artikel frisch aus Lexoffice und übernimmt seinen Stand in die
-     * Projektion — die Antwort „Lexoffice-Stand übernehmen“ auf einen
-     * Artikelkonflikt bei manueller Prüfung (Entscheidung 2026-10-06). Die
-     * lokale Änderung ist damit verworfen, der Artikel nicht mehr dirty.
-     *
-     * @throws RuntimeException Ohne API-Schlüssel oder external_id; bei Fehlern von Lexoffice als {@see LexofficeApiException}.
-     */
-    public function adoptRemote(LexofficeArticle $article): LexofficeArticle {
-        if (! app(LexofficeClientFactory::class)->isConfigured($this->organizationId)) {
-            throw new LexofficeNotConfiguredException();
-        }
-        if ($article->external_id === '') {
-            throw new RuntimeException('Lexoffice article has no external id to adopt.');
-        }
-
-        try {
-            $item = (new ArticlesEndpoint($this->client()))->get(new ID($article->external_id))->toArray();
-        } catch (ApiException $e) {
-            throw LexofficeApiException::fromApiException($e, __('Artikel'), __('Artikel abrufen'));
-        }
-        $article->fill($this->itemToAttrs($item) + ['is_dirty' => false])->save();
-
-        return $article;
-    }
-
-    /**
-     * @return array{pushed: int, failed: int}
-     */
-    public function pushAllDirty(Organization $organization): array {
-        $pushed = 0;
-        $failed = 0;
-
-        LexofficeArticle::query()
-            ->where('organization_id', $organization->id)
-            ->where('is_dirty', true)
-            ->whereNull('archived_at')
-            ->chunk(100, function ($articles) use (&$pushed, &$failed): void {
-                foreach ($articles as $article) {
-                    try {
-                        $this->push($article);
-                        $pushed++;
-                    } catch (\Throwable $e) {
-                        $failed++;
-                        report($e);
-                    }
-                }
-            });
-
-        return ['pushed' => $pushed, 'failed' => $failed];
-    }
-
-    /**
      * @param  array<string, mixed>  $item
      * @return array<string, mixed>
      */
@@ -384,86 +244,5 @@ class LexofficeArticleSync {
             'synced_at' => now(),
             'archived_at' => null,
         ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function articleToPayload(LexofficeArticle $article): array {
-        return array_filter([
-            'title' => $article->name,
-            'description' => $article->description,
-            // Die API und die Artikelart des SDK kennen nur PRODUCT und SERVICE.
-            'type' => strtoupper($article->type ?: 'SERVICE'),
-            'articleNumber' => $article->article_number,
-            'gtin' => $article->gtin,
-            'note' => $article->note,
-            'unitName' => $article->unit_name,
-            'price' => array_filter([
-                'netPrice' => $article->net_unit_price?->toFloat(),
-                'grossPrice' => $article->gross_unit_price?->toFloat(),
-                'currency' => $article->currency->value,
-                'taxRate' => $article->vat_rate !== null ? (float) $article->vat_rate->getNumericValue() : null,
-                'leadingPrice' => $article->leading_price ?: 'NET',
-            ], static fn($v) => $v !== null),
-        ], static fn($v) => $v !== null && $v !== '');
-    }
-
-    /**
-     * Inhaltsfelder in kanonischer Form. Beide Seiten laufen durch die Casts
-     * des Modells — sonst stünde „100" (API) gegen „100.0000 EUR" (Wertobjekt)
-     * und jeder Artikel mit Preis gälte als abweichend.
-     *
-     * @return array<string, string|null>
-     */
-    private function comparable(LexofficeArticle $article): array {
-        $values = [];
-        foreach (self::DIFF_FIELDS as $field) {
-            $value = $article->getAttribute($field);
-            $values[$field] = match (true) {
-                $value === null => null,
-                $value instanceof Money => $value->getAmount(),
-                $value instanceof Percentage => $value->getNumericValue(),
-                $value instanceof \BackedEnum => (string) $value->value,
-                default => (string) $value,
-            };
-        }
-
-        return $values;
-    }
-
-    /**
-     * Beide Schnappschüsse tragen dieselben Felder in kanonischer Form, damit
-     * die Konfliktliste sie ohne das Plugin nebeneinander zeigen kann.
-     *
-     * @param  array<string, string|null>  $localSnapshot
-     * @param  array<string, mixed>  $remoteSnapshot
-     * @param  list<string>  $diff
-     */
-    private function recordArticleConflict(LexofficeArticle $local, array $localSnapshot, array $remoteSnapshot, string $external, Organization $organization, array $diff): void {
-        PendingExternalConflict::query()->updateOrCreate(
-            [
-                'plugin_id' => LexofficePlugin::ID,
-                'conflict_type' => PendingExternalConflict::TYPE_ARTICLE,
-                'referenceable_type' => $local->getMorphClass(),
-                'referenceable_id' => $local->getKey(),
-                'external_id' => $external,
-                'status' => ExternalConflictStatus::Open,
-            ],
-            [
-                'organization_id' => $organization->id,
-                'local_snapshot' => $localSnapshot,
-                'remote_snapshot' => $remoteSnapshot,
-                'diff_fields' => $diff,
-            ],
-        );
-    }
-
-    private function fetchRemoteVersion(string $externalId): int {
-        try {
-            return (int) ((new ArticlesEndpoint($this->client()))->get(new ID($externalId))->toArray()['version'] ?? 0);
-        } catch (ApiException) {
-            return 0;
-        }
     }
 }

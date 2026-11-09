@@ -1,7 +1,7 @@
 ---
 title: "Conflitti Lexoffice"
 topic: admin.lexoffice
-version: 6
+version: 7
 keywords:
     - Lexware Office
     - conflitto di sincronizzazione
@@ -54,11 +54,9 @@ attenzione i dati messi a confronto prima di decidere. Tenga presente
 che per le fatture la titolarità della fatturazione spetta al programma
 esterno – WorkDiary vi trasmette i dati.
 
-La strategia di conflitto vale per contatti e articoli. I conflitti
-relativi agli articoli non compaiono nella Inbox di riconciliazione, ma
-nella scheda **Conflitti** del magazzino (**Magazzino** → **Conflitti**):
-lì sceglie **Mantieni locale**, **Applica lo stato di Lexoffice** oppure
-**Ignora** — con il diritto **Gestisci articoli**.
+La strategia di conflitto vale per i contatti. Gli articoli li gestisce
+Lexoffice: la sincronizzazione applica ogni versione più recente di
+Lexoffice, quindi non esistono conflitti di articoli.
 
 Specchio documenti: il sync dei documenti rispecchia i documenti di
 Lexoffice in WorkDiary. Vengono rispecchiati anche i documenti di contatti

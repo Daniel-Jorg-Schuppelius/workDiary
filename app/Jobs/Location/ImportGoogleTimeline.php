@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Location;
 
+use App\Jobs\Contracts\ModuleJob;
 use App\Models\Location\LocationPoint;
 use App\Models\Platform\{Organization, User};
 use App\Notifications\Location\GoogleImportFinishedNotification;
@@ -28,7 +29,7 @@ use Illuminate\Support\Facades\Storage;
  * Datei liegt im privaten Speicher, die Punkte gehen in Blöcken in die
  * Ingest-Pipeline; danach wird die Datei gelöscht.
  */
-final class ImportGoogleTimeline implements ShouldQueue {
+final class ImportGoogleTimeline implements ModuleJob, ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
@@ -45,6 +46,12 @@ final class ImportGoogleTimeline implements ShouldQueue {
         if (config('queue.default') !== 'sync') {
             $this->onConnection('media');
         }
+    }
+
+    public function organizationId(): ?int {
+        $id = User::query()->withoutGlobalScopes()->whereKey($this->userId)->value('organization_id');
+
+        return $id !== null ? (int) $id : null;
     }
 
     public function handle(GoogleTimelineImporter $importer, LocationIngestService $ingest): void {

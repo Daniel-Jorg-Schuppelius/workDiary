@@ -1,7 +1,7 @@
 ---
 title: "Facturas recibidas"
 topic: finance.incoming-invoices
-version: 7
+version: 8
 keywords:
     - varios tipos impositivos
     - factura de proveedor
@@ -296,8 +296,8 @@ identificación fiscal del emisor.
 rechaza (el rechazo solo con motivo). La liberación de pago solo es posible
 tras la aprobación. Cada decisión se registra con persona y momento.
 
-**Traspaso a la contabilidad:** Si Lexware Office o DATEV Unternehmen online
-está conectado y el traspaso está activado allí, un documento se traspasa en
+**Traspaso a la contabilidad:** Si Lexware Office, sevDesk o DATEV Unternehmen
+online está conectado y el traspaso está activado allí, un documento se traspasa en
 cuanto se conoce su contraparte. La aprobación sigue siendo requisito del
 pago, no del traspaso. Antes, el sistema comprueba: ningún documento no
 reconocido sin valores, no rechazado, dirigido a nosotros, no es copia de una
@@ -313,6 +313,20 @@ del sujeto pasivo, operaciones intracomunitarias o países terceros.
   factura electrónica o de los tipos introducidos. Si no, el comprobante se
   envía sin importes y contabilidad los completa en Lexware.
 - DATEV Unternehmen online recibe el original como imagen del comprobante.
+- sevDesk recibe el comprobante como borrador con el original; la
+  contabilidad lo confirma allí. sevDesk solo acepta un archivo XRechnung o
+  ZUGFeRD a partir de la versión contable 2.0; con la 1.0 se envía el PDF
+  adjunto. Si allí ya existe un comprobante con el mismo número para el
+  mismo contacto, solo se vincula; sin número, el traspaso propone un
+  comprobante con la misma fecha e importe. Si falta el contacto, el
+  traspaso busca una coincidencia inequívoca por nombre y, si no la hay, lo
+  crea cuando WorkDiary gestiona los datos maestros. Por cada tipo
+  impositivo (0, 7 o 19 %) se crea una posición con la cuenta contable de la
+  dirección indicada en los ajustes del plugin. Sin cuenta contable, en
+  moneda extranjera, con otros tipos y en inversión del sujeto pasivo, casos
+  intracomunitarios o exportaciones, el traspaso espera con un aviso:
+  registre entonces el comprobante en sevDesk y el siguiente traspaso lo
+  vincula mediante el número de factura.
 - Si falta el número de factura, el traspaso busca en Lexware por contacto,
   fecha del comprobante e importe. Una coincidencia no se vincula
   automáticamente: usted elige «Vincular con este comprobante» u «Otro

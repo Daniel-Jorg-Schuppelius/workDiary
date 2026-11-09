@@ -13,11 +13,11 @@ namespace Tests\Feature\Plugins\OrgaMax;
 use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
-use App\Models\Platform\User;
+use App\Models\Platform\{PluginSetting, User};
 use App\Plugins\OrgaMax\Enums\{OrgaMaxConnectionStatus, OrgaMaxInvoiceStatus};
 use App\Plugins\OrgaMax\Models\{OrgaMaxConnection, OrgaMaxInvoice};
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
-use App\Plugins\OrgaMax\Services\{OrgaMaxInvoiceProjector, OrgaMaxSyncService};
+use App\Plugins\OrgaMax\Services\{OrgaMaxInvoiceProjector, OrgaMaxSyncService, OrgaMaxVoucherPullService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\WithOrganization;
@@ -26,7 +26,9 @@ use Tests\TestCase;
 
 /**
  * MVP-307/311/313: Inbox-First-Zuordnung (keine Schattenstammdaten),
- * Rechnungsprojektion und budgetierter Sweep mit Offset-Checkpoint.
+ * Rechnungsprojektion und budgetierter Sweep mit Offset-Checkpoint. Die
+ * Rechnungen liest seit MVP-1501 der Belegspiegel, der den Plugin-Spiegel
+ * `orgamax_invoices` in derselben Runde schreibt.
  */
 class OrgaMaxSyncTest extends TestCase {
     use OrgaMaxApiResponses;
@@ -42,6 +44,7 @@ class OrgaMaxSyncTest extends TestCase {
         $this->setUpOrganization();
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($this->admin);
+        PluginSetting::create(['organization_id' => $this->organization->id, 'plugin_id' => OrgaMaxPlugin::ID, 'enabled' => true, 'settings' => []]);
 
         $this->connection = OrgaMaxConnection::create([
             'organization_id' => $this->organization->id,
@@ -113,7 +116,7 @@ class OrgaMaxSyncTest extends TestCase {
             ]),
         ]);
 
-        app(OrgaMaxSyncService::class)->run($this->connection);
+        app(OrgaMaxVoucherPullService::class)->pull((int) $this->organization->id);
 
         $projection = ExternalReference::query()
             ->where('plugin_id', OrgaMaxPlugin::ID)
@@ -148,7 +151,7 @@ class OrgaMaxSyncTest extends TestCase {
             ]),
         ]);
 
-        app(OrgaMaxSyncService::class)->run($this->connection);
+        app(OrgaMaxVoucherPullService::class)->pull((int) $this->organization->id);
 
         $this->assertSame(2, OrgaMaxInvoice::query()->count());
         $this->assertSame(2, ExternalReference::query()
@@ -170,7 +173,7 @@ class OrgaMaxSyncTest extends TestCase {
         $this->assertSame($mirror->id, $reference->referenceable_id);
 
         // Zweiter Lauf aktualisiert, statt zu duplizieren.
-        app(OrgaMaxSyncService::class)->run($this->connection->refresh());
+        app(OrgaMaxVoucherPullService::class)->pull((int) $this->organization->id);
         $this->assertSame(2, OrgaMaxInvoice::query()->count());
     }
 
@@ -186,7 +189,7 @@ class OrgaMaxSyncTest extends TestCase {
             ]),
         ]);
 
-        app(OrgaMaxSyncService::class)->run($this->connection);
+        app(OrgaMaxVoucherPullService::class)->pull((int) $this->organization->id);
 
         $this->assertSame(OrgaMaxInvoiceStatus::Unknown, OrgaMaxInvoice::query()->where('external_id', '601')->firstOrFail()->invoice_status);
         $this->assertSame(OrgaMaxInvoiceStatus::Unknown, OrgaMaxInvoice::query()->where('external_id', '602')->firstOrFail()->invoice_status);

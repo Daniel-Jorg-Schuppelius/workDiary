@@ -42,7 +42,7 @@ class ClubFeeExemption extends Model {
 
     protected $fillable = ['organization_id', 'club_member_id', 'kind', 'percent', 'starts_on', 'ends_on', 'reason', 'created_by_user_id'];
 
-    protected $casts = ['kind' => ClubFeeExemptionKind::class, 'starts_on' => 'date', 'ends_on' => 'date'];
+    protected $casts = ['kind' => ClubFeeExemptionKind::class, 'starts_on' => 'date', 'ends_on' => 'date', 'percent' => 'decimal:2'];
 
     /** @return BelongsTo<ClubMember, $this> */
     public function member(): BelongsTo {

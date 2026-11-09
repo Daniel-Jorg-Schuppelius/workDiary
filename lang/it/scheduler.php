@@ -94,6 +94,8 @@ return [
     // Nomi leggibili dei job (chiavi registry, annidate per via della notazione a punti);
     // aggiungere i nuovi job qui in tutte le lingue — altrimenti fallback = chiave.
     'job' => [
+        'rental' => ['expire-prepayments' => 'Liberare le prenotazioni dirette di noleggio non pagate'],
+        'timekeeping' => ['ical-sync' => 'Leggere i calendari iCal sottoscritti nella rilevazione tempi'],
         'projects' => ['check-time-targets' => 'Verificare i tempi obiettivo di progetto rispetto al tempo registrato'],
         'surveys' => ['scheduled' => 'Inviare sondaggi a intervallo fisso'],
         'demo' => [
@@ -124,9 +126,10 @@ return [
         'billbee' => ['sync' => 'Sincronizzazione Billbee'],
         'caldav' => ['publish' => 'Riconciliazione pubblicazione calendario CalDAV', 'import' => 'Reimportazione calendario CalDAV'],
         'carddav' => ['sync' => 'Sincronizzazione CardDAV'],
-        'sevdesk' => ['pull-vouchers' => 'Recupera i documenti sevDesk'],
+        'sevdesk' => ['pull-vouchers' => 'Recupera i documenti sevDesk', 'pull-contacts' => 'Importare i contatti sevDesk (guida la contabilità)'],
         'invoiceninja' => ['pull-vouchers' => 'Recuperare documenti Invoice Ninja'],
         'akaunting' => ['pull-vouchers' => 'Recuperare documenti Akaunting'],
+        'invoiceplane' => ['pull-vouchers' => 'Recuperare fatture InvoicePlane'],
         'catalog' => ['fetch_due' => 'Recuperare le fonti di catalogo', 'apply_pending_prices' => 'Attivare i listini programmati'],
         'tenders' => ['fetch_notices' => 'Recuperare i bandi'],
         'chat' => [
@@ -151,7 +154,7 @@ return [
             'sync' => 'Sincronizzazione domini',
             'events' => 'Recupero eventi dominio',
         ],
-        'easybill' => ['sync' => 'Recupero documenti easybill'],
+        'easybill' => ['sync' => 'File dei documenti easybill nel DMS', 'pull-vouchers' => 'Recuperare documenti easybill', 'pull-contacts' => 'Importare i contatti easybill (guida la contabilità)'],
         'etsy' => ['sync' => 'Sincronizzazione Etsy'],
         'google-calendar' => ['publish' => 'Riconciliazione pubblicazione calendario Google', 'import' => 'Reimportazione Google Calendar'],
         'google-drive' => ['subscriptions' => 'Rinnova i canali push di Google Drive'],
@@ -163,7 +166,7 @@ return [
         'platform' => ['usage_snapshot' => 'Registrare l’utilizzo per cliente'],
         'contracts' => ['price_index_sync' => 'Sincronizzare l’indice dei prezzi al consumo dalla Bundesbank'],
         'invoicing' => ['recurring' => 'Generare bozze di fatture ricorrenti', 'base_rate_sync' => 'Sincronizzare il tasso base dalla Bundesbank', 'online_payments_refresh' => 'Riconciliare i pagamenti online con il fornitore di pagamento', 'incoming_digest' => 'Segnalare le fatture ricevute da assegnare', 'incoming_transfer' => 'Ripetere i trasferimenti delle fatture ricevute'],
-        'jtl' => ['sync' => 'Sincronizzazione JTL Wawi'],
+        'jtl' => ['sync' => 'Sincronizzazione JTL Wawi', 'pull-vouchers' => 'Recuperare fatture JTL Wawi'],
         'resale' => [
             'propose' => 'Abbonamenti in rivendita: proporre collegamenti fattura, confermare le corrispondenze sicure',
             'sync_domains' => 'Abbonamenti in rivendita: acquisire i domini dalla gestione domini',

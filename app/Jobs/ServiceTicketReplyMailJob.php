@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\ServiceTicket\{TicketMessageDeliveryStatus, TicketMessageKind};
+use App\Jobs\Attributes\BelongsToModule;
+use App\Jobs\Contracts\ModuleJob;
 use App\Models\Platform\User;
 use App\Models\ServiceTicket\ServiceTicketMessage;
 use App\Services\Mail\MailSignature;
@@ -28,7 +30,8 @@ use Illuminate\Support\Facades\{Cache, Mail};
  * ausschließlich kind=public_reply verlässt das Haus — jede andere
  * Nachricht wird abgewiesen (DoD „Notiz kann nie versendet werden").
  */
-class ServiceTicketReplyMailJob implements ShouldQueue {
+#[BelongsToModule('helpdesk')]
+class ServiceTicketReplyMailJob implements ModuleJob, ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
@@ -41,6 +44,12 @@ class ServiceTicketReplyMailJob implements ShouldQueue {
     public array $backoff = [60, 300];
 
     public function __construct(public readonly int $messageId) {}
+
+    public function organizationId(): ?int {
+        $id = ServiceTicketMessage::query()->withoutGlobalScopes()->whereKey($this->messageId)->value('organization_id');
+
+        return $id !== null ? (int) $id : null;
+    }
 
     /**
      * Nach dem LETZTEN fehlgeschlagenen Versuch den Status sichtbar machen —

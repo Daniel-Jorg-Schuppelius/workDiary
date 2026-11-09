@@ -19,10 +19,9 @@ use App\Enums\Contracts\HasLabel;
  * Eigenschaft, keine eigene Seite.
  *
  * Ein System erscheint hier, sobald es einen lokalen Belegspiegel führt —
- * Lexoffice über `lexoffice_vouchers`, orgaMAX seit MVP-670 über
- * `orgamax_invoices`. Weitere Faktura-Plugins (SevDesk, easybill,
- * InvoicePlane, JTL) spiegeln seit MVP-731 in dieselbe Tabelle — je
- * Anbieter unterscheidet sie nur die `plugin_id`.
+ * Lexoffice über `lexoffice_vouchers`, die übrigen Faktura-Plugins (sevDesk,
+ * easybill, InvoicePlane, JTL seit MVP-731, orgaMAX seit MVP-1501) über
+ * `accounting_vouchers` — je Anbieter unterscheidet sie nur die `plugin_id`.
  */
 enum DocumentOrigin: string implements HasLabel {
     use HasOptions;

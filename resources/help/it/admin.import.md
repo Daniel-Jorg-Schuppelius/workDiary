@@ -1,7 +1,7 @@
 ---
 title: "Import CSV"
 topic: admin.import
-version: 4
+version: 5
 keywords:
     - importazione dati
     - importare anagrafiche
@@ -110,3 +110,32 @@ iCal, con anteprima, filtro per categorie e risoluzione delle serie.
 L'importazione delle presenze accetta la colonna facoltativa **erfasst am**
 (data e ora della registrazione originale). Serve al termine di registrazione
 MiLoG; senza di essa il termine non viene verificato per quelle righe.
+
+## Abbonamenti calendario: in continuo da un calendario iCal
+
+In **Abbonamenti calendario** (menu della panoramica importazioni) Lei si
+abbona a un calendario iCal tramite il suo indirizzo di abbonamento
+(`https://` o `webcal://`). WorkDiary lo legge ogni ora e riprende gli
+appuntamenti come l’importazione da file:
+
+- **Persona:** se il calendario appartiene a una persona, tutti gli
+  appuntamenti sono suoi. Senza persona decide l’indirizzo e-mail
+  dell’organizzatore o del partecipante.
+- **Periodo:** vengono letti gli ultimi 30 giorni; un appuntamento conta solo
+  quando è terminato. Le serie vengono sviluppate in questo periodo.
+- **Solo modifiche:** WorkDiary salta gli appuntamenti invariati (stessi
+  SEQUENCE e LAST-MODIFIED); un appuntamento modificato aggiorna la
+  registrazione. Se il server risponde «non modificato», l’intero passaggio
+  viene saltato.
+- **Nessun duplicato:** un appuntamento già registrato da un’importazione da
+  file (stesso UID) viene ripreso e non registrato di nuovo.
+- **Cancellazioni:** se un appuntamento registrato scompare dal calendario, il
+  tempo resta. Nella casella di assegnazione compare un avviso «Abbonamento
+  calendario»; elimini o corregga lì il tempo consapevolmente.
+- **Assegnazione:** gli appuntamenti senza progetto corrispondente finiscono
+  nella casella di assegnazione come con l’importazione da file; il passaggio
+  successivo riprova.
+
+L’indirizzo è salvato cifrato; viene mostrato solo il server. Gli indirizzi
+della rete interna richiedono **Consentire calendari della rete interna** e
+l’autorizzazione del gestore. **Recuperare ora** avvia subito un passaggio.

@@ -1,7 +1,7 @@
 ---
 title: "Importare l'elenco chiamate FRITZ!Box"
 topic: admin.fritzbox
-version: 2
+version: 3
 keywords:
     - FRITZ!Box
     - elenco chiamate
@@ -73,8 +73,8 @@ In **Plugin** apra la finestra **Configura** di **Elenco chiamate FRITZ!Box**:
 - **Considerare il tipo 3 come in uscita**: solo per elenchi di versioni più
   vecchie di FRITZ!OS, che esportano le chiamate in uscita come tipo 3.
 - **Confronta contatti esterni** (predefinito: attivo): i numeri sconosciuti
-  vengono confrontati anche con le rubriche collegate, come Lexoffice e
-  Microsoft 365.
+  vengono confrontati anche con le rubriche collegate, come Lexoffice, easybill,
+  orgaMAX e Microsoft 365.
 - **Numero timbratura: entrata**, **Numero timbratura: uscita** e **Numero
   timbratura: entrata/uscita**: i Suoi numeri per la timbratura telefonica
   (vedi sotto).

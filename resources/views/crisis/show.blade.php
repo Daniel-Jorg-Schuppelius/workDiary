@@ -38,6 +38,10 @@
                             <x-icon-btn icon="lock" size="sm" type="submit" show-label>{{ __('Akte schließen') }}</x-icon-btn>
                         </x-action-form>
                     @endif
+                    @if ($case->status->canTransitionTo(\App\Enums\Crisis\CrisisCaseStatus::Discarded))
+                        <x-button :href="route('crisis.discard.form', $case)" data-entry-modal-trigger
+                                  tone="error" size="sm" icon="delete" placement="danger">{{ __('Fehlmeldung verwerfen') }}</x-button>
+                    @endif
                 @endcan
                 @if ($canManage)
                     <x-action-form :action="route('crisis.alert', $case)">

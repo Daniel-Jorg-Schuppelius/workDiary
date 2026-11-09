@@ -37,5 +37,8 @@ class GitlabServiceProvider extends PluginServiceProviderBase {
         // schließt das GitLab-Issue über die Integrations-Outbox.
         $this->app->make(\App\Services\Integration\IntegrationOutboxDispatcherResolver::class)
             ->register(new Services\GitlabIssueWritebackDispatcher);
+
+        // Zeit-Rückkanal (MVP-1513), Opt-in `time_writeback`.
+        \App\Models\Time\TimeEntry::observe(Observers\GitlabTimeEntryObserver::class);
     }
 }

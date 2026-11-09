@@ -1,7 +1,7 @@
 ---
 title: "Industry profiles"
 topic: admin.branch-profiles
-version: 3
+version: 4
 keywords:
     - industry template
     - sector package
@@ -79,6 +79,19 @@ Multiple profiles, primary profile and uninstall:
   classification domains or modules are rejected.
 - Order types ship in the enabled languages; the display follows the
   user's language while the source label stays editable.
+
+Asset categories and new profile versions:
+
+- A profile's **asset categories** (e.g. press tool, pipe inspection camera
+  for HVAC) are created as categories of your organisation and are offered in
+  the asset form alongside the general IT categories. Existing own categories
+  with the same code stay unchanged. Uninstalling only removes unused,
+  unchanged categories that no other installed profile brings along.
+- If a new profile version supersedes a template, checklist or category,
+  applying it creates the successor and **deactivates** the predecessor
+  instead of deleting or renaming it. Existing orders and runs keep their
+  reference; a predecessor you reactivate stays active on every further
+  application.
 
 Customer-specific variants:
 

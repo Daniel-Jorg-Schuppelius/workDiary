@@ -79,6 +79,9 @@ class IntegrationInboxItem extends Model {
     // Quelle des Imports (für csv-import)
     public const string PLUGIN_CSV = 'csv-import';
 
+    /** Hinweise abonnierter Kalender (MVP-1516), etwa ein gebuchter Termin, den die Quelle nicht mehr liefert. */
+    public const string PLUGIN_ICAL_SUBSCRIPTION = 'ical-subscription';
+
     /** Dedupe-Präfix der Fälle aus fehlgeschlagener Outbox-Zustellung. */
     public const string DEDUPE_OUTBOX_FAILED = 'outbox-failed:';
 
@@ -188,6 +191,7 @@ class IntegrationInboxItem extends Model {
     public static function sourceLabel(string $pluginId): string {
         return match ($pluginId) {
             self::PLUGIN_CSV => (string) __('CSV-Import'),
+            self::PLUGIN_ICAL_SUBSCRIPTION => (string) __('import.ical_subscription.source_label'),
             \App\Services\Mail\MailIntakeService::PLUGIN_ID => (string) __('E-Mail-Eingang'),
             default => app(\App\Plugins\PluginManager::class)->find($pluginId)?->name() ?? ucfirst($pluginId),
         };

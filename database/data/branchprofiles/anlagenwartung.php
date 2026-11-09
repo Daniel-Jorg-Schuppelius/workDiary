@@ -15,7 +15,8 @@ return [
     'label' => 'Maschinenbau und Anlagenwartung',
     'description' => 'Maschinenbau und Anlagenwartung: Wartungsverträge, Störungen, Inspektionen, Kalibrierung und Ersatzteile mit SLA und Prüfintervallen.',
     // v2: Default-Eintragstypen (Struktur-Typen) ans Profil gekoppelt.
-    'version' => 3,
+    // v4: Asset-Kategorien werden als Kategorien der Organisation installiert (MVP-1508).
+    'version' => 4,
     // MVP-1053: Arbeitskosten nach § 35a EStG bei Privatkunden ausweisen; eigene Einstellungen bleiben.
     'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers'],
     // Default-Struktur-Typen (EntryTypeSeeder::profiles()) — nicht die
@@ -259,8 +260,7 @@ return [
         ],
     ],
     // 'protocol_templates': Codes aus database/data/protocol_templates.php (MVP-902).
-    // 'asset_categories' installiert der BranchProfileInstaller nicht (Kategorien
-    // stammen aus config('asset_categories')); sie dienen als Branchen-Taxonomie.
+    // 'asset_categories': Codes aus database/data/asset_categories.php (MVP-1508).
     'protocol_templates' => [
         ['code' => 'AW_WARTUNGSPROTOKOLL'],
         ['code' => 'AW_STOERBERICHT'],

@@ -1,7 +1,7 @@
 ---
 title: "Conditions particulières & compte client"
 topic: customers.billing
-version: 4
+version: 5
 keywords:
     - prix spéciaux
     - taux horaire client
@@ -13,6 +13,8 @@ keywords:
     - forfait mensuel
     - acompte mensuel
     - Lexoffice
+    - sevDesk
+    - easybill
     - clôture mensuelle
 audience: []
 modules:
@@ -27,7 +29,7 @@ Dans la fiche client, vous pouvez définir des **conditions
 particulières** : taux horaires propres par activité et type de jour
 (semaine/week-end, définis via « jours ouvrés par semaine ») ainsi que le
 mode de facturation — **compte client** sans factures avec solde courant,
-**facture mensuelle** ou **forfait** via le logiciel comptable (actuellement Lexoffice).
+**facture mensuelle** ou **forfait** via le logiciel comptable (Lexoffice, sevDesk ou easybill).
 
 Les conditions comprennent aussi un **forfait de déplacement** : chaque
 saisie de temps facturable apporte alors x minutes supplémentaires,
@@ -57,23 +59,32 @@ Les saisies tardives dans des mois clôturés sont signalées — rouvrez le
 mois ou changez la date.
 
 En **mode forfait**, le logiciel comptable de la souveraineté de
-facturation du client gère le document et le paiement — actuellement
-Lexoffice. Le
-forfait mensuel est saisi hors taxes (« acompte mensuel attendu ») ; le
-solde local oppose heures × taux au forfait payé. Deux voies pour le
-document :
+facturation du client gère le document et le paiement : Lexoffice, sevDesk
+ou easybill. Le forfait mensuel est saisi hors taxes (« acompte mensuel
+attendu ») ; le solde local oppose heures × taux au forfait payé. Deux
+voies pour le document :
 
-- **Envoyer le forfait** crée la facture dans Lexoffice (également
-  chaque mois, automatiquement, pour le mois précédent).
+- **Envoyer le forfait** crée la facture dans le logiciel (également
+  chaque mois, automatiquement, pour le mois précédent). sevDesk attribue
+  le numéro de facture puis tient la facture comme envoyée et ouverte ;
+  easybill la finalise et la numérote.
 - **Associer un document** rattache au mois une facture que vous avez
-  déjà créée dans Lexoffice. Si exactement une facture du client
+  déjà créée dans le logiciel. Si exactement une facture du client
   correspond par mois et montant HT, cela se fait automatiquement lors
   de la synchronisation des documents.
 
 Dès qu'un document est rattaché, « Envoyer le forfait » disparaît —
-sinon un second document apparaîtrait dans Lexoffice. Le statut de
+sinon un second document apparaîtrait dans le logiciel. Le statut de
 paiement revient lors de la synchronisation et est enregistré **hors
-taxes** (Lexoffice travaille en TTC).
+taxes** (les logiciels tiennent le montant ouvert TTC) ; les paiements
+partiels comptent au prorata. Pour sevDesk et easybill, le statut de
+paiement provient du miroir des pièces, donc de la récupération régulière
+des pièces ; une pièce annulée ou supprimée dans le logiciel annule le
+paiement enregistré. Si l’envoi vers sevDesk ou easybill est
+interrompu, la facture reste en brouillon ; un nouvel envoi la poursuit au lieu de créer une seconde pièce
+dans le logiciel. Les paiements issus du logiciel ne peuvent pas être
+annulés à la main dans le panneau : cela passe par la pièce dans le
+logiciel.
 
 Si les conditions particulières n'ont été créées qu'après coup, les
 temps plus anciens affichent d'abord 0,00 € sous « total ».

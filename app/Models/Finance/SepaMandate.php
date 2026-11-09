@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Finance;
 
+use App\Casts\{BicCast, IbanCast};
 use App\Enums\Finance\{MandateKind, MandateStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
@@ -61,8 +62,8 @@ class SepaMandate extends Model {
         'signed_on' => 'date',
         'last_collected_on' => 'date',
         'revoked_on' => 'date',
-        'iban' => 'encrypted',
-        'bic' => 'encrypted',
+        'iban' => IbanCast::class . ':encrypted',
+        'bic' => BicCast::class . ':encrypted',
         'account_holder' => 'encrypted',
     ];
 

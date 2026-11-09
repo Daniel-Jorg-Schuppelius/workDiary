@@ -10,7 +10,7 @@
 
 namespace App\Models\Article;
 
-use App\Casts\{DecimalCast, MoneyCast};
+use App\Casts\{DecimalCast, GtinCast, MoneyCast};
 use App\Enums\Article\{ArticleStatus, ArticleType};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasClassifications, HasCustomFields, HasSqid, HasTags, Searchable};
 use App\Models\Contracts\CustomFieldSubject;
@@ -117,6 +117,7 @@ class Article extends Model implements CustomFieldSubject {
         'pcf_factor_kg' => 'decimal:4',
         'pcf_process_kg' => 'decimal:4',
         'default_sale_price' => MoneyCast::class . ':currency,4',
+        'gtin' => GtinCast::class,
     ];
 
     /** @return HasMany<ArticleVariant, $this> */

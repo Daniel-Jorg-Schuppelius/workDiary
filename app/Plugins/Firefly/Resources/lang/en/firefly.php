@@ -11,6 +11,7 @@
 return [
     'plugin' => [
         'description' => 'Mirrors deposits and withdrawals from Firefly III and assigns them to invoices or incoming invoices via the document number in the description. Nothing is booked in WorkDiary, and nothing is written to Firefly III.',
+        'capability' => 'Payment reconciliation',
     ],
     'page' => [
         'subtitle' => 'Account movements from Firefly III, assigned via document numbers in the description — read-only.',

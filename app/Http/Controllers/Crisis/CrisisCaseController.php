@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Crisis;
 use App\Enums\Crisis\{CrisisActionStatus, CrisisCaseStatus, CrisisCommunicationStatus, CrisisContinuityImpactStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Crisis\{AddCrisisLinkRequest, AssignCrisisTeamRequest, MarkCrisisCommunicationSentRequest, StoreCrisisActionRequest, StoreCrisisCaseRequest, StoreCrisisCommunicationRequest, StoreCrisisContinuityImpactRequest, StoreCrisisDecisionRequest, StoreCrisisReviewRequest, StoreCrisisRoleRequest, StoreCrisisSituationReportRequest, UpdateCrisisActionRequest, UpdateCrisisCaseStatusRequest, UpdateCrisisContinuityImpactRequest};
+use App\Http\Requests\Crisis\{AddCrisisLinkRequest, AssignCrisisTeamRequest, DiscardCrisisCaseRequest, MarkCrisisCommunicationSentRequest, StoreCrisisActionRequest, StoreCrisisCaseRequest, StoreCrisisCommunicationRequest, StoreCrisisContinuityImpactRequest, StoreCrisisDecisionRequest, StoreCrisisReviewRequest, StoreCrisisRoleRequest, StoreCrisisSituationReportRequest, UpdateCrisisActionRequest, UpdateCrisisCaseStatusRequest, UpdateCrisisContinuityImpactRequest};
 use App\Models\Crisis\{CrisisCase, CrisisCommunication, CrisisRole, CrisisTeamAssignment};
 use App\Models\Platform\User;
 use App\Services\Crisis\{CrisisAlertService, CrisisDeadlineService};
@@ -146,6 +146,25 @@ class CrisisCaseController extends Controller {
         $case->audit('crisis.all_clear', []);
 
         return back()->with('status', __('Entwarnung dokumentiert.'));
+    }
+
+    /** Fehlmeldung verwerfen (MVP-1517): nur aus „gemeldet“, mit Begründung im Auditverlauf. */
+    public function discardForm(CrisisCase $case): View {
+        Gate::authorize('approve', $case);
+        abort_unless($case->status->canTransitionTo(CrisisCaseStatus::Discarded), 404);
+
+        return view('crisis._discard_dialog', ['case' => $case]);
+    }
+
+    public function discard(DiscardCrisisCaseRequest $request, CrisisCase $case): RedirectResponse {
+        Gate::authorize('approve', $case);
+        if (! $case->status->canTransitionTo(CrisisCaseStatus::Discarded)) {
+            return back()->with('error', __('Nur gemeldete, noch nicht bewertete Krisen werden verworfen.'));
+        }
+        $case->update(['status' => CrisisCaseStatus::Discarded]);
+        $case->audit('crisis.discarded', ['reason' => $request->validated()['reason']]);
+
+        return back()->with('status', __('Krisenfall verworfen.'));
     }
 
     public function close(CrisisCase $case): RedirectResponse {

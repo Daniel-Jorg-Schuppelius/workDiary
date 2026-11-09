@@ -1,7 +1,7 @@
 ---
 title: "Gestire le integrazioni"
 topic: admin.integrations
-version: 5
+version: 6
 keywords:
     - interfacce
     - connettori
@@ -158,3 +158,24 @@ Google Calendar o Microsoft 365 compaiono nella inbox come eventi singoli
 nella finestra di importazione, con eventi spostati e annullati gestiti
 correttamente. Una serie può essere creata come appuntamenti o scartata in
 una volta sola come gruppo.
+
+## GitHub e GitLab: ritrasferire completamento e tempo
+
+Le attività provenienti dalle issue di GitHub e GitLab restano gestite dal
+sistema di origine. Lei attiva separatamente due vie di ritorno nella scheda
+del plugin:
+
+- **Ritrasferire il completamento** (GitHub e GitLab): quando l’attività viene
+  completata in WorkDiary, WorkDiary chiude l’issue con una nota; riaprendo
+  l’attività, l’issue viene riaperta.
+- **Ritrasferire il tempo registrato** (solo GitLab): ogni tempo che Lei
+  registra per un’attività collegata viene registrato da WorkDiary una sola
+  volta come tempo impiegato sull’issue. Un timer in corso viene registrato
+  con la sua durata all’arresto. Se in seguito modifica o elimina la
+  registrazione, WorkDiary non modifica la voce in GitLab: GitLab non
+  restituisce alcun identificativo della singola voce. Corregga quindi il
+  tempo impiegato in GitLab, nel report di monitoraggio del tempo dell’issue.
+  Il token richiede lo scope `api`.
+
+GitHub non offre il monitoraggio del tempo sulle issue; lì esiste solo la via
+di ritorno del completamento.

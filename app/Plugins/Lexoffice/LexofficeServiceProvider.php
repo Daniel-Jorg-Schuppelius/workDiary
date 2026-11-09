@@ -70,9 +70,6 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
         $this->app->make(\App\Services\Stammdaten\IdentifierAuditModels::class)->register(\App\Plugins\Lexoffice\Models\LexofficeArticle::class);
         // Belegliste der Kunden- und Lieferantenakte (MVP-1038).
         $this->app->make(PartyDocumentSources::class)->register(new LexofficePartyDocumentSource);
-        // „Lexoffice-Stand übernehmen“ in der Konfliktliste des Lagers (Entscheidung 2026-10-06):
-        // der Kern erreicht das Plugin nur über diesen Beitrag.
-        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Inventory\Contracts\ArticleConflictHandler::class, \App\Plugins\Lexoffice\Services\LexofficeArticleConflictHandler::class);
         // Übergabe aus dem Rechnungseingang (MVP-1111).
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Invoicing\Contracts\IncomingInvoiceTransferTarget::class, \App\Plugins\Lexoffice\Services\LexofficeIncomingInvoiceTarget::class);
         // Kontaktsuche im Zuordnen-Dialog des Rechnungseingangs (Phase 152, MVP-1226).

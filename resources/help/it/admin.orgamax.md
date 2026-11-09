@@ -1,7 +1,7 @@
 ---
 title: "orgaMAX contabilità"
 topic: admin.orgamax
-version: 1
+version: 2
 keywords:
     - API orgaMAX
     - integrazione contabile
@@ -52,3 +52,16 @@ visibilmente da orgaMAX.
 Il polling è budgetato con checkpoint (orario, configurabile); «Sincronizza
 ora» rispetta gli stessi limiti. La consegna spese/ricevute resta bloccata
 fino alla conferma del pilot receipt.
+
+Specchio dei documenti: se fatturazione o pagamenti sono attivi, la
+sincronizzazione rispecchia le fatture orgaMAX con le relative posizioni e,
+con la funzionalità spese, anche le spese come documenti in entrata. Compaiono
+nel flusso dei documenti, nella scheda di cliente e fornitore, nel fatturato,
+nelle partite aperte e nelle provvigioni e negli acquisti di abbonamenti e
+licenze; i modelli ricorrenti compaiono nella riconciliazione di abbonamenti e
+licenze (l'API orgaMAX non fornisce periodicità né prossima esecuzione). Con la
+funzionalità articoli, gli articoli orgaMAX fanno parte del catalogo articoli.
+I dati vengono solo letti — WorkDiary non riscrive le spese.
+
+WorkDiary trasferisce i fornitori solo se la funzionalità fornitori è attiva ed
+è impostato «WorkDiary guida»; orgaMAX assegna quindi il numero fornitore.

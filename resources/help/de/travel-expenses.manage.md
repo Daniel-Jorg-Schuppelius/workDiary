@@ -1,7 +1,7 @@
 ---
 title: "Fahrten, Spesen & Pauschalen"
 topic: travel-expenses.manage
-version: 4
+version: 5
 keywords:
     - Reisekostenabrechnung
     - Spesenabrechnung
@@ -69,6 +69,19 @@ wird ins Fuhrpark-Fahrzeug übernommen. Steht das Fuhrpark-Fahrzeug im
 Tagesende festgeschrieben. Fahrten erfassen kann jede angemeldete Person,
 sofern Ihre Organisation das Modul nutzt; eine Fahrt gehört immer der Person,
 die sie erfasst hat.
+
+## Auslage einem Buchhaltungsbeleg zuordnen
+
+Steht dieselbe Ausgabe schon als Eingangsbeleg in der Buchhaltung, ordnen Sie
+ihn im Beleg-Dialog der Auslage zu. Vorgeschlagen werden Belege mit gleichem
+Bruttobetrag (auf zwei Cent genau), deren Belegdatum höchstens 14 Tage vom
+Auslagendatum abweicht. **Zuordnen** bestätigt, dass es derselbe Vorgang ist:
+Im Belegfluss zählt dann nur der Beleg. Ein Beleg gehört zu genau einer
+Auslage; die Zuordnung lösen Sie im selben Dialog.
+
+Das geht mit Lexoffice und mit jedem Programm, dessen Eingangsbelege WorkDiary
+spiegelt (sevDesk, Akaunting, Invoice Ninja). Die Übergabe einer Auslage als
+neuer Beleg (unten) gibt es nur für Lexoffice.
 
 ## Auslage als Beleg in die Buchhaltung
 

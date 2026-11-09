@@ -12,12 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Firefly;
 
-use App\Models\Platform\Organization;
 use App\Plugins\AbstractPlugin;
-use App\Plugins\Contracts\{PaymentSyncer, PluginCapability};
 use App\Plugins\Firefly\Api\FireflyClientFactory;
 use App\Plugins\Firefly\Models\FireflyConnection;
-use App\Plugins\Firefly\Services\FireflySyncService;
 use App\Plugins\Support\{ChecksConnectionHealth, SelfHostedSettings};
 
 /**
@@ -25,7 +22,7 @@ use App\Plugins\Support\{ChecksConnectionHealth, SelfHostedSettings};
  * Eingänge und Ausgänge werden gespiegelt und über Belegnummern Rechnungen bzw.
  * Eingangsrechnungen zugeordnet; gebucht wird in WorkDiary nichts.
  */
-class FireflyPlugin extends AbstractPlugin implements PaymentSyncer {
+class FireflyPlugin extends AbstractPlugin {
     use ChecksConnectionHealth;
 
     public const string ID = 'firefly';
@@ -51,13 +48,9 @@ class FireflyPlugin extends AbstractPlugin implements PaymentSyncer {
         ]);
     }
 
+    /** Der Zahlungsabgleich steht über {@see Services\FireflyCapabilitySource} in der Übersicht. */
     public function capabilities(): array {
-        return [PluginCapability::PaymentSync];
-    }
-
-    /** @return array<string, int|string> */
-    public function syncPayments(Organization $organization): array {
-        return app(FireflySyncService::class)->run($organization);
+        return [];
     }
 
     public function adminPanel(): ?array {

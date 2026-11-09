@@ -105,6 +105,7 @@ final class InvoicePlaneArticleCatalogTest extends TestCase {
         parent::setUp();
         $this->setUpOrganization();
         config()->set('invoiceplane.query.page_size', 2);
+        config()->set('plugins.invoiceplane.enabled', true);
     }
 
     public function test_without_product_reader_the_source_is_not_configured(): void {

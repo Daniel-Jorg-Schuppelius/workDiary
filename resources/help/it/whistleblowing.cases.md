@@ -1,7 +1,7 @@
 ---
 title: "Canale di segnalazione – gestione dei casi"
 topic: whistleblowing.cases
-version: 3
+version: 4
 keywords:
     - whistleblowing
     - segnalante
@@ -61,15 +61,28 @@ note**. A seconda delle autorizzazioni può
   nella sua casella protetta.
 
 Gli allegati caricati dalla persona segnalante vengono archiviati in
-forma cifrata; il fascicolo al momento non offre un download.
+forma cifrata e controllati contro i malware prima del rilascio. La scheda
+**Allegati** indica nome e dimensione di ogni file; gli allegati rilasciati
+si scaricano con l'icona **Scarica**. Altrimenti la scheda mostra lo stato
+del controllo: **Analisi in corso** finché manca il risultato, **Respinto** o
+**Analisi non riuscita** – WorkDiary non consegna questi file. Senza un
+antivirus configurato gli allegati restano in analisi.
 
 **Riservatezza e conflitti**:
 
 - **Dichiara conflitto di interessi** (motivazione facoltativa) La
   esclude dal caso: la Sua assegnazione termina subito e non può
   revocare il blocco da sé.
-- Il fascicolo al momento non offre né la marcatura delle persone
-  interessate né un accesso di emergenza per altre persone.
+- **Contrassegna la persona interessata** esclude una persona dal caso
+  tramite il suo **ID utente** (**Segna**, nota facoltativa); le
+  assegnazioni esistenti terminano subito.
+- **Accesso di emergenza** concede a una persona non assegnata un accesso
+  a tempo, per impostazione predefinita quattro ore (ID utente e
+  motivazione obbligatoria, **Rilascia**). Può concederlo solo un'altra
+  persona.
+- **Esporta caso** crea un pacchetto cifrato con AES-256 (motivazione e
+  password di almeno dodici caratteri, **Esporta**); trasmetta la password
+  separatamente dal pacchetto.
 - Ogni passaggio sul caso viene registrato in modo non manipolabile nel
   registro del caso.
 

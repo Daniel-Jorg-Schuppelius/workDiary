@@ -17,7 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Integration\PendingExternalConflict;
 use App\Plugins\PluginManager;
 use App\Services\Inventory\InventoryConflictResolver;
-use App\Support\{ErrorText, Trans};
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -31,16 +31,7 @@ use RuntimeException;
  *  - keep-local:  den lokalen Stand bewusst beibehalten, oder
  *  - compensate:  die Bewegung per Gegenbuchung ausgleichen.
  *
- * `article`: Ein lokal geänderter Artikel weicht vom Stand im Fremdsystem ab
- * (heute: Lexware Office). Die Liste zeigt beide Stände aus dem gespeicherten
- * Schnappschuss; ein Berechtigter kann
- *  - keep-local:   den lokalen Stand behalten (geht beim nächsten Push ins Fremdsystem),
- *  - adopt-remote: den Stand des Fremdsystems übernehmen (über das meldende Plugin), oder
- *  - dismiss:      den Konflikt ohne Abgleich verwerfen.
- *
- * Rechte je Art (Entscheidung 2026-10-06): sehen mit inventory.viewAny ODER
- * article.viewAny — ohne Lagerrecht nur Artikelkonflikte, ohne Artikelrecht nur
- * Bestandskonflikte. Auflösen mit inventory.post (Bestand) bzw. article.manage (Artikel).
+ * Sehen mit inventory.viewAny, auflösen mit inventory.post.
  */
 class InventoryConflictController extends Controller {
     use ResolvesCurrentOrganization;
@@ -53,12 +44,10 @@ class InventoryConflictController extends Controller {
         abort_if($types === [], 403);
 
         $status = (string) $request->input('status', ExternalConflictStatus::Open->value);
-        $type = (string) $request->input('type', '');
-        $type = in_array($type, $types, true) ? $type : '';
 
         $query = PendingExternalConflict::query()
             ->where('organization_id', $this->currentOrganizationId())
-            ->whereIn('conflict_type', $type !== '' ? [$type] : $types)
+            ->whereIn('conflict_type', $types)
             ->orderByDesc('id');
 
         if ($status !== '' && $status !== 'all') {
@@ -69,18 +58,12 @@ class InventoryConflictController extends Controller {
 
         return view('inventory.conflicts.index', [
             'conflicts' => $conflicts,
-            'articleDiffs' => $conflicts->getCollection()
-                ->where('conflict_type', PendingExternalConflict::TYPE_ARTICLE)
-                ->mapWithKeys(fn (PendingExternalConflict $conflict): array => [$conflict->id => $this->articleDiff($conflict)])
-                ->all(),
-            // Anzeigename des meldenden Plugins — die Aktion heißt „Lexoffice-Stand übernehmen“, nicht „lexoffice“.
+            // Anzeigename des meldenden Plugins statt seiner Kennung.
             'pluginLabels' => $conflicts->getCollection()->pluck('plugin_id')->unique()
                 ->mapWithKeys(fn (string $id): array => [$id => $this->plugins->find($id)?->name() ?? $id])
                 ->all(),
-            'types' => $types,
-            'filters' => ['status' => $status, 'type' => $type],
+            'filters' => ['status' => $status],
             'canResolveStock' => $user->can(P::InventoryPost->value),
-            'canResolveArticle' => $user->can(P::ArticleManage->value),
         ]);
     }
 
@@ -93,21 +76,7 @@ class InventoryConflictController extends Controller {
             return back()->with('error', ErrorText::for($e));
         }
 
-        $flash = $conflict->conflict_type === PendingExternalConflict::TYPE_ARTICLE ? 'kept_local_article' : 'kept_local';
-
-        return back()->with('success', __('inventory.conflict.flash.' . $flash));
-    }
-
-    public function adoptRemote(PendingExternalConflict $conflict): RedirectResponse {
-        $this->authorizeResolve($conflict);
-
-        try {
-            $this->resolver->adoptRemote($conflict, Auth::id() !== null ? (int) Auth::id() : null);
-        } catch (RuntimeException $e) {
-            return redirect()->toList('inventory.conflicts.index')->with('error', ErrorText::for($e));
-        }
-
-        return redirect()->toList('inventory.conflicts.index')->with('success', __('inventory.conflict.flash.adopted_remote'));
+        return back()->with('success', __('inventory.conflict.flash.kept_local'));
     }
 
     public function compensate(PendingExternalConflict $conflict): RedirectResponse {
@@ -122,50 +91,8 @@ class InventoryConflictController extends Controller {
         return back()->with('success', __('inventory.conflict.flash.compensated'));
     }
 
-    public function dismiss(PendingExternalConflict $conflict): RedirectResponse {
-        $this->authorizeResolve($conflict);
-
-        try {
-            $this->resolver->dismiss($conflict, Auth::id() !== null ? (int) Auth::id() : null);
-        } catch (RuntimeException $e) {
-            return redirect()->toList('inventory.conflicts.index')->with('error', ErrorText::for($e));
-        }
-
-        return redirect()->toList('inventory.conflicts.index')->with('success', __('inventory.conflict.flash.dismissed'));
-    }
-
-    /** Auflösen je Art: Bestand braucht das Buchungsrecht, Artikel das Artikelrecht. */
     private function authorizeResolve(PendingExternalConflict $conflict): void {
-        $permission = $conflict->conflict_type === PendingExternalConflict::TYPE_ARTICLE ? P::ArticleManage : P::InventoryPost;
-        Gate::authorize($permission->value);
+        Gate::authorize(P::InventoryPost->value);
         $this->assertSameOrganization($conflict, 403);
-    }
-
-    /**
-     * Abweichende Felder eines Artikelkonflikts mit beiden Ständen — nur aus
-     * dem gespeicherten Schnappschuss, ohne Zugriff auf das Fremdsystem-Plugin.
-     *
-     * @return list<array{label: string, local: string, remote: string}>
-     */
-    private function articleDiff(PendingExternalConflict $conflict): array {
-        $rows = [];
-        foreach ($conflict->diff_fields ?? [] as $field) {
-            $rows[] = [
-                'label' => Trans::or('inventory.conflict.field.' . $field, $field),
-                'local' => $this->snapshotValue($conflict->local_snapshot[$field] ?? null),
-                'remote' => $this->snapshotValue($conflict->remote_snapshot[$field] ?? null),
-            ];
-        }
-
-        return $rows;
-    }
-
-    /** Altbestand hält Preis und Steuersatz als serialisiertes Wertobjekt (amount/value) statt als Dezimalzeichenkette. */
-    private function snapshotValue(mixed $value): string {
-        if (is_array($value)) {
-            $value = $value['amount'] ?? $value['value'] ?? null;
-        }
-
-        return is_scalar($value) && trim((string) $value) !== '' ? trim((string) $value) : '—';
     }
 }

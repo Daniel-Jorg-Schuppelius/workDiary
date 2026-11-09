@@ -260,6 +260,7 @@ return [
             'claim_pattern' => 'Schemi di reclamo',
             'recurring_tickets' => 'Ticket ricorrenti',
             'capacity' => 'Carenze di personale',
+            'project_target' => 'Tempi obiettivo non raggiunti',
         ],
     ],
     'product_revenue' => [

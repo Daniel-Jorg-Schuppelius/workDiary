@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Architecture;
 
 use App\Models\Concerns\Auditable;
+use App\Support\Crypto\EncryptedCasts;
 use Illuminate\Database\Eloquent\Model;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -55,7 +56,7 @@ class AuditSecretRedactionRuleTest extends TestCase {
 
             $secrets = [];
             foreach ($model->getCasts() as $column => $cast) {
-                if (is_string($cast) && str_starts_with($cast, 'encrypted')) {
+                if (is_string($cast) && EncryptedCasts::covers($cast)) {
                     $secrets[] = $column;
                 }
             }

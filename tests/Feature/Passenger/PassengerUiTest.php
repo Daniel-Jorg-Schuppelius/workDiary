@@ -111,6 +111,16 @@ class PassengerUiTest extends TestCase {
         $this->actingAs($member)->get(route('passenger-rides.index'))->assertForbidden();
     }
 
+    public function test_status_filter_hides_requested_without_a_dispatch_provider(): void {
+        $this->activateProfile();
+
+        $statuses = $this->get(route('passenger-rides.index'))->assertOk()->viewData('statuses');
+
+        // „Angefragt“ setzt nur ein Vermittlungsanbieter (MVP-1517); ohne ihn wäre der Filterwert leer.
+        $this->assertNotContains(RideStatus::Requested, $statuses);
+        $this->assertContains(RideStatus::Accepted, $statuses);
+    }
+
     public function test_ride_lifecycle_via_web_ui(): void {
         $this->activateProfile();
         $driver = $this->orgUser();

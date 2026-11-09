@@ -175,6 +175,10 @@ return [
 
     'attributes' => [
 
+        'category_allowlist' => 'Solo categorie',
+        'category_allowlist.*' => 'Categoria',
+        'import_entity' => 'Destinazione dell’importazione',
+        'prepayment_percent' => 'Pagamento anticipato',
         'provider_customer_number' => 'numero cliente presso il fornitore',
         'rental_mode' => 'Tipo di locazione',
         'max_guests' => 'Numero massimo di ospiti',
@@ -2894,6 +2898,7 @@ return [
         'siblings.second_percent' => 'sconto secondo figlio',
         'siblings.further_percent' => 'sconto dal terzo figlio',
         'siblings.max_age' => 'limite di età',
+
     ],
 
     'values' => [

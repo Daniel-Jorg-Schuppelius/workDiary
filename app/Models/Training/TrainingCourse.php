@@ -77,6 +77,7 @@ class TrainingCourse extends Model {
         'cost_currency' => CurrencyCode::class,
         'lead_days' => 'integer',
         'is_active' => 'boolean',
+        'cost_amount' => 'decimal:2',
     ];
 
     /** Vorlauf der Fälligkeitsmeldung in Tagen (nie negativ). */

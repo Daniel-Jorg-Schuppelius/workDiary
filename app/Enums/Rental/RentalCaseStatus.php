@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Enums\Rental;
 
-use App\Enums\Concerns\HasOptions;
+use App\Enums\Concerns\{HasOptions, HasTransitions};
 use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
@@ -22,6 +22,7 @@ use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
  */
 enum RentalCaseStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
+    use HasTransitions;
 
     case Draft = 'draft';
     case Reserved = 'reserved';

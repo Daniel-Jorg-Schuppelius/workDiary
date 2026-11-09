@@ -28,7 +28,7 @@ class RekeyEncryptedCoverageRuleTest extends TestCase {
     private const array ALLOW_LIST = [
         'app/Console/Commands/SecurityRekeyEncryptedCommand.php' => 'der Rekey selbst',
         'app/Console/Commands/EncryptExistingPii.php' => 'einmaliges Migrationswerkzeug — verschlüsselt Felder, die danach encrypted-Casts tragen',
-        'app/Casts/ValueObjectCast.php' => 'generischer Cast; encrypted-Option derzeit von keinem Modell genutzt (sonst greift die Cast-Ableitung nicht — hier registrieren!)',
+        'app/Casts/Concerns/EncryptsAtRest.php' => 'Cast-Option `encrypted` (Kennungs- und Wertobjekt-Casts); die Ableitung erkennt sie über EncryptedCasts::covers()',
         'app/Http/Controllers/B2bCatalog/B2bPunchoutController.php' => 'transienter Session-Token, nicht persistiert',
         'app/Services/Applications/CareerFormState.php' => 'transienter Formular-Token, nicht persistiert',
         'app/Services/Shipping/CarrierTokenCache.php' => 'Cache-Eintrag — nach Rotation schlicht neu geholt',
@@ -58,12 +58,15 @@ class RekeyEncryptedCoverageRuleTest extends TestCase {
         $map = SecurityRekeyEncryptedCommand::encryptedFieldMap();
 
         $this->assertGreaterThanOrEqual(45, count($map), 'Ableitung eingebrochen? Es gab 47 Modelle mit encrypted-Casts + SystemSetting.');
+        // Kennungs-Casts mit Option `encrypted` (MVP-1512) zählen wie der encrypted-Cast.
         foreach ([
-            \App\Models\Platform\User::class => 'two_factor_secret',
-            \App\Models\Contacts\ContactBankAccount::class => 'iban',
-            \App\Models\Invoicing\IncomingEInvoice::class => 'creditor_iban',
-            \App\Models\Platform\SystemSetting::class => 'value',
-        ] as $class => $field) {
+            [\App\Models\Platform\User::class, 'two_factor_secret'],
+            [\App\Models\Platform\User::class, 'tax_identification_number'],
+            [\App\Models\Contacts\ContactBankAccount::class, 'iban'],
+            [\App\Models\Customer\Customer::class, 'bank_iban'],
+            [\App\Models\Invoicing\IncomingEInvoice::class, 'creditor_iban'],
+            [\App\Models\Platform\SystemSetting::class, 'value'],
+        ] as [$class, $field]) {
             $this->assertArrayHasKey($field, $map[$class] ?? [], $class);
         }
     }

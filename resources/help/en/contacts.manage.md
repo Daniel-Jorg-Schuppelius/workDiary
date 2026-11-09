@@ -1,7 +1,7 @@
 ---
 title: "Customers & suppliers"
 topic: contacts.manage
-version: 12
+version: 14
 keywords:
     - Preview as customer
     - Start password
@@ -103,6 +103,39 @@ If a contact has lost all two-factor methods and recovery codes, **Reset second 
 
 **Removing an access:** An access that has **never signed in** (invitation pending or expired, start password outstanding) is deleted permanently with **Delete access** – there is no evidence attached to it. If the contact has signed in before, the record stays: deactivate the access and choose **Remove access**. Name, address and credentials are dropped, the e-mail address becomes available for a new invitation, and photo confirmations, queries and requests remain as evidence (“Former portal access”). Both require a password confirmation and are logged on the customer; removed accesses only appear in the summary line below the list. The retention check (area **Portal accesses**) proposes deactivated accesses for removal after one year.
 
+## E-invoice
+
+In the customer dialog the e-invoice fields are in the section **Billing &
+display**:
+
+- **Default e-invoice format**: preset for new invoices and the file import of
+  this customer, such as **XRechnung (XML)** or **ZUGFeRD (hybrid PDF)**; **No
+  default (PDF)** keeps the PDF.
+- **Routing ID / buyer reference (BT-10)**: mandatory in the XRechnung – the
+  routing ID (Leitweg-ID) for public authorities, otherwise a reference set by
+  the customer.
+- **Peppol participant ID**: recipient identifier for sending via Peppol in the
+  form scheme:identifier, for example with the VAT ID or the routing ID; empty
+  means no Peppol dispatch to this customer.
+- **E-invoice recipient profile**: **Public authority** sends only the XML by
+  email, requires the routing ID, embeds the documents and attaches the
+  activity report automatically; **Standard** applies to all other customers,
+  **Organisation default** uses the organisation's setting.
+- **Attach activity report**: **By recipient profile**, **Always** or
+  **Never**; the report is generated from the billed times when the invoice is
+  issued.
+- **Largest e-invoice with documents (MB)**: upper limit for the e-invoice
+  including embedded documents; if empty, the profile's limit applies (standard
+  15 MB, public authority 10 MB).
+- **Dispatch route with external invoicing authority**: if an invoicing system
+  controls number and content of the invoice, either the invoicing system
+  delivers it or WorkDiary sends the invoice with the supporting documents – in
+  that case switch off automatic dispatch in the invoicing system. You only see
+  this field with the right **Manage finance configuration**.
+
+How documents get into the e-invoice and what applies to public-authority
+customers is described in the help topic **Invoices & documents**.
+
 ## Practical example
 
 An IT service provider creates "Müller GmbH", storing the billing
@@ -129,6 +162,52 @@ billing data for invoices and use the CSV import for larger sets.
 ## Supplier: tax data and self-billing
 
 The supplier carries the **VAT ID** and **tax number**. If your organisation bills a supplier’s services itself, enter the date of the **self-billing agreement**; only then can self-billed credit notes be issued to the supplier. The supplier page shows the agreement and the latest credit notes.
+
+## Invoices & vouchers in the file
+
+Besides the invoices created in WorkDiary, the **Invoices & vouchers** card
+shows the documents of connected accounting programs for the period in the
+header: Lexoffice, sevDesk, easybill, orgaMAX, Invoice Ninja, Akaunting,
+JTL-Wawi and InvoicePlane for customers and suppliers. A program
+appears as long as its document import is set up for your organisation; the
+“Source” column names it. Documents are assigned during the import through the
+contact link, the customer number or the supplier name; if the link is
+missing, the empty card says so. Where the program provides a PDF (sevDesk
+invoices and credit notes, easybill, orgaMAX invoices), **Original PDF** loads
+it directly. Incoming
+documents of these programs can also be allocated as material costs of the
+customer and in the purchasing of subscriptions and licences.
+
+## Transferring suppliers to accounting
+
+If WorkDiary leads the master data, suppliers are transferred to the
+accounting program just like customers: Lexoffice, sevDesk, easybill and
+orgaMAX. They are transferred when created, if the program assigns the
+supplier number according to **Number formats**, and after changes to a
+supplier that is already linked. easybill and orgaMAX can assign the supplier
+number; sevDesk creates a contact in the “Supplier” category and keeps no
+supplier number of its own, so the number from WorkDiary remains. orgaMAX only
+accepts suppliers if the “Suppliers” capability is active in the orgaMAX
+administration and “WorkDiary leads” is set; otherwise orgaMAX leads the
+suppliers and WorkDiary only links them.
+
+## Master data from the accounting program
+
+If master data authority is set to “Accounting leads”, WorkDiary transfers no
+contacts. Instead, customers and suppliers come from the program: Lexoffice
+and orgaMAX through their own contact sync, sevDesk and easybill every hour by
+these rules:
+
+- A contact that is already linked takes over the program’s data (name, VAT
+  ID, tax number; for easybill also address, email, phone and contact person).
+- A safe match, for example by VAT ID, is linked.
+- Anything unclear appears as a case in the **Mapping Inbox**; nothing is
+  created.
+
+sevDesk provides the role through the contact category: “Customer” and
+“Supplier” are imported, partners, prospects and contact persons of a company
+are not. easybill distinguishes by customer and supplier number; a contact with
+both numbers is customer and supplier. Archived easybill contacts are left out.
 
 ## Customer and supplier cockpit
 

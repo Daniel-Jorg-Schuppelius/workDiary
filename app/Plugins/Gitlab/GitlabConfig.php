@@ -24,7 +24,7 @@ use App\Plugins\Support\PluginSettingsResolver;
  */
 class GitlabConfig {
     /**
-     * @return array{api_token: ?string, project_id: ?string, webhook_token: ?string, default_project: ?string, base_url: string, allow_private_network: bool, writeback: bool, enabled: bool}
+     * @return array{api_token: ?string, project_id: ?string, webhook_token: ?string, default_project: ?string, base_url: string, allow_private_network: bool, writeback: bool, time_writeback: bool, enabled: bool}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(GitlabPlugin::ID, $organizationId);
@@ -37,8 +37,16 @@ class GitlabConfig {
             'base_url' => rtrim($r->string('base_url', trim: true) ?? 'https://gitlab.com', '/'),
             'allow_private_network' => $r->bool('allow_private_network', false),
             'writeback' => $r->bool('writeback', false),
+            'time_writeback' => $r->bool('time_writeback', false),
             'enabled' => $r->enabled(),
         ];
+    }
+
+    /** Gebuchte Zeit an verknüpfte Issues zurückschreiben (MVP-1513)? */
+    public static function timeWritebackEnabled(int $organizationId): bool {
+        $config = self::resolve($organizationId);
+
+        return $config['enabled'] && $config['time_writeback'] && self::isConfigured($organizationId);
     }
 
     /** Vollständig genug für Import/Healthcheck (Token + Projekt-ID)? */

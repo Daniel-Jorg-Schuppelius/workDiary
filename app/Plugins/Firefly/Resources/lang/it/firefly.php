@@ -11,6 +11,7 @@
 return [
     'plugin' => [
         'description' => 'Rispecchia entrate e uscite di Firefly III e le assegna a fatture o fatture in entrata tramite il numero del documento nella causale. In WorkDiary non viene registrato nulla e in Firefly III non viene scritto nulla.',
+        'capability' => 'Riconciliazione pagamenti',
     ],
     'page' => [
         'subtitle' => 'Movimenti di conto da Firefly III, assegnati tramite i numeri di documento nella causale — sola lettura.',

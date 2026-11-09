@@ -1,7 +1,7 @@
 ---
 title: "Portal del cliente – Alquiler"
 topic: customer-portal.rentals
-version: 3
+version: 4
 keywords:
     - alquilar una vivienda
     - reservar apartamento vacacional
@@ -106,6 +106,17 @@ grupos de equipos no se pueden reservar directamente. La reserva aparece en
 **Mis solicitudes** con el estado **Reservado directamente** y como operación
 de alquiler con el estado **Reservado**. Se notifica a su proveedor, que le
 envía la documentación de entrega.
+
+### Con pago anticipado en línea
+
+Si su proveedor exige un pago anticipado, la lista de equipos muestra **Pago
+anticipado … %** junto al precio. Tras **Reservar ahora** accede a la página de
+pago del proveedor de pagos. El equipo queda reservado para usted hasta que
+vence el plazo de pago (**Mis solicitudes** indica **Pago hasta …**). La
+reserva solo se confirma al recibir el pago; solo entonces se avisa a su
+proveedor. Si la página de pago no está disponible, vuelva a intentarlo con
+**Pagar ahora**. Si no paga dentro del plazo, la reserva caduca y el equipo
+vuelve a quedar libre. El pago anticipado se imputa a la factura posterior.
 
 ## Condiciones de alquiler
 

@@ -19,7 +19,8 @@ use App\Services\Classification\Contracts\ProfileInstallStep;
  * Branchenprofil-Abschnitt `protocol_templates` (MVP-901): Zeilen
  * `{name, kind, description?, items}` im Vorlagenformat oder nur `{code}`
  * aus dem Katalog `database/data/protocol_templates.php` (MVP-902).
- * Vorhandene Vorlagen gleichen Namens bleiben unberührt.
+ * Vorhandene Vorlagen gleichen Namens bleiben unberührt; `supersedes` nennt
+ * Katalog-Codes, deren Vorlagen mit dem Anlegen des Nachfolgers inaktiv werden.
  */
 final class ProtocolTemplateInstallStep implements ProfileInstallStep {
     public function key(): string {
@@ -31,6 +32,7 @@ final class ProtocolTemplateInstallStep implements ProfileInstallStep {
         $skipped = 0;
         $catalog = null;
         foreach ($rows as $row) {
+            $superseded = is_array($row) ? array_values(array_filter((array) ($row['supersedes'] ?? []), 'is_string')) : [];
             if (is_array($row) && isset($row['code']) && ! isset($row['items'])) {
                 $catalog ??= require database_path('data/protocol_templates.php');
                 $row = $catalog[(string) $row['code']] ?? $row;
@@ -55,6 +57,18 @@ final class ProtocolTemplateInstallStep implements ProfileInstallStep {
                 'updated_by' => $actor?->id,
             ]);
             $created++;
+
+            // Vorlagen tragen keinen Code; der Vorgänger wird über seinen Katalognamen gefunden.
+            if ($superseded !== []) {
+                $catalog ??= require database_path('data/protocol_templates.php');
+                $names = array_values(array_filter(array_map(static fn (string $code): ?string => $catalog[$code]['name'] ?? null, $superseded)));
+                ProtocolTemplate::query()
+                    ->where('organization_id', $organization->id)
+                    ->whereIn('name', $names)
+                    ->where('is_active', true)
+                    ->get()
+                    ->each(static fn (ProtocolTemplate $old) => $old->update(['is_active' => false]));
+            }
         }
 
         return ['created' => $created, 'skipped' => $skipped];

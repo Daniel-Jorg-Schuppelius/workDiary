@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\Media\MediaState;
+use App\Jobs\Attributes\BelongsToModule;
 use App\Models\Attachments\Attachment;
 use App\Services\Media\VideoTranscodingService;
 use Illuminate\Bus\Queueable;
@@ -35,6 +36,7 @@ use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
  * steht am Anhang, die Oberfläche zeigt ihn an, und ein neuer Anlauf ist
  * eine bewusste Handlung.
  */
+#[BelongsToModule('media')]
 class TranscodeVideoJob implements ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;

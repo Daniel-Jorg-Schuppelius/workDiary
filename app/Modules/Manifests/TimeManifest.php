@@ -52,6 +52,8 @@ final class TimeManifest extends Manifest {
             'attendances',
             'flex_balances',
             'flex_eligibilities',
+            'ical_subscription_items',
+            'ical_subscriptions',
             'minimum_wage_references',
             'minimum_wages',
             'month_closure_events',

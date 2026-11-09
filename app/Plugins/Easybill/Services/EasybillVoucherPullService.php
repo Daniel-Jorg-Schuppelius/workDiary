@@ -15,7 +15,7 @@ namespace App\Plugins\Easybill\Services;
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
 use App\Enums\Finance\AccountingVoucherState;
 use App\Plugins\Easybill\Api\{EasybillClient, EasybillClientFactory};
-use App\Plugins\Easybill\EasybillPlugin;
+use App\Plugins\Easybill\{EasybillConfig, EasybillPlugin};
 use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, MirroredVoucherLine, VoucherMirror, VoucherPuller};
 use Illuminate\Support\Carbon;
 
@@ -58,8 +58,9 @@ class EasybillVoucherPullService implements VoucherPuller {
         return EasybillPlugin::ID;
     }
 
+    /** Eingeschaltet und Zugang hinterlegt — der allgemeine Abruf prüft den Plugin-Schalter nicht selbst. */
     public function isConfigured(int $organizationId): bool {
-        return app(EasybillClientFactory::class)->isConfigured($organizationId);
+        return EasybillConfig::resolve($organizationId)['enabled'] && app(EasybillClientFactory::class)->isConfigured($organizationId);
     }
 
     /** @return array{read: int, created: int, updated: int, skipped: int} */

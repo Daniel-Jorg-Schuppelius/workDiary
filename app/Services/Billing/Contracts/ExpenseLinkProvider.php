@@ -28,12 +28,13 @@ use RuntimeException;
  * {@see ExpenseVoucherRef}-Werte zurück. Getragen wird die Zuordnung weiterhin
  * von {@see ExternalReference} — polymorph und genau dafür da.
  *
- * Entscheid E8: Der aktive Auslagen-Push bleibt Lexoffice-only. Es gibt daher
- * bewusst genau EINE echte Implementierung
- * ({@see \App\Plugins\Lexoffice\Services\LexofficeExpenseLinkProvider}) plus den
- * {@see \App\Services\Billing\NullExpenseLinkProvider} für Organisationen ohne
- * angebundene Buchhaltung — kein Provider heißt „keine Vorschläge, kein Push",
- * nicht „stiller Fehler".
+ * Entscheid E8: Der aktive Auslagen-Push bleibt Lexoffice-only
+ * ({@see \App\Plugins\Lexoffice\Services\LexofficeExpenseLinkProvider}). Vorschläge
+ * und Zuordnung gibt es für jedes Programm des allgemeinen Belegspiegels über
+ * {@see \App\Services\Finance\Accounting\Vouchers\AccountingVoucherExpenseLinkProvider}
+ * (MVP-1498, ohne Push). Der {@see \App\Services\Billing\NullExpenseLinkProvider}
+ * gilt für Organisationen ohne angebundene Buchhaltung — kein Provider heißt
+ * „keine Vorschläge, kein Push", nicht „stiller Fehler".
  */
 interface ExpenseLinkProvider {
     /** Anzeigename des führenden Systems (UI-Meldungen); null = keines. */

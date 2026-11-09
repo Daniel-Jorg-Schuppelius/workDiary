@@ -1,7 +1,7 @@
 ---
 title: "Buchhaltungswechsel"
 topic: admin.accounting-migration
-version: 1
+version: 2
 keywords:
     - Softwarewechsel
     - Systemwechsel Buchhaltung
@@ -9,6 +9,8 @@ keywords:
     - Umstieg
     - Lexoffice
     - orgaMAX
+    - sevDesk
+    - easybill
     - Lexoffice zu orgaMAX
     - Datenmigration
     - Probelauf
@@ -23,9 +25,10 @@ related:
 ---
 
 Der Buchhaltungswechsel führt kontrolliert von einer Buchhaltungssoftware
-zur nächsten (erster unterstützter Pfad: Lexoffice → orgaMAX). WorkDiary
-kopiert dabei nicht blind von System zu System, sondern ordnet beide
-Fremdsysteme denselben lokalen Fachobjekten zu.
+zur nächsten. Quelle und Ziel sind frei wählbar unter Lexoffice, orgaMAX,
+sevDesk und easybill, in beide Richtungen. WorkDiary kopiert dabei nicht
+blind von System zu System, sondern ordnet beide Fremdsysteme denselben
+lokalen Fachobjekten zu.
 
 Ablauf:
 
@@ -46,6 +49,20 @@ Ablauf:
 6. **Abschließen**: erst möglich, wenn keine offenen Altbelege und keine
    ungeklärten Zuordnungen mehr existieren. Das Protokoll (CSV) belegt
    Umfang, Zuordnungen und Abweichungen.
+
+Bei sevDesk und easybill gilt:
+
+- **Stammdaten** gleicht der Wechsel über die Kontaktverknüpfung ab: Kunden
+  und Lieferanten, die schon mit dem Programm verknüpft sind (Übergabe,
+  Kontakt-Push oder Kontaktabgleich), zählen als zugeordnet.
+- **Artikel** lassen sich mit sevDesk und easybill nicht abgleichen, weil
+  workDiary deren Artikelstamm nur spiegelt und nicht mit lokalen Artikeln
+  verknüpft. Wählen Sie den Bereich dann ab.
+- Die **Beleghistorie** stammt aus dem Belegspiegel. Lassen Sie vor der
+  Analyse und vor dem Abschluss den Belegabruf laufen, damit offene
+  Altbelege vollständig erfasst sind.
+- Die Belegbilder liegen weiter im Programm. Sichern Sie sie vor dem Ende
+  des Vertrags über dessen Export.
 
 Grundsätze: Finalisierte Belege werden **nie** als neue Belege im
 Zielsystem nachgebaut — sie bleiben mit Nummer, Status und Herkunft als

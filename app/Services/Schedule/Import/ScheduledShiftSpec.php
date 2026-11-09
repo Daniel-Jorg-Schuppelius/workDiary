@@ -20,6 +20,7 @@ use App\Models\Schedule\{ScheduledShift, ShiftType};
 use App\Services\Import\{HasMappableValues, ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\AbstractEntitySpec;
 use App\Services\Import\Specs\Concerns\{ParsesLocalDateTime, ResolvesImportUsers};
+use App\Services\Schedule\QualificationEnforcement;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
@@ -162,6 +163,17 @@ class ScheduledShiftSpec extends AbstractEntitySpec implements HasMappableValues
                 'status' => $status,
                 'updated_by' => $actorId,
             ];
+
+            // Qualifikationssperre (MVP-1514): Schichttyp und Tag bestimmen die Pflichtqualifikationen.
+            $blocked = app(QualificationEnforcement::class)->shiftBlockMessage((new ScheduledShift)->forceFill([
+                'organization_id' => $organization->id,
+                'user_id' => $user->id,
+                'shift_type_id' => $shiftTypeId,
+                'date' => $row['date'],
+            ]));
+            if ($blocked !== null && ($existing === null || (int) $existing->shift_type_id !== (int) $shiftTypeId)) {
+                return [ImportOutcome::Failed, new ValidationIssue(ImportErrorCode::Blocked, 'user_email', $blocked)];
+            }
 
             if ($existing !== null) {
                 $existing->fill($payload)->save();

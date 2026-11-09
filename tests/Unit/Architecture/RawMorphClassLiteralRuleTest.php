@@ -30,7 +30,9 @@ class RawMorphClassLiteralRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad-Präfix → Begründung */
-    private const array ALLOWLIST = [];
+    private const array ALLOWLIST = [
+        'tests/Unit/Architecture/RawMorphClassLiteralRuleTest.php' => 'Prüfmuster der Regel selbst',
+    ];
 
     public function test_no_class_names_as_morph_values(): void {
         $violations = [];
@@ -49,6 +51,20 @@ class RawMorphClassLiteralRuleTest extends TestCase {
         sort($violations);
 
         $this->assertSame([], $violations, "Klassenname als Morph-Wert (MVP-860, Morph-Map):\n" . implode("\n", $violations));
+    }
+
+    /** Die Regel sieht die Formen, die sie verbietet (Fund 2026-11-08: Ternärform in `DomainCommandService::create()`). */
+    public function test_the_rule_sees_direct_and_ternary_class_values(): void {
+        $source = <<<'PHP'
+            <?php
+            $a = ['subject_type' => $subject::class];
+            $b = ['subject_type' => $subject !== null ? $subject::class : null];
+            $c = ['subject_type' => $subject === null ? null : $subject::class];
+            $d = ['owner_type' => $row?->owner !== null ? get_class($owner) : null];
+            $ok = ['subject_type' => $subject?->getMorphClass(), 'other_type' => $x !== null ? MorphMap::alias($x::class) : null];
+            PHP;
+
+        $this->assertCount(4, $this->findings($source));
     }
 
     /**
@@ -104,8 +120,9 @@ class RawMorphClassLiteralRuleTest extends TestCase {
                 }
             }
         }
-        // 'x_type' => $x::class | $x->y::class | get_class($x) | static::class  und  where('x_type', $x::class | get_class($x))
-        if (preg_match_all('/(?:\'[\w.]+_type\'\s*=>\s*|where\(\'[\w.]+_type\',\s*)(?:\$[\w>\-\[\]\']+::class|get_class\(\$\w+\)|static::class)/', $source, $m, PREG_OFFSET_CAPTURE) > 0) {
+        // 'x_type' => $x::class | $x->y::class | get_class($x) | static::class  und  where('x_type', $x::class | get_class($x)),
+        // auch als Ternärzweig: 'x_type' => $x !== null ? $x::class : null bzw. … ? null : $x::class
+        if (preg_match_all('/(?:\'[\w.]+_type\'\s*=>\s*|where\(\'[\w.]+_type\',\s*)(?:(?:[^,;\n?]|\?->)+\?(?!->)\s*(?:(?:[^,;\n:]|::)+:\s*)?)?(?:\$[\w>\-\[\]\']+::class|get_class\(\$\w+\)|static::class)/', $source, $m, PREG_OFFSET_CAPTURE) > 0) {
             foreach ($m[0] as [$snippet, $offset]) {
                 $out[] = [$offset, $snippet];
             }

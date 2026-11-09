@@ -62,6 +62,13 @@ final class RetainerChannelResolver {
         return $channel !== null ? ($channel['links'])() : new NullRetainerVoucherLinks;
     }
 
+    /** Belegabgleich eines Programms nach dessen Spiegellauf (MVP-1505); null = führt keine Pauschalen. */
+    public function linksForPlugin(string $pluginId): ?RetainerVoucherLinks {
+        $channel = $this->channels[$pluginId] ?? null;
+
+        return $channel !== null ? ($channel['links'])() : null;
+    }
+
     /** @return array{label: string, publisher: Closure(): RetainerPublisher, links: Closure(): RetainerVoucherLinks}|null */
     private function channelFor(Customer $customer): ?array {
         return $this->channels[app(BillingModeResolver::class)->effectiveFor($customer)->value] ?? null;

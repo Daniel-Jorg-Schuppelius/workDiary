@@ -113,6 +113,7 @@ class GitlabPlugin extends AbstractPlugin implements LinksExternalRecords, TaskS
             ['key' => 'allow_private_network', 'label' => __('Private Adressen erlauben'), 'type' => 'boolean', 'default' => false, 'help' => __('Nur für On-Premise-Instanzen im eigenen Netz: erlaubt eine Instanz-URL mit privater/interner Adresse.')],
             ['key' => 'default_project', 'label' => __('Standard-Projekt (Sqid)'), 'type' => 'text', 'help' => __('Optional: Projekt-Kennung aus der Projekt-URL; importierte Aufgaben landen dort, sonst als globale Aufgabe.')],
             ['key' => 'writeback', 'label' => __('Erledigung zurückschreiben'), 'type' => 'boolean', 'default' => false, 'help' => __('Schließt das verknüpfte Issue (mit Notiz), wenn die Aufgabe in workDiary erledigt wird, und öffnet es beim Wiedereröffnen. Titel und Beschreibung bleiben quellsystem-geführt. Der Token braucht Schreibzugriff auf Issues (api-Scope).')],
+            ['key' => 'time_writeback', 'label' => __('Gebuchte Zeit zurückschreiben'), 'type' => 'boolean', 'default' => false, 'help' => __('Bucht jede in workDiary erfasste Zeit zu einer verknüpften Aufgabe einmal als Zeitaufwand auf das GitLab-Issue. Spätere Änderungen oder Löschungen des Zeiteintrags überträgt workDiary nicht, sie werden in GitLab korrigiert. Der Token braucht den api-Scope.')],
         ];
     }
 

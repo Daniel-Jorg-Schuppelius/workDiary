@@ -1,7 +1,7 @@
 ---
 title: "Formats de numérotation"
 topic: admin.number-formats
-version: 6
+version: 7
 keywords:
     - plage de numéros
     - numéro de facture
@@ -59,8 +59,10 @@ Les numéros déjà attribués restent inchangés.
 Dans la colonne **Attribué par**, vous choisissez pour **Client** et
 **Fournisseur** si WorkDiary attribue le numéro ou un logiciel de
 comptabilité connecté. Sont proposés les logiciels actifs capables
-d'attribuer des numéros : Lexoffice (client et fournisseur), sevDesk et
-easybill (client). orgaMAX n'attribue pas de numéros de client pour WorkDiary.
+d'attribuer des numéros : Lexoffice (client et fournisseur), easybill (client
+et fournisseur), sevDesk (client) et orgaMAX (fournisseur). orgaMAX n'attribue
+pas de numéros de client pour WorkDiary, sevDesk pas de numéros de
+fournisseur.
 
 Si un logiciel attribue les numéros :
 

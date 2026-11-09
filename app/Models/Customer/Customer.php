@@ -10,7 +10,7 @@
 
 namespace App\Models\Customer;
 
-use App\Casts\{MoneyCast, PercentageCast};
+use App\Casts\{BicCast, GermanTaxNumberCast, IbanCast, MoneyCast, PercentageCast, VatNumberCast};
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Project\ProjectStatus;
 use App\Models\Asset\Asset;
@@ -191,9 +191,12 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
         // Bankdaten sind eine Projektion des primären Bankkontos, das seit je
         // verschlüsselt liegt — flach zurückgeschrieben hob das die
         // Verschlüsselung auf (Sicherheitsscan S-21). Spalten als text.
-        'bank_iban' => 'encrypted',
-        'bank_bic' => 'encrypted',
+        'bank_iban' => IbanCast::class . ':encrypted',
+        'bank_bic' => BicCast::class . ':encrypted',
         'bank_account_holder' => 'encrypted',
+        // Kennungen: geschrieben kanonisch, gelesen Text (MVP-1512).
+        'vat_id' => VatNumberCast::class,
+        'tax_number' => GermanTaxNumberCast::class,
         'billing_cutover_on' => 'date',
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'billable' => 'boolean',

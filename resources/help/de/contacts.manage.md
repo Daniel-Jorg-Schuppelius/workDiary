@@ -1,7 +1,7 @@
 ---
 title: "Kunden & Lieferanten"
 topic: contacts.manage
-version: 12
+version: 14
 keywords:
     - Vorschau als Kunde
     - Startpasswort
@@ -107,6 +107,39 @@ Hat ein Kontakt alle Zwei-Faktor-Methoden und Recovery-Codes verloren, entfernt 
 
 **Zugang entfernen:** Einen Zugang, der sich **nie angemeldet** hat (Einladung offen oder abgelaufen, Startpasswort ausstehend), löschen Sie mit **Zugang löschen** endgültig – es gibt keine Nachweise an ihm. Hat sich der Kontakt schon einmal angemeldet, bleibt der Datensatz: Deaktivieren Sie den Zugang und wählen Sie **Zugang entfernen**. Dann fallen Name, Anschrift und Anmeldemittel weg, die E-Mail-Adresse wird für eine neue Einladung frei, und Foto-Bestätigungen, Rückfragen und Anfragen bleiben als Nachweis („Ehemaliger Portalzugang“). Beides verlangt eine Passwortbestätigung und wird am Kunden protokolliert; entfernte Zugänge stehen nur noch in der Summenzeile unter der Liste. Deaktivierte Zugänge schlägt die Löschfristen-Prüfung (Bereich **Portalzugänge**) nach einem Jahr zur Entfernung vor.
 
+## E-Rechnung
+
+Im Kundendialog stehen die Felder der E-Rechnung im Abschnitt **Abrechnung &
+Darstellung**:
+
+- **E-Rechnungs-Standardformat**: Vorbelegung für neue Rechnungen und den
+  Datei-Import dieses Kunden, etwa **XRechnung (XML)** oder **ZUGFeRD
+  (Hybrid-PDF)**; **Kein Standard (PDF)** belässt es beim PDF.
+- **Leitweg-ID / Käuferreferenz (BT-10)**: Pflichtangabe der XRechnung – bei
+  Behörden die Leitweg-ID, sonst eine Referenz, die der Kunde vorgibt.
+- **Peppol-Teilnehmer-ID**: Empfängerkennung für den Versand über Peppol in der
+  Form Kennzahl:Kennung, etwa mit der USt-IdNr. oder der Leitweg-ID; leer heißt
+  kein Peppol-Versand an diesen Kunden.
+- **Empfängerprofil der E-Rechnung**: **Öffentlicher Auftraggeber (Behörde)**
+  verschickt nur die XML per E-Mail, verlangt die Leitweg-ID, bettet die
+  Unterlagen ein und legt den Leistungsnachweis automatisch bei; **Standard**
+  gilt für alle übrigen Kunden, **Vorgabe der Organisation** übernimmt deren
+  Einstellung.
+- **Leistungsnachweis beilegen**: **Nach Empfängerprofil**, **Immer** oder
+  **Nie**; der Nachweis entsteht bei der Ausstellung aus den abgerechneten
+  Zeiten.
+- **Größte E-Rechnung mit Unterlagen (MB)**: Obergrenze für die E-Rechnung samt
+  eingebetteter Unterlagen; leer gilt die Grenze des Profils (Standard 15 MB,
+  Behörde 10 MB).
+- **Versandweg bei externer Rechnungshoheit**: Führt ein Fakturasystem Nummer
+  und Inhalt der Rechnung, stellt entweder das Fakturasystem zu, oder
+  WorkDiary versendet die Rechnung mit den Nachweisen – schalten Sie dann den
+  automatischen Versand im Fakturasystem ab. Das Feld sehen Sie nur mit dem
+  Recht **Finanzkonfiguration verwalten**.
+
+Wie Unterlagen in die E-Rechnung kommen und was bei Behördenkunden gilt,
+beschreibt das Hilfethema **Rechnungen & Belege**.
+
 ## Beispiel aus der Praxis
 
 Ein IT-Dienstleister legt die „Müller GmbH" an, hinterlegt
@@ -135,6 +168,54 @@ CSV-Import statt der Einzelanlage nutzen.
 ## Lieferant: Steuerdaten und Gutschriftsverfahren
 
 Am Lieferanten werden **USt-IdNr.** und **Steuernummer** gepflegt. Rechnet Ihre Organisation die Leistungen eines Lieferanten selbst ab, tragen Sie das Datum der **Vereinbarung über das Gutschriftsverfahren** ein; erst dann lassen sich Gutschriften an ihn ausstellen. Die Lieferantenseite zeigt die Vereinbarung und die letzten Gutschriften.
+
+## Rechnungen & Belege in der Akte
+
+Die Karte **Rechnungen & Belege** zeigt neben den Rechnungen aus WorkDiary die
+Belege der angebundenen Buchhaltungsprogramme im Zeitraum der Kopfzeile:
+Lexoffice, sevDesk, easybill, orgaMAX, Invoice Ninja, Akaunting, JTL-Wawi und
+InvoicePlane beim Kunden und beim Lieferanten. Ein
+Programm erscheint, solange sein Belegabruf für Ihre Organisation eingerichtet
+ist; die Spalte „Quelle“ nennt es. Zugeordnet werden die Belege beim Abruf über
+die Kontaktverknüpfung, die Kundennummer oder den Lieferantennamen; fehlt die
+Verknüpfung, sagt die leere Karte das. Wo das Programm ein PDF liefert
+(sevDesk-Rechnungen und -Gutschriften, easybill, orgaMAX-Rechnungen), lädt
+**Original-PDF** es direkt.
+Eingangsbelege dieser Programme lassen sich außerdem als Materialkosten des
+Kunden und im Einkauf von Abos und Lizenzen zuteilen.
+
+## Lieferanten an die Buchhaltung übertragen
+
+Führt WorkDiary die Stammdaten, gehen Lieferanten wie Kunden an das
+Buchhaltungsprogramm: Lexoffice, sevDesk, easybill und orgaMAX. Übertragen
+wird beim Anlegen, wenn das Programm laut **Nummernformate** die
+Lieferantennummer vergibt, und nach Änderungen an einem bereits verknüpften
+Lieferanten. easybill und orgaMAX vergeben auf Wunsch die Lieferantennummer;
+sevDesk legt einen Kontakt der Kategorie „Lieferant“ an und führt keine eigene
+Lieferantennummer, die Nummer bleibt dann die aus WorkDiary. orgaMAX nimmt
+Lieferanten nur an, wenn in der orgaMAX-Verwaltung die Capability
+„Lieferanten“ aktiv ist und „WorkDiary führt“ gilt; sonst führt orgaMAX die
+Lieferanten und WorkDiary ordnet sie nur zu.
+
+## Stammdaten aus dem Buchhaltungsprogramm
+
+Steht die Stammdatenhoheit auf „Buchhaltung führt“, überträgt WorkDiary keine
+Kontakte. Stattdessen kommen Kunden und Lieferanten aus dem Programm: Lexoffice
+und orgaMAX über ihren eigenen Kontaktabgleich, sevDesk und easybill stündlich
+nach diesen Regeln:
+
+- Ein schon verknüpfter Kontakt übernimmt den Stand des Programms (Name,
+  USt-IdNr., Steuernummer; bei easybill auch Anschrift, E-Mail, Telefon und
+  Ansprechpartner).
+- Ein sicherer Treffer, etwa über die USt-IdNr., wird verknüpft.
+- Alles Unklare erscheint als Klärfall in der **Zuordnungs-Inbox**; neu
+  angelegt wird nichts.
+
+sevDesk liefert die Rolle über die Kontaktkategorie: „Kunde“ und „Lieferant“
+werden übernommen, Partner, Interessenten und Ansprechpartner einer Firma
+nicht. easybill unterscheidet über Kunden- und Lieferantennummer; ein Kontakt
+mit beiden Nummern ist Kunde und Lieferant. Archivierte easybill-Kontakte
+bleiben draußen.
 
 ## Kunden- und Lieferanten-Cockpit
 

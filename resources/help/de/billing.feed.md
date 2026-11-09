@@ -1,7 +1,7 @@
 ---
 title: "Belegfluss"
 topic: billing.feed
-version: 4
+version: 5
 keywords:
     - Belegliste
     - Rechnungen
@@ -19,6 +19,7 @@ keywords:
 audience: []
 modules:
     - module.vertrieb
+    - module.finance
 related:
     - billing.chain
     - invoices.manage
@@ -85,6 +86,38 @@ nachzufassen“ öffnet die Belegkette mit allem, was noch aussteht.
 **Sichtbarkeit:** Der Belegfluss zeigt nur, was Ihre Rechte in den einzelnen
 Bereichen ohnehin erlauben. Fehlt Ihnen etwa das Recht auf Angebote, fehlen der
 Reiter und die zugehörigen Zeilen.
+
+## Doppelte Belege und Original
+
+**Extern führt:** Wurde eine Rechnung an ein Buchhaltungsprogramm übertragen
+oder hat das Programm ihre Nummer vergeben (Lexoffice, orgaMAX, sevDesk,
+easybill), steht sie nur einmal in der Liste – als gespiegelter Beleg. Das gilt
+für jedes angebundene Programm, sobald ein Ausgangsbeleg dieselbe Nummer trägt
+und demselben Kunden gehört: Eine Rechnungsnummer vergibt ein Unternehmen nur
+einmal. Ein Beleg mit gleicher Nummer, aber anderem Kunden verdrängt Ihre
+Rechnung nicht; Eingangsbelege und in der Quelle gelöschte Belege ebenso
+wenig.
+
+**Auslagen:** Ist einer Auslage ein Eingangsbeleg zugeordnet, zählt nur der
+Beleg im Aufwand – bei Lexoffice wie bei sevDesk, Akaunting, Invoice Ninja und
+den übrigen Programmen mit Belegspiegel.
+
+**Summen:** Gespiegelte Eingangsbelege zählen im Aufwand, Gutschriften mindern;
+Entwürfe und stornierte Belege zählen nicht.
+
+**Original:** Gespiegelte Belege öffnen über die Nummer das Original im
+Programm, wo es dafür eine Adresse gibt (Invoice Ninja, Akaunting). Bei
+sevDesk-Rechnungen und -Gutschriften, easybill-Dokumenten und
+orgaMAX-Rechnungen lädt **Original-PDF** am Zeilenende das PDF direkt aus dem
+Programm; dafür brauchen Sie das Recht, Belege anzusehen, beim orgaMAX-PDF
+zusätzlich die Administration. sevDesk-Belege ohne Rechnung (Kassenbon,
+Lieferantenbeleg) und orgaMAX-Ausgaben haben kein PDF.
+
+**orgaMAX und sevDesk:** orgaMAX spiegelt Rechnungen, Abschlagsrechnungen und
+Ausgaben; die Ausgaben stehen als Eingangsbelege im Aufwand. Gutschriften aus
+sevDesk stehen als ausgehende Gutschriften in der Liste und mindern den
+Umsatz. Serienvorlagen eines Programms sind kein Beleg und erscheinen nicht im
+Belegfluss; sie stehen im Abgleich von Abos und Lizenzen.
 
 ## Nach Projekt filtern
 

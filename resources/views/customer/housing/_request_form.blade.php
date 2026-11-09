@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Anfrage je Vermietungsart — erwartet: $profile, $mode (RentalMode::LongTerm|Holiday), $direct --}}
+{{-- Anfrage je Vermietungsart — erwartet: $profile, $mode (RentalMode::LongTerm|Holiday), $direct, $prepaymentPercent, $holdMinutes --}}
 @php($holiday = $mode === \App\Enums\Rental\RentalMode::Holiday)
 @php($prefix = 'unit-' . $profile->id . '-' . $mode->value)
 <form method="POST" action="{{ route('customer.housing.store') }}" class="mt-3 grid gap-3 sm:grid-cols-2">
@@ -23,6 +23,10 @@
         <x-input-field name="guests" :id="$prefix . '-guests'" type="number" min="1" :max="$profile->max_guests" required class="input-sm" :label="__('housing.guests')" :value="old('guests', 1)" />
     @endif
     <x-textarea-field name="note" :id="$prefix . '-note'" :label="__('housing.message')" maxlength="1000" rows="2" class="textarea-sm">{{ old('profile_id') === $profile->sqid && old('mode') === $mode->value ? old('note') : '' }}</x-textarea-field>
+    @if ($holiday && $direct && ($profile->prepayment_percent ?? $prepaymentPercent ?? 0) > 0)
+        {{-- MVP-1515: Online-Vorauszahlung der Direktbuchung. --}}
+        <p class="sm:col-span-2 text-xs text-muted">{{ __('rental.prepayment.hint', ['percent' => $profile->prepayment_percent ?? $prepaymentPercent, 'minutes' => $holdMinutes ?? \App\Services\Rental\RentalRequestService::DEFAULT_HOLD_MINUTES]) }}</p>
+    @endif
     <div class="sm:col-span-2 flex flex-wrap justify-end gap-2">
         @if ($holiday && $direct)
             <x-button type="submit" size="sm" tone="secondary" name="booking" value="direct">{{ __('rental.portal.direct_book') }}</x-button>

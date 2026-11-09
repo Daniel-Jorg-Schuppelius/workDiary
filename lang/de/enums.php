@@ -9,6 +9,13 @@
  */
 
 return [
+    'import' => [
+        'ical_sync_status' => [
+            'ok' => 'Gelesen',
+            'not_modified' => 'Unverändert',
+            'failed' => 'Fehler',
+        ],
+    ],
     'ai' => [
         'family' => ['llm' => 'Sprachmodell (LLM)', 'translation' => 'Übersetzung'],
         'verb' => ['formulate' => 'Formulieren', 'summarize' => 'Zusammenfassen', 'classify' => 'Klassifizieren', 'explain' => 'Erklären', 'find' => 'Finden', 'translate' => 'Übersetzen', 'extract' => 'Extrahieren'],
@@ -20,7 +27,7 @@ return [
     ],
     'domain' => [
         'environment' => ['ote' => 'OT&E (Test/Pilot)', 'production' => 'Produktiv'],
-        'connection_status' => ['draft' => 'Entwurf', 'active' => 'Aktiv', 'blocked' => 'Gesperrt'],
+        'connection_status' => ['draft' => 'Entwurf', 'active' => 'Aktiv', 'blocked' => 'Gesperrt', 'disconnected' => 'Getrennt'],
         'sync_status' => ['current' => 'Aktuell', 'stale' => 'Veraltet', 'pending' => 'Ausstehend', 'conflict' => 'Konflikt', 'unknown' => 'Unklar'],
         'renewal_mode' => ['autorenew' => 'Auto-Renew', 'autoexpire' => 'Auto-Expire', 'autodelete' => 'Auto-Delete', 'renewonce' => 'Einmal verlängern'],
         'command_status' => ['draft' => 'Entwurf', 'approved' => 'Freigegeben', 'pending' => 'Ausstehend', 'confirmed' => 'Bestätigt', 'failed' => 'Fehlgeschlagen', 'unknown' => 'Unklar', 'conflict' => 'Konflikt'],
@@ -61,7 +68,7 @@ return [
             'hard' => 'Blockierend',
             'soft' => 'Hinweis',
         ],
-        'classification_domain' => ['entry_type' => 'Auftragstypen', 'activity' => 'Tätigkeiten', 'defect_type' => 'Fehlertypen', 'root_cause' => 'Ursachen', 'result' => 'Ergebnisse', 'priority' => 'Prioritäten', 'goodwill_reason' => 'Kulanzgründe', 'rework_reason' => 'Nacharbeitsgründe', 'product_group' => 'Produktgruppen', 'dienstmittel_type' => 'Dienstmitteltypen', 'allergen' => 'Allergene', 'trade' => 'Gewerke', 'permit_type' => 'Genehmigungsarten', 'waste_code' => 'Abfallschlüssel (AVV)', 'customer_group' => 'Kundengruppen'],
+        'classification_domain' => ['entry_type' => 'Auftragstypen', 'activity' => 'Tätigkeiten', 'defect_type' => 'Fehlertypen', 'root_cause' => 'Ursachen', 'result' => 'Ergebnisse', 'priority' => 'Prioritäten', 'goodwill_reason' => 'Kulanzgründe', 'rework_reason' => 'Nacharbeitsgründe', 'product_group' => 'Produktgruppen', 'dienstmittel_type' => 'Dienstmitteltypen', 'allergen' => 'Allergene', 'trade' => 'Gewerke', 'permit_type' => 'Genehmigungsarten', 'waste_code' => 'Abfallschlüssel (AVV)', 'customer_group' => 'Kundengruppen', 'leistungsart' => 'Leistungsarten', 'pflegegrad' => 'Pflegegrade', 'kommunikation' => 'Kommunikationswege', 'event_type' => 'Veranstaltungsarten', 'lademittel_type' => 'Lademittel', 'asset_category' => 'Asset-Kategorien'],
     ],
     'room_requirement_kind' => [
         'hygieneLevel' => 'Hygienestufe',
@@ -1296,7 +1303,7 @@ return [
         'agreement-mode' => [
             'account' => 'Kundenkonto (rechnungslos)',
             'invoice' => 'Monatliche Rechnung',
-            'retainer' => 'Pauschale (Lexoffice)',
+            'retainer' => 'Pauschale (Buchhaltungsprogramm)',
         ],
         'rate-day-type' => [
             'weekday' => 'Werktag',
@@ -1307,6 +1314,8 @@ return [
             'bank' => 'Bank',
             'import' => 'Import',
             'lexoffice' => 'Lexoffice',
+            'sevdesk' => 'sevDesk',
+            'easybill' => 'easybill',
         ],
     ],
     'finance' => [
@@ -2286,7 +2295,7 @@ return [
     ],
     'plugin' => [
         'plugin_health_status' => ['ok' => 'Zustand ok', 'degraded' => 'Zustand eingeschränkt', 'failing' => 'Zustand fehlerhaft'],
-        'plugin_capability' => ['contact_sync' => 'Kontaktsynchronisierung', 'time_export' => 'Zeit-Export', 'time_import' => 'Zeit-Import', 'payment_sync' => 'Zahlungsabgleich', 'task_sync' => 'Aufgaben-Sync', 'calendar_publish' => 'Kalender-Veröffentlichung', 'shipping_provider' => 'Versanddienstleister', 'document_intake' => 'Dokumenteingang', 'backup_target' => 'Backupziel', 'domain_registrar' => 'Domain-Registrar', 'appointment_sync' => 'Terminsynchronisation', 'sms_gateway' => 'SMS-Gateway', 'online_payment' => 'Online-Zahlung', 'peppol_transport' => 'Peppol-Transport', 'fare_meter' => 'Taxameter-Import', 'passenger_dispatch' => 'Fahrtvermittlung', 'mobility_data' => 'Mobilitätsdaten'],
+        'plugin_capability' => ['contact_sync' => 'Kontaktsynchronisierung', 'time_export' => 'Zeit-Export', 'time_import' => 'Zeit-Import', 'task_sync' => 'Aufgaben-Sync', 'calendar_publish' => 'Kalender-Veröffentlichung', 'shipping_provider' => 'Versanddienstleister', 'document_intake' => 'Dokumenteingang', 'backup_target' => 'Backupziel', 'domain_registrar' => 'Domain-Registrar', 'appointment_sync' => 'Terminsynchronisation', 'sms_gateway' => 'SMS-Gateway', 'online_payment' => 'Online-Zahlung', 'peppol_transport' => 'Peppol-Transport', 'fare_meter' => 'Taxameter-Import', 'passenger_dispatch' => 'Fahrtvermittlung', 'mobility_data' => 'Mobilitätsdaten'],
     ],
     'privacy' => [
         'agreement_status' => ['draft' => 'Entwurf', 'active' => 'Aktiv', 'terminated' => 'Gekündigt', 'expired' => 'Abgelaufen'],
@@ -2315,14 +2324,14 @@ return [
         'rental_condition' => ['new' => 'Neuwertig', 'good' => 'Gut', 'used' => 'Gebraucht', 'worn' => 'Abgenutzt', 'damaged' => 'Beschädigt'],
         'rental_deposit_status' => ['requested' => 'Angefordert', 'received' => 'Erhalten', 'refunded' => 'Erstattet', 'partially_retained' => 'Teilweise einbehalten', 'retained' => 'Einbehalten', 'waived' => 'Verzichtet'],
         'rental_rate_card_status' => ['draft' => 'Entwurf', 'active' => 'Aktiv', 'retired' => 'Abgelöst'],
-        'rental_request_status' => ['requested' => 'angefragt', 'accepted' => 'angenommen', 'declined' => 'abgelehnt', 'withdrawn' => 'zurückgenommen'],
+        'rental_request_status' => ['requested' => 'angefragt', 'accepted' => 'angenommen', 'declined' => 'abgelehnt', 'withdrawn' => 'zurückgenommen', 'awaiting_payment' => 'Zahlung ausstehend', 'expired' => 'verfallen'],
         'rental_reservation_kind' => ['soft' => 'Vormerkung', 'hard' => 'Reservierung', 'rental' => 'Verleih', 'maintenance' => 'Wartungsfenster', 'cleaning' => 'Reinigung', 'transport' => 'Transport/Rüstzeit'],
         'rental_return_follow_up' => ['none' => 'Keine Folge', 'cleaning' => 'Reinigung erforderlich', 'repair' => 'Reparatur erforderlich', 'block' => 'Sperren', 'claim' => 'Reklamation eröffnen'],
     ],
     'service_ticket' => [
         'change_status' => ['draft' => 'Entwurf', 'pending_approval' => 'Wartet auf Freigabe', 'approved' => 'Genehmigt', 'implementing' => 'In Umsetzung', 'done' => 'Abgeschlossen', 'cancelled' => 'Abgebrochen'],
         'problem_status' => ['open' => 'Offen', 'analyzing' => 'In Analyse', 'known_error' => 'Known Error', 'resolved' => 'Gelöst', 'closed' => 'Geschlossen'],
-        'service_request_status' => ['draft' => 'Entwurf', 'pending_approval' => 'Wartet auf Genehmigung', 'approved' => 'Genehmigt', 'rejected' => 'Abgelehnt', 'fulfilling' => 'In Erfüllung', 'done' => 'Erledigt'],
+        'service_request_status' => ['pending_approval' => 'Wartet auf Genehmigung', 'approved' => 'Genehmigt', 'rejected' => 'Abgelehnt', 'done' => 'Erledigt'],
         'service_ticket_kind' => ['incident' => 'Störung', 'service_request' => 'Service-Anfrage', 'question' => 'Frage'],
         'service_ticket_priority' => ['low' => 'Niedrig', 'normal' => 'Normal', 'high' => 'Hoch', 'urgent' => 'Dringend'],
         'service_ticket_source' => ['manual' => 'Manuell', 'maintenance_plan' => 'Wartungsplan', 'open_issue' => 'Offene Punkte', 'email' => 'E-Mail', 'customer_portal' => 'Kundenportal', 'api' => 'API'],

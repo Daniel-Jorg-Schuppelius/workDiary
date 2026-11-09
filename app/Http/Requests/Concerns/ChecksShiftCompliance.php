@@ -15,6 +15,7 @@ namespace App\Http\Requests\Concerns;
 use App\Models\Platform\Organization;
 use App\Models\Schedule\ScheduledShift;
 use App\Services\Compliance\{ComplianceReport, ShiftComplianceService};
+use App\Services\Schedule\QualificationEnforcement;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -78,6 +79,21 @@ trait ChecksShiftCompliance {
             ) {
                 foreach ($report->violations as $vio) {
                     $v->errors()->add('compliance', $vio->message);
+                }
+            }
+
+            // Qualifikationssperre (MVP-1514) nur bei neuer Zuweisung; die
+            // Compliance-Übersteuerung hebt sie bewusst nicht auf.
+            if ($existing === null || $shift->isDirty(['user_id', 'shift_type_id', 'date'])) {
+                $candidate = (new ScheduledShift)->forceFill([
+                    'organization_id' => $shift->organization_id,
+                    'user_id' => $shift->user_id,
+                    'shift_type_id' => $shift->shift_type_id,
+                    'date' => $shift->date,
+                ]);
+                $message = app(QualificationEnforcement::class)->shiftBlockMessage($candidate);
+                if ($message !== null) {
+                    $v->errors()->add('user_id', $message);
                 }
             }
         });

@@ -1,7 +1,7 @@
 ---
 title: "Servizi IA"
 topic: ai.services
-version: 1
+version: 3
 keywords:
     - IA
     - AI
@@ -29,11 +29,27 @@ predefinita. In **Amministrazione → Servizi IA** collega i provider
 definisce per capability quali connessioni sono consentite e quale è
 quella predefinita.
 
+**Chi può usare l'IA:** Suggerimenti, traduzioni e azioni cumulative sono
+disponibili solo per le persone con il permesso «Richiedere suggerimenti IA».
+È compreso in tutti i ruoli standard del personale — dalla
+direzione, contabilità e personale fino al servizio interno, al servizio
+esterno e al call center —, ma non nel portale clienti né nel ruolo di
+supporto in sola lettura. Per i ruoli personalizzati lo assegna in
+**Ruoli & permessi**. Connessioni, autorizzazioni e budget li gestisce solo
+chi ha «Gestire le connessioni ai provider di IA e il routing delle
+capability».
+
 **Privacy:** L'anteprima del flusso dati mostra per capability quali
 classi di dati vanno a quale provider. Le connessioni cloud sono
 bloccate con sensibilità alta e nel profilo di assistenza domiciliare;
 i piani che usano gli input per l'addestramento non possono essere
 collegati. Le chiavi API sono salvate cifrate e mai visualizzate.
+
+**Sostituire una chiave:** Se una chiave API scade o è compromessa, apra
+«Modifica connessione» e la inserisca in «Nuova chiave API».
+Lasciato vuoto, il campo mantiene la chiave attuale. La nuova chiave viene
+verificata subito; la connessione resta e la sua assegnazione come
+predefinita per capability non va persa.
 
 **Memoria IA:** Termini di glossario, regole di stile e coppie di
 esempio per organizzazione, cliente o capability migliorano i

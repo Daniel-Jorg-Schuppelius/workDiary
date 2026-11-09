@@ -54,6 +54,13 @@ class AccountingMigrationService {
         if ($source === $target) {
             throw new RuntimeException((string) __('Quelle und Ziel müssen unterschiedliche Systeme sein.'));
         }
+        foreach ($areas as $area) {
+            foreach ([$source, $target] as $provider) {
+                if (! $provider->supportsArea($area)) {
+                    throw new RuntimeException((string) __('Den Bereich :area gleicht der Wechsel mit :system nicht ab. Wählen Sie ihn ab.', ['area' => $area->label(), 'system' => $provider->label()]));
+                }
+            }
+        }
 
         return DB::transaction(function () use ($organization, $areas, $cutoverOn, $actor, $source, $target): AccountingMigrationRun {
             $run = AccountingMigrationRun::create([

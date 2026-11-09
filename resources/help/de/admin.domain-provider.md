@@ -1,7 +1,7 @@
 ---
 title: "DomainReselling anbinden"
 topic: admin.domain-provider
-version: 1
+version: 2
 keywords:
     - Domains verwalten
     - Domainverwaltung
@@ -50,11 +50,22 @@ Projektionen. Der Abgleich ist lesend und idempotent.
 den Piloten; erst danach kann die Verbindung produktiv geschaltet werden.
 Solange der Pilot offen ist, meldet der Healthcheck „Pilot offen“.
 
-**Zugangsdaten rotieren & Trennen:** Login/Passwort lassen sich jederzeit
-neu setzen (Rotation), ohne die Verbindung neu anzulegen. Das Trennen
-entfernt die Verbindung; die bereits gelesenen Projektionsdaten bleiben als
-Nachweis erhalten.
+**Zugangsdaten erneuern:** Über das Schlüssel-Symbol öffnet sich der
+Dialog „Zugangsdaten erneuern“. Sie tragen ein neues Passwort ein; Login
+und Standard-Benutzer bleiben unverändert, wenn Sie die Felder leer lassen.
+WorkDiary prüft die neuen Zugangsdaten sofort — die Verbindung bleibt dabei
+bestehen, mit allen Domains, Zuordnungen und Nachweisen.
 
-**Zustände:** Eine Verbindung ist *Entwurf*, *aktiv* oder *gesperrt*.
-Gesperrte Verbindungen führen zu einem sichtbaren Blockiert-Zustand im
-Healthcheck — nie zu stillen Fehlaktionen.
+**Trennen:** „Trennen“ löscht nichts. Das Passwort wird entfernt, der
+Status wechselt auf *getrennt*, und kein Abgleich, kein Ereignisabruf und
+kein Befehl erreicht den Anbieter mehr. Domains, Kontakte, DNS-Zonen, das
+Befehlsjournal (wer hat was beim Anbieter geändert), die Buchungen und die
+Domain-Bezüge Ihrer Reselling-Abos und Einkaufszeilen bleiben als Nachweis
+erhalten. Zum Wiederverbinden hinterlegen Sie über „Zugangsdaten erneuern“
+neue Zugangsdaten; nach bestandener Prüfung ist die Verbindung wieder aktiv.
+
+**Zustände:** Eine Verbindung ist *Entwurf*, *aktiv*, *gesperrt* oder
+*getrennt*. Gesperrte Verbindungen führen zu einem sichtbaren
+Blockiert-Zustand im Healthcheck — nie zu stillen Fehlaktionen. Eine
+getrennte Verbindung meldet der Healthcheck nicht als Störung; sie ist
+bewusst außer Betrieb.

@@ -99,6 +99,28 @@ class GitlabClient {
         $this->guard($this->authed('post', $endpoint, ['json' => ['body' => $body]]), $endpoint);
     }
 
+    /**
+     * POST /api/v4/projects/{id}/issues/{iid}/add_spent_time — bucht Zeit auf
+     * das Issue (MVP-1513). `duration` im Format der Doku („3h30m“, ohne Tage:
+     * GitLab rechnet 1d = 8h). Die Antwort trägt nur die Summen des Issues,
+     * keine ID der Buchung.
+     *
+     * @return array<string, mixed>
+     */
+    public function addSpentTime(string $projectId, int $iid, int $minutes, ?string $summary = null): array {
+        $hours = intdiv($minutes, 60);
+        $rest = $minutes % 60;
+        $duration = ($hours > 0 ? $hours . 'h' : '') . ($rest > 0 || $hours === 0 ? $rest . 'm' : '');
+
+        $endpoint = sprintf('/api/v4/projects/%s/issues/%d/add_spent_time', rawurlencode($projectId), $iid);
+
+        /** @var array<string, mixed> */
+        return $this->guard($this->authed('post', $endpoint, ['json' => array_filter([
+            'duration' => $duration,
+            'summary' => $summary,
+        ], static fn (?string $value): bool => $value !== null && $value !== '')]), $endpoint);
+    }
+
     /** @return class-string<\App\Plugins\Support\PluginApiException> */
     protected function apiExceptionClass(): string {
         return GitlabApiException::class;

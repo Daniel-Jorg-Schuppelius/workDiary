@@ -1,7 +1,7 @@
 ---
 title: "Trajets, frais & indemnités forfaitaires"
 topic: travel-expenses.manage
-version: 4
+version: 5
 keywords:
     - notes de frais
     - frais de déplacement
@@ -66,6 +66,20 @@ carnet de bord**, les relevés kilométriques sont obligatoires et le trajet est
 figé après la fin de la journée. Toute personne connectée peut saisir des
 trajets si votre organisation utilise le module ; un trajet appartient toujours
 à la personne qui l'a saisi.
+
+## Associer un frais à une pièce comptable
+
+Si la même dépense figure déjà comme pièce entrante en comptabilité, associez
+cette pièce au frais dans la boîte de dialogue du justificatif. Sont proposées
+les pièces de même montant brut (à deux centimes près) dont la date s’écarte
+d’au plus 14 jours de la date du frais. **Associer** confirme qu’il s’agit de
+la même opération : dans le flux des pièces, seule la pièce compte alors. Une
+pièce appartient à un seul frais ; vous supprimez l’association dans la même
+boîte de dialogue.
+
+Cela fonctionne avec Lexoffice et avec chaque logiciel dont WorkDiary reflète
+les pièces entrantes (sevDesk, Akaunting, Invoice Ninja). La transmission d’un
+frais comme nouvelle pièce (ci-dessous) n’existe que pour Lexoffice.
 
 ## Transmettre un frais à la comptabilité comme justificatif
 

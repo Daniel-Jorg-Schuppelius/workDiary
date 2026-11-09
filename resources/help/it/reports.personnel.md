@@ -1,7 +1,7 @@
 ---
 title: "Personale: ferie, malattia, qualifiche, sicurezza"
 topic: reports.personnel
-version: 7
+version: 8
 keywords:
     - tasso di assenza
     - ferie residue
@@ -194,13 +194,20 @@ l'**Analisi direzionale**.
 In alto si trovano gli **indicatori** di tutte le aree per il periodo scelto
 nell'intestazione: finanze (produzione totale e risultato dalla BWA, punto
 minimo della previsione di liquidità), operatività (ricavi, margine di
-contribuzione, utilizzo), vendite (nuovi lead, conversione), assistenza
+contribuzione, utilizzo, giorni sotto obiettivo), vendite (nuovi lead, conversione), assistenza
 (ticket aperti, violazioni SLA) e qualità (NPS). Ogni riquadro compare solo
 con il permesso del report corrispondente e vi conduce — lì si trova lo stesso
 numero. **PDF** scarica il report direzionale. Chi dispone del permesso
 **Ricevere il report direzionale via e-mail** (direzione e amministrazione) lo
 riceve inoltre ogni lunedì in PDF, dall'inizio del mese fino a ieri;
 l'esecuzione si può ripianificare o sospendere in «Attività pianificate».
+
+Il riquadro **Giorni sotto obiettivo** dell'area operatività conta i
+giorni-persona sotto l'obiettivo del progetto nel periodo ancora aperti o
+confermati; l'indicazione riporta tutti i riscontri e il riquadro porta alla
+scheda piano/effettivo **Progetto per persona**. Compare solo se nel periodo
+esistono riscontri e solo per gli amministratori e le persone con il permesso
+**Consultare il rapporto presenze (organizzazione)**.
 
 La scheda **Problemi ricorrenti** raccoglie gli allarmi precoci dei moduli
 utilizzati dalla Sua organizzazione, raggruppati per tipo:
@@ -216,6 +223,9 @@ utilizzati dalla Sua organizzazione, raggruppati per tipo:
   tre ticket in 90 giorni.
 - **Carenze di personale**: team il cui fabbisogno pianificato supera la
   capacità nelle prossime quattro settimane.
+- **Tempi obiettivo non raggiunti**: progetti con almeno tre giorni-persona
+  aperti sotto obiettivo negli ultimi sette giorni; la voce porta alla scheda
+  tempi del progetto con i riscontri.
 
 Ogni voce indica il riscontro, un dettaglio e una raccomandazione; dove
 possibile, il titolo porta al cliente, all'oggetto o al report interessato.

@@ -124,6 +124,7 @@ final class CrisisShelvedCaseTest extends TestCase {
             'crisis.room.points.store' => ['post', route('crisis.room.points.store', $case), ['label' => 'Sperrung B9', 'kind' => 'closure', 'lat' => '50.95', 'lng' => '6.96']],
             'crisis.room.points.destroy' => ['delete', route('crisis.room.points.destroy', $f['point']), []],
             'crisis.all-clear' => ['post', route('crisis.all-clear', $case), []],
+            'crisis.discard' => ['post', route('crisis.discard', $case), ['reason' => 'Fehlalarm des Monitorings.']],
             'crisis.review.store' => ['post', route('crisis.review.store', $case), ['summary' => 'Verlauf']],
             'crisis.close' => ['post', route('crisis.close', $case), []],
         ];

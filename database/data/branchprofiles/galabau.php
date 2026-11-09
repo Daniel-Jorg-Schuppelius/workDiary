@@ -14,7 +14,8 @@ return [
     'code' => 'galabau',
     'label' => 'Garten- und Landschaftsbau',
     'description' => 'Garten- und Landschaftsbau: Pflegegänge, Neuanlagen, Pflanzung, Pflaster, Baumpflege und Winterdienst mit Prüfplänen für Bäume und Spielplätze.',
-    'version' => 2,
+    // v3: Asset-Kategorien werden als Kategorien der Organisation installiert (MVP-1508).
+    'version' => 3,
     // MVP-1053: Arbeitskosten nach § 35a EStG bei Privatkunden ausweisen; eigene Einstellungen bleiben.
     'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers'],
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
@@ -297,8 +298,7 @@ return [
         ['code' => 'gl_winterdienst', 'kind' => 'other', 'label' => 'Winterdienstpflicht', 'note' => 'Fläche im Winterdienstplan berücksichtigen.'],
     ],
     // 'protocol_templates': Codes aus database/data/protocol_templates.php (MVP-902).
-    // 'asset_categories' installiert der BranchProfileInstaller nicht (Kategorien
-    // stammen aus config('asset_categories')); sie dienen als Branchen-Taxonomie.
+    // 'asset_categories': Codes aus database/data/asset_categories.php (MVP-1508).
     'protocol_templates' => [
         ['code' => 'GL_PFLEGENACHWEIS'],
         ['code' => 'GL_PFLANZPROTOKOLL'],

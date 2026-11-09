@@ -57,7 +57,7 @@ final class AccountingSymmetryTest extends TestCase {
         return $overrides + [
             'id' => '9001',
             'objectName' => 'Voucher',
-            'creditDebit' => 'D',
+            'creditDebit' => 'C',
             'status' => '100',
             'voucherNumber' => 'BELEG-1',
             'voucherDate' => '2026-08-01 00:00:00',

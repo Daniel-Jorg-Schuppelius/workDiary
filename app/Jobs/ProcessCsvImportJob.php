@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\Import\{ImportErrorCode, ImportRunState};
+use App\Jobs\Attributes\BelongsToModule;
 use App\Models\Audit\AuditLog;
 use App\Models\Integration\{ImportRun, ImportRunError};
 use App\Models\Platform\User;
@@ -39,6 +40,7 @@ use Throwable;
  * Fehler werden als {@see ImportRunError} persistiert und der Status
  * abschließend auf `succeeded`, `partial` oder `failed` gesetzt.
  */
+#[BelongsToModule('integration')]
 class ProcessCsvImportJob implements ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;

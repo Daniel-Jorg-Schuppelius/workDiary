@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice-Konflikte"
 topic: admin.lexoffice
-version: 6
+version: 7
 keywords:
     - Lexware Office
     - Synchronisationskonflikt
@@ -56,11 +56,9 @@ gegenübergestellten Daten genau, bevor Sie entscheiden. Beachten Sie,
 dass bei Rechnungen die Faktura-Hoheit beim externen Programm liegt –
 WorkDiary liefert dorthin zu.
 
-Die Konflikt-Strategie gilt für Kontakte und Artikel. Artikelkonflikte
-erscheinen nicht in der Zuordnungs-Inbox, sondern im Reiter
-**Konflikte** des Lagers (**Lager** → **Konflikte**): Dort wählen Sie
-**Lokal belassen**, **Lexoffice-Stand übernehmen** oder **Verwerfen** —
-mit dem Recht **Artikel verwalten**.
+Die Konflikt-Strategie gilt für Kontakte. Artikel führt Lexoffice: Der
+Artikel-Sync übernimmt jede neuere Lexoffice-Version, Artikelkonflikte
+gibt es nicht.
 
 Belegspiegel: Der Beleg-Sync spiegelt die Lexoffice-Belege nach WorkDiary.
 Auch Belege von Lexoffice-Kontakten, die noch keinem Kunden oder Lieferanten

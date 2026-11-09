@@ -63,6 +63,25 @@ class Material extends Model {
         'is_active' => 'boolean',
     ];
 
+    /**
+     * Artikelnummer für einen Satz aus einem Fremdkatalog: leer, wenn ein anderes
+     * Material der Organisation sie schon trägt (Eindeutigkeit `organization_id`
+     * + `sku`) — der Treffer bleibt dann ohne Nummer buchbar.
+     */
+    public static function freeSku(int $organizationId, ?string $sku, ?int $exceptId = null): ?string {
+        $sku = mb_substr(trim((string) $sku), 0, 64);
+        if ($sku === '') {
+            return null;
+        }
+        $taken = self::query()->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->where('sku', $sku)
+            ->when($exceptId !== null, static fn ($query) => $query->whereKeyNot($exceptId))
+            ->exists();
+
+        return $taken ? null : $sku;
+    }
+
     /** @return BelongsTo<Article, $this> Optionaler Artikelbezug (MVP-904) für Lieferantenauswertungen. */
     public function article(): BelongsTo {
         return $this->belongsTo(Article::class);

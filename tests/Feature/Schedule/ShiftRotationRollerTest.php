@@ -13,6 +13,7 @@ namespace Tests\Feature\Schedule;
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Enums\Vacation\{VacationStatus, VacationType};
 use App\Models\Absence\Vacation;
+use App\Models\Hr\Qualification;
 use App\Models\Platform\User;
 use App\Models\Schedule\{ScheduledShift, ShiftRotation, ShiftType};
 use App\Services\Schedule\ShiftRotationRoller;
@@ -85,6 +86,20 @@ class ShiftRotationRollerTest extends TestCase {
             CarbonImmutable::parse('2026-06-15'),
             $weeks,
         );
+    }
+
+    public function test_qualification_block_skips_slots_without_required_qualification(): void {
+        $qualification = Qualification::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Brandschutzhelfer']);
+        $this->late->qualifications()->attach($qualification->id);
+        $this->organization->settings = ['qualifications' => ['enforcement' => 'block']];
+        $this->organization->save();
+
+        $stats = $this->roll();
+
+        // Woche 1 (Früh) entsteht, Woche 2 (Spät, Pflichtqualifikation fehlt) bleibt frei (MVP-1514).
+        $this->assertSame(5, $stats['created']);
+        $this->assertSame(5, $stats['skipped']);
+        $this->assertSame(0, ScheduledShift::query()->where('shift_type_id', $this->late->id)->count());
     }
 
     public function test_generates_alternating_weeks(): void {

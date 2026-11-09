@@ -1,7 +1,7 @@
 ---
 title: "Candidaturas y licitaciones"
 topic: applications.overview
-version: 2
+version: 3
 keywords:
     - reclutamiento
     - selección de personal
@@ -31,6 +31,12 @@ SHA-256). Las licitaciones ganadas se transfieren de forma controlada a
 un proyecto; las perdidas quedan disponibles para su análisis con el
 motivo de la pérdida.
 
+**Archivar un expediente:** Una licitación ya decidida (ganada, perdida,
+retirada) puede sacarse de la lista con «Archivar expediente». La decisión
+se conserva en el expediente y sigue contando en la tasa de éxito y en los
+motivos de pérdida; el filtro de estado «Archivado» muestra los
+expedientes archivados.
+
 **Candidaturas de personal:** Necesidad de puesto → publicación →
 expediente de candidatura con entrevistas, evaluaciones y decisión. Los
 datos de los candidatos se almacenan cifrados y solo son visibles para
@@ -44,6 +50,11 @@ entrevistas, propuestas de cita y nuevas decisiones quedan bloqueadas
 después. Los anuncios publicados pasan cada día a «Caducado» tras la
 fecha de caducidad o el fin del plazo de candidatura; puede volver a
 publicarlos con una nueva fecha o cerrarlos.
+
+**Descartar un borrador de empleado:** Si finalmente la contratación no se
+produce, «Descartar borrador» descarta el borrador. Ya no se crea ninguna
+cuenta y el paso queda en el historial de auditoría; un borrador ya
+invitado no puede descartarse.
 
 La decisión también pone fin a las entrevistas y propuestas de cita
 abiertas: las entrevistas planificadas se marcan como canceladas (la nota se

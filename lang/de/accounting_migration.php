@@ -18,6 +18,7 @@ return [
     'plan_hint' => 'Je Organisation ist genau ein Wechsel gleichzeitig möglich. Die Analyse schreibt in kein Fremdsystem.',
     'areas' => 'Datenbereiche',
     'read_only' => 'nur Historie',
+    'articles_hint' => 'Artikel gleicht der Wechsel nur zwischen Lexoffice und orgaMAX ab; sevDesk und easybill führen keine Artikelverknüpfung.',
     'cutover_on' => 'Stichtag',
     'cutover_hint' => 'Ab diesem Tag entstehen neue Fakturavorgänge ausschließlich im Zielsystem; das Quellsystem ist dafür gesperrt.',
     'plan_submit' => 'Wechsel planen',

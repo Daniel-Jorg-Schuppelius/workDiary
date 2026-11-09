@@ -19,6 +19,7 @@ return [
         'action' => [
             'dun' => 'Relancer',
             'open_original' => 'Ouvrir l’original',
+            'original_pdf' => 'PDF original',
         ],
         'tab' => [
             'all' => 'Tous',
@@ -59,6 +60,8 @@ return [
             'deleted' => 'Supprimé dans la source',
         ],
         'foreign_amount' => 'Montant dans une seconde devise',
+        'original_pdf_failed' => ':program n’a pas fourni le PDF. Veuillez réessayer plus tard.',
+        'original_pdf_missing' => ':program ne fournit pas de PDF pour cette pièce.',
         'scope' => [
             'mine' => 'Les miennes',
             'all' => 'Toutes',
@@ -69,6 +72,9 @@ return [
             'due' => 'Échéance',
             'open' => 'Restant',
         ],
+    ],
+    'party_documents' => [
+        'mirror_unlinked' => 'Aucun contact :program lié — les pièces apparaissent ici dès que l’import des pièces les attribue à ce tiers (lien de contact, numéro client ou nom du fournisseur).',
     ],
     'relations' => [
         'title' => 'Documents liés (:count)',

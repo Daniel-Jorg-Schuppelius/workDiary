@@ -83,9 +83,28 @@ class RoleProfilesTest extends TestCase {
                     PermissionEnum::SickLeaveViewAny,
                     PermissionEnum::ReportView,
                     PermissionEnum::ReportExport,
+                    // Urlaubskonto pflegt die Personalverwaltung (ul-21).
+                    PermissionEnum::VacationEntitlementsManage,
                 ],
                 [
                     PermissionEnum::InvoiceCreate,
+                    PermissionEnum::OrgamaxInvoiceSend,
+                ],
+            ],
+            'buchhaltung' => [
+                UserRole::Buchhaltung->value,
+                [
+                    PermissionEnum::InvoiceCreate,
+                    PermissionEnum::VoucherLexofficeSync,
+                    // orgaMAX-Faktura wie die Lexoffice-Abgleiche (ul-21).
+                    PermissionEnum::OrgamaxInvoiceConvert,
+                    PermissionEnum::OrgamaxInvoiceLock,
+                    PermissionEnum::OrgamaxInvoiceSend,
+                    PermissionEnum::OrgamaxPaymentRecord,
+                ],
+                [
+                    PermissionEnum::VacationEntitlementsManage,
+                    PermissionEnum::AiManage,
                 ],
             ],
             'aussendienst' => [
@@ -122,6 +141,8 @@ class RoleProfilesTest extends TestCase {
                     PermissionEnum::DiaryCreate,
                     PermissionEnum::TimeEntryCreate,
                     PermissionEnum::ReportExport,
+                    // KI schreibt ins KI-Gedächtnis und verbraucht Budget.
+                    PermissionEnum::AiUse,
                 ],
             ],
         ];
@@ -273,6 +294,25 @@ class RoleProfilesTest extends TestCase {
                     "Rolle '{$role}' darf '{$permission->value}' NICHT besitzen.",
                 );
             }
+        }
+    }
+
+    /** ul-21: KI nutzen gehört zu jeder Mitarbeiterrolle, nicht zu Kunde und Support; verwalten bleibt beim Admin. */
+    public function test_ai_use_is_part_of_every_employee_role(): void {
+        $employees = [
+            UserRole::Geschaeftsfuehrung, UserRole::Personalverwaltung, UserRole::Teamleitung, UserRole::Buchhaltung,
+            UserRole::User, UserRole::Aussendienst, UserRole::Callcenter,
+        ];
+        foreach ([UserRole::Admin, ...$employees, UserRole::Support, UserRole::Kunde] as $role) {
+            $user = User::factory()->state(['organization_id' => $this->organization->id])->create();
+            $this->assignRoleWithinOrganization($user, $role->value);
+
+            $this->assertSame(
+                $role === UserRole::Admin || in_array($role, $employees, true),
+                $user->hasPermissionTo(PermissionEnum::AiUse->value),
+                "Rolle '{$role->value}': ai.use",
+            );
+            $this->assertSame($role === UserRole::Admin, $user->hasPermissionTo(PermissionEnum::AiManage->value), "Rolle '{$role->value}': ai.manage");
         }
     }
 

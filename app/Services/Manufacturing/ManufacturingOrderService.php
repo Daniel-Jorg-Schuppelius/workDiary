@@ -22,8 +22,10 @@ use App\Models\Procedure\{ProcedureMaterialRequirement, ProcedureRun, ProcedureT
 use App\Services\Numbering\NumberSequenceService;
 use App\Services\Print\Contracts\ProductionOrderFactory;
 use App\Services\Procedure\Bom\{BomResolver, MaterialDemandCalculator};
+use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
 /**
@@ -178,6 +180,37 @@ class ManufacturingOrderService implements ProductionOrderFactory {
         }
 
         return $order;
+    }
+
+    /**
+     * Abschluss (MVP-1493): nur mit zurückgemeldeter Gutmenge — sonst stünde ein
+     * Auftrag ohne Ergebnis in der Nachkalkulation. Verbliebene Reservierungen
+     * gibt er frei wie der Storno; `completed_at` und den Fertigungsnachweis
+     * setzt {@see self::transition()}.
+     *
+     * @throws ValidationException ohne Gutmenge
+     */
+    public function complete(ManufacturingOrder $order): ManufacturingOrder {
+        if (! Decimal::of($order->goodTotal())->isPositive()) {
+            throw ValidationException::withMessages(['good_qty' => (string) __('manufacturing.order.error.complete_needs_good_qty')]);
+        }
+
+        $this->transition($order, ManufacturingOrderStatus::Completed);
+        app(ManufacturingInventoryService::class)->releaseRemainingReservations($order);
+
+        return $order;
+    }
+
+    /**
+     * Wiederaufnahme nach Warten oder Sperre (MVP-1493). Der Prozedurlauf vom
+     * Start bleibt; {@see self::startExecution()} legte einen zweiten an.
+     */
+    public function resume(ManufacturingOrder $order): ManufacturingOrder {
+        if (! in_array($order->status, [ManufacturingOrderStatus::Waiting, ManufacturingOrderStatus::Blocked], true)) {
+            throw new RuntimeException((string) __('manufacturing.order.error.resume_not_paused'));
+        }
+
+        return $this->transition($order, ManufacturingOrderStatus::InProgress);
     }
 
     /**

@@ -173,7 +173,7 @@ final class AccountingVoucherRevenueSource implements ExternalRevenueSource {
             ->when(! $withCancelled, static fn (Builder $q) => $q->whereNull('accounting_vouchers.source_deleted_at'))
             ->where(static fn (Builder $q) => $q
                 ->where('accounting_vouchers.direction', DocumentDirection::Outgoing->value)
-                ->orWhere(static fn (Builder $w) => $w->whereNull('accounting_vouchers.direction')->where('accounting_vouchers.voucher_type', 'C')))
+                ->orWhere(static fn (Builder $w) => $w->whereNull('accounting_vouchers.direction')->where('accounting_vouchers.voucher_type', 'D')))
             ->where(static fn (Builder $q) => $q->whereNull('accounting_vouchers.document_kind')->orWhereIn('accounting_vouchers.document_kind', $kinds))
             ->where(static fn (Builder $q) => $q
                 ->whereIn('accounting_vouchers.voucher_state', $states)

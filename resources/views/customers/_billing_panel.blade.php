@@ -243,7 +243,7 @@
                             <td><x-status-badge :tone="$payment->source->tone()">{{ $payment->source->label() }}</x-status-badge></td>
                             <td class="max-w-[16rem] truncate text-base-content/70">{{ $payment->note ?? '—' }}</td>
                             <td class="text-right">
-                                @if (! in_array($payment->source, [\App\Enums\Billing\AccountPaymentSource::Bank, \App\Enums\Billing\AccountPaymentSource::Lexoffice], true))
+                                @if (! $payment->source->isExternallyManaged())
                                     <x-action-form :action="route('customers.billing.payments.destroy', [$customer, $payment])" method="DELETE"
                                                    :confirm="__('customer-billing.confirm_void_payment')"
                                                    confirm-icon="delete" confirm-tone="error" :confirm-label="__('customer-billing.void_payment')">

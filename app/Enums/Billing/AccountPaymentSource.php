@@ -23,6 +23,8 @@ enum AccountPaymentSource: string implements HasLabel {
     case Bank = 'bank';
     case Import = 'import';
     case Lexoffice = 'lexoffice';
+    case SevDesk = 'sevdesk';
+    case Easybill = 'easybill';
 
     public function label(): string {
         return (string) __('enums.billing.account-payment-source.' . $this->value);
@@ -34,7 +36,15 @@ enum AccountPaymentSource: string implements HasLabel {
             self::Manual => 'ghost',
             self::Bank => 'info',
             self::Import => 'warning',
-            self::Lexoffice => 'success',
+            self::Lexoffice, self::SevDesk, self::Easybill => 'success',
+        };
+    }
+
+    /** Aus Bankabgleich oder Belegstatus gebucht: nur dort zu ändern, nicht von Hand stornierbar. */
+    public function isExternallyManaged(): bool {
+        return match ($this) {
+            self::Manual, self::Import => false,
+            self::Bank, self::Lexoffice, self::SevDesk, self::Easybill => true,
         };
     }
 }

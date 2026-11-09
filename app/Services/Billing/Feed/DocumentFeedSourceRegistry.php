@@ -48,6 +48,17 @@ class DocumentFeedSourceRegistry {
         return null;
     }
 
+    /** Link- und PDF-Darstellung der gespiegelten Belege eines Programms (MVP-1496/1499). */
+    public function voucherLinksFor(string $pluginId): ?MirroredVoucherLinks {
+        foreach ($this->sources as $source) {
+            if ($source instanceof MirroredVoucherLinks && $source->handles($pluginId)) {
+                return $source;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Wendet die Dubletten-Klauseln aller Quellen an, deren gespiegelte
      * Belege lokale Rechnungen verdrängen (Dublettenregel 1: extern führt).
@@ -70,7 +81,7 @@ class DocumentFeedSourceRegistry {
         $criteria = [];
         foreach ($this->sources as $source) {
             if ($source instanceof MarksLinkedExpenses) {
-                $criteria[] = $source->expenseLinkCriteria();
+                array_push($criteria, ...$source->expenseLinkCriteria());
             }
         }
 

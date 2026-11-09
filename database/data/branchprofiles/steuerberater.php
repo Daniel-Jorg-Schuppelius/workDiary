@@ -14,7 +14,8 @@ return [
     'code' => 'steuerberater',
     'label' => 'Steuerberatung',
     'description' => 'Steuerberatung: Finanzbuchführung, Lohn, Jahresabschluss, Steuererklärungen und Voranmeldungen mit Fristen und Vier-Augen-Freigaben.',
-    'version' => 1,
+    // v2: Kommunikations-Domäne, EÜR, Kategorien und Tags nach der Profilseite (MVP-1509).
+    'version' => 2,
     // Vorschlag für den Standard-Arbeitsbereich (MVP-840); nur Default, kein Zwang.
     'nav_focus_default' => 'finance',
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
@@ -86,8 +87,19 @@ return [
             ['code' => 'lohnsteuer', 'label' => 'Lohnsteuer'],
             ['code' => 'sozialversicherung', 'label' => 'Sozialversicherung'],
             ['code' => 'jahresabschluss', 'label' => 'Jahresabschluss'],
+            ['code' => 'eur', 'label' => 'Einnahmenüberschussrechnung (EÜR)'],
             ['code' => 'fibu', 'label' => 'Fibu'],
             ['code' => 'lohn', 'label' => 'Lohn'],
+        ],
+        'kommunikation' => [
+            ['code' => 'telefon', 'label' => 'Telefon'],
+            ['code' => 'email', 'label' => 'E-Mail'],
+            ['code' => 'postEingang', 'label' => 'Posteingang'],
+            ['code' => 'postAusgang', 'label' => 'Postausgang'],
+            ['code' => 'mandantenportal', 'label' => 'Mandantenportal'],
+            ['code' => 'datev', 'label' => 'DATEV'],
+            ['code' => 'elster', 'label' => 'ELSTER'],
+            ['code' => 'behoerde', 'label' => 'Behörde'],
         ],
     ],
     'classification_requirements' => [
@@ -156,7 +168,7 @@ return [
         ],
         [
             'entry_type_code' => 'kommunikation',
-            'required_domain' => 'activity',
+            'required_domain' => 'kommunikation',
             'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
             'severity' => ClassificationRequirementSeverity::Hard->value,
             'min_count' => 1,
@@ -326,8 +338,7 @@ return [
         ],
     ],
     // 'protocol_templates': Codes aus database/data/protocol_templates.php (MVP-902).
-    // 'asset_categories' installiert der BranchProfileInstaller nicht (Kategorien
-    // stammen aus config('asset_categories')); sie dienen als Branchen-Taxonomie.
+    // 'asset_categories': Codes aus database/data/asset_categories.php (MVP-1508).
     'protocol_templates' => [
         ['code' => 'STB_BERATUNGSPROTOKOLL'],
         ['code' => 'STB_TELEFONNOTIZ'],
@@ -345,8 +356,10 @@ return [
         'scanner',
         'signaturePad',
         'cardReader',
-        'softwareLicense',
+        'software_license',
         'datevAccount',
+        'safe',
+        'archiveShelf',
     ],
     'tags_seed' => [
         '#frist-kritisch',
@@ -356,6 +369,8 @@ return [
         '#vier-augen',
         '#geldwaesche',
         '#betriebspruefung',
+        '#dauerauftrag',
+        '#einmalig',
         '#quartalsende',
     ],
 ];

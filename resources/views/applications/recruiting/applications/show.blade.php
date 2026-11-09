@@ -325,14 +325,23 @@
                 @endif
                 @if ($draft->status === \App\Enums\Applications\EmployeeDraftStatus::Draft)
                     @can('invite', $draft)
-                        <x-action-form :action="route('recruiting.applications.draft.invite', [$application, $draft])" class="mt-3"
-                              :confirm="__('Jetzt ein Nutzerkonto anlegen? Der Kandidat muss beim ersten Login das Passwort setzen.')"
-                              confirm-icon="person_add" confirm-tone="primary" :confirm-label="__('Einladen')">
-                            <x-icon-btn icon="person_add" tone="primary" size="sm" type="submit" show-label>{{ __('Als Mitglied einladen') }}</x-icon-btn>
-                        </x-action-form>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            <x-action-form :action="route('recruiting.applications.draft.invite', [$application, $draft])"
+                                  :confirm="__('Jetzt ein Nutzerkonto anlegen? Der Kandidat muss beim ersten Login das Passwort setzen.')"
+                                  confirm-icon="person_add" confirm-tone="primary" :confirm-label="__('Einladen')">
+                                <x-icon-btn icon="person_add" tone="primary" size="sm" type="submit" show-label>{{ __('Als Mitglied einladen') }}</x-icon-btn>
+                            </x-action-form>
+                            <x-action-form :action="route('recruiting.applications.draft.discard', [$application, $draft])"
+                                  :confirm="__('Mitarbeiter-Entwurf verwerfen? Ein Konto entsteht dann nicht mehr.')"
+                                  confirm-icon="delete" confirm-tone="error" :confirm-label="__('Verwerfen')">
+                                <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Entwurf verwerfen') }}</x-icon-btn>
+                            </x-action-form>
+                        </div>
                     @endcan
                 @elseif ($draft->invitedUser)
                     <p class="mt-2 text-sm text-success">{{ __('Konto angelegt: :name', ['name' => $draft->invitedUser->name]) }}</p>
+                @elseif ($draft->status === \App\Enums\Applications\EmployeeDraftStatus::Discarded)
+                    <p class="mt-2 text-sm text-muted">{{ __('Entwurf verworfen — ein Konto entsteht nicht.') }}</p>
                 @endif
             @endif
         </x-card>

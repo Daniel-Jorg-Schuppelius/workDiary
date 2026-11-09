@@ -1,7 +1,7 @@
 ---
 title: "Clasificaciones y reglas obligatorias"
 topic: admin.classifications
-version: 1
+version: 2
 keywords:
     - listas de valores
     - categorías
@@ -40,3 +40,12 @@ vinculan un tipo de pedido con un dominio requerido y definen desde qué
 fase se exige el dato —al crear, antes de cerrar o antes de firmar— y
 si la regla bloquea o solo avisa, con mínimo/máximo de valores,
 selección múltiple y una condición JSON.
+
+Otros dominios llegan con los perfiles sectoriales, por ejemplo tipos de
+prestación, grados de dependencia y canales de comunicación (cuidados), tipos
+de evento (catering) y soportes de carga (transporte). El dominio
+**Categorías de activos** amplía las categorías informáticas generales del
+formulario de activos: un valor de la organización con código propio aparece
+además, uno con el código de una categoría general sustituye su denominación
+y uno desactivado la oculta. Una categoría que usa un activo solo puede
+desactivarse, no eliminarse.

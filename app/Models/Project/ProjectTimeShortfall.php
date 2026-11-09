@@ -15,6 +15,7 @@ namespace App\Models\Project;
 use App\Enums\Project\ShortfallStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Finance\BillingTransferPosition;
+use App\Models\Invoicing\InvoiceItem;
 use App\Models\Platform\User;
 use Database\Factories\Project\ProjectTimeShortfallFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -45,6 +46,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $billed_minutes
  * @property Carbon|null $billed_at
  * @property int|null $billing_transfer_position_id
+ * @property int|null $invoice_item_id
  * @property-read Project $project
  * @property-read User $user
  */
@@ -58,7 +60,7 @@ class ProjectTimeShortfall extends Model {
     protected $fillable = [
         'organization_id', 'project_id', 'user_id', 'date', 'target_minutes', 'booked_minutes',
         'shortfall_minutes', 'tolerance_minutes', 'status', 'acknowledged_by', 'acknowledged_at',
-        'resolved_at', 'notified_at', 'note', 'billed_minutes', 'billed_at', 'billing_transfer_position_id',
+        'resolved_at', 'notified_at', 'note', 'billed_minutes', 'billed_at', 'billing_transfer_position_id', 'invoice_item_id',
     ];
 
     protected $casts = [
@@ -93,6 +95,15 @@ class ProjectTimeShortfall extends Model {
     /** @return BelongsTo<BillingTransferPosition, $this> */
     public function billingTransferPosition(): BelongsTo {
         return $this->belongsTo(BillingTransferPosition::class);
+    }
+
+    /**
+     * Rechnungsposition der lokalen Rechnung, die die Auffüllung berechnet hat (MVP-1494).
+     *
+     * @return BelongsTo<InvoiceItem, $this>
+     */
+    public function invoiceItem(): BelongsTo {
+        return $this->belongsTo(InvoiceItem::class);
     }
 
     /**

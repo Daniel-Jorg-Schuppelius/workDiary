@@ -179,6 +179,30 @@ final class CrisisLifecycleTest extends TestCase {
         $this->actingAs($foreign)->get(route('crisis.show', $case))->assertNotFound();
     }
 
+    public function test_false_alarm_is_discarded_with_reason_only_while_reported(): void {
+        $case = $this->makeCase();
+        $this->actingAs($this->admin)->get(route('crisis.show', $case))->assertOk()
+            ->assertSee('Fehlmeldung verwerfen')->assertSee(route('crisis.discard.form', $case), false);
+        $this->actingAs($this->admin)->get(route('crisis.discard.form', $case))->assertOk()
+            ->assertSee('Begründung (Pflicht)')->assertSee(route('crisis.discard', $case), false);
+
+        $this->actingAs($this->admin)->post(route('crisis.discard', $case), [])->assertSessionHasErrors('reason');
+        $this->actingAs($this->admin)->post(route('crisis.discard', $case), ['reason' => 'Fehlalarm des Monitorings, Dienst lief durchgehend.'])
+            ->assertRedirect()->assertSessionHas('status', 'Krisenfall verworfen.');
+
+        $this->assertSame(CrisisCaseStatus::Discarded, $case->fresh()->status);
+        $this->assertSame('Fehlalarm des Monitorings, Dienst lief durchgehend.', $case->auditLogs()->where('event', 'crisis.discarded')->sole()->changes['reason'] ?? null);
+        $this->actingAs($this->admin)->get(route('crisis.show', $case))->assertOk()->assertSee('Akte verworfen — nur lesend.')->assertDontSee('Fehlmeldung verwerfen');
+
+        // Bewertet heißt: jemand hat die Lage gesehen — dann wird entwarnt, nicht verworfen.
+        $assessed = $this->makeCase();
+        $assessed->update(['status' => CrisisCaseStatus::Assessed]);
+        $this->actingAs($this->admin)->get(route('crisis.discard.form', $assessed))->assertNotFound();
+        $this->actingAs($this->admin)->post(route('crisis.discard', $assessed), ['reason' => 'Doch kein Vorfall.'])
+            ->assertSessionHas('error', 'Nur gemeldete, noch nicht bewertete Krisen werden verworfen.');
+        $this->assertSame(CrisisCaseStatus::Assessed, $assessed->fresh()->status);
+    }
+
     public function test_teamleitung_reads_but_cannot_manage(): void {
         $case = $this->makeCase();
         $lead = $this->userWithRole(UserRole::Teamleitung->value);

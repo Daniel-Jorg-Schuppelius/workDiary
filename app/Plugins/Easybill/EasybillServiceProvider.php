@@ -12,18 +12,25 @@ declare(strict_types=1);
 
 namespace App\Plugins\Easybill;
 
+use App\Enums\Finance\BillingMode;
+use App\Enums\Migration\MigrationProvider;
 use App\Plugins\Easybill\Console\EasybillSyncCommand;
-use App\Plugins\Easybill\Services\{EasybillArticleCatalogSource, EasybillTarget, EasybillVoucherPullService};
+use App\Plugins\Easybill\Services\{EasybillArticleCatalogSource, EasybillPhoneContactSource, EasybillTarget, EasybillVoucherLinks, EasybillVoucherPullService};
+use App\Plugins\Easybill\Services\Retainer\{EasybillRetainerPublisher, EasybillRetainerVouchers};
 use App\Plugins\Support\PluginServiceProviderBase;
+use App\Services\AccountingMigration\{MigrationSources, MirroredVoucherMigrationSource};
+use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
+use App\Services\Billing\RetainerChannelResolver;
 use App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry;
 use App\Services\Finance\Targets\FacturationTargetRegistry;
 use App\Services\Platform\Catalog\ArticleCatalog;
 
 /**
  * Bootet das easybill-Plugin (MVP-431): Config-Defaults unter
- * `plugins.easybill.*` + Sync-Command für den Beleg-Rückabruf. Keine eigenen
- * Routen/Views — Konfiguration über die Auto-Form der Plugin-Karte, die
- * Übergabe über den {@see \App\Plugins\Easybill\Services\EasybillTarget}.
+ * `plugins.easybill.*` + Sync-Command für den Beleg-Rückabruf. Einzige Route
+ * ist das Original-PDF gespiegelter Belege (MVP-1499) — Konfiguration über
+ * die Auto-Form der Plugin-Karte, die Übergabe über den
+ * {@see \App\Plugins\Easybill\Services\EasybillTarget}.
  */
 class EasybillServiceProvider extends PluginServiceProviderBase {
     protected function pluginId(): string {
@@ -31,7 +38,11 @@ class EasybillServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function registerPlugin(): void {
-        $this->commands([EasybillSyncCommand::class]);
+        // Kontakt-Rückweg bei „Buchhaltung führt“ (MVP-1502).
+        $this->commands([EasybillSyncCommand::class, Console\EasybillPullContactsCommand::class]);
+        // Rufnummernabgleich (FRITZ!Box, CTI; MVP-1500).
+        $this->app->scoped(EasybillPhoneContactSource::class);
+        $this->app->tag([EasybillPhoneContactSource::class], 'external-phone-contact-sources');
     }
 
     protected function bootPlugin(): void {
@@ -42,6 +53,17 @@ class EasybillServiceProvider extends PluginServiceProviderBase {
         $this->app->make(VoucherPullerRegistry::class)->register(EasybillVoucherPullService::class);
         // Artikelkatalog (Feature 185, gap-09): easybill-Artikel erreichen den Kern nur über diese Quelle.
         $this->app->make(ArticleCatalog::class)->register($this->app->make(EasybillArticleCatalogSource::class));
+        // Original-PDF gespiegelter Belege in Belegfluss und Akte (MVP-1499).
+        $this->app->make(DocumentFeedSourceRegistry::class)->register(new EasybillVoucherLinks);
+        // Quelle eines Buchhaltungswechsels über den Belegspiegel (Feature 110, MVP-1506).
+        $this->app->make(MigrationSources::class)->register(new MirroredVoucherMigrationSource(MigrationProvider::Easybill));
+        // Pauschal-Modus (Feature 098, MVP-1505): Pauschale und Spitzabrechnung in easybill, Zahlstand aus dem Spiegel.
+        $this->app->make(RetainerChannelResolver::class)->register(
+            EasybillPlugin::ID,
+            BillingMode::Easybill->programName(),
+            fn (): EasybillRetainerPublisher => $this->app->make(EasybillRetainerPublisher::class),
+            fn (): EasybillRetainerVouchers => $this->app->make(EasybillRetainerVouchers::class),
+        );
 
         // Belegnummern beim Übertragen (Phase 145).
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Numbering\Contracts\DocumentIssuer::class, \App\Plugins\Easybill\Services\EasybillDocumentIssuer::class);

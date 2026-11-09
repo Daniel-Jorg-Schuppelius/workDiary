@@ -427,6 +427,8 @@ return [
         'help_topics' => \App\Models\Platform\HelpTopic::class,
         'help_views' => \App\Models\Platform\HelpView::class,
         'holidays' => \App\Models\Platform\Holiday::class,
+        'ical_subscription_items' => \App\Models\Time\IcalSubscriptionItem::class,
+        'ical_subscriptions' => \App\Models\Time\IcalSubscription::class,
         'idea_map_shares' => \App\Models\Ideas\IdeaMapShare::class,
         'idea_maps' => \App\Models\Ideas\IdeaMap::class,
         'idea_node_links' => \App\Models\Ideas\IdeaNodeLink::class,

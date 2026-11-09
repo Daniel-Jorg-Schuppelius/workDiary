@@ -14,6 +14,7 @@ use APIToolkit\Exceptions\ApiException;
 use App\Models\Material\Material;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\LexofficeConfig;
+use App\Plugins\Support\PluginOrgContext;
 use App\Services\Material\MaterialProviderInterface;
 use Illuminate\Support\Collection;
 use Lexoffice\API\Client;
@@ -90,26 +91,31 @@ class LexofficeMaterialProvider implements MaterialProviderInterface {
     }
 
     /**
+     * Eine Artikelnummer, die ein anderes Material der Organisation schon trägt,
+     * bleibt am Satz leer (Unique-Index `organization_id` + `sku`).
+     *
      * @param  array<string, mixed>  $item
      */
     protected function upsert(array $item): Material {
         $price = data_get($item, 'price.netPrice');
         $tax = data_get($item, 'price.taxRate');
+        $material = Material::query()->firstOrNew([
+            'external_provider' => $this->name(),
+            'external_id' => (string) ($item['id'] ?? ''),
+        ]);
+        $sku = (string) ($item['articleNumber'] ?? '');
+        $organizationId = $this->organizationId ?? PluginOrgContext::currentId();
+        $material->fill([
+            'sku' => $organizationId !== null ? Material::freeSku($organizationId, $sku, $material->exists ? (int) $material->getKey() : null) : (trim($sku) ?: null),
+            'name' => (string) ($item['title'] ?? 'Artikel'),
+            'unit' => (string) ($item['unitName'] ?? 'Stk.'),
+            'default_unit_price' => $price !== null ? (string) $price : null,
+            'tax_rate' => $tax !== null ? (string) $tax : null,
+            'is_active' => true,
+        ]);
+        $material->save();
 
-        return Material::query()->updateOrCreate(
-            [
-                'external_provider' => $this->name(),
-                'external_id' => (string) ($item['id'] ?? ''),
-            ],
-            [
-                'sku' => (string) ($item['articleNumber'] ?? null) ?: null,
-                'name' => (string) ($item['title'] ?? 'Artikel'),
-                'unit' => (string) ($item['unitName'] ?? 'Stk.'),
-                'default_unit_price' => $price !== null ? (string) $price : null,
-                'tax_rate' => $tax !== null ? (string) $tax : null,
-                'is_active' => true,
-            ],
-        );
+        return $material;
     }
 
     protected function client(): Client {

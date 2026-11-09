@@ -115,6 +115,13 @@ return [
         'block_trips' => 'Ningún trayecto nuevo si una inspección obligatoria está vencida',
         'block_trips_hint' => 'Si la ITV, la revisión de prevención u otra inspección obligatoria del activo asignado está vencida o bloqueada, no se puede registrar ningún trayecto a partir de hoy. Los trayectos pasados siguen pudiéndose documentar.',
     ],
+    'qualifications' => [
+        'heading' => 'Cualificaciones obligatorias',
+        'enforcement' => 'Cualificación obligatoria faltante al asignar',
+        'enforcement_hint' => 'Aviso: el plan de turnos y el encargo muestran la cualificación faltante o no válida el día del servicio. Bloqueo: turno, intercambio de turno, rotación, importación de turnos, encargo, ruta y propuesta de hueco rechazan la asignación; una asignación existente solo puede confirmarse con una justificación.',
+        'mode_hint' => 'Solo aviso',
+        'mode_block' => 'Bloquear la asignación',
+    ],
     'payments' => [
         'heading' => 'Pago en línea',
         'description' => 'Enlace de pago y código QR en la factura, en el correo y en el portal del cliente. Active el proveedor de pagos (Stripe, Mollie o SumUp) como plugin con sus propias credenciales.',
@@ -149,6 +156,10 @@ return [
         'portal_direct_booking_hint' => 'Los clientes reservan de inmediato los equipos libres habilitados para el portal; se notifica a la dirección.',
         'geofence_radius' => 'Radio alrededor del lugar de uso (m)',
         'geofence_radius_hint' => 'Si la posición notificada de un equipo alquilado está más lejos de la ubicación del alquiler, se notifica la desviación. Sin ubicación se aplican las geocercas del cliente.',
+        'prepayment_percent' => 'Pago anticipado en la reserva directa (%)',
+        'prepayment_percent_hint' => 'Parte del precio bruto de la lista de precios, pagada en línea a través del proveedor de pagos. 0 = sin pago anticipado; ajustable de forma distinta por objeto de alquiler. La reserva solo se confirma al recibir el pago.',
+        'prepayment_hold_minutes' => 'Plazo de pago de la reserva directa (minutos)',
+        'prepayment_hold_minutes_hint' => 'Tiempo durante el que el equipo queda reservado para la reserva no pagada (10–1440, predeterminado 30). Después se libera la reserva.',
     ],
     'claims_pattern' => [
         'heading' => 'Patrones de reclamaciones',

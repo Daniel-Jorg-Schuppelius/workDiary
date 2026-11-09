@@ -1,7 +1,7 @@
 ---
 title: "Gestione delle emergenze e delle crisi"
 topic: crisis.overview
-version: 1
+version: 2
 keywords:
     - unità di crisi
     - piano di emergenza
@@ -42,6 +42,13 @@ momento, decisione e motivazione.
 72 h, NIS2 24 h/72 h/1 mese, KRITIS senza indugio) sono dati di
 catalogo — l'organizzazione può sovrascriverli; le scadenze concrete
 decorrono dall'attivazione.
+
+**Scartare un falso allarme:** se una crisi segnalata si rivela un falso
+allarme prima che qualcuno abbia valutato la situazione, «Scarta come
+falso allarme» chiude il fascicolo con una motivazione obbligatoria. La
+motivazione resta nel registro di audit, il fascicolo rimane in sola
+lettura. Dopo la valutazione non si scarta più, si dichiara il cessato
+allarme.
 
 **Comunicazione:** bozza, approvazione (mai da parte dell'autore) e
 invio documentato restano tracciabili separatamente.

@@ -29,6 +29,7 @@ return [
     'GiteaProjectLink' => 'Gitea/Forgejo repository mapping',
     'GlpiConnection' => 'GLPI connection',
     'GlpiProjectLink' => 'GLPI entity mapping',
+    'IcalSubscription' => 'Calendar subscription',
     'JiraConnection' => 'Jira connection',
     'JiraProjectLink' => 'Jira project mapping',
     'KanboardConnection' => 'Kanboard connection',

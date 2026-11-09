@@ -49,6 +49,7 @@ class PluginOverviewCoverageRuleTest extends TestCase {
         'Lexoffice/LexofficeVoucherLine' => 'Belegpositionen; gesucht wird der Beleg',
         'Lexoffice/LexofficeRecurringTemplate' => 'Serienvorlagen-Spiegel als Plan-Quelle des Reselling-Registers; sichtbar am Lizenzkonto des Empfängers',
         'Lexoffice/LexofficeRecurringTemplateLine' => 'Positionen der Serienvorlage; sichtbar am Lizenzkonto',
+        'OrgaMax/OrgaMaxInvoice' => 'Rechnungsspiegel für Wechsel, Belegverbund und PDF; im Belegfluss steht der Beleg aus dem allgemeinen Belegspiegel (MVP-1501)',
     ];
 
     private const string COVERING_CONTRACTS = '/\b(?:implements\s[^{]*\b(?:SearchDomain|SearchSource|DocumentFeedSource)\b|extends\s+(?:AbstractSearchSource|ShopOrderSearchDomain)\b)/';

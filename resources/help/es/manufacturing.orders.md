@@ -1,7 +1,7 @@
 ---
 title: "Órdenes de fabricación"
 topic: manufacturing.orders
-version: 4
+version: 5
 keywords:
     - orden de producción
     - lista de materiales
@@ -45,6 +45,26 @@ producto terminado se contabiliza como stock. Desde la página de detalle
 la orden puede asignarse a un puesto de trabajo o subcontratarse a un
 proveedor (genera un pedido); anular es irreversible y crear, notificar
 y entregar requieren el permiso **Registrar movimientos de stock**.
+
+## Finalizar, poner en espera, bloquear
+
+Una orden en curso solo muestra en la cabecera las acciones que permite su
+estado:
+
+- **Finalizar**: termina una orden *en curso*. Solo es posible cuando se ha
+  notificado una **cantidad buena**; de lo contrario aparece un aviso. Al
+  finalizar se registra la fecha de cierre, se congela el **comprobante de
+  fabricación** y se liberan las reservas de material no consumidas.
+  Después la orden ya no se puede modificar y cuenta en el **cálculo
+  posterior** del artículo.
+- **Poner en espera**: interrumpe la orden, por ejemplo hasta que llegue el
+  material.
+- **Bloquear**: detiene la orden, por ejemplo por un problema de calidad.
+- **Reanudar**: devuelve una orden en espera o bloqueada al estado *en
+  curso*. La ejecución del procedimiento iniciada al comenzar continúa.
+
+Finalizar, poner en espera, bloquear y reanudar requieren el permiso
+**Registrar movimientos de stock**.
 
 ## Envío en la entrega
 

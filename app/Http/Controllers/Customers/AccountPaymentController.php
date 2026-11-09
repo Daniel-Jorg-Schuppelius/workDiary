@@ -10,7 +10,6 @@
 
 namespace App\Http\Controllers\Customers;
 
-use App\Enums\Billing\AccountPaymentSource;
 use App\Http\Controllers\Controller;
 use App\Models\Billing\CustomerAccountPayment;
 use App\Models\Customer\Customer;
@@ -66,9 +65,8 @@ class AccountPaymentController extends Controller {
             404
         );
 
-        if (in_array($payment->source, [AccountPaymentSource::Bank, AccountPaymentSource::Lexoffice], true)) {
-            // Bank-/Lexoffice-gematchte Zahlungen werden über die jeweilige
-            // Zuordnung bzw. den Belegstatus verwaltet, nicht manuell storniert.
+        if ($payment->source->isExternallyManaged()) {
+            // Bank- und Programmzahlungen folgen der Zuordnung bzw. dem Belegstatus.
             throw ValidationException::withMessages([
                 'payment' => __('customer-billing.error_bank_payment_unmatch'),
             ]);

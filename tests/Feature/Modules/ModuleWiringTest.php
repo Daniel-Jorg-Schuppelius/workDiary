@@ -14,12 +14,9 @@ namespace Tests\Feature\Modules;
 
 use App\Enums\AssetCompliance\AssetComplianceStatus;
 use App\Enums\Import\ImportEntity;
-use App\Enums\Notification\NotificationEvent;
 use App\Enums\Search\SearchSourceType;
-use App\Events\Contracts\NotifiesUsers;
-use App\Listeners\Notification\NotificationBridge;
 use App\Models\Asset\Asset;
-use App\Models\Platform\{Organization, User};
+use App\Models\Platform\Organization;
 use App\Modules\{ModuleRegistry, ModuleUnavailableException};
 use App\Services\Ai\Contracts\NullAiInvoker;
 use App\Services\Ai\Exceptions\AiUnavailableException;
@@ -27,11 +24,9 @@ use App\Services\Asset\Contracts\NullAssetComplianceStatusProvider;
 use App\Services\Import\EntitySpecRegistry;
 use App\Services\Invoicing\Contracts\NullPaymentStatusProvider;
 use App\Services\Notification\DeadlineScans\{DeadlineScan, DeadlineScanRegistry};
-use App\Services\Notification\NotificationDispatcher;
 use App\Services\Routing\Contracts\NullTravelLogRecorder;
 use App\Services\Search\Indexing\SearchSourceRegistry;
 use App\Services\Sync\SyncCommandService;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
@@ -96,7 +91,6 @@ class ModuleWiringTest extends TestCase {
         $dispatcher = $this->app->make(\Illuminate\Contracts\Events\Dispatcher::class);
         $raw = $dispatcher->getRawListeners();
         $expected = $this->app->make(ModuleRegistry::class)->listeners();
-        $expected[NotifiesUsers::class] = [NotificationBridge::class];
         foreach ($expected as $event => $listeners) {
             foreach ($listeners as $listener) {
                 $bound = $raw[$event] ?? [];
@@ -104,34 +98,6 @@ class ModuleWiringTest extends TestCase {
                 $this->assertCount(1, $registered, "{$listener} muss genau einmal an {$event} hängen (Event-Discovery über handle()), gefunden: " . implode(', ', $registered));
             }
         }
-    }
-
-    public function test_notification_bridge_forwards_notifying_events_to_the_dispatcher(): void {
-        $subject = new User;
-        $event = new class($subject) implements NotifiesUsers {
-            public function __construct(private readonly Model $subject) {}
-
-            public function notificationEvent(): NotificationEvent {
-                return NotificationEvent::SecurityThreat;
-            }
-
-            public function notificationSubject(): Model {
-                return $this->subject;
-            }
-
-            public function notificationAffected(): ?User {
-                return null;
-            }
-
-            public function notificationPayload(): array {
-                return ['title' => 'Test'];
-            }
-        };
-        $dispatcher = Mockery::mock(NotificationDispatcher::class);
-        $dispatcher->shouldReceive('notify')->once()->with(NotificationEvent::SecurityThreat, $subject, null, ['title' => 'Test'])->andReturn(1);
-        $this->app->instance(NotificationDispatcher::class, $dispatcher);
-
-        event($event);
     }
 
     public function test_mail_intake_handlers_run_attachments_before_ticket_threading(): void {

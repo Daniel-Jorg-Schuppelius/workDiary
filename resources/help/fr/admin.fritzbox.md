@@ -1,7 +1,7 @@
 ---
 title: "Importer la liste d'appels FRITZ!Box"
 topic: admin.fritzbox
-version: 2
+version: 3
 keywords:
     - FRITZ!Box
     - liste d'appels
@@ -76,7 +76,7 @@ Sous **Plugins**, ouvrez la boîte de dialogue **Configurer** de
   anciennes versions de FRITZ!OS, qui exportent les appels sortants en type 3.
 - **Rapprocher les contacts externes** (par défaut : activé) : les numéros
   inconnus sont aussi comparés aux annuaires de contacts connectés, comme
-  Lexoffice et Microsoft 365.
+  Lexoffice, easybill, orgaMAX et Microsoft 365.
 - **Numéro de pointage : arrivée**, **Numéro de pointage : départ** et
   **Numéro de pointage : arrivée/départ** : vos propres numéros pour le
   pointage téléphonique (voir plus bas).

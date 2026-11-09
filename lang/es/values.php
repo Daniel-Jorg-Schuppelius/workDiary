@@ -60,6 +60,10 @@ return [
     'deliverynote' => 'Albarán de entrega',
     'downpaymentinvoice' => 'Factura de anticipo',
     'downpaymentdeduction' => 'Deducción de anticipo',
+    'salesvoucher' => 'Comprobante de ingreso',
+    'purchasevoucher' => 'Comprobante de compra',
+    'cancellationinvoice' => 'Factura de anulación',
+    'dunningnotice' => 'Reclamación de pago',
     'open' => 'Abierto',
     'closed' => 'Cerrado',
     'auto_closed' => 'Cerrado automáticamente',
@@ -180,7 +184,6 @@ return [
     'completed' => 'Completada',
 
     // Krisenmanagement (Feature 070)
-    'prepared' => 'Preparada',
     'reported' => 'Notificada',
     'assessed' => 'Evaluada',
     'activated' => 'Activada',

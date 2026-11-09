@@ -12,6 +12,7 @@ namespace App\Models\Concerns;
 
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\{Organization, User};
+use App\Support\Crypto\EncryptedCasts;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -59,7 +60,7 @@ trait Auditable {
         $fields = [];
 
         foreach ($this->getCasts() as $column => $cast) {
-            if (str_starts_with($cast, 'encrypted')) {
+            if (EncryptedCasts::covers($cast)) {
                 $fields[] = $column;
             }
         }

@@ -23,8 +23,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $organization_id
  * @property int $user_id
  * @property int $year
- * @property float $entitled_days
- * @property float $carryover_days
+ * @property string $entitled_days
+ * @property string $severely_disabled_days
+ * @property string $other_days
+ * @property string $carryover_days
  * @property Carbon|null $carryover_expires_on
  * @property string|null $note
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -50,9 +52,11 @@ class VacationEntitlement extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'year' => 'integer',
-        'entitled_days' => 'float',
-        'carryover_days' => 'float',
+        'entitled_days' => 'decimal:1',
+        'carryover_days' => 'decimal:1',
         'carryover_expires_on' => 'date',
+        'severely_disabled_days' => 'decimal:1',
+        'other_days' => 'decimal:1',
     ];
 
     /** @return BelongsTo<User, $this> */

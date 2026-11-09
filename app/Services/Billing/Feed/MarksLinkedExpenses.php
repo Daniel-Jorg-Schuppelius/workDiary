@@ -15,11 +15,12 @@ namespace App\Services\Billing\Feed;
 /**
  * Quelle, deren bestätigte Auslagen-Verknüpfung (MVP-551) die Auslage
  * geldunwirksam macht: dort führt der zugeordnete Buchhaltungsbeleg. Die
- * Kriterien benennen die `external_references`-Zeilen der Quelle.
+ * Kriterien benennen die `external_references`-Zeilen der Quelle — eine je
+ * Programm, der Belegspiegel `accounting_vouchers` trägt mehrere (MVP-1498).
  */
 interface MarksLinkedExpenses {
     /**
-     * @return array{plugin_id: string, external_type: string}
+     * @return list<array{plugin_id: string, external_type: string}>
      */
     public function expenseLinkCriteria(): array;
 }

@@ -913,12 +913,20 @@ return [
     // Review 2026-09-11 (Einkauf)
     'purchase_document' => [
         'field' => 'Pièce entrante',
-        'hint' => 'Pièces de toutes les sources des 36 derniers mois — miroir Lexoffice, dépenses locales, factures électroniques reçues ; ✓ = déjà affectée.',
+        'hint' => 'Pièces de toutes les sources des 36 derniers mois — miroirs des logiciels comptables (Lexoffice, sevDesk, Akaunting, Invoice Ninja …), dépenses locales, factures électroniques reçues ; ✓ = déjà affectée.',
         'sources_hint' => 'Sources',
         'source' => [
             'lexoffice' => 'Lexoffice',
             'expense' => 'Dépense',
             'incoming_einvoice' => 'Facture électronique entrante',
+            'accounting_voucher' => 'Logiciel comptable',
+            'sevdesk' => 'sevDesk',
+            'easybill' => 'easybill',
+            'orgamax' => 'orgaMAX',
+            'invoiceplane' => 'InvoicePlane',
+            'jtl_wawi' => 'JTL-Wawi',
+            'invoiceninja' => 'Invoice Ninja',
+            'akaunting' => 'Akaunting',
         ],
         'open' => 'Ouvrir la pièce (:source)',
         'preview' => 'Voir l’image de la pièce',

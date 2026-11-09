@@ -77,6 +77,7 @@ return [
         'empty' => 'Aucun temps facturable ni frais de déplacement pour les filtres sélectionnés.',
         'entry_count' => ':count saisie|:count saisies',
         'travel' => '+ :count déplacement(s)',
+        'target_top_up' => '+ :count complément à la cible du projet|+ :count compléments à la cible du projet',
         'warning_late' => ':count saisie tardive : la date de prestation tombe dans une période déjà facturée.|:count saisies tardives : les dates de prestation tombent dans des périodes déjà facturées.',
         'column' => [
             'description' => 'Position',

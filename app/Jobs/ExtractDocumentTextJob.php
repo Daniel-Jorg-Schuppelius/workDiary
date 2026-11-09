@@ -14,6 +14,7 @@ namespace App\Jobs;
 
 use App\Enums\Search\SearchSourceType;
 use App\Exceptions\DocumentTextUnavailableException;
+use App\Jobs\Attributes\BelongsToModule;
 use App\Models\Document\{DocumentVersion, DocumentVersionText};
 use App\Services\Document\DocumentTextExtractor;
 use App\Services\Search\Indexing\SearchIndexer;
@@ -32,6 +33,7 @@ use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
  * beim zweiten Mal genauso. Der Fehlschlag wird festgehalten, damit kein
  * späterer Lauf erneut dieselbe OCR startet.
  */
+#[BelongsToModule('document')]
 class ExtractDocumentTextJob implements ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;

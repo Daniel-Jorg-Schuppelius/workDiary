@@ -1,7 +1,7 @@
 ---
 title: "Subscriptions & Licences"
 topic: finance.resale
-version: 12
+version: 13
 keywords:
     - Import preview
     - Bulk actions
@@ -123,7 +123,8 @@ from three sources: (1) provider invoices and credit notes as PDF (Quality
 Hosting, German and English layout) — each line names contract, end
 customer and term, the amount goes exactly to the period; credit-note lines
 without a contract belong to the company. (2) Incoming vouchers from the
-voucher mirror pro rata: for collective invoices without lines (Telekom)
+voucher mirror (Lexoffice, sevDesk, Akaunting, Invoice Ninja and other
+programs; without drafts, cancellations and deleted documents) pro rata: for collective invoices without lines (Telekom)
 you enter the provider's share and the service month, the amount is spread
 over all periods of the month weighted by their monthly expected purchase.
 (3) Domain bookings from domain management automatically. On PDF import the

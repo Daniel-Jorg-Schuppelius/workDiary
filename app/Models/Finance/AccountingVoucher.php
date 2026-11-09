@@ -12,12 +12,13 @@ declare(strict_types=1);
 
 namespace App\Models\Finance;
 
+use App\Enums\Billing\{DocumentDirection, DocumentKind};
 use App\Enums\Finance\AccountingVoucherState;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
 
@@ -48,6 +49,9 @@ class AccountingVoucher extends Model {
     use HasFactory;
     use HasSqid;
 
+    /** `external_type` der Auslagen-Verknüpfung mit einem gespiegelten Beleg (MVP-1498); `plugin_id` ist das Programm. */
+    public const string EXPENSE_LINK = 'accounting_voucher';
+
     protected $fillable = [
         'organization_id', 'plugin_id', 'external_id', 'contact_external_id',
         'customer_id', 'supplier_id', 'sales_user_id', 'sales_agent_id', 'voucher_type', 'voucher_status',
@@ -76,6 +80,31 @@ class AccountingVoucher extends Model {
         'synced_at' => 'datetime',
         'lines_synced_at' => 'datetime',
     ];
+
+    /**
+     * Eingehende Einkaufsbelege ohne Entwürfe, Stornos, Stornodokumente und im
+     * Fremdsystem gelöschte (MVP-1129, MVP-1497). Gutschriften bleiben drin;
+     * Altzeilen vor MVP-731 zählen über `voucher_type` C (sevDesk: Ausgabe) und den sevDesk-Status.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopePurchases(Builder $query): Builder {
+        $kinds = [DocumentKind::Invoice->value, DocumentKind::Expense->value, DocumentKind::Other->value, DocumentKind::CreditNote->value];
+
+        return $query
+            ->whereNotNull('accounting_vouchers.voucher_date')
+            ->whereNull('accounting_vouchers.source_deleted_at')
+            ->where(static fn (Builder $q) => $q
+                ->where('accounting_vouchers.direction', DocumentDirection::Incoming->value)
+                ->orWhere(static fn (Builder $w) => $w->whereNull('accounting_vouchers.direction')->where('accounting_vouchers.voucher_type', 'C')))
+            ->where(static fn (Builder $q) => $q->whereNull('accounting_vouchers.document_kind')->orWhereIn('accounting_vouchers.document_kind', $kinds))
+            ->where(static fn (Builder $q) => $q
+                ->whereIn('accounting_vouchers.voucher_state', [AccountingVoucherState::Open->value, AccountingVoucherState::Paid->value])
+                ->orWhere(static fn (Builder $w) => $w->whereNull('accounting_vouchers.voucher_state')->where(static fn (Builder $x) => $x
+                    ->whereNull('accounting_vouchers.voucher_status')
+                    ->orWhere('accounting_vouchers.voucher_status', '!=', '50'))));
+    }
 
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {

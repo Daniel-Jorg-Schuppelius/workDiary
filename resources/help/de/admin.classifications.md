@@ -1,7 +1,7 @@
 ---
 title: "Klassifikationen & Pflichtregeln"
 topic: admin.classifications
-version: 1
+version: 2
 keywords:
     - Wertelisten
     - Kategorien
@@ -48,3 +48,12 @@ legen fest, ab welcher Phase die Angabe erforderlich ist – bei Erstellung,
 vor Abschluss oder vor Signatur – sowie ob die Regel blockierend ist oder
 nur ein Hinweis. Minimal- und Maximalanzahl, Mehrfachauswahl und eine
 JSON-Bedingung steuern, wann und wie viele Werte verlangt werden.
+
+Weitere Domänen kommen mit den Branchenprofilen, etwa Leistungsarten,
+Pflegegrade und Kommunikationswege im Profil Ambulante Pflege,
+Veranstaltungsarten im Partyservice und Lademittel in der Spedition. Die Domäne **Asset-Kategorien**
+ergänzt die allgemeinen IT-Kategorien des Asset-Formulars: Ein Organisationswert
+mit eigenem Code erscheint dort zusätzlich, einer mit dem Code einer
+allgemeinen Kategorie ersetzt deren Bezeichnung, ein deaktivierter blendet
+sie aus. Eine Kategorie, die ein Asset verwendet, lässt sich nur deaktivieren,
+nicht löschen.

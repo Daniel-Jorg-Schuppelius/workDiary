@@ -1,7 +1,7 @@
 ---
 title: "Abos & Lizenzen"
 topic: finance.resale
-version: 12
+version: 13
 keywords:
     - Import-Vorschau
     - Sammelaktionen
@@ -124,7 +124,7 @@ zur Probe: `php artisan resale:draft-local --organization=… --dry-run`
 Quellen: (1) Anbieterrechnungen und Gutschriften als PDF (Quality Hosting,
 deutsches und englisches Layout) — jede Position nennt Vertrag, Endkunde und
 Laufzeit, der Betrag geht exakt an die Periode; Gutschriftpositionen ohne
-Vertrag gelten der Firma. (2) Eingangsbelege aus dem Belegspiegel pro rata:
+Vertrag gelten der Firma. (2) Eingangsbelege aus dem Belegspiegel (Lexoffice, sevDesk, Akaunting, Invoice Ninja und weitere Programme; ohne Entwurf, Storno und gelöschte Belege) pro rata:
 für Sammelrechnungen ohne Positionen (Telekom) nennen Sie den Anteil des
 Anbieters und den Leistungsmonat, der Betrag wird auf alle Perioden des
 Monats verteilt, gewichtet mit ihrem monatlichen Soll-Einkauf. (3) Domain-

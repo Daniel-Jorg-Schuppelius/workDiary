@@ -91,6 +91,7 @@ class LexofficeRecurringTemplate extends Model {
         'lines_synced_at' => 'immutable_datetime',
         'payload' => 'array',
         'synced_at' => 'immutable_datetime',
+        'total_net' => 'decimal:2',
     ];
 
     /** @return HasMany<LexofficeRecurringTemplateLine, $this> */

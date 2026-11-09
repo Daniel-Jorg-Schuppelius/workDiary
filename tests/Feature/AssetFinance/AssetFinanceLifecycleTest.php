@@ -386,6 +386,27 @@ final class AssetFinanceLifecycleTest extends TestCase {
         }
     }
 
+    public function test_draft_is_cancelled_with_reason_and_only_as_draft(): void {
+        $contract = $this->createContract();
+        $this->actingAs($this->admin)->get(route('asset-finance.show', $contract))->assertOk()->assertSee('Entwurf stornieren');
+
+        $this->actingAs($this->admin)->post(route('asset-finance.cancel', $contract), [])->assertSessionHasErrors('reason');
+        $this->actingAs($this->admin)->post(route('asset-finance.cancel', $contract), ['reason' => 'Doppelt angelegt, gilt LEA-Vorgänger.'])
+            ->assertRedirect()->assertSessionHas('status', 'Entwurf storniert.');
+
+        $fresh = $contract->fresh();
+        $this->assertSame(AssetFinanceStatus::Cancelled, $fresh->status);
+        $this->assertSame(0, $fresh->rateSchedules()->count(), 'Ein stornierter Entwurf hat keinen Ratenplan');
+        $this->assertSame('Doppelt angelegt, gilt LEA-Vorgänger.', $fresh->auditLogs()->where('event', 'assetFinance.cancelled')->sole()->changes['reason'] ?? null);
+        $this->actingAs($this->admin)->get(route('asset-finance.show', $contract))->assertOk()->assertDontSee('Entwurf stornieren');
+
+        // Ein aktiver Vertrag wird gekündigt, nicht storniert.
+        $active = $this->createContract();
+        app(AssetFinanceService::class)->activate($active, $this->admin);
+        $this->actingAs($this->admin)->post(route('asset-finance.cancel', $active), ['reason' => 'Falsch angelegt.'])->assertSessionHasErrors('status');
+        $this->assertSame(AssetFinanceStatus::Active, $active->fresh()->status);
+    }
+
     public function test_module_gating_blocks_without_license(): void {
         // module.asset_finance ist NUR im Enterprise-Tier enthalten.
         $proOrg = \App\Models\Platform\Organization::factory()->create(['plan' => 'pro']);

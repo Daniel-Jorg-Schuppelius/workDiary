@@ -43,9 +43,6 @@ class PendingExternalConflict extends Model {
     /** Endgültig gescheiterte Spiegelung einer Lagerbewegung (MVP-072). */
     public const string TYPE_INVENTORY_OUTBOX = 'inventory_outbox';
 
-    /** Lokal geänderter Artikel, dessen Stand im Fremdsystem abweicht. */
-    public const string TYPE_ARTICLE = 'article';
-
     protected $fillable = [
         'organization_id',
         'plugin_id',
@@ -85,17 +82,11 @@ class PendingExternalConflict extends Model {
     }
 
     /**
-     * Arten der Konfliktliste, die ein Nutzer sehen darf (Entscheidung
-     * 2026-10-06): Bestand mit inventory.viewAny, Artikel mit article.viewAny.
+     * Arten der Konfliktliste, die ein Nutzer sehen darf: Bestand mit inventory.viewAny.
      *
      * @return list<string>
      */
     public static function typesVisibleTo(User $user): array {
-        $allowed = [
-            self::TYPE_INVENTORY_OUTBOX => $user->can(P::InventoryViewAny->value),
-            self::TYPE_ARTICLE => $user->can(P::ArticleViewAny->value),
-        ];
-
-        return array_keys(array_filter($allowed));
+        return $user->can(P::InventoryViewAny->value) ? [self::TYPE_INVENTORY_OUTBOX] : [];
     }
 }

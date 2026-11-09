@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Jobs\Location;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
+use App\Jobs\Contracts\ModuleJob;
 use App\Models\Platform\{Organization, User};
 use App\Services\Location\{VisitBuilder, VisitMaterializer};
 use Illuminate\Bus\Queueable;
@@ -26,7 +27,7 @@ use Illuminate\Queue\Middleware\WithoutOverlapping;
  * und überführt geschlossene Besuche in die Review-Inbox. Idempotent – es
  * werden nur unverarbeitete Punkte und nicht-materialisierte Besuche betrachtet.
  */
-class ProcessLocationBatch implements ShouldQueue {
+class ProcessLocationBatch implements ModuleJob, ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
@@ -44,6 +45,12 @@ class ProcessLocationBatch implements ShouldQueue {
      */
     public function middleware(): array {
         return [(new WithoutOverlapping('location-batch:' . $this->userId))->releaseAfter(30)->expireAfter(600)];
+    }
+
+    public function organizationId(): ?int {
+        $id = User::query()->withoutGlobalScopes()->whereKey($this->userId)->value('organization_id');
+
+        return $id !== null ? (int) $id : null;
     }
 
     public function handle(VisitBuilder $builder, VisitMaterializer $materializer): void {

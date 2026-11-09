@@ -1,7 +1,7 @@
 ---
 title: "CSV-Import"
 topic: admin.import
-version: 4
+version: 5
 keywords:
     - Datenimport
     - Stammdaten importieren
@@ -111,3 +111,28 @@ geprüft — mit Vorschau, Kategorie-Filter und Auflösung von Serien.
 Der Import von Anwesenheiten kennt die optionale Spalte **erfasst am**
 (Datum und Uhrzeit der ursprünglichen Aufzeichnung). Sie dient der
 MiLoG-Aufzeichnungsfrist; ohne sie bleibt die Frist für diese Zeilen ungeprüft.
+
+## Kalender-Abos: laufend aus einem iCal-Kalender
+
+Unter **Kalender-Abos** (Menü der Importübersicht) abonnieren Sie einen
+iCal-Kalender über seine Abo-Adresse (`https://` oder `webcal://`). WorkDiary
+liest ihn stündlich und übernimmt die Termine wie den Datei-Import:
+
+- **Person:** Gehört der Kalender einer Person, gehören ihr alle Termine.
+  Ohne Person entscheidet die E-Mail-Adresse von Organisator oder Teilnehmer.
+- **Zeitraum:** Gelesen werden die vergangenen 30 Tage; ein Termin zählt erst,
+  wenn er vorbei ist. Serientermine werden in diesem Zeitraum aufgelöst.
+- **Nur Änderungen:** Unveränderte Termine (gleiche SEQUENCE und
+  LAST-MODIFIED) überspringt WorkDiary; ein geänderter Termin ändert die
+  Buchung. Antwortet der Server „unverändert“, entfällt der ganze Lauf.
+- **Keine Dubletten:** Ein Termin, den ein Datei-Import schon gebucht hat
+  (gleiche UID), wird übernommen und nicht noch einmal gebucht.
+- **Löschungen:** Verschwindet ein gebuchter Termin aus dem Kalender, bleibt
+  die Zeit stehen. In der Zuordnungs-Inbox erscheint ein Hinweis
+  „Kalender-Abo“; löschen oder korrigieren Sie die Zeit dort bewusst.
+- **Zuordnung:** Termine ohne passendes Projekt landen wie beim Datei-Import in
+  der Zuordnungs-Inbox; der nächste Lauf versucht es erneut.
+
+Die Adresse liegt verschlüsselt; angezeigt wird nur der Server. Adressen im
+eigenen Netz brauchen **Kalender im eigenen Netz erlauben** und die Freigabe
+durch den Betreiber. Mit **Jetzt abrufen** starten Sie einen Lauf sofort.

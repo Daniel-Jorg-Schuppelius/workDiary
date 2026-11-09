@@ -14,8 +14,8 @@ return [
     'code' => 'shk',
     'label' => 'SHK',
     'description' => 'Sanitär, Heizung, Klima: Wartung, Störung, Installation, Inbetriebnahme, Druck- und Dichtheitsprüfung mit Prüfplänen für Heizung und Trinkwasser.',
-    // v2: Default-Eintragstypen (Struktur-Typen) ans Profil gekoppelt.
-    'version' => 3,
+    // v2: Default-Eintragstypen (Struktur-Typen) ans Profil gekoppelt; v4: Anlagenakte (MVP-1509).
+    'version' => 4,
     // MVP-1053: Arbeitskosten nach § 35a EStG bei Privatkunden ausweisen; eigene Einstellungen bleiben.
     'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers'],
     // Default-Struktur-Typen (EntryTypeSeeder::profiles()) — nicht die
@@ -292,13 +292,13 @@ return [
         ['code' => 'shk_technikraum', 'kind' => 'accessRestriction', 'label' => 'Technikraum zutrittsbeschränkt', 'level' => 'fachkraft'],
     ],
     // 'protocol_templates': Codes aus database/data/protocol_templates.php (MVP-902).
-    // 'asset_categories' installiert der BranchProfileInstaller nicht (Kategorien
-    // stammen aus config('asset_categories')); sie dienen als Branchen-Taxonomie.
+    // 'asset_categories': Codes aus database/data/asset_categories.php (MVP-1508).
     'protocol_templates' => [
         ['code' => 'SHK_WARTUNGSPROTOKOLL'],
         ['code' => 'SHK_DRUCKPROTOKOLL'],
         ['code' => 'SHK_DICHTHEITSPROTOKOLL'],
         ['code' => 'SHK_ABNAHME'],
+        ['code' => 'SHK_ANLAGENAKTE'],
         ['code' => 'SHK_SERVICEBERICHT'],
     ],
     'asset_categories' => [

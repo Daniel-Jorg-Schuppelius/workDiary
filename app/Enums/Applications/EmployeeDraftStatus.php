@@ -23,7 +23,7 @@ enum EmployeeDraftStatus: string implements HasStatusTransitions {
     case Draft = 'draft';
     case Invited = 'invited';
 
-    /** Im Schema vorgesehen, heute von keinem Code geschrieben. */
+    /** Verworfen, etwa nach Rückzug der Zusage (MVP-1517); kein Konto entsteht. */
     case Discarded = 'discarded';
 
     public function label(): string {
@@ -33,7 +33,7 @@ enum EmployeeDraftStatus: string implements HasStatusTransitions {
     /** @return list<self> */
     public function allowedTransitions(): array {
         return match ($this) {
-            self::Draft => [self::Invited],
+            self::Draft => [self::Invited, self::Discarded],
             self::Invited, self::Discarded => [],
         };
     }

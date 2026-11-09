@@ -1,7 +1,7 @@
 ---
 title: "Geräte- & Maschinenverleih"
 topic: rental.overview
-version: 4
+version: 5
 keywords:
     - Vermieter
     - Ferienwohnung
@@ -72,3 +72,24 @@ Ferienanfragen entscheiden Sie unter **Verleih-Anfragen**. Die Annahme einer Woh
 Für das Kundenportal müssen die Wohnung und der Bereich **Verleih-Anfragen** für den Kunden freigegeben sein. Monatsmieten und Kautionen der Dauervermietung sind im MVP Verwaltungsdaten; eine automatische Mietabrechnung oder Nebenkostenabrechnung erfolgt nicht.
 
 Das Profil bringt außerdem drei Abläufe mit (**Wohnungsübergabe**, **Wohnungsabnahme**, **Gästewechsel Ferienwohnung**), das **Wohnungsübergabeprotokoll** mit Zählerständen und Schlüsseln, Vertragsvorlagen für den Wohnraummietvertrag mit und ohne Indexmiete sowie für Mietbedingungen einer Ferienwohnung mit Fristen wie der jährlichen Betriebskostenabrechnung, und eigene Felder der Wohnung (Wohnfläche, Zimmer, Etage, Haustiere, Energieausweis). Ein angefragtes Mietverhältnis können Sie bestätigen, ablehnen oder stornieren, ein bestätigtes nur noch stornieren. Stornierte und abgelehnte Mietverhältnisse bleiben unverändert.
+
+## Direktbuchung mit Online-Vorauszahlung
+
+Ist unter „Organisation und Einstellungen“ eine **Vorauszahlung bei
+Direktbuchung** gesetzt (oder am Mietobjekt ein eigener Satz), führt die
+Direktbuchung im Kundenportal zur Bezahlseite des Zahlungsanbieters:
+
+- Die Akte wird sofort reserviert und hält das Gerät bis zur
+  **Zahlungsfrist**. Unter **Verleih-Anfragen** steht die Buchung bis dahin
+  auf **Zahlung ausstehend**.
+- Mit dem Zahlungseingang (Meldung des Anbieters oder Rückkehr des Kunden)
+  wird die Buchung **angenommen**; erst jetzt erhalten Sie die Benachrichtigung.
+- Ohne Zahlung bis zur Frist verfällt die Buchung (**verfallen**), die Akte wird
+  storniert und das Gerät ist wieder frei. Geht eine Zahlung erst danach ein,
+  bestätigt WorkDiary nichts, sondern meldet sie Ihnen zur Erstattung oder
+  Neubuchung.
+- Die Akte zeigt die bezahlte Vorauszahlung. Bei der Übergabe der Mietpositionen
+  an die Rechnung wird sie der Rechnung zugeordnet und deckt sie mit. Führt
+  ein Buchhaltungsprogramm die Rechnungen, steht die Summe im Protokoll der
+  Übergabe; berücksichtigen Sie sie dort. Im Buchungseingang erscheint die
+  Vorauszahlung erst mit der Rechnung buchbar.

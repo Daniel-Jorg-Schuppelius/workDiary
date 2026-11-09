@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Verleih-Anfrage im Portal (Feature 073, MVP-714): freigegebenes Sortiment, grobe Verfügbarkeit, zweiphasige Anfrage.
-     Erwartet: $profiles, $groups, $from, $to, $availability, $prices, $direct, $requests --}}
+     Erwartet: $profiles, $groups, $from, $to, $availability, $prices, $direct, $prepaymentPercent, $holdMinutes, $requests --}}
 @extends('customer.layout')
 
 @section('title', __('Verleih-Anfrage'))
@@ -56,6 +56,9 @@
                             @else
                                 <span class="text-muted">—</span>
                             @endif
+                            @if ($direct && ($profile->prepayment_percent ?? $prepaymentPercent ?? 0) > 0)
+                                <span class="block text-xs text-muted">{{ __('rental.prepayment.badge', ['percent' => $profile->prepayment_percent ?? $prepaymentPercent]) }}</span>
+                            @endif
                         </td>
                     </tr>
                 @endforeach
@@ -82,6 +85,10 @@
                         @endif
                     </x-select-field>
                     <x-textarea-field name="note" :label="__('Zweck / Notiz (optional)')" rows="2">{{ old('note') }}</x-textarea-field>
+                    @if ($direct && $profiles->contains(fn ($p) => ($p->prepayment_percent ?? $prepaymentPercent ?? 0) > 0))
+                        {{-- MVP-1515: Online-Vorauszahlung; der Satz je Gerät steht in der Liste. --}}
+                        <p class="sm:col-span-2 text-sm text-muted">{{ __('rental.prepayment.hint_list', ['minutes' => $holdMinutes]) }}</p>
+                    @endif
                     <div class="sm:col-span-2 flex justify-end gap-2">
                         @if ($direct)
                             {{-- Direktbuchung (MVP-916): nur ein bestimmtes, freies Gerät; der Dienst prüft unter Sperre. --}}
@@ -109,13 +116,27 @@
                 <td class="whitespace-nowrap">{{ $request->starts_at->fdatetime() }} – {{ $request->ends_at->fdatetime() }}</td>
                 <td>{{ $request->subjectLabel() }}</td>
                 <td>
-                    <x-status-badge :tone="$request->status->tone()">{{ $request->is_direct ? __('rental.portal.direct_status') : $request->status->label() }}</x-status-badge>
+                    <x-status-badge :tone="$request->status->tone()">{{ $request->is_direct && $request->status === \App\Enums\Rental\RentalRequestStatus::Accepted ? __('rental.portal.direct_status') : $request->status->label() }}</x-status-badge>
                     @if ($request->status === \App\Enums\Rental\RentalRequestStatus::Declined && $request->decline_reason)
                         <span class="block text-xs text-muted">{{ $request->decline_reason }}</span>
                     @endif
+                    @if ($request->isAwaitingPayment() && $request->prepayment_amount !== null)
+                        <span class="block text-xs text-muted">{{ __('rental.prepayment.amount', ['amount' => $request->prepayment_amount->format()]) }} · {{ __('rental.prepayment.due', ['until' => $request->payment_due_at?->fdatetime() ?? '—']) }}</span>
+                    @endif
                 </td>
                 <td class="text-right">
-                    @if ($request->isOpen())
+                    @if ($request->isAwaitingPayment())
+                        <div class="flex justify-end gap-1">
+                            <form method="POST" action="{{ route('customer.rentals.requests.pay', $request) }}">
+                                @csrf
+                                <x-button type="submit" tone="primary" size="xs" icon="credit_card"><span>{{ __('rental.prepayment.pay_now') }}</span></x-button>
+                            </form>
+                            <form method="POST" action="{{ route('customer.rentals.requests.withdraw', $request) }}">
+                                @csrf
+                                <x-button type="submit" tone="ghost" size="xs">{{ __('Zurücknehmen') }}</x-button>
+                            </form>
+                        </div>
+                    @elseif ($request->isOpen())
                         <form method="POST" action="{{ route('customer.rentals.requests.withdraw', $request) }}" class="flex justify-end">
                             @csrf
                             <x-button type="submit" tone="ghost" size="xs">{{ __('Zurücknehmen') }}</x-button>

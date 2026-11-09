@@ -52,6 +52,7 @@ class Floor extends Model {
 
     protected $casts = [
         'level' => 'int',
+        'gross_area_m2' => 'decimal:2',
     ];
 
     /** @return BelongsTo<Building, $this> */

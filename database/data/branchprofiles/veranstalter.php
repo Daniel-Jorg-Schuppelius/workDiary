@@ -26,7 +26,8 @@ return [
     'code' => 'veranstalter',
     'label' => 'Veranstalter / Event-Organisation',
     'description' => 'Veranstalter und Event-Organisation: Konzept, Budget, Location, Genehmigungen, Dienstleister, Ticketing, Durchführung und Zwischenfälle.',
-    'version' => 1,
+    // v2: Konzept und Dienstleisterliste als Protokollvorlagen (MVP-1509).
+    'version' => 2,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
     'modules_recommended' => [
@@ -346,12 +347,13 @@ return [
         ['code' => 'va_sanitaer', 'kind' => 'other', 'label' => 'Sanitärversorgung', 'note' => 'Sanitär-/Toilettenversorgung nach Besucherzahl.'],
     ],
     // 'protocol_templates': Codes aus database/data/protocol_templates.php (MVP-902).
-    // 'asset_categories' installiert der BranchProfileInstaller nicht (Kategorien
-    // stammen aus config('asset_categories')); sie dienen als Branchen-Taxonomie.
+    // 'asset_categories': Codes aus database/data/asset_categories.php (MVP-1508).
     'protocol_templates' => [
+        ['code' => 'VA_KONZEPT'],
         ['code' => 'VA_GENEHMIGUNGSLISTE'],
         ['code' => 'VA_SICHERHEITSKONZEPT'],
         ['code' => 'VA_ABLAUFPLAN'],
+        ['code' => 'VA_DIENSTLEISTERLISTE'],
         ['code' => 'VA_ABNAHME'],
         ['code' => 'VA_ZWISCHENFALLBERICHT'],
     ],

@@ -180,4 +180,16 @@ class EasybillVoucherPullTest extends TestCase {
         $this->assertSame(0, $result['read']);
         $fake->assertNothingSent();
     }
+
+    public function test_switched_off_plugin_with_a_key_mirrors_nothing(): void {
+        // MVP-1490: der geplante `accounting:pull-vouchers` prüft den Schalter nicht selbst.
+        PluginSetting::query()->firstOrFail()->update(['enabled' => false]);
+        $fake = $this->fakePages();
+
+        $this->assertFalse(app(EasybillVoucherPullService::class)->isConfigured((int) $this->organization->id));
+        $this->artisan('accounting:pull-vouchers', ['--plugin' => EasybillPlugin::ID])->assertSuccessful();
+
+        $fake->assertNothingSent();
+        $this->assertSame(0, AccountingVoucher::query()->count());
+    }
 }

@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Finance;
 
-use App\Enums\Billing\{DocumentDirection, DocumentKind};
-use App\Models\Finance\AccountingVoucher;
 use App\Models\Platform\Organization;
+use App\Plugins\Support\PluginTenantGate;
+use App\Services\Billing\RetainerChannelResolver;
 use App\Services\Finance\Accounting\Articles\ArticleMirror;
 use App\Services\Finance\Accounting\Vouchers\{LineAwareVoucherPuller, VoucherMirror};
 use App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry;
@@ -36,13 +36,13 @@ class PullAccountingVouchersCommand extends Command {
     private const int LINE_BATCH = 100;
 
     protected $signature = 'accounting:pull-vouchers
-        {--plugin= : Nur dieses Buchhaltungssystem (sevdesk, easybill, invoiceplane, jtl_wawi)}
+        {--plugin= : Nur dieses Buchhaltungssystem (Plugin-ID: sevdesk, easybill, orgamax, jtl_wawi, invoiceplane, invoiceninja, akaunting)}
         {--organization= : ID einer einzelnen Organisation, sonst alle}
         {--pages=2 : Anzahl abzurufender Seiten je Anbieter}';
 
     protected $description = 'Spiegelt Belege der angebundenen Buchhaltungssysteme in die Belegliste (Feature 122).';
 
-    public function handle(VoucherPullerRegistry $registry, ArticleMirror $articles): int {
+    public function handle(VoucherPullerRegistry $registry, ArticleMirror $articles, VoucherMirror $mirror, RetainerChannelResolver $retainers): int {
         $pluginOption = trim((string) $this->option('plugin'));
         $orgOption = $this->option('organization');
         $pages = max(1, (int) $this->option('pages'));
@@ -65,6 +65,10 @@ class PullAccountingVouchersCommand extends Command {
             ->get();
 
         foreach ($organizations as $organization) {
+            // Gesperrte Mandanten: kein Plugin-Lauf (Entscheidung 2026-10-05), der nächste Lauf nach dem Entsperren holt nach.
+            if (PluginTenantGate::blocks((int) $organization->id)) {
+                continue;
+            }
             // Artikelkatalog vor den Belegen (gap-09): so tragen neue Positionen gleich den Katalogschlüssel.
             foreach ($articles->sources() as $source) {
                 if (($pluginOption !== '' && $source->pluginId() !== $pluginOption) || ! $source->isConfigured((int) $organization->id)) {
@@ -89,7 +93,9 @@ class PullAccountingVouchersCommand extends Command {
                     foreach ($totals as $key => $value) {
                         $totals[$key] = $value + $result[$key];
                     }
-                    $lines = $puller instanceof LineAwareVoucherPuller ? $this->pullLines($puller, (int) $organization->id) : null;
+                    $lines = $puller instanceof LineAwareVoucherPuller ? $mirror->pullPendingLines($puller, (int) $organization->id, self::LINE_BATCH) : null;
+                    // Zahlstand der Pauschalen nach jedem Spiegellauf (Feature 098, MVP-1505).
+                    $retainers->linksForPlugin($puller->pluginId())?->reconcile($organization);
                     $this->line(sprintf(
                         'Org %d · %s: %d gelesen, %d neu, %d aktualisiert%s',
                         $organization->id,
@@ -118,31 +124,5 @@ class PullAccountingVouchersCommand extends Command {
         ));
 
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
-    }
-
-    /**
-     * Positionen nachladen (Feature 185, MVP-1424): ausgehende Rechnungen,
-     * Gutschriften und Serienvorlagen ohne `lines_synced_at`, jüngste zuerst,
-     * begrenzt je Lauf — der nächste Lauf macht weiter.
-     */
-    private function pullLines(LineAwareVoucherPuller $puller, int $organizationId): int {
-        $mirror = app(VoucherMirror::class);
-        $pending = AccountingVoucher::query()->withoutGlobalScopes()
-            ->where('organization_id', $organizationId)
-            ->where('plugin_id', $puller->pluginId())
-            ->whereNull('lines_synced_at')
-            ->whereNull('source_deleted_at')
-            ->where('direction', DocumentDirection::Outgoing->value)
-            ->whereIn('document_kind', [DocumentKind::Invoice->value, DocumentKind::DownPayment->value, DocumentKind::CreditNote->value, DocumentKind::RecurringTemplate->value])
-            ->orderByDesc('voucher_date')->orderByDesc('id')
-            ->limit(self::LINE_BATCH)
-            ->get();
-        $done = 0;
-        foreach ($pending as $voucher) {
-            $mirror->storeLines($organizationId, $puller->pluginId(), (string) $voucher->external_id, $puller->pullLines($organizationId, $voucher));
-            $done++;
-        }
-
-        return $done;
     }
 }

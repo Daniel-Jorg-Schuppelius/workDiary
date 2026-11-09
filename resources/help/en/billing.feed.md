@@ -1,7 +1,7 @@
 ---
 title: "Document flow"
 topic: billing.feed
-version: 4
+version: 5
 keywords:
     - invoices
     - quotes
@@ -19,6 +19,7 @@ keywords:
 audience: []
 modules:
     - module.vertrieb
+    - module.finance
 related:
     - billing.chain
     - invoices.manage
@@ -82,6 +83,37 @@ the document chain with everything that is still outstanding.
 **Visibility:** The document flow only shows what your permissions in the
 individual areas allow anyway. If you lack the permission for quotes, for
 example, the tab and its rows are missing.
+
+## Duplicate documents and the original
+
+**External leads:** If an invoice was transferred to an accounting program or
+the program assigned its number (Lexoffice, orgaMAX, sevDesk, easybill), it
+appears only once in the list – as a mirrored document. This applies to every
+connected program as soon as an outgoing document carries the same number and
+belongs to the same customer: a business issues an invoice number only once. A
+document with the same number but a different customer does not replace your
+invoice; neither do incoming documents or documents deleted in the source.
+
+**Expenses:** Once an incoming document is linked to an expense, only the
+document counts as expense – with Lexoffice as with sevDesk, Akaunting, Invoice
+Ninja and the other programs with a document mirror.
+
+**Totals:** Mirrored incoming documents count as expense, credit notes reduce
+it; drafts and cancelled documents do not count.
+
+**Original:** The number of a mirrored document opens the original in the
+program where one has an address (Invoice Ninja, Akaunting). For sevDesk
+invoices and credit notes, easybill documents and orgaMAX invoices,
+**Original PDF** at the end of the row loads the PDF straight from the program;
+this requires the right to view documents, and for the orgaMAX PDF also
+administration access. sevDesk vouchers without an invoice (till receipt,
+supplier voucher) and orgaMAX expenses have no PDF.
+
+**orgaMAX and sevDesk:** orgaMAX mirrors invoices, deposit invoices and
+expenses; the expenses appear as incoming documents under expense. Credit notes
+from sevDesk appear as outgoing credit notes and reduce revenue. A program's
+recurring templates are not documents and do not appear in the document feed;
+they are part of the subscriptions and licences reconciliation.
 
 ## Filter by project
 

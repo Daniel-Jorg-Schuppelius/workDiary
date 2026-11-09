@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Wohnung mieten im Kundenportal — erwartet: $profiles, $availability, $prices, $direct, $tenancies, $requests --}}
+{{-- Wohnung mieten im Kundenportal — erwartet: $profiles, $availability, $prices, $direct, $prepaymentPercent, $holdMinutes, $tenancies, $requests --}}
 @extends('customer.layout')
 @section('title', __('housing.portal_title'))
 @section('content')
@@ -79,7 +79,15 @@
                 <td>{{ $booking->asset?->name }}</td><td>{{ $booking->starts_at->orgTz()->fdate() }} – {{ $booking->ends_at->orgTz()->fdate() }}</td>
                 <td>{{ $booking->guests ?? '—' }}</td><td><x-status-badge :tone="$booking->status->tone()">{{ $booking->status->label() }}</x-status-badge>
                     @if ($booking->decline_reason)<p>{{ $booking->decline_reason }}</p>@endif
-                </td><td>@if ($booking->isOpen())
+                    @if ($booking->isAwaitingPayment() && $booking->prepayment_amount !== null)
+                        <span class="block text-xs text-muted">{{ __('rental.prepayment.amount', ['amount' => $booking->prepayment_amount->format()]) }} · {{ __('rental.prepayment.due', ['until' => $booking->payment_due_at?->fdatetime() ?? '—']) }}</span>
+                    @endif
+                </td><td>@if ($booking->isAwaitingPayment())
+                    <div class="flex justify-end gap-1">
+                        <form method="POST" action="{{ route('customer.rentals.requests.pay', $booking) }}">@csrf<x-button type="submit" size="xs" tone="primary" icon="credit_card"><span>{{ __('rental.prepayment.pay_now') }}</span></x-button></form>
+                        <form method="POST" action="{{ route('customer.rentals.requests.withdraw', $booking) }}">@csrf<x-button type="submit" size="xs" tone="ghost">{{ __('Zurücknehmen') }}</x-button></form>
+                    </div>
+                @elseif ($booking->isOpen())
                     <form method="POST" action="{{ route('customer.rentals.requests.withdraw', $booking) }}">@csrf<x-button type="submit" size="xs" tone="ghost">{{ __('Zurücknehmen') }}</x-button></form>
                 @endif</td>
             </tr>

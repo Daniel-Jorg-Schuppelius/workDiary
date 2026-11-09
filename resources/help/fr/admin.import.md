@@ -1,7 +1,7 @@
 ---
 title: "Import CSV"
 topic: admin.import
-version: 4
+version: 5
 keywords:
     - import de données
     - importer des données de base
@@ -113,3 +113,32 @@ résolution des séries.
 L'import des présences accepte la colonne facultative **erfasst am** (date et
 heure de l'enregistrement d'origine). Elle sert au délai d'enregistrement
 MiLoG ; sans elle, le délai n'est pas contrôlé pour ces lignes.
+
+## Abonnements de calendrier : en continu depuis un calendrier iCal
+
+Sous **Abonnements de calendrier** (menu de la vue d’ensemble des imports),
+vous vous abonnez à un calendrier iCal via son adresse d’abonnement
+(`https://` ou `webcal://`). WorkDiary le lit toutes les heures et reprend les
+rendez-vous comme l’import de fichier :
+
+- **Personne :** si le calendrier appartient à une personne, tous les
+  rendez-vous lui reviennent. Sans personne, l’adresse e-mail de
+  l’organisateur ou du participant décide.
+- **Période :** les 30 derniers jours sont lus ; un rendez-vous ne compte
+  qu’une fois terminé. Les séries sont développées dans cette période.
+- **Seulement les changements :** WorkDiary ignore les rendez-vous inchangés
+  (mêmes SEQUENCE et LAST-MODIFIED) ; un rendez-vous modifié met à jour la
+  saisie. Si le serveur répond « non modifié », tout le passage est ignoré.
+- **Pas de doublons :** un rendez-vous déjà saisi par un import de fichier
+  (même UID) est repris et pas saisi une seconde fois.
+- **Suppressions :** si un rendez-vous saisi disparaît du calendrier, le temps
+  reste. Une indication « Abonnement de calendrier » apparaît dans la boîte
+  d’affectation ; supprimez ou corrigez-y le temps en connaissance de cause.
+- **Affectation :** les rendez-vous sans projet correspondant arrivent dans la
+  boîte d’affectation comme pour l’import de fichier ; le passage suivant
+  réessaie.
+
+L’adresse est stockée chiffrée ; seul le serveur est affiché. Les adresses du
+réseau interne nécessitent **Autoriser les calendriers du réseau interne** et
+l’accord de l’exploitant. **Récupérer maintenant** lance un passage
+immédiatement.

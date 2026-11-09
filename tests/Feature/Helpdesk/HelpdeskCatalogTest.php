@@ -147,10 +147,8 @@ final class HelpdeskCatalogTest extends TestCase {
         } catch (\RuntimeException) {
         }
         $this->assertNull($request->fresh()?->fulfilled_id);
-
-        // Der im Schema vorgesehene Zwischenstand bleibt als Ausgang zugelassen.
-        $request->forceFill(['status' => ServiceRequestStatus::Fulfilling])->save();
-        $this->assertSame(ServiceRequestStatus::Done, $service->fulfill($request, $this->approver)->status);
+        // Entwurf und „in Erfüllung“ gibt es nicht (MVP-1517): ein Request startet in der Genehmigung.
+        $this->assertSame(['pending_approval', 'approved', 'rejected', 'done'], array_column(ServiceRequestStatus::cases(), 'value'));
     }
 
     public function test_visibility_filters_by_role(): void {

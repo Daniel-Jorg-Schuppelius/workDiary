@@ -1,7 +1,7 @@
 ---
 title: "Cellule de signalement – traitement des cas"
 topic: whistleblowing.cases
-version: 3
+version: 4
 keywords:
     - lanceur d'alerte
     - alerte éthique
@@ -62,15 +62,29 @@ dossier**, **Contenu du signalement**, **Responsable** et
   apparaît dans sa boîte de réception protégée.
 
 Les pièces jointes téléversées par la personne signalante sont stockées
-chiffrées ; le dossier ne propose actuellement pas de téléchargement.
+chiffrées et analysées contre les logiciels malveillants avant d'être
+libérées. La carte **Pièces jointes** indique le nom et la taille de chaque
+fichier ; vous téléchargez les pièces libérées avec l'icône
+**Télécharger**. Sinon, la carte affiche l'état de l'analyse : **Analyse en
+cours** tant que le résultat est attendu, **Rejeté** ou **Analyse échouée**
+– WorkDiary ne délivre pas ces fichiers. Sans antivirus configuré, les pièces
+jointes restent en cours d'analyse.
 
 **Confidentialité et conflits** :
 
 - **Déclarer un conflit d'intérêts** (justification facultative) vous
   exclut vous-même du dossier : votre attribution prend fin
   immédiatement et vous ne pouvez pas lever le blocage vous-même.
-- Le dossier ne propose actuellement ni le marquage des personnes
-  concernées ni un accès d’urgence pour d’autres personnes.
+- **Marquer la personne concernée** exclut une personne du dossier via son
+  **ID utilisateur** (**Marquer**, note facultative) ; les
+  attributions existantes prennent fin immédiatement.
+- **Accès d'urgence** donne à une personne non attribuée un accès limité
+  dans le temps, quatre heures par défaut (ID utilisateur et
+  justification obligatoire, **Valider**). Seule une autre personne peut
+  l'accorder.
+- **Exporter le dossier** crée un paquet chiffré en AES-256 (justification
+  et mot de passe d'au moins douze caractères, **Exporter**) ; transmettez le
+  mot de passe séparément du paquet.
 - Chaque étape du dossier est consignée de manière infalsifiable dans le
   journal du dossier.
 

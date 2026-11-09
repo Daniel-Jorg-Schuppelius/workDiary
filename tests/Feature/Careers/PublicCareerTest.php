@@ -72,10 +72,10 @@ class PublicCareerTest extends TestCase {
         $this->get('/karriere/' . $this->organization->slug)->assertNotFound();
     }
 
-    public function test_lists_published_postings_and_hides_drafts(): void {
+    public function test_lists_published_postings_and_hides_closed_ones(): void {
         $this->enablePortal();
         $this->publishPosting();
-        $this->publishPosting(['posting' => ['public_slug' => 'entwurf', 'status' => JobPostingStatus::Draft, 'public_title' => 'Geheim-Entwurf']]);
+        $this->publishPosting(['posting' => ['public_slug' => 'entwurf', 'status' => JobPostingStatus::Closed, 'public_title' => 'Geheim-Entwurf']]);
 
         $this->get('/karriere/' . $this->organization->slug)
             ->assertOk()

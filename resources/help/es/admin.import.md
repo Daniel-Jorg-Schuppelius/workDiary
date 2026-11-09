@@ -1,7 +1,7 @@
 ---
 title: "Importación CSV"
 topic: admin.import
-version: 4
+version: 5
 keywords:
     - importación de datos
     - importar datos maestros
@@ -112,3 +112,33 @@ series.
 La importación de asistencias admite la columna opcional **erfasst am** (fecha
 y hora del registro original). Sirve para el plazo de registro de la MiLoG; sin
 ella, el plazo no se comprueba en esas líneas.
+
+## Suscripciones de calendario: de forma continua desde un calendario iCal
+
+En **Suscripciones de calendario** (menú de la vista general de
+importaciones) usted se suscribe a un calendario iCal mediante su dirección de
+suscripción (`https://` o `webcal://`). WorkDiary lo lee cada hora y adopta las
+citas como la importación de archivos:
+
+- **Persona:** si el calendario pertenece a una persona, todas las citas son
+  suyas. Sin persona, decide la dirección de correo del organizador o del
+  asistente.
+- **Periodo:** se leen los últimos 30 días; una cita solo cuenta cuando ha
+  terminado. Las citas periódicas se desarrollan dentro de este periodo.
+- **Solo cambios:** WorkDiary omite las citas sin cambios (mismos SEQUENCE y
+  LAST-MODIFIED); una cita modificada actualiza el registro. Si el servidor
+  responde «sin cambios», se omite toda la ejecución.
+- **Sin duplicados:** una cita ya registrada por una importación de archivos
+  (mismo UID) se adopta y no se registra de nuevo.
+- **Eliminaciones:** si una cita registrada desaparece del calendario, el
+  tiempo se mantiene. En la bandeja de asignación aparece un aviso
+  «Suscripción de calendario»; elimine o corrija allí el tiempo de forma
+  consciente.
+- **Asignación:** las citas sin proyecto correspondiente llegan a la bandeja de
+  asignación como en la importación de archivos; la siguiente ejecución lo
+  vuelve a intentar.
+
+La dirección se guarda cifrada; solo se muestra el servidor. Las direcciones de
+la red propia necesitan **Permitir calendarios de la red propia** y la
+autorización del operador. **Consultar ahora** inicia una ejecución de
+inmediato.

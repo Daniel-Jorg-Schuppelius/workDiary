@@ -52,6 +52,11 @@ class Building extends Model {
         'updated_by',
     ];
 
+    /** @var array<string, string> */
+    protected $casts = [
+        'gross_area_m2' => 'decimal:2',
+    ];
+
     /** @return BelongsTo<Site, $this> */
     public function site(): BelongsTo {
         return $this->belongsTo(Site::class);

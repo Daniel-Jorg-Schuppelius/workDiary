@@ -322,6 +322,24 @@ class ManufacturingOrderController extends Controller {
         return back()->with('success', __('manufacturing.order.flash.delivered'));
     }
 
+    /** Abschluss (MVP-1493): ohne Gutmenge ein Validierungsfehler am Feld `good_qty`. */
+    public function complete(ManufacturingOrder $order): RedirectResponse {
+        return $this->guarded($order, fn () => $this->orders->complete($order), 'manufacturing.order.flash.completed');
+    }
+
+    /** Unterbrechen bis Material, Freigabe o. Ä. da ist. */
+    public function wait(ManufacturingOrder $order): RedirectResponse {
+        return $this->guarded($order, fn () => $this->orders->transition($order, ManufacturingOrderStatus::Waiting), 'manufacturing.order.flash.waiting');
+    }
+
+    public function block(ManufacturingOrder $order): RedirectResponse {
+        return $this->guarded($order, fn () => $this->orders->transition($order, ManufacturingOrderStatus::Blocked), 'manufacturing.order.flash.blocked');
+    }
+
+    public function resume(ManufacturingOrder $order): RedirectResponse {
+        return $this->guarded($order, fn () => $this->orders->resume($order), 'manufacturing.order.flash.resumed');
+    }
+
     public function cancel(ManufacturingOrder $order): RedirectResponse {
         return $this->guarded($order, function () use ($order): void {
             $this->orders->transition($order, ManufacturingOrderStatus::Cancelled);

@@ -1,7 +1,7 @@
 ---
 title: "Équipements & parc de véhicules"
 topic: assets.fleet
-version: 2
+version: 3
 keywords:
     - gestion de flotte
     - gestion des véhicules
@@ -38,6 +38,16 @@ Avant une suppression ou une mise au rebut, vérifiez si des
 maintenances, opérations, trajets ou documents ouverts y sont liés. Un
 historique critique doit être archivé et ne doit pas être perdu par
 écrasement.
+
+## Catégories
+
+Le champ « Catégorie » propose les catégories informatiques générales et
+celles de votre organisation. Les profils sectoriels apportent des catégories
+adaptées, par exemple caméra d’inspection et sertisseuse pour le génie
+climatique ou oxymètre de pouls et armoire à stupéfiants pour les soins. Les
+administrateurs créent leurs propres catégories sous Classifications, dans le
+domaine « Catégories d’actifs ». Une catégorie désactivée n’est plus proposée
+pour les nouveaux actifs mais reste sur ceux qui la portent déjà.
 
 ## Attribution et restitution
 

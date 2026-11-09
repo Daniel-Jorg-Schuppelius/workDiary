@@ -119,6 +119,26 @@ class SevDeskClient {
         return $this->rows($body);
     }
 
+    /**
+     * Eine Seite aller Kontakte (`GET /Contact`, Kontakt-Rückweg MVP-1502):
+     * `depth=1` liefert Organisationen und Personen, `countAll=true` die
+     * Gesamtzahl im Feld `total` (Abschnitt „Pagination“ der Doku).
+     *
+     * @return array{rows: list<array<string, mixed>>, total: ?int}
+     */
+    public function contacts(int $offset, int $limit): array {
+        $body = (array) $this->guard(
+            $this->api()->requestResponse('get', $this->baseUrl . '/Contact', ['query' => ['depth' => 1, 'offset' => $offset, 'limit' => $limit, 'countAll' => 'true']]),
+            '/Contact',
+        );
+        $total = $body['total'] ?? null;
+
+        return [
+            'rows' => array_values(array_filter($this->rows($body), 'is_array')),
+            'total' => is_numeric($total) ? (int) $total : null,
+        ];
+    }
+
     /** GET /Contact/Factory/getNextCustomerNumber — nächste freie Kundennummer, wenn sevDesk vergibt (MVP-1131). */
     public function nextCustomerNumber(): string {
         $body = $this->guard(
@@ -176,6 +196,59 @@ class SevDeskClient {
         );
 
         return $this->rows($body);
+    }
+
+    /**
+     * `GET /Voucher` mit Filtern (Rechnungseingang, MVP-1507): belegt sind
+     * `descriptionLike`, `creditDebit`, `startDate`/`endDate` (Zeitstempel) und
+     * `contact[id]` mit `contact[objectName]=Contact` (operationId getVouchers).
+     *
+     * @param  array<string, scalar>  $filter
+     * @return list<array<string, mixed>>
+     */
+    public function findVouchers(array $filter): array {
+        $body = (array) $this->guard(
+            $this->api()->requestResponse('get', $this->baseUrl . '/Voucher', ['query' => $filter + ['limit' => 50, 'embed' => 'supplier']]),
+            '/Voucher',
+        );
+
+        return array_values(array_filter($this->rows($body), 'is_array'));
+    }
+
+    /**
+     * `POST /Voucher/Factory/uploadTempFile` (operationId voucherUploadFile):
+     * Datei als Formularfeld `file`, Antwort `objects.filename` für
+     * `saveVoucher`. XML und PDF mit eingebetteter XML (ZUGFeRD) nimmt sevDesk
+     * nur ab Buchhaltung 2.0 an (API-News 2024-11-27).
+     */
+    public function uploadVoucherFile(string $content, string $filename): string {
+        $body = $this->object($this->guard(
+            $this->api()->requestResponse('post', $this->baseUrl . '/Voucher/Factory/uploadTempFile', ['multipart' => [
+                ['name' => 'file', 'contents' => $content, 'filename' => $filename],
+            ]]),
+            '/Voucher/Factory/uploadTempFile',
+        ));
+        $name = trim((string) ($body['filename'] ?? ''));
+        if ($name === '') {
+            throw new SevDeskApiException('sevDesk uploadTempFile returned no filename.', 0, '/Voucher/Factory/uploadTempFile');
+        }
+
+        return $name;
+    }
+
+    /**
+     * `POST /Voucher/Factory/saveVoucher` (operationId voucherFactorySaveVoucher):
+     * Beleg mit Positionen und angehängter Datei; Status nur 50 (Entwurf) oder
+     * 100 (offen). Antwort `objects.voucher`.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    public function saveVoucher(array $payload): array {
+        return $this->object((array) $this->guard(
+            $this->api()->requestResponse('post', $this->baseUrl . '/Voucher/Factory/saveVoucher', ['json' => $payload]),
+            '/Voucher/Factory/saveVoucher',
+        ));
     }
 
     /**
@@ -359,11 +432,26 @@ class SevDeskClient {
      * @return array{content: string, mime: string, filename: string}|null
      */
     public function invoicePdf(string $invoiceId): ?array {
-        $response = $this->api()->requestResponse('get', $this->baseUrl . '/Invoice/' . rawurlencode($invoiceId) . '/getPdf', ['query' => ['download' => 'true', 'preventSendBy' => 'true']]);
+        return $this->documentPdf('Invoice', $invoiceId);
+    }
+
+    /**
+     * `GET /CreditNote/{id}/getPdf` (operationId creditNoteGetPdf, MVP-1504):
+     * gleiche Antwort und Schalter wie bei der Rechnung.
+     *
+     * @return array{content: string, mime: string, filename: string}|null
+     */
+    public function creditNotePdf(string $creditNoteId): ?array {
+        return $this->documentPdf('CreditNote', $creditNoteId);
+    }
+
+    /** @return array{content: string, mime: string, filename: string}|null */
+    private function documentPdf(string $resource, string $id): ?array {
+        $response = $this->api()->requestResponse('get', $this->baseUrl . '/' . $resource . '/' . rawurlencode($id) . '/getPdf', ['query' => ['download' => 'true', 'preventSendBy' => 'true']]);
         if ($response->status() === 400) {
             return null;
         }
-        $body = $this->object($this->guard($response, '/Invoice/{id}/getPdf'));
+        $body = $this->object($this->guard($response, '/' . $resource . '/{id}/getPdf'));
         $content = (string) ($body['content'] ?? '');
         if ($content === '') {
             return null;
@@ -377,6 +465,48 @@ class SevDeskClient {
             'mime' => (string) ($body['mimeType'] ?? 'application/pdf'),
             'filename' => (string) ($body['filename'] ?? ''),
         ];
+    }
+
+    // ── Gutschriften ────────────────────────────────────────────────────
+
+    /**
+     * `GET /CreditNote` (operationId getCreditNotes, MVP-1504): `offset`/`limit`
+     * laut Abschnitt „Pagination“ der Doku, neueste Nummer zuerst über den
+     * belegten Filter `orderByCreditNoteNumber`.
+     *
+     * @return array<int, mixed>
+     */
+    public function creditNotes(int $offset, int $limit): array {
+        $body = (array) $this->guard(
+            $this->api()->requestResponse('get', $this->baseUrl . '/CreditNote', ['query' => [
+                'offset' => $offset,
+                'limit' => $limit,
+                'orderByCreditNoteNumber' => 'DESC',
+            ]]),
+            '/CreditNote',
+        );
+
+        return $this->rows($body);
+    }
+
+    /**
+     * `GET /CreditNotePos` (operationId getcreditNotePositions): Positionen einer
+     * Gutschrift; `creditNote[objectName]` trägt laut Doku den Wert `creditNote`.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function creditNotePositions(string $creditNoteId): array {
+        $body = (array) $this->guard(
+            $this->api()->requestResponse('get', $this->baseUrl . '/CreditNotePos', ['query' => [
+                'creditNote[id]' => $creditNoteId,
+                'creditNote[objectName]' => 'creditNote',
+                'embed' => 'part,unity',
+                'limit' => 1000,
+            ]]),
+            '/CreditNotePos',
+        );
+
+        return array_values(array_filter($this->rows($body), 'is_array'));
     }
 
     // ── Artikel ─────────────────────────────────────────────────────────

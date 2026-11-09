@@ -348,8 +348,16 @@ class TransferPositionReviewTest extends TestCase {
     public function test_ohne_ki_recht_kein_vorschlag(): void {
         $transfer = $this->confirmedTransfer();
         $position = $transfer->positions->first();
+        // ai.use steckt direkt am Nutzer und seit MVP-1510 auch in der Rolle; Rechte gelten je Organisation.
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($this->accountant->organization_id);
+        $this->accountant->revokePermissionTo(Permission::AiUse->value);
+        foreach ($this->accountant->roles as $role) {
+            $role->revokePermissionTo(Permission::AiUse->value);
+        }
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        $this->accountant->refresh();
 
-        $this->post(route('finance.transfers.positions.suggest', [$transfer, $position]))->assertForbidden();
+        $this->actingAs($this->accountant)->post(route('finance.transfers.positions.suggest', [$transfer, $position]))->assertForbidden();
     }
 
     public function test_manuelle_wortkorrektur_bietet_merken_dialog_an(): void {

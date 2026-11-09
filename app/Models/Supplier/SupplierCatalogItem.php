@@ -10,7 +10,7 @@
 
 namespace App\Models\Supplier;
 
-use App\Casts\MoneyCast;
+use App\Casts\{GtinCast, MoneyCast};
 use App\Enums\Procurement\CatalogItemStatus;
 use App\Models\Article\Article;
 use App\Models\Concerns\BelongsToOrganization;
@@ -99,6 +99,7 @@ class SupplierCatalogItem extends Model {
         'price_unit_amount' => 'integer',
         'lead_time_days' => 'integer',
         'last_seen_at' => 'datetime',
+        'gtin' => GtinCast::class,
     ];
 
     /** @return BelongsTo<SupplierCatalogSource, $this> */

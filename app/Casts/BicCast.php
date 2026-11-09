@@ -8,14 +8,15 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+declare(strict_types=1);
+
 namespace App\Casts;
 
 use CommonToolkit\Helper\Data\BankHelper;
 use CommonToolkit\ValueObjects\Bic;
-use Illuminate\Database\Eloquent\Model;
 
 /**
- * BIC-Spalte → {@see Bic}.
+ * BIC-Spalte.
  *
  * Beim Schreiben bleibt die **erfasste Länge** erhalten: `Bic::getValue()`
  * liefert immer die elfstellige Form (`DEUTDEFF` → `DEUTDEFFXXX`), und eine
@@ -24,13 +25,10 @@ use Illuminate\Database\Eloquent\Model;
  * wird deshalb nur getrimmt und in Großbuchstaben; `asBic11()` liefert die
  * elfstellige Form dort, wo ein Format sie verlangt.
  *
- * @extends ValueObjectCast<Bic>
+ * @extends IdentifierCast<Bic>
  */
-class BicCast extends ValueObjectCast {
-    /**
-     * @param  array<string, mixed>  $attributes
-     */
-    protected function toValueObject(string $raw, Model $model, array $attributes): ?Bic {
+class BicCast extends IdentifierCast {
+    protected function toValueObject(string $raw): ?Bic {
         return Bic::tryFrom($raw);
     }
 
@@ -39,14 +37,9 @@ class BicCast extends ValueObjectCast {
         return $value->getValue();
     }
 
-    /**
-     * Skalare Eingabe: nur normalisieren, nicht auf elf Stellen erweitern.
-     *
-     * @param  array<string, mixed>  $attributes
-     */
-    protected function storeScalar(string $raw, Model $model, array $attributes): string {
+    protected function normalise(string $raw): string {
         $normalised = BankHelper::normalizeBIC($raw) ?? '';
 
-        return $this->toValueObject($normalised, $model, $attributes) === null ? $raw : $normalised;
+        return $normalised !== '' && $this->toValueObject($normalised) !== null ? $normalised : $raw;
     }
 }

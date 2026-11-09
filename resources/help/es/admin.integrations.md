@@ -1,7 +1,7 @@
 ---
 title: "Gestionar integraciones"
 topic: admin.integrations
-version: 5
+version: 6
 keywords:
     - interfaces
     - conectores
@@ -157,3 +157,24 @@ Google Calendar o Microsoft 365 aparecen en la bandeja como eventos
 individuales dentro de la ventana de importación, con los eventos movidos
 y cancelados tratados correctamente. Una serie puede crearse como citas o
 descartarse de una vez como grupo.
+
+## GitHub y GitLab: devolver la finalización y el tiempo
+
+Las tareas procedentes de incidencias de GitHub y GitLab siguen gestionadas por
+el sistema de origen. Usted activa por separado dos vías de retorno en la
+tarjeta del plugin:
+
+- **Devolver la finalización** (GitHub y GitLab): cuando la tarea se completa
+  en WorkDiary, WorkDiary cierra la incidencia con una nota; al reabrir la
+  tarea, la incidencia se reabre.
+- **Devolver el tiempo registrado** (solo GitLab): cada tiempo que usted anota
+  para una tarea vinculada lo registra WorkDiary una sola vez como tiempo
+  dedicado en la incidencia. Un temporizador en marcha se registra con su
+  duración al detenerse. Si después modifica o elimina el registro, WorkDiary
+  no cambia el asiento en GitLab: GitLab no devuelve ningún identificador del
+  asiento individual. Corrija entonces el tiempo dedicado en GitLab, en el
+  informe de seguimiento de tiempo de la incidencia. El token necesita el
+  scope `api`.
+
+GitHub no ofrece seguimiento de tiempo en las incidencias; allí solo existe la
+vía de retorno de la finalización.

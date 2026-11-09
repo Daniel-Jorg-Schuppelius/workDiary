@@ -1,7 +1,7 @@
 ---
 title: "Integrationen verwalten"
 topic: admin.integrations
-version: 5
+version: 6
 keywords:
     - Schnittstellen
     - Anbindungen
@@ -154,3 +154,22 @@ Zugangsdaten an einer Stelle zu hinterlegen, die dafür nicht gedacht ist.
 Calendar oder Microsoft 365 erscheinen in der Inbox als Einzeltermine im
 Importfenster, verschobene und abgesagte Termine richtig. Eine Serie lässt
 sich als Gruppe auf einmal als Termine anlegen oder verwerfen.
+
+## GitHub und GitLab: Erledigung und Zeit zurückschreiben
+
+Aufgaben aus GitHub- und GitLab-Issues bleiben quellsystem-geführt. Zwei
+Rückwege schalten Sie in der Plugin-Karte einzeln ein:
+
+- **Erledigung zurückschreiben** (GitHub und GitLab): Wird die Aufgabe in
+  WorkDiary erledigt, schließt WorkDiary das Issue mit einer Notiz; beim
+  Wiedereröffnen öffnet es das Issue wieder.
+- **Gebuchte Zeit zurückschreiben** (nur GitLab): Jede Zeit, die Sie zu einer
+  verknüpften Aufgabe erfassen, bucht WorkDiary einmal als Zeitaufwand auf das
+  Issue. Ein laufender Timer wird mit seiner Dauer beim Stoppen gebucht.
+  Ändern oder löschen Sie den Zeiteintrag danach, ändert WorkDiary die Buchung
+  in GitLab nicht: GitLab meldet keine Kennung der einzelnen Buchung zurück.
+  Korrigieren Sie den Zeitaufwand dann in GitLab im Zeiterfassungsbericht des
+  Issues. Der Token braucht den Scope `api`.
+
+GitHub kennt keine Zeiterfassung an Issues, deshalb gibt es dort nur den
+Rückweg für die Erledigung.

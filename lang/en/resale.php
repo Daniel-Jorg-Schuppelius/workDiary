@@ -913,12 +913,20 @@ return [
     // Review 2026-09-11 (Einkauf)
     'purchase_document' => [
         'field' => 'Incoming document',
-        'hint' => 'Documents of all sources from the last 36 months — Lexoffice mirror, local expenses, received e-invoices; ✓ = already allocated.',
+        'hint' => 'Documents of all sources from the last 36 months — mirrors of the accounting programs (Lexoffice, sevDesk, Akaunting, Invoice Ninja …), local expenses, received e-invoices; ✓ = already allocated.',
         'sources_hint' => 'Sources',
         'source' => [
             'lexoffice' => 'Lexoffice',
             'expense' => 'Expense',
             'incoming_einvoice' => 'Incoming e-invoice',
+            'accounting_voucher' => 'Accounting program',
+            'sevdesk' => 'sevDesk',
+            'easybill' => 'easybill',
+            'orgamax' => 'orgaMAX',
+            'invoiceplane' => 'InvoicePlane',
+            'jtl_wawi' => 'JTL-Wawi',
+            'invoiceninja' => 'Invoice Ninja',
+            'akaunting' => 'Akaunting',
         ],
         'open' => 'Open document (:source)',
         'preview' => 'View document image',

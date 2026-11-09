@@ -13,6 +13,8 @@ namespace App\Http\Requests\Asset;
 use App\Enums\Asset\{AssetClass, AssetStatus};
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidOrNumericInputs;
+use App\Models\Asset\Asset;
+use App\Services\Asset\AssetCategoryCatalog;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
@@ -27,7 +29,11 @@ class SaveAssetRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         $orgId = $this->user()?->organization_id;
-        $categoryCodes = array_keys((array) config('asset_categories', []));
+        $asset = $this->route('asset');
+        $categoryCodes = array_keys(app(AssetCategoryCatalog::class)->options(
+            $orgId === null ? null : (int) $orgId,
+            $asset instanceof Asset ? $asset->category_code : null,
+        ));
 
         return [
             'asset_class' => ['required', new Enum(AssetClass::class)],

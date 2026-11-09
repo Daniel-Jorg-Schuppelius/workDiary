@@ -19,8 +19,6 @@ use App\Enums\Contracts\HasStatusTransitions;
 enum InvestmentBudgetRequestStatus: string implements HasStatusTransitions {
     use HasTransitions;
 
-    /** Spaltenvorgabe; der Code legt Anträge gleich „in Freigabe“ an. */
-    case Draft = 'draft';
     case InApproval = 'in_approval';
     case Approved = 'approved';
     case Rejected = 'rejected';
@@ -32,7 +30,7 @@ enum InvestmentBudgetRequestStatus: string implements HasStatusTransitions {
      * @return list<self>
      */
     public static function open(): array {
-        return [self::Draft, self::InApproval];
+        return [self::InApproval];
     }
 
     public function label(): string {
@@ -44,7 +42,7 @@ enum InvestmentBudgetRequestStatus: string implements HasStatusTransitions {
         return match ($this) {
             self::InApproval => [self::Approved, self::Rejected],
             self::Approved => [self::Superseded],
-            self::Draft, self::Rejected, self::Superseded => [],
+            self::Rejected, self::Superseded => [],
         };
     }
 }

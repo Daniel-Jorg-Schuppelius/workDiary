@@ -128,6 +128,25 @@ class TenderService {
     }
 
     /**
+     * Entschiedene Akte ablegen (MVP-1517): sie verlässt die Standardliste,
+     * die Entscheidung bleibt für die Auswertung in `archived_outcome`.
+     */
+    public function archive(ApplicationOpportunity $opportunity, User $actor): ApplicationOpportunity {
+        return DB::transaction(static function () use ($opportunity, $actor): ApplicationOpportunity {
+            $locked = ApplicationOpportunity::query()->whereKey($opportunity->getKey())->lockForUpdate()->firstOrFail();
+            if (! $locked->status->canTransitionTo(ApplicationOpportunityStatus::Archived)) {
+                throw new \RuntimeException((string) __('Nur entschiedene Akten werden abgelegt.'));
+            }
+
+            $outcome = $locked->status;
+            $locked->update(['status' => ApplicationOpportunityStatus::Archived, 'archived_outcome' => $outcome]);
+            $locked->audit('tender.archived', ['outcome' => $outcome->value, 'by' => $actor->id]);
+
+            return $locked->refresh();
+        });
+    }
+
+    /**
      * Kontrollierte Überführung nach Gewinn (MVP-187): verknüpft ein
      * bestehendes Projekt oder legt ein neues an — die Akte bleibt als
      * Nachweis erhalten (kein stiller Datenumzug).

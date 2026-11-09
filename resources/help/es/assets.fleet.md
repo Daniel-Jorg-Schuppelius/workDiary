@@ -1,7 +1,7 @@
 ---
 title: "Activos y flota"
 topic: assets.fleet
-version: 2
+version: 3
 keywords:
     - gestión de flota
     - gestión de vehículos
@@ -37,6 +37,16 @@ Antes de eliminar o dar de baja un activo, compruebe si tiene
 vinculados mantenimientos, expedientes, trayectos o documentos
 abiertos. El historial crítico debe archivarse y no perderse por
 sobrescritura.
+
+## Categorías
+
+El campo «Categoría» ofrece las categorías informáticas generales y las de su
+organización. Los perfiles sectoriales aportan categorías adecuadas, por
+ejemplo cámara de inspección y prensadora en climatización o pulsioxímetro y
+armario de estupefacientes en cuidados. Los administradores crean sus propias
+categorías en Clasificaciones, dominio «Categorías de activos». Una categoría
+desactivada ya no se ofrece para activos nuevos, pero se mantiene en los que
+ya la tienen.
 
 ## Asignación y devolución
 

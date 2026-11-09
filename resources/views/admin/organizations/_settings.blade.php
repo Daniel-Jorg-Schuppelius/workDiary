@@ -436,6 +436,19 @@
                               :hint="__('settings.rental_terms.portal_direct_booking_hint')"
                               error="settings.rental.portal_direct_booking"
                               :checked="(string) old('settings.rental.portal_direct_booking', data_get($stored, 'rental.portal_direct_booking') ? '1' : '0') === '1'" />
+            {{-- Online-Vorauszahlung der Direktbuchung (MVP-1515). --}}
+            <x-input-field name="settings[rental][portal_prepayment_percent]" type="number" min="0" max="100"
+                           :label="__('settings.rental_terms.prepayment_percent')"
+                           :hint="__('settings.rental_terms.prepayment_percent_hint')"
+                           error="settings.rental.portal_prepayment_percent"
+                           :value="old('settings.rental.portal_prepayment_percent', data_get($stored, 'rental.portal_prepayment_percent', ''))"
+                           placeholder="0" />
+            <x-input-field name="settings[rental][prepayment_hold_minutes]" type="number" min="10" max="1440"
+                           :label="__('settings.rental_terms.prepayment_hold_minutes')"
+                           :hint="__('settings.rental_terms.prepayment_hold_minutes_hint')"
+                           error="settings.rental.prepayment_hold_minutes"
+                           :value="old('settings.rental.prepayment_hold_minutes', data_get($stored, 'rental.prepayment_hold_minutes', ''))"
+                           placeholder="30" />
             {{-- Geofence-Abweichung verliehener Geräte (MVP-975). --}}
             <x-input-field name="settings[rental][geofence_radius_m]" type="number" min="50" max="50000"
                            :label="__('settings.rental_terms.geofence_radius')"

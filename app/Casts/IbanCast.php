@@ -8,23 +8,21 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+declare(strict_types=1);
+
 namespace App\Casts;
 
 use CommonToolkit\ValueObjects\Iban;
-use Illuminate\Database\Eloquent\Model;
 
 /**
- * IBAN-Spalte → {@see Iban}. Gespeichert wird die kanonische Form ohne
- * Leerzeichen; für die Anzeige `formatted()`, für Auszüge `masked()`.
- * Verschlüsselte Spalten: `IbanCast::class . ':encrypted'`.
+ * IBAN-Spalte: gespeichert wird die kanonische Form ohne Leerzeichen in
+ * Großbuchstaben, gelesen Text; das Wertobjekt für `formatted()`/`masked()`
+ * liefert `Iban::tryFrom()`. Verschlüsselte Spalten: `IbanCast::class . ':encrypted'`.
  *
- * @extends ValueObjectCast<Iban>
+ * @extends IdentifierCast<Iban>
  */
-class IbanCast extends ValueObjectCast {
-    /**
-     * @param  array<string, mixed>  $attributes
-     */
-    protected function toValueObject(string $raw, Model $model, array $attributes): ?Iban {
+class IbanCast extends IdentifierCast {
+    protected function toValueObject(string $raw): ?Iban {
         return Iban::tryFrom($raw);
     }
 

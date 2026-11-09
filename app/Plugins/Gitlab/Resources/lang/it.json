@@ -1,6 +1,8 @@
 {
+    "Bucht jede in workDiary erfasste Zeit zu einer verknüpften Aufgabe einmal als Zeitaufwand auf das GitLab-Issue. Spätere Änderungen oder Löschungen des Zeiteintrags überträgt workDiary nicht, sie werden in GitLab korrigiert. Der Token braucht den api-Scope.": "Registra una sola volta ogni tempo rilevato in workDiary per un’attività collegata come tempo impiegato sull’issue GitLab. workDiary non trasmette modifiche o cancellazioni successive della registrazione; le corregga in GitLab. Il token richiede lo scope api.",
     "Die Instanz-URL": "L’URL dell’istanza",
     "Für eine On-Premise-Instanz im eigenen Netz muss die Freigabe privater Adressen ausdrücklich aktiviert werden.": "Per un’istanza on-premise nella propria rete gli indirizzi privati devono essere consentiti esplicitamente.",
+    "Gebuchte Zeit zurückschreiben": "Ritrasferire il tempo registrato",
     "GitLab ist nicht konfiguriert (Projekt-ID oder API-Token fehlt).": "GitLab non è configurato (ID progetto o token API mancante).",
     "GitLab-Instanz, z. B. https://gitlab.com oder die eigene On-Premise-Adresse.": "Istanza GitLab, ad es. https://gitlab.com o il proprio indirizzo on-premise.",
     "Importiert GitLab-Issues eines Projekts als Aufgaben (idempotent über iid + Projekt-ID, self-hosted Instanzen unterstützt): Zeiterfassung und Abrechnung in WorkDiary, GitLab bleibt führend. Polling mit updated_after-Aufholpunkt, Webhook-Anstoß optional.": "Importa le issue GitLab di un progetto come attività (idempotente tramite iid + ID progetto, istanze self-hosted supportate): rilevamento tempi e fatturazione in WorkDiary, GitLab resta il sistema guida. Polling con checkpoint updated_after, attivazione via webhook opzionale.",

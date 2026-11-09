@@ -1,7 +1,7 @@
 ---
 title: "Asistencia, plan/real y cobertura"
 topic: reports.attendance
-version: 7
+version: 8
 keywords:
     - informe de asistencia
     - analizar fichajes
@@ -80,7 +80,7 @@ reservado y saldo en minutos por persona y una fila de total.
 **Análisis** → **Personal** → **Plan/real** compara lo previsto y lo real en
 varias vistas, que se cambian con las pestañas de la parte superior de la
 página: **Asistencia**, **Equipo**, **Organización**, **Turnos**,
-**Proyectos** y **Ubicaciones**. Solo ve las pestañas para las que tiene
+**Proyectos**, **Proyecto por persona** y **Ubicaciones**. Solo ve las pestañas para las que tiene
 permiso.
 
 Aquí el período no se toma de la cabecera: ajústelo en la barra de filtros con
@@ -145,6 +145,22 @@ el permiso de equipo esto solo es posible para miembros de sus propios equipos.
   indicación **sin datos previstos**; no es una alarma. El tiempo sin proyecto
   aparece en la fila **Sin proyecto**. Las comparaciones con presupuestos de
   tiempo y de dinero las ofrece **Rentabilidad**.
+- **Proyecto por persona**: lo previsto son los tiempos objetivo de los
+  proyectos por persona (pestaña Tiempo, **Gestionar tiempos objetivo**), lo
+  real es el tiempo que la persona registró en el proyecto; los tiempos de
+  máquina no cuentan. Mosaicos **Plan**, **Real**, **Diferencia** y **Días bajo
+  objetivo** (hallazgos abiertos o confirmados de la comparación nocturna; la
+  indicación da todos los hallazgos del período) y debajo la tabla **Proyecto
+  por persona** con **Proyecto**, **Persona**, **Objetivo (h)**, **Registrado
+  (h)**, **Diferencia (h)** y **Días bajo objetivo**. La diferencia es el
+  objetivo menos lo registrado y el tiempo que falta se resalta en amarillo; si
+  ya hay hallazgos resueltos, tras los días abiertos aparece en gris el número
+  de todos los hallazgos. Si un proyecto tiene una geocerca, **Presencia en el
+  sitio (h)** muestra el tiempo que la persona estuvo allí según el registro de
+  tiempo basado en la ubicación – solo como comprobante: no cuenta ni en lo real
+  ni en la diferencia. El campo **Todos los proyectos** limita la vista a un
+  proyecto con tiempos objetivo. Sin tiempos objetivo en el período, la página
+  muestra **No hay tiempos objetivo de proyecto en el período.**
 - **Ubicaciones**: para las ubicaciones no hay datos previstos; la vista solo
   muestra la distribución real del tiempo procedente del registro de tiempo
   basado en la ubicación. Recuadros **Real**, **Visitas al sitio** y
@@ -154,7 +170,7 @@ el permiso de equipo esto solo es posible para miembros de sus propios equipos.
   ubicación asignada figuran en **Sin asignación de ubicación** con la
   indicación **Geocerca sin ubicación**.
 
-Las tablas largas de las pestañas **Proyectos** y **Ubicaciones** se reparten en
+Las tablas largas de las pestañas **Proyectos**, **Proyecto por persona** y **Ubicaciones** se reparten en
 páginas de 50 filas cada una; los gráficos, en cambio, evalúan todas las filas,
 no solo la página mostrada.
 
@@ -223,7 +239,7 @@ de calor, **CSV** y **Excel**.
 - **Plan/real**: todas las personas ven la pestaña **Asistencia** con sus
   propios días. La pestaña **Equipo** requiere el permiso **Ver informe de
   presencia (equipo)**; las pestañas **Organización**, **Turnos**,
-  **Proyectos** y **Ubicaciones**, el permiso **Ver informe de presencia
+  **Proyectos**, **Proyecto por persona** y **Ubicaciones**, el permiso **Ver informe de presencia
   (organización)**. Los administradores ven todas las pestañas. En la
   asignación estándar, el rol Jefe de equipo tiene el permiso de equipo, la
   Dirección el de organización y la Administración de personal ambos.

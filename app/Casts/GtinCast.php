@@ -8,22 +8,19 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+declare(strict_types=1);
+
 namespace App\Casts;
 
 use CommonToolkit\ValueObjects\Gtin;
-use Illuminate\Database\Eloquent\Model;
 
 /**
- * GTIN/EAN → {@see Gtin} inkl. Prüfziffer. Ungültige Altbestände ergeben
- * beim Lesen `null` statt einer Exception.
+ * GTIN/EAN inkl. Prüfziffer, gespeichert als Ziffernfolge.
  *
- * @extends ValueObjectCast<Gtin>
+ * @extends IdentifierCast<Gtin>
  */
-class GtinCast extends ValueObjectCast {
-    /**
-     * @param  array<string, mixed>  $attributes
-     */
-    protected function toValueObject(string $raw, Model $model, array $attributes): ?Gtin {
+class GtinCast extends IdentifierCast {
+    protected function toValueObject(string $raw): ?Gtin {
         return Gtin::tryFrom($raw);
     }
 

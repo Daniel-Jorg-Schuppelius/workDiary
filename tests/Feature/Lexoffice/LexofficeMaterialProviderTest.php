@@ -82,6 +82,25 @@ class LexofficeMaterialProviderTest extends TestCase {
         $this->assertSame(0, app(MaterialProviderRegistry::class)->get('lexoffice')?->sync());
     }
 
+    public function test_article_number_taken_by_a_local_material_stays_empty_instead_of_failing(): void {
+        \App\Models\Material\Material::query()->create(['organization_id' => $this->organization->id, 'sku' => 'SW-24', 'name' => 'Switch (lokal)', 'unit' => 'Stk.', 'is_active' => true]);
+        $articles = ['content' => [
+            ['id' => 'lex-1', 'title' => 'Switch 24-Port', 'articleNumber' => 'SW-24', 'unitName' => 'Stk'],
+            ['id' => 'lex-2', 'title' => 'Patchkabel', 'articleNumber' => 'PK-1', 'unitName' => 'Stk'],
+        ]];
+        FakePluginHttp::fake(['https://api.lexware.io/v1/articles*' => FakePluginHttp::response($articles, 200)]);
+
+        $provider = app(MaterialProviderRegistry::class)->get('lexoffice');
+        $this->assertInstanceOf(LexofficeMaterialProvider::class, $provider);
+        $this->assertCount(2, $provider->search('s', 10));
+        // Ein zweiter Treffer derselben Artikel bleibt bei seiner Nummer bzw. ohne.
+        $this->assertCount(2, $provider->search('s', 10));
+
+        $this->assertDatabaseHas('materials', ['external_id' => 'lex-1', 'sku' => null, 'name' => 'Switch 24-Port']);
+        $this->assertDatabaseHas('materials', ['external_id' => 'lex-2', 'sku' => 'PK-1']);
+        $this->assertDatabaseHas('materials', ['external_id' => null, 'sku' => 'SW-24', 'name' => 'Switch (lokal)']);
+    }
+
     public function test_lexoffice_source_needs_the_key_of_the_current_organization(): void {
         $this->assertSame(['local', 'lexoffice'], app(MaterialProviderRegistry::class)->names());
 

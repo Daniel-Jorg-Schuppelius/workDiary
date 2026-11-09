@@ -43,6 +43,8 @@ class TenderController extends Controller {
 
         $query = ApplicationOpportunity::query()->with(['customer', 'responsible'])
             ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter))
+            // Abgelegte Akten nur auf ausdrücklichen Filter (MVP-1517).
+            ->when($statusFilter === null, fn($q) => $q->where('status', '!=', ApplicationOpportunityStatus::Archived))
             ->when($request->boolean('open_only'), fn($q) => $q->whereIn('status', ApplicationOpportunityStatus::open()));
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
@@ -303,6 +305,18 @@ class TenderController extends Controller {
         }
 
         return back()->with('success', __('Entscheidung dokumentiert.'));
+    }
+
+    public function archive(ApplicationOpportunity $opportunity): RedirectResponse {
+        Gate::authorize('decide', $opportunity);
+
+        try {
+            $this->tenders->archive($opportunity, $this->authUser());
+        } catch (\RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return back()->with('success', __('Akte abgelegt.'));
     }
 
     public function transfer(Request $request, ApplicationOpportunity $opportunity): RedirectResponse {

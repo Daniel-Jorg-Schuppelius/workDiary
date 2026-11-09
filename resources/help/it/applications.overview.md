@@ -1,7 +1,7 @@
 ---
 title: "Candidature e gare d'appalto"
 topic: applications.overview
-version: 2
+version: 3
 keywords:
     - recruiting
     - selezione del personale
@@ -30,6 +30,11 @@ pacchetti di presentazione versionati (snapshot con hash SHA-256). Le
 gare vinte vengono trasformate in modo controllato in un progetto;
 quelle perse restano analizzabili con il motivo della perdita.
 
+**Archiviare un fascicolo:** una gara già decisa (vinta, persa, ritirata)
+può essere tolta dall'elenco con «Archivia fascicolo». La decisione resta
+sul fascicolo e continua a contare nel tasso di successo e nei motivi di
+perdita; il filtro di stato «Archiviato» mostra i fascicoli archiviati.
+
 **Candidature del personale:** fabbisogno di posizioni → pubblicazione
 → fascicolo di candidatura con colloqui, valutazioni e decisione. I
 dati dei candidati sono salvati in forma crittografata e visibili solo
@@ -43,6 +48,11 @@ colloqui, proposte di appuntamento e ulteriori decisioni sono poi
 bloccati. Gli annunci pubblicati passano ogni giorno a «Scaduto» dopo la
 data di scadenza o il termine per le candidature; può ripubblicarli con
 una nuova data oppure chiuderli.
+
+**Scartare una bozza dipendente:** se l'assunzione alla fine non avviene,
+«Scarta bozza» scarta la bozza. Non viene più creato alcun account e il
+passo resta nel registro di audit; una bozza già invitata non può più
+essere scartata.
 
 La decisione chiude anche i colloqui e le proposte di appuntamento aperti: i
 colloqui pianificati vengono contrassegnati come annullati (la nota resta),

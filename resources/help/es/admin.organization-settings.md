@@ -1,7 +1,7 @@
 ---
 title: "Organización y configuración"
 topic: admin.organization-settings
-version: 4
+version: 5
 keywords:
     - configuración de la empresa
     - ajustes del inquilino
@@ -122,6 +122,18 @@ según la ley alemana de jornada laboral (ArbZG):
   deliberada en el diálogo del turno. Son graves el solapamiento, un descanso
   demasiado corto, la jornada diaria superada y un turno durante vacaciones
   aprobadas; las demás reglas solo advierten.
+
+## Cualificaciones obligatorias
+
+**Cualificación obligatoria faltante al asignar** determina qué ocurre cuando a
+una persona le falta una cualificación que exige el tipo de turno o el
+encargo, o cuando su cualificación ha caducado o aún no es válida el día del
+servicio:
+
+- **Solo aviso** (predeterminado): el plan de turnos y el encargo muestran la
+  carencia, pero se guarda igualmente.
+- **Bloquear la asignación**: la asignación se rechaza con un mensaje de
+  error. Más información en «Cualificaciones».
 
 ## Modelo de horario
 
@@ -397,6 +409,16 @@ herramientas y no pueden renovarse. La conexión en sí se describe en
 - **Permitir la reserva directa en el portal de clientes**: los clientes
   reservan de inmediato y en firme los equipos libres habilitados para el
   portal; se notifica a la dirección.
+- **Pago anticipado en la reserva directa (%)** (0–100, predeterminado 0):
+  parte del precio bruto de la lista de precios que los clientes pagan por
+  adelantado en línea a través del proveedor de pagos al reservar
+  directamente. La reserva solo se confirma al recibir el pago; el pago
+  anticipado se imputa a la factura. Un objeto de alquiler puede tener su
+  propio porcentaje (0 = ninguno). Sin proveedor de pagos configurado, solo es
+  posible la solicitud.
+- **Plazo de pago de la reserva directa (minutos)** (10–1440, predeterminado
+  30): tiempo durante el que el equipo queda reservado para una reserva no
+  pagada; después se libera la reserva.
 - **Radio alrededor del lugar de uso (m)** (50–50 000, predeterminado 500): si
   la posición notificada de un equipo alquilado está más lejos de la
   ubicación del alquiler, se notifica la desviación. Sin ubicación se aplican

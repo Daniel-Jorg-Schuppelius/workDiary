@@ -66,6 +66,8 @@ class Site extends Model {
 
     protected $casts = [
         'is_active' => 'boolean',
+        'geo_lat' => 'decimal:7',
+        'geo_lng' => 'decimal:7',
     ];
 
     /** @return BelongsTo<Customer, $this> */

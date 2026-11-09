@@ -1,7 +1,7 @@
 ---
 title: "Présence, prévu/réel et couverture"
 topic: reports.attendance
-version: 7
+version: 8
 keywords:
     - rapport de présence
     - analyser les pointages
@@ -81,7 +81,7 @@ ligne de total.
 
 **Rapports** → **Personnel** → **Plan/réel** compare le prévu et le réel dans
 plusieurs vues, que vous changez avec les onglets en haut de la page :
-**Présence**, **Équipe**, **Organisation**, **Services**, **Projets** et
+**Présence**, **Équipe**, **Organisation**, **Services**, **Projets**, **Projet par personne** et
 **Sites**. Vous ne voyez que les onglets pour lesquels vous disposez des droits.
 
 Ici, la période n'est pas reprise de l'en-tête : réglez-la dans la barre de
@@ -152,6 +152,22 @@ de vos propres équipes.
   une alerte. Le temps sans projet figure dans la ligne **Sans projet**. Les
   comparaisons avec des budgets en temps et en argent sont fournies par
   **Rentabilité**.
+- **Projet par personne** : le prévu correspond aux temps cibles des projets
+  par personne (onglet Temps, **Gérer les temps cibles**), le réel au temps que
+  la personne a saisi sur le projet ; les temps machine ne comptent pas. Tuiles
+  **Plan**, **Réel**, **Différence** et **Jours sous la cible** (constats
+  ouverts ou confirmés du rapprochement nocturne ; l'indication donne tous les
+  constats de la période), puis le tableau **Projet par personne** avec
+  **Projet**, **Personne**, **Cible (h)**, **Saisi (h)**, **Écart (h)** et
+  **Jours sous la cible**. L'écart est la cible moins le saisi, le temps
+  manquant est surligné en jaune ; si des constats sont déjà réglés, le nombre
+  de tous les constats suit les jours ouverts en gris. Si un projet a un
+  géorepérage, **Présence sur site (h)** indique le temps passé sur place par
+  la personne selon la saisie des temps basée sur la localisation – à titre de
+  justificatif uniquement, il ne compte ni dans le réel ni dans l'écart. Le
+  champ **Tous les projets** restreint la vue à un projet ayant des temps
+  cibles. Sans temps cibles sur la période, la page affiche **Aucun temps cible
+  de projet sur la période.**
 - **Sites** : il n'existe pas de données cibles pour les sites ; la vue montre
   uniquement la répartition réelle du temps issu de la saisie de temps basée
   sur la localisation. Tuiles **Réel**, **Visites sur site** et **Personnes**,
@@ -160,7 +176,7 @@ de vos propres équipes.
   **Part**. Les visites de géorepérages sans site associé figurent sous **Sans
   affectation de site** avec la mention **Géorepérage sans site**.
 
-Les longs tableaux des onglets **Projets** et **Sites** sont répartis sur des
+Les longs tableaux des onglets **Projets**, **Projet par personne** et **Sites** sont répartis sur des
 pages de 50 lignes chacune ; les graphiques exploitent en revanche toutes les
 lignes, pas seulement la page affichée.
 
@@ -231,7 +247,7 @@ de chaleur, **CSV** et **Excel**.
   l'organisation.
 - **Plan/réel** : chaque personne voit l'onglet **Présence** avec ses propres
   jours. L'onglet **Équipe** requiert le droit **Consulter le rapport de présence
-  (équipe)**, les onglets **Organisation**, **Services**, **Projets** et
+  (équipe)**, les onglets **Organisation**, **Services**, **Projets**, **Projet par personne** et
   **Sites** le droit **Consulter le rapport de présence (organisation)**. Les
   administrateurs voient tous les onglets. Dans l'attribution standard, le rôle
   Chef d'équipe dispose du droit équipe, la Direction du droit organisation et

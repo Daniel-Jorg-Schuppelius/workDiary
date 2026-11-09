@@ -17,8 +17,6 @@ use App\Models\Integration\ExternalReference;
 use App\Plugins\OrgaMax\Enums\OrgaMaxInvoiceStatus;
 use App\Plugins\OrgaMax\Models\{OrgaMaxConnection, OrgaMaxInvoice};
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
-use Orgamax\API\Client;
-use Orgamax\API\Endpoints\InvoicesEndpoint;
 use Orgamax\Entities\Invoices\Invoice;
 
 /**
@@ -31,55 +29,53 @@ use Orgamax\Entities\Invoices\Invoice;
 class OrgaMaxInvoiceProjector {
     public const string EXT_TYPE_INVOICE = 'orgamax_invoice';
 
-    /** @return array{read: int, updated: int} */
-    public function project(OrgaMaxConnection $connection, Client $client, int $offset, int $limit): array {
-        $rows = (new InvoicesEndpoint($client))->search(['offset' => $offset, 'limit' => $limit])?->getValues() ?? [];
-        $updated = 0;
-
-        foreach ($rows as $invoice) {
-            $externalId = $invoice->getId() !== null ? (string) $invoice->getId() : '';
-            if ($externalId === '') {
-                continue;
-            }
-
-            $projection = $this->projection($invoice);
-
-            // Je Rechnung ein eigenes lokales Objekt (MVP-653-Fix): der
-            // Unique-Index extref_unique erlaubt nur EINE Referenz je
-            // Zielmodell — die frühere Ablage an der Verbindung brach ab der
-            // zweiten Rechnung ab.
-            $mirror = OrgaMaxInvoice::query()->updateOrCreate([
-                'organization_id' => $connection->organization_id,
-                'external_id' => $externalId,
-            ], [
-                'customer_id' => $this->resolveCustomerId($connection->organization_id, $projection['customer_id'] ?? null),
-                'customer_external_id' => $this->nullIfBlank($projection['customer_id'] ?? null),
-                'customer_name' => $this->nullIfBlank($projection['customer'] ?? null),
-                'invoice_type' => $this->nullIfBlank($projection['type'] ?? null),
-                'invoice_status' => OrgaMaxInvoiceStatus::fromSdk($invoice->getState()),
-                'invoice_number' => $this->nullIfBlank($projection['number'] ?? null),
-                'invoice_date' => $this->dateOrNull($projection['date'] ?? null),
-                'due_on' => $this->dateOrNull($projection['due_on'] ?? null),
-                'total_net' => $projection['total_net'] ?? null,
-                'total_gross' => $projection['total_gross'] ?? null,
-                'outstanding_amount' => $projection['outstanding_amount'] ?? null,
-                'currency' => $projection['currency'] ?? 'EUR',
-                'payload' => $projection,
-                'synced_at' => now(),
-            ]);
-
-            ExternalReference::link(
-                $connection->organization_id,
-                OrgaMaxPlugin::ID,
-                self::EXT_TYPE_INVOICE,
-                $mirror,
-                $externalId,
-                $projection,
-            );
-            $updated++;
+    /**
+     * Eine gelesene Rechnung in den Plugin-Spiegel `orgamax_invoices` (Wechsel,
+     * Belegverbund, PDF); den allgemeinen Belegspiegel schreibt der
+     * {@see OrgaMaxVoucherPullService} aus derselben Zeile. Null ohne ID.
+     */
+    public function store(OrgaMaxConnection $connection, Invoice $invoice): ?OrgaMaxInvoice {
+        $externalId = $invoice->getId() !== null ? (string) $invoice->getId() : '';
+        if ($externalId === '') {
+            return null;
         }
 
-        return ['read' => count($rows), 'updated' => $updated];
+        $projection = $this->projection($invoice);
+
+        // Je Rechnung ein eigenes lokales Objekt (MVP-653-Fix): der
+        // Unique-Index extref_unique erlaubt nur EINE Referenz je
+        // Zielmodell — die frühere Ablage an der Verbindung brach ab der
+        // zweiten Rechnung ab.
+        $mirror = OrgaMaxInvoice::query()->updateOrCreate([
+            'organization_id' => $connection->organization_id,
+            'external_id' => $externalId,
+        ], [
+            'customer_id' => $this->resolveCustomerId($connection->organization_id, $projection['customer_id'] ?? null),
+            'customer_external_id' => $this->nullIfBlank($projection['customer_id'] ?? null),
+            'customer_name' => $this->nullIfBlank($projection['customer'] ?? null),
+            'invoice_type' => $this->nullIfBlank($projection['type'] ?? null),
+            'invoice_status' => OrgaMaxInvoiceStatus::fromSdk($invoice->getState()),
+            'invoice_number' => $this->nullIfBlank($projection['number'] ?? null),
+            'invoice_date' => $this->dateOrNull($projection['date'] ?? null),
+            'due_on' => $this->dateOrNull($projection['due_on'] ?? null),
+            'total_net' => $projection['total_net'] ?? null,
+            'total_gross' => $projection['total_gross'] ?? null,
+            'outstanding_amount' => $projection['outstanding_amount'] ?? null,
+            'currency' => $projection['currency'] ?? 'EUR',
+            'payload' => $projection,
+            'synced_at' => now(),
+        ]);
+
+        ExternalReference::link(
+            $connection->organization_id,
+            OrgaMaxPlugin::ID,
+            self::EXT_TYPE_INVOICE,
+            $mirror,
+            $externalId,
+            $projection,
+        );
+
+        return $mirror;
     }
 
     /**

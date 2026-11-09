@@ -12,13 +12,16 @@ declare(strict_types=1);
 
 namespace App\Models\Rental;
 
+use App\Casts\MoneyCast;
 use App\Enums\Rental\RentalRequestStatus;
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
+use App\Models\Invoicing\OnlinePayment;
 use App\Models\Platform\User;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\{Builder, Model};
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
 use Illuminate\Support\Carbon;
 
 /**
@@ -44,6 +47,9 @@ use Illuminate\Support\Carbon;
  * @property int|null $rental_reservation_id
  * @property int|null $rental_case_id
  * @property int|null $guests Gäste einer Ferienanfrage (Branchenprofil Vermieter)
+ * @property Money|null $prepayment_amount Online-Vorauszahlung der Direktbuchung (MVP-1515)
+ * @property string|null $currency
+ * @property Carbon|null $payment_due_at Ohne Zahlungseingang bis dahin verfällt die Reservierung
  */
 class RentalRequest extends Model {
     use Auditable;
@@ -54,7 +60,7 @@ class RentalRequest extends Model {
         'organization_id', 'customer_id', 'portal_user_id', 'asset_id', 'group_code',
         'starts_at', 'ends_at', 'note', 'status', 'is_direct', 'decided_by', 'decided_at',
         'decline_reason', 'rental_reservation_id', 'rental_case_id',
-        'guests',
+        'guests', 'prepayment_amount', 'currency', 'payment_due_at',
     ];
 
     /** @var array<string, string> */
@@ -65,6 +71,8 @@ class RentalRequest extends Model {
         'ends_at' => 'datetime',
         'decided_at' => 'datetime',
         'guests' => 'integer',
+        'prepayment_amount' => MoneyCast::class . ':currency,2',
+        'payment_due_at' => 'datetime',
     ];
 
     /** @param Builder<self> $query */
@@ -115,5 +123,14 @@ class RentalRequest extends Model {
     /** @return BelongsTo<RentalCase, $this> */
     public function rentalCase(): BelongsTo {
         return $this->belongsTo(RentalCase::class);
+    }
+
+    /** @return MorphMany<OnlinePayment, $this> */
+    public function onlinePayments(): MorphMany {
+        return $this->morphMany(OnlinePayment::class, 'subject');
+    }
+
+    public function isAwaitingPayment(): bool {
+        return $this->status === RentalRequestStatus::AwaitingPayment;
     }
 }

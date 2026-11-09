@@ -612,6 +612,9 @@ return [
         'invoices.self-billing.*' => 'invoices.self-billing',
         'invoices.*' => 'invoices.manage',
         'lexoffice.vouchers.*' => 'invoices.manage',
+        // Original-PDF gespiegelter Belege (MVP-1499).
+        'finance.sevdesk.vouchers.*' => 'billing.feed',
+        'finance.easybill.vouchers.*' => 'billing.feed',
         'events.*' => 'events.manage',
         'assets.*' => 'assets.fleet',
         // SLA, Verträge & Service-Level (Feature 010): Tickets und Report

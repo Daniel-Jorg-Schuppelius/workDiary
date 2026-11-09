@@ -18,6 +18,7 @@ return [
     'plan_hint' => 'Solo un cambio por organización a la vez. El análisis no escribe en ningún sistema externo.',
     'areas' => 'Áreas de datos',
     'read_only' => 'solo histórico',
+    'articles_hint' => 'Los artículos solo se concilian entre Lexoffice y orgaMAX; sevDesk y easybill no guardan ningún vínculo de artículo.',
     'cutover_on' => 'Fecha de corte',
     'cutover_hint' => 'A partir de ese día, los nuevos documentos de facturación se crean exclusivamente en el sistema destino; el sistema origen queda bloqueado para ello.',
     'plan_submit' => 'Planificar cambio',

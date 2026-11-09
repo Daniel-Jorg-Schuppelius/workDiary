@@ -1,7 +1,7 @@
 ---
 title: "Portale clienti – Noleggio"
 topic: customer-portal.rentals
-version: 3
+version: 4
 keywords:
     - affittare un appartamento
     - prenotare una casa vacanze
@@ -108,6 +108,19 @@ apparecchi non possono essere prenotati direttamente. La prenotazione compare
 in **Le mie richieste** con lo stato **Prenotato direttamente** e come
 operazione di noleggio con lo stato **Riservato**. Il Suo fornitore viene
 avvisato e Le invia i documenti di consegna.
+
+### Con pagamento anticipato online
+
+Se il Suo fornitore richiede un pagamento anticipato, l’elenco delle
+attrezzature mostra **Pagamento anticipato … %** accanto al prezzo. Dopo
+**Prenota subito** arriva alla pagina di pagamento del fornitore di pagamento.
+L’attrezzatura resta riservata per Lei fino alla scadenza del pagamento (in
+**Le mie richieste** compare **Pagamento entro …**). La prenotazione è
+confermata solo al ricevimento del pagamento; solo allora il Suo fornitore
+viene avvisato. Se la pagina di pagamento non è raggiungibile, riprovi con
+**Pagare ora**. Senza pagamento entro il termine la prenotazione scade e
+l’attrezzatura torna libera. Il pagamento anticipato viene imputato alla
+fattura successiva.
 
 ## Condizioni di noleggio
 

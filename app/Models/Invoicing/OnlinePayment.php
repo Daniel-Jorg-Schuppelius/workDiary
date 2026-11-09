@@ -17,17 +17,21 @@ use App\Enums\Invoicing\OnlinePaymentStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 use Illuminate\Support\Carbon;
 
 /**
  * Eine Bezahlseite beim Zahlungsanbieter für eine Rechnung (MVP-1067). Der
  * Stand kommt nur aus der Nachfrage beim Anbieter; bezahlte Beträge abzüglich
- * Erstattungen decken die Rechnung ({@see settledSumFor()}).
+ * Erstattungen decken die Rechnung ({@see settledSumFor()}). Eine
+ * Vorauszahlung (MVP-1515) entsteht vor der Rechnung für einen Gegenstand
+ * (`subject`, etwa eine Verleihbuchung) und wird ihr später zugeordnet.
  *
  * @property int $id
  * @property int $organization_id
- * @property int $invoice_id
+ * @property int|null $invoice_id
+ * @property string|null $subject_type
+ * @property int|null $subject_id
  * @property string $provider
  * @property string|null $provider_reference
  * @property OnlinePaymentStatus $status
@@ -46,7 +50,7 @@ class OnlinePayment extends Model {
     use HasSqid;
 
     protected $fillable = [
-        'organization_id', 'invoice_id', 'provider', 'provider_reference', 'status',
+        'organization_id', 'invoice_id', 'subject_type', 'subject_id', 'provider', 'provider_reference', 'status',
         'gross_amount', 'fee_amount', 'refunded_amount', 'currency', 'method',
         'checkout_url', 'checkout_expires_at', 'paid_at',
     ];
@@ -66,6 +70,11 @@ class OnlinePayment extends Model {
     /** @return BelongsTo<Invoice, $this> */
     public function invoice(): BelongsTo {
         return $this->belongsTo(Invoice::class);
+    }
+
+    /** @return MorphTo<Model, $this> */
+    public function subject(): MorphTo {
+        return $this->morphTo();
     }
 
     /** Online gezahlt abzüglich Erstattungen — Teil der Deckung jeder Rechnung. */

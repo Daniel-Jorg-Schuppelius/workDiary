@@ -31,6 +31,8 @@ use Carbon\CarbonImmutable;
  * überschrieben werden kann.
  */
 final class ShiftRotationRoller {
+    public function __construct(private readonly QualificationEnforcement $qualifications = new QualificationEnforcement) {}
+
     /**
      * @return array{created: int, skipped: int}
      */
@@ -90,6 +92,7 @@ final class ShiftRotationRoller {
 
         $created = 0;
         $skipped = 0;
+        $blocksUnqualified = $this->qualifications->blocks((int) $organization->getKey());
 
         foreach ($assignments as $assignment) {
             $rotation = $assignment->rotation;
@@ -127,6 +130,18 @@ final class ShiftRotationRoller {
 
                 $key = $uid . '|' . $day->toDateString();
                 if (isset($occupied[$key]) || isset($absent[$key])) {
+                    $skipped++;
+
+                    continue;
+                }
+
+                // Qualifikationssperre (MVP-1514): der Slot bleibt frei statt gesperrt besetzt.
+                if ($blocksUnqualified && $this->qualifications->shiftBlockMessage((new ScheduledShift)->forceFill([
+                    'organization_id' => $organization->getKey(),
+                    'user_id' => $uid,
+                    'shift_type_id' => $entry->shift_type_id,
+                    'date' => $day->toDateString(),
+                ])) !== null) {
                     $skipped++;
 
                     continue;

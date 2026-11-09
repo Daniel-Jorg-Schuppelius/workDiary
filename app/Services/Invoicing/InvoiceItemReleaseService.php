@@ -22,7 +22,7 @@ use App\Models\Travel\Expense;
  * Quellposten einer Rechnungsposition wieder freigeben (Vollscan 2026-08-23,
  * F14 — vorher ein deleting-Hook, der in 5 Fremdtabellen schrieb): Spese →
  * Approved, Zeiten → exported=false, Material → billed=false, Tour →
- * travel_billed=false, Mietposten → Released. Explizit aufrufbar — bei
+ * travel_billed=false, Mietposten → Released, Auffüllung auf Soll → offen. Explizit aufrufbar — bei
  * Query-Deletes/Kaskaden feuert kein Eloquent-Event, dann MUSS der Aufrufer
  * diese Freigabe selbst anstoßen.
  */
@@ -50,6 +50,7 @@ class InvoiceItemReleaseService {
         if ($i->tour_id !== null) {
             Tour::query()->whereKey($i->tour_id)->update(['travel_billed' => false]);
         }
+        app(TargetTopUps::class)->releaseInvoiceItems([(int) $i->id]);
         if ($i->stock_delivery_id !== null) {
             // Feature 160 (MVP-858): aktive Reservierung der Auslieferung lösen; die Herkunft bleibt am Posten.
             app(DeliveryInvoicingService::class)->release($i);

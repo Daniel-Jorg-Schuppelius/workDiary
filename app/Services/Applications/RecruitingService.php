@@ -397,6 +397,21 @@ class RecruitingService {
         return $draft;
     }
 
+    /** Entwurf verwerfen (MVP-1517): ohne Einladung endet er nachvollziehbar, ein Konto entsteht nie. */
+    public function discardDraft(EmployeeDraft $draft, User $actor): EmployeeDraft {
+        return DB::transaction(static function () use ($draft, $actor): EmployeeDraft {
+            $locked = EmployeeDraft::query()->whereKey($draft->getKey())->lockForUpdate()->firstOrFail();
+            if (! $locked->status->canTransitionTo(EmployeeDraftStatus::Discarded)) {
+                throw new \RuntimeException((string) __('Der Entwurf wurde bereits übernommen oder verworfen.'));
+            }
+
+            $locked->update(['status' => EmployeeDraftStatus::Discarded]);
+            $locked->audit('recruiting.draft_discarded', ['by' => $actor->id]);
+
+            return $locked;
+        });
+    }
+
     /**
      * Bewusste Übernahme (D4): löst den bestehenden Invite-Pfad aus —
      * neuer User mit must_change_password + is_new_system, Standardrolle

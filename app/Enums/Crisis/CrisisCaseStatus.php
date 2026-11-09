@@ -20,8 +20,6 @@ enum CrisisCaseStatus: string implements HasStatusTransitions {
     use HasOptions;
     use HasTransitions;
 
-    /** Im Schema vorgesehen, heute von keinem Code geschrieben. */
-    case Prepared = 'prepared';
     case Reported = 'reported';
     case Assessed = 'assessed';
     case Activated = 'activated';
@@ -32,7 +30,7 @@ enum CrisisCaseStatus: string implements HasStatusTransitions {
     case PostReview = 'post_review';
     case Closed = 'closed';
 
-    /** Wie „vorbereitet“: im Schema vorgesehen, heute von keinem Code geschrieben. */
+    /** Fehlmeldung: aus „gemeldet“ mit Begründung verworfen (MVP-1517). */
     case Discarded = 'discarded';
 
     /**
@@ -98,14 +96,15 @@ enum CrisisCaseStatus: string implements HasStatusTransitions {
      * damit eine ohne Alarm begonnene Akte noch alarmiert werden kann — ob sie
      * schon aktiviert war, prüft {@see \App\Models\Crisis\CrisisCase::canBeActivated()}
      * über `activated_at`. Danach Nachbereitung und Abschluss in dieser Folge.
-     * Geschlossen und verworfen sind Endzustände; aus „vorbereitet“ führt
-     * kein Weg, solange es keine Schreibstelle hat.
+     * Verwerfen geht nur aus „gemeldet“, bevor jemand die Lage bewertet hat.
+     * Geschlossen und verworfen sind Endzustände.
      *
      * @return list<self>
      */
     public function allowedTransitions(): array {
         $targets = match (true) {
-            $this === self::Reported, $this === self::Assessed => [...self::stages(), self::AllClear, self::Activated],
+            $this === self::Reported => [...self::stages(), self::AllClear, self::Activated, self::Discarded],
+            $this === self::Assessed => [...self::stages(), self::AllClear, self::Activated],
             $this->isActive() => [self::InProgress, self::Stabilized, self::Recovery, self::AllClear, self::Activated],
             $this === self::AllClear => [self::PostReview],
             $this === self::PostReview => [self::Closed],

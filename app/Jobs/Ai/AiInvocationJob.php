@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Jobs\Ai;
 
+use App\Jobs\Contracts\ModuleJob;
 use App\Models\Platform\Organization;
-use App\Services\Ai\{AiInvocationService, AiRoutingResolver};
+use App\Services\Ai\AiInvocationService;
 use App\Services\Ai\Contracts\{AiRequestInterface, AiResultHandlerInterface};
 use App\Services\Ai\Exceptions\{AiBudgetExceededException, AiUnavailableException};
-use App\Services\Licensing\ModuleStatusResolver;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -28,14 +28,13 @@ use Throwable;
  * Asynchroner KI-Aufruf (Feature 025, MVP-399). Idempotent: der
  * Ergebnis-Cache im {@see AiInvocationService} macht Wiederholungen
  * provider-frei, und Handler sind vertraglich idempotent
- * ({@see AiResultHandlerInterface}). Modul-Gate wird zusätzlich VOR der
- * Wirkung geprüft (MVP-052 §5) — Deaktivierung zwischen Dispatch und
- * Ausführung lässt den Job wirkungslos enden. Terminale Zustände
+ * ({@see AiResultHandlerInterface}). Das Modul-Gate vor der Wirkung hält
+ * die Queue ({@see ModuleJob}, MVP-1518). Terminale Zustände
  * (Capability aus, Budget erschöpft, Verbindung nicht erlaubt) gehen
  * ohne Retry an den Handler; nur „alle Provider fehlgeschlagen" wird
  * über die Queue erneut versucht.
  */
-class AiInvocationJob implements ShouldQueue {
+class AiInvocationJob implements ModuleJob, ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
@@ -61,16 +60,14 @@ class AiInvocationJob implements ShouldQueue {
         public readonly ?int $requestedConnectionId = null,
     ) {}
 
-    public function handle(AiInvocationService $service, ModuleStatusResolver $modules): void {
+    public function organizationId(): ?int {
+        return $this->organizationId;
+    }
+
+    public function handle(AiInvocationService $service): void {
         $organization = Organization::query()->withoutGlobalScopes()->find($this->organizationId);
         if ($organization === null) {
             return;
-        }
-
-        // MVP-052 §5: Modulstatus VOR der Wirkung prüfen — org-explizit,
-        // nicht über den Request-Container.
-        if (! $modules->isActiveFor($organization, AiRoutingResolver::MODULE)) {
-            return; // Modul aus → kein Vorschlag, kein Fehler, kein Retry.
         }
 
         $handler = $this->resolveHandler();

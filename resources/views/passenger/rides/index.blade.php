@@ -38,7 +38,7 @@
         </select>
         <select name="status" class="select select-sm select-bordered w-44 shrink-0" aria-label="{{ __('Status') }}">
             <option value="">{{ __('Alle Status') }}</option>
-            @foreach (\App\Enums\Passenger\RideStatus::cases() as $s)
+            @foreach ($statuses as $s)
                 <option value="{{ $s->value }}" @selected(request('status') === $s->value)>{{ $s->label() }}</option>
             @endforeach
         </select>

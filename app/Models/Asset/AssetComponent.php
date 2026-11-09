@@ -57,6 +57,7 @@ class AssetComponent extends Model {
         'removed_on' => 'date',
         'replace_interval_months' => 'integer',
         'status' => AssetComponentStatus::class,
+        'quantity' => 'decimal:3',
     ];
 
     /** @var array<string, mixed> */

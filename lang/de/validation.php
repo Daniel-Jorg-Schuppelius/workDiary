@@ -175,6 +175,10 @@ return [
 
     'attributes' => [
 
+        'category_allowlist' => 'Nur Kategorien',
+        'category_allowlist.*' => 'Kategorie',
+        'import_entity' => 'Zielbereich des Imports',
+        'prepayment_percent' => 'Vorauszahlung',
         'provider_customer_number' => 'Kundennummer beim Anbieter',
         'rental_mode' => 'Vermietungsart',
         'max_guests' => 'Maximale Gästezahl',
@@ -2894,6 +2898,7 @@ return [
         'siblings.second_percent' => 'Nachlass zweites Kind',
         'siblings.further_percent' => 'Nachlass ab drittem Kind',
         'siblings.max_age' => 'Altersgrenze',
+
     ],
 
     'values' => [

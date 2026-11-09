@@ -246,6 +246,20 @@ class AssetFinanceContractController extends Controller {
         return back()->with('status', __('Vertrag gekündigt.'));
     }
 
+    public function cancel(Request $request, AssetFinanceContract $contract): RedirectResponse {
+        Gate::authorize('update', $contract);
+
+        $data = $request->validate(['reason' => ['required', 'string', 'min:5', 'max:2000']]);
+
+        try {
+            $this->service->cancel($contract, $request->user() ?? abort(401), $data['reason']);
+        } catch (\RuntimeException $e) {
+            return back()->withErrors(['status' => ErrorText::for($e)]);
+        }
+
+        return back()->with('status', __('Entwurf storniert.'));
+    }
+
     public function close(Request $request, AssetFinanceContract $contract): RedirectResponse {
         Gate::authorize('update', $contract);
 

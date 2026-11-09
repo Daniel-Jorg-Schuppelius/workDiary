@@ -1,7 +1,7 @@
 ---
 title: "Gérer les intégrations"
 topic: admin.integrations
-version: 5
+version: 6
 keywords:
     - interfaces
     - connecteurs
@@ -161,3 +161,23 @@ CalDAV, Google Agenda ou Microsoft 365 apparaissent dans la boîte de
 réception comme événements individuels dans la fenêtre d'import, en tenant
 compte des événements déplacés et annulés. Une série peut être créée comme
 rendez-vous ou rejetée d'un coup en tant que groupe.
+
+## GitHub et GitLab : reporter l’achèvement et le temps
+
+Les tâches issues de GitHub et GitLab restent gérées par le système source.
+Vous activez séparément deux retours sur la carte du plugin :
+
+- **Reporter l’achèvement** (GitHub et GitLab) : lorsque la tâche est terminée
+  dans WorkDiary, WorkDiary ferme l’issue avec une note ; si vous rouvrez la
+  tâche, l’issue est rouverte.
+- **Reporter le temps saisi** (GitLab uniquement) : chaque temps que vous
+  saisissez pour une tâche liée est enregistré une seule fois par WorkDiary
+  comme temps passé sur l’issue. Un minuteur en cours est enregistré avec sa
+  durée à l’arrêt. Si vous modifiez ou supprimez ensuite la saisie, WorkDiary
+  ne modifie pas l’enregistrement dans GitLab : GitLab ne renvoie aucun
+  identifiant de l’enregistrement individuel. Corrigez alors le temps passé
+  dans GitLab, dans le rapport de suivi du temps de l’issue. Le jeton nécessite
+  le scope `api`.
+
+GitHub ne propose pas de suivi du temps sur les issues ; seul le retour de
+l’achèvement y existe.

@@ -42,6 +42,7 @@ class TimeAccountRule extends Model {
         'source_type' => TimeAccountSource::class,
         'valid_from' => 'date',
         'valid_until' => 'date',
+        'factor' => 'decimal:4',
     ];
 
     /** @return BelongsTo<TimeAccount, $this> */

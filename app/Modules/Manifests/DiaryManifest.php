@@ -112,6 +112,8 @@ final class DiaryManifest extends Manifest {
             \App\Services\Takeoff\Contracts\TakeoffProgressRecorder::class => \App\Services\Takeoff\Contracts\NullTakeoffProgressRecorder::class,
             // MVP-1184: Erfahrungswert der Servicedauer kommt aus der Planung (Tour-Ist), sonst keiner.
             \App\Services\Diary\Contracts\ServiceDurationSource::class => \App\Services\Diary\Contracts\NullServiceDurationSource::class,
+            // MVP-1514: Qualifikationssperre kommt aus der Planung, ohne sie keine Sperre.
+            \App\Services\Diary\Contracts\AssignmentQualificationGuard::class => \App\Services\Diary\Contracts\NullAssignmentQualificationGuard::class,
         ];
     }
 

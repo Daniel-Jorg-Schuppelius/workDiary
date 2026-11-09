@@ -1,7 +1,7 @@
 ---
 title: "Gestionar proyectos"
 topic: projects.manage
-version: 5
+version: 6
 keywords:
     - crear proyecto
     - gestión de proyectos
@@ -94,8 +94,11 @@ registrado y notifica los déficits por encima de la tolerancia (ajuste de la or
 15 minutos por defecto) a la dirección del proyecto, a la cola de trabajo y al cierre diario de
 la persona; los hallazgos se muestran en la pestaña de tiempos, donde pueden **confirmarse**, y
 un registro tardío los resuelve. Con **Facturar las horas acordadas** en la pestaña de
-facturación, la transferencia añade el tiempo que falta como posición «Tiempo de servicio
-acordado»; un registro posterior de ese día deja de ser facturable.
+facturación, la transferencia y la factura añaden el tiempo que falta como posición «Tiempo de
+servicio acordado»; la vista previa de la factura también muestra estos complementos. Cada
+complemento se factura una sola vez, en una factura o en una transferencia; un registro
+posterior de ese día deja de ser facturable. La anulación de la factura o de la transferencia,
+la eliminación de la posición o el descarte del borrador vuelve a liberar el complemento.
 
 ## Errores habituales
 

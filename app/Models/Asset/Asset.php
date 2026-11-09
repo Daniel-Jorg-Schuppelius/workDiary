@@ -115,6 +115,7 @@ class Asset extends Model implements CustomFieldSubject {
         'acquired_on' => 'date',
         'location_lat' => 'decimal:7',
         'location_lng' => 'decimal:7',
+        'acquisition_cost' => 'decimal:2',
     ];
 
     /**

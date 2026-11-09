@@ -12,6 +12,7 @@ namespace App\Jobs\Finance;
 
 use App\Enums\Finance\GobdExportStatus;
 use App\Jobs\Concerns\RetriesTransientFailures;
+use App\Jobs\Contracts\ModuleJob;
 use App\Models\Audit\GobdExport;
 use App\Models\Platform\{Organization, User};
 use App\Services\Finance\GdpduExportService;
@@ -39,7 +40,7 @@ use Throwable;
  * Der reproduzierbare Paket-Hash bleibt unberührt: er entsteht weiter über die
  * Dateiinhalte, nicht über den Ausführungsweg.
  */
-class GobdExportJob implements ShouldBeUniqueUntilProcessing, ShouldQueue {
+class GobdExportJob implements ModuleJob, ShouldBeUniqueUntilProcessing, ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
@@ -55,6 +56,12 @@ class GobdExportJob implements ShouldBeUniqueUntilProcessing, ShouldQueue {
 
     public function uniqueId(): string {
         return (string) $this->exportId;
+    }
+
+    public function organizationId(): ?int {
+        $id = GobdExport::query()->withoutGlobalScopes()->whereKey($this->exportId)->value('organization_id');
+
+        return $id !== null ? (int) $id : null;
     }
 
     public function handle(GdpduExportService $exports): void {

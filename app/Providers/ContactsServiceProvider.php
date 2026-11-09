@@ -18,7 +18,7 @@ use Illuminate\Support\ServiceProvider;
 /**
  * Kern-Bindung des provider-neutralen Rufnummern-Aggregats. Die einzelnen
  * Quellen tragen sich selbst bei: aufzählbare Verzeichnisse über das Tag
- * `external-phone-contact-sources` (Lexoffice, Microsoft 365), Rückwärts-
+ * `external-phone-contact-sources` (Lexoffice, easybill, orgaMAX, Microsoft 365), Rückwärts-
  * Auskünfte über `phone-number-resolvers` (Telefonauskunft-Plugin). So bleibt
  * das Aggregat verfügbar (auch für CTI), ohne dass der Kern die Plugins kennt.
  */
