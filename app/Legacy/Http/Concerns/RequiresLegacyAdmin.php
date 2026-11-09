@@ -29,11 +29,7 @@ trait RequiresLegacyAdmin {
     private function ensureAdmin(): void {
         $user = Auth::user();
 
-        abort_if(
-            ! LegacyRoleResolver::isAdmin($user)
-            && ! ($user instanceof \App\Models\Platform\User && $user->isGlobalAdmin()),
-            403
-        );
+        abort_unless(LegacyRoleResolver::canManage($user instanceof \App\Models\Platform\User ? $user : null), 403);
     }
 
     /** Liefert alle regulären Legacy-User (id > 3) sortiert nach uname.

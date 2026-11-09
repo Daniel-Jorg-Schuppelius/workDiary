@@ -1910,7 +1910,7 @@ class NavigationRegistry {
                 ['route' => $indexRoute, 'label' => __('Arbeitsliste'), 'icon' => 'list_alt', 'modal' => false, 'matches' => [$indexRoute, 'legacy.oncall.*', 'legacy.notdienst.*']],
                 ['route' => 'legacy.callcenter.notdienst', 'label' => __('Zentrale'), 'icon' => 'support_agent', 'modal' => false, 'matches' => ['legacy.callcenter.*', 'legacy.overview.*']],
                 // Support-Portal des Altsystems: wie dort nur für die Bürokonten (Legacy-Admins) und den Plattformbetrieb.
-                ...(LegacyBridge::isLegacyAdmin($user) || $user->isGlobalAdmin()
+                ...(LegacyBridge::canManageLegacy($user)
                     ? [['route' => 'legacy.support.orders.index', 'label' => __('legacy_support.nav.orders'), 'icon' => 'support', 'modal' => false, 'matches' => ['legacy.support.orders.*', 'legacy.support.archive.*', 'legacy.support.mail.*']]]
                     : []),
             ]
@@ -1980,7 +1980,7 @@ class NavigationRegistry {
         $isAppAdmin = $isLegacyAdmin || $isGlobalAdmin;
         if ($isAppAdmin) {
             // Wie LegacyUserAdminController: Legacy-Admin oder Plattformbetrieb, nicht jeder Org-Admin.
-            if ($isLegacyMode && ($isLegacyAdmin || $isPlatformAdmin)) {
+            if ($isLegacyMode && LegacyBridge::canManageLegacy($user)) {
                 $manageNavItems[] = ['route' => 'legacy.users.index', 'label' => __('user.employees'), 'icon' => 'group', 'modal' => false];
                 $manageNavItems[] = ['route' => 'legacy.support.customers.index', 'label' => __('legacy_support.nav.customers'), 'icon' => 'badge', 'modal' => false];
             }

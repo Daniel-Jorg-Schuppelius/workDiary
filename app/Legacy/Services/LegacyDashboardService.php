@@ -92,6 +92,8 @@ class LegacyDashboardService {
         return [
             'tab' => $tab,
             'isAdmin' => $isAdmin,
+            // Bereitschaft und Notdienst pflegt, wer das Altsystem verwaltet (wie RequiresLegacyAdmin).
+            'canManageDuties' => LegacyRoleResolver::canManage($currentUser),
             'canViewAll' => $canViewAll,
             'canFilterMine' => $legacyUserId > 0,
             'legacyUserId' => $legacyUserId,

@@ -37,6 +37,12 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Eintragsdetail und Migrations-Dashboard zeigten zwei Scrollleisten, weil ihre
   feste Höhe den Inhaltsbereich überragte. Sie füllen ihn jetzt wie die Seiten
   des neuen Bereichs; die ungenutzte Regel `wd-fill-h` ist entfallen.
+- Legacy-Bereich: Der Plattformbetrieb ohne Legacy-Konto sah in Wochenansicht,
+  Arbeitsliste, Archiv und Zentrale keine Mitarbeiter bzw. nur „eigene“
+  Einträge, obwohl er das Altsystem verwalten darf. Gesamtsicht und
+  Verwaltungsknöpfe (Archivwoche, Archivierung, Bereitschaft und Notdienst)
+  folgen jetzt einer Regel: Legacy-Admin oder Plattformbetrieb. Tagebuch-
+  Einträge anlegen bleibt an ein Legacy-Konto gebunden.
 
 ### Hinweise zum Update
 
