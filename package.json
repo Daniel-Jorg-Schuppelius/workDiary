@@ -42,7 +42,7 @@
         "leaflet": "^1.9.4",
         "leaflet-defaulticon-compatibility": "^0.1.2",
         "material-symbols": "^0.48.3",
-        "mind-elixir": "^5.15.1",
+        "mind-elixir": "^6.0.0",
         "pusher-js": "^8.6.0",
         "signature_pad": "^5.1.4"
     }
