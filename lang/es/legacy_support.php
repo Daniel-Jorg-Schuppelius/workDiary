@@ -48,6 +48,7 @@ return [
         'status' => 'Estado',
         'actions' => 'Acción',
         'mail_recipient' => 'Destinatario',
+        'legacy_customer_number' => 'Número de cliente en el sistema anterior',
     ],
     'status' => [
         'new' => 'Nuevo',
@@ -90,6 +91,7 @@ return [
     ],
     'customers' => [
         'subtitle' => 'Accesos de los clientes al portal de soporte del sistema antiguo.',
+        'portal_address' => 'Dirección de inicio de sesión para sus clientes:',
         'create' => 'Crear cliente',
         'edit' => 'Editar cliente',
         'delete' => 'Eliminar cliente',

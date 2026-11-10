@@ -88,9 +88,14 @@ class OrgaMaxPlugin extends AbstractPlugin implements ContactNumberIssuer, Conta
         ];
     }
 
+    /** Admin oder eines der Faktura-Rechte `finance.orgamax.*` (ul-21): Schranke der Faktura-Routen samt Original-PDF. */
+    public static function mayUseFactura(User $user): bool {
+        return $user->isAdmin() || array_any(Http\Controllers\OrgaMaxAdminController::FACTURA_PERMISSIONS, static fn (Permission $p): bool => $user->can($p->value));
+    }
+
     /** Die Faktura-Aktionen erreicht auch, wer kein Admin ist, aber eines der Rechte `finance.orgamax.*` hat (ul-21). */
     public function navigationItems(User $user): array {
-        if ($user->isAdmin() || ! array_any(Http\Controllers\OrgaMaxAdminController::FACTURA_PERMISSIONS, static fn (Permission $p): bool => $user->can($p->value))) {
+        if ($user->isAdmin() || ! self::mayUseFactura($user)) {
             return [];
         }
 

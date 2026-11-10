@@ -53,6 +53,9 @@ final class HrManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Hr\WorkQueue\PersonnelFileSubmissionWorkItemSource::class,
+            ],
             \App\Services\Org\Contracts\OffboardingStep::class => [
                 \App\Services\Hr\Offboarding\PersonnelFileOffboardingStep::class,
             ],

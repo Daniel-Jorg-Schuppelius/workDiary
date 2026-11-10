@@ -13,9 +13,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Investments;
 
 use App\Enums\Investments\{InvestmentBudgetRequestStatus, InvestmentCaseStatus, InvestmentDeviationStatus};
+use App\Enums\User\UserRole;
 use App\Models\Asset\Asset;
 use App\Models\Investments\{InvestmentBudgetRequest, InvestmentCase, InvestmentDeviation, InvestmentProgram, StrategicObjective};
 use App\Models\Platform\User;
+use App\Services\Approval\ApprovalService;
 use App\Services\Demo\Contracts\DemoSeedContext;
 use App\Services\Investments\Demo\InvestmentsDemoBlock;
 use App\Services\Investments\{InvestmentProgramService, InvestmentService, StrategicObjectiveService};
@@ -46,7 +48,8 @@ final class InvestmentStatusEnumCastTest extends TestCase {
         $this->setUpOrganization();
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-        $this->second = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        // Zuständig für kaufmännische Stufen (MVP-1541).
+        $this->second = User::factory()->withRoles(UserRole::Admin, UserRole::Buchhaltung)->create(['organization_id' => $this->organization->id]);
     }
 
     /** @param array<string, mixed> $attributes */
@@ -329,16 +332,22 @@ final class InvestmentStatusEnumCastTest extends TestCase {
         $case = $this->investment(InvestmentCaseStatus::InApproval);
         $superseded = $this->budget($case, InvestmentBudgetRequestStatus::Superseded);
         $pending = $this->budget($case, InvestmentBudgetRequestStatus::InApproval, '6500.00');
+        app(ApprovalService::class)->createChain($pending, [['rule' => ['kind' => 'commercial']]]);
         $open = $this->deviation($case, InvestmentDeviationStatus::Open);
         $approved = $this->deviation($case, InvestmentDeviationStatus::Approved);
         $rejected = $this->deviation($case, InvestmentDeviationStatus::Rejected);
         $scope = $this->deviation($case, InvestmentDeviationStatus::Approved, 'scope');
 
+        // Freigeben sieht die Zuständige der offenen Stufe, der Antragsteller den Hinweis (MVP-1541).
+        $decider = (string) $this->actingAs($this->second)->get(route('investments.show', $case))->assertOk()->getContent();
+        $this->assertPageHas('action="' . route('investments.budget.approve', [$case, $pending]) . '"', $decider);
+        $this->assertPageHas('action="' . route('investments.budget.reject', [$case, $pending]) . '"', $decider);
+        $this->assertPageLacks('action="' . route('investments.budget.approve', [$case, $superseded]) . '"', $decider);
+
         $html = $this->page(route('investments.show', $case));
 
-        $this->assertPageHas('action="' . route('investments.budget.approve', [$case, $pending]) . '"', $html);
-        $this->assertPageHas('action="' . route('investments.budget.reject', [$case, $pending]) . '"', $html);
-        $this->assertPageLacks('action="' . route('investments.budget.approve', [$case, $superseded]) . '"', $html);
+        $this->assertPageLacks('action="' . route('investments.budget.approve', [$case, $pending]) . '"', $html);
+        $this->assertPageHas(e('Wartet auf Stufe 1: Kaufmännisch (Rolle Buchhaltung).'), $html);
         $this->assertBadge('outline', InvestmentBudgetRequestStatus::Superseded->label(), $html);
         $this->assertBadge('outline', InvestmentBudgetRequestStatus::InApproval->label(), $html);
 

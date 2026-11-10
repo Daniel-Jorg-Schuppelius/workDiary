@@ -10,7 +10,7 @@
 
 namespace App\Console\Commands\Finance;
 
-use App\Console\Concerns\IteratesOrganizations;
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Http\Controllers\Finance\OpenTimesController;
 use App\Models\Platform\{Organization, User};
 use App\Models\Time\TimeEntry;
@@ -24,7 +24,7 @@ use Illuminate\Console\Command;
  * vorliegen. Ohne Befund wird nichts verschickt.
  */
 class OpenTimesDigestCommand extends Command {
-    use IteratesOrganizations;
+    use IteratesModuleOrganizations;
 
     protected $signature = 'finance:open-times-digest ' . self::ORGANIZATION_OPTION;
 

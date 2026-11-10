@@ -1,7 +1,7 @@
 ---
 title: "Buchhaltungswechsel"
 topic: admin.accounting-migration
-version: 2
+version: 3
 keywords:
     - Softwarewechsel
     - Systemwechsel Buchhaltung
@@ -57,7 +57,9 @@ Bei sevDesk und easybill gilt:
   Kontakt-Push oder Kontaktabgleich), zählen als zugeordnet.
 - **Artikel** lassen sich mit sevDesk und easybill nicht abgleichen, weil
   workDiary deren Artikelstamm nur spiegelt und nicht mit lokalen Artikeln
-  verknüpft. Wählen Sie den Bereich dann ab.
+  verknüpft. Wählen Sie den Bereich dann ab. Das Formular markiert ihn
+  („nicht mit sevDesk, easybill“); scheitert die Planung daran, bleiben
+  Quelle, Ziel und Stichtag stehen und der Bereich ist abgewählt.
 - Die **Beleghistorie** stammt aus dem Belegspiegel. Lassen Sie vor der
   Analyse und vor dem Abschluss den Belegabruf laufen, damit offene
   Altbelege vollständig erfasst sind.

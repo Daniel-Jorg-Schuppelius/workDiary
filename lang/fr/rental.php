@@ -48,6 +48,7 @@ return [
         'expired_reason' => 'Acompte en ligne non reçu dans le délai.',
         'withdrawn_reason' => 'Réservation directe impayée retirée par le client.',
         'on_case' => 'Acompte en ligne :amount payé — imputé sur la facture.',
+        'credited_on_case' => 'Acompte en ligne de :amount transmis au logiciel de comptabilité avec les positions de location — imputez-le sur la facture dans ce logiciel.',
         'profile_percent' => 'Acompte en réservation directe (%)',
         'profile_percent_hint' => 'Vide = valeur de l’organisation, 0 = pas d’acompte pour cet objet de location.',
         'badge' => 'Acompte :percent %',

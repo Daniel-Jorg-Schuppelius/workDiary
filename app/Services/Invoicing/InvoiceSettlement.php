@@ -12,12 +12,15 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
-use App\Enums\Finance\AllocationKind;
-use App\Enums\Invoicing\InvoiceStatus;
-use App\Models\Finance\PaymentAllocation;
-use App\Models\Invoicing\Invoice;
+use App\Enums\Finance\{AccountingEntryStatus, AllocationKind};
+use App\Enums\Invoicing\{InvoiceStatus, OnlinePaymentStatus};
+use App\Models\Accounting\{AccountingEntry, AccountingOpenItem};
+use App\Models\Finance\{CashEntry, PaymentAllocation};
+use App\Models\Invoicing\{Invoice, OnlinePayment};
+use App\Models\Scopes\OrganizationScope;
 use App\Support\MorphMap;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 
 /**
@@ -75,6 +78,57 @@ final class InvoiceSettlement {
         }
 
         return new InvoiceSettlementResult($from, $from, true);
+    }
+
+    /**
+     * Decken die Rechnung nur Online-Vorauszahlungen, die ihr Storno an den
+     * Gegenstand zurückgibt (MVP-1544)? Jede andere Deckung bliebe nach dem
+     * Storno ohne Beleg stehen: Bankzuordnung (auch Skonto), Kasse,
+     * Online-Zahlung der Rechnung, Altzahlung aus dem Vorsystem und ein
+     * Ausgleich am offenen Posten der lokalen Buchhaltung.
+     */
+    public function coveredOnlyByReleasablePrepayments(Invoice $invoice): bool {
+        $organizationId = (int) $invoice->organization_id;
+        $paid = [OnlinePaymentStatus::Paid->value, OnlinePaymentStatus::Refunded->value];
+        $online = fn (): Builder => OnlinePayment::query()->withoutGlobalScope(OrganizationScope::class)
+            ->where('organization_id', $organizationId)
+            ->where('invoice_id', $invoice->id)
+            ->whereIn('status', $paid)
+            ->whereColumn('gross_amount', '>', 'refunded_amount');
+
+        if (! $online()->whereNotNull('subject_type')->exists() || $online()->whereNull('subject_type')->exists()) {
+            return false;
+        }
+        $legacyPaid = data_get($invoice->import_metadata, 'paid_amount');
+        if (is_numeric($legacyPaid) && (float) $legacyPaid !== 0.0) {
+            return false;
+        }
+        if (PaymentAllocation::query()->withoutGlobalScope(OrganizationScope::class)
+            ->where('organization_id', $organizationId)
+            ->where('allocatable_type', MorphMap::alias(Invoice::class))
+            ->where('allocatable_id', $invoice->id)
+            ->exists()) {
+            return false;
+        }
+        if (CashEntry::query()->withoutGlobalScope(OrganizationScope::class)
+            ->where('organization_id', $organizationId)
+            ->where('invoice_id', $invoice->id)
+            ->where('direction', CashEntry::DIRECTION_IN)
+            ->whereDoesntHave('reversal')
+            ->exists()) {
+            return false;
+        }
+
+        return ! AccountingOpenItem::query()->withoutGlobalScope(OrganizationScope::class)
+            ->where('organization_id', $organizationId)
+            ->where('source_type', MorphMap::alias(Invoice::class))
+            ->where('source_id', $invoice->id)
+            ->whereColumn('open_amount', '<', 'original_amount')
+            ->whereIn('accounting_entry_id', AccountingEntry::query()->withoutGlobalScope(OrganizationScope::class)
+                ->where('organization_id', $organizationId)
+                ->where('status', AccountingEntryStatus::Posted->value)
+                ->select('id'))
+            ->exists();
     }
 
     /** Fälliger Betrag, den die Zahlungen aller Quellen noch nicht decken (nie negativ). */

@@ -18,7 +18,7 @@ use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\Organization;
 use App\Models\Time\{IcalSubscription, IcalSubscriptionItem};
 use App\Plugins\Support\PluginHttpFactory;
-use App\Services\Import\{EntitySpecRegistry, ImportOutcome, InboxFirstSpec};
+use App\Services\Import\{CalendarImportFeeds, EntitySpecRegistry, ImportOutcome, InboxFirstSpec};
 use App\Services\Import\Source\Ical\IcalEvent;
 use App\Services\Import\Source\ImportSourceFactory;
 use App\Services\Timekeeping\Import\ProjectTimeSpec;
@@ -42,6 +42,8 @@ use Throwable;
  *   ohne Änderung (keine Dublette, kein Überschreiben).
  * - Verschwindet ein gebuchter Termin aus der Quelle, entsteht ein Hinweis in
  *   der Zuordnungs-Inbox; gelöscht wird nichts.
+ * - Quelle ist die iCal-Adresse oder eine Kalenderverbindung (MVP-1531): deren
+ *   Feed liefert das iCal-Dokument des Rückblicks, der Rest des Laufs ist gleich.
  */
 class IcalSubscriptionSync {
     public const string INBOX_PLUGIN = IntegrationInboxItem::PLUGIN_ICAL_SUBSCRIPTION;
@@ -57,6 +59,7 @@ class IcalSubscriptionSync {
         private readonly PluginHttpFactory $http,
         private readonly ImportSourceFactory $sources,
         private readonly EntitySpecRegistry $specs,
+        private readonly CalendarImportFeeds $feeds,
     ) {}
 
     /** @return array{created: int, updated: int, unchanged: int, adopted: int, staged: int, failed: int, removed: int} */
@@ -85,8 +88,14 @@ class IcalSubscriptionSync {
      * @return array{created: int, updated: int, unchanged: int, adopted: int, staged: int, failed: int, removed: int}
      */
     private function run(IcalSubscription $subscription, Organization $organization, array $counts): array {
+        $tz = Tz::ofOrganization($organization);
+        $now = CarbonImmutable::now($tz);
+        $from = $now->startOfDay()->subDays(self::LOOKBACK_DAYS);
+
         try {
-            $content = $this->fetch($subscription);
+            $content = $subscription->calendar_source !== null
+                ? $this->fetchConnection($subscription, $organization, $from, $now)
+                : $this->fetch($subscription);
         } catch (Throwable $e) {
             $this->finish($subscription, IcalSyncStatus::Failed, $e->getMessage(), null);
 
@@ -98,9 +107,6 @@ class IcalSubscriptionSync {
             return $counts;
         }
 
-        $tz = Tz::ofOrganization($organization);
-        $now = CarbonImmutable::now($tz);
-        $from = $now->startOfDay()->subDays(self::LOOKBACK_DAYS);
         $spec = $this->specs->for($subscription->import_entity);
 
         try {
@@ -172,6 +178,21 @@ class IcalSubscriptionSync {
         ]);
 
         return $body;
+    }
+
+    /**
+     * Termine des Rückblicks aus der Kalenderverbindung, über denselben Feed
+     * wie der Einmalimport. Die Meldung bleibt allgemein wie dort; die
+     * Ursache steht im Log.
+     */
+    private function fetchConnection(IcalSubscription $subscription, Organization $organization, CarbonImmutable $from, CarbonImmutable $until): string {
+        try {
+            return $this->feeds->fetch($organization, (string) $subscription->calendar_source, $from->utc()->toDateTimeImmutable(), $until->utc()->toDateTimeImmutable());
+        } catch (Throwable $e) {
+            Log::warning('iCal-Abo: Kalenderverbindung nicht lesbar.', ['ical_subscription_id' => $subscription->id, 'exception' => $e]);
+
+            throw new \RuntimeException((string) __('import.error.calendar.fetch'), 0, $e);
+        }
     }
 
     /**
@@ -288,7 +309,7 @@ class IcalSubscriptionSync {
                     'display_title' => (string) __('import.ical_subscription.removed_title', ['name' => $subscription->name]),
                     'display_subtitle' => $state->starts_at !== null ? CarbonFmt::fdatetime($state->starts_at, Tz::ofOrganization($organization)) : null,
                     'remote_snapshot' => [
-                        'reason' => 'remote_deleted',
+                        'reason' => IntegrationInboxItem::REASON_REMOTE_DELETED,
                         // Gebuchte Zeit bleibt stehen; löschen oder korrigieren entscheidet ein Mensch.
                         'resolution' => IntegrationInboxItem::RESOLUTION_ACKNOWLEDGE_ONLY,
                         'subscription_id' => $subscription->id,

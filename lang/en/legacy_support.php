@@ -48,6 +48,7 @@ return [
         'status' => 'Status',
         'actions' => 'Action',
         'mail_recipient' => 'Recipient',
+        'legacy_customer_number' => 'Customer number in the legacy system',
     ],
     'status' => [
         'new' => 'New',
@@ -90,6 +91,7 @@ return [
     ],
     'customers' => [
         'subtitle' => 'Customer accounts for the support portal of the legacy system.',
+        'portal_address' => 'Sign-in address for your customers:',
         'create' => 'Create customer',
         'edit' => 'Edit customer',
         'delete' => 'Delete customer',

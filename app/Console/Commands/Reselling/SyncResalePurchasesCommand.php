@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Reselling;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Models\Platform\Organization;
 use App\Services\Reselling\Register\PurchaseAllocator;
 use Illuminate\Console\Command;
@@ -21,12 +22,14 @@ use Illuminate\Console\Command;
  * (Feature 152, MVP-762). Täglich nach `resale:sync-domains`; idempotent.
  */
 class SyncResalePurchasesCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'resale:sync-purchases {--org= : Nur diese Organisation (ID)}';
 
     protected $description = 'Domain-Buchungen als Einkaufsbelege ins Reselling-Register übernehmen';
 
     public function handle(PurchaseAllocator $allocator): int {
-        $query = Organization::query();
+        $query = Organization::query()->whereIn('id', $this->moduleOrganizationIds());
         if ($this->option('org') !== null) {
             $query->whereKey((int) $this->option('org'));
         }

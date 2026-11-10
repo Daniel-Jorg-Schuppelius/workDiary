@@ -14,6 +14,7 @@ namespace App\Console\Commands\Scheduling;
 
 use App\Enums\Scheduling\JobRunStatus;
 use App\Models\Platform\{ScheduledJobOverride, ScheduledJobRun, ScheduledJobState};
+use App\Modules\Attributes\BelongsToModule;
 use App\Scheduling\{JobRegistry, PluginBinding, SchedulerRegistrar};
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
@@ -31,6 +32,7 @@ use Illuminate\Support\Facades\Log;
  * Exit-Code bleibt im Scheduled-Betrieb 0 („Wächter lief"), --fail
  * liefert 1 bei Befunden (CI/Monitoring).
  */
+#[BelongsToModule('operations')]
 class SchedulerWatchdogCommand extends Command {
     private const int GRACE_MINUTES = 15;
 

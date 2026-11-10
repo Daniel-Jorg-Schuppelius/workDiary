@@ -474,4 +474,39 @@ class AccountingMigrationTest extends TestCase {
         $this->actingAs($this->admin)->post(route('admin.accounting-migration.store'), ['areas' => ['customers'], 'source' => 'billbee', 'target' => 'sevdesk'])
             ->assertSessionHasErrors('source');
     }
+
+    /** MVP-1528: Ein abgelehnter Plan behält Quelle, Ziel und Stichtag und wählt nicht abgleichbare Bereiche ab. */
+    public function test_failed_plan_keeps_the_input_and_deselects_unsupported_areas(): void {
+        $cutover = now()->addMonth()->toDateString();
+
+        $this->actingAs($this->admin)->from(route('admin.accounting-migration.index'))
+            ->post(route('admin.accounting-migration.store'), [
+                'areas' => ['customers', 'articles', 'documents'],
+                'cutover_on' => $cutover,
+                'source' => 'sevdesk',
+                'target' => 'easybill',
+            ])
+            ->assertRedirect(route('admin.accounting-migration.index'))
+            ->assertSessionHas('error', 'Den Bereich Artikel und Leistungen gleicht der Wechsel mit sevDesk nicht ab. Wählen Sie ihn ab. Im Formular ist er bereits abgewählt; prüfen Sie die Auswahl und planen Sie erneut.')
+            ->assertSessionHasInput('source', 'sevdesk')
+            ->assertSessionHasInput('target', 'easybill')
+            ->assertSessionHasInput('cutover_on', $cutover)
+            ->assertSessionHasInput('areas', ['customers', 'documents']);
+        $this->assertNull($this->service()->openRunFor($this->org));
+
+        $this->actingAs($this->admin)->get(route('admin.accounting-migration.index'))->assertOk()
+            ->assertSee('<option value="sevdesk" selected>', false)
+            ->assertSee('<option value="easybill" selected>', false)
+            ->assertSee('value="customers" class="checkbox checkbox-sm" checked', false)
+            ->assertDontSee('value="articles" class="checkbox checkbox-sm" checked', false)
+            ->assertSee('value="' . $cutover . '"', false)
+            ->assertSee('nicht mit sevDesk, easybill');
+    }
+
+    public function test_plan_form_preselects_lexoffice_to_orgamax_with_all_areas(): void {
+        $this->actingAs($this->admin)->get(route('admin.accounting-migration.index'))->assertOk()
+            ->assertSee('<option value="lexoffice" selected>', false)
+            ->assertSee('<option value="orgamax" selected>', false)
+            ->assertSee('value="articles" class="checkbox checkbox-sm" checked', false);
+    }
 }

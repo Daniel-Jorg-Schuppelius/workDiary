@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Privacy;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Models\Platform\Organization;
 use App\Models\Privacy\ComplianceFinding;
 use App\Services\Privacy\{ComplianceAnalysisService, PrivacyDeadlineService};
@@ -22,20 +23,24 @@ use Illuminate\Console\Command;
  * Scheduler (stuendlich/taeglich) gedacht.
  */
 class SendDeadlineReminders extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'privacy:deadlines';
 
     protected $description = 'Erinnert an fristnahe oder ueberfaellige Betroffenenanfragen (Art. 12).';
 
     public function handle(PrivacyDeadlineService $service, ComplianceAnalysisService $compliance): int {
-        $requests = $service->remind();
-        $incidents = $service->remindIncidents();
+        $active = $this->moduleOrganizationIds();
+        $requests = $service->remind($active);
+        $incidents = $service->remindIncidents($active);
 
         // Fristen-Scan der Compliance-Lücken (Nachtrag 043b/c): hält ablaufende AVV/TOM-Nachweise aktuell — nur für
         // Orgs, die das Datenschutzmodul bereits nutzen (min. ein Katalog-/Befund-Datensatz), keine Zwangs-Materialisierung.
         $orgIds = ComplianceFinding::query()->withoutGlobalScopes()
             ->distinct()->pluck('organization_id')
             ->merge(\App\Models\Privacy\PrivacyRequirement::query()->withoutGlobalScopes()->distinct()->pluck('organization_id'))
-            ->unique();
+            ->unique()
+            ->intersect($active);
         $scanned = 0;
         foreach (Organization::query()->whereIn('id', $orgIds)->get() as $organization) {
             $compliance->run($organization);

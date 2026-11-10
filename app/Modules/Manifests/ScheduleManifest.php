@@ -100,6 +100,13 @@ final class ScheduleManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Schedule\Demo\ScheduleDemoBlock::class,
+            ],
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Schedule\WorkQueue\DutyPlanApprovalWorkItemSource::class,
+                \App\Services\Schedule\WorkQueue\ShiftExchangeWorkItemSource::class,
+            ],
             \App\Services\Mcp\Contracts\McpTool::class => [
                 \App\Services\Dispatch\Mcp\RescheduleOrderTool::class,
             ],

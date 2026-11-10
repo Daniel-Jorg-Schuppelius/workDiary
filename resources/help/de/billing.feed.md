@@ -1,7 +1,7 @@
 ---
 title: "Belegfluss"
 topic: billing.feed
-version: 5
+version: 6
 keywords:
     - Belegliste
     - Rechnungen
@@ -116,7 +116,8 @@ Lieferantenbeleg) und orgaMAX-Ausgaben haben kein PDF.
 **orgaMAX und sevDesk:** orgaMAX spiegelt Rechnungen, Abschlagsrechnungen und
 Ausgaben; die Ausgaben stehen als Eingangsbelege im Aufwand. Gutschriften aus
 sevDesk stehen als ausgehende Gutschriften in der Liste und mindern den
-Umsatz. Serienvorlagen eines Programms sind kein Beleg und erscheinen nicht im
+Umsatz – auch Provisions- und Lizenzgutschriften, denn sevDesk liefert die
+Buchungskategorie beim Abruf nicht mit. Serienvorlagen eines Programms sind kein Beleg und erscheinen nicht im
 Belegfluss; sie stehen im Abgleich von Abos und Lizenzen.
 
 ## Nach Projekt filtern

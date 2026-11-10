@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Shipping;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Models\Shipping\Shipment;
 use App\Services\Shipping\ShipmentService;
 use DateInterval;
@@ -25,6 +26,8 @@ use Throwable;
  * config/scheduler.php (shipping.track).
  */
 class TrackShipmentsCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'shipping:track {--stale=3 : Stunden seit dem letzten Abgleich}';
 
     protected $description = 'Sendungsverfolgung offener Versandaufträge beim Carrier abgleichen';
@@ -33,7 +36,7 @@ class TrackShipmentsCommand extends Command {
         $tracked = 0;
         $failed = 0;
 
-        $due = $shipping->dueForTracking(new DateInterval('PT' . max(1, (int) $this->option('stale')) . 'H'));
+        $due = $this->whereModuleActive($shipping->dueForTracking(new DateInterval('PT' . max(1, (int) $this->option('stale')) . 'H')));
         foreach ($due->orderBy('id')->cursor() as $shipment) {
             /** @var Shipment $shipment */
             try {

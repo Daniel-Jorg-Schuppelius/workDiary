@@ -68,4 +68,13 @@ final class ReportingTeamManifest extends Manifest {
         ];
     }
 
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            // Keine eigenen Ordner: Der Block bucht Zeiten und liegt bei der Auswertung (Reporting).
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Reporting\Demo\TeamReportsDemoBlock::class,
+            ],
+        ];
+    }
 }

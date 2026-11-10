@@ -48,6 +48,7 @@ return [
         'expired_reason' => 'Online prepayment not received in time.',
         'withdrawn_reason' => 'Unpaid direct booking withdrawn by the customer.',
         'on_case' => 'Online prepayment :amount paid — credited to the invoice.',
+        'credited_on_case' => 'Online prepayment of :amount handed over to the accounting program with the rental items — credit it on the invoice there.',
         'profile_percent' => 'Prepayment for direct booking (%)',
         'profile_percent_hint' => 'Empty = organization default, 0 = no prepayment for this rental item.',
         'badge' => 'Prepayment :percent %',

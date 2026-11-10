@@ -107,6 +107,9 @@ final class GaebManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Gaeb\Demo\GaebDemoBlock::class,
+            ],
             \App\Services\Billing\Contracts\DocumentChainSource::class => [
                 \App\Services\Gaeb\Chain\BoqProgressToBill::class,
             ],

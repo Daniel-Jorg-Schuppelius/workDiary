@@ -33,6 +33,9 @@ interface ApprovalInboxSubject {
     /** Erwartet der Gegenstand noch Entscheidungen? Sonst verschwinden seine offenen Stufen aus dem Eingang. */
     public function awaitsDecision(Model $approvable): bool;
 
+    /** Wer den Gegenstand beantragt hat: er darf ihn nicht freigeben und sieht ihn nicht im Eingang (MVP-1522). */
+    public function requesterId(Model $approvable): ?int;
+
     /** Titel, Verweis auf die Akte (null ohne Leserecht) und Zusatzzeile. */
     public function present(Model $approvable, User $viewer): ApprovalInboxEntry;
 

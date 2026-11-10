@@ -77,4 +77,13 @@ final class FacilityManifest extends Manifest {
             'groups' => [],
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Facility\Demo\FacilityDemoBlock::class,
+            ],
+        ];
+    }
 }

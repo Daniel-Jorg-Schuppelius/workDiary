@@ -25,7 +25,7 @@ use Illuminate\Support\Collection;
  * Offene Stufen des Genehmigungs-Eingangs (Feature 065, MVP-154) — geteilt von
  * Eingang und Arbeitsvorrat: offene Schritte (decision null ODER question)
  * angemeldeter Gegenstände, je Gegenstand nur der NIEDRIGSTE offene Schritt
- * der geltenden Runde, gefiltert auf die Zuständigkeit.
+ * der geltenden Runde, gefiltert auf die Zuständigkeit; eigene Anträge nie.
  */
 class ApprovalInbox {
     /** @var array<class-string, ApprovalInboxSubject>|null */
@@ -62,10 +62,15 @@ class ApprovalInbox {
             ->values();
 
         $steps = new EloquentCollection($steps->all());
-        $steps->load('approvable');
+        $this->preload($steps);
 
         return $steps->toBase()
-            ->filter(fn(Approval $a): bool => $a->approvable !== null && (bool) $this->subjectFor($a)?->awaitsDecision($a->approvable))
+            ->filter(function (Approval $a) use ($user): bool {
+                $subject = $this->subjectFor($a);
+
+                return $a->approvable !== null && $subject !== null && $subject->awaitsDecision($a->approvable)
+                    && $subject->requesterId($a->approvable) !== (int) $user->id;
+            })
             ->values();
     }
 

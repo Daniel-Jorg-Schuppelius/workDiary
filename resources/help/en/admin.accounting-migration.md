@@ -1,7 +1,7 @@
 ---
 title: "Accounting software migration"
 topic: admin.accounting-migration
-version: 2
+version: 3
 keywords:
     - switch accounting software
     - migrate accounting
@@ -44,7 +44,9 @@ For sevDesk and easybill:
   sync) count as assigned.
 - **Articles** cannot be reconciled with sevDesk and easybill, because
   WorkDiary only mirrors their article master and does not link it to local
-  articles. Deselect the area in that case.
+  articles. Deselect the area in that case. The form marks it (“not with
+  sevDesk, easybill”); if planning fails because of it, source, target and
+  cutover date are kept and the area is deselected.
 - The **document history** comes from the document mirror. Run the
   document fetch before the analysis and before completion so that open
   legacy documents are fully captured.

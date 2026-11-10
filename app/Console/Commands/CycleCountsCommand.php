@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Console\Concerns\IteratesOrganizations;
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Models\Inventory\Warehouse;
 use App\Models\Platform\Organization;
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Inventory\{CycleCountPlanner, StocktakeService};
 use Illuminate\Console\Command;
 
@@ -23,8 +24,9 @@ use Illuminate\Console\Command;
  * Zählung der fälligen ABC-Klasse (A häufig, C selten). Für den Scheduler
  * gedacht – z. B. A wöchentlich, B monatlich, C quartalsweise.
  */
+#[BelongsToModule('inventory')]
 class CycleCountsCommand extends Command {
-    use IteratesOrganizations;
+    use IteratesModuleOrganizations;
 
     protected $signature = 'inventory:cycle-counts {--class=A : ABC-Klasse (A/B/C)} {--org= : Organisations-ID (sonst alle)}';
 

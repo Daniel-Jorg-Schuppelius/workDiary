@@ -600,6 +600,7 @@ return [
                 'decisionDue' => 'Investitionsentscheidung fällig',
                 'proposed' => 'Investition vorgeschlagen',
                 'decided' => 'Investitionsantrag entschieden',
+                'approvalRequested' => 'Investitionsantrag wartet auf Freigabe',
             ],
             'inventory' => [
                 'lotExpiring' => 'Charge läuft ab (MHD)',
@@ -1397,6 +1398,7 @@ return [
             'write_off' => 'Ausbuchung',
             'overpayment' => 'Überzahlung',
             'reversal' => 'Rückbuchung',
+            'cancellation' => 'Stornobeleg',
         ],
         // Quellenadapter und Buchungsregeln (Feature 125, MVP-673).
         'ebics-connection-status' => [
@@ -1441,6 +1443,7 @@ return [
             'disposal_gain' => 'Abgang Restbuchwert (Buchgewinn)',
             'payment_transit' => 'Geldtransit (Zahlungsanbieter)',
             'payment_fees' => 'Nebenkosten des Geldverkehrs',
+            'advance_received' => 'Erhaltene Anzahlungen',
         ],
         // Buchungskern (Feature 125, MVP-672).
         'balance-side' => [

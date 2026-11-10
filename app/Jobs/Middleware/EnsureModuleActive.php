@@ -13,14 +13,12 @@ declare(strict_types=1);
 namespace App\Jobs\Middleware;
 
 use App\Enums\Modules\ModuleKind;
-use App\Jobs\Attributes\BelongsToModule;
 use App\Jobs\Contracts\ModuleJob;
 use App\Models\Platform\Organization;
-use App\Modules\{Manifest, ModuleRegistry};
+use App\Modules\ModuleRegistry;
 use App\Services\Licensing\ModuleStatusResolver;
 use Closure;
 use Illuminate\Support\Facades\Log;
-use ReflectionClass;
 
 /**
  * Modul-Gate der Queue (MVP-1518, Konzept „Modul-Konfiguration“ §5): ein
@@ -42,7 +40,7 @@ final class EnsureModuleActive {
         if (! $command instanceof ModuleJob) {
             return $next($command);
         }
-        $manifest = $this->manifestFor($command::class);
+        $manifest = $this->modules->forClass($command::class);
         $license = $manifest !== null && $manifest->kind() === ModuleKind::Feature ? $manifest->licenseCode() : null;
         $organizationId = $license !== null ? $command->organizationId() : null;
         $organization = $organizationId !== null ? Organization::query()->withoutGlobalScopes()->find($organizationId) : null;
@@ -57,23 +55,5 @@ final class EnsureModuleActive {
         ]);
 
         return null;
-    }
-
-    /**
-     * Manifest eines Jobs: {@see BelongsToModule}, sonst der Domänenordner
-     * unter `App\Jobs`; Plugin-Jobs und Jobs ohne Ordner haben keins.
-     *
-     * @param  class-string  $jobClass
-     */
-    public function manifestFor(string $jobClass): ?Manifest {
-        $attribute = (new ReflectionClass($jobClass))->getAttributes(BelongsToModule::class)[0] ?? null;
-        if ($attribute !== null) {
-            return $this->modules->byCode($attribute->newInstance()->module);
-        }
-        if (preg_match('/^App\\\\Jobs\\\\(\w+)\\\\\w+$/', $jobClass, $m) !== 1) {
-            return null;
-        }
-
-        return $this->modules->byFolder($m[1]);
     }
 }

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Metering\MeterBillingService;
 use Illuminate\Console\Command;
 
@@ -21,6 +22,7 @@ use Illuminate\Console\Command;
  * Übersprungene Läufe (fehlende Ablesung) sind ein Ergebnis, kein Fehler:
  * Sie bleiben als Zeile mit Grund stehen.
  */
+#[BelongsToModule('metering')]
 class GenerateMeterInvoicesCommand extends Command {
     protected $signature = 'metering:generate-invoices';
 

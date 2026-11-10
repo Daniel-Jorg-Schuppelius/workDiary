@@ -12,6 +12,7 @@ return [
     'qualification' => [
         'missing' => 'Qualification obligatoire manquante',
         'blocked' => 'Affectation bloquée : le :date, il manque à :user la qualification obligatoire :qualifications (absente, expirée ou pas encore valable).',
+        'hint' => 'Remarque : le :date, il manque à :user la qualification obligatoire :qualifications (absente, expirée ou pas encore valable).',
     ],
     'availability' => [
         'title' => 'Disponibilité et souhaits de poste',

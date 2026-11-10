@@ -24,6 +24,8 @@ return [
         'pushed' => 'Kunde an die Buchhaltung übertragen (ID :id).',
         'failed' => 'Übertragung fehlgeschlagen: :msg',
         'no_plugin' => 'Kein Buchhaltungssystem aktiv.',
+        'pushed_supplier' => 'Lieferant an die Buchhaltung übertragen (ID :id).',
+        'no_supplier_plugin' => 'Kein aktives Buchhaltungssystem überträgt Lieferanten.',
     ],
 
     'error' => [
@@ -324,6 +326,9 @@ return [
             'changed_since_posting' => 'Die Quelle hat sich nach dem Buchen geändert (z. B. Erstattung) — Buchungssatz stornieren und neu buchen.',
             'foreign_currency' => 'Der Vorgang lautet auf :currency, die Buchhaltung führt :base — Zahlungen, Kasse und Anlagen in Fremdwährung bucht sie nicht.',
             'unsupported_target' => 'Für dieses Zahlungsziel gibt es noch keinen Buchungsweg.',
+            'prepayment_exceeds_invoice' => 'Die angerechnete Vorauszahlung übersteigt die Rechnung — den Überschuss zuerst erstatten.',
+            'cancelled_invoice_unposted' => 'Zuerst die stornierte Rechnung :number buchen — der Stornobeleg gleicht ihren offenen Posten aus.',
+            'cancelled_invoice_settled' => 'Der offene Posten der Rechnung :number trägt nur noch :open — den anderen Ausgleich zuerst zurücknehmen (Buchung stornieren).',
             'year_closed' => 'Das Geschäftsjahr :year ist geschlossen.',
             'period_closed' => 'Die Periode zum :date ist geschlossen.',
             'no_exchange_rate' => 'Für :currency fehlt der Monatskurs :month (Umrechnung in :base) — unter Umrechnungskurse nachtragen.',
@@ -337,6 +342,8 @@ return [
             'depreciation' => 'AfA :year · :no :name',
             'asset_disposal' => 'Abgang :no :name',
             'online_payment' => 'Online-Zahlung (:provider) · :invoice',
+            'online_prepayment' => 'Online-Vorauszahlung (:provider) · :customer',
+            'prepayment_resolved' => 'Anzahlung vom :date aufgelöst · :number',
         ],
         'reversal_reason' => [
             'unmatched' => 'Zahlungszuordnung aufgehoben — Gegenbuchung.',

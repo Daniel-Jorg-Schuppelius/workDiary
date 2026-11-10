@@ -18,18 +18,20 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Timekeeping\SaveIcalSubscriptionRequest;
 use App\Models\Platform\User;
 use App\Models\Time\IcalSubscription;
+use App\Services\Import\CalendarImportFeeds;
 use App\Services\Timekeeping\IcalSubscriptionSync;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 
 /**
  * Kalender-Abos der Zeiterfassung (Feature 094, MVP-1516). Wer eine Entität
- * per Datei importieren darf, darf sie auch abonnieren.
+ * per Datei importieren darf, darf sie auch abonnieren — auch aus den
+ * Kalenderverbindungen der Organisation, die der Einmalimport anbietet (MVP-1531).
  */
 class IcalSubscriptionController extends Controller {
     use ResolvesCurrentOrganization;
 
-    public function index(): View {
+    public function index(CalendarImportFeeds $feeds): View {
         $entities = $this->permittedEntities();
         abort_if($entities === [], 403);
 
@@ -43,10 +45,11 @@ class IcalSubscriptionController extends Controller {
         return view('admin.imports.ical-subscriptions.index', [
             'subscriptions' => $subscriptions,
             'lookbackDays' => IcalSubscriptionSync::LOOKBACK_DAYS,
+            'calendarLabels' => array_column($feeds->sources($this->currentOrganization()), 'label', 'value'),
         ]);
     }
 
-    public function create(): View {
+    public function create(CalendarImportFeeds $feeds): View {
         $entities = $this->permittedEntities();
         abort_if($entities === [], 403);
 
@@ -54,6 +57,7 @@ class IcalSubscriptionController extends Controller {
             'subscription' => (new IcalSubscription)->forceFill(['is_active' => true, 'import_entity' => $entities[0]]),
             'entities' => $entities,
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
+            'calendarSources' => $feeds->sources($this->currentOrganization()),
         ]);
     }
 
@@ -72,13 +76,14 @@ class IcalSubscriptionController extends Controller {
             ->with('success', __('import.ical_subscription.flash_created'));
     }
 
-    public function edit(IcalSubscription $icalSubscription): View {
+    public function edit(IcalSubscription $icalSubscription, CalendarImportFeeds $feeds): View {
         $this->authorizeEntity($icalSubscription->import_entity);
 
         return view('admin.imports.ical-subscriptions._form_dialog', [
             'subscription' => $icalSubscription,
             'entities' => $this->permittedEntities(),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
+            'calendarSources' => $feeds->sources($this->currentOrganization()),
         ]);
     }
 
@@ -87,9 +92,11 @@ class IcalSubscriptionController extends Controller {
         $data = $this->validatedData($request);
         $this->authorizeEntity($data['import_entity']);
 
-        if ($data['url'] === null) {
+        if ($data['url'] === null && $data['calendar_source'] === null) {
             unset($data['url']); // leer = gespeicherte Adresse behalten
-        } elseif ($data['url'] !== $icalSubscription->url) {
+        }
+        if ($data['calendar_source'] !== $icalSubscription->calendar_source
+            || (array_key_exists('url', $data) && $data['url'] !== $icalSubscription->url)) {
             // Neue Quelle: Bedingungen des alten Abrufs gelten nicht mehr.
             $data += ['http_etag' => null, 'http_last_modified' => null];
         }
@@ -123,7 +130,7 @@ class IcalSubscriptionController extends Controller {
             ->with('success', __('import.ical_subscription.flash_synced', $counts));
     }
 
-    /** @return array{name: string, import_entity: ImportEntity, url: ?string, user_id: ?int, category_allowlist: ?list<string>, allow_private_network: bool, is_active: bool} */
+    /** @return array{name: string, import_entity: ImportEntity, url: ?string, calendar_source: ?string, user_id: ?int, category_allowlist: ?list<string>, allow_private_network: bool, is_active: bool} */
     private function validatedData(SaveIcalSubscriptionRequest $request): array {
         $data = $request->validated();
 
@@ -131,6 +138,7 @@ class IcalSubscriptionController extends Controller {
             'name' => (string) $data['name'],
             'import_entity' => ImportEntity::from((string) $data['import_entity']),
             'url' => isset($data['url']) && $data['url'] !== '' ? (string) $data['url'] : null,
+            'calendar_source' => isset($data['calendar_source']) && $data['calendar_source'] !== '' ? (string) $data['calendar_source'] : null,
             'user_id' => isset($data['user_id']) ? (int) $data['user_id'] : null,
             'category_allowlist' => $data['category_allowlist'] ?? null,
             'allow_private_network' => $request->boolean('allow_private_network'),

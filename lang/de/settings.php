@@ -135,7 +135,7 @@ return [
         'on_documents_hint' => 'Ausgeschaltet bleibt die Online-Zahlung im Kundenportal möglich.',
     ],
     'approvals' => [
-        'step_roles_hint' => 'Freigabestufen einer Vertragsverhandlung erscheinen unter „Genehmigungen“ bei der Rolle, die ihrer Stufenart zugeordnet ist. Die Freigabe an der Akte bleibt möglich.',
+        'step_roles_hint' => 'Freigabestufen von Vertragsverhandlungen und Investitionsanträgen erscheinen unter „Genehmigungen“ bei der Rolle, die ihrer Stufenart zugeordnet ist. Investitionsanträge entscheidet auch an der Akte nur diese Rolle; Vertragsverhandlungen lassen sich weiter an der Akte freigeben. Trägt niemand die Rolle, bleibt der Antrag offen, bis sie jemandem zugewiesen ist — auch Admins entscheiden nur mit dieser Rolle.',
         'step_role' => ':kind: zuständige Rolle',
         'default_role' => 'Vorgabe (:role)',
     ],

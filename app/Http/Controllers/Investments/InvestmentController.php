@@ -91,9 +91,22 @@ class InvestmentController extends Controller {
     public function show(InvestmentCase $case, AssetCapitalizer $capitalizer): View {
         Gate::authorize('view', $case);
         $case->load(['options.supplier', 'budgetRequests.approvals', 'links.linkable', 'actuals', 'deviations', 'review', 'responsible', 'costCenter', 'project']);
+        $user = $this->authUser();
+        $mayApprove = Gate::allows('approve', $case);
 
         return view('investments.show', [
             'case' => $case,
+            // MVP-1541: Knöpfe nur für die Zuständigen der offenen Stufe, sonst der Hinweis, worauf der Antrag wartet.
+            'budgetDecisions' => $case->budgetRequests
+                ->mapWithKeys(function (InvestmentBudgetRequest $budgetRequest) use ($user, $mayApprove): array {
+                    $step = $this->investments->openStep($budgetRequest);
+
+                    return $step === null ? [] : [$budgetRequest->id => [
+                        'may' => $mayApprove && $this->investments->mayDecide($budgetRequest, $step, $user),
+                        'waiting' => $this->investments->waitingFor($step),
+                    ]];
+                })
+                ->all(),
             'projection' => $this->investments->projection($case),
             'suppliers' => Supplier::query()->orderBy('name')->get(['id', 'name', 'company']),
             'hasCostCenters' => CostCenter::query()->where('active', true)->exists(),

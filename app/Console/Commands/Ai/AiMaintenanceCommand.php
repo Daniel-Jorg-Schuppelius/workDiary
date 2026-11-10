@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Ai;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Enums\Ai\{AiConnectionStatus, AiTextSuggestionStatus};
 use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Sales\QuoteStatus;
@@ -31,8 +32,13 @@ use Illuminate\Support\Carbon;
  *    wenn der Beleg den Entwurf verlassen hat oder sie veraltet sind;
  *    entschiedene Vorschläge werden nach Aufbewahrungsfrist gelöscht
  *    (Betriebsdaten, kein Beleg).
+ *
+ * Prüfung und Verfall nur bei aktivem Modul (MVP-1524); das Löschen nach
+ * Frist läuft immer.
  */
 class AiMaintenanceCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'ai:maintenance';
 
     protected $description = 'Prüft KI-Provider-Verbindungen (Preflight/Health) und bereinigt Textvorschläge';
@@ -41,9 +47,9 @@ class AiMaintenanceCommand extends Command {
         $checked = 0;
         $failing = 0;
 
-        AiProviderConnection::query()
+        $this->whereModuleActive(AiProviderConnection::query()
             ->withoutGlobalScopes()
-            ->where('status', AiConnectionStatus::Active)
+            ->where('status', AiConnectionStatus::Active), withoutOrganization: true)
             ->orderBy('id')
             ->each(function (AiProviderConnection $connection) use ($tester, &$checked, &$failing): void {
                 $checked++;
@@ -70,9 +76,9 @@ class AiMaintenanceCommand extends Command {
     private function expireStaleSuggestions(): int {
         $expired = 0;
 
-        AiTextSuggestion::query()
+        $this->whereModuleActive(AiTextSuggestion::query()
             ->withoutGlobalScopes()
-            ->where('status', AiTextSuggestionStatus::Proposed)
+            ->where('status', AiTextSuggestionStatus::Proposed), withoutOrganization: true)
             ->orderBy('id')
             ->each(function (AiTextSuggestion $suggestion) use (&$expired): void {
                 $subject = $suggestion->subject;

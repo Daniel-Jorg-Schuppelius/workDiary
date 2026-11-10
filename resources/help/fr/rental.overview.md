@@ -1,7 +1,7 @@
 ---
 title: "Location de matériel"
 topic: rental.overview
-version: 5
+version: 6
 keywords:
     - bailleur
     - location de vacances
@@ -80,7 +80,21 @@ paiement :
   ne confirme rien mais vous le signale pour un remboursement ou une nouvelle
   réservation.
 - Le dossier affiche l’acompte payé. Lors du transfert des postes de location
-  vers la facture, il est rattaché à la facture et la couvre. Si un logiciel de
-  comptabilité gère les factures, le montant figure dans le journal du
-  transfert ; tenez-en compte là-bas. Dans la boîte de comptabilisation,
-  l’acompte ne devient comptabilisable qu’avec la facture.
+  vers la facture, il est rattaché à la facture et la couvre. L’annulation de
+  cette facture le libère ; la facture suivante l’impute.
+- Si un logiciel de comptabilité gère les factures, l’acompte est considéré
+  comme imputé dès le transfert des postes de location : le dossier et le
+  journal du transfert indiquent le montant à imputer sur la facture dans ce
+  logiciel, et un transfert ultérieur ne le compte pas une seconde fois.
+- Si WorkDiary tient la comptabilité, la boîte de comptabilisation enregistre
+  l’acompte à la date du paiement comme acompte reçu, avec TVA : la taxe naît
+  à l’encaissement (imposition minimale sur les encaissements), pas seulement
+  avec la facture. La facture WorkDiary qui l’impute solde l’acompte — sa
+  créance n’est que le reste ouvert, et la TVA de l’acompte est compensée avec
+  la taxe de la facture, de sorte qu’elle ne naît qu’une fois. Une facture
+  d’annulation contre-passe ce solde ; l’acompte redevient ouvert jusqu’à ce
+  que la facture suivante l’impute. Un remboursement après comptabilisation
+  ramène le paiement et la facture dans la boîte de comptabilisation
+  (contre-passer et comptabiliser à nouveau). L’affectation des comptes a
+  besoin pour cela du rôle « Acomptes reçus » (inclus dans les modèles SKR03
+  et SKR04).

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Jobs\Attributes\BelongsToModule;
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Search\Indexing\SearchIndexer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

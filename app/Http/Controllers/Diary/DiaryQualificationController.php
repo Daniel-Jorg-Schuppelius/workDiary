@@ -15,9 +15,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Hr\Qualification;
 use App\Models\Platform\User;
+use App\Services\Diary\Contracts\AssignmentQualificationGuard;
 use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\{Auth, DB, Gate};
 
 /**
  * Qualifikations-Anforderungen je Auftrag pflegen (Feature 028, Rang 53):
@@ -47,8 +48,22 @@ class DiaryQualificationController extends Controller {
             }
         }
 
-        $diary->requiredQualifications()->sync($ids);
+        // Der schon Zuständige muss die neue Anforderung erfüllen wie an den Zuweisungswegen (MVP-1528);
+        // die Sperre wirft und rollt die Änderung zurück.
+        $assignee = $diary->assigned_user_id !== null ? (int) $diary->assigned_user_id : null;
+        $guard = app(AssignmentQualificationGuard::class);
+        $hint = DB::transaction(function () use ($diary, $ids, $assignee, $guard): ?string {
+            $diary->requiredQualifications()->sync($ids);
+            if ($assignee === null) {
+                return null;
+            }
+            $guard->assertEntryAssignable($diary, $assignee, null, 'qualifications');
 
-        return back()->with('status', __('Qualifikations-Anforderungen aktualisiert.'));
+            return $guard->entryHint($diary, $assignee);
+        });
+
+        $response = back()->with('status', __('Qualifikations-Anforderungen aktualisiert.'));
+
+        return $hint !== null ? $response->with('warning', $hint) : $response;
     }
 }

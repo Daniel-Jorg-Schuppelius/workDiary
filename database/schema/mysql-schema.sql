@@ -12062,7 +12062,8 @@ CREATE TABLE `ical_subscriptions` (
   `user_id` bigint(20) unsigned DEFAULT NULL,
   `import_entity` varchar(40) NOT NULL,
   `name` varchar(120) NOT NULL,
-  `url` text NOT NULL,
+  `url` text DEFAULT NULL,
+  `calendar_source` varchar(120) DEFAULT NULL,
   `category_allowlist` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`category_allowlist`)),
   `allow_private_network` tinyint(1) NOT NULL DEFAULT 0,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
@@ -17702,6 +17703,7 @@ CREATE TABLE `online_payments` (
   `checkout_url` varchar(2048) DEFAULT NULL,
   `checkout_expires_at` timestamp NULL DEFAULT NULL,
   `paid_at` timestamp NULL DEFAULT NULL,
+  `credited_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -28784,3 +28786,6 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1058,'2027_04_10_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1059,'2027_04_11_100000_correct_sevdesk_voucher_direction',4);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1060,'2027_04_11_100100_add_archived_outcome_to_application_opportunities',4);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1061,'2027_04_11_100200_retire_draft_status_of_postings_and_budget_requests',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1062,'2027_04_12_100000_add_credited_at_to_online_payments',5);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1063,'2027_04_12_100100_rewrite_online_payment_counterparty_types',5);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1064,'2027_04_16_100000_add_calendar_source_to_ical_subscriptions',5);

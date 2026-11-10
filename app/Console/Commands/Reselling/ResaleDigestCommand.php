@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Reselling;
 
-use App\Console\Concerns\IteratesOrganizations;
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Enums\User\Permission;
 use App\Models\Platform\{Organization, User};
 use App\Models\Reselling\ResalePeriod;
@@ -32,7 +32,7 @@ use Spatie\Permission\PermissionRegistrar;
  * nichts verschickt.
  */
 class ResaleDigestCommand extends Command {
-    use IteratesOrganizations;
+    use IteratesModuleOrganizations;
 
     /** Vorlauf für „Verlängerung in Kürze" (Prozesse 6: 30 Tage). */
     public const int RENEWAL_DAYS = 30;

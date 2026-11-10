@@ -127,16 +127,29 @@ class SevDeskClient {
      * @return array{rows: list<array<string, mixed>>, total: ?int}
      */
     public function contacts(int $offset, int $limit): array {
-        $body = (array) $this->guard(
-            $this->api()->requestResponse('get', $this->baseUrl . '/Contact', ['query' => ['depth' => 1, 'offset' => $offset, 'limit' => $limit, 'countAll' => 'true']]),
-            '/Contact',
-        );
-        $total = $body['total'] ?? null;
+        return $this->page('/Contact', ['depth' => 1, 'offset' => $offset, 'limit' => $limit]);
+    }
 
-        return [
-            'rows' => array_values(array_filter($this->rows($body), 'is_array')),
-            'total' => is_numeric($total) ? (int) $total : null,
-        ];
+    /**
+     * Eine Seite aller Kontaktadressen (`GET /ContactAddress`, operationId
+     * getContactAddresses, MVP-1529): `Model_ContactAddressResponse` mit
+     * `contact.id`, `street`, `zip`, `city`, `country` und `category`.
+     *
+     * @return array{rows: list<array<string, mixed>>, total: ?int}
+     */
+    public function contactAddresses(int $offset, int $limit): array {
+        return $this->page('/ContactAddress', ['offset' => $offset, 'limit' => $limit]);
+    }
+
+    /**
+     * Eine Seite aller Kommunikationswege (`GET /CommunicationWay`, operationId
+     * getCommunicationWays, MVP-1529): `Model_CommunicationWayResponse` mit
+     * `contact.id`, `type` (EMAIL, PHONE, WEB, MOBILE), `value`, `key` und `main`.
+     *
+     * @return array{rows: list<array<string, mixed>>, total: ?int}
+     */
+    public function communicationWays(int $offset, int $limit): array {
+        return $this->page('/CommunicationWay', ['offset' => $offset, 'limit' => $limit]);
     }
 
     /** GET /Contact/Factory/getNextCustomerNumber — nächste freie Kundennummer, wenn sevDesk vergibt (MVP-1131). */
@@ -520,22 +533,7 @@ class SevDeskClient {
      * @return array{rows: list<array<string, mixed>>, total: ?int}
      */
     public function parts(int $offset, int $limit): array {
-        $body = (array) $this->guard(
-            $this->api()->requestResponse('get', $this->baseUrl . '/Part', ['query' => [
-                'offset' => $offset,
-                'limit' => $limit,
-                'countAll' => 'true',
-                'embed' => 'unity',
-                'ordering[id]' => 'ASC',
-            ]]),
-            '/Part',
-        );
-        $total = $body['total'] ?? null;
-
-        return [
-            'rows' => array_values(array_filter($this->rows($body), 'is_array')),
-            'total' => is_numeric($total) ? (int) $total : null,
-        ];
+        return $this->page('/Part', ['offset' => $offset, 'limit' => $limit, 'embed' => 'unity', 'ordering[id]' => 'ASC']);
     }
 
     // ── Benutzer (contactPerson-Pflichtfeld der Rechnung) ───────────────
@@ -550,6 +548,26 @@ class SevDeskClient {
     }
 
     // ── Intern ──────────────────────────────────────────────────────────
+
+    /**
+     * Eine Listenseite mit Gesamtzahl: `countAll=true` liefert sie im Feld
+     * `total` (Abschnitt „Pagination“ der Doku).
+     *
+     * @param  array<string, mixed>  $query
+     * @return array{rows: list<array<string, mixed>>, total: ?int}
+     */
+    private function page(string $resource, array $query): array {
+        $body = (array) $this->guard(
+            $this->api()->requestResponse('get', $this->baseUrl . $resource, ['query' => $query + ['countAll' => 'true']]),
+            $resource,
+        );
+        $total = $body['total'] ?? null;
+
+        return [
+            'rows' => array_values(array_filter($this->rows($body), 'is_array')),
+            'total' => is_numeric($total) ? (int) $total : null,
+        ];
+    }
 
     /**
      * sevDesk-Umschlag normalisieren: Listen kommen als `objects`-Array.

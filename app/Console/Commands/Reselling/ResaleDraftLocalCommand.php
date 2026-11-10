@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Reselling;
 
-use App\Console\Concerns\IteratesOrganizations;
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Models\Platform\Organization;
 use App\Services\Reselling\Register\ResaleDraftRun;
 use Illuminate\Console\Command;
@@ -26,7 +26,7 @@ use Illuminate\Console\Command;
  * {@see ResaleDraftExternalCommand}.
  */
 class ResaleDraftLocalCommand extends Command {
-    use IteratesOrganizations;
+    use IteratesModuleOrganizations;
 
     protected $signature = 'resale:draft-local ' . self::ORGANIZATION_OPTION
         . ' {--dry-run : Nur zählen, nichts schreiben}'

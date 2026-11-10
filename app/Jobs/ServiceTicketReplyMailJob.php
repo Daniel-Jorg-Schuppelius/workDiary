@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\ServiceTicket\{TicketMessageDeliveryStatus, TicketMessageKind};
-use App\Jobs\Attributes\BelongsToModule;
 use App\Jobs\Contracts\ModuleJob;
 use App\Models\Platform\User;
 use App\Models\ServiceTicket\ServiceTicketMessage;
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Mail\MailSignature;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Bus\Queueable;

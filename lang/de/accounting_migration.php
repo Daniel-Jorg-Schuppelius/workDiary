@@ -19,6 +19,8 @@ return [
     'areas' => 'Datenbereiche',
     'read_only' => 'nur Historie',
     'articles_hint' => 'Artikel gleicht der Wechsel nur zwischen Lexoffice und orgaMAX ab; sevDesk und easybill führen keine Artikelverknüpfung.',
+    'area_unsupported' => 'nicht mit :systems',
+    'areas_deselected' => 'Im Formular ist er bereits abgewählt; prüfen Sie die Auswahl und planen Sie erneut.',
     'cutover_on' => 'Stichtag',
     'cutover_hint' => 'Ab diesem Tag entstehen neue Fakturavorgänge ausschließlich im Zielsystem; das Quellsystem ist dafür gesperrt.',
     'plan_submit' => 'Wechsel planen',

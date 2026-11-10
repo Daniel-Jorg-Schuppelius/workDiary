@@ -600,6 +600,7 @@ return [
                 'decisionDue' => "Décision d'investissement attendue",
                 'proposed' => 'Investissement proposé',
                 'decided' => "Demande d'investissement décidée",
+                'approvalRequested' => "Demande d'investissement en attente d'approbation",
             ],
             'inventory' => [
                 'lotExpiring' => 'Lot arrivant à expiration (DLUO)',
@@ -1394,6 +1395,7 @@ return [
             'write_off' => 'Passage en perte',
             'overpayment' => 'Trop-perçu',
             'reversal' => 'Contre-passation',
+            'cancellation' => 'Document d\'annulation',
         ],
         // Quellenadapter und Buchungsregeln (Feature 125, MVP-673).
         'ebics-connection-status' => [
@@ -1438,6 +1440,7 @@ return [
             'disposal_gain' => 'Sortie valeur résiduelle (gain)',
             'payment_transit' => 'Fonds en transit (prestataire de paiement)',
             'payment_fees' => 'Frais bancaires et de paiement',
+            'advance_received' => 'Acomptes reçus',
         ],
         // Buchungskern (Feature 125, MVP-672).
         'balance-side' => [

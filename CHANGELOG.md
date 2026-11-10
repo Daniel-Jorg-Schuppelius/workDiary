@@ -10,6 +10,43 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinzugefügt
 
+- Arbeitsvorrat (Phase 174, `MVP-1525`): Überstundenanträge, Zeitkorrekturen
+  (Freigabe und Anwenden), Tagesabschluss-Korrekturen, Dienstpläne zur Freigabe,
+  Schichttausch (erst die Annahme durch die angefragte Person, dann die
+  Planung), Personalakten-Einreichungen, Kundenanfragen aus dem Portal,
+  Verleihanfragen, Kursbuchungen, Lieferanten-Selbstauskünfte und
+  Vereinsgruppen-Zuordnungen erscheinen bei der zuständigen Person — mit
+  demselben Recht wie auf der Entscheidungsseite, eigene Anträge nie.
+- Genehmigungen (`MVP-1522`): Investitionsanträge stehen mit ihren
+  Freigabestufen im Genehmigungs-Eingang und im Arbeitsvorrat; die zuständige
+  Stufe wird beim Einreichen, beim Nachtrag und beim Stufenwechsel
+  benachrichtigt. Die Geschäftsleitungsstufe ist der Geschäftsführung
+  zugeordnet (Einstellung „Freigabestufe Geschäftsleitung“ in der
+  Organisation). Eigene Anträge erscheinen im Genehmigungs-Eingang nie mehr.
+  An der Investitionsakte gilt dieselbe Stufenzuständigkeit (`MVP-1541`):
+  Freigeben und Ablehnen nur mit der Rolle der offenen Stufe, auch für Admins;
+  trägt niemand die Rolle, bleibt der Antrag offen.
+- Lieferanten (`MVP-1526`): „An Buchhaltung übertragen“ in der Lieferantenakte
+  und `accounting:push-contacts <plugin> --suppliers` übertragen auch bestehende
+  Lieferanten an sevDesk, easybill, orgaMAX oder Lexoffice.
+- sevDesk (`MVP-1529`): Führt die Buchhaltung die Stammdaten, übernimmt der
+  Kontakt-Rückweg auch Anschrift, E-Mail, Telefon, Mobil, Fax und Webseite.
+- Kalender-Abos (`MVP-1531`): Ein Abo kann statt einer iCal-Adresse eine
+  Kalenderverbindung (CalDAV, Google, Microsoft 365) nutzen und wird stündlich
+  mit `ical:sync` abgeglichen.
+- Demo-Mandant (`MVP-1532`, `MVP-1533`): Showcase-Daten für Planung
+  (Dienstplan, Mindestbesetzung, Schichttausch), Formulare, Wissen, Lager
+  (Bestand unter Meldebestand), Spesen, Team-Auswertungen (Zeiten mehrerer
+  Personen über drei Wochen), Standorterfassung, Verträge, Liegenschaften und
+  Bau (GAEB-Leistungsverzeichnis mit Aufmaß) — je nach Modul-Empfehlung der
+  Musterbranche oder im Vollumfang; der Reset räumt sie mit ab.
+- Verleih (`MVP-1523`): Eine Online-Vorauszahlung, die ans Buchhaltungsprogramm
+  übergeben ist, gilt als angerechnet; die Akte sagt das. Mit lokaler
+  Buchhaltung wird sie als erhaltene Anzahlung gebucht (Umsatzsteuer bei
+  Zahlungseingang, SKR03 1718/1711, SKR04 3272/3260) — seit `MVP-1542` auch,
+  wenn die lokale Rechnung erst später entsteht; die Rechnung löst die
+  Anzahlung auf, ein Stornobeleg dreht das zurück (Mindest-Istversteuerung).
+
 - Abos & Lizenzen (Phase 175, MVP-1534–1540): Anbieterrechnungen, die
   nur im Buchhaltungsprogramm liegen, werden täglich als Einkauf übernommen
   (Lexoffice, Anbieter mit lesbaren Positionen; der Rechnungseingang führt,
@@ -38,6 +75,53 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Behoben
 
+- Rechnungen (`MVP-1521`): Der Storno einer lokalen Rechnung gab nur die
+  Auffüllung auf das Projekt-Soll frei; eine Folgerechnung enthielt dann die
+  Differenz ohne die gebuchten Stunden. Storno am Entwurf und Stornobeleg geben
+  jetzt alles frei wie der Storno einer Übergabe (Zeiten, Material, Anfahrt,
+  Auslagen, Mietposten, Auslieferungen, Auffüllung); die Positionen der
+  stornierten Rechnung bleiben unverändert. Auslagen ließen sich nach einem
+  Storno nicht erneut abrechnen, und die Auslastung zählte stornierte Minuten
+  als fakturiert. Eine Rechnung, die nur Online-Vorauszahlungen teilweise
+  decken, ließ sich weder stornieren noch korrigieren; der Stornobeleg ist
+  jetzt möglich, die Vorauszahlung geht an ihre Buchung zurück (`MVP-1544`).
+  Mit lokaler Buchhaltung glich ein Stornobeleg den ältesten offenen Posten
+  des Kunden aus statt den der stornierten Rechnung (`MVP-1545`); er zählt
+  auch nicht mehr als Zahlung in den Auswertungen. Die Zahlungsbuchung schrieb
+  den Klassennamen als Gegenpartei-Typ.
+- Buchhaltung (`MVP-1543`, `MVP-1542`): Das Storno einer Buchung verdoppelte
+  in der Aufteilung auf die USt-Kennziffern die Steuer, statt sie aufzuheben.
+  Lokal berechnete Rechnungen fanden keine Erlös- und Steuerregel (Satz `19`
+  gegen `19.00`) und blieben im Buchungseingang hängen; Stornobelege und
+  Gutschriften ließen sich nicht buchen (negative Beträge).
+- Geplante Befehle der Fachmodule (`MVP-1524`) liefen weiter, wenn eine
+  Organisation das Modul abgeschaltet hatte: wiederkehrende Buchungen,
+  Rechnungsentwürfe aus Abos, Fremdabrufe und Erinnerungen. Sie überspringen
+  solche Organisationen jetzt; Aufbewahrung, Löschung, Virenscans,
+  Schlüsselrotation und die Sperre des Fahrtenbuchs laufen weiter.
+- Verleih (`MVP-1523`): Bei führendem Buchhaltungsprogramm meldete jede weitere
+  Übergabe die volle Vorauszahlung erneut. Die Buchung von Online-Zahlungen
+  schrieb den Klassennamen statt des Alias als Gegenpartei-Typ; eine
+  Datenmigration schreibt solche Zeilen um.
+- Kennungen (`MVP-1527`): Dublettenprüfung, Rechnungseingang, Zahlungsvorschlag
+  und Lexoffice-Abgleich fanden USt-IdNr. mit Leerzeichen oder Kleinbuchstaben
+  nicht, Scan und Katalog keine GTIN mit Trennzeichen. Das Original-PDF eines
+  orgaMAX-Belegs sah nur der Admin, nicht die Buchhaltung mit Faktura-Recht.
+  Asset-Auswertung, Drilldown und Prüfrunde zeigten Kategoriecodes statt
+  Bezeichnungen.
+- Oberflächen (`MVP-1528`): Ein in der Quelle gelöschter Kalendertermin bot
+  in der Integrations-Inbox nur „Remote übernehmen“, das immer scheiterte;
+  jetzt Zeiteintrag öffnen, löschen (nie abgerechnete) oder zur Kenntnis
+  nehmen. Der Buchhaltungswechsel verlor nach einer Ablehnung alle Eingaben.
+  Eine nachträglich gesetzte Pflichtqualifikation prüfte die schon zuständige
+  Person nicht.
+- Legacy-Bereich: „Neuer Eintrag“ stand auch ohne verknüpftes Legacy-Konto in
+  der Kopfzeile, das Speichern scheiterte dann; Mitarbeitende ohne Admin-Id
+  sahen ihn in der Arbeitsliste nicht. Es gilt eine Regel: eigene Einträge mit
+  jedem verknüpften Legacy-Konto. `legacy:import --support` übernimmt einen
+  Mechaniker ohne Konto und eine unbekannte Altkundennummer in die interne
+  Notiz. Die Seite „Portalkunden“ zeigt die Anmeldeadresse der Kunden.
+
 - Abos & Lizenzen: Der Domain-Einkauf hing an der auslaufenden Periode, weil
   der Anbieter die Verlängerung einige Tage vor dem neuen Laufzeitjahr bucht,
   und trug das negative Vorzeichen des Buchungsjournals; der Margenbericht
@@ -65,6 +149,19 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Hinweise zum Update
 
+- Phase 174: `migrate` (drei Migrationen, darunter die Umschreibung des
+  Gegenpartei-Typs). Organisationen mit lokaler Buchhaltung wenden die
+  Kontenplan-Vorlage erneut an (ergänzt nur fehlende Konten und Regeln), damit
+  die Rolle „Erhaltene Anzahlungen“ belegt ist. `db:seed` (läuft im Deploy) gibt
+  der Geschäftsführung das Eingangsrecht für Genehmigungen. Zeiten aus
+  Rechnungsstornos vor diesem Stand öffnet
+  `scripts/artisan.sh billing:reopen-times --from=… --apply` wieder — vorher
+  den Probelauf ohne `--apply` lesen, sie könnten inzwischen von Hand
+  abgerechnet sein. Rechnungen, die im Buchungseingang mit „Keine
+  Buchungsregel für Erlös“ hängen, erneut vorschlagen lassen. Organisationen
+  mit Investitionsanträgen weisen die Stufenrollen (Einstellungen →
+  Genehmigungen) zu; ohne Rolleninhaber entscheidet niemand, auch kein Admin.
+
 - Wurden Tagebuch, Bereitschaft oder Notdienst schon mit `legacy:import`
   übernommen, stehen diese Zeiten im neuen System um eine bis zwei Stunden zu
   spät. Ein erneuter Lauf (`scripts/artisan.sh legacy:import --diary --shifts
@@ -76,7 +173,7 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 Phasen 169–173 seit 1.0.0: Gerätelaufzeit, Projekt-Sollzeiten,
 Fernwartungs-Anbieter, rechnungsbegründende Unterlagen in der E-Rechnung und
 der Lückenschluss aus dem Scan auf Umsetzungslücken vom 2026-11-08. `1.0.0`
-bezeichnet den Stand von Commit `29050e66d`; beide Git-Tags setzt und
+bezeichnet den Stand von Commit `067af1fa3`; beide Git-Tags setzt und
 veröffentlicht der Inhaber.
 
 ### Hinweise zum Update

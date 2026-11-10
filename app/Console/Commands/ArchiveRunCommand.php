@@ -10,9 +10,11 @@
 
 namespace App\Console\Commands;
 
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Archive\ArchiveService;
 use Illuminate\Console\Command;
 
+#[BelongsToModule('archive')]
 class ArchiveRunCommand extends Command {
     protected $signature = 'archive:run {--days= : Schwellwert in Tagen (überschreibt config)}';
 

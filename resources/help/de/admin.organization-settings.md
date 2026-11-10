@@ -1,7 +1,7 @@
 ---
 title: "Organisation und Einstellungen"
 topic: admin.organization-settings
-version: 5
+version: 6
 keywords:
     - Firmeneinstellungen
     - Mandanteneinstellungen
@@ -163,13 +163,16 @@ ArbZG-Auswertung der erfassten Zeiten:
   **Zeitkorrektur-Genehmigungsstufen**: je **Einstufig (eine Freigabe)**
   (Vorgabe) oder **Zweistufig (Vier-Augen-Prinzip)** – dann braucht ein Antrag
   zwei Freigaben.
-- **Kaufmännisch: zuständige Rolle**, **Fachlich: zuständige Rolle** und
-  **HR: zuständige Rolle**: Freigabestufen einer Vertragsverhandlung
+- **Kaufmännisch: zuständige Rolle**, **Fachlich: zuständige Rolle**,
+  **HR: zuständige Rolle** und **Geschäftsleitung: zuständige Rolle**:
+  Freigabestufen von Vertragsverhandlungen und Investitionsanträgen
   erscheinen im Genehmigungs-Eingang unter „Genehmigungen“ bei der Rolle, die
   ihrer Stufenart zugeordnet ist. Zur Wahl stehen alle Rollen außer Kunde.
-  Leer gilt die Vorgabe: **Vorgabe (Buchhaltung)**, **Vorgabe (Teamleitung)**
-  bzw. **Vorgabe (Personalverwaltung)**. Die Freigabe direkt an der Akte
-  bleibt möglich.
+  Leer gilt die Vorgabe: **Vorgabe (Buchhaltung)**, **Vorgabe (Teamleitung)**,
+  **Vorgabe (Personalverwaltung)** bzw. **Vorgabe (Geschäftsführung)**.
+  Vertragsverhandlungen lassen sich weiter direkt an der Akte freigeben;
+  Investitionsanträge entscheidet auch an der Akte nur die zugeordnete Rolle
+  — Admins ebenso nur, wenn sie diese Rolle tragen.
 - **Beantragte Fehlzeiten sofort unter Vorbehalt eintragen (Ablehnung nimmt
   sie zurück)**: Beantragte Fehlzeiten wirken schon vor der Genehmigung in der
   Planung, gekennzeichnet als Vorbehalt; eine Ablehnung nimmt sie zurück.

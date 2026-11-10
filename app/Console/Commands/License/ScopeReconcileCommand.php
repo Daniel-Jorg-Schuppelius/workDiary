@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\License;
 
 use App\Models\Platform\Organization;
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Licensing\ModuleScopeService;
 use Illuminate\Console\Command;
 
@@ -22,6 +23,7 @@ use Illuminate\Console\Command;
  * im Deploy hinter `modules:cache` (neue Katalogmodule haben keinen Hook)
  * und täglich als Fangnetz; idempotent.
  */
+#[BelongsToModule('licensing')]
 class ScopeReconcileCommand extends Command {
     protected $signature = 'scope:reconcile
         {--org= : Nur diese Organisation (ID)}';

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Invoicing;
 
 use App\Models\Diary\Tour;
-use App\Models\Invoicing\InvoiceItem;
+use App\Models\Invoicing\{Invoice, InvoiceItem, OnlinePayment};
 use App\Models\Material\MaterialUsage;
 use App\Models\Time\TimeEntry;
 use App\Models\Travel\Expense;
@@ -22,11 +22,32 @@ use App\Models\Travel\Expense;
  * Quellposten einer Rechnungsposition wieder freigeben (Vollscan 2026-08-23,
  * F14 — vorher ein deleting-Hook, der in 5 Fremdtabellen schrieb): Spese →
  * Approved, Zeiten → exported=false, Material → billed=false, Tour →
- * travel_billed=false, Mietposten → Released, Auffüllung auf Soll → offen. Explizit aufrufbar — bei
- * Query-Deletes/Kaskaden feuert kein Eloquent-Event, dann MUSS der Aufrufer
- * diese Freigabe selbst anstoßen.
+ * travel_billed=false, Mietposten → Released, Auffüllung auf Soll → offen,
+ * Auslieferung → Pending. Explizit aufrufbar — bei Query-Deletes/Kaskaden
+ * feuert kein Eloquent-Event, dann MUSS der Aufrufer diese Freigabe selbst
+ * anstoßen.
  */
 class InvoiceItemReleaseService {
+    /**
+     * Storno der ganzen Rechnung, direkt oder per Stornobeleg (MVP-1521): gibt
+     * jede Quelle frei wie der Storno einer Übergabe. Die Positionen bleiben
+     * unverändert am Beleg (GoBD), nur die Quellen werden wieder abrechenbar.
+     */
+    public function releaseInvoice(Invoice $invoice): void {
+        foreach ($invoice->items()->get() as $item) {
+            $this->releaseSources($item);
+        }
+        $this->releasePrepayments($invoice);
+    }
+
+    /** Online-Vorauszahlungen (MVP-1515) gehören ihrem Gegenstand und gehen an ihn zurück. */
+    public function releasePrepayments(Invoice $invoice): int {
+        return OnlinePayment::query()->withoutGlobalScopes()
+            ->where('invoice_id', $invoice->id)
+            ->whereNotNull('subject_type')
+            ->update(['invoice_id' => null]);
+    }
+
     /** Muss VOR dem Löschen laufen: danach ist die Pivot-Zuordnung weg. */
     public function releaseSources(InvoiceItem $i): void {
         if ($i->expense_id !== null) {

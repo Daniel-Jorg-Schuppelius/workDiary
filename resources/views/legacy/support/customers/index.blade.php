@@ -31,6 +31,13 @@
             <div class="alert alert-info flex-none text-sm">{{ __('legacy_support.read_only') }}</div>
         @endunless
 
+        @php($portalLoginUrl = route('legacy.portal.login'))
+        <div role="note" class="alert flex-none flex-wrap text-sm">
+            <span>{{ __('legacy_support.customers.portal_address') }}</span>
+            <code class="font-mono text-xs break-all">{{ $portalLoginUrl }}</code>
+            <x-button tone="plain" size="sm" data-copy-text="{{ $portalLoginUrl }}">{{ __('Kopieren') }}</x-button>
+        </div>
+
         <x-table scroll="flex" table-sort="client">
             <x-slot:head>
                 <tr>

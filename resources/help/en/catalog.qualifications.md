@@ -1,7 +1,7 @@
 ---
 title: "Qualifications"
 topic: catalog.qualifications
-version: 2
+version: 3
 keywords:
     - skills
     - competencies
@@ -51,3 +51,8 @@ out the gap. If the organization switches to **Block assignment** under
 Staffing suggestions no longer list blocked people. Existing assignments
 remain; such an assignment can only be confirmed in dispatching with a
 reason, which is logged.
+
+If you change the required qualifications of an order that is already
+assigned to a person, WorkDiary checks that person right away: in blocking
+mode the change is rejected while one of the qualifications is missing; in
+hint mode it is saved and the gap is reported as a notice.

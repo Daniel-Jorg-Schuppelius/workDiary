@@ -266,7 +266,10 @@ class InvoiceController extends Controller {
             ? $authority->sourceLabel($authority->sourceFor((int) $invoice->organization_id, $invoice->numberScope()))
             : null;
 
-        return view('invoices.show', compact('invoice', 'openDownPaymentCount', 'settledByInvoice', 'directDebitOffer', 'numberIssuer'));
+        // Teilbezahlt ohne Storno- und Korrekturweg (MVP-1544): sagen, warum.
+        $cancellationBlocked = $this->authUser()->canManageBilling() ? $invoice->cancellationBlockedReason() : null;
+
+        return view('invoices.show', compact('invoice', 'openDownPaymentCount', 'settledByInvoice', 'directDebitOffer', 'numberIssuer', 'cancellationBlocked'));
     }
 
     /**
@@ -960,7 +963,8 @@ class InvoiceController extends Controller {
             'reason' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        if ($invoice->status === InvoiceStatus::Issued && ! $invoice->isCreditNote()) {
+        // Ausgestellt oder nur durch freiwerdende Vorauszahlungen teilbezahlt (MVP-1544): Stornobeleg.
+        if ($invoice->status !== InvoiceStatus::Draft) {
             $cancellation = $gen->cancellationFor($invoice, $data['reason'] ?? null, (int) Auth::id());
 
             return redirect()->route('invoices.show', $cancellation)

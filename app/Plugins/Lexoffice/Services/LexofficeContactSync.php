@@ -298,7 +298,7 @@ class LexofficeContactSync {
         $base = fn() => $modelClass::query()->where('organization_id', $organization->id)->where('is_collective', false);
 
         if ($vatId !== '') {
-            $byVat = $base()->where('vat_id', $vatId)->first();
+            $byVat = $base()->whereIdentifier('vat_id', $vatId)->first();
             if ($byVat instanceof Model) {
                 return $byVat;
             }

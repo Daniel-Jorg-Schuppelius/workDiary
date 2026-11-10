@@ -12,6 +12,7 @@ return [
     'qualification' => [
         'missing' => 'Cualificación obligatoria faltante',
         'blocked' => 'Asignación bloqueada: el :date, a :user le falta la cualificación obligatoria :qualifications (inexistente, caducada o aún no válida).',
+        'hint' => 'Aviso: el :date, a :user le falta la cualificación obligatoria :qualifications (inexistente, caducada o aún no válida).',
     ],
     'availability' => [
         'title' => 'Disponibilidad y deseos de turno',

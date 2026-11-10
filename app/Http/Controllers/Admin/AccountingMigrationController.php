@@ -82,17 +82,32 @@ class AccountingMigrationController extends Controller {
             (array) $data['areas'],
         )));
 
+        $source = MigrationProvider::from((string) $data['source']);
+        $target = MigrationProvider::from((string) $data['target']);
+
         try {
             $this->service->plan(
                 $organization,
                 $areas,
                 ! empty($data['cutover_on']) ? CarbonImmutable::parse((string) $data['cutover_on']) : null,
                 $user,
-                MigrationProvider::from((string) $data['source']),
-                MigrationProvider::from((string) $data['target']),
+                $source,
+                $target,
             );
         } catch (RuntimeException $e) {
-            return back()->with('error', ErrorText::for($e));
+            // Eingaben bleiben stehen; Bereiche, die das Paar nicht abgleicht, sind abgewählt (MVP-1528).
+            $supported = array_filter($areas, static fn (MigrationDataArea $area): bool => $source->supportsArea($area) && $target->supportsArea($area));
+
+            return back()
+                ->withInput([
+                    'source' => $source->value,
+                    'target' => $target->value,
+                    'cutover_on' => $data['cutover_on'] ?? null,
+                    'areas' => array_values(array_map(static fn (MigrationDataArea $area): string => $area->value, $supported)),
+                ])
+                ->with('error', count($supported) < count($areas)
+                    ? ErrorText::for($e) . ' ' . __('accounting_migration.areas_deselected')
+                    : ErrorText::for($e));
         }
 
         return redirect()->route('admin.accounting-migration.index')

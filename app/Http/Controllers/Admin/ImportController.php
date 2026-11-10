@@ -106,16 +106,8 @@ class ImportController extends Controller {
         if (! in_array($entity, [ImportEntity::Attendances, ImportEntity::ProjectTimes], true)) {
             return [];
         }
-        $sources = [];
-        foreach (app(\App\Modules\ModuleRegistry::class)->extensions(\App\Services\Import\Contracts\CalendarImportFeed::class) as $class) {
-            /** @var \App\Services\Import\Contracts\CalendarImportFeed $feed */
-            $feed = app($class);
-            foreach ($feed->connections($organization) as $connection) {
-                $sources[] = ['value' => $feed->key() . ':' . $connection['id'], 'label' => $feed->label() . ' · ' . $connection['label']];
-            }
-        }
 
-        return $sources;
+        return app(\App\Services\Import\CalendarImportFeeds::class)->sources($organization);
     }
 
     /**
@@ -125,22 +117,14 @@ class ImportController extends Controller {
      * @return array{0: UploadedFile, 1: string} Datei und Pfad der temporären Kopie
      */
     private function calendarUpload(\App\Models\Platform\Organization $organization, ImportEntity $entity, string $source, string $from, string $until): array {
-        [$key, $connectionId] = array_pad(explode(':', $source, 2), 2, '');
-        $feed = null;
-        foreach (app(\App\Modules\ModuleRegistry::class)->extensions(\App\Services\Import\Contracts\CalendarImportFeed::class) as $class) {
-            $candidate = app($class);
-            if ($candidate instanceof \App\Services\Import\Contracts\CalendarImportFeed && $candidate->key() === $key) {
-                $feed = $candidate;
-            }
-        }
-        if ($feed === null || ! in_array($entity, [ImportEntity::Attendances, ImportEntity::ProjectTimes], true)) {
+        if (! in_array($entity, [ImportEntity::Attendances, ImportEntity::ProjectTimes], true)) {
             throw new \RuntimeException((string) __('import.error.calendar.unknown'));
         }
 
         $tz = \App\Support\Tz::ofOrganization($organization);
-        $ics = $feed->fetch(
+        $ics = app(\App\Services\Import\CalendarImportFeeds::class)->fetch(
             $organization,
-            $connectionId,
+            $source,
             \Carbon\CarbonImmutable::parse($from, $tz)->startOfDay()->utc()->toDateTimeImmutable(),
             \Carbon\CarbonImmutable::parse($until, $tz)->endOfDay()->utc()->toDateTimeImmutable(),
         );

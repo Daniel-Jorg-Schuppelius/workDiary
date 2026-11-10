@@ -1,7 +1,7 @@
 ---
 title: "Geräte- & Maschinenverleih"
 topic: rental.overview
-version: 5
+version: 6
 keywords:
     - Vermieter
     - Ferienwohnung
@@ -89,7 +89,22 @@ Direktbuchung im Kundenportal zur Bezahlseite des Zahlungsanbieters:
   bestätigt WorkDiary nichts, sondern meldet sie Ihnen zur Erstattung oder
   Neubuchung.
 - Die Akte zeigt die bezahlte Vorauszahlung. Bei der Übergabe der Mietpositionen
-  an die Rechnung wird sie der Rechnung zugeordnet und deckt sie mit. Führt
-  ein Buchhaltungsprogramm die Rechnungen, steht die Summe im Protokoll der
-  Übergabe; berücksichtigen Sie sie dort. Im Buchungseingang erscheint die
-  Vorauszahlung erst mit der Rechnung buchbar.
+  an die Rechnung wird sie der Rechnung zugeordnet und deckt sie mit. Ein
+  Storno dieser Rechnung gibt sie wieder frei; die nächste Rechnung rechnet sie
+  an.
+- Führt ein Buchhaltungsprogramm die Rechnungen, gilt die Vorauszahlung mit
+  der Übergabe der Mietpositionen als angerechnet: Die Akte nennt den Betrag,
+  den Sie dort auf die Rechnung anrechnen, das Protokoll der Übergabe ebenso,
+  und eine spätere Übergabe zählt ihn nicht noch einmal.
+- Führt WorkDiary die Buchhaltung, bucht der Buchungseingang die
+  Vorauszahlung am Zahlungstag als erhaltene Anzahlung mit Umsatzsteuer: Die
+  Steuer entsteht mit dem Zahlungseingang (Mindest-Istversteuerung), nicht
+  erst mit der Rechnung. Die Rechnung in WorkDiary, die sie anrechnet, löst
+  die Anzahlung auf — ihre Forderung ist nur der offene Rest, und die
+  Umsatzsteuer der Anzahlung wird mit der Steuer der Rechnung verrechnet, so
+  dass sie nur einmal entsteht. Ein Stornobeleg dreht die Auflösung zurück;
+  die Anzahlung steht wieder offen, bis die nächste Rechnung sie anrechnet.
+  Eine Erstattung nach dem Buchen bringt Zahlung und Rechnung in den
+  Buchungseingang zurück (stornieren und neu buchen). Die Kontenzuordnung
+  braucht dafür die Rolle „Erhaltene Anzahlungen“ (in den Vorlagen SKR03 und
+  SKR04 enthalten).

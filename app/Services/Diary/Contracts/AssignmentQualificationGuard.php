@@ -23,4 +23,7 @@ use Illuminate\Validation\ValidationException;
 interface AssignmentQualificationGuard {
     /** @throws ValidationException */
     public function assertEntryAssignable(DiaryEntry $entry, int $userId, ?CarbonInterface $date = null, string $field = 'assigned_user_id'): void;
+
+    /** Hinweistext, wenn der Person eine Pflichtqualifikation fehlt, die Organisation aber nicht sperrt (MVP-1528). */
+    public function entryHint(DiaryEntry $entry, int $userId, ?CarbonInterface $date = null): ?string;
 }

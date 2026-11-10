@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Location;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Services\Location\VisitBuilder;
 use Illuminate\Console\Command;
 
@@ -21,13 +22,15 @@ use Illuminate\Console\Command;
  * Kunden ausgeht.
  */
 class CloseStaleVisitsCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'location:close-stale-visits {--hours= : Stunden ohne Punkt (Standard aus config/location.php)}';
 
     protected $description = 'Schließt offene Standort-Besuche ohne neuen Punkt und erzeugt ihre Zeitvorschläge.';
 
     public function handle(VisitBuilder $builder): int {
         $hours = $this->option('hours') !== null ? (int) $this->option('hours') : (int) config('location.stale_visit_hours', 6);
-        $closed = $builder->closeStaleVisits(max(1, $hours));
+        $closed = $builder->closeStaleVisits(max(1, $hours), $this->moduleOrganizationIds());
         $this->info(sprintf('%d verwaiste(r) Besuch(e) geschlossen.', $closed));
 
         return self::SUCCESS;

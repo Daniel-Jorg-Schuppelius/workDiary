@@ -132,7 +132,7 @@ return [
         'on_documents_hint' => 'Si se desactiva, el pago en línea sigue disponible en el portal del cliente.',
     ],
     'approvals' => [
-        'step_roles_hint' => 'Las etapas de aprobación de una negociación contractual aparecen en «Aprobaciones» para el rol asignado a su tipo de etapa. La aprobación desde el expediente sigue siendo posible.',
+        'step_roles_hint' => 'Las etapas de aprobación de las negociaciones contractuales y de las solicitudes de inversión aparecen en «Aprobaciones» para el rol asignado a su tipo de etapa. Las solicitudes de inversión solo las decide este rol, también desde el expediente; las negociaciones contractuales pueden seguir aprobándose desde el expediente. Si nadie tiene el rol, la solicitud queda abierta hasta que se asigne — también los administradores deciden solo con este rol.',
         'step_role' => ':kind: rol responsable',
         'default_role' => 'Predeterminado (:role)',
     ],

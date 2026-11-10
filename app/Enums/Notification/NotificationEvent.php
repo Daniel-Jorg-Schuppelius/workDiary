@@ -276,6 +276,8 @@ enum NotificationEvent: string implements HasLabel {
     /** Neuer Investitionsvorschlag von Mitarbeitenden oder über den öffentlichen Link (MVP-936). */
     case InvestmentProposed = 'investment.proposed';
     case InvestmentDecided = 'investment.decided';
+    /** Budgetantrag wartet auf eine Freigabestufe — an die Zuständigen der Stufe (MVP-1522). */
+    case InvestmentApprovalRequested = 'investment.approvalRequested';
 
     case OperationsBackupOverdue = 'operations.backupOverdue';
     case OperationsBackupFailed = 'operations.backupFailed';
@@ -673,6 +675,7 @@ enum NotificationEvent: string implements HasLabel {
             self::InvestmentDecisionDue => 'pending_actions',
             self::InvestmentProposed => 'lightbulb',
             self::InvestmentDecided => 'task_alt',
+            self::InvestmentApprovalRequested => 'pending_actions',
             self::InventoryLotExpiring => 'hourglass_bottom',
             self::RetentionReleaseDue => 'savings',
             self::GuaranteeExpiring => 'gpp_maybe',

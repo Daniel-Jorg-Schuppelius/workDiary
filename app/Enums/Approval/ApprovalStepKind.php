@@ -32,10 +32,10 @@ enum ApprovalStepKind: string implements HasLabel {
     }
 
     /**
-     * Einstellung „Stufenart → Rolle“ der Organisation (Entscheidung 2026-10-06).
-     * Geschäftsleitungsstufen (Investitionsanträge) entscheidet nur die Akte.
+     * Einstellung „Stufenart → Rolle“ der Organisation (Entscheidung 2026-10-06;
+     * Geschäftsleitung seit MVP-1522 für Investitionsanträge im Eingang).
      */
-    public function roleSetting(): ?string {
-        return $this === self::Management ? null : 'approvals.step_role.' . $this->value;
+    public function roleSetting(): string {
+        return 'approvals.step_role.' . $this->value;
     }
 }

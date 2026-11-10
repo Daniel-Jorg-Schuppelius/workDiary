@@ -11,6 +11,7 @@
 namespace App\Console\Commands;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskType};
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Backup\BackupVerifyService;
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use Illuminate\Console\Command;
@@ -22,6 +23,7 @@ use Throwable;
  * ({@see BackupVerifyService}); Fehlschläge werden als Betriebsaufgabe
  * gemeldet.
  */
+#[BelongsToModule('backup')]
 class BackupVerifyCommand extends Command {
     protected $signature = 'workdiary:backup:verify';
 

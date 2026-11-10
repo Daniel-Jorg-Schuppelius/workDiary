@@ -1,7 +1,7 @@
 ---
 title: "Cambio di software contabile"
 topic: admin.accounting-migration
-version: 2
+version: 3
 keywords:
     - migrazione contabilità
     - migrare dati contabili
@@ -45,11 +45,14 @@ Per sevDesk ed easybill:
   assegnati.
 - Gli **articoli** non si possono riconciliare con sevDesk ed easybill,
   perché WorkDiary rispecchia soltanto la loro anagrafica articoli senza
-  collegarla agli articoli locali. In tal caso deselezionate l’area.
+  collegarla agli articoli locali. In tal caso deselezioni l’area. Il modulo
+  la contrassegna («non con sevDesk, easybill»); se la pianificazione non
+  riesce per questo motivo, origine, destinazione e data di switch restano
+  impostate e l’area è deselezionata.
 - Lo **storico dei documenti** proviene dallo specchio dei documenti.
-  Eseguite il recupero dei documenti prima dell’analisi e prima della
+  Esegua il recupero dei documenti prima dell’analisi e prima della
   conclusione, così che i vecchi documenti aperti siano completi.
-- Le immagini dei documenti restano nel programma. Salvatele tramite la sua
+- Le immagini dei documenti restano nel programma. Le salvi tramite la sua
   esportazione prima della fine del contratto.
 
 Principi: i documenti finalizzati **non** vengono mai ricostruiti nel

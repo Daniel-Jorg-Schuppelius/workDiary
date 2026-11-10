@@ -21,6 +21,7 @@ use App\Services\Accounting\ExchangeRateService;
 use App\Services\Accounting\Posting\{PostingProposalLine, PostingRuleResolver, PostingSourceAdapter};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Database\Eloquent\Model;
 
@@ -90,6 +91,12 @@ abstract class AbstractPostingAdapter implements PostingSourceAdapter {
         $account = $rule->account;
         if ($account === null) {
             return null;
+        }
+        // Das Journal führt nur positive Beträge; ein negativer (Storno, Gutschrift) gehört auf die Gegenseite.
+        // Der Steuerbetrag behält das Vorzeichen seiner Wirkung.
+        if (NumberHelper::isNegativePrecise($debit) || NumberHelper::isNegativePrecise($credit)) {
+            $net = NumberHelper::subtractPrecise($debit, $credit, 2);
+            [$debit, $credit] = NumberHelper::isNegativePrecise($net) ? ['0.00', NumberHelper::negatePrecise($net)] : [$net, '0.00'];
         }
 
         return new PostingProposalLine(

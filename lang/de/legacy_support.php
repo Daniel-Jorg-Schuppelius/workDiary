@@ -48,6 +48,7 @@ return [
         'status' => 'Status',
         'actions' => 'Aktion',
         'mail_recipient' => 'Empfänger',
+        'legacy_customer_number' => 'Kundennummer im Altsystem',
     ],
     'status' => [
         'new' => 'Neu',
@@ -90,6 +91,7 @@ return [
     ],
     'customers' => [
         'subtitle' => 'Zugänge der Kunden zum Support-Portal des Altsystems.',
+        'portal_address' => 'Anmeldeadresse für Ihre Kunden:',
         'create' => 'Kunden anlegen',
         'edit' => 'Kunden bearbeiten',
         'delete' => 'Kunden löschen',

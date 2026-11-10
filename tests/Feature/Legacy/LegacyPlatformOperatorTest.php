@@ -75,6 +75,24 @@ class LegacyPlatformOperatorTest extends TestCase {
             ->assertSee(route('legacy.oncall.create'), false);
     }
 
+    public function test_new_entry_needs_a_legacy_account_in_buttons_and_backend(): void {
+        $this->withSession(['work_mode' => 'legacy']);
+
+        $this->actingAs($this->operator)->get(route('legacy.diary.index', ['tab' => 'auftraege']))
+            ->assertOk()
+            ->assertDontSee(route('legacy.diary.create'), false);
+        $this->actingAs($this->operator)->get(route('legacy.diary.create'))->assertForbidden();
+        $this->actingAs($this->operator)->post(route('mode.switch', 'legacy'), ['origin' => 'diary.create'])
+            ->assertRedirect(route('legacy.diary.index'));
+
+        // Mitarbeitende mit Legacy-Konto legen eigene Einträge an, auch ohne Id 1–3.
+        $employee = User::factory()->create(['legacy_user_id' => 4]);
+        $this->actingAs($employee)->get(route('legacy.diary.index', ['tab' => 'auftraege']))
+            ->assertOk()
+            ->assertSee(route('legacy.diary.create'), false);
+        $this->actingAs($employee)->get(route('legacy.diary.create'))->assertOk();
+    }
+
     public function test_employee_without_admin_rights_still_sees_only_himself(): void {
         $employee = User::factory()->create(['legacy_user_id' => 4]);
 

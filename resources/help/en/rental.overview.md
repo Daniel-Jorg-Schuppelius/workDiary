@@ -1,7 +1,7 @@
 ---
 title: "Equipment rental"
 topic: rental.overview
-version: 5
+version: 6
 keywords:
     - landlord
     - holiday apartment
@@ -82,7 +82,20 @@ leads to the payment page of the payment provider:
   WorkDiary confirms nothing but reports it to you for a refund or a new
   booking.
 - The rental case shows the paid prepayment. When the rental items are
-  transferred to the invoice, it is assigned to the invoice and covers it. If an
-  accounting program manages the invoices, the amount appears in the transfer
-  log; take it into account there. In the posting inbox the prepayment only
-  becomes postable together with the invoice.
+  transferred to the invoice, it is assigned to the invoice and covers it.
+  Cancelling that invoice releases it again; the next invoice credits it.
+- If an accounting program manages the invoices, the prepayment counts as
+  credited once the rental items are handed over: the rental case and the
+  transfer log show the amount to credit on the invoice there, and a later
+  handover does not count it again.
+- If WorkDiary keeps the books, the posting inbox books the prepayment on the
+  payment date as an advance payment received, with VAT: the tax arises when
+  the payment is received (minimum actual taxation), not only with the
+  invoice. The WorkDiary invoice that credits it releases the advance payment
+  — its receivable is only the open remainder, and the VAT of the advance
+  payment is offset against the tax of the invoice, so that it arises only
+  once. A cancellation document reverses the release; the advance payment is
+  open again until the next invoice credits it. A refund after posting brings
+  payment and invoice back into the posting inbox (reverse and post again).
+  The account mapping needs the role "Advance payments received" for this
+  (included in the SKR03 and SKR04 templates).

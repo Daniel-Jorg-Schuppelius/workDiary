@@ -1,7 +1,7 @@
 ---
 title: "Factures & pièces"
 topic: invoices.manage
-version: 12
+version: 13
 keywords:
     - créer une facture
     - établir une facture
@@ -152,9 +152,45 @@ affectée ; un remboursement l'annule. Avec la comptabilité locale, le
 paiement apparaît dans la boîte de comptabilisation (fonds en transit
 contre la créance, la commission du prestataire en frais bancaires et de
 paiement) ; vous comptabilisez le versement ultérieur du prestataire sur
-le compte de fonds en transit. Vous désactivez le lien sur la facture et
-dans l'e-mail dans les paramètres de l'organisation, sous « Paiement en
-ligne » ; il reste dans le portail client.
+le compte de fonds en transit. Un acompte en ligne issu de la location est
+enregistré dès la date du paiement comme acompte reçu, avec TVA ; la
+facture qui l'impute solde l'acompte et ne porte en créance que le reste
+ouvert. Vous désactivez le lien sur la facture et dans l'e-mail dans les
+paramètres de l'organisation, sous « Paiement en ligne » ; il reste dans
+le portail client.
+
+## Annuler et facturer à nouveau
+
+Un brouillon est annulé directement, une facture émise par une pièce
+d'annulation avec son propre numéro. Les deux voies libèrent tout ce que la
+facture a facturé, comme l'annulation d'une transmission : temps saisis,
+matériel, déplacements, débours, positions de location, livraisons et le
+complément jusqu'au temps cible du projet. Un acompte en ligne de la location
+revient à sa réservation et est imputé sur la facture suivante. Les positions
+de la facture annulée restent inchangées ; la facture suivante pour la période
+contient de nouveau les heures et le complément. Une facture payée est
+corrigée par une facture rectificative. Elle ne libère rien, car elle peut ne
+créditer qu'une partie de la facture.
+
+Une facture émise que seul un acompte en ligne couvre en partie s'annule elle
+aussi par une pièce d'annulation : l'acompte revient à sa réservation et est
+imputé sur la facture suivante. Si un autre paiement couvre la facture en
+partie – une opération bancaire dans le rapprochement des paiements (y compris
+un escompte accepté), un paiement en caisse, un paiement en ligne de la
+facture ou un lettrage du poste ouvert –, l'annulation reste bloquée et la
+facture en indique la raison. Annulez d'abord ce paiement ; une fois la
+facture entièrement payée, corrigez-la par une facture rectificative.
+
+Avec la comptabilité locale, la pièce d'annulation solde exactement le poste
+ouvert de la facture annulée, après un acompte le reste après l'acompte ; les
+autres postes ouverts du client restent intacts. L'acompte est ensuite de
+nouveau ouvert et se solde avec la facture suivante. Comptabilisez donc la
+facture avant sa pièce d'annulation ; sinon la pièce d'annulation attend dans
+la boîte de comptabilisation avec un avertissement. Une facture annulée avec
+pièce d'annulation y apparaît aussi pour être comptabilisée, car les deux
+pièces font partie du journal. La pièce d'annulation ne compte pas comme un
+paiement, pas même dans les aperçus fondés sur les encaissements
+(recettes-dépenses, TVA sur les encaissements).
 
 ## Documents liés
 

@@ -19,6 +19,8 @@ return [
     'areas' => 'Data areas',
     'read_only' => 'history only',
     'articles_hint' => 'Articles are only reconciled between Lexoffice and orgaMAX; sevDesk and easybill keep no article link.',
+    'area_unsupported' => 'not with :systems',
+    'areas_deselected' => 'It has already been deselected in the form; check the selection and plan again.',
     'cutover_on' => 'Cutover date',
     'cutover_hint' => 'From this day, new billing documents are created exclusively in the target system; the source system is blocked for them.',
     'plan_submit' => 'Plan migration',

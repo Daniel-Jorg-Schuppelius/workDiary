@@ -1,7 +1,7 @@
 ---
 title: "Kunden & Lieferanten"
 topic: contacts.manage
-version: 14
+version: 15
 keywords:
     - Vorschau als Kunde
     - Startpasswort
@@ -197,6 +197,15 @@ Lieferanten nur an, wenn in der orgaMAX-Verwaltung die Capability
 „Lieferanten“ aktiv ist und „WorkDiary führt“ gilt; sonst führt orgaMAX die
 Lieferanten und WorkDiary ordnet sie nur zu.
 
+Lieferanten aus der Zeit vor der Anbindung erreicht das nicht. Sie überträgt
+**An Buchhaltung übertragen** in der Lieferantenakte einzeln, an das erste
+aktive Programm, das Lieferanten annimmt; der Betrieb kann alle auf einmal mit
+`php artisan accounting:push-contacts <programm> --suppliers` übertragen. Ein
+schon verknüpfter Lieferant wird dabei aktualisiert, nicht doppelt angelegt;
+archivierte Lieferanten und der Sammellieferant bleiben außen vor. Führt die
+Buchhaltung die Stammdaten, gibt es den Knopf nicht und der Lauf überträgt
+nichts.
+
 ## Stammdaten aus dem Buchhaltungsprogramm
 
 Steht die Stammdatenhoheit auf „Buchhaltung führt“, überträgt WorkDiary keine
@@ -205,17 +214,21 @@ und orgaMAX über ihren eigenen Kontaktabgleich, sevDesk und easybill stündlich
 nach diesen Regeln:
 
 - Ein schon verknüpfter Kontakt übernimmt den Stand des Programms (Name,
-  USt-IdNr., Steuernummer; bei easybill auch Anschrift, E-Mail, Telefon und
-  Ansprechpartner).
+  USt-IdNr., Steuernummer, Anschrift, E-Mail und Telefon; bei easybill auch
+  den Ansprechpartner).
 - Ein sicherer Treffer, etwa über die USt-IdNr., wird verknüpft.
 - Alles Unklare erscheint als Klärfall in der **Zuordnungs-Inbox**; neu
   angelegt wird nichts.
 
 sevDesk liefert die Rolle über die Kontaktkategorie: „Kunde“ und „Lieferant“
 werden übernommen, Partner, Interessenten und Ansprechpartner einer Firma
-nicht. easybill unterscheidet über Kunden- und Lieferantennummer; ein Kontakt
-mit beiden Nummern ist Kunde und Lieferant. Archivierte easybill-Kontakte
-bleiben draußen.
+nicht. Anschrift ist die sevDesk-Adresse der Kategorie, die WorkDiary beim
+Übertragen verwendet, sonst die einzige Adresse; bei E-Mail, Telefon, Mobil,
+Fax und Webseite gilt der als Hauptweg markierte, sonst der einzige. Bei
+mehreren ohne diese Kennzeichen bleibt der Wert in WorkDiary unverändert, das
+Land ebenso. easybill unterscheidet über Kunden- und Lieferantennummer; ein
+Kontakt mit beiden Nummern ist Kunde und Lieferant. Archivierte
+easybill-Kontakte bleiben draußen.
 
 ## Kunden- und Lieferanten-Cockpit
 

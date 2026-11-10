@@ -31,8 +31,8 @@
         <x-filter-field :label="__('Produktgruppe')" for="rep-category">
             <select id="rep-category" name="category_code" class="select select-sm select-bordered">
                 <option value="">{{ __('Alle') }}</option>
-                @foreach($categories as $code)
-                    <option value="{{ $code }}" @selected($categoryCode === $code)>{{ $code }}</option>
+                @foreach($categories as $code => $categoryLabel)
+                    <option value="{{ $code }}" @selected($categoryCode === (string) $code)>{{ $categoryLabel }}</option>
                 @endforeach
             </select>
         </x-filter-field>

@@ -1,7 +1,7 @@
 ---
 title: "Alquiler de equipos"
 topic: rental.overview
-version: 5
+version: 6
 keywords:
     - arrendador
     - apartamento vacacional
@@ -80,7 +80,21 @@ proveedor de pagos:
   confirma nada, sino que se lo comunica para un reembolso o una nueva
   reserva.
 - El expediente muestra el pago anticipado abonado. Al traspasar las posiciones
-  de alquiler a la factura, se asigna a la factura y la cubre. Si un programa de
-  contabilidad gestiona las facturas, el importe consta en el registro del
-  traspaso; téngalo en cuenta allí. En la bandeja de contabilización, el pago
-  anticipado solo se puede contabilizar junto con la factura.
+  de alquiler a la factura, se asigna a la factura y la cubre. La anulación de
+  esa factura lo libera; la siguiente factura lo descuenta.
+- Si un programa de contabilidad gestiona las facturas, el pago anticipado se
+  considera descontado con el traspaso de las posiciones de alquiler: el
+  expediente y el registro del traspaso indican el importe que debe descontar
+  allí en la factura, y un traspaso posterior no lo vuelve a contar.
+- Si WorkDiary lleva la contabilidad, la bandeja de contabilización registra
+  el pago anticipado en la fecha de pago como anticipo recibido, con IVA: el
+  impuesto nace con el cobro (tributación mínima por lo percibido), no solo
+  con la factura. La factura de WorkDiary que lo descuenta liquida el
+  anticipo: su crédito es solo el resto pendiente, y el IVA del anticipo se
+  compensa con el impuesto de la factura, de modo que nace una sola vez. Una
+  factura de anulación revierte la liquidación; el anticipo vuelve a quedar
+  pendiente hasta que la siguiente factura lo descuente. Un reembolso después
+  de contabilizar devuelve el pago y la factura a la bandeja de
+  contabilización (anular y volver a contabilizar). Para ello, la asignación
+  de cuentas necesita el rol «Anticipos recibidos» (incluido en las
+  plantillas SKR03 y SKR04).

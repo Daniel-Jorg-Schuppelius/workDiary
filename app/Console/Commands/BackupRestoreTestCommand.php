@@ -12,6 +12,7 @@ namespace App\Console\Commands;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskType};
 use App\Models\Backup\BackupGeneration;
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Backup\BackupRestoreTestService;
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use Illuminate\Console\Command;
@@ -26,6 +27,7 @@ use Throwable;
  * stehen im Restore-Test-Register und als Betriebsaufgabe. Der produktive
  * Restore bleibt ein bewusster Wartungslauf mit Vier-Augen-Freigabe.
  */
+#[BelongsToModule('backup')]
 class BackupRestoreTestCommand extends Command {
     protected $signature = 'workdiary:backup:restore-test
         {--generation= : Snapshot-UUID einer Generation (Default: jüngste Generation jeder Verbindung)}

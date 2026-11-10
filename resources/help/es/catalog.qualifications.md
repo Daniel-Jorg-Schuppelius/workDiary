@@ -1,7 +1,7 @@
 ---
 title: "Cualificaciones"
 topic: catalog.qualifications
-version: 2
+version: 3
 keywords:
     - competencias
     - habilidades
@@ -50,3 +50,8 @@ asignación:
 Las propuestas de asignación ya no muestran a las personas bloqueadas. Las
 asignaciones existentes se mantienen; un servicio así solo puede confirmarse
 en la planificación con una justificación, que queda registrada.
+
+Si modifica las cualificaciones obligatorias de un encargo ya asignado a una
+persona, WorkDiary comprueba de inmediato a esa persona: en modo bloqueo, el
+cambio se rechaza mientras le falte alguna de las cualificaciones; en modo
+aviso, se guarda y la carencia se indica como aviso.

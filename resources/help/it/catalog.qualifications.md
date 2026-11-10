@@ -1,7 +1,7 @@
 ---
 title: "Qualifiche"
 topic: catalog.qualifications
-version: 2
+version: 3
 keywords:
     - competenze
     - abilità
@@ -50,3 +50,8 @@ Le proposte di copertura non mostrano più le persone bloccate. Le
 assegnazioni esistenti restano; un intervento di questo tipo si può
 confermare nella pianificazione solo con una motivazione, che viene
 registrata.
+
+Se modifica le qualifiche obbligatorie di un ordine già assegnato a una
+persona, WorkDiary verifica subito quella persona: in modalità blocco la
+modifica viene respinta finché le manca una delle qualifiche; in modalità
+avviso viene salvata e la lacuna viene segnalata come avviso.

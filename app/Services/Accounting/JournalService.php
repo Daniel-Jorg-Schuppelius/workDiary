@@ -21,7 +21,7 @@ use App\Services\Accounting\Posting\PostingInboxService;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\Helper\Data\StringHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -306,7 +306,8 @@ class JournalService {
                 'debit' => $line->credit?->getAmount() ?? '0.00',
                 'credit' => $line->debit?->getAmount() ?? '0.00',
                 'accounting_tax_code_id' => $line->accounting_tax_code_id,
-                'tax_amount' => $line->tax_amount?->getAmount(),
+                // Der Steuerbetrag trägt das Vorzeichen seiner Wirkung; das Storno hebt ihn auf (USt-Kennziffern).
+                'tax_amount' => $line->tax_amount !== null ? NumberHelper::negatePrecise($line->tax_amount->getAmount()) : null,
                 'counterparty_type' => $line->counterparty_type,
                 'counterparty_id' => $line->counterparty_id,
                 'project_id' => $line->project_id,

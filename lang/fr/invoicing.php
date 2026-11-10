@@ -355,6 +355,10 @@ return [
     'down_payment' => [
         'program_numbering' => 'Créez les factures d\'acompte et de solde dans :program tant que :program attribue les numéros de facture. WorkDiary les affiche dans le flux des documents.',
     ],
+    // Storno einer teilbezahlten Rechnung (MVP-1544).
+    'cancellation' => [
+        'partially_paid' => 'Cette facture est partiellement payée. Vous ne pouvez l\'annuler que tant que seuls des prépaiements en ligne la couvrent ; lors de l\'annulation, ils retournent à leur opération. Annulez d\'abord les autres paiements (rapprochement des paiements, caisse ou lettrage du poste ouvert) ; une fois la facture entièrement payée, corrigez-la par une facture corrective.',
+    ],
     // Rechnungsnachfragen aus E-Mails (Feature 166, MVP-1202).
     'inquiries' => [
         'title' => 'Demandes sur factures',

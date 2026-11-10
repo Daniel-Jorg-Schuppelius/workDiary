@@ -93,6 +93,9 @@ final class InvestmentsManifest extends Manifest {
             \App\Services\Accounting\Contracts\LiquidityForecastSource::class => [
                 \App\Services\Investments\Liquidity\PlannedInvestmentSource::class,
             ],
+            \App\Services\Approval\Contracts\ApprovalInboxSubject::class => [
+                \App\Services\Investments\Approvals\InvestmentBudgetInboxSubject::class,
+            ],
         ];
     }
 

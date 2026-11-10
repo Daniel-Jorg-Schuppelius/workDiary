@@ -1,7 +1,7 @@
 ---
 title: "Investment planning"
 topic: investments.overview
-version: 2
+version: 3
 keywords:
     - capital expenditure
     - CapEx
@@ -33,6 +33,22 @@ principle applies with an additional management step. The requester can
 never approve their own request. Approved budgets are frozen as a
 snapshot — an increase always requires an approved budget deviation and
 a supplement (new request, the old state remains as "superseded").
+
+**Approval inbox:** Open approval steps of a budget request appear under
+“Approvals” and in the work queue for the role your organisation assigns
+to the step type (default: commercial → accounting, management →
+management). On submission and when the next step is due, the people
+responsible are notified. Decisions there work as on the record; only
+people allowed to approve investments may approve.
+
+**Deciding on the record:** The same responsibility applies as in the
+inbox. “Release” and “Reject” are shown only to the person who is
+responsible for the open step and may decide it — not to the requester and
+not to whoever decided an earlier step of the same round. Everyone else sees
+what the request is waiting for, for example “Waiting for step 2:
+Management (role Management).” Admins, too, decide only with the role of
+the step; you set which role that is in the organisation settings under
+“Approvals”.
 
 **Deferring & rejection:** During planning the case can be parked with
 "Defer"; "Resume" returns it to exactly the phase it was in. The

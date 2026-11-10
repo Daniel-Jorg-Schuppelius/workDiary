@@ -1,7 +1,7 @@
 ---
 title: "Flujo de documentos"
 topic: billing.feed
-version: 5
+version: 6
 keywords:
     - facturas
     - presupuestos
@@ -118,7 +118,9 @@ no tienen PDF.
 
 **orgaMAX y sevDesk:** orgaMAX refleja facturas, facturas de anticipo y
 gastos; los gastos figuran como comprobantes de entrada en el gasto. Los abonos
-de sevDesk figuran como abonos salientes y reducen la facturación. Las
+de sevDesk figuran como abonos salientes y reducen la facturación, también los
+abonos de comisión y de regalías, porque sevDesk no devuelve la categoría
+contable al consultarlos. Las
 plantillas recurrentes de un programa no son comprobantes y no aparecen en el
 flujo; forman parte de la conciliación de suscripciones y licencias.
 

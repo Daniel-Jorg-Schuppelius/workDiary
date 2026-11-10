@@ -90,6 +90,13 @@ class UserFactory extends Factory {
         });
     }
 
+    /** Mehrere Rollen zugleich — die Einzelzustände ersetzen einander (`syncRoles`). */
+    public function withRoles(UserRole ...$roles): static {
+        return $this->afterCreating(function (User $user) use ($roles): void {
+            self::syncRolesInOwnOrg($user, array_values(array_map(static fn(UserRole $role): string => $role->value, $roles)));
+        });
+    }
+
     public function callcenter(): static {
         return $this->afterCreating(function (User $user): void {
             self::syncRolesInOwnOrg($user, [UserRole::Callcenter->value]);

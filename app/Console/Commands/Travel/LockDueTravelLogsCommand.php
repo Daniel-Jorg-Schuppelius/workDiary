@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Travel;
 
+use App\Modules\Attributes\RunsWhenModuleInactive;
 use App\Services\Travel\TravelLogService;
 use Illuminate\Console\Command;
 
@@ -19,6 +20,7 @@ use Illuminate\Console\Command;
  * Tagesende-Festschreibung des steuerlichen Fahrtenbuchs (Feature 137,
  * MVP-702): Logbook-Fahrten vergangener Tage werden unveränderlich.
  */
+#[RunsWhenModuleInactive('Unveränderbarkeit: Fahrten des steuerlichen Fahrtenbuchs werden zeitnah festgeschrieben (GoBD); sonst wären sie nach dem Wiedereinschalten des Moduls bis zum nächsten Lauf änderbar.')]
 class LockDueTravelLogsCommand extends Command {
     protected $signature = 'travel-logs:lock-due';
 

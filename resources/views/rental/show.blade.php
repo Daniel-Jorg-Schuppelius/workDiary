@@ -243,6 +243,12 @@
                 <span>{{ __('rental.prepayment.on_case', ['amount' => $prepaid->format()]) }}</span>
             </div>
         @endif
+        @if (($prepaidCredited ?? null) !== null)
+            <div role="status" class="alert alert-soft">
+                <x-icon name="credit_card" />
+                <span>{{ __('rental.prepayment.credited_on_case', ['amount' => $prepaidCredited->format()]) }}</span>
+            </div>
+        @endif
         <x-card :title="__('Mietpositionen & Abrechnung')" padding="p-0">
             <x-table bare>
                 <x-slot:head>

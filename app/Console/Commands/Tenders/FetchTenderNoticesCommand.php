@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Tenders;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Models\Tenders\TenderNotice;
 use App\Services\Tenders\{TenderNoticeImporter, TenderNoticeMatcher};
 use Illuminate\Console\Command;
@@ -25,6 +26,8 @@ use Illuminate\Support\Carbon;
  * Fassungen werden übersprungen, nicht doppelt angelegt.
  */
 final class FetchTenderNoticesCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'tenders:fetch-notices
                             {--day= : Veröffentlichungstag (YYYY-MM-DD), Vorgabe: gestern}
                             {--no-match : Nur abrufen, nicht gegen die Suchprofile abgleichen}';
@@ -32,6 +35,12 @@ final class FetchTenderNoticesCommand extends Command {
     protected $description = 'Holt die Bekanntmachungen des Bundes (OpenData, CC0) und gleicht sie gegen die Suchprofile ab.';
 
     public function handle(TenderNoticeImporter $importer, TenderNoticeMatcher $matcher): int {
+        $active = $this->moduleOrganizationIds();
+        if ($active === []) {
+            $this->line('Kein Abruf: das Ausschreibungsmodul ist in keiner Organisation aktiv.');
+
+            return self::SUCCESS;
+        }
         $day = $this->option('day') !== null ? Carbon::parse((string) $this->option('day')) : null;
 
         $result = $importer->importDay($day);
@@ -54,7 +63,8 @@ final class FetchTenderNoticesCommand extends Command {
         // Genau die neuen Fassungen abgleichen - ältere hatten ihre Chance,
         // und das Veröffentlichungsdatum ist nicht der Abruftag.
         $matches = $matcher->match(
-            TenderNotice::query()->whereIn('id', $result['ids'])->cursor()
+            TenderNotice::query()->whereIn('id', $result['ids'])->cursor(),
+            $active,
         );
         $this->info(sprintf('%d neue Treffer in den Suchprofilen.', $matches));
 

@@ -19,6 +19,8 @@ return [
     'areas' => 'Aree dati',
     'read_only' => 'solo storico',
     'articles_hint' => 'Gli articoli vengono riconciliati solo tra Lexoffice e orgaMAX; sevDesk ed easybill non conservano alcun collegamento agli articoli.',
+    'area_unsupported' => 'non con :systems',
+    'areas_deselected' => 'Nel modulo è già deselezionato; controlli la selezione e pianifichi di nuovo.',
     'cutover_on' => 'Data di switch',
     'cutover_hint' => 'Da quel giorno i nuovi documenti di fatturazione nascono esclusivamente nel sistema di destinazione; il sistema di origine è bloccato.',
     'plan_submit' => 'Pianifica il cambio',

@@ -1,7 +1,7 @@
 ---
 title: "Inbox di riconciliazione"
 topic: admin.integration-inbox
-version: 3
+version: 4
 keywords:
     - inbox integrazioni
     - conflitti di importazione
@@ -38,6 +38,12 @@ programma di contabilità ha assegnato a un cliente o fornitore un numero
 che un altro record porta già in WorkDiary. Il caso indica il titolare.
 Modifichi lì il numero e scelga **Adotta il remoto**; anche la
 sincronizzazione successiva lo adotta da sola.
+
+**Appuntamento rimosso nella fonte:** un abbonamento al calendario segnala che
+nel calendario manca un appuntamento già registrato come tempo. Non esiste uno
+stato remoto da adottare. Apra la registrazione del tempo, la elimini (con gli
+stessi permessi dell'elenco dei tempi; un tempo già fatturato resta) oppure
+prenda atto dell'avviso se il tempo deve restare.
 
 **Decidere:** associa una voce a un record esistente, la crea come nuova o la
 scarta. In caso di conflitto di campo sceglie se mantenere lo stato locale o

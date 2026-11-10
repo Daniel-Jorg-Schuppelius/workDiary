@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Jobs\Attributes\BelongsToModule;
 use App\Models\Attachments\Attachment;
 use App\Models\Platform\User;
+use App\Modules\Attributes\BelongsToModule;
 use App\Notifications\Media\SubtitleTranscribedNotification;
 use App\Services\Media\VideoTranscodingService;
 use Illuminate\Bus\Queueable;

@@ -1,7 +1,7 @@
 ---
 title: "Cambio de software contable"
 topic: admin.accounting-migration
-version: 2
+version: 3
 keywords:
     - migración contable
     - migrar contabilidad
@@ -44,7 +44,9 @@ En sevDesk y easybill:
   de contacto o sincronización de contactos) cuentan como asignados.
 - Los **artículos** no se pueden conciliar con sevDesk y easybill, porque
   WorkDiary solo refleja su maestro de artículos y no lo vincula con los
-  artículos locales. En ese caso, desmarque el área.
+  artículos locales. En ese caso, desmarque el área. El formulario la marca
+  («no con sevDesk, easybill»); si la planificación falla por ello, se
+  conservan origen, destino y fecha de corte y el área queda desmarcada.
 - El **histórico de documentos** procede del espejo de documentos. Ejecute
   la consulta de documentos antes del análisis y antes de la finalización
   para que los documentos antiguos abiertos queden completos.

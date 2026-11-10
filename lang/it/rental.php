@@ -48,6 +48,7 @@ return [
         'expired_reason' => 'Pagamento anticipato online non ricevuto in tempo.',
         'withdrawn_reason' => 'Prenotazione diretta non pagata ritirata dal cliente.',
         'on_case' => 'Pagamento anticipato online :amount pagato: viene imputato alla fattura.',
+        'credited_on_case' => 'Pagamento anticipato online di :amount trasmesso al programma di contabilità con le voci di noleggio: lo scomputi lì dalla fattura.',
         'profile_percent' => 'Pagamento anticipato per prenotazione diretta (%)',
         'profile_percent_hint' => 'Vuoto = valore dell’organizzazione, 0 = nessun anticipo per questo oggetto di noleggio.',
         'badge' => 'Pagamento anticipato :percent %',

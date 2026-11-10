@@ -12,10 +12,12 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Attachments\ChunkedUploadStore;
 use Illuminate\Console\Command;
 
 /** Teile abgebrochener Uploads entfernen (MVP-1265), nach einem Tag ohne Abschluss. */
+#[BelongsToModule('attachments')]
 class PruneChunkedUploadsCommand extends Command {
     protected $signature = 'uploads:prune-chunks';
 

@@ -12,11 +12,13 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\UI\SidebarNewsFeedService;
 use Illuminate\Console\Command;
 use Throwable;
 
 /** Aktualisiert den rein lesenden Neuigkeiten-Cache der Hilfe-Rail. */
+#[BelongsToModule('platform')]
 class NewsFeedRefreshCommand extends Command {
     protected $signature = 'news-feed:refresh';
 

@@ -18,6 +18,7 @@ use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Models\Travel\Expense;
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
@@ -133,7 +134,7 @@ class PaymentAdapter extends AbstractPostingAdapter {
                 $moneyOnDebit ? '0.00' : $absolute,
                 $moneyOnDebit ? $absolute : '0.00',
                 $purpose,
-                $target instanceof Invoice ? \App\Models\Customer\Customer::class : \App\Models\Platform\User::class,
+                MorphMap::alias($target instanceof Invoice ? \App\Models\Customer\Customer::class : \App\Models\Platform\User::class),
                 $target instanceof Invoice ? $target->customer_id : ($target instanceof Expense ? $target->user_id : null),
             );
 

@@ -32,6 +32,9 @@ enum SettlementKind: string implements HasLabel {
     /** Rückbuchung eines früheren Ausgleichs (Rückläufer, aufgehobenes Matching). */
     case Reversal = 'reversal';
 
+    /** Stornobeleg gleicht die stornierte Rechnung aus (MVP-1545) — ohne Geldfluss, zählt nie als Zahlung. */
+    case Cancellation = 'cancellation';
+
     public function label(): string {
         return (string) __('enums.finance.settlement-kind.' . $this->value);
     }
@@ -41,7 +44,7 @@ enum SettlementKind: string implements HasLabel {
             self::Payment => 'success',
             self::Discount, self::Retention => 'info',
             self::WriteOff => 'warning',
-            self::Overpayment => 'secondary',
+            self::Overpayment, self::Cancellation => 'secondary',
             self::Reversal => 'error',
         };
     }

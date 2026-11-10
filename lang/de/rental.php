@@ -48,6 +48,7 @@ return [
         'expired_reason' => 'Online-Vorauszahlung nicht fristgerecht eingegangen.',
         'withdrawn_reason' => 'Unbezahlte Direktbuchung vom Kunden zurückgenommen.',
         'on_case' => 'Online-Vorauszahlung :amount bezahlt — wird auf die Rechnung angerechnet.',
+        'credited_on_case' => 'Online-Vorauszahlung :amount mit den Mietpositionen an das Buchhaltungsprogramm übergeben — dort auf die Rechnung anrechnen.',
         'profile_percent' => 'Vorauszahlung bei Direktbuchung (%)',
         'profile_percent_hint' => 'Leer = Vorgabe der Organisation, 0 = keine Vorauszahlung für dieses Mietobjekt.',
         'badge' => 'Vorauszahlung :percent %',

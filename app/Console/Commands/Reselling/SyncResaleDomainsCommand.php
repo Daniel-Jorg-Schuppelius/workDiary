@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Reselling;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Enums\Reselling\SubscriptionProvider;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\ResaleSubscription;
@@ -23,6 +24,8 @@ use Illuminate\Console\Command;
  * spiegeln (Feature 152, MVP-763). Täglich nach `domain:sync`; idempotent.
  */
 class SyncResaleDomainsCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'resale:sync-domains {--org= : Nur diese Organisation (ID)}';
 
     protected $description = 'Domains aus der Domainverwaltung als Abos ins Reselling-Register übernehmen';
@@ -33,6 +36,9 @@ class SyncResaleDomainsCommand extends Command {
             $query->whereKey((int) $this->option('org'));
         }
         foreach ($query->orderBy('id')->get() as $organization) {
+            if (! $this->moduleActiveFor($organization)) {
+                continue;
+            }
             $result = $sync->sync($organization);
             if ($result['domains'] === 0 && $result['ended'] === 0) {
                 // Ohne Projektionen beendet der Sync nichts (Review 2026-09-10, B6) — nur melden, wenn es Domain-Abos gibt.

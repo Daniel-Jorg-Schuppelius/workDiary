@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Console\Concerns\IteratesOrganizations;
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Models\Supplier\{SupplierCatalogItem, SupplierCatalogSource};
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Procurement\{CatalogItemUpserter, DatanormImportService};
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -25,8 +26,9 @@ use Illuminate\Support\Carbon;
  * den Delta-Upsert (inklusive Preishistorie und Margen-Warnungen) und räumt
  * die Vormerkung ab.
  */
+#[BelongsToModule('procurement')]
 class ApplyPendingCatalogPricesCommand extends Command {
-    use IteratesOrganizations;
+    use IteratesModuleOrganizations;
 
     protected $signature = 'catalog:apply-pending-prices';
 
@@ -36,7 +38,7 @@ class ApplyPendingCatalogPricesCommand extends Command {
         $today = Carbon::now()->toDateString();
         $applied = 0;
 
-        $pending = SupplierCatalogItem::query()->withoutGlobalScopes()
+        $pending = $this->whereModuleActive(SupplierCatalogItem::query()->withoutGlobalScopes(), withoutOrganization: true)
             ->where('extra_attributes', 'like', '%' . DatanormImportService::PENDING_PRICE_KEY . '%')
             ->with('source.organization')
             ->get()

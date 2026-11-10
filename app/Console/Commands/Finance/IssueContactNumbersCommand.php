@@ -17,6 +17,7 @@ use App\Enums\Numbering\ContactNumberOutcome;
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Supplier\Supplier;
+use App\Modules\Attributes\RunsWhenModuleInactive;
 use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 use Illuminate\Console\Command;
@@ -28,6 +29,7 @@ use Throwable;
  * überträgt Kunden und Lieferanten, die noch eine Entwurfsnummer tragen —
  * aus Importen, API, Offline-Sync oder einem gescheiterten Sofort-Push.
  */
+#[RunsWhenModuleInactive('Nachlauf der Nummernvergabe: ob ein Buchhaltungsprogramm Kunden- und Lieferantennummern vergibt, entscheidet allein dessen Plugin-Schalter (NumberAuthority); auch das Anlegen im Formular vergibt ohne Finanzmodul.')]
 class IssueContactNumbersCommand extends Command {
     use IteratesOrganizations;
 

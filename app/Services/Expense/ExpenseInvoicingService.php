@@ -78,8 +78,9 @@ class ExpenseInvoicingService {
                 if (! $this->matchesCustomer($expense, (int) $invoice->customer_id)) {
                     continue;
                 }
-                if ($expense->invoiceItem()->exists()) {
-                    continue; // bereits einer anderen Rechnung zugeordnet
+                // Die Position einer stornierten Rechnung bleibt am Beleg, hält die Spese aber nicht mehr (MVP-1521).
+                if ($expense->invoiceItem()->whereHas('invoice', fn (Builder $q) => $q->where('status', '!=', InvoiceStatus::Cancelled->value))->exists()) {
+                    continue;
                 }
 
                 $description = $this->describe($expense);

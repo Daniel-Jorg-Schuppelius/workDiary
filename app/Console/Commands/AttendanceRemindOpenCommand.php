@@ -13,6 +13,7 @@ namespace App\Console\Commands;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Platform\User;
 use App\Models\Time\Attendance;
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\CarbonFmt;
 use Illuminate\Console\Command;
@@ -23,6 +24,7 @@ use Illuminate\Support\Carbon;
  * vergessen hat auszustempeln, erfährt es am selben Abend — nicht erst am
  * nächsten Tag durch das automatische Schließen. Eine Erinnerung je Stempelung.
  */
+#[BelongsToModule('time')]
 class AttendanceRemindOpenCommand extends Command {
     protected $signature = 'attendance:remind-open';
 

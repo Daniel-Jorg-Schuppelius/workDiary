@@ -355,6 +355,10 @@ return [
     'down_payment' => [
         'program_numbering' => 'Create down payment and final invoices in :program as long as :program assigns the invoice numbers. WorkDiary shows them in the document flow.',
     ],
+    // Storno einer teilbezahlten Rechnung (MVP-1544).
+    'cancellation' => [
+        'partially_paid' => 'This invoice is partially paid. It can only be cancelled while online prepayments alone cover it; on cancellation they return to their booking. First undo the other payments (payment reconciliation, cash book or settlement of the open item); once the invoice is paid in full, correct it with a corrective invoice.',
+    ],
     // Rechnungsnachfragen aus E-Mails (Feature 166, MVP-1202).
     'inquiries' => [
         'title' => 'Invoice inquiries',

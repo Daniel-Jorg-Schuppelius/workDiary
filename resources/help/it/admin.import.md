@@ -1,7 +1,7 @@
 ---
 title: "Import CSV"
 topic: admin.import
-version: 5
+version: 6
 keywords:
     - importazione dati
     - importare anagrafiche
@@ -111,12 +111,14 @@ L'importazione delle presenze accetta la colonna facoltativa **erfasst am**
 (data e ora della registrazione originale). Serve al termine di registrazione
 MiLoG; senza di essa il termine non viene verificato per quelle righe.
 
-## Abbonamenti calendario: in continuo da un calendario iCal
+## Abbonamenti calendario: in continuo da un calendario
 
 In **Abbonamenti calendario** (menu della panoramica importazioni) Lei si
 abbona a un calendario iCal tramite il suo indirizzo di abbonamento
-(`https://` o `webcal://`). WorkDiary lo legge ogni ora e riprende gli
-appuntamenti come l’importazione da file:
+(`https://` o `webcal://`) oppure sceglie come **Origine** una connessione
+calendario dell’organizzazione (CalDAV, Google Calendar, Microsoft 365), le
+stesse offerte dall’importazione dal calendario. WorkDiary lo legge ogni ora e
+riprende gli appuntamenti come l’importazione da file:
 
 - **Persona:** se il calendario appartiene a una persona, tutti gli
   appuntamenti sono suoi. Senza persona decide l’indirizzo e-mail
@@ -139,3 +141,9 @@ appuntamenti come l’importazione da file:
 L’indirizzo è salvato cifrato; viene mostrato solo il server. Gli indirizzi
 della rete interna richiedono **Consentire calendari della rete interna** e
 l’autorizzazione del gestore. **Recuperare ora** avvia subito un passaggio.
+
+Una connessione calendario fornisce a ogni passaggio gli appuntamenti degli
+ultimi 30 giorni; le regole sopra valgono invariate. Se la connessione viene
+scollegata o disattivata, l’abbonamento segnala un errore finché Lei non
+sceglie un’altra origine. Si possono scegliere solo le connessioni della Sua
+organizzazione.

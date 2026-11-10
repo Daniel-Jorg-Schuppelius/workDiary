@@ -37,6 +37,11 @@ class LegacyBridge {
         return LegacyRoleResolver::canManage($user);
     }
 
+    /** Verknüpftes Legacy-Konto — Voraussetzung für eigene Tagebucheinträge. */
+    public static function hasLegacyAccount(?User $user): bool {
+        return LegacyRoleResolver::resolveLegacyUserId($user) > 0;
+    }
+
     /**
      * Best-Effort-Arbeit gegen die Legacy-DB: der Callback läuft nur, wenn die
      * legacy-Verbindung konfiguriert und nicht als down markiert ist; sonst

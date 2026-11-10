@@ -161,7 +161,7 @@ class PaymentProposalService {
         // Merkmal — der Name kommt frei formatiert aus der Rechnung.
         $vatId = trim((string) ($invoice->seller_vat_id ?? ''));
         if ($vatId !== '') {
-            $byVat = Supplier::query()->where('vat_id', $vatId)->first();
+            $byVat = Supplier::query()->whereIdentifier('vat_id', $vatId)->first();
             if ($byVat !== null) {
                 return $byVat;
             }

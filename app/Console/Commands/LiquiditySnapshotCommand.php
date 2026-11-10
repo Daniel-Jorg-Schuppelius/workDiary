@@ -12,14 +12,19 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Models\Finance\BankAccount;
 use App\Models\Platform\Organization;
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Accounting\LiquiditySnapshotService;
 use App\Support\{OrganizationContext, Tz};
 use Illuminate\Console\Command;
 
 /** MVP-984: Wochenstand der Liquiditätsvorschau je Organisation mit Bankkonto festhalten. */
+#[BelongsToModule('finance')]
 class LiquiditySnapshotCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'accounting:liquidity-snapshot';
 
     protected $description = 'Hält den Wochenstand der 13-Wochen-Liquiditätsvorschau für den Plan/Ist-Vergleich fest.';
@@ -28,6 +33,9 @@ class LiquiditySnapshotCommand extends Command {
         $count = 0;
         $organizationIds = BankAccount::query()->withoutGlobalScopes()->distinct()->pluck('organization_id');
         foreach (Organization::query()->whereIn('id', $organizationIds)->get() as $organization) {
+            if (! $this->moduleActiveFor($organization)) {
+                continue;
+            }
             OrganizationContext::run($organization, static fn () => $snapshots->take($organization, Tz::now()));
             $count++;
         }

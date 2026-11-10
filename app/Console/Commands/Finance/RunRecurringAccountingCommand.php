@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Finance;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Enums\Finance\AccountingSovereignty;
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingSovereigntyResolver, RecurringAccountingService};
@@ -24,10 +25,12 @@ use Illuminate\Support\Facades\Cache;
  * Buchungsvorlagen als ENTWURF erzeugen — nie festschreiben, nie einen
  * Eingangsbeleg erfinden.
  *
- * Läuft nur für Organisationen mit lokaler Buchungshoheit; für alle anderen
- * gäbe es kein Hauptbuch, in das der Entwurf gehören würde.
+ * Läuft nur für Organisationen mit aktivem Modul und lokaler Buchungshoheit;
+ * für alle anderen gäbe es kein Hauptbuch, in das der Entwurf gehören würde.
  */
 class RunRecurringAccountingCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'accounting:run-recurring {--date= : Stichtag (Standard: heute)}';
 
     protected $description = 'Erzeugt fällige Belegerwartungen und Buchungsentwürfe der lokalen Buchhaltung (MVP-675)';
@@ -47,7 +50,7 @@ class RunRecurringAccountingCommand extends Command {
             $notified = 0;
 
             foreach (Organization::query()->orderBy('id')->cursor() as $organization) {
-                if ($sovereignty->at($organization, $asOf) !== AccountingSovereignty::Local) {
+                if (! $this->moduleActiveFor($organization) || $sovereignty->at($organization, $asOf) !== AccountingSovereignty::Local) {
                     continue;
                 }
 

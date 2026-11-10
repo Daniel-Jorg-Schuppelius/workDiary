@@ -41,7 +41,7 @@ class VariantMatcher {
         if ($gtin !== '') {
             $candidates = ArticleVariant::query()
                 ->where('organization_id', $organizationId)
-                ->where('gtin', $gtin)
+                ->whereIdentifier('gtin', $gtin)
                 ->limit(2)
                 ->get();
             if ($candidates->count() === 1) {

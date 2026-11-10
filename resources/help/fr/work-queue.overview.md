@@ -1,7 +1,7 @@
 ---
 title: "File de travail"
 topic: work-queue.overview
-version: 2
+version: 3
 keywords:
     - File de travail
     - Éléments ouverts
@@ -14,14 +14,36 @@ related:
 ---
 
 La file de travail rassemble en un seul endroit ce qui vous attend :
-validations (congés, notes de frais, clôtures mensuelles, modifications de
+validations (congés, notes de frais, clôtures mensuelles, demandes d'heures
+supplémentaires, corrections de temps, corrections de clôture journalière,
+plannings de service à approuver, échanges de poste, dépôts au dossier
+personnel, réservations de cours, auto-évaluations des fournisseurs,
+demandes d'admission dans les groupes de l'association, modifications de
 prix, temps de formation, circuits de validation), boîtes de réception (boîte
 d'affectation avec les clarifications d'e-mails, factures entrantes, demandes
-sur factures), tâches qui vous sont attribuées (points ouverts, commandes,
-tâches de projet, tickets de service) et rappels (vos brouillons en attente,
-rappels de chat).
+sur factures, demandes clients du portail, demandes de location), tâches qui
+vous sont attribuées (points ouverts, commandes, tâches de projet, tickets de
+service) et rappels (vos brouillons en attente, rappels de chat).
 
 **Temps cibles de projet :** si des personnes d’un projet sont sous leur temps cible, un élément par projet indique le nombre de constats ouverts ; sans le droit de voir tous les temps, vous ne voyez que vos propres jours. Il se résout dans l’onglet Temps du projet, par confirmation ou saisie tardive.
+
+**Validations par étapes :** Si votre organisation exige deux validations
+pour les heures supplémentaires ou les corrections de temps, la demande
+quitte votre file après votre validation — une autre personne donne la
+seconde étape. Les corrections de temps validées apparaissent ensuite chez
+les personnes autorisées à les appliquer.
+
+**Échange de poste en deux étapes :** Une demande d'échange qui vous est
+adressée apparaît comme votre élément personnel à accepter. Ce n'est qu'après
+l'acceptation que l'échange attend la validation de la planification ; une
+personne concernée par l'échange ne le valide pas. Les cessions ouvertes sans
+destinataire sont des offres et n'apparaissent pas dans la file.
+
+**Demandes clients et groupes de l'association :** Les nouvelles demandes
+clients sont visibles par toutes les personnes autorisées à les traiter,
+celles prises en charge uniquement par la personne attribuée. La gestion de
+l'association voit les demandes d'admission de tous les groupes, une
+direction de groupe celles de ses propres groupes.
 
 **Consulter ici, traiter là-bas :** La file affiche les éléments et renvoie
 à la page où vous les traitez. Elle n'a pas de statut propre ; un élément

@@ -351,8 +351,7 @@ class OrgaMaxAdminController extends Controller {
     /** Admin oder Inhaber eines der Faktura-Rechte, sonst 403. */
     private function facturaUser(): User {
         $user = $this->authUser();
-        $permitted = $user->isAdmin() || array_any(self::FACTURA_PERMISSIONS, static fn(Permission $p): bool => $user->can($p->value));
-        abort_unless($permitted, 403);
+        abort_unless(OrgaMaxPlugin::mayUseFactura($user), 403);
         abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
 
         return $user;

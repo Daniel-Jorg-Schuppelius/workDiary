@@ -1,7 +1,7 @@
 ---
 title: "Boîte de rapprochement"
 topic: admin.integration-inbox
-version: 3
+version: 4
 keywords:
     - boîte des intégrations
     - conflits import
@@ -38,6 +38,12 @@ logiciel de comptabilité a attribué à un client ou fournisseur un numéro
 qu'un autre enregistrement porte déjà dans WorkDiary. Le cas nomme le
 détenteur. Modifiez-y le numéro, puis choisissez **Reprendre le distant** ;
 la synchronisation suivante le reprend aussi d'elle-même.
+
+**Rendez-vous supprimé dans la source :** un abonnement de calendrier signale
+qu’un rendez-vous déjà comptabilisé manque dans le calendrier. Il n’existe
+alors aucun état distant à reprendre. Ouvrez la saisie de temps, supprimez-la
+(avec les mêmes droits que dans la liste des temps ; un temps facturé est
+conservé) ou prenez connaissance de l’avis si le temps doit rester.
 
 **Décider :** vous rattachez une entrée à un enregistrement existant, vous la
 créez ou vous la rejetez. En cas de conflit de champ, vous choisissez de

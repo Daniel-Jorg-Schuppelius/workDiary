@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Location;
 
 use App\Models\Location\LocationPoint;
+use App\Modules\Attributes\RunsWhenModuleInactive;
 use App\Services\Retention\LegalHoldService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -22,6 +23,7 @@ use Illuminate\Support\Carbon;
  * Nur bereits verarbeitete Punkte werden entfernt; abgeleitete Besuche und
  * Zeitbuchungen bleiben erhalten (Datenminimierung, Art. 5 DSGVO).
  */
+#[RunsWhenModuleInactive('Löschpflicht: die rohe GPS-Spur verschwindet nach der Aufbewahrungsfrist (Datenminimierung, Art. 5 DSGVO), auch wenn die Standorterfassung abgeschaltet ist.')]
 class PurgePointsCommand extends Command {
     protected $signature = 'location:purge-points
         {--days= : Aufbewahrungsfrist in Tagen (Default aus config/location.php)}';

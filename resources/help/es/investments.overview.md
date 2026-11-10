@@ -1,7 +1,7 @@
 ---
 title: "Planificación de inversiones"
 topic: investments.overview
-version: 2
+version: 3
 keywords:
     - solicitud de inversión
     - solicitud de presupuesto
@@ -33,6 +33,21 @@ nunca puede aprobar por sí mismo. Los presupuestos aprobados se congelan
 como snapshot — un incremento pasa siempre por una desviación
 presupuestaria aprobada y una adenda (nueva solicitud; el estado
 anterior se conserva como «sustituido»).
+
+**Bandeja de aprobaciones:** Las fases abiertas de una solicitud de
+presupuesto aparecen en «Aprobaciones» y en la cola de trabajo para el
+rol que su organización asigna al tipo de fase (predeterminado:
+comercial → contabilidad, dirección → dirección). Al presentarla y al
+pasar a la siguiente fase se notifica a los responsables. Allí se decide
+como en el expediente; solo aprueba quien puede aprobar inversiones.
+
+**Decidir desde el expediente:** Rige la misma responsabilidad que en la
+bandeja. «Liberar» y «Rechazar» solo los ve quien es responsable de la
+fase abierta y puede decidirla — ni el solicitante ni quien decidió una
+fase anterior de la misma ronda. Los demás ven a qué espera la solicitud,
+por ejemplo «En espera de la etapa 2: Dirección (rol Dirección).» También
+los administradores deciden solo con el rol de la fase; usted define qué
+rol es en la configuración de la organización, en «Aprobaciones».
 
 **Aplazamiento y rechazo:** Durante la planificación, el expediente se
 puede aparcar con «Aplazar»; «Reanudar» lo devuelve exactamente a la fase

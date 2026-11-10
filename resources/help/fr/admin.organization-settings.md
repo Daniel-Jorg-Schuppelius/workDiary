@@ -1,7 +1,7 @@
 ---
 title: "Organisation et paramètres"
 topic: admin.organization-settings
-version: 5
+version: 6
 keywords:
     - paramètres de l'entreprise
     - réglages du locataire
@@ -177,14 +177,18 @@ l'analyse ArbZG des temps saisis :
   chacun **Une étape (une approbation)** (par défaut) ou **Deux étapes
   (principe des quatre yeux)** – une demande nécessite alors deux
   approbations.
-- **Commercial : rôle responsable**, **Technique : rôle responsable** et
-  **RH : rôle responsable** : les étapes d'approbation d'une négociation
-  contractuelle apparaissent dans la boîte des approbations sous
+- **Commercial : rôle responsable**, **Technique : rôle responsable**,
+  **RH : rôle responsable** et **Direction : rôle responsable** : les étapes
+  d'approbation des négociations contractuelles et des demandes
+  d'investissement apparaissent dans la boîte des approbations sous
   « Approbations » pour le rôle associé à leur type d'étape. Tous les rôles
   sauf Client peuvent être choisis. Vide, la valeur par défaut s'applique :
-  **Par défaut (Comptabilité)**, **Par défaut (Chef d'équipe)** ou **Par
-  défaut (Gestion du personnel)**. L'approbation directement depuis le
-  dossier reste possible.
+  **Par défaut (Comptabilité)**, **Par défaut (Chef d'équipe)**, **Par
+  défaut (Gestion du personnel)** ou **Par défaut (Direction)**. Les
+  négociations contractuelles restent approuvables directement depuis le
+  dossier ; les demandes d'investissement ne sont tranchées, même depuis le
+  dossier, que par le rôle associé — les administrateurs aussi uniquement
+  s'ils détiennent ce rôle.
 - **Inscrire immédiatement les absences demandées à titre provisoire (le
   refus les retire)** : les absences demandées prennent effet dans la
   planification dès avant l'approbation, marquées comme provisoires ; un

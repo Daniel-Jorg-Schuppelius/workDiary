@@ -132,7 +132,7 @@ return [
         'on_documents_hint' => 'When switched off, online payment remains available in the customer portal.',
     ],
     'approvals' => [
-        'step_roles_hint' => 'Approval steps of a contract negotiation appear under “Approvals” for the role assigned to their step kind. Approval on the record remains possible.',
+        'step_roles_hint' => 'Approval steps of contract negotiations and investment requests appear under “Approvals” for the role assigned to their step kind. Investment requests are decided only by this role on the record as well; contract negotiations can still be approved on the record. If nobody holds the role, the request stays open until it is assigned — administrators, too, decide only with this role.',
         'step_role' => ':kind: responsible role',
         'default_role' => 'Default (:role)',
     ],

@@ -24,6 +24,8 @@ return [
         'pushed' => 'Client transféré vers la comptabilité (ID :id).',
         'failed' => 'Le transfert a échoué : :msg',
         'no_plugin' => 'Aucun système comptable actif.',
+        'pushed_supplier' => 'Fournisseur transféré vers la comptabilité (ID :id).',
+        'no_supplier_plugin' => 'Aucun système comptable actif ne transfère les fournisseurs.',
     ],
 
     'error' => [
@@ -324,6 +326,9 @@ return [
             'changed_since_posting' => 'La source a changé après la comptabilisation (p. ex. un remboursement) — annulez l’écriture et comptabilisez-la à nouveau.',
             'foreign_currency' => 'L’opération est en :currency, la comptabilité en :base — les paiements, la caisse et les immobilisations en devise ne sont pas comptabilisés.',
             'unsupported_target' => 'Aucun chemin comptable n\'existe encore pour cette cible de paiement.',
+            'prepayment_exceeds_invoice' => 'L\'acompte imputé dépasse la facture — remboursez d\'abord l\'excédent.',
+            'cancelled_invoice_unposted' => 'Comptabilisez d\'abord la facture annulée :number — le document d\'annulation solde son poste ouvert.',
+            'cancelled_invoice_settled' => 'Le poste ouvert de la facture :number ne porte plus que :open — annulez d\'abord l\'autre lettrage (contre-passez son écriture).',
             'year_closed' => 'L\'exercice :year est clôturé.',
             'period_closed' => 'La période du :date est clôturée.',
             'no_exchange_rate' => 'Le taux mensuel :month pour :currency (conversion en :base) manque — ajoutez-le sous Taux de change.',
@@ -337,6 +342,8 @@ return [
             'depreciation' => 'Amortissement :year · :no :name',
             'asset_disposal' => 'Sortie :no :name',
             'online_payment' => 'Paiement en ligne (:provider) · :invoice',
+            'online_prepayment' => 'Acompte en ligne (:provider) · :customer',
+            'prepayment_resolved' => 'Acompte du :date soldé · :number',
         ],
         'reversal_reason' => [
             'unmatched' => 'Affectation de paiement annulée — contre-écriture.',

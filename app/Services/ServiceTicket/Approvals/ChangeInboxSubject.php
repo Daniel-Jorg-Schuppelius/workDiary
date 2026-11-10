@@ -37,6 +37,10 @@ final class ChangeInboxSubject implements ApprovalInboxSubject {
         return $approvable instanceof Change && $approvable->status === ChangeStatus::PendingApproval;
     }
 
+    public function requesterId(Model $approvable): ?int {
+        return $approvable instanceof Change && $approvable->created_by !== null ? (int) $approvable->created_by : null;
+    }
+
     public function present(Model $approvable, User $viewer): ApprovalInboxEntry {
         if (! $approvable instanceof Change) {
             return new ApprovalInboxEntry('—');

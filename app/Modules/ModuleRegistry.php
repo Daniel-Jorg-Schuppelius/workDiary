@@ -13,9 +13,11 @@ declare(strict_types=1);
 namespace App\Modules;
 
 use App\Enums\User\PermissionGroup;
+use App\Modules\Attributes\BelongsToModule;
 use CommonToolkit\Helper\FileSystem\{File, Files, Folder};
 use Illuminate\Support\Str;
 use InvalidArgumentException;
+use ReflectionClass;
 
 /**
  * Register aller Manifeste (MVP-861). Discovery über `app/Modules/Manifests`,
@@ -91,6 +93,25 @@ final class ModuleRegistry {
         }
 
         return null;
+    }
+
+    /**
+     * Modul eines Jobs oder Konsolenbefehls (MVP-1518, MVP-1524):
+     * {@see BelongsToModule}, sonst der Domänenordner unter `App\Jobs` bzw.
+     * `App\Console\Commands`; Plugin-Klassen und Klassen ohne Ordner haben keins.
+     *
+     * @param  class-string  $class
+     */
+    public function forClass(string $class): ?Manifest {
+        $attribute = (new ReflectionClass($class))->getAttributes(BelongsToModule::class)[0] ?? null;
+        if ($attribute !== null) {
+            return $this->byCode($attribute->newInstance()->module);
+        }
+        if (preg_match('/^App\\\\(?:Jobs|Console\\\\Commands)\\\\(\w+)\\\\\w+$/', $class, $m) !== 1) {
+            return null;
+        }
+
+        return $this->byFolder($m[1]);
     }
 
     public function byPermissionGroup(PermissionGroup $group): ?Manifest {

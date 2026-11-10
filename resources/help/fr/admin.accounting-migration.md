@@ -1,7 +1,7 @@
 ---
 title: "Changement de logiciel comptable"
 topic: admin.accounting-migration
-version: 2
+version: 3
 keywords:
     - migration comptable
     - migrer la comptabilité
@@ -45,7 +45,10 @@ Pour sevDesk et easybill :
   ou synchronisation des contacts) comptent comme attribués.
 - Les **articles** ne peuvent pas être rapprochés avec sevDesk et easybill,
   car WorkDiary ne fait que refléter leur fichier articles sans le lier aux
-  articles locaux. Désélectionnez alors ce domaine.
+  articles locaux. Désélectionnez alors ce domaine. Le formulaire le signale
+  (« pas avec sevDesk, easybill ») ; si la planification échoue pour cette
+  raison, la source, la cible et la date de bascule sont conservées et le
+  domaine est désélectionné.
 - L’**historique des pièces** provient du miroir des pièces. Lancez la
   récupération des pièces avant l’analyse et avant la clôture afin que les
   anciennes pièces ouvertes soient entièrement prises en compte.

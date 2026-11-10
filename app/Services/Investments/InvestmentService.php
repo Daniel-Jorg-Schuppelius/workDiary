@@ -14,9 +14,17 @@ namespace App\Services\Investments;
 
 use App\Enums\Approval\ApprovalStepKind;
 use App\Enums\Investments\{InvestmentBudgetRequestStatus, InvestmentCaseStatus, InvestmentDeviationStatus};
+use App\Enums\Notification\NotificationEvent;
+use App\Enums\User\UserRole;
+use App\Models\Approval\Approval;
 use App\Models\Investments\{InvestmentBudgetRequest, InvestmentCase, InvestmentDeviation};
 use App\Models\Platform\User;
-use App\Services\Approval\ApprovalService;
+use App\Services\Approval\{ApprovalResponsibility, ApprovalService};
+use App\Services\Notification\NotificationDispatcher;
+use App\Support\DocumentNumber;
+use Closure;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -28,7 +36,10 @@ use Illuminate\Support\Facades\DB;
  * Abweichungsmanagement.
  */
 class InvestmentService {
-    public function __construct(private readonly ApprovalService $approvals) {}
+    public function __construct(
+        private readonly ApprovalService $approvals,
+        private readonly ApprovalResponsibility $responsibility,
+    ) {}
 
     /**
      * Budgetantrag einreichen: friert den Antragstand ein und baut die
@@ -68,6 +79,7 @@ class InvestmentService {
 
             $case->update(['status' => InvestmentCaseStatus::InApproval]);
             $case->audit('investment.budget_submitted', ['version' => $request->version, 'amount' => $amount]);
+            DB::afterCommit(fn () => $this->notifyOpenStep($request));
 
             return $request;
         });
@@ -75,21 +87,108 @@ class InvestmentService {
 
     /** Freigabestufe erteilen — Selbstfreigabe (Antragsteller) ist gesperrt. */
     public function approveBudget(InvestmentBudgetRequest $request, User $actor, ?string $reason = null): string {
-        if (! $request->status->canTransitionTo(InvestmentBudgetRequestStatus::Approved)) {
-            throw new \RuntimeException((string) __('Der Antrag ist nicht in Freigabe.'));
+        return $this->serialized($request, function () use ($request, $actor, $reason): string {
+            if (! $request->status->canTransitionTo(InvestmentBudgetRequestStatus::Approved)) {
+                throw new \RuntimeException((string) __('Der Antrag ist nicht in Freigabe.'));
+            }
+
+            return $this->applyDecision($request, $this->pendingStep($request), $actor, 'approved', $reason, null);
+        });
+    }
+
+    public function rejectBudget(InvestmentBudgetRequest $request, User $actor, string $reason): void {
+        $this->serialized($request, function () use ($request, $actor, $reason): string {
+            if (! $request->status->canTransitionTo(InvestmentBudgetRequestStatus::Rejected)) {
+                throw new \RuntimeException((string) __('Der Antrag ist nicht in Freigabe.'));
+            }
+
+            return $this->applyDecision($request, $this->pendingStep($request), $actor, 'rejected', $reason, null);
+        });
+    }
+
+    /**
+     * Entscheidung einer bestimmten Stufe aus dem Genehmigungs-Eingang
+     * (MVP-1522) — mit denselben Folgen wie Freigabe und Ablehnung an der Akte.
+     *
+     * @return 'approved_all'|'rejected'|'pending'
+     */
+    public function decide(Approval $approval, User $actor, string $decision, ?string $reason, ?int $delegateUserId): string {
+        $request = $approval->approvable;
+        if (! $request instanceof InvestmentBudgetRequest) {
+            throw new \LogicException('Die Stufe gehört zu keinem Budgetantrag.');
         }
-        $pending = $request->approvals()
-            ->currentRound()
-            ->where(fn($q) => $q->whereNull('decision')->orWhere('decision', 'question'))
-            ->orderBy('step')
-            ->first();
+
+        return $this->serialized($request, function () use ($request, $approval, $actor, $decision, $reason, $delegateUserId): string {
+            if ($request->status !== InvestmentBudgetRequestStatus::InApproval) {
+                throw new \RuntimeException((string) __('Der Antrag ist nicht in Freigabe.'));
+            }
+
+            return $this->applyDecision($request, $approval->refresh(), $actor, $decision, $reason, $delegateUserId);
+        });
+    }
+
+    /** Niedrigste offene Stufe der geltenden Runde (Rückfrage zählt als offen); null ohne offene Stufe. */
+    public function openStep(InvestmentBudgetRequest $request): ?Approval {
+        return $request->status === InvestmentBudgetRequestStatus::InApproval ? $this->openSteps($request)->first() : null;
+    }
+
+    /**
+     * Darf der Nutzer die offene Stufe entscheiden (MVP-1541)? Dieselbe Regel
+     * wie im Genehmigungs-Eingang: zuständig für die Stufe, weder Antragsteller
+     * noch Entscheider einer früheren Stufe derselben Runde.
+     */
+    public function mayDecide(InvestmentBudgetRequest $request, Approval $step, User $user): bool {
+        return $this->responsibility->isResponsible($step, $user)
+            && ! in_array((int) $user->id, $this->blockedDeciders($request, $step), true);
+    }
+
+    /** Wer die offene Stufe entscheidet, für den Hinweis an der Akte. */
+    public function waitingFor(Approval $step): string {
+        $kind = $this->responsibility->kindOf($step);
+        $role = $this->responsibility->mappedRole($step);
+        $rule = (array) $step->approver_rule;
+        $who = match (true) {
+            $kind !== null && $role !== null => (string) __('investment.approval.waiting_kind', ['kind' => $kind->label(), 'role' => $role->label()]),
+            (string) ($rule['type'] ?? '') === 'role' => (string) __('investment.approval.waiting_role', [
+                'role' => UserRole::tryFrom((string) ($rule['value'] ?? ''))?->label() ?? (string) ($rule['value'] ?? ''),
+            ]),
+            (string) ($rule['type'] ?? '') === 'user' => (string) (User::query()->whereKey((int) ($rule['value'] ?? 0))->value('name') ?? '—'),
+            default => '—',
+        };
+
+        return (string) __('investment.approval.waiting', ['step' => $step->step, 'who' => $who]);
+    }
+
+    private function pendingStep(InvestmentBudgetRequest $request): Approval {
+        $pending = $this->openSteps($request)->first();
         if ($pending === null) {
             throw new \RuntimeException((string) __('Keine offene Freigabestufe.'));
         }
 
-        $result = $this->approvals->decide($pending, $actor, 'approved', $reason, (int) $request->requested_by);
+        return $pending;
+    }
+
+    /** @return Builder<Approval> */
+    private function openSteps(InvestmentBudgetRequest $request): Builder {
+        return Approval::query()
+            ->where('approvable_type', $request->getMorphClass())
+            ->where('approvable_id', $request->getKey())
+            ->currentRound()
+            ->where(fn ($q) => $q->whereNull('decision')->orWhere('decision', 'question'))
+            ->orderBy('step')
+            ->orderBy('id');
+    }
+
+    /** @return 'approved_all'|'rejected'|'pending' */
+    private function applyDecision(InvestmentBudgetRequest $request, Approval $approval, User $actor, string $decision, ?string $reason, ?int $delegateUserId): string {
+        // An der Akte wie im Eingang: nur wer für die Stufe zuständig ist (MVP-1541).
+        if (! $this->responsibility->isResponsible($approval, $actor)) {
+            throw new AuthorizationException((string) __('investment.approval.not_responsible'));
+        }
+        $result = $this->approvals->decide($approval, $actor, $decision, $reason, (int) $request->requested_by, $delegateUserId);
+        $case = $request->investmentCase()->firstOrFail();
+
         if ($result === 'approved_all') {
-            $case = $request->investmentCase()->firstOrFail();
             $request->update([
                 'status' => InvestmentBudgetRequestStatus::Approved,
                 'decided_at' => now(),
@@ -108,32 +207,100 @@ class InvestmentService {
 
             // Vollaudit 2026-07 (M31): Entscheidung an den Antragsteller.
             $this->notifyDecision($case, $request, 'investment_approved_title');
+
+            return $result;
+        }
+
+        if ($result === 'rejected') {
+            $request->update(['status' => InvestmentBudgetRequestStatus::Rejected, 'decided_at' => now()]);
+            $case->update(['status' => InvestmentCaseStatus::Rejected]);
+            $case->audit('investment.budget_rejected', ['version' => $request->version, 'reason' => $reason]);
+
+            // Vollaudit 2026-07 (M31): Ablehnung inkl. Begründung an den Antragsteller.
+            $this->notifyDecision($case, $request, 'investment_rejected_title', $reason);
+
+            return $result;
+        }
+
+        $case->audit(match ($decision) {
+            'approved' => 'investment.budget_step_approved',
+            'question' => 'investment.budget_question',
+            default => 'investment.budget_delegated',
+        }, ['version' => $request->version, 'step' => $approval->step, 'round' => $approval->round]);
+        // Nächste Stufe oder Delegat übernimmt; eine Rückfrage bleibt bei derselben Stufe.
+        if ($decision !== 'question') {
+            DB::afterCommit(fn () => $this->notifyOpenStep($request));
         }
 
         return $result;
     }
 
-    public function rejectBudget(InvestmentBudgetRequest $request, User $actor, string $reason): void {
-        if (! $request->status->canTransitionTo(InvestmentBudgetRequestStatus::Rejected)) {
-            throw new \RuntimeException((string) __('Der Antrag ist nicht in Freigabe.'));
-        }
-        $pending = $request->approvals()
-            ->currentRound()
-            ->where(fn($q) => $q->whereNull('decision')->orWhere('decision', 'question'))
-            ->orderBy('step')
-            ->first();
-        if ($pending === null) {
-            throw new \RuntimeException((string) __('Keine offene Freigabestufe.'));
-        }
+    /**
+     * Entscheidungen je Antrag nacheinander: zwei Freigebende dürfen dieselbe
+     * Stufe nicht gleichzeitig entscheiden.
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $work
+     * @return T
+     */
+    private function serialized(InvestmentBudgetRequest $request, Closure $work): mixed {
+        return DB::transaction(function () use ($request, $work): mixed {
+            $request->newQueryWithoutScopes()->whereKey($request->getKey())->lockForUpdate()->value('id');
+            $request->refresh();
 
-        $this->approvals->decide($pending, $actor, 'rejected', $reason, (int) $request->requested_by);
-        $request->update(['status' => InvestmentBudgetRequestStatus::Rejected, 'decided_at' => now()]);
-        $case = $request->investmentCase()->firstOrFail();
-        $case->update(['status' => InvestmentCaseStatus::Rejected]);
-        $case->audit('investment.budget_rejected', ['version' => $request->version, 'reason' => $reason]);
+            return $work();
+        });
+    }
 
-        // Vollaudit 2026-07 (M31): Ablehnung inkl. Begründung an den Antragsteller.
-        $this->notifyDecision($case, $request, 'investment_rejected_title', $reason);
+    /**
+     * Antragsteller und Entscheider früherer Stufen derselben Runde — sie
+     * dürfen die Stufe nicht mehr entscheiden.
+     *
+     * @return list<int>
+     */
+    private function blockedDeciders(InvestmentBudgetRequest $request, Approval $step): array {
+        return array_values(Approval::query()
+            ->where('approvable_type', $step->approvable_type)
+            ->where('approvable_id', $step->approvable_id)
+            ->where('round', $step->round)
+            ->whereIn('decision', ['approved', 'rejected', 'delegated'])
+            ->pluck('decided_by')
+            ->push($request->requested_by)
+            ->filter()
+            ->map(static fn ($id): int => (int) $id)
+            ->all());
+    }
+
+    /** Zuständige der nächsten offenen Stufe benachrichtigen (MVP-1522), ohne die gesperrten. */
+    private function notifyOpenStep(InvestmentBudgetRequest $request): void {
+        $step = $this->openSteps($request)->first();
+        $case = $request->investmentCase()->first();
+        if ($step === null || $case === null) {
+            return;
+        }
+        $blocked = $this->blockedDeciders($request, $step);
+
+        $params = [
+            'amount' => DocumentNumber::money((string) $request->amount),
+            'step' => $step->step,
+            'kind' => (string) $this->responsibility->kindOf($step)?->label(),
+        ];
+        $dispatcher = app(NotificationDispatcher::class);
+        foreach ($this->responsibility->responsibleUsers($step) as $recipient) {
+            if (in_array((int) $recipient->id, $blocked, true)) {
+                continue;
+            }
+            $dispatcher->notify(NotificationEvent::InvestmentApprovalRequested, $case, $recipient, [
+                'title' => (string) __('investment.approval.requested_title', ['title' => (string) $case->title]),
+                'title_key' => 'investment.approval.requested_title',
+                'title_params' => ['title' => (string) $case->title],
+                'message' => (string) __('investment.approval.requested_message', $params),
+                'message_key' => 'investment.approval.requested_message',
+                'message_params' => $params,
+                'url' => route('investments.show', $case),
+            ]);
+        }
     }
 
     /**
@@ -198,6 +365,7 @@ class InvestmentService {
             $approved->update(['status' => InvestmentBudgetRequestStatus::Superseded]);
             $case->update(['status' => InvestmentCaseStatus::InApproval]);
             $case->audit('investment.budget_supplement', ['from' => $approved->version, 'to' => $request->version]);
+            DB::afterCommit(fn () => $this->notifyOpenStep($request));
 
             return $request;
         });

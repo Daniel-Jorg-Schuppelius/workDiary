@@ -12,6 +12,7 @@ namespace App\Console\Commands;
 
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\BackupHeartbeat;
+use App\Modules\Attributes\BelongsToModule;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
@@ -24,6 +25,7 @@ use Throwable;
  * protokolliert das Ergebnis als Audit-Event `backup.checkRestore`.
  * Kein echter Restore-Drill (Spec §6). Exit-Codes: 0 = ok, 1 = warn, 2 = critical.
  */
+#[BelongsToModule('backup')]
 class BackupCheckRestoreCommand extends Command {
     protected $signature = 'workdiary:backup:check-restore '
         . '{--json : Ergebnis als JSON auf STDOUT ausgeben}';

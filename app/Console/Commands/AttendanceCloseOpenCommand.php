@@ -10,9 +10,11 @@
 
 namespace App\Console\Commands;
 
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Attendance\AttendanceClockService;
 use Illuminate\Console\Command;
 
+#[BelongsToModule('time')]
 class AttendanceCloseOpenCommand extends Command {
     protected $signature = 'attendance:close-open';
 

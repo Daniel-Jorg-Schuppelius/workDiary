@@ -338,7 +338,22 @@ class IntegrationInboxController extends Controller {
         $this->guard($item);
         $service->keepLocal($item);
 
-        return back()->with('success', __('Konflikt zugunsten der lokalen Werte geschlossen.'));
+        return back()->with('success', $item->isRemoteDeletion()
+            ? __('import.ical_subscription.removed_acknowledged')
+            : __('Konflikt zugunsten der lokalen Werte geschlossen.'));
+    }
+
+    /** Verschwundener Kalendertermin: gebuchte Zeit löschen (MVP-1528). */
+    public function deleteRemovedRecord(IntegrationInboxItem $item, InboxActionService $service): RedirectResponse {
+        $this->guard($item);
+
+        try {
+            $service->deleteRemovedTimeEntry($item, $this->authUser());
+        } catch (\RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return back()->with('success', __('import.ical_subscription.removed_deleted'));
     }
 
     public function dismiss(IntegrationInboxItem $item, InboxActionService $service): RedirectResponse {

@@ -600,6 +600,7 @@ return [
                 'decisionDue' => 'Decisione di investimento in scadenza',
                 'proposed' => 'Investimento proposto',
                 'decided' => 'Richiesta di investimento decisa',
+                'approvalRequested' => 'Richiesta di investimento in attesa di approvazione',
             ],
             'inventory' => [
                 'lotExpiring' => 'Lotto in scadenza (TMC)',
@@ -1394,6 +1395,7 @@ return [
             'write_off' => 'Stralcio',
             'overpayment' => 'Eccedenza',
             'reversal' => 'Storno',
+            'cancellation' => 'Documento di storno',
         ],
         // Quellenadapter und Buchungsregeln (Feature 125, MVP-673).
         'ebics-connection-status' => [
@@ -1438,6 +1440,7 @@ return [
             'disposal_gain' => 'Dismissione valore residuo (plusvalenza)',
             'payment_transit' => 'Denaro in transito (fornitore di pagamento)',
             'payment_fees' => 'Spese bancarie e di pagamento',
+            'advance_received' => 'Acconti ricevuti',
         ],
         // Buchungskern (Feature 125, MVP-672).
         'balance-side' => [

@@ -15,6 +15,7 @@ namespace App\Console\Commands;
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\Organization;
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Mail\MailboxPoller;
 use Illuminate\Console\Command;
 
@@ -25,6 +26,7 @@ use Illuminate\Console\Command;
  * verarbeitete Mails werden nur markiert/verschoben, nie gelöscht. Läuft im
  * Scheduler und manuell aus der Admin-UI.
  */
+#[BelongsToModule('mail')]
 class MailPollCommand extends Command {
     use IteratesOrganizations;
 

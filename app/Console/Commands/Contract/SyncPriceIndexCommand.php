@@ -12,17 +12,25 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Contract;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Services\Contract\PriceIndexService;
 use Illuminate\Console\Command;
 use Throwable;
 
 /** Holt den Verbraucherpreisindex aus der Bundesbank-Reihe (MVP-952); neue Werte warten auf Freigabe. */
 class SyncPriceIndexCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'contracts:price-index-sync';
 
     protected $description = 'Importiert den Verbraucherpreisindex (Basis 2020 = 100) aus der Bundesbank-Zeitreihe.';
 
     public function handle(PriceIndexService $index): int {
+        if (! $this->moduleActiveAnywhere()) {
+            $this->line('Kein Abruf: das Vertragsmodul ist in keiner Organisation aktiv.');
+
+            return self::SUCCESS;
+        }
         try {
             $changed = $index->import();
         } catch (Throwable $e) {

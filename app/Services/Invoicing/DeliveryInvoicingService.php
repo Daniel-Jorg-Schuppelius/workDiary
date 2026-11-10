@@ -156,19 +156,6 @@ class DeliveryInvoicingService {
         return $count;
     }
 
-    /**
-     * Vollstorno: die Quellen der stornierten Rechnung werden zur erneuten
-     * Abrechnung frei; Teilgutschriften rufen das bewusst nicht auf.
-     */
-    public function releaseForCancellation(Invoice $original): int {
-        $count = 0;
-        foreach ($original->items()->whereNotNull('stock_delivery_id')->get() as $item) {
-            $count += $this->release($item);
-        }
-
-        return $count;
-    }
-
     private function blockReason(Invoice $invoice, StockDelivery $delivery): ?string {
         if ($delivery->customer_id !== $invoice->customer_id) {
             return (string) __('invoicing.free.error.delivery_customer');

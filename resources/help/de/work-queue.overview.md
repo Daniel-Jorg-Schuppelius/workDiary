@@ -1,7 +1,7 @@
 ---
 title: "Arbeitsvorrat"
 topic: work-queue.overview
-version: 2
+version: 3
 keywords:
     - Arbeitsvorrat
     - Offene Vorgänge
@@ -14,13 +14,33 @@ related:
 ---
 
 Der Arbeitsvorrat sammelt an einer Stelle, was gerade auf Sie wartet:
-Freigaben (Urlaub, Spesen, Monatsabschlüsse, Preisänderungen, Lernzeiten,
-Freigabeketten), Eingänge (Zuordnungs-Inbox samt E-Mail-Klärfällen,
-Rechnungseingang, Rechnungsnachfragen), Ihnen zugewiesene Aufgaben (offene
-Punkte, Aufträge, Projektaufgaben, Service-Tickets) und Erinnerungen
+Freigaben (Urlaub, Spesen, Monatsabschlüsse, Überstundenanträge,
+Zeitkorrekturen, Korrekturen am Tagesabschluss, Dienstpläne zur Genehmigung,
+Schichttausch, Einreichungen zur Personalakte, Kursbuchungen,
+Lieferanten-Selbstauskünfte, Aufnahmeanträge in Vereinsgruppen,
+Preisänderungen, Lernzeiten, Freigabeketten), Eingänge (Zuordnungs-Inbox samt
+E-Mail-Klärfällen, Rechnungseingang, Rechnungsnachfragen, Kundeneingänge aus
+dem Portal, Verleihanfragen), Ihnen zugewiesene Aufgaben (offene Punkte,
+Aufträge, Projektaufgaben, Service-Tickets) und Erinnerungen
 (liegengebliebene eigene Entwürfe, Chat-Erinnerungen).
 
 **Projekt-Sollzeiten:** Liegen Personen in einem Projekt unter ihrer Sollzeit, erscheint je Projekt ein Vorgang mit der Zahl der offenen Befunde; wer nicht alle Zeiten sieht, sieht nur die eigenen Tage. Erledigt wird er am Zeitreiter des Projekts durch Bestätigen oder Nachbuchung.
+
+**Freigaben in Stufen:** Verlangt Ihre Organisation zwei Freigaben für
+Überstunden oder Zeitkorrekturen, verschwindet der Antrag nach Ihrer Freigabe
+aus Ihrem Vorrat — die zweite Stufe gibt eine andere Person. Freigegebene
+Zeitkorrekturen erscheinen danach bei denen, die sie anwenden dürfen.
+
+**Schichttausch in zwei Schritten:** Eine an Sie gerichtete Tauschanfrage
+erscheint als Ihr persönlicher Vorgang zur Annahme. Erst nach der Annahme
+wartet der Tausch auf die Freigabe der Planung; wer selbst am Tausch beteiligt
+ist, gibt ihn nicht frei. Offene Abgaben ohne Zielperson sind Angebote und
+stehen nicht im Vorrat.
+
+**Kundeneingänge und Vereinsgruppen:** Neue Kundeneingänge sehen alle, die
+sie bearbeiten dürfen, angenommene nur die zugewiesene Person.
+Aufnahmeanträge sieht die Vereinsverwaltung für alle Gruppen, eine
+Gruppenleitung für ihre eigenen Gruppen.
 
 **Nur lesen, dort bearbeiten:** Der Vorrat zeigt die Vorgänge und verlinkt
 auf die Seite, auf der Sie sie erledigen. Er hat keinen eigenen Status; ist

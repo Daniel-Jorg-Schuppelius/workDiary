@@ -111,7 +111,10 @@ class HomeController extends Controller {
 
         return match ($origin) {
             'legacy.diary.index', 'diary.index' => $mode === 'legacy' ? 'legacy.diary.index' : 'diary.index',
-            'legacy.diary.create', 'diary.create' => $mode === 'legacy' ? 'legacy.diary.create' : 'diary.create',
+            // Ohne verknüpftes Legacy-Konto gibt es im Altsystem nichts anzulegen.
+            'legacy.diary.create', 'diary.create' => $mode === 'legacy'
+                ? (\App\Legacy\LegacyBridge::hasLegacyAccount($this->authUser()) ? 'legacy.diary.create' : 'legacy.diary.index')
+                : 'diary.create',
             default => $mode === 'legacy' ? 'legacy.diary.index' : 'diary.index',
         };
     }

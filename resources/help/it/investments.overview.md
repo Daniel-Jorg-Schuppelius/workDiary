@@ -1,7 +1,7 @@
 ---
 title: "Pianificazione degli investimenti"
 topic: investments.overview
-version: 2
+version: 3
 keywords:
     - richiesta di investimento
     - richiesta di budget
@@ -34,6 +34,21 @@ da sé. I budget approvati vengono congelati come snapshot — un aumento
 passa sempre attraverso una deviazione di budget approvata e
 un'integrazione (nuova richiesta, lo stato precedente resta conservato
 come «sostituito»).
+
+**Casella delle approvazioni:** le fasi aperte di una richiesta di budget
+compaiono in «Approvazioni» e nella coda di lavoro per il ruolo che la
+sua organizzazione assegna al tipo di fase (predefinito: commerciale →
+contabilità, direzione → direzione). Alla presentazione e al passaggio
+alla fase successiva i responsabili ricevono una notifica. Lì si decide
+come nella pratica; approva solo chi può approvare investimenti.
+
+**Decidere dalla pratica:** vale la stessa responsabilità della casella.
+«Rilascia» e «Rifiuta» li vede solo chi è responsabile della fase aperta e
+può deciderla — né il richiedente né chi ha deciso una fase precedente
+dello stesso giro. Gli altri vedono che cosa attende la richiesta, ad
+esempio «In attesa della fase 2: Direzione (ruolo Direzione).» Anche gli
+amministratori decidono solo con il ruolo della fase; quale ruolo sia lo
+stabilisce Lei nelle impostazioni dell'organizzazione, in «Approvazioni».
 
 **Rinvio e rifiuto:** durante la pianificazione il fascicolo può essere
 messo in attesa con «Rinvia»; «Riprendi» lo riporta esattamente alla fase

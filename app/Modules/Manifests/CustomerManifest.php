@@ -67,6 +67,9 @@ final class CustomerManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Customer\WorkQueue\CustomerIntakeWorkItemSource::class,
+            ],
             \App\Services\Search\Contracts\SearchDomain::class => [
                 \App\Services\Customer\Search\CustomerSearchDomain::class,
             ],

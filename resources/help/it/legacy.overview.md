@@ -1,7 +1,7 @@
 ---
 title: "Sistema precedente (Legacy)"
 topic: legacy.overview
-version: 4
+version: 5
 keywords:
     - vecchio sistema
     - dati storici
@@ -54,9 +54,15 @@ settimanale**, **Lista di lavoro** e **Centrale**.
   aperte**.
 
 I piani di servizio sono visibili a tutti. I dati del diario di tutte le
-persone li vedono gli amministratori del sistema precedente e il ruolo
-**Contabilità**; tutti gli altri vedono solo i propri. Il login del call center
-porta alla stessa pagina.
+persone li vedono gli amministratori del sistema precedente, la gestione della
+piattaforma e il ruolo **Contabilità**; tutti gli altri vedono solo i propri. Il
+login del call center porta alla stessa pagina.
+
+**Nuova voce** è disponibile per chiunque abbia l'account utente collegato a un
+account del sistema precedente; solo gli amministratori del sistema precedente
+creano voci per altre persone. Archiviazione, servizio di emergenza e
+reperibilità sono gestiti dagli amministratori del sistema precedente e dalla
+gestione della piattaforma.
 
 **Dipendenti** si trova nel menu di amministrazione (icona **Amministrazione**
 nell'intestazione) sotto **Personale** ed elenca gli utenti del sistema
@@ -102,6 +108,9 @@ sistema:
 **Clienti del portale** nel menu di gestione amministra gli accessi dei clienti
 con **Azienda**, **Nome utente** e **Password** (da 4 a 10 caratteri). I clienti
 con ordini in corso non si possono eliminare.
+
+L'indirizzo di accesso per i Suoi clienti è indicato in alto nella pagina
+**Clienti del portale**; **Copia** lo copia negli appunti.
 
 I clienti accedono dalla pagina di accesso propria del portale clienti, vedono
 solo i propri ordini con appuntamento e risposte, effettuano nuovi ordini e

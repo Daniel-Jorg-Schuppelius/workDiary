@@ -1,7 +1,7 @@
 ---
 title: "Flux de documents"
 topic: billing.feed
-version: 5
+version: 6
 keywords:
     - factures
     - devis
@@ -120,7 +120,8 @@ pièce fournisseur) et les dépenses orgaMAX n’ont pas de PDF.
 **orgaMAX et sevDesk :** orgaMAX reflète les factures, les factures d’acompte
 et les dépenses ; les dépenses figurent comme pièces entrantes dans les
 charges. Les avoirs de sevDesk figurent comme avoirs sortants et réduisent le
-chiffre d’affaires. Les modèles récurrents d’un logiciel ne sont pas des pièces
+chiffre d’affaires – y compris les avoirs de commission et de redevance, car
+sevDesk ne renvoie pas la catégorie comptable à la lecture. Les modèles récurrents d’un logiciel ne sont pas des pièces
 et n’apparaissent pas dans le flux ; ils servent au rapprochement des
 abonnements et licences.
 

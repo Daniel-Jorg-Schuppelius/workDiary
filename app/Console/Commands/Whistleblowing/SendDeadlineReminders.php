@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Whistleblowing;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Models\Whistleblowing\WhistleblowingCase;
 use App\Notifications\Whistleblowing\WhistleblowingDeadlineNotification;
 use App\Services\Whistleblowing\WhistleblowingDeadlineService;
@@ -24,16 +25,22 @@ use Illuminate\Support\Facades\{DB, Notification};
  * (inhaltsarm, Abschnitt 15). Laeuft mindestens stuendlich.
  */
 class SendDeadlineReminders extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'whistleblowing:deadlines';
 
     protected $description = 'Benachrichtigt Bearbeiter ueber faellige Hinweisgeber-Fristen (inhaltsarm).';
 
     public function handle(WhistleblowingDeadlineService $deadlines): int {
         $sent = 0;
+        $active = $this->moduleOrganizationIds();
 
         foreach ($deadlines->dueReminders() as $reminder) {
             /** @var WhistleblowingCase $case */
             $case = $reminder['case'];
+            if (! in_array((int) $case->organization_id, $active, true)) {
+                continue;
+            }
             $kind = (string) $reminder['kind'];
 
             // Idempotenz (Abschnitt 15): pro Fall/Art/Tag nur einmal erinnern.

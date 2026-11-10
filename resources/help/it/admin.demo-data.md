@@ -1,7 +1,7 @@
 ---
 title: "Dati dimostrativi"
 topic: admin.demo-data
-version: 2
+version: 3
 keywords:
     - dati di esempio
     - dati di prova
@@ -29,7 +29,14 @@ isolata; **Genera (seed)** popola l'organizzazione corrente ancora vuota;
 **Reimposta (reset)** cancella e ricrea i dati di un tenant demo
 mantenendo settore e ambito. Senza la spunta «Mostrare l'ambito
 completo», la demo segue la raccomandazione dei moduli del profilo e crea
-dati solo per i moduli attivi. La finestra indica in anticipo con quale
+dati solo per i moduli attivi. Anche i moduli che molti profili
+raccomandano mostrano dati: turni con scambio di turno, moduli con invii,
+articoli della base di conoscenza, giacenze con punto di riordino, note
+spese con registro di viaggio, tempi di lavoro di più persone per i report
+del team, luoghi d'intervento della localizzazione, contratti con
+scadenze, immobili e un computo metrico (GAEB); clienti, luoghi e
+materiale provengono dal settore modello, le coordinate della
+localizzazione sono inventate. La finestra indica in anticipo con quale
 licenza funzionerà la demo: se l'istanza può rilasciare licenze,
 l'organizzazione riceve una licenza a tempo; altrimenti vale la licenza
 dell'installazione, e senza entrambe la demo funziona nel piano Free con

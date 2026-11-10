@@ -12,7 +12,7 @@ namespace App\Models\Article;
 
 use App\Casts\{DecimalCast, GtinCast, MoneyCast};
 use App\Enums\Article\{ArticleStatus, ArticleType};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasClassifications, HasCustomFields, HasSqid, HasTags, Searchable};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasClassifications, HasCustomFields, HasSqid, HasTags, MatchesIdentifiers, Searchable};
 use App\Models\Contracts\CustomFieldSubject;
 use App\Models\Integration\ExternalArticleMapping;
 use App\Models\Procedure\ProcedureTemplateVersion;
@@ -55,6 +55,7 @@ class Article extends Model implements CustomFieldSubject {
     use HasFactory;
     use HasSqid;
     use HasTags;
+    use MatchesIdentifiers;
     use Searchable;
 
     protected $fillable = [

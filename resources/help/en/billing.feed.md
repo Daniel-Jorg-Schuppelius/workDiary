@@ -1,7 +1,7 @@
 ---
 title: "Document flow"
 topic: billing.feed
-version: 5
+version: 6
 keywords:
     - invoices
     - quotes
@@ -111,7 +111,9 @@ supplier voucher) and orgaMAX expenses have no PDF.
 
 **orgaMAX and sevDesk:** orgaMAX mirrors invoices, deposit invoices and
 expenses; the expenses appear as incoming documents under expense. Credit notes
-from sevDesk appear as outgoing credit notes and reduce revenue. A program's
+from sevDesk appear as outgoing credit notes and reduce revenue – commission
+and royalty credit notes too, because sevDesk does not return the booking
+category when they are read. A program's
 recurring templates are not documents and do not appear in the document feed;
 they are part of the subscriptions and licences reconciliation.
 

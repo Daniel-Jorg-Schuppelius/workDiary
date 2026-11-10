@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Finance;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Enums\Finance\EbicsConnectionStatus;
 use App\Models\Finance\EbicsConnection;
 use App\Models\Platform\Organization;
@@ -22,14 +23,16 @@ use Throwable;
 
 /** Täglicher Abruf der Tagesauszüge per EBICS (MVP-124) für alle freigeschalteten Zugänge. */
 class FetchEbicsStatementsCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'finance:ebics-statements';
 
     protected $description = 'Ruft die Tagesauszüge (camt.053) per EBICS ab und übernimmt sie in den Bankimport.';
 
     public function handle(EbicsStatementService $statements): int {
         // TENANT-BYPASS: Lauf über alle Organisationen; je Zugang wird sein Kontext gebunden.
-        $connections = EbicsConnection::query()->withoutGlobalScopes()
-            ->where('status', EbicsConnectionStatus::Active->value)
+        $connections = $this->whereModuleActive(EbicsConnection::query()->withoutGlobalScopes()
+            ->where('status', EbicsConnectionStatus::Active->value))
             ->get();
 
         foreach ($connections as $connection) {

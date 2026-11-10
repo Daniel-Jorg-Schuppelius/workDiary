@@ -48,6 +48,7 @@ return [
         'expired_reason' => 'Pago anticipado en línea no recibido a tiempo.',
         'withdrawn_reason' => 'Reserva directa no pagada retirada por el cliente.',
         'on_case' => 'Pago anticipado en línea :amount pagado: se imputa a la factura.',
+        'credited_on_case' => 'Pago anticipado en línea de :amount transferido al programa de contabilidad con las partidas de alquiler; descuéntelo allí en la factura.',
         'profile_percent' => 'Pago anticipado en la reserva directa (%)',
         'profile_percent_hint' => 'Vacío = valor de la organización, 0 = sin pago anticipado para este objeto de alquiler.',
         'badge' => 'Pago anticipado :percent %',

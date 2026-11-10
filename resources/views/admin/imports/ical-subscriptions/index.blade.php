@@ -50,7 +50,11 @@
                 <td class="font-medium">{{ $subscription->name }}</td>
                 <td>{{ $subscription->import_entity->label() }}</td>
                 <td>{{ $subscription->user?->name ?? '—' }}</td>
-                <td class="font-mono text-xs">{{ $subscription->sourceHost() }}</td>
+                @if ($subscription->calendar_source !== null)
+                    <td class="text-xs">{{ $calendarLabels[$subscription->calendar_source] ?? __('import.ical_subscription.source_missing') }}</td>
+                @else
+                    <td class="font-mono text-xs">{{ $subscription->sourceHost() }}</td>
+                @endif
                 <td class="text-sm">
                     @if (! $subscription->is_active)
                         <x-status-badge size="xs" tone="ghost">{{ __('import.ical_subscription.status_inactive') }}</x-status-badge>

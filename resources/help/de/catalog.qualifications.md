@@ -1,7 +1,7 @@
 ---
 title: "Qualifikationen"
 topic: catalog.qualifications
-version: 2
+version: 3
 keywords:
     - Kompetenzen
     - Fähigkeiten
@@ -54,3 +54,8 @@ hin. Stellt die Organisation unter „Organisation und Einstellungen“ auf
 Besetzungsvorschläge nennen gesperrte Personen nicht mehr. Bestehende
 Zuweisungen bleiben stehen; bestätigen lässt sich ein solcher Einsatz in der
 Disposition nur mit Begründung, die mitprotokolliert wird.
+
+Ändern Sie die Pflichtqualifikationen eines Auftrags, der schon einer Person
+zugewiesen ist, prüft WorkDiary diese Person sofort: Im Sperrmodus wird die
+Änderung abgelehnt, solange ihr eine der Qualifikationen fehlt; im
+Hinweismodus wird sie gespeichert und die Lücke als Hinweis gemeldet.

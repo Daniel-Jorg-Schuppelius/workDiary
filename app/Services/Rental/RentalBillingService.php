@@ -258,11 +258,18 @@ class RentalBillingService {
                     ])->save();
                 }
 
+                // Die Buchhaltung rechnet die Vorauszahlung an; lokal gibt es keine Rechnung dafür (MVP-1523).
+                $prepayments = $this->unassignedPrepayments($case);
+                $prepaid = $this->netOfRefunds($prepayments);
+                foreach ($prepayments as $prepayment) {
+                    $prepayment->forceFill(['credited_at' => now()])->save();
+                }
+
                 $case->audit('rental.chargesTransferred', [
                     'mode' => $mode->value,
                     'count' => $charges->count(),
-                    // Die Buchhaltung rechnet die Vorauszahlung an; lokal gibt es keine Rechnung dafür.
-                    'prepaid' => $this->prepaidTotal($case)?->getAmount(),
+                    'prepaid' => $prepaid?->getAmount(),
+                    'prepayments' => $prepayments->count(),
                 ]);
 
                 return null;
@@ -326,19 +333,33 @@ class RentalBillingService {
      * @return \Illuminate\Database\Eloquent\Collection<int, OnlinePayment>
      */
     public function unassignedPrepayments(RentalCase $case): \Illuminate\Database\Eloquent\Collection {
-        return OnlinePayment::query()->withoutGlobalScopes()
-            ->where('organization_id', $case->organization_id)
-            ->whereNull('invoice_id')
-            ->where('subject_type', (new RentalRequest)->getMorphClass())
-            ->whereIn('subject_id', RentalRequest::query()->withoutGlobalScopes()->where('rental_case_id', $case->id)->select('id'))
-            ->whereIn('status', [OnlinePaymentStatus::Paid->value, OnlinePaymentStatus::Refunded->value])
-            ->get();
+        return $this->paidPrepayments($case)->whereNull('invoice_id')->whereNull('credited_at')->get();
     }
 
     /** Summe der noch nicht zugeordneten Vorauszahlungen abzüglich Erstattungen; null ohne Vorauszahlung. */
     public function prepaidTotal(RentalCase $case): ?Money {
-        $prepayments = $this->unassignedPrepayments($case);
+        return $this->netOfRefunds($this->unassignedPrepayments($case));
+    }
 
+    /**
+     * Bei der Übergabe an ein führendes Programm angerechnete Vorauszahlungen
+     * (MVP-1523): dort sind sie auf die Rechnung anzurechnen.
+     */
+    public function creditedPrepaidTotal(RentalCase $case): ?Money {
+        return $this->netOfRefunds($this->paidPrepayments($case)->whereNull('invoice_id')->whereNotNull('credited_at')->get());
+    }
+
+    /** @return \Illuminate\Database\Eloquent\Builder<OnlinePayment> */
+    private function paidPrepayments(RentalCase $case): \Illuminate\Database\Eloquent\Builder {
+        return OnlinePayment::query()->withoutGlobalScopes()
+            ->where('organization_id', $case->organization_id)
+            ->where('subject_type', (new RentalRequest)->getMorphClass())
+            ->whereIn('subject_id', RentalRequest::query()->withoutGlobalScopes()->where('rental_case_id', $case->id)->select('id'))
+            ->whereIn('status', [OnlinePaymentStatus::Paid->value, OnlinePaymentStatus::Refunded->value]);
+    }
+
+    /** @param \Illuminate\Database\Eloquent\Collection<int, OnlinePayment> $prepayments */
+    private function netOfRefunds(\Illuminate\Database\Eloquent\Collection $prepayments): ?Money {
         return $prepayments->isEmpty() ? null : Money::sum($prepayments->map(static fn (OnlinePayment $p): Money => $p->gross_amount->minus($p->refunded_amount)));
     }
 

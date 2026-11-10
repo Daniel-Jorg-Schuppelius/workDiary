@@ -10,6 +10,7 @@
 
 namespace App\Console\Commands\Domain;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Enums\Domain\DomainConnectionStatus;
 use App\Models\Domain\DomainProviderConnection;
 use App\Services\Domain\{DomainAccountingService, DomainSyncService};
@@ -22,12 +23,14 @@ use Throwable;
  * Projektionen; Reconciliation-Konflikte werden nicht blind überschrieben.
  */
 class DomainSyncCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'domain:sync {--connection= : Nur eine Verbindung (ID)}';
 
     protected $description = 'Gleicht DomainReselling-Portfolio, Reseller und Accounting ab.';
 
     public function handle(DomainSyncService $sync, DomainAccountingService $accounting): int {
-        $query = DomainProviderConnection::query()->where('status', DomainConnectionStatus::Active->value);
+        $query = $this->whereModuleActive(DomainProviderConnection::query()->where('status', DomainConnectionStatus::Active->value), withoutOrganization: true);
         if (($id = $this->option('connection')) !== null) {
             $query->whereKey($id);
         }

@@ -143,6 +143,17 @@ class McpWriteToolsTest extends TestCase {
         $this->assertSame(0, Customer::query()->where('name', 'Korn doppelt')->count());
     }
 
+    /** MVP-1527: Die Dublettenprüfung vergleicht mit der kanonisch gespeicherten USt-IdNr. */
+    public function test_duplicate_vat_id_is_found_with_spaces_and_lower_case(): void {
+        $this->mcpAs($this->admin);
+
+        WorkDiaryMcpServer::tool(CreateCustomerTool::class, ['name' => 'Fischräucherei Lotsenhus', 'vat_id' => 'DE 811 907 980'])->assertOk()->assertHasNoErrors();
+        $this->assertSame('DE811907980', Customer::query()->where('name', 'Fischräucherei Lotsenhus')->value('vat_id'));
+
+        WorkDiaryMcpServer::tool(CreateCustomerTool::class, ['name' => 'Lotsenhus doppelt', 'vat_id' => 'de811 907980'])->assertOk()->assertSee('"created":false');
+        $this->assertSame(0, Customer::query()->where('name', 'Lotsenhus doppelt')->count());
+    }
+
     /** k1-10: `size:2` ließ „xx“ und „UK“ durch und speicherte Kleinschreibung. */
     public function test_customer_country_is_an_iso_code_stored_in_upper_case(): void {
         $this->mcpAs($this->admin);

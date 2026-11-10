@@ -205,4 +205,16 @@ return [
             'saved' => 'Objetivo guardado.',
         ],
     ],
+    // Etapas de aprobación en la bandeja de aprobaciones (MVP-1522).
+    'approval' => [
+        'inbox_title' => 'Solicitud de inversión: :title',
+        'inbox_reference' => 'Versión :version · :amount',
+        'requested_title' => 'Aprobación solicitada: inversión «:title»',
+        'requested_message' => 'Solicitud de presupuesto por :amount — etapa :step (:kind).',
+        'delegate_without_right' => 'Delegue en una persona autorizada a aprobar inversiones.',
+        'waiting' => 'En espera de la etapa :step: :who.',
+        'waiting_kind' => ':kind (rol :role)',
+        'waiting_role' => 'Rol :role',
+        'not_responsible' => 'Usted no es responsable de la etapa de aprobación abierta.',
+    ],
 ];

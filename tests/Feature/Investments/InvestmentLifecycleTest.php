@@ -40,9 +40,10 @@ final class InvestmentLifecycleTest extends TestCase {
         parent::setUp();
         $this->setUpOrganization();
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
-        $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-        $this->second = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-        $this->third = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        // Freigeben darf nur, wer die Rolle der Stufe trägt (MVP-1541): kaufmännisch → Buchhaltung, Geschäftsleitung → Geschäftsführung.
+        $this->admin = User::factory()->withRoles(UserRole::Admin, UserRole::Buchhaltung)->create(['organization_id' => $this->organization->id]);
+        $this->second = User::factory()->withRoles(UserRole::Admin, UserRole::Buchhaltung, UserRole::Geschaeftsfuehrung)->create(['organization_id' => $this->organization->id]);
+        $this->third = User::factory()->withRoles(UserRole::Admin, UserRole::Geschaeftsfuehrung)->create(['organization_id' => $this->organization->id]);
     }
 
     private function makeCase(): InvestmentCase {

@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
+use App\Services\Asset\AssetCategoryCatalog;
 use App\Services\Reporting\{AssetAnalysisReportBuilder, ReportFilters};
 use App\Support\{CarbonFmt, Sqid};
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -36,7 +37,10 @@ class AssetAnalysisReportController extends Controller {
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
-    public function __construct(private readonly AssetAnalysisReportBuilder $builder) {}
+    public function __construct(
+        private readonly AssetAnalysisReportBuilder $builder,
+        private readonly AssetCategoryCatalog $categories,
+    ) {}
 
     public function index(Request $request): View|Response|SymfonyResponse {
         $this->authorizeTeamReport();
@@ -100,13 +104,10 @@ class AssetAnalysisReportController extends Controller {
             'defectRateSeries' => $this->defectRateSeries($rows),
             'maintenanceSeries' => $this->maintenanceSeries($rows),
             ...$this->standardFilterOptions($filterFields, $filters),
-            'categories' => Asset::query()
+            'categories' => $this->categories->labelled($this->currentOrganizationId(), Asset::query()
                 ->whereNotNull('category_code')
-                ->orderBy('category_code')
                 ->distinct()
-                ->pluck('category_code')
-                ->filter()
-                ->values(),
+                ->pluck('category_code')),
             'manufacturers' => Asset::query()
                 ->whereNotNull('manufacturer')
                 ->orderBy('manufacturer')

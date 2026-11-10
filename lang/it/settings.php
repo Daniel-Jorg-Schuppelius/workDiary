@@ -132,7 +132,7 @@ return [
         'on_documents_hint' => 'Se disattivato, il pagamento online resta possibile nel portale clienti.',
     ],
     'approvals' => [
-        'step_roles_hint' => 'Le fasi di approvazione di una trattativa contrattuale compaiono in «Approvazioni» per il ruolo assegnato al loro tipo di fase. L\'approvazione dalla pratica resta possibile.',
+        'step_roles_hint' => 'Le fasi di approvazione delle trattative contrattuali e delle richieste di investimento compaiono in «Approvazioni» per il ruolo assegnato al loro tipo di fase. Le richieste di investimento le decide solo questo ruolo, anche dalla pratica; le trattative contrattuali restano approvabili dalla pratica. Se nessuno ha il ruolo, la richiesta resta aperta finché non viene assegnato — anche gli amministratori decidono solo con questo ruolo.',
         'step_role' => ':kind: ruolo responsabile',
         'default_role' => 'Predefinito (:role)',
     ],

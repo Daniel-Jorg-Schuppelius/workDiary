@@ -101,6 +101,9 @@ final class RentalManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Rental\WorkQueue\RentalRequestWorkItemSource::class,
+            ],
             \App\Services\Demo\Contracts\DemoBlock::class => [
                 \App\Services\Rental\Demo\RentalDemoBlock::class,
             ],

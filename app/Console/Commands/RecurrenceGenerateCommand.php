@@ -10,9 +10,11 @@
 
 namespace App\Console\Commands;
 
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Recurrence\RecurrenceGenerator;
 use Illuminate\Console\Command;
 
+#[BelongsToModule('diary')]
 class RecurrenceGenerateCommand extends Command {
     protected $signature = 'recurrence:generate {--lookahead=28 : Tage in die Zukunft, für die Aufträge erzeugt werden}';
 

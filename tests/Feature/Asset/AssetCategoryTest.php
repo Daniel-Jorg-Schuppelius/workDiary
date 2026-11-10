@@ -224,6 +224,36 @@ class AssetCategoryTest extends TestCase {
         $this->assertSame([], $violations, implode("\n", $violations));
     }
 
+    /** MVP-1527: Auswertung, Drilldown und Prüfrunden-Dialog zeigen die Bezeichnung statt des Profilcodes. */
+    public function test_report_drilldown_and_inspection_round_label_profile_codes(): void {
+        (new BranchProfileInstaller)->install($this->organization, 'shk');
+        $this->category('druckpruefpumpe')->update(['active' => false]);
+        $admin = $this->orgAdmin();
+        foreach (['pressmaschine', 'druckpruefpumpe', 'unbekannterCode'] as $code) {
+            Asset::factory()->create([
+                'organization_id' => $this->organization->id,
+                'asset_class' => AssetClass::Machine->value,
+                'status' => AssetStatus::Active->value,
+                'category_code' => $code,
+            ]);
+        }
+
+        $report = $this->actingAs($admin)->get(route('reports.assets', ['group_by' => 'group']))->assertOk();
+        $report->assertSee('<option value="pressmaschine" >Pressmaschine</option>', false)
+            ->assertSee('<option value="druckpruefpumpe" >Druckprüfpumpe</option>', false)
+            ->assertSee('<option value="unbekannterCode" >unbekannterCode</option>', false);
+        $labels = array_column($report->viewData('rows'), 'label');
+        sort($labels);
+        $this->assertSame(['Druckprüfpumpe', 'Pressmaschine', 'unbekannterCode'], $labels, 'inaktive Kategorie behält ihre Bezeichnung');
+
+        $this->actingAs($admin)->get(route('reports.assets.drilldown.open-issues', ['category_code' => 'pressmaschine']))->assertOk()
+            ->assertViewHas('scopeLabel', 'Pressmaschine');
+
+        $this->actingAs($admin)->get(route('asset-compliance.rounds.create'))->assertOk()
+            ->assertSee('<option value="pressmaschine" >Pressmaschine</option>', false)
+            ->assertDontSee('>pressmaschine<', false);
+    }
+
     /** @return array<string, mixed> */
     private function payload(string $categoryCode): array {
         return [

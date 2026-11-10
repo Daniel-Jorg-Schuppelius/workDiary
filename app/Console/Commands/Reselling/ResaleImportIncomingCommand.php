@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Reselling;
 
-use App\Console\Concerns\IteratesOrganizations;
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\Organization;
 use App\Services\Reselling\Register\{IncomingProviderInvoiceImport, MirroredProviderInvoiceImport};
@@ -28,7 +28,7 @@ use Illuminate\Console\Command;
  * liegen (Phase 175). Täglich; schon übernommene Zeilen erkennt der Import am Hash.
  */
 class ResaleImportIncomingCommand extends Command {
-    use IteratesOrganizations;
+    use IteratesModuleOrganizations;
 
     protected $signature = 'resale:import-incoming {--since= : Belegdatum ab (YYYY-MM-DD), Vorgabe 365 Tage} {--days= : Belegdatum der letzten N Tage (geplanter Lauf)} ' . self::ORGANIZATION_OPTION;
 

@@ -1,7 +1,7 @@
 ---
 title: "Clientes & proveedores"
 topic: contacts.manage
-version: 14
+version: 15
 keywords:
     - Vista previa como cliente
     - Contraseña inicial
@@ -199,6 +199,14 @@ en la administración de orgaMAX está activa la capacidad «Proveedores» y se 
 elegido «WorkDiary lidera»; de lo contrario, orgaMAX lidera los proveedores y
 WorkDiary solo los vincula.
 
+Esto no alcanza a los proveedores anteriores a la conexión. **Transferir a
+contabilidad** en la ficha del proveedor transfiere uno de ellos al primer
+programa activo que acepta proveedores; la operación puede transferirlos todos
+de una vez con `php artisan accounting:push-contacts <programa> --suppliers`.
+Un proveedor ya vinculado se actualiza, no se crea dos veces; los proveedores
+archivados y el proveedor colectivo quedan fuera. Si la contabilidad lidera los
+datos maestros, el botón no aparece y el proceso no transfiere nada.
+
 ## Datos maestros desde el programa de contabilidad
 
 Si la autoridad sobre los datos maestros está en «Dirige la contabilidad»,
@@ -207,17 +215,21 @@ vienen del programa: Lexoffice y orgaMAX mediante su propia sincronización de
 contactos, sevDesk y easybill cada hora según estas reglas:
 
 - Un contacto ya vinculado adopta los datos del programa (nombre, NIF-IVA,
-  número fiscal; en easybill también dirección, correo electrónico, teléfono y
-  persona de contacto).
+  número fiscal, dirección, correo electrónico y teléfono; en easybill también
+  la persona de contacto).
 - Una coincidencia segura, por ejemplo por NIF-IVA, se vincula.
 - Todo lo dudoso aparece como caso por aclarar en la **Bandeja de
   conciliación**; no se crea nada.
 
 sevDesk indica el rol mediante la categoría del contacto: se importan «Cliente»
 y «Proveedor», pero no socios, interesados ni personas de contacto de una
-empresa. easybill distingue por número de cliente y de proveedor; un contacto
-con ambos números es cliente y proveedor. Los contactos archivados de easybill
-quedan fuera.
+empresa. La dirección es la dirección de sevDesk de la categoría que WorkDiary
+usa al transferir; si no, la única dirección. Para correo electrónico,
+teléfono, móvil, fax y sitio web vale el marcado como principal; si no, el
+único. Si hay varios sin estas marcas, el valor en WorkDiary no cambia, igual
+que el país. easybill distingue por número de cliente y de proveedor; un
+contacto con ambos números es cliente y proveedor. Los contactos archivados de
+easybill quedan fuera.
 
 ## Cockpit de cliente y proveedor
 

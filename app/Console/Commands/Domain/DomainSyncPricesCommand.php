@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Domain;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Enums\Domain\DomainConnectionStatus;
 use App\Models\Domain\DomainProviderConnection;
 use App\Services\Domain\DomainPriceSyncService;
@@ -25,12 +26,14 @@ use Throwable;
  * den Benutzerklassen des Portals bekommen.
  */
 class DomainSyncPricesCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'domain:sync-prices {--connection= : Nur eine Verbindung (ID)}';
 
     protected $description = 'Preisstaffeln des Domainanbieters (Einkauf und Benutzerklassen je Zone) in den Preiskatalog spiegeln';
 
     public function handle(DomainPriceSyncService $sync): int {
-        $query = DomainProviderConnection::query()->where('status', DomainConnectionStatus::Active->value)->orderBy('id');
+        $query = $this->whereModuleActive(DomainProviderConnection::query()->where('status', DomainConnectionStatus::Active->value), withoutOrganization: true)->orderBy('id');
         if (($id = $this->option('connection')) !== null) {
             $query->whereKey($id);
         }

@@ -1,7 +1,7 @@
 ---
 title: "Flusso documenti"
 topic: billing.feed
-version: 5
+version: 6
 keywords:
     - fatture
     - preventivi
@@ -117,7 +117,9 @@ del fornitore) e le spese orgaMAX non hanno PDF.
 
 **orgaMAX e sevDesk:** orgaMAX rispecchia fatture, fatture di acconto e spese;
 le spese compaiono come documenti in entrata nei costi. Le note di credito di
-sevDesk compaiono come note di credito in uscita e riducono il fatturato. I
+sevDesk compaiono come note di credito in uscita e riducono il fatturato, anche
+quelle per provvigioni e royalty, perché sevDesk non restituisce la categoria
+contabile nella lettura. I
 modelli ricorrenti di un programma non sono documenti e non compaiono nel
 flusso; fanno parte della riconciliazione di abbonamenti e licenze.
 

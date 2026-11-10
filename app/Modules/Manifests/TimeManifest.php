@@ -104,6 +104,9 @@ final class TimeManifest extends Manifest {
         return [
             \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
                 \App\Services\TimeApproval\WorkQueue\MonthClosureWorkItemSource::class,
+                \App\Services\TimeApproval\WorkQueue\OvertimeRequestWorkItemSource::class,
+                \App\Services\TimeApproval\WorkQueue\TimeCorrectionWorkItemSource::class,
+                \App\Services\TimeApproval\WorkQueue\DayCorrectionWorkItemSource::class,
             ],
             \App\Services\Mcp\Contracts\McpTool::class => [
                 \App\Services\Time\Mcp\UnbilledTimeTool::class,

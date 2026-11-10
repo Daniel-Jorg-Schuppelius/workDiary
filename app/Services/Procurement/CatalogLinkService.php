@@ -102,7 +102,7 @@ class CatalogLinkService {
             return null;
         }
 
-        $article = $this->purchasableArticles($item)->where('gtin', $gtin)->first();
+        $article = $this->purchasableArticles($item)->whereIdentifier('gtin', $gtin)->first();
 
         return $article instanceof Article ? [$article, null] : null;
     }

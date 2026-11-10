@@ -335,13 +335,15 @@ class LearningTimeService {
      * Ohne diesen Kehraus liefe eine Sitzung ewig weiter und würde beim
      * nächsten Öffnen als riesige Spanne gebucht.
      *
+     * @param  list<int>|null  $organizationIds  nur diese Organisationen (geplanter Lauf: aktives Modul), null = alle
      * @return int Zahl der geschlossenen Sitzungen
      */
-    public function closeStaleSessions(?Carbon $now = null): int {
+    public function closeStaleSessions(?Carbon $now = null, ?array $organizationIds = null): int {
         $now ??= Carbon::now();
         $cutoff = $now->copy()->subMinutes(self::IDLE_CUTOFF_MINUTES);
 
         $sessions = LearningTimeSession::query()
+            ->when($organizationIds !== null, static fn ($query) => $query->whereIn('organization_id', $organizationIds))
             ->whereNull('ended_at')
             ->where(function ($query) use ($cutoff): void {
                 $query->where('last_heartbeat_at', '<', $cutoff)

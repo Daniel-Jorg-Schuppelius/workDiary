@@ -12,7 +12,7 @@ namespace App\Models\Supplier;
 
 use App\Casts\{BicCast, GermanTaxNumberCast, IbanCast, VatNumberCast};
 use App\Enums\Numbering\NumberScope;
-use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasCommunicationNotes, HasContactAndBankDetails, HasCustomFields, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasStructuredContactName, HasTags, Searchable};
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasCommunicationNotes, HasContactAndBankDetails, HasCustomFields, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasStructuredContactName, HasTags, MatchesIdentifiers, Searchable};
 use App\Models\Contacts\ContactAddress;
 use App\Models\Contracts\{ContactDetailsHolder, ContactNameHolder, CustomFieldSubject};
 use App\Models\Integration\ExternalReference;
@@ -89,6 +89,7 @@ class Supplier extends Model implements ContactDetailsHolder, ContactNameHolder,
     use HasSqid;
     use HasStructuredContactName;
     use HasTags;
+    use MatchesIdentifiers;
     use Searchable;
 
     protected $fillable = [

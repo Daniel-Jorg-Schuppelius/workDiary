@@ -48,8 +48,8 @@ final class OrgaMaxVoucherLinks extends MirroredVoucherLinks {
         return $invoiceId !== null ? route('admin.orgamax.invoices.mirror-pdf', Sqid::encode(OrgaMaxInvoice::class, (int) $invoiceId)) : null;
     }
 
-    /** Die PDF-Route liegt im orgaMAX-Admin und verlangt die Verwaltung. */
+    /** Die PDF-Route lässt dieselben Personen zu wie die Faktura-Aktionen (MVP-1527). */
     public function originalPdfUrl(AccountingVoucher $voucher, User $user): ?string {
-        return $user->isAdmin() ? parent::originalPdfUrl($voucher, $user) : null;
+        return OrgaMaxPlugin::mayUseFactura($user) ? parent::originalPdfUrl($voucher, $user) : null;
     }
 }

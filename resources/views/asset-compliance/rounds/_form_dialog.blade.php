@@ -20,8 +20,8 @@
     </x-select-field>
     <x-select-field name="category_code" :label="__('inspection_round.category')">
         <option value="">{{ __('inspection_round.any') }}</option>
-        @foreach ($categories as $category)
-            <option value="{{ $category }}" @selected(old('category_code') === $category)>{{ $category }}</option>
+        @foreach ($categories as $category => $categoryLabel)
+            <option value="{{ $category }}" @selected(old('category_code') === (string) $category)>{{ $categoryLabel }}</option>
         @endforeach
     </x-select-field>
     <x-select-field name="asset_compliance_profile_id" :label="__('inspection_round.profile')">

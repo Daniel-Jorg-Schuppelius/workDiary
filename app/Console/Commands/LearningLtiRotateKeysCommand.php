@@ -12,10 +12,13 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Modules\Attributes\{BelongsToModule, RunsWhenModuleInactive};
 use App\Services\Learning\LearningLtiKeyService;
 use Illuminate\Console\Command;
 
 /** LTI-Signaturschlüssel tauschen, sobald er fällig ist (Feature 149). */
+#[BelongsToModule('learning')]
+#[RunsWhenModuleInactive('Sicherheitspflicht: der LTI-Signaturschlüssel wird nach Frist getauscht und abgelaufene Schlüssel entfernt; ein liegengebliebener Schlüssel bliebe sonst nach dem Wiedereinschalten gültig.')]
 class LearningLtiRotateKeysCommand extends Command {
     protected $signature = 'learning:lti-rotate-keys {--force : Sofort tauschen, auch wenn der Schlüssel noch nicht fällig ist}';
 

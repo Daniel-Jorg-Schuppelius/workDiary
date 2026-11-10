@@ -74,6 +74,30 @@ class LexofficeContactSyncTest extends TestCase {
         ]);
     }
 
+    /** MVP-1527: Die lokale USt-IdNr. ist kanonisch gespeichert, Lexoffice liefert sie formatiert. */
+    public function test_sync_links_via_a_formatted_vat_id(): void {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Leuchtfeuer Segelschule',
+            'vat_id' => 'DE811907980',
+        ]);
+
+        $this->fakeContacts([[
+            'id' => 'lex-leuchtfeuer',
+            'company' => ['name' => 'Segelschule Leuchtfeuer GbR', 'vatRegistrationId' => 'de 811 907 980'],
+            'emailAddresses' => ['business' => ['buero@segelschule.test']],
+        ]]);
+
+        $result = (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins);
+
+        $this->assertSame(1, $result['linked']);
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => LexofficePlugin::ID,
+            'referenceable_id' => $customer->id,
+            'external_id' => 'lex-leuchtfeuer',
+        ]);
+    }
+
     public function test_lexoffice_wins_policy_updates_local_fields(): void {
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,

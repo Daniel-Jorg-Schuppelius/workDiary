@@ -37,6 +37,13 @@
         </div>
     @endif
 
+    @if (($cancellationBlocked ?? null) !== null)
+        <div role="status" class="alert alert-info text-sm">
+            <x-icon name="info" />
+            {{ $cancellationBlocked }}
+        </div>
+    @endif
+
     @if ((int) $invoice->dunning_level > 0)
         <div role="alert" class="alert alert-warning text-sm">
             <x-icon name="notification_important" />

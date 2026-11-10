@@ -108,6 +108,13 @@ class GobdLockGuardRuleTest extends TestCase {
         // der Produktivumgebung den Dienst und weist darauf hin, dass die
         // erzeugten Audit-Zeilen bewusst keine Hash-Kette tragen.
         'app/Console/Commands/Billing/SeedQueryLoadCommand.php' => 'Messdatensatz der Listen-Lastprofile, nur außerhalb der Produktivumgebung (MVP-722).',
+        // Demo-Reset (MVP-1532/1533): Die Blöcke räumen ihre Daten nur auf einem
+        // ausgewiesenen Demo-Mandanten ab (DemoSeederService::reset verlangt is_demo).
+        // Demo-Bestandsbuchungen, -Fahrten und der Designstand von Demo-Einreichungen
+        // sind keine Nachweise; ohne sie ließen sich Lager, Artikel und Kunden nicht löschen.
+        'app/Services/Inventory/Demo/InventoryDemoBlock.php' => 'Demo-Reset löscht Demo-Bestandsbuchungen eines is_demo-Mandanten (MVP-1532).',
+        'app/Services/Travel/Demo/TravelExpenseDemoBlock.php' => 'Demo-Reset löscht Demo-Fahrten eines is_demo-Mandanten, auch festgeschriebene (MVP-1532).',
+        'app/Services/Form/Demo/FormDemoBlock.php' => 'Demo-Reset löscht den Designstand von Demo-Einreichungen eines is_demo-Mandanten (MVP-1532).',
     ];
 
     public function test_guarded_models_register_lock_guards(): void {

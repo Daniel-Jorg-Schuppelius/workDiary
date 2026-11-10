@@ -37,6 +37,12 @@ final class ServiceRequestInboxSubject implements ApprovalInboxSubject {
         return $approvable instanceof ServiceRequest && $approvable->status === ServiceRequestStatus::PendingApproval;
     }
 
+    public function requesterId(Model $approvable): ?int {
+        $reporter = $approvable instanceof ServiceRequest ? $approvable->ticket?->reported_by_user_id : null;
+
+        return $reporter !== null ? (int) $reporter : null;
+    }
+
     public function present(Model $approvable, User $viewer): ApprovalInboxEntry {
         $ticket = $approvable instanceof ServiceRequest ? $approvable->ticket : null;
 

@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Models\Platform\Organization;
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Claims\ClaimCaseService;
 use Illuminate\Console\Command;
 
@@ -22,7 +24,10 @@ use Illuminate\Console\Command;
  * Tag (Nachweis über notification_dispatch_log). Registriert in
  * config/scheduler.php (claims.escalate), nicht hartcodiert.
  */
+#[BelongsToModule('claims')]
 class EscalateClaims extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'claims:escalate';
 
     protected $description = 'Überfällige Reklamationen an Verantwortliche eskalieren';
@@ -30,6 +35,9 @@ class EscalateClaims extends Command {
     public function handle(ClaimCaseService $service): int {
         $total = 0;
         foreach (Organization::query()->cursor() as $organization) {
+            if (! $this->moduleActiveFor($organization)) {
+                continue;
+            }
             $total += $service->escalateOverdue($organization);
         }
         $this->info("Eskalationen versendet: {$total}");

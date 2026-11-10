@@ -10,7 +10,9 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Chat\Reminder;
+use App\Console\Concerns\IteratesModuleOrganizations;
+use App\Models\Chat\{Channel, Reminder};
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Chat\ChatNotificationService;
 use Illuminate\Console\Command;
 
@@ -19,7 +21,10 @@ use Illuminate\Console\Command;
  * zentralen NotificationDispatcher (B7) und markiert sie als versendet.
  * Läuft minütlich über den Scheduler.
  */
+#[BelongsToModule('chat')]
 class SendChatReminders extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'chat:send-reminders';
 
     protected $description = 'Verschickt fällige Chat-Erinnerungen.';
@@ -28,6 +33,7 @@ class SendChatReminders extends Command {
         $due = Reminder::query()
             ->whereNull('sent_at')
             ->where('remind_at', '<=', now())
+            ->whereIn('channel_id', $this->whereModuleActive(Channel::query()->withoutGlobalScopes()->select('id')))
             ->with(['message.channel', 'user'])
             ->orderBy('remind_at')
             ->limit(200)

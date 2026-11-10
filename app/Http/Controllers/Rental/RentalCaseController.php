@@ -83,6 +83,8 @@ class RentalCaseController extends Controller {
             'chargeSuggestions' => Gate::allows('finance', $rental) ? $this->billing->suggestCharges($rental) : [],
             // Online-Vorauszahlung der Direktbuchung, noch keiner Rechnung zugeordnet (MVP-1515).
             'prepaid' => Gate::allows('finance', $rental) ? $this->billing->prepaidTotal($rental) : null,
+            // Bei der Übergabe an ein führendes Programm angerechnet (MVP-1523).
+            'prepaidCredited' => Gate::allows('finance', $rental) ? $this->billing->creditedPrepaidTotal($rental) : null,
             'rentableAssets' => $this->rentableAssets(),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ]);

@@ -205,4 +205,16 @@ return [
             'saved' => 'Ziel gespeichert.',
         ],
     ],
+    // Freigabestufen im Genehmigungs-Eingang (MVP-1522).
+    'approval' => [
+        'inbox_title' => 'Investitionsantrag: :title',
+        'inbox_reference' => 'Version :version · :amount',
+        'requested_title' => 'Freigabe erbeten: Investition „:title“',
+        'requested_message' => 'Budgetantrag über :amount — Stufe :step (:kind).',
+        'delegate_without_right' => 'Bitte an eine Person delegieren, die Investitionen freigeben darf.',
+        'waiting' => 'Wartet auf Stufe :step: :who.',
+        'waiting_kind' => ':kind (Rolle :role)',
+        'waiting_role' => 'Rolle :role',
+        'not_responsible' => 'Für die offene Freigabestufe sind Sie nicht zuständig.',
+    ],
 ];

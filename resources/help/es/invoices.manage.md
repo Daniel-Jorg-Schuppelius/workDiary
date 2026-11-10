@@ -1,7 +1,7 @@
 ---
 title: "Facturas & documentos"
 topic: invoices.manage
-version: 12
+version: 13
 keywords:
     - crear factura
     - emitir factura
@@ -151,9 +151,44 @@ reembolso lo revierte. Con la contabilidad local, el pago aparece en la
 bandeja de contabilización (dinero en tránsito contra el crédito, la
 comisión del proveedor como gastos bancarios y de pago); el abono
 posterior del proveedor se contabiliza contra la cuenta de dinero en
-tránsito. El enlace en la factura y en el correo se desactiva en la
-configuración de la organización, en «Pago en línea»; en el portal del
-cliente se mantiene.
+tránsito. Un pago anticipado en línea del alquiler se registra ya en la
+fecha de pago como anticipo recibido, con IVA; la factura que lo descuenta
+liquida el anticipo y solo muestra como crédito el resto pendiente. El
+enlace en la factura y en el correo se desactiva en la configuración de la
+organización, en «Pago en línea»; en el portal del cliente se mantiene.
+
+## Anular y facturar de nuevo
+
+Un borrador se anula directamente; una factura emitida, mediante un documento
+de anulación con número propio. Ambas vías liberan todo lo que la factura
+facturó, igual que la anulación de una transferencia: tiempos registrados,
+material, desplazamientos, gastos, partidas de alquiler, entregas y el
+complemento hasta el tiempo objetivo del proyecto. Un pago anticipado en línea
+del alquiler vuelve a su reserva y se descuenta en la siguiente factura. Las
+partidas de la factura anulada no cambian; la siguiente factura del periodo
+vuelve a contener las horas y el complemento. Una factura pagada se corrige
+con una factura rectificativa. Esta no libera nada, porque puede abonar solo
+una parte de la factura.
+
+Una factura emitida que solo un pago anticipado en línea cubre en parte
+también se anula mediante un documento de anulación: el pago anticipado vuelve
+a su reserva y se descuenta en la siguiente factura. Si otro pago cubre la
+factura en parte – un movimiento bancario en la conciliación de pagos
+(incluido un descuento por pronto pago aceptado), un pago en caja, un pago en
+línea de la factura o una compensación de la partida abierta –, la anulación
+sigue bloqueada y la factura indica el motivo. Anule primero ese pago; cuando
+la factura esté pagada por completo, corríjala con una factura rectificativa.
+
+Con la contabilidad local, el documento de anulación compensa exactamente la
+partida abierta de la factura anulada, tras un pago anticipado el resto
+después del anticipo; las demás partidas abiertas del cliente no se tocan.
+Después, el anticipo vuelve a estar abierto y se liquida con la siguiente
+factura. Por eso, contabilice la factura antes que su documento de anulación;
+de lo contrario, el documento de anulación espera en la bandeja de
+contabilización con un aviso. Una factura anulada con documento de anulación
+también aparece allí para contabilizarla, porque ambos documentos pertenecen
+al diario. El documento de anulación no cuenta como pago, tampoco en los
+informes por criterio de caja (resultado por caja, IVA por criterio de caja).
 
 ## Documentos relacionados
 

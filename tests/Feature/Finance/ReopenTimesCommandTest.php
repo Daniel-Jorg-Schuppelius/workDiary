@@ -109,6 +109,33 @@ class ReopenTimesCommandTest extends TestCase {
         $this->assertTrue((bool) $entry->fresh()->exported);
     }
 
+    /** MVP-1521: Ein Storno vor der Freigabe ließ die Zeiten verbraucht zurück — der Befehl holt sie zurück. */
+    public function test_zeiten_einer_stornierten_rechnung_werden_wieder_geoeffnet(): void {
+        $entry = $this->closedEntry('2026-04-10');
+        $invoice = Invoice::create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'number' => 'R-0002',
+            'status' => InvoiceStatus::Cancelled,
+            'currency' => 'EUR',
+            'tax_rate' => '19.00',
+            'created_by' => $this->user->id,
+        ]);
+        InvoiceItem::create([
+            'organization_id' => $this->organization->id,
+            'invoice_id' => $invoice->id,
+            'time_entry_id' => $entry->id,
+            'description' => 'Leistung',
+            'quantity' => '1.00',
+            'unit_price' => '90.00',
+            'position' => 1,
+        ])->timeEntries()->attach($entry->id);
+
+        $this->artisan('billing:reopen-times', ['--from' => '2026-04-01', '--apply' => true])->assertSuccessful();
+
+        $this->assertFalse((bool) $entry->fresh()->exported);
+    }
+
     public function test_uebergebene_zeiten_bleiben_geschlossen(): void {
         $entry = $this->closedEntry('2026-04-11');
 

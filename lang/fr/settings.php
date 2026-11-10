@@ -132,7 +132,7 @@ return [
         'on_documents_hint' => 'Désactivé, le paiement en ligne reste possible dans le portail client.',
     ],
     'approvals' => [
-        'step_roles_hint' => 'Les étapes d\'approbation d\'une négociation contractuelle apparaissent sous « Approbations » pour le rôle associé à leur type d\'étape. L\'approbation depuis le dossier reste possible.',
+        'step_roles_hint' => 'Les étapes d\'approbation des négociations contractuelles et des demandes d\'investissement apparaissent sous « Approbations » pour le rôle associé à leur type d\'étape. Les demandes d\'investissement ne sont tranchées, même depuis le dossier, que par ce rôle ; les négociations contractuelles restent approuvables depuis le dossier. Si personne n\'a ce rôle, la demande reste ouverte jusqu\'à son attribution — les administrateurs ne tranchent eux aussi qu\'avec ce rôle.',
         'step_role' => ':kind : rôle responsable',
         'default_role' => 'Par défaut (:role)',
     ],

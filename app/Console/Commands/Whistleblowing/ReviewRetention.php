@@ -14,6 +14,7 @@ namespace App\Console\Commands\Whistleblowing;
 
 use App\Enums\Whistleblowing\CaseStatus;
 use App\Models\Whistleblowing\WhistleblowingCase;
+use App\Modules\Attributes\RunsWhenModuleInactive;
 use App\Services\Whistleblowing\WhistleblowingCaseWorkflowService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -23,6 +24,7 @@ use Illuminate\Support\Carbon;
  * die Aufbewahrungspruefung (retention_review). BEWUSST keine automatische
  * Loeschung – die Loeschung ist eine bewusst autorisierte Handlung (Abschnitt 16).
  */
+#[RunsWhenModuleInactive('Aufbewahrungspflicht: abgeschlossene Hinweisgeberfälle gehen nach Ablauf der Frist in die Aufbewahrungsprüfung (HinSchG § 11), auch wenn das Modul abgeschaltet ist.')]
 class ReviewRetention extends Command {
     protected $signature = 'whistleblowing:retention-review';
 

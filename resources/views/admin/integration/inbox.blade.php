@@ -649,6 +649,28 @@
                                 @foreach ($conflictActions->inboxConflictActions($item) as $action)
                                     <x-ui-action :action="$action" size="sm" show-label />
                                 @endforeach
+                            @elseif ($item->isRemoteDeletion())
+                                {{-- Termin in der Quelle entfernt (MVP-1528): kein Fremdstand zum Übernehmen. --}}
+                                @if ($timeEntry !== null)
+                                    @can('update', $timeEntry)
+                                        <x-icon-btn icon="edit" tone="outline" size="sm" data-entry-modal-trigger show-label
+                                                    :label="__('import.ical_subscription.removed_open')"
+                                                    :href="$timeEntry->project !== null ? route('projects.time-entries.edit', [$timeEntry->project, $timeEntry]) : route('admin-time-entries.edit', $timeEntry)" />
+                                    @endcan
+                                    @if (! $timeEntry->exported)
+                                        @can('delete', $timeEntry)
+                                            <form method="POST" action="{{ route('admin.integration.inbox.delete-record', $item) }}"
+                                                  data-confirm-dialog data-confirm-message="{{ __('import.ical_subscription.removed_delete_confirm') }}">
+                                                @csrf
+                                                <x-button type="submit" tone="outline">{{ __('import.ical_subscription.removed_delete') }}</x-button>
+                                            </form>
+                                        @endcan
+                                    @endif
+                                @endif
+                                <form method="POST" action="{{ route('admin.integration.inbox.keep-local', $item) }}">
+                                    @csrf
+                                    <x-button type="submit">{{ __('import.ical_subscription.removed_acknowledge') }}</x-button>
+                                </form>
                             @elseif ($item->case_type === IntegrationInboxItem::CASE_CONFLICT)
                                 @foreach ($conflictActions?->inboxConflictActions($item) ?? [] as $action)
                                     <x-ui-action :action="$action" size="sm" show-label />

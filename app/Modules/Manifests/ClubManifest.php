@@ -128,6 +128,9 @@ final class ClubManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Club\WorkQueue\ClubMembershipWorkItemSource::class,
+            ],
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\Club\DeadlineScans\ClubEventReminderScan::class,
                 \App\Services\Club\DeadlineScans\ClubGroupCriteriaScan::class,

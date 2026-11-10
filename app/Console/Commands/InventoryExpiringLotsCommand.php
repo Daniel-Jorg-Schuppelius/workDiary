@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Console\Concerns\IteratesOrganizations;
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Platform\Organization;
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Inventory\LotService;
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Console\Command;
@@ -27,8 +28,9 @@ use Illuminate\Support\Carbon;
  * war zuvor toter Code ohne Aufrufer. Dedupliziert je Charge über den
  * NotificationDispatcher (Betreff enthält die Lot-ID).
  */
+#[BelongsToModule('inventory')]
 class InventoryExpiringLotsCommand extends Command {
-    use IteratesOrganizations;
+    use IteratesModuleOrganizations;
 
     protected $signature = 'inventory:expiring-lots {--days=30 : Vorlauf in Tagen} ' . self::ORGANIZATION_OPTION;
 

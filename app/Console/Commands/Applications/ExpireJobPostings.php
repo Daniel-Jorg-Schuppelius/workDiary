@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Applications;
 
-use App\Console\Concerns\IteratesOrganizations;
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Enums\Applications\JobPostingStatus;
 use App\Models\Applications\JobPosting;
 use Illuminate\Console\Command;
@@ -23,7 +23,7 @@ use Illuminate\Console\Command;
  * config/scheduler.php (recruiting.expire_postings).
  */
 class ExpireJobPostings extends Command {
-    use IteratesOrganizations;
+    use IteratesModuleOrganizations;
 
     protected $signature = 'recruiting:expire-postings ' . self::ORGANIZATION_OPTION;
 

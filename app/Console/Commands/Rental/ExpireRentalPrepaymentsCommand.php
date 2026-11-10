@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Rental;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Services\Rental\RentalRequestService;
 use Illuminate\Console\Command;
 
@@ -20,12 +21,14 @@ use Illuminate\Console\Command;
  * (MVP-1515); für den Scheduler im Fünf-Minuten-Takt.
  */
 class ExpireRentalPrepaymentsCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'rental:expire-prepayments';
 
     protected $description = 'Gibt Direktbuchungen im Verleih frei, deren Online-Vorauszahlung bis zur Frist nicht eingegangen ist.';
 
     public function handle(RentalRequestService $requests): int {
-        $expired = $requests->expireUnpaid();
+        $expired = $requests->expireUnpaid($this->moduleOrganizationIds());
         $this->info("Unbezahlte Direktbuchungen freigegeben: {$expired}.");
 
         return self::SUCCESS;

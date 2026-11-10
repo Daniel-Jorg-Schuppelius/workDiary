@@ -12,6 +12,7 @@ return [
     'qualification' => [
         'missing' => 'Missing required qualification',
         'blocked' => 'Assignment blocked: on :date, :user lacks the required qualification :qualifications (missing, expired or not yet valid).',
+        'hint' => 'Note: on :date, :user lacks the required qualification :qualifications (missing, expired or not yet valid).',
     ],
     'availability' => [
         'title' => 'Availability & shift wishes',

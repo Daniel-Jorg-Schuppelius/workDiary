@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Integrity;
 
 use App\Enums\Security\IntegrityCheckStatus;
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Release\CodeIntegrityService;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
@@ -23,6 +24,7 @@ use Illuminate\Console\Command;
  * Exit-Codes: 0 = ok, 1 = Abweichung/Fehler, 2 = keine Baseline —
  * geeignet für externes Monitoring (--json für Maschinenlesbarkeit).
  */
+#[BelongsToModule('platform')]
 class VerifyIntegrityCommand extends Command {
     protected $signature = 'integrity:verify
         {--json : Ergebnis als JSON ausgeben (Monitoring)}

@@ -16,7 +16,7 @@ namespace App\Jobs\Contracts;
  * Queue-Job eines Fachmoduls (MVP-1518): {@see \App\Jobs\Middleware\EnsureModuleActive}
  * führt ihn nur aus, wenn das Modul für seine Organisation aktiv ist. Das Modul
  * ergibt sich aus dem Domänenordner (`App\Jobs\<Ordner>\…`), außerhalb eines
- * Ordners aus {@see \App\Jobs\Attributes\BelongsToModule}.
+ * Ordners aus {@see \App\Modules\Attributes\BelongsToModule}.
  */
 interface ModuleJob {
     /** Organisation, für die der Job wirkt; null = ohne Organisationsbezug (läuft ungeprüft). */

@@ -15,6 +15,7 @@ namespace App\Casts;
 use App\Casts\Concerns\EncryptsAtRest;
 use Illuminate\Contracts\Database\Eloquent\{CastsAttributes, ComparesCastableAttributes};
 use Illuminate\Database\Eloquent\Model;
+use LogicException;
 
 /**
  * Basis der Kennungs-Casts (IBAN, BIC, USt-IdNr., Steuernummer, Steuer-ID,
@@ -58,6 +59,15 @@ abstract class IdentifierCast implements CastsAttributes, ComparesCastableAttrib
     /** Chiffrate gleicher Klartexte sind verschieden; ohne Vergleich gälte jedes Speichern als Änderung. */
     public function compare(Model $model, string $key, mixed $firstValue, mixed $secondValue): bool {
         return $this->read($firstValue) === $this->read($secondValue);
+    }
+
+    /** Form, in der eine Eingabe gespeichert würde — Suchwert für SQL-Vergleiche (MVP-1527). */
+    public function storedForm(string $raw): string {
+        if ($this->hasOption('encrypted')) {
+            throw new LogicException('Verschlüsselte Kennungen lassen sich nicht per SQL vergleichen.');
+        }
+
+        return $this->normalise(trim($raw));
     }
 
     /** Gültig → kanonisch, sonst unverändert. */

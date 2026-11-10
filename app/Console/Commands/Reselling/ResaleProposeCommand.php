@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Reselling;
 
-use App\Console\Concerns\IteratesOrganizations;
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Models\Platform\Organization;
 use App\Services\Reselling\Register\LinkProposer;
 use Illuminate\Console\Command;
@@ -25,7 +25,7 @@ use RuntimeException;
  * laufender Lauf (Sperre je Organisation) wird übersprungen, nicht gewartet.
  */
 class ResaleProposeCommand extends Command {
-    use IteratesOrganizations;
+    use IteratesModuleOrganizations;
 
     protected $signature = 'resale:propose ' . self::ORGANIZATION_OPTION;
 

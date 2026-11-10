@@ -205,4 +205,16 @@ return [
             'saved' => 'Objectif enregistré.',
         ],
     ],
+    // Étapes d'approbation dans la boîte des approbations (MVP-1522).
+    'approval' => [
+        'inbox_title' => "Demande d'investissement : :title",
+        'inbox_reference' => 'Version :version · :amount',
+        'requested_title' => 'Approbation demandée : investissement « :title »',
+        'requested_message' => 'Demande de budget de :amount — étape :step (:kind).',
+        'delegate_without_right' => 'Veuillez déléguer à une personne autorisée à approuver les investissements.',
+        'waiting' => 'En attente de l’étape :step : :who.',
+        'waiting_kind' => ':kind (rôle :role)',
+        'waiting_role' => 'Rôle :role',
+        'not_responsible' => 'Vous n’êtes pas responsable de l’étape d’approbation en cours.',
+    ],
 ];

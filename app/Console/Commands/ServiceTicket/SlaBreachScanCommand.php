@@ -10,6 +10,7 @@
 
 namespace App\Console\Commands\ServiceTicket;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Models\ServiceTicket\ServiceTicket;
 use App\Services\ServiceTicket\SlaViolationService;
@@ -18,6 +19,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 
 class SlaBreachScanCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'tickets:scan-sla-breaches';
 
     protected $description = 'Markiert Reaktions-/Lösungs-SLA-Verletzungen offener Service-Tickets, schreibt das Verletzungsregister und auditiert sie.';
@@ -27,7 +30,7 @@ class SlaBreachScanCommand extends Command {
         $reactionBreached = 0;
         $resolutionBreached = 0;
 
-        ServiceTicket::query()
+        $this->whereModuleActive(ServiceTicket::query())
             ->whereNotIn('status', [
                 ServiceTicketStatus::Closed->value,
                 ServiceTicketStatus::Rejected->value,

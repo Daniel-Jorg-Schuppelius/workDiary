@@ -43,6 +43,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $checkout_url
  * @property Carbon|null $checkout_expires_at
  * @property Carbon|null $paid_at
+ * @property Carbon|null $credited_at  Bei der Übergabe an ein führendes Programm angerechnet (MVP-1523)
  */
 class OnlinePayment extends Model {
     use Auditable;
@@ -65,6 +66,7 @@ class OnlinePayment extends Model {
         'refunded_amount' => MoneyCast::class . ':currency,2',
         'checkout_expires_at' => 'datetime',
         'paid_at' => 'datetime',
+        'credited_at' => 'datetime',
     ];
 
     /** @return BelongsTo<Invoice, $this> */

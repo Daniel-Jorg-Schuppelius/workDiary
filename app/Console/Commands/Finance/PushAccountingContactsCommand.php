@@ -28,9 +28,10 @@ use Throwable;
 class PushAccountingContactsCommand extends Command {
     protected $signature = 'accounting:push-contacts
         {plugin : Plugin-ID des Buchhaltungssystems (sevdesk, easybill, orgamax, lexoffice)}
-        {--organization= : ID einer einzelnen Organisation, sonst alle}';
+        {--organization= : ID einer einzelnen Organisation, sonst alle}
+        {--suppliers : Lieferanten statt Kunden übertragen (MVP-1526)}';
 
-    protected $description = 'Überträgt Kunden als Kontakte in das führende Buchhaltungssystem (Feature 122).';
+    protected $description = 'Überträgt Kunden oder mit --suppliers Lieferanten als Kontakte in das führende Buchhaltungssystem (Feature 122).';
 
     public function handle(ContactPushService $contacts): int {
         if (! $contacts->pushAllowed()) {
@@ -41,6 +42,7 @@ class PushAccountingContactsCommand extends Command {
 
         $pluginId = (string) $this->argument('plugin');
         $orgOption = $this->option('organization');
+        $suppliers = (bool) $this->option('suppliers');
         $totals = ['pushed' => 0, 'skipped' => 0, 'failed' => 0];
 
         $organizations = Organization::query()
@@ -49,7 +51,7 @@ class PushAccountingContactsCommand extends Command {
 
         foreach ($organizations as $organization) {
             try {
-                $result = $contacts->pushAll($organization, $pluginId);
+                $result = $suppliers ? $contacts->pushAllSuppliers($organization, $pluginId) : $contacts->pushAll($organization, $pluginId);
                 foreach ($totals as $key => $value) {
                     $totals[$key] = $value + $result[$key];
                 }
@@ -59,7 +61,8 @@ class PushAccountingContactsCommand extends Command {
         }
 
         $this->info(sprintf(
-            'Kontakt-Push (%s): %d übertragen, %d übersprungen, %d Fehler',
+            '%s (%s): %d übertragen, %d übersprungen, %d Fehler',
+            $suppliers ? 'Lieferanten-Push' : 'Kontakt-Push',
             $pluginId,
             $totals['pushed'],
             $totals['skipped'],

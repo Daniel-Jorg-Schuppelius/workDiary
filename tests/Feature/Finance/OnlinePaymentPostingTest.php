@@ -157,4 +157,125 @@ final class OnlinePaymentPostingTest extends TestCase {
         $this->assertCount(1, $items);
         $this->assertContains((string) __('accounting.inbox.blocker.changed_since_posting'), $items->first()['blockers']);
     }
+
+    /**
+     * MVP-1523: Eine bei der Übergabe an ein führendes Programm angerechnete
+     * Verleih-Vorauszahlung bucht als erhaltene Anzahlung mit Umsatzsteuer.
+     */
+    public function test_credited_prepayment_books_an_advance_payment_received_with_vat(): void {
+        $this->advanceRules();
+        $payment = $this->prepayment(credited: true, refunded: '0.00');
+
+        $proposal = app(OnlinePaymentAdapter::class)->proposalFor($this->org, $payment);
+
+        $this->assertSame([], $proposal->blockers);
+        $this->assertSame(['refunded_amount' => '0.00', 'advance_rate' => '19.00'], $proposal->extra);
+        $this->assertSame([
+            '1360 S 119.00 H 0.00',
+            '1718 S 0.00 H 100.00',
+            '1776 S 0.00 H 19.00',
+            '4970 S 2.04 H 0.00',
+            '1360 S 0.00 H 2.04',
+        ], array_map(static fn ($line): string => $line->account->number . ' S ' . $line->debit . ' H ' . $line->credit, $proposal->lines));
+        $this->assertSame('19.00', $proposal->lines[2]->taxAmount);
+        $this->assertSame('121.04', $proposal->debitTotal());
+        $this->assertSame('121.04', $proposal->creditTotal());
+    }
+
+    public function test_refund_of_a_credited_prepayment_reverses_net_and_vat(): void {
+        $this->advanceRules();
+        $proposal = app(OnlinePaymentAdapter::class)->proposalFor($this->org, $this->prepayment(credited: true, refunded: '59.50'));
+
+        $this->assertSame([], $proposal->blockers);
+        $this->assertSame([
+            '1360 S 119.00 H 0.00',
+            '1718 S 0.00 H 100.00',
+            '1776 S 0.00 H 19.00',
+            '1718 S 50.00 H 0.00',
+            '1776 S 9.50 H 0.00',
+            '1360 S 0.00 H 59.50',
+            '4970 S 2.04 H 0.00',
+            '1360 S 0.00 H 2.04',
+        ], array_map(static fn ($line): string => $line->account->number . ' S ' . $line->debit . ' H ' . $line->credit, $proposal->lines));
+        // Die Erstattung mindert die Umsatzsteuer: Der Steuerbetrag trägt das Vorzeichen der Wirkung.
+        $this->assertSame('-9.50', $proposal->lines[4]->taxAmount);
+    }
+
+    /** MVP-1542: Mindest-Istversteuerung — die Vorauszahlung vor der lokalen Rechnung bucht am Zahlungstag. */
+    public function test_prepayment_waiting_for_its_invoice_books_an_advance_on_the_payment_day(): void {
+        $this->advanceRules();
+        $proposal = app(OnlinePaymentAdapter::class)->proposalFor($this->org, $this->prepayment(credited: false, refunded: '0.00'));
+
+        $this->assertSame([], $proposal->blockers);
+        $this->assertSame('2026-06-15', $proposal->bookedOn->toDateString());
+        $this->assertSame([
+            '1360 S 119.00 H 0.00',
+            '1718 S 0.00 H 100.00',
+            '1776 S 0.00 H 19.00',
+            '4970 S 2.04 H 0.00',
+            '1360 S 0.00 H 2.04',
+        ], array_map(static fn ($line): string => $line->account->number . ' S ' . $line->debit . ' H ' . $line->credit, $proposal->lines));
+    }
+
+    /** MVP-1521: gibt der Storno der Rechnung die Zahlung frei, ist der Buchungssatz zu prüfen. */
+    public function test_payment_detached_from_its_invoice_counts_as_changed_since_posting(): void {
+        $inbox = app(\App\Services\Accounting\Posting\PostingInboxService::class);
+        $admin = User::query()->where('organization_id', $this->org->id)->firstOrFail();
+        $payment = $this->payment('0.00', null);
+        $entry = $inbox->prepare($this->org, app(OnlinePaymentAdapter::class)->proposalFor($this->org, $payment), $admin);
+        app(JournalService::class)->post($entry, $admin);
+        $this->assertFalse(app(OnlinePaymentAdapter::class)->changedSincePosting($payment, $entry->refresh()));
+
+        $payment->forceFill(['invoice_id' => null])->save();
+
+        $this->assertTrue(app(OnlinePaymentAdapter::class)->changedSincePosting($payment->refresh(), $entry->refresh()));
+    }
+
+    private function advanceRules(): void {
+        $chart = app(ChartOfAccountsService::class);
+        foreach ([
+            ['1718', 'Erhaltene, versteuerte Anzahlungen 19 % USt', AccountType::Liability, PostingAccountRole::AdvanceReceived],
+            ['1776', 'Umsatzsteuer 19 %', AccountType::Liability, PostingAccountRole::TaxOutput],
+        ] as [$number, $name, $type, $role]) {
+            $account = $chart->create($this->org, ['number' => $number, 'name' => $name, 'type' => $type]);
+            AccountingPostingRule::query()->create([
+                'organization_id' => $this->org->id,
+                'source_kind' => PostingSourceKind::OnlinePayment,
+                'role' => $role,
+                'accounting_account_id' => $account->id,
+                'match_criteria' => ['tax_rate' => '19.00'],
+                'priority' => 100,
+                'version' => 1,
+                'valid_from' => '2026-01-01',
+                'is_active' => true,
+            ]);
+        }
+    }
+
+    private function prepayment(bool $credited, string $refunded): OnlinePayment {
+        $request = \App\Models\Rental\RentalRequest::query()->create([
+            'organization_id' => $this->org->id,
+            'customer_id' => $this->invoice->customer_id,
+            'starts_at' => '2026-06-20 08:00:00',
+            'ends_at' => '2026-06-22 17:00:00',
+        ]);
+        $payment = OnlinePayment::query()->create([
+            'organization_id' => $this->org->id,
+            'subject_type' => $request->getMorphClass(),
+            'subject_id' => $request->id,
+            'provider' => 'stripe',
+            'provider_reference' => 'cs_test_' . uniqid(),
+            'status' => OnlinePaymentStatus::Paid,
+            'currency' => 'EUR',
+            'gross_amount' => '119.00',
+            'fee_amount' => '2.04',
+            'refunded_amount' => $refunded,
+            'paid_at' => '2026-06-15 10:00:00',
+        ]);
+        if ($credited) {
+            $payment->forceFill(['credited_at' => '2026-06-23 09:00:00'])->save();
+        }
+
+        return $payment->refresh();
+    }
 }

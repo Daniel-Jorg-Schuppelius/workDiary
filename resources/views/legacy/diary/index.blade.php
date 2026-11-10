@@ -41,7 +41,7 @@
             </div>{{-- badge+tabs --}}
             <div class="flex items-center gap-2">
                 @if ($tab === 'auftraege')
-                    @if ($isAdmin)
+                    @if ($legacyUserId > 0)
                         <x-icon-btn icon="add" tone="outline" size="sm"
                                     data-entry-modal-trigger
                                     :href="route('legacy.diary.create')"

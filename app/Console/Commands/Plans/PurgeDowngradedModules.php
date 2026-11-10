@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Plans;
 
 use App\Models\Platform\PlanModuleGrace;
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Licensing\ModuleCatalog;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,7 @@ use Illuminate\Support\Carbon;
  * werden NIE geloescht, nur als verarbeitet markiert (Zugriff sperrt schon das
  * Gate). Loeschung ist org-scoped; DB-FK-Cascade entfernt Kind-Datensaetze.
  */
+#[BelongsToModule('licensing')]
 class PurgeDowngradedModules extends Command {
     protected $signature = 'plans:purge {--dry-run : Nur anzeigen, nichts loeschen} {--org= : Auf eine Organisation beschraenken}';
 

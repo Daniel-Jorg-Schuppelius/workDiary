@@ -10,6 +10,8 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Payroll\EurostatMinimumWageImporter;
 use Illuminate\Console\Command;
 use Throwable;
@@ -19,12 +21,20 @@ use Throwable;
  * von Eurostat (earn_mw_avgr2) in die Referenztabelle. Läuft manuell sowie
  * geplant (siehe routes/console.php) und per Button auf der Lohn-Seite.
  */
+#[BelongsToModule('payroll')]
 class ImportMinimumWagesCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'payroll:import-minimum-wages';
 
     protected $description = 'Importiert die EU-Mindestlöhne (Eurostat earn_mw_avgr2) in die Referenztabelle.';
 
     public function handle(EurostatMinimumWageImporter $importer): int {
+        if (! $this->moduleActiveAnywhere()) {
+            $this->line('Kein Abruf: das Lohnmodul ist in keiner Organisation aktiv.');
+
+            return self::SUCCESS;
+        }
         try {
             $count = $importer->import();
         } catch (Throwable $e) {

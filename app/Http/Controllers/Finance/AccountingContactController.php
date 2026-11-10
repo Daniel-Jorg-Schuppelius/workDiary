@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
+use App\Models\Supplier\Supplier;
 use App\Plugins\Contracts\ContactSyncer;
 use App\Plugins\PluginManager;
 use App\Services\Finance\Accounting\ContactPushService;
@@ -23,7 +24,8 @@ use Illuminate\Support\Facades\Gate;
 use Throwable;
 
 /**
- * Einzel-Push eines Kunden in die Buchhaltung (Feature 122, MVP-611).
+ * Einzel-Push eines Kunden (Feature 122, MVP-611) oder Lieferanten (MVP-1526)
+ * in die Buchhaltung.
  *
  * Ergänzt den Lauf: Wer einen Kunden gerade angelegt hat, will ihn sofort
  * drüben haben, ohne auf die Nacht zu warten.
@@ -52,6 +54,27 @@ class AccountingContactController extends Controller {
         }
 
         return back()->with('status', __('accounting.flash.pushed', ['id' => $externalId]));
+    }
+
+    /**
+     * Bestehenden Lieferanten übertragen (MVP-1526): Anlage und Änderung
+     * erreichen nur neue bzw. schon verknüpfte Lieferanten.
+     */
+    public function pushSupplier(Request $request, Supplier $supplier): RedirectResponse {
+        Gate::authorize('update', $supplier);
+
+        $pluginId = trim((string) $request->input('plugin', '')) ?: $this->contacts->supplierSyncerId();
+        if ($pluginId === null) {
+            return back()->with('error', __('accounting.flash.no_supplier_plugin'));
+        }
+
+        try {
+            $externalId = $this->contacts->pushSupplier($supplier, $pluginId);
+        } catch (Throwable $e) {
+            return back()->with('error', __('accounting.flash.failed', ['msg' => ErrorText::for($e)]));
+        }
+
+        return back()->with('status', __('accounting.flash.pushed_supplier', ['id' => $externalId]));
     }
 
     /** Erstes aktives Plugin, das Kontakte überträgt. */

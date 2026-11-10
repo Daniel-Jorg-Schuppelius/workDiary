@@ -10,8 +10,10 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Events\Chat\MessageSent;
 use App\Models\Chat\{Channel, ScheduledMessage};
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Chat\ChatNotificationService;
 use Illuminate\Console\Command;
 
@@ -19,7 +21,10 @@ use Illuminate\Console\Command;
  * Erzeugt und versendet fällige geplante Chat-Nachrichten. Die echte Nachricht
  * entsteht erst hier (korrekte Reihenfolge/Echtzeit). Läuft minütlich.
  */
+#[BelongsToModule('chat')]
 class SendScheduledMessages extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'chat:send-scheduled';
 
     protected $description = 'Sendet fällige geplante Chat-Nachrichten.';
@@ -27,6 +32,7 @@ class SendScheduledMessages extends Command {
     public function handle(ChatNotificationService $chat): int {
         $due = ScheduledMessage::query()
             ->where('scheduled_at', '<=', now())
+            ->whereIn('channel_id', $this->whereModuleActive(Channel::query()->withoutGlobalScopes()->select('id')))
             ->orderBy('scheduled_at')
             ->limit(200)
             ->get();

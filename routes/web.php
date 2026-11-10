@@ -2143,6 +2143,8 @@ Route::middleware('auth')->group(function () {
         // Kontakt-Push in die Buchhaltung (Feature 122, MVP-611).
         Route::post('kunden/{customer}/buchhaltung/push', [\App\Http\Controllers\Finance\AccountingContactController::class, 'push'])
             ->name('accounting.contacts.push');
+        Route::post('lieferanten/{supplier}/buchhaltung/push', [\App\Http\Controllers\Finance\AccountingContactController::class, 'pushSupplier'])
+            ->name('accounting.suppliers.push');
 
         // Kundenrundschreiben (Feature 119, MVP-608).
         Route::prefix('rundschreiben')->name('circulars.')->group(function (): void {
@@ -5556,6 +5558,7 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/integration/inbox/{item}/create', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'create'])->name('admin.integration.inbox.create');
         Route::post('admin/integration/inbox/{item}/accept-remote', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'acceptRemote'])->name('admin.integration.inbox.accept-remote');
         Route::post('admin/integration/inbox/{item}/keep-local', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'keepLocal'])->name('admin.integration.inbox.keep-local');
+        Route::post('admin/integration/inbox/{item}/delete-record', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'deleteRemovedRecord'])->name('admin.integration.inbox.delete-record');
         Route::post('admin/integration/inbox/{item}/dismiss', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'dismiss'])->name('admin.integration.inbox.dismiss');
         Route::get('admin/integration/mappings', [\App\Http\Controllers\Admin\IntegrationMappingController::class, 'index'])->name('admin.integration.mappings.index');
         Route::delete('admin/integration/mappings/{reference}', [\App\Http\Controllers\Admin\IntegrationMappingController::class, 'destroy'])->name('admin.integration.mappings.destroy');

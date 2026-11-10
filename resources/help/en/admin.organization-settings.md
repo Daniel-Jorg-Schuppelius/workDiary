@@ -1,7 +1,7 @@
 ---
 title: "Organization and settings"
 topic: admin.organization-settings
-version: 5
+version: 6
 keywords:
     - company settings
     - tenant settings
@@ -161,13 +161,16 @@ recorded time:
 - **Vacation approval stages**, **Overtime approval stages** and **Time
   correction approval stages**: each **Single-stage (one approval)** (default)
   or **Two-stage (four-eyes principle)** – a request then needs two approvals.
-- **Commercial: responsible role**, **Technical: responsible role** and
-  **HR: responsible role**: approval steps of a contract negotiation appear in
-  the approval inbox under “Approvals” for the role assigned to their step
-  kind. All roles except Customer can be selected. Left empty, the default
-  applies: **Default (Accounting)**, **Default (Team Lead)** or **Default
-  (Personnel Administration)**. Approval directly on the record remains
-  possible.
+- **Commercial: responsible role**, **Technical: responsible role**, **HR:
+  responsible role** and **Management: responsible role**: approval steps of
+  contract negotiations and investment requests appear in the approval inbox
+  under “Approvals” for the role assigned to their step kind. All roles except
+  Customer can be selected. Left empty, the default applies: **Default
+  (Accounting)**, **Default (Team Lead)**, **Default (Personnel
+  Administration)** or **Default (Management)**. Contract negotiations can
+  still be approved directly on the record; investment requests are decided
+  only by the assigned role on the record as well — admins likewise only if
+  they hold this role.
 - **Book requested absences immediately as provisional (rejection removes
   them)**: requested absences already take effect in planning before
   approval, marked as provisional; a rejection removes them. Only approved

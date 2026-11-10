@@ -17,4 +17,8 @@ use Carbon\CarbonInterface;
 
 final class NullAssignmentQualificationGuard implements AssignmentQualificationGuard {
     public function assertEntryAssignable(DiaryEntry $entry, int $userId, ?CarbonInterface $date = null, string $field = 'assigned_user_id'): void {}
+
+    public function entryHint(DiaryEntry $entry, int $userId, ?CarbonInterface $date = null): ?string {
+        return null;
+    }
 }

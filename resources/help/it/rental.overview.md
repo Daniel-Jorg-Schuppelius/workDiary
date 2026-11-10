@@ -1,7 +1,7 @@
 ---
 title: "Noleggio attrezzature"
 topic: rental.overview
-version: 5
+version: 6
 keywords:
     - locatore
     - casa vacanze
@@ -79,8 +79,21 @@ fornitore di pagamento:
   WorkDiary non conferma nulla ma Glielo segnala per un rimborso o una nuova
   prenotazione.
 - La pratica mostra il pagamento anticipato versato. Al trasferimento delle
-  posizioni di noleggio in fattura viene assegnato alla fattura e la copre. Se
-  un programma di contabilità gestisce le fatture, l’importo compare nel
-  registro del trasferimento; ne tenga conto lì. Nella casella di
-  contabilizzazione il pagamento anticipato diventa contabilizzabile solo con
-  la fattura.
+  posizioni di noleggio in fattura viene assegnato alla fattura e la copre. Lo
+  storno di quella fattura lo libera; la fattura successiva lo scomputa.
+- Se un programma di contabilità gestisce le fatture, il pagamento anticipato
+  è considerato scomputato con il trasferimento delle posizioni di noleggio: la
+  pratica e il registro del trasferimento indicano l’importo da scomputare lì
+  dalla fattura, e un trasferimento successivo non lo conta di nuovo.
+- Se WorkDiary tiene la contabilità, la casella di contabilizzazione registra
+  il pagamento anticipato alla data del pagamento come acconto ricevuto, con
+  IVA: l’imposta sorge con l’incasso (tassazione minima per cassa), non solo
+  con la fattura. La fattura di WorkDiary che lo scomputa compensa l’acconto
+  — il suo credito è solo il residuo aperto, e l’IVA dell’acconto viene
+  compensata con l’imposta della fattura, così che sorga una sola volta. Una
+  fattura di storno annulla la compensazione; l’acconto torna aperto finché
+  la fattura successiva non lo scomputa. Un rimborso dopo la
+  contabilizzazione riporta pagamento e fattura nella casella di
+  contabilizzazione (stornare e contabilizzare di nuovo). Per questo
+  l’assegnazione dei conti richiede il ruolo «Acconti ricevuti» (incluso nei
+  modelli SKR03 e SKR04).

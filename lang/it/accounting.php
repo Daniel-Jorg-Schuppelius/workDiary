@@ -24,6 +24,8 @@ return [
         'pushed' => 'Cliente trasferito alla contabilità (ID :id).',
         'failed' => 'Trasferimento non riuscito: :msg',
         'no_plugin' => 'Nessun sistema contabile attivo.',
+        'pushed_supplier' => 'Fornitore trasferito alla contabilità (ID :id).',
+        'no_supplier_plugin' => 'Nessun sistema contabile attivo trasferisce i fornitori.',
     ],
 
     'error' => [
@@ -324,6 +326,9 @@ return [
             'changed_since_posting' => 'L’origine è cambiata dopo la registrazione (ad es. un rimborso): stornare la registrazione e registrarla di nuovo.',
             'foreign_currency' => 'L’operazione è in :currency, la contabilità in :base — pagamenti, cassa e cespiti in valuta estera non vengono registrati.',
             'unsupported_target' => 'Per questa destinazione di pagamento non esiste ancora un percorso contabile.',
+            'prepayment_exceeds_invoice' => 'Il pagamento anticipato imputato supera la fattura: rimborsi prima l\'eccedenza.',
+            'cancelled_invoice_unposted' => 'Registri prima la fattura stornata :number: il documento di storno pareggia la sua partita aperta.',
+            'cancelled_invoice_settled' => 'La partita aperta della fattura :number porta ancora solo :open: annulli prima l\'altro pareggio (stornandone la registrazione).',
             'year_closed' => 'L\'esercizio :year è chiuso.',
             'period_closed' => 'Il periodo del :date è chiuso.',
             'no_exchange_rate' => 'Manca il cambio mensile :month per :currency (conversione in :base): lo aggiunga in Tassi di cambio.',
@@ -337,6 +342,8 @@ return [
             'depreciation' => 'Ammortamento :year · :no :name',
             'asset_disposal' => 'Dismissione :no :name',
             'online_payment' => 'Pagamento online (:provider) · :invoice',
+            'online_prepayment' => 'Pagamento anticipato online (:provider) · :customer',
+            'prepayment_resolved' => 'Acconto del :date compensato · :number',
         ],
         'reversal_reason' => [
             'unmatched' => 'Assegnazione del pagamento annullata — contro-registrazione.',

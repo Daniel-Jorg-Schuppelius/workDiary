@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\Import\{ImportErrorCode, ImportRunState};
-use App\Jobs\Attributes\BelongsToModule;
 use App\Models\Audit\AuditLog;
 use App\Models\Integration\{ImportRun, ImportRunError};
 use App\Models\Platform\User;
+use App\Modules\Attributes\BelongsToModule;
 use App\Plugins\Support\TimeWritebackObserver;
 use App\Services\Import\Contracts\ProvidesZipImport;
 use App\Services\Import\{CsvPreflightAnalyzer, EntitySpecRegistry, ImportOutcome};

@@ -205,4 +205,16 @@ return [
             'saved' => 'Obiettivo salvato.',
         ],
     ],
+    // Fasi di approvazione nella casella delle approvazioni (MVP-1522).
+    'approval' => [
+        'inbox_title' => 'Richiesta di investimento: :title',
+        'inbox_reference' => 'Versione :version · :amount',
+        'requested_title' => 'Approvazione richiesta: investimento «:title»',
+        'requested_message' => 'Richiesta di budget di :amount — fase :step (:kind).',
+        'delegate_without_right' => 'Deleghi a una persona autorizzata ad approvare investimenti.',
+        'waiting' => 'In attesa della fase :step: :who.',
+        'waiting_kind' => ':kind (ruolo :role)',
+        'waiting_role' => 'Ruolo :role',
+        'not_responsible' => 'Lei non è responsabile della fase di approvazione aperta.',
+    ],
 ];

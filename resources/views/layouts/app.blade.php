@@ -312,10 +312,13 @@
                                 @endforeach
                             @endif
 
-                            <x-icon-btn icon="add" tone="primary" size="sm"
-                                        data-entry-modal-trigger
-                                        :href="route($createRoute)"
-                                        show-label>{{ __('Neuer Eintrag') }}</x-icon-btn>
+                            {{-- Legacy-Einträge gehören einem Altsystem-Nutzer: ohne verknüpftes Konto kein Anlegen. --}}
+                            @if (\App\Legacy\Support\LegacyRoleResolver::resolveLegacyUserId(auth()->user()) > 0)
+                                <x-icon-btn icon="add" tone="primary" size="sm"
+                                            data-entry-modal-trigger
+                                            :href="route($createRoute)"
+                                            show-label>{{ __('Neuer Eintrag') }}</x-icon-btn>
+                            @endif
                         @else
                             {{-- Sidebar-Toggle (nur < lg) --}}
                             <button type="button"

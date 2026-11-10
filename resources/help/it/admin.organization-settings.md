@@ -1,7 +1,7 @@
 ---
 title: "Organizzazione e impostazioni"
 topic: admin.organization-settings
-version: 5
+version: 6
 keywords:
     - impostazioni aziendali
     - impostazioni del tenant
@@ -175,14 +175,18 @@ ArbZG dei tempi registrati:
   **Un livello (una approvazione)** (predefinito) oppure **Due livelli
   (principio dei quattro occhi)** – una richiesta richiede allora due
   approvazioni.
-- **Commerciale: ruolo responsabile**, **Tecnica: ruolo responsabile** e
-  **Risorse umane: ruolo responsabile**: le fasi di approvazione di una
-  trattativa contrattuale compaiono nella casella delle approvazioni sotto
+- **Commerciale: ruolo responsabile**, **Tecnica: ruolo responsabile**,
+  **Risorse umane: ruolo responsabile** e **Direzione: ruolo responsabile**:
+  le fasi di approvazione delle trattative contrattuali e delle richieste di
+  investimento compaiono nella casella delle approvazioni sotto
   «Approvazioni» per il ruolo assegnato al loro tipo di fase. Si possono
   scegliere tutti i ruoli tranne Cliente. Se il campo è vuoto vale il
-  predefinito: **Predefinito (Contabilità)**, **Predefinito (Capo team)**
-  oppure **Predefinito (Gestione del personale)**. L'approvazione
-  direttamente dalla pratica resta possibile.
+  predefinito: **Predefinito (Contabilità)**, **Predefinito (Capo team)**,
+  **Predefinito (Gestione del personale)** oppure **Predefinito
+  (Direzione)**. Le trattative contrattuali restano approvabili direttamente
+  dalla pratica; le richieste di investimento le decide solo il ruolo
+  assegnato, anche dalla pratica — gli amministratori anch'essi solo se
+  hanno questo ruolo.
 - **Registrare subito con riserva le assenze richieste (il rifiuto le
   rimuove)**: le assenze richieste valgono già prima dell'approvazione nella
   pianificazione, contrassegnate come riserva; un rifiuto le rimuove. Si

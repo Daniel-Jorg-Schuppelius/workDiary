@@ -223,19 +223,19 @@
                                 </x-status-badge>
                             @endforeach
                         </div>
-                        @if ($request->status === \App\Enums\Investments\InvestmentBudgetRequestStatus::InApproval)
-                            @can('approve', $case)
-                                <div class="mt-2 flex flex-wrap gap-2">
-                                    <x-action-form :action="route('investments.budget.approve', [$case, $request])">
-                                        <x-icon-btn icon="verified" tone="success" size="xs" type="submit" show-label>{{ __('Freigeben') }}</x-icon-btn>
-                                    </x-action-form>
-                                    <form method="POST" action="{{ route('investments.budget.reject', [$case, $request]) }}" class="flex items-center gap-1">
-                                        @csrf
-                                        <input aria-label="{{ __('Ablehnungsgrund (Pflicht)') }}" name="reason" required maxlength="1000" class="input input-xs input-bordered w-56" placeholder="{{ __('Ablehnungsgrund (Pflicht)') }}">
-                                        <x-button type="submit" tone="outline" size="xs">{{ __('Ablehnen') }}</x-button>
-                                    </form>
-                                </div>
-                            @endcan
+                        @if (isset($budgetDecisions[$request->id]) && $budgetDecisions[$request->id]['may'])
+                            <div class="mt-2 flex flex-wrap gap-2">
+                                <x-action-form :action="route('investments.budget.approve', [$case, $request])">
+                                    <x-icon-btn icon="verified" tone="success" size="xs" type="submit" show-label>{{ __('Freigeben') }}</x-icon-btn>
+                                </x-action-form>
+                                <form method="POST" action="{{ route('investments.budget.reject', [$case, $request]) }}" class="flex items-center gap-1">
+                                    @csrf
+                                    <input aria-label="{{ __('Ablehnungsgrund (Pflicht)') }}" name="reason" required maxlength="1000" class="input input-xs input-bordered w-56" placeholder="{{ __('Ablehnungsgrund (Pflicht)') }}">
+                                    <x-button type="submit" tone="outline" size="xs">{{ __('Ablehnen') }}</x-button>
+                                </form>
+                            </div>
+                        @elseif (isset($budgetDecisions[$request->id]))
+                            <p class="mt-2 text-sm text-muted">{{ $budgetDecisions[$request->id]['waiting'] }}</p>
                         @endif
                     </div>
                 @endforeach

@@ -1,7 +1,7 @@
 ---
 title: "Invoices & documents"
 topic: invoices.manage
-version: 12
+version: 13
 keywords:
     - create invoice
     - write invoice
@@ -143,9 +143,44 @@ partially paid — just like with an allocated bank transaction; a refund
 reverses this. With local accounting, the payment appears in the posting
 inbox (cash in transit against receivable, the provider's fee as bank and
 payment charges); you book the provider's later payout against the
-cash-in-transit account. You can switch off the link on invoices and
-emails in the organization settings under “Online payment”; it remains in
-the customer portal.
+cash-in-transit account. An online prepayment from rental is booked on the
+payment date as an advance payment received, with VAT; the invoice that
+credits it releases the advance payment and shows only the open remainder
+as receivable. You can switch off the link on invoices and emails in the
+organization settings under “Online payment”; it remains in the customer
+portal.
+
+## Cancelling and billing again
+
+A draft is cancelled directly, an issued invoice through a cancellation
+document with its own number. Both ways release everything the invoice billed,
+just like cancelling a handover: booked times, material, travel, expenses,
+rental items, deliveries and the top-up to the project target. An online
+prepayment from rentals returns to its booking and is credited on the next
+invoice. The lines of the cancelled invoice stay unchanged; the next invoice
+for the period contains the hours and the top-up again. A paid invoice is
+corrected by a corrective invoice. It releases nothing, because it may credit
+only part of the invoice.
+
+An issued invoice that only an online prepayment partly covers is also
+cancelled through a cancellation document: the prepayment returns to its
+booking and is credited on the next invoice. If another payment partly covers
+the invoice – a bank transaction in payment reconciliation (including an
+accepted early-payment discount), a cash payment, an online payment of the
+invoice or a settlement of the open item –, cancellation stays locked and the
+invoice states why. Undo that payment first; once the invoice is paid in full,
+correct it with a corrective invoice.
+
+With local accounting, the cancellation document settles exactly the open item
+of the cancelled invoice, after a prepayment the rest after the advance; other
+open items of the customer stay untouched. The advance is open again
+afterwards and is resolved with the next invoice. Post the invoice before its
+cancellation document, therefore; otherwise the cancellation document waits in
+the posting inbox with a notice. A cancelled invoice with a cancellation
+document also appears there for posting, because both documents belong in the
+journal. The cancellation document does not count as a payment, not even in
+the cash-basis reports (cash-basis income statement, VAT on payments
+received).
 
 ## Related documents
 

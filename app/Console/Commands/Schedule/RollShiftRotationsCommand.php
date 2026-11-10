@@ -10,7 +10,7 @@
 
 namespace App\Console\Commands\Schedule;
 
-use App\Console\Concerns\IteratesOrganizations;
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Models\Platform\Organization;
 use App\Services\Schedule\ShiftRotationRoller;
 use Carbon\CarbonImmutable;
@@ -21,7 +21,7 @@ use Illuminate\Console\Command;
  * Scheduler gedacht (täglich); manuell mit --weeks für ein größeres Fenster.
  */
 class RollShiftRotationsCommand extends Command {
-    use IteratesOrganizations;
+    use IteratesModuleOrganizations;
 
     protected $signature = 'shifts:roll-forward
         {--weeks=4 : Planungsfenster in Wochen ab heute}';
@@ -37,7 +37,7 @@ class RollShiftRotationsCommand extends Command {
         $organizationIds = Organization::query()->orderBy('id')->pluck('id');
         foreach ($organizationIds as $organizationId) {
             $organization = Organization::query()->whereKey($organizationId)->first();
-            if ($organization === null) {
+            if ($organization === null || ! $this->moduleActiveFor($organization)) {
                 continue;
             }
             $this->withOrganizationContext($organization, function (Organization $organization) use ($roller, $from, $weeks, &$totals): void {

@@ -1,7 +1,7 @@
 ---
 title: "Ancien système (legacy)"
 topic: legacy.overview
-version: 4
+version: 5
 keywords:
     - ancienne application
     - anciennes données
@@ -56,9 +56,15 @@ hebdomadaire**, **Liste de travail** et **Bureau central**.
   et **Notifications ouvertes**.
 
 Chacun voit les plannings de service. Les données du journal de toutes les
-personnes sont visibles pour les administrateurs de l'ancien système et pour le
-rôle **Comptabilité** ; les autres ne voient que les leurs. La connexion du
-centre d'appels mène à la même page.
+personnes sont visibles pour les administrateurs de l'ancien système,
+l'exploitation de la plateforme et le rôle **Comptabilité** ; les autres ne
+voient que les leurs. La connexion du centre d'appels mène à la même page.
+
+**Nouvelle entrée** est disponible pour toute personne dont le compte
+utilisateur est associé à un compte de l'ancien système ; seuls les
+administrateurs de l'ancien système créent des entrées pour d'autres personnes.
+L'archivage, le service d'urgence et l'astreinte sont gérés par les
+administrateurs de l'ancien système et l'exploitation de la plateforme.
 
 **Employés** se trouve dans le menu d'administration (icône **Administration**
 dans l'en-tête) sous **Personnel** et liste les utilisateurs de l'ancien
@@ -102,6 +108,9 @@ système :
 **Clients du portail** dans le menu de gestion gère les accès des clients avec
 **Entreprise**, **Nom d'utilisateur** et **Mot de passe** (4 à 10 caractères).
 Les clients ayant des commandes en cours ne peuvent pas être supprimés.
+
+L'adresse de connexion de vos clients figure en haut de la page **Clients du
+portail** ; **Copier** la place dans le presse-papiers.
 
 Les clients se connectent sur la page de connexion propre au portail client,
 ne voient que leurs propres commandes avec rendez-vous et réponses, passent de

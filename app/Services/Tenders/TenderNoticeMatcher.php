@@ -35,9 +35,10 @@ final class TenderNoticeMatcher {
      * legt neue Treffer an.
      *
      * @param  iterable<TenderNotice> $notices
+     * @param  list<int>|null  $organizationIds  nur Profile dieser Organisationen (geplanter Lauf: aktives Modul), null = alle
      * @return int Zahl der neu angelegten Treffer
      */
-    public function match(iterable $notices): int {
+    public function match(iterable $notices, ?array $organizationIds = null): int {
         // Ohne globalen Scope: Der Abgleich läuft im Cron ohne angemeldete
         // Person und ordnet gerade erst zu, wen eine Bekanntmachung angeht -
         // ein Mandantenfilter hätte hier nichts zu filtern und würde alles
@@ -45,6 +46,7 @@ final class TenderNoticeMatcher {
         $profiles = TenderFilterProfile::query()
             ->withoutGlobalScopes()
             ->where('active', true)
+            ->when($organizationIds !== null, static fn ($query) => $query->whereIn('organization_id', $organizationIds))
             ->get();
         if ($profiles->isEmpty()) {
             return 0;

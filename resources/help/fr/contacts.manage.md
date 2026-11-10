@@ -1,7 +1,7 @@
 ---
 title: "Clients & fournisseurs"
 topic: contacts.manage
-version: 14
+version: 15
 keywords:
     - Aperçu en tant que client
     - Mot de passe initial
@@ -202,6 +202,15 @@ n’accepte les fournisseurs que si la capacité « Fournisseurs » est active d
 l’administration orgaMAX et que « WorkDiary pilote » est choisi ; sinon
 orgaMAX pilote les fournisseurs et WorkDiary se contente de les associer.
 
+Les fournisseurs antérieurs au raccordement ne sont pas concernés.
+**Transférer vers la comptabilité** dans la fiche fournisseur en transfère un
+au premier logiciel actif qui accepte les fournisseurs ; l’exploitation peut
+tous les transférer en une fois avec
+`php artisan accounting:push-contacts <logiciel> --suppliers`. Un fournisseur
+déjà lié est mis à jour, pas créé une seconde fois ; les fournisseurs archivés
+et le fournisseur collectif sont exclus. Si la comptabilité pilote les données
+de base, le bouton n’apparaît pas et le traitement ne transfère rien.
+
 ## Données de base issues du logiciel comptable
 
 Si la maîtrise des données de base est réglée sur « La comptabilité dirige »,
@@ -210,7 +219,7 @@ du logiciel : Lexoffice et orgaMAX par leur propre synchronisation des
 contacts, sevDesk et easybill chaque heure selon ces règles :
 
 - Un contact déjà lié reprend l’état du logiciel (nom, numéro de TVA, numéro
-  fiscal ; pour easybill aussi l’adresse, l’e-mail, le téléphone et
+  fiscal, adresse, e-mail et téléphone ; pour easybill aussi
   l’interlocuteur).
 - Une correspondance sûre, par exemple par le numéro de TVA, est associée.
 - Tout cas incertain apparaît comme cas à clarifier dans la **Boîte de
@@ -218,9 +227,14 @@ contacts, sevDesk et easybill chaque heure selon ces règles :
 
 sevDesk indique le rôle par la catégorie du contact : « Client » et
 « Fournisseur » sont repris, les partenaires, prospects et interlocuteurs
-d’une entreprise ne le sont pas. easybill distingue par numéro client et
-numéro fournisseur ; un contact avec les deux numéros est client et
-fournisseur. Les contacts easybill archivés restent exclus.
+d’une entreprise ne le sont pas. L’adresse est l’adresse sevDesk de la
+catégorie que WorkDiary utilise lors du transfert, sinon l’unique adresse ;
+pour l’e-mail, le téléphone, le mobile, le fax et le site web, c’est celui
+marqué comme principal, sinon l’unique. S’il y en a plusieurs sans ces
+marques, la valeur dans WorkDiary reste inchangée, de même que le pays.
+easybill distingue par numéro client et numéro fournisseur ; un contact avec
+les deux numéros est client et fournisseur. Les contacts easybill archivés
+restent exclus.
 
 ## Cockpit client et fournisseur
 

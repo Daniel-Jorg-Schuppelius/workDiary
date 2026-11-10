@@ -90,6 +90,9 @@ final class ContractManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Contract\Demo\ContractDemoBlock::class,
+            ],
             \App\Services\Cockpit\Contracts\CockpitPanel::class => [
                 \App\Services\Contract\Cockpit\AgreementCockpitPanel::class,
                 \App\Services\Contract\Cockpit\ContractCockpitPanel::class,

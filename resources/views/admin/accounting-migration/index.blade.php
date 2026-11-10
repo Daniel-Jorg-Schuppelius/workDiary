@@ -28,7 +28,7 @@
                         <span class="label-text text-sm">{{ __('accounting_migration.source') }} *</span>
                         <select name="source" required class="select select-bordered select-sm">
                             @foreach ($providers as $provider)
-                                <option value="{{ $provider->value }}" @selected($provider === \App\Enums\Migration\MigrationProvider::Lexoffice)>{{ $provider->label() }}</option>
+                                <option value="{{ $provider->value }}" @selected(old('source', \App\Enums\Migration\MigrationProvider::Lexoffice->value) === $provider->value)>{{ $provider->label() }}</option>
                             @endforeach
                         </select>
                     </label>
@@ -36,7 +36,7 @@
                         <span class="label-text text-sm">{{ __('accounting_migration.target') }} *</span>
                         <select name="target" required class="select select-bordered select-sm">
                             @foreach ($providers as $provider)
-                                <option value="{{ $provider->value }}" @selected($provider === \App\Enums\Migration\MigrationProvider::OrgaMax)>{{ $provider->label() }}</option>
+                                <option value="{{ $provider->value }}" @selected(old('target', \App\Enums\Migration\MigrationProvider::OrgaMax->value) === $provider->value)>{{ $provider->label() }}</option>
                             @endforeach
                         </select>
                     </label>
@@ -44,13 +44,22 @@
 
                 <fieldset class="space-y-1">
                     <legend class="label-text text-sm">{{ __('accounting_migration.areas') }}</legend>
+                    @php
+                        $chosenAreas = (array) old('areas', array_map(static fn ($a): string => $a->value, $areas));
+                    @endphp
                     @foreach ($areas as $area)
+                        @php
+                            $unsupportedBy = collect($providers)->reject(static fn ($p): bool => $p->supportsArea($area))->map(static fn ($p): string => $p->label())->implode(', ');
+                        @endphp
                         <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" name="areas[]" value="{{ $area->value }}" class="checkbox checkbox-sm" checked>
+                            <input type="checkbox" name="areas[]" value="{{ $area->value }}" class="checkbox checkbox-sm" @checked(in_array($area->value, $chosenAreas, true))>
                             {{ $area->label() }}
                             @unless ($area->isBuildable())
                                 <x-status-badge size="xs">{{ __('accounting_migration.read_only') }}</x-status-badge>
                             @endunless
+                            @if ($unsupportedBy !== '')
+                                <x-status-badge size="xs" tone="warning">{{ __('accounting_migration.area_unsupported', ['systems' => $unsupportedBy]) }}</x-status-badge>
+                            @endif
                         </label>
                     @endforeach
                     <p class="text-xs text-muted">{{ __('accounting_migration.articles_hint') }}</p>

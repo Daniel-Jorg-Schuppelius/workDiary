@@ -24,8 +24,11 @@ use Illuminate\Support\Carbon;
 class PrivacyDeadlineService {
     public function __construct(private readonly PrivacyEventService $events) {}
 
-    /** @return int Anzahl neu erinnerter Anfragen */
-    public function remind(): int {
+    /**
+     * @param  list<int>|null  $organizationIds  nur diese Organisationen (geplanter Lauf: aktives Modul), null = alle
+     * @return int Anzahl neu erinnerter Anfragen
+     */
+    public function remind(?array $organizationIds = null): int {
         $lead = (int) config('dataprotection.dsr_reminder_lead_days', 7);
         $threshold = Carbon::now()->addDays($lead);
 
@@ -36,6 +39,7 @@ class PrivacyDeadlineService {
 
         $due = DataSubjectRequest::query()
             ->withoutGlobalScopes()
+            ->when($organizationIds !== null, static fn ($query) => $query->whereIn('organization_id', $organizationIds))
             ->whereIn('status', array_map(static fn ($s) => $s->value, $openStatuses))
             ->whereNotNull('deadline_at')
             ->where('deadline_at', '<=', $threshold)
@@ -57,11 +61,13 @@ class PrivacyDeadlineService {
      * die noch nicht an die Aufsichtsbehoerde gemeldet wurden. Idempotent (einmal
      * je Vorfall).
      *
+     * @param  list<int>|null  $organizationIds  nur diese Organisationen (geplanter Lauf: aktives Modul), null = alle
      * @return int Anzahl neu erinnerter Vorfaelle
      */
-    public function remindIncidents(): int {
+    public function remindIncidents(?array $organizationIds = null): int {
         $due = Incident::query()
             ->withoutGlobalScopes()
+            ->when($organizationIds !== null, static fn ($query) => $query->whereIn('organization_id', $organizationIds))
             ->whereNotNull('authority_deadline_at')
             ->where('authority_deadline_at', '<=', Carbon::now())
             ->whereNull('authority_notified_at')

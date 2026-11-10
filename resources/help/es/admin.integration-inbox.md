@@ -1,7 +1,7 @@
 ---
 title: "Bandeja de conciliación"
 topic: admin.integration-inbox
-version: 3
+version: 4
 keywords:
     - bandeja de integraciones
     - conflictos de importación
@@ -38,6 +38,12 @@ programa de contabilidad asignó a un cliente o proveedor un número que otro
 registro ya lleva en WorkDiary. El caso indica el titular. Cambie allí el
 número y elija **Adoptar lo remoto**; la siguiente sincronización también lo
 adopta por sí sola.
+
+**Cita eliminada en el origen:** una suscripción de calendario indica que falta
+en el calendario una cita ya contabilizada. No hay ningún estado remoto que
+adoptar. Abra el registro de tiempo, elimínelo (con los mismos permisos que en
+la lista de tiempos; un tiempo ya facturado se mantiene) o dese por enterado
+del aviso si el tiempo debe quedarse.
 
 **Decidir:** asigna una entrada a un registro existente, la crea como nueva o
 la descarta. En un conflicto de campo elige si se mantiene el estado local o

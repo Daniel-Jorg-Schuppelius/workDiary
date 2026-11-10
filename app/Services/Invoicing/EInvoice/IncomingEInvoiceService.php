@@ -1176,7 +1176,7 @@ class IncomingEInvoiceService {
         $sellerName = trim((string) ($summary['seller'] ?? ''));
 
         if ($sellerVat !== '') {
-            foreach (\App\Models\Supplier\Supplier::query()->withoutGlobalScopes()->withoutCollective()->where('organization_id', $organizationId)->where('vat_id', $sellerVat)->limit(3)->get() as $supplier) {
+            foreach (\App\Models\Supplier\Supplier::query()->withoutGlobalScopes()->withoutCollective()->where('organization_id', $organizationId)->whereIdentifier('vat_id', $sellerVat)->limit(3)->get() as $supplier) {
                 $suppliers[$supplier->id] = ['id' => (int) $supplier->id, 'label' => (string) ($supplier->displayLabel()), 'reasons' => [(string) __('USt-IdNr. stimmt überein')]];
             }
         }
@@ -1349,7 +1349,7 @@ class IncomingEInvoiceService {
             static fn (string $vat): bool => $vat !== '' && $vat !== $ownVat,
         ));
         $supplier = $vatIds === [] ? null : \App\Models\Supplier\Supplier::query()->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)->whereIn('vat_id', $vatIds)->first();
+            ->where('organization_id', $organization->id)->whereIdentifier('vat_id', $vatIds)->first();
         // Der Lieferant der getroffenen Belegvorlage gilt, wenn keine USt-IdNr. ihn nennt (Phase 155, E5).
         $templateSupplierId = (int) ($result['template']['supplier_id'] ?? 0);
         if ($supplier === null && $templateSupplierId > 0) {

@@ -355,6 +355,10 @@ return [
     'down_payment' => [
         'program_numbering' => 'Cree las facturas de anticipo y finales en :program mientras :program asigne los números de factura. WorkDiary las muestra en el flujo de documentos.',
     ],
+    // Storno einer teilbezahlten Rechnung (MVP-1544).
+    'cancellation' => [
+        'partially_paid' => 'La factura está pagada parcialmente. Solo puede anularla mientras la cubran únicamente pagos anticipados en línea; al anularla, estos vuelven a su operación. Anule primero los demás pagos (conciliación de pagos, caja o compensación de la partida abierta); cuando la factura esté pagada por completo, corríjala con una factura rectificativa.',
+    ],
     // Rechnungsnachfragen aus E-Mails (Feature 166, MVP-1202).
     'inquiries' => [
         'title' => 'Consultas sobre facturas',

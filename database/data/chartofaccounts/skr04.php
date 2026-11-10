@@ -48,6 +48,9 @@ return [
         // Verbindlichkeiten
         ['number' => '3150', 'name' => 'Verbindlichkeiten gegenüber Kreditinstituten', 'type' => 'liability'],
         ['number' => '3300', 'name' => 'Verbindlichkeiten aus Lieferungen und Leistungen', 'type' => 'liability', 'is_open_item' => true],
+        ['number' => '3250', 'name' => 'Erhaltene Anzahlungen auf Bestellungen', 'type' => 'liability'],
+        ['number' => '3260', 'name' => 'Erhaltene, versteuerte Anzahlungen 7 % USt (Verbindlichkeiten)', 'type' => 'liability'],
+        ['number' => '3272', 'name' => 'Erhaltene, versteuerte Anzahlungen 19 % USt (Verbindlichkeiten)', 'type' => 'liability'],
         ['number' => '3720', 'name' => 'Verbindlichkeiten aus Lohn und Gehalt', 'type' => 'liability', 'is_open_item' => true],
         ['number' => '3801', 'name' => 'Umsatzsteuer 7 %', 'type' => 'liability', 'euer_category' => 'income_vat'],
         ['number' => '3806', 'name' => 'Umsatzsteuer 19 %', 'type' => 'liability', 'euer_category' => 'income_vat'],
@@ -132,6 +135,12 @@ return [
         ['source_kind' => 'online_payment', 'role' => 'payment_transit', 'account' => '1460'],
         ['source_kind' => 'online_payment', 'role' => 'receivable', 'account' => '1200'],
         ['source_kind' => 'online_payment', 'role' => 'payment_fees', 'account' => '6855'],
+        // Angerechnete Vorauszahlung ohne lokale Rechnung (MVP-1523): erhaltene Anzahlung netto, Umsatzsteuer bei Zufluss.
+        ['source_kind' => 'online_payment', 'role' => 'advance_received', 'account' => '3272', 'match' => ['tax_rate' => '19.00']],
+        ['source_kind' => 'online_payment', 'role' => 'advance_received', 'account' => '3260', 'match' => ['tax_rate' => '7.00']],
+        ['source_kind' => 'online_payment', 'role' => 'advance_received', 'account' => '3250', 'match' => ['tax_rate' => '0.00'], 'priority' => 90],
+        ['source_kind' => 'online_payment', 'role' => 'tax_output', 'account' => '3806', 'match' => ['tax_rate' => '19.00'], 'tax_code' => 'USt19'],
+        ['source_kind' => 'online_payment', 'role' => 'tax_output', 'account' => '3801', 'match' => ['tax_rate' => '7.00'], 'tax_code' => 'USt7'],
 
         // Jahres-AfA (Feature 133): direkte Methode, BGA als Auffangkonto —
         // Pkw/Software werden je Anlage überschrieben.

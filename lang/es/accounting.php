@@ -24,6 +24,8 @@ return [
         'pushed' => 'Cliente transferido a contabilidad (ID :id).',
         'failed' => 'La transferencia ha fallado: :msg',
         'no_plugin' => 'No hay ningún sistema contable activo.',
+        'pushed_supplier' => 'Proveedor transferido a contabilidad (ID :id).',
+        'no_supplier_plugin' => 'Ningún sistema contable activo transfiere proveedores.',
     ],
 
     'error' => [
@@ -324,6 +326,9 @@ return [
             'changed_since_posting' => 'El origen cambió después de la contabilización (p. ej., un reembolso): anule el asiento y contabilícelo de nuevo.',
             'foreign_currency' => 'La operación está en :currency, la contabilidad en :base — los pagos, la caja y los activos en moneda extranjera no se contabilizan.',
             'unsupported_target' => 'Todavía no hay vía contable para este destino de pago.',
+            'prepayment_exceeds_invoice' => 'El pago anticipado imputado supera la factura: reembolse primero el excedente.',
+            'cancelled_invoice_unposted' => 'Contabilice primero la factura anulada :number: el documento de anulación compensa su partida abierta.',
+            'cancelled_invoice_settled' => 'La partida abierta de la factura :number solo conserva :open: anule primero la otra compensación (revierta su asiento).',
             'year_closed' => 'El ejercicio :year está cerrado.',
             'period_closed' => 'El periodo del :date está cerrado.',
             'no_exchange_rate' => 'Falta el tipo mensual :month para :currency (conversión a :base): añádalo en Tipos de cambio.',
@@ -337,6 +342,8 @@ return [
             'depreciation' => 'Amortización :year · :no :name',
             'asset_disposal' => 'Baja :no :name',
             'online_payment' => 'Pago en línea (:provider) · :invoice',
+            'online_prepayment' => 'Pago anticipado en línea (:provider) · :customer',
+            'prepayment_resolved' => 'Anticipo del :date liquidado · :number',
         ],
         'reversal_reason' => [
             'unmatched' => 'Asignación de pago anulada — contraasiento.',

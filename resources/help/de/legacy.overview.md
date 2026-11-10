@@ -1,7 +1,7 @@
 ---
 title: "Altsystem (Legacy)"
 topic: legacy.overview
-version: 4
+version: 5
 keywords:
     - altes System
     - Vorgängersystem
@@ -70,8 +70,13 @@ sofern Sie Zugang zu beiden Bereichen haben – zeigt die Hauptnavigation
   Meldungen**.
 
 Die Dienstpläne sieht jede Person. Die Tagebuchdaten aller Personen sehen
-Altsystem-Administratoren und die Rolle **Buchhaltung**, alle anderen nur ihre
-eigenen. Der Callcenter-Login führt auf dieselbe Seite.
+Altsystem-Administratoren, der Plattformbetrieb und die Rolle **Buchhaltung**,
+alle anderen nur ihre eigenen. Der Callcenter-Login führt auf dieselbe Seite.
+
+**Neuer Eintrag** steht allen zur Verfügung, deren Benutzerkonto mit einem Konto
+des Altsystems verknüpft ist; Einträge für andere Personen legen nur
+Altsystem-Administratoren an. Archivierung, Notdienst und Bereitschaft pflegen
+Altsystem-Administratoren und der Plattformbetrieb.
 
 **Mitarbeiter** steht im Verwaltungsmenü (Symbol **Verwaltung** in der
 Kopfzeile) unter **Personal** und listet die Benutzer des Altsystems mit
@@ -116,6 +121,9 @@ die Kunden im Kundenportal des Altsystems erteilt haben:
 **Portalkunden** im Verwaltungsmenü verwaltet die Zugänge der Kunden mit
 **Firma**, **Benutzername** und **Passwort** (4 bis 10 Zeichen). Kunden mit
 laufenden Aufträgen lassen sich nicht löschen.
+
+Die Anmeldeadresse für die Kunden steht oben auf der Seite **Portalkunden**;
+**Kopieren** übernimmt sie in die Zwischenablage.
 
 Kunden melden sich auf der eigenen Anmeldeseite des Kundenportals an, sehen nur
 ihre eigenen Aufträge mit Termin und Antworten, erteilen neue Aufträge und

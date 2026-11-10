@@ -12,10 +12,13 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Modules\Attributes\{BelongsToModule, RunsWhenModuleInactive};
 use App\Services\Learning\LearningLtiNonceStore;
 use Illuminate\Console\Command;
 
 /** Abgelaufene LTI-Nonces entfernen (Feature 149) — ihre Token sind ohnehin ungültig. */
+#[BelongsToModule('learning')]
+#[RunsWhenModuleInactive('Löschung: abgelaufene LTI-Nonces sind wertlos und werden unabhängig vom Modulstatus entfernt.')]
 class LearningLtiPruneNoncesCommand extends Command {
     protected $signature = 'learning:lti-prune-nonces';
 

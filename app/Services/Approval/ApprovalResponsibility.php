@@ -17,6 +17,8 @@ use App\Enums\User\UserRole;
 use App\Models\Approval\Approval;
 use App\Models\Platform\{Organization, User};
 use App\Settings\SettingsRegistry;
+use Illuminate\Support\Collection;
+use Spatie\Permission\PermissionRegistrar;
 
 /**
  * Wer eine Freigabestufe im Genehmigungs-Eingang entscheiden darf: die
@@ -37,6 +39,30 @@ class ApprovalResponsibility {
             'role' => $user->hasRole((string) ($rule['value'] ?? '')),
             default => ($role = $this->mappedRole($approval)) !== null && $user->hasRole($role->value),
         };
+    }
+
+    /**
+     * Wer die Stufe entscheiden darf — Empfänger der Benachrichtigung einer
+     * Stufe (MVP-1522). Rollen gelten in der Organisation der Stufe, auch
+     * ohne Anfrage-Kontext (Konsole, Queue).
+     *
+     * @return Collection<int, User>
+     */
+    public function responsibleUsers(Approval $approval): Collection {
+        $registrar = app(PermissionRegistrar::class);
+        $previousTeamId = $registrar->getPermissionsTeamId();
+        $registrar->setPermissionsTeamId((int) $approval->organization_id);
+        try {
+            return User::query()
+                ->where('organization_id', (int) $approval->organization_id)
+                ->orderBy('id')
+                ->get()
+                ->filter(fn (User $user): bool => $this->isResponsible($approval, $user))
+                ->values()
+                ->toBase();
+        } finally {
+            $registrar->setPermissionsTeamId($previousTeamId);
+        }
     }
 
     /** Rolle, die die Organisation der Stufenart zuordnet; null ohne Stufenart oder Zuordnung. */

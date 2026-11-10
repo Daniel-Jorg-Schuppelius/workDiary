@@ -24,6 +24,8 @@ return [
         'pushed' => 'Customer transferred to accounting (ID :id).',
         'failed' => 'Transfer failed: :msg',
         'no_plugin' => 'No accounting system is active.',
+        'pushed_supplier' => 'Supplier transferred to accounting (ID :id).',
+        'no_supplier_plugin' => 'No active accounting system transfers suppliers.',
     ],
 
     'error' => [
@@ -324,6 +326,9 @@ return [
             'changed_since_posting' => 'The source changed after posting (e.g. a refund) — reverse the entry and post it again.',
             'foreign_currency' => 'The transaction is in :currency, accounting is kept in :base — payments, cash and assets in foreign currency are not posted.',
             'unsupported_target' => 'There is no posting path for this payment target yet.',
+            'prepayment_exceeds_invoice' => 'The credited prepayment exceeds the invoice — refund the excess first.',
+            'cancelled_invoice_unposted' => 'Post the cancelled invoice :number first — the cancellation document settles its open item.',
+            'cancelled_invoice_settled' => 'The open item of invoice :number only carries :open — undo the other settlement first (reverse its posting).',
             'year_closed' => 'Fiscal year :year is closed.',
             'period_closed' => 'The period covering :date is closed.',
             'no_exchange_rate' => 'The monthly rate :month for :currency (conversion into :base) is missing — add it under exchange rates.',
@@ -337,6 +342,8 @@ return [
             'depreciation' => 'Depreciation :year · :no :name',
             'asset_disposal' => 'Disposal :no :name',
             'online_payment' => 'Online payment (:provider) · :invoice',
+            'online_prepayment' => 'Online prepayment (:provider) · :customer',
+            'prepayment_resolved' => 'Advance payment of :date offset · :number',
         ],
         'reversal_reason' => [
             'unmatched' => 'Payment allocation removed — counter-entry.',

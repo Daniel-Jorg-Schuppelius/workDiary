@@ -22,14 +22,16 @@ use Illuminate\Support\Carbon;
 /**
  * Abonnierte iCal-Quelle der Zeiterfassung (Feature 094, MVP-1516). Die URL
  * liegt verschlüsselt, weil Kalenderdienste den Zugriff über ein Geheimnis in
- * der Adresse gewähren.
+ * der Adresse gewähren. Statt der URL kann eine Kalenderverbindung die Quelle
+ * sein (`calendar_source` = `<quelle>:<verbindung>`, MVP-1531).
  *
  * @property int $id
  * @property int $organization_id
  * @property int|null $user_id
  * @property ImportEntity $import_entity
  * @property string $name
- * @property string $url
+ * @property string|null $url
+ * @property string|null $calendar_source
  * @property list<string>|null $category_allowlist
  * @property bool $allow_private_network
  * @property bool $is_active
@@ -48,7 +50,7 @@ class IcalSubscription extends Model {
     use HasSqid;
 
     protected $fillable = [
-        'organization_id', 'user_id', 'import_entity', 'name', 'url', 'category_allowlist',
+        'organization_id', 'user_id', 'import_entity', 'name', 'url', 'calendar_source', 'category_allowlist',
         'allow_private_network', 'is_active', 'created_by', 'updated_by',
     ];
 
@@ -78,6 +80,6 @@ class IcalSubscription extends Model {
 
     /** Host der Quelle für die Anzeige — der Rest der Adresse kann ein Zugriffsgeheimnis sein. */
     public function sourceHost(): string {
-        return (string) (parse_url($this->url, PHP_URL_HOST) ?: '—');
+        return (string) (parse_url((string) $this->url, PHP_URL_HOST) ?: '—');
     }
 }

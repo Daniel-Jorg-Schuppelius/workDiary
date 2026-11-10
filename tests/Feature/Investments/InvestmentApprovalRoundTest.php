@@ -11,6 +11,7 @@
 namespace Tests\Feature\Investments;
 
 use App\Enums\Investments\InvestmentBudgetRequestStatus;
+use App\Enums\User\UserRole;
 use App\Models\Investments\{InvestmentBudgetRequest, InvestmentCase};
 use App\Models\Platform\User;
 use App\Services\Approval\ApprovalService;
@@ -39,8 +40,9 @@ final class InvestmentApprovalRoundTest extends TestCase {
         $this->setUpOrganization();
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->requester = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-        $this->second = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-        $this->third = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        // Stufenrollen (MVP-1541): kaufmännisch → Buchhaltung, Geschäftsleitung → Geschäftsführung.
+        $this->second = User::factory()->withRoles(UserRole::Admin, UserRole::Buchhaltung)->create(['organization_id' => $this->organization->id]);
+        $this->third = User::factory()->withRoles(UserRole::Admin, UserRole::Geschaeftsfuehrung)->create(['organization_id' => $this->organization->id]);
     }
 
     /** Zweistufiger Antrag (über der Schwelle), dessen Kette neu gestartet wurde, bevor jemand entschieden hat. */

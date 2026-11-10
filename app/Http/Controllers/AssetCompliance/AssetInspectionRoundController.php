@@ -19,6 +19,7 @@ use App\Models\Asset\Asset;
 use App\Models\AssetCompliance\{AssetComplianceProfile, AssetInspectionRound, AssetInspectionRoundItem};
 use App\Models\Customer\Customer;
 use App\Rules\ExistsInCurrentOrganization;
+use App\Services\Asset\AssetCategoryCatalog;
 use App\Services\AssetCompliance\{AssetComplianceService, InspectionRoundService};
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Contracts\View\View;
@@ -51,7 +52,7 @@ class AssetInspectionRoundController extends Controller {
 
         return view('asset-compliance.rounds._form_dialog', [
             'locations' => Asset::query()->whereNotNull('location_text')->distinct()->orderBy('location_text')->pluck('location_text'),
-            'categories' => Asset::query()->whereNotNull('category_code')->distinct()->orderBy('category_code')->pluck('category_code'),
+            'categories' => app(AssetCategoryCatalog::class)->labelled($this->currentOrganizationId(), Asset::query()->whereNotNull('category_code')->distinct()->pluck('category_code')),
             'profiles' => $this->compliance->effectiveProfiles($this->currentOrganizationId())->sortBy('name')->values(),
             'customers' => Customer::query()->whereHas('assets')->orderBy('name')->get(['id', 'name']),
         ]);

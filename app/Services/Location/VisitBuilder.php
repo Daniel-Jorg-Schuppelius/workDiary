@@ -255,11 +255,14 @@ class VisitBuilder {
     /**
      * Offene Besuche ohne Punkt seit `$hours` Stunden schließen (MVP-1186),
      * damit ihr Vorschlag entsteht; danach läuft die Materialisierung je Nutzer.
+     *
+     * @param  list<int>|null  $organizationIds  nur diese Organisationen (geplanter Lauf: aktives Modul), null = alle
      */
-    public function closeStaleVisits(int $hours): int {
+    public function closeStaleVisits(int $hours, ?array $organizationIds = null): int {
         $cutoff = Carbon::now()->subHours($hours);
         $stale = LocationVisit::query()
             ->withoutGlobalScopes()
+            ->when($organizationIds !== null, static fn ($query) => $query->whereIn('organization_id', $organizationIds))
             ->where('status', LocationVisitStatus::Open)
             ->where('left_at', '<', $cutoff)
             ->with('geofence')

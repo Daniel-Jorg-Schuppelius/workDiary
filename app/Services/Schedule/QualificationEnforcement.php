@@ -59,7 +59,7 @@ final class QualificationEnforcement implements AssignmentQualificationGuard {
 
         $user = $shift->user;
 
-        return $user instanceof User ? $this->message($user, $this->gate->missingFor($shift), $shift->date) : null;
+        return $user instanceof User ? $this->message('schedule.qualification.blocked', $user, $this->gate->missingFor($shift), $shift->date) : null;
     }
 
     /** @throws ValidationException */
@@ -75,10 +75,15 @@ final class QualificationEnforcement implements AssignmentQualificationGuard {
      * ist der geplante Beginn, sonst der geplante Tag.
      */
     public function entryBlockMessage(DiaryEntry $entry, int $userId, ?CarbonInterface $date = null): ?string {
-        if (! $this->blocks((int) $entry->organization_id)) {
-            return null;
-        }
+        return $this->blocks((int) $entry->organization_id) ? $this->entryMissingMessage('schedule.qualification.blocked', $entry, $userId, $date) : null;
+    }
 
+    /** Hinweis statt Sperre (MVP-1528): der Person fehlt eine Pflichtqualifikation, die Organisation sperrt aber nicht. */
+    public function entryHint(DiaryEntry $entry, int $userId, ?CarbonInterface $date = null): ?string {
+        return $this->blocks((int) $entry->organization_id) ? null : $this->entryMissingMessage('schedule.qualification.hint', $entry, $userId, $date);
+    }
+
+    private function entryMissingMessage(string $key, DiaryEntry $entry, int $userId, ?CarbonInterface $date): ?string {
         /** @var Collection<int, Qualification> $required */
         $required = $entry->requiredQualifications()->get();
         if ($required->isEmpty()) {
@@ -95,7 +100,7 @@ final class QualificationEnforcement implements AssignmentQualificationGuard {
             : ($entry->scheduled_for !== null ? CarbonImmutable::parse((string) $entry->scheduled_for) : null);
         $status = $this->gate->statusFor($user, $required, $date);
 
-        return $this->message($user, $required->filter(fn (Qualification $q): bool => ($status[(int) $q->id] ?? 'missing') === 'missing')->values(), $date);
+        return $this->message($key, $user, $required->filter(fn (Qualification $q): bool => ($status[(int) $q->id] ?? 'missing') === 'missing')->values(), $date);
     }
 
     /** @throws ValidationException */
@@ -107,12 +112,12 @@ final class QualificationEnforcement implements AssignmentQualificationGuard {
     }
 
     /** @param Collection<int, Qualification> $missing */
-    private function message(User $user, Collection $missing, ?CarbonInterface $date): ?string {
+    private function message(string $key, User $user, Collection $missing, ?CarbonInterface $date): ?string {
         if ($missing->isEmpty()) {
             return null;
         }
 
-        return (string) __('schedule.qualification.blocked', [
+        return (string) __($key, [
             'user' => $user->name,
             'qualifications' => $missing->map(fn (Qualification $q): string => (string) ($q->abbreviation ?: $q->name))->implode(', '),
             'date' => $date !== null ? CarbonFmt::fdate($date) : '—',

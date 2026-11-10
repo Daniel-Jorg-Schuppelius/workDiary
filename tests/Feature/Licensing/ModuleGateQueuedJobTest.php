@@ -11,10 +11,10 @@
 namespace Tests\Feature\Licensing;
 
 use App\Enums\Inventory\OutboxStatus;
-use App\Jobs\Attributes\BelongsToModule;
 use App\Jobs\Contracts\ModuleJob;
 use App\Jobs\Inventory\InventoryOutboxDeliveryJob;
 use App\Models\Platform\{LicenseFlagOverride, Organization};
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Inventory\InventoryOutboxService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

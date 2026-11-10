@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Console\Concerns\IteratesOrganizations;
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Enums\Procurement\CatalogSourceFormat;
 use App\Models\Supplier\{SupplierCatalogImport, SupplierCatalogSource};
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Procurement\{CatalogFetchService, CatalogImportDispatcher};
 use App\Services\Procurement\OpenMasterdata\Exceptions\OpenMasterdataException;
 use App\Services\Procurement\OpenMasterdata\OpenMasterdataService;
@@ -28,15 +29,16 @@ use Throwable;
  * und `next_fetch_at` erreicht/leer. Jeder Lauf wird protokolliert; Fehler einer
  * Quelle brechen den Gesamtlauf nicht ab.
  */
+#[BelongsToModule('procurement')]
 class FetchDueCatalogsCommand extends Command {
-    use IteratesOrganizations;
+    use IteratesModuleOrganizations;
 
     protected $signature = 'catalog:fetch-due';
 
     protected $description = 'Ruft fällige Remote-Katalogquellen ab und importiert sie (Feature 050).';
 
     public function handle(CatalogFetchService $fetch, CatalogImportDispatcher $dispatcher): int {
-        $due = SupplierCatalogSource::query()->withoutGlobalScopes()
+        $due = $this->whereModuleActive(SupplierCatalogSource::query()->withoutGlobalScopes(), withoutOrganization: true)
             ->where('active', true)
             // Open Masterdata (MVP-1072) hat keine Datei: der Lauf fragt Preise nach.
             ->where(fn ($q) => $q->whereIn('source_type', ['http', 'ftp', 'sftp'])->orWhere('format', CatalogSourceFormat::OpenMasterdata->value))

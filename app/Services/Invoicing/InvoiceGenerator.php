@@ -609,10 +609,16 @@ class InvoiceGenerator {
      * Stornorechnung (Feature 066, MVP-162/172): eigener Beleg im
      * Nummernkreis S mit vollständig negierten Positionen und dem
      * Steuerkontext des Originals; das Original wird als storniert
-     * markiert. Nur für ausgestellte, unbezahlte Rechnungen.
+     * markiert. Nur für ausgestellte, unbezahlte Rechnungen — teilbezahlt
+     * nur durch Vorauszahlungen, die der Storno freigibt (MVP-1544).
+     *
+     * @throws \Illuminate\Validation\ValidationException teilbezahlt durch eine andere Zahlung
      */
     public function cancellationFor(Invoice $original, ?string $reason = null, ?int $userId = null): Invoice {
-        if ($original->status !== InvoiceStatus::Issued || $original->isCreditNote()) {
+        if (($blocked = $original->cancellationBlockedReason()) !== null) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['invoice' => $blocked]);
+        }
+        if ($original->status === InvoiceStatus::Draft || ! $original->canBeCancelled()) {
             throw new \LogicException('Only issued invoices can be reversed (status: ' . $original->status->value . ')');
         }
 
@@ -669,10 +675,8 @@ class InvoiceGenerator {
             $cancellation->recalculate();
             $cancellation->save();
 
+            // Gibt alle Quellen frei, auch die Auslieferungen (Feature 160, MVP-1521).
             $original->cancel($reason ?? (string) __('Storniert durch Stornorechnung :nr', ['nr' => $cancellation->number]), $userId ?? (int) Auth::id());
-
-            // Feature 160 (MVP-858): Vollstorno gibt abgerechnete Auslieferungen zur erneuten Abrechnung frei.
-            app(DeliveryInvoicingService::class)->releaseForCancellation($original);
 
             return $cancellation;
         });

@@ -20,5 +20,7 @@ return [
         'commercial' => UserRole::Buchhaltung->value,
         'technical' => UserRole::Teamleitung->value,
         'hr' => UserRole::Personalverwaltung->value,
+        // Investitionsanträge ab Schwellenwert (MVP-1522).
+        'management' => UserRole::Geschaeftsfuehrung->value,
     ],
 ];

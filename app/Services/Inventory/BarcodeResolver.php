@@ -54,13 +54,13 @@ class BarcodeResolver {
         }
 
         $variant = ArticleVariant::query()
-            ->where(fn ($q) => $q->where('gtin', $code)->orWhere('sku', $code))
+            ->where(fn ($q) => $q->whereIdentifier('gtin', $code)->orWhere('sku', $code))
             ->first();
         if ($variant instanceof ArticleVariant) {
             return new BarcodeMatch(BarcodeMatchType::Variant, variant: $variant, article: $variant->article);
         }
 
-        $article = Article::query()->where('gtin', $code)->first();
+        $article = Article::query()->whereIdentifier('gtin', $code)->first();
         if ($article instanceof Article) {
             return new BarcodeMatch(BarcodeMatchType::Article, variant: $this->defaultVariant($article), article: $article);
         }

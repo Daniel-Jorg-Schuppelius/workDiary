@@ -1,7 +1,7 @@
 ---
 title: "Customers & suppliers"
 topic: contacts.manage
-version: 14
+version: 15
 keywords:
     - Preview as customer
     - Start password
@@ -191,6 +191,14 @@ accepts suppliers if the “Suppliers” capability is active in the orgaMAX
 administration and “WorkDiary leads” is set; otherwise orgaMAX leads the
 suppliers and WorkDiary only links them.
 
+This does not reach suppliers from before the connection. **Transfer to
+accounting** on the supplier record transfers one of them to the first active
+program that accepts suppliers; operations can transfer all of them at once
+with `php artisan accounting:push-contacts <program> --suppliers`. A supplier
+that is already linked is updated, not created twice; archived suppliers and
+the collective supplier are left out. If accounting leads the master data, the
+button is not shown and the run transfers nothing.
+
 ## Master data from the accounting program
 
 If master data authority is set to “Accounting leads”, WorkDiary transfers no
@@ -199,15 +207,21 @@ and orgaMAX through their own contact sync, sevDesk and easybill every hour by
 these rules:
 
 - A contact that is already linked takes over the program’s data (name, VAT
-  ID, tax number; for easybill also address, email, phone and contact person).
+  ID, tax number, address, email and phone; for easybill also the contact
+  person).
 - A safe match, for example by VAT ID, is linked.
 - Anything unclear appears as a case in the **Mapping Inbox**; nothing is
   created.
 
 sevDesk provides the role through the contact category: “Customer” and
 “Supplier” are imported, partners, prospects and contact persons of a company
-are not. easybill distinguishes by customer and supplier number; a contact with
-both numbers is customer and supplier. Archived easybill contacts are left out.
+are not. The address is the sevDesk address of the category WorkDiary uses
+when transferring, otherwise the only address; for email, phone, mobile, fax
+and website the one marked as main applies, otherwise the only one. If there
+are several without these markers, the value in WorkDiary stays unchanged, as
+does the country. easybill distinguishes by customer and supplier number; a
+contact with both numbers is customer and supplier. Archived easybill contacts
+are left out.
 
 ## Customer and supplier cockpit
 

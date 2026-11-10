@@ -44,7 +44,8 @@ enum InvoiceStatus: string implements HasLabel, HasStatusTransitions {
         return match ($this) {
             self::Draft => [self::Issued, self::Cancelled],
             self::Issued => [self::PartiallyPaid, self::Paid, self::Cancelled],
-            self::PartiallyPaid => [self::Paid, self::Issued],
+            // Storno nur, solange allein freiwerdende Vorauszahlungen decken (MVP-1544, Invoice::canBeCancelled()).
+            self::PartiallyPaid => [self::Paid, self::Issued, self::Cancelled],
             // Zurück nur, wenn die Deckung wegfällt (Zuordnung aufgehoben, Kassenstorno, Erstattung).
             self::Paid => [self::PartiallyPaid, self::Issued],
             self::Cancelled => [],

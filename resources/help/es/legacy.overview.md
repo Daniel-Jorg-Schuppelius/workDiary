@@ -1,7 +1,7 @@
 ---
 title: "Sistema heredado (Legacy)"
 topic: legacy.overview
-version: 4
+version: 5
 keywords:
     - sistema antiguo
     - datos antiguos
@@ -56,9 +56,15 @@ semanal**, **Lista de trabajo** y **Central**.
   abiertos**.
 
 Los planes de servicio los ve todo el mundo. Los datos del diario de todas las
-personas los ven los administradores del sistema antiguo y el rol
-**Contabilidad**; los demás solo ven los suyos. El acceso del call center lleva
-a la misma página.
+personas los ven los administradores del sistema antiguo, la operación de la
+plataforma y el rol **Contabilidad**; los demás solo ven los suyos. El acceso
+del call center lleva a la misma página.
+
+**Nueva entrada** está disponible para toda persona cuya cuenta de usuario esté
+vinculada a una cuenta del sistema antiguo; solo los administradores del
+sistema antiguo crean entradas para otras personas. El archivo, el servicio de
+urgencia y las guardias los gestionan los administradores del sistema antiguo y
+la operación de la plataforma.
 
 **Empleados** está en el menú de administración (icono **Administración** de la
 cabecera) en **Personal** y lista los usuarios del sistema antiguo con
@@ -101,6 +107,9 @@ antiguo:
 **Clientes del portal** en el menú de gestión administra los accesos de los
 clientes con **Empresa**, **Nombre de usuario** y **Contraseña** (de 4 a 10
 caracteres). Los clientes con pedidos en curso no se pueden eliminar.
+
+La dirección de inicio de sesión para sus clientes aparece arriba en la página
+**Clientes del portal**; **Copiar** la lleva al portapapeles.
 
 Los clientes inician sesión en la página de acceso propia del portal de
 clientes, ven solo sus propios pedidos con cita y respuestas, hacen pedidos

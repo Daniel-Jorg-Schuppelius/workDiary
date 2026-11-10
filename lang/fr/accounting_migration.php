@@ -19,6 +19,8 @@ return [
     'areas' => 'Domaines de données',
     'read_only' => 'historique seulement',
     'articles_hint' => 'Les articles ne sont rapprochés qu’entre Lexoffice et orgaMAX ; sevDesk et easybill ne conservent aucun lien d’article.',
+    'area_unsupported' => 'pas avec :systems',
+    'areas_deselected' => 'Il est déjà désélectionné dans le formulaire ; vérifiez la sélection et planifiez à nouveau.',
     'cutover_on' => 'Date de bascule',
     'cutover_hint' => 'À partir de ce jour, les nouvelles pièces de facturation naissent exclusivement dans le système cible ; le système source est bloqué pour cela.',
     'plan_submit' => 'Planifier le changement',

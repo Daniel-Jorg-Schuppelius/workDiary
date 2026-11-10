@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Billing;
 
 use App\Enums\Billing\DocumentOrigin;
+use App\Enums\User\{Permission, UserRole};
 use App\Models\Customer\Customer;
 use App\Models\Finance\AccountingVoucher;
 use App\Models\Integration\ExternalReference;
@@ -22,6 +23,7 @@ use App\Plugins\Easybill\EasybillPlugin;
 use App\Plugins\OrgaMax\Enums\OrgaMaxConnectionStatus;
 use App\Plugins\OrgaMax\Models\{OrgaMaxConnection, OrgaMaxInvoice};
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
+use App\Plugins\OrgaMax\Services\OrgaMaxVoucherLinks;
 use App\Plugins\SevDesk\SevDeskPlugin;
 use App\Services\Billing\Dto\PartyDocument;
 use App\Services\Billing\PartyDocumentSources;
@@ -29,6 +31,7 @@ use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -175,5 +178,37 @@ final class AccountingVoucherPartyDocumentsTest extends TestCase {
 
         $connection->forceFill(['status' => OrgaMaxConnectionStatus::Disconnected])->save();
         $this->assertSame([], app(PartyDocumentSources::class)->forParty($customer, $from, $to));
+    }
+
+    /** MVP-1527: Das Original-PDF bekommt, wen die PDF-Route zulässt — die Buchhaltung über `finance.orgamax.*`. */
+    public function test_orgamax_original_pdf_follows_the_factura_rights_of_the_route(): void {
+        PluginSetting::query()->create(['organization_id' => $this->organization->id, 'plugin_id' => OrgaMaxPlugin::ID, 'enabled' => true, 'settings' => []]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Kutterhafen Räucherei']);
+        ExternalReference::link($this->organization->id, OrgaMaxPlugin::ID, 'customer', $customer, '8');
+        OrgaMaxConnection::query()->create([
+            'organization_id' => $this->organization->id, 'mode' => OrgaMaxConnection::MODE_PRIVATE, 'api_key' => 'k', 'api_secret' => 's', 'ownership_id' => 'own-1',
+            'bearer_token' => 'token', 'token_expires_at' => Carbon::now()->addHour(), 'status' => OrgaMaxConnectionStatus::Active,
+            'capabilities' => ['billing' => ['enabled' => true, 'leader' => 'orgamax']],
+        ]);
+        $invoice = OrgaMaxInvoice::query()->create([
+            'organization_id' => $this->organization->id, 'external_id' => '51', 'customer_id' => $customer->id, 'invoice_type' => 'invoice',
+            'invoice_status' => 'locked', 'invoice_number' => 'OM-2026-51', 'invoice_date' => '2026-07-01', 'total_gross' => '238.00', 'currency' => 'EUR',
+        ]);
+        $voucher = $this->mirrored(DocumentOrigin::OrgaMax, ['external_id' => '51', 'customer_id' => $customer->id, 'voucher_number' => 'OM-2026-51', 'voucher_date' => '2026-07-01', 'total_amount' => '238.00']);
+        $pdf = route('admin.orgamax.invoices.mirror-pdf', Sqid::encode(OrgaMaxInvoice::class, (int) $invoice->id));
+
+        $accounting = $this->userWithRole(UserRole::Buchhaltung->value);
+        $this->actingAs($accounting)->withSession($this->range())->get(route('customers.show', $customer))->assertOk()
+            ->assertSee('OM-2026-51')
+            ->assertSee($pdf, false);
+
+        // Belegrecht allein reicht nicht: die Route verlangt Verwaltung oder ein Faktura-Recht.
+        $voucherReader = $this->orgUser();
+        app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
+        $voucherReader->givePermissionTo(Permission::VoucherViewAny->value);
+        $links = app(OrgaMaxVoucherLinks::class);
+        $this->assertNull($links->originalPdfUrl($voucher, $voucherReader->refresh()));
+        $this->assertSame($pdf, $links->originalPdfUrl($voucher, $accounting));
+        $this->assertSame($pdf, $links->originalPdfUrl($voucher, $this->admin));
     }
 }

@@ -10,6 +10,7 @@
 
 namespace App\Services\Reporting;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Time\TimeEntry;
@@ -67,14 +68,18 @@ class UtilizationReportBuilder {
                 });
         }
 
-        // Fakturierte Minuten (Rechnungsposition ↔ Zeiteintrag).
+        // Fakturierte Minuten (Rechnungsposition ↔ Zeiteintrag); ein Storno gibt die Zeiten frei (MVP-1521).
         $hasInvoiceData = Invoice::query()->exists();
         $invoicedByUser = [];
         if ($hasInvoiceData && $userIds !== []) {
             TimeEntry::query()
                 ->whereBetween('date', DateRange::days($from, $to))
                 ->whereIn('user_id', $userIds)
-                ->whereIn('id', DB::table('invoice_item_time_entries')->select('time_entry_id'))
+                ->whereIn('id', DB::table('invoice_item_time_entries')
+                    ->join('invoice_items', 'invoice_items.id', '=', 'invoice_item_time_entries.invoice_item_id')
+                    ->join('invoices', 'invoices.id', '=', 'invoice_items.invoice_id')
+                    ->where('invoices.status', '!=', InvoiceStatus::Cancelled->value)
+                    ->select('invoice_item_time_entries.time_entry_id'))
                 ->get(['user_id', 'minutes'])
                 ->each(function (TimeEntry $e) use (&$invoicedByUser): void {
                     $invoicedByUser[(int) $e->user_id] = ($invoicedByUser[(int) $e->user_id] ?? 0) + (int) $e->minutes;

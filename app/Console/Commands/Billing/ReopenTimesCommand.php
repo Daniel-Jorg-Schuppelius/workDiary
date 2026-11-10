@@ -11,6 +11,7 @@
 namespace App\Console\Commands\Billing;
 
 use App\Console\Concerns\IteratesOrganizations;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Time\TimeEntry;
@@ -26,8 +27,10 @@ use Illuminate\Database\Eloquent\Builder;
  *
  * Bewusst eng geführt — der `exported`-Flag ist der Verbraucht-Nachweis aller
  * Abrechnungspfade. Nie angefasst werden Zeiten, die
- *  - an einer Rechnung hängen (Pivot `invoice_item_time_entries` oder die
- *    Einzel-FK `invoice_items.time_entry_id`),
+ *  - an einer nicht stornierten Rechnung hängen (Pivot
+ *    `invoice_item_time_entries` oder die Einzel-FK `invoice_items.time_entry_id`;
+ *    ein Storno gibt seine Zeiten seit MVP-1521 selbst frei, ältere Stornos
+ *    holt dieser Befehl zurück),
  *  - in einer bestätigten/übergebenen Faktura-Übergabe stecken,
  *  - zu einem saldo-geführten Kunden gehören (dort setzt der Monatsabschluss
  *    `exported`; ein Rückholen würde den Saldo verfälschen).
@@ -46,7 +49,7 @@ class ReopenTimesCommand extends Command {
         . ' {--customer= : Kundennummer, Sqid oder ID eines einzelnen Kunden}'
         . ' {--apply : Änderungen schreiben (sonst Dry-Run)}';
 
-    protected $description = 'Öffnet fälschlich als abgerechnet markierte Zeiten ab einem Leistungsdatum wieder. Rechnungs-, Übergabe- und saldo-geführte Zeiten bleiben unangetastet. Ohne --apply nur Dry-Run.';
+    protected $description = 'Öffnet fälschlich als abgerechnet markierte Zeiten ab einem Leistungsdatum wieder. Zeiten nicht stornierter Rechnungen, bestätigter Übergaben und saldo-geführter Kunden bleiben unangetastet. Ohne --apply nur Dry-Run.';
 
     public function handle(): int {
         $fromRaw = trim((string) $this->option('from'));
@@ -149,13 +152,18 @@ class ReopenTimesCommand extends Command {
             // Saldo-geführte Kunden: dort ist `exported` das Ergebnis des
             // Monatsabschlusses, kein Abrechnungs-Versehen.
             ->withoutLedgerManagedCustomers()
-            // An einer Rechnung hängende Zeiten bleiben verbraucht.
+            // An einer nicht stornierten Rechnung hängende Zeiten bleiben verbraucht.
             ->whereNotExists(fn($sub) => $sub->selectRaw('1')
                 ->from('invoice_item_time_entries')
-                ->whereColumn('invoice_item_time_entries.time_entry_id', 'time_entries.id'))
+                ->join('invoice_items', 'invoice_items.id', '=', 'invoice_item_time_entries.invoice_item_id')
+                ->join('invoices', 'invoices.id', '=', 'invoice_items.invoice_id')
+                ->whereColumn('invoice_item_time_entries.time_entry_id', 'time_entries.id')
+                ->where('invoices.status', '!=', InvoiceStatus::Cancelled->value))
             ->whereNotExists(fn($sub) => $sub->selectRaw('1')
                 ->from('invoice_items')
-                ->whereColumn('invoice_items.time_entry_id', 'time_entries.id'))
+                ->join('invoices', 'invoices.id', '=', 'invoice_items.invoice_id')
+                ->whereColumn('invoice_items.time_entry_id', 'time_entries.id')
+                ->where('invoices.status', '!=', InvoiceStatus::Cancelled->value))
             // Ebenso Zeiten, die in einer bestätigten/übergebenen Übergabe stecken.
             ->whereNotExists(fn($sub) => $sub->selectRaw('1')
                 ->from('billing_transfer_items')

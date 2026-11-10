@@ -195,6 +195,41 @@ class AccountingRecapitulativeTest extends TestCase {
         $this->assertSame([], $breakdown['unclear']);
     }
 
+    /** Ein Storno hebt Bemessungsgrundlage und Steuer auf, statt die Steuer zu verdoppeln. */
+    public function test_a_reversal_cancels_base_and_tax_of_the_field_breakdown(): void {
+        $code = AccountingTaxCode::query()->create([
+            'organization_id' => $this->org->id,
+            'code' => 'USt19',
+            'name' => 'Umsatzsteuer 19 %',
+            'direction' => TaxCodeDirection::Output,
+            'rate' => '19.00',
+            'ustva_base_field' => '81',
+            'ustva_tax_field' => '81',
+            'valid_from' => $this->startsOn->toDateString(),
+            'is_active' => true,
+        ]);
+        $journal = app(JournalService::class);
+        $entry = $journal->postDirect($this->org, [
+            'booked_on' => CarbonImmutable::create(2026, 2, 10),
+            'memo' => 'Ausgangsrechnung',
+            'source_key' => 'storno-test:' . uniqid('', true),
+            'lines' => [
+                ['accounting_account_id' => $this->accounts['receivable']->id, 'debit' => '119.00', 'credit' => '0.00'],
+                ['accounting_account_id' => $this->accounts['revenue']->id, 'debit' => '0.00', 'credit' => '100.00', 'accounting_tax_code_id' => $code->id, 'tax_amount' => '19.00'],
+                ['accounting_account_id' => $this->accounts['vat']->id, 'debit' => '0.00', 'credit' => '19.00'],
+            ],
+        ], $this->admin);
+
+        $range = [$this->org, CarbonImmutable::create(2026, 1, 1), CarbonImmutable::create(2026, 3, 31)];
+        $before = collect(app(VatFieldBreakdownService::class)->forRange(...$range)['fields'])->firstWhere('field', '81');
+        $this->assertSame(['100.00', '19.00'], [$before['base'] ?? null, $before['tax'] ?? null]);
+
+        $journal->reverse($entry, 'Falsch gebucht', $this->admin);
+
+        $after = collect(app(VatFieldBreakdownService::class)->forRange(...$range)['fields'])->firstWhere('field', '81');
+        $this->assertSame(['0.00', '0.00'], [$after['base'] ?? null, $after['tax'] ?? null]);
+    }
+
     /** Ein Kennzeichen ohne Kennziffer steht sichtbar in den Klärungsfällen. */
     public function test_a_tax_code_without_a_field_number_is_listed(): void {
         $this->iglCode->update(['ustva_base_field' => null]);

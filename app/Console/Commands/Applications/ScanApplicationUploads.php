@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Applications;
 
+use App\Modules\Attributes\RunsWhenModuleInactive;
 use App\Services\Applications\ApplicationUploadScanService;
 use Illuminate\Console\Command;
 
@@ -16,6 +17,7 @@ use Illuminate\Console\Command;
  * Gegenstueck zu `whistleblowing:scan` fuer den Karrierebereich
  * (Vollscan 2026-09-15, Befund `P6-46`).
  */
+#[RunsWhenModuleInactive('Sicherheitsprüfung: eingegangene Bewerbungsunterlagen bleiben in Quarantäne, bis der Virenscan sie freigibt oder ablehnt — unabhängig davon, ob das Modul gerade genutzt wird.')]
 class ScanApplicationUploads extends Command {
     protected $signature = 'recruiting:scan-uploads';
 

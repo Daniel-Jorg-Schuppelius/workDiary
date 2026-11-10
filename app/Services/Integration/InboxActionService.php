@@ -18,12 +18,13 @@ use App\Exceptions\ContactNumberTakenException;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
-use App\Models\Platform\Organization;
+use App\Models\Platform\{Organization, User};
 use App\Models\Supplier\Supplier;
+use App\Models\Time\TimeEntry;
 use App\Services\Stammdaten\{ContactDetailsWriter, ContactNumberAdopter};
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\{Auth, Request};
+use Illuminate\Support\Facades\{Auth, DB, Gate, Request};
 use RuntimeException;
 
 /**
@@ -66,11 +67,16 @@ class InboxActionService {
             throw new RuntimeException('Konflikt-Eintrag ohne lokalen Datensatz.');
         }
 
+        // Ein verschwundener Termin hat keinen Fremdstand (MVP-1528).
+        if ($item->isRemoteDeletion()) {
+            throw new RuntimeException((string) __('import.ical_subscription.removed_accept_refused'));
+        }
+
         // Festgeschriebene Datensätze (abgerechnete Zeiten) dürfen nicht per Klick
         // auf den Fremdstand gezogen werden — sonst änderte sich die Grundlage
         // eines Belegs. Klar sagen statt still nichts tun.
         if (($item->remote_snapshot['resolution'] ?? null) === IntegrationInboxItem::RESOLUTION_ACKNOWLEDGE_ONLY) {
-            throw new RuntimeException((string) __('Dieser Datensatz ist bereits abgerechnet — der Fremdstand kann nicht übernommen werden. Bitte den Fall zur Kenntnis nehmen und die Abweichung über eine Korrektur buchen.'));
+            throw new RuntimeException(self::billedMessage());
         }
 
         // Programmnummer schon vergeben (MVP-1132): erst übernehmbar, wenn der Inhaber umnummeriert ist.
@@ -106,6 +112,29 @@ class InboxActionService {
         }
 
         $this->close($item, IntegrationInboxStatus::ResolvedRemote, $model);
+    }
+
+    /**
+     * Verschwundener Kalendertermin (MVP-1528): die gebuchte Zeit löschen.
+     * Es gilt dasselbe Recht wie bei der normalen Löschung; eine abgerechnete
+     * Zeit bleibt auch für Admins stehen.
+     *
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function deleteRemovedTimeEntry(IntegrationInboxItem $item, User $actor): void {
+        $entry = $item->referenceable;
+        if (! $item->isRemoteDeletion() || ! $entry instanceof TimeEntry) {
+            throw new RuntimeException((string) __('import.ical_subscription.removed_delete_unavailable'));
+        }
+        if ($entry->exported) {
+            throw new RuntimeException(self::billedMessage());
+        }
+        Gate::forUser($actor)->authorize('delete', $entry);
+
+        DB::transaction(function () use ($item, $entry): void {
+            $entry->delete();
+            $this->close($item, IntegrationInboxStatus::ResolvedRemote, null);
+        });
     }
 
     /** Konflikt zugunsten der lokalen Werte schließen — und lokal auch extern durchsetzen. */
@@ -144,6 +173,10 @@ class InboxActionService {
      */
     public function markResolved(IntegrationInboxItem $item, IntegrationInboxStatus $status, ?Model $resolvedTo = null): void {
         $this->close($item, $status, $resolvedTo);
+    }
+
+    private static function billedMessage(): string {
+        return (string) __('Dieser Datensatz ist bereits abgerechnet — der Fremdstand kann nicht übernommen werden. Bitte den Fall zur Kenntnis nehmen und die Abweichung über eine Korrektur buchen.');
     }
 
     private function writeReference(IntegrationInboxItem $item, Model $target): void {

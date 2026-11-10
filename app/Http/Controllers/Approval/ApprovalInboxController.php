@@ -31,7 +31,7 @@ use Illuminate\View\View;
  * (decision null ODER question), je approvable nur der NIEDRIGSTE offene
  * Schritt, Zuständigkeit über {@see ApprovalResponsibility}. Welche
  * Gegenstände erscheinen, melden die Module über {@see ApprovalInboxSubject}
- * an (Service-Requests, Changes, Vertragsverhandlungen); entschieden wird
+ * an (Service-Requests, Changes, Vertragsverhandlungen, Investitionsanträge); entschieden wird
  * auf dem Weg des Gegenstands. Es zählt nur die geltende (höchste) Runde.
  */
 class ApprovalInboxController extends Controller {

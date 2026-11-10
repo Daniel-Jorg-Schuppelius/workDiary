@@ -45,8 +45,9 @@ class InvoicePolicy {
     }
 
     /**
-     * Direktes Storno: nur für unbezahlte Rechnungen (draft/issued).
-     * Bezahlte Rechnungen müssen über eine Korrekturrechnung
+     * Storno: für unbezahlte Rechnungen (draft/issued) und teilbezahlte, die
+     * allein freiwerdende Vorauszahlungen decken (MVP-1544). Bezahlte
+     * Rechnungen müssen über eine Korrekturrechnung
      * (siehe {@see createCreditNote}) storniert werden.
      */
     public function cancel(User $user, Invoice $invoice): bool {

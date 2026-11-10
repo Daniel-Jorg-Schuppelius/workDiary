@@ -149,7 +149,6 @@
     {{-- Stufenart → Rolle im Genehmigungs-Eingang (Registry approvals.step_role.*; leer = Vorgabe aus config/approvals.php). --}}
     <p class="text-sm text-muted">{{ __('settings.approvals.step_roles_hint') }}</p>
     @foreach (\App\Enums\Approval\ApprovalStepKind::cases() as $stepKind)
-        @continue($stepKind->roleSetting() === null)
         @php
             $stepRoleDefault = \App\Enums\User\UserRole::tryFrom((string) config($stepKind->roleSetting()));
             $stepRole = (string) old('settings.approvals.step_role.' . $stepKind->value, data_get($organization?->settings, 'approvals.step_role.' . $stepKind->value, ''));

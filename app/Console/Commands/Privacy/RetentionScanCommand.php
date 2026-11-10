@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Privacy;
 
 use App\Models\Platform\{HelpView, Organization};
+use App\Modules\Attributes\RunsWhenModuleInactive;
 use App\Services\Retention\RetentionScanService;
 use Illuminate\Console\Command;
 
@@ -23,6 +24,7 @@ use Illuminate\Console\Command;
  * Direktlöschung: anonyme Hilfe-Aufrufzähler (help_views, 90 Tage —
  * keine Personenbezüge, kein Review nötig).
  */
+#[RunsWhenModuleInactive('Aufbewahrung und Löschung: die Fristen der Löschregeln gelten für alle Module, unabhängig davon, ob das Datenschutzmodul genutzt wird; der Scan schlägt nur vor, gelöscht wird nach Bestätigung.')]
 class RetentionScanCommand extends Command {
     protected $signature = 'privacy:retention-scan';
 

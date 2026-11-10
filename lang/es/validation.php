@@ -1382,6 +1382,7 @@ return [
         'iban' => 'IBAN',
         'ical_category_allowlist' => 'Categorías iCal',
         'calendar' => 'Calendario',
+        'calendar_source' => 'Origen del calendario',
         'ical_recurrence_from' => 'Series desde',
         'ical_recurrence_until' => 'Series hasta',
         'icon' => 'Icono',

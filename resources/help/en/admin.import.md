@@ -1,7 +1,7 @@
 ---
 title: "CSV import"
 topic: admin.import
-version: 5
+version: 6
 keywords:
     - data import
     - import master data
@@ -110,10 +110,12 @@ The attendance import accepts the optional column **erfasst am** (date and
 time of the original recording). It serves the minimum wage recording
 deadline; without it, the deadline is not checked for those rows.
 
-## Calendar subscriptions: continuously from an iCal calendar
+## Calendar subscriptions: continuously from a calendar
 
 Under **Calendar subscriptions** (menu of the import overview) you subscribe to
-an iCal calendar via its subscription address (`https://` or `webcal://`).
+an iCal calendar via its subscription address (`https://` or `webcal://`) or
+choose a calendar connection of the organization as **Source** (CalDAV, Google
+Calendar, Microsoft 365) – the same ones the import from the calendar offers.
 WorkDiary reads it every hour and takes over the events like the file import:
 
 - **Person:** if the calendar belongs to one person, all events belong to
@@ -135,3 +137,8 @@ WorkDiary reads it every hour and takes over the events like the file import:
 The address is stored encrypted; only the server is shown. Addresses on your
 own network need **Allow calendars on your own network** and approval by the
 operator. **Fetch now** starts a run immediately.
+
+A calendar connection delivers the events of the past 30 days on every run;
+the rules above apply unchanged. If the connection is disconnected or switched
+off, the subscription reports an error until you choose another source. Only
+the connections of your organization can be selected.

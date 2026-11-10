@@ -10,6 +10,7 @@
 
 namespace App\Console\Commands\Domain;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Enums\Domain\DomainConnectionStatus;
 use App\Models\Domain\DomainProviderConnection;
 use App\Services\Domain\DomainEventPollingService;
@@ -22,13 +23,15 @@ use Throwable;
  * `DeleteEvent` quittiert wird.
  */
 class DomainEventsCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'domain:events {--limit=100 : Ereignisse je Verbindung}';
 
     protected $description = 'Pollt DomainReselling-Ereignisse (Durable Store vor Acknowledge).';
 
     public function handle(DomainEventPollingService $events): int {
-        $connections = DomainProviderConnection::query()
-            ->where('status', DomainConnectionStatus::Active->value)
+        $connections = $this->whereModuleActive(DomainProviderConnection::query()
+            ->where('status', DomainConnectionStatus::Active->value), withoutOrganization: true)
             ->cursor();
 
         $stored = 0;

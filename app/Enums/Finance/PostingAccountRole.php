@@ -69,13 +69,16 @@ enum PostingAccountRole: string implements HasLabel {
     /** Gebühren des Zahlungsanbieters (SKR03 4970, SKR04 6855 — MVP-1067). */
     case PaymentFees = 'payment_fees';
 
+    /** Erhaltene, versteuerte Anzahlungen (SKR03 1718/1711, SKR04 3272/3260 — MVP-1523). */
+    case AdvanceReceived = 'advance_received';
+
     public function label(): string {
         return (string) __('enums.finance.posting-account-role.' . $this->value);
     }
 
     public function tone(): string {
         return match ($this) {
-            self::Receivable, self::Payable, self::EmployeePayable => 'info',
+            self::Receivable, self::Payable, self::EmployeePayable, self::AdvanceReceived => 'info',
             self::Revenue => 'success',
             self::Expense, self::Depreciation, self::DisposalLoss, self::PaymentFees => 'error',
             self::DisposalGain => 'success',

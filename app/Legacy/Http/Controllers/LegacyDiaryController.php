@@ -91,6 +91,9 @@ class LegacyDiaryController extends Controller {
     }
 
     public function create(): View|Response {
+        // Ein Eintrag gehört einem Altsystem-Nutzer; ohne verknüpftes Legacy-Konto ließe er sich nicht speichern.
+        abort_if(LegacyRoleResolver::resolveLegacyUserId(Auth::user()) <= 0, 403, __('Kein Legacy-Benutzerkonto verknüpft. Bitte wenden Sie sich an die Verwaltung.'));
+
         $data = $this->formData(null, false);
 
         return response(view('legacy.diary._form_dialog', $data));
@@ -106,11 +109,11 @@ class LegacyDiaryController extends Controller {
 
         if ($legacyUserId <= 0) {
             if ($request->hasHeader('X-Entry-Dialog')) {
-                return response()->json(['errors' => ['inhalt' => 'Kein Legacy-Benutzerkonto verknuepft. Bitte Admin kontaktieren.']], 422);
+                return response()->json(['errors' => ['inhalt' => __('Kein Legacy-Benutzerkonto verknüpft. Bitte wenden Sie sich an die Verwaltung.')]], 422);
             }
 
             return back()->withErrors([
-                'inhalt' => 'Kein Legacy-Benutzerkonto verknuepft. Bitte Admin kontaktieren.',
+                'inhalt' => __('Kein Legacy-Benutzerkonto verknüpft. Bitte wenden Sie sich an die Verwaltung.'),
             ])->withInput();
         }
 
@@ -126,7 +129,7 @@ class LegacyDiaryController extends Controller {
             return response()->json(['redirect' => route('legacy.diary.index')]);
         }
 
-        return redirect()->route('legacy.diary.show', $entry)->with('success', 'Legacy-Eintrag gespeichert.');
+        return redirect()->route('legacy.diary.show', $entry)->with('success', __('Legacy-Eintrag gespeichert.'));
     }
 
     public function show(LegacyDiaryEntry $entry): View|Response {
@@ -171,7 +174,7 @@ class LegacyDiaryController extends Controller {
             return response()->json(['redirect' => route('legacy.diary.index')]);
         }
 
-        return redirect()->route('legacy.diary.show', $entry)->with('success', 'Legacy-Eintrag aktualisiert.');
+        return redirect()->route('legacy.diary.show', $entry)->with('success', __('Legacy-Eintrag aktualisiert.'));
     }
 
     public function destroy(LegacyDiaryEntry $entry): RedirectResponse {
@@ -179,7 +182,7 @@ class LegacyDiaryController extends Controller {
 
         $entry->delete();
 
-        return redirect()->route('legacy.diary.index')->with('success', 'Legacy-Eintrag geloescht.');
+        return redirect()->route('legacy.diary.index')->with('success', __('Legacy-Eintrag gelöscht.'));
     }
 
     public function bulk(Request $request): RedirectResponse {
@@ -210,7 +213,7 @@ class LegacyDiaryController extends Controller {
             }
 
             return redirect()->route('legacy.diary.index')
-                ->with('success', $entries->count() . ' Legacy-Eintraege geloescht.');
+                ->with('success', __(':count Legacy-Einträge gelöscht.', ['count' => $entries->count()]));
         }
 
         $gelesen = match ((string) $data['action']) {
@@ -227,7 +230,7 @@ class LegacyDiaryController extends Controller {
         }
 
         return redirect()->route('legacy.diary.index')
-            ->with('success', $entries->count() . ' Legacy-Eintraege aktualisiert.');
+            ->with('success', __(':count Legacy-Einträge aktualisiert.', ['count' => $entries->count()]));
     }
 
     private function ensureCanModify(LegacyDiaryEntry $entry): void {

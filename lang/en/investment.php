@@ -205,4 +205,16 @@ return [
             'saved' => 'Objective saved.',
         ],
     ],
+    // Approval steps in the approvals inbox (MVP-1522).
+    'approval' => [
+        'inbox_title' => 'Investment request: :title',
+        'inbox_reference' => 'Version :version · :amount',
+        'requested_title' => 'Approval requested: investment “:title”',
+        'requested_message' => 'Budget request of :amount — step :step (:kind).',
+        'delegate_without_right' => 'Please delegate to a person who may approve investments.',
+        'waiting' => 'Waiting for step :step: :who.',
+        'waiting_kind' => ':kind (role :role)',
+        'waiting_role' => 'Role :role',
+        'not_responsible' => 'You are not responsible for the open approval step.',
+    ],
 ];

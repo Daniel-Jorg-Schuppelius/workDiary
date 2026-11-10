@@ -136,6 +136,29 @@ class LegacySupportImportTest extends TestCase {
         $this->assertNotNull($archived->closed_at);
     }
 
+    public function test_unassignable_mechanic_and_unknown_customer_number_land_in_the_internal_note(): void {
+        $order = $this->order('kp_archiv', [
+            'id' => 501,
+            'kunde' => 99,
+            'wer' => 'Monteur Ausgeschieden',
+            'intern' => 'Ventil getauscht',
+            'status' => LegacySupportOrder::STATUS_ARCHIVED,
+            'datum' => '2016-05-03 09:00:00',
+        ]);
+
+        $this->runImport();
+
+        $ticket = $this->ticket($order);
+        $this->assertNull($ticket->assigned_to_user_id);
+        $note = (string) ServiceTicketMessage::query()->withoutGlobalScopes()
+            ->where('service_ticket_id', $ticket->id)
+            ->where('kind', TicketMessageKind::InternalNote->value)
+            ->value('body');
+        $this->assertStringContainsString('Ventil getauscht', $note);
+        $this->assertStringContainsString('Mechaniker: Monteur Ausgeschieden', $note);
+        $this->assertStringContainsString('Kundennummer im Altsystem: 99', $note);
+    }
+
     public function test_second_run_updates_instead_of_duplicating(): void {
         $id = $this->order('kp_auftrag', ['antwort' => 'Erste Antwort']);
         $this->runImport();

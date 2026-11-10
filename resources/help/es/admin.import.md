@@ -1,7 +1,7 @@
 ---
 title: "Importación CSV"
 topic: admin.import
-version: 5
+version: 6
 keywords:
     - importación de datos
     - importar datos maestros
@@ -113,12 +113,14 @@ La importación de asistencias admite la columna opcional **erfasst am** (fecha
 y hora del registro original). Sirve para el plazo de registro de la MiLoG; sin
 ella, el plazo no se comprueba en esas líneas.
 
-## Suscripciones de calendario: de forma continua desde un calendario iCal
+## Suscripciones de calendario: de forma continua desde un calendario
 
 En **Suscripciones de calendario** (menú de la vista general de
 importaciones) usted se suscribe a un calendario iCal mediante su dirección de
-suscripción (`https://` o `webcal://`). WorkDiary lo lee cada hora y adopta las
-citas como la importación de archivos:
+suscripción (`https://` o `webcal://`) o elige como **Origen** una conexión de
+calendario de la organización (CalDAV, Google Calendar, Microsoft 365), las
+mismas que ofrece la importación desde el calendario. WorkDiary lo lee cada
+hora y adopta las citas como la importación de archivos:
 
 - **Persona:** si el calendario pertenece a una persona, todas las citas son
   suyas. Sin persona, decide la dirección de correo del organizador o del
@@ -142,3 +144,8 @@ La dirección se guarda cifrada; solo se muestra el servidor. Las direcciones de
 la red propia necesitan **Permitir calendarios de la red propia** y la
 autorización del operador. **Consultar ahora** inicia una ejecución de
 inmediato.
+
+Una conexión de calendario entrega en cada ejecución las citas de los últimos
+30 días; las reglas anteriores se aplican sin cambios. Si la conexión se
+desconecta o se desactiva, la suscripción informa de un error hasta que usted
+elija otro origen. Solo se pueden elegir las conexiones de su organización.

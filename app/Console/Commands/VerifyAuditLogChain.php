@@ -10,6 +10,7 @@
 
 namespace App\Console\Commands;
 
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Audit\AuditChainVerifier;
 use Illuminate\Console\Command;
 
@@ -28,6 +29,7 @@ use Illuminate\Console\Command;
  * Die Rechnung selbst liegt im {@see AuditChainVerifier} (MVP-699: die
  * Verfahrensdokumentation friert dasselbe Ergebnis als Nachweis ein).
  */
+#[BelongsToModule('audit')]
 class VerifyAuditLogChain extends Command {
     protected $signature = 'audit:verify {--chain= : Nur diese Kette prüfen (audit_logs|organization_audit_logs)}';
 

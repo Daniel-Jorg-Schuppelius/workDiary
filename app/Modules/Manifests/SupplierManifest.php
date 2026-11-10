@@ -58,6 +58,9 @@ final class SupplierManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Supplier\WorkQueue\SupplierQuestionnaireWorkItemSource::class,
+            ],
             \App\Services\Cockpit\Contracts\CockpitPanel::class => [
                 \App\Services\Supplier\Cockpit\SupplierCredentialCockpitPanel::class,
             ],

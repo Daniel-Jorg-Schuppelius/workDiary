@@ -14,7 +14,7 @@ use App\Casts\{BicCast, GermanTaxNumberCast, IbanCast, MoneyCast, PercentageCast
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Project\ProjectStatus;
 use App\Models\Asset\Asset;
-use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasClassifications, HasCommunicationNotes, HasContactAndBankDetails, HasCustomFields, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasStructuredContactName, HasTags, Searchable};
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasClassifications, HasCommunicationNotes, HasContactAndBankDetails, HasCustomFields, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasStructuredContactName, HasTags, MatchesIdentifiers, Searchable};
 use App\Models\Contacts\ContactAddress;
 use App\Models\Contracts\{ContactDetailsHolder, ContactNameHolder, CustomFieldSubject};
 use App\Models\Facility\{Room, Site};
@@ -109,6 +109,7 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
     use HasSqid;
     use HasStructuredContactName;
     use HasTags;
+    use MatchesIdentifiers;
     use Searchable;
 
     protected $fillable = [

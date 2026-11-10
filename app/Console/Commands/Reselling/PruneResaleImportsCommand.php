@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Reselling;
 
 use App\Models\Reselling\ResaleImport;
+use App\Modules\Attributes\RunsWhenModuleInactive;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
@@ -22,6 +23,7 @@ use Illuminate\Console\Command;
  * Import nicht mehr gelesen. Nach der Frist verschwindet die Datei, der
  * Import-Datensatz mit Zählern und Befunden bleibt als Historie.
  */
+#[RunsWhenModuleInactive('Löschpflicht: abgelegte Anbieter-Exporte tragen Endkundendaten und verschwinden nach der Aufbewahrungsfrist, auch wenn das Reselling-Modul abgeschaltet ist.')]
 class PruneResaleImportsCommand extends Command {
     protected $signature = 'resale:prune-imports
         {--days=90 : Dateien älter als N Tage löschen}

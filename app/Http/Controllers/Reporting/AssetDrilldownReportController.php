@@ -17,7 +17,7 @@ use App\Models\Asset\Asset;
 use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Platform\User;
 use App\Models\Protocol\Protocol;
-use App\Services\Asset\RecurringDefectService;
+use App\Services\Asset\{AssetCategoryCatalog, RecurringDefectService};
 use App\Support\MorphMap;
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
@@ -230,7 +230,7 @@ class AssetDrilldownReportController extends Controller {
             return $value === '' ? (string) __('Ohne Modell') : $value;
         }
         if ($filters['category_code'] !== null) {
-            return $filters['category_code'];
+            return app(AssetCategoryCatalog::class)->labels($this->currentOrganizationId())[$filters['category_code']] ?? $filters['category_code'];
         }
         return (string) __('Alle Assets');
     }

@@ -263,10 +263,13 @@ class RentalRequestService {
     /**
      * Unbezahlte Direktbuchungen nach Fristablauf freigeben (MVP-1515). Vorher
      * wird beim Anbieter nachgefragt — eine Zahlung ohne Webhook zählt noch.
+     *
+     * @param  list<int>|null  $organizationIds  nur diese Organisationen (geplanter Lauf: aktives Modul), null = alle
      */
-    public function expireUnpaid(): int {
+    public function expireUnpaid(?array $organizationIds = null): int {
         $expired = 0;
         RentalRequest::query()->withoutGlobalScopes()
+            ->when($organizationIds !== null, static fn ($query) => $query->whereIn('organization_id', $organizationIds))
             ->where('status', RentalRequestStatus::AwaitingPayment->value)
             ->where('payment_due_at', '<', Carbon::now())
             ->orderBy('id')

@@ -12,7 +12,7 @@ namespace App\Models\Article;
 
 use App\Casts\{GtinCast, MoneyCast};
 use App\Enums\Article\ArticleStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, MatchesIdentifiers};
 use App\Models\Integration\ExternalArticleMapping;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -41,6 +41,7 @@ class ArticleVariant extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
     use HasSqid;
+    use MatchesIdentifiers;
 
     protected $fillable = [
         'organization_id',

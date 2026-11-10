@@ -86,6 +86,9 @@ final class KnowledgeManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Knowledge\Demo\KnowledgeDemoBlock::class,
+            ],
             \App\Services\Navigation\Contracts\NavigationCondition::class => [
                 \App\Services\Collections\Navigation\KnowledgeHubCondition::class,
             ],

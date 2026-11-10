@@ -6,11 +6,15 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Dialog: Kalender-Abo anlegen/bearbeiten (MVP-1516) --}}
+{{-- Dialog: Kalender-Abo anlegen/bearbeiten (MVP-1516); Quelle Adresse oder Kalenderverbindung (MVP-1531) --}}
 @php
     /** @var \App\Models\Time\IcalSubscription $subscription */
     /** @var list<\App\Enums\Import\ImportEntity> $entities */
+    /** @var list<array{value: string, label: string}> $calendarSources */
     $isEdit = $subscription->exists;
+    $selectedSource = (string) old('calendar_source', $subscription->calendar_source ?? '');
+    $staleSource = $selectedSource !== '' && ! in_array($selectedSource, array_column($calendarSources, 'value'), true);
+    $keepsUrl = $isEdit && $subscription->url !== null;
     $selectedEntity = old('import_entity', $subscription->import_entity?->value);
     $selectedUser = (string) old('user_id', $subscription->user_id !== null ? \App\Support\Sqid::encode(\App\Models\Platform\User::class, (int) $subscription->user_id) : '');
 @endphp
@@ -33,10 +37,21 @@
                 <option value="{{ $entity->value }}" @selected($selectedEntity === $entity->value)>{{ $entity->label() }}</option>
             @endforeach
         </x-select-field>
+        @if ($calendarSources !== [] || $selectedSource !== '')
+            <x-select-field name="calendar_source" span="2" :label="__('import.ical_subscription.field_source')" :hint="__('import.ical_subscription.field_source_help')">
+                <option value="">{{ __('import.ical_subscription.field_source_url') }}</option>
+                @foreach ($calendarSources as $source)
+                    <option value="{{ $source['value'] }}" @selected($selectedSource === $source['value'])>{{ $source['label'] }}</option>
+                @endforeach
+                @if ($staleSource)
+                    <option value="{{ $selectedSource }}" selected>{{ __('import.ical_subscription.source_missing') }}</option>
+                @endif
+            </x-select-field>
+        @endif
         <x-input-field name="url" type="url" span="2" maxlength="2048" autocomplete="off" class="font-mono"
-                       :required="! $isEdit"
+                       :required="! $isEdit && $calendarSources === []"
                        :label="__('import.ical_subscription.field_url')"
-                       :hint="$isEdit ? __('import.ical_subscription.field_url_keep') : __('import.ical_subscription.field_url_help')"
+                       :hint="$keepsUrl ? __('import.ical_subscription.field_url_keep') : __('import.ical_subscription.field_url_help')"
                        :value="old('url')"
                        placeholder="https://calendar.example.org/feed.ics" />
         <x-select-field name="user_id" span="2" :label="__('import.ical_subscription.field_user')" :hint="__('import.ical_subscription.field_user_help')">

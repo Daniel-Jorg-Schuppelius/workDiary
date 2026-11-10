@@ -1,7 +1,7 @@
 ---
 title: "Rechnungen & Belege"
 topic: invoices.manage
-version: 12
+version: 13
 keywords:
     - Rechnung erstellen
     - Rechnung schreiben
@@ -148,9 +148,44 @@ teilbezahlt — wie bei einem zugeordneten Bankumsatz; eine Erstattung nimmt
 das zurück. Mit der lokalen Buchhaltung erscheint die Zahlung im
 Buchungseingang (Geldtransit an Forderung, die Gebühr des Anbieters als
 Nebenkosten des Geldverkehrs); die spätere Auszahlung des Anbieters buchen
-Sie gegen das Geldtransit-Konto. Den Link auf Rechnung und Mail schalten
-Sie in den Organisationseinstellungen unter „Online-Zahlung“ ab; im
-Kundenportal bleibt er.
+Sie gegen das Geldtransit-Konto. Eine Online-Vorauszahlung aus dem Verleih
+bucht schon am Zahlungstag als erhaltene Anzahlung mit Umsatzsteuer; die
+Rechnung, die sie anrechnet, löst die Anzahlung auf und weist als
+Forderung nur den offenen Rest aus. Den Link auf Rechnung und Mail
+schalten Sie in den Organisationseinstellungen unter „Online-Zahlung“ ab;
+im Kundenportal bleibt er.
+
+## Stornieren und neu abrechnen
+
+Ein Entwurf wird direkt storniert, eine ausgestellte Rechnung über einen
+Stornobeleg mit eigener Nummer. Beide Wege geben alles frei, was die Rechnung
+abgerechnet hat, wie der Storno einer Übergabe: gebuchte Zeiten, Material,
+Anfahrten, Auslagen, Mietpositionen, Auslieferungen und die Auffüllung auf das
+Projekt-Soll. Eine Online-Vorauszahlung aus dem Verleih geht an ihre Buchung
+zurück und wird auf die nächste Rechnung angerechnet. Die Positionen der
+stornierten Rechnung bleiben unverändert stehen; die nächste Rechnung für den
+Zeitraum enthält die Stunden und die Auffüllung wieder. Eine bezahlte Rechnung
+korrigiert eine Korrekturrechnung. Sie gibt nichts frei, weil sie auch nur
+einen Teil gutschreiben kann.
+
+Eine ausgestellte Rechnung, die nur eine Online-Vorauszahlung teilweise deckt,
+stornieren Sie ebenfalls per Stornobeleg: Die Vorauszahlung geht an ihre
+Buchung zurück und wird auf die nächste Rechnung angerechnet. Deckt eine
+andere Zahlung die Rechnung teilweise – ein Bankumsatz im Zahlungsabgleich
+(auch ein anerkanntes Skonto), eine Kassenzahlung, eine Online-Zahlung der
+Rechnung oder ein Ausgleich am offenen Posten –, bleibt der Storno gesperrt,
+und die Rechnung nennt den Grund. Heben Sie diese Zahlung zuerst auf; ist die
+Rechnung vollständig bezahlt, korrigieren Sie sie mit einer Korrekturrechnung.
+
+Mit der lokalen Buchhaltung gleicht der Stornobeleg genau den offenen Posten
+der stornierten Rechnung aus, nach einer Vorauszahlung den Rest nach der
+Anzahlung; andere offene Posten des Kunden bleiben unberührt. Die Anzahlung
+steht danach wieder offen und wird mit der nächsten Rechnung aufgelöst. Buchen
+Sie deshalb die Rechnung vor ihrem Stornobeleg, sonst wartet der Stornobeleg
+im Buchungseingang mit einem Hinweis. Eine stornierte Rechnung mit Stornobeleg
+erscheint dort ebenfalls zum Buchen, denn beide Belege gehören ins Journal.
+Der Stornobeleg zählt nicht als Zahlung, auch nicht in den Auswertungen nach
+Zahlungseingang (EÜR, Umsatzsteuer nach vereinnahmten Entgelten).
 
 ## Zugehörige Belege
 

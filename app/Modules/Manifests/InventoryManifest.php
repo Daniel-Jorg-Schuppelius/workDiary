@@ -131,6 +131,9 @@ final class InventoryManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Inventory\Demo\InventoryDemoBlock::class,
+            ],
             \App\Services\CustomerPortal\Contracts\PortalNoticeSource::class => [
                 \App\Services\Inventory\RecallPortalNotices::class,
             ],

@@ -1,7 +1,7 @@
 ---
 title: "Données de démonstration"
 topic: admin.demo-data
-version: 2
+version: 3
 keywords:
     - données exemple
     - données de test
@@ -30,7 +30,15 @@ l'organisation courante encore vide ; **Réinitialiser (reset)** supprime
 et recrée les données d'une organisation de démonstration en conservant
 secteur et étendue. Sans la case « Présenter l'étendue complète », la
 démonstration suit la recommandation de modules du profil et ne crée des
-données que pour les modules actifs. Le dialogue indique à l'avance sous
+données que pour les modules actifs. Les modules que de nombreux profils
+recommandent contiennent eux aussi des données : plannings avec échange
+d'équipe, formulaires avec soumissions, articles de la base de
+connaissances, stock avec seuils de réapprovisionnement, notes de frais
+avec carnet de bord, temps de travail de plusieurs personnes pour les
+analyses d'équipe, lieux d'intervention de la géolocalisation, contrats
+avec échéances, sites immobiliers et un devis quantitatif (GAEB) ; clients,
+lieux et matériel proviennent du secteur modèle, les coordonnées de la
+géolocalisation sont fictives. Le dialogue indique à l'avance sous
 quelle licence la démonstration fonctionnera : si l'instance peut délivrer
 des licences, l'organisation reçoit une licence temporaire ; sinon la
 licence de l'installation s'applique, et sans les deux la démonstration

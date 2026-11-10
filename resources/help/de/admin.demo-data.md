@@ -1,7 +1,7 @@
 ---
 title: "Demodaten"
 topic: admin.demo-data
-version: 2
+version: 3
 keywords:
     - Beispieldaten
     - Testdaten
@@ -48,6 +48,13 @@ Funktionsumfang:
   (Helpdesk, Agile, Bewerbungen, Investitionen, Krisenübung,
   Nachhaltigkeit, Reklamation, Verleih, Leasing, Prüfmittel, Buchhaltung,
   Lernplattform und mehr).
+- Auch die Module, die viele Branchenprofile empfehlen, zeigen Daten:
+  Dienstpläne mit Schichttausch, Formulare mit Einreichungen, Artikel der
+  Wissensbasis, Lagerbestand mit Meldebestand, Spesen mit Fahrtenbuch,
+  Arbeitszeiten mehrerer Personen für die Team-Auswertungen, Einsatzorte
+  der Standorterfassung, Verträge mit Fristen, Liegenschaften und ein
+  Leistungsverzeichnis (GAEB). Kunden, Orte und Material stammen aus der
+  Musterbranche; die Koordinaten der Standorterfassung sind erfunden.
 
 Lizenz:
 

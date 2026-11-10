@@ -12,6 +12,7 @@ return [
     'qualification' => [
         'missing' => 'Qualifica obbligatoria mancante',
         'blocked' => 'Assegnazione bloccata: il :date a :user manca la qualifica obbligatoria :qualifications (assente, scaduta o non ancora valida).',
+        'hint' => 'Nota: il :date a :user manca la qualifica obbligatoria :qualifications (assente, scaduta o non ancora valida).',
     ],
     'availability' => [
         'title' => 'Disponibilità e preferenze turni',

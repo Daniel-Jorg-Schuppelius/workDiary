@@ -18,6 +18,7 @@ use App\Models\Protocol\Protocol;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Contracts\ProvidesRemoteSessions;
 use App\Plugins\PluginManager;
+use App\Services\Asset\AssetCategoryCatalog;
 use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
@@ -33,6 +34,8 @@ use Carbon\CarbonImmutable;
  * Audit), Muster wie {@see PlanIstReportBuilder}.
  */
 class AssetAnalysisReportBuilder {
+    public function __construct(private readonly AssetCategoryCatalog $categories) {}
+
     /**
      * @param  list<int>  $excludedCustomerIds  Feature 002: Assets und Aufträge
      *         org-weit ausgeblendeter Kunden entfallen; Übersteuerung regelt der Aufrufer.
@@ -69,7 +72,7 @@ class AssetAnalysisReportBuilder {
             ))
             ->when($categoryCode !== null, fn($q) => $q->where('category_code', $categoryCode))
             ->when($manufacturer !== null, fn($q) => $q->where('manufacturer', $manufacturer))
-            ->get(['id', 'name', 'asset_no', 'category_code', 'manufacturer', 'model', 'product_id']);
+            ->get(['id', 'organization_id', 'name', 'asset_no', 'category_code', 'manufacturer', 'model', 'product_id']);
 
         if ($assets->isEmpty()) {
             return [];
@@ -159,13 +162,15 @@ class AssetAnalysisReportBuilder {
             $defectByAsset[$aid] = ['defects' => $count, 'last' => $last];
         }
 
+        $categoryLabels = $groupBy === 'group' ? $this->categories->labels((int) $assets->first()->organization_id) : [];
+
         /** @var array<string, array{label:string, assetIds:list<int>, drilldown:array<string,mixed>}> $groups */
         $groups = [];
         foreach ($assets as $asset) {
             [$key, $label, $drilldown] = match ($groupBy) {
                 'group' => [
                     (string) ($asset->category_code ?? '_none_'),
-                    (string) ($asset->category_code ?? __('Ohne Produktgruppe')),
+                    $asset->category_code !== null ? ($categoryLabels[$asset->category_code] ?? $asset->category_code) : (string) __('Ohne Produktgruppe'),
                     ['category_code' => $asset->category_code],
                 ],
                 // MVP-371 (produktmodell-konzept.md): typisierte Assets gruppieren

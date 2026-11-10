@@ -1,7 +1,7 @@
 ---
 title: "Mapping inbox"
 topic: admin.integration-inbox
-version: 3
+version: 4
 keywords:
     - integration inbox
     - import conflicts
@@ -39,6 +39,12 @@ program assigned a number to a customer or supplier that another record in
 WorkDiary already carries. The case names the holder. Change the number
 there, then choose **Adopt remote**; the next sync also takes it over on
 its own.
+
+**Event removed at the source:** A calendar subscription reports that an
+event already booked as time is missing from the calendar. There is no remote
+state to take over. Open the time entry, delete it (with the same rights as in
+the time list; billed time stays) or acknowledge the notice if the time should
+remain.
 
 **Deciding:** You link an entry to an existing record, create it as a new one
 or discard it. For a field conflict you choose whether the local state stays

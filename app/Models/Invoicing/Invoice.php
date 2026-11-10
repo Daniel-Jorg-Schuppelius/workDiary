@@ -550,8 +550,7 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
         // Die Zeilen der Unterlagen räumt der Fremdschlüssel ab, ihre Dateien nicht (Feature 196).
         static::deleting(function (self $invoice): void {
             app(\App\Services\Invoicing\EInvoice\SupportingDocumentService::class)->purgeFiles($invoice);
-            // Vorauszahlungen (MVP-1515) gehören ihrem Gegenstand und überleben den gelöschten Entwurf.
-            OnlinePayment::query()->withoutGlobalScopes()->where('invoice_id', $invoice->id)->whereNotNull('subject_type')->update(['invoice_id' => null]);
+            app(\App\Services\Invoicing\InvoiceItemReleaseService::class)->releasePrepayments($invoice);
         });
 
         // Ausstellungs-Unveränderlichkeit (MVP-162): Anker ist der beim offiziellen Ausstellen eingefrorene Partei-Snapshot
@@ -666,16 +665,33 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
     }
 
     /**
-     * Storno ist möglich, solange die Rechnung NICHT bezahlt wurde.
-     * Für bezahlte Rechnungen muss stattdessen eine Gutschrift (Korrekturrechnung)
-     * erstellt werden — vgl. {@see needsCreditNoteToCancel()}.
+     * Storno ist möglich, solange die Rechnung NICHT bezahlt wurde; teilbezahlt
+     * nur, wenn allein freiwerdende Online-Vorauszahlungen sie decken
+     * (MVP-1544). Für bezahlte Rechnungen muss stattdessen eine Gutschrift
+     * (Korrekturrechnung) erstellt werden — vgl. {@see needsCreditNoteToCancel()}.
      */
     public function canBeCancelled(): bool {
-        if ($this->isCancelled() || $this->isCreditNote()) {
+        if ($this->isCreditNote() || ! $this->status->canTransitionTo(InvoiceStatus::Cancelled)) {
             return false;
         }
 
-        return in_array($this->status, [InvoiceStatus::Draft, InvoiceStatus::Issued], true);
+        return $this->status !== InvoiceStatus::PartiallyPaid
+            || app(\App\Services\Invoicing\InvoiceSettlement::class)->coveredOnlyByReleasablePrepayments($this);
+    }
+
+    /** Warum eine teilbezahlte Rechnung weder Storno noch Korrekturrechnung zulässt; null, wenn einer der Wege offen ist. */
+    public function cancellationBlockedReason(): ?string {
+        if ($this->status !== InvoiceStatus::PartiallyPaid || $this->isCreditNote() || $this->canBeCancelled()) {
+            return null;
+        }
+
+        return (string) __('invoicing.cancellation.partially_paid');
+    }
+
+    /** @return HasMany<Invoice, $this> */
+    public function cancellations(): HasMany {
+        return $this->hasMany(Invoice::class, 'parent_invoice_id')
+            ->where('type', self::TYPE_CANCELLATION);
     }
 
     /**
@@ -689,23 +705,29 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
     }
 
     /**
-     * Storniert die Rechnung (nur draft/issued). Bei bezahlten Rechnungen wirft
+     * Storniert die Rechnung (siehe {@see canBeCancelled()}). Bei bezahlten Rechnungen wirft
      * dies eine LogicException — der Aufrufer muss createCreditNote() verwenden.
      *
      * @throws \LogicException
+     * @throws \Illuminate\Validation\ValidationException teilbezahlt durch eine andere Zahlung als freiwerdende Vorauszahlungen
      */
     public function cancel(?string $reason, ?int $userId): void {
+        if (($blocked = $this->cancellationBlockedReason()) !== null) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['invoice' => $blocked]);
+        }
         if (! $this->canBeCancelled()) {
             throw new \LogicException('Invoice cannot be cancelled in current state: ' . $this->status->value);
         }
-        $this->status = InvoiceStatus::Cancelled;
-        $this->cancelled_at = now();
-        $this->cancelled_by = $userId;
-        $this->cancel_reason = $reason;
-        $this->save();
+        \Illuminate\Support\Facades\DB::transaction(function () use ($reason, $userId): void {
+            $this->status = InvoiceStatus::Cancelled;
+            $this->cancelled_at = now();
+            $this->cancelled_by = $userId;
+            $this->cancel_reason = $reason;
+            $this->save();
 
-        // Feature 194: Storno von Entwurf oder Rechnung gibt die Auffüllung auf das Projekt-Soll frei, wie bei der Übergabe.
-        app(\App\Services\Invoicing\TargetTopUps::class)->releaseInvoiceItems($this->items()->pluck('id')->map(static fn($id): int => (int) $id)->all());
+            // Einzige Freigabestelle beider Storno-Wege (MVP-1521): alle Quellen wie beim Storno einer Übergabe.
+            app(\App\Services\Invoicing\InvoiceItemReleaseService::class)->releaseInvoice($this);
+        });
     }
 
     public function markSent(): void {

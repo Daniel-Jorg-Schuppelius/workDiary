@@ -1,7 +1,7 @@
 ---
 title: "Fatture & documenti"
 topic: invoices.manage
-version: 12
+version: 13
 keywords:
     - creare fattura
     - emettere fattura
@@ -153,9 +153,47 @@ pagata in parte, come con un movimento bancario assegnato; un rimborso lo
 annulla. Con la contabilità locale il pagamento compare nella casella
 delle registrazioni (denaro in transito contro il credito, la commissione
 del fornitore come spese bancarie e di pagamento); il successivo accredito
-del fornitore lo registri sul conto del denaro in transito. Il link su
-fattura ed e-mail si disattiva nelle impostazioni dell'organizzazione,
+del fornitore lo registri sul conto del denaro in transito. Un pagamento
+anticipato online del noleggio viene registrato già alla data del
+pagamento come acconto ricevuto, con IVA; la fattura che lo scomputa
+compensa l'acconto e riporta come credito solo il residuo aperto. Il link
+su fattura ed e-mail si disattiva nelle impostazioni dell'organizzazione,
 alla voce «Pagamento online»; nel portale clienti rimane.
+
+## Annullare e fatturare di nuovo
+
+Una bozza si annulla direttamente, una fattura emessa tramite un documento
+di storno con numero proprio. Entrambe le vie liberano tutto ciò che la
+fattura ha fatturato, come lo storno di un trasferimento: tempi
+registrati, materiale, trasferte, spese, voci di noleggio, consegne e
+l'integrazione fino al tempo obiettivo del progetto. Un pagamento
+anticipato online del noleggio torna alla sua prenotazione e viene
+scomputato dalla fattura successiva. Le voci della fattura annullata
+restano invariate; la fattura successiva per il periodo contiene di nuovo
+le ore e l'integrazione. Una fattura pagata si corregge con una fattura di
+rettifica. Questa non libera nulla, perché può accreditare anche solo una
+parte della fattura.
+
+Anche una fattura emessa che solo un pagamento anticipato online copre in
+parte si storna tramite un documento di storno: il pagamento anticipato torna
+alla sua prenotazione e viene scomputato dalla fattura successiva. Se un altro
+pagamento copre la fattura in parte – un movimento bancario nella
+riconciliazione dei pagamenti (anche uno sconto accettato), un pagamento in
+cassa, un pagamento online della fattura o un pareggio della partita aperta –,
+lo storno resta bloccato e la fattura ne indica il motivo. Annulli prima quel
+pagamento; quando la fattura è pagata per intero, la corregga con una fattura
+di rettifica.
+
+Con la contabilità locale, il documento di storno pareggia esattamente la
+partita aperta della fattura stornata, dopo un pagamento anticipato il resto
+dopo l'acconto; le altre partite aperte del cliente restano invariate.
+L'acconto torna poi aperto e viene chiuso con la fattura successiva. Registri
+quindi la fattura prima del suo documento di storno; altrimenti il documento
+di storno attende nella casella di registrazione con un avviso. Anche una
+fattura stornata con documento di storno vi compare da registrare, perché
+entrambi i documenti appartengono al giornale. Il documento di storno non
+conta come pagamento, nemmeno nei prospetti per cassa (conto per cassa, IVA
+per cassa).
 
 ## Documenti collegati
 

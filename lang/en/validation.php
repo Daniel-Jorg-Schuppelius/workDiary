@@ -1416,6 +1416,7 @@ return [
         'iban' => 'IBAN',
         'ical_category_allowlist' => 'iCal categories',
         'calendar' => 'Calendar',
+        'calendar_source' => 'Calendar source',
         'ical_recurrence_from' => 'Series from',
         'ical_recurrence_until' => 'Series to',
         'icon' => 'Icon',

@@ -1,7 +1,7 @@
 ---
 title: "Legacy system"
 topic: legacy.overview
-version: 4
+version: 5
 keywords:
     - old system
     - previous system
@@ -66,8 +66,14 @@ and **Office**.
   (open)**, **Upcoming holidays (30 days)** and **Open notifications**.
 
 Everyone sees the duty schedules. The diary data of all persons is visible to
-legacy administrators and the **Accounting** role; everyone else sees only
-their own. The call center login leads to the same page.
+legacy administrators, platform operations and the **Accounting** role;
+everyone else sees only their own. The call center login leads to the same
+page.
+
+**New entry** is available to everyone whose user account is linked to an
+account in the legacy system; only legacy administrators create entries for
+other persons. Archiving, emergency and on-call duty are maintained by legacy
+administrators and platform operations.
 
 **Employees** is in the administration menu (the **Administration** icon in the
 header) under **Personnel** and lists the users of the legacy system with
@@ -110,6 +116,9 @@ customers placed in the customer portal of the legacy system:
 **Portal customers** in the management menu maintains the customer accounts
 with **Company**, **Username** and **Password** (4 to 10 characters). Customers
 with open orders cannot be deleted.
+
+The sign-in address for your customers is shown at the top of the **Portal
+customers** page; **Copy** puts it on the clipboard.
 
 Customers sign in on the customer portal's own sign-in page, see only their own
 orders with appointment and replies, place new orders and change their

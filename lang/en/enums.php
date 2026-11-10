@@ -600,6 +600,7 @@ return [
                 'decisionDue' => 'Investment decision due',
                 'proposed' => 'Investment proposed',
                 'decided' => 'Investment request decided',
+                'approvalRequested' => 'Investment request awaiting approval',
             ],
             'inventory' => [
                 'lotExpiring' => 'Lot expiring (best-before)',
@@ -1394,6 +1395,7 @@ return [
             'write_off' => 'Write-off',
             'overpayment' => 'Overpayment',
             'reversal' => 'Reversal',
+            'cancellation' => 'Cancellation document',
         ],
         // Quellenadapter und Buchungsregeln (Feature 125, MVP-673).
         'ebics-connection-status' => [
@@ -1438,6 +1440,7 @@ return [
             'disposal_gain' => 'Disposal residual value (gain)',
             'payment_transit' => 'Cash in transit (payment provider)',
             'payment_fees' => 'Bank and payment charges',
+            'advance_received' => 'Advance payments received',
         ],
         // Buchungskern (Feature 125, MVP-672).
         'balance-side' => [

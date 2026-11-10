@@ -1,7 +1,7 @@
 ---
 title: "Investitionsplanung"
 topic: investments.overview
-version: 2
+version: 3
 keywords:
     - Investitionsantrag
     - Budgetantrag
@@ -34,6 +34,23 @@ Antragsteller kann nie selbst freigeben. Genehmigte Budgets werden als
 Snapshot eingefroren — eine Erhöhung läuft immer über eine genehmigte
 Budget-Abweichung und einen Nachtrag (neuer Antrag, alter Stand bleibt
 als „ersetzt" erhalten).
+
+**Genehmigungs-Eingang:** Offene Freigabestufen eines Budgetantrags
+erscheinen unter „Genehmigungen“ und im Arbeitsvorrat bei der Rolle, die
+Ihre Organisation der Stufenart zuordnet (Vorgabe: kaufmännisch →
+Buchhaltung, Geschäftsleitung → Geschäftsführung). Beim Einreichen und
+beim Wechsel zur nächsten Stufe werden die Zuständigen benachrichtigt.
+Entschieden wird dort wie an der Akte; Freigeben darf nur, wer
+Investitionen freigeben darf.
+
+**Entscheiden an der Akte:** Es gilt dieselbe Zuständigkeit wie im
+Eingang. „Freigeben“ und „Ablehnen“ sieht nur, wer für die offene Stufe
+zuständig ist und sie entscheiden darf — nicht der Antragsteller und nicht,
+wer eine frühere Stufe derselben Runde entschieden hat. Alle anderen sehen,
+worauf der Antrag wartet, etwa „Wartet auf Stufe 2: Geschäftsleitung (Rolle
+Geschäftsführung).“ Auch Admins entscheiden nur mit der Rolle der Stufe;
+welche Rolle das ist, legen Sie in den Organisationseinstellungen unter
+„Genehmigungen“ fest.
 
 **Zurückstellen & Ablehnung:** In der Planung lässt sich die Akte mit
 „Zurückstellen" parken; „Wieder aufnehmen" führt sie genau in die Phase

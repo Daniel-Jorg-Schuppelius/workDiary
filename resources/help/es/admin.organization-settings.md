@@ -1,7 +1,7 @@
 ---
 title: "Organización y configuración"
 topic: admin.organization-settings
-version: 5
+version: 6
 keywords:
     - configuración de la empresa
     - ajustes del inquilino
@@ -174,14 +174,18 @@ ArbZG de los tiempos registrados:
   extra** y **Etapas de aprobación de correcciones de tiempo**: cada una
   **Una etapa (una aprobación)** (predeterminado) o **Dos etapas (principio de
   cuatro ojos)** – una solicitud necesita entonces dos aprobaciones.
-- **Comercial: rol responsable**, **Técnica: rol responsable** y **RR. HH.:
-  rol responsable**: las etapas de aprobación de una negociación contractual
-  aparecen en la bandeja de aprobaciones en «Aprobaciones» para el rol
-  asignado a su tipo de etapa. Se pueden elegir todos los roles salvo
+- **Comercial: rol responsable**, **Técnica: rol responsable**, **RR. HH.:
+  rol responsable** y **Dirección: rol responsable**: las etapas de
+  aprobación de las negociaciones contractuales y de las solicitudes de
+  inversión aparecen en la bandeja de aprobaciones en «Aprobaciones» para el
+  rol asignado a su tipo de etapa. Se pueden elegir todos los roles salvo
   Cliente. Si queda vacío, se aplica el valor predeterminado:
-  **Predeterminado (Contabilidad)**, **Predeterminado (Jefe de equipo)** o
-  **Predeterminado (Administración de personal)**. La aprobación directamente
-  desde el expediente sigue siendo posible.
+  **Predeterminado (Contabilidad)**, **Predeterminado (Jefe de equipo)**,
+  **Predeterminado (Administración de personal)** o **Predeterminado
+  (Dirección)**. Las negociaciones contractuales pueden seguir aprobándose
+  directamente desde el expediente; las solicitudes de inversión solo las
+  decide el rol asignado, también desde el expediente — los administradores
+  igualmente solo si tienen ese rol.
 - **Registrar de inmediato las ausencias solicitadas de forma provisional (el
   rechazo las retira)**: las ausencias solicitadas ya surten efecto en la
   planificación antes de la aprobación, marcadas como provisionales; un

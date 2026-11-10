@@ -72,4 +72,13 @@ class AccountingOpenItemSettlement extends Model {
     public function paymentAllocation(): BelongsTo {
         return $this->belongsTo(PaymentAllocation::class, 'payment_allocation_id');
     }
+
+    /**
+     * Der Ausgleich, den diese Rückbuchung zurücknimmt.
+     *
+     * @return BelongsTo<AccountingOpenItemSettlement, $this>
+     */
+    public function reversedSettlement(): BelongsTo {
+        return $this->belongsTo(self::class, 'reverses_settlement_id');
+    }
 }

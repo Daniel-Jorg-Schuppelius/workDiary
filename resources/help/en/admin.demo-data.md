@@ -1,7 +1,7 @@
 ---
 title: "Demo data"
 topic: admin.demo-data
-version: 2
+version: 3
 keywords:
     - sample data
     - test data
@@ -47,6 +47,13 @@ Scope:
   agile, applications, investments, crisis exercise, sustainability,
   claims, rental, leasing, test equipment, accounting, learning platform
   and more).
+- The modules that many branch profiles recommend also show data: duty
+  rosters with a shift swap, forms with submissions, knowledge base
+  articles, stock with reorder points, expenses with a logbook, working
+  times of several people for the team reports, work sites for location
+  tracking, contracts with deadlines, facilities and a bill of quantities
+  (GAEB). Customers, places and material come from the sample branch; the
+  location coordinates are invented.
 
 License:
 

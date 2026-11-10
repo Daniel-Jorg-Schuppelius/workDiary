@@ -94,6 +94,9 @@ final class LocationManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Location\Demo\LocationDemoBlock::class,
+            ],
             \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
                 \App\Services\Location\Retention\LocationRetentionPolicies::class,
             ],

@@ -1,7 +1,7 @@
 ---
 title: "Planification des investissements"
 topic: investments.overview
-version: 2
+version: 3
 keywords:
     - demande d'investissement
     - demande de budget
@@ -33,6 +33,23 @@ supplémentaire. Le demandeur ne peut jamais valider lui-même. Les budgets
 approuvés sont figés sous forme de snapshot — une augmentation passe
 toujours par un écart budgétaire approuvé et un avenant (nouvelle
 demande, l'ancien état est conservé comme « remplacé »).
+
+**Boîte des approbations :** Les étapes ouvertes d'une demande de budget
+apparaissent sous « Approbations » et dans la file de travail pour le
+rôle que votre organisation attribue au type d'étape (par défaut :
+commercial → comptabilité, direction → direction). À la soumission et au
+passage à l'étape suivante, les responsables sont notifiés. On y décide
+comme dans le dossier ; seules les personnes autorisées à approuver des
+investissements peuvent valider.
+
+**Décider depuis le dossier :** La même responsabilité que dans la boîte
+s'applique. « Valider » et « Refuser » ne s'affichent que pour la personne
+responsable de l'étape ouverte qui peut la trancher — ni pour le
+demandeur, ni pour qui a tranché une étape antérieure du même tour. Les
+autres voient ce que la demande attend, par exemple « En attente de
+l’étape 2 : Direction (rôle Direction). » Les administrateurs eux aussi ne
+décident qu'avec le rôle de l'étape ; vous définissez ce rôle dans les
+paramètres de l'organisation sous « Approbations ».
 
 **Report et refus :** Pendant la planification, le dossier peut être mis
 en attente avec « Reporter » ; « Reprendre » le ramène exactement à la

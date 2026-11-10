@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting\Reports;
 
-use App\Enums\Finance\{AccountType, AccountingEntryStatus};
+use App\Enums\Finance\{AccountType, AccountingEntryStatus, SettlementKind};
 use App\Models\Accounting\{AccountingAccount, AccountingEntryLine, AccountingOpenItemSettlement};
 use App\Models\Platform\Organization;
 use App\Support\Query\DateRange;
@@ -154,12 +154,17 @@ abstract class AbstractAccountingReportBuilder {
     }
 
     /**
+     * Ausgleiche als Zahlungsstrom. Ein Stornobeleg gleicht ohne Geldfluss aus
+     * (MVP-1545) — er und seine Rückbuchung zählen nicht.
+     *
      * @return Collection<int, AccountingOpenItemSettlement>
      */
     protected function settlementsInPeriod(Organization $organization, CarbonImmutable $from, CarbonImmutable $to): Collection {
         return AccountingOpenItemSettlement::query()
             ->where('organization_id', $organization->id)
             ->whereBetween('booked_on', DateRange::days($from, $to))
+            ->where('kind', '!=', SettlementKind::Cancellation->value)
+            ->whereDoesntHave('reversedSettlement', fn ($query) => $query->where('kind', SettlementKind::Cancellation->value))
             ->with(['openItem.entry.lines.account'])
             ->get();
     }

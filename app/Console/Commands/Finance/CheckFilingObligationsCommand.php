@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Finance;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Enums\Finance\AccountingSovereignty;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Accounting\AccountingFilingObligation;
@@ -32,6 +33,8 @@ use Illuminate\Console\Command;
  * dass dieselbe Frist täglich neu meldet.
  */
 class CheckFilingObligationsCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'accounting:check-filings {--days=7 : Vorlauf in Tagen} {--date= : Stichtag (Standard: heute)}';
 
     protected $description = 'Gleicht steuerliche Meldepflichten ab und erinnert an fällige Fristen (MVP-686)';
@@ -48,7 +51,7 @@ class CheckFilingObligationsCommand extends Command {
         $notified = 0;
 
         foreach (Organization::query()->orderBy('id')->cursor() as $organization) {
-            if ($sovereignty->at($organization, $asOf) !== AccountingSovereignty::Local) {
+            if (! $this->moduleActiveFor($organization) || $sovereignty->at($organization, $asOf) !== AccountingSovereignty::Local) {
                 continue;
             }
 

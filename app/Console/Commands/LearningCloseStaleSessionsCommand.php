@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Learning\LearningTimeService;
 use Illuminate\Console\Command;
 
@@ -23,13 +25,16 @@ use Illuminate\Console\Command;
  * als riesige Spanne gebucht. Beendet wird beim **letzten Lebenszeichen**,
  * nicht jetzt.
  */
+#[BelongsToModule('learning')]
 class LearningCloseStaleSessionsCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'learning:close-stale-sessions';
 
     protected $description = 'Beendet Lernsitzungen ohne Lebenszeichen beim letzten Puls.';
 
     public function handle(LearningTimeService $time): int {
-        $closed = $time->closeStaleSessions();
+        $closed = $time->closeStaleSessions(null, $this->moduleOrganizationIds());
 
         $this->info(sprintf('%d Lernsitzung(en) geschlossen.', $closed));
 

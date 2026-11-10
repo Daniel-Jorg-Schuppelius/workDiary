@@ -10,14 +10,14 @@
 
 declare(strict_types=1);
 
-namespace App\Jobs\Attributes;
+namespace App\Modules\Attributes;
 
 use Attribute;
 
 /**
- * Modul eines Jobs, der nicht in einem Domänenordner liegt (MVP-1518). Ein
- * Umzug in den Ordner bräche bereits eingereihte Jobs: die Nutzlast trägt den
- * Klassennamen.
+ * Modul eines Jobs oder Konsolenbefehls, der nicht in einem Domänenordner
+ * liegt (MVP-1518, MVP-1524). Ein Umzug in den Ordner bräche bereits
+ * eingereihte Jobs: die Nutzlast trägt den Klassennamen.
  */
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class BelongsToModule {

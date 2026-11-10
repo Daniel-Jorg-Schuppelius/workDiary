@@ -1,7 +1,7 @@
 ---
 title: "Qualifications"
 topic: catalog.qualifications
-version: 2
+version: 3
 keywords:
     - compétences
     - savoir-faire
@@ -50,3 +50,8 @@ Les propositions d’affectation n’indiquent plus les personnes bloquées. Les
 affectations existantes restent en place ; une telle intervention ne peut
 être confirmée dans la régulation qu’avec une justification, qui est
 consignée.
+
+Si vous modifiez les qualifications obligatoires d’une intervention déjà
+attribuée à une personne, WorkDiary vérifie aussitôt cette personne : en mode blocage, la
+modification est refusée tant qu’une des qualifications lui manque ; en mode
+indication, elle est enregistrée et la lacune est signalée.

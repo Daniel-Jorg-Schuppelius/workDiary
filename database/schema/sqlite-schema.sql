@@ -25349,35 +25349,6 @@ CREATE INDEX "idx_audit_logs_org" on "audit_logs"("organization_id");
 CREATE INDEX "pts_invoice_item_idx" on "project_time_shortfalls"(
   "invoice_item_id"
 );
-CREATE TABLE IF NOT EXISTS "ical_subscriptions"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "user_id" integer,
-  "import_entity" varchar not null,
-  "name" varchar not null,
-  "url" text not null,
-  "category_allowlist" text,
-  "allow_private_network" tinyint(1) not null default '0',
-  "is_active" tinyint(1) not null default '1',
-  "http_etag" varchar,
-  "http_last_modified" varchar,
-  "last_synced_at" datetime,
-  "last_status" varchar,
-  "last_error" varchar,
-  "last_result" text,
-  "created_by" integer,
-  "updated_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("user_id") references "users"("id") on delete cascade,
-  foreign key("created_by") references "users"("id") on delete set null,
-  foreign key("updated_by") references "users"("id") on delete set null
-);
-CREATE INDEX "ical_subscriptions_active_synced_idx" on "ical_subscriptions"(
-  "is_active",
-  "last_synced_at"
-);
 CREATE TABLE IF NOT EXISTS "ical_subscription_items"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -25422,6 +25393,7 @@ CREATE TABLE IF NOT EXISTS "online_payments"(
   "updated_at" datetime,
   "subject_type" varchar,
   "subject_id" integer,
+  "credited_at" datetime,
   foreign key("invoice_id") references "invoices"("id") on delete restrict on update no action,
   foreign key("organization_id") references "organizations"("id") on delete cascade on update no action
 );
@@ -25440,6 +25412,36 @@ CREATE INDEX "online_payments_subject_idx" on "online_payments"(
 CREATE INDEX "rental_requests_status_due_idx" on "rental_requests"(
   "status",
   "payment_due_at"
+);
+CREATE TABLE IF NOT EXISTS "ical_subscriptions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "user_id" integer,
+  "import_entity" varchar not null,
+  "name" varchar not null,
+  "url" text,
+  "category_allowlist" text,
+  "allow_private_network" tinyint(1) not null default('0'),
+  "is_active" tinyint(1) not null default('1'),
+  "http_etag" varchar,
+  "http_last_modified" varchar,
+  "last_synced_at" datetime,
+  "last_status" varchar,
+  "last_error" varchar,
+  "last_result" text,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "calendar_source" varchar,
+  foreign key("updated_by") references "users"("id") on delete set null on update no action,
+  foreign key("created_by") references "users"("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action
+);
+CREATE INDEX "ical_subscriptions_active_synced_idx" on "ical_subscriptions"(
+  "is_active",
+  "last_synced_at"
 );
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
@@ -26503,3 +26505,6 @@ INSERT INTO migrations VALUES(1058,'2027_04_10_110000_add_online_prepayments_to_
 INSERT INTO migrations VALUES(1059,'2027_04_11_100000_correct_sevdesk_voucher_direction',4);
 INSERT INTO migrations VALUES(1060,'2027_04_11_100100_add_archived_outcome_to_application_opportunities',4);
 INSERT INTO migrations VALUES(1061,'2027_04_11_100200_retire_draft_status_of_postings_and_budget_requests',4);
+INSERT INTO migrations VALUES(1062,'2027_04_12_100000_add_credited_at_to_online_payments',5);
+INSERT INTO migrations VALUES(1063,'2027_04_12_100100_rewrite_online_payment_counterparty_types',5);
+INSERT INTO migrations VALUES(1064,'2027_04_16_100000_add_calendar_source_to_ical_subscriptions',5);

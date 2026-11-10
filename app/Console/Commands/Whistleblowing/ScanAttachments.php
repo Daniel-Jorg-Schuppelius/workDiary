@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Whistleblowing;
 
+use App\Modules\Attributes\RunsWhenModuleInactive;
 use App\Services\Whistleblowing\WhistleblowingAttachmentScanService;
 use Illuminate\Console\Command;
 
@@ -19,6 +20,7 @@ use Illuminate\Console\Command;
  * Prueft ausstehende Hinweisgeber-Anhaenge (Quarantaene → clean/rejected).
  * Ohne konfigurierten Scanner bleiben die Anhaenge fail-safe in Quarantaene.
  */
+#[RunsWhenModuleInactive('Sicherheitsprüfung: eingegangene Anhänge bleiben in Quarantäne, bis der Virenscan sie freigibt oder ablehnt — unabhängig davon, ob das Modul gerade genutzt wird.')]
 class ScanAttachments extends Command {
     protected $signature = 'whistleblowing:scan';
 

@@ -310,10 +310,19 @@ class LegacySupportImportService {
     }
 
     private function internalNote(LegacySupportOrder $order): string {
+        $mechanic = trim($this->text((string) $order->wer));
+        $customerNumber = (int) $order->kunde;
         $parts = array_filter([
             trim($this->text((string) $order->intern)),
             trim($this->text((string) $order->dauer)) !== ''
                 ? __('legacy_support.field.duration', [], $this->locale) . ': ' . trim($this->text((string) $order->dauer))
+                : '',
+            // Ohne Konto in der Zielorganisation bliebe sonst nirgends, wer den Auftrag erledigt hat.
+            $mechanic !== '' && ! isset($this->mechanicMap[mb_strtolower($mechanic)])
+                ? __('legacy_support.field.mechanic', [], $this->locale) . ': ' . $mechanic
+                : '',
+            $customerNumber > 0 && ! isset($this->customerMap[$customerNumber])
+                ? __('legacy_support.field.legacy_customer_number', [], $this->locale) . ': ' . $customerNumber
                 : '',
         ], fn(string $part): bool => $part !== '');
 

@@ -355,6 +355,10 @@ return [
     'down_payment' => [
         'program_numbering' => 'Abschlags- und Schlussrechnungen legen Sie in :program an, solange :program die Rechnungsnummern vergibt. WorkDiary zeigt sie im Belegfluss.',
     ],
+    // Storno einer teilbezahlten Rechnung (MVP-1544).
+    'cancellation' => [
+        'partially_paid' => 'Die Rechnung ist teilweise bezahlt. Stornieren lässt sie sich nur, solange allein Online-Vorauszahlungen sie decken; diese gehen beim Storno an ihren Vorgang zurück. Heben Sie zuerst die übrigen Zahlungen auf (Zahlungsabgleich, Kasse oder Ausgleich am offenen Posten); ist die Rechnung vollständig bezahlt, korrigieren Sie sie mit einer Korrekturrechnung.',
+    ],
     // Rechnungsnachfragen aus E-Mails (Feature 166, MVP-1202).
     'inquiries' => [
         'title' => 'Rechnungsnachfragen',

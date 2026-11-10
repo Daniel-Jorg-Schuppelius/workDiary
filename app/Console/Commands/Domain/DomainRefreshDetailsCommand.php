@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Domain;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Enums\Domain\DomainConnectionStatus;
 use App\Models\Domain\{DomainProjection, DomainProviderConnection};
 use App\Services\Domain\DomainSyncService;
@@ -27,13 +28,15 @@ use Throwable;
  * Domain werden gezählt, nicht hochgereicht. Täglich vor `resale:sync-domains`.
  */
 class DomainRefreshDetailsCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'domain:refresh-details {--limit=40 : Domains je Lauf} {--connection= : Nur eine Verbindung (ID)}';
 
     protected $description = 'Registrierungsdatum, Preis und Kontakt je Domain über StatusDomain nachladen (Budget je Lauf)';
 
     public function handle(DomainSyncService $sync): int {
         $limit = max(1, (int) $this->option('limit'));
-        $connections = DomainProviderConnection::query()->where('status', DomainConnectionStatus::Active->value);
+        $connections = $this->whereModuleActive(DomainProviderConnection::query()->where('status', DomainConnectionStatus::Active->value), withoutOrganization: true);
         if (($id = $this->option('connection')) !== null) {
             $connections->whereKey($id);
         }

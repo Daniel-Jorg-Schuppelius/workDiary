@@ -173,7 +173,8 @@ Welle 4 leer; ein neuer Verstoß wird gelöst, nicht eingetragen.
   `MirrorPdfRenderer`, `RuleAction`, `RuleTrigger` (Automationsregeln), `EarlyWarningSource`,
   `PortalNoticeSource` (Hinweise im Kundenportal),
   `ApprovalInboxSubject` (Gegenstand im Genehmigungs-Eingang; entschieden wird auf dem
-  Weg des Gegenstands, Zuständigkeit über `ApprovalResponsibility`),
+  Weg des Gegenstands, Zuständigkeit über `ApprovalResponsibility`, eigene Anträge
+  nie über `requesterId()`),
   `IncomingInvoiceTransferTarget` (Buchhaltungsziel des Rechnungseingangs; Tor, Journal
   `incoming_einvoice_transfers` und Wiederholung führt der Kern),
   `CalendarEventSource` (Termine eines Moduls im Kalender, etwa Ausschreibungsfristen;
@@ -209,8 +210,13 @@ Welle 4 leer; ein neuer Verstoß wird gelöst, nicht eingetragen.
   Queue-Jobs eines Fachmoduls implementieren `App\Jobs\Contracts\ModuleJob`
   (`organizationId()`); die Middleware `EnsureModuleActive` (über
   `Bus::pipeThrough`) beendet sie ohne Wirkung, wenn das Modul der
-  Organisation aus ist. Jobs direkt in `app/Jobs` nennen ihr Modul mit
-  `#[BelongsToModule]` (Gate `ModuleJobRuleTest`).
+  Organisation aus ist. Geplante Befehle eines Fachmoduls laufen über
+  `IteratesModuleOrganizations` (nur Organisationen mit aktivem Modul) oder
+  tragen `#[RunsWhenModuleInactive('Grund')]` — nur Aufbewahrung, Löschung,
+  Sicherheit (Gate `ModuleCommandRuleTest`). Jobs und Befehle ohne
+  Domänenordner nennen ihr Modul mit `#[BelongsToModule]`
+  (`App\Modules\Attributes`, aufgelöst über `ModuleRegistry::forClass()`;
+  Gate `ModuleJobRuleTest`).
 
 `modules:check` prüft die Verdrahtung (Interface erfüllt, Contract genau
 einmal definiert/gebunden, Listener mit `handle()`).

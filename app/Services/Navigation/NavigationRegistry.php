@@ -418,7 +418,7 @@ class NavigationRegistry {
                         ['route' => 'attendance.index', 'label' => __('Stempeluhr'), 'icon' => 'punch_clock', 'modal' => false, 'matches' => ['attendance.*']],
                         // Feature 154: zentrale Notizen, auch ohne geöffnete Akte.
                         ['route' => 'communication-notes.index', 'label' => __('communication.title.notes'), 'icon' => 'sticky_note_2', 'modal' => false, 'matches' => ['communication-notes.*']],
-                        // Genehmigungs-Eingang (Kernmodul „Freigaben“): Gegenstände aus Service Desk und Vertragsverhandlungen.
+                        // Genehmigungs-Eingang (Kernmodul „Freigaben“): Gegenstände aus Service Desk, Vertragsverhandlungen und Investitionsanträgen.
                         Gate::allows(Permission::ServiceRequestApprove->value)
                             ? ['route' => 'approvals.index', 'label' => __('Genehmigungen'), 'icon' => 'approval', 'modal' => false, 'matches' => ['approvals.*']]
                             : null,

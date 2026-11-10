@@ -15,6 +15,7 @@ namespace Tests\Unit\Architecture;
 use App\Enums\Modules\ModuleKind;
 use App\Jobs\Contracts\ModuleJob;
 use App\Jobs\Middleware\EnsureModuleActive;
+use App\Modules\ModuleRegistry;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use ReflectionClass;
 use Tests\TestCase;
@@ -31,10 +32,10 @@ class ModuleJobRuleTest extends TestCase {
     use ScansSourceTree;
 
     public function test_every_job_of_a_feature_module_is_gated(): void {
-        $gate = $this->app->make(EnsureModuleActive::class);
+        $modules = $this->app->make(ModuleRegistry::class);
         $violations = [];
         foreach ($this->jobClasses() as $class) {
-            $manifest = $gate->manifestFor($class);
+            $manifest = $modules->forClass($class);
             $gated = is_subclass_of($class, ModuleJob::class);
             if ($manifest === null) {
                 $violations[] = "{$class}: kein Modul — in den Domänenordner seines Moduls legen oder #[BelongsToModule] tragen";

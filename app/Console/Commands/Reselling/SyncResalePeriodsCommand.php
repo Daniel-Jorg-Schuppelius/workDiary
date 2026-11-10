@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Reselling;
 
+use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\ResaleSubscription;
 use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner, ResaleContractObligationSync};
@@ -23,6 +24,8 @@ use Illuminate\Console\Command;
  * dem Vertragskalender ab (079, Abos mit Vertrag). Täglich im Zeitplan; idempotent.
  */
 class SyncResalePeriodsCommand extends Command {
+    use IteratesModuleOrganizations;
+
     protected $signature = 'resale:sync-periods {--org= : Nur diese Organisation (ID)}';
 
     protected $description = 'Abrechnungsperioden der Reselling-Abos bis zum Planungshorizont anlegen';
@@ -30,7 +33,8 @@ class SyncResalePeriodsCommand extends Command {
     public function handle(PeriodPlanner $planner, ResaleContractObligationSync $obligations, LinkProposer $proposer): int {
         // Auch abgelöste und beendete Verträge der letzten 36 Monate (Feature 185, MVP-1402): eine
         // spätere Abtretung ändert ihr Soll, sonst bleibt der alte Vertrag ewig „teilweise".
-        $query = ResaleSubscription::query()->withoutGlobalScopes()->replannable();
+        $active = $this->moduleOrganizationIds();
+        $query = ResaleSubscription::query()->withoutGlobalScopes()->replannable()->whereIn('organization_id', $active);
         if ($this->option('org') !== null) {
             $query->where('organization_id', (int) $this->option('org'));
         }
@@ -50,7 +54,7 @@ class SyncResalePeriodsCommand extends Command {
         $this->info(sprintf('%d Abos geplant: %d neu, %d aktualisiert, %d entfernt, %d unverändert.', $count, $totals['created'], $totals['updated'], $totals['removed'], $totals['kept']));
 
         // Zweiter Schritt: Kündigungsfrist/Verlängerungswarnung je Abo mit Vertrag — aus den eben geplanten Perioden.
-        $organizations = Organization::query()->orderBy('id');
+        $organizations = Organization::query()->whereIn('id', $active)->orderBy('id');
         if ($this->option('org') !== null) {
             $organizations->where('id', (int) $this->option('org'));
         }

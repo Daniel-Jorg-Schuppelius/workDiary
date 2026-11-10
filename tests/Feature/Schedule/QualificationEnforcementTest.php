@@ -201,6 +201,57 @@ class QualificationEnforcementTest extends TestCase {
         $this->assertNotContains('qualification_missing', array_map(fn ($v) => $v->code, app(DispatchConflictChecker::class)->check($entry)->violations));
     }
 
+    private function assignedOrder(User $assignee): DiaryEntry {
+        $entry = DiaryEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->orgAdmin()->id,
+            'content' => 'Fassade streichen',
+            'status' => Status::Open->value,
+            'start_at' => Carbon::parse('2030-05-04 09:00'),
+        ]);
+        $entry->forceFill(['assigned_user_id' => $assignee->id])->save();
+
+        return $entry->refresh();
+    }
+
+    /** MVP-1528: Eine nachträglich gesetzte Pflichtqualifikation prüft die schon zuständige Person. */
+    public function test_block_mode_rejects_a_new_requirement_the_assignee_lacks(): void {
+        $admin = $this->orgAdmin();
+        $assignee = $this->orgUser(['name' => 'Max Muster']);
+        $entry = $this->assignedOrder($assignee);
+        $this->block();
+
+        $this->actingAs($admin)->from(route('diary.show', $entry))
+            ->put(route('diary.qualifications.update', $entry), ['qualifications' => [$this->qualification->sqid]])
+            ->assertSessionHasErrors(['qualifications' => 'Zuweisung gesperrt: Max Muster fehlt am 04.05.2030 die Pflichtqualifikation HA (nicht vorhanden, abgelaufen oder noch nicht gültig).']);
+        $this->assertSame(0, $entry->requiredQualifications()->count(), 'die Sperre rollt die Änderung zurück');
+
+        $assignee->qualifications()->attach($this->qualification->id, ['valid_until' => '2030-12-31']);
+        $this->actingAs($admin)->from(route('diary.show', $entry))
+            ->put(route('diary.qualifications.update', $entry), ['qualifications' => [$this->qualification->sqid]])
+            ->assertSessionHasNoErrors()
+            ->assertSessionMissing('warning');
+        $this->assertSame([$this->qualification->id], $entry->requiredQualifications()->pluck('qualifications.id')->map(fn ($id): int => (int) $id)->all());
+    }
+
+    public function test_hint_mode_saves_a_new_requirement_and_names_the_gap(): void {
+        $admin = $this->orgAdmin();
+        $entry = $this->assignedOrder($this->orgUser(['name' => 'Max Muster']));
+
+        $this->actingAs($admin)->from(route('diary.show', $entry))
+            ->put(route('diary.qualifications.update', $entry), ['qualifications' => [$this->qualification->sqid]])
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('warning', 'Hinweis: Max Muster fehlt am 04.05.2030 die Pflichtqualifikation HA (nicht vorhanden, abgelaufen oder noch nicht gültig).');
+        $this->assertSame(1, $entry->requiredQualifications()->count());
+
+        // Ohne zuständige Person gibt es nichts zu prüfen.
+        $entry->forceFill(['assigned_user_id' => null])->save();
+        $this->actingAs($admin)->from(route('diary.show', $entry))
+            ->put(route('diary.qualifications.update', $entry), ['qualifications' => [$this->qualification->sqid]])
+            ->assertSessionHasNoErrors()
+            ->assertSessionMissing('warning');
+    }
+
     public function test_block_mode_fails_the_shift_import_row(): void {
         $this->block();
         $this->orgUser(['email' => 'max.muster@example.org']);

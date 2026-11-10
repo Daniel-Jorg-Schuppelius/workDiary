@@ -17,7 +17,7 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Models\Supplier\Supplier;
-use App\Plugins\Contracts\ContactSyncer;
+use App\Plugins\Contracts\{ContactSyncer, SupplierContactSyncer};
 use App\Plugins\PluginManager;
 use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 use App\Services\Stammdaten\ContactNumberAdopter;
@@ -92,6 +92,49 @@ class ContactPushService implements \App\Services\Stammdaten\Contracts\ContactPu
         }
 
         return $counters;
+    }
+
+    /**
+     * Alle nicht archivierten Lieferanten an ein Buchhaltungs-Plugin mit
+     * Lieferantenkontakten übertragen (MVP-1526) — Gegenstück zu {@see pushAll()}
+     * für den Bestand, den Anlage und Änderung nicht erreichen.
+     *
+     * @return array{pushed: int, skipped: int, failed: int}
+     */
+    public function pushAllSuppliers(Organization $organization, string $pluginId): array {
+        $counters = ['pushed' => 0, 'skipped' => 0, 'failed' => 0];
+        if (! $this->pushAllowed() || ! $this->plugins->get($pluginId) instanceof SupplierContactSyncer) {
+            return $counters;
+        }
+
+        $suppliers = Supplier::query()
+            ->withoutCollective()
+            ->where('organization_id', $organization->id)
+            ->whereNull('archived_at')
+            ->orderBy('id')
+            ->get();
+
+        foreach ($suppliers as $supplier) {
+            try {
+                $this->pushSupplier($supplier, $pluginId);
+                $counters['pushed']++;
+            } catch (Throwable) {
+                $counters['failed']++;
+            }
+        }
+
+        return $counters;
+    }
+
+    /** Erstes aktives Plugin, das Lieferantenkontakte überträgt; null ohne. */
+    public function supplierSyncerId(): ?string {
+        foreach ($this->plugins->enabled() as $id => $plugin) {
+            if ($plugin instanceof SupplierContactSyncer) {
+                return (string) $id;
+            }
+        }
+
+        return null;
     }
 
     /** Einzelnen Kunden übertragen; gibt die externe ID zurück. */
@@ -186,13 +229,13 @@ class ContactPushService implements \App\Services\Stammdaten\Contracts\ContactPu
      * Einzelnen Lieferanten übertragen (B6): gleiche Leitplanken wie
      * {@see push()} — Führungsrichtung, Referenz-Nachweis mit synced_at.
      */
-    public function pushSupplier(\App\Models\Supplier\Supplier $supplier, string $pluginId): string {
+    public function pushSupplier(Supplier $supplier, string $pluginId): string {
         if (! $this->pushAllowed()) {
             throw new RuntimeException((string) __('accounting.error.accounting_leads'));
         }
 
         $plugin = $this->plugins->get($pluginId);
-        if (! $plugin instanceof \App\Plugins\Contracts\SupplierContactSyncer) {
+        if (! $plugin instanceof SupplierContactSyncer) {
             throw new RuntimeException((string) __('accounting.error.no_syncer', ['plugin' => $pluginId]));
         }
 

@@ -1,7 +1,7 @@
 ---
 title: "Zuordnungs-Inbox"
 topic: admin.integration-inbox
-version: 3
+version: 4
 keywords:
     - Integrations-Inbox
     - Importkonflikte
@@ -40,6 +40,12 @@ Buchhaltungsprogramm hat einem Kunden oder Lieferanten eine Nummer vergeben,
 die in WorkDiary schon ein anderer Datensatz trägt. Der Fall nennt den
 Inhaber. Ändern Sie dort die Nummer und wählen Sie dann **Remote
 übernehmen**; der nächste Abgleich übernimmt sie auch von selbst.
+
+**Termin in der Quelle entfernt:** Ein Kalender-Abo meldet, dass ein schon
+gebuchter Termin im Kalender fehlt. Einen entfernten Stand gibt es dann nicht.
+Öffnen Sie den Zeiteintrag, löschen Sie ihn (mit denselben Rechten wie in der
+Zeitliste; eine abgerechnete Zeit bleibt) oder nehmen Sie den Hinweis zur
+Kenntnis, wenn die Zeit stehen bleiben soll.
 
 **Entscheiden:** Einen Eintrag ordnen Sie einem bestehenden Datensatz zu,
 legen ihn neu an oder verwerfen ihn. Bei einem Feld-Konflikt wählen Sie, ob

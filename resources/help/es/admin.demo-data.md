@@ -1,7 +1,7 @@
 ---
 title: "Datos de demostración"
 topic: admin.demo-data
-version: 2
+version: 3
 keywords:
     - datos de ejemplo
     - datos de prueba
@@ -30,7 +30,14 @@ actual, todavía vacía; **Restablecer (reset)** borra y vuelve a crear los
 datos de un inquilino de demostración conservando sector y alcance. Sin
 marcar «Mostrar el alcance completo», la demostración sigue la
 recomendación de módulos del perfil y solo crea datos para los módulos
-activos. El diálogo indica de antemano con qué licencia funcionará la
+activos. También los módulos que recomiendan muchos perfiles muestran
+datos: cuadrantes con cambio de turno, formularios con envíos, artículos
+de la base de conocimientos, existencias con punto de pedido, gastos con
+libro de viajes, tiempos de trabajo de varias personas para los informes
+de equipo, lugares de intervención de la localización, contratos con
+plazos, inmuebles y un presupuesto de obra (GAEB); clientes, lugares y
+material proceden del sector de muestra, y las coordenadas de la
+localización son ficticias. El diálogo indica de antemano con qué licencia funcionará la
 demostración: si la instancia puede emitir licencias, la organización
 recibe una licencia temporal; de lo contrario se aplica la licencia de la
 instalación, y sin ambas la demostración funciona en el plan Free con la

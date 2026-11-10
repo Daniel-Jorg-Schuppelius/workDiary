@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\TimeExport\TimeExportStatus;
-use App\Jobs\Attributes\BelongsToModule;
 use App\Mail\TimeExportDeliveryMail;
 use App\Models\Time\{TimeExport, TimeExportDeliveryConfig};
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\TimeExport\{TimeExportService, TimeExportSftpUploader};
 use Carbon\CarbonImmutable;
 use Illuminate\Bus\Queueable;

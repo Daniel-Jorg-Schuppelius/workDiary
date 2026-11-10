@@ -270,6 +270,8 @@ class PermissionsSeeder extends Seeder {
                     // Feature 069: Investitionsfreigaben (Schwellenwerte) sind GF-Sache.
                     PermissionEnum::InvestmentApprove->value,
                     PermissionEnum::InvestmentManage->value,
+                    // Genehmigungs-Eingang: Geschäftsleitungsstufen der Investitionsanträge (MVP-1522).
+                    PermissionEnum::ServiceRequestApprove->value,
                     // Feature 070: Krisenstab führt die Geschäftsleitung.
                     PermissionEnum::CrisisManage->value,
                     PermissionEnum::CrisisApprove->value,

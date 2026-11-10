@@ -75,7 +75,7 @@ final class CreateCustomerTool extends GuardedTool {
             $data['country'] = strtoupper((string) $data['country']);
         }
         if (($data['vat_id'] ?? '') !== '') {
-            $existing = Customer::query()->where('organization_id', $organization->id)->where('vat_id', $data['vat_id'])->first();
+            $existing = Customer::query()->where('organization_id', $organization->id)->whereIdentifier('vat_id', (string) $data['vat_id'])->first();
             if ($existing !== null) {
                 return Response::structured(['created' => false, 'existing' => ['id' => $existing->sqid, 'name' => $existing->name]]);
             }

@@ -42,7 +42,8 @@ return [
     // führt Adressen und Kommunikationswege als EIGENE Objekte mit eigenem
     // Endpunkt; beide verlangen Katalog-IDs des Accounts. Die Defaults sind
     // Standardkatalogwerte — Verifikation am Pilot-Account (GET /Category?
-    // objectType=ContactAddress bzw. GET /CommunicationWayKey).
+    // objectType=ContactAddress bzw. GET /CommunicationWayKey). Der
+    // Kontakt-Rückweg (MVP-1529) liest die Adresse dieser Kategorie als Anschrift.
     'address_category_id' => (int) env('SEVDESK_ADDRESS_CATEGORY_ID', 47),
     'address_country_id' => (int) env('SEVDESK_ADDRESS_COUNTRY_ID', 1),
     'communication_way_key_id' => (int) env('SEVDESK_COMMUNICATION_WAY_KEY_ID', 1),

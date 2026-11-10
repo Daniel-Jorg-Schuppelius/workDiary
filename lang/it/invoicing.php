@@ -355,6 +355,10 @@ return [
     'down_payment' => [
         'program_numbering' => 'Crei le fatture di acconto e finali in :program finché :program assegna i numeri di fattura. WorkDiary le mostra nel flusso dei documenti.',
     ],
+    // Storno einer teilbezahlten Rechnung (MVP-1544).
+    'cancellation' => [
+        'partially_paid' => 'La fattura è parzialmente pagata. Può stornarla solo finché la coprono soltanto pagamenti anticipati online; con lo storno tornano alla loro operazione. Annulli prima gli altri pagamenti (riconciliazione dei pagamenti, cassa o pareggio della partita aperta); quando la fattura è pagata per intero, la corregga con una fattura rettificativa.',
+    ],
     // Rechnungsnachfragen aus E-Mails (Feature 166, MVP-1202).
     'inquiries' => [
         'title' => 'Richieste sulle fatture',

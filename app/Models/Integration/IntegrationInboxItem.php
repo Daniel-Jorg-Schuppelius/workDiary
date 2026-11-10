@@ -73,6 +73,9 @@ class IntegrationInboxItem extends Model {
     /** Rechnungsbegründende Unterlagen gehen nicht an das ausstellende Programm (Feature 196). */
     public const string REASON_SUPPORTING_DOCUMENTS = 'supporting_documents_not_transferred';
 
+    /** Kalender-Abo: Termin in der Quelle entfernt, die gebuchte Zeit steht noch (MVP-1516). */
+    public const string REASON_REMOTE_DELETED = 'remote_deleted';
+
     public const string CASE_CONFLICT = 'conflict';
     public const string CASE_AMBIGUOUS = 'ambiguous';
 
@@ -126,6 +129,12 @@ class IntegrationInboxItem extends Model {
 
     public function isOpen(): bool {
         return $this->status === IntegrationInboxStatus::Open;
+    }
+
+    /** Verschwundener Kalendertermin: kein Fremdstand zum Übernehmen, nur Löschen oder Kenntnisnahme (MVP-1528). */
+    public function isRemoteDeletion(): bool {
+        return $this->case_type === self::CASE_CONFLICT
+            && (($this->remote_snapshot ?? [])['reason'] ?? null) === self::REASON_REMOTE_DELETED;
     }
 
     /**

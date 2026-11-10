@@ -28,6 +28,51 @@ final class AssetCategoryCatalog {
      * @return array<string, string> Code → Bezeichnung
      */
     public function options(?int $organizationId, ?string $keep = null): array {
+        [$own, $hidden, $pool] = $this->sources($organizationId);
+
+        $options = $own + array_diff_key($pool, $own, $hidden);
+        if ($keep !== null && $keep !== '' && ! isset($options[$keep])) {
+            $options[$keep] = $hidden[$keep] ?? $pool[$keep] ?? $keep;
+        }
+
+        return $options;
+    }
+
+    /**
+     * Bezeichnungen aller bekannten Codes, auch inaktiver (MVP-1527): für
+     * Anzeige, Filter und Auswertungen gespeicherter Werte.
+     *
+     * @return array<string, string> Code → Bezeichnung
+     */
+    public function labels(?int $organizationId): array {
+        [$own, $hidden, $pool] = $this->sources($organizationId);
+
+        return $own + $hidden + $pool;
+    }
+
+    /**
+     * Gespeicherte Codes beschriftet und nach Bezeichnung sortiert; ein
+     * unbekannter Code bleibt als Code stehen.
+     *
+     * @param  iterable<mixed>  $codes
+     * @return array<string, string> Code → Bezeichnung
+     */
+    public function labelled(?int $organizationId, iterable $codes): array {
+        $labels = $this->labels($organizationId);
+        $out = [];
+        foreach ($codes as $code) {
+            $code = (string) $code;
+            if ($code !== '') {
+                $out[$code] = $labels[$code] ?? $code;
+            }
+        }
+        natcasesort($out);
+
+        return $out;
+    }
+
+    /** @return array{0: array<string, string>, 1: array<string, string>, 2: array<string, string>} aktive Organisationszeilen, inaktive, globaler Pool */
+    private function sources(?int $organizationId): array {
         $rows = $organizationId === null ? collect() : Classification::query()
             ->where('organization_id', $organizationId)
             ->where('domain', ClassificationDomain::AssetCategory->value)
@@ -41,7 +86,7 @@ final class AssetCategoryCatalog {
             if ($row->active) {
                 $own[$row->code] = $row->display_label;
             } else {
-                $hidden[$row->code] = true;
+                $hidden[$row->code] = $row->display_label;
             }
         }
 
@@ -50,11 +95,6 @@ final class AssetCategoryCatalog {
             $pool[(string) $code] = (string) __((string) $label);
         }
 
-        $options = $own + array_diff_key($pool, $own, $hidden);
-        if ($keep !== null && $keep !== '' && ! isset($options[$keep])) {
-            $options[$keep] = $rows->firstWhere('code', $keep)->display_label ?? $pool[$keep] ?? $keep;
-        }
-
-        return $options;
+        return [$own, $hidden, $pool];
     }
 }

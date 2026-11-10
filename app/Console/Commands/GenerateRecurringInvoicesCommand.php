@@ -10,6 +10,7 @@
 
 namespace App\Console\Commands;
 
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Invoicing\RecurringInvoiceService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Cache;
  * MVP-415: fällige Abrechnungspläne in Rechnungs-ENTWÜRFE überführen —
  * idempotent (invoice_schedule_runs), nie Auto-Ausstellung/-Versand.
  */
+#[BelongsToModule('invoicing')]
 class GenerateRecurringInvoicesCommand extends Command {
     protected $signature = 'invoices:generate-recurring';
 

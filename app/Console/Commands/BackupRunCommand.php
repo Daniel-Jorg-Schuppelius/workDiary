@@ -11,6 +11,7 @@
 namespace App\Console\Commands;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskType};
+use App\Modules\Attributes\BelongsToModule;
 use App\Services\Backup\BackupRunService;
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use Illuminate\Console\Command;
@@ -23,6 +24,7 @@ use Throwable;
  * Betriebsaufgabe gemeldet (Muster MVP-056); ein erfolgreicher Lauf
  * löst den Alarm wieder auf.
  */
+#[BelongsToModule('backup')]
 class BackupRunCommand extends Command {
     protected $signature = 'workdiary:backup:run';
 
