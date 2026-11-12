@@ -31,6 +31,13 @@
             :projects="$projects" :selected="(string) old('project_id', $prefillProjectId ?? '')"
             data-depends-on="customer_id" :data-parent="true" />
         <x-input-field name="valid_until" type="date" :label="__('Bindefrist (gültig bis)')" :value="old('valid_until', $defaultValidUntil ?? null)" />
+        {{-- Feature 112: Zuständiger fürs Nachfassen, leer = Ersteller. --}}
+        <x-select-field name="follow_up_user_id" :label="__('quotes.follow_up.owner_field')" :hint="__('quotes.follow_up.owner_hint')">
+            <option value="">{{ __('quotes.follow_up.owner_default') }}</option>
+            @foreach ($followUpUsers ?? [] as $followUpUser)
+                <option value="{{ $followUpUser->sqid }}" @selected((string) old('follow_up_user_id') === $followUpUser->sqid)>{{ $followUpUser->name }}</option>
+            @endforeach
+        </x-select-field>
         <x-textarea-field name="terms" :label="__('Bedingungen / Leistungsumfang (optional)')" rows="3" span="2">{{ old('terms') }}</x-textarea-field>
         @php
             $labourRule = \App\Models\Sales\Quote::labourCostDisclosureRule(auth()->user()?->organization);

@@ -60,6 +60,16 @@ return [
     'dms' => [
         'source_hint' => 'Dokumenttext aus :name',
     ],
+    'budget' => [
+        'title' => 'Monatsbudget',
+        'legend' => 'Monatsbudget je Familie',
+        'description' => 'Obergrenze des KI-Verbrauchs je Kalendermonat. Ist sie erreicht, lehnt workDiary weitere Aufrufe dieser Familie bis zum Monatsende ab. Leer = Vorgabe des Betreibers, ohne Vorgabe unbegrenzt.',
+        'field' => [
+            'llm' => 'Sprachmodell (Token je Monat)',
+            'translation' => 'Übersetzung (Zeichen je Monat)',
+        ],
+        'saved' => 'Monatsbudget gespeichert.',
+    ],
     'usage' => [
         'title' => 'KI-Verbrauch',
         'subtitle' => 'Monatsverbrauch je Familie, Budgetauslastung und Vorschlags-Funnel je Capability.',
@@ -360,6 +370,8 @@ return [
         'dismiss' => 'Nein, verwerfen',
     ],
     'suggestion' => [
+        'connection' => 'Verbindung',
+        'regenerate' => 'Neu erzeugen',
         'suggest' => 'KI-Vorschlag für diese Position',
         'suggest_all' => 'KI-Vorschläge für alle Positionen',
         'suggest_all_title' => 'Erstellt je Position einen Textvorschlag im Hintergrund — übernommen wird erst per Klick.',

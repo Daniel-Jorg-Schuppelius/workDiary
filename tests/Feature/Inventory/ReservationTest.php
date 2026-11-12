@@ -97,7 +97,7 @@ final class ReservationTest extends TestCase {
 
         $issued = StockMovement::query()->where('movement_type', StockMovementType::Issue->value)->orderBy('id')->get();
         $this->assertSame([[$early->id, '-2.0000'], [$late->id, '-3.0000']], $issued->map(fn (StockMovement $m): array => [$m->stock_lot_id, $m->qty_base])->all());
-        $this->assertSame(['0.0000', '3.0000'], [app(LotStockReader::class)->balanceOf($early), app(LotStockReader::class)->balanceOf($late)]);
+        $this->assertSame(['0.0000', '3.0000'], [app(LotStockReader::class)->balancesOf([$early])[$early->id], app(LotStockReader::class)->balancesOf([$late])[$late->id]]);
         $this->assertSame(['0.0000', '3.0000'], [
             $this->ledger->balance($this->variant, $this->warehouse, StockState::Reserved),
             $this->ledger->balance($this->variant, $this->warehouse, StockState::Physical),

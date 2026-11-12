@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 namespace App\Services\Attendance\Sync;
 
+use App\Http\Requests\Time\CorrectAttendanceRequest;
 use App\Models\Platform\User;
 use App\Models\Time\{Attendance, TimeCorrectionRequest};
 use App\Services\Attendance\{AttendanceClockService, StampPlausibility};
 use App\Services\Sync\Contracts\SyncCommandHandler;
-use App\Services\Sync\SyncConflictException;
+use App\Services\Sync\{SyncConflictException, SyncFormRequest};
 use App\Services\TimeApproval\TimeCorrectionService;
-use App\Support\MorphMap;
 use App\Support\{Setting, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\{Gate, Validator};
@@ -137,24 +137,18 @@ final class AttendanceSyncHandler implements SyncCommandHandler {
             throw new RuntimeException((string) __('Keine Berechtigung für Zeitkorrekturen.'));
         }
 
-        $data = Validator::make($payload, [
-            'attendance' => ['required', 'string'],
-            'base_version' => ['required', 'string', 'max:64'],
-            'started_at' => ['nullable', 'date'],
-            'ended_at' => ['nullable', 'date', 'after:started_at'],
-            'break_minutes' => ['nullable', 'integer', 'min:0', 'max:600'],
-            'reason' => ['required', 'string', 'min:20', 'max:4000'],
-        ])->validate();
-
         /** @var Attendance|null $attendance */
         $attendance = Attendance::query()
-            ->whereKey(Sqid::decodeOrNumeric(Attendance::class, (string) $data['attendance']))
+            ->whereKey(Sqid::decodeOrNumeric(Attendance::class, (string) ($payload['attendance'] ?? '')))
             ->where('user_id', $user->id)
             ->first();
 
         if ($attendance === null) {
             throw new RuntimeException((string) __('Stempelung nicht gefunden.'));
         }
+
+        // Dieselben Regeln wie der Dialog auf „Heute“ (MVP-1595).
+        $data = SyncFormRequest::validate(CorrectAttendanceRequest::class, $payload, $user)->validated();
 
         $current = $attendance->correctionVersion();
         if ($current !== (string) $data['base_version']) {
@@ -169,44 +163,7 @@ final class AttendanceSyncHandler implements SyncCommandHandler {
             );
         }
 
-        $before = [
-            'started_at' => $attendance->started_at?->toDateTimeString(),
-            'ended_at' => $attendance->ended_at?->toDateTimeString(),
-            'break_minutes_manual' => (int) ($attendance->break_minutes_manual ?? 0),
-        ];
-        $after = $before;
-        if (array_key_exists('started_at', $data) && $data['started_at'] !== null) {
-            $after['started_at'] = CarbonImmutable::parse((string) $data['started_at'])->toDateTimeString();
-        }
-        if (array_key_exists('ended_at', $data) && $data['ended_at'] !== null) {
-            $after['ended_at'] = CarbonImmutable::parse((string) $data['ended_at'])->toDateTimeString();
-        }
-        if (array_key_exists('break_minutes', $data) && $data['break_minutes'] !== null) {
-            $after['break_minutes_manual'] = (int) $data['break_minutes'];
-        }
-
-        if ($after === $before) {
-            throw new RuntimeException((string) __('Die Korrektur enthält keine Änderung.'));
-        }
-
-        $request = $this->corrections->createDraft(
-            $user,
-            CarbonImmutable::parse($attendance->date?->toDateString() ?? $attendance->started_at?->toDateString() ?? 'today'),
-            (string) $data['reason'],
-            [[
-                'target_type' => MorphMap::alias(Attendance::class),
-                'target_id' => (int) $attendance->id,
-                'action' => 'update',
-                'before' => $before,
-                'after' => $after,
-            ]],
-            $user,
-        );
-
-        $request = $this->corrections->submit($request, $user);
-        if ($this->corrections->selfApplicable($request)) {
-            $this->corrections->selfApply($request);
-        }
+        $request = $this->corrections->correctAttendance($user, $attendance, $data, (string) $data['reason']);
 
         return 'time_correction_requests:' . $request->id;
     }

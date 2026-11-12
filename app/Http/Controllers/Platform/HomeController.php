@@ -14,13 +14,34 @@ use App\Enums\Modules\ModuleKind;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Modules\{Manifest, ModuleRegistry};
+use App\Plugins\PluginManager;
 use App\Services\Navigation\StartPageResolver;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class HomeController extends Controller {
-    public function __invoke(Request $request, StartPageResolver $startPages, ModuleRegistry $modules): View|RedirectResponse {
+    /**
+     * Startseiten-Namen für Plugins, deren `name()` nicht der Produktname ist
+     * (Zusatz wie „Issues“, übersetzter Titel, mehrere Anbieter); [] = kein
+     * Produkt, etwa selbst gestellte Auskunftsdienste.
+     *
+     * @var array<string, list<string>>
+     */
+    public const array PRODUCT_NAMES = [
+        'datev-online' => ['DATEV'],
+        'dhl' => ['DHL'],
+        'fritzbox' => ['FRITZ!Box'],
+        'github' => ['GitHub'],
+        'gitlab' => ['GitLab'],
+        'google_calendar' => ['Google Calendar'],
+        'orgamax' => ['orgaMAX'],
+        'peppol-access-point' => ['Peppol'],
+        'phonedirectory' => [],
+        'remote-support' => ['AnyDesk', 'TeamViewer', 'RustDesk', 'Splashtop', 'pcvisit'],
+    ];
+
+    public function __invoke(Request $request, StartPageResolver $startPages, ModuleRegistry $modules, PluginManager $plugins): View|RedirectResponse {
         $canViewSensitive = Auth::check();
         $legacyConfigured = filled(config('database.connections.legacy.database'));
 
@@ -62,7 +83,53 @@ class HomeController extends Controller {
                 $modules->all(),
                 static fn(Manifest $manifest): bool => $manifest->kind() !== ModuleKind::Platform,
             )),
+            'integrations' => $this->integrationGroups($modules, $plugins),
         ]);
+    }
+
+    /**
+     * Anbindungen der Startseite aus dem Bestand: jedes Plugin erscheint über das Modul
+     * seines Manifests (oder ausdrücklich in `plugins`), dazu die fest eingebauten
+     * Anbindungen ohne Plugin. Ein Plugin ohne passende Gruppe landet unter
+     * „Weitere Anbindungen“, damit es nie fehlt.
+     *
+     * @return list<array{icon: string, title: string, items: list<string>}>
+     */
+    private function integrationGroups(ModuleRegistry $modules, PluginManager $plugins): array {
+        $groups = [
+            ['icon' => 'account_balance', 'title' => __('Buchhaltung, Zahlung & E-Rechnung'), 'modules' => ['finance', 'invoicing'], 'plugins' => [], 'items' => []],
+            ['icon' => 'local_shipping', 'title' => __('Handel & Versand'), 'modules' => ['inventory', 'shipping'], 'plugins' => [], 'items' => []],
+            ['icon' => 'task_alt', 'title' => __('Zeit, Aufgaben & Tickets'), 'modules' => ['time', 'kanban', 'project', 'helpdesk'], 'plugins' => [], 'items' => []],
+            ['icon' => 'cloud', 'title' => __('Kalender, Cloud & Dokumente'), 'modules' => ['calendar', 'contacts', 'backup'], 'plugins' => ['paperless'], 'items' => []],
+            ['icon' => 'forum', 'title' => __('Kommunikation, Ortung & IT-Service'), 'modules' => ['cti', 'notification', 'asset', 'domain'], 'plugins' => [], 'items' => ['Microsoft Teams', 'Mattermost', 'IMAP', 'OwnTracks', 'Traccar']],
+            ['icon' => 'auto_awesome', 'title' => __('KI & Übersetzung'), 'modules' => [], 'plugins' => [], 'items' => ['OpenAI', 'Anthropic', 'Gemini', 'Azure OpenAI', 'Ollama', 'DeepL', 'Azure Translator', 'LibreTranslate']],
+            ['icon' => 'extension', 'title' => __('Weitere Anbindungen'), 'modules' => [], 'plugins' => [], 'items' => []],
+        ];
+        $fallback = array_key_last($groups);
+
+        foreach ($plugins->all() as $id => $plugin) {
+            $module = $modules->byPlugin($id)?->code();
+            $target = $fallback;
+            foreach ($groups as $index => $group) {
+                if (in_array($id, $group['plugins'], true) || ($module !== null && in_array($module, $group['modules'], true))) {
+                    $target = $index;
+                    break;
+                }
+            }
+            array_push($groups[$target]['items'], ...(self::PRODUCT_NAMES[$id] ?? [$plugin->name()]));
+        }
+
+        $result = [];
+        foreach ($groups as $group) {
+            $items = array_values(array_unique($group['items']));
+            if ($items === []) {
+                continue;
+            }
+            natcasesort($items);
+            $result[] = ['icon' => $group['icon'], 'title' => $group['title'], 'items' => array_values($items)];
+        }
+
+        return $result;
     }
 
     public function switchMode(Request $request, string $mode): RedirectResponse {

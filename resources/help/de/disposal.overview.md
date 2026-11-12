@@ -41,6 +41,19 @@ Seriennummer, Menge, Gewicht und den AVV-Abfallschlüssel. Die Einstufung
 sie wird nicht von Hand gesetzt. Positionen sind nur bis zur
 Entsorger-Übergabe änderbar.
 
+**Asset an der Position:** Im Positionsdialog wählen Sie optional ein
+Asset, das in Betrieb ist; die Auswahl belegt Bezeichnung, Hersteller,
+Modell und Seriennummer vor. Akte und Nachweis zeigen das Asset. Der
+Abschluss nimmt verknüpfte Assets außer Betrieb. Ist ein Asset noch
+ausgegeben, bleibt es in Betrieb und die Akte weist darauf hin. An der
+Asset-Akte öffnet „Entsorgen“ eine neue Entsorgungsakte mit dem Asset als
+vorbereiteter Position.
+
+**Fotos:** Zu jeder Geräteposition laden Sie Fotos hoch (JPG, PNG, WebP),
+solange die Akte änderbar ist. Nach der Entsorger-Übergabe lassen sich
+Fotos weder ergänzen noch löschen. Mit „Fotos im Kundennachweis zeigen“ an
+der Akte erscheinen bis zu zwei Fotos je Position im Nachweis-PDF.
+
 **Datenträger-Behandlung:** Für jedes Gerät, das Datenträger enthält, wird
 die Behandlung dokumentiert — Datenträgertyp, Verfahren (z. B.
 Software-Löschung, Degaussing, Schreddern oder Ausbau zur Vernichtung),

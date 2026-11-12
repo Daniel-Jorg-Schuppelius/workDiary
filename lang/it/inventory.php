@@ -77,6 +77,8 @@ return [
         'pick_list_pdf' => 'Lista di prelievo (PDF)',
     ],
     'field' => [
+        'unit_base' => 'Unità base',
+        'unit_option' => ':unit (= :factor :base)',
         'code' => 'Codice',
         'default' => 'Predefinito',
         'available' => 'Disponibile',
@@ -130,7 +132,6 @@ return [
         'active' => 'Attiva',
         'fulfilled' => 'Evasa',
         'released' => 'Rilasciata',
-        'cancelled' => 'Annullata',
     ],
     'count_status' => [
         'counting' => 'Conteggio',
@@ -139,6 +140,7 @@ return [
         'cancelled' => 'Annullata',
     ],
     'count_ui' => [
+        'four_eyes_blocked' => 'Approvazione a quattro occhi: questo inventario contiene differenze oltre la soglia contate da Lei. L’approvazione spetta a un’altra persona.',
         'title' => 'Inventario',
         'open' => 'Apri inventario',
         'save' => 'Salva conteggio',
@@ -166,6 +168,17 @@ return [
         'qty_positive' => 'La quantità deve essere maggiore di zero.',
         'not_found' => 'Inventario non trovato.',
         'forbidden' => 'Nessuna autorizzazione per i conteggi di inventario.',
+        'nothing_counted' => 'Nessuna quantità contata registrata: la verifica ne richiede almeno una.',
+        'submit_review' => 'Concludere il conteggio',
+        'submit_review_confirm' => 'Concludere il conteggio? Le quantità restano bloccate fino all\'approvazione o alla riapertura.',
+        'reopen' => 'Riaprire il conteggio',
+        'cancel' => 'Annullare l\'inventario',
+        'cancel_confirm' => 'Annullare l\'inventario? Non verrà registrato nulla.',
+        'status_flash' => [
+            'review' => 'Conteggio concluso: le differenze attendono verifica e approvazione.',
+            'counting' => 'Conteggio riaperto.',
+            'cancelled' => 'Inventario annullato: non è stato registrato nulla.',
+        ],
     ],
     'overview' => [
         'avg' => 'Costo medio',
@@ -191,7 +204,6 @@ return [
         'status' => [
             'created' => 'Creato',
             'in_stock' => 'In magazzino',
-            'reserved' => 'Riservato',
             'shipped' => 'Spedito',
             'returned' => 'Reso',
             'blocked' => 'Bloccato',
@@ -310,7 +322,82 @@ return [
         ],
     ],
 
+    'settings' => [
+        'title' => 'Impostazioni di magazzino',
+        'valuation' => [
+            'heading' => 'Valutazione',
+            'description' => 'Metodo con cui vengono valutate entrate e uscite. I singoli articoli possono avere un metodo proprio nel modulo articolo.',
+            'label' => 'Metodo di valutazione',
+            'hint' => 'Passando a FIFO o FEFO, la giacenza esistente riceve uno strato iniziale al prezzo medio precedente. Il ritorno alla media mobile è possibile solo quando non resta giacenza negli strati.',
+        ],
+        'reservation' => [
+            'heading' => 'Prenotazione',
+            'description' => 'Quando un ordine di produzione prenota il proprio materiale. L’ordine registra il momento applicato; una modifica successiva vale solo per i nuovi ordini.',
+            'label' => 'Momento della prenotazione',
+            'hint' => 'La prenotazione all’avvio lascia il materiale disponibile più a lungo, ma può fallire all’avvio se manca la giacenza.',
+            'option' => [
+                'release' => 'Al rilascio dell’ordine',
+                'start' => 'All’avvio della produzione',
+            ],
+        ],
+        'four_eyes' => [
+            'heading' => 'Approvazione a quattro occhi',
+            'description' => 'Le differenze inventariali a partire dalla soglia non vengono approvate da chi le ha contate. Soglia e approvatore risultano nel registro di audit.',
+            'enabled' => 'Approvazione a quattro occhi per le differenze inventariali',
+            'threshold' => 'Soglia (valore di giacenza per riga)',
+            'threshold_hint' => '0 = ogni differenza richiede la seconda persona.',
+            'negative' => 'Approvazione a quattro occhi per i prelievi in giacenza negativa',
+            'negative_hint' => 'Un prelievo con «Consenti giacenza negativa» diventa una richiesta nella casella delle approvazioni; viene registrato solo quando un’altra persona con il diritto «Autorizzare giacenze negative» acconsente.',
+        ],
+        'numbers' => [
+            'heading' => 'Numeri articolo',
+            'description' => 'Chi gestisce numero articolo, SKU delle varianti e GTIN. Se li gestisce un gestionale di magazzino, i campi sono bloccati nell’anagrafica articoli e arrivano con la sincronizzazione.',
+            'label' => 'SKU e GTIN gestiti da',
+            'link' => 'Modificare nella numerazione «Articolo»',
+        ],
+        'flash' => [
+            'saved' => 'Impostazioni di magazzino salvate.',
+            'saved_layers' => 'Impostazioni di magazzino salvate. Strati iniziali creati per la giacenza esistente: :count.',
+        ],
+    ],
+    'journal' => [
+        'title' => 'Giornale di magazzino',
+        'subtitle' => 'Tutti i movimenti di magazzino in unità base, con la quantità e l’unità in cui sono stati registrati.',
+        'search_placeholder' => 'Articolo o SKU',
+        'empty' => 'Nessun movimento di magazzino nel periodo.',
+        'col' => [
+            'occurred_at' => 'Data e ora',
+            'state' => 'Stato della giacenza',
+            'qty_base' => 'Quantità (unità base)',
+            'entered' => 'Registrato come',
+            'lot' => 'Lotto',
+            'actor' => 'Registrato da',
+        ],
+    ],
+    'reservation' => [
+        'edit' => 'Modificare la prenotazione',
+        'saved' => 'Prenotazione salvata.',
+        'reserved' => 'Prenotato',
+        'consumed' => 'Di cui prelevato',
+        'open' => 'Ancora aperto',
+        'reserved_at' => 'Prenotato il',
+        'priority_hint' => 'Un numero più basso significa priorità più alta (predefinito 100). L’elenco delle prenotazioni segue questo ordine.',
+        'release_qty' => 'Rilasciare quantità parziale',
+        'release_hint' => 'Rilascia questa quantità, ad esempio per assegnarla a un altro ordine. Vuoto = non rilasciare nulla.',
+        'redistribute' => 'Ridistribuisci',
+        'redistribute_hint' => 'Cedere la quantità aperta a un’altra prenotazione dello stesso articolo, magazzino e proprietà, ad esempio a un ordine con priorità più alta. La giacenza prenotata resta invariata; la ridistribuzione è registrata nel protocollo di audit.',
+        'redistribute_to' => 'Alla prenotazione',
+        'redistribute_option' => 'Priorità :priority · aperto :open :unit · dal :date',
+        'redistribute_qty' => 'Quantità',
+        'redistribute_qty_hint' => 'Vuoto = l’intera quantità aperta.',
+        'redistribute_invalid' => 'La prenotazione di destinazione è sconosciuta.',
+        'redistribute_mismatch' => 'La ridistribuzione è possibile solo tra prenotazioni attive dello stesso articolo, magazzino, ubicazione e proprietà.',
+        'redistribute_too_much' => 'La quantità supera la quantità aperta della prenotazione.',
+    ],
     'valuation' => [
+        'switch' => [
+            'blocked_layers' => 'Il passaggio alla media mobile non è possibile finché la giacenza è valutata in strati FIFO/FEFO. La media non è stata aggiornata in questo periodo. Riduca prima la giacenza oppure mantenga il metodo a strati.',
+        ],
         'method' => [
             'moving_average' => 'Costo medio ponderato',
             'fifo' => 'FIFO',
@@ -436,5 +523,19 @@ return [
         'serial_qty_one' => 'Gli articoli serializzati si ricevono un numero alla volta (quantità 1).',
         'tracked_article_manual_move' => 'Articolo a lotti/serializzato: registrare tramite entrata merci (ordine) o gestione lotti/serie — non come stock anonimo.',
         'lot_required' => 'Articolo a lotti: i lotti non coprono la quantità; la giacenza senza lotto non viene prelevata.',
+        'unit_not_maintained' => 'L’unità «:unit» non è definita per l’articolo «:article».',
+        'unit_factor_invalid' => 'L’unità «:unit» dell’articolo «:article» non ha un fattore di conversione valido.',
+        'unit_quantity_too_small' => 'La quantità equivale a zero nell’unità base. Verifichi la quantità e l’unità «:unit».',
+        'shelf_life_required' => 'Articolo con scadenza: indichi il lotto e la data di scadenza.',
+        'shelf_life_manual_receipt' => 'Articolo con scadenza: registri l’entrata tramite il ricevimento merci (ordine) con lotto e data di scadenza.',
+    ],
+    // Vier-Augen-Freigabe Negativbestand (MVP-1626)
+    'negative' => [
+        'requested' => 'Il prelievo in giacenza negativa è stato richiesto. Viene registrato non appena una seconda persona lo approva nella casella delle approvazioni.',
+        'no_customer_cost' => 'Con l’approvazione a quattro occhi, un prelievo in giacenza negativa non può essere addebitato contemporaneamente a un cliente. Registrare i costi del materiale dopo l’approvazione.',
+        'delegate_without_right' => 'La persona a cui delegate ha bisogno del diritto «Autorizzare giacenze negative».',
+        'not_open' => 'La richiesta è già stata decisa.',
+        'inbox_title' => 'Giacenza negativa: :qty :unit :article',
+        'inbox_reference' => 'Magazzino :warehouse · richiesto da :name',
     ],
 ];

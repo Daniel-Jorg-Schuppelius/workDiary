@@ -11,6 +11,7 @@
 return [
     'error' => [
         'self_approval' => 'Der eigene Beleg kann nicht selbst freigegeben werden.',
+        'receipt_required' => 'Die Kategorie „:category“ verlangt einen Beleg. Die Auslage ist gespeichert, aber nicht eingereicht — laden Sie den Beleg hoch und reichen Sie sie dann ein.',
         'invalid_transition' => 'Die Aktion :action ist im Status :status nicht möglich.',
     ],
     'receipt' => [
@@ -31,6 +32,8 @@ return [
         'push_unsupported' => ':program übernimmt keine Auslagen als Beleg — ordnen Sie einen vorhandenen Beleg zu.',
         'title' => 'Belegdatei',
         'hint' => 'Hinterlegen Sie die Quittung zur Auslage — ohne Beleg ist sie weder für sich prüfbar noch später in die Buchhaltung übernehmbar.',
+        'required_hint' => 'Diese Kategorie verlangt einen Beleg. Speichern geht jederzeit; eingereicht werden kann die Auslage erst mit hinterlegtem Beleg (Aktion „Belegdatei“ in der Liste).',
+        'required_present' => 'Diese Kategorie verlangt einen Beleg — er ist hinterlegt.',
     ],
     'title' => [
         'index'        => 'Spesen',

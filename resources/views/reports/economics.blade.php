@@ -263,8 +263,14 @@
                     </tr>
                 @endforeach
             </x-table>
-            @foreach($aiPlanActualSuggestions as $aiPlanActualSuggestion)
-                @include('ai._insight', ['suggestion' => $aiPlanActualSuggestion])
+            @foreach($aiPlanActualSuggestions as $aiPlanActualProjectId => $aiPlanActualSuggestion)
+                {{-- „Neu erzeugen“ mit gewählter Verbindung für denselben Zeitraum (MVP-1628). --}}
+                @include('ai._insight', [
+                    'suggestion' => $aiPlanActualSuggestion,
+                    'regenerateAction' => $aiProjects->has($aiPlanActualProjectId)
+                        ? route('ai.assist.plan-actual', [$aiProjects[$aiPlanActualProjectId], 'from' => $from->toDateString(), 'to' => $to->toDateString()])
+                        : null,
+                ])
             @endforeach
             <div class="mt-2 text-xs text-muted">{{ __('Plan-Werte stammen aus dem Projekt-Zeitbudget (Minuten) und Projekt-Budget (€). Projekte ohne gepflegten Plan zeigen „–".') }}</div>
         @endif

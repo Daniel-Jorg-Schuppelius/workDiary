@@ -36,13 +36,17 @@ class AppointmentController extends Controller {
 
     public function index(AppointmentSlotService $slots, Request $request, SqidEncoder $sqids): View {
         $portalUser = $this->portalUser();
+        $customer = $this->portalCustomer();
 
+        // An ein Objekt gebundene Leistungen sieht nur der Kunde des Objekts (MVP-1612).
         $services = BookableService::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $portalUser->organization_id)
             ->where('active', true)
             ->orderBy('title')
-            ->get();
+            ->get()
+            ->filter(fn (BookableService $service): bool => $service->bookableBy($customer))
+            ->values();
 
         // Slot-Vorschau: gewählte Leistung + Datum (Default: frühester Tag).
         $selected = null;
@@ -55,7 +59,7 @@ class AppointmentController extends Controller {
         }
         if ($selected !== null) {
             $day = $this->resolveDateParam($request, 'day', static fn (): CarbonImmutable => CarbonImmutable::parse($selected->earliestStart()->format('Y-m-d')))->startOfDay();
-            $windows = $slots->slotsFor($selected, $day);
+            $windows = $slots->slotsFor($selected, $day, customer: $customer);
         }
 
         $requests = AppointmentRequest::query()

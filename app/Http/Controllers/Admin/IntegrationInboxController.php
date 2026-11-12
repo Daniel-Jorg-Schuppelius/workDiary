@@ -20,7 +20,7 @@ use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
-use App\Services\Integration\{InboxActionService, InboxGroupBookerRegistry, MatchProfileRegistry};
+use App\Services\Integration\{DataOwnershipGuard, InboxActionService, InboxGroupBookerRegistry, MatchProfileRegistry};
 use App\Support\{ErrorText, MorphMap};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -58,7 +58,8 @@ class IntegrationInboxController extends Controller {
             ->where('organization_id', $user->organization_id)
             ->whereNull('group_key')
             ->when($status !== 'all', fn($q) => $q->where('status', $status))
-            ->when($caseType !== 'all', fn($q) => $q->where('case_type', $caseType))
+            ->when($caseType === 'ownership', fn($q) => $q->whereLikeEscaped('dedupe_key', DataOwnershipGuard::DEDUPE_PREFIX, 'prefix'))
+            ->when(! in_array($caseType, ['all', 'ownership'], true), fn($q) => $q->where('case_type', $caseType))
             ->when($plugin !== 'all', fn($q) => $q->where('plugin_id', $plugin))
             ->when($target !== 'all', fn($q) => $q->where('target_type', $target))
             // Zeiteintrag-Kontext (Datum/Zeit/Projekt/Kunde) wird je Item
@@ -354,6 +355,19 @@ class IntegrationInboxController extends Controller {
         }
 
         return back()->with('success', __('import.ical_subscription.removed_deleted'));
+    }
+
+    /** Führerschaftskonflikt einmalig übernehmen (MVP-1592). */
+    public function acceptOwnership(IntegrationInboxItem $item, DataOwnershipGuard $guard): RedirectResponse {
+        $this->guard($item);
+
+        try {
+            $written = $guard->accept($item);
+        } catch (\RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return back()->with('success', $written !== null ? __('integration.ownership.accepted') : __('integration.ownership.accepted_nothing'));
     }
 
     public function dismiss(IntegrationInboxItem $item, InboxActionService $service): RedirectResponse {

@@ -48,7 +48,7 @@ use Throwable;
  * Mappings between local entities and Lexoffice ids are persisted in the
  * external_references table. The plugin id is "lexoffice".
  */
-class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\SupplierContactSyncer, ContactNumberIssuer, ContactSyncer, ContributesWhileInactive, NavigationContributor, SlotRenderer, TimeExporter {
+class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\SupplierContactSyncer, \App\Plugins\Contracts\WritesDataDomains, ContactNumberIssuer, ContactSyncer, ContributesWhileInactive, NavigationContributor, SlotRenderer, TimeExporter {
     public const string ID = 'lexoffice';
 
     public const string SERVICE_PROVIDER = LexofficeServiceProvider::class;
@@ -412,5 +412,10 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
             'external_type' => self::EXT_TYPE_VOUCHER,
             'payload' => $result['payload'],
         ];
+    }
+
+    /** Datenführerschaft (MVP-1592): Kontakt-Rückweg schreibt Kunden und Lieferanten. */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Customers];
     }
 }

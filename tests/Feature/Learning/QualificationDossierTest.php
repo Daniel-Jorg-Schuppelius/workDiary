@@ -99,17 +99,12 @@ class QualificationDossierTest extends TestCase {
             'valid_until' => '2027-01-01',
         ]);
 
-        $summary = $this->service()->summarizeQualification(
-            collect([$covered, $missing]),
-            $qualification->id,
-            Carbon::parse('2026-08-28')
-        );
+        $summary = $this->service()->coverageSummary(collect([$covered, $missing]), Carbon::parse('2026-08-28'));
 
         $this->assertSame(2, $summary['people']);
-        $this->assertSame(1, $summary['covered']);
-        $this->assertSame(1, $summary['missing']);
         $this->assertSame('2027-01-01', $summary['earliest_expiry']);
         $this->assertStringNotContainsString($covered->name, json_encode($summary) ?: '');
+        $this->assertStringNotContainsString($missing->name, json_encode($summary) ?: '');
     }
 
     public function test_widerruf_wirkt_ab_seinem_zeitpunkt_nicht_rueckwirkend(): void {

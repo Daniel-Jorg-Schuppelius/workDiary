@@ -12,8 +12,9 @@ namespace App\Http\Controllers\Time;
 
 use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Enums\User\Permission;
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{BuildsTimeEntryOptions, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Time\{Attendance, TimeCorrectionRequest, TimeEntry};
 use App\Services\TimeApproval\{TimeCorrectionService, TimeCorrectionWorkflowException};
@@ -34,7 +35,11 @@ use Illuminate\View\View;
  * {@see Admin\TimeCorrectionInboxController}.
  */
 class TimeCorrectionController extends Controller {
+    use BuildsTimeEntryOptions;
     use ResolvesGlobalDateRange;
+
+    /** Dialogwert „Auftrag entfernen“ im Feld `items.*.diary_entry`. */
+    private const string DIARY_ENTRY_NONE = '-';
 
     private const array ALLOWED_SORTS = ['scope_date', 'status'];
 
@@ -130,13 +135,19 @@ class TimeCorrectionController extends Controller {
 
         return response()->json([
             MorphMap::alias(TimeEntry::class) => TimeEntry::query()->where('user_id', $owner->id)->whereBetween('date', DateRange::days($date, $date))->with('project:id,name')->orderBy('started_at')->get()
-                ->map(static fn (TimeEntry $e): array => [
+                ->map(fn (TimeEntry $e): array => [
                     'id' => $e->sqid,
                     'label' => implode(' · ', array_filter([
                         $e->started_at !== null ? $span($e->started_at, $e->ended_at) : Formats::duration((int) $e->minutes, 'clock'),
                         $e->project?->name,
                         StringHelper::truncate((string) $e->description, 60),
                     ])),
+                    // Auftrag der Buchung ändern (MVP-1552): die Aufträge des Projekts zur Auswahl.
+                    'order' => $e->diary_entry_id !== null ? Sqid::encode(DiaryEntry::class, (int) $e->diary_entry_id) : '',
+                    'orders' => $e->project !== null
+                        ? $this->diaryOptions($e->project, $e->diary_entry_id)
+                            ->map(static fn (DiaryEntry $d): array => ['id' => $d->sqid, 'label' => $d->title ?: StringHelper::truncate((string) $d->content, 60)])->values()
+                        : [],
                 ])->values(),
             MorphMap::alias(Attendance::class) => Attendance::query()->where('user_id', $owner->id)->whereBetween('date', DateRange::days($date, $date))->orderBy('started_at')->get()
                 ->map(static fn (Attendance $a): array => ['id' => $a->sqid, 'label' => $span($a->started_at, $a->ended_at)])->values(),
@@ -176,6 +187,7 @@ class TimeCorrectionController extends Controller {
             'items.*.action' => ['required', 'string', 'in:create,update,delete'],
             'items.*.before' => ['nullable', 'string'],
             'items.*.after' => ['nullable', 'string'],
+            'items.*.diary_entry' => ['nullable', 'string', 'max:64'],
         ]);
 
         // „Im Namen von": Eigentümer = Mitarbeiter, Antragsteller = aktueller Nutzer.
@@ -195,7 +207,7 @@ class TimeCorrectionController extends Controller {
                 'target_id' => isset($row['target_id']) ? (int) $row['target_id'] : null,
                 'action' => $row['action'],
                 'before' => self::decodeJson($row['before'] ?? null),
-                'after' => self::decodeJson($row['after'] ?? null),
+                'after' => $this->withDiaryEntry(self::decodeJson($row['after'] ?? null), $row),
             ];
         }
 
@@ -214,6 +226,25 @@ class TimeCorrectionController extends Controller {
         return redirect()
             ->route('corrections.show', $req)
             ->with('status', __('Korrekturantrag als Entwurf gespeichert.'));
+    }
+
+    /**
+     * Auftragswahl des Dialogs in die Nachher-Werte übernehmen: der Auftrag
+     * kommt als Sqid, gespeichert wird `diary_entry_id` (Organisationsprüfung im Dienst).
+     *
+     * @param  array<string, mixed>|null  $after
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>|null
+     */
+    private function withDiaryEntry(?array $after, array $row): ?array {
+        $choice = (string) ($row['diary_entry'] ?? '');
+        $target = TimeCorrectionService::targetClass((string) ($row['target_type'] ?? ''));
+        if ($choice === '' || ($row['action'] ?? '') === 'delete' || $target !== TimeEntry::class) {
+            return $after;
+        }
+
+        // Unlesbare Auswahl wird 0 und scheitert an der Organisationsprüfung, statt den Auftrag still zu entfernen.
+        return ['diary_entry_id' => $choice === self::DIARY_ENTRY_NONE ? null : Sqid::decodeOrNumeric(DiaryEntry::class, $choice, 0)] + ($after ?? []);
     }
 
     public function show(TimeCorrectionRequest $correction): View {

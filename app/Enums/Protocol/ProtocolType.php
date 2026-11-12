@@ -29,12 +29,22 @@ enum ProtocolType: string implements HasLabel {
         return (string) __('enums.protocol.type.' . $this->value);
     }
 
-    /**
-     * Ob der Typ eine Pflicht-Signatur (mindestens einer Rolle) erfordert.
-     * Wird vom Service zum Pruefen vor `sign`/`signDirect` genutzt; in MVP-020
-     * nur informativ, in MVP-022 wird die Pflicht eingefordert.
-     */
+    /** Ob der Typ ohne Unterschrift nicht abgeschlossen werden kann. */
     public function requiresSignature(): bool {
-        return in_array($this, [self::Acceptance, self::Handover], true);
+        return $this->requiredSignatureRoles() !== [];
+    }
+
+    /**
+     * Rollen, deren Unterschrift vor dem Abschluss vorliegen muss (MVP-1572):
+     * Abnahme der Kunde, Übergabe beide Seiten.
+     *
+     * @return list<ProtocolSignatureRole>
+     */
+    public function requiredSignatureRoles(): array {
+        return match ($this) {
+            self::Acceptance => [ProtocolSignatureRole::Customer],
+            self::Handover => [ProtocolSignatureRole::Customer, ProtocolSignatureRole::Contractor],
+            default => [],
+        };
     }
 }

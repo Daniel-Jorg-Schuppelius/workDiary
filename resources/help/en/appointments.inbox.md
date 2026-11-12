@@ -1,7 +1,7 @@
 ---
 title: "Appointment requests"
 topic: appointments.inbox
-version: 1
+version: 2
 keywords:
     - online booking
     - appointment booking
@@ -42,3 +42,12 @@ not; why is none of the customer's business.
 **Confirm** creates the entry and binds the request to it. **Decline**
 requires a reason — it goes to the customer. If the customer cancels within
 the period, the request disappears from the inbox.
+
+## Assigning and maintaining
+
+Assign a request without a customer (such as a Calendly booking with an
+unknown email address) to a customer or a lead via **Assign**; an open case in
+the integration inbox is settled with it. Service types can be changed via
+**Edit**. If a service type is bound to a **site**, the portal and the slot
+search only offer it to the customer who owns the site; confirming takes the
+site's address as the order location (otherwise the customer's address).

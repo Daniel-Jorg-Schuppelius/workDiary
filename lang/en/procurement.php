@@ -174,6 +174,10 @@ return [
     ],
 
     'alert' => [
+        'document_margin' => [
+            'quotes' => 'Quote :number, item :position: document price :price yields :margin % margin',
+            'orders' => 'Order :number, item :position: document price :price yields :margin % margin',
+        ],
         'title' => 'Price alerts',
         'subtitle' => 'Purchase price changes below minimum margin',
         'empty' => 'No open price alerts.',
@@ -192,6 +196,8 @@ return [
             'purchase_orders' => 'Purchase orders',
             'boq_items' => 'BoQ items',
             'manufacturing_orders' => 'Manufacturing orders',
+            'quotes' => 'Quotes',
+            'orders' => 'Orders',
         ],
         'action' => [
             'acknowledge' => 'Done',
@@ -334,6 +340,7 @@ return [
             'host_not_allowed' => 'The remote host is not allowed (internal/private target).',
             'xlsx_invalid' => 'The file is not a readable XLSX file.',
             'sheet_not_found' => 'Worksheet ":sheet" not found (case-sensitive).',
+            'ignore_linked' => 'A linked item cannot be ignored — remove the link first.',
         ],
         'subtitle' => 'Manage catalog sources and import CSV price lists',
         'empty' => 'No catalog sources yet.',
@@ -408,6 +415,8 @@ return [
             'propose' => 'Suggest',
             'adopt' => 'Adopt as articles',
             'adopt_item' => 'Adopt tariff group as article',
+            'ignore' => 'Do not adopt (ignore)',
+            'unignore' => 'Include again',
         ],
         'adopt' => [
             'title' => 'Adopt catalog items',
@@ -474,10 +483,13 @@ return [
             'unlinked' => 'Link removed.',
             'proposed' => 'Suggestion: ":article" — please review and link.',
             'no_match' => 'No matching internal article found (EAN/GTIN, variant SKU, supply source, name).',
+            'ignored' => 'Item ignored — it is excluded from proposals, adoption and price updates.',
+            'unignored' => 'Item included again.',
         ],
     ],
 
     'field' => [
+        'unit' => 'Order unit',
         'number' => 'No.',
         'supplier' => 'Supplier',
         'warehouse' => 'Warehouse',
@@ -493,6 +505,7 @@ return [
     ],
 
     'flash' => [
+        'unknown_unit' => 'This unit is not maintained for the article.',
         'created' => 'Purchase order created.',
         'line_added' => 'Line added.',
         'conditions_saved' => 'Conditions saved.',
@@ -587,6 +600,52 @@ return [
         ],
     ],
     // Pflichtnachweise Subunternehmer (Feature 117, MVP-606).
+    'credential_types' => [
+        'title' => 'Credential types',
+        'subtitle' => 'Which credentials suppliers must provide. The catalogue types are templates; your own types add to them.',
+        'empty' => 'No credential types yet.',
+        'saved' => 'Credential type saved.',
+        'months' => ':count months',
+        'action' => [
+            'create' => 'Own credential type',
+            'edit' => 'Edit credential type',
+            'adopt' => 'Adopt as own type',
+        ],
+        'origin' => [
+            'catalog' => 'Catalogue',
+            'own' => 'Own type',
+        ],
+        'mode' => [
+            'warn' => 'Warn only',
+            'block' => 'Block ordering',
+        ],
+        'state' => [
+            'active' => 'Active',
+            'inactive' => 'Deactivated',
+        ],
+        'required' => [
+            'description' => 'Mandatory credentials count towards the traffic light of the supplier. With tags, the obligation applies only to suppliers carrying one of them, for example a trade or a type of service.',
+            'yes' => 'Mandatory credential',
+            'optional' => 'Optional',
+            'all' => 'Mandatory for all suppliers',
+            'tags' => 'Mandatory for: :tags',
+        ],
+        'field' => [
+            'name' => 'Name',
+            'description' => 'Description',
+            'origin' => 'Origin',
+            'required' => 'Obligation',
+            'required_tags' => 'Mandatory only for suppliers with tag',
+            'required_tags_hint' => 'Without a selection the obligation applies to all suppliers.',
+            'blocking_mode' => 'If the credential is missing',
+            'blocking_mode_hint' => 'Blocking only takes effect if the organisation has enabled blocking of orders.',
+            'validity' => 'Standard validity (months)',
+            'validity_hint' => 'Empty = unlimited.',
+            'warn_days_before' => 'Advance warning (days before expiry)',
+            'state' => 'State',
+            'state_hint' => 'Deactivated types are no longer offered and do not count towards the traffic light; stored credentials are kept.',
+        ],
+    ],
     'credentials' => [
         'badge' => 'Credentials: :status',
         'hint' => 'Mandatory supplier credentials (exemption certificate, insurance etc.)',

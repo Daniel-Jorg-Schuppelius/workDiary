@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Investments;
 
-use App\Enums\Investments\{InvestmentCaseStatus, InvestmentDeviationStatus};
+use App\Enums\Investments\{InvestmentBudgetRequestStatus, InvestmentCaseStatus, InvestmentDeviationStatus};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
@@ -23,7 +23,8 @@ use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
 use App\Services\Investments\Contracts\AssetCapitalizer;
 use App\Services\Investments\InvestmentService;
-use App\Support\{ErrorText, SortableQuery};
+use App\Support\{ErrorText, SortableQuery, Sqid};
+use CommonToolkit\Helper\Data\DateHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -45,10 +46,33 @@ class InvestmentController extends Controller {
         $category = $request->string('category')->toString();
         $categoryFilter = in_array($category, InvestmentCase::CATEGORIES, true) ? $category : '';
 
+        // Zeitraum, Verantwortliche, Kostenstelle, Budgetstatus und Risiko (Feature 069, MVP-1606).
+        $from = $this->filterDate($request, 'from');
+        $to = $this->filterDate($request, 'to');
+        $responsibleId = Sqid::decodeOrNumeric(User::class, $request->string('responsible')->toString());
+        $costCenterId = Sqid::decodeOrNumeric(CostCenter::class, $request->string('cost_center')->toString());
+        $budget = $request->string('budget')->toString();
+        $budgetFilter = in_array($budget, ['none', ...array_column(InvestmentBudgetRequestStatus::cases(), 'value')], true) ? $budget : '';
+        $urgency = $request->string('urgency')->toString();
+        $urgencyFilter = in_array($urgency, ['low', 'medium', 'high'], true) ? $urgency : '';
+        $withRisk = $request->boolean('risk');
+
         $query = InvestmentCase::query()
-            ->with(['responsible', 'costCenter'])
+            ->with(['responsible', 'costCenter', 'budgetRequests'])
             ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter))
-            ->when($categoryFilter !== '', fn($q) => $q->where('category', $categoryFilter));
+            ->when($categoryFilter !== '', fn($q) => $q->where('category', $categoryFilter))
+            // Überschneidung mit dem geplanten Zeitraum; Akten ohne Zeitraum fallen bei gesetztem Filter heraus.
+            ->when($from !== null, fn($q) => $q->where(fn($w) => $w->where('ends_on', '>=', $from)->orWhere(fn($o) => $o->whereNull('ends_on')->where('starts_on', '>=', $from))))
+            ->when($to !== null, fn($q) => $q->where('starts_on', '<=', $to))
+            ->when($responsibleId !== null, fn($q) => $q->where('responsible_user_id', $responsibleId))
+            ->when($costCenterId !== null, fn($q) => $q->where('cost_center_id', $costCenterId))
+            ->when($budgetFilter === 'none', fn($q) => $q->whereDoesntHave('budgetRequests'))
+            // Budgetstatus meint den jüngsten Antrag der Akte.
+            ->when($budgetFilter !== '' && $budgetFilter !== 'none', fn($q) => $q->whereHas('budgetRequests', fn($b) => $b
+                ->where('status', $budgetFilter)
+                ->whereRaw('version = (select max(latest.version) from investment_budget_requests as latest where latest.investment_case_id = investment_budget_requests.investment_case_id)')))
+            ->when($urgencyFilter !== '', fn($q) => $q->where('urgency', $urgencyFilter))
+            ->when($withRisk, fn($q) => $q->whereNotNull('risk_note')->where('risk_note', '!=', ''));
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
             'title' => 'title',
@@ -61,10 +85,30 @@ class InvestmentController extends Controller {
             'cases' => $query->paginate(25)->withQueryString(),
             'statuses' => InvestmentCaseStatus::options(),
             'categories' => InvestmentCase::CATEGORIES,
-            'filters' => ['status' => $statusFilter->value ?? '', 'category' => $categoryFilter],
+            'filters' => [
+                'status' => $statusFilter->value ?? '',
+                'category' => $categoryFilter,
+                'from' => $from,
+                'to' => $to,
+                'responsible' => $responsibleId,
+                'cost_center' => $costCenterId,
+                'budget' => $budgetFilter,
+                'urgency' => $urgencyFilter,
+                'risk' => $withRisk,
+            ],
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
+            'costCenters' => CostCenter::query()->where('active', true)->orderBy('code')->get(['id', 'code', 'label']),
+            'budgetStatuses' => InvestmentBudgetRequestStatus::cases(),
             'sort' => $sort,
             'dir' => $dir,
         ]);
+    }
+
+    /** Datumsfilter der Liste; Unlesbares zählt als nicht gesetzt. */
+    private function filterDate(Request $request, string $key): ?string {
+        $value = $request->string($key)->toString();
+
+        return DateHelper::isValidDate($value, ['Y-m-d']) ? $value : null;
     }
 
     public function create(): View {
@@ -170,6 +214,9 @@ class InvestmentController extends Controller {
             return back()->with('success', __('Akte wieder aufgenommen.'));
         }
         $case->update(['status' => $status]);
+        if ($status === InvestmentCaseStatus::Completed) {
+            $this->investments->stampAcquisitionSupplier($case);
+        }
 
         return back()->with('success', __('Status aktualisiert.'));
     }
@@ -306,6 +353,9 @@ class InvestmentController extends Controller {
             'created_by' => (int) Auth::id(),
         ]);
         $case->audit('investment.linked', ['type' => $data['linkable_type'], 'id' => $target->getKey()]);
+        if ($target instanceof \App\Models\Asset\Asset) {
+            $this->investments->stampAcquisitionSupplier($case);
+        }
         if ($case->status === InvestmentCaseStatus::Approved) {
             $case->update(['status' => InvestmentCaseStatus::InProgress]);
         }

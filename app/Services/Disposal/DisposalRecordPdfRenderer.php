@@ -32,7 +32,7 @@ class DisposalRecordPdfRenderer {
     public function render(DisposalJob $job): string {
         $job->loadMissing([
             'customer', 'site', 'responsible', 'creator',
-            'items.treatments.performer', 'items.asset',
+            'items.treatments.performer', 'items.asset', 'items.attachments',
             'handovers.disposer', 'handovers.document',
             'signatureAttachment',
         ]);
@@ -41,6 +41,8 @@ class DisposalRecordPdfRenderer {
 
         // MVP-650: abgeschlossene Akten rendern mit ihrem eingefrorenen Designstand.
         $design = app(DocumentDesignRenderer::class);
+        $payload = $design->payloadFromSnapshot($job, RenderDocumentKind::Protocol)
+            ?? ($organization !== null ? $design->payloadFor($organization, RenderDocumentKind::Protocol) : null);
 
         return $design->renderPdf(
             RenderDocumentKind::Protocol,
@@ -50,10 +52,14 @@ class DisposalRecordPdfRenderer {
                 'organization' => $organization,
                 'hash' => $this->contentHash($job),
                 'signatureDataUri' => $this->signatureDataUri($job),
+                'itemPhotos' => $job->is_photo_in_record ? $this->itemPhotos($job) : [],
                 'generatedAt' => now(),
+                // Aussteller nach Blockzustand (MVP-1624); abgeschlossene Altakten bleiben, wie sie waren.
+                'design' => $design->contextForDocument($job, RenderDocumentKind::Protocol, $payload, finalized: $job->completed_at !== null),
+                'issuer' => \App\Services\DocumentDesign\IssuerIdentity::for($organization),
             ],
             $organization,
-            payload: $design->payloadFromSnapshot($job, RenderDocumentKind::Protocol),
+            payload: $payload,
         );
     }
 
@@ -101,6 +107,26 @@ class DisposalRecordPdfRenderer {
         ];
 
         return CryptoHelper::hash(JsonHelper::encode($this->sortKeysDeep($canonical)));
+    }
+
+    /**
+     * Bis zu zwei Fotos je Position als data-URI (MVP-1578); dompdf bettet nur JPEG und PNG ein.
+     *
+     * @return array<int, list<string>>
+     */
+    private function itemPhotos(DisposalJob $job): array {
+        $out = [];
+        foreach ($job->items as $item) {
+            foreach ($item->attachments->whereIn('mime', ['image/jpeg', 'image/png'])->take(2) as $photo) {
+                $disk = Storage::disk($photo->disk ?? 'local');
+                $src = $disk->exists($photo->path) ? DataUrlHelper::encode((string) $disk->get($photo->path), $photo->mime) : null;
+                if (is_string($src) && $src !== '') {
+                    $out[(int) $item->id][] = $src;
+                }
+            }
+        }
+
+        return $out;
     }
 
     /** Unterschrifts-PNG als data-URI für die dompdf-Einbettung. */

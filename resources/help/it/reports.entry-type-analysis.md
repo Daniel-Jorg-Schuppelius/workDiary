@@ -1,7 +1,7 @@
 ---
 title: "Analisi per tipo di incarico"
 topic: reports.entry-type-analysis
-version: 3
+version: 4
 keywords:
     - previsto vs effettivo
     - scostamento dal pianificato
@@ -32,3 +32,5 @@ revisione dei prezzi.
 
 La durata pianificata di un incarico è la sua **Durata prevista (HH:MM)**; se è
 vuota, conta la durata dell’intervento di un ordine pianificato, altrimenti la durata della finestra oraria o dell’appuntamento.
+
+La colonna **Cause principali** indica, per tipo di ordine, le tre classificazioni più frequenti tra il motivo di rilavorazione dei tempi registrati e la causa principale dei reclami sull’ordine. Ogni ordine conta una volta; un clic mostra tempi e reclami interessati. Anche l’esportazione CSV contiene la colonna.

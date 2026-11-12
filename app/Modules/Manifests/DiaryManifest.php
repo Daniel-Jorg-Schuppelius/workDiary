@@ -103,6 +103,10 @@ final class DiaryManifest extends Manifest {
             \App\Automation\Triggers\RuleTrigger::class => [
                 \App\Services\OpenIssue\Automation\OpenIssueCreatedTrigger::class,
             ],
+            // MVP-1597: offene Punkte an Kunde, Projekt und Asset.
+            \App\Services\Cockpit\Contracts\CockpitPanel::class => [
+                \App\Services\Diary\Cockpit\OpenIssueCockpitPanel::class,
+            ],
         ];
     }
 
@@ -114,6 +118,8 @@ final class DiaryManifest extends Manifest {
             \App\Services\Diary\Contracts\ServiceDurationSource::class => \App\Services\Diary\Contracts\NullServiceDurationSource::class,
             // MVP-1514: Qualifikationssperre kommt aus der Planung, ohne sie keine Sperre.
             \App\Services\Diary\Contracts\AssignmentQualificationGuard::class => \App\Services\Diary\Contracts\NullAssignmentQualificationGuard::class,
+            // MVP-1549: Ticket aus einem offenen Punkt legt der Helpdesk an, ohne ihn gibt es das Angebot nicht.
+            \App\Services\Diary\Contracts\IssueTicketOpener::class => \App\Services\Diary\Contracts\NullIssueTicketOpener::class,
         ];
     }
 
@@ -122,6 +128,19 @@ final class DiaryManifest extends Manifest {
         return [
             \App\Events\Time\TimeEntryCreated::class => [
                 \App\Listeners\Diary\StartOrderFromTimeEntry::class,
+            ],
+            // MVP-1596: der Beleg setzt „Berechnet“ und nimmt es mit seinem Storno zurück.
+            \App\Events\Invoicing\InvoiceIssued::class => [
+                \App\Listeners\Diary\MarkOrdersInvoiced::class,
+            ],
+            \App\Events\Finance\BillingTransferCompleted::class => [
+                \App\Listeners\Diary\MarkOrdersInvoiced::class,
+            ],
+            \App\Events\Invoicing\InvoiceCancelled::class => [
+                \App\Listeners\Diary\RevertOrdersInvoiced::class,
+            ],
+            \App\Events\Finance\BillingTransferCancelled::class => [
+                \App\Listeners\Diary\RevertOrdersInvoiced::class,
             ],
         ];
     }

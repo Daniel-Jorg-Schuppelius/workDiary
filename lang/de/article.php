@@ -118,6 +118,18 @@ return [
         'type' => 'Artikelart',
         'status' => 'Status',
         'base_unit' => 'Basiseinheit',
+        'tax_class' => 'Steuerklasse',
+        'numbers_locked_hint' => 'Artikelnummer, Varianten-SKU und GTIN führt :program. Sie kommen mit dem Abgleich und lassen sich hier nicht ändern.',
+        'valuation_method' => 'Bewertungsverfahren',
+        'valuation_method_default' => 'Wie Organisation (:method)',
+        'valuation_method_hint' => 'Ein eigenes Verfahren gilt nur für diesen Artikel. Zurück zum gleitenden Durchschnitt geht es erst, wenn kein Bestand mehr in FIFO-/FEFO-Schichten liegt.',
+        'serial_prefix' => 'Seriennummern-Präfix',
+        'serial_prefix_hint' => 'Mit Präfix zählt der Artikel eigene Seriennummern (Präfix-00001). Leer = Nummernkreis der Organisation.',
+        'serial_padding' => 'Stellen der laufenden Nummer',
+        'serial_check_digit' => 'Prüfziffer anhängen',
+        'default_procedure' => 'Standard-Arbeitsplan',
+        'default_procedure_hint' => 'Veröffentlichte Prozedurversion, nach der Fertigungsaufträge und Fertigungsplanung diesen Artikel herstellen, solange ein Auftrag keine eigene wählt.',
+        'default_procedure_none' => 'Kein Standard-Arbeitsplan',
         'category' => 'Warengruppe',
         'category_hint' => 'Für Auswertungen und den DATANORM-Export (WRG-Datei).',
         'subcategory' => 'Unterwarengruppe',
@@ -150,10 +162,18 @@ return [
         'net_weight_kg_hint' => 'Gewicht ohne Verpackung; die Zollpapiere rechnen es mit der Menge hoch.',
     ],
 
+    'tax_class' => [
+        'standard' => 'Regelsatz',
+        'reduced' => 'Ermäßigter Satz',
+        'increased' => 'Erhöhter Satz',
+    ],
+
     'group' => [
+        'inventory' => 'Lager und Bewertung',
         'pricing' => 'Preise',
         'flags' => 'Eigenschaften',
         'customs' => 'Zoll und Ausfuhr',
+        'manufacturing' => 'Fertigung',
     ],
 
     'flag' => [

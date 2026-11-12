@@ -1,7 +1,7 @@
 ---
 title: "Plataforma de aprendizaje"
 topic: learning.overview
-version: 6
+version: 8
 keywords:
     - e-learning
     - LMS
@@ -54,6 +54,32 @@ procedimiento se inicia desde una entrada del diario.
 de seguridad bloquearía la página en silencio dentro del curso; por eso el
 editor rechaza de inmediato y de forma visible un host no permitido. Los hosts
 permitidos se gestionan en los ajustes.
+
+**Un vídeo puede llevar una parte obligatoria.** En el campo «Visto al menos
+(%)» usted define qué parte de un vídeo subido debe haberse visto antes de que
+la unidad pueda completarse. Solo cuentan los tramos realmente reproducidos —
+avanzar y saltar no cuentan, y el mismo tramo cuenta una sola vez. El estado
+aparece bajo el vídeo («Visto: 40 % – requerido: 80 %»); «Marcar como hecha» permanece
+bloqueado hasta entonces. Solo se guarda la parte alcanzada por persona y
+vídeo, sin rastro de reproducción. No puede fijarse una parte obligatoria para
+inserciones externas porque su progreso no es medible; el acceso sin cuenta de
+usuario no reproduce vídeos y no puede completar esas unidades.
+
+Al seleccionar un vídeo, el editor indica el **espacio de almacenamiento
+previsto**: el original más las versiones convertidas. Todo cuenta para la
+cuota de almacenamiento — así el orden de magnitud se conoce antes de la
+carga, y no solo al llegar a la cuota.
+
+Los tipos de unidad **Procedimiento**, **Encuesta** y **Externa** apuntan a un
+destino fuera del curso; usted elige la referencia al crear la unidad, donde
+es obligatoria. Una unidad de procedimiento se considera hecha en cuanto la
+persona finaliza una ejecución de la plantilla de procedimiento elegida (como
+persona ejecutora o asignada). Una unidad de encuesta abre el cuestionario
+elegido; al enviarlo, la unidad queda hecha. Una unidad externa indica una
+dirección, y la persona confirma «hecha» — si se desea, solo con un
+justificante cargado, que la lista de participantes del curso ofrece para su
+descarga. Estas unidades no pueden marcarse a mano; no están disponibles en el
+portal de clientes ni con el acceso sin cuenta de usuario.
 
 Un curso puede tener **requisitos previos** (todos, o basta con uno): bloquean
 el inicio, no la asignación — las inscripciones obligatorias están exentas. Un
@@ -151,6 +177,27 @@ al límite o la espera, una sola vez y con motivo.
 
 El **libro de calificaciones** por curso muestra alumnado × componentes. Sin componentes suma los puntos de exámenes y tareas; si la formación define **componentes** (examen, tarea, nota manual) puede asignar pesos — todos suman 100 o ninguno. Las notas manuales son aditivas: una corrección es una entrada nueva, cuenta la más reciente. El **boletín** (PDF) y la exportación CSV salen del mismo cálculo; mientras algo siga abierto, el boletín lleva la marca «provisional».
 
+Usted mantiene la **escala de notas** en los ajustes de la plataforma de
+aprendizaje: un nivel por línea con la forma «denominación = porcentaje
+mínimo», o una plantilla (notas escolares 1–6, letras A–F, aprobado/no
+aprobado) que puede ajustar después. Se aplica el nivel más alto cuyo
+porcentaje mínimo se alcanza; sin escala, el libro de calificaciones, el CSV y
+el boletín solo muestran el porcentaje.
+
+El **expediente de cualificaciones** (Aprendizaje → Expediente de
+cualificaciones) puede acotarse por equipo, persona, proyecto y sede; las
+selecciones se combinan. La selección de una sola persona solo existe en el
+expediente nominal (con motivo). Un proyecto comprende a sus miembros individuales y a
+los miembros de sus equipos; se considera desplegada en una sede a quien ha
+fichado en un punto de control de la sede en el periodo o posee un medio de
+acceso para la sede.
+Las personas empleadas al inicio del periodo que han causado baja después
+figuran en el expediente con la nota «baja el …» — cuenta la situación en la
+fecha de referencia. Con un motivo, el expediente está disponible además como
+**ZIP**: el expediente en PDF y JSON, cada certificado en su propio archivo
+PDF y un archivo de índice (CSV) que asigna cada línea a su archivo. Con más
+de 300 certificados, acote la selección.
+
 Matices por pregunta: las opciones de respuesta pueden llevar **puntos propios** («Etiqueta {3}», también negativos) — cuenta entonces la opción elegida en vez de todo o nada; una **autoevaluación** es una escala sin respuesta correcta, el nivel elegido es el valor; una **redacción** admite texto, archivo o ambos — el archivo está disponible en la evaluación. Por examen puede exigirse además el aprobado **en puntos** y fijarse el subconjunto por intento **en porcentaje** de las preguntas disponibles.
 
 Con **Importar preguntas** en el catálogo de preguntas se cargan preguntas desde un archivo CSV o Excel. Las columnas **kind** (tipo, como código corto, p. ej. single, o como denominación) y **prompt** son obligatorias; **options** contiene las líneas de respuesta una debajo de otra en una sola celda, con la misma escritura que en el editor. Son opcionales **title**, **category** (las categorías que faltan se crean), **points**, **explanation** y **hint**. La misma pregunta (tipo y texto) se omite en una segunda carga; las preguntas de zona activa necesitan una imagen y no pueden importarse desde un archivo.
@@ -167,6 +214,18 @@ cumplida y cualificación prolongada. No se crea un segundo mundo de pruebas.
 
 Los certificados se verifican mediante un enlace. La página muestra curso,
 fecha, vigencia y emisor; el nombre solo abreviado.
+
+**Revocar un certificado:** la lista de participantes de un curso muestra el
+número de certificado junto a la persona. Con el derecho **Gestionar el
+aprendizaje** usted revoca allí un certificado emitido por error mediante
+«Revocar el certificado» — el motivo es obligatorio. La revocación no puede
+deshacerse: la página de verificación, la credencial legible por máquina, la
+impresión y la expediente de cualificaciones la muestran desde su fecha, la persona
+recibe una notificación con el motivo, y el justificante obligatorio reflejado
+del subcontratista termina el mismo día. El registro de instrucción y la
+cualificación permanecen en sus registros y se corrigen allí. El **enlace de
+acceso** de una persona externa se invalida en el mismo lugar mediante
+«Invalidar el enlace de acceso»; deja de funcionar de inmediato.
 
 Los datos de aprendizaje pertenecen a la persona: el **informe al
 interesado** (módulo de protección de datos) enumera inscripciones, intentos,
@@ -288,3 +347,5 @@ borrador de esquema y de preguntas en el editor, tutor en el reproductor — y
 solo propone; la adopción y la evaluación son manuales. Puntos e insignias
 aparecen en «Mis formaciones»; la clasificación solo muestra a quien lo
 consintió.
+
+**Acceso de invitado con medios:** los externos sin cuenta ven todos los bloques de contenido como en el reproductor: imágenes, archivos, audio y vídeos se cargan a través de su acceso y se omiten los enlaces a páginas internas. Los vídeos con parte obligatoria siguen sin poder completarse allí.

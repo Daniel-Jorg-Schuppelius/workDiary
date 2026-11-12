@@ -40,6 +40,9 @@ return [
         'next_action' => 'Volver a hacer seguimiento del presupuesto :number',
         'wrong_status' => 'Solo se puede hacer seguimiento de presupuestos enviados o aprobados.',
         'no_customer' => 'El presupuesto no tiene cliente — sin cliente no hay expediente para la nota.',
+        'owner_field' => 'Responsable del seguimiento',
+        'owner_default' => 'Autor del presupuesto (predeterminado)',
+        'owner_hint' => 'Recibe el recordatorio cuando vence la fecha de seguimiento y aparece en «Solo los míos».',
         'kpi' => [
             'due' => 'Pendientes',
             'upcoming' => 'Próximos',
@@ -114,7 +117,6 @@ return [
         'flash' => [
             'confirmed' => 'Confirmación de pedido :number confirmada.',
             'cancelled' => 'Confirmación de pedido anulada.',
-            'create_first' => 'Cree primero la confirmación de pedido.',
         ],
         'error' => [
             'not_won' => 'Solo se confirman ofertas aceptadas.',

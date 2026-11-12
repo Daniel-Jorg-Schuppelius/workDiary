@@ -40,7 +40,7 @@ final class NamedStatusColumnEnumsTest extends TestCase {
         $this->assertSame(['pending', 'linked', 'synced'], $values(ExternalArticleSyncStatus::cases()));
         $this->assertSame(['open', 'linked'], $values(MarketplaceInboxStatus::cases()));
         $this->assertSame(['pending', 'approved', 'rejected'], $values(LearningTimeApprovalStatus::cases()));
-        $this->assertSame(['delivered', 'cancelled'], $values(DeliveryStockStatus::cases()));
+        $this->assertSame(['delivered'], $values(DeliveryStockStatus::cases()));
         $this->assertSame(['open', 'settled', 'waived'], $values(RideSettlementStatus::cases()));
         $this->assertSame(['passed', 'rework', 'blocked'], $values(PrintQcStatus::cases()));
         $this->assertSame(['queued', 'sent', 'failed'], $values(TicketMessageDeliveryStatus::cases()));

@@ -11,6 +11,7 @@
 return [
     'error' => [
         'self_approval' => 'No puede aprobar su propio gasto.',
+        'receipt_required' => 'La categoría «:category» exige un recibo. El gasto está guardado, pero no enviado: suba el recibo y envíelo después.',
         'invalid_transition' => 'La acción :action no es posible en el estado :status.',
     ],
     'receipt' => [
@@ -31,6 +32,8 @@ return [
         'push_unsupported' => ':program no acepta gastos como comprobantes: vincule un comprobante existente.',
         'title' => 'Archivo del recibo',
         'hint' => 'Adjunte el recibo al gasto — sin él no se puede verificar ni trasladar después a contabilidad.',
+        'required_hint' => 'Esta categoría exige un recibo. Puede guardar en cualquier momento; el gasto solo se puede enviar con un recibo adjunto (acción «Archivo del recibo» en la lista).',
+        'required_present' => 'Esta categoría exige un recibo: ya está adjunto.',
     ],
     'title' => [
         'index' => 'Gastos',

@@ -1,7 +1,7 @@
 ---
 title: "Relevés de compteurs"
 topic: meter-readings
-version: 1
+version: 2
 keywords:
     - index de compteur
     - relever un compteur
@@ -28,3 +28,5 @@ unité pour suivre l'évolution des consommations par compteur. Un nouveau
 relevé peut être créé directement depuis le contexte d'un actif ; les
 valeurs incohérentes (index inférieur au précédent) sont rejetées à la
 saisie, et l'enregistrement requiert l'autorisation correspondante.
+
+**Photo du compteur :** lors de la saisie, vous pouvez joindre une photo du relevé (sur téléphone, directement avec l’appareil photo). Elle est enregistrée en pièce jointe du relevé ; dans la liste, l’icône d’appareil photo l’ouvre.

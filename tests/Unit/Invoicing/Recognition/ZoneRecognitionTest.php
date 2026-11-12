@@ -63,7 +63,7 @@ final class ZoneRecognitionTest extends TestCase {
         ];
         $extractor = new ZoneExtractor;
 
-        self::assertSame('Rechnungs-Nr: AR20250831AD000815', $extractor->rawText(['page' => 1, 'x' => 0.65, 'y' => 0.09, 'w' => 0.35, 'h' => 0.04], $boxes));
+        self::assertSame('Rechnungs-Nr: AR20250831AD000815', $extractor->hits(['page' => 1, 'x' => 0.65, 'y' => 0.09, 'w' => 0.35, 'h' => 0.04], $boxes)[0]['raw']);
         self::assertSame('AR20250831AD000815', $extractor->extract(['field' => 'invoice_number', 'page' => 1, 'x' => 0.83, 'y' => 0.09, 'w' => 0.17, 'h' => 0.04], $boxes));
         self::assertSame('2025-08-31', $extractor->extract(['field' => 'issue_date', 'page' => 1, 'x' => 0.65, 'y' => 0.12, 'w' => 0.35, 'h' => 0.04], $boxes));
         self::assertSame('1190.00', $extractor->extract(['field' => 'amount_gross', 'page' => 1, 'x' => 0.65, 'y' => 0.79, 'w' => 0.2, 'h' => 0.04], $boxes));
@@ -115,7 +115,7 @@ final class ZoneRecognitionTest extends TestCase {
         $box = ['field' => 'amount_gross', 'page' => 1, 'scope' => 'any', 'anchor' => $split['anchor'], 'anchor_box' => $split['anchor_box']] + $drawn;
         self::assertSame('366.39', $extractor->extract($box, $first));
         self::assertSame('1049.30', $extractor->extract($box, $second));
-        self::assertSame('Gesamt EUR inkl. MwSt. 1.049,30', $extractor->rawText($box, $second));
+        self::assertSame('Gesamt EUR inkl. MwSt. 1.049,30', $extractor->hits($box, $second)[0]['raw']);
 
         // Zeilenmuster liest aus dem Text im Kästchen; über zwei Zeilen trennt ein Zeilenumbruch.
         $pattern = ['pattern' => 'MwSt\.\s+([\d.,]+)'] + $box;
@@ -129,7 +129,7 @@ final class ZoneRecognitionTest extends TestCase {
             ...$first,
         ];
         $wide = ['field' => 'amount_gross', 'page' => 1, 'x' => 0.58, 'y' => 0.73, 'w' => 0.40, 'h' => 0.08];
-        self::assertSame("Gesamt EUR ohne MwSt. 307,89\nGesamt EUR inkl. MwSt. 366,39", $extractor->rawText($wide, $twoRows));
+        self::assertSame("Gesamt EUR ohne MwSt. 307,89\nGesamt EUR inkl. MwSt. 366,39", $extractor->hits($wide, $twoRows)[0]['raw']);
         self::assertSame('366.39', $extractor->extract($wide, $twoRows), 'ohne Muster der letzte Betrag im Kästchen');
         self::assertSame('307.89', $extractor->extract(['pattern' => 'ohne MwSt\.\s+([\d.,]+)'] + $wide, $twoRows));
         self::assertNull($extractor->extract(['pattern' => 'ohne MwSt\..*inkl'] + $wide, $twoRows), '„.“ überspringt keinen Zeilenumbruch');

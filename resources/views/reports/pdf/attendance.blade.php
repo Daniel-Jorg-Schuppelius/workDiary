@@ -42,6 +42,8 @@
                 <th class="right">{{ __('Arbeitstage') }}</th>
                 <th class="right">{{ __('Soll') }}</th>
                 <th class="right">{{ __('Anwesend') }}</th>
+                <th class="right">{{ __('attendance.intermediate.homeoffice') }}</th>
+                <th class="right">{{ __('attendance.intermediate.errand') }}</th>
                 <th class="right">{{ __('Gebucht') }}</th>
                 <th class="right">{{ __('Saldo') }}</th>
             </tr>
@@ -53,11 +55,13 @@
                     <td class="right">{{ $r['workdays'] }}</td>
                     <td class="right">{{ $fmtMin($r['target_minutes']) }}</td>
                     <td class="right">{{ $fmtMin($r['attendance_minutes']) }}</td>
+                    <td class="right">{{ $fmtMin($r['homeoffice_minutes']) }}</td>
+                    <td class="right">{{ $fmtMin($r['errand_minutes']) }}</td>
                     <td class="right">{{ $fmtMin($r['time_entry_minutes']) }}</td>
                     <td class="right {{ $varClass($r['variance']) }}">{{ $fmtMin($r['variance']) }}</td>
                 </tr>
             @empty
-                <tr><td colspan="6" style="text-align:center; padding:12px; color:#888;">{{ __('Keine Daten.') }}</td></tr>
+                <tr><td colspan="8" style="text-align:center; padding:12px; color:#888;">{{ __('Keine Daten.') }}</td></tr>
             @endforelse
             @if (! empty($rows))
                 <tr class="totals">
@@ -65,6 +69,8 @@
                     <td></td>
                     <td class="right">{{ $fmtMin($totals['target']) }}</td>
                     <td class="right">{{ $fmtMin($totals['attendance']) }}</td>
+                    <td class="right">{{ $fmtMin($totals['homeoffice']) }}</td>
+                    <td class="right">{{ $fmtMin($totals['errand']) }}</td>
                     <td class="right">{{ $fmtMin($totals['time_entry']) }}</td>
                     <td class="right {{ $varClass($totals['variance']) }}">{{ $fmtMin($totals['variance']) }}</td>
                 </tr>

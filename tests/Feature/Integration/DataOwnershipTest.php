@@ -86,17 +86,19 @@ final class DataOwnershipTest extends TestCase {
 
         $this->assertSame(0, Task::query()->count(), 'Fremdgeführter Bereich: kein Task-Write.');
         $this->assertSame(1, $result['inbox']);
-        $this->assertSame(
-            1,
-            \App\Models\Integration\IntegrationInboxItem::query()
-                ->where('external_type', 'ticket_ownership_conflict')->count(),
-        );
+        // Führerschaftskonflikt mit „Einmalig übernehmen“ (MVP-1592) statt des früheren Klärfalls.
+        $case = \App\Models\Integration\IntegrationInboxItem::query()->sole();
+        $this->assertSame(['domain' => 'tasks', 'owner' => 'openproject', 'kind' => \App\Plugins\Zammad\Services\ZammadTicketImporter::OWNERSHIP_TASK], $case->ownershipMarker());
+        $this->assertInstanceOf(Task::class, app(\App\Services\Integration\DataOwnershipGuard::class)->accept($case));
+        $this->assertSame(1, Task::query()->count());
     }
 
     public function test_admin_matrix_updates_with_audit(): void {
         $org = Organization::factory()->create();
         app()->instance('currentOrganization', $org);
         $admin = User::factory()->admin()->create(['organization_id' => $org->id]);
+        // Zur Wahl steht nur ein aktives Plugin, das Tickets schreibt (MVP-1592).
+        \App\Models\Platform\PluginSetting::create(['organization_id' => $org->id, 'plugin_id' => 'zammad', 'enabled' => true, 'settings' => []]);
 
         $this->actingAs($admin)->get(route('admin.data-ownership.index'))
             ->assertOk()

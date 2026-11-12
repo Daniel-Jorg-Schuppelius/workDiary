@@ -1,7 +1,7 @@
 ---
 title: "Time clock & attendance"
 topic: attendance.manage
-version: 1
+version: 2
 keywords:
     - clock in
     - clock out
@@ -50,3 +50,5 @@ is locked for 15 minutes.
 **Evening reminder:** If you have been clocked in for at least eight hours at
 7 p.m., you get a reminder – once per clock-in. Anyone starting a shift in the
 evening is not reminded.
+
+**Correcting a clocking:** On "Today" the pencil icon in the clocking list opens the correction dialog — start, end, break and a reason. The correction runs as a request through approval; if your organisation allows self-correction, it applies immediately. Without a network it is stored and transferred later. If somebody changed the clocking meanwhile, your correction does not overwrite it: online you get a notice, offline a conflict under "Offline changes".

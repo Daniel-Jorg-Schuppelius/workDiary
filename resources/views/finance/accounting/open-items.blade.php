@@ -24,7 +24,7 @@
         <div role="tablist" class="tabs tabs-box w-fit">
             @foreach (\App\Enums\Finance\OpenItemDirection::cases() as $tab)
                 <a role="tab" class="tab {{ $direction === $tab ? 'tab-active' : '' }}"
-                   href="{{ route('finance.accounting.open-items.index', ['direction' => $tab->value]) }}">
+                   href="{{ route('finance.accounting.open-items.index', array_filter(['direction' => $tab->value, 'status' => $selectedStatus?->value])) }}">
                     {{ $tab->label() }}
                 </a>
             @endforeach
@@ -35,6 +35,16 @@
                 <x-kpi-tile :label="__('accounting.open_items.bucket.' . $bucket)" :value="$buckets[$bucket]" />
             @endforeach
         </div>
+
+        <x-filter-bar :action="route('finance.accounting.open-items.index')" :reset="route('finance.accounting.open-items.index', ['direction' => $direction->value])">
+            <input type="hidden" name="direction" value="{{ $direction->value }}">
+            <select name="status" class="select select-sm select-bordered w-56 shrink-0" aria-label="{{ __('accounting.ledger.column.status') }}">
+                <option value="">{{ __('accounting.dispute.filter_all') }}</option>
+                @foreach ($statuses as $status)
+                    <option value="{{ $status->value }}" @selected($selectedStatus === $status)>{{ $status->label() }}</option>
+                @endforeach
+            </select>
+        </x-filter-bar>
 
         <x-table scroll="flex" :zebra="true">
             <x-slot:head>
@@ -68,6 +78,9 @@
                         @if ($pendingDraft)
                             <x-status-badge tone="info" size="xs" class="ml-1">{{ __('accounting.open_items.awaiting_approval') }}</x-status-badge>
                         @endif
+                        @if ($item->status === \App\Enums\Finance\OpenItemStatus::Disputed && $item->disputed_at)
+                            <div class="text-xs text-base-content/70">{{ __('accounting.dispute.since', ['date' => $item->disputed_at->fdate(), 'reason' => (string) $item->dispute_note]) }}</div>
+                        @endif
                     </td>
                     <td class="text-right">
                         <div class="flex justify-end gap-1">
@@ -84,6 +97,18 @@
                                             data-entry-modal-trigger
                                             :href="route('finance.accounting.open-items.settle-form', $item)"
                                             :label="__('accounting.open_items.action.settle')" />
+                            @endif
+                            @if ($canPost && $item->status === \App\Enums\Finance\OpenItemStatus::Disputed)
+                                <x-action-form :action="route('finance.accounting.open-items.dispute.withdraw', $item)" method="POST"
+                                               :confirm="__('accounting.dispute.confirm.withdraw')">
+                                    <x-icon-btn icon="undo" size="xs" tone="ghost" type="submit"
+                                                :label="__('accounting.dispute.action.withdraw')" />
+                                </x-action-form>
+                            @elseif ($canPost && $item->status->isOpen())
+                                <x-icon-btn icon="gavel" size="xs" tone="ghost"
+                                            data-entry-modal-trigger
+                                            :href="route('finance.accounting.open-items.dispute-form', $item)"
+                                            :label="__('accounting.dispute.action.mark')" />
                             @endif
                         </div>
                     </td>

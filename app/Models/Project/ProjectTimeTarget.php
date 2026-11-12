@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Models\Project;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\Facility\Site;
 use App\Models\Platform\User;
 use Database\Factories\Project\ProjectTimeTargetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -30,7 +29,6 @@ use Illuminate\Support\Carbon;
  * @property int $organization_id
  * @property int $project_id
  * @property int|null $user_id
- * @property int|null $site_id
  * @property int|null $weekday ISO 1–7
  * @property Carbon|null $specific_date
  * @property int $target_minutes
@@ -50,7 +48,7 @@ class ProjectTimeTarget extends Model {
     use HasSqid;
 
     protected $fillable = [
-        'organization_id', 'project_id', 'user_id', 'site_id', 'weekday', 'specific_date',
+        'organization_id', 'project_id', 'user_id', 'weekday', 'specific_date',
         'target_minutes', 'valid_from', 'valid_until', 'note', 'created_by', 'updated_by',
     ];
 
@@ -70,11 +68,6 @@ class ProjectTimeTarget extends Model {
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
-    }
-
-    /** @return BelongsTo<Site, $this> */
-    public function site(): BelongsTo {
-        return $this->belongsTo(Site::class);
     }
 
     public function isProjectDefault(): bool {

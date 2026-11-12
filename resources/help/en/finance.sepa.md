@@ -1,7 +1,7 @@
 ---
 title: "SEPA outgoing payments"
 topic: finance.sepa
-version: 1
+version: 2
 keywords:
     - bulk transfer
     - payment run
@@ -66,3 +66,7 @@ A direct debit can refer to an open invoice of the mandate's customer:
 “Collect by direct debit” on the invoice opens the collection with amount and
 reference prefilled. With an invoice reference, the liquidity forecast counts
 the amount only once — in the payment run instead of also as an open receivable.
+
+## Expiry after 36 months
+
+Under the SEPA rulebook a mandate lapses if no collection has been submitted for 36 months. The payment run already skips such a mandate; the daily deadline run also sets it to **Expired** and records this in the log. For further collections, obtain a new mandate.

@@ -12,10 +12,14 @@ declare(strict_types=1);
 
 namespace App\Plugins\Contracts;
 
+use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Support\Ui\UiAction;
 
 /** Verbinden einer Quelle des Cloud-Belegeingangs in der Verwaltung (MVP-1041). */
 interface IntakeSourceConnector {
-    /** Eintrag im Menü „Neu“ des Cloud-Belegeingangs. */
-    public function intakeConnectAction(): UiAction;
+    /**
+     * Eintrag im Menü „Neu“ des Cloud-Belegeingangs; mit Verbindung die erneute
+     * Anmeldung genau dieser Verbindung (abgelaufen, blockiert, deaktiviert).
+     */
+    public function intakeConnectAction(?CloudDocumentConnection $connection = null): UiAction;
 }

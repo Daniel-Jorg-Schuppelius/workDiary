@@ -124,6 +124,7 @@ return [
         'dismiss' => 'Verwerfen',
         'decide' => 'Entscheiden',
         'import' => 'CSV-Import',
+        'admit_request' => 'Aufnahmeantrag erfassen',
     ],
     'label' => [
         'yes' => 'Ja',
@@ -183,6 +184,7 @@ return [
         'no_suggestion' => 'Keine eindeutige Zielgruppe gefunden — bitte wählen oder nur beenden.',
         'member_no' => 'Leer lassen für die nächste freie Nummer.',
         'discipline' => 'Für Graduierungsordnungen (z. B. Judo, Karate); sonst leer.',
+        'request_only' => 'Diese Gruppe nimmt nur über einen Antrag mit Freigabe auf. Kriterien und Obergrenze prüft die Freigabe.',
     ],
     'confirm' => [
         'revoke_guardian' => 'Vertretung widerrufen? Die Zuordnung bleibt als Nachweis erhalten.',
@@ -245,12 +247,14 @@ return [
         'proposal_decided' => 'Der Vorschlag ist bereits entschieden.',
         'group_foreign' => 'Die Zielgruppe gehört nicht zu dieser Organisation.',
         'age_range' => 'Das Höchstalter darf nicht unter dem Mindestalter liegen.',
+        'admission_by_application' => 'Diese Gruppe nimmt nur über einen Antrag mit Freigabe auf.',
     ],
     'note' => [
         'member_left' => 'Austritt',
         'membership_ended' => 'Zuordnung beendet',
         'criteria_met_again' => 'Kriterien wieder erfüllt',
         'proposal_confirmed' => 'Wechsel bestätigt',
+        'self_request' => 'Antrag aus dem Mitgliederbereich',
     ],
     // Vereinstermine (MVP-843)
     'events' => [
@@ -478,6 +482,8 @@ return [
             'delivery_failed' => 'Zustellfehler',
             'delivered' => 'zugestellt',
             'recipient_account' => 'Konto',
+            'group_requested' => 'Antrag offen',
+            'group_since' => 'seit :date',
         ],
         'kind' => [
             'reminder' => 'Erinnerung',
@@ -490,6 +496,7 @@ return [
             'cancel' => 'Abmelden',
             'attendance' => 'Meine Anwesenheit',
             'back' => 'Zu Mein Verein',
+            'group_request' => 'Aufnahme beantragen',
         ],
         'card' => [
             'upcoming' => 'Nächste Termine',
@@ -497,11 +504,13 @@ return [
             'attendance' => 'Bestätigte Anwesenheit',
             'changes' => 'Änderungen',
             'deliveries' => 'Zustellprotokoll',
+            'groups' => 'Gruppen',
         ],
         'hint' => [
             'upcoming' => 'Alle Termine, für die eine Anmeldung möglich ist — Termine der eigenen Gruppen erscheinen ohne persönliche Einladung.',
             'attendance' => 'Bestätigte Zeit im Zeitraum :from – :to (Kopfzeile).',
             'changes' => 'Verschiebungen, Absagen und Nachrücken der letzten Termine. Eine Nachricht gilt nicht als gelesen.',
+            'groups' => 'Diese Gruppen nehmen auf Antrag auf; die Gruppenleitung entscheidet.',
         ],
         'empty' => [
             'upcoming' => 'Keine anstehenden Termine.',
@@ -510,11 +519,13 @@ return [
         ],
         'confirm' => [
             'cancel' => 'Von „:title“ abmelden? Ein frei werdender Platz geht an die Warteliste.',
+            'group_request' => 'Aufnahme in „:group“ beantragen? Die Gruppenleitung entscheidet über den Antrag.',
         ],
         'flash' => [
             'registered' => 'Für „:title“ angemeldet.',
             'waitlisted' => 'Für „:title“ auf die Warteliste gesetzt.',
             'cancelled' => 'Von „:title“ abgemeldet.',
+            'group_requested' => 'Aufnahme in „:group“ beantragt.',
         ],
     ],
     // Graduierungen (MVP-846)
@@ -725,6 +736,7 @@ return [
             'request' => 'Zur Prüfung anmelden',
             'certificate' => 'Bescheinigung (PDF)',
             'open_event' => 'Zum Termin',
+            'release' => 'Ergebnisse freigeben',
         ],
         'card' => [
             'offer' => 'Prüfungsangebot',
@@ -739,6 +751,8 @@ return [
             'exception' => 'Ausnahme',
             'review_required' => 'Überprüfung nötig',
             'checked_at' => 'geprüft :date',
+            'released_at' => 'Ergebnisse freigegeben am :date.',
+            'result_pending' => 'Ergebnis folgt',
         ],
         'empty' => [
             'offers' => 'Keine Prüfungsangebote im Zeitraum.',
@@ -760,6 +774,7 @@ return [
         'confirm' => [
             'reject' => 'Kandidat ablehnen? Ein belegter Platz wird freigegeben.',
             'clear_review' => 'Überprüfung abschließen? Die Zulassung bleibt bestehen.',
+            'release' => 'Ergebnisse jetzt freigeben? Danach sehen Prüflinge und Vertretungen ihr Ergebnis; Ergebnisse und Nachweise sind eingefroren.',
         ],
         'flash' => [
             'offer_saved' => 'Prüfungsangebot gespeichert.',
@@ -772,6 +787,7 @@ return [
             'result_saved' => 'Ergebnis erfasst.',
             'self_admitted' => 'Für „:title“ zugelassen und angemeldet.',
             'self_requested' => 'Anfrage für „:title“ gestellt — die Leitung prüft die Zulassung.',
+            'results_released' => 'Ergebnisse freigegeben.',
         ],
         'error' => [
             'no_active_version' => 'Die Ordnung hat keine aktive Regelversion.',
@@ -781,6 +797,9 @@ return [
             'grades_required' => 'Mindestens einen Zielgrad wählen.',
             'no_requirement' => 'Für den Zielgrad sind in der Regelversion keine Voraussetzungen hinterlegt.',
             'no_target_grade' => 'Kein angebotener Grad liegt über dem aktuellen Grad.',
+            'released' => 'Die Ergebnisse dieser Prüfung sind freigegeben — Änderungen nur noch über Überprüfung oder Widerruf des Grades.',
+            'release_open_candidates' => 'Entscheiden Sie zuerst alle Kandidaten: Offene Anfragen und Zulassungen ohne Ergebnis verhindern die Freigabe.',
+            'release_no_results' => 'Es ist noch kein Ergebnis erfasst.',
         ],
         'pdf' => [
             'kind' => 'Graduierungsbescheinigung',

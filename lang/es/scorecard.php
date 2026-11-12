@@ -16,6 +16,13 @@ return [
     'title' => 'Scorecards de proveedores',
     'overview_subtitle' => 'Clasificación por puntuación global de compras, almacén, reclamaciones e ISMS (definición v:version).',
     'apply' => 'Mostrar',
+    'weights' => [
+        'action' => 'Ponderaciones',
+        'title' => 'Ponderación de la puntuación global',
+        'description' => 'Peso por indicador en porcentaje. La suma no tiene que ser 100: los indicadores sin datos se omiten y los pesos restantes se reparten proporcionalmente. Un campo vacío restablece el valor predeterminado.',
+        'saved' => 'Ponderación guardada.',
+        'error_all_zero' => 'Al menos un indicador necesita un peso superior a cero.',
+    ],
     'weights_hint' => 'Ponderación de la puntuación global: puntualidad :ontime %, tasa de reclamaciones :complaints %, calidad ISMS :quality %, evolución de precios :price %, comportamiento ante reclamaciones de regreso :recourse %. Los indicadores no disponibles se omiten y las ponderaciones se renormalizan.',
     'empty_ranking' => 'Aún no hay proveedores con datos de compra, reclamación o ISMS evaluables en el periodo.',
 

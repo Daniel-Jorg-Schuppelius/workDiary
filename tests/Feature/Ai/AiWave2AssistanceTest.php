@@ -405,6 +405,35 @@ class AiWave2AssistanceTest extends TestCase {
         $this->assertStringNotContainsString('Neubau', (string) json_encode($sent->facts));
     }
 
+    public function test_plan_actual_explanation_can_be_regenerated_with_a_chosen_connection(): void {
+        AiCapabilitySetting::factory()->create([
+            'organization_id' => $this->organization->id,
+            'capability' => PlanActualExplainService::CAPABILITY,
+            'enabled' => true,
+            'allowed_connection_ids' => [$this->cloud->id, $this->local->id],
+            'default_connection_id' => $this->cloud->id,
+            'allow_user_choice' => true,
+        ]);
+        $project = Project::factory()->create(['organization_id' => $this->organization->id, 'time_budget' => 600]);
+        \App\Models\Time\TimeEntry::query()->create([
+            'organization_id' => $this->organization->id, 'project_id' => $project->id, 'user_id' => $this->admin->id,
+            'date' => now()->toDateString(), 'minutes' => 90, 'kind' => \App\Enums\TimeEntry\TimeEntryKind::Work->value,
+        ]);
+        $this->fake->textResponse = 'Der Ist-Aufwand liegt unter dem Plan.';
+        $range = ['from' => now()->startOfMonth()->toDateString(), 'to' => now()->endOfMonth()->toDateString()];
+
+        $this->actingAs($this->admin)->from(route('reports.economics'))->post(route('ai.assist.plan-actual', $project), $range)->assertSessionHas('success');
+        $this->actingAs($this->admin)->get(route('reports.economics', $range))->assertOk()
+            ->assertSee('data-ai-connection-choice', false)
+            ->assertSee(e(route('ai.assist.plan-actual', [$project] + $range)), false);
+
+        // Die Komponente sendet nur Verbindung und Fähigkeit; der Zeitraum steht in der Adresse.
+        $this->actingAs($this->admin)->from(route('reports.economics'))
+            ->post(route('ai.assist.plan-actual', [$project] + $range), ['connection_id' => $this->local->sqid, 'capability' => PlanActualExplainService::CAPABILITY])
+            ->assertSessionHas('success');
+        $this->assertSame((int) $this->local->id, (int) \App\Models\Ai\AiTextSuggestion::query()->withoutGlobalScopes()->latest('id')->firstOrFail()->connection_id);
+    }
+
     public function test_plan_actual_explanation_needs_a_plan(): void {
         $this->enable(PlanActualExplainService::CAPABILITY);
         // Ohne gepflegtes Zeitbudget/Budget (DB-Default 0) gibt es keinen Plan.

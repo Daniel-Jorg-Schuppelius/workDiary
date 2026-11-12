@@ -12,12 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Privacy;
 
-use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Concerns\{HasOptions, HasTransitions};
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
-/** Bearbeitungsstand einer Betroffenenanfrage. */
-enum DataSubjectRequestStatus: string implements HasLabel {
+/** Bearbeitungsstand einer Betroffenenanfrage (Feature 043; Rückfrage und Rücknahme MVP-1620). */
+enum DataSubjectRequestStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
+    use HasTransitions;
 
     case Intake = 'intake';                 // eingegangen, noch nicht geprüft
     case IdentityCheck = 'identity_check';  // Identitätsprüfung läuft
@@ -36,6 +37,19 @@ enum DataSubjectRequestStatus: string implements HasLabel {
             self::Completed => __('enums.privacy.data_subject_request_status.completed'),
             self::Rejected => __('enums.privacy.data_subject_request_status.rejected'),
             self::Withdrawn => __('enums.privacy.data_subject_request_status.withdrawn'),
+        };
+    }
+
+    /** @return list<self> */
+    public function allowedTransitions(): array {
+        $closing = [self::Completed, self::Rejected, self::Withdrawn];
+
+        return match ($this) {
+            self::Intake => [self::IdentityCheck, self::InProgress, self::AwaitingInfo, ...$closing],
+            self::IdentityCheck => [self::InProgress, self::AwaitingInfo, ...$closing],
+            self::InProgress => [self::AwaitingInfo, ...$closing],
+            self::AwaitingInfo => [self::IdentityCheck, self::InProgress, ...$closing],
+            self::Completed, self::Rejected, self::Withdrawn => [],
         };
     }
 

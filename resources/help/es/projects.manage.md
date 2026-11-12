@@ -1,7 +1,7 @@
 ---
 title: "Gestionar proyectos"
 topic: projects.manage
-version: 6
+version: 7
 keywords:
     - crear proyecto
     - gestión de proyectos
@@ -124,3 +124,5 @@ margen de contribución y, si hay un presupuesto, su consumo en el periodo
 elegido; un clic abre el análisis de rentabilidad con las mismas cifras.
 Debajo aparecen los plazos de garantía y los avales del proyecto. Las tareas
 importadas indican su plugin, por ejemplo «Desde GitHub Issues».
+
+**Color del proyecto:** arriba a la derecha del diálogo del proyecto elige el color que marca el proyecto en listas, tiempos y la vista mensual.

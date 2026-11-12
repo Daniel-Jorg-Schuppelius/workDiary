@@ -133,6 +133,17 @@ return [
         'open_times' => [
             'description' => 'Abrechenbare Zeiten, die noch in keiner Rechnung stecken.',
         ],
+        'finance_movements' => [
+            'label' => 'Finanzbewegungen',
+            'description' => 'Offene Zuordnungen und die jüngsten Bewegungen aus Kontoauszügen, Firefly III und Shopkonten — bearbeitet wird in der Liste der Quelle.',
+            'empty' => 'Keine Quelle für Finanzbewegungen eingerichtet.',
+            'unassigned' => ':source: ohne Zuordnung',
+            'latest' => 'Letzte :days Tage',
+            'none_latest' => 'Keine Bewegungen in diesem Zeitraum.',
+            'open' => 'offen',
+            'no_counterparty' => 'Ohne Gegenpartei',
+            'source' => ['bank' => 'Kontoauszüge'],
+        ],
         'open_items' => [
             'description' => 'Offene Forderungen und Verbindlichkeiten samt überfälligem Anteil.',
             'feed_link' => 'Belegfluss →',

@@ -57,12 +57,12 @@
 
     <h2>{{ __('Qualitätsreihe') }} <small>({{ __('Ereignisse je Woche') }})</small></h2>
     <table>
-        <thead><tr><th>{{ __('Woche') }}</th><th class="num">{{ __('Wiederöffnungen') }}</th><th class="num">{{ __('Übersteuerungen') }}</th></tr></thead>
+        <thead><tr><th>{{ __('Woche') }}</th><th class="num">{{ __('Wiederöffnungen') }}</th><th class="num">{{ __('Übersteuerungen') }}</th><th class="num">{{ __('DoD-Abweichungen') }}</th><th class="num">{{ __('DoD-Abweichungsquote') }}</th></tr></thead>
         <tbody>
             @forelse ($quality->data['weeks'] as $week => $row)
-                <tr><td>{{ $week }}</td><td class="num">{{ $row['reopened'] }}</td><td class="num">{{ $row['overrides'] }}</td></tr>
+                <tr><td>{{ $week }}</td><td class="num">{{ $row['reopened'] }}</td><td class="num">{{ $row['overrides'] }}</td><td class="num">{{ $row['dod_overrides'] }}</td><td class="num">{{ $row['dod_rate'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['dod_rate'], 1) . ' %' : '—' }}</td></tr>
             @empty
-                <tr><td colspan="3">{{ __('Keine Qualitätsereignisse.') }}</td></tr>
+                <tr><td colspan="5">{{ __('Keine Qualitätsereignisse.') }}</td></tr>
             @endforelse
         </tbody>
     </table>

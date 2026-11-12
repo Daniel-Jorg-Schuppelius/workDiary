@@ -9,7 +9,14 @@
  */
 
 return [
+    'dsr_extension' => [
+        'closed' => 'The deadline can only be extended on an open request.',
+        'first_deadline_passed' => 'The first deadline has expired. An extension must be communicated to the person within that deadline and is no longer possible.',
+        'not_later' => 'The new deadline must be later than the current one.',
+        'too_late' => 'The deadline can be extended by no more than two further months, i.e. until :date.',
+    ],
     'retention_area' => [
+        'privacy_incidents' => 'Data breaches (closed)',
         'incoming_invoices_rejected' => 'Rejected incoming invoices',
         'audit_logs' => 'Audit log',
         'exports' => 'Payroll and time exports',
@@ -74,5 +81,16 @@ return [
         'dpia_missing' => '“:name” requires a DPIA but has no completed DPIA',
         'tom_missing' => '“:name” without assigned TOMs',
         'tom_proof_expiring' => 'TOM evidence is expiring or has expired: :names',
+    ],
+    'legal_region' => [
+        'label' => 'Legal region',
+        'hint' => 'Determines the retention periods of the deletion proposals and the details in the procedure documentation. A change applies to future deletion proposals.',
+    ],
+    'tom' => [
+        'implementation_status' => 'Implementation status',
+        'protection_level' => 'Protection requirement',
+        'protection_level_none' => '— not set —',
+        'state_save' => 'Save status',
+        'state_saved' => 'Implementation status and protection requirement saved.',
     ],
 ];

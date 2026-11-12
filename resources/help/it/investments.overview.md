@@ -1,7 +1,7 @@
 ---
 title: "Pianificazione degli investimenti"
 topic: investments.overview
-version: 3
+version: 4
 keywords:
     - richiesta di investimento
     - richiesta di budget
@@ -67,3 +67,14 @@ contabilità.
 **Valutazione successiva:** dopo la conclusione o l'interruzione
 vengono documentati il beneficio effettivo, l'economicità, le lessons
 learned e le misure successive.
+
+**Vita utile e fornitore:** ogni variante riporta una vita utile in anni;
+compare nel confronto e precompila il passaggio a cespite. Quando un asset
+viene collegato alla pratica o la pratica viene conclusa, l'asset riprende il
+fornitore della variante raccomandata come «Acquistato da», se non ne ha
+ancora uno.
+
+**Filtrare l'elenco:** l'elenco degli investimenti filtra anche per periodo,
+responsabile, centro di costo, stato del budget (stato della richiesta più
+recente), urgenza e nota di rischio. Il rapporto può essere esportato anche in
+PDF.

@@ -15,6 +15,8 @@ namespace App\Http\Requests\OpenIssue;
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueVisibility};
 use App\Http\Controllers\Diary\OpenIssueController;
 use App\Http\Requests\BaseFormRequest;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Models\Platform\User;
 
 /**
  * Validierung für das Anlegen eines offenen Punkts. `subject_id` bleibt
@@ -24,6 +26,11 @@ use App\Http\Requests\BaseFormRequest;
  * Controller (OpenIssuePolicy).
  */
 class StoreOpenIssueRequest extends BaseFormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> Der Anlage-Dialog sendet die Sqid der zuständigen Person. */
+    protected array $sqidFields = ['assignee_user_id' => User::class];
+
     /** @return array<string, mixed> */
     public function rules(): array {
         return [

@@ -12,6 +12,7 @@ namespace App\Models\Protocol;
 
 use App\Casts\IpAddressCast;
 use App\Enums\Protocol\{ProtocolSignatureMethod, ProtocolSignatureRole};
+use App\Models\Attachments\Attachment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -24,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $signed_at
  * @property ProtocolSignatureMethod $method
  * @property string|null $signature_image_path
+ * @property int|null $signature_attachment_id
  * @property \CommonToolkit\ValueObjects\IpAddress|null $ip
  * @property string|null $user_agent
  * @property string $hash
@@ -37,6 +39,7 @@ class ProtocolSignature extends Model {
         'signed_at',
         'method',
         'signature_image_path',
+        'signature_attachment_id',
         'ip',
         'user_agent',
         'hash',
@@ -52,5 +55,16 @@ class ProtocolSignature extends Model {
     /** @return BelongsTo<Protocol, $this> */
     public function protocol(): BelongsTo {
         return $this->belongsTo(Protocol::class);
+    }
+
+    /**
+     * Unterschriftsbild bzw. Scan der Papierabnahme (MVP-1572). Nur dieser
+     * Anhang wird angezeigt und gedruckt — nie `signature_image_path`, das
+     * früher Werte aus der Eingabe trug.
+     *
+     * @return BelongsTo<Attachment, $this>
+     */
+    public function signatureAttachment(): BelongsTo {
+        return $this->belongsTo(Attachment::class, 'signature_attachment_id');
     }
 }

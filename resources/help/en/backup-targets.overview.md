@@ -1,7 +1,7 @@
 ---
 title: "Cloud backup targets"
 topic: backup-targets.overview
-version: 2
+version: 3
 keywords:
     - offsite backup
     - data backup
@@ -33,3 +33,7 @@ WorkDiary backs up the whole installation encrypted to Dropbox, OneDrive, Google
 **Keys:** BACKUP_MASTER_KEY (ENV, store offline!) is the only regular decryption path; an optional recovery key pair decrypts in an emergency. Without a recovery key the page warns permanently — losing the master key renders all backups useless.
 
 **Operations:** The nightly run creates a snapshot (DB dump + files), encrypts it, uploads parts resumably and applies retention (7 daily / 4 weekly / 12 monthly; legal hold protects individual generations). A weekly spot-check verifies signature and hashes; the restore test restores into an isolated directory and logs RPO/RTO — until the first green test a generation counts as “backed up, restore not yet confirmed”.
+
+## Sign-in expired or target switched off
+
+If the provider rejects the sign-in during a backup or verify run, the target shows **Re-authentication required**; after repeated errors up to the switch-off threshold, **Disabled**. The target then takes part in no further run until you connect it again via **Re-authenticate**.

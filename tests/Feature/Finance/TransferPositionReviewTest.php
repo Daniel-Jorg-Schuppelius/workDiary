@@ -199,6 +199,28 @@ class TransferPositionReviewTest extends TestCase {
         $this->assertNotNull($position->ai_assisted_at);
     }
 
+    public function test_ki_vorschlag_laesst_sich_mit_gewaehlter_verbindung_neu_erzeugen(): void {
+        $this->enableAi();
+        $first = AiProviderConnection::query()->where('organization_id', $this->organization->id)->sole();
+        $second = AiProviderConnection::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Zweitverbindung']);
+        AiCapabilitySetting::query()->where('organization_id', $this->organization->id)
+            ->update(['allowed_connection_ids' => json_encode([$first->id, $second->id]), 'default_connection_id' => $first->id, 'allow_user_choice' => true]);
+        $transfer = $this->confirmedTransfer();
+        $position = $transfer->positions->first();
+
+        $this->post(route('finance.transfers.positions.suggest', [$transfer, $position]))->assertSessionHas('success');
+        $suggestion = AiTextSuggestion::query()->where('subject_id', $position->id)->firstOrFail();
+        $this->get(route('finance.transfers.show', $transfer))->assertOk()
+            ->assertSee('data-ai-connection-choice', false)
+            ->assertSee(route('finance.transfers.positions.suggest', [$transfer, $position]), false);
+
+        $this->post(route('finance.transfers.positions.suggest', [$transfer, $position]), [
+            'connection_id' => $second->sqid,
+            'capability' => $suggestion->capability,
+        ])->assertSessionHas('success');
+        $this->assertSame((int) $second->id, (int) AiTextSuggestion::query()->where('subject_id', $position->id)->firstOrFail()->connection_id);
+    }
+
     public function test_korrektur_erzeugt_eigenen_nachweis_mit_verweis(): void {
         $this->actingAs($this->orgAdmin());
         $transfer = $this->confirmedTransfer();

@@ -83,6 +83,7 @@ final class InspectionOrderTest extends TestCase {
         $this->assertSame(AssetInspectionOrderStatus::Offered, $order->fresh()?->status);
 
         $this->actingAs($this->admin)->post(route('asset-compliance.orders.decide', $order), ['decision' => 'accept'])->assertSessionHas('success');
+        $this->assertSame(AssetInspectionScheduleStatus::InProgress, $this->schedule->fresh()?->status, 'Angenommener Auftrag setzt den Termin in Arbeit (MVP-1620).');
         $this->logout();
 
         $item = $order->items()->sole();
@@ -130,6 +131,19 @@ final class InspectionOrderTest extends TestCase {
 
         $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($user)->get(route('asset-compliance.orders.create'))->assertForbidden();
+    }
+
+    public function test_cancel_after_acceptance_releases_the_schedule_in_progress(): void {
+        $this->actingAs($this->admin)->post(route('asset-compliance.orders.store'), [
+            'title' => 'x', 'supplier_id' => $this->provider->sqid, 'recipient_email' => 'labor@kalib.test', 'schedule_ids' => [$this->schedule->sqid],
+        ]);
+        $order = AssetInspectionOrder::query()->sole();
+        $order->forceFill(['status' => AssetInspectionOrderStatus::Offered, 'offer_amount' => '100', 'offer_planned_on' => now()->addDay()->toDateString()])->save();
+        app(InspectionOrderService::class)->decide($order, true, $this->admin);
+        $this->assertSame(AssetInspectionScheduleStatus::InProgress, $this->schedule->fresh()?->status);
+
+        $this->actingAs($this->admin)->post(route('asset-compliance.orders.cancel', $order))->assertSessionHas('success');
+        $this->assertSame(AssetInspectionScheduleStatus::Planned, $this->schedule->fresh()?->status);
     }
 
     /** Sicherheitsaudit 2026-10-04, pub-3: der Link endet mit der Mandantensperre. */

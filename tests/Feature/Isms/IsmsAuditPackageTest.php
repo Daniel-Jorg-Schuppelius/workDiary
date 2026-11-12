@@ -201,6 +201,37 @@ class IsmsAuditPackageTest extends TestCase {
             ->assertSessionHasErrors('file_hash');
     }
 
+    /** MVP-1619 (H2-02): Entwürfe sind änderbar und verwerfbar, finalisierte Pakete nicht. */
+    public function test_draft_can_be_edited_and_discarded_but_finalized_package_cannot(): void {
+        Storage::fake(AuditPackageService::DISK);
+        $admin = User::factory()->admin()->create();
+        $scope = $this->makeScope($admin);
+        $draft = $this->makePackage($admin, $scope);
+
+        $this->actingAs($admin)->get(route('isms.packages.edit', $draft))->assertOk();
+        $this->actingAs($admin)->put(route('isms.packages.update', $draft), [
+            'scope' => $scope->sqid,
+            'title' => 'Überwachungsaudit 2027',
+            'as_of_date' => '2027-03-31',
+            'norm' => '',
+            'edition' => '',
+        ])->assertRedirect(route('isms.packages.index'))->assertSessionHasNoErrors();
+        $draft->refresh();
+        $this->assertSame('Überwachungsaudit 2027', $draft->title);
+        $this->assertSame('2027-03-31', $draft->as_of_date->toDateString());
+        $this->assertNull($draft->norm);
+
+        $this->actingAs($admin)->delete(route('isms.packages.destroy', $draft))->assertRedirect(route('isms.packages.index'));
+        $this->assertSoftDeleted('isms_audit_packages', ['id' => $draft->id]);
+
+        $finalized = $this->makeFinalizedPackage($admin);
+        $this->actingAs($admin)->get(route('isms.packages.edit', $finalized))->assertForbidden();
+        $this->actingAs($admin)->from(route('isms.packages.index'))
+            ->delete(route('isms.packages.destroy', $finalized))
+            ->assertSessionHasErrors('status');
+        $this->assertNotSoftDeleted('isms_audit_packages', ['id' => $finalized->id]);
+    }
+
     public function test_token_requires_finalized_package(): void {
         $admin = User::factory()->admin()->create();
         $scope = $this->makeScope($admin);

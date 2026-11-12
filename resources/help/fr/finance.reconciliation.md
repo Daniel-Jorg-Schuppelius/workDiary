@@ -1,7 +1,7 @@
 ---
 title: "Rapprochement des paiements"
 topic: finance.reconciliation
-version: 3
+version: 5
 keywords:
     - rapprochement bancaire
     - importer un relevé
@@ -53,10 +53,30 @@ frais comme remboursée.
 
 ## Cas pratiques
 
+- **Rechercher une pièce :** si aucune suggestion ne convient, **Rechercher
+  une pièce** sur le mouvement ouvert affiche la liste de toutes les factures
+  ouvertes, des frais approuvés et des comptes clients. Vous choisissez la
+  pièce, le montant (inférieur = paiement partiel, supérieur = trop-perçu),
+  éventuellement le type et une note.
+- **Mouvement sans pièce :** avec la comptabilité locale, vous comptabilisez
+  des frais bancaires, des intérêts, un prélèvement privé ou une compensation
+  directement banque à compte général avec **Comptabiliser sur un compte
+  général**, éventuellement avec code de taxe (le mouvement est le montant
+  TTC) et centre de coûts. Le mouvement est ensuite considéré comme mis de
+  côté et comptabilisé. **Comptabiliser sur le compte d'attente** et le
+  virement interne restent disponibles.
 - **Escompte :** un paiement insuffisant dans la limite de la tolérance
-  d'escompte (3 % par défaut) est considéré comme un paiement complet.
-- **Tolérance de centimes :** des écarts d'arrondi jusqu'à 2 centimes
-  n'empêchent pas une suggestion.
+  d'escompte est considéré comme un paiement complet avec escompte. Si la
+  facture comporte ses propres conditions d'escompte, leur montant et leur
+  délai s'appliquent ; sinon la tolérance d'escompte de l'organisation (3 % par
+  défaut).
+- **Tolérance de centimes :** des écarts d'arrondi jusqu'à la tolérance de
+  centimes de l'organisation (0,02 par défaut) n'empêchent pas une suggestion.
+  Vous réglez les deux tolérances dans les paramètres de l'organisation sous
+  **Rapprochement bancaire**.
+- **Frais :** les prélèvements ne sont proposés pour le remboursement que de
+  frais validés payés à titre privé ; carte d'entreprise, caisse et virement
+  bancaire sont des fonds de l'entreprise.
 - **Paiement partiel/trop-perçu :** ils sont gérés comme un type
   d'affectation distinct ; en cas de paiement partiel, la facture reste
   ouverte.

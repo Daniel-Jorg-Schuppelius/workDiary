@@ -1,7 +1,7 @@
 ---
 title: "Learning platform"
 topic: learning.overview
-version: 6
+version: 8
 keywords:
     - e-learning
     - LMS
@@ -53,6 +53,31 @@ a procedure; it is started from a diary entry.
 otherwise block foreign pages silently inside the course, so the editor
 rejects a non-allowed host visibly and immediately. Allowed hosts are
 maintained in the settings.
+
+**A video can carry a required share.** In the field "Minimum watched (%)"
+you define how much of an uploaded video must have been watched before the
+unit can be completed. Only sections that were actually played count —
+skipping ahead and jumping do not, and the same passage counts once. The
+status is shown below the video ("Watched: 40 % – required: 80 %");
+"Mark as done" stays locked until then. Only the share reached per person and
+video is stored, no playback trace. A required share cannot be set for
+external embeds because their progress cannot be measured; access without a
+user account does not play videos and cannot complete such units.
+
+When a video is selected, the editor states the **expected storage**: the
+original plus the converted renditions. Everything counts towards the storage
+quota — so the order of magnitude is known before the upload, not only at the
+quota.
+
+The unit kinds **Procedure**, **Survey** and **External** point to a target
+outside the course; you choose the reference when creating the unit, where it
+is mandatory. A procedure unit counts as done as soon as the person completes
+a run of the chosen procedure template (as executing or assigned person). A
+survey unit opens the chosen questionnaire; submitting it completes the unit.
+An external unit names an address, and the person confirms "done" — optionally
+only with an uploaded proof, which the participant list of the course offers
+for download. These units cannot be ticked off by hand; they are not available
+in the customer portal or with access without a user account.
 
 A course can have **prerequisites** (all, or one is enough): they block the
 start, not the assignment — mandatory enrolments are exempt. An **exam without
@@ -147,6 +172,25 @@ and with a reason.
 
 The **gradebook** per course shows learners × components. Without components it adds the points of quizzes and assignments; if trainers define **components** (quiz, assignment, manual grade) they can assign weights — all adding up to 100 or none at all. Manual grades are additive: a correction is a new entry, the latest counts. The **report card** (PDF) and the CSV export come from the same calculation; while something is still open the report card is marked as preliminary.
 
+You maintain the **grading scale** in the learning platform settings: one
+level per line in the form "label = minimum percent", or a template (school
+grades 1–6, letters A–F, passed/failed) that you adjust afterwards. The
+highest level whose minimum percent is reached applies; without a scale,
+gradebook, CSV and report card show the percentage only.
+
+The **qualification dossier** (Learning → Qualification dossier) can be
+narrowed down by team, single person, project and site; the selections work
+together. Selecting a single person is only available in the named dossier
+(with a stated reason). A project comprises its individual members and the members of its
+teams; a person is deployed at a site if they clocked in or out at one of the
+site's checkpoints within the period or hold an access medium for the site. People who were employed at
+the start of the period and have since left appear in the dossier marked
+"left on …" — what counts is the status on the reference date. With a stated
+reason the dossier is also available as a **ZIP**: the dossier as PDF and
+JSON, every certificate as its own PDF file and an index file (CSV) that maps
+every line to its file. With more than 300 certificates, narrow the
+selection.
+
 Refinements per question: answer options can carry **their own points** (“Label {3}”, negative allowed) — the chosen option then counts instead of all-or-nothing; a **self-assessment** is a scale without a correct answer, the chosen level is the score; an **essay** accepts text, a file or both — the file is available in grading. Per quiz, passing can additionally be required **in points**, and the subset per attempt can be set **as a percentage** of the available questions.
 
 **Import questions** in the question catalogue reads questions from a CSV or Excel file. The columns **kind** (type, as a short code such as single or as its label) and **prompt** are required; **options** holds the answer lines one below the other in a single cell, written as in the editor. **title**, **category** (missing categories are created), **points**, **explanation** and **hint** are optional. The same question (type and question text) is skipped on a second run; hotspot questions need an image and cannot be imported from a file.
@@ -164,6 +208,17 @@ created.
 
 Certificates can be verified through a link. The verification page shows
 course, date, validity and issuer — the name only abbreviated.
+
+**Revoking a certificate:** The participant list of a course shows the
+certificate number next to the person. With the right **Manage learning** you
+revoke a wrongly issued certificate there via "Revoke certificate" — the
+reason is mandatory. The revocation cannot be undone: verification page,
+machine-readable credential, printout and qualification dossier show it from its
+point in time, the person is notified with the reason, and a mirrored
+mandatory credential of the subcontractor ends on the same day. Instruction
+record and qualification remain in their registers and are corrected there.
+You revoke the **access link** of an external person in the same place via
+"Revoke access link"; it stops working immediately.
 
 Learning data belongs to the person: the **data subject report** (data
 protection module) lists enrollments, quiz attempts, certificates, learning
@@ -279,3 +334,5 @@ approval. The AI has three entry points — outline draft and question draft
 in the editor, tutor in the player — and only suggests; adoption and grading
 are done by hand. Points and badges appear under “My training”; the
 leaderboard lists only people who opted in themselves.
+
+**Guest access with media:** External participants without a user account see all content blocks as in the player — images, files, audio and videos load through their access, links to internal pages are omitted. Videos with a required share still cannot be completed there.

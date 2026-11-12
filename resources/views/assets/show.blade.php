@@ -42,14 +42,26 @@
                             @endif
                         </div>
                     @endif
+                    @if ($asset->sla_contract_id !== null && (auth()->user()?->can(\App\Enums\User\Permission::SlaContractView->value) ?? false) && $asset->slaContract !== null)
+                        <div class="text-sm text-base-content/70">
+                            {{ __('SLA-Vertrag') }}:
+                            <a class="link link-hover" href="{{ route('sla-contracts.show', $asset->slaContract) }}">{{ $asset->slaContract->code }} — {{ $asset->slaContract->label }}</a>
+                        </div>
+                    @endif
                     <div class="flex flex-wrap items-center gap-2 text-sm">
                         <x-status-badge tone="ghost" outline>{{ $classOptions[$assetClassValue] ?? $assetClassValue }}</x-status-badge>
                         <x-status-badge :tone="$isBlocked ? 'error' : 'ghost'" :outline="! $isBlocked">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</x-status-badge>
                         <x-status-badge :tone="$lifecycle['phase_tone']">{{ $lifecycle['phase_label'] }}</x-status-badge>
+                        <x-status-badge :tone="$asset->health->tone()" outline :title="__('asset.health.hint')">{{ __('asset.health.label') }}: {{ $asset->health->label() }}</x-status-badge>
                         @if ($asset->serial_no)
                             <span class="text-base-content/70">{{ __('Seriennummer') }}: {{ $asset->serial_no }}</span>
                         @endif
                     </div>
+                    @if ($asset->decommissioned_on)
+                        <div class="text-sm text-base-content/70">
+                            {{ __('asset.decommission.since', ['date' => $asset->decommissioned_on->fdate()]) }}@if ($asset->decommission_reason) — {{ $asset->decommission_reason }}@endif
+                        </div>
+                    @endif
                     @if ($asset->tags->isNotEmpty())
                         <div class="flex flex-wrap gap-1">
                             @foreach ($asset->tags as $tag)
@@ -68,6 +80,18 @@
                     @can('update', $asset)
                         <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('assets.edit', $asset)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                     @endcan
+                    @if ($canTransferOwnership)
+                        <x-icon-btn icon="swap_horiz" size="sm" data-entry-modal-trigger :href="route('assets.ownership.form', $asset)" show-label>{{ __('asset.ownership.action') }}</x-icon-btn>
+                    @endif
+                    @if ($canDecommission)
+                        <x-icon-btn icon="power_settings_new" tone="error" size="sm" data-entry-modal-trigger :href="route('assets.decommission.form', $asset)" show-label>{{ __('asset.decommission.action') }}</x-icon-btn>
+                    @endif
+                    @if ($canRecommission ?? false)
+                        <x-icon-btn icon="restart_alt" tone="success" size="sm" data-entry-modal-trigger :href="route('assets.recommission.form', $asset)" show-label>{{ __('asset.recommission.action') }}</x-icon-btn>
+                    @endif
+                    <x-claim-open-link :params="['asset' => $asset->sqid]" />
+                    <x-disposal-open-link :asset="$asset" />
+                    <x-sustainability-assess-link :subject="$asset" />
                     @can('delete', $asset)
                         <x-icon-btn icon="merge" size="sm" :href="route('assets.merge.compare', ['source' => $asset->sqid])" show-label>{{ __('Zusammenführen') }}</x-icon-btn>
                     @endcan
@@ -108,6 +132,25 @@
         @endphp
 
         <x-custom-fields-card :subject="$asset" />
+
+        {{-- Anschaffung (Feature 069, MVP-1606): Lieferant aus der Investition, Datum und Kosten. --}}
+        @if ($asset->acquired_from_supplier_id !== null || $asset->acquired_on !== null || $asset->acquisition_cost !== null)
+            <x-card :title="__('asset.acquisition.title')" icon="shopping_cart">
+                <x-detail-grid layout="cells" small-labels>
+                    <x-detail-grid.row :label="__('asset.acquisition.supplier')">
+                        @if ($asset->acquiredFromSupplier === null)
+                            —
+                        @elseif (auth()->user()?->can('view', $asset->acquiredFromSupplier))
+                            <a class="link link-hover" href="{{ route('suppliers.show', $asset->acquiredFromSupplier) }}">{{ $asset->acquiredFromSupplier->name }}</a>
+                        @else
+                            {{ $asset->acquiredFromSupplier->name }}
+                        @endif
+                    </x-detail-grid.row>
+                    <x-detail-grid.row :label="__('asset.acquisition.date')">{{ $asset->acquired_on?->fdate() ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('asset.acquisition.cost')">{{ $asset->acquisition_cost !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $asset->acquisition_cost, 2, withThousandsSeparator: true) . ' €' : '—' }}</x-detail-grid.row>
+                </x-detail-grid>
+            </x-card>
+        @endif
 
         {{-- ── Verortung + Betriebssystem (nebeneinander) ──────────────────── --}}
         <div class="grid gap-4 md:grid-cols-2">
@@ -294,6 +337,9 @@
                                     <td>
                                         <div class="font-medium">{{ $plan->label }}</div>
                                         <div class="text-xs text-muted font-mono">{{ $plan->code }}</div>
+                                        @if ($plan->is_contractual)
+                                            <x-status-badge tone="info" size="xs">{{ __('Vertragspflicht') }}</x-status-badge>
+                                        @endif
                                     </td>
                                     <td>{{ $plan->interval_value }} {{ $intervalKindOptions[$kindValue] ?? $kindValue }}</td>
                                     <td>
@@ -343,7 +389,7 @@
 
         {{-- ── Ausgabe / Rückgabe (Feature 009) ─────────────────────────────── --}}
         <x-card :title="__('Ausgabe / Rückgabe')" icon="swap_horiz">
-            @if ($canCheckout && ! $isCheckedOut && ! $isDefectBlocked && empty($activeBlocks))
+            @if ($canCheckout && ! $isCheckedOut && ! $isDefectBlocked && empty($activeBlocks) && $asset->isInOperation())
                 <x-slot:actions>
                     <x-icon-btn icon="logout" tone="primary" size="sm"
                                 data-entry-modal-trigger
@@ -400,9 +446,8 @@
                             @endif
                         </div>
                         @if ($canCheckout)
-                            <x-action-form :action="route('assets.checkout.return', [$asset, $currentAssignment])">
-                                <x-icon-btn icon="login" tone="success" size="sm" type="submit" show-label>{{ __('Zurücknehmen') }}</x-icon-btn>
-                            </x-action-form>
+                            <x-icon-btn icon="login" tone="success" size="sm" data-entry-modal-trigger
+                                        :href="route('assets.checkout.return-form', [$asset, $currentAssignment])" show-label>{{ __('Zurücknehmen') }}</x-icon-btn>
                         @endif
                     </div>
                 </div>
@@ -419,6 +464,8 @@
                                 <th>{{ __('Empfänger') }}</th>
                                 <th>{{ __('Ausgegeben') }}</th>
                                 <th>{{ __('Zurückgegeben') }}</th>
+                                <th>{{ __('Zustand bei Ausgabe') }}</th>
+                                <th>{{ __('asset.return.condition_in') }}</th>
                             </tr>
                     </x-slot:head>
                             @foreach ($assignmentHistory as $past)
@@ -426,6 +473,13 @@
                                     <td>{{ $past->assignedToUser?->name ?? $past->assignedToTeam?->name ?? '—' }}</td>
                                     <td>{{ optional($past->checked_out_at)->fdatetime() ?: '—' }}</td>
                                     <td>{{ optional($past->returned_at)->fdatetime() ?: '—' }}</td>
+                                    <td>{{ $past->condition_out ?: '—' }}</td>
+                                    <td>
+                                        {{ $past->condition_in ?: '—' }}
+                                        @if ($past->return_note)
+                                            <div class="text-xs text-muted">{{ $past->return_note }}</div>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                 </x-table>

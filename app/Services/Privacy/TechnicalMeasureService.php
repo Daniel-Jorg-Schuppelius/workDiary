@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy;
 
-use App\Enums\Privacy\{MeasureCategory, ReviewResult};
+use App\Enums\Privacy\{ImplementationStatus, MeasureCategory, ProtectionLevel, ReviewResult};
 use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{MeasureAssignment, MeasureReview, ProcessingActivity, ProcessingAgreement, TechnicalMeasure, TechnicalMeasureVersion};
 use Illuminate\Support\Carbon;
@@ -25,18 +25,38 @@ use Illuminate\Support\Facades\DB;
  */
 class TechnicalMeasureService {
     /** @param array<string, mixed> $payload */
-    public function createDraft(Organization $organization, string $name, MeasureCategory $category, array $payload, ?User $actor = null): TechnicalMeasure {
-        return DB::transaction(function () use ($organization, $name, $category, $payload, $actor): TechnicalMeasure {
+    public function createDraft(
+        Organization $organization,
+        string $name,
+        MeasureCategory $category,
+        array $payload,
+        ?User $actor = null,
+        ImplementationStatus $status = ImplementationStatus::Planned,
+        ?ProtectionLevel $protection = null,
+    ): TechnicalMeasure {
+        return DB::transaction(function () use ($organization, $name, $category, $payload, $actor, $status, $protection): TechnicalMeasure {
             $measure = TechnicalMeasure::create([
                 'organization_id' => $organization->id,
                 'name' => $name,
                 'category' => $category,
+                'implementation_status' => $status,
+                'protection_level' => $protection,
                 'created_by' => $actor?->id,
             ]);
             $this->addVersion($measure, $payload, $actor, 'Erstentwurf');
 
             return $measure;
         });
+    }
+
+    /**
+     * Umsetzungsstand und Schutzbedarf (Feature 043, MVP-1620) — Stand der
+     * Maßnahme, nicht der Version; der VVT-Snapshot friert ihn mit ein.
+     */
+    public function updateState(TechnicalMeasure $measure, ImplementationStatus $status, ?ProtectionLevel $protection): TechnicalMeasure {
+        $measure->forceFill(['implementation_status' => $status, 'protection_level' => $protection])->save();
+
+        return $measure;
     }
 
     /** @param array<string, mixed> $payload */
@@ -124,6 +144,7 @@ class TechnicalMeasureService {
                 'name' => $m->name,
                 'category' => $m->category->value,
                 'implementation_status' => $m->implementation_status->value,
+                'protection_level' => $m->protection_level?->value,
                 'version_no' => $m->currentVersion?->version_no,
                 'payload' => $m->currentVersion?->payload,
             ];

@@ -1,7 +1,7 @@
 ---
 title: "Corrections de temps"
 topic: corrections.requests
-version: 1
+version: 3
 keywords:
     - demande de correction
     - oubli de pointage
@@ -29,3 +29,13 @@ approbation ou s'appliquent directement en autocorrection ; les
 corrections appliquées sont toujours marquées comme saisie manuelle et
 restent traçables. Les brouillons et demandes soumises peuvent être
 retirés.
+
+**Changer de commande :** si vous choisissez sous **Entrée concernée** une
+saisie de temps avec projet, le champ **Changer de commande** apparaît avec
+les commandes de ce projet. Vous rattachez ainsi la saisie à une autre
+commande ou la détachez avec **— sans commande —** ; après application, le
+temps figure sur la nouvelle commande.
+
+## Pointages ajustés
+
+Lorsqu'une demande approuvée ou appliquée par soi-même modifie un pointage clôturé, celui-ci affiche ensuite **Ajusté**. Un pointage encore en cours reste ouvert afin que le pointage de sortie reste possible.

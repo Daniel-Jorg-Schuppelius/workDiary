@@ -316,6 +316,8 @@
                                 :cached="$aiSuggestions[$item->id]->from_cache"
                                 :accept-action="route('ai.suggestions.accept', $aiSuggestions[$item->id])"
                                 :reject-action="route('ai.suggestions.reject', $aiSuggestions[$item->id])"
+                                :capability="$aiSuggestions[$item->id]->capability"
+                                :regenerate-action="route('ai.suggestions.quote-item', [$quote, $item])"
                                 field-name="text"
                             />
                         </td>
@@ -332,6 +334,8 @@
                                 :cached="$aiTranslations[$item->id]->from_cache"
                                 :accept-action="route('ai.assist.accept', $aiTranslations[$item->id])"
                                 :reject-action="route('ai.assist.reject', $aiTranslations[$item->id])"
+                                :capability="$aiTranslations[$item->id]->capability"
+                                :regenerate-action="route('ai.assist.quote-item-translate', [$quote, $item])"
                                 field-name="text"
                             />
                         </td>
@@ -358,6 +362,7 @@
                 @include('ai._insight', [
                     'suggestion' => $aiTermsSuggestion,
                     'acceptAction' => route('ai.assist.accept', $aiTermsSuggestion),
+                    'regenerateAction' => route('ai.assist.quote-terms-translate', $quote),
                     'showOriginal' => true,
                 ])
             @endif

@@ -125,6 +125,8 @@
                                 {{ __('procedure.report.follow_up.open_issue') }}
                             @elseif ($row['followUpKind'] === 'diary_entry')
                                 {{ __('procedure.report.follow_up.diary_entry') }}
+                            @elseif ($row['followUpKind'] === 'requalify_run')
+                                {{ __('procedure.report.follow_up.requalify_run') }}
                             @else
                                 <span class="text-muted">—</span>
                             @endif

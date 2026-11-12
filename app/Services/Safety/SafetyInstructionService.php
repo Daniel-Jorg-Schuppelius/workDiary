@@ -12,10 +12,12 @@ declare(strict_types=1);
 
 namespace App\Services\Safety;
 
+use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Enums\Safety\InstructionSignatureMethod;
 use App\Models\Platform\{Organization, User};
 use App\Models\Safety\{SafetyInstruction, SafetyInstructionParticipant};
 use App\Services\Concerns\AssignsSequentialNo;
+use App\Services\DocumentDesign\DocumentDesignRenderer;
 use App\Services\Training\TrainingAssignmentService;
 use CommonToolkit\Helper\Data\{CryptoHelper, DataUrlHelper};
 use Illuminate\Support\{Carbon, Str};
@@ -162,6 +164,11 @@ class SafetyInstructionService {
             'actor_user_id' => $actor->id,
             'method' => $method->value,
         ]);
+        // Die erste Unterschrift legt die Gestaltung des Nachweises fest (MVP-1624).
+        $organization = Organization::query()->withoutGlobalScopes()->find($instruction->organization_id);
+        if ($organization !== null) {
+            app(DocumentDesignRenderer::class)->snapshot($instruction, RenderDocumentKind::Protocol, $organization, user: $actor);
+        }
 
         return $participant->refresh();
     }

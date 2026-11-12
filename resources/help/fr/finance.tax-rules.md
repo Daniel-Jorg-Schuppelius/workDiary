@@ -1,7 +1,7 @@
 ---
 title: "Matrice des règles fiscales"
 topic: finance.tax-rules
-version: 1
+version: 2
 keywords:
     - taux de TVA
     - TVA
@@ -71,3 +71,12 @@ intracommunautaire formellement valide reçoivent automatiquement
 l'autoliquidation (Reverse Charge, 0 %), les clients de pays tiers la
 mention d'export (0 %) — les lignes correspondantes de la matrice
 fournissent pour cela le texte d'information sur la pièce.
+
+Une ligne de type **Exonéré** indique la disposition d'exonération des
+opérations exonérées selon le § 4 UStG : son texte d'information figure
+dans la facture électronique comme motif d'exonération des positions
+exonérées (catégorie E), à la date de prestation de la facture, par exemple
+« Soins médicaux exonérés (§ 4 n° 14 UStG) ». Sans elle, la facture
+électronique indique seulement « Opération exonérée ». Si le régime fiscal
+d'un brouillon change, workDiary remplace le texte de la matrice tant qu'il
+figure inchangé dans le texte de la facture.

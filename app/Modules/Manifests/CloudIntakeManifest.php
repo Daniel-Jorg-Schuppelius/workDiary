@@ -44,4 +44,14 @@ final class CloudIntakeManifest extends Manifest {
             'cloud_document_routes',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            // Datenführerschaft „Dokumente“ (MVP-1592): Übernehmen lädt die Datei neu.
+            \App\Services\Integration\Contracts\OwnershipConflictReplay::class => [
+                \App\Services\CloudIntake\CloudIntakeRunner::class,
+            ],
+        ];
+    }
 }

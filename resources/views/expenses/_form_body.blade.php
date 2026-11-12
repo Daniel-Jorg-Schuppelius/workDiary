@@ -19,6 +19,7 @@
                         data-tax-rate="{{ $cat->default_tax_rate?->getNumericValue() }}"
                         data-billable-default="{{ $cat->default_billable ? '1' : '0' }}"
                         data-slug="{{ $cat->slug }}"
+                        data-requires-receipt="{{ $cat->requires_receipt ? '1' : '0' }}"
                         @selected((string) old('expense_category_id', \App\Support\Sqid::encode(\App\Models\Travel\ExpenseCategory::class, $expense?->expense_category_id)) === $cat->sqid)>
                     {{ $cat->label }}
                 </option>
@@ -32,6 +33,11 @@
             <x-button :href="route('per-diem-trips.create')" tone="primary" data-entry-modal-trigger>
                 {{ __('Pauschale erfassen') }}
             </x-button>
+        </div>
+        @php($hasReceipt = $expense !== null && $expense->attachments()->exists())
+        <div data-receipt-hint role="status" class="alert {{ $hasReceipt ? 'alert-success' : 'alert-warning' }} mt-2 text-sm hidden">
+            <x-icon name="receipt" />
+            <span>{{ $hasReceipt ? __('expenses.receipt.required_present') : __('expenses.receipt.required_hint') }}</span>
         </div>
     </div>
     <x-input-field name="vendor" :label="__('Beleg / Anbieter')" maxlength="160" placeholder="{{ __('z. B. Bahn, Hotel-Name …') }}" :value="old('vendor', $expense?->vendor)" />

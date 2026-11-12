@@ -75,7 +75,10 @@ class SchedulerWatchdogCommand extends Command {
             // Fälligkeit in der Zeitplan-Zeitzone ermitteln, für Datenbank-
             // Vergleiche aber in UTC binden: Eloquent formatiert eine Carbon-
             // Instanz in IHRER Zeitzone, die Spalten liegen in UTC.
-            $due = CarbonImmutable::instance($cron->getPreviousRunDate($now->toDateTime()));
+            // Eigene Zeitzone des Jobs (MVP-1619): die Kadenz gilt in ihr.
+            $jobTimezone = $overrides[$key]['timezone'] ?? null;
+            $jobNow = is_string($jobTimezone) ? $now->setTimezone($jobTimezone) : $now;
+            $due = CarbonImmutable::instance($cron->getPreviousRunDate($jobNow->toDateTime()));
             $dueUtc = $due->utc();
             $deadline = $due->addMinutes($definition->expectedRuntimeMinutes + self::GRACE_MINUTES);
 

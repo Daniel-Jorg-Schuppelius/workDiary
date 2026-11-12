@@ -19,7 +19,7 @@ use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{Incident, Measure};
 use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB, Storage};
 
 /**
  * Workflow der Datenschutzvorfaelle (Art. 33/34): Anlegen mit per-Fall-Krypto und
@@ -183,9 +183,44 @@ class IncidentService {
         $incident = $measure->incident;
         if ($incident !== null) {
             $this->event($incident, 'measure_completed', $actor, ['measure_id' => $measure->id]);
+            $this->markContainedWhenMeasuresDone($incident, $actor);
         }
 
         return $measure;
+    }
+
+    /**
+     * Sind alle Maßnahmen erledigt, ist der noch nicht gemeldete Vorfall
+     * eingedämmt (MVP-1620); Meldung und Abschluss bleiben eigene Schritte.
+     */
+    private function markContainedWhenMeasuresDone(Incident $incident, ?User $actor): void {
+        DB::transaction(function () use ($incident, $actor): void {
+            $locked = Incident::query()->whereKey($incident->id)->lockForUpdate()->first();
+            if ($locked === null
+                || ! in_array($locked->status, [IncidentStatus::Detected, IncidentStatus::Assessing], true)
+                || $locked->measures()->where('status', MeasureStatus::Open->value)->exists()) {
+                return;
+            }
+            $locked->forceFill(['status' => IncidentStatus::Contained])->save();
+            $incident->setRawAttributes($locked->getAttributes(), true);
+            $this->event($locked, 'contained', $actor);
+        });
+    }
+
+    /**
+     * Crypto-Shredding nach Ablauf der Aufbewahrung: Sachverhalt, Betroffenes und
+     * Maßnahmen sind danach unlesbar, unverschlüsselt abgelegte Nachweise gelöscht.
+     */
+    public function shred(Incident $incident, ?User $actor = null): Incident {
+        foreach ($incident->attachments()->get() as $attachment) {
+            Storage::disk('local')->delete((string) $attachment->path);
+            $attachment->delete();
+        }
+
+        $incident->shredDek();
+        $this->event($incident, 'shredded', $actor);
+
+        return $incident;
     }
 
     /** @param array<string, mixed> $metadata */

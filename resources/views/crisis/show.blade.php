@@ -43,6 +43,12 @@
                                   tone="error" size="sm" icon="delete" placement="danger">{{ __('Fehlmeldung verwerfen') }}</x-button>
                     @endif
                 @endcan
+                {{-- Notfall-Anwesenheitsliste (Feature 103, MVP-1605): nur mit dem Recht der Liste. --}}
+                @can(\App\Enums\User\Permission::ReportPresenceEmergency->value)
+                    @if ($case->status->isActive() && app(\App\Services\Navigation\NavGate::class)->allows('reports.presence-emergency'))
+                        <x-icon-btn icon="groups" tone="outline" size="sm" :href="route('reports.presence-emergency')" show-label>{{ __('crisis.presence.open') }}</x-icon-btn>
+                    @endif
+                @endcan
                 @if ($canManage)
                     <x-action-form :action="route('crisis.alert', $case)">
                         <x-icon-btn icon="campaign" tone="warning" size="sm" type="submit" show-label
@@ -239,11 +245,20 @@
                         @endforeach
                     </select>
                     <input name="due_at" type="datetime-local" class="input input-sm input-bordered" aria-label="{{ __('Frist') }}">
-                    <select name="priority" class="select select-sm select-bordered">
+                    <select name="priority" class="select select-sm select-bordered" aria-label="{{ __('Priorität') }}">
                         <option value="high">{{ __('values.high') }}</option>
                         <option value="medium">{{ __('values.medium') }}</option>
                         <option value="low">{{ __('values.low') }}</option>
                     </select>
+                    {{-- Abhängigkeit (MVP-1605): erledigt wird erst nach dem Vorgänger. --}}
+                    @if ($case->actions->isNotEmpty())
+                        <select name="depends_on_id" class="select select-sm select-bordered max-w-48" aria-label="{{ __('crisis.action.depends_on') }}">
+                            <option value="">{{ __('crisis.action.no_predecessor') }}</option>
+                            @foreach ($case->actions as $candidate)
+                                <option value="{{ $candidate->sqid }}">{{ __('crisis.action.after', ['title' => \Illuminate\Support\Str::limit($candidate->title, 40)]) }}</option>
+                            @endforeach
+                        </select>
+                    @endif
                     <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Erfassen') }}</x-icon-btn>
                 </form>
             @endif
@@ -256,11 +271,27 @@
                             <x-status-badge size="xs" outline>{{ $action->status->label() }}</x-status-badge>
                             <span @class(['line-through opacity-60' => $action->status->isSettled()])>{{ $action->title }}</span>
                             @if ($action->assignee)<span class="text-xs text-muted">{{ $action->assignee->name }}</span>@endif
+                            @if ($action->dependsOn !== null)
+                                <x-status-badge size="xs" outline :tone="$action->dependsOn->status->isSettled() ? 'plain' : 'warning'">{{ __('crisis.action.after', ['title' => \Illuminate\Support\Str::limit($action->dependsOn->title, 40)]) }}</x-status-badge>
+                            @endif
                             @if ($action->due_at)
                                 <span @class(['text-xs', 'text-error font-semibold' => $action->due_at->isPast() && ! $action->status->isSettled(), 'text-muted' => ! $action->due_at->isPast()])>{{ $action->due_at->fdatetime() }}</span>
                             @endif
+                            @if ($canManage && ! $action->status->isSettled() && $case->actions->count() > 1)
+                                {{-- Vorgänger nachträglich ändern (MVP-1628); Kreise weist der Server ab. --}}
+                                <form method="POST" action="{{ route('crisis.actions.predecessor', [$case, $action]) }}" class="ml-auto flex items-center gap-1">
+                                    @csrf @method('PUT')
+                                    <select name="depends_on_id" class="select select-xs select-bordered max-w-48" data-autosubmit aria-label="{{ __('crisis.action.depends_on') }}">
+                                        <option value="">{{ __('crisis.action.no_predecessor') }}</option>
+                                        @foreach ($case->actions as $candidate)
+                                            @continue($candidate->id === $action->id)
+                                            <option value="{{ $candidate->sqid }}" @selected($action->depends_on_id === $candidate->id)>{{ __('crisis.action.after', ['title' => \Illuminate\Support\Str::limit($candidate->title, 40)]) }}</option>
+                                        @endforeach
+                                    </select>
+                                </form>
+                            @endif
                             @if ($canManage && ! $action->status->isSettled())
-                                <form method="POST" action="{{ route('crisis.actions.update', [$case, $action]) }}" class="ml-auto flex items-center gap-1">
+                                <form method="POST" action="{{ route('crisis.actions.update', [$case, $action]) }}" @class(['flex items-center gap-1', 'ml-auto' => $case->actions->count() <= 1])>
                                     @csrf @method('PUT')
                                     <select name="status" class="select select-xs select-bordered" data-autosubmit>
                                         @foreach (\App\Enums\Crisis\CrisisActionStatus::cases() as $status)
@@ -346,6 +377,7 @@
                     <input aria-label="{{ __('Wiederanlaufzeit (RTO) in Stunden') }}" name="rto_hours" type="number" min="0" class="input input-sm input-bordered w-24" placeholder="RTO h">
                     <input aria-label="{{ __('Maximaler Datenverlust (RPO) in Stunden') }}" name="rpo_hours" type="number" min="0" class="input input-sm input-bordered w-24" placeholder="RPO h">
                     <input aria-label="{{ __('Workaround') }}" name="workaround" maxlength="1000" class="input input-sm input-bordered w-48" placeholder="{{ __('Workaround') }}">
+                    <input aria-label="{{ __('crisis.bcm.substitute_process') }}" name="substitute_process" maxlength="1000" class="input input-sm input-bordered w-48" placeholder="{{ __('crisis.bcm.substitute_process') }}">
                     <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Erfassen') }}</x-icon-btn>
                 </form>
             @endif
@@ -360,15 +392,22 @@
                             @if ($impact->rto_hours !== null)<span class="text-xs text-muted">RTO {{ $impact->rto_hours }} h</span>@endif
                             @if ($impact->rpo_hours !== null)<span class="text-xs text-muted">RPO {{ $impact->rpo_hours }} h</span>@endif
                             @if ($impact->workaround)<span class="text-xs text-muted">{{ $impact->workaround }}</span>@endif
+                            @if ($impact->substitute_process)<span class="text-xs text-muted">{{ __('crisis.bcm.substitute_process') }}: {{ $impact->substitute_process }}</span>@endif
                             @if ($canManage)
+                                {{-- Reststatus (MVP-1605): Status und verbleibende Einschränkung werden zusammen gespeichert. --}}
                                 <form method="POST" action="{{ route('crisis.bcm.update', [$case, $impact]) }}" class="ml-auto flex items-center gap-1">
                                     @csrf @method('PUT')
-                                    <select name="status" class="select select-xs select-bordered" data-autosubmit>
+                                    <select name="status" class="select select-xs select-bordered" aria-label="{{ __('Status') }}">
                                         @foreach (\App\Enums\Crisis\CrisisContinuityImpactStatus::cases() as $status)
                                             <option value="{{ $status->value }}" @selected($impact->status === $status)>{{ $status->label() }}</option>
                                         @endforeach
                                     </select>
+                                    <input aria-label="{{ __('crisis.bcm.residual_note') }}" name="residual_note" maxlength="1000" value="{{ $impact->residual_note }}"
+                                           class="input input-xs input-bordered w-40" placeholder="{{ __('crisis.bcm.residual_note') }}">
+                                    <x-button type="submit" tone="plain" size="xs">{{ __('Speichern') }}</x-button>
                                 </form>
+                            @elseif ($impact->residual_note)
+                                <span class="text-xs text-muted">{{ __('crisis.bcm.residual_note') }}: {{ $impact->residual_note }}</span>
                             @endif
                         </li>
                     @endforeach
@@ -379,21 +418,9 @@
         {{-- Verknüpfte Vorgänge (MVP-218) --}}
         <x-card :title="__('Verknüpfte Vorgänge')">
             @if ($canManage)
-                <form method="POST" action="{{ route('crisis.links.store', $case) }}" class="mb-3 flex flex-wrap items-end gap-2">
-                    @csrf
-                    <select name="linkable_type" class="select select-sm select-bordered">
-                        <option value="service_ticket">{{ __('Service-Ticket') }}</option>
-                        <option value="isms_incident">{{ __('Security Incident') }}</option>
-                        <option value="privacy_incident">{{ __('Datenschutzvorfall') }}</option>
-                        <option value="safety_event">{{ __('Arbeitsschutzereignis') }}</option>
-                        <option value="procedure_run">{{ __('Playbook-/Prozedurlauf') }}</option>
-                        <option value="document">{{ __('Dokument') }}</option>
-                        <option value="asset">{{ __('crisis.room.link.asset') }}</option>
-                        <option value="customer">{{ __('crisis.room.link.customer') }}</option>
-                    </select>
-                    <input aria-label="{{ __('Sqid/ID des Vorgangs') }}" name="linkable_sqid" required maxlength="64" class="input input-sm input-bordered w-40" placeholder="{{ __('Sqid/ID des Vorgangs') }}">
-                    <x-icon-btn icon="link" tone="primary" size="sm" type="submit" show-label>{{ __('Verknüpfen') }}</x-icon-btn>
-                </form>
+                <div class="mb-3">
+                    <x-icon-btn icon="link" tone="primary" size="sm" data-entry-modal-trigger :href="route('crisis.links.create', $case)" show-label>{{ __('crisis.link.dialog_title') }}</x-icon-btn>
+                </div>
             @endif
             @if ($case->links->isEmpty())
                 <x-empty-state icon="link" :title="__('Keine verknüpften Vorgänge.')" compact />
@@ -402,7 +429,14 @@
                     @foreach ($case->links as $link)
                         <li>
                             <x-status-badge tone="plain" size="xs" outline>{{ \App\Support\EntityType::label($link->linkable_type) }}</x-status-badge>
-                            {{ $link->linkable?->getAttribute('title') ?? $link->linkable?->getAttribute('subject') ?? $link->linkable?->getAttribute('ticket_no') ?? ('#' . $link->linkable_id) }}
+                            @php($linkUrl = \App\Support\EntityUrl::for($link->linkable))
+                            @php($linkLabel = $link->linkable?->getAttribute('title') ?? $link->linkable?->getAttribute('name') ?? $link->linkable?->getAttribute('incident_number') ?? $link->linkable?->getAttribute('event_no') ?? $link->linkable?->getAttribute('ticket_no') ?? ('#' . $link->linkable_id))
+                            @if ($linkUrl !== null)
+                                <a class="link link-hover" href="{{ $linkUrl }}">{{ $linkLabel }}</a>
+                            @else
+                                {{ $linkLabel }}
+                            @endif
+                            @if ($link->note)<span class="text-xs text-muted">— {{ $link->note }}</span>@endif
                         </li>
                     @endforeach
                 </ul>

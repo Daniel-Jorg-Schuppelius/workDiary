@@ -1,7 +1,7 @@
 ---
 title: "Shift exchange with approval"
 topic: planning.exchange
-version: 2
+version: 3
 keywords:
     - swap shift
     - shift swap
@@ -35,3 +35,17 @@ Workflow:
    both shifts change.
 
 A request can be withdrawn as long as it has not been decided.
+
+**Shift in return:** In the dialog **Request exchange**, choose an upcoming
+shift of a colleague under **Shift in return (optional)**. Without a
+**Preferred person**, the shift in return determines the swap partner; it
+must belong to the chosen person. The list then shows the request with the
+badge **Swap** and the shift in return. During the check, the shift given
+away by the other side no longer counts.
+
+**Rule violation on approval:** If the new assignment violates a working
+time rule, the request carries the badge **Rule violation** and, instead of
+**Release**, the button **Check and approve**. The dialog lists the violated
+rules; you can only approve with **Approve despite rule violation** and a
+**Reason** (at least 10 characters). Reason and overridden rules are stored
+in the audit log. The override does not lift a qualification block.

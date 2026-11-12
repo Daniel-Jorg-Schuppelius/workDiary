@@ -1,7 +1,7 @@
 ---
 title: "JTL-Wawi anbinden"
 topic: admin.jtl-wawi
-version: 1
+version: 3
 keywords:
     - Warenwirtschaftssystem
     - Warenwirtschaft
@@ -56,3 +56,9 @@ bucht über die Outbox zurück) oder *nur lesen*. Der Wechsel zurück auf
 Pilotprogramm. Nach dem offiziellen Release kann sie editionsabhängig
 und kostenpflichtig werden; eine entfallene Lizenz führt zu einem
 sichtbaren Blockiert-Zustand, nie zu stillen Fehlbuchungen.
+
+**Übernahme-Inventur erneut ausführen:** Ist die Übernahme beim Wechsel auf „lokal“ fehlgeschlagen, starten Sie sie am selben Tag mit „Übernahme-Inventur ausführen“ erneut; ein zweiter Lauf bucht nichts doppelt. Ab dem Folgetag führt der lokale Bestand, die Aktion steht dann nicht mehr bereit.
+
+**Datenführerschaft:** Die Bestandsführung auf dieser Seite ist zugleich die Führung des Bereichs Bestände auf der Seite „Datenführerschaft“; dort wird sie nur angezeigt. Führt ein anderes System die Bestände, bucht die Übernahme-Inventur für das betroffene Paar nichts; der Fall steht im Integrations-Eingang zum einmaligen Übernehmen.
+
+**Fremde Bestandsführung:** Führt ein anderes Programm (etwa Billbee) den Bestand, zeigt die Seite das an und stellt den Modus nicht um; die Übernahme-Inventur aus JTL-Wawi liefe sonst über einen fremden Bestand.

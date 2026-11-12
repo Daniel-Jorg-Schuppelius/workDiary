@@ -1,7 +1,7 @@
 ---
 title: "Rechnungseingang"
 topic: finance.incoming-invoices
-version: 8
+version: 9
 keywords:
     - Mehrere Steuersätze
     - Eingangsrechnung
@@ -335,6 +335,24 @@ Aufruf ändert nichts.
 **XML-Download:** Das Rechnungs-XML lässt sich jederzeit aus dem Original
 extrahieren (bei ZUGFeRD aus dem PDF-Anhang). Jeder Abruf wird mit Prüfsumme
 als Nachweis protokolliert.
+
+## Steuerfall
+
+Bei Eingangsrechnungen zeigt die Karte **Eingang** den **Steuerfall**:
+Vorsteuer aus der Rechnung, Steuerschuld des Leistungsempfängers nach § 13b
+UStG (Abs. 1 für sonstige Leistungen aus dem übrigen Gemeinschaftsgebiet,
+Abs. 2 etwa für Bauleistungen, Gebäudereinigung, Schrott, Mobilfunkgeräte und
+Werklieferungen ausländischer Unternehmer) oder innergemeinschaftlicher Erwerb.
+WorkDiary ermittelt ihn aus der Steuerkategorie der E-Rechnung (`AE`
+Steuerschuld des Empfängers, `K` innergemeinschaftlicher Erwerb) und dem Land
+des Lieferanten, sonst aus der Vorgabe **Steuerfall seiner Eingangsrechnungen**
+am Lieferanten – solange die Rechnung keine Steuer ausweist. Über **Steuerfall
+ändern** setzen Sie ihn von Hand; **Automatisch** nimmt die Ermittlung zurück.
+Der Steuerfall gilt für die nächste Buchung in der lokalen Buchhaltung: Steht
+die Rechnung dort schon als Entwurf oder Buchung, verwerfen Sie zuerst den
+Entwurf bzw. stornieren die Buchung. Einen ermäßigten Satz – etwa 7 % beim
+Erwerb von Büchern – erfassen Sie im Dialog **Werte erfassen**; ohne Satz gilt
+der Regelsatz.
 
 ## Eingebettete Unterlagen
 

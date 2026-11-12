@@ -1,7 +1,7 @@
 ---
 title: "Using chat"
 topic: communication.chat
-version: 1
+version: 2
 keywords:
     - chat message
     - send message
@@ -32,3 +32,5 @@ corresponding business record.
 
 Do not share credentials or unnecessary personal data. Edited or deleted
 messages may remain traceable depending on permissions and audit rules.
+
+**Poll with an end:** When creating a poll in the chat you optionally set when voting ends. After that, the poll accepts no more votes.

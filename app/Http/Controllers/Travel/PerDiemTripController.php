@@ -234,6 +234,15 @@ class PerDiemTripController extends Controller {
                 ->limit(50)
                 ->get(['id', 'started_at', 'ended_at', 'from_address', 'to_address']),
             'countries' => ['DE'],
+            // Dreimonatsfrist (§ 9 Abs. 4a EStG) je Tätigkeitsstätte: bisherige Schlüssel zur Wiederverwendung.
+            'workplaceKeys' => PerDiemTrip::query()
+                ->where('user_id', $userId)
+                ->whereNotNull('workplace_key')
+                ->distinct()
+                ->orderBy('workplace_key')
+                ->limit(100)
+                ->pluck('workplace_key')
+                ->all(),
         ];
     }
 }

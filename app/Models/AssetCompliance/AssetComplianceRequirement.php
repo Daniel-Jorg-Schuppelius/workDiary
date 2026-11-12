@@ -28,13 +28,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property numeric-string|null $limit_min
  * @property numeric-string|null $limit_max
  * @property bool $is_mandatory
+ * @property bool $is_active
  */
 class AssetComplianceRequirement extends Model {
     use HasSqid;
 
     protected $fillable = [
         'organization_id', 'asset_compliance_profile_id', 'code', 'label',
-        'unit', 'limit_min', 'limit_max', 'is_mandatory',
+        'unit', 'limit_min', 'limit_max', 'is_mandatory', 'is_active',
     ];
 
     /** @var array<string, string> */
@@ -42,6 +43,7 @@ class AssetComplianceRequirement extends Model {
         'limit_min' => 'decimal:4',
         'limit_max' => 'decimal:4',
         'is_mandatory' => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     /** @return BelongsTo<AssetComplianceProfile, $this> */

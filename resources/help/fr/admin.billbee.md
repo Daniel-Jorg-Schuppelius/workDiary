@@ -1,7 +1,7 @@
 ---
 title: "Connecter Billbee"
 topic: admin.billbee
-version: 2
+version: 3
 keywords:
     - multicanal
     - commandes marketplace
@@ -48,3 +48,5 @@ synchronisation respecte automatiquement cette limite.
 le numéro de commande, le numéro de la place de marché, le nom ou l'e-mail de
 l'acheteur. La recherche globale affiche les mêmes commandes sous « Commandes
 Billbee » — pour l'administration, tant que le plugin est actif.
+
+**Gestion des stocks :** avec le réglage « Billbee », WorkDiary continue de comptabiliser dans son propre journal de stock et transmet chaque niveau comme valeur absolue par SKU à Billbee. Les personnes autorisées à configurer l’entrepôt peuvent changer ce réglage ; si un autre programme (comme JTL-Wawi) pilote déjà le stock, repassez-le d’abord en local là-bas. Il n’existe pas de mode lecture seule, car Billbee ne tient pas de stock propre.

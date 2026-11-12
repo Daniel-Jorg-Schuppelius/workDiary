@@ -50,3 +50,9 @@ formulaire des actifs : une valeur de l’organisation avec un code propre y
 apparaît en plus, une valeur reprenant le code d’une catégorie générale en
 remplace le libellé, et une valeur désactivée la masque. Une catégorie
 utilisée par un actif peut seulement être désactivée, pas supprimée.
+
+Une valeur encore utilisée par des enregistrements — saisies de temps,
+réclamations, articles ou affectations — ne peut pas être supprimée. Le message
+indique où et combien de fois elle est utilisée. Désactivez-la plutôt avec
+**Désactiver** dans sa ligne : elle disparaît des nouvelles sélections, les
+enregistrements existants la conservent.

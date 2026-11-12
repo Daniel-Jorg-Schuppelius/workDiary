@@ -177,4 +177,40 @@ class SlaReportTest extends TestCase {
 
         Carbon::setTestNow();
     }
+
+    /** MVP-1625: Wer ein vertrauliches Ticket nicht sehen darf, sieht auch seinen Kunden nicht — weder in der Liste noch in der Summe je Kunde. */
+    public function test_confidential_ticket_masks_its_customer_in_list_and_totals(): void {
+        Carbon::setTestNow('2026-06-10 12:00:00');
+        $owner = User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
+        $colleague = User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Geheimkunde Beispiel GmbH']);
+        $ticket = ServiceTicket::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'confidentiality' => ServiceTicket::CONFIDENTIALITY_RESTRICTED,
+            'assigned_to_user_id' => $owner->id,
+            'reported_at' => '2026-06-05 09:00:00',
+            'resolution_due_at' => '2026-06-05 17:00:00',
+        ]);
+        SlaViolation::factory()->create([
+            'organization_id' => $this->organization->id,
+            'service_ticket_id' => $ticket->id,
+            'kind' => SlaViolationKind::ResolutionTime->value,
+            'breached_at' => '2026-06-05 18:00:00',
+        ]);
+
+        $masked = $this->actingAs($colleague)->withSession($this->dateRangeMonth(2026, 6))->get(route('reports.sla'));
+        $masked->assertOk();
+        // Die Kundenauswahl der Filterleiste nennt alle Kunden; maßgeblich sind Summen und Liste.
+        $list = (string) strstr((string) $masked->getContent(), 'id="sla-violations"');
+        $this->assertStringNotContainsString('Geheimkunde Beispiel GmbH', $list);
+        $this->assertStringContainsString(e(__('helpdesk.confidentiality.masked')), $list);
+        $this->assertSame([['name' => __('helpdesk.confidentiality.masked'), 'count' => 1]], $masked->viewData('by_customer'));
+
+        $own = $this->actingAs($owner)->withSession($this->dateRangeMonth(2026, 6))->get(route('reports.sla'));
+        $this->assertStringContainsString('Geheimkunde Beispiel GmbH', (string) strstr((string) $own->getContent(), 'id="sla-violations"'));
+        $this->assertSame([['name' => 'Geheimkunde Beispiel GmbH', 'count' => 1]], $own->viewData('by_customer'));
+
+        Carbon::setTestNow();
+    }
 }

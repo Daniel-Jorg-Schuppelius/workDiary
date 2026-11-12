@@ -1,7 +1,7 @@
 ---
 title: "Vacaciones y enfermedad"
 topic: absences.manage
-version: 4
+version: 5
 keywords:
     - ausencia
     - solicitud de vacaciones
@@ -74,3 +74,12 @@ derecho, se muestra en su lugar la fecha desde la que está agotado. El análisi
 orientativas y no constituyen asesoramiento legal.
 
 Al igual que las vacaciones, los días con baja por enfermedad no tienen horario previsto: **Cuenta de horas de trabajo**, **Balance de trabajo**, **Asistencia** y **Plan/real** no los cuentan como déficit. Las bajas por enfermedad anuladas no cuentan en ningún sitio, tampoco en las cuentas de tiempo.
+
+**Solicitar corrección:** mientras no se haya registrado ninguna
+aprobación, las personas responsables devuelven una solicitud pendiente con
+**Solicitar corrección** (flecha de retorno en la fila) y una indicación. La
+solicitud pasa entonces a **Corrección solicitada**; la persona solicitante
+recibe una notificación y una entrada en la cola de trabajo, ve la
+indicación en el diálogo de edición, modifica la solicitud y la presenta de
+nuevo al guardar. Hasta entonces no se puede aprobar ni rechazar; la persona
+puede retirarla cancelándola.

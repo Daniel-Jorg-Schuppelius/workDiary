@@ -29,8 +29,20 @@
                     <x-button type="submit" tone="primary" size="sm">{{ __('accounting.ledger.action.post') }}</x-button>
                 </x-action-form>
             @endif
-            @if ($canPost && $directKind)
-                {{-- Nur wartende Direktbuchungen (E24); Festbuchungen bleiben unantastbar. --}}
+            @if ($canPrepare && $entry->status->isMutable())
+                @unless ($directKind)
+                    <x-icon-btn icon="edit" size="sm" tone="ghost" show-label
+                                data-entry-modal-trigger
+                                :href="route('finance.accounting.journal.edit', $entry)"
+                                :label="__('accounting.entry_form.action.edit')" />
+                @endunless
+                <x-icon-btn icon="account_tree" size="sm" tone="ghost" show-label
+                            data-entry-modal-trigger
+                            :href="route('finance.accounting.journal.cost-centers-form', $entry)"
+                            :label="__('accounting.entry_form.action.cost_centers')" />
+            @endif
+            @if ($entry->status->isMutable() && ($directKind ? $canPost : $canPrepare))
+                {{-- Nur Entwürfe (E24, MVP-1556); Festbuchungen bleiben unantastbar. --}}
                 <x-action-form :action="route('finance.accounting.journal.discard', $entry)" method="POST"
                                :confirm="__('accounting.ledger.confirm.discard')" confirm-icon="delete" confirm-tone="error"
                                :confirm-label="__('accounting.ledger.action.discard')">
@@ -106,6 +118,9 @@
                         <th>#</th>
                         <th>{{ __('accounting.ledger.column.account') }}</th>
                         <th>{{ __('accounting.ledger.column.memo') }}</th>
+                        <th>{{ __('accounting.entry_form.tax_code') }}</th>
+                        <th>{{ __('accounting.ledger.field.cost_center') }}</th>
+                        <th>{{ __('accounting.entry_form.counterparty') }}</th>
                         <th class="text-right">{{ __('accounting.ledger.column.debit') }}</th>
                         <th class="text-right">{{ __('accounting.ledger.column.credit') }}</th>
                     </tr>
@@ -115,12 +130,15 @@
                         <td class="font-mono">{{ $line->line_no }}</td>
                         <td>{{ $line->account?->displayLabel() ?? '—' }}</td>
                         <td class="text-sm text-base-content/70">{{ $line->memo }}</td>
+                        <td class="text-sm">{{ $line->taxCode?->code ?? '' }}</td>
+                        <td class="text-sm">{{ $line->costCenter?->code ?? '' }}</td>
+                        <td class="text-sm">{{ $line->counterparty?->name ?? '' }}</td>
                         <td class="text-right font-mono">{{ $line->debit?->format() ?? '' }}</td>
                         <td class="text-right font-mono">{{ $line->credit?->format() ?? '' }}</td>
                     </tr>
                 @endforeach
                 <tr class="font-semibold">
-                    <td colspan="3">{{ __('accounting.ledger.entry.total') }}</td>
+                    <td colspan="6">{{ __('accounting.ledger.entry.total') }}</td>
                     <td class="text-right font-mono">{{ $entry->debitTotal()->format() }}</td>
                     <td class="text-right font-mono">{{ $entry->creditTotal()->format() }}</td>
                 </tr>

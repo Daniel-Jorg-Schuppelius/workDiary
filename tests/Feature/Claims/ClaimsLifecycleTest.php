@@ -192,7 +192,7 @@ final class ClaimsLifecycleTest extends TestCase {
             ['2.0000', '2.0000', '0.0000', '0.0000'],
             [$ledger->balance($variant, $warehouse, StockState::Physical), $ledger->balance($variant, $warehouse, StockState::Blocked), $ledger->balance($variant, $warehouse, StockState::Quality), $ledger->available($variant, $warehouse)],
         );
-        $this->assertSame('2.0000', app(LotStockReader::class)->balanceOf($lot));
+        $this->assertSame('2.0000', app(LotStockReader::class)->balancesOf([$lot])[$lot->id]);
 
         $lots->unblock($lot, 'Prüfung ohne Befund', $this->admin);
         $this->assertSame('2.0000', $ledger->available($variant, $warehouse));
@@ -240,6 +240,21 @@ final class ClaimsLifecycleTest extends TestCase {
         $this->assertSame(Invoice::TYPE_CREDIT_NOTE, $result->type);
         // D1: strukturierter Grund am Beleg statt neuem Belegtyp.
         $this->assertSame('price_reduction', $result->reason_kind);
+    }
+
+    /** MVP-1620: der Vier-Augen-Schritt kann einen Vorschlag ablehnen; ein abgelehnter wird weder frei- noch ausgeführt. */
+    public function test_financial_proposal_can_be_rejected(): void {
+        $case = $this->openCase();
+        $service = app(ClaimFinancialService::class);
+        $outcome = $service->propose($case, $this->admin, ClaimFinancialKind::Refund, ['amount' => '20.00', 'justification' => 'Kulanz geprüft.']);
+
+        $this->actingAs($this->admin)->get(route('claims.show', $case))->assertOk()->assertSee(__('claims.financial.reject'));
+        $this->actingAs($this->admin)->post(route('claims.financial.reject', $outcome))->assertSessionHas('status', __('claims.financial.flash.rejected'));
+        $this->assertSame(\App\Enums\Claims\ClaimFinancialStatus::Rejected, $outcome->fresh()?->status);
+
+        $this->actingAs($this->admin)->post(route('claims.financial.reject', $outcome))->assertSessionHasErrors('outcome');
+        $this->expectException(\RuntimeException::class);
+        $service->approve($outcome->fresh() ?? $outcome, User::factory()->admin()->create(['organization_id' => $this->organization->id]));
     }
 
     public function test_external_billing_sovereignty_blocks_local_correction_document(): void {
@@ -324,11 +339,11 @@ final class ClaimsLifecycleTest extends TestCase {
 
         $html = (string) $this->actingAs($this->admin)->get(route('claims.show', $case))->assertOk()->getContent();
         $this->assertStringContainsString(e(__('Quarantäne: :state', ['state' => StockState::Blocked->label()])), $html);
-        preg_match('/<select name="stock_state".*?<\/select>/s', $html, $select);
+        preg_match('/<select\s+name="stock_state".*?<\/select>/s', $html, $select);
         foreach (StockState::cases() as $state) {
             $this->assertSame(
                 in_array($state, StockState::quarantine(), true),
-                str_contains($select[0] ?? '', '<option value="' . $state->value . '">' . $state->value . '</option>'),
+                str_contains($select[0] ?? '', '<option value="' . $state->value . '">' . e($state->label()) . '</option>'),
                 $state->value,
             );
         }

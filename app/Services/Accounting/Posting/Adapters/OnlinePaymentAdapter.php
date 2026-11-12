@@ -148,8 +148,13 @@ class OnlinePaymentAdapter extends AbstractPostingAdapter {
             }
         }
 
-        foreach ($pairs as [$role, $rule, $debit, $credit, $customerId, $taxAmount]) {
+        foreach ($pairs as $pair) {
+            [$role, $rule, $debit, $credit, $customerId, $taxAmount] = $pair;
             $line = $this->line($role, $rule, $debit, $credit, $memo, $customerId !== null ? MorphMap::alias(Customer::class) : null, $customerId, $taxAmount);
+            // Anzahlung: Kennzeichen und Steuer stehen an der Nettozeile, die Steuerzeile trägt keines.
+            if (array_key_exists(6, $pair)) {
+                $line = $line?->withTax($pair[6], $taxAmount);
+            }
             if ($line instanceof PostingProposalLine) {
                 $lines[] = $line;
                 $ruleVersions[] = $rule->versionTag();
@@ -188,7 +193,7 @@ class OnlinePaymentAdapter extends AbstractPostingAdapter {
      *
      * @param  numeric-string  $rate
      * @param  list<string>  $blockers
-     * @return list<array{0: PostingAccountRole, 1: AccountingPostingRule, 2: numeric-string, 3: numeric-string, 4: int|null, 5: numeric-string|null}>
+     * @return list<array{0: PostingAccountRole, 1: AccountingPostingRule, 2: numeric-string, 3: numeric-string, 4: int|null, 5: numeric-string|null, 6?: int|null}>
      */
     private function advancePairs(Organization $organization, OnlinePayment $payment, string $rate, ?int $customerId, ?AccountingPostingRule $transit, CarbonImmutable $on, array &$blockers): array {
         $context = ['tax_rate' => $rate];
@@ -206,17 +211,20 @@ class OnlinePaymentAdapter extends AbstractPostingAdapter {
 
         [$net, $taxAmount] = $this->advances->split($payment->gross_amount, $rate);
         $pairs = [[PostingAccountRole::PaymentTransit, $transit, $payment->gross_amount->getAmount(), '0.00', null, null]];
-        $pairs[] = [PostingAccountRole::AdvanceReceived, $advance, '0.00', $net, $customerId, null];
-        if ($taxed && ! NumberHelper::isZeroPrecise($taxAmount)) {
-            $pairs[] = [PostingAccountRole::TaxOutput, $tax, '0.00', $taxAmount, null, $taxAmount];
+        $hasTax = $taxed && ! NumberHelper::isZeroPrecise($taxAmount);
+        $taxCodeId = $advance->accounting_tax_code_id ?? ($hasTax ? $tax->accounting_tax_code_id : null);
+        $pairs[] = [PostingAccountRole::AdvanceReceived, $advance, '0.00', $net, $customerId, $hasTax ? $taxAmount : null, $taxCodeId];
+        if ($hasTax) {
+            $pairs[] = [PostingAccountRole::TaxOutput, $tax, '0.00', $taxAmount, null, null, null];
         }
 
         if ($payment->refunded_amount->isPositive()) {
             [$refundNet, $refundTax] = $this->advances->split($payment->refunded_amount, $rate);
-            $pairs[] = [PostingAccountRole::AdvanceReceived, $advance, $refundNet, '0.00', $customerId, null];
-            if ($taxed && ! NumberHelper::isZeroPrecise($refundTax)) {
-                // Der Steuerbetrag trägt das Vorzeichen der Wirkung — die Erstattung mindert die Umsatzsteuer.
-                $pairs[] = [PostingAccountRole::TaxOutput, $tax, $refundTax, '0.00', null, NumberHelper::negatePrecise($refundTax)];
+            $refundHasTax = $taxed && ! NumberHelper::isZeroPrecise($refundTax);
+            // Der Steuerbetrag trägt das Vorzeichen der Wirkung — die Erstattung mindert die Umsatzsteuer.
+            $pairs[] = [PostingAccountRole::AdvanceReceived, $advance, $refundNet, '0.00', $customerId, $refundHasTax ? NumberHelper::negatePrecise($refundTax) : null, $taxCodeId];
+            if ($refundHasTax) {
+                $pairs[] = [PostingAccountRole::TaxOutput, $tax, $refundTax, '0.00', null, null, null];
             }
             $pairs[] = [PostingAccountRole::PaymentTransit, $transit, '0.00', $payment->refunded_amount->getAmount(), null, null];
         }

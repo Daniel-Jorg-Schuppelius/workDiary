@@ -137,6 +137,7 @@ class AssetFinanceContractController extends Controller {
             'assets' => Asset::query()->orderBy('name')->get(['id', 'name']),
             'costCenters' => CostCenter::query()->where('active', true)->orderBy('code')->get(['id', 'code', 'label']),
             'investmentCases' => InvestmentCase::query()->orderByDesc('id')->limit(100)->get(['id', 'title']),
+            'purchaseOrders' => $this->purchaseOrderOptions(null),
         ]);
     }
 
@@ -167,6 +168,7 @@ class AssetFinanceContractController extends Controller {
             'assets' => collect(),
             'costCenters' => CostCenter::query()->where('active', true)->orderBy('code')->get(['id', 'code', 'label']),
             'investmentCases' => collect(),
+            'purchaseOrders' => $this->purchaseOrderOptions($contract->purchase_order_id),
         ]);
     }
 
@@ -287,6 +289,27 @@ class AssetFinanceContractController extends Controller {
         $contract->terms()->create(array_merge($data, ['organization_id' => $contract->organization_id]));
 
         return back()->with('status', __('Kondition ergänzt.'));
+    }
+
+    /**
+     * Bestellungen für den Bestellbezug (Feature 074, MVP-1606): die jüngsten,
+     * dazu die bereits hinterlegte; leer ohne Einkaufsmodul oder Leserecht.
+     *
+     * @return \Illuminate\Support\Collection<int, \App\Models\Procurement\PurchaseOrder>
+     */
+    private function purchaseOrderOptions(?int $selectedId): \Illuminate\Support\Collection {
+        if (! app(\App\Services\Navigation\NavGate::class)->allows('purchase-orders.index') || ! Gate::allows(\App\Enums\User\Permission::InventoryViewAny->value)) {
+            return collect();
+        }
+
+        return \App\Models\Procurement\PurchaseOrder::query()
+            ->with('supplier:id,name')
+            ->orderByDesc('id')
+            ->limit(100)
+            ->get(['id', 'number', 'supplier_id'])
+            ->when($selectedId !== null, fn ($orders) => $orders->contains('id', $selectedId)
+                ? $orders
+                : $orders->concat(\App\Models\Procurement\PurchaseOrder::query()->with('supplier:id,name')->whereKey($selectedId)->get(['id', 'number', 'supplier_id'])));
     }
 
     /** @return array<string, mixed> */

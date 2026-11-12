@@ -1,7 +1,7 @@
 ---
 title: "Location de matériel"
 topic: rental.overview
-version: 6
+version: 9
 keywords:
     - bailleur
     - location de vacances
@@ -43,6 +43,27 @@ L’interlocuteur est prérempli depuis la fiche client au choix du client et re
 **Remise & retour :** des protocoles distincts documentent état,
 accessoires, compteurs, photos et signature ; le retour porte la décision
 de suite (nettoyage, réparation/blocage, réclamation).
+
+**Points du procès-verbal :** les formulaires de remise et de reprise
+saisissent, outre l'état général, une liste de contrôle, les accessoires, des
+points d'état et, à la reprise, la consommation. Les points de contrôle et les
+accessoires viennent du profil de location ; décochez un accessoire manquant.
+Le dossier affiche les points sous « Afficher les points », le portail client
+aussi, sans les remarques internes.
+
+**État minimal :** dans le profil de location, vous définissez le site
+d'attache, l'état minimal et l'état actuel. Chaque reprise reprend l'état du
+procès-verbal. S'il est inférieur à l'état minimal, l'appareil ne peut être ni
+réservé ni utilisé en remplacement tant que vous n'avez pas ajusté l'état dans
+le profil après la remise en état.
+
+**Nettoyage :** « Nettoyage requis » dans le procès-verbal de reprise crée une
+plage de nettoyage ; l'appareil ne peut pas être attribué pendant celle-ci.
+« Nettoyage terminé » dans le dossier le libère avant la fin de la plage.
+
+**Préréservations :** si un autre dossier détient une préréservation sur la
+période, le dossier affiche un avis avec les dossiers concernés. La
+réservation reste possible.
 
 **Facturation :** les postes sont validés puis facturés localement ou
 transmis au système de facturation principal. La caution est une
@@ -98,3 +119,9 @@ paiement :
   (contre-passer et comptabiliser à nouveau). L’affectation des comptes a
   besoin pour cela du rôle « Acomptes reçus » (inclus dans les modèles SKR03
   et SKR04).
+
+**État minimal à la remise :** l’état minimal du profil de location s’applique aussi à la remise. Si l’état s’est dégradé depuis la réservation, WorkDiary refuse la remise jusqu’à ce que l’appareil soit remis en état et l’état mis à jour dans le profil.
+
+## Remettre une caution
+
+Une caution demandée et non encore reçue peut être **remise** avec un motif. Elle affiche ensuite **Renoncé** ; le motif figure dans le journal de la location.

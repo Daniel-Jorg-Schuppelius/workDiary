@@ -1,7 +1,7 @@
 ---
 title: "Working-time account & month approval"
 topic: time-accounts.flex
-version: 2
+version: 3
 keywords:
     - flextime account
     - overtime balance
@@ -36,3 +36,5 @@ correction requests so balances and the audit trail remain reproducible.
 included – unless nobody else in the organisation holds the approval right;
 the audit log then records the self-approval. Whoever may see months and
 correction requests for the team only sees the members of their own teams.
+
+**Account balance:** Target, actual and balance of the current month count only completed days up to yesterday, like the stored account, the tile and the terminal. The account balance includes the carry-over from the previous month. Approving the month freezes it in the account; only reopening recalculates it.

@@ -25,6 +25,7 @@
             </div>
             <x-slot:actions>
                 @if ($canManage)
+                    <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('surveys.edit', $survey)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                     <x-action-form :action="route('surveys.toggle-active', $survey)">
                         <x-icon-btn :icon="$survey->active ? 'pause' : 'play_arrow'" size="sm" type="submit" show-label>
                             {{ $survey->active ? __('Deaktivieren') : __('Aktivieren') }}

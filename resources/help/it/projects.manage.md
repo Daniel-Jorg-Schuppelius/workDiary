@@ -1,7 +1,7 @@
 ---
 title: "Gestire i progetti"
 topic: projects.manage
-version: 6
+version: 7
 keywords:
     - creare progetto
     - gestione progetti
@@ -124,3 +124,5 @@ margine di contribuzione e – se è previsto un budget – il suo consumo nel
 periodo scelto; un clic apre l'analisi di redditività con gli stessi numeri.
 Sotto compaiono i termini di garanzia e le fideiussioni del progetto. Le
 attività importate indicano il loro plugin, ad esempio «Da GitHub Issues».
+
+**Colore del progetto:** in alto a destra nella finestra del progetto sceglie il colore che contrassegna il progetto negli elenchi, nei tempi e nella panoramica mensile.

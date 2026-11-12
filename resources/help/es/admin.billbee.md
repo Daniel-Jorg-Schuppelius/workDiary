@@ -1,7 +1,7 @@
 ---
 title: "Conectar Billbee"
 topic: admin.billbee
-version: 2
+version: 3
 keywords:
     - multicanal
     - pedidos de marketplace
@@ -49,3 +49,5 @@ respeta este límite automáticamente.
 número de pedido, el número del marketplace, el nombre o el correo del
 comprador. La búsqueda global muestra los mismos pedidos en «Pedidos de
 Billbee», para la administración y mientras el plugin esté activo.
+
+**Gestión de existencias:** con el ajuste «Billbee», WorkDiary sigue registrando en su propio diario de almacén y comunica cada nivel como valor absoluto por SKU a Billbee. Pueden cambiarlo las personas autorizadas a configurar el almacén; si otro programa (como JTL-Wawi) ya gestiona las existencias, póngalo primero allí en local. No hay modo de solo lectura, porque Billbee no lleva existencias propias.

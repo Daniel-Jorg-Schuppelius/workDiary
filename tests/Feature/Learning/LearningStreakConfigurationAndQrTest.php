@@ -16,10 +16,11 @@ use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Audit\AuditLog;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningUnitProgress};
 use App\Models\Platform\User;
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, RenderProfileService};
 use App\Services\Learning\{LearningCertificatePdfRenderer, LearningCompletionService, LearningCourseService, LearningEnrollmentService, LearningGamificationService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Mockery;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -101,13 +102,14 @@ final class LearningStreakConfigurationAndQrTest extends TestCase {
         [, $enrollment] = $this->enrolled($learner);
         $certificate = app(LearningCompletionService::class)->issueCertificate($enrollment);
 
-        $this->mock(DocumentDesignRenderer::class, function ($mock): void {
+        // Teilattrappe: Gestaltung und Ausstellerkontext laufen echt (MVP-1624), nur das PDF entfällt.
+        $this->instance(DocumentDesignRenderer::class, Mockery::mock(DocumentDesignRenderer::class, [app(RenderProfileService::class)], function ($mock): void {
             $mock->shouldReceive('renderPdf')->once()->withArgs(function (RenderDocumentKind $kind, string $view, array $data): bool {
                 $html = view($view, $data)->render();
 
                 return str_starts_with($data['qrImage'], 'data:image/svg+xml') && str_contains($html, 'src="' . $data['qrImage'] . '"');
             })->andReturn('%PDF-1.4');
-        });
+        })->makePartial());
 
         $this->assertSame('%PDF-1.4', app(LearningCertificatePdfRenderer::class)->output($certificate));
     }

@@ -77,6 +77,7 @@ return [
 
     'flash' => [
         'saved' => 'WebDAV-Ablage gespeichert.',
+        'saved_and_mirrored' => 'WebDAV-Ablage gespeichert und aktiviert — alle bisher freigegebenen Objekte sind zum Spiegeln eingereiht.',
         'mirror_done' => 'Spiegellauf gestartet.',
         'disconnected' => 'WebDAV-Ablage getrennt. Bereits gespiegelte Dateien bleiben extern erhalten.',
         'no_connection' => 'Keine aktive WebDAV-Ablage vorhanden.',

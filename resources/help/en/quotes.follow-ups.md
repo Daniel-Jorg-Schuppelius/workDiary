@@ -1,7 +1,7 @@
 ---
 title: "Quote follow-ups"
 topic: quotes.follow-ups
-version: 1
+version: 2
 keywords:
     - chase quote
     - follow up on quote
@@ -30,6 +30,11 @@ would let an overdue quote slip out of sight.
 days after dispatch, configurable under *Settings → Quotes*). An existing
 date is never overwritten. The date can be postponed at any time, for
 example when the customer asks for more time.
+
+**Responsible:** Choose who follows up in the “New offering” dialog and when
+setting the follow-up date. Without a choice, the person who created the quote
+follows up. The reminder goes to the responsible person, and “Mine only” shows
+their quotes.
 
 **Following up:** Recording the contact creates a communication note in the
 customer file — that is where it will be looked for later, not in a separate

@@ -118,6 +118,18 @@ return [
         'type' => 'Article type',
         'status' => 'Status',
         'base_unit' => 'Base unit',
+        'tax_class' => 'Tax class',
+        'numbers_locked_hint' => 'Article number, variant SKU and GTIN are maintained by :program. They arrive with the synchronisation and cannot be changed here.',
+        'valuation_method' => 'Valuation method',
+        'valuation_method_default' => 'Same as organisation (:method)',
+        'valuation_method_hint' => 'A separate method applies to this article only. Switching back to the moving average is only possible once no stock remains in FIFO/FEFO layers.',
+        'serial_prefix' => 'Serial number prefix',
+        'serial_prefix_hint' => 'With a prefix the article counts its own serial numbers (prefix-00001). Empty = number range of the organisation.',
+        'serial_padding' => 'Digits of the running number',
+        'serial_check_digit' => 'Append check digit',
+        'default_procedure' => 'Default work plan',
+        'default_procedure_hint' => 'Published procedure version that manufacturing orders and manufacturing planning use to produce this article unless an order selects its own.',
+        'default_procedure_none' => 'No default work plan',
         'category' => 'Product group',
         'category_hint' => 'Used for reports and the DATANORM export (WRG file).',
         'subcategory' => 'Product subgroup',
@@ -150,10 +162,18 @@ return [
         'net_weight_kg_hint' => 'Weight without packaging; the customs documents multiply it by the quantity.',
     ],
 
+    'tax_class' => [
+        'standard' => 'Standard rate',
+        'reduced' => 'Reduced rate',
+        'increased' => 'Increased rate',
+    ],
+
     'group' => [
+        'inventory' => 'Inventory and valuation',
         'pricing' => 'Pricing',
         'flags' => 'Properties',
         'customs' => 'Customs and export',
+        'manufacturing' => 'Manufacturing',
     ],
 
     'flag' => [

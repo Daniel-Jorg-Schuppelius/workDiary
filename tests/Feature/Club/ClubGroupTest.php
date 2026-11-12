@@ -124,6 +124,40 @@ class ClubGroupTest extends TestCase {
         $this->assertSame(ClubGroupMembershipStatus::Rejected, $oldRequest->refresh()->status);
     }
 
+    /** MVP-1616: „Antrag mit Freigabe“ bietet keine direkte Aufnahme, auch nicht über einen Wechselvorschlag. */
+    public function test_application_group_offers_only_requests(): void {
+        $group = ClubGroup::factory()->byApplication()->create(['name' => 'Wettkampf']);
+        $member = ClubMember::factory()->aged(20)->create();
+
+        $this->actingAs($this->admin)->get(route('club.groups.admit.create', $group))
+            ->assertOk()
+            ->assertSee(__('club.hint.request_only'))
+            ->assertDontSee(__('club.label.mode_admit'));
+        $this->actingAs($this->admin)->from(route('club.groups.show', $group))
+            ->post(route('club.groups.admit', $group), ['club_member_id' => $member->sqid, 'valid_from' => $this->today()->toDateString(), 'mode' => 'admit'])
+            ->assertSessionHasErrors('mode');
+        $this->assertSame(0, $group->activeMemberCountOn($this->today()));
+
+        $this->actingAs($this->admin)->post(route('club.groups.admit', $group), ['club_member_id' => $member->sqid, 'valid_from' => $this->today()->toDateString(), 'mode' => 'request'])
+            ->assertRedirect(route('club.groups.show', $group));
+        $this->assertSame(ClubGroupMembershipStatus::Requested, $group->memberships()->sole()->status);
+    }
+
+    public function test_confirmed_proposal_into_an_application_group_becomes_a_request(): void {
+        $kids = ClubGroup::factory()->ageRange(6, 11)->create(['name' => 'Kinder']);
+        $youth = ClubGroup::factory()->byApplication()->ageRange(12, 17)->create(['name' => 'Jugend', 'club_department_id' => $kids->club_department_id]);
+        $member = ClubMember::factory()->aged(12)->create();
+        $this->groupService()->admit($kids, $member, $this->today()->subYear(), $this->admin);
+        $this->groupService()->refreshProposals($this->organization, $this->today());
+        $proposal = ClubGroupChangeProposal::query()->firstOrFail();
+
+        $this->groupService()->confirmProposal($proposal, $this->admin, $this->today(), $youth);
+
+        $this->assertSame(0, $youth->activeMemberCountOn($this->today()));
+        $this->assertSame(ClubGroupMembershipStatus::Requested, $youth->memberships()->sole()->status);
+        $this->assertSame(ClubProposalStatus::Confirmed, $proposal->refresh()->status);
+    }
+
     // ── Vorschläge ───────────────────────────────────────────────────────
 
     public function test_birthday_creates_a_proposal_instead_of_removing_the_member(): void {

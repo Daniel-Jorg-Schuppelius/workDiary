@@ -10,9 +10,9 @@
 
 namespace App\Http\Controllers\Domain;
 
-use App\Enums\Domain\DomainRenewalMode;
+use App\Enums\Domain\{DomainProviderCommandStatus, DomainRenewalMode};
 use App\Http\Controllers\Controller;
-use App\Models\Domain\DomainProjection;
+use App\Models\Domain\{DomainProjection, DomainProviderCommand};
 use App\Services\Domain\DomainLifecycleService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -25,10 +25,10 @@ class DomainLifecycleController extends Controller {
     public function renewalMode(Request $request, DomainProjection $domain, DomainLifecycleService $service): RedirectResponse {
         Gate::authorize('manageRenewal', $domain);
 
-        $data = $request->validate(['renewal_mode' => ['required', 'string', 'in:AUTORENEW,AUTOEXPIRE,AUTODELETE,RENEWONCE']]);
-        $service->setRenewalMode($domain, DomainRenewalMode::from($data['renewal_mode']), ($request->user() ?? abort(401)));
+        $data = $request->validate(['renewal_mode' => ['required', \Illuminate\Validation\Rule::enum(DomainRenewalMode::class)]]);
+        $command = $service->setRenewalMode($domain, DomainRenewalMode::from($data['renewal_mode']), ($request->user() ?? abort(401)));
 
-        return back()->with('success', __('domain.flash.renewal_mode_set'));
+        return $this->outcome($command, 'domain.flash.renewal_mode_set');
     }
 
     public function renew(Request $request, DomainProjection $domain, DomainLifecycleService $service): RedirectResponse {
@@ -44,9 +44,16 @@ class DomainLifecycleController extends Controller {
         Gate::authorize('manageTransfer', $domain);
 
         $data = $request->validate(['locked' => ['required', 'boolean']]);
-        $service->setTransferLock($domain, (bool) $data['locked'], ($request->user() ?? abort(401)));
+        $command = $service->setTransferLock($domain, (bool) $data['locked'], ($request->user() ?? abort(401)));
 
-        return back()->with('success', __('domain.flash.transferlock_set'));
+        return $this->outcome($command, 'domain.flash.transferlock_set');
+    }
+
+    /** Erfolgsmeldung nur bei bestätigtem Befehl; ein unklarer Ausgang sagt, dass der Sync-Lauf ihn abgleicht (MVP-1614). */
+    private function outcome(DomainProviderCommand $command, string $successKey): RedirectResponse {
+        return $command->status === DomainProviderCommandStatus::Confirmed
+            ? back()->with('success', __($successKey))
+            : back()->with('warning', __('domain.flash.command_' . $command->status->value));
     }
 
     public function transferIn(Request $request, DomainProjection $domain, DomainLifecycleService $service): RedirectResponse {

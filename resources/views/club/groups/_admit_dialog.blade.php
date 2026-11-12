@@ -8,10 +8,10 @@
 --}}
 {{--
   Mitglied aufnehmen bzw. Antrag vormerken (in #entry-modal geladen).
-  Variablen: $group, $candidates (Collection<ClubMember>), $today, $canOverride
+  Variablen: $group, $candidates (Collection<ClubMember>), $today, $canOverride, $requestOnly
 --}}
 <x-modal
-    :title="__('club.action.admit')"
+    :title="($requestOnly ?? false) ? __('club.action.admit_request') : __('club.action.admit')"
     :eyebrow="$group->name"
     icon="person_add"
     tone="primary"
@@ -34,12 +34,17 @@
                 @endforeach
             </x-select-field>
             <x-input-field name="valid_from" type="date" :label="__('club.field.valid_from')" required :value="old('valid_from', $today->toDateString())" />
-            <x-select-field name="mode" :label="__('club.field.mode')" required :hint="__('club.hint.request')">
-                <option value="admit" @selected(old('mode', 'admit') === 'admit')>{{ __('club.label.mode_admit') }}</option>
-                <option value="request" @selected(old('mode') === 'request')>{{ __('club.label.mode_request') }}</option>
-            </x-select-field>
+            @if ($requestOnly ?? false)
+                <input type="hidden" name="mode" value="request">
+                <p class="text-sm text-muted md:col-span-2">{{ __('club.hint.request_only') }}</p>
+            @else
+                <x-select-field name="mode" :label="__('club.field.mode')" required :hint="__('club.hint.request')">
+                    <option value="admit" @selected(old('mode', 'admit') === 'admit')>{{ __('club.label.mode_admit') }}</option>
+                    <option value="request" @selected(old('mode') === 'request')>{{ __('club.label.mode_request') }}</option>
+                </x-select-field>
+            @endif
             <x-input-field name="note" :label="__('club.field.note')" maxlength="255" span="2" :value="old('note')" />
-            @if ($canOverride)
+            @if ($canOverride && ! ($requestOnly ?? false))
                 <x-checkbox-field name="override" :label="__('club.field.override')" :checked="(bool) old('override', false)" span="2" :hint="__('club.hint.override')" />
             @endif
         </x-form-group>

@@ -133,7 +133,7 @@ class CsvPreflightAnalyzer {
                 $source = $csv;
             }
 
-            $result = $this->ingestRows($run, $source, $spec, $organization);
+            $result = $this->ingestRows($run, $source, $spec, $organization, ColumnAccess::denied($spec, $actor));
 
             // Rang 58/A13: nur wirklich unbekannte Werte behalten (kein Mapping,
             // kein Namens-Tag, kein eindeutiger Klassifikations-Code) — sie
@@ -175,16 +175,22 @@ class CsvPreflightAnalyzer {
      * Datenzeilen, sammelt die Vorschau und persistiert Zeilenfehler sowie nicht
      * blockierende Quellen-Hinweise (z. B. übersprungene iCal-Ganztags-Events).
      *
+     * Spalten ohne das nötige Recht ({@see ColumnAccess}) fallen vor der
+     * Prüfung weg und stehen einmal als Hinweis im Lauf (MVP-1625).
+     *
+     * @param  list<string>  $denied
      * @return array{preview: list<array<string, mixed>>, rowsTotal: int, rowsFailed: int, unresolvedValues: array<string, string>}
      */
-    private function ingestRows(ImportRun $run, ImportSource $source, EntitySpec $spec, Organization $organization): array {
+    private function ingestRows(ImportRun $run, ImportSource $source, EntitySpec $spec, Organization $organization, array $denied = []): array {
         $preview = [];
         $rowsTotal = 0;
         $rowsFailed = 0;
         // Rang 58: unbekannte Tag-/Kategorie-Quellwerte fürs Mapping-Formular.
         $unresolvedValues = [];
+        /** @var array<string, true> $ignored */
+        $ignored = [];
 
-        DB::transaction(function () use ($run, $source, $spec, $organization, &$preview, &$rowsTotal, &$rowsFailed, &$unresolvedValues): void {
+        DB::transaction(function () use ($run, $source, $spec, $organization, $denied, &$preview, &$rowsTotal, &$rowsFailed, &$unresolvedValues, &$ignored): void {
             foreach ($source->rows($spec) as $sourceRow) {
                 // Nicht blockierende Quellen-Hinweise (iCal-Ganztags-/OOF-/Serien-Zeilen).
                 $warning = $sourceRow->warning;
@@ -229,6 +235,12 @@ class CsvPreflightAnalyzer {
 
                 $rowsTotal++;
                 $mapped = $sourceRow->data;
+                foreach ($denied as $column) {
+                    if (trim((string) ($mapped[$column] ?? '')) !== '') {
+                        $ignored[$column] = true;
+                    }
+                    unset($mapped[$column]);
+                }
                 $normalized = $spec->normalize($mapped);
 
                 if ($spec instanceof \App\Services\Import\HasMappableValues) {
@@ -264,6 +276,16 @@ class CsvPreflightAnalyzer {
                         ], $issues),
                     ];
                 }
+            }
+            foreach (array_keys($ignored) as $column) {
+                ImportRunError::create([
+                    'import_run_id' => $run->id,
+                    'row_number' => 0,
+                    'field' => $column,
+                    'code' => ImportErrorCode::Blocked,
+                    'message' => (string) __('import.error.column_forbidden', ['column' => $column]),
+                    'row_data' => null,
+                ]);
             }
         });
 

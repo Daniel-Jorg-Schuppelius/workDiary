@@ -11,19 +11,22 @@
 namespace App\Plugins\Calendly\Http\Controllers;
 
 use App\Enums\Calendar\AppointmentRequestStatus;
+use App\Enums\User\Permission;
 use App\Models\Calendar\AppointmentRequest;
+use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
 use App\Plugins\Calendly\Api\{CalendlyClient, CalendlyOAuth};
 use App\Plugins\Calendly\{CalendlyConfig, CalendlyPlugin};
 use App\Plugins\Calendly\Enums\{CalendlyConnectionStatus, CalendlyWebhookSubscriptionStatus};
 use App\Plugins\Calendly\Models\{CalendlyConnection, CalendlyWebhookSubscription};
-use App\Plugins\Calendly\Services\{CalendlyBackfillService, CalendlyConfirmService, CalendlyOutboundService, CalendlySubscriptionManager};
+use App\Plugins\Calendly\Services\{CalendlyAppointmentMatcher, CalendlyBackfillService, CalendlyConfirmService, CalendlyOutboundService, CalendlySubscriptionManager};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
-use App\Support\OrganizationContext;
+use App\Support\{OrganizationContext, SqidEncoder};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
@@ -59,7 +62,56 @@ class CalendlyAdminController extends ConnectionOAuthController {
             'connection' => $connection,
             'subscription' => $subscription,
             'requests' => $requests,
+            'hostMappings' => ExternalReference::query()
+                ->forPlugin($organization, CalendlyPlugin::ID, CalendlyAppointmentMatcher::HOST_REFERENCE)
+                ->with('referenceable')
+                ->orderBy('external_id')
+                ->get(),
+            'users' => User::query()
+                ->where('organization_id', $organization->id)
+                ->whereNull('customer_id')
+                ->whereNull('deactivated_at')
+                ->orderBy('name')
+                ->get(['id', 'name']),
         ]);
+    }
+
+    /** Calendly-Gastgeber mit abweichender Adresse einem Benutzer zuordnen (MVP-1610). */
+    public function mapHost(Request $request, SqidEncoder $sqids): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $data = $request->validate([
+            'email' => ['required', 'email', 'max:255'],
+            'user' => ['required', 'string'],
+        ]);
+        $user = User::query()
+            ->where('organization_id', $organization->id)
+            ->whereNull('customer_id')
+            ->find($sqids->decode(User::class, (string) $data['user']));
+        abort_if($user === null, 422);
+
+        $email = mb_strtolower(trim((string) $data['email']));
+        ExternalReference::link($organization, CalendlyPlugin::ID, CalendlyAppointmentMatcher::HOST_REFERENCE, $user, $email);
+        $user->audit('calendly.user_mapped', ['calendly_email' => $email, 'by_user_id' => (int) $admin->id]);
+
+        return back()->with('success', __('Calendly-Nutzer zugeordnet.'));
+    }
+
+    public function unmapHost(ExternalReference $reference): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+        abort_unless((int) $reference->organization_id === (int) $organization->id
+            && $reference->plugin_id === CalendlyPlugin::ID
+            && $reference->external_type === CalendlyAppointmentMatcher::HOST_REFERENCE, 404);
+
+        $user = $reference->referenceable;
+        $reference->delete();
+        if ($user instanceof User) {
+            $user->audit('calendly.user_unmapped', ['calendly_email' => $reference->external_id, 'by_user_id' => (int) $admin->id]);
+        }
+
+        return back()->with('success', __('Calendly-Zuordnung entfernt.'));
     }
 
     // ── OAuth-Flow: Hooks der gemeinsamen Basis (Vollreview W3a) ──
@@ -171,10 +223,11 @@ class CalendlyAdminController extends ConnectionOAuthController {
         ]));
     }
 
+    /** Bestätigen und Ablehnen darf, wer die Disposition führt — dasselbe Recht wie im Termin-Eingang (MVP-1610). */
     public function confirm(AppointmentRequest $appointmentRequest, CalendlyConfirmService $service): RedirectResponse {
-        $admin = $this->admin();
+        Gate::authorize(Permission::DispatchManage->value);
 
-        $entry = $service->confirm($appointmentRequest, $admin);
+        $entry = $service->confirm($appointmentRequest, $this->authUser());
         if ($entry === null) {
             return back()->with('error', __('Terminwunsch konnte nicht bestätigt werden.'));
         }
@@ -183,10 +236,10 @@ class CalendlyAdminController extends ConnectionOAuthController {
     }
 
     public function decline(Request $request, AppointmentRequest $appointmentRequest, CalendlyConfirmService $service): RedirectResponse {
-        $admin = $this->admin();
+        Gate::authorize(Permission::DispatchManage->value);
         $data = $request->validate(['reason' => ['nullable', 'string', 'max:500']]);
 
-        $service->decline($appointmentRequest, $admin, $data['reason'] ?? null);
+        $service->decline($appointmentRequest, $this->authUser(), $data['reason'] ?? null);
 
         return back()->with('success', __('Terminwunsch abgelehnt.'));
     }

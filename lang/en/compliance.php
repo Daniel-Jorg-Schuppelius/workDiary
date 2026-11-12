@@ -129,6 +129,8 @@ return [
             'end' => 'End',
             'breaks' => 'Breaks (min)',
             'duration' => 'Duration',
+            'homeoffice' => 'of which home office',
+            'errand' => 'of which errands',
         ],
     ],
     'driving' => [

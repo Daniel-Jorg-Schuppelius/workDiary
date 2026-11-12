@@ -37,7 +37,8 @@ class AssetUsageGuard {
         $asset->audit('asset.useBlockedByGuard', [
             'context' => $context,
             'block_id' => $obstacle->block?->id,
-            'reason' => $obstacle->block?->reason->value ?? 'blocking_defect',
+            'reason' => $obstacle->block?->reason->value
+                ?? ($asset->isInOperation() ? 'blocking_defect' : 'out_of_service'),
         ]);
 
         throw $obstacle;
@@ -51,6 +52,13 @@ class AssetUsageGuard {
     }
 
     private function firstObstacle(Asset $asset, string $context): ?AssetNotUsableException {
+        // Kein Sperrgrund, sondern das Ende des Lebenszyklus: dafür gibt es keine Ausnahmefreigabe.
+        if (! $asset->isInOperation()) {
+            return new AssetNotUsableException(
+                (string) __('asset.guard.out_of_service', ['asset' => $asset->name, 'status' => $asset->status->label()]),
+            );
+        }
+
         $block = $this->blocks->effectiveBlocks($asset, $context)->first();
 
         if ($block !== null) {

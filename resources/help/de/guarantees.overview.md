@@ -41,3 +41,20 @@ und Grund dauerhaft dokumentiert.
 ## Kopplung an die Gewährleistung
 
 Eine Bürgschaft kann auf eine **Gewährleistungsfrist** zeigen. Ist deren Ende erreicht, meldet die Fristenprüfung die **Rückgabe** der Urkunde — wie nach der Freigabe eines abgelösten Einbehalts. Ebenso übernimmt ein Sicherheitseinbehalt an der Rechnung das Ende der gewählten Gewährleistung als Freigabetermin und zieht nach, wenn sich die Frist verschiebt.
+
+## Rückgabe fällig und Verfall
+
+**Rückgabe fällig:** Kachel und Filter zeigen aktive Bürgschaften, deren
+Sicherungszweck beendet ist — der abgelöste Einbehalt wurde an der Rechnung
+freigegeben, oder die gekoppelte Gewährleistung ist abgelaufen. Ein abgelöster
+Einbehalt ist bereits ausgezahlt; seine Freigabe (Rechnungsseite, Karte
+**Sicherheitseinbehalte**) erzeugt keine neue Forderung, sondern meldet nur die
+Urkunde zur Rückgabe.
+
+**Verfallen:** Ist die Befristung überschritten, setzt die tägliche
+Fristenprüfung die Bürgschaft auf *Abgelaufen*; der letzte Tag der Befristung
+zählt noch. Im Register lässt sich das auch sofort mit **Als verfallen
+vermerken** festhalten. Verfallene Bürgschaften zählen nicht mehr als aktiv.
+Die Rückgabe der Urkunde lässt sich weiterhin protokollieren, und wer eine
+Verlängerung nachträgt (neues Datum bei **Befristet bis**), macht die
+Bürgschaft wieder aktiv.

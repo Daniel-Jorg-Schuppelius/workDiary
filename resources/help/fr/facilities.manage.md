@@ -1,7 +1,7 @@
 ---
 title: "Sites et locaux"
 topic: facilities.manage
-version: 2
+version: 3
 keywords:
     - bâtiments
     - étages
@@ -45,3 +45,5 @@ gérées dans la boîte de dialogue de modification de la salle (choisir
 l'exigence, éventuellement un niveau ou une valeur et une note). Les
 exigences actives sont affichées dans la liste des salles et dans le
 dossier d'objet d'un actif situé dans la salle.
+
+**Modifier une exigence de salle :** dans la boîte de la salle, « Modifier » sur une exigence ouvre une boîte dédiée pour le type, le niveau, la note et l’interrupteur d’activité ; vous revenez ensuite à la boîte de la salle.

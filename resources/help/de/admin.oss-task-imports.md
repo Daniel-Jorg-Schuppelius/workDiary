@@ -1,7 +1,7 @@
 ---
 title: "Aufgabenimporte aus Open-Source-Werkzeugen"
 topic: admin.oss-task-imports
-version: 1
+version: 2
 keywords:
     - Vikunja
     - Kanboard
@@ -161,3 +161,5 @@ erneute Prüfung mit derselben Instanz setzt die Zuordnungen fort.
 - Leantime oder GLPI zeigt keine Quelle: Der API-Schlüssel ist keinem Projekt
   zugeordnet, oder die REST-API ist in GLPI nicht eingeschaltet.
 - FreeScout antwortet mit 404: Das Modul „API & Webhooks“ ist nicht aktiv.
+
+**Datenführerschaft:** Führt ein anderes System die Aufgaben, legt der Abgleich je Aufgabe einen Fall „Datenführerschaft“ im Integrations-Eingang an. **Einmalig übernehmen** spielt die Aufgabe über dieselbe Zuordnung ein, solange diese aktiv ist; ändert sich die Aufgabe danach in der Quelle, öffnet sich der Fall wieder.

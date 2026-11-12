@@ -12,17 +12,32 @@ declare(strict_types=1);
 
 namespace App\Enums\Guarantee;
 
-use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Concerns\{HasOptions, HasTransitions};
+use App\Enums\Contracts\HasStatusTransitions;
 
 /** Bürgschaftsregister (Feature 114, MVP-603). */
-enum GuaranteeStatus: string implements HasLabel {
+enum GuaranteeStatus: string implements HasStatusTransitions {
     use HasOptions;
+    use HasTransitions;
 
     case Active = 'active';
     case Returned = 'returned';
     case Drawn = 'drawn';
     case Expired = 'expired';
+
+    /**
+     * Verfallen ist nicht endgültig: Die Urkunde kann noch zurückkommen, und
+     * eine nachgetragene Verlängerung macht die Bürgschaft wieder aktiv.
+     *
+     * @return list<self>
+     */
+    public function allowedTransitions(): array {
+        return match ($this) {
+            self::Active => [self::Returned, self::Drawn, self::Expired],
+            self::Expired => [self::Returned, self::Active],
+            self::Returned, self::Drawn => [],
+        };
+    }
 
     public function label(): string {
         return (string) __('enums.guarantee_status.' . $this->value);

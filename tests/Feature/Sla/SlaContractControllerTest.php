@@ -96,4 +96,55 @@ class SlaContractControllerTest extends TestCase {
 
         $this->actingAs($plain)->get(route('sla-contracts.index'))->assertForbidden();
     }
+
+    /** Feature 010 (MVP-1620): Kontingente mit Pauschale und Mehrstundensatz sind erfassbar und sichtbar. */
+    public function test_manager_maintains_quotas_with_flat_fee_and_overage_rate(): void {
+        $manager = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $manager->givePermissionTo([Permission::SlaContractView->value, Permission::SlaContractManage->value]);
+        $contract = $this->contract(['code' => 'SLA-2', 'label' => 'Vertrag 2']);
+
+        $this->actingAs($manager)->get(route('sla-contracts.show', $contract))->assertOk()
+            ->assertSee(route('sla-contracts.quotas.create', $contract), false);
+        $this->actingAs($manager)->get(route('sla-contracts.quotas.create', $contract))->assertOk()
+            ->assertSee('name="flat_fee"', false)
+            ->assertSee('name="overage_rate"', false);
+
+        $this->actingAs($manager)->post(route('sla-contracts.quotas.store', $contract), [
+            'period_kind' => 'month', 'included_hours' => '10', 'warn_threshold_pct' => '75', 'flat_fee' => '150', 'overage_rate' => '80',
+        ])->assertSessionHasNoErrors()->assertRedirect(route('sla-contracts.show', $contract));
+
+        $quota = SlaContractQuota::query()->where('sla_contract_id', $contract->id)->sole();
+        $this->assertSame(600, $quota->included_minutes);
+        $this->assertSame(75, $quota->warn_threshold_pct);
+        $this->assertSame('150.00', (string) $quota->flat_fee);
+        $this->assertSame('80.00', (string) $quota->overage_rate);
+
+        $this->actingAs($manager)->post(route('sla-contracts.quotas.store', $contract), [
+            'period_kind' => 'month', 'included_hours' => '5', 'warn_threshold_pct' => '80',
+        ])->assertSessionHasErrors('period_kind');
+
+        $this->actingAs($manager)->patch(route('sla-contracts.quotas.update', [$contract, $quota]), [
+            'period_kind' => 'quarter', 'included_hours' => '30', 'warn_threshold_pct' => '90', 'flat_fee' => '', 'overage_rate' => '95.50',
+        ])->assertSessionHasNoErrors()->assertRedirect();
+        $quota->refresh();
+        $this->assertSame('quarter', $quota->period_kind->value);
+        $this->assertNull($quota->flat_fee);
+
+        $this->actingAs($this->viewer)->get(route('sla-contracts.show', $contract))->assertOk()
+            ->assertSee(__('sla.quota.overage_line', ['rate' => '95,50 €', 'amount' => '0,00 €']))
+            ->assertDontSee(route('sla-contracts.quotas.edit', [$contract, $quota]), false);
+
+        $this->actingAs($manager)->delete(route('sla-contracts.quotas.destroy', [$contract, $quota]))->assertRedirect();
+        $this->assertSame(0, SlaContractQuota::query()->count());
+    }
+
+    public function test_quota_maintenance_needs_the_manage_permission(): void {
+        $contract = $this->contract();
+
+        $this->actingAs($this->viewer)->get(route('sla-contracts.quotas.create', $contract))->assertForbidden();
+        $this->actingAs($this->viewer)->post(route('sla-contracts.quotas.store', $contract), [
+            'period_kind' => 'month', 'included_hours' => '1', 'warn_threshold_pct' => '80',
+        ])->assertForbidden();
+        $this->assertSame(0, SlaContractQuota::query()->count());
+    }
 }

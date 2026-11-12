@@ -99,12 +99,12 @@ class DepreciationCalculatorTest extends TestCase {
         $this->assertSame('300.00', $rows[1]->amount->getAmount());
     }
 
-    public function test_amount_for_year_outside_the_schedule_is_zero(): void {
+    public function test_year_outside_the_schedule_has_no_row(): void {
         $calculator = new DepreciationCalculator;
         $asset = $this->asset('2026-10-01', '3600.00', 36);
 
-        $this->assertSame('300.00', $calculator->amountForYear($asset, 2026)->getAmount());
-        $this->assertSame('0.00', $calculator->amountForYear($asset, 2031)->getAmount());
+        $this->assertSame('300.00', $calculator->rowForYear($asset, 2026)?->amount->getAmount());
+        $this->assertNull($calculator->rowForYear($asset, 2031));
         $this->assertNull($calculator->rowForYear($asset, 2025));
     }
 

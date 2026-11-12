@@ -81,19 +81,22 @@ class GuaranteeService {
      * Monate später niemand mehr beantworten kann.
      */
     public function markReturned(Guarantee $guarantee, ?User $actor = null, ?string $note = null): Guarantee {
-        if (! $guarantee->status->isActive()) {
-            throw new RuntimeException((string) __('guarantee.not_active'));
-        }
+        return DB::transaction(function () use ($guarantee, $actor, $note): Guarantee {
+            $guarantee = Guarantee::query()->lockForUpdate()->findOrFail($guarantee->id);
+            if (! $guarantee->status->canTransitionTo(GuaranteeStatus::Returned)) {
+                throw new RuntimeException((string) __('guarantee.not_active'));
+            }
 
-        $guarantee->forceFill([
-            'status' => GuaranteeStatus::Returned->value,
-            'returned_on' => CarbonImmutable::today()->toDateString(),
-            'returned_note' => $note,
-        ])->save();
+            $guarantee->forceFill([
+                'status' => GuaranteeStatus::Returned->value,
+                'returned_on' => CarbonImmutable::today()->toDateString(),
+                'returned_note' => $note,
+            ])->save();
 
-        $guarantee->audit('guarantee.returned', ['by' => $actor?->id]);
+            $guarantee->audit('guarantee.returned', ['by' => $actor?->id]);
 
-        return $guarantee->refresh();
+            return $guarantee->refresh();
+        });
     }
 
     /** Ziehung der Bürgschaft festhalten (Rechtsentscheidung, kein Automatismus). */
@@ -108,6 +111,44 @@ class GuaranteeService {
         ])->save();
 
         $guarantee->audit('guarantee.drawn', ['by' => $actor?->id]);
+
+        return $guarantee->refresh();
+    }
+
+    /**
+     * Befristung überschritten: Die Bürgschaft gilt nicht mehr als Sicherheit.
+     * Setzt der Fristenlauf (ohne Akteur) oder die Aktion im Register.
+     */
+    public function markExpired(Guarantee $guarantee, ?User $actor = null): Guarantee {
+        return DB::transaction(function () use ($guarantee, $actor): Guarantee {
+            // Fristenlauf und Aktion im Register können dieselbe Bürgschaft treffen.
+            $guarantee = Guarantee::query()->lockForUpdate()->findOrFail($guarantee->id);
+            if (! $guarantee->isExpiredUnnoticed()) {
+                throw new RuntimeException((string) __('guarantee.not_expired'));
+            }
+
+            $guarantee->forceFill(['status' => GuaranteeStatus::Expired->value])->save();
+            $guarantee->audit('guarantee.expired', [
+                'by' => $actor?->id,
+                'expires_on' => $guarantee->expires_on?->toDateString(),
+            ]);
+
+            return $guarantee->refresh();
+        });
+    }
+
+    /** Nachgetragene Verlängerung: Eine verfallene Bürgschaft mit offener Befristung läuft wieder. */
+    public function reactivateIfExtended(Guarantee $guarantee, ?User $actor = null): Guarantee {
+        if ($guarantee->status !== GuaranteeStatus::Expired
+            || ($guarantee->expires_on !== null && $guarantee->expires_on->lt(CarbonImmutable::today()))) {
+            return $guarantee;
+        }
+
+        $guarantee->forceFill(['status' => GuaranteeStatus::Active->value])->save();
+        $guarantee->audit('guarantee.reactivated', [
+            'by' => $actor?->id,
+            'expires_on' => $guarantee->expires_on?->toDateString(),
+        ]);
 
         return $guarantee->refresh();
     }

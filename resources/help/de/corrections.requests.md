@@ -1,7 +1,7 @@
 ---
 title: "Zeitkorrekturen"
 topic: corrections.requests
-version: 1
+version: 3
 keywords:
     - Korrekturantrag
     - Stempelung nachtragen
@@ -36,3 +36,13 @@ Genehmigung oder werden als Selbstkorrektur direkt angewandt. Angewandte
 Korrekturen werden stets als manuelle Erfassung gekennzeichnet, damit
 Änderung und Begründung nachvollziehbar bleiben. Entwürfe und eingereichte
 Anträge lassen sich zurückziehen.
+
+**Auftrag ändern:** Wählen Sie im Antrag unter **Betroffener Eintrag** eine
+Zeitbuchung mit Projekt, erscheint das Feld **Auftrag ändern** mit den
+Aufträgen dieses Projekts. Damit hängen Sie die Buchung an einen anderen
+Auftrag oder lösen sie mit **— ohne Auftrag —**; nach dem Anwenden steht die
+Zeit am neuen Auftrag.
+
+## Angepasste Stempelungen
+
+Wendet ein genehmigter oder selbst nachgetragener Antrag eine Änderung auf eine abgeschlossene Stempelung an, steht sie danach auf **Angepasst**. Eine noch laufende Stempelung bleibt offen, damit sich weiter ausstempeln lässt.

@@ -47,4 +47,9 @@ return [
             'saved' => 'Assessment saved.',
         ],
     ],
+    // Bestellbezug im Vertragsformular (MVP-1606).
+    'purchase_order' => [
+        'label' => 'Purchase order (optional)',
+        'none' => 'no purchase order',
+    ],
 ];

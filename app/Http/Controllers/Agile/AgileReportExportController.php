@@ -164,8 +164,8 @@ class AgileReportExportController extends Controller {
                 ...collect((array) $data['reasons'])->map(fn($row, $reason): array => [$reason, $row['hours'], $row['count']])->values()->all(),
             ],
             'quality' => [
-                ['week', 'reopened', 'overrides'],
-                ...collect((array) $data['weeks'])->map(fn($row, $week): array => [$week, $row['reopened'], $row['overrides']])->values()->all(),
+                ['week', 'reopened', 'overrides', 'dod_overrides', 'dod_rate_percent'],
+                ...collect((array) $data['weeks'])->map(fn($row, $week): array => [$week, $row['reopened'], $row['overrides'], $row['dod_overrides'], $row['dod_rate']])->values()->all(),
             ],
             default => [
                 ['date', 'open', 'in_progress', 'done'],

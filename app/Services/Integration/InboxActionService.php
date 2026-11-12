@@ -41,6 +41,7 @@ class InboxActionService {
     /** Ordnet den Eintrag einem bestehenden lokalen Datensatz zu. */
     public function assignTo(IntegrationInboxItem $item, Model $target): void {
         $this->writeReference($item, $target);
+        $this->handOver($item, $target);
         $this->close($item, IntegrationInboxStatus::ResolvedLinked, $target);
     }
 
@@ -55,9 +56,18 @@ class InboxActionService {
         $model = $profile->create($organization, $item->mapped_snapshot ?? []);
 
         $this->writeReference($item, $model);
+        $this->handOver($item, $model);
         $this->close($item, IntegrationInboxStatus::ResolvedCreated, $model);
 
         return $model;
+    }
+
+    /** Der Bezugsdatensatz des Falls (etwa eine Terminanfrage) übernimmt die Zuordnung selbst. */
+    private function handOver(IntegrationInboxItem $item, Model $target): void {
+        $subject = $item->referenceable;
+        if ($subject instanceof Contracts\AcceptsInboxAssignment && $subject !== $target) {
+            $subject->acceptInboxAssignment($target);
+        }
     }
 
     /** Konflikt zugunsten der Remote-Werte lösen (abweichende Felder übernehmen). */

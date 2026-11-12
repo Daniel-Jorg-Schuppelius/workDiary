@@ -78,6 +78,28 @@ class ClubMemberGrade extends Model {
         return $this->revoked_at !== null;
     }
 
+    /** @return BelongsTo<ClubExamCandidate, $this> */
+    public function examCandidate(): BelongsTo {
+        return $this->belongsTo(ClubExamCandidate::class, 'club_exam_candidate_id');
+    }
+
+    /** Grade ohne Prüfung oder aus einer Prüfung mit freigegebenen Ergebnissen (MVP-1616). */
+    public function isReleased(): bool {
+        return $this->club_exam_candidate_id === null
+            || $this->examCandidate()->whereHas('offer', static fn (Builder $offer) => $offer->whereNotNull('results_released_at'))->exists();
+    }
+
+    /**
+     * Nur für Mitglieder sichtbare Grade: Prüfungsgrade erst nach der Ergebnisfreigabe.
+     *
+     * @param  Builder<ClubMemberGrade>  $query
+     * @return Builder<ClubMemberGrade>
+     */
+    public function scopeReleased(Builder $query): Builder {
+        return $query->where(static fn (Builder $grades) => $grades->whereNull($query->qualifyColumn('club_exam_candidate_id'))
+            ->orWhereHas('examCandidate.offer', static fn (Builder $offer) => $offer->whereNotNull('results_released_at')));
+    }
+
     /**
      * @param  Builder<ClubMemberGrade>  $query
      * @return Builder<ClubMemberGrade>

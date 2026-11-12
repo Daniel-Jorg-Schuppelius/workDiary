@@ -1,7 +1,7 @@
 ---
 title: "Helpdesk y Service Desk"
 topic: helpdesk.overview
-version: 3
+version: 5
 keywords:
     - sistema de tickets
     - crear ticket
@@ -84,3 +84,58 @@ volumen por cola, los tiempos de reacción y resolución, el cumplimiento
 de SLA, los motivos de espera, las tasas de cambios, el inventario de
 problemas y la demanda del catálogo. Se renuncia deliberadamente a
 clasificaciones de agentes individuales.
+
+**Cambiar el estado:** con **Cambiar estado** en el ticket usted elige el
+nuevo estado; solo se ofrecen las transiciones permitidas. Al resolver y
+cerrar registra el **Código de cierre** y el **Resumen de la solución**. Un
+estado de espera necesita un motivo, una fecha de seguimiento y una persona
+responsable; llegada la fecha, WorkDiary se lo recuerda. El contrato SLA
+determina si el reloj SLA se detiene. Un ticket resuelto solo se reabre con
+un motivo; se conservan los tiempos de reacción y de solución anteriores.
+
+**Ajustes de la cola:** en cada cola usted define los tipos de ticket
+admitidos, el horario de atención, la región de festivos, el nombre del
+remitente y la dirección de respuesta. Los tickets nuevos sin asignación van
+a la cola predeterminada; si esta no admite el tipo de ticket, a la primera
+cola que lo admita. El SLA predeterminado de la cola se aplica si ni el
+activo del ticket, ni el proyecto ni el cliente tienen un contrato propio.
+
+**Cola gestionada externamente:** si un sistema conectado como Zammad lleva
+los tickets de una cola, los cambios de estado y las respuestas al cliente
+quedan bloqueados en WorkDiary y el ticket muestra un aviso. La asignación,
+las notas internas, los tiempos y la facturación siguen siendo posibles.
+Cuando usted restablece el destino de tickets de la integración, WorkDiary
+vuelve a llevar la cola.
+
+**Confidencialidad:** un ticket confidencial solo lo ven el responsable, los
+observadores, el equipo de la cola y los administradores. Usted fija el nivel
+al crear el ticket o en la clasificación.
+
+**Pedir un servicio:** en **Pedir un servicio** los empleados piden para sí
+mismos entradas del catálogo de servicios. Los datos del formulario de pedido
+aparecen en el ticket y en el diálogo de decisión de la aprobación; el ticket
+muestra además qué expediente cumple el pedido.
+
+**Estado del envío:** en cada respuesta enviada por correo electrónico se
+indica si el envío está pendiente, realizado o fallido.
+
+**Ticket desde un punto abierto:** en el punto abierto, **Abrir ticket** crea
+un ticket con el título, la descripción y la referencia del punto. Por cada
+punto se crea como máximo un ticket; el punto remite a él.
+
+**Portal del cliente:** cuando el cliente confirma la solución o reabre el
+ticket con un motivo, esto funciona como un cambio de estado interno — con
+historial y sin alterar los tiempos de reacción y de solución. En las colas
+gestionadas externamente, la respuesta, la aceptación y la reapertura también
+están bloqueadas en el portal; allí el portal solo muestra el estado.
+
+**Cambio de cola y buzón:** cuando un ticket cambia de cola, se aplica el SLA
+predeterminado de la nueva cola si su contrato procedía hasta entonces de la
+cola o de la organización, o si faltaba; un contrato del activo, del
+proyecto o del cliente y un contrato fijado expresamente se mantienen. En **Buzón de
+entrada** usted asigna un buzón a la cola — uno por cola.
+
+**Tickets confidenciales en listas:** las listas de selección y las
+referencias muestran un ticket confidencial solo a las personas autorizadas.
+En los desgloses de informes sigue contando, pero para los demás aparece solo
+como «Ticket confidencial».

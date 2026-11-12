@@ -73,5 +73,7 @@ class EasybillServiceProvider extends PluginServiceProviderBase {
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Invoicing\Contracts\IncomingPartyLookup::class, \App\Plugins\Easybill\Services\EasybillIncomingPartyLookup::class);
         // Rechnungen mit Nachweisen durch WorkDiary zustellen, das Fakturasystem führt (Feature 196).
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Finance\Contracts\ExternalInvoiceProvider::class, \App\Plugins\Easybill\Services\EasybillExternalInvoiceProvider::class);
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\EasybillContactImportService::class);
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\EasybillDocumentPullService::class);
     }
 }

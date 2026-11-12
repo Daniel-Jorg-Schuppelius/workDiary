@@ -32,6 +32,16 @@
                         <x-status-badge>{{ __('globale Vorlage') }}</x-status-badge>
                     @endif
                 </div>
+                <div class="flex flex-wrap items-center justify-end gap-2">
+                @can('update', $profile)
+                    @if ($profile->organization_id !== null)
+                        <x-icon-btn icon="edit" size="xs" data-entry-modal-trigger :href="route('asset-compliance.profiles.edit', $profile)" :label="__('Bearbeiten')" />
+                        <x-action-form :action="route('asset-compliance.profiles.toggle', $profile)"
+                                       :confirm="__('asset_compliance.profile.deactivate_confirm')" :confirm-label="__('asset_compliance.action.deactivate')">
+                            <x-icon-btn icon="pause" size="xs" type="submit" :label="__('asset_compliance.action.deactivate')" />
+                        </x-action-form>
+                    @endif
+                @endcan
                 @can('create', \App\Models\AssetCompliance\AssetComplianceProfile::class)
                     <details class="text-left">
                         <summary class="btn btn-xs btn-primary">{{ __('Asset zuweisen') }}</summary>
@@ -44,6 +54,8 @@
                             </x-select-field>
                             <x-input-field name="last_done_on" type="date" :label="__('Zuletzt geprüft am')" />
                             <x-input-field name="next_due_on" type="date" :label="__('Nächste Fälligkeit (optional)')" />
+                            <x-input-field name="interval_months_override" type="number" min="1" max="240" :id="'assign-interval-' . $profile->sqid"
+                                           :label="__('asset_compliance.assignment.interval_override')" :placeholder="(string) $profile->interval_months" />
                             <x-select-field name="responsible_user_id" :label="__('Verantwortlich')">
                                 <option value="">{{ __('—') }}</option>
                                 @foreach ($users as $u)
@@ -60,21 +72,41 @@
                         </form>
                     </details>
                 @endcan
+                </div>
             </div>
             <x-table bare>
-                <x-slot:head><tr><th>{{ __('Anforderung') }}</th><th>{{ __('Grenzwerte') }}</th><th>{{ __('Pflicht') }}</th></tr></x-slot:head>
+                <x-slot:head><tr><th>{{ __('Anforderung') }}</th><th>{{ __('Grenzwerte') }}</th><th>{{ __('Pflicht') }}</th><th class="text-right">{{ __('Aktionen') }}</th></tr></x-slot:head>
                 @forelse ($profile->requirements as $requirement)
-                    <tr>
-                        <td>{{ $requirement->label }}</td>
+                    <tr @class(['opacity-60' => ! $requirement->is_active])>
+                        <td>
+                            {{ $requirement->label }}
+                            @if (! $requirement->is_active)
+                                <x-status-badge tone="ghost" size="sm">{{ __('asset_compliance.state.inactive') }}</x-status-badge>
+                            @endif
+                        </td>
                         <td class="font-mono text-sm">
                             {{ $requirement->limit_min !== null ? '≥ ' . $requirement->limit_min : '' }}
                             {{ $requirement->limit_max !== null ? '≤ ' . $requirement->limit_max : '' }}
                             {{ $requirement->unit ?? '' }}
                         </td>
                         <td>{{ $requirement->is_mandatory ? __('ja') : __('optional') }}</td>
+                        <td class="text-right">
+                            @can('update', $profile)
+                                @if ($profile->organization_id !== null)
+                                    <div class="join">
+                                        <x-icon-btn icon="edit" tone="ghost" size="xs" class="join-item" data-entry-modal-trigger
+                                                    :href="route('asset-compliance.profiles.requirements.edit', [$profile, $requirement])" :label="__('Bearbeiten')" />
+                                        <x-action-form :action="route('asset-compliance.profiles.requirements.toggle', [$profile, $requirement])" class="join-item">
+                                            <x-icon-btn type="submit" tone="ghost" size="xs" :icon="$requirement->is_active ? 'pause' : 'play_arrow'"
+                                                        :label="$requirement->is_active ? __('asset_compliance.action.deactivate') : __('asset_compliance.action.activate')" />
+                                        </x-action-form>
+                                    </div>
+                                @endif
+                            @endcan
+                        </td>
                     </tr>
                 @empty
-                    <x-table.empty :colspan="3" :title="__('Keine messbaren Anforderungen — Ergebnis wird pauschal dokumentiert.')" compact />
+                    <x-table.empty :colspan="4" :title="__('Keine messbaren Anforderungen — Ergebnis wird pauschal dokumentiert.')" compact />
                 @endforelse
             </x-table>
             @can('update', $profile)
@@ -91,6 +123,27 @@
             @endcan
         </x-card>
     @endforeach
+
+    @if ($inactiveProfiles->isNotEmpty())
+        <x-card :title="__('asset_compliance.profile.inactive_title')" padding="p-0">
+            <x-table bare>
+                <x-slot:head><tr><th>{{ __('Name') }}</th><th>{{ __('Prüfart') }}</th><th class="text-right">{{ __('Aktionen') }}</th></tr></x-slot:head>
+                @foreach ($inactiveProfiles as $inactive)
+                    <tr>
+                        <td>{{ $inactive->name }} <span class="font-mono text-xs text-muted">{{ $inactive->code }}</span></td>
+                        <td>{{ $inactive->inspection_kind->label() }}</td>
+                        <td class="text-right">
+                            @can('update', $inactive)
+                                <x-action-form :action="route('asset-compliance.profiles.toggle', $inactive)">
+                                    <x-icon-btn icon="play_arrow" size="xs" type="submit" show-label>{{ __('asset_compliance.action.activate') }}</x-icon-btn>
+                                </x-action-form>
+                            @endcan
+                        </td>
+                    </tr>
+                @endforeach
+            </x-table>
+        </x-card>
+    @endif
 
     @can('create', \App\Models\AssetCompliance\AssetComplianceProfile::class)
         <x-card :title="__('Neues Organisationsprofil (überschreibt globale Vorlage gleichen Codes)')">

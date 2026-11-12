@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Time;
 
-use App\Enums\Attendance\AttendanceSource;
+use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
 use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Enums\User\Permission as P;
 use App\Models\Platform\{Organization, User};
@@ -89,6 +89,34 @@ class TimeCorrectionSelfApplyTest extends TestCase {
         ]);
         $log = \App\Models\Audit\AuditLog::query()->where('event', 'attendance.correctedByApproval')->firstOrFail();
         $this->assertSame((int) $req->id, (int) $log->changes['correction_request_id']);
+    }
+
+    /** MVP-1620: eine korrigierte, abgeschlossene Stempelung ist „angepasst“; eine laufende bleibt offen. */
+    public function test_applied_update_marks_a_closed_attendance_as_adjusted(): void {
+        $org = Organization::factory()->create(['settings' => ['attendance' => ['self_correction' => 'self']]]);
+        $emp = User::factory()->create(['organization_id' => $org->id]);
+        $closed = Attendance::factory()->create([
+            'organization_id' => $org->id, 'user_id' => $emp->id, 'date' => '2026-06-01',
+            'started_at' => '2026-06-01 08:00:00', 'ended_at' => '2026-06-01 16:00:00', 'status' => AttendanceStatus::Closed,
+        ]);
+        $running = Attendance::factory()->create([
+            'organization_id' => $org->id, 'user_id' => $emp->id, 'date' => '2026-06-02',
+            'started_at' => '2026-06-02 08:00:00', 'ended_at' => null, 'status' => AttendanceStatus::Open,
+        ]);
+        $service = app(TimeCorrectionService::class);
+        foreach ([[$closed, '2026-06-01', ['ended_at' => '2026-06-01 17:00:00']], [$running, '2026-06-02', ['started_at' => '2026-06-02 07:30:00']]] as [$target, $day, $after]) {
+            $req = $service->submit($service->createDraft($emp, CarbonImmutable::parse($day), 'Uhrzeit korrigieren.', [[
+                'target_type' => MorphMap::alias(Attendance::class),
+                'target_id' => $target->id,
+                'action' => 'update',
+                'before' => null,
+                'after' => $after,
+            ]], $emp), $emp);
+            $service->selfApply($req);
+        }
+
+        $this->assertSame(AttendanceStatus::Adjusted, $closed->fresh()?->status);
+        $this->assertSame(AttendanceStatus::Open, $running->fresh()?->status, 'Eine laufende Stempelung muss sich weiter ausstempeln lassen.');
     }
 
     public function test_requires_approval_by_default(): void {

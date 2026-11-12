@@ -1,7 +1,7 @@
 ---
 title: "Profil & compte"
 topic: account.profile
-version: 3
+version: 4
 keywords:
     - paramètres
     - changer le mot de passe
@@ -48,3 +48,11 @@ champ reste vide, votre nom et l’organisation figurent sous la réponse. Le pi
 de page e-mail de l’organisation (raison sociale, adresse, mentions
 obligatoires) suit automatiquement ; l’administration de l’organisation le gère
 dans les paramètres.
+
+## Connexion depuis un nouvel appareil
+
+Si quelqu'un se connecte à votre compte depuis un appareil inconnu ou depuis un
+autre pays, vous recevez un message par e-mail et dans l'application. Sous
+**Notifications**, vous pouvez désactiver cette alerte ; la désactivation et la
+réactivation sont consignées. Laissez si possible l'alerte active — elle est
+souvent le premier signe d'une prise de contrôle du compte.

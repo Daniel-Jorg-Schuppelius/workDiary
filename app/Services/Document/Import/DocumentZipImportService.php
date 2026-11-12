@@ -170,32 +170,6 @@ final class DocumentZipImportService implements ZipImporter {
     }
 
     /**
-     * Synchrone Variante ohne ImportRun (Tests, Kommandozeile).
-     *
-     * @return array{created: int, updated: int, skipped: int, failed: int, errors: list<string>}
-     */
-    public function importBinary(string $zipBinary, Organization $organization, User $actor): array {
-        $errors = [];
-        try {
-            $opened = $this->open($zipBinary);
-        } catch (RuntimeException $e) {
-            return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'failed' => 1, 'errors' => [$e->getMessage()]];
-        }
-        foreach ($opened['headerIssues'] as $issue) {
-            $errors[] = $issue->message;
-        }
-        if ($errors !== []) {
-            return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'failed' => 1, 'errors' => $errors];
-        }
-
-        $counts = $this->process($opened, $organization, $actor, static function (int $rowNumber, ValidationIssue $issue) use (&$errors): void {
-            $errors[] = sprintf('Zeile %d: %s', $rowNumber, $issue->message);
-        });
-
-        return $counts + ['errors' => $errors];
-    }
-
-    /**
      * @param  array{prefix: string, entries: array<string, string>, rows: list<array{number: int, data: array<string, string>}>}  $opened
      * @param  callable(int, ValidationIssue, array<string, string>): void  $onIssue
      * @return array{created: int, updated: int, skipped: int, failed: int}

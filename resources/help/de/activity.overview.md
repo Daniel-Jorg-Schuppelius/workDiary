@@ -1,7 +1,7 @@
 ---
 title: "Aktivität"
 topic: activity.overview
-version: 1
+version: 2
 keywords:
     - Aktivität
     - Wer hat was geändert
@@ -26,3 +26,5 @@ In den Akten von Kunde, Endkunde, Lieferant und Projekt fasst der
 „Änderungsverlauf“ die Änderungen und Ereignisse des Objekts zusammen; die
 Kachel „Letzte Team-Aktivität“ zeigt die jüngsten Einträge der letzten zwei
 Wochen.
+
+**Ereignis:** Der Filter „Ereignis“ grenzt auf eine Art von Änderung ein, etwa „Angelegt“ oder „Gelöscht“. „Fachereignisse“ zeigt alles außer den allgemeinen Änderungen (angelegt, geändert, gelöscht, archiviert, wiederhergestellt) — etwa Freigaben, Unterschriften oder Abschlüsse.

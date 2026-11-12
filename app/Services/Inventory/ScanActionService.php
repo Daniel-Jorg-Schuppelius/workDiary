@@ -40,7 +40,7 @@ class ScanActionService {
      * Abgang (je Charge eine Bewegung). Ein gescannter Chargencode bucht genau
      * diese Charge.
      *
-     * @param array{actor?: int|null, target?: Warehouse|null} $options
+     * @param array{actor?: int|null, target?: Warehouse|null, unit?: string|null} $options `unit`: Einheit des Artikels, leer = Basiseinheit
      */
     public function book(string $code, ScanAction $action, Warehouse $warehouse, string $qty, array $options = []): StockMovement|StockIssue {
         $match = $this->resolver->resolve($code);
@@ -49,7 +49,9 @@ class ScanActionService {
             throw new RuntimeException('Unbekannter oder nicht bestandsführender Code: ' . trim($code));
         }
 
-        $qty = DecimalQty::positive($qty);
+        // MVP-1584: Eingabe in einer Einheit des Artikels, gebucht wird in Basiseinheit.
+        $entered = EnteredQuantity::of($variant, $qty, $options['unit'] ?? null);
+        $qty = $entered->base;
         $actor = $options['actor'] ?? null;
 
         // Vollaudit 2026-07 (M19, E2): chargen-/serienpflichtige Artikel nicht
@@ -62,10 +64,15 @@ class ScanActionService {
             throw new RuntimeException((string) __('inventory.error.tracked_article_manual_move'));
         }
 
+        // MHD-Pflicht (MVP-1579): der Scan-Eingang kennt weder Charge noch Datum.
+        if ($action === ScanAction::Receipt && ($article->shelf_life_required ?? false)) {
+            throw new RuntimeException((string) __('inventory.error.shelf_life_manual_receipt'));
+        }
+
         return match ($action) {
-            ScanAction::Receipt => $this->ledger->receipt($variant, $warehouse, $qty, actorUserId: $actor),
-            ScanAction::Issue => $this->ledger->issue($variant, $warehouse, $qty, actorUserId: $actor, lot: $match->lot),
-            ScanAction::Transfer => $this->transfer($variant, $warehouse, $options['target'] ?? null, $qty, $actor, $match->lot),
+            ScanAction::Receipt => $this->ledger->receipt($variant, $warehouse, $qty, actorUserId: $actor, entered: $entered),
+            ScanAction::Issue => $this->ledger->issue($variant, $warehouse, $qty, actorUserId: $actor, lot: $match->lot, entered: $entered),
+            ScanAction::Transfer => $this->transfer($variant, $warehouse, $options['target'] ?? null, $entered, $actor, $match->lot),
         };
     }
 
@@ -73,15 +80,14 @@ class ScanActionService {
      * Umlagerung je Charge: die Menge wird wie ein Abgang zugeteilt (gescannte
      * Charge, sonst FEFO, Rest ohne Charge) und je Teil mit derselben Charge
      * im Ziel-Lager zugebucht — dort bleibt sie pickbar.
-     *
-     * @param numeric-string $qty
      */
-    private function transfer(ArticleVariant $variant, Warehouse $from, ?Warehouse $to, string $qty, ?int $actor, ?StockLot $scanned): StockIssue {
+    private function transfer(ArticleVariant $variant, Warehouse $from, ?Warehouse $to, EnteredQuantity $entered, ?int $actor, ?StockLot $scanned): StockIssue {
+        $qty = $entered->base;
         if (! $to instanceof Warehouse) {
             throw new RuntimeException('Umlagerung ohne Ziel-Lager.');
         }
 
-        return DB::transaction(function () use ($variant, $from, $to, $qty, $actor, $scanned): StockIssue {
+        return DB::transaction(function () use ($variant, $from, $to, $qty, $entered, $actor, $scanned): StockIssue {
             // Prüfung und Zuteilung in derselben Transaktion: beide sperren den Bestand gegen parallele Abgänge.
             if (Decimal::of($this->ledger->availableForUpdate($variant, $from), self::SCALE)->lessThan(Decimal::of($qty, self::SCALE))) {
                 throw new RuntimeException('Umlagerung übersteigt den verfügbaren Bestand.');
@@ -91,11 +97,13 @@ class ScanActionService {
             foreach ($this->lotStock->allocate($variant, $from, $qty, explicit: $scanned, ownership: OwnershipType::Own)->parts as ['lot' => $lot, 'qty' => $partQty]) {
                 $leaving[] = $this->ledger->post(new StockPosting(
                     $variant, $from, StockState::Physical, DecimalQty::negative($partQty), StockMovementType::TransferOut,
-                    OwnershipType::Own, actorUserId: $actor, stockLotId: $lot?->id,
+                    OwnershipType::Own, originalQty: $entered->originalFor($partQty), originalUnit: $entered->originalUnit,
+                    actorUserId: $actor, stockLotId: $lot?->id,
                 ))->setRelation('lot', $lot);
                 $this->ledger->post(new StockPosting(
                     $variant, $to, StockState::Physical, $partQty, StockMovementType::TransferIn,
-                    OwnershipType::Own, actorUserId: $actor, stockLotId: $lot?->id,
+                    OwnershipType::Own, originalQty: $entered->originalFor($partQty), originalUnit: $entered->originalUnit,
+                    actorUserId: $actor, stockLotId: $lot?->id,
                 ));
             }
 

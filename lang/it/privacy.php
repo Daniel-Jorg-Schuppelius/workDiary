@@ -9,7 +9,14 @@
  */
 
 return [
+    'dsr_extension' => [
+        'closed' => 'Il termine può essere prorogato solo per una richiesta aperta.',
+        'first_deadline_passed' => 'Il primo termine è scaduto. La proroga deve essere comunicata alla persona entro tale termine e non è più possibile.',
+        'not_later' => 'Il nuovo termine deve essere successivo a quello attuale.',
+        'too_late' => 'Il termine può essere prorogato al massimo di altri due mesi, cioè fino al :date.',
+    ],
     'retention_area' => [
+        'privacy_incidents' => 'Violazioni dei dati (chiuse)',
         'incoming_invoices_rejected' => 'Fatture in entrata rifiutate',
         'audit_logs' => 'Registro di audit',
         'exports' => 'Esportazioni paghe e tempi',
@@ -74,5 +81,16 @@ return [
         'dpia_missing' => '«:name» richiede una DPIA ma non ha una DPIA conclusa',
         'tom_missing' => '«:name» senza misure tecniche e organizzative assegnate',
         'tom_proof_expiring' => 'Le prove delle misure tecniche e organizzative scadono o sono scadute: :names',
+    ],
+    'legal_region' => [
+        'label' => 'Ambito giuridico',
+        'hint' => 'Determina i termini di conservazione delle proposte di eliminazione e le indicazioni della documentazione delle procedure. Una modifica vale per le future proposte di eliminazione.',
+    ],
+    'tom' => [
+        'implementation_status' => 'Stato di attuazione',
+        'protection_level' => 'Esigenza di protezione',
+        'protection_level_none' => '— non definita —',
+        'state_save' => 'Salva stato',
+        'state_saved' => 'Stato di attuazione ed esigenza di protezione salvati.',
     ],
 ];

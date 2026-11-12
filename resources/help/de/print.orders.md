@@ -1,7 +1,7 @@
 ---
 title: "Druckaufträge (Druck & Kopiershop)"
 topic: print.orders
-version: 1
+version: 2
 keywords:
     - Druckerei
     - Copyshop
@@ -47,3 +47,5 @@ Freigabe, Sperre oder Nacharbeit.
 läuft über die vorhandene Sendungslogik, der Tresenverkauf bleibt
 datensparsam. Nach Ablauf der Löschfrist wird nur die Kundendatei entfernt —
 Auftrag, Snapshot und Prüfsumme bleiben als kaufmännischer Nachweis.
+
+**Sicherheitsabstand und Sonderfarben:** In der Druckfreigabe halten Sie den Sicherheitsabstand in Millimetern und die Sonderfarben fest. Beide stehen danach im Produktionsstand des Auftrags.

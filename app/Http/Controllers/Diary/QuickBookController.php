@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Project\{Project, Task};
 use App\Models\Time\TimeEntry;
+use App\Rules\NotInLockedMonth;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
@@ -43,10 +44,10 @@ class QuickBookController extends Controller {
             'task' => ['nullable', 'string'],
             'description' => ['nullable', 'string', 'max:2000'],
             // Entweder Zeitspanne (aus dem Block) ODER Dauer+Datum (Fallback).
-            'started_at' => ['nullable', 'required_without:minutes', 'date'],
+            'started_at' => ['nullable', 'required_without:minutes', 'date', new NotInLockedMonth],
             'ended_at' => ['nullable', 'required_with:started_at', 'date', 'after:started_at'],
             'minutes' => ['nullable', 'required_without:started_at', 'integer', 'min:1', 'max:1440'],
-            'date' => ['nullable', 'date'],
+            'date' => ['nullable', 'date', new NotInLockedMonth],
         ]);
 
         $project = $this->resolveProject((string) $data['project']);
@@ -69,6 +70,10 @@ class QuickBookController extends Controller {
         } else {
             $attributes['minutes'] = (int) $data['minutes'];
             $day = filled($data['date'] ?? null) ? CarbonImmutable::parse((string) $data['date']) : CarbonImmutable::today();
+            if (blank($data['date'] ?? null)) {
+                // Ohne Datum gilt heute — die Regel am Feld hat dann nichts geprüft.
+                $request->merge(['date' => $day->toDateString()])->validate(['date' => [new NotInLockedMonth]]);
+            }
             $attributes['date'] = $day->startOfDay();
             $dateString = $day->toDateString();
         }
@@ -104,7 +109,7 @@ class QuickBookController extends Controller {
 
         $data = $request->validate([
             'blocks' => ['required', 'array', 'min:1', 'max:50'],
-            'blocks.*.started_at' => ['required', 'date'],
+            'blocks.*.started_at' => ['required', 'date', new NotInLockedMonth],
             'blocks.*.ended_at' => ['required', 'date', 'after:blocks.*.started_at'],
             'blocks.*.project' => ['nullable', 'string'],
             'date' => ['nullable', 'date'],

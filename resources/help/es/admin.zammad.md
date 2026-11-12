@@ -1,7 +1,7 @@
 ---
 title: "Conexión con Zammad"
 topic: admin.zammad
-version: 3
+version: 4
 keywords:
     - Zammad
     - helpdesk
@@ -193,3 +193,5 @@ como**, para tickets de servicio también la **Cola**, y haga clic en
   de servicio.
 - Los tickets llegan al proyecto equivocado: compruebe los ID de grupo en
   **Cola → proyecto** y las sugerencias de cliente en la bandeja.
+
+**Soberanía de datos:** En el modo «ticket de servicio», la importación solo escribe si Zammad puede escribir el área de tickets, es decir, si la gestiona WorkDiary o Zammad. Si otro sistema gestiona los tickets, la importación no crea ni cierra tickets; los casos quedan en la bandeja de integraciones para asumirlos una vez. Zammad gestiona la cola de destino: WorkDiary no acepta en ella la creación manual, la reserva de correos ni las respuestas por correo. En el modo «tarea» rige el área de tareas.

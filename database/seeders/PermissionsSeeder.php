@@ -235,6 +235,8 @@ class PermissionsSeeder extends Seeder {
                     PermissionEnum::ReportTargetManage->value,
                     // Feature 184: Leitungsbericht per E-Mail — Empfang ist Leitungssache.
                     PermissionEnum::ReportManagementDigest->value,
+                    // Nachweisarten der Lieferanten (MVP-1586): organisationsweite Sperrwirkung.
+                    PermissionEnum::SupplierCredentialTypeManage->value,
                     PermissionEnum::AuditLogView->value,
                     PermissionEnum::AccessAuditView->value,
                     PermissionEnum::FlexBalanceView->value,
@@ -435,6 +437,10 @@ class PermissionsSeeder extends Seeder {
             // Vollaudit 2026-07 (M22): Freigabe-Rechte der Leitung.
             PermissionEnum::InventoryNegative,
             PermissionEnum::InventorySubstituteApprove,
+            // MVP-1585: bisher in inventory.post enthalten — die Rolle behält Zählen, Reservieren und Kompensieren.
+            PermissionEnum::InventoryCount,
+            PermissionEnum::InventoryReserve,
+            PermissionEnum::InventoryExternalResolve,
             PermissionEnum::DutyPlanViewAny,
             PermissionEnum::DutyPlanCreate,
             PermissionEnum::DutyPlanUpdate,
@@ -1208,6 +1214,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::EnergyLogManage,
             // Offene Punkte lassen sich jedem zuweisen; wer einen hat, bearbeitet ihn.
             PermissionEnum::OpenIssueUpdate,
+            // Leistungen aus dem Servicekatalog bestellt jede interne Person für sich (MVP-1549).
+            PermissionEnum::ServiceCatalogRequest,
         ];
 
         return [

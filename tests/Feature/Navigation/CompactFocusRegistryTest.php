@@ -42,7 +42,12 @@ class CompactFocusRegistryTest extends TestCase {
         $registry = app(NavigationRegistry::class);
         $focus = app(NavFocusService::class);
         $selectable = $registry->selectableKeys();
-        $createRoutes = $registry->selectableCreateRoutes();
+        $createRoutes = [];
+        foreach ($registry->build(false, 'duties.index')['createGroups'] as $group) {
+            foreach ((array) $group['items'] as $item) {
+                $createRoutes[] = $item['route'];
+            }
+        }
 
         $this->assertNotEmpty($this->compactKeys());
         foreach ($this->compactKeys() as $key) {

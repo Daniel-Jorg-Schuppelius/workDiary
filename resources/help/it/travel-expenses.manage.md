@@ -1,7 +1,7 @@
 ---
 title: "Viaggi, spese e diarie"
 topic: travel-expenses.manage
-version: 5
+version: 7
 keywords:
     - nota spese
     - rimborso spese
@@ -148,3 +148,7 @@ contrassegni le traversate in cui il veicolo viaggia su traghetto o treno. Il
 secondo conducente non accumula tempo di guida, ma il suo tempo nel veicolo
 non conta come riposo; in multipresenza bastano 9 ore di riposo in 30 ore. Una
 traversata in traghetto o treno non interrompe il riposo.
+
+**Ricevuta e rimborso:** se la categoria richiede una ricevuta, la nota spese resta una bozza finché non è allegata; la carichi tramite «File del giustificativo» e poi la invii. Contrassegnando la nota come rimborsata, una finestra chiede il riferimento del rimborso (ad esempio la causale del bonifico); compare nell’esportazione delle spese.
+
+**Riferimento di rimborso e veicolo:** rimborsando una spesa o un forfait inserite un riferimento, ad esempio la causale del bonifico. Nel registro di viaggio indicate targa o denominazione dei veicoli privati o di terzi.

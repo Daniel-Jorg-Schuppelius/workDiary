@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 
-{{-- Aktivitäts-Feed der Organisation (Feature 183). Variablen: $items (list<TimelineItem>), $hasMore, $page, $types, $users, $filters, $rangeLabel. --}}
+{{-- Aktivitäts-Feed der Organisation (Feature 183). Variablen: $items (list<TimelineItem>), $hasMore, $page, $types, $events (Schlüssel → Bezeichnung), $users, $filters, $rangeLabel. --}}
 
 @extends('layouts.app')
 
@@ -21,6 +21,12 @@
             <option value="">{{ __('activity.filter.all_types') }}</option>
             @foreach ($types as $key => $class)
                 <option value="{{ $key }}" @selected($filters['type'] === $key)>{{ __('entity-types.' . class_basename($class)) }}</option>
+            @endforeach
+        </select>
+        <select name="event" class="select select-sm select-bordered w-48 shrink-0" aria-label="{{ __('activity.filter.event') }}">
+            <option value="">{{ __('activity.filter.all_events') }}</option>
+            @foreach ($events as $key => $label)
+                <option value="{{ $key }}" @selected($filters['event'] === $key)>{{ $label }}</option>
             @endforeach
         </select>
         <select name="user" class="select select-sm select-bordered w-48 shrink-0" aria-label="{{ __('activity.filter.user') }}">

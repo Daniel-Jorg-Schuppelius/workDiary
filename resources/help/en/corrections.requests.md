@@ -1,7 +1,7 @@
 ---
 title: "Time corrections"
 topic: corrections.requests
-version: 1
+version: 3
 keywords:
     - correction request
     - missed clock-in
@@ -32,3 +32,12 @@ Submitted requests either go through approval or are applied directly as a
 self-correction, depending on the organization's configuration. Applied
 corrections are always marked as manual entries so that the change and its
 reason remain traceable. Drafts and submitted requests can be withdrawn.
+
+**Change order:** If you select a time booking with a project under
+**Affected entry**, the field **Change order** appears with the orders of
+that project. Use it to attach the booking to another order or detach it
+with **— no order —**; after applying, the time is on the new order.
+
+## Adjusted time stamps
+
+If an approved or self-applied request changes a closed time stamp, it then shows **Adjusted**. A time stamp that is still running stays open so that clocking out remains possible.

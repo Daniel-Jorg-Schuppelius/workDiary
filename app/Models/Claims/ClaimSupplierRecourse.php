@@ -35,6 +35,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $amount_claimed
  * @property string|null $amount_recovered
  * @property \Illuminate\Support\Carbon|null $submitted_at
+ * @property int|null $response_due_days
  * @property \Illuminate\Support\Carbon|null $response_due_at
  * @property \Illuminate\Support\Carbon|null $responded_at
  */
@@ -47,7 +48,7 @@ class ClaimSupplierRecourse extends Model {
         'organization_id', 'claim_case_id', 'supplier_id', 'purchase_order_id',
         'incoming_einvoice_id', 'article_id', 'serial_no', 'status',
         'external_reference', 'warranty_terms', 'amount_claimed',
-        'amount_recovered', 'submitted_at', 'response_due_at', 'responded_at',
+        'amount_recovered', 'submitted_at', 'response_due_days', 'response_due_at', 'responded_at',
         'outcome_note', 'created_by',
     ];
 
@@ -57,6 +58,7 @@ class ClaimSupplierRecourse extends Model {
         'amount_claimed' => 'decimal:2',
         'amount_recovered' => 'decimal:2',
         'submitted_at' => 'datetime',
+        'response_due_days' => 'integer',
         'response_due_at' => 'datetime',
         'responded_at' => 'datetime',
     ];

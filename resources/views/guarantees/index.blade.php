@@ -116,10 +116,23 @@
                                                 :href="route('guarantees.secure-dialog', $guarantee)"
                                                 :label="__('guarantee.action.secure')" />
                                 @endif
+                                @if ($guarantee->isExpiredUnnoticed())
+                                    <x-action-form :action="route('guarantees.expired', $guarantee)"
+                                                   :confirm="__('guarantee.confirm.expired', ['reference' => $guarantee->reference ?? '—'])"
+                                                   confirm-icon="event_busy" confirm-tone="warning"
+                                                   :confirm-label="__('guarantee.action.expired')">
+                                        <x-icon-btn icon="event_busy" size="xs" tone="ghost" type="submit"
+                                                    :label="__('guarantee.action.expired')" />
+                                    </x-action-form>
+                                @endif
+                            @endif
+                            @if ($guarantee->status->canTransitionTo(\App\Enums\Guarantee\GuaranteeStatus::Returned))
                                 <x-action-form :action="route('guarantees.returned', $guarantee)">
                                     <x-icon-btn icon="assignment_return" size="xs" tone="ghost" type="submit"
                                                 :label="__('guarantee.action.returned')" />
                                 </x-action-form>
+                            @endif
+                            @if ($guarantee->status->isActive())
                                 <x-action-form :action="route('guarantees.drawn', $guarantee)"
                                                :confirm="__('guarantee.confirm.drawn', ['reference' => $guarantee->reference ?? '—'])"
                                                confirm-icon="gavel" confirm-tone="error"

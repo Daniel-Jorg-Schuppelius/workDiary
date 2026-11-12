@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice Conflicts"
 topic: admin.lexoffice
-version: 7
+version: 8
 keywords:
     - Lexware Office
     - sync conflict
@@ -74,3 +74,5 @@ permission and stored credentials.
 
 Permission: the Mapping Inbox is open to administrators and the
 **Accounting** role.
+
+**Data ownership:** If, according to data ownership, another program leads customers and suppliers, the contact sync applies no fields and creates no contacts; linking and the Lexoffice contact number remain. The withheld state waits in the integration inbox for **Take over once**.

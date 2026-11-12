@@ -1,7 +1,7 @@
 ---
 title: "Urlaub & Krankheit"
 topic: absences.manage
-version: 4
+version: 5
 keywords:
     - Abwesenheit
     - Urlaubsantrag
@@ -77,3 +77,12 @@ Datum, seit dem er ausgeschöpft ist. Die Auswertung **Krankheiten** zeigt den
 Stand je Person. Alle Angaben sind eine Orientierung, keine Rechtsberatung.
 
 Tage mit Krankmeldung haben wie Urlaub kein Soll: **Arbeitszeitkonto**, **Arbeitsbilanz**, **Anwesenheit** und **Plan/Ist** zählen sie nicht als Minus. Stornierte Krankmeldungen zählen nirgends mit, auch nicht in Zeitkonten.
+
+**Korrektur anfordern:** Solange noch keine Freigabe erfasst ist, geben
+Zuständige einen ausstehenden Antrag mit **Korrektur anfordern** (Pfeil
+zurück in der Zeile) und einem Hinweis zurück. Der Antrag steht dann auf
+**Korrektur angefordert**; die antragstellende Person erhält eine
+Benachrichtigung und einen Eintrag im Arbeitsvorrat, sieht den Hinweis im
+Dialog **Urlaubsantrag bearbeiten**, ändert den Antrag und reicht ihn mit
+**Speichern** neu ein. Bis dahin lässt er sich weder genehmigen noch
+ablehnen; zurückziehen kann die Person ihn mit **Stornieren**.

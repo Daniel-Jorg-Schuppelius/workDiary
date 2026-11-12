@@ -1,7 +1,7 @@
 ---
 title: "Trabajos programados"
 topic: admin.scheduler
-version: 1
+version: 2
 keywords:
     - tareas cron
     - cron
@@ -86,3 +86,5 @@ cuando faltan los informes.
 siguientes ejecuciones tras cada reprogramación. Un contador de errores
 elevado de forma persistente es un caso para el diagnóstico, no para
 pausar.
+
+**Ejecución por trabajo:** en el diálogo de reprogramación también puede fijar una zona horaria propia, un periodo de reposo (de–a, también pasada la medianoche) y reintentos tras un fallo. Las horas dentro del reposo pasan a su final y los intervalos se pausan; sin reposo ni zona horaria propios se aplica la ventana de funcionamiento del servidor. Un reintento comienza tras el intervalo configurado, como máximo las veces indicadas, y aparece en el registro como cualquier ejecución.

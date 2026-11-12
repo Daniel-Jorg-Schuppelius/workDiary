@@ -17,5 +17,21 @@ return [
         'requirementUnmet' => 'Pflichtklassifikationen fehlen: :domains',
         'requirementMin' => 'Pflichtklassifikation „:domain“: mindestens :min Angabe(n) nötig, vorhanden: :actual.',
         'requirementMax' => 'Pflichtklassifikation „:domain“: höchstens :max Angabe(n) erlaubt, vorhanden: :actual.',
+        'referenced' => 'Der Wert „:label“ wird noch verwendet (:usage) und kann nicht gelöscht werden. Legen Sie ihn stattdessen still: Er verschwindet aus neuen Auswahlen, bestehende Datensätze behalten ihn.',
+    ],
+    'action' => [
+        'deactivate' => 'Stilllegen',
+        'deactivate_confirm' => 'Wert stilllegen? Er ist danach nicht mehr neu wählbar, bestehende Datensätze behalten ihn.',
+    ],
+    'flash' => [
+        'deactivated' => '„:label“ wurde stillgelegt.',
+    ],
+    'reference' => [
+        'time_entries' => 'Zeiteinträge',
+        'claim_cases' => 'Reklamationen',
+        'products' => 'Artikel',
+        'classifiables' => 'Zuordnungen an Datensätzen',
+        'import_value_mappings' => 'Import-Zuordnungen',
+        'assets' => 'Assets',
     ],
 ];

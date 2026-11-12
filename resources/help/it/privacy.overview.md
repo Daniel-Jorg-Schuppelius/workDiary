@@ -1,7 +1,7 @@
 ---
 title: "Panoramica della gestione della protezione dei dati"
 topic: privacy.overview
-version: 2
+version: 5
 keywords:
     - GDPR
     - registro dei trattamenti
@@ -246,3 +246,15 @@ sull'identità valgono come autodichiarazione non verificata.
 
 **Autorizzazione:** un diritto proprio per gestire il portale interessati;
 senza questo diritto la voce di menu non compare.
+
+**Distruzione della chiave dopo la conservazione:** la scansione di cancellazione propone in **Conservazione** la distruzione delle richieste degli interessati e delle violazioni dei dati chiuse il cui termine di conservazione è scaduto. Solo dopo la Sua conferma e l'esecuzione WorkDiary distrugge la chiave della pratica: i contenuti non sono più leggibili, i documenti archiviati senza cifratura vengono eliminati e il recupero di un pacchetto informativo cifrato risponde «non più disponibile». Numero, tipo, scadenze, decisione e cronologia restano come prova.
+
+**Trattamento per conto terzi:** registrando un contratto di trattamento dei dati indicate se le misure tecniche e organizzative (TOM) sono verificate e fissate la prossima revisione. L’elenco evidenzia le revisioni scadute.
+
+## Stato della lavorazione, stato di attuazione e contenimento
+
+**Richieste degli interessati:** la scheda **Stato della lavorazione** registra che è stata richiesta una prova d'identità, inviata una richiesta di chiarimenti o ricevuta la risposta; **Ritirata dalla persona** chiude il caso. Durante le richieste di chiarimenti il termine di legge continua a decorrere.
+
+**MTO:** lo stato di attuazione e l'esigenza di protezione (normale, elevata, molto elevata) si registrano alla creazione e si modificano sulla misura. L'approvazione di un'attività di trattamento li congela entrambi nell'istantanea delle MTO.
+
+**Violazioni dei dati:** quando tutte le misure sono concluse, una violazione non ancora segnalata mostra **Contenuto**; segnalazione e chiusura restano passaggi distinti.

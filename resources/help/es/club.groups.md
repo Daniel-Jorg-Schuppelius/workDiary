@@ -1,7 +1,7 @@
 ---
 title: "Grupos de la asociación y propuestas de cambio"
 topic: club.groups
-version: 1
+version: 2
 keywords:
     - grupo de entrenamiento
     - grupo juvenil
@@ -49,3 +49,5 @@ la propuesta. Con «Comprobar criterios ahora» lanza el control de inmediato.
 grupo: admisiones, solicitudes, finalizaciones y propuestas del propio grupo.
 Los datos maestros del grupo y las excepciones quedan reservados a la
 administración de la asociación.
+
+**Modo de admisión:** con «por la dirección», la dirección admite directamente. Con «solicitud con aprobación» no hay admisión directa: la dirección registra una solicitud, y los miembros o sus representantes solicitan ellos mismos la admisión en «Mi club». Las solicitudes abiertas aparecen en la cola de trabajo de la dirección; criterios y cupo se comprueban al aprobar. Una propuesta de cambio confirmada hacia un grupo así también se convierte en solicitud.

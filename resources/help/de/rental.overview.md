@@ -1,7 +1,7 @@
 ---
 title: "Geräte- & Maschinenverleih"
 topic: rental.overview
-version: 6
+version: 9
 keywords:
     - Vermieter
     - Ferienwohnung
@@ -49,6 +49,27 @@ Der Ansprechpartner ist mit der Kundenwahl aus dem Kunden vorbelegt und bleibt �
 Zubehör, Zählerstand/Betriebsstunden, Fotos und Unterschrift. Die
 Rücknahme trägt die Folgeentscheidung: Reinigung, Reparatur/Sperre oder
 kontrollierte Übergabe an die Reklamation.
+
+**Protokollpositionen:** Das Übergabe- und das Rücknahmeformular erfassen
+neben dem Gesamtzustand eine Checkliste, das Zubehör, einzelne
+Zustandspositionen und bei der Rücknahme den Verbrauch. Prüfpunkte und
+Zubehör kommen aus dem Verleihprofil; beim Zubehör entfernen Sie den Haken,
+wenn ein Teil fehlt. Die Akte zeigt die Positionen unter „Positionen
+anzeigen“, das Kundenportal ebenfalls, dort ohne interne Bemerkungen.
+
+**Mindestzustand:** Im Verleihprofil legen Sie Heimatstandort, Mindestzustand
+und den aktuellen Zustand fest. Jede Rücknahme übernimmt den Zustand aus dem
+Protokoll. Liegt er unter dem Mindestzustand, lässt sich das Gerät nicht
+reservieren oder als Tauschgerät einsetzen, bis Sie den Zustand nach der
+Instandsetzung im Profil anpassen.
+
+**Reinigung:** „Reinigung erforderlich“ im Rücknahmeprotokoll legt ein
+Reinigungsfenster an; solange ist das Gerät nicht vergebbar. Mit „Reinigung
+erledigt“ in der Akte geben Sie es vor Ablauf des Fensters frei.
+
+**Vormerkungen:** Besteht im Zeitraum eine Vormerkung eines anderen Vorgangs,
+zeigt die Akte einen Hinweis mit den betroffenen Vorgängen. Die Reservierung
+bleibt möglich.
 
 **Abrechnung:** Mietpositionen entstehen aus dem Konditionen-Snapshot oder
 manuell, werden freigegeben und lokal fakturiert oder an das führende
@@ -108,3 +129,9 @@ Direktbuchung im Kundenportal zur Bezahlseite des Zahlungsanbieters:
   Buchungseingang zurück (stornieren und neu buchen). Die Kontenzuordnung
   braucht dafür die Rolle „Erhaltene Anzahlungen“ (in den Vorlagen SKR03 und
   SKR04 enthalten).
+
+**Mindestzustand bei der Übergabe:** Der Mindestzustand des Verleihprofils gilt auch bei der Übergabe. Ist der Zustand seit der Reservierung gesunken, lehnt WorkDiary die Übergabe ab, bis das Gerät instand gesetzt und der Zustand im Profil gepflegt ist.
+
+## Kaution erlassen
+
+Eine angeforderte, noch nicht erhaltene Kaution lässt sich mit Begründung **erlassen**. Sie steht danach auf **Verzichtet**; die Begründung steht im Protokoll des Mietvorgangs.

@@ -101,6 +101,9 @@ final class ProcedureTemplateInstallStep implements ProfileInstallStep {
                         'blocking' => (bool) ($step['blocking'] ?? true),
                         'requires_second_person' => (bool) ($step['requires_second_person'] ?? false),
                         'requires_proof_type' => isset($step['requires_proof_type']) ? (string) $step['requires_proof_type'] : null,
+                        'config' => is_array($step['config'] ?? null) && $step['config'] !== [] ? $step['config'] : null,
+                        'required_role' => isset($step['required_role']) ? (string) $step['required_role'] : null,
+                        'required_qualification_code' => isset($step['required_qualification_code']) ? (string) $step['required_qualification_code'] : null,
                     ];
                 }
 

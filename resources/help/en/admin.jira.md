@@ -1,7 +1,7 @@
 ---
 title: "Jira task import"
 topic: admin.jira
-version: 1
+version: 2
 keywords:
     - Jira
     - Jira Cloud
@@ -116,3 +116,5 @@ the plugin is active.
   Atlassian or has expired. Reconnect.
 - Nothing is created: the mapping is not confirmed yet, paused, or the issues
   are already done.
+
+**Data ownership:** If another system leads the tasks, the synchronisation creates a “Data ownership” case per task in the integration inbox. **Take over once** imports the task through the same mapping as long as it is active; if the task changes in the source afterwards, the case reopens.

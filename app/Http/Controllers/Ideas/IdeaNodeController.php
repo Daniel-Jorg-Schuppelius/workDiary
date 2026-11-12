@@ -148,8 +148,6 @@ class IdeaNodeController extends Controller {
             'note' => ['sometimes', 'nullable', 'string', 'max:5000'],
             'color' => ['sometimes', Rule::enum(IdeaNodeColor::class)],
             'node_status' => ['sometimes', 'nullable', 'string', 'max:24'],
-            'pos_x' => ['sometimes', 'nullable', 'integer', 'min:-100000', 'max:100000'],
-            'pos_y' => ['sometimes', 'nullable', 'integer', 'min:-100000', 'max:100000'],
             'lock_version' => ['required', 'integer', 'min:1'],
         ]);
 

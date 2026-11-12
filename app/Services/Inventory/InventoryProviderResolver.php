@@ -46,10 +46,6 @@ class InventoryProviderResolver {
         $this->external[$pluginId] = $factory;
     }
 
-    public function hasExternal(string $pluginId): bool {
-        return isset($this->external[$pluginId]);
-    }
-
     public function modeFor(Organization $organization): InventoryMode {
         $setting = data_get($organization->settings, 'inventory_mode');
         if (is_string($setting) && $setting !== '') {

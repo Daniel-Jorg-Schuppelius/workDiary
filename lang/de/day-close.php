@@ -79,6 +79,14 @@ return [
         'billable' => 'abrechenbar',
     ],
 
+    // Plan/Ist der Anwesenheit im Kopf des Tages (MVP-1552).
+    'plan_ist' => [
+        'label' => 'Plan/Ist',
+        'plan' => 'Plan ab :start (:duration)',
+        'plan_no_start' => 'Plan :duration',
+        'actual' => 'Ist :start–:end (:duration)',
+        'actual_none' => 'Ist: noch keine Stempelung',
+    ],
     'hint' => [
         'no_attendance' => 'Keine Stempelungen an diesem Tag.',
         'attendance_correction_only' => 'Stempel sind nur über einen Korrektur-Antrag änderbar.',
@@ -87,6 +95,7 @@ return [
         'break_recorded' => 'Pause: :min min',
         'no_issues' => 'Keine Auffälligkeiten — der Tag ist konsistent erfasst.',
         'month_locked' => 'Dieser Tag gehört zu einem freigegebenen Monat und ist gesperrt — Abschluss und Korrekturanträge laufen über die Monatsfreigabe.',
+        'day_closed' => 'Dieser Tag ist abgeschlossen — Stempel und Buchungen ändern Sie über einen Korrekturantrag.',
         'correction_intro' => 'Beschreiben Sie, was an diesem Tag korrigiert werden soll.',
         'reopen_intro' => 'Der Tag wird ohne Korrekturantrag wieder geöffnet — die Begründung wird im Audit-Protokoll gespeichert.',
     ],
@@ -130,6 +139,8 @@ return [
 
     'errors' => [
         'month_entry_locked' => 'Der Monat ist freigegeben — für nachträgliche Zeiten bitte einen Zeitkorrektur-Antrag stellen.',
+        'day_entry_locked' => 'Der Tag ist abgeschlossen — für nachträgliche Zeiten bitte einen Korrekturantrag stellen.',
+        'day_closed_reason' => 'Tag bereits abgeschlossen',
         'future_day' => 'Ein zukünftiger Tag kann nicht abgeschlossen werden.',
         'blocking_warnings' => 'Der Tag hat blockierende Warnungen und kann nicht abgeschlossen werden.',
         'illegal_day_status' => 'Aktion nicht erlaubt: Tagesstatus ist :status.',

@@ -49,5 +49,6 @@ class JtlWawiServiceProvider extends PluginServiceProviderBase {
                 $this->app->make(InventoryLedger::class),
             ),
         );
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\JtlTakeoverService::class);
     }
 }

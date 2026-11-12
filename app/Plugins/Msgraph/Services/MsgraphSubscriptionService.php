@@ -97,7 +97,7 @@ class MsgraphSubscriptionService {
 
     /** To-Do-Liste: weckt den Sync des Links (nur importierende Links). */
     public function ensureTodoLink(MsgraphTaskListLink $link, MsgraphTaskConnection $connection): void {
-        if ($link->status !== MsgraphTaskListLinkStatus::Active || ! $link->importsFromTodo() || ! $connection->isActive()) {
+        if (! $link->importsFromTodo() || ! $connection->isActive()) {
             return; // reine Export-Links weckt der Observer, kein Webhook nötig
         }
 

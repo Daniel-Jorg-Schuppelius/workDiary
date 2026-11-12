@@ -1,7 +1,7 @@
 ---
 title: "SharePoint storage"
 topic: admin.sharepoint
-version: 2
+version: 3
 keywords:
     - SharePoint
     - SharePoint Online
@@ -170,3 +170,5 @@ settings.
   connection is failing, an operations task is listed for it.
 - **Checking the state:** next to the page title you see the most recently
   checked state; **Test connection** checks it right away.
+
+**Activation catches up:** When mirroring is activated, WorkDiary immediately queues all objects released so far — including those from the time without an active connection. The mirror run needs no schedule; “Mirror now” remains for catching up by hand.

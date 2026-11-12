@@ -13,9 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Gitea;
 
 use App\Models\Integration\ExternalReference;
-use App\Models\Platform\Organization;
 use App\Plugins\AbstractPlugin;
-use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer, TaskSyncer};
+use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer};
 use App\Plugins\Gitea\Api\GiteaClientFactory;
 use App\Plugins\Gitea\Models\GiteaConnection;
 use App\Plugins\Gitea\Services\GiteaImportService;
@@ -27,7 +26,7 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSett
  * Aufgaben in WorkDiary-Projekte übernommen, nur lesend. Forgejo nutzt
  * dieselbe API und dasselbe Plugin.
  */
-class GiteaPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
+class GiteaPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, LinksExternalRecords, SlotRenderer {
     use ChecksConnectionHealth, RendersTaskLink;
 
     public const string ID = 'gitea';
@@ -56,10 +55,6 @@ class GiteaPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRe
         return [PluginCapability::TaskSync];
     }
 
-    public function syncTasks(Organization $organization): array {
-        return app(GiteaImportService::class)->run($organization);
-    }
-
     public function adminPanel(): ?array {
         return ['route' => 'admin.gitea.index', 'label' => 'Gitea/Forgejo', 'icon' => 'code'];
     }
@@ -82,5 +77,10 @@ class GiteaPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRe
 
     protected function taskLinkType(): string {
         return self::EXT_TYPE_ISSUE;
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Tasks];
     }
 }

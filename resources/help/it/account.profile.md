@@ -1,7 +1,7 @@
 ---
 title: "Profilo e account"
 topic: account.profile
-version: 3
+version: 4
 keywords:
     - impostazioni
     - cambiare password
@@ -48,3 +48,11 @@ sotto la risposta compaiono il Suo nome e l’organizzazione. Il piè di pagina
 e-mail dell’organizzazione (ragione sociale, indirizzo, dati obbligatori) segue
 automaticamente; lo gestisce l’amministrazione dell’organizzazione nelle
 impostazioni.
+
+## Accesso da un nuovo dispositivo
+
+Se qualcuno accede al Suo account da un dispositivo sconosciuto o da un altro
+paese, riceve un messaggio via e-mail e nell'app. In **Notifiche** può
+disattivare questo avviso; la disattivazione e la riattivazione vengono
+registrate. Se possibile, lasci attivo l'avviso: spesso è il primo segnale di
+un'appropriazione dell'account.

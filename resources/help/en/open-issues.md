@@ -1,7 +1,7 @@
 ---
 title: "Open issues"
 topic: open-issues
-version: 1
+version: 2
 keywords:
     - issue tracker
     - defect list
@@ -35,3 +35,15 @@ Invalid transitions are rejected so that the history stays consistent.
 **Several follow-up orders** can be created from an open issue. Each takes over
 customer, project and description, plus the issue's due date and a copy of its
 attachments — for defects from a protocol also the photos of the protocol item.
+
+**Editing:** In the edit dialog you also change due date, severity and – with
+the right to publish to customers – visibility; every change is recorded in the
+item's history. A critical item without a due date gets seven days.
+
+**Project, customer, asset:** You also create open items at a project, a
+customer and an asset; the panel is on their pages. With the assignment right
+you choose the responsible person at creation.
+
+**Details:** The **Details** dialog shows history, comments and attachments. A
+closed item neither accepts nor releases attachments. You filter the list by
+status, severity and responsible person.

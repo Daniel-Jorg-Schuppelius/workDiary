@@ -14,6 +14,7 @@ namespace App\Settings;
 
 use App\Models\Platform\{Organization, SystemSetting};
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 
 /**
@@ -74,6 +75,10 @@ class SettingsRegistry {
         $rules = [];
         $groups = [];
         foreach ($this->forScope($scope) as $key => $definition) {
+            // Ohne Regel fällt der Schlüssel aus den validierten Formulardaten: nur sein Fachdienst schreibt ihn.
+            if ($definition->serviceManaged) {
+                continue;
+            }
             $groups[$definition->group()] = true;
             $rules[$prefix . $key] = $definition->formRules();
 
@@ -125,6 +130,28 @@ class SettingsRegistry {
      * auditierten organizations.settings-JSON.
      */
     public function set(string $key, mixed $value, SettingScope $scope, ?Organization $organization = null, ?int $userId = null): void {
+        $this->assertNotServiceManaged($this->definition($key));
+        $this->store($key, $value, $scope, $organization, $userId);
+    }
+
+    /**
+     * Schreibweg des Fachdienstes für einen `service_managed`-Schlüssel der
+     * Organisation; `null` entfernt den Override. Der Dienst verantwortet die
+     * Folgen des Wechsels, generische Formulare kommen hier nicht vorbei.
+     */
+    public function setServiceManaged(string $key, mixed $value, Organization $organization): void {
+        if (! $this->definition($key)->serviceManaged) {
+            throw new InvalidArgumentException("Setting [{$key}] ist nicht dienstgeführt.");
+        }
+        if ($value === null) {
+            $this->forget($key, SettingScope::Organization, $organization);
+
+            return;
+        }
+        $this->store($key, $value, SettingScope::Organization, $organization, null);
+    }
+
+    private function store(string $key, mixed $value, SettingScope $scope, ?Organization $organization, ?int $userId): void {
         $definition = $this->definition($key);
         $this->assertWritableScope($definition, $scope, $organization);
         $this->validate($definition, $value);
@@ -147,6 +174,11 @@ class SettingsRegistry {
 
     /** Rollback auf Default: entfernt den Override der jeweiligen Ebene. */
     public function reset(string $key, SettingScope $scope, ?Organization $organization = null): void {
+        $this->assertNotServiceManaged($this->definition($key));
+        $this->forget($key, $scope, $organization);
+    }
+
+    private function forget(string $key, SettingScope $scope, ?Organization $organization): void {
         $definition = $this->definition($key);
         $this->assertWritableScope($definition, $scope, $organization);
 
@@ -187,6 +219,12 @@ class SettingsRegistry {
         $stored = (array) ($settings[$group] ?? []);
 
         return data_get($stored, $rest, \INF);
+    }
+
+    private function assertNotServiceManaged(SettingDefinition $definition): void {
+        if ($definition->serviceManaged) {
+            throw ValidationException::withMessages(['value' => __('settingsregistry.error.service_managed', ['key' => $definition->key])]);
+        }
     }
 
     private function assertWritableScope(SettingDefinition $definition, SettingScope $scope, ?Organization $organization): void {

@@ -27,7 +27,6 @@ class ProjectFactory extends Factory {
             'name' => fake()->unique()->words(2, true),
             'status' => ProjectStatus::Active->value,
             'billable' => true,
-            'global_activities' => true,
         ];
     }
 }

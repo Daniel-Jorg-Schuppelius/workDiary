@@ -1,7 +1,7 @@
 ---
 title: "Zählerablesungen"
 topic: meter-readings
-version: 1
+version: 2
 keywords:
     - Zählerstand
     - Zählerstand erfassen
@@ -32,3 +32,5 @@ Eine neue Ablesung kann direkt aus dem Kontext eines Assets angelegt werden.
 Unplausible Werte, etwa ein Stand unterhalb des vorherigen, werden bei der
 Erfassung abgewiesen. Die Erfassung steht Personen mit entsprechender
 Berechtigung zur Verfügung.
+
+**Foto des Zählers:** Beim Erfassen können Sie ein Foto des Zählerstands anhängen (auf dem Handy direkt mit der Kamera). Es liegt als Anhang am Zählerstand; in der Liste öffnet das Kamerasymbol das Foto.

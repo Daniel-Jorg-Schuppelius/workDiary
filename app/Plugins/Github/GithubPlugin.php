@@ -13,17 +13,14 @@ declare(strict_types=1);
 namespace App\Plugins\Github;
 
 use App\Models\Integration\ExternalReference;
-use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{LinksExternalRecords, Plugin, PluginCapability, TaskSyncer};
+use App\Plugins\Contracts\{LinksExternalRecords, Plugin, PluginCapability};
 use App\Plugins\Github\Api\GithubClientFactory;
-use App\Plugins\Github\Services\GithubIssueImporter;
 use App\Plugins\Support\ApiHealthProbe;
-use Throwable;
 
 /**
  * Ticketsystem-Anbindung GitHub Issues (Feature 060, MVP-129, Bauturbo A6):
- * zweiter Provider gegen den {@see TaskSyncer}-Vertrag nach dem
+ * zweiter Provider nach dem
  * Zammad-Referenzmuster.
  *
  * - Issues EINES konfigurierten Repos (owner/repo je Organisation, Fine-grained
@@ -38,7 +35,7 @@ use Throwable;
  *   an — GitHub liefert Webhooks nicht automatisch nach (kein Auto-Redelivery),
  *   das Polling schließt die Lücke.
  */
-class GithubPlugin extends AbstractPlugin implements LinksExternalRecords, TaskSyncer {
+class GithubPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, LinksExternalRecords {
     public const string ID = 'github';
 
     public const string SERVICE_PROVIDER = GithubServiceProvider::class;
@@ -74,33 +71,6 @@ class GithubPlugin extends AbstractPlugin implements LinksExternalRecords, TaskS
         ];
     }
 
-    /**
-     * Einheitlicher Sync-Einstieg (TaskSyncer): Issue-Import der Organisation.
-     * Einbahnig — `created`/`updated` aus dem Import, `unchanged` =
-     * übersprungene (unveränderte) Issues; `conflicts` bleibt 0.
-     */
-    public function syncTasks(Organization $organization): array {
-        $counters = ['created' => 0, 'updated' => 0, 'unchanged' => 0, 'conflicts' => 0, 'inbox' => 0, 'failed' => 0];
-
-        $config = GithubConfig::resolve((int) $organization->id);
-        if (! $config['enabled'] || ! GithubConfig::isConfigured((int) $organization->id)) {
-            return $counters;
-        }
-
-        try {
-            $client = app(GithubClientFactory::class)->for((int) $organization->id);
-            $result = app(GithubIssueImporter::class)->import($organization, $client, $config);
-            $counters['created'] += $result['created'];
-            $counters['updated'] += $result['updated'];
-            $counters['unchanged'] += $result['skipped'];
-            $counters['inbox'] += $result['inbox'];
-        } catch (Throwable) {
-            $counters['failed']++;
-        }
-
-        return $counters;
-    }
-
     /** @return array<int, array{key: string, label: string, type: string, options?: array<string, string>, help?: string, required?: bool, default?: mixed}> */
     public function settingsSchema(): array {
         return [
@@ -132,5 +102,10 @@ class GithubPlugin extends AbstractPlugin implements LinksExternalRecords, TaskS
 
             return (string) __('Verbunden mit GitHub als :login.', ['login' => (string) ($user['login'] ?? '?')]);
         }, ['auth' => (string) __('GitHub lehnt den API-Token ab (:status) — Fine-grained PAT prüfen.')]);
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Tasks];
     }
 }

@@ -117,12 +117,12 @@ class AssetDossierController extends Controller {
             'ownershipChanges' => $asset->ownershipChanges()
                 ->with(['changedBy:id,name', 'toCustomer:id,name', 'fromCustomer:id,name'])
                 ->get(),
-            // SLA-/Vertrags-Sektion (Feature 027 → Rang 48): Vertrag = direkter Override,
-            // sonst Kunden-/Default-Auflösung; Anzeige nur mit slaContract.view.
+            // SLA-/Vertrags-Sektion (Feature 027 → Rang 48): dieselbe Auflösung wie für ein
+            // Ticket am Asset ohne Projekt (Direktzuordnung → Kunde → Organisation); nur mit slaContract.view.
             'canViewSla' => $user->can(Permission::SlaContractView->value),
-            'slaContract' => $asset->slaContract
-                ?? app(ServiceLevelResolver::class)->resolveContract((int) $asset->organization_id, $asset->customer_id),
+            'slaContract' => app(ServiceLevelResolver::class)->resolveContract((int) $asset->organization_id, $asset->customer_id, assetId: (int) $asset->id),
             'slaTickets' => ServiceTicket::query()
+                ->visibleTo($user)
                 ->where('asset_id', $asset->id)
                 ->whereNotIn('status', [ServiceTicketStatus::Closed->value, ServiceTicketStatus::Rejected->value])
                 ->orderByDesc('reported_at')

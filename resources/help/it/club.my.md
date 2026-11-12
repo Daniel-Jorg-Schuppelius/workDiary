@@ -1,7 +1,7 @@
 ---
 title: "La mia associazione"
 topic: club.my
-version: 1
+version: 2
 keywords:
     - area soci
     - portale soci
@@ -39,3 +39,5 @@ di un appuntamento, lo scansioni con lo smartphone ed effettui il check-in
 per sé o per i soci che rappresenta, da 60 minuti prima dell’inizio fino alla
 fine. La presenza finisce nell’elenco dell’allenatore, che la conferma o la
 corregge come di consueto.
+
+**Gruppi:** in «Gruppi» vede i Suoi gruppi e le richieste aperte. Qui richiede l’ammissione ai gruppi che ammettono su richiesta; decide la direzione del gruppo. I risultati degli esami compaiono solo dopo la pubblicazione da parte del club.

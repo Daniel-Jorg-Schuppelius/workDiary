@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\{BoqItemType, GaebPhase};
-use App\Models\Gaeb\{BillOfQuantity, BoqCostType, BoqItem};
+use App\Models\Gaeb\{BillOfQuantity, BoqItem};
 
 /**
  * Auswertung der GAEB-Kalkulationsdaten (X52, Feature 109, MVP-647):
@@ -31,73 +31,6 @@ use App\Models\Gaeb\{BillOfQuantity, BoqCostType, BoqItem};
  * muss man sehen können.
  */
 class BoqCalculationDataService {
-    /**
-     * @return array{rows: list<array{key: string, description: string|null, unit: string|null, markup: float|null, ekt: float, gkt: float, total: float}>, ekt: float, gkt: float, calculated: float, offered: float|null, delta: float|null, currency: string}
-     */
-    public function forItem(BoqItem $item): array {
-        $item->loadMissing(['costApproaches', 'billOfQuantity.costTypes']);
-
-        $bill = $item->billOfQuantity;
-        /** @var iterable<BoqCostType> $types */
-        $types = $bill === null ? [] : $bill->costTypes;
-        $markups = [];
-        $meta = [];
-        foreach ($types as $type) {
-            $markups[$type->cost_key] = $type->markup_percent === null ? null : (float) $type->markup_percent;
-            $meta[$type->cost_key] = ['description' => $type->description, 'unit' => $type->unit];
-        }
-
-        $ektPerKey = [];
-        foreach ($item->costApproaches as $approach) {
-            $amount = $approach->calculatedAmount();
-            if ($amount === null) {
-                continue;
-            }
-            $ektPerKey[$approach->cost_key] = ($ektPerKey[$approach->cost_key] ?? 0.0) + $amount;
-        }
-
-        ksort($ektPerKey);
-
-        $rows = [];
-        $ektTotal = 0.0;
-        $gktTotal = 0.0;
-        foreach ($ektPerKey as $key => $ekt) {
-            $markup = $markups[(string) $key] ?? null;
-            // Ohne Zuschlagssatz gibt es keinen Zuschlag - eine unterstellte
-            // Null wäre dasselbe Ergebnis, aber ein anderer Satz: Sie behauptete,
-            // der Betrieb schlage auf diese Art nichts zu.
-            $gkt = $markup === null ? 0.0 : $ekt * $markup / 100;
-
-            $rows[] = [
-                'key' => (string) $key,
-                'description' => $meta[(string) $key]['description'] ?? null,
-                'unit' => $meta[(string) $key]['unit'] ?? null,
-                'markup' => $markup,
-                'ekt' => round($ekt, 2),
-                'gkt' => round($gkt, 2),
-                'total' => round($ekt + $gkt, 2),
-            ];
-
-            $ektTotal += $ekt;
-            $gktTotal += $gkt;
-        }
-
-        $calculated = $ektTotal + $gktTotal;
-        $offered = $item->total_price?->toFloat();
-
-        return [
-            'rows' => $rows,
-            'ekt' => round($ektTotal, 2),
-            'gkt' => round($gktTotal, 2),
-            'calculated' => round($calculated, 2),
-            'offered' => $offered === null ? null : round($offered, 2),
-            // Ohne Angebotspreis gibt es nichts zu vergleichen - eine Null
-            // behauptete Übereinstimmung.
-            'delta' => $offered === null ? null : round($calculated - $offered, 2),
-            'currency' => $item->currency->value,
-        ];
-    }
-
     /**
      * Dieselbe Rechnung über das ganze Verzeichnis, zusätzlich je Kostenart
      * zusammengefasst.

@@ -1,7 +1,7 @@
 ---
 title: "Compras y pedidos"
 topic: procurement.orders
-version: 3
+version: 6
 keywords:
     - orden de compra
     - pedido a proveedor
@@ -59,3 +59,17 @@ Si el proveedor debe aportar justificantes obligatorios (por ejemplo, certificad
 ## Respuesta del proveedor por GAEB
 
 Además de la confirmación openTRANS, **Importar respuesta del proveedor** también lee archivos comerciales GAEB. Un **X97** (confirmación del pedido X96) guarda cantidad, precio y fecha confirmados por línea e informa de desviaciones sin cambiar el pedido. Un **X94** (oferta de precios a la solicitud X93) aplica los precios unitarios ofertados al pedido mientras sea borrador. Las líneas se asignan por el número de artículo del proveedor; el archivo debe corresponder al número del pedido. La propia solicitud de precios (**Solicitud de precios (GAEB X93)**) y el campo para la oferta están en el pedido en borrador.
+
+## Unidad de pedido y recepción de mercancía
+
+Si el artículo tiene otras unidades, usted elige la **unidad de pedido** al añadir la posición (por ejemplo, rollo en lugar de metro). La cantidad y el precio unitario se entienden entonces por unidad de pedido, al igual que las cantidades pedida y recibida de la línea. La recepción convierte a la unidad base: el almacén recibe la cantidad en unidad base, el precio de coste se lleva por unidad base y el diario de almacén muestra el registro en la unidad de pedido. El tamaño de envase de un artículo de proveedor sigue siendo una magnitud de redondeo de las propuestas de pedido en unidad base.
+
+Los artículos con la propiedad «caducidad obligatoria» exigen lote y fecha de consumo preferente en la recepción; un lote ya conocido aporta su fecha.
+
+## Tipos de acreditación y propuesta de pedido
+
+En **Acreditaciones obligatorias → Tipos de acreditación** usted gestiona los tipos propios de la organización: denominación, validez habitual, preaviso, comportamiento si falta la acreditación y si el tipo es obligatorio. Con etiquetas, la obligación solo se aplica a los proveedores que tengan una de ellas (oficio, tipo de servicio). Los tipos del catálogo son plantilla y pueden adoptarse como tipo propio; los tipos propios se desactivan en lugar de eliminarse.
+
+Su gestión requiere el permiso **Gestionar los tipos de justificantes de proveedores** (por defecto: administración y dirección). No basta con poder editar proveedores, porque un tipo de justificante puede bloquear el envío de pedidos a todos los proveedores de la organización.
+
+La **propuesta de pedido** redondea al tamaño de envase del artículo del proveedor. Si el artículo tiene una unidad con exactamente ese factor, la propuesta pide en esa unidad y convierte el precio por unidad de pedido.

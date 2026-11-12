@@ -92,12 +92,7 @@ abstract class AbstractPostingAdapter implements PostingSourceAdapter {
         if ($account === null) {
             return null;
         }
-        // Das Journal führt nur positive Beträge; ein negativer (Storno, Gutschrift) gehört auf die Gegenseite.
-        // Der Steuerbetrag behält das Vorzeichen seiner Wirkung.
-        if (NumberHelper::isNegativePrecise($debit) || NumberHelper::isNegativePrecise($credit)) {
-            $net = NumberHelper::subtractPrecise($debit, $credit, 2);
-            [$debit, $credit] = NumberHelper::isNegativePrecise($net) ? ['0.00', NumberHelper::negatePrecise($net)] : [$net, '0.00'];
-        }
+        [$debit, $credit] = $this->positiveSides($debit, $credit);
 
         return new PostingProposalLine(
             role: $role,
@@ -111,6 +106,36 @@ abstract class AbstractPostingAdapter implements PostingSourceAdapter {
             counterpartyId: $counterpartyId,
             ruleVersion: $rule->versionTag(),
         );
+    }
+
+    /**
+     * Zeile auf einem Konto, das nicht aus einer Regel kommt — etwa das
+     * Steuerkonto eines Kennzeichens, das der Steuersatz bestimmt (MVP-1621/1622).
+     *
+     * @param  numeric-string  $debit
+     * @param  numeric-string  $credit
+     */
+    protected function accountLine(PostingAccountRole $role, AccountingAccount $account, string $debit, string $credit, ?string $memo, ?string $ruleVersion = null): PostingProposalLine {
+        [$debit, $credit] = $this->positiveSides($debit, $credit);
+
+        return new PostingProposalLine(role: $role, account: $account, debit: $debit, credit: $credit, memo: $memo, ruleVersion: $ruleVersion);
+    }
+
+    /**
+     * Das Journal führt nur positive Beträge; ein negativer (Storno, Gutschrift)
+     * gehört auf die Gegenseite. Der Steuerbetrag behält das Vorzeichen seiner Wirkung.
+     *
+     * @param  numeric-string  $debit
+     * @param  numeric-string  $credit
+     * @return array{0: numeric-string, 1: numeric-string}
+     */
+    private function positiveSides(string $debit, string $credit): array {
+        if (! NumberHelper::isNegativePrecise($debit) && ! NumberHelper::isNegativePrecise($credit)) {
+            return [$debit, $credit];
+        }
+        $net = NumberHelper::subtractPrecise($debit, $credit, 2);
+
+        return NumberHelper::isNegativePrecise($net) ? ['0.00', NumberHelper::negatePrecise($net)] : [$net, '0.00'];
     }
 
     /**

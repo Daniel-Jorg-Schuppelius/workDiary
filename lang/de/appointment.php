@@ -62,4 +62,23 @@ return [
         'proposed_action' => 'Im Kundenportal annehmen oder ablehnen',
         'rescheduled_title' => 'Ihr Termin wurde verschoben',
     ],
+    // Zuordnung und Pflege (MVP-1610, MVP-1612).
+    'assign' => [
+        'action' => 'Zuordnen',
+        'title' => 'Anfrage zuordnen',
+        'submit' => 'Zuordnen',
+        'invitee' => 'Gebucht von :name (:email).',
+        'customer_hint' => 'Der Auftrag entsteht bei der Bestätigung für diesen Kunden.',
+        'lead' => 'Lead',
+        'lead_hint' => 'Ist der Lead schon Kunde, wird der Kunde mit zugeordnet.',
+        'required' => 'Bitte einen Kunden oder einen Lead wählen.',
+        'done' => 'Anfrage zugeordnet.',
+        'decided' => 'Entschiedene Anfragen lassen sich nicht mehr zuordnen.',
+    ],
+    'service' => [
+        'edit_title' => 'Leistungsart bearbeiten',
+        'updated' => 'Leistungsart „:title“ gespeichert.',
+        'site_foreign' => 'Diese Leistungsart ist an ein Objekt eines anderen Kunden gebunden.',
+        'site_hint' => 'Mit Objekt buchen nur Kunden, denen das Objekt gehört; es wird Einsatzort des Auftrags.',
+    ],
 ];

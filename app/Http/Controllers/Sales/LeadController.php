@@ -71,8 +71,11 @@ class LeadController extends Controller {
             });
         }
 
+        $leads = $query->orderByDesc('id')->paginate(25)->withQueryString();
+
         return view('leads.index', [
-            'leads' => $query->orderByDesc('id')->paginate(25)->withQueryString(),
+            'leads' => $leads,
+            'customColumns' => app(\App\Services\Fields\CustomFieldService::class)->listColumnsFor($leads->getCollection(), Lead::class, (int) Auth::user()?->organization_id),
             'filters' => $filters,
             'counts' => Lead::query()->selectRaw('status, COUNT(*) AS n')->groupBy('status')->pluck('n', 'status'),
             'canManage' => Gate::allows(Permission::CustomerCreate->value),
@@ -140,6 +143,10 @@ class LeadController extends Controller {
         unset($data['tag_ids'], $data['new_tags']);
         $contact = $this->pullContactDetails($data);
         $lead->update($data);
+        // Inhaltliche Bearbeitung zählt als Kontakt (MVP-1612), ein Wechsel nur der Zuständigkeit nicht.
+        if (array_diff(array_keys($lead->getChanges()), ['responsible_user_id', 'updated_at']) !== []) {
+            $lead->touchContact();
+        }
         $this->writeContactDetails($lead, $contact);
         $lead->syncTagsFromInput($tagIds, $newTags);
         $lead->syncCustomFields($custom);

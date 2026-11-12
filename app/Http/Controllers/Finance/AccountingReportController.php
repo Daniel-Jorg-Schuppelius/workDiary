@@ -301,10 +301,11 @@ class AccountingReportController extends Controller {
             $rows = [[
                 (string) __('accounting.recapitulative.column.vat_id'),
                 (string) __('accounting.ledger.column.name'),
+                (string) __('accounting.recapitulative.column.kind'),
                 (string) __('accounting.ledger.column.amount'),
             ]];
             foreach ($data['rows'] as $row) {
-                $rows[] = [(string) $row['vat_id'], (string) $row['name'], (string) $row['amount']];
+                $rows[] = [(string) $row['vat_id'], (string) $row['name'], (string) __('accounting.recapitulative.kind.' . $row['kind']), (string) $row['amount']];
             }
 
             return $this->export($request, 'accounting-recapitulative', 'accounting.recapitulative', $rangeFrom, $rangeTo, $rows);

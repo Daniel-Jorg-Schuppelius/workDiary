@@ -24,15 +24,11 @@ enum SurveyInvitationStatus: string implements HasStatusTransitions {
     case Sent = 'sent';
     case Responded = 'responded';
 
-    /** Im Schema vorgesehen, heute von keinem Code geschrieben — eine Altzeile darf den Cast nicht sprengen. */
-    case Expired = 'expired';
-
     public function label(): string {
         return match ($this) {
             self::Created => __('enums.survey.survey_invitation_status.created'),
             self::Sent => __('enums.survey.survey_invitation_status.sent'),
             self::Responded => __('enums.survey.survey_invitation_status.responded'),
-            self::Expired => __('enums.survey.survey_invitation_status.expired'),
         };
     }
 
@@ -40,7 +36,7 @@ enum SurveyInvitationStatus: string implements HasStatusTransitions {
     public function allowedTransitions(): array {
         return match ($this) {
             self::Created, self::Sent => [self::Responded],
-            self::Responded, self::Expired => [],
+            self::Responded => [],
         };
     }
 }

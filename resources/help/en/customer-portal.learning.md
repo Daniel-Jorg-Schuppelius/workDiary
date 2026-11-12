@@ -98,3 +98,8 @@ documented and traceable for your contractor.
 - Exams are not included in the portal, nor are references to your
   contractor's internal knowledge base.
 - You cannot unenrol or withdraw a booking request in the portal.
+- If a video carries a required share, the unit can only be completed once
+  that share has been watched; the status is shown below the video. Skipping
+  ahead does not count.
+- Units that are completed via a procedure, a questionnaire or an external
+  confirmation cannot be worked on in the portal.

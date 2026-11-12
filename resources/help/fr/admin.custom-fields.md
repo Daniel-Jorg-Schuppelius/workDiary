@@ -1,7 +1,7 @@
 ---
 title: "Champs personnalisés"
 topic: admin.custom-fields
-version: 1
+version: 2
 keywords:
     - champs supplémentaires
     - champs libres
@@ -40,3 +40,5 @@ Remarques :
   ne sont jamais écrasés.
 - Les champs fichier, photo et signature ne sont pas disponibles ici —
   utilisez les pièces jointes et les formulaires.
+
+**Liste, export et recherche :** des champs personnalisés existent pour les clients, fournisseurs, prospects, commandes, actifs, articles et projets. Les champs avec colonne de liste apparaissent dans la vue d’ensemble correspondante. L’export CSV des clients, fournisseurs et commandes ajoute les champs en colonnes ; la recherche globale trouve les valeurs telles qu’elles sont affichées — y compris choix, dates et nombres. Le transfert de données pour réimport ne contient pas de champs personnalisés.

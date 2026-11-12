@@ -65,30 +65,7 @@ class VacationController extends Controller {
 
         $vacation = Vacation::create($data);
 
-        // MVP-538: Antragseingang an die Entscheider (Org-Regel, Default Teamleitung).
-        $owner = $vacation->user;
-        if ($owner !== null) {
-            app(NotificationDispatcher::class)->notify(
-                NotificationEvent::VacationRequested,
-                $vacation,
-                $owner,
-                [
-                    'title' => (string) __('notification.message.vacation_requested_title', [
-                        'user' => (string) ($owner->name ?? '–'),
-                        'from' => $vacation->start_date->format('d.m.Y'),
-                        'to' => $vacation->end_date->format('d.m.Y'),
-                    ]),
-                    'title_key' => 'notification.message.vacation_requested_title',
-                    'title_params' => [
-                        'user' => (string) ($owner->name ?? '–'),
-                        'from' => $vacation->start_date->toDateString(),
-                        'to' => $vacation->end_date->toDateString(),
-                    ],
-                    'message' => (string) ($vacation->note ?? ''),
-                    'url' => route('duties.index', ['tab' => 'urlaub']),
-                ],
-            );
-        }
+        $this->notifyRequested($vacation);
 
         return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag gestellt.'));
     }
@@ -124,7 +101,19 @@ class VacationController extends Controller {
             unset($data['user_id']);
         }
 
+        // Zur Korrektur zurückgegeben (MVP-1554): mit dem Speichern geht der Antrag neu in die Entscheidung.
+        $resubmitted = $vacation->status === VacationStatus::Revision;
+        if ($resubmitted) {
+            $data += ['status' => VacationStatus::Pending, 'revision_note' => null];
+        }
+
         $vacation->update($data);
+
+        if ($resubmitted) {
+            $this->notifyRequested($vacation);
+
+            return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('vacation.revision.resubmitted'));
+        }
 
         return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag aktualisiert.'));
     }
@@ -149,8 +138,57 @@ class VacationController extends Controller {
         ]);
     }
 
+    public function revisionForm(Vacation $vacation): View {
+        Gate::authorize('requestRevision', $vacation);
+
+        return view('vacations._revision_dialog', ['vacation' => $vacation]);
+    }
+
+    /** Antrag mit Hinweis zur Korrektur zurückgeben (MVP-1554). */
+    public function requestRevision(Request $request, Vacation $vacation): RedirectResponse {
+        Gate::authorize('requestRevision', $vacation);
+
+        $data = $request->validate([
+            'revision_note' => ['required', 'string', 'min:5', 'max:500'],
+        ]);
+
+        $vacation->update([
+            'status' => VacationStatus::Revision,
+            'revision_note' => $data['revision_note'],
+            'decided_by' => null,
+            'decided_at' => null,
+        ]);
+
+        $owner = $vacation->user;
+        if ($owner !== null) {
+            $params = ['from' => $vacation->start_date->toDateString(), 'to' => $vacation->end_date->toDateString()];
+            app(NotificationDispatcher::class)->notify(
+                NotificationEvent::VacationDecided,
+                $vacation,
+                $owner,
+                [
+                    'title' => (string) __('notification.message.vacation_revision_title', [
+                        'from' => $vacation->start_date->format('d.m.Y'),
+                        'to' => $vacation->end_date->format('d.m.Y'),
+                    ]),
+                    'title_key' => 'notification.message.vacation_revision_title',
+                    'title_params' => $params,
+                    'message' => (string) __('notification.message.vacation_revision_requested', ['note' => $data['revision_note']]),
+                    'message_key' => 'notification.message.vacation_revision_requested',
+                    'message_params' => ['note' => $data['revision_note']],
+                    'url' => route('duties.index', ['tab' => 'urlaub']),
+                ],
+            );
+        }
+
+        return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('vacation.revision.requested'));
+    }
+
     public function approve(Request $request, Vacation $vacation): RedirectResponse {
         Gate::authorize('decide', $vacation);
+        if ($vacation->status === VacationStatus::Revision) {
+            return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('error', __('vacation.revision.not_decidable'));
+        }
 
         /** @var User $auth */
         $auth = Auth::user();
@@ -205,6 +243,9 @@ class VacationController extends Controller {
 
     public function reject(Request $request, Vacation $vacation): RedirectResponse {
         Gate::authorize('decide', $vacation);
+        if ($vacation->status === VacationStatus::Revision) {
+            return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('error', __('vacation.revision.not_decidable'));
+        }
 
         $data = $request->validate([
             'reject_reason' => ['nullable', 'string', 'max:500'],
@@ -240,12 +281,40 @@ class VacationController extends Controller {
             'status' => VacationStatus::Cancelled,
             'decided_by' => null,
             'decided_at' => null,
+            'revision_note' => null,
         ]);
 
         return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag storniert.'));
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /** MVP-538: Antragseingang an die Entscheider (Org-Regel, Default Teamleitung). */
+    private function notifyRequested(Vacation $vacation): void {
+        $owner = $vacation->user;
+        if ($owner !== null) {
+            app(NotificationDispatcher::class)->notify(
+                NotificationEvent::VacationRequested,
+                $vacation,
+                $owner,
+                [
+                    'title' => (string) __('notification.message.vacation_requested_title', [
+                        'user' => (string) ($owner->name ?? '–'),
+                        'from' => $vacation->start_date->format('d.m.Y'),
+                        'to' => $vacation->end_date->format('d.m.Y'),
+                    ]),
+                    'title_key' => 'notification.message.vacation_requested_title',
+                    'title_params' => [
+                        'user' => (string) ($owner->name ?? '–'),
+                        'from' => $vacation->start_date->toDateString(),
+                        'to' => $vacation->end_date->toDateString(),
+                    ],
+                    'message' => (string) ($vacation->note ?? ''),
+                    'url' => route('duties.index', ['tab' => 'urlaub']),
+                ],
+            );
+        }
+    }
 
     /** MVP-538: finale Entscheidung an die antragstellende Person (nie die Vier-Augen-Zwischenstufe). */
     private function notifyDecided(Vacation $vacation, bool $approved): void {

@@ -124,6 +124,7 @@ return [
         'dismiss' => 'Dismiss',
         'decide' => 'Decide',
         'import' => 'CSV import',
+        'admit_request' => 'Record admission request',
     ],
     'label' => [
         'yes' => 'Yes',
@@ -183,6 +184,7 @@ return [
         'no_suggestion' => 'No unambiguous target group found — please choose one or only end the assignment.',
         'member_no' => 'Leave empty for the next free number.',
         'discipline' => 'For grading systems (e.g. judo, karate); otherwise leave empty.',
+        'request_only' => 'This group only admits via a request with approval. Criteria and capacity are checked on approval.',
     ],
     'confirm' => [
         'revoke_guardian' => 'Revoke this guardian? The assignment is kept as a record.',
@@ -245,12 +247,14 @@ return [
         'proposal_decided' => 'The proposal has already been decided.',
         'group_foreign' => 'The target group does not belong to this organisation.',
         'age_range' => 'The maximum age must not be below the minimum age.',
+        'admission_by_application' => 'This group only admits via a request with approval.',
     ],
     'note' => [
         'member_left' => 'Left the club',
         'membership_ended' => 'Assignment ended',
         'criteria_met_again' => 'Criteria met again',
         'proposal_confirmed' => 'Change confirmed',
+        'self_request' => 'Request from the member area',
     ],
     // Vereinstermine (MVP-843)
     'events' => [
@@ -478,6 +482,8 @@ return [
             'delivery_failed' => 'Delivery failed',
             'delivered' => 'delivered',
             'recipient_account' => 'Account',
+            'group_requested' => 'Request pending',
+            'group_since' => 'since :date',
         ],
         'kind' => [
             'reminder' => 'Reminder',
@@ -490,6 +496,7 @@ return [
             'cancel' => 'Cancel registration',
             'attendance' => 'My attendance',
             'back' => 'Back to My club',
+            'group_request' => 'Request admission',
         ],
         'card' => [
             'upcoming' => 'Upcoming events',
@@ -497,11 +504,13 @@ return [
             'attendance' => 'Confirmed attendance',
             'changes' => 'Changes',
             'deliveries' => 'Delivery log',
+            'groups' => 'Groups',
         ],
         'hint' => [
             'upcoming' => 'All events you may register for — events of your own groups appear without a personal invitation.',
             'attendance' => 'Confirmed time in the period :from – :to (header).',
             'changes' => 'Reschedules, cancellations and waitlist promotions of recent events. A message does not count as read.',
+            'groups' => 'These groups admit on request; the group leader decides.',
         ],
         'empty' => [
             'upcoming' => 'No upcoming events.',
@@ -510,11 +519,13 @@ return [
         ],
         'confirm' => [
             'cancel' => 'Cancel the registration for “:title”? A freed seat goes to the waitlist.',
+            'group_request' => 'Request admission to “:group”? The group leader decides on the request.',
         ],
         'flash' => [
             'registered' => 'Registered for “:title”.',
             'waitlisted' => 'Placed on the waitlist for “:title”.',
             'cancelled' => 'Registration for “:title” cancelled.',
+            'group_requested' => 'Admission to “:group” requested.',
         ],
     ],
     // Graduierungen (MVP-846)
@@ -725,6 +736,7 @@ return [
             'request' => 'Register for exam',
             'certificate' => 'Certificate (PDF)',
             'open_event' => 'To the event',
+            'release' => 'Release results',
         ],
         'card' => [
             'offer' => 'Exam offer',
@@ -739,6 +751,8 @@ return [
             'exception' => 'Exception',
             'review_required' => 'Review required',
             'checked_at' => 'checked :date',
+            'released_at' => 'Results released on :date.',
+            'result_pending' => 'Result pending',
         ],
         'empty' => [
             'offers' => 'No exam offers in the period.',
@@ -760,6 +774,7 @@ return [
         'confirm' => [
             'reject' => 'Reject the candidate? A taken seat is released.',
             'clear_review' => 'Close the review? The admission stays.',
+            'release' => 'Release the results now? Candidates and guardians will then see their result; results and evidence are frozen.',
         ],
         'flash' => [
             'offer_saved' => 'Exam offer saved.',
@@ -772,6 +787,7 @@ return [
             'result_saved' => 'Result recorded.',
             'self_admitted' => 'Admitted and registered for “:title”.',
             'self_requested' => 'Request for “:title” submitted — the leadership checks admission.',
+            'results_released' => 'Results released.',
         ],
         'error' => [
             'no_active_version' => 'The system has no active rule version.',
@@ -781,6 +797,9 @@ return [
             'grades_required' => 'Choose at least one target grade.',
             'no_requirement' => 'The rule version has no requirements for the target grade.',
             'no_target_grade' => 'No offered grade is above the current grade.',
+            'released' => 'The results of this exam have been released — changes only via review or revocation of the grade.',
+            'release_open_candidates' => 'Decide on all candidates first: open requests and admissions without a result prevent the release.',
+            'release_no_results' => 'No result has been recorded yet.',
         ],
         'pdf' => [
             'kind' => 'Grading certificate',

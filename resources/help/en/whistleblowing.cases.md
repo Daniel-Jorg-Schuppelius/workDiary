@@ -1,7 +1,7 @@
 ---
 title: "Reporting office – case handling"
 topic: whistleblowing.cases
-version: 4
+version: 5
 keywords:
     - whistleblowing
     - whistleblower
@@ -90,3 +90,15 @@ content, messages, attachments and assignments are then irretrievably
 lost; only a content-free deletion record remains. This is
 irreversible. If proceedings or a retention obligation stand in the
 way, set the status “Legal hold” instead.
+
+**List filters**: The bar above the list filters by **status**, **category**, **priority**, assigned person, deadline status (“Deadline overdue”, “Deadline within 14 days”, “Feedback outstanding”) and date of receipt. Category and priority only apply to cases assigned to you – otherwise the result list would reveal both.
+
+**Deadlines and feedback**: If you tick **This is the feedback under section 17 HinSchG** when sending a message, WorkDiary records the time on the case; a mere follow-up question does not count. After that the reminder for the feedback deadline stops. The assigned handlers receive low-content reminders: 48 hours before the acknowledgement is due, 14 days and 48 hours before the feedback deadline (once each) and then daily for as long as a deadline is overdue. Moving a case straight from “Received” to “Review” acknowledges receipt.
+
+**Further actions in the case file**:
+
+- **Revoke assignment** (icon next to the handler): the person loses access immediately.
+- **Add a document from the reporting office**: the file is encrypted like an attachment from the reporting person and only released after the scan; the reporting person does not see it.
+- The status “Legal hold” requires a **legal basis**, a **responsible person** and a **review date**; on the review date WorkDiary reminds the handlers.
+- Reopening (from “Closed – …” back to “In progress”) requires a **reason**; the retention period starts again with the next closure.
+- **Event log**: with the permission to view the log you can see who opened, changed or exported the case and when – without any report content. Every visit to the log is itself logged.

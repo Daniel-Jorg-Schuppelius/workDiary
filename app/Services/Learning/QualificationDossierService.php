@@ -14,10 +14,11 @@ namespace App\Services\Learning;
 
 use App\Enums\Learning\LearningEnrollmentStatus;
 use App\Models\Hr\UserQualification;
-use App\Models\Learning\{LearningCertificate, LearningEnrollment};
+use App\Models\Learning\{LearningCertificate, LearningCourse, LearningEnrollment};
 use App\Models\Platform\{Organization, User};
 use App\Models\Safety\SafetyInstructionParticipant;
 use App\Models\Training\TrainingAssignment;
+use App\Services\Schedule\Contracts\QualificationTrainingSource;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\{Carbon, Collection};
 
@@ -41,7 +42,7 @@ use Illuminate\Support\{Carbon, Collection};
  * nennen. Die **namentliche** ist die Ausnahme und gehört protokolliert —
  * sie ist eine Weitergabe personenbezogener Daten.
  */
-class QualificationDossierService {
+class QualificationDossierService implements QualificationTrainingSource {
     /**
      * Namentliche Mappe für eine Personengruppe über einen Zeitraum.
      *
@@ -97,53 +98,6 @@ class QualificationDossierService {
         }
 
         return $rows;
-    }
-
-    /**
-     * Aggregierte Auskunft **ohne Namen** — die Vorgabe für Angebote und
-     * Vergabeunterlagen: „fünf Eingesetzte, alle mit gültigem Nachweis,
-     * kürzeste Gültigkeit bis …".
-     *
-     * @param  Collection<int, User>  $users
-     * @return array{people: int, covered: int, missing: int, earliest_expiry: string|null}
-     */
-    public function summarizeQualification(Collection $users, int $qualificationId, ?Carbon $on = null): array {
-        $on ??= Carbon::today();
-
-        $entries = UserQualification::query()
-            ->whereIn('user_id', $users->pluck('id'))
-            ->where('qualification_id', $qualificationId)
-            ->get();
-
-        $covered = 0;
-        $earliest = null;
-
-        foreach ($entries as $entry) {
-            // Punktbetrachtung: der entartete Zeitraum `on..on`.
-            if ($this->coverage($entry->valid_from, $entry->valid_until, $on, $on) !== self::COVERAGE_FULL) {
-                continue;
-            }
-
-            $covered++;
-
-            // Ohne Ablaufdatum gibt es kein frühestes Ende.
-            $until = $entry->valid_until;
-
-            if ($until === null) {
-                continue;
-            }
-
-            if ($earliest === null || $until->lessThan($earliest)) {
-                $earliest = $until;
-            }
-        }
-
-        return [
-            'people' => $users->count(),
-            'covered' => $covered,
-            'missing' => max(0, $users->count() - $covered),
-            'earliest_expiry' => $earliest?->toDateString(),
-        ];
     }
 
     /**
@@ -409,16 +363,41 @@ class QualificationDossierService {
         ];
     }
 
-    /**
-     * Offene Kursabschlüsse einer Person — für die Einsatz-Ampel.
-     */
-    public function openEnrollments(User $user): int {
-        return LearningEnrollment::query()
-            ->where('user_id', $user->id)
+    /** Einsatz-Ampel (Feature 149): gelb, solange der Kurs zur geforderten Qualifikation läuft. */
+    public function openEnrollments(Collection $users, array $qualificationIds): array {
+        if ($users->isEmpty() || $qualificationIds === []) {
+            return [];
+        }
+
+        $open = [];
+        LearningEnrollment::query()
+            ->whereIn('user_id', $users->pluck('id'))
             ->whereIn('status', [
                 LearningEnrollmentStatus::Assigned->value,
                 LearningEnrollmentStatus::InProgress->value,
             ])
-            ->count();
+            ->whereHas('course', static fn ($course) => $course->whereIn('qualification_id', $qualificationIds))
+            ->with('course:id,qualification_id')
+            ->get(['id', 'user_id', 'learning_course_id'])
+            ->each(static function (LearningEnrollment $enrollment) use (&$open): void {
+                $qualificationId = (int) $enrollment->course?->qualification_id;
+                $open[(int) $enrollment->user_id][$qualificationId] = $qualificationId;
+            });
+
+        return array_map(static fn (array $ids): array => array_values($ids), $open);
+    }
+
+    /** Kursvorschlag der Einsatz-Ampel: je Qualifikation der erste freigegebene Kurs, der sie vermittelt. */
+    public function suggestedCourses(array $qualificationIds): array {
+        if ($qualificationIds === []) {
+            return [];
+        }
+
+        $courses = [];
+        foreach (LearningCourse::query()->released()->whereIn('qualification_id', $qualificationIds)->orderBy('title')->get(['id', 'title', 'qualification_id']) as $course) {
+            $courses[(int) $course->qualification_id] ??= (string) $course->title;
+        }
+
+        return $courses;
     }
 }

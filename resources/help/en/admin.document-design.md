@@ -1,7 +1,7 @@
 ---
 title: "Document design"
 topic: admin.document-design
-version: 1
+version: 4
 keywords:
     - letterhead
     - stationery
@@ -100,3 +100,45 @@ Getting started and letterhead view (refinement 6):
   texts) and **Release** (test documents, assignment, versions). The
   letterhead selection shows immediately in the A4 preview and is stored
   with "Save draft".
+
+Information blocks on documents:
+
+- Invoice, credit note, pro forma, quote, order confirmation, dunning letter
+  and fee notice print the blocks according to their state. **Dynamic**
+  prints the **company details** (name, address, register, legal line), the
+  **tax details** (VAT ID, tax number), the **contact person** (sales person
+  of the invoice or creator of the quote, otherwise the organisation's contact
+  details), **introduction** and **closing** (header and footer text of the
+  profile) and the **confidentiality notice** (own text on the Contents tab,
+  empty = default notice). "Already on the letterhead" and "not applicable"
+  omit the block.
+- Company and tax details come from the seller data of the e-invoice, or
+  failing that from the organisation's branding and legal details — so the
+  visible PDF does not contradict the structured invoice.
+- The preflight only counts "dynamic" company and tax details as fulfilled
+  when the data is maintained. If it is missing, this is an error for
+  assigned sales documents and a warning for the base design.
+- Issued invoices stay unchanged: the issuer details and the contact person
+  are frozen on issue; documents from before these blocks do not print them
+  even when reprinted.
+
+## Company details on purchase orders, delivery notes and protocols
+
+These documents also print company and tax details according to the block state of
+the design; this includes take-off sheets and disposal records, which are designed
+as protocols. If the mandatory block "Company details" is set to "dynamic", the
+preflight checks whether the name and the complete address are maintained — as for
+invoices and quotes. Records signed or completed before remain as they were.
+
+## Company details on records, certificates and construction letters
+
+Every document type with the mandatory block "Company details" prints it according
+to the block state, and the preflight checks the data for it: besides the documents
+above, the manufacturing record, notices of obstruction and of concerns, the
+certificate, the report card and the grading certificate, the completion record of a
+contract signing, the instruction record and the risk assessment, and the commercial
+and pro-forma invoice for customs. The design is frozen when the document is sent,
+issued, first signed, approved or completed; letters and records sent, issued,
+signed or completed before remain as they were. Timesheets, forms, reports, case
+files, activity reports and labels have no company block; the donation receipt
+follows the official template with its own issuer block.

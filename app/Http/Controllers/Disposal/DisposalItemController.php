@@ -15,9 +15,10 @@ namespace App\Http\Controllers\Disposal;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Disposal\{SaveDataMediaTreatmentRequest, SaveDisposalItemRequest};
 use App\Models\Disposal\{DataMediaTreatment, DisposalItem, DisposalJob};
+use App\Services\Attachments\FileAttacher;
 use App\Services\Disposal\DisposalJobService;
 use App\Support\ErrorText;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Throwable;
 
@@ -74,6 +75,24 @@ class DisposalItemController extends Controller {
 
         return redirect()->route('disposal.show', $job)
             ->with('status', __('Geräteposition entfernt.'));
+    }
+
+    /**
+     * Foto zur Geräteposition (MVP-1578). Gelöscht wird über den Anhangsweg;
+     * die Position sperrt beides, sobald die Akte nicht mehr änderbar ist.
+     */
+    public function storePhoto(Request $request, DisposalItem $disposalItem, FileAttacher $files): RedirectResponse {
+        $job = $this->jobFor($disposalItem);
+        Gate::authorize('update', $job);
+        abort_if($disposalItem->attachmentsLocked(), 403);
+
+        $request->validate(['photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:' . FileAttacher::maxKb()]]);
+
+        $actor = $request->user() ?? abort(401);
+        $attachment = $files->store($disposalItem, $request->file('photo'), $actor->id);
+        $disposalItem->attachmentAdded($attachment, $actor);
+
+        return redirect()->route('disposal.show', $job)->with('status', __('disposal.photo.flash.added'));
     }
 
     public function storeTreatment(SaveDataMediaTreatmentRequest $request, DisposalItem $disposalItem): RedirectResponse {

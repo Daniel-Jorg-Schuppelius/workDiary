@@ -1,7 +1,7 @@
 ---
 title: "Attività"
 topic: activity.overview
-version: 1
+version: 2
 keywords:
     - Attività
     - Chi ha modificato cosa
@@ -25,3 +25,5 @@ l’oggetto. I campi modificati restano nel registro di audit.
 Nelle schede di cliente, cliente finale, fornitore e progetto, la «Cronologia
 delle modifiche» riassume modifiche ed eventi dell’oggetto; il riquadro
 «Attività recente del team» mostra le ultime voci delle ultime due settimane.
+
+**Evento:** il filtro «Evento» limita l’elenco a un tipo di modifica, ad esempio «Creato» o «Eliminato». «Eventi di business» mostra tutto tranne le modifiche generali (creato, aggiornato, eliminato, archiviato, ripristinato), ad esempio approvazioni, firme o chiusure.

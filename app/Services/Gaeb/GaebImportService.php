@@ -34,7 +34,7 @@ use InvalidArgumentException;
  * ({@see GaebImport} im Status PreflightFailed) und schreibt keine Positionen.
  * Ein Reimport in ein bestehendes LV darf Positionen mit Ausführungsbezug nicht
  * still überschreiben — solche Fälle brechen mit {@see BoqImportConflictException}
- * ab (Status Conflict im Protokoll).
+ * ab; der Lauf steht mit Status Conflict und Vergleichsangaben im Protokoll.
  */
 class GaebImportService {
     public function __construct(
@@ -98,8 +98,29 @@ class GaebImportService {
             ? BillOfQuantity::query()->findOrFail($targetId)
             : null;
 
-        if ($target !== null) {
-            $this->guardReimport($target, $parsed);
+        // Der abgewiesene Reimport bleibt im Protokoll (MVP-1582): der Eintrag entsteht
+        // vor der Import-Transaktion und überlebt den Abbruch.
+        $conflicts = $target !== null ? $this->reimportConflicts($target, $parsed) : [];
+        if ($target !== null && $conflicts !== []) {
+            $refs = array_column($conflicts, 'ref');
+            $report['ok'] = false;
+            $report['errors'][] = (string) __('gaeb.flash.conflict', ['refs' => implode(', ', $refs)]);
+            $report['conflicts'] = $conflicts;
+
+            throw new BoqImportConflictException($refs, GaebImport::query()->create([
+                'organization_id' => $organizationId,
+                'bill_of_quantity_id' => $target->id,
+                'filename' => $filename,
+                'source_format' => $format->value,
+                'file_hash' => $fileHash,
+                'gaeb_version' => $parsed->getVersion(),
+                'phase' => GaebPhase::fromCode($parsed->getPhaseCode()),
+                'status' => GaebImportStatus::Conflict,
+                'section_count' => $parsed->countSections(),
+                'item_count' => $parsed->countItems(),
+                'preflight' => $report,
+                'created_by' => $options['created_by'] ?? null,
+            ]));
         }
 
         return DB::transaction(function () use ($parsed, $filename, $organizationId, $options, $fileHash, $report, $target, $format): GaebImport {
@@ -577,26 +598,37 @@ class GaebImportService {
     }
 
     /**
-     * Prüft, ob ein Reimport Positionen mit Ausführungs-/Abrechnungsbezug
-     * berühren würde, und bricht in dem Fall ab.
+     * Positionen mit Ausführungs-/Abrechnungsbezug, die ein Reimport berühren
+     * würde — je Position der Bestand neben dem Stand der Datei.
+     *
+     * @return list<array{ref: string, status: string, quantity: array{current: ?string, incoming: ?string}, unit_price: array{current: ?string, incoming: ?string}}>
      */
-    private function guardReimport(BillOfQuantity $target, GaebBoq $parsed): void {
-        $incomingRefs = [];
+    private function reimportConflicts(BillOfQuantity $target, GaebBoq $parsed): array {
+        $incoming = [];
         foreach ($parsed->getItems() as $item) {
-            $incomingRefs[] = $item->getReference();
+            $incoming[$item->getReference()] = $item;
         }
 
-        /** @var list<string> $protected */
-        $protected = $target->items()
-            ->get(['reference_no', 'status'])
-            ->filter(fn (BoqItem $item): bool => $item->status->hasExecutionReference())
-            ->pluck('reference_no')
-            ->all();
-
-        $touched = array_values(array_intersect($protected, $incomingRefs));
-
-        if ($touched !== []) {
-            throw new BoqImportConflictException($touched);
+        $conflicts = [];
+        foreach ($target->items()->get() as $existing) {
+            $item = $incoming[$existing->reference_no] ?? null;
+            if ($item === null || ! $existing->status->hasExecutionReference()) {
+                continue;
+            }
+            $conflicts[] = [
+                'ref' => (string) $existing->reference_no,
+                'status' => $existing->status->value,
+                'quantity' => [
+                    'current' => $existing->quantity?->getValue()->getValue(),
+                    'incoming' => $item->getQuantity(),
+                ],
+                'unit_price' => [
+                    'current' => $existing->unit_price?->getAmount(),
+                    'incoming' => $item->getUnitPrice()?->getAmount(),
+                ],
+            ];
         }
+
+        return $conflicts;
     }
 }

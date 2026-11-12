@@ -1,7 +1,7 @@
 ---
 title: "Transferencia de datos"
 topic: admin.data-transfer
-version: 2
+version: 3
 keywords:
     - exportación de datos
     - exportar datos
@@ -31,3 +31,12 @@ exportación se registra en el log de auditoría; al eliminar una
 exportación también se borra el archivo. Tiene acceso quien es
 administrador o posee al menos un permiso de exportación. Para copias
 de seguridad completas del sistema, consulta **Copias de seguridad**.
+
+## Columnas con permiso propio
+
+Las tarifas de facturación y de coste de las personas solo se exportan con el
+permiso para datos de personal y nóminas; las de los proyectos, solo con el permiso
+para la facturación de proyectos. Sin él, las columnas faltan en el archivo; un
+archivo que las contenga solo lo descarga quien tenga ese permiso. Al importar,
+workDiary omite esas columnas sin el permiso y las indica en el informe de
+comprobación; las demás columnas se importan.

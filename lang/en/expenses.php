@@ -11,6 +11,7 @@
 return [
     'error' => [
         'self_approval' => 'You cannot approve your own expense.',
+        'receipt_required' => 'The category ":category" requires a receipt. The expense is saved but not submitted — upload the receipt and then submit it.',
         'invalid_transition' => 'The action :action is not possible in status :status.',
     ],
     'receipt' => [
@@ -31,6 +32,8 @@ return [
         'push_unsupported' => ':program does not accept expenses as documents — link an existing document instead.',
         'title' => 'Receipt file',
         'hint' => 'Attach the receipt to the expense — without it the expense can neither be verified on its own nor handed to accounting later.',
+        'required_hint' => 'This category requires a receipt. You can save at any time; the expense can only be submitted once a receipt is attached ("Receipt file" action in the list).',
+        'required_present' => 'This category requires a receipt — it is attached.',
     ],
     'title' => [
         'index'           => 'Expenses',

@@ -13,12 +13,14 @@ declare(strict_types=1);
 namespace App\Services\Article;
 
 use App\Models\Article\{Article, ArticleUnit};
+use CommonToolkit\Enums\RoundingMode;
 use CommonToolkit\Helper\Data\NumberHelper;
 use RuntimeException;
 
 /**
  * Rechnet Mengen zwischen einer artikelbezogenen Einheit und der Basiseinheit
- * um (Feature 048, MVP-060). Rein dezimal (bcmath), nie Fließkomma.
+ * um (Feature 048, MVP-060). Rein dezimal, nie Fließkomma; gerundet wird
+ * kaufmännisch auf die Skala der Bestandsführung.
  * Dimensionswechsel (z. B. Liter↔Kilogramm) sind nur über einen ausdrücklich
  * gepflegten artikelbezogenen Faktor möglich — sonst gibt es keine Einheit und
  * die Umrechnung schlägt fehl.
@@ -27,21 +29,15 @@ class UnitConverter {
     /** Nachkommastellen der internen Bestandsführung (Basiseinheit). */
     public const int SCALE = 4;
 
-    /** Rechnet eine Menge in der angegebenen Einheit in die Basiseinheit um. */
+    /**
+     * Rechnet eine Menge in der angegebenen Einheit in die Basiseinheit um.
+     *
+     * @return numeric-string
+     */
     public function toBase(Article $article, string $quantity, string $unitCode): string {
         $factor = $this->factor($article, $unitCode);
 
-        return $this->round(bcmul(NumberHelper::normalizeDecimalString($quantity), $factor, self::SCALE + 4));
-    }
-
-    /** Rechnet eine Menge aus der Basiseinheit in die angegebene Einheit um. */
-    public function fromBase(Article $article, string $quantity, string $unitCode): string {
-        $factor = $this->factor($article, $unitCode);
-        if (bccomp($factor, '0', 8) === 0) {
-            throw new RuntimeException('Einheiten-Faktor 0 ist ungültig.');
-        }
-
-        return $this->round(bcdiv(NumberHelper::normalizeDecimalString($quantity), $factor, self::SCALE + 4));
+        return NumberHelper::multiplyPrecise(NumberHelper::normalizeDecimalString($quantity), $factor, self::SCALE, RoundingMode::HalfUp);
     }
 
     /**
@@ -49,7 +45,7 @@ class UnitConverter {
      *
      * @return numeric-string
      */
-    private function factor(Article $article, string $unitCode): string {
+    public function factor(Article $article, string $unitCode): string {
         if ($unitCode === $article->base_unit) {
             return '1';
         }
@@ -57,25 +53,14 @@ class UnitConverter {
         /** @var ArticleUnit|null $unit */
         $unit = $article->units()->where('code', $unitCode)->where('active', true)->first();
         if ($unit === null) {
-            throw new RuntimeException(sprintf(
-                'Keine gepflegte Umrechnung für Einheit "%s" am Artikel %d.',
-                $unitCode,
-                (int) $article->id,
-            ));
+            throw new RuntimeException((string) __('inventory.error.unit_not_maintained', ['unit' => $unitCode, 'article' => (string) $article->name]));
         }
 
         $factor = (string) $unit->factor_to_base;
+        if (! is_numeric($factor) || bccomp($factor, '0', 8) <= 0) {
+            throw new RuntimeException((string) __('inventory.error.unit_factor_invalid', ['unit' => $unitCode, 'article' => (string) $article->name]));
+        }
 
-        return is_numeric($factor) ? $factor : '1';
-    }
-
-    /**
-     * @param  numeric-string  $value
-     * @return numeric-string
-     */
-    private function round(string $value): string {
-        // bcadd mit Skala schneidet auf SCALE Stellen ab (die Werte wurden
-        // zuvor breiter gerechnet).
-        return bcadd($value, '0', self::SCALE);
+        return $factor;
     }
 }

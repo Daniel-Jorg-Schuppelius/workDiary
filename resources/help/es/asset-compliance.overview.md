@@ -1,7 +1,7 @@
 ---
 title: "Equipos de medición y calibración"
 topic: asset-compliance.overview
-version: 2
+version: 4
 keywords:
     - metrología
     - gestión de equipos de medida
@@ -224,3 +224,56 @@ vencidas y tasa de inspección.
 
 **Permiso:** **Listar obligaciones de inspección y equipos de medición**;
 también para congelar una instantánea.
+
+## Editar, desactivar, cancelar
+
+**Perfiles de inspección:** en la página **Perfiles de inspección**,
+**Editar** abre un perfil de la organización (nombre, tipo de inspección,
+intervalo, plazo de aviso, tolerancia, plazo de gracia, efecto de bloqueo,
+obligación de certificado, organismo de inspección predeterminado); el código
+se mantiene. Un intervalo modificado se aplica a partir de la próxima
+inspección a todas las obligaciones sin intervalo propio. **Desactivar**
+retira el perfil de la selección para nuevas asignaciones; las obligaciones y
+los informes existentes se conservan. Los perfiles desactivados figuran abajo,
+en «Perfiles de organización desactivados», y allí se pueden volver a
+activar. Las plantillas globales no se modifican: cree un perfil de la
+organización con el mismo código. No se elimina nada.
+
+**Requisitos:** en cada requisito puede cambiar la denominación, los límites,
+la unidad y si es obligatorio. Los nuevos límites se aplican a las nuevas
+inspecciones; los informes anteriores conservan sus valores de entonces. El
+cuadro de diálogo de inspección deja de pedir un requisito desactivado.
+
+**Obligaciones de inspección:** en la lista **Obligaciones de inspección** de
+la página **Equipo de inspección**, **Editar** cambia el **Intervalo para este
+activo (meses)**, la última inspección, el próximo vencimiento, la persona
+responsable, el organismo de inspección y la nota. Si deja vacío el
+vencimiento, se recalcula desde la última inspección cuando cambia el
+intervalo. El intervalo por activo también se puede indicar al asignar.
+**Desactivar** suspende la obligación: las citas abiertas se cancelan,
+termina el bloqueo por vencimiento de esta obligación y los informes se
+conservan. En **Desactivadas** verá las obligaciones suspendidas y podrá
+reanudarlas.
+
+**Cancelar una cita:** en el **Calendario de inspecciones**, la acción
+**Cancelar** cancela una cita abierta o incumplida; el motivo es obligatorio
+y figura después debajo del estado. La obligación de inspección sigue
+vigente.
+
+**Citas incumplidas:** si el día planificado de una cita abierta —o el
+vencimiento, si no hay día planificado— ha pasado sin inspección, el proceso
+nocturno de plazos la pasa a **Incumplido**. La inspección se registra
+entonces mediante una nueva cita.
+
+**Mediciones brutas:** en el cuadro de diálogo de inspección, la sección
+**Mediciones brutas** admite hasta cuatro puntos de medición libres con valor
+y unidad, sin comprobación de límites. La tabla **Informes de inspección**,
+debajo del calendario, muestra las últimas 20 inspecciones con el resultado,
+los valores medidos por requisito y las mediciones brutas.
+
+**Permiso:** editar, desactivar y cancelar con **Gestionar perfiles y
+obligaciones de inspección**.
+
+## Orden de inspección y estado de las citas
+
+Cuando acepta la oferta de un proveedor de inspecciones, las citas de la orden muestran **En curso**. Una orden cancelada vuelve a liberar las citas anunciadas y en curso; entonces muestran **Planificado**.

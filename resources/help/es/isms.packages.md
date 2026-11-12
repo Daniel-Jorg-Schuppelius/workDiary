@@ -1,7 +1,7 @@
 ---
 title: "Paquetes de auditoría y enlaces para auditores"
 topic: isms.packages
-version: 2
+version: 3
 keywords:
     - acceso para auditores
     - enlace de auditor
@@ -62,3 +62,5 @@ Permisos: la consulta requiere permisos de lectura del SGSI; la creación
 y la gestión requieren permisos de gestión del SGSI. La vista del
 auditor y la descarga funcionan mediante un enlace protegido, sin cuenta
 de WorkDiary.
+
+**Editar o descartar un borrador:** mientras un paquete no esté finalizado, puede cambiar título, alcance, fecha de referencia y filtro de norma mediante «Editar paquete», o descartar el borrador en el mismo diálogo. Los paquetes finalizados siguen siendo inmutables y no se pueden eliminar.

@@ -17,9 +17,10 @@ use App\Models\Attachments\Attachment;
 use App\Models\Platform\User;
 use App\Notifications\GenericEventNotification;
 use App\Services\Attachments\ImageMetaUploader;
+use App\Services\Security\KnownDeviceService;
 use App\Support\Auth\RecentAuthentication;
 use App\Support\ErrorText;
-use CommonToolkit\Helper\Data\{EmailHelper, PhoneNumberHelper};
+use CommonToolkit\Helper\Data\{EmailHelper, PhoneNumberHelper, StringHelper};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Hash, Log, Notification};
@@ -64,6 +65,7 @@ class ProfileController extends Controller {
             'preferences.notifications.mail_enabled' => ['nullable', 'boolean'],
             'preferences.notifications.quiet_from' => ['nullable', 'date_format:H:i'],
             'preferences.notifications.quiet_to' => ['nullable', 'date_format:H:i'],
+            'preferences.security_new_device_alert' => ['nullable', 'boolean'],
             'avatar' => ['nullable', 'file'],
             'remove_avatar' => ['nullable', 'boolean'],
             // CTI-Anrufer-Pop-up (MVP-118): eigene Durchwahl als Opt-in.
@@ -101,7 +103,7 @@ class ProfileController extends Controller {
             // Vom Profilformular verwaltete Keys ersetzt die Eingabe (bzw. leert sie); andere Keys — v. a.
             // color_scheme vom Header-Umschalter — bleiben, damit Speichern die Hell/Dunkel-Wahl nicht zurücksetzt.
             $existing = (array) ($user->preferences ?? []);
-            $formKeys = ['theme', 'locale', 'timezone', 'date_format', 'time_format', 'startpage', 'mail_signature', 'notifications'];
+            $formKeys = ['theme', 'locale', 'timezone', 'date_format', 'time_format', 'startpage', 'mail_signature', 'notifications', KnownDeviceService::PREFERENCE_KEY];
             $preserved = array_diff_key($existing, array_flip($formKeys));
             // Innerhalb von `notifications` gibt es Schlüssel, die das Formular
             // NICHT kennt: das SMS-Opt-in (Feature 147) entsteht über den
@@ -114,11 +116,23 @@ class ProfileController extends Controller {
             if ($keptNotifications !== []) {
                 $submitted['notifications'] = array_merge($keptNotifications, (array) ($submitted['notifications'] ?? []));
             }
+            $alertBefore = ($existing[KnownDeviceService::PREFERENCE_KEY] ?? true) !== false;
+            if (array_key_exists(KnownDeviceService::PREFERENCE_KEY, $submitted)) {
+                $submitted[KnownDeviceService::PREFERENCE_KEY] = StringHelper::parseBool($submitted[KnownDeviceService::PREFERENCE_KEY], true);
+            } elseif (array_key_exists(KnownDeviceService::PREFERENCE_KEY, $existing)) {
+                // Formular ohne den Schalter (ältere Fassung): die bisherige Wahl bleibt.
+                $submitted[KnownDeviceService::PREFERENCE_KEY] = $existing[KnownDeviceService::PREFERENCE_KEY];
+            }
             $merged = array_merge($preserved, $submitted);
             $user->preferences = $merged === [] ? null : $merged;
+            $alertAfter = ($merged[KnownDeviceService::PREFERENCE_KEY] ?? true) !== false;
         }
 
         $user->save();
+        // Abschalten der Neues-Gerät-Meldung schwächt die Kontosicherung — nachvollziehbar halten (MVP-1612).
+        if (isset($alertBefore, $alertAfter) && $alertBefore !== $alertAfter) {
+            $user->audit($alertAfter ? 'user.newDeviceAlertEnabled' : 'user.newDeviceAlertDisabled', []);
+        }
 
         $this->syncUserAddress($user, (array) ($data['address'] ?? []));
         $this->syncUserBankAccount($user, (array) ($data['bank'] ?? []));

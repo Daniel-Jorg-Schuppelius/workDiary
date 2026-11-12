@@ -1,7 +1,7 @@
 ---
 title: "Firefly III como fuente de conciliación"
 topic: admin.firefly
-version: 1
+version: 3
 keywords:
     - Firefly III
     - movimientos de cuenta
@@ -62,3 +62,9 @@ inicia al momento. **Desconectar** detiene la sincronización.
 - La comprobación indica una dirección interna: la dirección apunta a su propia
   red, pero **Permitir direcciones privadas** está desactivado o el operador no lo
   permite.
+
+## En la vista general
+
+La selección **Asignación** ofrece además **Abiertas (sin asignación o ambiguas)**. Los movimientos sin asignación o con asignación ambigua aparecen en la **cola de trabajo** como un elemento agrupado cada uno, y el mosaico del panel **Movimientos financieros** los cuenta junto a los extractos bancarios y muestra los últimos movimientos. Ambos solo los ve la administración y solo mientras el complemento esté activado.
+
+**Marcar como resuelto:** los movimientos que no necesitan justificante (comisión de mantenimiento, retirada privada) se marcan como resueltos con un motivo. Después dejan de contar en el mosaico «Movimientos financieros» y en la cola de trabajo; el filtro «Resueltos» los muestra y «Reabrir» quita la marca. La sincronización solo cambia la asignación, nunca la resolución.

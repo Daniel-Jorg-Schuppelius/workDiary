@@ -1,7 +1,7 @@
 ---
 title: "Connessione Todoist"
 topic: admin.todoist
-version: 2
+version: 3
 keywords:
     - Todoist
     - sincronizzare attività
@@ -166,3 +166,5 @@ filtrata su Todoist.
   una sincronizzazione fallisce per un altro motivo, la pagina mostra l’ultimo
   errore finché una sincronizzazione non riesce di nuovo; viene creata anche
   un’attività operativa.
+
+**Titolarità dei dati:** se un altro sistema gestisce le attività, la sincronizzazione crea un caso «Titolarità dei dati» per attività nella posta in arrivo delle integrazioni. **Acquisisci una volta** importa l’attività tramite la stessa assegnazione finché è attiva; se in seguito l’attività cambia nella fonte, il caso si riapre.

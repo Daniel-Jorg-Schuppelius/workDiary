@@ -1,7 +1,7 @@
 ---
 title: "Spesenkategorien"
 topic: catalog.expense-categories
-version: 1
+version: 2
 keywords:
     - Spesenarten
     - Ausgabenkategorien
@@ -32,3 +32,5 @@ Erfassen neuer Spesen als Vorschlag übernommen.
 Inaktive Kategorien bleiben erhalten, werden aber nicht mehr zur Auswahl
 angeboten. Eine Kategorie, die noch von Spesen verwendet wird, kann nicht
 gelöscht werden; setzen Sie sie in diesem Fall inaktiv.
+
+**Belegpflicht:** Ist „Beleg erforderlich“ gesetzt, lässt sich eine Auslage dieser Kategorie erst einreichen, wenn ein Beleg hinterlegt ist. Speichern als Entwurf geht immer; das Formular weist auf die Pflicht hin, und beim Einreichen ohne Beleg öffnet sich der Belegdialog.

@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
+use App\Enums\Manufacturing\ManufacturingOrderStatus;
 use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Platform\{Organization, User};
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, IssuerIdentity};
 
 /**
  * Rendert den Fertigungsnachweis eines Auftrags als PDF (Feature 047,
@@ -39,6 +40,8 @@ class ManufacturingRecordPdfRenderer {
         // C15: gemeinsamer View→Design→PDF-Dreischritt (Dokumentdesign ohne Profil No-Op).
         // MVP-650: abgeschlossene Aufträge rendern mit ihrem eingefrorenen Designstand.
         $design = app(DocumentDesignRenderer::class);
+        $payload = $design->payloadFromSnapshot($order, RenderDocumentKind::ManufacturingRecord)
+            ?? ($organization !== null ? $design->payloadFor($organization, RenderDocumentKind::ManufacturingRecord) : null);
 
         return $design->renderPdf(
             RenderDocumentKind::ManufacturingRecord,
@@ -50,9 +53,12 @@ class ManufacturingRecordPdfRenderer {
                 'quality' => $this->quality->metricsFor($order),
                 'reporters' => $reporters,
                 'generatedAt' => now(),
+                // Firmenangaben nach Blockzustand (MVP-1624); vorher abgeschlossene Nachweise bleiben, wie sie waren.
+                'design' => $design->contextForDocument($order, RenderDocumentKind::ManufacturingRecord, $payload, finalized: $order->status === ManufacturingOrderStatus::Completed),
+                'issuer' => IssuerIdentity::for($organization),
             ],
             $organization,
-            payload: $design->payloadFromSnapshot($order, RenderDocumentKind::ManufacturingRecord),
+            payload: $payload,
         );
     }
 

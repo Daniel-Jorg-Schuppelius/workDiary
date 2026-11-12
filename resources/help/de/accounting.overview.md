@@ -1,7 +1,7 @@
 ---
 title: "Lokale Buchhaltung"
 topic: accounting.overview
-version: 3
+version: 6
 keywords:
     - Hauptbuch
     - Finanzbuchhaltung
@@ -118,10 +118,36 @@ Organisation die lokale Buchhaltung führt oder geführt hat.
   `datev_account`, `euer_category` und `deductible_percent`. Bestehende
   Kontonummern werden aktualisiert, neue Konten angelegt, gelöscht wird nichts;
   fehlerhafte Zeilen werden übersprungen und gezählt.
-- **Steuerkennzeichen:** Sind Steuerkennzeichen angelegt, listet die Seite sie
-  mit ihren Kennziffern der Umsatzsteuer-Voranmeldung. Über **Bearbeiten**
-  ordnen Sie **Bemessungsgrundlage** und **Steuerbetrag** je eine Kennziffer zu
-  – eine Abgleichhilfe, kein Vordruck.
+- **Steuerkennzeichen:** Die Seite listet die Steuerkennzeichen mit Satz,
+  Steuerkonto, Gültigkeit und ihren Kennziffern der Umsatzsteuer-Voranmeldung.
+  **Steuerkennzeichen anlegen** erfasst **Kürzel**, **Bezeichnung**,
+  **Richtung**, **Steuersatz (%)**, **Steuerkonto**, **Gültig ab** und die
+  Kennziffern für **Bemessungsgrundlage** und **Steuerbetrag** – eine
+  Abgleichhilfe, kein Vordruck. Über **Bearbeiten** ändern Sie Bezeichnung und
+  Kennziffern jederzeit. Satz, Richtung und Steuerkonto eines Kennzeichens,
+  mit dem schon gebucht wurde, ändern sich nur zu einem neuen Stichtag: Die
+  bisherige Fassung endet am Vortag, Altbuchungen bleiben unverändert,
+  Buchungsregeln und Konten-Vorgaben folgen der neuen Fassung. **Stilllegen**
+  nimmt ein Kennzeichen aus der Auswahl; bestehende Buchungen behalten es.
+  Buchungen aus der Buchungs-Inbox tragen Kennzeichen und Steuerbetrag an der
+  Erlös- bzw. Aufwandszeile. Für Umsätze ohne Steuer wählt die Inbox das
+  Kennzeichen über die Steuerkategorie des Belegs: innergemeinschaftliche
+  Lieferung (Kennziffer 41), sonstige Leistung mit Steuerschuld des Empfängers
+  (21), Ausfuhr (43), nicht steuerbar (45); „steuerfrei“ ohne Kennziffer
+  erscheint als Klärungsfall. Kleinunternehmer erhalten kein Kennzeichen.
+- **Steuerschuld des Empfängers:** Für die Richtung **Umsatz- und Vorsteuer
+  (Steuerschuld des Empfängers)** erfasst das Steuerkennzeichen zusätzlich
+  **Vorsteuerkonto**, **Steuerfall im Rechnungseingang** und **Kennziffer der
+  Vorsteuer**. Die Vorlagen bringen § 13b Abs. 1 und 2 (19 %) und den
+  innergemeinschaftlichen Erwerb (19 % und 7 %) samt Konten mit, dazu das
+  Kennzeichen der Kennziffer 60 für Umsätze, für die der Kunde im Inland die
+  Steuer schuldet. Bestehende Kontenpläne aus der Vorlage erhalten sie mit dem
+  Update.
+- **DATEV:** **DATEV-BU-Schlüssel** am Kennzeichen nennt den Steuerschlüssel im
+  DATEV-Buchungsstapel (etwa 9 für Vorsteuer 19 %, 94 für § 13b).
+  **DATEV-Automatik** am Konto nennt das Kennzeichen, dessen Steuer DATEV auf
+  diesem Konto selbst errechnet (Automatikkonto wie 8400 im SKR03); dort setzt
+  der Stapel keinen Schlüssel.
 
 **Berechtigung:** Ansehen mit **Buchhaltung einsehen**; Vorlage, Import und
 alle Änderungen an Konten und Steuerkennzeichen mit **Buchhaltung einrichten**.

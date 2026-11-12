@@ -180,18 +180,4 @@ final class GithubIssueImportTest extends TestCase {
         $this->assertFalse($mapped->is_global);
     }
 
-    public function test_sync_tasks_aggregates_counters_via_task_syncer_contract(): void {
-        $this->configure();
-        FakePluginHttp::fake([
-            'https://api.github.com/repos/acme/support/issues*' => FakePluginHttp::response([$this->issue(1), $this->issue(2)]),
-        ]);
-
-        $first = (new GithubPlugin())->syncTasks($this->organization);
-        $this->assertSame(2, $first['created']);
-        $this->assertSame(0, $first['failed']);
-
-        $second = (new GithubPlugin())->syncTasks($this->organization);
-        $this->assertSame(0, $second['created']);
-        $this->assertSame(2, $second['unchanged']);
-    }
 }

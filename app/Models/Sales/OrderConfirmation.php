@@ -49,6 +49,7 @@ use Illuminate\Support\Carbon;
  * @property Money|null $tax_amount
  * @property Money|null $total
  * @property int|null $created_by
+ * @property array{issuer?: array<string, string>, contact?: array{name: string, phone: string, email: string}|null}|null $issuer_snapshot
  * @property-read Customer|null $customer
  * @property-read Quote|null $quote
  * @property-read \Illuminate\Database\Eloquent\Collection<int, OrderConfirmationItem> $items
@@ -63,6 +64,8 @@ class OrderConfirmation extends Model implements AuditsChanges, HasDocumentLines
     protected $fillable = [
         'organization_id', 'customer_id', 'project_id', 'quote_id', 'number', 'status',
         'confirmed_on', 'note', 'currency', 'subtotal', 'tax_amount', 'total', 'created_by',
+        // Aussteller und Ansprechpartner bei der Bestätigung (MVP-1624).
+        'issuer_snapshot',
     ];
 
     /** @var array<string, string> */
@@ -73,6 +76,7 @@ class OrderConfirmation extends Model implements AuditsChanges, HasDocumentLines
         'subtotal' => MoneyCast::class . ':currency,2',
         'tax_amount' => MoneyCast::class . ':currency,2',
         'total' => MoneyCast::class . ':currency,2',
+        'issuer_snapshot' => 'array',
     ];
 
     /** @return HasMany<OrderConfirmationItem, $this> */

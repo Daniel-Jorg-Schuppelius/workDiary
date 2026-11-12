@@ -17,7 +17,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\AccountingOpenItem;
-use App\Services\Accounting\OpenItemService;
+use App\Services\Accounting\{DiscountTaxSplit, OpenItemService};
 use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -46,7 +46,10 @@ class OpenItemController extends Controller {
 
         // Seitenweise: Bei mehreren tausend Posten kostet das Hydrieren der
         // Modelle mehr als die Abfrage (MVP-683).
-        $aging = $this->openItems->aging($organization, $direction, perPage: 50);
+        // Statusfilter der Liste (MVP-1559): offen, teilweise ausgeglichen, strittig.
+        $status = OpenItemStatus::tryFrom((string) $request->query('status', ''));
+        $status = $status?->isOpen() === true ? $status : null;
+        $aging = $this->openItems->aging($organization, $direction, perPage: 50, status: $status);
 
         return view('finance.accounting.open-items', [
             'direction' => $direction,
@@ -55,7 +58,8 @@ class OpenItemController extends Controller {
             // zweiten Ausgleich anzubieten.
             'pendingDrafts' => $this->openItems->pendingDrafts($aging['items'] instanceof LengthAwarePaginator ? $aging['items']->items() : $aging['items']),
             'buckets' => $aging['buckets'],
-            'statuses' => OpenItemStatus::cases(),
+            'statuses' => array_values(array_filter(OpenItemStatus::cases(), static fn (OpenItemStatus $case): bool => $case->isOpen())),
+            'selectedStatus' => $status,
             'canPost' => Gate::allows(Permission::AccountingLedgerPost->value),
         ]);
     }
@@ -67,6 +71,10 @@ class OpenItemController extends Controller {
         return view('finance.accounting._settle_dialog', [
             'item' => $item,
             'kinds' => [SettlementKind::Discount, SettlementKind::Retention, SettlementKind::WriteOff],
+            'missingCounterAccounts' => $this->openItems->missingCounterAccounts($this->currentOrganizationOrAbort(), $item->direction),
+            // Steuersätze, nach denen ein Skonto berichtigt wird (§ 17 UStG); leer = ohne Steuerbezug.
+            'discountTaxRates' => app(DiscountTaxSplit::class)->rates($item),
+            'discountSelfAssessed' => app(DiscountTaxSplit::class)->selfAssessed($item),
         ]);
     }
 
@@ -91,5 +99,32 @@ class OpenItemController extends Controller {
         return back()->with('status', $settlement === null
             ? __('accounting.open_items.flash.awaiting_approval')
             : __('accounting.open_items.flash.settled'));
+    }
+
+    /** Dialog: Posten als strittig kennzeichnen (MVP-1559), Grund ist Pflicht. */
+    public function disputeForm(AccountingOpenItem $item): View {
+        abort_unless(Gate::allows(Permission::AccountingLedgerPost->value), 403);
+        $this->assertSameOrganization($item);
+
+        return view('finance.accounting._dispute_dialog', ['item' => $item]);
+    }
+
+    public function dispute(Request $request, AccountingOpenItem $item): RedirectResponse {
+        abort_unless(Gate::allows(Permission::AccountingLedgerPost->value), 403);
+        $this->assertSameOrganization($item);
+        $data = $request->validate(['reason' => ['required', 'string', 'min:3', 'max:255']]);
+
+        $this->openItems->markDisputed($item, (string) $data['reason'], $this->authUser());
+
+        return back()->with('status', __('accounting.dispute.flash.marked'));
+    }
+
+    public function withdrawDispute(AccountingOpenItem $item): RedirectResponse {
+        abort_unless(Gate::allows(Permission::AccountingLedgerPost->value), 403);
+        $this->assertSameOrganization($item);
+
+        $this->openItems->withdrawDispute($item, $this->authUser());
+
+        return back()->with('status', __('accounting.dispute.flash.withdrawn'));
     }
 }

@@ -49,6 +49,7 @@ return [
         'search' => 'Búsqueda',
         'search_placeholder' => 'Concepto, contraparte, número de documento',
         'all_matches' => 'Todas las asignaciones',
+        'open_matches' => 'Abiertas (sin asignación o ambiguas)',
         'col' => [
             'date' => 'Fecha',
             'kind' => 'Tipo',
@@ -56,9 +57,23 @@ return [
             'description' => 'Concepto',
             'match' => 'Asignación',
             'amount' => 'Importe',
+            'actions' => 'Acciones',
         ],
         'empty' => 'Todavía no hay movimientos',
         'foreign_amount' => 'Importe en una segunda moneda',
+    ],
+    // Erledigt markieren (MVP-1628)
+    'settle' => [
+        'title' => 'Marcar el movimiento como resuelto',
+        'action' => 'Resuelto',
+        'intro' => 'El movimiento no necesita justificante (por ejemplo, comisión de mantenimiento o retirada privada). Después deja de contar en el mosaico «Movimientos financieros» y en la cola de trabajo; la sincronización no lo cambia.',
+        'note' => 'Motivo',
+        'done' => 'Movimiento marcado como resuelto.',
+        'already' => 'El movimiento ya está resuelto.',
+        'reopened' => 'Movimiento reabierto.',
+        'reopen' => 'Reabrir',
+        'filter' => 'Resueltos',
+        'badge' => 'Resuelto por :name el :date',
     ],
     'search' => [
         'domain' => 'Movimientos de Firefly III',
@@ -76,5 +91,10 @@ return [
     'health' => [
         'not_configured' => 'Firefly III no está configurado (falta la dirección o el token).',
         'not_connected' => 'La conexión con Firefly III aún no se ha comprobado.',
+    ],
+    'work_queue' => [
+        'source' => 'Firefly III',
+        'unmatched' => '{1} 1 movimiento de Firefly sin asignación|[2,*] :count movimientos de Firefly sin asignación',
+        'ambiguous' => '{1} 1 movimiento de Firefly con asignación ambigua|[2,*] :count movimientos de Firefly con asignación ambigua',
     ],
 ];

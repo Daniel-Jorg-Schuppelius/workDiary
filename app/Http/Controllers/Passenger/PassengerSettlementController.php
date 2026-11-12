@@ -22,7 +22,7 @@ use App\Services\Passenger\PassengerRideService;
 use App\Support\{ErrorText, Sqid};
 use App\Support\Query\DateRange;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{DB, Gate};
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -147,14 +147,18 @@ class PassengerSettlementController extends Controller {
             throw ValidationException::withMessages(['difference_reason' => (string) __('passenger.error.difference_reason_required')]);
         }
 
-        $settlement->forceFill([
-            'status' => $target,
-            'difference' => $difference,
-            'difference_reason' => trim((string) ($validated['difference_reason'] ?? '')) ?: null,
-            'closed_by' => ($request->user() ?? abort(401))->id,
-            'closed_at' => now(),
-        ])->save();
-        $settlement->audit('passenger.settlement_closed', ['status' => $target->value, 'difference' => $difference]);
+        $rides = DB::transaction(function () use ($settlement, $target, $difference, $validated, $request): int {
+            $settlement->forceFill([
+                'status' => $target,
+                'difference' => $difference,
+                'difference_reason' => trim((string) ($validated['difference_reason'] ?? '')) ?: null,
+                'closed_by' => ($request->user() ?? abort(401))->id,
+                'closed_at' => now(),
+            ])->save();
+
+            return $settlement->claimRides();
+        });
+        $settlement->audit('passenger.settlement_closed', ['status' => $target->value, 'difference' => $difference, 'rides' => $rides]);
 
         return redirect()->toList('passenger-settlements.index')->with('status', (string) __('passenger.flash.settlement_closed'));
     }

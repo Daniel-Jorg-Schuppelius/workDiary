@@ -12,23 +12,26 @@ declare(strict_types=1);
 
 namespace App\Services\Patrol;
 
-use App\Enums\OpenIssue\OpenIssueSource;
+use App\Enums\OpenIssue\{OpenIssueSource, OpenIssueStatus};
 use App\Enums\Patrol\PatrolRunStatus;
 use App\Models\Diary\OpenIssue;
 use App\Models\Patrol\{PatrolCheckpoint, PatrolRoute, PatrolRun};
-use App\Models\Platform\User;
+use App\Models\Platform\{Organization, User};
+use App\Support\CarbonFmt;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\{Carbon, Str};
 use RuntimeException;
 
 /**
- * Rundgangs-Durchführung (Feature 089, MVP-663–665).
+ * Rundgangs-Durchführung (Feature 089, MVP-663–665, MVP-1611).
  *
  * Die Soll-Zeiten sind **Nachweis-, keine Leistungsdruck-Metrik**: Der Scan
  * belegt Punkt und Zeit; die Abweichung wird ausgewiesen und begründet, nie
  * geglättet. Der Alarm läuft über das vorhandene Offene-Punkte-System — ein
  * verpasster Kontrollpunkt IST ein offener Punkt am Objekt, kein eigener
- * Benachrichtigungskanal.
+ * Benachrichtigungskanal. Je Lauf gibt es höchstens einen offenen Punkt; er
+ * entsteht bei der ersten Abweichung und wird bis zum Ende fortgeschrieben.
  */
 class PatrolService {
     /**
@@ -59,6 +62,9 @@ class PatrolService {
      * @return array{checkpoint: PatrolCheckpoint, token: string}
      */
     public function reissueToken(PatrolCheckpoint $checkpoint): array {
+        if ($checkpoint->deactivated_at !== null) {
+            throw new RuntimeException((string) __('patrol.checkpoint.deactivated'));
+        }
         $token = Str::upper(Str::random(12));
         $checkpoint->forceFill([
             'token_hash' => PatrolCheckpoint::hashToken($token),
@@ -68,11 +74,62 @@ class PatrolService {
         return ['checkpoint' => $checkpoint, 'token' => $token];
     }
 
+    /**
+     * Kontrollpunkt ändern. Bereits erfasste Scans behalten ihre Bewertung —
+     * sie wurde beim Scan festgehalten.
+     */
+    public function updateCheckpoint(PatrolCheckpoint $checkpoint, string $label, int $offsetMinutes, int $toleranceMinutes): PatrolCheckpoint {
+        if ($checkpoint->deactivated_at !== null) {
+            throw new RuntimeException((string) __('patrol.checkpoint.deactivated'));
+        }
+        $checkpoint->forceFill([
+            'label' => $label,
+            'expected_offset_minutes' => max(0, $offsetMinutes),
+            'tolerance_minutes' => max(0, $toleranceMinutes),
+        ])->save();
+        $checkpoint->route?->audit('patrol.checkpoint_updated', ['checkpoint' => $checkpoint->label]);
+
+        return $checkpoint;
+    }
+
+    /**
+     * Kontrollpunkt deaktivieren: ab jetzt nicht mehr erwartet und nicht mehr
+     * scanbar. Läufe, die vorher begonnen haben, zählen ihn weiter.
+     */
+    public function deactivateCheckpoint(PatrolCheckpoint $checkpoint): PatrolCheckpoint {
+        if ($checkpoint->deactivated_at === null) {
+            $checkpoint->forceFill(['deactivated_at' => Carbon::now()])->save();
+            $checkpoint->route?->audit('patrol.checkpoint_deactivated', ['checkpoint' => $checkpoint->label]);
+        }
+
+        return $checkpoint;
+    }
+
+    /** @param array{name: string, site_id: ?int, responsible_user_id: ?int} $attributes */
+    public function updateRoute(PatrolRoute $route, array $attributes): PatrolRoute {
+        $route->fill($attributes)->save();
+        if ($route->wasChanged()) {
+            $route->audit('patrol.route_updated', ['fields' => array_keys($route->getChanges())]);
+        }
+
+        return $route;
+    }
+
+    /** Route deaktivieren oder wieder freigeben; ein laufender Rundgang darf zu Ende gehen. */
+    public function setRouteActive(PatrolRoute $route, bool $active): PatrolRoute {
+        if ($route->active !== $active) {
+            $route->forceFill(['active' => $active])->save();
+            $route->audit($active ? 'patrol.route_activated' : 'patrol.route_deactivated', []);
+        }
+
+        return $route;
+    }
+
     public function start(PatrolRoute $route, User $actor): PatrolRun {
         if (! $route->active) {
             throw new RuntimeException((string) __('Diese Route ist nicht aktiv.'));
         }
-        if ($route->checkpoints()->count() === 0) {
+        if (! $route->checkpoints()->whereNull('deactivated_at')->exists()) {
             throw new RuntimeException((string) __('Ohne Kontrollpunkte kein Rundgang.'));
         }
         if ($route->runs()->where('status', PatrolRunStatus::Running)->exists()) {
@@ -93,9 +150,11 @@ class PatrolService {
     /**
      * Scan eines Kontrollpunkts: löst den Token gegen die Route auf und
      * bewertet das Soll-Fenster. Doppelscans desselben Punkts sind
-     * idempotent (der erste zählt).
+     * idempotent (der erste zählt). Ein Scan außerhalb des Fensters oder ein
+     * übersprungener, schon fälliger Punkt meldet die Abweichung sofort.
+     *
+     * $at: Scanzeit des Geräts bei offline erfassten Scans (MVP-1291).
      */
-    /** $at: Scanzeit des Geräts bei offline erfassten Scans (MVP-1291). */
     public function scan(PatrolRun $run, string $token, ?CarbonInterface $at = null): PatrolCheckpoint {
         if ($run->status !== PatrolRunStatus::Running) {
             throw new RuntimeException((string) __('Dieser Rundgang läuft nicht mehr.'));
@@ -111,6 +170,9 @@ class PatrolService {
 
         if ($run->scans()->where('patrol_checkpoint_id', $checkpoint->id)->exists()) {
             return $checkpoint;
+        }
+        if (! $checkpoint->isExpectedAt($run->started_at)) {
+            throw new RuntimeException((string) __('patrol.checkpoint.deactivated'));
         }
 
         $now = Carbon::now();
@@ -132,12 +194,18 @@ class PatrolService {
             'in_window' => $inWindow,
         ]);
 
+        $passed = $this->missedCheckpoints($run)
+            ->filter(fn (PatrolCheckpoint $open): bool => $open->expected_offset_minutes + $open->tolerance_minutes < $elapsed);
+        if (! $inWindow || $passed->isNotEmpty()) {
+            $this->raiseDeviation($run, null, (string) __('patrol.deviation.running_title', ['route' => (string) $run->route?->name]), $this->deviationLines($run, $passed->count()));
+        }
+
         return $checkpoint;
     }
 
     /**
      * Abschluss: Bei Abweichungen (verpasste Punkte oder Scans außerhalb des
-     * Fensters) ist die Begründung Pflicht, und die Leitstelle bekommt einen
+     * Fensters) ist die Begründung Pflicht, und die Verantwortliche bekommt den
      * offenen Punkt am Rundgang — über das vorhandene Eskalationssystem.
      */
     public function complete(PatrolRun $run, User $actor, ?string $deviationNote = null): PatrolRun {
@@ -179,7 +247,7 @@ class PatrolService {
      * erfassten Scans bleiben als Nachweis stehen; ins Wachbuch kommt der Lauf
      * nicht (dort stehen durchgeführte Rundgänge). Offene oder verspätete
      * Kontrollpunkte gehen wie beim Abschluss als offener Punkt an die
-     * Leitstelle — sonst ließe sich die Eskalation durch Abbrechen umgehen.
+     * Verantwortliche — sonst ließe sich die Eskalation durch Abbrechen umgehen.
      */
     public function abort(PatrolRun $run, User $actor, string $reason): PatrolRun {
         if (! $run->status->canTransitionTo(PatrolRunStatus::Aborted)) {
@@ -212,7 +280,83 @@ class PatrolService {
         return $run;
     }
 
-    private function raiseDeviation(PatrolRun $run, User $actor, string $title, ?string $description): void {
+    /**
+     * Fristenlauf (MVP-1611): Ein Rundgang, der nach Soll-Dauer plus Toleranz
+     * des letzten Kontrollpunkts noch läuft, meldet sich einmal als offener
+     * Punkt. Abbrechen kann ihn danach die Leitstelle.
+     */
+    public function flagOverdueRuns(Organization $organization): int {
+        $flagged = 0;
+        $runs = PatrolRun::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('status', PatrolRunStatus::Running->value)
+            ->whereNull('overdue_flagged_at')
+            ->with('route')
+            ->get();
+
+        foreach ($runs as $run) {
+            $planned = $this->plannedMinutes($run);
+            if ($planned === null || $run->started_at->copy()->addMinutes($planned)->isFuture()) {
+                continue;
+            }
+            $run->forceFill(['overdue_flagged_at' => Carbon::now()])->save();
+            $run->audit('patrol.overdue_flagged', ['planned_minutes' => $planned]);
+            $this->raiseDeviation(
+                $run,
+                null,
+                (string) __('patrol.deviation.overdue_title', ['route' => (string) $run->route?->name]),
+                (string) __('patrol.deviation.overdue_line', ['minutes' => $planned, 'start' => CarbonFmt::orgTz($run->started_at)->format('d.m.Y H:i')]) . "\n" . $this->deviationLines($run, $this->missedCheckpoints($run)->count()),
+            );
+            $flagged++;
+        }
+
+        return $flagged;
+    }
+
+    /** Soll-Dauer des Laufs: spätester Kontrollpunkt samt Toleranz; ohne erwartete Punkte null. */
+    public function plannedMinutes(PatrolRun $run): ?int {
+        $max = PatrolCheckpoint::query()
+            ->withoutGlobalScopes()
+            ->where('patrol_route_id', $run->patrol_route_id)
+            ->expectedAt($run->started_at)
+            ->selectRaw('MAX(expected_offset_minutes + tolerance_minutes) as planned')
+            ->value('planned');
+
+        return $max === null ? null : (int) $max;
+    }
+
+    /** Zuständig für Abweichungen: Verantwortliche der Route, sonst Teamleitung der Durchführenden. */
+    public function responsibleFor(PatrolRun $run): ?int {
+        $responsible = $run->route?->responsible_user_id;
+        if ($responsible !== null) {
+            return (int) $responsible;
+        }
+        $starter = $run->started_by !== null ? User::query()->withoutGlobalScopes()->find($run->started_by) : null;
+        $lead = $starter === null ? null : $starter->teams()->whereNotNull('teams.lead_user_id')->where('teams.lead_user_id', '!=', $starter->id)->value('teams.lead_user_id');
+
+        return $lead !== null ? (int) $lead : null;
+    }
+
+    /** Ein offener Punkt je Lauf: anlegen oder mit dem neuesten Stand fortschreiben. */
+    private function raiseDeviation(PatrolRun $run, ?User $actor, string $title, ?string $description): void {
+        $existing = OpenIssue::query()
+            ->withoutGlobalScopes()
+            ->where('subject_type', $run->getMorphClass())
+            ->where('subject_id', $run->id)
+            ->where('source_type', OpenIssueSource::PatrolDeviation->value)
+            ->whereIn('status', [OpenIssueStatus::Open->value, OpenIssueStatus::InProgress->value, OpenIssueStatus::Reopened->value])
+            ->first();
+        if ($existing !== null) {
+            $existing->forceFill(['title' => $title, 'description' => $description])->save();
+
+            return;
+        }
+
+        $creator = $actor->id ?? $run->started_by ?? $run->route?->created_by;
+        if ($creator === null) {
+            return;
+        }
         OpenIssue::query()->create([
             'organization_id' => $run->organization_id,
             'subject_type' => $run->getMorphClass(),
@@ -222,10 +366,22 @@ class PatrolService {
             'description' => $description,
             'severity' => 'high',
             'status' => 'open',
-            'assignee_user_id' => $actor->id,
-            'created_by_user_id' => $actor->id,
+            'assignee_user_id' => $this->responsibleFor($run),
+            'created_by_user_id' => (int) $creator,
             'due_at' => Carbon::now()->addDay(),
         ]);
+    }
+
+    private function deviationLines(PatrolRun $run, int $missed): string {
+        $lines = [];
+        foreach ($run->scans()->where('in_window', false)->with('checkpoint:id,label')->get() as $scan) {
+            $lines[] = (string) __('patrol.deviation.late_line', ['label' => (string) $scan->checkpoint?->label, 'delta' => ($scan->delta_minutes > 0 ? '+' : '') . $scan->delta_minutes]);
+        }
+        if ($missed > 0) {
+            $lines[] = (string) __('patrol.deviation.missed_line', ['count' => $missed]);
+        }
+
+        return implode("\n", $lines);
     }
 
     /**
@@ -260,13 +416,15 @@ class PatrolService {
     }
 
     /**
-     * Kontrollpunkte ohne Scan in diesem Lauf.
+     * Kontrollpunkte, die dieser Lauf erwartet und die noch keinen Scan haben.
+     * Ein vor dem Start deaktivierter Punkt zählt nicht.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, PatrolCheckpoint>
+     * @return Collection<int, PatrolCheckpoint>
      */
-    public function missedCheckpoints(PatrolRun $run): \Illuminate\Database\Eloquent\Collection {
+    public function missedCheckpoints(PatrolRun $run): Collection {
         return PatrolCheckpoint::query()
             ->where('patrol_route_id', $run->patrol_route_id)
+            ->expectedAt($run->started_at)
             ->whereNotIn('id', $run->scans()->pluck('patrol_checkpoint_id'))
             ->orderBy('position')
             ->get();

@@ -1,7 +1,7 @@
 ---
 title: "Gestión de emergencias y crisis"
 topic: crisis.overview
-version: 2
+version: 4
 keywords:
     - comité de crisis
     - plan de emergencia
@@ -56,3 +56,29 @@ el envío documentado quedan trazables por separado.
 soluciones provisionales y procesos sustitutivos; tras el fin de la
 alerta sigue el análisis posterior (obligatorio antes del cierre). Los
 simulacros se ejecutan por separado y no falsean expedientes reales.
+
+Los plazos propios se gestionan en la pestaña **Plazos de notificación**:
+adoptar los valores predeterminados de una categoría como plazos propios,
+crear, modificar y desactivar plazos. En cuanto una categoría tiene un plazo
+propio activo, solo se le aplican los plazos propios; sin plazo propio activo
+vuelven a aplicarse los valores predeterminados.
+
+**Medidas con predecesor:** al registrar una medida puede elegir un
+predecesor del mismo expediente. La medida solo puede completarse cuando el
+predecesor esté terminado o cancelado; puede empezarla antes.
+
+**Proceso sustitutivo y estado restante:** para un proceso crítico usted
+registra el proceso sustitutivo además de la solución provisional. Con el
+estado de recuperación anota la limitación restante.
+
+**Abrir una crisis a partir de un incidente:** el incidente de seguridad, el
+incidente de protección de datos, el evento de seguridad laboral y el ticket
+de incidente grave llevan el botón «Abrir crisis». El diálogo rellena título,
+categoría y desencadenante y vincula el incidente al nuevo expediente. Otros
+expedientes se vinculan mediante «Vincular un expediente» desde una selección;
+solo se ofrece lo que usted puede leer.
+
+**Lista de presencia de emergencia:** con el permiso correspondiente, un
+expediente de crisis en curso lleva directamente a ella.
+
+**Cambiar el predecesor:** el predecesor de una medida se cambia o elimina directamente en la lista de medidas. Solo se pueden elegir medidas del mismo expediente; WorkDiary rechaza una elección que crearía un ciclo (A espera a B, B a A).

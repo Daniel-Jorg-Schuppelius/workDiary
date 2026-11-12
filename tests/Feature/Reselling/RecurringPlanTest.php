@@ -249,7 +249,7 @@ class RecurringPlanTest extends TestCase {
         $this->assertCount(5, $links);
         $this->assertSame(5, (int) $links->sum('quantity'));
         $this->assertSame(LinkOrigin::Proposed, $links->first()?->origin);
-        $this->assertSame([$exchange->id], $plans->plannedSubscriptionIds($this->organization));
+        $this->assertSame([$exchange->id], array_keys($plans->plannedShares($this->organization)));
 
         // Prüfregeln: Teams ohne Vorlage; Exchange vollständig (keine Mengenabweichung).
         $findings = app(PlanAudit::class)->findings($this->organization);

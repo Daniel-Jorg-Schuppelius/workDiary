@@ -1,7 +1,7 @@
 ---
 title: "Conflictos de Lexoffice"
 topic: admin.lexoffice
-version: 7
+version: 8
 keywords:
     - Lexware Office
     - conflicto de sincronización
@@ -75,3 +75,5 @@ sincronización completa diaria se mantiene; el botón requiere el permiso
 
 Permiso: la Bandeja de conciliación está abierta a los administradores
 y al rol **Contabilidad**.
+
+**Soberanía de datos:** Si, según la soberanía de datos, otro programa lidera clientes y proveedores, la sincronización de contactos no aplica campos ni crea contactos; la vinculación y el número de contacto de Lexoffice se mantienen. El estado retenido espera en la bandeja de integraciones a **Asumir una vez**.

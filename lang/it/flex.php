@@ -40,4 +40,10 @@ return [
         'empty' => ':name non ha periodi flex registrati — non partecipa al tempo flex.',
         'confirm_delete' => 'Eliminare davvero questo periodo? I calcoli del saldo verranno rieseguiti.',
     ],
+    // Arbeitszeitkonto (MVP-1627)
+    'account' => [
+        'balance' => 'Saldo del conto',
+        'carry' => 'Riporto dal mese precedente: :value',
+        'settled_through' => 'Previsto ed effettivo fino al :date — la giornata di oggi conta da domani, come nel conto salvato.',
+    ],
 ];

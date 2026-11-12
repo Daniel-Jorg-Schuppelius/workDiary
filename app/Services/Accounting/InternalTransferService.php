@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Accounting;
 
 use App\Enums\Finance\DirectBookingKind;
-use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingTransfer};
+use App\Models\Accounting\{AccountingAccount, AccountingTransfer};
 use App\Models\Platform\{Organization, User};
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;
@@ -154,10 +154,5 @@ class InternalTransferService {
         }
 
         return $map;
-    }
-
-    /** Buchung des Vorgangs, sofern sie noch aktiv ist. */
-    public function entryOf(AccountingTransfer $transfer): ?AccountingEntry {
-        return $transfer->entry;
     }
 }

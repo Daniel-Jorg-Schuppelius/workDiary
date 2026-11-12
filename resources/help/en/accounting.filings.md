@@ -1,7 +1,7 @@
 ---
 title: "Tax deadlines and filing obligations"
 topic: accounting.filings
-version: 1
+version: 2
 keywords:
     - VAT return
     - advance VAT return
@@ -44,6 +44,11 @@ mistake in practice.
 All deadlines are calculated, not maintained: if one falls on a Saturday,
 Sunday or public holiday, it moves to the next business day. Only what has been
 filed is stored.
+
+The **Recapitulative statement** report lists, per VAT ID of the recipient,
+intra-Community supplies (field 41) and services to other EU countries
+(field 21) separately with their type. Only supplies decide whether the
+statement is filed monthly.
 
 > The program transmits nothing to the tax authorities. Filing still happens via
 > ELSTER or your tax advisor; the reports are auditable previews for

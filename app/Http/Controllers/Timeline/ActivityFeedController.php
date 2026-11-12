@@ -39,6 +39,12 @@ class ActivityFeedController extends Controller {
         $typeKey = (string) $request->query('type', '');
         $type = AuditLog::FILTER_TYPES[$typeKey] ?? null;
         $actorId = Sqid::decode(User::class, (string) $request->query('user', ''));
+        $events = [ActivityFeedService::DOMAIN_EVENTS => (string) __('activity.filter.domain_events')];
+        foreach (AuditLog::FILTER_EVENTS as $event) {
+            $events[$event] = (new AuditLog(['event' => $event]))->eventLabel();
+        }
+        $event = (string) $request->query('event', '');
+        $event = array_key_exists($event, $events) ? $event : null;
         $page = max(1, (int) $request->query('page', 1));
         $range = $this->globalDateRange();
 
@@ -46,10 +52,11 @@ class ActivityFeedController extends Controller {
             (int) $this->currentOrganization()->id,
             $range['from'],
             $range['to'],
-            $type,
-            $actorId,
-            self::PER_PAGE,
-            ($page - 1) * self::PER_PAGE,
+            type: $type,
+            actorId: $actorId,
+            limit: self::PER_PAGE,
+            offset: ($page - 1) * self::PER_PAGE,
+            event: $event,
         );
 
         return view('activity.index', [
@@ -57,8 +64,9 @@ class ActivityFeedController extends Controller {
             'hasMore' => $result['hasMore'],
             'page' => $page,
             'types' => AuditLog::FILTER_TYPES,
+            'events' => $events,
             'users' => LookupCache::userDropdown(),
-            'filters' => ['type' => $type !== null ? $typeKey : '', 'user' => $actorId !== null ? (string) $request->query('user') : ''],
+            'filters' => ['type' => $type !== null ? $typeKey : '', 'user' => $actorId !== null ? (string) $request->query('user') : '', 'event' => $event ?? ''],
             'rangeLabel' => $range['label'],
         ]);
     }

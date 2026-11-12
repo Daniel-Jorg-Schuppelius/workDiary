@@ -1,7 +1,7 @@
 ---
 title: "Objekte"
 topic: customer-portal.assets
-version: 3
+version: 5
 keywords:
     - Geräte
     - Anlagen
@@ -42,15 +42,25 @@ für Ihr Unternehmen noch keine Objekte.
 
 Oben stehen Name und Seriennummer des Objekts, darunter drei Abschnitte:
 
-- **Prüf- & Wartungstermine** – die hinterlegten Prüf- und Wartungspläne mit
+- **Prüf- & Wartungstermine** – die laufenden Prüf- und Wartungspläne mit
   **Bezeichnung** und **Nächste Fälligkeit**, die nächste Fälligkeit zuerst.
-  Ohne Plan steht dort **Keine Termine hinterlegt.**
+  **Vertragspflicht** kennzeichnet einen Termin, den Ihr Vertrag vorschreibt.
+  Pausierte Pläne erscheinen nicht, weil für sie kein Termin ansteht. Ohne
+  laufenden Plan steht dort **Keine Termine hinterlegt.**
 - **Abgeschlossene Wartungen** – erledigte Wartungen mit Bezeichnung und
   Datum.
 - **Protokolle** – die unterschriebenen Protokolle zum Objekt, die Ihr
   Auftragnehmer für Sie freigegeben hat, mit Titel, Status und Datum, das
   neueste zuerst, jeweils mit **PDF herunterladen**. Ohne solche Protokolle
   steht dort **Keine freigegebenen Protokolle.**
+
+## Protokolle abnehmen
+
+Wartet ein Protokoll auf Ihre Abnahme, steht über der Liste **Protokolle** der Abschnitt **Zur Abnahme**. Mit **Ansehen und unterschreiben** öffnen Sie das Protokoll mit allen Punkten. Zum Abnehmen tragen Sie Ihren Namen ein, unterschreiben im Unterschriftsfeld mit Finger, Stift oder Maus, bestätigen die Richtigkeit der Angaben und klicken auf **Unterschreiben**. Die Unterschrift lässt sich nicht zurücknehmen.
+
+Haben Sie Fragen oder Einwände, klären Sie diese vor der Unterschrift mit Ihrem Auftragnehmer – über die Rückfragen, sofern sie für Sie freigegeben sind. Nach Ihrer Unterschrift schließt Ihr Auftragnehmer das Protokoll ab; danach steht es unter **Protokolle** zum Herunterladen bereit.
+
+Sind Sie mit dem Protokoll nicht einverstanden, nutzen Sie darunter **Ablehnen**: Geben Sie eine Begründung an und nennen Sie bei Bedarf einzelne Mängel. Ihr Auftragnehmer wird benachrichtigt und überarbeitet das Protokoll; es erscheint wieder unter **Zur Abnahme**, sobald er es erneut einreicht.
 
 ## Protokolle herunterladen
 

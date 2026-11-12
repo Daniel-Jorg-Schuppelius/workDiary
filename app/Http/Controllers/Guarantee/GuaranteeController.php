@@ -62,7 +62,7 @@ class GuaranteeController extends Controller {
         if ($filters['show'] === 'expiring') {
             $query->whereNotNull('expires_on')->where('expires_on', '<', \App\Support\Query\DateRange::dayAfter(now()->addDays(90)));
         } elseif ($filters['show'] === 'return_due') {
-            $query->whereHas('retention', fn ($q) => $q->where('status', \App\Enums\Invoicing\RetentionStatus::Released->value));
+            $query->returnDue();
         }
 
         $guarantees = $query->orderByRaw('expires_on IS NULL, expires_on')->paginate(50)->withQueryString();
@@ -79,7 +79,7 @@ class GuaranteeController extends Controller {
             'activeReceived' => (clone $active)->where('direction', GuaranteeDirection::Received->value)->count(),
             'expiringSoon' => (clone $active)->whereNotNull('expires_on')
                 ->whereDate('expires_on', '<=', now()->addDays(90)->toDateString())->count(),
-            'returnDue' => (clone $active)->whereHas('retention', fn ($q) => $q->where('status', \App\Enums\Invoicing\RetentionStatus::Released->value))->count(),
+            'returnDue' => Guarantee::query()->returnDue()->count(),
         ]);
     }
 
@@ -118,8 +118,22 @@ class GuaranteeController extends Controller {
     public function update(SaveGuaranteeRequest $request, Guarantee $guarantee): RedirectResponse {
         $this->authorizeBilling();
         $guarantee->update($request->validated());
+        $this->guarantees->reactivateIfExtended($guarantee, $request->user());
 
         return redirect()->toList('guarantees.index')->with('status', __('guarantee.updated'));
+    }
+
+    /** Befristung überschritten: als verfallen vermerken (MVP-1561). */
+    public function expired(Request $request, Guarantee $guarantee): RedirectResponse {
+        $this->authorizeBilling();
+
+        try {
+            $this->guarantees->markExpired($guarantee, $request->user());
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return back()->with('status', __('guarantee.expired'));
     }
 
     public function returned(Request $request, Guarantee $guarantee): RedirectResponse {

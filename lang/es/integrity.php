@@ -27,6 +27,11 @@ return [
         'dirty' => 'Árbol de trabajo de Git no limpio en el ámbito de análisis: :count ruta(s) — :paths (AVISO).',
     ],
     'lockdown' => [
+        'release_action' => 'Levantar el bloqueo',
+        'release_confirm' => '¿Levantar el bloqueo y volver a liberar la instalación? Revise antes las desviaciones o congele una nueva línea base.',
+        'released' => 'Bloqueo levantado: la instalación vuelve a estar accesible.',
+        'not_engaged' => 'No hay ningún bloqueo de integridad activo.',
+        'active_notice' => 'El bloqueo de integridad mantiene la instalación en modo de mantenimiento.',
         'crisis_title' => 'Bloqueo de integridad: código fuente manipulado',
         'crisis_description' => 'Una línea base de versión firmada muestra desviaciones en varias comprobaciones consecutivas (:modified modificados, :added nuevos, :deleted eliminados). La instalación está en modo mantenimiento.',
     ],

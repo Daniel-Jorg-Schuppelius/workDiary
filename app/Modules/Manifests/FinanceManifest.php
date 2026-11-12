@@ -212,6 +212,11 @@ final class FinanceManifest extends Manifest {
             ],
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\Finance\DeadlineScans\IncomingRetentionReleaseScan::class,
+                \App\Services\Finance\DeadlineScans\SepaMandateExpiryScan::class,
+            ],
+            // Kontoumsätze in der Kachel „Finanzbewegungen“ (MVP-1617).
+            \App\Services\Dashboard\Contracts\FinanceMovementSource::class => [
+                \App\Services\Finance\Dashboard\BankMovementSource::class,
             ],
         ];
     }

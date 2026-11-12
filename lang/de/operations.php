@@ -36,6 +36,7 @@ return [
         'problem_report_open' => 'Offene Fehlermeldung',
         'cloud_intake_reauth' => 'Cloud-Eingang: neue Anmeldung nötig',
         'cloud_intake_quarantined' => 'Cloud-Eingang: Importe abgewiesen',
+        'sms_budget_warning' => 'SMS-Kontingent',
     ],
     'severity' => [
         'info' => 'Hinweis',
@@ -96,6 +97,8 @@ return [
         'problem_report_summary' => ':count offene Fehlermeldung(en) warten auf Bearbeitung.',
         'cloud_intake_reauth' => 'Cloud-Dokumenteingang :provider („:folder") braucht eine neue Anmeldung (:status).',
         'cloud_intake_quarantined' => ':count Datei(en) aus dem Cloud-Dokumenteingang wurden abgewiesen (zuletzt: :reason).',
+        'sms_budget_warning' => 'SMS-Kontingent :month: :used von :limit Segmenten verbraucht (:percent %).',
+        'sms_budget_exhausted' => 'SMS-Kontingent :month aufgebraucht (:used von :limit Segmenten) — weitere SMS werden bis Monatsende nicht versendet.',
         'support_grant_summary' => ':count aktive Supportfreigabe(n) — prüfen und bei Bedarf widerrufen.',
     ],
     'filter' => [

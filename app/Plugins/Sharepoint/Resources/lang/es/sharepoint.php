@@ -99,6 +99,7 @@ return [
         'drive_invalid' => 'La biblioteca de documentos elegida no pertenece al sitio elegido.',
         'target_saved' => 'Biblioteca de destino guardada.',
         'saved' => 'Configuración de SharePoint guardada.',
+        'saved_and_mirrored' => 'Configuración de SharePoint guardada y activada: todos los objetos publicados hasta ahora están en cola para la replicación.',
         'mirror_done' => 'Replicación iniciada.',
     ],
 ];

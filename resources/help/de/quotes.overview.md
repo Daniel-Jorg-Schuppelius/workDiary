@@ -1,7 +1,7 @@
 ---
 title: "Angebote"
 topic: quotes.overview
-version: 7
+version: 8
 keywords:
     - Angebot erstellen
     - Kostenvoranschlag
@@ -129,3 +129,8 @@ aus der Fertigung entstehen mit jeder Auslieferung (siehe Fertigungsaufträge).
 ## Angesehen und Unterschrift
 
 Öffnet der Kunde das Angebot über den Link oder im Kundenportal, steht es mit **„Vom Kunden angesehen am …“** im Kopf des Angebots; gezählt wird das erste Öffnen eines versendeten Angebots. Bei der Annahme kann der Kunde freiwillig seinen **Namen** angeben und **unterschreiben**. Die Unterschrift liegt als Bild am Angebot und steht mit Namen und Zeitpunkt im eingefrorenen Annahmestand; eine Annahme ohne Unterschrift bleibt möglich.
+
+**Aussteller und Ansprechpartner** stehen beim Versand des Angebots bzw. bei
+der Bestätigung der Auftragsbestätigung fest — wie bei der Rechnung beim
+Ausstellen. Spätere Änderungen an Firmen-, Steuer- oder Kontaktdaten ändern das
+versandte Dokument nicht.

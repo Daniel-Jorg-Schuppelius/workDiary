@@ -1,7 +1,7 @@
 ---
 title: "Conexión con Todoist"
 topic: admin.todoist
-version: 2
+version: 3
 keywords:
     - Todoist
     - sincronizar tareas
@@ -164,3 +164,5 @@ filtrada por Todoist.
   Si una sincronización falla por otro motivo, la página indica el último
   error hasta que una sincronización vuelva a funcionar; además se crea una
   tarea operativa.
+
+**Soberanía de datos:** Si otro sistema lidera las tareas, la sincronización crea un caso «Soberanía de datos» por tarea en la bandeja de integraciones. **Asumir una vez** importa la tarea a través de la misma asignación mientras esté activa; si la tarea cambia después en la fuente, el caso se vuelve a abrir.

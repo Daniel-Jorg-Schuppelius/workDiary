@@ -1,7 +1,7 @@
 ---
 title: "Almacenamiento SharePoint"
 topic: admin.sharepoint
-version: 2
+version: 3
 keywords:
     - SharePoint
     - SharePoint Online
@@ -179,3 +179,5 @@ con los mismos ajustes.
   Mientras la conexión falle, una tarea operativa lo indica.
 - **Comprobar el estado:** junto al título de la página figura el último estado
   comprobado; **Probar conexión** lo comprueba al momento.
+
+**La activación recupera:** al activar la replicación, WorkDiary pone en cola de inmediato todos los objetos publicados hasta ahora, también los del periodo sin conexión activa. La replicación no necesita programación; «Replicar ahora» sigue disponible para recuperar a mano.

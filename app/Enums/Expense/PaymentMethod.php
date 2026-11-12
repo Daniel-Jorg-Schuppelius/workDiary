@@ -27,13 +27,26 @@ enum PaymentMethod: string implements HasLabel {
 
     /**
      * Markiert Zahlungsarten, die einer Erstattung an den Mitarbeiter
-     * bedürfen (vs. Firmenmittel).
+     * bedürfen: nur privat Verauslagtes. Barkasse, Firmenkarte und
+     * Überweisung sind Firmenmittel.
      */
     public function isReimbursable(): bool {
         return match ($this) {
-            self::PrivatePaid, self::Cash => true,
-            self::CompanyCard, self::BankTransfer => false,
+            self::PrivatePaid => true,
+            self::Cash, self::CompanyCard, self::BankTransfer => false,
         };
+    }
+
+    /**
+     * Speicherwerte der erstattungsfähigen Zahlungsarten — für Kennzahlen und Abgleich.
+     *
+     * @return list<string>
+     */
+    public static function reimbursableValues(): array {
+        return array_values(array_map(
+            static fn (self $method): string => $method->value,
+            array_filter(self::cases(), static fn (self $method): bool => $method->isReimbursable()),
+        ));
     }
 
     /**

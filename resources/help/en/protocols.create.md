@@ -1,7 +1,7 @@
 ---
 title: "Creating a protocol"
 topic: protocols.create
-version: 3
+version: 4
 keywords:
     - acceptance report
     - maintenance report
@@ -46,6 +46,18 @@ attached to its case and findable in the case file.
 4. Attach **before/after photos** to the respective item.
 5. Submit the protocol **for review** or complete it with
    **“Finalize / sign”**; customers receive the **signature link**.
+
+In the dialog you also assign **tags**; they then appear in the master data of
+the protocol. Files that belong to the whole protocol – a site plan, a delivery
+note – are uploaded on the detail page under **Attachments**. With **Reorder
+items** you drag the items into the order you need; sub-items stay with their
+group. Tags, attachments and order can only be changed in the draft; every
+attachment and every reordering appears in the **History**.
+
+The location of a photo is only taken over if the organization has switched
+this on under **Settings → File uploads** (default: off). The coordinates are
+visible to users with the corresponding permission; they are always removed
+from the image file.
 
 ## Practical example
 

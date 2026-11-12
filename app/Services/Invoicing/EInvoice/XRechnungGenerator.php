@@ -51,6 +51,8 @@ use Illuminate\Validation\ValidationException;
  *  - Satz = 0  ⇒ Kategorie Z (Zero rated)
  *  - Org-Flag settings['einvoice']['small_business'] ⇒ Kategorie E
  *    (Exempt, § 19 UStG) mit Exemption-Text.
+ * Kategorien ohne Steuer (AE, K, G, O, E) tragen je Steueraufriss ihren
+ * Befreiungsgrund ({@see exemptionReason()}, MVP-1623).
  */
 class XRechnungGenerator {
     /**
@@ -81,6 +83,7 @@ class XRechnungGenerator {
         $invoice->loadMissing(['items', 'customer']);
         $seller = $this->sellerData($invoice);
         $customer = $invoice->customer;
+        $buyer = $invoice->recipient();
 
         // Status: nur gestellte/bezahlte Rechnungen sind final genug.
         if (! in_array($invoice->status, [InvoiceStatus::Issued, InvoiceStatus::Paid], true)) {
@@ -114,6 +117,56 @@ class XRechnungGenerator {
         // BT-31/BT-32: mindestens USt-IdNr. ODER Steuernummer.
         if ($seller['vat_id'] === '' && $seller['tax_number'] === '') {
             $errors[] = (string) __('invoicing.einvoice.error.missing_tax_id');
+        }
+
+        // Pflichtangaben je Steuerkategorie des Aufrisses (BG-23, MVP-1623).
+        $headerCategory = $this->taxCategory($invoice, $seller);
+        $categories = $this->lineCategories($invoice, $headerCategory);
+        $has = static fn (TaxCategory $category): bool => in_array($category, $categories, true);
+        // Eine Kategorie ohne Steuer steht in der E-Rechnung mit 0 %; rechnet der Beleg Steuer darauf, wichen beide ab.
+        if (! (bool) $invoice->is_reverse_charge) {
+            foreach ($invoice->pricedItems() as $item) {
+                $itemCategory = $this->itemTaxCategory($item, $headerCategory);
+                $rate = $item->tax_rate ?? $invoice->tax_rate;
+                if (! $itemCategory->isTaxable() && $rate !== null && $rate->isPositive()) {
+                    $errors[] = (string) __('invoicing.einvoice.error.line_category_rate', [
+                        'line' => Str::limit(trim((string) $item->description), 40, '…'),
+                        'category' => $itemCategory->value,
+                        'rate' => NumberHelper::toGermanFormat((float) $rate->getNumericValue(), 2),
+                    ]);
+                }
+            }
+        }
+        $buyerVatId = trim($buyer['vat_id']);
+        // BR-AE-02 bis -04: Reverse Charge verlangt die USt-IdNr. des Käufers (BT-48), auch im Inland nach § 13b.
+        if ($has(TaxCategory::REVERSE_CHARGE) && $buyerVatId === '') {
+            $errors[] = (string) __('invoicing.einvoice.error.reverse_charge_buyer_vat_id');
+        }
+        if ($has(TaxCategory::INTRA_COMMUNITY)) {
+            if ($buyerVatId === '') {
+                $errors[] = (string) __('invoicing.einvoice.error.intra_community_buyer_vat_id');
+            }
+            // BR-IC-12: Das Toolkit gibt das Lieferland (BT-80) noch nicht aus.
+            $warnings[] = (string) __('invoicing.einvoice.warning.intra_community_delivery_country');
+        }
+        // BR-IC-02, BR-G-02: innergemeinschaftliche Lieferung und Ausfuhr nennen die USt-IdNr. des Verkäufers.
+        if (($has(TaxCategory::INTRA_COMMUNITY) || $has(TaxCategory::EXPORT)) && $seller['vat_id'] === '') {
+            $errors[] = (string) __('invoicing.einvoice.error.seller_vat_id_required');
+        }
+        // BR-O-11 bis -14: „nicht steuerbar“ steht allein; BR-O-02 verbietet die USt-IdNr., es bleibt die Steuernummer.
+        if ($has(TaxCategory::OUT_OF_SCOPE)) {
+            if (count($categories) > 1) {
+                $errors[] = (string) __('invoicing.einvoice.error.not_subject_mixed');
+            }
+            if ($seller['tax_number'] === '') {
+                $errors[] = (string) __('invoicing.einvoice.error.not_subject_tax_number');
+            }
+            // BR-O-05: Das Toolkit schreibt den Positionssatz (BT-152) auch bei „nicht steuerbar“.
+            $warnings[] = (string) __('invoicing.einvoice.warning.not_subject_line_rate');
+        }
+        // § 14 Abs. 4 Nr. 8 UStG: Steuerbefreiung nach § 4 UStG mit Grund; ohne Regel steht nur „steuerfrei“ im Aufriss.
+        if ($has(TaxCategory::EXEMPT) && ! $seller['small_business'] && $this->exemptionRuleNote($invoice) === null) {
+            $warnings[] = (string) __('invoicing.einvoice.warning.exemption_unspecified');
         }
 
         // Zahlweg 58 (SEPA-Überweisung) braucht eine IBAN.
@@ -174,17 +227,13 @@ class XRechnungGenerator {
 
         // Käuferanschrift (BG-8) — für ein valides Dokument nötig, aber der
         // Kunde ist ggf. nachpflegbar; deshalb Warnung statt harter Fehler.
-        if (
-            trim((string) $customer->address_street) === ''
-            || trim((string) $customer->address_zip) === ''
-            || trim((string) $customer->address_city) === ''
-        ) {
+        if (trim($buyer['street']) === '' || trim($buyer['zip']) === '' || trim($buyer['city']) === '') {
             $warnings[] = (string) __('invoicing.einvoice.warning.buyer_address_incomplete');
         }
 
         // BT-49: elektronische Empfängeradresse — Peppol-Teilnehmerkennung
         // (MVP-734) oder ersatzweise die E-Mail. Fehlt beides, ist der Beleg
-        // nur für den Papier-/PDF-Weg brauchbar.
+        // nur für den Papier-/PDF-Weg brauchbar. Zustelladresse, deshalb aus dem heutigen Kunden.
         if (trim((string) $customer->email) === '' && trim((string) $customer->peppol_participant_id) === '') {
             $warnings[] = (string) __('invoicing.einvoice.warning.missing_buyer_email');
         }
@@ -334,7 +383,7 @@ class XRechnungGenerator {
 
     /**
      * Gemeinsamer Dokument-Aufbau für XRechnung (UBL) und ZUGFeRD (CII):
-     * Org-Settings ⇒ Seller, Customer ⇒ Buyer, Items ⇒ Lines. Das Toolkit
+     * Org-Settings ⇒ Seller, {@see Invoice::recipient()} ⇒ Buyer, Items ⇒ Lines. Das Toolkit
      * berechnet TaxTotal/LegalMonetaryTotal selbst aus den Lines — die
      * Betragstreue gegenüber den Invoice-Feldern sichert der Preflight.
      */
@@ -345,6 +394,14 @@ class XRechnungGenerator {
         $currency = $invoice->currency ?? CurrencyCode::Euro;
         $category = $this->taxCategory($invoice, $seller);
         $taxRate = $invoice->tax_rate !== null ? (float) $invoice->tax_rate->getNumericValue() : 0.0;
+        // BR-O-02: Eine nicht steuerbare Rechnung trägt keine USt-IdNr.; die Steuernummer kennzeichnet den Verkäufer.
+        $notSubject = $this->lineCategories($invoice, $category) === [TaxCategory::OUT_OF_SCOPE] && $seller['tax_number'] !== '';
+        if ($notSubject) {
+            $seller['vat_id'] = '';
+        }
+        // Käufer wie auf dem Beleg: ausgestellt der eingefrorene Stand (MVP-1624); Name wie displayLabel(): Firma, sonst Name.
+        $buyer = $invoice->recipient();
+        $buyerVatId = trim($buyer['vat_id']);
 
         $issuedOn = $invoice->issued_on ?? now();
         $dueOn = $invoice->due_on ?? $issuedOn->copy()->addDays($invoice->effectivePaymentTermsDays());
@@ -356,12 +413,12 @@ class XRechnungGenerator {
             ->withDueDate(new \DateTimeImmutable($dueOn->toDateString()))
             ->withSeller($seller['name'], $seller['vat_id'], $seller['tax_number'] !== '' ? $seller['tax_number'] : null)
             ->withSellerAddress($seller['street'], $seller['zip'], $seller['city'], $seller['country'])
-            ->withBuyer((string) ($customer->displayLabel()), trim((string) $customer->vat_id) !== '' ? trim((string) $customer->vat_id) : null)
+            ->withBuyer($buyer['company'] ?: $buyer['name'], $buyerVatId !== '' && ! $notSubject ? $buyerVatId : null)
             ->withBuyerAddress(
-                trim((string) $customer->address_street),
-                trim((string) $customer->address_zip),
-                trim((string) $customer->address_city),
-                strtoupper(trim((string) $customer->country) ?: 'DE'),
+                trim($buyer['street']),
+                trim($buyer['zip']),
+                trim($buyer['city']),
+                strtoupper(trim($buyer['country']) ?: 'DE'),
             )
             ->withPaymentMeans(PaymentMeansCode::SEPA_CREDIT_TRANSFER)
             ->withPaymentTerms($this->paymentTerms($invoice, $invoice->effectivePaymentTermsDays()));
@@ -406,7 +463,8 @@ class XRechnungGenerator {
         // gewinnt vor der E-Mail (Feature 066, MVP-734) — sie IST die
         // elektronische Adresse im Peppol-Sinn, und der Empfänger-Access-Point
         // prüft BT-49 gegen den Umschlag. Schema ist der ICD (z. B. 9930),
-        // nicht „EM". Ohne Kennung bleibt es bei der E-Mail.
+        // nicht „EM". Ohne Kennung bleibt es bei der E-Mail. Als Zustelladresse
+        // aus dem heutigen Kunden: der Umschlag adressiert den heutigen Teilnehmer.
         $buyerParticipant = \App\Services\Peppol\PeppolParticipantService::forCustomer($customer);
         $buyerEmail = trim((string) $customer->email);
         if ($buyerParticipant !== null) {
@@ -471,8 +529,9 @@ class XRechnungGenerator {
             // zusätzlich in BT-154 (Description).
             $description = trim((string) $item->description);
             $name = Str::limit($description !== '' ? $description : (string) __('invoicing.service'), 100, '…');
-            $itemRate = $item->tax_rate !== null ? (float) $item->tax_rate->getNumericValue() : $taxRate;
             $itemCategory = $this->itemTaxCategory($item, $category);
+            // Ohne Steuer (AE, K, G, E, Z, O) ist der Zeilensatz 0 % — auch wenn die Position den Regelsatz trägt (BR-AE-05 u. a.).
+            $itemRate = ! $itemCategory->isTaxable() ? 0.0 : ($item->tax_rate !== null ? (float) $item->tax_rate->getNumericValue() : $taxRate);
 
             // MVP-416: Zeilen mit Rabatt als InvoiceLine mit Line-Allowance (BG-27):
             // BT-131 = rabattiertes Zeilennetto, die Allowance erklärt die Differenz
@@ -523,33 +582,104 @@ class XRechnungGenerator {
                 if (!$group['allowance']->isPositive()) {
                     continue;
                 }
+                $allowanceCategory = $categoriesByRate[$rateKey] ?? $category;
                 $document->addAllowanceCharge(\ERechnungToolkit\Entities\AllowanceCharge::discount(
                     $group['allowance'],
                     (string) __('Rabatt'),
-                    taxCategory: $categoriesByRate[$rateKey] ?? $category,
-                    taxPercent: $group['rate'],
+                    taxCategory: $allowanceCategory,
+                    taxPercent: $allowanceCategory->isTaxable() ? $group['rate'] : 0.0,
                 ));
             }
         }
 
-        // Kategorie E (§ 19 UStG): der Builder kennt keinen Exemption-Text,
-        // das Entity-Modell schon — TaxSubtotals mit Befreiungsgrund neu setzen.
-        if ($category === TaxCategory::EXEMPT && $document->getTaxTotal() !== null) {
-            $reason = (string) __('invoicing.einvoice.exemption_small_business');
+        // Befreiungsgrund je Steueraufriss (BT-120/BT-121): Der Builder kennt nur einen Grund für alle
+        // Kategorien ohne Steuer (auch Z, dort verboten), das Entity-Modell einen je Aufriss (MVP-1623).
+        if ($document->getTaxTotal() !== null) {
             $subtotals = array_map(
-                static fn(TaxSubtotal $s): TaxSubtotal => new TaxSubtotal(
-                    $s->getTaxableAmount(),
-                    $s->getTaxAmount(),
-                    $s->getCategory(),
-                    $s->getPercent(),
-                    $reason,
-                ),
+                function (TaxSubtotal $s) use ($invoice, $seller): TaxSubtotal {
+                    [$reason, $code] = $this->exemptionReason($s->getCategory(), $invoice, $seller) ?? [null, null];
+
+                    return new TaxSubtotal($s->getTaxableAmount(), $s->getTaxAmount(), $s->getCategory(), $s->getPercent(), $reason, $code);
+                },
                 $document->getTaxTotal()->getSubtotals(),
             );
             $document->setTaxTotal(TaxTotal::fromSubtotals($subtotals, $currency));
         }
 
         return $document;
+    }
+
+    /**
+     * Befreiungsgrund (BT-120) und VATEX-Code (BT-121) einer Steuerkategorie
+     * ohne Steuer; null für Kategorien mit Steuer und für Z (BR-Z-10).
+     *
+     * @param array<string, mixed> $seller
+     * @return array{0: string, 1: ?string}|null
+     */
+    private function exemptionReason(TaxCategory $category, Invoice $invoice, array $seller): ?array {
+        return match ($category) {
+            TaxCategory::REVERSE_CHARGE => [(string) __('invoicing.einvoice.exemption_reverse_charge'), 'VATEX-EU-AE'],
+            TaxCategory::INTRA_COMMUNITY => [(string) __('invoicing.einvoice.exemption_intra_community'), 'VATEX-EU-IC'],
+            // Der TaxResolver führt jeden Drittlandkunden unter G; bei Dienstleistungen ist der Grund der Leistungsort.
+            TaxCategory::EXPORT => [(string) __($invoice->isMaterial() ? 'invoicing.einvoice.exemption_export_goods' : 'invoicing.einvoice.exemption_export_services'), 'VATEX-EU-G'],
+            TaxCategory::OUT_OF_SCOPE => [(string) __('invoicing.einvoice.exemption_not_subject'), 'VATEX-EU-O'],
+            TaxCategory::EXEMPT => [($seller['small_business'] ?? false) === true
+                ? (string) __('invoicing.einvoice.exemption_small_business')
+                : ($this->exemptionRuleNote($invoice) ?? (string) __('invoicing.einvoice.exemption_tax_free')), null],
+            default => null,
+        };
+    }
+
+    /**
+     * Befreiungsgründe (BT-120) je Steuerkategorie der berechneten Positionen;
+     * dieselben Texte druckt das Rechnungs-PDF (§ 14 Abs. 4 Nr. 8, § 14a UStG).
+     *
+     * @return array<string, string> Kategoriecode => Text
+     */
+    public function exemptionReasons(Invoice $invoice): array {
+        $invoice->loadMissing(['items', 'organization']);
+        $seller = $this->sellerData($invoice);
+        $reasons = [];
+        foreach ($this->lineCategories($invoice, $this->taxCategory($invoice, $seller)) as $category) {
+            $reason = $this->exemptionReason($category, $invoice, $seller);
+            if ($reason !== null) {
+                $reasons[$category->value] = $reason[0];
+            }
+        }
+
+        return $reasons;
+    }
+
+    /**
+     * Befreiungstatbestand steuerfreier Umsätze nach § 4 UStG: Hinweis der Regel
+     * mit Satzart `exempt` aus der Steuerregelmatrix zum Stichtag des Steuerfalls.
+     */
+    private function exemptionRuleNote(Invoice $invoice): ?string {
+        $organization = $invoice->organization;
+        if ($organization === null) {
+            return null;
+        }
+        $resolvedOn = (string) data_get($invoice->tax_context, 'resolved_on', '');
+        $on = $resolvedOn !== '' ? Carbon::parse($resolvedOn) : ($invoice->serviceDateTo() ?? $invoice->issued_on ?? now());
+        $resolver = app(\App\Services\Invoicing\TaxResolver::class);
+        $note = trim((string) $resolver->ruleFor((int) $organization->id, $resolver->sellerCountry($organization), $invoice->isMaterial() ? 'goods' : 'services', 'exempt', $on)?->note);
+
+        return $note !== '' ? $note : null;
+    }
+
+    /**
+     * Steuerkategorien der berechneten Positionen (BG-23); ohne Positionen die des Kopfes.
+     *
+     * @return list<TaxCategory>
+     */
+    private function lineCategories(Invoice $invoice, TaxCategory $fallback): array {
+        $categories = [];
+        foreach ($invoice->pricedItems() as $item) {
+            $itemCategory = $this->itemTaxCategory($item, $fallback);
+            $categories[$itemCategory->value] = $itemCategory;
+        }
+
+        return $categories === [] ? [$fallback] : array_values($categories);
     }
 
     /**
@@ -740,13 +870,13 @@ class XRechnungGenerator {
         return UnitCode::fromText($unit, UnitCode::UNIT_H87) ?? UnitCode::PIECE;
     }
 
-    /** BT-10 darf pro Rechnung überschrieben werden; Kundenstamm bleibt Fallback. */
+    /** BT-10 darf pro Rechnung überschrieben werden; sonst die Referenz des Empfängers (ausgestellt: eingefroren). */
     private function buyerReference(Invoice $invoice): string {
         $invoiceReference = trim((string) $invoice->buyer_reference);
 
         return $invoiceReference !== ''
             ? $invoiceReference
-            : trim((string) $invoice->customer->buyer_reference);
+            : trim($invoice->recipient()['buyer_reference']);
     }
 
     /**

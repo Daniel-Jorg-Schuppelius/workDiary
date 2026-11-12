@@ -37,7 +37,6 @@ use Illuminate\Support\Carbon;
  * @property int|null $passenger_seats
  * @property int $wheelchair_places
  * @property bool $barrier_free
- * @property bool $large_capacity
  * @property string|null $meter_kind
  * @property string|null $meter_serial
  * @property Carbon|null $meter_calibrated_until
@@ -65,7 +64,6 @@ class PassengerVehicleProfile extends Model {
         'passenger_seats',
         'wheelchair_places',
         'barrier_free',
-        'large_capacity',
         'meter_kind',
         'meter_serial',
         'meter_calibrated_until',
@@ -79,7 +77,6 @@ class PassengerVehicleProfile extends Model {
         'passenger_seats' => 'integer',
         'wheelchair_places' => 'integer',
         'barrier_free' => 'boolean',
-        'large_capacity' => 'boolean',
         'meter_calibrated_until' => 'date',
         'bokraft_checked_until' => 'date',
         'hu_valid_until' => 'date',

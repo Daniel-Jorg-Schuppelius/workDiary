@@ -25,4 +25,9 @@ class AsanaServiceProvider extends PluginServiceProviderBase {
         $this->app->singleton(AsanaOAuthGrant::class, static fn (): AsanaOAuthGrant => new AsanaOAuthGrant());
         $this->commands([Console\AsanaSyncCommand::class]);
     }
+
+    /** Datenführerschaft (MVP-1592): „Einmalig übernehmen“ spielt die Quellaufgabe erneut ein. */
+    protected function bootPlugin(): void {
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\AsanaImportService::class);
+    }
 }

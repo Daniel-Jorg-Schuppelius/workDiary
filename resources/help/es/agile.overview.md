@@ -1,7 +1,7 @@
 ---
 title: "Gestión ágil de proyectos"
 topic: agile.overview
-version: 2
+version: 4
 keywords:
     - Kanban
     - Scrum
@@ -45,6 +45,16 @@ sus criterios: añadir, marcar uno a uno, eliminar. El número junto a él muest
 los criterios cumplidos y existentes; antes de mover a una columna de
 terminado, el tablero nombra los criterios no cumplidos.
 
+**Definición de terminado:** Los ajustes del tablero contienen la definición
+de terminado del proyecto, una línea por punto. Al mover una tarjeta a una
+columna de terminado, el tablero abre un cuadro de diálogo con estos puntos
+y los criterios de aceptación aún abiertos. La tarjeta solo se mueve cuando
+cada punto está confirmado. Quien tenga el permiso de anulación puede
+moverla a pesar de los puntos abiertos indicando un motivo; lo mismo se
+aplica a un límite WIP alcanzado. Cada anulación aparece en el historial y
+cuenta en la serie de calidad de los informes, que también muestra la tasa
+de desviación de DoD por semana.
+
 **Tablero:** Las columnas representan el flujo de trabajo; las tarjetas
 avanzan de izquierda a derecha. Con un sprint seleccionado, el tablero
 muestra exclusivamente los elementos de ese sprint.
@@ -71,3 +81,5 @@ bloqueos y una previsión empírica — esta última solo aparece cuando
 existen suficientes semanas comparables, en lugar de fingir una
 precisión aparente. La vista muestra solo los proyectos que la persona
 que la consulta puede ver de todos modos.
+
+**Terminada fuera del tablero:** si la tarea de una tarjeta se completa en otro lugar (lista de tareas, importación), la tarjeta pasa a la columna de terminadas. Los criterios de aceptación abiertos y la definición de terminado sin confirmar quedan entonces como desviación en el historial del tablero y cuentan en la tasa de desviación DoD.

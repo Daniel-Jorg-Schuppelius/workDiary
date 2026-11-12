@@ -89,4 +89,41 @@ enum ChartOfAccounts: string implements HasLabel {
             self::Skr04 => '6930',
         };
     }
+
+    /**
+     * Erhaltenes Skonto auf Eingangsrechnungen — mindert den Aufwand, nicht
+     * den Erlös. SKR03 ⇒ 3736, SKR04 ⇒ 5736 (Default, überschreibbar).
+     */
+    public function defaultReceivedDiscountAccount(): string {
+        return match ($this) {
+            self::Skr03 => '3736',
+            self::Skr04 => '5736',
+        };
+    }
+
+    /**
+     * Skontokonto des ermäßigten Satzes neben der Vorgabe (19 %): Die Konten
+     * der Rahmen sind je Steuersatz getrennt. Gilt nur, solange die
+     * Organisation kein eigenes Skontokonto eingestellt hat.
+     *
+     * @return array{granted: string, received: string}
+     */
+    public function reducedRateDiscountAccounts(): array {
+        return match ($this) {
+            self::Skr03 => ['granted' => '8731', 'received' => '3731'],
+            self::Skr04 => ['granted' => '4731', 'received' => '5731'],
+        };
+    }
+
+    /**
+     * Ausbuchung einer Verbindlichkeit, die nicht mehr zu zahlen ist — ein
+     * sonstiger Ertrag, kein Forderungsverlust. SKR03 ⇒ 2709, SKR04 ⇒ 4839
+     * (Default, überschreibbar).
+     */
+    public function defaultPayableWriteOffAccount(): string {
+        return match ($this) {
+            self::Skr03 => '2709',
+            self::Skr04 => '4839',
+        };
+    }
 }

@@ -85,7 +85,8 @@ final class ExchangeRateConversionTest extends TestCase {
         $this->assertTrue($proposal->isPostable(), implode(' | ', $proposal->blockers));
         $amounts = array_map(static fn ($line): array => [$line->role, $line->debit, $line->credit, $line->taxAmount], $proposal->lines);
         $this->assertContains([PostingAccountRole::Receivable, '109.96', '0.00', null], $amounts);
-        $this->assertContains([PostingAccountRole::Revenue, '0.00', '92.40', null], $amounts);
+        // Die Erlöszeile trägt Kennzeichen und Steuer (Paket 3, Nachzug 2), umgerechnet wie die Beträge.
+        $this->assertContains([PostingAccountRole::Revenue, '0.00', '92.40', '17.56'], $amounts);
         $this->assertSame($proposal->debitTotal(), $proposal->creditTotal());
         $snapshot = $proposal->toSnapshot();
         $this->assertSame(['currency' => 'USD', 'base' => 'EUR', 'period' => '2026-03', 'rate' => '1.082300', 'source' => 'BMF', 'original_total' => '119.00'], $snapshot['exchange_rate']);

@@ -89,14 +89,23 @@ class InvoiceRetentionController extends Controller {
         return back()->with('status', __('invoicing.retention.added'));
     }
 
+    /** Dialog „Einbehalt freigeben" mit Notiz (MVP-1560). */
+    public function releaseDialog(Invoice $invoice, InvoiceRetention $retention): View {
+        $this->authorizeBilling();
+        abort_unless((int) $retention->invoice_id === (int) $invoice->id, 404);
+
+        return view('invoices._retention_release_dialog', ['invoice' => $invoice, 'retention' => $retention]);
+    }
+
     public function release(Request $request, Invoice $invoice, InvoiceRetention $retention): RedirectResponse {
         // Freigeben ist Lifecycle: Die update-Policy (nur Entwurf) passt nicht,
         // Maßstab ist das Abrechnungsrecht — wie beim Mahnen.
         $this->authorizeBilling();
         abort_unless((int) $retention->invoice_id === (int) $invoice->id, 404);
+        $data = $request->validate(['note' => ['nullable', 'string', 'max:500']]);
 
         try {
-            $this->retentions->release($retention, $request->user());
+            $this->retentions->release($retention, $request->user(), \CommonToolkit\Helper\Data\StringHelper::trimToNull($data['note'] ?? null));
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }

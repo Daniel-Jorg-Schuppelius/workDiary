@@ -17,6 +17,7 @@
         'action' => 'create',
         'before' => '',
         'after' => '',
+        'diary_entry' => '',
     ];
     $itemItems = old('items');
     if (! is_array($itemItems) || $itemItems === []) {
@@ -58,6 +59,7 @@
              data-items="{{ json_encode($itemItems) }}"
              data-template="{{ json_encode($itemTemplate) }}"
              data-targets-url="{{ route('corrections.targets') }}"
+             data-current-order-suffix=" · {{ __('time-correction.order.current') }}"
              class="space-y-3">
             <template x-for="(it, i) in items" :key="i">
                 <div class="rounded-box border border-base-300 bg-base-200/40 p-3 space-y-2">
@@ -90,6 +92,18 @@
                                 @endforeach
                             </select>
                         </div>
+                    </div>
+                    {{-- Auftrag der Buchung ändern (MVP-1552): nur bei gewählter Zeitbuchung mit Projekt. --}}
+                    <div class="fieldset" x-show="ordersFor(it).length > 0" x-cloak>
+                        <label :for="fieldName(i, 'diary_entry')" class="fieldset-label">{{ __('time-correction.order.label') }}</label>
+                        <select :id="fieldName(i, 'diary_entry')" :name="fieldName(i, 'diary_entry')" x-model="it.diary_entry"
+                                class="select select-sm select-bordered w-full">
+                            <option value="">{{ __('time-correction.order.unchanged') }}</option>
+                            <option value="-">{{ __('time-correction.order.none') }}</option>
+                            <template x-for="o in ordersFor(it)" :key="o.id">
+                                <option :value="o.id" x-text="orderLabel(it, o)" :selected="o.id === it.diary_entry"></option>
+                            </template>
+                        </select>
                     </div>
                     <div class="grid gap-2 md:grid-cols-2">
                         <div class="fieldset">

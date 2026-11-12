@@ -11,11 +11,14 @@
 namespace App\Http\Controllers\Time;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Material\SaveMaterialUsageRequest;
+use App\Http\Requests\Material\{SaveDayMaterialUsageRequest, SaveMaterialUsageRequest};
 use App\Models\Material\{Material, MaterialUsage};
 use App\Models\Project\Project;
 use App\Models\Time\Timesheet;
+use App\Services\Material\MaterialUsageRecorder;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -36,22 +39,24 @@ class TimesheetMaterialController extends Controller {
         return view('timesheets._material_form_dialog', ['project' => $project, 'timesheet' => $timesheet, 'materials' => $materials, 'usage' => $usage->loadMissing('material')]);
     }
 
-    public function store(Project $project, Timesheet $timesheet, SaveMaterialUsageRequest $request): RedirectResponse {
+    public function store(Project $project, Timesheet $timesheet, SaveMaterialUsageRequest $request, MaterialUsageRecorder $recorder): RedirectResponse {
         Gate::authorize('update', $timesheet);
 
-        $data = $request->validated();
-        // Falls Stamm-Material gewählt: Defaults übernehmen, falls leer
-        if (! empty($data['material_id'])) {
-            $material = Material::find((int) $data['material_id']);
-            if ($material) {
-                $data['unit_price'] = $data['unit_price'] ?? $material->default_unit_price;
-                $data['tax_rate'] = $data['tax_rate'] ?? $material->tax_rate;
-                $data['unit'] = $data['unit'] ?: $material->unit;
-                $data['description'] = $data['description'] ?: $material->name;
-            }
-        }
+        $recorder->record($timesheet, $request->validated());
 
-        $timesheet->materialUsages()->create($data);
+        return back()->with('success', __('Material erfasst.'));
+    }
+
+    /**
+     * Material auf „Heute“ (MVP-1594): Projekt und Tag statt Zettel — der
+     * offene Stundenzettel des Tages nimmt es auf. Offline läuft dasselbe
+     * Formular als Befehl `material.usage`.
+     */
+    public function storeForDay(SaveDayMaterialUsageRequest $request, MaterialUsageRecorder $recorder): RedirectResponse {
+        $data = $request->validated();
+        $project = Project::query()->findOrFail((int) $data['project_id']);
+
+        $recorder->recordForDay($this->authUser(), $project, CarbonImmutable::parse((string) $data['date']), Arr::except($data, ['project_id', 'date']));
 
         return back()->with('success', __('Material erfasst.'));
     }

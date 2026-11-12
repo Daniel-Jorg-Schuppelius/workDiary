@@ -26,6 +26,7 @@ use App\Services\Training\TrainingAssignmentService;
 use App\Support\Query\DateRange;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Rückfluss eines Kursabschlusses (Feature 149, MVP-740) — **die einzige
@@ -196,20 +197,59 @@ class LearningCompletionService {
                 : null,
             'score_percent' => $enrollment->score_percent,
         ]);
+        // Gestaltung beim Ausstellen festhalten: Nachdrucke zeigen den Stand der Ausstellung (MVP-1624).
+        $organization = \App\Models\Platform\Organization::query()->withoutGlobalScopes()->find($certificate->organization_id);
+        if ($organization !== null) {
+            app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->snapshot($certificate, \App\Enums\DocumentDesign\RenderDocumentKind::Certificate, $organization);
+        }
 
         $this->notifier->certificateIssued($certificate);
 
         return $certificate;
     }
 
+    /**
+     * Zertifikat widerrufen (MVP-1599). Der Datensatz bleibt — Prüfseite, PDF,
+     * Open Badge und Nachweismappe zeigen den Widerruf. Unterweisungsnachweis
+     * und Qualifikation bleiben in ihren Registern; dort werden sie auf ihrem
+     * eigenen Weg berichtigt.
+     */
     public function revoke(LearningCertificate $certificate, string $reason, ?int $actorUserId = null, ?Carbon $now = null): LearningCertificate {
-        $certificate->update([
-            'revoked_at' => $now ?? Carbon::now(),
-            'revoked_reason' => $reason,
-            'revoked_by_user_id' => $actorUserId,
-        ]);
+        $reason = trim($reason);
+        if ($reason === '') {
+            throw ValidationException::withMessages(['reason' => (string) __('learning.errors.revoke_reason_required')]);
+        }
+        if ($certificate->isRevoked()) {
+            throw ValidationException::withMessages(['certificate' => (string) __('learning.errors.certificate_already_revoked')]);
+        }
+        $now ??= Carbon::now();
 
-        return $certificate->refresh();
+        DB::transaction(function () use ($certificate, $reason, $actorUserId, $now): void {
+            $certificate->update([
+                'revoked_at' => $now,
+                'revoked_reason' => $reason,
+                'revoked_by_user_id' => $actorUserId,
+            ]);
+
+            // Der gespiegelte Pflichtnachweis des Subunternehmers (117) endet mit dem Widerruf.
+            SupplierCredential::query()
+                ->where('organization_id', $certificate->organization_id)
+                ->where('reference', $certificate->number)
+                ->whereIn('supplier_credential_type_id', SupplierCredentialType::query()
+                    ->where('organization_id', $certificate->organization_id)
+                    ->where('code', self::SUPPLIER_CREDENTIAL_CODE)
+                    ->select('id'))
+                ->where(fn ($query) => $query->whereNull('valid_until')->orWhere('valid_until', '>=', DateRange::dayAfter($now)))
+                ->get()
+                ->each(fn (SupplierCredential $credential) => $credential->update([
+                    'valid_until' => $now->toDateString(),
+                    'note' => trim($credential->note . ' ' . __('learning.proof.supplier_credential_revoked', ['reason' => $reason])),
+                ]));
+        });
+
+        $this->notifier->certificateRevoked($certificate->refresh());
+
+        return $certificate;
     }
 
     /**

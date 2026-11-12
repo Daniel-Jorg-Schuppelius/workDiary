@@ -33,9 +33,7 @@
 </head>
 <body>
 
-@if ($design->headerText() !== null)
-    <div class="tpl-header">{{ $design->headerText() }}</div>
-@endif
+@include('pdf._design_intro')
 
 @if ($invoice->isCancelled())
     <div class="banner banner-cancelled">
@@ -56,17 +54,20 @@
 @php
     $addressStyle = $design->addressWindowStyle();
     $senderStyle = $design->senderLineStyle();
+    // Empfänger aus dem beim Ausstellen eingefrorenen Stand (MVP-1624), als Entwurf der heutige Kunde.
+    $recipient ??= $invoice->recipient();
+    $buyerVatId ??= null;
 @endphp
 @if ($design->show(\App\Enums\DocumentDesign\InformationBlock::SenderLine) && $senderStyle !== null && $invoice->organization !== null)
     <div style="{{ $senderStyle }}">{{ ($orgLegal['account_holder'] ?? null) ?: $invoice->organization->name }}</div>
 @endif
 <div class="header">
     <div class="left"@if ($addressStyle !== null) style="{{ $addressStyle }}"@endif>
-        <strong>{{ $invoice->customer->name }}</strong><br>
-        @if ($invoice->customer->company){{ $invoice->customer->company }}<br>@endif
-        {{ $invoice->customer->address_street }}<br>
-        {{ $invoice->customer->address_zip }} {{ $invoice->customer->address_city }}<br>
-        {{ $invoice->customer->country }}
+        <strong>{{ $recipient['name'] }}</strong><br>
+        @if ($recipient['company'] !== ''){{ $recipient['company'] }}<br>@endif
+        {{ $recipient['street'] }}<br>
+        {{ $recipient['zip'] }} {{ $recipient['city'] }}<br>
+        {{ $recipient['country'] }}
     </div>
     <div class="right">
         <h1>{{ $invoice->documentLabel() }}</h1>
@@ -77,6 +78,9 @@
             {{ $invoice->dateLabelPeriod() }}: {{ $invoice->serviceDateFrom()->fdate() }} – {{ $invoice->serviceDateTo()->fdate() }}<br>
         @elseif ($invoice->serviceDateSingle())
             {{ $invoice->dateLabelSingle() }}: {{ $invoice->serviceDateSingle()->fdate() }}<br>
+        @endif
+        @if ($buyerVatId !== null)
+            {{ __('invoicing.buyer_vat_id') }}: {{ $buyerVatId }}<br>
         @endif
     </div>
 </div>
@@ -169,6 +173,10 @@
         @if ($smallBusiness)
             <tr><td colspan="{{ $footColspan + 1 }}" class="num" style="font-size: 8pt; color: #6b7280;">{{ __('Keine Umsatzsteuer gemäß § 19 UStG (Kleinunternehmerregelung).') }}</td></tr>
         @endif
+        {{-- § 14 Abs. 4 Nr. 8, § 14a UStG (MVP-1623): Befreiungshinweis je Steuerkategorie, sofern der Rechnungstext ihn nicht trägt. --}}
+        @foreach ($taxNotes ?? [] as $taxNote)
+            <tr><td colspan="{{ $footColspan + 1 }}" class="num" style="font-size: 8pt; color: #6b7280;">{{ $taxNote }}</td></tr>
+        @endforeach
         <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Gesamt') }}</td><td class="num">{{ \App\Support\DocumentNumber::decimal(($invoice->total?->toFloat() ?? 0.0), 2) }} {{ $invoice->currency->value }}</td></tr>
         @php
             // Sicherheitseinbehalte (Feature 113, MVP-602): Ohne diesen Ausweis
@@ -280,8 +288,6 @@
     </div>
 @endif
 
-@if ($design->footerText() !== null)
-    <div class="tpl-footer">{{ $design->footerText() }}</div>
-@endif
+@include('pdf._design_closing')
 </body>
 </html>

@@ -62,6 +62,5 @@ return [
         'pending' => 'Scan pending',
         'clean' => 'Released',
         'rejected' => 'Rejected',
-        'failed' => 'Scan failed',
     ],
 ];

@@ -27,6 +27,67 @@ return [
         'notify_title' => 'Notable claim pattern: :label',
         'notify_message' => ':count claims in :days days (:rule).',
     ],
+    // Lagerbezug der Rückläufer (MVP-1576).
+    'rma' => [
+        'group_return' => 'Return',
+        'group_receipt' => 'Goods receipt',
+        'group_stock' => 'Stock reference',
+        'hint_stock' => 'With warehouse, variant and quantity, the goods receipt posts the stock into quarantine. Without a variant, the return is only documented.',
+        'hint_warehouse' => 'Required for the stock posting as soon as a variant is selected.',
+        'hint_serial' => 'The selection sets the variant and quantity 1.',
+        'option' => ['no_stock' => '— no stock item —'],
+        'without_stock' => 'no stock reference — no stock posting',
+        'no_stock_module' => 'The inventory module is not active. The return is recorded without a stock posting.',
+        'disposition_books' => 'The decision transfers the stock out of quarantine or writes it off.',
+        'disposition_documents' => 'This return has no stock reference. The decision is recorded without a stock posting.',
+        'flash' => [
+            'received_booked' => 'Goods receipt posted into quarantine (:state).',
+            'received_unbooked' => 'Goods receipt recorded without a stock posting (no stock item or inventory module not active).',
+            'disposition_booked' => 'Disposition posted.',
+            'disposition_unbooked' => 'Disposition recorded without a stock posting.',
+        ],
+        'error' => [
+            'serial_variant' => 'The serial number belongs to a different item variant.',
+            'serial_qty' => 'A return with a serial number has quantity 1.',
+            'lot_variant' => 'The lot belongs to a different item variant.',
+        ],
+    ],
+    // Bezugsobjekte, Einstieg, Finanzfolge und Regress der Akte (MVP-1577).
+    'form' => [
+        'title_edit' => 'Edit claim',
+        'lot_article_mismatch' => 'The batch belongs to a different article.',
+        'group_links' => 'Affected objects',
+        'hint_links' => 'Link what the claim refers to. With a customer selected, the lists show only that customer’s objects.',
+        'hint_serial' => 'A serial number known in inventory is linked to the case.',
+        'serial_linked' => 'Serial number is known in inventory and linked.',
+    ],
+    'open' => [
+        'action' => 'Open claim',
+    ],
+    'financial' => [
+        'hint_invoice_local' => 'Credit note, cancellation, price reduction and correction are created from this invoice. A cancellation requires an issued, unpaid invoice; a credit note requires a paid invoice.',
+        'hint_invoice_external' => 'This customer’s invoices are managed in an external system. The correction document is created there; enter its number here afterwards.',
+        'source_invoice' => 'for invoice :number',
+        'error' => [
+            'invoice_required' => 'Select the invoice the correction document is to be created from.',
+            'not_cancellable' => 'Invoice :number cannot be cancelled. A cancellation requires an issued, unpaid invoice.',
+            'not_creditable' => 'No credit note can be created for invoice :number. It must be paid and must not have a correction yet.',
+            'not_rejectable' => 'Only proposed outcomes can be rejected.',
+        ],
+        'reject' => 'Reject',
+        'reject_confirm' => 'Reject the proposal? It ends without a document; a new proposal remains possible.',
+        'flash' => [
+            'rejected' => 'Proposal rejected.',
+        ],
+    ],
+    'recourse' => [
+        'group_claim' => 'Claim',
+        'group_reference' => 'Reference',
+        'hint_due_days' => 'Without an entry, :days days from submission apply.',
+        'hint_terms' => 'For example warranty period, exclusions or the notification period under the supply contract.',
+        'field_incoming_invoice' => 'Incoming invoice',
+        'due_days' => 'Response period: :days days from submission',
+    ],
     // Retourenlabel einer RMA (MVP-917).
     'return_label' => [
         'title' => 'Return label',
@@ -72,5 +133,9 @@ return [
     'portal_note' => [
         'history' => 'Your subsequent submissions',
         'notification_title' => 'Subsequent submission for complaint :number',
+    ],
+    'action' => [
+        'follow_up_order' => 'Follow-up order',
+        'follow_up_none' => '— no follow-up order —',
     ],
 ];

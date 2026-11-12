@@ -15,7 +15,7 @@ use App\Exceptions\ClassificationValidationException;
 use App\Models\Classification\Classification;
 use App\Models\Concerns\Auditable;
 use CommonToolkit\Helper\Data\ColorHelper;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB, Schema};
 
 /**
  * Org-Pflege für Klassifikationen (MVP-031).
@@ -52,24 +52,12 @@ class ClassificationManager {
         'asset_category' => [['table' => 'assets', 'column' => 'category_code']],
     ];
 
-    /**
-     * Registry für Referenz-Schutz beim Löschen.
-     * Map ['domain' => [ ['table' => 'diary_entries', 'column' => 'entry_type_classification_id'], ... ] ].
-     *
-     * @var array<string, list<array{table: string, column: string}>>
-     */
-    private array $referenceRegistry = [];
+    /** @var list<array{table: string, column: string}>|null Fremdschlüssel auf `classifications`, aus dem Schema */
+    private ?array $foreignKeyColumns = null;
 
     public function __construct(
         private readonly ClassificationResolver $resolver,
     ) {}
-
-    /**
-     * Registriert eine FK-Referenz für den Löschschutz.
-     */
-    public function registerReference(ClassificationDomain $domain, string $table, string $column): void {
-        $this->referenceRegistry[$domain->value][] = ['table' => $table, 'column' => $column];
-    }
 
     /**
      * Org-Wert anlegen (organization_id wird gesetzt).
@@ -301,8 +289,9 @@ class ClassificationManager {
             throw ClassificationValidationException::platformProtected();
         }
 
-        if ($this->isReferenced($classification)) {
-            throw ClassificationValidationException::referenced();
+        $usage = $this->referenceCounts($classification);
+        if ($usage !== []) {
+            throw ClassificationValidationException::referenced($usage);
         }
 
         $orgId = $classification->organization_id;
@@ -313,25 +302,58 @@ class ClassificationManager {
         $this->resolver->forget($orgId, $domain);
     }
 
-    public function isReferenced(Classification $classification): bool {
-        $refs = $this->referenceRegistry[$classification->domain->value] ?? [];
-        foreach ($refs as $ref) {
-            $exists = DB::table($ref['table'])->where($ref['column'], $classification->id)->exists();
-            if ($exists) {
-                return true;
+    /**
+     * Wo der Wert benutzt wird (MVP-1588): jede Spalte mit Fremdschlüssel auf
+     * `classifications` — auch das Pivot `classifiables` — und die Fachspalten,
+     * die den Code tragen. Die Fremdschlüssel kommen aus dem Schema; eine neue
+     * `*_classification_id`-Spalte ist damit ohne Anmeldung geschützt.
+     *
+     * @return array<string, int> Tabelle → Anzahl der Datensätze, nur Treffer
+     */
+    public function referenceCounts(Classification $classification): array {
+        $usage = [];
+        foreach ($this->foreignKeyColumns() as $ref) {
+            $count = DB::table($ref['table'])->where($ref['column'], $classification->id)->count();
+            if ($count > 0) {
+                $usage[$ref['table']] = ($usage[$ref['table']] ?? 0) + $count;
             }
         }
 
         foreach (self::CODE_REFERENCES[$classification->domain->value] ?? [] as $ref) {
-            if ($classification->organization_id !== null && DB::table($ref['table'])
+            if ($classification->organization_id === null) {
+                continue;
+            }
+            $count = DB::table($ref['table'])
                 ->where('organization_id', $classification->organization_id)
                 ->where($ref['column'], $classification->code)
-                ->exists()) {
-                return true;
+                ->count();
+            if ($count > 0) {
+                $usage[$ref['table']] = ($usage[$ref['table']] ?? 0) + $count;
             }
         }
 
-        return false;
+        return $usage;
+    }
+
+    /** @return list<array{table: string, column: string}> */
+    private function foreignKeyColumns(): array {
+        if ($this->foreignKeyColumns !== null) {
+            return $this->foreignKeyColumns;
+        }
+        $columns = [];
+        // Nur das eigene Schema: ohne Angabe nennt MySQL die Tabellen aller sichtbaren Datenbanken.
+        foreach (Schema::getTableListing(Schema::getCurrentSchemaListing(), false) as $table) {
+            if ($table === 'classifications') {
+                continue;
+            }
+            foreach (Schema::getForeignKeys($table) as $foreignKey) {
+                if ($foreignKey['foreign_table'] === 'classifications' && count($foreignKey['columns']) === 1) {
+                    $columns[] = ['table' => $table, 'column' => $foreignKey['columns'][0]];
+                }
+            }
+        }
+
+        return $this->foreignKeyColumns = $columns;
     }
 
     /**

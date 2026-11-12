@@ -49,6 +49,9 @@
                     @if ($measure->expected_impact)
                         <div class="text-xs text-muted">{{ $measure->expected_impact }}</div>
                     @endif
+                    @if ($measure->assessment !== null)
+                        <div class="text-xs"><a class="link link-hover" href="{{ route('sustainability.assessments.show', $measure->assessment) }}">{{ __('sustainability.measure.assessment') }}: {{ $measure->assessment->subject_label }} · V{{ $measure->assessment->version }}</a></div>
+                    @endif
                 </td>
                 <td><x-status-badge size="md" outline>{{ $measure->status->label() }}</x-status-badge></td>
                 <td>{{ __('values.' . $measure->effort) }}</td>

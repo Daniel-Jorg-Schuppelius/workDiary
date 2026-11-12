@@ -1,7 +1,7 @@
 ---
 title: "Calendario CalDAV"
 topic: admin.caldav
-version: 3
+version: 4
 keywords:
     - CalDAV
     - calendario de Nextcloud
@@ -158,3 +158,5 @@ de la ventana de tiempo permanecen allí.
   está desactivada o incompleta.
 - Faltan turnos en el calendario: en **Contenido publicado** no está marcado
   **Turnos y vacaciones**, o los turnos aún no están publicados.
+
+**Soberanía de datos:** Las citas de este calendario pertenecen al área de calendario. Si otro sistema gestiona el calendario, las propuestas, series y cambios aparecen en la bandeja de integraciones como caso «Soberanía de datos»; **Asumir una vez** crea la cita o la serie. Los avisos de eliminación siguen siendo casos normales.

@@ -19,21 +19,35 @@ use App\Services\Retention\RetentionPolicy;
 final class PrivacyRetentionPolicies implements RetentionPolicyProvider {
     public function policies(): array {
         return [
-            // Abgeschlossene Betroffenenanfragen nach Nachweisfrist.
+            // Abgeschlossene Betroffenenanfragen nach Nachweisfrist: Vollzug ist die
+            // Schlüsselvernichtung. Der Vorgang bleibt als inhaltsfreier Nachweis
+            // (Nummer, Art, Fristen, Entscheidung) mit seiner Ereigniskette stehen.
             new RetentionPolicy(
                 area: 'privacy_requests',
                 modelClass: \App\Models\Privacy\DataSubjectRequest::class,
                 overdueQuery: fn($organization, $cutoff) => \App\Models\Privacy\DataSubjectRequest::query()
                     ->withoutGlobalScopes()
                     ->where('organization_id', $organization->id)
+                    ->whereNotNull('dek_wrapped')
                     ->whereNotNull('closed_at')
                     ->where('closed_at', '<', $cutoff),
-                purge: function (\App\Models\Privacy\DataSubjectRequest $subject): void {
-                    foreach ($subject->attachments()->get() as $attachment) {
-                        \Illuminate\Support\Facades\Storage::disk('local')->delete((string) $attachment->path);
-                        $attachment->delete();
-                    }
-                    $subject->delete();
+                purge: function (\App\Models\Privacy\DataSubjectRequest $subject, \App\Models\Platform\User $actor): void {
+                    app(\App\Services\Privacy\DataSubjectRequestService::class)->shred($subject, $actor);
+                },
+            ),
+            // Abgeschlossene Datenschutzvorfälle: wie die Anfragen Schlüsselvernichtung
+            // statt Löschung – die Dokumentation nach Art. 33 Abs. 5 DSGVO bleibt als Gerüst.
+            new RetentionPolicy(
+                area: 'privacy_incidents',
+                modelClass: \App\Models\Privacy\Incident::class,
+                overdueQuery: fn($organization, $cutoff) => \App\Models\Privacy\Incident::query()
+                    ->withoutGlobalScopes()
+                    ->where('organization_id', $organization->id)
+                    ->whereNotNull('dek_wrapped')
+                    ->whereNotNull('closed_at')
+                    ->where('closed_at', '<', $cutoff),
+                purge: function (\App\Models\Privacy\Incident $subject, \App\Models\Platform\User $actor): void {
+                    app(\App\Services\Privacy\IncidentService::class)->shred($subject, $actor);
                 },
             ),
             // Personalstamm ausgeschiedener Mitarbeiter (Feature 130, MVP-694 —

@@ -133,6 +133,9 @@ class CustomFieldService {
         }
         $definition->save();
         unset($this->schemas[$organization->id . ':' . $alias]);
+        if ($changed) {
+            $this->refreshSearchTexts((int) $organization->id, $alias);
+        }
 
         return $definition;
     }
@@ -140,6 +143,21 @@ class CustomFieldService {
     public function setActive(CustomFieldDefinition $definition, bool $active): void {
         $definition->update(['is_active' => $active]);
         unset($this->schemas[$definition->organization_id . ':' . $definition->subject_alias]);
+        $this->refreshSearchTexts((int) $definition->organization_id, $definition->subject_alias);
+    }
+
+    /** Suchtext aller Wertesätze eines Trägers neu bilden — Bezeichnungen und Optionstexte können sich geändert haben. */
+    private function refreshSearchTexts(int $organizationId, string $alias): void {
+        $schema = $this->schemaFor($alias, $organizationId);
+        CustomFieldValue::query()->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->where('subject_type', $alias)
+            ->chunkById(200, function ($rows) use ($schema): void {
+                foreach ($rows as $row) {
+                    /** @var CustomFieldValue $row */
+                    $row->forceFill(['search_text' => $this->searchText($schema, $row->values)])->saveQuietly();
+                }
+            });
     }
 
     /**
@@ -190,6 +208,7 @@ class CustomFieldService {
         $row = $subject->customFieldValue()->updateOrCreate([], [
             'organization_id' => $subject->getAttribute('organization_id'),
             'values' => $values,
+            'search_text' => $this->searchText($schema, $values),
             'schema_version' => $definition !== null ? (int) $definition->version : 1,
         ]);
         $subject->setRelation('customFieldValue', $row);
@@ -203,8 +222,18 @@ class CustomFieldService {
      * @return list<string>
      */
     public function texts(Model&CustomFieldSubject $subject): array {
-        $schema = $this->schemaFor($subject);
-        $values = $subject->customValues();
+        return $this->displayTexts($this->schemaFor($subject), $subject->customValues());
+    }
+
+    /** Anzeigetexte zeilenweise für die SQL-Suche der Suchbereiche (MVP-1615); null ohne belegtes Feld. */
+    public function searchText(FieldSchema $schema, FieldValues $values): ?string {
+        $texts = $this->displayTexts($schema, $values);
+
+        return $texts === [] ? null : implode("\n", $texts);
+    }
+
+    /** @return list<string> */
+    private function displayTexts(FieldSchema $schema, FieldValues $values): array {
         $texts = [];
         foreach ($schema as $field) {
             if (! $field->type->hasValue() || $values->isEmpty($field)) {

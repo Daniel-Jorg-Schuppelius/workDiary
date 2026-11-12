@@ -14,9 +14,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Asset\SaveMeterReadingRequest;
 use App\Models\Asset\{Asset, MeterReading};
 use App\Models\Platform\User;
+use App\Services\Attachments\FileAttacher;
 use App\Services\MeterReading\MeterReadingService;
 use App\Support\{ErrorText, Sqid};
-use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use InvalidArgumentException;
@@ -38,7 +39,7 @@ class MeterReadingController extends Controller {
         [$sort, $dir] = \App\Support\SortableQuery::resolve($request, self::ALLOWED_SORTS, 'read_at');
 
         $query = MeterReading::query()
-            ->with(['asset:id,name,asset_no', 'readBy:id,name'])
+            ->with(['asset:id,name,asset_no', 'readBy:id,name', 'attachments:id,attachable_type,attachable_id,original_name'])
             ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
                 $w->whereLikeEscaped('unit', $search)
                     ->orWhereHas('asset', fn($a) => $a->whereLikeEscaped('name', $search)->orWhereLikeEscaped('asset_no', $search))
@@ -88,11 +89,16 @@ class MeterReadingController extends Controller {
         $asset = Asset::query()->findOrFail((int) $data['asset_id']);
 
         try {
-            $this->service->record($asset, $user, $data);
+            $reading = $this->service->record($asset, $user, $data);
         } catch (InvalidArgumentException $e) {
             return back()
                 ->withInput()
                 ->withErrors(['value' => __(ErrorText::for($e))]);
+        }
+
+        $photo = $request->file('photo');
+        if ($photo instanceof UploadedFile) {
+            app(FileAttacher::class)->store($reading, $photo, (int) $user->id);
         }
 
         return redirect()

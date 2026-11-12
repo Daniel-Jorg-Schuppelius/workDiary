@@ -174,6 +174,10 @@ return [
     ],
 
     'alert' => [
+        'document_margin' => [
+            'quotes' => 'Devis :number, position :position : le prix du document :price donne :margin % de marge',
+            'orders' => 'Commande :number, position :position : le prix du document :price donne :margin % de marge',
+        ],
         'title' => 'Alertes de prix',
         'subtitle' => 'Changements de prix d\'achat sous la marge minimale',
         'empty' => 'Aucune alerte de prix ouverte.',
@@ -192,6 +196,8 @@ return [
             'purchase_orders' => 'Commandes',
             'boq_items' => 'Positions de DQE',
             'manufacturing_orders' => 'Ordres de fabrication',
+            'quotes' => 'Devis',
+            'orders' => 'Commandes clients',
         ],
         'action' => [
             'acknowledge' => 'Fait',
@@ -334,6 +340,7 @@ return [
             'host_not_allowed' => 'L\'hôte distant n\'est pas autorisé (cible interne/privée).',
             'xlsx_invalid' => 'Le fichier n\'est pas un fichier XLSX lisible.',
             'sheet_not_found' => 'Feuille « :sheet » introuvable (sensible à la casse).',
+            'ignore_linked' => 'Une position liée ne peut pas être ignorée — supprimez d\'abord le lien.',
         ],
         'subtitle' => 'Gérer les sources de catalogue et importer des listes de prix CSV',
         'empty' => 'Aucune source de catalogue.',
@@ -408,6 +415,8 @@ return [
             'propose' => 'Suggérer',
             'adopt' => 'Reprendre comme articles',
             'adopt_item' => 'Reprendre le groupe tarifaire comme article',
+            'ignore' => 'Ne pas reprendre (ignorer)',
+            'unignore' => 'Reprendre à nouveau',
         ],
         'adopt' => [
             'title' => 'Reprendre les articles de catalogue',
@@ -474,10 +483,13 @@ return [
             'unlinked' => 'Lien supprimé.',
             'proposed' => 'Suggestion : « :article » — veuillez vérifier et lier.',
             'no_match' => 'Aucun article interne correspondant trouvé (EAN/GTIN, SKU de variante, source d\'approvisionnement, nom).',
+            'ignored' => 'Position ignorée — elle est exclue des propositions, de la reprise et de la mise à jour des prix.',
+            'unignored' => 'Position reprise.',
         ],
     ],
 
     'field' => [
+        'unit' => 'Unité de commande',
         'number' => 'N°',
         'supplier' => 'Fournisseur',
         'warehouse' => 'Entrepôt',
@@ -493,6 +505,7 @@ return [
     ],
 
     'flash' => [
+        'unknown_unit' => 'Cette unité n’est pas définie pour l’article.',
         'created' => 'Commande créée.',
         'line_added' => 'Ligne ajoutée.',
         'conditions_saved' => 'Conditions enregistrées.',
@@ -587,6 +600,52 @@ return [
         ],
     ],
     // Pflichtnachweise Subunternehmer (Feature 117, MVP-606).
+    'credential_types' => [
+        'title' => 'Types de justificatifs',
+        'subtitle' => 'Quels justificatifs les fournisseurs doivent présenter. Les types du catalogue servent de modèle ; vos propres types les complètent.',
+        'empty' => 'Aucun type de justificatif pour l’instant.',
+        'saved' => 'Type de justificatif enregistré.',
+        'months' => ':count mois',
+        'action' => [
+            'create' => 'Type de justificatif propre',
+            'edit' => 'Modifier le type de justificatif',
+            'adopt' => 'Reprendre comme type propre',
+        ],
+        'origin' => [
+            'catalog' => 'Catalogue',
+            'own' => 'Type propre',
+        ],
+        'mode' => [
+            'warn' => 'Avertir seulement',
+            'block' => 'Bloquer la commande',
+        ],
+        'state' => [
+            'active' => 'Actif',
+            'inactive' => 'Désactivé',
+        ],
+        'required' => [
+            'description' => 'Les justificatifs obligatoires comptent dans le feu tricolore du fournisseur. Avec des étiquettes, l’obligation ne vaut que pour les fournisseurs qui en portent une, par exemple un corps de métier ou un type de prestation.',
+            'yes' => 'Justificatif obligatoire',
+            'optional' => 'Facultatif',
+            'all' => 'Obligatoire pour tous les fournisseurs',
+            'tags' => 'Obligatoire pour : :tags',
+        ],
+        'field' => [
+            'name' => 'Désignation',
+            'description' => 'Description',
+            'origin' => 'Origine',
+            'required' => 'Obligation',
+            'required_tags' => 'Obligatoire uniquement pour les fournisseurs avec étiquette',
+            'required_tags_hint' => 'Sans sélection, l’obligation vaut pour tous les fournisseurs.',
+            'blocking_mode' => 'Si le justificatif manque',
+            'blocking_mode_hint' => 'Le blocage ne s’applique que si l’organisation a activé le blocage des commandes.',
+            'validity' => 'Validité standard (mois)',
+            'validity_hint' => 'Vide = illimité.',
+            'warn_days_before' => 'Préavis (jours avant l’échéance)',
+            'state' => 'État',
+            'state_hint' => 'Les types désactivés ne sont plus proposés et ne comptent pas dans le feu tricolore ; les justificatifs enregistrés sont conservés.',
+        ],
+    ],
     'credentials' => [
         'badge' => 'Justificatifs : :status',
         'hint' => 'Justificatifs obligatoires du fournisseur (attestation d’exonération, assurance, etc.)',

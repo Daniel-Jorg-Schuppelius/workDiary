@@ -1,7 +1,7 @@
 ---
 title: "Auftragstyp-Analyse"
 topic: reports.entry-type-analysis
-version: 3
+version: 4
 keywords:
     - Soll-Ist-Vergleich
     - Plan-Ist-Abweichung
@@ -36,3 +36,5 @@ Schulungs- oder Pricing-Bedarf.
 
 Die Plan-Dauer eines Auftrags ist seine **Geplante Dauer (HH:MM)**; ist sie
 leer, zählt die Servicedauer eines disponierten Auftrags, sonst die Länge des Zeitfensters bzw. die Dauer des Termins.
+
+Die Spalte **Top-Ursachen** nennt je Auftragstyp die drei häufigsten Klassifikationen aus dem Nacharbeitsgrund der gebuchten Zeiten und der Grundursache der Reklamationen zum Auftrag. Gezählt wird je Auftrag einmal; ein Klick zeigt die betroffenen Zeiten und Reklamationen. Der CSV-Export enthält die Spalte ebenfalls.

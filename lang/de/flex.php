@@ -40,4 +40,10 @@ return [
         'empty' => 'Für :name sind keine Gleitzeit-Perioden hinterlegt — er nimmt damit nicht an der Gleitzeit teil.',
         'confirm_delete' => 'Diese Periode wirklich löschen? Saldo-Berechnungen werden neu durchgeführt.',
     ],
+    // Arbeitszeitkonto (MVP-1627)
+    'account' => [
+        'balance' => 'Kontostand',
+        'carry' => 'Übertrag aus dem Vormonat: :value',
+        'settled_through' => 'Soll und Ist bis :date — der heutige Tag zählt ab morgen, wie im gespeicherten Konto.',
+    ],
 ];

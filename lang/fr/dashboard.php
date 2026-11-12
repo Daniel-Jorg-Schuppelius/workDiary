@@ -133,6 +133,17 @@ return [
         'open_times' => [
             'description' => 'Temps facturables qui ne figurent encore sur aucune facture.',
         ],
+        'finance_movements' => [
+            'label' => 'Mouvements financiers',
+            'description' => 'Rattachements ouverts et derniers mouvements des relevés bancaires, de Firefly III et des comptes de boutique — à traiter dans la liste de la source.',
+            'empty' => 'Aucune source de mouvements financiers n’est configurée.',
+            'unassigned' => ':source : sans rattachement',
+            'latest' => ':days derniers jours',
+            'none_latest' => 'Aucun mouvement sur cette période.',
+            'open' => 'ouvert',
+            'no_counterparty' => 'Sans contrepartie',
+            'source' => ['bank' => 'Relevés bancaires'],
+        ],
         'open_items' => [
             'description' => 'Créances et dettes ouvertes, part échue comprise.',
             'feed_link' => 'Flux de documents →',

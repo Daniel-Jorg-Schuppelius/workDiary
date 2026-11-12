@@ -62,6 +62,5 @@ return [
         'pending' => 'Analisi in corso',
         'clean' => 'Rilasciato',
         'rejected' => 'Respinto',
-        'failed' => 'Analisi non riuscita',
     ],
 ];

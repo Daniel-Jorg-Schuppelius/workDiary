@@ -56,7 +56,9 @@
                         {{ \App\Support\Trans::or('helpdesk.link.kind.' . $link->kind, $linkKindLabels[$link->kind] ?? $link->kind) }}
                     </x-status-badge>
                     <span class="text-muted">{{ \App\Support\EntityType::label($link->linked_type) }}</span>
-                    @if ($link->linked instanceof \App\Models\ServiceTicket\ServiceTicket)
+                    @if ($link->linked instanceof \App\Models\ServiceTicket\ServiceTicket && Gate::denies('view', $link->linked))
+                        <span class="text-muted"><x-icon name="lock" class="text-[14px]" /> {{ __('helpdesk.confidentiality.masked') }}</span>
+                    @elseif ($link->linked instanceof \App\Models\ServiceTicket\ServiceTicket)
                         <a href="{{ route('service-tickets.show', $link->linked) }}" class="link link-hover">
                             <span class="font-mono text-xs">{{ $link->linked->ticket_no }}</span>
                             {{ $link->linked->title }}

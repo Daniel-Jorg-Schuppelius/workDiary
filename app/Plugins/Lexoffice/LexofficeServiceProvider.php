@@ -139,5 +139,6 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
             LexofficeMaterializeVoucherFilesCommand::class,
             LexofficeWebhooksCommand::class,
         ]);
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\LexofficeContactSync::class);
     }
 }

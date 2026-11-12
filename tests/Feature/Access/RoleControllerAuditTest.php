@@ -113,4 +113,38 @@ class RoleControllerAuditTest extends TestCase {
             'auditable_id' => $role->getKey(),
         ]);
     }
+
+    /** MVP-1619 (H1-02): Kopieren belegt die Rechte-Matrix vor und vermerkt die Vorlage im Audit. */
+    public function test_role_can_be_copied_with_its_permissions(): void {
+        $this->actingAs($this->admin)->post(route('admin.access.roles.store'), [
+            'name' => 'teamleitung-basis',
+            'permissions' => ['customer.viewAny', 'customer.view'],
+        ]);
+        $source = Role::where('name', 'teamleitung-basis')->where('team_id', $this->organization->id)->firstOrFail();
+
+        $sourceSqid = \App\Support\Sqid::encode(Role::class, $source->id);
+        $this->actingAs($this->admin)->get(route('admin.access.roles.create', ['copy' => $sourceSqid]))
+            ->assertOk()
+            ->assertSee('name="copied_from" value="' . $sourceSqid . '"', false)
+            ->assertViewHas('assigned', fn (array $assigned): bool => in_array('customer.view', $assigned, true) && in_array('customer.viewAny', $assigned, true));
+
+        $this->actingAs($this->admin)->post(route('admin.access.roles.store'), [
+            'name' => 'innendienst',
+            'permissions' => ['customer.viewAny'],
+            'copied_from' => $sourceSqid,
+        ])->assertRedirect(route('admin.access.roles.index'));
+
+        $copy = Role::where('name', 'innendienst')->where('team_id', $this->organization->id)->firstOrFail();
+        $this->assertSame(['customer.viewAny'], $copy->permissions()->pluck('name')->all());
+        $log = AuditLog::query()->where('event', 'role.created')->where('auditable_id', $copy->getKey())->firstOrFail();
+        $this->assertSame('teamleitung-basis', $log->changes['after']['copied_from'] ?? null);
+    }
+
+    public function test_global_roles_are_no_copy_source(): void {
+        $global = Role::query()->whereNull('team_id')->first() ?? Role::create(['name' => 'plattform-test', 'guard_name' => 'web', 'team_id' => null]);
+
+        $this->actingAs($this->admin)->get(route('admin.access.roles.create', ['copy' => \App\Support\Sqid::encode(Role::class, $global->id)]))
+            ->assertOk()
+            ->assertDontSee('name="copied_from"', false);
+    }
 }

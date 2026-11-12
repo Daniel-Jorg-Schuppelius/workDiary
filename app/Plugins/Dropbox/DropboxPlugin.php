@@ -17,7 +17,7 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{BackupTarget, DocumentIntakeSource, Plugin, PluginCapability};
 use App\Plugins\Dropbox\Api\{DropboxBackupClient, DropboxClient};
 use App\Plugins\Support\Backup\BackupAccount;
-use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
+use App\Plugins\Support\Intake\{IntakeChangePage, IntakeItem};
 use App\Plugins\Support\PluginOrgContext;
 use App\Support\Ui\UiAction;
 use Psr\Http\Message\StreamInterface;
@@ -32,7 +32,7 @@ use Throwable;
  * Cloud-BACKUPZIEL — eigene Verbindung, eigene (Schreib-)Scopes,
  * strikt getrennt vom Dokumenteingang.
  */
-class DropboxPlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\IntakeSourceConnector, BackupTarget, DocumentIntakeSource {
+class DropboxPlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\IntakeSourceConnector, \App\Plugins\Contracts\WritesDataDomains, BackupTarget, DocumentIntakeSource {
     public const string ID = 'dropbox';
 
     /** Von der Plugin-Discovery VOR der Instanziierung registriert. */
@@ -58,10 +58,6 @@ class DropboxPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
     }
 
     // ── DocumentIntakeSource ────────────────────────────────────────────
-
-    public function intakeAccount(CloudDocumentConnection $connection): IntakeAccount {
-        return (new DropboxClient($connection))->account();
-    }
 
     public function intakeContainers(CloudDocumentConnection $connection, ?string $search = null): array {
         return (new DropboxClient($connection))->containers(); // Dropbox: keine Container-Suche
@@ -167,7 +163,14 @@ class DropboxPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
         return new UiAction('sync', (string) __('backup_targets.reconnect'), route('admin.backup-targets.dropbox.oauth.start', ['connection' => $connection->sqid]), post: true);
     }
 
-    public function intakeConnectAction(): UiAction {
-        return new UiAction('add', (string) __('dropbox::cloud_intake.action.connect_dropbox'), route('admin.cloud-intake.dropbox.oauth.start'), post: true);
+    public function intakeConnectAction(?CloudDocumentConnection $connection = null): UiAction {
+        return $connection !== null
+            ? new UiAction('sync', (string) __('cloud_intake.action.reconnect'), route('admin.cloud-intake.dropbox.oauth.start', ['connection' => $connection->sqid]), post: true)
+            : new UiAction('add', (string) __('dropbox::cloud_intake.action.connect_dropbox'), route('admin.cloud-intake.dropbox.oauth.start'), post: true);
+    }
+
+    /** Datenführerschaft (MVP-1592): Cloud-Dokumenteingang legt DMS-Dokumente an. */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Documents];
     }
 }

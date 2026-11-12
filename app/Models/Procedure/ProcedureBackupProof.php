@@ -12,6 +12,7 @@ namespace App\Models\Procedure;
 
 use App\Casts\ByteSizeCast;
 use App\Enums\Procedure\{ProcedureBackupScope, ProcedureBackupStorageTarget, ProcedureBackupVerifyMethod};
+use App\Models\Attachments\Attachment;
 use App\Models\Platform\User;
 use Database\Factories\Procedure\ProcedureBackupProofFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -34,9 +35,11 @@ use Illuminate\Support\Carbon;
  * @property ProcedureBackupStorageTarget $storage_target
  * @property int|null $attachment_id
  * @property string|null $external_ref
+ * @property int|null $registered_by_user_id
  * @property bool $verified
  * @property Carbon|null $verified_at
  * @property int|null $verified_by_user_id
+ * @property Carbon|null $rejected_at
  * @property ProcedureBackupVerifyMethod $verify_method
  * @property string|null $verify_note
  * @property Carbon $created_at
@@ -58,9 +61,11 @@ class ProcedureBackupProof extends Model {
         'storage_target',
         'attachment_id',
         'external_ref',
+        'registered_by_user_id',
         'verified',
         'verified_at',
         'verified_by_user_id',
+        'rejected_at',
         'verify_method',
         'verify_note',
         'created_at',
@@ -72,6 +77,7 @@ class ProcedureBackupProof extends Model {
         'verify_method' => ProcedureBackupVerifyMethod::class,
         'taken_at' => 'datetime',
         'verified_at' => 'datetime',
+        'rejected_at' => 'datetime',
         'created_at' => 'datetime',
         'verified' => 'bool',
         'size_bytes' => ByteSizeCast::class,
@@ -80,6 +86,16 @@ class ProcedureBackupProof extends Model {
     /** @return BelongsTo<ProcedureStepRun, $this> */
     public function stepRun(): BelongsTo {
         return $this->belongsTo(ProcedureStepRun::class, 'procedure_step_run_id');
+    }
+
+    /** @return BelongsTo<Attachment, $this> */
+    public function attachment(): BelongsTo {
+        return $this->belongsTo(Attachment::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function registeredBy(): BelongsTo {
+        return $this->belongsTo(User::class, 'registered_by_user_id');
     }
 
     /** @return BelongsTo<User, $this> */

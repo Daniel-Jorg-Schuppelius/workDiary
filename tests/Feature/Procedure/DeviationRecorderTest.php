@@ -133,6 +133,28 @@ class DeviationRecorderTest extends TestCase {
         $this->assertSame(ProcedureDeviationSeverity::Low, $deviation->severity);
     }
 
+    public function test_requalify_starts_a_repeat_run_that_counts_as_follow_up(): void {
+        ['user' => $user, 'stepRun' => $stepRun, 'run' => $run] = $this->makeRun();
+
+        $deviation = $this->deviations->record($stepRun, $user, [
+            'deviation_type' => ProcedureDeviationType::SafetyBlock->value,
+            'reason_text' => 'Schritt abgebrochen, der ganze Ablauf wird erneut durchlaufen.',
+            'proposed_action' => ProcedureDeviationProposedAction::Requalify->value,
+        ]);
+
+        $repeat = ProcedureRun::query()->findOrFail($deviation->requalify_run_id);
+        $this->assertNotSame((int) $run->id, (int) $repeat->id);
+        $this->assertSame((int) $run->procedure_template_version_id, (int) $repeat->procedure_template_version_id);
+        $this->assertSame([$run->subject_type, (int) $run->subject_id], [$repeat->subject_type, (int) $repeat->subject_id]);
+        $this->assertSame(1, $repeat->stepRuns()->count());
+        $event = $run->journal()->where('event_type', ProcedureRunEventType::DeviationActionTriggered->value)->firstOrFail();
+        $this->assertSame((int) $repeat->id, (int) $event->payload['requalify_run_id']);
+
+        // Kritisch, aber mit Wiederholungslauf: der Abschluss ist nicht gesperrt.
+        $this->assertSame([], $this->deviations->blockingDeviationIdsFor($run->refresh()));
+        $this->assertFalse($this->deviations->blocksCompletion($deviation));
+    }
+
     public function test_duplicate_recording_is_rejected(): void {
         ['user' => $user, 'stepRun' => $stepRun] = $this->makeRun();
 

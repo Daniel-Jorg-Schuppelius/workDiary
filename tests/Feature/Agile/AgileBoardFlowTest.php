@@ -94,6 +94,25 @@ final class AgileBoardFlowTest extends TestCase {
         );
     }
 
+    public function test_task_done_outside_the_board_records_open_dod_and_criteria_as_deviation(): void {
+        $this->board->update(['dod_items' => ['Tests grün', 'Doku ergänzt']]);
+        $item = $this->item();
+        AgileAcceptanceCriterion::query()->create(['organization_id' => $item->organization_id, 'work_item_id' => $item->id, 'position' => 1, 'text' => 'Export prüft Summen']);
+
+        // Etwa ein Aufgabenimport schließt die Aufgabe; die Karte folgt, die DoD war nie bestätigt.
+        $item->task()->firstOrFail()->forceFill(['status' => 'done'])->save();
+
+        $this->assertSame('done', $item->fresh(['column'])->column?->category?->value);
+        $dod = AgileEvent::query()->where('event', 'override.dod')->sole();
+        $this->assertSame('task_sync', $dod->payload['origin']);
+        $this->assertCount(2, $dod->payload['unconfirmed']);
+        $this->assertSame(1, AgileEvent::query()->where('event', 'override.criteria')->count());
+
+        // Wieder geöffnet ist keine Abweichung.
+        $item->task()->firstOrFail()->forceFill(['status' => 'open'])->save();
+        $this->assertSame(1, AgileEvent::query()->where('event', 'override.dod')->count());
+    }
+
     public function test_open_criteria_block_done_without_override(): void {
         $service = app(AgileBoardService::class);
         $done = $this->board->columns()->where('category', 'done')->firstOrFail();
@@ -114,6 +133,69 @@ final class AgileBoardFlowTest extends TestCase {
 
         $service->move($item, $done, (int) $item->fresh()->lock_version, 'PO-Entscheid', $this->lead, mayOverride: true);
         $this->assertSame(1, AgileEvent::query()->where('event', 'override.criteria')->count());
+    }
+
+    public function test_definition_of_done_must_be_confirmed_or_overridden(): void {
+        $service = app(AgileBoardService::class);
+        $this->board->update(['dod_items' => ['Tests grün', 'Doku ergänzt']]);
+        $done = $this->board->columns()->where('category', 'done')->firstOrFail();
+        $item = $this->item();
+
+        try {
+            $service->move($item, $done, (int) $item->fresh()->lock_version, 'Eilt', $this->lead, confirmedDod: [0]);
+            $this->fail('Unbestätigte DoD-Punkte wurden ignoriert.');
+        } catch (AgileFlowException $e) {
+            $this->assertSame('dod', $e->reason);
+        }
+
+        // Mit Recht, aber ohne Begründung bleibt der Zug gesperrt.
+        try {
+            $service->move($item, $done, (int) $item->fresh()->lock_version, ' ', $this->lead, mayOverride: true, confirmedDod: [0]);
+            $this->fail('Übersteuern ohne Begründung wurde akzeptiert.');
+        } catch (AgileFlowException $e) {
+            $this->assertSame('dod', $e->reason);
+        }
+
+        $service->move($item, $done, (int) $item->fresh()->lock_version, 'Kundentermin', $this->lead, mayOverride: true, confirmedDod: [0]);
+        $event = AgileEvent::query()->where('event', 'override.dod')->sole();
+        $this->assertSame('Kundentermin', $event->payload['reason']);
+        $this->assertSame(['Doku ergänzt'], $event->payload['unconfirmed']);
+
+        $week = $event->created_at->format('o-\WW');
+        $quality = app(\App\Services\Agile\AgileMetricsService::class)->qualitySeries($this->board->fresh())->data['weeks'][$week];
+        $this->assertSame(1, $quality['dod_overrides']);
+        $this->assertSame(100.0, $quality['dod_rate']);
+    }
+
+    public function test_confirmed_definition_of_done_moves_without_override_event(): void {
+        $this->board->update(['dod_items' => ['Tests grün', 'Doku ergänzt']]);
+        $done = $this->board->columns()->where('category', 'done')->firstOrFail();
+        $item = $this->item();
+
+        // Ohne Bestätigung öffnet das Board den Abschlussdialog.
+        $this->actingAs($this->lead)
+            ->from(route('agile.board', $this->project))
+            ->patch(route('agile.items.move', [$this->project, $item]), ['column' => $done->sqid, 'lock_version' => $item->fresh()->lock_version])
+            ->assertRedirect(route('agile.board', $this->project))
+            ->assertSessionHas('open_dialog', route('agile.items.move.dialog', [$this->project, $item, 'column' => $done->sqid]));
+        $this->assertNotSame($done->id, $item->fresh()->column_id);
+
+        $this->actingAs($this->lead)
+            ->get(route('agile.items.move.dialog', [$this->project, $item, 'column' => $done->sqid]))
+            ->assertOk()
+            ->assertSee('Tests grün')
+            ->assertSee('dod_confirmed[]', false);
+
+        $this->actingAs($this->lead)
+            ->patchJson(route('agile.items.move', [$this->project, $item]), ['column' => $done->sqid, 'lock_version' => $item->fresh()->lock_version, 'dod_confirmed' => [0]])
+            ->assertStatus(422)
+            ->assertJsonPath('error', 'dod');
+
+        $this->actingAs($this->lead)
+            ->patchJson(route('agile.items.move', [$this->project, $item]), ['column' => $done->sqid, 'lock_version' => $item->fresh()->lock_version, 'dod_confirmed' => [0, 1]])
+            ->assertOk();
+        $this->assertSame($done->id, $item->fresh()->column_id);
+        $this->assertSame(0, AgileEvent::query()->where('event', 'override.dod')->count());
     }
 
     public function test_block_requires_reason_and_card_stays(): void {

@@ -1,7 +1,7 @@
 ---
 title: "Preis- & Margenregeln"
 topic: pricing.margin-rules
-version: 1
+version: 2
 keywords:
     - Kalkulation
     - Preiskalkulation
@@ -61,3 +61,5 @@ Bereits abgeschlossene Vorgänge und historische Preise bleiben von
 Regeländerungen unberührt — eine geänderte Regel wirkt erst auf die
 nächste Preisübernahme. Lesen erfordert Lager-Leserechte, das Verwalten
 der Regeln und Anträge Lager-Konfigurationsrechte.
+
+Die Kalkulationswarnung nach einer Einkaufspreisänderung prüft die Mindestmarge auch gegen offene Angebote und nicht stornierte Aufträge mit dem Artikel: Gemessen wird der Belegpreis der Position, nicht der Stammpreis. Die Warnung nennt Beleg, Position, Belegpreis und die Marge, die sich daraus ergibt. Die Belege selbst behalten ihren Preis.

@@ -162,12 +162,130 @@ class GuaranteeTest extends TestCase {
         $this->assertSame(0, NotificationDispatchLog::query()
             ->where('event', NotificationEvent::GuaranteeReturnDue->value)->count());
 
-        $retention->refresh()->forceFill(['status' => RetentionStatus::Released->value])->save();
+        app(RetentionService::class)->release($retention->refresh(), $this->admin);
         $this->artisan('notifications:scan-deadlines')->assertExitCode(0);
 
         $this->assertDatabaseHas('notification_dispatch_log', [
             'event' => NotificationEvent::GuaranteeReturnDue->value,
         ]);
+    }
+
+    /** MVP-1561: Der abgelöste Einbehalt ist ausgezahlt — die Freigabe beendet nur den Sicherungszweck. */
+    public function test_releasing_a_secured_retention_creates_no_second_claim(): void {
+        [$invoice, $retention] = $this->invoiceWithRetention();
+        $guarantee = $this->guarantee();
+        app(GuaranteeService::class)->secureRetention($guarantee, $retention, $this->admin);
+        $retention->refresh()->forceFill(['released_on' => now()->subMonths(6)->toDateString()])->save();
+        $payable = app(RetentionService::class)->payableAmountOf($invoice->refresh());
+
+        $released = app(RetentionService::class)->release($retention->refresh(), $this->admin, 'Gewährleistung beendet');
+
+        $this->assertSame(RetentionStatus::Released, $released->status);
+        // Auszahlungstag bleibt der Tag der Ablösung.
+        $this->assertSame(now()->subMonths(6)->toDateString(), $released->released_on?->toDateString());
+        $this->assertSame('Gewährleistung beendet', $released->note);
+        $this->assertSame($payable, app(RetentionService::class)->payableAmountOf($invoice->refresh()));
+        $this->assertSame(0.0, app(RetentionService::class)->openAmountOf($invoice));
+        $this->assertSame(1, \App\Models\Invoicing\InvoiceRetention::query()->count());
+        $this->assertDatabaseHas('audit_logs', ['event' => 'invoice.retention_released', 'auditable_id' => $invoice->id]);
+    }
+
+    public function test_a_released_retention_cannot_be_released_again(): void {
+        [, $retention] = $this->invoiceWithRetention();
+        app(RetentionService::class)->release($retention, $this->admin);
+
+        $this->expectException(\RuntimeException::class);
+        app(RetentionService::class)->release($retention->refresh(), $this->admin);
+    }
+
+    /** MVP-1561: Kachel und Filter folgen beiden Zweigen des Fristenscans. */
+    public function test_return_due_tile_and_filter_cover_released_retention_and_ended_warranty(): void {
+        [, $retention] = $this->invoiceWithRetention();
+        $byRetention = $this->guarantee(['reference' => 'BG-EINBEHALT']);
+        app(GuaranteeService::class)->secureRetention($byRetention, $retention, $this->admin);
+
+        $warranty = \App\Models\Warranty\WarrantyPeriod::query()->create([
+            'organization_id' => $this->org->id,
+            'side' => \App\Enums\Warranty\WarrantySide::Owed->value,
+            'basis' => \App\Enums\Warranty\WarrantyBasis::cases()[0]->value,
+            'starts_on' => now()->subYears(5)->toDateString(),
+            'ends_on' => now()->subDay()->toDateString(),
+            'customer_id' => $this->customer->id,
+        ]);
+        $this->guarantee(['reference' => 'BG-GEWAEHR', 'warranty_period_id' => $warranty->id]);
+        $this->guarantee(['reference' => 'BG-LAUFEND']);
+        // Offene Rüge: die Sicherheit bleibt stehen, auch nach Fristende.
+        $claimed = \App\Models\Warranty\WarrantyPeriod::query()->create([
+            'organization_id' => $this->org->id,
+            'side' => \App\Enums\Warranty\WarrantySide::Owed->value,
+            'basis' => \App\Enums\Warranty\WarrantyBasis::cases()[0]->value,
+            'starts_on' => now()->subYears(5)->toDateString(),
+            'ends_on' => now()->subDay()->toDateString(),
+            'status' => \App\Enums\Warranty\WarrantyStatus::Claimed->value,
+            'customer_id' => $this->customer->id,
+        ]);
+        $this->guarantee(['reference' => 'BG-RUEGE', 'warranty_period_id' => $claimed->id]);
+
+        $before = $this->actingAs($this->admin)->get(route('guarantees.index', ['show' => 'return_due']));
+        $this->assertSame(1, $before->viewData('returnDue'));
+        $before->assertSee('BG-GEWAEHR')->assertDontSee('BG-EINBEHALT')->assertDontSee('BG-LAUFEND')->assertDontSee('BG-RUEGE');
+
+        app(RetentionService::class)->release($retention->refresh(), $this->admin);
+
+        $after = $this->actingAs($this->admin)->get(route('guarantees.index', ['show' => 'return_due']));
+        $this->assertSame(2, $after->viewData('returnDue'));
+        $after->assertSee('BG-GEWAEHR')->assertSee('BG-EINBEHALT')->assertDontSee('BG-LAUFEND');
+    }
+
+    /** MVP-1561: Befristung überschritten ⇒ der Fristenlauf setzt „verfallen"; der letzte Tag zählt noch. */
+    public function test_deadline_scan_marks_guarantees_past_their_term_as_expired(): void {
+        $past = $this->guarantee(['expires_on' => now()->subDay()->toDateString()]);
+        $today = $this->guarantee(['expires_on' => now()->toDateString()]);
+        $unlimited = $this->guarantee();
+
+        $this->artisan('notifications:scan-deadlines')->assertExitCode(0);
+
+        $this->assertSame(GuaranteeStatus::Expired, $past->refresh()->status);
+        $this->assertSame(GuaranteeStatus::Active, $today->refresh()->status);
+        $this->assertSame(GuaranteeStatus::Active, $unlimited->refresh()->status);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'guarantee.expired', 'auditable_id' => $past->id]);
+
+        $response = $this->actingAs($this->admin)->get(route('guarantees.index'));
+        $this->assertSame(2, $response->viewData('activeReceived'));
+    }
+
+    public function test_endpoint_marks_expired_only_past_the_term(): void {
+        $running = $this->guarantee(['expires_on' => now()->addMonth()->toDateString()]);
+        $past = $this->guarantee(['expires_on' => now()->subDay()->toDateString()]);
+
+        $this->actingAs($this->admin)->post(route('guarantees.expired', $running))->assertSessionHas('error');
+        $this->assertSame(GuaranteeStatus::Active, $running->refresh()->status);
+
+        $this->actingAs($this->admin)->get(route('guarantees.index'))
+            ->assertSee(route('guarantees.expired', $past), false)
+            ->assertDontSee(route('guarantees.expired', $running), false);
+
+        $this->actingAs($this->admin)->post(route('guarantees.expired', $past))->assertSessionHas('status');
+        $this->assertSame(GuaranteeStatus::Expired, $past->refresh()->status);
+    }
+
+    /** Die Urkunde kann auch nach dem Verfall zurückkommen; eine nachgetragene Verlängerung reaktiviert. */
+    public function test_expired_guarantee_can_be_returned_or_extended(): void {
+        $returned = $this->guarantee(['expires_on' => now()->subDay()->toDateString()]);
+        $extended = $this->guarantee(['expires_on' => now()->subDay()->toDateString()]);
+        $service = app(GuaranteeService::class);
+        $service->markExpired($returned, $this->admin);
+        $service->markExpired($extended, $this->admin);
+
+        $this->assertSame(GuaranteeStatus::Returned, $service->markReturned($returned->refresh(), $this->admin)->status);
+
+        $this->actingAs($this->admin)->put(route('guarantees.update', $extended), [
+            'direction' => $extended->direction->value,
+            'kind' => $extended->kind->value,
+            'amount' => '500.00',
+            'expires_on' => now()->addYear()->toDateString(),
+        ])->assertRedirect();
+        $this->assertSame(GuaranteeStatus::Active, $extended->refresh()->status);
     }
 
     public function test_index_lists_and_filters(): void {

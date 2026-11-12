@@ -1,7 +1,7 @@
 ---
 title: "Job pianificati"
 topic: admin.scheduler
-version: 1
+version: 2
 keywords:
     - cron job
     - cron
@@ -85,3 +85,5 @@ le analisi.
 esecuzioni successive dopo ogni ripianificazione. Un contatore degli
 errori stabilmente elevato è un caso per la diagnostica, non per la
 pausa.
+
+**Esecuzione per job:** nella finestra di ripianificazione può impostare anche un fuso orario proprio, un periodo di riposo (da–a, anche oltre la mezzanotte) e ripetizioni dopo un errore. Gli orari nel periodo di riposo vengono spostati alla sua fine, le cadenze si fermano; senza riposo e fuso propri vale la finestra operativa del server. Una ripetizione parte dopo l’intervallo impostato, al massimo per il numero di volte indicato, e compare nel registro come ogni esecuzione.

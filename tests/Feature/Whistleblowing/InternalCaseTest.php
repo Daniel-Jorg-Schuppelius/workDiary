@@ -137,16 +137,17 @@ class InternalCaseTest extends TestCase {
         $this->assignTo($case, $assigned);
         $category = __('whistleblowing.category.fraud');
 
-        $this->actingAs($assigned)->get(route('whistleblowing.internal.index'))
+        // Seit MVP-1601 nennt die Filterleiste jede Kategorie einmal; gezählt wird die Tabellenzeile dazu.
+        $seen = $this->actingAs($assigned)->get(route('whistleblowing.internal.index'))
             ->assertOk()
-            ->assertSee($case->case_number)
-            ->assertSee($category);
+            ->assertSee($case->case_number);
+        $this->assertSame(2, substr_count((string) $seen->getContent(), e($category)));
 
-        $this->actingAs($other)->get(route('whistleblowing.internal.index'))
+        $hidden = $this->actingAs($other)->get(route('whistleblowing.internal.index'))
             ->assertOk()
             ->assertSee($case->case_number)
-            ->assertDontSee($category)
             ->assertSee(__('Sichtbar nach Zuweisung'));
+        $this->assertSame(1, substr_count((string) $hidden->getContent(), e($category)));
     }
 
     public function test_other_organization_gets_404(): void {

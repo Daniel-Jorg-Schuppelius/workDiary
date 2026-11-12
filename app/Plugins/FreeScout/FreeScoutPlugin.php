@@ -13,9 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\FreeScout;
 
 use App\Models\Integration\ExternalReference;
-use App\Models\Platform\Organization;
 use App\Plugins\AbstractPlugin;
-use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer, TaskSyncer};
+use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer};
 use App\Plugins\FreeScout\Api\FreeScoutClientFactory;
 use App\Plugins\FreeScout\Models\FreeScoutConnection;
 use App\Plugins\FreeScout\Services\FreeScoutImportService;
@@ -24,7 +23,7 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSett
 /**
  * FreeScout-Aufgabenimport (Feature 174, Phase 158): Konversationen ausgewählter FreeScout-Postfächer werden als Aufgaben in WorkDiary-Projekte übernommen, nur lesend.
  */
-class FreeScoutPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
+class FreeScoutPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, LinksExternalRecords, SlotRenderer {
     use ChecksConnectionHealth, RendersTaskLink;
 
     public const string ID = 'freescout';
@@ -53,10 +52,6 @@ class FreeScoutPlugin extends AbstractPlugin implements LinksExternalRecords, Sl
         return [PluginCapability::TaskSync];
     }
 
-    public function syncTasks(Organization $organization): array {
-        return app(FreeScoutImportService::class)->run($organization);
-    }
-
     public function adminPanel(): ?array {
         return ['route' => 'admin.freescout.index', 'label' => 'FreeScout', 'icon' => 'support_agent'];
     }
@@ -79,5 +74,10 @@ class FreeScoutPlugin extends AbstractPlugin implements LinksExternalRecords, Sl
 
     protected function taskLinkType(): string {
         return self::EXT_TYPE_CONVERSATION;
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Tasks];
     }
 }

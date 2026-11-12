@@ -70,6 +70,7 @@ return [
 
     'error' => [
         'email_taken' => 'This email address is already taken.',
+        'column_forbidden' => 'Column :column skipped: only users with the corresponding permission may change these values. The other columns are imported.',
         'required' => 'Required field :field is missing.',
         'tooLong' => 'Field :field exceeds maximum length of :max characters.',
         'header' => [

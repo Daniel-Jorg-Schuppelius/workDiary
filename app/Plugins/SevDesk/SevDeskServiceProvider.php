@@ -75,5 +75,6 @@ class SevDeskServiceProvider extends PluginServiceProviderBase {
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Invoicing\Contracts\IncomingInvoiceTransferTarget::class, \App\Plugins\SevDesk\Services\SevDeskIncomingInvoiceTarget::class);
         // Rechnungen mit Nachweisen durch WorkDiary zustellen, das Fakturasystem führt (Feature 196).
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Finance\Contracts\ExternalInvoiceProvider::class, \App\Plugins\SevDesk\Services\SevDeskExternalInvoiceProvider::class);
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\SevDeskContactImportService::class);
     }
 }

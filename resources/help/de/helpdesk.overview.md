@@ -1,7 +1,7 @@
 ---
 title: "Helpdesk & Service Desk"
 topic: helpdesk.overview
-version: 3
+version: 5
 keywords:
     - Ticketsystem
     - Ticket erstellen
@@ -80,3 +80,57 @@ Kurzbewertung abgeben — eine je Ticket. Die Berichte zeigen Volumen je
 Queue, Reaktions- und Lösungszeiten, SLA-Erfüllung, Wartegründe,
 Change-Quoten, Problem-Bestand und Katalognachfrage. Auf Ranglisten
 einzelner Bearbeiter wird bewusst verzichtet.
+
+**Status ändern:** Über **Status ändern** am Ticket wählen Sie den neuen
+Status; angeboten werden nur zulässige Übergänge. Beim Lösen und Schließen
+erfassen Sie den **Abschlusscode** und die **Lösungszusammenfassung**. Ein
+Wartezustand braucht einen Wartegrund, eine Wiedervorlage und eine
+verantwortliche Person; ist die Wiedervorlage erreicht, erinnert WorkDiary
+sie. Ob die SLA-Uhr dabei anhält, bestimmt der SLA-Vertrag. Ein gelöstes
+Ticket öffnen Sie nur mit Grund wieder; die bisherigen Reaktions- und
+Lösungszeiten bleiben erhalten.
+
+**Queue-Einstellungen:** Je Queue legen Sie unterstützte Ticketarten,
+Geschäftszeiten, Feiertagsregion, Absendername und Antwortadresse fest. Neue
+Tickets ohne Zuordnung gehen an die Standard-Queue; nimmt sie die Ticketart
+nicht an, an die erste Queue, die es tut. Das Standard-SLA der Queue gilt,
+wenn weder das Asset des Tickets noch Projekt noch Kunde einen eigenen Vertrag
+haben.
+
+**Extern geführte Queue:** Führt ein angebundenes System wie Zammad die
+Tickets einer Queue, sind Statuswechsel und Antworten an den Kunden in
+WorkDiary gesperrt; das Ticket trägt einen Hinweis. Zuweisung, interne
+Notizen, Zeiten und Abrechnung bleiben möglich. Stellen Sie das Ticketziel
+der Anbindung zurück, führt WorkDiary die Queue wieder selbst.
+
+**Vertraulichkeit:** Ein vertrauliches Ticket sehen nur Bearbeiter,
+Beobachter, das Team der Queue und Administratoren. Sie setzen die Stufe bei
+der Anlage oder in der Klassifizierung.
+
+**Leistung bestellen:** Unter **Leistung bestellen** bestellen Mitarbeitende
+Einträge des Servicekatalogs für sich. Die Angaben aus dem Bestellformular
+stehen am Ticket und im Entscheidungsdialog der Genehmigung; das Ticket
+zeigt außerdem, welcher Vorgang die Bestellung erfüllt.
+
+**Zustellstatus:** An jeder per E-Mail versandten Antwort steht, ob der
+Versand vorgemerkt, erfolgt oder fehlgeschlagen ist.
+
+**Ticket aus offenem Punkt:** Am offenen Punkt legt **Ticket eröffnen** ein
+Ticket mit Titel, Beschreibung und Bezug des Punkts an. Je Punkt entsteht
+höchstens ein Ticket; der Punkt verweist darauf.
+
+**Kundenportal:** Bestätigt der Kunde die Lösung oder öffnet er das Ticket mit
+Grund wieder, läuft das wie ein interner Statuswechsel — mit Verlauf und
+unveränderten Reaktions- und Lösungszeiten. Bei extern geführten Queues sind
+Antwort, Abnahme und Wiederöffnung auch im Portal gesperrt; das Portal zeigt
+dort nur den Stand.
+
+**Queue wechseln und Postfach:** Wechselt ein Ticket die Queue, gilt das
+Standard-SLA der neuen Queue, sofern sein Vertrag bisher aus Queue oder
+Organisation stammte oder fehlte; ein Vertrag von Asset, Projekt oder Kunde und
+ein ausdrücklich gesetzter Vertrag bleiben. Unter **Eingangspostfach** ordnen Sie
+der Queue ein Postfach zu — eines je Queue.
+
+**Vertrauliche Tickets in Listen:** Auswahllisten und Verweise zeigen ein
+vertrauliches Ticket nur Berechtigten. In Berichts-Drilldowns zählt es weiter
+mit, erscheint für andere aber nur als „Vertrauliches Ticket“.

@@ -17,6 +17,10 @@ return [
     'filter' => [
         'label' => 'Filter history',
         'all' => 'All',
+        'types' => 'Types',
+        'actor' => 'Person',
+        'all_actors' => 'All people',
+        'customer_only' => 'Customer-relevant only',
         'status' => 'Status',
         'time' => 'Time',
         'comment' => 'Comments',
@@ -74,6 +78,7 @@ return [
             'visibilityChanged' => 'Open issue visibility changed',
             'commentAdded' => 'Comment on open issue',
             'attachmentAdded' => 'Attachment on open issue',
+            'ticketOpened' => 'Ticket opened from open issue',
         ],
     ],
     'action' => [

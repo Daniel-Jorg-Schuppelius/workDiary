@@ -104,6 +104,20 @@
                                    class="input-sm"
                                    step="0.0001"
                                    min="0.0001" />
+                    {{-- Einheit der Eingabe (MVP-1584): gepflegte Einheiten des erkannten Artikels. --}}
+                    @php($scanUnits = $match?->variant?->article?->units()->where('active', true)->orderBy('code')->get() ?? collect())
+                    @if ($scanUnits->isNotEmpty())
+                        <x-select-field name="unit" id="scan-unit" :label="__('inventory.field.unit')" class="select-sm">
+                            <option value="">{{ __('inventory.field.unit_base') }} ({{ $match->variant->article->base_unit }})</option>
+                            @foreach ($scanUnits as $unit)
+                                <option value="{{ $unit->code }}">{{ __('inventory.field.unit_option', [
+                                    'unit' => $unit->label ?: $unit->code,
+                                    'factor' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((string) $unit->factor_to_base, 4, trimTrailingZeros: true),
+                                    'base' => $match->variant->article->base_unit,
+                                ]) }}</option>
+                            @endforeach
+                        </x-select-field>
+                    @endif
                     <x-select-field name="warehouse" :label="__('inventory.field.warehouse')" class="select-sm">
                         @foreach ($warehouses as $wh)
                             <option value="{{ $wh->sqid }}">{{ $wh->name }}</option>

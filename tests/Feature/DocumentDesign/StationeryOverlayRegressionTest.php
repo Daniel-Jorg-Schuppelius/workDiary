@@ -142,7 +142,7 @@ class StationeryOverlayRegressionTest extends TestCase {
 
     /** @return array{0: Organization, 1: User} */
     private function orgAdmin(): array {
-        $org = Organization::factory()->create();
+        $org = Organization::factory()->withIssuerIdentity()->create();
         $this->app->instance('currentOrganization', $org);
 
         return [$org, User::factory()->admin()->create(['organization_id' => $org->id])];

@@ -71,16 +71,6 @@ class InvoicePlaneConnectionGuard {
         }
     }
 
-    public function isAcceptable(string $host, bool $tlsEnabled): bool {
-        try {
-            $this->assertAcceptable($host, $tlsEnabled);
-
-            return true;
-        } catch (InvoicePlaneConnectionException) {
-            return false;
-        }
-    }
-
     private function inAllowlist(string $host): bool {
         return in_array($host, $this->hostAllowlist, true);
     }

@@ -10,6 +10,9 @@
 --}}
 @php
     $accessories = old('accessories', $profile->accessories ?? []);
+    $checklistLabels = old('checklist_labels', $profile->checklist_labels ?? []);
+    $minCondition = old('min_condition', $profile->min_condition?->value);
+    $currentCondition = old('current_condition', $profile->current_condition?->value);
 @endphp
 <x-modal
     :title="__('Verleihprofil bearbeiten')"
@@ -45,6 +48,24 @@
                        :label="__('rental.prepayment.profile_percent')"
                        :hint="__('rental.prepayment.profile_percent_hint')"
                        :value="old('prepayment_percent', $profile->prepayment_percent)" />
+        {{-- MVP-1604: Heimatstandort und Mindestzustand; unter dem Mindestzustand ist das Gerät nicht vergebbar. --}}
+        <x-input-field name="home_site_label" id="profile-edit-home-site" maxlength="255"
+                       :label="__('rental.profile.home_site')"
+                       :value="old('home_site_label', $profile->home_site_label)" />
+        <x-select-field name="min_condition" id="profile-edit-min-condition" :label="__('rental.profile.min_condition')"
+                        :hint="__('rental.profile.min_condition_hint')">
+            <option value="">{{ __('rental.profile.no_minimum') }}</option>
+            @foreach (\App\Enums\Rental\RentalCondition::cases() as $condition)
+                <option value="{{ $condition->value }}" @selected($minCondition === $condition->value)>{{ $condition->label() }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="current_condition" id="profile-edit-current-condition" :label="__('rental.profile.current_condition')"
+                        :hint="__('rental.profile.current_condition_hint')">
+            <option value="">{{ __('rental.profile.condition_unknown') }}</option>
+            @foreach (\App\Enums\Rental\RentalCondition::cases() as $condition)
+                <option value="{{ $condition->value }}" @selected($currentCondition === $condition->value)>{{ $condition->label() }}</option>
+            @endforeach
+        </x-select-field>
     </div>
 
     <div class="grid gap-1">
@@ -61,6 +82,9 @@
 
     <x-textarea-field name="accessories" id="profile-edit-accessories" rows="3"
                       :label="__('Zubehör (eine Position je Zeile)')">{{ is_array($accessories) ? implode("\n", $accessories) : $accessories }}</x-textarea-field>
+    <x-textarea-field name="checklist_labels" id="profile-edit-checklist" rows="3"
+                      :label="__('rental.profile.checklist')"
+                      :hint="__('rental.profile.checklist_hint')">{{ is_array($checklistLabels) ? implode("\n", $checklistLabels) : $checklistLabels }}</x-textarea-field>
     <x-textarea-field name="notes" id="profile-edit-notes" rows="3"
                       :label="__('Notizen')">{{ old('notes', $profile->notes) }}</x-textarea-field>
 </x-modal>

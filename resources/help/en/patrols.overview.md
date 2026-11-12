@@ -1,7 +1,7 @@
 ---
 title: "Guard patrols"
 topic: patrols.overview
-version: 1
+version: 2
 keywords:
     - guard tour
     - security patrol
@@ -57,3 +57,22 @@ the existing system, no separate channel.
 Target times are **evidence, not a performance-pressure metric**: there is
 deliberately no position data on the scan and no person-based long-term
 evaluation.
+
+## Maintaining routes and checkpoints
+
+**Edit** changes the name, the site and the **responsible person** of the
+route. A route can be **deactivated** — a running patrol may finish, new ones
+cannot be started. Checkpoints can be edited (location, target, tolerance;
+recorded scans keep their rating) and **deactivated**: from then on they are no
+longer expected and can no longer be scanned. Earlier patrols stay unchanged:
+a run that started before the deactivation still expects the checkpoint.
+
+## Escalation
+
+The open item is created **immediately on the deviation** — with the first scan
+outside the window or as soon as a due checkpoint has been skipped — and goes
+to the person responsible for the route, or without one to the team lead of the
+person doing the patrol. There is one open item per run; it is updated until
+the end. If a patrol is still running after the planned duration plus the
+tolerance of the last checkpoint, the deadline run reports it once as **not
+finished**; the control centre can then abort it with a reason.

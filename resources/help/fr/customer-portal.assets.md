@@ -1,7 +1,7 @@
 ---
 title: "Objets"
 topic: customer-portal.assets
-version: 3
+version: 5
 keywords:
     - appareils
     - équipements
@@ -43,15 +43,25 @@ En haut figurent le nom et le numéro de série de l'objet, suivis de trois
 sections :
 
 - **Rendez-vous de contrôle & maintenance** – les plans de contrôle et de
-  maintenance enregistrés avec **Désignation** et **Prochaine échéance**, la
-  prochaine échéance en premier. Sans plan, la section affiche **Aucun
-  rendez-vous enregistré.**
+  maintenance en cours avec **Désignation** et **Prochaine échéance**, la
+  prochaine échéance en premier. **Obligation contractuelle** signale un
+  rendez-vous prescrit par votre contrat. Les plans en pause n'apparaissent
+  pas, car aucun rendez-vous n'est prévu pour eux. Sans plan en cours, la
+  section affiche **Aucun rendez-vous enregistré.**
 - **Maintenances terminées** – les maintenances effectuées avec leur
   désignation et leur date.
 - **Protocoles** – les protocoles signés de l'objet que votre prestataire a
   publiés pour vous, avec titre, statut et date, le plus récent en premier,
   chacun avec **Télécharger le PDF**. En l'absence de tels protocoles, la
   section indique **Aucun protocole approuvé.**
+
+## Réceptionner des protocoles
+
+Si un protocole attend votre réception, la section **À réceptionner** apparaît au-dessus de la liste **Protocoles**. **Consulter et signer** ouvre le protocole avec tous ses points. Pour le réceptionner, saisissez votre nom, signez dans le cadre de signature avec le doigt, un stylet ou la souris, confirmez l'exactitude des informations et cliquez sur **Signer**. La signature ne peut pas être retirée.
+
+Si vous avez des questions ou des objections, clarifiez-les avec votre prestataire avant de signer – via les questions, si elles sont libérées pour vous. Après votre signature, votre prestataire clôture le protocole ; il est ensuite disponible au téléchargement sous **Protocoles**.
+
+Si vous n'êtes pas d'accord avec le protocole, utilisez le refus situé en dessous : indiquez un motif et, au besoin, les défauts constatés. Votre prestataire est notifié et révise le protocole ; il réapparaît sous **À réceptionner** dès qu'il est soumis à nouveau.
 
 ## Télécharger les protocoles
 

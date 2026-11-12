@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Procedure\Fields;
 
+use App\Enums\Fields\FieldType;
 use App\Models\Procedure\ProcedureStepDef;
 use App\Services\Fields\FieldDefinition;
 
@@ -36,6 +37,11 @@ class ProcedureStepFields {
             if (is_scalar($option) && trim((string) $option) !== '') {
                 $options[] = trim((string) $option);
             }
+        }
+
+        // Auswahl ohne hinterlegte Optionen (viele Profilvorlagen): Freitext statt leerer Liste.
+        if ($type === FieldType::Choice && $options === []) {
+            $type = FieldType::Text;
         }
 
         return new FieldDefinition(

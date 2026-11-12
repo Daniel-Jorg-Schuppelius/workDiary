@@ -1,7 +1,7 @@
 ---
 title: "Relance des devis"
 topic: quotes.follow-ups
-version: 1
+version: 2
 keywords:
     - relancer un devis
     - suivi des devis
@@ -28,6 +28,11 @@ un devis en retard passerait inaperçu.
 (jours ouvrés après l’envoi, configurable sous *Paramètres → Devis*). Une
 date déjà fixée n’est jamais écrasée. La date peut être reportée à tout
 moment, par exemple si le client demande un délai de réflexion.
+
+**Responsable :** Vous choisissez qui relance dans la boîte de dialogue
+« Nouvelle offre » et lors de la fixation de la date de relance. Sans choix, la
+personne qui a créé le devis relance. Le rappel est adressé à la personne
+responsable, et « Les miens seulement » affiche ses devis.
 
 **Relancer :** L’enregistrement du contact crée une note de communication
 dans le dossier client — c’est là qu’on la cherchera plus tard, et non dans

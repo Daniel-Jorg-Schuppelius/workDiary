@@ -171,7 +171,8 @@ class EntryTypeAnalysisReportController extends Controller {
      *   revenue:float,
      *   cost:float,
      *   contribution:float,
-     *   contributionPerEntry:float
+     *   contributionPerEntry:float,
+     *   topCauses:list<array{classificationId:int, label:string, count:int}>
      * }>             $rows
      * @param  array<string, mixed>  $filters
      */
@@ -198,6 +199,7 @@ class EntryTypeAnalysisReportController extends Controller {
             (string) __('reporting.csv.cost_eur'),
             (string) __('reporting.csv.contribution_eur'),
             (string) __('reporting.csv.contribution_per_order_eur'),
+            (string) __('reporting.csv.top_causes'),
         ];
 
         foreach ($rows as $row) {
@@ -220,6 +222,7 @@ class EntryTypeAnalysisReportController extends Controller {
                 NumberHelper::toUSFormat((float) $row['cost'], 2),
                 NumberHelper::toUSFormat((float) $row['contribution'], 2),
                 NumberHelper::toUSFormat((float) $row['contributionPerEntry'], 2),
+                implode('; ', array_map(static fn (array $cause): string => $cause['label'] . ' (' . $cause['count'] . ')', $row['topCauses'])),
             ];
         }
 

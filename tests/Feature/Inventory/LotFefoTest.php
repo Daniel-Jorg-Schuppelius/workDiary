@@ -87,9 +87,9 @@ final class LotFefoTest extends TestCase {
         $issue = $this->fefo->issue($this->variant, $this->warehouse, '4', lot: $late);
 
         $this->assertCount(1, $issue);
-        $this->assertSame([$late->id, '-4.0000', '8.0000', '2.0000'], [$issue->first()->stock_lot_id, $issue->first()->qty_base, $issue->costTotal(), $issue->costUnit()]);
+        $this->assertSame([$late->id, '-4.0000', '8.0000'], [$issue->first()->stock_lot_id, $issue->first()->qty_base, $issue->costTotal()]);
         $this->assertSame(['6.0000', '10.0000'], [$this->layerQty($late), $this->layerQty($soon)]);
-        $this->assertSame(['6.0000', '10.0000'], [$this->stock()->balanceOf($late), $this->stock()->balanceOf($soon)]);
+        $this->assertSame(['6.0000', '10.0000'], [$this->stock()->balancesOf([$late])[$late->id], $this->stock()->balancesOf([$soon])[$soon->id]]);
     }
 
     /** Über zwei Chargen: eine Bewegung je Charge, Kosten je Teil aus ihrer Charge, Summe für den Abgang. */
@@ -106,7 +106,7 @@ final class LotFefoTest extends TestCase {
             array_map(fn ($m): array => [$m->stock_lot_id, $m->qty_base, $m->cost_total?->getAmount()], $issue->movements),
         );
         $this->assertSame(['15.0000', '40.0000'], [$issue->qty(), $issue->costTotal()]);
-        $this->assertSame(['0.0000', '5.0000'], [$this->stock()->balanceOf($soon), $this->stock()->balanceOf($late)]);
+        $this->assertSame(['0.0000', '5.0000'], [$this->stock()->balancesOf([$soon])[$soon->id], $this->stock()->balancesOf([$late])[$late->id]]);
         $this->assertSame(['0.0000', '5.0000'], [$this->layerQty($soon), $this->layerQty($late)]);
     }
 
@@ -121,7 +121,7 @@ final class LotFefoTest extends TestCase {
 
         $this->assertSame([null, '14.0000'], [$issue->first()->stock_lot_id, $issue->costTotal()]);
         $this->assertSame('5.0000', $this->layerQty($held));
-        $this->assertSame('5.0000', $this->stock()->balanceOf($held));
+        $this->assertSame('5.0000', $this->stock()->balancesOf([$held])[$held->id]);
     }
 
     public function test_expiring_until_reports_only_due_layers(): void {
@@ -142,12 +142,12 @@ final class LotFefoTest extends TestCase {
         $movement = $this->lots->receiveIntoLot($this->variant, $this->warehouse, '8', '2', $lot);
 
         $this->assertSame($lot->id, $movement->stock_lot_id);
-        $this->assertSame('8.0000', $this->stock()->balanceOf($lot));
+        $this->assertSame('8.0000', $this->stock()->balancesOf([$lot])[$lot->id]);
 
         $issue = $this->fefo->issue($this->variant, $this->warehouse, '3');
         $this->assertSame($lot->id, $issue->first()->stock_lot_id);
-        $this->assertSame('5.0000', $this->stock()->balanceOf($lot));
-        $this->assertSame('5.0000', $this->stock()->balanceOf($lot, $this->warehouse));
+        $this->assertSame('5.0000', $this->stock()->balancesOf([$lot])[$lot->id]);
+        $this->assertSame('5.0000', $this->stock()->balancesOf([$lot], $this->warehouse)[$lot->id]);
     }
 
     public function test_manager_resolves_fefo(): void {

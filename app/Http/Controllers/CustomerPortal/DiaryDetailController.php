@@ -71,7 +71,7 @@ class DiaryDetailController extends Controller {
      * Kundensichtbare Inhalte des Auftrags — einzige Datenquelle für
      * Portal-Detail UND PDF (identischer Sichtbarkeitsschnitt).
      *
-     * @return array{photos: \Illuminate\Support\Collection<int, Attachment>, materials: \Illuminate\Support\Collection<int, MaterialUsage>, protocols: \Illuminate\Support\Collection<int, \App\Models\Protocol\Protocol>}
+     * @return array{photos: \Illuminate\Support\Collection<int, Attachment>, materials: \Illuminate\Support\Collection<int, MaterialUsage>, protocols: \Illuminate\Support\Collection<int, \App\Models\Protocol\Protocol>, pendingProtocols: \Illuminate\Support\Collection<int, \App\Models\Protocol\Protocol>}
      */
     private function customerViewData(DiaryEntry $diary): array {
         $photos = $diary->attachments()
@@ -88,6 +88,8 @@ class DiaryDetailController extends Controller {
             ->get(['id', 'timesheet_id', 'description', 'quantity', 'unit', 'created_at']);
 
         $protocols = $diary->protocols()->releasedToCustomer()->get();
+        // Zur Abnahme eingereicht und noch ohne Unterschrift des Kunden (MVP-1572).
+        $pendingProtocols = $diary->protocols()->awaitingCustomerSignature()->get();
 
         // Vollaudit 2026-07 (H9): freigegebene Kommunikationsnotizen
         // (visibility=customer) erreichen jetzt das Portal — der Freigabe-
@@ -101,6 +103,7 @@ class DiaryDetailController extends Controller {
             'photos' => $photos,
             'materials' => $materials,
             'protocols' => $protocols,
+            'pendingProtocols' => $pendingProtocols,
             'notes' => $notes,
         ];
     }

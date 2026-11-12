@@ -27,6 +27,10 @@
                     <p><span class="font-semibold">{{ __('Version') }}:</span> {{ $agreement->version }}</p>
                     <p><span class="font-semibold">{{ __('Gültigkeit') }}:</span> {{ $agreement->valid_from?->fdate() ?? '—' }} – {{ $agreement->valid_until?->fdate() ?? '—' }}</p>
                     <p><span class="font-semibold">{{ __('Datenkategorien') }}:</span> {{ $agreement->data_categories ?? '—' }}</p>
+                    <p><span class="font-semibold">{{ __('TOM-Prüfung') }}:</span>
+                        <x-status-badge :tone="$agreement->tom_checked ? 'success' : 'warning'" size="sm">{{ $agreement->tom_checked ? __('geprüft') : __('offen') }}</x-status-badge>
+                    </p>
+                    <p><span class="font-semibold">{{ __('Nächster Review') }}:</span> {{ $agreement->review_due_at?->fdate() ?? '—' }}</p>
                     @if ($agreement->document_path)
                         <p><a class="link" href="{{ route('dataprotection.agreements.document', $agreement) }}">{{ __('Vertragsdokument') }}: {{ $agreement->document_name }}</a></p>
                     @endif

@@ -46,6 +46,18 @@ enum LexofficeHandoverStatus: string implements HasLabel {
         };
     }
 
+    /**
+     * Stände des manuellen Übergabewegs. „Übertragen“, „Prüfung nötig“ und
+     * „fehlgeschlagen“ setzt erst die automatische Übergabe (MVP-834, blockiert
+     * bis zum Herstellernachweis, Feature 158) — bis dahin bietet sie kein
+     * Filter an.
+     *
+     * @return list<self>
+     */
+    public static function manualCases(): array {
+        return [self::Pending, self::Exported, self::Confirmed];
+    }
+
     /** Übergabe gilt als erledigt — kein weiterer Export nötig. */
     public function isSettled(): bool {
         return in_array($this, [self::Confirmed, self::Transferred], true);

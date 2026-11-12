@@ -1,7 +1,7 @@
 ---
 title: "Pricing & margin rules"
 topic: pricing.margin-rules
-version: 1
+version: 2
 keywords:
     - markup
     - price calculation
@@ -57,3 +57,5 @@ Completed transactions and historical prices remain untouched by rule
 changes — a changed rule only affects the next price adoption. Reading
 requires inventory view permissions; managing rules and requests
 requires inventory configuration permissions.
+
+The costing alert after a purchase price change also checks the minimum margin against open quotes and orders that are not cancelled and contain the article: the document price of the line is measured, not the master price. The alert states the document, the line, the document price and the resulting margin. The documents themselves keep their price.

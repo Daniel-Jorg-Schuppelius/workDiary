@@ -60,6 +60,13 @@ return [
         'no_deadline_effect' => 'Le délai de traitement continue de courir à compter de la réception de votre demande ; la confirmation ne le reporte pas.',
     ],
 
+    'extension_mail' => [
+        'subject' => 'Prolongation du délai pour votre demande :nr',
+        'headline' => 'Le traitement de votre demande prend plus de temps',
+        'intro' => 'Pour votre demande relative à la protection des données portant la référence :nr, nous prolongeons le délai de réponse conformément à l\'article 12, paragraphe 3, du RGPD. Vous recevrez notre réponse au plus tard le :date.',
+        'reason' => 'Motif de la prolongation :',
+        'rights' => 'Vous avez le droit d\'introduire une réclamation auprès d\'une autorité de contrôle de la protection des données.',
+    ],
     'mail' => [
         'subject' => 'Accusé de réception de votre demande de protection des données :nr',
         'headline' => 'Votre demande de protection des données a été reçue',
@@ -86,6 +93,21 @@ return [
         'email_confirmed' => 'confirmée le :date',
         'email_unconfirmed' => 'non confirmée',
         'identity_required' => 'L’identité doit être vérifiée et confirmée avant toute communication (entrée par le portail).',
+        'status_heading' => 'État du traitement',
+        'status_invalid' => 'Le passage de « :from » à « :to » n\'est pas possible.',
+        'status_action' => [
+            'identity_check' => 'Demander un justificatif d\'identité',
+            'awaiting_info' => 'Question posée',
+            'info_received' => 'Réponse reçue',
+            'withdrawn' => 'Retirée par la personne',
+            'withdrawn_confirm' => 'Clôturer la demande comme retirée ? Le délai prend fin.',
+        ],
+        'status_flash' => [
+            'identity_check' => 'Vérification d\'identité en cours.',
+            'in_progress' => 'Traitement repris.',
+            'awaiting_info' => 'Question notée — le délai continue de courir.',
+            'withdrawn' => 'Demande clôturée comme retirée.',
+        ],
     ],
 
     'admin' => [
@@ -103,7 +125,7 @@ return [
         'allow_attachments' => 'Autoriser les pièces jointes',
         'presentation' => 'Présentation',
         'intro_text' => 'Texte d’introduction (facultatif)',
-        'default_locale' => 'Langue par défaut (facultatif, p. ex. fr)',
+        'default_locale' => 'Langue par défaut du portail',
         'saved' => 'Portail des personnes concernées enregistré.',
         'rotated' => 'Le lien du portail a été renouvelé. Les liens déjà publiés sont désormais invalides.',
     ],

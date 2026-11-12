@@ -1,7 +1,7 @@
 ---
 title: "Órdenes de impresión (imprenta & copistería)"
 topic: print.orders
-version: 1
+version: 2
 keywords:
     - reprografía
     - preflight
@@ -47,3 +47,5 @@ envío usa la logística existente y la venta en mostrador se mantiene con
 datos mínimos. Al vencer la retención solo se elimina el archivo del
 cliente — orden, instantánea y suma de verificación permanecen como prueba
 comercial.
+
+**Margen de seguridad y tintas planas:** en la aprobación de impresión registra el margen de seguridad en milímetros y las tintas planas. Ambos aparecen después en el estado de producción del pedido.

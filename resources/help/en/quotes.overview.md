@@ -1,7 +1,7 @@
 ---
 title: "Quotes"
 topic: quotes.overview
-version: 7
+version: 8
 keywords:
     - create quote
     - estimate
@@ -126,3 +126,7 @@ manufacturing orders).
 ## Viewed and signature
 
 When the customer opens the quote via the link or in the customer portal, the quote header shows **“Viewed by the customer on …”**; the first opening of a sent quote counts. On acceptance, the customer can optionally enter their **name** and **sign**. The signature is stored as an image on the quote and recorded with name and time in the frozen acceptance record; accepting without a signature remains possible.
+
+**Issuer and contact person** are fixed when the quote is sent or the order
+confirmation is confirmed — like the invoice when it is issued. Later changes to
+company, tax or contact data do not change the document that was sent.

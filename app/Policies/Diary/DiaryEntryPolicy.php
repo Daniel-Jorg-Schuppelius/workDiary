@@ -69,6 +69,11 @@ class DiaryEntryPolicy {
         return $this->canAct($user, $entry, Permission::OrderAccept);
     }
 
+    /** Annahme zurückgeben: dasselbe Recht wie das Annehmen. */
+    public function reject(User $user, DiaryEntry $entry): bool {
+        return $this->canAct($user, $entry, Permission::OrderAccept);
+    }
+
     public function start(User $user, DiaryEntry $entry): bool {
         return $this->canAct($user, $entry, Permission::OrderWork);
     }

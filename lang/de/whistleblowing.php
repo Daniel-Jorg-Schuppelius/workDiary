@@ -62,6 +62,5 @@ return [
         'pending' => 'In Prüfung',
         'clean' => 'Freigegeben',
         'rejected' => 'Abgewiesen',
-        'failed' => 'Prüfung fehlgeschlagen',
     ],
 ];

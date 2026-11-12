@@ -49,7 +49,7 @@ final class ProjectSearchDomain implements SearchDomain {
         }
         $query = Project::query()
             ->where('organization_id', $organizationId)
-            ->where(fn ($q) => $q->whereLikeEscaped('name', $term))
+            ->where(fn ($q) => $q->whereLikeEscaped('name', $term)->orWhereCustomFieldText($term))
             ->when($filters->customer !== null, fn ($q) => $q->where('customer_id', $filters->customer))
             ->with('customer:id,name');
         $filters->range($query, 'created_at');

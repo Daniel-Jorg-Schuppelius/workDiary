@@ -91,6 +91,18 @@
                     <input type="number" name="max_users" min="1" value="{{ old('max_users') }}"
                         class="input input-sm input-bordered w-full @error('max_users') input-error @enderror">
                 </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-muted" for="issue-max-orgs">{{ __('Max. Organisationen (optional)') }}</label>
+                    <input id="issue-max-orgs" type="number" name="max_orgs" min="1" value="{{ old('max_orgs') }}"
+                        class="input input-sm input-bordered w-full @error('max_orgs') input-error @enderror">
+                    @error('max_orgs')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-muted" for="issue-storage-quota">{{ __('Speicherkontingent je Organisation in GB (optional)') }}</label>
+                    <input id="issue-storage-quota" type="number" name="storage_quota_gb" min="1" value="{{ old('storage_quota_gb') }}"
+                        class="input input-sm input-bordered w-full @error('storage_quota_gb') input-error @enderror">
+                    @error('storage_quota_gb')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                </div>
             </div>
 
             <div class="rounded-box border border-base-300 bg-base-200/50 p-3 space-y-2">

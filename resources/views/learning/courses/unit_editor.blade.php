@@ -101,7 +101,8 @@
                         <x-input-field name="alt" :label="__('learning.field.block_alt')" maxlength="255" :value="old('alt')"
                                        :hint="__('learning.help.block_alt')" />
                         <x-input-field name="require_percent" type="number" min="1" max="100"
-                                       :label="__('learning.field.block_require_percent')" :value="old('require_percent')" />
+                                       :label="__('learning.field.block_require_percent')" :value="old('require_percent')"
+                                       :hint="__('learning.help.block_require_percent')" />
                         <x-checkbox-field name="autoplay" :label="__('learning.field.block_autoplay')" :hint="__('learning.help.block_autoplay')" :checked="(bool) old('autoplay')" />
                         <x-checkbox-field name="remember_position" :label="__('learning.field.block_remember_position')" :hint="__('learning.help.block_remember_position')" :checked="(bool) old('remember_position')" />
                         {{-- MVP-806: Felder der Blockarten Code, Akkordeon, Tabelle, Frage, Prozedur, Galerie. --}}
@@ -128,9 +129,14 @@
                                    data-chunk-upload="{{ route('learning.courses.units.uploads.start', [$course, $unit]) }}"
                                    data-chunk-threshold="{{ min(\App\Services\Attachments\FileAttacher::effectiveMaxKb() * 1024, 4 * 1024 * 1024) }}"
                                    data-chunk-target="media_upload" data-chunk-status="block-media-status"
+                                   data-storage-estimate="block-media-estimate"
+                                   data-storage-estimate-factor="{{ app(\App\Services\Media\VideoTranscodingService::class)->estimatedBytes(1_000_000_000, array_keys(\App\Services\Media\VideoTranscodingService::VARIANTS)) / 1_000_000_000 }}"
                                    class="file-input file-input-bordered file-input-sm w-full">
                             <input type="hidden" name="media_upload" value="">
                             <p class="mt-1 text-xs text-muted">{{ __('learning.help.block_media', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
+                            {{-- Feature 150: der Gesamtbedarf muss vor dem Upload sichtbar sein (MVP-1600). --}}
+                            <p id="block-media-estimate" class="mt-1 text-xs text-warning" role="status" aria-live="polite" hidden
+                               data-template="{{ __('learning.help.block_media_estimate', ['total' => '__T__', 'original' => '__O__']) }}"></p>
                             <p id="block-media-status" class="mt-1 text-xs" role="status" aria-live="polite"></p>
                         </div>
                         <div class="sm:col-span-2">
@@ -183,6 +189,27 @@
                         <x-input-field name="min_seconds" type="number" min="0" max="86400" :label="__('learning.field.min_seconds')"
                                        :hint="__('learning.help.min_seconds')"
                                        :value="old('min_seconds', $unit->minSeconds() ?: null)" />
+                        {{-- Verweis je Art (MVP-1600). --}}
+                        @if ($unit->kind === \App\Enums\Learning\LearningUnitKind::Procedure)
+                            <x-select-field name="procedure_template" :label="__('learning.field.unit_procedure')" :hint="__('learning.help.unit_procedure_link')" required>
+                                <option value="">–</option>
+                                @foreach ($procedureTemplates as $template)
+                                    <option value="{{ $template->sqid }}" @selected(old('procedure_template', $unit->procedureTemplateId() === $template->id ? $template->sqid : null) === $template->sqid)>{{ $template->name }} ({{ $template->code }})</option>
+                                @endforeach
+                            </x-select-field>
+                        @elseif ($unit->kind === \App\Enums\Learning\LearningUnitKind::Survey)
+                            <x-select-field name="survey" :label="__('learning.field.unit_survey')" :hint="__('learning.help.unit_survey_link')" required>
+                                <option value="">–</option>
+                                @foreach ($surveys as $survey)
+                                    <option value="{{ $survey->sqid }}" @selected(old('survey', $unit->surveyId() === $survey->id ? $survey->sqid : null) === $survey->sqid)>{{ $survey->title }}</option>
+                                @endforeach
+                            </x-select-field>
+                        @elseif ($unit->kind === \App\Enums\Learning\LearningUnitKind::External)
+                            <x-input-field name="external_url" type="url" :label="__('learning.field.unit_external_url')" maxlength="2000" required
+                                           :value="old('external_url', $unit->externalUrl())" />
+                            <x-checkbox-field name="proof_required" :label="__('learning.field.unit_proof_required')" :hint="__('learning.help.unit_proof_required')"
+                                              :checked="(bool) old('proof_required', $unit->requiresProof())" />
+                        @endif
                         <x-checkbox-field name="is_mandatory" :label="__('learning.field.is_mandatory')" :checked="(bool) old('is_mandatory', $unit->is_mandatory)" />
                         <x-checkbox-field name="is_preview" :label="__('learning.field.is_preview')" :hint="__('learning.help.is_preview')" :checked="(bool) old('is_preview', $unit->is_preview)" />
                     </x-form-group>

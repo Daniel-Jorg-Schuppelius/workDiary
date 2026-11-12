@@ -52,4 +52,17 @@ class OrganizationFactory extends Factory {
     public function inactive(): static {
         return $this->state(['is_active' => false]);
     }
+
+    /** Verkäuferdaten für Firmen- und Steuerangaben der Belege (§ 14 UStG); der Design-Preflight verlangt sie (MVP-1609). */
+    public function withIssuerIdentity(): static {
+        return $this->state(fn (array $attributes): array => ['settings' => array_replace_recursive((array) ($attributes['settings'] ?? []), [
+            'einvoice' => [
+                'street' => 'Musterstraße 1',
+                'zip' => '12345',
+                'city' => 'Musterstadt',
+                'country' => 'DE',
+                'vat_id' => 'DE123456789',
+            ],
+        ])]);
+    }
 }

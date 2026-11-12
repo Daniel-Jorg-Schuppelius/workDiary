@@ -118,6 +118,18 @@ return [
         'type' => 'Tipo articolo',
         'status' => 'Stato',
         'base_unit' => 'Unità base',
+        'tax_class' => 'Classe d’imposta',
+        'numbers_locked_hint' => 'Numero articolo, SKU delle varianti e GTIN sono gestiti da :program. Arrivano con la sincronizzazione e non possono essere modificati qui.',
+        'valuation_method' => 'Metodo di valutazione',
+        'valuation_method_default' => 'Come l’organizzazione (:method)',
+        'valuation_method_hint' => 'Un metodo proprio vale solo per questo articolo. Il ritorno alla media mobile è possibile solo quando non resta giacenza negli strati FIFO/FEFO.',
+        'serial_prefix' => 'Prefisso dei numeri di serie',
+        'serial_prefix_hint' => 'Con un prefisso l’articolo conta numeri di serie propri (prefisso-00001). Vuoto = numerazione dell’organizzazione.',
+        'serial_padding' => 'Cifre del numero progressivo',
+        'serial_check_digit' => 'Aggiungere cifra di controllo',
+        'default_procedure' => 'Ciclo di lavoro standard',
+        'default_procedure_hint' => 'Versione di procedura pubblicata con cui gli ordini e la pianificazione di produzione realizzano questo articolo, finché un ordine non ne sceglie una propria.',
+        'default_procedure_none' => 'Nessun ciclo di lavoro standard',
         'category' => 'Gruppo merceologico',
         'category_hint' => 'Per i report e l\'esportazione DATANORM (file WRG).',
         'subcategory' => 'Sottogruppo merceologico',
@@ -150,10 +162,18 @@ return [
         'net_weight_kg_hint' => 'Peso senza imballaggio; i documenti doganali lo moltiplicano per la quantità.',
     ],
 
+    'tax_class' => [
+        'standard' => 'Aliquota ordinaria',
+        'reduced' => 'Aliquota ridotta',
+        'increased' => 'Aliquota maggiorata',
+    ],
+
     'group' => [
+        'inventory' => 'Magazzino e valutazione',
         'pricing' => 'Prezzi',
         'flags' => 'Proprietà',
         'customs' => 'Dogana ed esportazione',
+        'manufacturing' => 'Produzione',
     ],
 
     'flag' => [

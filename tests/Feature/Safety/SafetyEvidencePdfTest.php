@@ -15,7 +15,7 @@ namespace Tests\Feature\Safety;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Enums\Safety\HazardAssessmentStatus;
 use App\Models\Platform\User;
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, RenderProfileService};
 use App\Services\Safety\{HazardAssessmentService, SafetyEvidencePdfRenderer, SafetyInstructionService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -46,7 +46,8 @@ final class SafetyEvidencePdfTest extends TestCase {
         $service->signDrawn($participant, $signer, self::PNG, '10.0.0.5');
 
         $captured = null;
-        $design = Mockery::mock(DocumentDesignRenderer::class);
+        // Teilattrappe: Gestaltung und Ausstellerkontext laufen echt (MVP-1624), nur das PDF entfällt.
+        $design = Mockery::mock(DocumentDesignRenderer::class, [app(RenderProfileService::class)])->makePartial();
         $design->shouldReceive('renderPdf')->once()
             ->withArgs(function (RenderDocumentKind $kind, string $view, array $data) use (&$captured): bool {
                 $captured = $data;

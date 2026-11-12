@@ -123,6 +123,8 @@ class DomainSyncService {
         $pageSize = $this->resolver->settings((int) $connection->organization_id)->listPageSize;
         $first = 0;
         $total = 0;
+        // Offene Befehle halten Konflikt, unklaren Ausgang und laufende Änderung sichtbar (MVP-1620).
+        $open = DomainProjection::commandSyncStatuses((int) $connection->organization_id);
 
         do {
             // wide=1 ist PFLICHT: ohne Verbose-Modus liefert die echte API nur
@@ -141,7 +143,7 @@ class DomainSyncService {
                 if ($domain === null || $domain === '') {
                     continue;
                 }
-                $this->upsertFromRow($connection, $domain, $row);
+                $this->upsertFromRow($connection, $domain, $row, $open[mb_strtolower(trim($domain))] ?? DomainSyncStatus::Current);
                 $total++;
             }
 
@@ -209,7 +211,7 @@ class DomainSyncService {
     }
 
     /** @param  array<string, string>  $row */
-    private function upsertFromRow(DomainProviderConnection $connection, string $domain, array $row): void {
+    private function upsertFromRow(DomainProviderConnection $connection, string $domain, array $row, DomainSyncStatus $syncStatus): void {
         $reseller = null;
         $user = $this->field($row, ['user', 'owner']);
         if ($user !== null && $user !== '') {
@@ -230,7 +232,7 @@ class DomainSyncService {
             // Live-Vertrag (domain:contract 2026-10-29): die Liste nennt keinen Registrar, aber die Registry (DOMAINREPOSITORY).
             'registrar' => $this->field($row, ['registrar', 'domainregistrar', 'domainrepository']),
             'status' => $this->field($row, ['status', 'domainstatus']),
-            'sync_status' => DomainSyncStatus::Current->value,
+            'sync_status' => $syncStatus->value,
             'renewal_mode' => DomainRenewalMode::fromProvider($this->field($row, ['renewalmode', 'domainrenewalmode']))?->value,
             'expiration_at' => $this->date($this->field($row, ['expirationdate', 'expiration', 'registrationexpirationdate', 'domainregistrationexpirationdate'])),
             'raw_hash' => CryptoHelper::hash(JsonHelper::encode($row)),
@@ -277,7 +279,7 @@ class DomainSyncService {
         $projection->fill([
             'registrar' => $this->field($row, ['registrar']) ?? $projection->registrar,
             'status' => $this->field($row, ['status']) ?? $projection->status,
-            'sync_status' => DomainSyncStatus::Current->value,
+            'sync_status' => (DomainProjection::commandSyncStatuses((int) $projection->organization_id, (string) $projection->external_domain)[mb_strtolower(trim((string) $projection->external_domain))] ?? DomainSyncStatus::Current)->value,
             'renewal_mode' => $freshMode instanceof DomainRenewalMode ? $freshMode->value : $currentMode,
             'next_action' => $this->field($row, ['nextaction']),
             'transferlock' => $this->boolField($row, ['transferlock'], (bool) $projection->transferlock),

@@ -35,6 +35,7 @@
                         :badge="$event->status->label()" :badgeTone="$event->status->tone()"
                         back-route="safety-events.index" :back-label="__('safety.action.back')">
             <x-slot:actions>
+                <x-crisis-open-link from="safety_event" :source="$event->sqid" />
                 @if ($canManage)
                     <x-icon-btn icon="edit" tone="outline" size="sm"
                                 data-entry-modal-trigger

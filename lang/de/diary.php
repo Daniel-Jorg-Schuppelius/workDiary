@@ -44,4 +44,38 @@ return [
         'format' => 'Bitte geben Sie die geplante Dauer als Stunden:Minuten an, z. B. 1:30.',
         'range' => 'Die geplante Dauer muss zwischen 0:01 und 168:00 liegen.',
     ],
+    // Kennzahl Plan/Ist am Auftrag (MVP-1552).
+    'plan_actual' => [
+        'label' => 'Plan/Ist',
+        'no_plan' => 'ohne Plan',
+        'own_only' => 'nur eigene Zeiten',
+    ],
+    // Auftrags-Lebenszyklus (MVP-1596).
+    'lifecycle' => [
+        'action' => [
+            'reject' => 'Annahme zurückgeben',
+            'revert_invoiced' => 'Berechnung zurücknehmen',
+        ],
+        'reject' => [
+            'title' => 'Annahme zurückgeben',
+            'legend' => 'Rückgabe',
+            'hint' => 'Der Auftrag steht danach wieder auf „Geplant“ und kann von einer anderen Person angenommen werden. Die Begründung steht im Verlauf.',
+        ],
+        'handover' => [
+            'legend' => 'Abnahme',
+            'accepted_by' => 'Abgenommen von (Name beim Kunden)',
+            'hint' => 'Das Protokoll trägt keine Kundenunterschrift. Bitte nennen Sie die Person, die beim Kunden abgenommen hat.',
+        ],
+        'accepted_final_by' => 'Abgenommen von :name am :date',
+        'invoiced_with' => 'Berechnet mit :reference',
+        'invoiced' => [
+            'transfer_reference' => 'Übergabe Nr. :id',
+        ],
+        'cancel' => [
+            'run_abort_reason' => 'Auftrag storniert: :reason',
+        ],
+        'error' => [
+            'stopwatch_running' => 'Der Auftrag lässt sich erst abschließen, wenn keine Stoppuhr mehr läuft. Noch aktiv: :names.',
+        ],
+    ],
 ];

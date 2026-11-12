@@ -257,6 +257,27 @@ class PrivacyIncidentTest extends TestCase {
         $this->assertSame(MeasureStatus::Done, $measure->fresh()->status);
     }
 
+    /** MVP-1620: erledigte Maßnahmen dämmen einen noch nicht gemeldeten Vorfall ein. */
+    public function test_incident_is_contained_once_all_measures_are_done(): void {
+        $org = Organization::factory()->create();
+        $actor = User::factory()->create(['organization_id' => $org->id]);
+        $svc = app(IncidentService::class);
+        $incident = $svc->open($org, IncidentType::Disclosure, 'Offenlegung');
+        $first = $svc->addMeasure($incident, 'Zugang sperren', null, null, $actor);
+        $second = $svc->addMeasure($incident, 'Passwörter tauschen', null, null, $actor);
+
+        $svc->completeMeasure($first, $actor);
+        $this->assertSame(IncidentStatus::Detected, $incident->fresh()?->status, 'Eine offene Maßnahme hält den Vorfall offen.');
+        $svc->completeMeasure($second, $actor);
+        $this->assertSame(IncidentStatus::Contained, $incident->fresh()?->status);
+        $this->assertTrue($incident->fresh()?->journal()->where('event', 'contained')->exists());
+
+        $reported = $svc->open($org, IncidentType::Disclosure, 'Gemeldet');
+        $svc->markReported($reported, true, false, $actor);
+        $svc->completeMeasure($svc->addMeasure($reported, 'Nachschulung', null, null, $actor), $actor);
+        $this->assertSame(IncidentStatus::Reported, $reported->fresh()?->status, 'Ein gemeldeter Vorfall fällt nicht zurück.');
+    }
+
     public function test_dpia_upsert_via_http(): void {
         $org = Organization::factory()->create();
         $officer = $this->officer($org);

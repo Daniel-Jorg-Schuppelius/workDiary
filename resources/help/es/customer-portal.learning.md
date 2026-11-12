@@ -101,3 +101,8 @@ proveedor.
 - Los exámenes no se incluyen en el portal, como tampoco las referencias a la
   base de conocimiento interna de su proveedor.
 - En el portal no puede darse de baja ni retirar una solicitud de reserva.
+- Si un vídeo lleva una parte obligatoria, la unidad solo puede completarse
+  cuando se haya visto esa parte; el estado aparece bajo el vídeo. Avanzar no
+  cuenta.
+- Las unidades que se completan mediante un procedimiento, un cuestionario o
+  una confirmación externa no pueden realizarse en el portal.

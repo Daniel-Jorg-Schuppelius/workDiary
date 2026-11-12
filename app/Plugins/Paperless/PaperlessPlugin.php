@@ -20,7 +20,7 @@ use App\Plugins\Contracts\{DocumentIntakeOrigins, DocumentIntakeSource, IntakeSo
 use App\Plugins\Paperless\Api\PaperlessClientFactory;
 use App\Plugins\Paperless\Services\PaperlessIntake;
 use App\Plugins\Support\{ApiHealthProbe, SelfHostedSettings};
-use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
+use App\Plugins\Support\Intake\{IntakeChangePage, IntakeItem};
 use App\Support\Ui\UiAction;
 use Illuminate\Database\Eloquent\Model;
 use Psr\Http\Message\StreamInterface;
@@ -32,7 +32,7 @@ use Psr\Http\Message\StreamInterface;
  * Dokumentablage, nur lesend. Basis-URL und Token stehen in den
  * Plugin-Einstellungen; die Verwaltung läuft über die Seite Cloud-Dokumenteingang.
  */
-class PaperlessPlugin extends AbstractPlugin implements DocumentIntakeOrigins, DocumentIntakeSource, IntakeSourceConnector, LinksExternalRecords {
+class PaperlessPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, DocumentIntakeOrigins, DocumentIntakeSource, IntakeSourceConnector, LinksExternalRecords {
     public const string ID = 'paperless';
 
     public const string SERVICE_PROVIDER = PaperlessServiceProvider::class;
@@ -57,10 +57,6 @@ class PaperlessPlugin extends AbstractPlugin implements DocumentIntakeOrigins, D
         return [PluginCapability::DocumentIntake];
     }
 
-    public function intakeAccount(CloudDocumentConnection $connection): IntakeAccount {
-        return app(PaperlessIntake::class)->account($connection);
-    }
-
     public function intakeContainers(CloudDocumentConnection $connection, ?string $search = null): array {
         return app(PaperlessIntake::class)->containers($connection, $search);
     }
@@ -77,8 +73,11 @@ class PaperlessPlugin extends AbstractPlugin implements DocumentIntakeOrigins, D
         app(PaperlessIntake::class)->recordOrigin($connection, $item, $imported);
     }
 
-    public function intakeConnectAction(): UiAction {
-        return new UiAction('add', (string) __('paperless::paperless.action.connect'), route('admin.cloud-intake.paperless.connect-form'), modal: true);
+    public function intakeConnectAction(?CloudDocumentConnection $connection = null): UiAction {
+        // Je Organisation eine Verbindung: das Formular frischt die bestehende auf.
+        return $connection !== null
+            ? new UiAction('sync', (string) __('cloud_intake.action.reconnect'), route('admin.cloud-intake.paperless.connect-form'), modal: true)
+            : new UiAction('add', (string) __('paperless::paperless.action.connect'), route('admin.cloud-intake.paperless.connect-form'), modal: true);
     }
 
     public function externalRecordUrl(ExternalReference $reference): ?string {
@@ -105,5 +104,10 @@ class PaperlessPlugin extends AbstractPlugin implements DocumentIntakeOrigins, D
         }
 
         return ApiHealthProbe::probe($this->name(), fn () => app(PaperlessClientFactory::class)->for((int) $organization->id)->probe());
+    }
+
+    /** Datenführerschaft (MVP-1592): Cloud-Dokumenteingang legt DMS-Dokumente an. */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Documents];
     }
 }

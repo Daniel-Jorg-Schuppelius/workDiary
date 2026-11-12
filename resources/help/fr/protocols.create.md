@@ -1,7 +1,7 @@
 ---
 title: "Créer un procès-verbal"
 topic: protocols.create
-version: 3
+version: 4
 keywords:
     - procès-verbal de réception
     - PV
@@ -48,6 +48,20 @@ reste rattachée à son dossier et se retrouve dans le dossier client.
 4. Joignez des **photos avant/après** au point concerné.
 5. Soumettez le protocole **pour vérification** ou clôturez-le avec
    **« Finaliser / signer »** ; les clients reçoivent le **lien de signature**.
+
+Dans la boîte de dialogue, vous attribuez aussi des **tags** ; ils figurent
+ensuite dans les données de base du protocole. Les fichiers qui concernent
+tout le protocole – un plan de situation, un bon de livraison – se téléversent
+sur la page de détail sous **Pièces jointes**. Avec **Réorganiser les
+points**, vous faites glisser les points dans l'ordre souhaité ; les
+sous-points restent dans leur groupe. Tags, pièces jointes et ordre ne se
+modifient que dans le brouillon ; chaque pièce jointe et chaque réorganisation
+figure dans l'**Historique**.
+
+Le lieu de prise de vue d'une photo n'est repris que si l'organisation l'a
+activé sous **Paramètres → Téléversements** (par défaut : désactivé). Les
+coordonnées sont visibles pour les personnes disposant du droit
+correspondant ; elles sont toujours supprimées du fichier image.
 
 ## Exemple pratique
 

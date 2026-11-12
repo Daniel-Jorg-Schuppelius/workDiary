@@ -60,6 +60,13 @@ return [
         'no_deadline_effect' => 'Die Bearbeitungsfrist läuft unverändert ab dem Eingang Ihrer Anfrage; die Bestätigung verschiebt sie nicht.',
     ],
 
+    'extension_mail' => [
+        'subject' => 'Fristverlängerung zu Ihrer Datenschutzanfrage :nr',
+        'headline' => 'Die Bearbeitung Ihrer Anfrage dauert länger',
+        'intro' => 'Für Ihre Datenschutzanfrage mit dem Aktenzeichen :nr verlängern wir die Bearbeitungsfrist nach Art. 12 Abs. 3 DSGVO. Sie erhalten unsere Antwort spätestens am :date.',
+        'reason' => 'Grund der Verlängerung:',
+        'rights' => 'Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren.',
+    ],
     'mail' => [
         'subject' => 'Eingangsbestätigung zu Ihrer Datenschutzanfrage :nr',
         'headline' => 'Ihre Datenschutzanfrage ist eingegangen',
@@ -86,6 +93,21 @@ return [
         'email_confirmed' => 'bestätigt am :date',
         'email_unconfirmed' => 'nicht bestätigt',
         'identity_required' => 'Vor der Auskunft muss die Identität geprüft und bestätigt werden (Portal-Eingang).',
+        'status_heading' => 'Bearbeitungsstand',
+        'status_invalid' => 'Der Wechsel von „:from“ zu „:to“ ist nicht möglich.',
+        'status_action' => [
+            'identity_check' => 'Identitätsnachweis anfordern',
+            'awaiting_info' => 'Rückfrage gestellt',
+            'info_received' => 'Antwort erhalten',
+            'withdrawn' => 'Von der Person zurückgezogen',
+            'withdrawn_confirm' => 'Anfrage als zurückgezogen schließen? Die Frist endet damit.',
+        ],
+        'status_flash' => [
+            'identity_check' => 'Identitätsprüfung läuft.',
+            'in_progress' => 'Bearbeitung fortgesetzt.',
+            'awaiting_info' => 'Rückfrage vermerkt — die Frist läuft weiter.',
+            'withdrawn' => 'Anfrage als zurückgezogen geschlossen.',
+        ],
     ],
 
     'admin' => [
@@ -103,7 +125,7 @@ return [
         'allow_attachments' => 'Anhänge erlauben',
         'presentation' => 'Darstellung',
         'intro_text' => 'Einleitungstext (optional)',
-        'default_locale' => 'Standardsprache (optional, z. B. de)',
+        'default_locale' => 'Standardsprache des Portals',
         'saved' => 'Betroffenenportal gespeichert.',
         'rotated' => 'Portal-Link wurde rotiert. Bereits veröffentlichte Links sind jetzt ungültig.',
     ],

@@ -108,6 +108,15 @@ final class AssetComplianceManifest extends Manifest {
         ];
     }
 
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Asset\AssetDecommissioned::class => [
+                \App\Listeners\AssetCompliance\CloseInspectionDutiesOfDecommissionedAsset::class,
+            ],
+        ];
+    }
+
     /** @return array<class-string, class-string> */
     public function bindings(): array {
         return [

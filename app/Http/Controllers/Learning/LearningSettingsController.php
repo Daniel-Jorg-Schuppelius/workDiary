@@ -17,9 +17,10 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\LearningCourseCategory;
 use App\Rules\MaxLineLength;
-use App\Services\Learning\{LearningConfigurationPdfRenderer, LearningCourseService, LearningQuestionEditorService};
+use App\Services\Learning\{LearningConfigurationPdfRenderer, LearningCourseService, LearningGradebookService, LearningQuestionEditorService};
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -43,6 +44,9 @@ class LearningSettingsController extends Controller {
             'embedHosts' => implode("\n", array_map('strval', (array) ($settings['embed_hosts'] ?? []))),
             // Kurskategorien (MVP-788): eine je Zeile, Reihenfolge = Position.
             'categories' => LearningCourseCategory::query()->orderBy('position')->orderBy('name')->pluck('name')->implode("\n"),
+            // Notenschema (MVP-1600): „Bezeichnung = Mindestprozent" je Zeile.
+            'gradeScale' => app(LearningGradebookService::class)->scaleText($this->currentOrganization()),
+            'gradeScaleTemplates' => array_keys(LearningGradebookService::SCALE_TEMPLATES),
         ]);
     }
 
@@ -56,7 +60,14 @@ class LearningSettingsController extends Controller {
             'streak_enabled' => ['nullable', 'boolean'],
             'embed_hosts' => ['nullable', 'string', 'max:2000'],
             'categories' => ['nullable', 'string', 'max:4000', new MaxLineLength(120)],
+            'grade_scale' => ['nullable', 'string', 'max:2000'],
+            'grade_scale_template' => ['nullable', Rule::in(array_keys(LearningGradebookService::SCALE_TEMPLATES))],
         ]);
+        // Eine gewählte Vorlage ersetzt die Liste; sonst gilt, was in der Liste steht.
+        $gradebook = app(LearningGradebookService::class);
+        $gradeScale = ! empty($data['grade_scale_template'])
+            ? $gradebook->scaleTemplate((string) $data['grade_scale_template'])
+            : $gradebook->parseScale((string) ($data['grade_scale'] ?? ''));
 
         $organization = $this->currentOrganization();
         $settings = (array) ($organization->settings ?? []);
@@ -70,6 +81,10 @@ class LearningSettingsController extends Controller {
             static fn (string $host): string => strtolower(trim($host)),
             LearningQuestionEditorService::linesOf((string) ($data['embed_hosts'] ?? '')),
         ))));
+        // Ohne Schema bleibt der Schlüssel weg — sonst zählte das erste Speichern danach als Änderung.
+        if ($gradeScale !== [] || array_key_exists('grade_scale', $before)) {
+            data_set($settings, 'learning.grade_scale', $gradeScale);
+        }
         // Konfigurationsversion (MVP-1271): jede Änderung zählt hoch und steht mit Vorher/Nachher im Audit-Log.
         $after = (array) $settings['learning'];
         unset($before['version'], $after['version']);

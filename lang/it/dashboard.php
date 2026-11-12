@@ -133,6 +133,17 @@ return [
         'open_times' => [
             'description' => 'Tempi fatturabili non ancora inseriti in una fattura.',
         ],
+        'finance_movements' => [
+            'label' => 'Movimenti finanziari',
+            'description' => 'Assegnazioni aperte e ultimi movimenti da estratti conto, Firefly III e conti negozio — si lavorano nell’elenco della fonte.',
+            'empty' => 'Nessuna fonte di movimenti finanziari configurata.',
+            'unassigned' => ':source: senza assegnazione',
+            'latest' => 'Ultimi :days giorni',
+            'none_latest' => 'Nessun movimento in questo periodo.',
+            'open' => 'aperto',
+            'no_counterparty' => 'Senza controparte',
+            'source' => ['bank' => 'Estratti conto'],
+        ],
         'open_items' => [
             'description' => 'Crediti e debiti aperti, inclusa la quota scaduta.',
             'feed_link' => 'Flusso documenti →',

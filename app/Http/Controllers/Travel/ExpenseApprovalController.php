@@ -113,6 +113,15 @@ class ExpenseApprovalController extends Controller {
             ->with('success', __('Spese abgelehnt.'));
     }
 
+    /** Erstattung mit Zahlungsreferenz (Überweisung, Kassenbeleg) — sie steht im Spesen-Export. */
+    public function reimburseForm(Expense $expense): View {
+        Gate::authorize('reimburse', $expense);
+
+        return view('expenses._reimburse_dialog', [
+            'expense' => $expense,
+        ]);
+    }
+
     public function markReimbursed(Request $request, Expense $expense): RedirectResponse {
         Gate::authorize('reimburse', $expense);
 

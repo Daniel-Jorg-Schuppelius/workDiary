@@ -37,7 +37,6 @@ class UploadProtocolItemPhotoRequest extends BaseFormRequest {
                 Rule::enum(ProtocolItemPhotoPhase::class),
             ],
             'caption' => ['nullable', 'string', 'max:180'],
-            'allow_geo' => ['nullable', 'boolean'],
         ];
     }
 }

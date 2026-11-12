@@ -10,104 +10,145 @@
 
 namespace App\Services\Procedure;
 
+use App\Models\Asset\Asset;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Procedure\{ProcedureTemplate, ProcedureTemplateVersion};
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\{Carbon, Collection};
 
 /**
- * Filtert veroeffentlichte Prozedurvorlagen anhand des
- * `applicability`-JSONs ihrer aktuellen Version gegen einen
- * Tagebucheintrag (MVP-025 §3.2 & §8.4 / ../WorkDiary-Architecture/konzepte/prozedurvorlagen.md).
+ * Filtert veröffentlichte Prozedurvorlagen anhand des `applicability`-JSONs
+ * ihrer aktuellen Version gegen einen Auftrag oder ein Asset
+ * (../WorkDiary-Architecture/konzepte/prozedurvorlagen.md §4, MVP-1571).
  *
- * Unterstuetzte Kriterien:
- *  - `diary_entry_type`: Liste von EntryType-Slugs (OR).
- *  - `customer_ids`: Liste von Kunden-Ids (OR).
- *  - `tags_any`: Liste von Tag-Namen; min. einer muss am Eintrag haengen.
+ * Kriterien (jedes gesetzte muss passen, innerhalb eines Kriteriums genügt ein Treffer):
+ *  - `diary_entry_type`: Auftragstyp-Slugs.
+ *  - `customer_ids`: Kunden.
+ *  - `tags_any`: Tags am Auftrag.
+ *  - `asset_categories`: Kategorie-Codes des Assets.
+ *  - `product_ids`: Produkt des Assets.
+ *  - `sla_contract_ids`: SLA-Vertrag des Assets.
  *
- * Fehlt ein Kriterium oder die gesamte `applicability`, gilt die
- * Vorlage als "universell anwendbar" und wird vorgeschlagen.
+ * Ohne Kriterien gilt die Vorlage am Auftrag als universell. Am Asset wird
+ * nur vorgeschlagen, was ein Asset-Kriterium nennt — sonst stünde jede
+ * universelle Vorlage an jeder Asset-Akte.
+ *
+ * @phpstan-type ApplicabilityContext array{diary_entry_type?: ?string, customer_id?: ?int, tags?: list<string>, asset_category?: ?string, product_id?: ?int, sla_contract_id?: ?int}
  */
 class ProcedureApplicabilityResolver {
+    /** Kriterien, die der Designer pflegt; andere Schlüssel bleiben beim Speichern erhalten. */
+    public const array RULE_KEYS = ['diary_entry_type', 'tags_any', 'customer_ids', 'asset_categories', 'product_ids', 'sla_contract_ids'];
+
+    private const array ASSET_RULE_KEYS = ['asset_categories', 'product_ids', 'sla_contract_ids'];
+
     public function __construct(private readonly ProcedureTemplateService $templates) {}
 
     /**
      * @return Collection<int, ProcedureTemplate>
      */
     public function suggestFor(DiaryEntry $entry): Collection {
-        $candidates = ProcedureTemplate::query()
+        return $this->matching((int) $entry->organization_id, $this->contextFor($entry), false);
+    }
+
+    /**
+     * @return Collection<int, ProcedureTemplate>
+     */
+    public function suggestForAsset(Asset $asset): Collection {
+        return $this->matching((int) $asset->organization_id, $this->contextFor($asset), true);
+    }
+
+    /**
+     * @return ApplicabilityContext
+     */
+    public function contextFor(Model $subject): array {
+        if ($subject instanceof DiaryEntry) {
+            $asset = $subject->asset;
+
+            return [
+                'diary_entry_type' => $subject->entryType?->slug,
+                'customer_id' => $subject->customer_id !== null ? (int) $subject->customer_id : null,
+                'tags' => array_values(array_map('strval', $subject->relationLoaded('tags')
+                    ? $subject->tags->pluck('name')->all()
+                    : $subject->tags()->pluck('name')->all())),
+            ] + $this->assetContext($asset);
+        }
+
+        if ($subject instanceof Asset) {
+            return [
+                'customer_id' => $subject->customer_id !== null ? (int) $subject->customer_id : null,
+            ] + $this->assetContext($subject);
+        }
+
+        return [];
+    }
+
+    /**
+     * Gilt die zum Stichtag gültige Version der Vorlage für diesen Kontext?
+     * Am Asset (`$requireAssetRule`) nur mit Asset-Kriterium.
+     *
+     * @param  ApplicabilityContext  $context
+     */
+    public function templateAppliesAt(ProcedureTemplate $template, array $context, ?Carbon $at = null, bool $requireAssetRule = false): bool {
+        $version = $this->templates->currentVersionFor($template, $at);
+
+        return $version !== null && $this->matches($version, $context, $requireAssetRule);
+    }
+
+    /**
+     * @param  ApplicabilityContext  $context
+     * @return Collection<int, ProcedureTemplate>
+     */
+    private function matching(int $organizationId, array $context, bool $requireAssetRule): Collection {
+        return ProcedureTemplate::query()
             ->withoutGlobalScopes()
-            ->where('organization_id', $entry->organization_id)
+            ->where('organization_id', $organizationId)
             ->where('active', true)
-            ->get();
-
-        $entryTypeSlug = $entry->entryType?->slug;
-        $entryCustomerId = $entry->customer_id;
-        /** @var array<int, string> $entryTags */
-        $entryTags = $entry->relationLoaded('tags')
-            ? $entry->tags->pluck('name')->all()
-            : $entry->tags()->pluck('name')->all();
-
-        return $candidates
-            ->map(fn(ProcedureTemplate $tpl): ?array => ($current = $this->templates->currentVersionFor($tpl)) === null
-                ? null
-                : ['template' => $tpl, 'version' => $current])
-            ->filter()
-            ->filter(fn(array $row): bool => $this->matches(
-                $row['version'],
-                $entryTypeSlug,
-                $entryCustomerId,
-                $entryTags,
-            ))
-            ->map(fn(array $row): ProcedureTemplate => $row['template'])
+            ->get()
+            ->filter(fn (ProcedureTemplate $template): bool => $this->templateAppliesAt($template, $context, null, $requireAssetRule))
             ->values();
     }
 
     /**
-     * @param  array<int, string>  $entryTags
+     * @return array{asset_category: ?string, product_id: ?int, sla_contract_id: ?int}
      */
-    private function matches(ProcedureTemplateVersion $version, ?string $entryTypeSlug, ?int $entryCustomerId, array $entryTags): bool {
+    private function assetContext(?Asset $asset): array {
+        return [
+            'asset_category' => $asset?->category_code,
+            'product_id' => $asset?->product_id !== null ? (int) $asset->product_id : null,
+            'sla_contract_id' => $asset?->sla_contract_id !== null ? (int) $asset->sla_contract_id : null,
+        ];
+    }
+
+    /**
+     * @param  ApplicabilityContext  $context
+     */
+    private function matches(ProcedureTemplateVersion $version, array $context, bool $requireAssetRule): bool {
         $rules = $version->applicability ?? [];
-        if ($rules === []) {
-            return true;
+        $list = static fn (string $key): array => is_array($rules[$key] ?? null) ? $rules[$key] : [];
+
+        if ($requireAssetRule && array_filter(array_map($list, self::ASSET_RULE_KEYS)) === []) {
+            return false;
         }
 
-        if (isset($rules['diary_entry_type']) && is_array($rules['diary_entry_type']) && $rules['diary_entry_type'] !== []) {
-            if ($entryTypeSlug === null || ! in_array($entryTypeSlug, $rules['diary_entry_type'], true)) {
-                return false;
-            }
+        $tags = $list('tags_any');
+        if ($tags !== [] && array_intersect($tags, $context['tags'] ?? []) === []) {
+            return false;
         }
 
-        if (isset($rules['customer_ids']) && is_array($rules['customer_ids']) && $rules['customer_ids'] !== []) {
-            if ($entryCustomerId === null || ! in_array($entryCustomerId, $rules['customer_ids'], true)) {
-                return false;
-            }
-        }
-
-        if (isset($rules['tags_any']) && is_array($rules['tags_any']) && $rules['tags_any'] !== []) {
-            if (array_intersect($rules['tags_any'], $entryTags) === []) {
+        foreach ([
+            'diary_entry_type' => $context['diary_entry_type'] ?? null,
+            'customer_ids' => $context['customer_id'] ?? null,
+            'asset_categories' => $context['asset_category'] ?? null,
+            'product_ids' => $context['product_id'] ?? null,
+            'sla_contract_ids' => $context['sla_contract_id'] ?? null,
+        ] as $key => $value) {
+            $allowed = $list($key);
+            // Lose verglichen: IDs kommen aus JSON teils als Zeichenkette.
+            if ($allowed !== [] && ($value === null || ! in_array((string) $value, array_map('strval', $allowed), true))) {
                 return false;
             }
         }
 
         return true;
-    }
-
-    /**
-     * Hilfsmethode fuer ad-hoc-Pruefungen ausserhalb des
-     * Tagebucheintrag-Kontextes.
-     *
-     * @param  array<string, mixed>  $context
-     */
-    public function templateAppliesAt(ProcedureTemplate $template, array $context, ?Carbon $at = null): bool {
-        $version = $this->templates->currentVersionFor($template, $at);
-        if ($version === null) {
-            return false;
-        }
-        return $this->matches(
-            $version,
-            $context['diary_entry_type'] ?? null,
-            $context['customer_id'] ?? null,
-            $context['tags'] ?? [],
-        );
     }
 }

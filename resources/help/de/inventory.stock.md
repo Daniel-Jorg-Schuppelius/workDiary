@@ -1,7 +1,7 @@
 ---
 title: "Lagerbestände & Scannen"
 topic: inventory.stock
-version: 2
+version: 6
 keywords:
     - Warenbestand
     - Bestand buchen
@@ -79,3 +79,33 @@ der Bewertungsschichten, Differenz); mit `--apply` bucht er bei FIFO- oder
 FEFO-Bewertung die Differenz nach „ohne Charge“ um, der Gesamtbestand bleibt
 gleich. Bei gleitendem Durchschnitt meldet er die Charge nur, gesperrte
 Chargen erst nach der Freigabe.
+
+## Einheiten, Lagerjournal und Einstellungen
+
+**Erfassen in einer Einheit des Artikels.** Hat ein Artikel weitere Einheiten mit Umrechnungsfaktor (etwa 1 Rolle = 100 m), bieten Buchungsformular und Scan-Ansicht neben der Menge die Auswahl **Einheit**. Gebucht wird immer in der Basiseinheit; die eingegebene Menge und die Einheit bleiben an der Bewegung stehen. Gerundet wird kaufmännisch auf vier Nachkommastellen. Eine Menge, die in der Basiseinheit null ergibt, und eine am Artikel nicht gepflegte Einheit werden abgewiesen.
+
+**Lagerjournal.** Der Reiter **Lagerjournal** listet alle Bewegungen mit Zeitpunkt, Lagerort, Bewegungsart, Menge in Basiseinheit und der Spalte **Erfasst als** (Eingabemenge und Einheit). Suche, Lagerort und der Zeitraum oben grenzen die Liste ein.
+
+**Mindesthaltbarkeit.** Trägt ein Artikel die Eigenschaft „Mindesthaltbarkeit erforderlich“, nimmt das Lager seinen Zugang nur über den Wareneingang der Bestellung mit Charge und Mindesthaltbarkeitsdatum an. Manueller Zugang und Scan-Eingang werden abgewiesen. Eine schon bekannte Charge bringt ihr Datum mit.
+
+**Lager-Einstellungen.** Mit dem Recht zur Lagerkonfiguration öffnen Sie in der Bestandsübersicht die **Lager-Einstellungen**. Dort wählen Sie das **Bewertungsverfahren** der Organisation (gleitender Durchschnitt, FIFO oder FEFO) und den **Reservierungszeitpunkt** der Fertigung (bei Freigabe oder beim Start). Beim Wechsel zu FIFO oder FEFO erhält vorhandener Bestand eine Anfangsschicht zum bisherigen Durchschnittspreis. Zurück zum gleitenden Durchschnitt geht es erst, wenn kein Bestand mehr in Schichten liegt, weil der Durchschnitt in dieser Zeit nicht fortgeschrieben wurde.
+
+## Rechte, Reservierungen und Artikelnummern
+
+**Getrennte Rechte.** Buchen, Inventur zählen, Inventurdifferenzen freigeben, Reservierungen ändern und externe Buchungen kompensieren sind eigene Rechte. Wer bisher buchen durfte, behält Zählen, Reservieren und Kompensieren; Ihr Administrator kann die Rechte je Rolle trennen.
+
+**Reservierung ändern.** Mit dem Recht für Reservierungen öffnet das Stiftsymbol einer aktiven Reservierung einen Dialog mit reservierter, entnommener und offener Menge. Dort setzen Sie die Priorität (kleinere Zahl = höhere Priorität) und geben eine Teilmenge frei, etwa um sie einem anderen Auftrag zuzuteilen.
+
+**Vier-Augen-Freigabe.** In den Lager-Einstellungen lässt sich die Vier-Augen-Freigabe für Inventurdifferenzen einschalten, mit einem Grenzwert für den Bestandswert der Differenz je Zeile. Ab dem Grenzwert gibt nicht frei, wer gezählt hat. Grenzwert und Freigebende stehen im Audit-Protokoll.
+
+**SKU und GTIN.** Die Lager-Einstellungen zeigen, wer Artikelnummer, Varianten-SKU und GTIN führt. Gewählt wird das auf der Seite „Nummernkreise“ beim Kreis „Artikel“. Führt eine Warenwirtschaft die Nummern, sind die Felder im Artikelstamm gesperrt und kommen mit dem Abgleich.
+
+**Negativbestand mit vier Augen:** Verlangt die Organisation in den Lager-Einstellungen eine Vier-Augen-Freigabe für Entnahmen in den Negativbestand, wird eine Entnahme mit „Negativen Bestand zulassen“ zum Antrag im Genehmigungs-Eingang. Gebucht wird erst, wenn eine andere Person mit dem Recht „Negative Bestände freigeben“ zustimmt; Antragsteller und Freigebende stehen im Audit-Protokoll.
+
+**Reservierungen umverteilen:** Im Dialog „Reservierung ändern“ geben Sie offene Menge an eine andere Reservierung desselben Artikels, Lagers und Eigentums ab, etwa an einen Auftrag mit höherer Priorität. Eine jüngere Reservierung verdrängt eine ältere nie still; die Umverteilung steht im Audit-Protokoll, und die Materialposition eines Fertigungsauftrags folgt ihr.
+
+**Bestandswert je Verfahren:** Durchschnittspreis und Bestandswert der
+Übersicht folgen dem Bewertungsverfahren des Artikels: beim gleitenden
+Durchschnitt aus dem Durchschnittsbuch, bei FIFO und FEFO aus den offenen
+Bewertungsschichten (Wert der Restmengen, Durchschnitt = Wert ÷ Menge). Dieselben
+Werte nutzt die ABC-Einteilung der zyklischen Inventur.

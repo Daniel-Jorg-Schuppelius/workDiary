@@ -14,7 +14,7 @@ namespace App\Services\Invoicing;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Invoicing\Invoice;
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, IssuerIdentity};
 use App\Services\UI\BrandingService;
 use PDFToolkit\Entities\PDFContent;
 use PDFToolkit\Registries\PDFWriterRegistry;
@@ -62,16 +62,51 @@ class InvoicePdfRenderer {
      * kommen aus dem Design-Payload statt aus invoice_templates).
      *
      * @param array<string, mixed>|null $payload
-     * @return array{invoice: Invoice, orgLegal: mixed, design: \App\Services\DocumentDesign\DesignContext}
+     * @return array{invoice: Invoice, orgLegal: mixed, design: \App\Services\DocumentDesign\DesignContext, taxNotes: list<string>, issuer: array<string, mixed>, contactPerson: array<string, mixed>|null, recipient: array<string, string>, buyerVatId: string|null}
      */
     public function viewData(Invoice $invoice, ?array $payload = null): array {
+        $design = $this->design->contextForDocument(
+            $invoice,
+            RenderDocumentKind::forInvoiceType((string) $invoice->type),
+            $payload ?? $this->designPayload($invoice),
+            finalized: $invoice->party_snapshot !== null,
+        );
+        $recipient = $invoice->recipient();
+        $buyerVatId = trim($recipient['vat_id']);
+
         return [
             'invoice' => $invoice,
             // Rechtsangaben aus der Org DER RECHNUNG statt aus dem Ambient-
             // Kontext: im Queue-Worker (Mail-Anhang) gibt es keinen Auth-User —
             // sonst fehlten die §14-UStG-Pflichtangaben im PDF-Footer.
             'orgLegal' => app(BrandingService::class)->legalFor($invoice->organization),
-            'design' => $this->design->context($payload ?? $this->designPayload($invoice)),
+            'design' => $design,
+            // Ausgestellte Rechnungen älteren Stands bleiben beim Nachdruck ohne ergänzten Hinweis.
+            'taxNotes' => $design->predatesExemptionNotes() ? [] : app(TaxExemptionNotes::class)->printed($invoice),
+            'issuer' => $this->issuer($invoice),
+            // Ausgestellt: der beim Ausstellen eingefrorene Ansprechpartner, auch wenn sich die Person später ändert.
+            'contactPerson' => is_array($invoice->party_snapshot) && array_key_exists('contact', $invoice->party_snapshot)
+                ? (is_array($invoice->party_snapshot['contact']) ? $invoice->party_snapshot['contact'] : null)
+                : self::contactPerson($invoice),
+            // Ausgestellt: der beim Ausstellen eingefrorene Empfänger, auch nach einer Adressänderung (MVP-1624).
+            'recipient' => $recipient,
+            // § 14a Abs. 1 und 3 UStG; Rechnungen älteren Stands bleiben beim Nachdruck ohne die Zeile (MVP-1623).
+            'buyerVatId' => $buyerVatId !== '' && ! $design->predatesBuyerVatId() ? $buyerVatId : null,
+        ];
+    }
+
+    /**
+     * Ansprechpartner des Belegs: die zuständige Vertriebsperson.
+     *
+     * @return array{name: string, phone: string, email: string}|null
+     */
+    public static function contactPerson(Invoice $invoice): ?array {
+        $person = $invoice->salesUser;
+
+        return $person === null ? null : [
+            'name' => (string) $person->name,
+            'phone' => (string) ($person->phone ?? ''),
+            'email' => (string) ($person->email ?? ''),
         ];
     }
 
@@ -102,6 +137,20 @@ class InvoicePdfRenderer {
         return $invoice->organization === null
             ? null
             : $this->design->payloadFor($invoice->organization, $kind, (int) $invoice->customer_id);
+    }
+
+    /**
+     * Ausstellerangaben: der beim Ausstellen eingefrorene Stand gilt allein,
+     * sonst die aktuellen Stammdaten (Entwurf).
+     *
+     * @return array<string, mixed>
+     */
+    private function issuer(Invoice $invoice): array {
+        $frozen = $invoice->party_snapshot['issuer'] ?? null;
+
+        return is_array($frozen)
+            ? $frozen
+            : IssuerIdentity::for($invoice->organization, is_array($invoice->party_snapshot['seller'] ?? null) ? $invoice->party_snapshot['seller'] : null);
     }
 
     private function hasSnapshotRecord(Invoice $invoice, RenderDocumentKind $kind): bool {

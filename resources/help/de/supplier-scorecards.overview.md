@@ -1,7 +1,7 @@
 ---
 title: "Lieferanten-Scorecards"
 topic: supplier-scorecards.overview
-version: 2
+version: 3
 keywords:
     - Lieferantenbewertung
     - Lieferantenranking
@@ -27,3 +27,5 @@ Die Scorecards bewerten Lieferanten anhand realer Bewegungsdaten: Termintreue (W
 **Ranking & Drilldown:** Die Liste sortiert nach Score; die Detail-Scorecard zeigt die Kennzahlen mit Diagrammen und signierten Drilldowns in die zugrunde liegenden Belege.
 
 **Ausgeblendete Lieferanten:** Lieferanten mit **In Auswertungen ausblenden** fehlen im Ranking; der Schalter **Ausgeblendete Lieferanten einbeziehen** nimmt sie wieder auf.
+
+**Gewichte einstellen:** Mit dem Recht zur Lagerkonfiguration öffnen Sie im Ranking **Gewichte** und tragen je Kennzahl ein Gewicht in Prozent ein. Die Summe muss nicht 100 ergeben; ein leeres Feld setzt die Vorgabe. Der Hinweis über dem Ranking nennt die wirksamen Gewichte.

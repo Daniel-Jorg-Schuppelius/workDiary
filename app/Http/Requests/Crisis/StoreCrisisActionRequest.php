@@ -25,6 +25,7 @@ class StoreCrisisActionRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'assignee_id' => \App\Models\Platform\User::class,
+        'depends_on_id' => \App\Models\Crisis\CrisisAction::class,
     ];
 
     /** @return array<string, mixed> */
@@ -34,6 +35,8 @@ class StoreCrisisActionRequest extends BaseFormRequest {
             'assignee_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('users')],
             'due_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
             'priority' => ['required', 'in:low,medium,high'],
+            // Vorgänger (MVP-1605); dieselbe Akte prüft der Controller.
+            'depends_on_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('crisis_actions')],
         ];
     }
 }

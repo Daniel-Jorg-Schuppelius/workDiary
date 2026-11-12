@@ -1,7 +1,7 @@
 ---
 title: "Sollecito delle offerte"
 topic: quotes.follow-ups
-version: 1
+version: 2
 keywords:
     - sollecitare un'offerta
     - follow-up offerte
@@ -29,6 +29,11 @@ e in cui un’offerta scaduta finirebbe fuori dalla vista.
 Offerte*). Una data già presente non viene mai sovrascritta. La data è
 posticipabile in qualsiasi momento, ad esempio se il cliente chiede tempo
 per decidere.
+
+**Responsabile:** Sceglie chi effettua il follow-up nella finestra «Nuova
+offerta» e quando imposta la data di sollecito. Senza scelta se ne occupa la
+persona che ha creato il preventivo. Il promemoria va alla persona responsabile e
+«Solo i miei» mostra i suoi preventivi.
 
 **Sollecitare:** La registrazione del contatto crea una nota di
 comunicazione nella scheda cliente — è lì che verrà cercata in seguito, non

@@ -21,6 +21,23 @@ return [
         'summary_nps' => 'NPS :nps da :answers valutazioni · :responded inviti su :total con risposta',
     ],
     'purchase_orders' => ['title' => 'Ordini di acquisto'],
+    'supplier_catalogs' => [
+        'title' => 'Cataloghi',
+        'items' => '{1} 1 articolo|[0,*] :count articoli',
+        'active' => 'attivo',
+        'inactive' => 'inattivo',
+    ],
+    'supplier_scorecard' => [
+        'title' => 'Prestazioni (scorecard)',
+        'summary' => 'Punteggio complessivo :score su 100 · ultimi :months mesi',
+        'summary_none' => 'Nessun punteggio complessivo · ultimi :months mesi',
+    ],
+    'asset_finance' => ['title' => 'Leasing e finanziamento'],
+    'claims' => ['title' => 'Reclami aperti'],
+    'appointments' => [
+        'title' => 'Appuntamenti',
+        'untitled' => 'Appuntamento',
+    ],
     'credentials' => [
         'title' => 'Attestazioni obbligatorie',
         'summary' => 'Stato complessivo: :status',

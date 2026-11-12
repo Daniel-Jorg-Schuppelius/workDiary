@@ -15,18 +15,20 @@ namespace App\Http\Controllers\Learning;
 use App\Enums\ExternalParticipant\ExternalParty;
 use App\Enums\Learning\{LearningCourseStatus, LearningEnrollmentSource, LearningEnrollmentStatus, LearningProgressStatus};
 use App\Http\Controllers\Controller;
+use App\Models\Attachments\Attachment;
 use App\Models\Communication\ExternalParticipant;
-use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningQuiz};
+use App\Models\Learning\{LearningAccessToken, LearningCertificate, LearningCourse, LearningEnrollment, LearningQuiz, LearningUnitProgress};
 use App\Models\Platform\User;
-use App\Services\Learning\{LearningAccessService, LearningEnrollmentService, LearningQuizService, LearningVersionMigrationService};
+use App\Services\Learning\{LearningAccessService, LearningCompletionService, LearningEnrollmentService, LearningQuizService, LearningVersionMigrationService};
 use App\Support\Sqid;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\{Carbon, Str};
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Gate, Storage};
 use Illuminate\Validation\{Rule, ValidationException};
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Teilnehmerverwaltung je Kurs (Feature 149, MVP-778): wer ist eingeschrieben,
@@ -83,9 +85,34 @@ class LearningEnrollmentController extends Controller {
             ->groupBy('status')
             ->pluck('total', 'status');
 
+        $enrollments = $query->paginate(50)->withQueryString();
+        $pageIds = $enrollments->getCollection()->pluck('id')->all();
+
         return view('learning.enrollments.index', [
             'course' => $course,
-            'enrollments' => $query->paginate(50)->withQueryString(),
+            'enrollments' => $enrollments,
+            // Zertifikat je Einschreibung (MVP-1599): das jüngste, auch ein widerrufenes.
+            'certificates' => LearningCertificate::query()
+                ->whereIn('learning_enrollment_id', $pageIds)
+                ->orderBy('id')
+                ->get()
+                ->keyBy('learning_enrollment_id'),
+            // Nachweise externer Einheiten (MVP-1600), je Einschreibung.
+            'proofs' => LearningUnitProgress::query()
+                ->whereIn('learning_enrollment_id', $pageIds)
+                ->whereHas('attachments')
+                ->with(['attachments', 'unit:id,title'])
+                ->get()
+                ->groupBy('learning_enrollment_id'),
+            'canRevokeCertificate' => Gate::allows('revokeCertificate', $course),
+            // Einschreibungen mit gültigem Einstiegslink — nur dort lohnt „entwerten".
+            'activeLinkIds' => LearningAccessToken::query()
+                ->whereIn('learning_enrollment_id', $pageIds)
+                ->whereNull('revoked_at')
+                ->where('expires_at', '>', now())
+                ->pluck('learning_enrollment_id')
+                ->map(static fn (mixed $id): int => (int) $id)
+                ->all(),
             'status' => $status,
             'source' => $source,
             'search' => $search,
@@ -316,6 +343,68 @@ class LearningEnrollmentController extends Controller {
             ->with($mailed ? 'success' : 'error', __($mailed ? 'learning.flash.access_link_sent' : 'learning.flash.access_link_no_email', [
                 'name' => $enrollment->learnerName(),
             ]));
+    }
+
+    /** Nachweis einer externen Einheit (MVP-1600) — nur aus einer Einschreibung dieses Kurses. */
+    public function proof(LearningCourse $course, LearningEnrollment $enrollment, Attachment $attachment): SymfonyResponse {
+        Gate::authorize('updateMeta', $course);
+        $this->guardBelongsToCourse($course, $enrollment);
+
+        $carrier = LearningUnitProgress::query()
+            ->where('learning_enrollment_id', $enrollment->id)
+            ->whereKey((int) $attachment->attachable_id)
+            ->first();
+        abort_unless($carrier !== null && $attachment->attachable_type === $carrier->getMorphClass(), 404);
+
+        return Storage::disk($attachment->disk)->download($attachment->path, $attachment->original_name);
+    }
+
+    /** Einstiegslink entwerten (MVP-1599): der Link eines Externen gilt ab sofort nicht mehr. */
+    public function revokeAccessLink(LearningCourse $course, LearningEnrollment $enrollment): RedirectResponse {
+        Gate::authorize('updateMeta', $course);
+        $this->guardBelongsToCourse($course, $enrollment);
+        abort_if($enrollment->external_participant_id === null, 404);
+
+        $revoked = $this->access->revoke($enrollment);
+
+        return redirect()
+            ->route('learning.courses.enrollments.index', $course)
+            ->with('success', __($revoked > 0 ? 'learning.flash.access_link_revoked' : 'learning.flash.access_link_none', [
+                'name' => $enrollment->learnerName(),
+            ]));
+    }
+
+    /** Zertifikat widerrufen (MVP-1599): Dialog mit Pflichtgrund. */
+    public function revokeCertificateDialog(LearningCourse $course, LearningEnrollment $enrollment): View {
+        Gate::authorize('revokeCertificate', $course);
+        $this->guardBelongsToCourse($course, $enrollment);
+
+        return view('learning.enrollments._revoke_certificate_dialog', [
+            'course' => $course,
+            'enrollment' => $enrollment,
+            'certificate' => $this->activeCertificate($enrollment),
+        ]);
+    }
+
+    public function revokeCertificate(Request $request, LearningCourse $course, LearningEnrollment $enrollment, LearningCompletionService $completion): RedirectResponse {
+        Gate::authorize('revokeCertificate', $course);
+        $this->guardBelongsToCourse($course, $enrollment);
+
+        $data = $request->validate([
+            'reason' => ['required', 'string', 'min:5', 'max:255'],
+        ]);
+        $certificate = $completion->revoke($this->activeCertificate($enrollment), $data['reason'], $this->authUser()->id);
+
+        return redirect()
+            ->route('learning.courses.enrollments.index', $course)
+            ->with('success', __('learning.flash.certificate_revoked', ['number' => $certificate->number, 'name' => $enrollment->learnerName()]));
+    }
+
+    private function activeCertificate(LearningEnrollment $enrollment): LearningCertificate {
+        return LearningCertificate::query()
+            ->where('learning_enrollment_id', $enrollment->id)
+            ->whereNull('revoked_at')
+            ->firstOrFail();
     }
 
     /**

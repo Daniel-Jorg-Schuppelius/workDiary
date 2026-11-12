@@ -1,7 +1,7 @@
 ---
 title: "Tâches d'exploitation & fenêtres de maintenance"
 topic: admin.operations
-version: 1
+version: 2
 keywords:
     - mode maintenance
     - interruption de service
@@ -63,3 +63,5 @@ suffisamment d'avance pour que l'annonce produise son effet, et traitez
 régulièrement le centre de tâches – les tâches critiques en premier. Le
 report est destiné à des ajournements délibérés, pas à devenir un état
 permanent.
+
+**Signalements et modules :** la tâche relative aux signalements ouverts n’existe que tant que le module helpdesk de l’organisation est actif ; s’il est désactivé, l’exécution suivante la résout.

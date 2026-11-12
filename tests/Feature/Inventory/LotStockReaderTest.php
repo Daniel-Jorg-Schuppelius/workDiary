@@ -60,8 +60,8 @@ final class LotStockReaderTest extends TestCase {
             $this->flatten($this->reader->balances($this->variant, $this->warehouse)),
         );
         $this->assertSame([$r1->id => ['L-A' => '2.0000']], $this->flatten($this->reader->balances($this->variant, $this->warehouse, $r1)));
-        $this->assertSame(['4.0000', '4.0000'], [$this->reader->balanceOf($a), $this->reader->balanceOf($b)]);
-        $this->assertSame('0.0000', $this->reader->balanceOf($a, Warehouse::factory()->create(['organization_id' => $this->organization->id])));
+        $this->assertSame(['4.0000', '4.0000'], [$this->reader->balancesOf([$a])[$a->id], $this->reader->balancesOf([$b])[$b->id]]);
+        $this->assertSame('0.0000', $this->reader->balancesOf([$a], Warehouse::factory()->create(['organization_id' => $this->organization->id]))[$a->id]);
     }
 
     /** Altchargen einer Kette zählen bei der heutigen Charge; ohne bekannte Zielcharge bei keiner. */

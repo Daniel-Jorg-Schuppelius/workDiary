@@ -39,14 +39,35 @@ class PublicProtocolSignatureControllerTest extends TestCase {
 
         $response = $this->post(route('protocols.public-sign.submit', ['token' => $token]), [
             'signer_name' => 'Max Mustermann',
+            'signature' => 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
             'accept' => '1',
         ]);
         $response->assertRedirect();
+        $response->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('protocol_signatures', [
             'protocol_id' => $protocol->id,
             'signer_name' => 'Max Mustermann',
         ]);
+
+        // Das gezeichnete Bild liegt als Anhang am Protokoll (MVP-1572).
+        $signature = $protocol->signatures()->firstOrFail();
+        $this->assertNotNull($signature->signatureAttachment);
+        $this->assertSame(Protocol::META_SIGNATURE, $signature->signatureAttachment->meta_type);
+        Storage::disk('local')->assertExists($signature->signatureAttachment->path);
+    }
+
+    public function test_store_without_drawn_signature_is_rejected(): void {
+        Storage::fake(ProtocolPdfRenderer::DISK);
+        [$creator, $protocol] = $this->makeReviewProtocol();
+        $token = $this->issueToken($creator, $protocol);
+
+        $this->post(route('protocols.public-sign.submit', ['token' => $token]), ['signer_name' => 'Max Mustermann', 'accept' => '1'])
+            ->assertSessionHasErrors('signature');
+        $this->post(route('protocols.public-sign.submit', ['token' => $token]), ['signer_name' => 'Max Mustermann', 'accept' => '1', 'signature' => 'data:image/png;base64,' . base64_encode('kein Bild')])
+            ->assertSessionHasErrors('signature');
+
+        $this->assertSame(0, $protocol->signatures()->count());
     }
 
     public function test_expired_token_returns_410(): void {

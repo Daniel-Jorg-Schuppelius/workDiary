@@ -1,7 +1,7 @@
 ---
 title: "Actividad"
 topic: activity.overview
-version: 1
+version: 2
 keywords:
     - Actividad
     - Quién cambió qué
@@ -25,3 +25,5 @@ Los campos modificados siguen en el registro de auditoría.
 En las fichas de cliente, cliente final, proveedor y proyecto, el «Historial
 de cambios» resume los cambios y eventos del objeto; la tarjeta «Última
 actividad del equipo» muestra las últimas entradas de las dos últimas semanas.
+
+**Evento:** El filtro «Evento» limita la lista a un tipo de cambio, como «Creado» o «Eliminado». «Eventos de negocio» muestra todo excepto los cambios generales (creado, actualizado, eliminado, archivado, restaurado), por ejemplo aprobaciones, firmas o cierres.

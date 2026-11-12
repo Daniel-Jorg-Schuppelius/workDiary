@@ -60,6 +60,13 @@ return [
         'no_deadline_effect' => 'The processing period still runs from the receipt of your request; the confirmation does not postpone it.',
     ],
 
+    'extension_mail' => [
+        'subject' => 'Extended deadline for your data protection request :nr',
+        'headline' => 'Processing your request will take longer',
+        'intro' => 'For your data protection request with reference :nr we are extending the response period under Art. 12(3) GDPR. You will receive our reply by :date at the latest.',
+        'reason' => 'Reason for the extension:',
+        'rights' => 'You have the right to lodge a complaint with a data protection supervisory authority.',
+    ],
     'mail' => [
         'subject' => 'Confirmation of receipt for your data protection request :nr',
         'headline' => 'Your data protection request has been received',
@@ -86,6 +93,21 @@ return [
         'email_confirmed' => 'confirmed on :date',
         'email_unconfirmed' => 'not confirmed',
         'identity_required' => 'Identity must be verified and confirmed before disclosing information (portal intake).',
+        'status_heading' => 'Processing status',
+        'status_invalid' => 'Changing from “:from” to “:to” is not possible.',
+        'status_action' => [
+            'identity_check' => 'Request proof of identity',
+            'awaiting_info' => 'Query sent',
+            'info_received' => 'Answer received',
+            'withdrawn' => 'Withdrawn by the person',
+            'withdrawn_confirm' => 'Close the request as withdrawn? This ends the deadline.',
+        ],
+        'status_flash' => [
+            'identity_check' => 'Identity check in progress.',
+            'in_progress' => 'Processing resumed.',
+            'awaiting_info' => 'Query noted — the deadline keeps running.',
+            'withdrawn' => 'Request closed as withdrawn.',
+        ],
     ],
 
     'admin' => [
@@ -103,7 +125,7 @@ return [
         'allow_attachments' => 'Allow attachments',
         'presentation' => 'Presentation',
         'intro_text' => 'Introductory text (optional)',
-        'default_locale' => 'Default language (optional, e.g. en)',
+        'default_locale' => 'Default language of the portal',
         'saved' => 'Data subject portal saved.',
         'rotated' => 'The portal link has been rotated. Links already published are now invalid.',
     ],

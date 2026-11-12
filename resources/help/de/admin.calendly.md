@@ -1,7 +1,7 @@
 ---
 title: "Terminbuchung (Calendly) verbinden"
 topic: admin.calendly
-version: 1
+version: 2
 keywords:
     - Online-Terminbuchung
     - Terminbuchungsseite
@@ -40,3 +40,18 @@ sondern als abgesagt gekennzeichnet.
 **Grenzen:** Die Anbindung liest Buchungen; sie legt keine Buchungsseiten an
 und ändert keine Verfügbarkeiten. Verfügbarkeiten pflegen Sie weiterhin dort,
 wo die Buchungsseite verwaltet wird.
+
+**Ohne Kundentreffer:** Eine Buchung, deren Adresse keinem Kunden eindeutig
+zugeordnet werden kann, erscheint im **Integrations-Eingang** als Fall mit Ziel
+„Kunde“: zuordnen (Vorschläge nach Name), neu anlegen oder verwerfen. Alternativ
+ordnen Sie die Anfrage im Termin-Eingang einem Kunden oder Lead zu.
+
+**Gastgeber zuordnen:** Calendly-Gastgeber werden über ihre E-Mail-Adresse
+erkannt. Weicht die Calendly-Adresse ab, ordnen Sie sie unter **Calendly-Nutzer
+zuordnen** einem Benutzer zu; die Termine gehen dann an diesen Benutzer.
+
+**Rechte:** Verbinden, Webhook, Abgleich, Gastgeber-Zuordnung und Buchungslinks
+sind Sache der Organisationsverwaltung. Terminwünsche bestätigen und ablehnen
+darf, wer die Disposition führt — auf dieser Seite wie im Termin-Eingang.
+
+**Datenführerschaft:** Buchungen und Absagen aus Calendly gehören zum Bereich Kalender. Führt ein anderes System den Kalender, legt WorkDiary keinen Terminwunsch an und ändert keinen; der Fall steht im Integrations-Eingang zum einmaligen Übernehmen.

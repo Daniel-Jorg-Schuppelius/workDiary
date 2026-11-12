@@ -60,6 +60,13 @@ return [
         'no_deadline_effect' => 'Il termine di trattamento decorre invariato dalla ricezione della richiesta; la conferma non lo posticipa.',
     ],
 
+    'extension_mail' => [
+        'subject' => 'Proroga del termine per la Sua richiesta :nr',
+        'headline' => 'L\'evasione della Sua richiesta richiede più tempo',
+        'intro' => 'Per la Sua richiesta in materia di protezione dei dati con riferimento :nr proroghiamo il termine di risposta ai sensi dell\'art. 12, par. 3, del GDPR. Riceverà la nostra risposta al più tardi il :date.',
+        'reason' => 'Motivo della proroga:',
+        'rights' => 'Ha il diritto di proporre reclamo a un\'autorità di controllo per la protezione dei dati.',
+    ],
     'mail' => [
         'subject' => 'Conferma di ricezione della sua richiesta di protezione dei dati :nr',
         'headline' => 'La sua richiesta di protezione dei dati è stata ricevuta',
@@ -86,6 +93,21 @@ return [
         'email_confirmed' => 'confermato il :date',
         'email_unconfirmed' => 'non confermato',
         'identity_required' => 'Prima di fornire informazioni l’identità deve essere verificata e confermata (ingresso dal portale).',
+        'status_heading' => 'Stato della lavorazione',
+        'status_invalid' => 'Il passaggio da «:from» a «:to» non è possibile.',
+        'status_action' => [
+            'identity_check' => 'Richiedere una prova d\'identità',
+            'awaiting_info' => 'Richiesta di chiarimenti inviata',
+            'info_received' => 'Risposta ricevuta',
+            'withdrawn' => 'Ritirata dalla persona',
+            'withdrawn_confirm' => 'Chiudere la richiesta come ritirata? Il termine finisce.',
+        ],
+        'status_flash' => [
+            'identity_check' => 'Verifica dell\'identità in corso.',
+            'in_progress' => 'Lavorazione ripresa.',
+            'awaiting_info' => 'Richiesta di chiarimenti annotata: il termine continua a decorrere.',
+            'withdrawn' => 'Richiesta chiusa come ritirata.',
+        ],
     ],
 
     'admin' => [
@@ -103,7 +125,7 @@ return [
         'allow_attachments' => 'Consenti allegati',
         'presentation' => 'Presentazione',
         'intro_text' => 'Testo introduttivo (facoltativo)',
-        'default_locale' => 'Lingua predefinita (facoltativa, ad es. it)',
+        'default_locale' => 'Lingua predefinita del portale',
         'saved' => 'Portale interessati salvato.',
         'rotated' => 'Il link del portale è stato ruotato. I link già pubblicati non sono più validi.',
     ],

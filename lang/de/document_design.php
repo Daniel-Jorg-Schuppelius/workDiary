@@ -107,6 +107,8 @@ return [
     'editor.texts_hint' => 'Freitexte über bzw. unter dem Beleginhalt der Vertriebsbelege (vormals Rechnungsvorlagen) — reiner Text, wird mit der Profilversion eingefroren.',
     'editor.header_text' => 'Kopftext',
     'editor.footer_text' => 'Fußtext',
+    'editor.confidentiality_text' => 'Vertraulichkeitsvermerk',
+    'editor.confidentiality_hint' => 'Erscheint nur, wenn der Block „Vertraulichkeit“ dynamisch ist. Leer = Standardvermerk.',
     'profile.customer_specific' => 'Kunden-Sonderprofil (wirkt nur über die Kundenakte)',
     'profile.customer_specific_hint' => 'Nimmt nicht an der org-weiten Auflösung teil — es gilt nur für Kunden, die es in ihrer Akte referenzieren.',
     'customer.panel_title' => 'Dokumentdesign',

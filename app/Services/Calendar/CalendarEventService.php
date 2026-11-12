@@ -12,8 +12,9 @@ namespace App\Services\Calendar;
 
 use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OnCallShift};
 use App\Models\Platform\User;
-use App\Modules\ModuleRegistry;
 use App\Services\Calendar\Contracts\CalendarEventSource;
+use App\Services\Licensing\ModuleExtensions;
+use App\Support\OrganizationContext;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -108,7 +109,7 @@ class CalendarEventService {
      */
     public function moduleEvents(CarbonInterface $start, CarbonInterface $end, User $user, bool $teamScope = false, ?int $filterUserId = null): array {
         $events = [];
-        foreach (app(ModuleRegistry::class)->extensions(CalendarEventSource::class) as $class) {
+        foreach (app(ModuleExtensions::class)->activeFor(CalendarEventSource::class, OrganizationContext::currentId() ?? $user->organization_id) as $class) {
             try {
                 /** @var CalendarEventSource $source */
                 $source = app($class);

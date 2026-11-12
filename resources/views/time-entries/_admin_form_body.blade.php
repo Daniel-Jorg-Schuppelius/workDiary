@@ -42,8 +42,9 @@
     <x-select-field span="2" name="activity_category_id" :label="__('Kategorie (optional)')">
         <option value="">— {{ __('keine Kategorie') }} —</option>
         @foreach ($categories as $c)
-            <option value="{{ $c->sqid }}" @selected((string) old('activity_category_id', \App\Support\Sqid::encode(\App\Models\Classification\ActivityCategory::class, $entry?->activity_category_id)) === $c->sqid)>
-                {{ $c->label }} ({{ $c->activity_type->label() }})
+            {{-- Die Kategorie belegt die Abrechenbarkeit neuer Verwaltungszeiten vor (MVP-1554). --}}
+            <option value="{{ $c->sqid }}" data-billable-default="{{ $c->billable_default ? '1' : '0' }}" @selected((string) old('activity_category_id', \App\Support\Sqid::encode(\App\Models\Classification\ActivityCategory::class, $entry?->activity_category_id)) === $c->sqid)>
+                {{ $c->label }} ({{ $c->activity_type->label() }})@if ($c->billable_default) · {{ __('Abrechenbar') }}@endif
             </option>
         @endforeach
     </x-select-field>

@@ -1,7 +1,7 @@
 ---
 title: "Computi metrici GAEB"
 topic: boq.overview
-version: 1
+version: 3
 keywords:
     - computo metrico
     - importare computo
@@ -76,3 +76,11 @@ Il **controllo prima della consegna** segnala inoltre le voci con prezzo in una 
 ## Commenti dell’offerente
 
 Nella richiesta di offerta il committente stabilisce se gli offerenti possono commentare le voci. La vista del computo mostra cosa indica il file. Se i commenti non sono ammessi, l’importazione non ne riprende nessuno (il protocollo d’importazione ne indica il numero) e l’offerta non ne contiene. Reimportare l’offerta non modifica quanto stabilito nella richiesta.
+
+## Avanzamento con documento e rilievi dell’importazione
+
+Oltre all’inserimento rapido della quantità, l’icona del metro a nastro di una voce apre la finestra **Segnalare l’avanzamento**. Lì Lei sceglie in aggiunta un **consumo di materiale** del progetto oppure un **verbale** del progetto. Il documento scelto determina l’origine della segnalazione e vi resta collegato; la finestra mostra le segnalazioni precedenti con il loro riferimento. Un consumo di materiale può essere assegnato a una sola voce; i suoi costi vengono attribuiti a questa voce nella valutazione di redditività. Per la sola attribuzione dei costi inserisca la quantità 0.
+
+Lo **storico delle importazioni** mostra i rilievi di ogni esecuzione. Una reimportazione rifiutata vi compare con lo stato «conflitto» e indica, per ogni voce protetta, quantità e prezzo unitario esistenti accanto ai valori del file. Non modifica nulla nel computo stesso.
+
+Anche il verbale stesso offre nel menu **Segnalare l’avanzamento di una voce del computo** se il progetto del verbale ha un computo con voci aperte. La segnalazione riceve l’origine «verbale» e rimanda a questo verbale.

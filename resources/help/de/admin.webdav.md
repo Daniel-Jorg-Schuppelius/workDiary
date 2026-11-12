@@ -1,7 +1,7 @@
 ---
 title: "WebDAV-Ablage"
 topic: admin.webdav
-version: 3
+version: 4
 keywords:
     - WebDAV
     - Nextcloud
@@ -160,3 +160,5 @@ Ablage erhalten. Zum Wiedereinschalten setzen Sie **Aktiv** und speichern.
   **Gespiegelte Inhalte** war beim Stellen bzw. Unterschreiben nicht gesetzt.
 - Ein Dokument wird nicht mehr aktualisiert: Es steht ein offener Konflikt in
   der Inbox, oder seine Spiegelung wurde getrennt.
+
+**Aktivieren holt nach:** Wird die Ablage aktiviert, reiht WorkDiary sofort alle bereits freigegebenen Objekte zum Spiegeln ein — auch die, die freigegeben wurden, solange keine aktive Ablage bestand. Einen Zeitplan braucht der Spiegellauf nicht; „Jetzt spiegeln“ bleibt für den Fall, dass Sie selbst nachziehen wollen.

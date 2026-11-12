@@ -1,7 +1,7 @@
 ---
 title: "Notifications"
 topic: account.notifications
-version: 1
+version: 2
 keywords:
     - alerts
     - messages
@@ -41,3 +41,5 @@ deliberately frugal: there is a monthly quota, long texts are shortened, and
 the organisation is warned before the quota runs out. Text messages do not
 replace in-app notifications; they accompany them for the case where nobody is
 at a screen.
+
+The SMS quota warning reaches the organisation’s administrators as an operations task with a notification: once when the warning threshold is reached and once more when the quota is used up — per month. Counting starts again with the new month.

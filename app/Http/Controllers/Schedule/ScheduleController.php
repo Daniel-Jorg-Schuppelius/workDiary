@@ -149,12 +149,37 @@ class ScheduleController extends Controller {
         $shifts->loadMissing(['shiftType.qualifications', 'user.qualifications']);
 
         $gate = new QualificationGate();
-        $gaps = [];
+        $missingByShift = [];
         foreach ($shifts as $s) {
             $missing = $gate->missingFor($s);
             if ($missing->isNotEmpty()) {
-                $gaps[(int) $s->id] = array_values($missing->map(fn($q): string => (string) ($q->abbreviation ?: $q->name))->all());
+                $missingByShift[(int) $s->id] = [$s, $missing];
             }
+        }
+        if ($missingByShift === []) {
+            return [];
+        }
+
+        // Einsatz-Ampel (Feature 149): laufender Kurs oder Kursvorschlag je fehlender Qualifikation.
+        $training = app(\App\Services\Schedule\Contracts\QualificationTrainingSource::class);
+        $qualificationIds = array_values(array_unique(array_merge(...array_map(
+            static fn (array $entry): array => array_map('intval', $entry[1]->pluck('id')->all()),
+            array_values($missingByShift),
+        ))));
+        $open = $training->openEnrollments($shifts->pluck('user')->filter()->unique('id')->values(), $qualificationIds);
+        $courses = $training->suggestedCourses($qualificationIds);
+
+        $gaps = [];
+        foreach ($missingByShift as $shiftId => [$shift, $missing]) {
+            $gaps[$shiftId] = array_values($missing->map(function ($q) use ($shift, $open, $courses): string {
+                $name = (string) ($q->abbreviation ?: $q->name);
+
+                return match (true) {
+                    in_array((int) $q->id, $open[(int) $shift->user_id] ?? [], true) => (string) __('schedule.qualification.course_running', ['qualification' => $name]),
+                    isset($courses[(int) $q->id]) => (string) __('schedule.qualification.course_suggested', ['qualification' => $name, 'course' => $courses[(int) $q->id]]),
+                    default => $name,
+                };
+            })->all());
         }
 
         return $gaps;

@@ -12,7 +12,7 @@ namespace App\Console\Commands\License;
 
 use App\Services\Licensing\PackageCatalog;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper, NumberHelper};
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Console\Command;
 
@@ -23,6 +23,8 @@ class IssueCommand extends Command {
         {--domain= : Domain-Bindung (z. B. app.kunde.de oder *.kunde.de)}
         {--expires= : Ablaufdatum (YYYY-MM-DD)}
         {--max-users= : Maximale Nutzerzahl}
+        {--max-orgs= : Maximale Zahl der Organisationen dieser Installation}
+        {--storage-quota-gb= : Speicherkontingent je Organisation in GB}
         {--plan=free : Tier (free|pro|enterprise) – steuert die Basis-Module}
         {--addons=* : Einzeln gebuchte Modul-Codes (z. B. module.datenschutz)}
         {--package= : Produktpaket (start|team|betrieb) – seine Module landen in den Add-ons}
@@ -55,6 +57,14 @@ class IssueCommand extends Command {
             return self::FAILURE;
         }
 
+        $maxOrgs = $this->positiveIntOption('max-orgs');
+        $storageQuotaGb = $this->positiveIntOption('storage-quota-gb');
+        if ($maxOrgs === false || $storageQuotaGb === false) {
+            $this->error('--max-orgs und --storage-quota-gb erwarten eine positive ganze Zahl.');
+
+            return self::FAILURE;
+        }
+
         $package = (string) ($this->option('package') ?? '');
         $addons = array_values(array_filter((array) $this->option('addons')));
         if ($package !== '') {
@@ -77,6 +87,8 @@ class IssueCommand extends Command {
                 : null,
             'domain' => $this->option('domain') ?: null,
             'max_users' => $this->option('max-users') !== null ? (int) $this->option('max-users') : null,
+            'max_orgs' => $maxOrgs,
+            'storage_quota_gb' => $storageQuotaGb,
             'features' => array_values(array_filter((array) $this->option('features'))),
             'plan' => (string) ($this->option('plan') ?: 'free'),
             'addons' => $addons,
@@ -99,5 +111,16 @@ class IssueCommand extends Command {
         }
 
         return self::SUCCESS;
+    }
+
+    /** Leer = kein Limit; false = ungültige Eingabe. */
+    private function positiveIntOption(string $name): int|false|null {
+        $raw = $this->option($name);
+        if ($raw === null || $raw === '') {
+            return null;
+        }
+        $value = NumberHelper::toIntOrNull($raw);
+
+        return $value !== null && $value > 0 ? $value : false;
     }
 }

@@ -85,6 +85,14 @@ class RentalAvailabilityService {
         // Gemeinsames Sperrmodell (D12): Sperren + blockierende Defekte
         $this->guard->ensureUsable($asset, self::USAGE_CONTEXT);
 
+        if ($profile->isBelowMinCondition()) {
+            throw new AssetNotUsableException((string) __('rental.condition.below_minimum', [
+                'asset' => $asset->name,
+                'current' => $profile->current_condition?->label(),
+                'minimum' => $profile->min_condition?->label(),
+            ]));
+        }
+
         if ($profile->isHousing()) {
             $from = $from->copy()->subHours($profile->buffer_before_hours);
             $to = $to?->copy()->addHours($profile->buffer_after_hours);

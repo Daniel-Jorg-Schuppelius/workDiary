@@ -1,7 +1,7 @@
 ---
 title: "Conflits Lexoffice"
 topic: admin.lexoffice
-version: 7
+version: 8
 keywords:
     - Lexware Office
     - conflit de synchronisation
@@ -75,3 +75,5 @@ justificatifs avec Lexoffice** et des identifiants enregistrés.
 
 Autorisation : la Boîte de rapprochement est ouverte aux administrateurs
 et au rôle **Comptabilité**.
+
+**Souveraineté des données :** si, selon la souveraineté des données, un autre programme est maître des clients et fournisseurs, la synchronisation des contacts ne reprend aucun champ et ne crée aucun contact ; la liaison et le numéro de contact Lexoffice restent. L’état retenu attend dans la boîte d’intégration **Reprendre une fois**.

@@ -17,11 +17,13 @@ use App\Enums\Invoicing\InvoiceScheduleStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\Accounting\{AccountingAccount, AccountingRecurringRun, AccountingRecurringTemplate};
+use App\Models\Accounting\{AccountingRecurringRun, AccountingRecurringTemplate};
 use App\Models\Invoicing\InvoiceSchedule;
 use App\Models\Platform\{Organization, User};
-use App\Services\Accounting\RecurringAccountingService;
+use App\Services\Accounting\{ManualEntryLines, RecurringAccountingService};
 use App\Support\Sqid;
+use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -38,7 +40,10 @@ use Illuminate\View\View;
 class RecurringAccountingController extends Controller {
     use ResolvesCurrentOrganization;
 
-    public function __construct(private readonly RecurringAccountingService $recurring) {}
+    public function __construct(
+        private readonly RecurringAccountingService $recurring,
+        private readonly ManualEntryLines $manualLines,
+    ) {}
 
     public function index(): View {
         abort_unless(Gate::allows(Permission::AccountingLedgerView->value), 403);
@@ -71,38 +76,26 @@ class RecurringAccountingController extends Controller {
     public function form(?AccountingRecurringTemplate $template = null): View {
         abort_unless(Gate::allows(Permission::AccountingLedgerConfigure->value), 403);
         $organization = $this->currentOrganizationOrAbort();
-        $accounts = AccountingAccount::query()
-            ->where('organization_id', $organization->id)
-            ->active()
-            ->orderBy('number')
-            ->get();
-
-        // Die Kontenfelder spiegeln die gespeicherten Zeilen — sonst stünde
-        // beim Bearbeiten „kein Konto" da und das Speichern würde abgewiesen.
-        $lineAccount = static function (string $side) use ($template, $accounts): ?string {
-            foreach ($template === null ? [] : ($template->template_lines ?? []) as $line) {
-                if (! Decimal::of((string) ($line[$side] ?? '0'), 2)->isZero()) {
-                    return $accounts->firstWhere('id', (int) ($line['accounting_account_id'] ?? 0))?->sqid;
-                }
-            }
-
-            return null;
-        };
+        if ($template instanceof AccountingRecurringTemplate) {
+            $this->assertSameOrganization($template);
+        }
+        $lines = $template instanceof AccountingRecurringTemplate ? ($template->template_lines ?? []) : [];
+        $rows = $this->manualLines->rows($lines);
 
         return view('finance.accounting._recurring_dialog', [
             'template' => $template,
             'kinds' => RecurringTemplateKind::cases(),
             'intervals' => RecurringInterval::cases(),
-            'accounts' => $accounts,
-            'debitAccount' => $lineAccount('debit'),
-            'creditAccount' => $lineAccount('credit'),
+            'rows' => $rows,
+            'rowCount' => $this->manualLines->rowCount($rows),
+            'counterparty' => $this->manualLines->counterpartyValue($lines),
             'users' => User::query()
                 ->forOrganization($organization)
                 ->where(fn ($query) => $query->whereNull('deactivated_at')->orWhere('id', $template?->responsible_user_id))
                 ->orderBy('name')
                 ->get(['id', 'name']),
             'preview' => $template !== null ? $this->recurring->preview($template) : [],
-        ]);
+        ] + $this->manualLines->formOptions($organization, CarbonImmutable::now()));
     }
 
     public function store(Request $request): RedirectResponse {
@@ -129,7 +122,7 @@ class RecurringAccountingController extends Controller {
         abort_unless(Gate::allows(Permission::AccountingLedgerConfigure->value), 403);
         $this->assertSameOrganization($template);
 
-        $data = $this->validated($request, $this->currentOrganizationOrAbort());
+        $data = $this->validated($request, $this->currentOrganizationOrAbort(), $template);
         $template->update($data + ['version' => $template->version + 1]);
 
         return back()->with('status', __('accounting.recurring.flash.versioned'));
@@ -215,7 +208,7 @@ class RecurringAccountingController extends Controller {
     }
 
     /** @return array<string, mixed> */
-    private function validated(Request $request, Organization $organization): array {
+    private function validated(Request $request, Organization $organization, ?AccountingRecurringTemplate $template = null): array {
         $data = $request->validate([
             'kind' => ['required', 'string', Rule::enum(RecurringTemplateKind::class)],
             'name' => ['required', 'string', 'max:191'],
@@ -224,8 +217,15 @@ class RecurringAccountingController extends Controller {
             'starts_on' => ['required', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
             'expected_amount' => ['nullable', 'numeric', 'decimal:0,8', 'gte:0'],
-            'debit_account' => ['nullable', 'string'],
-            'credit_account' => ['nullable', 'string'],
+            'counterparty' => ['nullable', 'string', 'max:80'],
+            'rows' => ['nullable', 'array', 'max:60'],
+            'rows.*.line' => ['nullable', 'integer', 'min:0'],
+            'rows.*.account' => ['nullable', 'string', 'max:64'],
+            'rows.*.debit' => ['nullable', 'numeric', 'decimal:0,2', 'gte:0'],
+            'rows.*.credit' => ['nullable', 'numeric', 'decimal:0,2', 'gte:0'],
+            'rows.*.tax_code' => ['nullable', 'string', 'max:64'],
+            'rows.*.cost_center' => ['nullable', 'string', 'max:64'],
+            'rows.*.memo' => ['nullable', 'string', 'max:191'],
             'responsible_user_id' => ['nullable', 'string'],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
@@ -245,31 +245,32 @@ class RecurringAccountingController extends Controller {
 
         if ($kind->createsDraft()) {
             // Ohne Zeilen bliebe der Lauf blockiert — das melden wir sofort,
-            // statt es erst nachts im Scheduler herauszufinden.
-            $missing = array_filter(
-                ['debit_account', 'credit_account', 'expected_amount'],
-                static fn (string $field): bool => ! isset($data[$field]) || $data[$field] === '',
-            );
-            if ($missing !== []) {
-                throw ValidationException::withMessages(array_fill_keys(
-                    $missing,
-                    (string) __('accounting.recurring.error.template_incomplete'),
-                ));
+            // statt es erst nachts im Scheduler herauszufinden. Die Vorlage bucht
+            // mehrzeilig mit Steuerkennzeichen und Gegenpartei wie die Handbuchung (MVP-1558).
+            $startsOn = CarbonImmutable::parse((string) $data['starts_on'])->startOfDay();
+            $today = CarbonImmutable::now()->startOfDay();
+            try {
+                $lines = $this->manualLines->build(
+                    $organization,
+                    $startsOn->greaterThan($today) ? $startsOn : $today,
+                    $data['rows'] ?? [],
+                    (string) ($data['counterparty'] ?? ''),
+                    $template instanceof AccountingRecurringTemplate ? ($template->template_lines ?? []) : [],
+                );
+            } catch (ValidationException $exception) {
+                throw array_key_exists('lines', $exception->errors())
+                    ? ValidationException::withMessages(['rows' => (string) __('accounting.recurring.error.template_incomplete')])
+                    : $exception;
             }
 
-            $debitId = (int) Sqid::decodeOrNumeric(AccountingAccount::class, (string) $data['debit_account']);
-            $creditId = (int) Sqid::decodeOrNumeric(AccountingAccount::class, (string) $data['credit_account']);
-            $own = AccountingAccount::query()
-                ->where('organization_id', $organization->id)
-                ->whereIn('id', [$debitId, $creditId])
-                ->count();
-            abort_unless($own === count(array_unique([$debitId, $creditId])), 422);
-
-            $amount = Decimal::of((string) $data['expected_amount'], 2)->getValue();
-            $lines = [
-                ['accounting_account_id' => $debitId, 'debit' => $amount, 'credit' => '0.00'],
-                ['accounting_account_id' => $creditId, 'debit' => '0.00', 'credit' => $amount],
-            ];
+            $debit = NumberHelper::sumPrecise(array_column($lines, 'debit'), 2);
+            if (NumberHelper::comparePrecise($debit, NumberHelper::sumPrecise(array_column($lines, 'credit'), 2), 2) !== 0) {
+                throw ValidationException::withMessages([
+                    'rows' => (string) __('accounting.recurring.error.template_unbalanced'),
+                ]);
+            }
+            // Erwarteter Betrag ist die Buchungssumme, wenn das Feld leer bleibt.
+            $data['expected_amount'] ??= $debit;
         }
 
         return [

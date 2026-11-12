@@ -27,7 +27,17 @@
                     {{ __('Eingang bis') }}: {{ optional($case->acknowledgement_due_at)->format('d.m.Y') }} ·
                     {{ __('Rückmeldung bis') }}: {{ optional($case->feedback_due_at)->format('d.m.Y') }}
                     @if ($case->acknowledged_at) · {{ __('bestätigt am') }} {{ $case->acknowledged_at->fdate() }} @endif
+                    @if ($case->feedback_sent_at) · {{ __('Rückmeldung gesendet am') }} {{ $case->feedback_sent_at->fdate() }} @endif
                 </p>
+                @if ($case->retention_due_at || $case->legal_hold_review_at)
+                    <p class="text-sm">
+                        @if ($case->retention_due_at) {{ __('Aufbewahrung bis') }}: {{ $case->retention_due_at->fdate() }} @endif
+                        @if ($case->legal_hold_review_at) · {{ __('Löschsperre prüfen am') }}: {{ $case->legal_hold_review_at->fdate() }} @endif
+                    </p>
+                @endif
+                @can('audit', $case)
+                    <x-icon-btn icon="history" tone="ghost" size="sm" :href="route('whistleblowing.internal.events', $case)" show-label>{{ __('Ereignisprotokoll') }}</x-icon-btn>
+                @endcan
             </div>
         </x-card>
 
@@ -42,7 +52,7 @@
             </div>
         </x-card>
 
-        {{-- Beweismittel des Melders: Download nur nach freigegebener Prüfung (Quarantäne-Gate im Controller). --}}
+        {{-- Beweismittel und Unterlagen der Meldestelle: Download nur nach freigegebener Prüfung (Quarantäne-Gate im Controller). --}}
         <x-card>
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Anhänge') }}</h2>
             <ul class="mt-2 space-y-1">
@@ -50,6 +60,7 @@
                     <li class="flex flex-wrap items-center gap-2">
                         <span class="break-all">{{ $attachment->original_name_ciphertext }}</span>
                         <span class="text-xs text-muted">{{ \CommonToolkit\Helper\Data\NumberHelper::formatBytes((int) $attachment->size, 1) }}</span>
+                        <x-status-badge tone="ghost" size="xs">{{ $attachment->uploaded_by_type === 'handler' ? __('Meldestelle') : __('Meldende Person') }}</x-status-badge>
                         @if ($attachment->scan_status === \App\Enums\Whistleblowing\AttachmentScanStatus::Clean)
                             <x-icon-btn icon="download" tone="ghost" size="xs"
                                         :href="route('whistleblowing.internal.attachment', ['case' => $case, 'attachment' => $attachment])"
@@ -62,13 +73,33 @@
                     <li class="text-muted">{{ __('Keine Anhänge.') }}</li>
                 @endforelse
             </ul>
+            @can('process', $case)
+                <form method="post" action="{{ route('whistleblowing.internal.attach', $case) }}" enctype="multipart/form-data" class="mt-3 flex flex-wrap items-end gap-2">
+                    @csrf
+                    <x-input-field name="file" id="handler-attachment" type="file" :label="__('Unterlage der Meldestelle hinzufügen')" required />
+                    <x-icon-btn icon="upload" tone="ghost" size="sm" type="submit" show-label>{{ __('Hochladen') }}</x-icon-btn>
+                </form>
+                <p class="mt-1 text-xs text-muted">{{ __('Die Datei wird mit dem Schlüssel des Falls verschlüsselt und ist erst nach der Malware-Prüfung abrufbar. Die meldende Person sieht sie nicht.') }}</p>
+            @endcan
         </x-card>
 
         <x-card>
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Bearbeiter') }}</h2>
             <ul class="mt-2 list-disc ml-5">
                 @forelse ($case->assignments->whereNull('revoked_at') as $a)
-                    <li>{{ $a->user?->name }} ({{ __('whistleblowing.role.' . $a->role->value) }})</li>
+                    <li>
+                        {{ $a->user?->name }} ({{ __('whistleblowing.role.' . $a->role->value) }})
+                        @can('assign', $case)
+                            <x-action-form :action="route('whistleblowing.internal.revoke', $case)"
+                                           :confirm="__('Zuweisung von :name widerrufen? Die Person verliert sofort den Zugriff auf diesen Fall.', ['name' => $a->user?->name])"
+                                           confirm-icon="person_remove" confirm-tone="warning"
+                                           :confirm-label="__('Widerrufen')">
+                                <input type="hidden" name="user_id" value="{{ $a->user?->sqid }}">
+                                <input type="hidden" name="role" value="{{ $a->role->value }}">
+                                <x-icon-btn icon="person_remove" tone="ghost" size="xs" type="submit" :label="__('Zuweisung widerrufen')" />
+                            </x-action-form>
+                        @endcan
+                    </li>
                 @empty
                     <li>{{ __('Niemand zugewiesen.') }}</li>
                 @endforelse
@@ -123,8 +154,15 @@
                                 </select>
                             </x-input-field>
                             <x-input-field name="reason" :label="__('Begründung')">
-                                <textarea id="reason" name="reason" class="textarea textarea-bordered w-full" placeholder="{{ __('Begründung (bei Abschluss erforderlich)') }}">{{ old('reason') }}</textarea>
+                                <textarea id="reason" name="reason" class="textarea textarea-bordered w-full" placeholder="{{ __('Begründung (bei Abschluss und Wiedereröffnung erforderlich)') }}">{{ old('reason') }}</textarea>
                             </x-input-field>
+                            {{-- Löschsperre (Konzept 8): Rechtsgrundlage, Verantwortlicher und Prüfdatum sind Pflicht. --}}
+                            @if (in_array(\App\Enums\Whistleblowing\CaseStatus::LegalHold, $statusTargets, true))
+                                <x-textarea-field name="legal_hold_basis" rows="2" maxlength="2000" :label="__('Rechtsgrundlage der Löschsperre')" :value="old('legal_hold_basis')"
+                                                  :hint="__('Nur bei „Löschsperre“: Verfahren oder Vorschrift, die der Löschung entgegensteht.')" />
+                                <x-input-field name="legal_hold_responsible" maxlength="255" :label="__('Verantwortlich für die Löschsperre')" :value="old('legal_hold_responsible')" />
+                                <x-input-field name="legal_hold_review_at" type="date" :label="__('Löschsperre prüfen am')" :value="old('legal_hold_review_at')" />
+                            @endif
                         </x-form-group>
                         <x-icon-btn icon="edit" tone="ghost" size="sm" type="submit" show-label>{{ __('Status setzen') }}</x-icon-btn>
                     </form>
@@ -173,9 +211,19 @@
                     <form method="post" action="{{ route('whistleblowing.internal.message', $case) }}" class="mt-2 space-y-2">
                         @csrf
                         <x-form-group tone="ghost" cols="1">
-                            <x-input-field name="body" :label="__('Nachricht an die meldende Person')" required>
-                                <textarea id="body" name="body" class="textarea textarea-bordered w-full" required></textarea>
+                            <x-input-field name="body" id="reporter-message-body" :label="__('Nachricht an die meldende Person')" required>
+                                <textarea id="reporter-message-body" name="body" class="textarea textarea-bordered w-full" required></textarea>
                             </x-input-field>
+                            @if ($case->feedback_sent_at)
+                                <p class="text-sm text-muted">{{ __('Die Rückmeldung nach § 17 HinSchG wurde am :date gesendet.', ['date' => $case->feedback_sent_at->fdate()]) }}</p>
+                            @else
+                                <x-input-field name="is_feedback">
+                                    <label class="label cursor-pointer justify-start gap-3">
+                                        <input type="checkbox" id="is_feedback" name="is_feedback" value="1" class="checkbox checkbox-sm">
+                                        <span class="fieldset-label">{{ __('Dies ist die Rückmeldung nach § 17 HinSchG (geplante oder ergriffene Folgemaßnahmen und Gründe)') }}</span>
+                                    </label>
+                                </x-input-field>
+                            @endif
                         </x-form-group>
                         <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Senden') }}</x-icon-btn>
                     </form>

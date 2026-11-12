@@ -124,6 +124,7 @@ class AiUsageReportController extends Controller {
             'families' => $families,
             'currentBudget' => $currentBudget,
             'funnel' => $funnel,
+            'canManage' => Gate::allows('create', AiProviderConnection::class),
         ]);
     }
 

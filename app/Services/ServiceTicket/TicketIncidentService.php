@@ -15,7 +15,6 @@ namespace App\Services\ServiceTicket;
 use App\Enums\ServiceTicket\{ServiceTicketPriority, TicketSeverity};
 use App\Models\Platform\{Organization, User};
 use App\Models\ServiceTicket\{ServiceTicket, ServiceTicketLink};
-use App\Support\Setting;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -33,9 +32,15 @@ class TicketIncidentService {
         3 => [1 => 'normal', 2 => 'high', 3 => 'urgent'],
     ];
 
+    /** Vorschlag der Standardmatrix — auch als Beschriftung der leeren Zelle im Einstellungsformular. */
+    public function defaultPriority(TicketSeverity $impact, TicketSeverity $urgency): ServiceTicketPriority {
+        return ServiceTicketPriority::from(self::DEFAULT_MATRIX[$impact->value][$urgency->value]);
+    }
+
     public function suggestPriority(Organization $organization, TicketSeverity $impact, TicketSeverity $urgency): ServiceTicketPriority {
+        // Je Organisation überschreibbar (MVP-1589); eine leere Zelle fällt auf die Standardmatrix.
         /** @var array<int|string, array<int|string, string>> $matrix */
-        $matrix = (array) Setting::get('helpdesk.priority_matrix', self::DEFAULT_MATRIX);
+        $matrix = (array) data_get((array) $organization->settings, 'helpdesk.priority_matrix', []);
         $value = (string) ($matrix[$impact->value][$urgency->value]
             ?? self::DEFAULT_MATRIX[$impact->value][$urgency->value]);
 

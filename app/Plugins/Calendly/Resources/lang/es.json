@@ -50,5 +50,13 @@
     "nicht verbunden": "no conectado",
     "nicht zugeordnet": "no asignado",
     "verbunden": "conectado",
-    "z. B. Erstberatung": "p. ej. primera consulta"
+    "z. B. Erstberatung": "p. ej. primera consulta",
+    "Calendly-Nutzer zuordnen": "Asignar usuarios de Calendly",
+    "Gastgeber werden über ihre E-Mail-Adresse erkannt. Weicht die Calendly-Adresse ab, ordnen Sie sie hier einem Benutzer zu.": "Los anfitriones se reconocen por su dirección de correo. Si la dirección de Calendly es distinta, asígnela aquí a un usuario.",
+    "Calendly-E-Mail": "Correo de Calendly",
+    "Zuordnung speichern": "Guardar asignación",
+    "Zuordnung entfernen": "Eliminar asignación",
+    "Calendly-Nutzer zugeordnet.": "Usuario de Calendly asignado.",
+    "Calendly-Zuordnung entfernt.": "Asignación de Calendly eliminada.",
+    "Noch keine abweichenden Gastgeber zugeordnet.": "Aún no hay anfitriones con dirección distinta asignados."
 }

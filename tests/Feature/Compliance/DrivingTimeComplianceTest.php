@@ -125,6 +125,20 @@ class DrivingTimeComplianceTest extends TestCase {
         $this->assertNull(app(DrivingTimeBudget::class)->remainingFor($this->driver->fresh(), CarbonImmutable::parse('2026-06-08')));
     }
 
+    public function test_findings_resolve_when_the_fleet_module_is_off(): void {
+        $this->trip('2026-06-08 06:00:00', '2026-06-08 11:00:00');
+        $this->scan();
+        $finding = ComplianceFinding::query()->where('category', DrivingTimeComplianceChecker::CATEGORY)->sole();
+        $this->assertNull($finding->resolved_at);
+
+        // Fuhrpark aus (MVP-1628): keine Befunde mehr, der offene löst sich im Lauf auf.
+        config(['license.feature_overrides' => ['module.fuhrpark' => false]]);
+        app(\App\Services\Licensing\FeatureFlagResolver::class)->flush();
+        $this->assertSame([], app(\App\Services\Compliance\ComplianceScanService::class)->drivingTimeFindingsForRange($this->organization, CarbonImmutable::parse('2026-06-01'), CarbonImmutable::parse('2026-06-10')));
+        $this->scan();
+        $this->assertNotNull($finding->fresh()->resolved_at);
+    }
+
     public function test_new_finding_notifies_driver(): void {
         Notification::fake();
         $this->trip('2026-06-08 06:00:00', '2026-06-08 11:00:00');

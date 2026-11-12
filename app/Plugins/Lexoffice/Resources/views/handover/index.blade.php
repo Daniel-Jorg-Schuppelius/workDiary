@@ -30,7 +30,7 @@
         <x-filter-field :label="__('lexoffice::lexware.field.handover_state')" for="handover-status" class="w-56 shrink-0">
             <select id="handover-status" name="status" class="select select-sm select-bordered">
                 <option value="">{{ __('lexoffice::lexware.handover.filter_all') }}</option>
-                @foreach (LexofficeHandoverStatus::cases() as $status)
+                @foreach (LexofficeHandoverStatus::manualCases() as $status)
                     <option value="{{ $status->value }}" @selected($statusFilter === $status)>{{ $status->label() }}</option>
                 @endforeach
             </select>

@@ -1,7 +1,7 @@
 ---
 title: "Diagnostics"
 topic: admin.diagnostics
-version: 1
+version: 2
 keywords:
     - system status
     - health check
@@ -45,3 +45,5 @@ Diagnostics views and triggered tests are recorded in the audit log.
 Viewing requires the diagnostics permission; running checks requires a
 separate permission. Operational metrics are available under
 **Metrics**.
+
+**Monitoring access:** For external monitoring, create an access under “Monitoring access”. The monitoring system fetches the report without signing in at /api/monitoring/diagnostics and sends the token in the header “Authorization: Bearer …”. The token is shown only once and stored only as a fingerprint; revoking blocks it immediately. The report contains no names or addresses, such as the licensee or the sender address. Requests are logged at most once per hour and access.

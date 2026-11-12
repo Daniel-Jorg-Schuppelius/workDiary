@@ -44,14 +44,6 @@ final class ZoneExtractor {
      * @param  array<string, mixed>  $zone
      * @param  list<WordBox>  $boxes
      */
-    public function rawText(array $zone, array $boxes): string {
-        return $this->firstHit($zone, $boxes)['raw'] ?? '';
-    }
-
-    /**
-     * @param  array<string, mixed>  $zone
-     * @param  list<WordBox>  $boxes
-     */
     public function extract(array $zone, array $boxes): ?string {
         return $this->firstHit($zone, $boxes)['value'] ?? null;
     }

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Whistleblowing;
 
 use App\Models\Concerns\BelongsToOrganization;
+use App\Support\Locales;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -48,4 +49,17 @@ class Portal extends Model {
         'external_channels' => 'array',
         'retention_months' => 'integer',
     ];
+
+    /**
+     * Sprachen des öffentlichen Portals, Standardsprache zuerst. Ohne Auswahl
+     * gibt es nur die Standardsprache und damit keine Umschaltung.
+     *
+     * @return list<string>
+     */
+    public function offeredLocales(): array {
+        $default = Locales::isSupported((string) $this->default_locale) ? (string) $this->default_locale : (string) config('app.locale', 'de');
+        $allowed = array_intersect(Locales::enabledCodes(), (array) ($this->allowed_locales ?? []));
+
+        return array_values(array_unique([$default, ...$allowed]));
+    }
 }

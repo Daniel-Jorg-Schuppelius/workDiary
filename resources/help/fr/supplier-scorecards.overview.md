@@ -1,7 +1,7 @@
 ---
 title: "Scorecards fournisseurs"
 topic: supplier-scorecards.overview
-version: 2
+version: 3
 keywords:
     - évaluation fournisseurs
     - notation des fournisseurs
@@ -27,3 +27,5 @@ Les scorecards évaluent les fournisseurs à partir de données réelles : ponct
 **Classement & analyse :** la liste est triée par score ; la scorecard détaillée présente les indicateurs avec graphiques et analyses signées vers les pièces sous-jacentes.
 
 **Fournisseurs masqués :** les fournisseurs marqués **Masquer dans les analyses** sont exclus du classement ; l'interrupteur **Inclure les fournisseurs masqués** les réintègre.
+
+**Régler les pondérations :** avec le droit de configuration du stock, vous ouvrez **Pondérations** dans le classement et saisissez un poids en pour cent par indicateur. Le total ne doit pas forcément faire 100 ; un champ vide rétablit la valeur par défaut. La note au-dessus du classement indique les pondérations en vigueur.

@@ -1,7 +1,7 @@
 ---
 title: "Diseño de documentos"
 topic: admin.document-design
-version: 1
+version: 4
 keywords:
     - papel membrete
     - membrete
@@ -106,3 +106,49 @@ Primeros pasos y vista del membrete (retoque 6):
   información, textos de cabecera/pie) y **Publicación** (documentos de
   prueba, asignación, versiones). La selección del membrete aparece de
   inmediato en la vista previa A4 y se guarda con «Guardar borrador».
+
+Bloques de información en el documento:
+
+- Factura, abono, proforma, presupuesto, confirmación de pedido, reclamación
+  y aviso de cuota imprimen los bloques según su estado. **Dinámico**
+  imprime los **datos de la empresa** (nombre, dirección, registro, línea
+  legal), los **datos fiscales** (NIF-IVA, número fiscal), la **persona de
+  contacto** (comercial de la factura o autor del presupuesto; si no, los
+  datos de contacto de la organización), la **introducción** y el **cierre**
+  (texto de cabecera y pie del perfil) y el **aviso de confidencialidad**
+  (texto propio en la pestaña Contenidos; vacío = aviso predeterminado).
+  «Ya en el membrete» y «no aplicable» omiten el bloque.
+- Los datos de la empresa y fiscales proceden de los datos del vendedor de
+  la factura electrónica o, en su defecto, del branding y los datos legales
+  de la organización; así el PDF visible no contradice la factura
+  estructurada.
+- El preflight solo da por cumplidos los datos de la empresa y fiscales
+  «dinámicos» si están mantenidos. Si faltan, es un error en los documentos
+  de venta asignados y una advertencia en el diseño base.
+- Las facturas emitidas no cambian: los datos del emisor y la persona de
+  contacto se congelan al emitir; los documentos anteriores a estos bloques
+  no los imprimen ni siquiera al reimprimirse.
+
+## Datos de la empresa en pedidos, albaranes y actas
+
+También estos documentos imprimen los datos de la empresa y fiscales según el
+estado de bloque del diseño; se incluyen las hojas de medición y los justificantes
+de eliminación, que se diseñan como acta. Si el bloque obligatorio «Datos de la
+empresa» está en «dinámico», la comprobación previa verifica que el nombre y la
+dirección completa estén registrados, como en facturas y ofertas. Los justificantes
+firmados o cerrados antes siguen como estaban.
+
+## Datos de la empresa en justificantes, certificados y escritos de obra
+
+Todo tipo de documento con el bloque obligatorio «Datos de la empresa» lo imprime
+según el estado del bloque, y la comprobación previa verifica sus datos: además de
+los documentos anteriores, el justificante de fabricación, el aviso de
+impedimento y el de reservas, el certificado, el boletín de notas y el certificado
+de graduación, el justificante de cierre de una firma de contrato, el justificante
+de instrucción y la evaluación de riesgos, así como la factura comercial y la
+proforma para la aduana. El diseño se congela al enviar, emitir, firmar por primera
+vez, aprobar o cerrar; los escritos y justificantes enviados, emitidos, firmados o
+cerrados antes siguen como estaban. Sin bloque de empresa quedan la hoja de horas,
+el formulario, el informe, el expediente, el justificante de prestaciones y la
+etiqueta; el certificado de donación sigue el modelo oficial con su propio bloque
+de emisor.

@@ -1,7 +1,7 @@
 ---
 title: "Collegare JTL-Wawi"
 topic: admin.jtl-wawi
-version: 1
+version: 3
 keywords:
     - gestionale magazzino
     - ERP
@@ -53,3 +53,9 @@ importa le giacenze JTL come inventario di apertura.
 Dopo il rilascio ufficiale può dipendere dall’edizione e diventare a
 pagamento; una licenza decaduta porta a uno stato bloccato visibile,
 mai a registrazioni errate silenziose.
+
+**Ripetere l’inventario di apertura:** se l’importazione non è riuscita al passaggio a «locale», la riavvii nello stesso giorno con «Esegui inventario di apertura»; una seconda esecuzione non registra nulla due volte. Dal giorno successivo guida la giacenza locale e l’azione non è più disponibile.
+
+**Titolarità dei dati:** La gestione delle giacenze di questa pagina è anche la gestione dell’area giacenze nella pagina «Titolarità dei dati», che la mostra soltanto. Se un altro sistema gestisce le giacenze, l’inventario di subentro non registra nulla per la coppia interessata; il caso resta nella casella delle integrazioni per essere acquisito una volta.
+
+**Giacenze gestite altrove:** se un altro programma (ad esempio Billbee) gestisce le giacenze, la pagina lo segnala e non cambia la modalità; altrimenti l’inventario di subentro da JTL-Wawi riguarderebbe giacenze che non gestisce.

@@ -170,9 +170,9 @@ class ProcedureDeviationReportBuilder {
             ->when($riskAccepted === true, fn(Builder $q) => $q->whereNotNull('risk_accepted_at'))
             ->when($riskAccepted === false, fn(Builder $q) => $q->whereNull('risk_accepted_at'))
             ->when($withFollowUp === true, fn(Builder $q) => $q->where(
-                fn(Builder $w) => $w->whereNotNull('open_issue_id')->orWhereNotNull('follow_up_diary_entry_id'),
+                fn(Builder $w) => $w->whereNotNull('open_issue_id')->orWhereNotNull('follow_up_diary_entry_id')->orWhereNotNull('requalify_run_id'),
             ))
-            ->when($withFollowUp === false, fn(Builder $q) => $q->whereNull('open_issue_id')->whereNull('follow_up_diary_entry_id'));
+            ->when($withFollowUp === false, fn(Builder $q) => $q->whereNull('open_issue_id')->whereNull('follow_up_diary_entry_id')->whereNull('requalify_run_id'));
     }
 
     /** @return DeviationRow */
@@ -183,9 +183,12 @@ class ProcedureDeviationReportBuilder {
         $createdAt = CarbonImmutable::parse((string) $deviation->created_at);
         $riskAcceptedAt = $deviation->risk_accepted_at !== null ? CarbonImmutable::parse((string) $deviation->risk_accepted_at) : null;
 
-        $followUpKind = $deviation->open_issue_id !== null
-            ? 'open_issue'
-            : ($deviation->follow_up_diary_entry_id !== null ? 'diary_entry' : null);
+        $followUpKind = match (true) {
+            $deviation->open_issue_id !== null => 'open_issue',
+            $deviation->follow_up_diary_entry_id !== null => 'diary_entry',
+            $deviation->requalify_run_id !== null => 'requalify_run',
+            default => null,
+        };
 
         return [
             'id' => (int) $deviation->id,

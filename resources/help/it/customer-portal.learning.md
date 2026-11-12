@@ -100,3 +100,8 @@ completamento viene documentato ed è tracciabile per il Suo fornitore.
   conoscenza interna del Suo fornitore.
 - Nel portale non può cancellare l'iscrizione né ritirare una richiesta di
   prenotazione.
+- Se un video ha una quota obbligatoria, l'unità può essere completata solo
+  quando tale quota è stata vista; lo stato compare sotto il video.
+  L'avanzamento rapido non conta.
+- Le unità che si completano tramite una procedura, un questionario o una
+  conferma esterna non possono essere svolte nel portale.

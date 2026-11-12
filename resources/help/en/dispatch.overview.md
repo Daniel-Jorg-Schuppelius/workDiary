@@ -1,7 +1,7 @@
 ---
 title: "Dispatch and conflict warnings"
 topic: dispatch.overview
-version: 3
+version: 4
 keywords:
     - scheduling
     - assign job
@@ -56,3 +56,13 @@ Under “Day proposal”, dispatch distributes all open orders of a day to the
 drivers in one run. Working windows, order time windows, breaks and
 qualifications are taken into account; drivers start and end at home. The
 proposal only becomes tours once it is adopted.
+
+## Qualification matrix and deployment traffic light
+
+If an order carries required qualifications, the **qualification matrix** shows
+for each employee the status at the start of the order: green **fulfilled**,
+yellow **expiring** (validity ends within 30 days) or **in training** (a course
+of the learning platform for this qualification is assigned or started), red
+**missing**. For yellow or red, the cell names the released course that teaches
+the qualification. The traffic light informs; an assignment is still blocked
+only by the qualification itself.

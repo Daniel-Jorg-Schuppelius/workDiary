@@ -36,6 +36,7 @@ return [
         'problem_report_open' => 'Informe de problema abierto',
         'cloud_intake_reauth' => 'Entrada en la nube: se requiere iniciar sesión',
         'cloud_intake_quarantined' => 'Entrada en la nube: importaciones rechazadas',
+        'sms_budget_warning' => 'Cupo de SMS',
     ],
     'severity' => [
         'info' => 'Aviso',
@@ -96,6 +97,8 @@ return [
         'problem_report_summary' => ':count informe(s) de problemas abiertos esperan tramitación.',
         'cloud_intake_reauth' => 'La entrada de documentos en la nube :provider (“:folder”) necesita volver a conectarse (:status).',
         'cloud_intake_quarantined' => ':count archivo(s) de la entrada de documentos en la nube fueron rechazados (último motivo: :reason).',
+        'sms_budget_warning' => 'Cupo de SMS :month: :used de :limit segmentos usados (:percent %).',
+        'sms_budget_exhausted' => 'Cupo de SMS :month agotado (:used de :limit segmentos): no se enviarán más SMS hasta fin de mes.',
         'support_grant_summary' => ':count autorización(es) de soporte activa(s): revisar y revocar si es necesario.',
     ],
     'filter' => [

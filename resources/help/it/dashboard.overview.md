@@ -1,7 +1,7 @@
 ---
 title: "Dashboard"
 topic: dashboard.overview
-version: 3
+version: 4
 keywords:
     - pagina iniziale
     - home
@@ -33,6 +33,8 @@ riquadri nascosti non interrogano più i dati: una dashboard ordinata
 si carica quindi anche più in fretta.
 
 I riquadri di conteggio dei widget di indicatori portano al registro ordini con il filtro di stato corrispondente, ai servizi e all’elenco dei membri.
+
+**Movimenti finanziari:** nell’area Finanze questo riquadro mostra per fonte i movimenti senza assegnazione — estratti conto della riconciliazione dei pagamenti e Firefly III — e sotto gli ultimi movimenti degli ultimi 30 giorni, anche dal conto negozio Etsy. Il numero apre l’elenco della fonte, per Firefly III filtrato sui movimenti aperti. Gli estratti conto sono visibili a chi ha il diritto alla riconciliazione dei pagamenti, Firefly III ed Etsy all’amministrazione finché il plugin è attivo.
 
 ## Prerequisiti
 

@@ -1,7 +1,7 @@
 ---
 title: "Task imports from open-source tools"
 topic: admin.oss-task-imports
-version: 1
+version: 2
 keywords:
     - Vikunja
     - Kanboard
@@ -161,3 +161,5 @@ mappings.
 - Leantime or GLPI shows no source: the API key is not assigned to any project,
   or the REST API is not enabled in GLPI.
 - FreeScout answers with 404: the “API & Webhooks” module is not active.
+
+**Data ownership:** If another system leads the tasks, the synchronisation creates a “Data ownership” case per task in the integration inbox. **Take over once** imports the task through the same mapping as long as it is active; if the task changes in the source afterwards, the case reopens.

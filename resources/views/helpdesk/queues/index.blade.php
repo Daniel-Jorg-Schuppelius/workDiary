@@ -43,6 +43,12 @@
                             @if ($queue->is_default)
                                 <x-status-badge tone="info" size="xs">{{ __('Standard') }}</x-status-badge>
                             @endif
+                            @if ($queue->isExternallyLed())
+                                <x-status-badge tone="warning" size="xs" outline :title="__('helpdesk.queue.ownershipExternalHint')">{{ __('helpdesk.queue.ownershipExternal') }}</x-status-badge>
+                            @endif
+                            @if (! empty($queue->supported_kinds))
+                                <div class="text-xs font-normal text-muted">{{ implode(', ', array_map(static fn ($kind): string => \App\Enums\ServiceTicket\ServiceTicketKind::tryFrom((string) $kind)?->label() ?? (string) $kind, $queue->supported_kinds)) }}</div>
+                            @endif
                         </td>
                         <td class="text-sm text-muted">{{ $queue->team?->name ?? '—' }}</td>
                         <td class="text-sm">{{ $queue->visibility === 'portal' ? __('Kundenportal') : __('Intern') }}</td>

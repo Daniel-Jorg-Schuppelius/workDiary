@@ -1,7 +1,7 @@
 ---
 title: "Today & Kanban"
 topic: work.overview
-version: 1
+version: 2
 keywords:
     - today view
     - daily overview
@@ -34,3 +34,5 @@ Typical flow:
 If no entries appear, check the date range, filters and active
 organization. Status changes use the same permissions and required
 fields as the work list.
+
+**On the road without a network:** On "Today" you can also capture project time (entry bar, duration or from/to), material and corrections of your own clockings offline. They are transferred on the next contact; whatever cannot be taken over is listed under "Offline changes".

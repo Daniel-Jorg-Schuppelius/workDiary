@@ -289,4 +289,59 @@ class SupplierCredentialTest extends TestCase {
         $this->credential(now()->addYear()->toDateString());
         $this->actingAs($this->admin)->get(route('purchase-orders.show', $order))->assertOk()->assertSee($badge(CredentialStatus::Ok));
     }
+
+    /** MVP-1586: eigene Nachweisarten der Organisation; der Katalog bleibt Vorlage. */
+    public function test_organization_maintains_its_own_credential_types(): void {
+        $tag = \App\Models\Classification\Tag::query()->create(['organization_id' => $this->org->id, 'name' => 'Elektro']);
+        $other = Organization::factory()->create();
+        $foreign = SupplierCredentialType::query()->create([
+            'organization_id' => $other->id, 'code' => 'fremd', 'name' => 'Fremde Art', 'warn_days_before' => 30,
+            'blocking_mode' => 'warn', 'is_required_default' => true, 'is_active' => true,
+        ]);
+
+        $this->actingAs($this->admin)->get(route('suppliers.credential-types.index'))
+            ->assertOk()->assertSee($this->type()->name)->assertDontSee('Fremde Art');
+        $this->actingAs($this->admin)->get(route('suppliers.credential-types.create', ['vorlage' => $this->type()->sqid]) . '&dialog=1')
+            ->assertOk()->assertSee($this->type()->name);
+
+        $payload = [
+            'name' => 'Eintragung Handwerksrolle', 'warn_days_before' => '14', 'default_validity_months' => '',
+            'blocking_mode' => 'block', 'is_required_default' => '1', 'is_active' => '1', 'required_tag_ids' => [$tag->sqid],
+        ];
+        $this->actingAs($this->admin)->post(route('suppliers.credential-types.store'), $payload)
+            ->assertRedirect(route('suppliers.credential-types.index'))->assertSessionHasNoErrors();
+        $own = SupplierCredentialType::query()->where('organization_id', $this->org->id)->sole();
+        $this->assertSame('eintragung_handwerksrolle', $own->code);
+        $this->assertSame([$tag->id], $own->required_tag_ids);
+        $this->assertTrue($own->blocks());
+
+        // Pflicht je Gewerk: ohne das Tag zählt die Art nicht in die Ampel, mit dem Tag fehlt sie.
+        $service = app(SupplierCredentialService::class);
+        $this->assertNotContains($own->id, $service->statusFor($this->supplier)->pluck('type.id')->all());
+        $this->supplier->tags()->attach($tag->id);
+        $row = $service->statusFor($this->supplier->fresh())->firstWhere('type.id', $own->id);
+        $this->assertSame(CredentialStatus::Missing, $row['status']);
+
+        // Deaktivieren statt löschen.
+        $this->actingAs($this->admin)->put(route('suppliers.credential-types.update', $own), ['is_active' => '0', 'required_tag_ids' => []] + $payload)
+            ->assertSessionHasNoErrors();
+        $this->assertFalse($own->fresh()->is_active);
+        $this->assertNull($own->fresh()->required_tag_ids);
+        $this->assertNotContains($own->id, $service->statusFor($this->supplier->fresh())->pluck('type.id')->all());
+
+        // Katalogzeilen und fremde Arten sind nicht änderbar.
+        $this->actingAs($this->admin)->put(route('suppliers.credential-types.update', $this->type()), $payload)->assertNotFound();
+        $this->actingAs($this->admin)->get(route('suppliers.credential-types.edit', $foreign))->assertNotFound();
+        $this->assertSame('freistellung_48b', $this->type()->code);
+
+        $user = User::factory()->user()->create(['organization_id' => $this->org->id]);
+        $this->actingAs($user)->get(route('suppliers.credential-types.index'))->assertForbidden();
+
+        // Lieferanten bearbeiten reicht nicht: Nachweisarten sperren organisationsweit.
+        $accounting = User::factory()->buchhaltung()->create(['organization_id' => $this->org->id]);
+        $this->assertTrue($accounting->can(\App\Enums\User\Permission::SupplierUpdate->value));
+        $this->actingAs($accounting)->get(route('suppliers.credential-types.index'))->assertForbidden();
+        $this->actingAs($accounting)->get(route('suppliers.credentials.index'))
+            ->assertOk()->assertDontSee(route('suppliers.credential-types.index'), false);
+    }
 }

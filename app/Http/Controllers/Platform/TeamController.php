@@ -257,7 +257,7 @@ class TeamController extends Controller {
 
     /**
      * Synchronisiert die Mitglieder (nur Benutzer der eigenen Organisation).
-     * Der Teamleiter wird stets als Mitglied geführt und im Pivot markiert.
+     * Der Teamleiter wird stets als Mitglied geführt; wer leitet, steht allein in `teams.lead_user_id`.
      *
      * @param  list<int>  $memberIds
      */
@@ -275,10 +275,7 @@ class TeamController extends Controller {
 
         $pivot = [];
         foreach ($validIds as $id) {
-            $pivot[$id] = [
-                'is_lead' => (int) $id === (int) $team->lead_user_id,
-                'joined_at' => Carbon::now(),
-            ];
+            $pivot[$id] = ['joined_at' => Carbon::now()];
         }
 
         $team->members()->sync($pivot);

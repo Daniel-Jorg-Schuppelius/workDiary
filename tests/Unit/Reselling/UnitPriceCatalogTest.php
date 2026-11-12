@@ -47,9 +47,10 @@ class UnitPriceCatalogTest extends TestCase {
         $this->assertSame(3, $catalog->quantityOf($entitlements[8]), '385,13 = 3 × 128,38');
         $this->assertSame(1, $catalog->quantityOf($entitlements[9]), '167,08 ist kein Vielfaches — eigener Stückpreis');
 
-        $units = $catalog->unitPrices();
-        $this->assertSame([22691, 24476], array_map(static fn($m) => $m->getMinorAmount(), $units['Microsoft 365 Business Premium']));
-        $this->assertSame([12838, 13894, 16708], array_map(static fn($m) => $m->getMinorAmount(), $units['Microsoft 365 Business Standard']));
+        $this->assertSame(
+            [13894, 13894, 12838, 12838, 16708],
+            array_map(static fn ($entitlement): int => $catalog->unitPriceOf($entitlement)->getMinorAmount(), array_slice($entitlements, 5)),
+        );
     }
 
     public function test_unknown_entitlement_falls_back_to_its_own_fee(): void {
@@ -71,8 +72,7 @@ class UnitPriceCatalogTest extends TestCase {
         $this->assertSame(2, $catalog->quantityOf($twiceEuro));
         $this->assertSame(1, $catalog->quantityOf($franken), 'CHF-Gebühr ist ein eigener Stückpreis');
         $this->assertSame('CHF', $catalog->unitPriceOf($franken)->getCurrency()->value);
-        $units = $catalog->unitPrices();
-        $this->assertSame([24476], array_map(static fn($m) => $m->getMinorAmount(), $units['Microsoft 365 Business Premium|EUR']));
-        $this->assertSame([48952], array_map(static fn($m) => $m->getMinorAmount(), $units['Microsoft 365 Business Premium|CHF']));
+        $this->assertSame(24476, $catalog->unitPriceOf($twiceEuro)->getMinorAmount());
+        $this->assertSame(48952, $catalog->unitPriceOf($franken)->getMinorAmount());
     }
 }

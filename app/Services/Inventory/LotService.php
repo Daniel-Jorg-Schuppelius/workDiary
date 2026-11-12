@@ -60,8 +60,8 @@ class LotService {
     }
 
     /** Wareneingang in eine Charge (legt eine FEFO-Bewertungsschicht an). */
-    public function receiveIntoLot(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, StockLot $lot, string $currency = 'EUR', ?int $actorUserId = null): StockMovement {
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $lot, $currency, $actorUserId): StockMovement {
+    public function receiveIntoLot(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, StockLot $lot, string $currency = 'EUR', ?int $actorUserId = null, ?EnteredQuantity $entered = null): StockMovement {
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $lot, $currency, $actorUserId, $entered): StockMovement {
             $this->lockAndRefresh($lot);
             // Ein Zugang an eine zusammengeführte Charge läge an einer Charge, die kein Pickzettel mehr vorschlägt.
             if ($lot->status === StockLotStatus::Merged) {
@@ -72,7 +72,7 @@ class LotService {
                 throw new RuntimeException((string) __('inventory.lot.error.receipt_into_blocked', ['lot' => $lot->lot_no]));
             }
 
-            return $this->fefo->receiptIntoLot($variant, $warehouse, $qty, $unitCost, $lot, $currency, $actorUserId);
+            return $this->fefo->receiptIntoLot($variant, $warehouse, $qty, $unitCost, $lot, $currency, $actorUserId, $entered);
         });
     }
 

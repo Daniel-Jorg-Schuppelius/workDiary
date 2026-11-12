@@ -62,4 +62,23 @@ return [
         'proposed_action' => 'Accettare o rifiutare nel portale clienti',
         'rescheduled_title' => 'Il Suo appuntamento è stato spostato',
     ],
+    // Assegnazione e gestione (MVP-1610, MVP-1612).
+    'assign' => [
+        'action' => 'Assegna',
+        'title' => 'Assegna richiesta',
+        'submit' => 'Assegna',
+        'invitee' => 'Prenotato da :name (:email).',
+        'customer_hint' => 'Alla conferma, l\'ordine viene creato per questo cliente.',
+        'lead' => 'Lead',
+        'lead_hint' => 'Se il lead è già cliente, viene assegnato anche il cliente.',
+        'required' => 'Scegliere un cliente o un lead.',
+        'done' => 'Richiesta assegnata.',
+        'decided' => 'Le richieste già decise non possono più essere assegnate.',
+    ],
+    'service' => [
+        'edit_title' => 'Modifica tipo di servizio',
+        'updated' => 'Tipo di servizio «:title» salvato.',
+        'site_foreign' => 'Questo tipo di servizio è legato a un oggetto di un altro cliente.',
+        'site_hint' => 'Con un oggetto prenota solo il cliente che ne è proprietario; diventa il luogo d\'intervento dell\'ordine.',
+    ],
 ];

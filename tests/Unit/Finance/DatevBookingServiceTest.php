@@ -108,6 +108,45 @@ class DatevBookingServiceTest extends TestCase {
         $this->assertSame('0', $rows[0]['tax_key']);
     }
 
+    /**
+     * MVP-1623: Ohne Steuer entscheidet der Steuerfall des Belegs über Erlöskonto
+     * und Schlüssel — dieselbe Kategorie wie der Journal-Weg, Konten aus der
+     * Vorlage; auf Automatikkonten kein Schlüssel und keine Preflight-Warnung.
+     */
+    public function test_zero_rated_sales_book_on_the_account_of_their_tax_case(): void {
+        $eu = $this->makeCustomer(['country' => 'AT', 'vat_id' => 'ATU12345678']);
+        $domestic = $this->makeCustomer(['country' => 'DE', 'is_reverse_charge_recipient' => true]);
+        $abroad = $this->makeCustomer(['country' => 'CH']);
+        $zero = ['tax_rate' => '0.00', 'tax_amount' => '0.00', 'total' => '100.00'];
+        $cases = [
+            'IGL' => [$eu, Invoice::CATEGORY_MATERIAL, 'AE', '8125', '4125'],
+            'RC21' => [$eu, Invoice::CATEGORY_SERVICE, 'AE', '8336', '4336'],
+            'RC60' => [$domestic, Invoice::CATEGORY_SERVICE, 'AE', '8337', '4337'],
+            'AUSF' => [$abroad, Invoice::CATEGORY_MATERIAL, 'G', '8120', '4120'],
+            'NSTB' => [$abroad, Invoice::CATEGORY_SERVICE, 'G', '8338', '4338'],
+        ];
+
+        $n = 0;
+        foreach ($cases as $code => [$customer, $category, $frozen, $skr03, $skr04]) {
+            $invoice = $this->makeInvoice($customer, $zero + [
+                'number' => 'RE-0-' . ++$n,
+                'category' => $category,
+                'is_reverse_charge' => $frozen === 'AE',
+                'tax_context' => ['category' => $frozen],
+            ]);
+
+            $row = $this->service()->buildBookingRows(new Collection([$invoice]), $this->config())[0];
+            $this->assertSame([$skr03, null, true], [$row['revenue_account'], $row['tax_key'], $row['automatic']], $code);
+            $this->assertSame($skr04, $this->service()->buildBookingRows(new Collection([$invoice]), $this->config(['skr' => 'skr04']))[0]['revenue_account'], $code);
+            $this->assertSame([], $this->service()->preflight($this->organization, new Collection([$invoice]), $this->config())['warnings'], $code);
+        }
+
+        // Steuerfrei im Inland bleibt beim eingestellten Konto.
+        $exempt = $this->makeInvoice($this->makeCustomer(), $zero + ['number' => 'RE-0-E', 'tax_context' => ['category' => 'E']]);
+        $row = $this->service()->buildBookingRows(new Collection([$exempt]), $this->config())[0];
+        $this->assertSame(['8200', '0'], [$row['revenue_account'], $row['tax_key']]);
+    }
+
     public function test_credit_note_reverses_soll_haben(): void {
         $customer = $this->makeCustomer();
         $invoice = $this->makeInvoice($customer, [

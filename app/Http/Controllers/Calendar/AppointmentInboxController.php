@@ -70,10 +70,70 @@ class AppointmentInboxController extends Controller {
     public function createService(): View {
         Gate::authorize(Permission::DispatchManage->value);
 
-        return view('appointments._service_dialog', [
-            'sites' => Site::query()->orderBy('name')->get(['id', 'name']),
-            'qualifications' => \App\Models\Hr\Qualification::query()->orderBy('name')->get(['id', 'name']),
+        return view('appointments._service_dialog', $this->serviceOptions() + ['service' => null]);
+    }
+
+    /** Bearbeiten-Dialog der Leistungsart (MVP-1610). */
+    public function editService(BookableService $bookableService): View {
+        Gate::authorize(Permission::DispatchManage->value);
+        abort_unless($bookableService->organization_id === $this->currentOrganizationId(), 404);
+
+        return view('appointments._service_dialog', $this->serviceOptions() + ['service' => $bookableService->load(['site:id', 'requiredQualification:id'])]);
+    }
+
+    public function updateService(Request $request, BookableService $bookableService, SqidEncoder $sqids): RedirectResponse {
+        Gate::authorize(Permission::DispatchManage->value);
+        abort_unless($bookableService->organization_id === $this->currentOrganizationId(), 404);
+
+        $bookableService->fill($this->validatedService($request, $sqids))->save();
+        if ($bookableService->wasChanged()) {
+            $bookableService->audit('appointment.service_updated', ['fields' => array_keys($bookableService->getChanges())]);
+        }
+
+        return redirect()->route('appointments.index', ['tab' => 'services'])
+            ->with('success', __('appointment.service.updated', ['title' => $bookableService->title]));
+    }
+
+    /** Zuordnen-Dialog einer offenen Anfrage (MVP-1610): Kunde oder Lead. */
+    public function assignForm(AppointmentRequest $appointmentRequest): View {
+        Gate::authorize(Permission::DispatchManage->value);
+        $this->assertSameOrganization($appointmentRequest);
+        abort_unless($appointmentRequest->isAssignable(), 404);
+
+        return view('appointments._assign_dialog', [
+            'request' => $appointmentRequest->load(['customer:id,name', 'lead']),
+            'customers' => \App\Models\Customer\Customer::query()->withoutCollective()->orderBy('name')->get(['id', 'name']),
+            'leads' => app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.vertrieb')
+                ? \App\Models\Sales\Lead::query()->whereNull('anonymized_at')->orderByDesc('id')->limit(500)->get()
+                : null,
         ]);
+    }
+
+    public function assign(Request $request, AppointmentRequest $appointmentRequest, AppointmentRequestService $service, SqidEncoder $sqids): RedirectResponse {
+        Gate::authorize(Permission::DispatchManage->value);
+        $this->assertSameOrganization($appointmentRequest);
+
+        $data = $request->validate([
+            'customer' => ['nullable', 'string'],
+            'lead' => ['nullable', 'string'],
+        ]);
+        $customer = filled($data['customer'] ?? null)
+            ? \App\Models\Customer\Customer::query()->find($sqids->decode(\App\Models\Customer\Customer::class, (string) $data['customer']))
+            : null;
+        $lead = filled($data['lead'] ?? null) && app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.vertrieb')
+            ? \App\Models\Sales\Lead::query()->find($sqids->decode(\App\Models\Sales\Lead::class, (string) $data['lead']))
+            : null;
+        if ($customer === null && $lead === null) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['customer' => __('appointment.assign.required')]);
+        }
+
+        try {
+            $service->assignParty($appointmentRequest, $customer, $lead);
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return back()->with('success', __('appointment.assign.done'));
     }
 
     public function confirm(AppointmentRequest $appointmentRequest, AppointmentRequestService $service): RedirectResponse {
@@ -150,6 +210,27 @@ class AppointmentInboxController extends Controller {
     public function storeService(Request $request, SqidEncoder $sqids): RedirectResponse {
         Gate::authorize(Permission::DispatchManage->value);
 
+        $service = BookableService::query()->create($this->validatedService($request, $sqids) + [
+            'organization_id' => $this->currentOrganizationId(),
+            'active' => true,
+            'created_by' => Auth::id(),
+        ]);
+        $service->audit('appointment.service_created', []);
+
+        return redirect()->route('appointments.index', ['tab' => 'services'])
+            ->with('success', __('Leistungsart „:title" ist jetzt buchbar.', ['title' => $service->title]));
+    }
+
+    /** @return array{sites: \Illuminate\Support\Collection<int, Site>, qualifications: \Illuminate\Support\Collection<int, \App\Models\Hr\Qualification>} */
+    private function serviceOptions(): array {
+        return [
+            'sites' => Site::query()->orderBy('name')->get(['id', 'name']),
+            'qualifications' => \App\Models\Hr\Qualification::query()->orderBy('name')->get(['id', 'name']),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function validatedService(Request $request, SqidEncoder $sqids): array {
         $data = $request->validate([
             'title' => ['required', 'string', 'max:160'],
             'description' => ['nullable', 'string', 'max:500'],
@@ -173,8 +254,7 @@ class AppointmentInboxController extends Controller {
             abort_if($siteId === null || ! Site::query()->whereKey($siteId)->exists(), 422);
         }
 
-        $service = BookableService::query()->create([
-            'organization_id' => $this->currentOrganizationId(),
+        return [
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
             'duration_minutes' => (int) $data['duration_minutes'],
@@ -183,13 +263,7 @@ class AppointmentInboxController extends Controller {
             'buffer_minutes' => (int) $data['buffer_minutes'],
             'site_id' => $siteId,
             'required_qualification_id' => $qualificationId,
-            'active' => true,
-            'created_by' => Auth::id(),
-        ]);
-        $service->audit('appointment.service_created', []);
-
-        return redirect()->route('appointments.index', ['tab' => 'services'])
-            ->with('success', __('Leistungsart „:title" ist jetzt buchbar.', ['title' => $service->title]));
+        ];
     }
 
     public function toggleService(BookableService $bookableService): RedirectResponse {

@@ -97,6 +97,9 @@ final class ManufacturingManifest extends Manifest {
             \App\Events\Invoicing\DeliveryInvoiced::class => [
                 \App\Listeners\Manufacturing\MarkDeliveryInvoiced::class,
             ],
+            \App\Events\Inventory\StockReservationQuantityChanged::class => [
+                \App\Listeners\Manufacturing\SyncMaterialReservation::class,
+            ],
         ];
     }
 }

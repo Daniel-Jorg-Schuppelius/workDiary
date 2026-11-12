@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Anlage-Dialog technische/organisatorische Maßnahme (in #entry-modal geladen). Variablen: $categories --}}
+{{-- Anlage-Dialog technische/organisatorische Maßnahme (in #entry-modal geladen). Variablen: $categories, $statuses, $protectionLevels --}}
 <x-modal
     :title="__('Neue Maßnahme')"
     :eyebrow="__('TOM-Katalog')"
@@ -22,6 +22,17 @@
         <x-input-field name="category" :label="__('Maßnahmenbereich')">
             <select id="category" name="category" class="select select-bordered w-full">
                 @foreach ($categories as $c)<option value="{{ $c->value }}" @selected(old('category') === $c->value)>{{ $c->label() }}</option>@endforeach
+            </select>
+        </x-input-field>
+        <x-input-field name="implementation_status" :label="__('privacy.tom.implementation_status')">
+            <select id="implementation_status" name="implementation_status" class="select select-bordered w-full">
+                @foreach ($statuses as $s)<option value="{{ $s->value }}" @selected(old('implementation_status', \App\Enums\Privacy\ImplementationStatus::Planned->value) === $s->value)>{{ $s->label() }}</option>@endforeach
+            </select>
+        </x-input-field>
+        <x-input-field name="protection_level" :label="__('privacy.tom.protection_level')">
+            <select id="protection_level" name="protection_level" class="select select-bordered w-full">
+                <option value="">{{ __('privacy.tom.protection_level_none') }}</option>
+                @foreach ($protectionLevels as $p)<option value="{{ $p->value }}" @selected(old('protection_level') === $p->value)>{{ $p->label() }}</option>@endforeach
             </select>
         </x-input-field>
         <x-input-field name="description" :label="__('Beschreibung')" span="2">

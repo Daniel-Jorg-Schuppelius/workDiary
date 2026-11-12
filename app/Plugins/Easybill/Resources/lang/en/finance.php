@@ -15,6 +15,8 @@ return [
         'unit_piece' => 'pcs',
     ],
     'error' => [
+        'ownership_unavailable' => 'The connection is not set up — the state cannot be applied right now.',
+        'ownership_not_ready' => 'The source is not providing the state right now — please apply it again later.',
         'easybill_no_customer' => 'The document has no customer and cannot be transferred to easybill.',
         'easybill_cancel_not_transferred' => 'Invoice :number is not in easybill; the cancellation cannot be created there. Set the range “Cancellation” to WorkDiary to number it locally.',
         'easybill_not_configured' => 'easybill is not configured for this organisation (API key missing).',

@@ -14,6 +14,8 @@ namespace App\Models\Guarantee;
 
 use App\Casts\MoneyCast;
 use App\Enums\Guarantee\{GuaranteeDirection, GuaranteeKind, GuaranteeStatus};
+use App\Enums\Invoicing\RetentionStatus;
+use App\Enums\Warranty\WarrantyStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\Contract\Contract;
 use App\Models\Customer\Customer;
@@ -21,8 +23,9 @@ use App\Models\Invoicing\InvoiceRetention;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Supplier\Supplier;
+use App\Support\Query\DateRange;
 use CommonToolkit\ValueObjects\Money;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
@@ -135,10 +138,39 @@ class Guarantee extends Model {
         return $this->issuerSupplier?->displayLabel() ?? (string) ($this->issuer_name ?? '—');
     }
 
-    /** Ist die Befristung abgelaufen, ohne dass jemand reagiert hat? */
+    /** Ist die Befristung abgelaufen, ohne dass jemand reagiert hat? Der letzte Tag der Befristung zählt noch. */
     public function isExpiredUnnoticed(): bool {
         return $this->status === GuaranteeStatus::Active
             && $this->expires_on !== null
-            && $this->expires_on->isPast();
+            && $this->expires_on->lt(Carbon::today());
+    }
+
+    /**
+     * Aktive Bürgschaften, deren Urkunde zurückgehört: Der abgelöste Einbehalt
+     * ist freigegeben oder die gekoppelte Gewährleistung ohne offene Rüge
+     * beendet (MVP-1282).
+     * Eine Quelle für Fristenscan, Kachel und Filter.
+     *
+     * @param Builder<self> $query
+     */
+    public function scopeReturnDue(Builder $query): void {
+        $query->where('status', GuaranteeStatus::Active->value)
+            ->where(fn (Builder $q) => $q
+                ->whereHas('retention', fn (Builder $r) => $r->where('status', RetentionStatus::Released->value))
+                // Solange eine Rüge offen ist, bleibt die Sicherheit stehen.
+                ->orWhereHas('warrantyPeriod', fn (Builder $w) => $w
+                    ->where('status', '!=', WarrantyStatus::Claimed->value)
+                    ->where('ends_on', '<', DateRange::dayAfter(Carbon::today()))));
+    }
+
+    /**
+     * Aktive Bürgschaften mit überschrittener Befristung.
+     *
+     * @param Builder<self> $query
+     */
+    public function scopePastExpiry(Builder $query): void {
+        $query->where('status', GuaranteeStatus::Active->value)
+            ->whereNotNull('expires_on')
+            ->where('expires_on', '<', Carbon::today()->toDateString());
     }
 }

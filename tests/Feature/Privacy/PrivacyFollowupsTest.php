@@ -86,7 +86,7 @@ class PrivacyFollowupsTest extends TestCase {
         $dpia->refresh();
         $this->assertSame('proceed', $dpia->outcome->value);
         $this->assertNotNull($dpia->assessed_at);
-        $this->assertNull($workflow->nextStep($dpia));
+        $this->assertSame(0, $dpia->steps()->where('status', '!=', DpiaStepStatus::Done->value)->count(), 'Nach der Freigabe ist kein Schritt offen.');
     }
 
     public function test_dpia_step_route_and_pdf_report(): void {

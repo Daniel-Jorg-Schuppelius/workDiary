@@ -70,4 +70,17 @@ final class MobileStocktakeTest extends TestCase {
 
         $this->assertSame('4.0000', $this->count->lines()->firstOrFail()->counted_qty);
     }
+
+    public function test_offline_command_counts_in_the_entered_unit(): void {
+        $article = $this->count->lines()->firstOrFail()->variant->article;
+        \App\Models\Article\ArticleUnit::factory()->create(['article_id' => $article->id, 'code' => 'Pack', 'factor_to_base' => '50', 'active' => true]);
+        $this->actingAs($this->admin)->get(route('inventory.counts.mobile', $this->count))->assertSee('<option value="Pack">', false);
+
+        $command = ['client_uuid' => (string) Str::uuid(), 'type' => 'inventory.count', 'payload' => ['count' => $this->count->sqid, 'code' => 'DUE-8', 'qty' => '2', 'unit' => 'Pack']];
+        $this->actingAs($this->admin)->postJson(route('api.internal.sync.commands'), ['commands' => [$command]])
+            ->assertOk()->assertJsonPath('results.0.status', 'applied');
+
+        // 2 Pack zu je 50 Stück, gezählt in der Basiseinheit (MVP-1626).
+        $this->assertSame('100.0000', $this->count->lines()->firstOrFail()->counted_qty);
+    }
 }

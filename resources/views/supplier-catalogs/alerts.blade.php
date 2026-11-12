@@ -37,7 +37,10 @@
                             'purchase_orders' => $impacts['purchase_orders'] ?? [],
                             'boq_items' => $impacts['boq_items'] ?? [],
                             'manufacturing_orders' => $impacts['manufacturing_orders'] ?? [],
+                            'quotes' => $impacts['quotes'] ?? [],
+                            'orders' => $impacts['orders'] ?? [],
                         ];
+                        $documentMargins = $impacts['document_margins'] ?? [];
                         $hasImpacts = array_filter($impactGroups) !== [];
                     @endphp
                     <tr>
@@ -57,6 +60,17 @@
                                     @endforeach
                                 </div>
                             @endif
+                            {{-- MVP-1581: Positionen, deren Belegpreis unter die Mindestmarge fällt. --}}
+                            @foreach ($documentMargins as $entry)
+                                <div class="text-xs text-error mt-0.5">
+                                    {{ __('procurement.alert.document_margin.' . $entry['group'], [
+                                        'number' => $entry['number'],
+                                        'position' => $entry['position'],
+                                        'price' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $entry['unit_price'], 2, withThousandsSeparator: true),
+                                        'margin' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $entry['margin'], 1),
+                                    ]) }}
+                                </div>
+                            @endforeach
                         </td>
                         <td class="text-sm">{{ $alert->supplier?->name ?: '—' }}</td>
                         <td class="text-right tabular-nums text-sm opacity-70">
@@ -74,7 +88,9 @@
                                     {{ $impacts['availability']['old'] ?? '—' }} → {{ $impacts['availability']['new'] ?? '—' }}
                                 </span>
                             @elseif ($alert->new_margin !== null)
-                                <span class="text-error font-medium">{{ rtrim(rtrim((string) $alert->new_margin?->getNumericValue(), '0'), '.') }} %</span>
+                                {{-- Liegt nur ein Beleg unter der Mindestmarge, ist die Stamm-Marge kein Fehler. --}}
+                                @php($masterMargin = (float) $alert->new_margin?->getNumericValue())
+                                <span @class(['font-medium', 'text-error' => $masterMargin < 0 || ($alert->min_margin !== null && $masterMargin < (float) $alert->min_margin->getNumericValue())])>{{ rtrim(rtrim((string) $alert->new_margin?->getNumericValue(), '0'), '.') }} %</span>
                                 @if ($alert->min_margin !== null)
                                     <span class="opacity-50 text-xs">(min {{ rtrim(rtrim((string) $alert->min_margin?->getNumericValue(), '0'), '.') }} %)</span>
                                 @endif

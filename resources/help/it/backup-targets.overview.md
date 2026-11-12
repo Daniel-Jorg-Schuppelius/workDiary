@@ -1,7 +1,7 @@
 ---
 title: "Destinazioni di backup cloud"
 topic: backup-targets.overview
-version: 2
+version: 3
 keywords:
     - backup offsite
     - salvataggio dati
@@ -33,3 +33,7 @@ WorkDiary salva l'intera installazione in forma cifrata su Dropbox, OneDrive, Go
 **Chiavi:** BACKUP_MASTER_KEY (ENV, conservare offline!) è l'unico percorso regolare di decifratura; una coppia di chiavi di recupero opzionale decifra in emergenza. Senza chiave di recupero la pagina avverte in modo permanente — la perdita della chiave master rende inutilizzabili tutti i backup.
 
 **Esercizio:** L'esecuzione notturna crea uno snapshot (dump DB + file), lo cifra, carica le parti in modo ripristinabile e applica la retention (7 giornaliere / 4 settimanali / 12 mensili; la conservazione legale protegge singole generazioni). Una verifica settimanale a campione controlla firma e hash; il test di ripristino ripristina in una directory isolata e registra RPO/RTO — fino al primo test verde una generazione vale come «salvata, ripristino non confermato».
+
+## Accesso scaduto o destinazione disattivata
+
+Se il fornitore rifiuta l'accesso durante un backup o una verifica, la destinazione mostra **Nuovo accesso richiesto**; dopo errori ripetuti fino alla soglia di disattivazione, **Disattivata**. La destinazione non partecipa più ad alcuna esecuzione finché non la ricollega con **Nuovo accesso**.

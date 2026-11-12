@@ -22,4 +22,9 @@ class GlpiServiceProvider extends PluginServiceProviderBase {
     protected function registerPlugin(): void {
         $this->commands([Console\GlpiSyncCommand::class]);
     }
+
+    /** Datenführerschaft (MVP-1592): „Einmalig übernehmen“ spielt die Quellaufgabe erneut ein. */
+    protected function bootPlugin(): void {
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\GlpiImportService::class);
+    }
 }

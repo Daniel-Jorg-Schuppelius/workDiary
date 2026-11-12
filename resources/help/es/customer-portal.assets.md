@@ -1,7 +1,7 @@
 ---
 title: "Objetos"
 topic: customer-portal.assets
-version: 3
+version: 5
 keywords:
     - equipos
     - instalaciones
@@ -42,14 +42,24 @@ Arriba figuran el nombre y el número de serie del objeto, seguidos de tres
 secciones:
 
 - **Citas de inspección & mantenimiento** – los planes de inspección y
-  mantenimiento registrados con **Denominación** y **Próximo vencimiento**, el
-  más próximo primero. Sin plan aparece **No hay citas registradas.**
+  mantenimiento en curso con **Denominación** y **Próximo vencimiento**, el
+  más próximo primero. **Obligación contractual** marca una cita que exige su
+  contrato. Los planes en pausa no aparecen porque no tienen ninguna cita
+  pendiente. Sin plan en curso aparece **No hay citas registradas.**
 - **Mantenimientos completados** – los mantenimientos realizados con
   denominación y fecha.
 - **Protocolos** – los protocolos firmados del objeto que su proveedor ha
   liberado para usted, con título, estado y fecha, el más reciente primero,
   cada uno con **Descargar PDF**. Si no hay ninguno, aparece
   **No hay protocolos aprobados.**
+
+## Aceptar protocolos
+
+Si un protocolo espera su aceptación, encima de la lista **Protocolos** aparece la sección **Pendientes de aceptación**. **Ver y firmar** abre el protocolo con todos sus puntos. Para aceptarlo, introduzca su nombre, firme en el recuadro de firma con el dedo, un lápiz o el ratón, confirme que los datos son correctos y haga clic en **Firmar**. La firma no se puede retirar.
+
+Si tiene preguntas u objeciones, aclárelas con su proveedor antes de firmar, mediante las consultas si están liberadas para usted. Tras su firma, su proveedor cierra el protocolo; después está disponible para descargar en **Protocolos**.
+
+Si no está de acuerdo con el protocolo, utilice el rechazo situado debajo: indique un motivo y, si procede, los defectos concretos. Su proveedor recibe una notificación y revisa el protocolo; vuelve a aparecer en **Pendientes de aceptación** en cuanto lo envía de nuevo.
 
 ## Descargar protocolos
 

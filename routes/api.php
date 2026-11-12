@@ -46,6 +46,11 @@ Route::post('terminal/ingest/{token}', \App\Http\Controllers\Api\TerminalIngestC
     ->middleware('throttle:terminal-ingest')
     ->name('api.terminal.ingest');
 
+// Diagnose-JSON für externe Überwachung (MVP-1618): Token nur im Authorization-Header.
+Route::get('monitoring/diagnostics', \App\Http\Controllers\Admin\MonitoringDiagnosticsController::class)
+    ->middleware('throttle:60,1')
+    ->name('api.monitoring.diagnostics');
+
 // ── Versionierte Sanctum-API (MVP-717, Vollscan J10) ─────────────────────────
 // Kanonisch sind die Routen unter `/api/v1/…` (Namen `api.*`). Die
 // unversionierten Pfade bleiben als Kompatibilitäts-Alias (Namen

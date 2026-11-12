@@ -24,7 +24,7 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($count->status->isOpen())
+    @if ($count->status->isCounting())
         <x-card>
             <form method="POST" action="{{ route('inventory.counts.scan-add', $count) }}" class="space-y-3"
                   data-offline-sync="inventory.count" data-sync-payload-count="{{ $count->sqid }}">
@@ -35,6 +35,16 @@
                 <div class="fieldset"><label for="qty" class="fieldset-label">{{ __('inventory.count_ui.mobile_qty') }}</label>
                     <input id="qty" name="qty" type="number" step="0.0001" min="0.0001" value="1" inputmode="decimal"
                            class="input input-lg input-bordered w-full"></div>
+                @php($countUnits = $count->lines->flatMap(fn ($l) => $l->variant?->article?->units ?? [])->pluck('code')->unique()->sort()->values())
+                @if ($countUnits->isNotEmpty())
+                    <div class="fieldset"><label for="count-mobile-unit" class="fieldset-label">{{ __('inventory.field.unit') }}</label>
+                        <select id="count-mobile-unit" name="unit" class="select select-lg select-bordered w-full">
+                            <option value="">{{ __('inventory.field.unit_base') }}</option>
+                            @foreach ($countUnits as $unitCode)
+                                <option value="{{ $unitCode }}">{{ $unitCode }}</option>
+                            @endforeach
+                        </select></div>
+                @endif
                 <x-button type="submit" tone="primary" class="w-full">{{ __('inventory.count_ui.mobile_add') }}</x-button>
                 <x-icon-btn icon="nfc" class="hidden w-full" type="button" data-nfc-read="#code" data-nfc-submit show-label>{{ __('asset.nfc.read') }}</x-icon-btn>
                 <p class="text-xs text-muted" data-nfc-status aria-live="polite"></p>

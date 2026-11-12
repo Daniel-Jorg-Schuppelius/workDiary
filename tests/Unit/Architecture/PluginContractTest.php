@@ -47,6 +47,9 @@ class PluginContractTest extends TestCase {
                 // W5e: Kern-Enum ODER Registry-Capability — beide erfüllen den Contract.
                 $this->assertInstanceOf(PluginCapabilityContract::class, $cap, "$class: capabilities() muss PluginCapabilityContract-Instanzen liefern.");
                 $interface = $cap->interface();
+                if ($interface === null) {
+                    continue; // reine Anzeige, kein Vertrag
+                }
                 $this->assertInstanceOf($interface, $plugin, "$class kündigt {$cap->identifier()} an, implementiert aber $interface nicht.");
             }
         }
@@ -62,7 +65,7 @@ class PluginContractTest extends TestCase {
             $plugin = $this->app->make($class);
             $advertised = array_map(static fn(PluginCapabilityContract $cap): string => $cap->identifier(), $plugin->capabilities());
             foreach (PluginCapability::cases() as $case) {
-                if ($plugin instanceof ($case->interface()) && ! in_array($case->identifier(), $advertised, true)) {
+                if ($case->interface() !== null && $plugin instanceof ($case->interface()) && ! in_array($case->identifier(), $advertised, true)) {
                     $missing[] = "$class implementiert {$case->interface()}, kündigt {$case->identifier()} aber nicht an.";
                 }
             }

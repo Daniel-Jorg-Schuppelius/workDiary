@@ -18,12 +18,15 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar back-route="reports.assets" :back-label="__('Zur Produktanalyse')">
+        <x-page-toolbar :back="route('reports.assets', array_filter($filters, fn ($v) => $v !== null && $v !== ''))" :back-label="__('Zur Produktanalyse')">
             <x-slot:subtitle>
-                {{ $label }} · {{ __('Schwelle: :n Defekte in :m Monaten', ['n' => $threshold, 'm' => $windowMonths]) }}
+                {{ __('Bereich') }}: {{ $scopeLabel }} · {{ $label }} · {{ __('Schwelle: :n Defekte in :m Monaten', ['n' => $threshold, 'm' => $windowMonths]) }}
+                @if ($recurringOnly)
+                    · {{ __('Nur Wiederholdefekte') }}
+                @endif
             </x-slot:subtitle>
             <x-slot:actions>
-                <x-report-export :url="fn (string $format) => route('reports.assets.drilldown.recurring-defects', ['export' => $format])" :formats="['csv', 'xlsx']" />
+                <x-report-export :url="fn (string $format) => route('reports.assets.drilldown.recurring-defects', array_filter($filters + ['recurring' => $recurringOnly ? 1 : null, 'export' => $format], fn ($v) => $v !== null && $v !== ''))" :formats="['csv', 'xlsx']" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -31,7 +34,7 @@
     <x-card>
         @if (empty($rows))
             <x-empty-state icon="check_circle"
-                           :title="__('Keine Defekte im gewählten Zeitraum.')" />
+                           :title="$recurringOnly ? __('Keine Wiederholdefekte im gewählten Zeitraum.') : __('Keine Defekte im gewählten Zeitraum.')" />
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>

@@ -1,7 +1,7 @@
 ---
 title: "Leasing & asset contracts"
 topic: asset-finance.overview
-version: 2
+version: 3
 keywords:
     - lease agreement
     - lease payments
@@ -47,3 +47,7 @@ system; the target audience is B2B (CCD II consumer rules are not checked).
 
 **End process:** documents condition, mileage/hours, damages and the
 decision — return, purchase, extension or replacement.
+
+**Purchase order:** In the contract form you select the related purchase
+order, provided purchasing is enabled and you may read purchase orders. The
+file shows the order number with a link.

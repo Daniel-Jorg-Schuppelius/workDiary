@@ -44,7 +44,7 @@ class PatrolController extends Controller {
         return view('patrols.index', [
             'routes' => PatrolRoute::query()
                 ->with('site:id,name')
-                ->withCount('checkpoints')
+                ->withCount(['checkpoints' => fn ($q) => $q->whereNull('deactivated_at')])
                 ->orderBy('name')
                 ->paginate(25),
             'openRuns' => PatrolRun::query()
@@ -61,7 +61,7 @@ class PatrolController extends Controller {
         $this->assertSameOrganization($patrolRoute);
 
         return view('patrols.show', [
-            'route' => $patrolRoute->load(['site:id,name', 'checkpoints']),
+            'route' => $patrolRoute->load(['site:id,name', 'responsible:id,name', 'checkpoints']),
             'runs' => $patrolRoute->runs()->with(['starter:id,name', 'abortedBy:id,name'])->withCount('scans')->orderByDesc('started_at')->limit(20)->get(),
             'canManage' => Gate::allows(Permission::DispatchManage->value),
         ]);
@@ -70,17 +70,106 @@ class PatrolController extends Controller {
     public function create(): View {
         Gate::authorize(Permission::DispatchManage->value);
 
-        return view('patrols._form_dialog', [
-            'sites' => Site::query()->orderBy('name')->get(['id', 'name']),
-        ]);
+        return view('patrols._form_dialog', $this->formOptions() + ['route' => null]);
     }
 
     public function store(Request $request, SqidEncoder $sqids): RedirectResponse {
         Gate::authorize(Permission::DispatchManage->value);
 
+        $route = PatrolRoute::query()->create($this->validatedRoute($request, $sqids) + [
+            'organization_id' => $this->currentOrganizationId(),
+            'active' => true,
+            'created_by' => Auth::id(),
+        ]);
+        $route->audit('patrol.route_created', []);
+
+        return redirect()->route('patrols.show', $route)->with('success', __('Route angelegt — jetzt Kontrollpunkte hinzufügen.'));
+    }
+
+    public function edit(PatrolRoute $patrolRoute): View {
+        Gate::authorize(Permission::DispatchManage->value);
+        $this->assertSameOrganization($patrolRoute);
+
+        return view('patrols._form_dialog', $this->formOptions() + ['route' => $patrolRoute->load(['site:id', 'responsible:id'])]);
+    }
+
+    public function update(Request $request, PatrolRoute $patrolRoute, SqidEncoder $sqids): RedirectResponse {
+        Gate::authorize(Permission::DispatchManage->value);
+        $this->assertSameOrganization($patrolRoute);
+
+        $this->service->updateRoute($patrolRoute, $this->validatedRoute($request, $sqids));
+
+        return redirect()->route('patrols.show', $patrolRoute)->with('success', __('patrol.route.updated'));
+    }
+
+    /** Route deaktivieren bzw. wieder freigeben (MVP-1611). */
+    public function toggleActive(PatrolRoute $patrolRoute): RedirectResponse {
+        Gate::authorize(Permission::DispatchManage->value);
+        $this->assertSameOrganization($patrolRoute);
+
+        $this->service->setRouteActive($patrolRoute, ! $patrolRoute->active);
+
+        return back()->with('success', $patrolRoute->active ? __('patrol.route.activated') : __('patrol.route.deactivated'));
+    }
+
+    public function editCheckpoint(PatrolRoute $patrolRoute, PatrolCheckpoint $checkpoint): View {
+        Gate::authorize(Permission::DispatchManage->value);
+        $this->assertSameOrganization($patrolRoute);
+        abort_unless($checkpoint->patrol_route_id === $patrolRoute->id && $checkpoint->deactivated_at === null, 404);
+
+        return view('patrols._checkpoint_dialog', ['route' => $patrolRoute, 'checkpoint' => $checkpoint]);
+    }
+
+    public function updateCheckpoint(Request $request, PatrolRoute $patrolRoute, PatrolCheckpoint $checkpoint): RedirectResponse {
+        Gate::authorize(Permission::DispatchManage->value);
+        $this->assertSameOrganization($patrolRoute);
+        abort_unless($checkpoint->patrol_route_id === $patrolRoute->id, 404);
+
+        $data = $request->validate([
+            'label' => ['required', 'string', 'max:160'],
+            'expected_offset_minutes' => ['required', 'integer', 'min:0', 'max:1440'],
+            'tolerance_minutes' => ['required', 'integer', 'min:0', 'max:240'],
+        ]);
+
+        try {
+            $this->service->updateCheckpoint($checkpoint, (string) $data['label'], (int) $data['expected_offset_minutes'], (int) $data['tolerance_minutes']);
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return redirect()->route('patrols.show', $patrolRoute)->with('success', __('patrol.checkpoint.updated', ['label' => $checkpoint->label]));
+    }
+
+    /** Kontrollpunkt deaktivieren — frühere Läufe zählen ihn weiter, neue erwarten ihn nicht mehr. */
+    public function deactivateCheckpoint(PatrolRoute $patrolRoute, PatrolCheckpoint $checkpoint): RedirectResponse {
+        Gate::authorize(Permission::DispatchManage->value);
+        $this->assertSameOrganization($patrolRoute);
+        abort_unless($checkpoint->patrol_route_id === $patrolRoute->id, 404);
+
+        $this->service->deactivateCheckpoint($checkpoint);
+
+        return back()->with('success', __('patrol.checkpoint.deactivated_done', ['label' => $checkpoint->label]));
+    }
+
+    /** @return array{sites: \Illuminate\Support\Collection<int, Site>, users: \Illuminate\Support\Collection<int, \App\Models\Platform\User>} */
+    private function formOptions(): array {
+        return [
+            'sites' => Site::query()->orderBy('name')->get(['id', 'name']),
+            'users' => \App\Models\Platform\User::query()
+                ->where('organization_id', $this->currentOrganizationId())
+                ->whereNull('customer_id')
+                ->whereNull('deactivated_at')
+                ->orderBy('name')
+                ->get(['id', 'name']),
+        ];
+    }
+
+    /** @return array{name: string, site_id: ?int, responsible_user_id: ?int} */
+    private function validatedRoute(Request $request, SqidEncoder $sqids): array {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:160'],
             'site' => ['nullable', 'string'],
+            'responsible' => ['nullable', 'string'],
         ]);
 
         $siteId = null;
@@ -89,16 +178,17 @@ class PatrolController extends Controller {
             abort_if($siteId === null || ! Site::query()->whereKey($siteId)->exists(), 422);
         }
 
-        $route = PatrolRoute::query()->create([
-            'organization_id' => $this->currentOrganizationId(),
-            'name' => $data['name'],
-            'site_id' => $siteId,
-            'active' => true,
-            'created_by' => Auth::id(),
-        ]);
-        $route->audit('patrol.route_created', []);
+        $responsibleId = null;
+        if (filled($data['responsible'] ?? null)) {
+            $responsibleId = $sqids->decode(\App\Models\Platform\User::class, (string) $data['responsible']);
+            abort_if($responsibleId === null || ! \App\Models\Platform\User::query()
+                ->where('organization_id', $this->currentOrganizationId())
+                ->whereNull('customer_id')
+                ->whereKey($responsibleId)
+                ->exists(), 422);
+        }
 
-        return redirect()->route('patrols.show', $route)->with('success', __('Route angelegt — jetzt Kontrollpunkte hinzufügen.'));
+        return ['name' => (string) $data['name'], 'site_id' => $siteId, 'responsible_user_id' => $responsibleId];
     }
 
     public function addCheckpoint(Request $request, PatrolRoute $patrolRoute): RedirectResponse {
@@ -130,7 +220,11 @@ class PatrolController extends Controller {
         $this->assertSameOrganization($patrolRoute);
         abort_unless($checkpoint->patrol_route_id === $patrolRoute->id, 404);
 
-        $issued = $this->service->reissueToken($checkpoint);
+        try {
+            $issued = $this->service->reissueToken($checkpoint);
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
 
         return back()->with('patrol_token_once', $issued['token'])
             ->with('success', __('Neuer Token für „:label" — der alte ist ab sofort wertlos.', ['label' => $checkpoint->label]));

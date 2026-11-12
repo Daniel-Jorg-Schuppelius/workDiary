@@ -42,6 +42,9 @@ return [
         'message' => 'Nessuna chiave di registro per questo ambito o termine di ricerca.',
         'history' => 'Nessuna modifica registrata finora.',
     ],
+    'error' => [
+        'service_managed' => 'L’impostazione :key è gestita nella sua pagina e non può essere modificata qui.',
+    ],
     'flash' => [
         'saved' => 'Impostazione :key salvata.',
         'reset' => 'Impostazione :key ripristinata al valore predefinito.',

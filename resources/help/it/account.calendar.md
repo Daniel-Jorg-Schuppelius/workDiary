@@ -1,7 +1,7 @@
 ---
 title: "Calendario"
 topic: account.calendar
-version: 1
+version: 2
 keywords:
     - agenda
     - appuntamenti
@@ -29,3 +29,7 @@ di calendario esterno usi l'abbonamento ICS nel suo profilo.
 ## Scadenze delle gare
 
 Con il modulo Gare, il calendario mostra le scadenze delle gare aperte: termine per i quesiti, per la partecipazione e per la presentazione, la data di apertura e il periodo di validità dell’offerta. Nel suo calendario compaiono le gare di cui è responsabile; nella vista del team tutte. Il clic apre la gara.
+
+## Scadenze contrattuali
+
+Con il modulo Gestione contratti, il calendario mostra gli obblighi aperti e mancati dei contratti — compreso il termine di disdetta —, la fine dei contratti a tempo determinato, ogni data di rinnovo per i contratti a rinnovo automatico e la verifica dell’indice. Nel suo calendario compaiono gli obblighi e i contratti di cui è responsabile (un obbligo senza un proprio responsabile conta per il responsabile del contratto); nella vista del team tutti quelli che può vedere, i contratti di lavoro solo con i diritti del personale. Il clic apre il contratto.

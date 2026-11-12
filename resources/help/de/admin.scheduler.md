@@ -1,7 +1,7 @@
 ---
 title: "Geplante Jobs"
 topic: admin.scheduler
-version: 1
+version: 2
 keywords:
     - Cronjobs
     - Cron
@@ -80,3 +80,5 @@ Scheduler auf – nicht erst, wenn Auswertungen fehlen.
 **Empfehlung:** Ändern Sie Pläne zurückhaltend und beobachten Sie nach jeder
 Umplanung die nächsten Läufe. Ein dauerhaft erhöhter Fehlerzähler ist
 ein Fall für die Diagnose, nicht fürs Pausieren.
+
+**Ausführung je Job:** Im Umplanen-Dialog legen Sie zusätzlich eine eigene Zeitzone, eine Ruhezeit (von–bis, auch über Mitternacht) und Wiederholungen nach einem Fehlschlag fest. Uhrzeiten in der Ruhezeit rücken an ihr Ende, Takte setzen in ihr aus; ohne eigene Ruhezeit und Zeitzone gilt das Betriebsfenster des Servers. Eine Wiederholung startet nach dem eingestellten Abstand, höchstens so oft wie angegeben, und steht wie jeder Lauf im Laufnachweis.

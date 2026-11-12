@@ -12,10 +12,16 @@ namespace App\Http\Controllers\Procedure;
 
 use App\Enums\Procedure\{ProcedureProofType, ProcedureRiskLevel, ProcedureStepType};
 use App\Http\Controllers\Controller;
+use App\Models\Article\Product;
+use App\Models\Customer\Customer;
+use App\Models\Hr\Qualification;
 use App\Models\Platform\User;
 use App\Models\Procedure\{ProcedureTemplate, ProcedureTemplateVersion};
-use App\Services\Procedure\ProcedureTemplateService;
+use App\Models\ServiceTicket\SlaContract;
+use App\Services\Asset\AssetCategoryCatalog;
+use App\Services\Procedure\{ProcedureApplicabilityResolver, ProcedureTemplateService, StepConfigForm};
 use App\Services\Recipes\RecipeService;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -35,6 +41,8 @@ use Illuminate\View\View;
 class ProcedureTemplateController extends Controller {
     public function __construct(
         private readonly ProcedureTemplateService $service,
+        private readonly StepConfigForm $stepConfig,
+        private readonly AssetCategoryCatalog $assetCategories,
     ) {}
 
     public function index(Request $request): View {
@@ -114,6 +122,13 @@ class ProcedureTemplateController extends Controller {
             'proofTypes' => ProcedureProofType::cases(),
             'riskLevels' => ProcedureRiskLevel::cases(),
             'canPublish' => Gate::allows('publish', $template),
+            'stepConfig' => $this->stepConfig,
+            'qualificationCodes' => Qualification::query()->active()->orderBy('name')->get(['name', 'abbreviation'])
+                ->map(static fn (Qualification $q): string => (string) ($q->abbreviation ?: $q->name))->unique()->values()->all(),
+            'customers' => Customer::query()->orderBy('name')->get(['id', 'name', 'number']),
+            'assetCategories' => $this->assetCategories->options((int) $template->organization_id),
+            'products' => Product::query()->orderBy('name')->get(['id', 'name']),
+            'slaContracts' => SlaContract::query()->orderBy('label')->get(['id', 'label', 'code']),
         ], $this->recipeViewData($template, $draft)));
     }
 
@@ -206,9 +221,16 @@ class ProcedureTemplateController extends Controller {
             'steps.*.requires_proof_type' => ['nullable', Rule::enum(ProcedureProofType::class)],
             'steps.*.required_role' => ['nullable', 'string', 'max:40'],
             'steps.*.required_qualification_code' => ['nullable', 'string', 'max:60'],
-            'steps.*.condition_step' => ['nullable', 'string', 'max:60'],
-            'steps.*.condition_equals' => ['nullable', 'string', 'max:120'],
-        ]);
+            'applicability_customers' => ['nullable', 'array'],
+            'applicability_customers.*' => ['string'],
+            'applicability_asset_categories' => ['nullable', 'array'],
+            'applicability_asset_categories.*' => ['string', 'max:60'],
+            'applicability_products' => ['nullable', 'array'],
+            'applicability_products.*' => ['string'],
+            'applicability_sla_contracts' => ['nullable', 'array'],
+            'applicability_sla_contracts.*' => ['string'],
+            'allow_blocked' => ['nullable', 'boolean'],
+        ] + $this->stepConfig->rules('steps.*.'));
 
         $this->service->updateTemplate($template, [
             'name' => $data['name'],
@@ -222,7 +244,8 @@ class ProcedureTemplateController extends Controller {
             $this->service->updateVersion($draft, [
                 'risk_level' => $data['risk_level'] ?? ProcedureRiskLevel::Normal->value,
                 'change_note' => $data['change_note'] ?? null,
-                'applicability' => $this->buildApplicability($data),
+                'applicability' => $this->buildApplicability($data, $draft->applicability ?? [], (int) $template->organization_id),
+                'allow_blocked' => $request->boolean('allow_blocked'),
             ]);
 
             $this->service->syncSteps($draft, $this->normalizeSteps($data['steps'] ?? []));
@@ -249,6 +272,7 @@ class ProcedureTemplateController extends Controller {
             'change_note' => __('procedure.flash.versionInitial'),
             'risk_level' => $latest !== null ? $latest->risk_level : ProcedureRiskLevel::Normal,
             'applicability' => $latest?->applicability,
+            'allow_blocked' => (bool) $latest?->allow_blocked,
         ]);
 
         // Schritte der letzten Version als Startpunkt uebernehmen.
@@ -340,73 +364,80 @@ class ProcedureTemplateController extends Controller {
     }
 
     /**
-     * Normalisiert die Designer-Zeilen, verwirft leere Zeilen und
-     * bettet bedingte Schritte (depends_on) sowie Mess-Toleranz in
-     * `config` ein.
+     * Normalisiert die Designer-Zeilen und verwirft leere Zeilen. `config`
+     * baut {@see StepConfigForm} — Schlüssel, die der Designer nicht kennt,
+     * bleiben erhalten.
      *
      * @param  array<int, array<string, mixed>>  $rows
      * @return list<array<string, mixed>>
      */
     private function normalizeSteps(array $rows): array {
         $steps = [];
-        $index = 0;
         foreach ($rows as $row) {
             $code = trim((string) ($row['code'] ?? ''));
             $label = trim((string) ($row['label'] ?? ''));
-            $type = (string) ($row['step_type'] ?? '');
-            if ($code === '' || $label === '' || ProcedureStepType::tryFrom($type) === null) {
+            $type = ProcedureStepType::tryFrom((string) ($row['step_type'] ?? ''));
+            if ($code === '' || $label === '' || $type === null) {
                 continue;
             }
 
-            $config = [];
-            $conditionStep = trim((string) ($row['condition_step'] ?? ''));
-            if ($conditionStep !== '') {
-                // Bedingter Schritt (Folge-MVP, additiv in config): dieser
-                // Schritt ist nur anwendbar, wenn der referenzierte Schritt
-                // den angegebenen Wert/Status hat.
-                $config['depends_on'] = [
-                    'step_code' => $conditionStep,
-                    'equals' => trim((string) ($row['condition_equals'] ?? '')) ?: null,
-                ];
-            }
-
-            $proof = (string) ($row['requires_proof_type'] ?? '');
+            $secondPerson = StepConfigForm::flag($row['requires_second_person'] ?? false);
 
             $steps[] = [
                 'code' => $code,
-                'step_type' => $type,
+                'step_type' => $type->value,
                 'label' => $label,
                 'description' => trim((string) ($row['description'] ?? '')) ?: null,
-                'required' => $this->boolFlag($row['required'] ?? false),
-                'blocking' => $this->boolFlag($row['blocking'] ?? false),
-                'config' => $config === [] ? null : $config,
+                'required' => StepConfigForm::flag($row['required'] ?? false),
+                'blocking' => StepConfigForm::flag($row['blocking'] ?? false),
+                'config' => $this->stepConfig->fromForm($row, $type, $secondPerson),
                 'required_role' => trim((string) ($row['required_role'] ?? '')) ?: null,
                 'required_qualification_code' => trim((string) ($row['required_qualification_code'] ?? '')) ?: null,
-                'requires_second_person' => $this->boolFlag($row['requires_second_person'] ?? false),
-                'requires_proof_type' => ProcedureProofType::tryFrom($proof)?->value,
+                'requires_second_person' => $secondPerson,
+                'requires_proof_type' => ProcedureProofType::tryFrom((string) ($row['requires_proof_type'] ?? ''))?->value,
             ];
-            $index++;
         }
 
         return $steps;
     }
 
     /**
+     * Zuordnungsregeln aus dem Formular; Schlüssel, die der Designer nicht
+     * pflegt, bleiben aus dem Bestand erhalten. Auswahlwerte sind Sqids und
+     * werden gegen die eigene Organisation aufgelöst.
+     *
      * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $existing
      * @return array<string, mixed>|null
      */
-    private function buildApplicability(array $data): ?array {
-        $rules = [];
-        $entryTypes = $this->splitList((string) ($data['applicability_entry_types'] ?? ''));
-        if ($entryTypes !== []) {
-            $rules['diary_entry_type'] = $entryTypes;
-        }
-        $tags = $this->splitList((string) ($data['applicability_tags'] ?? ''));
-        if ($tags !== []) {
-            $rules['tags_any'] = $tags;
-        }
+    private function buildApplicability(array $data, array $existing, int $organizationId): ?array {
+        // Eine inzwischen ausgeblendete Kategorie bleibt wählbar, solange die Vorlage sie nennt.
+        $categories = array_merge(array_keys($this->assetCategories->options($organizationId)), (array) ($existing['asset_categories'] ?? []));
+
+        $rules = array_filter(array_diff_key($existing, array_flip(ProcedureApplicabilityResolver::RULE_KEYS)) + [
+            'diary_entry_type' => $this->splitList((string) ($data['applicability_entry_types'] ?? '')),
+            'tags_any' => $this->splitList((string) ($data['applicability_tags'] ?? '')),
+            'customer_ids' => $this->ownIds(Customer::class, $data['applicability_customers'] ?? null),
+            'asset_categories' => array_values(array_unique(array_intersect((array) ($data['applicability_asset_categories'] ?? []), $categories))),
+            'product_ids' => $this->ownIds(Product::class, $data['applicability_products'] ?? null),
+            'sla_contract_ids' => $this->ownIds(SlaContract::class, $data['applicability_sla_contracts'] ?? null),
+        ], static fn (mixed $value): bool => $value !== [] && $value !== null);
 
         return $rules === [] ? null : $rules;
+    }
+
+    /**
+     * Sqids einer Mehrfachauswahl als IDs der eigenen Organisation (der Mandanten-Scope des Modells filtert).
+     *
+     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $model
+     * @return list<int>
+     */
+    private function ownIds(string $model, mixed $sqids): array {
+        if (! is_array($sqids) || $sqids === []) {
+            return [];
+        }
+
+        return array_values($model::query()->whereIn('id', Sqid::decodeMany($model, $sqids))->orderBy('id')->pluck('id')->map(static fn ($id): int => (int) $id)->all());
     }
 
     /**
@@ -418,9 +449,5 @@ class ProcedureTemplateController extends Controller {
             ->filter()
             ->values()
             ->all();
-    }
-
-    private function boolFlag(mixed $value): bool {
-        return in_array($value, [true, '1', 1, 'on', 'true'], true);
     }
 }

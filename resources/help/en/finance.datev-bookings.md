@@ -1,7 +1,7 @@
 ---
 title: "DATEV posting batch"
 topic: finance.datev-bookings
-version: 2
+version: 6
 keywords:
     - DATEV export
     - tax advisor
@@ -56,6 +56,14 @@ Creating, finalising and downloading batches is for the
 **accounting** role (and administrators); the configuration is
 maintained by administrators.
 
+For local accounting the **Accounts** section also holds the **cash discount
+account** and the **write-off account (bad debts)**: the counter accounts used
+when an open item is settled with a cash discount or written off. Left empty,
+the default of the chart of accounts applies (SKR03 8736 and 2400, SKR04 4736 and 6930). For payables there are the
+**account for cash discounts received** (3736 or 5736) and the **write-off
+account for payables** (other income, 2709 or 4839). If a local chart of accounts exists, an entered account must exist
+there; if an effective account is missing, the page says so.
+
 ## Recommended workflow
 
 1. **Create the batch:** choose the period, optionally include
@@ -104,3 +112,27 @@ only after it has been closed.
 After finalising, **Record transmission** captures what happens to the batch: **transmitted** to the accountant, then **confirmed** or **rejected** there. A rejected batch is transmitted again once the issue is resolved; corrections to documents still go through the next batch. Each step is recorded with time, person and an optional note in the batch history, and the list shows the current status. Please keep notes free of personal data, as the history cannot be changed.
 
 The **cover report (PDF)** summarises the batch for the accountant: period, advisor and client number, number of booking records and reversals, total, file checksum, totals by revenue account and by tax key, and the history.
+
+## DATEV handover from the journal
+
+If WorkDiary keeps the general ledger, the DATEV posting batch is built from
+the posted journal entries (card **DATEV handover** in **Period closing**).
+Each entry becomes booking records against an anchor line – usually the
+receivable, payable or money account – so DATEV books it exactly once. A line
+with a tax code goes out gross with its **DATEV posting key**; the tax lines
+are omitted because DATEV books the tax itself. With reverse charge (§ 13b,
+intra-Community acquisition) the amount stays net and DATEV books output and
+input tax. On an automatic account (field **DATEV automatic account** on the
+account) DATEV computes the tax from the account, and the batch sets no key
+there. If the automatic does not fit the entry, key 40 suspends it and the tax
+remains a separate record. A cash discount with tax correction also goes out as
+one record.
+
+## Sales without tax
+
+If an invoice shows no tax, the batch books it according to its tax case — like the
+accounting: intra-community supply (SKR03 8125 / SKR04 4125), service to another EU
+country (8336/4336), domestic reverse charge (8337/4337), export (8120/4120),
+non-taxable sale in a third country (8338/4338). These are DATEV automatic
+accounts; the batch sets no tax key there. Tax-exempt domestic sales stay on the
+configured account for tax-exempt revenue.

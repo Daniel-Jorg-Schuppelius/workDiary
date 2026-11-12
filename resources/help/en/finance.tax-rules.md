@@ -1,7 +1,7 @@
 ---
 title: "Tax rule matrix"
 topic: finance.tax-rules
-version: 1
+version: 2
 keywords:
     - tax rates
     - VAT
@@ -65,3 +65,11 @@ organisation takes precedence over the matrix for domestic invoices. EU
 customers with a formally valid VAT ID automatically receive reverse
 charge (0 %), non-EU customers the export note (0 %) — matching matrix
 rows provide the note text shown on the document.
+
+A row with the rate type **Exempt** names the exemption provision for
+tax-exempt supplies under § 4 UStG: its note text appears in the e-invoice
+as the exemption reason of the tax-exempt items (category E), as of the
+invoice's date of supply, for example "Tax-exempt medical treatment (§ 4
+no. 14 UStG)". Without it, the e-invoice only states "Tax-exempt supply".
+If the tax case of an invoice draft changes, workDiary replaces the matrix
+note text as long as it is still unchanged in the invoice text.

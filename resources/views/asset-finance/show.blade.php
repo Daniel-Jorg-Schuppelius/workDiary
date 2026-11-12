@@ -73,7 +73,13 @@
                 <x-detail-grid.row :label="__('Lieferant')">{{ $contract->supplier->name ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Kostenstelle')">{{ $contract->costCenter !== null ? $contract->costCenter->code . ' — ' . $contract->costCenter->label : ($contract->cost_center_label ?? '—') }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Projekt')">{{ $contract->project->name ?? '—' }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Bestellung')">{{ $contract->purchaseOrder->number ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Bestellung')">
+                    @if ($contract->purchaseOrder !== null && app(\App\Services\Navigation\NavGate::class)->allows('purchase-orders.show') && auth()->user()?->can(\App\Enums\User\Permission::InventoryViewAny->value))
+                        <a class="link link-hover" href="{{ route('purchase-orders.show', $contract->purchaseOrder) }}">{{ $contract->purchaseOrder->number }}</a>
+                    @else
+                        {{ $contract->purchaseOrder->number ?? '—' }}
+                    @endif
+                </x-detail-grid.row>
                 <x-detail-grid.row :label="__('Verantwortlich')">{{ $contract->responsible->name ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Kündigungsfrist')">{{ $contract->notice_period_days !== null ? $contract->notice_period_days . ' ' . __('Tage') : '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Versicherung')">{{ $contract->insurance_note ?? '—' }}</x-detail-grid.row>

@@ -49,3 +49,9 @@ formulario de activos: un valor de la organización con código propio aparece
 además, uno con el código de una categoría general sustituye su denominación
 y uno desactivado la oculta. Una categoría que usa un activo solo puede
 desactivarse, no eliminarse.
+
+Un valor que todavía utilizan registros —registros de tiempo, reclamaciones,
+artículos o asignaciones— no se puede eliminar. El mensaje indica dónde y
+cuántas veces se utiliza. Desactívelo en su lugar con **Desactivar** en su
+fila: desaparece de las nuevas selecciones y los registros existentes lo
+conservan.

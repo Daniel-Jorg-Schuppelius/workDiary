@@ -17,5 +17,21 @@ return [
         'requirementUnmet' => 'Mandatory classifications missing: :domains',
         'requirementMin' => 'Mandatory classification “:domain”: at least :min entry/entries required, present: :actual.',
         'requirementMax' => 'Mandatory classification “:domain”: at most :max entry/entries allowed, present: :actual.',
+        'referenced' => 'The value “:label” is still in use (:usage) and cannot be deleted. Retire it instead: it disappears from new selections, existing records keep it.',
+    ],
+    'action' => [
+        'deactivate' => 'Retire',
+        'deactivate_confirm' => 'Retire this value? It can no longer be selected, existing records keep it.',
+    ],
+    'flash' => [
+        'deactivated' => '“:label” has been retired.',
+    ],
+    'reference' => [
+        'time_entries' => 'Time entries',
+        'claim_cases' => 'Claims',
+        'products' => 'Articles',
+        'classifiables' => 'Assignments on records',
+        'import_value_mappings' => 'Import mappings',
+        'assets' => 'Assets',
     ],
 ];

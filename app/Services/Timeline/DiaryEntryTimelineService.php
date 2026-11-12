@@ -88,18 +88,23 @@ class DiaryEntryTimelineService {
         ProtocolEventType::SupersededBy,
     ];
 
+    /** Leseobergrenze je Quelle, sobald ein Filter nach dem Laden aussortiert. */
+    private const int FILTER_SCAN_CAP = 1000;
+
     public function __construct(private readonly FeatureFlagResolver $featureFlags) {}
 
     /**
      * @param  list<string>|null  $types  Filtergruppen aus {@see self::TYPES} (null/leer = alle)
-     * @return array{items: list<TimelineItem>, hasMore: bool}
+     * @param  TimelineFilter|null  $filter  Zeitraum, Person, „nur kundenrelevant“ (MVP-1596); mit Filter kommt `actors` dazu
+     * @return array{items: list<TimelineItem>, hasMore: bool, actors?: array<int, string>}
      */
-    public function forDiaryEntry(DiaryEntry $entry, User $viewer, ?array $types = null, int $limit = 50, int $offset = 0): array {
+    public function forDiaryEntry(DiaryEntry $entry, User $viewer, ?array $types = null, int $limit = 50, int $offset = 0, ?TimelineFilter $filter = null): array {
         $types = array_values(array_intersect($types ?? [], self::TYPES)) ?: self::TYPES;
         $limit = max(1, min(500, $limit));
         // Pro Quelle reicht offset+limit+1: mehr Einträge einer Quelle können
         // nach dem Merge nie auf der Seite landen; +1 für den hasMore-Blick.
-        $cap = $offset + $limit + 1;
+        // Mit Filter fällt nach dem Laden noch weg, deshalb liest jede Quelle bis zur Obergrenze.
+        $cap = $filter !== null ? max(self::FILTER_SCAN_CAP, $offset + $limit + 1) : $offset + $limit + 1;
 
         $items = [];
         $sources = [
@@ -122,7 +127,22 @@ class DiaryEntryTimelineService {
             }
         }
 
-        return self::sortAndSlice($items, $limit, $offset);
+        if ($filter === null) {
+            return self::sortAndSlice($items, $limit, $offset);
+        }
+
+        // Die Personenauswahl zeigt alle, die im gewählten Ausschnitt vorkommen — vor dem Personenfilter.
+        $items = array_values(array_filter($items, fn (TimelineItem $item): bool => $filter->matches($item, withActor: false)));
+        $actors = [];
+        foreach ($items as $item) {
+            if ($item->actorId !== null && $item->actor !== null) {
+                $actors[$item->actorId] = $item->actor;
+            }
+        }
+        asort($actors, SORT_NATURAL | SORT_FLAG_CASE);
+        $items = array_values(array_filter($items, fn (TimelineItem $item): bool => $filter->matches($item)));
+
+        return self::sortAndSlice($items, $limit, $offset) + ['actors' => $actors];
     }
 
     /**
@@ -173,6 +193,7 @@ class DiaryEntryTimelineService {
                 icon: 'add_circle',
                 occurredAt: $entry->created_at,
                 actor: $entry->user?->name,
+                actorId: $entry->user?->id,
                 title: (string) __('timeline.event.order_created'),
                 summary: $entry->title ?: Str::limit((string) $entry->content, 80),
                 url: route('diary.show', $entry),
@@ -191,6 +212,7 @@ class DiaryEntryTimelineService {
                 icon: 'task_alt',
                 occurredAt: $entry->end_at ?? $entry->updated_at,
                 actor: $entry->user?->name,
+                actorId: $entry->user?->id,
                 title: (string) __('timeline.event.order_completed'),
                 summary: $entry->title ?: Str::limit((string) $entry->content, 80),
                 url: route('diary.show', $entry),
@@ -228,6 +250,7 @@ class DiaryEntryTimelineService {
                 },
                 occurredAt: $event->created_at,
                 actor: $event->actor?->name,
+                actorId: $event->actor?->id,
                 title: $this->eventLabel($event->event),
                 summary: $event->protocol?->title,
                 visibility: $event->protocol?->visibility->value ?? TimelineItem::VISIBILITY_INTERNAL,
@@ -431,6 +454,7 @@ class DiaryEntryTimelineService {
                     icon: 'add_circle',
                     occurredAt: $log->created_at,
                     actor: $log->user?->name,
+                    actorId: $log->user?->id,
                     title: (string) __('timeline.event.order_created'),
                     summary: null,
                     url: route('diary.show', $entry),
@@ -452,6 +476,7 @@ class DiaryEntryTimelineService {
                 icon: 'flag',
                 occurredAt: $log->created_at,
                 actor: $log->user?->name,
+                actorId: $log->user?->id,
                 title: (string) __('timeline.event.status_changed'),
                 summary: $this->statusLabel($before) . ' → ' . $this->statusLabel($after),
                 url: route('diary.show', $entry),
@@ -494,6 +519,7 @@ class DiaryEntryTimelineService {
                 icon: 'schedule',
                 occurredAt: $timeEntry->created_at,
                 actor: $timeEntry->user?->name,
+                actorId: $timeEntry->user?->id,
                 title: (string) __('timeline.event.time_entry_added'),
                 summary: trim($duration . ($timeEntry->description ? ' — ' . $timeEntry->description : '')),
             );
@@ -520,6 +546,7 @@ class DiaryEntryTimelineService {
                 icon: 'chat_bubble',
                 occurredAt: $comment->created_at,
                 actor: $comment->user?->name,
+                actorId: $comment->user?->id,
                 title: (string) __('timeline.event.comment_added'),
                 summary: Str::limit((string) $comment->body, 120),
                 url: route('diary.show', $entry) . '#comments',
@@ -545,6 +572,7 @@ class DiaryEntryTimelineService {
                 icon: 'attach_file',
                 occurredAt: $attachment->created_at,
                 actor: $attachment->uploader?->name,
+                actorId: $attachment->uploader?->id,
                 title: (string) __('timeline.event.attachment_added'),
                 summary: $attachment->original_name,
                 // Der Download prüft die Signatur — ein nackter Link endet im 403.
@@ -580,6 +608,7 @@ class DiaryEntryTimelineService {
                 },
                 occurredAt: $event->created_at,
                 actor: $event->actor?->name,
+                actorId: $event->actor?->id,
                 title: $this->eventLabel($event->event),
                 summary: $event->protocol?->title,
                 visibility: $event->protocol?->visibility->value ?? TimelineItem::VISIBILITY_INTERNAL,
@@ -641,6 +670,7 @@ class DiaryEntryTimelineService {
                 icon: 'construction',
                 occurredAt: $assignment->checked_out_at,
                 actor: $assignment->assignedToUser?->name,
+                actorId: $assignment->assignedToUser?->id,
                 title: (string) __('timeline.event.asset_issued'),
                 summary: (string) ($assignment->asset->name ?? '—'),
             );
@@ -673,6 +703,7 @@ class DiaryEntryTimelineService {
                 },
                 occurredAt: $event->created_at,
                 actor: $event->actor?->name,
+                actorId: $event->actor?->id,
                 title: $this->eventLabel($event->event->value),
                 summary: $event->openIssue?->title,
                 url: route('diary.show', $entry) . '#open-issues',
@@ -713,6 +744,7 @@ class DiaryEntryTimelineService {
             icon: 'forum',
             occurredAt: $note->occurred_at,
             actor: $note->creator?->name,
+            actorId: $note->creator?->id,
             title: (string) __('timeline.event.communication_added'),
             summary: trim($note->type->label() . ' — ' . $note->subject),
             url: $url,
@@ -751,6 +783,7 @@ class DiaryEntryTimelineService {
             icon: 'folder_open',
             occurredAt: $document->created_at,
             actor: $document->creator?->name,
+            actorId: $document->creator?->id,
             title: (string) __('timeline.event.document_linked'),
             summary: $document->title . ' (' . $document->document_type->label() . ')',
             url: $url,
@@ -793,6 +826,7 @@ class DiaryEntryTimelineService {
                 },
                 occurredAt: $run->completed_at ?? $run->aborted_at ?? $run->started_at ?? $run->created_at,
                 actor: $run->assignee?->name,
+                actorId: $run->assignee?->id,
                 title: (string) __($titleKey),
                 summary: $templateName !== ''
                     ? $templateName . ' — ' . $run->status->label()

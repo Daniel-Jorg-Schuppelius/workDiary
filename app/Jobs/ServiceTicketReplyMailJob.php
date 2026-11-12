@@ -18,7 +18,7 @@ use App\Models\Platform\User;
 use App\Models\ServiceTicket\ServiceTicketMessage;
 use App\Modules\Attributes\BelongsToModule;
 use App\Services\Mail\MailSignature;
-use CommonToolkit\Helper\Data\EmailHelper;
+use CommonToolkit\Helper\Data\{EmailHelper, StringHelper};
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -100,11 +100,23 @@ class ServiceTicketReplyMailJob implements ModuleJob, ShouldQueue {
             $text .= "\n\n" . app(MailSignature::class)->blockFor($author, $ticket->organization()->withoutGlobalScopes()->first());
         }
 
+        // Absenderidentität der Queue (MVP-1548): Name am Absender, Antworten an die Adresse der Queue.
+        // Versendet wird weiter über das Postfach der Installation, damit SPF und DKIM stimmen.
+        $sender = (array) ($ticket->queue()->withoutGlobalScopes()->first()->sender_identity ?? []);
+        $senderName = StringHelper::trimToNull($sender['name'] ?? null);
+        $senderEmail = EmailHelper::isEmail((string) ($sender['email'] ?? '')) ? (string) $sender['email'] : null;
+
         $previous = $message->delivery_status;
         $message->update(['delivery_status' => TicketMessageDeliveryStatus::Sent]);
         try {
-            Mail::raw($text, function ($mail) use ($recipients, $subject): void {
+            Mail::raw($text, function ($mail) use ($recipients, $subject, $senderName, $senderEmail): void {
                 $mail->to($recipients)->subject($subject);
+                if ($senderName !== null) {
+                    $mail->from((string) config('mail.from.address'), $senderName);
+                }
+                if ($senderEmail !== null) {
+                    $mail->replyTo($senderEmail, $senderName);
+                }
             });
         } catch (\Throwable $e) {
             $message->update(['delivery_status' => $previous]);

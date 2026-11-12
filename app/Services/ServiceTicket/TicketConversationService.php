@@ -165,7 +165,9 @@ class TicketConversationService {
                 'wait_until' => null,
                 'wait_owner_id' => null,
             ])->save();
-            $ticket->audit('service_ticket.resumed', ['origin' => 'inbound_message']);
+            // Sonst bliebe die SLA-Uhr nach der Kundenantwort angehalten.
+            $closed = app(ServiceTicketService::class)->closePauseSegments($ticket);
+            $ticket->audit('service_ticket.resumed', ['origin' => 'inbound_message', 'paused_segments' => $closed]);
         }
 
         return $message;

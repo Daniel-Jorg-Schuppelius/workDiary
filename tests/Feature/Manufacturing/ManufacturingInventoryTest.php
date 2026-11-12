@@ -78,6 +78,28 @@ final class ManufacturingInventoryTest extends TestCase {
         $this->assertSame('80.0000', $this->ledger->available($this->materialVariant, $this->warehouse));
     }
 
+    public function test_redistribution_moves_reserved_material_to_the_short_order(): void {
+        $this->ledger->receipt($this->materialVariant, $this->warehouse, '30');
+        $first = $this->releasedOrder('10');
+        $this->link->reserveMaterials($first);           // 20 reserviert
+        $second = $this->releasedOrder('10');
+        $this->link->reserveMaterials($second);          // nur 10 von 20
+        $firstMaterial = $first->materials()->first();
+        $secondMaterial = $second->materials()->first();
+        $this->assertSame('10.0000', $secondMaterial->reserved_qty);
+
+        // Umverteilung (MVP-1626): die Materialpositionen folgen der Reservierung.
+        app(\App\Services\Inventory\ReservationService::class)->redistribute($firstMaterial->reservation, $secondMaterial->reservation, '10');
+        $this->assertSame('10.0000', $firstMaterial->fresh()->reserved_qty);
+        $this->assertSame('20.0000', $secondMaterial->fresh()->reserved_qty);
+
+        // Die abgebende Position ist jetzt unterdeckt; „Material reservieren“ füllt sie aus freiem Bestand, sobald es welchen gibt.
+        $this->ledger->receipt($this->materialVariant, $this->warehouse, '10');
+        $this->link->reserveMaterials($first->fresh());
+        $this->assertSame('20.0000', $first->materials()->first()->reserved_qty);
+        $this->assertSame('0.0000', $this->ledger->available($this->materialVariant, $this->warehouse));
+    }
+
     public function test_reserve_is_partial_when_insufficient(): void {
         $this->ledger->receipt($this->materialVariant, $this->warehouse, '5'); // < 20 Bedarf
         $order = $this->releasedOrder('10');
@@ -105,6 +127,11 @@ final class ManufacturingInventoryTest extends TestCase {
             ->get();
         $this->assertCount(1, $requests);
         $this->assertSame('15.0000', (string) $requests->first()->quantity);
+
+        // MVP-1620: Storno schließt den offenen Bedarf, er läuft nicht mehr in die Bestellvorschläge.
+        $this->assertSame(1, $this->link->closeOpenShortages($order));
+        $this->assertSame(\App\Enums\Manufacturing\ProcurementStatus::Closed, $requests->first()->fresh()?->status);
+        $this->assertSame(0, $this->link->closeOpenShortages($order));
     }
 
     /**
@@ -129,6 +156,17 @@ final class ManufacturingInventoryTest extends TestCase {
      * Vollaudit 2026-07 (M23): Default-Strategie „Reservierung bei Freigabe"
      * mit Modus-/Zeitpunkt-Snapshot am Auftrag.
      */
+    /** MVP-1580: Reservierung „beim Start" — die Freigabe reserviert dann nicht. */
+    public function test_reservation_timing_start_defers_reservation_past_release(): void {
+        $this->organization->update(['settings' => ['inventory' => ['reservation_timing' => 'start']]]);
+        $this->ledger->receipt($this->materialVariant, $this->warehouse, '100');
+
+        $order = $this->releasedOrder('10')->refresh();
+
+        $this->assertNull($order->reservation_applied_at);
+        $this->assertNull($order->reservation_mode);
+    }
+
     public function test_release_auto_reserves_and_snapshots_mode(): void {
         $this->ledger->receipt($this->materialVariant, $this->warehouse, '100');
         $order = $this->releasedOrder('10');
@@ -162,7 +200,7 @@ final class ManufacturingInventoryTest extends TestCase {
 
         $issued = StockMovement::query()->where('movement_type', StockMovementType::Issue->value)->orderBy('id')->get();
         $this->assertSame([[$early->id, '-5.0000'], [$late->id, '-3.0000']], $issued->map(fn (StockMovement $m): array => [$m->stock_lot_id, $m->qty_base])->all());
-        $this->assertSame(['0.0000', '27.0000'], [app(LotStockReader::class)->balanceOf($early), app(LotStockReader::class)->balanceOf($late)]);
+        $this->assertSame(['0.0000', '27.0000'], [app(LotStockReader::class)->balancesOf([$early])[$early->id], app(LotStockReader::class)->balancesOf([$late])[$late->id]]);
         $this->assertSame('12.0000', $this->ledger->balance($this->materialVariant, $this->warehouse, StockState::Reserved));
     }
 

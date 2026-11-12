@@ -391,6 +391,8 @@
                                 :cached="$aiSuggestions[$position->id]->from_cache"
                                 :accept-action="route('ai.suggestions.accept', $aiSuggestions[$position->id])"
                                 :reject-action="route('ai.suggestions.reject', $aiSuggestions[$position->id])"
+                                :capability="$aiSuggestions[$position->id]->capability"
+                                :regenerate-action="route('finance.transfers.positions.suggest', [$transfer, $position])"
                                 field-name="text"
                             />
                         </td>

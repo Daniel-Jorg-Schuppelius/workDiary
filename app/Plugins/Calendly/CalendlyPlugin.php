@@ -14,8 +14,7 @@ use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Calendly\Api\CalendlyClient;
 use App\Plugins\Calendly\Models\CalendlyConnection;
-use App\Plugins\Calendly\Services\CalendlyBackfillService;
-use App\Plugins\Contracts\{AppointmentSyncer, Plugin, PluginCapability};
+use App\Plugins\Contracts\{Plugin, PluginCapability};
 use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
 
 /**
@@ -31,7 +30,7 @@ use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
  * Plugin-Id ist "calendly", pro Organisation konfigurierbar; OAuth-Client-ID/
  * -Secret sind installationsweit (ENV).
  */
-class CalendlyPlugin extends AbstractPlugin implements AppointmentSyncer {
+class CalendlyPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains {
     public const string ID = 'calendly';
 
     public const string SERVICE_PROVIDER = CalendlyServiceProvider::class;
@@ -52,11 +51,6 @@ class CalendlyPlugin extends AbstractPlugin implements AppointmentSyncer {
         return [
             PluginCapability::AppointmentSync,
         ];
-    }
-
-    /** Einheitlicher Sync-Einstieg (AppointmentSyncer): Polling-Backfill über das Zeitfenster. */
-    public function syncAppointments(Organization $organization): array {
-        return app(CalendlyBackfillService::class)->sync($organization);
     }
 
     public function adminPanel(): ?array {
@@ -97,5 +91,10 @@ class CalendlyPlugin extends AbstractPlugin implements AppointmentSyncer {
         }
 
         return ApiHealthProbe::probe($this->name(), fn () => (new CalendlyClient($connection))->probe());
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Calendar];
     }
 }

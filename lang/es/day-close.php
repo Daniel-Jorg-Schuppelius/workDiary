@@ -79,6 +79,14 @@ return [
         'billable' => 'facturable',
     ],
 
+    // Plan/Ist der Anwesenheit im Kopf des Tages (MVP-1552).
+    'plan_ist' => [
+        'label' => 'Previsto/real',
+        'plan' => 'Previsto desde :start (:duration)',
+        'plan_no_start' => 'Previsto :duration',
+        'actual' => 'Real :start–:end (:duration)',
+        'actual_none' => 'Real: aún sin fichaje',
+    ],
     'hint' => [
         'no_attendance' => 'Sin fichajes en este día.',
         'attendance_correction_only' => 'Los fichajes solo pueden modificarse mediante una solicitud de corrección.',
@@ -87,6 +95,7 @@ return [
         'break_recorded' => 'Pausa: :min min',
         'no_issues' => 'Sin incidencias — el día está registrado de forma coherente.',
         'month_locked' => 'Este día pertenece a un mes aprobado y está bloqueado — el cierre y las solicitudes de corrección pasan por la aprobación mensual.',
+        'day_closed' => 'Este día está cerrado — los fichajes y las imputaciones se modifican mediante una solicitud de corrección.',
         'correction_intro' => 'Describa qué debe corregirse en este día.',
         'reopen_intro' => 'El día se reabre sin solicitud de corrección — la justificación se guarda en el registro de auditoría.',
     ],
@@ -130,6 +139,8 @@ return [
 
     'errors' => [
         'month_entry_locked' => 'El mes está aprobado: para tiempos posteriores presente una solicitud de corrección.',
+        'day_entry_locked' => 'El día está cerrado — presente una solicitud de corrección para los tiempos posteriores.',
+        'day_closed_reason' => 'Día ya cerrado',
         'future_day' => 'Un día futuro no puede cerrarse.',
         'blocking_warnings' => 'El día tiene avisos bloqueantes y no puede cerrarse.',
         'illegal_day_status' => 'Acción no permitida: el estado del día es :status.',

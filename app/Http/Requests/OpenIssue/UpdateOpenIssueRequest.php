@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\OpenIssue;
 
+use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueVisibility};
 use App\Http\Requests\BaseFormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Validierung für die Teil-Aktualisierung eines offenen Punkts (alle Felder
@@ -25,6 +27,10 @@ class UpdateOpenIssueRequest extends BaseFormRequest {
             'title' => ['sometimes', 'required', 'string', 'max:180'],
             'description' => ['sometimes', 'nullable', 'string', 'max:10000'],
             'category' => ['sometimes', 'nullable', 'string', 'max:40'],
+            // Frist, Schwere und Sichtbarkeit laufen über den Dienst und stehen im Verlauf (MVP-1597).
+            'severity' => ['sometimes', 'required', 'string', Rule::enum(OpenIssueSeverity::class)],
+            'due_at' => ['sometimes', 'nullable', 'date', new \App\Rules\TimestampRange()],
+            'visibility' => ['sometimes', 'required', 'string', Rule::enum(OpenIssueVisibility::class)],
         ];
     }
 }

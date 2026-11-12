@@ -63,6 +63,11 @@ class SustainabilityAssessment extends Model {
         return $this->hasMany(SustainabilityAssessmentItem::class, 'assessment_id');
     }
 
+    /** @return HasMany<SustainabilityMeasure, $this> */
+    public function measures(): HasMany {
+        return $this->hasMany(SustainabilityMeasure::class, 'assessment_id');
+    }
+
     /** @return MorphTo<Model, $this> */
     public function subject(): MorphTo {
         return $this->morphTo();

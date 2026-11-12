@@ -62,4 +62,23 @@ return [
         'proposed_action' => 'Aceptar o rechazar en el portal de clientes',
         'rescheduled_title' => 'Su cita se ha cambiado',
     ],
+    // Asignación y mantenimiento (MVP-1610, MVP-1612).
+    'assign' => [
+        'action' => 'Asignar',
+        'title' => 'Asignar solicitud',
+        'submit' => 'Asignar',
+        'invitee' => 'Reservado por :name (:email).',
+        'customer_hint' => 'Al confirmar, el pedido se crea para este cliente.',
+        'lead' => 'Lead',
+        'lead_hint' => 'Si el lead ya es cliente, también se asigna el cliente.',
+        'required' => 'Elija un cliente o un lead.',
+        'done' => 'Solicitud asignada.',
+        'decided' => 'Las solicitudes decididas ya no se pueden asignar.',
+    ],
+    'service' => [
+        'edit_title' => 'Editar tipo de servicio',
+        'updated' => 'Tipo de servicio «:title» guardado.',
+        'site_foreign' => 'Este tipo de servicio está vinculado a un objeto de otro cliente.',
+        'site_hint' => 'Con objeto, solo reserva el cliente propietario del objeto; pasa a ser el lugar de intervención del pedido.',
+    ],
 ];

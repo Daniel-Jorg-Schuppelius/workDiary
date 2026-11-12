@@ -50,5 +50,13 @@
     "nicht verbunden": "non connesso",
     "nicht zugeordnet": "non assegnato",
     "verbunden": "connesso",
-    "z. B. Erstberatung": "ad es. prima consulenza"
+    "z. B. Erstberatung": "ad es. prima consulenza",
+    "Calendly-Nutzer zuordnen": "Assegna utenti Calendly",
+    "Gastgeber werden über ihre E-Mail-Adresse erkannt. Weicht die Calendly-Adresse ab, ordnen Sie sie hier einem Benutzer zu.": "Gli host vengono riconosciuti dal loro indirizzo e-mail. Se l'indirizzo Calendly è diverso, lo assegni qui a un utente.",
+    "Calendly-E-Mail": "E-mail Calendly",
+    "Zuordnung speichern": "Salva assegnazione",
+    "Zuordnung entfernen": "Rimuovi assegnazione",
+    "Calendly-Nutzer zugeordnet.": "Utente Calendly assegnato.",
+    "Calendly-Zuordnung entfernt.": "Assegnazione Calendly rimossa.",
+    "Noch keine abweichenden Gastgeber zugeordnet.": "Nessun host con indirizzo diverso ancora assegnato."
 }

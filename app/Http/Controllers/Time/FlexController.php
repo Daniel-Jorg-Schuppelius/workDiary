@@ -110,7 +110,8 @@ class FlexController extends Controller {
             'month' => $month,
             'months' => $months,
             'activeKey' => $activeKey,
-            'summary' => $this->calc->monthlyBalance($user, $year, $month),
+            // Eine Rechnung mit Kachel und Terminal: Soll/Ist bis gestern, Kontostand mit Übertrag (MVP-1627).
+            'summary' => $this->calc->accountMonth($user, $year, $month),
             'isAdmin' => $canSeeOthers,
             'canSeeOthers' => $canSeeOthers,
             'service' => $this->weekService,

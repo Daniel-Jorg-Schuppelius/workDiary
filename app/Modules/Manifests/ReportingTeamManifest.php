@@ -75,6 +75,10 @@ final class ReportingTeamManifest extends Manifest {
             \App\Services\Demo\Contracts\DemoBlock::class => [
                 \App\Services\Reporting\Demo\TeamReportsDemoBlock::class,
             ],
+            // Personalbereich der Leitungssicht aus Krankheits- und Qualifikationsauswertung (MVP-1617).
+            \App\Services\Reporting\Contracts\ManagementKpiSource::class => [
+                \App\Services\Reporting\Management\PersonnelKpiSource::class,
+            ],
         ];
     }
 }

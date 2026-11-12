@@ -91,6 +91,7 @@ final class LearningManifest extends Manifest {
             'learning_time_sessions',
             'learning_unit_progress',
             'learning_units',
+            'learning_video_progress',
             'learning_xapi_documents',
             'learning_xapi_statements',
         ];
@@ -144,6 +145,18 @@ final class LearningManifest extends Manifest {
         ];
     }
 
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Procedure\ProcedureRunProgressed::class => [
+                \App\Listeners\Learning\CompleteProcedureUnits::class,
+            ],
+            \App\Events\Survey\SurveyResponseSubmitted::class => [
+                \App\Listeners\Learning\CompleteSurveyUnit::class,
+            ],
+        ];
+    }
+
     /** @return array<class-string, class-string> */
     public function contracts(): array {
         return [
@@ -155,6 +168,7 @@ final class LearningManifest extends Manifest {
     public function bindings(): array {
         return [
             \App\Services\Reporting\Contracts\TrainingNeedSource::class => \App\Services\Learning\TrainingNeedReport::class,
+            \App\Services\Schedule\Contracts\QualificationTrainingSource::class => \App\Services\Learning\QualificationDossierService::class,
         ];
     }
 }

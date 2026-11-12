@@ -378,4 +378,146 @@ class AccountingBankCashLinkTest extends TestCase {
 
         $this->assertNull(\App\Models\Accounting\AccountingEntry::query()->find($entry->id));
     }
+
+    /** MVP-1557: Bankgebühr ohne Beleg — Sachkonto und Vorsteuer an Bank, der Umsatz verlässt die offene Liste. */
+    public function test_a_transaction_without_document_posts_directly_to_a_ledger_account(): void {
+        $chart = app(ChartOfAccountsService::class);
+        $fees = $chart->create($this->org, ['number' => '4970', 'name' => 'Nebenkosten des Geldverkehrs', 'type' => AccountType::Expense]);
+        $inputTax = $chart->create($this->org, ['number' => '1576', 'name' => 'Vorsteuer 19 %', 'type' => AccountType::Asset]);
+        $taxCode = \App\Models\Accounting\AccountingTaxCode::query()->create([
+            'organization_id' => $this->org->id,
+            'code' => 'VSt19',
+            'name' => 'Vorsteuer 19 %',
+            'direction' => \App\Enums\Finance\TaxCodeDirection::Input,
+            'rate' => '19.00',
+            'tax_account_id' => $inputTax->id,
+            'valid_from' => $this->startsOn->toDateString(),
+            'is_active' => true,
+        ]);
+        $transaction = $this->transaction(11.90);
+        $transaction->forceFill(['direction' => \App\Enums\Finance\TransactionDirection::Debit])->save();
+
+        // Geldkonten gehören zur Umbuchung, nicht hierher.
+        try {
+            $this->inbox()->postBankTransactionToAccount($this->org, $transaction, $this->accounts['cash'], null, null, 'Falsch', $this->admin);
+            $this->fail('Kassenkonto als Sachkonto angenommen.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('account', $exception->errors());
+        }
+
+        $this->actingAs($this->admin)->get(route('finance.accounting.inbox.bank-direct.create', $transaction->sqid))
+            ->assertOk()->assertSee('4970')->assertDontSee('1000 ');
+        $this->actingAs($this->admin)->post(route('finance.accounting.inbox.bank-direct.store', $transaction->sqid), [
+            'account' => $fees->sqid,
+            'tax_code' => $taxCode->sqid,
+            'note' => 'Kontoführung Januar',
+        ])->assertSessionHasNoErrors()->assertSessionHas('status', (string) __('accounting.bank_direct.flash.posted'));
+
+        $entry = \App\Models\Accounting\AccountingEntry::query()->where('source_key', $this->inbox()->directKey($transaction))->sole()->load('lines.account');
+        $this->assertTrue($entry->status->isPosted());
+        $this->assertSame(
+            [['1200', '0.00', '11.90'], ['4970', '10.00', '0.00'], ['1576', '1.90', '0.00']],
+            $entry->lines->map(fn ($line): array => [$line->account->number, $line->debit->getAmount(), $line->credit->getAmount()])->all(),
+        );
+        $this->assertSame('1.90', $entry->lines[1]->tax_amount?->getAmount());
+        $this->assertSame(\App\Enums\Finance\DirectBookingKind::BankDirect, \App\Enums\Finance\DirectBookingKind::of($entry));
+
+        $transaction->refresh();
+        $this->assertSame(\App\Enums\Finance\MatchStatus::Ignored, $transaction->match_status);
+        $this->assertSame('posted', $this->inbox()->bankTransactionStates($this->org, [$transaction])[$transaction->id]['state']);
+
+        // Ein zweiter Versuch — auch als Klärungsbuchung gedacht — findet die Buchung vor.
+        $again = $this->inbox()->postBankTransactionToAccount($this->org, $transaction, $fees, null, null, 'Nochmal', $this->admin);
+        $this->assertSame($entry->id, $again->id);
+    }
+
+    /** MVP-1557: Ein Zinsertrag (Geldeingang) bucht Bank an Sachkonto. */
+    public function test_an_incoming_transaction_without_document_credits_the_ledger_account(): void {
+        $interest = app(ChartOfAccountsService::class)->create($this->org, ['number' => '2650', 'name' => 'Zinserträge', 'type' => AccountType::Income]);
+        $transaction = $this->transaction(3.20);
+
+        $entry = $this->inbox()->postBankTransactionToAccount($this->org, $transaction, $interest, null, null, 'Habenzinsen', $this->admin)->load('lines.account');
+
+        $this->assertSame(
+            [['1200', '3.20', '0.00'], ['2650', '0.00', '3.20']],
+            $entry->lines->map(fn ($line): array => [$line->account->number, $line->debit->getAmount(), $line->credit->getAmount()])->all(),
+        );
+    }
+
+    /** MVP-1557: Freie Belegsuche — jede offene Rechnung ist wählbar, Teilzahlung, Art und Notiz kommen an. */
+    public function test_a_single_transaction_can_be_assigned_to_any_open_invoice(): void {
+        $invoice = Invoice::create([
+            'organization_id' => $this->org->id,
+            'customer_id' => Customer::create(['organization_id' => $this->org->id, 'name' => 'Suchkunde GmbH', 'currency' => 'EUR', 'created_by' => $this->admin->id])->id,
+            'number' => 'RE-FREI-1',
+            'type' => Invoice::TYPE_INVOICE,
+            'category' => Invoice::CATEGORY_SERVICE,
+            'status' => InvoiceStatus::Issued,
+            'issued_on' => $this->startsOn->addDays(5)->toDateString(),
+            'currency' => 'EUR',
+            'subtotal' => '100.00',
+            'tax_amount' => '19.00',
+            'total' => '119.00',
+            'created_by' => $this->admin->id,
+        ]);
+        $transaction = $this->transaction(50.00);
+
+        $this->actingAs($this->admin)->get(route('finance.reconciliation.assign-form', $transaction->sqid))
+            ->assertOk()
+            ->assertSee('RE-FREI-1')
+            ->assertSee('Suchkunde GmbH');
+
+        $this->actingAs($this->admin)->post(route('finance.reconciliation.confirm', $transaction->sqid), [
+            'allocations' => [['target' => 'invoice:' . $invoice->sqid, 'amount' => '50.00', 'note' => 'Abschlag ohne Rechnungsnummer']],
+        ])->assertSessionHasNoErrors()->assertSessionHas('success');
+
+        $allocation = PaymentAllocation::query()->where('bank_transaction_id', $transaction->id)->sole();
+        $this->assertSame(AllocationKind::Partial, $allocation->kind);
+        $this->assertSame('Abschlag ohne Rechnungsnummer', $allocation->note);
+        $this->assertSame($invoice->id, $allocation->allocatable_id);
+
+        // Ausdrücklich gewählte Art gewinnt; Rückläufer und Unsinn werden abgewiesen.
+        $second = $this->transaction(69.00);
+        $this->actingAs($this->admin)->post(route('finance.reconciliation.confirm', $second->sqid), [
+            'allocations' => [['target' => 'invoice:' . $invoice->sqid, 'amount' => '69.00', 'kind' => AllocationKind::Chargeback->value]],
+        ])->assertSessionHasErrors('allocations.0.kind');
+        $this->actingAs($this->admin)->post(route('finance.reconciliation.confirm', $second->sqid), [
+            'allocations' => [['target' => 'unsinn', 'amount' => '69.00']],
+        ])->assertSessionHasErrors('allocations.0.target');
+        $this->actingAs($this->admin)->post(route('finance.reconciliation.confirm', $second->sqid), [
+            'allocations' => [['target' => 'invoice:' . $invoice->sqid, 'amount' => '69.00', 'kind' => AllocationKind::Overpayment->value]],
+        ])->assertSessionHasNoErrors();
+        $this->assertSame(AllocationKind::Overpayment, PaymentAllocation::query()->where('bank_transaction_id', $second->id)->sole()->kind);
+    }
+
+    /** Nachzug MVP-1557: Wird der Vier-Augen-Entwurf verworfen, steht der beiseitegelegte Umsatz wieder offen. */
+    public function test_discarding_a_bank_direct_draft_reopens_the_transaction(): void {
+        \App\Support\Setting::set(PostingInboxService::FOUR_EYES_KEY, true, \App\Settings\SettingScope::Organization, $this->org);
+        $fees = app(ChartOfAccountsService::class)->create($this->org, ['number' => '4970', 'name' => 'Nebenkosten des Geldverkehrs', 'type' => AccountType::Expense]);
+        $transaction = $this->transaction(4.50);
+        $transaction->forceFill(['direction' => \App\Enums\Finance\TransactionDirection::Debit])->save();
+
+        $draft = $this->inbox()->postBankTransactionToAccount($this->org, $transaction, $fees, null, null, 'Kontoführung', $this->admin);
+        $this->assertFalse($draft->status->isPosted());
+        $this->assertSame(\App\Enums\Finance\MatchStatus::Ignored, $transaction->refresh()->match_status);
+
+        app(\App\Services\Accounting\JournalService::class)->discard($draft, $this->admin);
+
+        $transaction->refresh();
+        $this->assertSame(\App\Enums\Finance\MatchStatus::Unmatched, $transaction->match_status);
+        $this->assertSame('open', $this->inbox()->bankTransactionStates($this->org, [$transaction])[$transaction->id]['state']);
+    }
+
+    /** Ein Umsatz, der schon vorher von Hand beiseitegelegt war, bleibt es auch nach dem Verwerfen. */
+    public function test_discarding_keeps_a_transaction_that_was_set_aside_by_hand(): void {
+        \App\Support\Setting::set(PostingInboxService::FOUR_EYES_KEY, true, \App\Settings\SettingScope::Organization, $this->org);
+        $fees = app(ChartOfAccountsService::class)->create($this->org, ['number' => '4970', 'name' => 'Nebenkosten des Geldverkehrs', 'type' => AccountType::Expense]);
+        $transaction = $this->transaction(4.50);
+        app(\App\Services\Finance\ReconciliationService::class)->ignore($transaction, $this->admin);
+
+        $draft = $this->inbox()->postBankTransactionToAccount($this->org, $transaction->refresh(), $fees, null, null, 'Kontoführung', $this->admin);
+        app(\App\Services\Accounting\JournalService::class)->discard($draft, $this->admin);
+
+        $this->assertSame(\App\Enums\Finance\MatchStatus::Ignored, $transaction->refresh()->match_status);
+    }
 }

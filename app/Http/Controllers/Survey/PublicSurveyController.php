@@ -36,6 +36,7 @@ class PublicSurveyController extends Controller {
             'survey' => $survey,
             'questions' => $survey->questions()->withoutGlobalScopes()->orderBy('position')->get(),
             'token' => $token,
+            'canOptOut' => $invitation->customer_id !== null,
         ]);
     }
 
@@ -62,6 +63,29 @@ class PublicSurveyController extends Controller {
         }
 
         return view('public.survey-thanks', ['survey' => $survey]);
+    }
+
+    /** Abmeldeseite: nur die Rückfrage – Mail-Scanner rufen Links ab, deshalb ändert GET nichts. */
+    public function optOutForm(string $token): View {
+        $invitation = $this->resolveForOptOut($token);
+
+        return view('public.survey-opt-out', ['token' => $token, 'done' => false, 'organization' => $invitation->organization?->name]);
+    }
+
+    public function optOut(string $token, SurveyService $service): View {
+        $invitation = $this->resolveForOptOut($token);
+        abort_if($service->optOut($invitation) === null, 404);
+
+        return view('public.survey-opt-out', ['token' => $token, 'done' => true, 'organization' => $invitation->organization?->name]);
+    }
+
+    /** Der Widerspruch hängt nicht an der Gültigkeit des Umfrage-Links: auch nach Teilnahme oder Ablauf. */
+    private function resolveForOptOut(string $token): SurveyInvitation {
+        $invitation = SurveyInvitation::findByAccessToken($token);
+        abort_if($invitation === null || $invitation->customer_id === null, 404);
+        $this->assertTenantPublicSurfacesAvailable((int) $invitation->organization_id);
+
+        return $invitation;
     }
 
     /**

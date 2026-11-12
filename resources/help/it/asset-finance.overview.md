@@ -1,7 +1,7 @@
 ---
 title: "Leasing e contratti asset"
 topic: asset-finance.overview
-version: 2
+version: 3
 keywords:
     - contratto di leasing
     - canoni di leasing
@@ -48,3 +48,7 @@ verificate).
 
 **Processo di fine:** documenta stato, chilometri/ore, danni e la
 decisione — restituzione, acquisto, proroga o sostituzione.
+
+**Ordine:** nel modulo del contratto Lei seleziona l'ordine corrispondente,
+se gli acquisti sono attivati e Lei può leggere gli ordini. La pratica mostra
+il numero d'ordine con collegamento.

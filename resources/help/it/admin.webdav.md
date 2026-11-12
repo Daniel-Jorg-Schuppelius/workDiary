@@ -1,7 +1,7 @@
 ---
 title: "Archivio WebDAV"
 topic: admin.webdav
-version: 3
+version: 4
 keywords:
     - WebDAV
     - Nextcloud
@@ -163,3 +163,5 @@ nell’archivio. Per riattivarlo imposti **Attivo** e salvi.
   firma.
 - Un documento non viene più aggiornato: c’è un conflitto aperto nell’inbox,
   oppure la sua copia è stata scollegata.
+
+**L’attivazione recupera:** quando l’archivio viene attivato, WorkDiary mette subito in coda tutti gli oggetti già rilasciati, anche quelli rilasciati mentre non c’era un archivio attivo. La copia non richiede pianificazione; «Copia ora» resta disponibile se vuole recuperare da sé.

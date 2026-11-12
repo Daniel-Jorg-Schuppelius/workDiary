@@ -10,14 +10,11 @@
 
 namespace App\Plugins\Zammad;
 
-use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
+use App\Plugins\Contracts\{Plugin, PluginCapability};
 use App\Plugins\Support\ApiHealthProbe;
 use App\Plugins\Zammad\Contracts\ZammadGatewayFactory;
 use App\Plugins\Zammad\Models\ZammadConnection;
-use App\Plugins\Zammad\Services\ZammadTicketImporter;
-use Throwable;
 
 /**
  * Helpdesk-/Ticketsystem-Anbindung Zammad (Feature 060, MVP-129).
@@ -37,7 +34,7 @@ use Throwable;
  * Kündigt {@see PluginCapability::TaskSync} an (Aufgaben-Sync-Vertrag aus
  * Feature 055) — bewusst einbahnig (Import); Konflikt-/Inbox-Zähler bleiben 0.
  */
-class ZammadPlugin extends AbstractPlugin implements TaskSyncer {
+class ZammadPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains {
     public const string ID = 'zammad';
 
     public const string SERVICE_PROVIDER = ZammadServiceProvider::class;
@@ -61,40 +58,6 @@ class ZammadPlugin extends AbstractPlugin implements TaskSyncer {
         return [
             PluginCapability::TaskSync,
         ];
-    }
-
-    /**
-     * Einheitlicher Sync-Einstieg (TaskSyncer): Ticket-Import über alle aktiven
-     * Zammad-Anbindungen der Organisation. Einbahnig — `created` aus dem
-     * Import, `updated` = in Zammad geschlossene, nun erledigte Aufgaben,
-     * `unchanged` = übersprungene Tickets; Konflikt-Zähler bleiben 0.
-     */
-    public function syncTasks(Organization $organization): array {
-        $counters = ['created' => 0, 'updated' => 0, 'unchanged' => 0, 'conflicts' => 0, 'inbox' => 0, 'failed' => 0];
-
-        $factory = app(ZammadGatewayFactory::class);
-        $importer = app(ZammadTicketImporter::class);
-
-        $connections = ZammadConnection::query()
-            ->where('organization_id', $organization->id)
-            ->get();
-
-        foreach ($connections as $connection) {
-            if (! $connection->isActive()) {
-                continue;
-            }
-            try {
-                $result = $importer->import($connection, $factory->for($connection));
-                $counters['created'] += $result['created'];
-                $counters['updated'] += $result['updated'];
-                $counters['unchanged'] += $result['skipped'];
-                $counters['inbox'] += $result['inbox'];
-            } catch (Throwable) {
-                $counters['failed']++;
-            }
-        }
-
-        return $counters;
     }
 
     public function adminPanel(): ?array {
@@ -133,5 +96,10 @@ class ZammadPlugin extends AbstractPlugin implements TaskSyncer {
 
             return (string) __('Verbunden mit :url.', ['url' => $connection->base_url]);
         });
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Tasks, \App\Enums\Integration\DataDomain::Tickets];
     }
 }

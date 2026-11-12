@@ -29,7 +29,21 @@
             <x-icon-btn icon="ac_unit" tone="ghost" size="sm" type="submit"
                         show-label>{{ __('Baseline einfrieren') }}</x-icon-btn>
         </x-action-form>
+        @if ($lockdownEngaged)
+            <x-action-form :action="route('admin.integrity.release')"
+                  :confirm="__('integrity.lockdown.release_confirm')"
+                  confirm-icon="lock_open"
+                  confirm-tone="warning"
+                  :confirm-label="__('integrity.lockdown.release_action')">
+                <x-icon-btn icon="lock_open" tone="warning" size="sm" type="submit"
+                            show-label>{{ __('integrity.lockdown.release_action') }}</x-icon-btn>
+            </x-action-form>
+        @endif
     </x-slot:actions>
+
+    @if ($lockdownEngaged)
+        <div role="alert" class="alert alert-warning mb-3 shrink-0 text-sm">{{ __('integrity.lockdown.active_notice') }}</div>
+    @endif
 
     <div class="grid gap-3 sm:grid-cols-3 mb-3 shrink-0">
         <x-card padding="p-3">

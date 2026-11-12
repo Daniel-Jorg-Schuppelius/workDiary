@@ -140,7 +140,9 @@
             @forelse ($contract->obligations as $obligation)
                 <tr @class(['opacity-60' => $obligation->status === \App\Enums\Contract\ContractObligationStatus::Done])>
                     <td>{{ $obligation->kind->label() }}</td>
-                    <td>{{ $obligation->title }} @if ($obligation->recurring) <x-status-badge>{{ __('wiederkehrend') }}</x-status-badge> @endif</td>
+                    <td>{{ $obligation->title }} @if ($obligation->recurring) <x-status-badge>{{ __('wiederkehrend') }}</x-status-badge> @endif
+                        @if ($obligation->note)<div class="text-xs text-muted">{{ $obligation->note }}</div>@endif
+                    </td>
                     <td>{{ $obligation->due_on->fdate() }}</td>
                     <td>{{ $obligation->warn_days_before }} {{ __('Tage') }}</td>
                     <td>
@@ -180,6 +182,7 @@
                 </x-select-field>
                 <x-input-field name="recurrence_months" type="number" min="1" :label="__('Wiederholung (Monate)')" />
                 <x-checkbox-field name="recurring" :label="__('Wiederkehrend')" :toggle="false" />
+                <x-input-field name="note" :label="__('Notiz')" maxlength="2000" span="2" />
                 <div class="flex items-end"><x-button type="submit">{{ __('Obligation ergänzen') }}</x-button></div>
             </form>
         @endcan

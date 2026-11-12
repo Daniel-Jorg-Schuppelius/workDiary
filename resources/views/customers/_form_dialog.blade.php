@@ -25,6 +25,7 @@
     @if ($isDialog)
         <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
     @endif
+    <x-accounting-led-notice />
 
     {{-- Kompaktes Kernformular (Feature 165, MVP-1193, E4): Pflichtkern vorn,
          Zusatzgruppen aufklappbar — dieselben Felder, derselbe Request. --}}
@@ -50,12 +51,14 @@
         $miscValues = [
             old('matchcode', $customer?->matchcode),
             old('vat_id', $customer?->vat_id),
+            (bool) old('is_reverse_charge_recipient', $customer?->is_reverse_charge_recipient ?? false),
             $customerGroupSqid,
             old('timezone', $customer?->timezone),
             old('homepage', $customer?->homepage),
             old('address', $customer?->address),
             (bool) old('exclude_from_reports', $customer?->exclude_from_reports ?? false),
             (bool) old('no_bulk_mail', $customer?->no_bulk_mail ?? false),
+            (bool) old('survey_opt_out', $customer?->survey_opt_out ?? false),
             old('comment', $customer?->comment),
             $selectedTagIds,
         ];
@@ -199,11 +202,15 @@
     </x-form-group-collapsible>
 
     <x-form-group-collapsible :legend="__('Portal & Sonstiges')" icon="tune" tone="ghost" cols="2"
-                              :fields="['matchcode', 'vat_id', 'customer_group_id', 'timezone', 'homepage', 'address', 'exclude_from_reports', 'no_bulk_mail', 'comment', 'tag_ids']"
+                              :fields="['matchcode', 'vat_id', 'is_reverse_charge_recipient', 'customer_group_id', 'timezone', 'homepage', 'address', 'exclude_from_reports', 'no_bulk_mail', 'survey_opt_out', 'comment', 'tag_ids']"
                               :values="$miscValues">
         <x-input-field name="matchcode" :label="__('Kürzel (Matchcode)')" maxlength="16" :value="old('matchcode', $customer?->matchcode)"
                        :hint="__('Für den Alias-Abgleich der Fernwartungs-Inbox, z. B. GSL.')" />
         <x-input-field name="vat_id" :label="__('USt-IdNr.')" maxlength="64" :value="old('vat_id', $customer?->vat_id)" />
+        {{-- MVP-1622: Inländischer Leistungsempfänger schuldet die Steuer (§ 13b UStG), etwa bei Bauleistungen an Bauleistende. --}}
+        <x-checkbox-field name="is_reverse_charge_recipient" :label="__('invoicing.reverse_charge_recipient.label')"
+                          :hint="__('invoicing.reverse_charge_recipient.hint')"
+                          :checked="old('is_reverse_charge_recipient', $customer?->is_reverse_charge_recipient ?? false)" />
         @if (($customerGroups ?? collect())->isNotEmpty())
             {{-- Kundengruppe (MVP-949) --}}
             <x-select-field name="customer_group_id" :label="__('Kundengruppe')">
@@ -229,6 +236,11 @@
         <x-checkbox-field name="no_bulk_mail" :label="__('Keine Sammelmails')"
                           :hint="__('Der Kunde erhält keine Rundschreiben — Pflichtmitteilungen ausgenommen.')"
                           :checked="old('no_bulk_mail', $customer?->no_bulk_mail ?? false)" />
+
+        {{-- Feature 090: Widerspruch gegen Umfragen; den Haken setzt auch der Abmeldelink der Einladung. --}}
+        <x-checkbox-field name="survey_opt_out" :label="__('Keine Umfragen')"
+                          :hint="__('Der Kunde erhält keine Umfrage-Einladungen mehr — weder von Hand noch automatisch.')"
+                          :checked="old('survey_opt_out', $customer?->survey_opt_out ?? false)" />
 
         <x-textarea-field name="comment" span="2" :label="__('Notiz (intern)')" rows="2" maxlength="5000" :value="old('comment', $customer?->comment)" />
 

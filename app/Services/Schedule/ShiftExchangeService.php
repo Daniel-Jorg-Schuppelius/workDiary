@@ -16,7 +16,7 @@ use App\Enums\Notification\NotificationEvent;
 use App\Enums\Shift\{ScheduledShiftStatus, ShiftExchangeStatus};
 use App\Models\Platform\{Organization, User};
 use App\Models\Schedule\{ScheduledShift, ShiftExchange};
-use App\Services\Compliance\{ComplianceReport, ShiftComplianceService};
+use App\Services\Compliance\{ComplianceReport, ComplianceViolation, ShiftComplianceService};
 use App\Services\Notification\NotificationDispatcher;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -36,6 +36,8 @@ use Illuminate\Support\Facades\DB;
  * blockt die Freigabe (override nur durch die Leitung möglich).
  */
 class ShiftExchangeService {
+    public const int OVERRIDE_REASON_MIN_LENGTH = 10;
+
     public function __construct(
         private readonly ShiftComplianceService $compliance,
         private readonly NotificationDispatcher $dispatcher,
@@ -56,6 +58,15 @@ class ShiftExchangeService {
         }
         if ($shift->status === ScheduledShiftStatus::Cancelled) {
             throw new ShiftExchangeException(__('schedule.exchange.error_cancelled_shift'));
+        }
+        // Echter Tausch (MVP-1553): die Gegenschicht gehört der Tauschperson; ohne Wunschperson bestimmt sie diese.
+        if ($offeredShift !== null) {
+            $ownerId = (int) ($offeredShift->user_id ?? 0);
+            if ($offeredShift->status === ScheduledShiftStatus::Cancelled || (int) $offeredShift->organization_id !== (int) $shift->organization_id
+                || $ownerId <= 0 || $ownerId === (int) $requester->id || ($target !== null && $ownerId !== (int) $target->id)) {
+                throw new ShiftExchangeException(__('schedule.exchange.error_offered_shift'));
+            }
+            $target ??= User::query()->whereKey($ownerId)->first();
         }
 
         $exchange = ShiftExchange::create([
@@ -142,15 +153,15 @@ class ShiftExchangeService {
 
         $reports = [];
         if ($exchange->scheduledShift !== null && $targetUserId > 0) {
-            $reports[(int) $exchange->scheduledShift->id] = $this->compliance->check(
-                $this->reassignProxy($exchange->scheduledShift, $targetUserId),
-                $organization,
+            $reports[(int) $exchange->scheduledShift->id] = $this->withoutCounterpart(
+                $this->compliance->check($this->reassignProxy($exchange->scheduledShift, $targetUserId), $organization),
+                $exchange->offeredShift,
             );
         }
         if ($exchange->offeredShift !== null) {
-            $reports[(int) $exchange->offeredShift->id] = $this->compliance->check(
-                $this->reassignProxy($exchange->offeredShift, (int) $exchange->requested_by_user_id),
-                $organization,
+            $reports[(int) $exchange->offeredShift->id] = $this->withoutCounterpart(
+                $this->compliance->check($this->reassignProxy($exchange->offeredShift, (int) $exchange->requested_by_user_id), $organization),
+                $exchange->scheduledShift,
             );
         }
 
@@ -158,11 +169,28 @@ class ShiftExchangeService {
     }
 
     /**
+     * Beim echten Tausch gibt jede Seite ihre Schicht ab: Verstöße, die allein
+     * gegen die abgegebene Gegenschicht bestehen (Überschneidung, Ruhezeit),
+     * gibt es nach dem Tausch nicht mehr.
+     */
+    private function withoutCounterpart(ComplianceReport $report, ?ScheduledShift $counterpart): ComplianceReport {
+        if ($counterpart === null) {
+            return $report;
+        }
+        $counterpartId = (int) $counterpart->id;
+
+        return new ComplianceReport(array_values(array_filter(
+            $report->violations,
+            static fn (ComplianceViolation $violation): bool => array_values(array_unique(array_map('intval', $violation->relatedShiftIds))) !== [$counterpartId],
+        )));
+    }
+
+    /**
      * Teamleitung gibt frei: Compliance-Check, dann Umsetzung der Zuordnung.
      *
      * @throws ShiftExchangeException bei ungültigem Status oder Compliance-Blockade
      */
-    public function approve(ShiftExchange $exchange, User $decider, bool $overrideCompliance = false): ShiftExchange {
+    public function approve(ShiftExchange $exchange, User $decider, bool $overrideCompliance = false, ?string $overrideReason = null): ShiftExchange {
         if (! $exchange->status->isDecidable()) {
             throw new ShiftExchangeException(__('schedule.exchange.error_not_decidable'));
         }
@@ -178,12 +206,25 @@ class ShiftExchangeService {
             throw new ShiftExchangeException(__('schedule.exchange.error_no_target'));
         }
 
+        // Die Gegenschicht muss noch der Tauschperson gehören, sonst bekäme der Antragsteller eine fremde Schicht.
+        $offered = $exchange->offeredShift;
+        if ($offered !== null && ((int) $offered->user_id !== $targetUserId || $offered->status === ScheduledShiftStatus::Cancelled)) {
+            throw new ShiftExchangeException(__('schedule.exchange.error_offered_shift'));
+        }
+
         // Compliance-Prüfung der neuen Zuordnung (KEINE parallele Logik).
-        if (! $overrideCompliance) {
-            foreach ($this->previewCompliance($exchange) as $report) {
-                if ($report->hasErrors()) {
-                    throw new ShiftExchangeException(__('schedule.exchange.error_compliance'));
-                }
+        $overridden = [];
+        foreach ($this->previewCompliance($exchange) as $report) {
+            foreach ($report->bySeverity(ComplianceViolation::SEVERITY_ERROR) as $violation) {
+                $overridden[] = ['code' => $violation->code, 'message' => $violation->message];
+            }
+        }
+        if ($overridden !== []) {
+            if (! $overrideCompliance) {
+                throw new ShiftExchangeException(__('schedule.exchange.error_compliance'));
+            }
+            if (mb_strlen(trim((string) $overrideReason)) < self::OVERRIDE_REASON_MIN_LENGTH) {
+                throw new ShiftExchangeException(__('schedule.exchange.error_override_reason', ['n' => self::OVERRIDE_REASON_MIN_LENGTH]));
             }
         }
 
@@ -197,7 +238,14 @@ class ShiftExchangeService {
             throw new ShiftExchangeException($blocked);
         }
 
-        DB::transaction(function () use ($exchange, $shift, $targetUserId, $decider): void {
+        DB::transaction(function () use ($exchange, $shift, $targetUserId, $decider, $overridden, $overrideReason): void {
+            if ($overridden !== []) {
+                $exchange->audit('shift_exchange.compliance_overridden', [
+                    'reason' => trim((string) $overrideReason),
+                    'violations' => $overridden,
+                    'decided_by' => (int) $decider->id,
+                ]);
+            }
             $shift->update(['user_id' => $targetUserId, 'updated_by' => $decider->id]);
 
             // Echter Tausch: Gegenschicht geht an den Antragsteller.

@@ -1,7 +1,7 @@
 ---
 title: "DATEV-Buchungsstapel"
 topic: finance.datev-bookings
-version: 2
+version: 6
 keywords:
     - DATEV-Export
     - Steuerberater
@@ -57,6 +57,16 @@ abgeleitet. Stapel anlegen, finalisieren und herunterladen darf die
 Rolle **Buchhaltung** (und Administration); die Konfiguration pflegen
 Administratoren.
 
+Für die lokale Buchhaltung stehen im Abschnitt **Konten** außerdem das
+**Skontokonto** und das **Ausbuchungskonto (Forderungsverluste)**: die
+Gegenkonten, wenn ein offener Posten mit Skonto oder Ausbuchung ausgeglichen
+wird. Leer gelassen gilt die Vorgabe des Kontenrahmens (SKR03 8736 und 2400, SKR04 4736 und 6930). Für
+Verbindlichkeiten gibt es das **Konto für erhaltene Skonti** (3736 bzw. 5736)
+und das **Ausbuchungskonto für Verbindlichkeiten** (sonstiger Ertrag, 2709 bzw.
+4839). Gibt es einen lokalen Kontenplan, muss ein eingetragenes
+Konto dort angelegt sein; fehlt ein wirksames Konto, weist die Seite darauf
+hin.
+
 ## Empfohlener Ablauf
 
 1. **Stapel anlegen:** Zeitraum wählen, optional freigegebene Spesen
@@ -104,3 +114,28 @@ nach dessen Abschluss exportieren.
 Nach dem Finalisieren hält **Übermittlung erfassen** fest, was mit dem Stapel geschieht: **übermittelt** an die Kanzlei, dort **bestätigt** oder **abgelehnt**. Ein abgelehnter Stapel wird nach der Klärung erneut übermittelt; Korrekturen an Belegen laufen weiterhin über den nächsten Stapel. Jeder Schritt steht mit Zeitpunkt, Person und optionalem Vermerk im Verlauf des Stapels, die Liste zeigt den aktuellen Stand. Vermerke bitte ohne personenbezogene Angaben, denn der Verlauf ist unveränderlich.
 
 Der **Begleitbericht (PDF)** fasst den Stapel für die Kanzlei zusammen: Zeitraum, Berater- und Mandantennummer, Zahl der Buchungssätze und Generalumkehr, Summe, Prüfsumme der Datei, Summen je Erlöskonto und je BU-Schlüssel sowie den Verlauf.
+
+## DATEV-Übergabe aus dem Journal
+
+Führt WorkDiary das Hauptbuch, entsteht der DATEV-Buchungsstapel aus den
+Festbuchungen des Journals (Karte **DATEV-Übergabe** im **Periodenabschluss**).
+Jede Buchung wird zu Buchungssätzen gegen eine Ankerzeile – meist das
+Forderungs-, Verbindlichkeits- oder Geldkonto –, sodass DATEV sie genau einmal
+bucht. Eine Zeile mit Steuerkennzeichen geht mit dessen **DATEV-BU-Schlüssel**
+brutto hinaus; die Steuerzeilen entfallen, weil DATEV die Steuer selbst bucht.
+Bei Steuerschuld des Empfängers (§ 13b, innergemeinschaftlicher Erwerb) bleibt
+der Betrag netto, DATEV bucht Umsatz- und Vorsteuer. Auf einem Automatikkonto
+(Feld **DATEV-Automatik** am Konto) errechnet DATEV die Steuer aus dem Konto,
+der Stapel setzt dort keinen Schlüssel. Passt die Automatik nicht zur Buchung,
+hebt der Schlüssel 40 sie auf, und die Steuer bleibt ein eigener Satz. Skonto
+mit Steuerberichtigung geht ebenso als ein Satz hinaus.
+
+## Umsätze ohne Steuer
+
+Weist eine Rechnung keine Steuer aus, bucht der Stapel nach ihrem Steuerfall —
+wie die Buchhaltung: innergemeinschaftliche Lieferung (SKR03 8125 / SKR04 4125),
+sonstige Leistung ins übrige Gemeinschaftsgebiet (8336/4336), Steuerschuld des
+Leistungsempfängers im Inland (8337/4337), Ausfuhr (8120/4120), nicht steuerbarer
+Umsatz im Drittland (8338/4338). Das sind DATEV-Automatikkonten; der Stapel setzt
+dort keinen BU-Schlüssel. Steuerfreie Umsätze im Inland bleiben auf dem
+eingestellten Konto für steuerfreie Erlöse.

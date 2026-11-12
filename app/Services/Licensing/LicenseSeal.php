@@ -39,10 +39,6 @@ final class LicenseSeal {
         return self::data()['files'];
     }
 
-    public static function sealedAt(): string {
-        return self::data()['sealed_at'];
-    }
-
     public static function isSealed(): bool {
         return self::publicKey() !== '';
     }

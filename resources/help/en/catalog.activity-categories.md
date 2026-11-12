@@ -1,7 +1,7 @@
 ---
 title: "Activity Categories"
 topic: catalog.activity-categories
-version: 1
+version: 2
 keywords:
     - activity types
     - task types
@@ -32,3 +32,10 @@ selection fields.
 Inactive categories are retained but no longer offered for selection. The
 search and column sorting help you locate entries quickly even in large
 catalogues.
+
+**Effect of the switches:** "Counts as work" decides whether a time with
+this category counts as working time in the working time account, the day
+close and the work balance; switched off it stays out, like the activity
+types break and absence. Clocked times count regardless. "Billable by
+default" presets the billability of new administrative times with this
+category; for times with a project the project still decides.

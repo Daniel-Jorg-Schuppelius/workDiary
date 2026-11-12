@@ -74,6 +74,7 @@
                     <x-table.th sort="company">{{ __('Firma') }}</x-table.th>
                     <th>{{ __('E-Mail') }}</th>
                     <th>{{ __('Ort') }}</th>
+                    <x-custom-field-heads :columns="$customColumns" />
                     <th></th>
                 </tr>
             </x-slot:head>
@@ -101,6 +102,7 @@
                     <td class="text-base-content/70">
                         {{ trim(($supplier->address_zip ? $supplier->address_zip.' ' : '').($supplier->address_city ?? '')) }}
                     </td>
+                    <x-custom-field-cells :columns="$customColumns" :model="$supplier" />
                     <td class="text-right">
                         @can('update', $supplier)
                             <x-icon-btn icon="edit"

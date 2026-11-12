@@ -88,6 +88,8 @@ return [
     'inventory' => [
         'heading' => 'Guida delle giacenze',
         'explain' => 'Definisce quale sistema guida le giacenze. Il ritorno a «locale» importa le giacenze JTL come inventario di apertura.',
+        'takeover_heading' => 'Inventario di apertura',
+        'takeover_explain' => 'Rilegge le giacenze JTL e registra la differenza rispetto alla giacenza locale come rettifica di apertura, ad esempio se l’importazione non è riuscita al cambio di modalità. Possibile solo nel giorno del passaggio a «locale»; una seconda esecuzione non registra nulla due volte.',
         'mode_local' => 'Locale — WorkDiary gestisce le giacenze da sé.',
         'mode_external' => 'Esterno — guida JTL-Wawi; WorkDiary legge e consegna le registrazioni.',
         'mode_read_only' => 'Sola lettura — guida JTL-Wawi; WorkDiary mostra soltanto le giacenze.',
@@ -101,11 +103,13 @@ return [
         'check_registration' => 'Verifica approvazione',
         'map' => 'Associa',
         'change_mode' => 'Cambia modalità',
+        'takeover' => 'Esegui inventario di apertura',
     ],
 
     'confirm' => [
         'disconnect' => 'Disconnettere davvero? Associazioni e proiezioni restano, le credenziali vengono eliminate.',
         'mode_change' => 'Cambiare davvero la modalità di guida delle giacenze?',
+        'takeover' => 'Importare ora le giacenze JTL come inventario di apertura?',
     ],
 
     'flash' => [
@@ -127,8 +131,10 @@ return [
         'mode_needs_connection' => 'La guida esterna delle giacenze richiede una connessione JTL attiva.',
         'mode_needs_mapping' => 'La guida esterna delle giacenze richiede almeno un magazzino JTL associato.',
         'mode_changed' => 'Modalità di guida delle giacenze cambiata.',
+        'mode_other_plugin' => 'Le giacenze sono attualmente gestite da :plugin. La modifica si fa sulla pagina di quel plugin.',
         'mode_changed_with_takeover' => 'Modalità cambiata — :booked rettifiche di apertura importate da JTL.',
         'takeover_done' => 'Inventario di apertura completato: :booked rettifiche su :pairs coppie.',
         'takeover_failed' => 'Inventario di apertura non riuscito (:reason).',
+        'takeover_not_today' => 'L’inventario di apertura è possibile solo nel giorno del passaggio a «locale»: dopo guida la giacenza locale.',
     ],
 ];

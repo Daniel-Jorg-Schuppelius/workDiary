@@ -69,6 +69,7 @@
                         {{-- Wirtschaftlichkeits-Ranking (Vollaudit 2026-07, N7). --}}
                         <x-table.th sort type="number" align="right">{{ __('DB') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('DB je Auftrag') }}</x-table.th>
+                        <th>{{ __('Top-Ursachen') }}</th>
                     </tr>
                 </x-slot:head>
                 @foreach($rows as $row)
@@ -111,6 +112,14 @@
                         <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['p90ActualMinutes'], 2, withThousandsSeparator: true) }}</td>
                         <td class="text-right tabular-nums {{ $row['contribution'] < 0 ? 'text-error' : '' }}" title="{{ __('Erlös :revenue · Kosten :cost', ['revenue' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['revenue'], 2, withThousandsSeparator: true) . ' €', 'cost' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['cost'], 2, withThousandsSeparator: true) . ' €']) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['contribution'], 2, withThousandsSeparator: true) }} €</td>
                         <td class="text-right tabular-nums {{ $row['contributionPerEntry'] < 0 ? 'text-error' : '' }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['contributionPerEntry'], 2, withThousandsSeparator: true) }} €</td>
+                        <td class="text-xs">
+                            @forelse ($row['topCauses'] as $cause)
+                                <a href="{{ route('reports.entry-types.drilldown.causes', $reportDrilldown + ['cause' => \App\Support\Sqid::encode(\App\Models\Classification\Classification::class, $cause['classificationId'])]) }}"
+                                   class="link link-hover whitespace-nowrap">{{ $cause['label'] }} ({{ $cause['count'] }})</a>@if (! $loop->last)<br>@endif
+                            @empty
+                                <span class="text-muted">—</span>
+                            @endforelse
+                        </td>
                     </tr>
                 @endforeach
             </x-table>

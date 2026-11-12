@@ -71,6 +71,8 @@ return [
             'valid_from' => 'Valid from',
             'reason' => 'Reason',
             'datev_account' => 'DATEV account',
+            'datev_automatic' => 'DATEV automatic account',
+            'datev_automatic_none' => '— no automatic account —',
             'euer_category' => 'Cash-basis line',
             'euer_category_none' => '— unassigned —',
             'bwa_group' => 'BWA line',
@@ -92,6 +94,7 @@ return [
             'sovereignty_switch' => 'Moving the data remains the accounting migration; this only reassigns who leads from the effective date.',
             'external_provider' => 'External authority only: name of the leading system (e.g. lexoffice).',
             'datev_account' => 'Export only; local posting does not depend on it.',
+            'datev_automatic' => 'Tax code whose tax DATEV computes itself on this account (automatic account, e.g. 8400 in SKR03). The DATEV batch sets no posting key there.',
             'euer_category' => 'Determines which line of the cash-basis form the account appears in. Without an assignment it shows up among the unresolved cases.',
             'bwa_group' => 'Line of the management report (BWA). Without an assignment the report derives the line from the SKR03/SKR04 number range; if that stays open too, the account appears under "not assigned".',
             'deductible_percent' => 'Applies to the cash-basis report only — the journal always carries the full amount (e.g. 70 % for business meals).',
@@ -99,7 +102,6 @@ return [
             'post_now' => 'Once posted, the entry can only be corrected through a counter-entry.',
             'reversal_booked_on' => 'Leave empty for the original day, as long as its period is still open.',
             'cost_center_required' => 'Postings to this account can only be finalised with a cost centre — including from the posting inbox.',
-            'cost_center' => 'Applies to the debit and credit line.',
         ],
         'action' => [
             'activate' => 'Activate local accounting',
@@ -162,6 +164,8 @@ return [
             'entry_posted' => 'Entry posted.',
             'entry_reversed' => 'Counter-entry created.',
             'entry_discarded' => 'Draft discarded — the action can be started again.',
+            'entry_updated' => 'Draft updated.',
+            'cost_centers_saved' => 'Cost centres saved.',
             'reversal_awaiting_approval' => 'Four-eyes principle: the reversal is waiting as a draft in the posting inbox for approval. The entry stays posted until a second person posts the counter-entry.',
         ],
         'error' => [
@@ -184,7 +188,8 @@ return [
             'unbalanced' => 'Debit (:debit) and credit (:credit) do not match.',
             'reverse_not_posted' => 'Only a posted entry can be reversed.',
             'reversal_pending' => 'A reversal of this entry is already awaiting approval.',
-            'discard_not_allowed' => 'Only a pending draft from a discount, write-off, clearing entry, transfer, opening balances, special prepayment or reversal can be discarded; posted entries remain unchanged.',
+            'discard_not_allowed' => 'Only a draft can be discarded; posted entries remain unchanged.',
+            'edit_not_allowed' => 'This draft comes from a business transaction (cash discount, write-off, clearing, transfer, opening balances, special prepayment, reversal). Its lines cannot be changed — only the cost centre; otherwise discard it and start the transaction again.',
             'reversal_reason_required' => 'A reversal requires a reason.',
             'account_in_use' => 'This account has been used — it can only be deactivated.',
             'entry_without_organization' => 'The entry has no organization — please inform your system administrator.',
@@ -332,6 +337,11 @@ return [
             'year_closed' => 'Fiscal year :year is closed.',
             'period_closed' => 'The period covering :date is closed.',
             'no_exchange_rate' => 'The monthly rate :month for :currency (conversion into :base) is missing — add it under exchange rates.',
+            'self_assessed_with_tax' => 'Tax case “:case”, but the document shows tax — check the tax case or the values in incoming invoices.',
+            'self_assessed_small_business' => 'Small businesses (§ 19 UStG) owe the output tax for “:case” but cannot deduct input tax — please post this invoice manually.',
+            'missing_self_assessed_code' => 'No tax code for “:case” at :rate % — create a code “Output and input tax” with this tax case, tax account and input tax account in the chart of accounts.',
+            'missing_input_tax_code' => 'No input tax code at :rate % — create an “Input tax” code with this rate and tax account in the chart of accounts.',
+            'expense_rate_without_input_tax' => 'Expense with :rate % tax: there is no input tax code at this rate. Foreign VAT is not deductible input tax — record the expense gross without a tax rate; invoices with reverse charge belong in incoming invoices.',
         ],
         'memo' => [
             'sales_invoice' => 'Invoice :number · :customer',
@@ -522,6 +532,134 @@ return [
     ],
 
     // Offene Posten (Feature 125, MVP-674).
+    // Handbuchung und Entwurf bearbeiten (MVP-1556/1558).
+    'entry_form' => [
+        'title_edit' => 'Edit draft',
+        'counterparty' => 'Counterparty',
+        'counterparty_hint' => 'Customer or supplier. Applies to lines on open item accounts and to lines with a tax code.',
+        'rows_hint' => 'One account and one amount per line, either debit or credit. With a tax code the line carries the net amount; the tax line is created on saving. Empty lines are ignored.',
+        'tax_code' => 'Tax code',
+        'line_memo' => 'Line text',
+        'cost_centers_title' => 'Assign cost centres',
+        'no_cost_centers' => 'There are no active cost centres.',
+        'cost_center_required' => 'Required',
+        'action' => [
+            'edit' => 'Edit draft',
+            'cost_centers' => 'Cost centres',
+        ],
+        'error' => [
+            'row' => 'Line :row:',
+            'one_side' => 'Please enter exactly one amount — debit or credit.',
+            'tax_account_missing' => 'Tax code :code has no tax account.',
+            'unknown_counterparty' => 'The counterparty was not found.',
+            'unknown_tax_code' => 'The tax code was not found.',
+            'tax_code_not_valid' => 'Tax code :code is not valid on :date.',
+        ],
+    ],
+    // Steuerkennzeichen pflegen (MVP-1558).
+    'tax_codes' => [
+        'category' => [
+            'K' => 'Intra-community supply',
+            'AE' => 'Reverse charge',
+            'G' => 'Export',
+            'O' => 'Not taxable',
+            'E' => 'Tax-free',
+        ],
+        'empty' => 'No tax code yet.',
+        'inactive' => 'Retired',
+        'in_use_hint' => 'This tax code has already been used in postings. Name and field numbers change immediately. Rate, direction or tax account only apply from a new effective date after :date — the previous version ends the day before, existing postings stay unchanged.',
+        'action' => [
+            'add' => 'Add tax code',
+        ],
+        'field' => [
+            'code' => 'Code',
+            'rate' => 'Tax rate (%)',
+            'tax_account' => 'Tax account',
+            'valid_from' => 'Valid from',
+            'tax_category' => 'Tax category (sale without tax)',
+            'validity' => 'Validity',
+            'input_tax_account' => 'Input tax account',
+            'tax_case' => 'Tax case in incoming invoices',
+            'ustva_input_tax_field' => 'Input tax field number',
+            'datev_tax_key' => 'DATEV posting key',
+        ],
+        'hint' => [
+            'code' => 'Short and unique, for example USt19. Letters, digits, dot, hyphen and underscore.',
+            'tax_account' => 'Account of the automatic tax line. Not needed at 0 %.',
+            'valid_from' => 'New effective date for a changed rate, direction or tax account.',
+            'tax_category' => 'Only for codes at 0 %: the posting inbox uses the category to pick the code of a sale without tax.',
+            'tax_case' => 'The posting inbox picks the code of an incoming invoice with reverse charge by tax case and rate.',
+            'datev_tax_key' => 'Tax key in the DATEV posting batch, e.g. 3 for output tax 19 %, 9 for input tax 19 %, 94 for § 13b. Empty: no key.',
+        ],
+        'self_assessed' => [
+            'legend' => 'Reverse charge (recipient liable)',
+            'hint' => 'Only for the direction “Output and input tax” (§ 13b UStG, intra-Community acquisition): the output tax goes to the tax account, the same input tax to the input tax account.',
+        ],
+        'confirm' => [
+            'deactivate' => 'Retire this tax code? New postings can no longer select it, existing ones keep it.',
+        ],
+        'flash' => [
+            'saved' => 'Tax code saved.',
+            'versioned' => 'New version of the tax code created from :date; posting rules and account defaults follow it.',
+            'deactivated' => 'Tax code retired.',
+        ],
+        'error' => [
+            'code_taken' => 'The code :code is already in use.',
+            'tax_account_required' => 'A tax code with a rate above 0 % needs a tax account.',
+            'input_tax_account_required' => 'With reverse charge the code needs an input tax account.',
+            'valid_from_required' => 'This tax code has already been used in postings. Please enter an effective date after :date from which the change applies.',
+        ],
+    ],
+    // Bankumsatz ohne Beleg direkt aufs Sachkonto (MVP-1557).
+    'bank_direct' => [
+        'title' => 'Post to a general ledger account without document',
+        'hint' => 'For transactions without a document: bank fee, interest, private withdrawal or offsetting. The transaction is posted bank to account or account to bank and set aside in reconciliation.',
+        'memo' => 'Bank transaction: :note',
+        'field' => [
+            'account' => 'General ledger account',
+            'tax_code' => 'Tax code',
+            'note' => 'Posting text',
+        ],
+        'hint_field' => [
+            'tax_code' => 'The transaction is the gross amount; the tax is extracted from it.',
+            'note' => 'For example “Account fees March”.',
+        ],
+        'action' => [
+            'post' => 'Post to ledger account',
+            'post_submit' => 'Post',
+        ],
+        'flash' => [
+            'posted' => 'Transaction posted to the ledger account.',
+        ],
+        'error' => [
+            'money_account' => 'Bank, cash and clearing accounts cannot be selected here — use the internal transfer or the clearing entry.',
+            'already_assigned' => 'The transaction is already assigned to a document.',
+        ],
+    ],
+    // Offener Posten strittig (MVP-1559).
+    'dispute' => [
+        'title' => 'Mark item as disputed',
+        'hint' => 'A disputed item stays open. It is not dunned (dunning block on the invoice) and does not count as expected inflow in the liquidity forecast.',
+        'reason' => 'Reason',
+        'since' => 'Disputed since :date: :reason',
+        'dunning_reason' => 'Open item disputed: :reason',
+        'filter_all' => 'All open',
+        'action' => [
+            'mark' => 'Mark as disputed',
+            'withdraw' => 'Withdraw dispute',
+        ],
+        'confirm' => [
+            'withdraw' => 'Withdraw the “disputed” mark? The dunning block set by this mark is lifted.',
+        ],
+        'flash' => [
+            'marked' => 'Item marked as disputed.',
+            'withdrawn' => 'The “disputed” mark was withdrawn.',
+        ],
+        'error' => [
+            'not_open' => 'Only an open item can be marked as disputed.',
+            'not_disputed' => 'The item is not marked as disputed.',
+        ],
+    ],
     'open_items' => [
         'title' => 'Open items',
         'menu' => 'Open items',
@@ -531,6 +669,9 @@ return [
         'settle_hint' => 'Open: :open. Payments come from the payment reconciliation — here only discount, retention or write-off.',
         'awaiting_approval' => 'Draft awaiting approval',
         'four_eyes_hint' => 'Four-eyes principle active: discounts and write-offs are created as drafts in the posting inbox. The item stays open until a second person posts the counter-entry.',
+        'discount_tax_hint' => 'The cash discount is split into net and tax share (:rates): the tax of the document is adjusted (§ 17 UStG).',
+        'discount_no_tax_hint' => 'Cash discount without tax adjustment: the entry of this item carries no tax (small business, reverse charge, tax-free or opening balance).',
+        'discount_self_assessed_hint' => 'Cash discount on an invoice with reverse charge (:rates): it reduces the tax base; output and input tax fall by the same amount (§ 17 (1) sentence 5 UStG).',
         'column' => [
             'counterparty' => 'Counterparty',
             'due_date' => 'Due',
@@ -556,6 +697,7 @@ return [
         ],
         'error' => [
             'draft_pending' => 'A counter-entry for this item is already awaiting approval. A further settlement is only possible once it has been posted.',
+            'counter_account_missing' => 'The counter account :account for :kind is missing in the chart of accounts. Create the account or enter an existing one in the DATEV settings — the item is not settled without a counter-entry.',
         ],
     ],
 
@@ -595,7 +737,7 @@ return [
         'hint' => [
             'kind' => 'A document expectation waits for an original; a posting template creates a draft.',
             'due_day' => '1–28, so every month has that day.',
-            'accounts' => 'Posting templates only — together with the expected amount.',
+            'accounts' => 'Posting lines only for posting templates. If the expected amount is left empty, the posting total applies.',
             'responsible' => 'Is notified about overdue items in addition to accounting.',
         ],
         'action' => [
@@ -628,10 +770,12 @@ return [
         ],
         'error' => [
             'already_closed' => 'This item is already closed.',
-            'template_incomplete' => 'A posting template needs debit account, credit account and amount.',
+            'template_incomplete' => 'A posting template needs at least two lines with account and amount.',
+            'template_unbalanced' => 'The lines of the posting template do not balance: debit and credit must be equal.',
         ],
         'blocker' => [
             'no_lines' => 'The template has no entry lines.',
+            'draft_discarded' => 'The posting draft was discarded.',
         ],
         'notification' => [
             'title' => 'Recurring item overdue: :name',
@@ -732,6 +876,10 @@ return [
             'ten_day_rule' => ':count payments fall between 22 Dec and 10 Jan and belong to the adjacent year by document date (§ 11 (1) sentence 2 EStG).',
             'open_clearing' => ':count clearing accounts are not settled yet.',
             'overdue_filings' => ':count filing deadlines have passed and are not marked as submitted.',
+            'unbooked_settlements' => ':count cash discount or write-off settlements have no journal entry — the item is closed, the receivable or payable account still carries it. Please post manually: :items',
+            'discounts_without_tax_correction' => ':count cash discount settlements were posted without tax adjustment (§ 17 UStG); calculated tax share :tax in total. Nothing is posted automatically — please decide on correcting entries with your tax adviser: :items',
+            'self_assessed_without_tax' => ':count posted incoming invoices state reverse charge (§ 13b UStG, intra-Community acquisition), but their entry carries no output and input tax. Nothing is posted automatically — please decide on correcting entries with your tax adviser: :items',
+            'tax_share' => 'tax share',
             'kpi' => [
                 'drafts' => 'Drafts',
                 'unbalanced' => 'Unbalanced',
@@ -1125,7 +1273,7 @@ return [
             'note_required' => 'A reason is required.',
         ],
         'blocker' => [
-            'unassigned' => 'No assigned document — postable only via an assignment or the clearing account.',
+            'unassigned' => 'No assigned document — can be posted via an assignment, directly to a ledger account or via the clearing account.',
         ],
         'flash' => [
             'posted' => 'Clearing entry created.',
@@ -1270,6 +1418,11 @@ return [
         'total' => 'Intra-Community supplies',
         'column' => [
             'vat_id' => 'VAT ID',
+            'kind' => 'Type',
+        ],
+        'kind' => [
+            'goods' => 'Intra-Community supplies',
+            'services' => 'Other services',
         ],
         'unclear' => [
             'missing_vat_id' => 'Entry :entry (:customer) without the recipient’s VAT ID.',

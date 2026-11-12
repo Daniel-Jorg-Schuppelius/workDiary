@@ -1,7 +1,7 @@
 ---
 title: "Crear un acta"
 topic: protocols.create
-version: 3
+version: 4
 keywords:
     - acta de recepción
     - informe de mantenimiento
@@ -46,6 +46,19 @@ expediente y localizable en él.
 4. Adjunte **fotos de antes y después** al punto correspondiente.
 5. Envíe el protocolo **a revisión** o ciérrelo con **«Finalizar / firmar»**;
    los clientes reciben el **enlace de firma**.
+
+En el diálogo asigna además **etiquetas**; después figuran en los datos
+maestros del protocolo. Los archivos que pertenecen a todo el protocolo – un
+plano de situación, un albarán – se suben en la página de detalle, en
+**Adjuntos**. Con **Reordenar puntos** arrastra los puntos al orden deseado;
+los subpuntos permanecen en su grupo. Etiquetas, adjuntos y orden solo se
+pueden cambiar en el borrador; cada adjunto y cada reordenación figura en el
+**Historial**.
+
+El lugar de la toma de una foto solo se toma si la organización lo ha activado
+en **Ajustes → Subidas de archivos** (predeterminado: desactivado). Las coordenadas las ve
+quien tiene el permiso correspondiente; del archivo de imagen se eliminan
+siempre.
 
 ## Ejemplo práctico
 

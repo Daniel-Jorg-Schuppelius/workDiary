@@ -177,6 +177,22 @@ class OperationsTaskCenterTest extends TestCase {
         $this->assertDatabaseHas('operations_tasks', ['dedupe_key' => "problem_report_open:org:{$orgId}", 'status' => 'resolved']);
     }
 
+    public function test_problem_report_task_follows_the_helpdesk_module(): void {
+        $orgId = (int) $this->admin->organization_id;
+        ProblemReport::query()->create([
+            'organization_id' => $orgId, 'user_id' => $this->admin->id, 'reference_no' => 'PR-2026-0002', 'status' => 'new',
+            'severity' => 'normal', 'summary' => 'Test', 'description' => 'Test', 'page_context' => [], 'delivery_target' => 'saas_inbox',
+        ]);
+        Artisan::call('operations:scan');
+        $this->assertDatabaseHas('operations_tasks', ['dedupe_key' => "problem_report_open:org:{$orgId}", 'status' => 'open']);
+
+        // Helpdesk aus: die Aufgabe löst sich auf, obwohl die Meldung offen bleibt (MVP-1628).
+        config(['license.feature_overrides' => ['module.helpdesk' => false]]);
+        app(\App\Services\Licensing\FeatureFlagResolver::class)->flush();
+        Artisan::call('operations:scan');
+        $this->assertDatabaseHas('operations_tasks', ['dedupe_key' => "problem_report_open:org:{$orgId}", 'status' => 'resolved']);
+    }
+
     public function test_watchdog_overdue_creates_task_and_success_resolves_it(): void {
         // 45 Minuten nach dem versetzten Stundenslot des Jobs (Leistungsanalyse 2026-11-02, perf-01).
         $this->travelTo(now()->startOfHour()->addMinutes(\App\Scheduling\JobOffset::minutes('toggl.import', \App\Scheduling\CadenceType::Hourly) + 45));

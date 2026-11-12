@@ -1,7 +1,7 @@
 ---
 title: "Customers & suppliers"
 topic: contacts.manage
-version: 15
+version: 17
 keywords:
     - Preview as customer
     - Start password
@@ -233,3 +233,7 @@ credentials, contracts and deadlines. A section only appears if the module is
 enabled, you have the right to see it and there are entries; the figures match
 the respective list. Administrators see shop orders from Etsy and Billbee.
 Like customers, suppliers have custom fields and documents.
+
+For suppliers, **Catalogues** (name, number of items, last import; with the warehouse read right) and **Performance** are added: the scorecard of the last twelve months with overall score, on-time delivery, complaint rate, price development, ISMS quality, recourse behaviour and lead time — each row opens the scorecard for the same period. Leasing and financing contracts with the supplier as lessor appear in the record with the right to the leasing files. Customers additionally show booked and requested **Appointments** (Calendly, appointment booking) to everyone who may open the “Appointment requests” page.
+
+**Accounting leads:** If, according to data ownership, the accounting software leads customer and supplier master data, the form shows a notice. You can still change everything, but the next synchronisation overwrites local changes — make lasting changes in the accounting program.

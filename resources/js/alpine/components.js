@@ -2090,6 +2090,14 @@ export function registerAlpineComponents(Alpine) {
      * @property {string} action
      * @property {string} before
      * @property {string} after
+     * @property {string} [diary_entry] Sqid des neuen Auftrags, "-" = ohne Auftrag, leer = unverändert
+     */
+    /**
+     * @typedef {Object} CorrectionCandidate
+     * @property {string} id
+     * @property {string} label
+     * @property {string} [order] Sqid des aktuellen Auftrags
+     * @property {Array<{id: string, label: string}>} [orders] Aufträge des Projekts
      */
     Alpine.data("correctionItems", () => ({
         /** @type {CorrectionItem[]} */
@@ -2097,13 +2105,15 @@ export function registerAlpineComponents(Alpine) {
         prefix: "items",
         /** @type {Partial<CorrectionItem>} */
         template: {},
-        /** @type {Record<string, Array<{id: string, label: string}>>} Morph-Alias → Buchungen */
+        /** @type {Record<string, CorrectionCandidate[]>} Morph-Alias → Buchungen */
         candidates: {},
+        currentOrderSuffix: "",
         init() {
             const d = this.$el.dataset;
             this.items = JSON.parse(d.items || "[]");
             this.prefix = d.prefix || "items";
             this.template = JSON.parse(d.template || "{}");
+            this.currentOrderSuffix = d.currentOrderSuffix || "";
             const form = this.$el.closest("form");
             if (form) {
                 form.addEventListener("change", (e) => {
@@ -2127,7 +2137,7 @@ export function registerAlpineComponents(Alpine) {
                 params.set("user", user.value);
             }
             try {
-                const res = /** @type {import("../lib/http.js").JsonResult<Record<string, Array<{id: string, label: string}>>>} */ (
+                const res = /** @type {import("../lib/http.js").JsonResult<Record<string, CorrectionCandidate[]>>} */ (
                     await getJson(url + "?" + params.toString())
                 );
                 this.candidates = res.ok && res.data ? res.data : {};
@@ -2138,6 +2148,20 @@ export function registerAlpineComponents(Alpine) {
         /** @param {CorrectionItem} it */
         optionsFor(it) {
             return this.candidates[it.target_type] || [];
+        },
+        /** Aufträge des Projekts der gewählten Buchung; leer bei Anlegen, Löschen und Anwesenheit. @param {CorrectionItem} it */
+        ordersFor(it) {
+            const { action, target_id: targetId } = it;
+            if (!targetId || action === "delete") {
+                return [];
+            }
+            const candidate = this.optionsFor(it).find((c) => c.id === targetId);
+            return (candidate && candidate.orders) || [];
+        },
+        /** @param {CorrectionItem} it @param {{id: string, label: string}} order */
+        orderLabel(it, order) {
+            const candidate = this.optionsFor(it).find((c) => c.id === it.target_id);
+            return candidate && candidate.order === order.id ? order.label + this.currentOrderSuffix : order.label;
         },
         add() {
             this.items.push(JSON.parse(JSON.stringify(this.template)));
@@ -2210,7 +2234,10 @@ export function registerAlpineComponents(Alpine) {
     Alpine.data("reminderOffsets", () => ({
         /** @type {Array<{value: number | string}>} Minuten; x-model liefert Strings */
         items: [],
+        /** Feldname: Kategorie `reminder_offsets`, Termin `reminder_overrides` (MVP-1619). */
+        field: "reminder_offsets",
         init() {
+            this.field = this.$el.dataset.field || "reminder_offsets";
             this.items = JSON.parse(this.$el.dataset.items || "[]").map(
                 (/** @type {number} */ v) => ({ value: v }),
             );
@@ -2224,7 +2251,7 @@ export function registerAlpineComponents(Alpine) {
         },
         /** @param {number} i */
         fieldName(i) {
-            return "reminder_offsets[" + i + "]";
+            return this.field + "[" + i + "]";
         },
     }));
 

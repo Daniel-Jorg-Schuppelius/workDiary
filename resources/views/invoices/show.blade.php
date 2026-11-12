@@ -330,6 +330,10 @@
                     @endif
                 @endif
 
+                @unless ($invoice->isCreditNote())
+                    <x-claim-open-link :params="['invoice' => $invoice->sqid]" />
+                @endunless
+
                 {{-- Destruktiv: immer im ⋯-Menü, abgesetzt am Ende. --}}
                 @can('cancel', $invoice)
                     <x-action-form :action="route('invoices.cancel', $invoice)"
@@ -628,6 +632,8 @@
                                 :cached="$aiSuggestions[$item->id]->from_cache"
                                 :accept-action="route('ai.suggestions.accept', $aiSuggestions[$item->id])"
                                 :reject-action="route('ai.suggestions.reject', $aiSuggestions[$item->id])"
+                                :capability="$aiSuggestions[$item->id]->capability"
+                                :regenerate-action="$aiSuggestions[$item->id]->capability === \App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_TRANSLATE ? null : route('ai.suggestions.invoice-item', [$invoice, $item])"
                                 field-name="text"
                             />
                         </td>
@@ -638,6 +644,8 @@
             @endforelse
         </x-table>
     </x-card>
+
+    @include('invoices._retentions', ['invoice' => $invoice])
 
     {{-- Rechnungsbegründende Unterlagen der E-Rechnung (Feature 196). --}}
     @include('invoices._supporting_documents', ['carrier' => $invoice, 'routePrefix' => 'invoices.supporting-documents'])

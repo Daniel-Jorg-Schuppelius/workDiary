@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Survey;
 
 use App\Enums\Survey\SurveyInvitationStatus;
+use App\Events\Survey\SurveyResponseSubmitted;
 use App\Mail\SurveyInvitationMail;
 use App\Models\Customer\Customer;
 use App\Models\Survey\{Survey, SurveyAnswer, SurveyInvitation, SurveyResponse};
@@ -43,7 +44,7 @@ class SurveyService {
     /**
      * @return array{invitation: SurveyInvitation, token: string}
      */
-    public function invite(Survey $survey, string $email, ?Customer $customer = null, string $contextKind = 'manual'): array {
+    public function invite(Survey $survey, string $email, ?Customer $customer = null, string $contextKind = 'manual', bool $selfRequested = false): array {
         if (! $survey->active) {
             throw new RuntimeException((string) __('Dieser Fragebogen ist nicht aktiv.'));
         }
@@ -53,7 +54,10 @@ class SurveyService {
         if ($customer !== null && $customer->survey_opt_out) {
             throw new RuntimeException((string) __('Dieser Kunde hat Umfragen widersprochen (Opt-out).'));
         }
-        if (! $this->fatigueAllows($survey, $email)) {
+        // Selbst angefordert (Lerneinheit, MVP-1600): der Deckel schützt vor
+        // ungefragter Post — hier öffnet die Person den Fragebogen selbst. Ohne
+        // Versandzeit zählt die Einladung auch nicht gegen spätere Einladungen.
+        if (! $selfRequested && ! $this->fatigueAllows($survey, $email)) {
             throw new RuntimeException((string) __('Ermüdungsschutz: Diese Adresse wurde innerhalb der letzten :days Tage bereits eingeladen.', [
                 'days' => $this->fatigueDays(),
             ]));
@@ -68,7 +72,7 @@ class SurveyService {
             'context_kind' => $contextKind,
             'token_hash' => CryptoHelper::hash($token),
             'expires_at' => Carbon::now()->addDays(30),
-            'sent_at' => Carbon::now(),
+            'sent_at' => $selfRequested ? null : Carbon::now(),
             'status' => SurveyInvitationStatus::Sent,
         ]);
 
@@ -138,7 +142,7 @@ class SurveyService {
             ];
         }
 
-        return DB::transaction(function () use ($invitation, $survey, $rows): SurveyResponse {
+        $response = DB::transaction(function () use ($invitation, $survey, $rows): SurveyResponse {
             // Atomarer Claim: nur EIN Submit gewinnt das Statuswechsel-Update;
             // der zweite sieht 0 Zeilen und legt keine Doppel-Antwort an.
             $claimed = SurveyInvitation::query()
@@ -171,6 +175,10 @@ class SurveyService {
 
             return $response;
         });
+
+        SurveyResponseSubmitted::dispatch($invitation);
+
+        return $response;
     }
 
     /** Auslöser-Spalten am Fragebogen (Ticket, Kurs, Auftrag). */
@@ -240,7 +248,7 @@ class SurveyService {
             if ($beforeMail !== null) {
                 $beforeMail($issued['invitation']);
             }
-            Mail::to($email)->send(new SurveyInvitationMail($survey, $issued['token']));
+            Mail::to($email)->send(new SurveyInvitationMail($survey, $issued['token'], $customer !== null));
 
             return true;
         } catch (RuntimeException) {
@@ -318,5 +326,31 @@ class SurveyService {
         $detractors = count(array_filter($values, static fn (int $v): bool => $v <= 6));
 
         return (int) round(($promoters - $detractors) / count($values) * 100);
+    }
+
+    /**
+     * Widerspruch über den Abmeldelink der Einladung (MVP-1603). Gilt für den
+     * Kunden der Einladung, auch wenn sie schon beantwortet oder abgelaufen ist.
+     */
+    public function optOut(SurveyInvitation $invitation): ?Customer {
+        if ($invitation->customer_id === null) {
+            return null;
+        }
+
+        // TENANT-BYPASS: öffentlicher Token-Link, Kunde nur in der Organisation der Einladung.
+        $customer = Customer::query()->withoutGlobalScopes()
+            ->where('organization_id', $invitation->organization_id)
+            ->whereKey($invitation->customer_id)
+            ->first();
+        if ($customer === null) {
+            return null;
+        }
+
+        if (! $customer->survey_opt_out) {
+            $customer->forceFill(['survey_opt_out' => true])->save();
+            $customer->audit('survey.opted_out', ['via' => 'link']);
+        }
+
+        return $customer;
     }
 }

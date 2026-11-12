@@ -106,7 +106,7 @@ final class RecallService {
         return StockSerial::query()
             ->where('organization_id', $recall->organization_id)
             ->where('article_variant_id', $recall->article_variant_id)
-            ->whereIn('status', [SerialStatus::Created->value, SerialStatus::InStock->value, SerialStatus::Reserved->value, SerialStatus::Returned->value])
+            ->whereIn('status', [SerialStatus::Created->value, SerialStatus::InStock->value, SerialStatus::Returned->value])
             ->when($orders !== [], fn (Builder $q) => $q->whereIn('manufacturing_order_id', $orders))
             ->when($serials !== [], fn (Builder $q) => $q->whereIn('serial_no', $serials))
             ->get();

@@ -36,6 +36,7 @@
         .sig-table td { width: 50%; padding: 2mm; border: 1px solid #888; vertical-align: top; }
         .sig-table img { max-height: 25mm; }
         .footer { position: fixed; bottom: 8mm; left: 8mm; right: 8mm; font-size: 8pt; color: #555; border-top: 1px solid #ccc; padding-top: 1mm; }
+        .tpl-issuer { margin-top: 6px; font-size: 9px; color: #555; }
     </style>
 </head>
 <body>
@@ -71,7 +72,12 @@
         <tr>
             <td>{{ $idx + 1 }}</td>
             <td>{{ $item->category }}</td>
-            <td>{{ trim(($item->manufacturer ?? '') . ' ' . ($item->model ?? '')) ?: '—' }}</td>
+            <td>
+                {{ trim(($item->manufacturer ?? '') . ' ' . ($item->model ?? '')) ?: '—' }}
+                @if ($item->asset !== null)
+                    <br><span style="font-size: 8pt">{{ __('disposal.item.asset') }}: {{ $item->asset->asset_no ?: $item->asset->name }}</span>
+                @endif
+            </td>
             <td>{{ $item->serial_number ?? '—' }}</td>
             <td class="right">{{ $item->quantity }}</td>
             <td class="right">{{ $item->weight_kg !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->weight_kg, 3, withThousandsSeparator: true) : '—' }}</td>
@@ -86,6 +92,18 @@
     @endforeach
     </tbody>
 </table>
+
+@if (($itemPhotos ?? []) !== [])
+    <h2>{{ __('disposal.pdf.photos') }}</h2>
+    @foreach ($job->items as $idx => $item)
+        @if (isset($itemPhotos[$item->id]))
+            <p style="margin: 2mm 0 1mm"><strong>{{ __('disposal.pdf.photo_of', ['number' => $idx + 1]) }}</strong> — {{ $item->category }}</p>
+            @foreach ($itemPhotos[$item->id] as $src)
+                <img src="{{ $src }}" alt="" style="height: 45mm; margin-right: 3mm">
+            @endforeach
+        @endif
+    @endforeach
+@endif
 
 @if ($job->items->contains(fn ($item) => $item->treatments->isNotEmpty()))
     <h2>{{ __('disposal.pdf.treatments') }}</h2>
@@ -172,6 +190,9 @@
         </td>
     </tr>
 </table>
+
+{{-- Firmenangaben nach Blockzustand des Designs (MVP-1624). --}}
+@include('pdf._design_issuer')
 
 {{-- Seitenzahl kommt vom DocumentDesignRenderer (dd-pagenum), kein eigener Zähler. --}}
 <div class="footer">

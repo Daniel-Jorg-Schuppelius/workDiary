@@ -65,6 +65,7 @@ return [
     ],
     'error' => [
         'email_taken' => 'Cette adresse e-mail est déjà utilisée.',
+        'column_forbidden' => 'Colonne :column ignorée : seules les personnes disposant du droit correspondant peuvent modifier ces valeurs. Les autres colonnes sont importées.',
         'required' => 'Le champ obligatoire :field est manquant.',
         'tooLong' => 'Le champ :field dépasse la longueur maximale de :max caractères.',
         'header' => [

@@ -16,6 +16,7 @@ use App\Enums\ServiceTicket\ServiceRequestStatus;
 use App\Models\Approval\Approval;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Procurement\RequestItem;
+use App\Services\Fields\{FieldDocument, FieldSchema, FieldValues};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany, MorphTo};
 
@@ -64,6 +65,14 @@ class ServiceRequest extends Model {
     /** @return MorphMany<Approval, $this> */
     public function approvals(): MorphMany {
         return $this->morphMany(Approval::class, 'approvable')->orderBy('step');
+    }
+
+    /** Eingefrorenes Formular mit den Antworten der Bestellung; null ohne Formular. */
+    public function formDocument(): ?FieldDocument {
+        $snapshot = (array) ($this->form_snapshot ?? []);
+        $schema = FieldSchema::fromArray($snapshot['fields'] ?? []);
+
+        return $schema->isEmpty() ? null : new FieldDocument($schema, FieldValues::fromArray($snapshot['answers'] ?? []));
     }
 
     /** @return MorphTo<Model, $this> */

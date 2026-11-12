@@ -18,6 +18,7 @@ use App\Models\Applications\{EmployeeDraft, JobApplication, JobApplicationInterv
 use App\Models\Platform\{Organization, User};
 use App\Services\Fields\FieldDocument;
 use App\Services\Notification\NotificationDispatcher;
+use App\Settings\SettingsRegistry;
 use App\Support\Crypto\BlindIndex;
 use Illuminate\Support\Facades\{DB, Hash, Log, Storage};
 use Illuminate\Support\Str;
@@ -199,7 +200,7 @@ class RecruitingService {
         if (in_array($decision, ['rejected', 'withdrawn'], true)) {
             // AGG §15 Abs. 4 + ArbGG §61b → Praxis-Default 6 Monate,
             // org-konfigurierbar (P1: Frist ist Konfiguration, kein Code).
-            $months = (int) config('applications.rejected_retention_months', 6);
+            $months = max(1, (int) app(SettingsRegistry::class)->effective('applications.rejected_retention_months', Organization::query()->find($application->organization_id))->value);
             $changes['retention_until'] = now()->addMonths($months)->toDateString();
         }
 

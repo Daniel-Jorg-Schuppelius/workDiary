@@ -25,6 +25,9 @@ use Illuminate\Support\Collection;
  * (Aufträge, Zeiten, Tickets) bleiben bei ihren Timeline-Diensten.
  */
 final class ActivityFeedService {
+    /** Filterwert „Fachereignisse“: alles außer den allgemeinen Änderungsereignissen. */
+    public const string DOMAIN_EVENTS = 'domain';
+
     /** Puffer je Quelle für Rauschfilter und Zusammenführung. */
     private const int BUFFER = 4;
 
@@ -70,14 +73,17 @@ final class ActivityFeedService {
      * dürfen (der Aufrufer prüft `viewAny` auf `AuditLog`).
      *
      * @param  class-string<Model>|null  $type
+     * @param  string|null  $event  ein Ereignis oder {@see DOMAIN_EVENTS} für alle Fachereignisse
      * @return array{items: list<TimelineItem>, hasMore: bool}
      */
-    public function global(int $organizationId, CarbonImmutable $from, CarbonImmutable $to, ?string $type = null, ?int $actorId = null, int $limit = 50, int $offset = 0): array {
+    public function global(int $organizationId, CarbonImmutable $from, CarbonImmutable $to, ?string $type = null, ?int $actorId = null, int $limit = 50, int $offset = 0, ?string $event = null): array {
         $query = AuditLog::query()
             ->where('organization_id', $organizationId)
             ->where('created_at', '>=', $from->startOfDay())
             ->where('created_at', '<=', $to->endOfDay())
-            ->when($actorId !== null, fn ($q) => $q->where('user_id', $actorId));
+            ->when($actorId !== null, fn ($q) => $q->where('user_id', $actorId))
+            ->when($event === self::DOMAIN_EVENTS, fn ($q) => $q->whereNotIn('event', AuditLog::CHANGE_EVENTS))
+            ->when($event !== null && $event !== self::DOMAIN_EVENTS, fn ($q) => $q->where('event', $event));
         if ($type !== null) {
             $query->where('auditable_type', MorphMap::stableKey($type));
         }

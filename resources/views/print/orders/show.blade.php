@@ -145,6 +145,8 @@
                     <x-detail-grid.row :label="__('print.snapshot.quantity')">{{ data_get($order->production_snapshot, 'quantity') }}</x-detail-grid.row>
                     <x-detail-grid.row :label="__('print.snapshot.due_date')">{{ data_get($order->production_snapshot, 'due_date') }}</x-detail-grid.row>
                     <x-detail-grid.row :label="__('print.snapshot.bleed_mm')">{{ data_get($order->production_snapshot, 'bleed_mm') }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('print.snapshot.safety_mm')">{{ data_get($order->production_snapshot, 'safety_mm') }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('print.snapshot.spot_colors')">{{ data_get($order->production_snapshot, 'spot_colors') }}</x-detail-grid.row>
                     <x-detail-grid.row :label="__('print.snapshot.finishing')">{{ collect(data_get($order->production_snapshot, 'finishing', []))->implode(', ') ?: null }}</x-detail-grid.row>
                     <x-detail-grid.row :label="__('print.field.approved_by')">{{ $order->approver->name ?? null }}</x-detail-grid.row>
                     <x-detail-grid.row :label="__('print.field.approved_at')">{{ optional($order->approved_at)->fdatetime() }}</x-detail-grid.row>
@@ -167,6 +169,8 @@
                         <input type="number" name="quantity" value="{{ old('quantity', $approved['quantity'] ?? (string) $mo?->target_qty?->getNumericValue()) }}" min="1" placeholder="{{ __('print.snapshot.quantity') }} *" class="input input-sm input-bordered" required aria-label="{{ __('print.snapshot.quantity') }}">
                         <input type="date" name="due_date" value="{{ old('due_date', optional($mo?->due_at)->toDateString()) }}" class="input input-sm input-bordered" required aria-label="{{ __('print.snapshot.due_date') }}">
                         <input type="number" name="bleed_mm" value="{{ old('bleed_mm') }}" step="0.1" min="0" placeholder="{{ __('print.snapshot.bleed_mm') }}" class="input input-sm input-bordered" aria-label="{{ __('print.snapshot.bleed_mm') }}">
+                        <input type="number" name="safety_mm" value="{{ old('safety_mm') }}" step="0.1" min="0" placeholder="{{ __('print.snapshot.safety_mm') }}" class="input input-sm input-bordered" aria-label="{{ __('print.snapshot.safety_mm') }}">
+                        <input type="text" name="spot_colors" value="{{ old('spot_colors') }}" maxlength="200" placeholder="{{ __('print.snapshot.spot_colors') }}" class="input input-sm input-bordered" aria-label="{{ __('print.snapshot.spot_colors') }}">
                         <input type="text" name="finishing" value="{{ old('finishing', implode(', ', (array) ($approved['finishing'] ?? []))) }}" placeholder="{{ __('print.snapshot.finishing') }}" class="input input-sm input-bordered" aria-label="{{ __('print.snapshot.finishing') }}">
                         <button type="submit" class="btn btn-sm btn-primary col-span-2">{{ __('print.orders.action.approve') }}</button>
                     </form>

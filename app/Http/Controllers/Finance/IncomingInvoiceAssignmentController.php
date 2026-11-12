@@ -13,15 +13,18 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Finance;
 
 use App\Enums\Billing\DocumentDirection;
-use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceMatchKind, IncomingInvoiceRecognition};
+use App\Enums\Finance\{AccountingEntryStatus, PostingSourceKind};
+use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceMatchKind, IncomingInvoiceRecognition, IncomingInvoiceTaxCase};
 use App\Http\Controllers\Concerns\{AuthorizesOrganizationManagement, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
+use App\Models\Accounting\AccountingEntry;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Supplier\Supplier;
 use App\Rules\Iban;
+use App\Services\Accounting\Posting\PostingSourceRegistry;
 use App\Services\Finance\Accounting\ContactPushService;
-use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceKindHints, IncomingInvoiceMatcher, IncomingInvoiceParties, IncomingInvoiceRules, IncomingInvoiceTaxBreakdown, IncomingInvoiceTransferService};
+use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceKindHints, IncomingInvoiceMatcher, IncomingInvoiceParties, IncomingInvoiceRules, IncomingInvoiceTaxBreakdown, IncomingInvoiceTaxCaseResolver, IncomingInvoiceTransferService};
 use App\Services\Stammdaten\CollectiveContacts;
 use App\Support\{ErrorText, Sqid};
 use CommonToolkit\Enums\CountryCode;
@@ -205,8 +208,6 @@ class IncomingInvoiceAssignmentController extends Controller {
             'issue_date' => ['required', 'date'],
             'due_date' => ['nullable', 'date', 'after_or_equal:issue_date'],
             'currency' => ['required', 'string', 'size:3'],
-            'amount_net' => ['nullable', 'numeric'],
-            'amount_tax' => ['nullable', 'numeric'],
             'amount_gross' => ['required', 'numeric'],
             'party_name' => ['nullable', 'string', 'max:191'],
             'party_vat_id' => ['nullable', 'string', 'max:32'],
@@ -218,7 +219,7 @@ class IncomingInvoiceAssignmentController extends Controller {
         $gross = NumberHelper::normalizeDecimalString((string) $data['amount_gross']);
         ['rows' => $rows, 'net' => $net, 'tax' => $tax] = $taxRows !== []
             ? IncomingInvoiceTaxBreakdown::resolve($data['tax_breakdown'], $gross)
-            : ['rows' => [], 'net' => isset($data['amount_net']) ? (string) $data['amount_net'] : null, 'tax' => isset($data['amount_tax']) ? (string) $data['amount_tax'] : null];
+            : ['rows' => [], 'net' => null, 'tax' => null];
         $sum = IncomingInvoiceTaxBreakdown::grossMismatch($net, $tax, $gross);
         if ($sum !== null) {
             throw ValidationException::withMessages(['amount_gross' => (string) __('Netto und Steuer ergeben :sum, nicht das Brutto.', [
@@ -256,6 +257,53 @@ class IncomingInvoiceAssignmentController extends Controller {
         }
 
         return redirect()->toList('finance.incoming-invoices.index')->with('success', $message);
+    }
+
+    /** Dialog: Steuerfall der Eingangsrechnung (MVP-1621), vorbelegt aus Beleg und Lieferant. */
+    public function taxCaseForm(IncomingEInvoice $incoming, IncomingInvoiceTaxCaseResolver $resolver): View {
+        $this->authorizeBilling();
+        abort_if($incoming->direction === DocumentDirection::Outgoing, 404);
+
+        return view('finance.incoming-invoices._tax_case_dialog', [
+            'incoming' => $incoming,
+            'cases' => IncomingInvoiceTaxCase::cases(),
+            'resolved' => $resolver->resolve($incoming),
+            'booked' => $this->ledgerEntry($incoming) !== null,
+        ]);
+    }
+
+    /**
+     * Steuerfall setzen; leer = wieder aus Beleg und Lieferant. Gilt für die
+     * nächste Buchung — eine vorhandene Buchung bleibt, wie sie ist.
+     */
+    public function taxCase(Request $request, IncomingEInvoice $incoming): RedirectResponse {
+        $this->authorizeBilling();
+        abort_if($incoming->direction === DocumentDirection::Outgoing, 404);
+        if ($incoming->status === IncomingEInvoiceStatus::Rejected) {
+            return back()->with('error', __('Der Eingang ist als „keine Rechnung“ abgelegt — Zuordnung, Werte und Einbehalte lassen sich nicht mehr ändern.'));
+        }
+        if ($incoming->transferred_at !== null) {
+            return back()->with('error', __('Der Eingang ist bereits an die Buchhaltung übergeben — die Zuordnung ist dort zu ändern.'));
+        }
+        if ($this->ledgerEntry($incoming) !== null) {
+            return back()->with('error', __('invoicing.incoming_tax_case.error.booked'));
+        }
+
+        $data = $request->validate(['tax_case' => ['nullable', 'string', Rule::enum(IncomingInvoiceTaxCase::class)]]);
+        $case = IncomingInvoiceTaxCase::tryFrom((string) ($data['tax_case'] ?? ''));
+        $incoming->forceFill(['tax_case' => $case])->save();
+        $incoming->audit('incoming_einvoice.tax_case_set', ['tax_case' => $case?->value]);
+
+        return back()->with('success', __('invoicing.incoming_tax_case.flash.saved'));
+    }
+
+    /** Buchung der Eingangsrechnung im lokalen Hauptbuch (Entwurf, bereit oder gebucht). */
+    private function ledgerEntry(IncomingEInvoice $incoming): ?AccountingEntry {
+        return AccountingEntry::query()
+            ->where('organization_id', $incoming->organization_id)
+            ->where('source_key', app(PostingSourceRegistry::class)->for(PostingSourceKind::IncomingInvoice)->sourceKey($incoming))
+            ->whereIn('status', [AccountingEntryStatus::Draft->value, AccountingEntryStatus::Ready->value, AccountingEntryStatus::Posted->value])
+            ->first();
     }
 
     /**

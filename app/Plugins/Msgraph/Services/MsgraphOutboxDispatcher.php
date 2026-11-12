@@ -15,7 +15,6 @@ namespace App\Plugins\Msgraph\Services;
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
 use App\Models\Integration\IntegrationOutboxEntry;
 use App\Models\Project\Task;
-use App\Plugins\Msgraph\Enums\MsgraphTaskListLinkStatus;
 use App\Plugins\Msgraph\Models\{MsgraphTaskConnection, MsgraphTaskListLink};
 use RuntimeException;
 
@@ -63,7 +62,7 @@ class MsgraphOutboxDispatcher implements IntegrationOutboxDispatcher {
             ->when($task->project_id === null, fn ($q) => $q
                 ->where('target_kind', MsgraphTaskListLink::KIND_GLOBAL_KANBAN))
             ->first();
-        if ($link === null || ! $link->exportsToTodo() || $link->status !== MsgraphTaskListLinkStatus::Active) {
+        if ($link === null || ! $link->exportsToTodo()) {
             return true; // Exportrichtung nicht (mehr) aktiv → bewusst kein Transfer
         }
 

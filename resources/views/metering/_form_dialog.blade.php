@@ -68,11 +68,44 @@
                        :value="old('interval_count', $agreement?->interval_count ?? 1)" />
     </div>
 
+    {{-- Mengenstaffel (MVP-1563): feste Zeilen ohne Skript; leere Zeilen fallen beim Speichern weg. --}}
+    @php
+        $tierRows = array_values((array) old('tiers', $agreement?->tiers ?? []));
+        $tierRows = array_pad($tierRows, max(count($tierRows) + 2, 4), []);
+    @endphp
+    <x-form-group :legend="__('metering.tiers.legend')" icon="stairs" cols="1" compact :description="__('metering.tiers.hint')">
+        @error('tiers')<p class="text-sm text-error" role="alert">{{ $message }}</p>@enderror
+        @foreach ($tierRows as $i => $tier)
+            <div class="grid grid-cols-2 gap-3">
+                <x-input-field name="tiers[{{ $i }}][from]" id="m-form-tier-{{ $i }}-from" type="number" step="0.001" min="0"
+                               error="tiers.{{ $i }}.from"
+                               :label="__('metering.tiers.from', ['n' => $i + 1])"
+                               :value="is_array($tier) ? ($tier['from'] ?? '') : ''" />
+                <x-input-field name="tiers[{{ $i }}][price]" id="m-form-tier-{{ $i }}-price" type="number" step="0.0001" min="0"
+                               error="tiers.{{ $i }}.price"
+                               :label="__('metering.tiers.price', ['n' => $i + 1])"
+                               :value="is_array($tier) ? ($tier['price'] ?? '') : ''" />
+            </div>
+        @endforeach
+    </x-form-group>
+
     <x-date-range layout="split" from-name="next_run_on" to-name="end_on" from-required
                   :from-label="__('metering.column.next_run_on')"
                   :to-label="__('metering.column.end_on')"
                   :from="old('next_run_on', $agreement?->next_run_on?->toDateString() ?? now()->endOfMonth()->toDateString())"
                   :to="old('end_on', $agreement?->end_on?->toDateString())" />
+
+    <div class="grid gap-3 sm:grid-cols-2">
+        <x-project-select :projects="$projects"
+                          :label="__('metering.column.project')"
+                          :hint="__('metering.project_hint')"
+                          :selected="old('project_id', $agreement?->project_id !== null ? \App\Support\Sqid::encode(\App\Models\Project\Project::class, (int) $agreement->project_id) : '')" />
+        <x-select-field name="status" id="m-form-status" :label="__('metering.column.status')" :hint="__('metering.status_hint')">
+            @foreach (\App\Enums\Metering\MeterBillingAgreementStatus::cases() as $st)
+                <option value="{{ $st->value }}" @selected(old('status', $agreement?->status?->value ?? \App\Enums\Metering\MeterBillingAgreementStatus::Active->value) === $st->value)>{{ $st->label() }}</option>
+            @endforeach
+        </x-select-field>
+    </div>
 
     <p class="text-xs text-muted">{{ __('metering.form_hint') }}</p>
 </x-modal>

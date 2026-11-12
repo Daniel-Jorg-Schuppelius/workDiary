@@ -11,13 +11,14 @@
 namespace App\Http\Controllers\Procedure;
 
 use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType, ProcedureRunStatus, ProcedureStepRunStatus};
-use App\Exceptions\{ProcedureDeviationValidationException, ProcedureRunIncompleteException, ProcedureSecondPersonException, ProcedureStepBlockedException};
+use App\Exceptions\{AssetNotUsableException, ProcedureDeviationValidationException, ProcedureRunIncompleteException, ProcedureSecondPersonException, ProcedureStepBlockedException};
 use App\Http\Controllers\Attachments\AttachmentController;
 use App\Http\Controllers\Controller;
+use App\Models\Asset\Asset;
 use App\Models\Attachments\Attachment;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
-use App\Models\Procedure\{ProcedureRun, ProcedureStepRun, ProcedureTemplate};
+use App\Models\Procedure\{ProcedureBackupProof, ProcedureDeviation, ProcedureRun, ProcedureStepRun, ProcedureTemplate};
 use App\Services\Fields\{FieldSchema, FieldValidator};
 use App\Services\Procedure\{DeviationRecorder, ProcedureApplicabilityResolver, ProcedureExecutionService, ProcedureRunBlockTracker, SecondPersonGate, WaitStepService};
 use App\Services\Procedure\Fields\ProcedureStepFields;
@@ -43,7 +44,7 @@ class ProcedureRunController extends Controller {
      * Mobile Ausführungsansicht: alle Schritte in Reihenfolge mit Status,
      * Sperrgrund, dem aktuell ausführbaren Schritt sowie Wartezeit-Restzeit.
      */
-    public function show(ProcedureRun $run, ProcedureExecutionService $execution, ProcedureRunBlockTracker $blocks, SecondPersonGate $secondPerson): View {
+    public function show(ProcedureRun $run, ProcedureExecutionService $execution, ProcedureRunBlockTracker $blocks, SecondPersonGate $secondPerson, DeviationRecorder $deviations): View {
         Gate::authorize('view', $run);
         if ($run->status === ProcedureRunStatus::Blocked) {
             $blocks->refresh($run); // abgelaufene Wartezeit löst kein Ereignis aus
@@ -80,8 +81,19 @@ class ProcedureRunController extends Controller {
             }
         }
 
+        $deviationsByStep = ProcedureDeviation::query()
+            ->whereIn('procedure_step_run_id', $stepRuns->pluck('id'))
+            ->with('riskAcceptedBy:id,name')
+            ->get()
+            ->keyBy('procedure_step_run_id');
+        $proofsByStep = ProcedureBackupProof::query()
+            ->whereIn('procedure_step_run_id', $stepRuns->pluck('id'))
+            ->with('verifiedBy:id,name', 'registeredBy:id,name', 'attachment')
+            ->get()
+            ->keyBy('procedure_step_run_id');
+
         $currentAssigned = false;
-        $steps = $stepRuns->map(function (ProcedureStepRun $sr) use ($execution, $secondPerson, $viewer, $valuesByStepCode, &$currentAssigned): array {
+        $steps = $stepRuns->map(function (ProcedureStepRun $sr) use ($execution, $secondPerson, $deviations, $viewer, $valuesByStepCode, $deviationsByStep, $proofsByStep, &$currentAssigned): array {
             $blockReason = $execution->blockReasonFor($sr, $viewer);
             $applicable = $execution->isStepApplicable($sr, $valuesByStepCode);
             $isCurrent = false;
@@ -98,8 +110,16 @@ class ProcedureRunController extends Controller {
                 'isCurrent' => $isCurrent,
                 'waitRemaining' => $this->waitRemainingSeconds($sr),
                 'requiresSecondPerson' => $secondPerson->requiresSecondPerson($sr),
+                'deviation' => $deviation = $deviationsByStep->get($sr->id),
+                'deviationBlocks' => $deviation !== null && $deviations->blocksCompletion($deviation),
+                'backupProof' => $proofsByStep->get($sr->id),
             ];
         });
+
+        $completionHints = array_values(array_filter([
+            $steps->contains(fn (array $step): bool => $step['deviationBlocks']) ? __('procedure.validation.criticalDeviationOpen') : null,
+            $execution->lacksCriticalSecondPerson($run) ? __('procedure.validation.criticalSecondPersonMissing') : null,
+        ]));
 
         $total = $stepRuns->count();
         $done = $stepRuns->filter(fn(ProcedureStepRun $sr) => $sr->status->isFinal())->count();
@@ -115,6 +135,7 @@ class ProcedureRunController extends Controller {
             'canExecute' => Gate::allows('execute', $run),
             'canAbort' => Gate::allows('abort', $run),
             'missingRequired' => $execution->missingRequiredStepRuns($run),
+            'completionHints' => $completionHints,
         ]);
     }
 
@@ -207,7 +228,37 @@ class ProcedureRunController extends Controller {
                 : back()->with('warning', __('procedure.flash.deviationFollowUpBlocked'));
         }
 
+        if ($deviation->proposed_action === ProcedureDeviationProposedAction::Requalify) {
+            return $deviation->requalify_run_id !== null
+                ? back()->with('success', __('procedure.flash.deviationRequalified'))
+                : back()->with('warning', __('procedure.flash.deviationRequalifyBlocked'));
+        }
+
         return back()->with('success', __('procedure.flash.deviationRecorded'));
+    }
+
+    /**
+     * Risikoakzeptanz einer kritischen Abweichung (MVP-1567): Recht
+     * `procedure.deviation.acceptRisk`, Pflichtbegründung, Eintrag im Journal.
+     */
+    public function acceptDeviationRisk(Request $request, ProcedureRun $run, ProcedureStepRun $stepRun, DeviationRecorder $deviations): RedirectResponse {
+        Gate::authorize('view', $run);
+        $this->assertStepBelongsToRun($run, $stepRun);
+        $deviation = ProcedureDeviation::query()->where('procedure_step_run_id', $stepRun->id)->firstOrFail();
+        Gate::authorize('acceptRisk', $deviation);
+        abort_unless($run->status->isActive(), 409);
+
+        $data = $request->validate([
+            'note' => ['required', 'string', 'min:' . DeviationRecorder::MIN_RISK_NOTE_LENGTH, 'max:2000'],
+        ], [], ['note' => __('procedure.deviation.accept_risk_note')]);
+
+        try {
+            $deviations->acceptRisk($deviation, $this->authUser(), $data['note']);
+        } catch (ProcedureDeviationValidationException $e) {
+            return back()->with('error', __('procedure.deviation.reason.' . $e->reason));
+        }
+
+        return back()->with('success', __('procedure.flash.criticalRiskAccepted'));
     }
 
     /**
@@ -314,7 +365,7 @@ class ProcedureRunController extends Controller {
         return back()->with('success', __('procedure.flash.secondPersonRevoked'));
     }
 
-    /** Schließt den Lauf ab (alle Pflichtschritte final, keine kritische Abweichung). */
+    /** Schließt den Lauf ab (alle Pflichtschritte final, keine offene kritische Abweichung, kritische Läufe mit Vier-Augen-Freigabe). */
     public function complete(ProcedureRun $run, ProcedureExecutionService $execution): RedirectResponse {
         Gate::authorize('execute', $run);
 
@@ -323,8 +374,10 @@ class ProcedureRunController extends Controller {
 
         try {
             $execution->completeRun($run, $actor);
-        } catch (ProcedureRunIncompleteException) {
-            return back()->with('error', __('procedure.validation.runIncomplete'));
+        } catch (ProcedureRunIncompleteException $e) {
+            return back()->with('error', $e->reason === ProcedureExecutionService::REASON_CRITICAL_SECOND_PERSON
+                ? __('procedure.validation.criticalSecondPersonMissing')
+                : __('procedure.validation.runIncomplete'));
         } catch (ProcedureDeviationValidationException) {
             return back()->with('error', __('procedure.validation.criticalDeviationOpen'));
         }
@@ -369,13 +422,13 @@ class ProcedureRunController extends Controller {
 
         $stepRuns = $run->stepRuns->sortBy(fn($sr) => $sr->stepDef->sort_order ?? 0)->values();
 
-        $deviations = \App\Models\Procedure\ProcedureDeviation::query()
+        $deviations = ProcedureDeviation::query()
             ->whereIn('procedure_step_run_id', $stepRuns->pluck('id'))
             ->with('createdBy:id,name', 'riskAcceptedBy:id,name')
             ->get()
             ->keyBy('procedure_step_run_id');
 
-        $backupProofs = \App\Models\Procedure\ProcedureBackupProof::query()
+        $backupProofs = ProcedureBackupProof::query()
             ->whereIn('procedure_step_run_id', $stepRuns->pluck('id'))
             ->with('verifiedBy:id,name')
             ->get()
@@ -415,15 +468,46 @@ class ProcedureRunController extends Controller {
         /** @var User $actor */
         $actor = Auth::user();
 
-        $applicable = $resolver->suggestFor($diary)->contains(fn($t) => $t->id === $template->id);
-        if (! $applicable) {
+        if (! $template->active || ! $resolver->templateAppliesAt($template, $resolver->contextFor($diary))) {
             return redirect()->route('diary.show', $diary)->with('error', __('procedure.flash.notApplicable'));
         }
 
         try {
             $run = $execution->start($template, $diary, $actor);
+        } catch (AssetNotUsableException $e) {
+            return redirect()->route('diary.show', $diary)->with('error', __('procedure.flash.assetBlocked', ['reason' => $e->getMessage()]));
         } catch (\RuntimeException $e) {
             return redirect()->route('diary.show', $diary)->with('error', __('procedure.flash.startFailed'));
+        }
+
+        return redirect()->route('procedure-runs.show', $run)->with('success', __('procedure.flash.runStarted'));
+    }
+
+    /**
+     * Startet einen Lauf an einem Asset (MVP-1571). Vorgeschlagen wird nur, was
+     * die Vorlage über Kategorie, Produkt oder SLA dem Asset zuordnet; ein
+     * gesperrtes Asset lässt nur Vorlagen zu, die das erlauben.
+     */
+    public function startOnAsset(
+        Asset $asset,
+        ProcedureTemplate $template,
+        ProcedureExecutionService $execution,
+        ProcedureApplicabilityResolver $resolver,
+    ): RedirectResponse {
+        Gate::authorize('start', ProcedureRun::class);
+        Gate::authorize('view', $asset);
+        abort_unless($template->organization_id === $asset->organization_id, 404);
+
+        if (! $template->active || ! $resolver->templateAppliesAt($template, $resolver->contextFor($asset), null, true)) {
+            return redirect()->route('assets.show', $asset)->with('error', __('procedure.flash.notApplicableAsset'));
+        }
+
+        try {
+            $run = $execution->start($template, $asset, $this->authUser());
+        } catch (AssetNotUsableException $e) {
+            return redirect()->route('assets.show', $asset)->with('error', __('procedure.flash.assetBlocked', ['reason' => $e->getMessage()]));
+        } catch (\RuntimeException) {
+            return redirect()->route('assets.show', $asset)->with('error', __('procedure.flash.startFailed'));
         }
 
         return redirect()->route('procedure-runs.show', $run)->with('success', __('procedure.flash.runStarted'));

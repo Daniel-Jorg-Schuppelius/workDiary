@@ -12,7 +12,8 @@ namespace App\Services\Reporting;
 
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
-use App\Models\Classification\EntryType;
+use App\Models\Claims\ClaimCase;
+use App\Models\Classification\{Classification, EntryType};
 use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Protocol\Protocol;
 use App\Models\Time\TimeEntry;
@@ -32,6 +33,8 @@ use CommonToolkit\Helper\Data\NumberHelper;
  * Audit), Muster wie {@see PlanIstReportBuilder}.
  */
 class EntryTypeAnalysisReportBuilder {
+    private const int TOP_CAUSES = 3;
+
     /**
      * @param  list<int>  $excludedCustomerIds  Feature 002: Aufträge (und deren
      *         Zeiten) org-weit ausgeblendeter Kunden entfallen; Übersteuerung
@@ -55,7 +58,8 @@ class EntryTypeAnalysisReportBuilder {
      *   revenue:float,
      *   cost:float,
      *   contribution:float,
-     *   contributionPerEntry:float
+     *   contributionPerEntry:float,
+     *   topCauses:list<array{classificationId:int, label:string, count:int}>
      * }>
      */
     public function build(
@@ -128,12 +132,14 @@ class EntryTypeAnalysisReportBuilder {
             ->values()
             ->all();
 
+        $causesByEntry = $this->causesByEntry($entryIds);
+
         $entryTypeLabels = EntryType::query()
             ->whereIn('id', $entries->pluck('entry_type_id')->filter()->all())
             ->pluck('label', 'id')
             ->all();
 
-        /** @var array<int, array{entryTypeId:int,entryTypeName:string,entryCount:int,plannedSum:int,plannedKnownCount:int,actualValues:list<int>,overrunCount:int,reworkCount:int,escalationCount:int,revenue:float,cost:float}> $bucket */
+        /** @var array<int, array{entryTypeId:int,entryTypeName:string,entryCount:int,plannedSum:int,plannedKnownCount:int,actualValues:list<int>,overrunCount:int,reworkCount:int,escalationCount:int,revenue:float,cost:float,causes:array<int,int>}> $bucket */
         $bucket = [];
 
         foreach ($entries as $entry) {
@@ -151,7 +157,11 @@ class EntryTypeAnalysisReportBuilder {
                     'escalationCount' => 0,
                     'revenue' => 0.0,
                     'cost' => 0.0,
+                    'causes' => [],
                 ];
+            }
+            foreach ($causesByEntry[(int) $entry->id] ?? [] as $classificationId) {
+                $bucket[$typeId]['causes'][$classificationId] = ($bucket[$typeId]['causes'][$classificationId] ?? 0) + 1;
             }
 
             $bucket[$typeId]['entryCount']++;
@@ -218,6 +228,7 @@ class EntryTypeAnalysisReportBuilder {
                 'cost' => round($row['cost'], 2),
                 'contribution' => round($row['revenue'] - $row['cost'], 2),
                 'contributionPerEntry' => round(($row['revenue'] - $row['cost']) / $entryCount, 2),
+                'topCauses' => $this->topCauses($row['causes']),
             ];
         }
 
@@ -226,4 +237,59 @@ class EntryTypeAnalysisReportBuilder {
         return $rows;
     }
 
+    /**
+     * Ursachen je Auftrag (H3-05): Nacharbeitsgrund der gebuchten Zeiten und
+     * Grundursache der Reklamationen zum Auftrag. Gezählt wird je Auftrag und
+     * Klassifikation einmal — zehn Nacharbeitszeiten am selben Auftrag sind
+     * eine Ursache, nicht zehn.
+     *
+     * @param  list<int>  $entryIds
+     * @return array<int, list<int>>
+     */
+    private function causesByEntry(array $entryIds): array {
+        $pairs = TimeEntry::query()
+            ->whereIn('diary_entry_id', $entryIds)
+            ->whereNotNull('rework_reason_classification_id')
+            ->distinct()
+            ->get(['diary_entry_id', 'rework_reason_classification_id'])
+            ->map(static fn (TimeEntry $e): array => [(int) $e->diary_entry_id, (int) $e->rework_reason_classification_id])
+            ->concat(ClaimCase::query()
+                ->whereIn('diary_entry_id', $entryIds)
+                ->whereNotNull('root_cause_classification_id')
+                ->distinct()
+                ->get(['diary_entry_id', 'root_cause_classification_id'])
+                ->map(static fn (ClaimCase $c): array => [(int) $c->diary_entry_id, (int) $c->root_cause_classification_id]));
+
+        $byEntry = [];
+        foreach ($pairs as [$entryId, $classificationId]) {
+            $byEntry[$entryId][$classificationId] = $classificationId;
+        }
+
+        return array_map(static fn (array $ids): array => array_values($ids), $byEntry);
+    }
+
+    /**
+     * @param  array<int, int>  $causes  Klassifikation → Zahl der Aufträge
+     * @return list<array{classificationId:int, label:string, count:int}>
+     */
+    private function topCauses(array $causes): array {
+        if ($causes === []) {
+            return [];
+        }
+        arsort($causes);
+        $top = array_slice($causes, 0, self::TOP_CAUSES, true);
+        $labels = Classification::query()->whereKey(array_keys($top))->get()->keyBy('id');
+
+        $out = [];
+        foreach ($top as $classificationId => $count) {
+            $classification = $labels->get($classificationId);
+            $out[] = [
+                'classificationId' => (int) $classificationId,
+                'label' => $classification instanceof Classification ? $classification->displayLabel() : '#' . $classificationId,
+                'count' => $count,
+            ];
+        }
+
+        return $out;
+    }
 }

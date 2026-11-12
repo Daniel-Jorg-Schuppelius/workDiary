@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 
 /**
  * Maßnahme (MVP-251): Nacharbeit/Reparatur/Ersatz/Serviceeinsatz usw.;
- * erzeugte Folgeobjekte (Auftrag, Ticket, Bestellung) hängen als Morph.
+ * der Folgeauftrag, über den sie disponiert wird, hängt als Morph (MVP-1623).
  *
  * @property int $id
  * @property int $organization_id
@@ -30,6 +30,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
  * @property string $title
  * @property \Illuminate\Support\Carbon|null $due_at
  * @property \Illuminate\Support\Carbon|null $done_at
+ * @property string|null $follow_up_type
+ * @property int|null $follow_up_id
  */
 class ClaimAction extends Model {
     use Auditable;

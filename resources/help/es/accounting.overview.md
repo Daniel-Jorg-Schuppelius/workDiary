@@ -1,7 +1,7 @@
 ---
 title: "Contabilidad local"
 topic: accounting.overview
-version: 3
+version: 6
 keywords:
     - libro mayor
     - contabilidad general
@@ -117,10 +117,38 @@ organización lleva o ha llevado la contabilidad local.
   `is_open_item`, `datev_account`, `euer_category` y `deductible_percent`. Los
   números existentes se actualizan, las cuentas nuevas se crean y no se elimina
   nada; las líneas erróneas se omiten y se cuentan.
-- **Códigos de IVA:** si existen códigos de IVA, la página los lista con sus
-  casillas de la declaración de IVA alemana. Con **Editar** usted asigna una
-  casilla a **Base imponible** y otra a **Cuota** – una ayuda de conciliación,
-  no el formulario.
+- **Códigos de impuesto:** la página lista los códigos de impuesto con tipo,
+  cuenta de impuesto, vigencia y sus casillas de la declaración de IVA
+  alemana. **Crear código de impuesto** registra **Código**, **Denominación**,
+  **Sentido**, **Tipo impositivo (%)**, **Cuenta de impuesto**, **Válido
+  desde** y las casillas de **Base imponible** e **Importe del impuesto** –
+  una ayuda para el cuadre, no el formulario. Con **Editar** se cambian en
+  cualquier momento la denominación y las casillas. El tipo, el sentido y la
+  cuenta de impuesto de un código ya utilizado en asientos solo cambian a
+  partir de una nueva fecha de efecto: la versión anterior termina el día
+  anterior, los asientos existentes no cambian, y las reglas de
+  contabilización y los valores por defecto de las cuentas siguen a la nueva
+  versión. **Desactivar** retira un código de la selección; los asientos
+  existentes lo conservan.
+  Los asientos de la bandeja contable llevan el código y el importe del
+  impuesto en la línea de ingreso o de gasto. Para las ventas sin impuesto, la
+  bandeja elige el código según la categoría fiscal del justificante: entrega
+  intracomunitaria (casilla 41), servicio con inversión del sujeto pasivo
+  (21), exportación (43), no sujeto (45); «exento» sin casilla aparece como
+  caso por aclarar. Los pequeños empresarios no reciben código.
+- **Inversión del sujeto pasivo:** para la dirección **IVA repercutido y
+  soportado (inversión del sujeto pasivo)** el código de impuesto registra
+  además **Cuenta de IVA soportado**, **Caso fiscal en facturas recibidas** y
+  **Casilla del IVA soportado**. Las plantillas traen el § 13b, apdos. 1 y 2
+  (19 %) y la adquisición intracomunitaria (19 % y 7 %) con sus cuentas, además
+  del código de la casilla 60 para ventas en las que el cliente nacional debe
+  el impuesto. Los planes de cuentas existentes de la plantilla los reciben con
+  la actualización.
+- **DATEV:** la **Clave fiscal DATEV** del código indica la clave fiscal del
+  lote DATEV (p. ej. 9 para IVA soportado 19 %, 94 para el § 13b). El
+  **Automatismo DATEV** de la cuenta indica el código cuyo impuesto calcula
+  DATEV por sí mismo en esta cuenta (cuenta automática como 8400 en el SKR03);
+  ahí el lote no pone ninguna clave.
 
 **Permiso:** ver con **Consultar la contabilidad**; plantilla, importación y
 todos los cambios en cuentas y códigos de IVA con **Configurar la

@@ -44,7 +44,8 @@ class SaveTimeEntryRequest extends BaseFormRequest {
             // Je Art begrenzt (24 h je Person, 31 Tage je Gerätelaufzeit, Feature 193) —
             // sonst ließen sich Personenzeiten über Tage buchen.
             'minutes' => [$isRange ? 'nullable' : 'required', 'integer', 'min:1', 'max:' . $kind->maxMinutes()],
-            'started_at' => ['nullable', 'date'],
+            // Zeitraum-Modus ohne `date`: der Tag folgt aus dem Beginn.
+            'started_at' => ['nullable', 'date', new \App\Rules\NotInLockedMonth($this->targetUser())],
             // Zeitraum mit derselben Grenze wie der Dauer-Modus.
             'ended_at' => array_filter(['nullable', 'date', 'after:started_at', $this->rangeLimit($kind)]),
             'break_minutes' => ['nullable', 'integer', 'min:0', 'max:600'],

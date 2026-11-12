@@ -1,7 +1,7 @@
 ---
 title: "Boîte de rapprochement"
 topic: admin.integration-inbox
-version: 4
+version: 6
 keywords:
     - boîte des intégrations
     - conflits import
@@ -90,3 +90,7 @@ une commande ouverte, par exemple lorsqu'un client répond à la facture mais
 vise la commande.
 
 La page est ouverte aux personnes autorisées à gérer la facturation.
+
+**Souveraineté des données :** Les cas marqués « Souveraineté des données » ont été créés par une intégration qui ne gère pas le domaine (voir la page « Souveraineté des données »). Le cas indique le système de référence ; rien n’a été écrit. **Reprendre une fois** écrit l’état retenu exactement une fois – par exemple le ticket, le rendez-vous ou le mouvement de stock –, **Écarter** l’abandonne et la même opération ne revient pas. Le filtre de type « Souveraineté des données » n’affiche que ces cas.
+
+**Rouvert :** un cas « Souveraineté des données » repris se rouvre lorsque l’intégration veut écrire un nouvel état de la même opération ; un cas rejeté reste rejeté. Si la souveraineté autorise à nouveau l’écriture, la synchronisation suivante clôt elle-même les cas ouverts comme repris. Les anciens cas à vérifier « géré par un autre système » deviennent des cas « Souveraineté des données » à la synchronisation suivante.

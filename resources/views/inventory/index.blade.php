@@ -12,12 +12,13 @@
 
 @php
     /** @var \App\Models\Inventory\Warehouse|null $selected */
-    $movements = [
-        'receipt' => __('inventory.movement.receipt'),
-        'issue' => __('inventory.movement.issue'),
-        'reserve' => __('inventory.movement.reserve'),
-        'release' => __('inventory.movement.release_reservation'),
-    ];
+    // MVP-1585: Buchen und Reservieren sind getrennte Rechte.
+    $movements = array_filter([
+        'receipt' => ($canPost ?? false) ? __('inventory.movement.receipt') : null,
+        'issue' => ($canPost ?? false) ? __('inventory.movement.issue') : null,
+        'reserve' => ($canReserve ?? false) ? __('inventory.movement.reserve') : null,
+        'release' => ($canReserve ?? false) ? __('inventory.movement.release_reservation') : null,
+    ]);
 @endphp
 
 @section('content')
@@ -25,6 +26,12 @@
      Reservierungen/Beschaffungsbedarf/Bestandsgrenzen — die Seite scrollt
      normal (Vollscan 2026-08 I10). --}}
 <x-index-page :subtitle="__('inventory.stock')">
+
+    @if ($canConfigure)
+        <x-slot:actions>
+            <x-icon-btn icon="settings" size="sm" data-entry-modal-trigger :href="route('inventory.settings.edit')" show-label>{{ __('inventory.settings.title') }}</x-icon-btn>
+        </x-slot:actions>
+    @endif
 
     @include('inventory._tabs')
 
@@ -44,7 +51,7 @@
             <x-empty-state framed :title="__('inventory.empty.no_selection')" />
         @else
             {{-- Buchungsformular --}}
-            @if ($canPost)
+            @if ($canPost || $canReserve)
                 <x-card>
                     <h2 class="font-semibold mb-3">{{ __('inventory.action.book') }} — {{ $selected->name }}</h2>
                     <form method="POST" action="{{ route('inventory.movements.store') }}" class="flex flex-wrap items-end gap-3">
@@ -94,6 +101,24 @@
                             <label for="qty" class="fieldset-label">{{ __('inventory.field.quantity') }}</label>
                             <input id="qty" name="qty" type="number" step="0.0001" min="0.0001" required class="input input-sm input-bordered w-28">
                         </div>
+                        {{-- Einheit der Eingabe (MVP-1584): gepflegte Einheiten der gewählten Variante; gebucht wird in Basiseinheit. --}}
+                        @if ($pickerVariants->contains(fn ($v) => $v->article?->units->isNotEmpty()))
+                            <div class="fieldset">
+                                <label for="movement-unit" class="fieldset-label">{{ __('inventory.field.unit') }}</label>
+                                <select id="movement-unit" name="unit" class="select select-sm select-bordered" data-depends-on="variant" data-depends-autoselect="off">
+                                    <option value="">{{ __('inventory.field.unit_base') }}</option>
+                                    @foreach ($pickerVariants as $v)
+                                        @foreach ($v->article?->units ?? [] as $unit)
+                                            <option value="{{ $unit->code }}" data-parent="{{ $v->sqid }}">{{ __('inventory.field.unit_option', [
+                                                'unit' => $unit->label ?: $unit->code,
+                                                'factor' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((string) $unit->factor_to_base, 4, trimTrailingZeros: true),
+                                                'base' => $v->article->base_unit,
+                                            ]) }}</option>
+                                        @endforeach
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
                         <div class="fieldset">
                             <label for="ownership" class="fieldset-label">{{ __('inventory.field.ownership') }}</label>
                             <select id="ownership" name="ownership" class="select select-sm select-bordered">
@@ -183,11 +208,8 @@
                             <td class="text-right tabular-nums">{{ $reservation->openQuantity() }}</td>
                             <td class="text-right tabular-nums">{{ $reservation->priority }}</td>
                             <td class="text-right">
-                                @if ($canPost)
-                                    <form method="POST" action="{{ route('inventory.reservations.release', $reservation) }}">
-                                        @csrf
-                                        <x-button type="submit" tone="plain" size="xs">{{ __('inventory.overview.release') }}</x-button>
-                                    </form>
+                                @if ($canReserve)
+                                    <x-icon-btn icon="edit" size="xs" data-entry-modal-trigger :href="route('inventory.reservations.edit', $reservation)" :label="__('inventory.reservation.edit')" />
                                 @endif
                             </td>
                         </tr>

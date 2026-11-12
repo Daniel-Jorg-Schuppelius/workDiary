@@ -13,10 +13,12 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Enums\Inventory\{StockMovementType, StockState};
+use App\Enums\Manufacturing\ProcurementStatus;
 use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\Warehouse;
 use App\Models\Manufacturing\{ManufacturingOrder, ManufacturingOrderMaterial};
 use App\Models\Platform\Organization;
+use App\Models\Procurement\ProcurementRequest;
 use App\Services\Inventory\{InventoryLedger, InventoryValuationManager, ReservationService, SerialService, StockPosting};
 use App\Support\DecimalQty;
 use CommonToolkit\Enums\CurrencyCode;
@@ -98,12 +100,12 @@ class ManufacturingInventoryService {
             return;
         }
 
-        $exists = \App\Models\Procurement\ProcurementRequest::query()
+        $exists = ProcurementRequest::query()
             ->where('organization_id', $order->organization_id)
             ->where('article_variant_id', $variant->id)
             ->where('source_type', $order->getMorphClass())
             ->where('source_id', $order->getKey())
-            ->where('status', \App\Enums\Manufacturing\ProcurementStatus::Open->value)
+            ->where('status', ProcurementStatus::Open->value)
             ->exists();
         if ($exists) {
             return;
@@ -186,6 +188,26 @@ class ManufacturingInventoryService {
 
             return $released;
         });
+    }
+
+    /**
+     * Storno: offene Fehlmaterial-Bedarfe des Auftrags werden geschlossen,
+     * damit sie nicht mehr in die Bestellvorschläge laufen (MVP-1620).
+     */
+    public function closeOpenShortages(ManufacturingOrder $order): int {
+        $closed = 0;
+        ProcurementRequest::query()
+            ->where('organization_id', $order->organization_id)
+            ->where('source_type', $order->getMorphClass())
+            ->where('source_id', $order->getKey())
+            ->where('status', ProcurementStatus::Open->value)
+            ->get()
+            ->each(function (ProcurementRequest $request) use (&$closed): void {
+                $request->forceFill(['status' => ProcurementStatus::Closed])->save();
+                $closed++;
+            });
+
+        return $closed;
     }
 
     /** Lagert eine Gutmenge des Fertigerzeugnisses in das Auftrags-Lager ein. */

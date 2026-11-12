@@ -24,7 +24,6 @@ enum ReservationStatus: string implements HasLabel {
     case Active = 'active';         // hält verfügbare Menge
     case Fulfilled = 'fulfilled';   // vollständig in Verbrauch überführt
     case Released = 'released';     // (teilweise) wieder freigegeben
-    case Cancelled = 'cancelled';
 
     public function label(): string {
         return __('inventory.reservation_status.' . $this->value);

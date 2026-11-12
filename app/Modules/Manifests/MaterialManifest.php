@@ -52,6 +52,9 @@ final class MaterialManifest extends Manifest {
             \App\Services\Import\EntitySpec::class => [
                 \App\Services\Material\Import\MaterialSpec::class,
             ],
+            \App\Services\Sync\Contracts\SyncCommandHandler::class => [
+                \App\Services\Material\Sync\MaterialUsageSyncHandler::class,
+            ],
         ];
     }
 }

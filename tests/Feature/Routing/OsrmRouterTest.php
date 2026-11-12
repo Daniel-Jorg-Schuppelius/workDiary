@@ -44,7 +44,6 @@ class OsrmRouterTest extends TestCase {
         $this->assertSame(12346, $result->distanceMeters);
         $this->assertSame(679, $result->durationSeconds);
         $this->assertSame(12.35, $result->distanceKm());
-        $this->assertSame(12, $result->durationMinutes());
         $this->assertNotNull($result->geometry);
 
         $fake->assertSent(function (RequestInterface $req): bool {

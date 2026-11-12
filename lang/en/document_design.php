@@ -107,6 +107,8 @@ return [
     'editor.texts_hint' => 'Free texts above and below the document content of sales documents (formerly invoice templates) — plain text, frozen with the profile version.',
     'editor.header_text' => 'Header text',
     'editor.footer_text' => 'Footer text',
+    'editor.confidentiality_text' => 'Confidentiality notice',
+    'editor.confidentiality_hint' => 'Only appears when the “Confidentiality” block is dynamic. Empty = default notice.',
     'profile.customer_specific' => 'Customer-specific profile (applies only via the customer file)',
     'profile.customer_specific_hint' => 'Does not participate in the org-wide resolution — it applies only to customers referencing it in their file.',
     'customer.panel_title' => 'Document design',

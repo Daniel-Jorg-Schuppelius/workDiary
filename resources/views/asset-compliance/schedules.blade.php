@@ -60,7 +60,12 @@
                             @endcan
                         @endif
                     </td>
-                    <td><x-status-badge size="md" outline>{{ $schedule->status->label() }}</x-status-badge></td>
+                    <td>
+                        <x-status-badge :tone="$schedule->status->tone()" size="md" outline>{{ $schedule->status->label() }}</x-status-badge>
+                        @if ($schedule->cancel_reason)
+                            <span class="block text-xs text-muted">{{ $schedule->cancel_reason }}</span>
+                        @endif
+                    </td>
                     <td class="text-right">
                         @can('inspect', \App\Models\AssetCompliance\AssetComplianceProfile::class)
                             @if ($schedule->status->isOpen() && $schedule->assignment !== null)
@@ -70,15 +75,75 @@
                                 </details>
                             @endif
                         @endcan
+                        @can('create', \App\Models\AssetCompliance\AssetComplianceProfile::class)
+                            @if ($schedule->status->canTransitionTo(\App\Enums\AssetCompliance\AssetInspectionScheduleStatus::Cancelled))
+                                <x-icon-btn icon="event_busy" tone="error" size="xs" data-entry-modal-trigger
+                                            :href="route('asset-compliance.schedules.cancel-form', $schedule)" :label="__('asset_compliance.schedule.cancel_action')" />
+                            @endif
+                        @endcan
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon="event_available" :colspan="6" :title="__('Keine offenen Prüftermine.')" compact />
+                <x-table.empty icon="event_available" :colspan="6" :title="request('status') ? __('asset_compliance.schedule.none_for_status') : __('Keine offenen Prüftermine.')" compact />
             @endforelse
         </x-table>
     </x-card>
 
     <x-pagination :paginator="$schedules" standing />
+
+    {{-- Prüfprotokolle mit Ergebniszeilen und Roh-Messwerten (MVP-1575). --}}
+    <x-card :title="__('asset_compliance.protocol.title')" padding="p-0">
+        <x-table bare>
+            <x-slot:head>
+                <tr>
+                    <th>{{ __('asset_compliance.protocol.performed_at') }}</th>
+                    <th>{{ __('Asset') }}</th>
+                    <th>{{ __('Prüfprofil') }}</th>
+                    <th>{{ __('Ergebnis') }}</th>
+                    <th>{{ __('asset_compliance.protocol.values') }}</th>
+                </tr>
+            </x-slot:head>
+            @forelse ($events as $event)
+                <tr>
+                    <td>
+                        {{ $event->performed_at->fdatetime() }}
+                        <span class="block text-xs text-muted">{{ $event->performer->name ?? $event->external_inspector_name ?? '—' }}</span>
+                    </td>
+                    <td>{{ $event->asset->name ?? '—' }}</td>
+                    <td>{{ $event->assignment?->profile?->name ?? '—' }}</td>
+                    <td>
+                        <x-status-badge :tone="$event->result->isPassed() ? 'success' : 'error'" size="md" outline>{{ $event->result->label() }}</x-status-badge>
+                        @if ($event->certificate)
+                            <span class="block text-xs text-muted">{{ __('Zertifikatsnummer') }}: {{ $event->certificate->certificate_no }}</span>
+                        @endif
+                    </td>
+                    <td class="text-sm">
+                        @forelse ($event->results as $line)
+                            <div>
+                                {{ $line->label }}:
+                                <span class="font-mono">{{ $line->value !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $line->value, 4) : '—' }} {{ $line->unit }}</span>
+                                @if (! $line->passed)
+                                    <x-status-badge tone="error" size="sm">{{ __('asset_compliance.protocol.out_of_limit') }}</x-status-badge>
+                                @endif
+                            </div>
+                        @empty
+                        @endforelse
+                        @foreach ($event->measurements as $measurement)
+                            <div class="text-base-content/70">
+                                {{ $measurement->label }}:
+                                <span class="font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $measurement->value, 4) }} {{ $measurement->unit }}</span>
+                            </div>
+                        @endforeach
+                        @if ($event->results->isEmpty() && $event->measurements->isEmpty())
+                            —
+                        @endif
+                    </td>
+                </tr>
+            @empty
+                <x-table.empty icon="fact_check" :colspan="5" :title="__('asset_compliance.protocol.empty')" compact />
+            @endforelse
+        </x-table>
+    </x-card>
 
     @can('create', \App\Models\AssetCompliance\AssetComplianceProfile::class)
         <x-card :title="__('Prüftermin planen')">

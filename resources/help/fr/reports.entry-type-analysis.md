@@ -1,7 +1,7 @@
 ---
 title: "Analyse par type d'intervention"
 topic: reports.entry-type-analysis
-version: 3
+version: 4
 keywords:
     - prévu vs réalisé
     - écart prévu réalisé
@@ -32,3 +32,5 @@ révision tarifaire.
 
 La durée prévue d'un ordre est sa **Durée prévue (HH:MM)** ; si elle est vide,
 la durée d’intervention d’une commande planifiée, sinon la durée du créneau ou du rendez-vous compte.
+
+La colonne **Principales causes** indique, par type de commande, les trois classifications les plus fréquentes issues du motif de reprise des temps saisis et de la cause racine des réclamations liées à la commande. Chaque commande compte une fois ; un clic affiche les temps et réclamations concernés. L’export CSV contient aussi cette colonne.

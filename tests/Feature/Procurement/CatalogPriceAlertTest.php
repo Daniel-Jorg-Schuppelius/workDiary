@@ -208,4 +208,83 @@ final class CatalogPriceAlertTest extends TestCase {
 
         $this->assertSame(PricingChangeAlertStatus::Acknowledged, $alert->fresh()->status);
     }
+
+    /**
+     * MVP-1581: der Stammpreis hält die Mindestmarge, ein offenes Angebot mit
+     * altem, niedrigerem Belegpreis nicht — gemessen wird die Position.
+     */
+    public function test_open_quote_below_min_margin_creates_alert_with_document_price(): void {
+        $customer = \App\Models\Customer\Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $quote = \App\Models\Sales\Quote::factory()->create([
+            'organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'number' => 'A-000077',
+            'status' => \App\Enums\Sales\QuoteStatus::Sent,
+        ]);
+        \App\Models\Sales\QuoteItem::factory()->create([
+            'organization_id' => $this->organization->id, 'quote_id' => $quote->id, 'article_id' => $this->article->id,
+            'position' => 3, 'quantity' => '2.00', 'unit_price' => '70.00',
+        ]);
+        // Abgelehntes Angebot und stornierter Auftrag zählen nicht.
+        $rejected = \App\Models\Sales\Quote::factory()->create([
+            'organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'number' => 'A-000078',
+            'status' => \App\Enums\Sales\QuoteStatus::Rejected,
+        ]);
+        \App\Models\Sales\QuoteItem::factory()->create([
+            'organization_id' => $this->organization->id, 'quote_id' => $rejected->id, 'article_id' => $this->article->id,
+            'unit_price' => '55.00',
+        ]);
+        $order = \App\Models\Sales\OrderConfirmation::factory()->create([
+            'organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'number' => 'AB-000012',
+            'status' => \App\Enums\Sales\OrderConfirmationStatus::Confirmed,
+        ]);
+        \App\Models\Sales\OrderConfirmationItem::factory()->create([
+            'organization_id' => $this->organization->id, 'order_confirmation_id' => $order->id, 'article_id' => $this->article->id,
+            'position' => 1, 'quantity' => '1.0000', 'unit_price' => '100.00',
+        ]);
+
+        $this->linkedItem('50.0000');
+        $this->importPrice('60,00');       // Stamm: 40 % ≥ 30 %; Angebot zu 70: 14,3 % < 30 %
+
+        $alert = PricingChangeAlert::query()->sole();
+        $this->assertSame(['A-000077'], $alert->impacts['quotes']);
+        $this->assertSame(['AB-000012'], $alert->impacts['orders']);
+        $this->assertCount(1, $alert->impacts['document_margins']);
+        $entry = $alert->impacts['document_margins'][0];
+        $this->assertSame(['quotes', 'A-000077', 3], [$entry['group'], $entry['number'], $entry['position']]);
+        $this->assertEqualsWithDelta(70.0, $entry['unit_price'], 0.0001);
+        $this->assertEqualsWithDelta(14.286, $entry['margin'], 0.001);
+
+        $this->actingAs($this->admin)
+            ->get(route('supplier-catalogs.alerts'))
+            ->assertOk()
+            ->assertSee('A-000077')
+            ->assertSee('AB-000012');
+    }
+
+    /** MVP-1581: Gewichte des Gesamt-Scores je Organisation, Eingabe in Prozent. */
+    public function test_scorecard_weights_are_saved_per_organization(): void {
+        $service = app(\App\Services\Procurement\SupplierScorecardService::class);
+        $this->assertSame(0.35, $service->weights()['ontime']);
+
+        $this->actingAs($this->admin)->get(route('supplier-scorecards.weights.edit'))->assertOk();
+        $this->actingAs($this->admin)->put(route('supplier-scorecards.weights.update'), [
+            'weights' => ['ontime' => '50', 'complaints' => '25', 'quality' => '', 'price' => '0', 'recourse' => '12.5'],
+        ])->assertRedirect(route('supplier-scorecards.index'))->assertSessionHasNoErrors();
+
+        $settings = $this->organization->fresh()->settings;
+        $this->assertEqualsWithDelta(0.5, data_get($settings, 'scorecard.weight.ontime'), 0.00001);
+        $this->assertNull(data_get($settings, 'scorecard.weight.quality'));
+
+        app()->instance('currentOrganization', $this->organization->fresh());
+        $weights = $service->weights();
+        $this->assertEqualsWithDelta(0.5, $weights['ontime'], 0.00001);
+        $this->assertEqualsWithDelta(0.2, $weights['quality'], 0.00001); // Vorgabe
+        $this->assertEqualsWithDelta(0.0, $weights['price'], 0.00001);
+        $this->assertEqualsWithDelta(0.125, $weights['recourse'], 0.00001);
+
+        $this->actingAs($this->admin)->put(route('supplier-scorecards.weights.update'), [
+            'weights' => ['ontime' => '0', 'complaints' => '0', 'quality' => '0', 'price' => '0', 'recourse' => '0'],
+        ])->assertSessionHasErrors('weights');
+
+        $this->actingAs($this->admin)->get(route('supplier-scorecards.index'))->assertOk()->assertSee(__('scorecard.weights.action'));
+    }
 }

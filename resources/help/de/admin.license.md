@@ -1,7 +1,7 @@
 ---
 title: "Lizenzverwaltung"
 topic: admin.license
-version: 3
+version: 4
 keywords:
     - Lizenzschlüssel
     - Tarif
@@ -77,3 +77,5 @@ USt-IdNr. und Bestellzeichen für die Abrechnung durch den Betreiber. Dort
 fragen Sie auch einen anderen Tarif oder Zusatzmodule an; es gibt je
 Organisation eine offene Anfrage, die Sie zurückziehen können. Der Betreiber
 erledigt sie, indem er eine neue Lizenz ausstellt.
+
+**Limits:** Beim Ausstellen legen Sie neben der Nutzerzahl auch die Zahl der Organisationen einer Installation und das Speicherkontingent je Organisation in GB fest — in der Ausstellerkonsole und per Befehl mit --max-orgs und --storage-quota-gb. Eine Organisationslizenz trägt Nutzerzahl und Speicherkontingent. Ist ein Limit erreicht, lehnt WorkDiary die Anlage einer weiteren Organisation bzw. den weiteren Upload ab; unter „Limits“ sehen Sie die Auslastung.

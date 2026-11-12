@@ -200,35 +200,6 @@ class WeekViewService {
         return User::query()->whereIn('id', $ids)->orderBy('name')->get(['id', 'name']);
     }
 
-    /** @return Collection<int, User> */
-    public function usersInWeek(CarbonInterface $anchor): Collection {
-        $tz = Tz::current();
-        $start = CarbonImmutable::instance($anchor)->setTimezone($tz)->startOfWeek(Weekday::MONDAY->value)->startOfDay();
-        $end = $start->addDays(7);
-        $startUtc = $start->setTimezone('UTC');
-        $endUtc = $end->setTimezone('UTC');
-
-        $entryUserIds = DiaryEntry::query()
-            ->where('is_archived', false)
-            ->where(function ($q) use ($startUtc, $endUtc) {
-                $q->whereBetween('start_at', [$startUtc, $endUtc])
-                    ->orWhere(function ($q2) use ($startUtc, $endUtc) {
-                        $q2->whereNotNull('end_at')
-                            ->where('start_at', '<', $endUtc)
-                            ->where('end_at', '>', $startUtc);
-                    });
-            })
-            ->distinct()
-            ->pluck('user_id');
-
-        $shiftUserIds = OnCallShift::query()->overlapping($startUtc, $endUtc)->where('is_archived', false)->distinct()->pluck('user_id');
-        $assignUserIds = EmergencyAssignment::query()->overlapping($startUtc, $endUtc)->where('is_archived', false)->distinct()->pluck('user_id');
-
-        $ids = $entryUserIds->merge($shiftUserIds)->merge($assignUserIds)->filter()->unique()->values();
-
-        return User::query()->whereIn('id', $ids)->orderBy('name')->get(['id', 'name']);
-    }
-
     /**
      * Stabile Farbtonzuordnung pro Benutzer (HSL Hue 0–359). Spiegelt das Schema
      * wider, das auch die Wochenansicht für die Eintragsränder nutzt.

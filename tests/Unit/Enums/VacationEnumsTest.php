@@ -21,7 +21,7 @@ class VacationEnumsTest extends TestCase {
     }
 
     public function test_vacation_status_cases(): void {
-        $this->assertSame(['pending', 'approved', 'rejected', 'cancelled'], VacationStatus::values());
+        $this->assertSame(['pending', 'approved', 'rejected', 'cancelled', 'revision'], VacationStatus::values());
         foreach (VacationStatus::cases() as $case) {
             $this->assertNotSame('', $case->label());
             $this->assertNotSame('', $case->tone());

@@ -1,7 +1,7 @@
 ---
 title: "Personnel: vacation, sickness, qualifications, safety"
 topic: reports.personnel
-version: 8
+version: 9
 keywords:
     - absence rates
     - remaining vacation
@@ -200,6 +200,8 @@ gives all findings and the tile leads to the plan/actual tab **Project per
 person**. It only appears if there are findings in the period and only for
 administrators and people with the right **View presence report
 (organization)**.
+
+The **Human resources** area shows the **sick days** (working days) in the period as the **Sickness** report without filters, with sick notes, affected people and exhausted continued pay in the hint; the **expired qualifications** as the qualification matrix (as of today), with those expiring within 30 days in the hint; and the **open leave requests** (as of today), with those starting within the next 14 days in the hint. Sick days and qualifications require the Team reports add-on and the right **View sick leaves** or **Manage qualifications**, leave requests the right **Approve vacation**; administrators see all three. Overtime and flexitime balances are not shown here: there is no organisation-wide report in which the figure could be checked.
 
 The card **Recurring problems** collects the early warnings of the modules your
 organization uses, grouped by type:

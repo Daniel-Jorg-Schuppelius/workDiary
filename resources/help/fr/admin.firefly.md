@@ -1,7 +1,7 @@
 ---
 title: "Firefly III comme source de rapprochement"
 topic: admin.firefly
-version: 1
+version: 3
 keywords:
     - Firefly III
     - mouvements de compte
@@ -64,3 +64,9 @@ maintenant** lance tout de suite. **Déconnecter** arrête la synchronisation.
 - La vérification signale une adresse interne : l’adresse pointe vers votre réseau,
   mais **Autoriser les adresses privées** est désactivé ou non autorisé par
   l’exploitant.
+
+## Dans la vue d’ensemble
+
+La sélection **Rattachement** propose en plus **Ouverts (sans rattachement ou ambigus)**. Les mouvements sans rattachement ou au rattachement ambigu apparaissent dans la **file de travail** sous la forme d’un élément groupé chacun, et la tuile du tableau de bord **Mouvements financiers** les compte à côté des relevés bancaires et affiche les derniers mouvements. Les deux ne sont visibles que par l’administration et seulement tant que le plugin est activé.
+
+**Marquer comme traité :** les mouvements qui n’ont pas besoin de justificatif (frais de tenue de compte, prélèvement privé) se marquent comme traités avec un motif. Ils ne comptent alors plus dans la tuile « Mouvements financiers » ni dans la file de travail ; le filtre « Traités » les affiche et « Rouvrir » annule le marquage. La synchronisation ne change que l’affectation, jamais le traitement.

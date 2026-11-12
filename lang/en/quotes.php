@@ -40,6 +40,9 @@ return [
         'next_action' => 'Follow up on quote :number again',
         'wrong_status' => 'Only sent or approved quotes can be followed up.',
         'no_customer' => 'The quote has no customer — without one there is no file for the note.',
+        'owner_field' => 'Responsible for follow-up',
+        'owner_default' => 'Creator of the quote (default)',
+        'owner_hint' => 'Receives the reminder when the follow-up date is due and appears under “Mine only”.',
         'kpi' => [
             'due' => 'Due',
             'upcoming' => 'Upcoming',
@@ -114,7 +117,6 @@ return [
         'flash' => [
             'confirmed' => 'Order confirmation :number confirmed.',
             'cancelled' => 'Order confirmation cancelled.',
-            'create_first' => 'Please create the order confirmation first.',
         ],
         'error' => [
             'not_won' => 'Only accepted quotes are confirmed.',

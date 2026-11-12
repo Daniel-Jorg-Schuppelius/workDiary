@@ -1,7 +1,7 @@
 ---
 title: "GAEB-Leistungsverzeichnisse"
 topic: boq.overview
-version: 1
+version: 3
 keywords:
     - LV
     - LV importieren
@@ -71,3 +71,11 @@ Die **Prüfung vor der Abgabe** meldet zusätzlich Positionen, deren Preis in ei
 ## Bieterkommentare
 
 In der Angebotsaufforderung legt der Auftraggeber fest, ob Bieter Kommentare zu Positionen abgeben dürfen. Die LV-Ansicht zeigt, was die Datei dazu sagt. Sind Kommentare nicht zugelassen, übernimmt der Import keine Kommentare (das Importprotokoll nennt ihre Zahl), und das Angebot enthält keine. Ein Reimport des Angebots ändert die Vorgabe der Aufforderung nicht.
+
+## Fortschritt mit Beleg und Befunde des Imports
+
+Neben der schnellen Mengeneingabe öffnet das Maßband-Symbol einer Position den Dialog **Fortschritt melden**. Dort wählen Sie zusätzlich einen **Materialverbrauch** des Projekts oder ein **Protokoll** des Projekts. Der gewählte Beleg bestimmt die Quelle der Meldung und bleibt an ihr stehen; der Dialog zeigt die bisherigen Meldungen mit ihrem Bezug. Ein Materialverbrauch lässt sich genau einer Position zuordnen; seine Kosten zählen in der Wirtschaftlichkeitsauswertung zu dieser Position. Für eine reine Kostenzuordnung tragen Sie die Menge 0 ein.
+
+Die **Importhistorie** zeigt je Lauf die Befunde. Ein abgewiesener Reimport steht dort mit dem Status „Konflikt“ und nennt je geschützter Position Menge und Einheitspreis im Bestand neben den Werten der Datei. Am Leistungsverzeichnis selbst ändert er nichts.
+
+Auch am Protokoll selbst steht im Menü **Fortschritt zur LV-Position melden**, wenn das Projekt des Protokolls ein Leistungsverzeichnis mit offenen Positionen hat. Die Meldung erhält die Quelle „Protokoll“ und verweist auf dieses Protokoll.

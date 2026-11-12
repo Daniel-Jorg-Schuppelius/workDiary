@@ -16,8 +16,9 @@ use App\Enums\Sales\QuoteStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Sales\Quote;
+use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Invoicing\QuoteFollowUpService;
-use App\Support\{ErrorText, Setting};
+use App\Support\{ErrorText, Setting, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -124,27 +125,36 @@ class QuoteFollowUpController extends Controller {
         return back()->with('status', __('quotes.follow_up.recorded'));
     }
 
-    /** Dialog-Fragment „Nachfasstermin setzen". */
+    /** Dialog-Fragment „Nachfasstermin setzen" mit dem Zuständigen (Feature 112). */
     public function scheduleDialog(Quote $quote): View {
         Gate::authorize('followUp', $quote);
+        $owner = $quote->follow_up_user_id ?? $quote->created_by;
 
-        return view('quotes._follow_up_schedule_dialog', ['quote' => $quote]);
+        return view('quotes._follow_up_schedule_dialog', [
+            'quote' => $quote,
+            // Aktive Benutzer der Organisation; ein ausgeschiedener Zuständiger bleibt wählbar, bis er ersetzt ist.
+            'followUpUsers' => User::query()->where('organization_id', $quote->organization_id)
+                ->where(fn ($query) => $query->whereNull('deactivated_at')->orWhere('id', $owner))
+                ->orderBy('name')->get(['id', 'name']),
+        ]);
     }
 
-    /** Nachfasstermin setzen/verschieben, ohne ein Ergebnis zu protokollieren. */
+    /** Nachfasstermin setzen/verschieben und Zuständigen festlegen, ohne ein Ergebnis zu protokollieren. */
     public function schedule(Request $request, Quote $quote): RedirectResponse {
         Gate::authorize('followUp', $quote);
         /** @var User $user */
         $user = $request->user();
 
+        $request->merge(['follow_up_user_id' => Sqid::decodeOrNumeric(User::class, $request->input('follow_up_user_id'))]);
         $data = $request->validate([
             'follow_up_at' => ['required', 'date', 'after_or_equal:today'],
+            'follow_up_user_id' => ['nullable', 'integer', new ExistsInCurrentOrganization()],
         ]);
 
         $quote->forceFill([
             'follow_up_at' => $data['follow_up_at'],
             'followed_up_at' => null,
-            'follow_up_user_id' => $quote->follow_up_user_id ?? $user->id,
+            'follow_up_user_id' => $data['follow_up_user_id'] ?? $quote->follow_up_user_id ?? $user->id,
         ])->save();
 
         return back()->with('status', __('quotes.follow_up.scheduled'));

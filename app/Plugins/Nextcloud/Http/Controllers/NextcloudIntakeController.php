@@ -76,7 +76,7 @@ class NextcloudIntakeController extends Controller {
         // Aktiv erst mit Stammordner + aktiver Regel, sonst Entwurf.
         $ready = $connection->root_folder_path !== null && $connection->routes()->where('active', true)->exists();
         $connection->forceFill([
-            'status' => $ready ? CloudIntakeConnectionStatus::Active : CloudIntakeConnectionStatus::Draft,
+            'status' => $connection->readyStatus($ready),
         ])->save();
 
         $connection->audit('cloudIntake.connected', ['by_user_id' => (int) $admin->id, 'provider' => CloudIntakeProvider::Nextcloud->value]);

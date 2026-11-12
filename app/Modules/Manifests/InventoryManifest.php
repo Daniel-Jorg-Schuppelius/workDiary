@@ -48,6 +48,7 @@ final class InventoryManifest extends Manifest {
     public function tables(): array {
         return [
             'inventory_outbox',
+            'negative_stock_requests',
             'recall_items',
             'recalls',
             'stock_count_lines',
@@ -125,6 +126,7 @@ final class InventoryManifest extends Manifest {
     public function bindings(): array {
         return [
             \App\Services\Claims\Contracts\RmaStockHandler::class => \App\Services\Inventory\Claims\InventoryRmaStockHandler::class,
+            \App\Services\Article\Contracts\ArticleValuation::class => \App\Services\Inventory\ValuationMethodSwitch::class,
         ];
     }
 
@@ -142,6 +144,9 @@ final class InventoryManifest extends Manifest {
             ],
             \App\Services\Sync\Contracts\SyncCommandHandler::class => [
                 \App\Services\Inventory\Sync\StockCountSyncHandler::class,
+            ],
+            \App\Services\Approval\Contracts\ApprovalInboxSubject::class => [
+                \App\Services\Inventory\Approvals\NegativeStockInboxSubject::class,
             ],
         ];
     }

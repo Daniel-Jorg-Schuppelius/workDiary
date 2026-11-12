@@ -1,7 +1,7 @@
 ---
 title: "Audit packages & auditor links"
 topic: isms.packages
-version: 2
+version: 3
 keywords:
     - auditor access
     - auditor link
@@ -59,3 +59,5 @@ Risks and irreversible actions:
 Permissions: viewing requires ISMS read access; creation and
 maintenance require ISMS maintenance access. The auditor download uses
 a protected link and does not require a WorkDiary account.
+
+**Edit or discard a draft:** As long as a package is not finalised, you change title, scope, reference date and standard filter via “Edit package”, or discard the draft in the same dialog. Finalised packages stay immutable and cannot be deleted.

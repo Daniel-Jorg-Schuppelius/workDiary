@@ -12,9 +12,23 @@ declare(strict_types=1);
 
 namespace App\Enums\ServiceTicket;
 
+use App\Enums\Contracts\HasLabel;
+
 /** Versandstand einer Ticket-Antwort per E-Mail; ohne Empfänger bleibt die Spalte leer. */
-enum TicketMessageDeliveryStatus: string {
+enum TicketMessageDeliveryStatus: string implements HasLabel {
     case Queued = 'queued';
     case Sent = 'sent';
     case Failed = 'failed';
+
+    public function label(): string {
+        return (string) __('enums.service_ticket.ticket_message_delivery_status.' . $this->value);
+    }
+
+    public function tone(): string {
+        return match ($this) {
+            self::Queued => 'ghost',
+            self::Sent => 'success',
+            self::Failed => 'error',
+        };
+    }
 }

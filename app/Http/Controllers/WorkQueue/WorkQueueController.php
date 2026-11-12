@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\WorkQueue;
 
-use App\Enums\WorkQueue\WorkItemCategory;
+use App\Enums\WorkQueue\{WorkItemCategory, WorkItemDueFilter};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Services\WorkQueue\Dto\WorkItem;
@@ -41,6 +41,7 @@ class WorkQueueController extends Controller {
         $category = WorkItemCategory::tryFrom($request->string('category')->toString());
         $source = $request->string('source')->toString();
         $source = array_key_exists($source, $sources) ? $source : '';
+        $due = WorkItemDueFilter::tryFrom($request->string('due')->toString());
         $mine = $request->boolean('mine');
         [$sort, $dir] = SortableQuery::resolve($request, self::SORTS, 'urgency', 'asc');
 
@@ -48,6 +49,7 @@ class WorkQueueController extends Controller {
             $queue->itemsFor($viewer, $this->currentOrganization(), $sources, $now),
             static fn (WorkItem $item): bool => ($category === null || $sources[$item->source]->category() === $category)
                 && ($source === '' || $item->source === $source)
+                && ($due === null || $due->matches($item->dueAt, $now))
                 && (! $mine || $item->personal),
         ));
         // Die Dringlichkeit ist die Grundordnung des Vorrats; andere Spalten sortieren stabil darüber.
@@ -77,7 +79,7 @@ class WorkQueueController extends Controller {
             'now' => $now,
             // Über die Obergrenze je Quelle hinaus nur gezählt (perfc-06).
             'overflow' => (int) array_sum($queue->overflowFor($viewer, $this->currentOrganization(), $sources)),
-            'filters' => ['category' => $category->value ?? '', 'source' => $source, 'mine' => $mine],
+            'filters' => ['category' => $category->value ?? '', 'source' => $source, 'due' => $due->value ?? '', 'mine' => $mine],
             'sort' => $sort,
             'dir' => $dir,
         ]);

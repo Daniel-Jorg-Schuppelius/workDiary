@@ -48,6 +48,7 @@ class AiInvocationService implements AiInvoker {
         private readonly AiRoutingResolver $resolver,
         private readonly AiBudgetService $budget,
         private readonly AiProviderFactory $providers,
+        private readonly AiConnectionChoice $choice,
     ) {}
 
     public function invoke(
@@ -66,6 +67,8 @@ class AiInvocationService implements AiInvoker {
             ]));
         }
 
+        // Wahl aus der Vorschlagskomponente (MVP-1590), wenn der Aufrufer keine Verbindung nennt.
+        $requestedConnectionId ??= $this->choice->for($capabilityKey);
         $candidates = $this->resolver->resolveCandidates($organization, $capabilityKey, $requestedConnectionId);
 
         $lastError = null;
@@ -74,7 +77,7 @@ class AiInvocationService implements AiInvoker {
 
             $cached = $this->fromCache(Cache::get($cacheKey));
             if ($cached !== null) {
-                return $this->wrap($organization, $capability, $connection, $cached, $index > 0, true);
+                return $this->wrap($organization, $capability, $connection, $cached, $index > 0, true, $requestedConnectionId);
             }
 
             $this->budget->assertWithinBudget($organization, $connection->family, $request->estimatedUnits());
@@ -101,7 +104,7 @@ class AiInvocationService implements AiInvoker {
 
             Cache::put($cacheKey, $this->cacheable($result), now()->addDays(max(1, (int) config('ai.cache_ttl_days', 7))));
 
-            return $this->wrap($organization, $capability, $connection, $result, $index > 0, false);
+            return $this->wrap($organization, $capability, $connection, $result, $index > 0, false, $requestedConnectionId);
         }
 
         if ($lastError !== null && ! $lastError instanceof AiException) {
@@ -145,6 +148,7 @@ class AiInvocationService implements AiInvoker {
         AiTextResult|AiClassificationResult|AiFindResult|AiTranslationResult|AiExtractionResult $result,
         bool $fallbackUsed,
         bool $fromCache,
+        ?int $requestedConnectionId = null,
     ): AiInvocationResult {
         // Audit ohne Prompt-/Antwort-Klartext (Feature 025, Leitprinzip 8);
         // Cache-Treffer erzeugen keinen neuen Provider-Kontakt und werden
@@ -163,6 +167,9 @@ class AiInvocationService implements AiInvoker {
                     'provider' => $connection->provider->value,
                     'prompt_version' => $capability->promptVersion,
                     'fallback_used' => $fallbackUsed,
+                    // Nutzerwahl der Verbindung (Feature 025): gewählt und ob sie auch geantwortet hat.
+                    'connection_chosen' => $requestedConnectionId !== null,
+                    'chosen_connection_id' => $requestedConnectionId,
                 ],
             ]);
         }

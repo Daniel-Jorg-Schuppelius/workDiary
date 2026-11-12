@@ -225,7 +225,7 @@ class TravelLogController extends Controller {
         $filename = sprintf('travel-logs-%s_%s.csv', $from->format('Y-m-d'), $to->format('Y-m-d'));
 
         $logs = TravelLog::query()
-            ->with(['project:id,name,slug,customer_id', 'customer:id,name,slug'])
+            ->with(['project:id,name,slug,customer_id', 'customer:id,name,slug', 'vehicleEntity:id,license_plate,label'])
             ->where('user_id', Auth::id())
             ->whereBetween('date', DateRange::days($from, $to))
             ->orderBy('date')
@@ -241,6 +241,7 @@ class TravelLogController extends Controller {
                     NumberHelper::toGermanFormat((float) $log->distance_km, 2),
                     $log->round_trip ? 'ja' : 'nein',
                     $log->vehicle->value,
+                    $log->vehicleEntity?->displayName() ?? (string) $log->vehicle_label,
                     NumberHelper::toGermanFormat((float) ($log->rate_per_km ?? 0), 4),
                     NumberHelper::toGermanFormat((float) $log->reimbursement_total, 2),
                     $log->project->name ?? '',
@@ -258,6 +259,7 @@ class TravelLogController extends Controller {
             'KM',
             'Hin/Rück',
             'Fahrzeug',
+            'Kennzeichen',
             'Satz €/km',
             'Erstattung €',
             'Projekt',

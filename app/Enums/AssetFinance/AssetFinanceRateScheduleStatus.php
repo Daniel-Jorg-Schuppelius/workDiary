@@ -19,9 +19,6 @@ enum AssetFinanceRateScheduleStatus: string implements HasLabel {
     case Planned = 'planned';
     case Paid = 'paid';
 
-    /** Im Schema vorgesehen, heute von keinem Code geschrieben. */
-    case Overdue = 'overdue';
-
     public function label(): string {
         return (string) __('values.' . $this->value);
     }

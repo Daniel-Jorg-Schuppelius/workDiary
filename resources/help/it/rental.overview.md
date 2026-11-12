@@ -1,7 +1,7 @@
 ---
 title: "Noleggio attrezzature"
 topic: rental.overview
-version: 6
+version: 9
 keywords:
     - locatore
     - casa vacanze
@@ -42,6 +42,27 @@ Il referente viene precompilato dal cliente al momento della scelta e resta modi
 **Consegna e restituzione:** protocolli separati documentano stato,
 accessori, contatori, foto e firma; la restituzione porta la decisione
 successiva (pulizia, riparazione/blocco, reclamo).
+
+**Voci del verbale:** i moduli di consegna e restituzione registrano, oltre
+allo stato generale, una lista di controllo, gli accessori, singole voci di
+stato e, alla restituzione, il consumo. Punti di controllo e accessori
+provengono dal profilo di noleggio; deselezioni un accessorio mancante. La
+pratica mostra le voci sotto «Mostra le voci», e così il portale clienti,
+senza osservazioni interne.
+
+**Stato minimo:** nel profilo di noleggio Lei definisce la sede di
+appartenenza, lo stato minimo e lo stato attuale. Ogni restituzione riprende
+lo stato dal verbale. Se è inferiore al minimo, l'apparecchio non può essere
+prenotato né usato come sostituto finché Lei non adegua lo stato nel profilo
+dopo la riparazione.
+
+**Pulizia:** «Pulizia necessaria» nel verbale di restituzione crea una
+finestra di pulizia; durante questa l'apparecchio non può essere assegnato.
+«Pulizia completata» nella pratica lo libera prima della fine della finestra.
+
+**Prenotazioni provvisorie:** se un'altra pratica ha una prenotazione
+provvisoria nel periodo, la pratica mostra un avviso con le pratiche
+interessate. La prenotazione resta possibile.
 
 **Fatturazione:** le voci vengono approvate e fatturate localmente o
 trasferite al sistema di fatturazione principale. La cauzione è
@@ -97,3 +118,9 @@ fornitore di pagamento:
   contabilizzazione (stornare e contabilizzare di nuovo). Per questo
   l’assegnazione dei conti richiede il ruolo «Acconti ricevuti» (incluso nei
   modelli SKR03 e SKR04).
+
+**Condizione minima alla consegna:** la condizione minima del profilo di noleggio vale anche alla consegna. Se la condizione è peggiorata dopo la prenotazione, WorkDiary rifiuta la consegna finché l’apparecchio non è riparato e la condizione aggiornata nel profilo.
+
+## Condonare una cauzione
+
+Una cauzione richiesta e non ancora ricevuta può essere **condonata** con una motivazione. Mostra poi **Rinunciato**; la motivazione è annotata nel registro del noleggio.

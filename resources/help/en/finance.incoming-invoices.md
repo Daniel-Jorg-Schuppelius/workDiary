@@ -1,7 +1,7 @@
 ---
 title: "Incoming invoices"
 topic: finance.incoming-invoices
-version: 8
+version: 9
 keywords:
     - several tax rates
     - supplier invoice
@@ -326,6 +326,22 @@ as evidence after approval; a second call changes nothing.
 **XML download:** The invoice XML can be extracted from the original at any
 time (for ZUGFeRD from the PDF attachment). Every download is logged with a
 checksum as evidence.
+
+## Tax case
+
+For incoming invoices the **Receipt** card shows the **tax case**: input tax
+from the invoice, reverse charge under § 13b UStG ((1) for services from
+another EU country, (2) e.g. for construction services, building cleaning,
+scrap, mobile phones and work deliveries by foreign businesses) or
+intra-Community acquisition. WorkDiary determines it from the tax category of
+the e-invoice (`AE` reverse charge, `K` intra-Community acquisition) and the
+supplier's country, otherwise from the preset **Tax case of its incoming
+invoices** on the supplier – as long as the invoice shows no tax. **Change tax
+case** sets it manually; **Automatic** returns to the determination. The tax
+case applies to the next posting in local accounting: if the invoice is already
+there as a draft or entry, first discard the draft or reverse the entry. Enter
+a reduced rate – e.g. 7 % when acquiring books – in the **Enter values**
+dialog; without a rate the standard rate applies.
 
 ## Embedded documents
 

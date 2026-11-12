@@ -14,7 +14,7 @@ namespace App\Services\Contract;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Contract\ContractSigningRevision;
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, IssuerIdentity};
 use App\Services\UI\BrandingService;
 use App\Support\DocumentLocale;
 
@@ -31,17 +31,22 @@ class SigningCertificatePdfRenderer {
         $revision->loadMissing(['contract.customer', 'contract.organization', 'manifestItems', 'requests.evidences', 'evidences']);
         $contract = $revision->contract;
 
+        $payload = $this->payload($revision);
+
         return DocumentLocale::within($contract?->customer, $contract?->organization, fn (): string => $this->design->renderPdf(
             RenderDocumentKind::SigningCertificate,
             'contracts.signing.certificate-pdf',
-            $this->viewData($revision),
+            $this->viewData($revision, $payload),
             $contract?->organization,
-            payload: $contract?->organization === null ? null : $this->design->payloadFor($contract->organization, RenderDocumentKind::SigningCertificate, (int) $contract->customer_id),
+            payload: $payload,
         ));
     }
 
-    /** @return array<string, mixed> */
-    public function viewData(ContractSigningRevision $revision): array {
+    /**
+     * @param array<string, mixed>|null $payload
+     * @return array<string, mixed>
+     */
+    public function viewData(ContractSigningRevision $revision, ?array $payload = null): array {
         $contract = $revision->contract;
 
         return [
@@ -50,7 +55,21 @@ class SigningCertificatePdfRenderer {
             'items' => $revision->manifestItems,
             'requests' => $revision->requests,
             'orgLegal' => app(BrandingService::class)->legalFor($contract?->organization),
-            'design' => $this->design->context($contract?->organization === null ? null : $this->design->payloadFor($contract->organization, RenderDocumentKind::SigningCertificate, (int) $contract->customer_id)),
+            // Aussteller nach Blockzustand (MVP-1624); vorher abgeschlossene Fassungen bleiben, wie sie waren.
+            'design' => $this->design->contextForDocument($revision, RenderDocumentKind::SigningCertificate, $payload ?? $this->payload($revision), finalized: $revision->completed_at !== null),
+            'issuer' => IssuerIdentity::for($contract?->organization),
         ];
+    }
+
+    /**
+     * Gestaltung beim Abschluss eingefroren, sonst das aktive Profil für den Kunden.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function payload(ContractSigningRevision $revision): ?array {
+        $contract = $revision->contract;
+
+        return $this->design->payloadFromSnapshot($revision, RenderDocumentKind::SigningCertificate)
+            ?? ($contract?->organization === null ? null : $this->design->payloadFor($contract->organization, RenderDocumentKind::SigningCertificate, (int) $contract->customer_id));
     }
 }

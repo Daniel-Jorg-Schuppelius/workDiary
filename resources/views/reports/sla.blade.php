@@ -157,6 +157,12 @@
                             @if ($q['over'] > 0)
                                 <span class="text-error"> · {{ __('sla.report.quota_over', ['min' => $q['over']]) }}</span>
                             @endif
+                            @if (($q['flat_fee'] ?? null) !== null)
+                                · {{ __('sla.quota.flat_fee') }}: {{ $q['flat_fee'] }}
+                            @endif
+                            @if (($q['overage_amount'] ?? null) !== null)
+                                · {{ __('sla.quota.overage_amount') }}: {{ $q['overage_amount'] }}
+                            @endif
                         </div>
                     </div>
                 @endforeach
@@ -186,14 +192,16 @@
                 @foreach ($violations as $v)
                     <tr class="hover">
                         <td class="font-mono text-xs">
-                            @if ($v->serviceTicket)
+                            @if ($v->serviceTicket && Gate::denies('view', $v->serviceTicket))
+                                <span class="font-sans text-muted">{{ __('helpdesk.confidentiality.masked') }}</span>
+                            @elseif ($v->serviceTicket)
                                 <a href="{{ route('service-tickets.show', $v->serviceTicket) }}" class="link link-hover">{{ $v->serviceTicket->ticket_no }}</a>
                             @else
                                 —
                             @endif
                         </td>
                         <td>{{ $v->kind->label() }}</td>
-                        <td class="text-base-content/70">{{ $v->serviceTicket?->customer?->name ?: '—' }}</td>
+                        <td class="text-base-content/70">{{ $v->serviceTicket && Gate::denies('view', $v->serviceTicket) ? __('helpdesk.confidentiality.masked') : ($v->serviceTicket?->customer?->name ?: '—') }}</td>
                         <td class="text-base-content/70 text-xs">{{ $v->target_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</td>
                         <td class="text-base-content/70 text-xs">{{ $v->breached_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</td>
                         <td class="text-right tabular-nums">{{ $v->overdue_minutes }}</td>

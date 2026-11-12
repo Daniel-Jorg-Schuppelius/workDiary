@@ -47,10 +47,14 @@
                 </td>
                 @if ($canManage)
                     <td class="text-right">
-                        <x-action-form :action="route('appointments.services.toggle', $service)">
-                            <x-icon-btn :icon="$service->active ? 'pause' : 'play_arrow'" size="sm" type="submit"
-                                        :label="$service->active ? __('Deaktivieren') : __('Aktivieren')" />
-                        </x-action-form>
+                        <div class="flex justify-end gap-1">
+                            <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger
+                                        :href="route('appointments.services.edit', $service)" :label="__('Bearbeiten')" />
+                            <x-action-form :action="route('appointments.services.toggle', $service)">
+                                <x-icon-btn :icon="$service->active ? 'pause' : 'play_arrow'" size="sm" type="submit"
+                                            :label="$service->active ? __('Deaktivieren') : __('Aktivieren')" />
+                            </x-action-form>
+                        </div>
                     </td>
                 @endif
             </tr>

@@ -14,7 +14,7 @@ namespace App\Http\Controllers\AssetCompliance;
 
 use App\Enums\AssetCompliance\{AssetInspectionResult, AssetInspectionScheduleStatus};
 use App\Http\Controllers\Controller;
-use App\Models\AssetCompliance\{AssetComplianceAssignment, AssetComplianceProfile, AssetComplianceRequirement, AssetInspectionSchedule};
+use App\Models\AssetCompliance\{AssetComplianceAssignment, AssetComplianceProfile, AssetComplianceRequirement, AssetInspectionEvent, AssetInspectionSchedule};
 use App\Models\Contacts\ExternalContact;
 use App\Models\Platform\User;
 use App\Rules\ExistsInCurrentOrganization;
@@ -43,7 +43,7 @@ class AssetInspectionController extends Controller {
 
         return view('asset-compliance.schedules', [
             'schedules' => AssetInspectionSchedule::query()
-                ->with(['asset', 'assignment.profile', 'inspector', 'externalContact'])
+                ->with(['asset', 'assignment.profile.requirements', 'inspector', 'externalContact'])
                 ->when($statusValue !== null, fn($q) => $q->where('status', $statusValue), fn($q) => $q->open())
                 ->orderBy('due_on')
                 ->paginate(50)
@@ -56,6 +56,12 @@ class AssetInspectionController extends Controller {
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'externalContacts' => ExternalContact::query()->orderBy('name')->limit(200)->get(['id', 'name']),
             'results' => AssetInspectionResult::cases(),
+            // Prüfprotokolle mit Ergebniszeilen und Roh-Messwerten (MVP-1575).
+            'events' => AssetInspectionEvent::query()
+                ->with(['asset:id,name', 'assignment.profile', 'performer:id,name', 'results', 'measurements', 'certificate'])
+                ->latest('performed_at')
+                ->limit(20)
+                ->get(),
         ]);
     }
 
@@ -93,6 +99,27 @@ class AssetInspectionController extends Controller {
         ]);
 
         return back()->with('status', __('Prüftermin geplant.'));
+    }
+
+    public function cancelForm(AssetInspectionSchedule $schedule): View {
+        Gate::authorize('create', AssetComplianceProfile::class);
+
+        return view('asset-compliance._schedule_cancel_dialog', ['schedule' => $schedule->load(['asset:id,name', 'assignment.profile'])]);
+    }
+
+    /** Prüftermin stornieren (MVP-1575). */
+    public function cancel(Request $request, AssetInspectionSchedule $schedule): RedirectResponse {
+        Gate::authorize('create', AssetComplianceProfile::class);
+
+        $data = $request->validate(['cancel_reason' => ['required', 'string', 'min:3', 'max:500']]);
+
+        try {
+            $this->service->cancelSchedule($schedule, $request->user(), (string) $data['cancel_reason']);
+        } catch (\InvalidArgumentException $e) {
+            return back()->withErrors(['cancel_reason' => ErrorText::for($e)]);
+        }
+
+        return redirect()->toList('asset-compliance.schedules.index')->with('status', __('asset_compliance.schedule.cancelled'));
     }
 
     /** Prüfung erfassen (MVP-286/287) mit Folgeentscheidung (MVP-289). */

@@ -1,7 +1,7 @@
 ---
 title: "Paquets d'audit et liens auditeur"
 topic: isms.packages
-version: 2
+version: 3
 keywords:
     - accès auditeur
     - lien pour l'auditeur
@@ -37,3 +37,5 @@ bloquées) et l'état des données correspond au moment de la finalisation ;
 le lien complet ne s'affiche **qu'une seule fois** à la création. Le
 La vue auditeur et le
 téléchargement passent par un lien protégé, sans compte WorkDiary.
+
+**Modifier ou abandonner un brouillon :** tant qu’un dossier n’est pas finalisé, vous modifiez le titre, le périmètre, la date de référence et le filtre de norme via « Modifier le dossier », ou abandonnez le brouillon dans la même boîte. Les dossiers finalisés restent immuables et ne peuvent pas être supprimés.

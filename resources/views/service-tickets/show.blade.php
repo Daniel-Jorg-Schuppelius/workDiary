@@ -24,18 +24,33 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$ticket->title"
                         back-route="service-tickets.index" :back-label="__('Zurück')">
-            @can('delete', $ticket)
-                <x-slot:actions>
+            <x-slot:actions>
+                @if ($canUpdate && ! $externallyLed)
+                    <x-icon-btn icon="swap_horiz" tone="primary" size="sm" data-entry-modal-trigger
+                                :href="route('service-tickets.status-form', $ticket)" show-label>{{ __('Status ändern') }}</x-icon-btn>
+                @endif
+                <x-claim-open-link :params="['ticket' => $ticket->sqid]" />
+                @if ($ticket->is_major)
+                    <x-crisis-open-link from="service_ticket" :source="$ticket->sqid" />
+                @endif
+                @can('delete', $ticket)
                     <x-action-form :action="route('service-tickets.destroy', $ticket)" method="DELETE" :confirm="__('Ticket wirklich löschen?')"
                                    confirm-icon="delete" confirm-tone="error" :confirm-label="__('Löschen')">
                         <x-icon-btn placement="danger" icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
                     </x-action-form>
-                </x-slot:actions>
-            @endcan
+                @endcan
+            </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 
     @include('customer-intakes._origin', ['subject' => $ticket])
+
+    @if ($externallyLed)
+        <div role="note" class="alert alert-warning text-sm" data-ticket-external>
+            <x-icon name="cloud_sync" />
+            <span>{{ __('helpdesk.external.banner', ['queue' => $ticket->queue?->name]) }}</span>
+        </div>
+    @endif
 
     <x-card>
         <div class="flex flex-wrap items-center gap-3">
@@ -43,6 +58,9 @@
             <x-status-badge tone="plain" size="md">{{ $ticket->priority->label() }}</x-status-badge>
             <x-status-badge size="md" outline>{{ $ticket->status->label() }}</x-status-badge>
             <x-status-badge tone="ghost" size="md">{{ $ticket->source->label() }}</x-status-badge>
+            @if ($ticket->confidentiality === \App\Models\ServiceTicket\ServiceTicket::CONFIDENTIALITY_RESTRICTED)
+                <x-status-badge tone="warning" size="md" data-ticket-confidential><x-icon name="lock" class="text-[14px]" /> {{ __('helpdesk.confidentiality.restricted') }}</x-status-badge>
+            @endif
             <span class="ml-auto {{ $slaStatus->textClass() }} font-medium">
                 <x-icon name="timer" class="align-middle text-[16px]" />
                 {{ $slaStatus->label() }}
@@ -66,10 +84,23 @@
             <x-detail-grid.row :label="__('Lösung bis')">{{ $resDue?->translatedFormat('d.m.Y H:i') ?: '—' }}</x-detail-grid.row>
             <x-detail-grid.row :label="__('Asset')">{{ $ticket->asset?->name ?: '—' }}</x-detail-grid.row>
             <x-detail-grid.row :label="__('Kunde')">{{ $ticket->customer?->name ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('helpdesk.queue.label')">{{ $ticket->queue?->name ?: '—' }} · {{ $ticket->kind->label() }}</x-detail-grid.row>
             @if ($ticket->businessService || $services->isNotEmpty())
                 <x-detail-grid.row :label="__('helpdesk.service.label')">{{ $ticket->businessService?->name ?: '—' }}@if ($ticket->serviceOffering) · {{ $ticket->serviceOffering->name }}@endif</x-detail-grid.row>
             @endif
         </x-detail-grid>
+
+        @if ($ticket->close_code || $ticket->resolution_summary)
+            <div class="mt-4" data-ticket-resolution>
+                <div class="text-xs uppercase text-muted mb-1">{{ __('helpdesk.status.resolution') }}</div>
+                @if ($ticket->close_code)
+                    <x-status-badge tone="ghost" size="sm">{{ $ticket->close_code->label() }}</x-status-badge>
+                @endif
+                @if ($ticket->resolution_summary)
+                    <div class="prose prose-sm max-w-none whitespace-pre-wrap mt-1">{{ $ticket->resolution_summary }}</div>
+                @endif
+            </div>
+        @endif
 
         @if ($ticket->description)
             <div class="mt-4">
@@ -78,6 +109,8 @@
             </div>
         @endif
     </x-card>
+
+    @include('service-tickets._service_request')
 
     {{-- Materialvorschlag (MVP-1284): fällige Verschleißteile des Geräts am Ticket. --}}
     @if ($ticket->asset)
@@ -141,24 +174,14 @@
                 @if ($services->isNotEmpty())
                     @include('service-tickets._service_fields', ['selectedService' => $ticket->businessService?->sqid, 'selectedOffering' => $ticket->serviceOffering?->sqid])
                 @endif
+                <x-select-field name="confidentiality" id="ticket-confidentiality" :label="__('helpdesk.confidentiality.label')" :hint="__('helpdesk.confidentiality.hint')">
+                    <option value="normal" @selected($ticket->confidentiality !== 'restricted')>{{ __('helpdesk.confidentiality.normal') }}</option>
+                    <option value="restricted" @selected($ticket->confidentiality === 'restricted')>{{ __('helpdesk.confidentiality.restricted') }}</option>
+                </x-select-field>
                 <x-textarea-field name="workaround" id="ticket-workaround" :label="__('Workaround')" rows="2" span="3" :value="$ticket->workaround" />
                 <div class="md:col-span-3">
                     <x-button tone="primary" size="sm" type="submit">{{ __('Klassifizieren') }}</x-button>
                 </div>
-            </form>
-        </x-card>
-
-        <x-card>
-            <h3 class="font-semibold mb-3">{{ __('Status ändern') }}</h3>
-            <form method="POST" action="{{ route('service-tickets.transition', $ticket) }}" class="flex flex-wrap items-end gap-2">
-                @csrf
-                <select name="status" class="select select-sm select-bordered">
-                    @foreach ($statusOptions as $val => $label)
-                        <option value="{{ $val }}" @selected($ticket->status->value === $val)>{{ $label }}</option>
-                    @endforeach
-                </select>
-                <x-button tone="primary" size="sm" type="submit">{{ __('Übernehmen') }}</x-button>
-                @error('status')<p class="text-error text-xs w-full">{{ $message }}</p>@enderror
             </form>
         </x-card>
     @endif
@@ -191,7 +214,7 @@
     <x-card :title="__('Verlauf')" icon="history">
         @include('service-tickets._timeline')
 
-        @if ($canUpdate)
+        @if ($canUpdate && ! $externallyLed)
             <form method="POST" action="{{ route('helpdesk.tickets.reply', $ticket) }}" enctype="multipart/form-data" class="mt-3">
                 @csrf
                 <label class="fieldset-label" for="reply-body">{{ __('Antwort (kundensichtbar)') }}</label>

@@ -13,11 +13,10 @@ namespace Tests\Feature\Classification;
 use App\Enums\Classification\ClassificationDomain;
 use App\Enums\User\UserRole;
 use App\Models\Classification\Classification;
-use App\Services\Classification\ClassificationManager;
 use Database\Seeders\ClassificationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\{DB, Schema};
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -156,22 +155,25 @@ class ClassificationAdminControllerTest extends TestCase {
             ->domain(ClassificationDomain::Activity)
             ->create(['code' => 'referenced_activity']);
 
-        Schema::create('classification_refs', function ($table): void {
-            $table->id();
-            $table->unsignedBigInteger('classification_id');
-        });
+        DB::table('classifiables')->insert([
+            'classification_id' => $classification->id,
+            'classifiable_type' => 'customers',
+            'classifiable_id' => 1,
+        ]);
 
-        DB::table('classification_refs')->insert(['classification_id' => $classification->id]);
-        app(ClassificationManager::class)->registerReference(ClassificationDomain::Activity, 'classification_refs', 'classification_id');
+        $this->actingAs($user)
+            ->delete(route('admin.classifications.destroy', $classification))
+            ->assertRedirect(route('admin.classifications.index'))
+            ->assertSessionHas('error');
+        // Die Meldung nennt, wo der Wert benutzt wird, und den Ausweg.
+        $this->assertStringContainsString(__('classification.reference.classifiables') . ': 1', (string) session('error'));
 
-        try {
-            $this->actingAs($user)
-                ->delete(route('admin.classifications.destroy', $classification))
-                ->assertRedirect(route('admin.classifications.index'))
-                ->assertSessionHas('error');
-        } finally {
-            Schema::dropIfExists('classification_refs');
-        }
+        $this->actingAs($user)
+            ->post(route('admin.classifications.deactivate', $classification))
+            ->assertRedirect(route('admin.classifications.index'))
+            ->assertSessionHas('success');
+        $this->assertFalse($classification->refresh()->active);
+        $this->assertNotNull($classification->deprecated_at);
 
         $this->assertDatabaseHas('classifications', ['id' => $classification->id]);
     }

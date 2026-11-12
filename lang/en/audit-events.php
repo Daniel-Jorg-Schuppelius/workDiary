@@ -26,6 +26,8 @@ return [
         'retired' => 'Access medium retired',
     ],
     'appointment' => [
+        'party_assigned' => 'Appointment request assigned',
+        'service_updated' => 'Bookable service changed',
         'proposed' => 'Alternative appointment proposed',
         'proposal_accepted' => 'Alternative appointment accepted',
         'proposal_declined' => 'Alternative appointment declined',
@@ -49,6 +51,8 @@ return [
         'synced' => 'Asana synced manually',
     ],
     'firefly' => [
+        'transaction_settled' => 'Firefly III: movement settled',
+        'transaction_reopened' => 'Firefly III: movement reopened',
         'connected' => 'Firefly III connection checked',
         'disconnected' => 'Firefly III disconnected',
     ],
@@ -165,6 +169,7 @@ return [
     ],
     'sepaMandate' => [
         'revoked' => 'SEPA mandate revoked',
+        'expired' => 'SEPA mandate expired (36 months without collection)',
     ],
     'circular' => [
         'send_started' => 'Circular dispatch started',
@@ -200,6 +205,7 @@ return [
     ],
     'archived' => 'Archived',
     'asset' => [
+        'recommissioned' => 'Asset returned to service',
         'blockExceptionGranted' => 'Asset block exception granted',
         'blockExceptionRevoked' => 'Asset block exception revoked',
         'blocked' => 'Asset blocked',
@@ -209,6 +215,7 @@ return [
         'decommissioned' => 'Asset decommissioned',
         'defectReported' => 'Asset defect reported',
         'defectUpdated' => 'Asset defect updated',
+        'healthChanged' => 'Asset condition changed',
         'moved' => 'Asset moved',
         'ownershipTransferred' => 'Asset ownership transferred',
         'ownership_changed' => 'Asset ownership changed',
@@ -226,11 +233,16 @@ return [
     ],
     'assetCompliance' => [
         'assigned' => 'Compliance profile assigned',
+        'assignmentDeactivated' => 'Inspection duty deactivated',
+        'assignmentReactivated' => 'Inspection duty resumed',
+        'assignmentUpdated' => 'Inspection duty changed',
         'claimOpened' => 'Compliance: claim opened',
         'decommissionRequested' => 'Decommission requested',
         'inspected' => 'Asset inspected',
         'measurementImported' => 'Inspection measurement imported',
         'restrictedUse' => 'Use restricted',
+        'scheduleCancelled' => 'Inspection date cancelled',
+        'scheduleMissed' => 'Inspection date missed',
     ],
     'assetDefect' => [
         'reported' => 'Defect reported',
@@ -284,6 +296,7 @@ return [
         'connected' => 'Backup target connected',
         'disconnected' => 'Backup target disconnected',
         'scopeBlocked' => 'Backup target: scope blocked',
+        'statusChanged' => 'Backup target: status changed',
     ],
     'branch_profile' => [
         'installed' => 'Branch profile installed',
@@ -296,6 +309,8 @@ return [
         'publish_manual' => 'CalDAV published manually',
     ],
     'calendly' => [
+        'user_mapped' => 'Calendly user mapped',
+        'user_unmapped' => 'Calendly user mapping removed',
         'booking_link_created' => 'Calendly booking link created',
         'cancel_synced' => 'Calendly cancellation synced',
         'subscribed' => 'Calendly webhook subscribed',
@@ -333,6 +348,9 @@ return [
         'connected' => 'Cloud document intake connected',
         'disconnected' => 'Cloud document intake disconnected',
         'folderSelected' => 'Cloud intake folder selected',
+        'startConfirmed' => 'Cloud intake start confirmed',
+        'statusChanged' => 'Cloud document intake: status changed',
+        'scopeBlocked' => 'Cloud document intake: permission missing, blocked',
     ],
     'collection' => [
         'imported' => 'Content imported into collection',
@@ -457,6 +475,7 @@ return [
         'communication_approved' => 'Crisis communication approved',
         'communication_sent' => 'Crisis communication sent',
         'exercise_documented' => 'Crisis exercise documented',
+        'deadline_template_created' => 'Crisis reporting deadline created',
         'linked' => 'Crisis case linked',
         'reported' => 'Crisis case reported',
         'reviewed' => 'Crisis review completed',
@@ -496,6 +515,8 @@ return [
     'diagnostics' => [
         'testTriggered' => 'Diagnostics test triggered',
         'viewed' => 'Diagnostics viewed',
+        'tokenCreated' => 'Monitoring access created',
+        'tokenRevoked' => 'Monitoring access revoked',
     ],
     'document' => [
         'purged' => 'Document purged',
@@ -565,6 +586,8 @@ return [
         'created' => 'Guarantee recorded',
         'returned' => 'Guarantee returned',
         'drawn' => 'Guarantee drawn',
+        'expired' => 'Guarantee expired',
+        'reactivated' => 'Guarantee active again after extension',
         'secured_retention' => 'Guarantee replaces a retention',
     ],
     'idea_map' => [
@@ -593,6 +616,7 @@ return [
         'candidate_dismissed' => 'Handover created despite a match',
         'direction_corrected' => 'Incoming document direction corrected',
         'values_captured' => 'Incoming document values recorded',
+        'tax_case_set' => 'Incoming document tax case set',
         'reanalyzed' => 'Incoming document recognised again',
         'revalidated' => 'Incoming document checked again',
         'assigned' => 'Incoming invoice assigned',
@@ -617,6 +641,8 @@ return [
         'conflict_resolved' => 'External system conflict resolved',
         'data_ownership_changed' => 'Data ownership changed',
         'inbox_resolved' => 'Inbox item resolved',
+        'ownership_blocked' => 'Write attempt held back by data ownership',
+        'ownership_overridden' => 'Data ownership conflict taken over',
         'settings_changed' => 'Integration settings changed',
     ],
     'integrity' => [
@@ -626,8 +652,13 @@ return [
         'lockdown_released' => 'Integrity lockdown released',
     ],
     'inventory' => [
+        'negativeRequested' => 'Negative stock requested',
+        'negativeRejected' => 'Negative stock rejected',
+        'reservationRedistributed' => 'Reservation redistributed',
         'mode_changed' => 'Inventory mode changed',
         'negativeApproved' => 'Negative stock approved',
+        'countApproved' => 'Stock count differences approved',
+        'countStatusChanged' => 'Stocktake: status changed',
     ],
     'stock_lot' => [
         'blocked' => 'Lot blocked',
@@ -646,6 +677,7 @@ return [
         'deviation_decided' => 'Investment deviation decided',
         'linked' => 'Investment linked',
         'option_recommended' => 'Investment option recommended',
+        'acquisition_supplier_set' => 'Acquisition supplier taken from the investment',
         'proposed' => 'Investment proposed',
         'reviewed' => 'Investment reviewed',
     ],
@@ -661,6 +693,7 @@ return [
         'retention_released' => 'Retention released',
         'retention_secured' => 'Retention replaced by a guarantee',
         'approved' => 'Invoice approved',
+        'approval_revoked' => 'Approval revoked by a change to the draft',
         'dunned' => 'Invoice dunned',
         'dunningBlocked' => 'Dunning block set',
         'dunningUnblocked' => 'Dunning block removed',
@@ -681,6 +714,8 @@ return [
             'transitioned' => 'ISMS audit: status changed',
         ],
         'audit_package' => [
+            'updated' => 'Audit package draft changed',
+            'deleted' => 'Audit package draft discarded',
             'created' => 'Audit package created',
             'finalized' => 'Audit package finalized',
             'token_created' => 'Audit package token created',
@@ -863,6 +898,12 @@ return [
         'vehicle_profile_updated' => 'Vehicle profile updated',
     ],
     'patrol' => [
+        'route_updated' => 'Patrol route changed',
+        'route_activated' => 'Patrol route activated',
+        'route_deactivated' => 'Patrol route deactivated',
+        'checkpoint_updated' => 'Checkpoint changed',
+        'checkpoint_deactivated' => 'Checkpoint deactivated',
+        'overdue_flagged' => 'Patrol not finished after planned duration',
         'route_created' => 'Patrol route created',
         'started' => 'Patrol started',
         'completed' => 'Patrol completed',
@@ -1021,6 +1062,7 @@ return [
         'chargeCancelled' => 'Rental charge cancelled',
         'chargesInvoiced' => 'Rental charges invoiced',
         'chargesTransferred' => 'Rental charges transferred',
+        'cleaningDone' => 'Cleaning after return done',
         'claimOpened' => 'Rental claim opened',
         'closed' => 'Rental closed',
         'completed' => 'Rental completed',
@@ -1035,6 +1077,7 @@ return [
         'termsAttached' => 'Rental terms attached to the rental case',
         'returned' => 'Rental asset returned',
         'termsFrozen' => 'Rental terms frozen',
+        'depositWaived' => 'Deposit waived',
     ],
     'report' => [
         'exported' => 'Report exported',
@@ -1090,6 +1133,7 @@ return [
         'dependencies_changed' => 'Business service dependencies changed',
     ],
     'service_ticket' => [
+        'confidentiality_changed' => 'Confidentiality changed',
         'service_changed' => 'Ticket service changed',
         'opened_from_intake' => 'Ticket created from customer intake',
         'accepted_by_customer' => 'Ticket accepted by customer',
@@ -1122,6 +1166,9 @@ return [
         'settings_saved' => 'SharePoint settings saved',
         'target_selected' => 'SharePoint target selected',
     ],
+    'shift_exchange' => [
+        'compliance_overridden' => 'Shift swap approved despite rule violation',
+    ],
     'shiftRotation' => [
         'activated' => 'Shift rotation activated',
         'assigned' => 'Shift rotation assigned',
@@ -1139,6 +1186,7 @@ return [
         'opt_out' => 'SMS alerting withdrawn',
         'verification_started' => 'SMS confirmation code requested',
         'budget_warning' => 'SMS cost warning threshold reached',
+        'budget_exhausted' => 'SMS quota used up',
     ],
     'sla_violation' => [
         'acknowledged' => 'SLA violation acknowledged',
@@ -1183,11 +1231,16 @@ return [
         'assessment_versioned' => 'ESG assessment version created',
     ],
     'survey' => [
+        'updated' => 'Questionnaire changed',
+        'opted_out' => 'Unsubscribed from surveys via the opt-out link',
         'created' => 'Questionnaire created',
         'invited' => 'Survey invitation sent',
     ],
     'sync' => [
         'applied' => 'Offline sync applied',
+        'conflict' => [
+            'resolved' => 'Offline conflict resolved',
+        ],
     ],
     'tax_rule' => [
         'created' => 'Tax rule created',
@@ -1267,6 +1320,8 @@ return [
         'corrected' => 'Trip corrected by cancellation trip',
     ],
     'user' => [
+        'newDeviceAlertDisabled' => 'Alert “Sign-in from a new device” switched off',
+        'newDeviceAlertEnabled' => 'Alert “Sign-in from a new device” switched on',
         'deputyReplaced' => 'Deputy reassigned',
         'anonymized' => 'Employee anonymized (PII removed, evidence retained)',
         'offboardingScheduled' => 'Offboarding scheduled',
@@ -1339,6 +1394,9 @@ return [
         'entry_posted' => 'Entry posted',
         'entry_reversed' => 'Entry reversed',
         'entry_discarded' => 'Draft discarded',
+        'open_item_disputed' => 'Open item marked as disputed',
+        'open_item_dispute_withdrawn' => 'Dispute mark withdrawn',
+        'entry_edited' => 'Draft edited',
         'period_soft_closed' => 'Period closed provisionally',
         'period_closed' => 'Period closed',
         'period_reopened' => 'Period reopened',
@@ -1462,6 +1520,7 @@ return [
             'rechecked' => 'Admissions re-checked',
             'reviewRequired' => 'Admission review required',
             'reviewCleared' => 'Review closed',
+            'resultsReleased' => 'Exam results released',
         ],
         'team' => [
             'profileCreated' => 'Sport profile created',
@@ -1606,5 +1665,9 @@ return [
         'packaged' => 'Delivery version created',
         'sent' => 'Provider invoice delivered',
         'deliveryResolved' => 'Delivery outcome recorded',
+    ],
+    'domain' => [
+        'commandReconciled' => 'Domain command reconciled',
+        'commandResolved' => 'Domain command resolved manually',
     ],
 ];

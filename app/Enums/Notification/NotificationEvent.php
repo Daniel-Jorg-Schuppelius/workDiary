@@ -76,6 +76,8 @@ enum NotificationEvent: string implements HasLabel {
     case SlaAtRisk = 'sla.atRisk';
     /** Scanner: Service-Ticket mit überschrittener SLA-Frist (verletzt) */
     case SlaBreached = 'sla.breached';
+    /** Scanner: internes Ziel (OLA) des Queue-Teams überschritten — an die Teamleitung des OLA-Teams (MVP-1548) */
+    case SlaOlaBreached = 'sla.olaBreached';
     /** Scanner: SLA-Inklusivzeit-Kontingent eines Vertrags erreicht die Warnschwelle (Feature 010 → Rang 44) */
     case SlaQuotaWarning = 'sla.quotaWarning';
     /** Scanner: Asset-Ausgabe mit überschrittener erwarteter Rückgabe (Feature 009) */
@@ -112,6 +114,8 @@ enum NotificationEvent: string implements HasLabel {
     case LearningGraded = 'learning.graded';
     /** Synchron: LearningCompletionService::issueCertificate() */
     case LearningCertificateIssued = 'learning.certificateIssued';
+    /** Synchron: LearningCompletionService::revoke() — an die betroffene Person (MVP-1599) */
+    case LearningCertificateRevoked = 'learning.certificateRevoked';
     /** Synchron: LearningQuizService — Prüfung nicht bestanden und keine Versuche mehr (MVP-1266) */
     case LearningFailedFinal = 'learning.failedFinal';
     /** Synchron: LearningEventService::promoteFromWaitlist() */
@@ -142,6 +146,9 @@ enum NotificationEvent: string implements HasLabel {
     case CustomerQueryRaised = 'customer.queryRaised';
     // Kundeneingang aus dem Portal (MVP-1074/1075): neu eingereicht bzw. Antwort,
     // Nachreichung, Angebotsentscheidung oder Druckfreigabe des Kunden.
+    // Abnahme über Signaturlink oder Portal (MVP-1572): an die Person, die den Link ausgestellt bzw. das Protokoll zur Prüfung gestellt hat.
+    case ProtocolCustomerSigned = 'protocol.customerSigned';
+    case ProtocolCustomerRejected = 'protocol.customerRejected';
     case CustomerIntakeSubmitted = 'customer.intakeSubmitted';
     case CustomerIntakeActivity = 'customer.intakeActivity';
 
@@ -239,6 +246,10 @@ enum NotificationEvent: string implements HasLabel {
     case DomainTransferChanged = 'domain.transferChanged';
     case DomainSyncFailed = 'domain.syncFailed';
     case DomainHighRiskAction = 'domain.highRiskAction';
+    /** Scanner: Verlängerungskosten einer Domain über dem Schwellwert der Organisation (MVP-1614) */
+    case DomainRenewalCostHigh = 'domain.renewalCostHigh';
+    /** Scanner: Guthaben und Kreditrahmen eines Anbieterkontos decken anstehende Verlängerungen nicht (MVP-1614) */
+    case DomainBalanceRisk = 'domain.balanceRisk';
 
     // Vollaudit 2026-07 (M16), Feature 045 Finanzschnittstelle.
     case FinanceTransferFailed = 'finance.transferFailed';
@@ -300,6 +311,8 @@ enum NotificationEvent: string implements HasLabel {
     // ein Betriebsereignis, kein Vorgang einer betroffenen Person.
     case OperationsCloudIntakeReauth = 'operations.cloudIntakeReauth';
     case OperationsCloudIntakeQuarantined = 'operations.cloudIntakeQuarantined';
+    /** SmsBudgetService::noteUsage(): Warnschwelle bzw. Deckel des SMS-Kontingents im Monat erreicht (MVP-1619). */
+    case OperationsSmsBudgetWarning = 'operations.smsBudgetWarning';
 
     // Sicherheitsereignisse (Feature 095/096): Plattform-Ebene, Versand
     // direkt an Plattform-Admins bzw. den betroffenen Nutzer — nie über
@@ -374,7 +387,7 @@ enum NotificationEvent: string implements HasLabel {
 
         return ! in_array($this, [self::TimeCorrectionRequested, self::OvertimeRequested, self::VacationRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ProcedureDeviationEscalated, self::ProcedureSecondPersonRequested, self::ClaimPattern, self::ReportWarning, self::SafetyAssessmentReviewDue, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::CustomerIntakeSubmitted, self::RentalRequested, self::AppointmentRequested, self::ShipmentDeliveryProblem, self::SlaQuotaWarning,
             // Domain-/Finanz-/Fristereignisse betreffen keine Einzelperson (Vollaudit 2026-07, W3.2).
-            self::DomainExpiring, self::DomainTransferChanged, self::DomainSyncFailed, self::DomainHighRiskAction,
+            self::DomainExpiring, self::DomainTransferChanged, self::DomainSyncFailed, self::DomainHighRiskAction, self::DomainRenewalCostHigh, self::DomainBalanceRisk,
             self::FinanceTransferFailed, self::FinanceBankImportFailed, self::FinanceReconciliationReview, self::RetentionReleaseDue,
             self::GuaranteeExpiring, self::GuaranteeReturnDue, self::SupplierCredentialExpiring,
             self::InvestmentDecisionDue, self::InvestmentProposed, self::InventoryLotExpiring], true);
@@ -467,6 +480,8 @@ enum NotificationEvent: string implements HasLabel {
             // Mitarbeiter — Default an die Leitung zur Bearbeitung.
             self::CustomerQueryRaised => [UserRole::Teamleitung->value],
             self::CustomerIntakeSubmitted => [UserRole::Teamleitung->value],
+            // Ohne erreichbare Person (ausgeschieden) an die Leitung.
+            self::ProtocolCustomerSigned, self::ProtocolCustomerRejected => [UserRole::Teamleitung->value],
             // Aktivität geht an die zuständige Person (affected); ohne Zuständigkeit an die Leitung.
             self::CustomerIntakeActivity => [UserRole::Teamleitung->value],
             // Zustellproblem (Feature 059): betrifft keine Einzelperson —
@@ -515,7 +530,9 @@ enum NotificationEvent: string implements HasLabel {
             self::DomainExpiring,
             self::DomainTransferChanged,
             self::DomainSyncFailed,
-            self::DomainHighRiskAction => [UserRole::Admin->value],
+            self::DomainHighRiskAction,
+            self::DomainRenewalCostHigh,
+            self::DomainBalanceRisk => [UserRole::Admin->value],
             // Freigabe des Sicherheitseinbehalts (MVP-602): kaufmännische Sache.
             self::RetentionReleaseDue,
             // Bürgschaften (MVP-603): Sicherheiten sind kaufmännische Steuerung.
@@ -562,6 +579,7 @@ enum NotificationEvent: string implements HasLabel {
             self::LearningSubmissionReceived,
             self::LearningGraded,
             self::LearningCertificateIssued,
+            self::LearningCertificateRevoked,
             self::LearningFailedFinal,
             self::LearningWaitlistPromoted,
             self::LearningBookingDecided,
@@ -597,6 +615,7 @@ enum NotificationEvent: string implements HasLabel {
             self::IsmsIncidentCritical => 'report',
             self::SlaAtRisk => 'timer',
             self::SlaBreached => 'timer_off',
+            self::SlaOlaBreached => 'groups',
             self::SlaQuotaWarning => 'data_usage',
             self::AssetReturnOverdue => 'assignment_return',
             self::TenderSubmissionDueSoon => 'schedule',
@@ -638,6 +657,8 @@ enum NotificationEvent: string implements HasLabel {
             self::ShiftExchangeDecided => 'swap_horiz',
             self::CustomerQueryRaised => 'contact_support',
             self::CustomerIntakeSubmitted => 'move_to_inbox',
+            self::ProtocolCustomerSigned => 'draw',
+            self::ProtocolCustomerRejected => 'thumb_down',
             self::CustomerIntakeActivity => 'mark_chat_unread',
             // Karten-Freigabe (Feature 054): Payload bewusst nur Titel + Link —
             // die IdeaMapPolicy greift beim Klick.
@@ -664,11 +685,14 @@ enum NotificationEvent: string implements HasLabel {
             self::OperationsProblemReportReceived => 'flag',
             self::OperationsCloudIntakeReauth => 'cloud_off',
             self::OperationsCloudIntakeQuarantined => 'block',
+            self::OperationsSmsBudgetWarning => 'sms',
             self::MonthClosureDecided => 'event_available',
             self::DomainExpiring => 'timer',
             self::DomainTransferChanged => 'swap_horiz',
             self::DomainSyncFailed => 'sync_problem',
             self::DomainHighRiskAction => 'gpp_maybe',
+            self::DomainRenewalCostHigh => 'payments',
+            self::DomainBalanceRisk => 'account_balance_wallet',
             self::FinanceTransferFailed => 'money_off',
             self::FinanceBankImportFailed => 'account_balance',
             self::FinanceReconciliationReview => 'rule',
@@ -742,6 +766,7 @@ enum NotificationEvent: string implements HasLabel {
             self::IsmsVulnerabilityOverdue,
             self::IsmsSupplierReviewOverdue,
             self::SlaBreached,
+            self::SlaOlaBreached,
             self::AssetReturnOverdue,
             self::MaintenanceOverdue,
             // Überfällige Wirksamkeitsprüfung (Feature 065, MVP-156).

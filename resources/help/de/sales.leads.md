@@ -1,7 +1,7 @@
 ---
 title: "Leads"
 topic: sales.leads
-version: 4
+version: 6
 keywords:
     - Interessenten
     - Akquise
@@ -74,3 +74,12 @@ je Quelle und Konversion. Wie bei Kunde, Lieferant und Projekt zeigen die
 Panels anderer Module nur, was zum Lead vorliegt — ein Modul ohne Daten zum
 Lead erscheint nicht. Der Verlauf führt die Audit-Einträge des Leads samt
 seiner Angebote; Terminbuchungen hängen am offenen Lead.
+
+Wer die Seite „Terminanfragen“ öffnen darf, sieht im Panel **Termine** die gebuchten und angefragten Termine des Leads (etwa aus Calendly) mit Zeitpunkt, Ort und Status; der Klick öffnet die Terminanfragen.
+
+## Letzter Kontakt
+
+Die Frist läuft ab dem **letzten Kontakt**. Er rückt bei jeder
+Kommunikationsnotiz am Lead (mit ihrem Zeitpunkt), bei jeder inhaltlichen
+Bearbeitung, beim Statuswechsel und beim Angebot aus dem Lead nach. Ein
+Wechsel nur der Zuständigkeit zählt nicht als Kontakt.

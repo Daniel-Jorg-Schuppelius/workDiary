@@ -72,7 +72,26 @@
         :floors="$floors ?? collect()"
         :rooms="$rooms ?? collect()"
         :selected="$prefill" />
+    @if ($asset->exists)
+        <x-input-field name="ownership_note" :label="__('asset.ownership.note')" :hint="__('asset.ownership.note_hint')" span="2" maxlength="1000" :value="old('ownership_note')" />
+    @endif
 </x-form-group>
+
+{{-- Vertragsbindung nur mit Leserecht auf SLA-Verträge; ohne bleibt sie unverändert. --}}
+@if (($contractOptions ?? null) !== null)
+    @php
+        $assetContractSqid = \App\Support\Sqid::encode(\App\Models\ServiceTicket\SlaContract::class, $asset->sla_contract_id);
+    @endphp
+    <x-form-group :legend="__('Verträge & SLA')" icon="verified_user" cols="2">
+        <x-select-field name="sla_contract_id" :label="__('SLA-Vertrag')" span="2"
+                        :hint="__('Gilt für Service-Tickets zu diesem Asset vor den Verträgen von Projekt und Kunde. Zur Wahl stehen Verträge des gespeicherten Kunden und Verträge ohne Kundenbindung.')">
+            <option value="">{{ __('— Kein SLA —') }}</option>
+            @foreach ($contractOptions as $contract)
+                <option value="{{ $contract->sqid }}" @selected((string) old('sla_contract_id', $assetContractSqid) === $contract->sqid)>{{ $contract->code }} — {{ $contract->label }}</option>
+            @endforeach
+        </x-select-field>
+    </x-form-group>
+@endif
 
 <x-form-group :legend="__('Notizen')" icon="sticky_note_2" cols="1">
     <x-textarea-field name="notes" rows="3" span="2" :value="old('notes', $asset->notes)" />

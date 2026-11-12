@@ -157,7 +157,7 @@ final class InventoryLedgerTest extends TestCase {
 
         $this->assertCount(1, $issue);
         $this->assertSame($late->id, $issue->first()->stock_lot_id);
-        $this->assertSame(['5.0000', '2.0000'], [$this->stock()->balanceOf($early), $this->stock()->balanceOf($late)]);
+        $this->assertSame(['5.0000', '2.0000'], [$this->stock()->balancesOf([$early])[$early->id], $this->stock()->balancesOf([$late])[$late->id]]);
     }
 
     /** FEFO über zwei Chargen und Rest ohne Charge: eine Bewegung je Teil, gesperrte Charge übersprungen. */
@@ -176,7 +176,7 @@ final class InventoryLedgerTest extends TestCase {
             array_map(fn (StockMovement $m): array => [$m->stock_lot_id, $m->qty_base], $issue->movements),
         );
         $this->assertSame(['L-EARLY', 'L-LATE', 'L-NONE'], array_map(fn (StockLot $lot): string => $lot->lot_no, $issue->lots()));
-        $this->assertSame('4.0000', $this->stock()->balanceOf($held));
+        $this->assertSame('4.0000', $this->stock()->balancesOf([$held])[$held->id]);
         $this->assertSame('12.0000', $this->ledger->balance($this->variant, $this->warehouse, StockState::Physical));
     }
 
@@ -190,7 +190,7 @@ final class InventoryLedgerTest extends TestCase {
         $issue = $this->ledger->issue($this->variant, $this->warehouse, '2', bin: $near);
 
         $this->assertSame([[$late->id, $near->id]], array_map(fn (StockMovement $m): array => [$m->stock_lot_id, $m->bin_id], $issue->movements));
-        $this->assertSame(['3.0000', '1.0000'], [$this->stock()->balanceOf($early), $this->stock()->balanceOf($late)]);
+        $this->assertSame(['3.0000', '1.0000'], [$this->stock()->balancesOf([$early])[$early->id], $this->stock()->balancesOf([$late])[$late->id]]);
     }
 
     /** Altbestand einer zusammengeführten Charge zählt bei der Zielcharge — gebucht wird auf sie. */
@@ -202,7 +202,7 @@ final class InventoryLedgerTest extends TestCase {
         $issue = $this->ledger->issue($this->variant, $this->warehouse, '4');
 
         $this->assertSame([[$target->id, '-4.0000']], array_map(fn (StockMovement $m): array => [$m->stock_lot_id, $m->qty_base], $issue->movements));
-        $this->assertSame(['1.0000', '0.0000'], [$this->stock()->balanceOf($target), $this->stock()->balanceOf($source->fresh() ?? $source)]);
+        $this->assertSame(['1.0000', '0.0000'], [$this->stock()->balancesOf([$target])[$target->id], $this->stock()->balancesOf([$source->fresh() ?? $source])[$source->id]]);
     }
 
     /** Mehrere Teile tragen `<schlüssel>#n`; die Wiederholung liefert den früheren Abgang, auch wenn heute anders zugeteilt würde. */
@@ -217,13 +217,13 @@ final class InventoryLedgerTest extends TestCase {
 
         $this->assertSame(array_map(fn (StockMovement $m): int => $m->id, $first->movements), array_map(fn (StockMovement $m): int => $m->id, $again->movements));
         $this->assertSame(2, StockMovement::query()->where('movement_type', StockMovementType::Issue->value)->count());
-        $this->assertSame(['0.0000', '3.0000'], [$this->stock()->balanceOf($early), $this->stock()->balanceOf($late)]);
+        $this->assertSame(['0.0000', '3.0000'], [$this->stock()->balancesOf([$early])[$early->id], $this->stock()->balancesOf([$late])[$late->id]]);
 
         // Ein Teil behält den Schlüssel unverändert; die Wiederholung bucht nichts.
         $single = $this->ledger->issue($this->variant, $this->warehouse, '1', idempotencyKey: 'pick-8');
         $this->assertSame('pick-8', $single->first()->idempotency_key);
         $this->assertSame($single->first()->id, $this->ledger->issue($this->variant, $this->warehouse, '1', idempotencyKey: 'pick-8')->first()->id);
-        $this->assertSame('2.0000', $this->stock()->balanceOf($late));
+        $this->assertSame('2.0000', $this->stock()->balancesOf([$late])[$late->id]);
     }
 
     /** Ohne Schlüssel erhält ein mehrteiliger Abgang einen Gruppenschlüssel: jede seiner Bewegungen führt zum ganzen Abgang. */
@@ -281,7 +281,7 @@ final class InventoryLedgerTest extends TestCase {
 
         $this->assertInstanceOf(StockIssue::class, $issue);
         $this->assertSame([[$lot->id, '-5.0000']], array_map(fn (StockMovement $m): array => [$m->stock_lot_id, $m->qty_base], $issue->movements));
-        $this->assertSame('-3.0000', $this->stock()->balanceOf($lot));
+        $this->assertSame('-3.0000', $this->stock()->balancesOf([$lot])[$lot->id]);
     }
 
     /** Die Sperrbuchung mindert die Verfügbarkeit überall — Prüfung des Abgangs eingeschlossen; die Freigabe stellt sie wieder her. */
@@ -306,7 +306,7 @@ final class InventoryLedgerTest extends TestCase {
 
         $lots->unblock($held, 'Prüfung ohne Befund', $actor);
         $this->assertSame('5.0000', $this->ledger->available($this->variant, $this->warehouse));
-        $this->assertSame('5.0000', $this->stock()->balanceOf($held));
+        $this->assertSame('5.0000', $this->stock()->balancesOf([$held])[$held->id]);
     }
 
     /** Chargenpflicht: ergäbe die Zuteilung einen Teil ohne Charge, wird nichts gebucht. */
@@ -326,7 +326,7 @@ final class InventoryLedgerTest extends TestCase {
         $this->assertSame([[$lot->id, '-2.0000']], array_map(fn (StockMovement $m): array => [$m->stock_lot_id, $m->qty_base], $issue->movements));
         // Eine gewählte Charge mit Negativfreigabe bleibt ein Teil mit Charge.
         $negative = $this->ledger->issue($this->variant, $this->warehouse, '1', allowNegative: true, lot: $lot, requireLot: true);
-        $this->assertSame('-1.0000', $this->stock()->balanceOf($lot));
+        $this->assertSame('-1.0000', $this->stock()->balancesOf([$lot])[$lot->id]);
         $this->assertCount(1, $negative);
     }
 

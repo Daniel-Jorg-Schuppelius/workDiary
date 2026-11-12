@@ -138,7 +138,6 @@ class TodoistAdminController extends ConnectionOAuthController {
 
         $data = $request->validate([
             'todoist_project_id' => ['required', 'string', 'max:64'],
-            'todoist_project_name' => ['nullable', 'string', 'max:191'],
             'todoist_project_names' => ['nullable', 'array'],
             'todoist_project_names.*' => ['nullable', 'string', 'max:191'],
             'target_kind' => ['required', 'in:project,global_kanban'],
@@ -161,7 +160,7 @@ class TodoistAdminController extends ConnectionOAuthController {
             'todoist_project_id' => (string) $data['todoist_project_id'],
         ]);
         $link->fill([
-            'todoist_project_name' => $data['todoist_project_names'][(string) $data['todoist_project_id']] ?? $data['todoist_project_name'] ?? $link->todoist_project_name,
+            'todoist_project_name' => $data['todoist_project_names'][(string) $data['todoist_project_id']] ?? $link->todoist_project_name,
             'target_kind' => (string) $data['target_kind'],
             'project_id' => $projectId,
             'sync_mode' => (string) $data['sync_mode'],

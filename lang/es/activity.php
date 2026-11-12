@@ -22,5 +22,8 @@ return [
         'all_types' => 'Todos los tipos de objeto',
         'user' => 'Persona',
         'all_users' => 'Todas las personas',
+        'event' => 'Evento',
+        'all_events' => 'Todos los eventos',
+        'domain_events' => 'Eventos de negocio',
     ],
 ];

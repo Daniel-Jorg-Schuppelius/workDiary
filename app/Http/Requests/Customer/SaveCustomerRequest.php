@@ -62,6 +62,9 @@ class SaveCustomerRequest extends BaseFormRequest {
             'billable' => ['sometimes', 'boolean'],
             'exclude_from_reports' => ['sometimes', 'boolean'],
             'no_bulk_mail' => ['sometimes', 'boolean'],
+            'survey_opt_out' => ['sometimes', 'boolean'],
+            // Leistungsempfänger schuldet die Steuer (§ 13b UStG, MVP-1622).
+            'is_reverse_charge_recipient' => ['sometimes', 'boolean'],
             // E-Rechnung (Feature 045): Leitweg-ID/Käuferreferenz (BT-10).
             'buyer_reference' => ['nullable', 'string', 'max:64'],
             // Kundengruppe (MVP-949).
@@ -146,6 +149,8 @@ class SaveCustomerRequest extends BaseFormRequest {
             'billable' => $this->boolean('billable'),
             'exclude_from_reports' => $this->boolean('exclude_from_reports'),
             'no_bulk_mail' => $this->boolean('no_bulk_mail'),
+            'survey_opt_out' => $this->boolean('survey_opt_out'),
+            'is_reverse_charge_recipient' => $this->boolean('is_reverse_charge_recipient'),
             'travel_settings' => $travel === [] ? null : $travel,
         ]));
     }

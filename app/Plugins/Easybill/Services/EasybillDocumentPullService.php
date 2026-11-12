@@ -13,15 +13,21 @@ declare(strict_types=1);
 namespace App\Plugins\Easybill\Services;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
+use App\Enums\Integration\DataDomain;
 use App\Models\Document\Document;
 use App\Models\Finance\BillingTransfer;
-use App\Models\Integration\ExternalReference;
-use App\Models\Platform\User;
-use App\Plugins\Easybill\Api\EasybillClientFactory;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\{Organization, User};
+use App\Plugins\Easybill\Api\{EasybillClient, EasybillClientFactory};
 use App\Plugins\Easybill\{EasybillConfig, EasybillPlugin};
 use App\Services\Document\DocumentService;
+use App\Services\Integration\Attributes\WritesDataDomain;
+use App\Services\Integration\Contracts\OwnershipConflictReplay;
+use App\Services\Integration\DataOwnershipGuard;
+use App\Services\Integration\Dto\OwnershipClaim;
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\CryptoHelper;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Rückabruf fertiggestellter easybill-Belege ins DMS (MVP-431, W1.3):
@@ -30,8 +36,13 @@ use CommonToolkit\Helper\Data\CryptoHelper;
  * BillingTransfer. Nachweis = sha256 + Abrufzeitpunkt in der
  * ExternalReference-Payload — bewusst KEINE Schemaänderung am DMS.
  * Je externem Beleg wird genau einmal gezogen (document_pulled_at).
+ * Führt ein anderes System die Dokumente, wartet der Beleg als
+ * Führerschaftskonflikt (MVP-1592) und zählt als ausstehend.
  */
-class EasybillDocumentPullService {
+#[WritesDataDomain(DataDomain::Documents)]
+class EasybillDocumentPullService implements OwnershipConflictReplay {
+    public const string OWNERSHIP_KIND = 'easybill.document';
+
     public function __construct(
         private readonly EasybillClientFactory $clients,
         private readonly DocumentService $documents,
@@ -55,73 +66,120 @@ class EasybillDocumentPullService {
         }
 
         $client = $this->clients->for($organizationId);
+        $organization = Organization::query()->withoutGlobalScopes()->find($organizationId);
         $pulled = 0;
         $pending = 0;
 
         foreach ($references as $reference) {
-            $remote = $client->document((string) $reference->external_id);
-
-            // Solange easybill den Beleg nicht fertiggestellt hat (Entwurf),
-            // gibt es weder finale Nummer noch archivwürdiges Dokument.
-            if (($remote['is_draft'] ?? true) !== false) {
-                $pending++;
-
-                continue;
-            }
-
-            $transfer = $reference->referenceable;
-            if (! $transfer instanceof BillingTransfer) {
-                continue;
-            }
-
-            $format = (string) ($config['einvoice_format'] ?? '');
-            $file = $format !== ''
-                ? $client->downloadFile((string) $reference->external_id)
-                : null;
-            if ($file === null) {
-                $content = $client->downloadPdf((string) $reference->external_id);
-                $file = $content !== null ? ['content' => $content, 'mime' => 'application/pdf'] : null;
-            }
-            if ($file === null) {
-                $pending++;
-
-                continue;
-            }
-
-            $number = trim((string) ($remote['number'] ?? ''));
-            $isXml = str_contains($file['mime'], 'xml');
-            $document = $this->storeDocument($transfer, $file['content'], $file['mime'], $number, $isXml);
-
-            // Vollaudit 2026-07 (N25): bei reinem XML-Format (z. B.
-            // xrechnung3_0_xml) zusätzlich das PDF archivieren — zweite
-            // Dokumentversion mit eigenem sha256 in der Nachweis-Payload.
-            $pdfSha = null;
-            if ($isXml) {
-                $pdfContent = $client->downloadPdf((string) $reference->external_id);
-                if ($pdfContent !== null) {
-                    $actor = $transfer->creator ?? User::query()->findOrFail($transfer->created_by_user_id);
-                    $pdfName = 'easybill-' . ($number !== '' ? $number : 'beleg-' . $transfer->getKey()) . '.pdf';
-                    $this->documents->addVersionFromContents($document, $actor, $pdfContent, $pdfName, 'application/pdf');
-                    $pdfSha = CryptoHelper::hash($pdfContent);
-                }
-            }
-
-            $reference->forceFill([
-                'external_number' => $number !== '' ? $number : $reference->external_number,
-                'payload' => array_merge((array) $reference->payload, array_filter([
-                    'document' => $remote,
-                    'document_pulled_at' => now()->toIso8601String(),
-                    'document_sha256' => CryptoHelper::hash($file['content']),
-                    'document_mime' => $file['mime'],
-                    'document_pdf_sha256' => $pdfSha,
-                    'dms_document_id' => $document->id,
-                ], static fn($v): bool => $v !== null)),
-                'synced_at' => now(),
-            ])->save();
-            $pulled++;
+            match ($this->pullReference($organization, $client, $config, $reference)) {
+                'pulled' => $pulled++,
+                'pending' => $pending++,
+                default => null,
+            };
         }
 
         return ['checked' => $references->count(), 'pulled' => $pulled, 'pending' => $pending];
+    }
+
+    /**
+     * Ein fertiggestellter Beleg ins DMS — nur, wenn easybill die Dokumente schreiben darf.
+     *
+     * @param  array<string, mixed>  $config
+     * @return 'pulled'|'pending'|'skipped'
+     */
+    private function pullReference(?Organization $organization, EasybillClient $client, array $config, ExternalReference $reference): string {
+        $remote = $client->document((string) $reference->external_id);
+
+        // Solange easybill den Beleg nicht fertiggestellt hat (Entwurf),
+        // gibt es weder finale Nummer noch archivwürdiges Dokument.
+        if (($remote['is_draft'] ?? true) !== false) {
+            return 'pending';
+        }
+
+        $transfer = $reference->referenceable;
+        if (! $transfer instanceof BillingTransfer) {
+            return 'skipped';
+        }
+        if (! $organization instanceof Organization || ! app(DataOwnershipGuard::class)->allows($organization, DataDomain::Documents, EasybillPlugin::ID, new OwnershipClaim(
+            kind: self::OWNERSHIP_KIND,
+            key: (string) $reference->external_id,
+            title: (string) __('easybill-Rechnung :number', ['number' => trim((string) ($remote['number'] ?? '')) ?: '—']),
+            target: Document::class,
+            payload: ['reference_id' => (int) $reference->id, 'number' => (string) ($remote['number'] ?? '')],
+            externalId: (string) $reference->external_id,
+            local: $transfer,
+        ))) {
+            return 'pending';
+        }
+
+        $format = (string) ($config['einvoice_format'] ?? '');
+        $file = $format !== ''
+            ? $client->downloadFile((string) $reference->external_id)
+            : null;
+        if ($file === null) {
+            $content = $client->downloadPdf((string) $reference->external_id);
+            $file = $content !== null ? ['content' => $content, 'mime' => 'application/pdf'] : null;
+        }
+        if ($file === null) {
+            return 'pending';
+        }
+
+        $number = trim((string) ($remote['number'] ?? ''));
+        $isXml = str_contains($file['mime'], 'xml');
+        $document = $this->storeDocument($transfer, $file['content'], $file['mime'], $number, $isXml);
+
+        // Vollaudit 2026-07 (N25): bei reinem XML-Format (z. B.
+        // xrechnung3_0_xml) zusätzlich das PDF archivieren — zweite
+        // Dokumentversion mit eigenem sha256 in der Nachweis-Payload.
+        $pdfSha = null;
+        if ($isXml) {
+            $pdfContent = $client->downloadPdf((string) $reference->external_id);
+            if ($pdfContent !== null) {
+                $actor = $transfer->creator ?? User::query()->findOrFail($transfer->created_by_user_id);
+                $pdfName = 'easybill-' . ($number !== '' ? $number : 'beleg-' . $transfer->getKey()) . '.pdf';
+                $this->documents->addVersionFromContents($document, $actor, $pdfContent, $pdfName, 'application/pdf');
+                $pdfSha = CryptoHelper::hash($pdfContent);
+            }
+        }
+
+        $reference->forceFill([
+            'external_number' => $number !== '' ? $number : $reference->external_number,
+            'payload' => array_merge((array) $reference->payload, array_filter([
+                'document' => $remote,
+                'document_pulled_at' => now()->toIso8601String(),
+                'document_sha256' => CryptoHelper::hash($file['content']),
+                'document_mime' => $file['mime'],
+                'document_pdf_sha256' => $pdfSha,
+                'dms_document_id' => $document->id,
+            ], static fn($v): bool => $v !== null)),
+            'synced_at' => now(),
+        ])->save();
+
+        return 'pulled';
+    }
+
+    /** @return list<string> */
+    public function ownershipKinds(): array {
+        return [self::OWNERSHIP_KIND];
+    }
+
+    /** „Einmalig übernehmen“: den Beleg der Übergabe jetzt abholen. */
+    public function replayOwnershipConflict(Organization $organization, IntegrationInboxItem $item): ?Model {
+        $payload = (array) (($item->remote_snapshot ?? [])['payload'] ?? []);
+        $reference = ExternalReference::query()
+            ->forPlugin($organization, EasybillPlugin::ID, EasybillTarget::EXT_TYPE_INVOICE)
+            ->find((int) ($payload['reference_id'] ?? 0));
+        if (! $reference instanceof ExternalReference || ! empty(((array) $reference->payload)['document_pulled_at'] ?? null)) {
+            return null;
+        }
+        if (! app(EasybillClientFactory::class)->isConfigured((int) $organization->id)) {
+            throw new \RuntimeException((string) __('easybill::finance.error.ownership_unavailable'));
+        }
+        if ($this->pullReference($organization, $this->clients->for((int) $organization->id), EasybillConfig::resolve((int) $organization->id), $reference) !== 'pulled') {
+            throw new \RuntimeException((string) __('easybill::finance.error.ownership_not_ready'));
+        }
+
+        return Document::query()->withoutGlobalScopes()->find((int) ((array) $reference->refresh()->payload)['dms_document_id']);
     }
 
     private function storeDocument(BillingTransfer $transfer, string $content, string $mime, string $number, bool $isXml): Document {

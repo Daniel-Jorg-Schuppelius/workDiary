@@ -40,5 +40,13 @@
                 @endforeach
             </x-select-field>
         @endif
+        @if ($users->isNotEmpty())
+            <x-select-field name="assignee_user_id" :label="__('open-issue.field.assignee')">
+                <option value="">{{ __('Unzugewiesen') }}</option>
+                @foreach ($users as $user)
+                    <option value="{{ $user->sqid }}" @selected((string) old('assignee_user_id') === $user->sqid)>{{ $user->name }}</option>
+                @endforeach
+            </x-select-field>
+        @endif
     </div>
 </x-modal>

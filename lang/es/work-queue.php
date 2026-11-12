@@ -16,6 +16,8 @@ return [
         'all_categories' => 'Todas las áreas',
         'source' => 'Origen',
         'all_sources' => 'Todos los orígenes',
+        'due' => 'Vencimiento',
+        'all_due' => 'Todos los vencimientos',
         'mine' => 'Solo los asignados a mí',
     ],
     'column' => [
@@ -40,6 +42,7 @@ return [
         'resale' => 'Suscripciones y licencias',
         'approval' => 'Cadenas de aprobación',
         'vacation_approval' => 'Solicitudes de vacaciones',
+        'vacation_revision' => 'Solicitudes de vacaciones por corregir',
         'expense_approval' => 'Gastos',
         'month_closure' => 'Cierres mensuales',
         'price_change' => 'Cambios de precio',
@@ -67,6 +70,7 @@ return [
     ],
     'item' => [
         'vacation' => 'Solicitud de vacaciones de :name',
+        'vacation_revision' => 'Corregir la solicitud de vacaciones',
         'expense' => 'Gasto de :name',
         'month_closure' => 'Mes :period de :name',
         'price_change' => 'Cambio de precio: :article',

@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice-Konflikte"
 topic: admin.lexoffice
-version: 7
+version: 8
 keywords:
     - Lexware Office
     - Synchronisationskonflikt
@@ -74,3 +74,5 @@ der Knopf braucht das Recht **Belege mit Lexoffice synchronisieren** und hinterl
 
 Berechtigung: Die Zuordnungs-Inbox steht Administratoren und der Rolle
 **Buchhaltung** offen.
+
+**Datenführerschaft:** Führt laut Datenführerschaft ein anderes Programm Kunden und Lieferanten, übernimmt der Kontakt-Sync keine Felder und legt keine Kontakte an; das Verknüpfen und die Lexoffice-Kontaktnummer bleiben. Der zurückgehaltene Stand wartet im Integrations-Eingang auf **Einmalig übernehmen**.

@@ -1,7 +1,7 @@
 ---
 title: "Benachrichtigungen"
 topic: account.notifications
-version: 1
+version: 2
 keywords:
     - Mitteilungen
     - Hinweise
@@ -43,3 +43,5 @@ bewusst sparsam gehalten: Es gibt ein monatliches Kontingent, lange Texte
 werden gekürzt, und die Organisation wird gewarnt, bevor das Kontingent
 aufgebraucht ist. SMS ersetzen keine Benachrichtigung in der Anwendung,
 sondern begleiten sie für den Fall, dass niemand am Bildschirm sitzt.
+
+Die Warnung zum SMS-Kontingent erreicht die Verwaltung der Organisation als Betriebsaufgabe mit Benachrichtigung: einmal, wenn die Warnschwelle erreicht ist, und noch einmal, wenn das Kontingent aufgebraucht ist — je Monat. Mit dem neuen Monat beginnt die Zählung von vorn.

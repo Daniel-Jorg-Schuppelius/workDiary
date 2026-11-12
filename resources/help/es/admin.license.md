@@ -1,7 +1,7 @@
 ---
 title: "Gestión de licencias"
 topic: admin.license
-version: 3
+version: 4
 keywords:
     - clave de licencia
     - plan
@@ -81,3 +81,5 @@ correo electrónico, la dirección, el NIF-IVA y la referencia de pedido para
 la facturación por parte del operador. Allí también solicita otro plan o
 módulos adicionales; por organización existe una solicitud abierta, que
 puede retirar. El operador la resuelve emitiendo una nueva licencia.
+
+**Límites:** al emitir, además del número de usuarios fija el número de organizaciones de una instalación y la cuota de almacenamiento por organización en GB — en la consola de emisión y por comando con --max-orgs y --storage-quota-gb. Una licencia de organización lleva el número de usuarios y la cuota de almacenamiento. Alcanzado un límite, WorkDiary rechaza crear otra organización o nuevas subidas; «Límites» muestra el uso.

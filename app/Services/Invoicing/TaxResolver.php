@@ -27,6 +27,9 @@ use CommonToolkit\Helper\Data\Validator;
  *
  *  - Inland: Org-Override (settings.invoicing.default_tax_rate), sonst
  *    Regelmatrix (Kategorie + Leistungsdatum), sonst statischer Katalog.
+ *  - Inland mit Kundenmerkmal „Leistungsempfänger schuldet die Steuer“
+ *    (§ 13b Abs. 2 und 5 UStG, z. B. Bauleistungen an Bauleistende, MVP-1622):
+ *    0 %, Kategorie AE, Pflichthinweis nach § 14a Abs. 5 UStG.
  *  - EU-Ausland B2B mit formal gültiger USt-IdNr.: 0 % + Reverse Charge
  *    (EN 16931 Kategorie AE) + Pflichthinweis.
  *  - EU-B2C: Verkäuferland-Satz (MVP, bewusst KEIN stiller OSS/IOSS-
@@ -56,6 +59,16 @@ class TaxResolver {
 
         $sellerCountry = $this->sellerCountry($organization);
         $buyerCountry = strtoupper(trim((string) ($customer->country ?? ''))) ?: $sellerCountry;
+
+        if ($buyerCountry === $sellerCountry && (bool) $customer->is_reverse_charge_recipient) {
+            return [
+                'rate' => '0.00',
+                'reverse_charge' => true,
+                'note' => (string) config('taxation.notes.reverse_charge_domestic'),
+                'category' => 'AE',
+                'rule' => null,
+            ];
+        }
 
         // Inland: expliziter Org-Override vor Regelmatrix vor statischem
         // Katalog (bewusst NICHT Setting::get — das fiele auf den
@@ -188,7 +201,8 @@ class TaxResolver {
         return $country !== '' ? $country : 'DE';
     }
 
-    private function standardRate(string $country): string {
+    /** Regelsatz des Landes laut Katalog — auch der Satz der Eigenberechnung bei Steuerschuld des Empfängers (MVP-1621). */
+    public function standardRate(string $country): string {
         return (string) config("taxation.rates.{$country}.standard", config('taxation.rates.DE.standard', '19.00'));
     }
 

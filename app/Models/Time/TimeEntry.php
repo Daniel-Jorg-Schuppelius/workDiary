@@ -389,6 +389,42 @@ class TimeEntry extends Model {
     }
 
     /**
+     * Zählt der Eintrag als Arbeitszeit (Zeitkonto, Tagesabschluss, Arbeitsbilanz)? Art und
+     * Tätigkeitstyp nach `timesheet.flex`, dazu der Schalter „Zählt als Arbeit“ der
+     * Tätigkeitskategorie (MVP-1554). Jede Bedingung schließt für sich aus.
+     */
+    public function countsAsWork(): bool {
+        return in_array(($this->kind ?? TimeEntryKind::Work)->value, self::workKinds(), true)
+            && ! in_array(($this->activity_type ?? TimeEntryActivityType::Project)->value, self::nonWorkActivityTypes(), true)
+            && ($this->activity_category_id === null || $this->activityCategory?->counts_as_work !== false);
+    }
+
+    /**
+     * SQL-Gegenstück zu {@see countsAsWork()}.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<TimeEntry>  $query
+     * @return \Illuminate\Database\Eloquent\Builder<TimeEntry>
+     */
+    public function scopeCountedAsWork(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder {
+        return $query
+            ->whereIn('time_entries.kind', self::workKinds())
+            ->whereNotIn('time_entries.activity_type', self::nonWorkActivityTypes())
+            ->where(static fn ($category) => $category
+                ->whereNull('time_entries.activity_category_id')
+                ->orWhereNotIn('time_entries.activity_category_id', ActivityCategory::query()->withoutGlobalScopes()->where('counts_as_work', false)->select('id')));
+    }
+
+    /** @return list<string> */
+    private static function workKinds(): array {
+        return array_values(array_map('strval', (array) config('timesheet.flex.count_kinds', [TimeEntryKind::Work->value, TimeEntryKind::Travel->value])));
+    }
+
+    /** @return list<string> */
+    private static function nonWorkActivityTypes(): array {
+        return array_values(array_map('strval', (array) config('timesheet.flex.exclude_activity_types', [TimeEntryActivityType::Break_->value, TimeEntryActivityType::Absence->value])));
+    }
+
+    /**
      * Nur Zeit von Personen — Gleitzeit, Pausen, Lohn, Auszahlung, SLA-Kontingent rechnen damit.
      *
      * @param  \Illuminate\Database\Eloquent\Builder<TimeEntry>  $query

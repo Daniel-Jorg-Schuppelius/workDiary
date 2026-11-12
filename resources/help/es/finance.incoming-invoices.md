@@ -1,7 +1,7 @@
 ---
 title: "Facturas recibidas"
 topic: finance.incoming-invoices
-version: 8
+version: 9
 keywords:
     - varios tipos impositivos
     - factura de proveedor
@@ -350,6 +350,23 @@ llamada no cambia nada.
 **Descarga de XML:** El XML de la factura puede extraerse del original en
 cualquier momento (en ZUGFeRD, del adjunto PDF). Cada descarga se registra
 con una suma de verificación como prueba.
+
+## Caso fiscal
+
+En las facturas recibidas, la tarjeta **Entrada** muestra el **caso fiscal**:
+IVA soportado de la factura, inversión del sujeto pasivo según el § 13b UStG
+(apdo. 1 para servicios de otro país de la UE, apdo. 2 p. ej. para obras de
+construcción, limpieza de edificios, chatarra, teléfonos móviles y entregas con
+instalación de empresas extranjeras) o adquisición intracomunitaria. WorkDiary
+lo determina por la categoría fiscal de la factura electrónica (`AE` inversión
+del sujeto pasivo, `K` adquisición intracomunitaria) y el país del proveedor,
+si no por el valor **Caso fiscal de sus facturas recibidas** del proveedor –
+mientras la factura no muestre impuesto. **Cambiar caso fiscal** lo fija a
+mano; **Automático** vuelve a la determinación. El caso fiscal se aplica a la
+próxima contabilización en la contabilidad local: si la factura ya figura allí
+como borrador o asiento, descarte primero el borrador o anule el asiento.
+Registre un tipo reducido – p. ej. 7 % al adquirir libros – en el diálogo
+**Introducir valores**; sin tipo se aplica el tipo general.
 
 ## Documentos incrustados
 

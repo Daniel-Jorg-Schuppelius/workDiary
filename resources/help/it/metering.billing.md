@@ -35,3 +35,21 @@ lettura, il periodo non viene fatturato anziché stimato.
 **Esecuzione:** L’esecuzione mensile crea bozze di fattura, non fatture
 inviate — l’approvazione resta alla persona. Ogni periodo viene fatturato
 una sola volta; una seconda esecuzione non genera duplicati.
+
+## Scaglioni, stato e progetto
+
+**Scaglioni di quantità:** la finestra dell'accordo offre righe con **da
+quantità** e **prezzo per unità**. Il primo scaglione parte da 0; le righe
+vuote vengono ignorate. Con gli scaglioni vale il prezzo di ciascuno scaglione
+al posto del prezzo unitario, e il calcolo è progressivo sul consumo al netto
+della quantità gratuita: un'unità in più non rende mai la fattura meno cara.
+L'elenco mostra allora «Scaglioni» al posto del prezzo unitario.
+
+**Stato:** *Attivo* viene fatturato; l'elaborazione salta *In pausa* e
+*Terminato*, e la fatturazione immediata è offerta solo per gli accordi
+attivi. Dopo una pausa l'elaborazione recupera a partire dalla data di
+**prossima fatturazione**: se il periodo di pausa non va fatturato, sposti in
+avanti la data prima di riattivare.
+
+**Progetto:** il progetto scelto viene assegnato alle bozze di fattura
+dell'elaborazione.

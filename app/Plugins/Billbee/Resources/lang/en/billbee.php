@@ -46,4 +46,17 @@ return [
     'cockpit' => [
         'title' => 'Billbee orders',
     ],
+    // Bestandsführung (MVP-1626)
+    'inventory' => [
+        'heading' => 'Inventory management',
+        'explain' => 'With “Billbee”, WorkDiary keeps booking in its own stock journal and reports every level as an absolute stock per SKU to Billbee, which distributes it to the marketplaces. “Local” reports nothing. There is no read-only mode: Billbee keeps no stock of its own.',
+        'mode_local' => 'Local — WorkDiary manages stock, Billbee receives nothing.',
+        'mode_external' => 'Billbee — WorkDiary manages stock and reports every level to Billbee.',
+        'save' => 'Save inventory management',
+        'confirm' => 'Really switch inventory management?',
+        'changed' => 'Inventory management changed.',
+        'unchanged' => 'Inventory management is already set this way.',
+        'needs_connection' => 'The credentials for reporting to Billbee are missing in the plugin settings.',
+        'other_leads' => 'Inventory is currently led by :plugin. Switch inventory management to local there first.',
+    ],
 ];

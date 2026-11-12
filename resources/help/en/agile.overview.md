@@ -1,7 +1,7 @@
 ---
 title: "Agile project management"
 topic: agile.overview
-version: 2
+version: 4
 keywords:
     - Kanban
     - Scrum
@@ -42,6 +42,15 @@ add, tick off one by one, remove. The number next to it shows fulfilled and
 existing criteria; before a move into a done column, the board names
 unfulfilled criteria.
 
+**Definition of done:** The board settings hold the project's definition of
+done, one line per item. When a card is moved into a done column, the board
+opens a dialog with these items and the acceptance criteria that are still
+open. The card only moves once every item is confirmed. Users with the
+override permission can move it despite open points and must give a reason;
+the same applies to a WIP limit that has been reached. Every override
+appears in the history and counts in the quality series of the reports,
+which also shows the DoD deviation rate per week.
+
 **Board:** Columns represent the workflow; cards move from left to right.
 With a sprint selected, the board shows only the items of that sprint.
 
@@ -64,3 +73,5 @@ board. A management overview summarises all boards: active sprint, velocity
 median, unplanned work, blockers and an empirical forecast — the latter only
 appears once enough comparable weeks exist, instead of feigning precision.
 The overview shows only projects the viewer is allowed to see anyway.
+
+**Done outside the board:** If a card’s task is completed elsewhere (task list, import), the card follows into the done column. Open acceptance criteria and the unconfirmed definition of done are then recorded as a deviation in the board history and count towards the DoD deviation rate.

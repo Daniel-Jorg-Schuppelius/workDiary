@@ -112,6 +112,16 @@ return [
         ],
     ],
     // Sammelbuchungs-Auflösung je TransactionDetail (Toolkit-Folgepaket 2).
+    // Freie Belegsuche beim Einzelumsatz (MVP-1557).
+    'assign' => [
+        'title' => 'Rechercher et affecter une pièce',
+        'hint' => 'Toutes les factures ouvertes, les frais approuvés et les comptes clients — même sans suggestion. Un montant inférieur est un paiement partiel, un montant supérieur un trop-perçu.',
+        'target' => 'Pièce',
+        'kind' => 'Type',
+        'kind_auto' => 'Automatiquement d’après le montant',
+        'note' => 'Note',
+        'action' => 'Rechercher une pièce',
+    ],
     'split' => [
         'title' => 'Décomposer l’écriture groupée',
         'return_title' => 'Rejet de prélèvement groupé — traiter par transaction individuelle',

@@ -1,7 +1,7 @@
 ---
 title: "Integrazioni Lexware: tariffa, matrice delle funzioni e consegna"
 topic: lexware.supplements
-version: 2
+version: 3
 keywords:
     - Lexoffice
     - Lexware Office
@@ -32,3 +32,7 @@ Nel menu di sistema, sotto **Finanze e retribuzioni → Integrazioni Lexware**, 
 **Consegna automatica:** Il canale «automatico» richiede una chiave API propria (tariffa XL) e un canale di consegna verificato; fino ad allora l'esportazione manuale resta la via standard. Le consegne aperte restano visibili in caso di cambio tariffa.
 
 **Diritti:** Le pagine sono visibili a chi ha «Elencare le fatture»; solo «Configurazione finanziaria» modifica il profilo tariffario; esportazione e conferma richiedono «Esportare le fatture». Nel menu di sistema il profilo tariffario compare solo con «Configurazione finanziaria»; dall'elenco di consegna resta consultabile per chi ha «Elencare le fatture».
+
+## Filtro dell'elenco di consegna
+
+Il filtro offre gli stati della via manuale: aperto, esportato, confermato manualmente. Trasmesso, verifica necessaria e non riuscito li imposta solo la consegna automatica, che seguirà una volta dimostrata la via di consegna.

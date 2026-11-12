@@ -1,7 +1,7 @@
 ---
 title: "Gestion des urgences & des crises"
 topic: crisis.overview
-version: 2
+version: 4
 keywords:
     - cellule de crise
     - plan d'urgence
@@ -55,3 +55,29 @@ et la diffusion documentée restent traçables séparément.
 solutions de contournement et processus de substitution ; après la levée
 de l'alerte suit le retour d'expérience (obligatoire avant la clôture).
 Les exercices sont menés séparément et ne faussent aucun dossier réel.
+
+Vous gérez vos propres délais dans l’onglet **Délais de déclaration** :
+reprendre les valeurs par défaut d’une catégorie comme délais propres, créer,
+modifier et désactiver des délais. Dès qu’une catégorie possède un délai
+propre actif, seuls les délais propres s’y appliquent ; sans délai propre
+actif, les valeurs par défaut s’appliquent de nouveau.
+
+**Mesures avec prédécesseur :** lors de la saisie d'une mesure, vous pouvez
+choisir un prédécesseur du même dossier. La mesure ne peut être terminée
+qu'une fois le prédécesseur terminé ou annulé ; vous pouvez la commencer avant.
+
+**Processus de substitution et état résiduel :** pour un processus critique,
+vous saisissez le processus de substitution en plus de la solution de
+contournement. Avec l'état de reprise, vous notez la restriction restante.
+
+**Ouvrir une crise à partir d'un incident :** l'incident de sécurité,
+l'incident de protection des données, l'événement de sécurité au travail et le
+ticket d'incident majeur portent le bouton « Ouvrir une crise ». La boîte de
+dialogue préremplit titre, catégorie et déclencheur et lie l'incident au
+nouveau dossier. Vous liez d'autres dossiers via « Lier un dossier » à partir
+d'une sélection ; seuls ceux que vous pouvez lire sont proposés.
+
+**Liste de présence d'urgence :** avec le droit correspondant, un dossier de
+crise en cours y mène directement.
+
+**Modifier le prédécesseur :** vous modifiez ou supprimez le prédécesseur d’une mesure directement dans la liste des mesures. Seules les mesures du même dossier sont proposées ; WorkDiary refuse un choix qui créerait une boucle (A attend B, B attend A).

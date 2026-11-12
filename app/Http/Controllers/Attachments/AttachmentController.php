@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
 use App\Models\Attachments\Attachment;
 use App\Models\Communication\Comment;
+use App\Models\Contracts\GuardsAttachments;
 use App\Models\Customer\Customer;
 use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OnCallShift};
 use App\Models\Knowledge\KnowledgeArticle;
@@ -62,6 +63,10 @@ class AttachmentController extends Controller {
         'safety-instruction' => \App\Models\Safety\SafetyInstruction::class,
         // Aufmaß (MVP-1058): Fotos und Skizzen zum Blatt.
         'takeoff' => \App\Models\Takeoff\Takeoff::class,
+        // Anhänge am ganzen Protokoll (MVP-1573); Sperre und Journal über GuardsAttachments.
+        'protocol' => \App\Models\Protocol\Protocol::class,
+        // Anhänge am offenen Punkt (MVP-1597); Sperre und Verlauf über GuardsAttachments.
+        'open-issue' => \App\Models\Diary\OpenIssue::class,
     ];
 
     /**
@@ -90,6 +95,8 @@ class AttachmentController extends Controller {
 
         // Anhängen erfordert das Bearbeiten-Recht am Trägerobjekt, nicht nur Sichtbarkeit.
         Gate::authorize('update', $parent);
+        // Nachweise nehmen nichts mehr an — auch nicht über den Admin-Durchgriff der Policy.
+        abort_if($parent instanceof GuardsAttachments && $parent->attachmentsLocked(), 403);
 
         // W2.3: Belege an Ausgaben haben ein eigenes, konfigurierbares Limit
         // und eine eigene MIME-Whitelist (config/expenses.php).
@@ -124,7 +131,10 @@ class AttachmentController extends Controller {
         // Kanonische Ablage über FileAttacher (M46-Rest, Folgepunkt 2026-07-20):
         // Ordner/UUID/sanitize/morphMany UND der H8-Quota-Guard (wirft
         // ValidationException → Redirect mit errors['file'], wie zuvor).
-        app(FileAttacher::class)->store($parent, $file, Auth::id() !== null ? (int) Auth::id() : null);
+        $attachment = app(FileAttacher::class)->store($parent, $file, Auth::id() !== null ? (int) Auth::id() : null);
+        if ($parent instanceof GuardsAttachments) {
+            $parent->attachmentAdded($attachment, $this->authUser());
+        }
 
         return back()->with('success', __('Anhang hochgeladen.'));
     }
@@ -247,8 +257,14 @@ class AttachmentController extends Controller {
 
         Gate::authorize('delete', $attachment);
 
+        $parent = $attachment->attachable;
+        abort_if($parent instanceof GuardsAttachments && $parent->attachmentsLocked($attachment), 403);
+
         Storage::disk($attachment->disk)->delete($attachment->path);
         $attachment->delete();
+        if ($parent instanceof GuardsAttachments) {
+            $parent->attachmentRemoved($attachment, $this->authUser());
+        }
 
         return back()->with('success', __('Anhang gelöscht.'));
     }

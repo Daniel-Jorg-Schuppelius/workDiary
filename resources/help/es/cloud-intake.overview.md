@@ -1,7 +1,7 @@
 ---
 title: "Entrada de documentos en la nube"
 topic: cloud-intake.overview
-version: 2
+version: 5
 keywords:
     - Paperless-ngx
     - Seafile
@@ -32,3 +32,11 @@ WorkDiary LEE documentos de carpetas supervisadas en Dropbox, OneDrive/SharePoin
 **Reglas:** patrones de ruta con * y ** más variables como {customer_number} asignan archivos a clientes, proyectos, órdenes, activos o contratos existentes — nunca por creación automática. Los casos dudosos van a la bandeja de integración.
 
 **Seguridad:** solo permisos de lectura, tokens cifrados, archivos de origen intactos; los webhooks son solo señales de aviso — la ejecución delta reanudable es la autoritativa.
+
+**Prueba de regla e inicio:** cada regla necesita una ruta de prueba, por ejemplo una carpeta de cliente real. Al guardar, WorkDiary comprueba si la ruta coincide con el patrón, qué variables se reconocen y qué destino resulta; sin prueba superada no se guarda nada. Una referencia de destino fija asigna todos los archivos de una regla a un cliente, proyecto, pedido, activo o contrato concreto. Las reglas activas de una conexión no pueden solaparse: patrones iguales o una ruta de prueba que coincide con dos reglas bloquean la activación. Una conexión solo inicia su primera importación cuando usted ha revisado la vista previa y confirmado «Iniciar importación»; una nueva carpeta raíz exige una nueva confirmación.
+
+**Soberanía de datos:** Si, según la soberanía de datos, otro sistema lidera los documentos, la conexión no incorpora archivos al DMS; cada archivo se convierte en un caso en la bandeja de integraciones, sin justificante de entrega. **Asumir una vez** vuelve a descargar el archivo y lo crea según las reglas. Las reglas de facturas recibidas, pedidos y paquetes de licitación no se ven afectadas.
+
+## Inicio de sesión caducado, bloqueado o desactivado
+
+Si el proveedor rechaza el inicio de sesión (caducado o revocado), la conexión muestra **Reautenticación necesaria**. Si faltan permisos de lectura al iniciar sesión, muestra **Bloqueada**; tras errores repetidos hasta el umbral de desactivación, **Desactivada**. En los tres casos la importación queda en pausa y la tarjeta ofrece **Volver a iniciar sesión**. Solo un nuevo inicio de sesión vuelve a activar la conexión; cambiar la carpeta o las reglas no lo hace.

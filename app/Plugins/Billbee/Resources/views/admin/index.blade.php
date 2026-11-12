@@ -29,6 +29,36 @@
     </x-slot:actions>
 
 
+    {{-- Bestandsführung (MVP-1626): Rückkanal der Bestände an Billbee. --}}
+    @if ($canConfigureInventory)
+        <x-card as="form" class="space-y-3" method="POST" action="{{ route('admin.billbee.mode.update') }}"
+                data-confirm-dialog data-confirm-message="{{ __('billbee::billbee.inventory.confirm') }}">
+            @csrf
+            <h2 class="text-base font-semibold">{{ __('billbee::billbee.inventory.heading') }}</h2>
+            <p class="text-sm text-muted">{{ __('billbee::billbee.inventory.explain') }}</p>
+            @php($billbeeLeads = $inventoryMode === \App\Enums\Inventory\InventoryMode::External && $inventoryPlugin === \App\Plugins\Billbee\BillbeePlugin::ID)
+            @if ($inventoryMode !== \App\Enums\Inventory\InventoryMode::Local && ! $billbeeLeads)
+                <div role="status" class="alert alert-info alert-soft text-sm">
+                    <x-icon name="info" />
+                    <span>{{ __('billbee::billbee.inventory.other_leads', ['plugin' => app(\App\Plugins\PluginManager::class)->find($inventoryPlugin)?->name() ?? $inventoryPlugin]) }}</span>
+                </div>
+            @else
+                <div class="flex flex-col gap-2">
+                    @foreach ([\App\Enums\Inventory\InventoryMode::Local, \App\Enums\Inventory\InventoryMode::External] as $mode)
+                        <label class="label cursor-pointer justify-start gap-2">
+                            <input type="radio" name="inventory_mode" value="{{ $mode->value }}" class="radio radio-sm"
+                                   @checked($billbeeLeads ? $mode === \App\Enums\Inventory\InventoryMode::External : $mode === \App\Enums\Inventory\InventoryMode::Local)>
+                            <span class="label-text">{{ __('billbee::billbee.inventory.mode_' . $mode->value) }}</span>
+                        </label>
+                    @endforeach
+                </div>
+                <div class="flex flex-wrap justify-end gap-2">
+                    <x-button type="submit">{{ __('billbee::billbee.inventory.save') }}</x-button>
+                </div>
+            @endif
+        </x-card>
+    @endif
+
     {{-- Filter --}}
     <form method="GET" action="{{ route('admin.billbee.index') }}" class="flex flex-wrap items-end gap-2">
         <label class="form-control">

@@ -46,6 +46,8 @@ return [
     ],
 
     'form' => [
+        'is_photo_in_record' => 'Mostra le foto nell’attestato per il cliente',
+        'is_photo_in_record_hint' => 'Nel PDF dell’attestato compaiono fino a due foto per posizione apparecchio.',
         'title_create' => 'Nuova pratica di smaltimento',
         'title_edit' => 'Modifica pratica di smaltimento',
         'submit_create' => 'Crea pratica',
@@ -76,6 +78,13 @@ return [
     ],
 
     'item' => [
+        'asset' => 'Asset',
+        'asset_none' => '— senza asset collegato —',
+        'asset_hint' => 'Solo asset in esercizio. La selezione precompila denominazione, produttore, modello e numero di serie; la chiusura della pratica mette l’asset fuori esercizio.',
+        'error' => [
+            'asset_not_in_operation' => 'L’asset non è più in esercizio e non può essere smaltito.',
+            'asset_taken' => 'L’asset è già presente in una pratica di smaltimento aperta.',
+        ],
         'title_create' => 'Registra posizione',
         'title_edit' => 'Modifica posizione',
         'group_device' => 'Apparecchio',
@@ -157,6 +166,23 @@ return [
         'reason' => 'Motivazione',
     ],
 
+    // Asset-Bezug und Fotos der Gerätepositionen (MVP-1578).
+    'asset' => [
+        'action' => 'Smaltisci',
+        'create_hint' => 'Dopo la creazione registri «:asset» come posizione apparecchio; l’asset è già selezionato.',
+        'add_hint' => 'Registri l’asset «:asset» come posizione apparecchio: è già selezionato nella finestra.',
+        'pending_decommission' => 'Non messi fuori esercizio: :assets. L’asset è ancora consegnato o in uno stato finale: lo ritiri e lo metta fuori esercizio nella sua scheda.',
+    ],
+    'photo' => [
+        'label' => 'Foto',
+        'alt' => 'Foto di :item',
+        'upload' => 'Carica foto',
+        'upload_for' => 'Seleziona una foto per :item',
+        'flash' => [
+            'added' => 'Foto salvata per la posizione apparecchio.',
+        ],
+    ],
+
     'action' => [
         'create' => 'Nuova pratica di smaltimento',
         'collect' => 'Registra ritiro',
@@ -177,6 +203,8 @@ return [
     ],
 
     'pdf' => [
+        'photos' => 'Foto',
+        'photo_of' => 'Posizione :number',
         'title' => 'Attestato di presa in carico e smaltimento',
         'number' => 'Numero pratica',
         'customer' => 'Cliente',

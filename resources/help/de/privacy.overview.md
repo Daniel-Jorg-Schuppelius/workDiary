@@ -1,7 +1,7 @@
 ---
 title: "Datenschutzmanagement im Überblick"
 topic: privacy.overview
-version: 2
+version: 5
 keywords:
     - DSGVO
     - Verarbeitungsverzeichnis
@@ -258,3 +258,15 @@ gelten als ungeprüfte Selbstauskunft.
 
 **Berechtigung:** ein eigenes Recht zur Verwaltung des Betroffenenportals;
 ohne dieses Recht fehlt der Menüeintrag.
+
+**Schlüsselvernichtung nach der Aufbewahrung:** Der Löschscan schlägt abgeschlossene Betroffenenanfragen und Datenschutzvorfälle nach Ablauf ihrer Aufbewahrungsfrist unter **Aufbewahrung** zur Vernichtung vor. Erst nach Ihrer Bestätigung und dem Vollzug vernichtet WorkDiary den Schlüssel des Vorgangs: Inhalte sind danach nicht mehr lesbar, unverschlüsselt abgelegte Nachweise werden gelöscht, und der Abruf eines verschlüsselten Auskunftspakets antwortet mit „nicht mehr vorhanden“. Nummer, Art, Fristen, Entscheidung und der Verlauf bleiben als Nachweis stehen.
+
+**Auftragsverarbeitung:** Beim Erfassen eines Vertrags zur Auftragsverarbeitung halten Sie fest, ob die technischen und organisatorischen Maßnahmen (TOM) geprüft sind, und setzen den nächsten Review. Überfällige Reviews hebt die Liste hervor.
+
+## Bearbeitungsstand, Umsetzungsstatus und Eindämmung
+
+**Betroffenenanfragen:** Die Karte **Bearbeitungsstand** hält fest, dass ein Identitätsnachweis angefordert, eine Rückfrage gestellt oder die Antwort eingegangen ist; **Von der Person zurückgezogen** schließt den Fall. Bei Rückfragen läuft die gesetzliche Frist weiter.
+
+**TOM:** Umsetzungsstatus und Schutzbedarf (normal, hoch, sehr hoch) erfassen Sie bei der Anlage und ändern sie auf der Maßnahme. Die Freigabe einer Verarbeitungstätigkeit friert beides im TOM-Snapshot ein.
+
+**Datenschutzvorfälle:** Sind alle Maßnahmen erledigt, steht ein noch nicht gemeldeter Vorfall auf **Eingedämmt**; Meldung und Abschluss bleiben eigene Schritte.

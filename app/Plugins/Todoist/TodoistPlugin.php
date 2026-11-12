@@ -12,7 +12,7 @@ namespace App\Plugins\Todoist;
 
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
+use App\Plugins\Contracts\{Plugin, PluginCapability};
 use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
 use App\Plugins\Todoist\Api\TodoistApiClient;
 use App\Plugins\Todoist\Enums\TodoistConnectionStatus;
@@ -30,7 +30,7 @@ use App\Plugins\Todoist\Models\TodoistConnection;
  *
  * Plugin-Id ist "todoist", per Organisation aktivierbar.
  */
-class TodoistPlugin extends AbstractPlugin implements \App\Plugins\Contracts\SlotRenderer, TaskSyncer {
+class TodoistPlugin extends AbstractPlugin implements \App\Plugins\Contracts\SlotRenderer, \App\Plugins\Contracts\WritesDataDomains {
     public const string ID = 'todoist';
 
     public const string SERVICE_PROVIDER = TodoistServiceProvider::class;
@@ -56,11 +56,6 @@ class TodoistPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Slo
         return [
             PluginCapability::TaskSync,
         ];
-    }
-
-    /** Einheitlicher Sync-Einstieg (TaskSyncer): Abgleich aller aktiven Projektzuordnungen. */
-    public function syncTasks(Organization $organization): array {
-        return app(Services\TodoistSyncService::class)->syncOrganization($organization);
     }
 
     /**
@@ -130,5 +125,10 @@ class TodoistPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Slo
         $url = self::taskUrl($context);
 
         return $url !== null ? view('todoist::tasks._link', ['url' => $url])->render() : null;
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Tasks];
     }
 }

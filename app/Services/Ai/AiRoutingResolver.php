@@ -90,6 +90,30 @@ class AiRoutingResolver {
         return $candidates;
     }
 
+    /**
+     * Verbindungen, zwischen denen der Nutzer für eine Capability wählen darf
+     * (MVP-1590): leer, solange die Organisation die Wahl nicht erlaubt, die
+     * Capability aus ist oder nur eine Verbindung zulässig bleibt.
+     *
+     * @return list<AiProviderConnection>
+     */
+    public function userChoices(Organization $organization, string $capabilityKey): array {
+        if (! $this->registry->has($capabilityKey) || ! $this->modules->isActiveFor($organization, self::MODULE)) {
+            return [];
+        }
+        $setting = AiCapabilitySetting::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('capability', $capabilityKey)
+            ->first();
+        if ($setting === null || ! $setting->enabled || ! $setting->allow_user_choice) {
+            return [];
+        }
+        $candidates = $this->allowedConnections($organization, $setting, $this->registry->get($capabilityKey));
+
+        return count($candidates) > 1 ? $candidates : [];
+    }
+
     public function resolve(
         Organization $organization,
         string $capabilityKey,

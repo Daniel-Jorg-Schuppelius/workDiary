@@ -12,10 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\Rental;
 
+use App\Enums\Contracts\HasLabel;
+
 /** Befund einer Checklistenposition im Übergabe- oder Rücknahmeprotokoll (MVP-263/265). */
-enum RentalConditionItemState: string {
+enum RentalConditionItemState: string implements HasLabel {
     case Ok = 'ok';
     case Worn = 'worn';
     case Damaged = 'damaged';
     case Missing = 'missing';
+
+    public function label(): string {
+        return (string) __('enums.rental.rental_condition_item_state.' . $this->value);
+    }
 }

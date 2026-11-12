@@ -25,7 +25,7 @@ use App\Plugins\Jira\Services\JiraImportService;
 use App\Plugins\PluginManager;
 use App\Plugins\Support\OAuthConnectionStatus;
 use App\Plugins\Support\TaskSync\{TaskImportAttachException, TaskImportBusyException};
-use App\Services\Integration\{DataOwnershipResolver, InboxActionService};
+use App\Services\Integration\{DataOwnershipGuard, DataOwnershipResolver, InboxActionService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\Concerns\WithOrganization;
@@ -150,7 +150,62 @@ class TaskImportFlowTest extends TestCase {
         $this->assertSame(2, $counters['inbox']);
         $this->assertSame(['A'], Task::query()->pluck('title')->all());
         $this->assertSame('todoist', app(DataOwnershipResolver::class)->ownerFor($this->organization->fresh(), DataDomain::Tasks), 'Der Lauf ändert die Datenführung nicht.');
-        $this->assertSame(2, IntegrationInboxItem::query()->where('dedupe_key', 'like', '%:ownership')->count());
+        $this->assertSame(2, $this->ownershipCases()->count(), 'Führerschaftskonflikte mit „Einmalig übernehmen“ (MVP-1592).');
+        $this->assertSame(0, IntegrationInboxItem::query()->where('dedupe_key', 'like', '%:ownership')->count());
+    }
+
+    public function test_ownership_conflict_accept_imports_once_and_a_new_remote_state_reopens_it(): void {
+        $this->jiraLink($this->project);
+        app(DataOwnershipResolver::class)->setOwner($this->organization, DataDomain::Tasks, 'todoist');
+        $this->serve([$this->jiraIssue('10002', 'MUS-2', 'B')]);
+        $this->jira()->run($this->organization);
+        $case = $this->ownershipCases()->sole();
+        $this->assertSame(JiraPlugin::ID . '.task', $case->ownershipMarker()['kind'] ?? null);
+
+        $task = app(DataOwnershipGuard::class)->accept($case);
+
+        $this->assertInstanceOf(Task::class, $task);
+        $this->assertSame(['B'], Task::query()->pluck('title')->all());
+        $this->assertSame(IntegrationInboxStatus::ResolvedRemote, $case->refresh()->status);
+        $this->jira()->run($this->organization);
+        $this->assertSame(IntegrationInboxStatus::ResolvedRemote, $case->refresh()->status, 'Gleicher Stand: nichts neu vorzulegen.');
+
+        $this->serve([$this->jiraIssue('10002', 'MUS-2', 'B geändert')]);
+        $this->jira()->run($this->organization);
+        $this->assertSame(IntegrationInboxStatus::Open, $case->refresh()->status, 'Neuer Stand nach dem Übernehmen: der Fall öffnet sich wieder.');
+        $this->assertSame(['B'], Task::query()->pluck('title')->all());
+
+        app(InboxActionService::class)->dismiss($case);
+        $this->serve([$this->jiraIssue('10002', 'MUS-2', 'B noch einmal')]);
+        $this->jira()->run($this->organization);
+        $this->assertSame(IntegrationInboxStatus::Dismissed, $case->refresh()->status, 'Verworfen bleibt verworfen.');
+        $this->assertSame(['B'], Task::query()->pluck('title')->all());
+    }
+
+    public function test_open_legacy_ownership_case_becomes_an_ownership_conflict(): void {
+        $this->jiraLink($this->project);
+        $connection = $this->jira()->connection($this->organization->id);
+        $this->assertNotNull($connection);
+        $externalId = $this->jira()->externalId($connection, '10003');
+        $legacy = IntegrationInboxItem::query()->create([
+            'organization_id' => $this->organization->id, 'plugin_id' => JiraPlugin::ID, 'dedupe_key' => JiraPlugin::EXT_TYPE_ISSUE . ':' . $externalId . ':ownership',
+            'source' => JiraPlugin::ID, 'target_type' => (new Task())->getMorphClass(), 'external_type' => JiraPlugin::EXT_TYPE_ISSUE, 'external_id' => $externalId, 'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
+            'status' => IntegrationInboxStatus::Open, 'remote_snapshot' => ['id' => $externalId], 'display_title' => 'MUS-3', 'occurred_at' => now(),
+        ]);
+        app(DataOwnershipResolver::class)->setOwner($this->organization, DataDomain::Tasks, 'todoist');
+        $this->serve([$this->jiraIssue('10003', 'MUS-3', 'C')]);
+
+        $this->jira()->run($this->organization);
+
+        $legacy->refresh();
+        $this->assertStringStartsWith(DataOwnershipGuard::DEDUPE_PREFIX, (string) $legacy->dedupe_key, 'Der offene Altfall wird zum Führerschaftskonflikt.');
+        $this->assertNotNull($legacy->ownershipMarker());
+        $this->assertSame(1, IntegrationInboxItem::query()->count());
+    }
+
+    /** @return \Illuminate\Database\Eloquent\Builder<IntegrationInboxItem> */
+    private function ownershipCases(): \Illuminate\Database\Eloquent\Builder {
+        return IntegrationInboxItem::query()->whereLikeEscaped('dedupe_key', DataOwnershipGuard::DEDUPE_PREFIX, 'prefix');
     }
 
     public function test_keep_local_becomes_the_base_and_a_later_remote_change_opens_a_new_round(): void {

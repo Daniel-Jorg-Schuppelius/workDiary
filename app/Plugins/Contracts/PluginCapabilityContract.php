@@ -30,9 +30,10 @@ interface PluginCapabilityContract {
 
     /**
      * Das Contract-Interface, das ein Plugin mit dieser Fähigkeit implementieren
-     * muss — erzwungen von `plugin:doctor` und dem PluginContractTest.
+     * muss — erzwungen von `plugin:doctor` und dem PluginContractTest. Null,
+     * wenn die Fähigkeit nur angezeigt und nie über einen Vertrag gerufen wird.
      *
-     * @return class-string
+     * @return class-string|null
      */
-    public function interface(): string;
+    public function interface(): ?string;
 }

@@ -204,6 +204,40 @@ class LearningExternalAccessTest extends TestCase {
         $this->assertSame(0, $enrollment->refresh()->progress()->count());
     }
 
+    public function test_gastzugang_zeigt_alle_blockarten_mit_medien(): void {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        [$enrollment, $course] = $this->externalEnrollment();
+        $unit = $course->units()->firstOrFail();
+        \Illuminate\Support\Facades\Storage::disk('local')->put('learning/plan.png', 'png-bytes');
+        $image = \App\Models\Attachments\Attachment::query()->create([
+            'organization_id' => $this->organization->id, 'attachable_type' => $unit->getMorphClass(), 'attachable_id' => $unit->id,
+            'disk' => 'local', 'path' => 'learning/plan.png', 'original_name' => 'plan.png', 'mime' => 'image/png', 'size' => 9,
+        ]);
+        $unit->forceFill(['content' => json_encode([
+            ['type' => 'callout', 'tone' => 'warning', 'text' => 'Helmpflicht im ganzen Baufeld'],
+            ['type' => 'image', 'attachment_id' => $image->id, 'alt' => 'Lageplan der Baustelle'],
+        ])])->save();
+        $token = $this->service()->issue($enrollment);
+        $this->get(route('learning.external.enter', $token));
+
+        $media = route('learning.external.units.media', [$unit, $image]);
+        $this->get(route('learning.external.show'))->assertOk()
+            ->assertSee('Helmpflicht im ganzen Baufeld')
+            ->assertSee('Lageplan der Baustelle')
+            ->assertSee($media, false);
+        $this->get($media)->assertOk();
+
+        // Nur Anhänge der Einheit im Kurs der Sitzung.
+        [, $otherCourse] = $this->externalEnrollment();
+        $foreignUnit = $otherCourse->units()->firstOrFail();
+        $this->get(route('learning.external.units.media', [$foreignUnit, $image]))->assertNotFound();
+        $other = \App\Models\Attachments\Attachment::query()->create([
+            'organization_id' => $this->organization->id, 'attachable_type' => $foreignUnit->getMorphClass(), 'attachable_id' => $foreignUnit->id,
+            'disk' => 'local', 'path' => 'learning/plan.png', 'original_name' => 'x.png', 'mime' => 'image/png', 'size' => 9,
+        ]);
+        $this->get(route('learning.external.units.media', [$unit, $other]))->assertNotFound();
+    }
+
     public function test_fremde_einheit_wird_abgewiesen(): void {
         [$enrollment] = $this->externalEnrollment();
         [, $otherCourse] = $this->externalEnrollment();

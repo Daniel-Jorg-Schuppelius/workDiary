@@ -184,9 +184,8 @@ class IncomingPdfInvoiceTest extends TestCase {
             'invoice_number' => 'KF-2026-0099',
             'issue_date' => '2026-09-14',
             'currency' => 'EUR',
-            'amount_net' => '100.00',
-            'amount_tax' => '19.00',
             'amount_gross' => '119.00',
+            'tax_breakdown' => [['percent' => '19', 'net' => '100.00', 'tax' => '19.00']],
         ])->assertRedirect();
 
         $this->get(route('finance.incoming-invoices.show', $incoming->document))->assertOk()
@@ -287,12 +286,12 @@ class IncomingPdfInvoiceTest extends TestCase {
         $this->assertSame([], $clarification->taxBreakdown());
         $this->assertSame($expected, \App\Services\Invoicing\EInvoice\IncomingInvoiceTaxBreakdown::prefill($clarification, (array) data_get($clarification->summary, 'extraction.found', [])));
 
-        // Eine Erfassung nur mit Summen ersetzt die erkannte Aufschlüsselung.
+        // Eine Erfassung mit einem Satz ersetzt die erkannte Aufschlüsselung.
         $this->post(route('finance.incoming-invoices.values', $incoming), [
-            'invoice_number' => 'MS-2026-1', 'issue_date' => '2026-10-01', 'currency' => 'EUR',
-            'amount_net' => '1200.00', 'amount_tax' => '204.00', 'amount_gross' => '1404.00',
+            'invoice_number' => 'MS-2026-1', 'issue_date' => '2026-10-01', 'currency' => 'EUR', 'amount_gross' => '1404.00',
+            'tax_breakdown' => [['percent' => '17', 'net' => '1200.00', 'tax' => '204.00']],
         ])->assertSessionHasNoErrors();
-        $this->assertSame([], $incoming->refresh()->taxBreakdown());
+        $this->assertSame([['percent' => '17.00', 'net' => '1200.00', 'tax' => '204.00']], $incoming->refresh()->taxBreakdown());
     }
 
     public function test_preview_of_a_confidential_original_is_audited_and_foreign_access_denied(): void {

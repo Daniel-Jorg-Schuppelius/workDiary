@@ -33,6 +33,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
  * @property string|null $document_type
  * @property string|null $target_ref_type
  * @property int|null $target_ref_id
+ * @property string|null $test_path
+ * @property \Illuminate\Support\Carbon|null $tested_at
  * @property bool $auto_version
  * @property bool $active
  */
@@ -56,6 +58,8 @@ class CloudDocumentRoute extends Model {
         'document_type',
         'target_ref_type',
         'target_ref_id',
+        'test_path',
+        'tested_at',
         'auto_version',
         'active',
     ];
@@ -66,6 +70,7 @@ class CloudDocumentRoute extends Model {
         'allowed_extensions' => 'array',
         'auto_version' => 'boolean',
         'active' => 'boolean',
+        'tested_at' => 'datetime',
     ];
 
     /** @return BelongsTo<CloudDocumentConnection, $this> */

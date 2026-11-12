@@ -45,12 +45,11 @@ final class DiaryEntrySource extends AbstractSearchSource {
             type: $this->type(),
             sourceId: (int) $model->id,
             title: $title !== '' ? $title : self::firstLine($model->content),
-            excerpt: self::join("\n\n", $model->content, $model->response, $model->notes) ?: null,
+            excerpt: self::join("\n\n", $model->content, $model->response) ?: null,
             primaryTexts: [$title],
             texts: [
                 $model->content,
                 $model->response,
-                $model->notes,
                 ...$model->customFieldTexts(),
                 ...self::strings($model->comments, 'body'),
                 ...self::strings($model->tags, 'name'),

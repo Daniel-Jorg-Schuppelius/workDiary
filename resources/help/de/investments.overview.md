@@ -1,7 +1,7 @@
 ---
 title: "Investitionsplanung"
 topic: investments.overview
-version: 3
+version: 4
 keywords:
     - Investitionsantrag
     - Budgetantrag
@@ -69,3 +69,14 @@ ersetzt keine Buchhaltung.
 **Nachbewertung:** Nach Abschluss oder Abbruch werden tatsächlicher
 Nutzen, Wirtschaftlichkeit, Lessons Learned und Folgemaßnahmen
 dokumentiert.
+
+**Nutzungsdauer und Lieferant:** Jede Variante nimmt eine Nutzungsdauer in
+Jahren auf; sie steht im Variantenvergleich und belegt die Übernahme als
+Anlage vor. Wird ein Asset mit der Akte verknüpft oder die Akte abgeschlossen,
+übernimmt das Asset den Lieferanten der empfohlenen Variante als „Bezogen von“,
+sofern dort noch keiner steht.
+
+**Liste filtern:** Die Investitionsliste filtert zusätzlich nach Zeitraum,
+Verantwortlichen, Kostenstelle, Budgetstatus (Stand des jüngsten Antrags),
+Dringlichkeit und Risikohinweis. Der Bericht lässt sich auch als PDF
+ausgeben.

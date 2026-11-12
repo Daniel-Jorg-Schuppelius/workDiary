@@ -62,6 +62,8 @@ class LiquidityBuilder extends AbstractAccountingReportBuilder {
             ->where('organization_id', $organization->id)
             ->where('direction', $direction->value)
             ->stillOpen()
+            // Eine strittige Forderung ist kein erwarteter Eingang (MVP-1559); Verbindlichkeiten bleiben vorsichtig drin.
+            ->when($direction === OpenItemDirection::Receivable, fn ($query) => $query->undisputed())
             ->sum('open_amount');
 
         return Decimal::of((string) $sum, 2)->getValue();

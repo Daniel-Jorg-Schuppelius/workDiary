@@ -55,10 +55,21 @@
                     <x-icon-btn icon="badge" size="sm"
                                 :href="route('attendance.index')"
                                 show-label>{{ __('Stempelungen') }}</x-icon-btn>
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('admin-time-entries.create', ['date' => $day->toDateString()])"
-                                show-label>{{ __('Verwaltungszeit') }}</x-icon-btn>
+                    {{-- Material des Tages (MVP-1594): Dialog liegt in der Seite, öffnet also auch offline. --}}
+                    @if (! $isFuture)
+                        @can(\App\Enums\User\Permission::TimesheetUpdate->value)
+                            <x-icon-btn icon="category" size="sm"
+                                        data-open-dialog="today-material-dialog"
+                                        show-label>{{ __('timesheet.day_material.action') }}</x-icon-btn>
+                        @endcan
+                    @endif
+                    {{-- Abgeschlossener Tag: Buchungen nur noch über den Korrekturantrag (MVP-1551). --}}
+                    @if ($effectiveStatus === \App\Enums\TimeApproval\DayClosureStatus::Open)
+                        <x-icon-btn icon="add" tone="primary" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('admin-time-entries.create', ['date' => $day->toDateString()])"
+                                    show-label>{{ __('Verwaltungszeit') }}</x-icon-btn>
+                    @endif
 
                     {{-- Tagesabschluss-Aktionen (Speichern / Tag abschließen / …):
                          in die Toolbar gezogen statt sticky unten. Dialoge am Seitenende. --}}
@@ -76,8 +87,17 @@
             </div>
         @endif
 
+        @if (! $monthLocked && $effectiveStatus !== \App\Enums\TimeApproval\DayClosureStatus::Open)
+            <div role="alert" class="alert alert-info">
+                <x-icon name="lock" />
+                <span>{{ __('day-close.hint.day_closed') }}</span>
+            </div>
+        @endif
+
+        @include('time-approval.day._plan_ist', ['planIst' => $planIst ?? null])
+
         {{-- Eingabeleiste (Toggl-artig): Timer/Manuell-Buchung direkt mit Projektwahl. --}}
-        @if (! $isFuture)
+        @if (! $isFuture && $effectiveStatus === \App\Enums\TimeApproval\DayClosureStatus::Open)
             @include('today._entry_bar')
         @endif
 
@@ -247,8 +267,11 @@
                             <x-table.th sort type="string">{{ __('Beginn') }}</x-table.th>
                             <x-table.th sort type="string">{{ __('Ende') }}</x-table.th>
                             <x-table.th sort type="number" align="right">{{ __('Pause') }}</x-table.th>
+                            <x-table.th sort type="duration" align="right">{{ __('attendance.intermediate.homeoffice') }}</x-table.th>
+                            <x-table.th sort type="duration" align="right">{{ __('attendance.intermediate.errand') }}</x-table.th>
                             <x-table.th sort type="duration" align="right">{{ __('Dauer') }}</x-table.th>
                             <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                            <th class="w-16 text-right">{{ __('Aktion') }}</th>
                         </tr>
                     </x-slot:head>
                     @forelse ($attendances as $a)
@@ -256,11 +279,19 @@
                             <td class="tabular-nums">{{ $a->started_at?->ftime() }}</td>
                             <td class="tabular-nums">{{ $a->ended_at?->ftime() ?? '—' }}</td>
                             <td class="text-right tabular-nums">{{ $a->break_minutes_total }}</td>
+                            <td class="text-right tabular-nums" data-sort-value="{{ (int) $a->homeoffice_minutes }}">{{ $a->homeoffice_minutes > 0 ? $fmt((int) $a->homeoffice_minutes) : '—' }}</td>
+                            <td class="text-right tabular-nums" data-sort-value="{{ (int) $a->errand_minutes }}">{{ $a->errand_minutes > 0 ? $fmt((int) $a->errand_minutes) : '—' }}</td>
                             <td class="text-right tabular-nums" data-sort-value="{{ (int) ($a->duration_minutes ?? 0) }}">{{ $fmt((int) ($a->duration_minutes ?? 0)) }}</td>
                             <td><x-status-badge :tone="$a->isOpen() ? 'success' : 'ghost'">{{ $a->statusLabel() }}</x-status-badge></td>
+                            <td class="text-right whitespace-nowrap">
+                                @can('create', \App\Models\Time\TimeCorrectionRequest::class)
+                                    <x-icon-btn icon="edit_note" data-open-dialog="attendance-correct-{{ $a->sqid }}"
+                                                :label="__('time-correction.attendance.action')" />
+                                @endcan
+                            </td>
                         </tr>
                     @empty
-                        <x-table.empty :colspan="5"
+                        <x-table.empty :colspan="8"
                                        icon="schedule"
                                        :title="__('Noch keine Stempelung')"
                                        :message="__('Für diesen Tag ist noch keine Stempelung erfasst.')" />
@@ -274,5 +305,17 @@
         @include('time-approval.day._corrections')
         @include('time-approval.day._correction_dialog')
         @include('time-approval.day._reopen_dialog')
+
+        {{-- Offline-fähige Dialoge (MVP-1594/1595): in der Seite statt nachgeladen. --}}
+        @if (! $isFuture)
+            @can(\App\Enums\User\Permission::TimesheetUpdate->value)
+                @include('today._material_dialog')
+            @endcan
+        @endif
+        @can('create', \App\Models\Time\TimeCorrectionRequest::class)
+            @foreach ($attendances as $a)
+                @include('today._attendance_correct_dialog', ['attendance' => $a])
+            @endforeach
+        @endcan
     </x-page-shell>
 @endsection

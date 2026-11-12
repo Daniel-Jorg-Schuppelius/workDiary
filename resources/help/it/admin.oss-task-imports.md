@@ -1,7 +1,7 @@
 ---
 title: "Importazioni di attività da strumenti open source"
 topic: admin.oss-task-imports
-version: 1
+version: 2
 keywords:
     - Vikunja
     - Kanboard
@@ -170,3 +170,5 @@ associazioni.
 - Leantime o GLPI non mostrano alcuna origine: la chiave API non è assegnata a
   nessun progetto, oppure l’API REST non è attiva in GLPI.
 - FreeScout risponde con 404: il modulo «API & Webhooks» non è attivo.
+
+**Titolarità dei dati:** se un altro sistema gestisce le attività, la sincronizzazione crea un caso «Titolarità dei dati» per attività nella posta in arrivo delle integrazioni. **Acquisisci una volta** importa l’attività tramite la stessa assegnazione finché è attiva; se in seguito l’attività cambia nella fonte, il caso si riapre.

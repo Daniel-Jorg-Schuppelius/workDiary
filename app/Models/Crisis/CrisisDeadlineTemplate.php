@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Crisis;
 
-use App\Models\Concerns\HasSqid;
+use App\Models\Concerns\{Auditable, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -33,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $active
  */
 class CrisisDeadlineTemplate extends Model {
+    use Auditable;
     use HasSqid;
 
     protected $fillable = ['organization_id', 'category', 'label', 'offset_hours', 'source', 'active'];

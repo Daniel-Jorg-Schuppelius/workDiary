@@ -58,8 +58,9 @@ final class InventoryOverviewTest extends TestCase {
         $reservation = app(ReservationService::class)->reserve($this->variant, $this->warehouse, '4');
         $this->assertSame('6.0000', app(InventoryLedger::class)->available($this->variant, $this->warehouse));
 
+        // Der Reservierungsdialog gibt die ganze offene Menge frei.
         $this->actingAs($this->teamlead)
-            ->post(route('inventory.reservations.release', $reservation))
+            ->put(route('inventory.reservations.update', $reservation), ['priority' => $reservation->priority, 'release_qty' => '4'])
             ->assertRedirect();
 
         $this->assertSame(ReservationStatus::Released, $reservation->fresh()->status);
@@ -70,7 +71,7 @@ final class InventoryOverviewTest extends TestCase {
         $reservation = app(ReservationService::class)->reserve($this->variant, $this->warehouse, '2');
         $stranger = User::factory()->user()->create(['organization_id' => $this->organization->id]);
 
-        $this->actingAs($stranger)->post(route('inventory.reservations.release', $reservation))->assertForbidden();
+        $this->actingAs($stranger)->put(route('inventory.reservations.update', $reservation), ['priority' => $reservation->priority, 'release_qty' => '2'])->assertForbidden();
     }
 
     public function test_set_levels_requires_configure(): void {
@@ -178,7 +179,7 @@ final class InventoryOverviewTest extends TestCase {
             ->assertSessionHas('success');
 
         $stock = app(LotStockReader::class);
-        $this->assertSame(['2.0000', '1.0000'], [$stock->balanceOf($early), $stock->balanceOf($late)]);
+        $this->assertSame(['2.0000', '1.0000'], [$stock->balancesOf([$early])[$early->id], $stock->balancesOf([$late])[$late->id]]);
         $this->assertNull(StockMovement::query()->where('movement_type', StockMovementType::Reserve->value)->sole()->stock_lot_id);
     }
 
@@ -222,7 +223,7 @@ final class InventoryOverviewTest extends TestCase {
         $this->actingAs($this->admin)->post(route('inventory.movements.store'), $this->movement('issue', '1', ['lot' => $lot->sqid, 'cost_customer' => $customer->sqid], $tracked))
             ->assertSessionHas('success');
         $this->assertSame(2, $issues());
-        $this->assertSame('0.0000', app(LotStockReader::class)->balanceOf($lot));
+        $this->assertSame('0.0000', app(LotStockReader::class)->balancesOf([$lot])[$lot->id]);
         $this->assertSame(1, $customer->materialCostAllocations()->count());
 
         $serial = $this->makeVariant(['serial_required' => true]);
@@ -247,6 +248,31 @@ final class InventoryOverviewTest extends TestCase {
     }
 
     /** @param array<string, mixed> $article */
+    /** MVP-1620: Bei FIFO/FEFO bewertet die Übersicht aus den Schichten, nicht aus dem stillstehenden Durchschnittsbuch. */
+    public function test_layered_articles_show_their_layer_value(): void {
+        $fifo = $this->makeVariant(['valuation_method' => 'fifo']);
+        $layers = app(\App\Services\Inventory\FifoValuationService::class);
+        $layers->receipt($fifo, $this->warehouse, '10', '2.50');
+        $layers->receipt($fifo, $this->warehouse, '10', '3.50');
+        $layers->issue($fifo, $this->warehouse, '5');
+        $average = $this->makeVariant();
+        app(\App\Services\Inventory\ValuationService::class)->receipt($average, $this->warehouse, '4', '10');
+
+        $summaries = app(\App\Services\Inventory\InventoryValuationManager::class)->summariesForWarehouse($this->warehouse, $this->organization);
+        // 5 × 2,50 + 10 × 3,50 = 47,50 auf 15 Stück.
+        $this->assertSame(['avg' => '3.1666', 'value' => '47.5000'], $summaries[$fifo->id]);
+        $this->assertSame('40.0000', $summaries[$average->id]['value']);
+
+        $this->actingAs($this->admin)
+            ->get(route('inventory.stock', ['warehouse' => $this->warehouse->sqid]))
+            ->assertOk()
+            ->assertSee('47.5000')
+            ->assertSee('40.0000');
+
+        $classes = app(\App\Services\Inventory\CycleCountPlanner::class)->classify($this->warehouse);
+        $this->assertSame('A', $classes[$fifo->id], 'Die ABC-Einteilung bewertet die Schichten mit.');
+    }
+
     private function makeVariant(array $article = []): ArticleVariant {
         $article = Article::factory()->create(['organization_id' => $this->organization->id, ...$article]);
 

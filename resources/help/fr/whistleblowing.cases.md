@@ -1,7 +1,7 @@
 ---
 title: "Cellule de signalement – traitement des cas"
 topic: whistleblowing.cases
-version: 4
+version: 5
 keywords:
     - lanceur d'alerte
     - alerte éthique
@@ -96,3 +96,15 @@ attributions sont alors irrémédiablement perdus ; seule subsiste une
 preuve de suppression sans contenu. C’est irréversible. Si une procédure
 ou une obligation de conservation s’y oppose, choisissez plutôt le
 statut « Suspension de suppression (legal hold) ».
+
+**Filtres de la liste** : la barre au-dessus de la liste filtre par **statut**, **catégorie**, **priorité**, personne attribuée, état des délais (« Délai dépassé », « Délai dans les 14 jours », « Retour d'information en attente ») et période de réception. Catégorie et priorité ne s'appliquent qu'aux dossiers qui vous sont attribués – sinon la liste des résultats révélerait les deux.
+
+**Délais et retour d'information** : si vous cochez **Il s'agit du retour d'information prévu à l'article 17 HinSchG** lors de l'envoi d'un message, WorkDiary enregistre la date au dossier ; une simple question complémentaire ne compte pas. Le rappel du délai de retour s'arrête alors. Les gestionnaires attribués reçoivent des rappels sans contenu : 48 heures avant l'échéance de l'accusé de réception, 14 jours et 48 heures avant le délai de retour (une fois chacun), puis chaque jour tant qu'un délai est dépassé. Passer un dossier directement de « Reçu » à « Examen » vaut accusé de réception.
+
+**Autres actions dans le dossier** :
+
+- **Révoquer l'attribution** (icône à côté du gestionnaire) : la personne perd immédiatement l'accès.
+- **Ajouter un document du service de signalement** : le fichier est chiffré comme une pièce jointe de l'auteur du signalement et n'est disponible qu'après l'analyse ; l'auteur du signalement ne le voit pas.
+- Le statut « Blocage de suppression » exige une **base juridique**, un **responsable** et une **date de réexamen** ; à cette date, WorkDiary rappelle les gestionnaires.
+- Une réouverture (de « Clôturé – … » à « En cours ») exige un **motif** ; le délai de conservation recommence à la prochaine clôture.
+- **Journal des événements** : avec le droit de consultation du journal, vous voyez qui a ouvert, modifié ou exporté le dossier et quand – sans contenu du signalement. Chaque consultation du journal est elle-même journalisée.

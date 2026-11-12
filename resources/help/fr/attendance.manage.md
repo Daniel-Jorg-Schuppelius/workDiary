@@ -1,7 +1,7 @@
 ---
 title: "Pointeuse & présence"
 topic: attendance.manage
-version: 1
+version: 2
 keywords:
     - pointer
     - pointage
@@ -49,3 +49,5 @@ si l'administration vous en a attribué un. Après cinq échecs, il est bloqué
 **Rappel du soir :** Si, à 19 h, vous êtes pointé depuis au moins huit heures,
 vous recevez un rappel – une fois par pointage. Une personne qui commence son
 service le soir ne reçoit pas de rappel.
+
+**Corriger un pointage :** sur « Aujourd’hui », l’icône crayon de la liste des pointages ouvre la boîte de dialogue de correction — début, fin, pause et motif. La correction suit le circuit de validation sous forme de demande ; si votre organisation autorise l’autocorrection, elle s’applique immédiatement. Sans réseau, elle est enregistrée et transmise plus tard. Si quelqu’un a modifié le pointage entre-temps, votre correction ne l’écrase pas : en ligne, un avertissement s’affiche ; hors ligne, un conflit apparaît sous « Modifications hors ligne ».

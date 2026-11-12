@@ -26,6 +26,8 @@ enum DisposalJobEventType: string implements HasLabel {
     case ItemAdded = 'item_added';
     case ItemUpdated = 'item_updated';
     case ItemRemoved = 'item_removed';
+    case ItemPhotoAdded = 'item_photo_added';
+    case ItemPhotoRemoved = 'item_photo_removed';
     case TreatmentAdded = 'treatment_added';
     case TreatmentRemoved = 'treatment_removed';
     case HandoverAdded = 'handover_added';
@@ -42,6 +44,8 @@ enum DisposalJobEventType: string implements HasLabel {
             self::ItemAdded => (string) __('enums.disposal.disposal_job_event_type.item_added'),
             self::ItemUpdated => (string) __('enums.disposal.disposal_job_event_type.item_updated'),
             self::ItemRemoved => (string) __('enums.disposal.disposal_job_event_type.item_removed'),
+            self::ItemPhotoAdded => (string) __('enums.disposal.disposal_job_event_type.item_photo_added'),
+            self::ItemPhotoRemoved => (string) __('enums.disposal.disposal_job_event_type.item_photo_removed'),
             self::TreatmentAdded => (string) __('enums.disposal.disposal_job_event_type.treatment_added'),
             self::TreatmentRemoved => (string) __('enums.disposal.disposal_job_event_type.treatment_removed'),
             self::HandoverAdded => (string) __('enums.disposal.disposal_job_event_type.handover_added'),

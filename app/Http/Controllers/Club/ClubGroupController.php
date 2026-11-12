@@ -165,6 +165,8 @@ class ClubGroupController extends Controller {
             'candidates' => $candidates,
             'today' => CarbonImmutable::today(),
             'canOverride' => Gate::allows('override', $group),
+            // Antrag mit Freigabe: direkte Aufnahme wird nicht angeboten (MVP-1616).
+            'requestOnly' => $group->admission_mode === \App\Enums\Club\ClubAdmissionMode::Application,
         ]);
     }
 

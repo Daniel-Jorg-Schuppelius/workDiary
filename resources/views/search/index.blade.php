@@ -125,7 +125,7 @@
             @include('search._notices', ['parsed' => $result->parsed])
 
             @if ($aiAnswer !== null)
-                @include('ai._insight', ['suggestion' => $aiAnswer, 'showOriginal' => true])
+                @include('ai._insight', ['suggestion' => $aiAnswer, 'showOriginal' => true, 'regenerateAction' => route('ai.assist.search-answer', $parameters)])
             @endif
 
             @if ($result->hits->total() > 0)

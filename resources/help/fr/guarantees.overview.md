@@ -38,3 +38,20 @@ et son motif.
 ## Lien avec la garantie
 
 Une caution peut renvoyer à un **délai de garantie**. Une fois ce délai écoulé, le contrôle des échéances signale la **restitution** de l’acte — comme après la libération d’une retenue remplacée. De même, une retenue sur facture reprend la fin de la garantie choisie comme date de libération et suit si le délai change.
+
+## Restitution à demander et expiration
+
+**Restitution à demander :** la tuile et le filtre affichent les cautions
+actives dont l’objet de garantie a pris fin — la retenue remplacée a été
+libérée sur la facture, ou la garantie liée est arrivée à son terme. Une
+retenue remplacée a déjà été versée ; sa libération (page de la facture, carte
+**Retenues de garantie**) ne crée aucune nouvelle créance et signale seulement
+l’acte à restituer.
+
+**Expirée :** une fois l’échéance dépassée, le contrôle quotidien des
+échéances passe la caution à *Expirée* ; le dernier jour de l’échéance compte
+encore. Dans le registre, vous pouvez aussi le consigner immédiatement avec
+**Enregistrer comme expirée**. Les cautions expirées ne comptent plus comme
+actives. La restitution de l’acte peut toujours être enregistrée, et la saisie
+d’une prolongation (nouvelle date d’échéance) rend la caution de nouveau
+active.

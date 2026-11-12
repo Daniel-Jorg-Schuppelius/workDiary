@@ -180,6 +180,9 @@ class CodeIntegrityService {
         // bei Transportfehlern still übersprungen — nie Fail-Ursache.
         app(IntegrityAnchorService::class)->push($manifest, $check->exists ? $check : null);
 
+        // Neue gültige Baseline hebt einen Lockdown auf (MVP-1612).
+        app(IntegrityLockdownService::class)->release($creator, 'baseline:' . $source);
+
         return $check;
     }
 

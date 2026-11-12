@@ -1,7 +1,7 @@
 ---
 title: "Diagnostic"
 topic: admin.diagnostics
-version: 1
+version: 2
 keywords:
     - état du système
     - contrôle de santé
@@ -29,3 +29,5 @@ pouvez en outre déclencher un **e-mail de test** vers votre propre adresse
 pour vérifier la configuration mail. Les consultations et les tests sont
 consignés dans le journal d'audit ; l'affichage exige le droit de
 diagnostic, le déclenchement de contrôles un droit distinct.
+
+**Accès de supervision :** pour une supervision externe, créez un accès sous « Accès de supervision ». La supervision récupère le rapport sans connexion à l’adresse /api/monitoring/diagnostics et envoie le jeton dans l’en-tête « Authorization: Bearer … ». Le jeton n’est affiché qu’une fois et n’est conservé que sous forme d’empreinte ; la révocation le bloque immédiatement. Le rapport ne contient ni noms ni adresses, comme le titulaire de licence ou l’adresse d’expédition. Les appels sont journalisés au plus une fois par heure et par accès.

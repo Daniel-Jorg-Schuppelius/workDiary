@@ -49,9 +49,10 @@
                 @endcan
                 @can('sign', $protocol)
                     <x-icon-btn placement="bar" icon="draw" tone="primary" size="sm" data-entry-modal-trigger :href="route('protocols.transition-form', [$protocol, 'sign'])" show-label>{{ __('protocol.action.sign') }}</x-icon-btn>
-                    @can(\App\Enums\User\Permission::ProtocolSignatureRequest->value)
+                    {{-- Signaturlink nur am eingefrorenen Inhalt („in Prüfung“). --}}
+                    @if ($protocol->status === \App\Enums\Protocol\ProtocolStatus::InReview && auth()->user()->can(\App\Enums\User\Permission::ProtocolSignatureRequest->value))
                         <x-icon-btn icon="link" size="sm" data-entry-modal-trigger :href="route('protocols.signature-tokens.create', $protocol)" show-label>{{ __('protocol.dialog.token_title') }}</x-icon-btn>
-                    @endcan
+                    @endif
                 @endcan
                 @can('supersede', $protocol)
                     <x-icon-btn placement="menu" icon="history_edu" size="sm" data-entry-modal-trigger :href="route('protocols.transition-form', [$protocol, 'supersede'])" show-label>{{ __('protocol.action.supersede') }}</x-icon-btn>
@@ -61,6 +62,10 @@
                         <x-icon-btn placement="menu" icon="archive" size="sm" type="submit" show-label>{{ __('protocol.action.archive') }}</x-icon-btn>
                     </x-action-form>
                 @endcan
+                {{-- MVP-1582: nur wenn das Projekt des Protokolls ein Leistungsverzeichnis mit offenen Positionen hat. --}}
+                @if ($canReportBoqProgress)
+                    <x-icon-btn placement="menu" icon="straighten" size="sm" data-entry-modal-trigger :href="route('protocols.boq-progress.create', $protocol)" show-label>{{ __('protocol.boq_progress.action') }}</x-icon-btn>
+                @endif
                 @can(\App\Enums\User\Permission::ProtocolTemplateManage->value)
                     <x-icon-btn placement="menu" icon="library_add" size="sm" data-entry-modal-trigger :href="route('protocols.as-template.form', $protocol)" show-label>{{ __('protocol.template.save_title') }}</x-icon-btn>
                 @endcan
@@ -79,7 +84,7 @@
         <div role="status" class="alert alert-info">
             <x-icon name="link" />
             <div class="min-w-0">
-                <p class="text-sm">{{ __('protocol.dialog.token_url_hint') }}</p>
+                <p class="text-sm">{{ __(session('protocol.signature.token_emailed') ? 'protocol.dialog.token_url_hint' : 'protocol.dialog.token_url_hint_plain') }}</p>
                 <code class="block break-all text-xs">{{ session('protocol.signature.token_url') }}</code>
             </div>
         </div>
@@ -96,6 +101,15 @@
                 <x-detail-grid.row :label="__('Erstellt von')" :value="$protocol->creator?->name" />
                 @if ($protocol->description)
                     <x-detail-grid.row :label="__('Beschreibung')" :value="$protocol->description" />
+                @endif
+                @if ($protocol->tags->isNotEmpty())
+                    <x-detail-grid.row :label="__('Tags')">
+                        <span class="flex flex-wrap gap-1">
+                            @foreach ($protocol->tags as $tag)
+                                <x-tag-badge :tag="$tag" />
+                            @endforeach
+                        </span>
+                    </x-detail-grid.row>
                 @endif
             </x-detail-grid>
         </x-card>
@@ -151,6 +165,9 @@
                                     :title="__('ai.suggestion.suggest_protocol_all_title')">{{ __('ai.suggestion.suggest_protocol_all') }}</x-icon-btn>
                     </x-action-form>
                 @endif
+                @if ($protocol->items->count() > 1)
+                    <x-icon-btn icon="swap_vert" size="sm" data-entry-modal-trigger :href="route('protocols.items.order-form', $protocol)" show-label>{{ __('protocol.action.reorderItems') }}</x-icon-btn>
+                @endif
                 <x-icon-btn icon="playlist_add" tone="primary" size="sm" data-entry-modal-trigger :href="route('protocols.items.create', $protocol)" show-label>{{ __('protocol.action.addItem') }}</x-icon-btn>
             </x-slot:actions>
         @endif
@@ -170,7 +187,9 @@
                         @endif
                     </tr>
                 </x-slot:head>
-                @foreach ($protocol->items as $item)
+                {{-- Unterpunkte stehen unter ihrer Gruppe, nicht noch einmal in der obersten Ebene. --}}
+                @php($itemIds = $protocol->items->pluck('id')->flip())
+                @foreach ($protocol->items->reject(fn ($i) => $itemIds->has($i->parent_item_id)) as $item)
                     <tr>
                         <td class="font-medium">{{ $item->label }}</td>
                         <td>{{ $item->result?->label() ?? '—' }}</td>
@@ -255,17 +274,36 @@
 
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Signaturen')" icon="draw" :count="$protocol->signatures->count()">
+            @php($missingSignatureRoles = $protocol->status->isImmutable() ? [] : $protocol->missingSignatureRoles())
+            @if ($missingSignatureRoles !== [])
+                <div role="note" class="alert alert-warning mb-2 text-sm">
+                    <x-icon name="draw" />
+                    <span>{{ \App\Services\Protocol\ProtocolService::missingSignaturesMessage($missingSignatureRoles) }}</span>
+                </div>
+            @endif
             @if ($protocol->signatures->isEmpty())
                 <x-empty-state icon="draw" :title="__('Noch keine Signaturen.')" compact />
             @else
                 <ul class="divide-y divide-base-300 text-sm">
                     @foreach ($protocol->signatures as $signature)
-                        <li class="flex items-center justify-between gap-2 py-2">
-                            <div class="min-w-0">
-                                <span class="font-medium">{{ $signature->signer_name }}</span>
-                                <span class="text-muted">· {{ $signature->role }}</span>
+                        @php($signatureFile = $signature->signatureAttachment)
+                        <li class="flex items-center justify-between gap-3 py-2">
+                            <div class="flex min-w-0 items-center gap-3">
+                                {{-- Bild nur aus dem Anhang (MVP-1572), nie aus signature_image_path. --}}
+                                @if ($signatureFile && $signatureFile->isImage())
+                                    <a href="{{ \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($signatureFile) }}" target="_blank" rel="noopener" class="shrink-0">
+                                        <img src="{{ \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($signatureFile) }}" alt="{{ __('protocol.dialog.signature_image') }}: {{ $signature->signer_name }}"
+                                             class="h-10 w-24 rounded border border-base-300 bg-white object-contain" loading="lazy">
+                                    </a>
+                                @elseif ($signatureFile)
+                                    <x-icon-btn icon="attach_file" size="xs" :href="\App\Http\Controllers\Attachments\AttachmentController::downloadUrl($signatureFile)" :title="__('protocol.dialog.signature_scan')" />
+                                @endif
+                                <div class="min-w-0">
+                                    <span class="font-medium">{{ $signature->signer_name }}</span>
+                                    <span class="text-muted">· {{ $signature->role->label() }} · {{ $signature->method->label() }}</span>
+                                </div>
                             </div>
-                            <span class="tabular-nums text-base-content/70">{{ $signature->signed_at?->fdatetime() }}</span>
+                            <span class="whitespace-nowrap tabular-nums text-base-content/70">{{ $signature->signed_at?->fdatetime() }}</span>
                         </li>
                     @endforeach
                 </ul>
@@ -305,7 +343,11 @@
             @endif
         </x-card>
 
-        <x-attachments-section :attachments="$protocol->attachments" />
+        {{-- Anhänge am ganzen Protokoll (MVP-1573): Upload nur im Entwurf; das PDF des Abschlusses nur mit Download-Recht. --}}
+        <x-attachments-section :attachments="$protocol->attachments->reject(fn ($att) => $att->meta_type === \App\Models\Protocol\Protocol::META_PDF && ! auth()->user()->can(\App\Enums\User\Permission::ProtocolPdfDownload->value))"
+                               upload-type="protocol" :upload-id="$protocol->sqid"
+                               :can-upload="$protocol->status->isEditable() && auth()->user()->can('update', $protocol)"
+                               :can-delete="$protocol->status->isEditable()" details />
     </div>
 
     {{-- Externe Beteiligte (Feature 033, Rang 28): Einladen/Widerrufen je Protokoll. --}}

@@ -1,7 +1,7 @@
 ---
 title: "Richieste di appuntamento"
 topic: appointments.inbox
-version: 1
+version: 2
 keywords:
     - prenotazione online
     - prenotazione appuntamenti
@@ -42,3 +42,14 @@ finestra è prenotabile o no; il perché non riguarda il cliente.
 **Confermare** crea la voce e vi lega la richiesta. **Rifiutare** richiede un
 motivo — va al cliente. Se il cliente annulla entro il termine, la richiesta
 sparisce dalla inbox.
+
+## Assegnare e gestire
+
+Una richiesta senza cliente (ad esempio una prenotazione Calendly con un
+indirizzo e-mail sconosciuto) si assegna a un cliente o a un lead con
+**Assegna**; il caso aperto nella casella di integrazione è così risolto. I
+tipi di servizio si modificano con **Modifica**. Se un tipo di servizio è
+legato a un **oggetto**, il portale e la ricerca degli slot lo offrono solo al
+cliente proprietario dell'oggetto; la conferma riprende l'indirizzo
+dell'oggetto come luogo d'intervento dell'ordine (altrimenti quello del
+cliente).

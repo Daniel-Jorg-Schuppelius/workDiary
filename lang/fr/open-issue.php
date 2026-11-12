@@ -12,8 +12,10 @@ return [
     'title' => [
         'index' => 'Points ouverts',
         'show' => 'Point ouvert :title',
+        'history' => 'Historique',
     ],
     'field' => [
+        'ticket' => 'Ticket',
         'title' => 'Titre',
         'description' => 'Description',
         'category' => 'Catégorie',
@@ -30,6 +32,8 @@ return [
         'follow_up' => 'Mission de suivi',
     ],
     'action' => [
+        'details' => 'Détails',
+        'openTicket' => 'Ouvrir un ticket',
         'create' => 'Créer un point ouvert',
         'edit' => 'Modifier',
         'assign' => 'Assigner',
@@ -44,6 +48,8 @@ return [
         'followUp' => 'Créer une mission de suivi',
     ],
     'flash' => [
+        'ticketOpened' => 'Le ticket :no a été ouvert à partir du point ouvert.',
+        'ticketExists' => 'Le ticket :no existe déjà pour ce point ouvert.',
         'created' => 'Point ouvert créé.',
         'updated' => 'Point ouvert mis à jour.',
         'deleted' => 'Point ouvert supprimé.',
@@ -60,5 +66,15 @@ return [
 
     'follow_up' => [
         'content_intro' => 'Mission de suivi du point ouvert n° :id « :title »',
+    ],
+    'hint' => [
+        'edit_tracked' => 'Les modifications de l\'échéance, de la gravité et de la visibilité figurent dans l\'historique du point.',
+    ],
+
+    'filter' => [
+        'all_statuses' => 'Tous les statuts',
+        'all_severities' => 'Toutes les gravités',
+        'all_assignees' => 'Tous les responsables',
+        'no_match' => 'Aucun point ouvert ne correspond au filtre.',
     ],
 ];

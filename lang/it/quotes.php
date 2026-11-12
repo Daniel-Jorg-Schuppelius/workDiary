@@ -40,6 +40,9 @@ return [
         'next_action' => 'Sollecitare di nuovo il preventivo :number',
         'wrong_status' => 'Solo i preventivi inviati o approvati possono essere sollecitati.',
         'no_customer' => 'Il preventivo non ha un cliente — senza cliente non c’è un fascicolo per la nota.',
+        'owner_field' => 'Responsabile del follow-up',
+        'owner_default' => 'Autore del preventivo (predefinito)',
+        'owner_hint' => 'Riceve il promemoria alla scadenza del follow-up e compare in «Solo i miei».',
         'kpi' => [
             'due' => 'In scadenza',
             'upcoming' => 'In arrivo',
@@ -114,7 +117,6 @@ return [
         'flash' => [
             'confirmed' => 'Conferma d\'ordine :number confermata.',
             'cancelled' => 'Conferma d\'ordine annullata.',
-            'create_first' => 'Crei prima la conferma d\'ordine.',
         ],
         'error' => [
             'not_won' => 'Si confermano solo offerte accettate.',

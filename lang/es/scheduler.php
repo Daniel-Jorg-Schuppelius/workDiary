@@ -30,6 +30,12 @@ return [
         'criticality' => 'Criticidad',
         'last_status' => 'Resultado',
         'source' => 'Origen del plan',
+        'run_options' => 'Ejecución',
+        'timezone' => 'Zona horaria',
+        'quiet_from' => 'En reposo desde',
+        'quiet_until' => 'Vuelve a ejecutarse desde',
+        'retry_attempts' => 'Reintentos tras un fallo',
+        'retry_delay_minutes' => 'Intervalo entre reintentos (min)',
     ],
     'action' => [
         'reschedule' => 'Reprogramar',
@@ -115,6 +121,7 @@ return [
             'lti_rotate_keys' => 'Rotar las claves de firma LTI',
             'lti_prune_nonces' => 'Eliminar los nonces LTI caducados',
         ],
+        'flex' => ['recompute' => 'Recalcular los saldos de horario flexible'],
         'attendance' => ['close_open' => 'Cerrar fichajes olvidados', 'open_reminder' => 'Recordar fichajes abiertos por la tarde'],
         'audit' => ['verify' => 'Verificar la cadena de auditoría'],
         'backup' => [
@@ -254,6 +261,10 @@ return [
         'day' => 'Día de la semana 0–6 (0 = domingo) o día del mes 1–31.',
         'expression' => 'Solo para operadores: minuto hora día mes día-semana.',
         'allowlist' => 'Duración prevista aprox. :runtime min. El trabajo se ejecuta con protección contra solapamientos; los intervalos demasiado cortos se rechazan en el servidor.',
+        'timezone_default' => 'Zona horaria de la instalación (:tz)',
+        'quiet_window' => 'Las horas dentro del periodo de reposo pasan a su final; los intervalos se pausan durante él. Sin periodo de reposo propio se aplica la ventana de funcionamiento del servidor (:window); con zona horaria propia no, porque esa ventana se define en la zona horaria de la instalación.',
+        'quiet_window_none' => 'Las horas dentro del periodo de reposo pasan a su final; los intervalos se pausan durante él. Si se deja vacío, el trabajo se ejecuta a cualquier hora.',
+        'retry' => 'Si una ejecución falla, el trabajo vuelve a iniciarse tras el intervalo, como máximo las veces indicadas, con protección contra solapamientos y visible en el registro de ejecuciones. 0 = sin reintento.',
     ],
     'flash' => [
         'rescheduled' => 'El trabajo :job ha sido reprogramado.',

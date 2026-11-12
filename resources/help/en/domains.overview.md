@@ -1,7 +1,7 @@
 ---
 title: "Domain management"
 topic: domains.overview
-version: 2
+version: 5
 keywords:
     - register domain
     - renew domain
@@ -73,3 +73,15 @@ portfolio, balances and level, and allows customer assignment per subuser. For
 each subuser you can enter the customer number at the provider; the monthly
 vouchers built from the accounting journal in the reselling register then
 carry the portal’s invoice numbers (“customer number-MM-YYYY”).
+
+**Unclear commands:** If the provider’s answer stays incomplete, the command is set to “unclear” and is never repeated. The next sync run reads the domain’s state at the provider: registration, renewal mode, transfer lock and renewal are thus confirmed, recognised as failed or marked as a conflict. Transfers, DNS and high-risk actions have no status query — check them at the provider and resolve them manually with a reason in the command journal.
+
+**Costs and balance:** In the organisation settings you set a cost threshold for renewals and a minimum balance. Domain management reports upcoming renewals above the threshold and provider accounts whose balance plus credit limit does not cover the renewals of the coming days — without coverage the provider deletes the domains on their failure date.
+
+**Renewal mode:** You can choose the three modes the provider documents:
+auto-renew, auto-expire and auto-delete. A previously stored value "Renew once" is
+unknown after the update; the next sync reads the actual mode from the provider.
+
+## Sync state of a domain
+
+While a command to the provider is running, the domain shows **Pending**. If its outcome stays unclear or the provider differs after writing, it shows **Unclear** or **Conflict** and appears in the **sync issues** tile; a sync does not overwrite this while the command is open. After completion – automatic or manual – the domain shows **Stale** until the next sync reads it again.

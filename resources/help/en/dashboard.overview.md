@@ -1,7 +1,7 @@
 ---
 title: "Dashboard"
 topic: dashboard.overview
-version: 3
+version: 4
 keywords:
     - home page
     - start page
@@ -32,6 +32,8 @@ reporting rights sees different tiles than someone without. Hidden
 tiles stop querying data, so a tidy dashboard also loads faster.
 
 The count tiles of the key-figure widgets lead to the order book with the matching status filter, to the duties and to the member list.
+
+**Financial transactions:** In the Finance area, this tile shows the unassigned transactions per source — bank statements from payment reconciliation and Firefly III — and below them the latest transactions of the last 30 days, including the Etsy shop account. The number opens the source list, for Firefly III filtered to the open transactions. Bank statements are visible to people with the right to payment reconciliation, Firefly III and Etsy to administrators while the plugin is enabled.
 
 ## Requirements
 

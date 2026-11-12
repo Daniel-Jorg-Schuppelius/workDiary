@@ -40,7 +40,7 @@ use RuntimeException;
  * - Rate-Limits sind tarifabhängig (PLUS 10, BUSINESS 60 req/min) — das
  *   Intervall kommt aus dem Setting `rate_limit_per_minute`.
  */
-class EasybillPlugin extends AbstractPlugin implements ContactNumberIssuer, ContactSyncer, SupplierContactSyncer {
+class EasybillPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, ContactNumberIssuer, ContactSyncer, SupplierContactSyncer {
     public const string ID = 'easybill';
 
     public const string SERVICE_PROVIDER = EasybillServiceProvider::class;
@@ -241,5 +241,10 @@ class EasybillPlugin extends AbstractPlugin implements ContactNumberIssuer, Cont
         return ApiHealthProbe::probe($this->name(), static fn () => app(EasybillClientFactory::class)->for((int) $organization->id)->documents(['limit' => 1]), [
             'rate_limited' => (string) __('easybill drosselt (429) — Request-Limit im Setting prüfen.'),
         ]);
+    }
+
+    /** Datenführerschaft (MVP-1592): Kontakt-Rückweg schreibt Kunden und Lieferanten. */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Customers];
     }
 }

@@ -7,10 +7,15 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Dialog: Geräteposition erfassen/bearbeiten (Feature 100, MVP-474).
-     Erwartet: $job, $item (DisposalItem|null = Anlegen), $wasteCodes.
+     Erwartet: $job, $item (DisposalItem|null = Anlegen), $wasteCodes, $assets (in Betrieb),
+     $prefillAsset (Asset|null, nur beim Anlegen: Einstieg an der Asset-Akte).
      Lokaler ad-hoc-Dialog (:embedded="false"), geöffnet via data-open-dialog. --}}
 @php
     $dialogId = $item !== null ? 'disposal-item-edit-' . $item->id : 'disposal-item-create';
+    $prefillAsset = $item === null ? ($prefillAsset ?? null) : null;
+    $selectedAssetId = $item?->asset_id ?? $prefillAsset?->id;
+    // Das verknüpfte Asset bleibt wählbar, auch wenn es inzwischen außer Betrieb ist.
+    $assetOptions = $item?->asset !== null && ! $assets->contains('id', $item->asset_id) ? $assets->concat([$item->asset]) : $assets;
 @endphp
 <x-modal
     :id="$dialogId"
@@ -25,14 +30,29 @@
     :submit-label="$item !== null ? __('Speichern') : __('Erfassen')"
 >
     <x-form-group :legend="__('disposal.item.group_device')" icon="devices" tone="primary" cols="2">
-        <x-input-field name="category" :label="__('Kategorie')" required maxlength="120"
-                       :value="$item?->category ?? old('category')" />
-        <x-input-field name="manufacturer" :label="__('Hersteller')" maxlength="120"
-                       :value="$item?->manufacturer ?? old('manufacturer')" />
-        <x-input-field name="model" :label="__('Modell')" maxlength="120"
-                       :value="$item?->model ?? old('model')" />
-        <x-input-field name="serial_number" :label="__('Seriennummer')" maxlength="120"
-                       :value="$item?->serial_number ?? old('serial_number')" />
+        @if ($assetOptions->isNotEmpty())
+            <x-select-field name="asset_id" :id="$dialogId . '-asset'" :label="__('disposal.item.asset')" span="2"
+                            :hint="__('disposal.item.asset_hint')">
+                <option value="">{{ __('disposal.item.asset_none') }}</option>
+                @foreach ($assetOptions as $asset)
+                    <option value="{{ $asset->sqid }}" @selected($selectedAssetId === $asset->id)
+                            data-prefill-name="{{ $asset->name }}" data-prefill-manufacturer="{{ $asset->manufacturer }}"
+                            data-prefill-model="{{ $asset->model }}" data-prefill-serial="{{ $asset->serial_no }}">{{ $asset->asset_no ? $asset->asset_no . ' · ' : '' }}{{ $asset->name }}@if ($asset->serial_no) · {{ $asset->serial_no }}@endif</option>
+                @endforeach
+            </x-select-field>
+        @endif
+        <x-input-field name="category" :id="$dialogId . '-category'" :label="__('Kategorie')" required maxlength="120"
+                       :value="$item?->category ?? $prefillAsset?->name ?? old('category')"
+                       data-prefill-from="asset_id" data-prefill-key="name" />
+        <x-input-field name="manufacturer" :id="$dialogId . '-manufacturer'" :label="__('Hersteller')" maxlength="120"
+                       :value="$item?->manufacturer ?? $prefillAsset?->manufacturer ?? old('manufacturer')"
+                       data-prefill-from="asset_id" data-prefill-key="manufacturer" />
+        <x-input-field name="model" :id="$dialogId . '-model'" :label="__('Modell')" maxlength="120"
+                       :value="$item?->model ?? $prefillAsset?->model ?? old('model')"
+                       data-prefill-from="asset_id" data-prefill-key="model" />
+        <x-input-field name="serial_number" :id="$dialogId . '-serial'" :label="__('Seriennummer')" maxlength="120"
+                       :value="$item?->serial_number ?? $prefillAsset?->serial_no ?? old('serial_number')"
+                       data-prefill-from="asset_id" data-prefill-key="serial" />
         <x-input-field name="quantity" type="number" min="1" step="1" :label="__('Menge')" required
                        :value="$item?->quantity ?? old('quantity', 1)" />
         <x-input-field name="weight_kg" type="number" min="0" step="0.001" :label="__('disposal.item.weight')"

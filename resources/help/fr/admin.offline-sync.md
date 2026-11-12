@@ -1,7 +1,7 @@
 ---
 title: "Synchronisation hors ligne"
 topic: admin.offline-sync
-version: 1
+version: 2
 keywords:
     - travailler hors ligne
     - sans internet
@@ -45,3 +45,7 @@ comptent toujours l’ensemble — un filtre posé ne les masque pas.
 le serveur. L’écart entre les deux est la latence hors ligne — une journée est
 normale en intervention, une semaine signale un appareil qui ne synchronise
 pas.
+
+## Décisions sur les conflits
+
+À côté du résultat « Conflit » figure la décision de la personne — « Version distante conservée », « Abandonné » ou « Renvoyé » — ou « ouvert » tant qu’aucune décision n’a été prise. Une saisie renvoyée apparaît sur sa propre ligne avec son propre résultat. Les commandes pour un domaine désactivé pour l’organisation sont refusées.

@@ -129,6 +129,8 @@ return [
             'end' => 'Fine',
             'breaks' => 'Pause (min)',
             'duration' => 'Durata',
+            'homeoffice' => 'di cui telelavoro',
+            'errand' => 'di cui commissioni di servizio',
         ],
     ],
     'driving' => [

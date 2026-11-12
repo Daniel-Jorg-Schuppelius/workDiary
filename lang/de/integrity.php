@@ -27,6 +27,11 @@ return [
         'dirty' => 'Git-Arbeitsbaum im Prüfumfang nicht sauber: :count Pfad(e) — :paths (WARN).',
     ],
     'lockdown' => [
+        'release_action' => 'Lockdown aufheben',
+        'release_confirm' => 'Lockdown aufheben und die Installation wieder freigeben? Vorher die Abweichungen prüfen oder eine neue Baseline einfrieren.',
+        'released' => 'Lockdown aufgehoben — die Installation ist wieder erreichbar.',
+        'not_engaged' => 'Es ist kein Integritäts-Lockdown aktiv.',
+        'active_notice' => 'Der Integritäts-Lockdown hält die Installation im Wartungsmodus.',
         'crisis_title' => 'Integritäts-Lockdown: Quelltext manipuliert',
         'crisis_description' => 'Signierte Release-Baseline zeigt über mehrere Läufe Abweichungen (:modified geändert, :added neu, :deleted gelöscht). Installation ist im Wartungsmodus.',
     ],

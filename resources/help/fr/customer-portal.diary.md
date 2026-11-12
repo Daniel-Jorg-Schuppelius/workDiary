@@ -1,7 +1,7 @@
 ---
 title: "Journal et dossier du cas"
 topic: customer-portal.diary
-version: 4
+version: 5
 keywords:
     - journal des interventions
     - historique des interventions
@@ -66,6 +66,14 @@ Si une section est vide, elle affiche un message comme **Aucune photo approuvée
 - **Contester** – le champ **Qu’est-ce qui ne va pas ?** s'ouvre. Décrivez le problème en 3 caractères au moins et 2000 au plus, puis cliquez sur **Envoyer**.
 
 Une contestation est transmise à votre prestataire sous forme de question sur cette commande, et votre prestataire en est averti. Le message **Contestation transmise — nous revenons vers vous.** confirme l'envoi. Vous recevez la réponse par e-mail à votre e-mail de connexion ; si les questions sont libérées pour vous, elle figure aussi dans la section **Questions et commentaires**.
+
+## Réceptionner des protocoles
+
+Si un protocole attend votre réception, la section **À réceptionner** apparaît au-dessus de la liste **Protocoles**. **Consulter et signer** ouvre le protocole avec tous ses points. Pour le réceptionner, saisissez votre nom, signez dans le cadre de signature avec le doigt, un stylet ou la souris, confirmez l'exactitude des informations et cliquez sur **Signer**. La signature ne peut pas être retirée.
+
+Si vous avez des questions ou des objections, clarifiez-les avec votre prestataire avant de signer – via les questions, si elles sont libérées pour vous. Après votre signature, votre prestataire clôture le protocole ; il est ensuite disponible au téléchargement sous **Protocoles**.
+
+Si vous n'êtes pas d'accord avec le protocole, utilisez le refus situé en dessous : indiquez un motif et, au besoin, les défauts constatés. Votre prestataire est notifié et révise le protocole ; il réapparaît sous **À réceptionner** dès qu'il est soumis à nouveau.
 
 ## Télécharger les protocoles
 

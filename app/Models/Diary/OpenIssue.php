@@ -10,13 +10,16 @@
 
 namespace App\Models\Diary;
 
-use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
+use App\Enums\OpenIssue\{OpenIssueEventType, OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
+use App\Models\Attachments\Attachment;
+use App\Models\Communication\Comment;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasJournal, HasSqid};
+use App\Models\Contracts\GuardsAttachments;
 use App\Models\Platform\User;
 use Database\Factories\Diary\OpenIssueFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, MorphTo};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, MorphMany, MorphTo};
 
 /**
  * @property int $id
@@ -38,7 +41,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, MorphTo};
  * @property string|null $closed_reason
  * @property int $created_by_user_id
  */
-class OpenIssue extends Model {
+class OpenIssue extends Model implements GuardsAttachments {
     use Auditable;
     use HasJournal;
 
@@ -111,4 +114,24 @@ class OpenIssue extends Model {
         return $this->belongsToMany(DiaryEntry::class, 'open_issue_follow_ups')->withPivot(['organization_id', 'created_by'])->withTimestamps()->orderBy('open_issue_follow_ups.id');
     }
 
+    /** @return MorphMany<Comment, $this> */
+    public function comments(): MorphMany {
+        /** @var MorphMany<Comment, $this> $relation */
+        $relation = $this->morphMany(Comment::class, 'commentable')->orderBy('created_at');
+
+        return $relation;
+    }
+
+    /** Ein geschlossener Punkt ist Nachweis: Anhänge kommen weder dazu noch weg. */
+    public function attachmentsLocked(?Attachment $attachment = null): bool {
+        return $this->status->isClosed();
+    }
+
+    public function attachmentAdded(Attachment $attachment, ?User $actor): void {
+        $this->record(OpenIssueEventType::AttachmentAdded, ['attachment_id' => $attachment->id, 'name' => $attachment->original_name], $actor);
+    }
+
+    public function attachmentRemoved(Attachment $attachment, ?User $actor): void {
+        $this->record(OpenIssueEventType::AttachmentRemoved, ['attachment_id' => $attachment->id, 'name' => $attachment->original_name], $actor);
+    }
 }

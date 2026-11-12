@@ -75,6 +75,22 @@
                     </select></div>
                 <div class="fieldset"><label for="qty" class="fieldset-label">{{ __('procurement.field.qty') }}</label>
                     <input id="qty" name="qty" type="number" step="0.0001" min="0.0001" value="1" class="input input-sm input-bordered w-24"></div>
+                {{-- Bestelleinheit (MVP-1584): Menge und Preis gelten je gewählter Einheit; der Wareneingang rechnet in die Basiseinheit um. --}}
+                @if ($articles->contains(fn ($a) => $a->units->isNotEmpty()))
+                    <div class="fieldset"><label for="line-unit" class="fieldset-label">{{ __('procurement.field.unit') }}</label>
+                        <select id="line-unit" name="unit" class="select select-sm select-bordered" data-depends-on="article" data-depends-autoselect="off">
+                            <option value="">{{ __('inventory.field.unit_base') }}</option>
+                            @foreach ($articles as $article)
+                                @foreach ($article->units as $unit)
+                                    <option value="{{ $unit->code }}" data-parent="{{ $article->sqid }}">{{ __('inventory.field.unit_option', [
+                                        'unit' => $unit->label ?: $unit->code,
+                                        'factor' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((string) $unit->factor_to_base, 4, trimTrailingZeros: true),
+                                        'base' => $article->base_unit,
+                                    ]) }}</option>
+                                @endforeach
+                            @endforeach
+                        </select></div>
+                @endif
                 <div class="fieldset"><label for="unit_price" class="fieldset-label">{{ __('procurement.field.unit_price') }}</label>
                     <input id="unit_price" name="unit_price" type="number" step="0.0001" min="0" class="input input-sm input-bordered w-28"></div>
                 <div class="fieldset grow"><label for="note" class="fieldset-label">{{ __('procurement.field.line_note') }}</label>
@@ -127,7 +143,7 @@
                         @if (trim((string) $line->note) !== '')<div class="text-xs opacity-60">{{ $line->note }}</div>@endif
                     </td>
                     <td class="text-right tabular-nums">{{ $line->ordered_qty?->getNumericValue() }} {{ $line->unit }}</td>
-                    <td class="text-right tabular-nums">{{ $line->received_qty?->getNumericValue() }}</td>
+                    <td class="text-right tabular-nums">{{ $line->received_qty?->getNumericValue() }} {{ $line->unit }}</td>
                     {{-- Auftragsbestätigung (MVP-964): bestätigte Werte, Abweichung markiert --}}
                     @if ($order->supplier_confirmed_at !== null)
                         <td class="text-sm">
@@ -148,14 +164,15 @@
                                 <input type="hidden" name="line" value="{{ $line->sqid }}">
                                 @php($lineArticle = $line->variant?->article)
                                 {{-- Vollaudit 2026-07 (M19): Pflichterfassung Charge/Serie/MHD (E2). --}}
-                                @if ($lineArticle?->batch_required)
+                                @if ($lineArticle?->batch_required || $lineArticle?->shelf_life_required)
                                     <input aria-label="{{ __('inventory.lot.lot_no') }}" name="lot_no" required placeholder="{{ __('inventory.lot.lot_no') }}" class="input input-xs input-bordered w-24">
-                                    <input name="best_before" type="date" title="{{ __('inventory.lot.best_before') }}" class="input input-xs input-bordered w-32">
+                                    <input name="best_before" type="date" aria-label="{{ __('inventory.lot.best_before') }}" title="{{ __('inventory.lot.best_before') }}" class="input input-xs input-bordered w-32" @required($lineArticle?->shelf_life_required)>
                                 @endif
                                 @if ($lineArticle?->serial_required)
                                     <input aria-label="{{ __('inventory.serial.field.serial_no') }}" name="serial_no" required placeholder="{{ __('inventory.serial.field.serial_no') }}" class="input input-xs input-bordered w-24">
                                 @endif
-                                <input name="qty" type="number" step="0.0001" min="0.0001" value="{{ $lineArticle?->serial_required ? 1 : $line->openQty() }}" class="input input-xs input-bordered w-20">
+                                <input aria-label="{{ __('procurement.field.qty') }}" name="qty" type="number" step="0.0001" min="0.0001" value="{{ $lineArticle?->serial_required ? 1 : $line->openQty() }}" class="input input-xs input-bordered w-20">
+                                <span class="text-xs text-muted">{{ $line->unit }}</span>
                                 <x-button type="submit" tone="plain" size="xs">{{ __('procurement.action.receive') }}</x-button>
                             </form>
                         </td>

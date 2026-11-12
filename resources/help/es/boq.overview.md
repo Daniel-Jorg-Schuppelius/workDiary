@@ -1,7 +1,7 @@
 ---
 title: "Presupuestos de obra GAEB"
 topic: boq.overview
-version: 1
+version: 3
 keywords:
     - mediciones
     - importar mediciones
@@ -74,3 +74,11 @@ La **comprobación antes de la entrega** avisa además de partidas con precio en
 ## Comentarios del licitador
 
 En la solicitud de oferta, el cliente decide si los licitadores pueden comentar las partidas. La vista del presupuesto muestra lo que indica el archivo. Si no se permiten comentarios, la importación no los toma (el registro de importación indica cuántos) y la oferta no contiene ninguno. Reimportar la oferta no cambia lo fijado en la solicitud.
+
+## Avance con documento y hallazgos de la importación
+
+Además de la entrada rápida de cantidad, el icono de cinta métrica de una partida abre el diálogo **Registrar avance**. Allí usted elige además un **consumo de material** del proyecto o un **acta** del proyecto. El documento elegido determina el origen del registro y queda unido a él; el diálogo muestra los registros anteriores con su referencia. Un consumo de material solo puede asignarse a una partida; su coste se imputa a esa partida en la evaluación de rentabilidad. Para asignar solo costes, introduzca la cantidad 0.
+
+El **historial de importaciones** muestra los hallazgos de cada ejecución. Una reimportación rechazada aparece allí con el estado «conflicto» e indica, por cada partida protegida, la cantidad y el precio unitario existentes junto a los valores del archivo. No modifica nada en el presupuesto de obra.
+
+El acta misma ofrece también en su menú **Registrar avance de una partida del presupuesto** si el proyecto del acta tiene un presupuesto de obra con partidas abiertas. El registro recibe el origen «acta» y remite a esta acta.

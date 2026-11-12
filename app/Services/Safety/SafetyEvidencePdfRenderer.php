@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Safety;
 
-use App\Enums\DocumentDesign\RenderDocumentKind;
+use App\Enums\DocumentDesign\{PageFormat, RenderDocumentKind};
 use App\Models\Platform\Organization;
 use App\Models\Safety\{HazardAssessment, SafetyInstruction, SafetyInstructionParticipant};
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, IssuerIdentity};
 use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Support\Facades\Storage;
 
@@ -32,23 +32,35 @@ class SafetyEvidencePdfRenderer {
         $instruction->loadMissing(['participants.user:id,name', 'instructor:id,name', 'assessment']);
         $organization = Organization::query()->withoutGlobalScopes()->find($instruction->organization_id);
 
+        $payload = $this->design->payloadFromSnapshot($instruction, RenderDocumentKind::Protocol)
+            ?? ($organization !== null ? $this->design->payloadFor($organization, RenderDocumentKind::Protocol) : null);
+
         return $this->design->renderPdf(RenderDocumentKind::Protocol, 'pdf.safety-instruction', [
             'instruction' => $instruction,
             'organization' => $organization,
             'signatures' => $instruction->participants->mapWithKeys(fn (SafetyInstructionParticipant $participant): array => [$participant->id => $this->signatureDataUri($participant)])->all(),
             'generatedAt' => now(),
-        ], $organization);
+            // Arbeitgeber nach Blockzustand (MVP-1624); vorher unterschriebene Nachweise bleiben, wie sie waren.
+            'design' => $this->design->contextForDocument($instruction, RenderDocumentKind::Protocol, $payload, finalized: $instruction->participants->contains(static fn (SafetyInstructionParticipant $participant): bool => $participant->signed_at !== null)),
+            'issuer' => IssuerIdentity::for($organization),
+        ], $organization, payload: $payload);
     }
 
     public function assessment(HazardAssessment $assessment): string {
         $assessment->loadMissing(['items', 'approvedBy:id,name', 'createdBy:id,name', 'supersedes']);
         $organization = Organization::query()->withoutGlobalScopes()->find($assessment->organization_id);
 
+        $payload = $this->design->payloadFromSnapshot($assessment, RenderDocumentKind::Protocol)
+            ?? ($organization !== null ? $this->design->payloadFor($organization, RenderDocumentKind::Protocol, null, PageFormat::A4Landscape) : null);
+
         return $this->design->renderPdf(RenderDocumentKind::Protocol, 'pdf.safety-assessment', [
             'assessment' => $assessment,
             'organization' => $organization,
             'generatedAt' => now(),
-        ], $organization, ['orientation' => 'landscape']);
+            // Arbeitgeber nach Blockzustand (MVP-1624); vorher freigegebene Beurteilungen bleiben, wie sie waren.
+            'design' => $this->design->contextForDocument($assessment, RenderDocumentKind::Protocol, $payload, finalized: $assessment->approved_at !== null),
+            'issuer' => IssuerIdentity::for($organization),
+        ], $organization, ['orientation' => 'landscape'], $payload);
     }
 
     public function filename(string $prefix, string $displayNo): string {

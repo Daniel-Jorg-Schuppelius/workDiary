@@ -1,7 +1,7 @@
 ---
 title: "Pianificazione dei servizi e dei turni"
 topic: planning.shifts
-version: 4
+version: 5
 keywords:
     - turnistica
     - piano turni
@@ -47,3 +47,9 @@ o **Confermato**; le bozze e i turni annullati non contano. Il report
 **Copertura** calcola con le stesse regole.
 
 Con **Per tutti i piani di servizio** una voce vale per tutti i piani: in ogni piano di servizio e nei giorni senza piano, ad esempio per i turni inseriti direttamente nel **Piano turni**. L’elenco contrassegna queste voci con **Tutti i piani di servizio**; Lei le vede e le modifica in ogni piano di servizio.
+
+**Qualifica obbligatoria mancante:** Per ogni qualifica mancante la nota sul
+turno indica se la persona ha già iniziato il corso corrispondente della
+piattaforma di apprendimento («corso in corso») o quale corso pubblicato la
+trasmette. L'assegnazione resta bloccata finché non si possiede la qualifica
+stessa.

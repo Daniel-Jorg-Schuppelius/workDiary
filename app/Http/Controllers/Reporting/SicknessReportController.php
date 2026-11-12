@@ -10,19 +10,15 @@
 
 namespace App\Http\Controllers\Reporting;
 
-use App\Enums\Sickness\SickLeaveKind;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{ResolvesReportScope, ResolvesStandardReportFilters};
 use App\Models\Absence\SickLeave;
 use App\Models\Platform\User;
-use App\Services\Calendar\HolidayService;
-use App\Services\Reporting\ReportFilters;
-use App\Services\Sickness\ContinuedPaymentService;
+use App\Services\Reporting\SicknessReportBuilder;
 use App\Support\ChartBucket;
-use App\Support\Query\DateRange;
-use Carbon\{CarbonImmutable, CarbonInterface};
+use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -41,10 +37,7 @@ class SicknessReportController extends Controller {
     use ResolvesReportScope;
     use ResolvesStandardReportFilters;
 
-    public function __construct(
-        private readonly HolidayService $holidayService,
-        private readonly ContinuedPaymentService $continuedPayment,
-    ) {}
+    public function __construct(private readonly SicknessReportBuilder $builder) {}
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
@@ -54,9 +47,9 @@ class SicknessReportController extends Controller {
 
         $filters = $this->standardFilters($request, ['user', 'team'], $fromDate, $toDate, scope: $scope);
 
-        $leaves = $this->loadLeaves($fromDate, $toDate, $scope, $userId, $filters);
-        $rows = $this->aggregate($fromDate, $toDate, $leaves);
-        $totals = $this->totals($rows);
+        $leaves = $this->builder->leaves($fromDate, $toDate, $scope === 'mine' ? $userId : null, $filters);
+        $rows = $this->builder->rows($fromDate, $toDate, $leaves);
+        $totals = $this->builder->totals($rows);
         $months = $this->buildBucketsInRange($fromDate, $toDate);
         $monthlySeries = $this->monthlySickSeries($fromDate, $toDate, $leaves, $months);
 
@@ -77,28 +70,6 @@ class SicknessReportController extends Controller {
             'heatmapRows' => $this->userMonthHeatmapRows($fromDate, $toDate, $leaves, $rows, $months),
             ...$this->standardFilterOptions(['user', 'team'], $filters),
         ]);
-    }
-
-    /**
-     * Krankmeldungen des Zeitraums (Scope + Standardfilter angewandt) —
-     * eine Query für Tabelle und beide Diagramme.
-     *
-     * @return Collection<int, SickLeave>
-     */
-    private function loadLeaves(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): Collection {
-        $q = SickLeave::query()
-            ->whereNull('cancelled_at')
-            ->where('end_date', '>=', $from->toDateString())
-            ->where('start_date', '<', DateRange::dayAfter($to));
-        if ($scope === 'mine') {
-            $q->where('user_id', $userId);
-        }
-        $filters->applyUserAndTeam($q);
-
-        /** @var Collection<int, SickLeave> $leaves */
-        $leaves = $q->with('attachments')->get();
-
-        return $leaves;
     }
 
     /**
@@ -186,115 +157,8 @@ class SicknessReportController extends Controller {
         for ($day = $start; $day->lte($end); $day = $day->addDay()) {
             $key = ChartBucket::keyLabel($granularity, $day)[0];
             if (array_key_exists($key, $buckets)) {
-                $buckets[$key] += $this->countWorkdays($day, $day);
+                $buckets[$key] += $this->builder->workdays($day, $day);
             }
         }
-    }
-
-    /**
-     * @param  Collection<int, SickLeave>  $leaves
-     * @return array<int, array{
-     *   user: User,
-     *   sick_workdays:int,
-     *   sick_calendar_days:int,
-     *   episodes:int,
-     *   follow_ups:int,
-     *   with_au:int,
-     *   entitlement_days:int,
-     *   used_days:int,
-     *   remaining_days:int,
-     *   exhausted:bool,
-     *   chain_start:?string,
-     *   exhaustion_date:?string
-     * }>
-     */
-    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, Collection $leaves): array {
-        /** @var array<int, array{workdays:int, cal:int, episodes:int, follow:int, with_au:int}> $byUser */
-        $byUser = [];
-        foreach ($leaves as $s) {
-            $uid = (int) $s->user_id;
-            if (! isset($byUser[$uid])) {
-                $byUser[$uid] = ['workdays' => 0, 'cal' => 0, 'episodes' => 0, 'follow' => 0, 'with_au' => 0];
-            }
-            $start = $s->start_date->greaterThan($from) ? $s->start_date->copy() : $from->copy();
-            $end = $s->end_date->lessThan($to) ? $s->end_date->copy() : $to->copy();
-            if ($start->greaterThan($end)) {
-                continue;
-            }
-            $byUser[$uid]['workdays'] += $this->countWorkdays($start, $end);
-            $byUser[$uid]['cal'] += (int) $start->copy()->startOfDay()->diffInDays($end->copy()->startOfDay()) + 1;
-            $byUser[$uid]['episodes']++;
-            if ($s->kind === SickLeaveKind::FollowUp) {
-                $byUser[$uid]['follow']++;
-            }
-            if ($s->attachments->isNotEmpty()) {
-                $byUser[$uid]['with_au']++;
-            }
-        }
-
-        if ($byUser === []) {
-            return [];
-        }
-
-        /** @var Collection<int, User> $users */
-        $users = User::query()->whereIn('id', array_keys($byUser))->orderBy('name')->get();
-
-        $rows = [];
-        foreach ($users as $user) {
-            $uid = (int) $user->id;
-            $data = $byUser[$uid];
-            $status = $this->continuedPayment->statusFor($user);
-            $rows[] = [
-                'user' => $user,
-                'sick_workdays' => $data['workdays'],
-                'sick_calendar_days' => $data['cal'],
-                'episodes' => $data['episodes'],
-                'follow_ups' => $data['follow'],
-                'with_au' => $data['with_au'],
-                'entitlement_days' => $status->entitlementDays,
-                'used_days' => $status->usedDays,
-                'remaining_days' => max(0, $status->remainingDays),
-                'exhausted' => $status->exhausted,
-                'chain_start' => $status->chainStart?->toDateString(),
-                'exhaustion_date' => $status->exhaustionDate?->toDateString(),
-            ];
-        }
-
-        return $rows;
-    }
-
-    /**
-     * @param  array<int, array{user:User, sick_workdays:int, sick_calendar_days:int, episodes:int, follow_ups:int, with_au:int, entitlement_days:int, used_days:int, remaining_days:int, exhausted:bool, chain_start:?string, exhaustion_date:?string}>  $rows
-     * @return array{users:int, sick_workdays:int, sick_calendar_days:int, episodes:int, follow_ups:int, with_au:int, exhausted:int}
-     */
-    private function totals(array $rows): array {
-        $t = [
-            'users' => count($rows),
-            'sick_workdays' => 0,
-            'sick_calendar_days' => 0,
-            'episodes' => 0,
-            'follow_ups' => 0,
-            'with_au' => 0,
-            'exhausted' => 0,
-        ];
-        foreach ($rows as $r) {
-            $t['sick_workdays'] += $r['sick_workdays'];
-            $t['sick_calendar_days'] += $r['sick_calendar_days'];
-            $t['episodes'] += $r['episodes'];
-            $t['follow_ups'] += $r['follow_ups'];
-            $t['with_au'] += $r['with_au'];
-            if ($r['exhausted']) {
-                $t['exhausted']++;
-            }
-        }
-
-        return $t;
-    }
-
-    private function countWorkdays(CarbonInterface $start, CarbonInterface $end): int {
-        if ($start->greaterThan($end)) {
-            return 0;
-        }
-        return $this->holidayService->workingDaysBetween($start, $end);
     }
 }

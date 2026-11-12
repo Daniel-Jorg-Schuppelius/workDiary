@@ -95,6 +95,8 @@ class SchedulerRegistrationTest extends TestCase {
         // MVP-803: Abend-Erinnerung bei offener Stempelung.
         'attendance:remind-open' => ['0 19 * * *', true, true],
         'attendance:close-open' => ['7,22,37,52 * * * *', true, true],
+        // MVP-1550: gespeicherte Gleitzeitsalden.
+        'flex:recompute' => ['40 2 * * *', true, true],
         'recurrence:generate' => ['30 4 * * *', true, true],
         'events:dispatch-reminders' => ['2,7,12,17,22,27,32,37,42,47,52,57 * * * *', true, true],
         'events:check-certificates' => ['0 6 * * *', true, true],

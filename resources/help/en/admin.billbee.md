@@ -1,7 +1,7 @@
 ---
 title: "Connect Billbee"
 topic: admin.billbee
-version: 2
+version: 3
 keywords:
     - multichannel
     - marketplace orders
@@ -48,3 +48,5 @@ limit automatically.
 number, marketplace number, buyer name or email. The global search shows the
 same orders under "Billbee orders" — for administrators, while the plugin is
 active.
+
+**Inventory management:** With the “Billbee” setting, WorkDiary keeps booking in its own stock journal and reports every stock level as an absolute value per SKU to Billbee. People allowed to configure the warehouse can switch it; if another program (such as JTL-Wawi) already leads the stock, switch it to local there first. There is no read-only mode because Billbee keeps no stock of its own.

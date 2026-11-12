@@ -62,23 +62,4 @@ class KeyHandoverServiceTest extends TestCase {
 
         Carbon::setTestNow();
     }
-
-    public function test_current_holder_returns_latest_open_handover(): void {
-        $out = $this->service->record($this->asset, $this->actor, [
-            'direction' => KeyHandoverDirection::Out->value,
-            'person_name' => 'Anna',
-            'occurred_at' => '2026-06-01 09:00:00',
-        ]);
-
-        $this->assertNotNull($this->service->currentHolder($this->asset));
-        $this->assertSame($out->id, $this->service->currentHolder($this->asset)?->id);
-
-        $this->service->record($this->asset, $this->actor, [
-            'direction' => KeyHandoverDirection::In->value,
-            'person_name' => 'Anna',
-            'occurred_at' => '2026-06-02 09:00:00',
-        ]);
-
-        $this->assertNull($this->service->currentHolder($this->asset));
-    }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Portal de solicitudes de personas interesadas"
 topic: privacy.portal
-version: 1
+version: 2
 keywords:
     - solicitud RGPD
     - derecho de acceso
@@ -37,3 +37,7 @@ mismo una violación de datos.
 
 **Distinción:** Este portal no es el de denuncias. Aquel sirve para comunicar
 irregularidades; este trata los datos propios de quien solicita.
+
+**Ampliar el plazo:** en una solicitud abierta encontrará la tarjeta **Ampliar plazo**. Conforme al art. 12.3 del RGPD son posibles como máximo dos meses más; indique el nuevo plazo y el motivo. Solo es posible mientras corre el primer plazo, porque la persona debe ser informada dentro de él. Si la solicitud tiene una dirección de contacto (portal), WorkDiary envía allí la comunicación con el motivo; de lo contrario, comunique ambos usted mismo. El expediente muestra después el nuevo plazo con la indicación del original y vuelve a avisar a tiempo antes del nuevo plazo.
+
+**Idioma del portal:** el **idioma predeterminado del portal** determina el idioma del formulario público; sin selección se aplica el idioma de la aplicación.

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Billing\Sepa;
 
 use App\Enums\Invoicing\IncomingEInvoiceStatus;
+use App\Models\Accounting\AccountingOpenItem;
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Supplier\Supplier;
 use App\Support\Crypto\BlindIndex;
@@ -109,6 +110,16 @@ class PaymentProposalService {
         }
         if ($this->ibanDiffersFromMaster($invoice, $supplier)) {
             return 'iban_differs';
+        }
+        // Strittige Verbindlichkeit (MVP-1559): gezahlt wird erst, wenn das Kennzeichen am offenen Posten zurückgenommen ist.
+        $disputed = AccountingOpenItem::query()
+            ->where('organization_id', $invoice->organization_id)
+            ->where('source_type', $invoice->getMorphClass())
+            ->where('source_id', $invoice->getKey())
+            ->disputed()
+            ->exists();
+        if ($disputed) {
+            return 'disputed';
         }
 
         return null;

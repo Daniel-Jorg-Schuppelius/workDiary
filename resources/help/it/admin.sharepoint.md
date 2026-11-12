@@ -1,7 +1,7 @@
 ---
 title: "Archiviazione SharePoint"
 topic: admin.sharepoint
-version: 2
+version: 3
 keywords:
     - SharePoint
     - SharePoint Online
@@ -180,3 +180,5 @@ impostazioni.
   operativa lo segnala.
 - **Verificare lo stato:** accanto al titolo della pagina compare l'ultimo
   stato verificato; **Verifica connessione** lo controlla subito.
+
+**L’attivazione recupera:** quando la replica viene attivata, WorkDiary mette subito in coda tutti gli oggetti già rilasciati, anche quelli del periodo senza connessione attiva. La replica non richiede pianificazione; «Replica ora» resta disponibile per il recupero manuale.

@@ -78,6 +78,11 @@ class CommunicationNoteService {
                 $note->audit('communication.confidential.set', ['actor_user_id' => $creator->id]);
             }
 
+            // Eine Notiz am Lead ist ein Kontakt: die Löschfrist läuft ab ihr (MVP-1612).
+            if ($notable instanceof \App\Models\Sales\Lead) {
+                $notable->touchContact($occurredAt);
+            }
+
             return $note->fresh(['participants']) ?? $note;
         });
 

@@ -118,6 +118,18 @@ return [
         'type' => 'Tipo de artículo',
         'status' => 'Estado',
         'base_unit' => 'Unidad base',
+        'tax_class' => 'Clase de impuesto',
+        'numbers_locked_hint' => 'El número de artículo, el SKU de las variantes y el GTIN los gestiona :program. Llegan con la sincronización y no pueden cambiarse aquí.',
+        'valuation_method' => 'Método de valoración',
+        'valuation_method_default' => 'Como la organización (:method)',
+        'valuation_method_hint' => 'Un método propio solo se aplica a este artículo. Solo se puede volver al promedio móvil cuando no queden existencias en capas FIFO/FEFO.',
+        'serial_prefix' => 'Prefijo de números de serie',
+        'serial_prefix_hint' => 'Con prefijo, el artículo cuenta sus propios números de serie (prefijo-00001). Vacío = rango de numeración de la organización.',
+        'serial_padding' => 'Dígitos del número correlativo',
+        'serial_check_digit' => 'Añadir dígito de control',
+        'default_procedure' => 'Plan de trabajo estándar',
+        'default_procedure_hint' => 'Versión de procedimiento publicada con la que las órdenes y la planificación de fabricación producen este artículo, mientras una orden no elija otra.',
+        'default_procedure_none' => 'Sin plan de trabajo estándar',
         'category' => 'Grupo de mercancías',
         'category_hint' => 'Para informes y la exportación DATANORM (archivo WRG).',
         'subcategory' => 'Subgrupo de mercancías',
@@ -150,10 +162,18 @@ return [
         'net_weight_kg_hint' => 'Peso sin embalaje; los documentos aduaneros lo multiplican por la cantidad.',
     ],
 
+    'tax_class' => [
+        'standard' => 'Tipo general',
+        'reduced' => 'Tipo reducido',
+        'increased' => 'Tipo incrementado',
+    ],
+
     'group' => [
+        'inventory' => 'Almacén y valoración',
         'pricing' => 'Precios',
         'flags' => 'Propiedades',
         'customs' => 'Aduana y exportación',
+        'manufacturing' => 'Fabricación',
     ],
 
     'flag' => [

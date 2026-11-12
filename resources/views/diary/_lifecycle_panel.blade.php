@@ -26,6 +26,10 @@
     $actions = $diary->status->allowedActions();
     $signedProtocol = $diary->protocols
         ->first(fn ($protocol) => $protocol->status === \App\Enums\Protocol\ProtocolStatus::Signed);
+    // Ohne Kundenunterschrift im Protokoll fragt die Abnahme nach dem Namen der abnehmenden Person.
+    $handoverSigner = $signedProtocol !== null && in_array('handover', $actions, true)
+        ? \App\Services\Diary\OrderService::customerSignerName($signedProtocol)
+        : null;
     $dialogSuffix = $diary->sqid;
 @endphp
 
@@ -38,6 +42,12 @@
                 @if ($diary->assignedUser)
                     <span class="text-sm text-base-content/70">{{ __('Zugewiesen an :name', ['name' => $diary->assignedUser->name]) }}</span>
                 @endif
+                @if ($diary->accepted_final_at && $diary->accepted_final_by)
+                    <span class="text-sm text-base-content/70">{{ __('diary.lifecycle.accepted_final_by', ['name' => $diary->accepted_final_by, 'date' => $diary->accepted_final_at->fdate()]) }}</span>
+                @endif
+                @if ($diary->invoiced_at && $diary->invoice_reference)
+                    <span class="text-sm text-base-content/70">{{ __('diary.lifecycle.invoiced_with', ['reference' => $diary->invoice_reference]) }}</span>
+                @endif
             </div>
         </div>
 
@@ -48,6 +58,12 @@
                         @csrf
                         <x-icon-btn type="submit" icon="check_circle" tone="primary" size="sm" show-label>{{ __('Annehmen') }}</x-icon-btn>
                     </form>
+                @endcan
+            @endif
+            @if (! $isDialog && in_array('reject', $actions, true))
+                @can('reject', $diary)
+                    <x-icon-btn type="button" icon="undo" tone="outline" size="sm" show-label
+                        data-open-dialog="order-reject-{{ $dialogSuffix }}">{{ __('diary.lifecycle.action.reject') }}</x-icon-btn>
                 @endcan
             @endif
             @if (in_array('start', $actions, true))
@@ -80,7 +96,12 @@
             @endif
             @if (in_array('handover', $actions, true))
                 @can('handover', $diary)
-                    @if ($signedProtocol)
+                    @if ($signedProtocol && $handoverSigner === null)
+                        @unless ($isDialog)
+                            <x-icon-btn type="button" icon="handshake" tone="primary" size="sm" show-label
+                                data-open-dialog="order-handover-{{ $dialogSuffix }}">{{ __('Abnahme starten') }}</x-icon-btn>
+                        @endunless
+                    @elseif ($signedProtocol)
                         <form method="POST" action="{{ route('diary.lifecycle', [$diary, 'action' => 'handover']) }}">
                             @csrf
                             <input type="hidden" name="protocol_id" value="{{ $signedProtocol->sqid }}">
@@ -127,5 +148,5 @@
 </section>
 
 @unless ($isDialog)
-    @include('diary._lifecycle_dialogs', ['dialogSuffix' => $dialogSuffix])
+    @include('diary._lifecycle_dialogs', ['dialogSuffix' => $dialogSuffix, 'signedProtocol' => $signedProtocol, 'handoverSigner' => $handoverSigner])
 @endunless

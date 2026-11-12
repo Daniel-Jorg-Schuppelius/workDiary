@@ -21,5 +21,16 @@ return [
         'stamp_too_old' => 'Der Zeitstempel liegt mehr als :days Tage zurück und wird nicht mehr übernommen.',
         'day_locked' => 'Der Tag ist abgeschlossen oder der Monat freigegeben — bitte eine Zeitkorrektur beantragen.',
         'stamp_overlaps' => 'Für diesen Zeitpunkt gibt es bereits eine Stempelung.',
+        'forbidden' => 'Keine Berechtigung für diese Aktion.',
+        'module_inactive' => 'Dieser Bereich ist für Ihre Organisation nicht freigeschaltet.',
+    ],
+    // Konflikte statt Ablehnung: der Nutzer entscheidet (MVP-1593/1594).
+    'conflict' => [
+        'missing_fields' => 'Es fehlen Pflichtangaben: :fields.',
+        'day_locked' => 'Der :date ist inzwischen abgeschlossen oder der Monat freigegeben — die Buchung wurde nicht übernommen. Ändern Sie das Datum oder beantragen Sie eine Zeitkorrektur.',
+        'lock' => [
+            'day' => 'Tag abgeschlossen',
+            'month' => 'Monat freigegeben',
+        ],
     ],
 ];

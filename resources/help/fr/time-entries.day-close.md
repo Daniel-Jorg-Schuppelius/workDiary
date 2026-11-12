@@ -1,7 +1,7 @@
 ---
 title: "Clôture de journée"
 topic: time-entries.day-close
-version: 5
+version: 6
 keywords:
     - clôturer la journée
     - fin de journée
@@ -62,6 +62,13 @@ disposant du droit **Rouvrir une clôture journalière** peut aussi
 déverrouiller une journée clôturée sans demande via **Rouvrir la
 journée** ; la justification est consignée dans le journal d’audit.
 
+Le verrouillage vaut aussi pour les **saisies de temps** de la journée : tant
+que la journée est clôturée ou en correction, les temps de projet et
+d’administration de ce jour ne peuvent être ni créés, ni modifiés, ni
+supprimés, pas même par le chronomètre, la saisie rapide, l’import ou
+l’interface. La barre de saisie est alors masquée ; l’application renvoie à
+la demande de correction.
+
 Les journées d’un mois déjà validé sont entièrement verrouillées ; toute
 modification passe alors par la validation mensuelle.
 
@@ -70,3 +77,11 @@ propre journée, sauf si personne d'autre dans l'organisation ne dispose de ce
 droit ; le journal d'audit consigne alors l'auto-validation. Qui ne peut voir
 les clôtures journalières que pour l'équipe voit uniquement les membres de ses
 propres équipes dans « Équipe aujourd’hui » et dans les vues journalières.
+
+L’en-tête de la journée affiche **Prévu/réel** : le temps prévu du modèle
+horaire avec le début de la plage fixe, à côté du premier et du dernier
+pointage et de la présence. Des marques d’avertissement apparaissent en cas
+de début tardif et d’écart d’heures ; l’organisation fixe les seuils sous
+**Paramètres** → **Prévu/réel de la présence** (par défaut 15 minutes et
+10 %). Les pointages indiquent en outre les minutes en **Télétravail** et en
+**Déplacement de service**.

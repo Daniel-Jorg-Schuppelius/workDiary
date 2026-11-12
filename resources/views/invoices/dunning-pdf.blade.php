@@ -48,9 +48,7 @@
 </head>
 <body>
 
-@if ($design->headerText() !== null)
-    <div class="tpl-header">{{ $design->headerText() }}</div>
-@endif
+@include('pdf._design_intro')
 
 @php
     $addressStyle = $design->addressWindowStyle();
@@ -176,8 +174,6 @@
     </div>
 @endif
 
-@if ($design->footerText() !== null)
-    <div class="tpl-footer">{{ $design->footerText() }}</div>
-@endif
+@include('pdf._design_closing')
 </body>
 </html>

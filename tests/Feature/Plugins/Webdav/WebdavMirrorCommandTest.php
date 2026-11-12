@@ -106,6 +106,26 @@ class WebdavMirrorCommandTest extends TestCase {
             ->count(), 'Wiederholter Voll-Spiegellauf darf keine Duplikate einreihen.');
     }
 
+    /** MVP-1619 (F3-09): Freigaben aus der Zeit ohne aktive Ablage holt die Aktivierung nach — ein Zeitplan ist dafür nicht nötig. */
+    public function test_activating_the_storage_queues_documents_released_before(): void {
+        $document = $this->makeActiveDocument();
+        $this->assertSame(0, IntegrationOutboxEntry::query()->where('organization_id', $this->organization->id)->count());
+
+        $this->actingAs($this->orgAdmin())->post(route('admin.webdav.connection.store'), [
+            'name' => 'Nextcloud',
+            'base_url' => 'https://cloud.example.com/remote.php/dav/files/svc/WorkDiary',
+            'username' => 'svc',
+            'app_password' => 'secret',
+            'default_folder' => 'Dokumente',
+            'active' => '1',
+        ])->assertSessionHas('success', __('webdav::webdav.flash.saved_and_mirrored'));
+
+        $this->assertDatabaseHas('integration_outbox', [
+            'organization_id' => $this->organization->id,
+            'idempotency_key' => 'mirror:doc-' . $document->id . ':v' . $document->current_version_id,
+        ]);
+    }
+
     public function test_without_active_connection_nothing_is_queued(): void {
         $this->makeActiveDocument();
 

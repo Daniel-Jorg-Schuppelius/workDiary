@@ -126,6 +126,36 @@ class AgileBoardController extends Controller {
             ->with('success', __('Board-Einstellungen gespeichert.'));
     }
 
+    /** Abschlussdialog: offene Kriterien, DoD-Punkte zum Bestätigen, Begründung fürs Übersteuern. */
+    public function moveDialog(Request $request, Project $project, \App\Models\Agile\AgileWorkItem $item): View {
+        abort_unless((int) ($item->board?->project_id) === (int) $project->id, 404);
+        Gate::authorize('move', $item);
+
+        $target = $this->targetColumn($item, (string) $request->query('column'));
+        $wipReached = $target->wip_limit !== null
+            && (int) $target->id !== (int) $item->column_id
+            && \App\Models\Agile\AgileWorkItem::query()->where('column_id', $target->id)->where('id', '!=', $item->id)->count() >= $target->wip_limit;
+        $entersDone = $target->category === \App\Enums\Agile\AgileColumnCategory::Done;
+
+        return view('agile._move_dialog', [
+            'project' => $project,
+            'item' => $item->load('task:id,title'),
+            'target' => $target,
+            'wipReached' => $wipReached,
+            'openCriteria' => $entersDone ? $item->acceptanceCriteria()->whereNull('checked_at')->get() : collect(),
+            'dodItems' => $entersDone && $item->column?->category !== \App\Enums\Agile\AgileColumnCategory::Done
+                ? array_values((array) ($item->board->dod_items ?? []))
+                : [],
+            'mayOverride' => Gate::allows(Permission::AgileWorkflowOverride->value),
+        ]);
+    }
+
+    private function targetColumn(\App\Models\Agile\AgileWorkItem $item, string $sqid): \App\Models\Agile\AgileBoardColumn {
+        return \App\Models\Agile\AgileBoardColumn::query()
+            ->where('board_id', $item->board_id)
+            ->findOrFail(\App\Support\Sqid::decode(\App\Models\Agile\AgileBoardColumn::class, $sqid));
+    }
+
     /** Karte verschieben (JSON für Alpine-Fetch, Form-Fallback ohne JS). */
     public function moveItem(Request $request, Project $project, \App\Models\Agile\AgileWorkItem $item): \Symfony\Component\HttpFoundation\Response {
         abort_unless((int) ($item->board?->project_id) === (int) $project->id, 404);
@@ -135,12 +165,11 @@ class AgileBoardController extends Controller {
             'column' => ['required', 'string', 'max:64'],
             'lock_version' => ['required', 'integer', 'min:1'],
             'override_reason' => ['nullable', 'string', 'max:300'],
+            'dod_confirmed' => ['nullable', 'array', 'max:100'],
+            'dod_confirmed.*' => ['integer', 'min:0'],
         ]);
 
-        $columnId = \App\Support\Sqid::decode(\App\Models\Agile\AgileBoardColumn::class, (string) $data['column']);
-        $target = \App\Models\Agile\AgileBoardColumn::query()
-            ->where('board_id', $item->board_id)
-            ->findOrFail($columnId);
+        $target = $this->targetColumn($item, (string) $data['column']);
 
         /** @var User $actor */
         $actor = Auth::user();
@@ -153,15 +182,18 @@ class AgileBoardController extends Controller {
                 $data['override_reason'] ?? null,
                 $actor,
                 Gate::allows(Permission::AgileWorkflowOverride->value),
+                array_map(intval(...), array_values((array) ($data['dod_confirmed'] ?? []))),
             );
         } catch (\App\Services\Agile\AgileConflictException $e) {
             abort(409, $e->getMessage());
         } catch (\App\Services\Agile\AgileFlowException $e) {
             if ($request->expectsJson()) {
-                return response()->json(['error' => $e->reason, 'message' => $e->getMessage()], 422);
+                return response()->json(['error' => $e->reason, 'message' => $e->getMessage(), 'errors' => ['column' => [$e->getMessage()]]], 422);
             }
 
-            return back()->with('error', $e->getMessage());
+            // Der Abschlussdialog zeigt, was offen ist, und nimmt Bestätigung bzw. Begründung an.
+            return back()->with('warning', $e->getMessage())
+                ->with('open_dialog', route('agile.items.move.dialog', [$project, $item, 'column' => $target->sqid]));
         }
 
         if ($request->expectsJson()) {

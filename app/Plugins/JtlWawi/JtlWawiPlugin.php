@@ -32,7 +32,7 @@ use App\Plugins\Support\ApiHealthProbe;
  * (Lexoffice-Präzedenz: Capability-Enum nur für die dort gebundenen
  * Plugin-Klassen-Interfaces).
  */
-class JtlWawiPlugin extends AbstractPlugin {
+class JtlWawiPlugin extends AbstractPlugin implements \App\Plugins\Contracts\ArticleNumberIssuer, \App\Plugins\Contracts\WritesDataDomains {
     public const string ID = 'jtl_wawi';
 
     public const string SERVICE_PROVIDER = JtlWawiServiceProvider::class;
@@ -108,5 +108,10 @@ class JtlWawiPlugin extends AbstractPlugin {
                 'version' => $version !== '' ? $version : __('unbekannt'),
             ]);
         }, ['auth' => (string) __('API lehnt die Anmeldung ab — Verbindung/Scopes erneuern.')]);
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Inventory];
     }
 }

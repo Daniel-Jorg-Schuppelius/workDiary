@@ -98,4 +98,7 @@ return [
     'resolution' => [
         'note' => 'In WorkDiary erledigt.',
     ],
+    'ownership' => [
+        'target_changed' => 'Die Verbindung importiert nicht mehr als Service-Ticket — bitte den Fall verwerfen oder den Zielmodus wieder umstellen.',
+    ],
 ];

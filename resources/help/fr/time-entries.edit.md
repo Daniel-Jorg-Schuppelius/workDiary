@@ -1,7 +1,7 @@
 ---
 title: "Modifier une saisie de temps"
 topic: time-entries.edit
-version: 3
+version: 4
 keywords:
     - corriger un temps
     - changer une saisie
@@ -94,6 +94,8 @@ verrouillée si
 - la fenêtre de correction a expiré (par défaut 7 jours après le jour de la
   saisie),
 - le mois a déjà été validé pour vous,
+- vous avez déjà clôturé la journée de la saisie (les modifications passent
+  alors par **Demander une correction** dans la vue du jour),
 - la feuille d'heures associée est signée ou verrouillée, ou
 - la saisie a déjà été exportée.
 

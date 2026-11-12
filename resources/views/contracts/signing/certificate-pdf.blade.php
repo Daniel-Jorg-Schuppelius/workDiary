@@ -34,13 +34,12 @@
     .note { margin-top: 18px; padding: 8px 10px; border: 1px solid #ddd; font-size: 9px; color: #555; }
     .tpl-header { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #ddd; white-space: pre-line; }
     .tpl-footer { margin-top: 24px; padding-top: 8px; border-top: 1px solid #ddd; font-size: 9px; color: #555; white-space: pre-line; }
+    .tpl-issuer { margin-top: 8px; font-size: 9px; color: #555; }
     @page { margin: 20mm; }
 </style>
 </head>
 <body>
-@if ($design->headerText() !== null)
-    <div class="tpl-header">{{ $design->headerText() }}</div>
-@endif
+@include('pdf._design_intro')
 
 <h1>{{ __('contract-signing.certificate.title') }}</h1>
 <div class="meta">
@@ -112,8 +111,10 @@
     {{ __('contract-signing.certificate.generated_at', ['at' => now()->fdatetime()]) }}
 </div>
 
-@if ($design->footerText() !== null)
+@if ($design->show(\App\Enums\DocumentDesign\InformationBlock::ClosingText) && $design->footerText() !== null)
     <div class="tpl-footer">{{ $design->footerText() }}</div>
 @endif
+{{-- Aussteller nach Blockzustand des Designs (MVP-1624). --}}
+@include('pdf._design_issuer')
 </body>
 </html>

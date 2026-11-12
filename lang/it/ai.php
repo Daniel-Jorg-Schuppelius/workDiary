@@ -60,6 +60,16 @@ return [
     'dms' => [
         'source_hint' => 'Testo del documento da :name',
     ],
+    'budget' => [
+        'title' => 'Budget mensile',
+        'legend' => 'Budget mensile per famiglia',
+        'description' => 'Limite del consumo IA per mese solare. Una volta raggiunto, workDiary rifiuta ulteriori chiamate di questa famiglia fino a fine mese. Vuoto = predefinito del gestore, illimitato senza predefinito.',
+        'field' => [
+            'llm' => 'Modello linguistico (token al mese)',
+            'translation' => 'Traduzione (caratteri al mese)',
+        ],
+        'saved' => 'Budget mensile salvato.',
+    ],
     'usage' => [
         'title' => 'Consumo IA',
         'subtitle' => 'Consumo mensile per famiglia, utilizzo del budget e funnel dei suggerimenti per capacità.',
@@ -360,6 +370,8 @@ return [
         'dismiss' => 'No, scarta',
     ],
     'suggestion' => [
+        'connection' => 'Connessione',
+        'regenerate' => 'Rigenerare',
         'suggest' => 'Suggerimento IA per questa posizione',
         'suggest_all' => 'Suggerimenti IA per tutte le posizioni',
         'suggest_all_title' => 'Crea un suggerimento di testo per posizione in background — nulla viene applicato finché non fa clic.',

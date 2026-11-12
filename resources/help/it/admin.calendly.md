@@ -1,7 +1,7 @@
 ---
 title: "Collegare la prenotazione appuntamenti (Calendly)"
 topic: admin.calendly
-version: 1
+version: 2
 keywords:
     - prenotazione online
     - pagina di prenotazione
@@ -37,3 +37,20 @@ contrassegnato come disdetto.
 **Limiti:** L'integrazione legge le prenotazioni; non crea pagine di
 prenotazione e non modifica le disponibilità, che continua a gestire dove
 amministra la pagina.
+
+**Senza cliente corrispondente:** Una prenotazione il cui indirizzo non può
+essere assegnato in modo univoco a un cliente compare nella **casella di
+integrazione** come caso con destinazione «Cliente»: assegnare (suggerimenti per
+nome), creare o scartare. In alternativa assegni la richiesta a un cliente o a
+un lead nella casella degli appuntamenti.
+
+**Assegnare gli host:** Gli host di Calendly vengono riconosciuti dal loro
+indirizzo e-mail. Se l'indirizzo Calendly è diverso, lo assegni a un utente in
+**Assegna utenti Calendly**; gli appuntamenti vanno quindi a quell'utente.
+
+**Autorizzazioni:** Connessione, webhook, sincronizzazione, assegnazione degli
+host e link di prenotazione spettano all'amministrazione dell'organizzazione.
+Confermare e rifiutare le richieste di appuntamento può farlo chi gestisce la
+pianificazione, in questa pagina come nella casella degli appuntamenti.
+
+**Titolarità dei dati:** Le prenotazioni e le disdette da Calendly appartengono all’area calendario. Se un altro sistema gestisce il calendario, WorkDiary non crea né modifica alcuna richiesta di appuntamento; il caso resta nella casella delle integrazioni per essere acquisito una volta.

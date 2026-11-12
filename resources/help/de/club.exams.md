@@ -1,7 +1,7 @@
 ---
 title: "Prüfungen"
 topic: club.exams
-version: 1
+version: 2
 keywords:
     - Gürtelprüfung
     - Graduierungsprüfung
@@ -32,3 +32,5 @@ Ein Prüfungsangebot ist ein Vereinstermin der Art „Prüfung“ mit Ordnung, Z
 **Ergebnis:** Prüfer des Angebots oder Inhaber des Rechts „Prüfer“ erfassen bestanden, nicht bestanden oder nicht angetreten. Nur „bestanden“ vergibt den Zielgrad, genau einmal und mit Verweis auf die Prüfung; der Zulassungsbericht wird mit dem Ergebnis eingefroren. Ein Fehlversuch entfernt keinen vorhandenen Grad und setzt keine Trainingszeit zurück.
 
 **Bescheinigung:** Für jeden gültigen Grad gibt es eine PDF-Bescheinigung mit Datum, Herkunft, Prüfung und bestätigender Person. Ein Widerruf wird darauf sichtbar gedruckt; maßgeblich bleibt die Graduierungshistorie.
+
+**Ergebnisfreigabe:** Erfasste Ergebnisse sehen Prüflinge und Vertretungen erst, wenn Sie „Ergebnisse freigeben“ ausführen — vorher zeigt „Mein Verein“ „Ergebnis folgt“, der neue Grad und die Bescheinigung erscheinen dort noch nicht. Freigeben lässt sich, sobald jeder Kandidat entschieden ist: keine offene Anfrage, keine Zulassung ohne Ergebnis. Die Freigabe friert die Prüfung ein; Zulassungsberichte und verwendete Nachweise ändern sich nicht mehr, neue Kandidaten und Ergebnisse sind nicht mehr möglich. Spätere Korrekturen laufen über die Überprüfung bzw. den Widerruf des Grades.

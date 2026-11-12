@@ -26,6 +26,8 @@ return [
     // E-invoicing (feature 045, section 8): XRechnung (UBL 2.1, EN 16931).
     'buyer_reference' => 'Routing ID / buyer reference (BT-10)',
     'buyer_reference_hint' => 'Required for XRechnung (e-invoice): the Leitweg-ID for public authorities, otherwise a reference provided by the customer.',
+    // Customer VAT ID on the invoice PDF (section 14a UStG, MVP-1623).
+    'buyer_vat_id' => 'Your VAT ID',
     'einvoice' => [
         'button' => 'XRechnung',
         'button_title' => 'Download XRechnung (UBL 2.1, EN 16931)',
@@ -43,6 +45,12 @@ return [
         ],
         'payment_terms' => 'Payable within :days days without deduction.',
         'exemption_small_business' => 'No VAT charged according to § 19 UStG (German small business scheme).',
+        'exemption_reverse_charge' => 'Reverse charge',
+        'exemption_intra_community' => 'Tax-exempt intra-Community supply (§ 4 no. 1 (b) in conjunction with § 6a UStG)',
+        'exemption_export_goods' => 'Tax-exempt export delivery (§ 4 no. 1 (a) in conjunction with § 6 UStG)',
+        'exemption_export_services' => 'Service not taxable in Germany (place of supply at the recipient, § 3a UStG)',
+        'exemption_not_subject' => 'Not subject to VAT in Germany',
+        'exemption_tax_free' => 'Tax-exempt supply',
         'rule_violation' => 'Rule :code: :text',
         'note_supporting_documents' => 'Supporting documents attached: :list',
         'line_note_entries' => ':count assignments, :from – :to',
@@ -53,6 +61,12 @@ return [
             'missing_buyer_reference' => 'The customer is missing the routing ID/buyer reference (BT-10).',
             'missing_seller_field' => 'Seller detail missing: :field (organisation settings → invoicing).',
             'missing_tax_id' => 'Neither VAT ID nor tax number is configured in the organisation settings.',
+            'reverse_charge_buyer_vat_id' => 'Reverse charge (category AE) requires the customer\'s VAT ID (BR-AE-02) — please add it to the customer.',
+            'intra_community_buyer_vat_id' => 'An intra-Community supply (category K) requires the customer\'s VAT ID (BR-IC-02) — please add it to the customer.',
+            'seller_vat_id_required' => 'Intra-Community supplies and exports (categories K and G) require the organisation\'s VAT ID (BR-IC-02, BR-G-02) — please add it in the organisation settings.',
+            'not_subject_mixed' => 'Items not subject to VAT (category O) must not appear next to other VAT categories in an e-invoice (BR-O-11) — please invoice them separately.',
+            'not_subject_tax_number' => 'Supplies not subject to VAT (category O) carry no VAT ID (BR-O-02); the e-invoice therefore needs the tax number in the organisation settings.',
+            'line_category_rate' => 'Item “:line”: VAT category :category carries no tax, but the item carries :rate % — the invoice and the e-invoice would differ. Please set the item\'s tax rate to 0 %.',
             'missing_iban' => 'IBAN for the SEPA credit transfer is missing in the organisation settings.',
             'missing_tax_rate' => 'The invoice has no tax rate.',
             'totals_mismatch' => 'The invoice totals are inconsistent (lines, subtotal, tax, total).',
@@ -65,6 +79,9 @@ return [
             'missing_buyer_email' => 'Customer email is missing (electronic delivery address BT-49).',
             'missing_due_date' => 'Due date missing — the default payment term is used.',
             'service_date_fallback' => 'No item states a date of supply or a period; the invoice date counts as the time of supply (§ 14 (4) no. 6 UStG).',
+            'intra_community_delivery_country' => 'Intra-Community supply (category K): the e-invoice does not yet contain a delivery country (BT-80, rule BR-IC-12) — strict recipients will reject it.',
+            'not_subject_line_rate' => 'Supplies not subject to VAT (category O): the e-invoice still states a tax rate of 0 % on its items (rule BR-O-05) — strict recipients will reject it.',
+            'exemption_unspecified' => 'Tax-exempt items (category E): no exemption reason is stored, so the e-invoice only states “Tax-exempt supply”. Create a rule with the rate type “Exempt” in the tax rule matrix and enter the exemption provision as its document notice text (§ 14 (4) no. 8 UStG).',
             'activity_report_missing' => 'This recipient expects an activity report, but the invoice carries no documents.',
             'near_limit' => 'The e-invoice with documents is :size and close to the recipient’s limit (:limit).',
         ],
@@ -136,6 +153,9 @@ return [
         'position_hint' => 'Sets the order; headings number the items that follow.',
     ],
     // Arbeitskosten nach § 35a EStG (MVP-1053).
+    'approval' => [
+        'self' => 'With mandatory approval, the invoice cannot be approved by the person who created it.',
+    ],
     'labour_costs' => [
         'disclosure' => [
             'off' => 'Never show',
@@ -279,6 +299,11 @@ return [
         'dunning_note' => 'less retention',
         'added' => 'Retention recorded.',
         'released' => 'Retention released.',
+        'released_on' => 'Released on',
+        'release_due' => 'Release due',
+        'release_title' => 'Release retention',
+        'release_hint' => 'Once released, the amount is a regular open item: it counts towards the amount payable again and is included in dunning.',
+        'release_hint_secured' => 'This retention was replaced by a guarantee and has already been paid out. Releasing it only ends the security purpose: no new receivable is created, and the guarantee deed must be returned.',
     ],
 
     // Leistungszeitraum je Position (Feature 152, Review 2026-09-11).
@@ -333,7 +358,6 @@ return [
             'delivery_foreign' => 'The delivery does not belong to this organisation.',
             'delivery_customer' => 'The delivery belongs to another customer.',
             'delivery_external' => 'The delivery is invoiced externally.',
-            'delivery_not_delivered' => 'The delivery has not taken place yet.',
             'delivery_invoiced' => 'The delivery is already invoiced.',
             'delivery_reserved' => 'Delivery “:name” is already reserved in draft :number.',
             'delivery_currency' => 'The delivery is in :currency, the document in :invoice — no automatic conversion.',
@@ -346,6 +370,7 @@ return [
         'service_period' => 'Service period',
         'service_from' => 'Service period from',
         'service_to' => 'Service period to',
+        'tax_category_hint' => 'Empty = derived from the document (S/AE/Z/E/G/K/O). Categories without tax (AE, Z, E, G, K, O) set the rate to 0 %.',
     ],
     'service_rules' => [
         'title' => 'Billing rules',
@@ -514,5 +539,28 @@ return [
             'total_limit' => 'Document :name not taken over: the documents of this invoice exceed 50 MB in total.',
             'unreadable' => 'Document :name not taken over: larger than :limit or not readable.',
         ],
+    ],
+    // Steuerfall der Eingangsrechnung (MVP-1621) und § 13b als Leistender (MVP-1622).
+    'incoming_tax_case' => [
+        'title' => 'Tax case',
+        'field' => 'Tax case',
+        'hint' => 'With reverse charge (§ 13b UStG, intra-Community acquisition) the invoice is net; the entry records output and input tax itself. Applies to the next posting.',
+        'automatic' => 'Automatic (from document and supplier)',
+        'detected' => 'Determined: :case (:source).',
+        'action' => 'Change tax case',
+        'supplier_field' => 'Tax case of its incoming invoices',
+        'supplier_hint' => 'Preset in incoming invoices as long as the invoice shows no tax — e.g. for construction services under § 13b UStG.',
+        'source' => ['manual' => 'set manually', 'document' => 'from the e-invoice', 'supplier' => 'supplier preset', 'default' => 'default'],
+        'flash' => ['saved' => 'Tax case saved.'],
+        'error' => ['booked' => 'The incoming invoice is already in the accounts (draft or posting). Change the tax case after discarding the draft or reversing the entry.'],
+    ],
+    'reverse_charge_recipient' => [
+        'label' => 'Recipient is liable for VAT (§ 13b UStG)',
+        'hint' => 'Domestic customer liable for the tax on your services, e.g. construction services to construction businesses. Invoices go out without VAT and with the note “Reverse charge: recipient liable for tax” (field 60).',
+    ],
+    // Steuerfall des Rechnungsentwurfs (MVP-1623).
+    'tax_case' => [
+        'changed_on_issue' => 'The customer\'s tax case has changed since the draft was last edited (reverse charge, export or tax-exempt). The draft has been adjusted — please check the totals and issue the invoice again.',
+        'note_kept' => 'The invoice text was edited by hand and has therefore not been adjusted: please check the tax case notice (such as reverse charge, export or tax exemption) yourself.',
     ],
 ];

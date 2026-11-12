@@ -10,11 +10,15 @@
 
 namespace Tests\Feature\CloudIntake;
 
+use App\Enums\CloudIntake\CloudIntakeConnectionStatus;
 use App\Models\CloudIntake\CloudDocumentConnection;
-use App\Plugins\Dropbox\Api\DropboxClient;
+use App\Plugins\Dropbox\Api\{DropboxClient, DropboxOAuth};
 use App\Plugins\Dropbox\DropboxPlugin;
 use App\Plugins\Support\Intake\IntakeItem;
 use App\Services\CloudIntake\StaleCheckpointException;
+use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Psr7\Response as Psr7Response;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakePluginHttp;
@@ -64,6 +68,30 @@ class DropboxIntakeTest extends TestCase {
 
         $target->forceFill(['status' => \App\Enums\Backup\BackupTargetStatus::Active])->save();
         $this->assertSame(\App\Plugins\PluginHealth::STATUS_OK, $plugin->healthCheck()->status);
+    }
+
+    /** MVP-1620: fehlt ein Lese-Scope, ist die Verbindung blockiert statt teilaktiv (Feature 080 §Preflight). */
+    public function test_oauth_callback_blocks_the_connection_without_a_required_scope(): void {
+        $admin = $this->orgAdmin();
+        foreach ([
+            ['account_info.read files.metadata.read', CloudIntakeConnectionStatus::Blocked],
+            ['account_info.read files.metadata.read files.content.read', CloudIntakeConnectionStatus::Draft],
+        ] as [$scope, $expected]) {
+            $mock = new MockHandler([new Psr7Response(200, ['Content-Type' => 'application/json'], (string) json_encode([
+                'access_token' => 'at-1', 'refresh_token' => 'rt-1', 'expires_in' => 14400, 'scope' => $scope,
+            ]))]);
+            app()->instance(DropboxOAuth::class, new DropboxOAuth(new GuzzleClient(['handler' => HandlerStack::create($mock)])));
+            FakePluginHttp::fake([
+                'https://api.dropboxapi.com/2/users/get_current_account' => FakePluginHttp::response(['account_id' => 'dbid:1', 'email' => 'konto@example.org', 'name' => ['display_name' => 'Konto']]),
+            ]);
+            $start = $this->actingAs($admin)->post(route('admin.cloud-intake.dropbox.oauth.start'));
+            parse_str((string) parse_url((string) $start->headers->get('Location'), PHP_URL_QUERY), $query);
+
+            $this->actingAs($admin)->get(route('admin.cloud-intake.dropbox.oauth.callback', ['state' => (string) ($query['state'] ?? ''), 'code' => 'auth-code']));
+
+            $this->assertSame($expected, CloudDocumentConnection::query()->latest('id')->firstOrFail()->status, $scope);
+        }
+        $this->assertDatabaseHas('audit_logs', ['event' => 'cloudIntake.scopeBlocked']);
     }
 
     public function test_changes_maps_files_tombstones_and_cursor(): void {

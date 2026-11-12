@@ -11,9 +11,12 @@
 namespace App\Services\Asset;
 
 use App\Enums\Asset\{AssetClass, AssetStatus, MaintenanceIntervalKind};
+use App\Models\Asset\Asset;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Facility\{Building, Floor, Room, Site};
+use App\Models\ServiceTicket\SlaContract;
 use App\Support\Sqid;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -68,6 +71,21 @@ class AssetFormOptions {
     }
 
     /**
+     * Außer Betrieb geht nur über die eigene Aktion; ein bereits außer Betrieb
+     * genommenes Asset behält seinen Status beim Bearbeiten.
+     *
+     * @return array<string, string>
+     */
+    public function statusOptionsForEdit(\App\Models\Asset\Asset $asset): array {
+        $options = $this->statusOptions();
+        if ($asset->status !== AssetStatus::Decommissioned) {
+            unset($options[AssetStatus::Decommissioned->value]);
+        }
+
+        return $options;
+    }
+
+    /**
      * @return array<string, string>
      */
     public function intervalKindOptions(): array {
@@ -80,6 +98,38 @@ class AssetFormOptions {
                 MaintenanceIntervalKind::Kilometers => __('Kilometer'),
             }])
             ->all();
+    }
+
+    /**
+     * SLA-Verträge, an die ein Wartungsplan des Assets binden darf: aktive Kundenverträge
+     * des Asset-Kunden und Verträge ohne Kundenbindung, nie ein OLA; der bisher gebundene
+     * Vertrag bleibt wählbar, auch wenn er inzwischen inaktiv ist.
+     *
+     * @return Collection<int, SlaContract>
+     */
+    public function maintenanceContractOptions(Asset $asset, ?int $currentContractId = null): Collection {
+        return $this->contractOptionsQuery($asset, $currentContractId)->get(['id', 'code', 'label', 'customer_id']);
+    }
+
+    /**
+     * SLA-Verträge für die Direktzuordnung am Asset: wie beim Wartungsplan, aber ohne
+     * projektgebundene Verträge – die gelten nur über ihr Projekt.
+     *
+     * @return Collection<int, SlaContract>
+     */
+    public function assetContractOptions(Asset $asset): Collection {
+        return $this->contractOptionsQuery($asset, $asset->sla_contract_id)
+            ->whereNull('project_id')
+            ->get(['id', 'code', 'label', 'customer_id']);
+    }
+
+    /** @return Builder<SlaContract> */
+    private function contractOptionsQuery(Asset $asset, ?int $currentContractId): Builder {
+        return SlaContract::query()
+            ->where('is_ola', false)
+            ->where(fn($q) => $q->whereNull('customer_id')->when($asset->customer_id !== null, fn($qq) => $qq->orWhere('customer_id', $asset->customer_id)))
+            ->where(fn($q) => $q->where('is_active', true)->when($currentContractId !== null, fn($qq) => $qq->orWhere('id', $currentContractId)))
+            ->orderBy('code');
     }
 
     /**

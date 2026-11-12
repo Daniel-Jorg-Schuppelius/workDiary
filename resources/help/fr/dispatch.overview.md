@@ -1,7 +1,7 @@
 ---
 title: "Dispatching et alertes de conflit"
 topic: dispatch.overview
-version: 3
+version: 4
 keywords:
     - planification des interventions
     - affecter une intervention
@@ -57,3 +57,13 @@ les commandes ouvertes d'une journée entre les conducteurs. Les plages de
 travail, les créneaux des commandes, les pauses et les qualifications sont pris
 en compte ; les conducteurs partent et rentrent à leur domicile. La proposition
 ne devient des tournées qu'après sa reprise.
+
+## Matrice des qualifications et feu d’intervention
+
+Si un ordre exige des qualifications, la **matrice des qualifications** affiche
+pour chaque collaborateur l’état au début de l’ordre : vert **acquise**, jaune
+**expire bientôt** (validité terminant sous 30 jours) ou **en formation** (un
+cours de la plateforme d’apprentissage menant à cette qualification est
+attribué ou commencé), rouge **manquante**. En jaune ou rouge, la cellule
+indique le cours publié qui transmet la qualification. Le feu informe ; seule
+la qualification elle-même bloque une affectation.

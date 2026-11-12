@@ -78,6 +78,7 @@ class BackupRunService {
                     $ok[] = $connection->name;
                 } catch (Throwable $e) {
                     $connection->recordConnectionFailure(class_basename($e) . ': ' . $e->getMessage());
+                    $connection->degradeAfter($e);
                     $failed[$connection->name] = class_basename($e);
                 }
             }

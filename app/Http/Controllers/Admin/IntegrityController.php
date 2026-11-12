@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Jobs\Security\{FreezeIntegrityBaselineJob, RunIntegrityCheckJob};
 use App\Models\Platform\IntegrityCheck;
-use App\Services\Release\CodeIntegrityService;
+use App\Services\Release\{CodeIntegrityService, IntegrityLockdownService};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 
@@ -24,7 +24,7 @@ use Illuminate\View\View;
  * Minuten, kein Web-Timeout).
  */
 class IntegrityController extends Controller {
-    public function index(Request $request, CodeIntegrityService $service): View {
+    public function index(Request $request, CodeIntegrityService $service, IntegrityLockdownService $lockdown): View {
         abort_unless($request->user()?->isGlobalAdmin() === true, 403);
 
         $baseline = $service->load();
@@ -44,7 +44,18 @@ class IntegrityController extends Controller {
             ],
             'latest' => $latest,
             'checks' => $checks,
+            'lockdownEngaged' => $lockdown->isDown() && $lockdown->engaged(),
         ]);
+    }
+
+    /** Lockdown aufheben (MVP-1612) — Plattformbetrieb, Zugang im Wartungsmodus über das Bypass-Geheimnis. */
+    public function release(Request $request, IntegrityLockdownService $lockdown): RedirectResponse {
+        abort_unless($request->user()?->isGlobalAdmin() === true, 403);
+
+        $released = $lockdown->release($request->user(), 'manual');
+
+        return redirect()->route('admin.integrity.index')
+            ->with('status', $released ? __('integrity.lockdown.released') : __('integrity.lockdown.not_engaged'));
     }
 
     /** „Jetzt prüfen": Prüflauf in die Queue (Ergebnis erscheint in der Liste). */

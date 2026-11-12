@@ -15,6 +15,8 @@ return [
         'unit_piece' => 'pcs',
     ],
     'error' => [
+        'ownership_unavailable' => 'La connexion n’est pas configurée — l’état ne peut pas être repris pour le moment.',
+        'ownership_not_ready' => 'La source ne fournit pas l’état pour le moment — veuillez le reprendre plus tard.',
         'easybill_no_customer' => 'Le document n\'a pas de client et ne peut pas être transmis à easybill.',
         'easybill_cancel_not_transferred' => 'La facture :number n\'est pas dans easybill ; l\'annulation ne peut pas y être créée. Réglez la plage « Annulation » sur WorkDiary pour la numéroter localement.',
         'easybill_not_configured' => 'easybill n\'est pas configuré pour cette organisation (clé API manquante).',

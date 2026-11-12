@@ -10,13 +10,13 @@
 
 namespace App\Services\Flextime;
 
-use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Enums\Vacation\VacationStatus;
 use App\Models\Absence\{SickLeave, Vacation};
 use App\Models\Platform\User;
 use App\Models\Time\{Attendance, FlexBalance, TimeEntry};
 use App\Services\Calendar\HolidayService;
 use App\Support\Query\DateRange;
+use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};
 
 class FlexCalculator {
@@ -88,8 +88,7 @@ class FlexCalculator {
             ->where('user_id', $user->id)
             ->whereDate('date', $day->toDateString())
             ->whereNull('attendance_id')
-            ->whereIn('kind', $this->countedKinds())
-            ->whereNotIn('activity_type', $this->excludedActivityTypes())
+            ->countedAsWork()
             ->sum('minutes');
 
         return $attendanceMinutes + $entryMinutes;
@@ -125,24 +124,6 @@ class FlexCalculator {
     }
 
     /**
-     * @return array<int, string> TimeEntry kinds that count toward Ist-Arbeitszeit.
-     */
-    protected function countedKinds(): array {
-        $kinds = (array) config('timesheet.flex.count_kinds', [TimeEntryKind::Work->value, TimeEntryKind::Travel->value]);
-
-        return array_values(array_map('strval', $kinds));
-    }
-
-    /**
-     * @return array<int, string> activity_types that must never count (Pausen, Abwesenheit).
-     */
-    protected function excludedActivityTypes(): array {
-        $excl = (array) config('timesheet.flex.exclude_activity_types', [TimeEntryActivityType::Break_->value, TimeEntryActivityType::Absence->value]);
-
-        return array_values(array_map('strval', $excl));
-    }
-
-    /**
      * @return array{target:int, actual:int, balance:int}
      */
     public function dailyBalance(User $user, CarbonInterface $day): array {
@@ -159,9 +140,12 @@ class FlexCalculator {
     /**
      * @return array{target:int, actual:int, balance:int, days:array<string, array{target:int, actual:int, balance:int, is_holiday:bool, is_vacation:bool, holiday_name:?string}>}
      */
-    public function monthlyBalance(User $user, int $year, int $month): array {
+    public function monthlyBalance(User $user, int $year, int $month, ?CarbonInterface $through = null): array {
         $start = CarbonImmutable::createFromDate($year, $month, 1)->startOfMonth();
         $end = $start->endOfMonth();
+        if ($through !== null) {
+            $end = $end->min(CarbonImmutable::parse($through->toDateString())->endOfDay());
+        }
 
         // Feiertage einmalig für den Zeitraum vorladen (statt pro Tag).
         $holidayMap = $this->holidayMap($year);
@@ -204,18 +188,104 @@ class FlexCalculator {
         return $this->holidays->forYear($year);
     }
 
-    public function recompute(User $user, int $year, int $month): FlexBalance {
-        $b = $this->monthlyBalance($user, $year, $month);
+    /**
+     * Monat des Arbeitszeitkontos (MVP-1627): eine Rechnung für Seite, API,
+     * Kachel und Terminal. Soll und Ist zählen nur abgeschlossene Tage (bis
+     * gestern), sonst stünde im laufenden Monat das Soll der Restwochen schon im
+     * Saldo; die Tagesliste bleibt vollständig. `account` ist der Kontostand mit
+     * dem Übertrag des Vormonats.
+     *
+     * @return array{target:int, actual:int, balance:int, carry:int, account:int, settled_through:?string, days:array<string, array{target:int, actual:int, balance:int, is_holiday:bool, is_vacation:bool, holiday_name:?string}>}
+     */
+    public function accountMonth(User $user, int $year, int $month): array {
+        $full = $this->monthlyBalance($user, $year, $month);
+        $yesterday = $this->today($user)->subDay()->toDateString();
+
+        $target = 0;
+        $actual = 0;
+        foreach ($full['days'] as $iso => $day) {
+            if ($iso <= $yesterday) {
+                $target += $day['target'];
+                $actual += $day['actual'];
+            }
+        }
+
+        $previous = CarbonImmutable::createFromDate($year, $month, 1)->startOfMonth()->subMonth();
+        $carry = (int) FlexBalance::query()
+            ->where('user_id', $user->id)
+            ->where('year', $previous->year)
+            ->where('month', $previous->month)
+            ->value('balance_minutes');
+        $lastDay = (string) array_key_last($full['days']);
+
+        return [
+            'target' => $target,
+            'actual' => $actual,
+            'balance' => $actual - $target,
+            'carry' => $carry,
+            'account' => $carry + $actual - $target,
+            // Gesetzt, solange der Monat nicht abgeschlossen ist.
+            'settled_through' => $lastDay !== '' && $lastDay > $yesterday ? $yesterday : null,
+            'days' => $full['days'],
+        ];
+    }
+
+    /**
+     * Schreibt den Monatssaldo (MVP-1550). `balance_minutes` ist der laufende
+     * Kontostand aus {@see accountMonth()}. Ein freigegebener Monat ist
+     * eingefroren (`locked`, MVP-1627): ihn schreibt nur die Freigabe
+     * (`$lock = true`) oder die Wiedereröffnung (`$lock = false`) neu.
+     */
+    public function recompute(User $user, int $year, int $month, ?bool $lock = null): FlexBalance {
+        $existing = FlexBalance::query()->where('user_id', $user->id)->where('year', $year)->where('month', $month)->first();
+        if ($existing instanceof FlexBalance && $existing->locked && $lock === null) {
+            return $existing;
+        }
+
+        $b = $this->accountMonth($user, $year, $month);
 
         return FlexBalance::query()->updateOrCreate(
             ['user_id' => $user->id, 'year' => $year, 'month' => $month],
             [
                 'target_minutes' => $b['target'],
                 'actual_minutes' => $b['actual'],
-                'balance_minutes' => $b['balance'],
+                'carry_over_minutes' => $b['carry'],
+                'balance_minutes' => $b['account'],
+                'locked' => $lock ?? false,
                 'computed_at' => now(),
             ],
         );
+    }
+
+    /**
+     * Rechnet ab dem Monat lückenlos bis zum laufenden Monat neu, damit der
+     * Übertrag der Folgemonate stimmt. Ohne Sollführung (Vertrauensarbeitszeit)
+     * gibt es kein Zeitkonto und keine Zeile. `$lockFirst` setzt bzw. löst die
+     * Sperre des ersten Monats (Monatsfreigabe, Wiedereröffnung).
+     *
+     * @return int Anzahl geschriebener Monate
+     */
+    public function recomputeFrom(User $user, int $year, int $month, ?bool $lockFirst = null): int {
+        $current = $this->today($user)->startOfMonth();
+        $written = 0;
+        $first = CarbonImmutable::createFromDate($year, $month, 1)->startOfMonth();
+        for ($cursor = $first; $cursor->lte($current); $cursor = $cursor->addMonth()) {
+            $lastDay = $cursor->endOfMonth()->min($current->endOfMonth());
+            if (! $this->resolver->for($user, $lastDay)->tracksTarget()) {
+                continue;
+            }
+            $this->recompute($user, $cursor->year, $cursor->month, $cursor->equalTo($first) ? $lockFirst : null);
+            $written++;
+        }
+
+        return $written;
+    }
+
+    /** Kalendertag der Organisation als reines Datum — die Monatsrechnung vergleicht Daten, keine Zeitpunkte. */
+    private function today(User $user): CarbonImmutable {
+        $organization = $user->organization;
+
+        return CarbonImmutable::parse(CarbonImmutable::now($organization !== null ? Tz::ofOrganization($organization) : Tz::current())->toDateString());
     }
 
     protected function isHoliday(CarbonInterface $day): bool {

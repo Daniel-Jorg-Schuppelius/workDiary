@@ -25,7 +25,7 @@
     <x-input-field name="valid_until" type="date" :label="__('Gültig bis (leer = Intervall)')" />
     <x-input-field name="external_inspector_name" :label="__('Externer Prüfer (Name)')" />
 
-    @foreach ($assignment->profile?->requirements ?? [] as $i => $requirement)
+    @foreach (($assignment->profile?->requirements ?? collect())->where('is_active', true)->values() as $i => $requirement)
         <div class="grid grid-cols-2 items-end gap-2">
             <input type="hidden" name="results[{{ $i }}][requirement_id]" value="{{ $requirement->sqid }}">
             <x-input-field name="results[{{ $i }}][value]" type="number" step="0.0001"
@@ -36,6 +36,20 @@
             </span>
         </div>
     @endforeach
+
+    {{-- Roh-Messwerte (MVP-1575): freie Messreihe neben den Grenzwert-Anforderungen. --}}
+    <details>
+        <summary class="cursor-pointer text-sm font-medium">{{ __('asset_compliance.measurement.title') }}</summary>
+        <p class="mt-1 text-xs text-muted">{{ __('asset_compliance.measurement.hint') }}</p>
+        @php($measurementKey = ($schedule->sqid ?? $assignment->sqid))
+        @for ($m = 0; $m < 4; $m++)
+            <div class="mt-2 grid grid-cols-3 gap-2">
+                <x-input-field name="measurements[{{ $m }}][label]" :id="'measurement-' . $measurementKey . '-' . $m . '-label'" maxlength="255" :label="__('asset_compliance.measurement.label')" />
+                <x-input-field name="measurements[{{ $m }}][value]" :id="'measurement-' . $measurementKey . '-' . $m . '-value'" type="number" step="0.0001" :label="__('asset_compliance.measurement.value')" />
+                <x-input-field name="measurements[{{ $m }}][unit]" :id="'measurement-' . $measurementKey . '-' . $m . '-unit'" maxlength="30" :label="__('Einheit')" />
+            </div>
+        @endfor
+    </details>
 
     <x-select-field name="follow_up" :label="__('Folgeentscheidung')">
         <option value="none">{{ __('Keine / Freigabe') }}</option>

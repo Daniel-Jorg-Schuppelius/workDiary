@@ -53,3 +53,8 @@ general IT categories of the asset form: an organisation value with its own
 code appears there in addition, one with the code of a general category
 replaces its label, and a deactivated one hides it. A category used by an
 asset can only be deactivated, not deleted.
+
+A value that records still use – such as time entries, claims, articles or
+assignments – cannot be deleted. The message states where and how often it is
+used. Retire it instead with **Retire** in its row: it disappears from new
+selections, existing records keep it.

@@ -243,6 +243,10 @@
                     <option value="information_letter">{{ __('Informationsschreiben') }}</option>
                     <option value="other">{{ __('values.other') }}</option>
                 </select>
+                <input aria-label="{{ __('Bekannt seit') }}" title="{{ __('Bekannt seit') }}" name="recorded_on" type="date" class="input input-sm input-bordered w-40"
+                       value="{{ now()->toDateString() }}">
+                <input aria-label="{{ __('Notiz') }}" name="note" maxlength="500" class="input input-sm input-bordered flex-1 min-w-48"
+                       placeholder="{{ __('Notiz') }}">
                 <label class="label cursor-pointer gap-1 text-xs">
                     <input type="checkbox" name="is_own" value="1" class="checkbox checkbox-sm">
                     <span>{{ __('Eigenes Angebot') }}</span>
@@ -290,7 +294,7 @@
                                 —
                             @endif
                         </td>
-                        <td class="text-xs text-base-content/70">{{ __('tender.bid_source.' . $bid->source) }}</td>
+                        <td class="text-xs text-base-content/70">{{ __('tender.bid_source.' . $bid->source) }}@if ($bid->recorded_on) · {{ $bid->recorded_on->fdate() }}@endif</td>
                         <td class="text-right">
                             @can('update', $opportunity)
                                 <x-action-form :action="route('tenders.bids.destroy', [$opportunity, $bid])" method="DELETE">

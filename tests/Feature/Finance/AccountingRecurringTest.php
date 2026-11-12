@@ -289,7 +289,7 @@ class AccountingRecurringTest extends TestCase {
             'interval' => RecurringInterval::Monthly->value,
             'due_day' => 1,
             'starts_on' => $this->startsOn->toDateString(),
-        ])->assertSessionHasErrors(['debit_account', 'credit_account', 'expected_amount']);
+        ])->assertSessionHasErrors(['rows']);
 
         $this->assertSame(0, AccountingRecurringTemplate::query()->count());
     }
@@ -303,8 +303,8 @@ class AccountingRecurringTest extends TestCase {
             ->assertOk()
             ->getContent();
 
-        $this->assertSame($this->accounts['expense']->sqid, $this->selectedOption((string) $html, 'debit_account'));
-        $this->assertSame($this->accounts['bank']->sqid, $this->selectedOption((string) $html, 'credit_account'));
+        $this->assertMatchesRegularExpression('/name="rows\[0\]\[account\]"[^>]*value="' . $this->accounts['expense']->number . '"/s', (string) $html);
+        $this->assertMatchesRegularExpression('/name="rows\[1\]\[account\]"[^>]*value="' . $this->accounts['bank']->number . '"/s', (string) $html);
         $this->assertSame($this->admin->sqid, $this->selectedOption((string) $html, 'responsible_user_id'));
     }
 
@@ -319,8 +319,10 @@ class AccountingRecurringTest extends TestCase {
             'due_day' => $template->due_day,
             'starts_on' => $template->starts_on->toDateString(),
             'expected_amount' => '1000.00',
-            'debit_account' => $this->accounts['expense']->sqid,
-            'credit_account' => $this->accounts['bank']->sqid,
+            'rows' => [
+                ['line' => 0, 'account' => $this->accounts['expense']->number, 'debit' => '1000.00'],
+                ['line' => 1, 'account' => $this->accounts['bank']->number, 'credit' => '1000.00'],
+            ],
             'responsible_user_id' => $this->admin->sqid,
         ])->assertSessionHasNoErrors()->assertRedirect();
 

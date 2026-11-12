@@ -22,4 +22,10 @@ return [
         'scheduleHint' => 'Clientes con una orden finalizada o un ticket resuelto en el intervalo, como máximo una vez por intervalo. Vacío = desactivado.',
         'saved' => 'Desencadenantes guardados.',
     ],
+    // Cabecera del cuestionario (MVP-1610).
+    'header' => [
+        'edit_title' => 'Editar cuestionario',
+        'updated' => 'Cuestionario guardado.',
+        'anonymous_locked' => 'El anonimato ya no se puede cambiar tras la primera invitación.',
+    ],
 ];

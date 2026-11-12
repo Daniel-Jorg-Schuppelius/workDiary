@@ -1,7 +1,7 @@
 ---
 title: "Connexion Zammad"
 topic: admin.zammad
-version: 3
+version: 4
 keywords:
     - Zammad
     - helpdesk
@@ -201,3 +201,5 @@ d’abord confirmation.
   file manque pour les tickets de service.
 - Des tickets arrivent dans le mauvais projet : vérifiez les ID de groupe sous
   **File → projet** et les suggestions de clients dans la boîte.
+
+**Souveraineté des données :** En mode « ticket de service », l’import n’écrit que si Zammad peut écrire le domaine des tickets, c’est-à-dire si WorkDiary ou Zammad le gère. Si un autre système gère les tickets, l’import ne crée ni ne clôt de tickets ; les cas attendent dans la boîte de réception des intégrations pour être repris une fois. Zammad gère la file cible : WorkDiary n’y accepte ni création manuelle, ni enregistrement de courriels, ni réponses par courriel. En mode « tâche », le domaine des tâches s’applique.

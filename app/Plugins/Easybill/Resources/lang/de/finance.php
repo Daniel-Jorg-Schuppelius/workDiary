@@ -15,6 +15,8 @@ return [
         'unit_piece' => 'Stk.',
     ],
     'error' => [
+        'ownership_unavailable' => 'Die Anbindung ist nicht eingerichtet — der Stand lässt sich gerade nicht übernehmen.',
+        'ownership_not_ready' => 'Die Quelle liefert den Stand gerade nicht — bitte später erneut übernehmen.',
         'easybill_no_customer' => 'Der Beleg hat keinen Kunden und lässt sich nicht an easybill übertragen.',
         'easybill_cancel_not_transferred' => 'Die Rechnung :number ist nicht in easybill; das Storno lässt sich dort nicht anlegen. Stellen Sie den Kreis „Storno“ auf WorkDiary, um es lokal zu nummerieren.',
         'easybill_not_configured' => 'easybill ist für diese Organisation nicht konfiguriert (API-Key fehlt).',

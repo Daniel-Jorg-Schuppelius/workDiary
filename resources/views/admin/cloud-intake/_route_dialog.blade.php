@@ -10,6 +10,8 @@
 @php
     /** @var \App\Models\CloudIntake\CloudDocumentConnection $connection */
     /** @var \App\Models\CloudIntake\CloudDocumentRoute $route */
+    /** @var array<string, array{label: string, options: list<array{value: string, label: string}>}> $targetOptions */
+    /** @var \App\Services\CloudIntake\CloudRouteTestResult|null $testPreview */
     $isEdit = $route->exists;
 @endphp
 <x-modal
@@ -52,6 +54,22 @@
             @error('document_type')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
+        <div class="fieldset md:col-span-2">
+            <label class="fieldset-label" for="cir-target-ref">{{ __('cloud_intake.route.target_ref') }}</label>
+            <select id="cir-target-ref" name="target_ref" class="select select-bordered w-full">
+                <option value="">{{ __('cloud_intake.route.target_ref_none') }}</option>
+                @foreach ($targetOptions as $group)
+                    <optgroup label="{{ $group['label'] }}">
+                        @foreach ($group['options'] as $option)
+                            <option value="{{ $option['value'] }}" @selected(old('target_ref', $targetValue) === $option['value'])>{{ $option['label'] }}</option>
+                        @endforeach
+                    </optgroup>
+                @endforeach
+            </select>
+            <p class="text-xs text-muted">{{ __('cloud_intake.route.target_ref_help') }}</p>
+            @error('target_ref')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
+        </div>
+
         <div class="fieldset">
             <label class="fieldset-label" for="cir-priority">{{ __('cloud_intake.route.priority') }}</label>
             <input id="cir-priority" type="number" name="priority" min="1" max="9999" required
@@ -87,6 +105,25 @@
             <p class="text-xs text-muted">{{ __('cloud_intake.route.auto_version_help') }}</p>
         </div>
 
+        <div class="fieldset md:col-span-2">
+            <label class="fieldset-label" for="cir-test-path">{{ __('cloud_intake.route.test_path') }}</label>
+            <input id="cir-test-path" type="text" name="test_path" required maxlength="1024"
+                   value="{{ old('test_path', $route->test_path) }}"
+                   class="input input-bordered w-full font-mono" placeholder="Kunden/10023/Vertraege/Rahmenvertrag.pdf">
+            <p class="text-xs text-muted">{{ __('cloud_intake.route.test_path_help') }}</p>
+            @error('test_path')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
+            @if ($testPreview !== null)
+                <div role="status" class="mt-2 rounded-box border p-2 text-xs {{ $testPreview->ok ? 'border-success/40 bg-success/10' : 'border-warning/40 bg-warning/10' }}">
+                    <p class="font-semibold">{{ __('cloud_intake.route.test_preview', ['at' => $route->tested_at?->ftime() ?? '—']) }}</p>
+                    <ul class="mt-1 space-y-0.5">
+                        @foreach ($testPreview->lines as $line)
+                            <li>{{ $line }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+        </div>
+
         <div class="fieldset">
             <label class="fieldset-label">
                 <input type="hidden" name="active" value="0">
@@ -94,6 +131,8 @@
                        @checked(old('active', $route->active ?? true))>
                 {{ __('cloud_intake.route.active') }}
             </label>
+            <p class="text-xs text-muted">{{ __('cloud_intake.route.active_help') }}</p>
+            @error('active')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
     </x-form-group>
 

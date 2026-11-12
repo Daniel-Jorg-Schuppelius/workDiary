@@ -1,7 +1,7 @@
 ---
 title: "Gérer les projets"
 topic: projects.manage
-version: 6
+version: 7
 keywords:
     - créer un projet
     - gestion de projet
@@ -128,3 +128,5 @@ consommation sur la période choisie ; un clic ouvre l'analyse de rentabilité
 avec les mêmes chiffres. Les délais de garantie et cautions du projet
 apparaissent en dessous. Les tâches reprises indiquent leur plugin, par
 exemple « Depuis GitHub Issues ».
+
+**Couleur du projet :** en haut à droite de la boîte de dialogue du projet, vous choisissez la couleur qui signale le projet dans les listes, les temps et l’aperçu mensuel.

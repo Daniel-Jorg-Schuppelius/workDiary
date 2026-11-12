@@ -112,6 +112,16 @@ return [
         ],
     ],
     // Sammelbuchungs-Auflösung je TransactionDetail (Toolkit-Folgepaket 2).
+    // Freie Belegsuche beim Einzelumsatz (MVP-1557).
+    'assign' => [
+        'title' => 'Find and assign a document',
+        'hint' => 'All open invoices, approved expenses and customer accounts — even without a suggestion. A smaller amount is a partial payment, a larger one an overpayment.',
+        'target' => 'Document',
+        'kind' => 'Kind',
+        'kind_auto' => 'Automatically from the amount',
+        'note' => 'Note',
+        'action' => 'Find document',
+    ],
     'split' => [
         'title' => 'Resolve batch booking',
         'return_title' => 'Batch direct debit return — process per single transaction',

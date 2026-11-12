@@ -38,3 +38,19 @@ fecha y motivo.
 ## Vínculo con la garantía
 
 Un aval puede referirse a un **plazo de garantía**. Cuando este termina, la comprobación de plazos avisa de la **devolución** del documento, igual que tras liberar una retención sustituida. Del mismo modo, una retención en la factura toma el fin de la garantía elegida como fecha de liberación y se ajusta si el plazo cambia.
+
+## Devolución pendiente y vencimiento
+
+**Devolución pendiente:** la tarjeta y el filtro muestran los avales activos
+cuya finalidad de garantía ha terminado: la retención sustituida se liberó en
+la factura o la garantía vinculada ha finalizado. Una retención sustituida ya
+se ha pagado; su liberación (página de la factura, tarjeta **Retenciones de
+garantía**) no genera ningún crédito nuevo y solo indica que el documento debe
+devolverse.
+
+**Vencido:** una vez superado el plazo, la comprobación diaria de plazos pasa
+el aval a *Vencido*; el último día del plazo todavía cuenta. En el registro
+también puede dejar constancia de inmediato con **Registrar como vencido**.
+Los avales vencidos ya no cuentan como activos. La devolución del documento
+puede seguir registrándose, y al introducir una prórroga (nueva fecha de
+vencimiento) el aval vuelve a estar activo.

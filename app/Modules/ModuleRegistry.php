@@ -37,6 +37,9 @@ final class ModuleRegistry {
     /** @var array<class-string, list<class-string>> Erweiterungspunkt → Beiträge der Plugins */
     private array $contributions = [];
 
+    /** @var array<class-string, string>|null Beitragsklasse → Code des meldenden Moduls */
+    private ?array $extensionIndex = null;
+
     public function __construct(
         private readonly string $manifestDirectory,
         private readonly string $cacheFile,
@@ -286,6 +289,28 @@ final class ModuleRegistry {
     }
 
     /**
+     * Modul, dessen Manifest eine Klasse als Beitrag zu einem Erweiterungspunkt
+     * meldet (MVP-1587). Plugin-Beiträge ({@see contribute()}) haben keins.
+     *
+     * @param  class-string  $class
+     */
+    public function extensionOwner(string $class): ?Manifest {
+        if ($this->extensionIndex === null) {
+            $this->extensionIndex = [];
+            foreach ($this->all() as $code => $manifest) {
+                foreach ($manifest->extensions() as $classes) {
+                    foreach ($classes as $contribution) {
+                        $this->extensionIndex[$contribution] ??= $code;
+                    }
+                }
+            }
+        }
+        $code = $this->extensionIndex[$class] ?? null;
+
+        return $code === null ? null : $this->all()[$code];
+    }
+
+    /**
      * Beitrag eines Plugins zu einem Erweiterungspunkt — Plugins haben kein
      * Manifest und tragen sich beim Booten ein (MVP-1045). Nicht gecacht.
      *
@@ -366,6 +391,7 @@ final class ModuleRegistry {
         $this->manifests = null;
         $this->tableIndex = null;
         $this->routeMap = null;
+        $this->extensionIndex = null;
     }
 
     /** @return array<string, Manifest> */

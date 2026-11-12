@@ -14,18 +14,22 @@ namespace App\Http\Controllers\Procurement;
 
 use App\Enums\Procurement\PurchaseOrderStatus;
 use App\Enums\User\Permission;
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Models\Claims\ClaimCase;
 use App\Models\Platform\User;
 use App\Models\Procurement\{PurchaseOrder, PurchaseOrderLine};
 use App\Models\Supplier\Supplier;
 use App\Services\Procurement\SupplierScorecardService;
+use App\Settings\SettingScope;
+use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Pagination\LengthAwarePaginator as Paginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -41,6 +45,7 @@ use Illuminate\View\View;
  * Leitplanke Export-Authz).
  */
 class SupplierScorecardController extends Controller {
+    use ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange;
 
     private const int PER_PAGE = 25;
@@ -69,6 +74,42 @@ class SupplierScorecardController extends Controller {
             'weights' => $this->service->weights(),
             'metricVersion' => SupplierScorecardService::METRIC_VERSION,
         ]);
+    }
+
+    public function editWeights(): View {
+        Gate::authorize(Permission::InventoryConfigure->value);
+
+        return view('reports.supplier-scorecards._weights_dialog', [
+            'weights' => $this->service->weights(),
+            'defaults' => SupplierScorecardService::DEFAULT_WEIGHTS,
+        ]);
+    }
+
+    /** Gewichte in Prozent; leer setzt die Kennzahl auf die Vorgabe zurück (MVP-1581). */
+    public function updateWeights(Request $request): RedirectResponse {
+        Gate::authorize(Permission::InventoryConfigure->value);
+
+        $keys = array_keys(SupplierScorecardService::DEFAULT_WEIGHTS);
+        $data = $request->validate(array_fill_keys(
+            array_map(static fn (string $key): string => 'weights.' . $key, $keys),
+            ['nullable', 'numeric', 'min:0', 'max:100'],
+        ));
+        $input = (array) ($data['weights'] ?? []);
+        if (array_sum(array_map(static fn (string $key): float => (float) ($input[$key] ?? SupplierScorecardService::DEFAULT_WEIGHTS[$key] * 100), $keys)) <= 0.0) {
+            throw ValidationException::withMessages(['weights' => __('scorecard.weights.error_all_zero')]);
+        }
+
+        $organization = $this->currentOrganization();
+        foreach ($keys as $key) {
+            $setting = 'scorecard.weight.' . $key;
+            if (($input[$key] ?? null) === null) {
+                Setting::reset($setting, SettingScope::Organization, $organization);
+            } else {
+                Setting::set($setting, round((float) $input[$key] / 100, 4), SettingScope::Organization, $organization);
+            }
+        }
+
+        return redirect()->toList('supplier-scorecards.index')->with('success', __('scorecard.weights.saved'));
     }
 
     /**

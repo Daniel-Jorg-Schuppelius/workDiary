@@ -17,7 +17,6 @@ use App\Services\DocumentDesign\{DocumentDesignRenderer, LetterheadAssetService,
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use RuntimeException;
 use Tests\TestCase;
 
 /**
@@ -37,7 +36,7 @@ class LandscapeDesignTest extends TestCase {
         Storage::fake('local');
         // Render-Testseite als Fixture — keine Test-View im Produktivcode.
         \Illuminate\Support\Facades\View::addNamespace('dd-test', base_path('tests/Fixtures/views'));
-        $this->org = Organization::factory()->create();
+        $this->org = Organization::factory()->withIssuerIdentity()->create();
         app()->instance('currentOrganization', $this->org);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->org->id]);
     }
@@ -157,16 +156,5 @@ class LandscapeDesignTest extends TestCase {
         $portraitResult = $service->activate($portraitVersion->refresh(), $this->admin);
         $this->assertFalse($portraitResult->ok(), 'Dieselbe Box sprengt das Hochformat.');
         $this->assertSame('box_off_page', $portraitResult->errors[0]['code']);
-    }
-
-    public function test_page_format_is_locked_after_activation(): void {
-        $service = $this->service();
-        $profile = $service->createProfile($this->org, 'P', [], false, $this->admin);
-        $service->assignPageFormat($profile, PageFormat::A4Landscape);
-        $this->assertSame(PageFormat::A4Landscape, $profile->refresh()->page_format);
-
-        $this->assertTrue($service->activate($profile->versions()->firstOrFail(), $this->admin)->ok());
-        $this->expectException(RuntimeException::class);
-        $service->assignPageFormat($profile->refresh(), PageFormat::A4Portrait);
     }
 }

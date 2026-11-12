@@ -23,6 +23,8 @@ return [
     ],
 
     'field' => [
+        'new_device_alert' => 'Bei Anmeldung von neuem Gerät benachrichtigen',
+        'new_device_alert_hint' => 'Meldet per E-Mail und in der App, wenn sich jemand mit Ihrem Konto von einem unbekannten Gerät oder Land anmeldet. Das Abschalten wird protokolliert.',
         'event' => 'Ereignis',
         'enabled' => 'Aktiv',
         'rule_enabled' => 'Benachrichtigungen für dieses Ereignis aktiv',
@@ -97,6 +99,7 @@ return [
         'learning_graded' => 'Ihre Aufgabe „:assignment“ im Kurs „:course“ wurde bewertet.',
         'learning_returned' => 'Ihre Aufgabe „:assignment“ im Kurs „:course“ wurde zur Überarbeitung zurückgegeben.',
         'learning_certificate_issued' => 'Ihr Zertifikat :number für den Kurs „:course“ ist ausgestellt.',
+        'learning_certificate_revoked' => 'Ihr Zertifikat :number für den Kurs „:course“ wurde widerrufen. Grund: :reason',
         'learning_waitlist_promoted' => 'Für „:title“ am :date ist ein Platz frei geworden — Sie sind angemeldet.',
         'club_event_reminder' => 'Erinnerung für :name: „:title“ beginnt am :date.',
         'club_event_rescheduled' => '„:title“ (:name) wurde verschoben — neuer Beginn :date, vorher :previous.',
@@ -130,7 +133,7 @@ return [
 
         'guarantee_expiring' => 'Läuft am :date ab — :amount, Bürge :issuer.',
 
-        'guarantee_return_due' => 'Rückgabe fällig — der abgelöste Einbehalt ist freigegeben (:amount, Bürge :issuer).',
+        'guarantee_return_due' => 'Rückgabe fällig — der abgelöste Einbehalt ist freigegeben oder die Gewährleistung beendet (:amount, Bürge :issuer).',
 
         // Sicherheitseinbehalte (Feature 113, MVP-602).
 
@@ -178,6 +181,9 @@ return [
         'impossible_travel_message' => 'Anmeldung aus :to, zuvor :from — :distance km in :hours h (:speed km/h). Falls das nicht Sie waren: Passwort ändern und Sitzungen beenden.',
         'issue_assigned' => ':actor hat Ihnen diesen Offenen Punkt zugewiesen.',
         'customer_query_raised' => 'Ein Kunde hat eine Rückfrage gestellt.',
+        'protocol_customer_signed_ready' => ':name hat „:title“ unterschrieben. Das Protokoll kann abgeschlossen werden.',
+        'protocol_customer_signed_pending' => ':name hat „:title“ unterschrieben. Zum Abschluss fehlt noch: :roles.',
+        'protocol_customer_rejected' => ':name hat „:title“ abgelehnt: :reason',
         'due_soon' => 'Fällig am :date.',
         'overdue' => 'Überfällig seit :date.',
         'followup_due_soon' => 'Folgeaktion fällig am :date.',
@@ -197,6 +203,8 @@ return [
         'vacation_decided_title' => 'Entscheidung zu Ihrem Urlaubsantrag (:from – :to)',
         'vacation_approved' => 'Ihr Urlaubsantrag wurde genehmigt. :note',
         'vacation_rejected' => 'Ihr Urlaubsantrag wurde abgelehnt. :note',
+        'vacation_revision_title' => 'Korrektur zu Ihrem Urlaubsantrag angefordert (:from – :to)',
+        'vacation_revision_requested' => 'Bitte ändern Sie Ihren Urlaubsantrag und reichen Sie ihn neu ein. :note',
         'unclear_case_title' => 'Ungeklärter Fall am :date',
         'open_attendance_title' => 'Sie sind seit :time Uhr eingestempelt',
         'open_attendance_body' => 'Bitte ausstempeln, falls Sie schon Feierabend haben — sonst schließt das System die Stempelung später automatisch.',
@@ -224,6 +232,7 @@ return [
         'supplier_review_overdue' => 'Lieferanten-Review überfällig seit :date.',
         'sla_at_risk' => 'SLA-Lösungsfrist gefährdet — fällig am :date.',
         'sla_breached' => 'SLA-Lösungsfrist überschritten — fällig war :date.',
+        'sla_ola_breached' => 'Internes Ziel (OLA) des Teams :team überschritten — fällig war :date.',
         'sla_quota_warning' => 'SLA-Kontingent zu :percent % ausgeschöpft (:consumed von :included Min.) im Zeitraum :period.',
         'asset_return_overdue' => 'Asset-Rückgabe überfällig — erwartet war :date.',
         'tender_submission_due_soon' => 'Abgabe bis :date.',
@@ -262,5 +271,10 @@ return [
         'chat_reminder_title' => 'Erinnerung · #:channel',
 
         'chat_attachment' => '[Anhang]',
+        'domain_renewal_cost_title' => 'Verlängerung von :domain kostet :amount',
+        'domain_renewal_cost_body' => 'Abbuchung am :date: :amount.',
+        'domain_balance_risk_title' => 'Anbieterkonto :account: Deckung prüfen',
+        'domain_balance_uncovered' => 'Guthaben und Kreditrahmen (:available) reichen nicht für die Verlängerungen der nächsten :days Tage (:due). Ohne Deckung löscht der Anbieter die Domains zum Ausfalldatum.',
+        'domain_balance_low' => 'Guthaben :balance liegt unter dem Schwellwert Ihrer Organisation.',
     ],
 ];

@@ -82,6 +82,16 @@
         </x-select-field>
     </div>
 
+    {{-- DATEV-Automatikkonto (MVP-1622): DATEV rechnet die Steuer aus dem Konto, der Stapel setzt dort keinen BU-Schlüssel. --}}
+    @php($automaticCode = old('datev_automatic', ($taxCodes ?? collect())->firstWhere('id', $account?->default_tax_code_id)?->sqid ?? ''))
+    <x-select-field name="datev_automatic" :label="__('accounting.ledger.field.datev_automatic')"
+                    :hint="__('accounting.ledger.hint.datev_automatic')">
+        <option value="">{{ __('accounting.ledger.field.datev_automatic_none') }}</option>
+        @foreach ($taxCodes ?? [] as $taxCode)
+            <option value="{{ $taxCode->sqid }}" @selected($automaticCode === $taxCode->sqid)>{{ $taxCode->code }} · {{ $taxCode->name }}</option>
+        @endforeach
+    </x-select-field>
+
     <x-input-field name="description" type="text" maxlength="500"
                    :label="__('accounting.ledger.field.description')"
                    :value="old('description', $account->description ?? '')" />

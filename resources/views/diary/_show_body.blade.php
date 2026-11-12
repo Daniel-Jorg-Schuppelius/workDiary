@@ -125,6 +125,22 @@
             </x-info-tile>
             @include('assets.components._suggestion_card', ['asset' => $diary->asset])
         @endif
+        {{-- Plan/Ist am Auftrag (plan-ist-abgleich.md §4.3, MVP-1552). --}}
+        @php($planMinutes = $diary->effectivePlannedMinutes())
+        @php($bookedMinutes = $diary->bookedMinutesVisibleTo(auth()->user()))
+        @if ($planMinutes !== null || $bookedMinutes > 0)
+            <x-info-tile :label="__('diary.plan_actual.label')">
+                <span class="tabular-nums">{{ $planMinutes !== null ? \App\Support\Formats::duration($planMinutes, 'clock') : '—' }} / {{ \App\Support\Formats::duration($bookedMinutes, 'clock') }}</span>
+                @if ($planMinutes !== null)
+                    <span @class(['tabular-nums', 'text-error' => $bookedMinutes > $planMinutes, 'text-muted' => $bookedMinutes <= $planMinutes])>({{ $bookedMinutes >= $planMinutes ? '+' : '−' }}{{ \App\Support\Formats::duration(abs($bookedMinutes - $planMinutes), 'clock') }})</span>
+                @else
+                    <span class="text-xs text-muted">{{ __('diary.plan_actual.no_plan') }}</span>
+                @endif
+                @unless (auth()->user()->canViewAllTimeEntries())
+                    <x-slot:after><span class="mt-1 block text-xs text-muted">{{ __('diary.plan_actual.own_only') }}</span></x-slot:after>
+                @endunless
+            </x-info-tile>
+        @endif
         <x-info-tile :label="__('Erstellt')">{{ $diary->created_at->fdatetime() }}</x-info-tile>
         <x-info-tile :label="__('Geändert')">{{ $diary->updated_at->diffForHumans() }}</x-info-tile>
     </div>

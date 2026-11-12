@@ -1,7 +1,7 @@
 ---
 title: "Servicios de IA"
 topic: ai.services
-version: 3
+version: 5
 keywords:
     - IA
     - inteligencia artificial
@@ -65,3 +65,18 @@ cada posición, y en un protocolo «Mejorar todos los puntos» reformula cada
 punto con texto. Ambas se ejecutan en segundo plano. Cada posición y cada
 punto recibe su propia sugerencia, que usted acepta o rechaza de forma
 individual; nada se aplica automáticamente.
+
+**Elegir la conexión:** si su organización permite «los usuarios pueden
+elegir» para un servicio y hay varias conexiones admitidas, la propuesta
+muestra una selección. «Volver a generar» crea la propuesta con la conexión
+elegida; la propuesta abierta anterior se sustituye. La elección queda en el
+registro de auditoría.
+
+**Elección de conexión:** si la organización permite «Los usuarios pueden elegir» para un servicio, una sugerencia también se puede regenerar con otra conexión permitida en el traspaso (textos de líneas), en la búsqueda de actividades y en «Explicar plan/real».
+
+**Presupuesto mensual:** En la página **Consumo de IA**, «Presupuesto mensual»
+fija por familia un límite por mes natural: en tokens para los modelos de
+lenguaje y en caracteres para las traducciones. Una vez alcanzado, workDiary
+rechaza con un aviso más llamadas de esta familia hasta final de mes; los
+mosaicos muestran el uso. Si queda vacío, se aplica el valor predeterminado del
+operador; sin él, el consumo es ilimitado.

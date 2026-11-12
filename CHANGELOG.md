@@ -8,8 +8,169 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-12
+
+Phasen 174–176 seit 1.1.0: Lückenschluss aus dem Nachscan vom 2026-11-09,
+Reselling-Register (Einkauf, Anbieterrechnungen aus dem Buchhaltungsprogramm,
+Anschlüsse), Legacy-Bereich mit dem Support-Portal des Altsystems und der
+Lückenschluss aus dem Ganzbestands-Scan vom 2026-11-10 (MVP-1546–1629) samt
+Umsatzsteuer der Empfängerseite, Datenführerschaft in allen Bereichen,
+Offline-Erfassung von Zeit und Material und sechs Architektur-Gates gegen
+Funktionen ohne Wirkung. Die Tags `v1.0.0` (Commit `067af1fa3`), `v1.1.0`
+(Commit `45958a9d6`) und `v1.2.0` sind lokal gesetzt; veröffentlicht werden
+sie mit dem nächsten Push.
+
 ### Hinzugefügt
 
+- Umsatzsteuer der Empfängerseite (`MVP-1621`): Eine Eingangsrechnung mit
+  Steuerschuld des Empfängers – § 13b UStG (Abs. 1 sonstige Leistung aus dem
+  übrigen Gemeinschaftsgebiet, Abs. 2 etwa Bauleistungen, Gebäudereinigung,
+  Werklieferungen ausländischer Unternehmer) oder innergemeinschaftlicher
+  Erwerb – bucht Aufwand netto an Verbindlichkeit und dazu Umsatzsteuer im
+  Haben und dieselbe Vorsteuer im Soll. Kennziffern 46/47 bzw. 84/85, beim
+  Erwerb 89 bzw. 93, die Vorsteuer in 67 bzw. 61; die kontenbasierte
+  Umsatzsteuer-Vorschau zeigt beide Seiten (auch bei Ist-Versteuerung zum
+  Rechnungsdatum). Der Steuerfall kommt aus der Steuerkategorie der E-Rechnung
+  (`AE`, `K`) und dem Land des Lieferanten, sonst aus der neuen Vorgabe
+  „Steuerfall seiner Eingangsrechnungen“ am Lieferanten; auf der Detailseite
+  des Eingangs lässt er sich ändern. Neue Kennzeichen-Richtung „Umsatz- und
+  Vorsteuer“ mit Vorsteuerkonto, Steuerfall und Vorsteuer-Kennziffer; die
+  Vorlagen bringen RC13BEU, RC13B, IGE19 und IGE7 samt Konten (SKR03 1572,
+  1574, 1577, 1772, 1774, 1787; SKR04 1402, 1404, 1407, 3802, 3804, 3837) mit.
+  Skonto auf einen solchen Posten mindert Umsatz- und Vorsteuer um denselben
+  Betrag (§ 17 Abs. 1 Satz 5 UStG). Handbuchung und „Auf Sachkonto buchen“
+  erzeugen bei solchen Kennzeichen beide Steuerzeilen. Der Bericht
+  „Buchungsqualität“ nennt festgeschriebene Eingangsrechnungen mit
+  Steuerschuld des Empfängers am Beleg, aber ohne Steuerbuchung.
+- Umsatzsteuer (`MVP-1622`): Eingangsrechnungen mit mehreren Steuersätzen
+  buchen Aufwand und Vorsteuer je Satz (aus der Steueraufschlüsselung der
+  E-Rechnung bzw. dem Werte-Dialog), mit dem Vorsteuerkennzeichen des Satzes;
+  Kennziffer 66 und das Skonto je Satz stimmen damit. Kunden lassen sich als
+  „Leistungsempfänger schuldet die Umsatzsteuer (§ 13b UStG)“ führen: Rechnungen
+  an sie gehen im Inland ohne Umsatzsteuer und mit Pflichthinweis hinaus,
+  Kennziffer 60 über das neue Kennzeichen RC60 (Erlöskonto 8337 bzw. 4337).
+  Innergemeinschaftliche Lieferungen buchen mit der Vorlage auf 8125 bzw. 4125.
+  Die Zusammenfassende Meldung führt auch die sonstigen Leistungen
+  (Kennziffer 21) je Empfänger mit ihrer Art; die Schwelle für die monatliche
+  Meldung zählt weiter nur Lieferungen.
+- Arbeitszeitkonto (Phase 176, `MVP-1550`): Der gespeicherte Gleitzeitsaldo wird
+  jetzt geschrieben. `flex:recompute` läuft nachts je Organisation für alle
+  aktiven Personen mit Sollführung über Vormonat und laufenden Monat
+  (`--from=JJJJ-MM` rechnet weiter zurück), die Monatsfreigabe und ihre
+  Wiederöffnung rechnen den Monat und alle Folgemonate neu. Der Saldo ist der
+  laufende Kontostand (Übertrag des Vormonats plus Ist minus Soll); der
+  laufende Monat zählt bis gestern. Kachel „Arbeitszeitkonto“,
+  Terminal-Anzeige, Prognose und „Flex Δ“ im Personalbericht zeigen damit
+  Werte statt „Noch kein Saldo“.
+- Tagesabschluss (`MVP-1551`): Der abgeschlossene Tag sperrt auch die
+  Projekt- und Verwaltungszeiten des Tages — Anlegen, Ändern und Löschen über
+  Erfassung, Eingabeleiste, Schnellbuchung, Stoppuhr, Neuzuordnung,
+  Stundenzettel-API und CSV-Import. Änderungen laufen über den
+  Korrekturantrag; nach dessen Freigabe sind die Buchungen wieder änderbar.
+  Die Seite „Heute“ blendet die Eingabeleiste aus und nennt den Weg.
+- Anwesenheit (`MVP-1552`): Homeoffice- und Dienstgang-Minuten stehen in der
+  Stempelliste, in der Tagesansicht, im Tagesabschluss und im Bericht
+  Anwesenheit samt CSV- und PDF-Export.
+- Zeitkorrektur (`MVP-1552`): Ein Korrekturantrag kann den Auftrag einer
+  Zeitbuchung ändern oder lösen; der Dialog bietet die Aufträge des Projekts.
+- Plan/Ist (`MVP-1552`): Der Kopf des Tages zeigt Soll und Kernzeitbeginn
+  neben erster und letzter Stempelung mit Warnmarken, der Auftrag die
+  Kennzahl Plan/Ist. Die Schwellen „später Beginn“ und „Stundenabweichung“
+  sind je Organisation einstellbar (Vorgabe 15 Minuten, 10 %).
+- Schichttausch (`MVP-1553`): Der Antragsdialog lässt eine Gegenschicht
+  wählen (Schicht gegen Schicht); die Liste zeigt den Tausch. Verstößt die
+  neue Zuordnung gegen Arbeitszeitregeln, gibt die Leitung nur über den Dialog
+  „Prüfen und freigeben“ mit Begründung frei; Begründung und übersteuerte
+  Regeln stehen im Audit-Protokoll.
+- Urlaub (`MVP-1554`): „Korrektur anfordern“ gibt einen ausstehenden Antrag
+  mit Hinweis zurück (Status „Korrektur angefordert“); die antragstellende
+  Person wird benachrichtigt, findet ihn im Arbeitsvorrat, ändert ihn und
+  reicht ihn mit dem Speichern neu ein.
+- Tätigkeitskategorien (`MVP-1554`): „Zählt als Arbeit“ wirkt in
+  Arbeitszeitkonto, Tagesabschluss und Arbeitsbilanz, „Standardmäßig
+  abrechenbar“ belegt die Abrechenbarkeit neuer Verwaltungszeiten vor.
+- Buchhaltung (`MVP-1555`): Skontokonto und Ausbuchungskonto des
+  OPOS-Ausgleichs stehen im DATEV-Einstellungsformular (leer = Vorgabe des
+  Kontenrahmens). Die Vorgabekonten der Ausbuchung (SKR03 2400, SKR04 6930
+  „Forderungsverluste“) sind in beiden Kontenplan-Vorlagen; bestehende
+  Kontenpläne aus der Vorlage bekommen das Konto beim Update nachgetragen.
+  Verbindlichkeiten haben eigene Gegenkonten mit eigenen Einstellungsfeldern:
+  erhaltene Skonti (SKR03 3736, SKR04 5736) und für die Ausbuchung ein
+  sonstiger Ertrag (SKR03 2709, SKR04 4839) statt gewährter Skonti und
+  Forderungsverluste.
+- Skonto mit Steuerberichtigung (`MVP-1555`, § 17 UStG): Der Skonto-Ausgleich
+  an offenen Posten und das Skonto aus dem Zahlungsabgleich teilen den Betrag
+  nach dem Steuersatz des Belegs in Netto und Steueranteil – an Forderungen
+  mindert er die Umsatzsteuer, an Verbindlichkeiten die Vorsteuer, bei
+  mehreren Sätzen anteilig. Kennziffern der Voranmeldung und
+  Umsatzsteuer-Vorschau zeigen die Minderung. Je Satz gilt das Skontokonto des
+  Rahmens (19 %: 8736/3736 bzw. 4736/5736, 7 %: 8731/3731 bzw. 4731/5731),
+  solange kein eigenes Konto eingestellt ist. Ohne Steuerbezug
+  (Kleinunternehmer, Reverse Charge, steuerfrei, Startsaldo) bleibt das Skonto
+  ungeteilt; der Dialog sagt, was gilt.
+- Umsatzsteuer-Kennziffern (`MVP-1558`): Buchungen aus der Buchungs-Inbox
+  tragen Steuerkennzeichen und Steuerbetrag an der Erlös- bzw. Aufwandszeile;
+  die Bemessungsgrundlage ist damit exakt. Umsätze ohne Steuer erscheinen in
+  ihrer Kennziffer: innergemeinschaftliche Lieferung (41, damit auch in der
+  Zusammenfassenden Meldung), sonstige Leistung mit Steuerschuld des
+  Empfängers (21), Ausfuhr (43), nicht steuerbar (45); neue Kennzeichen RC21,
+  AUSF und NSTB in den Vorlagen. Ältere Buchungen bleiben unverändert und
+  werden weiter richtig gelesen.
+- Buchungsjournal (`MVP-1556`): Entwürfe lassen sich bearbeiten (Datum, Text,
+  Beleg, Gegenpartei, Zeilen) und verwerfen – auch Handbuchungen, Entwürfe aus
+  Buchungsvorlagen und aus Inbox-Vorschlägen; der Vorgang einer verworfenen
+  Buchungsvorlage gilt als übersprungen. „Kostenstellen“ trägt an jedem Entwurf
+  die Kostenstelle je Zeile nach. Wer einen Entwurf ändert, gilt als
+  Vorbereiter (Vier-Augen-Prinzip). Festbuchungen bleiben unveränderlich.
+- Zahlungsabgleich (`MVP-1557`): „Beleg suchen“ ordnet einem Einzelumsatz jede
+  offene Rechnung, freigegebene Spese oder ein Kundenkonto zu – über die
+  Vorschläge hinaus, mit Teil- und Überzahlung, Art und Notiz. „Auf Sachkonto
+  buchen“ bucht einen Umsatz ohne Beleg (Bankgebühr, Zinsen, Privat,
+  Verrechnung) direkt Bank an Sachkonto, auf Wunsch mit Steuerkennzeichen und
+  Kostenstelle; der Umsatz gilt danach als beiseitegelegt. Wird der
+  Vier-Augen-Entwurf dieser Buchung verworfen, steht der Umsatz wieder offen.
+- Buchhaltung (`MVP-1558`): Steuerkennzeichen lassen sich anlegen, ändern und
+  stilllegen; Satz, Richtung und Steuerkonto eines bebuchten Kennzeichens
+  wechseln nur zum Stichtag (neue Fassung, Altbuchungen bleiben). Handbuchung
+  und Buchungsvorlage buchen mehrere Zeilen mit Steuerkennzeichen
+  (Nettobetrag, Steuerzeile automatisch), Kostenstelle je Zeile und
+  Gegenpartei; solche Buchungen stehen in den Kennziffern der Voranmeldung.
+  Das Konto wird im Dialog als Kontonummer mit Vorschlagsliste erfasst.
+- Offene Posten (`MVP-1559`): „Als strittig kennzeichnen“ mit Grund und
+  „Strittig zurücknehmen“, Statusfilter in der Liste. Ein strittiger Posten
+  wird nicht gemahnt (Mahnsperre an der Rechnung) und zählt in
+  Liquiditätsübersicht und -vorschau nicht als erwarteter Eingang. Die
+  Eingangsrechnung einer strittigen Verbindlichkeit ist im Zahlungsvorschlag
+  gesperrt.
+- Sicherheitseinbehalte (`MVP-1560`): Die Rechnungsseite zeigt die Karte
+  „Sicherheitseinbehalte“ mit Art, Betrag, Freigabetermin und Status. An der
+  ausgestellten Rechnung gibt ein Dialog mit Notiz den Einbehalt frei – die
+  Route gab es, einen Knopf nicht.
+- Bürgschaften (`MVP-1561`): Ein durch Bürgschaft abgelöster Einbehalt lässt
+  sich freigeben. Das beendet nur den Sicherungszweck: Der Auszahlungstag
+  bleibt, es entsteht keine neue Forderung, und die Urkunde wird zur Rückgabe
+  gemeldet. Neu ist „Als verfallen vermerken“; die tägliche Fristenprüfung
+  setzt Bürgschaften mit überschrittener Befristung auf „Abgelaufen“ (der
+  letzte Tag zählt noch). Verfallene zählen nicht mehr als aktiv, ihre Urkunde
+  kann weiter als zurückerhalten vermerkt werden, und eine nachgetragene
+  Verlängerung macht sie wieder aktiv.
+- Fakturierung (`MVP-1562`): „Freigabe vor der Ausstellung verlangen
+  (Vier-Augen-Prinzip)“ und „Nur validierte E-Rechnungen ausstellen“ stehen in
+  den Organisationseinstellungen. Die Ausstellung las beide Schalter schon,
+  setzen ließen sie sich nicht.
+- Zählerabrechnung (`MVP-1563`): Der Dialog der Vereinbarung erfasst
+  Mengenstaffel (Zeilen „ab Menge“ und „Preis je Einheit“), Status und Projekt.
+  Die Liste zeigt „Staffel“ statt des Einheitspreises und den Status als
+  Plakette; „Jetzt abrechnen“ steht nur bei aktiven Vereinbarungen.
+- Gewährleistung (`MVP-1564`): Fristen lassen sich bearbeiten; ein verschobenes
+  Ende zieht gekoppelte offene Einbehalte nach, gekoppelte Bürgschaften folgen
+  dem neuen Ende. „Rüge erfassen“ setzt den Status „Gerügt“ und verknüpft auf
+  Wunsch die Reklamationsakte. Die Wahl eines Abnahmeprotokolls belegt den
+  Fristbeginn mit dem Abnahmetag vor.
+- Mitarbeiter (`MVP-1565`): Stundensatz (Verrechnung) und interner Kostensatz
+  je Person stehen im Mitarbeiter-Dialog. Sichtbar und änderbar sind sie nur
+  mit dem Recht „Personal-/Lohndaten verwalten“; Änderungen werden
+  protokolliert. Bisher ließen sich beide nur per CSV-Import setzen.
 - Arbeitsvorrat (Phase 174, `MVP-1525`): Überstundenanträge, Zeitkorrekturen
   (Freigabe und Anwenden), Tagesabschluss-Korrekturen, Dienstpläne zur Freigabe,
   Schichttausch (erst die Annahme durch die angefragte Person, dann die
@@ -72,9 +233,930 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Aufträge und Archiv Servicetickets `KP-<Nr.>` mit Termin, Mechaniker, Antwort
   und interner Notiz; ohne SLA-Fristen, Routing und Webhooks, wiederholbar.
   Passwörter werden nicht übernommen.
+- Helpdesk (Phase 176, `MVP-1548`): Das Standard-SLA der Queue wirkt — der
+  Vertrag eines neuen Tickets ergibt sich aus Projekt, Kunde, Queue,
+  Organisationsvorgabe, in dieser Reihenfolge. Am Queue-Formular lassen sich
+  unterstützte Ticketarten, Geschäftszeiten, Feiertagsregion, Absendername und
+  Antwortadresse pflegen; Routing, Board, Fristberechnung und Antwortmail
+  richten sich danach. Extern geführte Queues (Zammad) sind an Queue und Ticket
+  gekennzeichnet, Statuswechsel und Kundenantworten dort gesperrt; der
+  Abschluss kommt aus Zammad, und beim Zurückstellen des Ticketziels führt
+  WorkDiary die Queue wieder selbst. Am SLA-Vertrag sind Eskalationsstufen und
+  das OLA-Team pflegbar; ein OLA wird nie als Kunden-SLA gezogen und erscheint
+  als internes Ziel an der SLA-Uhr der Tickets des Teams. Tickets lassen sich
+  bei Anlage und Klassifizierung als vertraulich kennzeichnen; Liste und Board
+  zeigen sie nur Berechtigten.
+- Service Desk (`MVP-1549`): Mitarbeitende bestellen Katalogeinträge unter
+  „Leistung bestellen“ (neues Recht „Leistungen aus dem Servicekatalog
+  bestellen“, alle internen Profile außer Support). Die Angaben des
+  Bestellformulars und das Erfüllungsobjekt stehen am Ticket, die Angaben auch
+  im Entscheidungsdialog der Genehmigung. Antworten zeigen den Zustellstatus
+  ihrer E-Mail. Aus einem offenen Punkt lässt sich ein Ticket eröffnen
+  (höchstens eines je Punkt, mit Verweis am Punkt).
+- Helpdesk (Nachzug Helpdesk zu `MVP-1546`–`MVP-1549`): Abnahme und
+  Wiederöffnung im Kundenportal laufen über den Fachdienst wie intern; in
+  extern geführten Queues sind Antwort, Abnahme und Wiederöffnung auch im
+  Portal gesperrt. Beim Queue-Wechsel von Hand gilt das Standard-SLA der neuen
+  Queue, wenn der Vertrag bisher aus Queue oder Organisation kam oder fehlte.
+  Das Eingangspostfach der Queue ist im Formular pflegbar (eines je Queue).
+  Vertrauliche Tickets erscheinen in Auswahllisten, Verweisen, Projekt- und
+  Auftragssicht nur für Berechtigte und in Berichts-Drilldowns maskiert. Neues
+  Benachrichtigungsereignis „Internes Ziel (OLA) überschritten“: einmal an die
+  Teamleitung des OLA-Teams, mit Eskalation nach den Benachrichtigungsregeln.
+- Prozeduren (`MVP-1566`): Die Lauf-Ansicht zeigt am Backup-Schritt die Karte
+  „Backup-Nachweis“. „Backup-Nachweis erfassen“ nimmt gesichertes System,
+  Umfang, Zeitpunkt, Ablage (Anhang oder externe Ablage) und Prüfweg auf; eine
+  hochgeladene Datei wird gegen die erwartete Prüfsumme geprüft und der
+  Nachweis dann selbsttätig bestätigt. Restore-Test und Bestätigung durch die
+  Leitung bestätigt eine zweite Person mit dem Recht „Backup-Nachweis
+  verifizieren“; „Nachweis ablehnen“ verlangt eine Begründung. Den Ablageort
+  einer externen Sicherung sieht nur, wer „Externe Backup-Ablagen einsehen“
+  darf. Damit lassen sich Backup-Schritte und Schritte mit „Vorheriges Backup
+  nötig“ erstmals über die Oberfläche abschließen; ist kein Backup möglich,
+  bleibt die begründete Abweichung.
+- Prozeduren (`MVP-1567`): Abweichungen stehen mit Art, Schweregrad,
+  Begründung und Folgemaßnahme am Schritt. Eine kritische Abweichung ohne
+  offenen Punkt und ohne Folgeauftrag sperrt den Abschluss, bis jemand mit dem
+  Recht „Kritische Abweichung akzeptieren“ das Risiko mit Begründung
+  akzeptiert; Person, Zeitpunkt und Begründung stehen im Verlauf des Laufs.
+  Der Bericht „Prozedur-Abweichungen“ bekommt damit Daten für „Risiko
+  akzeptiert“ und „Ø Stunden bis Entscheidung“.
+- Prozeduren (`MVP-1568`): Die Qualifikation am Schritt und die
+  Mindestqualifikation der zweiten Person werden gegen die gültigen
+  Qualifikationen der Person geprüft (Kürzel, ersatzweise Name). Bisher war ein
+  Schritt mit eingetragener Qualifikation für niemanden ausführbar.
+- Prozeduren (`MVP-1569`): Designer und Schrittbibliothek pflegen die
+  Konfiguration je Schrittart: Auswahl-Optionen, Einheit und Grenzen,
+  feste Wartezeit, „Vorheriges Backup nötig“, Vorgaben für den Backup-Nachweis
+  sowie Rolle und Qualifikation der zweiten Person. Ein Auswahlschritt ohne
+  Optionen nimmt im Lauf freien Text.
+- Prozeduren (`MVP-1570`): Eine Version mit Risikostufe „Kritisch“ lässt sich
+  nur mit mindestens einem Vier-Augen-Schritt veröffentlichen, und ihr Lauf
+  wird erst mit einer erledigten, gegengezeichneten Freigabe abgeschlossen.
+- Prozeduren (`MVP-1571`): Die automatische Zuordnung kennt zusätzlich Kunden,
+  Asset-Kategorien, Produkte und SLA-Verträge; alle sind im Designer wählbar.
+  Vorlagen mit Asset-Kriterium stehen an der Asset-Akte in der Karte
+  „Prozeduren“ und lassen sich dort starten. An einem gesperrten Asset startet
+  nur eine Vorlage mit „Darf an gesperrten Assets laufen“.
+- Protokolle (`MVP-1572`): Unterschriften werden gezeichnet und gedruckt. Der
+  Dialog „Abschließen / Unterschreiben“ und der Signaturlink haben ein
+  Unterschriftsfeld; das Bild liegt als Anhang am Protokoll, steht bei den
+  Signaturen und im PDF mit Name, Rolle, Zeitpunkt und Art. Die Papierabnahme
+  lädt Foto oder Scan der unterschriebenen Seite hoch und bestätigt, dass das
+  Original vorliegt. Kunden nehmen ein kundensichtbares Protokoll, das zur
+  Prüfung eingereicht ist, im Kundenportal an Auftrag oder Objekt unter „Zur
+  Abnahme“ ab. Der Signaturlink geht zusätzlich per E-Mail an die
+  unterzeichnende Person (abschaltbar). Das PDF des Abschlusses liegt als
+  Anhang am Protokoll.
+- Protokolle (`MVP-1573`): Tags im Anlage- und Bearbeitungsdialog und an der
+  Detailseite; Anhänge am ganzen Protokoll mit Verlaufseintrag, nur im
+  Entwurf; „Punkte umsortieren“ per Ziehen, Unterpunkte bleiben bei ihrer
+  Gruppe. Die Organisationseinstellung „Aufnahmeort (GPS) aus Protokollfotos
+  übernehmen“ (Datei-Uploads, Standard aus) entscheidet, ob Koordinaten
+  gespeichert werden; angezeigt werden sie mit dem Recht
+  `protocol.item.photo.viewGeo`.
+- Assets (`MVP-1574`): „Außer Betrieb nehmen“ an der Asset-Akte mit Datum und
+  Grund; Wartungspläne ruhen danach, Prüfpflichten werden deaktiviert, offene
+  Prüftermine storniert, und das Asset fällt aus Ausgabe, Verleih,
+  Reservierung, Druck und Prozedurstart. „Eigentümer wechseln“ schreibt jeden
+  Wechsel mit Von, Nach und Notiz in die Eigentümerwechsel-Historie der
+  Objektakte; ein anderer Kunde im Bearbeiten-Dialog ist derselbe Wechsel. Die
+  Status „Gesperrt“ und „In Reparatur“ legen eine Sperre im gemeinsamen
+  Sperrmodell an und sperren damit überall, auch den Prozedurstart an einem
+  Auftrag zu diesem Asset. Der Zustand (In Ordnung, Eingeschränkt, Kritisch)
+  wird aus Sperren, Defekten und überfälligen Terminen abgeleitet und steht an
+  der Akte; ein geänderter Standort erscheint als „Standort geändert“ in der
+  Timeline. Die Rücknahme einer Ausgabe fragt Zustand und Notiz ab.
+- Prüfwesen (`MVP-1575`): Prüfprofile, Anforderungen und Prüfpflichten lassen
+  sich bearbeiten und deaktivieren (nichts wird gelöscht); das Intervall je
+  Asset steht im Zuweisungs- und im Bearbeitungsdialog. Prüftermine lassen
+  sich mit Begründung stornieren; der Fristenlauf setzt verstrichene Termine
+  auf „Versäumt“. Der Prüfdialog nimmt Roh-Messwerte auf, die Liste
+  „Prüfprotokolle“ im Prüfkalender zeigt Ergebniszeilen und Roh-Messwerte.
+- Protokolle (`MVP-1572`): Eine Unterschrift gilt für ihren Inhaltsstand.
+  Unterschriften, die nicht sofort abschließen, sowie Signaturlink und
+  Portal-Abnahme gibt es nur „in Prüfung“. Geht das Protokoll zurück in den
+  Entwurf, verfallen Unterschriften und offene Links („Unterschrift
+  verworfen“ im Verlauf). Kunden können die Abnahme im Portal mit Begründung
+  ablehnen. Unterschrift und Ablehnung über Link oder Portal benachrichtigen
+  die Person, die den Link ausgestellt bzw. das Protokoll eingereicht hat
+  (Ereignisse „Kunde hat ein Protokoll unterschrieben“ und „Kunde hat die
+  Abnahme abgelehnt“).
+- Reklamation (`MVP-1576`): Rückläufer buchen Bestand. Ankündigung und
+  Wareneingang nehmen Artikelvariante, Menge, Lager, Seriennummer und Charge
+  auf, vorbelegt aus Artikel und Seriennummer der Akte; die drei Schritte
+  laufen als Dialoge. Mit Variante, Lager und Menge bucht der Wareneingang in
+  die Quarantäne, die Verwendungsentscheidung bucht um oder aus und führt
+  den Seriennummernstatus nach. Eine Seriennummer legt Variante und Menge 1
+  fest. Rücksendungen aus dem Kundenportal bringen Variante und
+  Seriennummer mit; das Lager ergänzt der Wareneingang.
+- Reklamation (`MVP-1577`): Der Anlagedialog und der neue Dialog
+  „Bearbeiten“ verknüpfen Rechnung, Auftrag, Projekt, Service-Ticket, Asset,
+  Protokoll, Lieferant, Artikel und Bestellung; mit gewähltem Kunden zeigen
+  die Listen nur dessen Objekte. Eine im Lager bekannte Seriennummer wird
+  der Akte zugeordnet. „Reklamation eröffnen“ steht an Rechnung, Auftrag,
+  Asset und Service-Ticket und belegt Objekt und Kunden vor. „Folge
+  vorschlagen“ wählt die Rechnung; Gutschrift und Storno lassen sich damit
+  aus der Akte ausführen. Der Regress nimmt Lieferant (Auswahl), Bestellung,
+  Eingangsrechnung, Artikel, Seriennummer, Garantiebedingungen und eine
+  eigene Antwortfrist auf und zeigt sie in der Regresszeile.
+- Entsorgung (`MVP-1578`): Der Positionsdialog wählt ein Asset in Betrieb
+  und belegt Bezeichnung, Hersteller, Modell und Seriennummer vor; Akte und
+  Nachweis zeigen es, der Abschluss nimmt es außer Betrieb. „Entsorgen“ an
+  der Asset-Akte öffnet eine Entsorgungsakte mit dem Asset als vorbereiteter
+  Position. Je Geräteposition lassen sich Fotos hochladen; mit „Fotos im
+  Kundennachweis zeigen“ erscheinen bis zu zwei je Position im Nachweis-PDF.
+- Lager (`MVP-1579`): Das Bewertungsverfahren ist einstellbar. Die neuen
+  „Lager-Einstellungen“ der Bestandsübersicht wählen gleitenden Durchschnitt,
+  FIFO oder FEFO je Organisation, das Artikelformular ein eigenes Verfahren je
+  Artikel. Der Wechsel zu FIFO/FEFO legt für vorhandenen Bestand
+  Anfangsschichten zum Durchschnittspreis an; zurück zum Durchschnitt geht es
+  erst, wenn kein Bestand mehr in Schichten liegt. Das Artikelformular pflegt
+  außerdem das Seriennummernschema (Präfix, Stellen, Prüfziffer). Artikel mit
+  „Mindesthaltbarkeit erforderlich“ nehmen Zugang nur noch über den
+  Wareneingang mit Charge und Mindesthaltbarkeitsdatum an.
+- Fertigung (`MVP-1580`): Der Reservierungszeitpunkt (bei Freigabe oder beim
+  Start) steht in den Lager-Einstellungen; gelesen wird die Einstellung der
+  Organisation des Auftrags.
+- Einkauf (`MVP-1581`): Die Kalkulationswarnung nach einer Preisänderung
+  erfasst offene Angebote und nicht stornierte Aufträge mit dem Artikel und
+  misst die Mindestmarge am Belegpreis der Position. Die Gewichte des
+  Lieferanten-Scores sind im Ranking je Organisation einstellbar.
+- Leistungsverzeichnisse (`MVP-1582`): Der Dialog „Fortschritt melden“ bindet
+  eine Meldung an einen Materialverbrauch oder ein Protokoll des Projekts; der
+  Materialverbrauch zählt damit in der Wirtschaftlichkeit zur Position. Ein
+  abgewiesener Reimport steht mit Status „Konflikt“ und dem Vergleich von
+  Bestand und Datei in der Importhistorie, die jetzt die Befunde jedes Laufs
+  zeigt. Ein Kostengruppenkatalog ohne Ausgabe der Norm erzeugt einen Befund.
+- Lager (`MVP-1584`): Gepflegte Einheiten eines Artikels wirken. Manuelle
+  Buchung, Scan und Bestellposition erfassen die Menge in einer Einheit des
+  Artikels; gebucht wird in Basiseinheit, der Wareneingang rechnet Menge und
+  Einstandspreis aus der Bestelleinheit um. Eingabemenge und Einheit stehen an
+  der Bewegung und im neuen Reiter „Lagerjournal“. Umgerechnet wird
+  kaufmännisch gerundet auf vier Nachkommastellen.
+- Einstellungen je Organisation (`MVP-1589`): Der Rechtsraum steht in den
+  Stammdaten der Organisation (Auswahl aus den Rechtsräumen der
+  Aufbewahrungsfristen, Änderung im Audit-Protokoll) und bestimmt
+  Löschvorschläge und Verfahrensdokumentation. Neu einstellbar sind der
+  Abstand der Führerscheinkontrolle, die Prioritätsmatrix des Helpdesks, die
+  Warnschwelle der Kapazitätsplanung, die Schwelle der zweiten Freigabestufe
+  bei Investitionen, Trennzeichen und Metazeilen des CSV-Exports der Berichte
+  und die Löschfrist abgelehnter Bewerbungen. Im Krisenmanagement pflegt der
+  Reiter „Meldefristen“ eigene Fristen je Kategorie (anlegen, ändern,
+  deaktivieren, Vorgaben übernehmen); die Vorgaben bleiben Vorlage.
+- KI (`MVP-1590`): Erlaubt die Organisation für einen Dienst „Nutzer dürfen
+  wählen“, bietet der KI-Vorschlag die zugelassenen Verbindungen an; „Neu
+  erzeugen“ erstellt den Vorschlag mit der gewählten Verbindung, die Wahl steht
+  im Audit-Ereignis des Aufrufs. Einträge des KI-Gedächtnisses zählen ihre
+  Nutzung, sobald sie in einen Prompt einfließen; häufig benutzte Einträge
+  haben damit Vorrang, wenn das Budget nicht für alle reicht.
+- Lager (`MVP-1584`, Nachtrag): Auch die Inventur zählt in Artikeleinheiten
+  (Zählliste je Zeile, Scan, mobile Zählung). Der Bestellvorschlag bestellt in
+  der Einheit, deren Faktor der Verpackungseinheit des Lieferantenartikels
+  entspricht, und rechnet den Preis je Bestelleinheit um.
+- Leistungsverzeichnisse (`MVP-1582`, Nachtrag): „Fortschritt zur LV-Position
+  melden“ steht auch am Protokoll, wenn sein Projekt ein Leistungsverzeichnis
+  mit offenen Positionen hat.
+- Artikelstamm (`MVP-1583`): SKU- und GTIN-Hoheit. Beim Nummernkreis „Artikel“
+  lässt sich eine Warenwirtschaft (JTL-Wawi) als vergebende Stelle wählen.
+  Dann sind Artikelnummer und GTIN im Artikelformular gesperrt, neue Artikel
+  und Varianten erhalten keine eigene Nummer, und nur der Abgleich des
+  Programms schreibt sie. Die Lager-Einstellungen zeigen die führende Stelle.
+- Lager (`MVP-1585`): Getrennte Rechte für Inventur zählen,
+  Inventurdifferenzen freigeben, Reservierungen ändern und externe Buchungen
+  kompensieren. Wer `inventory.post` bzw. `inventory.configure` hält, bekommt
+  die herausgelösten Rechte mit der Migration. Vier-Augen-Freigabe für
+  Inventurdifferenzen ab einem Grenzwert, einschaltbar in den
+  Lager-Einstellungen; Grenzwert und Freigebende stehen im Audit-Protokoll.
+  Reservierungen lassen sich ändern: Priorität setzen, Teilmenge freigeben.
+- Lieferanten (`MVP-1586`): Eigene Nachweisarten je Organisation unter
+  „Pflichtnachweise → Nachweisarten“ (anlegen, ändern, deaktivieren,
+  Sperrverhalten, Pflicht). Die Pflicht lässt sich auf Lieferanten mit
+  bestimmten Tags begrenzen (Gewerk, Leistungsart). Katalogarten bleiben
+  Vorlage und lassen sich übernehmen. Die Pflege verlangt das eigene Recht
+  „Nachweisarten der Lieferanten verwalten“ (Admin und Geschäftsführung),
+  nicht „Lieferant bearbeiten“.
+- Aufträge (`MVP-1596`): **Pausieren** und **Stornieren** beenden laufende
+  Stoppuhren auf dem Auftrag und buchen die Zeit; **Abschließen** verlangt, dass
+  keine Stoppuhr mehr läuft, und nennt, wer noch aktiv ist. Ein Storno
+  archiviert offene Protokolle des Auftrags und bricht laufende Prozedurläufe
+  ab, unterschriebene Protokolle bleiben. **Fortsetzen** leert Pausenzeitpunkt,
+  -grund und -notiz (sie stehen im Verlauf). Neu: **Annahme zurückgeben** mit
+  Begründung setzt einen angenommenen Auftrag wieder auf „Geplant“.
+- Aufträge (`MVP-1596`): „Berechnet“ setzt jetzt der Beleg. Eine ausgestellte
+  Rechnung oder eine vollzogene Übergabe ans Buchhaltungsprogramm, die Zeiten
+  eines abgenommenen Auftrags abrechnet, stellt ihn auf „Berechnet“ und trägt
+  die Belegnummer ein; der Storno des Belegs nimmt das zurück, solange kein
+  anderer Beleg Zeiten des Auftrags hält. Die Eingabe von Hand bleibt.
+- Aufträge (`MVP-1596`): Der Verlauf am Auftrag filtert nach Zeitraum,
+  mehreren Typen, Person und „Nur kundenrelevant“.
+- Offene Punkte (`MVP-1597`): Frist, Schweregrad und Sichtbarkeit lassen sich
+  nach der Anlage ändern (Sichtbarkeit „Kunde“ nur mit dem Recht zur
+  Kundenfreigabe); jede Änderung steht im Verlauf. Offene Punkte gibt es jetzt
+  auch an Projekt, Kunde und Asset. Der neue Dialog **Details** zeigt Verlauf,
+  Kommentare und Anhänge; ein geschlossener Punkt nimmt keine Anhänge mehr an.
+  Die Liste filtert nach Status, Schweregrad und zuständiger Person, und die
+  zuständige Person ist schon bei der Anlage wählbar.
+- Lernplattform (`MVP-1598`): Der Pflichtanteil eines Videos („Mindestens
+  gesehen (%)“) wirkt. Der Player zählt die tatsächlich abgespielten
+  Abschnitte (Vorspulen zählt nicht, dieselbe Stelle nur einmal) und meldet
+  sie; der Server rechnet höchstens im Tempo der Uhr und nie über die
+  Videodauer hinaus an und speichert je Einschreibung und Video nur den
+  erreichten Anteil. Unter dem Pflichtanteil lässt sich die Einheit nicht
+  abschließen — in „Meine Schulungen“, im Kundenportal und im
+  Offline-Abgleich; der Knopf bleibt gesperrt und nennt den Stand. Für fremde
+  Einbettungen lehnt der Editor einen Pflichtanteil ab, der Zugang ohne
+  Benutzerkonto weist auf das nicht abspielbare Pflichtvideo hin.
+- Lernplattform (`MVP-1599`): Zertifikate lassen sich widerrufen. In der
+  Teilnehmerliste eines Kurses steht die Zertifikatsnummer an der Person; mit
+  dem Recht „Lernen verwalten“ widerruft man dort mit Pflichtgrund. Prüfseite,
+  maschinenlesbarer Nachweis, Ausdruck und Nachweismappe zeigen den Widerruf,
+  die Person wird mit dem Grund benachrichtigt (neues Ereignis „Zertifikat
+  widerrufen“), der gespiegelte Pflichtnachweis eines Subunternehmers endet am
+  selben Tag, und das Audit-Log hält Person, Zeitpunkt und Grund fest. An
+  derselben Stelle lässt sich der Einstiegslink einer externen Person
+  entwerten.
+- Lernplattform (`MVP-1600`): Das Notenschema je Organisation ist pflegbar
+  (Einstellungen der Lernplattform: Stufen „Bezeichnung = Mindestprozent“ oder
+  Vorlage 1–6, A–F, bestanden/nicht bestanden); Notenbuch, CSV und Zeugnis
+  zeigen damit die Note. Die Einheitenarten Prozedur, Umfrage und Extern
+  wirken: Der Einheiten-Dialog verlangt den Verweis; ein abgeschlossener Lauf
+  der Prozedurvorlage, der abgesendete Fragebogen bzw. die Bestätigung
+  „erledigt“ (wahlweise nur mit hochgeladenem Nachweis) schließen die Einheit
+  ab, von Hand abhaken lassen sie sich nicht mehr. Die Nachweismappe lässt
+  sich zusätzlich nach Person, Projekt und Standort eingrenzen, führt
+  Personen, die am Stichtag beschäftigt waren und inzwischen ausgeschieden
+  sind, und kommt mit Anlass auch als ZIP mit Zertifikats-PDFs und
+  Index-Datei. Der Editor nennt beim Auswählen eines Videos den zu
+  erwartenden Speicherbedarf (Original plus Fassungen).
+- Hinweisgebersystem (Phase 176, `MVP-1601`): Die Nachricht an die meldende
+  Person lässt sich als Rückmeldung nach § 17 HinSchG kennzeichnen; die erste
+  setzt `feedback_sent_at` und beendet die Erinnerung, die bisher bis zum
+  Abschluss täglich lief. `whistleblowing:deadlines` warnt jetzt in Stufen
+  (Eingangsbestätigung 48 Stunden vorher, Rückmeldung 14 Tage und 48 Stunden
+  vorher, je einmal; überfällig täglich) und am Prüfdatum einer Löschsperre.
+  Die Aufbewahrungsfrist rechnet mit den Monaten des Portals. Neu an der
+  Fallakte: Ereignisprotokoll hinter `whistleblowing.audit.view` (der Aufruf
+  wird protokolliert), Zuweisung widerrufen, Unterlagen der Meldestelle über
+  den verschlüsselten Anhangsweg; die Löschsperre verlangt Rechtsgrundlage,
+  Verantwortlichen und Prüfdatum, die Wiedereröffnung eine Begründung. Die
+  Fallliste filtert nach Status, Kategorie, Priorität, Person, Friststatus
+  und Eingangszeitraum. Das Portal nennt externe Meldewege (Pflichthinweis,
+  dazu pflegbare Stellen), lässt sich auf die erlaubten Sprachen umschalten
+  und zeigt den Stand des Datenschutzhinweises.
+- Datenschutz (Phase 176, `MVP-1602`): Die Frist einer Betroffenenanfrage
+  lässt sich nach Art. 12 Abs. 3 DSGVO verlängern – höchstens zwei weitere
+  Monate, mit Grund und nur, solange die erste Frist läuft. Der Vorgang
+  führt die ursprüngliche Frist weiter, `privacy:deadlines` erinnert vor der
+  neuen Frist erneut, und Anfragen mit Kontaktadresse erhalten die Mitteilung
+  samt Grund per E-Mail. Der Löschscan schlägt abgeschlossene
+  Betroffenenanfragen und (neu, Bereich `privacy_incidents`)
+  Datenschutzvorfälle nach der Aufbewahrungsfrist zur Schlüsselvernichtung
+  vor; nach Freigabe sind die Inhalte unlesbar, unverschlüsselte Nachweise
+  gelöscht, und der Vorgang bleibt als inhaltsfreier Nachweis stehen. Das
+  Betroffenenportal erscheint in seiner Standardsprache.
+- Umfragen (Phase 176, `MVP-1603`): Der Widerspruch gegen Umfragen lässt sich
+  erfassen – als Haken „Keine Umfragen“ am Kunden und über den Link
+  „Umfragen abbestellen“ in jeder Einladung an einen Kunden und auf der
+  Umfrageseite (ohne Anmeldung, mit Rückfrage, im Änderungsverlauf des Kunden
+  vermerkt). Kundenexport und -import führen die Spalte `survey_opt_out`.
+- Verleih (`MVP-1604`): Die Akte warnt beim Reservieren, wenn im Zeitraum eine
+  weiche Vormerkung eines anderen Vorgangs besteht, und nennt die betroffenen
+  Vorgänge; gesperrt wird nicht. Übergabe- und Rücknahmeformular erfassen
+  Checkliste, Zubehör, Zustandspositionen und Verbrauch; Prüfpunkte und Zubehör
+  kommen aus dem Verleihprofil, Akte und Kundenportal zeigen die Positionen.
+  Das Verleihprofil pflegt Heimatstandort, Mindestzustand, aktuellen Zustand
+  und die Prüfpunkte; unter dem Mindestzustand ist ein Gerät nicht vergebbar.
+  „Reinigung erforderlich“ legt ein Reinigungsfenster an, „Reinigung erledigt“
+  gibt das Gerät vorzeitig frei. Migration
+  `2027_04_17_230000_add_condition_and_checklist_to_rental_profiles`.
+- Krisenmanagement (`MVP-1605`): Maßnahmen können einen Vorgänger aus derselben
+  Akte tragen und lassen sich erst erledigen, wenn er erledigt oder abgebrochen
+  ist. Der kritische Prozess nimmt Ersatzprozess und verbleibende Einschränkung
+  auf. Eine laufende Akte führt mit dem Recht der Liste zur
+  Notfall-Anwesenheitsliste. Sicherheitsvorfall, Datenschutzvorfall,
+  Arbeitsschutzereignis und Major-Incident-Ticket tragen „Krise eröffnen“; der
+  Vorfall wird mit der neuen Akte verknüpft. „Vorgang verknüpfen“ bietet eine
+  Auswahl lesbarer Vorgänge statt der Sqid-Eingabe.
+- Investitionen und Leasing (`MVP-1606`): Die Variante nimmt die Nutzungsdauer
+  auf, der Variantenvergleich zeigt sie. Ein mit der Akte verknüpftes Asset
+  übernimmt den Lieferanten der empfohlenen Variante (`acquired_from_supplier_id`),
+  die Asset-Akte zeigt Lieferant, Datum und Kosten der Anschaffung. Die
+  Investitionsliste filtert nach Zeitraum, Verantwortlichen, Kostenstelle,
+  Budgetstatus, Dringlichkeit und Risikohinweis; der Investitionsbericht gibt
+  es auch als PDF. Der Leasingvertrag wählt seine Bestellung im Formular.
+- Nachhaltigkeit (`MVP-1607`): „Bewertung starten“ wählt ein Bezugsobjekt
+  (Asset, Fahrzeug, Standort, Raum, Projekt, Auftrag, Lieferant, Artikel,
+  Investition, Vertrag) aus den lesbaren Objekten freigeschalteter Module und
+  speichert es als Morph-Alias; die Bewertung verlinkt Objekt und alle
+  Bewertungen desselben Objekts. Asset, Lieferant und Investition tragen
+  „Nachhaltigkeit bewerten“. Maßnahmen lassen sich einer Bewertung zuordnen,
+  Bewertungs- und Maßnahmenliste führen bis zum Objekt.
+- Agiles Board (`MVP-1608`): Die Definition of Done wirkt. Beim Zug in eine
+  Fertig-Spalte öffnet das Board einen Dialog mit den DoD-Punkten und den
+  offenen Akzeptanzkriterien; ohne Übersteuerungsrecht muss jeder Punkt
+  bestätigt sein, mit Recht genügt eine Begründung. Geprüft wird
+  serverseitig in `AgileBoardService::move()`, die Übersteuerung steht als
+  Ereignis `override.dod` mit den unbestätigten Punkten im Verlauf. Die
+  Qualitätsreihe weist DoD-Abweichungen und die DoD-Abweichungsquote je Woche
+  aus (Sprint-Bericht, PDF, CSV).
+- Dokumentdesign (`MVP-1609`): Firmenangaben, Steuerangaben, Ansprechpartner,
+  Einleitung, Schluss und Vertraulichkeitsvermerk wirken in Rechnung,
+  Gutschrift, Angebot, Auftragsbestätigung, Mahnung und Beitragsmitteilung
+  nach ihrem Blockzustand. Firmen- und Steuerangaben kommen aus den
+  Verkäuferdaten der E-Rechnung bzw. Branding und Rechtsangaben, der
+  Ansprechpartner aus dem Beleg; Kopf- und Fußtext folgen den Blöcken
+  Einleitung und Schluss, der Vertraulichkeitsvermerk ist im Editor pflegbar.
+  Der Preflight wertet „dynamisch“ bei Firmen- und Steuerangaben nur mit
+  gepflegten Stammdaten als erfüllt (Fehler bei zugeordneten Vertriebsbelegen,
+  Warnung beim Basisdesign). Ausstellerangaben und Ansprechpartner werden beim
+  Ausstellen der Rechnung eingefroren; Belege aus der Zeit vor dieser Änderung
+  (Generatorstand `document-design/1.0.0`) bleiben beim Nachdruck unverändert.
+- Terminbuchung und Calendly (`MVP-1610`): Eine Anfrage ohne Kundentreffer lässt
+  sich im Termin-Eingang über „Zuordnen“ einem Kunden oder Lead zuordnen; ein
+  konvertierter Lead bringt seinen Kunden mit. Im Integrations-Eingang steht
+  eine solche Calendly-Buchung als Einzelfall mit Ziel „Kunde“ (Vorschläge aus
+  dem Kundenprofil, zuordnen oder neu anlegen); die Zuordnung landet an der
+  Anfrage. Calendly-Gastgeber mit abweichender Adresse lassen sich einem
+  Benutzer zuordnen. Bestätigen und Ablehnen im Calendly-Bereich verlangen wie
+  im Termin-Eingang das Dispositionsrecht, Verbinden und Zuordnungen bleiben
+  bei der Verwaltung. Buchbare Leistungsarten und der Kopf eines Fragebogens
+  (Titel, Zweck, Anonymität bis zur ersten Einladung) sind bearbeitbar.
+  Migration `2027_04_17_240100_route_calendly_unmatched_bookings_to_customers`.
+- Wächterrundgänge (`MVP-1611`): Routen (Bezeichnung, Objekt, Verantwortliche)
+  und Kontrollpunkte sind bearbeitbar; Routen und Kontrollpunkte lassen sich
+  deaktivieren. Ein Rundgang, der vor der Deaktivierung begonnen hat, erwartet
+  den Punkt weiter — frühere Läufe und der Bericht bleiben unverändert. Eine
+  Abweichung erzeugt sofort einen offenen Punkt für die Verantwortliche der
+  Route (sonst die Teamleitung der durchführenden Person), je Lauf einen, der
+  bis zum Ende fortgeschrieben wird. Läuft ein Rundgang nach Soll-Dauer plus
+  Toleranz noch, meldet ihn der Fristenlauf (`patrol_overdue`) einmal als nicht
+  beendet. Migration `2027_04_17_240000_add_responsibility_and_deactivation_to_patrols`.
+- Kleinere Lücken (`MVP-1612`): Der letzte Kontakt eines Leads rückt bei
+  Kommunikationsnotiz, inhaltlicher Bearbeitung und Angebot aus dem Lead nach.
+  Die Meldung „Anmeldung von neuem Gerät“ lässt sich im Profil abschalten; An-
+  und Abschalten stehen im Audit-Log. Eine neue Integritäts-Baseline hebt den
+  Lockdown auf, ohne Baseline der Plattformbetrieb über `integrity:release
+  --reason=…` oder den Knopf auf der Integritätsseite (auditiert); ein
+  Wartungsmodus aus anderem Anlass bleibt stehen. Eine an ein Objekt gebundene
+  Leistungsart bietet Portal und Slot-Suche nur dem Kunden des Objekts an, die
+  Bestätigung übernimmt die Objektanschrift als Einsatzort.
+- Cloud-Dokumenteingang (`MVP-1613`): Eine Ordnerregel kann alle Dateien einem
+  festen Kunden, Projekt, Auftrag, Asset oder Vertrag zuordnen (nur Arten
+  aktiver Module, Objekt der eigenen Organisation). Jede Regel braucht einen
+  Testpfad: Gespeichert wird nur, wenn er das Muster trifft und ein Ziel ergibt;
+  die Rückmeldung und der Regeldialog zeigen erkannte Variablen und Ziel.
+  Mehrere Pfadvariablen, unbekannte Objekte und ein Zielbereich ohne aktives
+  Modul werden abgewiesen. Zwei aktive Regeln einer Verbindung mit gleichem
+  Muster oder einem Testpfad, der beide trifft, blockieren die Aktivierung.
+  Den ersten Import beginnt eine Verbindung erst nach Vorschau und „Import
+  starten“; ein neuer Stammordner verlangt eine neue Bestätigung (Audit
+  `cloudIntake.startConfirmed`). Migration
+  `2027_04_17_260200_add_route_test_and_start_confirmation_to_cloud_intake`.
+- Domains (`MVP-1614`): Befehle mit unklarem Ausgang gleicht `domain:sync`
+  über `StatusDomain` ab — Registrierung, Renewal-Modus, Transfersperre und
+  Verlängerung werden bestätigt, als fehlgeschlagen erkannt oder als Konflikt
+  mit Hinweis markiert. Transfers, DNS und Hochrisikobefehle bleiben „unklar“
+  mit dem Hinweis, beim Anbieter zu prüfen, und lassen sich im Befehlsjournal
+  mit Begründung als ausgeführt oder fehlgeschlagen abschließen (Audit
+  `domain.commandResolved`). Renewal-Modus und Transfersperre melden einen
+  unklaren Ausgang, statt Erfolg anzuzeigen. Neue Benachrichtigungen an die
+  Admins: Verlängerung ab der Kostenschwelle der Organisation
+  (`domain.renewal_cost_threshold`, je Abbuchungstermin einmal) und
+  Anbieterkonto, dessen Guthaben samt Kreditrahmen die Verlängerungen im
+  Vorlauf nicht deckt oder unter dem Mindestguthaben liegt
+  (`domain.balance_threshold`, je Woche einmal).
+- Eigene Felder (`MVP-1615`): Kunden- und Lieferantenexport hängen die eigenen
+  Felder als Spalten an; die Suchbereiche von Kunde, Lieferant, Lead, Asset,
+  Artikel und Projekt finden die Anzeigewerte; Lieferanten- und Lead-Liste
+  zeigen Listenspalten. Der Anzeigetext liegt je Wertesatz in
+  `custom_field_values.search_text` und folgt geänderten Feldlisten. Migration
+  `2027_04_17_260100_add_search_text_to_custom_field_values` (befüllt den
+  Bestand).
+- Verein (`MVP-1616`): Gruppen im Modus „Antrag mit Freigabe“ nehmen nur über
+  einen Antrag auf — auch ein bestätigter Wechselvorschlag wird dort zum
+  Antrag. Mitglieder und Vertretungen beantragen die Aufnahme unter „Mein
+  Verein“; der Antrag erscheint im Arbeitsvorrat der Leitung. Prüfungen haben
+  die Aktion „Ergebnisse freigeben“ (sobald jeder Kandidat entschieden ist):
+  Vorher sehen Prüflinge weder Ergebnis noch neuen Grad noch Bescheinigung;
+  danach sind Zulassungsberichte, Nachweise, Kandidaten und Ergebnisse
+  eingefroren (Audit `club.exam.resultsReleased`). Migration
+  `2027_04_17_260300_release_recorded_club_exam_results`.
+- Überblick (`MVP-1617`): Die Dashboard-Kachel „Finanzbewegungen“ (Bereich
+  Finanzen, zunächst ausgeblendet) zeigt je Quelle die Bewegungen ohne
+  Zuordnung und die jüngsten Bewegungen der letzten 30 Tage; Quellen melden
+  sich über den Erweiterungspunkt `FinanceMovementSource` (Kontoauszüge des
+  Zahlungsabgleichs, Firefly III, Etsy-Shopkonto). Firefly-Bewegungen ohne oder
+  mit mehrdeutiger Zuordnung stehen gebündelt im Arbeitsvorrat, die
+  Firefly-Liste filtert auf „Offen“. Das Lieferanten-Cockpit zeigt Kataloge und
+  die Scorecard der letzten zwölf Monate; Asset und Lieferant zeigen Leasing-
+  und Finanzierungsverträge, das Asset außerdem offene Tickets, Reklamationen
+  und Gewährleistungsfristen aus Aufträgen und Protokollen zum Asset, Lead und
+  Kunde die Termine aus Terminbuchung und Calendly. Der Arbeitsvorrat filtert
+  nach Fälligkeit (überfällig, heute, diese Woche, ohne Frist), der
+  Aktivitäts-Feed nach Ereignis, auch nach allen Fachereignissen. Die
+  Leitungssicht und der Leitungsbericht haben einen Bereich Personal:
+  Krankheitstage wie die Krankheits-Auswertung, abgelaufene und bald
+  ablaufende Qualifikationen wie die Qualifikationsmatrix, offene
+  Urlaubsanträge. Der Kalender zeigt Vertragsfristen: offene und versäumte
+  Pflichten, Vertragsende bzw. Verlängerung und Indexprüfung. Die nie
+  geschriebene Spalte `project_time_targets.site_id` entfällt — Zeiten kennen
+  kein Objekt, das Soll gilt je Projekt, Person und Tag (Migration
+  `2027_04_17_270000_drop_site_id_from_project_time_targets`).
+- Lizenz und Diagnose (`MVP-1618`): `license:issue --max-orgs=… --storage-quota-gb=…`
+  und die Ausstellerkonsole stellen Organisations- und Speicherlimit aus, die
+  Organisationslizenz Nutzer- und Speicherlimit. Die Anlage einer
+  Organisation durch den Plattformbetrieb prüft `max_orgs`, das
+  Speicherkontingent gilt aus der Lizenz der Organisation; „Limits“ zeigt
+  Organisationen und Speicher. Auf der Diagnoseseite lassen sich
+  Überwachungszugänge anlegen und widerrufen: `GET /api/monitoring/diagnostics`
+  mit `Authorization: Bearer <Token>` liefert den Bericht ohne Namen und
+  Adressen, rate-limitiert und höchstens stündlich im Audit. Migration
+  `2027_04_17_260000_create_monitoring_tokens_table`.
+
+- Sammelreste (`MVP-1619`): Rollen lassen sich kopieren — das Symbol
+  „Kopieren“ an einer Rolle der Organisation öffnet den Anlegen-Dialog mit
+  vorbelegten Rechten, das Audit nennt die Vorlage. Eine Spesenkategorie mit
+  „Beleg erforderlich“ lässt das Einreichen erst mit hinterlegtem Beleg zu
+  (Entwurf bleibt speicherbar, das Formular weist darauf hin, der Belegdialog
+  öffnet sich). Die Warnung zum SMS-Kontingent erreicht die Verwaltung als
+  Betriebsaufgabe mit Benachrichtigung (`operations.smsBudgetWarning`), je
+  Monat einmal an der Warnschwelle und einmal am Deckel. Projektfarbe im
+  Projektdialog. Spalte „Top-Ursachen“ in der Auftragstypanalyse aus
+  Nacharbeitsgrund und Reklamations-Grundursache, mit Drilldown und im
+  CSV-Export. Entwürfe von ISMS-Auditpaketen sind bearbeit- und verwerfbar.
+  Scheduler-Jobs haben je Job Zeitzone, Ruhezeit und Wiederholung nach
+  Fehlschlag (Wiederholung als zweites Scheduler-Ereignis mit gemeinsamer
+  Sperre; Migration `2027_04_17_280000_add_run_options_to_scheduled_job_overrides`).
+  Raumanforderungen bearbeiten im eigenen Dialog; Übernahme-Inventur auf der
+  JTL-Seite erneut ausführen (nur am Tag des Wechsels auf „lokal“);
+  Erstattungsreferenz im Dialog „Als erstattet markieren“. Erfassungsfelder,
+  die der Server schon annahm: Erinnerungen je Termin, TOM-Prüfung und
+  nächster Review am AVV, Laufzeit der Chat-Umfrage, Sicherheitsabstand und
+  Sonderfarben der Druckfreigabe, Interviewer beim direkt geplanten
+  Bewerbungsgespräch, Datum und Notiz des Submissionsergebnisses, Wartezeit
+  beim Fahrtabschluss (Minuten, vorbelegt aus Warte- und Abholzeit),
+  Tätigkeitsstätte der Dreimonatsfrist, Kennzeichen im Fahrtenbuch (auch im
+  Export), Notiz an der Vertragsobligation, Steuerklasse am Artikel. Das Foto
+  eines Zählerstands ist ein Anhang (Upload im Dialog, Symbol in der Liste).
+  WebDAV- und SharePoint-Ablage reihen beim Aktivieren alle bisher
+  freigegebenen Objekte ein; einen Zeitplan braucht der Spiegellauf nicht.
+- Datenführerschaft (`MVP-1592`, Teil 1): Tickets, Bestände und Kalender
+  werden durchgesetzt. Schreibt eine Integration in einen Bereich, den ein
+  anderes System führt, schreibt sie nichts; stattdessen entsteht im
+  Integrations-Eingang ein Fall „Datenführerschaft“ mit „Einmalig übernehmen“
+  (schreibt den zurückgehaltenen Stand genau einmal) und „Verwerfen“. Betroffen
+  sind Service-Tickets aus Zammad (Anlage und Abschluss), Termine aus CalDAV,
+  Google Kalender und Microsoft 365 (Vorschläge, Serien, Änderungen),
+  Calendly-Buchungen und -Absagen sowie die Übernahme-Inventur aus JTL-Wawi;
+  Todoist, Microsoft To Do und OpenProject prüfen jetzt auch die Führung der
+  Aufgaben. Die Matrix bietet je Bereich nur Integrationen an, die ihn schreiben
+  können, zeigt offene Konflikte und nennt beim Wechsel, was mit ihnen
+  geschieht; der Wechsel wird mit vorheriger Führung auditiert. Bestände folgen
+  der Bestandsführung der Warenwirtschaft und sind in der Matrix nur zu sehen.
+  In eine von Zammad geführte Queue legt WorkDiary keine Tickets mehr selbst an
+  (manuell, Mail-Buchung, Standard-Queue) und hängt keine Mail-Antworten an.
+  Neues Gate `DataOwnershipWriteRuleTest`.
+- Datenführerschaft (`MVP-1592`, Teil 2): Dokumente und Kunden/Lieferanten
+  werden durchgesetzt, die Aufgabenimporte laufen über denselben Baustein.
+  Führt ein anderes System die Dokumente, legt der Cloud-Dokumenteingang
+  (Dropbox, Google Drive, Microsoft 365/SharePoint, Nextcloud, Paperless-ngx,
+  Seafile) keine DMS-Dokumente und Versionen an, und der easybill-Belegabruf
+  archiviert nichts; „Einmalig übernehmen“ lädt die Datei neu. Die Zeile
+  „Kunden und Lieferanten“ der Matrix ist jetzt die Stammdatenhoheit
+  (`finance.master_data_authority`): Ein gewähltes Buchhaltungsprogramm führt,
+  WorkDiary überträgt keine Kontakte dorthin, und nur dieses Programm übernimmt
+  Felder (Lexoffice-Kontaktabgleich mit „Lexoffice gewinnt“ und Neuanlage,
+  Kontakt-Rückweg aus sevDesk und easybill); „Buchhaltung (jedes Programm, das
+  Kunden schreibt)“ lässt alle angebundenen Programme schreiben. Die
+  Toggl-Migration legt unter fremder Führung keine Kunden an und bricht mit
+  Hinweis ab. Jira, Asana, Gitea, Redmine, Plane, Taiga, Kanboard, Leantime,
+  Vikunja, GLPI, FreeScout, Todoist, Microsoft To Do, GitHub, GitLab,
+  OpenProject und die Aufgaben aus Zammad legen ihre Fälle als
+  Führerschaftskonflikt mit „Einmalig übernehmen“ an (auch der Statusabgleich
+  der Git-Issues und der Abschluss aus Zammad); offene Altfälle werden beim
+  nächsten Abgleich dazu. Ein übernommener Fall öffnet sich wieder, wenn die
+  Quelle einen neuen Stand schreiben will; verworfen bleibt verworfen, und ein
+  Fall, den die zurückgekehrte Führung selbst schreibt, gilt als übernommen.
+  Lokale Ticketanlage in einer extern geführten Queue zeigt auf jedem Weg
+  (Katalog, Portal, Problemmeldung, offener Punkt, Kundeneingang, API) die
+  Meldung statt eines Serverfehlers; Lernfragen gehen dann per Mail an die
+  Kursverantwortung, Wartungstickets werden ausgelassen und protokolliert.
+- Offline (`MVP-1593`): **Projektzeiten offline.** Die Eingabeleiste auf
+  „Heute“ speichert Buchungen mit Dauer oder Von/Bis ohne Verbindung und
+  überträgt sie als Befehl `time.entry` — über dieselben Regeln und denselben
+  Dienst wie online (Monats- und Tagessperre, Abrechnungs-Snapshot,
+  Sollzeit-Marker, Aufgabe nur aus dem Projekt). Wurde der Tag bis zum Abgleich
+  abgeschlossen oder fehlt eine Pflichtangabe, entsteht ein Konflikt statt
+  einer stillen Ablehnung. Den Timer gibt es offline nicht. Eine Aufgabe aus
+  einem anderen Projekt meldet die Leiste jetzt als Eingabefehler statt mit
+  „Nicht gefunden“.
+- Offline (`MVP-1594`): **Material auf „Heute“, auch offline.** Neuer Dialog
+  „Material“ (Projekt, Material aus dem Stamm oder frei, Menge, Einheit); das
+  Material landet auf dem offenen Stundenzettel von Projekt, Person und Tag,
+  der bei Bedarf angelegt wird. Offline geht es als Befehl `material.usage` in
+  die Warteschlange und wird über die Befehls-ID genau einmal angelegt. Dialog
+  am Zettel, API und „Heute“ schreiben über einen Dienst; einen Lagerabgang
+  bucht der Materialverbrauch am Stundenzettel wie bisher nicht.
+- Offline (`MVP-1595`): **Stempelung korrigieren, auch offline.** In der
+  Stempelliste auf „Heute“ öffnet das Stift-Symbol einen Korrekturdialog
+  (Beginn, Ende, Pause, Begründung); die Korrektur läuft als Antrag durch die
+  Freigabe bzw. gilt sofort bei erlaubter Selbstkorrektur. Hat sich die
+  Stempelung seit dem Öffnen geändert, wird nichts überschrieben — online ein
+  Hinweis, offline ein Konflikt.
+- Offline (`MVP-1595`): **Konflikte entscheiden.** Die Seite
+  „Offline-Änderungen“ zeigt Konflikte aller Offline-Befehle, auch offene von
+  anderen Geräten, mit lesbarem Serverstand. Entscheidungen: fremden Stand
+  übernehmen bzw. verwerfen, eigene Fassung senden oder bearbeiten und erneut
+  senden. Jede Entscheidung wird am Befehl gespeichert und als
+  `sync.conflict.resolved` in die Audit-Kette geschrieben; die Admin-Sicht
+  „Offline-Synchronisierung“ zeigt sie neben dem Ergebnis bzw. „offen“.
+
+- Lager (`MVP-1626`): Vier-Augen-Freigabe für Entnahmen in den Negativbestand
+  (Lager-Einstellungen). Ist sie eingeschaltet, wird eine Entnahme mit
+  „Negativen Bestand zulassen“ zum Antrag im Genehmigungs-Eingang und erst
+  gebucht, wenn eine andere Person mit dem Recht „Negative Bestände freigeben“
+  zustimmt; Antragsteller und Freigebende stehen im Audit-Protokoll. Der
+  Genehmigungs-Eingang kennt dafür Stufen nach Recht. Reservierungen lassen
+  sich im Dialog „Reservierung ändern“ an eine andere Reservierung desselben
+  Bestands umverteilen (sichtbar und auditiert, nie still nach Priorität); die
+  Materialposition eines Fertigungsauftrags folgt Umverteilung und
+  Teilfreigabe. Billbee ist als Bestandsführung wählbar (Rückkanal der
+  Bestände); eine fremde Führung stellen weder die Billbee- noch die
+  JTL-Seite um.
+- Assets (`MVP-1628`): „Wieder in Betrieb nehmen“ mit Pflichtgrund und Audit,
+  dasselbe Recht wie die Außerbetriebnahme; über einen Entsorgungsauftrag
+  entsorgte Assets bleiben außer Betrieb, und das Bearbeitungsformular führt
+  nicht aus „außer Betrieb“ heraus.
+- Krisenmanagement (`MVP-1628`): Der Vorgänger einer Maßnahme lässt sich
+  nachträglich ändern oder lösen; Kreise werden abgewiesen.
+- Firefly III (`MVP-1628`): Bewegungen ohne Beleg lassen sich mit Begründung
+  als erledigt markieren und wieder öffnen; Kachel „Finanzbewegungen“,
+  Arbeitsvorrat und Filter „offen“ zählen sie nicht mehr, der Filter
+  „Erledigt“ zeigt sie.
+- KI (`MVP-1628`): Die Verbindungswahl („Nutzer dürfen wählen“) gilt auch an
+  den Positionstexten der Übergabe, in der Tätigkeitsrecherche der Suche und
+  bei „Plan-Ist erklären“.
+- Prozeduren (`MVP-1627`): Die Folgeaktion „Erneut durchlaufen“ startet einen
+  Wiederholungslauf derselben Vorlage am selben Objekt; er zählt als
+  Folgemaßnahme einer kritischen Abweichung und steht im Abweichungsbericht.
+- Protokolle (`MVP-1627`): Befehl `protocols:tidy-pdfs [--dry-run]
+  [--organization=]` überführt den Nachweis abgeschlossener Protokolle aus
+  `protocols/{org}` in einen Anhang und entfernt übrige, nicht referenzierte
+  Fassungen.
+- Architektur (`MVP-1620`): Sechs Gates messen, ob eine Funktion wirkt, statt
+  ob es sie gibt: Dienstmethode ohne Aufrufer (`ServiceMethodCallerRuleTest`),
+  Einstellung ohne Schreibstelle (`SettingWriterRuleTest`), validiertes Feld
+  ohne Sender (`ValidatedFieldSenderRuleTest`), schreibende Route ohne
+  Einstieg (`WriteRouteEntryRuleTest`), Statusfall ohne Setzer
+  (`StatusCaseSetterRuleTest`) und Spalte ohne Lese- oder Schreibstelle
+  (`ColumnUsageRuleTest`). Je Gate eine Baseline mit Grund je Eintrag unter
+  `tests/Unit/Architecture/baselines/`, die nur schrumpfen darf; ein zweiter
+  Test meldet erfüllte Einträge. Dabei entfernt: 34 öffentliche
+  Dienstmethoden ohne Aufrufer und Validierungsregeln für Felder, die kein
+  Formular sendet (Ausstellungsdatum des Teilnahmezertifikats, Abruflimit des
+  CSAF-Feeds, Knotenposition im Ideen-Update, Auditprogramm im Auditdialog,
+  Einzelname der Todoist-Zuordnung).
+- Lückenschluss der Gate-Befunde (`MVP-1620`): Die Anlagen-Stückliste
+  übernimmt Material aus Einsätzen – unter „Material aus Einsätzen“ stehen die
+  am Stundenzettel dem Gerät zugeordneten Verbräuche, „Übernehmen“ trägt sie
+  mit dem Einsatztag als Einbaudatum (und dem Artikel des Materials) ein, jeden
+  Verbrauch nur einmal (Feature 118). Die Qualifikationsmatrix der Disposition
+  zeigt die Einsatz-Ampel aus Feature 149: gelb „in Schulung“, wenn ein Kurs zur
+  geforderten Qualifikation zugewiesen oder begonnen ist, bei gelb und rot den
+  freigegebenen Kurs, der sie vermittelt; der Sperrhinweis im Schichtplan nennt
+  dasselbe (Vertrag `QualificationTrainingSource`, gebunden von der
+  Lernplattform). Das KI-Monatsbudget je Familie lässt sich auf der Seite
+  „KI-Verbrauch“ pflegen; die Organisationseinstellungen haben Felder für den
+  Quellenvermerk eines eigenen Kachelservers (Text ohne HTML) und die Sprache
+  der Feiertagsnamen. Der Artikeldialog wählt den Standard-Arbeitsplan
+  (veröffentlichte Prozedurversion), den Fertigungsauftrag, Fertigungs- und
+  Bedarfsplanung lesen. SLA-Verträge erfassen Inklusivzeit-Kontingente mit
+  Zeitraum, Stunden, Warnschwelle, Pauschale und Mehrstundensatz; Vertragsseite
+  und SLA-Report nennen Pauschale und Mehrstundenbetrag als Nachweis.
+- Aufgeräumt (`MVP-1620`): 28 Dienstmethoden ohne Aufrufer, die nur Tests
+  nutzten (darunter `LotStockReader::balanceOf`, `DepreciationCalculator::amountForYear`,
+  `InventoryOutboxService::confirmByKey`, die synchrone ZIP-Importvariante,
+  `RenderProfileService::assignPageFormat`), die Route
+  `inventory.reservations.release` (der Reservierungsdialog gibt die Restmenge
+  frei) und die Rückfälle `value_json` (Protokollpunkt), `ratio_part` (Rezeptur)
+  sowie `amount_net`/`amount_tax` ohne Steuerzeilen im Werte-Dialog der
+  Eingangsrechnung. Spalten ohne Leser und Schreiber entfallen:
+  `projects.is_maintenance`, `employee_drafts.planned_start_on`,
+  `todoist_connections.webhook_capable`. Die Tests prüfen die Regeln jetzt über
+  den lebenden Weg.
+- Statusfälle mit Wirkung (`MVP-1620`): Cloud-Dokumenteingang und Backupziele
+  stufen sich nach einem Lauf mit abgewiesener Anmeldung (HTTP 401, nicht
+  erneuerbares Token) auf „Neu anmelden“ und ab der Abschaltschwelle auf
+  „Deaktiviert“ ab; fehlen nach der Anmeldung Pflicht-Scopes, ist die
+  Cloud-Verbindung „Blockiert“. Die Karte bietet „Neu anmelden“ für genau diese
+  Verbindung, Regeländerungen setzen sie nicht mehr still auf aktiv. Domains
+  zeigen „Ausstehend“, „Unklar“ und „Konflikt“ aus den offenen
+  Anbieterbefehlen – der Abgleich überschreibt das nicht – und nach dem
+  Abschluss „Veraltet“ bis zum nächsten Lesen. Der Fristenlauf setzt
+  SEPA-Mandate 36 Monate nach dem letzten Einzug auf „Abgelaufen“. Inventur:
+  „Zählung abschließen“ friert die Mengen zur Prüfung ein, die Freigabe kann
+  wieder öffnen oder die Inventur ohne Buchung verwerfen. Reklamation:
+  Vorschlag im Vier-Augen-Schritt ablehnen. Verleih: angeforderte Kaution mit
+  Begründung erlassen. Lieferantenkatalog: Position ignorieren und wieder
+  aufnehmen. Betroffenenanfrage: Identitätsnachweis angefordert, Rückfrage,
+  Antwort erhalten und Rücknahme (Statusvertrag am Enum). TOM: Umsetzungsstatus
+  und Schutzbedarf erfassen und ändern, beides im VVT-Snapshot.
+  Datenschutzvorfall: mit der letzten erledigten Maßnahme „Eingedämmt“.
+  Angenommener Prüfauftrag setzt seine Termine „In Durchführung“, ein Storno
+  gibt sie frei. Eine korrigierte, abgeschlossene Stempelung steht auf
+  „Angepasst“. Der Abschluss einer Schichtabrechnung bindet die beendeten
+  Fahrten des Fahrers (abgerechnet bzw. ohne Betrag). Eine Auslieferung ohne
+  Kunden ist „Nicht erforderlich“ zu berechnen; das Storno eines
+  Fertigungsauftrags schließt seine offenen Fehlmaterial-Bedarfe.
+- Gestrichene Statusfälle (`MVP-1620`): Fälle, die kein Ereignis setzt, entfallen
+  samt Lesern und Texten – Rate „überfällig“ (Leasing), Ereignis „fehlgeschlagen“
+  (Domains), Bankumsatz „Dublette“, Steuerregel „Entwurf“, Reservierung
+  „storniert“, Seriennummer „reserviert“, Lieferbestand „storniert“, SMS
+  „zugestellt“, Umfrage-Einladung „abgelaufen“, Anhangsprüfung „fehlgeschlagen“
+  (Hinweisgeber) und Aufgabenlisten-Verknüpfung „pausiert“ (Microsoft To Do).
+  Die Übergabeliste Lexware bietet im Filter nur noch die Stände des manuellen
+  Wegs an; „übertragen“, „Prüfung erforderlich“ und „fehlgeschlagen“ bleiben der
+  automatischen Übergabe (`MVP-834`) vorbehalten. Das Gate zählt den Wert eines
+  Match-Arms als Setzer (vorher vier Fehlalarme: Leasing „verlängert“/„gekauft“,
+  Druckauftrag „bereit“/„Nacharbeit“).
 
 ### Behoben
 
+- Plugins (`MVP-1620`): Wurde der Plugin-Manager im laufenden Prozess neu
+  aufgebaut (Tests, Neuregistrierung), geriet die Buchung eines Boot-Fehlers
+  in eine Endlosschleife: Der Speicher-Hook des Plugin-Zustands forderte den
+  noch nicht fertigen Manager an und baute ihn erneut. Fehler beim Aufbau
+  werden jetzt gebucht, sobald der Manager steht.
+- Zusammenfassende Meldung (`MVP-1622`, `MVP-1624`): Die Meldung las die
+  USt-IdNr. des Kunden von heute. Änderte ein Kunde seine Nummer, meldete eine
+  spätere ZM für alte Rechnungen die neue. Jetzt gilt die USt-IdNr. der
+  ausgestellten Rechnung (`Invoice::recipient()`); Buchungen ohne
+  Rechnungsbezug lesen wie bisher den Kunden.
+- Lager (`MVP-1620`): Bei FIFO und FEFO zeigte die Bestandsübersicht den
+  Durchschnittspreis und Bestandswert des stillstehenden Durchschnittsbuchs –
+  ohne vorherigen Durchschnitt null. Jetzt bewertet sie je Variante nach dem
+  wirksamen Verfahren, bei Schichten aus den offenen Restmengen; die
+  ABC-Einteilung der zyklischen Inventur nutzt dieselben Werte.
+- Lernplattform (`MVP-1600`, `MVP-1617`): Die Nachweismappe mit Auswahl nach
+  Standort endete mit einem Serverfehler, weil sie noch die entfernte Spalte
+  `project_time_targets.site_id` las. Am Standort eingesetzt ist jetzt, wer im
+  Zeitraum an einem Kontrollpunkt des Standorts gestempelt hat oder ein
+  Zutrittsmedium dafür hält.
+- Umsatzsteuer (`MVP-1623`): Der DATEV-Stapel ohne Hauptbuch buchte jede
+  Rechnung ohne Steuer mit BU 0 auf das Konto für steuerfreie Erlöse
+  (8200/4200). Jetzt bestimmt der Steuerfall der Rechnung – dieselbe Kategorie
+  wie in der Buchhaltung – Konto und Schlüssel aus der Vorlage des
+  Kontenrahmens: innergemeinschaftliche Lieferung 8125/4125, sonstige Leistung
+  ins übrige Gemeinschaftsgebiet 8336/4336, Steuerschuld des Empfängers im
+  Inland 8337/4337, Ausfuhr 8120/4120, nicht steuerbar im Drittland 8338/4338,
+  jeweils als DATEV-Automatikkonto ohne BU-Schlüssel. Steuerfreie Umsätze im
+  Inland bleiben auf dem eingestellten Konto. Die Kontenplan-Vorlagen führen die
+  Erlöskonten für RC21, AUSF und NSTB samt Regel; bisher buchten diese
+  Kennzeichen auf das Konto für steuerfreie Umsätze (8100/4100).
+- Rechnungen (`MVP-1623`): Änderte sich der Steuerfall des Kunden nach der
+  Anlage eines Entwurfs (Merkmal § 13b, neue USt-IdNr., Umzug ins Drittland),
+  ging die Rechnung mit dem alten Fall hinaus, während der eingefrorene
+  Steuerkontext schon den neuen nannte. Jede Bearbeitung des Entwurfs zieht den
+  Fall jetzt aus dem TaxResolver nach; die Ausstellung eines veralteten
+  Entwurfs passt ihn an und hält an, bis der neue Stand geprüft ist.
+- XRechnung (`MVP-1623`): Bei Reverse Charge trugen Positionen mit eigenem
+  Steuersatz diesen Satz weiter, die Datei rechnete darauf Steuer, und der
+  Befreiungsgrund fehlte (KoSIT: BR-AE-01, -05, -08, -09, -10). Jetzt stehen
+  Positionen und Rabatte ohne Steuer mit 0 %, der Steueraufriss nennt
+  „Steuerschuldnerschaft des Leistungsempfängers“ mit Code `VATEX-EU-AE`, und die
+  Prüfung vor dem Versand verlangt die USt-IdNr. des Kunden (BR-AE-02) – auch
+  bei § 13b im Inland.
+- Auslagen (`MVP-1623`): Die Vorsteuer einer Auslage buchte unabhängig vom
+  Steuersatz des Belegs auf das Vorsteuerkonto der allgemeinen Regel (7 % also
+  auf 19 %). Jetzt gilt das Vorsteuerkennzeichen des Satzes; gibt es zu einem
+  Satz keines – meist ausländische Umsatzsteuer –, hält der Buchungsvorschlag
+  mit Hinweis an, statt sie als Vorsteuer zu buchen.
+- Rechnungsfreigabe (`MVP-1624`): Eine Änderung am freigegebenen Entwurf
+  (Positionen, Konditionen, Kunde, Datum, Rechnungstext) ließ die Freigabe
+  stehen. Sie wird jetzt aufgehoben und im Protokoll vermerkt; die Sperre der
+  Selbstfreigabe bleibt.
+- Angebot und Auftragsbestätigung (`MVP-1624`): Aussteller und Ansprechpartner
+  werden beim Versand bzw. bei der Bestätigung eingefroren wie bei der
+  Rechnung; spätere Stammdatenänderungen deuten das Dokument nicht mehr um.
+- Dokumentdesign (`MVP-1624`): Bestellung, Lieferschein und Protokoll (auch
+  Aufmaßblatt und Entsorgungsnachweis) druckten Firmen- und Steuerangaben nicht
+  nach dem Blockzustand, und der Preflight prüfte für sie nicht, ob die
+  Stammdaten gepflegt sind. Beides gilt jetzt wie bei den Vertriebsbelegen.
+- Aufträge (`MVP-1624`): Materialrechnungen und Materialübergaben setzten den
+  abgenommenen Auftrag nicht auf „Berechnet“; jetzt wie bei Zeiten, über den
+  Stundenzettel des Materials. Der Storno nimmt es zurück, solange kein anderer
+  Beleg Zeiten oder Material des Auftrags hält.
+- Gewährleistung (`MVP-1624`): Gerügte Fristen fielen aus den Erinnerungen und
+  aus dem Cockpit; eine gerügte eigene Frist fehlte im Vergleich mit
+  Subunternehmer-Fristen.
+- E-Rechnung (`MVP-1623`): XRechnung und ZUGFeRD nannten einen Befreiungsgrund
+  nur bei Reverse Charge, und „steuerfrei“ (E) trug immer den Text zu § 19 UStG.
+  Innergemeinschaftliche Lieferung (K), Ausfuhr (G) und „nicht steuerbar“ (O)
+  waren damit ungültig (BR-IC-10, BR-G-10, BR-O-10), jede Befreiung nach § 4
+  UStG nannte die Kleinunternehmerregel. Jetzt trägt jeder Steueraufriss seinen
+  Grund mit Code (`VATEX-EU-IC`, `VATEX-EU-G`, `VATEX-EU-O`, `VATEX-EU-AE`);
+  Kategorie Z bleibt ohne Grund (BR-Z-10), § 19 gilt nur für Kleinunternehmer,
+  andere Befreiungen nennen den Hinweistext einer Steuerregel der Satzart
+  „Befreit“. Die Prüfung vor dem Versand meldet fehlende USt-IdNrn. bei K und G,
+  „nicht steuerbar“ neben anderen Kategorien und Positionen ohne Steuerkategorie
+  mit Steuersatz; bei „nicht steuerbar“ entfallen die USt-IdNrn. zugunsten der
+  Steuernummer (BR-O-02).
+- Rechnungen (`MVP-1623`): Beim Wechsel des Steuerfalls blieb der automatische
+  Hinweistext des alten Falls im Entwurf stehen. Er wird jetzt ersetzt oder
+  entfällt; einen von Hand geänderten Text lässt workDiary stehen und meldet ihn.
+- Rechnungs-PDF (`MVP-1623`): Positionen der Kategorien E (§ 4 UStG), K, G, O
+  und einzelne AE-Positionen druckten keinen Befreiungshinweis, wenn der
+  Rechnungstext ihn nicht enthielt (§ 14 Abs. 4 Nr. 8, § 14a UStG). Das PDF
+  druckt jetzt je Kategorie den Befreiungsgrund der E-Rechnung, sofern der
+  Rechnungstext weder ihn noch den automatischen Hinweis der Kategorie trägt;
+  Reverse Charge des Kopfes und § 19 behalten ihre Zeile. Rechnungen, die vor
+  dem Generatorstand `document-design/1.2.0` ausgestellt wurden, bleiben beim
+  Nachdruck unverändert. Gutschrift und Stornorechnung übernehmen jetzt die
+  Steuerkategorie jeder Position des Originals (vorher fiel sie weg, E-Rechnung
+  und Hinweis folgten dem Kopf).
+- Rechnungspositionen (`MVP-1623`): Eine Kategorie ohne Steuer (Z, E, AE, K, G,
+  O) setzte den Steuersatz nicht auf 0 %; ein leerer Satz fiel auf den Kopfsatz,
+  erst die E-Rechnungs-Prüfung hielt an. Positionsformular und Abrechnungsplan
+  setzen jetzt 0 % (Formular über die Vorbelegung, Server in jedem Fall); der
+  Hinweis nennt K und O. Die Summenrechnung ist unverändert.
+- Angebote (`MVP-1623`): Der Zuständige fürs Nachfassen (Feature 112) ließ sich
+  nicht wählen. Der Dialog „Neues Angebot“ und „Nachfasstermin setzen“ haben
+  jetzt das Feld; ohne Wahl fasst wie bisher der Ersteller nach.
+- Zahlungsabgleich (`MVP-1623`): Cent- und Skonto-Toleranz waren fest
+  (0,02 bzw. 3 %), Feature 045 nennt sie konfigurierbar. Sie sind jetzt
+  Einstellungen der Organisation (`finance.reconciliation.cent_tolerance`,
+  `finance.reconciliation.skonto_percent`, Gruppe „Bankabgleich“) mit den
+  bisherigen Werten als Vorgabe. Lastschriften schlagen nur noch privat
+  verauslagte Spesen zur Erstattung vor; `PaymentMethod::isReimbursable()`
+  zählte die Barkasse mit und widersprach der Kennzahl „Erstattungsfähig“.
+- Reklamationen (`MVP-1623`): Eine Maßnahme konnte weder ihren Folgeauftrag
+  noch im Formular die verantwortliche Person nennen. Beides ist jetzt
+  erfassbar; der Folgeauftrag (beim Kunden der Akte, sichtbar für den
+  Bearbeiter) steht verlinkt an der Maßnahme.
+- Hilfe (`MVP-1623`): Die Rückmeldung „War das hilfreich?“ wurde gespeichert,
+  aber nie ausgewertet und zählte als Aufruf bei den beliebten Themen. Neuer
+  Befehl `help:feedback [--days=90] [--limit=20]`; beliebte Themen zählen nur
+  Aufrufe.
+- Rechnungs-PDF (`MVP-1623`): Die USt-IdNr. des Kunden stand nirgends auf der
+  Rechnung, auch nicht bei innergemeinschaftlicher Lieferung und Reverse Charge
+  (§ 14a Abs. 1 und 3 UStG). Ist sie hinterlegt, druckt der Kopf jetzt „Ihre
+  USt-IdNr.“. Rechnungen, die vor dem Generatorstand `document-design/1.3.0`
+  ausgestellt wurden, bleiben beim Nachdruck ohne die Zeile.
+- Rechnungen (`MVP-1624`): Der beim Ausstellen eingefrorene Empfänger wurde nie
+  gelesen. PDF und E-Rechnung druckten Name, Anschrift und USt-IdNr. aus den
+  heutigen Kundendaten, ein Nachdruck nach einer Adressänderung zeigte also eine
+  andere Rechnung als die versandte. PDF, XRechnung/ZUGFeRD (Käufer, Anschrift,
+  USt-IdNr., Käuferreferenz), GAEB-Rechnungsexport und der DATEV-Buchungstext
+  lesen jetzt den eingefrorenen Stand, auch bei älteren Rechnungen; Felder, die
+  ältere Snapshots nicht führen (Firma, Käuferreferenz), kommen weiter aus dem
+  Kunden. Der Snapshot führt künftig Firma und Käuferreferenz und das Land ohne
+  Vorgabe „DE“. Entwürfe zeigen wie bisher die aktuellen Kundendaten;
+  Stornobeleg und Korrekturrechnung frieren ihren Empfänger beim eigenen
+  Ausstellen ein. Die elektronische Zustelladresse (BT-49) und Mahnschreiben
+  folgen bewusst den aktuellen Daten. Der Ausweis der Arbeitskosten nach § 35a
+  EStG wird beim Ausstellen festgeschrieben; vorher folgte er beim Nachdruck der
+  heutigen Organisationsregel und Kundenart.
+- Dokumentdesign (`MVP-1624`): Fertigungsnachweis, Behinderungsanzeige,
+  Bedenkenanmeldung, Zertifikat, Zeugnis, Graduierungsbescheinigung,
+  Abschlussnachweis der Vertragsunterzeichnung, Unterweisungsnachweis,
+  Gefährdungsbeurteilung und Zollrechnung druckten trotz Pflichtblock
+  „Firmenangaben“ keine bzw. keine nach dem Blockzustand, und der Preflight
+  prüfte ihre Stammdaten nicht. Jetzt gilt beides für jede Dokumentart mit
+  diesem Pflichtblock. Versand, Ausstellung, erste Unterschrift, Freigabe bzw.
+  Verleihung frieren die Gestaltung ein; vorher abgeschlossene Belege bleiben
+  unverändert. Behoben dabei: Der Snapshot einer Behinderungsanzeige passte
+  nicht in die Spalte (31 Zeichen), versandte Schreiben hatten deshalb nie einen
+  eingefrorenen Stand.
+- Datenübertragung (`MVP-1625`): Benutzer- und Projektimport schrieben
+  Verrechnungs- und Kostensätze mit dem bloßen Importrecht. Diese Spalten
+  verlangen jetzt dasselbe Recht wie in der Oberfläche (Personal- und
+  Lohndaten bzw. Projektabrechnung); ohne es übergeht der Import sie mit
+  Hinweis im Prüfbericht, der Export lässt sie weg, und eine Exportdatei mit
+  diesen Spalten lädt nur herunter, wer das Recht hat.
+- SLA-Bericht (`MVP-1625`): Die Liste der Verletzungen nannte bei
+  vertraulichen Tickets den Kunden; Liste und Auswertung je Kunde zeigen ihn
+  jetzt nur, wer das Ticket sehen darf.
+- Domains (`MVP-1625`): Der Verlängerungsmodus „Einmal verlängern“
+  (`RENEWONCE`) steht nicht im Handbuch des Anbieters und ist nicht mehr
+  wählbar; setzbar sind Auto-Renew, Auto-Expire und Auto-Delete, auch bei der
+  Registrierung.
+- Lager (`MVP-1626`): Die Offline-Zählung sandte die gewählte Einheit nicht
+  mit und zählte in der Basiseinheit; die Reklamationsakte nimmt jetzt die
+  Charge chargengeführter Artikel auf (die Mustererkennung „gleiche Charge“
+  hatte kein Feld).
+- Arbeitszeitkonto (`MVP-1627`): Die Seite rechnete den laufenden Monat gegen
+  das volle Monatssoll, Kachel und Terminal bis gestern. Seite und API
+  rechnen jetzt wie das gespeicherte Konto und zeigen den Kontostand mit
+  Übertrag; ein freigegebener Monat ist im Konto eingefroren (`locked`), bis
+  er wieder geöffnet wird.
+- MiLoG-Nachweis (`MVP-1627`): je Tag „davon Homeoffice“ und „davon
+  Dienstgang“.
+- Stundenzettel (`MVP-1627`): Material auf „Heute“ (online und offline)
+  prüfte die speicherbare Zettelsumme nicht.
+- Protokolle (`MVP-1627`): Unterschrift und Abschluss lesen den Status unter
+  Zeilensperre neu; eine Rückgabe in den Entwurf dazwischen weist die
+  Unterschrift ab.
+- Kunden und Lieferanten (`MVP-1628`): Hinweis im Formular, wenn die
+  Buchhaltung die Stammdaten führt (der nächste Abgleich überschreibt lokale
+  Änderungen).
+- Verleih (`MVP-1628`): Der Mindestzustand gilt auch bei der Übergabe.
+- Agile Boards (`MVP-1628`): Folgt eine Karte einer außerhalb des Boards
+  erledigten Aufgabe, stehen offene Akzeptanzkriterien und die nicht
+  bestätigte Definition of Done als Abweichung im Board-Verlauf.
+- Module (`MVP-1628`): `operations:scan` legt Aufgaben zu Fehlermeldungen nur
+  mit aktivem Helpdesk an, `compliance:scan-findings` Lenkzeitbefunde nur mit
+  aktivem Fuhrpark; offene lösen sich auf.
+- Lernen (`MVP-1628`): Der Gastzugang zeigte nur Text, Überschrift und
+  Checkliste; jetzt alle Blockarten mit Medien über den Zugang.
+- Aufträge (`MVP-1629`): Die Spalte `diary_entries.notes` ohne Schreiber und
+  Anzeige entfällt; vorhandene Texte werden Kommentare am Auftrag.
+- Wartungspläne (`MVP-1628`): Die Vertragsbindung (SLA-Vertrag,
+  „Vertragspflicht“, „Bei Fälligkeit“) war nur in der Anzeige vorhanden –
+  kein Formular schrieb sie, die Vertragsseite blieb leer und das
+  Fälligkeits-Ticket wurde nie angelegt. Der Dialog des Wartungsplans bietet
+  sie jetzt an (Vertrag des Asset-Kunden oder ohne Kundenbindung, nie ein
+  OLA; nur mit Leserecht auf SLA-Verträge, die Aktion nur mit Helpdesk).
+  „Vertragspflicht“ verlangt einen Vertrag und steht auch am Asset, in der
+  Objektakte und im Kundenportal. Das Kundenportal zeigte die Namen der
+  Wartungspläne nicht an.
+- Startseite (`MVP-1628`): Die Liste der Anbindungen stand auf dem Stand vor
+  Phase 157 (Aufgaben-, Dokument-, Shop-, Zahlungs- und Faktura-Plugins
+  fehlten). Sie entsteht jetzt aus den Plugins und der Modulzuordnung ihrer
+  Manifeste; ein neues Plugin erscheint ohne Handpflege, ein Test hält
+  Gruppen und Kennzahl beim Bestand.
+- Hilfe (`MVP-1629`): „Branding“ beschrieb den Logo-Upload über die
+  Anhänge-Verwaltung; die Seite hat eigene Upload-Felder für beide
+  Varianten. „Drilldown“ und „Kundenanalyse“ beschrieben Spalten, Filter und
+  Ziele, die es nicht gibt; jetzt Offene Punkte, Defektprotokolle, Ursachen
+  und Wiederholdefekte bzw. Kundenanalyse und Kunden & Projekte, wie sie die
+  Seite zeigt.
+- Assets (`MVP-1628`): Der SLA-Vertrag am Asset hatte keine Schreibstelle,
+  und die Ticketauflösung überging ihn. Das Asset-Formular bietet ihn jetzt an
+  (Vertrag des Asset-Kunden oder ohne Kundenbindung, nie ein OLA oder ein
+  projektgebundener Vertrag; nur mit Leserecht auf SLA-Verträge, sonst bleibt
+  die Bindung unverändert); er steht im Kopf der Detailseite. Ein Ticket am
+  Asset löst den Vertrag Asset → Projekt → Kunde → Queue → Organisation auf –
+  die Zusage an genau dieses Objekt ist die engste; ein Queue-Wechsel lässt
+  sie stehen, ein inaktiver Vertrag oder der eines anderen Kunden greift nie.
+  Die Objektakte zeigt den so geltenden Vertrag. Wechselt der Kunde des
+  Assets, entfallen Bindungen an Verträge des bisherigen Kunden am Asset und
+  an seinen Wartungsplänen (samt „Vertragspflicht“).
+- Produktanalyse (`MVP-1628`): Der Drilldown „Wiederholdefekte“ hatte keinen
+  Einstieg. Die neue Spalte „Wiederholdefekte“ zählt je Zeile die Assets mit
+  mindestens drei Defektmeldungen in zwölf Monaten und führt auf genau diese
+  Fälle; der Drilldown übernimmt die Filter der Zeile (auch im Export), CSV
+  und PDF der Analyse führen die Spalte mit.
+- Kundenportal (`MVP-1628`): Die Objektakte listete pausierte Wartungspläne
+  mit einer Fälligkeit, die nie eintritt; jetzt nur laufende Pläne.
+
+- Offline (`MVP-1593`): Befehle der Offline-Warteschlange wurden auch für
+  Bereiche übernommen, die für die Organisation abgeschaltet sind (etwa
+  Lernen, Inventur, Rundgänge); jetzt abgewiesen. Eine fehlende Berechtigung
+  in einem Dienst bricht nicht mehr den ganzen Stapel ab, sondern weist den
+  einzelnen Befehl ab.
+- DATEV-Übergabe aus dem Journal (`MVP-1622`): Der EXTF-Stapel schrieb jede
+  Journalzeile als eigenen Buchungssatz – eine Buchung mit zwei Zeilen kam in
+  DATEV doppelt an, eine mit mehr Zeilen ohne Gegenkonto, und als BU-Schlüssel
+  stand das Kürzel des Kennzeichens („USt19“). Jetzt entstehen je Buchung
+  Buchungssätze gegen eine Ankerzeile (Personen- oder Geldkonto); eine Zeile
+  mit Steuerkennzeichen geht brutto mit dessen DATEV-BU-Schlüssel hinaus, die
+  Steuerzeilen entfallen. Auf DATEV-Automatikkonten (neues Feld
+  „DATEV-Automatik“ am Konto) setzt der Stapel keinen Schlüssel; passt die
+  Automatik nicht, hebt BU 40 sie auf. Bei Steuerschuld des Empfängers bleibt
+  der Betrag netto mit BU 94 bzw. 19/18. Neues Feld „DATEV-BU-Schlüssel“ am
+  Steuerkennzeichen.
+- Offene Posten (`MVP-1555`): Fehlte das Skonto- oder Ausbuchungskonto im
+  Kontenplan, schloss „Ausgleichen“ den Posten ohne Buchung – OPOS-Liste und
+  Summen-/Saldenliste liefen auseinander. Der Ausgleich wird jetzt mit Meldung
+  abgewiesen, der Dialog warnt vorher. Bereits ohne Buchung geschlossene
+  Skonto- und Ausbuchungsausgleiche listet der Bericht „Buchungsqualität“;
+  sie sind von Hand nachzubuchen.
+- Umsatzsteuer-Voranmeldung (`MVP-1558`): Für Buchungen aus der Buchungs-Inbox
+  stand in den Kennziffern der Steuerbetrag als Bemessungsgrundlage (bei einer
+  Rechnung über 200 € netto zu 19 % also 38 € in Kennziffer 81). Die
+  Aufteilung liest das Steuerkennzeichen jetzt an der Steuerzeile wie an der
+  Nettozeile und rechnet die Grundlage aus Steuer und Satz; Festbuchungen
+  bleiben unverändert, die Steuerbeträge und die kontenbasierte Vorschau waren
+  nicht betroffen.
+- Schichttausch (`MVP-1553`): Ein Tausch am selben Tag scheiterte an der
+  Überschneidung mit der Schicht, die die andere Seite gerade abgibt; die
+  Prüfung lässt die abgegebene Gegenschicht jetzt außen vor. Die Freigabe
+  prüft außerdem, dass die Gegenschicht noch der Tauschperson gehört, und
+  nimmt die Übersteuerung nur noch mit Begründung an.
+- Verwaltungszeit (`MVP-1554`): Neue Verwaltungszeiten galten immer als
+  abrechenbar; mit Kategorie gilt jetzt deren Vorgabe.
+- Helpdesk (Phase 176, `MVP-1546`): Tickets ließen sich in der Oberfläche
+  weder lösen noch schließen, weil das Statusformular den Abschlusscode nicht
+  erfasste. „Status ändern“ ist jetzt ein Dialog mit Abschlusscode und
+  Lösungszusammenfassung; angeboten werden nur zulässige Übergänge. Damit sind
+  Abnahme und Bewertung im Kundenportal sowie der Webhook `ticket.closed`
+  wieder erreichbar.
+- Helpdesk (`MVP-1547`): Wartezustände verlangen Grund, Wiedervorlage und
+  verantwortliche Person und pausieren die SLA-Uhr nach den Regeln des
+  Vertrags; Fortsetzen verschiebt die Fristen um die Pausendauer, auch nach
+  einer Kundenantwort. Wiederöffnen geht nur mit Grund. Wiedervorlage-Erinnerung
+  und Bericht „Wartezeit nach Grund“ erhalten dadurch Daten.
 - Rechnungen (`MVP-1521`): Der Storno einer lokalen Rechnung gab nur die
   Auffüllung auf das Projekt-Soll frei; eine Folgerechnung enthielt dann die
   Differenz ohne die gebuchten Stunden. Storno am Entwurf und Stornobeleg geben
@@ -146,9 +1228,194 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Verwaltungsknöpfe (Archivwoche, Archivierung, Bereitschaft und Notdienst)
   folgen jetzt einer Regel: Legacy-Admin oder Plattformbetrieb. Tagebuch-
   Einträge anlegen bleibt an ein Legacy-Konto gebunden.
+- Bürgschaften (`MVP-1561`): Kachel und Filter „Rückgabe fällig“ zeigten
+  immer 0, weil sich ein abgelöster Einbehalt nicht freigeben ließ und die
+  gekoppelte Gewährleistung nicht mitzählte. Beide folgen jetzt der
+  Fristenprüfung. Solange zu einer gekoppelten Gewährleistung eine Rüge offen
+  ist, wird keine Rückgabe gemeldet.
+- Fakturierung (`MVP-1562`): Mit Freigabezwang konnte die Person, die die
+  Rechnung angelegt hat, sie selbst freigeben. Das lehnt die Freigabe jetzt ab;
+  ohne Freigabezwang bleibt sie ein freiwilliger Vermerk.
+- Zählerabrechnung (`MVP-1563`): „Jetzt abrechnen“ meldete bei pausierten und
+  beendeten Vereinbarungen „0 Entwürfe“ statt des Grundes.
+- Prozeduren (`MVP-1569`): Beim Speichern im Designer gingen Angaben der
+  Schrittkonfiguration verloren, die das Formular nicht zeigte (etwa aus
+  Importen); sie bleiben jetzt erhalten. Die Installation eines
+  Branchenprofils übernimmt Konfiguration, Rolle und Qualifikation seiner
+  Schritte.
+- Protokolle (`MVP-1572`): Abnahme- und Übergabeprotokolle ließen sich ohne
+  Unterschrift abschließen. Ein Abnahmeprotokoll braucht jetzt die
+  Unterschrift des Kunden, ein Übergabeprotokoll die beider Seiten; der
+  Signaturblock ist dort nicht mehr abwählbar. Ein vor der Unterschrift
+  erzeugtes PDF wurde nach dem Abschluss weiter ausgeliefert und zeigte die
+  Unterschriften nicht.
+- Protokolle (`MVP-1573`): Unterpunkte einer Gruppe standen auf der
+  Detailseite doppelt. Anhänge eines unterschriebenen Protokolls ließen sich
+  über den Admin-Durchgriff noch löschen.
+- Protokolle (`MVP-1572`): Eine im Entwurf erfasste Unterschrift blieb
+  gültig, wenn der Inhalt danach geändert wurde; ein vor dem Abschluss
+  ausgestellter Signaturlink ließ sich danach noch einlösen. Nach
+  Unterschrift oder Ablehnung zeigte der Link „abgelaufen“ statt der
+  Bestätigung. PDFs von Entwürfen blieben ohne Löschweg auf der Platte.
+- Reklamation (`MVP-1576`): Wareneingang und Verwendungsentscheidung
+  meldeten „gebucht“, obwohl nie Bestand bewegt wurde. Die Meldung nennt
+  jetzt „ohne Bestandsbuchung erfasst“, wenn Lagerartikel oder Lager-Modul
+  fehlen; mit Variante ohne Lager oder Menge lehnt der Wareneingang ab.
+- Reklamation (`MVP-1577`): Gutschrift, Storno, Minderung und Korrektur
+  ohne Rechnung scheiterten erst nach der Freigabe; der Vorschlag verlangt
+  die Rechnung jetzt gleich. Ein Storno einer bezahlten Rechnung brach mit
+  einem Serverfehler ab und nennt jetzt den Grund.
+- Entsorgung (`MVP-1578`): Ein noch ausgegebenes Asset übersprang der
+  Abschluss ohne Hinweis; Meldung und Akte nennen es jetzt.
+- Modulfreischaltung (`MVP-1587`): Ist ein Modul für eine Organisation aus,
+  liefern seine Beiträge dort nichts mehr — keine Fristenmeldung und kein
+  Statuswechsel aus dem Fristen-Scan, keine Frühwarnung, kein Eintrag im
+  Genehmigungs-Eingang, kein Cockpit-Panel, keine Quelle im Arbeitsvorrat,
+  keine Kennzahl der Leitungssicht, kein Kalendertermin, keine Treffergruppe
+  und kein Portalhinweis. Das gilt auch für Beiträge eines abgeschalteten
+  Plugins. Aufbewahrung und Löschung laufen weiter.
+- Klassifikationen (`MVP-1588`): Ein Wert, den Zeiteinträge, Reklamationen,
+  Artikel, Zuordnungen oder Import-Zuordnungen noch verwenden, lässt sich nicht
+  mehr löschen. Die Meldung nennt die Stellen mit Anzahl; „Stilllegen“ in der
+  Zeile nimmt den Wert aus neuen Auswahlen. Der Schutz liest die Fremdschlüssel
+  aus dem Schema und gilt damit für jede neue Klassifikationsspalte.
+- API (`MVP-1591`): Das Löschen eines Kunden über die API verhält sich wie in
+  der Oberfläche — gesperrt bei externen Referenzen, weiteren Projekten und
+  Belegen (409) sowie Legal Hold (423); das KI-Gedächtnis des Kunden wird
+  auditiert gelöscht, das Standardprojekt geht mit.
+- Entfernt (`MVP-1591`): Plugin-Verträge `TaskSyncer` und `AppointmentSyncer`
+  samt `syncTasks()`/`syncAppointments()` sowie `intakeAccount()` am
+  Dokumenteingang — der Betrieb rief sie nie. Die Fähigkeiten „Aufgaben-Sync“
+  und „Termin-Sync“ bleiben als Anzeige in der Plugin-Übersicht.
+- Auftragsbestätigung: Eine angenommene Angebotsposition mit Artikel ließ die
+  Auftragsbestätigung mit einem Datenbankfehler scheitern, weil die
+  Vorbelegung des Arbeitsanteils eine Spalte schrieb, die Auftragspositionen
+  nicht haben.
+- Einstellungen: Das Bewertungsverfahren des Lagers ließ sich über die
+  generische Einstellungsseite am Bestandsübertrag vorbei ändern. Es wird nur
+  noch in den Lager-Einstellungen geschrieben.
+- Aufträge (`MVP-1596`): Die Abnahme speichert den Namen der Person, die beim
+  Kunden unterschrieben hat, statt der Kennung des Mitarbeiters; ohne
+  Kundenunterschrift im Protokoll fragt der Dialog nach dem Namen. Der
+  handelnde Mitarbeiter steht weiter im Verlauf.
+
+- Domains (`MVP-1619`): Der Verlängerungsmodus geht über
+  `SetDomainRenewalMode` (Handbuch 2.3.2.10) statt über `ModifyDomain`, das
+  den Parameter nicht kennt; offene Altbefehle gleicht `domain:sync` weiter ab.
+- Spesen (`MVP-1619`): Der Verpflegungshinweis im Spesenformular erschien nie,
+  weil die Kategorieliste ohne Kennung geladen wurde.
+- JTL-Wawi (`MVP-1619`): Die Übernahme-Inventur ließ sich an jedem späteren Tag
+  erneut auslösen und hätte den inzwischen lokal geführten Bestand auf den
+  JTL-Stand zurückgebucht; jetzt nur am Tag des Wechsels.
 
 ### Hinweise zum Update
 
+- Gate-Befunde (`MVP-1620`): `migrate` entfernt die ungenutzten Spalten
+  `projects.is_maintenance` (samt Index), `employee_drafts.planned_start_on`
+  und `todoist_connections.webhook_capable` – sie hatten keinen Schreibweg, im
+  Bestand stehen nur Vorgaben – und ergänzt `asset_components.material_usage_id`
+  (Herkunft eines aus dem Materialverbrauch übernommenen Teils).
+- Statusfälle (`MVP-1620`): `migrate` (`2027_04_17_360000`) bildet gespeicherte
+  Werte gestrichener Statusfälle auf belegte ab – Rate `overdue` → `planned`,
+  Domain-Ereignis `failed` → `stored`, Bankumsatz `duplicate` → `ignored`,
+  Steuerregel `draft` → `retired`, Reservierung `cancelled` → `released`,
+  Seriennummer `reserved` → `in_stock`, Lieferbestand `cancelled` →
+  `delivered`, SMS `delivered` → `sent`, Umfrage-Einladung `expired` → `sent`
+  (der Ablauf steht in `expires_at`), Anhangsprüfung `failed` → `pending`
+  (erneute Prüfung), To-Do-Verknüpfung `paused` → `active`. Kein Code hat diese
+  Werte je geschrieben; die Abbildung schützt nur den Enum-Cast.
+  `2027_04_17_360100` setzt offene Auslieferungen ohne Kunden auf „Nicht
+  erforderlich“.
+- Steuer, Belege, Rechte (`MVP-1623`–`MVP-1625`): `migrate` (vier Migrationen)
+  trägt in Kontenplänen aus der SKR03-/SKR04-Vorlage die Erlöskonten 8120,
+  8336, 8338 bzw. 4120, 4336, 4338 als Automatikkonten der Kennzeichen AUSF,
+  RC21 und NSTB samt Erlösregel nach (eigene Konten und Regeln bleiben),
+  ergänzt `issuer_snapshot` an Angeboten und Auftragsbestätigungen (Bestand
+  bleibt ohne und zeigt die aktuellen Stammdaten), `restricted_columns` an
+  Exportläufen und setzt einen gespeicherten Domain-Verlängerungsmodus
+  `RENEWONCE` auf unbekannt – der nächste `domain:sync` liest den tatsächlichen
+  Modus. Wer im DATEV-Stapel ohne Hauptbuch bisher Rechnungen ohne Steuer auf
+  8200/4200 übergeben hat, stimmt die Umstellung auf die Konten des
+  Steuerfalls mit der Kanzlei ab. Entwürfe mit veraltetem Steuerfall halten
+  bei der Ausstellung einmal an.
+- E-Rechnung und Dokumentdesign (`MVP-1623`, `MVP-1624`): `migrate` verbreitert
+  `document_render_snapshots.document_kind` auf 50 Zeichen. Für steuerfreie
+  Umsätze nach § 4 UStG eine Steuerregel der Satzart „Befreit“ mit dem
+  Befreiungstatbestand als Hinweistext anlegen, sonst nennt die E-Rechnung nur
+  „Steuerfreier Umsatz“ (Warnung in der Prüfung).
+- Spalten ohne Leser (`MVP-1623`): `migrate`
+  (`2027_04_17_370000`) entfernt `projects.global_activities` (Kimai-Rest),
+  `team_user.is_lead` (wer leitet, steht in `teams.lead_user_id`),
+  `timesheets.attendance_total_minutes` und `untracked_minutes` (nie befüllt;
+  den Abgleich mit der Anwesenheit führt der Tagesabschluss) und
+  `passenger_vehicle_profiles.large_capacity` (die Disposition prüft die
+  Sitzplätze; das Feld „Großraum“ entfällt im Fahrzeugprofil). Der
+  Generatorstand der Belege steigt auf `document-design/1.2.0`.
+
+- Lager, Zeit, Fachmodule, Nachweise (`MVP-1626`–`MVP-1629`): `migrate` legt
+  `negative_stock_requests` an, ergänzt `procedure_deviations.requalify_run_id`
+  und an `firefly_transactions` die Erledigung (`settled_at`, `settled_by`,
+  `note`) und überführt Texte aus `diary_entries.notes` in Kommentare am
+  Auftrag, bevor die Spalte entfällt (der Rückweg legt sie leer an, die Texte
+  bleiben Kommentare); gespeicherte Gleitzeitsalden bereits freigegebener
+  Monate werden gesperrt. Die Vier-Augen-Freigabe für Negativbestand ist aus;
+  einschalten in den Lager-Einstellungen. Danach einmal `php artisan
+  protocols:tidy-pdfs --dry-run`, dann ohne `--dry-run`: alte Protokoll-PDFs
+  unter `protocols/{org}` werden Anhang bzw. entfernt.
+
+- Offline (`MVP-1595`): `migrate` ergänzt an `sync_commands` die Entscheidung
+  über Konflikte (`resolution`, `resolved_at`, `resent_client_uuid`). Bestehende
+  Konflikte gelten als offen und erscheinen bei der jeweiligen Person unter
+  „Offline-Änderungen“.
+- Umsatzsteuer der Empfängerseite (`MVP-1621`, `MVP-1622`): `migrate` (zwei
+  Migrationen) ergänzt Vorsteuerkonto, Vorsteuer-Kennziffer, Steuerfall und
+  DATEV-BU-Schlüssel an den Steuerkennzeichen, den Steuerfall an
+  Eingangsrechnung und Lieferant und das § 13b-Merkmal am Kunden. In
+  Kontenplänen aus der SKR03-/SKR04-Vorlage trägt sie die Konten und
+  Kennzeichen der Steuerschuld des Empfängers (RC13BEU, RC13B, IGE19, IGE7)
+  und RC60 nach, setzt die BU-Schlüssel der Vorlagen-Kennzeichen (USt19 3,
+  USt7 2, VSt19 9, VSt7 8, RC21 47, AUSF 1), markiert die DATEV-Automatikkonten
+  der Vorlage und ergänzt die Regeln für Vorsteuer 7 % sowie die Erlöskonten
+  für IGL und RC60. Eigene Kennzeichen, Schlüssel, Konten und Regeln bleiben;
+  ein Konto, dessen DATEV-Konto abweicht, wird nicht als Automatikkonto
+  markiert. Wer eigene Kontenpläne führt, legt die Kennzeichen „Umsatz- und
+  Vorsteuer“ mit Steuerfall selbst an, trägt die BU-Schlüssel ein und markiert
+  seine Automatikkonten – sonst bleiben Eingangsrechnungen mit Steuerschuld des
+  Empfängers mit Hinweis in der Buchungs-Inbox stehen, und der DATEV-Stapel
+  setzt an Automatikkonten einen Schlüssel. Danach den Bericht
+  „Buchungsqualität“ öffnen: Er nennt festgeschriebene Eingangsrechnungen mit
+  Steuerschuld des Empfängers ohne Steuerbuchung; nachgebucht wird nichts
+  automatisch. Der DATEV-Stapel aus dem Journal hat jetzt einen Buchungssatz je
+  Gegenbuchung statt je Zeile – ein früher exportierter Stapel ist nicht
+  erneut zu importieren, sondern mit der Kanzlei abzugleichen. Lieferanten, die
+  regelmäßig nach § 13b abrechnen, erhalten die Vorgabe im Lieferantenformular.
+- Aufträge (`MVP-1596`): `migrate` stellt `diary_entries.accepted_final_by` von
+  der Nutzerkennung auf den Namen der abnehmenden Person um und füllt ihn aus
+  der Kundenunterschrift des verknüpften Protokolls. Der Mitarbeiter, der die
+  Abnahme ausgelöst hat, steht unverändert im Verlauf des Auftrags.
+- Arbeitszeitkonto (`MVP-1550`): Der Saldo beginnt mit dem ersten Lauf beim
+  Vormonat. Wer ältere Monate im Kontostand führen will, rechnet einmalig mit
+  `php artisan flex:recompute --from=JJJJ-MM` zurück; der Lauf ist wiederholbar.
+- Urlaub (`MVP-1554`): `php artisan migrate` ergänzt `vacations.revision_note`.
+- Buchhaltung (`MVP-1555`, `MVP-1559`): `migrate` (vier Migrationen) trägt die
+  Gegenkonten des OPOS-Ausgleichs (SKR03 2400, 3736, 2709; SKR04 6930, 5736,
+  4839, dazu 3731 bzw. 5731) in Kontenpläne aus der Vorlage nach, ergänzt die
+  Steuerkennzeichen RC21, AUSF und NSTB und setzt die Steuerkategorie an IGL
+  und FREI (eigene Kennzeichen und Konten bleiben)
+  und ergänzt `accounting_open_items.disputed_at`/`dispute_note`. Danach den
+  Bericht „Buchungsqualität“ öffnen: Er nennt Skonto- und
+  Ausbuchungsausgleiche, die ohne Buchung geschlossen wurden – sie sind von
+  Hand nachzubuchen. Wer eigene Konten führt, trägt Skonto- und
+  Ausbuchungskonto in den DATEV-Einstellungen ein. Derselbe Bericht nennt
+  Skonto-Ausgleiche, die vor diesem Stand ohne Steuerberichtigung gebucht
+  wurden, mit ihrem rechnerischen Steueranteil – es wird nichts automatisch
+  nachgebucht; über Korrekturbuchungen entscheidet die Steuerberatung. Wer
+  eigene Steuerkennzeichen für Umsätze ohne Steuer führt, trägt dort die
+  „Steuerkategorie“ ein (Kontenplan → Steuerkennzeichen), damit die Inbox sie
+  findet; eine Erlösregel mit eigenem Steuerkennzeichen geht vor.
+- Phase 176 (Helpdesk): `migrate` (eine Migration, Feiertagsregion der Queue).
+  `db:seed` (läuft im Deploy) vergibt das neue Recht „Leistungen aus dem
+  Servicekatalog bestellen“ an die internen Profile.
 - Phase 174: `migrate` (drei Migrationen, darunter die Umschreibung des
   Gegenpartei-Typs). Organisationen mit lokaler Buchhaltung wenden die
   Kontenplan-Vorlage erneut an (ergänzt nur fehlende Konten und Regeln), damit
@@ -167,6 +1434,105 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   spät. Ein erneuter Lauf (`scripts/artisan.sh legacy:import --diary --shifts
   --assignments`) korrigiert sie, überschreibt dabei aber wie bisher Änderungen,
   die im neuen System an übernommenen Einträgen gemacht wurden.
+- Bürgschaften (`MVP-1561`): Der nächste Lauf von `notifications:scan-deadlines`
+  setzt alle aktiven Bürgschaften mit überschrittener Befristung auf
+  „Abgelaufen“. Wer eine Verlängerung noch nicht eingetragen hat, trägt das
+  neue Datum bei „Befristet bis“ nach – die Bürgschaft ist dann wieder aktiv.
+- Fakturierung (`MVP-1562`): Organisationen, in denen `invoicing.require_approval`
+  bereits von Hand in den Einstellungen stand, brauchen zur Freigabe ab jetzt
+  eine zweite Person mit Ausstellungsrecht.
+- Frontend (`MVP-1564`): `npm run build` ausführen – die Vorbelegung aus dem
+  Abnahmeprotokoll nutzt eine Erweiterung in `resources/js/app.js`.
+- Prozeduren (`MVP-1566`, `MVP-1571`): `scripts/artisan.sh migrate` ergänzt
+  `procedure_backup_proofs.registered_by_user_id`, `.rejected_at` und
+  `procedure_template_versions.allow_blocked`.
+- Prozeduren (`MVP-1566`): Rückspieltest und Bestätigung eines Backups
+  brauchen eine zweite Person; wer den Nachweis erfasst hat, bestätigt ihn
+  nicht mehr selbst.
+- Prozeduren (`MVP-1570`): Kritische Vorlagen ohne Vier-Augen-Schritt lassen
+  sich nicht mehr veröffentlichen. Bereits veröffentlichte Versionen ohne
+  solchen Schritt bleiben abschließbar; mit der nächsten Version braucht die
+  Vorlage einen Vier-Augen-Schritt oder eine niedrigere Risikostufe. Das
+  Profil Taxi/Mietwagen legt „Störung / Unfall“ bei neuen Installationen mit
+  Risikostufe „Hoch“ an.
+- Prozeduren (`MVP-1567`): Eine kritische Abweichung mit offenem Punkt oder
+  Folgeauftrag sperrt den Abschluss nicht mehr; die Eskalation allein hebt
+  die Sperre nicht auf.
+- Protokolle (`MVP-1572`): `scripts/artisan.sh migrate` ergänzt
+  `protocol_signatures.signature_attachment_id`. Bereits unterschriebene
+  Protokolle bleiben unverändert; offene Abnahme- und Übergabeprotokolle
+  brauchen vor dem Abschluss die Unterschriften ihres Typs. Im Dialog im Haus
+  stehen nur noch „vor Ort“ (mit gezeichneter Unterschrift) und „Papier“ (mit
+  Scan) zur Wahl. Der Signaturlink-Versand nutzt die Mail-Queue.
+- Protokolle (`MVP-1573`): `npm run build` ausführen (Umsortieren der Punkte,
+  `resources/js/protocol-item-order.js`). Foto-Geodaten werden nur noch
+  gespeichert, wenn die Organisation die Einstellung einschaltet.
+- Assets (`MVP-1574`): `scripts/artisan.sh migrate` ergänzt
+  `assets.decommission_reason` und `asset_assignments.return_note` und legt
+  für Assets im Status „Gesperrt“ oder „In Reparatur“ ohne blockierenden
+  Defekt eine Sperre an (Grund „Manuell gesperrt“ bzw. „Wartung“) — diese
+  Assets sind danach in Verleih, Reservierung, Druck und Prozedurstart
+  gesperrt, bis der Status zurückgesetzt wird. Ein anderer Kunde im
+  Bearbeiten-Dialog verlangt jetzt das Recht `asset.transferOwnership`
+  (den Standardrollen für Mitarbeitende und Außendienst fehlt es). „Außer
+  Betrieb“ steht im
+  Bearbeiten-Dialog nicht mehr zur Wahl. Der Asset-Import liest die Spalte
+  „Zustand“ weiter ein, übernimmt den Wert aber nicht.
+- Prüfwesen (`MVP-1575`): `scripts/artisan.sh migrate` ergänzt
+  `asset_inspection_schedules.cancel_reason` und
+  `asset_compliance_requirements.is_active`. Der erste Fristenlauf nach dem
+  Update setzt offene Prüftermine mit verstrichenem Tag auf „Versäumt“.
+- Protokolle (`MVP-1572`): Offene Signaturlinks an Entwürfen lassen sich
+  nicht mehr einlösen; nach „Zur Prüfung einreichen“ neu ausstellen.
+  Unterschriften aus dem Entwurf, die nicht mehr zum Inhalt passen, werden
+  beim Einreichen verworfen. Eine Ablehnung über den Link setzt das Protokoll
+  jetzt zurück in den Entwurf. PDFs unterschriebener Protokolle werden beim
+  nächsten Abruf als Anhang angemeldet.
+- Reklamation (`MVP-1577`): `scripts/artisan.sh migrate` ergänzt
+  `claim_supplier_recourses.response_due_days`.
+- Entsorgung (`MVP-1578`): `scripts/artisan.sh migrate` ergänzt
+  `disposal_jobs.is_photo_in_record` (Vorgabe aus). Ein Asset lässt sich nur
+  in einer offenen Entsorgungsakte führen.
+- Cloud-Dokumenteingang (`MVP-1613`): `migrate` setzt Verbindungen, die schon
+  liefen oder nicht mehr im Entwurf stehen, auf „Start bestätigt“ — sie
+  importieren weiter. Bestehende Ordnerregeln haben keinen Testpfad; beim
+  nächsten Bearbeiten ist einer anzugeben.
+- Eigene Felder (`MVP-1615`): `migrate` befüllt den Suchtext aller
+  Wertesätze; danach finden die Suchbereiche die eigenen Felder.
+- Verein (`MVP-1616`): `migrate` gibt Prüfungen mit schon erfassten
+  Ergebnissen frei, damit Mitglieder ihre bisher sichtbaren Grade behalten.
+  Neue Ergebnisse brauchen danach „Ergebnisse freigeben“.
+- Überblick (`MVP-1617`): `migrate` entfernt `project_time_targets.site_id`
+  (nie befüllt). Die Kachel „Finanzbewegungen“ ist ausgeblendet und lässt sich
+  unter „Dashboard anpassen“ einblenden.
+- Lizenz (`MVP-1618`): `LicenseService` ist versiegelt — nach dem Deploy
+  `license:seal` ausführen (deploy.sh tut das). Das Speicherkontingent kommt
+  jetzt aus der Organisationslizenz, wenn eine Organisation eine nutzbare
+  eigene Lizenz trägt; ohne Kontingent darin gilt kein Speicherlimit.
+
+- Sammelreste (`MVP-1619`): `migrate` ergänzt Zeitzone, Ruhezeit und
+  Wiederholung an `scheduled_job_overrides` und entfernt drei Spalten ohne
+  Lese- und Formularweg: `meter_readings.photo_path` (Foto ist jetzt ein
+  Anhang), `procedure_template_code` an Wartungsplan und -vorlage (die
+  Prozedur-Zuordnung läuft über Kategorie, Produkt, SLA-Vertrag und Kunde,
+  MVP-1571), `energy_logs.location_lat/lng`. Die GET-Route
+  `quotes/{quote}/auftragsbestaetigung` (Altpfad vor MVP-1162) entfällt;
+  Request-Felder ohne Wirkung entfallen: `source_reference` an der
+  Ticket-Anlage, `notes` am Auftrag (Spalte bleibt bis zur Prüfung auf
+  Bestandsdaten). Nach dem Deploy `schema:dump` (Hauptlauf).
+- Datenführerschaft (`MVP-1592`): `migrate` entfernt den wirkungslosen
+  Matrix-Eintrag für Bestände (`data_ownership.inventory`); maßgeblich ist die
+  Bestandsführung (`inventory_mode`, `inventory_plugin_id`). Bitte die Matrix
+  prüfen: Wer früher einen Bereich einem Plugin zugewiesen hat, dessen
+  Schreibwege das nun sperrt, sieht die Fälle im Integrations-Eingang; ein
+  gespeichertes Plugin, das den Bereich nicht schreiben kann, ist markiert.
+- Datenführerschaft (`MVP-1592`, Teil 2): Die Stammdatenhoheit
+  (`finance.master_data_authority`) stellen Organisationen jetzt in der Matrix
+  in der Zeile „Kunden und Lieferanten“ ein; steht sie bereits auf
+  „Buchhaltung“, zeigt die Matrix „Buchhaltung (jedes Programm, das Kunden
+  schreibt)“ — bitte das führende Programm wählen. Offene Klärfälle „fremd
+  geführt“ der Aufgabenimporte werden beim nächsten Abgleich zu Fällen
+  „Datenführerschaft“. Keine Migration.
 
 ## [1.1.0] - 2026-11-08
 

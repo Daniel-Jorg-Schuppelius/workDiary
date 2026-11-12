@@ -77,6 +77,7 @@ return [
 
     'flash' => [
         'saved' => 'Stockage WebDAV enregistré.',
+        'saved_and_mirrored' => 'Stockage WebDAV enregistré et activé — tous les objets publiés jusqu’ici sont en file pour la copie.',
         'mirror_done' => 'Copie lancée.',
         'disconnected' => 'Stockage WebDAV déconnecté. Les fichiers déjà copiés sont conservés en externe.',
         'no_connection' => 'Aucun stockage WebDAV actif.',

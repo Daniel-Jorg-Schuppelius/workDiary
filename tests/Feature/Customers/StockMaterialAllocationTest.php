@@ -133,13 +133,13 @@ class StockMaterialAllocationTest extends TestCase {
         $this->assertSame(20.0, $allocation->allocated_amount?->toFloat());
         $this->assertSame([MorphMap::alias(StockMovement::class), $issued[0]->id], [$allocation->source_type, $allocation->source_id]);
         $this->assertSame(1, $this->customer->materialCostAllocations()->count());
-        $this->assertSame('0.0000', app(LotStockReader::class)->balanceOf($lot));
+        $this->assertSame('0.0000', app(LotStockReader::class)->balancesOf([$lot])[$lot->id]);
 
         $service->reverse($allocation);
 
         $returned = StockMovement::query()->where('movement_type', StockMovementType::Return->value)->orderBy('id')->get();
         $this->assertSame([[$lot->id, '2.0000', $issued[0]->id], [null, '2.0000', $issued[1]->id]], $returned->map(fn (StockMovement $m): array => [$m->stock_lot_id, $m->qty_base, $m->source_id])->all());
-        $this->assertSame('2.0000', app(LotStockReader::class)->balanceOf($lot));
+        $this->assertSame('2.0000', app(LotStockReader::class)->balancesOf([$lot])[$lot->id]);
         $this->assertSame('12.0000', app(InventoryLedger::class)->available($this->variant, $this->warehouse));
     }
 
@@ -153,7 +153,7 @@ class StockMaterialAllocationTest extends TestCase {
 
         app(CustomerStockAllocationService::class)->issueForCustomer($this->customer, $this->variant, $this->warehouse, '2', actorUserId: $this->admin->id, lot: $late);
 
-        $this->assertSame(['3.0000', '1.0000'], [app(LotStockReader::class)->balanceOf($early), app(LotStockReader::class)->balanceOf($late)]);
+        $this->assertSame(['3.0000', '1.0000'], [app(LotStockReader::class)->balancesOf([$early])[$early->id], app(LotStockReader::class)->balancesOf([$late])[$late->id]]);
     }
 
     /** Die Rückbuchung in eine inzwischen gesperrte Charge scheitert nicht: die Menge wird mitgesperrt (D5). */
@@ -172,7 +172,7 @@ class StockMaterialAllocationTest extends TestCase {
         $return = StockMovement::query()->where('movement_type', StockMovementType::Return->value)->sole();
         $hold = StockMovement::query()->where('idempotency_key', 'lot-block:' . $lot->id . ':arrival:' . $return->id)->sole();
         $this->assertSame([StockMovementType::LotBlock, StockState::Blocked, '3.0000', $lot->id], [$hold->movement_type, $hold->stock_state, $hold->qty_base, $hold->stock_lot_id]);
-        $this->assertSame(['4.0000', '4.0000'], [app(LotStockReader::class)->balanceOf($lot), $ledger->balance($this->variant, $this->warehouse, StockState::Blocked)]);
+        $this->assertSame(['4.0000', '4.0000'], [app(LotStockReader::class)->balancesOf([$lot])[$lot->id], $ledger->balance($this->variant, $this->warehouse, StockState::Blocked)]);
         $this->assertSame('10.0000', $ledger->available($this->variant, $this->warehouse));
 
         // Die Freigabe gibt auch die mitgesperrte Menge frei.

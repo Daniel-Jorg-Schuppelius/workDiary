@@ -1,7 +1,7 @@
 ---
 title: "Todoist-Anbindung"
 topic: admin.todoist
-version: 2
+version: 3
 keywords:
     - Todoist
     - Aufgaben synchronisieren
@@ -164,3 +164,5 @@ Todoist.
   mit **Verbindung erneuern** verbinden Sie neu. Scheitert ein Abgleich aus
   anderem Grund, nennt die Seite den letzten Fehler, bis ein Abgleich wieder
   gelingt; zusätzlich entsteht eine Betriebsaufgabe.
+
+**Datenführerschaft:** Führt ein anderes System die Aufgaben, legt der Abgleich je Aufgabe einen Fall „Datenführerschaft“ im Integrations-Eingang an. **Einmalig übernehmen** spielt die Aufgabe über dieselbe Zuordnung ein, solange diese aktiv ist; ändert sich die Aufgabe danach in der Quelle, öffnet sich der Fall wieder.

@@ -57,6 +57,13 @@ final class ProtocolManifest extends Manifest {
         ];
     }
 
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Protocol\Contracts\BoqProgressReporter::class => \App\Services\Protocol\Contracts\NullBoqProgressReporter::class,
+        ];
+    }
+
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
@@ -74,6 +81,15 @@ final class ProtocolManifest extends Manifest {
             ],
             \App\Services\Classification\Contracts\ProfileInstallStep::class => [
                 \App\Services\Protocol\Install\ProtocolTemplateInstallStep::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Diary\OrderCancelled::class => [
+                \App\Listeners\Protocol\CloseProtocolsOfCancelledOrder::class,
             ],
         ];
     }

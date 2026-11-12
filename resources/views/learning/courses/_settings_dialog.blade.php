@@ -39,6 +39,19 @@
                           :hint="__('learning.help.categories_list')" :value="old('categories', $categories)" />
     </x-form-group>
 
+    {{-- Notenschema (MVP-1600): ohne Stufen zeigen Notenbuch und Zeugnis nur Prozent. --}}
+    <x-form-group :legend="__('learning.field.grade_scale')" icon="grading" tone="success" cols="1">
+        <x-select-field name="grade_scale_template" :label="__('learning.field.grade_scale_template')"
+                        :hint="__('learning.help.grade_scale_template')">
+            <option value="">{{ __('learning.grade_scale.keep') }}</option>
+            @foreach ($gradeScaleTemplates as $template)
+                <option value="{{ $template }}" @selected(old('grade_scale_template') === $template)>{{ __('learning.grade_scale.template_' . $template) }}</option>
+            @endforeach
+        </x-select-field>
+        <x-textarea-field name="grade_scale" :label="__('learning.field.grade_scale_levels')" rows="6" maxlength="2000"
+                          :hint="__('learning.help.grade_scale')" :value="old('grade_scale', $gradeScale)" />
+    </x-form-group>
+
     <x-form-group :legend="__('learning.field.embed_hosts')" icon="public" tone="neutral" cols="1">
         <x-textarea-field name="embed_hosts" :label="__('learning.field.embed_hosts')" rows="3" maxlength="2000"
                           :hint="__('learning.help.embed_hosts')" :value="old('embed_hosts', $embedHosts)" />

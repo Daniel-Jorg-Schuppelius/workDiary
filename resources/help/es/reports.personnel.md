@@ -1,7 +1,7 @@
 ---
 title: "Personal: vacaciones, enfermedad, cualificaciones, seguridad"
 topic: reports.personnel
-version: 8
+version: 9
 keywords:
     - absentismo
     - vacaciones restantes
@@ -208,6 +208,8 @@ abiertos o confirmados; la indicación da todos los hallazgos y la tarjeta lleva
 a la pestaña de plan/real **Proyecto por persona**. Solo aparece si hay
 hallazgos en el periodo y solo para los administradores y las personas con el
 permiso **Ver informe de presencia (organización)**.
+
+El área **Personal** muestra los **días de baja** (días laborables) del periodo como el informe **Bajas** sin filtros, con las bajas, las personas afectadas y la prestación agotada en la nota; las **cualificaciones vencidas** como la matriz de cualificaciones (a día de hoy), con las que vencen en 30 días en la nota; y las **solicitudes de vacaciones abiertas** (a día de hoy), con las que empiezan en los próximos 14 días en la nota. Los días de baja y las cualificaciones requieren el módulo adicional Informes de equipo y el derecho **Ver las bajas por enfermedad** o **Gestionar las cualificaciones**; las solicitudes de vacaciones, el derecho **Aprobar vacaciones**; los administradores ven las tres. Los saldos de horas extra y de horario flexible no aparecen aquí: no hay ningún informe de toda la organización en el que se pueda comprobar la cifra.
 
 La tarjeta **Problemas recurrentes** reúne las alertas tempranas de los módulos
 que utiliza su organización, agrupadas por tipo:

@@ -1,7 +1,7 @@
 ---
 title: "Lote de asientos DATEV"
 topic: finance.datev-bookings
-version: 2
+version: 6
 keywords:
     - exportación DATEV
     - asesor fiscal
@@ -57,6 +57,16 @@ Crear, finalizar y descargar lotes corresponde al rol de
 **contabilidad** (y a administradores); la configuración, a
 administradores.
 
+Para la contabilidad local, la sección **Cuentas** incluye además la **cuenta
+de descuento por pronto pago** y la **cuenta de baja (pérdidas por créditos
+incobrables)**: las contracuentas cuando una partida abierta se compensa con
+descuento o se da de baja. Si se dejan vacías, se aplica el valor
+predeterminado del plan de cuentas (SKR03 8736 y 2400, SKR04 4736 y 6930). Para las deudas existen la **cuenta
+de descuentos obtenidos** (3736 o 5736) y la **cuenta de baja de deudas**
+(otros ingresos, 2709 o 4839). Si
+existe un plan de cuentas local, la cuenta indicada debe existir en él; si
+falta una cuenta efectiva, la página lo indica.
+
 ## Procedimiento recomendado
 
 1. **Crear el lote:** elegir el periodo, incluir si procede los
@@ -104,3 +114,29 @@ solo tras su cierre.
 Tras finalizar, **Registrar transmisión** deja constancia de lo que ocurre con el lote: **transmitido** a la asesoría y allí **confirmado** o **rechazado**. Un lote rechazado se vuelve a transmitir una vez aclarado; las correcciones de documentos siguen yendo en el lote siguiente. Cada paso queda con fecha, persona y nota opcional en el historial del lote, y la lista muestra el estado actual. Las notas, sin datos personales, ya que el historial no se puede modificar.
 
 El **informe adjunto (PDF)** resume el lote para la asesoría: periodo, número de asesor y de cliente, número de asientos y anulaciones, total, suma de control del archivo, totales por cuenta de ingresos y por clave fiscal, y el historial.
+
+## Traspaso DATEV desde el diario
+
+Si WorkDiary lleva el libro mayor, el lote de asientos DATEV se genera a partir
+de los asientos firmes del diario (tarjeta **Traspaso DATEV** en **Cierre de
+periodos**). Cada asiento se convierte en apuntes DATEV contra una línea de
+anclaje – normalmente la cuenta de clientes, proveedores o tesorería –, de modo
+que DATEV lo contabiliza una sola vez. Una línea con código de impuesto sale en
+bruto con su **Clave fiscal DATEV**; las líneas de impuesto se omiten porque
+DATEV contabiliza el impuesto por sí mismo. Con inversión del sujeto pasivo
+(§ 13b, adquisición intracomunitaria) el importe queda neto y DATEV contabiliza
+el IVA repercutido y el soportado. En una cuenta automática (campo
+**Automatismo DATEV** de la cuenta) DATEV calcula el impuesto a partir de la
+cuenta y el lote no pone ahí ninguna clave. Si el automatismo no encaja con el
+asiento, la clave 40 lo suspende y el impuesto queda como un apunte propio. Un
+descuento con corrección de impuesto también sale como un único apunte.
+
+## Ventas sin impuesto
+
+Si una factura no muestra impuesto, el lote la contabiliza según su supuesto fiscal,
+igual que la contabilidad: entrega intracomunitaria (SKR03 8125 / SKR04 4125),
+prestación de servicios a otro país de la UE (8336/4336), inversión del sujeto
+pasivo nacional (8337/4337), exportación (8120/4120), venta no sujeta en un tercer
+país (8338/4338). Son cuentas automáticas de DATEV; el lote no indica allí clave
+fiscal. Las ventas exentas nacionales permanecen en la cuenta configurada para
+ingresos exentos.

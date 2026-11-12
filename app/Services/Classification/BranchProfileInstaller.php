@@ -264,7 +264,6 @@ class BranchProfileInstaller {
                 'interval_kind' => (string) ($row['interval_kind'] ?? 'months'),
                 'interval_value' => max(1, (int) ($row['interval_value'] ?? 12)),
                 'tolerance_days' => max(0, (int) ($row['tolerance_days'] ?? 0)),
-                'procedure_template_code' => $row['procedure_template_code'] ?? null,
                 'is_active' => (bool) ($row['is_active'] ?? true),
             ];
 

@@ -14,7 +14,7 @@ use App\Enums\Procedure\{ProcedureProofType, ProcedureStepType};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Procedure\{ProcedureLibraryStep, ProcedureTemplate};
-use App\Services\Procedure\ProcedureTemplateService;
+use App\Services\Procedure\{ProcedureTemplateService, StepConfigForm};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -27,7 +27,10 @@ use Illuminate\View\View;
  * auch die Bibliothek.
  */
 class ProcedureLibraryController extends Controller {
-    public function __construct(private readonly ProcedureTemplateService $templates) {}
+    public function __construct(
+        private readonly ProcedureTemplateService $templates,
+        private readonly StepConfigForm $stepConfig,
+    ) {}
 
     public function index(): View {
         Gate::authorize(Permission::ProcedureTemplateUpdate->value);
@@ -38,7 +41,7 @@ class ProcedureLibraryController extends Controller {
     public function create(): View {
         Gate::authorize(Permission::ProcedureTemplateUpdate->value);
 
-        return view('procedures.library._form_dialog', ['step' => null]);
+        return view('procedures.library._form_dialog', ['step' => null, 'config' => StepConfigForm::BLANK]);
     }
 
     public function store(Request $request): RedirectResponse {
@@ -51,7 +54,7 @@ class ProcedureLibraryController extends Controller {
     public function edit(ProcedureLibraryStep $step): View {
         Gate::authorize(Permission::ProcedureTemplateUpdate->value);
 
-        return view('procedures.library._form_dialog', ['step' => $step]);
+        return view('procedures.library._form_dialog', ['step' => $step, 'config' => $this->stepConfig->toForm($step->config)]);
     }
 
     public function update(Request $request, ProcedureLibraryStep $step): RedirectResponse {
@@ -108,11 +111,12 @@ class ProcedureLibraryController extends Controller {
             'required_qualification_code' => ['nullable', 'string', 'max:60'],
             'requires_second_person' => ['nullable', 'boolean'],
             'requires_proof_kind' => ['nullable', Rule::enum(ProcedureProofType::class)],
-        ]);
+        ] + $this->stepConfig->rules());
         foreach (['is_required', 'is_blocking', 'requires_second_person'] as $flag) {
             $data[$flag] = $request->boolean($flag);
         }
+        $config = $this->stepConfig->fromForm($data, ProcedureStepType::from((string) $data['step_kind']), $data['requires_second_person']);
 
-        return $data;
+        return array_diff_key($data, StepConfigForm::BLANK) + ['config' => $config];
     }
 }

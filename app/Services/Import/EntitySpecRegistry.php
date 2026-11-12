@@ -31,13 +31,6 @@ class EntitySpecRegistry {
             ?? throw new InvalidArgumentException("Kein Import-Spec registriert für: {$entity->value}");
     }
 
-    public function byValue(string $entityValue): EntitySpec {
-        $entity = ImportEntity::tryFrom($entityValue)
-            ?? throw new InvalidArgumentException("Unbekannte Import-Entität: {$entityValue}");
-
-        return $this->for($entity);
-    }
-
     /** @return array<string, EntitySpec> */
     private function specs(): array {
         if ($this->specs === null) {

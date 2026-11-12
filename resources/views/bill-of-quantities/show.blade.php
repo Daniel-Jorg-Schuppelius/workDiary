@@ -133,6 +133,7 @@
                                     <x-icon-btn type="submit" icon="save" size="xs" :label="__('Status setzen')" />
                                 </form>
                             @endif
+                            <x-icon-btn icon="straighten" size="xs" data-entry-modal-trigger :href="route('bill-of-quantities.items.progress.create', $item)" :label="__('gaeb.progress.dialog.open')" />
                             <x-icon-btn icon="link" size="xs" data-entry-modal-trigger :href="route('bill-of-quantities.items.mappings.create', $item)" :label="__('gaeb.mapping.add')" />
                         </td>
                     @endif
@@ -195,13 +196,49 @@
                     <th>{{ __('gaeb.columns.phase') }}</th>
                     <th class="text-right">{{ __('gaeb.columns.items') }}</th>
                     <th>{{ __('gaeb.columns.status') }}</th>
+                    <th>{{ __('gaeb.show.findings') }}</th>
                 </x-slot:head>
                 @foreach ($imports as $import)
+                    @php
+                        // MVP-1582: Befunde des Laufs — Warnungen, Fehler und der Vergleich eines abgewiesenen Reimports.
+                        $findings = array_merge((array) ($import->preflight['errors'] ?? []), (array) ($import->preflight['warnings'] ?? []));
+                        $conflicts = (array) ($import->preflight['conflicts'] ?? []);
+                        $num = static fn (?string $value, int $decimals): string => $value !== null && $value !== ''
+                            ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($value, $decimals, withThousandsSeparator: true, trimTrailingZeros: true)
+                            : '—';
+                    @endphp
                     <tr>
                         <td class="text-sm">{{ $import->created_at?->fdatetime() }}</td>
                         <td>{{ $import->phase?->label() ?: '—' }}</td>
                         <td class="text-right tabular-nums">{{ $import->item_count }}</td>
-                        <td><x-status-badge>{{ $import->status->label() }}</x-status-badge></td>
+                        <td><x-status-badge :tone="match ($import->status) {
+                            \App\Enums\Gaeb\GaebImportStatus::Conflict, \App\Enums\Gaeb\GaebImportStatus::PreflightFailed => 'error',
+                            default => 'neutral',
+                        }">{{ $import->status->label() }}</x-status-badge></td>
+                        <td class="text-sm">
+                            @if ($findings === [] && $conflicts === [])
+                                <span class="text-muted">—</span>
+                            @else
+                                <details>
+                                    <summary class="cursor-pointer">{{ __('gaeb.show.findings_count', ['count' => count($findings) + count($conflicts)]) }}</summary>
+                                    <ul class="list-disc pl-5 mt-1 space-y-0.5">
+                                        @foreach ($findings as $finding)
+                                            <li>{{ $finding }}</li>
+                                        @endforeach
+                                        @foreach ($conflicts as $conflict)
+                                            <li>{{ __('gaeb.show.conflict_line', [
+                                                'ref' => $conflict['ref'] ?? '—',
+                                                'status' => \App\Enums\Gaeb\BoqItemStatus::tryFrom((string) ($conflict['status'] ?? ''))?->label() ?? '—',
+                                                'quantity' => $num($conflict['quantity']['current'] ?? null, 4),
+                                                'incoming_quantity' => $num($conflict['quantity']['incoming'] ?? null, 4),
+                                                'price' => $num($conflict['unit_price']['current'] ?? null, 2),
+                                                'incoming_price' => $num($conflict['unit_price']['incoming'] ?? null, 2),
+                                            ]) }}</li>
+                                        @endforeach
+                                    </ul>
+                                </details>
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
             </x-table>

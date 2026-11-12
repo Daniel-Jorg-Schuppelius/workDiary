@@ -1,7 +1,7 @@
 ---
 title: "Échéances fiscales et obligations déclaratives"
 topic: accounting.filings
-version: 1
+version: 2
 keywords:
     - déclaration de TVA
     - TVA mensuelle
@@ -43,6 +43,11 @@ La prorogation ne s'y applique **pas** — l'erreur la plus fréquente.
 Toutes les échéances sont calculées : si l'une tombe un samedi, un dimanche ou
 un jour férié, elle est reportée au jour ouvrable suivant. Seul ce qui est
 déposé est enregistré.
+
+Le rapport **État récapitulatif** présente, par numéro de TVA du destinataire,
+les livraisons intracommunautaires (case 41) et les prestations vers d’autres
+pays de l’UE (case 21) séparément avec leur type. Seules les livraisons
+décident d’une déclaration mensuelle.
 
 > Le programme ne transmet rien à l'administration. Le dépôt se fait toujours
 > via ELSTER ou votre conseil fiscal ; les états sont des aperçus vérifiables.

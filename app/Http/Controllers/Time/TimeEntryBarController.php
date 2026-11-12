@@ -11,14 +11,14 @@
 namespace App\Http\Controllers\Time;
 
 use App\Enums\Diary\Mode;
-use App\Enums\TimeEntry\TimeEntryKind;
-use App\Http\Controllers\Concerns\{BuildsTimeEntryOptions, ProvidesTimeEntryTagPicker};
+use App\Http\Controllers\Concerns\BuildsTimeEntryOptions;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Time\QuickTimeEntryRequest;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Project\{Project, Task};
 use App\Models\Time\TimeEntry;
+use App\Services\Timekeeping\ManualTimeBooking;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, RedirectResponse};
@@ -32,59 +32,23 @@ use Illuminate\Support\Str;
  */
 class TimeEntryBarController extends Controller {
     use BuildsTimeEntryOptions;
-    use ProvidesTimeEntryTagPicker;
 
-    public function store(QuickTimeEntryRequest $request): RedirectResponse {
+    public function store(QuickTimeEntryRequest $request, ManualTimeBooking $booking): RedirectResponse {
         Gate::authorize('create', TimeEntry::class);
 
         /** @var User $user */
         $user = Auth::user();
         $data = $request->validated();
-        [$tagIds, $newTags] = $this->pullTagInput($data);
-
-        /** @var Project $project */
-        $project = Project::query()->findOrFail((int) $data['project_id']);
-
-        // Aufgabe muss zum gewählten Projekt gehören (Org-Scope prüft die Rule).
-        if (($data['task_id'] ?? null) !== null) {
-            abort_unless(
-                Task::query()->where('project_id', $project->id)->whereKey((int) $data['task_id'])->exists(),
-                404,
-            );
-        }
-
-        $attributes = [
-            'project_id' => $project->id,
-            'user_id' => $user->id,
-            'organization_id' => $project->organization_id,
-            'kind' => TimeEntryKind::Work,
-            'task_id' => $data['task_id'] ?? null,
-            'diary_entry_id' => $data['diary_entry_id'] ?? null,
-            'description' => $data['description'] ?? null,
-        ];
-
         $isRange = filled($data['started_at'] ?? null) && filled($data['ended_at'] ?? null);
 
-        if ($isRange) {
-            // minutes + date leitet der TimeEntry-saving-Hook aus der Spanne ab;
-            // die Werte kommen bereits als UTC-Strings aus dem FormRequest.
-            $attributes['started_at'] = $data['started_at'];
-            $attributes['ended_at'] = $data['ended_at'];
-            $attributes['break_minutes'] = (int) ($data['break_minutes'] ?? 0);
-        } else {
-            $attributes['minutes'] = (int) $data['minutes'];
-            $attributes['date'] = CarbonImmutable::parse((string) $data['date'])->startOfDay();
-        }
+        $timeEntry = $booking->book($user, $data);
 
         // Der gewählte lokale Kalendertag bestimmt die Rücksprung-Ansicht —
         // nicht der UTC-Tag von started_at (kann beim Umrechnen abweichen).
         $dateString = CarbonImmutable::parse((string) $data['date'])->toDateString();
 
-        $timeEntry = TimeEntry::create($attributes);
-        $timeEntry->syncTagsFromInput($tagIds, $newTags);
-
         $redirect = redirect()->route('today.show', ['date' => $dateString])
-            ->with('status', __('Zeit auf „:project" gebucht.', ['project' => $project->name]));
+            ->with('status', __('Zeit auf „:project" gebucht.', ['project' => (string) $timeEntry->project?->name]));
 
         if ($isRange) {
             // Ketten-Erfassung: die nächste Buchung setzt dort an, wo diese

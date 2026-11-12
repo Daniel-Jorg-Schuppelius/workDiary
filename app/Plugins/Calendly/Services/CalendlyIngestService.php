@@ -13,14 +13,22 @@ declare(strict_types=1);
 namespace App\Plugins\Calendly\Services;
 
 use App\Enums\Calendar\AppointmentRequestStatus;
-use App\Enums\Integration\IntegrationInboxStatus;
+use App\Enums\Integration\{DataDomain, IntegrationInboxStatus};
 use App\Models\Calendar\AppointmentRequest;
+use App\Models\Customer\Customer;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\Organization;
 use App\Plugins\Calendly\CalendlyPlugin;
 use App\Plugins\Support\PluginSettingsResolver;
+use App\Services\Integration\Attributes\WritesDataDomain;
+use App\Services\Integration\Contracts\OwnershipConflictReplay;
+use App\Services\Integration\DataOwnershipGuard;
+use App\Services\Integration\Dto\OwnershipClaim;
+use App\Services\Integration\Match\EntityMatcher;
+use App\Services\Integration\Profiles\CustomerMatchProfile;
 use App\Services\Sales\LeadService;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Zustandsautomat der Calendly-Terminwünsche (Feature 095). Verarbeitet einen
@@ -31,8 +39,15 @@ use Carbon\CarbonImmutable;
  * Reschedule = zwei Calendly-Events (`invitee.canceled` alt + `invitee.created`
  * neu); die Verlinkung läuft über URI-Strings und funktioniert in beiden
  * Ankunftsreihenfolgen. Unzuordenbare Invitees landen in der Zuordnungs-Inbox.
+ *
+ * Termine gehören zum Bereich „Kalender“ (MVP-1592): Führt ein anderes System
+ * ihn, wird nichts geschrieben, sondern ein Führerschaftskonflikt angelegt.
  */
-class CalendlyIngestService {
+#[WritesDataDomain(DataDomain::Calendar)]
+class CalendlyIngestService implements OwnershipConflictReplay {
+    /** Konfliktart: Buchung oder Absage aus Calendly. */
+    public const string OWNERSHIP_KIND = 'calendly.invitee';
+
     public function __construct(
         private readonly CalendlyAppointmentMatcher $matcher,
         private readonly CalendlyConfirmService $confirm,
@@ -68,11 +83,36 @@ class CalendlyIngestService {
             $event = ((string) ($invitee['status'] ?? 'active')) === 'canceled' ? 'invitee.canceled' : 'invitee.created';
         }
 
-        return match ($event) {
-            'invitee.created' => $this->handleCreated($organization, $invitee, $inviteeUri),
-            'invitee.canceled' => $this->handleCanceled($organization, $invitee, $inviteeUri),
-            default => null,
-        };
+        if (! in_array($event, ['invitee.created', 'invitee.canceled'], true)) {
+            return null;
+        }
+        if (! app(DataOwnershipGuard::class)->allows($organization, DataDomain::Calendar, CalendlyPlugin::ID, new OwnershipClaim(
+            kind: self::OWNERSHIP_KIND,
+            key: $event . ':' . $inviteeUri,
+            title: (string) ($invitee['name'] ?? $invitee['email'] ?? 'Calendly'),
+            target: AppointmentRequest::class,
+            payload: ['event' => $event, 'invitee' => $invitee],
+            externalId: $inviteeUri,
+            subtitle: (string) __('calendly::calendly.ownership.' . ($event === 'invitee.created' ? 'created' : 'canceled')),
+        ))) {
+            return null;
+        }
+
+        return $event === 'invitee.created'
+            ? $this->handleCreated($organization, $invitee, $inviteeUri)
+            : $this->handleCanceled($organization, $invitee, $inviteeUri);
+    }
+
+    /** @return list<string> */
+    public function ownershipKinds(): array {
+        return [self::OWNERSHIP_KIND];
+    }
+
+    /** Übernehmen im Eingang: dieselbe Verarbeitung mit dem gespeicherten Calendly-Stand. */
+    public function replayOwnershipConflict(Organization $organization, IntegrationInboxItem $item): ?Model {
+        $payload = (array) (($item->remote_snapshot ?? [])['payload'] ?? []);
+
+        return $this->handleInvitee($organization, (string) ($payload['event'] ?? ''), (array) ($payload['invitee'] ?? []));
     }
 
     /** @param array<string, mixed> $invitee */
@@ -215,8 +255,21 @@ class CalendlyIngestService {
         ];
     }
 
-    /** @param array<string, mixed> $invitee */
+    /**
+     * Buchung ohne eindeutigen Kunden als Einzelfall mit Ziel „Kunde“ (MVP-1610):
+     * Zuordnen oder Anlegen setzt den Kunden an der Anfrage
+     * ({@see AppointmentRequest::acceptInboxAssignment()}); unscharfe Treffer des
+     * Kundenprofils stehen als Vorschläge am Fall.
+     *
+     * @param array<string, mixed> $invitee
+     */
     private function recordUnmatched(Organization $organization, AppointmentRequest $request, array $invitee): void {
+        $mapped = array_filter([
+            'name' => $request->invitee_name,
+            'email' => $request->invitee_email,
+        ], static fn (?string $value): bool => $value !== null && $value !== '');
+        $candidates = $mapped === [] ? [] : app(EntityMatcher::class)->match($organization, app(CustomerMatchProfile::class), $mapped)->candidates();
+
         IntegrationInboxItem::query()->updateOrCreate(
             [
                 'organization_id' => $organization->id,
@@ -225,15 +278,17 @@ class CalendlyIngestService {
             ],
             [
                 'source' => 'api',
-                'target_type' => (new AppointmentRequest)->getMorphClass(),
+                'target_type' => (new Customer)->getMorphClass(),
                 'external_type' => 'calendly_invitee',
                 'external_id' => (string) $request->source_uri,
-                'group_key' => $request->service_label ?? 'calendly',
-                'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
+                'group_key' => null,
+                'case_type' => $candidates === [] ? IntegrationInboxItem::CASE_UNMATCHED : IntegrationInboxItem::CASE_AMBIGUOUS,
                 'status' => IntegrationInboxStatus::Open,
                 'referenceable_type' => $request->getMorphClass(),
                 'referenceable_id' => $request->getKey(),
                 'remote_snapshot' => $invitee,
+                'mapped_snapshot' => $mapped === [] ? null : $mapped,
+                'candidate_ids' => $candidates === [] ? null : IntegrationInboxItem::candidatePayload($candidates),
                 'display_title' => $request->invitee_name,
                 'display_subtitle' => $request->invitee_email,
                 'occurred_at' => now(),

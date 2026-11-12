@@ -118,6 +118,7 @@ class Organization extends Model {
         'license_uid',
         'locale',
         'timezone',
+        'legal_region',
         'settings',
         'is_active',
         'tenant_status',

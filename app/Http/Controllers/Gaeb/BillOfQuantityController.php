@@ -15,16 +15,20 @@ use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Article\Article;
-use App\Models\Gaeb\{BillOfQuantity, BoqItem};
-use App\Models\Material\Material;
+use App\Models\Diary\DiaryEntry;
+use App\Models\Gaeb\{BillOfQuantity, BoqItem, BoqItemProgress};
+use App\Models\Material\{Material, MaterialUsage};
 use App\Models\Project\Project;
+use App\Models\Protocol\Protocol;
 use App\Services\Gaeb\{BoqCostingService, BoqExportService, BoqImportConflictException, BoqProgressService, BoqWorkflowException, BoqWorkflowService, GaebImportService};
 use App\Support\{ErrorText, MorphMap, SqidEncoder};
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use ERechnungToolkit\Enums\GaebFormat;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -81,6 +85,22 @@ class BillOfQuantityController extends Controller {
         ]);
     }
 
+    /**
+     * Dialog der Fortschrittsmeldung mit Bezug auf Materialverbrauch oder
+     * Protokoll des Projekts und den bisherigen Meldungen (MVP-1582).
+     */
+    public function progressForm(BoqItem $boqItem): View {
+        $this->canManage();
+        abort_unless($boqItem->organization_id === $this->currentOrganization()->id, 404);
+
+        return view('bill-of-quantities._progress_dialog', [
+            'item' => $boqItem,
+            'entries' => $boqItem->progress()->with(['materialUsage', 'protocol'])->orderByDesc('captured_at')->limit(50)->get(),
+            'materialUsages' => $this->assignableMaterialUsages($boqItem)->get(),
+            'protocols' => $this->projectProtocols($boqItem)?->orderByDesc('occurred_at')->limit(200)->get() ?? collect(),
+        ]);
+    }
+
     /** MVP-083: Aufmaß-/Fortschrittsmeldung zu einer Position erfassen. */
     public function recordProgress(Request $request, BoqItem $boqItem): RedirectResponse {
         $this->canManage();
@@ -90,15 +110,89 @@ class BillOfQuantityController extends Controller {
             'quantity' => ['required', 'numeric'],
             'source' => ['nullable', 'string'],
             'note' => ['nullable', 'string', 'max:500'],
+            'material_usage' => ['nullable', 'string'],
+            'protocol' => ['nullable', 'string'],
         ]);
 
+        // MVP-1582: der Bezug bestimmt die Quelle — ein Etikett ohne Beleg gibt es für diese beiden nicht mehr.
+        $usageId = null;
+        $protocolId = null;
+        if (! empty($validated['material_usage'])) {
+            $usageId = $this->assignableMaterialUsages($boqItem)
+                ->whereKey(app(SqidEncoder::class)->decode(MaterialUsage::class, (string) $validated['material_usage']))
+                ->value('id');
+            if ($usageId === null) {
+                throw ValidationException::withMessages(['material_usage' => __('gaeb.progress.error.material_usage')]);
+            }
+        }
+        if (! empty($validated['protocol'])) {
+            $protocolId = $this->projectProtocols($boqItem)
+                ?->whereKey(app(SqidEncoder::class)->decode(Protocol::class, (string) $validated['protocol']))
+                ->value('id');
+            if ($protocolId === null) {
+                throw ValidationException::withMessages(['protocol' => __('gaeb.progress.error.protocol')]);
+            }
+        }
+        $source = match (true) {
+            $usageId !== null => BoqProgressSource::Material,
+            $protocolId !== null => BoqProgressSource::Protocol,
+            default => BoqProgressSource::tryFrom((string) ($validated['source'] ?? 'manual')) ?? BoqProgressSource::Manual,
+        };
+        if ($usageId !== null && $protocolId !== null) {
+            throw ValidationException::withMessages(['protocol' => __('gaeb.progress.error.one_reference')]);
+        }
+        if (in_array($source, [BoqProgressSource::Material, BoqProgressSource::Protocol], true) && $usageId === null && $protocolId === null) {
+            throw ValidationException::withMessages(['source' => __('gaeb.progress.error.reference_required')]);
+        }
+
         $this->progressService->record($boqItem, (string) $validated['quantity'], [
-            'source' => BoqProgressSource::tryFrom((string) ($validated['source'] ?? 'manual')) ?? BoqProgressSource::Manual,
+            'source' => $source,
+            'material_usage_id' => $usageId !== null ? (int) $usageId : null,
+            'protocol_id' => $protocolId !== null ? (int) $protocolId : null,
             'note' => $validated['note'] ?? null,
             'created_by' => Auth::user()?->id,
         ]);
 
         return back()->with('success', __('gaeb.progress.flash.recorded'));
+    }
+
+    /**
+     * Materialverbrauch des LV-Projekts, der noch keiner Position zugeordnet
+     * ist: die Auswertung rechnet einen Verbrauch nur bei eindeutigem Ziel zu.
+     *
+     * @return Builder<MaterialUsage>
+     */
+    private function assignableMaterialUsages(BoqItem $boqItem): Builder {
+        $projectId = $boqItem->billOfQuantity?->project_id;
+
+        return MaterialUsage::query()
+            ->with('material:id,name')
+            ->whereHas('timesheet', fn (Builder $q) => $q->where('project_id', $projectId ?? 0))
+            ->whereNotIn('id', BoqItemProgress::query()->whereNotNull('material_usage_id')->select('material_usage_id'))
+            ->orderByDesc('id')
+            ->limit(200);
+    }
+
+    /**
+     * Protokolle des LV-Projekts (am Projekt oder an einem seiner Einträge);
+     * null ohne Projekt oder ohne Leserecht auf Protokolle.
+     *
+     * @return Builder<Protocol>|null
+     */
+    private function projectProtocols(BoqItem $boqItem): ?Builder {
+        $projectId = $boqItem->billOfQuantity?->project_id;
+        if ($projectId === null || ! Gate::allows('viewAny', Protocol::class)) {
+            return null;
+        }
+
+        return Protocol::query()->where(function (Builder $q) use ($projectId): void {
+            $q->where(fn (Builder $own) => $own
+                ->where('subject_type', MorphMap::alias(Project::class))
+                ->where('subject_id', $projectId))
+                ->orWhere(fn (Builder $viaEntry) => $viaEntry
+                    ->where('subject_type', MorphMap::alias(DiaryEntry::class))
+                    ->whereIn('subject_id', DiaryEntry::query()->where('project_id', $projectId)->select('id')));
+        });
     }
 
     /** Dialog zum Verknüpfen; Artikel und Material werden erst beim Öffnen geladen (Vollscan 2026-10-21). */

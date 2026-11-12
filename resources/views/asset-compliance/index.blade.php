@@ -25,7 +25,14 @@
         <x-kpi-tile :label="__('Aktive Sperren')" :value="$activeBlocks->count()" href="#compliance-blocks" />
     </div>
 
-    <x-card :title="__('Prüfpflichten (nach Fälligkeit)')" padding="p-0">
+    <x-card :title="$show === 'inactive' ? __('asset_compliance.assignment.inactive_title') : __('Prüfpflichten (nach Fälligkeit)')" padding="p-0">
+        <x-slot:actions>
+            @if ($show === 'inactive')
+                <x-icon-btn icon="list" size="sm" :href="route('asset-compliance.index')" show-label>{{ __('asset_compliance.assignment.show_active') }}</x-icon-btn>
+            @elseif ($inactiveCount > 0)
+                <x-icon-btn icon="pause_circle" size="sm" :href="route('asset-compliance.index', ['show' => 'inactive'])" show-label>{{ __('asset_compliance.assignment.show_inactive', ['count' => $inactiveCount]) }}</x-icon-btn>
+            @endif
+        </x-slot:actions>
         <x-table bare>
             <x-slot:head>
                 <tr>
@@ -34,6 +41,7 @@
                     <th>{{ __('Fällig am') }}</th>
                     <th>{{ __('Prüfstatus') }}</th>
                     <th>{{ __('Verantwortlich') }}</th>
+                    <th class="text-right">{{ __('Aktionen') }}</th>
                 </tr>
             </x-slot:head>
             @forelse ($listed as $assignment)
@@ -41,6 +49,9 @@
                     <td>{{ $assignment->asset->name ?? '—' }}</td>
                     <td>{{ $assignment->profile->name ?? '—' }}
                         <span class="text-xs text-muted">({{ $assignment->profile?->inspection_kind->label() }})</span>
+                        @if ($assignment->interval_months_override !== null)
+                            <x-status-badge tone="plain" size="sm" outline>{{ __('alle :n Monate', ['n' => $assignment->interval_months_override]) }}</x-status-badge>
+                        @endif
                     </td>
                     <td>
                         @if ($assignment->isOverdue())
@@ -56,9 +67,27 @@
                         <x-status-badge size="md" outline>{{ $status?->label() ?? '—' }}</x-status-badge>
                     </td>
                     <td>{{ $assignment->responsible->name ?? '—' }}</td>
+                    <td class="text-right">
+                        @can('create', \App\Models\AssetCompliance\AssetComplianceProfile::class)
+                            <div class="join">
+                                <x-icon-btn icon="edit" tone="ghost" size="xs" class="join-item" data-entry-modal-trigger
+                                            :href="route('asset-compliance.assignments.edit', $assignment)" :label="__('Bearbeiten')" />
+                                @if ($assignment->is_active)
+                                    <x-action-form :action="route('asset-compliance.assignments.toggle', $assignment)" class="join-item"
+                                                   :confirm="__('asset_compliance.assignment.deactivate_confirm')" :confirm-label="__('asset_compliance.action.deactivate')">
+                                        <x-icon-btn type="submit" tone="ghost" size="xs" icon="pause" :label="__('asset_compliance.action.deactivate')" />
+                                    </x-action-form>
+                                @else
+                                    <x-action-form :action="route('asset-compliance.assignments.toggle', $assignment)" class="join-item">
+                                        <x-icon-btn type="submit" tone="ghost" size="xs" icon="play_arrow" :label="__('asset_compliance.action.activate')" />
+                                    </x-action-form>
+                                @endif
+                            </div>
+                        @endcan
+                    </td>
                 </tr>
             @empty
-                <x-table.empty icon="rule_settings" :colspan="5" :title="__('Keine Prüfpflichten — Prüfprofile zuweisen (Prüfprofile-Seite).')" compact />
+                <x-table.empty icon="rule_settings" :colspan="6" :title="__('Keine Prüfpflichten — Prüfprofile zuweisen (Prüfprofile-Seite).')" compact />
             @endforelse
         </x-table>
     </x-card>

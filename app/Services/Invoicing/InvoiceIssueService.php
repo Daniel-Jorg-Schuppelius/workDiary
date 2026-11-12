@@ -10,12 +10,14 @@
 
 namespace App\Services\Invoicing;
 
-use App\Enums\Invoicing\InvoiceStatus;
+use App\Enums\Invoicing\{InvoiceStatus, TaxCaseAlignment};
 use App\Models\Invoicing\{Invoice, OnlinePayment};
+use App\Models\Platform\Organization;
 use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\Invoicing\EInvoice\EInvoiceValidationService;
 use App\Services\Numbering\{DocumentIssuers, NumberAuthority, NumberSequenceService};
 use App\Support\ErrorText;
+use CommonToolkit\ValueObjects\Percentage;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -108,6 +110,15 @@ final class InvoiceIssueService {
         if ($invoice->customer->is_collective) {
             throw new InvoiceIssueException(InvoiceIssueException::REASON_COLLECTIVE_CUSTOMER, (string) __('An den Sammelkunden lässt sich keine Rechnung stellen. Bitte einen Kunden mit Anschrift wählen.'));
         }
+        // Hat sich der Steuerfall seit der letzten Bearbeitung geändert, geht der angepasste Entwurf erst nach Prüfung hinaus.
+        $alignment = $this->alignTaxCase($invoice);
+        if ($alignment->changed()) {
+            $invoice->recalculate();
+            $invoice->save();
+
+            throw new InvoiceIssueException(InvoiceIssueException::REASON_TAX_CASE_CHANGED, (string) __('invoicing.tax_case.changed_on_issue')
+                . ($alignment === TaxCaseAlignment::NoteKept ? ' ' . __('invoicing.tax_case.note_kept') : ''));
+        }
         if ($invoice->pricedItems()->isEmpty()) {
             throw new InvoiceIssueException(InvoiceIssueException::REASON_EMPTY, (string) __('invoicing.free.error.empty'));
         }
@@ -134,6 +145,8 @@ final class InvoiceIssueService {
         $invoice->update($extra + [
             'status' => InvoiceStatus::Issued,
             'payment_terms_days' => $paymentTermsDays,
+            // § 35a-Ausweis festschreiben: Organisationsregel und Kundenart dürfen den Nachdruck nicht ändern (MVP-1624).
+            'is_labour_cost_disclosed' => $invoice->is_labour_cost_disclosed ?? $invoice->disclosesLabourCosts(),
             'issued_on' => $fromFile && $invoice->issued_on !== null ? $invoice->issued_on : ($invoice->issued_on ?? now()),
             'due_on' => $fromFile && $invoice->due_on !== null
                 ? $invoice->due_on
@@ -163,7 +176,77 @@ final class InvoiceIssueService {
         // Lifecycle-Webhook (MVP-718): invoice.issued an der Service-Schreibstelle.
         $this->lifecycleWebhooks->invoiceIssued($invoice);
 
+        \App\Events\Invoicing\InvoiceIssued::dispatch((int) $invoice->organization_id, (int) $invoice->id);
+
         return $invoice;
+    }
+
+    /**
+     * Steuerfall des Entwurfs nach den aktuellen Kunden- und Organisationsdaten
+     * (MVP-1623): Weicht er ab, kommen Reverse Charge und Kopfsatz wie bei
+     * generierten Rechnungen aus dem {@see TaxResolver} — etwa wenn der Kunde
+     * nach der Anlage zum Leistungsempfänger nach § 13b wurde, eine USt-IdNr.
+     * bekam oder ins Drittland zog.
+     * Setzt nur die Felder; Summen rechnet und speichert der Aufrufer.
+     * Gutschriften, Stornos und importierte Belege tragen den Fall ihres
+     * Originals bzw. ihrer Datei.
+     */
+    public function alignTaxCase(Invoice $invoice): TaxCaseAlignment {
+        if ($invoice->status !== InvoiceStatus::Draft || $invoice->isCreditNote() || $invoice->type === Invoice::TYPE_CANCELLATION
+            || in_array($invoice->number_source, ['file_import', \App\Services\Invoicing\Import\InvoiceSpec::NUMBER_SOURCE], true)) {
+            return TaxCaseAlignment::Unchanged;
+        }
+        $organization = $invoice->organization;
+        if ($organization === null) {
+            return TaxCaseAlignment::Unchanged;
+        }
+
+        $tax = $this->taxResolver->resolve($organization, $invoice->customer, $invoice->serviceDateTo() ?? now());
+        $rate = Percentage::of((string) $tax['rate'], 2);
+        // Der Fall zählt, nicht der Satz: Reverse Charge oder steuerfrei gegen steuerpflichtig. Ein anderer Regelsatz bleibt Sache des Entwurfs.
+        if ((bool) $invoice->is_reverse_charge === $tax['reverse_charge'] && $rate->isZero() === ($invoice->tax_rate?->isZero() ?? true)) {
+            return TaxCaseAlignment::Unchanged;
+        }
+        // Reverse Charge und 0 % tragen einen Pflichthinweis (§ 14a UStG, Steuerbefreiung, § 19); der Regelsatz keinen.
+        $hadTaxNote = (bool) $invoice->is_reverse_charge || ($invoice->tax_rate?->isZero() ?? true);
+        $invoice->is_reverse_charge = $tax['reverse_charge'];
+        $invoice->tax_rate = $rate;
+
+        return $this->alignTaxNote($invoice, $organization, trim((string) $tax['note']), $hadTaxNote);
+    }
+
+    /**
+     * Hinweistext des neuen Steuerfalls: Ein unverändert stehender automatischer
+     * Text des alten Falls wird ersetzt bzw. entfällt. Fehlt er, obwohl der alte
+     * Fall einen trug, hat ihn jemand geändert — dann bleibt der Text stehen.
+     */
+    private function alignTaxNote(Invoice $invoice, Organization $organization, string $note, bool $hadTaxNote): TaxCaseAlignment {
+        $notes = (string) $invoice->notes;
+        $stale = array_values(array_filter(
+            app(TaxExemptionNotes::class)->automatic($organization),
+            static fn (string $automatic): bool => $automatic !== $note && str_contains($notes, $automatic),
+        ));
+        $hasNote = $note !== '' && str_contains($notes, $note);
+
+        if ($stale === []) {
+            if ($hasNote) {
+                return TaxCaseAlignment::Aligned;
+            }
+            if ($hadTaxNote && trim($notes) !== '') {
+                return TaxCaseAlignment::NoteKept;
+            }
+            $notes = trim($notes . "\n" . $note);
+        } else {
+            foreach ($stale as $i => $automatic) {
+                $notes = $i === 0 && ! $hasNote && $note !== ''
+                    ? str_replace($automatic, $note, $notes)
+                    : str_replace([$automatic . "\n", "\n" . $automatic, $automatic], '', $notes);
+            }
+        }
+        $notes = trim((string) preg_replace("/\n{3,}/", "\n\n", $notes));
+        $invoice->notes = $notes !== '' ? $notes : null;
+
+        return TaxCaseAlignment::Aligned;
     }
 
     /** Programm, das die Nummer dieses Belegs vergibt; null = workDiary. */

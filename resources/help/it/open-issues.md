@@ -1,7 +1,7 @@
 ---
 title: "Pratiche aperte"
 topic: open-issues
-version: 1
+version: 2
 keywords:
     - lista difetti
     - difetti
@@ -33,3 +33,16 @@ vengono rifiutate, così lo storico resta coerente.
 Da un punto aperto si possono creare **più ordini di seguito**. Ognuno riprende
 cliente, progetto e descrizione, oltre alla scadenza del punto e a una copia dei
 suoi allegati — per i difetti da un verbale anche le foto della voce del verbale.
+
+**Modificare:** nella finestra di modifica cambia anche scadenza, gravità e,
+con il diritto di pubblicazione al cliente, la visibilità; ogni modifica è
+riportata nella cronologia del punto. Un punto critico senza scadenza riceve
+sette giorni.
+
+**Progetto, cliente, bene:** crea punti aperti anche su un progetto, un cliente
+e un bene; il pannello si trova nelle loro pagine. Con il diritto di
+assegnazione sceglie il responsabile già alla creazione.
+
+**Dettagli:** la finestra **Dettagli** mostra cronologia, commenti e allegati.
+Un punto chiuso non accetta né cede più allegati. L'elenco si filtra per stato,
+gravità e responsabile.

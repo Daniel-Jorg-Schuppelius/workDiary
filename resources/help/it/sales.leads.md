@@ -1,7 +1,7 @@
 ---
 title: "Lead"
 topic: sales.leads
-version: 4
+version: 6
 keywords:
     - potenziali clienti
     - prospect
@@ -73,3 +73,12 @@ pannelli degli altri moduli mostrano solo ciò che esiste per il lead — un
 modulo senza dati sul lead non compare. La cronologia elenca le voci di audit
 del lead, offerte incluse; le prenotazioni di appuntamenti sono collegate al
 lead aperto.
+
+Chi può aprire la pagina «Richieste di appuntamento» vede nel pannello **Appuntamenti** gli appuntamenti prenotati e richiesti del lead (ad esempio da Calendly) con data, luogo e stato; il clic apre le richieste di appuntamento.
+
+## Ultimo contatto
+
+Il termine decorre dall'**ultimo contatto**. Avanza a ogni nota di
+comunicazione sul lead (con la sua data), a ogni modifica dei contenuti, a ogni
+cambio di stato e a ogni offerta creata dal lead. Cambiare solo il
+responsabile non conta come contatto.

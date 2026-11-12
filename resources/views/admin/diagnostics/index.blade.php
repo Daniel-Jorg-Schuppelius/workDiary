@@ -128,6 +128,66 @@
             </x-card>
         @endforeach
     </div>
+
+    {{-- Überwachungszugang (MVP-1618): Token im Header, Klartext nur einmal sichtbar. --}}
+    <x-card as="section" class="flex flex-col gap-3">
+        <header class="flex flex-wrap items-center gap-2">
+            <x-icon name="key" />
+            <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('diagnostics.token.heading') }}</h2>
+            <x-icon-btn class="ml-auto" icon="add" tone="ghost" size="xs" data-entry-modal-trigger
+                        :href="route('admin.diagnostics.tokens.create')" show-label>{{ __('diagnostics.token.create') }}</x-icon-btn>
+        </header>
+        <p class="text-sm text-muted">{{ __('diagnostics.token.intro', ['url' => route('api.monitoring.diagnostics')]) }}</p>
+
+        @if (session('monitoring_token_plain'))
+            <div role="alert" class="alert alert-warning text-sm">
+                <x-icon name="warning" />
+                <div class="min-w-0">
+                    <p>{{ __('diagnostics.token.shown_once') }}</p>
+                    <code class="mt-1 block break-all font-mono text-xs">{{ session('monitoring_token_plain') }}</code>
+                </div>
+            </div>
+        @endif
+
+        @if ($monitoringTokens->isEmpty())
+            <x-empty-state icon="key" :message="__('diagnostics.token.empty')" compact />
+        @else
+            <x-table>
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('diagnostics.token.name') }}</th>
+                        <th>{{ __('diagnostics.token.hint') }}</th>
+                        <th>{{ __('diagnostics.token.created_by') }}</th>
+                        <th>{{ __('diagnostics.token.last_used') }}</th>
+                        <th>{{ __('diagnostics.token.status') }}</th>
+                        <th></th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($monitoringTokens as $token)
+                    @php /** @var \App\Models\Diagnostics\MonitoringToken $token */ @endphp
+                    <tr>
+                        <td>{{ $token->name }}</td>
+                        <td class="font-mono text-xs">{{ $token->token_hint }}…</td>
+                        <td class="text-sm">{{ $token->creator?->name ?? '—' }} <span class="text-muted">{{ $token->created_at?->ftime() }}</span></td>
+                        <td class="text-sm tabular-nums">{{ $token->last_used_at?->ftime() ?? '—' }}</td>
+                        <td>
+                            <x-status-badge size="xs" :tone="$token->isActive() ? 'success' : 'ghost'">
+                                {{ $token->isActive() ? __('diagnostics.token.active') : __('diagnostics.token.revoked_state') }}
+                            </x-status-badge>
+                        </td>
+                        <td class="text-right">
+                            @if ($token->isActive())
+                                <x-action-form :action="route('admin.diagnostics.tokens.revoke', $token)" method="DELETE"
+                                               :confirm="__('diagnostics.token.revoke_confirm')" :confirm-label="__('diagnostics.token.revoke')">
+                                    <x-icon-btn icon="block" tone="error" size="xs" type="submit" :label="__('diagnostics.token.revoke')" />
+                                </x-action-form>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </x-table>
+        @endif
+    </x-card>
 </x-index-page>
 
 {{-- Test-Mail per fetch abschicken (früher Inline-onsubmit; unter Nonce-CSP

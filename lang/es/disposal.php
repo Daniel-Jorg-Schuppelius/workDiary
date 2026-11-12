@@ -47,6 +47,8 @@ return [
     ],
 
     'form' => [
+        'is_photo_in_record' => 'Mostrar fotos en el justificante del cliente',
+        'is_photo_in_record_hint' => 'En el PDF del justificante aparecen hasta dos fotos por posición de equipo.',
         'title_create' => 'Nuevo expediente de eliminación',
         'title_edit' => 'Editar expediente de eliminación',
         'submit_create' => 'Crear expediente',
@@ -77,6 +79,13 @@ return [
     ],
 
     'item' => [
+        'asset' => 'Activo',
+        'asset_none' => '— sin activo vinculado —',
+        'asset_hint' => 'Solo activos en servicio. La selección rellena la denominación, el fabricante, el modelo y el número de serie; al cerrar el expediente el activo se da de baja.',
+        'error' => [
+            'asset_not_in_operation' => 'El activo ya no está en servicio y no se puede eliminar.',
+            'asset_taken' => 'El activo ya figura en un expediente de eliminación abierto.',
+        ],
         'title_create' => 'Registrar posición',
         'title_edit' => 'Editar posición',
         'group_device' => 'Equipo',
@@ -158,6 +167,23 @@ return [
         'reason' => 'Motivo',
     ],
 
+    // Asset-Bezug und Fotos der Gerätepositionen (MVP-1578).
+    'asset' => [
+        'action' => 'Eliminar como residuo',
+        'create_hint' => 'Tras crear el expediente, registre «:asset» como posición de equipo; el activo ya está seleccionado allí.',
+        'add_hint' => 'Registre el activo «:asset» como posición de equipo; ya está seleccionado en el diálogo.',
+        'pending_decommission' => 'No dados de baja: :assets. El activo sigue entregado o está en un estado final; recójalo y delo de baja en su ficha.',
+    ],
+    'photo' => [
+        'label' => 'Fotos',
+        'alt' => 'Foto de :item',
+        'upload' => 'Subir foto',
+        'upload_for' => 'Seleccionar foto para :item',
+        'flash' => [
+            'added' => 'Foto guardada para la posición de equipo.',
+        ],
+    ],
+
     'action' => [
         'create' => 'Nuevo expediente de eliminación',
         'collect' => 'Registrar recogida',
@@ -178,6 +204,8 @@ return [
     ],
 
     'pdf' => [
+        'photos' => 'Fotos',
+        'photo_of' => 'Posición :number',
         'title' => 'Justificante de recepción y eliminación',
         'number' => 'Número de expediente',
         'customer' => 'Cliente',

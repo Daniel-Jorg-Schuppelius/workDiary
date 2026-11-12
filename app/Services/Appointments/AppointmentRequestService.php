@@ -57,6 +57,9 @@ class AppointmentRequestService {
         if ($start->lessThan($service->earliestStart())) {
             throw new RuntimeException((string) __('Dieser Termin unterschreitet den Vorlauf von :hours Stunden.', ['hours' => $service->lead_time_hours]));
         }
+        if (! $service->bookableBy($customer)) {
+            throw new RuntimeException((string) __('appointment.service.site_foreign'));
+        }
 
         $request = AppointmentRequest::query()->create([
             'organization_id' => $service->organization_id,
@@ -74,6 +77,28 @@ class AppointmentRequestService {
         ]);
         $request->audit('appointment.requested', ['service' => $service->title]);
         $this->announce($request);
+
+        return $request;
+    }
+
+    /**
+     * Anfrage einem Kunden oder Lead zuordnen (MVP-1610) und offene Fälle des
+     * Integrations-Eingangs zu ihr schließen — die Zuordnung ist damit getroffen.
+     */
+    public function assignParty(AppointmentRequest $request, ?Customer $customer, ?\App\Models\Sales\Lead $lead): AppointmentRequest {
+        DB::transaction(function () use ($request, $customer, $lead): void {
+            $request->assignParty($customer, $lead);
+            $resolvedTo = $request->customer()->first() ?? $lead;
+            $items = \App\Models\Integration\IntegrationInboxItem::query()
+                ->where('organization_id', $request->organization_id)
+                ->where('referenceable_type', $request->getMorphClass())
+                ->where('referenceable_id', $request->id)
+                ->where('status', \App\Enums\Integration\IntegrationInboxStatus::Open->value)
+                ->get();
+            foreach ($items as $item) {
+                app(\App\Services\Integration\InboxActionService::class)->markResolved($item, \App\Enums\Integration\IntegrationInboxStatus::ResolvedLinked, $resolvedTo);
+            }
+        });
 
         return $request;
     }
@@ -207,6 +232,7 @@ class AppointmentRequestService {
         $entry->end_at = $request->end_at;
         // Ortsdatum des Termins, nicht das UTC-Datum.
         $entry->scheduled_for = $request->start_at !== null ? Carbon::parse($request->start_at->copy()->setTimezone(Tz::current())->toDateString()) : null;
+        $this->fillLocation($entry, $request);
         $entry->save();
 
         $request->forceFill([
@@ -219,6 +245,24 @@ class AppointmentRequestService {
         $this->notifyInvitee($request);
 
         return $entry;
+    }
+
+    /** Einsatzort (MVP-1612): das Objekt der Leistungsart, sonst die Anschrift des Kunden. */
+    private function fillLocation(DiaryEntry $entry, AppointmentRequest $request): void {
+        $site = $request->bookableService?->site;
+        if ($site !== null) {
+            $entry->address_line = $site->address_street;
+            $entry->address_zip = $site->address_zip;
+            $entry->address_city = $site->address_city;
+
+            return;
+        }
+        $customer = $request->customer;
+        if ($customer !== null) {
+            $entry->address_line = $customer->getAttribute('address_street');
+            $entry->address_zip = $customer->getAttribute('address_zip');
+            $entry->address_city = $customer->getAttribute('address_city');
+        }
     }
 
     public function decline(AppointmentRequest $request, User $decider, string $reason): AppointmentRequest {

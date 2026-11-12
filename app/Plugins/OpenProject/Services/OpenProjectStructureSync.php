@@ -10,13 +10,19 @@
 
 namespace App\Plugins\OpenProject\Services;
 
+use App\Enums\Integration\DataDomain;
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Task\{TaskPriority, TaskStatus};
-use App\Models\Integration\{ExternalReference, ExternalReferenceAlias};
+use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\{Project, Task};
 use App\Plugins\OpenProject\Api\OpenProjectApiClient;
 use App\Plugins\OpenProject\OpenProjectPlugin;
+use App\Plugins\OpenProject\Sources\OpenProjectWorkPackage;
+use App\Services\Integration\Attributes\WritesDataDomain;
+use App\Services\Integration\Contracts\OwnershipConflictReplay;
+use App\Services\Integration\DataOwnershipGuard;
+use App\Services\Integration\Dto\OwnershipClaim;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +40,10 @@ use Illuminate\Support\Facades\Auth;
  * gesetzt ist; sonst bleibt Unzuordenbares unverknüpft (und landet beim Zeit-
  * Import in der Inbox).
  */
-class OpenProjectStructureSync {
+#[WritesDataDomain(DataDomain::Tasks)]
+class OpenProjectStructureSync implements OwnershipConflictReplay {
+    public const string OWNERSHIP_KIND = 'openproject.work_package';
+
     public const string EXT_TYPE_PROJECT = 'project';
 
     public const string EXT_TYPE_WORK_PACKAGE = 'work_package';
@@ -118,15 +127,9 @@ class OpenProjectStructureSync {
             }
 
             $match = $this->matchTaskByTitle($organization, $project, $remote->subject);
-            if ($match === null && $createMissing) {
-                $match = Task::query()->create([
-                    'organization_id' => $organization->id,
-                    'project_id' => $project->id,
-                    'title' => $remote->subject,
-                    'status' => TaskStatus::Open->value,
-                    'priority' => TaskPriority::Medium->value,
-                    'created_by' => Auth::id(),
-                ]);
+            // Neue Aufgaben nur, wenn OpenProject die Aufgaben schreiben darf (MVP-1592); Verknüpfen bleibt.
+            if ($match === null && $createMissing && $this->permits($organization, $remote)) {
+                $match = $this->createTask($organization, $project, $remote);
                 $created++;
             }
 
@@ -141,6 +144,56 @@ class OpenProjectStructureSync {
         }
 
         return ['linked' => $linked, 'created' => $created, 'unmatched' => $unmatched];
+    }
+
+    private function permits(Organization $organization, OpenProjectWorkPackage $remote): bool {
+        return app(DataOwnershipGuard::class)->allows($organization, DataDomain::Tasks, OpenProjectPlugin::ID, new OwnershipClaim(
+            kind: self::OWNERSHIP_KIND,
+            key: $remote->externalId,
+            title: $remote->subject,
+            target: Task::class,
+            payload: ['work_package' => ['external_id' => $remote->externalId, 'subject' => $remote->subject, 'project_external_id' => $remote->projectExternalId]],
+            externalId: $remote->externalId,
+            subtitle: $remote->projectName,
+        ));
+    }
+
+    private function createTask(Organization $organization, Project $project, OpenProjectWorkPackage $remote): Task {
+        return Task::query()->create([
+            'organization_id' => $organization->id,
+            'project_id' => $project->id,
+            'title' => $remote->subject,
+            'status' => TaskStatus::Open->value,
+            'priority' => TaskPriority::Medium->value,
+            'created_by' => Auth::id(),
+        ]);
+    }
+
+    /** @return list<string> */
+    public function ownershipKinds(): array {
+        return [self::OWNERSHIP_KIND];
+    }
+
+    /** „Einmalig übernehmen“: Aufgabe zum Arbeitspaket anlegen, sofern es noch keine gibt. */
+    public function replayOwnershipConflict(Organization $organization, IntegrationInboxItem $item): ?Model {
+        $payload = (array) (($item->remote_snapshot ?? [])['payload'] ?? []);
+        $raw = (array) ($payload['work_package'] ?? []);
+        $remote = new OpenProjectWorkPackage((string) ($raw['external_id'] ?? ''), (string) ($raw['subject'] ?? ''), isset($raw['project_external_id']) ? (string) $raw['project_external_id'] : null);
+        if ($remote->externalId === '' || trim($remote->subject) === '') {
+            return null;
+        }
+        $existing = $this->resolveTask($organization, $remote->externalId);
+        if ($existing !== null) {
+            return $existing;
+        }
+        $project = $this->resolveProject($organization, $remote->projectExternalId);
+        if ($project === null) {
+            throw new \RuntimeException((string) __('integration.task_import.ownership_replay.link_gone'));
+        }
+        $task = $this->matchTaskByTitle($organization, $project, $remote->subject) ?? $this->createTask($organization, $project, $remote);
+        $this->rememberReference($organization, self::EXT_TYPE_WORK_PACKAGE, $remote->externalId, $task, ['subject' => $remote->subject]);
+
+        return $task;
     }
 
     /**

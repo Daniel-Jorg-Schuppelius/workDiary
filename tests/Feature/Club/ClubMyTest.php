@@ -90,6 +90,33 @@ class ClubMyTest extends TestCase {
         return $user->notifications()->get()->map(fn($n): string => (string) (((array) $n->data)['event'] ?? ''))->sort()->values()->all();
     }
 
+    /** MVP-1616: Selbstantrag für Gruppen mit Freigabe; die Leitung entscheidet im Arbeitsvorrat. */
+    public function test_member_requests_admission_to_an_application_group(): void {
+        $training = ClubGroup::factory()->create(['name' => 'Breitensport']);
+        $squad = ClubGroup::factory()->byApplication()->create(['name' => 'Wettkampfkader']);
+        $closed = ClubGroup::factory()->create(['name' => 'Leitungsgruppe']);
+        $self = $this->orgUser();
+        $member = $this->memberIn($training, $self);
+
+        $this->actingAs($self)->get(route('club.my.index'))
+            ->assertOk()
+            ->assertSee('Breitensport')
+            ->assertSee(route('club.my.group-request', $squad), false)
+            ->assertDontSee(route('club.my.group-request', $closed), false);
+
+        $this->actingAs($self)->post(route('club.my.group-request', $closed))->assertNotFound();
+        $this->actingAs($self)->post(route('club.my.group-request', $squad))->assertRedirect(route('club.my.index'));
+        $request = $squad->memberships()->sole();
+        $this->assertSame(\App\Enums\Club\ClubGroupMembershipStatus::Requested, $request->status);
+        $this->assertSame($member->id, $request->club_member_id);
+        $this->actingAs($self)->post(route('club.my.group-request', $squad))->assertNotFound();
+
+        $items = iterator_to_array(app(\App\Services\Club\WorkQueue\ClubMembershipWorkItemSource::class)->items($this->admin, $this->organization), false);
+        $this->assertCount(1, $items);
+        app(ClubGroupService::class)->approve($request, $this->admin);
+        $this->assertSame(1, $squad->activeMemberCountOn(CarbonImmutable::today()));
+    }
+
     // ── Sichtbarkeit und Anmeldung ───────────────────────────────────────
 
     public function test_member_finds_a_course_of_the_own_group_without_invitation_and_registers(): void {

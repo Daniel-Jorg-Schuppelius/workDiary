@@ -10,10 +10,12 @@
 
 namespace Tests\Feature\Asset;
 
-use App\Enums\Asset\MaintenanceIntervalKind;
-use App\Enums\User\UserRole;
+use App\Enums\Asset\{MaintenanceDueAction, MaintenanceIntervalKind};
+use App\Enums\User\{Permission, UserRole};
 use App\Models\Asset\{Asset, MaintenancePlan};
+use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
+use App\Models\ServiceTicket\SlaContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -140,6 +142,107 @@ class MaintenancePlanControllerTest extends TestCase {
             ->assertRedirect();
 
         $this->assertDatabaseMissing('maintenance_plans', ['id' => $plan->id]);
+    }
+
+    /** gl-68: Vertragsbindung, Vertragspflicht und Fälligkeitsaktion haben eine Schreibstelle. */
+    public function test_dialog_offers_only_matching_contracts(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->org->id]);
+        $other = Customer::factory()->create(['organization_id' => $this->org->id]);
+        $this->asset->update(['customer_id' => $customer->id]);
+        $own = SlaContract::factory()->create(['organization_id' => $this->org->id, 'customer_id' => $customer->id, 'code' => 'SLA-OWN', 'is_default' => false]);
+        SlaContract::factory()->create(['organization_id' => $this->org->id, 'customer_id' => $other->id, 'code' => 'SLA-OTHER', 'is_default' => false]);
+        SlaContract::factory()->create(['organization_id' => $this->org->id, 'code' => 'SLA-OLA', 'is_ola' => true, 'is_default' => false]);
+
+        $this->get(route('assets.maintenance-plans.create', $this->asset))->assertOk()
+            ->assertSee('name="sla_contract_id"', false)
+            ->assertSee('name="is_contractual"', false)
+            ->assertSee('name="due_action"', false)
+            ->assertSee('value="' . $own->sqid . '"', false)
+            ->assertDontSee('SLA-OTHER')
+            ->assertDontSee('SLA-OLA');
+    }
+
+    public function test_store_binds_contract_and_contract_page_shows_obligation(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->org->id]);
+        $this->asset->update(['customer_id' => $customer->id]);
+        $contract = SlaContract::factory()->create(['organization_id' => $this->org->id, 'customer_id' => $customer->id, 'is_default' => false]);
+
+        $this->post(route('assets.maintenance-plans.store', $this->asset), [
+            'label' => 'Jahresinspektion',
+            'interval_kind' => MaintenanceIntervalKind::Months->value,
+            'interval_value' => 12,
+            'sla_contract_id' => $contract->sqid,
+            'is_contractual' => '1',
+            'due_action' => MaintenanceDueAction::Ticket->value,
+        ])->assertRedirect(route('assets.show', $this->asset))->assertSessionHasNoErrors();
+
+        $plan = MaintenancePlan::query()->where('label', 'Jahresinspektion')->firstOrFail();
+        $this->assertSame($contract->id, $plan->sla_contract_id);
+        $this->assertTrue($plan->is_contractual);
+        $this->assertSame(MaintenanceDueAction::Ticket, $plan->due_action);
+
+        $this->get(route('sla-contracts.show', $contract))->assertOk()
+            ->assertSee('Jahresinspektion')
+            ->assertSee(__('Vertragspflicht'));
+        $this->get(route('assets.show', $this->asset))->assertOk()->assertSee(__('Vertragspflicht'));
+
+        $this->put(route('assets.maintenance-plans.update', [$this->asset, $plan]), [
+            'label' => 'Jahresinspektion',
+            'interval_kind' => MaintenanceIntervalKind::Months->value,
+            'interval_value' => 12,
+            'sla_contract_id' => '',
+            'is_contractual' => '0',
+            'due_action' => MaintenanceDueAction::None->value,
+        ])->assertSessionHasNoErrors();
+        $plan->refresh();
+        $this->assertNull($plan->sla_contract_id);
+        $this->assertFalse($plan->is_contractual);
+        $this->assertSame(MaintenanceDueAction::None, $plan->due_action);
+    }
+
+    public function test_obligation_needs_a_contract_of_the_asset_customer(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->org->id]);
+        $other = Customer::factory()->create(['organization_id' => $this->org->id]);
+        $this->asset->update(['customer_id' => $customer->id]);
+        $foreign = SlaContract::factory()->create(['organization_id' => $this->org->id, 'customer_id' => $other->id, 'is_default' => false]);
+        $payload = ['label' => 'Prüfung', 'interval_kind' => 'months', 'interval_value' => 6];
+
+        $this->post(route('assets.maintenance-plans.store', $this->asset), $payload + ['is_contractual' => '1'])
+            ->assertSessionHasErrors('sla_contract_id');
+        $this->post(route('assets.maintenance-plans.store', $this->asset), $payload + ['sla_contract_id' => $foreign->sqid])
+            ->assertSessionHasErrors('sla_contract_id');
+        $this->assertDatabaseMissing('maintenance_plans', ['label' => 'Prüfung']);
+    }
+
+    public function test_without_sla_right_binding_stays_untouched(): void {
+        $contract = SlaContract::factory()->create(['organization_id' => $this->org->id, 'is_default' => false]);
+        $plan = MaintenancePlan::factory()->create([
+            'organization_id' => $this->org->id,
+            'asset_id' => $this->asset->id,
+            'sla_contract_id' => $contract->id,
+            'is_contractual' => true,
+        ]);
+        $role = Role::create(['name' => 'wartung-ohne-sla', 'guard_name' => 'web', 'team_id' => $this->org->id]);
+        $role->givePermissionTo([Permission::AssetView->value, Permission::AssetUpdate->value]);
+        $this->actor->syncRoles([$role]);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $this->actor->unsetRelation('roles')->unsetRelation('permissions');
+
+        $this->get(route('assets.maintenance-plans.edit', [$this->asset, $plan]))->assertOk()
+            ->assertDontSee('name="sla_contract_id"', false)
+            ->assertDontSee('name="is_contractual"', false);
+
+        $this->put(route('assets.maintenance-plans.update', [$this->asset, $plan]), [
+            'label' => 'Umbenannt',
+            'interval_kind' => 'months',
+            'interval_value' => 6,
+            'sla_contract_id' => '',
+            'is_contractual' => '0',
+        ])->assertSessionHasNoErrors();
+        $plan->refresh();
+        $this->assertSame('Umbenannt', $plan->label);
+        $this->assertSame($contract->id, $plan->sla_contract_id);
+        $this->assertTrue($plan->is_contractual);
     }
 
     public function test_cross_asset_access_is_blocked(): void {

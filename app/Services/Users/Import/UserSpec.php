@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Users\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
+use App\Enums\User\Permission;
 use App\Models\Platform\{Organization, User};
+use App\Services\Import\Contracts\GuardsColumns;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\AbstractEntitySpec;
 use CommonToolkit\Helper\Data\EmailHelper;
@@ -28,7 +30,7 @@ use Throwable;
  * Bestehende Nutzer werden nur in den unkritischen Stammdaten aktualisiert
  * (kein Passwort-Reset, keine Organisations-Übernahme).
  */
-class UserSpec extends AbstractEntitySpec {
+class UserSpec extends AbstractEntitySpec implements GuardsColumns {
     public function entity(): ImportEntity {
         return ImportEntity::Users;
     }
@@ -39,6 +41,11 @@ class UserSpec extends AbstractEntitySpec {
 
     public function requiredColumns(): array {
         return ['name', 'email'];
+    }
+
+    /** Sätze stehen sonst hinter der Personalverwaltung (MVP-1565, MVP-1625). */
+    public function columnPermissions(): array {
+        return ['hourly_rate' => Permission::UserPayrollManage, 'internal_rate' => Permission::UserPayrollManage];
     }
 
     public function headerAliases(): array {

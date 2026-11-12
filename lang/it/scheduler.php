@@ -30,6 +30,12 @@ return [
         'criticality' => 'Criticità',
         'last_status' => 'Esito',
         'source' => 'Origine del piano',
+        'run_options' => 'Esecuzione',
+        'timezone' => 'Fuso orario',
+        'quiet_from' => 'A riposo da',
+        'quiet_until' => 'Di nuovo attivo da',
+        'retry_attempts' => 'Ripetizioni dopo un errore',
+        'retry_delay_minutes' => 'Intervallo tra le ripetizioni (min)',
     ],
     'action' => [
         'reschedule' => 'Ripianifica',
@@ -115,6 +121,7 @@ return [
             'lti_rotate_keys' => 'Ruotare le chiavi di firma LTI',
             'lti_prune_nonces' => 'Rimuovere i nonce LTI scaduti',
         ],
+        'flex' => ['recompute' => 'Ricalcolare i saldi dell’orario flessibile'],
         'attendance' => ['close_open' => 'Chiudere le timbrature dimenticate', 'open_reminder' => 'Ricordare la sera le timbrature aperte'],
         'audit' => ['verify' => 'Verificare la catena di audit'],
         'backup' => [
@@ -254,6 +261,10 @@ return [
         'day' => 'Giorno della settimana 0–6 (0 = domenica) o giorno del mese 1–31.',
         'expression' => 'Solo per gestori: minuto ora giorno mese giorno-settimana.',
         'allowlist' => 'Durata prevista ca. :runtime min. Il job viene eseguito con protezione da sovrapposizioni; intervalli troppo stretti vengono rifiutati lato server.',
+        'timezone_default' => 'Fuso orario dell’installazione (:tz)',
+        'quiet_window' => 'Gli orari nel periodo di riposo vengono spostati alla sua fine; le cadenze si fermano durante il periodo. Senza un periodo di riposo proprio vale la finestra operativa del server (:window), non con un fuso orario proprio, perché la finestra è definita nel fuso dell’installazione.',
+        'quiet_window_none' => 'Gli orari nel periodo di riposo vengono spostati alla sua fine; le cadenze si fermano durante il periodo. Se vuoto, il job viene eseguito a qualsiasi ora.',
+        'retry' => 'Se un’esecuzione non riesce, il job riparte dopo l’intervallo, al massimo per il numero di volte indicato, con protezione dalle sovrapposizioni e visibile nel registro delle esecuzioni. 0 = nessuna ripetizione.',
     ],
     'flash' => [
         'rescheduled' => 'Il job :job è stato ripianificato.',

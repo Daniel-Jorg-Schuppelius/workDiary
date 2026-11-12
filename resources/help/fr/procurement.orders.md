@@ -1,7 +1,7 @@
 ---
 title: "Achats & commandes"
 topic: procurement.orders
-version: 3
+version: 6
 keywords:
     - approvisionnement
     - bon de commande
@@ -60,3 +60,17 @@ Si des justificatifs obligatoires sont exigés du fournisseur (par exemple attes
 ## Réponse du fournisseur via GAEB
 
 Outre la confirmation openTRANS, **Importer la réponse du fournisseur** lit aussi les fichiers commerciaux GAEB. Un **X97** (confirmation de la commande X96) enregistre la quantité, le prix et la date confirmés par ligne et signale les écarts sans modifier la commande. Un **X94** (offre de prix à la demande X93) reprend les prix unitaires proposés dans la commande tant qu’elle est en brouillon. Les lignes sont rapprochées par la référence article du fournisseur ; le fichier doit correspondre au numéro de la commande. La demande de prix elle-même (**Demande de prix (GAEB X93)**) et le champ pour l’offre se trouvent dans la commande en brouillon.
+
+## Unité de commande et réception
+
+Si l’article possède d’autres unités, vous choisissez l’**unité de commande** en ajoutant la ligne (par exemple rouleau au lieu de mètre). La quantité et le prix unitaire s’entendent alors par unité de commande, de même que les quantités commandée et livrée de la ligne. La réception convertit en unité de base : le stock reçoit la quantité en unité de base, le prix de revient est tenu par unité de base, et le journal de stock affiche la saisie dans l’unité de commande. Le conditionnement d’un article fournisseur reste une grandeur d’arrondi des propositions de commande en unité de base.
+
+Les articles portant la propriété « durée de conservation requise » exigent un lot et une date limite de consommation à la réception ; un lot déjà connu apporte sa date.
+
+## Types de justificatifs et proposition de commande
+
+Sous **Justificatifs obligatoires → Types de justificatifs**, vous gérez les types propres à l’organisation : désignation, validité standard, préavis, comportement en cas de justificatif manquant et caractère obligatoire. Avec des étiquettes, l’obligation ne vaut que pour les fournisseurs qui en portent une (corps de métier, type de prestation). Les types du catalogue servent de modèle et peuvent être repris comme type propre ; les types propres sont désactivés au lieu d’être supprimés.
+
+Leur gestion requiert le droit **Gérer les types de justificatifs des fournisseurs** (par défaut : administration et direction). Le droit de modifier les fournisseurs ne suffit pas, car un type de justificatif peut bloquer l’envoi des commandes à tous les fournisseurs de l’organisation.
+
+La **proposition de commande** arrondit au conditionnement de l’article fournisseur. Si l’article possède une unité ayant exactement ce facteur, la proposition commande dans cette unité et convertit le prix par unité de commande.

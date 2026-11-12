@@ -132,6 +132,7 @@ final class GaebManifest extends Manifest {
             \App\Services\Procurement\Contracts\PurchaseOrderGaebResponseReader::class => \App\Services\Gaeb\GaebOrderResponseReader::class,
             \App\Services\Invoicing\Contracts\InvoiceGaebExporter::class => \App\Services\Gaeb\GaebInvoiceExportService::class,
             \App\Services\Takeoff\Contracts\TakeoffProgressRecorder::class => \App\Services\Gaeb\BoqProgressService::class,
+            \App\Services\Protocol\Contracts\BoqProgressReporter::class => \App\Services\Gaeb\ProtocolBoqProgressReporter::class,
         ];
     }
 }

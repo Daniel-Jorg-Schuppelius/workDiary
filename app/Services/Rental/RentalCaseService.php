@@ -21,7 +21,7 @@ use App\Models\Asset\Asset;
 use App\Models\Contract\{Contract, ContractSigningRevision};
 use App\Models\Notification\NotificationDispatchLog;
 use App\Models\Platform\{Organization, User};
-use App\Models\Rental\{RentalCase, RentalCaseAsset, RentalHandoverReport, RentalRateCard, RentalReservation, RentalReturnReport};
+use App\Models\Rental\{RentalCase, RentalCaseAsset, RentalHandoverReport, RentalProfile, RentalRateCard, RentalReservation, RentalReturnReport};
 use App\Services\Asset\AssetBlockService;
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\Numbering\NumberSequenceService;
@@ -150,6 +150,23 @@ class RentalCaseService {
     }
 
     /**
+     * Weiche Vormerkungen anderer Vorgänge im Zeitraum der Akte (MVP-1604):
+     * Hinweis beim Reservieren, keine Sperre.
+     *
+     * @return list<RentalReservation>
+     */
+    public function softConflicts(RentalCase $case): array {
+        $found = [];
+        foreach ($case->caseAssets()->with('asset')->get() as $caseAsset) {
+            if ($caseAsset->asset instanceof Asset && $caseAsset->status->isOpen()) {
+                array_push($found, ...$this->availability->softConflicts($caseAsset->asset, $case->starts_at, $case->ends_at, $case->id));
+            }
+        }
+
+        return $found;
+    }
+
+    /**
      * Übergabeprotokoll je Leihobjekt (MVP-263). Sobald alle Positionen
      * übergeben sind, wechselt die Akte auf HandedOver.
      *
@@ -169,6 +186,15 @@ class RentalCaseService {
             // Kein stilles Übergeben gesperrter Geräte — auch wenn die
             // Sperre erst nach der Reservierung entstanden ist.
             app(\App\Services\Asset\AssetUsageGuard::class)->ensureUsable($asset, RentalAvailabilityService::USAGE_CONTEXT);
+            // Der Mindestzustand gilt auch bei der Übergabe: der Zustand kann seit der Reservierung gesunken sein (MVP-1628).
+            $profile = RentalProfile::query()->where('asset_id', $asset->id)->first();
+            if ($profile?->isBelowMinCondition() === true) {
+                throw new \App\Exceptions\AssetNotUsableException((string) __('rental.condition.below_minimum', [
+                    'asset' => $asset->name,
+                    'current' => $profile->current_condition?->label(),
+                    'minimum' => $profile->min_condition?->label(),
+                ]));
+            }
 
             $caseAsset = $this->caseAssetFor($case, $asset);
 
@@ -360,6 +386,8 @@ class RentalCaseService {
 
             $caseAsset->forceFill(['status' => RentalCaseAssetStatus::Returned])->save();
             $asset->audit('rental.returned', ['case' => $case->number, 'report_id' => $report->id]);
+            // Der Rücknahmezustand ist der Stand, gegen den der Mindestzustand des Profils prüft (MVP-1604).
+            $asset->rentalProfile?->forceFill(['current_condition' => $report->condition])->save();
 
             $case->reservations()->active()->where('asset_id', $asset->id)
                 ->get()
@@ -457,21 +485,41 @@ class RentalCaseService {
         return $count;
     }
 
+    /**
+     * Reinigung erledigt (MVP-1604): beendet das Reinigungsfenster vor seinem
+     * Ablauf, das Gerät ist wieder vergebbar.
+     */
+    public function completeCleaning(RentalReservation $reservation, User $actor): RentalReservation {
+        if ($reservation->kind !== RentalReservationKind::Cleaning || $reservation->status !== RentalReservationStatus::Active) {
+            throw new \RuntimeException((string) __('rental.cleaning.not_open'));
+        }
+
+        $reservation->forceFill([
+            'status' => RentalReservationStatus::Completed,
+            'ends_at' => $reservation->ends_at->min(now()),
+        ])->save();
+        $reservation->asset?->audit('rental.cleaningDone', ['reservation_id' => $reservation->id, 'by' => $actor->id]);
+
+        return $reservation;
+    }
+
     private function applyFollowUp(RentalCase $case, Asset $asset, User $actor, RentalReturnReport $report): void {
+        // „Reinigung erforderlich“ wirkt neben jeder Folgeentscheidung (MVP-1604).
+        if ($report->cleaning_required || $report->follow_up === RentalReturnFollowUp::Cleaning) {
+            RentalReservation::query()->create([
+                'organization_id' => $case->organization_id,
+                'rental_case_id' => $case->id,
+                'asset_id' => $asset->id,
+                'kind' => RentalReservationKind::Cleaning->value,
+                'status' => RentalReservationStatus::Active,
+                'starts_at' => $report->reported_at,
+                'ends_at' => $report->reported_at->copy()->addHours(max(1, $asset->rentalProfile->buffer_after_hours ?? 4)),
+                'note' => (string) __('Reinigung nach Rücknahme :number', ['number' => $case->number]),
+                'created_by' => $actor->id,
+            ]);
+        }
+
         switch ($report->follow_up) {
-            case RentalReturnFollowUp::Cleaning:
-                RentalReservation::query()->create([
-                    'organization_id' => $case->organization_id,
-                    'rental_case_id' => $case->id,
-                    'asset_id' => $asset->id,
-                    'kind' => RentalReservationKind::Cleaning->value,
-                    'status' => RentalReservationStatus::Active,
-                    'starts_at' => $report->reported_at,
-                    'ends_at' => $report->reported_at->copy()->addHours(max(1, $asset->rentalProfile->buffer_after_hours ?? 4)),
-                    'note' => (string) __('Reinigung nach Rücknahme :number', ['number' => $case->number]),
-                    'created_by' => $actor->id,
-                ]);
-                break;
 
             case RentalReturnFollowUp::Repair:
             case RentalReturnFollowUp::Block:
@@ -488,6 +536,7 @@ class RentalCaseService {
                 $this->escalateToClaim($case, $asset, $actor, $report);
                 break;
 
+            case RentalReturnFollowUp::Cleaning:
             case RentalReturnFollowUp::None:
                 break;
         }

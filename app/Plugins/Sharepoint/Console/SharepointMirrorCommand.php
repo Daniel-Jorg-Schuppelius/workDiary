@@ -20,8 +20,8 @@ use App\Plugins\Support\Mirror\MirrorTarget;
  * Voll-Spiegellauf der SharePoint-Ablage (MVP-330, Bauturbo A10; Kern im
  * gemeinsamen {@see MirrorBackfillCommand}): reiht alle aktuell freigegebenen
  * Dokumente je Organisation idempotent in die Integrations-Outbox ein.
- * Läuft manuell aus der Admin-UI (bewusst kein Scheduler-Registry-Eintrag,
- * wie der WebDAV-Bestand).
+ * Läuft beim Aktivieren der Ablage und manuell aus der Admin-UI, ohne
+ * Zeitplan (Begründung im Basisbefehl).
  */
 class SharepointMirrorCommand extends MirrorBackfillCommand {
     protected $signature = 'sharepoint:mirror

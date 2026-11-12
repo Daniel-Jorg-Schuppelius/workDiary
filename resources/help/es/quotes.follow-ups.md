@@ -1,7 +1,7 @@
 ---
 title: "Seguimiento de presupuestos"
 topic: quotes.follow-ups
-version: 1
+version: 2
 keywords:
     - hacer seguimiento
     - recordatorio de presupuesto
@@ -28,6 +28,11 @@ a un periodo y en el que un presupuesto vencido quedaría fuera de la vista.
 (días laborables tras el envío, configurable en *Ajustes → Presupuestos*).
 Una fecha ya fijada nunca se sobrescribe. La fecha puede aplazarse en
 cualquier momento, por ejemplo si el cliente pide tiempo para decidir.
+
+**Responsable:** Elija quién hace el seguimiento en el diálogo «Nueva
+oferta» y al fijar la fecha de seguimiento. Sin elección, lo hace la
+persona que creó el presupuesto. El recordatorio va a la persona responsable, y
+«Solo los míos» muestra sus presupuestos.
 
 **Hacer seguimiento:** Al registrar el contacto se crea una nota de
 comunicación en el expediente del cliente — es allí donde se buscará más

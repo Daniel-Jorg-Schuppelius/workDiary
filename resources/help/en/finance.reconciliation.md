@@ -1,7 +1,7 @@
 ---
 title: "Payment reconciliation"
 topic: finance.reconciliation
-version: 3
+version: 5
 keywords:
     - bank reconciliation
     - import bank statement
@@ -48,10 +48,25 @@ import alone changes no document** – only **confirmation** sets
 
 ## Practical cases
 
-- **Cash discount:** An underpayment within the discount tolerance (default
-  3 %) counts as a full payment.
-- **Cent tolerance:** Rounding differences up to 2 cents do not prevent a
-  suggestion.
+- **Find document:** if no suggestion fits, **Find document** on the open
+  transaction opens the list of all open invoices, approved expenses and
+  customer accounts. You choose the document, the amount (smaller = partial
+  payment, larger = overpayment), optionally the kind and a note.
+- **Transaction without document:** with local accounting you post a bank fee,
+  interest, a private withdrawal or an offsetting directly bank to ledger
+  account with **Post to ledger account**, optionally with tax code (the
+  transaction is the gross amount) and cost centre. The transaction then
+  counts as set aside and posted. **Post to clearing account** and the
+  internal transfer remain available.
+- **Cash discount:** An underpayment within the discount tolerance counts as a
+  full payment with cash discount. If the invoice has its own cash discount
+  terms, their amount and deadline apply; otherwise the organisation's discount
+  tolerance (default 3 %).
+- **Cent tolerance:** Rounding differences up to the organisation's cent
+  tolerance (default 0.02) do not prevent a suggestion. You set both tolerances
+  in the organisation settings under **Bank reconciliation**.
+- **Expenses:** Debits are only suggested for reimbursing approved expenses
+  paid privately; company card, cash box and bank transfer are company funds.
 - **Partial/overpayment:** tracked as their own allocation kind; on a partial
   payment the invoice stays open.
 - **Balance chain:** Opening balance + sum of transactions is checked against

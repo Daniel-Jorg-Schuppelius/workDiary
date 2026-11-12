@@ -1,7 +1,7 @@
 ---
 title: "Tableau de bord"
 topic: dashboard.overview
-version: 3
+version: 4
 keywords:
     - page d'accueil
     - accueil
@@ -33,6 +33,8 @@ quelqu'un qui n'en a pas. Les tuiles masquées n'interrogent plus les
 données : un tableau de bord rangé se charge donc aussi plus vite.
 
 Les tuiles de comptage des widgets d’indicateurs mènent au journal des ordres avec le filtre d’état correspondant, aux services et à la liste des membres.
+
+**Mouvements financiers :** dans la zone Finances, cette tuile affiche par source les mouvements sans rattachement — relevés bancaires du rapprochement des paiements et Firefly III — et, en dessous, les derniers mouvements des 30 derniers jours, y compris le compte de boutique Etsy. Le nombre ouvre la liste de la source, filtrée sur les mouvements ouverts pour Firefly III. Les relevés bancaires sont visibles avec le droit au rapprochement des paiements, Firefly III et Etsy par l’administration tant que le plugin est activé.
 
 ## Prérequis
 

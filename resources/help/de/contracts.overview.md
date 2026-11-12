@@ -1,7 +1,7 @@
 ---
 title: "Vertragsverwaltung"
 topic: contracts.overview
-version: 1
+version: 3
 keywords:
     - Vertragsmanagement
     - Verträge
@@ -27,6 +27,8 @@ Das Modul führt allgemeine Verträge (Miete, Wartung, Software, Rahmenverträge
 
 **Fristen im Blick:** Kündigungs- und Verlängerungstermine erzeugen Erinnerungen über die Benachrichtigungsregeln (mehrstufige Eskalation, optional Kalender-Kanal). So läuft kein Vertrag unbemerkt in die Verlängerung.
 
-**Obligationen:** Wiederkehrende Pflichten (Zahlungen, Prüfungen, Meldungen) werden je Vertrag geführt und erscheinen im Fristenkalender.
+**Obligationen:** Wiederkehrende Pflichten (Zahlungen, Prüfungen, Meldungen) werden je Vertrag geführt und erscheinen im Kalender (Menü „Kalender“), zusammen mit Vertragsende, Verlängerung und Indexprüfung.
 
 **Verknüpfung:** Leasing-/Finanzierungsverträge aus der Asset-Verwaltung können einem Vertrag zugeordnet werden; Dokumente hängen wie überall als Anhänge an der Akte.
+
+**Notiz zur Obligation:** Zu jeder Vertragsobligation (Frist, Pflicht) können Sie eine Notiz hinterlegen, etwa was zu tun ist oder wer zu informieren ist.

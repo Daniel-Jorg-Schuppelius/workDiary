@@ -22,4 +22,10 @@ return [
         'scheduleHint' => 'Clients ayant une intervention terminée ou un ticket résolu dans l’intervalle, au plus une fois par intervalle. Vide = désactivé.',
         'saved' => 'Déclencheurs enregistrés.',
     ],
+    // En-tête du questionnaire (MVP-1610).
+    'header' => [
+        'edit_title' => 'Modifier le questionnaire',
+        'updated' => 'Questionnaire enregistré.',
+        'anonymous_locked' => 'L\'anonymat ne peut plus être modifié après la première invitation.',
+    ],
 ];

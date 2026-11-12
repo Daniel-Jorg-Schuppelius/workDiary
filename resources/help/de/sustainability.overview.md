@@ -1,7 +1,7 @@
 ---
 title: "Nachhaltigkeit & ESG"
 topic: sustainability.overview
-version: 2
+version: 3
 keywords:
     - CO2-Bilanz
     - CO2-Fußabdruck
@@ -55,3 +55,15 @@ in der Übersicht nicht mehr erscheinen.
 CSV-Export mit Methodikangabe und einfrierbarem
 Managementbewertungs-Snapshot. Die VSME-1.0-Referenzmatrix zeigt, welche
 WorkDiary-Daten welchen Berichtsabschnitt vorbereiten.
+
+**Bewertung mit Bezugsobjekt:** „Bewertung starten“ fragt nach dem
+Bezugsobjekt: Asset, Fahrzeug, Standort, Raum, Projekt, Auftrag, Lieferant,
+Artikel, Investition oder Vertrag. Zur Wahl stehen die Objekte freigeschalteter
+Module, die Sie lesen dürfen; ohne Bezugsobjekt geben Sie eine Bezeichnung ein.
+Asset, Lieferant und Investition tragen den Knopf „Nachhaltigkeit bewerten“.
+Die Bewertung verlinkt ihr Objekt und alle Bewertungen desselben Objekts; jede
+weitere Bewertung eines Objekts ist eine neue Version.
+
+**Maßnahmen je Bewertung:** Eine Maßnahme lässt sich einer Bewertung zuordnen,
+beim Erfassen in der Übersicht oder direkt an der Bewertung. Die
+Maßnahmenliste verlinkt die Bewertung.

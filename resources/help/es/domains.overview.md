@@ -1,7 +1,7 @@
 ---
 title: "Gestión de dominios"
 topic: domains.overview
-version: 2
+version: 5
 keywords:
     - registrar dominio
     - renovar dominio
@@ -79,3 +79,16 @@ por subusuario. Para cada subusuario puede introducir el número de cliente en
 el proveedor; los comprobantes mensuales construidos a partir del diario
 contable en el registro de reventa llevan entonces los números de factura del
 portal («número de cliente-MM-AAAA»).
+
+**Comandos inciertos:** si la respuesta del proveedor queda incompleta, el comando pasa a «incierto» y nunca se repite. La próxima sincronización lee el estado del dominio en el proveedor: registro, modo de renovación, bloqueo de transferencia y renovación se confirman así, se reconocen como fallidos o se marcan como conflicto. Las transferencias, el DNS y las acciones de alto riesgo no tienen consulta de estado — compruébelos en el proveedor y ciérrelos manualmente con un motivo en el diario de comandos.
+
+**Costes y saldo:** en los ajustes de la organización fija un umbral de coste para renovaciones y un saldo mínimo. La gestión de dominios avisa de renovaciones próximas por encima del umbral y de cuentas del proveedor cuyo saldo con límite de crédito no cubre las renovaciones de los próximos días — sin cobertura, el proveedor elimina los dominios en su fecha de fallo.
+
+**Modo de renovación:** se pueden elegir los tres modos que documenta el
+proveedor: renovación automática, expiración automática y eliminación automática.
+Un valor guardado antes, «Renovar una vez», queda como desconocido tras la
+actualización; la siguiente sincronización lee el modo real en el proveedor.
+
+## Estado de sincronización de un dominio
+
+Mientras se ejecuta una orden al proveedor, el dominio muestra **Pendiente**. Si su resultado sigue siendo incierto o el proveedor difiere tras la escritura, muestra **Incierto** o **Conflicto** y aparece en el mosaico de problemas de sincronización; una sincronización no lo sobrescribe mientras la orden siga abierta. Tras el cierre – automático o manual – el dominio muestra **Obsoleto** hasta que la siguiente sincronización lo vuelva a leer.

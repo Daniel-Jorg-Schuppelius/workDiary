@@ -13,11 +13,10 @@ namespace App\Plugins\Msgraph\Api;
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
 use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
-use App\Plugins\Support\{ConnectionTokenStore, PluginHttpFactory};
+use App\Plugins\Support\{ConnectionTokenStore, PluginApiException, PluginHttpFactory};
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeContainer, IntakeItem};
 use App\Services\CloudIntake\StaleCheckpointException;
 use Psr\Http\Message\StreamInterface;
-use RuntimeException;
 
 /**
  * Microsoft-Graph-Gateway für den LESENDEN Dokumenteingang (Feature 080,
@@ -51,7 +50,7 @@ class MsgraphIntakeClient implements GraphSubscriptionClient {
     public function account(): IntakeAccount {
         $response = $this->api->getResponse($this->base . '/me');
         if (! $response->successful()) {
-            throw new RuntimeException('Graph /me fehlgeschlagen (HTTP ' . $response->status() . ').');
+            throw new PluginApiException('Graph /me fehlgeschlagen (HTTP ' . $response->status() . ').', $response->status());
         }
 
         /** @var array{id?: string, displayName?: string, mail?: string, userPrincipalName?: string} $data */
@@ -76,7 +75,7 @@ class MsgraphIntakeClient implements GraphSubscriptionClient {
     public function containers(?string $search = null): array {
         $response = $this->api->getResponse($this->base . '/me/drives');
         if (! $response->successful()) {
-            throw new RuntimeException('Graph /me/drives fehlgeschlagen (HTTP ' . $response->status() . ').');
+            throw new PluginApiException('Graph /me/drives fehlgeschlagen (HTTP ' . $response->status() . ').', $response->status());
         }
 
         $containers = [];
@@ -179,7 +178,7 @@ class MsgraphIntakeClient implements GraphSubscriptionClient {
             throw new StaleCheckpointException('Graph-Delta-Token abgelaufen (410 Gone).');
         }
         if (! $response->successful()) {
-            throw new RuntimeException('Graph delta fehlgeschlagen (HTTP ' . $response->status() . ').');
+            throw new PluginApiException('Graph delta fehlgeschlagen (HTTP ' . $response->status() . ').', $response->status());
         }
 
         /** @var array{value?: list<array{id?: string, name?: string, size?: int, eTag?: string, cTag?: string, lastModifiedDateTime?: string, deleted?: array<string, mixed>, file?: array{mimeType?: string, hashes?: array{quickXorHash?: string}}, parentReference?: array{path?: string, id?: string}}>, '@odata.nextLink'?: string, '@odata.deltaLink'?: string} $data */
@@ -229,7 +228,7 @@ class MsgraphIntakeClient implements GraphSubscriptionClient {
         $response = $this->api->getResponse($url);
 
         if (! $response->successful()) {
-            throw new RuntimeException('Graph-Download fehlgeschlagen (HTTP ' . $response->status() . ').');
+            throw new PluginApiException('Graph-Download fehlgeschlagen (HTTP ' . $response->status() . ').', $response->status());
         }
 
         return $response->toPsrResponse()->getBody();

@@ -1,7 +1,7 @@
 ---
 title: "Ordini di stampa (stampa & copisteria)"
 topic: print.orders
-version: 1
+version: 2
 keywords:
     - centro stampa
     - preflight
@@ -45,3 +45,5 @@ rilavorazione.
 spedizione usa la logistica esistente, la vendita al banco resta minimale
 nei dati. Alla scadenza di conservazione viene rimosso solo il file del
 cliente — ordine, snapshot e checksum restano come prova commerciale.
+
+**Margine di sicurezza e colori speciali:** nell’approvazione di stampa registrate il margine di sicurezza in millimetri e i colori speciali. Entrambi compaiono poi nello stato di produzione dell’ordine.

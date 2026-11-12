@@ -40,6 +40,9 @@ return [
         'next_action' => 'Relancer à nouveau le devis :number',
         'wrong_status' => 'Seuls les devis envoyés ou approuvés peuvent être relancés.',
         'no_customer' => 'Le devis n’a pas de client — sans client, il n’y a pas de dossier pour la note.',
+        'owner_field' => 'Responsable de la relance',
+        'owner_default' => 'Auteur du devis (par défaut)',
+        'owner_hint' => 'Reçoit le rappel lorsque la date de relance est atteinte et apparaît sous « Les miens seulement ».',
         'kpi' => [
             'due' => 'Dues',
             'upcoming' => 'À venir',
@@ -114,7 +117,6 @@ return [
         'flash' => [
             'confirmed' => 'Confirmation de commande :number confirmée.',
             'cancelled' => 'Confirmation de commande annulée.',
-            'create_first' => 'Veuillez d\'abord créer la confirmation de commande.',
         ],
         'error' => [
             'not_won' => 'Seuls les devis acceptés sont confirmés.',

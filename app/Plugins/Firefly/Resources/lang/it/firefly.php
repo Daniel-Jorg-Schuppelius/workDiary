@@ -49,6 +49,7 @@ return [
         'search' => 'Ricerca',
         'search_placeholder' => 'Causale, controparte, numero di documento',
         'all_matches' => 'Tutte le assegnazioni',
+        'open_matches' => 'Aperti (senza assegnazione o ambigui)',
         'col' => [
             'date' => 'Data',
             'kind' => 'Tipo',
@@ -56,9 +57,23 @@ return [
             'description' => 'Causale',
             'match' => 'Assegnazione',
             'amount' => 'Importo',
+            'actions' => 'Azioni',
         ],
         'empty' => 'Ancora nessun movimento',
         'foreign_amount' => 'Importo in una seconda valuta',
+    ],
+    // Erledigt markieren (MVP-1628)
+    'settle' => [
+        'title' => 'Segna il movimento come evaso',
+        'action' => 'Evaso',
+        'intro' => 'Il movimento non richiede un documento (ad esempio spese di tenuta conto o prelievo privato). Non conta più nel riquadro «Movimenti finanziari» né nella coda di lavoro; la sincronizzazione non lo modifica.',
+        'note' => 'Motivo',
+        'done' => 'Movimento segnato come evaso.',
+        'already' => 'Il movimento è già evaso.',
+        'reopened' => 'Movimento riaperto.',
+        'reopen' => 'Riapri',
+        'filter' => 'Evasi',
+        'badge' => 'Evaso da :name il :date',
     ],
     'search' => [
         'domain' => 'Movimenti Firefly III',
@@ -76,5 +91,10 @@ return [
     'health' => [
         'not_configured' => 'Firefly III non è configurato (mancano indirizzo o token).',
         'not_connected' => 'La connessione Firefly III non è ancora stata verificata.',
+    ],
+    'work_queue' => [
+        'source' => 'Firefly III',
+        'unmatched' => '{1} 1 movimento Firefly senza assegnazione|[2,*] :count movimenti Firefly senza assegnazione',
+        'ambiguous' => '{1} 1 movimento Firefly con assegnazione ambigua|[2,*] :count movimenti Firefly con assegnazione ambigua',
     ],
 ];

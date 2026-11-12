@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Die Org-Filterung übernehmen die Abfragen ausdrücklich.
  *
  * @property string $blocking_mode
+ * @property list<int>|null $required_tag_ids
  */
 class SupplierCredentialType extends Model {
     use Auditable;
@@ -42,6 +43,7 @@ class SupplierCredentialType extends Model {
         'warn_days_before',
         'blocking_mode',
         'is_required_default',
+        'required_tag_ids',
         'description',
         'frame_version',
         'is_active',
@@ -52,12 +54,30 @@ class SupplierCredentialType extends Model {
         'default_validity_months' => 'integer',
         'warn_days_before' => 'integer',
         'is_required_default' => 'boolean',
+        'required_tag_ids' => 'array',
         'is_active' => 'boolean',
     ];
 
     /** @return HasMany<SupplierCredential, $this> */
     public function credentials(): HasMany {
         return $this->hasMany(SupplierCredential::class);
+    }
+
+    /**
+     * Pflicht für diesen Lieferanten (MVP-1586): ohne Tag-Begrenzung für alle,
+     * sonst nur, wenn er eines der Tags trägt (Gewerk, Leistungsart).
+     *
+     * @param list<int> $supplierTagIds
+     */
+    public function requiredFor(array $supplierTagIds): bool {
+        $limited = array_map('intval', (array) ($this->required_tag_ids ?? []));
+
+        return $this->is_required_default && ($limited === [] || array_intersect($limited, $supplierTagIds) !== []);
+    }
+
+    /** Katalogzeile der Installation — Vorlage, nicht änderbar. */
+    public function isTemplate(): bool {
+        return $this->organization_id === null;
     }
 
     public function blocks(): bool {

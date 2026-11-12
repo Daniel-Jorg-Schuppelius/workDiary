@@ -1,7 +1,7 @@
 ---
 title: "Zahlungsabgleich"
 topic: finance.reconciliation
-version: 3
+version: 5
 keywords:
     - Bankabgleich
     - Kontoabgleich
@@ -51,10 +51,26 @@ Spese als erstattet.
 
 ## Praxisfälle
 
-- **Skonto:** Eine Unterzahlung innerhalb der Skonto-Toleranz (Standard 3 %)
-  gilt als vollständige Zahlung.
-- **Cent-Toleranz:** Rundungsdifferenzen bis 2 Cent verhindern keinen
-  Vorschlag.
+- **Beleg suchen:** Passt kein Vorschlag, öffnet **Beleg suchen** am offenen
+  Umsatz die Liste aller offenen Rechnungen, freigegebenen Spesen und
+  Kundenkonten. Sie wählen den Beleg, den Betrag (kleiner = Teilzahlung,
+  größer = Überzahlung), auf Wunsch die Art und eine Notiz.
+- **Umsatz ohne Beleg:** Bankgebühr, Zinsen, Privatentnahme oder Verrechnung
+  buchen Sie mit lokaler Buchhaltung über **Auf Sachkonto buchen** direkt Bank
+  an Sachkonto, auf Wunsch mit Steuerkennzeichen (der Umsatz ist der
+  Bruttobetrag) und Kostenstelle. Der Umsatz gilt danach als beiseitegelegt
+  und gebucht. Daneben bleiben **Auf Klärungskonto buchen** und die interne
+  Umbuchung.
+- **Skonto:** Eine Unterzahlung innerhalb der Skonto-Toleranz gilt als
+  vollständige Zahlung mit Skontoabzug. Trägt die Rechnung eine eigene
+  Skontokondition, gelten deren Betrag und Frist, sonst die Skonto-Toleranz der
+  Organisation (Standard 3 %).
+- **Cent-Toleranz:** Rundungsdifferenzen bis zur Cent-Toleranz der
+  Organisation (Standard 0,02) verhindern keinen Vorschlag. Beide Toleranzen
+  stellen Sie in den Einstellungen der Organisation unter **Bankabgleich** ein.
+- **Spesen:** Lastschriften werden nur privat verauslagten, freigegebenen
+  Spesen zur Erstattung vorgeschlagen; Firmenkarte, Barkasse und Überweisung
+  sind Firmenmittel.
 - **Teilzahlung/Überzahlung:** werden als eigene Zuordnungsart geführt; bei
   Teilzahlung bleibt die Rechnung offen.
 - **Saldenkette:** Eröffnungssaldo + Summe der Umsätze wird gegen den

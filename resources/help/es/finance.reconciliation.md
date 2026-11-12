@@ -1,7 +1,7 @@
 ---
 title: "Conciliación de pagos"
 topic: finance.reconciliation
-version: 3
+version: 5
 keywords:
     - conciliación bancaria
     - importar extracto bancario
@@ -53,10 +53,29 @@ sola no modifica ningún documento**: solo la **confirmación** establece
 
 ## Casos prácticos
 
-- **Descuento por pronto pago:** un pago inferior dentro de la tolerancia
-  de descuento (3 % por defecto) se considera pago completo.
-- **Tolerancia de céntimos:** las diferencias de redondeo de hasta 2
-  céntimos no impiden una sugerencia.
+- **Buscar justificante:** si ninguna sugerencia encaja, **Buscar
+  justificante** en el movimiento abierto muestra la lista de todas las
+  facturas abiertas, los gastos aprobados y las cuentas de cliente. Se elige
+  el justificante, el importe (menor = pago parcial, mayor = pago en exceso)
+  y, si se desea, el tipo y una nota.
+- **Movimiento sin justificante:** con contabilidad local, una comisión
+  bancaria, intereses, una retirada privada o una compensación se contabilizan
+  directamente banco a cuenta contable con **Contabilizar en cuenta
+  contable**, si se desea con código de impuesto (el movimiento es el importe
+  bruto) y centro de coste. Después el movimiento se considera apartado y
+  contabilizado. Siguen disponibles **Contabilizar en cuenta de aclaración** y
+  el traspaso interno.
+- **Descuento por pronto pago:** un pago inferior dentro de la tolerancia de
+  descuento se considera pago completo con descuento. Si la factura tiene
+  condiciones de descuento propias, se aplican su importe y su plazo; si no, la
+  tolerancia de descuento de la organización (3 % por defecto).
+- **Tolerancia de céntimos:** las diferencias de redondeo hasta la tolerancia
+  de céntimos de la organización (0,02 por defecto) no impiden una sugerencia.
+  Ambas tolerancias se configuran en los ajustes de la organización, en
+  **Conciliación bancaria**.
+- **Gastos:** los cargos solo se proponen para reembolsar gastos aprobados
+  pagados de forma privada; la tarjeta de empresa, la caja y la transferencia
+  bancaria son fondos de la empresa.
 - **Pago parcial/pago en exceso:** se gestionan como un tipo de asignación
   propio; en caso de pago parcial, la factura sigue abierta.
 - **Cadena de saldos:** se comprueba el saldo inicial + la suma de los

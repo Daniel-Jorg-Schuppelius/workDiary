@@ -88,6 +88,8 @@ return [
     'inventory' => [
         'heading' => 'Inventory leadership',
         'explain' => 'Defines which system leads the stock. Switching back to “local” imports the JTL stock as an opening stocktake.',
+        'takeover_heading' => 'Opening stocktake',
+        'takeover_explain' => 'Reads the JTL stock again and books the difference to the local stock as an opening correction — for example if the import failed when the mode was changed. Only possible on the day of the switch to “local”; a second run books nothing twice.',
         'mode_local' => 'Local — WorkDiary manages stock itself.',
         'mode_external' => 'External — JTL-Wawi leads; WorkDiary reads and hands over postings.',
         'mode_read_only' => 'Read only — JTL-Wawi leads; WorkDiary only displays stock.',
@@ -101,11 +103,13 @@ return [
         'check_registration' => 'Check approval',
         'map' => 'Map',
         'change_mode' => 'Change mode',
+        'takeover' => 'Run opening stocktake',
     ],
 
     'confirm' => [
         'disconnect' => 'Really disconnect? Mappings and projections are kept, the credentials are deleted.',
         'mode_change' => 'Really change the inventory leadership mode?',
+        'takeover' => 'Import the JTL stock as an opening stocktake now?',
     ],
 
     'flash' => [
@@ -127,8 +131,10 @@ return [
         'mode_needs_connection' => 'External inventory leadership requires an active JTL connection.',
         'mode_needs_mapping' => 'External inventory leadership requires at least one mapped JTL warehouse.',
         'mode_changed' => 'Inventory leadership mode changed.',
+        'mode_other_plugin' => 'Inventory is currently led by :plugin. Switch it on that plugin’s page.',
         'mode_changed_with_takeover' => 'Mode changed — :booked opening corrections imported from JTL.',
         'takeover_done' => 'Opening stocktake finished: :booked corrections from :pairs pairs.',
         'takeover_failed' => 'Opening stocktake failed (:reason).',
+        'takeover_not_today' => 'The opening stocktake is only possible on the day of the switch to “local” — afterwards the local stock leads.',
     ],
 ];

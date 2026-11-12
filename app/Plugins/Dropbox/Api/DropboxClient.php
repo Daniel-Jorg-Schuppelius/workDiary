@@ -13,12 +13,11 @@ namespace App\Plugins\Dropbox\Api;
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
 use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Plugins\Dropbox\{DropboxConfig, DropboxPlugin};
-use App\Plugins\Support\{ConnectionTokenStore, PluginHttpFactory};
+use App\Plugins\Support\{ConnectionTokenStore, PluginApiException, PluginHttpFactory};
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeContainer, IntakeItem};
 use App\Services\CloudIntake\StaleCheckpointException;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Psr\Http\Message\StreamInterface;
-use RuntimeException;
 
 /**
  * Dropbox-Gateway (Feature 080, MVP-353) auf dem php-api-toolkit-Fundament:
@@ -60,7 +59,7 @@ class DropboxClient {
     public function account(): IntakeAccount {
         $response = $this->api->postJson($this->apiBase . '/users/get_current_account');
         if (! $response->successful()) {
-            throw new RuntimeException('Dropbox get_current_account fehlgeschlagen (HTTP ' . $response->status() . ').');
+            throw new PluginApiException('Dropbox get_current_account fehlgeschlagen (HTTP ' . $response->status() . ').', $response->status());
         }
 
         /** @var array{account_id?: string, email?: string, name?: array{display_name?: string}} $data */
@@ -98,7 +97,7 @@ class DropboxClient {
             throw new StaleCheckpointException('Dropbox-Cursor abgelaufen (reset).');
         }
         if (! $response->successful()) {
-            throw new RuntimeException('Dropbox list_folder fehlgeschlagen (HTTP ' . $response->status() . ').');
+            throw new PluginApiException('Dropbox list_folder fehlgeschlagen (HTTP ' . $response->status() . ').', $response->status());
         }
 
         /** @var array{entries?: list<array<string, mixed>>, cursor?: string, has_more?: bool} $data */
@@ -144,7 +143,7 @@ class DropboxClient {
         ]);
 
         if (! $response->successful()) {
-            throw new RuntimeException('Dropbox-Download fehlgeschlagen (HTTP ' . $response->status() . ').');
+            throw new PluginApiException('Dropbox-Download fehlgeschlagen (HTTP ' . $response->status() . ').', $response->status());
         }
 
         return $response->toPsrResponse()->getBody();

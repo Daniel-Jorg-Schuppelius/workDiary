@@ -247,4 +247,24 @@ class AiMemoryServiceTest extends TestCase {
 
         $this->assertSame([], $this->service()->glossaryFor($this->organization, self::CAPABILITY));
     }
+
+    /** MVP-1590: Was in einen Prompt einfließt, zählt als benutzt — gesammelt, nicht je Eintrag. */
+    public function test_entries_fed_into_a_prompt_count_as_used(): void {
+        $used = AiMemoryEntry::factory()->create(['organization_id' => $this->organization->id, 'term' => 'benutzt']);
+        $other = AiMemoryEntry::factory()->create(['organization_id' => $this->organization->id, 'capability' => 'andere.capability', 'term' => 'unbenutzt']);
+        $service = $this->service();
+
+        $service->glossaryFor($this->organization, self::CAPABILITY);
+        $service->glossaryFor($this->organization, self::CAPABILITY);
+        $this->assertSame(0, $used->fresh()->usage_count, 'geschrieben wird erst am Ende des Requests');
+
+        \Illuminate\Support\Facades\DB::enableQueryLog();
+        $service->flushUsage();
+        $this->assertCount(1, \Illuminate\Support\Facades\DB::getQueryLog());
+        \Illuminate\Support\Facades\DB::disableQueryLog();
+
+        $this->assertSame(2, $used->fresh()->usage_count);
+        $this->assertNotNull($used->fresh()->last_used_at);
+        $this->assertSame(0, $other->fresh()->usage_count);
+    }
 }

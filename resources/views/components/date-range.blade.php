@@ -31,6 +31,7 @@
     'inputClass' => '',         // extra classes appended to inputs
     'formControl' => false,     // wrap split fields with DaisyUI form-control
     'linked' => true,           // koppelt Von/Bis: Bis kann nicht vor Von liegen
+    'fromData' => [],           // data-Attribute am „Von"-Feld (ohne Präfix), z. B. für den Vorbelegungs-Binder
 ])
 
 @php
@@ -69,6 +70,7 @@
                     @if($min !== null) min="{{ $min }}" @endif
                     @if($fromMax !== null) max="{{ $fromMax }}" @endif
                     @if($linked) data-range-from @endif
+                    @foreach ($fromData as $dataKey => $dataValue) data-{{ $dataKey }}="{{ $dataValue }}" @endforeach
                     class="{{ $inputBase }} w-full {{ $inputClass }} @if($fromError) input-error @endif"
                 >
                 @if($fromError)<p class="text-error text-sm">{{ $fromError }}</p>@endif
@@ -100,6 +102,7 @@
                     @if($min !== null) min="{{ $min }}" @endif
                     @if($fromMax !== null) max="{{ $fromMax }}" @endif
                     @if($linked) data-range-from @endif
+                    @foreach ($fromData as $dataKey => $dataValue) data-{{ $dataKey }}="{{ $dataValue }}" @endforeach
                     class="{{ $inputBase }} w-full {{ $inputClass }} @if($fromError) input-error @endif"
                 >
                 @if($fromError)<p class="mt-1 text-sm text-error">{{ $fromError }}</p>@endif
@@ -140,6 +143,7 @@
                 @if($min !== null) min="{{ $min }}" @endif
                 @if($fromMax !== null) max="{{ $fromMax }}" @endif
                 @if($linked) data-range-from @endif
+                @foreach ($fromData as $dataKey => $dataValue) data-{{ $dataKey }}="{{ $dataValue }}" @endforeach
                 class="join-item flex-1 min-w-0 {{ $inputBase }} {{ $inputClass }}"
                 title="{{ $fromLabel }}"
                 aria-label="{{ $fromLabel }}"

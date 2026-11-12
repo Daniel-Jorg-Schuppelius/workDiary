@@ -1,7 +1,7 @@
 ---
 title: "License management"
 topic: admin.license
-version: 3
+version: 4
 keywords:
     - license key
     - plan
@@ -73,3 +73,5 @@ VAT ID and purchase order reference for billing by the operator. There you
 also request a different plan or add-on modules; each organization has one
 open request, which you can withdraw. The operator completes it by issuing
 a new license.
+
+**Limits:** When issuing, you set not only the number of users but also the number of organisations of an installation and the storage quota per organisation in GB — in the issuer console and on the command line with --max-orgs and --storage-quota-gb. An organisation licence carries the number of users and the storage quota. Once a limit is reached, WorkDiary rejects creating another organisation or further uploads; “Limits” shows the usage.

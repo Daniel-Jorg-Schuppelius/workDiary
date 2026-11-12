@@ -37,6 +37,8 @@ return [
 
     'notes' => [
         'reverse_charge' => 'Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge, §13b UStG / Art. 196 MwStSystRL).',
+        // Inland (§ 13b Abs. 2 und 5 UStG), Pflichtangabe nach § 14a Abs. 5 UStG (MVP-1622).
+        'reverse_charge_domestic' => 'Steuerschuldnerschaft des Leistungsempfängers (§ 13b UStG).',
         'export' => 'Nicht im Inland steuerbare Leistung (Leistungsort beim Empfänger, §3a UStG).',
     ],
 ];

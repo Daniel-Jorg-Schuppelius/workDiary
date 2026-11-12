@@ -62,4 +62,23 @@ return [
         'proposed_action' => 'Accept or decline in the customer portal',
         'rescheduled_title' => 'Your appointment has been moved',
     ],
+    // Assignment and maintenance (MVP-1610, MVP-1612).
+    'assign' => [
+        'action' => 'Assign',
+        'title' => 'Assign request',
+        'submit' => 'Assign',
+        'invitee' => 'Booked by :name (:email).',
+        'customer_hint' => 'On confirmation, the order is created for this customer.',
+        'lead' => 'Lead',
+        'lead_hint' => 'If the lead is already a customer, the customer is assigned as well.',
+        'required' => 'Please choose a customer or a lead.',
+        'done' => 'Request assigned.',
+        'decided' => 'Decided requests can no longer be assigned.',
+    ],
+    'service' => [
+        'edit_title' => 'Edit service type',
+        'updated' => 'Service type “:title” saved.',
+        'site_foreign' => 'This service type is bound to a site of another customer.',
+        'site_hint' => 'With a site, only the customer who owns the site can book; it becomes the order location.',
+    ],
 ];

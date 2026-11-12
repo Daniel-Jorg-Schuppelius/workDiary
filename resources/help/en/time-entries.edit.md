@@ -1,7 +1,7 @@
 ---
 title: "Edit a time entry"
 topic: time-entries.edit
-version: 3
+version: 4
 keywords:
     - correct time
     - change time entry
@@ -93,6 +93,8 @@ they are not locked. An entry is locked if
 - the correction window has expired (by default 7 days after the day of the
   entry),
 - the month has already been released for you,
+- you have already closed the day of the entry (changes then go through
+  **Request correction** in the day view),
 - the related timesheet is signed or locked, or
 - the entry has already been exported.
 

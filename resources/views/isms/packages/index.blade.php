@@ -158,6 +158,12 @@
                                                 :label="__('isms.action.create_token')" />
                                 @endcan
                             @else
+                                @can('update', $package)
+                                    <x-icon-btn icon="edit" tone="outline" size="xs"
+                                                data-entry-modal-trigger
+                                                :href="route('isms.packages.edit', $package)"
+                                                :label="__('isms.action.edit_package')" />
+                                @endcan
                                 @can('finalize', $package)
                                     <x-action-form :action="route('isms.packages.finalize', $package)"
                                           data-confirm-title="{{ __('isms.action.finalize_package') }}"

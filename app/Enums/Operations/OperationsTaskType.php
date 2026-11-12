@@ -48,6 +48,7 @@ enum OperationsTaskType: string implements HasLabel {
     // Cloud-Dokumenteingang (Feature 080 P9; Audit 2026-08, W4.4).
     case CloudIntakeReauth = 'cloud_intake_reauth';
     case CloudIntakeQuarantined = 'cloud_intake_quarantined';
+    case SmsBudgetWarning = 'sms_budget_warning';
 
     public function label(): string {
         return __('operations.type.' . $this->value);
@@ -71,6 +72,7 @@ enum OperationsTaskType: string implements HasLabel {
             self::ProblemReportOpen => NotificationEvent::OperationsProblemReportReceived,
             self::CloudIntakeReauth => NotificationEvent::OperationsCloudIntakeReauth,
             self::CloudIntakeQuarantined => NotificationEvent::OperationsCloudIntakeQuarantined,
+            self::SmsBudgetWarning => NotificationEvent::OperationsSmsBudgetWarning,
             // Fehlende Konfiguration/offene Supportfreigaben sind reine
             // Aufgaben (Onboarding-/Grant-UI benachrichtigt bereits selbst);
             // die Limit-Warnung (N9) ist ebenfalls eine reine Betriebsaufgabe.

@@ -15,7 +15,4 @@ namespace App\Plugins\Msgraph\Enums;
 /** Stand einer To-Do-Listen-Zuordnung: nur aktive Zuordnungen werden synchronisiert. */
 enum MsgraphTaskListLinkStatus: string {
     case Active = 'active';
-
-    /** Im Schema vorgesehen, heute von keinem Code geschrieben. */
-    case Paused = 'paused';
 }

@@ -25,18 +25,26 @@ use Illuminate\Support\Carbon;
 class ValuationBackfillService {
     public const int SCALE = 4;
 
-    public function backfill(Organization $organization): int {
+    /**
+     * Mit Varianten ist es der Verfahrenswechsel: dort zählen nur Schichten mit
+     * Restmenge, weil verbrauchte aus einer früheren Schichtphase stammen können.
+     *
+     * @param list<int>|null $variantIds
+     */
+    public function backfill(Organization $organization, ?array $variantIds = null): int {
         $created = 0;
 
         $valuations = StockValuation::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->where('qty_on_hand', '>', 0)
+            ->when($variantIds !== null, fn ($q) => $q->whereIn('article_variant_id', $variantIds ?? []))
             ->get();
 
         foreach ($valuations as $valuation) {
             $hasLayer = StockValuationLayer::query()->withoutGlobalScopes()
                 ->where('article_variant_id', $valuation->article_variant_id)
                 ->where('warehouse_id', $valuation->warehouse_id)
+                ->when($variantIds !== null, fn ($q) => $q->where('qty_remaining', '>', 0))
                 ->exists();
             if ($hasLayer) {
                 continue;

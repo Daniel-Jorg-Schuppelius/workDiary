@@ -69,7 +69,14 @@ class ExpenseService {
         });
     }
 
+    /**
+     * @throws ValidationException Kategorie mit Belegpflicht, aber kein Beleg hinterlegt
+     */
     public function submitForApproval(Expense $expense): Expense {
+        if ($expense->status === ExpenseStatus::Draft || $expense->status === ExpenseStatus::Rejected) {
+            $this->assertReceiptPresent($expense);
+        }
+
         $wasSubmitted = false;
 
         $expense = DB::transaction(function () use ($expense, &$wasSubmitted): Expense {
@@ -213,6 +220,18 @@ class ExpenseService {
         }
 
         return $attributes;
+    }
+
+    /** Belegpflicht der Kategorie: der Entwurf bleibt speicherbar, nur das Einreichen braucht den Beleg. */
+    private function assertReceiptPresent(Expense $expense): void {
+        $category = $expense->category()->first();
+        if (! $category instanceof ExpenseCategory || ! $category->requires_receipt || $expense->attachments()->exists()) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'receipt' => (string) __('expenses.error.receipt_required', ['category' => $category->label]),
+        ]);
     }
 
     /**

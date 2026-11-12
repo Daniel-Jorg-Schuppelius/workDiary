@@ -64,6 +64,22 @@ final class CatalogLinkTest extends TestCase {
         ]);
     }
 
+    /** MVP-1620: eine nicht verknüpfte Position lässt sich bewusst ignorieren und wieder aufnehmen. */
+    public function test_item_can_be_ignored_and_restored(): void {
+        $item = $this->item();
+
+        $this->actingAs($this->admin)->post(route('supplier-catalogs.items.ignore', $item))->assertSessionHas('success', __('procurement.catalog.flash.ignored'));
+        $this->assertSame(CatalogItemStatus::Ignored, $item->fresh()?->status);
+        $this->actingAs($this->admin)->get(route('supplier-catalogs.show', $this->source))->assertOk()->assertSee(__('procurement.catalog.action.unignore'));
+
+        $this->actingAs($this->admin)->post(route('supplier-catalogs.items.ignore', $item))->assertSessionHas('success', __('procurement.catalog.flash.unignored'));
+        $this->assertSame(CatalogItemStatus::New, $item->fresh()?->status);
+
+        $this->links->link($item->fresh() ?? $item, $this->article());
+        $this->actingAs($this->admin)->post(route('supplier-catalogs.items.ignore', $item))->assertSessionHas('error');
+        $this->assertSame(CatalogItemStatus::Linked, $item->fresh()?->status);
+    }
+
     public function test_link_sets_status_and_creates_supply(): void {
         $item = $this->item();
         $article = $this->article();

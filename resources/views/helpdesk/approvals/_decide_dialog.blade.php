@@ -36,6 +36,17 @@
         </div>
     </div>
 
+    {{-- Angaben zum Gegenstand (MVP-1549): entschieden wird in Kenntnis der Antworten. --}}
+    @if ($entry->fields !== null)
+        <div class="mt-3" data-approval-fields>
+            <x-detail-grid layout="cells">
+                @foreach ($entry->fields->schema->visibleFor($entry->fields->values->toArray()) as $field)
+                    <x-detail-grid.row :label="$field->label"><x-field-display :field="$field" :values="$entry->fields->values" /></x-detail-grid.row>
+                @endforeach
+            </x-detail-grid>
+        </div>
+    @endif
+
     {{-- Entscheidungs-Umschaltung via Alpine.data("reveal") (components.js) — CSP-Build-konform. --}}
     <div class="mt-3 space-y-2"
          x-data="reveal(@js(old('decision', 'approved')))">

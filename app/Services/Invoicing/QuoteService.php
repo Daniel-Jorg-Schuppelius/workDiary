@@ -143,6 +143,11 @@ class QuoteService {
         $attributes = [
             'status' => QuoteStatus::Sent,
             'acceptance_token_hash' => CryptoHelper::hash($token),
+            // Wie die Rechnung beim Ausstellen: spätere Stammdatenänderungen deuten das versandte Angebot nicht um (MVP-1624).
+            'issuer_snapshot' => [
+                'issuer' => \App\Services\DocumentDesign\IssuerIdentity::for($quote->organization),
+                'contact' => QuotePdfRenderer::contactPerson($quote),
+            ],
         ] + ($number !== null ? ['number' => $number] : []);
 
         // Nachfasstermin vorbelegen (Feature 112, MVP-601) — nur vorbelegen,

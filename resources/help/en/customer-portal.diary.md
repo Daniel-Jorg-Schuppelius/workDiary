@@ -1,7 +1,7 @@
 ---
 title: "Diary and case file"
 topic: customer-portal.diary
-version: 4
+version: 5
 keywords:
     - job list
     - proof of work
@@ -67,6 +67,14 @@ Next to each photo you have not yet confirmed there are two buttons:
 - **Dispute** – the field **What is wrong?** opens. Describe the problem in at least 3 and at most 2000 characters and click **Send**.
 
 A dispute is sent to your contractor as a query about this order, and your contractor is notified. The message **Complaint submitted — we will get back to you.** confirms that it was sent. You receive the answer by email at your login email; if queries have been released to you, it also appears in the section **Queries and comments**.
+
+## Accepting protocols
+
+If a protocol is waiting for your acceptance, the section **Awaiting acceptance** appears above the **Protocols** list. **View and sign** opens the protocol with all its items. To accept it, enter your name, sign in the signature box with your finger, a pen or the mouse, confirm that the details are correct and click **Sign**. The signature cannot be withdrawn.
+
+If you have questions or objections, clarify them with your contractor before signing – via the queries, if they are released to you. After your signature your contractor completes the protocol; it is then available for download under **Protocols**.
+
+If you do not agree with the protocol, use **Reject** below it: state a reason and, if needed, name individual defects. Your contractor is notified and revises the protocol; it appears again under **Awaiting acceptance** as soon as it is resubmitted.
 
 ## Downloading protocols
 

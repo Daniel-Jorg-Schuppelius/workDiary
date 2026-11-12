@@ -48,8 +48,9 @@
             </x-filter-bar>
         @endif
 
-        <div class="grid gap-3 sm:grid-cols-2">
-            <x-kpi-tile :label="__('accounting.recapitulative.total')" :value="$total" />
+        <div class="grid gap-3 sm:grid-cols-3">
+            <x-kpi-tile :label="__('accounting.recapitulative.total')" :value="$total_goods" href="#recap-rows" />
+            <x-kpi-tile :label="__('accounting.recapitulative.kind.services')" :value="$total_services" href="#recap-rows" />
             <x-kpi-tile :label="__('accounting.reports.kpi.findings')" :value="count($unclear)" href="#recap-unclear" />
         </div>
 
@@ -65,11 +66,12 @@
             @endif
         </x-card>
 
-        <x-table scroll="flex" :zebra="true">
+        <x-table scroll="flex" :zebra="true" id="recap-rows" class="scroll-mt-24">
             <x-slot:head>
                 <tr>
                     <th>{{ __('accounting.recapitulative.column.vat_id') }}</th>
                     <th>{{ __('accounting.ledger.column.name') }}</th>
+                    <th>{{ __('accounting.recapitulative.column.kind') }}</th>
                     <th class="text-right">{{ __('accounting.ledger.column.amount') }}</th>
                 </tr>
             </x-slot:head>
@@ -77,10 +79,12 @@
                 <tr class="hover">
                     <td class="font-mono">{{ $row['vat_id'] }}</td>
                     <td>{{ $row['name'] }}</td>
+                    {{-- Art der Leistung der Meldung (MVP-1622): Lieferung oder sonstige Leistung. --}}
+                    <td>{{ __('accounting.recapitulative.kind.' . $row['kind']) }}</td>
                     <td class="text-right font-mono">{{ $row['amount'] }}</td>
                 </tr>
             @empty
-                <x-table.empty :colspan="3" icon="public" :title="__('accounting.reports.empty')" compact />
+                <x-table.empty :colspan="4" icon="public" :title="__('accounting.reports.empty')" compact />
             @endforelse
         </x-table>
 

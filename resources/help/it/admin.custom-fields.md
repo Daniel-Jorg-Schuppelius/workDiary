@@ -1,7 +1,7 @@
 ---
 title: "Campi personalizzati"
 topic: admin.custom-fields
-version: 1
+version: 2
 keywords:
     - campi aggiuntivi
     - campi liberi
@@ -39,3 +39,5 @@ Note:
   mai sovrascritti.
 - Campi file, foto e firma non sono disponibili qui — per questo usi
   allegati e moduli.
+
+**Elenco, esportazione e ricerca:** i campi personalizzati esistono per clienti, fornitori, lead, ordini, asset, articoli e progetti. I campi con colonna di elenco compaiono nella relativa panoramica. L’esportazione CSV di clienti, fornitori e ordini aggiunge i campi come colonne; la ricerca globale trova i valori così come vengono visualizzati — anche scelte, date e numeri. Il trasferimento dati per la reimportazione non contiene campi personalizzati.

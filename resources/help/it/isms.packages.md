@@ -1,7 +1,7 @@
 ---
 title: "Pacchetti di audit e link per auditor"
 topic: isms.packages
-version: 2
+version: 3
 keywords:
     - accesso auditor
     - link auditor
@@ -37,3 +37,5 @@ per intero una sola volta** alla creazione. I pacchetti finalizzati sono
 immutabili e lo stato dei dati corrisponde al momento della finalizzazione,
 non a una ricostruzione retroattiva. Creazione e gestione richiedono diritti
 di gestione ISMS; il download dell'auditor avviene senza account WorkDiary.
+
+**Modificare o scartare una bozza:** finché un pacchetto non è finalizzato, modifica titolo, ambito, data di riferimento e filtro di norma tramite «Modifica pacchetto», oppure scarta la bozza nella stessa finestra. I pacchetti finalizzati restano immutabili e non si possono eliminare.

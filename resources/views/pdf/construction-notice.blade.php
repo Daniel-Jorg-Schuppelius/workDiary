@@ -28,6 +28,7 @@
         .muted { color: #555; font-size: 9pt; }
         .note { border: 1px solid #888; padding: 2mm; margin-top: 4mm; font-size: 10pt; }
         .footer { position: fixed; bottom: 8mm; left: 8mm; right: 8mm; font-size: 8pt; color: #555; border-top: 1px solid #ccc; padding-top: 1mm; }
+        .tpl-issuer { margin-top: 2mm; font-size: 8pt; color: #555; }
     </style>
 </head>
 <body>
@@ -96,6 +97,9 @@
 @endif
 
 <div class="note muted">{{ __('construction.pdf.disclaimer') }}</div>
+
+{{-- Absenderangaben des Geschäftsbriefs nach Blockzustand des Designs (§ 35a GmbHG, § 37a HGB; MVP-1624). --}}
+@include('pdf._design_issuer')
 
 <div class="footer">
     {{ $notice->displayNo() }} · {{ $organization?->name }} · {{ $generatedAt->format('d.m.Y H:i') }}

@@ -77,6 +77,8 @@ return [
         'pick_list_pdf' => 'Liste de préparation (PDF)',
     ],
     'field' => [
+        'unit_base' => 'Unité de base',
+        'unit_option' => ':unit (= :factor :base)',
         'code' => 'Code',
         'default' => 'Par défaut',
         'available' => 'Disponible',
@@ -130,7 +132,6 @@ return [
         'active' => 'Active',
         'fulfilled' => 'Honorée',
         'released' => 'Libérée',
-        'cancelled' => 'Annulée',
     ],
     'count_status' => [
         'counting' => 'Comptage',
@@ -139,6 +140,7 @@ return [
         'cancelled' => 'Annulée',
     ],
     'count_ui' => [
+        'four_eyes_blocked' => 'Validation à quatre yeux : cet inventaire contient des écarts supérieurs au seuil que vous avez comptés vous-même. Une autre personne doit le valider.',
         'title' => 'Inventaire',
         'open' => 'Ouvrir un inventaire',
         'save' => 'Enregistrer le comptage',
@@ -166,6 +168,17 @@ return [
         'qty_positive' => 'La quantité doit être supérieure à zéro.',
         'not_found' => 'Inventaire introuvable.',
         'forbidden' => 'Aucune autorisation pour les comptages d\'inventaire.',
+        'nothing_counted' => 'Aucune quantité comptée saisie — la vérification en exige au moins une.',
+        'submit_review' => 'Terminer le comptage',
+        'submit_review_confirm' => 'Terminer le comptage ? Les quantités sont ensuite verrouillées jusqu\'à la validation ou la réouverture.',
+        'reopen' => 'Rouvrir le comptage',
+        'cancel' => 'Abandonner l\'inventaire',
+        'cancel_confirm' => 'Abandonner l\'inventaire ? Rien ne sera comptabilisé.',
+        'status_flash' => [
+            'review' => 'Comptage terminé — les écarts attendent vérification et validation.',
+            'counting' => 'Comptage rouvert.',
+            'cancelled' => 'Inventaire abandonné — rien n\'a été comptabilisé.',
+        ],
     ],
     'overview' => [
         'avg' => 'Coût moyen',
@@ -191,7 +204,6 @@ return [
         'status' => [
             'created' => 'Créé',
             'in_stock' => 'En stock',
-            'reserved' => 'Réservé',
             'shipped' => 'Expédié',
             'returned' => 'Repris',
             'blocked' => 'Bloqué',
@@ -310,7 +322,82 @@ return [
         ],
     ],
 
+    'settings' => [
+        'title' => 'Paramètres du stock',
+        'valuation' => [
+            'heading' => 'Valorisation',
+            'description' => 'Méthode de valorisation des entrées et des sorties. Un article peut porter sa propre méthode dans le formulaire d’article.',
+            'label' => 'Méthode de valorisation',
+            'hint' => 'Lors du passage à FIFO ou FEFO, le stock existant reçoit une couche initiale au prix moyen précédent. Le retour au coût moyen pondéré n’est possible que lorsqu’il ne reste plus de stock en couches.',
+        ],
+        'reservation' => [
+            'heading' => 'Réservation',
+            'description' => 'Moment où un ordre de fabrication réserve son matériel. L’ordre enregistre le moment appliqué ; une modification ultérieure ne concerne que les nouveaux ordres.',
+            'label' => 'Moment de la réservation',
+            'hint' => 'La réservation au démarrage laisse le matériel disponible plus longtemps, mais peut échouer au démarrage faute de stock.',
+            'option' => [
+                'release' => 'À la libération de l’ordre',
+                'start' => 'Au démarrage de la fabrication',
+            ],
+        ],
+        'four_eyes' => [
+            'heading' => 'Validation à quatre yeux',
+            'description' => 'Les écarts d’inventaire à partir du seuil ne sont pas validés par la personne qui les a comptés. Le seuil et le valideur figurent dans le journal d’audit.',
+            'enabled' => 'Validation à quatre yeux des écarts d’inventaire',
+            'threshold' => 'Seuil (valeur de stock par ligne)',
+            'threshold_hint' => '0 = chaque écart exige la deuxième personne.',
+            'negative' => 'Validation à quatre yeux pour les sorties en stock négatif',
+            'negative_hint' => 'Une sortie avec « Autoriser le stock négatif » devient une demande dans la boîte des validations ; elle n’est comptabilisée qu’après l’accord d’une autre personne disposant du droit « Autoriser les stocks négatifs ».',
+        ],
+        'numbers' => [
+            'heading' => 'Numéros d’article',
+            'description' => 'Qui gère le numéro d’article, le SKU des variantes et le GTIN. Si une gestion commerciale les gère, les champs sont verrouillés dans la fiche article et arrivent avec la synchronisation.',
+            'label' => 'SKU et GTIN gérés par',
+            'link' => 'Modifier dans la plage de numéros « Article »',
+        ],
+        'flash' => [
+            'saved' => 'Paramètres du stock enregistrés.',
+            'saved_layers' => 'Paramètres du stock enregistrés. Couches initiales créées pour le stock existant : :count.',
+        ],
+    ],
+    'journal' => [
+        'title' => 'Journal de stock',
+        'subtitle' => 'Tous les mouvements de stock en unité de base, avec la quantité et l’unité saisies.',
+        'search_placeholder' => 'Article ou SKU',
+        'empty' => 'Aucun mouvement de stock sur la période.',
+        'col' => [
+            'occurred_at' => 'Date et heure',
+            'state' => 'État du stock',
+            'qty_base' => 'Quantité (unité de base)',
+            'entered' => 'Saisi comme',
+            'lot' => 'Lot',
+            'actor' => 'Enregistré par',
+        ],
+    ],
+    'reservation' => [
+        'edit' => 'Modifier la réservation',
+        'saved' => 'Réservation enregistrée.',
+        'reserved' => 'Réservé',
+        'consumed' => 'Dont prélevé',
+        'open' => 'Encore ouvert',
+        'reserved_at' => 'Réservé le',
+        'priority_hint' => 'Un nombre plus petit signifie une priorité plus élevée (100 par défaut). La liste des réservations est triée ainsi.',
+        'release_qty' => 'Libérer une quantité partielle',
+        'release_hint' => 'Libère cette quantité, par exemple pour l’attribuer à un autre ordre. Vide = ne rien libérer.',
+        'redistribute' => 'Redistribuer',
+        'redistribute_hint' => 'Céder la quantité ouverte à une autre réservation du même article, entrepôt et propriété, par exemple à un ordre plus prioritaire. Le stock réservé reste identique ; la redistribution figure dans le journal d’audit.',
+        'redistribute_to' => 'Vers la réservation',
+        'redistribute_option' => 'Priorité :priority · ouvert :open :unit · depuis le :date',
+        'redistribute_qty' => 'Quantité',
+        'redistribute_qty_hint' => 'Vide = toute la quantité ouverte.',
+        'redistribute_invalid' => 'La réservation cible est inconnue.',
+        'redistribute_mismatch' => 'La redistribution n’est possible qu’entre réservations actives du même article, entrepôt, emplacement et propriété.',
+        'redistribute_too_much' => 'La quantité dépasse la quantité ouverte de la réservation.',
+    ],
     'valuation' => [
+        'switch' => [
+            'blocked_layers' => 'Le passage au coût moyen pondéré est impossible tant que du stock est valorisé en couches FIFO/FEFO. La moyenne n’a pas été tenue à jour pendant cette période. Écoulez d’abord le stock ou conservez la méthode par couches.',
+        ],
         'method' => [
             'moving_average' => 'Coût moyen pondéré',
             'fifo' => 'FIFO',
@@ -436,5 +523,19 @@ return [
         'serial_qty_one' => 'Les articles sérialisés se réceptionnent numéro par numéro (quantité 1).',
         'tracked_article_manual_move' => 'Article suivi par lot/série : enregistrer via la réception (commande) ou la gestion des lots/séries — pas en stock anonyme.',
         'lot_required' => 'Article suivi par lot : les lots ne couvrent pas la quantité ; le stock sans lot n’est pas prélevé.',
+        'unit_not_maintained' => 'L’unité « :unit » n’est pas définie pour l’article « :article ».',
+        'unit_factor_invalid' => 'L’unité « :unit » de l’article « :article » n’a pas de facteur de conversion valide.',
+        'unit_quantity_too_small' => 'La quantité vaut zéro dans l’unité de base. Veuillez vérifier la quantité et l’unité « :unit ».',
+        'shelf_life_required' => 'Article avec durée de conservation : veuillez indiquer le lot et la date limite de consommation.',
+        'shelf_life_manual_receipt' => 'Article avec durée de conservation : veuillez enregistrer l’entrée via la réception de marchandises (commande) avec lot et date limite de consommation.',
+    ],
+    // Vier-Augen-Freigabe Negativbestand (MVP-1626)
+    'negative' => [
+        'requested' => 'La sortie en stock négatif est demandée. Elle est comptabilisée dès qu’une deuxième personne la valide dans la boîte des validations.',
+        'no_customer_cost' => 'Avec la validation à quatre yeux, une sortie en stock négatif ne peut pas être imputée en même temps à un client. Comptabilisez les coûts de matériel après la validation.',
+        'delegate_without_right' => 'La personne à qui vous déléguez a besoin du droit « Autoriser les stocks négatifs ».',
+        'not_open' => 'La demande a déjà été décidée.',
+        'inbox_title' => 'Stock négatif : :qty :unit :article',
+        'inbox_reference' => 'Entrepôt :warehouse · demandé par :name',
     ],
 ];

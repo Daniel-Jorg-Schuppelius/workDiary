@@ -184,7 +184,7 @@ class ShiftExchangeTest extends TestCase {
             'target_user_id' => $target->id,
         ]);
 
-        app(ShiftExchangeService::class)->approve($exchange, $lead, overrideCompliance: true);
+        app(ShiftExchangeService::class)->approve($exchange, $lead, overrideCompliance: true, overrideReason: 'Einmalige Ausnahme, mit beiden abgestimmt.');
 
         $this->assertSame(ShiftExchangeStatus::Approved, $exchange->fresh()->status);
         $this->assertSame($target->id, $shift->fresh()->user_id);

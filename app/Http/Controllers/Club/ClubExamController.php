@@ -87,7 +87,8 @@ class ClubExamController extends Controller {
             'canManage' => Gate::allows('update', $offer),
             'canCandidates' => Gate::allows('manageCandidates', $offer),
             'canException' => Gate::allows('admitByException', $offer),
-            'canResult' => Gate::allows('recordResult', $offer) && ! $offer->event?->isCancelled(),
+            'canResult' => Gate::allows('recordResult', $offer) && ! $offer->event?->isCancelled() && $offer->results_released_at === null,
+            'canRelease' => Gate::allows('update', $offer) && $offer->results_released_at === null && $candidates->contains(fn (ClubExamCandidate $c): bool => $c->status->isResult()),
         ]);
     }
 
@@ -195,6 +196,15 @@ class ClubExamController extends Controller {
         $flagged = $this->exams->recheckOffer($offer, (string) __('club.exams.label.review_manual'));
 
         return redirect()->route('club.exams.show', $offer)->with('success', __('club.exams.flash.rechecked', ['count' => $flagged]));
+    }
+
+    public function release(ClubExamOffer $offer): RedirectResponse {
+        Gate::authorize('update', $offer);
+        /** @var User $actor */
+        $actor = Auth::user();
+        $this->exams->releaseResults($offer, $actor);
+
+        return redirect()->route('club.exams.show', $offer)->with('success', __('club.exams.flash.results_released'));
     }
 
     public function clearReview(Request $request, ClubExamOffer $offer, ClubExamCandidate $candidate): RedirectResponse {

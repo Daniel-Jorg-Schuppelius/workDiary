@@ -491,7 +491,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
      */
     public function teams(): BelongsToMany {
         return $this->belongsToMany(Team::class, 'team_user')
-            ->withPivot(['is_lead', 'joined_at'])
+            ->withPivot(['joined_at'])
             ->withTimestamps();
     }
 

@@ -10,6 +10,7 @@
      Konflikte liefert der View-Composer im AppServiceProvider (Entscheidung 2026-10-06). --}}
 <x-tab-nav class="flex-none" :items="[
     ['route' => 'inventory.stock', 'routeIs' => 'inventory.stock', 'icon' => 'inventory', 'label' => __('inventory.stock'), 'when' => $inventoryTabs['canViewInventory']],
+    ['route' => 'inventory.journal', 'routeIs' => 'inventory.journal', 'icon' => 'receipt_long', 'label' => __('inventory.journal.title'), 'when' => $inventoryTabs['canViewInventory']],
     ['route' => 'inventory.counts.index', 'routeIs' => 'inventory.counts.index', 'icon' => 'fact_check', 'label' => __('inventory.count_ui.title'), 'when' => $inventoryTabs['canViewInventory']],
     ['route' => 'warehouses.index', 'routeIs' => 'warehouses.index', 'icon' => 'warehouse', 'label' => __('inventory.warehouses'), 'when' => $inventoryTabs['canViewInventory']],
     ['route' => 'inventory.conflicts.index', 'routeIs' => 'inventory.conflicts.*', 'icon' => 'difference', 'label' => __('inventory.conflict.tab'), 'count' => $inventoryTabs['openConflicts'] > 0 ? $inventoryTabs['openConflicts'] : null, 'when' => $inventoryTabs['canViewConflicts']],

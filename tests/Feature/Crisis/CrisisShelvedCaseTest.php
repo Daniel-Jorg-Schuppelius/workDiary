@@ -41,6 +41,8 @@ final class CrisisShelvedCaseTest extends TestCase {
         'crisis.store', 'crisis.roles.store',
         'crisis.bia.store', 'crisis.bia.import', 'crisis.bia.update',
         'crisis.exercises.store', 'crisis.exercises.document',
+        // Meldefristen der Organisation (MVP-1589): Katalogdaten, keine Akte.
+        'crisis.deadlines.store', 'crisis.deadlines.adopt', 'crisis.deadlines.update', 'crisis.deadlines.toggle',
         'crisis.status-page.rotate', 'crisis.status-page.revoke', 'crisis.status-page.toggle',
     ];
 
@@ -114,6 +116,7 @@ final class CrisisShelvedCaseTest extends TestCase {
             'crisis.decisions.store' => ['post', route('crisis.decisions.store', $case), ['decision' => 'Wiederanlauf freigeben']],
             'crisis.actions.store' => ['post', route('crisis.actions.store', $case), ['title' => 'Forensik beauftragen', 'priority' => 'high']],
             'crisis.actions.update' => ['put', route('crisis.actions.update', [$case, $f['action']]), ['status' => 'done']],
+            'crisis.actions.predecessor' => ['put', route('crisis.actions.predecessor', [$case, $f['action']]), ['depends_on_id' => null]],
             'crisis.communications.store' => ['post', route('crisis.communications.store', $case), ['audience' => 'public', 'subject' => 'Störung', 'body' => 'Wir arbeiten daran.']],
             'crisis.communications.approve' => ['post', route('crisis.communications.approve', [$case, $f['draft']]), []],
             'crisis.communications.sent' => ['post', route('crisis.communications.sent', [$case, $f['approved']]), ['channel' => 'Mail']],
@@ -246,6 +249,7 @@ final class CrisisShelvedCaseTest extends TestCase {
             $this->assertFalse(str_contains($html, 'action="' . $url . '"'), "Formular für {$name} auf der geschlossenen Akte.");
         }
         $this->assertFalse(str_contains($html, 'action="' . route('crisis.roles.store') . '"'));
+        $this->assertFalse(str_contains($html, route('crisis.links.create', $case)));
         // Weder Lagezustand noch Maßnahmen- oder Wiederanlaufstatus lassen sich noch wählen.
         $this->assertFalse(str_contains($html, '<select name="status"'));
         $this->assertFalse(str_contains($html, e((string) __('Nachbereitung wird nach der Entwarnung möglich.'))));
@@ -268,8 +272,10 @@ final class CrisisShelvedCaseTest extends TestCase {
             ->assertDontSeeText('— nur lesend.');
         $html = (string) $response->getContent();
 
-        foreach (['crisis.sitrep.store', 'crisis.actions.store', 'crisis.team.store', 'crisis.links.store', 'crisis.room.points.store'] as $name) {
+        foreach (['crisis.sitrep.store', 'crisis.actions.store', 'crisis.team.store', 'crisis.room.points.store'] as $name) {
             $this->assertTrue(str_contains($html, 'action="' . $this->requests($case, $fixtures)[$name][1] . '"'), $name);
         }
+        // Verknüpfen läuft über den Auswahldialog (MVP-1605).
+        $this->assertTrue(str_contains($html, 'href="' . route('crisis.links.create', $case) . '"'));
     }
 }

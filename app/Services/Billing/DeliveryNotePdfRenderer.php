@@ -15,7 +15,7 @@ namespace App\Services\Billing;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Billing\DeliveryNote;
 use App\Models\Platform\Organization;
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, IssuerIdentity};
 use App\Support\DocumentLocale;
 
 /**
@@ -36,6 +36,7 @@ class DeliveryNotePdfRenderer {
         if ($payload === null && $legacy !== null) {
             $payload = $design->payloadFromSnapshot($legacy, RenderDocumentKind::DeliveryNote);
         }
+        $payload ??= $organization !== null ? $design->payloadFor($organization, RenderDocumentKind::DeliveryNote) : null;
 
         // Belegsprache je Kunde (Feature 034, MVP-721): nur Darstellung.
         return DocumentLocale::within($note->customer, $organization, fn (): string => $design->renderPdf(
@@ -46,6 +47,9 @@ class DeliveryNotePdfRenderer {
                 'organization' => $organization,
                 'number' => $note->number,
                 'warehouses' => $note->items->map(fn ($item) => $item->stockDelivery?->warehouse?->name)->filter()->unique()->values(),
+                // Firmenangaben nach Blockzustand, wie der Preflight sie prüft (MVP-1624).
+                'design' => $design->contextForDocument($note, RenderDocumentKind::DeliveryNote, $payload),
+                'issuer' => IssuerIdentity::for($organization),
             ],
             $organization,
             payload: $payload,

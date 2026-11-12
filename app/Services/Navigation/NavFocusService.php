@@ -85,11 +85,6 @@ class NavFocusService {
         return $this->personal[(int) $user->id] ??= array_values(UserWorkspace::query()->forUser($user)->get()->all());
     }
 
-    /** Memo vergessen — nach dem Anlegen, Ändern oder Löschen eines Arbeitsbereichs im selben Request. */
-    public function forgetPersonal(): void {
-        $this->personal = [];
-    }
-
     /** Eigener Arbeitsbereich zum Schlüssel — nur der eigene, nie ein fremder. */
     public function personalByKey(?User $user, string $key): ?UserWorkspace {
         if (! self::isPersonalKey($key)) {

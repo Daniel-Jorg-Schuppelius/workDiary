@@ -10,13 +10,16 @@
 
 namespace App\Services\Sync;
 
-use App\Enums\Sync\SyncCommandStatus;
+use App\Enums\Sync\{SyncCommandStatus, SyncConflictResolution};
 use App\Models\Audit\AuditLog;
 use App\Models\Integration\SyncCommand;
 use App\Models\Platform\User;
 use App\Modules\ModuleRegistry;
+use App\Services\Licensing\ModuleExtensions;
 use App\Services\Sync\Contracts\SyncCommandHandler;
 use App\Support\MorphMap;
+use Carbon\CarbonImmutable;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -42,7 +45,10 @@ class SyncCommandService {
     /** @var array<string, SyncCommandHandler>|null Befehlstyp → Handler, lazy aus den Manifesten */
     private ?array $handlers = null;
 
-    public function __construct(private readonly ModuleRegistry $modules) {}
+    public function __construct(
+        private readonly ModuleRegistry $modules,
+        private readonly ModuleExtensions $moduleGate,
+    ) {}
 
     /** @return list<string> Bekannte Befehlstypen (für die Request-Validierung) */
     public function types(): array {
@@ -97,6 +103,9 @@ class SyncCommandService {
             return $this->response($clientUuid, SyncCommandStatus::Duplicate, $row?->result_ref, null);
         } catch (ValidationException $e) {
             return $this->reject($user, $command, $e->errors());
+        } catch (AuthorizationException) {
+            // Ein Dienst prüft per Gate::authorize — als Ablehnung, nicht als Abbruch des ganzen Stapels.
+            return $this->reject($user, $command, ['command' => [(string) __('sync.error.forbidden')]]);
         } catch (SyncConflictException $e) {
             // VOR dem RuntimeException-Zweig: der Konflikt ist eine Unterklasse
             // und darf nicht als Ablehnung durchrutschen.
@@ -115,6 +124,11 @@ class SyncCommandService {
      */
     private function execute(User $user, string $type, array $payload): string {
         $handler = $this->handlers()[$type] ?? throw new RuntimeException('Unbekannter Sync-Befehlstyp: ' . $type);
+
+        // Der Sync-Endpunkt liegt hinter keinem Routen-Gate eines Fachmoduls (MVP-1593).
+        if (! $this->moduleGate->allows($handler::class, $user->organization_id)) {
+            throw new RuntimeException((string) __('sync.error.module_inactive'));
+        }
 
         return $handler->handle($user, $type, $payload);
     }
@@ -138,6 +152,55 @@ class SyncCommandService {
         }
 
         return $this->handlers;
+    }
+
+    /**
+     * Entscheidung des Nutzers über einen eigenen Konflikt festhalten (MVP-1595,
+     * Konzept §3.4): einmal je Konflikt, mit `sync.conflict.resolved` in der
+     * Audit-Kette. Ein bereits entschiedener Konflikt bleibt, wie er ist.
+     *
+     * @return bool false, wenn es diesen Konflikt der Person nicht gibt
+     */
+    public function resolveConflict(User $user, string $clientUuid, SyncConflictResolution $resolution, ?string $resentClientUuid = null, bool $edited = false): bool {
+        return DB::transaction(function () use ($user, $clientUuid, $resolution, $resentClientUuid, $edited): bool {
+            $row = SyncCommand::query()
+                ->where('user_id', $user->id)
+                ->where('client_uuid', $clientUuid)
+                ->where('result_status', SyncCommandStatus::Conflict->value)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $row instanceof SyncCommand) {
+                return false;
+            }
+            if ($row->resolved_at !== null) {
+                return true;
+            }
+
+            $resent = $resolution === SyncConflictResolution::Resent ? $resentClientUuid : null;
+            $row->forceFill([
+                'resolution' => $resolution,
+                'resolved_at' => CarbonImmutable::now(),
+                'resent_client_uuid' => $resent,
+            ])->save();
+
+            AuditLog::query()->create([
+                'organization_id' => $user->organization_id,
+                'user_id' => $user->id,
+                'event' => 'sync.conflict.resolved',
+                'auditable_type' => MorphMap::stableKey(User::class),
+                'auditable_id' => $user->id,
+                'changes' => [
+                    'type' => $row->type,
+                    'client_uuid' => $clientUuid,
+                    'resolution' => $resolution->value,
+                    'resent_client_uuid' => $resent,
+                    'edited' => $resent !== null && $edited,
+                ],
+            ]);
+
+            return true;
+        });
     }
 
     /**
@@ -210,7 +273,7 @@ class SyncCommandService {
      */
     private function sanitizedPayload(array $command): array {
         $payload = $command['payload'] ?? [];
-        unset($payload['body'], $payload['note'], $payload['values'], $payload['reason']);
+        unset($payload['body'], $payload['note'], $payload['values'], $payload['reason'], $payload['description'], $payload['new_tags']);
 
         return $payload;
     }

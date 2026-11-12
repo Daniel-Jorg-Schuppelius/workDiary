@@ -309,9 +309,21 @@
             @forelse ($commands as $command)
                 <tr>
                     <td class="font-mono text-xs">{{ $command->command }}</td>
-                    <td><x-status-badge :tone="$command->status->badge()">{{ $command->status->label() }}</x-status-badge></td>
+                    <td>
+                        <x-status-badge :tone="$command->status->badge()">{{ $command->status->label() }}</x-status-badge>
+                        {{-- Abgleich unklarer Befehle (MVP-1614): Hinweis des Sync-Laufs oder des manuellen Abschlusses. --}}
+                        @if ($command->reconciliationText() !== null)
+                            <p class="mt-1 text-xs text-muted">{{ $command->reconciliationText() }}</p>
+                        @elseif ($command->status === \App\Enums\Domain\DomainProviderCommandStatus::Unknown)
+                            <p class="mt-1 text-xs text-muted">{{ __('domain.flash.command_unknown') }}</p>
+                        @endif
+                    </td>
                     <td class="text-xs text-muted">{{ $command->created_at?->diffForHumans() }}</td>
                     <td class="text-right">
+                        @if ($can['dangerous'] && $command->status->needsReconciliation())
+                            <x-icon-btn icon="fact_check" tone="warning" size="xs" data-entry-modal-trigger
+                                        :href="route('domains.commands.resolve.edit', $command)" :label="__('domain.command.resolve_title')" />
+                        @endif
                         @if ($can['dangerous'] && $command->status === \App\Enums\Domain\DomainProviderCommandStatus::Draft)
                             <x-action-form :action="route('domains.commands.approve', $command)">
                                 <x-icon-btn icon="how_to_reg" tone="warning" size="xs" type="submit" :title="__('domain.action.approve')" />

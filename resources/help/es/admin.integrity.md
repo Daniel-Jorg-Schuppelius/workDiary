@@ -1,7 +1,7 @@
 ---
 title: "Integridad del código fuente"
 topic: admin.integrity
-version: 1
+version: 2
 keywords:
     - detección de manipulación
     - integridad de archivos
@@ -44,3 +44,12 @@ verificación de firma.
 
 La ejecución diaria se desactiva con `INTEGRITY_CHECK_ENABLED` y se
 replanifica en la página del planificador.
+
+**Levantar el bloqueo:** Si el bloqueo de integridad ha puesto la instalación
+en modo de mantenimiento, una línea base recién congelada («Congelar línea
+base», `integrity:freeze`) lo levanta automáticamente. Sin nueva línea base, la
+operación de la plataforma lo levanta con **Levantar el bloqueo** en esta
+página (acceso mediante el secreto de omisión) o con `php artisan
+integrity:release --reason=…`. Ambos quedan en el registro de auditoría con
+motivo y persona. Un modo de mantenimiento con otra causa (por ejemplo, un
+despliegue) no se levanta por estas vías.

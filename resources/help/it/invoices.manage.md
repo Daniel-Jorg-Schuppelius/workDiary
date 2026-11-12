@@ -1,7 +1,7 @@
 ---
 title: "Fatture & documenti"
 topic: invoices.manage
-version: 13
+version: 17
 keywords:
     - creare fattura
     - emettere fattura
@@ -285,3 +285,100 @@ WorkDiary: WorkDiary non li trasmette a Lexoffice, sevDesk, easybill o orgaMAX.
 Chi invia la fattura dal programma li allega lì a mano; la casella delle
 integrazioni lo ricorda. Il trasferimento offre **Attestazione delle
 prestazioni** da scaricare.
+
+## Liberare le ritenute a garanzia
+
+Le ritenute compaiono nella pagina della fattura, nella scheda **Ritenute a
+garanzia**, con tipo, importo, data di liberazione e stato. Su una fattura
+emessa, l’icona del lucchetto apre la finestra **Libera**; una nota ne
+registra il motivo. Con la liberazione l’importo diventa una normale partita
+aperta, rientra nell’importo da pagare e viene sollecitato. Una ritenuta
+sostituita da una fideiussione è già stata pagata: la sua liberazione pone
+fine solo allo scopo di garanzia, non nasce alcun nuovo credito e il registro
+delle fideiussioni segnala l’atto da restituire. Per liberare serve il
+permesso di fatturazione.
+
+## Approvazione e regime fiscale della bozza
+
+Con l'**approvazione obbligatoria**, l'approvazione vale per lo stato verificato:
+se in seguito modifica posizioni, condizioni, cliente, date o il testo della
+fattura, l'approvazione viene revocata e va concessa di nuovo, non dalla persona
+che ha creato la fattura. Il registro annota la revoca.
+
+Ogni bozza riprende il proprio **regime fiscale** (inversione contabile,
+esportazione, esenzione) dai dati del cliente, anche la bozza libera. Se i dati del
+cliente cambiano in seguito — ad esempio con l'attributo «Il destinatario deve
+l'IVA» o una nuova partita IVA —, la modifica successiva della bozza applica il
+nuovo regime. Se emette una bozza con un regime fiscale superato, workDiary la
+adegua e interrompe l'emissione: verifichi gli importi ed emetta di nuovo.
+
+Con l'**inversione contabile**, la fattura elettronica richiede la partita IVA del
+cliente (regola BR-AE-02), anche per l'inversione nazionale ai sensi del § 13b UStG;
+il controllo prima dell'invio segnala se manca. Tutte le posizioni compaiono allora
+allo 0 % con la dicitura «Inversione contabile» nella XRechnung.
+
+Il **testo di avviso** segue il regime fiscale: se l'avviso automatico del regime
+precedente (ad esempio sull'inversione contabile o sull'esportazione) è ancora
+invariato nel testo della fattura, viene sostituito dall'avviso del nuovo regime o
+eliminato. Se ha modificato l'avviso a mano, il suo testo resta: workDiary lo
+segnala e lei verifica l'avviso personalmente.
+
+## Motivi di esenzione nella fattura elettronica
+
+Ogni categoria IVA senza imposta riporta il proprio motivo di esenzione nella
+XRechnung e nel PDF ZUGFeRD, nelle fatture miste per ciascun riepilogo IVA:
+inversione contabile (AE), cessione intracomunitaria (K), esportazione (G) e «non
+imponibile» (O) con testo e codice; la categoria Z non ha motivo. «Esente» (E) cita
+il § 19 UStG solo per le piccole imprese. Per altre esenzioni crei nella **matrice
+delle regole fiscali** una regola con il tipo di aliquota «Esente» e inserisca la
+norma di esenzione come testo di avviso del giustificativo, ad esempio «Cure mediche
+esenti (§ 4 n. 14 UStG)»; senza regola compare solo «Operazione esente» e il
+controllo prima dell'invio avvisa.
+
+Il controllo prima dell'invio segnala inoltre: partita IVA del cliente mancante nelle
+cessioni intracomunitarie, partita IVA dell'organizzazione mancante nelle cessioni
+verso altri paesi UE e nelle esportazioni, «non imponibile» accanto ad altre
+categorie e una posizione di categoria senza imposta con aliquota superiore allo 0 %.
+Con «non imponibile» la fattura elettronica non riporta partite IVA; basta il codice
+fiscale. Alla fattura elettronica mancano ancora due dati (avviso): il paese di
+consegna nelle cessioni intracomunitarie e l'omissione dell'aliquota per posizione in
+«non imponibile».
+
+## Indicazione di esenzione nel PDF della fattura
+
+Le posizioni senza imposta richiedono un'indicazione anche sulla fattura stessa
+(§ 14, comma 4, n. 8 e § 14a UStG). Sotto il riepilogo dell'imposta il PDF stampa
+per ogni categoria fiscale lo stesso testo del motivo di esenzione della fattura
+elettronica, ad esempio «cessione intracomunitaria esente» per K o la dicitura di
+inversione contabile per una singola posizione con AE. Se il testo della fattura
+contiene già l'indicazione — o l'indicazione automatica di questa categoria
+derivante dal regime fiscale — la riga viene omessa. L'inversione contabile
+dell'intero documento e il § 19 UStG mantengono la propria riga come finora. Le
+fatture emesse prima di questa estensione vengono ristampate senza modifiche. La
+nota di credito e la fattura di storno riprendono la categoria fiscale di ogni
+posizione dell'originale.
+
+Se sceglie una categoria senza imposta (AE, Z, E, G, K, O) su una posizione o in un
+piano di fatturazione, il modulo imposta l'aliquota allo 0 %; in ogni caso viene
+salvato 0 %.
+
+## Destinatario e partita IVA sulla fattura
+
+Una fattura emessa stampa il destinatario così com'era al momento dell'emissione:
+nome, società, indirizzo e partita IVA del cliente vengono congelati con
+l'emissione. Se in seguito modifica i dati del cliente, la ristampa, l'allegato
+PDF, la XRechnung, lo ZUGFeRD e l'esportazione GAEB restano invariati; solo le
+nuove fatture riprendono il nuovo indirizzo. Una bozza mostra sempre i dati
+attuali del cliente. Il documento di storno e la fattura correttiva congelano il
+destinatario alla propria emissione. L'indirizzo di recapito elettronico
+(identificativo Peppol o e-mail) e i solleciti seguono invece i dati attuali del
+cliente, perché vengono recapitati oggi.
+
+Se per il cliente è registrata una partita IVA, compare nell'intestazione della
+fattura («Vostra partita IVA»). Per le cessioni intracomunitarie e l'inversione
+contabile è obbligatoria (§ 14a UStG). Le fatture emesse prima di questa
+estensione vengono ristampate senza la riga.
+
+L'emissione fissa anche l'indicazione dei costi di manodopera secondo il § 35a
+EStG: una modifica successiva della regola dell'organizzazione o del tipo di
+cliente non cambia più una fattura emessa.

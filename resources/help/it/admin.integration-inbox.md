@@ -1,7 +1,7 @@
 ---
 title: "Inbox di riconciliazione"
 topic: admin.integration-inbox
-version: 4
+version: 6
 keywords:
     - inbox integrazioni
     - conflitti di importazione
@@ -90,3 +90,7 @@ aperto, ad esempio quando un cliente risponde alla fattura ma intende
 l'ordine.
 
 La pagina è aperta a chi è autorizzato a gestire la fatturazione.
+
+**Titolarità dei dati:** I casi contrassegnati «Titolarità dei dati» li ha creati un’integrazione che non gestisce l’area (vedere la pagina «Titolarità dei dati»). Il caso indica il sistema principale; non è stato scritto nulla. **Acquisisci una volta** scrive lo stato trattenuto esattamente una volta – ad esempio il ticket, l’appuntamento o il movimento di magazzino –, **Scarta** lo lascia cadere e la stessa operazione non ritorna. Il filtro di tipo «Titolarità dei dati» mostra solo questi casi.
+
+**Riaperto:** un caso «Titolarità dei dati» acquisito si riapre quando l’integrazione vuole scrivere un nuovo stato della stessa operazione; uno scartato resta scartato. Se la titolarità consente di nuovo la scrittura, la sincronizzazione successiva chiude da sola i casi aperti come acquisiti. I precedenti casi da verificare «gestito da un altro sistema» diventano casi «Titolarità dei dati» alla sincronizzazione successiva.

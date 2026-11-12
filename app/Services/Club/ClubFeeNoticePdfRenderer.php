@@ -14,7 +14,7 @@ namespace App\Services\Club;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Club\{ClubFeeClaim, ClubFeeDunning};
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, IssuerIdentity};
 use App\Services\UI\BrandingService;
 
 /** Beitragsmitteilung als PDF (MVP-850) über den Dokument-Renderer; Bankblock und Verwendungszweck wie beim Beleg. */
@@ -26,6 +26,8 @@ class ClubFeeNoticePdfRenderer {
         $claim->loadMissing(['items.member', 'account', 'customer', 'organization', 'correctedClaim']);
         $organization = $claim->organization;
 
+        $payload = $organization === null ? null : $this->design->payloadFor($organization, RenderDocumentKind::FeeNotice);
+
         return \App\Support\DocumentLocale::within($claim->customer, $organization, fn(): string => $this->design->renderPdf(
             RenderDocumentKind::FeeNotice,
             'club.pdf.fee_notice',
@@ -34,8 +36,11 @@ class ClubFeeNoticePdfRenderer {
                 'dunning' => $dunning,
                 'orgLegal' => app(BrandingService::class)->legalFor($organization),
                 'footerText' => (string) data_get($organization?->settings, 'club.fees.notice_footer', ''),
+                'design' => $this->design->context($payload),
+                'issuer' => IssuerIdentity::for($organization),
             ],
             $organization,
+            payload: $payload,
         ));
     }
 

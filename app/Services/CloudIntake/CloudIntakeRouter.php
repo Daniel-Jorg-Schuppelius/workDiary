@@ -73,6 +73,14 @@ class CloudIntakeRouter {
         };
     }
 
+    /** Ist der Zielbereich erreichbar? Fachmodul-Ziele brauchen ihren Erweiterungspunkt (Regeltest, MVP-1613). */
+    public function targetAvailable(CloudIntakeRouteTarget $target): bool {
+        return match ($target) {
+            CloudIntakeRouteTarget::IncomingInvoice, CloudIntakeRouteTarget::Document => true,
+            CloudIntakeRouteTarget::B2bOrder, CloudIntakeRouteTarget::GaebPackage => $this->handlerFor($target) !== null,
+        };
+    }
+
     private function handlerFor(CloudIntakeRouteTarget $target): ?CloudIntakeHandler {
         foreach (app(ModuleRegistry::class)->extensions(CloudIntakeHandler::class) as $class) {
             /** @var CloudIntakeHandler $handler */
@@ -201,7 +209,7 @@ class CloudIntakeRouter {
      * externe Kennung ist die Sqid (URLs/Formulare) — der Ordnername trägt
      * also die Auftrags-Sqid.
      */
-    private function lookup(string $variable, string $value): ?Model {
+    public function lookup(string $variable, string $value): ?Model {
         if ($value === '') {
             return null;
         }

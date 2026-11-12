@@ -26,6 +26,7 @@
         @endcan
     @endif
 @endif
+<x-claim-open-link :params="['order' => $diary->sqid]" />
 @can('archive', $diary)
     @if ($diary->is_archived)
         <x-action-form :action="route('diary.restore', $diary)">

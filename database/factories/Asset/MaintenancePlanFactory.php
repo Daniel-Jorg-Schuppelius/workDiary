@@ -28,7 +28,6 @@ class MaintenancePlanFactory extends Factory {
             'interval_kind' => MaintenanceIntervalKind::Months->value,
             'interval_value' => 6,
             'tolerance_days' => 7,
-            'procedure_template_code' => null,
             'last_run_at' => null,
             'next_due_on' => now()->addMonths(6)->toDateString(),
             'is_active' => true,

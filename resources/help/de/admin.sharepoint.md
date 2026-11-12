@@ -1,7 +1,7 @@
 ---
 title: "SharePoint-Ablage"
 topic: admin.sharepoint
-version: 2
+version: 3
 keywords:
     - SharePoint
     - SharePoint Online
@@ -184,3 +184,5 @@ denselben Einstellungen weiter.
   Betriebsaufgabe in der Übersicht der Betriebsaufgaben.
 - **Zustand prüfen:** Neben dem Seitentitel steht der zuletzt geprüfte Zustand;
   **Verbindung testen** prüft ihn sofort.
+
+**Aktivieren holt nach:** Wird die Spiegelung aktiviert, reiht WorkDiary sofort alle bereits freigegebenen Objekte ein — auch die aus der Zeit ohne aktive Verbindung. Einen Zeitplan braucht der Spiegellauf nicht; „Jetzt spiegeln“ bleibt für das Nachziehen von Hand.

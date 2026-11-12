@@ -9,8 +9,13 @@
 
 @php
     /** @var \App\Models\Asset\Asset $asset */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\ServiceTicket\SlaContract>|null $contractOptions */
+    /** @var array<string, string>|null $dueActionOptions */
     $plan ??= null;
+    $contractOptions ??= null;
+    $dueActionOptions ??= null;
     $planKind = $plan?->interval_kind?->value;
+    $planContractSqid = \App\Support\Sqid::encode(\App\Models\ServiceTicket\SlaContract::class, $plan?->sla_contract_id);
 @endphp
 
 <x-modal
@@ -36,4 +41,29 @@
         <x-input-field type="number" name="tolerance_days" :label="__('Toleranz (Tage)')" min="0" max="365" :value="old('tolerance_days', $plan?->tolerance_days ?? 7)" />
         <x-input-field type="date" name="next_due_on" :label="$plan ? __('Nächste Fälligkeit') : __('Erste Fälligkeit')" :value="old('next_due_on', $plan?->next_due_on?->toDateString())" />
     </div>
+
+    @if ($contractOptions !== null || $dueActionOptions !== null)
+        <div class="grid gap-3 sm:grid-cols-2">
+            @if ($contractOptions !== null)
+                <x-select-field name="sla_contract_id" :label="__('SLA-Vertrag')">
+                    <option value="">{{ __('— Kein SLA —') }}</option>
+                    @foreach ($contractOptions as $contract)
+                        <option value="{{ $contract->sqid }}" @selected((string) old('sla_contract_id', $planContractSqid) === $contract->sqid)>{{ $contract->code }} — {{ $contract->label }}</option>
+                    @endforeach
+                </x-select-field>
+            @endif
+            @if ($dueActionOptions !== null)
+                <x-select-field name="due_action" :label="__('Bei Fälligkeit')">
+                    @foreach ($dueActionOptions as $value => $label)
+                        <option value="{{ $value }}" @selected(old('due_action', $plan?->due_action?->value ?? \App\Enums\Asset\MaintenanceDueAction::None->value) === $value)>{{ $label }}</option>
+                    @endforeach
+                </x-select-field>
+            @endif
+            @if ($contractOptions !== null)
+                <x-checkbox-field name="is_contractual" :label="__('Vertragspflicht')" span="2"
+                                  :checked="(bool) old('is_contractual', $plan?->is_contractual ?? false)"
+                                  :hint="__('Der Plan bildet einen Pflichttermin des gewählten SLA-Vertrags ab und erscheint dort als vertragspflichtige Wartung.')" />
+            @endif
+        </div>
+    @endif
 </x-modal>

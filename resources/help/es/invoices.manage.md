@@ -1,7 +1,7 @@
 ---
 title: "Facturas & documentos"
 topic: invoices.manage
-version: 13
+version: 17
 keywords:
     - crear factura
     - emitir factura
@@ -280,3 +280,96 @@ WorkDiary: WorkDiary no los transfiere a Lexoffice, sevDesk, easybill ni
 orgaMAX. Quien envíe la factura desde el programa los adjunta allí a mano; la
 bandeja de integraciones lo recuerda. El traspaso ofrece **Justificante de
 servicios** para descargar.
+
+## Liberar retenciones de garantía
+
+Las retenciones aparecen en la página de la factura, en la tarjeta
+**Retenciones de garantía**, con tipo, importe, fecha de liberación y estado.
+En una factura emitida, el icono del candado abre el diálogo **Liberar**; una
+nota deja constancia del motivo. Con la liberación, el importe pasa a ser una
+partida abierta normal, vuelve a contar en el importe a pagar y se reclama.
+Una retención sustituida por un aval ya se ha pagado: su liberación solo pone
+fin a la finalidad de garantía, no se genera ningún crédito nuevo y el
+registro de avales indica que el documento debe devolverse. Para liberar se
+necesita el permiso de facturación.
+
+## Aprobación y supuesto fiscal del borrador
+
+Con **aprobación obligatoria**, la aprobación vale para el estado revisado: si
+después modifica posiciones, condiciones, cliente, fechas o el texto de la factura,
+la aprobación se anula y debe concederse de nuevo, no por la persona que creó la
+factura. El registro deja constancia de la anulación.
+
+Cada borrador toma su **supuesto fiscal** (inversión del sujeto pasivo, exportación,
+exención) de los datos del cliente, también el borrador libre. Si los datos del
+cliente cambian después —por ejemplo con el atributo «El destinatario adeuda el IVA»
+o un nuevo NIF-IVA—, la siguiente edición del borrador aplica el nuevo supuesto. Si
+emite un borrador con un supuesto fiscal desactualizado, workDiary lo ajusta y
+detiene la emisión: compruebe los importes y vuelva a emitir.
+
+Con **inversión del sujeto pasivo**, la factura electrónica necesita el NIF-IVA del
+cliente (regla BR-AE-02), también en la inversión nacional según el § 13b UStG; la
+comprobación previa al envío indica si falta. Todas las posiciones figuran entonces
+con un 0 % y la mención «Inversión del sujeto pasivo» en la XRechnung.
+
+El **texto de aviso** sigue al supuesto fiscal: si el aviso automático del supuesto
+anterior (por ejemplo, sobre la inversión del sujeto pasivo o la exportación) sigue
+sin cambios en el texto de la factura, lo sustituye el aviso del nuevo supuesto o se
+elimina. Si modificó el aviso a mano, su texto se mantiene: workDiary se lo indica y
+usted lo revisa.
+
+## Motivos de exención en la factura electrónica
+
+Cada categoría de IVA sin impuesto lleva su motivo de exención en la XRechnung y en
+el PDF ZUGFeRD, en facturas mixtas por cada desglose: inversión del sujeto pasivo
+(AE), entrega intracomunitaria (K), exportación (G) y «no sujeto» (O) con texto y
+código; la categoría Z no lleva motivo. «Exento» (E) cita el § 19 UStG solo para
+pequeñas empresas. Para otras exenciones, cree en la **matriz de reglas fiscales**
+una regla con el tipo «Exento» e indique el supuesto de exención como texto de aviso
+del justificante, por ejemplo «Tratamiento médico exento (§ 4 n.º 14 UStG)»; sin
+regla solo figura «Operación exenta» y la comprobación previa al envío avisa.
+
+La comprobación previa al envío indica además: falta del NIF-IVA del cliente en
+entregas intracomunitarias, falta del NIF-IVA de la organización en entregas a otros
+países de la UE y exportaciones, «no sujeto» junto a otras categorías y una posición
+de categoría sin impuesto con un tipo superior al 0 %. Con «no sujeto» la factura
+electrónica no lleva NIF-IVA; basta el número fiscal. A la factura electrónica le
+faltan aún dos datos (aviso): el país de entrega en entregas intracomunitarias y la
+omisión del tipo por posición en «no sujeto».
+
+## Nota de exención en el PDF de la factura
+
+Las posiciones sin impuesto también necesitan una nota en la propia factura
+(§ 14, apdo. 4, n.º 8 y § 14a UStG). Bajo el desglose del impuesto, el PDF imprime
+para cada categoría fiscal el mismo texto que el motivo de exención de la factura
+electrónica, por ejemplo «entrega intracomunitaria exenta» para K o la mención de
+inversión del sujeto pasivo para una posición aislada con AE. Si el texto de la
+factura ya contiene la nota — o la nota automática de esta categoría procedente del
+supuesto fiscal —, la línea se omite. La inversión del sujeto pasivo de todo el
+documento y el § 19 UStG mantienen su propia línea como hasta ahora. Las facturas
+emitidas antes de esta ampliación se reimprimen sin cambios. El abono y la factura
+de anulación adoptan la categoría fiscal de cada posición del original.
+
+Si elige una categoría sin impuesto (AE, Z, E, G, K, O) en una posición o en un plan
+de facturación, el formulario fija el tipo en 0 %; en cualquier caso se guarda 0 %.
+
+## Destinatario y NIF-IVA en la factura
+
+Una factura emitida imprime el destinatario tal como era al emitirla: el nombre, la
+empresa, la dirección y el NIF-IVA del cliente quedan fijados con la emisión. Si
+después modifica los datos del cliente, la reimpresión, el PDF adjunto, la
+XRechnung, el ZUGFeRD y la exportación GAEB no cambian; solo las facturas nuevas
+adoptan la nueva dirección. Un borrador muestra siempre los datos actuales del
+cliente. El documento de anulación y la factura rectificativa fijan el destinatario
+al emitirse ellos mismos. En cambio, la dirección de entrega electrónica
+(identificador Peppol o correo electrónico) y las cartas de reclamación siguen los
+datos actuales del cliente, porque se entregan hoy.
+
+Si el cliente tiene un NIF-IVA registrado, aparece en la cabecera de la factura
+(«Su NIF-IVA»). En entregas intracomunitarias y en la inversión del sujeto pasivo
+es obligatorio (§ 14a UStG). Las facturas emitidas antes de esta ampliación se
+reimprimen sin esa línea.
+
+La emisión también fija la indicación de los costes de mano de obra según el
+§ 35a EStG: un cambio posterior de la regla de la organización o del tipo de
+cliente ya no modifica una factura emitida.

@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Firefly\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Audit\AuditLog;
+use App\Models\Platform\User;
 use App\Plugins\Firefly\Api\FireflyClientFactory;
 use App\Plugins\Firefly\Enums\FireflyMatchStatus;
 use App\Plugins\Firefly\{FireflyConfig, FireflyPlugin};
@@ -21,9 +23,11 @@ use App\Plugins\Firefly\Services\FireflySyncService;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\OAuthConnectionStatus;
 use App\Plugins\Support\TaskSync\SelfHostedInstance;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Throwable;
 
@@ -34,16 +38,32 @@ use Throwable;
 class FireflyAdminController extends Controller {
     use ResolvesPluginOrgContext;
 
+    /** Filterwert für Bewegungen ohne eindeutige Zuordnung. */
+    public const string OPEN = 'open';
+
+    /** Filterwert für als erledigt markierte Bewegungen (MVP-1628). */
+    public const string SETTLED = 'settled';
+
     public function index(Request $request, FireflySyncService $sync): View {
         $organization = $this->organization($this->admin());
         $search = StringHelper::trimToNull($request->query('q'));
-        $status = FireflyMatchStatus::tryFrom((string) $request->query('match', ''));
-        $query = FireflyTransaction::query()->where('organization_id', $organization->id)->with(['invoice', 'incomingEinvoice']);
+        $match = (string) $request->query('match', '');
+        $status = FireflyMatchStatus::tryFrom($match);
+        // „offen“ = ohne oder mit mehrdeutiger Zuordnung, wie Kachel und Arbeitsvorrat zählen (MVP-1617).
+        $open = $status === null && $match === self::OPEN;
+        $settled = $status === null && $match === self::SETTLED;
+        $query = FireflyTransaction::query()->where('organization_id', $organization->id)->with(['invoice', 'incomingEinvoice', 'settledBy']);
         if ($search !== null) {
             FireflyTransaction::whereMatching($query, $search);
         }
         if ($status !== null) {
-            $query->where('match_status', $status->value);
+            // Wie der Arbeitsvorrat zählt: erledigte stehen unter „Erledigt“, nicht mehr unter ihrem offenen Stand.
+            $query->where('match_status', $status->value)
+                ->when(in_array($status->value, FireflyMatchStatus::openValues(), true), fn ($q) => $q->whereNull('settled_at'));
+        } elseif ($open) {
+            $query->openForReview();
+        } elseif ($settled) {
+            $query->whereNotNull('settled_at');
         }
         $connection = $sync->connection((int) $organization->id);
 
@@ -54,6 +74,8 @@ class FireflyAdminController extends Controller {
             'transactions' => $query->orderByDesc('booked_on')->orderByDesc('id')->paginate(25)->withQueryString(),
             'search' => $search,
             'status' => $status,
+            'open' => $open,
+            'settled' => $settled,
             'windowDays' => FireflyConfig::resolve((int) $organization->id)['window_days'],
         ]);
     }
@@ -124,6 +146,58 @@ class FireflyAdminController extends Controller {
         }
 
         return $this->back()->with('success', (string) __('firefly::firefly.flash.disconnected'));
+    }
+
+    /** Erledigt markieren (MVP-1628): eine Bewegung ohne Beleg mit Begründung aus der Nacharbeit nehmen. */
+    public function settleForm(FireflyTransaction $transaction): View {
+        $this->ownTransaction($transaction);
+
+        return view('firefly::admin._settle_dialog', ['transaction' => $transaction]);
+    }
+
+    public function settle(Request $request, FireflyTransaction $transaction): RedirectResponse {
+        $admin = $this->ownTransaction($transaction);
+        $data = $request->validate(['note' => ['required', 'string', 'min:3', 'max:500']]);
+        if ($transaction->isSettled()) {
+            return $this->back()->with('error', (string) __('firefly::firefly.settle.already'));
+        }
+
+        $transaction->forceFill(['settled_at' => CarbonImmutable::now(), 'settled_by' => $admin->id, 'note' => trim((string) $data['note'])])->save();
+        $this->auditTransaction($transaction, 'transaction_settled', ['note' => $transaction->note]);
+
+        return $this->back()->with('success', (string) __('firefly::firefly.settle.done'));
+    }
+
+    public function reopen(FireflyTransaction $transaction): RedirectResponse {
+        $this->ownTransaction($transaction);
+        if (! $transaction->isSettled()) {
+            return $this->back();
+        }
+
+        $previous = ['settled_at' => $transaction->settled_at?->toIso8601String(), 'settled_by' => $transaction->settled_by, 'note' => $transaction->note];
+        $transaction->forceFill(['settled_at' => null, 'settled_by' => null, 'note' => null])->save();
+        $this->auditTransaction($transaction, 'transaction_reopened', $previous);
+
+        return $this->back()->with('success', (string) __('firefly::firefly.settle.reopened'));
+    }
+
+    private function ownTransaction(FireflyTransaction $transaction): User {
+        $admin = $this->admin();
+        abort_unless((int) $transaction->organization_id === (int) $this->organization($admin)->id, 404);
+
+        return $admin;
+    }
+
+    /** @param  array<string, mixed>  $changes */
+    private function auditTransaction(FireflyTransaction $transaction, string $event, array $changes): void {
+        AuditLog::query()->create([
+            'organization_id' => $transaction->organization_id,
+            'user_id' => Auth::id(),
+            'event' => FireflyPlugin::ID . '.' . $event,
+            'auditable_type' => MorphMap::stableKey(FireflyTransaction::class),
+            'auditable_id' => $transaction->id,
+            'changes' => $changes,
+        ]);
     }
 
     private function back(): RedirectResponse {

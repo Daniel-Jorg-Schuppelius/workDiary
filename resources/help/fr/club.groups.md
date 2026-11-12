@@ -1,7 +1,7 @@
 ---
 title: "Groupes de l'association et propositions de changement"
 topic: club.groups
-version: 1
+version: 2
 keywords:
     - groupe d'entraînement
     - groupe jeunes
@@ -51,3 +51,5 @@ lance le contrôle immédiatement.
 celui-ci : admissions, demandes, fins de rattachement et propositions de son
 propre groupe. Les données de base du groupe et les exceptions restent
 réservées à l'administration de l'association.
+
+**Mode d’admission :** avec « par la direction », la direction admet directement. Avec « demande avec validation », il n’y a pas d’admission directe : la direction saisit une demande, et les membres ou leurs représentants demandent eux-mêmes l’admission sous « Mon club ». Les demandes ouvertes figurent dans la file de travail de la direction ; critères et capacité sont vérifiés lors de la validation. Une proposition de changement confirmée vers un tel groupe devient elle aussi une demande.

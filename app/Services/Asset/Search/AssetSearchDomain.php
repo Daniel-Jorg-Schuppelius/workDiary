@@ -52,7 +52,8 @@ final class AssetSearchDomain implements SearchDomain {
             ->where(fn ($q) => $q->whereLikeEscaped('name', $term)
                 ->orWhereLikeEscaped('asset_no', $term)
                 ->orWhereLikeEscaped('inventory_no', $term)
-                ->orWhereLikeEscaped('serial_no', $term))
+                ->orWhereLikeEscaped('serial_no', $term)
+                ->orWhereCustomFieldText($term))
             ->when($filters->customer !== null, fn ($q) => $q->where('customer_id', $filters->customer))
             ->with('customer:id,name');
         $filters->range($query, 'created_at');

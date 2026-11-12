@@ -249,6 +249,21 @@
                                 <span class="text-warning">{{ __('Noch nicht zugeordnet') }}</span>
                             @endif
                         </x-detail-grid.row>
+                        {{-- Steuerfall (MVP-1621): Vorsteuer aus der Rechnung oder Steuerschuld des Empfängers. --}}
+                        @if ($incoming->direction !== \App\Enums\Billing\DocumentDirection::Outgoing)
+                            @php($taxCase = app(\App\Services\Invoicing\EInvoice\IncomingInvoiceTaxCaseResolver::class)->resolve($incoming))
+                            <x-detail-grid.row :label="__('invoicing.incoming_tax_case.field')">
+                                <span class="inline-flex flex-wrap items-center gap-1">
+                                    {{ $taxCase['case']->label() }}
+                                    <span class="text-xs text-muted">({{ __('invoicing.incoming_tax_case.source.' . $taxCase['source']) }})</span>
+                                    @if ($incoming->transferred_at === null && $incoming->status !== \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected && (auth()->user()?->canManageBilling() ?? false))
+                                        <x-icon-btn icon="edit" size="xs" tone="ghost" data-entry-modal-trigger
+                                                    :href="route('finance.incoming-invoices.tax-case.form', $incoming)"
+                                                    :label="__('invoicing.incoming_tax_case.action')" />
+                                    @endif
+                                </span>
+                            </x-detail-grid.row>
+                        @endif
                         @if ($incoming->sender_email)
                             <x-detail-grid.row :label="__('Absender')">{{ $incoming->sender_email }}</x-detail-grid.row>
                         @endif

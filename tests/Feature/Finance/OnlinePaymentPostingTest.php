@@ -177,7 +177,10 @@ final class OnlinePaymentPostingTest extends TestCase {
             '4970 S 2.04 H 0.00',
             '1360 S 0.00 H 2.04',
         ], array_map(static fn ($line): string => $line->account->number . ' S ' . $line->debit . ' H ' . $line->credit, $proposal->lines));
-        $this->assertSame('19.00', $proposal->lines[2]->taxAmount);
+        // Kennzeichen und Steuer stehen an der Nettozeile der Anzahlung, die Steuerzeile trägt keines.
+        $this->assertSame('19.00', $proposal->lines[1]->taxAmount);
+        $this->assertNull($proposal->lines[2]->taxAmount);
+        $this->assertNull($proposal->lines[2]->taxCodeId);
         $this->assertSame('121.04', $proposal->debitTotal());
         $this->assertSame('121.04', $proposal->creditTotal());
     }
@@ -198,7 +201,8 @@ final class OnlinePaymentPostingTest extends TestCase {
             '1360 S 0.00 H 2.04',
         ], array_map(static fn ($line): string => $line->account->number . ' S ' . $line->debit . ' H ' . $line->credit, $proposal->lines));
         // Die Erstattung mindert die Umsatzsteuer: Der Steuerbetrag trägt das Vorzeichen der Wirkung.
-        $this->assertSame('-9.50', $proposal->lines[4]->taxAmount);
+        $this->assertSame('-9.50', $proposal->lines[3]->taxAmount);
+        $this->assertNull($proposal->lines[4]->taxAmount);
     }
 
     /** MVP-1542: Mindest-Istversteuerung — die Vorauszahlung vor der lokalen Rechnung bucht am Zahlungstag. */

@@ -16,6 +16,8 @@ return [
         'all_categories' => 'All areas',
         'source' => 'Source',
         'all_sources' => 'All sources',
+        'due' => 'Due date',
+        'all_due' => 'All due dates',
         'mine' => 'Assigned to me only',
     ],
     'column' => [
@@ -40,6 +42,7 @@ return [
         'resale' => 'Subscriptions & licences',
         'approval' => 'Approval chains',
         'vacation_approval' => 'Leave requests',
+        'vacation_revision' => 'Leave requests to correct',
         'expense_approval' => 'Expenses',
         'month_closure' => 'Month closings',
         'price_change' => 'Price changes',
@@ -67,6 +70,7 @@ return [
     ],
     'item' => [
         'vacation' => 'Leave request from :name',
+        'vacation_revision' => 'Correct leave request',
         'expense' => 'Expense from :name',
         'month_closure' => 'Month :period from :name',
         'price_change' => 'Price change: :article',

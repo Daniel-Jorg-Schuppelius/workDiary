@@ -36,7 +36,6 @@ use Throwable;
  * @property Carbon|null $token_expires_at
  * @property string|null $scopes
  * @property TodoistConnectionStatus $status
- * @property bool $webhook_capable
  * @property string|null $sync_cursor
  * @property Carbon|null $last_sync_at
  * @property Carbon|null $last_full_sync_at
@@ -66,7 +65,6 @@ class TodoistConnection extends Model implements ManagedPluginConnection {
         'token_expires_at',
         'scopes',
         'status',
-        'webhook_capable',
         'sync_cursor',
         'last_sync_at',
         'last_full_sync_at',
@@ -83,7 +81,6 @@ class TodoistConnection extends Model implements ManagedPluginConnection {
         'refresh_token' => 'encrypted',
         'token_expires_at' => 'datetime',
         'status' => TodoistConnectionStatus::class,
-        'webhook_capable' => 'boolean',
         'last_sync_at' => 'datetime',
         'last_full_sync_at' => 'datetime',
         'connected_at' => 'datetime',

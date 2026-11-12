@@ -43,9 +43,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $locked_by
  * @property string|null $notes
  * @property int $totals_minutes
- * @property int $attendance_total_minutes
  * @property int $entries_total_minutes
- * @property int $untracked_minutes
  * @property string $totals_material_net
  * @property string|null $magic_token_hash
  * @property Carbon|null $magic_expires_at
@@ -84,9 +82,7 @@ class Timesheet extends Model {
         'locked_by',
         'notes',
         'totals_minutes',
-        'attendance_total_minutes',
         'entries_total_minutes',
-        'untracked_minutes',
         'totals_material_net',
         'magic_token_hash',
         'magic_expires_at',
@@ -99,9 +95,7 @@ class Timesheet extends Model {
         'locked_at' => 'datetime',
         'magic_expires_at' => 'datetime',
         'totals_minutes' => 'integer',
-        'attendance_total_minutes' => 'integer',
         'entries_total_minutes' => 'integer',
-        'untracked_minutes' => 'integer',
         'totals_material_net' => 'decimal:2',
         'kind' => TimesheetKind::class,
         'status' => TimesheetStatus::class,
@@ -190,7 +184,6 @@ class Timesheet extends Model {
         $material = (float) $this->materialUsages->sum(fn (MaterialUsage $u): float => $u->line_total_net?->toFloat() ?? 0.0);
         $this->totals_minutes = $minutes;
         $this->entries_total_minutes = $minutes;
-        $this->untracked_minutes = max(0, (int) $this->attendance_total_minutes - $minutes);
         $this->totals_material_net = (string) round($material, 2);
         $this->saveQuietly();
     }

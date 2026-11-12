@@ -12,7 +12,7 @@ namespace Tests\Support;
 
 use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Plugins\Contracts\DocumentIntakeSource;
-use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
+use App\Plugins\Support\Intake\{IntakeChangePage, IntakeItem};
 use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
@@ -33,10 +33,6 @@ class FakeIntakeAdapter implements DocumentIntakeSource {
 
     /** @var list<string|null> Übergebene Checkpoints (Assertions). */
     public array $seenCheckpoints = [];
-
-    public function intakeAccount(CloudDocumentConnection $connection): IntakeAccount {
-        return new IntakeAccount('fake-account', 'Fake <fake@example.test>');
-    }
 
     public function intakeContainers(CloudDocumentConnection $connection, ?string $search = null): array {
         return [];

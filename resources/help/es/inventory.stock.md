@@ -1,7 +1,7 @@
 ---
 title: "Existencias y escaneo"
 topic: inventory.stock
-version: 2
+version: 6
 keywords:
     - stock
     - almacén
@@ -74,3 +74,33 @@ lote (saldo contable, resto de las capas de valoración, diferencia); con
 `--apply` traspasa la diferencia a «sin lote» en valoración FIFO o FEFO, y
 las existencias totales no cambian. Con precio medio móvil solo informa del
 lote; los lotes bloqueados, solo tras su liberación.
+
+## Unidades, diario de almacén y ajustes
+
+**Registrar en una unidad del artículo.** Si un artículo tiene otras unidades con factor de conversión (por ejemplo, 1 rollo = 100 m), el formulario de movimientos y la vista de escaneo ofrecen la selección **Unidad** junto a la cantidad. Siempre se contabiliza en la unidad base; la cantidad introducida y su unidad quedan en el movimiento. El redondeo es comercial a cuatro decimales. Se rechazan una cantidad que equivale a cero en la unidad base y una unidad no definida en el artículo.
+
+**Diario de almacén.** La pestaña **Diario de almacén** lista todos los movimientos con fecha y hora, almacén, tipo de movimiento, cantidad en unidad base y la columna **Registrado como** (cantidad y unidad introducidas). La búsqueda, el almacén y el periodo superior acotan la lista.
+
+**Caducidad.** Si un artículo tiene la propiedad «caducidad obligatoria», el almacén solo acepta su entrada mediante la recepción de mercancía de un pedido, con lote y fecha de consumo preferente. Se rechazan las entradas manuales y por escaneo. Un lote ya conocido aporta su fecha.
+
+**Ajustes de almacén.** Con el permiso de configuración de almacén, usted abre los **ajustes de almacén** en la vista de existencias. Allí elige el **método de valoración** de la organización (promedio móvil, FIFO o FEFO) y el **momento de la reserva** en fabricación (al liberar o al iniciar). Al cambiar a FIFO o FEFO, las existencias reciben una capa inicial al precio medio anterior. Solo se puede volver al promedio móvil cuando ya no queden existencias en capas, porque el promedio no se actualizó durante ese tiempo.
+
+## Permisos, reservas y números de artículo
+
+**Permisos separados.** Contabilizar movimientos, contar inventario, aprobar diferencias de inventario, modificar reservas y compensar asientos externos son permisos independientes. Quien podía contabilizar conserva contar, reservar y compensar; su administrador puede separar los permisos por rol.
+
+**Modificar una reserva.** Con el permiso de reservas, el icono de lápiz de una reserva activa abre un diálogo con la cantidad reservada, retirada y pendiente. Allí usted fija la prioridad (un número menor significa mayor prioridad) y libera una cantidad parcial, por ejemplo para asignarla a otra orden.
+
+**Aprobación de cuatro ojos.** En los ajustes de almacén puede activarse la aprobación de cuatro ojos para diferencias de inventario, con un umbral para el valor de existencias de la diferencia por línea. A partir del umbral no aprueba quien contó. El umbral y quien aprueba constan en el registro de auditoría.
+
+**SKU y GTIN.** Los ajustes de almacén muestran quién gestiona el número de artículo, el SKU de las variantes y el GTIN. Se elige en la página «Rangos de numeración», rango «Artículo». Si un sistema de gestión de mercancías gestiona los números, los campos quedan bloqueados en el maestro de artículos y llegan con la sincronización.
+
+**Existencias negativas a cuatro ojos:** si la organización exige en la configuración de almacén una aprobación a cuatro ojos para salidas a existencias negativas, una salida con «Permitir existencias negativas» se convierte en una solicitud en la bandeja de aprobaciones. Solo se registra cuando otra persona con el permiso «Autorizar existencias negativas» da su conformidad; solicitante y aprobador quedan en el registro de auditoría.
+
+**Redistribuir reservas:** en el diálogo «Modificar reserva» cede la cantidad abierta a otra reserva del mismo artículo, almacén y propiedad, por ejemplo a una orden con mayor prioridad. Una reserva más reciente nunca desplaza en silencio a una más antigua; la redistribución queda en el registro de auditoría y la línea de material de una orden de fabricación la sigue.
+
+**Valor del stock según el método:** El precio medio y el valor del stock de
+la vista siguen el método de valoración del artículo: con el precio medio móvil,
+del libro de medias; con FIFO y FEFO, de las capas de valoración abiertas (valor
+de las cantidades restantes, media = valor ÷ cantidad). La clasificación ABC del
+inventario cíclico usa los mismos valores.

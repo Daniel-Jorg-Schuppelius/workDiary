@@ -42,6 +42,9 @@ return [
         'message' => 'No registry keys exist for this scope or search term.',
         'history' => 'No changes logged yet.',
     ],
+    'error' => [
+        'service_managed' => 'The setting :key is maintained on its own page and cannot be changed here.',
+    ],
     'flash' => [
         'saved' => 'Setting :key saved.',
         'reset' => 'Setting :key reset to default.',

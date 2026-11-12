@@ -1,7 +1,7 @@
 ---
 title: "Giacenze e scansione"
 topic: inventory.stock
-version: 2
+version: 6
 keywords:
     - magazzino
     - carico merce
@@ -71,3 +71,33 @@ lotto (saldo contabile, residuo degli strati di valutazione, differenza);
 con `--apply` trasferisce la differenza a «senza lotto» con valutazione FIFO
 o FEFO, e la giacenza totale resta invariata. Con il prezzo medio mobile
 segnala soltanto il lotto; i lotti bloccati solo dopo lo sblocco.
+
+## Unità, giornale di magazzino e impostazioni
+
+**Registrare in un’unità dell’articolo.** Se un articolo ha altre unità con fattore di conversione (per esempio 1 rotolo = 100 m), il modulo dei movimenti e la vista di scansione offrono la scelta **Unità** accanto alla quantità. La registrazione avviene sempre nell’unità base; la quantità inserita e la sua unità restano sul movimento. L’arrotondamento è commerciale a quattro decimali. Una quantità che equivale a zero nell’unità base e un’unità non definita per l’articolo vengono rifiutate.
+
+**Giornale di magazzino.** La scheda **Giornale di magazzino** elenca tutti i movimenti con data e ora, magazzino, tipo di movimento, quantità in unità base e la colonna **Registrato come** (quantità e unità inserite). Ricerca, magazzino e periodo in alto restringono l’elenco.
+
+**Scadenza.** Se un articolo ha la proprietà «scadenza obbligatoria», il magazzino accetta la sua entrata solo tramite il ricevimento merci di un ordine, con lotto e data di scadenza. Le entrate manuali e da scansione vengono rifiutate. Un lotto già noto porta con sé la propria data.
+
+**Impostazioni di magazzino.** Con il diritto di configurazione del magazzino Lei apre le **impostazioni di magazzino** nella panoramica delle giacenze. Lì sceglie il **metodo di valutazione** dell’organizzazione (media mobile, FIFO o FEFO) e il **momento della prenotazione** in produzione (al rilascio o all’avvio). Passando a FIFO o FEFO, la giacenza esistente riceve uno strato iniziale al prezzo medio precedente. Il ritorno alla media mobile è possibile solo quando non resta giacenza negli strati, perché la media non è stata aggiornata in questo periodo.
+
+## Diritti, prenotazioni e numeri articolo
+
+**Diritti separati.** Registrare movimenti, contare l’inventario, approvare le differenze inventariali, modificare le prenotazioni e compensare le registrazioni esterne sono diritti distinti. Chi poteva registrare mantiene conteggio, prenotazione e compensazione; il Suo amministratore può separare i diritti per ruolo.
+
+**Modificare una prenotazione.** Con il diritto sulle prenotazioni, l’icona della matita di una prenotazione attiva apre una finestra con la quantità prenotata, prelevata e aperta. Lì Lei imposta la priorità (un numero più basso significa priorità più alta) e rilascia una quantità parziale, ad esempio per assegnarla a un altro ordine.
+
+**Approvazione a quattro occhi.** Nelle impostazioni di magazzino è possibile attivare l’approvazione a quattro occhi per le differenze inventariali, con una soglia per il valore di giacenza della differenza per riga. A partire dalla soglia non approva chi ha contato. Soglia e approvatore risultano nel registro di audit.
+
+**SKU e GTIN.** Le impostazioni di magazzino mostrano chi gestisce numero articolo, SKU delle varianti e GTIN. La scelta avviene nella pagina «Numerazioni», numerazione «Articolo». Se un gestionale di magazzino gestisce i numeri, i campi sono bloccati nell’anagrafica articoli e arrivano con la sincronizzazione.
+
+**Giacenza negativa a quattro occhi:** se l’organizzazione richiede nelle impostazioni di magazzino un’approvazione a quattro occhi per i prelievi in giacenza negativa, un prelievo con «Consenti giacenza negativa» diventa una richiesta nella casella delle approvazioni. Viene registrato solo quando un’altra persona con il diritto «Autorizzare giacenze negative» acconsente; richiedente e approvatore compaiono nel protocollo di audit.
+
+**Ridistribuire le prenotazioni:** nella finestra «Modifica prenotazione» cedete la quantità aperta a un’altra prenotazione dello stesso articolo, magazzino e proprietà, ad esempio a un ordine con priorità più alta. Una prenotazione più recente non ne scalza mai una più vecchia in silenzio; la ridistribuzione compare nel protocollo di audit e la riga materiale di un ordine di produzione la segue.
+
+**Valore di magazzino per metodo:** Prezzo medio e valore di magazzino della
+panoramica seguono il metodo di valutazione dell'articolo: con la media mobile
+dal registro delle medie, con FIFO e FEFO dagli strati di valutazione aperti
+(valore delle quantità residue, media = valore ÷ quantità). La classificazione
+ABC dell'inventario ciclico usa gli stessi valori.

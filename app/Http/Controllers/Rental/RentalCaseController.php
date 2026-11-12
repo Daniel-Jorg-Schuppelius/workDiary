@@ -71,7 +71,7 @@ class RentalCaseController extends Controller {
 
         $rental->load([
             'customer', 'project', 'site', 'responsible', 'rateCard',
-            'caseAssets.asset', 'caseAssets.replacedBy',
+            'caseAssets.asset.rentalProfile', 'caseAssets.replacedBy',
             'reservations.asset', 'handoverReports.asset', 'handoverReports.conditionItems',
             'handoverReports.accessoryItems', 'returnReports.asset',
             'returnReports.conditionItems', 'returnReports.accessoryItems',
@@ -86,6 +86,10 @@ class RentalCaseController extends Controller {
             // Bei der Übergabe an ein führendes Programm angerechnet (MVP-1523).
             'prepaidCredited' => Gate::allows('finance', $rental) ? $this->billing->creditedPrepaidTotal($rental) : null,
             'rentableAssets' => $this->rentableAssets(),
+            // Weiche Vormerkungen anderer Vorgänge: Hinweis vor und nach dem Reservieren (MVP-1604).
+            'softConflicts' => in_array($rental->status, [RentalCaseStatus::Draft, RentalCaseStatus::Reserved], true)
+                ? collect($this->service->softConflicts($rental))->each->loadMissing(['asset:id,name', 'rentalCase.customer:id,name'])
+                : collect(),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -161,7 +165,10 @@ class RentalCaseController extends Controller {
             return back()->withErrors(['reserve' => ErrorText::for($e)]);
         }
 
-        return back()->with('status', __('Zeitraum reserviert — Verfügbarkeit ist blockiert.'));
+        $redirect = back()->with('status', __('Zeitraum reserviert — Verfügbarkeit ist blockiert.'));
+        $soft = count($this->service->softConflicts($rental));
+
+        return $soft === 0 ? $redirect : $redirect->with('warning', trans_choice('rental.soft.reserved_warning', $soft, ['count' => $soft]));
     }
 
     /** Verlängerung (MVP-264) mit erneuter Konfliktprüfung. */
@@ -241,6 +248,7 @@ class RentalCaseController extends Controller {
     /** @return \Illuminate\Support\Collection<int, Asset> */
     private function rentableAssets(): \Illuminate\Support\Collection {
         return Asset::query()
+            ->inOperation()
             ->whereHas('rentalProfile', fn($q) => $q->where('is_rentable', true))
             ->with('rentalProfile')
             ->orderBy('name')

@@ -1,7 +1,7 @@
 ---
 title: "Leasing et contrats d'actifs"
 topic: asset-finance.overview
-version: 2
+version: 3
 keywords:
     - crédit-bail
     - contrat de location
@@ -47,3 +47,7 @@ la cible est B2B (les règles CCD II consommateurs ne sont pas vérifiées).
 
 **Processus de fin :** documente l'état, le kilométrage, les dommages et
 la décision — restitution, achat, prolongation ou remplacement.
+
+**Commande :** dans le formulaire du contrat, vous sélectionnez la commande
+correspondante, si les achats sont activés et que vous pouvez lire les
+commandes. Le dossier affiche le numéro de commande avec un lien.

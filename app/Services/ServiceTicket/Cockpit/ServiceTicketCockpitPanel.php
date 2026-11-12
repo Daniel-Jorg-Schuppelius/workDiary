@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket\Cockpit;
 
+use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\ServiceTicket\ServiceTicket;
@@ -22,9 +23,11 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 
-/** Ungelöste Tickets des Kunden (Feature 010); vertrauliche nur, wo die Ticket-Policy sie zeigt. */
+/** Ungelöste Tickets des Kunden oder Assets (Feature 010, MVP-1617); vertrauliche nur, wo die Ticket-Policy sie zeigt. */
 final class ServiceTicketCockpitPanel implements CockpitPanel {
     private const int LIMIT = 10;
+
+    private const array COLUMN = [Customer::class => 'customer_id', Asset::class => 'asset_id'];
 
     public function __construct(private readonly FeatureFlagResolver $features) {}
 
@@ -33,7 +36,7 @@ final class ServiceTicketCockpitPanel implements CockpitPanel {
     }
 
     public function supports(Model $subject): bool {
-        return $subject instanceof Customer;
+        return isset(self::COLUMN[$subject::class]);
     }
 
     public function render(Model $subject, User $viewer): ?View {
@@ -42,7 +45,7 @@ final class ServiceTicketCockpitPanel implements CockpitPanel {
             return null;
         }
         $tickets = ServiceTicket::query()
-            ->where('customer_id', $subject->getKey())
+            ->where(self::COLUMN[$subject::class], $subject->getKey())
             ->open()
             ->orderBy('resolution_due_at')
             ->get()

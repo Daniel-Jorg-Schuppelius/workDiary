@@ -12,13 +12,21 @@ declare(strict_types=1);
 
 namespace App\Plugins\Billbee\Http\Controllers;
 
+use App\Enums\Inventory\InventoryMode;
+use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
+use App\Models\Audit\AuditLog;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\{Organization, User};
+use App\Plugins\Billbee\Api\BillbeeClientFactory;
 use App\Plugins\Billbee\BillbeePlugin;
 use App\Plugins\Billbee\Models\BillbeeOrder;
 use App\Plugins\Billbee\Services\{BillbeeArticleMappingService, BillbeeOrderImportService};
+use App\Plugins\PluginManager;
+use App\Services\Inventory\InventoryProviderResolver;
+use App\Support\MorphMap;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
 
@@ -62,6 +70,9 @@ class BillbeeAdminController extends Controller {
             'search' => $search,
             'openInbox' => $openInbox,
             'lastSyncAt' => BillbeeOrder::query()->where('organization_id', $organization->id)->max('updated_at'),
+            'inventoryMode' => app(InventoryProviderResolver::class)->modeFor($organization),
+            'inventoryPlugin' => (string) data_get($organization->settings, 'inventory_plugin_id', ''),
+            'canConfigureInventory' => $request->user()?->can(Permission::InventoryConfigure->value) ?? false,
         ]);
     }
 
@@ -80,6 +91,51 @@ class BillbeeAdminController extends Controller {
 
             return back()->with('error', (string) __('billbee::billbee.flash.sync_failed'));
         }
+    }
+
+    /**
+     * Bestandsrückkanal ein- oder ausschalten (MVP-1626): „Billbee“ bucht weiter
+     * ins lokale Journal und meldet jeden Stand als Absolutbestand an Billbee;
+     * „lokal“ meldet nichts. „Nur lesen“ gibt es nicht — Billbee führt keinen
+     * eigenen Bestand, aus dem WorkDiary lesen könnte. Verlangt inventory.configure.
+     */
+    public function updateMode(Request $request, InventoryProviderResolver $resolver, BillbeeClientFactory $clients): RedirectResponse {
+        [$user, $organization] = $this->authorizeAdmin($request);
+        abort_unless($user->can(Permission::InventoryConfigure->value), 403);
+
+        $data = $request->validate([
+            'inventory_mode' => ['required', Rule::in([InventoryMode::Local->value, InventoryMode::External->value])],
+        ]);
+        $target = InventoryMode::from((string) $data['inventory_mode']);
+        $current = $resolver->modeFor($organization);
+        $currentPlugin = (string) data_get($organization->settings, 'inventory_plugin_id', '');
+
+        // Führt ein anderes Plugin, wechselt nur dessen Seite — sonst entfiele etwa die Übernahme-Inventur von JTL.
+        if ($current !== InventoryMode::Local && $currentPlugin !== '' && $currentPlugin !== BillbeePlugin::ID) {
+            return back()->with('error', (string) __('billbee::billbee.inventory.other_leads', ['plugin' => app(PluginManager::class)->find($currentPlugin)?->name() ?? $currentPlugin]));
+        }
+        if ($target === $current) {
+            return back()->with('success', (string) __('billbee::billbee.inventory.unchanged'));
+        }
+        if ($target === InventoryMode::External && ! $clients->isConfigured((int) $organization->id)) {
+            return back()->with('error', (string) __('billbee::billbee.inventory.needs_connection'));
+        }
+
+        $settings = (array) ($organization->settings ?? []);
+        $settings['inventory_mode'] = $target->value;
+        $settings['inventory_plugin_id'] = $target === InventoryMode::Local ? null : BillbeePlugin::ID;
+        $organization->forceFill(['settings' => $settings])->save();
+
+        AuditLog::query()->create([
+            'organization_id' => $organization->id,
+            'user_id' => $user->id,
+            'event' => 'inventory.mode_changed',
+            'auditable_type' => MorphMap::stableKey($organization::class),
+            'auditable_id' => $organization->getKey(),
+            'changes' => ['from' => $current->value, 'to' => $target->value, 'plugin_id' => $settings['inventory_plugin_id']],
+        ]);
+
+        return back()->with('success', (string) __('billbee::billbee.inventory.changed'));
     }
 
     /** @return array{0: User, 1: Organization} */

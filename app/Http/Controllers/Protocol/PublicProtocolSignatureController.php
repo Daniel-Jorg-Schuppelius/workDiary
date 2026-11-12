@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Protocol;
 
+use App\Exceptions\ProtocolValidationException;
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Http\Controllers\Controller;
 use App\Models\Protocol\ProtocolSignatureToken;
@@ -31,7 +32,9 @@ class PublicProtocolSignatureController extends Controller {
 
     public function show(string $token): View|Response {
         try {
-            $record = $this->tokens->open($token);
+            // Nach der eigenen Entscheidung zeigt die Seite deren Bestätigung und die Rückfragen, kein „abgelaufen“.
+            $decided = ProtocolSignatureToken::findByAccessToken($token);
+            $record = $decided?->used_at !== null ? $decided : $this->tokens->open($token);
         } catch (RuntimeException $e) {
             return response()->view('public.protocol-sign-error', ['message' => ErrorText::for($e)], 410);
         }
@@ -61,23 +64,23 @@ class PublicProtocolSignatureController extends Controller {
     public function store(Request $request, string $token): RedirectResponse|Response {
         $data = $request->validate([
             'signer_name' => ['required', 'string', 'min:2', 'max:120'],
-            // 'signature_image_path' NICHT vom Client annehmen (Sicherheitsscan
-            // 2026-08-23, S-63): der Endpunkt ist nur tokengeschützt, und ein
-            // beliebiger Pfad landete unverändert in der Datenbank. Heute wird
-            // er nirgends gerendert — ein späterer PDF- oder View-Renderer, der
-            // ihn als Bildquelle lädt, verarbeitete damit Pfadangaben aus einer
-            // unauthentifizierten Quelle (`storage/…`, `phar://`). Gesetzt wird
-            // er serverseitig, sobald ein Bild gespeichert wird.
+            // Das gezeichnete Bild kommt als PNG-Data-URL und wird am Server
+            // geprüft und abgelegt (MVP-1572). Einen Pfad nimmt der Endpunkt
+            // weiterhin nicht an (Sicherheitsscan 2026-08-23, S-63).
+            'signature' => ['required', 'string', 'starts_with:data:image/png;base64,', 'max:1500000'],
             'accept' => ['accepted'],
         ]);
 
         try {
             $this->tokens->redeem($token, [
                 'signer_name' => $data['signer_name'],
-                'signature_image_path' => null,
+                'signature_image' => $data['signature'],
                 'ip' => $request->ip(),
                 'user_agent' => substr((string) $request->userAgent(), 0, 255),
             ]);
+        } catch (ProtocolValidationException $e) {
+            // Vor RuntimeException: die Unterschrift war ungültig, der Link bleibt einlösbar.
+            return back()->withErrors(['signature' => implode(' • ', $e->errors())])->withInput($request->except('signature'));
         } catch (RuntimeException $e) {
             return response()->view('public.protocol-sign-error', ['message' => ErrorText::for($e)], 410);
         }

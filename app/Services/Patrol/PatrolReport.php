@@ -34,16 +34,18 @@ final class PatrolReport {
             ->with(['route:id,name,site_id', 'route.site:id,name', 'scans:id,patrol_run_id,in_window', 'starter:id,name'])
             ->orderBy('started_at')
             ->get();
-        $expectedByRoute = PatrolCheckpoint::query()
+        // Soll je Lauf: ohne die Punkte, die vor seinem Start deaktiviert wurden (MVP-1611).
+        $checkpointsByRoute = PatrolCheckpoint::query()
             ->whereIn('patrol_route_id', $runs->pluck('patrol_route_id')->unique())
-            ->selectRaw('patrol_route_id, COUNT(*) as aggregate')
-            ->groupBy('patrol_route_id')
-            ->pluck('aggregate', 'patrol_route_id');
+            ->get(['id', 'patrol_route_id', 'deactivated_at'])
+            ->groupBy('patrol_route_id');
 
         $rows = [];
         $totals = ['runs' => 0, 'completed' => 0, 'aborted' => 0, 'expected' => 0, 'on_time' => 0, 'late' => 0, 'missed' => 0, 'punctuality' => null];
         foreach ($runs as $run) {
-            $expected = (int) ($expectedByRoute[$run->patrol_route_id] ?? 0);
+            $expected = ($checkpointsByRoute[$run->patrol_route_id] ?? collect())
+                ->filter(fn (PatrolCheckpoint $checkpoint): bool => $checkpoint->isExpectedAt($run->started_at))
+                ->count();
             $onTime = $run->scans->where('in_window', true)->count();
             $late = $run->scans->count() - $onTime;
             $row = ['run' => $run, 'expected' => $expected, 'on_time' => $onTime, 'late' => $late, 'missed' => max(0, $expected - $run->scans->count())];

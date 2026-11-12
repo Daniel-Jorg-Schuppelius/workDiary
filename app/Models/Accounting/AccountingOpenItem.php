@@ -29,6 +29,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
  * @property CurrencyCode $currency
  * @property string|null $source_type nullableMorphs — Belegbezug fehlt bei Posten aus Buchungen von Hand
  * @property int|null $source_id
+ * @property \Illuminate\Support\Carbon|null $disputed_at
+ * @property string|null $dispute_note
  */
 class AccountingOpenItem extends Model {
     use Auditable;
@@ -53,6 +55,8 @@ class AccountingOpenItem extends Model {
         'original_amount',
         'open_amount',
         'settled_at',
+        'disputed_at',
+        'dispute_note',
     ];
 
     /** @var array<string, string> */
@@ -65,6 +69,7 @@ class AccountingOpenItem extends Model {
         'document_date' => 'date',
         'due_date' => 'date',
         'settled_at' => 'datetime',
+        'disputed_at' => 'datetime',
     ];
 
     /** @return BelongsTo<AccountingEntry, $this> */
@@ -102,6 +107,25 @@ class AccountingOpenItem extends Model {
             OpenItemStatus::PartiallySettled->value,
             OpenItemStatus::Disputed->value,
         ]);
+    }
+
+    /**
+     * Ohne strittige Posten (MVP-1559): Was strittig ist, zählt nicht als
+     * erwarteter Geldeingang.
+     *
+     * @param  Builder<AccountingOpenItem>  $query
+     * @return Builder<AccountingOpenItem>
+     */
+    public function scopeUndisputed(Builder $query): Builder {
+        return $query->where('status', '!=', OpenItemStatus::Disputed->value);
+    }
+
+    /**
+     * @param  Builder<AccountingOpenItem>  $query
+     * @return Builder<AccountingOpenItem>
+     */
+    public function scopeDisputed(Builder $query): Builder {
+        return $query->where('status', OpenItemStatus::Disputed->value);
     }
 
     /** Tage seit Fälligkeit; negativ = noch nicht fällig. */

@@ -133,6 +133,17 @@ return [
         'open_times' => [
             'description' => 'Billable time not yet on any invoice.',
         ],
+        'finance_movements' => [
+            'label' => 'Financial transactions',
+            'description' => 'Open assignments and the latest transactions from bank statements, Firefly III and shop accounts — edited in the source list.',
+            'empty' => 'No source for financial transactions is set up.',
+            'unassigned' => ':source: unassigned',
+            'latest' => 'Last :days days',
+            'none_latest' => 'No transactions in this period.',
+            'open' => 'open',
+            'no_counterparty' => 'No counterparty',
+            'source' => ['bank' => 'Bank statements'],
+        ],
         'open_items' => [
             'description' => 'Open receivables and payables including the overdue share.',
             'feed_link' => 'Document flow →',

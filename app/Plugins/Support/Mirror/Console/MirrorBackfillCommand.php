@@ -29,9 +29,11 @@ use Illuminate\Console\Command;
  * gehoben aus `webdav:mirror`, Feature 058/MVP-127): reiht je Organisation
  * alles idempotent in die Integrations-Outbox ein, was die Anbindung spiegelt —
  * freigegebene Dokumente, gestellte Rechnungen und signierte Protokolle, je
- * nach gewählten Quellen. Aufholpfad neben den ereignisgetriebenen Observern;
- * läuft manuell aus der Admin-UI (bewusst KEIN Scheduler-Registry-Eintrag).
- * Dedupe über dieselben Idempotenzschlüssel wie die Observer.
+ * nach gewählten Quellen. Aufholpfad neben den ereignisgetriebenen Observern:
+ * läuft beim Aktivieren der Ablage und manuell aus der Admin-UI, bewusst ohne
+ * Zeitplan — die Outbox verliert eingereihte Objekte nicht (Wiederholung,
+ * Kompensation), unbemerkt fehlen nur Freigaben aus der Zeit ohne aktive
+ * Ablage (MVP-1619). Dedupe über dieselben Idempotenzschlüssel wie die Observer.
  */
 abstract class MirrorBackfillCommand extends Command {
     use IteratesOrganizations;

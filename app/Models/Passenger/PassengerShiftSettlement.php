@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace App\Models\Passenger;
 
-use App\Enums\Passenger\ShiftSettlementStatus;
+use App\Enums\Passenger\{RideSettlementStatus, RideStatus, ShiftSettlementStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Fleet\Vehicle;
 use App\Models\Platform\User;
+use App\Support\Query\DateRange;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -33,6 +34,8 @@ use Illuminate\Support\Carbon;
  * @property int $driver_user_id
  * @property int|null $vehicle_id
  * @property Carbon $shift_date
+ * @property Carbon|null $started_at
+ * @property Carbon|null $ended_at
  * @property numeric-string $meter_total
  * @property numeric-string $cash_total
  * @property numeric-string $card_total
@@ -106,6 +109,34 @@ class PassengerShiftSettlement extends Model {
     /** @return HasMany<PassengerRide, $this> */
     public function rides(): HasMany {
         return $this->hasMany(PassengerRide::class, 'shift_settlement_id');
+    }
+
+    /**
+     * Bindet die beendeten Fahrten des Fahrers aus dieser Schicht an die
+     * Abrechnung (MVP-1620): erledigte gelten als abgerechnet, stornierte,
+     * abgebrochene und nicht angetretene als ohne Betrag erledigt.
+     * Ohne Schichtzeiten zählt der Schichttag.
+     *
+     * @return int Anzahl gebundener Fahrten
+     */
+    public function claimRides(): int {
+        $end = 'coalesce(completed_at, cancelled_at)';
+        [$from, $until] = $this->started_at !== null && $this->ended_at !== null
+            ? [$this->started_at->toDateTimeString(), $this->ended_at->toDateTimeString()]
+            : [DateRange::dayStart($this->shift_date), DateRange::dayAfter($this->shift_date)];
+        $rides = fn () => PassengerRide::query()
+            ->where('organization_id', $this->organization_id)
+            ->where('driver_user_id', $this->driver_user_id)
+            ->whereNull('shift_settlement_id')
+            ->where('settlement_status', RideSettlementStatus::Open->value)
+            ->whereRaw($end . ' >= ? and ' . $end . ' < ?', [$from, $until]);
+
+        $settled = $rides()->where('status', RideStatus::Completed->value)
+            ->update(['settlement_status' => RideSettlementStatus::Settled->value, 'shift_settlement_id' => $this->id]);
+        $waived = $rides()->whereIn('status', [RideStatus::Cancelled->value, RideStatus::NoShow->value, RideStatus::Aborted->value])
+            ->update(['settlement_status' => RideSettlementStatus::Waived->value, 'shift_settlement_id' => $this->id]);
+
+        return $settled + $waived;
     }
 
     /**

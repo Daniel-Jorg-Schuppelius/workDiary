@@ -15,7 +15,7 @@ namespace App\Services\Procurement;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Platform\Organization;
 use App\Models\Procurement\PurchaseOrder;
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, IssuerIdentity};
 
 /**
  * Rendert eine Bestellung als menschenlesbares PDF (Feature 048, E4) — für
@@ -35,15 +35,22 @@ class PurchaseOrderPdfRenderer {
         }
 
         // C15: gemeinsamer View→Design→PDF-Dreischritt (Dokumentdesign ohne Profil No-Op).
-        return app(DocumentDesignRenderer::class)->renderPdf(
+        $design = app(DocumentDesignRenderer::class);
+        $payload = $organization !== null ? $design->payloadFor($organization, RenderDocumentKind::PurchaseOrder) : null;
+
+        return $design->renderPdf(
             RenderDocumentKind::PurchaseOrder,
             'pdf.purchase-order',
             [
                 'order' => $order,
                 'organization' => $organization,
                 'total' => $total,
+                // Firmenangaben nach Blockzustand, wie der Preflight sie prüft (MVP-1624).
+                'design' => $design->context($payload),
+                'issuer' => IssuerIdentity::for($organization),
             ],
             $organization,
+            payload: $payload,
         );
     }
 

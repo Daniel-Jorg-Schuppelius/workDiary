@@ -75,6 +75,7 @@ use Illuminate\Support\Facades\Storage;
  * @property string|null $discount_percent
  * @property int|null $discount_days
  * @property int|null $paid_in_run_id
+ * @property \App\Enums\Invoicing\IncomingInvoiceTaxCase|null $tax_case
  */
 class IncomingEInvoice extends Model {
     use Auditable;
@@ -110,6 +111,8 @@ class IncomingEInvoice extends Model {
         'supplier_id', 'customer_id', 'match_kind', 'matched_user_id', 'matched_at',
         // MVP-1219: Belegvorlage, die beim Eingang getroffen hat.
         'template_id',
+        // MVP-1621: Steuerfall von Hand; leer = aus Beleg und Lieferant.
+        'tax_case',
     ];
 
     /** @var array<string, string> */
@@ -137,6 +140,7 @@ class IncomingEInvoice extends Model {
         'creditor_iban_confirmed_at' => 'datetime',
         'duplicate_cleared_at' => 'datetime',
         'discount_percent' => 'decimal:2',
+        'tax_case' => \App\Enums\Invoicing\IncomingInvoiceTaxCase::class,
     ];
 
     protected static function booted(): void {

@@ -1,7 +1,7 @@
 ---
 title: "Meter readings"
 topic: meter-readings
-version: 1
+version: 2
 keywords:
     - meter reading
     - record meter reading
@@ -31,3 +31,5 @@ This makes consumption trends per meter traceable.
 A new reading can be created directly from an asset's context. Implausible
 values, such as a reading below the previous one, are rejected on entry.
 Recording is available to people with the appropriate permission.
+
+**Meter photo:** When recording, you can attach a photo of the meter reading (on a phone directly with the camera). It is stored as an attachment of the reading; in the list, the camera icon opens the photo.

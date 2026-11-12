@@ -40,6 +40,18 @@ classification is derived automatically from the asterisk in the waste
 code — it is never set by hand. Items can only be changed until the
 handover to the disposal contractor.
 
+**Asset on the item:** In the item dialog you can select an asset that is
+in operation; the selection pre-fills name, manufacturer, model and serial
+number. The case and the record show the asset. Completion decommissions
+linked assets. If an asset is still checked out, it stays in operation and
+the case points this out. In the asset file, “Dispose” opens a new
+disposal case with the asset as a prepared item.
+
+**Photos:** You can upload photos (JPG, PNG, WebP) for every device item
+while the case is editable. After handover to the disposal contractor,
+photos can neither be added nor deleted. With “Show photos in the customer
+record” on the case, up to two photos per item appear in the record PDF.
+
 **Data media treatment:** For every device containing data media the
 treatment is documented — data medium type, method (e.g. software wipe,
 degaussing, shredding or removal for destruction), DIN 66399 material

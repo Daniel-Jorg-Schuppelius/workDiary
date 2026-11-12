@@ -12,7 +12,7 @@ namespace Tests\Feature\Plugins\Github;
 
 use App\Enums\Plugin\PluginHealthStatus;
 use App\Models\Platform\{Organization, PluginSetting, PluginState};
-use App\Plugins\Contracts\{PluginCapability, TaskSyncer};
+use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Github\{GithubConfig, GithubPlugin};
 use App\Plugins\{PluginDiscovery, PluginHealth};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -51,7 +51,6 @@ final class GithubConnectionTest extends TestCase {
         $plugin = new GithubPlugin();
         $this->assertContains(PluginCapability::TaskSync, $plugin->capabilities());
         $this->assertTrue($plugin->isPerOrganization());
-        $this->assertInstanceOf(TaskSyncer::class, $plugin);
     }
 
     public function test_healthcheck_without_configuration_is_degraded_not_configured(): void {

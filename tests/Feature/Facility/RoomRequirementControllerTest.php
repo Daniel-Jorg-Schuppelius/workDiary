@@ -77,6 +77,36 @@ class RoomRequirementControllerTest extends TestCase {
         $this->assertDatabaseMissing('room_requirements', ['id' => $requirement->id]);
     }
 
+    /** MVP-1619: Anforderung im eigenen Dialog ändern; danach öffnet der Raumdialog wieder. */
+    public function test_manager_can_edit_requirement_in_dialog(): void {
+        $room = Room::factory()->create(['organization_id' => $this->organization->id]);
+        $requirement = RoomRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'room_id' => $room->id,
+            'kind' => RoomRequirementKind::ItInventory->value,
+        ]);
+
+        $this->actingAs($this->manager)->get(route('rooms.requirements.edit', [$room, $requirement]))
+            ->assertOk()
+            ->assertSee(route('rooms.requirements.update', [$room, $requirement]), false);
+        $this->actingAs($this->manager)->get(route('rooms.edit', $room))
+            ->assertSee(route('rooms.requirements.edit', [$room, $requirement]), false);
+
+        $this->actingAs($this->manager)
+            ->put(route('rooms.requirements.update', [$room, $requirement]), [
+                'kind' => RoomRequirementKind::ItInventory->value,
+                'level' => 'Stufe 2',
+                'note' => 'Zugang nur mit Begleitung',
+                'is_active' => '0',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('open_dialog', route('rooms.edit', $room));
+
+        $requirement->refresh();
+        $this->assertSame('Stufe 2', $requirement->level);
+        $this->assertFalse($requirement->is_active);
+    }
+
     public function test_requirement_must_belong_to_room(): void {
         $roomA = Room::factory()->create(['organization_id' => $this->organization->id]);
         $roomB = Room::factory()->create(['organization_id' => $this->organization->id]);

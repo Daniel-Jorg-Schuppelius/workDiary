@@ -1,7 +1,7 @@
 ---
 title: "Panel de control"
 topic: dashboard.overview
-version: 3
+version: 4
 keywords:
     - página de inicio
     - inicio
@@ -34,6 +34,8 @@ Los mosaicos ocultos dejan de consultar datos: un panel ordenado
 también carga más rápido.
 
 Los mosaicos de recuento de los widgets de indicadores llevan al libro de órdenes con el filtro de estado correspondiente, a los servicios y a la lista de miembros.
+
+**Movimientos financieros:** En el área de Finanzas, este mosaico muestra por fuente los movimientos sin asignar —extractos bancarios de la conciliación de pagos y Firefly III— y debajo los últimos movimientos de los últimos 30 días, también de la cuenta de tienda de Etsy. El número abre la lista de la fuente, en Firefly III filtrada por los movimientos abiertos. Los extractos bancarios los ven las personas con derecho a la conciliación de pagos; Firefly III y Etsy, la administración mientras el complemento esté activado.
 
 ## Requisitos
 

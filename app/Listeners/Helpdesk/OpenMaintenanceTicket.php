@@ -18,6 +18,7 @@ use App\Listeners\ModuleListener;
 use App\Models\Integration\ExternalReference;
 use App\Services\Asset\MaintenanceDueService;
 use App\Services\ServiceTicket\ServiceTicketService;
+use Illuminate\Support\Facades\Log;
 
 /** Fällige Wartung → Ticket, genau einmal je Fälligkeit (ExternalReference als Nachweis). */
 final class OpenMaintenanceTicket extends ModuleListener {
@@ -40,15 +41,22 @@ final class OpenMaintenanceTicket extends ModuleListener {
             return;
         }
 
-        $ticket = $this->tickets->create($event->organization, null, [
-            'title' => $plan->label,
-            'priority' => ServiceTicketPriority::Normal->value,
-            'source' => ServiceTicketSource::MaintenancePlan->value,
-            'source_reference' => $plan->code,
-            'asset_id' => $plan->asset_id,
-            'sla_contract_id' => $plan->sla_contract_id,
-            'reported_at' => $plan->next_due_on->toDateString(),
-        ]);
+        try {
+            $ticket = $this->tickets->create($event->organization, null, [
+                'title' => $plan->label,
+                'priority' => ServiceTicketPriority::Normal->value,
+                'source' => ServiceTicketSource::MaintenancePlan->value,
+                'source_reference' => $plan->code,
+                'asset_id' => $plan->asset_id,
+                'sla_contract_id' => $plan->sla_contract_id,
+                'reported_at' => $plan->next_due_on->toDateString(),
+            ]);
+        } catch (\App\Exceptions\ExternallyLedQueueException $e) {
+            // Standard-Queue extern geführt (MVP-1592): kein lokales Ticket; der nächste Lauf versucht es erneut.
+            Log::warning('Wartungsticket nicht angelegt: Queue extern geführt', ['plan' => $plan->id, 'message' => $e->getMessage()]);
+
+            return;
+        }
 
         ExternalReference::query()->create([
             'organization_id' => $plan->organization_id,

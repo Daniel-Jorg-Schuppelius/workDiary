@@ -21,8 +21,23 @@ use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState};
  * der Kontext wie der Systemfallback (alles dynamisch, keine Fenster).
  */
 class DesignContext {
-    /** @param array<string, mixed>|null $payload Eingefrorenes oder aktives Profil-Payload. */
-    public function __construct(public readonly ?array $payload = null) {}
+    /** Ab diesem Generatorstand drucken Belege Firmen-, Steuer-, Ansprechpartner- und Vertraulichkeitsblock und schalten Kopf-/Fußtext über den Blockzustand (MVP-1609). */
+    public const string ISSUER_BLOCKS_SINCE = '1.1.0';
+
+    /** Ab diesem Generatorstand druckt die Rechnung den Befreiungshinweis je Steuerkategorie (MVP-1623). */
+    public const string EXEMPTION_NOTES_SINCE = '1.2.0';
+
+    /** Ab diesem Generatorstand druckt die Rechnung die USt-IdNr. des Kunden (MVP-1623, § 14a UStG). */
+    public const string BUYER_VAT_ID_SINCE = '1.3.0';
+
+    /** Stand festgeschriebener Belege ohne Snapshot-Datensatz: älter als jede Erweiterung. */
+    public const string LEGACY_GENERATOR = 'document-design/1.0.0';
+
+    /**
+     * @param array<string, mixed>|null $payload Eingefrorenes oder aktives Profil-Payload.
+     * @param string|null $frozenGenerator Generatorstand des festgeschriebenen Belegs; null = nicht festgeschrieben.
+     */
+    public function __construct(public readonly ?array $payload = null, private readonly ?string $frozenGenerator = null) {}
 
     public function hasProfile(): bool {
         return $this->payload !== null;
@@ -47,6 +62,18 @@ class DesignContext {
 
     /** Sichtbarkeit eines Blocks: nur `dynamic` wird von WorkDiary gedruckt. */
     public function show(InformationBlock $block): bool {
+        // Ältere festgeschriebene Belege bleiben, wie sie ausgestellt wurden.
+        if ($this->predatesIssuerBlocks()) {
+            $legacy = match ($block) {
+                InformationBlock::IntroText, InformationBlock::ClosingText => true,
+                InformationBlock::CompanyIdentity, InformationBlock::TaxIdentity,
+                InformationBlock::ContactPerson, InformationBlock::Confidentiality => false,
+                default => null,
+            };
+            if ($legacy !== null) {
+                return $legacy;
+            }
+        }
         if ($this->payload === null) {
             return $block->defaultState() === InformationBlockState::Dynamic;
         }
@@ -56,11 +83,41 @@ class DesignContext {
         return $state === InformationBlockState::Dynamic;
     }
 
-    /**
-     * Inline-Style für das Empfängerfenster (absolut in mm, relativ zum
-     * Inhaltsbereich der ersten Seite). Null, wenn kein Fenster definiert ist —
-     * die View rendert die Anschrift dann im normalen Fluss.
-     */
+    /** Beleg aus der Zeit vor den Ausstellerblöcken: bleibt beim Nachdruck, wie er ausgestellt wurde. */
+    public function predatesIssuerBlocks(): bool {
+        return $this->predates(self::ISSUER_BLOCKS_SINCE);
+    }
+
+    /** Rechnung aus der Zeit vor den Befreiungshinweisen: der Nachdruck ergänzt keinen Hinweis. */
+    public function predatesExemptionNotes(): bool {
+        return $this->predates(self::EXEMPTION_NOTES_SINCE);
+    }
+
+    /** Rechnung aus der Zeit vor der USt-IdNr. des Kunden: der Nachdruck ergänzt die Zeile nicht. */
+    public function predatesBuyerVatId(): bool {
+        return $this->predates(self::BUYER_VAT_ID_SINCE);
+    }
+
+    public static function versionPredates(string $generatorVersion, string $since): bool {
+        return version_compare(substr((string) strrchr('/' . $generatorVersion, '/'), 1), $since, '<');
+    }
+
+    private function predates(string $since): bool {
+        if ($this->frozenGenerator !== null && self::versionPredates($this->frozenGenerator, $since)) {
+            return true;
+        }
+        $generator = (string) ($this->payload['generator_version'] ?? '');
+
+        return $generator !== '' && self::versionPredates($generator, $since);
+    }
+
+    /** Vertraulichkeitsvermerk des Designs; ohne eigenen Text der Standardvermerk. */
+    public function confidentialityText(): string {
+        $value = trim((string) (($this->payload['content_texts'] ?? [])['confidentiality_text'] ?? ''));
+
+        return $value !== '' ? $value : (string) __('Vertraulich — nur für den benannten Empfänger bestimmt.');
+    }
+
     /** Kopftext des Belegs (MVP-651, vormals invoice_templates.header_text). */
     public function headerText(): ?string {
         $value = trim((string) (($this->payload['content_texts'] ?? [])['header_text'] ?? ''));
@@ -88,6 +145,11 @@ class DesignContext {
         return (string) ($settings['accent_color'] ?? '#333333');
     }
 
+    /**
+     * Inline-Style für das Empfängerfenster (absolut in mm, relativ zum
+     * Inhaltsbereich der ersten Seite). Null, wenn kein Fenster definiert ist —
+     * die View rendert die Anschrift dann im normalen Fluss.
+     */
     public function addressWindowStyle(): ?string {
         $box = $this->payload['layout']['address_window'] ?? null;
         if (! is_array($box)) {

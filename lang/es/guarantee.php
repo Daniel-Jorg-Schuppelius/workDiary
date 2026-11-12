@@ -18,8 +18,10 @@ return [
     'updated' => 'Aval actualizado.',
     'returned' => 'Devolución registrada.',
     'drawn' => 'Ejecución registrada.',
+    'expired' => 'Aval registrado como vencido.',
     'secured' => 'Retención de garantía sustituida por el aval.',
     'not_active' => 'Este aval ya no está activo.',
+    'not_expired' => 'El plazo de este aval no ha vencido.',
     'retention_not_open' => 'Esta retención ya no está abierta.',
     'foreign_organization' => 'El aval y la retención pertenecen a organizaciones distintas.',
     'amount_too_low' => 'El aval no cubre la retención — un aval menor no la sustituye.',
@@ -30,10 +32,12 @@ return [
         'edit' => 'Editar aval',
         'returned' => 'Documento devuelto',
         'drawn' => 'Registrar como ejecutado',
+        'expired' => 'Registrar como vencido',
         'secure' => 'Sustituir retención',
     ],
     'confirm' => [
         'drawn' => '¿Registrar la ejecución del aval :reference? Después ya no cuenta como garantía y el registro no se puede deshacer.',
+        'expired' => '¿Registrar el aval :reference como vencido? Su plazo ha vencido; después ya no cuenta como garantía.',
     ],
     'secure' => [
         'title' => 'Sustituir retención de garantía',
@@ -49,7 +53,7 @@ return [
         'received_hint' => 'Si vence sin que nadie lo note, la garantía se pierde.',
         'expiring' => 'Vence en 90 días',
         'return_due' => 'Devolución pendiente',
-        'return_due_hint' => 'La retención sustituida está liberada — el documento debe volver.',
+        'return_due_hint' => 'La retención sustituida está liberada o la garantía vinculada ha terminado — el documento debe volver.',
     ],
     'column' => [
         'reference' => 'N.º de aval',

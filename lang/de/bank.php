@@ -112,6 +112,16 @@ return [
         ],
     ],
     // Sammelbuchungs-Auflösung je TransactionDetail (Toolkit-Folgepaket 2).
+    // Freie Belegsuche beim Einzelumsatz (MVP-1557).
+    'assign' => [
+        'title' => 'Beleg suchen und zuordnen',
+        'hint' => 'Alle offenen Rechnungen, freigegebenen Spesen und Kundenkonten — auch ohne Vorschlag. Ein kleinerer Betrag ist eine Teilzahlung, ein größerer eine Überzahlung.',
+        'target' => 'Beleg',
+        'kind' => 'Art',
+        'kind_auto' => 'Automatisch aus dem Betrag',
+        'note' => 'Notiz',
+        'action' => 'Beleg suchen',
+    ],
     'split' => [
         'title' => 'Sammelbuchung auflösen',
         'return_title' => 'Sammel-Rücklastschrift — Rückläufer je Einzeltransaktion',

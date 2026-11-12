@@ -1,7 +1,7 @@
 ---
 title: "Personenbeförderung (Taxi/Mietwagen)"
 topic: passenger.overview
-version: 1
+version: 3
 keywords:
     - Taxiunternehmen
     - Mietwagenunternehmen
@@ -45,3 +45,9 @@ den Geräteumsatz. Differenzen bleiben offen, bis sie begründet geklärt sind.
 
 WorkDiary ersetzt weder Taxameter/Wegstreckenzähler noch TSE — diese Systeme
 bleiben führend, ihre Werte werden dokumentiert und abgeglichen.
+
+**Wartezeit beim Fahrtabschluss:** Beim Abschluss einer Fahrt tragen Sie die Wartezeit in Minuten ein; vorbelegt ist die Zeit zwischen Warte-Beginn und Abholung. Gespeichert wird sie sekundengenau.
+
+## Fahrten in der Schichtabrechnung
+
+Beim Abschluss einer Schichtabrechnung bindet WorkDiary die beendeten Fahrten des Fahrers aus dieser Schicht (Schichtzeiten, ohne sie der Schichttag): Erledigte gelten als abgerechnet, stornierte, abgebrochene und nicht angetretene als ohne Betrag erledigt. Die Fahrt zeigt danach ihre Abrechnung.

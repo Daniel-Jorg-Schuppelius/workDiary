@@ -157,6 +157,9 @@ class ServiceTicketTimelineService {
 
         $items = [];
         foreach ($query->get() as $message) {
+            // Zustellstatus der Antwortmail (MVP-1549): nur intern, das Portal sieht ihn nicht.
+            $delivery = $customerView ? null : $message->delivery_status;
+            $recipients = implode(', ', array_filter((array) ($message->to ?? []), 'is_string'));
             $items[] = new TimelineItem(
                 id: 'message:' . $message->id,
                 type: 'message',
@@ -172,6 +175,10 @@ class ServiceTicketTimelineService {
                 visibility: $message->kind->isCustomerVisible()
                     ? TimelineItem::VISIBILITY_CUSTOMER
                     : TimelineItem::VISIBILITY_INTERNAL,
+                badge: $delivery !== null
+                    ? (string) __('helpdesk.delivery.badge', ['status' => $delivery->label(), 'to' => $recipients !== '' ? $recipients : '—'])
+                    : null,
+                badgeTone: $delivery?->tone() ?? 'ghost',
             );
         }
 

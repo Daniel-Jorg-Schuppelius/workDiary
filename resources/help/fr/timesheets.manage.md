@@ -1,7 +1,7 @@
 ---
 title: "Gérer les feuilles d'heures"
 topic: timesheets.manage
-version: 1
+version: 3
 keywords:
     - relevé d'heures
     - feuille de temps
@@ -30,3 +30,7 @@ les corrections passent de façon traçable par une nouvelle version.
 Avant la validation, période, client, projet, description des
 prestations et quantités doivent être exacts ; le PDF n'est qu'une
 sortie de l'état enregistré, pas la source de données de référence.
+
+**Matériel depuis « Aujourd’hui » :** via « Matériel » sur « Aujourd’hui », vous saisissez des consommables avec projet, quantité et unité — même sans réseau. Ils sont ajoutés à votre feuille de temps ouverte du projet pour ce jour ; s’il n’y en a pas (ou si elle est déjà signée), une nouvelle est créée. Le matériel d’une feuille de temps ne génère pas de sortie de stock.
+
+**Limite de somme :** le matériel saisi sur « Aujourd’hui » va sur la feuille d’heures ouverte du jour. Si quantité × prix unitaire, avec les autres lignes, dépassait la somme enregistrable de la feuille, la saisie est refusée — en ligne comme hors ligne.

@@ -79,6 +79,14 @@ return [
         'billable' => 'fatturabile',
     ],
 
+    // Plan/Ist der Anwesenheit im Kopf des Tages (MVP-1552).
+    'plan_ist' => [
+        'label' => 'Previsto/effettivo',
+        'plan' => 'Previsto dalle :start (:duration)',
+        'plan_no_start' => 'Previsto :duration',
+        'actual' => 'Effettivo :start–:end (:duration)',
+        'actual_none' => 'Effettivo: ancora nessuna timbratura',
+    ],
     'hint' => [
         'no_attendance' => 'Nessuna timbratura in questo giorno.',
         'attendance_correction_only' => 'Le timbrature possono essere modificate solo tramite una richiesta di correzione.',
@@ -87,6 +95,7 @@ return [
         'break_recorded' => 'Pausa: :min min',
         'no_issues' => 'Nessuna anomalia — la giornata è registrata in modo coerente.',
         'month_locked' => 'Questo giorno appartiene a un mese approvato ed è bloccato — chiusura e richieste di correzione passano per l\'approvazione mensile.',
+        'day_closed' => 'Questa giornata è chiusa — timbrature e registrazioni si modificano con una richiesta di correzione.',
         'correction_intro' => 'Descriva cosa deve essere corretto in questo giorno.',
         'reopen_intro' => 'La giornata viene riaperta senza richiesta di correzione — la motivazione viene salvata nel registro di audit.',
     ],
@@ -130,6 +139,8 @@ return [
 
     'errors' => [
         'month_entry_locked' => 'Il mese è approvato: per tempi successivi presenti una richiesta di correzione.',
+        'day_entry_locked' => 'La giornata è chiusa — presenti una richiesta di correzione per i tempi successivi.',
+        'day_closed_reason' => 'Giornata già chiusa',
         'future_day' => 'Un giorno futuro non può essere chiuso.',
         'blocking_warnings' => 'La giornata presenta avvisi bloccanti e non può essere chiusa.',
         'illegal_day_status' => 'Azione non consentita: lo stato del giorno è :status.',

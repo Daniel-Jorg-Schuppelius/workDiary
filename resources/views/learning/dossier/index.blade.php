@@ -25,6 +25,10 @@
                     <x-icon-btn icon="download" tone="ghost" size="sm"
                                 :href="route('learning.dossier.json', request()->query())"
                                 show-label>{{ __('learning.action.dossier_json') }}</x-icon-btn>
+                    {{-- ZIP (MVP-1600): Mappe, Einzelbelege und Index. --}}
+                    <x-icon-btn icon="folder_zip" tone="ghost" size="sm"
+                                :href="route('learning.dossier.zip', request()->query())"
+                                show-label>{{ __('learning.action.dossier_zip') }}</x-icon-btn>
                 @endif
             </x-slot:actions>
         </x-page-toolbar>
@@ -47,6 +51,35 @@
                 <option value="">{{ __('learning.field.all_people') }}</option>
                 @foreach ($teams as $team)
                     <option value="{{ $team->sqid }}" @selected($teamSqid === $team->sqid)>{{ $team->name }}</option>
+                @endforeach
+            </select>
+        </x-filter-field>
+
+        {{-- Auswahl nach Person, Projekt und Standort (MVP-1600), kombinierbar mit dem Team. --}}
+        {{-- Die Personenauswahl nennt Namen — deshalb nur in der namentlichen Mappe (mit Anlass). --}}
+        @if ($named)
+        <x-filter-field :label="__('learning.field.person')" for="dossier-person" class="min-w-44 flex-1">
+            <select id="dossier-person" name="user_id" class="select select-bordered select-sm w-full">
+                <option value="">{{ __('learning.field.all_persons') }}</option>
+                @foreach ($people as $person)
+                    <option value="{{ $person->sqid }}" @selected($personSqid === $person->sqid)>{{ $person->name }}@if ($person->deactivated_at) ({{ __('learning.field.left_on', ['date' => $person->deactivated_at->translatedFormat('d.m.Y')]) }})@endif</option>
+                @endforeach
+            </select>
+        </x-filter-field>
+        @endif
+        <x-filter-field :label="__('learning.field.project')" for="dossier-project" class="min-w-44 flex-1">
+            <select id="dossier-project" name="project_id" class="select select-bordered select-sm w-full">
+                <option value="">{{ __('learning.field.all_projects') }}</option>
+                @foreach ($projects as $project)
+                    <option value="{{ $project->sqid }}" @selected($projectSqid === $project->sqid)>{{ $project->name }}@if ($project->number) ({{ $project->number }})@endif</option>
+                @endforeach
+            </select>
+        </x-filter-field>
+        <x-filter-field :label="__('learning.field.site')" for="dossier-site" class="min-w-44 flex-1">
+            <select id="dossier-site" name="site_id" class="select select-bordered select-sm w-full" title="{{ __('learning.help.dossier_site') }}">
+                <option value="">{{ __('learning.field.all_sites') }}</option>
+                @foreach ($sites as $site)
+                    <option value="{{ $site->sqid }}" @selected($siteSqid === $site->sqid)>{{ $site->name }}</option>
                 @endforeach
             </select>
         </x-filter-field>
@@ -131,7 +164,13 @@
             @endphp
             @forelse ($rows as $row)
                 <tr>
-                    <td class="font-medium">{{ $row['user']->name }}</td>
+                    <td class="font-medium">
+                        {{ $row['user']->name }}
+                        @if ($row['user']->deactivated_at)
+                            {{-- Ausgeschieden, aber am Stichtag beschäftigt (MVP-1600). --}}
+                            <x-status-badge tone="neutral" size="sm" outline>{{ __('learning.field.left_on', ['date' => $row['user']->deactivated_at->translatedFormat('d.m.Y')]) }}</x-status-badge>
+                        @endif
+                    </td>
                     @foreach (['qualifications', 'instructions', 'certificates'] as $area)
                         @php($entries = $row[$area])
                         <td>

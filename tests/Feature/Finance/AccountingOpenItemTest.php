@@ -22,6 +22,7 @@ use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -296,18 +297,74 @@ class AccountingOpenItemTest extends TestCase {
         $this->assertSame('2.38', $lines['1400']?->credit?->getAmount());
     }
 
-    /** Ohne gepflegtes Gegenkonto wird nicht geraten: der Ausgleich läuft ohne Buchung. */
-    public function test_settlement_without_counter_account_stays_unbooked(): void {
+    /** Ohne Gegenkonto im Kontenplan wird der Ausgleich abgewiesen, der Posten bleibt offen (MVP-1555). */
+    public function test_settlement_without_counter_account_is_rejected(): void {
         [, , $item] = $this->postInvoice();
         $this->actingAs($this->admin);
 
         // 2400 (Ausbuchung, SKR03) ist im Kontenplan dieser Organisation nicht angelegt.
-        app(OpenItemService::class)->settle($item, SettlementKind::WriteOff, '19.00');
+        try {
+            app(OpenItemService::class)->settle($item, SettlementKind::WriteOff, '19.00');
+            $this->fail('Der Ausgleich ohne Gegenkonto wurde angenommen.');
+        } catch (ValidationException $e) {
+            $this->assertStringContainsString('2400', $e->getMessage());
+        }
 
         $item->refresh();
+        $this->assertSame('119.00', $item->open_amount?->getAmount());
+        $this->assertCount(0, $item->settlements);
+        $this->assertSame(['write_off' => '2400'], app(OpenItemService::class)->missingCounterAccounts($this->org));
+    }
+
+    /** Mit dem Vorlagenkonto bucht die Ausbuchung Forderungsverlust an Forderung. */
+    public function test_write_off_books_against_the_configured_account(): void {
+        [, , $item] = $this->postInvoice();
+        $this->actingAs($this->admin);
+        $settings = (array) $this->org->settings;
+        $settings['datev']['write_off_account'] = '2405';
+        $this->org->forceFill(['settings' => $settings])->save();
+        $writeOff = app(ChartOfAccountsService::class)->create($this->org, ['number' => '2405', 'name' => 'Forderungsverluste', 'type' => AccountType::Expense]);
+
+        app(OpenItemService::class)->settle($item->refresh(), SettlementKind::WriteOff, '19.00');
+
+        $settlement = $item->refresh()->settlements->first();
         $this->assertSame('100.00', $item->open_amount?->getAmount());
-        $this->assertCount(1, $item->settlements);
-        $this->assertNull($item->settlements->first()?->accounting_entry_id);
+        $this->assertNotNull($settlement?->accounting_entry_id);
+        $this->assertSame('19.00', $settlement?->entry?->lines->firstWhere('accounting_account_id', $writeOff->id)?->debit?->getAmount());
+        $this->assertSame([], app(OpenItemService::class)->missingCounterAccounts($this->org));
+    }
+
+    /** Altbestand: Ausgleiche ohne Buchung stehen im Qualitätsbericht, zurückgenommene nicht. */
+    public function test_unbooked_settlements_are_listed_read_only(): void {
+        [, , $item] = $this->postInvoice();
+        $legacy = AccountingOpenItemSettlement::query()->create([
+            'organization_id' => $this->org->id,
+            'accounting_open_item_id' => $item->id,
+            'kind' => SettlementKind::WriteOff,
+            'amount' => '19.00',
+            'currency' => $item->currency,
+            'booked_on' => '2026-03-01',
+            'created_at' => now(),
+        ]);
+
+        $found = app(OpenItemService::class)->settlementsWithoutEntry($this->org);
+        $this->assertSame([$legacy->id], $found->pluck('id')->all());
+
+        $quality = app(\App\Services\Accounting\Reports\DataQualityBuilder::class)->build($this->org, CarbonImmutable::create(2026, 1, 1), CarbonImmutable::create(2026, 12, 31));
+        $this->assertSame(1, $quality['unbooked_settlements']);
+        $this->assertStringContainsString((string) $item->document_reference, implode(' ', $quality['findings']));
+
+        AccountingOpenItemSettlement::query()->create([
+            'organization_id' => $this->org->id,
+            'accounting_open_item_id' => $item->id,
+            'kind' => SettlementKind::Reversal,
+            'amount' => '19.00',
+            'currency' => $item->currency,
+            'booked_on' => '2026-03-02',
+            'reverses_settlement_id' => $legacy->id,
+            'created_at' => now(),
+        ]);
+        $this->assertCount(0, app(OpenItemService::class)->settlementsWithoutEntry($this->org));
     }
 
     public function test_aging_groups_by_due_date(): void {
@@ -333,11 +390,97 @@ class AccountingOpenItemTest extends TestCase {
         [, , $item] = $this->postInvoice();
 
         $this->actingAs($this->admin)->post(route('finance.accounting.open-items.settle', $item), [
-            'kind' => SettlementKind::WriteOff->value,
+            'kind' => SettlementKind::Retention->value,
             'amount' => '19.00',
-            'note' => 'Kleinbetrag ausgebucht',
+            'note' => 'Sicherheitseinbehalt',
         ])->assertRedirect();
 
         $this->assertSame('100.00', $item->refresh()->open_amount?->getAmount());
+    }
+
+    /** Die Ausbuchung ohne Gegenkonto scheitert auch über HTTP mit Meldung am Feld. */
+    public function test_write_off_without_counter_account_fails_over_http(): void {
+        [, , $item] = $this->postInvoice();
+
+        $this->actingAs($this->admin)->post(route('finance.accounting.open-items.settle', $item), [
+            'kind' => SettlementKind::WriteOff->value,
+            'amount' => '19.00',
+        ])->assertSessionHasErrors('kind');
+
+        $this->assertSame('119.00', $item->refresh()->open_amount?->getAmount());
+    }
+
+    /** MVP-1559: Strittig setzen sperrt die Mahnung, bleibt bei Teilausgleich stehen und lässt sich zurücknehmen. */
+    public function test_an_open_item_can_be_marked_disputed_and_withdrawn(): void {
+        [$invoice, , $item] = $this->postInvoice();
+        $liquidity = fn (): string => app(\App\Services\Accounting\Reports\LiquidityBuilder::class)->build($this->org, CarbonImmutable::create(2026, 12, 31))['receivable'];
+        $this->assertSame('119.00', $liquidity());
+
+        $this->actingAs($this->admin)->get(route('finance.accounting.open-items.dispute-form', $item))->assertOk();
+        $this->actingAs($this->admin)->post(route('finance.accounting.open-items.dispute', $item), ['reason' => ''])->assertSessionHasErrors('reason');
+        $this->actingAs($this->admin)->post(route('finance.accounting.open-items.dispute', $item), ['reason' => 'Mangel gerügt'])
+            ->assertSessionHasNoErrors();
+
+        $item->refresh();
+        $this->assertSame(OpenItemStatus::Disputed, $item->status);
+        $this->assertSame('Mangel gerügt', $item->dispute_note);
+        $this->assertNotNull($item->disputed_at);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'accounting.open_item_disputed', 'auditable_id' => $item->id]);
+        $this->assertTrue($invoice->refresh()->isDunningBlocked());
+        $this->assertStringContainsString('Mangel gerügt', (string) $invoice->dunning_block_reason);
+        // Strittig ist kein erwarteter Eingang.
+        $this->assertSame('0.00', $liquidity());
+
+        // Filter der Liste und Rücknahme-Knopf.
+        $this->actingAs($this->admin)->get(route('finance.accounting.open-items.index', ['status' => 'disputed']))
+            ->assertOk()
+            ->assertSee((string) $item->document_reference)
+            ->assertSee(route('finance.accounting.open-items.dispute.withdraw', $item), false);
+        $this->actingAs($this->admin)->get(route('finance.accounting.open-items.index', ['status' => 'partially_settled']))
+            ->assertOk()
+            ->assertDontSee(route('finance.accounting.open-items.dispute.withdraw', $item), false);
+
+        // Ein Teilausgleich lässt den Rest strittig; ein zweites Kennzeichnen wird abgewiesen.
+        app(OpenItemService::class)->settle($item, SettlementKind::Retention, '19.00');
+        $this->assertSame(OpenItemStatus::Disputed, $item->refresh()->status);
+        $this->actingAs($this->admin)->post(route('finance.accounting.open-items.dispute', $item), ['reason' => 'Nochmal'])
+            ->assertSessionHasErrors('reason');
+
+        $this->actingAs($this->admin)->post(route('finance.accounting.open-items.dispute.withdraw', $item))->assertSessionHasNoErrors();
+        $item->refresh();
+        $this->assertSame(OpenItemStatus::PartiallySettled, $item->status);
+        $this->assertNull($item->disputed_at);
+        $this->assertNull($item->dispute_note);
+        $this->assertFalse($invoice->refresh()->isDunningBlocked());
+        $this->assertDatabaseHas('audit_logs', ['event' => 'accounting.open_item_dispute_withdrawn', 'auditable_id' => $item->id]);
+        $this->assertSame('100.00', $liquidity());
+
+        $this->actingAs($this->admin)->post(route('finance.accounting.open-items.dispute.withdraw', $item))->assertSessionHasErrors('status');
+    }
+
+    /** MVP-1559: Eine von Hand gesetzte Mahnsperre gehört nicht dem Kennzeichen — sie bleibt bei der Rücknahme. */
+    public function test_withdrawing_a_dispute_keeps_a_manual_dunning_block(): void {
+        [$invoice, , $item] = $this->postInvoice();
+        app(\App\Services\Invoicing\DunningService::class)->block($invoice, 'Ratenzahlung vereinbart', $this->admin);
+
+        $service = app(OpenItemService::class);
+        $service->markDisputed($item, 'Leistung bestritten', $this->admin);
+        $this->assertSame('Ratenzahlung vereinbart', $invoice->refresh()->dunning_block_reason);
+
+        $service->withdrawDispute($item->refresh(), $this->admin);
+        $this->assertTrue($invoice->refresh()->isDunningBlocked());
+        $this->assertSame('Ratenzahlung vereinbart', $invoice->dunning_block_reason);
+    }
+
+    /** MVP-1559: Der Vollausgleich schließt auch einen strittigen Posten und räumt das Kennzeichen ab. */
+    public function test_a_full_settlement_closes_a_disputed_item(): void {
+        [$invoice, , $item] = $this->postInvoice();
+        app(OpenItemService::class)->markDisputed($item, 'Betrag bestritten', $this->admin);
+
+        $this->payInvoice($invoice, '119.00');
+
+        $item->refresh();
+        $this->assertSame(OpenItemStatus::Settled, $item->status);
+        $this->assertNull($item->disputed_at);
     }
 }

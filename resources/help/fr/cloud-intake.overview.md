@@ -1,7 +1,7 @@
 ---
 title: "Entrée de documents cloud"
 topic: cloud-intake.overview
-version: 2
+version: 5
 keywords:
     - Paperless-ngx
     - Seafile
@@ -32,3 +32,11 @@ WorkDiary LIT les documents des dossiers surveillés dans Dropbox, OneDrive/Shar
 **Règles :** des motifs de chemin avec * et ** plus des variables comme {customer_number} associent les fichiers aux clients, projets, commandes, actifs ou contrats existants — jamais par création automatique. Les cas ambigus vont dans la boîte de réception d’intégration.
 
 **Sécurité :** scopes en lecture seule, jetons chiffrés, fichiers sources intacts ; les webhooks ne sont que des signaux de réveil — l’exécution delta reprise fait foi.
+
+**Test de règle et démarrage :** chaque règle a besoin d’un chemin de test, par exemple un vrai dossier client. À l’enregistrement, WorkDiary vérifie si le chemin correspond au modèle, quelles variables sont reconnues et quelle cible en résulte ; sans test réussi, rien n’est enregistré. Une référence cible fixe affecte tous les fichiers d’une règle à un client, projet, commande, actif ou contrat précis. Les règles actives d’une connexion ne doivent pas se chevaucher : des modèles identiques ou un chemin de test correspondant à deux règles bloquent l’activation. Une connexion ne commence son premier import qu’après que vous avez consulté l’aperçu et confirmé « Démarrer l’import » ; un nouveau dossier racine exige une nouvelle confirmation.
+
+**Souveraineté des données :** si, selon la souveraineté des données, un autre système est maître des documents, la connexion ne reprend aucun fichier dans la GED ; chaque fichier devient un cas dans la boîte d’intégration, sans justificatif de transfert. **Reprendre une fois** télécharge à nouveau le fichier et le crée selon les règles. Les règles pour factures entrantes, commandes et dossiers d’appel d’offres ne sont pas concernées.
+
+## Connexion expirée, bloquée ou désactivée
+
+Si le fournisseur refuse la connexion (expirée ou révoquée), la connexion affiche **Reconnexion requise**. S'il manque des autorisations de lecture lors de la connexion, elle affiche **Bloquée** ; après des erreurs répétées jusqu'au seuil de désactivation, **Désactivée**. Dans les trois cas, l'import est suspendu et la carte propose **Se reconnecter**. Seule une nouvelle connexion réactive la connexion ; modifier le dossier ou les règles ne suffit pas.

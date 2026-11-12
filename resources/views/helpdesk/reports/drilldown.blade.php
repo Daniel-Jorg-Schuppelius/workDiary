@@ -50,7 +50,9 @@
                 @foreach ($rows as $row)
                     <tr>
                         <td>
-                            @if ($row['ticket'] !== null)
+                            @if ($row['ticket'] !== null && Gate::denies('view', $row['ticket']))
+                                <span class="text-muted"><x-icon name="lock" class="text-[14px]" /> {{ __('helpdesk.confidentiality.masked') }}</span>
+                            @elseif ($row['ticket'] !== null)
                                 <a href="{{ route('service-tickets.show', $row['ticket']) }}" class="link">{{ $row['ticket']->ticket_no }}</a>
                                 <span class="text-muted">{{ \Illuminate\Support\Str::limit($row['ticket']->title, 60, '…') }}</span>
                             @else
@@ -60,7 +62,7 @@
                         <td class="text-sm text-muted">{{ $row['ticket']?->queue?->name ?? '—' }}</td>
                         <td class="text-sm">{{ $row['ticket']?->status?->label() ?? '—' }}</td>
                         <td class="text-sm text-muted">{{ $row['at'] ?? '—' }}</td>
-                        <td class="text-sm">{{ $row['detail'] ?? '—' }}</td>
+                        <td class="text-sm">{{ $row['ticket'] !== null && Gate::denies('view', $row['ticket']) ? '—' : ($row['detail'] ?? '—') }}</td>
                     </tr>
                 @endforeach
             </x-table>

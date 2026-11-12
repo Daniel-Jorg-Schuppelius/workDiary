@@ -1,7 +1,7 @@
 ---
 title: "Chiusura giornaliera"
 topic: time-entries.day-close
-version: 5
+version: 6
 keywords:
     - chiudere la giornata
     - fine giornata
@@ -60,6 +60,13 @@ chiusura giornaliera** può anche sbloccare una giornata chiusa senza
 richiesta con **Riapri giornata**; la motivazione viene registrata nel
 registro di audit.
 
+Il blocco vale anche per le **registrazioni di tempo** della giornata: finché
+la giornata è chiusa o in correzione, i tempi di progetto e di
+amministrazione di quel giorno non si possono creare, modificare né
+eliminare, nemmeno con cronometro, registrazione rapida, importazione o
+interfaccia. La barra di inserimento è nascosta; l’applicazione rinvia alla
+richiesta di correzione.
+
 Le giornate di un mese già approvato sono completamente bloccate; lì ogni
 modifica passa per l’approvazione mensile.
 
@@ -68,3 +75,11 @@ a meno che nell'organizzazione nessun altro abbia questo permesso; il registro
 di audit annota allora l'autoapprovazione. Chi può vedere le chiusure
 giornaliere solo per il team vede soltanto i membri dei propri team in «Team
 oggi» e nelle viste giornaliere.
+
+Nell’intestazione della giornata compare **Previsto/effettivo**: il tempo
+previsto del modello orario con l’inizio della fascia obbligatoria accanto
+alla prima e all’ultima timbratura e alla presenza. Compaiono contrassegni di
+avviso in caso di inizio in ritardo e di ore che si scostano;
+l’organizzazione fissa le soglie in **Impostazioni** → **Previsto/effettivo
+della presenza** (predefinito 15 minuti e 10 %). Le timbrature mostrano
+inoltre i minuti di **Lavoro da casa** e di **Uscita di servizio**.

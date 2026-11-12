@@ -113,7 +113,7 @@ class SmsChannelService {
                 'status_at' => Carbon::now(),
             ])->save();
 
-            Log::warning('sms: monthly budget exhausted', ['organization_id' => $organization->id]);
+            $this->budget->noteExhausted($organization);
 
             return false;
         }

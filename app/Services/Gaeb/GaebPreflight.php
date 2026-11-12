@@ -169,6 +169,15 @@ class GaebPreflight {
             $warnings[] = __('gaeb.preflight.phase_unknown', ['code' => (string) $boq->getPhaseCode()]);
         }
 
+        // Feature 109 (MVP-1582): die Ausgabe der Norm steht im Katalogtyp; ohne sie
+        // ist offen, welche Gliederung die Kostengruppen meinen.
+        foreach ($boq->getCatalogs() as $catalog) {
+            $type = (string) $catalog->getType();
+            if (str_starts_with($type, 'cost group') && preg_match('/\b\d{4}-\d{2}\b/', $type) !== 1) {
+                $warnings[] = __('gaeb.preflight.catalog_without_edition', ['catalog' => $catalog->getName() ?? $catalog->getId()]);
+            }
+        }
+
         if ($boq->countItems() === 0) {
             $errors[] = __('gaeb.preflight.no_items');
         }

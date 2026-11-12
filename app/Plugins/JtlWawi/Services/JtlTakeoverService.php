@@ -12,15 +12,20 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi\Services;
 
-use App\Enums\Integration\IntegrationInboxStatus;
+use App\Enums\Integration\{DataDomain, IntegrationInboxStatus};
 use App\Enums\Inventory\StockState;
 use App\Models\Article\ArticleVariant;
-use App\Models\Integration\ExternalArticleMapping;
-use App\Models\Inventory\Warehouse;
+use App\Models\Integration\{ExternalArticleMapping, IntegrationInboxItem};
+use App\Models\Inventory\{StockMovement, Warehouse};
 use App\Models\Platform\Organization;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use App\Plugins\JtlWawi\Models\JtlWarehouseMapping;
+use App\Services\Integration\Attributes\WritesDataDomain;
+use App\Services\Integration\Contracts\OwnershipConflictReplay;
+use App\Services\Integration\DataOwnershipGuard;
+use App\Services\Integration\Dto\OwnershipClaim;
 use App\Services\Inventory\InventoryLedger;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Übernahme-Inventur beim Moduswechsel (Feature 078, MVP-324).
@@ -38,16 +43,24 @@ use App\Services\Inventory\InventoryLedger;
  * Beim Wechsel local → external wird NICHT automatisch nach JTL gebucht;
  * {@see preflight()} liefert den Bericht (Zuordnungslücken, lokale
  * Restbestände) für die manuelle Übergabe.
+ *
+ * Bestände bucht die Übernahme nur, wenn JTL den Bereich „Bestände“
+ * schreiben darf (MVP-1592); sonst entsteht je Paar ein
+ * Führerschaftskonflikt, den „übernehmen“ einmal bucht.
  */
-class JtlTakeoverService {
+#[WritesDataDomain(DataDomain::Inventory)]
+class JtlTakeoverService implements OwnershipConflictReplay {
+    /** Konfliktart: Eröffnungsbestand eines Paars aus JTL. */
+    public const string OWNERSHIP_KIND = 'jtl_wawi.opening_stock';
+
     public function __construct(
         private readonly JtlStockReader $reader,
         private readonly InventoryLedger $ledger,
     ) {}
 
-    /** @return array{pairs: int, booked: int, unmapped_warehouses: int} */
+    /** @return array{pairs: int, booked: int, unmapped_warehouses: int, blocked: int} */
     public function importOpeningStock(Organization $organization, ?int $actorUserId = null): array {
-        $result = ['pairs' => 0, 'booked' => 0, 'unmapped_warehouses' => 0];
+        $result = ['pairs' => 0, 'booked' => 0, 'unmapped_warehouses' => 0, 'blocked' => 0];
         $stamp = now()->format('Ymd');
 
         $warehouses = $this->mappedWarehouses($organization);
@@ -69,32 +82,76 @@ class JtlTakeoverService {
 
             foreach ($warehouses as $warehouse) {
                 $result['pairs']++;
-
-                $snapshot = $this->reader->refresh($variant, $warehouse);
-                $externalTotal = $snapshot->quantity_total;
-                if (! is_numeric($externalTotal)) {
-                    $externalTotal = '0';
+                $outcome = $this->takeOverPair($organization, $variant, $warehouse, $stamp, $actorUserId);
+                if ($outcome === false) {
+                    $result['blocked']++;
+                } elseif ($outcome instanceof StockMovement) {
+                    $result['booked']++;
                 }
-                $localPhysical = $this->ledger->balance($variant, $warehouse, StockState::Physical);
-                $delta = bcsub($externalTotal, $localPhysical, InventoryLedger::SCALE);
-
-                if (bccomp($delta, '0', InventoryLedger::SCALE) === 0) {
-                    continue;
-                }
-
-                $this->ledger->correction(
-                    $variant,
-                    $warehouse,
-                    StockState::Physical,
-                    $delta,
-                    idempotencyKey: sprintf('takeover:%d:%s:%d:%d', $organization->id, $stamp, $variant->id, $warehouse->id),
-                    actorUserId: $actorUserId,
-                );
-                $result['booked']++;
             }
         }
 
         return $result;
+    }
+
+    /**
+     * Ein Variante×Lager-Paar übernehmen: Korrekturbuchung, null bei
+     * gleichem Bestand, false bei fremder Führung (Konflikt angelegt).
+     */
+    private function takeOverPair(Organization $organization, ArticleVariant $variant, Warehouse $warehouse, string $stamp, ?int $actorUserId): StockMovement|false|null {
+        if (! app(DataOwnershipGuard::class)->allows($organization, DataDomain::Inventory, JtlWawiPlugin::ID, new OwnershipClaim(
+            kind: self::OWNERSHIP_KIND,
+            key: $variant->id . ':' . $warehouse->id . ':' . $stamp,
+            title: trim((string) $variant->sku . ' · ' . (string) $warehouse->name, ' ·'),
+            target: StockMovement::class,
+            payload: ['variant_id' => $variant->id, 'warehouse_id' => $warehouse->id, 'stamp' => $stamp, 'actor_user_id' => $actorUserId],
+            externalId: $variant->id . ':' . $warehouse->id,
+        ))) {
+            return false;
+        }
+
+        $snapshot = $this->reader->refresh($variant, $warehouse);
+        $externalTotal = $snapshot->quantity_total;
+        if (! is_numeric($externalTotal)) {
+            $externalTotal = '0';
+        }
+        $localPhysical = $this->ledger->balance($variant, $warehouse, StockState::Physical);
+        $delta = bcsub($externalTotal, $localPhysical, InventoryLedger::SCALE);
+
+        if (bccomp($delta, '0', InventoryLedger::SCALE) === 0) {
+            return null;
+        }
+
+        return $this->ledger->correction(
+            $variant,
+            $warehouse,
+            StockState::Physical,
+            $delta,
+            idempotencyKey: sprintf('takeover:%d:%s:%d:%d', $organization->id, $stamp, $variant->id, $warehouse->id),
+            actorUserId: $actorUserId,
+        );
+    }
+
+    /** @return list<string> */
+    public function ownershipKinds(): array {
+        return [self::OWNERSHIP_KIND];
+    }
+
+    /** Übernehmen im Eingang: das Paar mit dem Stichtag des Laufs buchen (gleiche Idempotenz). */
+    public function replayOwnershipConflict(Organization $organization, IntegrationInboxItem $item): ?Model {
+        $payload = (array) (($item->remote_snapshot ?? [])['payload'] ?? []);
+        $variant = ArticleVariant::query()->withoutGlobalScopes()
+            ->whereHas('article', fn ($q) => $q->withoutGlobalScopes()->where('organization_id', $organization->id))
+            ->find((int) ($payload['variant_id'] ?? 0));
+        $warehouse = Warehouse::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->find((int) ($payload['warehouse_id'] ?? 0));
+        if (! $variant instanceof ArticleVariant || ! $warehouse instanceof Warehouse) {
+            return null;
+        }
+
+        $actor = isset($payload['actor_user_id']) ? (int) $payload['actor_user_id'] : null;
+        $movement = $this->takeOverPair($organization, $variant, $warehouse, (string) ($payload['stamp'] ?? now()->format('Ymd')), $actor);
+
+        return $movement instanceof StockMovement ? $movement : null;
     }
 
     /**

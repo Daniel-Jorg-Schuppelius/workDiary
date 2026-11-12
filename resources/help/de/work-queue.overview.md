@@ -1,7 +1,7 @@
 ---
 title: "Arbeitsvorrat"
 topic: work-queue.overview
-version: 3
+version: 4
 keywords:
     - Arbeitsvorrat
     - Offene Vorgänge
@@ -55,3 +55,7 @@ gebündelt mit ihrer Anzahl.
 offen. Danach sortiert die Liste; Filter grenzen auf einen Bereich, eine
 Quelle oder nur Ihnen persönlich zugewiesene Vorgänge ein. Die Kachel
 „Arbeitsvorrat“ auf dem Dashboard zeigt die dringendsten Vorgänge.
+
+**Fälligkeit:** Der Filter „Fälligkeit“ zeigt nur überfällige, heute fällige oder diese Woche (bis Sonntag) fällige Vorgänge oder solche ohne Frist.
+
+**Firefly III:** Ist das Plugin eingeschaltet, sehen Administratoren Firefly-Bewegungen ohne Zuordnung und solche mit mehrdeutiger Zuordnung als je einen gebündelten Vorgang ohne Frist. Der Link öffnet die passend gefilterte Liste auf der Firefly-Seite; ordnet der nächste Abgleich eine Bewegung einer Rechnung zu, sinkt die Zahl.

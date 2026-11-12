@@ -1,7 +1,7 @@
 ---
 title: "WebDAV storage"
 topic: admin.webdav
-version: 3
+version: 4
 keywords:
     - WebDAV
     - Nextcloud
@@ -156,3 +156,5 @@ storage. To switch it on again, set **Active** and save.
   **Mirrored content** was not ticked when they were issued or signed.
 - A document is no longer updated: there is an open conflict in the inbox,
   or its mirroring has been detached.
+
+**Activation catches up:** When the storage is activated, WorkDiary immediately queues all objects released so far for mirroring — including those released while no storage was active. The mirror run needs no schedule; “Mirror now” remains for when you want to catch up yourself.

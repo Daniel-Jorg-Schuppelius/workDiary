@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property BoqProgressSource $source
  * @property int|null $diary_entry_id
  * @property int|null $material_usage_id
+ * @property int|null $protocol_id
  * @property string|null $note
  * @property \Illuminate\Support\Carbon $captured_at
  */
@@ -45,6 +46,7 @@ class BoqItemProgress extends Model {
         'source',
         'diary_entry_id',
         'material_usage_id',
+        'protocol_id',
         'note',
         'captured_at',
         'created_by',
@@ -64,5 +66,15 @@ class BoqItemProgress extends Model {
     /** @return BelongsTo<DiaryEntry, $this> */
     public function diaryEntry(): BelongsTo {
         return $this->belongsTo(DiaryEntry::class);
+    }
+
+    /** @return BelongsTo<\App\Models\Material\MaterialUsage, $this> */
+    public function materialUsage(): BelongsTo {
+        return $this->belongsTo(\App\Models\Material\MaterialUsage::class);
+    }
+
+    /** @return BelongsTo<\App\Models\Protocol\Protocol, $this> */
+    public function protocol(): BelongsTo {
+        return $this->belongsTo(\App\Models\Protocol\Protocol::class);
     }
 }

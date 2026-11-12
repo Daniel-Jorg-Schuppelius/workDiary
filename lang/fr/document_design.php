@@ -107,6 +107,8 @@ return [
     'editor.texts_hint' => 'Textes libres au-dessus et au-dessous du contenu des documents de vente (anciennement modèles de facture) — texte brut, gelé avec la version du profil.',
     'editor.header_text' => 'Texte d\'en-tête',
     'editor.footer_text' => 'Texte de pied',
+    'editor.confidentiality_text' => 'Mention de confidentialité',
+    'editor.confidentiality_hint' => 'N\'apparaît que si le bloc « Confidentialité » est dynamique. Vide = mention par défaut.',
     'profile.customer_specific' => 'Profil spécifique au client (actif uniquement via le dossier client)',
     'profile.customer_specific_hint' => 'Ne participe pas à la résolution à l\'échelle de l\'organisation — il ne s\'applique qu\'aux clients qui le référencent dans leur dossier.',
     'customer.panel_title' => 'Design de documents',

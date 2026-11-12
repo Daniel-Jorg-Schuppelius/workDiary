@@ -19,7 +19,7 @@ use Illuminate\Support\Carbon;
 /**
  * Fristen-Erinnerungen fuer Betroffenenanfragen (Art. 12: ein Monat). Schreibt
  * idempotent ein `deadline_reminder`-Ereignis, sobald eine offene Anfrage in das
- * Vorlauf-Fenster bzw. die Ueberfaelligkeit laeuft – einmal je Anfrage.
+ * Vorlauf-Fenster bzw. die Ueberfaelligkeit laeuft – einmal je Anfrage und Frist.
  */
 class PrivacyDeadlineService {
     public function __construct(private readonly PrivacyEventService $events) {}
@@ -43,7 +43,11 @@ class PrivacyDeadlineService {
             ->whereIn('status', array_map(static fn ($s) => $s->value, $openStatuses))
             ->whereNotNull('deadline_at')
             ->where('deadline_at', '<=', $threshold)
-            ->whereDoesntHave('journal', static fn ($q) => $q->where('event', 'deadline_reminder'))
+            // Nach einer Fristverlängerung (Art. 12 Abs. 3) zählt nur eine Erinnerung, die danach kam.
+            ->whereDoesntHave('journal', static fn ($q) => $q->where('event', 'deadline_reminder')
+                ->where(static fn ($w) => $w
+                    ->whereNull('privacy_data_subject_requests.deadline_extended_at')
+                    ->orWhereColumn('privacy_request_events.created_at', '>', 'privacy_data_subject_requests.deadline_extended_at')))
             ->get();
 
         foreach ($due as $request) {

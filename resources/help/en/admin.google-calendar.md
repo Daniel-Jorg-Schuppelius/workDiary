@@ -1,7 +1,7 @@
 ---
 title: "Connecting Google Calendar"
 topic: admin.google-calendar
-version: 2
+version: 3
 keywords:
     - Google Calendar
     - Google calendar sync
@@ -125,3 +125,5 @@ As long as the connection is failing, an operations task is listed for it.
 - **Shut down:** after repeated consecutive errors, WorkDiary shuts the
   connection down; **Connect to Google** then appears again. Check the cause
   and connect again.
+
+**Data ownership:** Appointments from this calendar belong to the calendar area. If another system leads the calendar, proposals, series and changes appear in the integration inbox as a “Data ownership” case; **Take over once** creates the appointment or the series. Deletion notices remain ordinary cases.

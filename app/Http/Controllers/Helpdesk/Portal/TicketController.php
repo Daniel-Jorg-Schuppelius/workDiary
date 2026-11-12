@@ -98,7 +98,8 @@ class TicketController extends Controller {
             // (Leak-Schutz strukturell im Timeline-Service, MVP-152).
             'timeline' => $timeline->forCustomer($ticket),
             'rated' => TicketSatisfaction::query()->where('service_ticket_id', $ticket->id)->exists(),
-            'canReopen' => in_array($ticket->status, self::REOPENABLE, true),
+            'externallyLed' => $ticket->isExternallyLed(),
+            'canReopen' => ! $ticket->isExternallyLed() && in_array($ticket->status, self::REOPENABLE, true),
         ]);
     }
 
@@ -194,6 +195,9 @@ class TicketController extends Controller {
     public function reply(Request $request, ServiceTicket $ticket, TicketConversationService $conversation): RedirectResponse {
         $user = $this->portalUser();
         abort_unless((int) $ticket->customer_id === (int) $user->customer_id, 404);
+        if ($ticket->isExternallyLed()) {
+            return $this->externallyLed($ticket);
+        }
 
         $data = $request->validate(['body' => ['required', 'string', 'min:2', 'max:10000']]);
         $files = $this->validatedUploads($request);
@@ -204,34 +208,44 @@ class TicketController extends Controller {
             ->with('success', __('Antwort gesendet.'));
     }
 
-    /** Lösung bestätigen: done → accepted. */
-    public function accept(ServiceTicket $ticket): RedirectResponse {
+    /** Lösung bestätigen: done → accepted, über den Fachdienst wie intern. */
+    public function accept(ServiceTicket $ticket, ServiceTicketService $tickets): RedirectResponse {
         $user = $this->portalUser();
         abort_unless((int) $ticket->customer_id === (int) $user->customer_id, 404);
+        if ($ticket->isExternallyLed()) {
+            return $this->externallyLed($ticket);
+        }
         abort_unless($ticket->status === ServiceTicketStatus::Done, 422);
 
-        $ticket->forceFill(['status' => ServiceTicketStatus::Accepted->value, 'accepted_at' => now()])->save();
-        $ticket->audit('service_ticket.accepted_by_customer', ['portal_user' => $user->id]);
+        $tickets->accept($ticket, $user);
 
         return redirect()->route('customer.tickets.show', $ticket)
             ->with('success', __('Lösung bestätigt — vielen Dank!'));
     }
 
-    /** Wiedereröffnen mit Pflichtgrund (done/accepted → in_progress). */
-    public function reopen(Request $request, ServiceTicket $ticket, TicketConversationService $conversation): RedirectResponse {
+    /** Wiedereröffnen mit Pflichtgrund (done/accepted → in_progress), über den Fachdienst wie intern. */
+    public function reopen(Request $request, ServiceTicket $ticket, TicketConversationService $conversation, ServiceTicketService $tickets): RedirectResponse {
         $user = $this->portalUser();
         abort_unless((int) $ticket->customer_id === (int) $user->customer_id, 404);
+        if ($ticket->isExternallyLed()) {
+            return $this->externallyLed($ticket);
+        }
         abort_unless(in_array($ticket->status, self::REOPENABLE, true), 422);
 
         $data = $request->validate(['reason' => ['required', 'string', 'min:5', 'max:500']]);
 
-        // Kundennachricht + Statuswechsel (SLA-Historie bleibt unangetastet).
+        // Der Grund steht als Kundennachricht im Verlauf; SLA-Historie bleibt unangetastet.
         $conversation->inbound($ticket, $data['reason'], 'portal', author: $user);
-        $ticket->forceFill(['status' => ServiceTicketStatus::InProgress->value])->save();
-        $ticket->audit('service_ticket.reopened', ['reason' => $data['reason'], 'portal_user' => $user->id]);
+        $tickets->reopen($ticket, $user, $data['reason']);
 
         return redirect()->route('customer.tickets.show', $ticket)
             ->with('success', __('Ticket wiedereröffnet.'));
+    }
+
+    /** Extern geführte Queue: Status und Kundenkommunikation führt das Fremdsystem (Feature 065). */
+    private function externallyLed(ServiceTicket $ticket): RedirectResponse {
+        return redirect()->route('customer.tickets.show', $ticket)
+            ->with('error', __('helpdesk.external.portalLocked'));
     }
 
     /** Zufriedenheits-Kurzbewertung — eine Antwort je Ticket, nur nach Abschluss. */

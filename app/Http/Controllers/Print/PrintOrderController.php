@@ -93,7 +93,7 @@ class PrintOrderController extends Controller {
 
         return view('print.orders.show', [
             'order' => $order,
-            'machines' => Asset::query()->orderBy('name')->get(['id', 'name']),
+            'machines' => Asset::query()->inOperation()->orderBy('name')->get(['id', 'name']),
             'shipments' => Shipment::query()->orderByDesc('id')->limit(50)->get(),
             'claimLinks' => $claimsEnabled
                 ? \App\Models\Claims\ClaimCaseLink::query()

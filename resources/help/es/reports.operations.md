@@ -1,7 +1,7 @@
 ---
 title: "Operaciones: reparto del tiempo, procedimientos, material, guardias"
 topic: reports.operations
-version: 6
+version: 8
 keywords:
     - análisis de operaciones
     - órdenes de servicio
@@ -144,6 +144,9 @@ punto abierto/orden de seguimiento** o **Sin seguimiento**). Exportación en
 PDF, CSV y Excel; CSV y Excel contienen además la acción propuesta y el
 motivo.
 
+La aceptación del riesgo se realiza en la ejecución del procedimiento, en la
+desviación (**Aceptar riesgo**, permiso «Aceptar una desviación crítica»).
+
 ## Ejecuciones de procedimiento bloqueadas
 
 **Análisis** → **Proyectos y clientes** → **Ejecuciones de procedimiento
@@ -219,13 +222,16 @@ los informes**.
   período), **Puntos abiertos** (abiertos actualmente, con independencia del
   período), **Escalado** (puntos abiertos con el estado **Bloqueado**),
   **Defectos** (actas de defecto de esas órdenes en el período), **Tasa de
-  defectos %** (defectos en relación con las órdenes) y **Último incidente**.
+  defectos %** (defectos en relación con las órdenes), **Defectos
+  recurrentes** (activos de la fila con al menos tres avisos de defecto en los
+  doce meses hasta el final del período, al menos uno de ellos en el período)
+  y **Último incidente**.
 - Si en el período hay registros de tiempo de sesiones de mantenimiento
   remoto para los equipos, se añaden **Sesiones de mantenimiento** y
   **Tiempo de mantenimiento** y un gráfico del tiempo de mantenimiento.
 - Gráficos: **Defectos en el período (top 20)** y **Tasa de defectos (top
-  15)**. Las cifras de puntos abiertos, escalados y defectos y las barras
-  llevan a las listas de detalle correspondientes.
+  15)**. Las cifras de puntos abiertos, escalados, defectos y defectos
+  recurrentes y las barras llevan a las listas de detalle correspondientes.
 
 Exportación en PDF, CSV y Excel.
 

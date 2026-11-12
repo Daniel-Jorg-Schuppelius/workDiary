@@ -52,7 +52,9 @@ final class StatusTransitionsTest extends TestCase {
             'Offener Punkt: offen → blockiert' => [OpenIssueStatus::Open, OpenIssueStatus::Blocked, false],
             'Offener Punkt: wiedereröffnet → in Arbeit' => [OpenIssueStatus::Reopened, OpenIssueStatus::InProgress, true],
             'Asset: aktiv → in Reparatur' => [AssetStatus::Active, AssetStatus::InRepair, true],
-            'Asset: ausgemustert → aktiv' => [AssetStatus::Decommissioned, AssetStatus::Active, false],
+            // Wiederinbetriebnahme über die eigene Aktion (MVP-1628); andere Wege bleiben zu.
+            'Asset: ausgemustert → aktiv' => [AssetStatus::Decommissioned, AssetStatus::Active, true],
+            'Asset: ausgemustert → in Reparatur' => [AssetStatus::Decommissioned, AssetStatus::InRepair, false],
             'Defekt: erledigt → offen' => [DefectStatus::Resolved, DefectStatus::Open, true],
             'Defekt: abgeschrieben → offen' => [DefectStatus::WrittenOff, DefectStatus::Open, false],
             'Ticket: gemeldet → gesichtet' => [ServiceTicketStatus::Reported, ServiceTicketStatus::Triaged, true],

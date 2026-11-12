@@ -107,21 +107,46 @@ class AssetComponentService {
     }
 
     /**
+     * Materialverbräuche am Asset, die noch nicht in der Stückliste stehen —
+     * die Kandidaten der Übernahme, jüngster Einsatz zuerst.
+     *
+     * @return Collection<int, MaterialUsage>
+     */
+    public function adoptableUsages(Asset $asset): Collection {
+        return MaterialUsage::query()
+            ->with('timesheet:id,work_date')
+            ->where('asset_id', $asset->id)
+            ->whereNotIn('id', AssetComponent::query()->where('asset_id', $asset->id)->whereNotNull('material_usage_id')->select('material_usage_id'))
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get();
+    }
+
+    /**
      * Verbrauchtes Material als Komponente übernehmen — damit die Liste ohne
-     * doppelte Pflege wächst.
+     * doppelte Pflege wächst. Einbaudatum ist der Einsatztag; ein Material mit
+     * Artikelbezug verweist auf den Artikel.
      */
     public function adoptFromUsage(MaterialUsage $usage, Asset $asset, ?User $actor = null): AssetComponent {
         if ((int) $asset->organization_id !== (int) $usage->organization_id) {
             throw new RuntimeException((string) __('asset.components.foreign_organization'));
         }
+        if ((int) $usage->asset_id !== (int) $asset->id) {
+            throw new RuntimeException((string) __('asset.components.usage_of_other_asset'));
+        }
+        if (AssetComponent::query()->where('material_usage_id', $usage->id)->exists()) {
+            throw new RuntimeException((string) __('asset.components.already_adopted'));
+        }
 
         $component = AssetComponent::query()->create([
             'organization_id' => $asset->organization_id,
             'asset_id' => $asset->id,
+            'article_id' => $usage->material?->article_id,
             'label' => (string) ($usage->description ?? '—'),
             'quantity' => $usage->quantity?->getNumericValue(),
             'unit' => $usage->unit,
-            'installed_on' => CarbonImmutable::today()->toDateString(),
+            'material_usage_id' => $usage->id,
+            'installed_on' => ($usage->timesheet->work_date ?? CarbonImmutable::today())->toDateString(),
             'created_by' => $actor?->id,
         ]);
         $component->audit('assetComponent.adopted', ['material_usage_id' => $usage->id]);

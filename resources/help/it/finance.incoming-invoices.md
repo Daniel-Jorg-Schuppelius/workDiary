@@ -1,7 +1,7 @@
 ---
 title: "Fatture ricevute"
 topic: finance.incoming-invoices
-version: 8
+version: 9
 keywords:
     - più aliquote
     - fattura fornitore
@@ -353,6 +353,23 @@ l’approvazione; una seconda chiamata non cambia nulla.
 **Download XML:** l’XML della fattura può essere estratto dall’originale in
 qualsiasi momento (per ZUGFeRD dall’allegato PDF). Ogni download viene
 registrato con una somma di controllo come prova.
+
+## Caso fiscale
+
+Per le fatture in entrata la scheda **Ricezione** mostra il **caso fiscale**:
+IVA a credito dalla fattura, inversione contabile secondo il § 13b UStG (comma
+1 per i servizi da un altro paese UE, comma 2 p. es. per lavori edili, pulizia
+di edifici, rottami, telefoni cellulari e forniture con posa di imprese
+estere) o acquisto intracomunitario. WorkDiary lo determina dalla categoria IVA
+della fattura elettronica (`AE` inversione contabile, `K` acquisto
+intracomunitario) e dal paese del fornitore, altrimenti dall’impostazione
+**Caso fiscale delle sue fatture in entrata** del fornitore – finché la fattura
+non riporta imposta. **Modifica caso fiscale** lo imposta a mano;
+**Automatico** torna alla determinazione. Il caso fiscale vale per la prossima
+registrazione nella contabilità locale: se la fattura vi si trova già come
+bozza o registrazione, scarti prima la bozza o storni la registrazione.
+Un’aliquota ridotta – p. es. 7 % per l’acquisto di libri – la registri nella
+finestra **Inserire i valori**; senza aliquota vale quella ordinaria.
 
 ## Documenti incorporati
 

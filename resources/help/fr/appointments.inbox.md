@@ -1,7 +1,7 @@
 ---
 title: "Demandes de rendez-vous"
 topic: appointments.inbox
-version: 1
+version: 2
 keywords:
     - prise de rendez-vous
     - réservation en ligne
@@ -42,3 +42,13 @@ créneau est réservable ou non ; le pourquoi ne regarde pas le client.
 **Confirmer** crée l’entrée et y lie la demande. **Refuser** exige un motif —
 il est transmis au client. Si le client annule dans le délai, la demande
 disparaît de la boîte.
+
+## Attribuer et gérer
+
+Une demande sans client (par exemple une réservation Calendly avec une
+adresse e-mail inconnue) s'attribue à un client ou à un lead via
+**Attribuer** ; le cas ouvert dans la boîte d'intégration est ainsi réglé. Les
+types de prestation se modifient via **Modifier**. Si un type de prestation
+est lié à un **site**, le portail et la recherche de créneaux ne le proposent
+qu'au client propriétaire du site ; la confirmation reprend l'adresse du site
+comme lieu d'intervention de la commande (sinon celle du client).

@@ -1,7 +1,7 @@
 ---
 title: "Design des documents"
 topic: admin.document-design
-version: 1
+version: 4
 keywords:
     - papier à en-tête
     - en-tête
@@ -110,3 +110,50 @@ Prise en main et aperçu du papier à en-tête (retouche 6) :
   (documents de test, attribution, versions). La sélection du papier à
   en-tête apparaît immédiatement dans l'aperçu A4 et est enregistrée avec
   « Enregistrer le brouillon ».
+
+Blocs d'information sur le document :
+
+- Facture, avoir, pro forma, devis, confirmation de commande, relance et
+  avis de cotisation impriment les blocs selon leur état. **Dynamique**
+  imprime les **coordonnées de l'entreprise** (nom, adresse, registre,
+  mention légale), les **données fiscales** (n° de TVA, numéro fiscal), le
+  **contact** (commercial de la facture ou auteur du devis, sinon les
+  coordonnées de l'organisation), l'**introduction** et la **conclusion**
+  (texte d'en-tête et de pied du profil) ainsi que la **mention de
+  confidentialité** (texte propre dans l'onglet Contenus, vide = mention par
+  défaut). « Déjà sur le papier à en-tête » et « non applicable » omettent
+  le bloc.
+- Les coordonnées de l'entreprise et les données fiscales proviennent des
+  données vendeur de la facture électronique, à défaut du branding et des
+  mentions légales de l'organisation ; le PDF visible ne contredit donc pas
+  la facture structurée.
+- Le contrôle préalable ne considère les coordonnées et données fiscales
+  « dynamiques » comme remplies que si les données sont renseignées. Sinon,
+  c'est une erreur pour les documents de vente attribués et un avertissement
+  pour le design de base.
+- Les factures émises restent inchangées : les données de l'émetteur et le
+  contact sont figés à l'émission ; les documents antérieurs à ces blocs ne
+  les impriment pas, même lors d'une réimpression.
+
+## Coordonnées de l'entreprise sur les commandes, bons de livraison et procès-verbaux
+
+Ces pièces impriment elles aussi les coordonnées de l'entreprise et les données
+fiscales selon l'état de bloc du design ; cela comprend les métrés et les
+attestations d'élimination, conçus comme des procès-verbaux. Si le bloc obligatoire
+« Coordonnées de l'entreprise » est sur « dynamique », le contrôle préalable vérifie
+que le nom et l'adresse complète sont renseignés — comme pour les factures et les
+devis. Les justificatifs signés ou clôturés auparavant restent inchangés.
+
+## Coordonnées de l'entreprise sur les justificatifs, certificats et courriers de chantier
+
+Chaque type de document avec le bloc obligatoire « Coordonnées de l'entreprise »
+l'imprime selon l'état du bloc, et le contrôle préalable vérifie ses données : outre
+les pièces ci-dessus, le justificatif de fabrication, l'avis d'empêchement et
+l'avis de réserves, le certificat, le bulletin et l'attestation de grade, le
+justificatif de clôture d'une signature de contrat, le justificatif d'instruction
+et l'évaluation des risques, ainsi que la facture commerciale et la facture
+pro forma pour la douane. Le design est figé à l'envoi, à l'émission, à la première
+signature, à la validation ou à la clôture ; les courriers et justificatifs envoyés,
+émis, signés ou clôturés auparavant restent inchangés. Feuille de temps, formulaire,
+rapport, dossier, justificatif de prestations et étiquette n'ont pas de bloc
+entreprise ; le reçu de don suit le modèle officiel avec son propre bloc émetteur.

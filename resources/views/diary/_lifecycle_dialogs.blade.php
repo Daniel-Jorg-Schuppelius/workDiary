@@ -31,6 +31,41 @@
     </x-modal>
 @endcan
 
+@can('reject', $diary)
+    <x-modal id="order-reject-{{ $dialogSuffix }}" :embedded="false" tone="warning" icon="undo"
+        :eyebrow="__('Auftrag')" :title="__('diary.lifecycle.reject.title')"
+        :action="route('diary.lifecycle', [$diary, 'action' => 'reject'])"
+        :submit-label="__('diary.lifecycle.action.reject')" submit-class="btn-warning">
+        <p class="mb-3 text-sm text-base-content/70">{{ __('diary.lifecycle.reject.hint') }}</p>
+        <x-form-group :legend="__('diary.lifecycle.reject.legend')" icon="undo" tone="warning">
+            <div class="fieldset">
+                <label class="fieldset-label" for="reject-reason-{{ $dialogSuffix }}">{{ __('Begründung') }} *</label>
+                <textarea id="reject-reason-{{ $dialogSuffix }}" name="reason" required rows="3" maxlength="2000"
+                    class="textarea textarea-sm textarea-bordered w-full"></textarea>
+            </div>
+        </x-form-group>
+    </x-modal>
+@endcan
+
+@if (($signedProtocol ?? null) !== null && ($handoverSigner ?? null) === null)
+    @can('handover', $diary)
+        <x-modal id="order-handover-{{ $dialogSuffix }}" :embedded="false" tone="primary" icon="handshake"
+            :eyebrow="__('Auftrag')" :title="__('Abnahme starten')"
+            :action="route('diary.lifecycle', [$diary, 'action' => 'handover'])"
+            :submit-label="__('Abnahme starten')">
+            <input type="hidden" name="protocol_id" value="{{ $signedProtocol->sqid }}">
+            <p class="mb-3 text-sm text-base-content/70">{{ __('diary.lifecycle.handover.hint') }}</p>
+            <x-form-group :legend="__('diary.lifecycle.handover.legend')" icon="draw" tone="primary">
+                <div class="fieldset">
+                    <label class="fieldset-label" for="handover-signer-{{ $dialogSuffix }}">{{ __('diary.lifecycle.handover.accepted_by') }} *</label>
+                    <input id="handover-signer-{{ $dialogSuffix }}" name="accepted_by" required maxlength="120"
+                        class="input input-sm input-bordered w-full">
+                </div>
+            </x-form-group>
+        </x-modal>
+    @endcan
+@endif
+
 @can('complete', $diary)
     <x-modal id="order-complete-{{ $dialogSuffix }}" :embedded="false" tone="success" icon="task_alt"
         :eyebrow="__('Auftrag')" :title="__('Auftrag abschließen')"

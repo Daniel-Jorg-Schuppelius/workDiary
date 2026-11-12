@@ -1,7 +1,7 @@
 ---
 title: "Angebote nachfassen"
 topic: quotes.follow-ups
-version: 1
+version: 2
 keywords:
     - Wiedervorlage
     - Nachfasstermin
@@ -30,6 +30,11 @@ ist und ein überfälliges Angebot damit aus dem Blick geriete.
 (Werktage nach Versand, einstellbar unter *Einstellungen → Angebote*). Ein
 bereits gesetzter Termin wird dabei nie überschrieben. Der Termin lässt
 sich jederzeit verschieben, etwa wenn der Kunde um Bedenkzeit bittet.
+
+**Zuständig:** Wer nachfasst, wählen Sie im Dialog „Neues Angebot“ und beim
+Setzen des Nachfasstermins. Ohne Auswahl fasst die Person nach, die das
+Angebot angelegt hat. Die Erinnerung geht an die zuständige Person, und
+„Nur meine“ zeigt ihre Angebote.
 
 **Nachfassen:** Beim Festhalten des Kontakts entsteht eine
 Kommunikationsnotiz in der Kundenakte — dort wird sie später gesucht, nicht

@@ -173,8 +173,8 @@ return [
     'plan_ist' => [
         'warning' => [
             'presence' => [
-                'lateStart' => 'Beginn mehr als 15 Minuten nach Plan',
-                'hoursDiff' => 'Stunden weichen mehr als 10 % ab',
+                'lateStart' => 'Beginn mehr als :minutes Minuten nach Plan',
+                'hoursDiff' => 'Stunden weichen mehr als :percent % ab',
             ],
         ],
     ],
@@ -236,6 +236,7 @@ return [
         'group' => [
             'finance' => 'Finanzen',
             'operations' => 'Betrieb',
+            'hr' => 'Personal',
             'sales' => 'Vertrieb',
             'service' => 'Service',
             'quality' => 'Qualität',
@@ -257,6 +258,12 @@ return [
             'resale_open_hint' => 'offen :amount',
             'resale_margin' => 'Marge Abos & Lizenzen',
             'resale_margin_hint' => ':periods Perioden, :actual mit Ist-Einkauf',
+            'sick_days' => 'Krankheitstage',
+            'sick_days_hint' => ':episodes Krankmeldungen von :users Personen · Entgeltfortzahlung erschöpft: :exhausted',
+            'qualifications_expired' => 'Qualifikationen abgelaufen',
+            'qualifications_expiring' => 'Stand heute · laufen in :days Tagen ab: :count',
+            'vacation_pending' => 'Offene Urlaubsanträge',
+            'vacation_pending_hint' => 'Stand heute · Beginn in den nächsten 14 Tagen: :count',
         ],
         'digest' => [
             'subject' => 'Leitungsbericht :organization · :range',
@@ -347,6 +354,8 @@ return [
         'tracked_minutes' => 'Erfasst (Min.)',
         'invoiced_minutes' => 'Fakturiert (Min.)',
         'present_minutes' => 'Anwesend (Min.)',
+        'homeoffice_minutes' => 'Homeoffice (Min.)',
+        'errand_minutes' => 'Dienstgang (Min.)',
         'booked_minutes' => 'Gebucht (Min.)',
         'balance_minutes' => 'Saldo (Min.)',
         'plan_minutes' => 'Plan (Min.)',
@@ -384,6 +393,7 @@ return [
         'defects_period' => 'Defekte im Zeitraum',
         'defects_12_months' => 'Defekte 12 Monate',
         'recurring_defect' => 'Wiederholdefekt',
+        'recurring_defects' => 'Wiederholdefekte',
         'maintenance_sessions' => 'Wartungssitzungen',
         'maintenance_minutes' => 'Wartungszeit (Min.)',
         'last_incident' => 'Letzter Vorfall',
@@ -480,6 +490,7 @@ return [
         'median_actual_minutes' => 'Median Ist (Min.)',
         'p90_actual_minutes' => 'P90 Ist (Min.)',
         'contribution_per_order_eur' => 'Deckungsbeitrag je Auftrag (€)',
+        'top_causes' => 'Top-Ursachen (Aufträge)',
         'license_plate' => 'Kennzeichen',
         'propulsion' => 'Antrieb',
         'trips' => 'Fahrten',

@@ -1,7 +1,7 @@
 ---
 title: "Scheduled jobs"
 topic: admin.scheduler
-version: 1
+version: 2
 keywords:
     - cron jobs
     - cron
@@ -77,3 +77,5 @@ noticed – not only once reports start missing.
 **Recommendation:** Change plans conservatively and watch the next
 runs after every reschedule. A persistently elevated error counter is
 a case for diagnostics, not for pausing the job.
+
+**Execution per job:** In the reschedule dialog you can also set a time zone of its own, a quiet period (from–to, also across midnight) and retries after a failure. Times inside the quiet period move to its end, intervals pause during it; without a quiet period and time zone of its own, the server operating window applies. A retry starts after the configured delay, at most as often as set, and appears in the run log like any other run.

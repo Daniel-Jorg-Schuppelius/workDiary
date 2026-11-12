@@ -470,4 +470,29 @@ class InvestmentService {
             ? (float) $override
             : (float) config('investments.approval_threshold', 10000);
     }
+
+    /**
+     * Lieferant der Anschaffung (Feature 069, MVP-1606): verknüpfte Assets ohne
+     * Lieferanten bekommen den der empfohlenen Variante, sonst den der ersten
+     * Variante mit Lieferant. Ein gepflegter Lieferant bleibt.
+     */
+    public function stampAcquisitionSupplier(InvestmentCase $case): int {
+        $options = $case->options()->whereNotNull('supplier_id')->orderByDesc('recommended')->orderBy('id')->get();
+        $supplierId = $options->first()?->supplier_id;
+        if ($supplierId === null) {
+            return 0;
+        }
+
+        $stamped = 0;
+        foreach ($case->links()->with('linkable')->get() as $link) {
+            $asset = $link->linkable;
+            if ($asset instanceof \App\Models\Asset\Asset && $asset->getAttribute('acquired_from_supplier_id') === null) {
+                $asset->forceFill(['acquired_from_supplier_id' => $supplierId])->save();
+                $asset->audit('investment.acquisition_supplier_set', ['investment' => $case->title, 'supplier_id' => $supplierId]);
+                $stamped++;
+            }
+        }
+
+        return $stamped;
+    }
 }

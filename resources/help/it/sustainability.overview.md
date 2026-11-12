@@ -1,7 +1,7 @@
 ---
 title: "Sostenibilità ed ESG"
 topic: sustainability.overview
-version: 2
+version: 3
 keywords:
     - impronta di carbonio
     - bilancio delle emissioni
@@ -57,3 +57,15 @@ meno recenti che non compaiono più nella panoramica.
 export CSV con indicazione della metodologia e snapshot congelabile
 della valutazione del management. La matrice di riferimento VSME 1.0
 mostra quali dati di WorkDiary preparano quale sezione del report.
+
+**Valutazione con oggetto:** «Avvia valutazione» chiede l'oggetto valutato:
+asset, veicolo, sede, locale, progetto, ordine, fornitore, articolo,
+investimento o contratto. Sono proposti gli oggetti dei moduli attivati che Lei
+può leggere; senza oggetto Lei inserisce una denominazione. Asset, fornitore e
+investimento riportano il pulsante «Valuta la sostenibilità». La valutazione
+rimanda al suo oggetto e a tutte le valutazioni dello stesso oggetto; ogni
+ulteriore valutazione di un oggetto è una nuova versione.
+
+**Misure per valutazione:** una misura può essere assegnata a una valutazione,
+registrandola nel riepilogo o direttamente nella valutazione. L'elenco delle
+misure rimanda alla valutazione.

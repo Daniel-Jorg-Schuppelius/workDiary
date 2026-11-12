@@ -1,7 +1,7 @@
 ---
 title: "Ruoli & permessi"
 topic: admin.roles
-version: 3
+version: 4
 keywords:
     - autorizzazioni
     - diritti utente
@@ -86,3 +86,5 @@ controllo accessi e nel registro di audit). La vista è in sola lettura e
 richiede il permesso «Visualizzare le modifiche a ruoli e permessi»; gli
 account di supporto lo hanno per ricostruire gli eventi senza modificare
 nulla.
+
+**Copiare un ruolo:** l’icona «Copia» di un ruolo dell’organizzazione apre la finestra di creazione con le relative autorizzazioni preselezionate. Assegni un nome proprio e adatti le autorizzazioni; il ruolo di origine viene registrato nelle **Modifiche ai diritti**. I ruoli globali della piattaforma non si possono copiare.

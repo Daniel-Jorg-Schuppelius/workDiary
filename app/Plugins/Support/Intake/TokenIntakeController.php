@@ -107,7 +107,7 @@ abstract class TokenIntakeController extends Controller {
         // Aktiv erst mit gewählter Quelle, Stammordner und aktiver Regel, sonst Entwurf.
         $ready = $connection->container_id !== null && $connection->root_folder_path !== null && $connection->routes()->where('active', true)->exists();
         $connection->forceFill([
-            'status' => $ready ? CloudIntakeConnectionStatus::Active : CloudIntakeConnectionStatus::Draft,
+            'status' => $connection->readyStatus($ready),
         ])->save();
         $connection->audit('cloudIntake.connected', ['by_user_id' => (int) $admin->id, 'provider' => $this->provider()->value]);
 

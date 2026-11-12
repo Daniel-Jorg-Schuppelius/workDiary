@@ -52,6 +52,18 @@ final class PostingProposalLine {
     }
 
     /**
+     * Dieselbe Zeile mit anderem Steuerbezug. Kennzeichen und Steuerbetrag
+     * stehen an der Erlös- bzw. Aufwandszeile; die Steuerzeile trägt keines —
+     * so ist die Bemessungsgrundlage exakt und auch 0-%-Umsätze haben ihre
+     * Kennziffer.
+     *
+     * @param  numeric-string|null  $taxAmount
+     */
+    public function withTax(?int $taxCodeId, ?string $taxAmount): self {
+        return new self($this->role, $this->account, $this->debit, $this->credit, $taxCodeId, $taxAmount, $this->memo, $this->counterpartyType, $this->counterpartyId, $this->ruleVersion);
+    }
+
+    /**
      * Form für {@see \App\Services\Accounting\JournalService::draft()}.
      *
      * @return array<string, mixed>

@@ -1,7 +1,7 @@
 ---
 title: "Anagrafica articoli"
 topic: articles.master
-version: 1
+version: 5
 keywords:
     - articoli
     - creare articolo
@@ -38,3 +38,23 @@ Crei le varianti solo quando opzioni e valori sono completi.
 Per i documenti doganali, gli articoli riportano in «Dogana ed esportazione»
 il codice doganale (da 6 a 11 cifre; spazi e punti vengono rimossi), il paese
 d’origine come codice ISO e il peso netto per unità.
+
+## Magazzino e valutazione
+
+In «Magazzino e valutazione» Lei definisce nella finestra dell’articolo un **metodo di valutazione** proprio; senza scelta vale il metodo dell’organizzazione. Il passaggio a FIFO o FEFO crea uno strato iniziale per la giacenza esistente; il ritorno alla media mobile è possibile solo quando non resta giacenza dell’articolo negli strati.
+
+Con un **prefisso dei numeri di serie** l’articolo conta numeri di serie propri (prefisso e numero progressivo, su richiesta con cifra di controllo); senza prefisso vale la numerazione dell’organizzazione.
+
+Le **unità** aggiuntive valgono per movimenti di magazzino, scansione, ordini e ricevimento merci: la quantità può essere inserita nell’unità, la registrazione avviene nell’unità base. La proprietà «scadenza obbligatoria» richiede lotto e data di scadenza al ricevimento merci.
+
+Se un gestionale di magazzino gestisce i numeri articolo (pagina «Numerazioni», numerazione «Articolo»), numero articolo e GTIN sono di sola lettura nella finestra; i nuovi articoli e varianti ricevono il numero con la sincronizzazione.
+
+**Classe fiscale:** nel modulo articolo registrate la classe fiscale (ordinaria, ridotta, maggiorata). Viene salvata con l’articolo, ripresa nell’importazione e confrontata per duplicati e unioni; l’aliquota di un documento resta fissata sulla riga.
+
+## Produzione
+
+In «Produzione» sceglie il **ciclo di lavoro standard** dell'articolo: una
+versione pubblicata di un modello di procedura attivo. Gli ordini e la
+pianificazione di produzione realizzano poi l'articolo con esso, finché un
+ordine non ne sceglie una propria; anche la pianificazione dei fabbisogni lo
+legge. La sezione compare non appena esistono versioni di procedura pubblicate.

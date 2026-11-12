@@ -177,6 +177,7 @@ class SharepointAdminController extends ConnectionOAuthController {
             'folder_path.*' => ['nullable', 'string', 'max:190'],
         ]);
 
+        $wasActive = $connection->isActive();
         $connection->forceFill([
             'default_folder' => trim((string) $data['default_folder'], '/'),
             'folder_map' => SharepointConnection::folderMapFromInput((array) $request->input('folder_type', []), (array) $request->input('folder_path', [])),
@@ -185,6 +186,13 @@ class SharepointAdminController extends ConnectionOAuthController {
             'active' => (bool) ($data['active'] ?? false),
         ])->save();
         $connection->audit('sharepoint.settings_saved', ['by_user_id' => (int) $admin->id, 'active' => $connection->active]);
+
+        // Was vor der Aktivierung freigegeben wurde, hat kein Observer eingereiht — die Aktivierung holt es nach.
+        if (! $wasActive && $connection->isActive()) {
+            Artisan::call('sharepoint:mirror', ['--organization' => (string) $organization->id]);
+
+            return back()->with('success', __('sharepoint::sharepoint.flash.saved_and_mirrored'));
+        }
 
         return back()->with('success', __('sharepoint::sharepoint.flash.saved'));
     }

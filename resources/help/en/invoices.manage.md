@@ -1,7 +1,7 @@
 ---
 title: "Invoices & documents"
 topic: invoices.manage
-version: 13
+version: 17
 keywords:
     - create invoice
     - write invoice
@@ -269,3 +269,92 @@ WorkDiary does not transfer them to Lexoffice, sevDesk, easybill or orgaMAX.
 Whoever sends the e-invoice from the program attaches them there by hand; the
 integration inbox reminds you. The billing transfer offers **Activity report**
 for download.
+
+## Releasing retentions
+
+Retentions are listed on the invoice page in the **Retentions** card with
+kind, amount, release date and status. On an issued invoice, the lock icon
+opens the **Release** dialog; a note records the reason. Once released, the
+amount is a regular open item, counts towards the amount payable again and is
+included in dunning. A retention replaced by a guarantee has already been paid
+out: releasing it only ends the security purpose, no new receivable is
+created, and the guarantee register reports the deed as due for return.
+Releasing requires the billing permission.
+
+## Approval and tax case of the draft
+
+With **mandatory approval**, the approval applies to the reviewed state: if you
+change line items, conditions, customer, dates or the invoice text afterwards, the
+approval is revoked and must be given again — not by the person who created the
+invoice. The log records the revocation.
+
+Every draft takes its **tax case** (reverse charge, export, tax-exempt) from the
+customer data, including the free draft. If the customer data change afterwards —
+for example through the attribute "Recipient owes the VAT" or a new VAT ID —, the
+next edit of the draft applies the new case. If you issue a draft with an outdated
+tax case, workDiary adjusts it and stops the issue: check the totals and issue
+again.
+
+With **reverse charge**, the e-invoice needs the customer's VAT ID (rule BR-AE-02),
+also for domestic reverse charge under § 13b UStG; the check before sending reports
+a missing one. All line items then appear with 0 % and the note "Reverse charge"
+in the XRechnung.
+
+The **notice text** follows the tax case: if the automatic notice of the old case
+(for example on reverse charge or export) is still unchanged in the invoice text,
+the notice of the new case replaces it, or it is removed. If you edited the notice
+by hand, your text stays — workDiary tells you, and you check the notice yourself.
+
+## Exemption reasons in the e-invoice
+
+Every VAT category without tax carries its exemption reason in the XRechnung and the
+ZUGFeRD PDF, per VAT breakdown on mixed invoices: reverse charge (AE), intra-Community
+supply (K), export (G) and "not subject to VAT" (O) with text and code; category Z has
+no reason. "Exempt" (E) names § 19 UStG only for small businesses. For other
+exemptions, create a rule with the rate type "Exempt" in the **tax rule matrix** and
+enter the exemption provision as its document notice text, for example "Tax-exempt
+medical treatment (§ 4 no. 14 UStG)"; without a rule only "Tax-exempt supply" appears
+and the check before sending warns.
+
+The check before sending also reports: a missing customer VAT ID for intra-Community
+supplies, a missing organisation VAT ID for supplies to other EU countries and
+exports, "not subject to VAT" next to other categories, and an item without tax in
+its category but with a tax rate above 0 %. With "not subject to VAT" the e-invoice
+carries no VAT IDs; the tax number is enough. Two details are still missing from the
+e-invoice (warning): the delivery country for intra-Community supplies and the
+omission of the item rate for "not subject to VAT".
+
+## Exemption note in the invoice PDF
+
+Items without tax also need a note on the invoice itself (§ 14 (4) no. 8 and
+§ 14a UStG). Below the tax lines, the PDF prints the same text per tax category as
+the exemption reason of the e-invoice, for example "Tax-exempt intra-Community
+supply" for K or the reverse charge wording for a single item with AE. If the
+invoice text already contains the note — or the automatic note of this category
+from the tax case — the line is left out. Reverse charge for the whole document
+and § 19 UStG keep their own line as before. Invoices issued before this
+extension are reprinted unchanged. Credit notes and cancellation invoices take
+over the tax category of each item of the original.
+
+If you choose a category without tax (AE, Z, E, G, K, O) on an item or in a billing
+schedule, the form sets the tax rate to 0 %; 0 % is saved in any case.
+
+## Recipient and VAT ID on the invoice
+
+An issued invoice prints the recipient as it stood at issue: the customer's name,
+company, address and VAT ID are frozen when the invoice is issued. If you change
+the customer data afterwards, reprints, the PDF attachment, XRechnung, ZUGFeRD and
+the GAEB export stay unchanged; only new invoices take over the new address. A
+draft always shows the current customer data. Cancellation documents and
+corrective invoices freeze the recipient when they are issued themselves. The
+electronic delivery address (Peppol ID or e-mail) and dunning letters, by
+contrast, follow the current customer data because they are delivered today.
+
+If a VAT ID is stored for the customer, it appears in the invoice header ("Your
+VAT ID"). For intra-Community supplies and reverse charge it is mandatory
+(§ 14a UStG). Invoices issued before this extension are reprinted without the
+line.
+
+Issuing also fixes the disclosure of labour costs under § 35a EStG: a later change
+to the organisation rule or to the type of customer no longer changes an issued
+invoice.

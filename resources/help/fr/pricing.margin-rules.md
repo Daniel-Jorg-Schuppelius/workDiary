@@ -1,7 +1,7 @@
 ---
 title: "Règles de prix & de marge"
 topic: pricing.margin-rules
-version: 1
+version: 2
 keywords:
     - coefficient
     - majoration
@@ -61,3 +61,5 @@ affectés par les modifications de règles — une règle modifiée n'agit qu'à
 la prochaine reprise de prix. La lecture exige des droits de lecture du
 stock, la gestion des règles et des demandes des droits de configuration
 du stock.
+
+L’alerte de calcul après un changement de prix d’achat vérifie aussi la marge minimale par rapport aux devis ouverts et aux commandes non annulées contenant l’article : c’est le prix du document de la position qui est mesuré, non le prix de base. L’alerte indique le document, la position, le prix du document et la marge qui en résulte. Les documents conservent leur prix.

@@ -23,7 +23,7 @@ use App\Plugins\Seafile\Api\SeafileClientFactory;
 use App\Plugins\Seafile\Services\{SeafileBackupTarget, SeafileIntake};
 use App\Plugins\Support\{ApiHealthProbe, SelfHostedSettings};
 use App\Plugins\Support\Backup\BackupAccount;
-use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
+use App\Plugins\Support\Intake\{IntakeChangePage, IntakeItem};
 use App\Support\Ui\UiAction;
 use Illuminate\Database\Eloquent\Model;
 use Psr\Http\Message\StreamInterface;
@@ -38,7 +38,7 @@ use Psr\Http\Message\StreamInterface;
  *  - **Backupziel**: systemweit, verschlüsselt, in eine gewählte Bibliothek —
  *    eigene Verbindung mit eigenem Token, getrennt vom Eingang.
  */
-class SeafilePlugin extends AbstractPlugin implements BackupTarget, BackupTargetConnector, DocumentIntakeOrigins, DocumentIntakeSource, IntakeSourceConnector, LinksExternalRecords {
+class SeafilePlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, BackupTarget, BackupTargetConnector, DocumentIntakeOrigins, DocumentIntakeSource, IntakeSourceConnector, LinksExternalRecords {
     public const string ID = 'seafile';
 
     public const string SERVICE_PROVIDER = SeafileServiceProvider::class;
@@ -65,10 +65,6 @@ class SeafilePlugin extends AbstractPlugin implements BackupTarget, BackupTarget
 
     // ── Dokumenteingang ─────────────────────────────────────────────────
 
-    public function intakeAccount(CloudDocumentConnection $connection): IntakeAccount {
-        return app(SeafileIntake::class)->account($connection);
-    }
-
     public function intakeContainers(CloudDocumentConnection $connection, ?string $search = null): array {
         return app(SeafileIntake::class)->containers($connection, $search);
     }
@@ -85,8 +81,11 @@ class SeafilePlugin extends AbstractPlugin implements BackupTarget, BackupTarget
         app(SeafileIntake::class)->recordOrigin($connection, $item, $imported);
     }
 
-    public function intakeConnectAction(): UiAction {
-        return new UiAction('add', (string) __('seafile::seafile.action.connect_intake'), route('admin.cloud-intake.seafile.connect-form'), modal: true);
+    public function intakeConnectAction(?CloudDocumentConnection $connection = null): UiAction {
+        // Je Organisation eine Verbindung: das Formular frischt die bestehende auf.
+        return $connection !== null
+            ? new UiAction('sync', (string) __('cloud_intake.action.reconnect'), route('admin.cloud-intake.seafile.connect-form'), modal: true)
+            : new UiAction('add', (string) __('seafile::seafile.action.connect_intake'), route('admin.cloud-intake.seafile.connect-form'), modal: true);
     }
 
     public function externalRecordUrl(ExternalReference $reference): ?string {
@@ -162,5 +161,10 @@ class SeafilePlugin extends AbstractPlugin implements BackupTarget, BackupTarget
         }
 
         return ApiHealthProbe::probe($this->name(), fn () => app(SeafileClientFactory::class)->for((int) $organization->id)->probe());
+    }
+
+    /** Datenführerschaft (MVP-1592): Cloud-Dokumenteingang legt DMS-Dokumente an. */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Documents];
     }
 }

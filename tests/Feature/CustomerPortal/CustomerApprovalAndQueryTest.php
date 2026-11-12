@@ -43,6 +43,8 @@ class CustomerApprovalAndQueryTest extends TestCase {
 
         $response = $this->post(route('protocols.public-sign.submit', ['token' => $token]), [
             'signer_name' => 'Max Kunde',
+            // Unterschrift wird gezeichnet (MVP-1572).
+            'signature' => 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
             'accept' => '1',
         ]);
         $response->assertRedirect();

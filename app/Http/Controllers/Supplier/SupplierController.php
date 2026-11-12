@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Supplier\SaveSupplierRequest;
 use App\Models\Classification\Tag;
 use App\Models\Supplier\Supplier;
+use App\Services\Fields\CustomFieldService;
 use App\Services\Numbering\NumberAuthority;
 use App\Services\Stammdaten\{ContactMasterDataPusher, PartyDeletionGuard};
 use App\Services\Supplier\SupplierDetailAssembler;
@@ -57,6 +58,7 @@ class SupplierController extends Controller {
             'search' => $search,
             'sort' => $sort,
             'dir' => $dir,
+            'customColumns' => app(CustomFieldService::class)->listColumnsFor($suppliers->getCollection(), Supplier::class, (int) Auth::user()?->organization_id),
         ]);
     }
 
@@ -202,8 +204,14 @@ class SupplierController extends Controller {
             ->orderBy('name');
 
         $filename = 'lieferanten-' . now()->format('Y-m-d-His') . '.csv';
+        // Eigene Felder der Organisation als Zusatzspalten (MVP-1615).
+        $customFields = app(CustomFieldService::class);
+        $customColumns = $customFields->exportColumns(Supplier::class, (int) Auth::user()?->organization_id);
+        if ($customColumns !== []) {
+            $query->with('customFieldValue');
+        }
 
-        $rows = (static function () use ($query): \Generator {
+        $rows = (static function () use ($query, $customFields): \Generator {
             /** @var Supplier $s */
             foreach ($query->lazy(500) as $s) {
                 yield [
@@ -222,6 +230,7 @@ class SupplierController extends Controller {
                     $s->active ? 'ja' : 'nein',
                     $s->archived_at?->format('Y-m-d') ?? '',
                     $s->created_at?->format('Y-m-d') ?? '',
+                    ...$customFields->exportRow($s),
                 ];
             }
         })();
@@ -242,6 +251,7 @@ class SupplierController extends Controller {
             'Aktiv',
             'Archiviert',
             'Angelegt',
+            ...array_column($customColumns, 'label'),
         ], $rows);
     }
 }

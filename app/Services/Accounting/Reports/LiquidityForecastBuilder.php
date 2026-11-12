@@ -280,6 +280,8 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
             ->where('organization_id', $organization->id)
             ->where('direction', OpenItemDirection::Receivable->value)
             ->stillOpen()
+            // Strittig ist kein erwarteter Eingang (MVP-1559).
+            ->undisputed()
             ->with('counterparty')
             ->orderBy('due_date')
             ->get();

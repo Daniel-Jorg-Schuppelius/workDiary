@@ -14,7 +14,8 @@ namespace App\Services\Learning;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Learning\LearningCertificate;
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Models\Platform\Organization;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, IssuerIdentity};
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -36,7 +37,12 @@ class LearningCertificatePdfRenderer {
         $certificate->loadMissing(['course', 'enrollment.course']);
         $verifyUrl = route('learning.certificates.verify', $certificate->verification_code);
 
-        return app(DocumentDesignRenderer::class)->renderPdf(
+        $design = app(DocumentDesignRenderer::class);
+        $organization = Organization::query()->withoutGlobalScopes()->find($certificate->organization_id);
+        $payload = $design->payloadFromSnapshot($certificate, RenderDocumentKind::Certificate)
+            ?? ($organization !== null ? $design->payloadFor($organization, RenderDocumentKind::Certificate) : null);
+
+        return $design->renderPdf(
             RenderDocumentKind::Certificate,
             'learning.pdf.certificate',
             [
@@ -44,8 +50,12 @@ class LearningCertificatePdfRenderer {
                 'verifyUrl' => $verifyUrl,
                 // Prüfseite per Handy (MVP-1263) — dieselbe Adresse wie im Text darunter.
                 'qrImage' => (string) DataUrlHelper::encode((new Writer(new ImageRenderer(new RendererStyle(180, 1), new SvgImageBackEnd())))->writeString($verifyUrl), 'image/svg+xml'),
+                // Aussteller nach Blockzustand (MVP-1624); vorher ausgestellte Zertifikate bleiben, wie sie waren.
+                'design' => $design->contextForDocument($certificate, RenderDocumentKind::Certificate, $payload, finalized: true),
+                'issuer' => IssuerIdentity::for($organization),
             ],
-            (int) $certificate->organization_id,
+            $organization,
+            payload: $payload,
         );
     }
 

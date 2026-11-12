@@ -16,7 +16,7 @@ use App\Enums\Article\ArticleStatus;
 use App\Enums\Numbering\NumberScope;
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Platform\Organization;
-use App\Services\Numbering\NumberSequenceService;
+use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 use RuntimeException;
 
 /**
@@ -39,7 +39,8 @@ class ArticleService {
      */
     public function createArticle(Organization $organization, array $attributes): Article {
         $attributes['organization_id'] = $organization->id;
-        if (empty($attributes['number'])) {
+        // Führt eine Warenwirtschaft die Nummern (MVP-1583), vergibt workDiary keine eigene: sie kommt mit dem Abgleich.
+        if (empty($attributes['number']) && app(NumberAuthority::class)->articleNumbersLockedBy($organization) === null) {
             $attributes['number'] = $this->numbers->next($organization, NumberScope::Article);
         }
 
@@ -58,6 +59,9 @@ class ArticleService {
         $orgId = $variant->organization_id;
         if ($orgId === null) {
             throw new RuntimeException('Variante ohne Organisation kann keine SKU erhalten.');
+        }
+        if (app(NumberAuthority::class)->articleNumbersLockedBy($orgId) !== null) {
+            return $variant;
         }
 
         $variant->sku = $this->numbers->next($orgId, NumberScope::Article);

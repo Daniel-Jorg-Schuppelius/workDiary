@@ -84,13 +84,4 @@ class DpiaWorkflowService {
 
         return $step;
     }
-
-    /** Nächster offener Schritt (null = Workflow abgeschlossen). */
-    public function nextStep(Dpia $dpia): ?DpiaStep {
-        return DpiaStep::query()
-            ->where('dpia_id', $dpia->id)
-            ->where('status', '!=', DpiaStepStatus::Done)
-            ->orderBy('position')
-            ->first();
-    }
 }

@@ -33,6 +33,7 @@
         .total { margin-top: 16px; font-size: 14px; font-weight: 700; }
         .pending { margin: 0 0 14px; padding: 8px 10px; border: 2px solid #a60; color: #a60; font-weight: 700; }
         .note { margin-top: 18px; font-size: 10px; color: #555; }
+        .tpl-issuer { margin-top: 8px; font-size: 9px; color: #555; }
     </style>
 </head>
 <body>
@@ -81,6 +82,8 @@
     </p>
 
     <p class="note">{{ __('learning.pdf.report_card_note') }} · {{ now()->translatedFormat('d.m.Y') }}</p>
+    {{-- Aussteller nach Blockzustand des Designs (MVP-1624). --}}
+    @include('pdf._design_issuer')
 </div>
 </body>
 </html>

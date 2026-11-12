@@ -107,6 +107,7 @@ final class DomainEventStatusEnumCastTest extends TestCase {
     }
 
     public function test_status_values_match_the_schema(): void {
-        $this->assertSame(['stored', 'acknowledged', 'failed'], array_column(DomainEventStatus::cases(), 'value'));
+        // „failed“ entfällt (MVP-1620): eine gescheiterte Quittung bleibt gespeichert und wird erneut gesendet.
+        $this->assertSame(['stored', 'acknowledged'], array_column(DomainEventStatus::cases(), 'value'));
     }
 }

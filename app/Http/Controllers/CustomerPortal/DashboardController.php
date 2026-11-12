@@ -20,12 +20,12 @@ use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Invoicing\Invoice;
 use App\Models\Project\Project;
 use App\Models\Reselling\ResaleSubscription;
-use App\Modules\ModuleRegistry;
 use App\Services\Billing\Contracts\ExternalRevenue;
 use App\Services\Billing\Dto\ExternalInvoiceQuery;
 use App\Services\Customer\Intake\CustomerIntakeStages;
 use App\Services\CustomerPortal\Contracts\PortalNoticeSource;
 use App\Services\CustomerPortal\{PortalInsights, PortalNavigation, PortalTimeEntries, PortalVisibility};
+use App\Services\Licensing\ModuleExtensions;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
@@ -35,7 +35,7 @@ use Throwable;
 class DashboardController extends Controller {
     use ResolvesPortalUser;
 
-    public function __invoke(PortalVisibility $visibility, ModuleRegistry $modules, CustomerIntakeStages $stages, PortalTimeEntries $portalTimes, PortalNavigation $navigation): View {
+    public function __invoke(PortalVisibility $visibility, ModuleExtensions $extensions, CustomerIntakeStages $stages, PortalTimeEntries $portalTimes, PortalNavigation $navigation): View {
         $user = $this->portalUser();
         $customerId = (int) $user->customer_id;
         $customer = $this->portalCustomer();
@@ -109,7 +109,7 @@ class DashboardController extends Controller {
         $notices = [];
         $organization = $user->organization;
         if ($organization !== null) {
-            foreach ($modules->extensions(PortalNoticeSource::class) as $class) {
+            foreach ($extensions->activeFor(PortalNoticeSource::class, $organization) as $class) {
                 try {
                     /** @var PortalNoticeSource $source */
                     $source = app($class);

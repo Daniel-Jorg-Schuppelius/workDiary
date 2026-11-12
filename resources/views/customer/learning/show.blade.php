@@ -29,6 +29,9 @@
         @php
             $isDone = in_array($unit->id, $completedUnitIds, true);
             $isLocked = ! $isDone && ! $unit->isReleasedFor($enrollment, null, $completedUnitIds);
+            // Pflichtanteil der Videos (MVP-1598): die Sperre sitzt im Dienst; hier Anzeige und Knopf.
+            $videoGated = ! $isDone && ! $isLocked && ! $unit->reportsOwnResult()
+                && app(\App\Services\Learning\LearningVideoProgressService::class)->unmetFor($enrollment, $unit, $videoProgress) !== [];
         @endphp
         <x-card>
             <div class="flex flex-wrap items-start justify-between gap-3">
@@ -40,11 +43,18 @@
                 @if ($isLocked)
                     <x-status-badge tone="neutral" size="sm" outline>{{ $unit->lockLabelFor($enrollment, $completedUnitIds) }}</x-status-badge>
                 @endif
-                @unless ($isDone || $isLocked)
-                    <form method="POST" action="{{ route('customer.learning.units.complete', [$enrollment, $unit]) }}">
+                @if (! $isDone && ! $isLocked && $unit->reportsOwnResult())
+                    {{-- Prüfung, Termin, Prozedur, Umfrage, Extern: im Portal nicht abschließbar. --}}
+                    <p class="w-full text-xs text-muted" role="status">{{ __('learning.external.unit_unavailable') }}</p>
+                @endif
+                @unless ($isDone || $isLocked || $unit->reportsOwnResult())
+                    <form method="POST" action="{{ route('customer.learning.units.complete', [$enrollment, $unit]) }}" data-video-gate="{{ $unit->sqid }}">
                         @csrf
-                        <x-icon-btn icon="task_alt" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.complete_unit') }}</x-icon-btn>
+                        <x-icon-btn icon="task_alt" tone="primary" size="sm" type="submit" :disabled="$videoGated" show-label>{{ __('learning.action.complete_unit') }}</x-icon-btn>
                     </form>
+                    @if ($videoGated)
+                        <p class="w-full text-right text-xs text-warning" data-video-gate-hint="{{ $unit->sqid }}">{{ __('learning.help.video_gate') }}</p>
+                    @endif
                 @endunless
             </div>
 
@@ -54,6 +64,11 @@
                     'mediaState' => $mediaState,
                     'mediaUrl' => fn (int $id): ?string => ($a = $unit->attachments->firstWhere('id', $id))
                         ? route('customer.learning.units.media', [$enrollment->sqid, $unit->sqid, $a->sqid])
+                        : null,
+                    'videoProgress' => $videoProgress,
+                    'videoGate' => $unit->sqid,
+                    'videoProgressUrl' => fn (int $id): ?string => ! $enrollment->status->isFinal() && ! $unit->reportsOwnResult() && ($a = $unit->attachments->firstWhere('id', $id))
+                        ? route('customer.learning.units.video-progress', [$enrollment->sqid, $unit->sqid, $a->sqid])
                         : null,
                     'portal' => true,
                 ])

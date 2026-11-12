@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Approval\Dto;
 
+use App\Services\Fields\FieldDocument;
+
 /** Gegenstand einer Zeile im Genehmigungs-Eingang; ohne `$type` gilt die Bezeichnung des Modells. */
 final readonly class ApprovalInboxEntry {
     public function __construct(
@@ -19,5 +21,7 @@ final readonly class ApprovalInboxEntry {
         public ?string $url = null,
         public ?string $reference = null,
         public ?string $type = null,
+        /** Erfasste Angaben zum Gegenstand, etwa die Antworten einer Katalogbestellung. */
+        public ?FieldDocument $fields = null,
     ) {}
 }

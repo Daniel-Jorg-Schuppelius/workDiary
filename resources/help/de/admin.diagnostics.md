@@ -1,7 +1,7 @@
 ---
 title: "Diagnose"
 topic: admin.diagnostics
-version: 1
+version: 2
 keywords:
     - Systemstatus
     - Systemzustand
@@ -49,3 +49,5 @@ Aufrufe der Diagnose und ausgelöste Tests werden im Audit-Log
 protokolliert. Das Anzeigen erfordert das Diagnose-Recht, das Auslösen
 von Prüfungen ein eigenes Recht. Betriebskennzahlen finden Sie unter
 **Metriken**.
+
+**Überwachungszugang:** Für externe Überwachung legen Sie unter „Überwachungszugang“ einen Zugang an. Die Überwachung ruft den Bericht ohne Anmeldung unter /api/monitoring/diagnostics ab und sendet den Token im Kopf „Authorization: Bearer …“. Der Token erscheint nur einmal und wird nur als Abdruck gespeichert; Widerrufen sperrt ihn sofort. Der Bericht enthält keine Namen und Adressen, etwa Lizenznehmer oder Absenderadresse. Abrufe werden höchstens einmal je Stunde und Zugang protokolliert.

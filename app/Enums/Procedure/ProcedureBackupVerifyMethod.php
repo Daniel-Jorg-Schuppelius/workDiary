@@ -10,12 +10,18 @@
 
 namespace App\Enums\Procedure;
 
-enum ProcedureBackupVerifyMethod: string {
+use App\Enums\Contracts\HasLabel;
+
+enum ProcedureBackupVerifyMethod: string implements HasLabel {
     case Checksum = 'checksum';
     case RestoreCheck = 'restoreCheck';
     case ManagerConfirmation = 'managerConfirmation';
 
     public function isAutomatic(): bool {
         return $this === self::Checksum;
+    }
+
+    public function label(): string {
+        return (string) __('enums.procedure.backup-verify-method.' . $this->value);
     }
 }

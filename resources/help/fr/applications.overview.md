@@ -1,7 +1,7 @@
 ---
 title: "Candidatures & appels d'offres"
 topic: applications.overview
-version: 3
+version: 4
 keywords:
     - recrutement
     - gestion des candidats
@@ -83,3 +83,5 @@ lance alors le tour suivant.
 Mention légale : WorkDiary documente le processus, mais ne remplace aucun
 conseil juridique — en particulier aucune appréciation de la licéité ou de
 la pertinence économique des conditions contractuelles.
+
+**Conduite de l’entretien et ouverture des offres :** en planifiant un entretien d’embauche, vous choisissez qui le mène. Pour les appels d’offres, vous indiquez depuis quand les offres concurrentes saisies sont connues et ajoutez une note.

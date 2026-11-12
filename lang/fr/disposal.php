@@ -46,6 +46,8 @@ return [
     ],
 
     'form' => [
+        'is_photo_in_record' => 'Afficher les photos dans le justificatif client',
+        'is_photo_in_record_hint' => 'Jusqu’à deux photos par position d’appareil figurent dans le PDF du justificatif.',
         'title_create' => 'Nouveau dossier d\'élimination',
         'title_edit' => 'Modifier le dossier d\'élimination',
         'submit_create' => 'Créer le dossier',
@@ -76,6 +78,13 @@ return [
     ],
 
     'item' => [
+        'asset' => 'Actif',
+        'asset_none' => '— sans actif lié —',
+        'asset_hint' => 'Uniquement les actifs en service. La sélection préremplit la désignation, le fabricant, le modèle et le numéro de série ; la clôture du dossier met l’actif hors service.',
+        'error' => [
+            'asset_not_in_operation' => 'L’actif n’est plus en service et ne peut pas être éliminé.',
+            'asset_taken' => 'L’actif figure déjà dans un dossier d’élimination ouvert.',
+        ],
         'title_create' => 'Saisir une position',
         'title_edit' => 'Modifier la position',
         'group_device' => 'Appareil',
@@ -157,6 +166,23 @@ return [
         'reason' => 'Motif',
     ],
 
+    // Asset-Bezug und Fotos der Gerätepositionen (MVP-1578).
+    'asset' => [
+        'action' => 'Éliminer',
+        'create_hint' => 'Après la création, saisissez « :asset » comme position d’appareil ; l’actif y est déjà sélectionné.',
+        'add_hint' => 'Saisissez l’actif « :asset » comme position d’appareil — il est déjà sélectionné dans la boîte de dialogue.',
+        'pending_decommission' => 'Non mis hors service : :assets. L’actif est encore remis ou dans un état final — reprenez-le et mettez-le hors service dans sa fiche.',
+    ],
+    'photo' => [
+        'label' => 'Photos',
+        'alt' => 'Photo de :item',
+        'upload' => 'Téléverser une photo',
+        'upload_for' => 'Choisir une photo pour :item',
+        'flash' => [
+            'added' => 'Photo enregistrée pour la position d’appareil.',
+        ],
+    ],
+
     'action' => [
         'create' => 'Nouveau dossier d\'élimination',
         'collect' => 'Saisir l\'enlèvement',
@@ -177,6 +203,8 @@ return [
     ],
 
     'pdf' => [
+        'photos' => 'Photos',
+        'photo_of' => 'Position :number',
         'title' => 'Justificatif de prise en charge et d\'élimination',
         'number' => 'Numéro de dossier',
         'customer' => 'Client',

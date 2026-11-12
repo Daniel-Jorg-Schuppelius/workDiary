@@ -52,6 +52,9 @@ class ClubEventReminderScan extends AbstractDeadlineScan {
             ->get();
 
         foreach ($events as $event) {
+            if (! $this->moduleActiveFor($event->organization_id)) {
+                continue;
+            }
             $memberIds = ClubEventParticipation::query()
                 ->withoutGlobalScopes()
                 ->where('event_id', $event->id)

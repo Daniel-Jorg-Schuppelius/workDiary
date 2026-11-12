@@ -138,4 +138,10 @@ return [
             'dismissed' => 'Indexation rejetée.',
         ],
     ],
+    // Échéances de contrat dans le calendrier (MVP-1617).
+    'calendar' => [
+        'end' => 'Fin du contrat',
+        'renewal' => 'Reconduction',
+        'indexation_review' => 'Révision de l’indice',
+    ],
 ];

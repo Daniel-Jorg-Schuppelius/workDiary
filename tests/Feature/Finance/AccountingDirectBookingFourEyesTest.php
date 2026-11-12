@@ -586,9 +586,10 @@ class AccountingDirectBookingFourEyesTest extends TestCase {
             ->post(route('finance.accounting.journal.store'), [
                 'booked_on' => $this->startsOn->addMonth()->toDateString(),
                 'memo' => 'Direkt festschreiben',
-                'debit_account' => $this->accounts['bank']->sqid,
-                'credit_account' => $this->accounts['revenue']->sqid,
-                'amount' => '10.00',
+                'rows' => [
+                    ['account' => $this->accounts['bank']->number, 'debit' => '10.00'],
+                    ['account' => $this->accounts['revenue']->number, 'credit' => '10.00'],
+                ],
                 'post' => '1',
             ])
             ->assertSessionHasErrors('four_eyes');
@@ -833,10 +834,11 @@ class AccountingDirectBookingFourEyesTest extends TestCase {
         $this->assertSame(AccountingEntryStatus::Ready, $again->status);
     }
 
-    public function test_only_waiting_direct_bookings_can_be_discarded(): void {
+    /** Seit MVP-1556 lässt sich jeder Entwurf verwerfen, auch die Handbuchung — eine Festbuchung nie. */
+    public function test_only_drafts_can_be_discarded(): void {
         $item = $this->openItem();
         $posted = $this->invoiceEntry($item);
-        $proposalDraft = app(JournalService::class)->draft($this->org, [
+        $manualDraft = app(JournalService::class)->draft($this->org, [
             'booked_on' => $this->startsOn->addMonth(),
             'memo' => 'Handbuchung',
             'lines' => [
@@ -845,15 +847,17 @@ class AccountingDirectBookingFourEyesTest extends TestCase {
             ],
         ], $this->admin);
 
-        foreach ([$posted, $proposalDraft] as $entry) {
-            try {
-                app(JournalService::class)->discard($entry, $this->admin);
-                $this->fail('Verworfen, obwohl keine wartende Direktbuchung: #' . $entry->id);
-            } catch (ValidationException $exception) {
-                $this->assertArrayHasKey('status', $exception->errors());
-            }
-            $this->assertNotNull(AccountingEntry::query()->find($entry->id));
+        try {
+            app(JournalService::class)->discard($posted, $this->admin);
+            $this->fail('Festbuchung verworfen: #' . $posted->id);
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
         }
+        $this->assertNotNull(AccountingEntry::query()->find($posted->id));
+
+        app(JournalService::class)->discard($manualDraft, $this->admin);
+        $this->assertNull(AccountingEntry::query()->find($manualDraft->id));
+        $this->assertSame(1, AccountingEvent::query()->where('event', 'accounting.entry_discarded')->count());
     }
 
     public function test_discarding_over_http_needs_the_post_permission_and_returns_to_the_open_items(): void {

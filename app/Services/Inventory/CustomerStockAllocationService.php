@@ -50,9 +50,10 @@ class CustomerStockAllocationService {
         ?int $actorUserId = null,
         ?StockLot $lot = null,
         bool $requireLot = false,
+        ?EnteredQuantity $entered = null,
     ): MaterialCostAllocation {
-        return DB::transaction(function () use ($customer, $variant, $warehouse, $qty, $projectId, $allocatedOn, $actorUserId, $lot, $requireLot): MaterialCostAllocation {
-            $issue = $this->valuation->issue($variant, $warehouse, $qty, actorUserId: $actorUserId, lot: $lot, requireLot: $requireLot);
+        return DB::transaction(function () use ($customer, $variant, $warehouse, $qty, $projectId, $allocatedOn, $actorUserId, $lot, $requireLot, $entered): MaterialCostAllocation {
+            $issue = $this->valuation->issue($variant, $warehouse, $qty, actorUserId: $actorUserId, lot: $lot, requireLot: $requireLot, entered: $entered);
             $movement = $issue->first();
             $currency = $customer->currency->value;
 

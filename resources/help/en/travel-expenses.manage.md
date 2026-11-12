@@ -1,7 +1,7 @@
 ---
 title: "Travel logs, expenses & allowances"
 topic: travel-expenses.manage
-version: 5
+version: 7
 keywords:
     - travel expenses
     - expense report
@@ -148,3 +148,7 @@ where the vehicle travels on a ferry or train. The second driver gets no
 driving time, but their time in the vehicle does not count as rest; in
 multi-manning 9 hours of rest within 30 hours are enough. A ferry or train
 crossing does not interrupt the rest.
+
+**Receipt duty and reimbursement:** If the category requires a receipt, the expense stays a draft until one is attached; upload it via “Receipt file” and then submit. Marking an expense as reimbursed opens a dialog for the reimbursement reference (for example the transfer reference); it appears in the expense export.
+
+**Reimbursement reference and vehicle:** When reimbursing an expense or allowance you enter a reference, for example the payment reference of the transfer. In the logbook you record the licence plate or name of private or third-party vehicles.

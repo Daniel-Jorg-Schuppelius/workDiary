@@ -13,9 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Jira;
 
 use App\Models\Integration\ExternalReference;
-use App\Models\Platform\Organization;
 use App\Plugins\AbstractPlugin;
-use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer, TaskSyncer};
+use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer};
 use App\Plugins\Jira\Api\JiraClientFactory;
 use App\Plugins\Jira\Models\JiraConnection;
 use App\Plugins\Jira\Services\JiraImportService;
@@ -27,7 +26,7 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink};
  * Eine Verbindung je Organisation über die verteilbare Atlassian-App des
  * Herausgebers; Abgleich alle 15 Minuten, Vollabgleich täglich.
  */
-class JiraPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
+class JiraPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, LinksExternalRecords, SlotRenderer {
     use ChecksConnectionHealth, RendersTaskLink;
 
     public const string ID = 'jira';
@@ -55,10 +54,6 @@ class JiraPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRen
 
     public function capabilities(): array {
         return [PluginCapability::TaskSync];
-    }
-
-    public function syncTasks(Organization $organization): array {
-        return app(JiraImportService::class)->run($organization);
     }
 
     public function adminPanel(): ?array {
@@ -99,5 +94,10 @@ class JiraPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRen
             && preg_match('/^[a-z0-9-]+\.atlassian\.net$/i', (string) ($parts['host'] ?? '')) === 1
             && array_intersect_key($parts, array_flip(['port', 'user', 'pass', 'query', 'fragment'])) === []
             && in_array($parts['path'] ?? '', ['', '/'], true);
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Tasks];
     }
 }

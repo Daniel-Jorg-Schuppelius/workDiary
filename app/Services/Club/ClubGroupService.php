@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Club;
 
-use App\Enums\Club\{ClubCriteriaResult, ClubGroupMembershipStatus, ClubProposalStatus};
+use App\Enums\Club\{ClubAdmissionMode, ClubCriteriaResult, ClubGroupMembershipStatus, ClubProposalStatus};
 use App\Models\Club\{ClubGrade, ClubGradingSystem, ClubGroup, ClubGroupChangeProposal, ClubGroupMembership, ClubMember};
 use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
@@ -99,10 +99,17 @@ class ClubGroupService {
         $group->delete();
     }
 
-    /** Direkte Aufnahme durch die Leitung; Ausnahme von den Kriterien nur mit Begründung. */
+    /**
+     * Direkte Aufnahme durch die Leitung; Ausnahme von den Kriterien nur mit
+     * Begründung. Gruppen im Modus „Antrag mit Freigabe“ nehmen nur über
+     * einen Antrag auf (MVP-1616).
+     */
     public function admit(ClubGroup $group, ClubMember $member, CarbonInterface $from, User $actor, bool $override = false, ?string $note = null): ClubGroupMembership {
         return DB::transaction(function () use ($group, $member, $from, $actor, $override, $note): ClubGroupMembership {
             $group = $this->lockGroup($group->id);
+            if ($group->admission_mode === ClubAdmissionMode::Application) {
+                throw ValidationException::withMessages(['mode' => __('club.error.admission_by_application')]);
+            }
             $day = CarbonImmutable::instance($from)->startOfDay();
 
             $this->assertAdmittable($group, $member, $day);
@@ -327,7 +334,12 @@ class ClubGroupService {
                 if ($target->organization_id !== $proposal->organization_id) {
                     throw ValidationException::withMessages(['suggested_group_id' => __('club.error.group_foreign')]);
                 }
-                $this->admit($target, $member, $day, $actor, $override, $note);
+                // Zielgruppe mit Freigabe: der bestätigte Wechsel wird dort zum Antrag.
+                if ($target->admission_mode === ClubAdmissionMode::Application) {
+                    $this->request($target, $member, $day, $actor, $note);
+                } else {
+                    $this->admit($target, $member, $day, $actor, $override, $note);
+                }
             }
 
             $proposal->update([

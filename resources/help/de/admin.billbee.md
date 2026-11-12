@@ -1,7 +1,7 @@
 ---
 title: "Billbee anbinden"
 topic: admin.billbee
-version: 2
+version: 3
 keywords:
     - Multichannel
     - Marktplatz-Bestellungen
@@ -49,3 +49,5 @@ dieses Limit automatisch ein.
 Marktplatz-Nummer, Käufername oder E-Mail. Dieselben Bestellungen zeigt die
 globale Suche unter „Billbee-Bestellungen“ — für die Administration, solange
 das Plugin aktiv ist.
+
+**Bestandsführung:** Mit der Einstellung „Billbee“ bucht WorkDiary weiter im eigenen Lagerjournal und meldet jeden Bestand als Absolutwert je SKU an Billbee. Umstellen dürfen Personen mit dem Recht, das Lager zu konfigurieren; führt bereits ein anderes Programm (etwa JTL-Wawi) den Bestand, wird dort zuerst auf lokal gestellt. Einen Nur-lesen-Modus gibt es nicht, weil Billbee keinen eigenen Bestand führt.

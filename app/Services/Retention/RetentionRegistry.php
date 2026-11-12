@@ -56,6 +56,18 @@ class RetentionRegistry {
         return $region;
     }
 
+    /** @return list<string> Rechtsräume, für die mindestens ein Bereich eine Frist nennt. */
+    public function regions(): array {
+        $regions = [strtoupper((string) config('retention.default_region', 'DE'))];
+        foreach ((array) config('retention.areas', []) as $area) {
+            array_push($regions, ...array_map(strval(...), array_keys((array) ($area['years'] ?? []))));
+        }
+        $regions = array_values(array_unique($regions));
+        sort($regions);
+
+        return $regions;
+    }
+
     /**
      * Aufbewahrungsdauer in Jahren für Bereich+Rechtsraum (Fallback DE);
      * null, wenn der Bereich nicht konfiguriert ist.

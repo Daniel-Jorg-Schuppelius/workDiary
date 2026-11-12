@@ -23,6 +23,12 @@
             · <a href="{{ route('sustainability.assessments.index') }}" class="link link-hover">{{ __('Alle anzeigen') }}</a>
         </p>
     @endif
+    @if ($subject !== null)
+        <p class="flex-none text-sm text-muted">
+            {{ __('Filter') }}: {{ $subjects->label($subject) }}
+            · <a href="{{ route('sustainability.assessments.index') }}" class="link link-hover">{{ __('Alle anzeigen') }}</a>
+        </p>
+    @endif
     <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm" table-sort="server"
              :route="route('sustainability.assessments.index')" :current-sort="$sort" :current-dir="$dir"
              :sort-params="request()->except(['sort', 'dir', 'page'])">
@@ -40,7 +46,18 @@
         </x-slot:head>
         @forelse ($assessments as $assessment)
             <tr class="hover">
-                <td><a class="link link-hover font-medium" href="{{ route('sustainability.assessments.show', $assessment) }}">{{ $assessment->subject_label }}</a></td>
+                <td>
+                    <a class="link link-hover font-medium" href="{{ route('sustainability.assessments.show', $assessment) }}">{{ $assessment->subject_label }}</a>
+                    {{-- Drilldown bis zum Objekt (MVP-1607). --}}
+                    @if ($assessment->subject !== null && ($objectType = $subjects->typeOfStored($assessment->subject_type)) !== null)
+                        <div class="text-xs text-muted">
+                            {{ $subjects->typeLabel($objectType) }}
+                            @if (($objectUrl = $subjects->url($assessment->subject)) !== null)
+                                · <a class="link link-hover" href="{{ $objectUrl }}">{{ __('sustainability.subject.open') }}</a>
+                            @endif
+                        </div>
+                    @endif
+                </td>
                 <td class="tabular-nums">V{{ $assessment->version }}</td>
                 <td><x-status-badge size="md" outline>{{ $assessment->status->label() }}</x-status-badge></td>
                 <td class="text-right">

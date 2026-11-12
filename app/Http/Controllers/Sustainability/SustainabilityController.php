@@ -18,7 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\Platform\User;
 use App\Models\Sustainability\{SustainabilityActivityRecord, SustainabilityAssessment, SustainabilityCriterion, SustainabilityFactorSet, SustainabilityFrameMapping, SustainabilityMeasure, SustainabilityReportSnapshot, SustainabilitySite, SustainabilityTarget};
-use App\Services\Sustainability\{EmissionCalculationService, SustainabilityAssessmentService};
+use App\Services\Sustainability\{EmissionCalculationService, SustainabilityAssessmentService, SustainabilitySubjects};
 use App\Support\{ErrorText, SortableQuery};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Contracts\View\View;
@@ -46,6 +46,7 @@ class SustainabilityController extends Controller {
     public function __construct(
         private readonly EmissionCalculationService $emissions,
         private readonly SustainabilityAssessmentService $assessments,
+        private readonly SustainabilitySubjects $subjects,
     ) {}
 
     public function index(Request $request): View|\Symfony\Component\HttpFoundation\Response {
@@ -106,6 +107,7 @@ class SustainabilityController extends Controller {
             'estimatedShare' => $estimatedShare,
             'targets' => $targets,
             'assessments' => SustainabilityAssessment::query()->orderByDesc('id')->limit(self::DASHBOARD_LIMIT)->get(),
+            'assessmentOptions' => SustainabilityAssessment::query()->orderByDesc('id')->limit(100)->get(['id', 'subject_label', 'version']),
             'assessmentCount' => SustainabilityAssessment::query()->count(),
             'measures' => SustainabilityMeasure::query()->with('responsible')->orderByDesc('id')->limit(self::DASHBOARD_LIMIT)->get(),
             'measureCount' => SustainabilityMeasure::query()->count(),
@@ -211,18 +213,39 @@ class SustainabilityController extends Controller {
 
     // ── Bewertungen (MVP-225/226/230) ────────────────────────────────────
 
+    /** Dialog „Bewertung starten“ (MVP-1607): Bezugsobjekt wählen oder frei benennen; `subject` belegt vor. */
+    public function createAssessment(Request $request): View {
+        Gate::authorize('create', SustainabilityAssessment::class);
+        $preset = $this->subjects->parse($request->string('subject')->toString());
+
+        return view('sustainability.assessments._create_dialog', [
+            'groups' => $this->subjects->options($preset),
+            'preset' => $preset !== null ? $this->subjects->value($preset) : null,
+            'criteriaCount' => SustainabilityCriterion::query()->where('active', true)->count(),
+        ]);
+    }
+
     public function storeAssessment(Request $request): RedirectResponse {
         Gate::authorize('create', SustainabilityAssessment::class);
         $data = $request->validate([
-            'subject_label' => ['required', 'string', 'max:200'],
+            'subject_ref' => ['nullable', 'string', 'max:120'],
+            'subject_label' => ['nullable', 'required_without:subject_ref', 'string', 'max:200'],
         ]);
+
+        $subject = null;
+        if (filled($data['subject_ref'] ?? null)) {
+            $subject = $this->subjects->parse($data['subject_ref']);
+            if ($subject === null) {
+                return back()->withInput()->withErrors(['subject_ref' => __('sustainability.subject.not_found')]);
+            }
+        }
 
         try {
             $assessment = $this->assessments->createDraft(
                 $this->currentOrganization()->id,
-                null,
-                null,
-                $data['subject_label'],
+                $subject?->getMorphClass(),
+                $subject !== null ? (int) $subject->getKey() : null,
+                filled($data['subject_label'] ?? null) ? (string) $data['subject_label'] : $this->subjects->label($subject ?? abort(422)),
                 $this->authUser(),
             );
         } catch (\RuntimeException $e) {
@@ -239,12 +262,18 @@ class SustainabilityController extends Controller {
         [$sort, $dir] = SortableQuery::resolve($request, self::ASSESSMENT_SORTS, 'created');
         // Kachel „Kritische Bewertungen“ (ux-pattern-katalog §4): dieselbe Menge wie der Zähler der Übersicht.
         $critical = $request->boolean('critical');
+        // Drilldown bis zum Objekt (MVP-1607): alle Versionen eines Bezugsobjekts.
+        $subject = $this->subjects->parse($request->string('subject')->toString());
 
         return view('sustainability.assessments.index', [
             'critical' => $critical,
+            'subject' => $subject,
+            'subjects' => $this->subjects,
             // Zweitschlüssel id: gleiche Werte (Status, Version) blättern sonst nicht stabil.
             'assessments' => SustainabilityAssessment::query()
+                ->with('subject')
                 ->when($critical, fn ($q) => $q->where('rating', 'red')->where('status', SustainabilityAssessmentStatus::Final))
+                ->when($subject, fn ($q, \Illuminate\Database\Eloquent\Model $object) => $q->where('subject_type', $object->getMorphClass())->where('subject_id', $object->getKey()))
                 ->orderBy(self::ASSESSMENT_SORTS[$sort], $dir)
                 ->orderBy('id', $dir)
                 ->paginate(25)
@@ -256,7 +285,7 @@ class SustainabilityController extends Controller {
 
     public function showAssessment(Request $request, SustainabilityAssessment $assessment): View {
         Gate::authorize('view', $assessment);
-        $assessment->load(['items.criterion', 'assessor']);
+        $assessment->load(['items.criterion', 'assessor', 'subject', 'measures.responsible']);
 
         // Alternativenvergleich (MVP-230): zweite Bewertung nebenan.
         $compare = null;
@@ -269,6 +298,10 @@ class SustainabilityController extends Controller {
         return view('sustainability.assessment', [
             'assessment' => $assessment,
             'compare' => $compare,
+            'subjectUrl' => $this->subjects->url($assessment->subject),
+            'subjectType' => ($type = $this->subjects->typeOfStored($assessment->subject_type)) !== null ? $this->subjects->typeLabel($type) : null,
+            'subjectFilter' => $assessment->subject !== null ? $this->subjects->value($assessment->subject) : null,
+            'canCreateMeasure' => Gate::allows('create', SustainabilityAssessment::class),
             'others' => SustainabilityAssessment::query()->whereKeyNot($assessment->id)->orderByDesc('id')->limit(50)->get(['id', 'subject_label', 'version', 'status']),
             'canManage' => Gate::allows('manage', $assessment),
         ]);
@@ -322,7 +355,7 @@ class SustainabilityController extends Controller {
         Gate::authorize('viewAny', SustainabilityAssessment::class);
 
         $status = (string) $request->query('status', '');
-        $query = SustainabilityMeasure::query()->with('responsible');
+        $query = SustainabilityMeasure::query()->with(['responsible', 'assessment']);
         if ($status === 'open') {
             $query->whereIn('status', SustainabilityMeasureStatus::open());
         } elseif (($single = SustainabilityMeasureStatus::tryFrom($status)) !== null) {
@@ -343,8 +376,13 @@ class SustainabilityController extends Controller {
 
     public function storeMeasure(Request $request): RedirectResponse {
         Gate::authorize('create', SustainabilityAssessment::class);
-        $request->merge(['responsible_user_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('responsible_user_id'))]);
+        $request->merge([
+            'responsible_user_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('responsible_user_id')),
+            'assessment_id' => \App\Support\Sqid::decodeOrNumeric(SustainabilityAssessment::class, $request->input('assessment_id')),
+        ]);
         $data = $request->validate([
+            // Zuordnung zu einer Bewertung (MVP-1607).
+            'assessment_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('sustainability_assessments')],
             'title' => ['required', 'string', 'max:300'],
             'expected_impact' => ['nullable', 'string', 'max:500'],
             'effort' => ['required', 'in:low,medium,high'],

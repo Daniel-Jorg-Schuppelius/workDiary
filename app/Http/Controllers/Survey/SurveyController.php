@@ -70,7 +70,7 @@ class SurveyController extends Controller {
     public function create(): View {
         Gate::authorize(Permission::CustomerUpdate->value);
 
-        return view('surveys._form_dialog', ['survey' => null]);
+        return view('surveys._form_dialog', ['survey' => null, 'anonymityLocked' => false]);
     }
 
     public function store(Request $request): RedirectResponse {
@@ -99,6 +99,36 @@ class SurveyController extends Controller {
         $survey->audit('survey.created', ['anonymous' => $survey->anonymous]);
 
         return redirect()->route('surveys.show', $survey)->with('success', __('Fragebogen angelegt — jetzt Fragen hinzufügen.'));
+    }
+
+    /** Kopf bearbeiten (MVP-1610): Titel und Zweck; die Anonymität nur bis zur ersten Einladung. */
+    public function edit(Survey $survey): View {
+        Gate::authorize(Permission::CustomerUpdate->value);
+        $this->assertSameOrganization($survey);
+
+        return view('surveys._form_dialog', ['survey' => $survey, 'anonymityLocked' => $survey->invitations()->exists()]);
+    }
+
+    public function update(Request $request, Survey $survey): RedirectResponse {
+        Gate::authorize(Permission::CustomerUpdate->value);
+        $this->assertSameOrganization($survey);
+
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:160'],
+            'purpose' => ['nullable', 'string', 'max:500'],
+            'anonymous' => ['nullable', 'boolean'],
+        ]);
+        // Nach der ersten Einladung bleibt die Anonymität, wie sie zugesagt wurde.
+        $survey->update([
+            'title' => $data['title'],
+            'purpose' => $data['purpose'] ?? null,
+            'anonymous' => $survey->invitations()->exists() ? $survey->anonymous : $request->boolean('anonymous'),
+        ]);
+        if ($survey->wasChanged()) {
+            $survey->audit('survey.updated', ['fields' => array_keys($survey->getChanges())]);
+        }
+
+        return redirect()->route('surveys.show', $survey)->with('success', __('survey.header.updated'));
     }
 
     /** Auslöser ändern (MVP-1293): Ticket, Auftrag, Kurs, fester Abstand. */
@@ -185,7 +215,7 @@ class SurveyController extends Controller {
             return back()->with('error', ErrorText::for($e));
         }
 
-        Mail::to($email)->send(new SurveyInvitationMail($survey, $issued['token']));
+        Mail::to($email)->send(new SurveyInvitationMail($survey, $issued['token'], true));
 
         return back()->with('success', __('Einladung an :email versendet.', ['email' => $email]));
     }

@@ -26,7 +26,7 @@
                     <x-icon-btn icon="person_add" tone="primary" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('club.groups.admit.create', $group)"
-                                show-label>{{ __('club.action.admit') }}</x-icon-btn>
+                                show-label>{{ $group->admission_mode === \App\Enums\Club\ClubAdmissionMode::Application ? __('club.action.admit_request') : __('club.action.admit') }}</x-icon-btn>
                 @endif
                 @if ($canManage)
                     <x-icon-btn icon="edit" tone="outline" size="sm"

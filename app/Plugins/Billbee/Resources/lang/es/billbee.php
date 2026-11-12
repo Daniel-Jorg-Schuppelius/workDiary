@@ -46,4 +46,17 @@ return [
     'cockpit' => [
         'title' => 'Pedidos de Billbee',
     ],
+    // Bestandsführung (MVP-1626)
+    'inventory' => [
+        'heading' => 'Gestión de existencias',
+        'explain' => 'Con «Billbee», WorkDiary sigue registrando en su propio diario de almacén y comunica cada nivel como existencias absolutas por SKU a Billbee, que lo reparte a los marketplaces. «Local» no comunica nada. No hay modo de solo lectura: Billbee no lleva existencias propias.',
+        'mode_local' => 'Local — WorkDiary gestiona las existencias, Billbee no recibe nada.',
+        'mode_external' => 'Billbee — WorkDiary gestiona las existencias y comunica cada nivel a Billbee.',
+        'save' => 'Guardar gestión de existencias',
+        'confirm' => '¿Cambiar realmente la gestión de existencias?',
+        'changed' => 'Gestión de existencias cambiada.',
+        'unchanged' => 'La gestión de existencias ya está configurada así.',
+        'needs_connection' => 'Faltan las credenciales para comunicar con Billbee en la configuración del plugin.',
+        'other_leads' => 'Las existencias las gestiona actualmente :plugin. Ponga allí primero la gestión en local.',
+    ],
 ];

@@ -16,7 +16,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Schedule\StoreShiftExchangeRequest;
 use App\Models\Platform\User;
 use App\Models\Schedule\{ScheduledShift, ShiftExchange};
+use App\Services\Compliance\ComplianceViolation;
 use App\Services\Schedule\{ShiftExchangeException, ShiftExchangeService};
+use App\Support\Query\DateRange;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -25,6 +27,8 @@ use Illuminate\View\View;
  * Schichttausch mit Freigabe (Feature 007).
  */
 class ShiftExchangeController extends Controller {
+    private const int OFFER_HORIZON_DAYS = 60;
+
     public function __construct(private readonly ShiftExchangeService $service) {}
 
     public function index(): View {
@@ -55,6 +59,9 @@ class ShiftExchangeController extends Controller {
         return view('shift-exchanges.index', [
             'mine' => $mine,
             'pendingApproval' => $pendingApproval,
+            'blocked' => $pendingApproval
+                ->filter(fn (ShiftExchange $exchange): bool => $exchange->target_user_id !== null && $this->blockingViolations($exchange) !== [])
+                ->pluck('id')->all(),
             'canApprove' => $canApprove,
             'statuses' => ShiftExchangeStatus::cases(),
         ]);
@@ -75,6 +82,18 @@ class ShiftExchangeController extends Controller {
                 ->limit(100)
                 ->get(),
             'colleagues' => User::inCurrentOrganization()->whereKeyNot($auth->id)->orderBy('name')->get(['id', 'name']),
+            // Gegenschichten für den echten Tausch (MVP-1553): kommende Schichten der Kolleginnen und Kollegen.
+            'offerableShifts' => ScheduledShift::query()
+                ->whereNotNull('user_id')
+                ->where('user_id', '!=', $auth->id)
+                ->whereBetween('date', DateRange::days(now(), now()->addDays(self::OFFER_HORIZON_DAYS)))
+                ->where('status', '!=', \App\Enums\Shift\ScheduledShiftStatus::Cancelled->value)
+                ->with(['shiftType', 'user:id,name'])
+                ->orderBy('date')
+                ->limit(300)
+                ->get()
+                ->groupBy(static fn (ScheduledShift $shift): string => (string) $shift->user?->name)
+                ->sortKeys(),
         ]);
     }
 
@@ -117,16 +136,41 @@ class ShiftExchangeController extends Controller {
         return $this->run(fn() => $this->service->cancel($exchange, $auth), 'schedule.exchange.cancelled');
     }
 
+    /** Freigabe mit Regelverstoß: Verstöße zeigen, Übersteuerung nur mit Begründung (MVP-1553). */
+    public function approveForm(ShiftExchange $exchange): View {
+        Gate::authorize('decide', $exchange);
+
+        return view('shift-exchanges._approve_dialog', [
+            'exchange' => $exchange->load(['scheduledShift.shiftType', 'offeredShift.shiftType', 'requester', 'targetUser']),
+            'violations' => $this->blockingViolations($exchange),
+        ]);
+    }
+
     public function approve(Request $request, ShiftExchange $exchange): RedirectResponse {
         Gate::authorize('decide', $exchange);
         /** @var User $auth */
         $auth = Auth::user();
-        $override = $request->boolean('override_compliance');
+        $data = $request->validate([
+            'override_compliance' => ['sometimes', 'boolean'],
+            'override_reason' => ['nullable', 'string', 'max:500'],
+        ]);
 
         return $this->run(
-            fn() => $this->service->approve($exchange, $auth, $override),
+            fn() => $this->service->approve($exchange, $auth, (bool) ($data['override_compliance'] ?? false), $data['override_reason'] ?? null),
             'schedule.exchange.approved',
         );
+    }
+
+    /** @return list<string> Meldungen der blockierenden Regelverstöße der geplanten Zuordnung */
+    private function blockingViolations(ShiftExchange $exchange): array {
+        $messages = [];
+        foreach ($this->service->previewCompliance($exchange) as $report) {
+            foreach ($report->bySeverity(ComplianceViolation::SEVERITY_ERROR) as $violation) {
+                $messages[] = $violation->message;
+            }
+        }
+
+        return array_values(array_unique($messages));
     }
 
     public function reject(Request $request, ShiftExchange $exchange): RedirectResponse {

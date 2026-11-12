@@ -1,7 +1,7 @@
 ---
 title: "Exploitation : répartition du temps, procédures, matériel, astreinte"
 topic: reports.operations
-version: 6
+version: 8
 keywords:
     - rapport d’exploitation
     - commandes de service
@@ -141,6 +141,9 @@ Filtres : **Procédure**, **Type**, **Gravité**, **Risque accepté**
 PDF, CSV et Excel ; CSV et Excel contiennent en plus l’action proposée et le
 motif.
 
+L'acceptation du risque elle-même se fait dans l'exécution de la procédure,
+sur l'écart (**Accepter le risque**, droit « Accepter un écart critique »).
+
 ## Exécutions de procédure bloquées
 
 **Rapports** → **Projets et clients** → **Exécutions de procédure bloquées**
@@ -217,13 +220,16 @@ les rapports**.
   période), **Points ouverts** (actuellement ouverts, indépendamment de la
   période), **Escaladé** (points ouverts au statut **Bloqué**), **Défauts**
   (procès-verbaux de défaut de ces commandes dans la période), **Taux de
-  défauts %** (défauts rapportés aux commandes) et **Dernier incident**.
+  défauts %** (défauts rapportés aux commandes), **Défauts récurrents**
+  (actifs de la ligne avec au moins trois signalements de défaut dans les douze
+  mois jusqu’à la fin de la période, dont au moins un dans la période) et
+  **Dernier incident**.
 - S’il existe dans la période des saisies de temps issues de sessions de
   télémaintenance pour les appareils, **Sessions de maintenance** et **Temps
   de maintenance** s’ajoutent, ainsi qu’un graphique du temps de maintenance.
 - Graphiques : **Défauts sur la période (top 20)** et **Taux de défauts (top
-  15)**. Les chiffres des points ouverts, escalades et défauts ainsi que les
-  barres mènent aux listes détaillées correspondantes.
+  15)**. Les chiffres des points ouverts, escalades, défauts et défauts récurrents
+  ainsi que les barres mènent aux listes détaillées correspondantes.
 
 Export en PDF, CSV et Excel.
 

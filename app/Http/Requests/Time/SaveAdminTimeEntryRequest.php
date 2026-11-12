@@ -84,8 +84,11 @@ class SaveAdminTimeEntryRequest extends BaseFormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {
+        $entry = $this->route('timeEntry');
+
         return [
-            'date' => ['required', 'date'],
+            // Abgeschlossener Tag oder freigegebener Monat: nur über den Korrekturantrag (MVP-1551).
+            'date' => ['required', 'date', new \App\Rules\NotInLockedMonth($entry instanceof \App\Models\Time\TimeEntry ? $entry->user : null)],
             'minutes' => ['required', 'integer', 'min:1', 'max:1440'],
             'activity_type' => ['required', 'string', Rule::in([
                 TimeEntryActivityType::Admin->value,

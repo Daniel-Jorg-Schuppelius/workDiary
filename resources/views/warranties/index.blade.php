@@ -114,10 +114,31 @@
                     <td class="whitespace-nowrap">
                         <x-status-badge :tone="$period->isRunning() ? 'neutral' : 'warning'" outline>{{ $period->ends_on->fdate() }}</x-status-badge>
                     </td>
-                    <td>{{ $period->status->label() }}</td>
+                    <td class="whitespace-nowrap">
+                        <x-status-badge :tone="$period->status->tone()">{{ $period->status->label() }}</x-status-badge>
+                        @if ($period->claimCase !== null)
+                            @if ($canOpenClaims)
+                                <a class="link text-xs" href="{{ route('claims.show', $period->claimCase) }}">{{ $period->claimCase->number }}</a>
+                            @else
+                                <span class="text-xs text-muted">{{ $period->claimCase->number }}</span>
+                            @endif
+                        @endif
+                    </td>
                     <td class="text-right">
-                        <div class="flex justify-end">
-                            @if ($period->status === \App\Enums\Warranty\WarrantyStatus::Open)
+                        <div class="flex justify-end gap-1">
+                            @if ($period->status !== \App\Enums\Warranty\WarrantyStatus::Closed)
+                                <x-icon-btn icon="edit" size="xs" tone="ghost"
+                                            data-entry-modal-trigger
+                                            :href="route('warranties.edit', $period)"
+                                            :label="__('Bearbeiten')" />
+                            @endif
+                            @if ($period->status->canTransitionTo(\App\Enums\Warranty\WarrantyStatus::Claimed))
+                                <x-icon-btn icon="report" size="xs" tone="ghost"
+                                            data-entry-modal-trigger
+                                            :href="route('warranties.claim.form', $period)"
+                                            :label="__('warranty.action.claim')" />
+                            @endif
+                            @if ($period->status->canTransitionTo(\App\Enums\Warranty\WarrantyStatus::Closed))
                                 <x-action-form :action="route('warranties.close', $period)">
                                     <x-icon-btn icon="task_alt" size="xs" tone="ghost" type="submit"
                                                 :label="__('warranty.action.close')" />

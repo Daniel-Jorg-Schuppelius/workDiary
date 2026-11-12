@@ -1,7 +1,7 @@
 ---
 title: "Heute & Kanban"
 topic: work.overview
-version: 1
+version: 2
 keywords:
     - Tagesübersicht
     - Heute-Ansicht
@@ -35,3 +35,5 @@ Typischer Ablauf:
 Fehlen Einträge, prüfen Sie zuerst Zeitraum, Filter und aktive Organisation.
 Statuswechsel unterliegen den gleichen Berechtigungen und
 Pflichtangaben wie in der Arbeitsliste.
+
+**Unterwegs ohne Netz:** Auf „Heute“ lassen sich Projektzeiten (Eingabeleiste, Dauer oder Von/Bis), Material und Korrekturen der eigenen Stempelungen auch offline erfassen. Sie werden beim nächsten Kontakt übertragen; was nicht übernommen werden kann, steht unter „Offline-Änderungen“.

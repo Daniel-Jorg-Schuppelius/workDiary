@@ -1,7 +1,7 @@
 ---
 title: "GAEB bills of quantities"
 topic: boq.overview
-version: 1
+version: 3
 keywords:
     - BoQ
     - import BoQ
@@ -68,3 +68,11 @@ The **check before submission** also reports items priced in a currency other th
 ## Bidder comments
 
 In the request for bid, the client decides whether bidders may comment on items. The bill of quantities view shows what the file says. If comments are not permitted, the import does not take any over (the import log states how many) and the bid contains none. Reimporting the bid does not change the setting from the request.
+
+## Progress with a record and import findings
+
+Besides the quick quantity entry, the tape-measure icon of an item opens the dialog **Report progress**. There you additionally choose a **material consumption** of the project or a **protocol** of the project. The chosen record determines the source of the report and stays with it; the dialog shows the previous reports with their reference. A material consumption can be assigned to exactly one item; its cost counts towards this item in the economics evaluation. Enter the quantity 0 to assign costs only.
+
+The **import history** shows the findings of each run. A rejected reimport appears there with the status “conflict” and states, for each protected item, quantity and unit price on record next to the values of the file. It changes nothing in the bill of quantities itself.
+
+The protocol itself also offers **Report progress for a bill-of-quantities item** in its menu if the project of the protocol has a bill of quantities with open items. The report receives the source “protocol” and refers to this protocol.

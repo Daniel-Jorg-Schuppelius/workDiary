@@ -138,4 +138,10 @@ return [
             'dismissed' => 'Adeguamento all’indice scartato.',
         ],
     ],
+    // Scadenze contrattuali nel calendario (MVP-1617).
+    'calendar' => [
+        'end' => 'Fine del contratto',
+        'renewal' => 'Rinnovo',
+        'indexation_review' => 'Verifica dell’indice',
+    ],
 ];

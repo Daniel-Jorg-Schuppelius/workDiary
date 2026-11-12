@@ -14,10 +14,11 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\Audit\AuditLog;
+use App\Models\Diagnostics\MonitoringToken;
 use App\Models\Platform\User;
-use App\Services\Diagnostics\DiagnosticsService;
+use App\Services\Diagnostics\{DiagnosticsService, MonitoringTokenService};
 use App\Support\MorphMap;
-use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Gate, Mail};
 use Illuminate\View\View;
 
@@ -36,7 +37,37 @@ class DiagnosticsController extends Controller {
 
         return view('admin.diagnostics.index', [
             'report' => $report,
+            'monitoringTokens' => MonitoringToken::query()->with('creator:id,name')->latest('id')->get(),
         ]);
+    }
+
+    public function createToken(): View {
+        Gate::authorize(Permission::PlatformDiagnosticsView->value);
+        $this->assertPlatformOperator();
+
+        return view('admin.diagnostics._token_dialog');
+    }
+
+    /** Neuer Überwachungszugang; der Klartext erscheint einmal nach dem Speichern. */
+    public function storeToken(Request $request, MonitoringTokenService $tokens): RedirectResponse {
+        Gate::authorize(Permission::PlatformDiagnosticsView->value);
+        $this->assertPlatformOperator();
+
+        $data = $request->validate(['name' => ['required', 'string', 'max:120']]);
+        ['plain' => $plain] = $tokens->issue((string) $data['name'], $this->authUser());
+
+        return redirect()->route('admin.diagnostics.index')
+            ->with('monitoring_token_plain', $plain)
+            ->with('success', __('diagnostics.token.created'));
+    }
+
+    public function revokeToken(MonitoringToken $monitoringToken, MonitoringTokenService $tokens): RedirectResponse {
+        Gate::authorize(Permission::PlatformDiagnosticsView->value);
+        $this->assertPlatformOperator();
+
+        $tokens->revoke($monitoringToken, $this->authUser());
+
+        return redirect()->route('admin.diagnostics.index')->with('success', __('diagnostics.token.revoked'));
     }
 
     public function json(Request $request, DiagnosticsService $diagnostics): JsonResponse {

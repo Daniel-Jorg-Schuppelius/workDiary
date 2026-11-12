@@ -22,7 +22,7 @@ use Carbon\CarbonImmutable;
  * liefert nichts, wenn dem Betrachter Recht oder Modul fehlen.
  */
 interface ManagementKpiSource {
-    /** Bereich der Leitungssicht: finance, operations, sales, service oder quality. */
+    /** Bereich der Leitungssicht: finance, operations, hr, sales, service oder quality. */
     public function group(): string;
 
     /** Position innerhalb des Bereichs; kleinere Werte zuerst. */

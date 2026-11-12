@@ -108,7 +108,7 @@ class HelpContentTest extends TestCase {
     }
 
     public function test_related_references_point_to_existing_topics(): void {
-        $allCodes = $this->loader->allTopicCodes();
+        $allCodes = $this->loader->topicsForLocale('de');
 
         foreach ($this->loader->locales() as $locale) {
             foreach ($this->loader->loadAllForLocale($locale) as $item) {
@@ -131,7 +131,7 @@ class HelpContentTest extends TestCase {
     public function test_registry_entries_point_to_existing_topic_files(): void {
         /** @var array<string, mixed> $map */
         $map = (array) config('help-topics.routes');
-        $allCodes = $this->loader->allTopicCodes();
+        $allCodes = $this->loader->topicsForLocale('de');
 
         $this->assertNotEmpty($map, 'Die Route→Topic-Registry ist leer.');
 

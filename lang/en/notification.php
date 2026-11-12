@@ -23,6 +23,8 @@ return [
     ],
 
     'field' => [
+        'new_device_alert' => 'Notify me of sign-ins from a new device',
+        'new_device_alert_hint' => 'Reports by email and in the app when someone signs in to your account from an unknown device or country. Switching it off is logged.',
         'event' => 'Event',
         'enabled' => 'Active',
         'rule_enabled' => 'Notifications for this event enabled',
@@ -97,6 +99,7 @@ return [
         'learning_graded' => 'Your assignment “:assignment” in the course “:course” has been graded.',
         'learning_returned' => 'Your assignment “:assignment” in the course “:course” was returned for revision.',
         'learning_certificate_issued' => 'Your certificate :number for the course “:course” has been issued.',
+        'learning_certificate_revoked' => 'Your certificate :number for the course “:course” has been revoked. Reason: :reason',
         'learning_waitlist_promoted' => 'A seat became available for “:title” on :date — you are registered.',
         'club_event_reminder' => 'Reminder for :name: “:title” starts on :date.',
         'club_event_rescheduled' => '“:title” (:name) was rescheduled — new start :date, previously :previous.',
@@ -130,7 +133,7 @@ return [
 
         'guarantee_expiring' => 'Expires on :date — :amount, guarantor :issuer.',
 
-        'guarantee_return_due' => 'Return due — the replaced retention is released (:amount, guarantor :issuer).',
+        'guarantee_return_due' => 'Return due — the replaced retention is released or the warranty has ended (:amount, guarantor :issuer).',
 
         // Sicherheitseinbehalte (Feature 113, MVP-602).
 
@@ -178,6 +181,9 @@ return [
         'impossible_travel_message' => 'Login from :to, previously :from — :distance km in :hours h (:speed km/h). If this was not you: change your password and end all sessions.',
         'issue_assigned' => ':actor assigned this open issue to you.',
         'customer_query_raised' => 'A customer raised a query.',
+        'protocol_customer_signed_ready' => ':name signed “:title”. The protocol can be finalized.',
+        'protocol_customer_signed_pending' => ':name signed “:title”. Still missing before completion: :roles.',
+        'protocol_customer_rejected' => ':name rejected “:title”: :reason',
         'due_soon' => 'Due on :date.',
         'overdue' => 'Overdue since :date.',
         'followup_due_soon' => 'Follow-up due on :date.',
@@ -197,6 +203,8 @@ return [
         'vacation_decided_title' => 'Decision on your vacation request (:from – :to)',
         'vacation_approved' => 'Your vacation request was approved. :note',
         'vacation_rejected' => 'Your vacation request was rejected. :note',
+        'vacation_revision_title' => 'Correction requested for your leave request (:from – :to)',
+        'vacation_revision_requested' => 'Please change your leave request and submit it again. :note',
         'unclear_case_title' => 'Unclear case on :date',
         'open_attendance_title' => 'You have been clocked in since :time',
         'open_attendance_body' => 'Please clock out if you have already finished work — otherwise the system will close the clock-in automatically later.',
@@ -224,6 +232,7 @@ return [
         'supplier_review_overdue' => 'Supplier review overdue since :date.',
         'sla_at_risk' => 'SLA resolution deadline at risk — due on :date.',
         'sla_breached' => 'SLA resolution deadline breached — was due :date.',
+        'sla_ola_breached' => 'Internal target (OLA) of team :team exceeded — was due :date.',
         'sla_quota_warning' => 'SLA quota :percent% used (:consumed of :included min) in period :period.',
         'asset_return_overdue' => 'Asset return overdue — was expected :date.',
         'tender_submission_due_soon' => 'Submission due by :date.',
@@ -262,5 +271,10 @@ return [
         'chat_reminder_title' => 'Reminder · #:channel',
 
         'chat_attachment' => '[Attachment]',
+        'domain_renewal_cost_title' => 'Renewal of :domain costs :amount',
+        'domain_renewal_cost_body' => 'Charged on :date: :amount.',
+        'domain_balance_risk_title' => 'Provider account :account: check coverage',
+        'domain_balance_uncovered' => 'Balance and credit limit (:available) do not cover the renewals of the next :days days (:due). Without coverage the provider deletes the domains on their failure date.',
+        'domain_balance_low' => 'Balance :balance is below your organisation’s threshold.',
     ],
 ];

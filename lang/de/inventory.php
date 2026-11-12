@@ -77,6 +77,8 @@ return [
         'pick_list_pdf' => 'Kommissionierliste (PDF)',
     ],
     'field' => [
+        'unit_base' => 'Basiseinheit',
+        'unit_option' => ':unit (= :factor :base)',
         'code' => 'Kürzel',
         'default' => 'Standard',
         'available' => 'Verfügbar',
@@ -130,7 +132,6 @@ return [
         'active' => 'Aktiv',
         'fulfilled' => 'Erfüllt',
         'released' => 'Freigegeben',
-        'cancelled' => 'Storniert',
     ],
     'count_status' => [
         'counting' => 'Zählung läuft',
@@ -139,6 +140,7 @@ return [
         'cancelled' => 'Abgebrochen',
     ],
     'count_ui' => [
+        'four_eyes_blocked' => 'Vier-Augen-Freigabe: Diese Inventur enthält Differenzen über dem Grenzwert, die Sie selbst gezählt haben. Die Freigabe muss eine andere Person übernehmen.',
         'title' => 'Inventur',
         'open' => 'Inventur eröffnen',
         'save' => 'Zählung speichern',
@@ -166,6 +168,17 @@ return [
         'qty_positive' => 'Die Menge muss größer als null sein.',
         'not_found' => 'Inventur nicht gefunden.',
         'forbidden' => 'Keine Berechtigung für Inventurzählungen.',
+        'nothing_counted' => 'Noch keine Zählmenge erfasst — die Prüfung braucht mindestens eine.',
+        'submit_review' => 'Zählung abschließen',
+        'submit_review_confirm' => 'Zählung abschließen? Die Mengen sind danach bis zur Freigabe oder Wiederöffnung gesperrt.',
+        'reopen' => 'Zählung wieder öffnen',
+        'cancel' => 'Inventur verwerfen',
+        'cancel_confirm' => 'Inventur verwerfen? Es wird nichts gebucht.',
+        'status_flash' => [
+            'review' => 'Zählung abgeschlossen — die Differenzen warten auf Prüfung und Freigabe.',
+            'counting' => 'Zählung wieder geöffnet.',
+            'cancelled' => 'Inventur verworfen — es wurde nichts gebucht.',
+        ],
     ],
     'overview' => [
         'avg' => 'Ø-Preis',
@@ -191,7 +204,6 @@ return [
         'status' => [
             'created' => 'Erzeugt',
             'in_stock' => 'Auf Lager',
-            'reserved' => 'Reserviert',
             'shipped' => 'Ausgeliefert',
             'returned' => 'Zurückgenommen',
             'blocked' => 'Gesperrt',
@@ -310,7 +322,82 @@ return [
         ],
     ],
 
+    'settings' => [
+        'title' => 'Lager-Einstellungen',
+        'valuation' => [
+            'heading' => 'Bewertung',
+            'description' => 'Nach welchem Verfahren Zu- und Abgänge bewertet werden. Einzelne Artikel können im Artikelformular ein eigenes Verfahren tragen.',
+            'label' => 'Bewertungsverfahren',
+            'hint' => 'Beim Wechsel zu FIFO oder FEFO erhält vorhandener Bestand eine Anfangsschicht zum bisherigen Durchschnittspreis. Zurück zum gleitenden Durchschnitt geht es erst, wenn kein Bestand mehr in Schichten liegt.',
+        ],
+        'reservation' => [
+            'heading' => 'Reservierung',
+            'description' => 'Wann ein Fertigungsauftrag sein Material reserviert. Der Auftrag hält den angewendeten Zeitpunkt fest; eine spätere Änderung wirkt nur auf neue Aufträge.',
+            'label' => 'Reservierungszeitpunkt',
+            'hint' => 'Reservierung beim Start hält Material länger frei verfügbar, kann aber beim Start an fehlendem Bestand scheitern.',
+            'option' => [
+                'release' => 'Bei Freigabe des Auftrags',
+                'start' => 'Beim Start der Fertigung',
+            ],
+        ],
+        'four_eyes' => [
+            'heading' => 'Vier-Augen-Freigabe',
+            'description' => 'Inventurdifferenzen ab dem Grenzwert gibt nicht frei, wer sie gezählt hat. Grenzwert und Freigebende stehen im Audit-Protokoll.',
+            'enabled' => 'Vier-Augen-Freigabe für Inventurdifferenzen',
+            'threshold' => 'Grenzwert (Bestandswert je Zeile)',
+            'threshold_hint' => '0 = jede Differenz braucht die zweite Person.',
+            'negative' => 'Vier-Augen-Freigabe für Entnahmen in den Negativbestand',
+            'negative_hint' => 'Eine Entnahme mit „Negativen Bestand zulassen“ wird zum Antrag im Genehmigungs-Eingang; gebucht wird erst, wenn eine andere Person mit dem Recht „Negative Bestände freigeben“ zustimmt.',
+        ],
+        'numbers' => [
+            'heading' => 'Artikelnummern',
+            'description' => 'Wer Artikelnummer, Varianten-SKU und GTIN führt. Führt eine Warenwirtschaft sie, sind die Felder im Artikelstamm gesperrt und kommen mit dem Abgleich.',
+            'label' => 'SKU und GTIN führt',
+            'link' => 'Beim Nummernkreis „Artikel“ ändern',
+        ],
+        'flash' => [
+            'saved' => 'Lager-Einstellungen gespeichert.',
+            'saved_layers' => 'Lager-Einstellungen gespeichert. Angelegte Anfangsschichten für vorhandenen Bestand: :count.',
+        ],
+    ],
+    'journal' => [
+        'title' => 'Lagerjournal',
+        'subtitle' => 'Alle Lagerbewegungen in Basiseinheit, mit der Menge und Einheit, in der sie erfasst wurden.',
+        'search_placeholder' => 'Artikel oder SKU',
+        'empty' => 'Keine Lagerbewegungen im Zeitraum.',
+        'col' => [
+            'occurred_at' => 'Zeitpunkt',
+            'state' => 'Bestandszustand',
+            'qty_base' => 'Menge (Basiseinheit)',
+            'entered' => 'Erfasst als',
+            'lot' => 'Charge',
+            'actor' => 'Gebucht von',
+        ],
+    ],
+    'reservation' => [
+        'edit' => 'Reservierung ändern',
+        'saved' => 'Reservierung gespeichert.',
+        'reserved' => 'Reserviert',
+        'consumed' => 'Davon entnommen',
+        'open' => 'Noch offen',
+        'reserved_at' => 'Reserviert am',
+        'priority_hint' => 'Kleinere Zahl = höhere Priorität (Vorgabe 100). Die Liste der Reservierungen ordnet danach.',
+        'release_qty' => 'Teilmenge freigeben',
+        'release_hint' => 'Gibt diese Menge wieder frei, etwa um sie einem anderen Auftrag zuzuteilen. Leer = nichts freigeben.',
+        'redistribute' => 'Umverteilen',
+        'redistribute_hint' => 'Offene Menge an eine andere Reservierung desselben Artikels, Lagers und Eigentums abgeben, etwa an einen Auftrag mit höherer Priorität. Der reservierte Bestand bleibt gleich; die Umverteilung steht im Audit-Protokoll.',
+        'redistribute_to' => 'An Reservierung',
+        'redistribute_option' => 'Priorität :priority · offen :open :unit · seit :date',
+        'redistribute_qty' => 'Menge',
+        'redistribute_qty_hint' => 'Leer = die ganze offene Menge.',
+        'redistribute_invalid' => 'Die Ziel-Reservierung ist unbekannt.',
+        'redistribute_mismatch' => 'Umverteilt wird nur zwischen aktiven Reservierungen desselben Artikels, Lagers, Platzes und Eigentums.',
+        'redistribute_too_much' => 'Die Menge ist größer als die offene Menge der Reservierung.',
+    ],
     'valuation' => [
+        'switch' => [
+            'blocked_layers' => 'Der Wechsel zum gleitenden Durchschnitt ist nicht möglich, solange Bestand in FIFO-/FEFO-Schichten bewertet ist. Der Durchschnitt wurde in dieser Zeit nicht fortgeschrieben. Bauen Sie den Bestand zuerst ab oder bleiben Sie beim Schichtverfahren.',
+        ],
         'method' => [
             'moving_average' => 'Gleitender Durchschnitt',
             'fifo' => 'FIFO',
@@ -436,5 +523,19 @@ return [
         'serial_qty_one' => 'Serienpflichtige Artikel werden je Seriennummer einzeln gebucht (Menge 1).',
         'tracked_article_manual_move' => 'Chargen-/serienpflichtiger Artikel: Buchung bitte über Wareneingang (Bestellung) bzw. Chargen-/Serienverwaltung — nicht als anonymer Bestand.',
         'lot_required' => 'Chargenpflichtiger Artikel: Die Chargen decken die Menge nicht; Bestand ohne Charge wird nicht entnommen.',
+        'unit_not_maintained' => 'Die Einheit „:unit“ ist am Artikel „:article“ nicht gepflegt.',
+        'unit_factor_invalid' => 'Die Einheit „:unit“ am Artikel „:article“ hat keinen gültigen Umrechnungsfaktor.',
+        'unit_quantity_too_small' => 'Die Menge ergibt in der Basiseinheit null. Bitte prüfen Sie Menge und Einheit „:unit“.',
+        'shelf_life_required' => 'Artikel mit Mindesthaltbarkeit: Bitte Charge und Mindesthaltbarkeitsdatum angeben.',
+        'shelf_life_manual_receipt' => 'Artikel mit Mindesthaltbarkeit: Zugang bitte über den Wareneingang (Bestellung) mit Charge und Mindesthaltbarkeitsdatum buchen.',
+    ],
+    // Vier-Augen-Freigabe Negativbestand (MVP-1626)
+    'negative' => [
+        'requested' => 'Die Entnahme in den Negativbestand ist beantragt. Gebucht wird, sobald eine zweite Person sie im Genehmigungs-Eingang freigibt.',
+        'no_customer_cost' => 'Mit Vier-Augen-Freigabe lässt sich eine Entnahme in den Negativbestand nicht zugleich auf einen Kunden buchen. Buchen Sie die Materialkosten nach der Freigabe.',
+        'delegate_without_right' => 'Die Person, an die Sie abgeben, braucht das Recht „Negative Bestände freigeben“.',
+        'not_open' => 'Der Antrag ist bereits entschieden.',
+        'inbox_title' => 'Negativbestand: :qty :unit :article',
+        'inbox_reference' => 'Lager :warehouse · beantragt von :name',
     ],
 ];

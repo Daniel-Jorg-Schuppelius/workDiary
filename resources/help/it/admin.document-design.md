@@ -1,7 +1,7 @@
 ---
 title: "Design dei documenti"
 topic: admin.document-design
-version: 1
+version: 4
 keywords:
     - carta intestata
     - intestazione
@@ -106,3 +106,48 @@ Primi passi e vista della carta intestata (rifinitura 6):
   intestazione/piè) e **Rilascio** (documenti di prova, assegnazione,
   versioni). La selezione della carta intestata compare subito
   nell'anteprima A4 e viene salvata con «Salva bozza».
+
+Blocchi informativi nel documento:
+
+- Fattura, nota di credito, proforma, offerta, conferma d'ordine, sollecito
+  e avviso di quota stampano i blocchi in base al loro stato. **Dinamico**
+  stampa i **dati aziendali** (nome, indirizzo, registro, riga legale), i
+  **dati fiscali** (partita IVA, codice fiscale), il **referente**
+  (commerciale della fattura o autore dell'offerta, altrimenti i recapiti
+  dell'organizzazione), **introduzione** e **chiusura** (testo di
+  intestazione e piè di pagina del profilo) e la **nota di riservatezza**
+  (testo proprio nella scheda Contenuti, vuoto = nota predefinita). «Già
+  sulla carta intestata» e «non applicabile» omettono il blocco.
+- Dati aziendali e fiscali provengono dai dati del venditore della fattura
+  elettronica o, in mancanza, dal branding e dai dati legali
+  dell'organizzazione: il PDF visibile non contraddice così la fattura
+  strutturata.
+- Il preflight considera soddisfatti i dati aziendali e fiscali «dinamici»
+  solo se i dati sono gestiti. Se mancano, è un errore per i documenti di
+  vendita assegnati e un avviso per il design di base.
+- Le fatture emesse restano invariate: i dati dell'emittente e il referente
+  vengono congelati all'emissione; i documenti precedenti a questi blocchi
+  non li stampano nemmeno in ristampa.
+
+## Dati aziendali su ordini, bolle di consegna e verbali
+
+Anche questi documenti stampano i dati aziendali e fiscali secondo lo stato del
+blocco del design; vi rientrano i fogli di misurazione e gli attestati di
+smaltimento, impostati come verbale. Se il blocco obbligatorio «Dati aziendali» è su
+«dinamico», il controllo preliminare verifica che nome e indirizzo completo siano
+inseriti, come per fatture e offerte. I documenti già firmati o chiusi in precedenza
+restano invariati.
+
+## Dati aziendali su attestati, certificati e comunicazioni di cantiere
+
+Ogni tipo di documento con il blocco obbligatorio «Dati aziendali» lo stampa secondo
+lo stato del blocco, e il controllo preliminare ne verifica i dati: oltre ai
+documenti sopra, l'attestato di produzione, la comunicazione di impedimento e quella
+di riserve, il certificato, la pagella e l'attestato di grado, l'attestato di
+chiusura di una firma contrattuale, l'attestato di istruzione e la valutazione dei
+rischi, nonché la fattura commerciale e la proforma per la dogana. Il design viene
+congelato all'invio, all'emissione, alla prima firma, all'approvazione o alla
+chiusura; comunicazioni e attestati inviati, emessi, firmati o chiusi in precedenza
+restano invariati. Foglio ore, modulo, rapporto, fascicolo, attestato delle
+prestazioni ed etichetta non hanno il blocco aziendale; la ricevuta di donazione
+segue il modello ufficiale con un proprio blocco dell'emittente.

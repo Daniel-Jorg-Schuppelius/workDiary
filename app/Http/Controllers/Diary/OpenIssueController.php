@@ -15,16 +15,21 @@ use App\Exceptions\InvalidOpenIssueTransitionException;
 use App\Http\Controllers\Concerns\AuthorizesCarrier;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OpenIssue\{AssignOpenIssueRequest, StoreOpenIssueRequest, TransitionOpenIssueRequest, UpdateOpenIssueRequest};
+use App\Models\Asset\Asset;
+use App\Models\Attachments\Attachment;
+use App\Models\Communication\Comment;
 use App\Models\Customer\Customer;
 use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Services\Diary\Contracts\IssueTicketOpener;
 use App\Services\OpenIssue\OpenIssueService;
 use App\Support\ErrorText;
-use App\Support\{Sqid, Tz};
+use App\Support\{Setting, Sqid, Tz};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\{Arr, Carbon};
+use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
 use InvalidArgumentException;
 
@@ -41,6 +46,7 @@ class OpenIssueController extends Controller {
         'diary' => DiaryEntry::class,
         'project' => Project::class,
         'customer' => Customer::class,
+        'asset' => Asset::class,
     ];
 
     public function __construct(
@@ -66,15 +72,46 @@ class OpenIssueController extends Controller {
             'subjectKind' => $subjectKind,
             'subjectId' => Sqid::encode($subjectClass, $subjectId),
             'canPublishToCustomer' => Gate::allows('publishToCustomer', OpenIssue::class),
-            'canAssign' => Gate::allows('assign', OpenIssue::class),
+            'users' => Gate::allows('assign', OpenIssue::class)
+                ? User::inCurrentOrganization()->orderBy('name')->get(['id', 'name'])
+                : collect(),
         ]);
     }
 
-    /** Titel, Beschreibung und Kategorie bearbeiten (Vollscan 2026-10-21). */
+    /** Detaildialog (MVP-1597): Felder, Verlauf, Kommentare, Anhänge. */
+    public function show(OpenIssue $issue): View {
+        Gate::authorize('view', $issue);
+
+        return view('open-issues._show_dialog', [
+            'issue' => $issue->load(['assignee:id,name', 'creator:id,name', 'journal.actor:id,name', 'comments.user:id,name', 'attachments.uploader:id,name']),
+            'canUpload' => Gate::allows('update', $issue) && Gate::allows('create', Attachment::class) && ! $issue->attachmentsLocked(),
+        ]);
+    }
+
+    public function comment(Request $request, OpenIssue $issue): RedirectResponse {
+        Gate::authorize('view', $issue);
+        Gate::authorize('create', Comment::class);
+
+        $body = $request->validate([
+            'body' => ['required', 'string', 'max:' . (int) Setting::get('validation.comment.body_max', 5000)],
+        ])['body'];
+
+        $this->service->addComment($issue, $this->authUser(), $body);
+
+        return redirect()
+            ->back()
+            ->with('success', __('Kommentar gespeichert.'))
+            ->withFragment('open-issue-' . $issue->id);
+    }
+
+    /** Titel, Beschreibung, Kategorie sowie Frist, Schwere und Sichtbarkeit bearbeiten. */
     public function edit(OpenIssue $issue): View {
         Gate::authorize('update', $issue);
 
-        return view('open-issues._edit_dialog', ['issue' => $issue]);
+        return view('open-issues._edit_dialog', [
+            'issue' => $issue,
+            'canPublishToCustomer' => Gate::allows('publishToCustomer', OpenIssue::class),
+        ]);
     }
 
     /** Zuweisung ändern oder aufheben. */
@@ -146,12 +183,32 @@ class OpenIssueController extends Controller {
         Gate::authorize('update', $issue);
 
         $data = $request->validated();
+        $actor = $this->authUser();
 
-        $issue->update($data);
+        $visibility = isset($data['visibility']) ? OpenIssueVisibility::from($data['visibility']) : null;
+        if ($visibility === OpenIssueVisibility::Customer && $issue->visibility !== $visibility) {
+            Gate::authorize('publishToCustomer', OpenIssue::class);
+        }
+
+        DB::transaction(function () use ($issue, $data, $actor, $visibility): void {
+            $issue->update(Arr::only($data, ['title', 'description', 'category']));
+
+            // Frist vor Schwere: „kritisch“ ohne Frist setzt der Dienst auf sieben Tage.
+            if (array_key_exists('due_at', $data)) {
+                $this->service->changeDueDate($issue, filled($data['due_at']) ? Carbon::instance(Tz::parse((string) $data['due_at'])) : null, $actor);
+            }
+            if (isset($data['severity'])) {
+                $this->service->changeSeverity($issue, OpenIssueSeverity::from($data['severity']), $actor);
+            }
+            if ($visibility !== null) {
+                $this->service->changeVisibility($issue, $visibility, $actor);
+            }
+        });
 
         return redirect()
             ->back()
-            ->with('success', __('open-issue.flash.updated'));
+            ->with('success', __('open-issue.flash.updated'))
+            ->withFragment('open-issue-' . $issue->id);
     }
 
     public function destroy(OpenIssue $issue): RedirectResponse {
@@ -176,6 +233,23 @@ class OpenIssueController extends Controller {
         $this->service->assign($issue, $assignee, $actor);
 
         return redirect()->back()->with('success', __('open-issue.flash.assigned'));
+    }
+
+    /** Ticket aus dem offenen Punkt (MVP-1549); ohne Helpdesk antwortet die Null-Bindung und es bleibt bei 404. */
+    public function ticket(OpenIssue $issue, IssueTicketOpener $opener): RedirectResponse {
+        Gate::authorize('update', $issue);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        abort_unless($opener->available($actor), 404);
+
+        $ticket = $this->service->openTicket($issue, $actor, $opener);
+        abort_if($ticket === null, 404);
+
+        return redirect()
+            ->back()
+            ->with('success', __($ticket['created'] ? 'open-issue.flash.ticketOpened' : 'open-issue.flash.ticketExists', ['no' => $ticket['label']]))
+            ->withFragment('open-issue-' . $issue->id);
     }
 
     public function transition(TransitionOpenIssueRequest $request, OpenIssue $issue, string $action): RedirectResponse {

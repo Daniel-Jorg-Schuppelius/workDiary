@@ -73,7 +73,10 @@ class TimeEntryObserver {
         // sonst als nicht abrechenbar (rate = 0), obwohl das DB-Default
         // true ist.
         if (! $entry->exists && ! array_key_exists('billable', $entry->getAttributes())) {
-            $entry->billable = $entry->project?->effectiveBillable() ?? true;
+            // Ohne Projekt (Verwaltungszeit) gibt die Tätigkeitskategorie die Vorgabe (MVP-1554).
+            $entry->billable = $entry->project?->effectiveBillable()
+                ?? $entry->activityCategory->billable_default
+                ?? true;
         }
 
         // Recalculate billing snapshot whenever a relevant field changes.

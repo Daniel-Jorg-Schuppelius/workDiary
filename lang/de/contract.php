@@ -138,4 +138,10 @@ return [
             'dismissed' => 'Indexanpassung verworfen.',
         ],
     ],
+    // Vertragsfristen im Kalender (MVP-1617).
+    'calendar' => [
+        'end' => 'Vertragsende',
+        'renewal' => 'Verlängerung',
+        'indexation_review' => 'Indexprüfung',
+    ],
 ];

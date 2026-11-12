@@ -66,6 +66,7 @@ final class PlatformManifest extends Manifest {
             'integrity_checks',
             'model_has_permissions',
             'model_has_roles',
+            'monitoring_tokens',
             'onboarding_progress',
             'organization_audit_logs',
             'organization_sso_domains',

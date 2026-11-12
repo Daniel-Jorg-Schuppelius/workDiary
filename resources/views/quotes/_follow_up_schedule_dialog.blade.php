@@ -23,4 +23,10 @@
     <x-input-field name="follow_up_at" type="date" required :min="today()->toDateString()"
                    :label="__('quotes.follow_up.column.follow_up_at')"
                    :value="old('follow_up_at', $quote->follow_up_at?->gte(today()) ? $quote->follow_up_at->toDateString() : '')" />
+    @php($owner = (int) ($quote->follow_up_user_id ?? $quote->created_by ?? 0))
+    <x-select-field name="follow_up_user_id" :label="__('quotes.follow_up.owner_field')" :hint="__('quotes.follow_up.owner_hint')">
+        @foreach ($followUpUsers as $followUpUser)
+            <option value="{{ $followUpUser->sqid }}" @selected((string) old('follow_up_user_id', $owner === (int) $followUpUser->id ? $followUpUser->sqid : '') === $followUpUser->sqid)>{{ $followUpUser->name }}</option>
+        @endforeach
+    </x-select-field>
 </x-modal>

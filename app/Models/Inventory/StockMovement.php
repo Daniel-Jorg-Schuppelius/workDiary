@@ -102,6 +102,11 @@ class StockMovement extends Model {
         return $this->belongsTo(StockLot::class, 'stock_lot_id');
     }
 
+    /** @return BelongsTo<\App\Models\Platform\User, $this> */
+    public function actor(): BelongsTo {
+        return $this->belongsTo(\App\Models\Platform\User::class, 'actor_user_id');
+    }
+
     /** @return MorphTo<Model, $this> */
     public function source(): MorphTo {
         return $this->morphTo();

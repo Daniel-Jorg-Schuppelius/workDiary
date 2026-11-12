@@ -138,4 +138,10 @@ return [
             'dismissed' => 'Index adjustment dismissed.',
         ],
     ],
+    // Contract deadlines in the calendar (MVP-1617).
+    'calendar' => [
+        'end' => 'Contract end',
+        'renewal' => 'Renewal',
+        'indexation_review' => 'Index review',
+    ],
 ];

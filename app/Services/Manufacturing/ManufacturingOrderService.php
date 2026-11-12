@@ -127,8 +127,8 @@ class ManufacturingOrderService implements ProductionOrderFactory {
     /**
      * Reservierungsstrategie (Feature 048; Vollaudit 2026-07, M23): Zeitpunkt
      * org-konfigurierbar über das Setting `inventory.reservation_timing`
-     * (release|start, Default release — „bestätigte Terminierung" fällt ohne
-     * eigenen Terminierungs-Status bewusst auf release zurück); der Auftrag
+     * (release|start, Default release — „bestätigte Terminierung" gibt es
+     * nicht, weil der Auftrag keinen Terminierungs-Status führt); der Auftrag
      * friert Modus + Zeitpunkt als Snapshot ein. Der manuelle Button bleibt
      * für Nachreservierungen erhalten.
      */
@@ -142,7 +142,8 @@ class ManufacturingOrderService implements ProductionOrderFactory {
             return;
         }
 
-        $mode = (string) \App\Support\Setting::get('inventory.reservation_timing', 'release');
+        // Organisation des Auftrags, nicht die der Anfrage: auch Jobs und Befehle ohne gebundene Organisation lesen richtig (MVP-1580).
+        $mode = (string) app(\App\Settings\SettingsRegistry::class)->effective('inventory.reservation_timing', $order->organization)->value;
         if (! in_array($mode, ['release', 'start'], true)) {
             $mode = 'release';
         }

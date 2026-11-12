@@ -44,19 +44,17 @@ class RecipeController extends Controller {
             'article' => ['required', 'string'],
             'quantity_kind' => ['required', Rule::enum(QuantityKind::class)],
             'quantity' => ['nullable', 'numeric', 'min:0', 'required_unless:quantity_kind,ratio'],
-            'ratio_part' => ['nullable', 'numeric', 'gt:0'],
             'unit' => ['required', 'string', 'max:20'],
             'waste_surcharge' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'rounding' => ['nullable', Rule::enum(RoundingMode::class)],
             'is_tool' => ['nullable', 'boolean'],
         ]);
 
-        // Verhältnisanteil: das gemeinsame Mengenfeld des Formulars trägt den
-        // Anteil, wenn kein eigenes ratio_part übermittelt wurde.
+        // Verhältnisanteil: das gemeinsame Mengenfeld des Formulars trägt den Anteil.
         $isRatio = $data['quantity_kind'] === QuantityKind::Ratio->value;
-        $ratioPart = $isRatio ? ($data['ratio_part'] ?? $data['quantity'] ?? null) : null;
+        $ratioPart = $isRatio ? ($data['quantity'] ?? null) : null;
         if ($isRatio && ($ratioPart === null || (float) $ratioPart <= 0)) {
-            return back()->withErrors(['ratio_part' => __('recipes.error.ratio_required')])->withInput();
+            return back()->withErrors(['quantity' => __('recipes.error.ratio_required')])->withInput();
         }
 
         $article = Article::query()

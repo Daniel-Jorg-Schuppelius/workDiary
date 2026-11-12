@@ -1,7 +1,7 @@
 ---
 title: "Tareas operativas y ventanas de mantenimiento"
 topic: admin.operations
-version: 1
+version: 2
 keywords:
     - modo mantenimiento
     - tiempo de inactividad
@@ -61,3 +61,5 @@ sustitución. Cada acción queda auditada.
 suficiente antelación para que el anuncio surta efecto, y trabaje el
 centro de tareas con regularidad — las tareas críticas primero. Posponer
 está pensado para aplazamientos conscientes, no como estado permanente.
+
+**Incidencias y módulos:** la tarea de incidencias abiertas solo existe mientras el módulo de helpdesk de la organización esté activo; si se desactiva, la siguiente ejecución la resuelve.

@@ -90,6 +90,12 @@
                            :value="old('settings.invoicing.quote_validity_days', data_get($stored, 'invoicing.quote_validity_days', ''))"
                            :placeholder="__('settings.placeholder_default', ['value' => (string) config('invoicing.quote_validity_days')])"
                            :hint="__('settings.invoicing.quote_validity_days_hint')" />
+            {{-- Freigabezwang (MVP-1562): Ausstellung erst nach Freigabe durch eine zweite Person. --}}
+            <x-checkbox-field name="settings[invoicing][require_approval]" span="2" tone="info"
+                             :label="__('settings.invoicing.require_approval')"
+                             error="settings.invoicing.require_approval"
+                             :checked="(string) old('settings.invoicing.require_approval', data_get($stored, 'invoicing.require_approval', '0')) === '1'"
+                             :hint="__('settings.invoicing.require_approval_hint')" />
 
             {{-- Standardleistung (MVP-486): Artikel aus dem Artikelkatalog (MVP-1026)
                  für Bezeichnung, Einheit, Standardtext und Preis-Rückfall.
@@ -278,6 +284,11 @@
                              error="settings.einvoice.small_business"
                              :checked="(string) old('settings.einvoice.small_business', data_get($stored, 'einvoice.small_business', '0')) === '1'"
                              :hint="__('settings.einvoice.small_business_hint')" />
+            <x-checkbox-field name="settings[einvoice][enforce_validation]" span="2" tone="info"
+                             :label="__('settings.einvoice.enforce_validation')"
+                             error="settings.einvoice.enforce_validation"
+                             :checked="(string) old('settings.einvoice.enforce_validation', data_get($stored, 'einvoice.enforce_validation', '0')) === '1'"
+                             :hint="__('settings.einvoice.enforce_validation_hint')" />
         </x-form-group>
 
         {{-- Rechnungsbegründende Unterlagen und Empfängerprofil (Feature 196). --}}
@@ -342,6 +353,23 @@
                               error="settings.finance.accounting_four_eyes"
                               :checked="(string) old('settings.finance.accounting_four_eyes', (int) (bool) data_get($stored, 'finance.accounting_four_eyes', false)) === '1'"
                               :hint="__('settings.accounting.four_eyes_hint')" />
+        </x-form-group>
+
+        {{-- BANKABGLEICH (Feature 045, MVP-1623): Toleranzen der Zuordnungsvorschläge. --}}
+        <x-form-group :legend="__('settings.reconciliation.heading')" icon="account_balance" tone="info" cols="2" compact
+                      :description="__('settings.reconciliation.description')">
+            <x-input-field name="settings[finance][reconciliation][cent_tolerance]" type="number" min="0" max="1" step="0.01"
+                           :label="__('settings.reconciliation.cent_tolerance')"
+                           error="settings.finance.reconciliation.cent_tolerance"
+                           :value="old('settings.finance.reconciliation.cent_tolerance', data_get($stored, 'finance.reconciliation.cent_tolerance', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => '0,02'])"
+                           :hint="__('settings.reconciliation.cent_tolerance_hint')" />
+            <x-input-field name="settings[finance][reconciliation][skonto_percent]" type="number" min="0" max="10" step="0.1"
+                           :label="__('settings.reconciliation.skonto_percent')"
+                           error="settings.finance.reconciliation.skonto_percent"
+                           :value="old('settings.finance.reconciliation.skonto_percent', data_get($stored, 'finance.reconciliation.skonto_percent', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => '3'])"
+                           :hint="__('settings.reconciliation.skonto_percent_hint')" />
         </x-form-group>
 
         {{-- ANLAGEN (MVP-892): Wertgrenzen für GWG und Sammelposten, netto. --}}
@@ -465,6 +493,92 @@
                               :hint="__('settings.fleet.block_trips_hint')"
                               error="settings.fleet.block_trips_on_overdue_inspection"
                               :checked="(string) old('settings.fleet.block_trips_on_overdue_inspection', data_get($stored, 'fleet.block_trips_on_overdue_inspection') ? '1' : '0') === '1'" />
+            {{-- Abstand der Führerscheinkontrolle (MVP-1589). --}}
+            <x-input-field name="settings[fleet][license_check_interval_months]" type="number" min="1" max="60"
+                           :label="__('settings.fleet.license_interval')"
+                           :hint="__('settings.fleet.license_interval_hint')"
+                           error="settings.fleet.license_check_interval_months"
+                           :value="old('settings.fleet.license_check_interval_months', data_get($stored, 'fleet.license_check_interval_months', ''))"
+                           placeholder="6" />
+        </x-form-group>
+
+        {{-- HELPDESK (MVP-1589): Prioritätsmatrix Auswirkung × Dringlichkeit; leere Zelle = Standard. --}}
+        <x-form-group :legend="__('settings.helpdesk_matrix.heading')" icon="grid_on" tone="info" cols="3" compact
+                      :description="__('settings.helpdesk_matrix.description')">
+            @foreach (\App\Enums\ServiceTicket\TicketSeverity::cases() as $impact)
+                @foreach (\App\Enums\ServiceTicket\TicketSeverity::cases() as $urgency)
+                    @php($cell = 'helpdesk.priority_matrix.' . $impact->value . '.' . $urgency->value)
+                    <x-select-field name="settings[helpdesk][priority_matrix][{{ $impact->value }}][{{ $urgency->value }}]"
+                                    id="settings-helpdesk-matrix-{{ $impact->value }}-{{ $urgency->value }}"
+                                    :label="__('settings.helpdesk_matrix.cell', ['impact' => $impact->label(), 'urgency' => $urgency->label()])"
+                                    error="settings.{{ $cell }}">
+                        <option value="">{{ __('settings.helpdesk_matrix.default', ['priority' => app(\App\Services\ServiceTicket\TicketIncidentService::class)->defaultPriority($impact, $urgency)->label()]) }}</option>
+                        @foreach (\App\Enums\ServiceTicket\ServiceTicketPriority::cases() as $priority)
+                            <option value="{{ $priority->value }}" @selected((string) old('settings.' . $cell, data_get($stored, $cell, '')) === $priority->value)>{{ $priority->label() }}</option>
+                        @endforeach
+                    </x-select-field>
+                @endforeach
+            @endforeach
+        </x-form-group>
+
+        {{-- KAPAZITÄT (MVP-1589): Schwelle der Frühwarnung. --}}
+        <x-form-group :legend="__('settings.capacity.heading')" icon="groups" tone="warning" cols="2" compact>
+            <x-input-field name="settings[hr][capacity][threshold]" type="number" min="50" max="300"
+                           :label="__('settings.capacity.threshold')"
+                           :hint="__('settings.capacity.threshold_hint')"
+                           error="settings.hr.capacity.threshold"
+                           :value="old('settings.hr.capacity.threshold', data_get($stored, 'hr.capacity.threshold', ''))"
+                           placeholder="100" />
+        </x-form-group>
+
+        {{-- INVESTITIONEN (MVP-1589): Schwelle der zweiten Freigabestufe. --}}
+        <x-form-group :legend="__('settings.investments.heading')" icon="savings" tone="info" cols="2" compact>
+            <x-input-field name="settings[investments][approval_threshold]" type="number" min="0" step="0.01"
+                           :label="__('settings.investments.approval_threshold')"
+                           :hint="__('settings.investments.approval_threshold_hint')"
+                           error="settings.investments.approval_threshold"
+                           :value="old('settings.investments.approval_threshold', data_get($stored, 'investments.approval_threshold', ''))"
+                           :placeholder="(string) config('investments.approval_threshold', 10000)" />
+        </x-form-group>
+
+        {{-- DOMAINS (MVP-1614): Kosten- und Saldowarnung der Domainverwaltung. --}}
+        <x-form-group :legend="__('settings.domain.heading')" icon="language" tone="info" cols="2" compact>
+            <x-input-field name="settings[domain][renewal_cost_threshold]" type="number" min="0" step="0.01"
+                           :label="__('settings.domain.renewal_cost_threshold')"
+                           :hint="__('settings.domain.renewal_cost_threshold_hint')"
+                           error="settings.domain.renewal_cost_threshold"
+                           :value="old('settings.domain.renewal_cost_threshold', data_get($stored, 'domain.renewal_cost_threshold', ''))" />
+            <x-input-field name="settings[domain][balance_threshold]" type="number" min="0" step="0.01"
+                           :label="__('settings.domain.balance_threshold')"
+                           :hint="__('settings.domain.balance_threshold_hint')"
+                           error="settings.domain.balance_threshold"
+                           :value="old('settings.domain.balance_threshold', data_get($stored, 'domain.balance_threshold', ''))" />
+        </x-form-group>
+
+        {{-- BERICHTE (MVP-1589): CSV-Export je Organisation. --}}
+        <x-form-group :legend="__('settings.report_csv.heading')" icon="table_view" tone="info" cols="2" compact>
+            <x-select-field name="settings[reports][csv_delimiter_name]" :label="__('settings.report_csv.delimiter')" error="settings.reports.csv_delimiter_name">
+                <option value="">{{ __('settings.report_csv.system_default') }}</option>
+                @foreach (['semicolon', 'comma', 'tab'] as $delimiter)
+                    <option value="{{ $delimiter }}" @selected((string) old('settings.reports.csv_delimiter_name', data_get($stored, 'reports.csv_delimiter_name', '')) === $delimiter)>{{ __('settings.report_csv.' . $delimiter) }}</option>
+                @endforeach
+            </x-select-field>
+            @php($metaLines = (string) old('settings.reports.csv_meta_lines', data_get($stored, 'reports.csv_meta_lines', '')))
+            <x-select-field name="settings[reports][csv_meta_lines]" :label="__('settings.report_csv.meta_lines')" :hint="__('settings.report_csv.meta_lines_hint')" error="settings.reports.csv_meta_lines">
+                <option value="">{{ __('settings.report_csv.system_default') }}</option>
+                <option value="1" @selected($metaLines === '1')>{{ __('settings.report_csv.meta_on') }}</option>
+                <option value="0" @selected($metaLines === '0')>{{ __('settings.report_csv.meta_off') }}</option>
+            </x-select-field>
+        </x-form-group>
+
+        {{-- BEWERBUNGEN (MVP-1589): Löschfrist abgelehnter Bewerbungen. --}}
+        <x-form-group :legend="__('settings.applications_retention.heading')" icon="person_remove" tone="warning" cols="2" compact>
+            <x-input-field name="settings[applications][rejected_retention_months]" type="number" min="1" max="36"
+                           :label="__('settings.applications_retention.months')"
+                           :hint="__('settings.applications_retention.months_hint')"
+                           error="settings.applications.rejected_retention_months"
+                           :value="old('settings.applications.rejected_retention_months', data_get($stored, 'applications.rejected_retention_months', ''))"
+                           :placeholder="(string) config('applications.rejected_retention_months', 6)" />
         </x-form-group>
 
         {{-- REKLAMATIONSMUSTER (MVP-886): Schwelle und Zeitfenster für Bericht und Hinweis. --}}
@@ -517,6 +631,23 @@
                            :placeholder="__('settings.placeholder_default', ['value' => '15'])"
                            :hint="__('settings.project_targets.tolerance_minutes_hint')" />
         </x-form-group>
+
+        {{-- PLAN/IST (MVP-1552): Schwellen der Anwesenheitswarnungen. --}}
+        <x-form-group :legend="__('settings.plan_ist.heading')" icon="compare_arrows" tone="info" cols="2" compact
+                      :description="__('settings.plan_ist.description')">
+            <x-input-field name="settings[plan_ist][late_start_minutes]" type="number" min="0" max="240" step="1"
+                           :label="__('settings.plan_ist.late_start_minutes')"
+                           error="settings.plan_ist.late_start_minutes" inputmode="numeric"
+                           :value="old('settings.plan_ist.late_start_minutes', data_get($stored, 'plan_ist.late_start_minutes', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => '15'])"
+                           :hint="__('settings.plan_ist.late_start_minutes_hint')" />
+            <x-input-field name="settings[plan_ist][hours_diff_percent]" type="number" min="0" max="100" step="1"
+                           :label="__('settings.plan_ist.hours_diff_percent')"
+                           error="settings.plan_ist.hours_diff_percent" inputmode="numeric"
+                           :value="old('settings.plan_ist.hours_diff_percent', data_get($stored, 'plan_ist.hours_diff_percent', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => '10'])"
+                           :hint="__('settings.plan_ist.hours_diff_percent_hint')" />
+        </x-form-group>
     </div>
 
     {{-- UPLOADS --}}
@@ -529,6 +660,15 @@
                                :value="old('settings.uploads.' . $k, data_get($stored, 'uploads.' . $k, ''))"
                                :placeholder="__('settings.placeholder_default', ['value' => (string) $v])" />
             @endforeach
+        </x-form-group>
+        {{-- Standort aus Protokollfotos (MVP-1573): Default aus, Hinweis auf den Datenschutz. --}}
+        <x-form-group :legend="__('settings.protocol.heading')" icon="location_on" tone="info" cols="1" compact
+                      :description="__('settings.protocol.description')">
+            <x-checkbox-field name="settings[protocol][photo_geo]" tone="info"
+                             :label="__('settings.protocol.photo_geo')"
+                             error="settings.protocol.photo_geo"
+                             :checked="(string) old('settings.protocol.photo_geo', data_get($stored, 'protocol.photo_geo', '0')) === '1'"
+                             :hint="__('settings.protocol.photo_geo_hint')" />
         </x-form-group>
     </div>
 
@@ -635,6 +775,12 @@
                            error="settings.routing.tiles.max_zoom"
                            :value="old('settings.routing.tiles.max_zoom', data_get($stored, 'routing.tiles.max_zoom', ''))"
                            :placeholder="__('settings.placeholder_default', ['value' => (string) config('routing.tiles.max_zoom')])" />
+            <x-input-field name="settings[routing][tiles][attribution]" span="2" maxlength="255"
+                           :label="__('settings.routing.tiles.attribution')"
+                           error="settings.routing.tiles.attribution"
+                           :hint="__('settings.routing.tiles.attribution_hint')"
+                           :value="old('settings.routing.tiles.attribution', data_get($stored, 'routing.tiles.attribution', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => html_entity_decode(strip_tags((string) config('routing.tiles.attribution')))])" />
         </x-form-group>
     </div>
 
@@ -719,6 +865,16 @@
                                 @selected((string) old('settings.holidays.provider', data_get($stored, 'holidays.provider', '')) === $value)>{{ $label }}</option>
                         @endforeach
                     </optgroup>
+                @endforeach
+            </x-select-field>
+            @php($holidayLocale = (string) old('settings.holidays.locale', data_get($stored, 'holidays.locale', '')))
+            <x-select-field name="settings[holidays][locale]" span="2"
+                            :label="__('settings.region.holiday_locale')"
+                            error="settings.holidays.locale"
+                            :hint="__('settings.region.holiday_locale_hint')">
+                <option value="">{{ __('settings.placeholder_default', ['value' => \Locale::getDisplayName((string) config('holidays.locale', 'de_DE'), app()->getLocale())]) }}</option>
+                @foreach ($registry->definition('holidays.locale')->resolvedOptions() ?? [] as $locale)
+                    <option value="{{ $locale }}" @selected($holidayLocale === (string) $locale)>{{ \Locale::getDisplayName((string) $locale, app()->getLocale()) }}</option>
                 @endforeach
             </x-select-field>
         </x-form-group>

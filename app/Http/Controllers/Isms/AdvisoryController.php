@@ -97,7 +97,6 @@ class AdvisoryController extends Controller {
 
         $data = $request->validate([
             'provider_url' => ['nullable', 'url', 'max:255'],
-            'limit' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
         /** @var User $importer */
@@ -110,7 +109,7 @@ class AdvisoryController extends Controller {
                 $data['provider_url'] ?? \App\Services\Isms\CsafFeedService::DEFAULT_PROVIDER,
                 $organization,
                 $importer,
-                (int) ($data['limit'] ?? \App\Services\Isms\CsafFeedService::DEFAULT_LIMIT),
+                \App\Services\Isms\CsafFeedService::DEFAULT_LIMIT,
             );
         } catch (\Throwable $e) {
             return redirect()->route('isms.advisories.index')

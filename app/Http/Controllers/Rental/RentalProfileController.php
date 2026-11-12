@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Rental;
 
-use App\Enums\Rental\RentalRateCardStatus;
+use App\Enums\Rental\{RentalCondition, RentalRateCardStatus};
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
 use App\Models\Rental\{RentalCase, RentalProfile, RentalRateCard};
@@ -23,6 +23,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 /**
  * Gerätepool (MVP-259): Verleihprofile machen Assets leihfähig und tragen
@@ -42,6 +43,7 @@ class RentalProfileController extends Controller {
                 ->withQueryString(),
             'groups' => RentalProfile::query()->whereNotNull('group_code')->distinct()->orderBy('group_code')->pluck('group_code'),
             'assets' => Asset::query()
+                ->inOperation()
                 ->whereDoesntHave('rentalProfile')
                 ->orderBy('name')
                 ->get(['id', 'name']),
@@ -103,10 +105,12 @@ class RentalProfileController extends Controller {
         }
 
         // Auch das leere Textfeld (kommt als null an) wird zur Liste — sonst scheitert es an der Array-Regel.
-        if ($request->has('accessories') && ! is_array($request->input('accessories'))) {
-            $request->merge([
-                'accessories' => array_map('trim', StringHelper::lines((string) $request->input('accessories'), true)),
-            ]);
+        foreach (['accessories', 'checklist_labels'] as $list) {
+            if ($request->has($list) && ! is_array($request->input($list))) {
+                $request->merge([
+                    $list => array_map('trim', StringHelper::lines((string) $request->input($list), true)),
+                ]);
+            }
         }
 
         $data = $request->validate([
@@ -119,7 +123,10 @@ class RentalProfileController extends Controller {
             'buffer_before_hours' => ['nullable', 'integer', 'min:0', 'max:720'],
             'buffer_after_hours' => ['nullable', 'integer', 'min:0', 'max:720'],
             'requires_inspection' => ['sometimes', 'boolean'],
-            'min_condition' => ['nullable', 'string', 'max:20'],
+            'min_condition' => ['nullable', Rule::enum(RentalCondition::class)],
+            'current_condition' => ['nullable', Rule::enum(RentalCondition::class)],
+            'checklist_labels' => ['sometimes', 'array', 'max:40'],
+            'checklist_labels.*' => ['string', 'max:255'],
             'accessories' => ['sometimes', 'array'],
             'accessories.*' => ['string', 'max:255'],
             'default_rate_card_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('rental_rate_cards')],

@@ -36,6 +36,7 @@ return [
         'problem_report_open' => 'Open problem report',
         'cloud_intake_reauth' => 'Cloud intake: sign-in required',
         'cloud_intake_quarantined' => 'Cloud intake: imports rejected',
+        'sms_budget_warning' => 'SMS quota',
     ],
     'severity' => [
         'info' => 'Notice',
@@ -96,6 +97,8 @@ return [
         'problem_report_summary' => ':count open problem report(s) await processing.',
         'cloud_intake_reauth' => 'Cloud document intake :provider (":folder") needs to be reconnected (:status).',
         'cloud_intake_quarantined' => ':count file(s) from the cloud document intake were rejected (last reason: :reason).',
+        'sms_budget_warning' => 'SMS quota :month: :used of :limit segments used (:percent %).',
+        'sms_budget_exhausted' => 'SMS quota :month used up (:used of :limit segments) — no further SMS will be sent until the end of the month.',
         'support_grant_summary' => ':count active support grant(s) — review and revoke if needed.',
     ],
     'filter' => [

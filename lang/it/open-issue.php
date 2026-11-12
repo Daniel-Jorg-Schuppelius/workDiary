@@ -12,8 +12,10 @@ return [
     'title' => [
         'index' => 'Punti aperti',
         'show' => 'Punto aperto :title',
+        'history' => 'Cronologia',
     ],
     'field' => [
+        'ticket' => 'Ticket',
         'title' => 'Titolo',
         'description' => 'Descrizione',
         'category' => 'Categoria',
@@ -30,6 +32,8 @@ return [
         'follow_up' => 'Incarico di follow-up',
     ],
     'action' => [
+        'details' => 'Dettagli',
+        'openTicket' => 'Apri ticket',
         'create' => 'Crea punto aperto',
         'edit' => 'Modifica',
         'assign' => 'Assegna',
@@ -44,6 +48,8 @@ return [
         'followUp' => 'Crea incarico di follow-up',
     ],
     'flash' => [
+        'ticketOpened' => 'Il ticket :no è stato aperto dal punto aperto.',
+        'ticketExists' => 'Per questo punto aperto esiste già il ticket :no.',
         'created' => 'Punto aperto creato.',
         'updated' => 'Punto aperto aggiornato.',
         'deleted' => 'Punto aperto eliminato.',
@@ -60,5 +66,15 @@ return [
 
     'follow_up' => [
         'content_intro' => 'Incarico di follow-up per il punto aperto #:id «:title»',
+    ],
+    'hint' => [
+        'edit_tracked' => 'Le modifiche a scadenza, gravità e visibilità sono riportate nella cronologia del punto.',
+    ],
+
+    'filter' => [
+        'all_statuses' => 'Tutti gli stati',
+        'all_severities' => 'Tutte le gravità',
+        'all_assignees' => 'Tutti i responsabili',
+        'no_match' => 'Nessun punto aperto corrisponde al filtro.',
     ],
 ];

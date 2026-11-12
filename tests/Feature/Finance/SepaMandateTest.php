@@ -89,6 +89,24 @@ class SepaMandateTest extends TestCase {
         $this->assertFalse($mandate->isUsable());
     }
 
+    /** MVP-1620: der Fristenlauf schreibt den Verfall fest — nur bei 36 Monaten ohne Einzug. */
+    public function test_deadline_scan_marks_dormant_mandates_as_expired(): void {
+        $dormant = $this->mandate(['last_collected_on' => CarbonImmutable::today()->subMonths(37)->toDateString()]);
+        $recent = $this->mandate(['last_collected_on' => CarbonImmutable::today()->subMonths(35)->toDateString()]);
+        $unused = $this->mandate();
+        $revoked = $this->mandate(['status' => MandateStatus::Revoked->value, 'last_collected_on' => CarbonImmutable::today()->subMonths(40)->toDateString()]);
+
+        $scan = app(\App\Services\Finance\DeadlineScans\SepaMandateExpiryScan::class);
+        $options = new \App\Services\Notification\DeadlineScans\DeadlineScanOptions(7, 30);
+        $this->assertSame(0, $scan->run(app(\App\Services\Notification\NotificationDispatcher::class), $options));
+
+        $this->assertSame(MandateStatus::Expired, $dormant->fresh()?->status);
+        $this->assertSame(MandateStatus::Active, $recent->fresh()?->status);
+        $this->assertSame(MandateStatus::Active, $unused->fresh()?->status);
+        $this->assertSame(MandateStatus::Revoked, $revoked->fresh()?->status);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'sepaMandate.expired', 'auditable_id' => $dormant->id]);
+    }
+
     public function test_first_collection_has_the_longer_lead_time(): void {
         $first = $this->mandate();
         $recurring = $this->mandate(['last_collected_on' => CarbonImmutable::today()->subMonth()->toDateString()]);

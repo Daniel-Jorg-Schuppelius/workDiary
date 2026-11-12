@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Notification\Sms;
 
 use App\Enums\Notification\SmsDeliveryStatus;
+use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskType};
 use App\Models\Notification\NotificationDispatchLog;
 use App\Models\Platform\Organization;
+use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -34,6 +36,10 @@ use Illuminate\Support\Facades\Log;
  * auseinanderlaufen, ohne dass es jemandem auffiele.
  */
 class SmsBudgetService {
+    private const string DEDUPE_PREFIX = 'sms_budget:';
+
+    public function __construct(private readonly OperationsAlertService $alerts) {}
+
     /** Monatsgrenze in Segmenten; null = unbegrenzt. */
     public function limitFor(Organization $organization): ?int {
         // Org-explizit lesen (nicht Setting::get) — Scheduler und Queue laufen
@@ -62,7 +68,7 @@ class SmsBudgetService {
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->where('channel', NotificationDispatchLog::CHANNEL_SMS)
-            ->whereIn('status', [SmsDeliveryStatus::Sent->value, SmsDeliveryStatus::Delivered->value])
+            ->where('status', SmsDeliveryStatus::Sent->value)
             ->where('created_at', '>=', Carbon::now()->startOfMonth())
             ->sum('segments');
     }
@@ -76,32 +82,76 @@ class SmsBudgetService {
 
     /**
      * Nach einem erfolgreichen Versand: hat dieser Versand die Warnschwelle
-     * gerissen? Der Vergleich „vorher darunter, jetzt darüber" sorgt dafür,
-     * dass genau einmal je Monat gewarnt wird, ohne dafür einen Merker zu
-     * brauchen.
+     * oder den Deckel gerissen? Der Vergleich „vorher darunter, jetzt darüber"
+     * meldet jede Schwelle genau einmal je Monat, ohne Merker.
      */
     public function noteUsage(Organization $organization, int $segments): void {
         $limit = $this->limitFor($organization);
-        $percent = $this->warnPercent($organization);
-        if ($limit === null || $limit === 0 || $percent === 0 || $segments <= 0) {
+        if ($limit === null || $limit === 0 || $segments <= 0) {
             return;
         }
 
-        $threshold = (int) ceil($limit * $percent / 100);
         $used = $this->usedThisPeriod($organization);
-        if ($used < $threshold || $used - $segments >= $threshold) {
+        $percent = $this->warnPercent($organization);
+        $crossed = static fn (int $threshold): bool => $used >= $threshold && $used - $segments < $threshold;
+
+        if ($crossed($limit)) {
+            $this->warn($organization, $used, $limit, true);
+        } elseif ($percent > 0 && $crossed((int) ceil($limit * $percent / 100))) {
+            $this->warn($organization, $used, $limit, false);
+        }
+    }
+
+    /**
+     * Ein Versand scheiterte am Deckel. Meldet „aufgebraucht“, falls das noch
+     * nicht geschah (etwa nach Senken des Deckels mitten im Monat); weitere
+     * Sperren benachrichtigen nicht erneut.
+     */
+    public function noteExhausted(Organization $organization): void {
+        $limit = $this->limitFor($organization);
+        if ($limit === null) {
             return;
         }
 
-        Log::warning('sms: budget warning threshold reached', [
+        Log::warning('sms: monthly budget exhausted', ['organization_id' => $organization->id]);
+        $this->alerts->report($this->signal($organization, $this->usedThisPeriod($organization), $limit, true));
+    }
+
+    /**
+     * Betriebsaufgabe je Organisation und Monat: die Warnschwelle meldet als
+     * Warnung, der Deckel verschärft dieselbe Aufgabe auf kritisch — beides
+     * benachrichtigt die Verwaltung genau einmal (Dedupe im Alarmdienst).
+     */
+    private function warn(Organization $organization, int $used, int $limit, bool $exhausted): void {
+        Log::warning('sms: budget threshold reached', [
             'organization_id' => $organization->id,
             'used_segments' => $used,
             'limit_segments' => $limit,
-            'warn_percent' => $percent,
+            'exhausted' => $exhausted,
         ]);
-        $organization->audit('sms.budget_warning', [
+        $organization->audit($exhausted ? 'sms.budget_exhausted' : 'sms.budget_warning', [
             'used_segments' => $used,
             'limit_segments' => $limit,
         ]);
+
+        $this->alerts->resolve(self::DEDUPE_PREFIX . $organization->id . ':' . Carbon::now()->subMonthNoOverflow()->format('Y-m'));
+        $this->alerts->report($this->signal($organization, $used, $limit, $exhausted));
+    }
+
+    private function signal(Organization $organization, int $used, int $limit, bool $exhausted): OperationsSignal {
+        return new OperationsSignal(
+            type: OperationsTaskType::SmsBudgetWarning,
+            dedupeKey: self::DEDUPE_PREFIX . $organization->id . ':' . Carbon::now()->format('Y-m'),
+            severity: $exhausted ? OperationsTaskSeverity::Critical : OperationsTaskSeverity::Warning,
+            titleKey: $exhausted ? 'operations.task.sms_budget_exhausted' : 'operations.task.sms_budget_warning',
+            params: [
+                'month' => Carbon::now()->format('m/Y'),
+                'used' => $used,
+                'limit' => $limit,
+                'percent' => (int) floor($used * 100 / max(1, $limit)),
+            ],
+            organizationId: (int) $organization->id,
+            linkRoute: 'admin.settings.index',
+        );
     }
 }

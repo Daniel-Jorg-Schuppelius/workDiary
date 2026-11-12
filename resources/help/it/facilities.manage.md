@@ -1,7 +1,7 @@
 ---
 title: "Sedi e locali"
 topic: facilities.manage
-version: 2
+version: 3
 keywords:
     - edifici
     - piani
@@ -43,3 +43,5 @@ finestra di modifica della sala (scegliere il requisito, facoltativamente
 un livello o un valore e una nota). Nell'elenco delle sale e nel fascicolo
 oggetto di un asset collocato nella sala vengono mostrati i requisiti
 attivi.
+
+**Modificare un requisito della sala:** nella finestra della sala, «Modifica» su un requisito apre una finestra dedicata per tipo, livello, nota e interruttore di attività; poi torna alla finestra della sala.

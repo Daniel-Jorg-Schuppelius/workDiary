@@ -28,8 +28,4 @@ final class RouteResult {
     public function distanceKm(): float {
         return round($this->distanceMeters / 1000, 2);
     }
-
-    public function durationMinutes(): int {
-        return (int) ceil($this->durationSeconds / 60);
-    }
 }

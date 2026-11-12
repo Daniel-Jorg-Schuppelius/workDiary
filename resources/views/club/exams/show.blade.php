@@ -22,10 +22,17 @@
                         :badgeTone="$isCancelled ? 'error' : 'primary'"
                         back-route="club.exams.index" :back-label="__('club.action.back')">
             <x-slot:actions>
-                @if ($canCandidates && ! $isCancelled)
+                @if ($canCandidates && ! $isCancelled && $offer->results_released_at === null)
                     <x-icon-btn icon="person_add" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.exams.candidates.create', $offer)" show-label>{{ __('club.exams.action.add_candidate') }}</x-icon-btn>
                     <x-action-form :action="route('club.exams.recheck', $offer)">
                         <x-icon-btn type="submit" icon="rule" tone="outline" size="sm" show-label>{{ __('club.exams.action.recheck') }}</x-icon-btn>
+                    </x-action-form>
+                @endif
+                @if ($canRelease ?? false)
+                    <x-action-form :action="route('club.exams.release', $offer)"
+                                   :confirm="__('club.exams.confirm.release')"
+                                   :confirm-label="__('club.exams.action.release')">
+                        <x-icon-btn type="submit" icon="campaign" tone="primary" size="sm" show-label>{{ __('club.exams.action.release') }}</x-icon-btn>
                     </x-action-form>
                 @endif
                 @if ($canManage)
@@ -40,6 +47,13 @@
     </x-slot:toolbar>
 
     <x-validation-errors />
+
+    @if ($offer->results_released_at)
+        <div role="status" class="alert alert-success text-sm">
+            <x-icon name="campaign" />
+            <span>{{ __('club.exams.label.released_at', ['date' => $offer->results_released_at->ftime()]) }}</span>
+        </div>
+    @endif
 
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="space-y-4 lg:col-span-2">

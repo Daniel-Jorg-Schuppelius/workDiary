@@ -1,7 +1,7 @@
 ---
 title: "Prüfmittel & Kalibrierung"
 topic: asset-compliance.overview
-version: 2
+version: 4
 keywords:
     - Prüfmittelverwaltung
     - Eichung
@@ -233,3 +233,52 @@ Pflichten und Prüfquote.
 
 **Berechtigung:** **Prüfpflichten und Prüfmittel auflisten** – das gilt auch
 für das Einfrieren eines Snapshots.
+
+## Bearbeiten, deaktivieren, stornieren
+
+**Prüfprofile:** Auf der Seite **Prüfprofile** öffnet **Bearbeiten** ein
+Organisationsprofil (Name, Prüfart, Intervall, Vorwarnzeit, Toleranz,
+Nachfrist, Sperrwirkung, Zertifikatspflicht, Standard-Prüfstelle); der Code
+bleibt. Ein geändertes Intervall gilt ab der nächsten Prüfung für alle
+Pflichten ohne eigenes Intervall. **Deaktivieren** nimmt das Profil aus der
+Auswahl für neue Zuweisungen; bestehende Prüfpflichten und Protokolle
+bleiben. Deaktivierte Profile stehen unten unter „Deaktivierte
+Organisationsprofile" und lassen sich dort wieder aktivieren. Globale
+Vorlagen ändern Sie nicht – legen Sie ein Organisationsprofil mit gleichem
+Code an. Gelöscht wird nichts.
+
+**Anforderungen:** Je Anforderung ändern Sie Bezeichnung, Grenzwerte, Einheit
+und Pflicht. Neue Grenzwerte gelten für neue Prüfungen; alte Protokolle
+behalten ihre damaligen Werte. Eine deaktivierte Anforderung fragt der
+Prüfdialog nicht mehr ab.
+
+**Prüfpflichten:** In der Liste **Prüfpflichten** auf der Seite
+**Prüfmittel** ändern Sie über **Bearbeiten** das **Intervall für dieses
+Asset (Monate)**, letzte Prüfung, nächste Fälligkeit, Verantwortliche,
+Prüfstelle und Notiz. Lassen Sie die Fälligkeit leer, wird sie bei geändertem
+Intervall ab der letzten Prüfung neu gerechnet. Das Intervall je Asset geben
+Sie auch gleich beim Zuweisen an. **Deaktivieren** lässt die Pflicht ruhen:
+Offene Prüftermine werden storniert, die Sperre wegen Überfälligkeit dieser
+Pflicht endet, Protokolle bleiben. Über **Deaktivierte** sehen Sie ruhende
+Pflichten und nehmen sie wieder auf.
+
+**Termin stornieren:** Im **Prüfkalender** storniert die Aktion
+**Stornieren** einen offenen oder versäumten Termin; die Begründung ist
+Pflicht und steht danach unter dem Status. Die Prüfpflicht läuft weiter.
+
+**Versäumte Termine:** Ist der geplante Tag eines offenen Termins – ohne
+geplantes Datum die Fälligkeit – ohne Prüfung verstrichen, setzt der
+nächtliche Fristenlauf ihn auf **Versäumt**. Die Prüfung erfassen Sie dann
+über einen neuen Termin.
+
+**Roh-Messwerte:** Im Prüfdialog nimmt der Abschnitt **Roh-Messwerte** bis zu
+vier freie Messpunkte mit Wert und Einheit auf, ohne Grenzwertprüfung. Die
+Tabelle **Prüfprotokolle** unter dem Kalender zeigt die letzten 20 Prüfungen
+mit Ergebnis, Messwerten je Anforderung und den Roh-Messwerten.
+
+**Berechtigung:** Bearbeiten, Deaktivieren und Stornieren mit **Prüfprofile
+und Prüfpflichten pflegen**.
+
+## Prüfauftrag und Terminstand
+
+Nehmen Sie das Angebot eines Prüfdienstleisters an, stehen die Termine des Auftrags auf **In Durchführung**. Ein stornierter Auftrag gibt angekündigte und laufende Termine wieder frei; sie stehen dann auf **Geplant**.

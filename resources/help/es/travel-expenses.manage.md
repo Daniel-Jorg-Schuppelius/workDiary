@@ -1,7 +1,7 @@
 ---
 title: "Viajes, gastos y dietas"
 topic: travel-expenses.manage
-version: 5
+version: 7
 keywords:
     - nota de gastos
     - gastos de viaje
@@ -148,3 +148,7 @@ equipo) o marque las travesías en las que el vehículo viaja en ferry o tren.
 El segundo conductor no acumula tiempo de conducción, pero su tiempo en el
 vehículo no cuenta como descanso; en conducción en equipo bastan 9 horas de
 descanso en 30 horas. Una travesía en ferry o tren no interrumpe el descanso.
+
+**Recibo y reembolso:** si la categoría exige un recibo, el gasto sigue siendo un borrador hasta que se adjunte; súbalo mediante «Archivo del recibo» y luego envíelo. Al marcarlo como reembolsado, un diálogo pide la referencia del reembolso (por ejemplo, el concepto de la transferencia); aparece en la exportación de gastos.
+
+**Referencia de reembolso y vehículo:** al reembolsar un gasto o una dieta introduce una referencia, por ejemplo el concepto de la transferencia. En el libro de viajes registra la matrícula o la denominación de vehículos privados o de terceros.

@@ -33,6 +33,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $deviation_note
  * @property string|null $abort_reason
  * @property int|null $aborted_by_user_id
+ * @property Carbon|null $overdue_flagged_at
  */
 class PatrolRun extends Model {
     use Auditable;
@@ -48,6 +49,7 @@ class PatrolRun extends Model {
     protected $casts = [
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
+        'overdue_flagged_at' => 'datetime',
         'status' => PatrolRunStatus::class,
     ];
 

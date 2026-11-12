@@ -48,3 +48,8 @@ modulo degli asset: un valore dell’organizzazione con codice proprio vi
 compare in aggiunta, uno con il codice di una categoria generale ne sostituisce
 la denominazione e uno disattivato la nasconde. Una categoria usata da un
 asset può solo essere disattivata, non eliminata.
+
+Un valore ancora utilizzato da record — registrazioni di tempo, reclami,
+articoli o assegnazioni — non può essere eliminato. Il messaggio indica dove e
+quante volte è utilizzato. Lo disattivi invece con **Disattivare** nella sua
+riga: scompare dalle nuove selezioni, i record esistenti lo mantengono.

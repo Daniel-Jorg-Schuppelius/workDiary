@@ -100,6 +100,16 @@
                                                     :href="route('admin.classifications.edit', $classification)"
                                                     :title="__('Bearbeiten')" />
                                     @endcan
+                                    @can('update', $classification)
+                                        @if ($classification->active)
+                                            <form method="POST" action="{{ route('admin.classifications.deactivate', $classification) }}" class="inline">
+                                                @csrf
+                                                <x-icon-btn type="submit" icon="block" size="xs"
+                                                            :title="__('classification.action.deactivate')"
+                                                            data-confirm-dialog data-confirm-message="{{ __('classification.action.deactivate_confirm') }}" />
+                                            </form>
+                                        @endif
+                                    @endcan
                                     @can('delete', $classification)
                                         <form method="POST" action="{{ route('admin.classifications.destroy', $classification) }}" class="inline">
                                             @csrf @method('DELETE')

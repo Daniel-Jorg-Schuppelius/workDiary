@@ -1,7 +1,7 @@
 ---
 title: "Sites & rooms"
 topic: facilities.manage
-version: 2
+version: 3
 keywords:
     - facilities
     - buildings
@@ -43,3 +43,5 @@ cleaning profile and are maintained in the room edit dialog (pick the
 requirement, optionally a level or value and a note). Active requirements
 are shown in the room list and in the object file of any asset located in
 that room.
+
+**Change a room requirement:** In the room dialog, “Edit” on a requirement opens its own dialog for kind, level, note and active switch; afterwards you return to the room dialog.

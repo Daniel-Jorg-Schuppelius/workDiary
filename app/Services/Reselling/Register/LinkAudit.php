@@ -155,23 +155,6 @@ final class LinkAudit {
     }
 
     /**
-     * Prüffälle je Abo-ID (Zähler für Listen).
-     *
-     * @param  list<Finding>  $findings
-     * @return array<int, int>
-     */
-    public static function countBySubscription(array $findings): array {
-        $counts = [];
-        foreach ($findings as $finding) {
-            foreach ($finding['links'] as $link) {
-                $counts[(int) $link->subscription_id] = ($counts[(int) $link->subscription_id] ?? 0) + 1;
-            }
-        }
-
-        return $counts;
-    }
-
-    /**
      * @param  iterable<int>  $ids
      * @return Collection<int, ResaleSubscription>
      */

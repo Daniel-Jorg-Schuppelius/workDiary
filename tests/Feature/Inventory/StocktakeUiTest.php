@@ -79,6 +79,35 @@ final class StocktakeUiTest extends TestCase {
         $this->assertSame('8.0000', app(InventoryLedger::class)->balance($this->variant, $this->warehouse, StockState::Physical));
     }
 
+    /** MVP-1620: Zählung abschließen friert die Mengen zur Prüfung ein; Verwerfen bucht nichts. */
+    public function test_review_step_and_cancellation(): void {
+        $count = app(\App\Services\Inventory\StocktakeService::class)->open($this->warehouse);
+        $line = $count->lines->firstWhere('stock_state', StockState::Physical);
+        $review = ['status' => StockCountStatus::Review->value];
+
+        $this->actingAs($this->teamlead)->post(route('inventory.counts.transition', $count), $review)->assertSessionHas('error');
+        $this->assertSame(StockCountStatus::Counting, $count->fresh()?->status, 'Ohne Zählmenge keine Prüfung.');
+
+        $this->actingAs($this->teamlead)->post(route('inventory.counts.record', $count), ['counted' => [$line->id => '9']]);
+        $this->actingAs($this->teamlead)->post(route('inventory.counts.transition', $count), $review)->assertSessionHas('success');
+        $this->assertSame(StockCountStatus::Review, $count->fresh()?->status);
+        $this->actingAs($this->teamlead)->post(route('inventory.counts.record', $count), ['counted' => [$line->id => '1']])->assertStatus(422);
+        $this->actingAs($this->admin)->get(route('inventory.counts.show', $count))->assertOk()
+            ->assertSee(__('inventory.count_ui.reopen'))->assertDontSee(__('inventory.count_ui.submit_review'));
+
+        // Wieder öffnen und Verwerfen gehören zur Freigabe.
+        $this->actingAs($this->teamlead)->post(route('inventory.counts.transition', $count), ['status' => StockCountStatus::Counting->value])->assertForbidden();
+        $this->actingAs($this->admin)->post(route('inventory.counts.transition', $count), ['status' => StockCountStatus::Counting->value])->assertSessionHas('success');
+        $this->assertSame(StockCountStatus::Counting, $count->fresh()?->status);
+        $this->actingAs($this->admin)->post(route('inventory.counts.transition', $count), ['status' => StockCountStatus::Completed->value])->assertSessionHasErrors('status');
+
+        $this->actingAs($this->admin)->post(route('inventory.counts.transition', $count), ['status' => StockCountStatus::Cancelled->value])->assertSessionHas('success');
+        $this->assertSame(StockCountStatus::Cancelled, $count->fresh()?->status);
+        $this->assertSame('10.0000', app(InventoryLedger::class)->balance($this->variant, $this->warehouse, StockState::Physical), 'Verworfene Inventur bucht nichts.');
+        $this->actingAs($this->admin)->post(route('inventory.counts.apply', $count))->assertStatus(422);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'inventory.countStatusChanged', 'auditable_id' => $count->id]);
+    }
+
     private function makeVariant(): ArticleVariant {
         $article = Article::factory()->create(['organization_id' => $this->organization->id]);
 

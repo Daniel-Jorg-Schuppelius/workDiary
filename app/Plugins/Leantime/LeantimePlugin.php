@@ -13,9 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Leantime;
 
 use App\Models\Integration\ExternalReference;
-use App\Models\Platform\Organization;
 use App\Plugins\AbstractPlugin;
-use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer, TaskSyncer};
+use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer};
 use App\Plugins\Leantime\Api\LeantimeClientFactory;
 use App\Plugins\Leantime\Models\LeantimeConnection;
 use App\Plugins\Leantime\Services\LeantimeImportService;
@@ -24,7 +23,7 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSett
 /**
  * Leantime-Aufgabenimport (Feature 173, Phase 158): To-dos ausgewählter Leantime-Projekte werden als Aufgaben in WorkDiary-Projekte übernommen, nur lesend.
  */
-class LeantimePlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
+class LeantimePlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, LinksExternalRecords, SlotRenderer {
     use ChecksConnectionHealth, RendersTaskLink;
 
     public const string ID = 'leantime';
@@ -53,10 +52,6 @@ class LeantimePlugin extends AbstractPlugin implements LinksExternalRecords, Slo
         return [PluginCapability::TaskSync];
     }
 
-    public function syncTasks(Organization $organization): array {
-        return app(LeantimeImportService::class)->run($organization);
-    }
-
     public function adminPanel(): ?array {
         return ['route' => 'admin.leantime.index', 'label' => 'Leantime', 'icon' => 'rocket_launch'];
     }
@@ -79,5 +74,10 @@ class LeantimePlugin extends AbstractPlugin implements LinksExternalRecords, Slo
 
     protected function taskLinkType(): string {
         return self::EXT_TYPE_TICKET;
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Tasks];
     }
 }

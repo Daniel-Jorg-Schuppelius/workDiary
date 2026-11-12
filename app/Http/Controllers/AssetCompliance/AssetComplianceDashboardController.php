@@ -58,6 +58,12 @@ class AssetComplianceDashboardController extends Controller {
         $listed = match ($show) {
             'due_soon' => $dueSoon,
             'overdue' => $overdue,
+            // Ruhende Pflichten bleiben erreichbar, damit sie sich wieder aufnehmen lassen (MVP-1575).
+            'inactive' => AssetComplianceAssignment::query()
+                ->where('is_active', false)
+                ->with(['asset', 'profile', 'responsible'])
+                ->orderBy('next_due_on')
+                ->get(),
             default => $assignments,
         };
         if ($listed === $assignments) {
@@ -70,6 +76,7 @@ class AssetComplianceDashboardController extends Controller {
             'assignments' => $assignments,
             'listed' => $listed,
             'show' => $show,
+            'inactiveCount' => AssetComplianceAssignment::query()->where('is_active', false)->count(),
             'activeBlocks' => $activeBlocks,
             'statusByAsset' => $assignments->pluck('asset')->filter()->unique('id')
                 ->mapWithKeys(fn (Asset $asset) => [$asset->id => $this->service->statusFor($asset)]),

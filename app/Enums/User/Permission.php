@@ -158,6 +158,8 @@ enum Permission: string implements HasLabel {
     case SupplierExport = 'supplier.export';
     case SupplierImport = 'supplier.import';
     case SupplierLexofficeSync = 'supplier.lexoffice.sync';
+    // Nachweisarten wirken organisationsweit (Sperre im Einkauf) — eigenes Recht statt supplier.update.
+    case SupplierCredentialTypeManage = 'supplier.credentialTypes.manage';
 
         // ── Produkte & Leistungen (Lexoffice-Artikel) ──────────────────────
     case ArticleViewAny = 'article.viewAny';
@@ -605,6 +607,8 @@ enum Permission: string implements HasLabel {
     case HelpdeskTicketInternalNote = 'helpdesk.ticket.internal_note';
         // ── Servicekatalog & Request-Genehmigungen (Feature 065, MVP-154) ──
     case ServiceCatalogManage = 'service_catalog.manage';
+        // Interne Bestellung aus dem Servicekatalog (MVP-1549).
+    case ServiceCatalogRequest = 'service_catalog.request';
     case ServiceRequestApprove = 'service_request.approve';
         // ── Problem-Management (Feature 065, MVP-156) ─────────
     case ServiceDeskProblemManage = 'service_desk.problem.manage';
@@ -659,6 +663,11 @@ enum Permission: string implements HasLabel {
         // Ersatzmaterial-Genehmigung sind eigene, rollenbasierte Rechte.
     case InventoryNegative = 'inventory.negative';
     case InventorySubstituteApprove = 'inventory.substituteApprove';
+        // MVP-1585: getrennte Lagerrechte (Feature 048, Berechtigungen und Freigaben).
+    case InventoryCount = 'inventory.count';
+    case InventoryCountApprove = 'inventory.countApprove';
+    case InventoryReserve = 'inventory.reserve';
+    case InventoryExternalResolve = 'inventory.externalResolve';
 
         // ── Bewerbungen & Ausschreibungen (Feature 068, MVP-183) ──────────
         // Zwei GETRENNTE Rechtebereiche: Auftragsbewerbungen (tender.*) und

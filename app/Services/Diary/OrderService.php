@@ -12,25 +12,39 @@ namespace App\Services\Diary;
 
 use App\Enums\Classification\ClassificationRequirementPhase;
 use App\Enums\Diary\Status;
-use App\Enums\Protocol\ProtocolStatus;
+use App\Enums\Protocol\{ProtocolSignatureRole, ProtocolStatus};
+use App\Events\Diary\OrderCancelled;
 use App\Exceptions\InvalidOrderTransitionException;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Protocol\Protocol;
 use App\Services\Classification\ClassificationRequirementValidator;
+use App\Services\Timesheet\Stopwatch;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 class OrderService {
-    public function __construct(private readonly ClassificationRequirementValidator $requirements) {}
+    public function __construct(
+        private readonly ClassificationRequirementValidator $requirements,
+        private readonly Stopwatch $stopwatch,
+    ) {}
 
     public function accept(DiaryEntry $entry, User $actor): DiaryEntry {
         return $this->transition($entry, $actor, 'accept', Status::Accepted, [
             'accepted_at' => CarbonImmutable::now(),
             'accepted_by_user_id' => $actor->id,
         ]);
+    }
+
+    /** Annahme zurückgeben: der Auftrag ist wieder geplant und offen für eine andere Person. */
+    public function reject(DiaryEntry $entry, User $actor, string $reason): DiaryEntry {
+        return $this->transition($entry, $actor, 'reject', Status::Planned, [
+            'accepted_at' => null,
+            'accepted_by_user_id' => null,
+        ], $reason);
     }
 
     public function start(DiaryEntry $entry, User $actor): DiaryEntry {
@@ -62,6 +76,10 @@ class OrderService {
         return $this->transition($entry, $actor, 'resume', Status::InProgress, [
             'resumed_at' => $now,
             'wait_seconds_total' => (int) $entry->wait_seconds_total + $waitSeconds,
+            // Grund und Notiz der Pause stehen im Journal (order.pause).
+            'paused_at' => null,
+            'pause_reason' => null,
+            'pause_note' => null,
         ], payload: ['wait_seconds' => $waitSeconds]);
     }
 
@@ -76,7 +94,10 @@ class OrderService {
         return $completed;
     }
 
-    public function handover(DiaryEntry $entry, User $actor, Protocol $protocol): DiaryEntry {
+    /**
+     * @param  string|null  $signerName  Name der abnehmenden Person beim Kunden, falls das Protokoll keine Kundenunterschrift trägt
+     */
+    public function handover(DiaryEntry $entry, User $actor, Protocol $protocol, ?string $signerName = null): DiaryEntry {
         if (
             $protocol->status !== ProtocolStatus::Signed
             || ! MorphMap::is($protocol->subject_type, DiaryEntry::class)
@@ -85,17 +106,42 @@ class OrderService {
             throw new InvalidArgumentException((string) __('Für die Abnahme ist ein signiertes Protokoll dieses Auftrags erforderlich.'));
         }
 
+        $signer = self::customerSignerName($protocol) ?? StringHelper::trimToNull($signerName);
+
         return $this->transition($entry, $actor, 'handover', Status::AcceptedFinal, [
             'accepted_final_at' => $protocol->signed_at ?? CarbonImmutable::now(),
-            'accepted_final_by' => $actor->id,
+            'accepted_final_by' => $signer !== null ? mb_substr($signer, 0, 120) : null,
             'protocol_id' => $protocol->id,
-        ], payload: ['protocol_id' => $protocol->id]);
+        ], payload: array_filter(['protocol_id' => $protocol->id, 'signer' => $signer]));
     }
 
-    public function markInvoiced(DiaryEntry $entry, User $actor, string $reference): DiaryEntry {
+    /** Name unter der jüngsten Kundenunterschrift des Protokolls. */
+    public static function customerSignerName(Protocol $protocol): ?string {
+        $name = $protocol->signatures()
+            ->where('role', ProtocolSignatureRole::Customer->value)
+            ->latest('signed_at')
+            ->latest('id')
+            ->value('signer_name');
+
+        return StringHelper::trimToNull(is_string($name) ? $name : null);
+    }
+
+    /**
+     * @param  User|null  $actor  null, wenn ein Beleg den Auftrag berechnet (Rechnung, Übergabe)
+     * @param  array<string, mixed>  $payload  Herkunft des Belegs
+     */
+    public function markInvoiced(DiaryEntry $entry, ?User $actor, string $reference, array $payload = []): DiaryEntry {
         return $this->transition($entry, $actor, 'markInvoiced', Status::Invoiced, [
             'invoiced_at' => CarbonImmutable::now(),
-            'invoice_reference' => $reference,
+            'invoice_reference' => mb_substr($reference, 0, 120),
+        ], $reference, $payload);
+    }
+
+    /** Der Beleg, der den Auftrag berechnet hat, ist storniert: zurück auf „Abgenommen“. */
+    public function revertInvoiced(DiaryEntry $entry, ?User $actor, string $reference): DiaryEntry {
+        return $this->transition($entry, $actor, 'revertInvoiced', Status::AcceptedFinal, [
+            'invoiced_at' => null,
+            'invoice_reference' => null,
         ], $reference);
     }
 
@@ -130,7 +176,7 @@ class OrderService {
      */
     private function transition(
         DiaryEntry $entry,
-        User $actor,
+        ?User $actor,
         string $action,
         Status $target,
         array $attributes,
@@ -150,6 +196,20 @@ class OrderService {
             // unvollständig klassifizierter Auftrag wird nicht fertig.
             if ($action === 'complete') {
                 $this->requirements->assertSatisfied($locked, ClassificationRequirementPhase::BeforeComplete);
+                // Abschluss setzt beendete Zeiten voraus; wer noch läuft, nennt die Meldung.
+                $running = $this->stopwatch->runningOnOrder((int) $locked->id);
+                if ($running->isNotEmpty()) {
+                    throw InvalidOrderTransitionException::stopwatchRunning(
+                        array_values($running->map(fn ($time): string => (string) ($time->user->name ?? '—'))->unique()->all()),
+                    );
+                }
+            }
+            // Auf einem wartenden oder stornierten Auftrag läuft keine Zeit weiter.
+            if (in_array($action, ['pause', 'cancel'], true)) {
+                $stopped = $this->stopwatch->stopOnOrder((int) $locked->id)->modelKeys();
+                if ($stopped !== []) {
+                    $payload['stopped_time_entry_ids'] = $stopped;
+                }
             }
 
             $locked->forceFill($attributes + ['status' => $target->value])->save();
@@ -157,9 +217,13 @@ class OrderService {
             $locked->record('order.' . $action, $payload, $actor, extra: [
                 'from_status' => $from->slug(),
                 'to_status' => $target->slug(),
-                'actor_kind' => 'user',
+                'actor_kind' => $actor !== null ? 'user' : 'system',
                 'note' => $note,
             ]);
+
+            if ($action === 'cancel') {
+                OrderCancelled::dispatch((int) $locked->organization_id, (int) $locked->id, $actor?->id, (string) $note);
+            }
 
             return $locked->refresh();
         });
@@ -168,6 +232,8 @@ class OrderService {
     private function actionLabel(string $action): string {
         return match ($action) {
             'accept' => (string) __('Annehmen'),
+            'reject' => (string) __('diary.lifecycle.action.reject'),
+            'revertInvoiced' => (string) __('diary.lifecycle.action.revert_invoiced'),
             'start' => (string) __('Beginnen'),
             'pause' => (string) __('Pausieren'),
             'resume' => (string) __('Fortsetzen'),

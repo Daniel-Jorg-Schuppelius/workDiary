@@ -62,6 +62,7 @@
                     <th>{{ __('Status') }}</th>
                     <th>{{ __('Verantwortlich') }}</th>
                     <th>{{ __('Letzter Kontakt') }}</th>
+                    <x-custom-field-heads :columns="$customColumns" />
                 </tr>
             </x-slot:head>
             @foreach ($leads as $lead)
@@ -80,6 +81,7 @@
                     <td><x-status-badge :tone="$lead->status->tone()" size="sm">{{ $lead->status->label() }}</x-status-badge></td>
                     <td class="text-sm">{{ $lead->responsible?->name ?? '—' }}</td>
                     <td class="whitespace-nowrap text-sm">{{ $lead->last_contact_at?->fdate() ?? '—' }}</td>
+                    <x-custom-field-cells :columns="$customColumns" :model="$lead" />
                 </tr>
             @endforeach
         </x-table>

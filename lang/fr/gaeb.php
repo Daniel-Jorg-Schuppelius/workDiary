@@ -50,6 +50,9 @@ return [
     ],
 
     'show' => [
+        'findings' => 'Constats',
+        'findings_count' => 'Afficher :count constat(s)',
+        'conflict_line' => 'Position :ref (:status) : quantité :quantity, dans le fichier :incoming_quantity ; prix unitaire :price, dans le fichier :incoming_price',
         'back_to_boq' => 'Retour au bordereau',
         'positions' => 'Postes',
         'history' => 'Historique des imports',
@@ -137,6 +140,7 @@ return [
         'title' => 'Remarques préliminaires',
     ],
     'preflight' => [
+        'catalog_without_edition' => 'Le catalogue de groupes de coûts « :catalog » n’indique pas l’édition de la norme. Les groupes de coûts ont été repris ; veuillez attribuer l’édition au catalogue avant toute analyse.',
         'version_unknown' => 'La version GAEB n’a pas pu être détectée.',
         'version_unsupported' => 'La version GAEB :version n’est pas prise en charge (cible 3.3).',
         'phase_unknown' => 'La phase d’échange « :code » est inconnue.',
@@ -170,6 +174,25 @@ return [
     ],
 
     'progress' => [
+        'dialog' => [
+            'open' => 'Déclarer l’avancement et consulter les déclarations',
+            'title' => 'Déclarer l’avancement',
+            'quantity_hint' => 'Quantité exécutée dans l’unité de la position. Saisissez 0 pour une simple affectation des coûts d’une consommation de matériel.',
+            'source' => 'Source',
+            'material_usage_hint' => 'Consommation de matériel du projet pas encore affectée à une position. Ses coûts sont imputés à cette position dans l’analyse.',
+            'protocol_hint' => 'Procès-verbal du projet dont provient la déclaration. La déclaration y renvoie durablement.',
+            'history' => 'Déclarations précédentes',
+            'history_empty' => 'Aucune déclaration pour l’instant.',
+            'captured_at' => 'Saisi le',
+            'reference' => 'Référence',
+        ],
+        'error' => [
+            'material_usage' => 'La consommation de matériel n’appartient pas à ce projet ou est déjà affectée à une position.',
+            'protocol' => 'Le procès-verbal n’appartient pas à ce projet.',
+            'one_reference' => 'Veuillez choisir soit une consommation de matériel, soit un procès-verbal.',
+            'reference_required' => 'Les sources « procès-verbal » et « consommation de matériel » exigent la pièce correspondante.',
+            'position' => 'La position n’appartient pas à un devis quantitatif de ce projet ou est terminée.',
+        ],
         'from_takeoff' => 'Quantité recalculée à partir de :lines lignes de métré du X31.',
         'takeoff_skipped' => ':count lignes avec une formule non prise en charge ont été ignorées.',
         'title' => 'Métré / avancement',

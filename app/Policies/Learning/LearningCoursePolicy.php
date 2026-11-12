@@ -51,6 +51,11 @@ class LearningCoursePolicy {
         return ($user->can(P::LearningAuthor->value) || $user->can(P::LearningManage->value)) && $course->isVisibleTo($user);
     }
 
+    /** Zertifikat widerrufen (MVP-1599): Verwaltungsrecht — wer Inhalte schreibt, entzieht keine Nachweise. */
+    public function revokeCertificate(User $user, LearningCourse $course): bool {
+        return $user->can(P::LearningManage->value) && $course->isVisibleTo($user);
+    }
+
     /**
      * Neue Bearbeitungsrunde eines freigegebenen Kurses. Eigenes Recht statt
      * `update`: das verlangt einen bearbeitbaren Stand und wies deshalb jeden

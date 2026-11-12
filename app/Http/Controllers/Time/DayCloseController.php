@@ -85,6 +85,7 @@ class DayCloseController extends Controller {
             'issues' => $context['issues'],
             'hasBlocking' => $context['hasBlocking'],
             'aggregates' => $context['aggregates'],
+            'planIst' => $context['planIst'],
             'validator' => $validator,
             'openAttendance' => $openAttendance,
             'isToday' => $day->isSameDay(CarbonImmutable::now()),

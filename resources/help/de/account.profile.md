@@ -1,7 +1,7 @@
 ---
 title: "Profil & Konto"
 topic: account.profile
-version: 3
+version: 4
 keywords:
     - Benutzerkonto
     - Einstellungen
@@ -56,3 +56,11 @@ WorkDiary schreiben (Antwort auf eine E-Mail-Notiz, Antwort im Ticket). Bleibt
 das Feld leer, stehen Ihr Name und die Organisation unter der Antwort. Die
 E-Mail-Fußzeile der Organisation (Firmierung, Anschrift, Pflichtangaben) folgt
 automatisch; sie pflegt die Organisationsverwaltung in den Einstellungen.
+
+## Anmeldung von neuem Gerät
+
+Meldet sich jemand mit Ihrem Konto von einem unbekannten Gerät oder aus einem
+anderen Land an, erhalten Sie eine Nachricht per E-Mail und in der App. Unter
+**Benachrichtigungen** lässt sich diese Meldung abschalten; das Abschalten und
+das Wiedereinschalten werden protokolliert. Lassen Sie die Meldung möglichst an —
+sie ist oft der erste Hinweis auf eine Kontoübernahme.

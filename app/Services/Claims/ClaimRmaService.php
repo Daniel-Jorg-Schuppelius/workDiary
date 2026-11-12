@@ -48,7 +48,10 @@ class ClaimRmaService {
      * den gewählten Quarantäne-Zustand; Seriennummern werden als Rückläufer
      * markiert (Statuswechsel, Bestandswirkung nur über den Ledger).
      *
-     * @param array<string, mixed> $attributes warehouse_id, qty?, stock_state?, condition_note?
+     * Lager, Variante, Menge, Seriennummer und Charge lassen sich hier noch
+     * ergänzen (Portal-Rücksendungen kommen ohne Lagerbezug, MVP-1576).
+     *
+     * @param array<string, mixed> $attributes warehouse_id?, article_id?, article_variant_id?, stock_serial_id?, stock_lot_id?, qty?, stock_state?, condition_note?
      */
     public function receive(ClaimRmaReturn $rma, User $actor, array $attributes): ClaimRmaReturn {
         $requested = $attributes['stock_state'] ?? StockState::Quality;
@@ -60,6 +63,11 @@ class ClaimRmaService {
         return DB::transaction(function () use ($rma, $actor, $attributes, $state): ClaimRmaReturn {
             $rma->fill([
                 'warehouse_id' => $attributes['warehouse_id'] ?? $rma->warehouse_id,
+                'article_id' => $attributes['article_id'] ?? $rma->article_id,
+                'article_variant_id' => $attributes['article_variant_id'] ?? $rma->article_variant_id,
+                'stock_serial_id' => $attributes['stock_serial_id'] ?? $rma->stock_serial_id,
+                'stock_lot_id' => $attributes['stock_lot_id'] ?? $rma->stock_lot_id,
+                'serial_no' => $attributes['serial_no'] ?? $rma->serial_no,
                 'qty' => $attributes['qty'] ?? $rma->qty,
                 'stock_state' => $state,
                 'condition_note' => $attributes['condition_note'] ?? $rma->condition_note,
@@ -71,7 +79,7 @@ class ClaimRmaService {
             ])->save();
 
             $rma->refresh();
-            $this->stock->bookReturn($rma, $state->value, $actor);
+            $rma->stockBooked = $this->stock->bookReturn($rma, $state->value, $actor);
 
             return $rma;
         });
@@ -130,7 +138,7 @@ class ClaimRmaService {
         }
 
         return DB::transaction(function () use ($rma, $actor, $disposition, $note): ClaimRmaReturn {
-            $this->stock->applyDisposition($rma, $disposition, $actor);
+            $rma->stockBooked = $this->stock->applyDisposition($rma, $disposition, $actor);
 
             $rma->forceFill([
                 'status' => ClaimRmaStatus::Completed->value,

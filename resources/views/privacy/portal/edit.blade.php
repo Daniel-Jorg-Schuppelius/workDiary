@@ -65,7 +65,14 @@
                     <x-input-field name="intro_text" :label="__('dsar.admin.intro_text')" span="2">
                         <textarea id="intro_text" name="intro_text" rows="4" class="textarea textarea-bordered w-full">{{ old('intro_text', $portal->intro_text) }}</textarea>
                     </x-input-field>
-                    <x-input-field name="default_locale" :label="__('dsar.admin.default_locale')" :value="old('default_locale', $portal->default_locale)" />
+                    <x-input-field name="default_locale" :label="__('dsar.admin.default_locale')">
+                        <select id="default_locale" name="default_locale" class="select select-bordered w-full">
+                            <option value="">{{ __('Sprache der Anwendung') }}</option>
+                            @foreach (\App\Support\Locales::enabledCodes() as $code)
+                                <option value="{{ $code }}" @selected(old('default_locale', $portal->default_locale) === $code)>{{ \App\Support\Locales::native($code) }}</option>
+                            @endforeach
+                        </select>
+                    </x-input-field>
                 </x-form-group>
 
                 <x-icon-btn icon="save" tone="primary" size="sm" type="submit" show-label>{{ __('Speichern') }}</x-icon-btn>

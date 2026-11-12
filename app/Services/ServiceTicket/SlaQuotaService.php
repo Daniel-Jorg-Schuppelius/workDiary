@@ -17,8 +17,11 @@ use App\Models\Project\Project;
 use App\Models\Scopes\OrganizationScope;
 use App\Models\ServiceTicket\{SlaContract, SlaContractQuota};
 use App\Models\Time\TimeEntry;
+use App\Services\Billing\DocumentTotalsCalculator;
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 
 /**
  * Berechnet den Inklusivzeit-Verbrauch eines SLA-Kontingents (Feature 010 →
@@ -31,8 +34,10 @@ use Carbon\{CarbonImmutable, CarbonInterface};
  * einen Kunden gebunden (Default-Vertrag), zählt die gesamte abrechenbare Zeit
  * der Organisation im Zeitraum.
  *
- * Die Beträge (`overage_rate`/`flat_fee`) sind reine Nachweisfelder — die
- * Rechnungshoheit liegt beim externen Abrechnungsprogramm.
+ * Die Beträge (`overage_rate`/`flat_fee`) sind Nachweis — die Rechnungshoheit
+ * liegt beim externen Abrechnungsprogramm. Die Abrechnung des Zeitraums nennt
+ * Pauschale und Mehrstundenbetrag (über dem Kontingent × Satz), damit Vertrag und
+ * Rechnung abgeglichen werden können.
  */
 class SlaQuotaService {
     /**
@@ -40,7 +45,7 @@ class SlaQuotaService {
      * übergeben, damit auch scanner-/systemseitige Aufrufe ohne
      * Mandantenkontext funktionieren).
      *
-     * @return array{period_key: string, start: string, end: string, included_minutes: int, consumed_minutes: int, remaining_minutes: int, over_minutes: int, percentage: int, threshold_reached: bool}
+     * @return array{period_key: string, start: string, end: string, included_minutes: int, consumed_minutes: int, remaining_minutes: int, over_minutes: int, percentage: int, threshold_reached: bool, flat_fee: ?Money, overage_rate: ?Money, overage_amount: ?Money}
      */
     public function usage(SlaContract $contract, SlaContractQuota $quota, ?CarbonInterface $reference = null): array {
         $reference ??= CarbonImmutable::now();
@@ -51,6 +56,7 @@ class SlaQuotaService {
         $remaining = max(0, $included - $consumed);
         $over = max(0, $consumed - $included);
         $percentage = $included > 0 ? (int) floor($consumed * 100 / $included) : 100;
+        $rate = Money::ofNullable($quota->overage_rate, CurrencyCode::Euro);
 
         return [
             'period_key' => $quota->period_kind->key($reference),
@@ -62,6 +68,9 @@ class SlaQuotaService {
             'over_minutes' => $over,
             'percentage' => $percentage,
             'threshold_reached' => $included > 0 && $percentage >= (int) $quota->warn_threshold_pct,
+            'flat_fee' => Money::ofNullable($quota->flat_fee, CurrencyCode::Euro),
+            'overage_rate' => $rate,
+            'overage_amount' => $rate !== null ? DocumentTotalsCalculator::lineNet(round($over / 60, 4), $rate) : null,
         ];
     }
 

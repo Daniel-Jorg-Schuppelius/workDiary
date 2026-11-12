@@ -1,7 +1,7 @@
 ---
 title: "Notifications"
 topic: account.notifications
-version: 1
+version: 2
 keywords:
     - alertes
     - messages
@@ -34,3 +34,5 @@ volontairement sobre : il existe un quota mensuel, les textes longs sont
 raccourcis et l'organisation est alertée avant épuisement du quota. Le SMS ne
 remplace pas la notification dans l'application, il l'accompagne lorsque
 personne n'est devant un écran.
+
+L’alerte de quota SMS parvient aux administrateurs de l’organisation sous forme de tâche d’exploitation avec notification : une fois au seuil d’alerte, puis une seconde fois lorsque le quota est épuisé — par mois. Le décompte repart à zéro avec le nouveau mois.

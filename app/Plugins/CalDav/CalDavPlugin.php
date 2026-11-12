@@ -37,7 +37,7 @@ use Throwable;
  * Kündigt {@see PluginCapability::CalendarPublish} an. Rückimport externer
  * Termine ist bewusst zweite Ausbaustufe.
  */
-class CalDavPlugin extends AbstractPlugin implements CalendarPublisher {
+class CalDavPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, CalendarPublisher {
     public const string ID = 'caldav';
 
     public const string SERVICE_PROVIDER = CalDavServiceProvider::class;
@@ -215,5 +215,10 @@ class CalDavPlugin extends AbstractPlugin implements CalendarPublisher {
 
             return (string) __('Verbunden mit :url.', ['url' => $connection->base_url]);
         });
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Calendar];
     }
 }

@@ -10,8 +10,9 @@
 
 namespace Tests\Feature\Privacy;
 
-use App\Enums\Privacy\{ControllerRole, MeasureCategory, ReviewResult};
+use App\Enums\Privacy\{ControllerRole, ImplementationStatus, MeasureCategory, ProtectionLevel, ReviewResult};
 use App\Models\Platform\{Organization, User};
+use App\Models\Privacy\TechnicalMeasure;
 use App\Services\Privacy\{DataProtectionPermissions, ProcessingActivityService, TechnicalMeasureService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -78,6 +79,40 @@ class PrivacyTomTest extends TestCase {
         $this->assertIsArray($snapshot);
         $this->assertCount(1, $snapshot);
         $this->assertSame('Zugriffskonzept', $snapshot[0]['name']);
+    }
+
+    /** MVP-1620: Umsetzungsstand und Schutzbedarf sind bei Anlage und später erfassbar und gehen in den VVT-Snapshot. */
+    public function test_implementation_status_and_protection_level_are_captured(): void {
+        $org = Organization::factory()->create();
+        $officer = $this->officer($org);
+
+        $this->actingAs($officer)->get(route('dataprotection.tom.create'))->assertOk()->assertSee(__('privacy.tom.protection_level'));
+        $this->actingAs($officer)->post(route('dataprotection.tom.store'), [
+            'name' => 'Mehrfaktor-Anmeldung', 'category' => MeasureCategory::DataAccess->value,
+            'implementation_status' => ImplementationStatus::Partial->value, 'protection_level' => ProtectionLevel::High->value,
+        ])->assertRedirect();
+        $measure = TechnicalMeasure::query()->where('name', 'Mehrfaktor-Anmeldung')->sole();
+        $this->assertSame(ImplementationStatus::Partial, $measure->implementation_status);
+        $this->assertSame(ProtectionLevel::High, $measure->protection_level);
+
+        $this->actingAs($officer)->post(route('dataprotection.tom.state', $measure), [
+            'implementation_status' => ImplementationStatus::Implemented->value, 'protection_level' => ProtectionLevel::VeryHigh->value,
+        ])->assertSessionHas('status', __('privacy.tom.state_saved'));
+        $measure->refresh();
+        $this->assertSame(ImplementationStatus::Implemented, $measure->implementation_status);
+        $this->assertSame(ProtectionLevel::VeryHigh, $measure->protection_level);
+        $this->actingAs($officer)->post(route('dataprotection.tom.state', $measure), ['implementation_status' => ImplementationStatus::NotApplicable->value])->assertSessionHasNoErrors();
+        $this->assertNull($measure->fresh()?->protection_level);
+        $this->actingAs($officer)->get(route('dataprotection.tom.show', $measure))->assertOk()->assertSee(ImplementationStatus::NotApplicable->label());
+
+        $actor = User::factory()->create(['organization_id' => $org->id]);
+        $vvt = app(ProcessingActivityService::class);
+        $activity = $vvt->createDraft($org, 'Kundenkonto', 'Vertrag', ControllerRole::Controller, [], $actor);
+        app(TechnicalMeasureService::class)->assignToActivity($measure, $activity);
+        app(TechnicalMeasureService::class)->updateState($measure, ImplementationStatus::Implemented, ProtectionLevel::Normal);
+        $vvt->approve($activity, $activity->versions()->firstOrFail(), $actor);
+        $snapshot = (array) data_get($activity->versions()->firstOrFail()->payload, 'tom_snapshot');
+        $this->assertSame('normal', $snapshot[0]['protection_level'] ?? null);
     }
 
     public function test_assign_only_within_org_via_http(): void {

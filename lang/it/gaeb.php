@@ -50,6 +50,9 @@ return [
     ],
 
     'show' => [
+        'findings' => 'Rilievi',
+        'findings_count' => 'Mostrare :count rilievo/i',
+        'conflict_line' => 'Voce :ref (:status): quantità :quantity, nel file :incoming_quantity; prezzo unitario :price, nel file :incoming_price',
         'back_to_boq' => 'Torna al computo',
         'positions' => 'Voci',
         'history' => 'Cronologia importazioni',
@@ -137,6 +140,7 @@ return [
         'title' => 'Premesse',
     ],
     'preflight' => [
+        'catalog_without_edition' => 'Il catalogo dei gruppi di costo «:catalog» non indica l’edizione della norma. I gruppi di costo sono stati acquisiti; assegni l’edizione al catalogo prima di valutare.',
         'version_unknown' => 'Impossibile rilevare la versione GAEB.',
         'version_unsupported' => 'La versione GAEB :version non è supportata (linea obiettivo 3.3).',
         'phase_unknown' => 'La fase di scambio «:code» è sconosciuta.',
@@ -170,6 +174,25 @@ return [
     ],
 
     'progress' => [
+        'dialog' => [
+            'open' => 'Segnalare l’avanzamento e vedere le segnalazioni',
+            'title' => 'Segnalare l’avanzamento',
+            'quantity_hint' => 'Quantità eseguita nell’unità della voce. Inserisca 0 per la sola attribuzione dei costi di un consumo di materiale.',
+            'source' => 'Origine',
+            'material_usage_hint' => 'Consumo di materiale del progetto non ancora assegnato a una voce. I suoi costi vengono attribuiti a questa voce nella valutazione.',
+            'protocol_hint' => 'Verbale del progetto da cui proviene la segnalazione. La segnalazione vi fa riferimento in modo permanente.',
+            'history' => 'Segnalazioni precedenti',
+            'history_empty' => 'Ancora nessuna segnalazione.',
+            'captured_at' => 'Registrato il',
+            'reference' => 'Riferimento',
+        ],
+        'error' => [
+            'material_usage' => 'Il consumo di materiale non appartiene a questo progetto o è già assegnato a una voce.',
+            'protocol' => 'Il verbale non appartiene a questo progetto.',
+            'one_reference' => 'Scelga un consumo di materiale oppure un verbale.',
+            'reference_required' => 'Le origini «verbale» e «consumo di materiale» richiedono il relativo documento.',
+            'position' => 'La voce non appartiene a un computo di questo progetto oppure è conclusa.',
+        ],
         'from_takeoff' => 'Quantità ricalcolata da :lines righe di misurazione del X31.',
         'takeoff_skipped' => ':count righe con una formula non supportata sono state ignorate.',
         'title' => 'Misurazione / avanzamento',

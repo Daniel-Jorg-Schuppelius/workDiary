@@ -10,11 +10,14 @@
 
 namespace App\Services\Procedure;
 
-use App\Enums\Procedure\{ProcedureRunEventType, ProcedureRunStatus, ProcedureStepRunStatus, ProcedureStepType};
+use App\Enums\Procedure\{ProcedureRiskLevel, ProcedureRunEventType, ProcedureRunStatus, ProcedureStepRunStatus, ProcedureStepType};
 use App\Events\Procedure\ProcedureRunProgressed;
-use App\Exceptions\{ProcedureDeviationValidationException, ProcedureRunIncompleteException, ProcedureStepBlockedException};
+use App\Exceptions\{AssetNotUsableException, ProcedureDeviationValidationException, ProcedureRunIncompleteException, ProcedureStepBlockedException};
+use App\Models\Asset\Asset;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Procedure\{ProcedureBackupProof, ProcedureRun, ProcedureRunEvent, ProcedureStepDef, ProcedureStepRun, ProcedureTemplate, ProcedureTemplateVersion};
+use App\Services\Asset\AssetUsageGuard;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -32,17 +35,28 @@ class ProcedureExecutionService {
     // Wurf-Semantik bleibt hier bewusst erhalten (Pflicht-Run).
     use \App\Services\Procedure\Concerns\RecordsProcedureRunEvents;
 
+    /** Kontext der Asset-Sperre; eine Ausnahmefreigabe für „procedure“ lässt den Start zu. */
+    public const string ASSET_CONTEXT = 'procedure';
+
+    public const string REASON_CRITICAL_SECOND_PERSON = 'criticalSecondPersonMissing';
+
     public function __construct(
         private readonly ProcedureTemplateService $templates,
         private readonly BackupProofService $backups,
         private readonly SecondPersonGate $secondPerson,
         private readonly DeviationRecorder $deviations,
+        private readonly StepQualificationCheck $qualifications,
+        private readonly AssetUsageGuard $assetGuard,
     ) {}
 
     /**
      * Startet einen Run auf Basis der aktuell gueltigen Version der
      * Vorlage (gefroren) und erzeugt fuer jeden Schritt einen
-     * pending Step-Run.
+     * pending Step-Run. An einem gesperrten Asset startet nur eine Version,
+     * die das ausdrücklich erlaubt (`allow_blocked`).
+     *
+     * @throws AssetNotUsableException
+     * @throws \RuntimeException ohne veröffentlichte Version
      */
     public function start(ProcedureTemplate $template, Model $subject, User $actor, ?User $assignee = null): ProcedureRun {
         $version = $this->templates->currentVersionFor($template);
@@ -52,6 +66,12 @@ class ProcedureExecutionService {
                 $template->id,
                 Carbon::today()->toDateString(),
             ));
+        }
+
+        // Am Auftrag gilt die Sperre des Auftrags-Assets genauso (asset-sperrstatus §4).
+        $asset = $subject instanceof DiaryEntry ? $subject->asset : $subject;
+        if ($asset instanceof Asset && ! $version->allow_blocked) {
+            $this->assetGuard->ensureUsable($asset, self::ASSET_CONTEXT);
         }
 
         return DB::transaction(function () use ($template, $version, $subject, $actor, $assignee) {
@@ -120,7 +140,10 @@ class ProcedureExecutionService {
             return ProcedureStepBlockedException::REASON_MISSING_ROLE;
         }
 
-        if ($def->required_qualification_code !== null && $def->required_qualification_code !== '') {
+        if (
+            $actor !== null && $def->required_qualification_code !== null && $def->required_qualification_code !== ''
+            && ! $this->qualifications->holds($actor, $def->required_qualification_code, (int) $run->organization_id)
+        ) {
             return ProcedureStepBlockedException::REASON_MISSING_QUALIFICATION;
         }
 
@@ -162,9 +185,8 @@ class ProcedureExecutionService {
     /**
      * Setzt einen Schritt auf einen finalen Status (oder
      * uebersteuert pending → blocked / pending). Validiert
-     * vorab via {@see canExecute()} (ausser bei `failed`, das auch
-     * bei gesperrtem Schritt erlaubt sein muss, um Abweichungen zu
-     * dokumentieren — folgt in MVP-029).
+     * vorab via {@see canExecute()}. Abweichungen an einem gesperrten
+     * Schritt erfasst der {@see DeviationRecorder}.
      *
      * @param  array<string, mixed>  $payload
      */
@@ -223,11 +245,10 @@ class ProcedureExecutionService {
     }
 
     /**
-     * Schliesst einen Run ab. Wirft
-     * {@see ProcedureRunIncompleteException}, wenn Pflichtschritte
-     * offen sind. Vier-Augen-Pruefung fuer kritische Runs folgt in
-     * MVP-028 — dieser Service prueft bereits den Risk-Level und
-     * legt das Audit-Event ab.
+     * Schliesst einen Run ab. Wirft {@see ProcedureRunIncompleteException},
+     * wenn Pflichtschritte offen sind oder einem kritischen Lauf die
+     * Vier-Augen-Freigabe fehlt, und {@see ProcedureDeviationValidationException}
+     * bei einer kritischen Abweichung ohne Entscheidung.
      */
     public function completeRun(ProcedureRun $run, User $actor): ProcedureRun {
         $missing = $this->missingRequiredStepRuns($run);
@@ -247,6 +268,13 @@ class ProcedureExecutionService {
             throw ProcedureDeviationValidationException::criticalOpen();
         }
 
+        if ($this->lacksCriticalSecondPerson($run)) {
+            $this->recordEvent($run, ProcedureRunEventType::RunCompletionRejected, $actor, null, [
+                'reason' => self::REASON_CRITICAL_SECOND_PERSON,
+            ]);
+            throw new ProcedureRunIncompleteException($run, [], self::REASON_CRITICAL_SECOND_PERSON);
+        }
+
         return DB::transaction(function () use ($run, $actor) {
             $run->status = ProcedureRunStatus::Completed;
             $run->completed_at = now();
@@ -257,6 +285,35 @@ class ProcedureExecutionService {
 
             return $run->refresh();
         });
+    }
+
+    /**
+     * Kritische Vorlage: der Abschluss braucht mindestens einen erledigten,
+     * gegengezeichneten Vier-Augen-Schritt. Altversionen ganz ohne solchen
+     * Schritt (vor der Veröffentlichungsprüfung entstanden) könnten das nie
+     * erfüllen und bleiben abschließbar, bis eine neue Version sie ablöst.
+     */
+    public function lacksCriticalSecondPerson(ProcedureRun $run): bool {
+        if ($run->templateVersion?->risk_level !== ProcedureRiskLevel::Critical) {
+            return false;
+        }
+
+        $stepRuns = $run->stepRuns()->with('stepDef')->get();
+        if (! $stepRuns->contains(fn (ProcedureStepRun $stepRun): bool => $this->secondPerson->requiresSecondPerson($stepRun))) {
+            return false;
+        }
+
+        foreach ($stepRuns as $stepRun) {
+            if (
+                $stepRun->status === ProcedureStepRunStatus::Done
+                && $stepRun->second_person_signed_at !== null
+                && $this->secondPerson->requiresSecondPerson($stepRun)
+            ) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function abort(ProcedureRun $run, User $actor, ?string $reason = null): ProcedureRun {

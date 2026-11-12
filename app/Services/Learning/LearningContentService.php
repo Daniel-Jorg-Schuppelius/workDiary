@@ -169,6 +169,17 @@ class LearningContentService {
                     $block[$flag] = StringHelper::parseBool($block[$flag]) ?? false;
                 }
             }
+
+            // Pflichtanteil (MVP-1598) nur am hochgeladenen Video: eine fremde
+            // Einbettung meldet keinen Fortschritt, die Regel wäre unerfüllbar.
+            if (isset($block['require_percent'])) {
+                if (! isset($block['attachment_id'])) {
+                    throw ValidationException::withMessages([
+                        'require_percent' => (string) __('learning.errors.video_percent_needs_upload'),
+                    ]);
+                }
+                $block['require_percent'] = max(1, min(100, (int) $block['require_percent']));
+            }
         }
 
         if ($kind->needsHostAllowlist() && isset($block['url'])) {

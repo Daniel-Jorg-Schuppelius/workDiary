@@ -10,9 +10,8 @@
 
 namespace Tests\Feature\Inventory;
 
-use App\Enums\Inventory\OutboxStatus;
 use App\Models\Inventory\{InventoryOutboxEntry, StockMovement};
-use App\Services\Inventory\{ExternalStockMirror, InventoryOutboxService};
+use App\Services\Inventory\ExternalStockMirror;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Tests\Concerns\WithOrganization;
@@ -91,16 +90,5 @@ final class ExternalStockMirrorTest extends TestCase {
         app(ExternalStockMirror::class)->mirror($movement, $this->organization);
 
         $this->assertSame(0, InventoryOutboxEntry::query()->count());
-    }
-
-    public function test_confirm_by_key_is_idempotent(): void {
-        Bus::fake();
-        $outbox = app(InventoryOutboxService::class);
-        $entry = $outbox->enqueue($this->organization->id, 'jtl_wawi', 'receipt', ['x' => 1], 'K-1');
-
-        $this->assertTrue($outbox->confirmByKey($this->organization->id, 'K-1'));
-        $this->assertTrue($outbox->confirmByKey($this->organization->id, 'K-1')); // idempotent
-        $this->assertFalse($outbox->confirmByKey($this->organization->id, 'UNKNOWN'));
-        $this->assertSame(OutboxStatus::Confirmed, $entry->fresh()->status);
     }
 }

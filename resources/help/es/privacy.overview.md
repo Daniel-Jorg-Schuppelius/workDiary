@@ -1,7 +1,7 @@
 ---
 title: "Resumen de la gestión de protección de datos"
 topic: privacy.overview
-version: 2
+version: 5
 keywords:
     - RGPD
     - registro de actividades de tratamiento
@@ -242,3 +242,15 @@ autodeclaración no verificada.
 
 **Permiso:** un permiso propio para gestionar el portal de interesados; sin
 él, la entrada de menú no aparece.
+
+**Destrucción de la clave tras la conservación:** el análisis de eliminación propone en **Conservación** destruir las solicitudes de interesados y las brechas de datos cerradas cuyo plazo de conservación ha expirado. Solo tras su confirmación y la ejecución WorkDiary destruye la clave del expediente: los contenidos dejan de ser legibles, los justificantes almacenados sin cifrar se eliminan y la descarga de un paquete de información cifrado responde «ya no existe». El número, el tipo, los plazos, la decisión y el historial permanecen como prueba.
+
+**Encargo de tratamiento:** al registrar un contrato de encargo de tratamiento indica si las medidas técnicas y organizativas (TOM) están comprobadas y fija la próxima revisión. La lista resalta las revisiones vencidas.
+
+## Estado de la tramitación, estado de implantación y contención
+
+**Solicitudes de interesados:** la tarjeta **Estado de la tramitación** registra que se ha solicitado una prueba de identidad, se ha enviado una consulta o ha llegado la respuesta; **Retirada por la persona** cierra el caso. El plazo legal sigue corriendo durante las consultas.
+
+**MTO:** el estado de implantación y la necesidad de protección (normal, alta, muy alta) se registran al crear la medida y se cambian en la propia medida. La aprobación de una actividad de tratamiento congela ambos en la instantánea de MTO.
+
+**Brechas de datos:** cuando todas las medidas están terminadas, una brecha aún no notificada muestra **Contenido**; la notificación y el cierre siguen siendo pasos propios.

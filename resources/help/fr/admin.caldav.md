@@ -1,7 +1,7 @@
 ---
 title: "Calendrier CalDAV"
 topic: admin.caldav
-version: 3
+version: 4
 keywords:
     - CalDAV
     - calendrier Nextcloud
@@ -167,3 +167,5 @@ seulement de la fenêtre de temps y restent.
   connexion est désactivée ou incomplète.
 - Les plannings manquent dans le calendrier : **Plannings & congés** n’est pas
   coché sous **Contenu publié**, ou les services ne sont pas encore publiés.
+
+**Souveraineté des données :** Les rendez-vous de ce calendrier relèvent du domaine calendrier. Si un autre système gère le calendrier, les propositions, séries et modifications apparaissent dans la boîte de réception des intégrations comme cas « Souveraineté des données » ; **Reprendre une fois** crée le rendez-vous ou la série. Les avis de suppression restent des cas ordinaires.

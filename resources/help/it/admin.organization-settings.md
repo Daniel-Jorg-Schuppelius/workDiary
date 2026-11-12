@@ -1,7 +1,7 @@
 ---
 title: "Organizzazione e impostazioni"
 topic: admin.organization-settings
-version: 6
+version: 8
 keywords:
     - impostazioni aziendali
     - impostazioni del tenant
@@ -303,6 +303,13 @@ gestione della piattaforma è un'impostazione di sistema in **Impostazioni
 
 Come nascono le fatture è descritto nel tema «Fatture & documenti».
 
+- **Richiedere l’approvazione prima dell’emissione (principio dei quattro
+  occhi)**: una fattura può essere emessa, inviata o trasferita al programma
+  di contabilità solo dopo la conferma di una seconda persona con **Rilascia**.
+  Chi ha creato la fattura non può approvarla. Da attivare solo se almeno due
+  persone possono emettere fatture; senza la spunta l’approvazione resta
+  facoltativa.
+
 ## Solleciti
 
 Valori predefiniti per livello per il sollecito singolo e la serie di
@@ -347,6 +354,9 @@ Tre campi agiscono inoltre su tutte le fatture create localmente:
   (regime delle piccole imprese).»; la XRechnung riceve la categoria fiscale
   E (esente). La spunta prevale su **Aliquota fiscale predefinita (%)** e sul
   reverse charge.
+- **Emettere solo fatture elettroniche convalidate**: la convalida della
+  fattura elettronica viene eseguita prima dell’emissione. Se la fattura non la
+  supera, l’emissione viene interrotta e si apre il rapporto di verifica.
 
 ## Fattura elettronica: documenti e destinatari
 
@@ -362,6 +372,17 @@ Regole per i documenti giustificativi nella fattura elettronica:
 ## Contabilità: principio dei quattro occhi
 
 L’opzione **Principio dei quattro occhi** del gruppo **Contabilità** richiede l’approvazione di una seconda persona: chi prepara una registrazione o una registrazione diretta (sconto, passaggio a perdita, registrazione di chiarimento, giroconto interno, saldi iniziali, acconto speciale) non la registra personalmente; chi compone un ciclo di pagamenti SEPA non lo rilascia personalmente. Le registrazioni dirette vengono allora create come bozze nella **Posta contabile** e hanno effetto solo dopo la registrazione definitiva. Senza l’opzione, WorkDiary le registra subito.
+
+## Riconciliazione bancaria: tolleranze
+
+Il gruppo **Riconciliazione bancaria** governa le proposte di abbinamento della
+riconciliazione dei pagamenti.
+
+- **Tolleranza in centesimi (importo)** (0–1, predefinito 0,02): differenza di
+  arrotondamento entro la quale un importo pagato è considerato corrispondente.
+- **Tolleranza sconto cassa (%)** (0–10, predefinito 3): pagamento inferiore
+  proposto come pagamento completo con sconto se la fattura non prevede
+  condizioni di sconto proprie.
 
 ## Cespiti: beni di modesto valore e fondo collettivo
 
@@ -588,8 +609,11 @@ direttamente dal server di tile configurato.
   immagini da questo server.
 - **Zoom massimo** (1–22, predefinito 19): ingrandimento massimo delle mappe.
   Scelga al massimo il livello fornito dal server di tile.
-- L'attribuzione in fondo alla mappa è fissata dalla configurazione di base
-  del gestore; qui non si può modificare.
+- **Attribuzione** (fino a 255 caratteri, testo senza HTML): indicazione
+  richiesta dal fornitore delle tile, in basso a destra su ogni mappa, ad esempio
+  «© Fornitore». Se vuota vale l'attribuzione della configurazione di base
+  indicata dal testo grigio. Per un proprio server di tile inserisca
+  l'indicazione richiesta dalle sue condizioni d'uso.
 
 ## Fatturazione trasferta
 
@@ -631,6 +655,12 @@ festività regionali come il Corpus Domini o il giorno della Riforma valgono
 solo in determinati Länder – scelga quindi la regione della Sua azienda. Se il
 campo è vuoto vale il valore predefinito del sistema, che la prima voce
 dell'elenco indica come «Predefinito …».
+
+**Lingua dei nomi delle festività** stabilisce in quale lingua calendario,
+turni e report indicano le festività legali. Può scegliere tedesco (Germania,
+Austria, Svizzera), francese e italiano (Svizzera) nonché inglese, francese,
+italiano e spagnolo. Le festività proprie mantengono il loro nome. Se il campo
+è vuoto vale il valore predefinito del sistema.
 
 La regione agisce ovunque workDiary tenga conto delle festività, tra l'altro
 per:
@@ -722,3 +752,15 @@ organizzazione.
 
 L'attivazione e la disattivazione della modalità manutenzione vengono
 registrate nel registro di audit.
+
+**Ambito giuridico:** nei dati anagrafici si sceglie l’ambito giuridico
+dell’organizzazione. Determina i termini di conservazione delle proposte di
+eliminazione e le indicazioni della documentazione delle procedure; la
+modifica è riportata nel registro di audit.
+
+Nelle impostazioni avanzate si definiscono inoltre: l’intervallo del controllo
+della patente, la matrice delle priorità dell’helpdesk (impatto × urgenza,
+cella vuota = valore predefinito), la soglia di avviso della pianificazione
+della capacità, la soglia del secondo livello di approvazione degli
+investimenti, separatore e righe di metadati dell’esportazione CSV dei report
+e il termine di eliminazione delle candidature respinte.

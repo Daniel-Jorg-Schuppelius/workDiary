@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Gaeb;
 
+use App\Models\Gaeb\GaebImport;
 use RuntimeException;
 
 /**
@@ -19,8 +20,11 @@ use RuntimeException;
  * überschreiben. Der Import bricht ab, ohne Bestehendes still zu ändern.
  */
 class BoqImportConflictException extends RuntimeException {
-    /** @param list<string> $conflictingRefs */
-    public function __construct(public readonly array $conflictingRefs) {
+    /**
+     * @param list<string> $conflictingRefs
+     * @param GaebImport|null $import Protokolleintrag des abgewiesenen Laufs (MVP-1582)
+     */
+    public function __construct(public readonly array $conflictingRefs, public readonly ?GaebImport $import = null) {
         parent::__construct('Reimport berührt Positionen mit Ausführungsbezug: ' . implode(', ', $conflictingRefs));
     }
 }

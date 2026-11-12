@@ -410,6 +410,31 @@ class RentalBillingService {
     }
 
     /**
+     * Erlass einer angeforderten, nicht gezahlten Kaution (MVP-1620) — nur mit
+     * Begründung, damit offene Anforderungen nicht ewig stehen bleiben.
+     */
+    public function waiveDeposit(RentalDeposit $deposit, User $actor, string $reason): RentalDeposit {
+        if (trim($reason) === '') {
+            throw new \InvalidArgumentException((string) __('rental.deposit.error.reason_required'));
+        }
+
+        return DB::transaction(function () use ($deposit, $actor, $reason): RentalDeposit {
+            /** @var RentalDeposit $locked */
+            $locked = RentalDeposit::query()->whereKey($deposit->id)->lockForUpdate()->firstOrFail();
+            if ($locked->status !== RentalDepositStatus::Requested) {
+                throw new \RuntimeException((string) __('rental.deposit.error.not_waivable'));
+            }
+            $locked->forceFill([
+                'status' => RentalDepositStatus::Waived->value,
+                'recorded_by' => $actor->id,
+            ])->save();
+            $locked->rentalCase?->audit('rental.depositWaived', ['amount' => (string) $locked->amount, 'reason' => trim($reason)]);
+
+            return $locked;
+        });
+    }
+
+    /**
      * Kautionsabschluss: vollständige Erstattung, Teil- oder Voll-Einbehalt.
      * Einbehalt braucht eine Pflichtbegründung (Streit/Kulanz → Claims).
      */

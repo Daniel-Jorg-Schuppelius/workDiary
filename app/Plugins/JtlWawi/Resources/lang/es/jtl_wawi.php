@@ -88,6 +88,8 @@ return [
     'inventory' => [
         'heading' => 'Liderazgo de existencias',
         'explain' => 'Define qué sistema lidera las existencias. Volver a «local» importa las existencias de JTL como inventario de apertura.',
+        'takeover_heading' => 'Inventario de apertura',
+        'takeover_explain' => 'Vuelve a leer las existencias de JTL y contabiliza la diferencia con las existencias locales como corrección de apertura, por ejemplo si la importación falló al cambiar de modo. Solo es posible el día del cambio a «local»; una segunda ejecución no contabiliza nada dos veces.',
         'mode_local' => 'Local — WorkDiary gestiona las existencias por sí mismo.',
         'mode_external' => 'Externo — lidera JTL-Wawi; WorkDiary lee y traspasa los asientos.',
         'mode_read_only' => 'Solo lectura — lidera JTL-Wawi; WorkDiary solo muestra las existencias.',
@@ -101,11 +103,13 @@ return [
         'check_registration' => 'Comprobar aprobación',
         'map' => 'Asignar',
         'change_mode' => 'Cambiar modo',
+        'takeover' => 'Ejecutar inventario de apertura',
     ],
 
     'confirm' => [
         'disconnect' => '¿Desconectar de verdad? Las asignaciones y proyecciones se conservan; las credenciales se eliminan.',
         'mode_change' => '¿Cambiar de verdad el modo de liderazgo de existencias?',
+        'takeover' => '¿Importar ahora las existencias de JTL como inventario de apertura?',
     ],
 
     'flash' => [
@@ -127,8 +131,10 @@ return [
         'mode_needs_connection' => 'El liderazgo externo de existencias requiere una conexión JTL activa.',
         'mode_needs_mapping' => 'El liderazgo externo de existencias requiere al menos un almacén JTL asignado.',
         'mode_changed' => 'Modo de liderazgo de existencias cambiado.',
+        'mode_other_plugin' => 'Las existencias las gestiona actualmente :plugin. El cambio se hace en la página de ese plugin.',
         'mode_changed_with_takeover' => 'Modo cambiado — :booked correcciones de apertura importadas de JTL.',
         'takeover_done' => 'Inventario de apertura finalizado: :booked correcciones de :pairs pares.',
         'takeover_failed' => 'Falló el inventario de apertura (:reason).',
+        'takeover_not_today' => 'El inventario de apertura solo es posible el día del cambio a «local»; después mandan las existencias locales.',
     ],
 ];

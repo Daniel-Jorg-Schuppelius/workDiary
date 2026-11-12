@@ -1,7 +1,7 @@
 ---
 title: "AI services"
 topic: ai.services
-version: 3
+version: 5
 keywords:
     - AI assistant
     - artificial intelligence
@@ -61,3 +61,18 @@ until you click — quantities, prices and tax remain untouched.
 and in a protocol “Refine all items” rephrases every item with text. Both run
 in the background. Each line and item receives its own suggestion, which you
 accept or reject individually; nothing is applied automatically.
+
+**Choosing a connection:** If your organisation allows “users may choose”
+for a service and several connections are permitted, the suggestion shows a
+selection. “Regenerate” creates the suggestion with the chosen connection;
+the previous open suggestion is replaced. The choice is recorded in the audit
+log.
+
+**Connection choice:** If the organisation allows “Users may choose” for a service, a suggestion can also be regenerated with another permitted connection at the transfer (line texts), in the activity research of the search and for “Explain plan vs. actual”.
+
+**Monthly budget:** On the **AI usage** page, “Monthly budget” sets an upper
+limit per calendar month for each family – tokens for language models,
+characters for translations. Once it is reached, workDiary rejects further
+calls of this family until the end of the month with a message; the tiles show
+the utilisation. If empty, the operator default applies; without a default,
+usage is unlimited.

@@ -44,6 +44,9 @@ class ClaimRmaReturn extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
+    /** Ergebnis der letzten Buchung für die Rückmeldung an den Nutzer — kein Attribut, wird nie gespeichert. */
+    public bool $stockBooked = false;
+
     protected $fillable = [
         'organization_id', 'claim_case_id', 'rma_number', 'status',
         'expected_at', 'received_at', 'received_by', 'warehouse_id',
@@ -101,6 +104,11 @@ class ClaimRmaReturn extends Model {
     /** @return HasMany<ClaimInspection, $this> */
     public function inspections(): HasMany {
         return $this->hasMany(ClaimInspection::class, 'claim_rma_return_id');
+    }
+
+    /** Lager, Variante und Menge stehen fest — nur dann bewegt der Rückläufer Bestand. */
+    public function hasStockReference(): bool {
+        return $this->article_variant_id !== null && $this->warehouse_id !== null && (float) $this->qty > 0;
     }
 
     /**

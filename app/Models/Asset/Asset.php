@@ -22,8 +22,8 @@ use App\Models\Protocol\Protocol;
 use App\Models\ServiceTicket\SlaContract;
 use App\Support\Sqid;
 use Database\Factories\Asset\AssetFactory;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMany};
 use Illuminate\Support\Carbon;
 
@@ -52,6 +52,7 @@ use Illuminate\Support\Carbon;
  * @property AssetHealth $health
  * @property Carbon|null $commissioned_on
  * @property Carbon|null $decommissioned_on
+ * @property string|null $decommission_reason
  * @property Carbon|null $warranty_until
  * @property Carbon|null $next_maintenance_on
  * @property Carbon|null $next_inspection_on
@@ -90,6 +91,7 @@ class Asset extends Model implements CustomFieldSubject {
         'health',
         'commissioned_on',
         'decommissioned_on',
+        'decommission_reason',
         'warranty_until',
         'next_maintenance_on',
         'next_inspection_on',
@@ -137,6 +139,33 @@ class Asset extends Model implements CustomFieldSubject {
         return self::query()
             ->where(fn ($q) => $q->where('asset_no', $code)->orWhere('inventory_no', $code)->orWhere('serial_no', $code))
             ->first();
+    }
+
+    /**
+     * Lieferant der Anschaffung; die Investition setzt ihn aus der empfohlenen Variante (MVP-1606).
+     *
+     * @return BelongsTo<\App\Models\Supplier\Supplier, $this>
+     */
+    public function acquiredFromSupplier(): BelongsTo {
+        return $this->belongsTo(\App\Models\Supplier\Supplier::class, 'acquired_from_supplier_id');
+    }
+
+    /**
+     * Assets im Betrieb — ohne außer Betrieb genommene, ersetzte und verlorene.
+     * Für Auswahllisten; die Einsatzprüfung selbst macht der AssetUsageGuard.
+     *
+     * @param Builder<self> $query
+     */
+    public function scopeInOperation(Builder $query): void {
+        $query->whereNotIn('status', [
+            AssetStatus::Decommissioned->value,
+            AssetStatus::Replaced->value,
+            AssetStatus::Lost->value,
+        ]);
+    }
+
+    public function isInOperation(): bool {
+        return ! in_array($this->status, [AssetStatus::Decommissioned, AssetStatus::Replaced, AssetStatus::Lost], true);
     }
 
     /** @return BelongsTo<Customer, $this> */

@@ -62,3 +62,18 @@ Data quality notes:
 Export as **PDF**, **CSV** or **Excel** for management and controlling.
 The page shows organisation-wide financial data and is only available to
 people with the **View reports** permission.
+
+## Maintaining the cost rate per employee
+
+The **internal cost rate** per person is the basis of costing. You find it in
+the employee dialog (**Organization** → **Employees** → edit) in the group
+**Rates for billing and costing**, next to the **Hourly rate (billing)**. Both
+fields are visible and editable only with the permission “Manage
+personnel & payroll data”; they do not appear in the user's own profile, and
+every change is logged.
+
+Order of rate resolution: the person's cost rate takes precedence over that of
+task, project and customer. The person's hourly rate likewise takes precedence
+over that of task, project and customer — only special conditions and a rate
+directly on the time entry rank higher. A new rate affects times recorded or
+recalculated afterwards.

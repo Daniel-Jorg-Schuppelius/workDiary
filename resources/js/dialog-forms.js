@@ -25,7 +25,7 @@ import { suggestPassword } from "./lib/password.js";
  */
 
 /**
- * Auslagen: Kategorie setzt Steuersatz und Abrechenbar-Vorgabe, zeigt den Verpflegungshinweis.
+ * Auslagen: Kategorie setzt Steuersatz und Abrechenbar-Vorgabe, zeigt Verpflegungs- und Belegpflicht-Hinweis.
  * @param {ParentNode} root
  */
 function initExpenseCategory(root) {
@@ -37,14 +37,22 @@ function initExpenseCategory(root) {
         const taxInput = /** @type {HTMLInputElement | null} */ (scope.querySelector("[data-expense-tax-rate]"));
         const billable = /** @type {HTMLInputElement | null} */ (scope.querySelector("[data-expense-billable]"));
         const mealsHint = scope.querySelector("[data-meals-hint]");
+        const receiptHint = scope.querySelector("[data-receipt-hint]");
 
         const refreshMealsHint = () => {
-            if (!mealsHint) return;
             const option = select.options[select.selectedIndex];
-            mealsHint.classList.toggle(
-                "hidden",
-                !(option && option.dataset.slug === "meals"),
-            );
+            if (mealsHint) {
+                mealsHint.classList.toggle(
+                    "hidden",
+                    !(option && option.dataset.slug === "meals"),
+                );
+            }
+            if (receiptHint) {
+                receiptHint.classList.toggle(
+                    "hidden",
+                    !(option && option.dataset.requiresReceipt === "1"),
+                );
+            }
         };
 
         refreshMealsHint();

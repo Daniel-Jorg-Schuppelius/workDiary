@@ -1,7 +1,7 @@
 ---
 title: "Importazione di attività da Jira"
 topic: admin.jira
-version: 1
+version: 2
 keywords:
     - Jira
     - Jira Cloud
@@ -122,3 +122,5 @@ plugin è attivo.
   revocata in Atlassian o è scaduta. Ricolleghi l’account.
 - Non viene creato nulla: l’associazione non è ancora confermata, è in pausa
   oppure i ticket sono già completati.
+
+**Titolarità dei dati:** se un altro sistema gestisce le attività, la sincronizzazione crea un caso «Titolarità dei dati» per attività nella posta in arrivo delle integrazioni. **Acquisisci una volta** importa l’attività tramite la stessa assegnazione finché è attiva; se in seguito l’attività cambia nella fonte, il caso si riapre.

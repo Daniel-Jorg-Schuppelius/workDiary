@@ -1,7 +1,7 @@
 ---
 title: "Esami"
 topic: club.exams
-version: 1
+version: 2
 keywords:
     - esame di cintura
     - esame di grado
@@ -29,3 +29,5 @@ Un'offerta d'esame è un appuntamento dell'associazione di tipo «esame» con re
 **Risultato:** Gli esaminatori dell'offerta o i titolari del diritto «esaminatore» registrano superato, non superato o assente. Solo «superato» assegna il grado obiettivo, esattamente una volta e con riferimento all'esame; il rapporto di ammissibilità viene congelato con il risultato. Una bocciatura non rimuove alcun grado esistente e non azzera il tempo di allenamento.
 
 **Attestato:** Ogni grado valido ha un attestato PDF con data, provenienza, esame e persona confermante. Una revoca vi è stampata in modo visibile; fa fede lo storico delle graduazioni.
+
+**Pubblicazione dei risultati:** candidati e rappresentanti vedono i risultati registrati solo dopo «Pubblica risultati» — fino ad allora «Il mio club» mostra «Risultato in arrivo», e il nuovo grado e l’attestato non vi compaiono ancora. La pubblicazione è possibile non appena ogni candidato è deciso: nessuna richiesta aperta, nessuna ammissione senza risultato. La pubblicazione congela l’esame; rapporti di ammissione e attestazioni usate non cambiano più, e non sono più possibili nuovi candidati né risultati. Le correzioni successive passano per la verifica o la revoca del grado.

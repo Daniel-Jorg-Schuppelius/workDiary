@@ -13,9 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Glpi;
 
 use App\Models\Integration\ExternalReference;
-use App\Models\Platform\Organization;
 use App\Plugins\AbstractPlugin;
-use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer, TaskSyncer};
+use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer};
 use App\Plugins\Glpi\Api\GlpiClientFactory;
 use App\Plugins\Glpi\Models\GlpiConnection;
 use App\Plugins\Glpi\Services\GlpiImportService;
@@ -24,7 +23,7 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSett
 /**
  * GLPI-Aufgabenimport (Feature 174, Phase 158): Tickets ausgewählter GLPI-Entitäten werden als Aufgaben in WorkDiary-Projekte übernommen, nur lesend.
  */
-class GlpiPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
+class GlpiPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, LinksExternalRecords, SlotRenderer {
     use ChecksConnectionHealth, RendersTaskLink;
 
     public const string ID = 'glpi';
@@ -56,10 +55,6 @@ class GlpiPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRen
         return [PluginCapability::TaskSync];
     }
 
-    public function syncTasks(Organization $organization): array {
-        return app(GlpiImportService::class)->run($organization);
-    }
-
     public function adminPanel(): ?array {
         return ['route' => 'admin.glpi.index', 'label' => 'GLPI', 'icon' => 'confirmation_number'];
     }
@@ -82,5 +77,10 @@ class GlpiPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRen
 
     protected function taskLinkType(): string {
         return self::EXT_TYPE_TICKET;
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Tasks];
     }
 }

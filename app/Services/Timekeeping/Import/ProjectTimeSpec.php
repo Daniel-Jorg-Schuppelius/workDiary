@@ -22,7 +22,7 @@ use App\Models\Time\TimeEntry;
 use App\Services\Import\{HasMappableValues, ImportOutcome, InboxFirstSpec, ValidationIssue};
 use App\Services\Import\Specs\AbstractEntitySpec;
 use App\Services\Import\Specs\Concerns\{BindsTimeImportReference, ParsesLocalDateTime, ResolvesImportUsers};
-use App\Services\TimeApproval\MonthClosureService;
+use App\Services\TimeApproval\DayCloseService;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\HashAlgorithm;
@@ -53,7 +53,7 @@ class ProjectTimeSpec extends AbstractEntitySpec implements HasMappableValues, I
 
     private const string EXTERNAL_TYPE = 'project-time';
 
-    public function __construct(private readonly MonthClosureService $monthClosures) {}
+    public function __construct(private readonly DayCloseService $dayClose) {}
 
     public function entity(): ImportEntity {
         return ImportEntity::ProjectTimes;
@@ -167,7 +167,7 @@ class ProjectTimeSpec extends AbstractEntitySpec implements HasMappableValues, I
             $date = (string) $row['date'];
 
             // Sperr-Schutz: bereits abgeschlossene/exportierte Zeiträume nicht überschreiben.
-            if ($this->monthClosures->isPeriodLockedForUser($user, CarbonImmutable::parse($date))) {
+            if ($this->dayClose->bookingLock($user, CarbonImmutable::parse($date)) !== null) {
                 return [
                     ImportOutcome::Failed,
                     new ValidationIssue(

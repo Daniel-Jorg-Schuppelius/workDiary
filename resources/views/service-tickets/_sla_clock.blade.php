@@ -58,11 +58,31 @@
         </x-detail-grid>
     @endif
 
+    {{-- OLA (MVP-1548): internes Ziel des Queue-Teams, kein Kundenversprechen. --}}
+    @if (! empty($olaTargets))
+        <div class="divider my-2"></div>
+        <div class="mb-1 text-xs uppercase text-muted" data-ticket-ola>{{ __('helpdesk.ola.title', ['team' => $ticket->queue?->team?->name ?? '—', 'contract' => $olaTargets['contract']->label]) }}</div>
+        <x-detail-grid layout="cells">
+            <x-detail-grid.row :label="__('helpdesk.ola.reaction')" class="flex items-center gap-2">
+                {{ $olaTargets['reaction_due_at']?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}
+                @if ($olaTargets['reaction_due_at'])
+                    <x-status-badge :tone="$olaTargets['reaction_status']->tone()" size="sm" outline>{{ $olaTargets['reaction_status']->label() }}</x-status-badge>
+                @endif
+            </x-detail-grid.row>
+            <x-detail-grid.row :label="__('helpdesk.ola.resolution')" class="flex items-center gap-2">
+                {{ $olaTargets['resolution_due_at']?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}
+                @if ($olaTargets['resolution_due_at'])
+                    <x-status-badge :tone="$olaTargets['resolution_status']->tone()" size="sm" outline>{{ $olaTargets['resolution_status']->label() }}</x-status-badge>
+                @endif
+            </x-detail-grid.row>
+        </x-detail-grid>
+    @endif
+
     @if ($ticket->status->isWaiting())
         <div class="divider my-2"></div>
         <x-detail-grid layout="cells" :cols="3">
             <x-detail-grid.row :label="__('Wartegrund')">{{ $ticket->wait_reason ?: '—' }}</x-detail-grid.row>
-            <x-detail-grid.row :label="__('Wiedervorlage')">{{ $ticket->wait_until?->translatedFormat('d.m.Y H:i') ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Wiedervorlage')">{{ $ticket->wait_until?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</x-detail-grid.row>
             <x-detail-grid.row :label="__('Verantwortlich')">{{ $ticket->waitOwner?->name ?: '—' }}</x-detail-grid.row>
         </x-detail-grid>
     @endif

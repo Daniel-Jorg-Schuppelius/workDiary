@@ -7,7 +7,8 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Dialog: Entsorgungsakte anlegen/bearbeiten (Feature 100, MVP-474).
-     Erwartet: $job (DisposalJob|null), $customers, $sites, $users, $diaryEntries. --}}
+     Erwartet: $job (DisposalJob|null), $customers, $sites, $users, $diaryEntries,
+     $prefillAsset (Asset|null: Einstieg „Entsorgen“ an der Asset-Akte, MVP-1578). --}}
 <x-modal
     :title="$job !== null ? __('disposal.form.title_edit') : __('disposal.form.title_create')"
     :eyebrow="__('disposal.eyebrow')"
@@ -21,6 +22,7 @@
     {{-- Regel 12: Alpine nicht am auto-<form>, sondern am Body-Wrapper. Der
          Einsatzort-Select filtert reaktiv nach dem gewählten Kunden. --}}
     @php
+        $prefillCustomerId = $job?->customer_id ?? $prefillAsset?->customer_id;
         // Das Kunden-Select postet Sqids; der Einsatzort-Filter vergleicht
         // deshalb ebenfalls über den Kunden-Sqid (Vollscan 2026-08-23, I1).
         $customerSqids = $customers->mapWithKeys(fn ($c) => [(int) $c->id => (string) $c->sqid]);
@@ -30,14 +32,14 @@
             'parent' => $customerSqids[(int) $s->customer_id] ?? '',
         ])->values();
     @endphp
-    <div x-data="dependentSelect(@js((string) old('customer_id', $job?->customer?->sqid ?? '')))"
+    <div x-data="dependentSelect(@js((string) old('customer_id', $customerSqids[(int) $prefillCustomerId] ?? '')))"
          data-items="{{ json_encode($siteOptions) }}"
          class="space-y-4">
         <x-form-group :legend="__('disposal.form.group_assignment')" icon="recycling" tone="primary" cols="2">
             <x-select-field name="customer_id" :label="__('Kunde')" required x-model="parent">
                 <option value="">{{ __('-- Kunde wählen --') }}</option>
                 @foreach ($customers as $c)
-                    <option value="{{ $c->sqid }}" @selected((string) old('customer_id', $job?->customer_id) === (string) $c->id)>{{ $c->name }}</option>
+                    <option value="{{ $c->sqid }}" @selected((string) old('customer_id', $prefillCustomerId) === (string) $c->id)>{{ $c->name }}</option>
                 @endforeach
             </x-select-field>
             <x-select-field name="site_id" :label="__('disposal.form.site')">
@@ -66,6 +68,12 @@
             <x-input-field name="total_weight_kg" type="number" step="0.001" min="0" :label="__('disposal.field.total_weight')"
                            :value="old('total_weight_kg', $job?->total_weight_kg)" />
             <x-textarea-field name="notes" :label="__('Notizen')" rows="2" span="2">{{ old('notes', $job?->notes) }}</x-textarea-field>
+            <x-checkbox-field name="is_photo_in_record" :label="__('disposal.form.is_photo_in_record')" :hint="__('disposal.form.is_photo_in_record_hint')"
+                              :checked="(bool) old('is_photo_in_record', $job?->is_photo_in_record ?? false)" span="2" />
+            @if ($prefillAsset !== null)
+                <input type="hidden" name="asset" value="{{ $prefillAsset->sqid }}">
+                <p class="text-sm text-muted md:col-span-2">{{ __('disposal.asset.create_hint', ['asset' => $prefillAsset->name]) }}</p>
+            @endif
         </x-form-group>
 
         <x-validation-errors />

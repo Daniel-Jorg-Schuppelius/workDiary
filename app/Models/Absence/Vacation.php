@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property VacationStatus $status
  * @property string|null $note
  * @property string|null $reject_reason
+ * @property string|null $revision_note
  * @property int|null $decided_by
  * @property Carbon|null $decided_at
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -47,6 +48,7 @@ class Vacation extends Model {
         'status',
         'note',
         'reject_reason',
+        'revision_note',
         'decided_by',
         'decided_at',
         // Zweistufige Genehmigung (MVP-523): erste Freigabe.

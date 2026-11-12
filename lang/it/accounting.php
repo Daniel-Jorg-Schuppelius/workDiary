@@ -71,6 +71,8 @@ return [
             'valid_from' => 'Valido dal',
             'reason' => 'Motivazione',
             'datev_account' => 'Conto DATEV',
+            'datev_automatic' => 'Automatismo DATEV',
+            'datev_automatic_none' => '— nessun conto automatico —',
             'euer_category' => 'Riga entrate-uscite',
             'euer_category_none' => '— senza assegnazione —',
             'bwa_group' => 'Riga BWA',
@@ -92,6 +94,7 @@ return [
             'sovereignty_switch' => 'Il trasferimento dei dati resta il cambio di contabilità; qui si riassegna solo la direzione.',
             'external_provider' => 'Solo con autorità esterna: nome del sistema principale (ad es. lexoffice).',
             'datev_account' => 'Solo per l\'esportazione; la registrazione locale non ne dipende.',
+            'datev_automatic' => 'Codice IVA la cui imposta DATEV calcola da sé su questo conto (conto automatico, p. es. 8400 nello SKR03). Il lotto DATEV non vi imposta alcuna chiave.',
             'euer_category' => 'Determina in quale riga del modulo compare il conto. Senza assegnazione finisce tra i casi non chiariti.',
             'bwa_group' => 'Riga dell\'analisi gestionale (BWA). Senza assegnazione il report deriva la riga dall\'intervallo SKR03/SKR04; se resta aperto, il conto appare sotto «non assegnato».',
             'deductible_percent' => "Agisce solo sull'anteprima entrate-uscite — nel giornale resta sempre l'importo pieno (p. es. 70 % per le spese di rappresentanza).",
@@ -99,7 +102,6 @@ return [
             'post_now' => 'Dopo la registrazione la correzione avviene solo tramite contro-registrazione.',
             'reversal_booked_on' => 'Lasciare vuoto per il giorno originale, se il periodo è ancora aperto.',
             'cost_center_required' => 'Le registrazioni su questo conto si possono confermare solo con un centro di costo, anche dalla casella delle proposte.',
-            'cost_center' => 'Vale per la riga dare e avere.',
         ],
         'action' => [
             'activate' => 'Attivare la contabilità locale',
@@ -162,6 +164,8 @@ return [
             'entry_posted' => 'Registrazione definitiva.',
             'entry_reversed' => 'Contro-registrazione creata.',
             'entry_discarded' => 'Bozza scartata — l’operazione può essere riavviata.',
+            'entry_updated' => 'Bozza modificata.',
+            'cost_centers_saved' => 'Centri di costo salvati.',
             'reversal_awaiting_approval' => 'Principio dei quattro occhi: lo storno attende l’approvazione come bozza nella posta contabile. La registrazione resta definitiva finché una seconda persona non registra la contro-registrazione.',
         ],
         'error' => [
@@ -184,7 +188,8 @@ return [
             'unbalanced' => 'Dare (:debit) e Avere (:credit) non coincidono.',
             'reverse_not_posted' => 'Solo una registrazione definitiva può essere stornata.',
             'reversal_pending' => 'Per questa registrazione uno storno attende già l’approvazione.',
-            'discard_not_allowed' => 'Si può scartare solo una bozza in attesa da sconto, stralcio, scrittura in sospeso, giroconto, saldi iniziali, acconto speciale o storno; le registrazioni definitive restano invariate.',
+            'discard_not_allowed' => 'Si può scartare solo una bozza; le registrazioni definitive restano invariate.',
+            'edit_not_allowed' => 'Questa bozza deriva da un’operazione (sconto, storno crediti, conto transitorio, giroconto, saldi di apertura, acconto speciale, storno). Le sue righe non si possono modificare — solo il centro di costo; altrimenti la scarti e riavvii l’operazione.',
             'reversal_reason_required' => 'Lo storno richiede una motivazione.',
             'account_in_use' => 'Su questo conto è già stato registrato — può solo essere disattivato.',
             'entry_without_organization' => 'La registrazione non ha un\'organizzazione — informare l\'amministratore.',
@@ -332,6 +337,11 @@ return [
             'year_closed' => 'L\'esercizio :year è chiuso.',
             'period_closed' => 'Il periodo del :date è chiuso.',
             'no_exchange_rate' => 'Manca il cambio mensile :month per :currency (conversione in :base): lo aggiunga in Tassi di cambio.',
+            'self_assessed_with_tax' => 'Caso fiscale «:case», ma il documento indica l’imposta — verifichi il caso fiscale o i valori nelle fatture in entrata.',
+            'self_assessed_small_business' => 'I piccoli imprenditori (§ 19 UStG) devono l’IVA per «:case» ma non detraggono IVA a credito — registri questa fattura a mano.',
+            'missing_self_assessed_code' => 'Nessun codice IVA per «:case» al :rate % — crei nel piano dei conti un codice «IVA a debito e a credito» con questo caso fiscale, conto IVA e conto IVA a credito.',
+            'missing_input_tax_code' => 'Nessun codice IVA a credito al :rate % — crei nel piano dei conti un codice «IVA a credito» con questa aliquota e un conto IVA.',
+            'expense_rate_without_input_tax' => 'Spesa con IVA al :rate %: non esiste un codice IVA a credito per questa aliquota. L\'IVA estera non è IVA detraibile: registri la spesa al lordo senza aliquota; le fatture con inversione contabile vanno nelle fatture in entrata.',
         ],
         'memo' => [
             'sales_invoice' => 'Fattura :number · :customer',
@@ -522,6 +532,134 @@ return [
     ],
 
     // Offene Posten (Feature 125, MVP-674).
+    // Handbuchung und Entwurf bearbeiten (MVP-1556/1558).
+    'entry_form' => [
+        'title_edit' => 'Modifica bozza',
+        'counterparty' => 'Controparte',
+        'counterparty_hint' => 'Cliente o fornitore. Vale per le righe su conti con partite aperte e per le righe con codice imposta.',
+        'rows_hint' => 'Un conto e un importo per riga, in dare o in avere. Con codice imposta la riga riporta l’importo netto; la riga d’imposta viene creata al salvataggio. Le righe vuote vengono ignorate.',
+        'tax_code' => 'Codice imposta',
+        'line_memo' => 'Testo di riga',
+        'cost_centers_title' => 'Assegna centri di costo',
+        'no_cost_centers' => 'Non ci sono centri di costo attivi.',
+        'cost_center_required' => 'Obbligatorio',
+        'action' => [
+            'edit' => 'Modifica bozza',
+            'cost_centers' => 'Centri di costo',
+        ],
+        'error' => [
+            'row' => 'Riga :row:',
+            'one_side' => 'Inserisca esattamente un importo — in dare o in avere.',
+            'tax_account_missing' => 'Il codice imposta :code non ha un conto d’imposta.',
+            'unknown_counterparty' => 'La controparte non è stata trovata.',
+            'unknown_tax_code' => 'Il codice imposta non è stato trovato.',
+            'tax_code_not_valid' => 'Il codice imposta :code non è valido il :date.',
+        ],
+    ],
+    // Steuerkennzeichen pflegen (MVP-1558).
+    'tax_codes' => [
+        'category' => [
+            'K' => 'Cessione intracomunitaria',
+            'AE' => 'Inversione contabile',
+            'G' => 'Esportazione',
+            'O' => 'Non imponibile',
+            'E' => 'Esente',
+        ],
+        'empty' => 'Nessun codice imposta ancora creato.',
+        'inactive' => 'Disattivato',
+        'in_use_hint' => 'Questo codice è già stato usato in registrazioni. Nome e righi cambiano subito. Aliquota, direzione o conto d’imposta valgono solo da una nuova data di decorrenza successiva al :date — la versione precedente termina il giorno prima, le registrazioni esistenti restano invariate.',
+        'action' => [
+            'add' => 'Crea codice imposta',
+        ],
+        'field' => [
+            'code' => 'Codice',
+            'rate' => 'Aliquota (%)',
+            'tax_account' => 'Conto d’imposta',
+            'valid_from' => 'Valido dal',
+            'tax_category' => 'Categoria fiscale (vendita senza imposta)',
+            'validity' => 'Validità',
+            'input_tax_account' => 'Conto IVA a credito',
+            'tax_case' => 'Caso fiscale nelle fatture in entrata',
+            'ustva_input_tax_field' => 'Rigo dell’IVA a credito',
+            'datev_tax_key' => 'Chiave fiscale DATEV',
+        ],
+        'hint' => [
+            'code' => 'Breve e univoco, ad esempio USt19. Lettere, cifre, punto, trattino e trattino basso.',
+            'tax_account' => 'Conto della riga d’imposta automatica. Non serve allo 0 %.',
+            'valid_from' => 'Nuova data di decorrenza per aliquota, direzione o conto d’imposta modificati.',
+            'tax_category' => 'Solo per i codici allo 0 %: la posta contabile sceglie tramite la categoria il codice di una vendita senza imposta.',
+            'tax_case' => 'La casella di contabilizzazione sceglie il codice di una fattura in entrata con inversione contabile in base al caso fiscale e all’aliquota.',
+            'datev_tax_key' => 'Chiave fiscale nel lotto DATEV, p. es. 3 per IVA 19 %, 9 per IVA a credito 19 %, 94 per il § 13b. Vuoto: nessuna chiave.',
+        ],
+        'self_assessed' => [
+            'legend' => 'Inversione contabile (debitore il destinatario)',
+            'hint' => 'Solo per la direzione «IVA a debito e a credito» (§ 13b UStG, acquisto intracomunitario): l’IVA a debito va sul conto IVA, la stessa IVA a credito sul conto IVA a credito.',
+        ],
+        'confirm' => [
+            'deactivate' => 'Disattivare questo codice imposta? Le nuove registrazioni non potranno più sceglierlo, quelle esistenti lo mantengono.',
+        ],
+        'flash' => [
+            'saved' => 'Codice imposta salvato.',
+            'versioned' => 'Nuova versione del codice imposta creata dal :date; le regole di registrazione e i valori predefiniti dei conti la seguono.',
+            'deactivated' => 'Codice imposta disattivato.',
+        ],
+        'error' => [
+            'code_taken' => 'Il codice :code è già in uso.',
+            'tax_account_required' => 'Un codice imposta con aliquota superiore allo 0 % richiede un conto d’imposta.',
+            'input_tax_account_required' => 'Con l’inversione contabile il codice richiede un conto IVA a credito.',
+            'valid_from_required' => 'Questo codice è già stato usato in registrazioni. Indichi una data di decorrenza successiva al :date da cui vale la modifica.',
+        ],
+    ],
+    // Bankumsatz ohne Beleg direkt aufs Sachkonto (MVP-1557).
+    'bank_direct' => [
+        'title' => 'Registrare senza documento su un conto',
+        'hint' => 'Per movimenti senza documento: spese bancarie, interessi, prelievo privato o compensazione. Il movimento viene registrato banca a conto o conto a banca e messo da parte nella riconciliazione.',
+        'memo' => 'Movimento bancario: :note',
+        'field' => [
+            'account' => 'Conto',
+            'tax_code' => 'Codice imposta',
+            'note' => 'Testo della registrazione',
+        ],
+        'hint_field' => [
+            'tax_code' => 'Il movimento è l’importo lordo; l’imposta viene scorporata.',
+            'note' => 'Ad esempio «Spese di tenuta conto marzo».',
+        ],
+        'action' => [
+            'post' => 'Registra su un conto',
+            'post_submit' => 'Registra',
+        ],
+        'flash' => [
+            'posted' => 'Movimento registrato sul conto.',
+        ],
+        'error' => [
+            'money_account' => 'I conti banca, cassa e transitori non sono selezionabili qui — usi il giroconto interno o la registrazione transitoria.',
+            'already_assigned' => 'Il movimento è già assegnato a un documento.',
+        ],
+    ],
+    // Offener Posten strittig (MVP-1559).
+    'dispute' => [
+        'title' => 'Contrassegna la partita come contestata',
+        'hint' => 'Una partita contestata resta aperta. Non viene sollecitata (blocco dei solleciti sulla fattura) e non conta come incasso atteso nella previsione di liquidità.',
+        'reason' => 'Motivo',
+        'since' => 'Contestata dal :date: :reason',
+        'dunning_reason' => 'Partita aperta contestata: :reason',
+        'filter_all' => 'Tutte le aperte',
+        'action' => [
+            'mark' => 'Contrassegna come contestata',
+            'withdraw' => 'Ritira la contestazione',
+        ],
+        'confirm' => [
+            'withdraw' => 'Ritirare il contrassegno «contestata»? Il blocco dei solleciti impostato da questo contrassegno viene rimosso.',
+        ],
+        'flash' => [
+            'marked' => 'Partita contrassegnata come contestata.',
+            'withdrawn' => 'Il contrassegno «contestata» è stato ritirato.',
+        ],
+        'error' => [
+            'not_open' => 'Solo una partita aperta può essere contrassegnata come contestata.',
+            'not_disputed' => 'La partita non è contrassegnata come contestata.',
+        ],
+    ],
     'open_items' => [
         'title' => 'Partite aperte',
         'menu' => 'Partite aperte',
@@ -531,6 +669,9 @@ return [
         'settle_hint' => 'Aperto: :open. I pagamenti arrivano dalla riconciliazione bancaria — qui solo sconto, ritenuta o stralcio.',
         'awaiting_approval' => 'Bozza in attesa di approvazione',
         'four_eyes_hint' => 'Principio dei quattro occhi attivo: sconto e stralcio vengono creati come bozza nella posta contabile. La partita resta aperta finché una seconda persona non registra la contropartita.',
+        'discount_tax_hint' => 'Lo sconto viene ripartito in netto e quota d’imposta (:rates): l’imposta del documento viene rettificata (§ 17 UStG).',
+        'discount_no_tax_hint' => 'Sconto senza rettifica d’imposta: la registrazione di questa partita non ha imposta (piccolo imprenditore, inversione contabile, esente o saldo di apertura).',
+        'discount_self_assessed_hint' => 'Sconto su una fattura con inversione contabile (:rates): riduce la base imponibile; IVA a debito e IVA a credito diminuiscono dello stesso importo (§ 17, comma 1, frase 5 UStG).',
         'column' => [
             'counterparty' => 'Controparte',
             'due_date' => 'Scadenza',
@@ -556,6 +697,7 @@ return [
         ],
         'error' => [
             'draft_pending' => 'Per questa partita una contropartita attende già l’approvazione. Un’ulteriore compensazione è possibile solo dopo la sua registrazione.',
+            'counter_account_missing' => 'Nel piano dei conti manca la contropartita :account per :kind. Crei il conto o indichi un conto esistente nelle impostazioni DATEV — senza contropartita la partita non viene pareggiata.',
         ],
     ],
 
@@ -595,7 +737,7 @@ return [
         'hint' => [
             'kind' => 'L\'attesa aspetta un originale; il modello di registrazione crea una bozza.',
             'due_day' => '1–28, così ogni mese ha quel giorno.',
-            'accounts' => 'Solo per i modelli di registrazione — insieme all\'importo atteso.',
+            'accounts' => 'Righe di registrazione solo per i modelli di registrazione. Se l’importo atteso resta vuoto, vale il totale della registrazione.',
             'responsible' => 'Riceve, oltre alla contabilità, l\'avviso sulle operazioni scadute.',
         ],
         'action' => [
@@ -628,10 +770,12 @@ return [
         ],
         'error' => [
             'already_closed' => 'L\'operazione è già chiusa.',
-            'template_incomplete' => 'Un modello richiede conto Dare, conto Avere e importo.',
+            'template_incomplete' => 'Un modello di registrazione richiede almeno due righe con conto e importo.',
+            'template_unbalanced' => 'Le righe del modello di registrazione non quadrano: dare e avere devono essere uguali.',
         ],
         'blocker' => [
             'no_lines' => 'Al modello mancano le righe di registrazione.',
+            'draft_discarded' => 'La bozza di registrazione è stata scartata.',
         ],
         'notification' => [
             'title' => 'Operazione ricorrente scaduta: :name',
@@ -732,6 +876,10 @@ return [
             'ten_day_rule' => ":count pagamenti cadono tra il 22.12 e il 10.01 e appartengono all'anno adiacente secondo il documento (§ 11 c. 1 per. 2 EStG).",
             'open_clearing' => ':count conti transitori non sono ancora pareggiati.',
             'overdue_filings' => ':count scadenze dichiarative sono superate e non risultano presentate.',
+            'unbooked_settlements' => ':count pareggi per sconto o storno non hanno una registrazione nel giornale — la partita è chiusa, il conto crediti o debiti la riporta ancora. Registri manualmente: :items',
+            'discounts_without_tax_correction' => ':count pareggi per sconto sono stati registrati senza rettifica d’imposta (§ 17 UStG); quota d’imposta calcolata in totale :tax. Nulla viene registrato automaticamente — decida con il consulente fiscale le registrazioni di rettifica: :items',
+            'self_assessed_without_tax' => ':count fatture in entrata registrate indicano l’inversione contabile (§ 13b UStG, acquisto intracomunitario), ma la loro registrazione non riporta IVA a debito né a credito. Nulla viene registrato automaticamente — decida con il Suo consulente fiscale sulle registrazioni di rettifica: :items',
+            'tax_share' => 'quota d’imposta',
             'kpi' => [
                 'drafts' => 'Bozze',
                 'unbalanced' => 'Non in pareggio',
@@ -1125,7 +1273,7 @@ return [
             'note_required' => 'La motivazione è obbligatoria.',
         ],
         'blocker' => [
-            'unassigned' => 'Nessun documento attribuito — registrabile solo tramite attribuzione o conto transitorio.',
+            'unassigned' => 'Nessun documento assegnato — registrabile tramite un’assegnazione, direttamente su un conto o tramite il conto transitorio.',
         ],
         'flash' => [
             'posted' => 'Scrittura in sospeso creata.',
@@ -1270,6 +1418,11 @@ return [
         'total' => 'Cessioni intracomunitarie',
         'column' => [
             'vat_id' => 'Partita IVA',
+            'kind' => 'Tipo',
+        ],
+        'kind' => [
+            'goods' => 'Cessioni intracomunitarie',
+            'services' => 'Altre prestazioni',
         ],
         'unclear' => [
             'missing_vat_id' => 'Registrazione :entry (:customer) senza partita IVA del destinatario.',

@@ -99,7 +99,7 @@ final class LotUiTest extends TestCase {
         $this->assertSame('Reklamation des Lieferanten', $lot->blocked_reason);
         $this->assertSame($this->admin->id, $lot->blocked_by_user_id);
         $this->assertNotNull($lot->blocked_at);
-        $this->assertSame('10.0000', app(LotStockReader::class)->balanceOf($lot));
+        $this->assertSame('10.0000', app(LotStockReader::class)->balancesOf([$lot])[$lot->id]);
         $log = AuditLog::query()->where('event', 'stock_lot.blocked')->sole();
         $this->assertSame([$this->admin->id, $lot->id, 'Reklamation des Lieferanten'], [$log->user_id, $log->auditable_id, $log->changes['reason']]);
         $this->assertSame(__('audit-events.stock_lot.blocked'), $log->eventLabel());
@@ -209,7 +209,7 @@ final class LotUiTest extends TestCase {
             ->assertSessionHas('success');
 
         $this->assertSame(StockLotStatus::Merged, $b->fresh()?->status);
-        $this->assertSame('11.0000', app(LotStockReader::class)->balanceOf($a));
+        $this->assertSame('11.0000', app(LotStockReader::class)->balancesOf([$a])[$a->id]);
         $this->assertDatabaseHas('stock_movements', ['stock_lot_id' => $a->id, 'movement_type' => 'transfer_in', 'actor_user_id' => $this->admin->id]);
     }
 
@@ -222,7 +222,7 @@ final class LotUiTest extends TestCase {
         ])->assertRedirect();
 
         $split = StockLot::query()->where('lot_no', 'L1-A')->sole();
-        $this->assertSame(['6.0000', '4.0000'], [app(LotStockReader::class)->balanceOf($lot), app(LotStockReader::class)->balanceOf($split)]);
+        $this->assertSame(['6.0000', '4.0000'], [app(LotStockReader::class)->balancesOf([$lot])[$lot->id], app(LotStockReader::class)->balancesOf([$split])[$split->id]]);
         $this->assertDatabaseHas('stock_movements', ['stock_lot_id' => $split->id, 'movement_type' => 'transfer_in', 'actor_user_id' => $this->admin->id]);
     }
 
@@ -255,7 +255,7 @@ final class LotUiTest extends TestCase {
         $this->assertSame('15.0000', $ledger->balance($this->variant, $this->warehouse, StockState::Physical));
         $this->assertSame('5.0000', $ledger->available($this->variant, $this->warehouse));
         $this->assertSame('0.0000', $ledger->availableInBin($this->variant, $this->warehouse, $bin));
-        $this->assertSame('10.0000', app(LotStockReader::class)->balanceOf($lot));
+        $this->assertSame('10.0000', app(LotStockReader::class)->balancesOf([$lot])[$lot->id]);
 
         $this->actingAs($this->admin)->post(route('inventory.lots.unblock.store', $lot), ['reason' => 'Prüfung ohne Befund'])
             ->assertRedirect(route('inventory.lots'));
@@ -321,7 +321,7 @@ final class LotUiTest extends TestCase {
         // Die nachgetragene Sperre gibt die Freigabe wie jede andere zurück.
         $lots->unblock($held, 'Prüfung ohne Befund', $this->admin);
         $this->assertSame('10.0000', $ledger->available($this->variant, $this->warehouse));
-        $this->assertSame('3.0000', app(LotStockReader::class)->balanceOf($active));
+        $this->assertSame('3.0000', app(LotStockReader::class)->balancesOf([$active])[$active->id]);
     }
 
     /**

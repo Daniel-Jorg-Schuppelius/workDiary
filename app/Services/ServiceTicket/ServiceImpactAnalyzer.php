@@ -35,15 +35,6 @@ final class ServiceImpactAnalyzer {
     }
 
     /**
-     * Fachdienste, auf die der Dienst (auch mittelbar) angewiesen ist.
-     *
-     * @return list<int>
-     */
-    public function requiredBy(int $organizationId, int $businessServiceId): array {
-        return $this->reach($this->graph($organizationId)['down'], $businessServiceId);
-    }
-
-    /**
      * Ergäbe „$service hängt ab von $dependsOnIds“ einen Kreis?
      *
      * @param  list<int>  $dependsOnIds

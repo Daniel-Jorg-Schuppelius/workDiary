@@ -25,16 +25,17 @@
                      :delete-confirm="__('Lieferant wirklich löschen?')"
                      :can-delete="auth()->user()->can('delete', $supplier)">
         {{-- Bestand an die Buchhaltung übertragen (MVP-1526); Anlage und Änderung übertragen sonst selbst. --}}
-        @can('update', $supplier)
-            @if (! $supplier->is_collective && app(\App\Services\Stammdaten\Contracts\ContactPushTarget::class)->pushAllowed()
-                && app(\App\Plugins\PluginManager::class)->enabled()->contains(static fn ($plugin): bool => $plugin instanceof \App\Plugins\Contracts\SupplierContactSyncer))
-                <x-slot:actions>
+        <x-slot:actions>
+            @can('update', $supplier)
+                @if (! $supplier->is_collective && app(\App\Services\Stammdaten\Contracts\ContactPushTarget::class)->pushAllowed()
+                    && app(\App\Plugins\PluginManager::class)->enabled()->contains(static fn ($plugin): bool => $plugin instanceof \App\Plugins\Contracts\SupplierContactSyncer))
                     <x-action-form :action="route('accounting.suppliers.push', $supplier)">
                         <x-icon-btn icon="cloud_upload" tone="ghost" size="sm" type="submit" show-label>{{ __('accounting.action.push') }}</x-icon-btn>
                     </x-action-form>
-                </x-slot:actions>
-            @endif
-        @endcan
+                @endif
+            @endcan
+            <x-sustainability-assess-link :subject="$supplier" />
+        </x-slot:actions>
         <x-slot:badges>
             @if ($supplier->is_collective)
                 <x-status-badge tone="info">{{ __('Sammelkontakt') }}</x-status-badge>

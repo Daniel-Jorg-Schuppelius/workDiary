@@ -1,7 +1,7 @@
 ---
 title: "Operations tasks & maintenance windows"
 topic: admin.operations
-version: 1
+version: 2
 keywords:
     - maintenance mode
     - downtime
@@ -59,3 +59,5 @@ cancelled entirely. Every action is audited.
 the announcement can take effect, and work through the task center
 regularly – critical tasks first. Snoozing is meant for deliberate
 postponements, not as a permanent state.
+
+**Problem reports and modules:** The task for open problem reports exists only while the organisation’s helpdesk module is active; if it is switched off, the next run resolves it.

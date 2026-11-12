@@ -10,13 +10,14 @@
 
 namespace App\Services\Procedure;
 
-use App\Enums\Procedure\ProcedureRiskLevel;
+use App\Enums\Procedure\{ProcedureRiskLevel, ProcedureStepType};
 use App\Exceptions\PublishedProcedureVersionLockedException;
 use App\Models\Platform\{Organization, User};
 use App\Models\Procedure\{ProcedureLibraryStep, ProcedureStepDef, ProcedureTemplate, ProcedureTemplateVersion};
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Verwaltet Prozedurvorlagen und ihre Versionen (MVP-025).
@@ -56,7 +57,7 @@ class ProcedureTemplateService {
      * Legt eine neue (unveroeffentlichte) Version an. Die Nummer wird
      * automatisch hochgezaehlt.
      *
-     * @param  array{change_note?: ?string, risk_level?: ProcedureRiskLevel|string, applicability?: ?array<string, mixed>}  $attributes
+     * @param  array{change_note?: ?string, risk_level?: ProcedureRiskLevel|string, applicability?: ?array<string, mixed>, allow_blocked?: bool}  $attributes
      */
     public function addVersion(ProcedureTemplate $template, User $author, array $attributes = []): ProcedureTemplateVersion {
         return DB::transaction(function () use ($template, $attributes) {
@@ -71,6 +72,7 @@ class ProcedureTemplateService {
                 'change_note' => $attributes['change_note'] ?? null,
                 'risk_level' => $riskLevel,
                 'applicability' => $attributes['applicability'] ?? null,
+                'allow_blocked' => (bool) ($attributes['allow_blocked'] ?? false),
             ]);
             $version->procedure_template_id = $template->id;
             $version->save();
@@ -143,33 +145,6 @@ class ProcedureTemplateService {
     }
 
     /**
-     * Aktualisiert eine Schritt-Definition. Erlaubt nur in
-     * Draft-Versionen.
-     *
-     * @param  array<string, mixed>  $attributes
-     */
-    public function updateStepDef(ProcedureStepDef $step, array $attributes): ProcedureStepDef {
-        $version = $step->version()->firstOrFail();
-        if ($version->isPublished()) {
-            throw PublishedProcedureVersionLockedException::forVersion($version);
-        }
-        $step->fill($attributes);
-        $step->save();
-        return $step;
-    }
-
-    /**
-     * Loescht eine Schritt-Definition. Erlaubt nur in Draft-Versionen.
-     */
-    public function deleteStepDef(ProcedureStepDef $step): void {
-        $version = $step->version()->firstOrFail();
-        if ($version->isPublished()) {
-            throw PublishedProcedureVersionLockedException::forVersion($version);
-        }
-        $step->delete();
-    }
-
-    /**
      * Aktualisiert die Stammdaten einer Vorlage (Name/Beschreibung/Domain)
      * sowie deren Aktiv-Status. Versionen bleiben unberuehrt.
      *
@@ -188,7 +163,7 @@ class ProcedureTemplateService {
      * Version (Risikostufe, Anwendbarkeit, Aenderungsnotiz). Wirft auf
      * veroeffentlichten Versionen.
      *
-     * @param  array{change_note?: ?string, risk_level?: ProcedureRiskLevel|string, applicability?: ?array<string, mixed>}  $attributes
+     * @param  array{change_note?: ?string, risk_level?: ProcedureRiskLevel|string, applicability?: ?array<string, mixed>, allow_blocked?: bool}  $attributes
      */
     public function updateVersion(ProcedureTemplateVersion $version, array $attributes): ProcedureTemplateVersion {
         if ($version->isPublished()) {
@@ -206,6 +181,9 @@ class ProcedureTemplateService {
         }
         if (array_key_exists('applicability', $attributes)) {
             $version->applicability = $attributes['applicability'];
+        }
+        if (array_key_exists('allow_blocked', $attributes)) {
+            $version->allow_blocked = (bool) $attributes['allow_blocked'];
         }
         $version->save();
         return $version->refresh();
@@ -266,6 +244,7 @@ class ProcedureTemplateService {
             // die Freigabe; Rezepte ohne Profil sind nie betroffen. Lazy
             // aufgelöst, um keinen Konstruktor-Zyklus aufzubauen.
             app(\App\Services\Recipes\RecipeService::class)->assertPublishable($version);
+            $this->assertCriticalHasSecondPerson($version);
 
             $from = ($validFrom ?? Carbon::today())->copy()->startOfDay();
 
@@ -288,6 +267,28 @@ class ProcedureTemplateService {
 
             return $version->refresh();
         });
+    }
+
+    /**
+     * Eine kritische Version braucht einen Vier-Augen-Schritt (MVP-1570):
+     * ohne ihn ließe sich kein Lauf regelgerecht abschließen.
+     *
+     * @throws ValidationException
+     */
+    private function assertCriticalHasSecondPerson(ProcedureTemplateVersion $version): void {
+        if ($version->risk_level !== ProcedureRiskLevel::Critical || self::hasSecondPersonStep($version)) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'risk_level' => (string) __('procedure.validation.criticalNeedsSecondPerson'),
+        ]);
+    }
+
+    public static function hasSecondPersonStep(ProcedureTemplateVersion $version): bool {
+        return $version->steps()
+            ->where(fn ($q) => $q->where('requires_second_person', true)->orWhere('step_type', ProcedureStepType::Freigabe->value))
+            ->exists();
     }
 
     /**

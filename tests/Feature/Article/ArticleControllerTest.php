@@ -162,4 +162,32 @@ final class ArticleControllerTest extends TestCase {
             ->assertOk()
             ->assertSee('Verschleißteil');
     }
+
+    /** Feature 047 (MVP-1620): der Standard-Arbeitsplan ist im Artikeldialog wählbar und wird gespeichert. */
+    public function test_default_work_plan_is_selectable(): void {
+        $template = \App\Models\Procedure\ProcedureTemplate::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Montage Schaltschrank']);
+        $published = \App\Models\Procedure\ProcedureTemplateVersion::factory()->published()->create(['procedure_template_id' => $template->id, 'version' => 2]);
+        $draft = \App\Models\Procedure\ProcedureTemplateVersion::factory()->create(['procedure_template_id' => $template->id, 'version' => 3]);
+        $foreign = \App\Models\Procedure\ProcedureTemplateVersion::factory()->published()->create();
+        $article = Article::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Schaltschrank', 'status' => ArticleStatus::Active]);
+
+        $this->actingAs($this->admin)->get(route('articles.edit', $article))
+            ->assertOk()
+            ->assertSee('name="default_procedure_template_version_id"', false)
+            ->assertSee($published->sqid)
+            ->assertDontSee($draft->sqid)
+            ->assertDontSee($foreign->sqid);
+
+        $payload = ['name' => 'Schaltschrank', 'type' => 'finished', 'base_unit' => 'Stk', 'status' => 'active'];
+        $this->actingAs($this->admin)->put(route('articles.update', $article), $payload + ['default_procedure_template_version_id' => $published->sqid])
+            ->assertSessionHasNoErrors()->assertRedirect();
+        $this->assertSame($published->id, $article->refresh()->defaultProcedureVersion?->id);
+
+        $this->actingAs($this->admin)->put(route('articles.update', $article), $payload + ['default_procedure_template_version_id' => $foreign->sqid])
+            ->assertSessionHasErrors('default_procedure_template_version_id');
+
+        $this->actingAs($this->admin)->put(route('articles.update', $article), $payload + ['default_procedure_template_version_id' => ''])
+            ->assertSessionHasNoErrors();
+        $this->assertNull($article->refresh()->default_procedure_template_version_id);
+    }
 }

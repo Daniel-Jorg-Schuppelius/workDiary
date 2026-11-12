@@ -21,7 +21,7 @@ use App\Models\Invoicing\InvoiceItem;
 use App\Models\Platform\Organization;
 use App\Models\Shipping\ShipmentParcel;
 use App\Services\Billing\DocumentTotalsCalculator;
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, IssuerIdentity};
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;
 use App\Settings\SettingsRegistry;
 use App\Support\DocumentLocale;
@@ -56,6 +56,7 @@ class CustomsInvoicePdfRenderer {
         $commercial = $reason === ShipmentExportReason::Sale;
         $grossGrams = $delivery->parcels->sum(static fn (ShipmentParcel $parcel): int => (int) $parcel->weight_grams);
         $invoice = $delivery->invoiceItems->sortByDesc('id')->map(static fn (InvoiceItem $item) => $item->invoice)->filter()->first();
+        $payload = $this->design->payloadFor($organization, RenderDocumentKind::DeliveryNote);
 
         return DocumentLocale::within($customer, $organization, fn (): string => $this->design->renderPdf(
             RenderDocumentKind::DeliveryNote,
@@ -83,8 +84,12 @@ class CustomsInvoicePdfRenderer {
                 'position' => $position,
                 'grossWeight' => $grossGrams > 0 ? Decimal::of((string) $grossGrams, 0)->dividedBy(Decimal::of('1000', 0), 3)->format() : null,
                 'parcels' => $delivery->parcels->count(),
+                // Firmenangaben nach Blockzustand wie am Lieferschein (MVP-1624); das Zollpapier entsteht je Abruf neu.
+                'design' => $this->design->context($payload),
+                'issuer' => IssuerIdentity::for($organization),
             ],
             $organization,
+            payload: $payload,
         ));
     }
 

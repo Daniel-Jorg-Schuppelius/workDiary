@@ -25,6 +25,7 @@ use CommonToolkit\Helper\FileSystem\File;
 use ERechnungToolkit\Parsers\UglInvoiceParser;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -129,7 +130,8 @@ class PurchaseOrderController extends Controller {
 
         return view('purchase-orders.show', [
             'order' => $purchaseOrder,
-            'articles' => Article::query()->where('purchasable', true)->orderBy('name')->limit(500)->get(),
+            'articles' => Article::query()->where('purchasable', true)->orderBy('name')->limit(500)
+                ->with(['units' => fn ($q) => $q->where('active', true)->orderBy('code')])->get(),
             'canManage' => Auth::user()?->can(P::InventoryPost->value) ?? false,
             'canImportAdvice' => app(DespatchAdviceImportService::class)->available(),
             // Nachweis-Ampel des Lieferanten (MVP-1283); ohne geforderte Nachweise keine Ampel.
@@ -342,6 +344,8 @@ class PurchaseOrderController extends Controller {
             'article' => ['required', 'string'],
             'qty' => ['required', 'numeric', 'gt:0'],
             'unit_price' => ['nullable', 'numeric', 'min:0'],
+            // Bestelleinheit (MVP-1584): gepflegte Einheit des Artikels, leer = Basiseinheit.
+            'unit' => ['nullable', 'string', 'max:20'],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
 
@@ -351,8 +355,14 @@ class PurchaseOrderController extends Controller {
             return back()->with('error', __('procurement.flash.unknown_article'));
         }
 
+        $unit = trim((string) ($data['unit'] ?? ''));
+        if ($unit !== '' && $unit !== $article->base_unit && ! $article->units()->where('code', $unit)->where('active', true)->exists()) {
+            throw ValidationException::withMessages(['unit' => __('procurement.flash.unknown_unit')]);
+        }
+
         $this->orders->addLine($purchaseOrder, $article, (string) $data['qty'], [
             'unit_price' => isset($data['unit_price']) ? (string) $data['unit_price'] : null,
+            'unit' => $unit !== '' ? $unit : null,
             'note' => $data['note'] ?? null,
         ]);
 

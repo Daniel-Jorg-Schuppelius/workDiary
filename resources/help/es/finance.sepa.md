@@ -1,7 +1,7 @@
 ---
 title: "Pagos salientes SEPA"
 topic: finance.sepa
-version: 1
+version: 2
 keywords:
     - transferencia masiva
     - remesa de pagos
@@ -66,3 +66,7 @@ Una domiciliación puede referirse a una factura abierta del cliente del mandato
 «Cobrar por domiciliación» en la factura abre el cobro con importe y concepto
 prerrellenados. Con referencia a la factura, la previsión de tesorería cuenta
 el importe una sola vez: en la remesa y no además como cuenta por cobrar.
+
+## Caducidad a los 36 meses
+
+Según el reglamento SEPA, un mandato caduca si no se ha presentado ningún cobro durante 36 meses. La remesa de pagos ya no utiliza ese mandato; la revisión diaria de plazos lo pasa además a **Caducado** y lo anota en el registro. Para nuevos cobros, obtenga un nuevo mandato.

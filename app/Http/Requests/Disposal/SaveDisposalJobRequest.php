@@ -46,6 +46,7 @@ class SaveDisposalJobRequest extends BaseFormRequest {
             'picked_up_on' => ['nullable', 'date'],
             'total_weight_kg' => ['nullable', 'numeric', 'min:0', 'max:9999999'],
             'notes' => ['nullable', 'string', 'max:2000'],
+            'is_photo_in_record' => ['sometimes', 'boolean'],
         ];
     }
 }

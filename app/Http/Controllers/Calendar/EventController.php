@@ -275,6 +275,10 @@ class EventController extends Controller {
 
         $data['is_all_day'] ??= false;
         $data['is_mandatory'] ??= false;
+        // Das Formular sendet die Liste immer; leer heißt Vorgabe der Kategorie.
+        $offsets = array_values(array_unique(array_map('intval', (array) ($data['reminder_overrides'] ?? []))));
+        rsort($offsets);
+        $data['reminder_overrides'] = $offsets === [] ? null : $offsets;
 
         // Eingaben sind Wandzeit in der Zeitzone des Termins, gespeichert wird UTC (MVP-823).
         $tz = $this->inputTimezone($request);

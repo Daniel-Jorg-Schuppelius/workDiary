@@ -1,7 +1,7 @@
 ---
 title: "Factures & pièces"
 topic: invoices.manage
-version: 13
+version: 17
 keywords:
     - créer une facture
     - établir une facture
@@ -282,3 +282,100 @@ WorkDiary : WorkDiary ne les transmet pas à Lexoffice, sevDesk, easybill ou
 orgaMAX. Qui envoie la facture depuis le logiciel les y joint à la main ; la
 boîte des intégrations le rappelle. Le transfert propose **Justificatif de
 prestations** au téléchargement.
+
+## Libérer les retenues de garantie
+
+Les retenues figurent sur la page de la facture dans la carte **Retenues de
+garantie**, avec le type, le montant, la date de libération et le statut. Sur
+une facture émise, l’icône de cadenas ouvre la boîte de dialogue **Libérer** ;
+une note en consigne le motif. Une fois libéré, le montant redevient un poste
+ouvert ordinaire, compte de nouveau dans le montant à payer et fait l’objet de
+relances. Une retenue remplacée par une caution a déjà été versée : sa
+libération met seulement fin à l’objet de la garantie, aucune nouvelle créance
+n’est créée et le registre des cautions signale l’acte à restituer. La
+libération exige le droit de facturation.
+
+## Validation et régime fiscal du brouillon
+
+Avec la **validation obligatoire**, la validation porte sur l'état contrôlé : si
+vous modifiez ensuite des lignes, des conditions, le client, des dates ou le texte
+de la facture, la validation est annulée et doit être redonnée — pas par la personne
+qui a créé la facture. Le journal consigne l'annulation.
+
+Chaque brouillon reprend son **régime fiscal** (autoliquidation, exportation,
+exonération) des données du client, y compris le brouillon libre. Si les données du
+client changent ensuite — par exemple avec l'attribut « Le destinataire doit la
+TVA » ou un nouveau numéro de TVA —, la modification suivante du brouillon applique
+le nouveau régime. Si vous émettez un brouillon au régime fiscal dépassé, workDiary
+l'ajuste et interrompt l'émission : vérifiez les montants et émettez de nouveau.
+
+En **autoliquidation**, la facture électronique exige le numéro de TVA du client
+(règle BR-AE-02), y compris pour l'autoliquidation nationale selon le § 13b UStG ;
+le contrôle avant l'envoi signale son absence. Toutes les lignes figurent alors à
+0 % avec la mention « Autoliquidation » dans la XRechnung.
+
+Le **texte de mention** suit le régime fiscal : si la mention automatique de l'ancien
+régime (par exemple sur l'autoliquidation ou l'exportation) figure encore telle quelle
+dans le texte de la facture, la mention du nouveau régime la remplace ou elle est
+supprimée. Si vous avez modifié la mention à la main, votre texte reste — workDiary
+vous le signale et vous vérifiez la mention vous-même.
+
+## Motifs d'exonération dans la facture électronique
+
+Chaque catégorie de TVA sans taxe porte son motif d'exonération dans la XRechnung et
+le PDF ZUGFeRD, par ventilation de TVA pour les factures mixtes : autoliquidation
+(AE), livraison intracommunautaire (K), exportation (G) et « non imposable » (O) avec
+texte et code ; la catégorie Z n'a pas de motif. « Exonéré » (E) ne cite le § 19
+UStG que pour les petites entreprises. Pour les autres exonérations, créez dans la
+**matrice des règles fiscales** une règle avec le type de taux « Exonéré » et
+saisissez la disposition d'exonération comme mention sur le justificatif, par exemple
+« Soins médicaux exonérés (§ 4 n° 14 UStG) » ; sans règle, seule la mention
+« Opération exonérée » apparaît et le contrôle avant l'envoi avertit.
+
+Le contrôle avant l'envoi signale en outre : l'absence du numéro de TVA du client pour
+une livraison intracommunautaire, l'absence du numéro de TVA de l'organisation pour
+les livraisons vers un autre pays de l'UE et les exportations, « non imposable » à
+côté d'autres catégories et une position de catégorie sans taxe avec un taux
+supérieur à 0 %. Avec « non imposable », la facture électronique ne porte aucun numéro
+de TVA ; le numéro fiscal suffit. Deux données manquent encore à la facture
+électronique (avertissement) : le pays de livraison pour les livraisons
+intracommunautaires et l'absence du taux par ligne pour « non imposable ».
+
+## Mention d'exonération dans le PDF de la facture
+
+Les positions sans taxe exigent aussi une mention sur la facture elle-même
+(§ 14, al. 4, n° 8 et § 14a UStG). Sous le détail de la TVA, le PDF imprime pour
+chaque catégorie fiscale le même texte que le motif d'exonération de la facture
+électronique, par exemple « livraison intracommunautaire exonérée » pour K ou la
+mention d'autoliquidation pour une position isolée en AE. Si le texte de la
+facture contient déjà la mention — ou la mention automatique de cette catégorie
+issue du régime fiscal —, la ligne est omise. L'autoliquidation de tout le
+document et le § 19 UStG gardent leur propre ligne comme auparavant. Les factures
+émises avant cette extension sont réimprimées sans changement. L'avoir et la
+facture d'annulation reprennent la catégorie fiscale de chaque position de
+l'original.
+
+Si vous choisissez une catégorie sans taxe (AE, Z, E, G, K, O) sur une position ou
+dans un plan de facturation, le formulaire fixe le taux à 0 % ; 0 % est enregistré
+dans tous les cas.
+
+## Destinataire et numéro de TVA sur la facture
+
+Une facture émise imprime le destinataire tel qu'il était lors de l'émission : le
+nom, la société, l'adresse et le numéro de TVA du client sont figés à l'émission.
+Si vous modifiez ensuite les données du client, la réimpression, la pièce jointe
+PDF, la XRechnung, le ZUGFeRD et l'export GAEB restent inchangés ; seules les
+nouvelles factures reprennent la nouvelle adresse. Un brouillon affiche toujours
+les données actuelles du client. La pièce d'annulation et la facture rectificative
+figent le destinataire lors de leur propre émission. L'adresse de remise
+électronique (identifiant Peppol ou e-mail) et les lettres de relance suivent en
+revanche les données actuelles du client, car elles sont remises aujourd'hui.
+
+Si un numéro de TVA est enregistré pour le client, il figure dans l'en-tête de la
+facture (« Votre n° de TVA intracommunautaire »). Il est obligatoire pour les
+livraisons intracommunautaires et l'autoliquidation (§ 14a UStG). Les factures
+émises avant cette extension sont réimprimées sans cette ligne.
+
+L'émission fige aussi l'indication des coûts de main-d'œuvre selon le § 35a EStG :
+une modification ultérieure de la règle de l'organisation ou du type de client ne
+change plus une facture émise.

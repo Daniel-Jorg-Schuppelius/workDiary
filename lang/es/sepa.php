@@ -91,6 +91,7 @@ return [
         'missing_iban' => 'Falta el IBAN',
         'zero_amount' => 'Importe 0',
         'iban_differs' => 'El IBAN difiere de los datos maestros',
+        'disputed' => 'Partida abierta en disputa',
     ],
 
     'error' => [

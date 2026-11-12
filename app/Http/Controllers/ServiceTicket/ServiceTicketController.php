@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers\ServiceTicket;
 
-use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketStatus};
+use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketStatus, TicketCloseCode};
 use App\Exceptions\ServiceTicketException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ServiceTicket\SaveServiceTicketRequest;
@@ -40,6 +40,7 @@ class ServiceTicketController extends Controller {
         [$sort, $dir] = \App\Support\SortableQuery::resolve($request, self::ALLOWED_SORTS, 'reported_at');
 
         $query = ServiceTicket::query()
+            ->visibleTo($this->authUser())
             ->with(['customer:id,name', 'asset:id,name,asset_no', 'assignedTo:id,name'])
             ->orderBy($sort, $dir);
 
@@ -94,6 +95,7 @@ class ServiceTicketController extends Controller {
             // Zugeordnete Probleme (MVP-156) + Changes (MVP-157) im Verknüpfungs-Widget.
             'problems', 'changes',
             'businessService:id,name', 'serviceOffering:id,name', 'project:id,name,slug,customer_id', 'project.customer:id,name,slug',
+            'queue', 'serviceRequest.fulfilled',
         ]);
 
         /** @var User $viewer */
@@ -124,6 +126,8 @@ class ServiceTicketController extends Controller {
             'canUpdate' => Gate::allows('update', $ticket),
             'canAssign' => Gate::allows('assign', $ticket),
             'canClose' => Gate::allows('close', $ticket),
+            'externallyLed' => $ticket->isExternallyLed(),
+            'olaTargets' => app(\App\Services\ServiceTicket\SlaTimer::class)->olaTargets($ticket),
             'orgUsers' => User::query()
                 ->where('organization_id', $ticket->organization_id)
                 ->orderBy('name')
@@ -206,48 +210,105 @@ class ServiceTicketController extends Controller {
             ->with('success', __('Ticket angelegt: :no', ['no' => $ticket->ticket_no]));
     }
 
+    /** Statusdialog: Ziele aus der Übergangstabelle, Pflichtfelder je Zielart (MVP-1546, MVP-1547). */
+    public function statusForm(ServiceTicket $ticket): View {
+        Gate::authorize('transition', $ticket);
+        // Extern geführte Queue: den Status führt das Fremdsystem (Feature 065, Datenführerschaft).
+        abort_if($ticket->isExternallyLed(), 409, (string) __('helpdesk.external.statusLocked'));
+
+        $canClose = Gate::allows('close', $ticket);
+        $targets = array_values(array_filter(
+            $ticket->status->allowedTransitions(),
+            static fn (ServiceTicketStatus $target): bool => $target !== ServiceTicketStatus::Closed || $canClose,
+        ));
+
+        return view('service-tickets._status_dialog', [
+            'ticket' => $ticket,
+            'targets' => $targets,
+            'reopening' => $this->isReopening($ticket->status),
+            'orgUsers' => User::query()
+                ->where('organization_id', $ticket->organization_id)
+                ->orderBy('name')
+                ->get(['id', 'name']),
+        ]);
+    }
+
     public function transition(Request $request, ServiceTicket $ticket): RedirectResponse {
         Gate::authorize('transition', $ticket);
-
-        $data = $request->validate([
-            'status' => ['required', 'string', Rule::enum(ServiceTicketStatus::class)],
-            // Vollaudit 2026-07 (M30): Abschlusscode + Lösungszusammenfassung beim Schließen.
-            'close_code' => ['nullable', 'string', Rule::enum(\App\Enums\ServiceTicket\TicketCloseCode::class)],
-            'resolution_summary' => ['nullable', 'string', 'max:5000'],
-        ]);
+        if ($ticket->isExternallyLed()) {
+            return back()->with('error', __('helpdesk.external.statusLocked'));
+        }
 
         $user = $request->user();
         if (! $user instanceof User) {
             abort(403);
         }
-        $target = ServiceTicketStatus::from($data['status']);
+
+        $from = $ticket->status;
+        $target = ServiceTicketStatus::tryFrom((string) $request->input('status'));
         $isClosing = in_array($target, [ServiceTicketStatus::Closed, ServiceTicketStatus::Done], true);
+        $isWaiting = $target?->isWaiting() ?? false;
+        $isReopening = $target === ServiceTicketStatus::InProgress && $this->isReopening($from);
+
+        $data = $request->validate([
+            'status' => ['required', 'string', Rule::enum(ServiceTicketStatus::class)],
+            'close_code' => [Rule::requiredIf($isClosing), 'nullable', 'string', Rule::enum(TicketCloseCode::class)],
+            'resolution_summary' => ['nullable', 'string', 'max:5000'],
+            'wait_reason' => [Rule::requiredIf($isWaiting), 'nullable', 'string', 'min:3', 'max:255'],
+            'wait_until' => [Rule::requiredIf($isWaiting), 'nullable', 'date', new \App\Rules\TimestampRange],
+            'wait_owner_id' => ['nullable', 'string', 'max:40'],
+            'reopen_reason' => [Rule::requiredIf($isReopening), 'nullable', 'string', 'min:5', 'max:500'],
+        ], [
+            'close_code.required' => __('Beim Abschluss ist ein Abschlusscode erforderlich.'),
+        ]);
+
+        $target = ServiceTicketStatus::from($data['status']);
         if ($target === ServiceTicketStatus::Closed) {
             Gate::authorize('close', $ticket);
         }
+        if ($from === $target) {
+            return redirect()->route('service-tickets.show', $ticket);
+        }
 
-        // Vollaudit 2026-07 (M30): Abschlusscode ist beim Schließen Pflicht.
-        if ($isClosing && empty($data['close_code'])) {
-            return back()->withErrors(['close_code' => __('Beim Abschluss ist ein Abschlusscode erforderlich.')]);
+        $waitOwnerId = null;
+        if ($isWaiting && ($data['wait_owner_id'] ?? '') !== '') {
+            $waitOwnerId = \App\Support\Sqid::decode(User::class, (string) $data['wait_owner_id']);
+            $exists = $waitOwnerId !== null && User::query()
+                ->whereKey($waitOwnerId)
+                ->where('organization_id', $ticket->organization_id)
+                ->exists();
+            if (! $exists) {
+                return back()->withInput()->withErrors(['wait_owner_id' => __('Bearbeiter nicht gefunden.')]);
+            }
+        }
+
+        // Eingabe in der Zeitzone der Organisation, gespeichert in App-Zeit.
+        $waitUntil = $isWaiting
+            ? \Illuminate\Support\Carbon::parse((string) $data['wait_until'], \App\Support\Tz::current())->setTimezone((string) config('app.timezone'))
+            : null;
+        if ($waitUntil !== null && ! $waitUntil->isFuture()) {
+            return back()->withInput()->withErrors(['wait_until' => __('helpdesk.status.waitUntilFuture')]);
         }
 
         try {
-            $this->tickets->transition($ticket, $user, $target);
+            match (true) {
+                $isClosing => $this->tickets->conclude($ticket, $user, $target, TicketCloseCode::from((string) $data['close_code']), $data['resolution_summary'] ?? null),
+                $waitUntil !== null => $this->tickets->wait($ticket, $user, $target, (string) $data['wait_reason'], $waitUntil, $waitOwnerId),
+                $isReopening => $this->tickets->reopen($ticket, $user, (string) $data['reopen_reason']),
+                $from->isWaiting() => $this->tickets->resume($ticket, $user),
+                default => $this->tickets->transition($ticket, $user, $target),
+            };
         } catch (ServiceTicketException $e) {
-            return back()->withErrors(['status' => __($e->getMessage())]);
-        }
-
-        if ($isClosing) {
-            $ticket->forceFill([
-                'close_code' => $data['close_code'],
-                'resolution_summary' => $data['resolution_summary'] ?? $ticket->resolution_summary,
-            ])->save();
-            $ticket->audit('service_ticket.closed', ['close_code' => $data['close_code']]);
+            return back()->withInput()->withErrors(['status' => __($e->getMessage())]);
         }
 
         return redirect()
             ->route('service-tickets.show', $ticket)
             ->with('success', __('Ticket-Status aktualisiert.'));
+    }
+
+    private function isReopening(ServiceTicketStatus $from): bool {
+        return in_array($from, [ServiceTicketStatus::Done, ServiceTicketStatus::Accepted, ServiceTicketStatus::Closed], true);
     }
 
     /**
@@ -263,6 +324,7 @@ class ServiceTicketController extends Controller {
             'urgency' => ['required', 'integer', 'in:1,2,3'],
             'priority_override' => ['nullable', \Illuminate\Validation\Rule::enum(ServiceTicketPriority::class)],
             'workaround' => ['nullable', 'string', 'max:5000'],
+            'confidentiality' => ['nullable', Rule::in([ServiceTicket::CONFIDENTIALITY_NORMAL, ServiceTicket::CONFIDENTIALITY_RESTRICTED])],
             'business_service_id' => ['nullable', 'string', 'max:40'],
             'service_offering_id' => ['nullable', 'string', 'max:40'],
         ]);
@@ -282,6 +344,10 @@ class ServiceTicketController extends Controller {
 
         if (array_key_exists('workaround', $data)) {
             $ticket->forceFill(['workaround' => $data['workaround']])->save();
+        }
+
+        if (isset($data['confidentiality'])) {
+            $this->tickets->setConfidentiality($ticket, $user, (string) $data['confidentiality']);
         }
 
         // Felder fehlen ohne Modul Service Desk — dann bleibt der Service unberührt.

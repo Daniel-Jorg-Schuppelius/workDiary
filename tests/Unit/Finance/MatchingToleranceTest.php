@@ -12,17 +12,21 @@ namespace Tests\Unit\Finance;
 
 use App\Enums\Finance\AllocationKind;
 use App\Services\Finance\MatchingService;
-use PHPUnit\Framework\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 /**
- * Skonto-, Cent-Toleranz- und Voll/Teil/Über-Logik (Feature 045, Priorität 3).
+ * Skonto-, Cent-Toleranz- und Voll/Teil/Über-Logik (Feature 045, Priorität 3)
+ * mit den Vorgaben der Einstellungen (MVP-1623: je Organisation einstellbar).
  */
 class MatchingToleranceTest extends TestCase {
+    use RefreshDatabase;
+
     private MatchingService $service;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->service = new MatchingService(new \App\Services\Invoicing\RetentionService());
+        $this->service = app(MatchingService::class);
     }
 
     public function test_exact_amount_is_full_payment(): void {

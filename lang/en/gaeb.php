@@ -50,6 +50,9 @@ return [
     ],
 
     'show' => [
+        'findings' => 'Findings',
+        'findings_count' => 'Show :count finding(s)',
+        'conflict_line' => 'Item :ref (:status): quantity :quantity, in the file :incoming_quantity; unit price :price, in the file :incoming_price',
         'back_to_boq' => 'Back to bill of quantities',
         'positions' => 'Line items',
         'history' => 'Import history',
@@ -137,6 +140,7 @@ return [
         'title' => 'Preliminary notes',
     ],
     'preflight' => [
+        'catalog_without_edition' => 'Cost group catalogue “:catalog” does not state the edition of the standard. The cost groups were imported; please assign the edition to the catalogue before evaluating.',
         'version_unknown' => 'GAEB version could not be detected.',
         'version_unsupported' => 'GAEB version :version is not supported (target line 3.3).',
         'phase_unknown' => 'Exchange phase ":code" is unknown.',
@@ -170,6 +174,25 @@ return [
     ],
 
     'progress' => [
+        'dialog' => [
+            'open' => 'Report progress and view reports',
+            'title' => 'Report progress',
+            'quantity_hint' => 'Executed quantity in the unit of the item. Enter 0 to assign the cost of a material consumption only.',
+            'source' => 'Source',
+            'material_usage_hint' => 'Material consumption of the project not yet assigned to an item. Its cost counts towards this item in the evaluation.',
+            'protocol_hint' => 'Protocol of the project the report comes from. The report keeps a permanent reference to it.',
+            'history' => 'Previous reports',
+            'history_empty' => 'No reports yet.',
+            'captured_at' => 'Recorded on',
+            'reference' => 'Reference',
+        ],
+        'error' => [
+            'material_usage' => 'The material consumption does not belong to this project or is already assigned to an item.',
+            'protocol' => 'The protocol does not belong to this project.',
+            'one_reference' => 'Please choose either a material consumption or a protocol.',
+            'reference_required' => 'The sources “protocol” and “material consumption” require the corresponding record.',
+            'position' => 'The item does not belong to a bill of quantities of this project or is completed.',
+        ],
         'from_takeoff' => 'Quantity recomputed from :lines survey lines of the X31.',
         'takeoff_skipped' => ':count lines with an unsupported formula were left out.',
         'title' => 'Measurement / progress',

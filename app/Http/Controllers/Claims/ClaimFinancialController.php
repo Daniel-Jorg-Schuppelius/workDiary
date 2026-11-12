@@ -44,10 +44,17 @@ class ClaimFinancialController extends Controller {
             'justification' => ['required', 'string', 'min:10', 'max:4000'],
         ]);
 
-        $this->service->propose($claim, $request->user() ?? abort(401), ClaimFinancialKind::from($data['kind']), [
+        $kind = ClaimFinancialKind::from($data['kind']);
+        $invoiceId = $data['invoice_id'] ?? $claim->invoice_id;
+        // Ohne Quellbeleg scheiterte die Ausführung erst nach der Freigabe (MVP-1577).
+        if ($invoiceId === null && $kind->producesInvoice() && $this->service->localBilling($claim)) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['invoice_id' => __('claims.financial.error.invoice_required')]);
+        }
+
+        $this->service->propose($claim, $request->user() ?? abort(401), $kind, [
             'amount' => $data['amount'] ?? null,
             'currency' => $data['currency'] ?? 'EUR',
-            'invoice_id' => $data['invoice_id'] ?? $claim->invoice_id,
+            'invoice_id' => $invoiceId,
             'justification' => $data['justification'],
         ]);
 
@@ -64,6 +71,18 @@ class ClaimFinancialController extends Controller {
         }
 
         return back()->with('status', __('Folge freigegeben (Vier-Augen-Prinzip).'));
+    }
+
+    public function reject(ClaimFinancialOutcome $outcome): RedirectResponse {
+        Gate::authorize('finance', $outcome->claimCase);
+
+        try {
+            $this->service->reject($outcome);
+        } catch (\RuntimeException $e) {
+            return back()->withErrors(['outcome' => ErrorText::for($e)]);
+        }
+
+        return back()->with('status', __('claims.financial.flash.rejected'));
     }
 
     public function execute(Request $request, ClaimFinancialOutcome $outcome): RedirectResponse {

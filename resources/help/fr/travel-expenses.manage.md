@@ -1,7 +1,7 @@
 ---
 title: "Trajets, frais & indemnités forfaitaires"
 topic: travel-expenses.manage
-version: 5
+version: 7
 keywords:
     - notes de frais
     - frais de déplacement
@@ -152,3 +152,7 @@ train. Le second conducteur n'accumule pas de temps de conduite, mais son temps
 dans le véhicule ne compte pas comme repos ; en équipage multiple, 9 heures de
 repos en 30 heures suffisent. Une traversée en ferry ou en train n'interrompt
 pas le repos.
+
+**Justificatif et remboursement :** si la catégorie exige un justificatif, la note de frais reste un brouillon tant qu’il n’est pas joint ; téléversez-le via « Justificatif », puis soumettez-la. Le marquage comme remboursée ouvre une boîte pour la référence de remboursement (par exemple le libellé du virement) ; elle figure dans l’export des frais.
+
+**Référence de remboursement et véhicule :** en remboursant une dépense ou un forfait, vous saisissez une référence, par exemple le libellé du virement. Dans le carnet de route, vous indiquez l’immatriculation ou la désignation des véhicules privés ou tiers.

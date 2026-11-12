@@ -1,7 +1,7 @@
 ---
 title: "Configure the reporting portal"
 topic: whistleblowing.portal
-version: 1
+version: 2
 keywords:
     - whistleblower portal
     - enable portal
@@ -48,3 +48,11 @@ name. Use **Rotate link** to generate a new slug.
 Risk: After rotating, **already distributed links become invalid
 immediately**. Only use this when a link should no longer be usable,
 and actively communicate the new link afterwards.
+
+**Languages**: The **default language** determines the language in which the portal appears. Under **Additional languages** you choose the languages the reporting person can switch to; without a selection there is no language switch.
+
+**External reporting channels**: The portal always points out that external reporting offices of the authorities are available alongside the internal office. Enter the offices responsible for your organisation with name and web address; they appear as a list in the portal.
+
+**Version of the privacy notice**: The value appears below the introduction so that it is clear which version applies.
+
+**Retention**: The months set here apply to every case closed from now on. Cases already closed keep the period calculated when they were closed.

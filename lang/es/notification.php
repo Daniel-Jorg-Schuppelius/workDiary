@@ -23,6 +23,8 @@ return [
     ],
 
     'field' => [
+        'new_device_alert' => 'Avisarme de inicios de sesión desde un dispositivo nuevo',
+        'new_device_alert_hint' => 'Avisa por correo electrónico y en la aplicación cuando alguien inicia sesión con su cuenta desde un dispositivo o país desconocido. La desactivación queda registrada.',
         'event' => 'Evento',
         'enabled' => 'Activo',
         'rule_enabled' => 'Notificaciones activadas para este evento',
@@ -97,6 +99,7 @@ return [
         'learning_graded' => 'Su tarea «:assignment» del curso «:course» ha sido evaluada.',
         'learning_returned' => 'Su tarea «:assignment» del curso «:course» ha sido devuelta para revisión.',
         'learning_certificate_issued' => 'Su certificado :number del curso «:course» ha sido emitido.',
+        'learning_certificate_revoked' => 'Su certificado :number del curso «:course» ha sido revocado. Motivo: :reason',
         'learning_waitlist_promoted' => 'Ha quedado una plaza libre para «:title» el :date — está inscrito/a.',
         'club_event_reminder' => 'Recordatorio para :name: «:title» empieza el :date.',
         'club_event_rescheduled' => '«:title» (:name) se ha aplazado: nuevo inicio :date, antes :previous.',
@@ -130,7 +133,7 @@ return [
 
         'guarantee_expiring' => 'Vence el :date — :amount, avalista :issuer.',
 
-        'guarantee_return_due' => 'Devolución pendiente — la retención sustituida está liberada (:amount, avalista :issuer).',
+        'guarantee_return_due' => 'Devolución pendiente — la retención sustituida está liberada o la garantía ha terminado (:amount, avalista :issuer).',
 
         // Sicherheitseinbehalte (Feature 113, MVP-602).
 
@@ -178,6 +181,9 @@ return [
         'impossible_travel_message' => 'Inicio de sesión desde :to, antes :from — :distance km en :hours h (:speed km/h). Si no fue usted: cambie la contraseña y cierre las sesiones.',
         'issue_assigned' => ':actor le ha asignado este punto abierto.',
         'customer_query_raised' => 'Un cliente ha planteado una consulta.',
+        'protocol_customer_signed_ready' => ':name ha firmado «:title». El protocolo se puede cerrar.',
+        'protocol_customer_signed_pending' => ':name ha firmado «:title». Para el cierre falta todavía: :roles.',
+        'protocol_customer_rejected' => ':name ha rechazado «:title»: :reason',
         'due_soon' => 'Vence el :date.',
         'overdue' => 'Vencido desde el :date.',
         'followup_due_soon' => 'Acción de seguimiento vence el :date.',
@@ -197,6 +203,8 @@ return [
         'vacation_decided_title' => 'Decisión sobre su solicitud de vacaciones (:from – :to)',
         'vacation_approved' => 'Su solicitud de vacaciones fue aprobada. :note',
         'vacation_rejected' => 'Su solicitud de vacaciones fue rechazada. :note',
+        'vacation_revision_title' => 'Corrección solicitada para su solicitud de vacaciones (:from – :to)',
+        'vacation_revision_requested' => 'Modifique su solicitud de vacaciones y preséntela de nuevo. :note',
         'unclear_case_title' => 'Caso por aclarar el :date',
         'open_attendance_title' => 'Tiene la entrada fichada desde las :time',
         'open_attendance_body' => 'Fiche la salida si ya ha terminado; de lo contrario, el sistema cerrará el fichaje automáticamente más tarde.',
@@ -224,6 +232,7 @@ return [
         'supplier_review_overdue' => 'Revisión de proveedor vencida desde :date.',
         'sla_at_risk' => 'Plazo de resolución de SLA en riesgo — vence el :date.',
         'sla_breached' => 'Plazo de resolución de SLA incumplido — vencía el :date.',
+        'sla_ola_breached' => 'Objetivo interno (OLA) del equipo :team superado — vencía el :date.',
         'sla_quota_warning' => 'Cuota de SLA al :percent % (:consumed de :included min) en el periodo :period.',
         'asset_return_overdue' => 'Devolución del activo vencida — se esperaba el :date.',
         'tender_submission_due_soon' => 'Entrega hasta el :date.',
@@ -262,5 +271,10 @@ return [
         'chat_reminder_title' => 'Recordatorio · #:channel',
 
         'chat_attachment' => '[Adjunto]',
+        'domain_renewal_cost_title' => 'La renovación de :domain cuesta :amount',
+        'domain_renewal_cost_body' => 'Cargo el :date: :amount.',
+        'domain_balance_risk_title' => 'Cuenta del proveedor :account: compruebe la cobertura',
+        'domain_balance_uncovered' => 'El saldo y el límite de crédito (:available) no cubren las renovaciones de los próximos :days días (:due). Sin cobertura, el proveedor elimina los dominios en su fecha de fallo.',
+        'domain_balance_low' => 'El saldo :balance está por debajo del umbral de su organización.',
     ],
 ];

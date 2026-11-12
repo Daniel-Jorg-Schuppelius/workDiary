@@ -37,6 +37,10 @@ class AssetValidationException extends RuntimeException {
 
     public const string CODE_INVALID_DEFECT_TRANSITION = 'asset.invalidDefectTransition';
 
+    public const string CODE_CHECKED_OUT_ON_DECOMMISSION = 'asset.checkedOutOnDecommission';
+
+    public const string CODE_DISPOSED = 'asset.disposed';
+
     public function __construct(
         public readonly string $errorCode,
         string $message = '',
@@ -58,6 +62,14 @@ class AssetValidationException extends RuntimeException {
 
     public static function decommissionDateRequired(): self {
         return new self(self::CODE_DECOMMISSION_DATE_REQUIRED, 'decommissioned_on ist bei Status decommissioned erforderlich');
+    }
+
+    public static function checkedOutOnDecommission(): self {
+        return new self(self::CODE_CHECKED_OUT_ON_DECOMMISSION, 'asset.decommission.error.checked_out');
+    }
+
+    public static function disposed(): self {
+        return new self(self::CODE_DISPOSED, 'asset.recommission.error.disposed');
     }
 
     public static function roomCustomerMismatch(): self {

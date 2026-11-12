@@ -14,7 +14,7 @@ namespace App\Services\ServiceTicket\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\ServiceTicket\ServiceTicketStatus;
-use App\Models\ServiceTicket\ServiceTicket;
+use App\Models\ServiceTicket\{ServiceQueue, ServiceTicket, SlaContract};
 use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\ServiceTicket\SlaTimer;
@@ -48,6 +48,9 @@ class SlaTicketScan extends AbstractDeadlineScan {
             ->chunkById(200, function (Collection $tickets) use ($dispatcher, $now, &$sent): void {
                 /** @var Collection<int, ServiceTicket> $tickets */
                 foreach ($tickets as $ticket) {
+                    if (! $this->moduleActiveFor($ticket->organization_id)) {
+                        continue;
+                    }
                     $status = $this->timer->resolutionStatus($ticket, $now);
                     if ($status === \App\Enums\ServiceTicket\SlaStatus::Breached) {
                         $payload = $this->slaPayload($ticket, 'sla_breached');
@@ -71,6 +74,59 @@ class SlaTicketScan extends AbstractDeadlineScan {
                             dedup: true,
                         );
                     }
+                }
+            });
+
+        return $sent + $this->scanOlaTargets($dispatcher);
+    }
+
+    /**
+     * Internes Ziel (OLA, MVP-1548): überschreitet ein offenes Ticket das Ziel des
+     * Queue-Teams, geht die Meldung einmal an die Teamleitung des OLA-Teams
+     * (ohne sie an die Bearbeitung) und eskaliert nach den Benachrichtigungsregeln.
+     * Kein Verletzungsregister — Feature 065 sagt für OLA Messung und Eskalation zu.
+     */
+    private function scanOlaTargets(NotificationDispatcher $dispatcher): int {
+        $teamIds = SlaContract::query()->where('is_active', true)->where('is_ola', true)->whereNotNull('ola_team_id')->pluck('ola_team_id')->unique()->all();
+        if ($teamIds === []) {
+            return 0;
+        }
+
+        $sent = 0;
+        ServiceTicket::query()
+            ->open()
+            ->whereNotNull('reported_at')
+            ->whereIn('queue_id', ServiceQueue::query()->whereIn('team_id', $teamIds)->select('id'))
+            ->with('queue.team')
+            ->chunkById(200, function (Collection $tickets) use ($dispatcher, &$sent): void {
+                /** @var Collection<int, ServiceTicket> $tickets */
+                foreach ($tickets as $ticket) {
+                    if (! $this->moduleActiveFor($ticket->organization_id)) {
+                        continue;
+                    }
+                    $targets = $this->timer->olaTargets($ticket);
+                    $breached = $targets === null ? null : match (true) {
+                        $targets['resolution_status'] === \App\Enums\ServiceTicket\SlaStatus::Breached => $targets['resolution_due_at'],
+                        $targets['reaction_status'] === \App\Enums\ServiceTicket\SlaStatus::Breached && $ticket->acknowledged_at === null => $targets['reaction_due_at'],
+                        default => null,
+                    };
+                    $team = $ticket->queue?->team;
+                    if ($breached === null || $team === null) {
+                        continue;
+                    }
+                    $lead = $team->lead_user_id !== null
+                        ? \App\Models\Platform\User::query()->where('organization_id', $ticket->organization_id)->find($team->lead_user_id)
+                        : null;
+                    $payload = [
+                        'title' => trim($ticket->ticket_no . ' — ' . $ticket->title, ' —'),
+                        'message' => (string) __('notification.message.sla_ola_breached', ['team' => $team->name, 'date' => $breached->format('d.m.Y H:i')]),
+                        'message_key' => 'notification.message.sla_ola_breached',
+                        'message_params' => ['team' => $team->name, 'date' => $breached->toIso8601String()],
+                        'url' => route('service-tickets.show', $ticket),
+                        'due_at' => $breached,
+                    ];
+                    $sent += $dispatcher->notify(NotificationEvent::SlaOlaBreached, $ticket, $lead ?? $ticket->assignedTo, $payload, dedup: true);
+                    $sent += $dispatcher->escalateIfDue(NotificationEvent::SlaOlaBreached, $ticket, $payload);
                 }
             });
 

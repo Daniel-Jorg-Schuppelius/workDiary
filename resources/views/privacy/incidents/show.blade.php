@@ -15,6 +15,9 @@
         <x-slot:badges>
             <x-status-badge :tone="$incident->isDeadlineBreached() ? 'error' : 'ghost'" size="sm">{{ $incident->status->label() }}</x-status-badge>
         </x-slot:badges>
+        <x-slot:actions>
+            <x-crisis-open-link from="privacy_incident" :source="$incident->sqid" />
+        </x-slot:actions>
 
 
         @php $isProcessor = $incident->controller_role?->value === 'processor'; @endphp

@@ -51,7 +51,7 @@ class ClubGroupCriteriaScan extends AbstractDeadlineScan {
 
         foreach ($organizationIds as $organizationId) {
             $organization = Organization::query()->whereKey($organizationId)->first();
-            if ($organization === null) {
+            if ($organization === null || ! $this->moduleActiveFor($organization)) {
                 continue;
             }
 

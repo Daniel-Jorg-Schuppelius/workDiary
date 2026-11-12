@@ -1,7 +1,7 @@
 ---
 title: "Justificantes: actividad de auditoría, cumplimiento y salario mínimo"
 topic: reports.compliance
-version: 3
+version: 4
 keywords:
     - análisis de auditoría
     - quién cambió qué
@@ -150,3 +150,5 @@ requiere el permiso **Ver el cumplimiento del tiempo de trabajo**.
 
 El **Justificante tiempos de conducción** del mismo menú se describe en el
 tema dedicado a flota, libro de viajes y tiempos de conducción.
+
+**Justificante MiLoG:** para cada día laborable, junto al inicio, el fin, las pausas y la duración aparecen los minutos de teletrabajo y de gestiones de servicio: cuentan como tiempo de trabajo; el justificante solo muestra dónde se trabajó. Los hallazgos de tiempos de conducción y descanso solo se generan mientras el módulo de flota esté activo; si se desactiva, la siguiente ejecución cierra los hallazgos abiertos.

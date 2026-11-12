@@ -20,7 +20,8 @@ use App\Models\Platform\Organization;
 use App\Models\Project\Task;
 use App\Plugins\PluginErrorRecorder;
 use App\Plugins\Support\{PluginApiException, PluginSettingsResolver, PluginTenantGate};
-use App\Services\Integration\DataOwnershipResolver;
+use App\Services\Integration\Attributes\WritesDataDomain;
+use App\Services\Integration\{DataOwnershipGuard, DataOwnershipResolver};
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
@@ -36,7 +37,7 @@ use Throwable;
  * Datenführung, Klärfälle und Aufholpunkt stehen hier einmal.
  *
  * - Ein Lauf je Organisation und Anbieter (Cache-Sperre); das ausdrückliche
- *   Verknüpfen nimmt dieselbe Sperre.
+ *   Verknüpfen und das Übernehmen eines Führerschaftskonflikts nehmen dieselbe Sperre.
  * - Neue Aufgaben nur in bestätigten Zuordnungen, nie erledigte Altaufgaben,
  *   nie bei fremder Datenführung oder mehrdeutigem Ziel.
  * - Bestand wird nie verschoben; ein anderes Ziel ist ein Klärfall.
@@ -52,6 +53,7 @@ use Throwable;
  *
  * @extends AbstractTaskSyncService<TLink>
  */
+#[WritesDataDomain(DataDomain::Tasks)]
 abstract class AbstractTaskImportService extends AbstractTaskSyncService {
     /** Überlappung des Delta-Laufs mit dem letzten Aufholpunkt. */
     public const int OVERLAP_MINUTES = 10;
@@ -253,7 +255,6 @@ abstract class AbstractTaskImportService extends AbstractTaskSyncService {
         }
 
         $startedAt = CarbonImmutable::now();
-        $mayWrite = app(DataOwnershipResolver::class)->mayWrite($organization, DataDomain::Tasks, $this->pluginId());
 
         /** @var array<string, array{remote: RemoteTask, links: array<int, TLink>}> $seen */
         $seen = [];
@@ -289,7 +290,7 @@ abstract class AbstractTaskImportService extends AbstractTaskSyncService {
 
         foreach ($seen as $entry) {
             try {
-                $outcome = DB::transaction(fn (): string => $this->importOne($organization, $connection, $entry['remote'], $entry['links'], $mayWrite));
+                $outcome = DB::transaction(fn (): string => $this->importOne($organization, $connection, $entry['remote'], $entry['links']));
             } catch (Throwable $e) {
                 $outcome = 'failed';
                 $this->recordError($e, $organization, ['external_id' => $entry['remote']->id]);
@@ -328,7 +329,7 @@ abstract class AbstractTaskImportService extends AbstractTaskSyncService {
      * @param  array<int, TLink>  $links  Zuordnungen, in denen die Aufgabe gelesen wurde
      * @return 'created'|'updated'|'unchanged'|'conflicts'|'inbox'
      */
-    private function importOne(Organization $organization, Model $connection, RemoteTask $remote, array $links, bool $mayWrite): string {
+    private function importOne(Organization $organization, Model $connection, RemoteTask $remote, array $links): string {
         $externalId = $this->externalId($connection, $remote->id);
         $snapshot = ['id' => $externalId] + $remote->snapshot;
         $targets = array_values(array_unique(array_map(fn (Model $l): int => $l->targetProjectId(), $links)));
@@ -339,8 +340,8 @@ abstract class AbstractTaskImportService extends AbstractTaskSyncService {
 
         if ($reference === null) {
             $link = $this->linkFor($links, null);
-            if (! $mayWrite) {
-                return $this->stageInbox($link, $snapshot, 'ownership');
+            if (! $this->permits($organization, $link, $remote, $externalId, $links, null)) {
+                return 'inbox';
             }
             if ($remote->isDone()) {
                 return 'unchanged'; // erledigte Historie wird nie neu angelegt
@@ -364,14 +365,74 @@ abstract class AbstractTaskImportService extends AbstractTaskSyncService {
         if (! $task instanceof Task) {
             return $this->stageInbox($link, $snapshot, 'local_deleted');
         }
-        if (! $mayWrite) {
-            return $this->stageInbox($link, $snapshot, 'ownership');
+        if (! $this->permits($organization, $link, $remote, $externalId, $links, $task)) {
+            return 'inbox';
         }
         if (! in_array((int) $task->project_id, $targets, true)) {
             $this->stageInbox($link, $snapshot, 'target_mismatch');
         }
 
         return $this->applyRemote($link, $reference, $task, $remote, $snapshot);
+    }
+
+    /**
+     * Datenführung vor jedem Schreiben (MVP-1592): sonst Führerschaftskonflikt
+     * mit der normalisierten Quellaufgabe und den Zuordnungen des Laufs.
+     *
+     * @param  TLink  $link
+     * @param  array<int, TLink>  $links
+     */
+    private function permits(Organization $organization, Model $link, RemoteTask $remote, string $externalId, array $links, ?Task $task): bool {
+        $linkIds = array_map(static fn (Model $l): int => (int) $l->getKey(), array_values($links));
+        sort($linkIds);
+
+        return app(DataOwnershipGuard::class)->allows($organization, DataDomain::Tasks, $this->pluginId(), $this->ownershipClaim(
+            $externalId,
+            $this->remoteDisplayTitle(['id' => $externalId] + $remote->snapshot),
+            $this->displaySubtitle($link),
+            ['link_ids' => $linkIds, 'remote' => ['id' => $remote->id, 'fields' => $remote->fields, 'snapshot' => $remote->snapshot, 'issues' => $remote->issues]],
+            $task,
+        ));
+    }
+
+    /**
+     * „Einmalig übernehmen“: dieselbe Strecke wie der Lauf, unter derselben
+     * Sperre, nur für noch bestätigte Zuordnungen des gespeicherten Stands.
+     */
+    public function replayOwnershipConflict(Organization $organization, IntegrationInboxItem $item): ?Model {
+        $payload = (array) (($item->remote_snapshot ?? [])['payload'] ?? []);
+        $raw = (array) ($payload['remote'] ?? []);
+        if (! is_scalar($raw['id'] ?? null) || (string) $raw['id'] === '') {
+            return null;
+        }
+        /** @var array{title?: string, description?: ?string, status?: string, due_date?: ?string} $fields */
+        $fields = (array) ($raw['fields'] ?? []);
+        /** @var array{title: string, key?: ?string, url?: ?string, project?: ?string} $snapshot */
+        $snapshot = (array) ($raw['snapshot'] ?? []) + ['title' => ''];
+        $remote = new RemoteTask((string) $raw['id'], $fields, $snapshot, array_values(array_map(strval(...), (array) ($raw['issues'] ?? []))));
+        $linkIds = array_map(intval(...), (array) ($payload['link_ids'] ?? []));
+
+        return $this->locked((int) $organization->id, function () use ($organization, $remote, $linkIds): ?Model {
+            $connection = $this->connection((int) $organization->id);
+            if ($connection === null || ! $this->mayRun($organization)) {
+                throw new \RuntimeException((string) __('integration.task_import.ownership_replay.not_ready'));
+            }
+            $links = [];
+            foreach ($this->runnableLinks((int) $organization->id) as $link) {
+                if (in_array((int) $link->getKey(), $linkIds, true)) {
+                    $links[(int) $link->getKey()] = $link;
+                }
+            }
+            if ($links === []) {
+                throw new \RuntimeException((string) __('integration.task_import.ownership_replay.link_gone'));
+            }
+            $this->importOne($organization, $connection, $remote, $links);
+
+            return ExternalReference::query()
+                ->forPlugin($organization, $this->pluginId(), $this->externalType())
+                ->forExternalId($this->externalId($connection, $remote->id))
+                ->first()?->referenceable;
+        });
     }
 
     /**

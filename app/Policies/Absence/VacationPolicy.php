@@ -22,7 +22,7 @@ class VacationPolicy {
 
     /** Admin-Durchgriff — außer bei der Entscheidung, dort gilt die Selbstfreigabe-Regel auch für Admins. */
     public function before(User $user, string $ability): ?bool {
-        return $ability !== 'decide' && $user->isAdmin() ? true : null;
+        return ! in_array($ability, ['decide', 'requestRevision'], true) && $user->isAdmin() ? true : null;
     }
 
     public function viewAny(User $user): bool {
@@ -38,9 +38,9 @@ class VacationPolicy {
     }
 
     public function update(User $user, Vacation $vacation): bool {
-        // Nur Antragssteller darf ändern, solange noch ausstehend
+        // Nur Antragssteller darf ändern: solange ausstehend oder zur Korrektur zurückgegeben.
         return $this->owns($user, $vacation)
-            && $vacation->status === VacationStatus::Pending
+            && in_array($vacation->status, [VacationStatus::Pending, VacationStatus::Revision], true)
             && $user->can(Permission::VacationRequest->value);
     }
 
@@ -66,9 +66,20 @@ class VacationPolicy {
             );
     }
 
+    /**
+     * Zur Korrektur zurückgeben (MVP-1554): wer entscheiden darf, solange noch
+     * keine Freigabestufe verbucht ist — Stufen sind unveränderlich und
+     * gälten sonst für einen geänderten Antrag weiter.
+     */
+    public function requestRevision(User $user, Vacation $vacation): bool {
+        return $vacation->status->canTransitionTo(VacationStatus::Revision)
+            && $vacation->first_approved_by === null
+            && $this->decide($user, $vacation);
+    }
+
     /** Stornieren, sofern noch nicht abgeschlossen: der Antragsteller oder org-weit mit vacation.cancel. */
     public function cancel(User $user, Vacation $vacation): bool {
-        if (! in_array($vacation->status, [VacationStatus::Pending, VacationStatus::Approved], true)) {
+        if (! $vacation->status->canTransitionTo(VacationStatus::Cancelled)) {
             return false;
         }
 

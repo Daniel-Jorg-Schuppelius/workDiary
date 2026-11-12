@@ -274,6 +274,101 @@ class MeterBillingTest extends TestCase {
         $this->assertSame((int) $this->asset->id, (int) $agreement->asset_id);
     }
 
+    /** @return array<string, mixed> */
+    private function formInput(array $overrides = []): array {
+        return array_merge([
+            'customer_id' => $this->customer->sqid,
+            'asset_id' => $this->asset->sqid,
+            'title' => 'Drucker OG',
+            'base_price' => '10',
+            'unit_price' => '0.02',
+            'free_units' => '0',
+            'interval_unit' => 'monthly',
+            'next_run_on' => '2026-07-31',
+        ], $overrides);
+    }
+
+    /** MVP-1563: Staffelzeilen, Status und Projekt kommen aus dem Dialog an. */
+    public function test_dialog_saves_tiers_status_and_project(): void {
+        $project = \App\Models\Project\Project::factory()->create(['organization_id' => $this->org->id, 'customer_id' => $this->customer->id]);
+
+        $this->actingAs($this->admin)->get(route('metering.create'))
+            ->assertOk()
+            ->assertSee('name="tiers[0][from]"', false)
+            ->assertSee('name="tiers[0][price]"', false)
+            ->assertSee('name="status"', false)
+            ->assertSee('name="project_id"', false);
+
+        $this->actingAs($this->admin)->post(route('metering.store'), $this->formInput([
+            'project_id' => $project->sqid,
+            'status' => MeterBillingAgreementStatus::Paused->value,
+            // Unsortiert und mit Leerzeilen, wie ein Formular sie schickt.
+            'tiers' => [
+                ['from' => '1000', 'price' => '0.01'],
+                ['from' => '', 'price' => ''],
+                ['from' => '0', 'price' => '0.02'],
+                ['from' => null, 'price' => null],
+            ],
+        ]))->assertSessionHasNoErrors()->assertRedirect(route('metering.index'));
+
+        $agreement = MeterBillingAgreement::query()->sole();
+        $this->assertSame((int) $project->id, (int) $agreement->project_id);
+        $this->assertSame(MeterBillingAgreementStatus::Paused, $agreement->status);
+        $this->assertSame([['from' => '0', 'price' => '0.02'], ['from' => '1000', 'price' => '0.01']], $agreement->tiers);
+        $this->assertSame(25.0, round(app(MeterBillingService::class)->priceFor($agreement, 1500.0), 2));
+
+        $this->actingAs($this->admin)->get(route('metering.edit', $agreement))
+            ->assertOk()
+            ->assertSee('value="1000"', false);
+        $this->actingAs($this->admin)->get(route('metering.index'))
+            ->assertOk()
+            ->assertSee(__('metering.tiers.badge', ['count' => 2]))
+            ->assertSee(MeterBillingAgreementStatus::Paused->label())
+            ->assertDontSee(route('metering.run', $agreement), false);
+    }
+
+    public function test_emptied_tier_rows_fall_back_to_the_unit_price(): void {
+        $agreement = $this->agreement(['tiers' => [['from' => '0', 'price' => '0.02']]]);
+
+        $this->actingAs($this->admin)->put(route('metering.update', $agreement), $this->formInput([
+            'status' => MeterBillingAgreementStatus::Active->value,
+            'tiers' => [['from' => '', 'price' => ''], ['from' => '', 'price' => '']],
+        ]))->assertSessionHasNoErrors();
+
+        $agreement->refresh();
+        $this->assertNull($agreement->tiers);
+        $this->assertFalse($agreement->hasTiers());
+    }
+
+    public function test_tiers_must_start_at_zero_and_be_distinct_and_priced(): void {
+        $this->actingAs($this->admin)->post(route('metering.store'), $this->formInput([
+            'tiers' => [['from' => '100', 'price' => '0.02']],
+        ]))->assertSessionHasErrors('tiers');
+        $this->actingAs($this->admin)->post(route('metering.store'), $this->formInput([
+            'tiers' => [['from' => '0', 'price' => '0.02'], ['from' => '0', 'price' => '0.01']],
+        ]))->assertSessionHasErrors('tiers');
+        $this->actingAs($this->admin)->post(route('metering.store'), $this->formInput([
+            'tiers' => [['from' => '0', 'price' => '']],
+        ]))->assertSessionHasErrors('tiers.0.price');
+
+        $this->assertSame(0, MeterBillingAgreement::query()->count());
+    }
+
+    /** MVP-1563: Der Lauf überspringt pausierte Vereinbarungen; die Einzelaktion sagt es. */
+    public function test_paused_agreement_is_skipped_by_the_run_and_refused_by_the_action(): void {
+        $agreement = $this->agreement(['status' => MeterBillingAgreementStatus::Paused->value]);
+        $nextRun = $agreement->next_run_on->toDateString();
+
+        $result = app(MeterBillingService::class)->generateDue(CarbonImmutable::parse($nextRun)->addMonths(2));
+
+        $this->assertSame(['created' => 0, 'skipped' => 0, 'blocked' => 0], $result);
+        $this->assertSame($nextRun, $agreement->refresh()->next_run_on->toDateString());
+        $this->assertSame(0, MeterBillingRun::query()->count());
+
+        $this->actingAs($this->admin)->post(route('metering.run', $agreement))->assertSessionHas('error');
+        $this->assertSame(0, MeterBillingRun::query()->count());
+    }
+
     public function test_non_billing_user_is_forbidden(): void {
         $user = User::factory()->user()->create(['organization_id' => $this->org->id]);
 

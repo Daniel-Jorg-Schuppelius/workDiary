@@ -54,11 +54,11 @@ class ValuationService implements InventoryValuationStrategy {
     }
 
     /** Wareneingang mit Einzelkosten: aktualisiert den gleitenden Durchschnitt. */
-    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null): StockMovement {
+    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?EnteredQuantity $entered = null): StockMovement {
         $qty = DecimalQty::positive($qty);
         $unitCost = DecimalQty::positive($unitCost);
 
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $source): StockMovement {
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $source, $entered): StockMovement {
             $valuation = $this->valuationFor($variant, $warehouse);
             $oldQty = $valuation->exists ? $valuation->qty_on_hand : '0';
             $oldAvg = $valuation->exists ? ($valuation->avg_cost?->getAmount() ?? '0') : '0';
@@ -83,6 +83,8 @@ class ValuationService implements InventoryValuationStrategy {
                 $qty,
                 StockMovementType::Receipt,
                 OwnershipType::Own,
+                originalQty: $entered?->originalQty,
+                originalUnit: $entered?->originalUnit,
                 actorUserId: $actorUserId,
                 source: $source,
                 costUnit: $unitCost,
@@ -142,9 +144,10 @@ class ValuationService implements InventoryValuationStrategy {
      * Abgang über das Lagerbuch (Charge gewählt oder FEFO-zugeteilt), jeder
      * Teil zum aktuellen Durchschnitt bewertet (Durchschnitt unverändert).
      */
-    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false): StockIssue {
+    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false, ?EnteredQuantity $entered = null): StockIssue {
         return $this->ledger->issue(
             $variant, $warehouse, $qty,
+            entered: $entered,
             allowNegative: $allowNegative,
             actorUserId: $actorUserId,
             lot: $lot,
@@ -171,16 +174,6 @@ class ValuationService implements InventoryValuationStrategy {
         $valuation = $this->valuationFor($variant, $warehouse);
 
         return $valuation->exists ? ($valuation->avg_cost?->getAmount() ?? '0') : '0';
-    }
-
-    /** Bewerteter Gesamtbestand = Durchschnitt × Menge. @return numeric-string */
-    public function totalValue(ArticleVariant $variant, Warehouse $warehouse): string {
-        $valuation = $this->valuationFor($variant, $warehouse);
-        if (! $valuation->exists) {
-            return '0';
-        }
-
-        return bcmul($valuation->qty_on_hand, $valuation->avg_cost?->getAmount() ?? '0', self::SCALE);
     }
 
     /**

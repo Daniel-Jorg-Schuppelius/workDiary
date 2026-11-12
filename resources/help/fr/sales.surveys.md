@@ -1,7 +1,7 @@
 ---
 title: "Enquêtes"
 topic: sales.surveys
-version: 1
+version: 2
 keywords:
     - satisfaction client
     - enquête de satisfaction
@@ -48,3 +48,13 @@ changement de statut du ticket.
 **Score NPS** = %promoteurs (9–10) − %détracteurs (0–6). Sans réponses, pas
 de score — pas de valeur signifie « rien à calculer », pas zéro. La CSAT des
 tickets (note au portail) reste indépendante.
+
+## Enregistrer une opposition
+
+Vous définissez l'opt-out sur le client : dans la boîte de dialogue du client, sous **Portail et divers**, cochez **Pas d'enquêtes**. La personne invitée peut aussi s'opposer elle-même – chaque invitation adressée à un client et la page de l'enquête portent le lien **Se désabonner des enquêtes**. Il mène, sans connexion, à une demande de confirmation ; après confirmation, la case est cochée sur le client et l'opération est consignée dans l'historique des modifications du client. Le lien fonctionne aussi lorsque l'enquête a déjà reçu une réponse ou a expiré. Les invitations sans lien avec un client ne comportent pas de lien de désinscription. Dans l'export et l'import des clients, la valeur figure dans la colonne `survey_opt_out`.
+
+## Modifier un questionnaire
+
+**Modifier** sur la page du questionnaire change le titre et le texte
+d'introduction. L'anonymat ne peut être changé que jusqu'à la première
+invitation — ensuite il reste tel qu'il a été promis aux participants.

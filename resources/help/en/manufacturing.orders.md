@@ -1,7 +1,7 @@
 ---
 title: "Manufacturing orders"
 topic: manufacturing.orders
-version: 5
+version: 6
 keywords:
     - production order
     - work order
@@ -127,3 +127,7 @@ document, its counterpart appears there with the program's number. Links the
 program reports itself, such as a down payment created in Lexoffice, appear as
 well. The **Relation** column says what the document is to this one; "via …"
 names the document through which the connection exists.
+
+## Delivery without a customer and cancellation
+
+A delivery without a customer needs no invoicing; its invoicing status shows **Not required**. A cancelled order closes its open material shortages – they no longer feed into purchase proposals.

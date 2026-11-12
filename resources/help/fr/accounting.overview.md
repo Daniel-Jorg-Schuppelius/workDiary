@@ -1,7 +1,7 @@
 ---
 title: "Comptabilité locale"
 topic: accounting.overview
-version: 3
+version: 6
 keywords:
     - grand livre
     - tenue de comptabilité
@@ -120,10 +120,37 @@ organisation tient ou a tenu la comptabilité locale.
   `is_open_item`, `datev_account`, `euer_category` et `deductible_percent`. Les
   numéros existants sont mis à jour, les nouveaux comptes créés, rien n'est
   supprimé ; les lignes erronées sont ignorées et comptées.
-- **Codes de taxe :** dès que des codes de taxe existent, la page les liste avec
-  leurs cases de la déclaration de TVA allemande. Via **Modifier**, vous
-  attribuez une case à **Base imposable** et une à **Montant de taxe** – une
-  aide au rapprochement, pas le formulaire.
+- **Codes de taxe :** la page liste les codes de taxe avec taux, compte de
+  taxe, validité et leurs cases de la déclaration de TVA allemande. **Créer un
+  code de taxe** saisit **Code**, **Désignation**, **Sens**, **Taux de taxe
+  (%)**, **Compte de taxe**, **Valable à partir du** et les cases pour **Base
+  imposable** et **Montant de la taxe** – une aide au rapprochement, pas le
+  formulaire. Avec **Modifier**, vous changez à tout moment la désignation et
+  les cases. Le taux, le sens et le compte de taxe d'un code déjà utilisé dans
+  des écritures ne changent qu'à une nouvelle date d'effet : la version
+  précédente prend fin la veille, les écritures existantes restent inchangées,
+  les règles d'écriture et les valeurs par défaut des comptes suivent la
+  nouvelle version. **Désactiver** retire un code de la sélection ; les
+  écritures existantes le conservent.
+  Les écritures issues de la boîte de saisie portent le code et le montant de
+  taxe sur la ligne de produit ou de charge. Pour les ventes sans taxe, la
+  boîte choisit le code d'après la catégorie de taxe de la pièce : livraison
+  intracommunautaire (case 41), prestation avec autoliquidation (21),
+  exportation (43), non imposable (45) ; « exonéré » sans case apparaît comme
+  cas à clarifier. Les petites entreprises ne reçoivent aucun code.
+- **Autoliquidation par le destinataire :** pour le sens **TVA collectée et
+  déductible (autoliquidation)**, le code de taxe saisit en plus le **Compte de
+  TVA déductible**, le **Cas fiscal des factures entrantes** et la **Case de la
+  TVA déductible**. Les modèles apportent le § 13b, al. 1 et 2 (19 %) et
+  l’acquisition intracommunautaire (19 % et 7 %) avec leurs comptes, ainsi que
+  le code de la case 60 pour les ventes dont le client national doit la taxe.
+  Les plans comptables existants issus du modèle les reçoivent avec la mise à
+  jour.
+- **DATEV :** la **Clé de taxe DATEV** du code indique la clé de taxe du lot
+  DATEV (p. ex. 9 pour la TVA déductible 19 %, 94 pour le § 13b).
+  L’**Automatisme DATEV** du compte indique le code dont DATEV calcule lui-même
+  la taxe sur ce compte (compte automatique comme 8400 au SKR03) ; le lot n’y
+  met aucune clé.
 
 **Autorisation :** consulter avec **Consulter la comptabilité** ; modèle,
 import et toute modification des comptes et codes de taxe avec **Configurer la

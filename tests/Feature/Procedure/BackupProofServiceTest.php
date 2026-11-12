@@ -109,7 +109,8 @@ class BackupProofServiceTest extends TestCase {
         $stepRun = $run->stepRuns->first();
 
         $proof = $this->backups->register($stepRun, $user, $this->validPayload());
-        $verified = $this->backups->verify($proof, $user, null, 'okay');
+        // Bestätigung durch die Leitung braucht eine zweite Person (MVP-1566).
+        $verified = $this->backups->verify($proof, $this->colleague($org), null, 'okay');
 
         $this->assertTrue($verified->verified);
         $this->assertNotNull($verified->verified_at);
@@ -190,10 +191,87 @@ class BackupProofServiceTest extends TestCase {
         /** @var ProcedureStepRun $backup */
         $backup = $run->stepRuns->first();
         $proof = $this->backups->register($backup, $user, $this->validPayload());
-        $this->backups->verify($proof, $user, null);
+        $this->backups->verify($proof, $this->colleague($org), null);
         $this->executor->execute($backup->fresh(), $user, ProcedureStepRunStatus::Done);
 
         $this->assertTrue($this->executor->canExecute($maint->fresh(), $user));
+    }
+
+    public function test_registrant_cannot_confirm_the_own_proof(): void {
+        [$org, $user] = $this->makeOrgAndUser();
+        $template = $this->makeBackupTemplate($org, $user);
+        $run = $this->executor->start($template, DiaryEntry::factory()->for($user)->create(), $user);
+        $proof = $this->backups->register($run->stepRuns->first(), $user, $this->validPayload());
+
+        $this->assertSame($user->id, $proof->registered_by_user_id);
+        try {
+            $this->backups->verify($proof, $user, null, 'selbst geprüft');
+            $this->fail('Expected ProcedureBackupValidationException');
+        } catch (ProcedureBackupValidationException $e) {
+            $this->assertSame(ProcedureBackupValidationException::REASON_SELF_VERIFY, $e->reason);
+        }
+        $this->assertFalse($proof->fresh()->verified);
+    }
+
+    public function test_reject_keeps_the_step_blocked_and_journals_the_reason(): void {
+        [$org, $user] = $this->makeOrgAndUser();
+        $template = $this->makeBackupTemplate($org, $user);
+        $run = $this->executor->start($template, DiaryEntry::factory()->for($user)->create(), $user);
+        $stepRun = $run->stepRuns->first();
+        $proof = $this->backups->register($stepRun, $user, $this->validPayload());
+
+        $rejected = $this->backups->reject($proof, $this->colleague($org), 'Sicherung unvollständig');
+
+        $this->assertFalse($rejected->verified);
+        $this->assertNotNull($rejected->rejected_at);
+        $this->assertSame(ProcedureStepBlockedException::REASON_BACKUP_NOT_VERIFIED, $this->executor->blockReasonFor($stepRun->fresh(), $user));
+        $event = $run->journal()->reorder()->where('event_type', ProcedureRunEventType::BackupRejected->value)->firstOrFail();
+        $this->assertSame('Sicherung unvollständig', data_get($event->payload, 'reason'));
+
+        // Ein neuer Nachweis ersetzt den abgelehnten.
+        $fresh = $this->backups->register($stepRun->fresh(), $user, $this->validPayload());
+        $this->assertNull($fresh->rejected_at);
+        $this->assertSame(1, ProcedureBackupProof::query()->where('procedure_step_run_id', $stepRun->id)->count());
+    }
+
+    public function test_matching_file_checksum_verifies_without_a_second_person(): void {
+        [$org, $user] = $this->makeOrgAndUser();
+        $template = $this->makeBackupTemplate($org, $user);
+        $run = $this->executor->start($template, DiaryEntry::factory()->for($user)->create(), $user);
+        $stepRun = $run->stepRuns->first();
+        $payload = $this->validPayload([
+            'verify_method' => ProcedureBackupVerifyMethod::Checksum->value,
+            'checksum_value' => strtoupper(str_repeat('ab', 32)),
+        ]);
+
+        try {
+            $this->backups->register($stepRun, $user, $payload + ['file_checksum' => str_repeat('cd', 32)]);
+            $this->fail('Expected checksum mismatch');
+        } catch (ProcedureBackupValidationException $e) {
+            $this->assertSame(ProcedureBackupValidationException::REASON_CHECKSUM_MISMATCH, $e->reason);
+        }
+
+        $proof = $this->backups->register($stepRun, $user, $payload + ['file_checksum' => str_repeat('ab', 32)]);
+        $this->assertTrue($proof->verified);
+        $this->assertSame($user->id, $proof->verified_by_user_id);
+        $this->assertSame(1, $run->journal()->where('event_type', ProcedureRunEventType::BackupVerified->value)->count());
+    }
+
+    public function test_checksum_method_needs_the_expected_value(): void {
+        [$org, $user] = $this->makeOrgAndUser();
+        $template = $this->makeBackupTemplate($org, $user);
+        $run = $this->executor->start($template, DiaryEntry::factory()->for($user)->create(), $user);
+
+        try {
+            $this->backups->register($run->stepRuns->first(), $user, $this->validPayload(['verify_method' => ProcedureBackupVerifyMethod::Checksum->value]));
+            $this->fail('Expected ProcedureBackupValidationException');
+        } catch (ProcedureBackupValidationException $e) {
+            $this->assertSame(ProcedureBackupValidationException::REASON_CHECKSUM_MISSING, $e->reason);
+        }
+    }
+
+    private function colleague(Organization $org): User {
+        return User::factory()->teamleitung()->create(['organization_id' => $org->id]);
     }
 
     /**

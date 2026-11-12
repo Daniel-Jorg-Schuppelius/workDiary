@@ -1,7 +1,7 @@
 ---
 title: "Matriz de reglas fiscales"
 topic: finance.tax-rules
-version: 1
+version: 2
 keywords:
     - tipos de IVA
     - IVA
@@ -70,3 +70,12 @@ formalmente válido reciben automáticamente inversión del sujeto pasivo
 (reverse charge, 0 %), y los clientes de terceros países la indicación
 de exportación (0 %) — las filas correspondientes de la matriz aportan
 para ello el texto indicativo en el documento.
+
+Una fila con el tipo **Exento** indica el supuesto de exención de las
+operaciones exentas según el § 4 UStG: su texto indicativo figura en la
+factura electrónica como motivo de exención de las posiciones exentas
+(categoría E), a la fecha de prestación de la factura, por ejemplo
+«Tratamiento médico exento (§ 4 n.º 14 UStG)». Sin ella, la factura
+electrónica solo indica «Operación exenta». Si cambia el supuesto fiscal
+de un borrador, workDiary sustituye el texto de la matriz mientras siga sin
+cambios en el texto de la factura.

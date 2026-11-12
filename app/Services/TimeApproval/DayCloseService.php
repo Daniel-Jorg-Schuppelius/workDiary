@@ -11,13 +11,13 @@
 namespace App\Services\TimeApproval;
 
 use App\Enums\TimeApproval\{DayClosureStatus, DayCorrectionStatus, MonthClosureStatus};
-use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Models\Diary\{DayClosure, DayCorrectionRequest};
 use App\Models\Platform\User;
 use App\Models\Time\{Attendance, TimeEntry};
 use App\Models\Time\MonthClosure;
 use App\Services\Concerns\ResolvesActorId;
 use App\Services\Flextime\FlexCalculator;
+use App\Services\Reporting\PlanIstReportBuilder;
 use App\Services\TimeApproval\Concerns\GuardsApprovalWorkflow;
 use App\Services\Timekeeping\BreakRuleEvaluator;
 use App\Support\Query\DateRange;
@@ -184,7 +184,8 @@ class DayCloseService {
      *     hasBlocking: bool,
      *     aggregates: array{target:int, gross:int, breaks:int, net:int, booked:int,
      *         required_break:int, diff:int, day_balance:int, month_balance:int},
-     *     monthLocked: bool
+     *     monthLocked: bool,
+     *     planIst: array{plan_minutes:int, actual_minutes:int, plan_start:?string, actual_start:?string, actual_end:?string, warnings:list<string>, no_plan:bool}|null
      * }
      */
     public function context(User $user, CarbonImmutable $day): array {
@@ -234,6 +235,8 @@ class DayCloseService {
                 'month_balance' => $this->monthBalanceToDate($user, $day),
             ],
             'monthLocked' => $this->isMonthLocked($user, $day),
+            // Plan/Ist der Anwesenheit im Kopf des Tages (plan-ist-abgleich.md §4.1).
+            'planIst' => app(PlanIstReportBuilder::class)->presenceFor($user, $day, $day)[0] ?? null,
         ];
     }
 
@@ -482,6 +485,23 @@ class DayCloseService {
         return $this->isMonthLocked($user, $day);
     }
 
+    /**
+     * Sperre für Projektzeiten des Tages (MVP-1551): der freigegebene Monat
+     * und der abgeschlossene oder in Korrektur stehende Tag. Nach einer
+     * Korrektur-Freigabe ist der Tag wieder offen — dann sind nur die Stempel
+     * gesperrt (attendance_locked), Buchungen bewusst nicht.
+     *
+     * @return 'month'|'day'|null
+     */
+    public function bookingLock(User $user, CarbonImmutable $day): ?string {
+        if ($this->isMonthLocked($user, $day)) {
+            return 'month';
+        }
+        $closure = $this->find($user, $day);
+
+        return $closure instanceof DayClosure && ! $closure->isOpen() ? 'day' : null;
+    }
+
     // ── intern ─────────────────────────────────────────────────────────
 
     /**
@@ -509,35 +529,17 @@ class DayCloseService {
      * @return list<array{minutes:int, billable:bool, has_comment:bool, counted:bool}>
      */
     private function entryData(Collection $entries): array {
-        $kinds = $this->countedKinds();
-        $excluded = $this->excludedActivityTypes();
-
         $data = [];
         foreach ($entries as $entry) {
             $data[] = [
                 'minutes' => (int) $entry->minutes,
                 'billable' => (bool) $entry->billable,
                 'has_comment' => filled($entry->description),
-                'counted' => in_array($entry->kind->value, $kinds, true)
-                    && ! in_array($entry->activity_type->value, $excluded, true),
+                'counted' => $entry->countsAsWork(),
             ];
         }
 
         return $data;
-    }
-
-    /** @return array<int, string> */
-    private function countedKinds(): array {
-        $kinds = (array) config('timesheet.flex.count_kinds', [TimeEntryKind::Work->value, TimeEntryKind::Travel->value]);
-
-        return array_values(array_map('strval', $kinds));
-    }
-
-    /** @return array<int, string> */
-    private function excludedActivityTypes(): array {
-        $excl = (array) config('timesheet.flex.exclude_activity_types', [TimeEntryActivityType::Break_->value, TimeEntryActivityType::Absence->value]);
-
-        return array_values(array_map('strval', $excl));
     }
 
     /** Gleitzeit-Saldo vom Monatsersten bis einschließlich des Tages (§2.5). */

@@ -1,7 +1,7 @@
 ---
 title: "Helpdesk & Service Desk"
 topic: helpdesk.overview
-version: 3
+version: 5
 keywords:
     - système de tickets
     - créer un ticket
@@ -84,3 +84,61 @@ le volume par file, les temps de réaction et de résolution, le respect
 des SLA, les motifs d'attente, les taux de changement, l'encours de
 problèmes et la demande du catalogue. Les classements d'agents
 individuels sont volontairement exclus.
+
+**Changer le statut :** avec **Changer le statut** sur le ticket, vous
+choisissez le nouveau statut ; seules les transitions autorisées sont
+proposées. Lors de la résolution et de la clôture, vous saisissez le **Code
+de clôture** et le **Résumé de la résolution**. Un état d’attente nécessite un
+motif, une date de relance et une personne responsable ; à l’échéance,
+WorkDiary le lui rappelle. Le contrat SLA détermine si l’horloge SLA
+s’arrête. Vous ne rouvrez un ticket résolu qu’avec un motif ; les temps de
+réaction et de résolution précédents sont conservés.
+
+**Paramètres de la file :** pour chaque file, vous définissez les types de
+tickets pris en charge, les heures d’ouverture, la région des jours fériés,
+le nom de l’expéditeur et l’adresse de réponse. Les nouveaux tickets sans
+affectation vont dans la file par défaut ; si elle n’accepte pas le type de
+ticket, dans la première file qui l’accepte. Le SLA par défaut de la file
+s’applique si ni l’actif du ticket, ni le projet, ni le client n’ont leur
+propre contrat.
+
+**File gérée en externe :** si un système connecté tel que Zammad gère les
+tickets d’une file, les changements de statut et les réponses au client sont
+verrouillés dans WorkDiary et le ticket affiche un avis. L’attribution, les
+notes internes, les temps et la facturation restent possibles. Dès que vous
+rétablissez la cible des tickets de l’intégration, WorkDiary gère de nouveau
+la file.
+
+**Confidentialité :** un ticket confidentiel n’est visible que par le
+responsable, les observateurs, l’équipe de la file et les administrateurs.
+Vous définissez le niveau à la création ou dans la classification.
+
+**Commander une prestation :** sous **Commander une prestation**, les
+collaborateurs commandent pour eux-mêmes des entrées du catalogue de
+services. Les informations du formulaire de commande figurent sur le ticket
+et dans la boîte de dialogue de décision de l’approbation ; le ticket indique
+aussi quel dossier réalise la commande.
+
+**État de l’envoi :** chaque réponse envoyée par e-mail indique si l’envoi
+est en attente, effectué ou en échec.
+
+**Ticket à partir d’un point ouvert :** sur le point ouvert, **Ouvrir un
+ticket** crée un ticket avec le titre, la description et la référence du
+point. Un seul ticket au plus est créé par point ; le point y renvoie.
+
+**Portail client :** lorsque le client confirme la résolution ou rouvre le
+ticket avec un motif, cela se déroule comme un changement de statut interne —
+avec historique et temps de réaction et de résolution inchangés. Pour les
+files gérées en externe, la réponse, l’acceptation et la réouverture sont
+également verrouillées dans le portail ; celui-ci n’y affiche que l’état.
+
+**Changement de file et boîte :** lorsqu’un ticket change de file, le SLA par
+défaut de la nouvelle file s’applique si son contrat provenait jusque-là de
+la file ou de l’organisation, ou s’il manquait ; un contrat de l’actif, du
+projet ou du client et un contrat défini explicitement sont conservés. Sous **Boîte de
+réception**, vous attribuez une boîte à la file — une par file.
+
+**Tickets confidentiels dans les listes :** les listes de sélection et les
+renvois n’affichent un ticket confidentiel qu’aux personnes autorisées. Dans
+les détails des rapports, il reste compté mais n’apparaît pour les autres que
+comme « Ticket confidentiel ».

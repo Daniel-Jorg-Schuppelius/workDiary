@@ -17,6 +17,8 @@ use App\Enums\Support\ProblemReportStatus;
 use App\Models\Auth\SupportAccessGrant;
 use App\Models\Platform\Organization;
 use App\Models\ServiceTicket\ProblemReport;
+use App\Modules\ModuleRegistry;
+use App\Services\Licensing\ModuleStatusResolver;
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use Illuminate\Console\Command;
 
@@ -203,7 +205,12 @@ class OperationsScanCommand extends Command {
     }
 
     private function scanProblemReports(OperationsAlertService $alerts, int $organizationId): void {
-        $open = ProblemReport::query()
+        // Fehlermeldungen gehören dem Helpdesk (MVP-1628): ohne aktives Modul keine Aufgabe, eine bestehende löst sich auf.
+        $license = app(ModuleRegistry::class)->byTable((new ProblemReport)->getTable())?->licenseCode();
+        $organization = Organization::query()->find($organizationId);
+        $active = $license === null || ($organization instanceof Organization && app(ModuleStatusResolver::class)->isActiveFor($organization, $license));
+
+        $open = ! $active ? 0 : ProblemReport::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
             ->where('status', '!=', ProblemReportStatus::Closed->value)

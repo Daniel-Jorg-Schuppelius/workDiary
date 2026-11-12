@@ -38,9 +38,7 @@
 </style>
 </head>
 <body>
-@if ($design->headerText() !== null)
-    <div class="tpl-header">{{ $design->headerText() }}</div>
-@endif
+@include('pdf._design_intro')
 @if ($claim->status === \App\Enums\Club\ClubFeeClaimStatus::Cancelled)
     <p class="banner">{{ __('club.fees.pdf.cancelled', ['date' => $claim->cancelled_at?->translatedFormat('d.m.Y')]) }}</p>
 @endif
@@ -118,8 +116,6 @@
 @if ($footerText !== '')
     <p style="margin-top: 14px; white-space: pre-line;">{{ $footerText }}</p>
 @endif
-@if ($design->footerText() !== null)
-    <div class="tpl-footer">{{ $design->footerText() }}</div>
-@endif
+@include('pdf._design_closing')
 </body>
 </html>

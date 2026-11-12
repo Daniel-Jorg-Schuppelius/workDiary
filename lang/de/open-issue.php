@@ -12,9 +12,11 @@ return [
     'title' => [
         'index' => 'Offene Punkte',
         'show' => 'Offener Punkt :title',
+        'history' => 'Verlauf',
     ],
 
     'field' => [
+        'ticket' => 'Ticket',
         'title' => 'Titel',
         'description' => 'Beschreibung',
         'category' => 'Kategorie',
@@ -32,6 +34,8 @@ return [
     ],
 
     'action' => [
+        'details' => 'Details',
+        'openTicket' => 'Ticket eröffnen',
         'create' => 'Offenen Punkt anlegen',
         'edit' => 'Bearbeiten',
         'assign' => 'Zuweisen',
@@ -47,6 +51,8 @@ return [
     ],
 
     'flash' => [
+        'ticketOpened' => 'Ticket :no wurde aus dem offenen Punkt eröffnet.',
+        'ticketExists' => 'Zu diesem offenen Punkt gibt es bereits das Ticket :no.',
         'created' => 'Offener Punkt wurde angelegt.',
         'updated' => 'Offener Punkt wurde aktualisiert.',
         'deleted' => 'Offener Punkt wurde gelöscht.',
@@ -63,5 +69,15 @@ return [
 
     'follow_up' => [
         'content_intro' => 'Folgeauftrag zu offenem Punkt #:id „:title“',
+    ],
+    'hint' => [
+        'edit_tracked' => 'Änderungen an Frist, Schweregrad und Sichtbarkeit stehen im Verlauf des Punkts.',
+    ],
+
+    'filter' => [
+        'all_statuses' => 'Alle Status',
+        'all_severities' => 'Alle Schweregrade',
+        'all_assignees' => 'Alle Zuständigen',
+        'no_match' => 'Kein offener Punkt passt zum Filter.',
     ],
 ];

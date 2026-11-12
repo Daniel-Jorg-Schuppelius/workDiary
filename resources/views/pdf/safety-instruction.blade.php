@@ -29,6 +29,7 @@
         table.rows img { max-height: 14mm; max-width: 45mm; }
         .mono { font-family: DejaVu Sans Mono, monospace; font-size: 7.5pt; color: #444; }
         .muted { color: #555; font-size: 8pt; }
+        .tpl-issuer { margin-top: 2mm; font-size: 8pt; color: #555; }
     </style>
 </head>
 <body>
@@ -79,5 +80,7 @@
     </table>
 
     <p class="muted">{{ __('safety.register.pdf.generated', ['date' => $generatedAt->orgTz()->format('d.m.Y H:i')]) }}</p>
+    {{-- Arbeitgeber nach Blockzustand des Designs (MVP-1624). --}}
+    @include('pdf._design_issuer')
 </body>
 </html>

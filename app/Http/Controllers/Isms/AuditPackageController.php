@@ -65,13 +65,7 @@ class AuditPackageController extends Controller {
     public function store(Request $request): RedirectResponse {
         Gate::authorize('create', IsmsAuditPackage::class);
 
-        $data = $request->validate([
-            'scope' => ['required', 'string', 'max:64'],
-            'title' => ['required', 'string', 'max:180'],
-            'as_of_date' => ['required', 'date'],
-            'norm' => ['nullable', 'string', 'max:64'],
-            'edition' => ['nullable', 'string', 'max:16'],
-        ]);
+        $data = $request->validate($this->packageRules());
 
         /** @var User $creator */
         $creator = Auth::user();
@@ -86,6 +80,46 @@ class AuditPackageController extends Controller {
         return redirect()
             ->toList('isms.packages.index')
             ->with('success', __('isms.flash.package_created'));
+    }
+
+    /** Entwurf bearbeiten (gleicher Dialog wie die Anlage). */
+    public function edit(IsmsAuditPackage $package): View {
+        Gate::authorize('update', $package);
+        abort_if($package->isFinalized(), 403, __('isms.error.package_already_finalized'));
+
+        return view('isms.packages._form_dialog', [
+            'package' => $package,
+            'scopes' => IsmsScope::query()->orderByDesc('is_default')->orderBy('name')->get(),
+        ]);
+    }
+
+    public function update(Request $request, IsmsAuditPackage $package): RedirectResponse {
+        Gate::authorize('update', $package);
+
+        $data = $request->validate($this->packageRules());
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $scope = $this->scopeOrNull($data['scope']) ?? $package->scope ?? $this->scopeService->ensureDefaultScope((int) $package->organization_id);
+
+        $this->service->update($package, $scope, $data, $actor);
+
+        return redirect()
+            ->toList('isms.packages.index')
+            ->with('success', __('isms.flash.package_updated'));
+    }
+
+    /** Entwurf verwerfen; finalisierte Pakete bleiben als Nachweis stehen. */
+    public function destroy(IsmsAuditPackage $package): RedirectResponse {
+        Gate::authorize('delete', $package);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $this->service->delete($package, $actor);
+
+        return redirect()
+            ->toList('isms.packages.index')
+            ->with('success', __('isms.flash.package_deleted'));
     }
 
     /** Finalisieren: Snapshot + SHA-256, danach unveränderlich. */
@@ -114,6 +148,17 @@ class AuditPackageController extends Controller {
         return redirect()
             ->toList('isms.packages.index')
             ->withErrors(['file_hash' => __('isms.flash.package_verified_mismatch', ['no' => $package->displayNo()])]);
+    }
+
+    /** @return array<string, list<string>> */
+    private function packageRules(): array {
+        return [
+            'scope' => ['required', 'string', 'max:64'],
+            'title' => ['required', 'string', 'max:180'],
+            'as_of_date' => ['required', 'date'],
+            'norm' => ['nullable', 'string', 'max:64'],
+            'edition' => ['nullable', 'string', 'max:16'],
+        ];
     }
 
     /** Interner Download der Paketdatei (Gate-geprüft, pfadsicher). */

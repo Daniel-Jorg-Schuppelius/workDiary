@@ -1,7 +1,7 @@
 ---
 title: "Categorías de gastos"
 topic: catalog.expense-categories
-version: 1
+version: 2
 keywords:
     - tipos de gasto
     - gastos de viaje
@@ -28,3 +28,5 @@ facturable por defecto y si requiere justificante; el tipo impositivo se
 propone al registrar gastos nuevos. Las categorías inactivas se
 conservan pero dejan de ofrecerse; una categoría aún usada por gastos no
 puede borrarse — márquela como inactiva.
+
+**Recibo obligatorio:** si está marcado «Recibo obligatorio», un gasto de esta categoría solo puede enviarse con un recibo adjunto. Guardar como borrador siempre es posible; el formulario indica la obligación y enviar sin recibo abre el diálogo del recibo.

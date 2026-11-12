@@ -1,7 +1,7 @@
 ---
 title: "Ubicaciones y salas"
 topic: facilities.manage
-version: 2
+version: 3
 keywords:
     - edificios
     - plantas
@@ -43,3 +43,5 @@ del operador. Complementan el perfil de limpieza y se gestionan en el
 diálogo de edición de la sala (elegir el requisito, opcionalmente un nivel
 o un valor y una nota). En la lista de salas y en el expediente del objeto
 de un activo ubicado en la sala se muestran los requisitos activos.
+
+**Cambiar un requisito de sala:** en el diálogo de la sala, «Editar» en un requisito abre su propio diálogo para tipo, nivel, nota e interruptor de activo; después vuelve al diálogo de la sala.

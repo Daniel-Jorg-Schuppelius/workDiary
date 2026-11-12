@@ -30,6 +30,8 @@
                 :cached="$aiText->from_cache"
                 :accept-action="route('ai.suggestions.accept', $aiText)"
                 :reject-action="route('ai.suggestions.reject', $aiText)"
+                :capability="$aiText->capability"
+                :regenerate-action="route('ai.suggestions.protocol-item', $item)"
                 field-name="text" />
         </td>
     </tr>

@@ -1,7 +1,7 @@
 ---
 title: "Importación de Toggl"
 topic: admin.toggl
-version: 5
+version: 6
 keywords:
     - Toggl Track
     - importar tiempos
@@ -113,3 +113,5 @@ Webhook (opcional):
   proyecto de Toggl; los existentes se reconocen por el nombre) y los tiempos
   se envían en el siguiente ciclo. El retraso de tiempos antiguos se recupera
   con `toggl:push --days=90`.
+
+**Soberanía de datos:** Si otro sistema lidera clientes y proveedores, la migración no crea clientes y se detiene con un aviso, también en la vista previa. Cree los clientes que falten en el sistema principal y sincronice, o asigne el espacio de trabajo a un cliente existente.

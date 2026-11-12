@@ -65,7 +65,8 @@ final class DeliveryTest extends TestCase {
         $this->assertSame('7.0000', $this->ledger->balance($this->variant, $this->warehouse, StockState::Physical));
         $this->assertSame('3.0000', $delivery->quantity?->getNumericValue());
         $this->assertSame(DeliveryStockStatus::Delivered, $delivery->stock_status);
-        $this->assertSame(DeliveryFacturationStatus::Pending, $delivery->facturation_status);
+        // Ohne Kunden gibt es nichts zu berechnen (MVP-1620).
+        $this->assertSame(DeliveryFacturationStatus::NotRequired, $delivery->facturation_status);
         $this->assertSame('Widget rot', $delivery->name_snapshot);
         $this->assertSame('WID-ROT', $delivery->sku_snapshot);
         $this->assertSame('12.0000', $delivery->unit_price_snapshot?->getAmount());
@@ -111,7 +112,7 @@ final class DeliveryTest extends TestCase {
             [[$soon->id, '-2.0000', '8.0000'], [$late->id, '-1.0000', '3.0000']],
             $issued->map(fn (StockMovement $m): array => [$m->stock_lot_id, $m->qty_base, $m->cost_total?->getAmount()])->all(),
         );
-        $this->assertSame(['0.0000', '1.0000'], [app(LotStockReader::class)->balanceOf($soon), app(LotStockReader::class)->balanceOf($late)]);
+        $this->assertSame(['0.0000', '1.0000'], [app(LotStockReader::class)->balancesOf([$soon])[$soon->id], app(LotStockReader::class)->balancesOf([$late])[$late->id]]);
         $this->assertEqualsCanonicalizing($issued->pluck('id')->all(), InventoryOutboxEntry::query()->where('operation', 'issue')->pluck('stock_movement_id')->all());
         $this->assertSame(1, StockDelivery::query()->count());
     }
@@ -125,6 +126,7 @@ final class DeliveryTest extends TestCase {
 
         $delivery = $this->deliveries->deliver($this->variant, $this->warehouse, '1', customer: $customer);
         $this->assertSame('lexoffice', $delivery->facturation_target);
+        $this->assertSame(DeliveryFacturationStatus::Pending, $delivery->facturation_status);
     }
 
     public function test_deliveries_are_isolated_per_organization(): void {

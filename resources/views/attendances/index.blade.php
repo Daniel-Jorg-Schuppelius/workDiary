@@ -41,6 +41,8 @@
                     <x-table.th sort="started_at" default>{{ __('Beginn') }}</x-table.th>
                     <x-table.th sort="ended_at">{{ __('Ende') }}</x-table.th>
                     <th class="text-right">{{ __('Pause') }}</th>
+                    <th class="text-right">{{ __('attendance.intermediate.homeoffice') }}</th>
+                    <th class="text-right">{{ __('attendance.intermediate.errand') }}</th>
                     <x-table.th sort="duration" align="right">{{ __('Dauer') }}</x-table.th>
                     <x-table.th sort="status">{{ __('Status') }}</x-table.th>
                     <x-table.th sort="source">{{ __('Quelle') }}</x-table.th>
@@ -52,6 +54,8 @@
                     <td class="tabular-nums">{{ $a->started_at?->ftime() }}</td>
                     <td class="tabular-nums">{{ $a->ended_at?->ftime() ?? '—' }}</td>
                     <td class="text-right tabular-nums">{{ $a->break_minutes_total }}</td>
+                    <td class="text-right tabular-nums">{{ $a->homeoffice_minutes > 0 ? \App\Support\Formats::duration((int) $a->homeoffice_minutes, 'clock', withUnit: false) : '—' }}</td>
+                    <td class="text-right tabular-nums">{{ $a->errand_minutes > 0 ? \App\Support\Formats::duration((int) $a->errand_minutes, 'clock', withUnit: false) : '—' }}</td>
                     <td class="text-right tabular-nums">
                         @if ($a->duration_minutes !== null)
                             {{ \App\Support\Formats::duration((int) $a->duration_minutes, 'clock', withUnit: false) }}
@@ -65,7 +69,7 @@
                     <td class="text-xs text-muted">{{ $a->sourceLabel() }}</td>
                 </tr>
             @empty
-                <x-table.empty icon="schedule" :colspan="7" :title="__('Keine Stempelungen im Zeitraum')" compact />
+                <x-table.empty icon="schedule" :colspan="9" :title="__('Keine Stempelungen im Zeitraum')" compact />
             @endforelse
         </x-table>
         <x-pagination :paginator="$attendances" standing />

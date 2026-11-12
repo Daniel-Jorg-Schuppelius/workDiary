@@ -1,7 +1,7 @@
 ---
 title: "Rollen & Rechte"
 topic: admin.roles
-version: 3
+version: 4
 keywords:
     - Berechtigungen
     - Benutzerrechte
@@ -86,3 +86,5 @@ Person und Zeitpunkt unter **Rechteänderungen** (Knopf oben in der
 Zugriffssteuerung und im Prüfprotokoll). Die Sicht ist lesend und braucht
 das Recht „Rollen- und Rechteänderungen einsehen“; Support-Konten haben es, damit
 sie Vorgänge nachvollziehen können, ohne etwas zu verändern.
+
+**Rolle kopieren:** Das Symbol „Kopieren“ an einer Rolle der Organisation öffnet den Anlegen-Dialog mit deren Berechtigungen vorbelegt. Vergeben Sie einen eigenen Namen und schneiden Sie die Rechte zu; die Vorlage steht unter **Rechteänderungen** beim Anlegen. Globale Plattformrollen lassen sich nicht kopieren.

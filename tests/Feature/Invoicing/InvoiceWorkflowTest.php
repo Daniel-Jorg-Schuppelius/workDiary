@@ -71,16 +71,99 @@ final class InvoiceWorkflowTest extends TestCase {
 
     public function test_require_approval_blocks_issue_until_approved(): void {
         $this->org->update(['settings' => ['invoicing' => ['require_approval' => '1']]]);
-        $invoice = $this->draft();
+        $invoice = $this->draft(['created_by' => $this->user->id]);
 
         $this->actingAs($this->user)->post(route('invoices.issue', $invoice));
         $this->assertSame(InvoiceStatus::Draft, $invoice->fresh()->status, 'Ohne Freigabe keine Ausstellung.');
 
-        $this->actingAs($this->user)->post(route('invoices.approve', $invoice))->assertRedirect();
+        // MVP-1562: Mit Freigabezwang gibt nicht frei, wer die Rechnung angelegt hat.
+        $this->actingAs($this->user)->post(route('invoices.approve', $invoice))->assertSessionHas('error');
+        $this->assertNull($invoice->fresh()->approved_at);
+
+        $second = User::factory()->admin()->create(['organization_id' => $this->org->id]);
+        $this->actingAs($second)->post(route('invoices.approve', $invoice))->assertRedirect();
         $this->assertNotNull($invoice->fresh()->approved_at);
 
         $this->actingAs($this->user)->post(route('invoices.issue', $invoice));
         $this->assertSame(InvoiceStatus::Issued, $invoice->fresh()->status);
+    }
+
+    /** MVP-1624: Eine inhaltliche Änderung nach der Freigabe hebt sie auf (Positionen, Konditionen, Kopf); der Ersteller gibt nicht wieder frei. */
+    public function test_changing_the_approved_draft_revokes_the_approval(): void {
+        $this->org->update(['settings' => ['invoicing' => ['require_approval' => '1']]]);
+        $invoice = $this->draft(['created_by' => $this->user->id]);
+        $reviewer = User::factory()->admin()->create(['organization_id' => $this->org->id]);
+        $approve = function () use ($reviewer, $invoice): void {
+            $this->actingAs($reviewer)->post(route('invoices.approve', $invoice))->assertRedirect();
+            $this->assertNotNull($invoice->fresh()->approved_at);
+        };
+
+        // Position geändert, auch ohne neue Summe.
+        $approve();
+        $item = $invoice->items()->firstOrFail();
+        $this->actingAs($this->user)->put(route('invoices.items.update', [$invoice, $item]), ['description' => 'Leistung geändert', 'quantity' => '1', 'unit' => 'h', 'unit_price' => '100.00'])->assertSessionHasNoErrors();
+        $this->assertNull($invoice->fresh()->approved_at);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'invoice.approval_revoked', 'auditable_id' => $invoice->id]);
+
+        // Konditionen geändert.
+        $approve();
+        $this->actingAs($this->user)->patch(route('invoices.conditions.update', $invoice), ['discount_percent' => '5'])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertNull($invoice->fresh()->approved_at);
+
+        // Kunde oder Datum am Kopf geändert.
+        $approve();
+        $invoice->fresh()->update(['due_on' => now()->addDays(30)->toDateString()]);
+        $this->assertNull($invoice->fresh()->approved_at);
+
+        // Die Selbstfreigabe-Sperre bleibt.
+        $this->actingAs($this->user)->post(route('invoices.approve', $invoice))->assertSessionHas('error');
+        $this->actingAs($this->user)->post(route('invoices.issue', $invoice));
+        $this->assertSame(InvoiceStatus::Draft, $invoice->fresh()->status);
+
+        // Ausstellen nach erneuter Freigabe hebt sie nicht auf.
+        $approve();
+        $this->actingAs($this->user)->post(route('invoices.issue', $invoice));
+        $issued = $invoice->fresh();
+        $this->assertSame(InvoiceStatus::Issued, $issued->status);
+        $this->assertNotNull($issued->approved_at);
+    }
+
+    /** Ohne Freigabezwang bleibt die Freigabe ein freiwilliger Vermerk — auch durch den Ersteller. */
+    public function test_optional_approval_may_be_given_by_the_creator(): void {
+        $invoice = $this->draft();
+
+        $this->actingAs($this->user)->post(route('invoices.approve', $invoice))->assertSessionHas('status');
+        $this->assertNotNull($invoice->fresh()->approved_at);
+    }
+
+    /** MVP-1562: Das Organisationsformular schreibt beide Schalter in dem Format, das die Ausstellung liest. */
+    public function test_organization_form_switches_on_approval_and_validation_requirement(): void {
+        $registry = app(\App\Settings\SettingsRegistry::class);
+        $this->assertTrue($registry->has('invoicing.require_approval'));
+        $this->assertTrue($registry->has('einvoice.enforce_validation'));
+
+        $admin = User::factory()->admin()->create(['organization_id' => $this->org->id]);
+        $this->actingAs($admin)->get(route('admin.organizations.edit', $this->org))
+            ->assertOk()
+            ->assertSee('settings[invoicing][require_approval]', false)
+            ->assertSee('settings[einvoice][enforce_validation]', false);
+
+        $this->actingAs($admin)->put(route('admin.organizations.update', $this->org), [
+            'name' => $this->org->name,
+            'plan' => $this->org->plan,
+            'locale' => $this->org->locale ?? 'de',
+            'timezone' => $this->org->timezone ?? 'Europe/Berlin',
+            'is_active' => 1,
+            'settings' => ['invoicing' => ['require_approval' => '1'], 'einvoice' => ['enforce_validation' => '1']],
+        ])->assertSessionHasNoErrors();
+
+        $settings = $this->org->refresh()->settings;
+        $this->assertSame('1', (string) data_get($settings, 'invoicing.require_approval'));
+        $this->assertSame('1', (string) data_get($settings, 'einvoice.enforce_validation'));
+
+        $invoice = $this->draft();
+        $this->actingAs($this->user)->post(route('invoices.issue', $invoice));
+        $this->assertSame(InvoiceStatus::Draft, $invoice->fresh()->status);
     }
 
     /**

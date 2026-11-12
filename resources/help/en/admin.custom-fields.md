@@ -1,7 +1,7 @@
 ---
 title: "Custom fields"
 topic: admin.custom-fields
-version: 1
+version: 2
 keywords:
     - user-defined fields
     - additional fields
@@ -38,3 +38,5 @@ Notes:
   overwritten.
 - File, photo and signature fields are not available here — use
   attachments and forms for those.
+
+**List, export and search:** Custom fields exist for customers, suppliers, leads, orders, assets, articles and projects. Fields with a list column appear in the respective overview. The CSV export of customers, suppliers and orders appends the fields as columns; the global search finds the values as they are displayed — including choices, dates and numbers. The data transfer for re-import does not contain custom fields.

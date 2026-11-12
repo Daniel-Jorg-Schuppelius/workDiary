@@ -73,10 +73,9 @@ class WhistleblowingAssignmentService {
 
         if ($assignment instanceof CaseAssignment) {
             $assignment->forceFill(['revoked_at' => Carbon::now()])->save();
-            $this->events->record($case, WhistleblowingEventService::CASE_ASSIGNED, $actor, [
+            $this->events->record($case, WhistleblowingEventService::CASE_ASSIGNMENT_REVOKED, $actor, [
                 'assignee_user_id' => (int) $user->getKey(),
                 'role' => $role->value,
-                'revoked' => true,
             ]);
         }
     }

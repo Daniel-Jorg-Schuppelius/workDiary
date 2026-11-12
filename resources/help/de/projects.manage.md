@@ -1,7 +1,7 @@
 ---
 title: "Projekte verwalten"
 topic: projects.manage
-version: 6
+version: 7
 keywords:
     - Projekt anlegen
     - Projektmanagement
@@ -125,3 +125,5 @@ gewählten Zeitraum; ein Klick öffnet die Wirtschaftlichkeitsauswertung mit
 denselben Zahlen. Gewährleistungsfristen und Bürgschaften zum Projekt
 erscheinen darunter. Übernommene Aufgaben nennen ihr Plugin, etwa „Aus GitHub
 Issues“.
+
+**Projektfarbe:** Oben rechts im Projektdialog wählen Sie die Farbe, mit der das Projekt in Listen, Zeiten und Monatsübersicht markiert wird.

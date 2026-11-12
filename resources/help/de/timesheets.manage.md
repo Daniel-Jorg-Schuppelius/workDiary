@@ -1,7 +1,7 @@
 ---
 title: "Stundenzettel verwalten"
 topic: timesheets.manage
-version: 1
+version: 3
 keywords:
     - Stundennachweis
     - Leistungsnachweis
@@ -34,3 +34,7 @@ Stand.
 Vor der Freigabe müssen Zeitraum, Kunde, Projekt, Leistungsbeschreibung
 und Mengen fachlich stimmen. Ein PDF ist eine Ausgabe des gespeicherten
 Stands, nicht die führende Datenquelle.
+
+**Material von „Heute“:** Über „Material“ auf „Heute“ erfassen Sie Verbrauchsmaterial mit Projekt, Menge und Einheit — auch ohne Netz. Es landet auf Ihrem offenen Stundenzettel des Projekts für diesen Tag; gibt es keinen (oder ist er schon unterschrieben), wird ein neuer angelegt. Einen Lagerabgang bucht der Materialverbrauch am Stundenzettel nicht.
+
+**Summengrenze:** Material, das Sie auf „Heute“ erfassen, landet auf dem offenen Stundenzettel des Tages. Würde Menge × Einzelpreis zusammen mit den übrigen Zeilen die speicherbare Summe des Zettels überschreiten, wird die Erfassung abgewiesen — online wie offline.

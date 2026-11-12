@@ -1,7 +1,7 @@
 ---
 title: "Umfragen"
 topic: sales.surveys
-version: 1
+version: 2
 keywords:
     - Kundenzufriedenheit
     - Kundenbefragung
@@ -47,3 +47,13 @@ Ticket-Statuswechsel.
 **NPS-Score** = %Promotoren (9–10) − %Detraktoren (0–6). Ohne Antworten gibt
 es keinen Score — kein Wert heißt „nichts zu rechnen", nicht Null. Die
 Ticket-CSAT (Bewertung im Portal) bleibt unabhängig davon bestehen.
+
+## Widerspruch erfassen
+
+Den Opt-out setzen Sie am Kunden: im Kundendialog unter **Portal & Sonstiges** den Haken **Keine Umfragen**. Die eingeladene Person kann auch selbst widersprechen – jede Einladung an einen Kunden und die Umfrageseite tragen den Link **Umfragen abbestellen**. Er führt ohne Anmeldung auf eine Rückfrage; nach der Bestätigung ist der Haken am Kunden gesetzt und der Vorgang im Änderungsverlauf des Kunden vermerkt. Der Link wirkt auch, wenn die Umfrage schon beantwortet oder abgelaufen ist. Einladungen ohne Kundenbezug tragen keinen Abmeldelink. Im Kundenexport und -import steht der Wert in der Spalte `survey_opt_out`.
+
+## Fragebogen bearbeiten
+
+**Bearbeiten** auf der Fragebogenseite ändert Titel und Einleitungstext. Die
+Anonymität lässt sich nur bis zur ersten Einladung umstellen — danach bleibt
+sie, wie sie den Teilnehmenden zugesagt wurde.

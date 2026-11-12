@@ -1,7 +1,7 @@
 ---
 title: "Catálogos de proveedores"
 topic: supplier-catalogs.overview
-version: 3
+version: 4
 keywords:
     - DATANORM
     - BMEcat
@@ -97,3 +97,7 @@ cliente forma parte del inicio de sesión, lo indica su carta de acceso.
 
 La lectura es posible con permisos de lectura de almacén; crear,
 importar y vincular requieren permisos de contabilización de almacén.
+
+## Ignorar posiciones
+
+Las posiciones no vinculadas pueden **no adoptarse** de forma deliberada (icono de ojo en la fila). Las posiciones ignoradas quedan excluidas de las propuestas, la adopción masiva y la actualización de precios; el mismo icono las vuelve a incluir. Elimine primero el vínculo de una posición vinculada.

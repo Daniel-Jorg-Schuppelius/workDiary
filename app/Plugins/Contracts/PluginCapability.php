@@ -106,22 +106,24 @@ enum PluginCapability: string implements HasLabel, PluginCapabilityContract {
     }
 
     /**
-     * Das Contract-Interface, das ein Plugin mit dieser Fähigkeit implementieren muss.
+     * Das Contract-Interface, das ein Plugin mit dieser Fähigkeit implementieren
+     * muss. Aufgaben- und Terminabgleich sind reine Anzeige (MVP-1591): Der
+     * Kern ruft sie nie über einen Vertrag, jedes Plugin führt seinen Abgleich
+     * über den eigenen Befehl und Dienst.
      *
-     * @return class-string
+     * @return class-string|null
      */
-    public function interface(): string {
+    public function interface(): ?string {
         return match ($this) {
             self::ContactSync => ContactSyncer::class,
             self::TimeExport => TimeExporter::class,
             self::TimeImport => TimeImporter::class,
-            self::TaskSync => TaskSyncer::class,
+            self::TaskSync, self::AppointmentSync => null,
             self::CalendarPublish => CalendarPublisher::class,
             self::ShippingProvider => ShippingProvider::class,
             self::DocumentIntake => DocumentIntakeSource::class,
             self::BackupTarget => BackupTarget::class,
             self::DomainRegistrar => DomainRegistrar::class,
-            self::AppointmentSync => AppointmentSyncer::class,
             self::SmsGateway => SmsProvider::class,
             self::OnlinePayment => OnlinePaymentProvider::class,
             self::PeppolTransport => PeppolTransportProvider::class,

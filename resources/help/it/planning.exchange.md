@@ -1,7 +1,7 @@
 ---
 title: "Scambio turni con approvazione"
 topic: planning.exchange
-version: 2
+version: 3
 keywords:
     - scambiare turno
     - cambio turno
@@ -36,3 +36,19 @@ Procedura:
    vero scambio, per entrambi i turni.
 
 Una richiesta può essere ritirata finché non è ancora stata decisa.
+
+**Turno in cambio:** nella finestra **Richiedi scambio** scelga in **Turno
+in cambio (facoltativo)** un turno futuro di una collega o di un collega.
+Senza **persona desiderata**, il turno in cambio determina la persona con cui
+scambia; deve appartenere alla persona scelta. L’elenco mostra allora la
+richiesta con il contrassegno **Scambio** e il turno in cambio. Nel
+controllo il turno ceduto dall’altra parte non conta più.
+
+**Violazione delle regole all’approvazione:** se la nuova assegnazione viola
+una regola sull’orario di lavoro, la richiesta riporta il contrassegno
+**Violazione delle regole** e, al posto di **Rilascia**, il pulsante
+**Verificare e approvare**. La finestra indica le regole violate; può
+approvare solo con **Approvare nonostante la violazione delle regole** e una
+**Motivazione** (almeno 10 caratteri). Motivazione e regole derogate
+restano nel registro di audit. La deroga non rimuove un blocco di
+qualifica.

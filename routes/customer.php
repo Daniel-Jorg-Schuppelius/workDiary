@@ -84,6 +84,12 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
             Route::post('/diary/{diary}/photos/{attachment}/complain', [PhotoConfirmationController::class, 'complain'])->name('diary.photos.complain');
             // Unterschriebene, kundensichtbare Protokolle als PDF (Phase 137, E17).
             Route::get('/diary/{diary}/protocols/{protocol}/pdf', [ProtocolPdfController::class, 'diary'])->name('diary.protocols.pdf');
+            // Abnahme eines zur Prüfung eingereichten Protokolls (MVP-1572).
+            Route::get('/diary/{diary}/protocols/{protocol}/abnahme', [\App\Http\Controllers\CustomerPortal\ProtocolAcceptanceController::class, 'showDiary'])->name('diary.protocols.accept');
+            Route::post('/diary/{diary}/protocols/{protocol}/abnahme', [\App\Http\Controllers\CustomerPortal\ProtocolAcceptanceController::class, 'signDiary'])
+                ->middleware('throttle:12,1')->name('diary.protocols.accept.sign');
+            Route::post('/diary/{diary}/protocols/{protocol}/abnahme/ablehnen', [\App\Http\Controllers\CustomerPortal\ProtocolAcceptanceController::class, 'rejectDiary'])
+                ->middleware('throttle:12,1')->name('diary.protocols.accept.reject');
         });
 
         Route::middleware('portal.capability:time_entries')->group(function (): void {
@@ -197,6 +203,11 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
             Route::get('/assets', [AssetController::class, 'index'])->name('assets.index');
             Route::get('/assets/{asset}', [AssetController::class, 'show'])->name('assets.show');
             Route::get('/assets/{asset}/protocols/{protocol}/pdf', [ProtocolPdfController::class, 'asset'])->name('assets.protocols.pdf');
+            Route::get('/assets/{asset}/protocols/{protocol}/abnahme', [\App\Http\Controllers\CustomerPortal\ProtocolAcceptanceController::class, 'showAsset'])->name('assets.protocols.accept');
+            Route::post('/assets/{asset}/protocols/{protocol}/abnahme', [\App\Http\Controllers\CustomerPortal\ProtocolAcceptanceController::class, 'signAsset'])
+                ->middleware('throttle:12,1')->name('assets.protocols.accept.sign');
+            Route::post('/assets/{asset}/protocols/{protocol}/abnahme/ablehnen', [\App\Http\Controllers\CustomerPortal\ProtocolAcceptanceController::class, 'rejectAsset'])
+                ->middleware('throttle:12,1')->name('assets.protocols.accept.reject');
         });
 
         Route::middleware('portal.capability:queries')->group(function (): void {
@@ -311,6 +322,7 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
         Route::post('/schulungen/{enrollment}/einheiten/{unit}/erledigt', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'completeUnit'])->name('learning.units.complete');
         Route::get('/schulungen/{enrollment}/einheiten/{unit}/medien/fassung/{rendition}', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'renditionMedia'])->name('learning.units.rendition');
         Route::get('/schulungen/{enrollment}/einheiten/{unit}/medien/{attachment}', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'unitMedia'])->name('learning.units.media');
+        Route::post('/schulungen/{enrollment}/einheiten/{unit}/medien/{attachment}/fortschritt', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'videoProgress'])->middleware('throttle:60,1')->name('learning.units.video-progress');
     });
 
 });

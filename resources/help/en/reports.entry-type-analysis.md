@@ -1,7 +1,7 @@
 ---
 title: "Entry type analysis"
 topic: reports.entry-type-analysis
-version: 3
+version: 4
 keywords:
     - plan vs actual
     - target vs actual
@@ -35,3 +35,5 @@ or pricing needs.
 
 An order's planned duration is its **Planned duration (HH:MM)**; if it is
 empty, the service duration of a dispatched order, otherwise the length of the time slot or the duration of the appointment counts.
+
+The **Top causes** column lists, per order type, the three most frequent classifications from the rework reason of booked times and the root cause of complaints about the order. Each order counts once; a click shows the affected times and complaints. The CSV export contains the column as well.

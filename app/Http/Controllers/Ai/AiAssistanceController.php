@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Ai;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Ai\Concerns\AppliesConnectionChoice;
 use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\Ai\AiTextSuggestion;
@@ -47,6 +48,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
  * gelesen und verworfen, die Entscheidung wird auditiert.
  */
 class AiAssistanceController extends Controller {
+    use AppliesConnectionChoice;
     use RequiresPlatformOperator;
 
     use ResolvesCurrentOrganization;
@@ -256,6 +258,7 @@ class AiAssistanceController extends Controller {
 
     private function guarded(callable $action): RedirectResponse {
         try {
+            $this->applyConnectionChoice(request());
             $message = $action();
         } catch (AiException $e) {
             return back()->with('error', $e->getMessage());

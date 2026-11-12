@@ -14,7 +14,7 @@ use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry};
 use App\Models\Platform\User;
 use App\Models\Project\{Project, Task};
-use App\Plugins\Contracts\{PluginCapability, TaskSyncer};
+use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Msgraph\Enums\{MsgraphConnectionStatus, MsgraphTaskListLinkStatus};
 use App\Plugins\Msgraph\Models\{MsgraphTaskConnection, MsgraphTaskListLink};
 use App\Plugins\Msgraph\MsgraphPlugin;
@@ -86,7 +86,6 @@ final class MsgraphTodoSyncTest extends TestCase {
         $plugin = new MsgraphPlugin();
 
         $this->assertContains(PluginCapability::TaskSync, $plugin->capabilities());
-        $this->assertInstanceOf(TaskSyncer::class, $plugin);
     }
 
     public function test_oauth_start_requests_tasks_scope(): void {
@@ -119,7 +118,7 @@ final class MsgraphTodoSyncTest extends TestCase {
             'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks*' => FakePluginHttp::response(['value' => [$this->remoteTask()]]),
         ]);
 
-        $first = (new MsgraphPlugin())->syncTasks($this->organization);
+        $first = app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
         $this->assertSame(1, $first['created']);
 
         $task = Task::query()->firstOrFail();
@@ -138,7 +137,7 @@ final class MsgraphTodoSyncTest extends TestCase {
         FakePluginHttp::fake([
             'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks*' => FakePluginHttp::response(['value' => [$this->remoteTask()]]),
         ]);
-        $second = (new MsgraphPlugin())->syncTasks($this->organization);
+        $second = app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
         $this->assertSame(1, $second['unchanged']);
         $this->assertSame(1, Task::query()->count());
     }
@@ -151,7 +150,7 @@ final class MsgraphTodoSyncTest extends TestCase {
         FakePluginHttp::fake([
             'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks*' => FakePluginHttp::response(['value' => [$this->remoteTask()]]),
         ]);
-        (new MsgraphPlugin())->syncTasks($this->organization);
+        app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
 
         // Lokal UND remote unterschiedlich geändert → Konflikt, kein Überschreiben.
         $task = Task::query()->firstOrFail();
@@ -160,7 +159,7 @@ final class MsgraphTodoSyncTest extends TestCase {
         FakePluginHttp::fake([
             'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks*' => FakePluginHttp::response(['value' => [$this->remoteTask(['title' => 'Server patchen (remote umbenannt)'])]]),
         ]);
-        $result = (new MsgraphPlugin())->syncTasks($this->organization);
+        $result = app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
 
         $this->assertSame(1, $result['conflicts']);
         $this->assertSame('Server patchen (lokal umbenannt)', Task::query()->firstOrFail()->title);
@@ -179,12 +178,12 @@ final class MsgraphTodoSyncTest extends TestCase {
         FakePluginHttp::fake([
             'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks*' => FakePluginHttp::response(['value' => [$this->remoteTask()]]),
         ]);
-        (new MsgraphPlugin())->syncTasks($this->organization);
+        app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
 
         FakePluginHttp::fake([
             'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks*' => FakePluginHttp::response(['value' => []]),
         ]);
-        $result = (new MsgraphPlugin())->syncTasks($this->organization);
+        $result = app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
 
         $this->assertSame(1, $result['inbox']);
         $this->assertSame(1, Task::query()->count()); // nie löschen
@@ -211,7 +210,7 @@ final class MsgraphTodoSyncTest extends TestCase {
             'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks' => FakePluginHttp::response(['id' => 'todo-neu'], 201),
         ]);
 
-        $result = (new MsgraphPlugin())->syncTasks($this->organization);
+        $result = app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
         $this->assertSame(1, $result['created']);
 
         $fake->assertSent(function ($request): bool {
@@ -232,7 +231,7 @@ final class MsgraphTodoSyncTest extends TestCase {
             'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/todo-neu' => FakePluginHttp::response(['id' => 'todo-neu']),
         ]);
 
-        $second = (new MsgraphPlugin())->syncTasks($this->organization);
+        $second = app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
         $this->assertSame(1, $second['updated']);
         $patch->assertSent(fn ($request): bool => $request->getMethod() === 'PATCH'
             && str_ends_with((string) $request->getUri(), '/tasks/todo-neu'));
@@ -263,7 +262,7 @@ final class MsgraphTodoSyncTest extends TestCase {
                 '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta?$deltatoken=chk-1',
             ]),
         ]);
-        $first = (new MsgraphPlugin())->syncTasks($this->organization);
+        $first = app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
 
         $this->assertSame(2, $first['created']);
         $this->assertStringContainsString('chk-1', (string) $link->fresh()?->delta_link);
@@ -276,7 +275,7 @@ final class MsgraphTodoSyncTest extends TestCase {
                 '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta?$deltatoken=chk-2',
             ]),
         ]);
-        $second = (new MsgraphPlugin())->syncTasks($this->organization);
+        $second = app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
 
         $this->assertSame(1, $second['inbox']);
         $fake->assertSent(fn ($request): bool => str_contains(urldecode((string) $request->getUri()), 'chk-1'));
@@ -301,7 +300,7 @@ final class MsgraphTodoSyncTest extends TestCase {
             ]),
         ]);
 
-        $result = (new MsgraphPlugin())->syncTasks($this->organization);
+        $result = app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
 
         $this->assertSame(1, $result['created']);
         $this->assertSame(0, $result['failed']);
@@ -320,7 +319,7 @@ final class MsgraphTodoSyncTest extends TestCase {
             ], 400),
             'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks*' => FakePluginHttp::response(['value' => [$this->remoteTask()]]),
         ]);
-        $first = (new MsgraphPlugin())->syncTasks($this->organization);
+        $first = app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
 
         $this->assertSame(1, $first['created']);
         $this->assertSame(0, $first['failed']);
@@ -333,7 +332,7 @@ final class MsgraphTodoSyncTest extends TestCase {
         $fake = FakePluginHttp::fake([
             'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks*' => FakePluginHttp::response(['value' => []]),
         ]);
-        $second = (new MsgraphPlugin())->syncTasks($this->organization);
+        $second = app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
 
         $this->assertSame(1, $second['inbox']);
         $this->assertSame(0, $second['failed']);
@@ -348,7 +347,7 @@ final class MsgraphTodoSyncTest extends TestCase {
                 '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta?$deltatoken=spaeter',
             ]),
         ]);
-        $third = (new MsgraphPlugin())->syncTasks($this->organization);
+        $third = app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
 
         $this->assertSame(0, $third['failed']);
         $this->assertNull($link->fresh()?->delta_unsupported_at);
@@ -371,7 +370,7 @@ final class MsgraphTodoSyncTest extends TestCase {
                 '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta?$deltatoken=neu',
             ]),
         ]);
-        $result = (new MsgraphPlugin())->syncTasks($this->organization);
+        $result = app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
 
         $this->assertSame(1, $result['created']);
         $this->assertSame(0, $result['failed']);
@@ -446,14 +445,14 @@ final class MsgraphTodoSyncTest extends TestCase {
         FakePluginHttp::fake([
             'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta*' => FakePluginHttp::response(['value' => [$this->remoteTask()]]),
         ]);
-        (new MsgraphPlugin())->syncTasks($this->organization);
+        app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
         $this->assertSame(1, Task::query()->count());
 
         // Remote-Änderung übernehmen (3-Wege-Update) — ebenfalls kein Echo.
         FakePluginHttp::fake([
             'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta*' => FakePluginHttp::response(['value' => [$this->remoteTask(['title' => 'Server patchen (remote)'])]]),
         ]);
-        (new MsgraphPlugin())->syncTasks($this->organization);
+        app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($this->organization);
 
         $this->assertSame('Server patchen (remote)', Task::query()->firstOrFail()->title);
         $this->assertSame(0, IntegrationOutboxEntry::query()->withoutGlobalScopes()->where('plugin_id', MsgraphPlugin::ID)->count());

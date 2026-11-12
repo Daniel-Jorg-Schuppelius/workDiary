@@ -15,7 +15,10 @@ use App\Enums\Contracts\HasLabel;
 
 /**
  * Wirkungsrichtung eines Steuerkennzeichens (Feature 125, MVP-672):
- * Umsatzsteuer (Ausgangsseite), Vorsteuer (Eingangsseite) oder steuerfrei.
+ * Umsatzsteuer (Ausgangsseite), Vorsteuer (Eingangsseite), steuerfrei oder
+ * beides zugleich — die Steuerschuld des Empfängers (§ 13b UStG,
+ * innergemeinschaftlicher Erwerb, MVP-1621): Umsatzsteuer auf dem Steuerkonto,
+ * Vorsteuer auf dem Vorsteuerkonto des Kennzeichens.
  *
  * Das Kennzeichen entscheidet **nicht** über die steuerliche Behandlung — die
  * kommt aus dem eingefrorenen `tax_context` des Belegs ({@see \App\Models\Finance\TaxRule}).
@@ -27,6 +30,7 @@ enum TaxCodeDirection: string implements HasLabel {
     case Output = 'output';
     case Input = 'input';
     case None = 'none';
+    case SelfAssessed = 'both';
 
     public function label(): string {
         return (string) __('enums.finance.tax-code-direction.' . $this->value);
@@ -37,6 +41,12 @@ enum TaxCodeDirection: string implements HasLabel {
             self::Output => 'success',
             self::Input => 'info',
             self::None => 'ghost',
+            self::SelfAssessed => 'warning',
         };
+    }
+
+    /** Steht die Bemessungsgrundlage im Soll (Aufwand) statt im Haben (Erlös)? */
+    public function basedOnDebit(): bool {
+        return $this === self::Input || $this === self::SelfAssessed;
     }
 }

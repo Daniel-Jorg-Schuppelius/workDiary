@@ -285,6 +285,24 @@ class HelpCenterTest extends TestCase {
             ->assertDontSee('Sicherung geheim');
     }
 
+    /** MVP-1623: Eine Rückmeldung „War das hilfreich?“ ist kein Aufruf (Auswertung über help:feedback). */
+    public function test_feedback_does_not_count_as_a_view_in_popular_topics(): void {
+        $this->makeTopic('dashboard.overview', ['title' => 'Dashboard-Grundlagen']);
+        $user = User::factory()->user()->create();
+        HelpView::query()->create([
+            'organization_id' => $user->organization_id,
+            'topic' => 'dashboard.overview',
+            'locale' => 'de',
+            'was_helpful' => false,
+            'created_at' => now(),
+        ]);
+
+        $response = $this->actingAs($user)->get(route('help.center.index'));
+
+        $response->assertOk();
+        $this->assertSame([], $response->viewData('popular'));
+    }
+
     public function test_help_drawer_offers_help_center_link_and_search(): void {
         // Direkter Weg ins Hilfecenter aus der Sidebar — auch ohne Topic
         // der aktuellen Seite; die Suche landet als GET auf der Vollseite.

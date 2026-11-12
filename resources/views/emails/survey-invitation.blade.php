@@ -11,4 +11,8 @@
 @if ($survey->anonymous)
 {{ __('Ihre Antworten werden anonym gespeichert und sind nicht auf Sie rückführbar.') }}
 @endif
+@if ($optOutUrl ?? null)
+
+{{ __('Sie möchten keine Umfragen mehr von uns erhalten?') }} [{{ __('Umfragen abbestellen') }}]({{ $optOutUrl }})
+@endif
 @endcomponent

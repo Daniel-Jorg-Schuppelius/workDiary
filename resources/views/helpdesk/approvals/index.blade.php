@@ -57,6 +57,8 @@
                                 {{ $kind->label() }} · {{ __('Rolle') }}: {{ $mappedRole->label() }}
                             @elseif ((string) ($rule['type'] ?? '') === 'role')
                                 {{ __('Rolle') }}: {{ \App\Enums\User\UserRole::tryFrom((string) ($rule['value'] ?? ''))?->label() ?? (string) ($rule['value'] ?? '') }}
+                            @elseif ((string) ($rule['type'] ?? '') === 'permission')
+                                {{ __('helpdesk.approvals.by_permission', ['permission' => \App\Enums\User\Permission::tryFrom((string) ($rule['value'] ?? ''))?->label() ?? (string) ($rule['value'] ?? '')]) }}
                             @else
                                 {{ __('Persönlich') }}
                             @endif

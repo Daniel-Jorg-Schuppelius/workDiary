@@ -105,7 +105,7 @@ final class SalesHelpdeskFinanceStatusLabelsTest extends TestCase {
         $this->assertSame(['queued', 'sent', 'failed'], $values(DocumentDispatchStatus::cases()));
         $this->assertSame(['active', 'completed', 'cancelled'], IsmsAuditProgramStatus::values());
         $this->assertSame(['open', 'done', 'skipped'], $values(OnboardingStepState::cases()));
-        $this->assertSame(['active', 'draft', 'retired'], $values(TaxRuleStatus::cases()));
+        $this->assertSame(['active', 'retired'], $values(TaxRuleStatus::cases()));
     }
 
     public function test_quote_and_change_predicates_cover_the_former_literal_lists(): void {

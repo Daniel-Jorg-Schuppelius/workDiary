@@ -66,37 +66,70 @@
                              :label="__('accounting.ledger.filter.only_active')" :checked="$onlyActive" />
         </x-filter-bar>
 
-        @if ($taxCodes->isNotEmpty())
-            {{-- Steuerkennzeichen samt UStVA-Kennziffern (MVP-688). --}}
+        @if ($taxCodes->isNotEmpty() || ($canConfigure && $hasAccounts))
+            {{-- Steuerkennzeichen samt UStVA-Kennziffern (MVP-688); anlegen, ändern, stilllegen (MVP-1558). --}}
             <x-card :title="__('accounting.filing.fields.tax_codes')" icon="tag" :subtitle="__('accounting.filing.fields.subtitle')">
+                @if ($canConfigure)
+                    <x-slot:actions>
+                        <x-icon-btn icon="add" size="xs" tone="primary" show-label
+                                    data-entry-modal-trigger
+                                    :href="route('finance.accounting.tax-codes.create')"
+                                    :label="__('accounting.tax_codes.action.add')" />
+                    </x-slot:actions>
+                @endif
                 <x-table :bare="true">
                     <x-slot:head>
                         <tr>
                             <th>{{ __('accounting.ledger.column.number') }}</th>
                             <th>{{ __('accounting.ledger.column.name') }}</th>
                             <th>{{ __('accounting.reports.column.direction') }}</th>
+                            <th class="text-right">{{ __('accounting.tax_codes.field.rate') }}</th>
+                            <th>{{ __('accounting.tax_codes.field.tax_account') }}</th>
+                            <th>{{ __('accounting.tax_codes.field.validity') }}</th>
                             <th class="text-right">{{ __('accounting.filing.fields.column.base') }}</th>
                             <th class="text-right">{{ __('accounting.filing.fields.column.tax') }}</th>
+                            <th class="text-right">{{ __('accounting.tax_codes.field.datev_tax_key') }}</th>
                             <th class="text-right"></th>
                         </tr>
                     </x-slot:head>
-                    @foreach ($taxCodes as $taxCode)
-                        <tr class="hover">
+                    @forelse ($taxCodes as $taxCode)
+                        <tr class="hover {{ $taxCode->is_active ? '' : 'opacity-60' }}">
                             <td class="font-mono">{{ $taxCode->code }}</td>
-                            <td>{{ $taxCode->name }}</td>
+                            <td>
+                                {{ $taxCode->name }}
+                                @unless ($taxCode->is_active)
+                                    <x-status-badge tone="ghost" size="xs">{{ __('accounting.tax_codes.inactive') }}</x-status-badge>
+                                @endunless
+                            </td>
                             <td>{{ $taxCode->direction->label() }}</td>
+                            <td class="text-right font-mono">{{ $taxCode->rate }} %</td>
+                            {{-- Steuerschuld des Empfängers (MVP-1621): Umsatzsteuer- / Vorsteuerkonto und -Kennziffer. --}}
+                            <td class="font-mono">{{ $taxCode->taxAccount?->number ?? '—' }}@if ($taxCode->inputTaxAccount) / {{ $taxCode->inputTaxAccount->number }}@endif</td>
+                            <td>{{ $taxCode->valid_from->fdate() }}@if ($taxCode->valid_to) – {{ $taxCode->valid_to->fdate() }}@endif</td>
                             <td class="text-right font-mono">{{ $taxCode->ustva_base_field ?? '—' }}</td>
-                            <td class="text-right font-mono">{{ $taxCode->ustva_tax_field ?? '—' }}</td>
+                            <td class="text-right font-mono">{{ $taxCode->ustva_tax_field ?? '—' }}@if ($taxCode->ustva_input_tax_field) / {{ $taxCode->ustva_input_tax_field }}@endif</td>
+                            <td class="text-right font-mono">{{ $taxCode->datev_tax_key ?? '—' }}</td>
                             <td class="text-right">
                                 @if ($canConfigure)
-                                    <x-icon-btn icon="edit" size="xs" tone="ghost"
-                                                data-entry-modal-trigger
-                                                :href="route('finance.accounting.tax-codes.edit', $taxCode)"
-                                                :label="__('Bearbeiten')" />
+                                    <div class="flex justify-end gap-1">
+                                        <x-icon-btn icon="edit" size="xs" tone="ghost"
+                                                    data-entry-modal-trigger
+                                                    :href="route('finance.accounting.tax-codes.edit', $taxCode)"
+                                                    :label="__('Bearbeiten')" />
+                                        @if ($taxCode->is_active)
+                                            <x-action-form :action="route('finance.accounting.tax-codes.deactivate', $taxCode)" method="POST"
+                                                           :confirm="__('accounting.tax_codes.confirm.deactivate')">
+                                                <x-icon-btn icon="block" size="xs" tone="ghost" type="submit"
+                                                            :label="__('accounting.ledger.action.deactivate')" />
+                                            </x-action-form>
+                                        @endif
+                                    </div>
                                 @endif
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <x-table.empty :colspan="10" icon="tag" :title="__('accounting.tax_codes.empty')" compact />
+                    @endforelse
                 </x-table>
             </x-card>
         @endif

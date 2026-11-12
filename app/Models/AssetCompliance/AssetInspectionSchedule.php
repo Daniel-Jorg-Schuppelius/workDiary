@@ -34,6 +34,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $due_on
  * @property \Illuminate\Support\Carbon|null $planned_on
  * @property AssetInspectionScheduleStatus $status
+ * @property string|null $cancel_reason
  */
 class AssetInspectionSchedule extends Model {
     use Auditable;
@@ -44,7 +45,7 @@ class AssetInspectionSchedule extends Model {
     protected $fillable = [
         'organization_id', 'asset_compliance_assignment_id', 'asset_id', 'diary_entry_id',
         'due_on', 'planned_on', 'inspector_user_id', 'external_contact_id',
-        'status', 'note',
+        'status', 'note', 'cancel_reason',
     ];
 
     /** @var array<string, string> */

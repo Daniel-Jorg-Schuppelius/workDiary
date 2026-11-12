@@ -1,7 +1,7 @@
 ---
 title: "Activité"
 topic: activity.overview
-version: 1
+version: 2
 keywords:
     - Activité
     - Qui a modifié quoi
@@ -26,3 +26,5 @@ Dans les fiches client, client final, fournisseur et projet, l’« Historique
 des modifications » regroupe les modifications et événements de l’objet ; la
 tuile « Activité récente de l’équipe » affiche les dernières entrées des deux
 dernières semaines.
+
+**Événement :** le filtre « Événement » limite la liste à un type de modification, par exemple « Créé » ou « Supprimé ». « Événements métier » affiche tout sauf les modifications générales (créé, mis à jour, supprimé, archivé, restauré) — par exemple validations, signatures ou clôtures.

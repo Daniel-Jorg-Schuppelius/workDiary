@@ -104,7 +104,7 @@ class SlaReportController extends Controller {
      * Vertrags-Kontingent für die Periode, in der das Berichtsende liegt
      * (org-gescopt über den globalen Scope im HTTP-Kontext).
      *
-     * @return list<array{contract: string, period: string, period_key: string, included: int, consumed: int, remaining: int, over: int, percentage: int, threshold_reached: bool}>
+     * @return list<array{contract: string, period: string, period_key: string, included: int, consumed: int, remaining: int, over: int, percentage: int, threshold_reached: bool, flat_fee: ?string, overage_amount: ?string}>
      */
     private function quotaUsage(CarbonImmutable $reference): array {
         $out = [];
@@ -124,6 +124,9 @@ class SlaReportController extends Controller {
                 'over' => $usage['over_minutes'],
                 'percentage' => $usage['percentage'],
                 'threshold_reached' => $usage['threshold_reached'],
+                // Nachweis zum Vertrag (Feature 010): Pauschale und Mehrstundenbetrag des Zeitraums.
+                'flat_fee' => $usage['flat_fee']?->format(),
+                'overage_amount' => $usage['overage_amount']?->format(),
             ];
         }
 
@@ -184,7 +187,7 @@ class SlaReportController extends Controller {
 
         /** @var Collection<int, SlaViolation> $violations */
         $violations = SlaViolation::query()
-            ->with(['serviceTicket:id,ticket_no,title,customer_id,status', 'serviceTicket.customer:id,name'])
+            ->with(['serviceTicket:id,ticket_no,title,customer_id,status,confidentiality,assigned_to_user_id,queue_id', 'serviceTicket.customer:id,name'])
             ->whereBetween('breached_at', [$from, $to])
             ->when($filters->customerId !== null, fn($q) => $q->whereHas('serviceTicket', fn($t) => $t->where('customer_id', $filters->customerId)))
             // Feature 002: Verletzungen an Tickets ausgeblendeter Kunden entfallen
@@ -206,11 +209,13 @@ class SlaReportController extends Controller {
                 $byPriority[$v->priority] = ($byPriority[$v->priority] ?? 0) + 1;
             }
             $ticket = $v->serviceTicket;
-            $customer = $ticket?->customer;
-            $custId = $customer !== null ? (int) $customer->id : 0;
+            // Vertrauliche Tickets nennen ihren Kunden auch in der Summe nicht (MVP-1625); -1 ist der Sammelposten.
+            $masked = $ticket !== null && Gate::denies('view', $ticket);
+            $customer = $masked ? null : $ticket?->customer;
+            $custId = $masked ? -1 : ($customer !== null ? (int) $customer->id : 0);
             if (! isset($byCustomer[$custId])) {
                 $byCustomer[$custId] = [
-                    'name' => $customer !== null ? $customer->name : (string) __('sla.report.no_customer'),
+                    'name' => $masked ? (string) __('helpdesk.confidentiality.masked') : ($customer !== null ? $customer->name : (string) __('sla.report.no_customer')),
                     'count' => 0,
                 ];
             }

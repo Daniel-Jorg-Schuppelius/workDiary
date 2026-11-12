@@ -1,7 +1,7 @@
 ---
 title: "Collegare Microsoft 365"
 topic: admin.msgraph
-version: 2
+version: 3
 keywords:
     - Microsoft 365
     - casella condivisa
@@ -243,3 +243,5 @@ segnala.
   **Plugin** segnala che le connessioni secondarie Microsoft 365 richiedono
   attenzione, una connessione per ingresso documenti, backup o invio e-mail è
   disturbata. Ripeta l'accesso in quel punto.
+
+**Titolarità dei dati:** Gli appuntamenti di questo calendario appartengono all’area calendario. Se un altro sistema gestisce il calendario, proposte, serie e modifiche compaiono nella casella delle integrazioni come caso «Titolarità dei dati»; **Acquisisci una volta** crea l’appuntamento o la serie. Gli avvisi di eliminazione restano casi ordinari. Microsoft To Do rientra nell’area attività.

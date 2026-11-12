@@ -88,6 +88,45 @@
         </div>
     @endif
 
+    {{-- Gastgeber mit abweichender Calendly-Adresse (MVP-1610) --}}
+    @if ($connection && $connection->isActive())
+        <div class="rounded-box border border-base-300 p-4 space-y-2">
+            <h3 class="font-medium">{{ __('Calendly-Nutzer zuordnen') }}</h3>
+            <p class="text-xs text-muted">{{ __('Gastgeber werden über ihre E-Mail-Adresse erkannt. Weicht die Calendly-Adresse ab, ordnen Sie sie hier einem Benutzer zu.') }}</p>
+            @if ($hostMappings->isEmpty())
+                <x-empty-state icon="link_off" compact :title="__('Noch keine abweichenden Gastgeber zugeordnet.')" />
+            @else
+                <ul class="space-y-1 text-sm">
+                    @foreach ($hostMappings as $mapping)
+                        <li class="flex items-center justify-between gap-2">
+                            <span>{{ $mapping->external_id }} → {{ $mapping->referenceable?->name ?? '—' }}</span>
+                            <x-action-form :action="route('admin.calendly.hosts.destroy', $mapping)" method="DELETE" :confirm="__('Zuordnung entfernen') . '?'">
+                                <x-icon-btn icon="link_off" size="xs" type="submit" :label="__('Zuordnung entfernen')" />
+                            </x-action-form>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+            <form method="POST" action="{{ route('admin.calendly.hosts.store') }}" class="flex flex-wrap items-end gap-2">
+                @csrf
+                <div class="fieldset">
+                    <label class="fieldset-label" for="calendly-host-email">{{ __('Calendly-E-Mail') }}</label>
+                    <input id="calendly-host-email" name="email" type="email" required maxlength="255" class="input input-sm input-bordered" />
+                </div>
+                <div class="fieldset">
+                    <label class="fieldset-label" for="calendly-host-user">{{ __('Benutzer') }}</label>
+                    <select id="calendly-host-user" name="user" required class="select select-sm select-bordered">
+                        <option value="">{{ __('… auswählen') }}</option>
+                        @foreach ($users as $user)
+                            <option value="{{ $user->sqid }}">{{ $user->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <x-button type="submit">{{ __('Zuordnung speichern') }}</x-button>
+            </form>
+        </div>
+    @endif
+
     {{-- Offene Terminwünsche (zweiphasige Bestätigung) --}}
     @if ($requests->total() === 0)
         <x-empty-state framed icon="event_busy"

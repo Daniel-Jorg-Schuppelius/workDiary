@@ -38,7 +38,7 @@ final class StockCountSyncHandler implements SyncCommandHandler {
         if ($type !== 'inventory.count') {
             throw new RuntimeException('Unbekannter Sync-Befehlstyp: ' . $type);
         }
-        if (! Gate::forUser($user)->allows(P::InventoryPost->value)) {
+        if (! Gate::forUser($user)->allows(P::InventoryCount->value)) {
             throw new RuntimeException((string) __('inventory.count_ui.forbidden'));
         }
 
@@ -46,6 +46,7 @@ final class StockCountSyncHandler implements SyncCommandHandler {
             'count' => ['required', 'string'],
             'code' => ['required', 'string', 'max:120'],
             'qty' => ['required', 'numeric', 'gt:0'],
+            'unit' => ['nullable', 'string', 'max:20'],
         ])->validate();
 
         $count = StockCount::query()->whereKey(Sqid::decode(StockCount::class, $data['count']))->first();
@@ -53,6 +54,6 @@ final class StockCountSyncHandler implements SyncCommandHandler {
             throw new RuntimeException((string) __('inventory.count_ui.not_found'));
         }
 
-        return 'stock_count_lines:' . $this->stocktake->addByScan($count, (string) $data['code'], (string) $data['qty'], $user->id)->id;
+        return 'stock_count_lines:' . $this->stocktake->addByScan($count, (string) $data['code'], (string) $data['qty'], $user->id, $data['unit'] ?? null)->id;
     }
 }

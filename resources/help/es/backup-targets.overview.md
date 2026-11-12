@@ -1,7 +1,7 @@
 ---
 title: "Destinos de copia de seguridad en la nube"
 topic: backup-targets.overview
-version: 2
+version: 3
 keywords:
     - copia externa
     - respaldo de datos
@@ -33,3 +33,7 @@ WorkDiary respalda toda la instalación cifrada en Dropbox, OneDrive, Google Dri
 **Claves:** BACKUP_MASTER_KEY (ENV, ¡guardar sin conexión!) es la única vía regular de descifrado; un par de claves de recuperación opcional descifra en caso de emergencia. Sin clave de recuperación la página advierte permanentemente — perder la clave maestra inutiliza todas las copias.
 
 **Operación:** La ejecución nocturna crea una instantánea (volcado de BD + archivos), la cifra, sube las partes de forma reanudable y aplica la retención (7 diarias / 4 semanales / 12 mensuales; la retención legal protege generaciones individuales). Una verificación semanal por muestreo comprueba firma y hashes; la prueba de restauración restaura en un directorio aislado y registra RPO/RTO — hasta la primera prueba verde una generación cuenta como «guardada, restauración no confirmada».
+
+## Inicio de sesión caducado o destino desactivado
+
+Si el proveedor rechaza el inicio de sesión durante una copia o una verificación, el destino muestra **Requiere nuevo inicio de sesión**; tras errores repetidos hasta el umbral de desactivación, **Desactivada**. El destino no participa entonces en ninguna ejecución hasta que vuelva a conectarlo con **Volver a iniciar sesión**.

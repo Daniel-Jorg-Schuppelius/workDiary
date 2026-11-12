@@ -13,9 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Vikunja;
 
 use App\Models\Integration\ExternalReference;
-use App\Models\Platform\Organization;
 use App\Plugins\AbstractPlugin;
-use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer, TaskSyncer};
+use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer};
 use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSettings};
 use App\Plugins\Vikunja\Api\VikunjaClientFactory;
 use App\Plugins\Vikunja\Models\VikunjaConnection;
@@ -24,7 +23,7 @@ use App\Plugins\Vikunja\Services\VikunjaImportService;
 /**
  * Vikunja-Aufgabenimport (Feature 173, Phase 158): Aufgaben ausgewählter Vikunja-Projekte werden als Aufgaben in WorkDiary-Projekte übernommen, nur lesend.
  */
-class VikunjaPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
+class VikunjaPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, LinksExternalRecords, SlotRenderer {
     use ChecksConnectionHealth, RendersTaskLink;
 
     public const string ID = 'vikunja';
@@ -53,10 +52,6 @@ class VikunjaPlugin extends AbstractPlugin implements LinksExternalRecords, Slot
         return [PluginCapability::TaskSync];
     }
 
-    public function syncTasks(Organization $organization): array {
-        return app(VikunjaImportService::class)->run($organization);
-    }
-
     public function adminPanel(): ?array {
         return ['route' => 'admin.vikunja.index', 'label' => 'Vikunja', 'icon' => 'checklist'];
     }
@@ -79,5 +74,10 @@ class VikunjaPlugin extends AbstractPlugin implements LinksExternalRecords, Slot
 
     protected function taskLinkType(): string {
         return self::EXT_TYPE_TASK;
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Tasks];
     }
 }

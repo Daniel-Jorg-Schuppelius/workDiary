@@ -35,6 +35,7 @@
         table.meta th { background: #f5f5f5; width: 190px; font-weight: 600; }
         .revoked { margin: 0 0 18px; padding: 10px 12px; border: 2px solid #a00; color: #a00; font-weight: 700; }
         .note { margin-top: 22px; font-size: 10px; color: #555; }
+        .tpl-issuer { margin-top: 8px; font-size: 9px; color: #555; }
     </style>
 </head>
 <body>
@@ -68,6 +69,8 @@
     </table>
 
     <p class="note">{{ __('club.exams.pdf.note') }}</p>
+    {{-- Aussteller nach Blockzustand des Designs (MVP-1624). --}}
+    @include('pdf._design_issuer')
 </div>
 </body>
 </html>

@@ -330,6 +330,6 @@ class FixedAssetTest extends TestCase {
         $this->assertSame($device->id, $stored->asset_id);
         $this->assertSame('2400.00', $stored->acquisition_cost?->getAmount());
         $this->assertSame($this->accounts['bga']->id, $stored->asset_account_id);
-        $this->assertSame('1000.00', app(\App\Services\Accounting\DepreciationCalculator::class)->amountForYear($stored, 2026)->getAmount());
+        $this->assertSame('1000.00', app(\App\Services\Accounting\DepreciationCalculator::class)->rowForYear($stored, 2026)?->amount->getAmount());
     }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Beschaffung & Bestellungen"
 topic: procurement.orders
-version: 3
+version: 6
 keywords:
     - Einkauf
     - Bestellung anlegen
@@ -59,3 +59,17 @@ Verlangt der Lieferant Pflichtnachweise (etwa Freistellungsbescheinigung oder Ve
 ## Antwort des Händlers über GAEB
 
 Neben der openTRANS-Bestätigung liest **Antwort des Lieferanten einlesen** auch GAEB-Handelsdateien. Eine **X97** (Auftragsbestätigung auf die Bestellung X96) legt bestätigte Menge, Preis und Termin je Zeile ab und meldet Abweichungen, ohne die Bestellung zu ändern. Ein **X94** (Preisangebot auf die Preisanfrage X93) übernimmt die angebotenen Einzelpreise in die Bestellung, solange sie Entwurf ist. Zugeordnet wird über die Artikelnummer des Lieferanten; die Datei muss zur Nummer der Bestellung passen. Die Preisanfrage selbst (**Preisanfrage (GAEB X93)**) und das Feld für das Angebot stehen im Bestellentwurf.
+
+## Bestelleinheit und Wareneingang
+
+Hat der Artikel weitere Einheiten, wählen Sie beim Hinzufügen der Position die **Bestelleinheit** (etwa Rolle statt Meter). Menge und Einzelpreis gelten dann je Bestelleinheit, ebenso bestellte und gelieferte Menge der Zeile. Der Wareneingang rechnet in die Basiseinheit um: Das Lager erhält die Menge in Basiseinheit, der Einstandspreis wird je Basiseinheit geführt, und das Lagerjournal zeigt die Eingabe in der Bestelleinheit. Die Verpackungseinheit eines Lieferantenartikels bleibt eine Rundungsgröße der Bestellvorschläge in Basiseinheit.
+
+Artikel mit der Eigenschaft „Mindesthaltbarkeit erforderlich“ verlangen beim Wareneingang Charge und Mindesthaltbarkeitsdatum; eine schon bekannte Charge bringt ihr Datum mit.
+
+## Nachweisarten und Bestellvorschlag
+
+Unter **Pflichtnachweise → Nachweisarten** pflegen Sie eigene Nachweisarten der Organisation: Bezeichnung, Regel-Gültigkeit, Vorwarnung, Verhalten bei fehlendem Nachweis und ob die Art Pflicht ist. Mit Tags gilt die Pflicht nur für Lieferanten, die eines davon tragen (Gewerk, Leistungsart). Die Arten des Katalogs sind Vorlage und lassen sich als eigene Art übernehmen; eigene Arten werden deaktiviert statt gelöscht.
+
+Die Pflege verlangt das Recht **Nachweisarten der Lieferanten verwalten** (Standard: Admin und Geschäftsführung). Lieferanten bearbeiten allein reicht nicht, weil eine Nachweisart das Auslösen von Bestellungen bei allen Lieferanten der Organisation sperren kann.
+
+Der **Bestellvorschlag** rundet auf die Verpackungseinheit des Lieferantenartikels. Gibt es am Artikel eine Einheit mit genau diesem Faktor, bestellt der Vorschlag in dieser Einheit und rechnet den Preis je Bestelleinheit um.

@@ -41,6 +41,11 @@ final class TimelineItem implements Arrayable {
         /** Drill-down-Link auf das Originalobjekt (URL, ggf. mit Fragment). */
         public readonly ?string $url = null,
         public readonly string $visibility = self::VISIBILITY_INTERNAL,
+        /** Zusatzmarke am Eintrag, etwa der Zustellstatus einer Antwortmail. */
+        public readonly ?string $badge = null,
+        public readonly string $badgeTone = 'ghost',
+        /** Nutzer-ID des Auslösers für den Personenfilter; null bei System, Kunde oder Quelle ohne Person. */
+        public readonly ?int $actorId = null,
     ) {}
 
     /** @return array<string, mixed> */
@@ -55,6 +60,8 @@ final class TimelineItem implements Arrayable {
             'summary' => $this->summary,
             'url' => $this->url,
             'visibility' => $this->visibility,
+            'badge' => $this->badge,
+            'badge_tone' => $this->badgeTone,
         ];
     }
 }

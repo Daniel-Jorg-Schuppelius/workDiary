@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\CloudIntake;
 
-use App\Enums\CloudIntake\{CloudIntakeItemStatus, CloudIntakeRouteTarget};
+use App\Enums\CloudIntake\{CloudIntakeConnectionStatus, CloudIntakeItemStatus, CloudIntakeRouteTarget};
 use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem, CloudDocumentRoute};
 use App\Models\Customer\Customer;
@@ -18,6 +18,7 @@ use App\Models\Document\{Document, DocumentVersion};
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\User;
 use App\Plugins\Support\Intake\{IntakeChangePage, IntakeItem};
+use App\Plugins\Support\PluginApiException;
 use App\Services\CloudIntake\{CloudIntakeRunner, StaleCheckpointException};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -190,6 +191,28 @@ class CloudIntakeRunnerTest extends TestCase {
         $failed = app(CloudIntakeRunner::class)->run($this->connection->fresh(), $this->adapter);
         $this->assertSame('failed', $failed['status']);
         $this->assertNotNull($this->connection->fresh()->last_error);
+    }
+
+    /** MVP-1620: abgewiesene Anmeldung → „neu anmelden“; Abschaltschwelle erreicht → „deaktiviert“. */
+    public function test_failed_runs_degrade_the_connection_status(): void {
+        $this->route();
+        $this->adapter->pages = [new PluginApiException('list_folder fehlgeschlagen (HTTP 401).', 401)];
+
+        $this->assertSame('failed', app(CloudIntakeRunner::class)->run($this->connection->fresh(), $this->adapter)['status']);
+        $this->assertSame(CloudIntakeConnectionStatus::ReauthRequired, $this->connection->fresh()?->status);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'cloudIntake.statusChanged', 'auditable_id' => $this->connection->id]);
+        $this->assertSame('not_runnable', app(CloudIntakeRunner::class)->run($this->connection->fresh(), $this->adapter)['status']);
+
+        // Ein einzelner Zeitfehler stuft nicht ab, die Abschaltschwelle schon.
+        $this->connection->refresh()->forceFill(['status' => CloudIntakeConnectionStatus::Active, 'consecutive_failures' => 0, 'disabled_at' => null])->save();
+        $this->adapter->pages = [new \RuntimeException('Zeitüberschreitung')];
+        app(CloudIntakeRunner::class)->run($this->connection->fresh(), $this->adapter);
+        $this->assertSame(CloudIntakeConnectionStatus::Active, $this->connection->fresh()?->status);
+
+        $this->connection->refresh()->forceFill(['consecutive_failures' => (int) \App\Support\Setting::get('integrations.auto_disable_threshold', 10) - 1])->save();
+        $this->adapter->pages = [new \RuntimeException('Zeitüberschreitung')];
+        app(CloudIntakeRunner::class)->run($this->connection->fresh(), $this->adapter);
+        $this->assertSame(CloudIntakeConnectionStatus::Disabled, $this->connection->fresh()?->status);
     }
 
     public function test_lease_prevents_parallel_runs(): void {

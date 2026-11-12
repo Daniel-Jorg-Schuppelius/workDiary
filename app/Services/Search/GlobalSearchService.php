@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Search;
 
 use App\Models\Platform\User;
-use App\Modules\ModuleRegistry;
+use App\Services\Licensing\ModuleExtensions;
 use App\Services\Search\Contracts\SearchDomain;
 use App\Services\Search\Dto\SearchDomainFilters;
 use App\Support\{CarbonFmt, OrganizationContext};
@@ -47,7 +47,7 @@ class GlobalSearchService {
 
     public function __construct(
         private readonly ActivitySearchService $activities,
-        private readonly ModuleRegistry $modules,
+        private readonly ModuleExtensions $extensions,
     ) {}
 
     /**
@@ -112,7 +112,7 @@ class GlobalSearchService {
     /** @return list<SearchDomain> nach {@see SearchDomain::order()} */
     private function availableDomains(User $user): array {
         $domains = [];
-        foreach ($this->modules->extensions(SearchDomain::class) as $class) {
+        foreach ($this->extensions->activeFor(SearchDomain::class, OrganizationContext::currentId() ?? $user->organization_id) as $class) {
             /** @var SearchDomain $domain */
             $domain = app($class);
             if ($domain->available($user)) {

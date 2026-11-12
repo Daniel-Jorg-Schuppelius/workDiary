@@ -1,7 +1,7 @@
 ---
 title: "Tätigkeitskategorien"
 topic: catalog.activity-categories
-version: 1
+version: 2
 keywords:
     - Tätigkeiten
     - Tätigkeitsarten
@@ -34,3 +34,11 @@ bestimmen die Darstellung in Listen und Auswahlfeldern.
 Inaktive Kategorien bleiben erhalten, werden aber nicht mehr zur Auswahl
 angeboten. Über die Suche und die Spaltensortierung finden Sie Einträge
 auch bei umfangreichen Katalogen schnell wieder.
+
+**Wirkung der Schalter:** „Zählt als Arbeit“ entscheidet, ob eine Zeit mit
+dieser Kategorie in Arbeitszeitkonto, Tagesabschluss und Arbeitsbilanz als
+Arbeitszeit zählt; ausgeschaltet bleibt sie außen vor, so wie die
+Tätigkeitstypen Pause und Abwesenheit. Stempelzeiten zählen unabhängig davon.
+„Standardmäßig abrechenbar“ belegt die Abrechenbarkeit neuer
+Verwaltungszeiten mit dieser Kategorie vor; bei Zeiten mit Projekt
+entscheidet weiter das Projekt.

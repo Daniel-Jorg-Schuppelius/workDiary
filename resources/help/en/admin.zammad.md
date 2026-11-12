@@ -1,7 +1,7 @@
 ---
 title: "Zammad connection"
 topic: admin.zammad
-version: 3
+version: 4
 keywords:
     - Zammad
     - helpdesk
@@ -190,3 +190,5 @@ first.
   tickets is missing.
 - Tickets land in the wrong project: check the group IDs under **Queue →
   project** and the customer suggestions in the inbox.
+
+**Data ownership:** In “service ticket” mode the import only writes if Zammad may write the tickets area – that is, if WorkDiary or Zammad leads it. If another system leads tickets, the import neither creates nor closes tickets; the cases wait in the integration inbox to be taken over once. Zammad leads the target queue: WorkDiary does not accept manual creation, mail booking or mail replies into this queue. In “task” mode the tasks area applies.

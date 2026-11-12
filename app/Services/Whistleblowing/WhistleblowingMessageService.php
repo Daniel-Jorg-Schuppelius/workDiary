@@ -30,11 +30,20 @@ class WhistleblowingMessageService {
         return $this->create($case, $body, $author, MessageVisibility::Internal);
     }
 
-    /** Freigegebene Nachricht an den Reporter (Postfach). */
-    public function sendToReporter(WhistleblowingCase $case, string $body, User $author): Message {
+    /**
+     * Freigegebene Nachricht an den Reporter (Postfach). Als Rückmeldung nach
+     * § 17 HinSchG gekennzeichnet, hält sie die Frist ein: Die erste setzt
+     * `feedback_sent_at`, spätere ändern den Zeitpunkt nicht mehr.
+     */
+    public function sendToReporter(WhistleblowingCase $case, string $body, User $author, bool $isFeedback = false): Message {
         $message = $this->create($case, $body, $author, MessageVisibility::Reporter);
 
         $this->events->record($case, WhistleblowingEventService::MESSAGE_SENT_TO_REPORTER, $author);
+
+        if ($isFeedback && $case->getAttribute('feedback_sent_at') === null) {
+            $case->forceFill(['feedback_sent_at' => Carbon::now()])->save();
+            $this->events->record($case, WhistleblowingEventService::CASE_FEEDBACK_SENT, $author);
+        }
 
         return $message;
     }

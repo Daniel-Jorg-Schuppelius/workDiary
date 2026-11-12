@@ -13,8 +13,11 @@ declare(strict_types=1);
 namespace App\Http\Middleware\Whistleblowing;
 
 use App\Models\Whistleblowing\Portal;
+use App\Support\Locales;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -51,7 +54,23 @@ class ResolvePortal {
         }
 
         $request->attributes->set('wb_portal', $portal);
+        $this->applyLocale($request, $portal);
 
         return $next($request);
+    }
+
+    /** Sprache des Portals: Auswahl der meldenden Person (nur aus den erlaubten), sonst die Standardsprache. */
+    private function applyLocale(Request $request, Portal $portal): void {
+        $offered = $portal->offeredLocales();
+        $wanted = $request->query('lang');
+        if (is_string($wanted) && in_array($wanted, $offered, true) && $request->hasSession()) {
+            $request->session()->put('wb_locale', $wanted);
+        }
+
+        $chosen = $request->hasSession() ? $request->session()->get('wb_locale') : null;
+        $locale = is_string($chosen) && in_array($chosen, $offered, true) ? $chosen : $offered[0];
+
+        App::setLocale($locale);
+        Carbon::setLocale(Locales::carbon($locale));
     }
 }

@@ -80,6 +80,13 @@
                           :y-label="__('Wiederöffnungen')"
                           :y2-label="__('Übersteuerungen')"
                           :series="collect($quality->data['weeks'])->map(fn($row, $week) => ['x' => $week, 'y' => $row['reopened'], 'y2' => $row['overrides']])->values()->all()" />
+
+            <x-charts.bar :title="__('DoD-Abweichungsquote')"
+                          :unit="__('Prozent der Abschlüsse je Woche')"
+                          :computed-at="$quality->computedAt"
+                          :x-label="__('Woche')"
+                          :y-label="__('DoD-Abweichungsquote')"
+                          :series="collect($quality->data['weeks'])->filter(fn($row) => $row['dod_rate'] !== null)->map(fn($row, $week) => ['x' => $week, 'y' => $row['dod_rate']])->values()->all()" />
         </div>
 
         @if ($scope !== null)

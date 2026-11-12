@@ -15,6 +15,8 @@ return [
         'unit_piece' => 'pz.',
     ],
     'error' => [
+        'ownership_unavailable' => 'Il collegamento non è configurato: lo stato non può essere acquisito al momento.',
+        'ownership_not_ready' => 'La fonte non fornisce lo stato al momento: riprovi più tardi.',
         'easybill_no_customer' => 'Il documento non ha un cliente e non può essere trasmesso a easybill.',
         'easybill_cancel_not_transferred' => 'La fattura :number non è in easybill; lo storno non può essere creato lì. Imposti la serie «Storno» su WorkDiary per numerarlo localmente.',
         'easybill_not_configured' => 'easybill non è configurato per questa organizzazione (chiave API mancante).',

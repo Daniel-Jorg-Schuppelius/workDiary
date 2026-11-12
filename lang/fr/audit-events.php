@@ -26,6 +26,8 @@ return [
         'retired' => 'Support d’accès réformé',
     ],
     'appointment' => [
+        'party_assigned' => 'Demande de rendez-vous attribuée',
+        'service_updated' => 'Type de prestation réservable modifié',
         'proposed' => 'Autre créneau proposé',
         'proposal_accepted' => 'Autre créneau accepté',
         'proposal_declined' => 'Autre créneau refusé',
@@ -49,6 +51,8 @@ return [
         'synced' => 'Asana synchronisé manuellement',
     ],
     'firefly' => [
+        'transaction_settled' => 'Firefly III : mouvement traité',
+        'transaction_reopened' => 'Firefly III : mouvement rouvert',
         'connected' => 'Connexion Firefly III vérifiée',
         'disconnected' => 'Firefly III déconnecté',
     ],
@@ -165,6 +169,7 @@ return [
     ],
     'sepaMandate' => [
         'revoked' => 'Mandat SEPA révoqué',
+        'expired' => 'Mandat SEPA expiré (36 mois sans prélèvement)',
     ],
     'circular' => [
         'send_started' => 'Envoi de la circulaire lancé',
@@ -200,6 +205,7 @@ return [
     ],
     'archived' => 'Archivé',
     'asset' => [
+        'recommissioned' => 'Équipement remis en service',
         'blockExceptionGranted' => 'Exception de blocage de ressource accordée',
         'blockExceptionRevoked' => 'Exception de blocage de ressource retirée',
         'blocked' => 'Ressource bloquée',
@@ -209,6 +215,7 @@ return [
         'decommissioned' => 'Ressource mise hors service',
         'defectReported' => 'Défaut de ressource signalé',
         'defectUpdated' => 'Défaut de ressource mis à jour',
+        'healthChanged' => 'État de la ressource modifié',
         'moved' => 'Ressource déplacée',
         'ownershipTransferred' => 'Propriété de la ressource transférée',
         'ownership_changed' => 'Propriété de la ressource modifiée',
@@ -226,11 +233,16 @@ return [
     ],
     'assetCompliance' => [
         'assigned' => 'Profil de conformité attribué',
+        'assignmentDeactivated' => 'Obligation de contrôle désactivée',
+        'assignmentReactivated' => 'Obligation de contrôle reprise',
+        'assignmentUpdated' => 'Obligation de contrôle modifiée',
         'claimOpened' => 'Conformité : réclamation ouverte',
         'decommissionRequested' => 'Mise hors service demandée',
         'inspected' => 'Ressource contrôlée',
         'measurementImported' => 'Mesure d\'inspection importée',
         'restrictedUse' => 'Utilisation restreinte',
+        'scheduleCancelled' => 'Rendez-vous de contrôle annulé',
+        'scheduleMissed' => 'Rendez-vous de contrôle manqué',
     ],
     'assetDefect' => [
         'reported' => 'Défaut signalé',
@@ -284,6 +296,7 @@ return [
         'connected' => 'Cible de backup connectée',
         'disconnected' => 'Cible de backup déconnectée',
         'scopeBlocked' => 'Cible de backup : périmètre bloqué',
+        'statusChanged' => 'Cible de sauvegarde : statut modifié',
     ],
     'branch_profile' => [
         'installed' => 'Profil de filiale installé',
@@ -296,6 +309,8 @@ return [
         'publish_manual' => 'CalDAV publié manuellement',
     ],
     'calendly' => [
+        'user_mapped' => 'Utilisateur Calendly attribué',
+        'user_unmapped' => 'Attribution d\'utilisateur Calendly supprimée',
         'booking_link_created' => 'Lien de réservation Calendly créé',
         'cancel_synced' => 'Annulation Calendly synchronisée',
         'subscribed' => 'Webhook Calendly abonné',
@@ -333,6 +348,9 @@ return [
         'connected' => 'Réception de documents cloud connectée',
         'disconnected' => 'Réception de documents cloud déconnectée',
         'folderSelected' => 'Dossier de réception cloud sélectionné',
+        'startConfirmed' => 'Démarrage de l’entrée cloud confirmé',
+        'statusChanged' => 'Réception cloud de documents : statut modifié',
+        'scopeBlocked' => 'Réception cloud de documents : autorisation manquante, bloquée',
     ],
     'collection' => [
         'imported' => 'Contenus importés dans la collection',
@@ -457,6 +475,7 @@ return [
         'communication_approved' => 'Communication de crise approuvée',
         'communication_sent' => 'Communication de crise envoyée',
         'exercise_documented' => 'Exercice de crise documenté',
+        'deadline_template_created' => 'Délai de déclaration de crise créé',
         'linked' => 'Cas de crise lié',
         'reported' => 'Cas de crise signalé',
         'reviewed' => 'Retour d\'expérience de crise terminé',
@@ -496,6 +515,8 @@ return [
     'diagnostics' => [
         'testTriggered' => 'Test de diagnostic déclenché',
         'viewed' => 'Diagnostics consultés',
+        'tokenCreated' => 'Accès de supervision créé',
+        'tokenRevoked' => 'Accès de supervision révoqué',
     ],
     'document' => [
         'purged' => 'Document détruit',
@@ -565,6 +586,8 @@ return [
         'created' => 'Caution enregistrée',
         'returned' => 'Caution restituée',
         'drawn' => 'Caution appelée',
+        'expired' => 'Caution expirée',
+        'reactivated' => 'Caution de nouveau active après prolongation',
         'secured_retention' => 'La caution remplace une retenue',
     ],
     'idea_map' => [
@@ -593,6 +616,7 @@ return [
         'candidate_dismissed' => 'Transmission créée malgré une correspondance',
         'direction_corrected' => 'Direction du document corrigée',
         'values_captured' => 'Valeurs du document saisies',
+        'tax_case_set' => 'Cas fiscal du document saisi',
         'reanalyzed' => 'Reconnaissance du document répétée',
         'revalidated' => 'Vérification du document répétée',
         'assigned' => 'Facture entrante attribuée',
@@ -617,6 +641,8 @@ return [
         'conflict_resolved' => 'Conflit avec un système externe résolu',
         'data_ownership_changed' => 'Souveraineté des données modifiée',
         'inbox_resolved' => 'Élément de la boîte de réception résolu',
+        'ownership_blocked' => 'Écriture retenue par la souveraineté des données',
+        'ownership_overridden' => 'Conflit de souveraineté des données repris',
         'settings_changed' => 'Paramètres d\'intégration modifiés',
     ],
     'integrity' => [
@@ -626,8 +652,13 @@ return [
         'lockdown_released' => 'Verrouillage d\'intégrité levé',
     ],
     'inventory' => [
+        'negativeRequested' => 'Stock négatif demandé',
+        'negativeRejected' => 'Stock négatif refusé',
+        'reservationRedistributed' => 'Réservation redistribuée',
         'mode_changed' => 'Mode de gestion des stocks modifié',
         'negativeApproved' => 'Stock négatif approuvé',
+        'countApproved' => 'Écarts d’inventaire validés',
+        'countStatusChanged' => 'Inventaire : statut modifié',
     ],
     'stock_lot' => [
         'blocked' => 'Lot bloqué',
@@ -646,6 +677,7 @@ return [
         'deviation_decided' => 'Écart d\'investissement tranché',
         'linked' => 'Investissement lié',
         'option_recommended' => 'Option d\'investissement recommandée',
+        'acquisition_supplier_set' => 'Fournisseur de l’acquisition repris de l’investissement',
         'proposed' => 'Investissement proposé',
         'reviewed' => 'Investissement réexaminé',
     ],
@@ -661,6 +693,7 @@ return [
         'retention_released' => 'Retenue de garantie libérée',
         'retention_secured' => 'Retenue remplacée par une caution',
         'approved' => 'Facture approuvée',
+        'approval_revoked' => 'Validation annulée par une modification du brouillon',
         'dunned' => 'Facture relancée',
         'dunningBlocked' => 'Blocage de relance défini',
         'dunningUnblocked' => 'Blocage de relance levé',
@@ -681,6 +714,8 @@ return [
             'transitioned' => 'Audit ISMS : statut modifié',
         ],
         'audit_package' => [
+            'updated' => 'Brouillon du paquet d\'audit modifié',
+            'deleted' => 'Brouillon du paquet d\'audit abandonné',
             'created' => 'Paquet d\'audit créé',
             'finalized' => 'Paquet d\'audit finalisé',
             'token_created' => 'Token du paquet d\'audit créé',
@@ -863,6 +898,12 @@ return [
         'vehicle_profile_updated' => 'Profil de véhicule modifié',
     ],
     'patrol' => [
+        'route_updated' => 'Itinéraire de ronde modifié',
+        'route_activated' => 'Itinéraire de ronde activé',
+        'route_deactivated' => 'Itinéraire de ronde désactivé',
+        'checkpoint_updated' => 'Point de contrôle modifié',
+        'checkpoint_deactivated' => 'Point de contrôle désactivé',
+        'overdue_flagged' => 'Ronde non terminée après la durée prévue',
         'route_created' => 'Parcours de ronde créé',
         'started' => 'Ronde démarrée',
         'completed' => 'Ronde terminée',
@@ -1021,6 +1062,7 @@ return [
         'chargeCancelled' => 'Frais de location annulés',
         'chargesInvoiced' => 'Frais de location facturés',
         'chargesTransferred' => 'Frais de location transférés',
+        'cleaningDone' => 'Nettoyage après reprise terminé',
         'claimOpened' => 'Réclamation de location ouverte',
         'closed' => 'Location clôturée',
         'completed' => 'Location terminée',
@@ -1035,6 +1077,7 @@ return [
         'termsAttached' => 'Conditions de location rattachées au dossier de location',
         'returned' => 'Matériel de location restitué',
         'termsFrozen' => 'Conditions de location gelées',
+        'depositWaived' => 'Caution remise',
     ],
     'report' => [
         'exported' => 'Rapport exporté',
@@ -1090,6 +1133,7 @@ return [
         'dependencies_changed' => 'Dépendances du service métier modifiées',
     ],
     'service_ticket' => [
+        'confidentiality_changed' => 'Confidentialité modifiée',
         'service_changed' => 'Service du ticket modifié',
         'opened_from_intake' => 'Ticket créé depuis la demande client',
         'accepted_by_customer' => 'Ticket accepté par le client',
@@ -1122,6 +1166,9 @@ return [
         'settings_saved' => 'Paramètres SharePoint enregistrés',
         'target_selected' => 'Cible SharePoint sélectionnée',
     ],
+    'shift_exchange' => [
+        'compliance_overridden' => 'Échange de poste validé malgré une infraction aux règles',
+    ],
     'shiftRotation' => [
         'activated' => 'Rotation de services activée',
         'assigned' => 'Rotation de services attribuée',
@@ -1139,6 +1186,7 @@ return [
         'opt_out' => 'Alerte par SMS révoquée',
         'verification_started' => 'Code de confirmation SMS demandé',
         'budget_warning' => 'Seuil d’alerte de coût SMS atteint',
+        'budget_exhausted' => 'Quota de SMS épuisé',
     ],
     'sla_violation' => [
         'acknowledged' => 'Violation de SLA acquittée',
@@ -1183,11 +1231,16 @@ return [
         'assessment_versioned' => 'Version d\'évaluation ESG créée',
     ],
     'survey' => [
+        'updated' => 'Questionnaire modifié',
+        'opted_out' => 'Désabonnement des enquêtes via le lien de désinscription',
         'created' => 'Questionnaire créé',
         'invited' => 'Invitation à l’enquête envoyée',
     ],
     'sync' => [
         'applied' => 'Synchronisation hors ligne appliquée',
+        'conflict' => [
+            'resolved' => 'Conflit hors ligne résolu',
+        ],
     ],
     'tax_rule' => [
         'created' => 'Règle fiscale créée',
@@ -1267,6 +1320,8 @@ return [
         'corrected' => 'Trajet corrigé par un trajet d’annulation',
     ],
     'user' => [
+        'newDeviceAlertDisabled' => 'Alerte « Connexion depuis un nouvel appareil » désactivée',
+        'newDeviceAlertEnabled' => 'Alerte « Connexion depuis un nouvel appareil » activée',
         'deputyReplaced' => 'Suppléance réattribuée',
         'anonymized' => 'Collaborateur anonymisé (données personnelles supprimées, justificatifs conservés)',
         'offboardingScheduled' => 'Départ programmé',
@@ -1339,6 +1394,9 @@ return [
         'entry_posted' => 'Écriture comptabilisée',
         'entry_reversed' => 'Écriture extournée',
         'entry_discarded' => 'Brouillon rejeté',
+        'open_item_disputed' => 'Poste ouvert marqué comme litigieux',
+        'open_item_dispute_withdrawn' => 'Mention « litigieux » levée',
+        'entry_edited' => 'Brouillon modifié',
         'period_soft_closed' => 'Période clôturée provisoirement',
         'period_closed' => 'Période clôturée',
         'period_reopened' => 'Période rouverte',
@@ -1462,6 +1520,7 @@ return [
             'rechecked' => 'Admissions revérifiées',
             'reviewRequired' => 'Vérification de l\'admission requise',
             'reviewCleared' => 'Vérification close',
+            'resultsReleased' => 'Résultats d’examen publiés',
         ],
         'team' => [
             'profileCreated' => 'Profil sportif créé',
@@ -1606,5 +1665,9 @@ return [
         'packaged' => 'Version d’envoi créée',
         'sent' => 'Facture du prestataire envoyée',
         'deliveryResolved' => 'Issue de l’envoi consignée',
+    ],
+    'domain' => [
+        'commandReconciled' => 'Commande de domaine rapprochée',
+        'commandResolved' => 'Commande de domaine clôturée manuellement',
     ],
 ];

@@ -1,7 +1,7 @@
 ---
 title: "Conectar Google Calendar"
 topic: admin.google-calendar
-version: 2
+version: 3
 keywords:
     - Google Calendar
     - calendario de Google
@@ -133,3 +133,5 @@ indica.
 - **Suspensión:** tras errores repetidos consecutivos, WorkDiary suspende la
   conexión; entonces vuelve a aparecer **Conectar con Google**. Compruebe la
   causa y vuelva a conectar.
+
+**Soberanía de datos:** Las citas de este calendario pertenecen al área de calendario. Si otro sistema gestiona el calendario, las propuestas, series y cambios aparecen en la bandeja de integraciones como caso «Soberanía de datos»; **Asumir una vez** crea la cita o la serie. Los avisos de eliminación siguen siendo casos normales.

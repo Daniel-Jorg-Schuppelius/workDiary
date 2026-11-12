@@ -10,7 +10,8 @@
   Mobile, Schritt-für-Schritt ausführbare Prozedurlauf-Ansicht (MVP-063):
   rendert bedingte Schritte, Warteschritte (MVP-064), Vier-Augen-Freigaben
   und Medien-Nachweise. Variablen: $run, $steps, $subject, $backUrl,
-  $progressTotal, $progressDone, $canExecute, $canAbort, $missingRequired.
+  $progressTotal, $progressDone, $canExecute, $canAbort, $missingRequired,
+  $completionHints.
 --}}
 @php
     $version = $run->templateVersion;
@@ -72,6 +73,9 @@
                             $isWait = $def?->step_type === \App\Enums\Procedure\ProcedureStepType::Wait;
                             // Ohne Gegenzeichnung meldet blockReasonFor() den Schritt als gesperrt — die Vier-Augen-Leiste ersetzt dann den Sperrhinweis.
                             $awaitsSecondPerson = $step['blockReason'] === \App\Exceptions\ProcedureStepBlockedException::REASON_SECOND_PERSON_REQUIRED;
+                            // Dasselbe am Backup-Schritt: die Backup-Karte ersetzt den Sperrhinweis.
+                            $isBackup = $def?->step_type === \App\Enums\Procedure\ProcedureStepType::Backup;
+                            $awaitsBackup = $step['blockReason'] === \App\Exceptions\ProcedureStepBlockedException::REASON_BACKUP_NOT_VERIFIED;
                         @endphp
                         <li class="rounded-box border {{ $step['isCurrent'] ? 'border-primary ring-1 ring-primary/30' : 'border-base-300' }} bg-base-200/30 p-4">
                             <div class="flex items-start justify-between gap-2">
@@ -108,8 +112,16 @@
                                 @include('procedures.runs._second_person', ['sr' => $sr, 'run' => $run, 'isFinal' => $isFinal, 'runActive' => $runActive])
                             @endif
 
+                            @if ($isBackup && ($step['backupProof'] !== null || $awaitsBackup || $step['blockReason'] === null))
+                                @include('procedures.runs._backup', ['sr' => $sr, 'run' => $run, 'proof' => $step['backupProof'], 'isFinal' => $isFinal, 'runActive' => $runActive])
+                            @endif
+
+                            @if ($step['deviation'] !== null)
+                                @include('procedures.runs._deviation', ['deviation' => $step['deviation'], 'sr' => $sr, 'run' => $run, 'runActive' => $runActive, 'blocksCompletion' => $step['deviationBlocks']])
+                            @endif
+
                             {{-- Sperrgrund --}}
-                            @if (! $isFinal && $step['blockReason'] && ! $awaitsSecondPerson)
+                            @if (! $isFinal && $step['blockReason'] && ! $awaitsSecondPerson && ! $awaitsBackup)
                                 <div class="mt-3 flex items-center gap-2 rounded-box bg-base-300/40 px-3 py-2 text-xs text-muted">
                                     <x-icon name="lock" class="text-muted" />
                                     {{ __('procedure.blocked.' . $step['blockReason']) }}
@@ -182,38 +194,11 @@
                                         </div>
                                     </form>
 
-                                    {{-- Abweichung erfassen (MVP-795): Der Recorder war gebaut,
-                                         hatte aber keinen Einstieg in der Oberfläche. --}}
-                                    <form method="POST" action="{{ route('procedure-runs.steps.deviation', [$run, $sr]) }}" class="mt-2 space-y-2 border-t border-base-300 pt-2">
-                                        @csrf
-                                        <p class="text-xs text-muted">{{ __('procedure.run.deviationHint') }}</p>
-                                        <div class="flex flex-wrap gap-2">
-                                            <select name="deviation_type" required aria-label="{{ __('procedure.run.deviationType') }}" class="select select-bordered select-sm">
-                                                @foreach (\App\Enums\Procedure\ProcedureDeviationType::cases() as $type)
-                                                    <option value="{{ $type->value }}">{{ $type->label() }}</option>
-                                                @endforeach
-                                            </select>
-                                            <select name="severity" aria-label="{{ __('procedure.run.deviationSeverity') }}" class="select select-bordered select-sm">
-                                                <option value="">{{ __('procedure.run.deviationSeverityDefault') }}</option>
-                                                @foreach (\App\Enums\Procedure\ProcedureDeviationSeverity::cases() as $severity)
-                                                    <option value="{{ $severity->value }}">{{ $severity->label() }}</option>
-                                                @endforeach
-                                            </select>
-                                            <select name="proposed_action" aria-label="{{ __('procedure.run.deviationAction') }}" class="select select-bordered select-sm">
-                                                @foreach (\App\Enums\Procedure\ProcedureDeviationProposedAction::cases() as $action)
-                                                    <option value="{{ $action->value }}">{{ $action->label() }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <textarea name="reason_text" rows="2" required minlength="20" maxlength="2000"
-                                                  aria-label="{{ __('procedure.run.deviationReason') }}"
-                                                  class="textarea textarea-bordered textarea-sm w-full"
-                                                  placeholder="{{ __('procedure.run.deviationReason') }}"></textarea>
-                                        <x-button type="submit" tone="warning" icon="alert" class="btn-outline">
-                                            {{ __('procedure.run.recordDeviation') }}
-                                        </x-button>
-                                    </form>
+                                    @include('procedures.runs._deviation_form', ['run' => $run, 'sr' => $sr])
                                 @endif
+                            @elseif ($canExecute && $runActive && ! $isFinal && $awaitsBackup)
+                                {{-- Ohne Nachweis bleibt nur die begründete Abweichung („Backup nicht möglich“). --}}
+                                @include('procedures.runs._deviation_form', ['run' => $run, 'sr' => $sr])
                             @elseif ($canExecute && $runActive && ! $isFinal && ! $step['applicable'] && $step['blockReason'] === null)
                                 {{-- Nicht zutreffender bedingter Schritt: schnelle N/A-Erledigung --}}
                                 <form method="POST" action="{{ route('procedure-runs.steps.execute', [$run, $sr]) }}" class="mt-3">
@@ -230,7 +215,7 @@
                     <div class="flex flex-wrap items-center justify-between gap-2 border-t border-base-300 pt-4">
                         <form method="POST" action="{{ route('procedure-runs.complete', $run) }}">
                             @csrf
-                            <x-button type="submit" tone="success" icon="task_alt" :disabled="! empty($missingRequired)">
+                            <x-button type="submit" tone="success" icon="task_alt" :disabled="! empty($missingRequired) || $completionHints !== []">
                                 {{ __('procedure.run.complete') }}
                             </x-button>
                         </form>
@@ -250,6 +235,9 @@
                     @if (! empty($missingRequired))
                         <p class="text-xs text-muted">{{ __('procedure.run.completeHint') }}</p>
                     @endif
+                    @foreach ($completionHints as $hint)
+                        <p class="text-xs text-muted">{{ $hint }}</p>
+                    @endforeach
                 @endif
             </div>
         </x-card>

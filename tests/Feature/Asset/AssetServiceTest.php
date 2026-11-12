@@ -16,8 +16,7 @@ use App\Models\Asset\Asset;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
-use App\Services\Asset\{AssetNumberGenerator, AssetService};
-use App\Services\Numbering\NumberSequenceService;
+use App\Services\Asset\AssetService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -34,7 +33,7 @@ class AssetServiceTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
 
-        $this->service = new AssetService(new AssetNumberGenerator(new NumberSequenceService));
+        $this->service = app(AssetService::class);
         $this->org = Organization::factory()->create();
         $this->actor = User::factory()->geschaeftsfuehrung()->create([
             'organization_id' => $this->org->id,
@@ -71,7 +70,7 @@ class AssetServiceTest extends TestCase {
         ]);
     }
 
-    public function test_transfer_ownership_to_customer_sets_customer_id(): void {
+    public function test_update_with_another_customer_records_ownership_history(): void {
         $asset = Asset::factory()->create([
             'organization_id' => $this->org->id,
             'owned_by' => AssetOwnership::Organization->value,
@@ -79,15 +78,23 @@ class AssetServiceTest extends TestCase {
         ]);
         $customer = Customer::factory()->create(['organization_id' => $this->org->id]);
 
-        $updated = $this->service->transferOwnership($asset, $this->actor, AssetOwnership::Customer, $customer->id);
+        $updated = $this->service->update($asset, $this->actor, [
+            'owned_by' => AssetOwnership::Customer->value,
+            'customer_id' => $customer->id,
+            'ownership_note' => 'Verkauft',
+        ]);
 
         $this->assertSame(AssetOwnership::Customer, $updated->owned_by);
         $this->assertSame($customer->id, $updated->customer_id);
-
-        $audit = AuditLog::query()->where('event', 'asset.ownershipTransferred')->latest('id')->first();
-        $this->assertNotNull($audit);
+        $this->assertDatabaseHas('asset_ownership_changes', [
+            'asset_id' => $asset->id,
+            'from_ownership' => 'org',
+            'to_ownership' => 'customer',
+            'to_customer_id' => $customer->id,
+            'note' => 'Verkauft',
+        ]);
+        $this->assertNotNull(AuditLog::query()->where('event', 'asset.ownership_changed')->latest('id')->first());
     }
-
     public function test_decommission_requires_valid_transition_and_date(): void {
         $asset = Asset::factory()->create([
             'organization_id' => $this->org->id,

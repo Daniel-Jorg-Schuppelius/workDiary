@@ -1,7 +1,7 @@
 ---
 title: "Prove: attività di audit, conformità e salario minimo"
 topic: reports.compliance
-version: 3
+version: 4
 keywords:
     - analisi di audit
     - chi ha modificato cosa
@@ -149,3 +149,5 @@ diritto **Visualizza la conformità orario di lavoro**.
 
 La **Prova tempi di guida** dello stesso menu è descritta nell’argomento
 dedicato a parco veicoli, registro viaggi e tempi di guida.
+
+**Prova MiLoG:** per ogni giorno lavorativo, accanto a inizio, fine, pause e durata compaiono i minuti in telelavoro e in commissioni di servizio: contano come orario di lavoro, la prova mostra solo dove si è lavorato. I rilievi sui tempi di guida e di riposo nascono solo finché il modulo flotta è attivo; se viene disattivato, l’esecuzione successiva chiude i rilievi aperti.

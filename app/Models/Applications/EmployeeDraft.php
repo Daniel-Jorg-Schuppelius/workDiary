@@ -30,7 +30,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $job_application_id
  * @property string $name
  * @property string|null $email
- * @property \Illuminate\Support\Carbon|null $planned_start_on
  * @property array<int, string>|null $qualifications
  * @property \App\Services\Fields\FieldDocument|null $checklist
  * @property string|null $note
@@ -45,13 +44,12 @@ class EmployeeDraft extends Model {
 
     protected $fillable = [
         'organization_id', 'job_application_id', 'name', 'email',
-        'planned_start_on', 'qualifications', 'checklist', 'note', 'status',
+        'qualifications', 'checklist', 'note', 'status',
         'invited_user_id', 'created_by',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
-        'planned_start_on' => 'date',
         'qualifications' => 'array',
         'checklist' => FieldDocumentCast::class,
         'status' => EmployeeDraftStatus::class,

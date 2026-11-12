@@ -15,10 +15,10 @@ namespace App\Services\Asset\Contracts;
 use App\Models\ServiceTicket\SlaContract;
 
 /**
- * SLA-Vertrag zu Organisation/Kunde/Projekt (MVP-863): definiert vom
+ * SLA-Vertrag zu Organisation/Kunde/Projekt/Asset (MVP-863): definiert vom
  * Anlagenkern (Dossier), gebunden vom Helpdesk ({@see \App\Services\ServiceTicket\SlaTimer}).
  * Null-Bindung: kein Vertrag.
  */
 interface ServiceLevelResolver {
-    public function resolveContract(int $organizationId, ?int $customerId, ?int $projectId = null): ?SlaContract;
+    public function resolveContract(int $organizationId, ?int $customerId, ?int $projectId = null, ?int $queueId = null, ?int $assetId = null): ?SlaContract;
 }

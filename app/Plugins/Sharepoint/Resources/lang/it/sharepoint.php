@@ -99,6 +99,7 @@ return [
         'drive_invalid' => 'La raccolta documenti scelta non appartiene al sito scelto.',
         'target_saved' => 'Raccolta di destinazione salvata.',
         'saved' => 'Impostazioni SharePoint salvate.',
+        'saved_and_mirrored' => 'Impostazioni SharePoint salvate e attivate: tutti gli oggetti rilasciati finora sono in coda per la replica.',
         'mirror_done' => 'Replica avviata.',
     ],
 ];

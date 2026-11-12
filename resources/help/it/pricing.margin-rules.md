@@ -1,7 +1,7 @@
 ---
 title: "Regole di prezzo e di margine"
 topic: pricing.margin-rules
-version: 1
+version: 2
 keywords:
     - ricarico
     - maggiorazione
@@ -64,3 +64,5 @@ modifiche delle regole — una regola modificata ha effetto solo sulla
 successiva acquisizione di prezzo. La lettura richiede permessi di
 lettura del magazzino, la gestione delle regole e delle richieste
 permessi di configurazione del magazzino.
+
+L’avviso di calcolo dopo una variazione del prezzo d’acquisto verifica il margine minimo anche rispetto ai preventivi aperti e agli ordini non annullati con l’articolo: viene misurato il prezzo del documento della posizione, non il prezzo anagrafico. L’avviso indica documento, posizione, prezzo del documento e il margine che ne risulta. I documenti mantengono il loro prezzo.

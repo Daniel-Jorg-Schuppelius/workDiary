@@ -16,6 +16,13 @@ return [
     'title' => 'Scorecard fornitori',
     'overview_subtitle' => 'Classifica per punteggio complessivo da acquisti, magazzino, reclami e ISMS (definizione v:version).',
     'apply' => 'Mostra',
+    'weights' => [
+        'action' => 'Pesi',
+        'title' => 'Ponderazione del punteggio complessivo',
+        'description' => 'Peso per indicatore in percentuale. La somma non deve essere 100: gli indicatori mancanti vengono saltati e i pesi restanti ripartiti in proporzione. Un campo vuoto ripristina il valore predefinito.',
+        'saved' => 'Ponderazione salvata.',
+        'error_all_zero' => 'Almeno un indicatore deve avere un peso superiore a zero.',
+    ],
     'weights_hint' => 'Ponderazione del punteggio complessivo: puntualità :ontime %, tasso di reclami :complaints %, qualità ISMS :quality %, andamento prezzi :price %, comportamento sui regressi :recourse %. Gli indicatori non disponibili vengono saltati e i pesi rinormalizzati.',
     'empty_ranking' => 'Ancora nessun fornitore con dati di acquisto, reclamo o ISMS valutabili nel periodo.',
 

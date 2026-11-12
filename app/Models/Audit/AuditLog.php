@@ -56,6 +56,12 @@ class AuditLog extends Model implements HashChainable {
         'number_sequence' => \App\Models\Numbering\NumberSequence::class,
     ];
 
+    /** Allgemeine Änderungsereignisse; jedes andere Ereignis ist ein Fachereignis (Aktivitäts-Feed, MVP-1617). */
+    public const array CHANGE_EVENTS = ['created', 'updated', 'deleted', 'archived', 'restored'];
+
+    /** Ereignisse der Filter in Audit-Übersicht und Aktivitäts-Feed. */
+    public const array FILTER_EVENTS = [...self::CHANGE_EVENTS, 'import.confirmed', 'import.started', 'import.finished', 'import.partial', 'import.preflightFailed'];
+
     protected $fillable = [
         'organization_id',
         'user_id',

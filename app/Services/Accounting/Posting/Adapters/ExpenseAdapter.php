@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Posting\Adapters;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Enums\Finance\{PostingAccountRole, PostingSourceKind};
+use App\Enums\Finance\{PostingAccountRole, PostingSourceKind, TaxCodeDirection};
+use App\Models\Accounting\{AccountingAccount, AccountingTaxCode};
 use App\Models\Platform\{Organization, User};
 use App\Models\Travel\Expense;
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine};
@@ -79,28 +80,52 @@ class ExpenseAdapter extends AbstractPostingAdapter {
         // das Aufwandskonto, nicht am Zufall des Belegtexts.
         $context = ['expense_category_id' => (string) ($source->expense_category_id ?? '')];
 
+        // Vorsteuer zum Satz des Belegs (MVP-1623): Ein Kennzeichen der Regel muss zum Satz passen, sonst gilt das
+        // Vorsteuerkennzeichen dieses Satzes. Gibt es keines, ist es meist ausländische Umsatzsteuer — keine Vorsteuer.
+        // Eine Regel ohne Kennzeichen bucht wie bisher auf ihr Konto.
+        $taxed = NumberHelper::isPositivePrecise($tax);
+        $rate = $source->tax_rate !== null ? NumberHelper::roundPrecise((string) $source->tax_rate->getNumericValue(), 2) : null;
+        $taxRule = $taxed ? $this->rule($organization, PostingAccountRole::TaxInput, $rate !== null ? ['tax_rate' => $rate] : [], $date) : null;
+        $taxCode = $taxRule?->taxCode;
+        $taxAccount = $taxRule?->account;
+        if ($taxed && $rate !== null && $taxCode instanceof AccountingTaxCode && ! $this->fitsRate($taxCode, $rate)) {
+            $taxCode = AccountingTaxCode::query()
+                ->where('organization_id', $organization->id)
+                ->where('direction', TaxCodeDirection::Input->value)
+                ->where('rate', $rate)
+                ->whereNotNull('tax_account_id')
+                ->validOn($date)
+                ->orderByDesc('valid_from')
+                ->with('taxAccount')
+                ->first();
+            $taxAccount = $taxCode?->taxAccount;
+            if (! $taxAccount instanceof AccountingAccount) {
+                $blockers[] = (string) __('accounting.inbox.blocker.expense_rate_without_input_tax', ['rate' => NumberHelper::toGermanFormat((float) $rate, 2)]);
+            }
+        }
+
         $expenseRule = $this->rule($organization, PostingAccountRole::Expense, $context, $date)
             ?? $this->rule($organization, PostingAccountRole::Expense, [], $date);
         if ($expenseRule === null) {
             $blockers[] = $this->missingRuleBlocker(PostingAccountRole::Expense, $context);
         } else {
-            $line = $this->line(PostingAccountRole::Expense, $expenseRule, $net, '0.00', (string) $source->description);
+            // Kennzeichen und Vorsteuer stehen an der Aufwandszeile, die Steuerzeile trägt keines; das Kennzeichen der Regel nur, wenn es zum Satz passt.
+            $ruleCode = $expenseRule->taxCode;
+            $lineCode = $ruleCode instanceof AccountingTaxCode && ($rate === null || $this->fitsRate($ruleCode, $rate)) ? $ruleCode->id : $taxCode?->id;
+            $line = $this->line(PostingAccountRole::Expense, $expenseRule, $net, '0.00', (string) $source->description)
+                ?->withTax($taxed ? $lineCode : $expenseRule->accounting_tax_code_id, $taxed && $taxAccount instanceof AccountingAccount ? $tax : null);
             if ($line instanceof PostingProposalLine) {
                 $lines[] = $line;
                 $ruleVersions[] = $expenseRule->versionTag();
             }
         }
 
-        if (NumberHelper::isPositivePrecise($tax)) {
-            $taxRule = $this->rule($organization, PostingAccountRole::TaxInput, [], $date);
+        if ($taxed) {
             if ($taxRule === null) {
                 $blockers[] = $this->missingRuleBlocker(PostingAccountRole::TaxInput);
-            } else {
-                $line = $this->line(PostingAccountRole::TaxInput, $taxRule, $tax, '0.00', (string) $source->description, taxAmount: $tax);
-                if ($line instanceof PostingProposalLine) {
-                    $lines[] = $line;
-                    $ruleVersions[] = $taxRule->versionTag();
-                }
+            } elseif ($taxAccount instanceof AccountingAccount) {
+                $lines[] = $this->accountLine(PostingAccountRole::TaxInput, $taxAccount, $tax, '0.00', (string) $source->description, $taxRule->versionTag());
+                $ruleVersions[] = $taxRule->versionTag();
             }
         }
 
@@ -146,5 +171,12 @@ class ExpenseAdapter extends AbstractPostingAdapter {
             title: (string) ($source->description ?? '—'),
             extra: $fx['extra'],
         );
+    }
+
+    /** @param numeric-string $rate */
+    private function fitsRate(?AccountingTaxCode $code, string $rate): bool {
+        return $code instanceof AccountingTaxCode
+            && $code->direction === TaxCodeDirection::Input
+            && NumberHelper::comparePrecise((string) $code->rate, $rate, 2) === 0;
     }
 }

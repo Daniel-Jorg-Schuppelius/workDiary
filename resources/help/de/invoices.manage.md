@@ -1,7 +1,7 @@
 ---
 title: "Rechnungen & Belege"
 topic: invoices.manage
-version: 13
+version: 17
 keywords:
     - Rechnung erstellen
     - Rechnung schreiben
@@ -278,3 +278,100 @@ WorkDiary: An Lexoffice, sevDesk, easybill oder orgaMAX überträgt WorkDiary
 sie nicht. Wer die E-Rechnung aus dem Programm verschickt, hängt sie dort von
 Hand an; die Integrations-Inbox erinnert daran. Am Übergabenachweis steht dafür
 **Leistungsnachweis** zum Herunterladen.
+
+## Sicherheitseinbehalte freigeben
+
+Hinterlegte Einbehalte stehen auf der Rechnungsseite in der Karte
+**Sicherheitseinbehalte** mit Art, Betrag, Freigabetermin und Status. An der
+ausgestellten Rechnung öffnet das Schloss-Symbol den Dialog **Freigeben**;
+eine Notiz hält den Anlass fest. Mit der Freigabe wird der Betrag ein normaler
+offener Posten, zählt wieder zum Zahlbetrag und wird gemahnt. Ein durch
+Bürgschaft abgelöster Einbehalt ist bereits ausgezahlt: Seine Freigabe beendet
+nur den Sicherungszweck, es entsteht keine neue Forderung, und das
+Bürgschaftsregister meldet die Urkunde zur Rückgabe. Freigeben darf, wer das
+Abrechnungsrecht hat.
+
+## Freigabe und Steuerfall des Entwurfs
+
+Mit **Freigabepflicht** gilt die Freigabe dem geprüften Stand: Ändern Sie danach
+Positionen, Konditionen, Kunde, Datum oder Rechnungstext, ist die Freigabe
+aufgehoben und muss erneut erteilt werden — nicht von der Person, die die
+Rechnung angelegt hat. Das Protokoll hält die Aufhebung fest.
+
+Den **Steuerfall** (Reverse Charge, Ausfuhr, steuerfrei) übernimmt jeder Entwurf
+aus den Kundendaten, auch der freie Entwurf. Ändern sich die Kundendaten danach —
+etwa durch das Merkmal „Leistungsempfänger schuldet die Umsatzsteuer“ oder eine
+neue USt-IdNr. —, zieht die nächste Bearbeitung des Entwurfs den Fall nach.
+Stellen Sie einen Entwurf mit veraltetem Steuerfall, passt workDiary ihn an und
+hält die Ausstellung an: Prüfen Sie die Summen und stellen Sie erneut.
+
+Bei **Reverse Charge** braucht die E-Rechnung die USt-IdNr. des Kunden (Regel
+BR-AE-02), auch bei § 13b UStG im Inland; die Prüfung vor dem Versand meldet eine
+fehlende. Alle Positionen stehen dann mit 0 % und dem Hinweis
+„Steuerschuldnerschaft des Leistungsempfängers“ in der XRechnung.
+
+Mit dem Steuerfall zieht der Entwurf den **Hinweistext** mit: Steht der
+automatische Hinweis des alten Falls (etwa zu Reverse Charge oder zur Ausfuhr)
+unverändert im Rechnungstext, ersetzt ihn der Hinweis des neuen Falls oder er
+entfällt. Haben Sie den Hinweis von Hand geändert, bleibt Ihr Text stehen —
+workDiary meldet das, und Sie prüfen den Hinweis selbst.
+
+## Befreiungsgründe in der E-Rechnung
+
+Jede Steuerkategorie ohne Steuer trägt in der XRechnung und im ZUGFeRD-PDF ihren
+Befreiungsgrund, bei gemischten Rechnungen je Steueraufriss: Reverse Charge (AE),
+innergemeinschaftliche Lieferung (K), Ausfuhr (G) und „nicht steuerbar“ (O) mit
+Text und Code; Kategorie Z bleibt ohne Grund. „Steuerfrei“ (E) nennt § 19 UStG nur
+für Kleinunternehmer. Für andere Steuerbefreiungen legen Sie in der
+**Steuerregelmatrix** eine Regel mit der Satzart „Befreit“ an und tragen den
+Befreiungstatbestand als Beleg-Hinweistext ein, etwa „Steuerfreie Heilbehandlung
+(§ 4 Nr. 14 UStG)“; ohne Regel steht nur „Steuerfreier Umsatz“, und die Prüfung vor
+dem Versand warnt.
+
+Die Prüfung vor dem Versand meldet außerdem: fehlende USt-IdNr. des Kunden bei
+innergemeinschaftlicher Lieferung, fehlende USt-IdNr. der Organisation bei
+Lieferung ins EU-Ausland und Ausfuhr, „nicht steuerbar“ neben anderen Kategorien
+und eine Position ohne Steuerkategorie mit Steuersatz über 0 %. Bei „nicht
+steuerbar“ stehen keine USt-IdNrn. in der E-Rechnung, es genügt die Steuernummer.
+Zwei Angaben fehlen der E-Rechnung noch (Warnung): das Lieferland bei
+innergemeinschaftlicher Lieferung und der Verzicht auf den Positionssatz bei
+„nicht steuerbar“.
+
+## Befreiungshinweis im Rechnungs-PDF
+
+Positionen ohne Steuer brauchen auch auf der Rechnung selbst einen Hinweis
+(§ 14 Abs. 4 Nr. 8, § 14a UStG). Das PDF druckt unter dem Steuerausweis je
+Steuerkategorie denselben Text wie der Befreiungsgrund der E-Rechnung, etwa
+„Steuerfreie innergemeinschaftliche Lieferung“ bei K oder
+„Steuerschuldnerschaft des Leistungsempfängers“ bei einer einzelnen Position mit
+AE. Enthält der Rechnungstext den Hinweis schon — oder den automatischen Hinweis
+dieser Kategorie aus dem Steuerfall —, entfällt die Zeile. Reverse Charge des
+ganzen Belegs und § 19 UStG stehen wie bisher in einer eigenen Zeile.
+Rechnungen, die vor dieser Erweiterung ausgestellt wurden, druckt workDiary
+unverändert nach. Gutschrift und Stornorechnung übernehmen die Steuerkategorie
+jeder Position des Originals.
+
+Wählen Sie an einer Position oder im Abrechnungsplan eine Kategorie ohne Steuer
+(AE, Z, E, G, K, O), setzt das Formular den Steuersatz auf 0 %; gespeichert wird
+in jedem Fall 0 %.
+
+## Empfänger und USt-IdNr. auf der Rechnung
+
+Eine ausgestellte Rechnung druckt den Empfänger so, wie er beim Ausstellen
+feststand: Name, Firma, Anschrift und USt-IdNr. des Kunden werden mit der
+Ausstellung eingefroren. Ändern Sie danach die Kundendaten, bleiben Nachdruck,
+PDF-Anhang, XRechnung, ZUGFeRD und GAEB-Export unverändert; erst neue Rechnungen
+übernehmen die neue Anschrift. Ein Entwurf zeigt immer die aktuellen
+Kundendaten. Stornobeleg und Korrekturrechnung frieren den Empfänger beim
+eigenen Ausstellen ein. Die elektronische Zustelladresse (Peppol-Kennung oder
+E-Mail) und Mahnschreiben folgen dagegen den aktuellen Kundendaten, weil sie
+heute zugestellt werden.
+
+Ist beim Kunden eine USt-IdNr. hinterlegt, steht sie im Kopf der Rechnung
+(„Ihre USt-IdNr.“). Bei innergemeinschaftlicher Lieferung und Reverse Charge ist
+sie Pflichtangabe (§ 14a UStG). Rechnungen, die vor dieser Erweiterung
+ausgestellt wurden, druckt workDiary ohne die Zeile nach.
+
+Den Ausweis der Arbeitskosten nach § 35a EStG schreibt die Ausstellung ebenfalls
+fest: Eine spätere Änderung der Organisationsregel oder der Kundenart ändert eine
+ausgestellte Rechnung nicht mehr.

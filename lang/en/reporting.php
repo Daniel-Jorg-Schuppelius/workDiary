@@ -173,8 +173,8 @@ return [
     'plan_ist' => [
         'warning' => [
             'presence' => [
-                'lateStart' => 'Start more than 15 minutes after plan',
-                'hoursDiff' => 'Hours deviate by more than 10 %',
+                'lateStart' => 'Start more than :minutes minutes after plan',
+                'hoursDiff' => 'Hours deviate by more than :percent %',
             ],
         ],
     ],
@@ -236,6 +236,7 @@ return [
         'group' => [
             'finance' => 'Finance',
             'operations' => 'Operations',
+            'hr' => 'Human resources',
             'sales' => 'Sales',
             'service' => 'Service',
             'quality' => 'Quality',
@@ -257,6 +258,12 @@ return [
             'resale_open_hint' => 'open :amount',
             'resale_margin' => 'Margin subscriptions & licences',
             'resale_margin_hint' => ':periods periods, :actual with actual purchase',
+            'sick_days' => 'Sick days',
+            'sick_days_hint' => ':episodes sick notes from :users people · continued pay exhausted: :exhausted',
+            'qualifications_expired' => 'Qualifications expired',
+            'qualifications_expiring' => 'As of today · expiring within :days days: :count',
+            'vacation_pending' => 'Open leave requests',
+            'vacation_pending_hint' => 'As of today · starting within the next 14 days: :count',
         ],
         'digest' => [
             'subject' => 'Management report :organization · :range',
@@ -347,6 +354,8 @@ return [
         'tracked_minutes' => 'Captured (min)',
         'invoiced_minutes' => 'Invoiced (min)',
         'present_minutes' => 'Present (min)',
+        'homeoffice_minutes' => 'Home office (min)',
+        'errand_minutes' => 'Business errand (min)',
         'booked_minutes' => 'Booked (min)',
         'balance_minutes' => 'Balance (min)',
         'plan_minutes' => 'Plan (min)',
@@ -384,6 +393,7 @@ return [
         'defects_period' => 'Defects in period',
         'defects_12_months' => 'Defects 12 months',
         'recurring_defect' => 'Repeat defect',
+        'recurring_defects' => 'Repeat defects',
         'maintenance_sessions' => 'Maintenance sessions',
         'maintenance_minutes' => 'Maintenance time (min)',
         'last_incident' => 'Last incident',
@@ -480,6 +490,7 @@ return [
         'median_actual_minutes' => 'Median actual (min)',
         'p90_actual_minutes' => 'P90 actual (min)',
         'contribution_per_order_eur' => 'Contribution margin per order (€)',
+        'top_causes' => 'Top causes (orders)',
         'license_plate' => 'License plate',
         'propulsion' => 'Powertrain',
         'trips' => 'Trips',

@@ -1,7 +1,7 @@
 ---
 title: "Stockage SharePoint"
 topic: admin.sharepoint
-version: 2
+version: 3
 keywords:
     - SharePoint
     - SharePoint Online
@@ -185,3 +185,5 @@ reprend avec les mêmes paramètres.
   perturbée, une tâche d'exploitation la signale.
 - **Vérifier l'état :** à côté du titre de la page figure le dernier état
   vérifié ; **Tester la connexion** le vérifie immédiatement.
+
+**L’activation rattrape :** lorsque la réplication est activée, WorkDiary met immédiatement en file tous les objets déjà publiés — y compris ceux de la période sans connexion active. La réplication n’a pas besoin de planification ; « Répliquer maintenant » reste disponible pour un rattrapage manuel.

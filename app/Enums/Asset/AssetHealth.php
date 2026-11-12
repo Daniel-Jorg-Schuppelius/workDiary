@@ -10,8 +10,22 @@
 
 namespace App\Enums\Asset;
 
-enum AssetHealth: string {
+use App\Enums\Contracts\HasLabel;
+
+enum AssetHealth: string implements HasLabel {
     case Ok = 'ok';
     case Degraded = 'degraded';
     case Critical = 'critical';
+
+    public function label(): string {
+        return (string) __('enums.asset.asset_health.' . $this->value);
+    }
+
+    public function tone(): string {
+        return match ($this) {
+            self::Ok => 'success',
+            self::Degraded => 'warning',
+            self::Critical => 'error',
+        };
+    }
 }

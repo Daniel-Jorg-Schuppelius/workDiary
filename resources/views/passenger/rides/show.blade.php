@@ -144,6 +144,7 @@
                 <x-detail-grid.row :label="__('passenger.field.completed_at')">{{ optional($ride->completed_at)->fdatetime() }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('passenger.field.occupied_km')">{{ $ride->occupied_km }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('passenger.field.empty_km')">{{ $ride->empty_km }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('passenger.field.waiting_minutes')">{{ $ride->waiting_seconds ? intdiv((int) $ride->waiting_seconds, 60) : null }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('passenger.field.closing_reason')">{{ $ride->closing_reason }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('passenger.field.closing_note')">{{ $ride->closing_note }}</x-detail-grid.row>
             </x-detail-grid>
@@ -174,6 +175,10 @@
                         <input type="number" step="0.1" min="0" name="occupied_km" value="{{ old('occupied_km') }}" placeholder="{{ __('passenger.field.occupied_km') }}" class="input input-sm input-bordered" aria-label="{{ __('passenger.field.occupied_km') }}">
                         <input type="number" step="0.1" min="0" name="empty_km" value="{{ old('empty_km') }}" placeholder="{{ __('passenger.field.empty_km') }}" class="input input-sm input-bordered" aria-label="{{ __('passenger.field.empty_km') }}">
                         <input type="number" step="1" min="0" name="odometer_end_km" value="{{ old('odometer_end_km') }}" placeholder="{{ __('passenger.field.odometer_end_km') }}" class="input input-sm input-bordered" aria-label="{{ __('passenger.field.odometer_end_km') }}">
+                        @php
+                            $waitedMinutes = $ride->waiting_started_at && $ride->picked_up_at ? (int) round($ride->waiting_started_at->diffInMinutes($ride->picked_up_at, true)) : null;
+                        @endphp
+                        <input type="number" step="1" min="0" max="1440" name="waiting_minutes" value="{{ old('waiting_minutes', $waitedMinutes) }}" placeholder="{{ __('passenger.field.waiting_minutes') }}" class="input input-sm input-bordered" aria-label="{{ __('passenger.field.waiting_minutes') }}" title="{{ __('passenger.field.waiting_minutes') }}">
                         {{-- Pflicht, sobald der Satz vom Vorschlag aus Streckengrenze und Landeskatalog abweicht (§ 12 Abs. 2 Nr. 10 UStG). --}}
                         <input type="text" maxlength="200" name="tax_reason" value="{{ old('tax_reason') }}" placeholder="{{ __('passenger.field.tax_reason') }}" class="input input-sm input-bordered col-span-2" aria-label="{{ __('passenger.field.tax_reason') }}">
                         <x-button type="submit" class="col-span-2">{{ __('passenger.rides.action.complete') }}</x-button>

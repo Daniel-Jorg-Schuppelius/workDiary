@@ -16,7 +16,4 @@ namespace App\Enums\Domain;
 enum DomainEventStatus: string {
     case Stored = 'stored';
     case Acknowledged = 'acknowledged';
-
-    /** Im Schema vorgesehen, heute von keinem Code geschrieben — eine gescheiterte Quittung bleibt gespeichert. */
-    case Failed = 'failed';
 }

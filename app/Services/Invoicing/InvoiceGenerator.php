@@ -613,6 +613,7 @@ class InvoiceGenerator {
      * nur durch Vorauszahlungen, die der Storno freigibt (MVP-1544).
      *
      * @throws \Illuminate\Validation\ValidationException teilbezahlt durch eine andere Zahlung
+     * @throws \LogicException wenn die Rechnung nicht ausgestellt ist
      */
     public function cancellationFor(Invoice $original, ?string $reason = null, ?int $userId = null): Invoice {
         if (($blocked = $original->cancellationBlockedReason()) !== null) {
@@ -667,6 +668,8 @@ class InvoiceGenerator {
                     'discount_percent' => $item->discount_percent,
                     'discount_amount' => $item->discount_amount?->negated(),
                     'tax_rate' => $item->tax_rate,
+                    // Steuerkategorie des Originals: E-Rechnung und Befreiungshinweis wie dort (MVP-1623).
+                    'tax_category' => $item->tax_category ?? (data_get($original->tax_context, 'category') ?: null),
                     'position' => ++$position,
                 ]);
             }
@@ -936,6 +939,7 @@ class InvoiceGenerator {
         });
     }
 
+    /** @throws \LogicException wenn die Rechnung keine Gutschrift zulässt */
     public function creditNoteFor(Invoice $original, ?int $userId = null): Invoice {
         if (! $original->needsCreditNoteToCancel()) {
             throw new \LogicException('Original invoice is not eligible for credit note (status: ' . $original->status->value . ')');
@@ -987,6 +991,7 @@ class InvoiceGenerator {
                     'discount_percent' => $item->discount_percent,
                     'discount_amount' => $item->discount_amount?->negated(),
                     'tax_rate' => $item->tax_rate,
+                    'tax_category' => $item->tax_category ?? (data_get($original->tax_context, 'category') ?: null),
                     'position' => ++$position,
                     // bewusst KEINE time_entry_id / expense_id — Zeit/Spese bleibt am Original
                 ]);

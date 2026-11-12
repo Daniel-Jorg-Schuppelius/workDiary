@@ -10,16 +10,24 @@
 
 namespace App\Services\CloudIntake;
 
-use App\Enums\CloudIntake\CloudIntakeItemStatus;
+use App\Enums\CloudIntake\{CloudIntakeItemStatus, CloudIntakeRouteTarget};
+use App\Enums\Integration\DataDomain;
 use App\Models\Audit\AuditLog;
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem};
-use App\Models\Platform\User;
+use App\Models\Document\Document;
+use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Platform\{Organization, User};
 use App\Plugins\Contracts\{DocumentIntakeOrigins, DocumentIntakeSource};
 use App\Plugins\PluginManager;
 use App\Plugins\Support\Intake\IntakeItem;
+use App\Services\Integration\Attributes\WritesDataDomain;
+use App\Services\Integration\Contracts\OwnershipConflictReplay;
+use App\Services\Integration\DataOwnershipGuard;
+use App\Services\Integration\Dto\OwnershipClaim;
 use App\Services\Platform\IntakeActor;
 use App\Support\MorphMap;
 use CommonToolkit\Helper\FileSystem\{File, Folder};
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\Cache;
@@ -42,8 +50,14 @@ use Throwable;
  *  - **Dedup:** je Item-Revision (Unique) und kanalübergreifend über SHA-256.
  *  - Fehler ⇒ {@see \App\Models\Concerns\HasConnectionHealth} + sichtbares
  *    Datenalter; Tombstones markieren nur Nachweise (`source_gone`).
+ *  - **Datenführerschaft (MVP-1592):** DMS-Dokumente legt nur an, wer den
+ *    Bereich „Dokumente“ schreiben darf — sonst Führerschaftskonflikt vor dem
+ *    Download, ohne Nachweis; „Einmalig übernehmen“ lädt die Datei neu.
  */
-class CloudIntakeRunner {
+#[WritesDataDomain(DataDomain::Documents)]
+class CloudIntakeRunner implements OwnershipConflictReplay {
+    public const string OWNERSHIP_KIND = 'cloud_intake.document';
+
     public function __construct(
         private readonly RoutePatternValidator $patterns,
         private readonly CloudIntakeRouter $router,
@@ -135,6 +149,7 @@ class CloudIntakeRunner {
                 continue;
             } catch (Throwable $e) {
                 $connection->recordConnectionFailure(class_basename($e));
+                $connection->degradeAfter($e);
                 $result['status'] = 'failed';
 
                 return;
@@ -182,6 +197,13 @@ class CloudIntakeRunner {
             ->exists();
         if ($exists) {
             $result['skipped']++;
+
+            return;
+        }
+
+        // 2b. Datenführerschaft: ein fremd geführtes DMS bekommt nichts.
+        if ($match['route']->target === CloudIntakeRouteTarget::Document && ! $this->permits($connection, $item)) {
+            $result['inbox']++;
 
             return;
         }
@@ -407,7 +429,79 @@ class CloudIntakeRunner {
         return $marked;
     }
 
-    private function resolveAdapter(CloudDocumentConnection $connection): ?DocumentIntakeSource {
+    private function permits(CloudDocumentConnection $connection, IntakeItem $item): bool {
+        $organization = $connection->organization;
+
+        return $organization instanceof Organization && app(DataOwnershipGuard::class)->allows($organization, DataDomain::Documents, $connection->provider->pluginId(), new OwnershipClaim(
+            kind: self::OWNERSHIP_KIND,
+            key: $connection->id . ':' . $item->itemId,
+            title: $item->name,
+            target: Document::class,
+            payload: ['connection_id' => (int) $connection->id, 'item' => get_object_vars($item)],
+            externalId: $item->itemId,
+            subtitle: $item->path,
+        ));
+    }
+
+    /** @return list<string> */
+    public function ownershipKinds(): array {
+        return [self::OWNERSHIP_KIND];
+    }
+
+    /**
+     * „Einmalig übernehmen“: die Datei wie im Lauf erneut laden, prüfen und
+     * übergeben — unter der Sperre der Verbindung, mit ihren heutigen Regeln.
+     */
+    public function replayOwnershipConflict(Organization $organization, IntegrationInboxItem $item): ?Model {
+        $payload = (array) (($item->remote_snapshot ?? [])['payload'] ?? []);
+        $raw = (array) ($payload['item'] ?? []);
+        $connection = CloudDocumentConnection::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->find((int) ($payload['connection_id'] ?? 0));
+        $adapter = $connection instanceof CloudDocumentConnection ? $this->resolveAdapter($connection) : null;
+        if (! $connection instanceof CloudDocumentConnection || ! $connection->isRunnable() || $adapter === null) {
+            throw new \RuntimeException((string) __('cloud_intake.ownership.connection_unavailable'));
+        }
+        if (! is_string($raw['itemId'] ?? null) || ! is_string($raw['revision'] ?? null)) {
+            return null;
+        }
+        $intake = new IntakeItem(
+            itemId: $raw['itemId'],
+            path: (string) ($raw['path'] ?? ''),
+            name: (string) ($raw['name'] ?? ''),
+            revision: $raw['revision'],
+            size: (int) ($raw['size'] ?? 0),
+            mime: isset($raw['mime']) ? (string) $raw['mime'] : null,
+            modifiedAt: isset($raw['modifiedAt']) ? (string) $raw['modifiedAt'] : null,
+            contentHash: isset($raw['contentHash']) ? (string) $raw['contentHash'] : null,
+            parentId: isset($raw['parentId']) ? (string) $raw['parentId'] : null,
+        );
+        $actor = IntakeActor::resolve((int) $connection->organization_id, $connection->created_by_user_id !== null ? (int) $connection->created_by_user_id : null);
+        if (! $actor instanceof User) {
+            throw new \RuntimeException((string) __('cloud_intake.ownership.connection_unavailable'));
+        }
+
+        $lock = Cache::lock('cloud-intake:run:' . $connection->id, 900);
+        if (! $lock->get()) {
+            throw new \RuntimeException((string) __('cloud_intake.ownership.busy'));
+        }
+        try {
+            $result = ['status' => 'ok', 'pages' => 0, 'imported' => 0, 'inbox' => 0, 'rejected' => 0, 'duplicates' => 0, 'skipped' => 0, 'tombstones' => 0];
+            \App\Support\OrganizationContext::run($organization, function () use ($connection, $adapter, $actor, $intake, &$result): void {
+                $routes = $connection->routes()->where('active', true)->orderBy('priority')->get();
+                $this->processItem($connection, $adapter, $actor, $routes, $intake, $result);
+            });
+        } finally {
+            $lock->release();
+        }
+
+        return CloudDocumentItem::query()->withoutGlobalScopes()
+            ->where('connection_id', $connection->id)
+            ->where('item_revision_hash', CloudDocumentItem::itemRevisionHash($intake->itemId, $intake->revision))
+            ->first()?->imported;
+    }
+
+    protected function resolveAdapter(CloudDocumentConnection $connection): ?DocumentIntakeSource {
         $plugin = app(PluginManager::class)->find($connection->provider->pluginId());
 
         return $plugin instanceof DocumentIntakeSource ? $plugin : null;

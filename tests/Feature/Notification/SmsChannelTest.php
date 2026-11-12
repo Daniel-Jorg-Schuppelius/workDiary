@@ -263,6 +263,36 @@ class SmsChannelTest extends TestCase {
         $this->assertSame(0, $blocked->segments);
     }
 
+    /** MVP-1619 (H1-06): Warnschwelle und Deckel erreichen die Organisation als Betriebsaufgabe, je Monat eine. */
+    public function test_budget_thresholds_report_one_operations_task_per_month(): void {
+        FakePluginHttp::fake([self::SEVEN_SMS => self::sevenOk()]);
+        $this->sevenIo();
+        $this->rule(NotificationEvent::CrisisAlert);
+        $this->organization->forceFill(['settings' => ['notifications' => ['sms' => ['monthly_limit' => 2, 'warn_percent' => 50]]]])->save();
+        app()->instance('currentOrganization', $this->organization->refresh());
+        $dedupeKey = 'sms_budget:' . $this->organization->id . ':' . now()->format('Y-m');
+
+        $this->assertTrue($this->send($this->recipient()));
+        $task = \App\Models\Project\OperationsTask::query()->where('dedupe_key', $dedupeKey)->first();
+        $this->assertNotNull($task);
+        $this->assertSame(\App\Enums\Operations\OperationsTaskType::SmsBudgetWarning, $task->type);
+        $this->assertSame(\App\Enums\Operations\OperationsTaskSeverity::Warning, $task->severity);
+        $this->assertSame($this->organization->id, (int) $task->organization_id);
+
+        $second = $this->orgUser(['mobile' => '+4915100000000']);
+        $second->setPreference('notifications', ['sms_opt_in' => true, 'sms_number_hash' => hash('sha256', '+4915100000000'), 'sms_verified_at' => now()->toIso8601String()]);
+        $this->assertTrue($this->send($second->refresh()));
+
+        $third = $this->orgUser(['mobile' => '+4915100000001']);
+        $third->setPreference('notifications', ['sms_opt_in' => true, 'sms_number_hash' => hash('sha256', '+4915100000001'), 'sms_verified_at' => now()->toIso8601String()]);
+        $this->assertFalse($this->send($third->refresh()));
+
+        $this->assertSame(1, \App\Models\Project\OperationsTask::query()->where('dedupe_key', $dedupeKey)->count());
+        $this->assertSame(\App\Enums\Operations\OperationsTaskSeverity::Critical, $task->fresh()?->severity);
+        $this->assertSame(1, \App\Models\Audit\AuditLog::query()->where('event', 'sms.budget_warning')->count());
+        $this->assertSame(1, \App\Models\Audit\AuditLog::query()->where('event', 'sms.budget_exhausted')->count());
+    }
+
     // --- Fehlerpfad / Retry-Regel ----------------------------------------
 
     public function test_gateway_5xx_is_not_retried_and_lands_as_failed(): void {

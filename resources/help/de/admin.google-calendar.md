@@ -1,7 +1,7 @@
 ---
 title: "Google Kalender anbinden"
 topic: admin.google-calendar
-version: 2
+version: 3
 keywords:
     - Google Kalender
     - Google Calendar
@@ -131,3 +131,5 @@ dazu eine Betriebsaufgabe in der Übersicht der Betriebsaufgaben.
 - **Stillgelegt:** Nach wiederholten Fehlern in Folge legt WorkDiary die
   Verbindung still; dann erscheint wieder **Mit Google verbinden**. Prüfen Sie
   die Ursache und verbinden Sie neu.
+
+**Datenführerschaft:** Termine aus diesem Kalender gehören zum Bereich Kalender. Führt ein anderes System den Kalender, erscheinen Vorschläge, Serien und Änderungen im Integrations-Eingang als Fall „Datenführerschaft“; **Einmalig übernehmen** legt den Termin bzw. die Serie an. Lösch-Hinweise bleiben gewöhnliche Fälle.

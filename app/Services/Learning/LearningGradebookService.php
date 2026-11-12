@@ -256,6 +256,71 @@ class LearningGradebookService {
         return $rows;
     }
 
+    /** Vorlagen fürs Notenschema (MVP-1600): Bezeichnung → Mindestprozent. */
+    public const array SCALE_TEMPLATES = [
+        'school' => ['1' => 92, '2' => 81, '3' => 67, '4' => 50, '5' => 30, '6' => 0],
+        'letters' => ['A' => 90, 'B' => 80, 'C' => 70, 'D' => 60, 'E' => 50, 'F' => 0],
+        'pass_fail' => ['passed' => 50, 'failed' => 0],
+    ];
+
+    public const int SCALE_MAX_LEVELS = 20;
+
+    /**
+     * Stufen einer Vorlage in der Speicherform von {@see scaleFor()}.
+     *
+     * @return list<array{min_percent: int, label: string}>
+     */
+    public function scaleTemplate(string $template): array {
+        $rows = [];
+        foreach (self::SCALE_TEMPLATES[$template] ?? [] as $label => $minPercent) {
+            $rows[] = [
+                'min_percent' => $minPercent,
+                'label' => $template === 'pass_fail' ? (string) __('learning.grade_scale.' . $label) : (string) $label,
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Eingabe „Bezeichnung = Mindestprozent" je Zeile in die Speicherform.
+     *
+     * @return list<array{min_percent: int, label: string}>
+     */
+    public function parseScale(string $text): array {
+        $rows = [];
+        $seen = [];
+        foreach (preg_split('/\R/', $text) ?: [] as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+            if (! preg_match('/^(.{1,40}?)\s*=\s*(\d{1,3})\s*%?$/u', $line, $match) || (int) $match[2] > 100) {
+                throw ValidationException::withMessages(['grade_scale' => (string) __('learning.errors.grade_scale_line', ['line' => $line])]);
+            }
+            $minPercent = (int) $match[2];
+            if (isset($seen[$minPercent])) {
+                throw ValidationException::withMessages(['grade_scale' => (string) __('learning.errors.grade_scale_duplicate', ['percent' => $minPercent])]);
+            }
+            $seen[$minPercent] = true;
+            $rows[] = ['min_percent' => $minPercent, 'label' => trim($match[1])];
+        }
+        if (count($rows) > self::SCALE_MAX_LEVELS) {
+            throw ValidationException::withMessages(['grade_scale' => (string) __('learning.errors.grade_scale_too_many', ['max' => self::SCALE_MAX_LEVELS])]);
+        }
+        usort($rows, static fn (array $a, array $b): int => $b['min_percent'] <=> $a['min_percent']);
+
+        return $rows;
+    }
+
+    /** Das gepflegte Schema als Eingabetext — Gegenstück zu {@see parseScale()}. */
+    public function scaleText(?Organization $organization): string {
+        return implode("\n", array_map(
+            static fn (array $row): string => $row['label'] . ' = ' . $row['min_percent'],
+            $this->scaleFor($organization),
+        ));
+    }
+
     public function gradeFor(?Organization $organization, int $percent): ?string {
         foreach ($this->scaleFor($organization) as $row) {
             if ($percent >= $row['min_percent']) {

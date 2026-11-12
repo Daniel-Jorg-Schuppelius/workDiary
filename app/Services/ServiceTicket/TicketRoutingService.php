@@ -137,9 +137,10 @@ class TicketRoutingService {
      * SLA-Stands; ohne Fenster gilt immer Geschäftszeit.
      */
     private function withinBusinessHours(ServiceTicket $ticket): bool {
-        $hours = $ticket->queue_id !== null
-            ? \App\Models\ServiceTicket\ServiceQueue::query()->find($ticket->queue_id, ['id', 'business_hours'])?->business_hours
+        $queue = $ticket->queue_id !== null
+            ? \App\Models\ServiceTicket\ServiceQueue::query()->find($ticket->queue_id, ['id', 'business_hours', 'holiday_region'])
             : null;
+        $hours = $queue?->business_hours;
         if (! is_array($hours) || $hours === []) {
             $hours = $ticket->sla_snapshot['business_hours'] ?? null;
         }
@@ -147,7 +148,7 @@ class TicketRoutingService {
         $at = ($ticket->reported_at ?? \Illuminate\Support\Carbon::now())->copy()
             ->setTimezone($organization !== null ? \App\Support\Tz::ofOrganization($organization) : (string) config('app.timezone'));
 
-        return app(SlaTimer::class)->isWithinBusinessHours(is_array($hours) ? $hours : null, $at);
+        return app(SlaTimer::class)->isWithinBusinessHours(is_array($hours) ? $hours : null, $at, $queue?->holiday_region);
     }
 
     /**
@@ -200,12 +201,13 @@ class TicketRoutingService {
     /** @param array<string, mixed> $actions */
     private function applyActions(ServiceTicket $ticket, array $actions): ?int {
         if (isset($actions['set_queue'])) {
-            $queueId = \App\Models\ServiceTicket\ServiceQueue::query()
+            $target = \App\Models\ServiceTicket\ServiceQueue::query()
                 ->where('organization_id', $ticket->organization_id)
                 ->whereKey((int) $actions['set_queue'])
-                ->value('id');
-            if ($queueId !== null) {
-                $ticket->queue_id = $queueId;
+                ->first();
+            // Eine Queue, die die Ticketart nicht annimmt, ist kein Ziel.
+            if ($target !== null && $target->supportsKind($ticket->kind)) {
+                $ticket->queue()->associate($target);
             }
         }
         if (isset($actions['set_priority'])) {
@@ -217,6 +219,7 @@ class TicketRoutingService {
         if (isset($actions['set_sla'])) {
             $contract = \App\Models\ServiceTicket\SlaContract::query()
                 ->where('organization_id', $ticket->organization_id)
+                ->where('is_ola', false)
                 ->whereKey((int) $actions['set_sla'])
                 ->first();
             if ($contract !== null) {
@@ -227,9 +230,11 @@ class TicketRoutingService {
             $queue = \App\Models\ServiceTicket\ServiceQueue::query()
                 ->where('organization_id', $ticket->organization_id)
                 ->where('team_id', (int) $actions['set_team'])
-                ->value('id');
+                ->orderBy('id')
+                ->get()
+                ->first(fn (\App\Models\ServiceTicket\ServiceQueue $candidate): bool => $candidate->supportsKind($ticket->kind));
             if ($queue !== null) {
-                $ticket->queue_id = $queue;
+                $ticket->queue()->associate($queue);
             }
         }
         if (isset($actions['assign']) && in_array($actions['assign'], self::ASSIGN_STRATEGIES, true)) {

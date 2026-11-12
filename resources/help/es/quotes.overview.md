@@ -1,7 +1,7 @@
 ---
 title: "Ofertas"
 topic: quotes.overview
-version: 7
+version: 8
 keywords:
     - crear presupuesto
     - presupuesto
@@ -129,3 +129,8 @@ con cada entrega (véase órdenes de fabricación).
 ## Visto y firma
 
 Cuando el cliente abre la oferta mediante el enlace o en el portal de clientes, la cabecera muestra **«Visto por el cliente el …»**; cuenta la primera apertura de una oferta enviada. Al aceptar, el cliente puede indicar opcionalmente su **nombre** y **firmar**. La firma se guarda como imagen en la oferta y queda registrada con nombre y fecha en el estado de aceptación congelado; aceptar sin firma sigue siendo posible.
+
+**Emisor y persona de contacto** quedan fijados al enviar la oferta o al
+confirmar la confirmación de pedido, igual que la factura al emitirla. Los cambios
+posteriores en los datos de empresa, fiscales o de contacto no modifican el
+documento enviado.

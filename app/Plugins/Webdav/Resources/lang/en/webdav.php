@@ -77,6 +77,7 @@ return [
 
     'flash' => [
         'saved' => 'WebDAV storage saved.',
+        'saved_and_mirrored' => 'WebDAV storage saved and activated — all objects released so far are queued for mirroring.',
         'mirror_done' => 'Mirror run started.',
         'disconnected' => 'WebDAV storage disconnected. Already mirrored files remain externally.',
         'no_connection' => 'No active WebDAV storage.',

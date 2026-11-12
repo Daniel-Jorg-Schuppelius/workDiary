@@ -74,7 +74,7 @@ final class RentalSustainabilityPrivacyStatusLabelsTest extends TestCase {
     public function test_cases_and_named_subsets_keep_their_stored_values(): void {
         $values = static fn (array $cases): array => array_map(static fn (\BackedEnum $case): string => (string) $case->value, $cases);
 
-        $this->assertSame(['stored', 'acknowledged', 'failed'], $values(DomainEventStatus::cases()));
+        $this->assertSame(['stored', 'acknowledged'], $values(DomainEventStatus::cases()));
         $this->assertSame(['planned', 'handed_over', 'returned', 'swapped'], RentalCaseAssetStatus::values());
         $this->assertSame(['planned', 'handed_over'], $values(RentalCaseAssetStatus::open()));
         $this->assertSame(['active', 'completed', 'cancelled'], RentalReservationStatus::values());

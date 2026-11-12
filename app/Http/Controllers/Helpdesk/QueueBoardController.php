@@ -51,6 +51,7 @@ class QueueBoardController extends Controller {
         $queueId = Sqid::decode(ServiceQueue::class, $queueFilter !== '' ? $queueFilter : null);
 
         $query = ServiceTicket::query()
+            ->visibleTo($user)
             ->with(['assignedTo:id,name', 'queue:id,name'])
             ->when($user->organization_id !== null, fn ($builder) => $builder->where('organization_id', $user->organization_id))
             ->orderBy('reported_at')
@@ -176,6 +177,12 @@ class QueueBoardController extends Controller {
         $moved = 0;
         foreach ($tickets as $ticket) {
             if (! Gate::allows('update', $ticket)) {
+                $skipped++;
+
+                continue;
+            }
+            // Nimmt die Queue die Ticketart nicht an, bleibt das Ticket, wo es ist.
+            if (! $queue->supportsKind($ticket->kind)) {
                 $skipped++;
 
                 continue;

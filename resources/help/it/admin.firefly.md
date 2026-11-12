@@ -1,7 +1,7 @@
 ---
 title: "Firefly III come fonte di riconciliazione"
 topic: admin.firefly
-version: 1
+version: 3
 keywords:
     - Firefly III
     - movimenti di conto
@@ -61,3 +61,9 @@ subito. **Scollegare** ferma la sincronizzazione.
 - La verifica fallisce con 401: il token è errato o scaduto.
 - La verifica segnala un indirizzo interno: l’indirizzo punta alla propria rete,
   ma **Consentire indirizzi privati** è disattivato o non consentito dal gestore.
+
+## Nella panoramica
+
+La selezione **Assegnazione** offre inoltre **Aperti (senza assegnazione o ambigui)**. I movimenti senza assegnazione o con assegnazione ambigua compaiono nella **coda di lavoro** come un elemento raggruppato ciascuno, e il riquadro della dashboard **Movimenti finanziari** li conta accanto agli estratti conto e mostra gli ultimi movimenti. Entrambi sono visibili solo all’amministrazione e solo finché il plugin è attivo.
+
+**Segnare come evaso:** i movimenti che non richiedono un documento (spese di tenuta conto, prelievo privato) si segnano come evasi con un motivo. Non contano più nel riquadro «Movimenti finanziari» né nella coda di lavoro; il filtro «Evasi» li mostra e «Riapri» annulla il contrassegno. La sincronizzazione cambia solo l’assegnazione, mai l’evasione.

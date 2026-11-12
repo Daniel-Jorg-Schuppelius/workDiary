@@ -13,7 +13,6 @@ namespace App\Services\Event;
 use App\Enums\Event\{EventStatus, ParticipantRole, ParticipantStatus};
 use App\Models\Calendar\Event;
 use App\Models\Facility\Room;
-use App\Models\Platform\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -125,23 +124,5 @@ class EventService {
             ];
         }
         $event->participants()->sync($sync);
-    }
-
-    public function addParticipant(
-        Event $event,
-        User $user,
-        ParticipantRole $role = ParticipantRole::Attendee,
-        ParticipantStatus $status = ParticipantStatus::Invited,
-    ): void {
-        $event->participants()->syncWithoutDetaching([
-            $user->getKey() => [
-                'role' => $role->value,
-                'status' => $status->value,
-            ],
-        ]);
-    }
-
-    public function removeParticipant(Event $event, User $user): void {
-        $event->participants()->detach($user->getKey());
     }
 }

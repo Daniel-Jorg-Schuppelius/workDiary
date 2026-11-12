@@ -11,6 +11,7 @@
     $protocol ??= null;
     $subject ??= $protocol?->subject;
     $templates ??= collect();
+    $allTags ??= collect();
 @endphp
 <x-modal
     :title="$protocol ? __('protocol.title.edit') : __('protocol.title.create')"
@@ -51,4 +52,9 @@
     @if ($protocol)
         <x-textarea-field name="state_final" :label="__('protocol.field.state_final')" :value="old('state_final', $protocol->state_final)" rows="2" />
     @endif
+    {{-- Tags (MVP-1573): tag_ids[] und new_tags verarbeitet der Controller. --}}
+    <div class="fieldset">
+        <span class="label"><span class="label-text">{{ __('Tags') }}</span></span>
+        <x-tag-picker :tags="$allTags" :selected="$protocol?->tags?->map(fn ($t) => $t->sqid)->all() ?? []" />
+    </div>
 </x-modal>

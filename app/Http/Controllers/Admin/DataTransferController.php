@@ -147,6 +147,9 @@ class DataTransferController extends Controller {
         // Herunterladen — nicht nur beim Erzeugen (sonst käme ein Nutzer mit
         // nur einem Export-Recht an fremde Entitäts-Exporte inkl. PII).
         $this->authorizeExport($export->entity);
+        // Enthält die Datei Spalten mit eigenem Recht, braucht auch der Download dieses Recht (MVP-1625).
+        $denied = \App\Services\Import\ColumnAccess::denied($this->registry->for($export->entity), $this->authUser());
+        abort_if(array_intersect((array) $export->restricted_columns, $denied) !== [], 403);
         abort_unless($export->state === ExportRunState::Ready, 409);
 
         $disk = Storage::disk(ExportRunner::DISK);

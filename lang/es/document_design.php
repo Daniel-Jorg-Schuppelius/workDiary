@@ -107,6 +107,8 @@ return [
     'editor.texts_hint' => 'Textos libres encima y debajo del contenido de los documentos de venta (antes plantillas de factura) — texto plano, se congela con la versión del perfil.',
     'editor.header_text' => 'Texto de cabecera',
     'editor.footer_text' => 'Texto de pie',
+    'editor.confidentiality_text' => 'Aviso de confidencialidad',
+    'editor.confidentiality_hint' => 'Solo aparece si el bloque «Confidencialidad» es dinámico. Vacío = aviso predeterminado.',
     'profile.customer_specific' => 'Perfil específico de cliente (solo actúa a través de la ficha del cliente)',
     'profile.customer_specific_hint' => 'No participa en la resolución de toda la organización — solo se aplica a los clientes que lo referencian en su ficha.',
     'customer.panel_title' => 'Diseño de documentos',

@@ -20,6 +20,7 @@
                 @if ($case->costCenterDisplay()) · {{ $case->costCenterDisplay() }} @endif
             </div>
             <x-slot:actions>
+                <x-sustainability-assess-link :subject="$case" />
                 @can('update', $case)
                     <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('investments.edit', $case)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                     @if (in_array($case->status, [\App\Enums\Investments\InvestmentCaseStatus::Approved, \App\Enums\Investments\InvestmentCaseStatus::InProgress], true))
@@ -107,6 +108,8 @@
                         <input aria-label="{{ __('Einmalkosten €') }}" name="one_time_cost" type="number" step="0.01" min="0" required class="input input-sm input-bordered" placeholder="{{ __('Einmalkosten €') }}">
                         <input aria-label="{{ __('Folgekosten €/Jahr') }}" name="recurring_cost_yearly" type="number" step="0.01" min="0" class="input input-sm input-bordered" placeholder="{{ __('Folgekosten €/Jahr') }}">
                         <input aria-label="{{ __('Lieferzeit (Wochen)') }}" name="delivery_weeks" type="number" min="0" class="input input-sm input-bordered" placeholder="{{ __('Lieferzeit (Wochen)') }}">
+                        {{-- Nutzungsdauer (MVP-1606): steht im Vergleich und belegt die Aktivierung vor. --}}
+                        <input aria-label="{{ __('investment.option.useful_life') }}" name="useful_life_years" type="number" min="0" max="99" class="input input-sm input-bordered" placeholder="{{ __('investment.option.useful_life') }}">
                         <div class="flex gap-2 sm:col-span-2">
                             <select name="quality_score" class="select select-sm select-bordered" aria-label="{{ __('Qualität') }}">
                                 <option value="">{{ __('Qualität') }}</option>
@@ -127,6 +130,7 @@
                                 <th class="text-right">{{ __('Einmalig') }}</th>
                                 <th class="text-right">{{ __('Folgekosten p. a.') }}</th>
                                 <th class="text-right">{{ __('Lieferzeit') }}</th>
+                                <th class="text-right">{{ __('investment.option.useful_life_short') }}</th>
                                 <th>{{ __('Qualität') }}</th>
                                 <th></th>
                             </tr>
@@ -141,6 +145,7 @@
                                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $option->one_time_cost, 2, withThousandsSeparator: true) }} €</td>
                                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $option->recurring_cost_yearly, 2, withThousandsSeparator: true) }} €</td>
                                     <td class="text-right">{{ $option->delivery_weeks !== null ? __(':count Wo.', ['count' => $option->delivery_weeks]) : '—' }}</td>
+                                    <td class="text-right">{{ $option->useful_life_years !== null ? trans_choice('investment.option.years', $option->useful_life_years, ['count' => $option->useful_life_years]) : '—' }}</td>
                                     <td>{{ $option->quality_score !== null ? str_repeat('★', (int) $option->quality_score) : '—' }}</td>
                                     <td class="whitespace-nowrap text-right">
                                         <x-icon-btn icon="account_balance" size="xs" tone="ghost" :href="route('investments.options.financing', [$case, $option])" :title="__('investment.financing.open')" />

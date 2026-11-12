@@ -1,7 +1,7 @@
 ---
 title: "Connecter Google Agenda"
 topic: admin.google-calendar
-version: 2
+version: 3
 keywords:
     - Google Agenda
     - Google Calendar
@@ -134,3 +134,5 @@ la signale.
 - **Mise à l'arrêt :** après des erreurs répétées consécutives, WorkDiary met
   la connexion à l'arrêt ; **Connecter à Google** réapparaît alors. Vérifiez la
   cause et reconnectez-vous.
+
+**Souveraineté des données :** Les rendez-vous de ce calendrier relèvent du domaine calendrier. Si un autre système gère le calendrier, les propositions, séries et modifications apparaissent dans la boîte de réception des intégrations comme cas « Souveraineté des données » ; **Reprendre une fois** crée le rendez-vous ou la série. Les avis de suppression restent des cas ordinaires.

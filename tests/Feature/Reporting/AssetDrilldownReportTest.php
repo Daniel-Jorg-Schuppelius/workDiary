@@ -193,6 +193,39 @@ class AssetDrilldownReportTest extends TestCase {
         Carbon::setTestNow();
     }
 
+    /** MVP-1628: Einstieg aus der Produktanalyse mit Zeilenfilter und „nur Wiederholdefekte“. */
+    public function test_recurring_defects_drilldown_takes_row_filter_and_recurring_flag(): void {
+        Carbon::setTestNow('2026-06-15 12:00:00');
+        foreach (['2026-06-01', '2026-06-05', '2026-06-10'] as $d) {
+            $this->defect($d);
+        }
+        $single = Asset::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Lüfter Y', 'category_code' => 'FAN']);
+        AssetDefect::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_id' => $single->id,
+            'reported_by_user_id' => $this->user->id,
+            'reported_at' => '2026-06-12',
+        ]);
+        $session = $this->dateRangeSession(Carbon::parse('2026-06-01'), Carbon::parse('2026-06-30'));
+        $ids = fn ($response): array => array_column($response->viewData('rows'), 'asset_id');
+
+        $all = $this->actingAs($this->user)->withSession($session)->get(route('reports.assets.drilldown.recurring-defects'));
+        $this->assertEqualsCanonicalizing([$this->asset->id, $single->id], $ids($all));
+
+        $recurring = $this->actingAs($this->user)->withSession($session)->get(route('reports.assets.drilldown.recurring-defects', ['recurring' => 1]));
+        $this->assertSame([$this->asset->id], $ids($recurring));
+        $recurring->assertSee(__('Nur Wiederholdefekte'));
+
+        $category = $this->actingAs($this->user)->withSession($session)->get(route('reports.assets.drilldown.recurring-defects', ['category_code' => 'FAN']));
+        $this->assertSame([$single->id], $ids($category));
+
+        $empty = $this->actingAs($this->user)->withSession($session)->get(route('reports.assets.drilldown.recurring-defects', ['asset_id' => $single->id, 'recurring' => 1]));
+        $this->assertSame([], $empty->viewData('rows'));
+        $empty->assertSee(__('Keine Wiederholdefekte im gewählten Zeitraum.'));
+
+        Carbon::setTestNow();
+    }
+
     public function test_recurring_defects_csv_writes_audit_log(): void {
         Carbon::setTestNow('2026-06-15 12:00:00');
         $this->defect('2026-06-10');

@@ -1,7 +1,7 @@
 ---
 title: "Investment planning"
 topic: investments.overview
-version: 3
+version: 4
 keywords:
     - capital expenditure
     - CapEx
@@ -64,3 +64,13 @@ replace accounting.
 
 **Post-review:** After completion or cancellation, the actual benefit,
 economics, lessons learned and follow-up actions are documented.
+
+**Useful life and supplier:** Each option takes a useful life in years; it
+appears in the option comparison and prefills the transfer to fixed assets.
+When an asset is linked to the file or the file is completed, the asset takes
+the supplier of the recommended option as “Acquired from”, unless one is
+already set.
+
+**Filtering the list:** The investment list also filters by period, responsible
+person, cost centre, budget status (state of the most recent request), urgency
+and risk note. The report can also be exported as a PDF.

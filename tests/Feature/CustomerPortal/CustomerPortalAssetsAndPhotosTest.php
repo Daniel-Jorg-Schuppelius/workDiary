@@ -334,4 +334,26 @@ class CustomerPortalAssetsAndPhotosTest extends TestCase {
 
         $this->actingAs($this->portalUser, 'customer')->get(route('customer.assets.show', $foreign))->assertNotFound();
     }
+
+    /** MVP-1628: Das Portal nennt Termine; ein pausierter Wartungsplan hat keinen und erscheint nicht. */
+    public function test_assets_portal_lists_only_active_maintenance_plans(): void {
+        $own = Asset::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id]);
+        \App\Models\Asset\MaintenancePlan::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_id' => $own->id,
+            'label' => 'Jahreswartung Brenner',
+            'is_active' => true,
+        ]);
+        \App\Models\Asset\MaintenancePlan::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_id' => $own->id,
+            'label' => 'Pausierte Filterprüfung',
+            'is_active' => false,
+        ]);
+
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.assets.show', $own))
+            ->assertOk()
+            ->assertSee('Jahreswartung Brenner')
+            ->assertDontSee('Pausierte Filterprüfung');
+    }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Notificaciones"
 topic: account.notifications
-version: 1
+version: 2
 keywords:
     - avisos
     - alertas
@@ -34,3 +34,5 @@ alarmas de guardia— puede enviarse además un SMS. Esta vía es deliberadament
 austera: hay un cupo mensual, los textos largos se acortan y se avisa a la
 organización antes de agotarlo. El SMS no sustituye a la notificación dentro de
 la aplicación, la acompaña para cuando nadie está ante una pantalla.
+
+El aviso del cupo de SMS llega a la administración de la organización como tarea de operación con notificación: una vez al alcanzar el umbral de aviso y otra cuando el cupo se agota, en cada mes. Con el nuevo mes el recuento vuelve a empezar.

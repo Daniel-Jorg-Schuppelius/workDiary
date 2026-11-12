@@ -9,7 +9,14 @@
  */
 
 return [
+    'dsr_extension' => [
+        'closed' => 'El plazo solo puede ampliarse en una solicitud abierta.',
+        'first_deadline_passed' => 'El primer plazo ha vencido. La ampliación debe comunicarse a la persona dentro de ese plazo y ya no es posible.',
+        'not_later' => 'El nuevo plazo debe ser posterior al actual.',
+        'too_late' => 'El plazo puede ampliarse como máximo dos meses más, es decir, hasta el :date.',
+    ],
     'retention_area' => [
+        'privacy_incidents' => 'Brechas de datos (cerradas)',
         'incoming_invoices_rejected' => 'Facturas recibidas rechazadas',
         'audit_logs' => 'Registro de auditoría',
         'exports' => 'Exportaciones de nómina y tiempos',
@@ -74,5 +81,16 @@ return [
         'dpia_missing' => '«:name» requiere una EIPD pero no tiene una EIPD concluida',
         'tom_missing' => '«:name» sin medidas técnicas y organizativas asignadas',
         'tom_proof_expiring' => 'Las pruebas de medidas técnicas y organizativas vencen o han vencido: :names',
+    ],
+    'legal_region' => [
+        'label' => 'Ámbito jurídico',
+        'hint' => 'Determina los plazos de conservación de las propuestas de eliminación y los datos de la documentación de procedimientos. Un cambio se aplica a las futuras propuestas de eliminación.',
+    ],
+    'tom' => [
+        'implementation_status' => 'Estado de implantación',
+        'protection_level' => 'Necesidad de protección',
+        'protection_level_none' => '— sin definir —',
+        'state_save' => 'Guardar estado',
+        'state_saved' => 'Estado de implantación y necesidad de protección guardados.',
     ],
 ];

@@ -36,6 +36,7 @@ return [
         'problem_report_open' => 'Segnalazione di problema aperta',
         'cloud_intake_reauth' => 'Ingresso cloud: nuovo accesso necessario',
         'cloud_intake_quarantined' => 'Ingresso cloud: importazioni rifiutate',
+        'sms_budget_warning' => 'Contingente SMS',
     ],
     'severity' => [
         'info' => 'Avviso',
@@ -96,6 +97,8 @@ return [
         'problem_report_summary' => ':count segnalazione/i aperta/e in attesa di elaborazione.',
         'cloud_intake_reauth' => 'L’ingresso documenti cloud :provider (“:folder”) deve essere ricollegato (:status).',
         'cloud_intake_quarantined' => ':count file dall’ingresso documenti cloud sono stati rifiutati (ultimo motivo: :reason).',
+        'sms_budget_warning' => 'Contingente SMS :month: :used di :limit segmenti usati (:percent %).',
+        'sms_budget_exhausted' => 'Contingente SMS :month esaurito (:used di :limit segmenti): non verranno inviati altri SMS fino a fine mese.',
         'support_grant_summary' => ':count autorizzazione/i di supporto attiva/e — verificare ed eventualmente revocare.',
     ],
     'filter' => [

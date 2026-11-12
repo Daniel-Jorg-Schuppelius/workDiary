@@ -276,9 +276,51 @@ class ClubExamTest extends TestCase {
         $pdf = $this->actingAs($this->admin)->get(route('club.members.grades.certificate', [$member, $awarded]));
         $pdf->assertOk()->assertHeader('content-type', 'application/pdf');
         $this->assertStringStartsWith('%PDF', (string) $pdf->getContent());
+        // Vor der Ergebnisfreigabe bekommt das Mitglied keine Bescheinigung (MVP-1616).
+        $this->actingAs($self)->get(route('club.my.certificate', $awarded))->assertNotFound();
+        $this->actingAs($this->admin)->post(route('club.exams.release', $offer))->assertRedirect(route('club.exams.show', $offer));
         $this->actingAs($self)->get(route('club.my.certificate', $awarded))->assertOk()->assertHeader('content-type', 'application/pdf');
         $this->actingAs($this->orgUser())->get(route('club.my.certificate', $awarded))->assertForbidden();
         $this->actingAs($self)->get(route('club.exams.index'))->assertForbidden();
+    }
+
+    /** MVP-1616: Ergebnisse bleiben bis zur Freigabe verborgen; die Freigabe friert die Prüfung ein. */
+    public function test_results_stay_hidden_until_released_and_release_freezes_the_offer(): void {
+        $self = $this->orgUser();
+        $member = $this->member();
+        app(ClubMemberService::class)->update($member, ['user_id' => $self->id]);
+        $other = $this->member();
+        foreach ([$member, $other] as $person) {
+            $this->training($person, '2026-05-01 18:00', 90);
+            $this->training($person, '2026-05-08 18:00', 90);
+        }
+        // Prüfung liegt zurück: der Grad gilt ab dem Prüfungstag und wäre ohne Freigabe schon sichtbar.
+        $offer = $this->offer(CarbonImmutable::now('Europe/Berlin')->subDays(2)->setTime(10, 0));
+        $candidate = $this->exams()->admit($this->exams()->addCandidate($offer, $member, $this->yellow, $this->admin), $this->admin);
+        $pending = $this->exams()->admit($this->exams()->addCandidate($offer, $other, $this->yellow, $this->admin), $this->admin);
+        $this->exams()->recordResult($candidate, ClubExamCandidateStatus::Passed, $this->admin);
+
+        $page = $this->actingAs($self)->get(route('club.my.index'))->assertOk();
+        $this->assertSame('Weiß', $page->viewData('grading')->first()['current']?->grade?->name, 'Der neue Grad erscheint erst nach der Freigabe.');
+
+        // Offene Zulassung ohne Ergebnis verhindert die Freigabe.
+        $this->actingAs($this->admin)->from(route('club.exams.show', $offer))->post(route('club.exams.release', $offer))->assertSessionHasErrors('results');
+        $this->assertNull($offer->refresh()->results_released_at);
+        $this->exams()->recordResult($pending, ClubExamCandidateStatus::NoShow, $this->admin);
+        $records = $candidate->usedRecords()->pluck('club_attendance_records.id')->all();
+
+        $this->actingAs($this->admin)->post(route('club.exams.release', $offer))->assertSessionHasNoErrors();
+        $this->assertNotNull($offer->refresh()->results_released_at);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'club.exam.resultsReleased', 'auditable_id' => $offer->id]);
+
+        $page = $this->actingAs($self)->get(route('club.my.index'))->assertOk();
+        $this->assertSame('Gelb', $page->viewData('grading')->first()['current']?->grade?->name);
+
+        // Eingefroren: keine neuen Kandidaten, kein Neuschreiben der Nachweise.
+        $this->exams()->check($candidate->refresh());
+        $this->assertSame($records, $candidate->usedRecords()->pluck('club_attendance_records.id')->all());
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->exams()->addCandidate($offer, $this->member(), $this->yellow, $this->admin);
     }
 
     /** Die Liste sortiert in der Datenbank nach Terminbeginn, nicht nach Anlagereihenfolge — auch über Seiten hinweg. */

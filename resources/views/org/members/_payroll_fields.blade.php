@@ -151,3 +151,17 @@
         </div>
     @endif
 </x-form-group>
+
+{{-- Verrechnungs- und Kostensatz (MVP-1565): nur mit dem Lohnrecht sichtbar, nie im eigenen Profil. --}}
+@if ($canManagePayroll)
+    <x-form-group :legend="__('user.rates.legend')" icon="price_change" tone="warning" cols="2" :description="__('user.rates.hint')">
+        <x-input-field name="hourly_rate" id="member-hourly-rate" type="number" step="0.01" min="0" max="99999.99"
+                       :label="__('user.rates.hourly_rate')"
+                       :value="old('hourly_rate', $member?->hourly_rate?->getAmount())"
+                       :hint="__('user.rates.hourly_rate_hint')" />
+        <x-input-field name="internal_rate" id="member-internal-rate" type="number" step="0.01" min="0" max="99999.99"
+                       :label="__('user.rates.internal_rate')"
+                       :value="old('internal_rate', $member?->internal_rate?->getAmount())"
+                       :hint="__('user.rates.internal_rate_hint')" />
+    </x-form-group>
+@endif

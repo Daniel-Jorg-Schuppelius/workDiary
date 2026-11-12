@@ -1,7 +1,7 @@
 ---
 title: "Designer di procedure"
 topic: procedures.designer
-version: 3
+version: 4
 keywords:
     - istruzione operativa
     - creare checklist
@@ -55,10 +55,51 @@ controllo)» o «Attesa». Inoltre sono configurabili:
 - **Condizione: passo** e **Condizione: valore** (se-allora): il passo
   diventa rilevante solo se un altro passo ha un determinato valore.
 
+## Configurazione per tipo di passaggio
+
+A seconda del **Tipo**, un passo mostra altri campi:
+
+- «Scelta»: **Opzioni di scelta**, separate da virgole. Senza opzioni il
+  passo accetta testo libero durante l'esecuzione.
+- «Numero/misurazione» e «Serie di misurazioni»: **Unità**, **Limite inferiore** e
+  **Limite superiore** (tolleranza).
+- «Attesa»: **Tempo di attesa fisso (secondi)**; se vuoto, la
+  durata viene inserita durante l'esecuzione.
+- «Registrazione di backup»: **Ambito**, **Archiviazione**, **Metodo di
+  verifica**, **Dimensione minima (KB)** ed **Età massima del backup
+  (minuti)**. «Scelto durante l'esecuzione» lascia l'indicazione alla
+  persona esecutrice.
+- Ogni altro passo: **Backup preliminare necessario** lo blocca finché un
+  passo di backup della stessa esecuzione non è completato e la sua prova
+  confermata, se desiderato con un'età massima.
+- Passi a quattro occhi: **Ruolo della seconda persona**, **Qualifica
+  della seconda persona** e **La persona esecutrice può controfirmare da
+  sé** (di norma disattivato).
+
+**Qualifica** indica la sigla di una qualifica dei dipendenti o, in
+mancanza, il suo nome; si verifica se la persona la possiede oggi in corso
+di validità. La **Libreria dei passaggi** offre gli stessi campi in
+**Configurazione per tipo di passaggio**. Le indicazioni provenienti da
+profili di settore o importazioni che il designer non mostra restano
+conservate al salvataggio.
+
+Il livello di rischio «Critica» richiede almeno un passo a quattro occhi:
+senza di esso la versione non può essere pubblicata, e un'esecuzione si
+conclude solo con un'approvazione a quattro occhi completata.
+
 ## Assegnazione automatica
 
-Tramite **Tipi di commessa** e **Tag** Lei stabilisce per quali commesse
-il modello viene proposto automaticamente. Nella pagina di dettaglio
-della commessa i modelli pubblicati corrispondenti compaiono nella scheda
-**Procedure** sotto «Procedure suggerite per questa commessa:» come
-pulsante di avvio.
+Un modello viene proposto quando **tutti** i criteri impostati
+corrispondono: **Tipi di commessa**, **Tag**, **Clienti**, **Categorie di
+asset**, **Prodotti** e **Contratti SLA**. Categoria, prodotto e SLA si
+riferiscono all'asset della commessa. Senza criteri il modello vale per
+ogni commessa.
+
+- Nella pagina di dettaglio della commessa i modelli pubblicati
+  corrispondenti compaiono nella scheda **Procedure** sotto «Procedure
+  suggerite per questa commessa:» come pulsante di avvio.
+- Se il modello indica una categoria di asset, un prodotto o un contratto
+  SLA, viene proposto anche nella scheda dell'asset sotto «Procedure
+  previste per questo asset:».
+- **Può essere eseguita su asset bloccati** consente l'avvio su un asset
+  bloccato, ad esempio per le procedure di riparazione e verifica.

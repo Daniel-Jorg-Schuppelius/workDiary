@@ -143,7 +143,6 @@ return [
     'app/Services/ServiceTicket/ChangeService.php::implement',
     'app/Services/ServiceTicket/ProblemService.php::transition',
     'app/Services/ServiceTicket/ServiceRequestService.php::fulfill',
-    'app/Services/ServiceTicket/ServiceTicketService.php::transition',
     'app/Services/Supplier/SupplierQuestionnaireService.php::review',
     'app/Services/Supplier/SupplierQuestionnaireService.php::submit',
     'app/Services/Sustainability/SustainabilityAssessmentService.php::finalize',

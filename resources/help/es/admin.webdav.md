@@ -1,7 +1,7 @@
 ---
 title: "Almacenamiento WebDAV"
 topic: admin.webdav
-version: 3
+version: 4
 keywords:
     - WebDAV
     - Nextcloud
@@ -167,3 +167,5 @@ guarde.
   **Contenido reflejado** no estaba marcada al emitirlas o firmarlas.
 - Un documento ya no se actualiza: hay un conflicto abierto en la bandeja, o
   se desvinculó su copia.
+
+**La activación recupera:** al activar el almacenamiento, WorkDiary pone en cola de inmediato todos los objetos publicados hasta ahora, también los publicados mientras no había almacenamiento activo. La copia no necesita programación; «Copiar ahora» sigue disponible si desea recuperar usted mismo.

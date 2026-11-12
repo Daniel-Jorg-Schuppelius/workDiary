@@ -1,7 +1,7 @@
 ---
 title: "CalDAV calendar"
 topic: admin.caldav
-version: 3
+version: 4
 keywords:
     - CalDAV
     - Nextcloud calendar
@@ -151,3 +151,5 @@ there.
   incomplete.
 - Rosters are missing in the calendar: **Rosters & leave** is not ticked under
   **Published content**, or the shifts have not been published yet.
+
+**Data ownership:** Appointments from this calendar belong to the calendar area. If another system leads the calendar, proposals, series and changes appear in the integration inbox as a “Data ownership” case; **Take over once** creates the appointment or the series. Deletion notices remain ordinary cases.

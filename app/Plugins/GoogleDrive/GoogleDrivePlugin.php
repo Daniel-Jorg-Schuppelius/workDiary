@@ -18,7 +18,7 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{BackupTarget, DocumentIntakeSource, DocumentIntakeSubscriptions, Plugin, PluginCapability};
 use App\Plugins\GoogleDrive\Api\{GoogleDriveBackupClient, GoogleDriveClient};
 use App\Plugins\Support\Backup\BackupAccount;
-use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
+use App\Plugins\Support\Intake\{IntakeChangePage, IntakeItem};
 use App\Plugins\Support\PluginOrgContext;
 use App\Support\Ui\UiAction;
 use Psr\Http\Message\StreamInterface;
@@ -31,7 +31,7 @@ use Throwable;
  * Produktiver öffentlicher Rollout bleibt bis zur Google-OAuth-Verifikation
  * blockiert (P10/Welle C).
  */
-class GoogleDrivePlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\IntakeSourceConnector, BackupTarget, DocumentIntakeSource, DocumentIntakeSubscriptions {
+class GoogleDrivePlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\IntakeSourceConnector, \App\Plugins\Contracts\WritesDataDomains, BackupTarget, DocumentIntakeSource, DocumentIntakeSubscriptions {
     public const string ID = 'google-drive';
 
     /** Von der Plugin-Discovery VOR der Instanziierung registriert. */
@@ -57,10 +57,6 @@ class GoogleDrivePlugin extends AbstractPlugin implements \App\Plugins\Contracts
     }
 
     // ── DocumentIntakeSource ────────────────────────────────────────────
-
-    public function intakeAccount(CloudDocumentConnection $connection): IntakeAccount {
-        return (new GoogleDriveClient($connection))->account();
-    }
 
     public function intakeContainers(CloudDocumentConnection $connection, ?string $search = null): array {
         return (new GoogleDriveClient($connection))->containers(); // Shared-Drive-Suche: bei Bedarf nachrüstbar
@@ -181,7 +177,14 @@ class GoogleDrivePlugin extends AbstractPlugin implements \App\Plugins\Contracts
         return new UiAction('sync', (string) __('backup_targets.reconnect'), route('admin.backup-targets.google.oauth.start', ['connection' => $connection->sqid]), post: true);
     }
 
-    public function intakeConnectAction(): UiAction {
-        return new UiAction('add', (string) __('google-drive::cloud_intake.action.connect_google'), route('admin.cloud-intake.google.oauth.start'), post: true);
+    public function intakeConnectAction(?CloudDocumentConnection $connection = null): UiAction {
+        return $connection !== null
+            ? new UiAction('sync', (string) __('cloud_intake.action.reconnect'), route('admin.cloud-intake.google.oauth.start', ['connection' => $connection->sqid]), post: true)
+            : new UiAction('add', (string) __('google-drive::cloud_intake.action.connect_google'), route('admin.cloud-intake.google.oauth.start'), post: true);
+    }
+
+    /** Datenführerschaft (MVP-1592): Cloud-Dokumenteingang legt DMS-Dokumente an. */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Documents];
     }
 }

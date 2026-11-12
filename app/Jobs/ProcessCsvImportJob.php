@@ -18,8 +18,8 @@ use App\Models\Integration\{ImportRun, ImportRunError};
 use App\Models\Platform\User;
 use App\Modules\Attributes\BelongsToModule;
 use App\Plugins\Support\TimeWritebackObserver;
+use App\Services\Import\{ColumnAccess, CsvPreflightAnalyzer, EntitySpecRegistry, ImportOutcome};
 use App\Services\Import\Contracts\ProvidesZipImport;
-use App\Services\Import\{CsvPreflightAnalyzer, EntitySpecRegistry, ImportOutcome};
 use App\Services\Import\Source\ImportSourceFactory;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
@@ -147,6 +147,8 @@ class ProcessCsvImportJob implements ShouldQueue {
                 // (Ganztags/OOF/Serie) werden als übersprungen gezählt und im Bericht
                 // sichtbar gemacht; Datenzeilen laufen chunkweise durch den Upsert.
                 $source = $sources->make($path, $run->entity, $organization, $run->delimiter ?: null, (array) ($run->source_options ?? []));
+                // Spalten ohne das Recht der Person übergeht der Lauf; den Hinweis schrieb die Vorprüfung (MVP-1625).
+                $denied = array_flip(ColumnAccess::denied($spec, User::query()->find($run->created_by_user_id)));
 
                 $chunk = [];
                 foreach ($source->rows($spec) as $sourceRow) {
@@ -165,7 +167,7 @@ class ProcessCsvImportJob implements ShouldQueue {
                         continue;
                     }
 
-                    $mapped = $sourceRow->data;
+                    $mapped = array_diff_key($sourceRow->data, $denied);
                     $chunk[] = ['row' => $sourceRow->number, 'raw' => $mapped, 'norm' => $spec->normalize($mapped)];
 
                     if (count($chunk) >= self::CHUNK) {

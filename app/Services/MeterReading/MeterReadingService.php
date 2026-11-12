@@ -54,7 +54,6 @@ class MeterReadingService {
             'previous_value' => $previousValue !== null ? NumberHelper::toUSFormat($previousValue, 4) : null,
             'consumption' => $consumption !== null ? NumberHelper::toUSFormat($consumption, 4) : null,
             'read_by_user_id' => $actor?->id,
-            'photo_path' => $payload['photo_path'] ?? null,
             'notes' => $payload['notes'] ?? null,
             'is_estimated' => (bool) ($payload['is_estimated'] ?? false),
         ]);
@@ -71,13 +70,6 @@ class MeterReadingService {
         ]);
 
         return $reading->refresh();
-    }
-
-    public function latestForAsset(Asset $asset): ?MeterReading {
-        return MeterReading::query()
-            ->where('asset_id', $asset->id)
-            ->orderByDesc('read_at')
-            ->first();
     }
 
     private function parseDecimal(mixed $value, string $field): float {

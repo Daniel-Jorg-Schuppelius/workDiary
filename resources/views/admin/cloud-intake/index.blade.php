@@ -50,6 +50,38 @@
                     </div>
                 </div>
 
+                {{-- Erstlauf erst nach bestätigter Vorschau (Feature 080 §Vorschau und Erstabgleich, MVP-1613). --}}
+                @if ($connection->start_confirmed_at === null)
+                    @php $preview = $previews[$connection->id] ?? null; @endphp
+                    <div role="note" class="alert alert-info text-sm">
+                        <x-icon name="preview" />
+                        <div class="min-w-0 flex-1">
+                            <p>{{ __('cloud_intake.start.pending') }}</p>
+                            @if (is_array($preview))
+                                <p class="mt-1 text-muted">{{ __('cloud_intake.flash.preview_result', array_intersect_key($preview, array_flip(['files', 'matched', 'unmatched', 'size', 'more']))) }}</p>
+                            @endif
+                        </div>
+                        @if (is_array($preview) && ($canManage ?? false))
+                            <x-action-form :action="route('admin.cloud-intake.confirm-start', $connection)"
+                                           :confirm="__('cloud_intake.start.confirm')"
+                                           :confirm-label="__('cloud_intake.start.action')">
+                                <x-icon-btn icon="play_arrow" tone="primary" size="xs" type="submit" show-label>{{ __('cloud_intake.start.action') }}</x-icon-btn>
+                            </x-action-form>
+                        @endif
+                    </div>
+                @endif
+
+                @if ($connection->status->needsReconnect())
+                    {{-- Abgelaufen, blockiert oder abgeschaltet: zurück nur über die erneute Anmeldung (MVP-1620). --}}
+                    <div role="alert" class="alert alert-error text-sm">
+                        <x-icon name="lock_reset" />
+                        <span class="min-w-0 flex-1">{{ __('cloud_intake.status_hint.' . $connection->status->value) }}</span>
+                        @if (($canManage ?? false) && isset($reconnectActions[$connection->id]))
+                            <x-ui-action :action="$reconnectActions[$connection->id]" size="xs" show-label />
+                        @endif
+                    </div>
+                @endif
+
                 @if ($connection->last_error)
                     <div role="alert" class="alert alert-warning text-sm">
                         <x-icon name="warning" />
@@ -143,6 +175,7 @@
                                 <th class="text-right">{{ __('cloud_intake.route.priority') }}</th>
                                 <th>{{ __('cloud_intake.route.pattern') }}</th>
                                 <th>{{ __('cloud_intake.route.target') }}</th>
+                                <th>{{ __('cloud_intake.route.test_path') }}</th>
                                 <th>{{ __('cloud_intake.route.active') }}</th>
                                 <th></th>
                             </tr>
@@ -151,7 +184,13 @@
                             <tr>
                                 <td class="text-right tabular-nums">{{ $route->priority }}</td>
                                 <td class="font-mono text-sm">{{ $route->path_pattern }}</td>
-                                <td>{{ $route->target->label() }}</td>
+                                <td>
+                                    {{ $route->target->label() }}
+                                    @if (isset($targetLabels[$route->id]))
+                                        <span class="block text-xs text-muted">{{ $targetLabels[$route->id] }}</span>
+                                    @endif
+                                </td>
+                                <td class="font-mono text-xs">{{ $route->test_path ?? '—' }}</td>
                                 <td>
                                     <x-status-badge size="xs" :tone="$route->active ? 'success' : 'ghost'">
                                         {{ $route->active ? __('cloud_intake.route.active') : __('cloud_intake.route.inactive') }}

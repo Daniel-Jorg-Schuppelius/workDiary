@@ -63,6 +63,20 @@ class ProjectsTest extends TestCase {
         ]);
     }
 
+    /** MVP-1619 (G-07): Projektfarbe im Dialog wählbar. */
+    public function test_project_color_is_offered_in_dialog_and_saved(): void {
+        $user = User::factory()->user()->create();
+
+        $this->actingAs($user)->get(route('projects.create'))->assertOk()->assertSee('name="color"', false);
+        $this->actingAs($user)->post(route('projects.store'), [
+            'name' => 'Farbiges Projekt',
+            'status' => ProjectStatus::Active->value,
+            'color' => '#22c55e',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('projects', ['name' => 'Farbiges Projekt', 'color' => '#22c55e']);
+    }
+
     /**
      * Abrechenbar-Schalter (Tri-State): '0'/'1' setzen die Spalte, leere
      * Auswahl („Erben") setzt sie auf null zurück.

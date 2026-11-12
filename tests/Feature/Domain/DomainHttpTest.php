@@ -245,6 +245,69 @@ class DomainHttpTest extends TestCase {
         $this->assertDatabaseHas('domain_provider_commands', ['command' => 'RenewDomain', 'target' => 'laufzeit.de', 'status' => 'confirmed']);
     }
 
+    /** Handbuch 2.3.2.10: der Modus geht über `SetDomainRenewalMode`, nicht über `ModifyDomain` (MVP-1619). */
+    public function test_renewal_mode_is_sent_with_the_documented_command(): void {
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $domain = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_domain' => 'laufzeit.de',
+            'domain_hash' => DomainProjection::hashFor('laufzeit.de'),
+            'renewal_mode' => 'AUTORENEW',
+        ]);
+        $this->admin->givePermissionTo(Permission::DomainRenewalManage->value);
+
+        $sent = [];
+        FakeDomainResellingTransport::fake([
+            'SetDomainRenewalMode' => function (array $params) use (&$sent): string {
+                $sent = $params;
+
+                return "code=200\ndescription=ok\nEOF\n";
+            },
+            'ModifyDomain' => "code=541\ndescription=unexpected command\nEOF\n",
+        ]);
+
+        $this->actingAs($this->admin)->from(route('domains.show', $domain))
+            ->post(route('domains.renewal-mode', $domain), ['renewal_mode' => 'AUTOEXPIRE'])
+            ->assertRedirect(route('domains.show', $domain));
+
+        $this->assertSame('laufzeit.de', $sent['domain'] ?? null);
+        $this->assertSame('AUTOEXPIRE', $sent['renewalmode'] ?? null);
+        $this->assertDatabaseHas('domain_provider_commands', ['command' => 'SetDomainRenewalMode', 'target' => 'laufzeit.de', 'status' => 'confirmed']);
+        $this->assertSame('AUTOEXPIRE', $domain->fresh()?->renewal_mode?->value);
+    }
+
+    /** MVP-1625: Setzbar sind nur die drei Modi des Handbuchs; `RENEWONCE` erreicht den Anbieter nicht mehr. */
+    public function test_undocumented_renewal_mode_is_rejected_before_the_provider_call(): void {
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $domain = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_domain' => 'einmal.de',
+            'domain_hash' => DomainProjection::hashFor('einmal.de'),
+            'renewal_mode' => 'AUTORENEW',
+        ]);
+        $this->admin->givePermissionTo(Permission::DomainRenewalManage->value);
+        FakeDomainResellingTransport::fake([]);
+
+        $this->actingAs($this->admin)->from(route('domains.show', $domain))
+            ->post(route('domains.renewal-mode', $domain), ['renewal_mode' => 'RENEWONCE'])
+            ->assertSessionHasErrors('renewal_mode');
+
+        $this->assertDatabaseMissing('domain_provider_commands', ['target' => 'einmal.de']);
+        $this->actingAs($this->admin)->get(route('domains.show', $domain))->assertOk()->assertDontSee('value="RENEWONCE"', false);
+    }
+
+    /** MVP-1625: Ein gespeichertes `RENEWONCE` wäre beim Lesen ein ungültiger Enum-Wert — die Migration macht es unbekannt. */
+    public function test_migration_clears_stored_undocumented_renewal_mode(): void {
+        $domain = DomainProjection::factory()->create(['organization_id' => $this->organization->id, 'renewal_mode' => 'AUTORENEW']);
+        \Illuminate\Support\Facades\DB::table('domain_projections')->where('id', $domain->id)->update(['renewal_mode' => 'RENEWONCE']);
+
+        (require database_path('migrations/2027_04_17_320000_clear_undocumented_domain_renewal_mode.php'))->up();
+
+        $this->assertNull($domain->fresh()?->renewal_mode);
+    }
+
     /**
      * Zone ersetzen geht nur vom gelesenen Stand aus: Der Dialog ist mit den
      * Einträgen der Zone vorbelegt, ohne gelesene Zone gibt es ihn nicht.

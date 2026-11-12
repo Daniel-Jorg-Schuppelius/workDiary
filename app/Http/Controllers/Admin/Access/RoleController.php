@@ -16,7 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\Organization;
 use App\Services\Whistleblowing\WhistleblowingPermissions;
-use App\Support\MorphMap;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Support\Str;
@@ -58,12 +58,15 @@ class RoleController extends Controller {
         ]);
     }
 
-    public function create(): View {
+    public function create(Request $request): View {
         Gate::authorize('manage-access');
+
+        $source = $this->organizationRole(Sqid::decodeOrNumeric(Role::class, $request->string('copy')->toString()));
 
         return view('admin.access.roles._form_dialog', [
             'role' => new Role,
-            'assigned' => [],
+            'assigned' => $source?->permissions()->pluck('name')->all() ?? [],
+            'copySource' => $source,
             'permissions' => PermissionEnum::grouped(),
         ]);
     }
@@ -78,7 +81,9 @@ class RoleController extends Controller {
             'name' => ['required', 'string', 'max:80', 'regex:/^[a-z0-9._-]+$/'],
             'permissions' => ['array'],
             'permissions.*' => ['string'],
+            'copied_from' => ['nullable', 'string', 'max:32'],
         ]);
+        $source = $this->organizationRole(Sqid::decodeOrNumeric(Role::class, $data['copied_from'] ?? null));
 
         $slug = Str::lower($data['name']);
 
@@ -102,10 +107,11 @@ class RoleController extends Controller {
         $role->syncPermissions($permissions);
 
         $this->logRoleChange($organization, $role, 'created', [
-            'after' => [
+            'after' => array_filter([
                 'name' => $role->name,
                 'permissions' => $permissions,
-            ],
+                'copied_from' => $source?->name,
+            ], static fn (mixed $value): bool => $value !== null),
         ], $request);
 
         return redirect()->route('admin.access.roles.index')
@@ -212,6 +218,18 @@ class RoleController extends Controller {
             'ip' => $request->ip(),
             'user_agent' => substr((string) $request->userAgent(), 0, 255),
         ]);
+    }
+
+    /** Vorlage zum Kopieren: nur Rollen der eigenen Organisation, nie die globalen Zeilen. */
+    private function organizationRole(?int $roleId): ?Role {
+        if ($roleId === null) {
+            return null;
+        }
+
+        return Role::query()
+            ->where((string) config('permission.column_names.team_foreign_key', 'team_id'), $this->currentOrganization()->id)
+            ->whereKey($roleId)
+            ->first();
     }
 
     private function ensureEditable(Role $role): void {

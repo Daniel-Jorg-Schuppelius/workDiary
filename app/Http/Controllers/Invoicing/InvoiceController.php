@@ -316,6 +316,11 @@ class InvoiceController extends Controller {
     public function approve(Invoice $invoice): RedirectResponse {
         Gate::authorize('issue', $invoice);
         abort_unless($invoice->status === InvoiceStatus::Draft, 422);
+        // Mit Freigabezwang ist die Freigabe das zweite Augenpaar: nicht durch den Ersteller (MVP-1562).
+        if ((string) data_get($invoice->organization?->settings, 'invoicing.require_approval', '0') === '1'
+            && (int) $invoice->created_by === (int) Auth::id()) {
+            return back()->with('error', __('invoicing.approval.self'));
+        }
 
         $invoice->update(['approved_at' => now(), 'approved_by' => (int) Auth::id()]);
         $invoice->audit('invoice.approved', ['by' => (int) Auth::id()]);
@@ -903,9 +908,18 @@ class InvoiceController extends Controller {
     }
 
     private function refreshTotals(Invoice $invoice): void {
-        $invoice->load('items');
+        $invoice->load(['items', 'customer', 'organization']);
+        // Der Steuerfall folgt den aktuellen Kundendaten, solange der Beleg Entwurf ist (MVP-1623).
+        $this->flashTaxCaseAlignment(app(\App\Services\Invoicing\InvoiceIssueService::class)->alignTaxCase($invoice));
         $invoice->recalculate();
         $invoice->save();
+    }
+
+    /** Ein von Hand geänderter Hinweistext bleibt beim Steuerfallwechsel stehen — die Person prüft ihn selbst. */
+    private function flashTaxCaseAlignment(\App\Enums\Invoicing\TaxCaseAlignment $alignment): void {
+        if ($alignment === \App\Enums\Invoicing\TaxCaseAlignment::NoteKept) {
+            session()->flash('warning', (string) __('invoicing.tax_case.note_kept'));
+        }
     }
 
     /** MVP-416: Rabatt-/Skonto-Konditionen des Entwurfs (Dialog). */
@@ -936,7 +950,8 @@ class InvoiceController extends Controller {
             'skonto_days' => $data['skonto_days'] ?? null,
             'is_labour_cost_disclosed' => isset($data['labour_cost_disclosure']) ? $data['labour_cost_disclosure'] === '1' : null,
         ]);
-        $invoice->load('items');
+        $invoice->load(['items', 'customer', 'organization']);
+        $this->flashTaxCaseAlignment(app(\App\Services\Invoicing\InvoiceIssueService::class)->alignTaxCase($invoice));
         $invoice->recalculate();
         $invoice->save();
 

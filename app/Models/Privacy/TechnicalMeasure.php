@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Privacy;
 
-use App\Enums\Privacy\{ImplementationStatus, MeasureCategory};
+use App\Enums\Privacy\{ImplementationStatus, MeasureCategory, ProtectionLevel};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -51,6 +51,7 @@ class TechnicalMeasure extends Model {
     protected $casts = [
         'category' => MeasureCategory::class,
         'implementation_status' => ImplementationStatus::class,
+        'protection_level' => ProtectionLevel::class,
         'valid_from' => 'date',
         'valid_until' => 'date',
         'next_review_at' => 'date',

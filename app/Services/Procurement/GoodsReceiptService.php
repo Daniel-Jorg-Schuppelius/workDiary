@@ -17,7 +17,7 @@ use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\{StockMovement, Warehouse};
 use App\Models\Platform\Organization;
 use App\Models\Procurement\{PurchaseOrder, PurchaseOrderLine};
-use App\Services\Inventory\{InventoryLedger, InventoryValuationManager};
+use App\Services\Inventory\{EnteredQuantity, InventoryLedger, InventoryValuationManager};
 use App\Support\DecimalQty;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -25,7 +25,7 @@ use RuntimeException;
 /**
  * Wareneingang gegen eine Bestellung (Feature 048, E4). Bucht die gelieferte
  * Menge bewertet in das Bestell-Lager und schreibt `received_qty` der Bestellzeile
- * fort. Teil- und Überlieferung sind zulässig; der Bestellstatus wird daraus neu
+ * fort — in der Einheit der Zeile, das Lager führt die Basiseinheit (MVP-1584). Teil- und Überlieferung sind zulässig; der Bestellstatus wird daraus neu
  * abgeleitet (teilweise/vollständig geliefert).
  */
 class GoodsReceiptService {
@@ -64,19 +64,30 @@ class GoodsReceiptService {
         if (($article->batch_required ?? false) && trim((string) $lotNo) === '') {
             throw new RuntimeException((string) __('inventory.error.batch_required'));
         }
+        // MHD-Pflicht (MVP-1579): das Datum hängt an der Charge, ohne Charge gibt es keins.
+        if (($article->shelf_life_required ?? false) && trim((string) $lotNo) === '') {
+            throw new RuntimeException((string) __('inventory.error.shelf_life_required'));
+        }
         if (($article->serial_required ?? false)) {
             if (trim((string) $serialNo) === '') {
                 throw new RuntimeException((string) __('inventory.error.serial_required'));
             }
-            if (bccomp($qty, '1', self::SCALE) !== 0) {
-                throw new RuntimeException((string) __('inventory.error.serial_qty_one'));
-            }
         }
 
-        $cost = $unitCost ?? $line->unit_price?->getAmount() ?? '0';
+        // MVP-1584: Menge und Preis stehen in der Einheit der Bestellzeile; gebucht und bewertet wird in
+        // Basiseinheit. Eine Zeileneinheit ohne gepflegte Umrechnung (Altbestand, Freitext) gilt als Basiseinheit.
+        $lineUnit = trim((string) $line->unit);
+        $convertible = $lineUnit !== '' && ($article?->units()->where('code', $lineUnit)->where('active', true)->exists() ?? false);
+        $entered = EnteredQuantity::of($variant, $qty, $convertible ? $lineUnit : null);
+        $baseQty = $entered->base;
+        if (($article->serial_required ?? false) && bccomp($baseQty, '1', self::SCALE) !== 0) {
+            throw new RuntimeException((string) __('inventory.error.serial_qty_one'));
+        }
+
+        $cost = $entered->unitCostInBase($unitCost ?? $line->unit_price?->getAmount() ?? '0');
         $organization = Organization::query()->find($order->organization_id);
 
-        return DB::transaction(function () use ($line, $order, $variant, $warehouse, $qty, $cost, $organization, $actorUserId, $lotNo, $bestBefore, $serialNo): StockMovement {
+        return DB::transaction(function () use ($line, $order, $variant, $warehouse, $qty, $baseQty, $entered, $cost, $organization, $actorUserId, $lotNo, $bestBefore, $serialNo): StockMovement {
             // Bestellzeile gesperrt neu laden: paralleler Wareneingang gegen dieselbe
             // Zeile darf das read-modify-write von received_qty nicht überschreiben.
             $line = PurchaseOrderLine::query()->lockForUpdate()->find($line->id) ?? $line;
@@ -85,11 +96,15 @@ class GoodsReceiptService {
                 // Chargen-Eingang über die FEFO-Schicht (M19): Lot anlegen/finden
                 // und bewertet in die Charge buchen — statt anonymem Bestand.
                 $lot = $this->lots->register($variant, (string) $lotNo, $bestBefore);
-                $movement = $this->lots->receiveIntoLot($variant, $warehouse, $qty, (string) $cost, $lot, $line->currency->value, $actorUserId);
+                // Eine schon bekannte Charge bringt ihr Datum mit.
+                if (($variant->article->shelf_life_required ?? false) && $lot->best_before === null) {
+                    throw new RuntimeException((string) __('inventory.error.shelf_life_required'));
+                }
+                $movement = $this->lots->receiveIntoLot($variant, $warehouse, $baseQty, $cost, $lot, $line->currency->value, $actorUserId, $entered);
             } else {
                 $movement = $organization instanceof Organization
-                    ? $this->valuation->forVariant($variant, $organization)->receipt($variant, $warehouse, $qty, (string) $cost, $line->currency->value, $actorUserId, $line)
-                    : $this->ledger->finishedGoodReceipt($variant, $warehouse, $qty);
+                    ? $this->valuation->forVariant($variant, $organization)->receipt($variant, $warehouse, $baseQty, $cost, $line->currency->value, $actorUserId, $line, $entered)
+                    : $this->ledger->finishedGoodReceipt($variant, $warehouse, $baseQty);
             }
 
             if (trim((string) $serialNo) !== '') {

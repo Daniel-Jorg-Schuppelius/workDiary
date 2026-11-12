@@ -23,4 +23,5 @@ Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class
     ->group(static function (): void {
         Route::get('/', [BillbeeAdminController::class, 'index'])->name('index');
         Route::post('sync', [BillbeeAdminController::class, 'syncNow'])->name('sync');
+        Route::post('bestandsfuehrung', [BillbeeAdminController::class, 'updateMode'])->name('mode.update');
     });

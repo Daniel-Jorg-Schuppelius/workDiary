@@ -146,11 +146,13 @@ class IntegrityLockdownService {
     }
 
     /**
-     * Entsperrung nach neuer gültiger Baseline oder manuellem Eingriff.
-     * Idempotent; auditiert. Liefert false, wenn nichts zu tun war.
+     * Entsperrung nach neuer gültiger Baseline (aus {@see CodeIntegrityService::freeze()})
+     * oder durch den Plattformbetrieb (`integrity:release`, Knopf auf der
+     * Integritätsseite). Idempotent; auditiert. Ein Wartungsmodus aus anderem
+     * Anlass (Deploy) bleibt unberührt. Liefert false, wenn nichts zu tun war.
      */
     public function release(?User $actor = null, string $reason = 'manual'): bool {
-        if (! $this->isDown()) {
+        if (! $this->isDown() || ! $this->engaged()) {
             return false;
         }
 
@@ -170,6 +172,15 @@ class IntegrityLockdownService {
 
     public function isDown(): bool {
         return app()->isDownForMaintenance();
+    }
+
+    /** Stammt die Sperre vom Lockdown? Der jüngste Lockdown-Eintrag der Audit-Kette entscheidet. */
+    public function engaged(): bool {
+        return AuditLog::query()
+            ->withoutGlobalScopes()
+            ->whereIn('event', ['integrity.lockdown_engaged', 'integrity.lockdown_released'])
+            ->orderByDesc('id')
+            ->value('event') === 'integrity.lockdown_engaged';
     }
 
     /** Gegenstück zu {@see engageMaintenance()} — ebenfalls Test-Naht. */

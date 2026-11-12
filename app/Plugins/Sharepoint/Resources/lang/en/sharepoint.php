@@ -99,6 +99,7 @@ return [
         'drive_invalid' => 'The chosen document library does not belong to the chosen site.',
         'target_saved' => 'Target library saved.',
         'saved' => 'SharePoint settings saved.',
+        'saved_and_mirrored' => 'SharePoint settings saved and activated — all objects released so far are queued for mirroring.',
         'mirror_done' => 'Mirror run started.',
     ],
 ];

@@ -1,7 +1,7 @@
 ---
 title: "Operations: time allocation, procedures, material, on-call"
 topic: reports.operations
-version: 6
+version: 8
 keywords:
     - operations report
     - service orders
@@ -137,6 +137,9 @@ only** or **Open only**) and **Follow-up action** (**With open
 issue/follow-up order** or **Without follow-up**). Export as PDF, CSV and
 Excel; CSV and Excel additionally contain the proposed action and the reason.
 
+The risk itself is accepted in the procedure run on the deviation (**Accept
+risk**, permission “Accept critical deviation”).
+
 ## Blocked procedure runs
 
 **Reports** → **Projects & customers** → **Blocked procedure runs** shows runs
@@ -207,13 +210,15 @@ appears for administrators and with the **View reports** permission.
   **Open issues** (currently open, regardless of the period), **Escalated**
   (open issues with the status **Blocked**), **Defects** (defect reports of
   these orders in the period), **Defect rate %** (defects in relation to the
-  orders) and **Last incident**.
+  orders), **Repeat defects** (assets of the row with at least three defect
+  reports in the twelve months up to the end of the period, at least one of
+  them in the period) and **Last incident**.
 - If there are time entries from remote support sessions for the devices in
   the period, **Maintenance sessions** and **Maintenance time** are added,
   together with a chart of the maintenance time.
 - Charts: **Defects in the period (top 20)** and **Defect rate (top 15)**. The
-  numbers for open issues, escalations and defects as well as the bars lead to
-  the corresponding detail lists.
+  numbers for open issues, escalations, defects and repeat defects as well as
+  the bars lead to the corresponding detail lists.
 
 Export as PDF, CSV and Excel.
 

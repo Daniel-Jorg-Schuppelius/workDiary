@@ -14,16 +14,19 @@ namespace App\Services\Travel\Demo;
 
 use App\Enums\Expense\PaymentMethod;
 use App\Enums\Travel\{TravelLogVehicle, TripKind};
+use App\Models\Attachments\Attachment;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
 use App\Models\Travel\{Expense, ExpenseCategory, PerDiemDay, PerDiemTrip, TravelLog};
+use App\Services\Attachments\FileAttacher;
 use App\Services\Demo\Contracts\{DemoBlock, DemoSeedContext};
 use App\Services\Expense\{ExpenseService, PerDiemRateLookup, PerDiemTripService};
 use App\Services\Travel\TravelLogService;
-use App\Support\Tz;
+use App\Support\{MorphMap, Tz};
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Reisen und Spesen zur Vorführung (MVP-1532): Auslagen in allen Stufen
@@ -32,8 +35,12 @@ use Carbon\CarbonImmutable;
  * Verpflegungspauschale, sofern die Pauschalsätze eingespielt sind.
  */
 final class TravelExpenseDemoBlock implements DemoBlock {
+    /** Minimal gültiges 1×1-PNG (selbst erzeugt, lizenzfrei) als Demo-Beleg. */
+    private const string RECEIPT_PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
     public function __construct(
         private readonly ExpenseService $expenses,
+        private readonly FileAttacher $attacher,
         private readonly TravelLogService $travelLogs,
         private readonly PerDiemTripService $trips,
         private readonly PerDiemRateLookup $rates,
@@ -128,6 +135,11 @@ final class TravelExpenseDemoBlock implements DemoBlock {
         $tripIds = PerDiemTrip::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->pluck('id');
         PerDiemDay::query()->whereIn('per_diem_trip_id', $tripIds)->delete();
         PerDiemTrip::query()->withoutGlobalScopes()->whereKey($tripIds)->delete();
+        $expenseIds = Expense::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->pluck('id');
+        foreach (Attachment::query()->withoutGlobalScopes()->where('attachable_type', MorphMap::alias(Expense::class))->whereIn('attachable_id', $expenseIds)->get() as $attachment) {
+            Storage::disk($attachment->disk)->delete($attachment->path);
+            $attachment->delete();
+        }
         Expense::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereNotNull('corrects_expense_id')->delete();
         Expense::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->delete();
         TimeEntry::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereNotNull('travel_log_id')->delete();
@@ -137,7 +149,7 @@ final class TravelExpenseDemoBlock implements DemoBlock {
     }
 
     private function expense(User $owner, ?ExpenseCategory $category, Customer $customer, string $vendor, ?Project $project, CarbonImmutable $date, string $gross, PaymentMethod $method, string $description): Expense {
-        return $this->expenses->create([
+        $expense = $this->expenses->create([
             'organization_id' => $customer->organization_id,
             'user_id' => $owner->id,
             'expense_category_id' => $category?->id,
@@ -150,5 +162,10 @@ final class TravelExpenseDemoBlock implements DemoBlock {
             'amount_gross' => $gross,
             'created_by' => $owner->id,
         ]);
+
+        // Die Standardkategorien verlangen einen Beleg; ohne ihn ließe sich die Demo-Auslage nicht einreichen.
+        $this->attacher->storeContent($expense, (string) base64_decode(self::RECEIPT_PNG, true), 'beleg-demo.png', 'image/png', (int) $owner->id, ['organization_id' => $customer->organization_id], 'expenses/demo');
+
+        return $expense;
     }
 }

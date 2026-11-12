@@ -309,6 +309,8 @@ class BillingTransferService {
             // Feature-Nutzungszähler (036; Vollaudit 2026-07, N14).
             app(\App\Services\Metrics\OperationsMetricsService::class)->increment('finance.transfer', (int) $transfer->organization_id);
 
+            \App\Events\Finance\BillingTransferCompleted::dispatch((int) $transfer->organization_id, (int) $transfer->id);
+
             return $transfer->refresh();
         });
     }
@@ -422,6 +424,8 @@ class BillingTransferService {
                 'external_reference_id' => $transfer->external_reference_id,
                 'file_path' => $transfer->file_path,
             ]);
+
+            \App\Events\Finance\BillingTransferCancelled::dispatch((int) $transfer->organization_id, (int) $transfer->id);
 
             return $transfer->refresh();
         });

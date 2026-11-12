@@ -45,7 +45,7 @@ class MarketplacePurchasesReaderTest extends TestCase {
         $this->assertSame(2, $first->sourceLine);
 
         $this->assertCount(3, $import->companies());
-        $this->assertCount(2, $import->byCompany()['100002']);
+        $this->assertCount(2, array_filter($import->entitlements, static fn ($entitlement): bool => $entitlement->company->key === '100002'));
     }
 
     public function test_missing_required_column_is_reported(): void {

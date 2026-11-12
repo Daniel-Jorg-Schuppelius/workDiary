@@ -74,6 +74,9 @@ final class ProcedureManifest extends Manifest {
             \App\Automation\Triggers\RuleTrigger::class => [
                 \App\Services\Procedure\Automation\DeviationRecordedTrigger::class,
             ],
+            \App\Services\Cockpit\Contracts\CockpitPanel::class => [
+                \App\Services\Procedure\Cockpit\ProcedureCockpitPanel::class,
+            ],
         ];
     }
 
@@ -81,6 +84,9 @@ final class ProcedureManifest extends Manifest {
         return [
             \App\Events\Procedure\ProcedureRunProgressed::class => [
                 \App\Listeners\Procedure\RefreshProcedureRunBlockState::class,
+            ],
+            \App\Events\Diary\OrderCancelled::class => [
+                \App\Listeners\Procedure\AbortRunsOfCancelledOrder::class,
             ],
         ];
     }

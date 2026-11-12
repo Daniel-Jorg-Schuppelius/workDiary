@@ -1,7 +1,7 @@
 ---
 title: "Toggl Import"
 topic: admin.toggl
-version: 5
+version: 6
 keywords:
     - Toggl Track
     - import time entries
@@ -126,3 +126,5 @@ Webhook (optional):
   itself (customer name as Toggl client, project name as Toggl project;
   existing ones are matched by name), and the times follow in the next run.
   Older backlog is caught up with `toggl:push --days=90`.
+
+**Data ownership:** If another system leads customers and suppliers, the migration creates no customers and stops with a notice – also in the preview. Create missing customers in the leading system and synchronise, or assign the workspace to an existing customer.

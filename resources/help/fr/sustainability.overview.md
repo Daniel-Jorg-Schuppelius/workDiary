@@ -1,7 +1,7 @@
 ---
 title: "Durabilité & ESG"
 topic: sustainability.overview
-version: 2
+version: 3
 keywords:
     - bilan carbone
     - empreinte carbone
@@ -58,3 +58,15 @@ avertissements sur la qualité des données, export CSV avec mention de la
 méthodologie et snapshot d'évaluation par le management pouvant être
 figé. La matrice de référence VSME 1.0 montre quelles données WorkDiary
 préparent quelle section du rapport.
+
+**Évaluation avec objet :** « Démarrer l'évaluation » demande l'objet évalué :
+actif, véhicule, site, salle, projet, commande, fournisseur, article,
+investissement ou contrat. Sont proposés les objets des modules activés que
+vous pouvez lire ; sans objet, vous saisissez une désignation. L'actif, le
+fournisseur et l'investissement portent le bouton « Évaluer la durabilité ».
+L'évaluation renvoie à son objet et à toutes les évaluations du même objet ;
+chaque nouvelle évaluation d'un objet est une nouvelle version.
+
+**Mesures par évaluation :** une mesure peut être associée à une évaluation,
+lors de la saisie dans la vue d'ensemble ou directement dans l'évaluation. La
+liste des mesures renvoie à l'évaluation.

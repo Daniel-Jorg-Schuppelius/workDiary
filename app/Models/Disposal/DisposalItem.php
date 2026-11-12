@@ -12,8 +12,12 @@ declare(strict_types=1);
 
 namespace App\Models\Disposal;
 
+use App\Enums\Disposal\DisposalJobEventType;
 use App\Models\Asset\Asset;
+use App\Models\Attachments\Attachment;
 use App\Models\Concerns\{HasAttachments, HasSqid};
+use App\Models\Contracts\GuardsAttachments;
+use App\Models\Platform\User;
 use Database\Factories\Disposal\DisposalItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -42,7 +46,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int|null $asset_id
  * @property string|null $note
  */
-class DisposalItem extends Model {
+class DisposalItem extends Model implements GuardsAttachments {
     use HasAttachments;
 
     /** @use HasFactory<DisposalItemFactory> */
@@ -73,6 +77,19 @@ class DisposalItem extends Model {
     /** @return BelongsTo<Asset, $this> */
     public function asset(): BelongsTo {
         return $this->belongsTo(Asset::class);
+    }
+
+    /** Fotos gehören zum Nachweis: nach der Entsorger-Übergabe kommt keines mehr hinzu oder weg (MVP-1578). */
+    public function attachmentsLocked(?Attachment $attachment = null): bool {
+        return $this->job?->status->isEditable() !== true;
+    }
+
+    public function attachmentAdded(Attachment $attachment, ?User $actor): void {
+        $this->job?->record(DisposalJobEventType::ItemPhotoAdded, ['item_id' => $this->id, 'attachment_id' => $attachment->id, 'name' => $attachment->original_name], $actor);
+    }
+
+    public function attachmentRemoved(Attachment $attachment, ?User $actor): void {
+        $this->job?->record(DisposalJobEventType::ItemPhotoRemoved, ['item_id' => $this->id, 'attachment_id' => $attachment->id, 'name' => $attachment->original_name], $actor);
     }
 
     /** @return HasMany<DataMediaTreatment, $this> */

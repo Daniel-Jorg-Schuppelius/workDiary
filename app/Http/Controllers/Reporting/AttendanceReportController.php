@@ -106,7 +106,7 @@ class AttendanceReportController extends Controller {
     /**
      * Heatmap Mitarbeiter × Wochentag (Anwesenheitsminuten; Anzeige h:mm).
      *
-     * @param  array<int, array{user: User, attendance_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
+     * @param  array<int, array{user: User, attendance_minutes:int, homeoffice_minutes:int, errand_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
      * @return list<array{label: string, cells: list<array{value: int}>}>
      */
     private function weekdayHeatmapRows(CarbonImmutable $from, CarbonImmutable $to, array $rows): array {
@@ -149,7 +149,7 @@ class AttendanceReportController extends Controller {
      * Anwesenheitsstunden im Zeitverlauf — je Tag, bei langen Zeiträumen je
      * ISO-Woche (über alle gefilterten Mitarbeiter summiert).
      *
-     * @param  array<int, array{user: User, attendance_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
+     * @param  array<int, array{user: User, attendance_minutes:int, homeoffice_minutes:int, errand_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
      * @return list<array{x: string, y: float}>
      */
     private function timelineSeries(CarbonImmutable $from, CarbonImmutable $to, array $rows): array {
@@ -193,6 +193,8 @@ class AttendanceReportController extends Controller {
      * @return array<int, array{
      *   user: User,
      *   attendance_minutes: int,
+     *   homeoffice_minutes: int,
+     *   errand_minutes: int,
      *   time_entry_minutes: int,
      *   target_minutes: int,
      *   workdays: int,
@@ -217,16 +219,16 @@ class AttendanceReportController extends Controller {
         }
         $userIds = $users->pluck('id')->map(static fn($v): int => (int) $v)->all();
 
-        /** @var array<int, int> $attMinByUser */
-        $attMinByUser = Attendance::query()
+        // Homeoffice und Dienstgang sind Teilmengen der Anwesenheit (MVP-532), keine eigene Zeit.
+        $attendanceSums = Attendance::query()
             ->whereIn('user_id', $userIds)
             ->whereBetween('date', DateRange::days($from, $to))
             ->whereNotIn('status', [AttendanceStatus::Cancelled->value, AttendanceStatus::Open->value])
-            ->selectRaw('user_id, COALESCE(SUM(duration_minutes), 0) as m')
+            ->selectRaw('user_id, COALESCE(SUM(duration_minutes), 0) as m, COALESCE(SUM(homeoffice_minutes), 0) as homeoffice, COALESCE(SUM(errand_minutes), 0) as errand')
             ->groupBy('user_id')
-            ->pluck('m', 'user_id')
-            ->map(static fn($v): int => (int) $v)
-            ->all();
+            ->toBase()
+            ->get()
+            ->keyBy(static fn (object $row): int => (int) $row->user_id);
 
         /** @var array<int, int> $teMinByUser */
         $teMinByUser = TimeEntry::query()
@@ -262,11 +264,14 @@ class AttendanceReportController extends Controller {
             $uid = (int) $u->id;
             $userSchedules = array_values($schedByUser[$uid] ?? []);
             [$workdays, $targetMin] = $this->computeTarget($from, $to, $userSchedules, $daysOff[$uid] ?? []);
-            $att = $attMinByUser[$uid] ?? 0;
+            $sums = $attendanceSums->get($uid);
+            $att = (int) ($sums->m ?? 0);
             $te = $teMinByUser[$uid] ?? 0;
             $rows[] = [
                 'user' => $u,
                 'attendance_minutes' => $att,
+                'homeoffice_minutes' => (int) ($sums->homeoffice ?? 0),
+                'errand_minutes' => (int) ($sums->errand ?? 0),
                 'time_entry_minutes' => $te,
                 'target_minutes' => $targetMin,
                 'workdays' => $workdays,
@@ -324,21 +329,27 @@ class AttendanceReportController extends Controller {
     }
 
     /**
-     * @param  array<int, array{user: User, attendance_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
-     * @return array{attendance:int, time_entry:int, target:int, variance:int}
+     * @param  array<int, array{user: User, attendance_minutes:int, homeoffice_minutes:int, errand_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
+     * @return array{attendance:int, homeoffice:int, errand:int, time_entry:int, target:int, variance:int}
      */
     private function totals(array $rows): array {
         $att = 0;
+        $homeoffice = 0;
+        $errand = 0;
         $te = 0;
         $tg = 0;
         foreach ($rows as $r) {
             $att += $r['attendance_minutes'];
+            $homeoffice += $r['homeoffice_minutes'];
+            $errand += $r['errand_minutes'];
             $te += $r['time_entry_minutes'];
             $tg += $r['target_minutes'];
         }
 
         return [
             'attendance' => $att,
+            'homeoffice' => $homeoffice,
+            'errand' => $errand,
             'time_entry' => $te,
             'target' => $tg,
             'variance' => $att - $tg,
@@ -346,24 +357,24 @@ class AttendanceReportController extends Controller {
     }
 
     /**
-     * @param  array<int, array{user: User, attendance_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
+     * @param  array<int, array{user: User, attendance_minutes:int, homeoffice_minutes:int, errand_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
      * @param  array<string, mixed>  $exportFilters
      */
     private function exportCsv(array $rows, string $from, string $to, array $exportFilters, Request $request): Response {
         $filename = sprintf('anwesenheit_%s_%s.csv', $from, $to);
         $out = [];
-        $out[] = [(string) __('reporting.csv.employee'), (string) __('reporting.csv.workdays'), (string) __('reporting.csv.target_minutes'), (string) __('reporting.csv.present_minutes'), (string) __('reporting.csv.booked_minutes'), (string) __('reporting.csv.balance_minutes')];
+        $out[] = [(string) __('reporting.csv.employee'), (string) __('reporting.csv.workdays'), (string) __('reporting.csv.target_minutes'), (string) __('reporting.csv.present_minutes'), (string) __('reporting.csv.homeoffice_minutes'), (string) __('reporting.csv.errand_minutes'), (string) __('reporting.csv.booked_minutes'), (string) __('reporting.csv.balance_minutes')];
         foreach ($rows as $r) {
-            $out[] = [$r['user']->name, $r['workdays'], $r['target_minutes'], $r['attendance_minutes'], $r['time_entry_minutes'], $r['variance']];
+            $out[] = [$r['user']->name, $r['workdays'], $r['target_minutes'], $r['attendance_minutes'], $r['homeoffice_minutes'], $r['errand_minutes'], $r['time_entry_minutes'], $r['variance']];
         }
         $totals = $this->totals($rows);
-        $out[] = [(string) __('reporting.csv.total'), '', $totals['target'], $totals['attendance'], $totals['time_entry'], $totals['variance']];
+        $out[] = [(string) __('reporting.csv.total'), '', $totals['target'], $totals['attendance'], $totals['homeoffice'], $totals['errand'], $totals['time_entry'], $totals['variance']];
 
         return $this->csvWithMetadata($out, $filename, 'attendance', $exportFilters, $request);
     }
 
     /**
-     * @param  array<int, array{user: User, attendance_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
+     * @param  array<int, array{user: User, attendance_minutes:int, homeoffice_minutes:int, errand_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
      * @param  list<array{label: string, cells: list<array{value: int}>}>  $heatmapRows
      * @param  list<string>  $weekdayLabels
      * @param  array<string, mixed>  $exportFilters

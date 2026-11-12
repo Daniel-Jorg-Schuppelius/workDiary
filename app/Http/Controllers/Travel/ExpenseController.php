@@ -27,6 +27,7 @@ use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -74,13 +75,13 @@ class ExpenseController extends Controller {
             'gross' => (float) (clone $totalsQuery)->sum('amount_gross'),
             'reimbursable' => (float) (clone $totalsQuery)
                 ->whereIn('status', [ExpenseStatus::Approved->value, ExpenseStatus::Reimbursed->value, ExpenseStatus::Invoiced->value])
-                ->where('payment_method', PaymentMethod::PrivatePaid->value)
+                ->whereIn('payment_method', PaymentMethod::reimbursableValues())
                 ->sum('amount_gross'),
             'pending' => (int) (clone $totalsQuery)->where('status', ExpenseStatus::Pending->value)->count(),
             'reimbursement_pending' => (float) Expense::query()
                 ->where('user_id', Auth::id())
                 ->where('status', ExpenseStatus::Approved->value)
-                ->where('payment_method', PaymentMethod::PrivatePaid->value)
+                ->whereIn('payment_method', PaymentMethod::reimbursableValues())
                 ->whereNull('reimbursed_at')
                 ->sum('amount_gross'),
             'current_month' => (float) Expense::query()
@@ -150,7 +151,11 @@ class ExpenseController extends Controller {
         $expense = $this->service->create($data);
 
         if ($request->boolean('submit_after_save')) {
-            $this->service->submitForApproval($expense);
+            try {
+                $this->service->submitForApproval($expense);
+            } catch (ValidationException $e) {
+                return $this->receiptMissing($expense, $e);
+            }
 
             return redirect()->toList('expenses.index')
                 ->with('success', __('Spese erfasst und zur Genehmigung eingereicht.'));
@@ -291,7 +296,11 @@ class ExpenseController extends Controller {
         $this->service->update($expense, $request->validated());
 
         if ($request->boolean('submit_after_save') && $expense->fresh()?->status === ExpenseStatus::Draft) {
-            $this->service->submitForApproval($expense);
+            try {
+                $this->service->submitForApproval($expense);
+            } catch (ValidationException $e) {
+                return $this->receiptMissing($expense, $e);
+            }
 
             return redirect()->toList('expenses.index')
                 ->with('success', __('Spese gespeichert und zur Genehmigung eingereicht.'));
@@ -313,10 +322,21 @@ class ExpenseController extends Controller {
     public function submit(Expense $expense): RedirectResponse {
         Gate::authorize('submit', $expense);
 
-        $this->service->submitForApproval($expense);
+        try {
+            $this->service->submitForApproval($expense);
+        } catch (ValidationException $e) {
+            return $this->receiptMissing($expense, $e);
+        }
 
         return redirect()->toList('expenses.index')
             ->with('success', __('Spese zur Genehmigung eingereicht.'));
+    }
+
+    /** Einreichen ohne Pflichtbeleg: der Entwurf bleibt, der Belegdialog öffnet sich zum Hochladen. */
+    private function receiptMissing(Expense $expense, ValidationException $e): RedirectResponse {
+        return redirect()->toList('expenses.index')
+            ->with('warning', (string) collect($e->errors())->flatten()->first())
+            ->with('open_dialog', route('expenses.receipt', $expense));
     }
 
     public function cancel(Expense $expense): RedirectResponse {
@@ -401,7 +421,7 @@ class ExpenseController extends Controller {
                 ->where('is_active', true)
                 ->orderBy('sort')
                 ->orderBy('label')
-                ->get(['id', 'label', 'default_tax_rate', 'default_billable', 'icon', 'color']),
+                ->get(['id', 'slug', 'label', 'default_tax_rate', 'default_billable', 'requires_receipt', 'icon', 'color']),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'paymentMethods' => PaymentMethod::allowed(),

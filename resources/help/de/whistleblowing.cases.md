@@ -1,7 +1,7 @@
 ---
 title: "Meldestelle – Fallbearbeitung"
 topic: whistleblowing.cases
-version: 4
+version: 5
 keywords:
     - Hinweisgebersystem
     - HinSchG
@@ -93,3 +93,15 @@ Nachrichten, Anhänge und Zuweisungen sind danach unwiederbringlich
 verloren, es bleibt nur ein inhaltsfreier Löschnachweis. Das ist
 unumkehrbar. Steht ein Verfahren oder eine Aufbewahrungspflicht
 entgegen, setzen Sie stattdessen den Status „Löschsperre (Legal Hold)“.
+
+**Filter der Fallliste**: Die Leiste über der Liste filtert nach **Status**, **Kategorie**, **Priorität**, zugewiesener Person, Friststatus („Frist überfällig“, „Frist in 14 Tagen“, „Rückmeldung offen“) und Eingangszeitraum. Kategorie und Priorität wirken nur auf Fälle, die Ihnen zugewiesen sind – sonst verriete die Trefferliste beides.
+
+**Fristen und Rückmeldung**: Setzen Sie beim Senden einer Nachricht den Haken **Dies ist die Rückmeldung nach § 17 HinSchG**, hält WorkDiary den Zeitpunkt am Fall fest; eine bloße Rückfrage zählt nicht. Danach endet die Erinnerung an die Rückmeldefrist. Die zugewiesenen Bearbeiter erhalten inhaltsarme Erinnerungen: 48 Stunden vor Ablauf der Eingangsbestätigung, 14 Tage und 48 Stunden vor der Rückmeldefrist (jeweils einmal) und danach täglich, solange eine Frist überfällig ist. Wer einen Fall ohne Zwischenschritt von „Eingegangen“ auf „Prüfung“ setzt, bestätigt damit den Eingang.
+
+**Weitere Aktionen an der Fallakte**:
+
+- **Zuweisung widerrufen** (Symbol neben dem Bearbeiter): Die Person verliert sofort den Zugriff.
+- **Unterlage der Meldestelle hinzufügen**: Die Datei wird wie ein Anhang der meldenden Person verschlüsselt und erst nach der Prüfung freigegeben; die meldende Person sieht sie nicht.
+- Der Status „Löschsperre (Legal Hold)“ verlangt **Rechtsgrundlage**, **Verantwortlichen** und ein **Prüfdatum**; am Prüfdatum erinnert WorkDiary die Bearbeiter.
+- Eine Wiedereröffnung (von „Abgeschlossen – …“ zurück auf „In Bearbeitung“) verlangt eine **Begründung**; die Aufbewahrungsfrist beginnt mit dem nächsten Abschluss neu.
+- **Ereignisprotokoll**: Mit dem Recht zur Protokolleinsicht sehen Sie, wer den Fall wann geöffnet, geändert oder exportiert hat – ohne Meldeinhalte. Jeder Aufruf des Protokolls wird selbst protokolliert.

@@ -1,7 +1,7 @@
 ---
 title: "Tagesabschluss"
 topic: time-entries.day-close
-version: 5
+version: 6
 keywords:
     - Tag abschließen
     - Feierabend
@@ -60,6 +60,13 @@ sind nur Buchungen änderbar, Stempel bleiben gesperrt. Wer das Recht
 ohne Antrag mit **Tag wieder öffnen** entsperren; die Begründung wird im
 Audit-Protokoll festgehalten.
 
+Die Sperre gilt auch für die **Zeiteinträge** des Tages: Solange der Tag
+abgeschlossen oder in Korrektur ist, lassen sich Projekt- und
+Verwaltungszeiten dieses Tages weder anlegen noch ändern oder löschen, auch
+nicht über Stoppuhr, Schnellbuchung, Import oder Schnittstelle. Die
+Eingabeleiste ist dann ausgeblendet; die Anwendung nennt den Korrekturantrag
+als Weg.
+
 Tage in einem bereits freigegebenen Monat sind komplett gesperrt; dort
 läuft jede Änderung über die Monatsfreigabe.
 
@@ -68,3 +75,10 @@ niemand selbst, außer es gibt in der Organisation sonst niemanden mit diesem
 Recht; das Audit-Protokoll vermerkt dann die Selbstfreigabe. Wer
 Tagesabschlüsse nur für das Team sehen darf, sieht unter „Team heute“ und in
 den Tagesansichten die Mitglieder der eigenen Teams.
+
+Im Kopf des Tages steht **Plan/Ist**: das Soll des Arbeitszeitmodells mit
+Kernzeitbeginn neben der ersten und letzten Stempelung und der Anwesenheit.
+Warnmarken erscheinen bei spätem Beginn und bei abweichenden Stunden; die
+Schwellen legt die Organisation unter **Einstellungen** → **Plan/Ist der
+Anwesenheit** fest (Vorgabe 15 Minuten und 10 %). Die Stempelungen zeigen
+außerdem die Minuten im **Homeoffice** und im **Dienstgang**.

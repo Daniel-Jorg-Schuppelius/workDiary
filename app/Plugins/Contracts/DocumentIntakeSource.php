@@ -11,7 +11,7 @@
 namespace App\Plugins\Contracts;
 
 use App\Models\CloudIntake\CloudDocumentConnection;
-use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeContainer, IntakeItem};
+use App\Plugins\Support\Intake\{IntakeChangePage, IntakeContainer, IntakeItem};
 use Psr\Http\Message\StreamInterface;
 
 /**
@@ -33,9 +33,6 @@ use Psr\Http\Message\StreamInterface;
  * und erzeugt einen Betriebsalarm statt still weiterzulaufen.
  */
 interface DocumentIntakeSource {
-    /** Bestätigte Kontoidentität der Verbindung (nach OAuth-Callback). */
-    public function intakeAccount(CloudDocumentConnection $connection): IntakeAccount;
-
     /**
      * Wählbare Quell-Container (Drive/Bibliothek/Shared Drive/Namespace)
      * für die Admin-Auswahl. `$search` ist optional: Provider mit durchsuchbaren

@@ -47,6 +47,8 @@ class SaveSupplierRequest extends BaseFormRequest {
             ],
             'vendor_number' => ['nullable', 'string', 'max:64'],
             'tax_number' => ['nullable', 'string', 'max:64'],
+            // Steuerfall seiner Eingangsrechnungen (MVP-1621).
+            'incoming_tax_case' => ['nullable', 'string', Rule::enum(\App\Enums\Invoicing\IncomingInvoiceTaxCase::class)],
             // Gutschriftsverfahren (MVP-1280): Datum der Vereinbarung nach § 14 Abs. 2 Satz 2 UStG.
             'self_billing_agreed_on' => ['nullable', 'date'],
             'active' => ['sometimes', 'boolean'],

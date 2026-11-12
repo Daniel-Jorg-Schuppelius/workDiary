@@ -14,7 +14,6 @@ namespace App\Services\Inventory;
 
 use App\Models\Inventory\{StockLot, StockMovement};
 use ArrayIterator;
-use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Decimal;
 use Countable;
 use IteratorAggregate;
@@ -52,15 +51,6 @@ final class StockIssue implements Countable, IteratorAggregate {
             array_map(static fn (StockMovement $movement): Decimal => Decimal::of($movement->cost_total?->getAmount() ?? '0', InventoryLedger::SCALE), $this->movements),
             InventoryLedger::SCALE,
         )->getValue();
-    }
-
-    /**
-     * Stückkosten über alle Teile.
-     *
-     * @return numeric-string
-     */
-    public function costUnit(): string {
-        return NumberHelper::divideOrDefault($this->costTotal(), $this->qty(), InventoryLedger::SCALE);
     }
 
     /**

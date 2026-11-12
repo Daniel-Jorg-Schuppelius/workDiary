@@ -77,6 +77,7 @@ return [
 
     'flash' => [
         'saved' => 'Archivio WebDAV salvato.',
+        'saved_and_mirrored' => 'Archivio WebDAV salvato e attivato: tutti gli oggetti rilasciati finora sono in coda per la copia.',
         'mirror_done' => 'Copia avviata.',
         'disconnected' => 'Archivio WebDAV disconnesso. I file già copiati restano all\'esterno.',
         'no_connection' => 'Nessun archivio WebDAV attivo.',

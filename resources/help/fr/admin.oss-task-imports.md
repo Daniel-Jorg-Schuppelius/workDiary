@@ -1,7 +1,7 @@
 ---
 title: "Imports de tâches depuis des outils open source"
 topic: admin.oss-task-imports
-version: 1
+version: 2
 keywords:
     - Vikunja
     - Kanboard
@@ -169,3 +169,5 @@ les associations.
 - Leantime ou GLPI n’affiche aucune source : la clé API n’est associée à aucun
   projet, ou l’API REST n’est pas activée dans GLPI.
 - FreeScout répond par 404 : le module « API & Webhooks » n’est pas actif.
+
+**Souveraineté des données :** si un autre système est maître des tâches, la synchronisation crée un cas « Souveraineté des données » par tâche dans la boîte d’intégration. **Reprendre une fois** importe la tâche via la même affectation tant qu’elle est active ; si la tâche change ensuite dans la source, le cas se rouvre.

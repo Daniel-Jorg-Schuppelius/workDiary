@@ -34,7 +34,6 @@ class ProjectRecurrenceRuleTest extends TestCase {
             'organization_id' => $this->owner->organization_id,
             'name' => 'Wartung ' . uniqid('', true),
             'status' => ProjectStatus::Active->value,
-            'is_maintenance' => true,
             'created_by' => $this->owner->id,
         ]);
     }

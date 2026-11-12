@@ -12,10 +12,12 @@ declare(strict_types=1);
 
 namespace App\Services\Safety;
 
+use App\Enums\DocumentDesign\{PageFormat, RenderDocumentKind};
 use App\Enums\Safety\HazardAssessmentStatus;
 use App\Models\Platform\{Organization, User};
 use App\Models\Safety\{HazardAssessment, HazardAssessmentItem, HazardCatalogItem};
 use App\Services\Concerns\{AssertsValidatedTransition, AssignsSequentialNo};
+use App\Services\DocumentDesign\DocumentDesignRenderer;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -96,6 +98,12 @@ class HazardAssessmentService {
                 $target === HazardAssessmentStatus::Approved ? 'safety.hazard_assessment.approved' : 'safety.hazard_assessment.transitioned',
                 ['actor_user_id' => $actor->id, 'status' => $target->value],
             );
+            // Die Freigabe legt die Gestaltung des Nachweises fest (MVP-1624); er druckt quer.
+            $organization = $target === HazardAssessmentStatus::Approved ? Organization::query()->withoutGlobalScopes()->find($assessment->organization_id) : null;
+            if ($organization !== null) {
+                $design = app(DocumentDesignRenderer::class);
+                $design->snapshot($assessment, RenderDocumentKind::Protocol, $organization, $design->payloadFor($organization, RenderDocumentKind::Protocol, null, PageFormat::A4Landscape), $actor);
+            }
         });
 
         return $assessment->refresh();

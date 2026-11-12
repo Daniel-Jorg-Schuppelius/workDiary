@@ -12,20 +12,27 @@ namespace App\Services\Protocol;
 
 use App\Enums\Classification\ClassificationRequirementPhase;
 use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\Notification\NotificationEvent;
+use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueVisibility};
 use App\Enums\Protocol\{ProtocolEventType, ProtocolItemResult, ProtocolItemType, ProtocolSignatureMethod, ProtocolSignatureRole, ProtocolStatus, ProtocolType, ProtocolVisibility};
 use App\Exceptions\{ClassificationRequirementException, InvalidProtocolTransitionException, ProtocolValidationException};
+use App\Models\Attachments\Attachment;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Protocol\{Protocol, ProtocolItem, ProtocolSignature, ProtocolTemplate};
+use App\Services\Attachments\FileAttacher;
 use App\Services\Classification\ClassificationRequirementValidator;
 use App\Services\Diary\OrderService;
 use App\Services\Integration\LifecycleWebhookPublisher;
+use App\Services\Notification\NotificationDispatcher;
 use App\Services\OpenIssue\OpenIssueService;
 use App\Support\MorphMap;
+use CommonToolkit\Helper\Data\DataUrlHelper;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\{Carbon, Str};
+use Illuminate\Support\Facades\{DB, Storage};
 use InvalidArgumentException;
 
 /**
@@ -37,6 +44,9 @@ use InvalidArgumentException;
  * bleiben.
  */
 class ProtocolService {
+    /** Obergrenze des gezeichneten Unterschriftsbilds (wie Fahrtenbuch und Unterweisung). */
+    public const int SIGNATURE_MAX_BYTES = 1_000_000;
+
     public function __construct(
         private readonly ProtocolItemValidator $itemValidator,
         private readonly ClassificationRequirementValidator $requirements,
@@ -119,22 +129,40 @@ class ProtocolService {
         $protocol->update(['status' => ProtocolStatus::InReview->value]);
         $this->record($protocol, ProtocolEventType::RequestedReview, $actor);
 
+        // Ab hier ist der Inhalt eingefroren. Eine Unterschrift von früher, die
+        // nicht mehr zu ihm passt, gilt nicht weiter (MVP-1572).
+        foreach ($this->staleSignatures($protocol) as $signature) {
+            $this->voidSignature($protocol, $signature, $actor, 'content_changed');
+        }
+
         return $protocol->refresh();
     }
 
     public function returnToDraft(Protocol $protocol, User $actor, ?string $reason = null): Protocol {
         $this->assertActionAllowed($protocol, 'returnToDraft');
-        $protocol->update(['status' => ProtocolStatus::Draft->value]);
-        $this->record($protocol, ProtocolEventType::ReturnedToDraft, $actor, [
-            'reason' => $reason,
-        ]);
 
-        return $protocol->refresh();
+        return DB::transaction(function () use ($protocol, $actor, $reason): Protocol {
+            $protocol->update(['status' => ProtocolStatus::Draft->value]);
+            $this->record($protocol, ProtocolEventType::ReturnedToDraft, $actor, [
+                'reason' => $reason,
+            ]);
+
+            // Der Entwurf ist wieder änderbar: Unterschriften und offene Links
+            // bezogen sich auf den eingefrorenen Stand und verfallen mit ihm.
+            foreach ($protocol->signatures()->get() as $signature) {
+                $this->voidSignature($protocol, $signature, $actor, 'returned_to_draft');
+            }
+            $this->expireOpenTokens($protocol, $actor, 'returned_to_draft');
+
+            return $protocol->refresh();
+        });
     }
 
     /**
      * Schliesst die Erstellungsphase ab und setzt das Protokoll auf `signed`.
-     * Optional kann gleichzeitig die erste Signatur erfasst werden.
+     * Optional kann gleichzeitig eine Signatur erfasst werden. Abnahme und
+     * Übergabe verlangen die Unterschriften ihres Typs (MVP-1572) — fehlt eine,
+     * bleibt das Protokoll offen.
      *
      * @param  array<string, mixed>|null  $signatureData
      */
@@ -142,15 +170,53 @@ class ProtocolService {
         $this->assertActionAllowed($protocol, $protocol->status === ProtocolStatus::Draft ? 'signDirect' : 'sign');
         $this->assertProtocolValid($protocol, ClassificationRequirementPhase::BeforeSign);
 
-        $signed = DB::transaction(function () use ($protocol, $actor, $signatureData): Protocol {
+        // Vor dem ersten Schreiben prüfen: ein gespeichertes Unterschriftsbild macht kein Rollback rückgängig.
+        $incoming = $signatureData !== null
+            ? $this->parseRole($this->stringAttribute($signatureData, 'role', ProtocolSignatureRole::Contractor->value))
+            : null;
+        $missing = $protocol->missingSignatureRoles($incoming);
+        if ($missing !== []) {
+            throw new ProtocolValidationException([self::missingSignaturesMessage($missing)]);
+        }
+        // Ein Nachweis trägt nur Unterschriften, deren Hash zum Inhalt passt.
+        $stale = $this->staleSignatures($protocol);
+        if ($stale !== []) {
+            throw new ProtocolValidationException([(string) __('protocol.validation.signature.stale', [
+                'names' => implode(', ', array_map(static fn (ProtocolSignature $signature): string => $signature->signer_name, $stale)),
+            ])]);
+        }
+
+        $image = null;
+        try {
+            $signed = $this->finalize($protocol, $actor, $signatureData, $image);
+        } catch (\Throwable $e) {
+            // Scheitert der Abschluss nach der Unterschrift, rollt ihre Zeile zurück — die Datei nicht.
+            if (is_string($image) && ! Attachment::query()->withoutGlobalScopes()->where('path', $image)->exists()) {
+                Storage::disk('local')->delete($image);
+            }
+
+            throw $e;
+        }
+
+        // Lifecycle-Webhook (MVP-718): protocol.signed erst nach der Transaktion.
+        app(LifecycleWebhookPublisher::class)->protocolSigned($signed);
+
+        return $signed;
+    }
+
+    /** @param  array<string, mixed>|null  $signatureData */
+    private function finalize(Protocol $protocol, User $actor, ?array $signatureData, ?string &$image): Protocol {
+        return DB::transaction(function () use ($protocol, $actor, $signatureData, &$image): Protocol {
+            $this->lockUnchangedStatus($protocol);
+            $this->assertActionAllowed($protocol, $protocol->status === ProtocolStatus::Draft ? 'signDirect' : 'sign');
+            if ($signatureData !== null) {
+                $image = $this->addSignature($protocol, $actor, $signatureData)->signature_image_path;
+            }
+
             $protocol->update([
                 'status' => ProtocolStatus::Signed->value,
                 'signed_at' => Carbon::now(),
             ]);
-
-            if ($signatureData !== null) {
-                $this->addSignature($protocol, $actor, $signatureData);
-            }
 
             $this->record($protocol, ProtocolEventType::Signed, $actor, [
                 'with_signature' => $signatureData !== null,
@@ -161,19 +227,67 @@ class ProtocolService {
                 app(OrderService::class)->handover($subject, $actor, $protocol->refresh());
             }
 
-            $this->renderPdfFor($protocol->refresh(), $actor);
+            $this->expireOpenTokens($protocol, $actor, 'signed');
+            $path = $this->renderPdfFor($protocol->refresh(), $actor);
+            $this->pdfRenderer->discardSuperseded($protocol, $path);
 
             return $protocol->refresh();
         });
-
-        // Lifecycle-Webhook (MVP-718): protocol.signed erst nach der Transaktion.
-        app(LifecycleWebhookPublisher::class)->protocolSigned($signed);
-
-        return $signed;
     }
 
     /**
-     * Erzeugt das PDF (idempotent) und vermerkt den Event mit Pfad + Hash.
+     * Unterschrift vor dem Abschluss erfassen (MVP-1572): vor Ort am Gerät,
+     * Papierabnahme oder Kundenportal — nur „in Prüfung“. Das Protokoll bleibt
+     * offen; der Abschluss folgt mit {@see sign()}, sobald alle
+     * Pflichtunterschriften da sind.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function captureSignature(Protocol $protocol, User $actor, array $data): ProtocolSignature {
+        if ($protocol->status->isImmutable()) {
+            throw InvalidProtocolTransitionException::immutable($protocol->status);
+        }
+        // Nur „in Prüfung“ ist der Inhalt eingefroren; im Entwurf könnte er sich unter der Unterschrift ändern.
+        if ($protocol->status !== ProtocolStatus::InReview) {
+            throw new ProtocolValidationException([(string) __('protocol.validation.signature.reviewFirst')]);
+        }
+        $this->assertProtocolValid($protocol, ClassificationRequirementPhase::BeforeSign);
+
+        return $this->addSignature($protocol, $actor, $data);
+    }
+
+    /** @param  list<ProtocolSignatureRole>  $roles */
+    public static function missingSignaturesMessage(array $roles): string {
+        return (string) __('protocol.validation.signature.requiredRoles', [
+            'roles' => implode(', ', array_map(static fn (ProtocolSignatureRole $role): string => $role->label(), $roles)),
+        ]);
+    }
+
+    /**
+     * Das PDF des Abschlusses als Anhang am Protokoll (abnahme-signatur.md §5.2);
+     * je Datei genau einmal.
+     */
+    private function registerPdfAttachment(Protocol $protocol, string $path, User $actor): void {
+        $disk = Storage::disk(ProtocolPdfRenderer::DISK);
+        if ($protocol->attachments()->where('path', $path)->exists() || ! $disk->exists($path)) {
+            return;
+        }
+
+        $protocol->attachments()->create([
+            'organization_id' => $protocol->organization_id,
+            'user_id' => $actor->id,
+            'disk' => ProtocolPdfRenderer::DISK,
+            'path' => $path,
+            'original_name' => sprintf('%s v%d.pdf', $protocol->type->label(), $protocol->revision),
+            'mime' => 'application/pdf',
+            'size' => $disk->size($path),
+            'meta_type' => Protocol::META_PDF,
+        ]);
+    }
+
+    /**
+     * Legt das PDF ab (idempotent) und vermerkt den Event mit Pfad + Hash.
+     * Nur für Nachweise; Entwürfe liefert {@see ProtocolPdfRenderer::content()}.
      */
     public function renderPdfFor(Protocol $protocol, User $actor): string {
         $start = microtime(true);
@@ -183,6 +297,11 @@ class ProtocolService {
             'hash' => $this->pdfRenderer->hashFor($protocol),
             'duration_ms' => (int) round((microtime(true) - $start) * 1000),
         ]);
+        // Als Anhang steht die Datei im Löschregister der Organisation — auch bei Nachweisen von früher.
+        if ($protocol->status->isImmutable()) {
+            $this->registerPdfAttachment($protocol, $path, $actor);
+        }
+
         return $path;
     }
 
@@ -239,6 +358,7 @@ class ProtocolService {
             ]);
 
             $protocol->update(['status' => ProtocolStatus::Superseded->value]);
+            $this->expireOpenTokens($protocol, $actor, 'superseded');
 
             $this->record($protocol, ProtocolEventType::SupersededBy, $actor, [
                 'replacement_id' => $copy->id,
@@ -416,27 +536,52 @@ class ProtocolService {
     }
 
     /**
+     * Neue Reihenfolge der Punkte (MVP-1573). Unterpunkte bleiben hinter ihrer
+     * Gruppe, damit PDF (flach nach `sort_order`) und Detailseite dieselbe
+     * Reihenfolge zeigen; nicht genannte Punkte behalten ihren Platz am Ende,
+     * fremde IDs zählen nicht.
+     *
      * @param  list<int>  $orderedIds
      */
     public function reorderItems(Protocol $protocol, User $actor, array $orderedIds): void {
         $this->assertEditable($protocol);
 
-        DB::transaction(function () use ($protocol, $orderedIds): void {
-            foreach ($orderedIds as $index => $itemId) {
-                $protocol->items()
-                    ->whereKey($itemId)
-                    ->update(['sort_order' => $index]);
+        $position = array_flip(array_values(array_unique($orderedIds)));
+        $items = $protocol->items()->get(['id', 'protocol_id', 'parent_item_id', 'sort_order'])
+            ->sortBy(static fn (ProtocolItem $item): array => [$position[$item->id] ?? PHP_INT_MAX, $item->sort_order, $item->id])
+            ->values();
+        $known = $items->pluck('id')->flip();
+        $byParent = $items->groupBy(static fn (ProtocolItem $item): int => $known->has($item->parent_item_id) ? (int) $item->parent_item_id : 0);
+
+        /** @var list<int> $final */
+        $final = [];
+        $walk = static function (int $parentId) use (&$walk, &$final, $byParent): void {
+            foreach ($byParent->get($parentId, []) as $item) {
+                $final[] = (int) $item->id;
+                $walk((int) $item->id);
+            }
+        };
+        $walk(0);
+
+        DB::transaction(function () use ($protocol, $final): void {
+            foreach ($final as $index => $itemId) {
+                $protocol->items()->whereKey($itemId)->update(['sort_order' => $index + 1]);
             }
         });
 
         $this->record($protocol, ProtocolEventType::ItemReordered, $actor, [
-            'order' => $orderedIds,
+            'order' => $final,
         ]);
     }
 
     // ----- Signatures -----
 
     /**
+     * Schreibt die Unterschrift mit Inhalts-Hash. Ein Bild kommt nur aus
+     * `signature_image` (gezeichnet, PNG als Data-URL) oder `signature_scan`
+     * (Datei der Papierabnahme) und liegt als Anhang am Protokoll — ein Pfad
+     * aus der Eingabe wird nie übernommen (Sicherheitsscan 2026-08-23, S-63).
+     *
      * @param  array<string, mixed>  $data
      */
     public function addSignature(Protocol $protocol, User $actor, array $data): ProtocolSignature {
@@ -446,41 +591,257 @@ class ProtocolService {
         $signerNameRaw = $data['signer_name'] ?? null;
         $signerName = is_scalar($signerNameRaw) ? (string) $signerNameRaw : $actor->name;
         $signedAt = $this->dateAttribute($data['signed_at'] ?? null, 'signed_at') ?? Carbon::now();
-        $imagePath = $data['signature_image_path'] ?? null;
 
+        if ($protocol->signatures()->where('role', $role->value)->where('signer_name', $signerName)->exists()) {
+            throw new ProtocolValidationException([(string) __('protocol.validation.signature.duplicate', ['name' => $signerName, 'role' => $role->label()])]);
+        }
+
+        // Gehasht wird der gespeicherte Stand, nicht eine früher geladene Punktliste.
         $hash = $this->hasher->contentHash(
-            $protocol,
+            $protocol->unsetRelation('items'),
             $signerName,
             $role->value,
             $signedAt->toIso8601String(),
         );
 
-        $signature = ProtocolSignature::query()->create([
-            'protocol_id' => $protocol->id,
-            'role' => $role->value,
-            'signer_name' => $signerName,
-            'signer_email' => $data['signer_email'] ?? null,
-            'signed_at' => $signedAt,
-            'method' => $method->value,
-            'signature_image_path' => $imagePath,
-            'ip' => $data['ip'] ?? null,
-            'user_agent' => $data['user_agent'] ?? null,
-            'hash' => $hash,
-        ]);
+        // Uploader: beim Link niemand aus dem Haus, im Portal das Portalkonto.
+        $uploaderId = array_key_exists('uploaded_by_user_id', $data) ? $data['uploaded_by_user_id'] : $actor->id;
+        $image = $this->storeSignatureImage($protocol, $role, $data, is_numeric($uploaderId) ? (int) $uploaderId : null);
 
-        // MVP-650: mit der (ersten) Signatur den Designstand einfrieren —
-        // signierte Protokolle rendern dauerhaft mit dem damaligen Profil
-        // (idempotent, weitere Signaturen ändern nichts).
-        if ($protocol->organization !== null) {
-            app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->snapshot(
-                $protocol,
-                \App\Enums\DocumentDesign\RenderDocumentKind::Protocol,
-                $protocol->organization,
-                user: $actor,
-            );
+        try {
+            return $this->writeSignature($protocol, $actor, $data, $role, $method, $signerName, $signedAt, $hash, $image);
+        } catch (\Throwable $e) {
+            // Die Zeile rollt zurück, die Datei nicht: ohne Unterschrift bleibt kein Bild liegen.
+            if ($image !== null) {
+                Storage::disk($image->disk)->delete($image->path);
+                $image->newQuery()->whereKey($image->id)->delete();
+            }
+
+            throw $e;
+        }
+    }
+
+    /** @param  array<string, mixed>  $data */
+    private function writeSignature(Protocol $protocol, User $actor, array $data, ProtocolSignatureRole $role, ProtocolSignatureMethod $method, string $signerName, Carbon $signedAt, string $hash, ?Attachment $image): ProtocolSignature {
+        return DB::transaction(function () use ($protocol, $actor, $data, $role, $method, $signerName, $signedAt, $hash, $image): ProtocolSignature {
+            $this->lockUnchangedStatus($protocol);
+            if ($protocol->status->isImmutable()) {
+                throw InvalidProtocolTransitionException::immutable($protocol->status);
+            }
+
+            $signature = ProtocolSignature::query()->create([
+                'protocol_id' => $protocol->id,
+                'role' => $role->value,
+                'signer_name' => $signerName,
+                'signer_email' => $data['signer_email'] ?? null,
+                'signed_at' => $signedAt,
+                'method' => $method->value,
+                'signature_image_path' => $image?->path,
+                'signature_attachment_id' => $image?->id,
+                'ip' => $data['ip'] ?? null,
+                'user_agent' => $data['user_agent'] ?? null,
+                'hash' => $hash,
+            ]);
+
+            $this->record($protocol, ProtocolEventType::SignatureAdded, $actor, [
+                'signature_id' => $signature->id,
+                'role' => $role->value,
+                'method' => $method->value,
+                'signer_name' => $signerName,
+                'with_image' => $image !== null,
+                'original_on_file' => $method === ProtocolSignatureMethod::Paper ? (bool) ($data['original_confirmed'] ?? false) : null,
+            ]);
+
+            // MVP-650: mit der (ersten) Signatur den Designstand einfrieren —
+            // signierte Protokolle rendern dauerhaft mit dem damaligen Profil
+            // (idempotent, weitere Signaturen ändern nichts).
+            if ($protocol->organization !== null) {
+                app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->snapshot(
+                    $protocol,
+                    \App\Enums\DocumentDesign\RenderDocumentKind::Protocol,
+                    $protocol->organization,
+                    user: $actor,
+                );
+            }
+
+            return $signature;
+        });
+    }
+
+    /**
+     * Sperrt die Protokollzeile und prüft, dass der Status noch der geprüfte ist
+     * (MVP-1627): Rückgabe in den Entwurf oder Abschluss dazwischen ließen die
+     * Unterschrift sonst an einem anderen Stand hängen.
+     */
+    private function lockUnchangedStatus(Protocol $protocol): void {
+        $current = Protocol::query()->whereKey($protocol->getKey())->lockForUpdate()->value('status');
+        $current = $current instanceof ProtocolStatus ? $current : ProtocolStatus::tryFrom((string) $current);
+        if ($current !== $protocol->status) {
+            throw InvalidProtocolTransitionException::from($current ?? $protocol->status, 'sign');
+        }
+    }
+
+    /** @param  array<string, mixed>  $data */
+    private function storeSignatureImage(Protocol $protocol, ProtocolSignatureRole $role, array $data, ?int $uploaderId): ?Attachment {
+        $extra = ['organization_id' => $protocol->organization_id, 'meta_type' => Protocol::META_SIGNATURE];
+        $attacher = app(FileAttacher::class);
+
+        $scan = $data['signature_scan'] ?? null;
+        if ($scan instanceof UploadedFile) {
+            return $attacher->store($protocol, $scan, $uploaderId, $extra, 'protocol-signatures');
         }
 
-        return $signature;
+        $image = $data['signature_image'] ?? null;
+        if (! is_string($image) || $image === '') {
+            return null;
+        }
+        $binary = DataUrlHelper::decode($image, ['image/png'], self::SIGNATURE_MAX_BYTES);
+        if ($binary === false) {
+            throw new ProtocolValidationException([(string) __('protocol.validation.signature.imageInvalid')]);
+        }
+
+        return $attacher->storeContent($protocol, $binary, 'unterschrift-' . $role->value . '.png', 'image/png', $uploaderId, $extra, 'protocol-signatures');
+    }
+
+    /**
+     * Unterschriften, deren Hash nicht (mehr) zum gespeicherten Inhalt passt.
+     *
+     * @return list<ProtocolSignature>
+     */
+    public function staleSignatures(Protocol $protocol): array {
+        $protocol->unsetRelation('items');
+
+        return array_values($protocol->signatures()->get()->reject(fn (ProtocolSignature $signature): bool => hash_equals(
+            (string) $signature->hash,
+            $this->hasher->contentHash($protocol, $signature->signer_name, $signature->role->value, $signature->signed_at->toIso8601String()),
+        ))->all());
+    }
+
+    /** Verwirft eine Unterschrift samt Bild; im Journal bleibt, wer unterschrieben hatte und warum sie nicht mehr gilt. */
+    private function voidSignature(Protocol $protocol, ProtocolSignature $signature, User $actor, string $reason): void {
+        $this->record($protocol, ProtocolEventType::SignatureVoided, $actor, [
+            'signature_id' => $signature->id,
+            'role' => $signature->role->value,
+            'method' => $signature->method->value,
+            'signer_name' => $signature->signer_name,
+            'signed_at' => $signature->signed_at->toIso8601String(),
+            'hash' => $signature->hash,
+            'reason' => $reason,
+        ]);
+        $signature->signatureAttachment?->delete();
+        $signature->delete();
+    }
+
+    /** Offene Signaturlinks verfallen, sobald das Protokoll nicht mehr zur Unterschrift vorliegt. */
+    private function expireOpenTokens(Protocol $protocol, User $actor, string $reason): void {
+        foreach ($protocol->signatureTokens()->whereNull('used_at')->where('expires_at', '>', Carbon::now())->get() as $token) {
+            $token->forceFill(['expires_at' => Carbon::now()])->save();
+            $this->record($protocol, ProtocolEventType::SignatureLinkRevoked, $actor, [
+                'token_id' => $token->id,
+                'role' => $token->role->value,
+                'signer_email' => $token->signer_email,
+                'reason' => $reason,
+            ]);
+        }
+    }
+
+    /**
+     * Ablehnung der Abnahme durch den Kunden (Link oder Portal): je Mangel ein
+     * offener Punkt am Auftrag, das Protokoll geht zurück in den Entwurf, das
+     * Haus wird benachrichtigt.
+     *
+     * @param  array{reason: string, signer_name?: string|null, issues?: list<string>, ip?: string|null, user_agent?: string|null, token_id?: int|null, role?: string|null, channel: string}  $data
+     */
+    public function rejectByCustomer(Protocol $protocol, User $actor, ?User $notify, array $data): void {
+        $reason = trim($data['reason']);
+        $name = $data['signer_name'] ?? null;
+
+        DB::transaction(function () use ($protocol, $actor, $data, $reason, $name): void {
+            $issueSubject = $protocol->subject instanceof Model ? $protocol->subject : $protocol;
+            $issues = array_values(array_filter(array_map(
+                static fn ($line): string => trim((string) $line),
+                $data['issues'] ?? []
+            ), static fn (string $line): bool => $line !== ''));
+            if ($issues === []) {
+                // Mindestens ein Offener Punkt aus der Pflicht-Begründung.
+                $issues = [$reason];
+            }
+
+            foreach ($issues as $line) {
+                $this->openIssues->create($issueSubject, $actor, [
+                    'organization_id' => $protocol->organization_id,
+                    'source_type' => OpenIssueSource::CustomerRejection->value,
+                    'source_ref_id' => $protocol->id,
+                    'title' => Str::limit($line, 200, ''),
+                    'description' => __('protocol.signature.rejectIssueDescription', [
+                        'protocol' => $protocol->title,
+                        'name' => $name ?? __('protocol.signature.customer'),
+                    ]),
+                    'severity' => OpenIssueSeverity::Medium->value,
+                    'visibility' => OpenIssueVisibility::Customer->value,
+                ]);
+            }
+
+            $this->record($protocol, ProtocolEventType::SignatureRejected, $actor, [
+                'token_id' => $data['token_id'] ?? null,
+                'role' => $data['role'] ?? ProtocolSignatureRole::Customer->value,
+                'channel' => $data['channel'],
+                'signer_name' => $name,
+                'reason' => $reason,
+                'issue_count' => count($issues),
+                'ip' => $data['ip'] ?? null,
+                'user_agent' => $data['user_agent'] ?? null,
+            ]);
+
+            if ($protocol->status === ProtocolStatus::InReview) {
+                $this->returnToDraft($protocol, $actor, $reason);
+            }
+        });
+
+        $this->notifyHouse(NotificationEvent::ProtocolCustomerRejected, $protocol, $notify, 'notification.message.protocol_customer_rejected', [
+            'name' => $name ?? (string) __('protocol.signature.customer'),
+            'title' => $protocol->title,
+            'reason' => Str::limit($reason, 160),
+        ]);
+    }
+
+    /** Meldung ans Haus nach einer Unterschrift des Kunden über Link oder Portal; sagt, ob jetzt abgeschlossen werden kann. */
+    public function notifyCustomerSigned(Protocol $protocol, ?User $notify, string $signerName): void {
+        $missing = $protocol->missingSignatureRoles();
+        $this->notifyHouse(
+            NotificationEvent::ProtocolCustomerSigned,
+            $protocol,
+            $notify,
+            $missing === [] ? 'notification.message.protocol_customer_signed_ready' : 'notification.message.protocol_customer_signed_pending',
+            [
+                'name' => $signerName,
+                'title' => $protocol->title,
+                'roles' => implode(', ', array_map(static fn (ProtocolSignatureRole $role): string => $role->label(), $missing)),
+            ],
+        );
+    }
+
+    /** Wer das Protokoll zuletzt zur Prüfung gestellt hat, sonst wer es angelegt hat. */
+    public function reviewRequester(Protocol $protocol): ?User {
+        $event = $protocol->journal()->where('event', ProtocolEventType::RequestedReview)->latest('id')->first();
+
+        $userId = $event?->getAttribute('actor_user_id') ?? $protocol->created_by_user_id;
+
+        return User::query()->whereKey((int) $userId)->first();
+    }
+
+    /** @param  array<string, string>  $params */
+    private function notifyHouse(NotificationEvent $event, Protocol $protocol, ?User $recipient, string $messageKey, array $params): void {
+        // Erst nach dem Commit — die Meldung darf die Unterschrift nie aufhalten.
+        DB::afterCommit(function () use ($event, $protocol, $recipient, $messageKey, $params): void {
+            app(NotificationDispatcher::class)->notify($event, $protocol, $recipient, [
+                'title' => $protocol->title,
+                'message' => (string) __($messageKey, $params),
+                'message_key' => $messageKey,
+                'message_params' => $params,
+                'url' => route('protocols.show', $protocol),
+            ]);
+        });
     }
 
     // ----- Helpers -----

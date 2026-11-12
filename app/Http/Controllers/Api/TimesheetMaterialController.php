@@ -13,8 +13,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Material\SaveMaterialUsageRequest;
 use App\Http\Resources\MaterialUsageResource;
-use App\Models\Material\{Material, MaterialUsage};
+use App\Models\Material\MaterialUsage;
 use App\Models\Time\Timesheet;
+use App\Services\Material\MaterialUsageRecorder;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
@@ -62,20 +63,10 @@ class TimesheetMaterialController extends Controller {
             new OA\Response(response: 422, description: 'Validation error'),
         ],
     )]
-    public function store(Timesheet $timesheet, SaveMaterialUsageRequest $request): MaterialUsageResource {
+    public function store(Timesheet $timesheet, SaveMaterialUsageRequest $request, MaterialUsageRecorder $recorder): MaterialUsageResource {
         Gate::authorize('update', $timesheet);
-        $data = $request->validated();
-        if (! empty($data['material_id'])) {
-            $m = Material::find((int) $data['material_id']);
-            if ($m) {
-                $data['unit_price'] = $data['unit_price'] ?? $m->default_unit_price;
-                $data['tax_rate'] = $data['tax_rate'] ?? $m->tax_rate;
-                $data['unit'] = $data['unit'] ?: $m->unit;
-                $data['description'] = $data['description'] ?: $m->name;
-            }
-        }
 
-        return new MaterialUsageResource($timesheet->materialUsages()->create($data));
+        return new MaterialUsageResource($recorder->record($timesheet, $request->validated()));
     }
 
     #[OA\Put(

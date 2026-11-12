@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Helpdesk;
 
+use App\Enums\ServiceTicket\ServiceTicketKind;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
+use App\Models\Mail\EmailConnection;
 use App\Models\Platform\Team;
 use App\Models\ServiceTicket\{ServiceQueue, SlaContract};
+use App\Support\HolidayRegions;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{DB, Gate};
+use Illuminate\Validation\{Rule, ValidationException};
 use Illuminate\View\View;
 
 /**
@@ -40,7 +45,7 @@ class ServiceQueueController extends Controller {
                 ->paginate(25)
                 ->withQueryString(),
             'teams' => Team::query()->orderBy('name')->get(['id', 'name']),
-            'slaContracts' => SlaContract::query()->orderBy('label')->get(['id', 'label']),
+            'slaContracts' => SlaContract::query()->where('is_ola', false)->orderBy('label')->get(['id', 'label']),
             'canManage' => Gate::allows('create', ServiceQueue::class),
         ]);
     }
@@ -52,8 +57,14 @@ class ServiceQueueController extends Controller {
             'queue' => new ServiceQueue(['visibility' => 'internal']),
             'isEdit' => false,
             'teams' => Team::query()->orderBy('name')->get(['id', 'name']),
-            'slaContracts' => SlaContract::query()->orderBy('label')->get(['id', 'label']),
+            'slaContracts' => SlaContract::query()->where('is_ola', false)->orderBy('label')->get(['id', 'label']),
+            'mailboxes' => $this->mailboxes(),
         ]);
+    }
+
+    /** @return \Illuminate\Database\Eloquent\Collection<int, EmailConnection> */
+    private function mailboxes(): \Illuminate\Database\Eloquent\Collection {
+        return EmailConnection::query()->orderBy('name')->get(['id', 'name', 'mailbox_address']);
     }
 
     public function edit(ServiceQueue $queue): View {
@@ -63,7 +74,8 @@ class ServiceQueueController extends Controller {
             'queue' => $queue,
             'isEdit' => true,
             'teams' => Team::query()->orderBy('name')->get(['id', 'name']),
-            'slaContracts' => SlaContract::query()->orderBy('label')->get(['id', 'label']),
+            'slaContracts' => SlaContract::query()->where('is_ola', false)->orderBy('label')->get(['id', 'label']),
+            'mailboxes' => $this->mailboxes(),
         ]);
     }
 
@@ -117,7 +129,7 @@ class ServiceQueueController extends Controller {
 
     /** @return array<string, mixed> */
     private function validated(Request $request, ?ServiceQueue $queue = null): array {
-        foreach (['team_id' => Team::class, 'default_sla_contract_id' => SlaContract::class] as $field => $model) {
+        foreach (['team_id' => Team::class, 'default_sla_contract_id' => SlaContract::class, 'email_connection_id' => EmailConnection::class] as $field => $model) {
             if ($request->filled($field)) {
                 $request->merge([$field => \App\Support\Sqid::decodeOrNumeric($model, $request->input($field))]);
             }
@@ -130,17 +142,68 @@ class ServiceQueueController extends Controller {
             'default_sla_contract_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('sla_contracts')],
             'visibility' => ['required', 'in:internal,portal'],
             'is_default' => ['nullable', 'boolean'],
+            'email_connection_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('email_connections')],
+            'supported_kinds' => ['nullable', 'array'],
+            'supported_kinds.*' => [Rule::enum(ServiceTicketKind::class)],
+            'holiday_region' => ['nullable', 'string', Rule::in(HolidayRegions::providers())],
+            'sender_name' => ['nullable', 'string', 'max:120'],
+            'sender_email' => ['nullable', 'email', 'max:190'],
+            'business_hours' => ['nullable', 'array'],
+            'business_hours.*.from' => ['nullable', 'date_format:H:i'],
+            'business_hours.*.to' => ['nullable', 'date_format:H:i'],
         ]);
         $data['is_default'] = (bool) ($data['is_default'] ?? false);
         $data['team_id'] = $data['team_id'] ?? null;
         $data['default_sla_contract_id'] = $data['default_sla_contract_id'] ?? null;
+        // Ein OLA ist ein internes Ziel und kein Kundenversprechen der Queue.
+        if ($data['default_sla_contract_id'] !== null && SlaContract::query()->whereKey($data['default_sla_contract_id'])->where('is_ola', true)->exists()) {
+            throw ValidationException::withMessages(['default_sla_contract_id' => __('helpdesk.queue.olaNotDefault')]);
+        }
+        // Ein Postfach speist genau eine Queue: der Mail-Eingang sucht die Queue über die Verbindung.
+        $data['email_connection_id'] = $data['email_connection_id'] ?? null;
+        if ($data['email_connection_id'] !== null && ServiceQueue::query()
+            ->where('email_connection_id', $data['email_connection_id'])
+            ->whereKeyNot($queue->id ?? 0)
+            ->exists()) {
+            throw ValidationException::withMessages(['email_connection_id' => __('helpdesk.queue.mailboxTaken')]);
+        }
+        $data['supported_kinds'] = array_values(array_unique((array) ($data['supported_kinds'] ?? []))) ?: null;
+        $data['holiday_region'] = StringHelper::trimToNull($data['holiday_region'] ?? null);
+        $sender = array_filter([
+            'name' => StringHelper::trimToNull($data['sender_name'] ?? null),
+            'email' => StringHelper::trimToNull($data['sender_email'] ?? null),
+        ]);
+        $data['sender_identity'] = $sender !== [] ? $sender : null;
+        $data['business_hours'] = $this->businessHours((array) ($data['business_hours'] ?? []));
+        unset($data['sender_name'], $data['sender_email']);
         if ($queue === null) {
-            /** @var \App\Models\Platform\User $user */
-            $user = \Illuminate\Support\Facades\Auth::user();
             $data['organization_id'] = (int) $this->currentOrganization()->id;
         }
 
         return $data;
+    }
+
+    /**
+     * Ein Fenster je Wochentag in der Form, die der SlaTimer liest (`weekday`, `from`, `to`).
+     *
+     * @param  array<int|string, mixed>  $rows
+     * @return list<array{weekday: int, from: string, to: string}>|null
+     */
+    private function businessHours(array $rows): ?array {
+        $windows = [];
+        foreach ($rows as $weekday => $row) {
+            $from = StringHelper::trimToNull(is_array($row) ? ($row['from'] ?? null) : null);
+            $to = StringHelper::trimToNull(is_array($row) ? ($row['to'] ?? null) : null);
+            if ($from === null && $to === null) {
+                continue;
+            }
+            if ((int) $weekday < 1 || (int) $weekday > 7 || $from === null || $to === null || $to <= $from) {
+                throw ValidationException::withMessages(['business_hours' => __('helpdesk.queue.hoursInvalid')]);
+            }
+            $windows[] = ['weekday' => (int) $weekday, 'from' => $from, 'to' => $to];
+        }
+
+        return $windows !== [] ? $windows : null;
     }
 
     /** Genau eine Default-Queue je Org. */

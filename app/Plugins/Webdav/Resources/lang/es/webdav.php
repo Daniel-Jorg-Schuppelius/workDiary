@@ -77,6 +77,7 @@ return [
 
     'flash' => [
         'saved' => 'Almacenamiento WebDAV guardado.',
+        'saved_and_mirrored' => 'Almacenamiento WebDAV guardado y activado: todos los objetos publicados hasta ahora están en cola para la copia.',
         'mirror_done' => 'Copia iniciada.',
         'disconnected' => 'Almacenamiento WebDAV desconectado. Los archivos ya copiados se conservan externamente.',
         'no_connection' => 'No hay ningún almacenamiento WebDAV activo.',

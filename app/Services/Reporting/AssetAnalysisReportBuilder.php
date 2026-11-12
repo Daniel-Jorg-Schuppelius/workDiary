@@ -18,7 +18,7 @@ use App\Models\Protocol\Protocol;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Contracts\ProvidesRemoteSessions;
 use App\Plugins\PluginManager;
-use App\Services\Asset\AssetCategoryCatalog;
+use App\Services\Asset\{AssetCategoryCatalog, RecurringDefectService};
 use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
@@ -34,7 +34,10 @@ use Carbon\CarbonImmutable;
  * Audit), Muster wie {@see PlanIstReportBuilder}.
  */
 class AssetAnalysisReportBuilder {
-    public function __construct(private readonly AssetCategoryCatalog $categories) {}
+    public function __construct(
+        private readonly AssetCategoryCatalog $categories,
+        private readonly RecurringDefectService $recurringDefects,
+    ) {}
 
     /**
      * @param  list<int>  $excludedCustomerIds  Feature 002: Assets und Aufträge
@@ -48,6 +51,7 @@ class AssetAnalysisReportBuilder {
      *   escalationCount:int,
      *   defectCount:int,
      *   defectRate:float,
+     *   recurringDefectCount:int,
      *   maintenanceSessions:int,
      *   maintenanceMinutes:int,
      *   lastIncidentAt:?string,
@@ -162,7 +166,17 @@ class AssetAnalysisReportBuilder {
             $defectByAsset[$aid] = ['defects' => $count, 'last' => $last];
         }
 
-        $categoryLabels = $groupBy === 'group' ? $this->categories->labels((int) $assets->first()->organization_id) : [];
+        $organizationId = (int) $assets->first()->organization_id;
+        $categoryLabels = $groupBy === 'group' ? $this->categories->labels($organizationId) : [];
+
+        // Dieselbe Pareto-Sicht wie der Drilldown „Wiederholdefekte“, damit Zahl und Liste übereinstimmen.
+        /** @var array<int, true> $recurringAssets */
+        $recurringAssets = [];
+        foreach ($this->recurringDefects->pareto($organizationId, $from, $to, $assetIds) as $paretoRow) {
+            if ($paretoRow['is_recurring']) {
+                $recurringAssets[$paretoRow['asset_id']] = true;
+            }
+        }
 
         /** @var array<string, array{label:string, assetIds:list<int>, drilldown:array<string,mixed>}> $groups */
         $groups = [];
@@ -205,6 +219,7 @@ class AssetAnalysisReportBuilder {
             $openCount = 0;
             $escCount = 0;
             $defectCount = 0;
+            $recurringCount = 0;
             $maintSessions = 0;
             $maintMinutes = 0;
             $lastIncident = null;
@@ -213,6 +228,7 @@ class AssetAnalysisReportBuilder {
                 $openCount += $openByAsset[$aid] ?? 0;
                 $escCount += $escByAsset[$aid] ?? 0;
                 $defectCount += $defectByAsset[$aid]['defects'] ?? 0;
+                $recurringCount += isset($recurringAssets[$aid]) ? 1 : 0;
                 $maintSessions += $maintByAsset[$aid]['sessions'] ?? 0;
                 $maintMinutes += $maintByAsset[$aid]['minutes'] ?? 0;
                 $candidate = $defectByAsset[$aid]['last'] ?? null;
@@ -245,6 +261,7 @@ class AssetAnalysisReportBuilder {
                 'escalationCount' => $escCount,
                 'defectCount' => $defectCount,
                 'defectRate' => $defectRate,
+                'recurringDefectCount' => $recurringCount,
                 'maintenanceSessions' => $maintSessions,
                 'maintenanceMinutes' => $maintMinutes,
                 'lastIncidentAt' => $lastIncident,

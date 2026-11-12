@@ -12,7 +12,7 @@ namespace App\Services\Timekeeping;
 
 use App\Models\Platform\User;
 use App\Models\Time\TimeEntry;
-use App\Services\TimeApproval\MonthClosureService;
+use App\Services\TimeApproval\{DayCloseService, MonthClosureService};
 use App\Support\Setting;
 use Carbon\{CarbonImmutable, CarbonInterface};
 
@@ -27,6 +27,7 @@ use Carbon\{CarbonImmutable, CarbonInterface};
  *      `timesheet.edit_window_days`.
  *   2. The owning Timesheet (if any) must not be signed or locked.
  *   3. The entry must not be `exported` (e.g. transmitted to lexoffice).
+ *   4. Weder der Monat noch der Tag des Eintrags ist abgeschlossen.
  */
 class TimeEntryEditPolicy {
     public const string REASON_WINDOW = 'window';
@@ -39,6 +40,9 @@ class TimeEntryEditPolicy {
 
     /** Der Monat des Eintrags ist für diesen Mitarbeiter freigegeben/gesperrt. */
     public const string REASON_MONTH_CLOSED = 'month_closed';
+
+    /** Der Tag des Eintrags ist abgeschlossen oder in Korrektur (MVP-1551). */
+    public const string REASON_DAY_CLOSED = 'day_closed';
 
     public function windowDays(): int {
         $setting = Setting::get('timesheet.edit_window_days');
@@ -67,6 +71,12 @@ class TimeEntryEditPolicy {
             && app(MonthClosureService::class)->isPeriodLockedForUser($user, CarbonImmutable::instance($entry->date));
     }
 
+    /** Hat die Person den Tag des Eintrags abgeschlossen? Änderungen laufen dann über den Korrekturantrag. */
+    public function isDayClosedFor(User $user, TimeEntry $entry): bool {
+        return $entry->date !== null
+            && app(DayCloseService::class)->bookingLock($user, CarbonImmutable::parse($entry->date->toDateString())) === 'day';
+    }
+
     /**
      * @return array{locked: bool, reason: ?string}
      */
@@ -86,6 +96,10 @@ class TimeEntryEditPolicy {
         $owner = $entry->user;
         if ($owner instanceof User && $this->isMonthClosedFor($owner, $entry)) {
             return ['locked' => true, 'reason' => self::REASON_MONTH_CLOSED];
+        }
+
+        if ($owner instanceof User && $this->isDayClosedFor($owner, $entry)) {
+            return ['locked' => true, 'reason' => self::REASON_DAY_CLOSED];
         }
 
         $timesheet = $entry->timesheet;
@@ -135,6 +149,7 @@ class TimeEntryEditPolicy {
             self::REASON_TIMESHEET_SIGNED => __('Stundenzettel signiert'),
             self::REASON_EXPORTED => __('Eintrag bereits exportiert'),
             self::REASON_MONTH_CLOSED => __('Monat bereits freigegeben'),
+            self::REASON_DAY_CLOSED => __('day-close.errors.day_closed_reason'),
             default => null,
         };
 

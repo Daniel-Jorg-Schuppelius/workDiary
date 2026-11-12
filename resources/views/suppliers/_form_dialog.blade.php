@@ -25,6 +25,7 @@
     @if ($isDialog)
         <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
     @endif
+    <x-accounting-led-notice />
 
     <x-form-group :legend="__('Stammdaten')" icon="local_shipping" tone="primary" cols="2">
             <x-input-field name="name" :label="__('Name')" required maxlength="200" :value="old('name', $supplier?->name)" />
@@ -34,6 +35,14 @@
             <x-input-field name="company" :label="__('Firma')" maxlength="200" :value="old('company', $supplier?->company)" />
             <x-input-field name="vat_id" :label="__('USt-IdNr.')" maxlength="64" :value="old('vat_id', $supplier?->vat_id)" />
             <x-input-field name="tax_number" :label="__('Steuernummer')" maxlength="64" :value="old('tax_number', $supplier?->tax_number)" />
+            {{-- Vorbelegung des Steuerfalls im Rechnungseingang (MVP-1621), etwa Bauleistungen nach § 13b UStG. --}}
+            <x-select-field name="incoming_tax_case" :label="__('invoicing.incoming_tax_case.supplier_field')"
+                            :hint="__('invoicing.incoming_tax_case.supplier_hint')">
+                <option value="">{{ __('invoicing.incoming_tax_case.automatic') }}</option>
+                @foreach (\App\Enums\Invoicing\IncomingInvoiceTaxCase::cases() as $taxCase)
+                    <option value="{{ $taxCase->value }}" @selected(old('incoming_tax_case', $supplier?->incoming_tax_case?->value ?? '') === $taxCase->value)>{{ $taxCase->label() }}</option>
+                @endforeach
+            </x-select-field>
             <x-input-field name="self_billing_agreed_on" type="date" :label="__('invoicing.self_billing.field.agreement')"
                            :hint="__('invoicing.self_billing.help.agreement')" :value="old('self_billing_agreed_on', $supplier?->self_billing_agreed_on?->toDateString())" />
             <x-input-field name="vendor_number" :label="__('Kreditorennummer')" maxlength="64" :value="old('vendor_number', $supplier?->vendor_number)" />

@@ -88,6 +88,9 @@ final class ProcurementManifest extends Manifest {
         return [
             \App\Services\Cockpit\Contracts\CockpitPanel::class => [
                 \App\Services\Procurement\Cockpit\PurchaseOrderCockpitPanel::class,
+                // Lieferanten-360°: Kataloge und Leistung (MVP-1617).
+                \App\Services\Procurement\Cockpit\SupplierCatalogCockpitPanel::class,
+                \App\Services\Procurement\Cockpit\SupplierScorecardCockpitPanel::class,
             ],
             \App\Services\Search\Contracts\SearchDomain::class => [
                 \App\Services\Procurement\Search\PurchaseOrderSearchDomain::class,

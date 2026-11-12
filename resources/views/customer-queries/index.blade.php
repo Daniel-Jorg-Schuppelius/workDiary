@@ -59,7 +59,7 @@
                             {{-- Fremdsprachige Rückfrage verstehen (Feature 148, MVP-732):
                                  Lesehilfe, kein Antwort-Entwurf. --}}
                             @if (($understandSuggestions[$query->id] ?? null) !== null)
-                                @include('ai._insight', ['suggestion' => $understandSuggestions[$query->id]])
+                                @include('ai._insight', ['suggestion' => $understandSuggestions[$query->id], 'regenerateAction' => route('ai.assist.portal-query', $query)])
                             @endif
                             @if ($query->attachments->isNotEmpty())
                                 {{-- Anhänge des Kunden (MVP-712): Nachweis, kein Löschen. --}}

@@ -13,10 +13,12 @@ namespace App\Models\Backup;
 use App\Enums\Backup\{BackupProvider, BackupTargetStatus};
 use App\Models\Concerns\{Auditable, HasConnectionHealth, HasSqid};
 use App\Models\Platform\User;
+use App\Plugins\Support\ConnectionFailure;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
+use Throwable;
 
 /**
  * Backupziel-Verbindung (Feature 017 Phase 32, MVP-361): OAuth-gebundenes
@@ -105,6 +107,24 @@ class BackupTargetConnection extends Model {
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    /**
+     * Stand nach einem gescheiterten Lauf (MVP-1620): abgewiesene Anmeldung →
+     * „neu anmelden“, Abschaltschwelle erreicht → „deaktiviert“. Zurück auf
+     * aktiv führt nur die erneute Verbindung.
+     */
+    public function degradeAfter(Throwable $error): void {
+        $target = match (true) {
+            ConnectionFailure::requiresReauth($error) => BackupTargetStatus::ReauthRequired,
+            $this->isConnectionFailing() => BackupTargetStatus::Disabled,
+            default => null,
+        };
+        if ($target === null || $this->status !== BackupTargetStatus::Active) {
+            return;
+        }
+        $this->forceFill(['status' => $target])->save();
+        $this->audit('backupTarget.statusChanged', ['status' => $target->value, 'error' => class_basename($error)]);
     }
 
     public function isRunnable(): bool {

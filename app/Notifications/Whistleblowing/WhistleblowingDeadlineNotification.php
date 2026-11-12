@@ -35,9 +35,14 @@ class WhistleblowingDeadlineNotification extends Notification {
     }
 
     public function toMail(object $notifiable): MailMessage {
-        $label = $this->kind === 'acknowledge'
-            ? __('Eingangsbestätigung überfällig')
-            : __('Rückmeldung fällig');
+        $label = match ($this->kind) {
+            'acknowledge_48h' => __('Eingangsbestätigung in 48 Stunden fällig'),
+            'acknowledge' => __('Eingangsbestätigung überfällig'),
+            'feedback_14d' => __('Rückmeldung in 14 Tagen fällig'),
+            'feedback_48h' => __('Rückmeldung in 48 Stunden fällig'),
+            'legal_hold' => __('Löschsperre zur Prüfung fällig'),
+            default => __('Rückmeldung überfällig'),
+        };
 
         return (new MailMessage)
             ->subject(__('Hinweisgeber-Frist') . ': ' . $this->caseNumber)

@@ -64,13 +64,6 @@ final class TourProblem {
         return CarbonImmutable::parse($date->toDateString(), $timezone)->startOfDay()->addSeconds($seconds)->utc();
     }
 
-    /** Zeitpunkt → Sekunden seit Mitternacht des Plantags (Ortszeit). */
-    public function secondsOf(\DateTimeInterface $at): int {
-        $midnight = CarbonImmutable::parse($this->date->toDateString(), $this->timezone)->startOfDay();
-
-        return (int) $midnight->diffInSeconds(CarbonImmutable::instance($at)->setTimezone($this->timezone), false);
-    }
-
     /** Anzeige- und Nachvollzieh-Daten ohne Matrix (für `tour_proposals.problem`). */
     /** @return array<string, mixed> */
     public function summary(): array {

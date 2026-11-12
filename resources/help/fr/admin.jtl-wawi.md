@@ -1,7 +1,7 @@
 ---
 title: "Connecter JTL-Wawi"
 topic: admin.jtl-wawi
-version: 1
+version: 3
 keywords:
     - gestion commerciale
     - ERP
@@ -55,3 +55,9 @@ mode « local » reprend les stocks JTL comme inventaire d’ouverture.
 bêta/pilote. Après la sortie officielle, elle peut dépendre de
 l’édition et devenir payante ; une licence expirée mène à un état
 bloqué visible, jamais à des écritures erronées silencieuses.
+
+**Relancer l’inventaire d’ouverture :** si la reprise a échoué lors du passage au mode « local », relancez-la le même jour avec « Lancer l’inventaire d’ouverture » ; un second passage ne comptabilise rien en double. À partir du lendemain, c’est le stock local qui fait foi et l’action n’est plus proposée.
+
+**Souveraineté des données :** La gestion des stocks de cette page est aussi la gestion du domaine des stocks sur la page « Souveraineté des données », qui se contente de l’afficher. Si un autre système gère les stocks, l’inventaire de reprise ne comptabilise rien pour la paire concernée ; le cas attend dans la boîte de réception des intégrations pour être repris une fois.
+
+**Stock piloté ailleurs :** si un autre programme (comme Billbee) pilote le stock, la page l’indique et ne change pas le mode ; sinon l’inventaire de reprise de JTL-Wawi porterait sur un stock qu’il ne pilote pas.

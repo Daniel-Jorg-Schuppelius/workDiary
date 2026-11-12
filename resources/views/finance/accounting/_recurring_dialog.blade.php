@@ -12,6 +12,7 @@
 <x-modal
     :title="$template ? __('accounting.recurring.action.edit') : __('accounting.recurring.action.add')"
     icon="event_repeat"
+    size="wide"
     :action="$template ? route('finance.accounting.recurring.update', $template) : route('finance.accounting.recurring.store')"
     :method="$template ? 'PUT' : 'POST'"
     :submit-label="__('Speichern')"
@@ -49,21 +50,9 @@
                   :from="old('starts_on', $template?->starts_on?->toDateString() ?? now()->toDateString())"
                   :to="old('ends_on', $template?->ends_on?->toDateString() ?? '')" />
 
-    <div class="grid gap-3 sm:grid-cols-2">
-        <x-select-field name="debit_account" :label="__('accounting.ledger.column.debit')" :hint="__('accounting.recurring.hint.accounts')">
-            <option value="">{{ __('accounting.recurring.no_account') }}</option>
-            @foreach ($accounts as $account)
-                <option value="{{ $account->sqid }}" @selected(old('debit_account', $debitAccount) === $account->sqid)>{{ $account->displayLabel() }}</option>
-            @endforeach
-        </x-select-field>
-
-        <x-select-field name="credit_account" :label="__('accounting.ledger.column.credit')">
-            <option value="">{{ __('accounting.recurring.no_account') }}</option>
-            @foreach ($accounts as $account)
-                <option value="{{ $account->sqid }}" @selected(old('credit_account', $creditAccount) === $account->sqid)>{{ $account->displayLabel() }}</option>
-            @endforeach
-        </x-select-field>
-    </div>
+    {{-- Buchungszeilen der Vorlage (MVP-1558): mehrzeilig mit Steuerkennzeichen und Gegenpartei. --}}
+    <p class="text-xs text-muted">{{ __('accounting.recurring.hint.accounts') }}</p>
+    @include('finance.accounting._entry_rows')
 
     @php($responsible = old('responsible_user_id', $template?->responsible?->sqid))
     <x-select-field name="responsible_user_id" :label="__('accounting.recurring.column.responsible')"
@@ -77,6 +66,8 @@
     <x-input-field name="note" type="text" maxlength="500"
                    :label="__('accounting.ledger.field.note')"
                    :value="old('note', $template->note ?? '')" />
+
+    <x-validation-errors />
 
     @if ($preview !== [])
         <p class="text-xs text-muted">

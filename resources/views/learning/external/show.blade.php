@@ -57,28 +57,33 @@
                 @if ($isLocked)
                     <x-status-badge tone="neutral" size="sm" outline>{{ $unit->lockLabelFor($enrollment, $completedUnitIds) }}</x-status-badge>
                 @endif
+                @if (! $isDone && ! $isLocked && in_array($unit->kind, [\App\Enums\Learning\LearningUnitKind::Procedure, \App\Enums\Learning\LearningUnitKind::Survey, \App\Enums\Learning\LearningUnitKind::External], true) && $unit->reportsOwnResult())
+                    <p class="w-full text-xs text-muted" role="status">{{ __('learning.external.unit_unavailable') }}</p>
+                @endif
                 {{-- Einheiten mit eigener Ergebnisquelle schließt nur diese Quelle ab. --}}
                 @unless ($isDone || $isLocked || $unit->reportsOwnResult())
-                    <form method="POST" action="{{ route('learning.external.units.complete', $unit) }}">
-                        @csrf
-                        <x-icon-btn icon="task_alt" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.complete_unit') }}</x-icon-btn>
-                    </form>
+                    @if (app(\App\Services\Learning\LearningVideoProgressService::class)->requirementsFor($unit) !== [])
+                        {{-- Dieser Zugang spielt keine Videos; der Pflichtanteil (MVP-1598) ist hier nicht erfüllbar. --}}
+                        <p class="w-full text-xs text-warning" role="status">{{ __('learning.external.video_required') }}</p>
+                    @else
+                        <form method="POST" action="{{ route('learning.external.units.complete', $unit) }}">
+                            @csrf
+                            <x-icon-btn icon="task_alt" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.complete_unit') }}</x-icon-btn>
+                        </form>
+                    @endif
                 @endunless
             </div>
 
-            @foreach ($isLocked ? [] : $unit->blocks() as $block)
-                @if (($block['type'] ?? null) === 'text' && isset($block['text']))
-                    <p class="mt-3 whitespace-pre-line text-sm text-base-content/80">{{ $block['text'] }}</p>
-                @elseif (($block['type'] ?? null) === 'heading' && isset($block['text']))
-                    <h3 class="mt-3 text-sm font-semibold">{{ $block['text'] }}</h3>
-                @elseif (($block['type'] ?? null) === 'checklist' && isset($block['items']))
-                    <ul class="mt-3 list-disc pl-5 text-sm text-base-content/80">
-                        @foreach ($block['items'] as $item)
-                            <li>{{ $item }}</li>
-                        @endforeach
-                    </ul>
-                @endif
-            @endforeach
+            {{-- Alle Blockarten wie im Player (MVP-1628): Medien über die Gastroute, ohne Verweise ins Haus. --}}
+            @unless ($isLocked)
+                @include('learning._blocks', [
+                    'blocks' => $unit->blocks(),
+                    'portal' => true,
+                    'mediaUrl' => fn (int $id): ?string => $unit->attachments->contains('id', $id)
+                        ? route('learning.external.units.media', [$unit, $unit->attachments->firstWhere('id', $id)])
+                        : null,
+                ])
+            @endunless
         </x-card>
     @endforeach
 </div>

@@ -64,3 +64,19 @@ Notas sobre la calidad de los datos:
 Exportación en **PDF**, **CSV** o **Excel** para dirección y control de
 gestión. La página muestra datos financieros de toda la organización y
 solo está disponible para personas con el permiso **Ver los informes**.
+
+## Mantener la tarifa de coste por empleado
+
+La **tarifa de coste interna** por persona es la base del cálculo posterior.
+Se encuentra en el diálogo del empleado (**Organización** → **Empleados** →
+editar), en el grupo **Tarifas para facturación y cálculo posterior**, junto a
+la **Tarifa por hora (facturación)**. Ambos campos solo son visibles y
+modificables con el permiso «Gestionar los datos de personal y nómina»; no
+aparecen en el perfil propio y cada cambio queda registrado.
+
+Orden de determinación de tarifas: la tarifa de coste de la persona tiene
+prioridad sobre la de la tarea, el proyecto y el cliente. La tarifa por hora
+de la persona también tiene prioridad sobre la de la tarea, el proyecto y el
+cliente; solo van por delante las condiciones especiales y una tarifa indicada
+directamente en la entrada de tiempo. Una tarifa nueva se aplica a los tiempos
+que se registren o recalculen después.

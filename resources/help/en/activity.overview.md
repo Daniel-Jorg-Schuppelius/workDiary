@@ -1,7 +1,7 @@
 ---
 title: "Activity"
 topic: activity.overview
-version: 1
+version: 2
 keywords:
     - Activity
     - Who changed what
@@ -25,3 +25,5 @@ fields changed is still shown in the audit log.
 In the records of customers, end customers, suppliers and projects, the
 "Change history" summarises the object's changes and events; the "Recent team
 activity" tile shows the latest entries of the past two weeks.
+
+**Event:** The “Event” filter narrows the list to one kind of change, such as “Created” or “Deleted”. “Business events” shows everything except the general changes (created, updated, deleted, archived, restored) — for example approvals, signatures or closures.

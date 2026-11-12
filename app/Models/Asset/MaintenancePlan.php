@@ -32,7 +32,6 @@ use Illuminate\Support\Carbon;
  * @property MaintenanceIntervalKind $interval_kind
  * @property int $interval_value
  * @property int $tolerance_days
- * @property string|null $procedure_template_code
  * @property Carbon|null $last_run_at
  * @property Carbon|null $next_due_on
  * @property bool $is_active
@@ -61,7 +60,6 @@ class MaintenancePlan extends Model {
         'interval_kind',
         'interval_value',
         'tolerance_days',
-        'procedure_template_code',
         'last_run_at',
         'next_due_on',
         'is_active',

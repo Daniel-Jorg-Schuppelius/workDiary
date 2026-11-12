@@ -117,8 +117,15 @@ final class OrderConfirmationService {
         }
 
         $number = $this->issuers->numberOnIssue($confirmation, NumberScope::OrderConfirmation);
-        $confirmation->update(['status' => OrderConfirmationStatus::Confirmed, 'confirmed_on' => now()->toDateString()]
-            + ($number !== null ? ['number' => $number] : []));
+        $confirmation->update([
+            'status' => OrderConfirmationStatus::Confirmed,
+            'confirmed_on' => now()->toDateString(),
+            // Wie die Rechnung beim Ausstellen (MVP-1624).
+            'issuer_snapshot' => [
+                'issuer' => \App\Services\DocumentDesign\IssuerIdentity::for($confirmation->organization),
+                'contact' => \App\Services\Invoicing\OrderConfirmationPdfRenderer::contactPerson($confirmation),
+            ],
+        ] + ($number !== null ? ['number' => $number] : []));
         $confirmation->audit('order_confirmation.confirmed', ['by' => $actor->id, 'number' => $confirmation->number]);
 
         $organization = $confirmation->organization;

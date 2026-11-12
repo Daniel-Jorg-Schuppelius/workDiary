@@ -1,7 +1,7 @@
 ---
 title: "Correcciones de tiempo"
 topic: corrections.requests
-version: 1
+version: 3
 keywords:
     - solicitud de corrección
     - fichaje olvidado
@@ -28,3 +28,12 @@ solicitudes enviadas pasan por aprobación o se aplican directamente como
 autocorrección; las correcciones aplicadas se marcan siempre como
 registro manual para mantener la trazabilidad. Los borradores y las
 solicitudes enviadas pueden retirarse.
+
+**Cambiar la orden:** si en **Entrada afectada** elige una imputación de
+tiempo con proyecto, aparece el campo **Cambiar la orden** con las órdenes
+de ese proyecto. Así vincula la imputación a otra orden o la desvincula con
+**— sin orden —**; tras aplicar, el tiempo figura en la nueva orden.
+
+## Fichajes ajustados
+
+Si una solicitud aprobada o aplicada por uno mismo modifica un fichaje cerrado, este muestra después **Ajustado**. Un fichaje que sigue en curso permanece abierto para que siga siendo posible fichar la salida.

@@ -40,23 +40,24 @@ class FifoValuationService implements InventoryValuationStrategy {
         return ValuationMethod::Fifo;
     }
 
-    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null): StockMovement {
-        return $this->applyReceipt($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, null, $source);
+    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?EnteredQuantity $entered = null): StockMovement {
+        return $this->applyReceipt($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, null, $source, $entered);
     }
 
     /** Wareneingang einer konkreten Charge (E2): Schicht trägt Los + Verfallsdatum (FEFO). */
-    public function receiptIntoLot(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, StockLot $lot, string $currency = 'EUR', ?int $actorUserId = null): StockMovement {
-        return $this->applyReceipt($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $lot);
+    public function receiptIntoLot(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, StockLot $lot, string $currency = 'EUR', ?int $actorUserId = null, ?EnteredQuantity $entered = null): StockMovement {
+        return $this->applyReceipt($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $lot, null, $entered);
     }
 
-    private function applyReceipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency, ?int $actorUserId, ?StockLot $lot, ?Model $source = null): StockMovement {
+    private function applyReceipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency, ?int $actorUserId, ?StockLot $lot, ?Model $source = null, ?EnteredQuantity $entered = null): StockMovement {
         $qty = DecimalQty::positive($qty);
         $unitCost = DecimalQty::positive($unitCost);
 
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $lot, $source): StockMovement {
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $lot, $source, $entered): StockMovement {
             $movement = $this->ledger->post(new StockPosting(
                 $variant, $warehouse, StockState::Physical, $qty, StockMovementType::Receipt,
-                OwnershipType::Own, actorUserId: $actorUserId, source: $source,
+                OwnershipType::Own, originalQty: $entered?->originalQty, originalUnit: $entered?->originalUnit,
+                actorUserId: $actorUserId, source: $source,
                 costUnit: $unitCost, costTotal: bcmul($qty, $unitCost, self::SCALE), currency: $currency,
                 stockLotId: $lot?->id,
             ));
@@ -83,9 +84,10 @@ class FifoValuationService implements InventoryValuationStrategy {
      * Teil verbraucht zuerst die Schichten seiner Charge — der Teil ohne
      * Charge die chargenlosen —, danach die übrigen in Verfahrensfolge.
      */
-    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false): StockIssue {
+    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false, ?EnteredQuantity $entered = null): StockIssue {
         return $this->ledger->issue(
             $variant, $warehouse, $qty,
+            entered: $entered,
             allowNegative: $allowNegative,
             actorUserId: $actorUserId,
             lot: $lot,
@@ -156,18 +158,25 @@ class FifoValuationService implements InventoryValuationStrategy {
         return bcadd($sum, '0', self::SCALE);
     }
 
-    public function totalValue(ArticleVariant $variant, Warehouse $warehouse): string {
-        $layers = StockValuationLayer::query()
-            ->where('article_variant_id', $variant->id)
-            ->where('warehouse_id', $warehouse->id)
-            ->get(['qty_remaining', 'unit_cost']);
-
-        $total = '0';
-        foreach ($layers as $layer) {
-            $total = bcadd($total, bcmul($layer->qty_remaining, $layer->unit_cost?->getAmount() ?? '0', self::SCALE), self::SCALE);
+    /**
+     * Schichtbewertung aller Varianten eines Lagers in einer Query: Wert = Restmenge × Stückkosten
+     * je Schicht, Durchschnitt = Wert / Restmenge.
+     *
+     * @return array<int, array{avg: numeric-string, value: numeric-string}>
+     */
+    public function summariesForWarehouse(Warehouse $warehouse): array {
+        $sums = [];
+        foreach (StockValuationLayer::query()->where('warehouse_id', $warehouse->id)->where('qty_remaining', '>', 0)->get(['article_variant_id', 'qty_remaining', 'unit_cost']) as $layer) {
+            $variantId = (int) $layer->article_variant_id;
+            $sums[$variantId] ??= ['qty' => '0', 'value' => '0'];
+            $sums[$variantId]['qty'] = bcadd($sums[$variantId]['qty'], $layer->qty_remaining, self::SCALE);
+            $sums[$variantId]['value'] = bcadd($sums[$variantId]['value'], bcmul($layer->qty_remaining, $layer->unit_cost?->getAmount() ?? '0', self::SCALE), self::SCALE);
         }
 
-        return $total;
+        return array_map(static fn (array $sum): array => [
+            'avg' => NumberHelper::divideOrDefault($sum['value'], $sum['qty'], self::SCALE),
+            'value' => $sum['value'],
+        ], $sums);
     }
 
     /**

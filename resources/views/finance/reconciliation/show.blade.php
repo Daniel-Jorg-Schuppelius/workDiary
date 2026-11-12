@@ -119,6 +119,13 @@
                                 <x-posting-state :state="$posting['state']" :blockers="$posting['blockers']" />
                                 @if ($posting['state'] === 'open' && auth()->user()?->can(\App\Enums\User\Permission::AccountingLedgerPost->value))
                                     {{-- Bewusste Klärungsbuchung (MVP-681): nie automatisch. --}}
+                                    @if ($transaction->allocations->isEmpty())
+                                        {{-- Umsatz ohne Beleg (MVP-1557): Gebühr, Zins, Privat direkt aufs Sachkonto. --}}
+                                        <x-icon-btn icon="account_balance" size="xs" tone="ghost"
+                                                    data-entry-modal-trigger
+                                                    :href="route('finance.accounting.inbox.bank-direct.create', $transaction->sqid)"
+                                                    :label="__('accounting.bank_direct.action.post')" />
+                                    @endif
                                     <x-icon-btn icon="help_center" size="xs" tone="ghost"
                                                 data-entry-modal-trigger
                                                 :href="route('finance.accounting.inbox.clearing.create', $transaction->sqid)"
@@ -386,6 +393,13 @@
                             @endif
 
                             <div class="flex gap-2 mt-2">
+                                @unless ($transaction->hasSplitDetails())
+                                    {{-- Freie Belegsuche über die Vorschläge hinaus (MVP-1557). --}}
+                                    <x-icon-btn icon="search" tone="ghost" size="xs" show-label
+                                                data-entry-modal-trigger
+                                                :href="route('finance.reconciliation.assign-form', $transaction->sqid)"
+                                                :label="__('bank.assign.action')" />
+                                @endunless
                                 <form method="POST" action="{{ route('finance.reconciliation.ignore', $transaction->sqid) }}">
                                     @csrf
                                     <x-icon-btn icon="block" tone="ghost" size="xs" type="submit"

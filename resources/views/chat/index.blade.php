@@ -351,6 +351,7 @@
             <input type="checkbox" name="multiple" value="1" class="checkbox checkbox-sm">
             <span class="label-text">{{ __('Mehrfachauswahl') }}</span>
         </label>
+        <x-input-field name="closes_at" type="datetime-local" :label="__('Abstimmung endet (optional)')" class="mt-2" />
     </x-modal>
 
     @can('update', $activeChannel)

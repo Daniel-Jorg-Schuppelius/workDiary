@@ -8,7 +8,8 @@
 
   Auftrags-Timeline „Verlauf" (MVP-010).
   Erwartet: $diary, $timelineItems (list<TimelineItem>), $timelineHasMore (bool),
-            $timelineType (string, ''=alle), $timelineLimit (int)
+            $timelineTypes (list<string>, leer = alle), $timelineFilter (TimelineFilter),
+            $timelineActors (array<int, string>), $timelineQuery (array), $timelineLimit (int)
 --}}
 @php
     // Kurznarrativ des Verlaufs (Feature 148, MVP-732): verdichtet die
@@ -33,29 +34,44 @@
         @include('ai._insight', [
             'suggestion' => $aiNarrative,
             'acceptAction' => route('ai.assist.accept', $aiNarrative),
+            'regenerateAction' => route('ai.assist.case-narrative', $diary),
         ])
     @endif
 
-    {{-- Filter-Chips nach Ereignistyp (serverseitig per Query-Param) --}}
-    <nav class="mb-4 flex flex-wrap gap-1.5" aria-label="{{ __('timeline.filter.label') }}">
-        <a href="{{ route('diary.show', $diary) }}#timeline"
-           @class(['badge badge-sm', 'badge-primary' => $timelineType === '', 'badge-ghost' => $timelineType !== ''])>
-            {{ __('timeline.filter.all') }}
-        </a>
-        @foreach (\App\Services\Timeline\DiaryEntryTimelineService::TYPES as $typeKey)
-            <a href="{{ route('diary.show', [$diary, 'timeline_type' => $typeKey]) }}#timeline"
-               @class(['badge badge-sm', 'badge-primary' => $timelineType === $typeKey, 'badge-ghost' => $timelineType !== $typeKey])>
-                {{ __('timeline.filter.' . $typeKey) }}
-            </a>
-        @endforeach
-    </nav>
+    {{-- Filterleiste (MVP-1596): Zeitraum, Typen, Person, „nur kundenrelevant“ — alles serverseitig. --}}
+    <x-filter-bar class="mb-4" :action="route('diary.show', $diary) . '#timeline'" :reset="route('diary.show', $diary)"
+                  aria-label="{{ __('timeline.filter.label') }}">
+        <x-date-range class="w-80 shrink-0" :label="false" from-name="timeline_from" to-name="timeline_to"
+                      :from="request('timeline_from')" :to="request('timeline_to')" />
+        <x-filter-field :label="__('timeline.filter.actor')" for="timeline-actor">
+            <select id="timeline-actor" name="timeline_actor" class="select select-sm select-bordered shrink-0">
+                <option value="">{{ __('timeline.filter.all_actors') }}</option>
+                @foreach ($timelineActors as $actorId => $actorName)
+                    <option value="{{ \App\Support\Sqid::encode(\App\Models\Platform\User::class, $actorId) }}" @selected($timelineFilter->actorId === $actorId)>{{ $actorName }}</option>
+                @endforeach
+            </select>
+        </x-filter-field>
+        <x-filter-toggle name="timeline_customer" id="timeline-customer" :label="__('timeline.filter.customer_only')"
+                         :checked="$timelineFilter->customerOnly" />
+        {{-- Typen mehrfach wählbar; ohne Auswahl gelten alle. --}}
+        <fieldset class="order-60 flex basis-full flex-wrap items-center gap-1.5">
+            <legend class="sr-only">{{ __('timeline.filter.types') }}</legend>
+            @foreach (\App\Services\Timeline\DiaryEntryTimelineService::TYPES as $typeKey)
+                <label @class(['badge badge-sm cursor-pointer gap-1 whitespace-nowrap', 'badge-primary' => in_array($typeKey, $timelineTypes, true), 'badge-ghost' => ! in_array($typeKey, $timelineTypes, true)])>
+                    <input type="checkbox" class="checkbox checkbox-xs" name="timeline_types[]" value="{{ $typeKey }}"
+                           @checked(in_array($typeKey, $timelineTypes, true))>
+                    {{ __('timeline.filter.' . $typeKey) }}
+                </label>
+            @endforeach
+        </fieldset>
+    </x-filter-bar>
 
     @include('timeline._items', ['items' => $timelineItems])
 
     @if ($timelineHasMore)
         <div class="mt-4 text-center">
             <x-icon-btn icon="expand_more" tone="outline" size="sm" show-label
-                        :href="route('diary.show', array_filter(['diary' => $diary, 'timeline_type' => $timelineType ?: null, 'timeline_limit' => $timelineLimit + 50])) . '#timeline'">
+                        :href="route('diary.show', ['diary' => $diary, 'timeline_limit' => $timelineLimit + 50] + $timelineQuery) . '#timeline'">
                 {{ __('timeline.action.load_more') }}
             </x-icon-btn>
         </div>

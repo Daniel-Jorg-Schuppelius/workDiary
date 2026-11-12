@@ -18,6 +18,7 @@ use App\Models\Platform\{Organization, User};
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -225,12 +226,12 @@ class ClubGradingService {
     }
 
     /** Voraussetzung für den nächsthöheren Grad des Mitglieds in der aktiven Version, sonst null. */
-    public function nextRequirement(ClubMember $member, ClubGradingSystem $system, ?CarbonInterface $on = null): ?ClubGradeRequirement {
+    public function nextRequirement(ClubMember $member, ClubGradingSystem $system, ?CarbonInterface $on = null, bool $releasedOnly = false): ?ClubGradeRequirement {
         $version = $system->activeVersion();
         if ($version === null) {
             return null;
         }
-        $current = $this->currentGrade($member, $system, $on ?? CarbonImmutable::today());
+        $current = $this->currentGrade($member, $system, $on ?? CarbonImmutable::today(), $releasedOnly);
         $currentRank = $current?->grade->rank ?? -1;
         /** @var ClubGrade|null $next */
         $next = $system->grades()->where('is_active', true)->where('rank', '>', $currentRank)->orderBy('rank')->first();
@@ -245,11 +246,15 @@ class ClubGradingService {
 
     // ── Grade je Mitglied ────────────────────────────────────────────────
 
-    /** Gültiger höchster Grad des Mitglieds in dieser Ordnung am Stichtag. */
-    public function currentGrade(ClubMember $member, ClubGradingSystem $system, CarbonInterface $on): ?ClubMemberGrade {
+    /**
+     * Gültiger höchster Grad des Mitglieds in dieser Ordnung am Stichtag;
+     * `releasedOnly` für den Mitgliederbereich (Prüfungsgrade erst nach der Ergebnisfreigabe, MVP-1616).
+     */
+    public function currentGrade(ClubMember $member, ClubGradingSystem $system, CarbonInterface $on, bool $releasedOnly = false): ?ClubMemberGrade {
         /** @var ClubMemberGrade|null $grade */
         $grade = ClubMemberGrade::query()
             ->valid()
+            ->when($releasedOnly, static fn (Builder $query) => $query->released())
             ->where('club_member_grades.club_member_id', $member->id)
             ->where('club_member_grades.club_grading_system_id', $system->id)
             ->where('club_member_grades.obtained_on', '<', DateRange::dayAfter($on))
@@ -301,6 +306,8 @@ class ClubGradingService {
             $organization = Organization::query()->whereKey($member->organization_id)->first();
             if ($organization !== null) {
                 $this->groups->refreshProposals($organization, CarbonImmutable::today(), $member);
+                // Gestaltung der Bescheinigung mit der Verleihung festhalten (MVP-1624).
+                app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->snapshot($awarded, \App\Enums\DocumentDesign\RenderDocumentKind::Certificate, $organization, user: $actor);
             }
 
             return $awarded;

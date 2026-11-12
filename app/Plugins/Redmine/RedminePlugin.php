@@ -15,7 +15,7 @@ namespace App\Plugins\Redmine;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Plugins\AbstractPlugin;
-use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer, TaskSyncer, TimeImporter};
+use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer, TimeImporter};
 use App\Plugins\Redmine\Api\RedmineClientFactory;
 use App\Plugins\Redmine\Models\RedmineConnection;
 use App\Plugins\Redmine\Services\RedmineImportService;
@@ -26,7 +26,7 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSett
  * ausgewählter Projekte werden Aufgaben, Zeiteinträge auf Wunsch Zeitbuchungen
  * im Zielprojekt — nur lesend, ohne Rückexport.
  */
-class RedminePlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer, TimeImporter {
+class RedminePlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, LinksExternalRecords, SlotRenderer, TimeImporter {
     use ChecksConnectionHealth, RendersTaskLink;
 
     public const string ID = 'redmine';
@@ -58,10 +58,6 @@ class RedminePlugin extends AbstractPlugin implements LinksExternalRecords, Slot
         return [PluginCapability::TaskSync, PluginCapability::TimeImport];
     }
 
-    public function syncTasks(Organization $organization): array {
-        return app(RedmineImportService::class)->run($organization);
-    }
-
     public function importTimeEntries(Organization $organization): array {
         return app(RedmineImportService::class)->importTimes($organization);
     }
@@ -88,5 +84,10 @@ class RedminePlugin extends AbstractPlugin implements LinksExternalRecords, Slot
 
     protected function taskLinkType(): string {
         return self::EXT_TYPE_ISSUE;
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Tasks];
     }
 }

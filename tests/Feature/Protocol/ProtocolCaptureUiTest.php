@@ -146,7 +146,7 @@ class ProtocolCaptureUiTest extends TestCase {
         $this->actingAs($admin)->get(route('protocols.signature-tokens.create', $protocol))->assertOk();
         $this->actingAs($admin)->post(route('protocols.transition', [$protocol, 'sign']), [
             'with_signature' => '1',
-            'signature' => ['signer_name' => 'Erika Muster', 'role' => 'contractor', 'method' => 'onscreen'],
+            'signature' => ['signer_name' => 'Erika Muster', 'role' => 'contractor', 'method' => 'onscreen', 'image' => 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='],
         ])->assertSessionHasNoErrors();
 
         $protocol->refresh();

@@ -14,6 +14,7 @@ namespace App\Services\DocumentDesign;
 
 use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState, PageFormat, RenderDocumentKind, TableStylePreset};
 use App\Models\DocumentDesign\DocumentRenderProfileVersion;
+use App\Models\Platform\Organization;
 use CommonToolkit\Helper\Data\ColorHelper;
 
 /**
@@ -154,17 +155,49 @@ class RenderPreflightService {
             }
         }
 
+        $profile = $version->profile;
+        if ($profile === null) {
+            return;
+        }
+        $issuer = null;
+        $reported = [];
+        // Gebundene Arten zuerst: ihr Fehler geht der Warnung des Rückfalls vor.
+        $boundKinds = (array) ($profile->document_kinds ?? []);
+        usort($kinds, static fn ($a, $b): int => (int) in_array($b, $boundKinds, true) <=> (int) in_array($a, $boundKinds, true));
         foreach ($kinds as $kindValue) {
             $kind = RenderDocumentKind::tryFrom((string) $kindValue);
             if ($kind === null) {
                 continue;
             }
             foreach ($kind->mandatoryBlocks() as $block) {
-                if ($version->blockState($block) === InformationBlockState::NotApplicable) {
+                $state = $version->blockState($block);
+                if ($state === InformationBlockState::NotApplicable) {
                     $result->error('mandatory_missing', __(':kind: Pflichtblock „:block" darf nicht „nicht anwendbar" sein.', [
                         'kind' => $kind->label(),
                         'block' => $block->label(),
                     ]), null, $block->value);
+                }
+                // „Dynamisch“ erfüllt den Pflichtblock nur, wenn der Beleg ihn druckt und die Stammdaten dafür da sind.
+                if ($state !== InformationBlockState::Dynamic || ! $kind->printsIssuerBlocks() || isset($reported[$block->value])) {
+                    continue;
+                }
+                $issuer ??= IssuerIdentity::for(Organization::query()->withoutGlobalScopes()->find($profile->organization_id));
+                $missing = match ($block) {
+                    InformationBlock::CompanyIdentity => ! IssuerIdentity::hasCompanyIdentity($issuer),
+                    InformationBlock::TaxIdentity => ! IssuerIdentity::hasTaxIdentity($issuer),
+                    default => false,
+                };
+                if ($missing) {
+                    $reported[$block->value] = true;
+                    $message = $block === InformationBlock::TaxIdentity
+                        ? __('Pflichtblock „:block" ist dynamisch, aber weder USt-IdNr. noch Steuernummer der Organisation sind gepflegt.', ['block' => $block->label()])
+                        : __('Pflichtblock „:block" ist dynamisch, aber Name und vollständige Anschrift der Organisation sind nicht gepflegt.', ['block' => $block->label()]);
+                    // Ein Standardprofil deckt die Art nur als Rückfall: dort warnt der Preflight, statt Organisationen ohne Faktura zu sperren.
+                    $bound = in_array($kind->value, $boundKinds, true)
+                        || $kind->family() === $profile->document_family;
+                    $bound
+                        ? $result->error('mandatory_data_missing', $message, null, $block->value)
+                        : $result->warn('mandatory_data_missing', $message, null, $block->value);
                 }
             }
         }

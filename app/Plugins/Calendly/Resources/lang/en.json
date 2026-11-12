@@ -50,5 +50,13 @@
     "nicht verbunden": "not connected",
     "nicht zugeordnet": "not assigned",
     "verbunden": "connected",
-    "z. B. Erstberatung": "e.g. initial consultation"
+    "z. B. Erstberatung": "e.g. initial consultation",
+    "Calendly-Nutzer zuordnen": "Map Calendly users",
+    "Gastgeber werden über ihre E-Mail-Adresse erkannt. Weicht die Calendly-Adresse ab, ordnen Sie sie hier einem Benutzer zu.": "Hosts are recognised by their email address. If the Calendly address differs, map it to a user here.",
+    "Calendly-E-Mail": "Calendly email",
+    "Zuordnung speichern": "Save mapping",
+    "Zuordnung entfernen": "Remove mapping",
+    "Calendly-Nutzer zugeordnet.": "Calendly user mapped.",
+    "Calendly-Zuordnung entfernt.": "Calendly mapping removed.",
+    "Noch keine abweichenden Gastgeber zugeordnet.": "No differing hosts mapped yet."
 }

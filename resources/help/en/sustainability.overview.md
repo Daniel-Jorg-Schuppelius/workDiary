@@ -1,7 +1,7 @@
 ---
 title: "Sustainability & ESG"
 topic: sustainability.overview
-version: 2
+version: 3
 keywords:
     - carbon footprint
     - CO2 emissions
@@ -53,3 +53,15 @@ that no longer appear in the overview.
 methodology note and a freezable management-review snapshot. The
 VSME 1.0 reference matrix shows which WorkDiary data prepares which
 report section.
+
+**Assessment with a subject:** “Start assessment” asks for the subject: asset,
+vehicle, site, room, project, order, supplier, article, investment or contract.
+You can choose from the objects of enabled modules that you may read; without
+a subject you enter a name. Assets, suppliers and investments carry the
+“Assess sustainability” button. The assessment links to its object and to all
+assessments of the same object; each further assessment of an object is a new
+version.
+
+**Measures per assessment:** A measure can be assigned to an assessment, when
+recording it in the overview or directly at the assessment. The list of
+measures links to the assessment.

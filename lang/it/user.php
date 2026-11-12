@@ -11,6 +11,16 @@
 return [
     'employees' => 'Dipendenti',
 
+    // Tariffa di fatturazione e di costo per persona (MVP-1565), visibile solo con user.payroll.manage.
+    'rates' => [
+        'legend' => 'Tariffe per fatturazione e consuntivo',
+        'hint' => 'Riservato: visibile e modificabile solo con il permesso «Gestisci i dati del personale e delle buste paga». Le modifiche valgono per i tempi registrati o ricalcolati in seguito e vengono registrate nel log.',
+        'hourly_rate' => 'Tariffa oraria (fatturazione)',
+        'hourly_rate_hint' => 'Prevale sulla tariffa di attività, progetto e cliente; solo le condizioni particolari e una tariffa sulla registrazione del tempo hanno la precedenza. Lasci vuoto se deve valere la tariffa del progetto o del cliente.',
+        'internal_rate' => 'Tariffa di costo interna',
+        'internal_rate_hint' => 'Costo orario di questa persona per il consuntivo; prevale sulla tariffa di costo di attività, progetto e cliente.',
+    ],
+
     'role' => [
         'admin' => 'Amministratore',
         'meldestelle' => 'Ufficio segnalazioni',

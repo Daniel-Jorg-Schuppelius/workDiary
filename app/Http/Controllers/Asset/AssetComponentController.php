@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Article\Article;
 use App\Models\Asset\{Asset, AssetComponent};
 use App\Models\Inventory\StockSerial;
+use App\Models\Material\MaterialUsage;
 use App\Services\Asset\AssetComponentService;
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -38,6 +39,7 @@ class AssetComponentController extends Controller {
             'installed' => $this->components->installed($asset),
             'history' => $this->components->history($asset),
             'due' => $this->components->dueComponents($asset),
+            'adoptable' => Gate::allows('update', $asset) ? $this->components->adoptableUsages($asset) : collect(),
         ]);
     }
 
@@ -86,6 +88,19 @@ class AssetComponentController extends Controller {
         }
 
         return back()->with('status', __('asset.components.replaced'));
+    }
+
+    /** Materialverbrauch am Gerät in die Stückliste übernehmen (Feature 118). */
+    public function adopt(Request $request, Asset $asset, MaterialUsage $materialUsage): RedirectResponse {
+        Gate::authorize('update', $asset);
+
+        try {
+            $this->components->adoptFromUsage($materialUsage, $asset, $request->user());
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return back()->with('status', __('asset.components.adopted'));
     }
 
     public function remove(Asset $asset, AssetComponent $component): RedirectResponse {

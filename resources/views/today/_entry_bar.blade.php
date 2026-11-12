@@ -60,7 +60,9 @@
                 'minutes' => old('minutes'),
             ];
         @endphp
+        {{-- Offline (MVP-1593): Dauer und Von/Bis gehen als Befehl `time.entry` in die Warteschlange; der Timer nicht. --}}
         <form method="POST" action="{{ route('today.entry-bar.store') }}"
+              data-offline-sync="time.entry"
               x-data="entryBar"
               data-config="{{ json_encode($entryBarConfig) }}"
               {{-- Kein space-y am Formular: es würde der sichtbaren Hauptzeile

@@ -1,7 +1,7 @@
 ---
 title: "Quelltext-Integrität"
 topic: admin.integrity
-version: 1
+version: 2
 keywords:
     - Manipulationserkennung
     - Manipulationsschutz
@@ -44,3 +44,11 @@ Baseline fällt bei der Signaturprüfung auf.
 
 Der tägliche Lauf ist über `INTEGRITY_CHECK_ENABLED` schaltbar und über die
 Scheduler-Seite umplanbar.
+
+**Lockdown aufheben:** Hat der Integritäts-Lockdown die Installation in den
+Wartungsmodus geschaltet, hebt ihn eine neu eingefrorene Baseline
+(„Baseline einfrieren“, `integrity:freeze`) automatisch auf. Ohne neue Baseline
+hebt der Plattformbetrieb ihn über **Lockdown aufheben** auf dieser Seite
+(Zugang über das Bypass-Geheimnis) oder mit `php artisan integrity:release
+--reason=…` auf. Beides steht mit Grund und Person im Audit-Log. Einen
+Wartungsmodus aus anderem Anlass (etwa ein Deploy) heben diese Wege nicht auf.

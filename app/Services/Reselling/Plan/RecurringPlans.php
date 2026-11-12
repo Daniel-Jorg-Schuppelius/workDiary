@@ -37,10 +37,6 @@ final class RecurringPlans {
         return array_values($this->sources);
     }
 
-    public function hasSources(): bool {
-        return $this->sources !== [];
-    }
-
     /** Gibt es für die Organisation eine aktive Plan-Quelle? Ohne sie gibt es keinen Plan und keine Plan-Befunde. */
     public function availableFor(Organization $organization): bool {
         foreach ($this->sources as $source) {
@@ -98,36 +94,6 @@ final class RecurringPlans {
         }
 
         return false;
-    }
-
-    /**
-     * Abos, deren Abrechnung eine laufende Serienvorlage übernimmt — der
-     * Rechnungsvorschlag lässt ihre Perioden aus (MVP-1411).
-     *
-     * @return list<int>
-     */
-    public function plannedSubscriptionIds(Organization $organization): array {
-        if (! $this->availableFor($organization)) {
-            return [];
-        }
-        $active = [];
-        foreach ($this->templatesFor($organization) as $template) {
-            if ($template->isActive()) {
-                $active[$template->key] = true;
-            }
-        }
-        if ($active === []) {
-            return [];
-        }
-
-        $ids = ResalePlanLink::query()->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->whereIn('plan_key', array_keys($active))
-            ->distinct()
-            ->pluck('subscription_id')
-            ->all();
-
-        return array_values(array_map('intval', $ids));
     }
 
     /**

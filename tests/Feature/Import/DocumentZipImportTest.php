@@ -58,6 +58,42 @@ class DocumentZipImportTest extends TestCase {
         return ZipFile::createFromStrings(['manifest.csv' => $manifest] + $files);
     }
 
+    /**
+     * Ausführung wie im Job: Lauf anlegen, importieren, Zeilenfehler aus dem Lauf lesen.
+     *
+     * @return array{created: int, updated: int, skipped: int, failed: int, errors: list<string>}
+     */
+    private function runImport(string $zip): array {
+        $run = ImportRun::create([
+            'organization_id' => $this->organization->id,
+            'entity' => ImportEntity::Documents,
+            'state' => ImportRunState::Running,
+            'input_filename' => 'docs.zip',
+            'input_hash' => hash('sha256', $zip),
+            'storage_path' => 'imports/' . $this->organization->id . '/docs.zip',
+        ]);
+        [$created, $updated, $skipped, $failed] = app(DocumentZipImportService::class)->import($run, $zip, $this->organization, $this->admin);
+
+        return [
+            'created' => $created,
+            'updated' => $updated,
+            'skipped' => $skipped,
+            'failed' => $failed,
+            'errors' => $run->errors()->orderBy('id')->get()
+                ->map(static fn ($error): string => 'Zeile ' . $error->row_number . ': ' . $error->message)
+                ->all(),
+        ];
+    }
+
+    private function rejectedArchiveMessage(string $zip): string {
+        try {
+            $this->runImport($zip);
+        } catch (\RuntimeException $e) {
+            return $e->getMessage();
+        }
+        $this->fail('Das Archiv wurde nicht abgewiesen.');
+    }
+
     public function test_manifest_rows_create_documents_at_customer_project_and_asset(): void {
         $manifest = "file;target_type;target_key;title;document_type;valid_until\n"
             . "vertrag.pdf;customer;K-1;Wartungsvertrag;contract;31.12.2027\n"
@@ -69,7 +105,7 @@ class DocumentZipImportTest extends TestCase {
             'handbuch.pdf' => self::PDF,
         ]);
 
-        $result = app(DocumentZipImportService::class)->importBinary($zip, $this->organization, $this->admin);
+        $result = $this->runImport($zip);
 
         $this->assertSame(['created' => 3, 'updated' => 0, 'skipped' => 0, 'failed' => 0, 'errors' => []], $result);
         $contract = Document::query()->where('title', 'Wartungsvertrag')->firstOrFail();
@@ -88,7 +124,7 @@ class DocumentZipImportTest extends TestCase {
             'docs/plan.txt' => "Plan v2 mit mehr Inhalt\n",
             'handbuch.pdf' => self::PDF,
         ]);
-        $result = app(DocumentZipImportService::class)->importBinary($again, $this->organization, $this->admin);
+        $result = $this->runImport($again);
         $this->assertSame(['created' => 0, 'updated' => 1, 'skipped' => 2, 'failed' => 0], array_diff_key($result, ['errors' => true]));
         $this->assertSame(3, Document::query()->count());
         $this->assertSame(2, Document::query()->where('title', 'Bauplan')->firstOrFail()->versions()->count());
@@ -103,7 +139,7 @@ class DocumentZipImportTest extends TestCase {
             . "ok.pdf;user;K-1;Falscher Zieltyp\n";
         $zip = $this->zip($manifest, ['ok.pdf' => self::PDF, 'script.exe' => 'MZ']);
 
-        $result = app(DocumentZipImportService::class)->importBinary($zip, $this->organization, $this->admin);
+        $result = $this->runImport($zip);
 
         $this->assertSame(1, $result['created']);
         $this->assertSame(4, $result['skipped']);
@@ -120,7 +156,7 @@ class DocumentZipImportTest extends TestCase {
         // ELF-Kopf: Endung erlaubt, Inhalt (application/octet-stream) nicht.
         $zip = $this->zip($manifest, ['bild.png' => "\x7fELF\x02\x01\x01" . str_repeat("\0", 60)]);
 
-        $result = app(DocumentZipImportService::class)->importBinary($zip, $this->organization, $this->admin);
+        $result = $this->runImport($zip);
 
         $this->assertSame(1, $result['failed'], json_encode($result, JSON_THROW_ON_ERROR));
         $this->assertSame(0, Document::query()->count());
@@ -137,23 +173,17 @@ class DocumentZipImportTest extends TestCase {
         $zip = (string) file_get_contents((string) $tmp);
         @unlink((string) $tmp);
 
-        $result = app(DocumentZipImportService::class)->importBinary($zip, $this->organization, $this->admin);
-
-        $this->assertSame(1, $result['failed']);
-        $this->assertSame(0, $result['created']);
-        $this->assertStringContainsString('evil.txt', $result['errors'][0]);
+        $this->assertStringContainsString('evil.txt', $this->rejectedArchiveMessage($zip));
         $this->assertSame(0, Document::query()->count());
     }
 
     public function test_missing_manifest_and_targets_of_other_org_fail(): void {
-        $result = app(DocumentZipImportService::class)->importBinary(ZipFile::createFromStrings(['a.pdf' => self::PDF]), $this->organization, $this->admin);
-        $this->assertSame(1, $result['failed']);
-        $this->assertStringContainsString('manifest.csv', $result['errors'][0]);
+        $this->assertStringContainsString('manifest.csv', $this->rejectedArchiveMessage(ZipFile::createFromStrings(['a.pdf' => self::PDF])));
 
         $foreign = \App\Models\Platform\Organization::factory()->create();
         Customer::factory()->create(['organization_id' => $foreign->id, 'number' => 'K-F', 'name' => 'Fremd']);
         $zip = $this->zip("file;target_type;target_key;title\nok.pdf;customer;K-F;Fremd\n", ['ok.pdf' => self::PDF]);
-        $result = app(DocumentZipImportService::class)->importBinary($zip, $this->organization, $this->admin);
+        $result = $this->runImport($zip);
         $this->assertSame(1, $result['skipped']);
         $this->assertSame(0, Document::query()->count());
     }

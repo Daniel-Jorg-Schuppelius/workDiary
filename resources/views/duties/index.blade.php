@@ -101,6 +101,7 @@
                         <option value="{{ \App\Enums\Vacation\VacationStatus::Approved->value }}"  @selected(($filters['vstatus'] ?? '') === \App\Enums\Vacation\VacationStatus::Approved->value)>{{ __('Genehmigt') }}</option>
                         <option value="{{ \App\Enums\Vacation\VacationStatus::Rejected->value }}"  @selected(($filters['vstatus'] ?? '') === \App\Enums\Vacation\VacationStatus::Rejected->value)>{{ __('Abgelehnt') }}</option>
                         <option value="{{ \App\Enums\Vacation\VacationStatus::Cancelled->value }}" @selected(($filters['vstatus'] ?? '') === \App\Enums\Vacation\VacationStatus::Cancelled->value)>{{ __('Storniert') }}</option>
+                        <option value="{{ \App\Enums\Vacation\VacationStatus::Revision->value }}" @selected(($filters['vstatus'] ?? '') === \App\Enums\Vacation\VacationStatus::Revision->value)>{{ \App\Enums\Vacation\VacationStatus::Revision->label() }}</option>
                     </select>
                 </x-filter-field>
             @elseif ($tab === 'krank')

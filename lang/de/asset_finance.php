@@ -47,4 +47,9 @@ return [
             'saved' => 'Einschätzung gespeichert.',
         ],
     ],
+    // Bestellbezug im Vertragsformular (MVP-1606).
+    'purchase_order' => [
+        'label' => 'Bestellung (optional)',
+        'none' => 'kein Bestellbezug',
+    ],
 ];

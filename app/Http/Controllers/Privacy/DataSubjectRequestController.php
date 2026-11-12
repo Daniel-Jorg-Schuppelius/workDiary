@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Privacy;
 
-use App\Enums\Privacy\{DataSubjectKind, DataSubjectRequestType};
+use App\Enums\Privacy\{DataSubjectKind, DataSubjectRequestStatus, DataSubjectRequestType};
 use App\Http\Controllers\Controller;
 use App\Models\Applications\JobApplication;
 use App\Models\Audit\AuditLog;
@@ -26,7 +26,9 @@ use App\Services\Privacy\{DataSubjectRequestService, PrivacyExportService, Subje
 use App\Support\Sqid;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response};
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -199,6 +201,20 @@ class DataSubjectRequestController extends Controller {
         return back()->with('status', __('Identität bestätigt.'));
     }
 
+    /** Rückfrage, Identitätsnachweis, Antwort erhalten oder Rücknahme (MVP-1620). */
+    public function transition(Request $request, DataSubjectRequest $dsr): RedirectResponse {
+        Gate::authorize('update', $dsr);
+        $data = $request->validate([
+            'status' => ['required', Rule::enum(DataSubjectRequestStatus::class)->only([
+                DataSubjectRequestStatus::IdentityCheck, DataSubjectRequestStatus::InProgress, DataSubjectRequestStatus::AwaitingInfo, DataSubjectRequestStatus::Withdrawn,
+            ])],
+        ]);
+        $target = DataSubjectRequestStatus::from((string) $data['status']);
+        $this->service->transition($dsr, $target, $request->user());
+
+        return back()->with('status', __('dsar.internal.status_flash.' . $target->value));
+    }
+
     public function assign(Request $request, DataSubjectRequest $dsr): RedirectResponse {
         Gate::authorize('assign', $dsr);
         // Sqid-Input dekodieren (numerischer Fallback für Alt-Clients).
@@ -211,6 +227,20 @@ class DataSubjectRequestController extends Controller {
         $this->service->assign($dsr, $assignee, $request->user());
 
         return back()->with('status', __('Anfrage zugewiesen.'));
+    }
+
+    /** Fristverlängerung nach Art. 12 Abs. 3 DSGVO; die Grenzen prüft der Dienst. */
+    public function extendDeadline(Request $request, DataSubjectRequest $dsr): RedirectResponse {
+        Gate::authorize('update', $dsr);
+        $data = $request->validate([
+            'deadline_at' => ['required', 'date'],
+            'extension_reason' => ['required', 'string', 'min:5', 'max:5000'],
+        ]);
+
+        $this->service->extendDeadline($dsr, Carbon::parse((string) $data['deadline_at']), $data['extension_reason'], $request->user());
+
+        return redirect()->route('dataprotection.requests.show', $dsr)
+            ->with('status', __('Frist verlängert.'));
     }
 
     public function decide(Request $request, DataSubjectRequest $dsr): RedirectResponse {

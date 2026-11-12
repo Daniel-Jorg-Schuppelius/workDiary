@@ -123,6 +123,8 @@ class HelpCenterController extends Controller {
             60,
             static fn(): array => HelpView::query()
                 ->where('organization_id', $orgId)
+                // Rückmeldungen (was_helpful gesetzt) sind kein Aufruf; sie wertet help:feedback aus.
+                ->whereNull('was_helpful')
                 ->where('created_at', '>=', CarbonImmutable::now()->subDays(90))
                 ->groupBy('topic')
                 ->selectRaw('topic, COUNT(*) AS views')

@@ -34,14 +34,14 @@ use Illuminate\Database\Eloquent\Model;
  *  - Gutschrift (credit) ⇒ offene Rechnungen (Status nicht paid/cancelled).
  *  - Lastschrift (debit)  ⇒ freigegebene, noch nicht erstattete Spesen.
  *  - Fremdwährung (currency != Beleg-Währung) ⇒ kein Auto-Vorschlag.
- *  - Cent-Toleranz ±0,02; Skonto-Toleranz bis SKONTO_PERCENT % Unterzahlung.
+ *  - Cent-Toleranz und Skonto-Toleranz je Organisation (MVP-1623, Vorgabe ±0,02 bzw. 3 %).
  */
 class MatchingService {
-    /** Cent-Toleranz für „Betrag passt" (Rundungsdifferenz). */
-    public const float CENT_TOLERANCE = 0.02;
+    /** Vorgabe der Cent-Toleranz für „Betrag passt" (Rundungsdifferenz). */
+    public const float DEFAULT_CENT_TOLERANCE = 0.02;
 
-    /** Maximaler Skontoabzug, der noch als Vollzahlung gilt (Prozent). */
-    public const float SKONTO_PERCENT = 3.0;
+    /** Vorgabe des Skontoabzugs, der ohne Kondition am Beleg noch als Vollzahlung gilt (Prozent). */
+    public const float DEFAULT_SKONTO_PERCENT = 3.0;
 
     public const int SCORE_REFERENCE = 60;
 
@@ -54,6 +54,26 @@ class MatchingService {
     public const int SCORE_DATE_NEAR = 10;
 
     public function __construct(private readonly \App\Services\Invoicing\RetentionService $retentions) {}
+
+    /** @var array<string, float> Einstellungen je Organisation, einmal je Instanz gelesen (Abgleich prüft je Kandidat). */
+    private array $settings = [];
+
+    /** Cent-Toleranz der Organisation (`finance.reconciliation.cent_tolerance`, Feature 045). */
+    public function centTolerance(): float {
+        return $this->setting('finance.reconciliation.cent_tolerance', self::DEFAULT_CENT_TOLERANCE);
+    }
+
+    /** Skontoabzug in Prozent, der ohne Skontokondition am Beleg als Vollzahlung gilt (`finance.reconciliation.skonto_percent`). */
+    public function skontoPercent(): float {
+        return $this->setting('finance.reconciliation.skonto_percent', self::DEFAULT_SKONTO_PERCENT);
+    }
+
+    private function setting(string $key, float $default): float {
+        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $memo = ($organization instanceof \App\Models\Platform\Organization ? $organization->id : 0) . ':' . $key;
+
+        return $this->settings[$memo] ??= max(0.0, (float) (\App\Support\Setting::get($key, $default) ?? $default));
+    }
 
     /**
      * Liefert die besten Zuordnungsvorschläge für einen Bankumsatz.
@@ -91,7 +111,7 @@ class MatchingService {
             $reasons = [];
 
             $expected = $agreement->expected_monthly_amount?->toFloat();
-            if ($expected !== null && abs($amount - $expected) <= self::CENT_TOLERANCE) {
+            if ($expected !== null && abs($amount - $expected) <= $this->centTolerance()) {
                 $score += self::SCORE_AMOUNT_EXACT;
                 $reasons[] = 'amount';
             }
@@ -244,8 +264,10 @@ class MatchingService {
         $results = [];
 
         /** @var \Illuminate\Database\Eloquent\Collection<int, Expense> $expenses */
+        // Erstattet wird nur Verauslagtes; Firmenkarte und Barkasse sind Firmenmittel (MVP-1623).
         $expenses = Expense::query()
             ->where('status', \App\Enums\Expense\ExpenseStatus::Approved->value)
+            ->whereIn('payment_method', \App\Enums\Expense\PaymentMethod::reimbursableValues())
             ->whereNull('reimbursed_at')
             ->get();
 
@@ -409,7 +431,7 @@ class MatchingService {
             $score = 0;
             $reasons = [];
 
-            if (abs(abs((float) $allocation->amount) - $amount) <= self::CENT_TOLERANCE) {
+            if (abs(abs((float) $allocation->amount) - $amount) <= $this->centTolerance()) {
                 $score += self::SCORE_AMOUNT_EXACT;
                 $reasons[] = 'amount';
             }
@@ -455,7 +477,7 @@ class MatchingService {
      * gilt total − Skontobetrag als Vollzahlung, sofern das Zahlungsdatum
      * innerhalb der Frist liegt (ohne bekanntes Datum: Kondition zählt).
      * Nach Fristablauf zählt der volle Betrag. Ohne Kondition bleibt die
-     * pauschale SKONTO_PERCENT-Toleranz als Fallback.
+     * pauschale Skonto-Toleranz der Organisation als Fallback.
      */
     public function minAcceptableFor(Invoice $invoice, ?\Carbon\CarbonInterface $paymentDate = null): float {
         // Sicherheitseinbehalt (Feature 113, MVP-602) zuerst abziehen: Er ist
@@ -472,13 +494,13 @@ class MatchingService {
             return $withinDeadline ? round($total - $invoice->skontoAmount()->toFloat(), 2) : $total;
         }
 
-        return $total * (1 - self::SKONTO_PERCENT / 100);
+        return $total * (1 - $this->skontoPercent() / 100);
     }
 
     /**
      * Bewertet die Betragsnähe: exakt (±Cent-Toleranz) oder mit zulässigem
      * Skonto — beleggenau, wenn `$minAcceptable` übergeben wird (MVP-416),
-     * sonst pauschal bis SKONTO_PERCENT % Unterzahlung.
+     * sonst pauschal bis zur Skonto-Toleranz der Organisation.
      *
      * @return array{0: int, 1: string}
      */
@@ -486,12 +508,12 @@ class MatchingService {
         if ($due <= 0.0) {
             return [0, ''];
         }
-        if (abs($paid - $due) <= self::CENT_TOLERANCE) {
+        if (abs($paid - $due) <= $this->centTolerance()) {
             return [self::SCORE_AMOUNT_EXACT, 'amount'];
         }
 
-        $minWithSkonto = $minAcceptable ?? $due * (1 - self::SKONTO_PERCENT / 100);
-        if ($paid < $due && $paid >= $minWithSkonto - self::CENT_TOLERANCE) {
+        $minWithSkonto = $minAcceptable ?? $due * (1 - $this->skontoPercent() / 100);
+        if ($paid < $due && $paid >= $minWithSkonto - $this->centTolerance()) {
             return [self::SCORE_AMOUNT_SKONTO, 'skonto'];
         }
 
@@ -503,11 +525,11 @@ class MatchingService {
         if ($foreignCurrency) {
             return AllocationKind::Partial;
         }
-        $minWithSkonto = $minAcceptable ?? $due * (1 - self::SKONTO_PERCENT / 100);
-        if ($paid + self::CENT_TOLERANCE >= $due) {
-            return $paid - $due > self::CENT_TOLERANCE ? AllocationKind::Overpayment : AllocationKind::Payment;
+        $minWithSkonto = $minAcceptable ?? $due * (1 - $this->skontoPercent() / 100);
+        if ($paid + $this->centTolerance() >= $due) {
+            return $paid - $due > $this->centTolerance() ? AllocationKind::Overpayment : AllocationKind::Payment;
         }
-        if ($paid >= $minWithSkonto - self::CENT_TOLERANCE) {
+        if ($paid >= $minWithSkonto - $this->centTolerance()) {
             return AllocationKind::Payment; // Skontozahlung gilt als Vollzahlung.
         }
 

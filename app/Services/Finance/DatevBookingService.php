@@ -16,6 +16,7 @@ use App\Models\Finance\{DatevBookingBatch, DatevBookingEvent, DatevBookingSource
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Models\Travel\Expense;
+use App\Services\Accounting\Posting\Adapters\SalesInvoiceAdapter;
 use App\Services\Billing\{BillingModeResolver, FinancialFormatsSupport};
 use App\Services\Concerns\{AssertsValidatedTransition, ResolvesActorId};
 use App\Services\Export\ExportRunner;
@@ -50,6 +51,7 @@ use Illuminate\Validation\ValidationException;
  *   amount: float,
  *   tax_rate: float,
  *   tax_key: ?string,
+ *   automatic: bool,
  *   document_ref: string,
  *   text: string,
  *   date: string,
@@ -199,7 +201,7 @@ class DatevBookingService {
      * Buchung DATEV-seitig um.
      *
      * @param  Collection<int, Invoice|Expense>  $sources
-     * @return list<array{source_type: string, source_id: int, debtor_account: string, revenue_account: string, soll_haben: string, amount: float, tax_rate: float, tax_key: ?string, document_ref: string, text: string, date: string, is_credit_note: bool, is_reversal: bool}>
+     * @return list<BookingRow>
      */
     public function buildBookingRows(Collection $sources, DatevBookingConfig $config): array {
         $rows = [];
@@ -222,7 +224,7 @@ class DatevBookingService {
     }
 
     /**
-     * @return list<array{source_type: string, source_id: int, debtor_account: string, revenue_account: string, soll_haben: string, amount: float, tax_rate: float, tax_key: ?string, document_ref: string, text: string, date: string, is_credit_note: bool, is_reversal: bool}>
+     * @return list<BookingRow>
      */
     private function invoiceRows(Invoice $invoice, DatevBookingConfig $config): array {
         $breakdown = (array) ($invoice->tax_breakdown ?? []);
@@ -231,6 +233,7 @@ class DatevBookingService {
         }
 
         $base = $this->invoiceRow($invoice, $config);
+        $zeroRated = $this->zeroRatedRevenue($invoice, $config);
         $rows = [];
         foreach ($breakdown as $slice) {
             $rate = (float) ($slice['rate'] ?? 0);
@@ -238,12 +241,15 @@ class DatevBookingService {
             if ($gross === 0.0) {
                 continue;
             }
+            // Ein Satz ohne Steuer (Reverse Charge mit Positionssatz, steuerfreier Anteil) bucht nach dem Steuerfall.
+            $untaxed = $zeroRated !== null && round((float) ($slice['tax'] ?? 0), 2) === 0.0;
             $rows[] = [
                 ...$base,
-                'revenue_account' => $config->revenueAccountFor($rate),
+                'revenue_account' => $untaxed ? $zeroRated['account'] : $config->revenueAccountFor($rate),
                 'amount' => round(abs($gross), 2),
                 'tax_rate' => $rate,
-                'tax_key' => $config->taxKeyFor($rate),
+                'tax_key' => $untaxed ? $zeroRated['tax_key'] : $config->taxKeyFor($rate),
+                'automatic' => $untaxed && $zeroRated['automatic'],
             ];
         }
 
@@ -251,7 +257,23 @@ class DatevBookingService {
     }
 
     /**
-     * @return array{source_type: string, source_id: int, debtor_account: string, revenue_account: string, soll_haben: string, amount: float, tax_rate: float, tax_key: ?string, document_ref: string, text: string, date: string, is_credit_note: bool, is_reversal: bool}
+     * Konto und Schlüssel eines Umsatzes ohne Steuer nach dem Steuerfall des
+     * Belegs (MVP-1623): dieselbe Kategorie wie der Journal-Weg
+     * ({@see SalesInvoiceAdapter::zeroRatedCategory()}), Konten aus der Vorlage
+     * des Kontenrahmens. Steuerfrei und Kleinunternehmer bleiben beim
+     * eingestellten Konto (null).
+     *
+     * @return array{account: string, tax_key: ?string, automatic: bool}|null
+     */
+    private function zeroRatedRevenue(Invoice $invoice, DatevBookingConfig $config): ?array {
+        $organization = $invoice->organization;
+        $zeroRated = $organization instanceof Organization ? app(SalesInvoiceAdapter::class)->zeroRatedCategory($organization, $invoice) : null;
+
+        return $zeroRated !== null ? $config->zeroRatedRevenue($zeroRated['category'], $zeroRated['domestic']) : null;
+    }
+
+    /**
+     * @return BookingRow
      */
     private function invoiceRow(Invoice $invoice, DatevBookingConfig $config): array {
         $taxRate = $invoice->tax_rate !== null ? (float) $invoice->tax_rate->getNumericValue() : 0.0;
@@ -264,16 +286,19 @@ class DatevBookingService {
         // Standardrechnung: Soll Debitor an Haben Erlös (S).
         // Gutschrift: Umkehrung ⇒ Haben Debitor an Soll Erlös (H).
         $sollHaben = $isCredit ? 'H' : 'S';
+        // Ohne ausgewiesene Steuer entscheidet der Steuerfall über Konto und Schlüssel (MVP-1623).
+        $zeroRated = ($invoice->tax_amount?->isZero() ?? true) ? $this->zeroRatedRevenue($invoice, $config) : null;
 
         return [
             'source_type' => MorphMap::alias(Invoice::class),
             'source_id' => (int) $invoice->id,
             'debtor_account' => $config->debtorAccountFor($invoice->customer),
-            'revenue_account' => $config->revenueAccountFor($taxRate),
+            'revenue_account' => $zeroRated['account'] ?? $config->revenueAccountFor($taxRate),
             'soll_haben' => $sollHaben,
             'amount' => round(abs($gross), 2),
             'tax_rate' => $taxRate,
-            'tax_key' => $config->taxKeyFor($taxRate),
+            'tax_key' => $zeroRated !== null ? $zeroRated['tax_key'] : $config->taxKeyFor($taxRate),
+            'automatic' => $zeroRated['automatic'] ?? false,
             'document_ref' => (string) $invoice->number,
             'text' => $isReversal
                 ? $this->clip(trim('Storno ' . $this->invoiceText($invoice)), 60)
@@ -290,7 +315,7 @@ class DatevBookingService {
      * ({@see DatevBookingConfig::expenseAccountFor()}); ohne Mapping greift die
      * bisherige Vereinfachung (Erlöskonto-Slot, Steuersatz-BU).
      *
-     * @return array{source_type: string, source_id: int, debtor_account: string, revenue_account: string, soll_haben: string, amount: float, tax_rate: float, tax_key: ?string, document_ref: string, text: string, date: string, is_credit_note: bool, is_reversal: bool}
+     * @return BookingRow
      */
     private function expenseRow(Expense $expense, DatevBookingConfig $config): array {
         $taxRate = ($expense->tax_rate !== null ? (float) $expense->tax_rate->getNumericValue() : 0.0);
@@ -305,6 +330,7 @@ class DatevBookingService {
             'amount' => round(abs($gross), 2),
             'tax_rate' => $taxRate,
             'tax_key' => $config->expenseTaxKeyFor($expense),
+            'automatic' => false,
             'document_ref' => 'E-' . (int) $expense->id,
             'text' => $this->clip(trim((string) ($expense->vendor ?: $expense->description)) ?: 'Auslage', 60),
             'date' => $expense->date->toDateString(),
@@ -338,7 +364,8 @@ class DatevBookingService {
         foreach ($rows as $row) {
             $total += $this->signedRowAmount($row);
 
-            if ($row['tax_key'] === null) {
+            // Auf einem Automatikkonto rechnet DATEV selbst; dort fehlt der Schlüssel mit Absicht.
+            if ($row['tax_key'] === null && ! $row['automatic']) {
                 $warnings[] = (string) __('finance.datev.preflight.unknown_tax_key', [
                     'ref' => $row['document_ref'],
                     'rate' => NumberHelper::toGermanFormat($row['tax_rate'], 2, withThousandsSeparator: true),
@@ -831,7 +858,8 @@ class DatevBookingService {
     }
 
     private function invoiceText(Invoice $invoice): string {
-        $customer = (string) ($invoice->customer->name ?? '');
+        // Name wie auf dem Beleg, damit ein späterer Export denselben Buchungstext trägt (MVP-1624).
+        $customer = $invoice->recipient()['name'];
         $label = $invoice->isCreditNote() ? 'Gutschrift' : 'Rechnung';
 
         return $this->clip(trim($label . ' ' . $customer), 60);

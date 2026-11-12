@@ -211,6 +211,7 @@ class ProblemController extends Controller {
      */
     private function incidentOptions(): \Illuminate\Database\Eloquent\Collection {
         return ServiceTicket::query()
+            ->visibleTo($this->authUser())
             ->where('kind', \App\Enums\ServiceTicket\ServiceTicketKind::Incident->value)
             ->orderByDesc('reported_at')
             ->limit(100)

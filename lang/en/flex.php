@@ -40,4 +40,10 @@ return [
         'empty' => ':name has no flex periods on record — they do not participate in flex time.',
         'confirm_delete' => 'Really delete this period? Balance calculations will be re-run.',
     ],
+    // Arbeitszeitkonto (MVP-1627)
+    'account' => [
+        'balance' => 'Account balance',
+        'carry' => 'Carried over from the previous month: :value',
+        'settled_through' => 'Target and actual up to :date — today counts from tomorrow, as in the stored account.',
+    ],
 ];

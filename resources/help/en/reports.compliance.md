@@ -1,7 +1,7 @@
 ---
 title: "Evidence: audit activity, compliance and minimum wage"
 topic: reports.compliance
-version: 3
+version: 4
 keywords:
     - audit report
     - who changed what
@@ -144,3 +144,5 @@ working-time compliance** permission.
 
 The **Driving time evidence** in the same menu is described in the topic on
 fleet, logbook and driving times.
+
+**Minimum wage evidence:** For each working day, the minutes in home office and on errands appear next to start, end, breaks and duration — they count as working time; the evidence only shows where the work was done. Driving and rest time findings are produced only while the fleet module is active; if it is switched off, the next run closes open findings.

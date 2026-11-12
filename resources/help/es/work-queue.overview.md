@@ -1,7 +1,7 @@
 ---
 title: "Cola de trabajo"
 topic: work-queue.overview
-version: 3
+version: 4
 keywords:
     - Cola de trabajo
     - Elementos abiertos
@@ -57,3 +57,7 @@ compartidas aparecen agrupadas con su cantidad.
 ordena así; los filtros la limitan a un área, un origen o solo a los
 elementos asignados a usted. El mosaico «Cola de trabajo» del panel muestra
 los elementos más urgentes.
+
+**Vencimiento:** El filtro «Vencimiento» muestra solo los elementos vencidos, los que vencen hoy o esta semana (hasta el domingo), o los que no tienen plazo.
+
+**Firefly III:** Si el complemento está activado, los administradores ven los movimientos de Firefly sin asignación y los de asignación ambigua como un elemento agrupado cada uno, sin plazo. El enlace abre la lista filtrada correspondiente en la página de Firefly; cuando la siguiente conciliación asigna un movimiento a una factura, el número baja.

@@ -1,7 +1,7 @@
 ---
 title: "Conectar JTL-Wawi"
 topic: admin.jtl-wawi
-version: 1
+version: 3
 keywords:
     - sistema de gestión de inventario
     - ERP
@@ -53,3 +53,9 @@ existencias de JTL como inventario de apertura.
 beta/piloto. Tras el lanzamiento oficial puede depender de la edición
 y pasar a ser de pago; una licencia caducada lleva a un estado
 bloqueado visible, nunca a asientos erróneos silenciosos.
+
+**Volver a ejecutar el inventario de apertura:** si la importación falló al cambiar a «local», iníciela de nuevo el mismo día con «Ejecutar inventario de apertura»; una segunda ejecución no contabiliza nada dos veces. A partir del día siguiente mandan las existencias locales y la acción deja de ofrecerse.
+
+**Soberanía de datos:** La gestión de existencias de esta página es también la gestión del área de existencias en la página «Soberanía de datos», que solo la muestra. Si otro sistema gestiona las existencias, el inventario de traspaso no contabiliza nada para el par afectado; el caso queda en la bandeja de integraciones para asumirlo una vez.
+
+**Existencias gestionadas en otro lugar:** si otro programa (como Billbee) gestiona las existencias, la página lo indica y no cambia el modo; de lo contrario, el inventario de traspaso de JTL-Wawi se aplicaría a existencias que no gestiona.

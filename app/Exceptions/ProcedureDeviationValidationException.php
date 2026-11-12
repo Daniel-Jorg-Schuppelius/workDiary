@@ -31,6 +31,12 @@ class ProcedureDeviationValidationException extends RuntimeException {
 
     public const string REASON_CRITICAL_NEEDS_ACTION = 'criticalNeedsAction';
 
+    public const string REASON_RISK_NOT_CRITICAL = 'riskNotCritical';
+
+    public const string REASON_RISK_ALREADY_ACCEPTED = 'riskAlreadyAccepted';
+
+    public const string REASON_RISK_NOTE_MISSING = 'riskNoteMissing';
+
     public function __construct(
         public readonly string $errorCode,
         public readonly string $reason,

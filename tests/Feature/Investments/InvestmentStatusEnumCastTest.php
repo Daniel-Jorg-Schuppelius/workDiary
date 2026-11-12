@@ -158,7 +158,7 @@ final class InvestmentStatusEnumCastTest extends TestCase {
         // Unbekannter Filterwert: ungefiltert.
         $this->actingAs($this->admin)->get(route('investments.index', ['status' => 'unbekannt']))->assertOk()
             ->assertViewHas('cases', fn ($cases): bool => $cases->total() === 2)
-            ->assertViewHas('filters', ['status' => '', 'category' => '']);
+            ->assertViewHas('filters', fn (array $filters): bool => $filters['status'] === '' && $filters['category'] === '');
     }
 
     public function test_every_status_keeps_its_badge_tone(): void {

@@ -10,26 +10,30 @@
 
 namespace App\Http\Controllers\Asset;
 
+use App\Enums\Asset\MaintenanceDueAction;
+use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Asset\SaveMaintenancePlanRequest;
 use App\Models\Asset\{Asset, MaintenancePlan};
 use App\Models\Platform\User;
 use App\Services\Asset\{AssetFormOptions, MaintenancePlanService};
+use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class MaintenancePlanController extends Controller {
-    public function __construct(private readonly MaintenancePlanService $plans, private readonly AssetFormOptions $options) {}
+    public function __construct(
+        private readonly MaintenancePlanService $plans,
+        private readonly AssetFormOptions $options,
+        private readonly FeatureFlagResolver $features,
+    ) {}
 
     public function create(Asset $asset): View {
         Gate::authorize('update', $asset);
         Gate::authorize('create', MaintenancePlan::class);
 
-        return view('assets._maintenance_form_dialog', [
-            'asset' => $asset,
-            'intervalKindOptions' => $this->options->intervalKindOptions(),
-        ]);
+        return view('assets._maintenance_form_dialog', $this->dialogData($asset, null));
     }
 
     /** Bestehenden Plan im selben Dialog bearbeiten (Vollscan 2026-10-21). */
@@ -37,11 +41,7 @@ class MaintenancePlanController extends Controller {
         $this->ensurePlanBelongsToAsset($asset, $plan);
         Gate::authorize('update', $plan);
 
-        return view('assets._maintenance_form_dialog', [
-            'asset' => $asset,
-            'plan' => $plan,
-            'intervalKindOptions' => $this->options->intervalKindOptions(),
-        ]);
+        return view('assets._maintenance_form_dialog', $this->dialogData($asset, $plan));
     }
 
     public function store(Asset $asset, SaveMaintenancePlanRequest $request): RedirectResponse {
@@ -123,6 +123,28 @@ class MaintenancePlanController extends Controller {
         return redirect()
             ->route('assets.show', $asset)
             ->with('success', __('Wartungsplan gelöscht.'));
+    }
+
+    /**
+     * Vertragsbindung nur mit Leserecht auf SLA-Verträge; die Aktion „Ticket“ nur,
+     * wenn der Helpdesk das Ticket auch anlegen kann.
+     *
+     * @return array<string, mixed>
+     */
+    private function dialogData(Asset $asset, ?MaintenancePlan $plan): array {
+        $canBindContract = $this->authUser()->can(Permission::SlaContractView->value);
+
+        return [
+            'asset' => $asset,
+            'plan' => $plan,
+            'intervalKindOptions' => $this->options->intervalKindOptions(),
+            'contractOptions' => $canBindContract
+                ? $this->options->maintenanceContractOptions($asset, $plan?->sla_contract_id)
+                : null,
+            'dueActionOptions' => $this->features->isEnabled('module.helpdesk') || $plan?->due_action === MaintenanceDueAction::Ticket
+                ? MaintenanceDueAction::options()
+                : null,
+        ];
     }
 
     private function ensurePlanBelongsToAsset(Asset $asset, MaintenancePlan $plan): void {

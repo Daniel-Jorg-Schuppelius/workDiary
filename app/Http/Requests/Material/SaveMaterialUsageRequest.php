@@ -39,6 +39,7 @@ class SaveMaterialUsageRequest extends BaseFormRequest {
     /**
      * Zeilen- und Zettelsumme sind decimal(12,2): Menge × Preis (auch der aus dem
      * Materialstamm übernommene) darf sie nicht sprengen (UI-Fuzz 2026-09-21: 1264).
+     * Ohne Zettel in der Route (Tagesbuchung) prüft {@see \App\Services\Material\MaterialUsageRecorder}.
      */
     public function withValidator(Validator $validator): void {
         $validator->after(function (Validator $v): void {
@@ -52,12 +53,7 @@ class SaveMaterialUsageRequest extends BaseFormRequest {
                 $price = Material::query()->whereKey((int) $this->input('material_id'))->value('default_unit_price');
             }
             $usage = $this->route('usage');
-            $usageId = $usage instanceof MaterialUsage ? $usage->getKey() : null;
-            $others = $timesheet->materialUsages()
-                ->when($usageId !== null, fn ($q) => $q->whereKeyNot($usageId))
-                ->sum('line_total_net');
-
-            if ((float) $this->input('quantity') * (float) $price + (float) $others > 9999999999.99) {
+            if (MaterialUsage::exceedsTimesheetSum($timesheet, $this->input('quantity'), $price, $usage instanceof MaterialUsage ? (int) $usage->getKey() : null)) {
                 $v->errors()->add('quantity', __('Menge × Einzelpreis übersteigt die höchste speicherbare Summe des Stundenzettels.'));
             }
         });

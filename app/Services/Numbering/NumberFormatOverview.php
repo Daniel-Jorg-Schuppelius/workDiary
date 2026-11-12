@@ -35,6 +35,7 @@ class NumberFormatOverview {
     public const array SELECTABLE_SOURCE_SCOPES = [
         NumberScope::Customer, NumberScope::Supplier, NumberScope::Quote, NumberScope::OrderConfirmation, NumberScope::DeliveryNote,
         NumberScope::Invoice, NumberScope::CreditNote, NumberScope::Cancellation,
+        NumberScope::Article, // SKU-/GTIN-Hoheit (MVP-1583)
     ];
 
     public function __construct(

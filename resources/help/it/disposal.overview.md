@@ -40,6 +40,20 @@ produttore/modello, numero di serie, quantità, peso e codice rifiuto
 dall'asterisco nel codice rifiuto — non viene mai impostata a mano. Le
 posizioni sono modificabili solo fino alla consegna allo smaltitore.
 
+**Asset sulla posizione:** nella finestra della posizione si
+può scegliere un asset in esercizio; la selezione precompila denominazione, produttore,
+modello e numero di serie. Pratica e attestato mostrano l’asset. La
+chiusura mette fuori esercizio gli asset collegati. Se
+un asset è ancora consegnato, resta in esercizio e la pratica lo segnala. Nella
+scheda dell’asset, «Smaltisci» apre una nuova pratica di smaltimento con
+l’asset come posizione preparata.
+
+**Foto:** per ogni posizione apparecchio si caricano foto (JPG, PNG, WebP)
+finché la pratica è modificabile. Dopo la consegna allo smaltitore le foto
+non si possono più aggiungere né eliminare. Con «Mostra le foto
+nell’attestato per il cliente» nella pratica, nel PDF dell’attestato
+compaiono fino a due foto per posizione.
+
 **Trattamento dei supporti dati:** Per ogni apparecchio che contiene
 supporti dati viene documentato il trattamento — tipo di supporto,
 procedura (ad es. cancellazione software, smagnetizzazione, triturazione o

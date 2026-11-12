@@ -16,6 +16,7 @@ use App\Enums\Classification\ClassificationDomain;
 use App\Enums\Disposal\DisposalJobStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Disposal\{SaveDisposalJobRequest, SignDisposalJobRequest};
+use App\Models\Asset\Asset;
 use App\Models\Contacts\ExternalContact;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
@@ -79,7 +80,7 @@ class DisposalJobController extends Controller {
         ]);
     }
 
-    public function show(DisposalJob $disposalJob): View {
+    public function show(Request $request, DisposalJob $disposalJob): View {
         Gate::authorize('view', $disposalJob);
 
         $disposalJob->load([
@@ -98,15 +99,30 @@ class DisposalJobController extends Controller {
                 (int) $disposalJob->organization_id,
                 ClassificationDomain::WasteCode,
             ),
+            // Nur Assets in Betrieb lassen sich entsorgen (MVP-1578); bereits verknüpfte bleiben über die Position sichtbar.
+            'assets' => Asset::query()->inOperation()->orderBy('name')->get(['id', 'asset_no', 'name', 'manufacturer', 'model', 'serial_no']),
+            'prefillAsset' => $this->assetFromRequest($request),
+            'pendingAssets' => $disposalJob->status === DisposalJobStatus::Completed
+                ? $disposalJob->items->pluck('asset')->filter(fn (?Asset $asset): bool => $asset !== null && $asset->isInOperation())->values()
+                : collect(),
         ]);
     }
 
+    /** Asset aus dem Einstieg an der Asset-Akte: nur in Betrieb und für den Nutzer sichtbar. */
+    private function assetFromRequest(Request $request): ?Asset {
+        $id = Sqid::decode(Asset::class, $request->string('asset')->toString());
+        $asset = $id !== null ? Asset::query()->inOperation()->find($id) : null;
+
+        return $asset !== null && Gate::allows('view', $asset) ? $asset : null;
+    }
+
     /** Anlege-Dialog (Formulare in Dialogen). */
-    public function create(): View {
+    public function create(Request $request): View {
         Gate::authorize('create', DisposalJob::class);
 
         return view('disposal._form_dialog', [
             'job' => null,
+            'prefillAsset' => $this->assetFromRequest($request),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'sites' => Site::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'customer_id']),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
@@ -120,6 +136,7 @@ class DisposalJobController extends Controller {
 
         return view('disposal._form_dialog', [
             'job' => $disposalJob,
+            'prefillAsset' => null,
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'sites' => Site::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'customer_id']),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
@@ -135,7 +152,10 @@ class DisposalJobController extends Controller {
 
         $job = $this->service->open($organization, $actor, $request->validated());
 
-        return redirect()->route('disposal.show', $job)
+        // Einstieg an der Asset-Akte: die Akte öffnet mit dem Asset als vorbereiteter Position.
+        $asset = $this->assetFromRequest($request);
+
+        return redirect()->route('disposal.show', array_filter(['disposalJob' => $job, 'asset' => $asset?->sqid]))
             ->with('status', __('Entsorgungsakte :number angelegt.', ['number' => $job->number]));
     }
 
@@ -195,8 +215,16 @@ class DisposalJobController extends Controller {
             return back()->withErrors(['status' => ErrorText::for($exception)]);
         }
 
-        return redirect()->route('disposal.show', $disposalJob)
+        $redirect = redirect()->route('disposal.show', $disposalJob)
             ->with('status', __('Entsorgungsakte abgeschlossen — der Kundennachweis wurde erzeugt und freigegeben.'));
+
+        // Noch ausgegebene oder gesperrte Assets mustert der Abschluss nicht aus — das darf nicht still bleiben.
+        $pending = $disposalJob->items()->with('asset')->get()->pluck('asset')
+            ->filter(fn (?Asset $asset): bool => $asset !== null && $asset->isInOperation());
+
+        return $pending->isEmpty()
+            ? $redirect
+            : $redirect->with('warning', __('disposal.asset.pending_decommission', ['assets' => $pending->pluck('name')->implode(', ')]));
     }
 
     public function cancel(Request $request, DisposalJob $disposalJob): RedirectResponse {

@@ -55,14 +55,23 @@
                                     @endif
                                 </td>
                                 @foreach ($required as $qualification)
-                                    @php $status = $row['status'][$qualification->id] ?? 'missing'; @endphp
+                                    @php
+                                        $status = $row['status'][$qualification->id] ?? 'missing';
+                                        $inTraining = $status !== 'ok' && in_array((int) $qualification->id, $row['training'] ?? [], true);
+                                        $course = $courses[(int) $qualification->id] ?? null;
+                                    @endphp
                                     <td class="text-center">
                                         @if ($status === 'ok')
                                             <x-status-badge tone="success" class="gap-1"><x-icon name="check" class="text-xs" />{{ __('erfüllt') }}</x-status-badge>
+                                        @elseif ($inTraining)
+                                            <x-status-badge tone="warning" class="gap-1"><x-icon name="school" class="text-xs" />{{ __('schedule.qualification.in_training') }}</x-status-badge>
                                         @elseif ($status === 'expiring')
                                             <x-status-badge tone="warning" class="gap-1"><x-icon name="schedule" class="text-xs" />{{ __('läuft ab') }}</x-status-badge>
                                         @else
                                             <x-status-badge tone="error" class="gap-1"><x-icon name="close" class="text-xs" />{{ __('fehlt') }}</x-status-badge>
+                                        @endif
+                                        @if ($status !== 'ok' && ! $inTraining && $course !== null)
+                                            <div class="mt-0.5 text-xs text-muted">{{ __('schedule.qualification.course', ['course' => $course]) }}</div>
                                         @endif
                                     </td>
                                 @endforeach
@@ -71,6 +80,7 @@
             </x-table>
             <p class="mt-2 text-xs text-muted">
                 {{ __('„Läuft ab" = gültig am Stichtag, aber Befristung endet binnen 30 Tagen.') }}
+                {{ __('schedule.qualification.training_legend') }}
             </p>
         </x-card>
     @endif

@@ -86,6 +86,7 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, Invoice> $creditNotes
  *
  * @phpstan-import-type Totals from \App\Services\Billing\DocumentTotalsCalculator
+ * @phpstan-import-type Buyer from \App\Services\Invoicing\InvoicePartySnapshot
  */
 class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarrier {
     use Auditable;
@@ -147,6 +148,18 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
      * Felder dürfen sich über normale save()-Wege noch ändern.
      * (saveQuietly interner Abgleichspfade umgeht den Guard bewusst.)
      */
+    /**
+     * Inhalt, den eine Freigabe (`invoicing.require_approval`) prüft: Ändert
+     * sich eines dieser Felder am freigegebenen Entwurf, ist die Freigabe
+     * hinfällig (MVP-1624). Positionen meldet {@see InvoiceItem} selbst.
+     */
+    public const array APPROVED_CONTENT = [
+        'customer_id', 'foreign_customer_id', 'project_id', 'type', 'category', 'currency',
+        'issued_on', 'due_on', 'payment_terms_days', 'tax_rate', 'is_reverse_charge', 'is_labour_cost_disclosed',
+        'subtotal', 'tax_amount', 'total', 'tax_breakdown', 'discount_percent', 'discount_amount',
+        'skonto_percent', 'skonto_days', 'notes', 'buyer_reference',
+    ];
+
     public const array MUTABLE_AFTER_ISSUE = [
         'status',
         'paid_on',
@@ -567,6 +580,25 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
             }
         });
 
+        // Die Freigabe gilt dem geprüften Stand (MVP-1624). Der Statuswechsel beim Ausstellen ist keine Änderung.
+        static::updating(function (self $invoice): void {
+            if ($invoice->getRawOriginal('approved_at') === null || $invoice->isDirty(['approved_at', 'status'])
+                || $invoice->getRawOriginal('status') !== InvoiceStatus::Draft->value) {
+                return;
+            }
+            $changed = array_values(array_intersect(array_keys($invoice->getDirty()), self::APPROVED_CONTENT));
+            if ($changed === []) {
+                return;
+            }
+            // Eine geänderte Position kann die Freigabe schon über eine andere Instanz aufgehoben haben.
+            $stillApproved = self::query()->withoutGlobalScopes()->whereKey($invoice->getKey())->whereNotNull('approved_at')->exists();
+            $invoice->approved_at = null;
+            $invoice->approved_by = null;
+            if ($stillApproved) {
+                $invoice->audit('invoice.approval_revoked', ['fields' => $changed]);
+            }
+        });
+
         // Lifecycle-Webhook invoice.paid (MVP-718): „bezahlt" wird an mehreren Stellen geschrieben (Bankabgleich,
         // Kassenbuch, Retainer-Abgleich, Web-Aktion) — der Modell-Statuswechsel ist die einzige gemeinsame Naht.
         // Provisionen (Feature 146, MVP-729) hängen an derselben Naht: Basis ist die BEZAHLTE Rechnung, nie die
@@ -589,6 +621,24 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
         static::deleting(function (self $invoice): void {
             $invoice->items()->get()->each->delete();
         });
+    }
+
+    /**
+     * Freigabe eines Entwurfs aufheben, weil sich sein Inhalt geändert hat
+     * (MVP-1624); ohne Freigabe oder nach dem Ausstellen ohne Wirkung.
+     *
+     * @param list<string> $fields geänderte Felder bzw. `items`
+     */
+    public function revokeApproval(array $fields): void {
+        $revoked = self::query()->withoutGlobalScopes()->whereKey($this->getKey())
+            ->where('status', InvoiceStatus::Draft->value)
+            ->whereNotNull('approved_at')
+            ->update(['approved_at' => null, 'approved_by' => null]);
+        if ($revoked === 0) {
+            return;
+        }
+        $this->forceFill(['approved_at' => null, 'approved_by' => null])->syncOriginalAttributes(['approved_at', 'approved_by']);
+        $this->audit('invoice.approval_revoked', ['fields' => $fields]);
     }
 
     /**
@@ -615,6 +665,28 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
                 $renderer->payloadFor($this->organization, $kind, (int) $this->customer_id),
             );
         }
+    }
+
+    /**
+     * Empfänger, wie er auf dem Beleg steht (MVP-1624): ausgestellt der beim
+     * Ausstellen eingefrorene Stand, als Entwurf der heutige Kunde. Felder, die
+     * ein älterer Snapshot noch nicht führt (etwa `company`), ergänzt der heutige Stand.
+     *
+     * @return Buyer
+     */
+    public function recipient(): array {
+        $current = \App\Services\Invoicing\InvoicePartySnapshot::buyer($this->customer);
+        $frozen = is_array($this->party_snapshot) ? ($this->party_snapshot['buyer'] ?? null) : null;
+        if (! is_array($frozen)) {
+            return $current;
+        }
+        foreach (array_keys($current) as $field) {
+            if (array_key_exists($field, $frozen) && is_scalar($frozen[$field])) {
+                $current[$field] = (string) $frozen[$field];
+            }
+        }
+
+        return $current;
     }
 
     /** Überfällig = ausgestellt/teilbezahlt und Fälligkeit überschritten. */
@@ -727,6 +799,8 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
 
             // Einzige Freigabestelle beider Storno-Wege (MVP-1521): alle Quellen wie beim Storno einer Übergabe.
             app(\App\Services\Invoicing\InvoiceItemReleaseService::class)->releaseInvoice($this);
+
+            \App\Events\Invoicing\InvoiceCancelled::dispatch((int) $this->organization_id, (int) $this->id);
         });
     }
 

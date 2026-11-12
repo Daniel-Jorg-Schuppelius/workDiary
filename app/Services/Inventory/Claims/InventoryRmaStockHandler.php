@@ -20,6 +20,7 @@ use App\Models\Inventory\StockMovement;
 use App\Models\Platform\User;
 use App\Services\Claims\Contracts\RmaStockHandler;
 use App\Services\Inventory\{InventoryLedger, LotService, SerialService, StockPosting};
+use App\Services\Licensing\ModuleStatusResolver;
 use CommonToolkit\Helper\Data\NumberHelper;
 
 /** Reklamationsrückläufer im Lagerkern (MVP-250): Quarantäne, Wiedereinlagerung, Verschrottung, Rücksendung. */
@@ -28,13 +29,18 @@ final class InventoryRmaStockHandler implements RmaStockHandler {
         private readonly InventoryLedger $ledger,
         private readonly SerialService $serials,
         private readonly LotService $lots,
+        private readonly ModuleStatusResolver $modules,
     ) {}
 
     public function wasShippedTo(int $organizationId, string $serialNo, Customer $customer): bool {
         return $this->serials->wasShippedTo($organizationId, $serialNo, $customer);
     }
 
-    public function bookReturn(ClaimRmaReturn $rma, string $state, User $actor): void {
+    public function bookReturn(ClaimRmaReturn $rma, string $state, User $actor): bool {
+        if (! $this->stockActive($rma)) {
+            return false;
+        }
+        $booked = false;
         $qtyRaw = (string) $rma->qty;
         $qty = is_numeric($qtyRaw) ? NumberHelper::roundPrecise($qtyRaw, 4) : '0.0000';
         if ($rma->articleVariant !== null && $rma->warehouse !== null && (float) $qty > 0) {
@@ -51,13 +57,19 @@ final class InventoryRmaStockHandler implements RmaStockHandler {
                 stockLotId: $rma->stock_lot_id,
                 stockSerialId: $rma->stock_serial_id,
             ));
+            $booked = true;
         }
         if ($rma->stockSerial !== null) {
             $this->serials->returnSerial($rma->stockSerial, $rma->warehouse);
         }
+
+        return $booked;
     }
 
-    public function applyDisposition(ClaimRmaReturn $rma, ClaimRmaDisposition $disposition, User $actor): void {
+    public function applyDisposition(ClaimRmaReturn $rma, ClaimRmaDisposition $disposition, User $actor): bool {
+        if (! $this->stockActive($rma)) {
+            return false;
+        }
         $variant = $rma->articleVariant;
         $warehouse = $rma->warehouse;
         $qtyRaw = (string) $rma->qty;
@@ -96,7 +108,16 @@ final class InventoryRmaStockHandler implements RmaStockHandler {
                 break;
             case ClaimRmaDisposition::Repair:
                 // bleibt in Quarantäne; Maßnahme (MVP-251) steuert weiter
-                break;
+                return false;
         }
+
+        return $hasStock;
+    }
+
+    /** Ohne Lager-Modul der Organisation bleibt der Rückläufer reine Dokumentation. */
+    private function stockActive(ClaimRmaReturn $rma): bool {
+        $organization = $rma->organization;
+
+        return $organization !== null && $this->modules->isActiveFor($organization, 'module.lager');
     }
 }

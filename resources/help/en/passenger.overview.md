@@ -1,7 +1,7 @@
 ---
 title: "Passenger transport (taxi/private hire)"
 topic: passenger.overview
-version: 1
+version: 3
 keywords:
     - taxi company
     - private hire
@@ -44,3 +44,9 @@ total. Differences stay open until they are resolved with a reason.
 
 WorkDiary replaces neither the taximeter/odometer nor the TSE — those systems
 remain authoritative; their values are documented and reconciled.
+
+**Waiting time when completing a ride:** When completing a ride you enter the waiting time in minutes; it is prefilled with the time between start of waiting and pickup. It is stored to the second.
+
+## Rides in the shift settlement
+
+When a shift settlement is closed, WorkDiary binds the driver's finished rides from that shift (shift times, otherwise the shift day): completed rides count as settled, cancelled, aborted and no-show rides as done without an amount. The ride then shows its settlement.

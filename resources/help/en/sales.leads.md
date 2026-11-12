@@ -1,7 +1,7 @@
 ---
 title: "Leads"
 topic: sales.leads
-version: 4
+version: 6
 keywords:
     - prospects
     - prospecting
@@ -72,3 +72,12 @@ source and conversion. As for customer, supplier and project, the panels of
 other modules only show what exists for the lead — a module without data for
 the lead does not appear. The history lists the audit entries of the lead
 including its quotes; appointment bookings are attached to the open lead.
+
+Anyone who may open the “Appointment requests” page sees the lead’s booked and requested appointments (for example from Calendly) with time, location and status in the **Appointments** panel; clicking opens the appointment requests.
+
+## Last contact
+
+The period runs from the **last contact**. It moves forward with every
+communication note on the lead (at its time), every change of content, every
+status change and every quote created from the lead. Changing only the
+responsible person does not count as contact.

@@ -343,8 +343,9 @@ class ManufacturingOrderController extends Controller {
     public function cancel(ManufacturingOrder $order): RedirectResponse {
         return $this->guarded($order, function () use ($order): void {
             $this->orders->transition($order, ManufacturingOrderStatus::Cancelled);
-            // Storno gibt verbliebene Materialreservierungen frei (MVP-071).
+            // Storno gibt verbliebene Materialreservierungen frei (MVP-071) und schließt offene Fehlmaterial-Bedarfe.
             $this->inventory->releaseRemainingReservations($order);
+            $this->inventory->closeOpenShortages($order);
         }, 'manufacturing.order.flash.cancelled');
     }
 

@@ -363,7 +363,11 @@ class TogglController extends Controller {
         $userMap = $this->options->buildUserMap($validated['user_map'] ?? [], $organization);
 
         $dryRun = $validated['action'] === 'preview';
-        $summary = $this->exportImporter->import($validated['path'], $organization, $workspaceModes, $validated['user_mode'], $dryRun, $userMap);
+        try {
+            $summary = $this->exportImporter->import($validated['path'], $organization, $workspaceModes, $validated['user_mode'], $dryRun, $userMap);
+        } catch (\RuntimeException $e) {
+            return back()->withInput()->with('error', \App\Support\ErrorText::for($e));
+        }
 
         // Persistent (nicht nur Flash), damit die Vorschau-/Ergebnistabelle beim
         // erneuten Aufruf der Seite weiter sichtbar bleibt — bis sie zurückgesetzt wird.
@@ -502,7 +506,11 @@ class TogglController extends Controller {
         $userMap = $this->options->buildUserMap($validated['user_map'] ?? [], $organization);
 
         $dryRun = $validated['action'] === 'preview';
-        $summary = $this->exportImporter->importFromApi($organization, $sources, $workspaceModes, $validated['user_mode'], $dryRun, $userMap);
+        try {
+            $summary = $this->exportImporter->importFromApi($organization, $sources, $workspaceModes, $validated['user_mode'], $dryRun, $userMap);
+        } catch (\RuntimeException $e) {
+            return back()->withInput()->with('error', \App\Support\ErrorText::for($e));
+        }
 
         return redirect()
             ->route('admin.toggl.import-api')

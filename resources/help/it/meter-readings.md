@@ -1,7 +1,7 @@
 ---
 title: "Letture dei contatori"
 topic: meter-readings
-version: 1
+version: 2
 keywords:
     - lettura contatore
     - registrare lettura
@@ -28,3 +28,5 @@ l'andamento dei consumi per contatore. Una nuova lettura può essere
 creata direttamente dal contesto di un asset; valori non plausibili, ad
 esempio inferiori al precedente, vengono rifiutati. La registrazione
 richiede l'apposita autorizzazione.
+
+**Foto del contatore:** durante la registrazione può allegare una foto della lettura (sul telefono direttamente con la fotocamera). Viene salvata come allegato della lettura; nell’elenco l’icona della fotocamera apre la foto.

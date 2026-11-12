@@ -21,7 +21,23 @@
         {{ __('accounting.open_items.settle_hint', ['open' => $item->open_amount?->format() ?? '—']) }}
     </p>
 
+    <p class="text-xs text-muted">
+        @php($discountRates = implode(' / ', array_map(fn (string $rate): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $rate, 0) . ' %', $discountTaxRates ?? [])))
+        {{ match (true) {
+            ($discountSelfAssessed ?? false) => __('accounting.open_items.discount_self_assessed_hint', ['rates' => $discountRates]),
+            ($discountTaxRates ?? []) !== [] => __('accounting.open_items.discount_tax_hint', ['rates' => $discountRates]),
+            default => __('accounting.open_items.discount_no_tax_hint'),
+        } }}
+    </p>
+
     <x-accounting.four-eyes-note :text="__('accounting.open_items.four_eyes_hint')" />
+
+    @foreach ($missingCounterAccounts ?? [] as $kindValue => $number)
+        <div class="alert bg-warning/10 border-warning/30 text-sm" role="note">
+            <x-icon name="warning" />
+            <span>{{ __('accounting.open_items.error.counter_account_missing', ['kind' => \App\Enums\Finance\SettlementKind::from($kindValue)->label(), 'account' => $number]) }}</span>
+        </div>
+    @endforeach
 
     <x-select-field name="kind" :label="__('accounting.open_items.column.kind')">
         @foreach ($kinds as $kind)

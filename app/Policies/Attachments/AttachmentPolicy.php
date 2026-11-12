@@ -57,6 +57,8 @@ class AttachmentPolicy {
         $enrollment = match (true) {
             $parent instanceof \App\Models\Learning\LearningSubmission => $parent->enrollment,
             $parent instanceof \App\Models\Learning\LearningAnswer => $parent->attempt?->enrollment,
+            // Nachweis einer externen Lerneinheit (MVP-1600): hängt am Fortschritt.
+            $parent instanceof \App\Models\Learning\LearningUnitProgress => $parent->enrollment,
             default => null,
         };
         if ($enrollment !== null) {

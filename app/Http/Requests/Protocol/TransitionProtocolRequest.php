@@ -14,14 +14,18 @@ namespace App\Http\Requests\Protocol;
 
 use App\Enums\Protocol\{ProtocolSignatureMethod, ProtocolSignatureRole};
 use App\Http\Requests\BaseFormRequest;
+use App\Models\Protocol\Protocol;
+use App\Services\Attachments\FileAttacher;
+use Illuminate\Validation\Rule;
 
 /**
  * Validierung für Statusübergänge eines Protokolls. Die Regeln hängen von
  * der Aktion (Routenparameter `action`) ab: `returnToDraft` erlaubt einen
  * optionalen, `supersede` verlangt einen Grund; `sign` validiert den
- * Signaturblock nur, wenn `with_signature` gesetzt ist. Für alle übrigen
- * Aktionen gibt es keine Eingabefelder. Berechtigung trägt der Controller
- * (ProtocolPolicy je Aktion).
+ * Signaturblock, wenn `with_signature` gesetzt ist oder der Protokolltyp noch
+ * Pflichtunterschriften verlangt (MVP-1572). Für alle übrigen Aktionen gibt
+ * es keine Eingabefelder. Berechtigung trägt der Controller (ProtocolPolicy
+ * je Aktion).
  */
 class TransitionProtocolRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
@@ -29,12 +33,15 @@ class TransitionProtocolRequest extends BaseFormRequest {
         return match ((string) $this->route('action')) {
             'returnToDraft' => ['reason' => ['nullable', 'string', 'max:2000']],
             'supersede' => ['reason' => ['required', 'string', 'max:2000']],
-            'sign' => $this->boolean('with_signature') ? [
-                // Rule::enum statt Handliste (Vollaudit 2026-07, N48).
-                'signature.role' => ['required', 'string', \Illuminate\Validation\Rule::enum(ProtocolSignatureRole::class)],
-                'signature.signer_name' => ['required', 'string', 'max:120'],
+            'sign' => $this->withSignature() ? [
+                'signature.role' => ['required', 'string', Rule::enum(ProtocolSignatureRole::class)],
+                'signature.signer_name' => ['required', 'string', 'min:2', 'max:120'],
                 'signature.signer_email' => ['nullable', 'email', 'max:180'],
-                'signature.method' => ['required', 'string', \Illuminate\Validation\Rule::enum(ProtocolSignatureMethod::class)],
+                // Im Haus gibt es nur „vor Ort“ und „Papier“; Portal und Link belegen sich über ihren eigenen Weg.
+                'signature.method' => ['required', 'string', Rule::enum(ProtocolSignatureMethod::class)->only([ProtocolSignatureMethod::Onscreen, ProtocolSignatureMethod::Paper])],
+                'signature.image' => ['nullable', 'required_if:signature.method,' . ProtocolSignatureMethod::Onscreen->value, 'string', 'starts_with:data:image/png;base64,', 'max:1500000'],
+                'signature.scan' => ['nullable', 'required_if:signature.method,' . ProtocolSignatureMethod::Paper->value, 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:' . FileAttacher::maxKb()],
+                'signature.original_confirmed' => ['accepted_if:signature.method,' . ProtocolSignatureMethod::Paper->value],
             ] : [],
             default => [],
         };
@@ -47,15 +54,32 @@ class TransitionProtocolRequest extends BaseFormRequest {
      * @return array<string, mixed>|null
      */
     public function signaturePayload(): ?array {
-        if (! $this->boolean('with_signature')) {
+        if (! $this->withSignature()) {
             return null;
         }
 
         /** @var array<string, mixed> $sig */
         $sig = $this->validated()['signature'];
-        $sig['ip'] = $this->ip();
-        $sig['user_agent'] = (string) $this->userAgent();
+        $paper = ($sig['method'] ?? null) === ProtocolSignatureMethod::Paper->value;
 
-        return $sig;
+        return [
+            'role' => $sig['role'],
+            'signer_name' => $sig['signer_name'],
+            'signer_email' => $sig['signer_email'] ?? null,
+            'method' => $sig['method'],
+            'signature_image' => $paper ? null : ($sig['image'] ?? null),
+            'signature_scan' => $paper ? $this->file('signature.scan') : null,
+            'original_confirmed' => $paper,
+            'ip' => $this->ip(),
+            'user_agent' => (string) $this->userAgent(),
+        ];
+    }
+
+    /** Fehlt eine Pflichtunterschrift, ist der Signaturblock nicht abwählbar. */
+    private function withSignature(): bool {
+        $protocol = $this->route('protocol');
+
+        return $this->boolean('with_signature')
+            || ($protocol instanceof Protocol && $protocol->missingSignatureRoles() !== []);
     }
 }

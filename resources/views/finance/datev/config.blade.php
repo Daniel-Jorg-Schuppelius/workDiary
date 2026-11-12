@@ -62,6 +62,36 @@
                                value="{{ old('datev.revenue_account_tax_free', data_get($stored, 'revenue_account_tax_free', '')) }}"
                                maxlength="12"
                                placeholder="{{ $config->skr->defaultTaxFreeRevenueAccount() }}" />
+                {{-- Gegenkonten des OPOS-Ausgleichs (MVP-1555); leer = Vorgabe des Kontenrahmens. --}}
+                <x-input-field name="datev[discount_account]"
+                               :label="__('finance.datev.config.discount_account')"
+                               type="text"
+                               value="{{ old('datev.discount_account', data_get($stored, 'discount_account', '')) }}"
+                               :hint="__('finance.datev.config.discount_account_hint')"
+                               maxlength="12"
+                               placeholder="{{ $config->skr->defaultDiscountAccount() }}" />
+                <x-input-field name="datev[write_off_account]"
+                               :label="__('finance.datev.config.write_off_account')"
+                               type="text"
+                               value="{{ old('datev.write_off_account', data_get($stored, 'write_off_account', '')) }}"
+                               :hint="__('finance.datev.config.write_off_account_hint')"
+                               maxlength="12"
+                               placeholder="{{ $config->skr->defaultWriteOffAccount() }}" />
+                {{-- Verbindlichkeiten: erhaltenes Skonto mindert den Aufwand, die Ausbuchung ist ein sonstiger Ertrag. --}}
+                <x-input-field name="datev[received_discount_account]"
+                               :label="__('finance.datev.config.received_discount_account')"
+                               type="text"
+                               value="{{ old('datev.received_discount_account', data_get($stored, 'received_discount_account', '')) }}"
+                               :hint="__('finance.datev.config.received_discount_account_hint')"
+                               maxlength="12"
+                               placeholder="{{ $config->skr->defaultReceivedDiscountAccount() }}" />
+                <x-input-field name="datev[payable_write_off_account]"
+                               :label="__('finance.datev.config.payable_write_off_account')"
+                               type="text"
+                               value="{{ old('datev.payable_write_off_account', data_get($stored, 'payable_write_off_account', '')) }}"
+                               :hint="__('finance.datev.config.payable_write_off_account_hint')"
+                               maxlength="12"
+                               placeholder="{{ $config->skr->defaultPayableWriteOffAccount() }}" />
                 <x-input-field name="datev[debtor_base]"
                                :label="__('finance.datev.config.debtor_base')"
                                type="number"
@@ -70,6 +100,13 @@
                                min="1"
                                max="99999999" />
             </x-form-group>
+
+            @if (($missingSettlementAccounts ?? []) !== [])
+                <div class="alert bg-warning/10 border-warning/30 text-sm" role="note">
+                    <x-icon name="warning" />
+                    <span>{{ __('finance.datev.config.settlement_accounts_missing', ['accounts' => implode(', ', $missingSettlementAccounts)]) }}</span>
+                </div>
+            @endif
 
             <x-form-group :legend="__('finance.datev.config.tax_group')" icon="percent" tone="warning" cols="3" compact>
                 <x-input-field name="datev[tax_keys][19.00]"

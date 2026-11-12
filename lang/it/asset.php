@@ -67,6 +67,9 @@ return [
         'removed' => 'Componente smontato.',
         'not_installed' => 'Questo componente non è più montato.',
         'foreign_organization' => 'Consumo di materiale e apparecchio appartengono a organizzazioni diverse.',
+        'usage_of_other_asset' => 'Il consumo di materiale appartiene a un altro apparecchio.',
+        'already_adopted' => 'Questo consumo di materiale è già nella distinta.',
+        'adopted' => 'Materiale ripreso nella distinta.',
         'replace_hint' => '«:name» viene smontato e resta nello storico con la data di rimozione.',
         'label_hint' => 'Per componenti di terzi senza anagrafica articolo.',
         'interval_hint' => 'Intervallo di sostituzione in mesi — da qui la scadenza.',
@@ -74,7 +77,9 @@ return [
             'add' => 'Aggiungi componente',
             'replace' => 'Sostituisci',
             'remove' => 'Smonta',
+            'adopt' => 'Riprendi',
         ],
+        'adopt' => ['heading' => 'Materiale dagli interventi', 'hint' => 'Materiale assegnato a questo apparecchio su un foglio ore. «Riprendi» lo inserisce nella distinta con il giorno dell’intervento come data di montaggio.', 'column_date' => 'Intervento'],
         'due' => ['heading' => 'Componenti di usura in scadenza', 'hint' => 'Proposta per il prossimo intervento — decide il tecnico.'],
         'history' => ['heading' => 'Storico (componenti smontati e sostituiti)'],
         'column' => [
@@ -105,5 +110,77 @@ return [
     'nfc' => [
         'read' => 'Leggi tag NFC',
         'write' => 'Scrivi tag NFC',
+    ],
+    // Zustand, Außerbetriebnahme, Eigentümerwechsel, Rücknahme (MVP-1574).
+    'health' => [
+        'label' => 'Stato',
+        'hint' => 'Derivato: critico con un blocco attivo o un difetto bloccante, limitato con un difetto aperto o manutenzione/ispezione scadute.',
+    ],
+    'decommission' => [
+        'title' => 'Dismettere l\'asset',
+        'action' => 'Dismettere',
+        'intro' => 'L\'asset viene dismesso definitivamente. In seguito non può più essere consegnato, noleggiato, prenotato o pianificato; il fascicolo resta conservato.',
+        'date' => 'Dismesso dal',
+        'reason' => 'Motivo',
+        'since' => 'Dismesso dal :date',
+        'by_disposal' => 'Smaltito tramite un ordine di smaltimento.',
+        'done' => 'Asset dismesso.',
+        'plans' => 'Piani di manutenzione attivi: :count — verranno sospesi.',
+        'duties' => 'Obblighi di ispezione attivi: :count — vengono sospesi, gli appuntamenti di ispezione aperti vengono annullati.',
+        'error' => [
+            'checked_out' => 'L\'asset è ancora consegnato. Lo ritiri prima.',
+            'not_allowed' => 'L\'asset non può essere dismesso dallo stato «:status».',
+        ],
+    ],
+    // Wiederinbetriebnahme (MVP-1628)
+    'recommission' => [
+        'title' => 'Rimettere in servizio l’asset',
+        'action' => 'Rimetti in servizio',
+        'intro' => 'L’asset torna attivo: può essere consegnato, prestato, prenotato e pianificato. I piani di manutenzione sospesi e gli obblighi di verifica inattivi restano disattivati: riattivarli uno per uno.',
+        'reason' => 'Motivo della rimessa in servizio',
+        'done' => 'Asset rimesso in servizio.',
+        'error' => [
+            'not_decommissioned' => 'Solo un asset dismesso può essere rimesso in servizio.',
+            'disposed' => 'L’asset è stato smaltito tramite un ordine di smaltimento e resta fuori servizio.',
+        ],
+    ],
+    'ownership' => [
+        'title' => 'Cambiare proprietario',
+        'action' => 'Cambiare proprietario',
+        'current' => 'Attualmente: :owner',
+        'owned_by' => 'Proprietà',
+        'customer_hint' => 'Solo con proprietà «Cliente»; altrimenti il legame con il cliente viene rimosso.',
+        'note' => 'Nota sul cambio di proprietario',
+        'note_hint' => 'Viene salvata solo se cambia il cliente; il cambio compare poi nel fascicolo.',
+        'done' => 'Cambio di proprietario registrato.',
+        'error' => [
+            'unchanged' => 'Proprietà e cliente sono invariati.',
+            'forbidden' => 'Un altro cliente è un cambio di proprietario; non dispone del permesso necessario.',
+        ],
+    ],
+    'return' => [
+        'title' => 'Ritirare l\'asset',
+        'condition_in' => 'Stato alla restituzione',
+        'condition_placeholder' => 'ad es. completo, involucro graffiato',
+    ],
+    'timeline' => [
+        'ownership_changed' => 'Proprietario cambiato',
+        'health_changed' => 'Stato modificato',
+        'blocked' => 'Bloccato',
+        'unblocked' => 'Blocco rimosso',
+    ],
+    'block' => [
+        'from_status' => 'Dallo stato «:status».',
+        'status_left' => 'Stato modificato.',
+    ],
+    'guard' => [
+        'out_of_service' => ':asset non è più in esercizio (:status) e non può essere utilizzato.',
+    ],
+    // Anschaffung an der Asset-Akte (MVP-1606).
+    'acquisition' => [
+        'title' => 'Acquisizione',
+        'supplier' => 'Acquistato da',
+        'date' => 'Data di acquisizione',
+        'cost' => 'Costo di acquisizione',
     ],
 ];

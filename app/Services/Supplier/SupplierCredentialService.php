@@ -47,6 +47,10 @@ class SupplierCredentialService {
             ->orderBy('name')
             ->get();
 
+        // Pflicht je Gewerk/Leistungsart (MVP-1586): begrenzte Typen gelten nur für Lieferanten mit einem der Tags.
+        $tagIds = array_values($supplier->tags()->pluck('tags.id')->map(fn ($id): int => (int) $id)->all());
+        $types = $types->filter(fn (SupplierCredentialType $type): bool => $type->requiredFor($tagIds))->values();
+
         $credentials = SupplierCredential::query()
             ->where('supplier_id', $supplier->id)
             ->orderByDesc('valid_until')

@@ -66,6 +66,16 @@ class BookableService extends Model {
         return $this->belongsTo(Qualification::class, 'required_qualification_id');
     }
 
+    /** Standortbindung (MVP-1612): eine an ein Objekt gebundene Leistung bucht nur der Kunde, dem das Objekt gehört. */
+    public function bookableBy(?\App\Models\Customer\Customer $customer): bool {
+        if ($this->site_id === null) {
+            return true;
+        }
+        $owner = Site::query()->withoutGlobalScopes()->whereKey($this->site_id)->value('customer_id');
+
+        return $customer !== null && (int) $owner === (int) $customer->id;
+    }
+
     /** Frühester buchbarer Zeitpunkt nach Vorlauf. */
     public function earliestStart(): Carbon {
         return Carbon::now()->addHours($this->lead_time_hours);

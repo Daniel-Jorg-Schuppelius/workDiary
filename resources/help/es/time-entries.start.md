@@ -1,7 +1,7 @@
 ---
 title: "Iniciar el registro de tiempos"
 topic: time-entries.start
-version: 2
+version: 3
 keywords:
     - cronómetro
     - iniciar temporizador
@@ -51,6 +51,8 @@ fichaje, registros y correcciones trazables.
 
 ![Vista de hoy con línea de cronómetro, balance diario y fichaje](media/zeit/heute-erfassung.png)
 *La vista de hoy: iniciar el cronómetro, balance previsto/real y el fichaje de un vistazo.*
+
+**Sin conexión:** la barra de entrada de «Hoy» guarda también sin red las reservas con duración o desde/hasta y las transmite en el siguiente contacto, con las mismas reglas que en línea. Si para entonces el día está cerrado o falta el proyecto, la reserva no se descarta en silencio, sino que aparece como conflicto en «Cambios sin conexión». El temporizador no está disponible sin conexión.
 
 ## Ejemplo práctico
 

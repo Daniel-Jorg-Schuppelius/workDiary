@@ -262,24 +262,41 @@ class AgileMetricsService {
 
     /**
      * Qualitätsreihe je ISO-Woche (P8): Wiederöffnungen (column.moved von
-     * einer done- in eine nicht-done-Spalte) und Übersteuerungen
-     * (override.*-Events) — Frühindikator statt Personen-Scoring.
+     * einer done- in eine nicht-done-Spalte), Übersteuerungen
+     * (override.*-Events) und DoD-Abweichungsquote — Frühindikator statt
+     * Personen-Scoring.
      */
     public function qualitySeries(AgileBoard $board): MetricResult {
         $categories = $this->columnCategories($board);
 
         $weeks = [];
+        $doneEntries = [];
         foreach ($this->boardEvents($board) as $event) {
             $week = $event->created_at->format('o-\WW');
-            $isReopen = $event->event === 'column.moved'
-                && ($categories[(int) ($event->payload['from'] ?? 0)] ?? null) === AgileColumnCategory::Done->value
-                && ($categories[(int) ($event->payload['to'] ?? 0)] ?? null) !== AgileColumnCategory::Done->value;
+            $fromDone = ($categories[(int) ($event->payload['from'] ?? 0)] ?? null) === AgileColumnCategory::Done->value;
+            $toDone = ($categories[(int) ($event->payload['to'] ?? 0)] ?? null) === AgileColumnCategory::Done->value;
+            if ($event->event === 'column.moved' && $toDone && ! $fromDone) {
+                $doneEntries[$week] = ($doneEntries[$week] ?? 0) + 1;
+            }
+            $isReopen = $event->event === 'column.moved' && $fromDone && ! $toDone;
             $isOverride = str_starts_with($event->event, 'override.');
             if (! $isReopen && ! $isOverride) {
                 continue;
             }
-            $weeks[$week] ??= ['reopened' => 0, 'overrides' => 0];
+            $weeks[$week] ??= ['reopened' => 0, 'overrides' => 0, 'dod_overrides' => 0, 'dod_rate' => null];
             $weeks[$week][$isReopen ? 'reopened' : 'overrides']++;
+            if ($event->event === 'override.dod') {
+                $weeks[$week]['dod_overrides']++;
+            }
+        }
+        // DoD-Abweichungsquote: übersteuerte Abschlüsse je Abschluss der Woche;
+        // Wochen mit Abschlüssen ohne Abweichung zählen mit 0 %.
+        foreach (array_keys($doneEntries) as $week) {
+            $weeks[$week] ??= ['reopened' => 0, 'overrides' => 0, 'dod_overrides' => 0, 'dod_rate' => null];
+        }
+        foreach ($weeks as $week => $row) {
+            $entries = $doneEntries[$week] ?? 0;
+            $weeks[$week]['dod_rate'] = $entries > 0 ? round($row['dod_overrides'] / $entries * 100, 1) : null;
         }
         ksort($weeks);
 

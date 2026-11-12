@@ -169,9 +169,13 @@ class AssetSpec extends AbstractEntitySpec {
                 $payload['customer_id'] = $customer->id;
             }
 
+            // Der Zustand ist abgeleitet (MVP-1574); die Spalte wird gelesen, aber nicht übernommen.
+            unset($payload['health']);
+
             $existing = $this->assetByNumber($organization, (string) $payload['asset_no']);
             if ($existing !== null) {
                 $existing->fill($payload)->save();
+                $this->syncDerivedState($existing);
 
                 return [ImportOutcome::Updated, null];
             }
@@ -179,15 +183,22 @@ class AssetSpec extends AbstractEntitySpec {
             $payload['asset_class'] ??= AssetClass::Device->value;
             $payload['status'] ??= AssetStatus::Active->value;
             $payload['owned_by'] ??= AssetOwnership::Organization->value;
-            $payload['health'] ??= AssetHealth::Ok->value;
+            $payload['health'] = AssetHealth::Ok->value;
 
             $asset = Asset::query()->create($payload);
             $asset->audit('asset.created', ['asset_no' => $asset->asset_no, 'source' => 'csv-import']);
+            $this->syncDerivedState($asset);
 
             return [ImportOutcome::Created, null];
         } catch (Throwable $e) {
             return [ImportOutcome::Failed, new ValidationIssue(ImportErrorCode::Persist, null, $e->getMessage())];
         }
+    }
+
+    /** Statussperre und Zustand folgen dem importierten Status wie beim Bearbeiten. */
+    private function syncDerivedState(Asset $asset): void {
+        app(\App\Services\Asset\AssetBlockService::class)->syncStatusBlock($asset);
+        app(\App\Services\Asset\AssetHealthService::class)->sync($asset);
     }
 
     /**

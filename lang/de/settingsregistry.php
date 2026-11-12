@@ -42,6 +42,9 @@ return [
         'message' => 'Für diesen Scope bzw. Suchbegriff sind keine Registry-Schlüssel vorhanden.',
         'history' => 'Noch keine Änderungen protokolliert.',
     ],
+    'error' => [
+        'service_managed' => 'Die Einstellung :key wird auf ihrer Fachseite gepflegt und lässt sich hier nicht ändern.',
+    ],
     'flash' => [
         'saved' => 'Einstellung :key gespeichert.',
         'reset' => 'Einstellung :key auf den Default zurückgesetzt.',

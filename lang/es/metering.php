@@ -19,6 +19,19 @@ return [
     'blocked_external' => 'Un sistema externo lleva la facturación de este cliente — no se crea ningún documento.',
     'run_done' => 'Facturado: :created borrador(es), :skipped omitidos.',
     'form_hint' => 'Sin lectura final en el periodo no se crea un borrador, sino un aviso — no se estima nada.',
+    'not_runnable' => 'Este acuerdo no se factura (estado: :status). Para facturarlo, cambie el estado a «Activo».',
+    'project_hint' => 'Los borradores de factura del proceso se asignan a este proyecto.',
+    'status_hint' => 'El proceso omite los acuerdos en pausa y finalizados. Tras una pausa, recupera desde «Próxima facturación»; adelante la fecha si es necesario.',
+    'tiers' => [
+        'legend' => 'Escala por tramos',
+        'hint' => 'Opcional. Con escala, en cada tramo se aplica su precio en lugar del precio unitario; el cálculo es progresivo sobre el consumo una vez descontada la cantidad gratuita. El primer tramo empieza en 0; las filas vacías se ignoran.',
+        'from' => 'Tramo :n desde cantidad',
+        'price' => 'Tramo :n precio por unidad',
+        'badge' => 'Escala (:count tramos)',
+        'badge_title' => 'Se aplica una escala por tramos en lugar del precio unitario.',
+        'first_from_zero' => 'El primer tramo debe empezar en 0; de lo contrario, parte del consumo quedaría sin facturar.',
+        'duplicate_from' => 'Cada tramo necesita su propia cantidad «desde».',
+    ],
     'unit_default' => 'unidades',
     'action' => [
         'create' => 'Registrar acuerdo',
@@ -37,6 +50,7 @@ return [
         'interval_count' => 'Factor',
         'next_run_on' => 'Próxima facturación',
         'end_on' => 'Fin',
+        'project' => 'Proyecto',
         'status' => 'Estado',
     ],
     'interval' => [

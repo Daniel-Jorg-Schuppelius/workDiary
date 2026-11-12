@@ -69,7 +69,15 @@
                     <td class="whitespace-nowrap text-sm">{{ $command->created_at?->fdatetime() }}</td>
                     <td class="text-sm">{{ $command->user?->name ?? '—' }}</td>
                     <td class="font-mono text-xs">{{ $command->type }}</td>
-                    <td><x-status-badge :tone="$command->result_status->tone()" size="sm">{{ $command->result_status->label() }}</x-status-badge></td>
+                    <td class="whitespace-nowrap">
+                        <x-status-badge :tone="$command->result_status->tone()" size="sm">{{ $command->result_status->label() }}</x-status-badge>
+                        {{-- Entscheidung der Person über ihren Konflikt (MVP-1595); ohne sie ist er offen. --}}
+                        @if ($command->resolution !== null)
+                            <x-status-badge tone="ghost" size="sm" :title="$command->resolved_at?->fdatetime()">{{ $command->resolution->label() }}</x-status-badge>
+                        @elseif ($command->result_status === \App\Enums\Sync\SyncCommandStatus::Conflict)
+                            <x-status-badge tone="warning" size="sm">{{ __('offline.unresolved') }}</x-status-badge>
+                        @endif
+                    </td>
                     <td class="text-xs">
                         @if ($command->result_errors)
                             <span class="text-error">{{ implode('; ', array_map(strval(...), \Illuminate\Support\Arr::flatten($command->result_errors))) }}</span>

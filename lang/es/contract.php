@@ -138,4 +138,10 @@ return [
             'dismissed' => 'Ajuste por índice descartado.',
         ],
     ],
+    // Plazos de contratos en el calendario (MVP-1617).
+    'calendar' => [
+        'end' => 'Fin del contrato',
+        'renewal' => 'Prórroga',
+        'indexation_review' => 'Revisión del índice',
+    ],
 ];

@@ -1,7 +1,7 @@
 ---
 title: "Microsoft 365 anbinden"
 topic: admin.msgraph
-version: 2
+version: 3
 keywords:
     - Microsoft 365
     - freigegebenes Postfach abrufen
@@ -243,3 +243,5 @@ Kalenderverbindung gestört ist, steht dazu eine Betriebsaufgabe in der
   dass Microsoft-365-Nebenverbindungen Aufmerksamkeit brauchen, ist eine
   Verbindung für Dokumenteingang, Backup oder Mail-Versand gestört. Melden Sie
   sich dort erneut an.
+
+**Datenführerschaft:** Termine aus diesem Kalender gehören zum Bereich Kalender. Führt ein anderes System den Kalender, erscheinen Vorschläge, Serien und Änderungen im Integrations-Eingang als Fall „Datenführerschaft“; **Einmalig übernehmen** legt den Termin bzw. die Serie an. Lösch-Hinweise bleiben gewöhnliche Fälle. Für Microsoft To Do gilt der Bereich Aufgaben.

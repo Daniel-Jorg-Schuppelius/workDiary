@@ -107,6 +107,8 @@ return [
     'editor.texts_hint' => 'Testi liberi sopra e sotto il contenuto dei documenti di vendita (in precedenza modelli di fattura) — testo semplice, congelato con la versione del profilo.',
     'editor.header_text' => 'Testo di intestazione',
     'editor.footer_text' => 'Testo a piè di pagina',
+    'editor.confidentiality_text' => 'Nota di riservatezza',
+    'editor.confidentiality_hint' => 'Compare solo se il blocco «Riservatezza» è dinamico. Vuoto = nota predefinita.',
     'profile.customer_specific' => 'Profilo specifico del cliente (attivo solo tramite la scheda cliente)',
     'profile.customer_specific_hint' => 'Non partecipa alla risoluzione a livello di organizzazione — vale solo per i clienti che lo referenziano nella loro scheda.',
     'customer.panel_title' => 'Design dei documenti',

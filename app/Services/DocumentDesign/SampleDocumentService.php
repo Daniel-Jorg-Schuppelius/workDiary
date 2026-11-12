@@ -95,7 +95,7 @@ class SampleDocumentService {
         $intro = $design->show(InformationBlock::IntroText) ? '<p>' . $this->introText($kind, $long) . '</p>' : '';
         $closing = $design->show(InformationBlock::ClosingText) ? '<p>' . $long . '</p>' : '';
         $confidential = $design->show(InformationBlock::Confidentiality)
-            ? '<p style="font-size: 8px; color: #999;">' . __('Vertraulich — nur für den benannten Empfänger bestimmt.') . '</p>'
+            ? '<p style="font-size: 8px; color: #999;">' . e($design->confidentialityText()) . '</p>'
             : '';
 
         $meta = $design->show(InformationBlock::DocumentMeta)

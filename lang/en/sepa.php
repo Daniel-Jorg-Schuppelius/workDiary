@@ -91,6 +91,7 @@ return [
         'missing_iban' => 'IBAN missing',
         'zero_amount' => 'Amount is 0',
         'iban_differs' => 'IBAN differs from master data',
+        'disputed' => 'Open item disputed',
     ],
 
     'error' => [

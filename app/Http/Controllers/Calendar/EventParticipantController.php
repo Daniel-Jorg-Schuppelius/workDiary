@@ -87,18 +87,10 @@ class EventParticipantController extends Controller {
         return back()->with('success', __('Status aktualisiert.'));
     }
 
-    public function issueCertificate(Request $request, Event $event, User $user): RedirectResponse {
+    public function issueCertificate(Event $event, User $user): RedirectResponse {
         Gate::authorize('issueCertificate', $event);
 
-        $data = $request->validate([
-            'issued_at' => ['nullable', 'date'],
-        ]);
-
-        $this->certificates->issue(
-            $event,
-            $user,
-            isset($data['issued_at']) ? \Illuminate\Support\Carbon::parse($data['issued_at']) : null,
-        );
+        $this->certificates->issue($event, $user);
 
         return back()->with('success', __('Zertifikat ausgestellt.'));
     }

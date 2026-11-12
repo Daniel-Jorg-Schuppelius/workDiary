@@ -49,7 +49,8 @@ final class LeadSearchDomain implements SearchDomain {
             ->where('organization_id', $organizationId)
             ->where(fn ($q) => $q->whereLikeEscaped('company', $term)
                 ->orWhereLikeEscaped('contact_name', $term)
-                ->orWhereLikeEscaped('email', $term))
+                ->orWhereLikeEscaped('email', $term)
+                ->orWhereCustomFieldText($term))
             ->when($filters->person !== null, fn ($q) => $q->where('responsible_user_id', $filters->person))
             ->when($filters->customer !== null, fn ($q) => $q->where('customer_id', $filters->customer));
         $filters->range($query, 'created_at');

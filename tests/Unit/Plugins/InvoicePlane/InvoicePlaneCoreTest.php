@@ -42,8 +42,10 @@ class InvoicePlaneCoreTest extends TestCase {
     }
 
     public function test_allowlisted_public_host_requires_tls(): void {
-        $this->assertTrue($this->guard()->isAcceptable('8.8.8.8', true));
-        $this->assertFalse($this->guard()->isAcceptable('8.8.8.8', false)); // TLS fehlt
+        $this->guard()->assertAcceptable('8.8.8.8', true);
+
+        $this->expectException(InvoicePlaneConnectionException::class);
+        $this->guard()->assertAcceptable('8.8.8.8', false); // TLS fehlt
     }
 
     // ── MVP-420: signierter Bridge-Befehl ────────────────────────────────────

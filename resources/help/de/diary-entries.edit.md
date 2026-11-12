@@ -1,7 +1,7 @@
 ---
 title: "Auftrag bearbeiten"
 topic: diary-entries.edit
-version: 3
+version: 5
 keywords:
     - Auftrag ändern
     - Auftragsdetails
@@ -35,3 +35,25 @@ Beachten Sie:
 - Die **Geplante Dauer (HH:MM)** ändern Sie im Bearbeitungsdialog im Abschnitt
   **Zeitraum**. Leeren Sie das Feld, gilt wieder die Servicedauer eines disponierten Auftrags, sonst die Länge des Zeitfensters
   bzw. die Dauer des Termins.
+
+**Lebenszyklus:** Eine angenommene Aufgabe geben Sie über **Annahme zurückgeben**
+mit Begründung zurück; der Auftrag steht dann wieder auf „Geplant“. **Pausieren**
+und **Stornieren** beenden laufende Stoppuhren auf dem Auftrag und buchen die
+Zeit. **Abschließen** setzt voraus, dass keine Stoppuhr mehr läuft – die Meldung
+nennt, wer noch aktiv ist. Ein Storno archiviert offene Protokolle und bricht
+laufende Prozedurläufe ab; unterschriebene Protokolle bleiben. Bei der Abnahme
+wird die Person festgehalten, die beim Kunden unterschrieben hat; trägt das
+Protokoll keine Kundenunterschrift, fragt der Dialog nach dem Namen.
+
+**Berechnet:** Stellen Sie eine Rechnung aus, die Zeiten eines abgenommenen
+Auftrags abrechnet, oder übergeben Sie diese Zeiten an Ihr Buchhaltungsprogramm,
+wechselt der Auftrag von selbst auf „Berechnet“ und nennt den Beleg. Wird der
+Beleg storniert, steht der Auftrag wieder auf „Abgenommen“. Die Eingabe von Hand
+bleibt möglich.
+
+**Material:** Ebenso berechnet eine Materialrechnung oder die Übergabe von
+Material den Auftrag, wenn das Material auf einem Stundenzettel mit Zeiten dieses
+Auftrags steht.
+
+**Verlauf filtern:** Über dem Verlauf wählen Sie Zeitraum, einen oder mehrere
+Typen, eine Person und „Nur kundenrelevant“.

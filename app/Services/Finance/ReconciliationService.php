@@ -277,6 +277,14 @@ class ReconciliationService implements PaymentStatusProvider {
         return $this->setStatus($transaction, MatchStatus::Ignored, 'ignored', $actor);
     }
 
+    /**
+     * Nimmt „beiseitegelegt“ zurück: Der Umsatz steht wieder offen, etwa wenn
+     * seine Direktbuchung aufs Sachkonto verworfen wurde.
+     */
+    public function reopen(BankTransaction $transaction, ?User $actor = null): BankTransaction {
+        return $this->setStatus($transaction, MatchStatus::Unmatched, 'reopened', $actor);
+    }
+
     private function setStatus(BankTransaction $transaction, MatchStatus $status, string $event, ?User $actor): BankTransaction {
         $this->assertBooked($transaction);
         $actorId = $this->resolveActorId($actor);
@@ -364,7 +372,7 @@ class ReconciliationService implements PaymentStatusProvider {
             // Teil der Hash-Kette (skonto_accepted) und des Z3-Nachweises.
             // Basis ist der fällige Betrag: ein offener Einbehalt ist kein Skonto.
             $skonto = $this->settlement->shortfall($invoice);
-            if ($skonto > MatchingService::CENT_TOLERANCE) {
+            if ($skonto > $this->matching->centTolerance()) {
                 PaymentAllocation::query()->create([
                     'organization_id' => $invoice->organization_id,
                     'bank_transaction_id' => $transaction->id,

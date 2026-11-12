@@ -190,4 +190,55 @@ class ExpenseWorkflowTest extends TestCase {
             ->get(route('expenses.edit', $expense))
             ->assertForbidden();
     }
+
+    /** MVP-1619 (H1-04): Belegpflicht der Kategorie wirkt beim Einreichen, nicht beim Speichern. */
+    public function test_category_requiring_a_receipt_blocks_submission_until_one_is_attached(): void {
+        $category = ExpenseCategory::factory()->create(['organization_id' => $this->organization->id, 'requires_receipt' => true]);
+        $expense = Expense::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->user->id,
+            'expense_category_id' => $category->id,
+        ]);
+
+        $this->actingAs($this->user)
+            ->post(route('expenses.submit', $expense))
+            ->assertRedirect()
+            ->assertSessionHas('warning')
+            ->assertSessionHas('open_dialog', route('expenses.receipt', $expense));
+        $this->assertSame(ExpenseStatus::Draft, $expense->fresh()?->status);
+
+        app(\App\Services\Attachments\FileAttacher::class)->storeContent($expense, '%PDF-1.4 Beleg', 'beleg.pdf', 'application/pdf', $this->user->id);
+
+        $this->actingAs($this->user)->post(route('expenses.submit', $expense))->assertSessionHas('success');
+        $this->assertSame(ExpenseStatus::Pending, $expense->fresh()?->status);
+    }
+
+    public function test_saving_with_submit_keeps_the_draft_when_the_receipt_is_missing(): void {
+        $category = ExpenseCategory::factory()->create(['organization_id' => $this->organization->id, 'requires_receipt' => true]);
+
+        $this->actingAs($this->user)->post(route('expenses.store'), [
+            'date' => now()->toDateString(),
+            'expense_category_id' => $category->sqid,
+            'description' => 'Parkhaus',
+            'payment_method' => \App\Enums\Expense\PaymentMethod::PrivatePaid->value,
+            'amount_gross' => '12.00',
+            'currency' => 'EUR',
+            'submit_after_save' => '1',
+        ])->assertSessionHas('warning');
+
+        $expense = Expense::query()->where('user_id', $this->user->id)->latest('id')->firstOrFail();
+        $this->assertSame(ExpenseStatus::Draft, $expense->status);
+    }
+
+    public function test_category_without_receipt_duty_submits_without_attachment(): void {
+        $expense = Expense::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->user->id,
+            'expense_category_id' => $this->category->id,
+        ]);
+
+        app(ExpenseService::class)->submitForApproval($expense);
+
+        $this->assertSame(ExpenseStatus::Pending, $expense->fresh()?->status);
+    }
 }

@@ -270,7 +270,6 @@ class PassengerMasterDataController extends Controller {
             'passenger_seats' => ['nullable', 'integer', 'min:1', 'max:60'],
             'wheelchair_places' => ['nullable', 'integer', 'min:0', 'max:10'],
             'barrier_free' => ['nullable', 'boolean'],
-            'large_capacity' => ['nullable', 'boolean'],
             'meter_kind' => ['nullable', 'string', 'in:' . PassengerVehicleProfile::METER_TAXAMETER . ',' . PassengerVehicleProfile::METER_ODOMETER],
             'meter_serial' => ['nullable', 'string', 'max:64'],
             'meter_calibrated_until' => ['nullable', 'date'],
@@ -280,7 +279,6 @@ class PassengerMasterDataController extends Controller {
         ]);
         $validated['wheelchair_places'] = (int) ($validated['wheelchair_places'] ?? 0);
         $validated['barrier_free'] = (bool) ($validated['barrier_free'] ?? false);
-        $validated['large_capacity'] = (bool) ($validated['large_capacity'] ?? false);
 
         return $validated;
     }

@@ -30,6 +30,9 @@
             </option>
         @endforeach
     </x-select-field>
+    <x-input-field name="vehicle_label" :label="__('Kennzeichen / Bezeichnung')" maxlength="64"
+                   :value="old('vehicle_label', $src?->vehicle_label)"
+                   :hint="__('Für Fahrzeuge außerhalb des Fuhrparks, etwa den Privatwagen.')" />
     <x-select-field name="trip_kind" :label="__('Fahrtart')" required>
         @foreach ($tripKinds as $kind)
             <option value="{{ $kind->value }}" @selected(old('trip_kind', $src?->trip_kind?->value ?? 'business') === $kind->value)>{{ $kind->label() }}</option>

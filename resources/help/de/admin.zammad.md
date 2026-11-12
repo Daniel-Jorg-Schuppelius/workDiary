@@ -1,7 +1,7 @@
 ---
 title: "Zammad-Anbindung"
 topic: admin.zammad
-version: 3
+version: 4
 keywords:
     - Zammad
     - Helpdesk
@@ -195,3 +195,5 @@ WorkDiary fragt vorher nach.
   fehlt die Queue.
 - Tickets landen im falschen Projekt: Prüfen Sie die Gruppen-IDs unter
   **Queue → Projekt** und die Kundenvorschläge in der Inbox.
+
+**Datenführerschaft:** Im Modus „Service-Ticket“ schreibt der Import nur, wenn Zammad den Bereich Tickets schreiben darf – also WorkDiary oder Zammad ihn führt. Führt ein anderes System die Tickets, legt der Import weder Tickets an noch schließt er sie; die Fälle stehen im Integrations-Eingang zum einmaligen Übernehmen. Die Ziel-Queue führt Zammad: Manuelle Anlage, Mail-Buchung und Mail-Antworten in diese Queue nimmt WorkDiary nicht an. Im Modus „Aufgabe“ gilt der Bereich Aufgaben.

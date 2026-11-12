@@ -46,6 +46,7 @@ class LearningConfigurationPdfRenderer {
             __('learning.field.leaderboard_enabled') => $this->gamification->isLeaderboardEnabled($organization) ? $yes : $no,
             __('learning.field.streak_enabled') => $this->gamification->isStreakEnabled($organization) ? $yes : $no,
             __('learning.field.embed_hosts') => implode(', ', array_map('strval', (array) ($settings['embed_hosts'] ?? []))) ?: '—',
+            __('learning.field.grade_scale') => str_replace("\n", ', ', app(LearningGradebookService::class)->scaleText($organization)) ?: '—',
             __('learning.field.categories') => LearningCourseCategory::query()->where('organization_id', $organization->id)->orderBy('position')->pluck('name')->implode(', ') ?: '—',
         ];
 

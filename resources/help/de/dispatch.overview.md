@@ -1,7 +1,7 @@
 ---
 title: "Disposition und Konfliktwarnungen"
 topic: dispatch.overview
-version: 3
+version: 4
 keywords:
     - Einsatzplanung
     - disponieren
@@ -58,3 +58,13 @@ Unter „Tagesvorschlag“ verteilt die Leitstelle alle offenen Aufträge eines
 Tages in einem Lauf auf die Fahrer. Berücksichtigt werden Arbeitsfenster,
 Zeitfenster der Aufträge, Pausen und Qualifikationen; die Fahrer starten und
 enden zu Hause. Der Vorschlag wird erst mit der Übernahme zu Touren.
+
+## Qualifikationsmatrix und Einsatz-Ampel
+
+Trägt ein Auftrag geforderte Qualifikationen, zeigt die **Qualifikationsmatrix**
+je Mitarbeiter:in den Stand zum Auftragsbeginn: grün **erfüllt**, gelb **läuft
+ab** (Befristung endet binnen 30 Tagen) oder **in Schulung** (ein Kurs der
+Lernplattform zu dieser Qualifikation ist zugewiesen oder begonnen), rot
+**fehlt**. Bei gelb oder rot nennt die Zelle den freigegebenen Kurs, der die
+Qualifikation vermittelt. Die Ampel informiert; gesperrt wird eine Zuweisung
+weiterhin nur über die Qualifikation selbst.

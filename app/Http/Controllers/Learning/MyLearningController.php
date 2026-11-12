@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Learning;
 
 use App\Enums\Learning\LearningProgressStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Learning\Concerns\ReportsVideoProgress;
 use App\Models\Attachments\Attachment;
 use App\Models\Communication\CommunicationNote;
 use App\Models\Learning\{LearningAssignment, LearningCertificate, LearningEnrollment, LearningQuestion, LearningQuiz, LearningQuizAttempt, LearningSubmission, LearningUnit};
@@ -22,7 +23,7 @@ use App\Services\Ai\Exceptions\AiException;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Learning\{LearningAiSuggestionService, LearningAssignmentService, LearningCertificatePdfRenderer, LearningEnrollmentService, LearningEventService, LearningGamificationService, LearningQuestionService, LearningQuizService, LearningReportCardPdfRenderer, LearningTimeService, LearningTranslationService};
-use App\Services\Learning\LearningMedia;
+use App\Services\Learning\{LearningMedia, LearningUnitLinkService, LearningVideoProgressService};
 use App\Services\Media\{MediaResponder, VideoTranscodingService};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response, UploadedFile};
 use Illuminate\Support\Facades\Storage;
@@ -40,6 +41,8 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Eigentümer-Prüfung.
  */
 class MyLearningController extends Controller {
+    use ReportsVideoProgress;
+
     public function __construct(
         private readonly LearningEnrollmentService $enrollments,
         private readonly LearningTimeService $time,
@@ -160,10 +163,28 @@ class MyLearningController extends Controller {
             }
         }
 
+        $videoProgress = app(LearningVideoProgressService::class)->percentsFor($enrollment);
+        // Verweise der Arten Prozedur und Umfrage (MVP-1600): Namen für die Anzeige.
+        $units = $enrollment->course->units ?? collect();
+        $unitLinks = [
+            'procedures' => \App\Models\Procedure\ProcedureTemplate::query()
+                ->whereIn('id', $units->map(fn (LearningUnit $unit): ?int => $unit->procedureTemplateId())->filter()->all())
+                ->pluck('name', 'id'),
+            'surveys' => \App\Models\Survey\Survey::query()
+                ->whereIn('id', $units->map(fn (LearningUnit $unit): ?int => $unit->surveyId())->filter()->all())
+                ->pluck('title', 'id'),
+        ];
+        $enrollment->progress->load('attachments');
+
         return view('learning.my.show', [
             'enrollment' => $enrollment,
             'course' => $enrollment->course,
             'completedUnitIds' => $completedUnitIds,
+            // Pflichtanteil der Videos (MVP-1598): Stand je Anhang.
+            'videoProgress' => $videoProgress,
+            'unitLinks' => $unitLinks,
+            // Nachweise externer Einheiten: Fortschritt je Einheit mit Anhängen.
+            'progressByUnit' => $enrollment->progress->keyBy('learning_unit_id'),
             'tutorEnabled' => app(LearningAiSuggestionService::class)->isAvailable($enrollment->organization, LearningAiSuggestionService::CAPABILITY_TUTOR),
             // Voraussetzungen (MVP-784): der Start bleibt gesperrt, solange sie fehlen.
             'missingPrerequisites' => $this->enrollments->missingPrerequisites($enrollment),
@@ -307,6 +328,13 @@ class MyLearningController extends Controller {
         return response()->json(['quality' => $data['quality']]);
     }
 
+    /** Neu gesehene Videosekunden anrechnen (MVP-1598) — Pflichtanteil vor dem Abschluss. */
+    public function videoProgress(Request $request, LearningEnrollment $enrollment, LearningUnit $unit, Attachment $attachment): JsonResponse {
+        $this->authorizeOwn($enrollment);
+
+        return $this->recordVideoProgress($request, $enrollment, $unit, $attachment);
+    }
+
     /** Lernzeit starten — hier greift die Zeitpolitik des Kurses. */
     public function startTime(LearningEnrollment $enrollment): RedirectResponse {
         $this->authorizeOwn($enrollment);
@@ -374,6 +402,54 @@ class MyLearningController extends Controller {
         return redirect()
             ->route('learning.my.show', $enrollment)
             ->with('success', __('learning.flash.unit_completed'));
+    }
+
+    /** Umfrage-Einheit (MVP-1600): Fragebogen öffnen — das Absenden schließt die Einheit ab. */
+    public function openSurvey(LearningEnrollment $enrollment, LearningUnit $unit): RedirectResponse {
+        $this->authorizeOwn($enrollment);
+        abort_unless($unit->learning_course_id === $enrollment->learning_course_id, 404);
+
+        return redirect()->to(app(LearningUnitLinkService::class)->openSurvey($enrollment, $unit));
+    }
+
+    /**
+     * Externe Einheit (MVP-1600): „erledigt" bestätigen, wahlweise oder
+     * verpflichtend mit Nachweis. Der Nachweis hängt am Fortschritt der Einheit.
+     */
+    public function completeExternal(Request $request, LearningEnrollment $enrollment, LearningUnit $unit): RedirectResponse {
+        $this->authorizeOwn($enrollment);
+        abort_unless($unit->learning_course_id === $enrollment->learning_course_id, 404);
+        abort_unless($unit->kind === \App\Enums\Learning\LearningUnitKind::External && $unit->externalUrl() !== null, 404);
+
+        $request->validate([
+            'proof' => [$unit->requiresProof() ? 'required' : 'nullable', ...FileAttacher::rule()],
+        ], [
+            'proof.required' => (string) __('learning.errors.proof_required'),
+        ]);
+
+        $progress = $this->enrollments->completeUnit($enrollment, $unit);
+        $proof = $request->file('proof');
+        if ($proof instanceof UploadedFile) {
+            app(FileAttacher::class)->store($progress, $proof, $this->authUser()->id, ['organization_id' => $enrollment->organization_id], 'learning-proofs');
+        }
+
+        return redirect()
+            ->route('learning.my.show', $enrollment)
+            ->with('success', __('learning.flash.unit_completed'));
+    }
+
+    /** Eigenen Nachweis einer externen Einheit herunterladen. */
+    public function unitProof(LearningEnrollment $enrollment, LearningUnit $unit, Attachment $attachment): SymfonyResponse {
+        $this->authorizeOwn($enrollment);
+
+        $progress = $enrollment->progress()->where('learning_unit_id', $unit->id)->firstOrFail();
+        abort_unless(
+            $attachment->attachable_type === $progress->getMorphClass()
+            && (int) $attachment->attachable_id === (int) $progress->id,
+            404
+        );
+
+        return Storage::disk($attachment->disk)->download($attachment->path, $attachment->original_name);
     }
 
     /** Prüfungsversuch starten — Versuchsgrenze und Sperrfrist gelten hier. */

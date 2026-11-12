@@ -12,18 +12,19 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting\Posting\Adapters;
 
-use App\Enums\Finance\{PostingAccountRole, PostingSourceKind, SettlementKind};
+use App\Enums\Finance\{PostingAccountRole, PostingSourceKind, SettlementKind, TaxCodeDirection};
 use App\Enums\Invoicing\InvoiceStatus;
-use App\Models\Accounting\{AccountingEntry, AccountingOpenItem};
+use App\Models\Accounting\{AccountingEntry, AccountingOpenItem, AccountingTaxCode};
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Services\Accounting\{FiscalYearService, JournalService};
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine, PostingRuleResolver, PrepaymentAdvance};
 use App\Services\Invoicing\Import\InvoiceSpec;
+use App\Services\Invoicing\TaxResolver;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, VatNumberHelper};
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Support\Collection;
@@ -41,6 +42,9 @@ use Illuminate\Support\Collection;
  * aus (MVP-1545), nie den ältesten des Kunden.
  */
 class SalesInvoiceAdapter extends AbstractPostingAdapter {
+    /** Kennziffer der Umsätze, für die der Empfänger die Steuer schuldet (§ 13b Abs. 5 UStG). */
+    public const string DOMESTIC_REVERSE_CHARGE_FIELD = '60';
+
     public function __construct(
         PostingRuleResolver $rules,
         private readonly PrepaymentAdvance $advances,
@@ -177,11 +181,29 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
             $tax = Money::of((string) ($group['tax'] ?? '0'), $source->documentCurrency())->getAmount();
             $context = ['tax_rate' => $rate];
 
-            $revenue = $this->rule($organization, PostingAccountRole::Revenue, $context, $issuedOn);
+            $taxed = ! NumberHelper::isZeroPrecise($tax);
+            $taxRule = $taxed ? $this->rule($organization, PostingAccountRole::TaxOutput, $context, $issuedOn) : null;
+            $zeroRated = $taxed ? null : $this->zeroRatedTaxCode($organization, $source, $issuedOn);
+
+            // Ein Umsatz ohne Steuer findet über sein Kennzeichen ein eigenes Erlöskonto (MVP-1622).
+            $revenue = $this->rule($organization, PostingAccountRole::Revenue, $context + ($zeroRated !== null ? ['tax_code' => $zeroRated->code] : []), $issuedOn);
             if ($revenue === null) {
                 $blockers[] = $this->missingRuleBlocker(PostingAccountRole::Revenue, $context);
             } else {
-                $line = $this->line(PostingAccountRole::Revenue, $revenue, '0.00', $net, $source->number);
+                // Kennzeichen und Steuer stehen an der Erlöszeile: das der Regel, sonst das
+                // des Steuersatzes, bei 0 % das der Steuerkategorie des Belegs (steuerfrei,
+                // innergemeinschaftlich, Reverse Charge, Ausfuhr).
+                $taxCodeId = $revenue->accounting_tax_code_id
+                    ?? ($taxed ? $taxRule?->accounting_tax_code_id : $zeroRated?->id);
+                $line = $this->line(
+                    PostingAccountRole::Revenue,
+                    $revenue,
+                    '0.00',
+                    $net,
+                    $source->number,
+                    $taxCodeId !== null ? MorphMap::alias(Customer::class) : null,
+                    $taxCodeId !== null ? $source->customer_id : null,
+                )?->withTax($taxCodeId, $taxed ? $tax : null);
                 if ($line instanceof PostingProposalLine) {
                     $lines[] = $line;
                     $ruleVersions[] = $revenue->versionTag();
@@ -189,18 +211,17 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
             }
 
             // Steuerzeile nur, wenn der Beleg auch Steuer ausweist.
-            if (NumberHelper::isZeroPrecise($tax)) {
+            if (! $taxed) {
                 continue;
             }
 
-            $taxRule = $this->rule($organization, PostingAccountRole::TaxOutput, $context, $issuedOn);
             if ($taxRule === null) {
                 $blockers[] = $this->missingRuleBlocker(PostingAccountRole::TaxOutput, $context);
 
                 continue;
             }
 
-            $line = $this->line(PostingAccountRole::TaxOutput, $taxRule, '0.00', $tax, $source->number, taxAmount: $tax);
+            $line = $this->line(PostingAccountRole::TaxOutput, $taxRule, '0.00', $tax, $source->number)?->withTax(null, null);
             if ($line instanceof PostingProposalLine) {
                 $lines[] = $line;
                 $ruleVersions[] = $taxRule->versionTag();
@@ -215,7 +236,12 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
             if ($advanceRule === null) {
                 $blockers[] = $this->missingRuleBlocker(PostingAccountRole::AdvanceReceived, $context);
             } else {
-                $line = $this->line(PostingAccountRole::AdvanceReceived, $advanceRule, $credit['net'], '0.00', $memo, MorphMap::alias(Customer::class), $credit['customer_id']);
+                // Die Auflösung mindert Bemessungsgrundlage und Steuer der Rechnung um die schon versteuerte Anzahlung.
+                $line = $this->line(PostingAccountRole::AdvanceReceived, $advanceRule, $credit['net'], '0.00', $memo, MorphMap::alias(Customer::class), $credit['customer_id'])
+                    ?->withTax(
+                        $advanceRule->accounting_tax_code_id ?? (NumberHelper::isZeroPrecise($credit['tax']) ? null : $taxRule?->accounting_tax_code_id),
+                        NumberHelper::isZeroPrecise($credit['tax']) ? null : NumberHelper::negatePrecise($credit['tax']),
+                    );
                 if ($line instanceof PostingProposalLine) {
                     $lines[] = $line;
                     $ruleVersions[] = $advanceRule->versionTag();
@@ -230,7 +256,7 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
                 continue;
             }
             // Die Steuer der Anzahlung entstand mit der Zahlung; hier mindert sie die Steuer der Rechnung.
-            $line = $this->line(PostingAccountRole::TaxOutput, $taxRule, $credit['tax'], '0.00', $memo, taxAmount: NumberHelper::negatePrecise($credit['tax']));
+            $line = $this->line(PostingAccountRole::TaxOutput, $taxRule, $credit['tax'], '0.00', $memo)?->withTax(null, null);
             if ($line instanceof PostingProposalLine) {
                 $lines[] = $line;
                 $ruleVersions[] = $taxRule->versionTag();
@@ -263,6 +289,78 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
             // Ohne Fälligkeit hätte der offene Posten keine Altersstruktur.
             extra: $fx['extra'] + ['due_date' => $source->due_on?->toDateString()] + ($credits !== [] ? [PrepaymentAdvance::SNAPSHOT_KEY => $credits] : []) + $settles,
         );
+    }
+
+    /**
+     * Steuerkategorie eines Umsatzes ohne Steuer (EN 16931) aus dem
+     * eingefrorenen Steuerkontext des Belegs: EU-B2B ist bei Material eine
+     * innergemeinschaftliche Lieferung (K), sonst eine sonstige Leistung mit
+     * Steuerschuld des Empfängers (AE); Drittland ist bei Material eine Ausfuhr
+     * (G), sonst nicht steuerbar (O); alles andere steuerfrei (E). `AE` an einen
+     * Kunden im Inland ist ein steuerpflichtiger Umsatz, für den der Empfänger
+     * die Steuer schuldet (§ 13b Abs. 5 UStG, Kennziffer 60, MVP-1622).
+     * Kleinunternehmer melden keine Kennziffern (null). Der belegbasierte
+     * DATEV-Export wählt Konto und Schlüssel über dieselbe Kategorie (MVP-1623).
+     *
+     * @return array{category: string, domestic: bool}|null
+     */
+    public function zeroRatedCategory(Organization $organization, Invoice $invoice): ?array {
+        if ((string) data_get((array) ($organization->settings ?? []), 'einvoice.small_business', '0') === '1') {
+            return null;
+        }
+
+        $frozen = (string) data_get($invoice->tax_context, 'category', $invoice->is_reverse_charge ? 'AE' : '');
+        $goods = $invoice->category === Invoice::CATEGORY_MATERIAL;
+        $domestic = $frozen === 'AE' && $this->isDomestic($organization, $invoice);
+
+        return [
+            'category' => match ($frozen) {
+                'AE' => $domestic ? 'AE' : ($goods ? 'K' : 'AE'),
+                'K' => 'K',
+                'G' => $goods ? 'G' : 'O',
+                'O' => 'O',
+                default => 'E',
+            },
+            'domestic' => $domestic,
+        ];
+    }
+
+    /** Steuerkennzeichen eines Umsatzes ohne Steuer zu seiner Kategorie ({@see zeroRatedCategory()}). */
+    private function zeroRatedTaxCode(Organization $organization, Invoice $invoice, CarbonImmutable $on): ?AccountingTaxCode {
+        $zeroRated = $this->zeroRatedCategory($organization, $invoice);
+        if ($zeroRated === null) {
+            return null;
+        }
+        ['category' => $category, 'domestic' => $domestic] = $zeroRated;
+
+        return AccountingTaxCode::query()
+            ->where('organization_id', $organization->id)
+            ->where('direction', '!=', TaxCodeDirection::SelfAssessed->value)
+            ->where('tax_category', $category)
+            // Kennziffer 60 trennt die inländische Steuerschuld des Empfängers von der sonstigen Leistung ins EU-Ausland (21).
+            ->when($category === 'AE', fn ($query) => $domestic
+                ? $query->where('ustva_base_field', self::DOMESTIC_REVERSE_CHARGE_FIELD)
+                : $query->where(fn ($inner) => $inner->whereNull('ustva_base_field')->orWhere('ustva_base_field', '!=', self::DOMESTIC_REVERSE_CHARGE_FIELD)))
+            ->validOn($on)
+            ->orderByDesc('valid_from')
+            ->first();
+    }
+
+    /**
+     * Kunde im Land der Organisation: als Empfänger nach § 13b geführt, sonst nach
+     * dem Land seiner USt-IdNr. bzw. seiner Anschrift (ohne beides: Inland).
+     */
+    private function isDomestic(Organization $organization, Invoice $invoice): bool {
+        $customer = Customer::query()->find($invoice->customer_id);
+        if (! $customer instanceof Customer || (bool) $customer->is_reverse_charge_recipient) {
+            return $customer instanceof Customer;
+        }
+        $vatId = trim((string) $customer->vat_id);
+        $prefix = $vatId !== '' ? VatNumberHelper::extractCountryCode(VatNumberHelper::normalize($vatId)) : null;
+        // Griechenland führt EL als Präfix der USt-IdNr.
+        $country = $prefix !== null ? ($prefix === 'EL' ? 'GR' : $prefix) : strtoupper(trim((string) $customer->country));
+
+        return $country === '' || $country === app(TaxResolver::class)->sellerCountry($organization);
     }
 
     /**

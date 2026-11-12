@@ -1,7 +1,7 @@
 ---
 title: "Ingresso documenti cloud"
 topic: cloud-intake.overview
-version: 2
+version: 5
 keywords:
     - Paperless-ngx
     - Seafile
@@ -32,3 +32,11 @@ WorkDiary LEGGE i documenti dalle cartelle monitorate in Dropbox, OneDrive/Share
 **Regole:** modelli di percorso con * e ** più variabili come {customer_number} assegnano i file a clienti, progetti, commesse, asset o contratti esistenti — mai con creazione automatica. I casi dubbi finiscono nella inbox di integrazione.
 
 **Sicurezza:** solo scope di lettura, token cifrati, file di origine intatti; i webhook sono solo segnali di risveglio — fa fede il ciclo delta ripristinabile.
+
+**Prova della regola e avvio:** ogni regola richiede un percorso di prova, ad esempio una vera cartella cliente. Al salvataggio WorkDiary verifica se il percorso corrisponde al modello, quali variabili vengono riconosciute e quale destinazione ne risulta; senza prova superata non viene salvato nulla. Un riferimento di destinazione fisso assegna tutti i file di una regola a un cliente, progetto, ordine, asset o contratto specifico. Le regole attive di una connessione non possono sovrapporsi: modelli uguali o un percorso di prova che corrisponde a due regole bloccano l’attivazione. Una connessione avvia la prima importazione solo dopo che Lei ha consultato l’anteprima e confermato «Avvia importazione»; una nuova cartella principale richiede una nuova conferma.
+
+**Titolarità dei dati:** se, secondo la titolarità dei dati, un altro sistema gestisce i documenti, il collegamento non acquisisce file nel DMS; ogni file diventa un caso nella posta in arrivo delle integrazioni, senza prova di consegna. **Acquisisci una volta** scarica di nuovo il file e lo crea secondo le regole. Le regole per fatture in entrata, ordini e pacchetti di gara non sono interessate.
+
+## Accesso scaduto, bloccato o disattivato
+
+Se il fornitore rifiuta l'accesso (scaduto o revocato), la connessione mostra **Nuova autenticazione**. Se all'accesso mancano autorizzazioni di lettura, mostra **Bloccata**; dopo errori ripetuti fino alla soglia di disattivazione, **Disattivata**. In tutti e tre i casi l'importazione è sospesa e la scheda offre **Nuovo accesso**. Solo un nuovo accesso riattiva la connessione; modificare la cartella o le regole non basta.

@@ -26,4 +26,12 @@ enum MeterBillingAgreementStatus: string implements HasLabel {
     public function label(): string {
         return (string) __('metering.status.' . $this->value);
     }
+
+    public function tone(): string {
+        return match ($this) {
+            self::Active => 'success',
+            self::Paused => 'warning',
+            self::Ended => 'neutral',
+        };
+    }
 }

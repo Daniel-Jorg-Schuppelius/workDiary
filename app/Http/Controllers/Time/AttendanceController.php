@@ -10,11 +10,14 @@
 
 namespace App\Http\Controllers\Time;
 
+use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Time\CorrectAttendanceRequest;
 use App\Models\Platform\User;
-use App\Models\Time\Attendance;
+use App\Models\Time\{Attendance, TimeCorrectionRequest};
 use App\Services\Attendance\AttendanceClockService;
+use App\Services\TimeApproval\{TimeCorrectionService, TimeCorrectionWorkflowException};
 use App\Support\{Setting, SortableQuery};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -169,5 +172,31 @@ class AttendanceController extends Controller {
         return back()->with('success', $running
             ? __(':status begonnen.', ['status' => $label])
             : __(':status beendet.', ['status' => $label]));
+    }
+
+    /**
+     * Eigene Stempelung korrigieren (MVP-1595). Offline nimmt dasselbe
+     * Formular den Weg `attendance.correct`; online wie offline gilt: hat sich
+     * die Stempelung seit dem Öffnen des Dialogs geändert, wird nichts überschrieben.
+     */
+    public function correct(Attendance $attendance, CorrectAttendanceRequest $request, TimeCorrectionService $corrections): RedirectResponse {
+        Gate::authorize('create', TimeCorrectionRequest::class);
+        $user = $this->authUser();
+        abort_unless((int) $attendance->user_id === (int) $user->id, 404);
+
+        $data = $request->validated();
+        if ($attendance->correctionVersion() !== (string) $data['base_version']) {
+            return back()->with('error', __('time-correction.attendance.changed'));
+        }
+
+        try {
+            $correction = $corrections->correctAttendance($user, $attendance, $data, (string) $data['reason']);
+        } catch (TimeCorrectionWorkflowException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', $correction->status === TimeCorrectionStatus::Applied
+            ? __('time-correction.attendance.applied')
+            : __('time-correction.attendance.submitted'));
     }
 }

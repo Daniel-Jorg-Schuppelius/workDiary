@@ -1,7 +1,7 @@
 ---
 title: "Usar el chat"
 topic: communication.chat
-version: 1
+version: 2
 keywords:
     - mensaje
     - enviar mensaje
@@ -29,3 +29,5 @@ de forma permanente a un cliente, proyecto u orden debe documentarse
 además en el registro correspondiente. No comparta credenciales ni
 datos personales innecesarios; los mensajes borrados o editados pueden
 seguir siendo trazables según permisos y requisitos de auditoría.
+
+**Encuesta con fin:** al crear una encuesta en el chat puede fijar opcionalmente cuándo termina la votación. Después, la encuesta no admite más votos.

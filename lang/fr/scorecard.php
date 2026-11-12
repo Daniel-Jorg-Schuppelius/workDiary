@@ -16,6 +16,13 @@ return [
     'title' => 'Scorecards fournisseurs',
     'overview_subtitle' => 'Classement par score global issu des achats, du stock, des réclamations et de l’ISMS (définition v:version).',
     'apply' => 'Afficher',
+    'weights' => [
+        'action' => 'Pondérations',
+        'title' => 'Pondération du score global',
+        'description' => 'Poids par indicateur en pour cent. Le total ne doit pas forcément faire 100 : les indicateurs manquants sont ignorés et les poids restants répartis au prorata. Un champ vide rétablit la valeur par défaut.',
+        'saved' => 'Pondération enregistrée.',
+        'error_all_zero' => 'Au moins un indicateur doit avoir un poids supérieur à zéro.',
+    ],
     'weights_hint' => 'Pondération du score global : respect des délais :ontime %, taux de réclamation :complaints %, qualité ISMS :quality %, évolution des prix :price %, comportement en recours :recourse %. Les indicateurs indisponibles sont ignorés et les pondérations renormalisées.',
     'empty_ranking' => 'Aucun fournisseur avec des données d’achat, de réclamation ou ISMS exploitables sur la période.',
 

@@ -58,9 +58,11 @@
                     <td class="text-sm">{{ $route->site?->name ?? '—' }}</td>
                     <td class="text-sm tabular-nums">{{ $route->checkpoints_count }}</td>
                     <td class="text-right">
-                        <x-action-form :action="route('patrols.start', $route)">
-                            <x-icon-btn icon="play_arrow" tone="primary" size="sm" type="submit" show-label>{{ __('Starten') }}</x-icon-btn>
-                        </x-action-form>
+                        @if ($route->active)
+                            <x-action-form :action="route('patrols.start', $route)">
+                                <x-icon-btn icon="play_arrow" tone="primary" size="sm" type="submit" show-label>{{ __('Starten') }}</x-icon-btn>
+                            </x-action-form>
+                        @endif
                     </td>
                 </tr>
             @endforeach

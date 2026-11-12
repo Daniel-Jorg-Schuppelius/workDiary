@@ -55,8 +55,4 @@ final class ResolveOutcome {
     public function isResolved(): bool {
         return in_array($this->type, [self::LINKED, self::CREATED], true);
     }
-
-    public function needsAttention(): bool {
-        return ! $this->isResolved();
-    }
 }

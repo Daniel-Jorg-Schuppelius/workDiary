@@ -1,7 +1,7 @@
 ---
 title: "Gestion de projet agile"
 topic: agile.overview
-version: 2
+version: 4
 keywords:
     - Kanban
     - Scrum
@@ -44,6 +44,16 @@ ses critères : ajouter, cocher un à un, supprimer. Le nombre à côté indique
 critères remplis et existants ; avant un déplacement vers une colonne
 « terminé », le tableau nomme les critères non remplis.
 
+**Définition de terminé :** Les paramètres du tableau contiennent la
+définition de terminé du projet, une ligne par point. Lors du déplacement
+vers une colonne terminée, le tableau ouvre une boîte de dialogue avec ces
+points et les critères d'acceptation encore ouverts. L'élément n'est déplacé
+que lorsque chaque point est confirmé. Les personnes disposant du droit de
+passer outre peuvent déplacer l'élément malgré des points ouverts en
+indiquant un motif ; il en va de même pour une limite WIP atteinte. Chaque
+passage outre figure dans l'historique et compte dans la série qualité des
+rapports, qui indique aussi le taux d'écart DoD par semaine.
+
 **Tableau :** Les colonnes représentent le flux de travail ; les cartes se
 déplacent de gauche à droite. Avec un sprint sélectionné, le tableau
 n'affiche que les éléments de ce sprint.
@@ -71,3 +81,5 @@ planifié, blocages et une prévision empirique — cette dernière n'apparaît
 que lorsque suffisamment de semaines comparables sont disponibles, plutôt
 que de simuler une fausse précision. La synthèse n'affiche que les projets
 que la personne qui la consulte est de toute façon autorisée à voir.
+
+**Terminé hors du tableau :** si la tâche d’une carte est terminée ailleurs (liste de tâches, import), la carte suit dans la colonne terminée. Les critères d’acceptation ouverts et la définition de terminé non confirmée figurent alors comme écart dans l’historique du tableau et comptent dans le taux d’écart DoD.

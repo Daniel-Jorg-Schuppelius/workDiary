@@ -12,25 +12,31 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\GitIssueImport;
 
-use App\Enums\Integration\{DataDomain, IntegrationInboxStatus};
+use App\Enums\Integration\DataDomain;
 use App\Enums\Task\TaskStatus;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{Organization, PluginSetting};
 use App\Models\Project\{Project, Task};
-use App\Services\Integration\DataOwnershipResolver;
+use App\Services\Integration\Attributes\WritesDataDomain;
+use App\Services\Integration\Contracts\OwnershipConflictReplay;
+use App\Services\Integration\DataOwnershipGuard;
+use App\Services\Integration\Dto\OwnershipClaim;
 use App\Support\SqidEncoder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
  * Gemeinsames Skeleton des Git-Issue-Imports (Feature 060, Konsolidierung
  * C8): Checkpoint in plugin_settings, ExternalReference-Upsert, Status-
- * Mapping, Ownership-Konflikt → Inbox. Das Ticketsystem bleibt führend;
+ * Mapping. Anlage und Statusabgleich fragen vorher den `DataOwnershipGuard`
+ * (MVP-1592); „Einmalig übernehmen“ spielt das Issue erneut ein. Das Ticketsystem bleibt führend;
  * hier entstehen nur Aufgaben, **idempotent** über ExternalReference —
  * Referenz-Schlüssel/-Typen und Checkpoint-Keys liefern die Subklassen
  * unverändert (Bestandsdaten!). Provider-spezifisch bleiben Client und
  * Payload-Mapper (Feldnamen, PR-Filter).
  */
-abstract class AbstractGitIssueImporter {
+#[WritesDataDomain(DataDomain::Tasks)]
+abstract class AbstractGitIssueImporter implements OwnershipConflictReplay {
     abstract protected function pluginId(): string;
 
     /** ExternalReference-`external_type` (Bestandsdaten — nie ändern). */
@@ -76,7 +82,6 @@ abstract class AbstractGitIssueImporter {
         $maxUpdated = $checkpoint;
 
         $projectId = $this->resolveProject($organization, $defaultProjectSqid);
-        $ownership = app(DataOwnershipResolver::class);
 
         $perPage = 100;
         $maxPages = max(1, (int) config($this->maxPagesConfigKey(), 10));
@@ -97,48 +102,7 @@ abstract class AbstractGitIssueImporter {
                     continue;
                 }
 
-                $externalId = $this->externalId($issue);
-                $target = $this->mapStatus($issue);
-
-                $reference = ExternalReference::query()
-                    ->forPlugin($organization, $this->pluginId(), $this->externalType())
-                    ->forExternalId($externalId)
-                    ->first();
-
-                if ($reference instanceof ExternalReference) {
-                    $counters[$this->syncExisting($reference, $target, $issue) ? 'updated' : 'skipped']++;
-
-                    continue;
-                }
-
-                // Datenführerschaft (Restpunkt 69): führt ein ANDERES Plugin den
-                // Aufgabenbereich, landet das Issue als Inbox-Konflikt.
-                if (! $ownership->mayWrite($organization, DataDomain::Tasks, $this->pluginId())) {
-                    $counters['inbox'] += $this->ownershipConflict($organization, $ownership, $externalId, $issue);
-
-                    continue;
-                }
-
-                $task = Task::query()->create([
-                    'organization_id' => $organization->id,
-                    'project_id' => $projectId,
-                    'is_global' => $projectId === null,
-                    'title' => $this->taskTitle($issue),
-                    'status' => $target->value,
-                    'billable' => true,
-                ]);
-
-                ExternalReference::query()->create([
-                    'organization_id' => $organization->id,
-                    'plugin_id' => $this->pluginId(),
-                    'external_type' => $this->externalType(),
-                    'referenceable_type' => $task->getMorphClass(),
-                    'referenceable_id' => $task->id,
-                    'external_id' => $externalId,
-                    'payload' => $issue,
-                    'synced_at' => Carbon::now(),
-                ]);
-                $counters['created']++;
+                $counters[$this->importIssue($organization, $projectId, $issue)]++;
             }
 
             $page++;
@@ -147,6 +111,108 @@ abstract class AbstractGitIssueImporter {
         $this->persistCheckpoint($row, $maxUpdated);
 
         return $counters;
+    }
+
+    /**
+     * Ein Issue: verknüpfte Aufgabe abgleichen oder neu anlegen — beides nur,
+     * wenn der Anbieter die Aufgaben schreiben darf.
+     *
+     * @param  array<string, mixed>  $issue
+     * @return 'created'|'updated'|'skipped'|'inbox'
+     */
+    private function importIssue(Organization $organization, ?int $projectId, array $issue): string {
+        $externalId = $this->externalId($issue);
+        $target = $this->mapStatus($issue);
+
+        $reference = ExternalReference::query()
+            ->forPlugin($organization, $this->pluginId(), $this->externalType())
+            ->forExternalId($externalId)
+            ->first();
+
+        if ($reference instanceof ExternalReference) {
+            $task = $reference->referenceable;
+            if (! $task instanceof Task || ! $this->statusChanges($task, $target)) {
+                return 'skipped';
+            }
+            if (! $this->permits($organization, $this->pluginId() . '.issue_status', $issue, ['issue' => $issue], $task)) {
+                return 'inbox';
+            }
+
+            return $this->syncExisting($reference, $target, $issue) ? 'updated' : 'skipped';
+        }
+
+        if (! $this->permits($organization, $this->pluginId() . '.issue', $issue, ['issue' => $issue, 'project_id' => $projectId], null)) {
+            return 'inbox';
+        }
+
+        $task = Task::query()->create([
+            'organization_id' => $organization->id,
+            'project_id' => $projectId,
+            'is_global' => $projectId === null,
+            'title' => $this->taskTitle($issue),
+            'status' => $target->value,
+            'billable' => true,
+        ]);
+
+        ExternalReference::query()->create([
+            'organization_id' => $organization->id,
+            'plugin_id' => $this->pluginId(),
+            'external_type' => $this->externalType(),
+            'referenceable_type' => $task->getMorphClass(),
+            'referenceable_id' => $task->id,
+            'external_id' => $externalId,
+            'payload' => $issue,
+            'synced_at' => Carbon::now(),
+        ]);
+
+        return 'created';
+    }
+
+    /**
+     * @param  array<string, mixed>  $issue
+     * @param  array<string, mixed>  $payload
+     */
+    private function permits(Organization $organization, string $kind, array $issue, array $payload, ?Task $task): bool {
+        $externalId = $this->externalId($issue);
+
+        return app(DataOwnershipGuard::class)->allows($organization, DataDomain::Tasks, $this->pluginId(), new OwnershipClaim(
+            kind: $kind,
+            key: $externalId,
+            title: $this->taskTitle($issue),
+            target: Task::class,
+            payload: $payload,
+            externalId: $externalId,
+            local: $task,
+            legacyKey: $kind === $this->pluginId() . '.issue' ? 'ownership-conflict:issue:' . $externalId : null,
+        ));
+    }
+
+    /** @return list<string> */
+    public function ownershipKinds(): array {
+        return [$this->pluginId() . '.issue', $this->pluginId() . '.issue_status'];
+    }
+
+    /** „Einmalig übernehmen“: das gespeicherte Issue durch denselben Weg. */
+    public function replayOwnershipConflict(Organization $organization, IntegrationInboxItem $item): ?Model {
+        $payload = (array) (($item->remote_snapshot ?? [])['payload'] ?? []);
+        $issue = (array) ($payload['issue'] ?? []);
+        if ($issue === [] || $this->externalId($issue) === '') {
+            return null;
+        }
+        $projectId = isset($payload['project_id']) && Project::query()->whereKey((int) $payload['project_id'])->where('organization_id', $organization->id)->exists()
+            ? (int) $payload['project_id']
+            : null;
+        $this->importIssue($organization, $projectId, $issue);
+
+        return ExternalReference::query()
+            ->forPlugin($organization, $this->pluginId(), $this->externalType())
+            ->forExternalId($this->externalId($issue))
+            ->first()?->referenceable;
+    }
+
+    private function statusChanges(Task $task, TaskStatus $target): bool {
+        return ($target === TaskStatus::Done && $task->status !== TaskStatus::Done)
+            || ($target === TaskStatus::Open && $task->status === TaskStatus::Done);
     }
 
     /**
@@ -162,9 +228,7 @@ abstract class AbstractGitIssueImporter {
             return false;
         }
 
-        $shouldUpdate = ($target === TaskStatus::Done && $task->status !== TaskStatus::Done)
-            || ($target === TaskStatus::Open && $task->status === TaskStatus::Done);
-        if (! $shouldUpdate) {
+        if (! $this->statusChanges($task, $target)) {
             return false;
         }
 
@@ -174,32 +238,6 @@ abstract class AbstractGitIssueImporter {
         $reference->forceFill(['payload' => $issue, 'synced_at' => Carbon::now()])->save();
 
         return true;
-    }
-
-    /** @param array<string, mixed> $issue */
-    private function ownershipConflict(Organization $organization, DataOwnershipResolver $ownership, string $externalId, array $issue): int {
-        $item = IntegrationInboxItem::query()->firstOrCreate(
-            [
-                'organization_id' => $organization->id,
-                'plugin_id' => $this->pluginId(),
-                'dedupe_key' => 'ownership-conflict:issue:' . $externalId,
-            ],
-            [
-                'source' => $this->pluginId(),
-                'target_type' => (new Task)->getMorphClass(),
-                'external_type' => 'issue_ownership_conflict',
-                'external_id' => $externalId,
-                'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-                'status' => IntegrationInboxStatus::Open,
-                'remote_snapshot' => [
-                    'issue' => $externalId,
-                    'title' => (string) ($issue['title'] ?? ''),
-                    'reason' => 'Aufgabenbereich wird von "' . $ownership->ownerFor($organization, DataDomain::Tasks) . '" geführt.',
-                ],
-            ],
-        );
-
-        return $item->wasRecentlyCreated ? 1 : 0;
     }
 
     /** Sqid → Projekt-ID der eigenen Organisation (Mandantengrenze), sonst null. */

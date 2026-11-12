@@ -195,7 +195,11 @@ class LearningCoursePortabilityService {
                     'points' => $unit['points'] ?? 0,
                     'duration_minutes' => $unit['duration_minutes'] ?? null,
                     'release_rule' => is_array($unit['release_rule'] ?? null) ? $unit['release_rule'] : null,
-                    'completion_rule' => is_array($unit['completion_rule'] ?? null) ? $unit['completion_rule'] : null,
+                    // Verweise auf Prozedurvorlage und Fragebogen (MVP-1600) gelten nur im
+                    // Ausgangssystem — eine fremde Nummer träfe hier einen anderen Datensatz.
+                    'completion_rule' => is_array($unit['completion_rule'] ?? null)
+                        ? (array_diff_key($unit['completion_rule'], ['procedure_template_id' => true, 'survey_id' => true]) ?: null)
+                        : null,
                     'content' => is_array($unit['blocks'] ?? null) ? $unit['blocks'] : null,
                 ]);
 

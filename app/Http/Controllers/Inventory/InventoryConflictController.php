@@ -63,7 +63,7 @@ class InventoryConflictController extends Controller {
                 ->mapWithKeys(fn (string $id): array => [$id => $this->plugins->find($id)?->name() ?? $id])
                 ->all(),
             'filters' => ['status' => $status],
-            'canResolveStock' => $user->can(P::InventoryPost->value),
+            'canResolveStock' => $user->can(P::InventoryExternalResolve->value),
         ]);
     }
 
@@ -92,7 +92,7 @@ class InventoryConflictController extends Controller {
     }
 
     private function authorizeResolve(PendingExternalConflict $conflict): void {
-        Gate::authorize(P::InventoryPost->value);
+        Gate::authorize(P::InventoryExternalResolve->value);
         $this->assertSameOrganization($conflict, 403);
     }
 }

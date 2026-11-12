@@ -15,7 +15,7 @@ namespace App\Services\Takeoff;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Platform\Organization;
 use App\Models\Takeoff\Takeoff;
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, IssuerIdentity};
 use CommonToolkit\Helper\FileSystem\File;
 
 /** Aufmaßblatt als PDF (MVP-1058) — Nachweis zur Rechnung. */
@@ -26,11 +26,22 @@ final class TakeoffPdfRenderer {
         $takeoff->loadMissing(['lines.boqItem', 'lines.article', 'diaryEntry', 'project', 'billOfQuantity']);
         $organization = Organization::query()->withoutGlobalScopes()->findOrFail($takeoff->organization_id);
 
-        return app(DocumentDesignRenderer::class)->renderPdf(
+        $design = app(DocumentDesignRenderer::class);
+        $payload = $design->payloadFor($organization, RenderDocumentKind::Protocol);
+
+        return $design->renderPdf(
             RenderDocumentKind::Protocol,
             'pdf.takeoff',
-            ['takeoff' => $takeoff, 'organization' => $organization, 'totals' => $this->takeoffs->totals($takeoff)],
+            [
+                'takeoff' => $takeoff,
+                'organization' => $organization,
+                'totals' => $this->takeoffs->totals($takeoff),
+                // Firmenangaben nach Blockzustand, wie der Preflight sie prüft (MVP-1624).
+                'design' => $design->context($payload),
+                'issuer' => IssuerIdentity::for($organization),
+            ],
             $organization,
+            payload: $payload,
         );
     }
 

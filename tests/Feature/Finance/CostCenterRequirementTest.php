@@ -72,14 +72,18 @@ final class CostCenterRequirementTest extends TestCase {
         ])->assertSessionHasNoErrors();
         $this->assertTrue($this->expense->refresh()->is_cost_center_required);
 
-        $entry = ['booked_on' => '2026-03-10', 'memo' => 'Papier', 'debit_account' => $this->expense->sqid, 'credit_account' => $this->bank->sqid, 'amount' => '40.00', 'post' => '1'];
-        $this->actingAs($this->admin)->post(route('finance.accounting.journal.store'), $entry)
+        $entry = ['booked_on' => '2026-03-10', 'memo' => 'Papier', 'post' => '1'];
+        $rows = fn (?string $costCenter): array => ['rows' => [
+            ['account' => $this->expense->number, 'debit' => '40.00', 'cost_center' => $costCenter],
+            ['account' => $this->bank->number, 'credit' => '40.00', 'cost_center' => $costCenter],
+        ]];
+        $this->actingAs($this->admin)->post(route('finance.accounting.journal.store'), $entry + $rows(null))
             ->assertSessionHasErrors(['lines' => __('accounting.ledger.error.cost_center_required', ['account' => $this->expense->displayLabel()])]);
         $this->assertSame(0, AccountingEntry::query()->where('status', AccountingEntryStatus::Posted)->count());
 
         $office = CostCenter::query()->create(['organization_id' => $this->org->id, 'code' => '100', 'label' => 'Verwaltung', 'active' => true]);
         $this->actingAs($this->admin)->get(route('finance.accounting.journal.create'))->assertOk()->assertSee('100 · Verwaltung');
-        $this->actingAs($this->admin)->post(route('finance.accounting.journal.store'), $entry + ['cost_center' => $office->sqid])->assertRedirect();
+        $this->actingAs($this->admin)->post(route('finance.accounting.journal.store'), $entry + $rows($office->sqid))->assertRedirect();
         $posted = AccountingEntry::query()->where('status', AccountingEntryStatus::Posted)->sole();
         $this->assertSame([$office->id, $office->id], $posted->lines->pluck('cost_center_id')->all());
 

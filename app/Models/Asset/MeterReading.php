@@ -10,7 +10,7 @@
 
 namespace App\Models\Asset;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
 use App\Models\Platform\User;
 use Database\Factories\Asset\MeterReadingFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -28,7 +28,6 @@ use Illuminate\Support\Carbon;
  * @property string|null $previous_value
  * @property string|null $consumption
  * @property int|null $read_by_user_id
- * @property string|null $photo_path
  * @property string|null $notes
  * @property bool $is_estimated
  * @property Carbon|null $created_at
@@ -36,7 +35,7 @@ use Illuminate\Support\Carbon;
  */
 class MeterReading extends Model {
     /** @use HasFactory<MeterReadingFactory> */
-    use Auditable, BelongsToOrganization, HasFactory;
+    use Auditable, BelongsToOrganization, HasAttachments, HasFactory;
 
     protected $fillable = [
         'organization_id',
@@ -47,7 +46,6 @@ class MeterReading extends Model {
         'previous_value',
         'consumption',
         'read_by_user_id',
-        'photo_path',
         'notes',
         'is_estimated',
     ];

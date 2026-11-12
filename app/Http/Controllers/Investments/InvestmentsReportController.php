@@ -16,7 +16,7 @@ use App\Enums\Investments\{InvestmentBudgetRequestStatus, InvestmentCaseStatus, 
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{ResolvesStandardReportFilters, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Investments\{InvestmentActual, InvestmentBudgetRequest, InvestmentCase, InvestmentDeviation};
 use App\Models\Platform\User;
 use App\Services\Investments\InvestmentService;
@@ -25,21 +25,22 @@ use App\Support\ChartBucket;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
-use Illuminate\Http\{Request, Response};
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
  * Investitionsberichte (Feature 069, MVP-208): Pipeline, Budgetauslastung
  * (genehmigt/gebunden/Ist), offene Freigaben, Abweichungen — Drilldown
- * bis zur Akte, CSV-Export.
+ * bis zur Akte, CSV- und PDF-Export.
  */
 class InvestmentsReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
-    public function index(Request $request, InvestmentService $investments): View|Response {
+    public function index(Request $request, InvestmentService $investments): View|\Symfony\Component\HttpFoundation\Response {
         $user = Auth::user();
         abort_unless($user instanceof User && $user->can(P::InvestmentViewAny->value), 403);
 
@@ -86,6 +87,16 @@ class InvestmentsReportController extends Controller {
             }
 
             return $this->csvWithMetadata($csv, 'investments.csv', 'investments', $filters->toAuditArray(), $request);
+        }
+
+        if ($request->query('export') === 'pdf') {
+            return $this->pdfDownload('investments.pdf.report', [
+                'rows' => $rows,
+                'totals' => $totals,
+                'openApprovals' => $openApprovals,
+                'openDeviations' => $openDeviations,
+                'statusLabel' => $filters->status !== null ? InvestmentCaseStatus::from($filters->status)->label() : null,
+            ], 'investitionen.pdf', 'landscape', $request, 'investments', $filters->toAuditArray());
         }
 
         return view('reports.investments', [

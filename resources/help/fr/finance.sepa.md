@@ -1,7 +1,7 @@
 ---
 title: "Paiements sortants SEPA"
 topic: finance.sepa
-version: 1
+version: 2
 keywords:
     - virement groupé
     - lot de paiements
@@ -70,3 +70,7 @@ Un prélèvement peut se rapporter à une facture ouverte du client du mandat :
 et libellé préremplis. Avec la référence de facture, la prévision de trésorerie
 ne compte le montant qu'une fois — dans l'ordre de paiement et non en plus
 comme créance ouverte.
+
+## Expiration après 36 mois
+
+Selon le règlement SEPA, un mandat devient caduc si aucun prélèvement n'a été présenté pendant 36 mois. Le traitement des paiements n'utilise déjà plus un tel mandat ; le contrôle quotidien des échéances le passe en outre à **Expiré** et le consigne dans le journal. Pour d'autres prélèvements, obtenez un nouveau mandat.

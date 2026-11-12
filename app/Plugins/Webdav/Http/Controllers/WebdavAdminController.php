@@ -101,12 +101,20 @@ class WebdavAdminController extends Controller {
             return back()->with('error', __('webdav::webdav.flash.password_required'))->withInput();
         }
 
+        $wasActive = $connection->exists && $connection->isActive();
         $connection->forceFill($attributes)->save();
         $connection->audit('webdav.connection_saved', [
             'by_user_id' => (int) $admin->id,
             'active' => $connection->active,
             'allow_private_network' => $connection->allow_private_network,
         ]);
+
+        // Was vor der Aktivierung freigegeben wurde, hat kein Observer eingereiht — die Aktivierung holt es nach.
+        if (! $wasActive && $connection->isActive()) {
+            Artisan::call('webdav:mirror', ['--organization' => (string) $organization->id]);
+
+            return back()->with('success', __('webdav::webdav.flash.saved_and_mirrored'));
+        }
 
         return back()->with('success', __('webdav::webdav.flash.saved'));
     }

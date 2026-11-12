@@ -35,10 +35,6 @@ final readonly class SourceRow {
         public ?ValidationIssue $warning = null,
     ) {}
 
-    public function isWarning(): bool {
-        return $this->warning !== null;
-    }
-
     /**
      * @param  array<string, string>  $data
      */

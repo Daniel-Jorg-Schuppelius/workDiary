@@ -32,7 +32,7 @@ use RuntimeException;
  * eingefrorenen Snapshot.
  */
 class DocumentDesignRenderer {
-    public const string GENERATOR_VERSION = 'document-design/1.0.0';
+    public const string GENERATOR_VERSION = 'document-design/1.3.0';
 
     public function __construct(private readonly RenderProfileService $profiles) {}
 
@@ -92,6 +92,26 @@ class DocumentDesignRenderer {
     /** @param array<string, mixed>|null $payload */
     public function context(?array $payload): DesignContext {
         return new DesignContext($payload);
+    }
+
+    /**
+     * Kontext eines Belegs mit dem Generatorstand seines Snapshots: Ein
+     * festgeschriebener Beleg druckt beim Nachdruck nur, was sein Stand kannte
+     * (Ausstellerblöcke MVP-1609, Befreiungshinweise und USt-IdNr. des Kunden MVP-1623) — auch wenn der
+     * Snapshot nur den Systemfallback hält oder ganz fehlt.
+     *
+     * @param array<string, mixed>|null $payload
+     */
+    public function contextForDocument(Model $document, RenderDocumentKind $kind, ?array $payload, bool $finalized = false): DesignContext {
+        $generator = DocumentRenderSnapshot::query()
+            ->withoutGlobalScopes()
+            ->where('documentable_type', $document->getMorphClass())
+            ->where('documentable_id', $document->getKey())
+            ->whereIn('document_kind', array_unique([$kind->value, ($kind->fallbackKind() ?? $kind)->value]))
+            ->orderByDesc('id')
+            ->value('generator_version');
+
+        return new DesignContext($payload, is_string($generator) ? $generator : ($finalized ? DesignContext::LEGACY_GENERATOR : null));
     }
 
     /**

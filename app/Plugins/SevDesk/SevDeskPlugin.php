@@ -43,7 +43,7 @@ use RuntimeException;
  *   GET /Tools/bookkeepingSystemVersion und erneuert den Versions-Cache
  *   des Mandanten.
  */
-class SevDeskPlugin extends AbstractPlugin implements ContactNumberIssuer, ContactNumberPreview, ContactSyncer, SupplierContactSyncer {
+class SevDeskPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, ContactNumberIssuer, ContactNumberPreview, ContactSyncer, SupplierContactSyncer {
     public const string ID = 'sevdesk';
 
     public const string SERVICE_PROVIDER = SevDeskServiceProvider::class;
@@ -261,5 +261,10 @@ class SevDeskPlugin extends AbstractPlugin implements ContactNumberIssuer, Conta
         return ApiHealthProbe::probe($this->name(), static fn (): string => (string) __('sevDesk-API erreichbar (Buchhaltung :version).', [
             'version' => app(SevDeskClientFactory::class)->for((int) $organization->id)->bookkeepingVersion(fresh: true),
         ]));
+    }
+
+    /** Datenführerschaft (MVP-1592): Kontakt-Rückweg schreibt Kunden und Lieferanten. */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Customers];
     }
 }

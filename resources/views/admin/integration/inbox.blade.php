@@ -37,6 +37,7 @@
                 @foreach ($caseLabels as $value => $label)
                     <option value="{{ $value }}" @selected($filters['case'] === $value)>{{ $label }}</option>
                 @endforeach
+                <option value="ownership" @selected($filters['case'] === 'ownership')>{{ __('integration.ownership.badge') }}</option>
             </select>
             {{-- Quelle wird über die Tabs unter dem Kopf gewählt; der aktive
                  Tab bleibt beim Umschalten der übrigen Filter erhalten. --}}
@@ -437,7 +438,12 @@
                                 default => 'ghost',
                             };
                         @endphp
-                        <x-status-badge :tone="$caseTone">{{ $caseLabels[$item->case_type] ?? $item->case_type }}</x-status-badge>
+                        @php $ownership = $item->ownershipMarker(); @endphp
+                        @if ($ownership !== null)
+                            <x-status-badge tone="warning" icon="lock">{{ __('integration.ownership.badge') }}</x-status-badge>
+                        @else
+                            <x-status-badge :tone="$caseTone">{{ $caseLabels[$item->case_type] ?? $item->case_type }}</x-status-badge>
+                        @endif
                         <x-status-badge tone="plain" outline>{{ $pluginNames[$item->plugin_id] ?? $item->plugin_id }}</x-status-badge>
                         @if ($targetLabel !== null)
                             <x-status-badge tone="plain" outline>{{ $targetLabel }}</x-status-badge>
@@ -552,9 +558,30 @@
                         </div>
                     @endif
 
+                    @if ($ownership !== null)
+                        @php
+                            $ownershipDomain = \App\Enums\Integration\DataDomain::tryFrom($ownership['domain']);
+                            $ownershipOwner = match ($ownership['owner']) {
+                                \App\Services\Integration\DataOwnershipResolver::NATIVE => __('integration.ownership.matrix.native'),
+                                \App\Services\Integration\DataOwnershipResolver::ACCOUNTING => __('integration.ownership.matrix.accounting_any'),
+                                default => \App\Models\Integration\IntegrationInboxItem::sourceLabel($ownership['owner']),
+                            };
+                            $ownershipSource = $pluginNames[$item->plugin_id] ?? $item->plugin_id;
+                        @endphp
+                        <div class="mb-3 text-sm text-warning">
+                            {{ __('integration.ownership.hint', ['domain' => $ownershipDomain?->label() ?? $ownership['domain'], 'owner' => $ownershipOwner, 'source' => $ownershipSource]) }}
+                        </div>
+                    @endif
+
                     @if ($item->isOpen())
                         <div class="flex flex-wrap items-center justify-end gap-2">
-                            @if ($item->plugin_id === \App\Services\Mail\MailIntakeService::PLUGIN_ID)
+                            @if ($ownership !== null)
+                                <form method="POST" action="{{ route('admin.integration.inbox.accept-ownership', $item) }}"
+                                      data-confirm-dialog data-confirm-message="{{ __('integration.ownership.accept_confirm', ['source' => $ownershipSource, 'owner' => $ownershipOwner]) }}">
+                                    @csrf
+                                    <x-button type="submit">{{ __('integration.ownership.accept') }}</x-button>
+                                </form>
+                            @elseif ($item->plugin_id === \App\Services\Mail\MailIntakeService::PLUGIN_ID)
                                 {{-- E-Mail-Eingang (Feature 056): als Kommunikationsnotiz beim Kunden
                                      buchen. Bewusst kein „Neu anlegen" — eine Mail erzeugt keinen Kunden.
                                      Kunde leer = automatisch erkannter Absender-Kunde. --}}

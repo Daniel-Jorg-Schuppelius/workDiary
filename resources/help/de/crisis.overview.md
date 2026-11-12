@@ -1,7 +1,7 @@
 ---
 title: "Notfall- & Krisenmanagement"
 topic: crisis.overview
-version: 2
+version: 4
 keywords:
     - Krisenstab
     - Notfallmanagement
@@ -56,3 +56,30 @@ dokumentierte Aussendung bleiben getrennt nachvollziehbar.
 Workarounds und Ersatzprozessen; nach der Entwarnung folgt die
 Nachbereitung (Pflicht vor dem Schließen). Übungen laufen getrennt und
 verfälschen keine echten Akten.
+
+Eigene Meldefristen pflegen Sie im Reiter **Meldefristen**: Vorgaben einer
+Kategorie als eigene Fristen übernehmen, Fristen anlegen, ändern und
+deaktivieren. Sobald eine Kategorie eine aktive eigene Frist hat, gelten für
+sie nur noch die eigenen Fristen; ohne aktive eigene Frist gelten wieder die
+Vorgaben.
+
+**Maßnahmen mit Vorgänger:** Beim Erfassen einer Maßnahme wählen Sie auf
+Wunsch einen Vorgänger aus derselben Akte. Die Maßnahme lässt sich erst
+erledigen, wenn der Vorgänger erledigt oder abgebrochen ist; in Arbeit nehmen
+können Sie sie vorher.
+
+**Ersatzprozess und Reststatus:** Zum kritischen Prozess erfassen Sie neben dem
+Workaround den Ersatzprozess. Beim Wiederanlaufstatus halten Sie die
+verbleibende Einschränkung fest.
+
+**Krise aus einem Vorfall eröffnen:** Sicherheitsvorfall, Datenschutzvorfall,
+Arbeitsschutzereignis und Major-Incident-Ticket tragen den Knopf „Krise
+eröffnen“. Der Dialog belegt Titel, Kategorie und Auslöser vor und verknüpft
+den Vorfall mit der neuen Akte. Weitere Vorgänge verknüpfen Sie in der Akte
+über „Vorgang verknüpfen“ aus einer Auswahl; angeboten wird, was Sie lesen
+dürfen.
+
+**Notfall-Anwesenheitsliste:** Eine laufende Krisenakte führt mit dem Recht für
+die Notfall-Anwesenheitsliste direkt dorthin.
+
+**Vorgänger ändern:** Den Vorgänger einer Maßnahme ändern oder lösen Sie direkt in der Maßnahmenliste. Zur Wahl stehen nur Maßnahmen derselben Akte; eine Wahl, die einen Kreis ergäbe (A wartet auf B, B auf A), weist WorkDiary ab.

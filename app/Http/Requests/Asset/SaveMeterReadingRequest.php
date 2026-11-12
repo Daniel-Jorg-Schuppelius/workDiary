@@ -29,7 +29,8 @@ class SaveMeterReadingRequest extends BaseFormRequest {
             'unit' => ['required', 'string', 'max:16'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'is_estimated' => ['nullable', 'boolean'],
-            'photo_path' => ['nullable', 'string', 'max:255'],
+            // Foto als Anhang (MVP-1619) statt eines Pfads aus der Eingabe.
+            'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,heic', 'max:10240'],
         ];
     }
 }

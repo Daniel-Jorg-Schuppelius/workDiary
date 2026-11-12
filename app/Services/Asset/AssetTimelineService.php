@@ -37,6 +37,7 @@ class AssetTimelineService {
                     'event' => $log->event,
                     'user_id' => $log->user_id,
                     'user_name' => $log->user?->name,
+                    'location' => $log->event === 'asset.moved' ? $this->moveText((array) $log->changes) : null,
                 ],
             ];
         }
@@ -167,6 +168,14 @@ class AssetTimelineService {
         );
 
         return array_slice($events, 0, max(1, $limit));
+    }
+
+    /** @param array<string, mixed> $changes */
+    private function moveText(array $changes): string {
+        $from = trim((string) ($changes['from_location_text'] ?? ''));
+        $to = trim((string) ($changes['to_location_text'] ?? $changes['location_text'] ?? ''));
+
+        return ($from !== '' ? $from : '—') . ' → ' . ($to !== '' ? $to : '—');
     }
 
     private function toIso(Carbon|string|null $value): ?string {

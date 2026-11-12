@@ -107,6 +107,13 @@ final class InspectionOrderService {
         $target = $accept ? AssetInspectionOrderStatus::Accepted : AssetInspectionOrderStatus::Requested;
         $this->assertValidatedTransition($order->status, $target, 'inspection_order.error.transition');
         $order->forceFill(['status' => $target, 'accepted_at' => $accept ? now() : null, 'accepted_by' => $accept ? $actor->id : null])->save();
+        if ($accept) {
+            // Angenommener Auftrag: die angekündigten Termine sind in Arbeit (MVP-1620).
+            AssetInspectionSchedule::query()
+                ->whereIn('id', $order->items()->whereNotNull('asset_inspection_schedule_id')->pluck('asset_inspection_schedule_id'))
+                ->where('status', AssetInspectionScheduleStatus::Announced->value)
+                ->update(['status' => AssetInspectionScheduleStatus::InProgress->value]);
+        }
         $order->audit($accept ? 'inspection_order.accepted' : 'inspection_order.offer_rejected', ['offer_amount' => $order->offer_amount]);
 
         return $order;
@@ -206,7 +213,7 @@ final class InspectionOrderService {
             $order->forceFill(['status' => AssetInspectionOrderStatus::Cancelled])->save();
             AssetInspectionSchedule::query()
                 ->whereIn('id', $order->items()->whereNotNull('asset_inspection_schedule_id')->pluck('asset_inspection_schedule_id'))
-                ->where('status', AssetInspectionScheduleStatus::Announced->value)
+                ->whereIn('status', [AssetInspectionScheduleStatus::Announced->value, AssetInspectionScheduleStatus::InProgress->value])
                 ->update(['status' => AssetInspectionScheduleStatus::Planned->value]);
         });
         $order->audit('inspection_order.cancelled', []);

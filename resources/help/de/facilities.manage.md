@@ -1,7 +1,7 @@
 ---
 title: "Standorte & Räume"
 topic: facilities.manage
-version: 2
+version: 3
 keywords:
     - Liegenschaften
     - Gebäude
@@ -45,3 +45,5 @@ Betreiberpflicht. Sie ergänzen das Reinigungsprofil und werden im
 Raum-Bearbeiten-Dialog gepflegt (Anforderung wählen, optional Stufe oder
 Wert und eine Notiz). In der Raumliste und in der Objektakte eines im
 Raum verorteten Assets werden die aktiven Anforderungen angezeigt.
+
+**Raumanforderung ändern:** Im Raumdialog öffnet „Bearbeiten“ an einer Anforderung einen eigenen Dialog für Art, Stufe, Notiz und Aktiv-Schalter; danach kehren Sie in den Raumdialog zurück.

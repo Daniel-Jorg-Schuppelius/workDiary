@@ -1,7 +1,7 @@
 ---
 title: "Contabilità locale"
 topic: accounting.overview
-version: 3
+version: 6
 keywords:
     - libro mastro
     - contabilità generale
@@ -116,10 +116,36 @@ organizzazione tiene o ha tenuto la contabilità locale.
   `is_open_item`, `datev_account`, `euer_category` e `deductible_percent`. I
   numeri esistenti vengono aggiornati, i nuovi conti creati, non viene
   eliminato nulla; le righe errate vengono ignorate e contate.
-- **Codici IVA:** se esistono codici IVA, la pagina li elenca con i rispettivi
-  campi della dichiarazione IVA tedesca. Con **Modifica** Lei assegna un campo
-  a **Base imponibile** e uno a **Imposta** – un ausilio di riconciliazione,
-  non il modulo.
+- **Codici imposta:** la pagina elenca i codici imposta con aliquota, conto
+  d'imposta, validità e i relativi righi della dichiarazione IVA tedesca.
+  **Crea codice imposta** registra **Codice**, **Denominazione**,
+  **Direzione**, **Aliquota (%)**, **Conto d'imposta**, **Valido dal** e i
+  righi per **Base imponibile** e **Importo dell'imposta** – un aiuto per la
+  quadratura, non il modulo. Con **Modifica** si cambiano in qualsiasi momento
+  denominazione e righi. Aliquota, direzione e conto d'imposta di un codice
+  già usato in registrazioni cambiano solo da una nuova data di decorrenza: la
+  versione precedente termina il giorno prima, le registrazioni esistenti
+  restano invariate, le regole di registrazione e i valori predefiniti dei
+  conti seguono la nuova versione. **Disattiva** toglie un codice dalla
+  selezione; le registrazioni esistenti lo mantengono.
+  Le registrazioni dalla posta contabile riportano codice e importo d'imposta
+  sulla riga di ricavo o di costo. Per le vendite senza imposta la posta
+  sceglie il codice in base alla categoria fiscale del documento: cessione
+  intracomunitaria (rigo 41), prestazione con inversione contabile (21),
+  esportazione (43), non imponibile (45); «esente» senza rigo compare come
+  caso da chiarire. I piccoli imprenditori non ricevono alcun codice.
+- **Inversione contabile (debitore il destinatario):** per la direzione **IVA a
+  debito e a credito (inversione contabile)** il codice IVA registra in più
+  **Conto IVA a credito**, **Caso fiscale nelle fatture in entrata** e **Rigo
+  dell’IVA a credito**. I modelli portano il § 13b, commi 1 e 2 (19 %) e
+  l’acquisto intracomunitario (19 % e 7 %) con i relativi conti, più il codice
+  del rigo 60 per le vendite in cui il cliente nazionale deve l’imposta. I
+  piani dei conti esistenti dal modello li ricevono con l’aggiornamento.
+- **DATEV:** la **Chiave fiscale DATEV** del codice indica la chiave fiscale
+  nel lotto DATEV (p. es. 9 per IVA a credito 19 %, 94 per il § 13b).
+  L’**Automatismo DATEV** del conto indica il codice la cui imposta DATEV
+  calcola da sé su questo conto (conto automatico come 8400 nello SKR03); lì il
+  lotto non imposta alcuna chiave.
 
 **Autorizzazione:** consultare con **Consultare la contabilità**; modello,
 importazione e ogni modifica a conti e codici IVA con **Configurare la

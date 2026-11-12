@@ -13,7 +13,9 @@ namespace Tests\Feature\Asset;
 use App\Enums\Asset\AssetComponentStatus;
 use App\Models\Article\Article;
 use App\Models\Asset\{Asset, AssetComponent};
+use App\Models\Material\{Material, MaterialUsage};
 use App\Models\Platform\{Organization, User};
+use App\Models\Time\Timesheet;
 use App\Services\Asset\AssetComponentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -275,5 +277,68 @@ class AssetComponentTest extends TestCase {
                 ->assertSee('Keilriemen')
                 ->assertDontSee('Neu verbaut');
         }
+    }
+
+    /** Materialverbrauch am Stundenzettel, dem Gerät zugeordnet. */
+    private function usage(?Asset $asset = null, ?Material $material = null, string $workDate = '2026-09-14'): MaterialUsage {
+        $timesheet = Timesheet::query()->create([
+            'organization_id' => $this->org->id,
+            'user_id' => $this->admin->id,
+            'work_date' => $workDate,
+        ]);
+
+        return MaterialUsage::query()->create([
+            'organization_id' => $this->org->id,
+            'timesheet_id' => $timesheet->id,
+            'asset_id' => ($asset ?? $this->asset)->id,
+            'material_id' => $material?->id,
+            'description' => 'Taschenfilter F7',
+            'quantity' => '2.000',
+            'unit' => 'Stk.',
+            'line_total_net' => '0.00',
+        ]);
+    }
+
+    public function test_material_of_a_job_is_offered_and_adopted_once(): void {
+        $article = Article::factory()->create(['organization_id' => $this->org->id, 'name' => 'Filter F7 Artikel']);
+        $material = Material::query()->create(['organization_id' => $this->org->id, 'article_id' => $article->id, 'name' => 'Filter F7', 'unit' => 'Stk.']);
+        $usage = $this->usage(material: $material);
+
+        $this->actingAs($this->admin)->get(route('assets.components.index', $this->asset))
+            ->assertOk()
+            ->assertSee(__('asset.components.adopt.heading'))
+            ->assertSee(route('assets.components.adopt', [$this->asset, $usage]), false);
+
+        $this->actingAs($this->admin)->post(route('assets.components.adopt', [$this->asset, $usage]))
+            ->assertRedirect()->assertSessionHas('status', __('asset.components.adopted'));
+
+        $component = AssetComponent::query()->where('material_usage_id', $usage->id)->sole();
+        $this->assertSame($article->id, $component->article_id);
+        $this->assertSame('2026-09-14', $component->installed_on?->toDateString(), 'Einbaudatum ist der Einsatztag.');
+        $this->assertSame('2.000', (string) $component->quantity);
+        $this->assertTrue(app(AssetComponentService::class)->adoptableUsages($this->asset)->isEmpty());
+
+        $this->actingAs($this->admin)->post(route('assets.components.adopt', [$this->asset, $usage]))
+            ->assertRedirect()->assertSessionHas('error', __('asset.components.already_adopted'));
+        $this->assertSame(1, AssetComponent::query()->where('material_usage_id', $usage->id)->count());
+    }
+
+    public function test_material_of_another_device_is_not_adopted(): void {
+        $other = Asset::factory()->create(['organization_id' => $this->org->id, 'name' => 'Lüftungsanlage 2']);
+        $usage = $this->usage($other);
+
+        $this->assertTrue(app(AssetComponentService::class)->adoptableUsages($this->asset)->isEmpty());
+        $this->actingAs($this->admin)->post(route('assets.components.adopt', [$this->asset, $usage]))
+            ->assertRedirect()->assertSessionHas('error', __('asset.components.usage_of_other_asset'));
+        $this->assertSame(0, AssetComponent::query()->count());
+    }
+
+    public function test_adopting_needs_the_right_to_edit_the_device(): void {
+        $usage = $this->usage();
+        // Ohne Rolle fehlt das Recht, Geräte zu bearbeiten.
+        $reader = User::factory()->create(['organization_id' => $this->org->id]);
+
+        $this->actingAs($reader)->post(route('assets.components.adopt', [$this->asset, $usage]))->assertForbidden();
+        $this->assertSame(0, AssetComponent::query()->count());
     }
 }

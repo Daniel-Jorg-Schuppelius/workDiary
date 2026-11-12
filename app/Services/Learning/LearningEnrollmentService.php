@@ -35,6 +35,7 @@ class LearningEnrollmentService {
     public function __construct(
         private readonly LearningCompletionService $completion,
         private readonly LearningNotifier $notifier,
+        private readonly LearningVideoProgressService $videoProgress,
     ) {}
 
     /**
@@ -169,6 +170,13 @@ class LearningEnrollmentService {
                     ]),
                 ]);
             }
+        }
+
+        // Pflichtanteil der Videos (MVP-1598): ohne ihn behauptete der Nachweis
+        // eine Regel, die nicht wirkt. Prüfung, Termin, Abgabe und Kurspaket
+        // schließen über ihr eigenes Ergebnis ab.
+        if (! $unit->reportsOwnResult()) {
+            $this->videoProgress->guardWatched($enrollment, $unit);
         }
 
         return DB::transaction(function () use ($enrollment, $unit, $progressPercent): LearningUnitProgress {

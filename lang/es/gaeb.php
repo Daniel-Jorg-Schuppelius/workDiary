@@ -50,6 +50,9 @@ return [
     ],
 
     'show' => [
+        'findings' => 'Hallazgos',
+        'findings_count' => 'Mostrar :count hallazgo(s)',
+        'conflict_line' => 'Partida :ref (:status): cantidad :quantity, en el archivo :incoming_quantity; precio unitario :price, en el archivo :incoming_price',
         'back_to_boq' => 'Volver al presupuesto',
         'positions' => 'Partidas',
         'history' => 'Historial de importaciones',
@@ -137,6 +140,7 @@ return [
         'title' => 'Observaciones preliminares',
     ],
     'preflight' => [
+        'catalog_without_edition' => 'El catálogo de grupos de costes «:catalog» no indica la edición de la norma. Los grupos de costes se han importado; asigne la edición al catálogo antes de evaluar.',
         'version_unknown' => 'No se pudo detectar la versión GAEB.',
         'version_unsupported' => 'La versión GAEB :version no es compatible (línea objetivo 3.3).',
         'phase_unknown' => 'La fase de intercambio «:code» es desconocida.',
@@ -170,6 +174,25 @@ return [
     ],
 
     'progress' => [
+        'dialog' => [
+            'open' => 'Registrar avance y ver los registros',
+            'title' => 'Registrar avance',
+            'quantity_hint' => 'Cantidad ejecutada en la unidad de la partida. Introduzca 0 para asignar solo el coste de un consumo de material.',
+            'source' => 'Origen',
+            'material_usage_hint' => 'Consumo de material del proyecto aún no asignado a una partida. Su coste se imputa a esta partida en la evaluación.',
+            'protocol_hint' => 'Acta del proyecto de la que procede el registro. El registro la referencia de forma permanente.',
+            'history' => 'Registros anteriores',
+            'history_empty' => 'Aún no hay registros.',
+            'captured_at' => 'Registrado el',
+            'reference' => 'Referencia',
+        ],
+        'error' => [
+            'material_usage' => 'El consumo de material no pertenece a este proyecto o ya está asignado a una partida.',
+            'protocol' => 'El acta no pertenece a este proyecto.',
+            'one_reference' => 'Elija un consumo de material o un acta, no ambos.',
+            'reference_required' => 'Los orígenes «acta» y «consumo de material» requieren el documento correspondiente.',
+            'position' => 'La partida no pertenece a un presupuesto de obra de este proyecto o está finalizada.',
+        ],
         'from_takeoff' => 'Cantidad recalculada a partir de :lines líneas de medición del X31.',
         'takeoff_skipped' => ':count líneas con una fórmula no admitida se han omitido.',
         'title' => 'Medición / avance',

@@ -124,6 +124,7 @@ final class TimeManifest extends Manifest {
             ],
             \App\Services\Sync\Contracts\SyncCommandHandler::class => [
                 \App\Services\Attendance\Sync\AttendanceSyncHandler::class,
+                \App\Services\Timekeeping\Sync\TimeEntrySyncHandler::class,
             ],
             \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
                 \App\Services\TimeExport\Retention\TimeRetentionPolicies::class,

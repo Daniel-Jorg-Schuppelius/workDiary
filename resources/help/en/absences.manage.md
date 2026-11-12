@@ -1,7 +1,7 @@
 ---
 title: "Leave & sickness"
 topic: absences.manage
-version: 4
+version: 5
 keywords:
     - absence
     - leave request
@@ -73,3 +73,11 @@ has been exhausted is shown instead. The report **Sicknesses** shows the status
 per person. All figures are a guide, not legal advice.
 
 Days with a sick note have no target time, just like vacation: **Working-time account**, **Work balance**, **Attendance** and **Plan/actual** do not count them as a minus. Cancelled sick notes count nowhere, not even in time accounts.
+
+**Request correction:** As long as no approval has been recorded, those
+responsible return a pending request with **Request correction** (back
+arrow in the row) and a note. The request is then **Correction requested**;
+the applicant receives a notification and an entry in the work queue, sees
+the note in the edit dialog, changes the request and submits it again by
+saving. Until then it can neither be approved nor rejected; the applicant
+can withdraw it by cancelling.

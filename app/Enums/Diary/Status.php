@@ -84,12 +84,14 @@ enum Status: int implements HasLabel {
     public function allowedActions(): array {
         return match ($this) {
             self::Open => ['accept', 'cancel'],
-            self::Accepted => ['start', 'cancel'],
+            self::Accepted => ['start', 'reject', 'cancel'],
             self::InProgress => ['pause', 'complete', 'cancel'],
             self::Problem, self::WaitingMaterial => ['resume'],
             self::Done => ['handover'],
             self::AcceptedFinal => ['markInvoiced'],
-            self::Invoiced, self::Cancelled => [],
+            // Nur der Beleg nimmt „Berechnet“ zurück, wenn er storniert wird (MVP-1596).
+            self::Invoiced => ['revertInvoiced'],
+            self::Cancelled => [],
         };
     }
 }

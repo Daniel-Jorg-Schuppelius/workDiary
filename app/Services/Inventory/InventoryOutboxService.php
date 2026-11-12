@@ -75,26 +75,6 @@ class InventoryOutboxService implements OutboxTransitionService {
         );
     }
 
-    /**
-     * Inbound-Bestätigung (Webhook-Rückkanal): markiert den Eintrag mit dem
-     * Schlüssel als bestätigt. Idempotent; liefert false, wenn unbekannt.
-     */
-    public function confirmByKey(int $organizationId, string $idempotencyKey): bool {
-        $entry = InventoryOutboxEntry::withoutGlobalScopes()
-            ->where('organization_id', $organizationId)
-            ->where('idempotency_key', $idempotencyKey)
-            ->first();
-        if ($entry === null) {
-            return false;
-        }
-
-        if ($entry->status !== OutboxStatus::Confirmed) {
-            $this->markConfirmed($entry);
-        }
-
-        return true;
-    }
-
     protected function outboxStatusEnum(): string {
         return OutboxStatus::class;
     }

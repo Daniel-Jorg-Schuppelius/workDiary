@@ -27,9 +27,9 @@ use App\Services\Archive\ArchiveService;
 use App\Services\Classification\ClassificationRequirementValidator;
 use App\Services\Diary\FollowUpOrderService;
 use App\Services\OpenIssue\OpenIssueService;
-use App\Services\Timeline\DiaryEntryTimelineService;
+use App\Services\Timeline\{DiaryEntryTimelineService, TimelineFilter};
 use App\Services\UI\DateRangeContext;
-use App\Support\{LookupCache, Sqid};
+use App\Support\{LookupCache, Sqid, Tz};
 use App\Support\SqidEncoder;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -265,13 +265,37 @@ class DiaryController extends Controller {
         // einfaches „mehr laden" über wachsendes Limit.
         /** @var User $viewer */
         $viewer = Auth::user();
-        $timelineType = (string) $request->query('timeline_type', '');
+        // Filter (MVP-1596): Typen mehrfach, Zeitraum, Person, „nur kundenrelevant“.
+        // `timeline_type` (einzeln) bleibt für alte Links.
+        $timelineQuery = $request->validate([
+            'timeline_type' => ['nullable', 'string'],
+            'timeline_types' => ['nullable', 'array'],
+            'timeline_types.*' => ['string'],
+            'timeline_from' => ['nullable', 'date'],
+            'timeline_to' => ['nullable', 'date'],
+            'timeline_actor' => ['nullable', 'string'],
+            'timeline_customer' => ['nullable', 'boolean'],
+        ]);
+        $timelineTypes = array_values(array_intersect(
+            array_filter([...($timelineQuery['timeline_types'] ?? []), (string) ($timelineQuery['timeline_type'] ?? '')]),
+            DiaryEntryTimelineService::TYPES,
+        ));
+        $timelineActorId = filled($timelineQuery['timeline_actor'] ?? null)
+            ? Sqid::decodeOrNumeric(User::class, (string) $timelineQuery['timeline_actor'])
+            : null;
+        $timelineFilter = new TimelineFilter(
+            from: filled($timelineQuery['timeline_from'] ?? null) ? Tz::parse((string) $timelineQuery['timeline_from']) : null,
+            to: filled($timelineQuery['timeline_to'] ?? null) ? Tz::parse((string) $timelineQuery['timeline_to'] . ' 23:59:59') : null,
+            actorId: $timelineActorId !== null && $timelineActorId > 0 ? $timelineActorId : null,
+            customerOnly: (bool) ($timelineQuery['timeline_customer'] ?? false),
+        );
         $timelineLimit = max(1, min(500, (int) $request->query('timeline_limit', 50)));
         $timeline = app(DiaryEntryTimelineService::class)->forDiaryEntry(
             $diary,
             $viewer,
-            $timelineType !== '' ? [$timelineType] : null,
+            $timelineTypes !== [] ? $timelineTypes : null,
             $timelineLimit,
+            filter: $timelineFilter,
         );
 
         // Prozeduren (Feature 026): laufende Läufe + vorgeschlagene, noch nicht
@@ -301,7 +325,16 @@ class DiaryController extends Controller {
         return view('diary.show', compact('diary', 'legacyEntry', 'dataQualityGaps') + [
             'timelineItems' => $timeline['items'],
             'timelineHasMore' => $timeline['hasMore'],
-            'timelineType' => $timelineType,
+            'timelineTypes' => $timelineTypes,
+            'timelineFilter' => $timelineFilter,
+            'timelineActors' => $timeline['actors'] ?? [],
+            'timelineQuery' => array_filter([
+                'timeline_types' => $timelineTypes,
+                'timeline_from' => $timelineQuery['timeline_from'] ?? null,
+                'timeline_to' => $timelineQuery['timeline_to'] ?? null,
+                'timeline_actor' => $timelineQuery['timeline_actor'] ?? null,
+                'timeline_customer' => $timelineFilter->customerOnly ? 1 : null,
+            ]),
             'timelineLimit' => $timelineLimit,
             'procedureRuns' => $procedureRuns,
             'suggestedProcedures' => $suggestedProcedures,

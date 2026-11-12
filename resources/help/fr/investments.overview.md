@@ -1,7 +1,7 @@
 ---
 title: "Planification des investissements"
 topic: investments.overview
-version: 3
+version: 4
 keywords:
     - demande d'investissement
     - demande de budget
@@ -68,3 +68,14 @@ restent maîtres, WorkDiary ne remplace aucune comptabilité.
 **Évaluation a posteriori :** Après la clôture ou l'abandon, on documente
 le bénéfice réel, la rentabilité, les enseignements tirés (lessons
 learned) et les mesures de suivi.
+
+**Durée d'utilisation et fournisseur :** chaque variante reçoit une durée
+d'utilisation en années ; elle figure dans la comparaison et préremplit la
+reprise en immobilisation. Lorsqu'un actif est lié au dossier ou que le
+dossier est clôturé, l'actif reprend le fournisseur de la variante recommandée
+comme « Acquis auprès de », s'il n'en a pas encore.
+
+**Filtrer la liste :** la liste des investissements filtre aussi par période,
+responsable, centre de coûts, état du budget (état de la demande la plus
+récente), urgence et note de risque. Le rapport peut aussi être exporté en
+PDF.

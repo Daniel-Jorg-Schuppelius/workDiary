@@ -60,7 +60,12 @@
                             <span class="text-muted text-xs">{{ $r->asset->asset_no }}</span>
                         @endif
                     </td>
-                    <td class="text-right font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $r->value, 4, withThousandsSeparator: true) }}</td>
+                    <td class="text-right font-mono">
+                        @if ($photo = $r->attachments->first())
+                            <a href="{{ \Illuminate\Support\Facades\URL::signedRoute('attachments.download', $photo) }}" class="link link-hover mr-1" title="{{ __('Foto des Zählers') }}"><x-icon name="photo_camera" /></a>
+                        @endif
+                        {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $r->value, 4, withThousandsSeparator: true) }}
+                    </td>
                     <td class="text-right font-mono text-base-content/70">
                         {{ $r->consumption !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $r->consumption, 4, withThousandsSeparator: true) : '—' }}
                     </td>

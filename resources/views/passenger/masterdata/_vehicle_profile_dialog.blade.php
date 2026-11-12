@@ -53,11 +53,6 @@
             <input type="checkbox" id="profile-barrier-free" name="barrier_free" value="1" class="checkbox checkbox-sm" @checked((bool) old('barrier_free', $profile?->barrier_free))>
             <label for="profile-barrier-free" class="text-sm">{{ __('passenger.field.barrier_free') }}</label>
         </div>
-        <div class="flex items-center gap-2">
-            <input type="hidden" name="large_capacity" value="0">
-            <input type="checkbox" id="profile-large-capacity" name="large_capacity" value="1" class="checkbox checkbox-sm" @checked((bool) old('large_capacity', $profile?->large_capacity))>
-            <label for="profile-large-capacity" class="text-sm">{{ __('passenger.field.large_capacity') }}</label>
-        </div>
     </x-form-group>
 
     <x-form-group :legend="__('passenger.section.devices')" icon="speed" tone="primary" cols="2">

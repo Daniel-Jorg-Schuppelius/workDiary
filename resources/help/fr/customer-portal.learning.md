@@ -104,3 +104,8 @@ prestataire.
   la base de connaissances interne de votre prestataire.
 - Vous ne pouvez ni vous désinscrire ni retirer une demande de réservation
   dans le portail.
+- Si une vidéo porte une part obligatoire, l'unité ne peut être terminée
+  qu'une fois cette part visionnée ; l'état figure sous la vidéo. L'avance
+  rapide ne compte pas.
+- Les unités qui se terminent par une procédure, un questionnaire ou une
+  confirmation externe ne peuvent pas être traitées dans le portail.

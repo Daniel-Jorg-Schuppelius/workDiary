@@ -1,7 +1,7 @@
 ---
 title: "Modificare una registrazione di tempo"
 topic: time-entries.edit
-version: 3
+version: 4
 keywords:
     - correggere le ore
     - cambiare registrazione
@@ -92,6 +92,8 @@ sono bloccate. Una registrazione è bloccata se
 - la finestra di correzione è scaduta (per impostazione predefinita 7 giorni
   dopo il giorno della registrazione),
 - il mese è già stato approvato per Lei,
+- Lei ha già chiuso la giornata della registrazione (le modifiche passano
+  allora da **Richiedi correzione** nella vista del giorno),
 - il foglio ore collegato è firmato o bloccato, oppure
 - la registrazione è già stata esportata.
 

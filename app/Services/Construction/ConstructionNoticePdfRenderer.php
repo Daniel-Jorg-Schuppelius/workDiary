@@ -15,7 +15,7 @@ namespace App\Services\Construction;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Construction\ConstructionNotice;
 use App\Models\Platform\Organization;
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, IssuerIdentity};
 
 /**
  * PDF der VOB/B-Schreiben (H23, MVP-728) auf dem Firmenbogen. Belegart ist die
@@ -33,6 +33,8 @@ class ConstructionNoticePdfRenderer {
 
         $organization = Organization::query()->withoutGlobalScopes()->find($notice->organization_id);
         $design = app(DocumentDesignRenderer::class);
+        $payload = $design->payloadFromSnapshot($notice, $notice->kind)
+            ?? ($organization !== null ? $design->payloadFor($organization, $notice->kind) : null);
 
         return $design->renderPdf(
             $notice->kind,
@@ -41,9 +43,12 @@ class ConstructionNoticePdfRenderer {
                 'notice' => $notice,
                 'organization' => $organization,
                 'generatedAt' => now(),
+                // Absenderangaben des Geschäftsbriefs nach Blockzustand (MVP-1624); vorher versandte Schreiben bleiben, wie sie zugingen.
+                'design' => $design->contextForDocument($notice, $notice->kind, $payload, finalized: $notice->sent_at !== null),
+                'issuer' => IssuerIdentity::for($organization),
             ],
             $organization,
-            payload: $design->payloadFromSnapshot($notice, $notice->kind),
+            payload: $payload,
         );
     }
 

@@ -643,6 +643,13 @@ class ContractSigningService {
             $this->expireOpenLinks($revision, $actor);
             $revision->forceFill(['status' => SigningRevisionStatus::Signed->value, 'completed_at' => now()])->save();
             $contract = $revision->contract()->firstOrFail();
+            // Gestaltung des Abschlussnachweises mit dem Abschluss festhalten (MVP-1624).
+            $organization = Organization::query()->withoutGlobalScopes()->find($contract->organization_id);
+            if ($organization !== null) {
+                $design = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class);
+                $kind = \App\Enums\DocumentDesign\RenderDocumentKind::SigningCertificate;
+                $design->snapshot($revision, $kind, $organization, $design->payloadFor($organization, $kind, (int) $contract->customer_id), $actor);
+            }
             $contract->audit('contract.signing.completed', ['revision_id' => $revision->id, 'manifest_hash' => $revision->manifest_hash, 'by' => $actor?->id]);
             $this->scheduleReview($revision, $contract);
             ContractSigningCompleted::dispatch($revision);

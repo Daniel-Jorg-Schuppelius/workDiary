@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Passenger;
 
-use App\Enums\Passenger\{RideOperationMode, RideStatus};
+use App\Enums\Passenger\{RideOperationMode, RideSettlementStatus, RideStatus};
 use App\Enums\Passenger\ShiftSettlementStatus;
 use App\Models\Finance\{CashEntry, CashRegister};
 use App\Models\Passenger\{PassengerRide, PassengerShiftSettlement};
@@ -164,6 +164,43 @@ class PassengerRetentionAndCashTest extends TestCase {
             'cash_register_id' => $register->sqid,
         ])->assertSessionHasErrors('status');
         $this->assertSame(1, CashEntry::query()->count());
+    }
+
+    /** MVP-1620: der Abschluss bindet die beendeten Fahrten des Fahrers aus der Schicht. */
+    public function test_closing_a_settlement_settles_the_rides_of_the_shift(): void {
+        $this->activateProfile();
+        $driver = $this->orgUser();
+        $ride = function (User $by, RideStatus $status, \Illuminate\Support\Carbon $at): PassengerRide {
+            $ride = app(PassengerRideService::class)->accept($this->organization, $this->admin, [
+                'operation_mode' => RideOperationMode::Taxi->value,
+                'order_channel' => 'phone',
+                'pickup_address' => 'Musterweg 1, Musterstadt',
+                'destination_address' => 'Bahnhof Musterstadt',
+            ]);
+            $ride->forceFill(['status' => $status, 'driver_user_id' => $by->id] + ($status === RideStatus::Completed ? ['completed_at' => $at] : ['cancelled_at' => $at]))->save();
+
+            return $ride;
+        };
+        $done = $ride($driver, RideStatus::Completed, now()->startOfDay()->addHours(10));
+        $noShow = $ride($driver, RideStatus::NoShow, now()->startOfDay()->addHours(11));
+        $yesterday = $ride($driver, RideStatus::Completed, now()->subDay()->startOfDay()->addHours(10));
+        $colleague = $ride($this->orgUser(), RideStatus::Completed, now()->startOfDay()->addHours(10));
+
+        $settlement = PassengerShiftSettlement::query()->create([
+            'organization_id' => $this->organization->id,
+            'driver_user_id' => $driver->id,
+            'shift_date' => now()->toDateString(),
+            'meter_total' => '40.00',
+            'cash_total' => '40.00',
+        ]);
+        $this->post(route('passenger-settlements.close', $settlement))->assertRedirect(route('passenger-settlements.index'));
+
+        $this->assertSame(RideSettlementStatus::Settled, $done->fresh()?->settlement_status);
+        $this->assertSame($settlement->id, $done->fresh()?->shift_settlement_id);
+        $this->assertSame(RideSettlementStatus::Waived, $noShow->fresh()?->settlement_status);
+        $this->assertSame(RideSettlementStatus::Open, $yesterday->fresh()?->settlement_status);
+        $this->assertSame(RideSettlementStatus::Open, $colleague->fresh()?->settlement_status);
+        $this->get(route('passenger-rides.show', $done))->assertOk()->assertSee($settlement->shift_date->fdate());
     }
 
     public function test_cash_handover_requires_cash_module(): void {

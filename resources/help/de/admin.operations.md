@@ -1,7 +1,7 @@
 ---
 title: "Betriebsaufgaben & Wartungsfenster"
 topic: admin.operations
-version: 1
+version: 2
 keywords:
     - Wartungsmodus
     - Downtime
@@ -61,3 +61,5 @@ absagen. Jede Aktion wird auditiert.
 die Ankündigung ihre Wirkung entfaltet, und arbeiten Sie das Aufgabencenter
 regelmäßig ab – kritische Aufgaben zuerst. Zurückstellen ist für
 bewusste Verschiebungen gedacht, nicht als Dauerzustand.
+
+**Fehlermeldungen und Module:** Die Aufgabe zu offenen Fehlermeldungen entsteht nur, solange das Helpdesk-Modul der Organisation aktiv ist; schaltet es ab, löst der nächste Lauf sie auf.

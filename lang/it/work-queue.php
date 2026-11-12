@@ -16,6 +16,8 @@ return [
         'all_categories' => 'Tutte le aree',
         'source' => 'Origine',
         'all_sources' => 'Tutte le origini',
+        'due' => 'Scadenza',
+        'all_due' => 'Tutte le scadenze',
         'mine' => 'Solo quelli assegnati a me',
     ],
     'column' => [
@@ -40,6 +42,7 @@ return [
         'resale' => 'Abbonamenti e licenze',
         'approval' => 'Catene di approvazione',
         'vacation_approval' => 'Richieste di ferie',
+        'vacation_revision' => 'Richieste di ferie da correggere',
         'expense_approval' => 'Note spese',
         'month_closure' => 'Chiusure mensili',
         'price_change' => 'Variazioni di prezzo',
@@ -67,6 +70,7 @@ return [
     ],
     'item' => [
         'vacation' => 'Richiesta di ferie di :name',
+        'vacation_revision' => 'Correggere la richiesta di ferie',
         'expense' => 'Nota spese di :name',
         'month_closure' => 'Mese :period di :name',
         'price_change' => 'Variazione di prezzo: :article',

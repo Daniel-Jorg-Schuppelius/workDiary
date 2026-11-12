@@ -15,10 +15,13 @@ namespace App\Http\Controllers\Learning;
 use App\Enums\Learning\LearningProgressStatus;
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Http\Controllers\Controller;
+use App\Models\Attachments\Attachment;
 use App\Models\Learning\{LearningEnrollment, LearningUnit};
 use App\Services\Learning\{LearningAccessService, LearningEnrollmentService};
+use App\Services\Media\MediaResponder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Lernzugang ohne Benutzerkonto (Feature 149, MVP-742).
@@ -75,7 +78,7 @@ class ExternalLearningController extends Controller {
     public function show(Request $request): View {
         $enrollment = $this->currentEnrollment($request);
 
-        $enrollment->load(['course.units.section', 'externalParticipant']);
+        $enrollment->load(['course.units.section', 'course.units.attachments', 'externalParticipant']);
         // Mindestverweildauer (MVP-788): das erste Öffnen zählt ab jetzt.
         $this->enrollments->markSeen($enrollment, $enrollment->course->units ?? []);
         $enrollment->load('progress');
@@ -101,6 +104,25 @@ class ExternalLearningController extends Controller {
         return redirect()
             ->route('learning.external.show')
             ->with('success', __('learning.flash.unit_completed'));
+    }
+
+    /**
+     * Medien eines Inhaltsblocks (MVP-1628): Bild, Datei, Audio, Video. Der
+     * Anhang muss an dieser Einheit hängen, die Einheit im Kurs der Sitzung
+     * liegen und freigegeben sein — sonst wäre die Route ein Leseschlüssel.
+     */
+    public function unitMedia(Request $request, LearningUnit $unit, Attachment $attachment): SymfonyResponse {
+        $enrollment = $this->currentEnrollment($request);
+        abort_unless($unit->learning_course_id === $enrollment->learning_course_id, 404);
+        abort_unless(
+            $attachment->attachable_type === $unit->getMorphClass()
+            && (int) $attachment->attachable_id === (int) $unit->id,
+            404
+        );
+        $completed = array_values(array_map('intval', $enrollment->progress()->where('status', LearningProgressStatus::Completed)->pluck('learning_unit_id')->all()));
+        abort_unless(in_array($unit->id, $completed, true) || $unit->isReleasedFor($enrollment, null, $completed), 403);
+
+        return app(MediaResponder::class)->attachment($attachment);
     }
 
     /**

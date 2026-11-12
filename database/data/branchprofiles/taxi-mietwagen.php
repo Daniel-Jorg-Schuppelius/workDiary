@@ -272,7 +272,8 @@ return [
             'name' => 'Störung / Unfall',
             'name_i18n' => ['en' => 'Disruption / accident', 'es' => 'Avería / accidente', 'fr' => 'Incident / accident', 'it' => 'Guasto / incidente'],
             'domain' => 'taxi-mietwagen',
-            'risk_level' => 'critical',
+            // Nicht „critical“: am Unfallort gibt es keine zweite Person für die Vier-Augen-Freigabe (MVP-1570).
+            'risk_level' => 'high',
             'description' => 'Panne, Gerätefehler oder Unfall mit Fahrgastschutz und Eskalation dokumentieren.',
             'steps' => [
                 ['code' => 'sichern', 'step_type' => 'confirm', 'label' => 'Fahrgäste sichern, Unfallstelle absichern'],

@@ -1,7 +1,7 @@
 ---
 title: "Conectar Microsoft 365"
 topic: admin.msgraph
-version: 2
+version: 3
 keywords:
     - Microsoft 365
     - buzón compartido
@@ -243,3 +243,5 @@ Mientras una conexión de calendario falle, una tarea operativa lo indica.
   **Plugins** indica que las conexiones secundarias de Microsoft 365 requieren
   atención, hay una conexión de entrada de documentos, copia de seguridad o
   envío de correo con problemas. Vuelva a iniciar sesión allí.
+
+**Soberanía de datos:** Las citas de este calendario pertenecen al área de calendario. Si otro sistema gestiona el calendario, las propuestas, series y cambios aparecen en la bandeja de integraciones como caso «Soberanía de datos»; **Asumir una vez** crea la cita o la serie. Los avisos de eliminación siguen siendo casos normales. Microsoft To Do pertenece al área de tareas.

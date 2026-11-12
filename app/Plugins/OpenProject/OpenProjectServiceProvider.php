@@ -42,5 +42,6 @@ class OpenProjectServiceProvider extends PluginServiceProviderBase {
             OpenProjectSyncCommand::class,
             OpenProjectPushCommand::class,
         ]);
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\OpenProjectStructureSync::class);
     }
 }

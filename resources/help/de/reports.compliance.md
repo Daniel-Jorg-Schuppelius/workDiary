@@ -1,7 +1,7 @@
 ---
 title: "Nachweise: Audit-Aktivität, Compliance und Mindestlohn"
 topic: reports.compliance
-version: 3
+version: 4
 keywords:
     - Audit-Auswertung
     - wer hat was geändert
@@ -145,3 +145,5 @@ und verlangt das Recht **ArbZG-Compliance einsehen**.
 
 Den **Lenkzeit-Nachweis** im selben Menü beschreibt das Thema zu Fuhrpark,
 Fahrtenbuch und Lenkzeiten.
+
+**MiLoG-Nachweis:** Je Arbeitstag stehen neben Beginn, Ende, Pausen und Dauer die Minuten im Homeoffice und auf Dienstgängen — sie zählen zur Arbeitszeit, der Nachweis zeigt nur, wo gearbeitet wurde. Lenk- und Ruhezeitbefunde entstehen nur, solange das Fuhrpark-Modul aktiv ist; schaltet es ab, schließt der nächste Lauf offene Befunde.

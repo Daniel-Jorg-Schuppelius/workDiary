@@ -17,7 +17,9 @@ use App\Models\Fleet\Vehicle;
 use App\Models\Platform\{Organization, User};
 use App\Models\Time\Attendance;
 use App\Models\Travel\TravelLog;
+use App\Modules\ModuleRegistry;
 use App\Services\Calendar\HolidayService;
+use App\Services\Licensing\ModuleStatusResolver;
 use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
@@ -133,7 +135,9 @@ final class ComplianceScanService {
      * @return array<int, list<AttendanceComplianceFinding>>  Befunde je user_id (nur Fahrer mit ≥1 Befund)
      */
     public function drivingTimeFindingsForRange(Organization $organization, CarbonImmutable $from, CarbonImmutable $to): array {
-        if (! $organization->drivingTimeRulesEnabled()) {
+        // Lenkzeiten hängen am Fuhrpark (MVP-1628): ohne aktives Modul keine Befunde, offene lösen sich im Lauf auf.
+        $fleet = app(ModuleRegistry::class)->byTable((new Vehicle)->getTable())?->licenseCode();
+        if (! $organization->drivingTimeRulesEnabled() || ($fleet !== null && ! app(ModuleStatusResolver::class)->isActiveFor($organization, $fleet))) {
             return [];
         }
 

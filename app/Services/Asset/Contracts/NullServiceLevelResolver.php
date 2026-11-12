@@ -15,7 +15,7 @@ namespace App\Services\Asset\Contracts;
 use App\Models\ServiceTicket\SlaContract;
 
 final class NullServiceLevelResolver implements ServiceLevelResolver {
-    public function resolveContract(int $organizationId, ?int $customerId, ?int $projectId = null): ?SlaContract {
+    public function resolveContract(int $organizationId, ?int $customerId, ?int $projectId = null, ?int $queueId = null, ?int $assetId = null): ?SlaContract {
         return null;
     }
 }

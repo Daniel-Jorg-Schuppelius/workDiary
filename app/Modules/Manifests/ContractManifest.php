@@ -107,6 +107,10 @@ final class ContractManifest extends Manifest {
                 \App\Services\Contract\DeadlineScans\ContractObligationScan::class,
                 \App\Services\Contract\DeadlineScans\ContractIndexationScan::class,
             ],
+            // Vertragsfristen im Kalender (MVP-1617).
+            \App\Services\Calendar\Contracts\CalendarEventSource::class => [
+                \App\Services\Contract\Calendar\ContractCalendarSource::class,
+            ],
         ];
     }
 

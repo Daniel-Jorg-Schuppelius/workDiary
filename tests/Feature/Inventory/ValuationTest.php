@@ -45,7 +45,7 @@ final class ValuationTest extends TestCase {
         $this->valuation->receipt($this->variant, $this->warehouse, '10', '4');
 
         $this->assertSame('3.0000', $this->valuation->average($this->variant, $this->warehouse));
-        $this->assertSame('60.0000', $this->valuation->totalValue($this->variant, $this->warehouse));
+        $this->assertSame('60.0000', $this->valuation->summariesForWarehouse($this->warehouse)[$this->variant->id]['value']);
     }
 
     public function test_issue_valued_at_average_keeps_average(): void {
@@ -55,9 +55,8 @@ final class ValuationTest extends TestCase {
         $issue = $this->valuation->issue($this->variant, $this->warehouse, '5');
 
         $this->assertSame('15.0000', $issue->first()->cost_total?->getAmount()); // 5 × 3
-        $this->assertSame('3.0000', $issue->costUnit());
         $this->assertSame('3.0000', $this->valuation->average($this->variant, $this->warehouse));
-        $this->assertSame('45.0000', $this->valuation->totalValue($this->variant, $this->warehouse));
+        $this->assertSame('45.0000', $this->valuation->summariesForWarehouse($this->warehouse)[$this->variant->id]['value']);
     }
 
     public function test_receipt_stamps_cost_snapshot_on_movement(): void {

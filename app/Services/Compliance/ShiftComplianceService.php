@@ -63,13 +63,4 @@ final class ShiftComplianceService {
 
         return new ComplianceReport($violations);
     }
-
-    /**
-     * Liste der vom Service unterstützten Regel-Keys (für Settings-UI).
-     *
-     * @return list<string>
-     */
-    public function ruleKeys(): array {
-        return array_map(fn(ComplianceRule $r) => $r->key(), $this->rules);
-    }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Strumenti di misura e taratura"
 topic: asset-compliance.overview
-version: 2
+version: 4
 keywords:
     - metrologia
     - gestione strumenti
@@ -221,3 +221,53 @@ tasso di controllo.
 
 **Autorizzazione:** **Elencare obblighi di verifica e strumenti di misura** –
 vale anche per congelare uno snapshot.
+
+## Modificare, disattivare, annullare
+
+**Profili di controllo:** nella pagina **Profili di controllo**, **Modifica**
+apre un profilo dell'organizzazione (nome, tipo di verifica, intervallo,
+preavviso, tolleranza, proroga, effetto di blocco, obbligo di certificato,
+ente di verifica predefinito); il codice resta invariato. Un intervallo
+modificato vale dalla prossima verifica per tutti gli obblighi senza
+intervallo proprio. **Disattivare** toglie il profilo dalla selezione per le
+nuove assegnazioni; obblighi e verbali esistenti restano. I profili
+disattivati compaiono in fondo, in «Profili dell'organizzazione disattivati»,
+e lì possono essere riattivati. I modelli globali non si modificano: crei un
+profilo dell'organizzazione con lo stesso codice. Non viene eliminato nulla.
+
+**Requisiti:** per ogni requisito può modificare denominazione, limiti, unità
+e obbligatorietà. I nuovi limiti valgono per le nuove verifiche; i verbali
+precedenti mantengono i valori di allora. La finestra di verifica non chiede
+più un requisito disattivato.
+
+**Obblighi di controllo:** nell'elenco **Obblighi di controllo** della pagina
+**Strumento di controllo**, **Modifica** cambia l'**Intervallo per questo asset
+(mesi)**, l'ultima verifica, la prossima scadenza, la persona responsabile,
+l'ente di verifica e la nota. Se lascia vuota la scadenza, viene ricalcolata
+dall'ultima verifica quando cambia l'intervallo. L'intervallo per asset può
+essere indicato anche già in fase di assegnazione. **Disattivare** sospende
+l'obbligo: gli appuntamenti aperti vengono annullati, il blocco per scadenza
+di questo obbligo termina, i verbali restano. In **Disattivati** vede gli
+obblighi sospesi e li riprende.
+
+**Annullare un appuntamento:** nel **Calendario dei controlli**, l'azione
+**Annullare** annulla un appuntamento aperto o mancato; il motivo è
+obbligatorio e compare poi sotto lo stato. L'obbligo di verifica prosegue.
+
+**Appuntamenti mancati:** se il giorno pianificato di un appuntamento aperto
+– o la scadenza, in assenza di un giorno pianificato – è trascorso senza
+verifica, l'elaborazione notturna delle scadenze lo imposta su **Mancato**.
+La verifica si registra allora tramite un nuovo appuntamento.
+
+**Misure grezze:** nella finestra di verifica, la sezione **Misure grezze**
+accoglie fino a quattro punti di misura liberi con valore e unità, senza
+verifica dei limiti. La tabella **Verbali di ispezione**, sotto il
+calendario, mostra le ultime 20 verifiche con risultato, valori misurati per
+requisito e misure grezze.
+
+**Autorizzazione:** modificare, disattivare e annullare con **Gestire profili
+e obblighi di verifica**.
+
+## Ordine di verifica e stato degli appuntamenti
+
+Quando accetta l'offerta di un fornitore di verifiche, gli appuntamenti dell'ordine mostrano **In corso**. Un ordine annullato libera di nuovo gli appuntamenti annunciati e in corso, che mostrano poi **Pianificato**.

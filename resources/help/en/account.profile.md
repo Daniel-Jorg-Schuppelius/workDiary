@@ -1,7 +1,7 @@
 ---
 title: "Profile & Account"
 topic: account.profile
-version: 3
+version: 4
 keywords:
     - user settings
     - change password
@@ -54,3 +54,11 @@ Under **E-mail** you store your signature for replies you send from WorkDiary
 name and the organisation appear below the reply. The organisation's e-mail
 footer (company name, address, mandatory details) follows automatically; the
 organisation administration maintains it in the settings.
+
+## Sign-in from a new device
+
+If someone signs in to your account from an unknown device or from another
+country, you receive a message by email and in the app. You can switch this
+alert off under **Notifications**; switching it off and on again is logged. If
+possible, leave the alert on — it is often the first sign of an account
+takeover.

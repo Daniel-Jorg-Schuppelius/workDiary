@@ -16,8 +16,8 @@ use App\Enums\Contracts\HasLabel;
 /**
  * Lebenszyklus einer Cloud-Dokumenteingang-Verbindung (Feature 080):
  * `draft` bis Konto/Ordner bestätigt UND mindestens eine gültige Route
- * existiert; fehlende Scopes ⇒ `blocked` statt teilaktiv; Token-Probleme ⇒
- * `reauth_required`.
+ * existiert; fehlende Scopes ⇒ `blocked` statt teilaktiv; abgewiesene
+ * Anmeldung ⇒ `reauth_required`; Abschaltschwelle erreicht ⇒ `disabled`.
  */
 enum CloudIntakeConnectionStatus: string implements HasLabel {
     use HasOptions;
@@ -46,5 +46,10 @@ enum CloudIntakeConnectionStatus: string implements HasLabel {
     /** Nur aktive Verbindungen werden vom Runner/Scheduler verarbeitet. */
     public function isRunnable(): bool {
         return $this === self::Active;
+    }
+
+    /** Zurück auf aktiv führt nur eine erneute Anmeldung (MVP-1620). */
+    public function needsReconnect(): bool {
+        return in_array($this, [self::ReauthRequired, self::Blocked, self::Disabled], true);
     }
 }

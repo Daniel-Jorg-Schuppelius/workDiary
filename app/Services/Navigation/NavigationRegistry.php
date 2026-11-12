@@ -310,25 +310,6 @@ class NavigationRegistry {
         return array_values(array_unique($keys));
     }
 
-    /**
-     * Routen der Schnellerstellung, die der aktuelle Nutzer anlegen darf
-     * (Ziel der `create:<route>`-Schlüssel kompakter Bereiche, Feature 165).
-     *
-     * @return list<string>
-     */
-    public function selectableCreateRoutes(): array {
-        $routes = [];
-        foreach ($this->filterCreateGroups($this->createGroupsBlueprint(), []) as $group) {
-            foreach ((array) ($group['items'] ?? []) as $item) {
-                if (\is_array($item)) {
-                    $routes[] = (string) $item['route'];
-                }
-            }
-        }
-
-        return array_values(array_unique($routes));
-    }
-
     /** Rechte-Ebene einer Route (NavGate::mayAccess) — für den Funktionskatalog. */
     public function mayAccessRoute(string $route): bool {
         return $this->gate->mayAccess($route);
@@ -555,6 +536,9 @@ class NavigationRegistry {
                     : null,
                 Gate::allows('viewAny', \App\Models\Procurement\RequestItem::class)
                     ? ['route' => 'servicedesk.catalog.index', 'label' => __('Servicekatalog'), 'icon' => 'storefront', 'modal' => false, 'matches' => ['servicedesk.catalog.*']]
+                    : null,
+                Gate::allows(Permission::ServiceCatalogRequest->value)
+                    ? ['route' => 'servicedesk.order.index', 'label' => __('helpdesk.order.title'), 'icon' => 'shopping_cart', 'modal' => false, 'matches' => ['servicedesk.order.*']]
                     : null,
                 Gate::allows('viewAny', \App\Models\ServiceTicket\Problem::class)
                     ? ['route' => 'servicedesk.problems.index', 'label' => __('Probleme'), 'icon' => 'troubleshoot', 'modal' => false, 'matches' => ['servicedesk.problems.*']]

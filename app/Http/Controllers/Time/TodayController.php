@@ -125,6 +125,8 @@ class TodayController extends Controller {
             'entryBarProjects' => $projects,
             'entryBarRecentIds' => $recentProjectIds,
             'entryBarRecentEntries' => $recentEntryTexts,
+            // Material des Tages (MVP-1594): Auswahl aus dem aktiven Materialstamm.
+            'dayMaterials' => $isFuture ? collect() : \App\Models\Material\Material::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'unit']),
             'allTags' => \App\Support\LookupCache::tagOptions(),
             'recentTagIds' => $this->recentTimeEntryTagSqids((int) $user->id),
             'runningEntry' => $this->stopwatch->current($user),
@@ -145,6 +147,7 @@ class TodayController extends Controller {
             'issues' => $context['issues'],
             'hasBlocking' => $context['hasBlocking'],
             'aggregates' => $context['aggregates'],
+            'planIst' => $context['planIst'],
             'validator' => $this->dayClose->makeValidator(),
             'isToday' => $day->isSameDay(CarbonImmutable::now()),
             'isFuture' => $isFuture,

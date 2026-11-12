@@ -10,16 +10,19 @@
 
 namespace App\Enums\Vacation;
 
-use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Concerns\{HasOptions, HasTransitions};
+use App\Enums\Contracts\HasStatusTransitions;
 
-enum VacationStatus: string implements HasLabel {
+enum VacationStatus: string implements HasStatusTransitions {
     use HasOptions;
+    use HasTransitions;
 
     case Pending = 'pending';
     case Approved = 'approved';
     case Rejected = 'rejected';
     case Cancelled = 'cancelled';
+    /** Zur Korrektur an die antragstellende Person zurückgegeben (MVP-1554). */
+    case Revision = 'revision';
 
     public function label(): string {
         return (string) __('enums.vacation.status.' . $this->value);
@@ -32,6 +35,18 @@ enum VacationStatus: string implements HasLabel {
             self::Rejected => 'error',
             self::Cancelled => 'ghost',
             self::Pending => 'warning',
+            self::Revision => 'info',
+        };
+    }
+
+    /** @return list<self> */
+    public function allowedTransitions(): array {
+        return match ($this) {
+            self::Pending => [self::Approved, self::Rejected, self::Revision, self::Cancelled],
+            // Geändert und neu eingereicht oder zurückgezogen.
+            self::Revision => [self::Pending, self::Cancelled],
+            self::Approved => [self::Cancelled],
+            self::Rejected, self::Cancelled => [],
         };
     }
 }

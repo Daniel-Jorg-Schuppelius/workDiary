@@ -1,7 +1,7 @@
 ---
 title: "Import de tâches Jira"
 topic: admin.jira
-version: 1
+version: 2
 keywords:
     - Jira
     - Jira Cloud
@@ -123,3 +123,5 @@ plugin est actif.
   révoquée chez Atlassian ou a expiré. Reconnectez-vous.
 - Rien n’est créé : l’association n’est pas encore confirmée, elle est en
   pause, ou les tickets sont déjà terminés.
+
+**Souveraineté des données :** si un autre système est maître des tâches, la synchronisation crée un cas « Souveraineté des données » par tâche dans la boîte d’intégration. **Reprendre une fois** importe la tâche via la même affectation tant qu’elle est active ; si la tâche change ensuite dans la source, le cas se rouvre.

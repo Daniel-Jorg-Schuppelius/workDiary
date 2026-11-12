@@ -1,7 +1,7 @@
 ---
 title: "Services d'IA"
 topic: ai.services
-version: 3
+version: 5
 keywords:
     - IA
     - intelligence artificielle
@@ -67,3 +67,18 @@ chaque ligne, et dans un procès-verbal « Affiner tous les points » reformule
 chaque point avec texte. Les deux s’exécutent en arrière-plan. Chaque ligne
 et chaque point reçoit sa propre proposition, que vous acceptez ou rejetez
 individuellement ; rien n’est appliqué automatiquement.
+
+**Choisir la connexion :** si votre organisation autorise « les utilisateurs
+peuvent choisir » pour un service et que plusieurs connexions sont permises,
+la proposition affiche une sélection. « Régénérer » crée la proposition avec
+la connexion choisie ; la proposition ouverte précédente est remplacée. Le
+choix figure dans le journal d’audit.
+
+**Choix de la connexion :** si l’organisation autorise « Les utilisateurs peuvent choisir » pour un service, une suggestion peut aussi être régénérée avec une autre connexion autorisée au transfert (textes de lignes), dans la recherche d’activités et pour « Expliquer prévu/réel ».
+
+**Budget mensuel :** Sur la page **Consommation IA**, « Budget mensuel » fixe
+par famille un plafond par mois civil – en jetons pour les modèles de langage,
+en caractères pour les traductions. Une fois atteint, workDiary refuse avec un
+message les autres appels de cette famille jusqu’à la fin du mois ; les tuiles
+affichent l’utilisation. Vide, la valeur par défaut de l’exploitant s’applique ;
+sans valeur par défaut, la consommation est illimitée.

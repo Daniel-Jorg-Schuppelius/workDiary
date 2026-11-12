@@ -190,6 +190,22 @@ class RecurringAccountingService {
             ->each(fn (AccountingRecurringRun $run): AccountingRecurringRun => $this->fulfill($run, $entry));
     }
 
+    /**
+     * Verworfener Entwurf einer Buchungsvorlage (MVP-1556): Der Vorgang gilt
+     * als bewusst übersprungen, sonst bliebe er ohne Entwurf überfällig stehen.
+     */
+    public function skipFromDiscardedEntry(AccountingEntry $entry): void {
+        AccountingRecurringRun::query()
+            ->where('accounting_entry_id', $entry->id)
+            ->where('status', RecurringRunStatus::DraftCreated->value)
+            ->get()
+            ->each(fn (AccountingRecurringRun $run): bool => $run->update([
+                'status' => RecurringRunStatus::Skipped,
+                'accounting_entry_id' => null,
+                'blocked_reason' => (string) __('accounting.recurring.blocker.draft_discarded'),
+            ]));
+    }
+
     /** Überfällige Vorgänge melden — je Vorgang höchstens einmal. */
     public function notifyOverdue(Organization $organization, CarbonImmutable $asOf): int {
         $runs = AccountingRecurringRun::query()

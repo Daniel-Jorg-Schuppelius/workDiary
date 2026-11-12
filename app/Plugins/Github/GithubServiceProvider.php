@@ -37,5 +37,6 @@ class GithubServiceProvider extends PluginServiceProviderBase {
         // schließt das GitHub-Issue über die Integrations-Outbox.
         $this->app->make(\App\Services\Integration\IntegrationOutboxDispatcherResolver::class)
             ->register(new Services\GithubIssueWritebackDispatcher);
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\GithubIssueImporter::class);
     }
 }

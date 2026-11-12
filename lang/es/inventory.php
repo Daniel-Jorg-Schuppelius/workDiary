@@ -77,6 +77,8 @@ return [
         'pick_list_pdf' => 'Lista de picking (PDF)',
     ],
     'field' => [
+        'unit_base' => 'Unidad base',
+        'unit_option' => ':unit (= :factor :base)',
         'code' => 'Código',
         'default' => 'Predeterminado',
         'available' => 'Disponible',
@@ -130,7 +132,6 @@ return [
         'active' => 'Activa',
         'fulfilled' => 'Cumplida',
         'released' => 'Liberada',
-        'cancelled' => 'Cancelada',
     ],
     'count_status' => [
         'counting' => 'Conteo',
@@ -139,6 +140,7 @@ return [
         'cancelled' => 'Cancelada',
     ],
     'count_ui' => [
+        'four_eyes_blocked' => 'Aprobación de cuatro ojos: este inventario contiene diferencias por encima del umbral que usted mismo contó. Debe aprobarlo otra persona.',
         'title' => 'Inventario',
         'open' => 'Abrir inventario',
         'save' => 'Guardar conteo',
@@ -166,6 +168,17 @@ return [
         'qty_positive' => 'La cantidad debe ser mayor que cero.',
         'not_found' => 'Inventario no encontrado.',
         'forbidden' => 'Sin permiso para recuentos de inventario.',
+        'nothing_counted' => 'Aún no se ha registrado ninguna cantidad contada; la revisión necesita al menos una.',
+        'submit_review' => 'Terminar el recuento',
+        'submit_review_confirm' => '¿Terminar el recuento? Las cantidades quedan bloqueadas hasta la aprobación o la reapertura.',
+        'reopen' => 'Reabrir el recuento',
+        'cancel' => 'Descartar el inventario',
+        'cancel_confirm' => '¿Descartar el inventario? No se contabilizará nada.',
+        'status_flash' => [
+            'review' => 'Recuento terminado: las diferencias esperan revisión y aprobación.',
+            'counting' => 'Recuento reabierto.',
+            'cancelled' => 'Inventario descartado: no se ha contabilizado nada.',
+        ],
     ],
     'overview' => [
         'avg' => 'Coste medio',
@@ -191,7 +204,6 @@ return [
         'status' => [
             'created' => 'Creado',
             'in_stock' => 'En stock',
-            'reserved' => 'Reservado',
             'shipped' => 'Enviado',
             'returned' => 'Devuelto',
             'blocked' => 'Bloqueado',
@@ -310,7 +322,82 @@ return [
         ],
     ],
 
+    'settings' => [
+        'title' => 'Ajustes de almacén',
+        'valuation' => [
+            'heading' => 'Valoración',
+            'description' => 'Método con el que se valoran entradas y salidas. Cada artículo puede tener su propio método en el formulario del artículo.',
+            'label' => 'Método de valoración',
+            'hint' => 'Al cambiar a FIFO o FEFO, las existencias reciben una capa inicial al precio medio anterior. Solo se puede volver al promedio móvil cuando ya no queden existencias en capas.',
+        ],
+        'reservation' => [
+            'heading' => 'Reserva',
+            'description' => 'Cuándo una orden de fabricación reserva su material. La orden registra el momento aplicado; un cambio posterior solo afecta a las órdenes nuevas.',
+            'label' => 'Momento de la reserva',
+            'hint' => 'Reservar al inicio mantiene el material disponible más tiempo, pero puede fallar al iniciar si faltan existencias.',
+            'option' => [
+                'release' => 'Al liberar la orden',
+                'start' => 'Al iniciar la fabricación',
+            ],
+        ],
+        'four_eyes' => [
+            'heading' => 'Aprobación de cuatro ojos',
+            'description' => 'Las diferencias de inventario a partir del umbral no las aprueba quien las contó. El umbral y quien aprueba constan en el registro de auditoría.',
+            'enabled' => 'Aprobación de cuatro ojos para diferencias de inventario',
+            'threshold' => 'Umbral (valor de existencias por línea)',
+            'threshold_hint' => '0 = cada diferencia requiere a la segunda persona.',
+            'negative' => 'Aprobación a cuatro ojos para salidas a existencias negativas',
+            'negative_hint' => 'Una salida con «Permitir existencias negativas» se convierte en una solicitud en la bandeja de aprobaciones; solo se registra cuando otra persona con el permiso «Autorizar existencias negativas» da su conformidad.',
+        ],
+        'numbers' => [
+            'heading' => 'Números de artículo',
+            'description' => 'Quién gestiona el número de artículo, el SKU de las variantes y el GTIN. Si los gestiona un sistema de gestión de mercancías, los campos quedan bloqueados en el maestro de artículos y llegan con la sincronización.',
+            'label' => 'SKU y GTIN gestionados por',
+            'link' => 'Cambiar en el rango de numeración «Artículo»',
+        ],
+        'flash' => [
+            'saved' => 'Ajustes de almacén guardados.',
+            'saved_layers' => 'Ajustes de almacén guardados. Capas iniciales creadas para las existencias: :count.',
+        ],
+    ],
+    'journal' => [
+        'title' => 'Diario de almacén',
+        'subtitle' => 'Todos los movimientos de almacén en unidad base, con la cantidad y la unidad en que se registraron.',
+        'search_placeholder' => 'Artículo o SKU',
+        'empty' => 'No hay movimientos de almacén en el periodo.',
+        'col' => [
+            'occurred_at' => 'Fecha y hora',
+            'state' => 'Estado de existencias',
+            'qty_base' => 'Cantidad (unidad base)',
+            'entered' => 'Registrado como',
+            'lot' => 'Lote',
+            'actor' => 'Registrado por',
+        ],
+    ],
+    'reservation' => [
+        'edit' => 'Modificar reserva',
+        'saved' => 'Reserva guardada.',
+        'reserved' => 'Reservado',
+        'consumed' => 'De ello retirado',
+        'open' => 'Aún pendiente',
+        'reserved_at' => 'Reservado el',
+        'priority_hint' => 'Un número menor significa mayor prioridad (100 por defecto). La lista de reservas se ordena según él.',
+        'release_qty' => 'Liberar cantidad parcial',
+        'release_hint' => 'Libera esta cantidad, por ejemplo para asignarla a otra orden. Vacío = no liberar nada.',
+        'redistribute' => 'Redistribuir',
+        'redistribute_hint' => 'Ceder la cantidad abierta a otra reserva del mismo artículo, almacén y propiedad, por ejemplo a una orden con mayor prioridad. Las existencias reservadas no cambian; la redistribución queda en el registro de auditoría.',
+        'redistribute_to' => 'A la reserva',
+        'redistribute_option' => 'Prioridad :priority · abierto :open :unit · desde :date',
+        'redistribute_qty' => 'Cantidad',
+        'redistribute_qty_hint' => 'Vacío = toda la cantidad abierta.',
+        'redistribute_invalid' => 'La reserva de destino es desconocida.',
+        'redistribute_mismatch' => 'Solo se puede redistribuir entre reservas activas del mismo artículo, almacén, ubicación y propiedad.',
+        'redistribute_too_much' => 'La cantidad supera la cantidad abierta de la reserva.',
+    ],
     'valuation' => [
+        'switch' => [
+            'blocked_layers' => 'No es posible cambiar al promedio móvil mientras haya existencias valoradas en capas FIFO/FEFO. El promedio no se actualizó durante ese tiempo. Reduzca primero las existencias o mantenga el método por capas.',
+        ],
         'method' => [
             'moving_average' => 'Promedio ponderado',
             'fifo' => 'FIFO',
@@ -436,5 +523,19 @@ return [
         'serial_qty_one' => 'Los artículos serializados se reciben de uno en uno (cantidad 1).',
         'tracked_article_manual_move' => 'Artículo con lote/serie: registre mediante entrada de mercancías (pedido) o gestión de lotes/series — no como stock anónimo.',
         'lot_required' => 'Artículo con lote: los lotes no cubren la cantidad; no se retiran existencias sin lote.',
+        'unit_not_maintained' => 'La unidad «:unit» no está definida en el artículo «:article».',
+        'unit_factor_invalid' => 'La unidad «:unit» del artículo «:article» no tiene un factor de conversión válido.',
+        'unit_quantity_too_small' => 'La cantidad equivale a cero en la unidad base. Compruebe la cantidad y la unidad «:unit».',
+        'shelf_life_required' => 'Artículo con caducidad: indique el lote y la fecha de consumo preferente.',
+        'shelf_life_manual_receipt' => 'Artículo con caducidad: registre la entrada mediante la recepción de mercancía (pedido) con lote y fecha de consumo preferente.',
+    ],
+    // Vier-Augen-Freigabe Negativbestand (MVP-1626)
+    'negative' => [
+        'requested' => 'La salida a existencias negativas se ha solicitado. Se registra en cuanto una segunda persona la apruebe en la bandeja de aprobaciones.',
+        'no_customer_cost' => 'Con la aprobación a cuatro ojos, una salida a existencias negativas no puede cargarse a la vez a un cliente. Registre los costes de material tras la aprobación.',
+        'delegate_without_right' => 'La persona a la que delega necesita el permiso «Autorizar existencias negativas».',
+        'not_open' => 'La solicitud ya está decidida.',
+        'inbox_title' => 'Existencias negativas: :qty :unit :article',
+        'inbox_reference' => 'Almacén :warehouse · solicitado por :name',
     ],
 ];

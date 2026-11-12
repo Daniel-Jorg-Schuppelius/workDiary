@@ -11,9 +11,13 @@
 namespace App\Http\Requests\Asset;
 
 use App\Enums\Asset\{AssetClass, AssetStatus};
+use App\Enums\User\Permission;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidOrNumericInputs;
 use App\Models\Asset\Asset;
+use App\Models\Platform\User;
+use App\Models\ServiceTicket\SlaContract;
+use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Asset\AssetCategoryCatalog;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
@@ -24,6 +28,7 @@ class SaveAssetRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'product_id' => \App\Models\Article\Product::class,
+        'sla_contract_id' => SlaContract::class,
     ];
 
     /** @return array<string, mixed> */
@@ -34,6 +39,9 @@ class SaveAssetRequest extends BaseFormRequest {
             $orgId === null ? null : (int) $orgId,
             $asset instanceof Asset ? $asset->category_code : null,
         ));
+        // Vertragsbindung nur mit Leserecht auf SLA-Verträge; sonst bleibt sie unverändert.
+        $user = $this->user();
+        $canBindContract = $user instanceof User && $user->can(Permission::SlaContractView->value);
 
         return [
             'asset_class' => ['required', new Enum(AssetClass::class)],
@@ -74,7 +82,14 @@ class SaveAssetRequest extends BaseFormRequest {
                     fn($query) => $query->where('organization_id', $orgId)
                 ),
             ],
-            'status' => ['required', new Enum(AssetStatus::class), Rule::notIn([AssetStatus::Decommissioned->value])],
+            // Außer Betrieb setzt nur die eigene Aktion; ein so stillgelegtes Asset bleibt bearbeitbar.
+            'status' => ['required', new Enum(AssetStatus::class), Rule::notIn(
+                $asset instanceof Asset && $asset->status === AssetStatus::Decommissioned ? [] : [AssetStatus::Decommissioned->value],
+            )],
+            'ownership_note' => ['nullable', 'string', 'max:1000'],
+            'sla_contract_id' => $canBindContract
+                ? ['nullable', 'integer', new ExistsInCurrentOrganization('sla_contracts')]
+                : ['exclude'],
             'tag_ids' => ['nullable', 'array'],
             'tag_ids.*' => ['nullable', 'string', 'max:64'],
             'new_tags' => ['nullable', 'string', 'max:500'],
@@ -82,6 +97,26 @@ class SaveAssetRequest extends BaseFormRequest {
     }
 
     public function withValidator(\Illuminate\Validation\Validator $validator): void {
+        // Gleiche Regel wie am Wartungsplan, gemessen am Kunden nach dem Speichern; projektgebundene
+        // Verträge gelten nur über ihr Projekt.
+        $validator->after(function (\Illuminate\Validation\Validator $v): void {
+            $data = $v->getData();
+            $contractId = $data['sla_contract_id'] ?? null;
+            if ($contractId === null || $contractId === '' || $v->errors()->has('sla_contract_id')) {
+                return;
+            }
+            $contract = SlaContract::query()->find((int) $contractId);
+            if (! $contract instanceof SlaContract) {
+                return;
+            }
+            $customerId = ($data['customer_id'] ?? null) !== null && $data['customer_id'] !== '' ? (int) $data['customer_id'] : null;
+            if ($contract->project_id !== null) {
+                $v->errors()->add('sla_contract_id', __('Ein projektgebundener Vertrag gilt nur über sein Projekt und lässt sich nicht an ein Asset binden.'));
+            } elseif ((bool) $contract->is_ola || ($contract->customer_id !== null && (int) $contract->customer_id !== $customerId)) {
+                $v->errors()->add('sla_contract_id', __('Wählen Sie einen Kundenvertrag dieses Kunden oder einen Vertrag ohne Kundenbindung.'));
+            }
+        });
+
         $validator->after(function ($validator): void {
             $customerId = $this->input('customer_id');
             $foreignCustomerId = $this->input('foreign_customer_id');

@@ -1,7 +1,7 @@
 ---
 title: "Gestione licenze"
 topic: admin.license
-version: 3
+version: 4
 keywords:
     - chiave di licenza
     - piano
@@ -82,3 +82,5 @@ indirizzo, partita IVA e riferimento d'ordine per la fatturazione da parte
 del gestore. Lì richiede anche un altro piano o moduli aggiuntivi; per ogni
 organizzazione esiste una richiesta aperta, che può ritirare. Il gestore la
 evade emettendo una nuova licenza.
+
+**Limiti:** in fase di emissione stabilisce, oltre al numero di utenti, il numero di organizzazioni di un’installazione e la quota di archiviazione per organizzazione in GB — nella console di emissione e da riga di comando con --max-orgs e --storage-quota-gb. Una licenza di organizzazione contiene numero di utenti e quota di archiviazione. Raggiunto un limite, WorkDiary rifiuta la creazione di un’altra organizzazione o ulteriori caricamenti; «Limiti» mostra l’utilizzo.

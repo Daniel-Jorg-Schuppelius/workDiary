@@ -30,6 +30,15 @@ use Throwable;
  * plugin_settings-Tabelle (s. /admin/plugins) plus globaler Auto-Disable.
  */
 class PluginServiceProvider extends ServiceProvider {
+    /**
+     * Fehler beim Aufbau des Managers werden erst danach gebucht: der Speicher-Hook
+     * von PluginState fragt den Manager an und baute ihn beim Neuaufbau sonst endlos neu.
+     */
+    private bool $buildingManager = false;
+
+    /** @var list<array{0: string, 1: string, 2: Throwable}> */
+    private array $deferredFailures = [];
+
     public function register(): void {
         $this->mergeConfigFrom(__DIR__ . '/../../config/plugins.php', 'plugins');
 
@@ -54,21 +63,34 @@ class PluginServiceProvider extends ServiceProvider {
         $this->app->singleton(PluginManager::class, function (Application $app) use ($classes): PluginManager {
             $manager = new PluginManager;
 
-            foreach ($classes as $class) {
-                $instance = $this->instantiatePlugin($app, $class);
-                if ($instance === null) {
-                    continue;
+            $this->buildingManager = true;
+            try {
+                foreach ($classes as $class) {
+                    $instance = $this->instantiatePlugin($app, $class);
+                    if ($instance === null) {
+                        continue;
+                    }
+                    try {
+                        $manager->register($instance);
+                    } catch (Throwable $e) {
+                        // Duplikat-ID o. Ä. darf nie die ganze App reißen: Plugin
+                        // überspringen und den Konflikt org-los aufzeichnen (W0b).
+                        $this->safeRecord($instance->id(), 'boot', $e);
+                    }
                 }
-                try {
-                    $manager->register($instance);
-                } catch (Throwable $e) {
-                    // Duplikat-ID o. Ä. darf nie die ganze App reißen: Plugin
-                    // überspringen und den Konflikt org-los aufzeichnen (W0b).
-                    $this->safeRecord($instance->id(), 'boot', $e);
-                }
+            } finally {
+                $this->buildingManager = false;
             }
 
             return $manager;
+        });
+        // Läuft, nachdem der Container die Instanz hält.
+        $this->app->afterResolving(PluginManager::class, function (): void {
+            $failures = $this->deferredFailures;
+            $this->deferredFailures = [];
+            foreach ($failures as [$pluginId, $phase, $e]) {
+                $this->safeRecord($pluginId, $phase, $e);
+            }
         });
     }
 
@@ -169,6 +191,11 @@ class PluginServiceProvider extends ServiceProvider {
     }
 
     private function safeRecord(string $pluginId, string $phase, Throwable $e): void {
+        if ($this->buildingManager) {
+            $this->deferredFailures[] = [$pluginId, $phase, $e];
+
+            return;
+        }
         try {
             /** @var PluginErrorRecorder $recorder */
             $recorder = $this->app->make(PluginErrorRecorder::class);

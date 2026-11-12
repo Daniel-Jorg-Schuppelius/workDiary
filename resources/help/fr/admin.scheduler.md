@@ -1,7 +1,7 @@
 ---
 title: "Jobs planifiés"
 topic: admin.scheduler
-version: 1
+version: 2
 keywords:
     - tâches cron
     - cron
@@ -84,3 +84,5 @@ détecté – et pas seulement lorsque des analyses font défaut.
 prochaines exécutions après chaque replanification. Un compteur
 d'erreurs durablement élevé relève du diagnostic, pas de la mise en
 pause.
+
+**Exécution par tâche :** dans la boîte de replanification, vous définissez en outre un fuseau horaire propre, une période de repos (de–à, y compris après minuit) et des nouvelles tentatives après un échec. Les heures situées dans la période de repos sont reportées à sa fin, les cadences s’interrompent ; sans période de repos ni fuseau propres, la fenêtre de fonctionnement du serveur s’applique. Une nouvelle tentative démarre après l’intervalle défini, au plus autant de fois qu’indiqué, et figure dans le journal comme toute exécution.

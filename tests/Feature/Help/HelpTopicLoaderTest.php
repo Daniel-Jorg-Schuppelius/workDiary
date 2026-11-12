@@ -82,7 +82,6 @@ MD);
         $this->assertSame(['de', 'en'], $loader->locales());
         $this->assertSame(['topic.a', 'topic.b'], $loader->topicsForLocale('de'));
         $this->assertSame(['topic.a'], $loader->topicsForLocale('en'));
-        $this->assertSame(['topic.a', 'topic.b'], $loader->allTopicCodes());
     }
 
     public function test_loader_defaults_title_to_topic_when_front_matter_missing(): void {

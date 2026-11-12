@@ -155,6 +155,34 @@ class ServiceTicket extends Model {
         $query->whereIn('status', array_map(static fn (ServiceTicketStatus $s): string => $s->value, ServiceTicketStatus::openCases()));
     }
 
+    public const string CONFIDENTIALITY_NORMAL = 'normal';
+
+    public const string CONFIDENTIALITY_RESTRICTED = 'restricted';
+
+    /**
+     * Listen ohne vertrauliche Tickets, die die Person nicht öffnen dürfte —
+     * dieselbe Regel wie {@see \App\Policies\ServiceTicket\ServiceTicketPolicy::view()}.
+     *
+     * @param Builder<static> $query
+     */
+    #[Scope]
+    protected function visibleTo(Builder $query, User $user): void {
+        if ($user->isAdmin()) {
+            return;
+        }
+        $query->where(function (Builder $visible) use ($user): void {
+            $visible->where('confidentiality', '!=', self::CONFIDENTIALITY_RESTRICTED)
+                ->orWhere('assigned_to_user_id', $user->id)
+                ->orWhereHas('watchers', fn (Builder $watchers) => $watchers->where('user_id', $user->id))
+                ->orWhereHas('queue', fn (Builder $queue) => $queue->whereIn('team_id', $user->teams()->select('teams.id')));
+        });
+    }
+
+    /** Die Queue des Tickets wird von einem Fremdsystem geführt (Feature 065, Datenführerschaft). */
+    public function isExternallyLed(): bool {
+        return $this->queue?->isExternallyLed() ?? false;
+    }
+
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
@@ -199,6 +227,15 @@ class ServiceTicket extends Model {
      */
     public function changes(): \Illuminate\Database\Eloquent\Relations\BelongsToMany {
         return $this->belongsToMany(Change::class, 'change_ticket')->withTimestamps();
+    }
+
+    /**
+     * Katalogbestellung hinter einem Ticket der Art Service-Request (MVP-154).
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne<ServiceRequest, $this>
+     */
+    public function serviceRequest(): \Illuminate\Database\Eloquent\Relations\HasOne {
+        return $this->hasOne(ServiceRequest::class, 'service_ticket_id');
     }
 
     /** @return \Illuminate\Database\Eloquent\Relations\HasMany<SlaClockSegment, $this> */

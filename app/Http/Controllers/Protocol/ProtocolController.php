@@ -10,12 +10,14 @@
 
 namespace App\Http\Controllers\Protocol;
 
-use App\Enums\Protocol\{ProtocolItemPhotoPhase, ProtocolItemType};
+use App\Enums\Protocol\{ProtocolEventType, ProtocolItemPhotoPhase, ProtocolItemType, ProtocolSignatureRole};
 use App\Enums\User\Permission;
 use App\Exceptions\{InvalidProtocolTransitionException, ProtocolValidationException};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Protocol\{AddProtocolItemRequest, FillProtocolItemRequest, IssueProtocolSignatureTokenRequest, StoreProtocolRequest, TransitionProtocolRequest, UpdateProtocolRequest, UploadProtocolItemPhotoRequest};
+use App\Mail\ProtocolSignatureRequestMail;
 use App\Models\Asset\Asset;
+use App\Models\Classification\Tag;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
@@ -24,11 +26,11 @@ use App\Models\Protocol\{Protocol, ProtocolItem, ProtocolItemPhoto};
 use App\Services\Protocol\Fields\ProtocolItemFields;
 use App\Services\Protocol\{ProtocolItemPhotoService, ProtocolPdfRenderer, ProtocolService, ProtocolSignatureTokenService, ProtocolTemplateService};
 use App\Services\Weather\WeatherService;
-use App\Support\{EntityUrl, ErrorText, Sqid};
+use App\Support\{EntityUrl, ErrorText, Setting, Sqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate, Storage};
+use Illuminate\Support\Facades\{Auth, Gate, Mail, Storage};
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use InvalidArgumentException;
@@ -69,7 +71,7 @@ class ProtocolController extends Controller {
         $protocol->load([
             'items.children',
             'items.photos.attachment',
-            'signatures',
+            'signatures.signatureAttachment',
             // Externe Signatur-Links inkl. Widerruf (Vollaudit 2026-07, M6).
             'signatureTokens',
             'subject',
@@ -82,6 +84,7 @@ class ProtocolController extends Controller {
 
         return view('protocols.show', [
             'protocol' => $protocol,
+            'canReportBoqProgress' => app(\App\Services\Protocol\Contracts\BoqProgressReporter::class)->positionsFor($protocol, $this->authUser()) !== [],
         ]);
     }
 
@@ -100,6 +103,7 @@ class ProtocolController extends Controller {
             'subjectKind' => $kind,
             'subject' => $subject,
             'templates' => app(ProtocolTemplateService::class)->applicableFor($subject),
+            'allTags' => Tag::query()->orderBy('name')->get(),
         ]);
     }
 
@@ -132,7 +136,10 @@ class ProtocolController extends Controller {
     public function edit(Protocol $protocol): View {
         Gate::authorize('update', $protocol);
 
-        return view('protocols._form_dialog', ['protocol' => $protocol]);
+        return view('protocols._form_dialog', [
+            'protocol' => $protocol->load('tags'),
+            'allTags' => Tag::query()->orderBy('name')->get(),
+        ]);
     }
 
     public function update(UpdateProtocolRequest $request, Protocol $protocol): RedirectResponse {
@@ -179,6 +186,7 @@ class ProtocolController extends Controller {
         return view('protocols._transition_dialog', [
             'protocol' => $protocol,
             'action' => $action,
+            'missingRoles' => $action === 'sign' ? $protocol->missingSignatureRoles() : [],
         ]);
     }
 
@@ -197,6 +205,9 @@ class ProtocolController extends Controller {
         $actor = Auth::user();
 
         try {
+            if ($action === 'sign') {
+                return $this->signOrCapture($request, $protocol, $actor);
+            }
             match ($action) {
                 'requestReview' => $this->service->requestReview($protocol, $actor),
                 'returnToDraft' => $this->service->returnToDraft(
@@ -204,7 +215,6 @@ class ProtocolController extends Controller {
                     $actor,
                     $request->validated()['reason'] ?? null,
                 ),
-                'sign' => $this->service->sign($protocol, $actor, $request->signaturePayload()),
                 'archive' => $this->service->archive($protocol, $actor),
                 'supersede' => $this->service->supersede(
                     $protocol,
@@ -224,6 +234,33 @@ class ProtocolController extends Controller {
         return redirect()
             ->back()
             ->with('success', __('protocol.flash.transition.' . $action))
+            ->withFragment('protocol-' . $protocol->id);
+    }
+
+    /**
+     * Abschluss mit Unterschrift (MVP-1572): Fehlt nach dieser Unterschrift
+     * noch eine Pflichtrolle (Übergabe: beide Seiten), wird sie erfasst und
+     * das Protokoll bleibt offen — der Dialog wird für die nächste Person
+     * erneut geöffnet.
+     */
+    private function signOrCapture(TransitionProtocolRequest $request, Protocol $protocol, User $actor): RedirectResponse {
+        $payload = $request->signaturePayload();
+        $role = $payload !== null ? ProtocolSignatureRole::from((string) $payload['role']) : null;
+        $missing = $protocol->missingSignatureRoles($role);
+
+        if ($payload !== null && $missing !== []) {
+            $this->service->captureSignature($protocol, $actor, $payload);
+
+            return redirect()->back()->with('success', __('protocol.flash.signature_captured', [
+                'roles' => implode(', ', array_map(static fn (ProtocolSignatureRole $r): string => $r->label(), $missing)),
+            ]));
+        }
+
+        $this->service->sign($protocol, $actor, $payload);
+
+        return redirect()
+            ->back()
+            ->with('success', __('protocol.flash.transition.sign'))
             ->withFragment('protocol-' . $protocol->id);
     }
 
@@ -258,6 +295,37 @@ class ProtocolController extends Controller {
         }
 
         return redirect()->back()->with('success', __('protocol.flash.item.added'));
+    }
+
+    /** Dialog „Punkte umsortieren“ (MVP-1573) in der Reihenfolge der Detailseite: Gruppe, dann ihre Unterpunkte. */
+    public function reorderForm(Protocol $protocol): View {
+        Gate::authorize('update', $protocol);
+
+        $items = $protocol->items()->get();
+        $ids = $items->pluck('id')->flip();
+        $children = $items->filter(static fn (ProtocolItem $item): bool => $ids->has($item->parent_item_id))->groupBy('parent_item_id');
+
+        return view('protocols._reorder_dialog', [
+            'protocol' => $protocol,
+            'items' => $items->reject(static fn (ProtocolItem $item): bool => $ids->has($item->parent_item_id))
+                ->flatMap(static fn (ProtocolItem $item) => [$item, ...$children->get($item->id, [])]),
+        ]);
+    }
+
+    public function reorderItems(Request $request, Protocol $protocol): RedirectResponse {
+        Gate::authorize('update', $protocol);
+
+        $data = $request->validate([
+            'order_ids' => ['required', 'array', 'max:500'],
+            'order_ids.*' => ['required', 'string', 'max:64'],
+        ]);
+        try {
+            $this->service->reorderItems($protocol, $this->authUser(), Sqid::decodeMany(ProtocolItem::class, $data['order_ids']));
+        } catch (InvalidProtocolTransitionException $e) {
+            return redirect()->back()->withErrors(['status' => $e->getMessage()]);
+        }
+
+        return redirect()->back()->with('success', __('protocol.flash.item.reordered'));
     }
 
     /** Dialog „Ausfüllen“ je Punkt (MVP-883), Eingabe über das Feldschema. */
@@ -320,7 +388,6 @@ class ProtocolController extends Controller {
         Gate::authorize('addPhoto', $item->protocol);
         /** @var User $u */
         $u = Auth::user();
-        $allowGeo = $u->can(Permission::ProtocolItemPhotoViewGeo->value);
 
         $data = $request->validated();
 
@@ -334,7 +401,8 @@ class ProtocolController extends Controller {
                 $u,
                 [
                     'caption' => $data['caption'] ?? null,
-                    'allow_geo' => (bool) ($data['allow_geo'] ?? false) && $allowGeo,
+                    // Standort nur, wenn die Organisation ihn führt (MVP-1573); gezeigt wird er mit protocol.item.photo.viewGeo.
+                    'allow_geo' => (bool) Setting::get('protocol.photo_geo', false),
                 ],
             );
         } catch (InvalidArgumentException $e) {
@@ -428,11 +496,28 @@ class ProtocolController extends Controller {
 
         /** @var User $actor */
         $actor = Auth::user();
-        $result = $tokens->issue($protocol, $actor, $data);
+        try {
+            $result = $tokens->issue($protocol, $actor, $data);
+        } catch (\RuntimeException $e) {
+            // Nicht „in Prüfung“: im Entwurf könnte sich der Inhalt unter der Unterschrift ändern.
+            return redirect()->back()->withErrors(['status' => ErrorText::for($e)]);
+        }
+        $url = route('protocols.public-sign', ['token' => $result['token']]);
+
+        // Der Link steht nur im Klartext-Token; die Mail ist neben der Anzeige der zweite Zustellweg (MVP-1572).
+        $emailed = $request->boolean('send_email', true) && filled($result['model']->signer_email);
+        if ($emailed) {
+            Mail::to((string) $result['model']->signer_email)->queue(new ProtocolSignatureRequestMail($protocol, $result['model'], $url));
+            $this->service->logEvent($protocol, ProtocolEventType::SignatureLinkEmailed, $actor, [
+                'token_id' => $result['model']->id,
+                'signer_email' => $result['model']->signer_email,
+            ]);
+        }
 
         return redirect()->back()
-            ->with('success', __('protocol.signature.tokenIssued'))
-            ->with('protocol.signature.token_url', route('protocols.public-sign', ['token' => $result['token']]));
+            ->with('success', __($emailed ? 'protocol.signature.tokenIssuedEmailed' : 'protocol.signature.tokenIssued', ['email' => $result['model']->signer_email]))
+            ->with('protocol.signature.token_url', $url)
+            ->with('protocol.signature.token_emailed', $emailed);
     }
 
     /** Widerruf eines externen Signatur-Links (Feature 012 MVP; Vollaudit 2026-07, M6). */
@@ -469,15 +554,25 @@ class ProtocolController extends Controller {
             abort(403);
         }
 
-        /** @var User $actor */
-        $actor = $u;
-        $path = $this->service->renderPdfFor($protocol, $actor);
-        $this->service->recordPdfDownload($protocol, $actor);
+        $name = sprintf('protokoll-%d-r%d.pdf', $protocol->id, $protocol->revision);
+
+        // Entwürfe und Protokolle in Prüfung entstehen je Abruf und bleiben nicht auf der Platte.
+        if (! $protocol->status->isImmutable()) {
+            $bytes = $renderer->content($protocol);
+            $this->service->recordPdfDownload($protocol, $u);
+
+            return response()->streamDownload(static function () use ($bytes): void {
+                echo $bytes;
+            }, $name, ['Content-Type' => 'application/pdf']);
+        }
+
+        $path = $this->service->renderPdfFor($protocol, $u);
+        $this->service->recordPdfDownload($protocol, $u);
 
         /** @var FilesystemAdapter $disk */
         $disk = Storage::disk(ProtocolPdfRenderer::DISK);
 
-        return $disk->download($path, sprintf('protokoll-%d-r%d.pdf', $protocol->id, $protocol->revision));
+        return $disk->download($path, $name);
     }
 
     /**

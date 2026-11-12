@@ -98,7 +98,8 @@ class QuickTimeEntryRequest extends BaseFormRequest {
             'task_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tasks')],
             'diary_entry_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('diary_entries')],
             'description' => ['nullable', 'string', 'max:500'],
-            'date' => ['required', 'date'],
+            // Abgeschlossener Tag oder freigegebener Monat: nur über den Korrekturantrag (MVP-1551).
+            'date' => ['required', 'date', new \App\Rules\NotInLockedMonth],
             'start_time' => ['nullable', 'date_format:H:i'],
             'end_time' => ['nullable', 'date_format:H:i', 'required_with:start_time'],
             'started_at' => ['nullable', 'date'],
@@ -115,6 +116,13 @@ class QuickTimeEntryRequest extends BaseFormRequest {
         $validator->after(function ($v): void {
             if ($this->filled('end_time') && ! $this->filled('start_time')) {
                 $v->errors()->add('start_time', __('Startzeit erforderlich, wenn eine Endzeit angegeben ist.'));
+            }
+
+            // Aufgabe nur aus dem gewählten Projekt — gilt für Leiste und Offline-Befehl gleich (MVP-1593).
+            $data = $v->getData();
+            if (! $v->errors()->hasAny(['project_id', 'task_id']) && ($data['task_id'] ?? null) !== null
+                && ! \App\Models\Project\Task::query()->where('project_id', (int) ($data['project_id'] ?? 0))->whereKey((int) $data['task_id'])->exists()) {
+                $v->errors()->add('task_id', __('validation.exists', ['attribute' => __('Aufgabe')]));
             }
         });
     }

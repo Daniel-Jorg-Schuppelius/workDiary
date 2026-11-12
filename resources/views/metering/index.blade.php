@@ -65,24 +65,32 @@
             </x-slot:head>
             @forelse ($agreements as $agreement)
                 <tr class="hover">
-                    <td class="font-medium">{{ $agreement->title }}</td>
+                    <td class="font-medium">{{ $agreement->title }}@if ($agreement->project !== null)<div class="text-xs font-normal text-muted">{{ $agreement->project->name }}</div>@endif</td>
                     <td>{{ $agreement->customer?->displayLabel() ?? '—' }}</td>
                     <td>{{ $agreement->asset?->name ?? '—' }}</td>
                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $agreement->base_price, 2, withThousandsSeparator: true) }}</td>
-                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $agreement->unit_price, 4) }}</td>
+                    <td class="text-right tabular-nums whitespace-nowrap">
+                        @if ($agreement->hasTiers())
+                            <x-status-badge tone="info" outline size="xs" :title="__('metering.tiers.badge_title')">{{ __('metering.tiers.badge', ['count' => count($agreement->tiers)]) }}</x-status-badge>
+                        @else
+                            {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $agreement->unit_price, 4) }}
+                        @endif
+                    </td>
                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $agreement->free_units, 2) }}</td>
                     <td class="whitespace-nowrap">{{ $agreement->next_run_on->fdate() }}</td>
-                    <td>{{ $agreement->status->label() }}</td>
+                    <td><x-status-badge :tone="$agreement->status->tone()">{{ $agreement->status->label() }}</x-status-badge></td>
                     <td class="text-right">
                         <div class="flex justify-end gap-1">
                             <x-icon-btn icon="edit" size="xs" tone="ghost"
                                         data-entry-modal-trigger
                                         :href="route('metering.edit', $agreement)"
                                         :label="__('Bearbeiten')" />
-                            <x-action-form :action="route('metering.run', $agreement)">
-                                <x-icon-btn icon="receipt_long" size="xs" tone="ghost" type="submit"
-                                            :label="__('metering.action.run')" />
-                            </x-action-form>
+                            @if ($agreement->isRunnable())
+                                <x-action-form :action="route('metering.run', $agreement)">
+                                    <x-icon-btn icon="receipt_long" size="xs" tone="ghost" type="submit"
+                                                :label="__('metering.action.run')" />
+                                </x-action-form>
+                            @endif
                         </div>
                     </td>
                 </tr>

@@ -1,7 +1,7 @@
 ---
 title: "Terminanfragen"
 topic: appointments.inbox
-version: 1
+version: 2
 keywords:
     - Terminbuchung
     - Online-Terminbuchung
@@ -44,3 +44,13 @@ buchbar oder nicht; warum, geht den Kunden nichts an.
 **Bestätigen** legt den Eintrag an und bindet die Anfrage daran. **Ablehnen**
 verlangt einen Grund — er geht an den Kunden. Storniert der Kunde innerhalb
 der Frist selbst, verschwindet die Anfrage aus der Inbox.
+
+## Zuordnen und pflegen
+
+Eine Anfrage ohne Kunden (etwa eine Calendly-Buchung mit unbekannter
+E-Mail-Adresse) ordnen Sie über **Zuordnen** einem Kunden oder einem Lead zu;
+ein offener Fall im Integrations-Eingang ist damit erledigt. Leistungsarten
+lassen sich über **Bearbeiten** ändern. Ist eine Leistungsart an ein **Objekt**
+gebunden, bieten Portal und Slot-Suche sie nur dem Kunden an, dem das Objekt
+gehört; die Bestätigung übernimmt die Anschrift des Objekts als Einsatzort
+des Auftrags (sonst die Anschrift des Kunden).

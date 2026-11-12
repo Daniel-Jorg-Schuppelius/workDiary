@@ -13,11 +13,14 @@ declare(strict_types=1);
 namespace App\Services\Accounting;
 
 use App\Enums\Finance\{AccountType, AccountingEntryStatus, DirectBookingKind, OpenItemDirection, OpenItemStatus, SettlementKind};
-use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingEntryLine, AccountingOpenItem, AccountingOpenItemSettlement};
+use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingEntryLine, AccountingOpenItem, AccountingOpenItemSettlement, AccountingTaxCode};
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Finance\Datev\DatevBookingConfig;
+use App\Services\Invoicing\DunningService;
 use App\Support\{MorphMap, Tz};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use CommonToolkit\ValueObjects\{Decimal, Money};
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -184,6 +187,85 @@ class OpenItemService {
     }
 
     /**
+     * Posten als strittig kennzeichnen (MVP-1559). Er bleibt offen und
+     * ausgleichbar, wird aber nicht gemahnt: An der Ausgangsrechnung entsteht
+     * eine Mahnsperre, sofern dort noch keine steht. Der Nachweis liegt im
+     * Audit-Log des Postens.
+     *
+     * @throws ValidationException
+     */
+    public function markDisputed(AccountingOpenItem $item, string $reason, User $actor): AccountingOpenItem {
+        return DB::transaction(function () use ($item, $reason, $actor): AccountingOpenItem {
+            /** @var AccountingOpenItem $item */
+            $item = AccountingOpenItem::query()->lockForUpdate()->findOrFail($item->getKey());
+            if (! in_array($item->status, [OpenItemStatus::Open, OpenItemStatus::PartiallySettled], true)) {
+                throw ValidationException::withMessages([
+                    'reason' => (string) __('accounting.dispute.error.not_open'),
+                ]);
+            }
+
+            $reason = StringHelper::truncate(trim($reason), 255, '…');
+            $item->update(['status' => OpenItemStatus::Disputed, 'disputed_at' => now(), 'dispute_note' => $reason]);
+            $item->audit('accounting.open_item_disputed', ['by' => $actor->id, 'reason' => $reason]);
+
+            $invoice = $this->receivableInvoice($item);
+            if ($invoice instanceof Invoice && ! $invoice->isDunningBlocked()) {
+                app(DunningService::class)->block($invoice, $this->dunningReason($reason), $actor);
+            }
+
+            return $item->refresh();
+        });
+    }
+
+    /**
+     * Kennzeichen „strittig“ zurücknehmen: Der Posten gilt wieder als offen
+     * bzw. teilweise ausgeglichen. Die Mahnsperre fällt nur, wenn sie aus dem
+     * Kennzeichen stammt — eine von Hand gesetzte bleibt.
+     *
+     * @throws ValidationException
+     */
+    public function withdrawDispute(AccountingOpenItem $item, User $actor): AccountingOpenItem {
+        return DB::transaction(function () use ($item, $actor): AccountingOpenItem {
+            /** @var AccountingOpenItem $item */
+            $item = AccountingOpenItem::query()->lockForUpdate()->findOrFail($item->getKey());
+            if ($item->status !== OpenItemStatus::Disputed) {
+                throw ValidationException::withMessages([
+                    'status' => (string) __('accounting.dispute.error.not_disputed'),
+                ]);
+            }
+
+            $reason = (string) $item->dispute_note;
+            $open = $item->open_amount ?? Money::zero($item->currency);
+            $item->update([
+                'status' => $open->equals($item->original_amount ?? $open) ? OpenItemStatus::Open : OpenItemStatus::PartiallySettled,
+                'disputed_at' => null,
+                'dispute_note' => null,
+            ]);
+            $item->audit('accounting.open_item_dispute_withdrawn', ['by' => $actor->id, 'reason' => $reason]);
+
+            $invoice = $this->receivableInvoice($item);
+            if ($invoice instanceof Invoice && $invoice->isDunningBlocked() && $invoice->dunning_block_reason === $this->dunningReason($reason)) {
+                app(DunningService::class)->unblock($invoice, $actor);
+            }
+
+            return $item->refresh();
+        });
+    }
+
+    /** Ausgangsrechnung hinter einer Forderung — nur sie kennt eine Mahnsperre. */
+    private function receivableInvoice(AccountingOpenItem $item): ?Invoice {
+        if ($item->direction !== OpenItemDirection::Receivable || ! MorphMap::is($item->source_type, Invoice::class)) {
+            return null;
+        }
+
+        return Invoice::query()->where('organization_id', $item->organization_id)->find($item->source_id);
+    }
+
+    private function dunningReason(string $reason): string {
+        return StringHelper::truncate((string) __('accounting.dispute.dunning_reason', ['reason' => $reason]), 255, '…');
+    }
+
+    /**
      * Gegenbuchungen von Hand, die als Entwurf auf die Freigabe warten (E9) —
      * je Posten höchstens eine.
      *
@@ -212,15 +294,103 @@ class OpenItemService {
     }
 
     /**
+     * Skonto- und Ausbuchungsausgleiche ohne Journalbuchung — Altbestand aus
+     * der Zeit, als ein fehlendes Gegenkonto den Posten still schloss
+     * (MVP-1555). Nur lesend: Die Korrektur bucht die Buchhaltung von Hand.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, AccountingOpenItemSettlement>
+     */
+    public function settlementsWithoutEntry(Organization $organization): \Illuminate\Database\Eloquent\Collection {
+        return AccountingOpenItemSettlement::query()
+            ->where('organization_id', $organization->id)
+            ->whereIn('kind', [SettlementKind::Discount->value, SettlementKind::WriteOff->value])
+            ->whereNull('accounting_entry_id')
+            ->whereNull('reverses_settlement_id')
+            // Ein zurückgenommener Ausgleich hat seine Wirkung schon verloren.
+            ->whereNotIn('id', AccountingOpenItemSettlement::query()
+                ->where('organization_id', $organization->id)
+                ->whereNotNull('reverses_settlement_id')
+                ->select('reverses_settlement_id'))
+            ->with('openItem')
+            ->orderBy('booked_on')
+            ->orderBy('id')
+            ->get();
+    }
+
+    /**
+     * Festgeschriebene Skonto-Ausgleiche ohne Steuerberichtigung, obwohl der
+     * Posten einen Steuerbezug hat — Bestand aus der Zeit, als das Skonto voll
+     * aufs Skontokonto ging. Nur lesend: Über Korrekturbuchungen entscheidet die
+     * Steuerberatung.
+     *
+     * @return list<array{settlement: AccountingOpenItemSettlement, tax: Money}>
+     */
+    public function discountsWithoutTaxCorrection(Organization $organization): array {
+        $split = app(DiscountTaxSplit::class);
+        $settlements = AccountingOpenItemSettlement::query()
+            ->where('organization_id', $organization->id)
+            ->where('kind', SettlementKind::Discount->value)
+            ->whereNotNull('accounting_entry_id')
+            ->whereNull('reverses_settlement_id')
+            ->whereNotIn('id', AccountingOpenItemSettlement::query()
+                ->where('organization_id', $organization->id)
+                ->whereNotNull('reverses_settlement_id')
+                ->select('reverses_settlement_id'))
+            ->whereHas('entry', fn (Builder $query) => $query->where('status', AccountingEntryStatus::Posted->value))
+            ->with(['entry.lines', 'openItem.entry.lines.taxCode'])
+            ->orderBy('booked_on')
+            ->orderBy('id')
+            ->get();
+
+        $found = [];
+        foreach ($settlements as $settlement) {
+            $item = $settlement->openItem;
+            $entry = $settlement->entry;
+            if (! $item instanceof AccountingOpenItem || ! $entry instanceof AccountingEntry || $split->carriesTax($entry)) {
+                continue;
+            }
+
+            $tax = $split->taxOf($item, $settlement->amount?->getAmount() ?? '0.00');
+            if ($tax->isPositive()) {
+                $found[] = ['settlement' => $settlement, 'tax' => $tax];
+            }
+        }
+
+        return $found;
+    }
+
+    /**
+     * Ausgleichsarten, deren Gegenkonto im Kontenplan fehlt (Art ⇒ Kontonummer) —
+     * der Dialog warnt, bevor der Ausgleich daran scheitert.
+     *
+     * @return array<string, string>
+     */
+    public function missingCounterAccounts(Organization $organization, OpenItemDirection $direction = OpenItemDirection::Receivable): array {
+        $wanted = [
+            SettlementKind::Discount->value => $this->counterAccountNumber($organization, SettlementKind::Discount, $direction),
+            SettlementKind::WriteOff->value => $this->counterAccountNumber($organization, SettlementKind::WriteOff, $direction),
+        ];
+        $existing = AccountingAccount::query()
+            ->where('organization_id', $organization->id)
+            ->whereIn('number', array_values($wanted))
+            ->pluck('number')
+            ->all();
+
+        return array_filter($wanted, static fn (string $number): bool => ! in_array($number, $existing, true));
+    }
+
+    /**
      * Erzeugt die Gegenbuchung zu einem Ausgleich von Hand.
      *
      * Nur fuer Skonto und Ausbuchung: Zahlung, Einbehalt und Rueckbuchung haben
      * ihre Buchung anderswo (Bankabgleich, Zahlungslauf) und bekaemen sie hier
      * ein zweites Mal.
      *
-     * Fehlt das Gegenkonto im Kontenplan der Organisation, wird **nicht
-     * geraten**: der Ausgleich laeuft dann wie bisher ohne Journalzeile weiter,
-     * damit unvollstaendige Kontenpflege ihn nicht blockiert.
+     * Fehlt das Gegenkonto im Kontenplan der Organisation, wird der Ausgleich
+     * abgewiesen (MVP-1555): Ein Posten, der ohne Buchung schliesst, laesst
+     * OPOS-Liste und Summen-/Saldenliste still auseinanderlaufen.
+     *
+     * @throws ValidationException
      */
     private function counterEntryFor(
         AccountingOpenItem $item,
@@ -235,20 +405,19 @@ class OpenItemService {
         $organization = $item->organization;
         $actor = Auth::user();
 
-        if (! $organization instanceof Organization || ! $actor instanceof User) {
-            return null;
-        }
+        $number = $this->counterAccountNumber($organization, $kind, $item->direction);
 
-        $config = DatevBookingConfig::forOrganization($organization);
-        $number = $kind === SettlementKind::Discount ? $config->discountAccount : $config->writeOffAccount;
+        $counterAccount = $organization instanceof Organization
+            ? AccountingAccount::query()->where('organization_id', $organization->id)->where('number', $number)->first()
+            : null;
 
-        $counterAccount = AccountingAccount::query()
-            ->where('organization_id', $organization->id)
-            ->where('number', $number)
-            ->first();
-
-        if (! $counterAccount instanceof AccountingAccount) {
-            return null;
+        if (! $organization instanceof Organization || ! $actor instanceof User || ! $counterAccount instanceof AccountingAccount) {
+            throw ValidationException::withMessages([
+                'kind' => (string) __('accounting.open_items.error.counter_account_missing', [
+                    'kind' => $kind->label(),
+                    'account' => $number,
+                ]),
+            ]);
         }
 
         // Der Posten wird entlastet: bei einer Forderung steht das Gegenkonto im
@@ -260,10 +429,10 @@ class OpenItemService {
             'counterparty_type' => $item->counterparty_type,
             'counterparty_id' => $item->counterparty_id,
         ];
-        $counterLine = [
-            'accounting_account_id' => $counterAccount->id,
-            $receivable ? 'debit' : 'credit' => $amount,
-        ];
+        // Skonto mindert auch die Steuer (§ 17 UStG): Netto aufs Skontokonto, Steueranteil aufs Steuerkonto.
+        $counterLines = $kind === SettlementKind::Discount
+            ? app(DiscountTaxSplit::class)->counterLines($item, $amount, fn (?AccountingTaxCode $code): int => $this->discountAccountId($organization, $item->direction, $counterAccount, $code))
+            : [['accounting_account_id' => $counterAccount->id, $receivable ? 'debit' : 'credit' => $amount]];
 
         // Der Snapshot lenkt settleFromEntry() auf genau diesen Posten und
         // haelt die Ausgleichsart fest — sonst waere jede Gegenbuchung eine
@@ -288,8 +457,48 @@ class OpenItemService {
             'source_id' => (int) $item->getKey(),
             'source_key' => 'opos-settle:' . $item->getKey() . ':' . $kind->value . ':' . $amount,
             'snapshot' => $snapshot,
-            'lines' => $receivable ? [$counterLine, $itemLine] : [$itemLine, $counterLine],
+            'lines' => $receivable ? [...$counterLines, $itemLine] : [$itemLine, ...$counterLines],
         ], $actor, DirectBookingKind::OpenItemSettlement);
+    }
+
+    /**
+     * Skontokonto je Steuersatz: Die Kontenrahmen trennen die Skontokonten nach
+     * Satz. Solange die Organisation die Vorgabe (19 %) nutzt, geht der
+     * ermäßigte Satz auf dessen Konto, sofern es im Kontenplan steht; ein eigens
+     * eingestelltes Konto gilt für alle Sätze — die Kennziffer hängt am
+     * Steuerkennzeichen der Zeile, nicht am Konto.
+     */
+    private function discountAccountId(Organization $organization, OpenItemDirection $direction, AccountingAccount $configured, ?AccountingTaxCode $code): int {
+        $skr = DatevBookingConfig::forOrganization($organization)->skr;
+        $receivable = $direction === OpenItemDirection::Receivable;
+        $default = $receivable ? $skr->defaultDiscountAccount() : $skr->defaultReceivedDiscountAccount();
+
+        if ($code instanceof AccountingTaxCode && $configured->number === $default && NumberHelper::comparePrecise((string) $code->rate, '7.00', 2) === 0) {
+            $reduced = AccountingAccount::query()
+                ->where('organization_id', $organization->id)
+                ->where('number', $skr->reducedRateDiscountAccounts()[$receivable ? 'granted' : 'received'])
+                ->active()
+                ->value('id');
+            if ($reduced !== null) {
+                return (int) $reduced;
+            }
+        }
+
+        return (int) $configured->id;
+    }
+
+    /**
+     * Gegenkonto je Richtung: Gewährtes Skonto und Forderungsverlust gehören
+     * zur Forderung; an der Verbindlichkeit sind es erhaltenes Skonto und ein
+     * sonstiger Ertrag.
+     */
+    private function counterAccountNumber(?Organization $organization, SettlementKind $kind, OpenItemDirection $direction): string {
+        $config = DatevBookingConfig::forOrganization($organization);
+
+        return match (true) {
+            $direction === OpenItemDirection::Receivable => $kind === SettlementKind::Discount ? $config->discountAccount : $config->writeOffAccount,
+            default => $kind === SettlementKind::Discount ? $config->receivedDiscountAccount : $config->payableWriteOffAccount,
+        };
     }
 
     /**
@@ -315,7 +524,7 @@ class OpenItemService {
      *
      * @return array{items: Collection<int, AccountingOpenItem>|LengthAwarePaginator<int, AccountingOpenItem>, buckets: array<string, string>}
      */
-    public function aging(Organization $organization, OpenItemDirection $direction, ?int $perPage = null, bool $withItems = true): array {
+    public function aging(Organization $organization, OpenItemDirection $direction, ?int $perPage = null, bool $withItems = true, ?OpenItemStatus $status = null): array {
         $today = CarbonImmutable::now(Tz::current())->startOfDay();
 
         // Grenzen als Datumswerte statt als Datumsarithmetik im SQL — das
@@ -350,10 +559,12 @@ class OpenItemService {
             $buckets[$key] = Decimal::of((string) ($sums[$key] ?? 0), 2)->getValue();
         }
 
+        // Der Statusfilter gilt der Liste; die Bänder zeigen weiter alle offenen Posten.
+        $list = fn (): Builder => $status instanceof OpenItemStatus ? $base()->where('status', $status->value) : $base();
         $items = match (true) {
             ! $withItems => new Collection(),
-            $perPage !== null => $base()->orderBy('due_date')->paginate($perPage)->withQueryString(),
-            default => $base()->get(),
+            $perPage !== null => $list()->orderBy('due_date')->paginate($perPage)->withQueryString(),
+            default => $list()->get(),
         };
 
         return ['items' => $items, 'buckets' => $buckets];
@@ -519,6 +730,8 @@ class OpenItemService {
             $original = $item->original_amount ?? Money::zero($item->currency);
             $status = match (true) {
                 $newOpen->isZero() => OpenItemStatus::Settled,
+                // Strittig bleibt strittig, solange ein Rest offen ist (MVP-1559).
+                $item->status === OpenItemStatus::Disputed => OpenItemStatus::Disputed,
                 $newOpen->equals($original) => OpenItemStatus::Open,
                 default => OpenItemStatus::PartiallySettled,
             };
@@ -527,7 +740,7 @@ class OpenItemService {
                 'open_amount' => $newOpen->getAmount(),
                 'status' => $status,
                 'settled_at' => $status === OpenItemStatus::Settled ? now() : null,
-            ]);
+            ] + ($status === OpenItemStatus::Settled ? ['disputed_at' => null, 'dispute_note' => null] : []));
 
             return $settlement;
         });

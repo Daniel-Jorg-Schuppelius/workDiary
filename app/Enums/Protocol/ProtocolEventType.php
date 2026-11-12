@@ -29,6 +29,11 @@ final class ProtocolEventType {
     public const string AttachmentAdded = 'protocol.attachmentAdded';
     public const string AttachmentRemoved = 'protocol.attachmentRemoved';
     public const string SignatureRequested = 'protocol.signatureRequested';
+    // MVP-1572: Link zusätzlich per E-Mail zugestellt; Unterschrift erfasst (vor Ort, Papier, Portal, Link).
+    public const string SignatureLinkEmailed = 'protocol.signatureLinkEmailed';
+    public const string SignatureAdded = 'protocol.signatureAdded';
+    // Unterschrift gilt nicht mehr: Inhalt geändert oder Protokoll zurück im Entwurf.
+    public const string SignatureVoided = 'protocol.signatureVoided';
     public const string SignatureLinkOpened = 'protocol.signatureLinkOpened';
     public const string SignatureRejected = 'protocol.signatureRejected';
     // Widerruf externer Signatur-Links (Feature 012 MVP; Vollaudit 2026-07, M6).

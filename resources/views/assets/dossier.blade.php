@@ -23,10 +23,8 @@
         'blocked' => __('Gesperrt'), 'reserved' => __('Reserviert'), 'loanOut' => __('Ausgeliehen'),
         'replaced' => __('Ersetzt'), 'decommissioned' => __('Außer Betrieb'), 'lost' => __('Verloren'),
     ];
-    $healthLabels = ['ok' => __('OK'), 'degraded' => __('Eingeschränkt'), 'critical' => __('Kritisch')];
     $classValue = $asset->asset_class instanceof \BackedEnum ? $asset->asset_class->value : (string) $asset->asset_class;
     $statusValue = $asset->status instanceof \BackedEnum ? $asset->status->value : (string) $asset->status;
-    $healthValue = $asset->health instanceof \BackedEnum ? $asset->health->value : (string) $asset->health;
     $room = $asset->room;
     $building = $room?->floorRelation?->building;
     $site = $building?->site;
@@ -82,7 +80,7 @@
     <table class="kv">
         <tr><th>{{ __('Bezeichnung') }}</th><td>{{ $asset->name }}</td></tr>
         <tr><th>{{ __('Typ') }}</th><td>{{ $classLabels[$classValue] ?? $classValue }}</td></tr>
-        <tr><th>{{ __('Status') }}</th><td>{{ $statusLabels[$statusValue] ?? $statusValue }} · {{ __('asset.dossier.health') }}: {{ $healthLabels[$healthValue] ?? $healthValue }}</td></tr>
+        <tr><th>{{ __('Status') }}</th><td>{{ $statusLabels[$statusValue] ?? $statusValue }} · {{ __('asset.dossier.health') }}: {{ $asset->health->label() }}</td></tr>
         {{-- raw-markup-ok: Standalone-Druckansicht mit eigenem CSS (.badge.ok/.warn/.crit), ohne daisyUI --}}
         <tr><th>{{ __('asset.dossier.lifecycle') }}</th><td><span class="badge {{ $lifecycle['phase_tone'] === 'success' ? 'ok' : ($lifecycle['phase_tone'] === 'error' ? 'crit' : 'warn') }}">{{ $lifecycle['phase_label'] }}</span></td></tr>
         @if ($asset->manufacturer || $asset->model)
@@ -99,7 +97,7 @@
             @endif
         </td></tr>
         <tr><th>{{ __('asset.dossier.commissioned') }}</th><td>{{ $lifecycle['commissioned_on']?->fdate() ?? '—' }}</td></tr>
-        <tr><th>{{ __('asset.dossier.decommissioned') }}</th><td>{{ $lifecycle['decommissioned_on']?->fdate() ?? '—' }}</td></tr>
+        <tr><th>{{ __('asset.dossier.decommissioned') }}</th><td>{{ $lifecycle['decommissioned_on']?->fdate() ?? '—' }}@if ($asset->decommission_reason) — {{ $asset->decommission_reason }}@endif</td></tr>
         <tr><th>{{ __('asset.dossier.warranty') }}</th><td>
             {{ $lifecycle['warranty_until']?->fdate() ?? '—' }}
             @if ($lifecycle['warranty_expired'])<x-status-badge tone="plain" size="md" class="crit">{{ __('asset.dossier.warranty_expired') }}</x-status-badge>@endif
@@ -145,7 +143,7 @@
             <tbody>
                 @foreach ($maintenancePlans as $plan)
                     <tr>
-                        <td>{{ $plan->label }}</td>
+                        <td>{{ $plan->label }}@if ($plan->is_contractual) · {{ __('Vertragspflicht') }}@endif</td>
                         <td>{{ $plan->next_due_on?->fdate() ?? '—' }}</td>
                         <td>{{ $plan->last_run_at?->fdatetime() ?? '—' }}</td>
                         {{-- raw-markup-ok: Standalone-Druckansicht mit eigenem CSS (.badge.ok/.warn/.crit), ohne daisyUI --}}
@@ -168,7 +166,7 @@
                     <td>
                         @if ($slaContract)
                             <a href="{{ route('sla-contracts.show', $slaContract) }}">{{ $slaContract->code }} — {{ $slaContract->label }}</a>
-                            @if ($asset->sla_contract_id)
+                            @if ((int) $asset->sla_contract_id === (int) $slaContract->id)
                                 <x-status-badge tone="plain" size="md">{{ __('Direktzuordnung') }}</x-status-badge>
                             @endif
                         @else
@@ -219,13 +217,15 @@
     @if ($assignments->isNotEmpty())
         <h2>{{ __('asset.dossier.assignments') }}</h2>
         <table>
-            <thead><tr><th>{{ __('asset.dossier.checked_out') }}</th><th>{{ __('asset.dossier.assignee') }}</th><th>{{ __('asset.dossier.returned') }}</th></tr></thead>
+            <thead><tr><th>{{ __('asset.dossier.checked_out') }}</th><th>{{ __('asset.dossier.assignee') }}</th><th>{{ __('asset.dossier.returned') }}</th><th>{{ __('Zustand bei Ausgabe') }}</th><th>{{ __('asset.return.condition_in') }}</th></tr></thead>
             <tbody>
                 @foreach ($assignments as $assignment)
                     <tr>
                         <td>{{ $assignment->checked_out_at?->fdatetime() ?? '—' }}</td>
                         <td>{{ $assignment->assignedToUser?->name ?? $assignment->assignedToTeam?->name ?? '—' }}</td>
                         <td>{{ $assignment->returned_at?->fdatetime() ?? __('asset.dossier.open') }}</td>
+                        <td>{{ $assignment->condition_out ?: '—' }}</td>
+                        <td>{{ $assignment->condition_in ?: '—' }}@if ($assignment->return_note) — {{ $assignment->return_note }}@endif</td>
                     </tr>
                 @endforeach
             </tbody>

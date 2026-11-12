@@ -29,6 +29,8 @@ class SurveyInvitationMail extends Mailable {
     public function __construct(
         public readonly Survey $survey,
         public readonly string $token,
+        // Abmeldelink nur bei Einladungen mit Kundenbezug: Der Widerspruch steht am Kunden.
+        public readonly bool $withOptOut = false,
     ) {}
 
     public function envelope(): Envelope {
@@ -38,6 +40,7 @@ class SurveyInvitationMail extends Mailable {
     public function content(): Content {
         return new Content(markdown: 'emails.survey-invitation', with: [
             'url' => route('surveys.public-show', ['token' => $this->token]),
+            'optOutUrl' => $this->withOptOut ? route('surveys.public-opt-out', ['token' => $this->token]) : null,
         ]);
     }
 }

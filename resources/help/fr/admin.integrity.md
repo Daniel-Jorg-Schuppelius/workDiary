@@ -1,7 +1,7 @@
 ---
 title: "Intégrité du code source"
 topic: admin.integrity
-version: 1
+version: 2
 keywords:
     - détection de manipulation
     - intégrité des fichiers
@@ -44,3 +44,12 @@ signé — une référence manipulée échoue à la vérification de signature.
 
 L’exécution quotidienne se désactive via `INTEGRITY_CHECK_ENABLED` et se
 replanifie sur la page du planificateur.
+
+**Lever le verrouillage :** Si le verrouillage d'intégrité a mis l'installation
+en mode maintenance, une référence nouvellement figée (« Figer la référence »,
+`integrity:freeze`) le lève automatiquement. Sans nouvelle référence,
+l'exploitation de la plateforme le lève via **Lever le verrouillage** sur cette
+page (accès par le secret de contournement) ou avec `php artisan
+integrity:release --reason=…`. Les deux sont consignés dans le journal d'audit
+avec motif et personne. Un mode maintenance d'une autre origine (par exemple un
+déploiement) n'est pas levé par ces voies.

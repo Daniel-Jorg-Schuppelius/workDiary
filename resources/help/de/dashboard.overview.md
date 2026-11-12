@@ -1,7 +1,7 @@
 ---
 title: "Dashboard"
 topic: dashboard.overview
-version: 3
+version: 4
 keywords:
     - Startseite
     - Übersicht
@@ -34,6 +34,8 @@ Kacheln stellen keine Abfragen mehr; ein aufgeräumtes Dashboard lädt
 deshalb auch schneller.
 
 Die Zählkacheln der Kennzahlen-Widgets führen ins Auftragsbuch mit dem passenden Statusfilter, zu den Diensten und zur Mitarbeiterliste.
+
+**Finanzbewegungen:** Die Kachel im Bereich Finanzen zeigt je Quelle die Bewegungen ohne Zuordnung — Kontoauszüge aus dem Zahlungsabgleich und Firefly III — und darunter die jüngsten Bewegungen der letzten 30 Tage, auch aus dem Etsy-Shopkonto. Die Zahl führt in die Liste der Quelle, bei Firefly III gefiltert auf die offenen Bewegungen. Kontoauszüge sehen Personen mit Recht auf den Zahlungsabgleich, Firefly III und Etsy die Administration, solange das Plugin eingeschaltet ist.
 
 ## Voraussetzungen
 

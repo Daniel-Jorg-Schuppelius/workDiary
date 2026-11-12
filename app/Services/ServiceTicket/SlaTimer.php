@@ -11,7 +11,8 @@
 namespace App\Services\ServiceTicket;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, SlaStatus};
-use App\Models\ServiceTicket\{ServiceTicket, SlaContract};
+use App\Models\Asset\Asset;
+use App\Models\ServiceTicket\{ServiceQueue, ServiceTicket, SlaContract};
 use App\Services\Asset\Contracts\ServiceLevelResolver;
 use App\Services\Calendar\HolidayService;
 use Illuminate\Support\Carbon;
@@ -37,9 +38,13 @@ class SlaTimer implements ServiceLevelResolver {
      * Dienstplanung werden übersprungen). Ohne Fenster gilt Kalenderzeit — so
      * bleiben Alt-Verträge unverändert.
      *
+     * Kalender der Queue (MVP-1548): ihre Geschäftszeiten gelten, wenn der
+     * Vertrag keine nennt; ihre Feiertagsregion ersetzt die der Organisation.
+     *
+     * @param  array<int|string, mixed>|null  $fallbackBusinessHours
      * @return array{reaction_due_at: Carbon|null, resolution_due_at: Carbon|null}
      */
-    public function computeDeadlines(SlaContract $contract, ServiceTicketPriority $priority, Carbon $reportedAt): array {
+    public function computeDeadlines(SlaContract $contract, ServiceTicketPriority $priority, Carbon $reportedAt, ?array $fallbackBusinessHours = null, ?string $holidayProvider = null): array {
         /** @var array<string, array{reaction_minutes?: int, resolution_minutes?: int}> $table */
         $table = $contract->priority_table;
         $entry = $table[$priority->value] ?? null;
@@ -51,50 +56,100 @@ class SlaTimer implements ServiceLevelResolver {
         $resolution = isset($entry['resolution_minutes']) ? (int) $entry['resolution_minutes'] : null;
 
         $windows = $this->normalizeBusinessHours($contract->business_hours);
+        if ($windows === []) {
+            $windows = $this->normalizeBusinessHours($fallbackBusinessHours);
+        }
 
         return [
-            'reaction_due_at' => $reaction !== null ? $this->addDuration($reportedAt, $reaction, $windows) : null,
-            'resolution_due_at' => $resolution !== null ? $this->addDuration($reportedAt, $resolution, $windows) : null,
+            'reaction_due_at' => $reaction !== null ? $this->addDuration($reportedAt, $reaction, $windows, $holidayProvider) : null,
+            'resolution_due_at' => $resolution !== null ? $this->addDuration($reportedAt, $resolution, $windows, $holidayProvider) : null,
         ];
     }
 
     /**
-     * Findet den passenden SLA-Vertrag: Projekt → Kunde → Org-Default (W5.4).
-     * Ein projektgebundener Vertrag gewinnt, wenn der Kontext ein Projekt hat;
-     * projektgebundene Verträge greifen NUR über ihr Projekt (nie als Kunden-
-     * oder Default-Treffer). Ohne Projekt bleibt das Verhalten unverändert.
+     * Findet den passenden SLA-Vertrag: Asset → Projekt → Kunde → Queue → Org-Default.
+     * Die Direktzuordnung am Asset ist die engste Zusage (ein Objekt); eine Zusage an
+     * Projekt oder Kunde ist spezifischer als die Vorgabe der Queue; die Queue ist
+     * spezifischer als die der Organisation (MVP-1548). Projektgebundene Verträge
+     * greifen nur über ihr Projekt, OLA-Verträge (internes Ziel je Team) nie als
+     * Kundenzusage, der Vertrag eines anderen Kunden nie über das Asset.
      */
-    public function resolveContract(int $organizationId, ?int $customerId, ?int $projectId = null): ?SlaContract {
-        if ($projectId !== null) {
-            $projectBound = SlaContract::query()
-                ->where('organization_id', $organizationId)
-                ->where('project_id', $projectId)
-                ->where('is_active', true)
+    public function resolveContract(int $organizationId, ?int $customerId, ?int $projectId = null, ?int $queueId = null, ?int $assetId = null): ?SlaContract {
+        $contracts = fn () => SlaContract::query()
+            ->where('organization_id', $organizationId)
+            ->where('is_active', true)
+            ->where('is_ola', false);
+
+        if ($assetId !== null) {
+            $assetBound = $contracts()
+                ->whereKey(Asset::query()->where('organization_id', $organizationId)->whereKey($assetId)->select('sla_contract_id'))
+                ->whereNull('project_id')
+                ->where(fn ($q) => $q->whereNull('customer_id')->when($customerId !== null, fn ($qq) => $qq->orWhere('customer_id', $customerId)))
                 ->first();
+            if ($assetBound !== null) {
+                return $assetBound;
+            }
+        }
+
+        if ($projectId !== null) {
+            $projectBound = $contracts()->where('project_id', $projectId)->first();
             if ($projectBound !== null) {
                 return $projectBound;
             }
         }
 
         if ($customerId !== null) {
-            $specific = SlaContract::query()
-                ->where('organization_id', $organizationId)
-                ->where('customer_id', $customerId)
-                ->whereNull('project_id')
-                ->where('is_active', true)
-                ->first();
+            $specific = $contracts()->where('customer_id', $customerId)->whereNull('project_id')->first();
             if ($specific !== null) {
                 return $specific;
             }
         }
 
-        return SlaContract::query()
-            ->where('organization_id', $organizationId)
+        if ($queueId !== null) {
+            $queueDefault = $contracts()
+                ->whereKey(ServiceQueue::query()->where('organization_id', $organizationId)->whereKey($queueId)->select('default_sla_contract_id'))
+                ->first();
+            if ($queueDefault !== null) {
+                return $queueDefault;
+            }
+        }
+
+        return $contracts()
             ->whereNull('customer_id')
             ->whereNull('project_id')
-            ->where('is_active', true)
             ->where('is_default', true)
             ->first();
+    }
+
+    /**
+     * Internes Ziel des Queue-Teams am Ticket (OLA, MVP-1548): Fristen aus dem
+     * OLA-Vertrag des Teams ab Meldezeitpunkt, reine Anzeige ohne Verletzungsregister.
+     *
+     * @return array{contract: SlaContract, reaction_due_at: Carbon|null, resolution_due_at: Carbon|null, reaction_status: SlaStatus, resolution_status: SlaStatus}|null
+     */
+    public function olaTargets(ServiceTicket $ticket): ?array {
+        $queue = $ticket->queue;
+        if ($queue === null || $queue->team_id === null || $ticket->reported_at === null) {
+            return null;
+        }
+        $contract = SlaContract::query()
+            ->where('organization_id', $ticket->organization_id)
+            ->where('is_active', true)
+            ->where('is_ola', true)
+            ->where('ola_team_id', $queue->team_id)
+            ->orderBy('id')
+            ->first();
+        if ($contract === null) {
+            return null;
+        }
+        $due = $this->computeDeadlines($contract, $ticket->priority, $ticket->reported_at, $queue->business_hours, $queue->holiday_region);
+
+        return [
+            'contract' => $contract,
+            ...$due,
+            'reaction_status' => $this->statusFor($due['reaction_due_at'], $ticket->reported_at, $ticket->acknowledged_at, false, null),
+            'resolution_status' => $this->statusFor($due['resolution_due_at'], $ticket->reported_at, $ticket->resolved_at, false, null),
+        ];
     }
 
     /**
@@ -176,12 +231,12 @@ class SlaTimer implements ServiceLevelResolver {
      *
      * @param  array<int, list<array{from: int, to: int}>>  $windows
      */
-    private function addDuration(Carbon $start, int $minutes, array $windows): Carbon {
+    private function addDuration(Carbon $start, int $minutes, array $windows, ?string $holidayProvider = null): Carbon {
         if ($windows === []) {
             return $start->copy()->addMinutes($minutes);
         }
 
-        return $this->addBusinessMinutes($start, $minutes, $windows);
+        return $this->addBusinessMinutes($start, $minutes, $windows, $holidayProvider);
     }
 
     /**
@@ -190,7 +245,7 @@ class SlaTimer implements ServiceLevelResolver {
      *
      * @param  array<int, list<array{from: int, to: int}>>  $windows
      */
-    private function addBusinessMinutes(Carbon $start, int $minutes, array $windows): Carbon {
+    private function addBusinessMinutes(Carbon $start, int $minutes, array $windows, ?string $holidayProvider = null): Carbon {
         $cursor = $start->copy();
         $remaining = max(0, $minutes);
         if ($remaining === 0) {
@@ -201,7 +256,7 @@ class SlaTimer implements ServiceLevelResolver {
         // Sicherheitsgrenze (max. ~10 Jahre Tage) gegen eine Endlosschleife,
         // falls ein Fenster nie erreichbar ist.
         for ($guardDays = 0; $guardDays <= 3660; $guardDays++) {
-            $dayWindows = $this->isBusinessDay($cursor, $windows, $holidays)
+            $dayWindows = $this->isBusinessDay($cursor, $windows, $holidays, $holidayProvider)
                 ? ($windows[$cursor->dayOfWeekIso] ?? [])
                 : [];
 
@@ -234,12 +289,12 @@ class SlaTimer implements ServiceLevelResolver {
      *
      * @param  array<int|string, mixed>|null  $businessHours
      */
-    public function isWithinBusinessHours(?array $businessHours, Carbon $at): bool {
+    public function isWithinBusinessHours(?array $businessHours, Carbon $at, ?string $holidayProvider = null): bool {
         $windows = $this->normalizeBusinessHours($businessHours);
         if ($windows === []) {
             return true;
         }
-        if (! $this->isBusinessDay($at, $windows, $this->holidays())) {
+        if (! $this->isBusinessDay($at, $windows, $this->holidays(), $holidayProvider)) {
             return false;
         }
         $minute = $at->hour * 60 + $at->minute;
@@ -255,12 +310,12 @@ class SlaTimer implements ServiceLevelResolver {
     /**
      * @param  array<int, list<array{from: int, to: int}>>  $windows
      */
-    private function isBusinessDay(Carbon $date, array $windows, HolidayService $holidays): bool {
+    private function isBusinessDay(Carbon $date, array $windows, HolidayService $holidays, ?string $holidayProvider = null): bool {
         if (($windows[$date->dayOfWeekIso] ?? []) === []) {
             return false;
         }
 
-        return ! $holidays->isHoliday($date);
+        return ! $holidays->isHoliday($date, $holidayProvider);
     }
 
     /**

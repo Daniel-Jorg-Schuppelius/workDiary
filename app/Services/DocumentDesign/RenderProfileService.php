@@ -459,9 +459,9 @@ class RenderProfileService {
     }
 
     /**
-     * Kopf-/Fußtexte (MVP-651): reiner Text, längenbegrenzt — kein HTML.
+     * Kopf-/Fußtexte (MVP-651) und Vertraulichkeitsvermerk: reiner Text, längenbegrenzt — kein HTML.
      *
-     * @return array{header_text: ?string, footer_text: ?string}|null
+     * @return array{header_text: ?string, footer_text: ?string, confidentiality_text: ?string}|null
      */
     private function sanitizeContentTexts(mixed $raw): ?array {
         if ($raw === null) {
@@ -469,12 +469,12 @@ class RenderProfileService {
         }
         $raw = (array) $raw;
         $clean = [];
-        foreach (['header_text', 'footer_text'] as $key) {
+        foreach (['header_text', 'footer_text', 'confidentiality_text'] as $key) {
             $value = trim(strip_tags((string) ($raw[$key] ?? '')));
             $clean[$key] = $value === '' ? null : mb_substr($value, 0, 2000);
         }
 
-        return $clean['header_text'] === null && $clean['footer_text'] === null ? null : $clean;
+        return array_filter($clean, static fn (?string $text): bool => $text !== null) === [] ? null : $clean;
     }
 
     /**
@@ -494,15 +494,6 @@ class RenderProfileService {
     /** Familien-Bindung einer Variante setzen/entfernen (#83). */
     public function assignFamily(DocumentRenderProfile $profile, ?RenderDocumentFamily $family): void {
         $profile->document_family = $family;
-        $profile->save();
-    }
-
-    /** Seitenformat eines Profils setzen (MVP-652) — nur solange keine Version aktiv ist. */
-    public function assignPageFormat(DocumentRenderProfile $profile, PageFormat $format): void {
-        if ($profile->active_version_id !== null && ($profile->page_format ?? PageFormat::A4Portrait) !== $format) {
-            throw new RuntimeException((string) __('Das Seitenformat kann nach der Aktivierung nicht mehr gewechselt werden — bitte ein neues Profil anlegen.'));
-        }
-        $profile->page_format = $format;
         $profile->save();
     }
 

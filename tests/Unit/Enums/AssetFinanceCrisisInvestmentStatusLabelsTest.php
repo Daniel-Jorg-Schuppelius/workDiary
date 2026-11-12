@@ -69,7 +69,7 @@ final class AssetFinanceCrisisInvestmentStatusLabelsTest extends TestCase {
 
         $this->assertSame(['open', 'done', 'missed'], AssetFinanceDeadlineStatus::values());
         $this->assertSame(['draft', 'in_progress', 'completed'], $values(AssetFinanceEndProcessStatus::cases()));
-        $this->assertSame(['planned', 'paid', 'overdue'], $values(AssetFinanceRateScheduleStatus::cases()));
+        $this->assertSame(['planned', 'paid'], $values(AssetFinanceRateScheduleStatus::cases()));
         $this->assertSame(['open', 'in_progress', 'done', 'cancelled'], CrisisActionStatus::values());
         $this->assertSame(['open', 'in_progress'], $values(CrisisActionStatus::pending()));
         $this->assertSame(['reported', 'assessed', 'activated', 'in_progress', 'stabilized', 'recovery', 'all_clear', 'post_review', 'closed', 'discarded'], CrisisCaseStatus::values());

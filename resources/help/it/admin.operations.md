@@ -1,7 +1,7 @@
 ---
 title: "Attività operative e finestre di manutenzione"
 topic: admin.operations
-version: 1
+version: 2
 keywords:
     - modalità manutenzione
     - downtime
@@ -63,3 +63,5 @@ sufficiente anticipo, affinché l'annuncio produca il suo effetto, ed
 elaborare regolarmente il centro attività – prima le attività
 critiche. Il posticipo è pensato per rinvii consapevoli, non come
 stato permanente.
+
+**Segnalazioni e moduli:** l’attività per le segnalazioni aperte esiste solo finché il modulo helpdesk dell’organizzazione è attivo; se viene disattivato, l’esecuzione successiva la risolve.

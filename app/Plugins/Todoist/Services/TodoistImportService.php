@@ -12,8 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\Todoist\Services;
 
+use App\Enums\Integration\DataDomain;
 use App\Enums\Task\{TaskPriority, TaskStatus};
-use App\Models\Integration\ExternalReference;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Platform\Organization;
 use App\Models\Project\Task;
 use App\Plugins\Support\TaskSync\{AbstractTaskSyncService, TaskSyncLink};
 use App\Plugins\Todoist\Api\TodoistApiClient;
@@ -21,6 +23,9 @@ use App\Plugins\Todoist\Enums\TodoistProjectLinkStatus;
 use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Observers\TodoistTaskObserver;
 use App\Plugins\Todoist\TodoistPlugin;
+use App\Services\Integration\Attributes\WritesDataDomain;
+use App\Services\Integration\DataOwnershipGuard;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Throwable;
 
@@ -36,7 +41,10 @@ use Throwable;
  *
  * @extends AbstractTaskSyncService<TodoistProjectLink>
  */
+#[WritesDataDomain(DataDomain::Tasks)]
 class TodoistImportService extends AbstractTaskSyncService {
+    /** @var array<int, Organization|null> */
+    private array $organizations = [];
     /** Felder des gemeinsamen base-Snapshots (Konfliktbasis). */
     public const array SYNCED_FIELDS = ['title', 'description', 'status', 'priority', 'due_date', 'time_budget', 'assigned_to'];
 
@@ -137,6 +145,13 @@ class TodoistImportService extends AbstractTaskSyncService {
         }
         $reference = $references->get($externalId);
 
+        // Führt ein anderes System die Aufgaben, schreibt der Abgleich nichts (MVP-1592).
+        $organization = $this->organizations[(int) $link->organization_id] ??= Organization::query()->withoutGlobalScopes()->find($link->organization_id);
+        $claim = $this->ownershipClaim($externalId, $this->remoteDisplayTitle($remote), $this->displaySubtitle($link), ['link_id' => (int) $link->id, 'remote' => $remote], $reference?->referenceable instanceof Task ? $reference->referenceable : null);
+        if (! $organization instanceof Organization || ! app(DataOwnershipGuard::class)->allows($organization, DataDomain::Tasks, TodoistPlugin::ID, $claim)) {
+            return 'inbox';
+        }
+
         // Unteraufgabe: Elternauflösung nur innerhalb derselben Projektzuordnung.
         $parentTaskId = null;
         $parentExternal = isset($remote['parent_id']) ? (string) $remote['parent_id'] : '';
@@ -197,6 +212,29 @@ class TodoistImportService extends AbstractTaskSyncService {
         }
 
         return $this->applyThreeWay($link, $reference, $task, $remote, $mapped, $parentTaskId);
+    }
+
+    /** „Einmalig übernehmen“: die gespeicherte Todoist-Aufgabe als Delta der noch aktiven Zuordnung. */
+    public function replayOwnershipConflict(Organization $organization, IntegrationInboxItem $item): ?Model {
+        $payload = (array) (($item->remote_snapshot ?? [])['payload'] ?? []);
+        $remote = array_filter((array) ($payload['remote'] ?? []), is_string(...), ARRAY_FILTER_USE_KEY);
+        $link = TodoistProjectLink::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->find((int) ($payload['link_id'] ?? 0));
+        if (! $link instanceof TodoistProjectLink || ! $link->importsFromTodoist() || $link->status !== TodoistProjectLinkStatus::Active) {
+            throw new \RuntimeException((string) __('integration.task_import.ownership_replay.link_gone'));
+        }
+        if ((string) ($remote['id'] ?? '') === '') {
+            return null;
+        }
+        if ($this->syncItems($link, collect([$remote]))['failed'] > 0) {
+            throw new \RuntimeException((string) __('integration.task_import.ownership_replay.failed'));
+        }
+
+        return ExternalReference::query()
+            ->forPlugin($organization, TodoistPlugin::ID, TodoistPlugin::EXT_TYPE_TASK)
+            ->forExternalId((string) $remote['id'])
+            ->first()?->referenceable;
     }
 
     /**

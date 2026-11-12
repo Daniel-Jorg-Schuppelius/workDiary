@@ -1,7 +1,7 @@
 ---
 title: "Arbeitszeitkonto & Monatsfreigabe"
 topic: time-accounts.flex
-version: 2
+version: 3
 keywords:
     - Gleitzeitkonto
     - Stundenkonto
@@ -40,3 +40,5 @@ auch keine Administration – außer es gibt in der Organisation sonst niemanden
 mit dem Freigaberecht; das Audit-Protokoll vermerkt diese Selbstfreigabe. Wer
 Monate und Korrekturanträge nur für das Team sehen darf, sieht die Mitglieder
 der eigenen Teams.
+
+**Kontostand:** Soll, Ist und Saldo des laufenden Monats zählen nur abgeschlossene Tage bis gestern, wie das gespeicherte Konto, die Kachel und das Terminal. Der Kontostand enthält den Übertrag des Vormonats. Mit der Monatsfreigabe wird der Monat im Konto eingefroren; erst eine Wiedereröffnung rechnet ihn neu.

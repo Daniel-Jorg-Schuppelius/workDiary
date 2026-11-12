@@ -50,5 +50,13 @@
     "nicht verbunden": "non connecté",
     "nicht zugeordnet": "non attribué",
     "verbunden": "connecté",
-    "z. B. Erstberatung": "p. ex. première consultation"
+    "z. B. Erstberatung": "p. ex. première consultation",
+    "Calendly-Nutzer zuordnen": "Attribuer des utilisateurs Calendly",
+    "Gastgeber werden über ihre E-Mail-Adresse erkannt. Weicht die Calendly-Adresse ab, ordnen Sie sie hier einem Benutzer zu.": "Les hôtes sont reconnus par leur adresse e-mail. Si l'adresse Calendly diffère, attribuez-la ici à un utilisateur.",
+    "Calendly-E-Mail": "E-mail Calendly",
+    "Zuordnung speichern": "Enregistrer l'attribution",
+    "Zuordnung entfernen": "Supprimer l'attribution",
+    "Calendly-Nutzer zugeordnet.": "Utilisateur Calendly attribué.",
+    "Calendly-Zuordnung entfernt.": "Attribution Calendly supprimée.",
+    "Noch keine abweichenden Gastgeber zugeordnet.": "Aucun hôte avec une adresse différente n'est encore attribué."
 }

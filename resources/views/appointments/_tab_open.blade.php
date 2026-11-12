@@ -41,6 +41,10 @@
                 @if ($canManage)
                     <td class="text-right whitespace-nowrap">
                         <div class="flex justify-end gap-1">
+                            @if ($request->customer_id === null)
+                                <x-icon-btn icon="person_search" size="sm" show-label data-entry-modal-trigger
+                                            :href="route('appointments.assign.form', $request)">{{ __('appointment.assign.action') }}</x-icon-btn>
+                            @endif
                             @if ($request->status === \App\Enums\Calendar\AppointmentRequestStatus::Requested)
                                 <x-action-form :action="route('appointments.confirm', $request)">
                                     <x-icon-btn icon="check" tone="success" size="sm" type="submit" show-label>{{ __('Bestätigen') }}</x-icon-btn>

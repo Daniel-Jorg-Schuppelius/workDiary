@@ -1,7 +1,7 @@
 ---
 title: "Helpdesk e service desk"
 topic: helpdesk.overview
-version: 3
+version: 5
 keywords:
     - sistema di ticket
     - aprire un ticket
@@ -84,3 +84,58 @@ il volume per coda, i tempi di reazione e di risoluzione,
 l'adempimento SLA, i motivi di attesa, le quote di change, il numero di
 problemi aperti e la domanda di catalogo. Alle classifiche dei singoli
 operatori si rinuncia deliberatamente.
+
+**Cambiare lo stato:** con **Cambia stato** sul ticket Lei sceglie il nuovo
+stato; vengono proposte solo le transizioni consentite. Alla soluzione e alla
+chiusura registra il **Codice di chiusura** e il **Riepilogo della
+soluzione**. Uno stato di attesa richiede un motivo, una data di
+ripresentazione e una persona responsabile; alla scadenza WorkDiary glielo
+ricorda. Il contratto SLA stabilisce se l’orologio SLA si ferma. Un ticket
+risolto si riapre solo con un motivo; i tempi di reazione e di soluzione
+precedenti restano invariati.
+
+**Impostazioni della coda:** per ogni coda Lei definisce i tipi di ticket
+supportati, gli orari di servizio, la regione delle festività, il nome del
+mittente e l’indirizzo di risposta. I nuovi ticket senza assegnazione vanno
+alla coda predefinita; se questa non accetta il tipo di ticket, alla prima
+coda che lo accetta. Lo SLA predefinito della coda vale se né l’asset del
+ticket né il progetto né il cliente hanno un proprio contratto.
+
+**Coda gestita esternamente:** se un sistema collegato come Zammad gestisce i
+ticket di una coda, i cambi di stato e le risposte al cliente sono bloccati
+in WorkDiary e il ticket mostra un avviso. Assegnazione, note interne, tempi
+e fatturazione restano possibili. Quando Lei ripristina la destinazione dei
+ticket dell’integrazione, WorkDiary gestisce di nuovo la coda.
+
+**Riservatezza:** un ticket riservato è visibile solo all’incaricato, agli
+osservatori, al team della coda e agli amministratori. Lei imposta il livello
+alla creazione o nella classificazione.
+
+**Ordinare un servizio:** in **Ordinare un servizio** i collaboratori
+ordinano per sé voci del catalogo dei servizi. I dati del modulo d’ordine
+compaiono sul ticket e nella finestra di decisione dell’approvazione; il
+ticket mostra inoltre quale pratica evade l’ordine.
+
+**Stato dell’invio:** ogni risposta inviata per e-mail indica se l’invio è in
+coda, eseguito o non riuscito.
+
+**Ticket da un punto aperto:** sul punto aperto, **Apri ticket** crea un
+ticket con titolo, descrizione e riferimento del punto. Per ogni punto nasce
+al massimo un ticket; il punto vi rimanda.
+
+**Portale clienti:** quando il cliente conferma la soluzione o riapre il
+ticket con un motivo, ciò avviene come un cambio di stato interno — con
+cronologia e tempi di reazione e di soluzione invariati. Per le code gestite
+esternamente, risposta, accettazione e riapertura sono bloccate anche nel
+portale; lì il portale mostra solo lo stato.
+
+**Cambio di coda e casella:** quando un ticket cambia coda, vale lo SLA
+predefinito della nuova coda se il suo contratto proveniva finora dalla coda
+o dall’organizzazione oppure mancava; un contratto dell’asset, del progetto o
+del cliente e un contratto impostato espressamente restano. In **Casella in ingresso** Lei
+assegna una casella alla coda — una per coda.
+
+**Ticket riservati negli elenchi:** gli elenchi di selezione e i riferimenti
+mostrano un ticket riservato solo alle persone autorizzate. Nei dettagli dei
+report continua a essere conteggiato, ma agli altri appare solo come «Ticket
+riservato».

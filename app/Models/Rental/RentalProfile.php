@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Rental;
 
 use App\Casts\MoneyCast;
-use App\Enums\Rental\RentalMode;
+use App\Enums\Rental\{RentalCondition, RentalMode};
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use CommonToolkit\Enums\CurrencyCode;
@@ -35,6 +35,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $buffer_after_hours
  * @property bool $requires_inspection
  * @property array<int, string>|null $accessories
+ * @property array<int, string>|null $checklist_labels Prüfpunkte der Protokoll-Checkliste (MVP-1604)
+ * @property RentalCondition|null $min_condition
+ * @property RentalCondition|null $current_condition Stand der letzten Rücknahme oder der Pflege im Profil
+ * @property string|null $home_site_label
  * @property RentalMode|null $rental_mode Wohnung (Branchenprofil Vermieter); null = Leihgerät
  * @property \CommonToolkit\ValueObjects\Money|null $rent_amount Kaltmiete je Monat
  * @property \CommonToolkit\ValueObjects\Money|null $ancillary_amount Nebenkostenvorauszahlung je Monat
@@ -50,7 +54,7 @@ class RentalProfile extends Model {
     protected $fillable = [
         'organization_id', 'asset_id', 'is_rentable', 'portal_bookable', 'prepayment_percent', 'group_code',
         'home_site_label', 'buffer_before_hours', 'buffer_after_hours',
-        'requires_inspection', 'min_condition', 'accessories',
+        'requires_inspection', 'min_condition', 'current_condition', 'accessories', 'checklist_labels',
         'default_rate_card_id', 'notes',
         'rental_mode', 'public_description', 'max_guests', 'minimum_nights',
         'check_in_time', 'check_out_time', 'rent_amount', 'ancillary_amount', 'currency',
@@ -65,6 +69,9 @@ class RentalProfile extends Model {
         'buffer_before_hours' => 'integer',
         'buffer_after_hours' => 'integer',
         'accessories' => 'array',
+        'checklist_labels' => 'array',
+        'min_condition' => RentalCondition::class,
+        'current_condition' => RentalCondition::class,
         'rental_mode' => RentalMode::class,
         'max_guests' => 'integer',
         'minimum_nights' => 'integer',
@@ -90,6 +97,13 @@ class RentalProfile extends Model {
     /** @param Builder<self> $query */
     public function scopeLongTermRentable(Builder $query): void {
         $query->whereIn('rental_mode', [RentalMode::LongTerm->value, RentalMode::Both->value]);
+    }
+
+    /** Mindestzustand unterschritten (MVP-1604); ohne bekannten Zustand gilt das Gerät als vergebbar. */
+    public function isBelowMinCondition(): bool {
+        return $this->min_condition !== null
+            && $this->current_condition !== null
+            && ! $this->current_condition->meets($this->min_condition);
     }
 
     public function isHousing(): bool {

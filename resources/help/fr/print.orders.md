@@ -1,7 +1,7 @@
 ---
 title: "Ordres d'impression (imprimerie & copie)"
 topic: print.orders
-version: 1
+version: 2
 keywords:
     - reprographie
     - contrôle en amont
@@ -45,3 +45,5 @@ qualité compare à l'état validé et documente libération, blocage ou reprise
 utilise la logistique existante, la vente au comptoir reste sobre en
 données. À l'échéance de rétention, seul le fichier client est supprimé —
 ordre, instantané et somme de contrôle demeurent comme preuve commerciale.
+
+**Marge de sécurité et tons directs :** dans le bon à tirer, vous consignez la marge de sécurité en millimètres et les tons directs. Les deux figurent ensuite dans l’état de production de la commande.

@@ -38,6 +38,7 @@
         .verify .qr img { width: 100px; height: 100px; }
         .verify code { font-family: DejaVu Sans Mono, monospace; }
         .revoked { margin: 0 0 18px; padding: 10px 12px; border: 2px solid #a00; color: #a00; font-weight: 700; }
+        .tpl-issuer { margin-top: 8px; font-size: 9px; color: #555; }
     </style>
 </head>
 <body>
@@ -104,6 +105,8 @@
             @endif
         </tr>
     </table>
+    {{-- Aussteller nach Blockzustand des Designs (MVP-1624). --}}
+    @include('pdf._design_issuer')
 </div>
 </body>
 </html>

@@ -10,13 +10,10 @@
 
 namespace App\Services\Protocol;
 
-use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueVisibility};
-use App\Enums\Protocol\{ProtocolEventType, ProtocolSignatureMethod, ProtocolSignatureRole};
+use App\Enums\Protocol\{ProtocolEventType, ProtocolSignatureMethod, ProtocolSignatureRole, ProtocolStatus};
 use App\Models\Platform\User;
 use App\Models\Protocol\{Protocol, ProtocolEvent, ProtocolSignatureToken};
-use App\Services\OpenIssue\OpenIssueService;
 use CommonToolkit\Helper\Data\CryptoHelper;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -42,6 +39,7 @@ class ProtocolSignatureTokenService {
      * @return array{token: string, model: ProtocolSignatureToken}
      */
     public function issue(Protocol $protocol, User $actor, array $data): array {
+        $this->assertAwaitingSignature($protocol);
         $role = $this->parseRole($data['role'] ?? ProtocolSignatureRole::Customer->value);
         $token = Str::random(48);
         $hash = CryptoHelper::hash($token);
@@ -95,6 +93,7 @@ class ProtocolSignatureTokenService {
 
     public function open(string $token): ProtocolSignatureToken {
         $record = $this->ensureUsable($token);
+        $this->assertAwaitingSignature($record->protocol()->firstOrFail());
 
         if ($record->opened_at === null) {
             $record->update(['opened_at' => Carbon::now()]);
@@ -114,17 +113,20 @@ class ProtocolSignatureTokenService {
 
         return DB::transaction(function () use ($record, $data): ProtocolSignatureToken {
             $protocol = $record->protocol()->firstOrFail();
+            $this->assertAwaitingSignature($protocol);
             $actor = $protocol->creator()->firstOrFail(); // Token-Inhaber agiert in Vertretung
 
-            $signatureData = array_merge([
+            // Feste Schlüssel statt Durchreichen: Rolle, Methode und Uploader bestimmt der Link, nicht die Eingabe.
+            $signatureData = [
                 'role' => $record->role->value,
                 'method' => ProtocolSignatureMethod::EmailLink->value,
                 'signer_name' => $data['signer_name'] ?? $record->signer_name ?? 'Anonym',
                 'signer_email' => $data['signer_email'] ?? $record->signer_email,
-                'signature_image_path' => $data['signature_image_path'] ?? null,
+                'signature_image' => $data['signature_image'] ?? null,
+                'uploaded_by_user_id' => null,
                 'ip' => $data['ip'] ?? null,
                 'user_agent' => $data['user_agent'] ?? null,
-            ], $data);
+            ];
 
             $signature = $this->protocols->addSignature($protocol, $actor, $signatureData);
 
@@ -134,6 +136,9 @@ class ProtocolSignatureTokenService {
                 'decided_at' => Carbon::now(),
                 'signed_signature_id' => $signature->id,
             ]);
+
+            // Wer den Link ausgestellt hat, erfährt von der Unterschrift.
+            $this->protocols->notifyCustomerSigned($protocol, $record->creator, $signature->signer_name);
 
             return $record->refresh();
         });
@@ -159,6 +164,7 @@ class ProtocolSignatureTokenService {
 
         return DB::transaction(function () use ($record, $data, $reason): ProtocolSignatureToken {
             $protocol = $record->protocol()->firstOrFail();
+            $this->assertAwaitingSignature($protocol);
             $actor = $protocol->creator()->firstOrFail(); // Token-Inhaber agiert in Vertretung
 
             $record->update([
@@ -168,47 +174,29 @@ class ProtocolSignatureTokenService {
                 'decided_at' => Carbon::now(),
             ]);
 
-            // Offene Punkte am betroffenen Auftrag (Protokoll-Subjekt) bzw.
-            // ersatzweise am Protokoll selbst erfassen.
-            $issueSubject = $protocol->subject instanceof Model ? $protocol->subject : $protocol;
-            $issues = array_values(array_filter(array_map(
-                static fn($line): string => trim((string) $line),
-                $data['issues'] ?? []
-            ), static fn(string $line): bool => $line !== ''));
-
-            if ($issues === []) {
-                // Mindestens ein Offener Punkt aus der Pflicht-Begründung.
-                $issues = [$reason];
-            }
-
-            $openIssues = app(OpenIssueService::class);
-            foreach ($issues as $line) {
-                $openIssues->create($issueSubject, $actor, [
-                    'organization_id' => $protocol->organization_id,
-                    'source_type' => OpenIssueSource::CustomerRejection->value,
-                    'source_ref_id' => $protocol->id,
-                    'title' => Str::limit($line, 200, ''),
-                    'description' => __('protocol.signature.rejectIssueDescription', [
-                        'protocol' => $protocol->title,
-                        'name' => $data['signer_name'] ?? $record->signer_name ?? __('protocol.signature.customer'),
-                    ]),
-                    'severity' => OpenIssueSeverity::Medium->value,
-                    'visibility' => OpenIssueVisibility::Customer->value,
-                ]);
-            }
-
-            ProtocolEvent::log(null, ProtocolEventType::SignatureRejected, [
-                'token_id' => $record->id,
-                'role' => $record->role->value,
-                'signer_name' => $data['signer_name'] ?? $record->signer_name,
+            $this->protocols->rejectByCustomer($protocol, $actor, $record->creator, [
                 'reason' => $reason,
-                'issue_count' => count($issues),
+                'signer_name' => $data['signer_name'] ?? $record->signer_name,
+                'issues' => $data['issues'] ?? [],
                 'ip' => $data['ip'] ?? null,
                 'user_agent' => $data['user_agent'] ?? null,
-            ], $actor->id, extra: ['protocol_id' => $protocol->id]);
+                'token_id' => $record->id,
+                'role' => $record->role->value,
+                'channel' => ProtocolSignatureMethod::EmailLink->value,
+            ]);
 
             return $record->refresh();
         });
+    }
+
+    /**
+     * Unterschrieben und abgelehnt wird nur am eingefrorenen Inhalt („in
+     * Prüfung“): danach ist das Protokoll abgeschlossen, davor noch änderbar.
+     */
+    private function assertAwaitingSignature(Protocol $protocol): void {
+        if ($protocol->status !== ProtocolStatus::InReview) {
+            throw new RuntimeException((string) __('protocol.signature.notAwaiting'));
+        }
     }
 
     private function ensureUsable(string $token): ProtocolSignatureToken {

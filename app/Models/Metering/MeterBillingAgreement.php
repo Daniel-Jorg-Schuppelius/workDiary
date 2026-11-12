@@ -99,6 +99,11 @@ class MeterBillingAgreement extends Model {
         return $this->hasMany(MeterBillingRun::class)->orderByDesc('period_start');
     }
 
+    /** Gilt eine Mengenstaffel statt des Einheitspreises? Gleiche Lesart wie der Rechner: nur Zeilen mit Preis. */
+    public function hasTiers(): bool {
+        return array_filter((array) ($this->tiers ?? []), static fn (mixed $tier): bool => is_array($tier) && isset($tier['price'])) !== [];
+    }
+
     public function isRunnable(): bool {
         return $this->status === MeterBillingAgreementStatus::Active
             && ($this->end_on === null || ! $this->end_on->isPast());

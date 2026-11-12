@@ -524,6 +524,12 @@
                             <textarea class="textarea textarea-bordered textarea-sm" rows="3" maxlength="2000"
                                       x-model="contentTexts.footer_text" @change="markDirty()" :disabled="!editable"></textarea>
                         </label>
+                        <label class="form-control mt-2">
+                            <span class="label-text text-sm">{{ __('document_design.editor.confidentiality_text') }}</span>
+                            <textarea class="textarea textarea-bordered textarea-sm" rows="2" maxlength="2000"
+                                      x-model="contentTexts.confidentiality_text" @change="markDirty()" :disabled="!editable"></textarea>
+                            <span class="text-xs text-muted">{{ __('document_design.editor.confidentiality_hint') }}</span>
+                        </label>
                     </x-card>
 
                 </div>

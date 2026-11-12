@@ -1,7 +1,7 @@
 ---
 title: "Rôles & droits"
 topic: admin.roles
-version: 3
+version: 4
 keywords:
     - permissions
     - autorisations
@@ -87,3 +87,5 @@ haut du contrôle d'accès et du journal d'audit). La vue est en lecture
 seule et nécessite le droit « Voir les modifications des rôles et droits » ; les
 comptes de support l'ont afin de retracer les opérations sans rien
 modifier.
+
+**Copier un rôle :** l’icône « Copier » d’un rôle de l’organisation ouvre la boîte de création avec ses permissions présélectionnées. Donnez un nom propre au rôle et ajustez les permissions ; le rôle source est consigné dans les **Modifications de droits**. Les rôles globaux de la plateforme ne peuvent pas être copiés.

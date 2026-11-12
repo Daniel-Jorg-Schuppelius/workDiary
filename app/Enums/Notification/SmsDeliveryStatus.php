@@ -19,9 +19,9 @@ use App\Enums\Contracts\HasLabel;
  * Zustellstatus einer SMS (Feature 147, MVP-730) — geführt je Empfänger im
  * `notification_dispatch_log`.
  *
- * `Sent` heißt „vom Gateway angenommen", nicht „beim Empfänger": echte
- * Zustellquittungen (DLR) kommen erst über den optionalen Status-Webhook des
- * Anbieters und heben den Eintrag dann auf `Delivered`. `Blocked` ist kein
+ * `Sent` heißt „vom Gateway angenommen", nicht „beim Empfänger" —
+ * Zustellquittungen (DLR) wertet WorkDiary nicht aus (Feature 147, bewusst
+ * außen vor bis zu einem Piloten mit Status-Webhook). `Blocked` ist kein
  * Fehler des Anbieters, sondern eine eigene Entscheidung (Budgetdeckel,
  * fehlendes Opt-in) — sie kostet nichts und erzeugt keinen Versuch.
  */
@@ -29,8 +29,6 @@ enum SmsDeliveryStatus: string implements HasLabel {
     use HasOptions;
 
     case Sent = 'sent';
-
-    case Delivered = 'delivered';
 
     case Failed = 'failed';
 
@@ -42,6 +40,6 @@ enum SmsDeliveryStatus: string implements HasLabel {
 
     /** Hat der Versuch tatsächlich Geld gekostet (zählt gegen das Monatsbudget)? */
     public function isBillable(): bool {
-        return $this === self::Sent || $this === self::Delivered;
+        return $this === self::Sent;
     }
 }

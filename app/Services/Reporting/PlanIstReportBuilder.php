@@ -20,7 +20,7 @@ use App\Models\Schedule\ScheduledShift;
 use App\Models\Time\{Attendance, TimeEntry, WorkSchedule};
 use App\Services\Flextime\FlexCalculator;
 use App\Support\Query\DateRange;
-use App\Support\Tz;
+use App\Support\{Setting, Tz};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -48,9 +48,19 @@ use Illuminate\Support\Collection;
  *    die Lücke wird in der UI explizit ausgewiesen.
  */
 class PlanIstReportBuilder {
-    /** Schwellen aus §2.1, später konfigurierbar. */
-    private const int LATE_START_THRESHOLD_MIN = 15;
-    private const int HOURS_DIFF_THRESHOLD_PERCENT = 10;
+    public const string SETTING_LATE_START = 'plan_ist.late_start_minutes';
+
+    public const string SETTING_HOURS_DIFF = 'plan_ist.hours_diff_percent';
+
+    /** Schwelle „Beginn nach Plan“ in Minuten (§2.1), je Organisation einstellbar. */
+    public static function lateStartMinutes(): int {
+        return max(0, (int) Setting::get(self::SETTING_LATE_START, 15));
+    }
+
+    /** Schwelle der Stundenabweichung in Prozent (§2.1), je Organisation einstellbar. */
+    public static function hoursDiffPercent(): int {
+        return max(0, (int) Setting::get(self::SETTING_HOURS_DIFF, 10));
+    }
 
     /**
      * Persönlicher Anwesenheits-Plan/Ist pro Tag im Zeitraum.
@@ -62,6 +72,7 @@ class PlanIstReportBuilder {
      *     delta_minutes: int,
      *     plan_start: ?string,
      *     actual_start: ?string,
+     *     actual_end: ?string,
      *     late_start_minutes: ?int,
      *     warnings: list<string>,
      *     no_plan: bool,
@@ -94,6 +105,9 @@ class PlanIstReportBuilder {
 
         $daysOff = app(FlexCalculator::class)->daysWithoutTarget([(int) $user->id], $from, $to)[(int) $user->id] ?? [];
 
+        $lateStartLimit = self::lateStartMinutes();
+        $hoursDiffLimit = self::hoursDiffPercent();
+
         $rows = [];
         for ($d = $from; $d->lte($to); $d = $d->addDay()) {
             $key = $d->format('Y-m-d');
@@ -114,6 +128,7 @@ class PlanIstReportBuilder {
             $firstAtt = $dayAttendances->sortBy('started_at')->first();
             // Stempelzeit liegt in UTC, der Kernzeitbeginn ist Ortszeit.
             $actualStart = Tz::toLocal($firstAtt?->started_at)?->format('H:i');
+            $actualEnd = Tz::toLocal($dayAttendances->max('ended_at'))?->format('H:i');
 
             $delta = $actualMinutes - $planMinutes;
             $lateStart = null;
@@ -127,12 +142,12 @@ class PlanIstReportBuilder {
 
             $warnings = [];
             if (! $noPlan) {
-                if ($lateStart !== null && $lateStart > self::LATE_START_THRESHOLD_MIN) {
+                if ($lateStart !== null && $lateStart > $lateStartLimit) {
                     $warnings[] = 'presence.lateStart';
                 }
                 if ($planMinutes > 0 && abs($delta) > 0) {
                     $pct = (abs($delta) / max(1, $planMinutes)) * 100;
-                    if ($pct > self::HOURS_DIFF_THRESHOLD_PERCENT) {
+                    if ($pct > $hoursDiffLimit) {
                         $warnings[] = 'presence.hoursDiff';
                     }
                 }
@@ -145,6 +160,7 @@ class PlanIstReportBuilder {
                 'delta_minutes' => $delta,
                 'plan_start' => $planStart,
                 'actual_start' => $actualStart,
+                'actual_end' => $actualEnd,
                 'late_start_minutes' => $lateStart,
                 'warnings' => $warnings,
                 'no_plan' => $noPlan,

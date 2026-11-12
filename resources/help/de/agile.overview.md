@@ -1,7 +1,7 @@
 ---
 title: "Agiles Projektmanagement"
 topic: agile.overview
-version: 2
+version: 4
 keywords:
     - Kanban
     - Scrum
@@ -43,6 +43,15 @@ seine Kriterien: anlegen, einzeln abhaken, entfernen. Die Zahl daneben zeigt
 erfüllte und vorhandene Kriterien; vor dem Zug in eine Fertig-Spalte nennt
 das Board unerfüllte Kriterien.
 
+**Definition of Done:** In den Board-Einstellungen steht die Definition of
+Done des Projekts, eine Zeile je Punkt. Beim Zug in eine Fertig-Spalte
+öffnet das Board einen Dialog mit diesen Punkten und den noch offenen
+Akzeptanzkriterien. Verschoben wird erst, wenn jeder Punkt bestätigt ist.
+Wer das Recht zum Übersteuern hat, kann trotz offener Punkte verschieben und
+gibt dafür eine Begründung an; das gilt ebenso für ein erreichtes WIP-Limit.
+Jede Übersteuerung steht im Verlauf und zählt in der Qualitätsreihe der
+Berichte, die auch die DoD-Abweichungsquote je Woche ausweist.
+
 **Board:** Spalten bilden den Arbeitsfluss ab; die Karten wandern von links
 nach rechts. Mit gewähltem Sprint zeigt das Board ausschließlich die Elemente
 dieses Sprints.
@@ -69,3 +78,5 @@ Blockierungen und eine empirische Prognose — Letztere erscheint erst, wenn
 genügend vergleichbare Wochen vorliegen, statt Scheingenauigkeit
 vorzutäuschen. Die Übersicht zeigt nur Projekte, die die betrachtende Person
 ohnehin sehen darf.
+
+**Außerhalb des Boards erledigt:** Wird die Aufgabe einer Karte anderswo erledigt (Aufgabenliste, Import), folgt die Karte in die erledigt-Spalte. Offene Akzeptanzkriterien und die nicht bestätigte Definition of Done stehen dann als Abweichung im Board-Verlauf und zählen in der DoD-Abweichungsquote.

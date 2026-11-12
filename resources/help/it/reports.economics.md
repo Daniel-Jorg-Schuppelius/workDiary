@@ -63,3 +63,20 @@ Esportazione in **PDF**, **CSV** o **Excel** per direzione e controllo di
 gestione. La pagina mostra dati finanziari dell’intera organizzazione ed
 è disponibile solo per le persone con il permesso **Visualizza i
 report**.
+
+## Gestire la tariffa di costo per dipendente
+
+La **tariffa di costo interna** per persona è la base del consuntivo. Si trova
+nella finestra del dipendente (**Organizzazione** → **Dipendenti** →
+modifica), nel gruppo **Tariffe per fatturazione e consuntivo**, accanto alla
+**Tariffa oraria (fatturazione)**. Entrambi i campi sono visibili e
+modificabili solo con il permesso «Gestisci i dati del personale e delle
+buste paga»; non
+compaiono nel profilo personale e ogni modifica viene registrata nel log.
+
+Ordine di determinazione delle tariffe: la tariffa di costo della persona
+prevale su quella di attività, progetto e cliente. Anche la tariffa oraria
+della persona prevale su quella di attività, progetto e cliente: hanno la
+precedenza solo le condizioni particolari e una tariffa indicata direttamente
+sulla registrazione del tempo. Una nuova tariffa vale per i tempi registrati
+o ricalcolati in seguito.

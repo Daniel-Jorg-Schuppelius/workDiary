@@ -1,7 +1,7 @@
 ---
 title: "Todoist connection"
 topic: admin.todoist
-version: 2
+version: 3
 keywords:
     - Todoist
     - sync tasks
@@ -158,3 +158,5 @@ Todoist.
   paused; reconnect with **Renew connection**. If a sync fails for another
   reason, the page shows the last error until a sync succeeds again; an
   operations task is created as well.
+
+**Data ownership:** If another system leads the tasks, the synchronisation creates a “Data ownership” case per task in the integration inbox. **Take over once** imports the task through the same mapping as long as it is active; if the task changes in the source afterwards, the case reopens.

@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 
-{{-- Zentraler Arbeitsvorrat (Feature 179). Variablen: $items (Paginator von WorkItem), $sources (Schlüssel → Quelle), $now, $filters, $sort, $dir. --}}
+{{-- Zentraler Arbeitsvorrat (Feature 179). Variablen: $items (Paginator von WorkItem), $sources (Schlüssel → Quelle), $now, $filters (category, source, due, mine), $sort, $dir. --}}
 
 @extends('layouts.app')
 
@@ -32,6 +32,13 @@
             @endforeach
         </select>
 
+        <select name="due" class="select select-sm select-bordered w-44 shrink-0" aria-label="{{ __('work-queue.filter.due') }}">
+            <option value="">{{ __('work-queue.filter.all_due') }}</option>
+            @foreach (\App\Enums\WorkQueue\WorkItemDueFilter::cases() as $due)
+                <option value="{{ $due->value }}" @selected($filters['due'] === $due->value)>{{ $due->label() }}</option>
+            @endforeach
+        </select>
+
         <x-filter-toggle name="mine" :label="__('work-queue.filter.mine')" :checked="$filters['mine']" />
     </x-filter-bar>
 
@@ -43,7 +50,7 @@
     @else
         <x-table scroll="flex" :pinRows="true" table-sort="server"
                  :route="route('work-queue.index')" :current-sort="$sort" :current-dir="$dir"
-                 :sort-params="array_filter(['category' => $filters['category'] ?: null, 'source' => $filters['source'] ?: null, 'mine' => $filters['mine'] ? 1 : null])">
+                 :sort-params="array_filter(['category' => $filters['category'] ?: null, 'source' => $filters['source'] ?: null, 'due' => $filters['due'] ?: null, 'mine' => $filters['mine'] ? 1 : null])">
             <x-slot:head>
                 <tr>
                     <x-table.th sort="urgency">{{ __('work-queue.column.urgency') }}</x-table.th>

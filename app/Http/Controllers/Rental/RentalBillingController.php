@@ -149,6 +149,21 @@ class RentalBillingController extends Controller {
         return back()->with('status', __('Kaution als erhalten markiert.'));
     }
 
+    /** Angeforderte Kaution erlassen — mit Pflichtbegründung (MVP-1620). */
+    public function waiveDeposit(Request $request, RentalDeposit $deposit): RedirectResponse {
+        Gate::authorize('finance', $deposit->rentalCase()->firstOrFail());
+
+        $data = $request->validate(['reason' => ['required', 'string', 'max:2000']]);
+
+        try {
+            $this->billing->waiveDeposit($deposit, $request->user() ?? abort(401), (string) $data['reason']);
+        } catch (\RuntimeException|\InvalidArgumentException $e) {
+            return back()->withErrors(['deposit' => ErrorText::for($e)]);
+        }
+
+        return back()->with('status', __('rental.deposit.flash.waived'));
+    }
+
     public function settleDeposit(Request $request, RentalDeposit $deposit): RedirectResponse {
         Gate::authorize('finance', $deposit->rentalCase()->firstOrFail());
 

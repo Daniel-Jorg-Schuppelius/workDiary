@@ -1,7 +1,7 @@
 ---
 title: "Supplier scorecards"
 topic: supplier-scorecards.overview
-version: 2
+version: 3
 keywords:
     - supplier rating
     - vendor rating
@@ -28,3 +28,5 @@ Scorecards rate suppliers from real transaction data: on-time delivery (goods re
 **Ranking & drilldown:** The list sorts by score; the detail scorecard shows the metrics with charts and signed drilldowns into the underlying records.
 
 **Hidden suppliers:** Suppliers marked **Hide in reports** are left out of the ranking; the switch **Include hidden suppliers** brings them back.
+
+**Setting weights:** With the right to configure inventory you open **Weights** in the ranking and enter a weight in percent for each metric. The total need not be 100; an empty field restores the default. The note above the ranking states the weights in effect.

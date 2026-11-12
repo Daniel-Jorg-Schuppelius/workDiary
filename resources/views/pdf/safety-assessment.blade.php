@@ -26,6 +26,7 @@
         table.rows th { background: #eee; text-align: left; }
         .center { text-align: center; }
         .muted { color: #555; font-size: 8pt; }
+        .tpl-issuer { margin-top: 2mm; font-size: 8pt; color: #555; }
     </style>
 </head>
 <body>
@@ -80,5 +81,7 @@
     </table>
 
     <p class="muted">{{ __('safety.register.pdf.legend') }} · {{ __('safety.register.pdf.generated', ['date' => $generatedAt->orgTz()->format('d.m.Y H:i')]) }}</p>
+    {{-- Arbeitgeber nach Blockzustand des Designs (MVP-1624). --}}
+    @include('pdf._design_issuer')
 </body>
 </html>

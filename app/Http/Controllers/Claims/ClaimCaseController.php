@@ -20,9 +20,10 @@ use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Attachments\FileAttacher;
-use App\Services\Claims\ClaimCaseService;
+use App\Services\Claims\{ClaimCaseService, ClaimFinancialService};
 use App\Services\Claims\Contracts\RmaReturnLabelIssuer;
 use App\Services\Classification\ClassificationResolver;
+use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -35,6 +36,12 @@ use Illuminate\Validation\Rule;
  * Bearbeiten als Dialog. Dublettenwarnung beim Eingang (MVP-248).
  */
 class ClaimCaseController extends Controller {
+    /** Betroffene Objekte der Akte (MVP-1577). */
+    private const array LINK_FIELDS = [
+        'diary_entry_id', 'project_id', 'service_ticket_id', 'protocol_id', 'asset_id',
+        'article_id', 'invoice_id', 'supplier_id', 'purchase_order_id',
+    ];
+
     public function __construct(private readonly ClaimCaseService $service) {}
 
     public function index(Request $request): View {
@@ -66,11 +73,13 @@ class ClaimCaseController extends Controller {
 
         $claim->load([
             'customer', 'responsible', 'invoice', 'asset', 'article', 'supplier',
-            'diaryEntry', 'project', 'serviceTicket', 'protocol', 'stockSerial',
+            'diaryEntry', 'project', 'serviceTicket', 'protocol', 'stockSerial', 'stockLot',
             'defectType', 'rootCause', 'goodwillReason',
             'evidence.recorder', 'assessments.assessor', 'decisions.decider',
-            'rmaReturns.inspections', 'rmaReturns.returnShipments', 'actions.assignee',
-            'financialOutcomes.resultInvoice', 'supplierRecourses.supplier',
+            'rmaReturns.inspections', 'rmaReturns.returnShipments', 'rmaReturns.articleVariant', 'rmaReturns.article',
+            'rmaReturns.warehouse', 'rmaReturns.stockLot', 'actions.assignee', 'actions.followUp',
+            'financialOutcomes.resultInvoice', 'financialOutcomes.invoice', 'supplierRecourses.supplier',
+            'supplierRecourses.purchaseOrder', 'supplierRecourses.incomingEInvoice', 'supplierRecourses.article', 'purchaseOrder',
             'links', 'attachments',
         ]);
 
@@ -84,20 +93,36 @@ class ClaimCaseController extends Controller {
             'goodwillReasons' => $resolver->list($orgId, ClassificationDomain::GoodwillReason),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'returnCarriers' => $claim->organization !== null ? app(RmaReturnLabelIssuer::class)->carriers($claim->organization) : [],
+            'stock' => $this->stockOptions($claim),
+            'financialInvoices' => \App\Models\Invoicing\Invoice::query()
+                ->where(fn ($q) => $q->whereKey($claim->invoice_id ?? 0)->when($claim->customer_id !== null, fn ($w) => $w->orWhere('customer_id', $claim->customer_id)))
+                ->orderByDesc('id')->limit(100)->get(['id', 'number', 'issued_on', 'status', 'customer_id']),
+            'localBilling' => app(ClaimFinancialService::class)->localBilling($claim),
+            'recourseOptions' => Gate::allows('recourse', $claim) ? $this->recourseOptions() : null,
             'duplicates' => $this->service->duplicates($claim->only([
                 'diary_entry_id', 'invoice_id', 'asset_id', 'stock_serial_id', 'serial_no', 'customer_id', 'title',
             ]), (int) $claim->id),
+            // Folgeaufträge der Maßnahmen (MVP-1623): sichtbare Aufträge beim Kunden der Akte.
+            'followUpOrders' => \App\Models\Diary\DiaryEntry::query()->visibleInBulkTo($this->authUser())
+                ->when($claim->customer_id !== null, fn ($q) => $q->where('customer_id', $claim->customer_id))
+                ->orderByDesc('id')->limit(100)->get(['id', 'title', 'customer_id', 'user_id', 'assigned_user_id']),
         ]);
     }
 
-    /** Anlege-Dialog (Formulare in Dialogen, MVP-247). */
-    public function create(): View {
+    /**
+     * Anlege-Dialog (Formulare in Dialogen, MVP-247). Die Einstiege an Rechnung,
+     * Auftrag, Asset und Ticket übergeben ihr Objekt als Sqid (MVP-1577).
+     */
+    public function create(Request $request): View {
         Gate::authorize('create', ClaimCase::class);
 
-        return view('claims._form_dialog', [
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
-        ]);
+        return $this->formDialog(null, $this->prefillFromOrigin($request));
+    }
+
+    public function edit(ClaimCase $claim): View {
+        Gate::authorize('update', $claim);
+
+        return $this->formDialog($claim, $claim->only([...self::LINK_FIELDS, 'customer_id', 'responsible_user_id', 'serial_no', 'stock_lot_id']));
     }
 
     public function store(Request $request): RedirectResponse {
@@ -119,7 +144,12 @@ class ClaimCaseController extends Controller {
     public function update(Request $request, ClaimCase $claim): RedirectResponse {
         Gate::authorize('update', $claim);
 
-        $claim->fill($this->validated($request))->save();
+        $data = $this->validated($request);
+        // Das Dialogfeld kennt nur den Tag: eine unveränderte Frist behält ihre Uhrzeit.
+        if (isset($data['due_at']) && $claim->due_at?->isSameDay($data['due_at']) === true) {
+            unset($data['due_at']);
+        }
+        $claim->fill($data)->save();
 
         return back()->with('status', __('Reklamationsakte aktualisiert.'));
     }
@@ -203,6 +233,137 @@ class ClaimCaseController extends Controller {
         return back()->with('status', __('Nachweis erfasst.'));
     }
 
+    /**
+     * Vorbelegung aus dem Einstieg: nur Objekte, die der Nutzer sehen darf;
+     * Kunde, Projekt und Seriennummer folgen dem Objekt.
+     *
+     * @return array<string, int|string|null>
+     */
+    private function prefillFromOrigin(Request $request): array {
+        $origins = [
+            'invoice' => ['invoice_id', \App\Models\Invoicing\Invoice::class],
+            'order' => ['diary_entry_id', \App\Models\Diary\DiaryEntry::class],
+            'asset' => ['asset_id', \App\Models\Asset\Asset::class],
+            'ticket' => ['service_ticket_id', \App\Models\ServiceTicket\ServiceTicket::class],
+        ];
+        $prefill = [];
+        foreach ($origins as $param => [$field, $model]) {
+            $id = Sqid::decode($model, $request->string($param)->toString());
+            $origin = $id !== null ? $model::query()->find($id) : null;
+            if ($origin === null || ! Gate::allows('view', $origin)) {
+                continue;
+            }
+            $prefill[$field] = (int) $origin->getKey();
+            $prefill['customer_id'] ??= $origin->getAttribute('customer_id');
+            foreach (['project_id', 'diary_entry_id', 'asset_id'] as $follow) {
+                if ($follow !== $field && $origin->getAttribute($follow) !== null) {
+                    $prefill[$follow] ??= (int) $origin->getAttribute($follow);
+                }
+            }
+            if ($origin instanceof \App\Models\Asset\Asset) {
+                $prefill['serial_no'] = $origin->serial_no;
+            }
+        }
+
+        return $prefill;
+    }
+
+    /**
+     * Dialog mit den Auswahllisten der betroffenen Objekte: die jüngsten je
+     * Art, dazu immer das bereits verknüpfte. Aufträge nur, soweit sichtbar.
+     *
+     * @param array<string, mixed> $values
+     */
+    private function formDialog(?ClaimCase $claim, array $values): View {
+        $user = $this->authUser();
+        $recent = static fn (\Illuminate\Database\Eloquent\Builder $query, string $field, int $limit = 100) => $query
+            ->orderByDesc('id')->limit($limit)->get()
+            ->when(($values[$field] ?? null) !== null, fn ($rows) => $rows->contains('id', (int) $values[$field])
+                ? $rows
+                : $rows->concat($query->getModel()->newQuery()->whereKey((int) $values[$field])->get()));
+        $stock = app(FeatureFlagResolver::class)->isEnabled('module.lager');
+
+        return view('claims._form_dialog', [
+            'claim' => $claim,
+            'values' => $values,
+            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
+            'diaryEntries' => $recent(\App\Models\Diary\DiaryEntry::query()->visibleInBulkTo($user)->select(['id', 'title', 'customer_id', 'user_id', 'assigned_user_id']), 'diary_entry_id'),
+            'projects' => \App\Models\Project\Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
+            'tickets' => $recent(\App\Models\ServiceTicket\ServiceTicket::query()->select(['id', 'ticket_no', 'title', 'customer_id']), 'service_ticket_id'),
+            'protocols' => $recent(\App\Models\Protocol\Protocol::query()->select(['id', 'title']), 'protocol_id'),
+            'assets' => \App\Models\Asset\Asset::query()->orderBy('name')->get(['id', 'name', 'serial_no', 'customer_id']),
+            'invoices' => $recent(\App\Models\Invoicing\Invoice::query()->select(['id', 'number', 'customer_id', 'issued_on']), 'invoice_id', 200),
+            'suppliers' => \App\Models\Supplier\Supplier::query()->orderBy('name')->get(['id', 'name']),
+            'articles' => $stock ? \App\Models\Article\Article::query()->orderBy('name')->get(['id', 'number', 'name']) : collect(),
+            // Chargen nur chargengeführter Artikel (MVP-1626); die verknüpfte immer dabei.
+            'lots' => $stock ? $recent(\App\Models\Inventory\StockLot::query()->with('variant.article:id,name')
+                ->whereHas('variant.article', fn ($q) => $q->where('batch_required', true))
+                ->select(['id', 'article_variant_id', 'lot_no']), 'stock_lot_id', 300) : collect(),
+            'purchaseOrders' => $stock ? $recent(\App\Models\Procurement\PurchaseOrder::query()->select(['id', 'number', 'supplier_id']), 'purchase_order_id') : collect(),
+        ]);
+    }
+
+    /**
+     * Auswahllisten des Regressdialogs (MVP-1577); Bestellung und Artikel nur mit Lager-Modul.
+     *
+     * @return array{suppliers: \Illuminate\Support\Collection<int, \App\Models\Supplier\Supplier>, purchaseOrders: \Illuminate\Support\Collection<int, \App\Models\Procurement\PurchaseOrder>, incomingInvoices: \Illuminate\Support\Collection<int, \App\Models\Invoicing\IncomingEInvoice>, articles: \Illuminate\Support\Collection<int, \App\Models\Article\Article>}
+     */
+    private function recourseOptions(): array {
+        $stock = app(FeatureFlagResolver::class)->isEnabled('module.lager');
+
+        return [
+            'suppliers' => \App\Models\Supplier\Supplier::query()->orderBy('name')->get(['id', 'name']),
+            'purchaseOrders' => $stock
+                ? \App\Models\Procurement\PurchaseOrder::query()->with('supplier:id,name')->orderByDesc('id')->limit(100)->get(['id', 'number', 'supplier_id'])
+                : collect(),
+            'incomingInvoices' => \App\Models\Invoicing\IncomingEInvoice::query()->purchases()->visibleTo($this->authUser())
+                ->orderByDesc('id')->limit(100)->get(['id', 'invoice_number', 'seller_name', 'issue_date']),
+            'articles' => $stock ? \App\Models\Article\Article::query()->orderBy('name')->get(['id', 'number', 'name']) : collect(),
+        ];
+    }
+
+    /**
+     * Auswahllisten für den Lagerbezug der Rückläufer (MVP-1576); null ohne
+     * Lager-Modul oder Lagerrecht — dann dokumentiert der Rückläufer nur.
+     *
+     * @return array{warehouses: \Illuminate\Support\Collection<int, \App\Models\Inventory\Warehouse>, variants: \Illuminate\Support\Collection<int, \App\Models\Article\ArticleVariant>, serials: \Illuminate\Support\Collection<int, \App\Models\Inventory\StockSerial>, lots: \Illuminate\Support\Collection<int, \App\Models\Inventory\StockLot>}|null
+     */
+    private function stockOptions(ClaimCase $claim): ?array {
+        if (! app(FeatureFlagResolver::class)->isEnabled('module.lager') || ! Gate::allows('warehouse', $claim)) {
+            return null;
+        }
+
+        $variants = \App\Models\Article\ArticleVariant::query()
+            ->with('article:id,name')
+            ->when($claim->article_id !== null, fn ($q) => $q->where('article_id', $claim->article_id))
+            ->get()
+            ->sortBy(fn (\App\Models\Article\ArticleVariant $v): string => ($v->article->name ?? '') . ' ' . ($v->sku ?? ''))
+            ->values();
+        // Ohne Artikel oder Kunde wäre die Liste beliebig — dann nur die Seriennummer der Akte.
+        $serials = \App\Models\Inventory\StockSerial::query()
+            ->where(function ($q) use ($claim): void {
+                $q->whereKey($claim->stock_serial_id ?? 0);
+                if ($claim->article_id !== null || $claim->customer_id !== null) {
+                    $q->orWhere(fn ($inner) => $inner
+                        ->when($claim->article_id !== null, fn ($w) => $w->where('article_id', $claim->article_id))
+                        ->when($claim->customer_id !== null, fn ($w) => $w->where('customer_id', $claim->customer_id)));
+                }
+            })
+            ->orderBy('serial_no')->limit(200)->get(['id', 'article_variant_id', 'serial_no']);
+
+        return [
+            'warehouses' => \App\Models\Inventory\Warehouse::query()->where('active', true)->orderBy('name')->get(['id', 'name']),
+            'variants' => $variants,
+            'serials' => $serials,
+            'lots' => $claim->article_id !== null || $claim->stock_lot_id !== null
+                ? \App\Models\Inventory\StockLot::query()
+                    ->where(fn ($q) => $q->whereIn('article_variant_id', $variants->modelKeys())->orWhere('id', $claim->stock_lot_id ?? 0))
+                    ->orderBy('lot_no')->limit(200)->get(['id', 'article_variant_id', 'lot_no'])
+                : collect(),
+        ];
+    }
+
     /** @return array<string, mixed> */
     private function validated(Request $request): array {
         $fieldModels = [
@@ -218,6 +379,7 @@ class ClaimCaseController extends Controller {
             'supplier_id' => \App\Models\Supplier\Supplier::class,
             'purchase_order_id' => \App\Models\Procurement\PurchaseOrder::class,
             'stock_serial_id' => \App\Models\Inventory\StockSerial::class,
+            'stock_lot_id' => \App\Models\Inventory\StockLot::class,
             'defect_type_classification_id' => \App\Models\Classification\Classification::class,
             'root_cause_classification_id' => \App\Models\Classification\Classification::class,
             'goodwill_reason_classification_id' => \App\Models\Classification\Classification::class,
@@ -228,7 +390,7 @@ class ClaimCaseController extends Controller {
             }
         }
 
-        return $request->validate([
+        $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:8000'],
             'source' => ['required', Rule::enum(ClaimSource::class)],
@@ -253,10 +415,39 @@ class ClaimCaseController extends Controller {
             'purchase_order_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('purchase_orders')],
             'stock_serial_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('stock_serials')],
             'serial_no' => ['nullable', 'string', 'max:255'],
+            'stock_lot_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('stock_lots')],
             // Katalog mit Org-Override (D3): globale Zeilen (org NULL) + eigene.
             'defect_type_classification_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('classifications', includeGlobal: true)],
             'root_cause_classification_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('classifications', includeGlobal: true)],
             'goodwill_reason_classification_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('classifications', includeGlobal: true)],
         ]);
+
+        // Aufträge anderer lassen sich nicht über die Akte anhängen.
+        if (($data['diary_entry_id'] ?? null) !== null && ! Gate::allows('view', \App\Models\Diary\DiaryEntry::query()->findOrFail($data['diary_entry_id']))) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['diary_entry_id' => __('validation.exists', ['attribute' => __('validation.attributes.diary_entry_id')])]);
+        }
+
+        // Charge (MVP-1626): gehört zum Artikel der Akte; ohne Artikel folgt er der Charge.
+        if (($data['stock_lot_id'] ?? null) !== null) {
+            $lotArticleId = (int) \App\Models\Inventory\StockLot::query()->with('variant:id,article_id')->findOrFail((int) $data['stock_lot_id'])->variant?->article_id;
+            if (($data['article_id'] ?? null) !== null && (int) $data['article_id'] !== $lotArticleId) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['stock_lot_id' => __('claims.form.lot_article_mismatch')]);
+            }
+            $data['article_id'] ??= $lotArticleId;
+        }
+
+        // Seriennummer als Text: dem Lager zuordnen, wenn sie dort eindeutig ist — Dublettenprüfung und Seriennummernabgleich brauchen den Bezug.
+        if (array_key_exists('serial_no', $data) && ! array_key_exists('stock_serial_id', $data)) {
+            $serialNo = trim((string) $data['serial_no']);
+            $matches = $serialNo === '' ? collect() : \App\Models\Inventory\StockSerial::query()->where('serial_no', $serialNo)
+                ->when(($data['article_id'] ?? null) !== null, fn ($q) => $q->where('article_id', $data['article_id']))
+                ->limit(2)->get(['id', 'article_id']);
+            $data['stock_serial_id'] = $matches->count() === 1 ? $matches->first()->id : null;
+            if ($matches->count() === 1 && array_key_exists('article_id', $data)) {
+                $data['article_id'] ??= $matches->first()->article_id;
+            }
+        }
+
+        return $data;
     }
 }

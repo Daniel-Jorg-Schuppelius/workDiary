@@ -1,7 +1,7 @@
 ---
 title: "Offline-Synchronisierung"
 topic: admin.offline-sync
-version: 1
+version: 2
 keywords:
     - offline arbeiten
     - ohne Internet
@@ -46,3 +46,7 @@ den Gesamtbestand — ein gesetzter Filter verdeckt sie nicht.
 Eingang auf dem Server. Die Spanne dazwischen ist die Offline-Latenz — ein
 Tag Abstand ist bei Außendienst normal, eine Woche ein Hinweis, dass ein
 Gerät nicht synchronisiert.
+
+## Entscheidung über Konflikte
+
+Neben dem Ergebnis „Konflikt“ steht, wie die Person entschieden hat — „Fremder Stand übernommen“, „Verworfen“ oder „Erneut gesendet“ — oder „offen“, solange sie nicht entschieden hat. Eine erneut gesendete Erfassung erscheint als eigene Zeile mit eigenem Ergebnis. Befehle für einen Bereich, der für die Organisation abgeschaltet ist, werden abgewiesen.

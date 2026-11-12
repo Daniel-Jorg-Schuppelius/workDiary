@@ -99,6 +99,7 @@ return [
         'drive_invalid' => 'Die gewählte Dokumentbibliothek gehört nicht zur gewählten Site.',
         'target_saved' => 'Ziel-Bibliothek gespeichert.',
         'saved' => 'SharePoint-Einstellungen gespeichert.',
+        'saved_and_mirrored' => 'SharePoint-Einstellungen gespeichert und aktiviert — alle bisher freigegebenen Objekte sind zum Spiegeln eingereiht.',
         'mirror_done' => 'Spiegellauf gestartet.',
     ],
 ];

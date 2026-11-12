@@ -14,6 +14,43 @@
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Eingegangene Hinweisgeber-Meldungen einsehen und bearbeiten.')">
+        <x-filter-bar :action="route('whistleblowing.internal.index')" :reset="route('whistleblowing.internal.index')">
+            <select name="status" class="select select-sm select-bordered w-48 shrink-0" aria-label="{{ __('Status') }}">
+                <option value="">{{ __('Alle Status') }}</option>
+                @foreach (\App\Enums\Whistleblowing\CaseStatus::cases() as $status)
+                    <option value="{{ $status->value }}" @selected(($filters['status'] ?? '') === $status->value)>{{ $status->label() }}</option>
+                @endforeach
+            </select>
+            {{-- Kategorie und Priorität filtern nur zugewiesene Fälle (MVP-802): sonst verriete die Trefferliste beides. --}}
+            <select name="category" class="select select-sm select-bordered w-48 shrink-0" aria-label="{{ __('Kategorie') }}" title="{{ __('Wirkt nur auf Fälle, die Ihnen zugewiesen sind.') }}">
+                <option value="">{{ __('Alle Kategorien') }}</option>
+                @foreach (\App\Enums\Whistleblowing\CaseCategory::cases() as $category)
+                    <option value="{{ $category->value }}" @selected(($filters['category'] ?? '') === $category->value)>{{ __('whistleblowing.category.' . $category->value) }}</option>
+                @endforeach
+            </select>
+            <select name="priority" class="select select-sm select-bordered w-36 shrink-0" aria-label="{{ __('Priorität') }}" title="{{ __('Wirkt nur auf Fälle, die Ihnen zugewiesen sind.') }}">
+                <option value="">{{ __('Alle Prioritäten') }}</option>
+                @foreach (\App\Enums\Whistleblowing\CasePriority::cases() as $priority)
+                    <option value="{{ $priority->value }}" @selected(($filters['priority'] ?? '') === $priority->value)>{{ __('whistleblowing.priority.' . $priority->value) }}</option>
+                @endforeach
+            </select>
+            <select name="assignee" class="select select-sm select-bordered w-44 shrink-0" aria-label="{{ __('Zugewiesene Person') }}">
+                <option value="">{{ __('Alle Bearbeiter') }}</option>
+                @foreach ($assignees as $assignee)
+                    <option value="{{ $assignee->sqid }}" @selected(($filters['assignee'] ?? '') === $assignee->sqid)>{{ $assignee->name }}</option>
+                @endforeach
+            </select>
+            <select name="deadline" class="select select-sm select-bordered w-44 shrink-0" aria-label="{{ __('Friststatus') }}">
+                <option value="">{{ __('Alle Fristen') }}</option>
+                <option value="overdue" @selected(($filters['deadline'] ?? '') === 'overdue')>{{ __('Frist überfällig') }}</option>
+                <option value="soon" @selected(($filters['deadline'] ?? '') === 'soon')>{{ __('Frist in 14 Tagen') }}</option>
+                <option value="feedback_open" @selected(($filters['deadline'] ?? '') === 'feedback_open')>{{ __('Rückmeldung offen') }}</option>
+            </select>
+            <x-date-range class="w-80 shrink-0" :label="false" from-name="from" to-name="to"
+                          :from="$filters['from'] ?? null" :to="$filters['to'] ?? null"
+                          :from-label="__('Eingang von')" :to-label="__('Eingang bis')" />
+        </x-filter-bar>
+
         <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>

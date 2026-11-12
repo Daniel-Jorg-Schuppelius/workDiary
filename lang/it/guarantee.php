@@ -18,8 +18,10 @@ return [
     'updated' => 'Fideiussione aggiornata.',
     'returned' => 'Restituzione registrata.',
     'drawn' => 'Escussione registrata.',
+    'expired' => 'Fideiussione registrata come scaduta.',
     'secured' => 'Ritenuta a garanzia sostituita dalla fideiussione.',
     'not_active' => 'Questa fideiussione non è più attiva.',
+    'not_expired' => 'Il termine di questa fideiussione non è superato.',
     'retention_not_open' => 'Questa ritenuta non è più aperta.',
     'foreign_organization' => 'Fideiussione e ritenuta appartengono a organizzazioni diverse.',
     'amount_too_low' => 'La fideiussione non copre la ritenuta — una fideiussione minore non la sostituisce.',
@@ -30,10 +32,12 @@ return [
         'edit' => 'Modifica fideiussione',
         'returned' => 'Documento restituito',
         'drawn' => 'Registra come escussa',
+        'expired' => 'Registra come scaduta',
         'secure' => 'Sostituisci ritenuta',
     ],
     'confirm' => [
         'drawn' => 'Registrare l’escussione della fideiussione :reference? In seguito non vale più come garanzia e la registrazione non può essere annullata.',
+        'expired' => 'Registrare la fideiussione :reference come scaduta? Il termine è superato; in seguito non vale più come garanzia.',
     ],
     'secure' => [
         'title' => 'Sostituire la ritenuta a garanzia',
@@ -49,7 +53,7 @@ return [
         'received_hint' => 'Se scade inosservata, la garanzia è persa.',
         'expiring' => 'In scadenza entro 90 giorni',
         'return_due' => 'Restituzione dovuta',
-        'return_due_hint' => 'La ritenuta sostituita è liberata — il documento va restituito.',
+        'return_due_hint' => 'La ritenuta sostituita è liberata o la garanzia collegata è terminata — il documento va restituito.',
     ],
     'column' => [
         'reference' => 'N. fideiussione',

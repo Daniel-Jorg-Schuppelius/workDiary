@@ -1,7 +1,7 @@
 ---
 title: "Objects"
 topic: customer-portal.assets
-version: 3
+version: 5
 keywords:
     - devices
     - equipment
@@ -41,14 +41,24 @@ any objects for your company.
 The top shows the name and serial number of the object, followed by three
 sections:
 
-- **Inspection & maintenance appointments** – the stored inspection and
+- **Inspection & maintenance appointments** – the running inspection and
   maintenance plans with **Name** and **Next due date**, the next due date
-  first. Without a plan it shows **No appointments configured.**
+  first. **Contractual obligation** marks an appointment that your contract
+  requires. Paused plans are not shown because no appointment is pending for
+  them. Without a running plan it shows **No appointments configured.**
 - **Completed maintenance** – completed maintenance work with name and date.
 - **Protocols** – the signed protocols for the object that your contractor
   has released for you, with title, status and date, the newest first, each
   with **Download PDF**. Without such protocols it reads
   **No approved protocols.**
+
+## Accepting protocols
+
+If a protocol is waiting for your acceptance, the section **Awaiting acceptance** appears above the **Protocols** list. **View and sign** opens the protocol with all its items. To accept it, enter your name, sign in the signature box with your finger, a pen or the mouse, confirm that the details are correct and click **Sign**. The signature cannot be withdrawn.
+
+If you have questions or objections, clarify them with your contractor before signing – via the queries, if they are released to you. After your signature your contractor completes the protocol; it is then available for download under **Protocols**.
+
+If you do not agree with the protocol, use **Reject** below it: state a reason and, if needed, name individual defects. Your contractor is notified and revises the protocol; it appears again under **Awaiting acceptance** as soon as it is resubmitted.
 
 ## Downloading protocols
 

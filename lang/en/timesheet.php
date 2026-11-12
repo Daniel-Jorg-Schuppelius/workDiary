@@ -43,4 +43,10 @@ return [
         'hash' => 'SHA-256: :hash',
         'none' => '— no signature —',
     ],
+    // Material auf „Heute“, auch offline (MVP-1594).
+    'day_material' => [
+        'action' => 'Material',
+        'title' => 'Record material',
+        'hint' => 'The material goes onto your open timesheet of the project for this day; if there is none, it is created. Without a connection it is stored on the device and transferred on the next contact.',
+    ],
 ];

@@ -1,7 +1,7 @@
 ---
 title: "Personnel : congés, maladie, qualifications, sécurité"
 topic: reports.personnel
-version: 8
+version: 9
 keywords:
     - absentéisme
     - congés restants
@@ -214,6 +214,8 @@ l'onglet plan/réel **Projet par personne**. Elle n'apparaît que s'il existe
 des constats dans la période, et uniquement pour les administrateurs et les
 personnes disposant du droit **Consulter le rapport de présence
 (organisation)**.
+
+La zone **Personnel** affiche les **jours de maladie** (jours ouvrés) de la période comme le rapport **Maladies** sans filtre, avec dans la note les arrêts, les personnes concernées et le maintien de salaire épuisé ; les **qualifications expirées** comme la matrice des qualifications (à ce jour), avec dans la note celles qui expirent sous 30 jours ; et les **demandes de congé ouvertes** (à ce jour), avec dans la note celles qui commencent dans les 14 prochains jours. Les jours de maladie et les qualifications nécessitent le module complémentaire Rapports d’équipe et le droit **Voir les arrêts maladie** ou **Gérer les qualifications**, les demandes de congé le droit **Approuver les congés** ; les administrateurs voient les trois. Les soldes d’heures supplémentaires et d’horaire variable n’y figurent pas : aucun rapport à l’échelle de l’organisation ne permet de recalculer le chiffre.
 
 La carte **Problèmes récurrents** rassemble les alertes précoces des modules
 utilisés par votre organisation, regroupées par type :

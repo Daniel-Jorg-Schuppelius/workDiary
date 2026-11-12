@@ -60,6 +60,16 @@ return [
     'dms' => [
         'source_hint' => "Texte du document issu de :name",
     ],
+    'budget' => [
+        'title' => "Budget mensuel",
+        'legend' => "Budget mensuel par famille",
+        'description' => "Plafond de consommation IA par mois civil. Une fois atteint, workDiary refuse les autres appels de cette famille jusqu’à la fin du mois. Vide = valeur par défaut de l’exploitant, illimité sans valeur par défaut.",
+        'field' => [
+            'llm' => "Modèle de langage (jetons par mois)",
+            'translation' => "Traduction (caractères par mois)",
+        ],
+        'saved' => "Budget mensuel enregistré.",
+    ],
     'usage' => [
         'title' => "Consommation IA",
         'subtitle' => "Consommation mensuelle par famille, utilisation du budget et entonnoir des suggestions par capacité.",
@@ -360,6 +370,8 @@ return [
         'dismiss' => 'Non, rejeter',
     ],
     'suggestion' => [
+        'connection' => 'Connexion',
+        'regenerate' => 'Régénérer',
         'suggest' => 'Suggestion IA pour cette position',
         'suggest_all' => 'Suggestions IA pour toutes les positions',
         'suggest_all_title' => 'Crée une suggestion de texte par position en arrière-plan — rien n\'est appliqué avant le clic.',

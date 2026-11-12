@@ -46,13 +46,21 @@
             </x-slot:head>
             @forelse ($profiles as $profile)
                 <tr>
-                    <td>{{ $profile->asset->name ?? '—' }}</td>
+                    <td>
+                        {{ $profile->asset->name ?? '—' }}
+                        @if (filled($profile->home_site_label))
+                            <span class="block text-xs text-muted">{{ $profile->home_site_label }}</span>
+                        @endif
+                    </td>
                     <td>{{ $profile->group_code ?? '—' }}</td>
                     <td>
                         @if ($profile->is_rentable)
                             <x-status-badge size="md" outline tone="success">{{ __('leihfähig') }}</x-status-badge>
                         @else
                             <x-status-badge size="md" outline>{{ __('gesperrt für Verleih') }}</x-status-badge>
+                        @endif
+                        @if ($profile->isBelowMinCondition())
+                            <x-status-badge tone="error" size="md" outline>{{ __('rental.condition.below_badge') }}</x-status-badge>
                         @endif
                     </td>
                     <td>
@@ -125,7 +133,15 @@
                         <span class="label-text text-sm">{{ __('Prüfpflicht: überfällige Prüfung blockiert Verleih') }}</span>
                     </label>
                 </div>
+                <x-input-field name="home_site_label" maxlength="255" :label="__('rental.profile.home_site')" :value="old('home_site_label')" />
+                <x-select-field name="min_condition" :label="__('rental.profile.min_condition')" :hint="__('rental.profile.min_condition_hint')">
+                    <option value="">{{ __('rental.profile.no_minimum') }}</option>
+                    @foreach (\App\Enums\Rental\RentalCondition::cases() as $condition)
+                        <option value="{{ $condition->value }}" @selected(old('min_condition') === $condition->value)>{{ $condition->label() }}</option>
+                    @endforeach
+                </x-select-field>
                 <x-textarea-field name="accessories" :label="__('Zubehör (eine Position je Zeile)')" rows="3">{{ is_array(old('accessories')) ? implode("\n", old('accessories')) : old('accessories') }}</x-textarea-field>
+                <x-textarea-field name="checklist_labels" :label="__('rental.profile.checklist')" :hint="__('rental.profile.checklist_hint')" rows="3">{{ is_array(old('checklist_labels')) ? implode("\n", old('checklist_labels')) : old('checklist_labels') }}</x-textarea-field>
                 <x-textarea-field name="notes" :label="__('Notizen')" rows="3">{{ old('notes') }}</x-textarea-field>
                 <div class="sm:col-span-2">
                     <x-button type="submit">{{ __('Profil speichern') }}</x-button>

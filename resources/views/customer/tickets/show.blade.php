@@ -46,17 +46,21 @@
         @endforelse
     </div>
 
-    <form method="POST" action="{{ route('customer.tickets.reply', $ticket) }}" enctype="multipart/form-data" class="mt-4">
-        @csrf
-        <textarea aria-label="{{ __('Ihre Antwort…') }}" name="body" rows="3" required minlength="2" maxlength="10000" class="textarea textarea-bordered w-full" placeholder="{{ __('Ihre Antwort…') }}"></textarea>
-        <div class="mt-1 flex flex-wrap items-center gap-2">
-            <input name="files[]" type="file" multiple class="file-input file-input-sm file-input-bordered"
-                   aria-label="{{ __('Anhänge (optional)') }}">
-            <x-button type="submit">{{ __('Antworten') }}</x-button>
-        </div>
-        @error('files')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
-        @error('files.*')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
-    </form>
+    @if ($externallyLed)
+        <div role="note" class="alert alert-info mt-4 text-sm" data-portal-ticket-external>{{ __('helpdesk.external.portalNotice') }}</div>
+    @else
+        <form method="POST" action="{{ route('customer.tickets.reply', $ticket) }}" enctype="multipart/form-data" class="mt-4">
+            @csrf
+            <textarea aria-label="{{ __('Ihre Antwort…') }}" name="body" rows="3" required minlength="2" maxlength="10000" class="textarea textarea-bordered w-full" placeholder="{{ __('Ihre Antwort…') }}"></textarea>
+            <div class="mt-1 flex flex-wrap items-center gap-2">
+                <input name="files[]" type="file" multiple class="file-input file-input-sm file-input-bordered"
+                       aria-label="{{ __('Anhänge (optional)') }}">
+                <x-button type="submit">{{ __('Antworten') }}</x-button>
+            </div>
+            @error('files')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
+            @error('files.*')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
+        </form>
+    @endif
 
     @if ($canReopen)
         <div class="mt-4 flex flex-wrap items-start gap-3 rounded-box border border-info/40 bg-info/5 p-3">

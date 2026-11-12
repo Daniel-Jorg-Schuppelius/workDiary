@@ -63,6 +63,13 @@ final class ArticleManifest extends Manifest {
         ];
     }
 
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Article\Contracts\ArticleValuation::class => \App\Services\Article\Contracts\NullArticleValuation::class,
+        ];
+    }
+
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [

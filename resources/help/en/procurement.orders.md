@@ -1,7 +1,7 @@
 ---
 title: "Procurement & purchase orders"
 topic: procurement.orders
-version: 3
+version: 6
 keywords:
     - purchasing
     - create purchase order
@@ -59,3 +59,17 @@ If mandatory credentials are required for the supplier (such as an exemption cer
 ## Supplier reply via GAEB
 
 Besides the openTRANS confirmation, **Import supplier reply** also reads GAEB trade files. An **X97** (order confirmation for order X96) stores the confirmed quantity, price and date per line and reports deviations without changing the order. An **X94** (price offer for price inquiry X93) applies the offered unit prices to the order while it is a draft. Lines are matched by the supplier's article number; the file must refer to the order's number. The price inquiry itself (**Price inquiry (GAEB X93)**) and the field for the offer are available in the draft order.
+
+## Order unit and goods receipt
+
+If the article has further units, you choose the **order unit** when adding the line (for example roll instead of metre). Quantity and unit price then apply per order unit, as do the ordered and received quantities of the line. The goods receipt converts to the base unit: the warehouse receives the quantity in the base unit, the cost price is kept per base unit, and the stock journal shows the entry in the order unit. The pack size of a supplier article remains a rounding quantity of the purchase suggestions in the base unit.
+
+Articles with the property “shelf life required” demand a lot and a best-before date at goods receipt; a lot that is already known brings its date with it.
+
+## Credential types and purchase suggestion
+
+Under **Mandatory credentials → Credential types** you maintain the organisation’s own credential types: name, standard validity, advance warning, behaviour if the credential is missing and whether the type is mandatory. With tags, the obligation applies only to suppliers carrying one of them (trade, type of service). The catalogue types are templates and can be adopted as your own type; own types are deactivated instead of deleted.
+
+Maintaining them requires the permission **Manage supplier credential types** (default: admin and management). Editing suppliers alone is not enough, because a credential type can block placing orders with all suppliers of the organisation.
+
+The **purchase suggestion** rounds to the pack size of the supplier article. If the article has a unit with exactly this factor, the suggestion orders in that unit and converts the price per order unit.

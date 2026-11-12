@@ -58,26 +58,6 @@ class KeyHandoverService {
         return $handover->refresh();
     }
 
-    public function currentHolder(Asset $asset): ?KeyHandover {
-        $latestOut = KeyHandover::query()
-            ->where('asset_id', $asset->id)
-            ->where('direction', KeyHandoverDirection::Out->value)
-            ->orderByDesc('occurred_at')
-            ->first();
-
-        if ($latestOut === null) {
-            return null;
-        }
-
-        $laterReturn = KeyHandover::query()
-            ->where('asset_id', $asset->id)
-            ->where('direction', KeyHandoverDirection::In->value)
-            ->where('occurred_at', '>=', $latestOut->occurred_at)
-            ->exists();
-
-        return $laterReturn ? null : $latestOut;
-    }
-
     private function parseDirection(string $value): KeyHandoverDirection {
         return KeyHandoverDirection::tryFrom($value)
             ?? throw new InvalidArgumentException('Unknown handover direction: ' . $value);

@@ -1,7 +1,7 @@
 ---
 title: "Managing timesheets"
 topic: timesheets.manage
-version: 1
+version: 3
 keywords:
     - timesheet
     - time report
@@ -32,3 +32,7 @@ new state.
 Before release, verify period, customer, project, service description
 and quantities. A PDF is an output of the stored state, not the primary
 data source.
+
+**Material from "Today":** Via "Material" on "Today" you record consumables with project, quantity and unit — also without a network. They go onto your open timesheet of the project for that day; if there is none (or it is already signed), a new one is created. Material on a timesheet does not post a stock withdrawal.
+
+**Sum limit:** Material you record on “Today” lands on the open timesheet of the day. If quantity × unit price together with the other lines would exceed the timesheet’s storable total, the entry is rejected — online and offline.

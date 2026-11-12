@@ -1,7 +1,7 @@
 ---
 title: "Groupes de coûts selon DIN 276"
 topic: boq.cost-groups
-version: 1
+version: 2
 keywords:
     - affecter un groupe de coûts
     - estimation des coûts
@@ -167,3 +167,7 @@ Le changement de norme passe par **Affecter → Changer d’édition** et affich
 d’abord un **aperçu**. Seules les correspondances univoques sont converties ; le
 reste demeure. Les lacunes sont l’essentiel — elles montrent où quelqu’un doit
 décider. Un code deviné serait pire que l’ancien.
+
+## Import sans édition de la norme
+
+Si le catalogue de groupes de coûts d’un fichier GAEB n’indique pas l’édition de la norme, l’import reprend les groupes de coûts et consigne un **constat** : il figure dans l’historique des imports du devis quantitatif. Attribuez ensuite l’édition au catalogue via **Affecter → Changer d’édition** avant toute analyse.

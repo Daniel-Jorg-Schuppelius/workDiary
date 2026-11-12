@@ -12,7 +12,7 @@ namespace App\Plugins\Nextcloud\Api;
 
 use APIToolkit\API\WebDav\{MultiStatus, Propfind};
 use App\Plugins\Nextcloud\Exceptions\NextcloudNotFoundException;
-use App\Plugins\Support\PluginApiClient;
+use App\Plugins\Support\{PluginApiClient, PluginApiException};
 use App\Support\UrlSafety;
 use Illuminate\Http\Client\Response;
 use Psr\Http\Message\StreamInterface;
@@ -106,7 +106,7 @@ class NextcloudWebdavClient {
             throw new NextcloudNotFoundException("Nextcloud path not found: {$serverPath}");
         }
         if ($status !== 207) {
-            throw new RuntimeException("Nextcloud PROPFIND failed (HTTP {$status}).");
+            throw new PluginApiException("Nextcloud PROPFIND failed (HTTP {$status}).", $status);
         }
 
         return $this->parseChildren($response->body(), $serverPath);
@@ -146,7 +146,7 @@ class NextcloudWebdavClient {
     public function getStream(string $serverPath): StreamInterface {
         $response = $this->send('GET', $this->fileUrl($serverPath));
         if ($response->status() >= 400) {
-            throw new RuntimeException('Nextcloud GET failed (HTTP ' . $response->status() . ').');
+            throw new PluginApiException('Nextcloud GET failed (HTTP ' . $response->status() . ').', $response->status());
         }
 
         return $response->toPsrResponse()->getBody();

@@ -1,7 +1,7 @@
 ---
 title: "Connecter Microsoft 365"
 topic: admin.msgraph
-version: 2
+version: 3
 keywords:
     - Microsoft 365
     - boîte partagée
@@ -251,3 +251,5 @@ la signale.
   nécessitent une attention, une connexion pour l'entrée de documents, la
   sauvegarde ou l'envoi d'e-mails est perturbée. Reconnectez-vous à cet
   endroit.
+
+**Souveraineté des données :** Les rendez-vous de ce calendrier relèvent du domaine calendrier. Si un autre système gère le calendrier, les propositions, séries et modifications apparaissent dans la boîte de réception des intégrations comme cas « Souveraineté des données » ; **Reprendre une fois** crée le rendez-vous ou la série. Les avis de suppression restent des cas ordinaires. Microsoft To Do relève du domaine des tâches.

@@ -128,8 +128,12 @@
             <x-slot:actions>
                 <x-button size="sm" tone="ghost" :href="route('sustainability.assessments.index')">{{ __('Alle anzeigen') }}</x-button>
                 @if ($canManage)
-                    <x-button size="sm" tone="ghost" icon="add" data-open-dialog="assessment-create"
-                              :disabled="$criteria->where('active', true)->isEmpty()">{{ __('Bewertung starten') }}</x-button>
+                    {{-- Dialog mit Auswahl des Bezugsobjekts (MVP-1607). --}}
+                    @if ($criteria->where('active', true)->isEmpty())
+                        <x-button size="sm" tone="ghost" icon="add" disabled>{{ __('Bewertung starten') }}</x-button>
+                    @else
+                        <x-button size="sm" tone="ghost" icon="add" data-entry-modal-trigger :href="route('sustainability.assessments.create')">{{ __('Bewertung starten') }}</x-button>
+                    @endif
                 @endif
             </x-slot:actions>
             @if ($canManage && $criteria->where('active', true)->isEmpty())
@@ -352,15 +356,6 @@
             </div>
         </x-modal>
 
-        <x-modal id="assessment-create" :embedded="false" tone="primary" icon="grade"
-                 :title="__('Bewertung starten')" :action="route('sustainability.assessments.store')" :submitLabel="__('Bewertung starten')">
-            <label class="block">
-                <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Gerät/Prozess/Dienstleistung/Lieferant …') }}</span>
-                <input name="subject_label" required maxlength="200" class="input input-bordered input-sm w-full">
-            </label>
-            <p class="mt-2 text-xs text-muted">{{ __(':count aktive Kriterien im Katalog.', ['count' => $criteria->where('active', true)->count()]) }}</p>
-        </x-modal>
-
         <x-modal id="criterion-create" :embedded="false" tone="primary" icon="checklist"
                  :title="__('Kriterium anlegen')" :action="route('sustainability.criteria.store')" :submitLabel="__('Anlegen')">
             <div class="grid gap-3 sm:grid-cols-2">
@@ -394,6 +389,17 @@
                     <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Erwartete Wirkung') }}</span>
                     <input name="expected_impact" maxlength="500" class="input input-bordered input-sm w-full">
                 </label>
+                @if ($assessmentOptions->isNotEmpty())
+                    <label class="block sm:col-span-2">
+                        <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('sustainability.measure.assessment') }}</span>
+                        <select name="assessment_id" class="select select-bordered select-sm w-full">
+                            <option value="">{{ __('sustainability.measure.no_assessment') }}</option>
+                            @foreach ($assessmentOptions as $option)
+                                <option value="{{ $option->sqid }}">{{ $option->subject_label }} · V{{ $option->version }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                @endif
                 <label class="block">
                     <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Aufwand') }}</span>
                     <select name="effort" class="select select-bordered select-sm w-full">

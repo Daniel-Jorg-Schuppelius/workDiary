@@ -1,7 +1,7 @@
 ---
 title: "Incidencias abiertas"
 topic: open-issues
-version: 1
+version: 2
 keywords:
     - lista de defectos
     - defectos
@@ -34,3 +34,15 @@ A partir de un punto abierto se pueden crear **varias órdenes de seguimiento**.
 Cada una toma cliente, proyecto y descripción, además del vencimiento del punto y
 una copia de sus adjuntos; en los defectos de un protocolo, también las fotos del
 punto del protocolo.
+
+**Editar:** en el diálogo de edición cambia también el plazo, la gravedad y,
+con el permiso de publicación al cliente, la visibilidad; cada cambio queda en
+el historial del punto. Un punto crítico sin plazo recibe siete días.
+
+**Proyecto, cliente, activo:** también crea puntos abiertos en un proyecto, un
+cliente y un activo; el panel está en sus páginas. Con el permiso de asignación
+elige al responsable ya al crear el punto.
+
+**Detalles:** el diálogo **Detalles** muestra historial, comentarios y adjuntos.
+Un punto cerrado ya no admite ni cede adjuntos. La lista se filtra por estado,
+gravedad y responsable.

@@ -67,15 +67,6 @@ final class LotStockReader {
     }
 
     /**
-     * Buchsaldo einer Charge über alle Lager bzw. in einem Lager.
-     *
-     * @return numeric-string
-     */
-    public function balanceOf(StockLot $lot, ?Warehouse $warehouse = null): string {
-        return $this->balancesOf([$lot], $warehouse)[$lot->id];
-    }
-
-    /**
      * Buchsalden mehrerer Chargen in einem Durchlauf (Chargenliste). In eine
      * Charge zusammengeführte Altchargen zählen bei ihr; eine zusammengeführte
      * Charge selbst hat keinen Bestand mehr.
@@ -114,7 +105,7 @@ final class LotStockReader {
      * Physischer Saldo einer Charge je Topf (Lager, Platz, Eigentum) in fester
      * Folge — Lager, Platz (ohne Platz zuerst), Eigentumsart, Eigentümer
      * aufsteigend; in sie zusammengeführte Altchargen zählen mit. Ihre Summe
-     * ist der Buchsaldo ({@see balanceOf()}). `$forUpdate` sperrt die
+     * ist der Buchsaldo ({@see balancesOf()}). `$forUpdate` sperrt die
      * Bewegungen — erst nach der Chargenzeile, wie beim Zusammenführen.
      *
      * @return list<array{warehouse: Warehouse, bin: WarehouseBin|null, ownership: OwnershipType, ownerRef: string|null, qty: Decimal}>

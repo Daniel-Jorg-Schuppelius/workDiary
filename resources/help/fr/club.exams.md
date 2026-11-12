@@ -1,7 +1,7 @@
 ---
 title: "Examens"
 topic: club.exams
-version: 1
+version: 2
 keywords:
     - passage de grade
     - examen de ceinture
@@ -29,3 +29,5 @@ Une offre d'examen est un rendez-vous de l'association de type « examen » avec
 **Résultat :** Les examinateurs de l'offre ou les titulaires du droit « examinateur » saisissent réussi, échoué ou absent. Seul « réussi » attribue le grade cible, exactement une fois et avec référence à l'examen ; le rapport d'admissibilité est figé avec le résultat. Un échec ne retire aucun grade existant et ne remet aucun temps d'entraînement à zéro.
 
 **Attestation :** Chaque grade valide dispose d'une attestation PDF avec date, origine, examen et personne confirmante. Une révocation y est imprimée visiblement ; l'historique des graduations fait foi.
+
+**Publication des résultats :** les candidats et représentants ne voient les résultats saisis qu’après « Publier les résultats » — auparavant, « Mon club » affiche « Résultat à venir », et le nouveau grade ainsi que l’attestation n’y apparaissent pas encore. La publication est possible dès que chaque candidat est décidé : aucune demande ouverte, aucune admission sans résultat. La publication fige l’examen ; les rapports d’admission et les justificatifs utilisés ne changent plus, et de nouveaux candidats ou résultats ne sont plus possibles. Les corrections ultérieures passent par la révision ou la révocation du grade.

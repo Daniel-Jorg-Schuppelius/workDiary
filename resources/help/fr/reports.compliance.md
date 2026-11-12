@@ -1,7 +1,7 @@
 ---
 title: "Justificatifs : activité d’audit, conformité et salaire minimum"
 topic: reports.compliance
-version: 3
+version: 4
 keywords:
     - analyse d’audit
     - qui a modifié quoi
@@ -152,3 +152,5 @@ sens de l’article 17, alinéa 1, de la loi allemande sur le salaire minimum
 
 Le **Justificatif temps de conduite** du même menu est décrit dans le sujet
 consacré au parc automobile, au carnet de bord et aux temps de conduite.
+
+**Justificatif MiLoG :** pour chaque jour travaillé, les minutes en télétravail et en déplacement de service figurent à côté du début, de la fin, des pauses et de la durée — elles comptent comme temps de travail ; le justificatif montre seulement où le travail a été effectué. Les constats de temps de conduite et de repos ne sont produits que tant que le module flotte est actif ; s’il est désactivé, l’exécution suivante clôt les constats ouverts.

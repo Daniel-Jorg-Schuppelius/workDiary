@@ -1,7 +1,7 @@
 ---
 title: "Gestion des contrats"
 topic: contracts.overview
-version: 1
+version: 3
 keywords:
     - suivi des contrats
     - contrats
@@ -26,6 +26,8 @@ Le module gère les contrats généraux (location, maintenance, logiciels, contr
 
 **Échéances sous contrôle :** les dates de résiliation et de renouvellement déclenchent des rappels via les règles de notification (escalade à plusieurs niveaux, canal calendrier en option).
 
-**Obligations :** les obligations récurrentes (paiements, contrôles, déclarations) sont suivies par contrat et apparaissent dans le calendrier des échéances.
+**Obligations :** les obligations récurrentes (paiements, contrôles, déclarations) sont suivies par contrat et apparaissent dans le calendrier (menu « Calendrier »), avec la fin du contrat, la reconduction et la révision de l’indice.
 
 **Liens :** les contrats de leasing/financement de la gestion des actifs peuvent être rattachés à un contrat ; les documents s'attachent au dossier.
+
+**Note sur une obligation :** pour chaque obligation contractuelle (échéance, devoir), vous pouvez déposer une note, par exemple ce qu’il faut faire ou qui informer.

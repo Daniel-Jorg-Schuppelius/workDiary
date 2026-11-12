@@ -435,6 +435,22 @@ final class RentalLifecycleTest extends TestCase {
         $this->assertSame(0, $case->charges()->count());
     }
 
+    /** MVP-1620: eine angeforderte, nicht gezahlte Kaution lässt sich mit Begründung erlassen. */
+    public function test_requested_deposit_can_be_waived_with_reason(): void {
+        $case = $this->openCase(['deposit_amount' => '80.00']);
+        $deposit = app(RentalBillingService::class)->requestDeposit($case, $this->admin, 80.0);
+
+        $this->actingAs($this->admin)->get(route('rental.show', $case))->assertOk()->assertSee(__('rental.deposit.waive'));
+        $this->actingAs($this->admin)->post(route('rental.deposits.waive', $deposit), ['reason' => ''])->assertSessionHasErrors('reason');
+        $this->actingAs($this->admin)->post(route('rental.deposits.waive', $deposit), ['reason' => 'Stammkunde, Kaution entfällt.'])
+            ->assertSessionHas('status', __('rental.deposit.flash.waived'));
+
+        $this->assertSame(RentalDepositStatus::Waived, $deposit->fresh()?->status);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'rental.depositWaived']);
+        $this->actingAs($this->admin)->post(route('rental.deposits.waive', $deposit), ['reason' => 'nochmal'])->assertSessionHasErrors('deposit');
+        $this->actingAs($this->admin)->post(route('rental.deposits.receive', $deposit))->assertSessionHasErrors('deposit');
+    }
+
     public function test_role_separation_finance_vs_handover(): void {
         $case = $this->openCase();
         app(RentalCaseService::class)->reserve($case, $this->admin);

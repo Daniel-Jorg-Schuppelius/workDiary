@@ -11,6 +11,7 @@
 return [
     'error' => [
         'self_approval' => 'Non è possibile approvare la propria nota spese.',
+        'receipt_required' => 'La categoria «:category» richiede una ricevuta. La nota spese è salvata ma non inviata: carichi la ricevuta e poi la invii.',
         'invalid_transition' => 'L’azione :action non è possibile nello stato :status.',
     ],
     'receipt' => [
@@ -31,6 +32,8 @@ return [
         'push_unsupported' => ':program non accetta spese come documenti: colleghi un documento esistente.',
         'title' => 'File del giustificativo',
         'hint' => 'Alleghi la ricevuta alla nota spese — senza di essa non è verificabile né trasferibile alla contabilità.',
+        'required_hint' => 'Questa categoria richiede una ricevuta. Può salvare in qualsiasi momento; la nota spese può essere inviata solo con una ricevuta allegata (azione «File del giustificativo» nell\'elenco).',
+        'required_present' => 'Questa categoria richiede una ricevuta: è allegata.',
     ],
     'title' => [
         'index' => 'Spese',

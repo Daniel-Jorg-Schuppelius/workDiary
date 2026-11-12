@@ -108,4 +108,12 @@ enum NumberScope: string implements HasLabel {
             self::CustomerIntake => false, // Eingangsakte, keine Belegwirkung
         };
     }
+
+    /**
+     * Kreis, dessen Hoheit an eine Warenwirtschaft gehen kann (MVP-1583): die
+     * Artikelnummer. SKU der Varianten und GTIN folgen derselben Stelle.
+     */
+    public function isArticleMaster(): bool {
+        return $this === self::Article;
+    }
 }

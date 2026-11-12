@@ -103,25 +103,6 @@ class CrosswalkRegistry {
     }
 
     /**
-     * Findet den ersten Crosswalk-Key mit passender Quell-/Zielnorm — null,
-     * wenn keiner existiert.
-     */
-    public function findKey(string $sourceNorm, string $sourceEdition, string $targetNorm, string $targetEdition): ?string {
-        foreach ($this->load() as $key => $crosswalk) {
-            if (
-                $crosswalk['source_norm'] === $sourceNorm
-                && $crosswalk['source_edition'] === $sourceEdition
-                && $crosswalk['target_norm'] === $targetNorm
-                && $crosswalk['target_edition'] === $targetEdition
-            ) {
-                return $key;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Lädt und validiert alle Crosswalk-Dateien (einmal pro Instanz).
      *
      * @return array<string, array{key: string, source_norm: string, source_edition: string, target_norm: string, target_edition: string, label: string, version: string, as_of: ?string, mappings: list<array{source_ref: string, target_refs: list<string>}>}>

@@ -17,6 +17,10 @@ return [
     'filter' => [
         'label' => 'Filtrar historial',
         'all' => 'Todos',
+        'types' => 'Tipos',
+        'actor' => 'Persona',
+        'all_actors' => 'Todas las personas',
+        'customer_only' => 'Solo relevante para el cliente',
         'status' => 'Estado',
         'time' => 'Tiempos',
         'comment' => 'Comentarios',
@@ -74,6 +78,7 @@ return [
             'visibilityChanged' => 'Visibilidad del punto abierto modificada',
             'commentAdded' => 'Comentario en el punto abierto',
             'attachmentAdded' => 'Adjunto en el punto abierto',
+            'ticketOpened' => 'Ticket abierto desde el punto abierto',
         ],
     ],
     'action' => [

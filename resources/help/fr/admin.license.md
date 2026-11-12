@@ -1,7 +1,7 @@
 ---
 title: "Gestion des licences"
 topic: admin.license
-version: 3
+version: 4
 keywords:
     - clé de licence
     - forfait
@@ -82,3 +82,5 @@ commande pour la facturation par l'exploitant. Vous y demandez aussi une
 autre offre ou des modules complémentaires ; il existe une demande ouverte
 par organisation, que vous pouvez retirer. L'exploitant la traite en
 émettant une nouvelle licence.
+
+**Limites :** lors de l’émission, vous fixez, outre le nombre d’utilisateurs, le nombre d’organisations d’une installation et le quota de stockage par organisation en Go — dans la console d’émission et en ligne de commande avec --max-orgs et --storage-quota-gb. Une licence d’organisation porte le nombre d’utilisateurs et le quota de stockage. Une fois une limite atteinte, WorkDiary refuse la création d’une autre organisation ou de nouveaux téléversements ; « Limites » affiche l’utilisation.

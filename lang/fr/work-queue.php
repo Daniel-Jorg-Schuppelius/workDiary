@@ -16,6 +16,8 @@ return [
         'all_categories' => 'Tous les domaines',
         'source' => 'Source',
         'all_sources' => 'Toutes les sources',
+        'due' => 'Échéance',
+        'all_due' => 'Toutes les échéances',
         'mine' => 'Uniquement ceux qui me sont attribués',
     ],
     'column' => [
@@ -40,6 +42,7 @@ return [
         'resale' => 'Abonnements et licences',
         'approval' => 'Circuits de validation',
         'vacation_approval' => 'Demandes de congé',
+        'vacation_revision' => 'Demandes de congé à corriger',
         'expense_approval' => 'Notes de frais',
         'month_closure' => 'Clôtures mensuelles',
         'price_change' => 'Modifications de prix',
@@ -67,6 +70,7 @@ return [
     ],
     'item' => [
         'vacation' => 'Demande de congé de :name',
+        'vacation_revision' => 'Corriger la demande de congé',
         'expense' => 'Note de frais de :name',
         'month_closure' => 'Mois :period de :name',
         'price_change' => 'Modification de prix : :article',

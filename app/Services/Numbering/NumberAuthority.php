@@ -13,14 +13,15 @@ namespace App\Services\Numbering;
 use App\Enums\Numbering\NumberScope;
 use App\Models\Numbering\NumberFormat;
 use App\Models\Platform\Organization;
-use App\Plugins\Contracts\ContactNumberIssuer;
+use App\Plugins\Contracts\{ArticleNumberIssuer, ContactNumberIssuer};
 use App\Plugins\PluginManager;
 use App\Plugins\Support\PluginSettingsResolver;
 use App\Services\Numbering\Contracts\DocumentIssuer;
 
 /**
  * Entscheidet, wer einen Nummernkreis vergibt: `local` (workDiary) oder die
- * Plugin-ID eines Buchhaltungsprogramms (MVP-1130). Bei Vergabe durch ein
+ * Plugin-ID eines Buchhaltungsprogramms (MVP-1130) bzw. beim Artikel einer
+ * Warenwirtschaft (MVP-1583). Bei Vergabe durch ein
  * Programm entsteht lokal nur eine Entwurfsnummer, die beim Übertragen bzw.
  * Abgleich durch die Nummer des Programms ersetzt wird.
  *
@@ -49,7 +50,7 @@ class NumberAuthority {
 
     /** Eingestellte Quelle ohne Prüfung, ob das Programm aktiv ist (Anzeige auf der Seite „Nummernkreise“). */
     public function configuredSource(Organization|int|null $organization, NumberScope $scope): string {
-        if (! $scope->isAccountingRelevant()) {
+        if (! $scope->isAccountingRelevant() && ! $scope->isArticleMaster()) {
             return self::SOURCE_LOCAL;
         }
 
@@ -79,7 +80,8 @@ class NumberAuthority {
         $options = [self::SOURCE_LOCAL => (string) __('numbering.source.local')];
         foreach ($plugins->enabled() as $id => $plugin) {
             $issuesContacts = $plugin instanceof ContactNumberIssuer && in_array($scope, $plugin->issuableNumberScopes(), true);
-            if ($issuesContacts || in_array((string) $id, $documentIssuers, true)) {
+            $issuesArticles = $scope->isArticleMaster() && $plugin instanceof ArticleNumberIssuer;
+            if ($issuesContacts || $issuesArticles || in_array((string) $id, $documentIssuers, true)) {
                 $options[(string) $id] = $plugin->name();
             }
         }
@@ -104,6 +106,17 @@ class NumberAuthority {
         }
 
         return $this->sourceLabel($source);
+    }
+
+    /**
+     * Warenwirtschaft, die Artikelnummer, Varianten-SKU und GTIN führt
+     * (MVP-1583) — die Felder sind dann im Artikelstamm gesperrt, nur der
+     * Abgleich des Programms schreibt sie. Null = workDiary führt.
+     */
+    public function articleNumbersLockedBy(Organization|int|null $organization): ?string {
+        $source = $this->sourceFor($organization, NumberScope::Article);
+
+        return $source === self::SOURCE_LOCAL ? null : $this->sourceLabel($source);
     }
 
     /** Anzeigename der vergebenden Stelle (Programmname oder workDiary). */

@@ -21,6 +21,23 @@ return [
         'summary_nps' => 'NPS :nps aus :answers Bewertungen · :responded von :total Einladungen beantwortet',
     ],
     'purchase_orders' => ['title' => 'Bestellungen'],
+    'supplier_catalogs' => [
+        'title' => 'Kataloge',
+        'items' => '{1} 1 Artikel|[0,*] :count Artikel',
+        'active' => 'aktiv',
+        'inactive' => 'inaktiv',
+    ],
+    'supplier_scorecard' => [
+        'title' => 'Leistung (Scorecard)',
+        'summary' => 'Gesamt-Score :score von 100 · letzte :months Monate',
+        'summary_none' => 'Kein Gesamt-Score · letzte :months Monate',
+    ],
+    'asset_finance' => ['title' => 'Leasing und Finanzierung'],
+    'claims' => ['title' => 'Offene Reklamationen'],
+    'appointments' => [
+        'title' => 'Termine',
+        'untitled' => 'Termin',
+    ],
     'credentials' => [
         'title' => 'Pflichtnachweise',
         'summary' => 'Gesamtstatus: :status',

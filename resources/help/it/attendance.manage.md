@@ -1,7 +1,7 @@
 ---
 title: "Timbratura e presenze"
 topic: attendance.manage
-version: 1
+version: 2
 keywords:
     - timbrare
     - timbratura entrata
@@ -49,3 +49,5 @@ bloccato per 15 minuti.
 **Promemoria serale:** Se alle 19 è in entrata da almeno otto ore, riceve un
 promemoria, una volta per timbratura. Chi inizia un turno di sera non riceve
 promemoria.
+
+**Correggere una timbratura:** su «Oggi» l’icona della matita nell’elenco delle timbrature apre la finestra di correzione: inizio, fine, pausa e motivazione. La correzione segue l’iter di approvazione come richiesta; se la Sua organizzazione consente l’autocorrezione, vale subito. Senza rete viene salvata e trasmessa più tardi. Se qualcuno ha modificato la timbratura nel frattempo, la Sua correzione non la sovrascrive: online compare un avviso, offline un conflitto in «Modifiche offline».

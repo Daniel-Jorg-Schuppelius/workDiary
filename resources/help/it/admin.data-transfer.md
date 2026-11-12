@@ -1,7 +1,7 @@
 ---
 title: "Trasferimento dati"
 topic: admin.data-transfer
-version: 2
+version: 3
 keywords:
     - esportazione dati
     - esportare dati
@@ -47,3 +47,12 @@ di audit.
 
 Nota: questa sezione serve alla migrazione/al trasferimento dei dati.
 Per backup completi del sistema consulti **Backup**.
+
+## Colonne con un permesso proprio
+
+Le tariffe di fatturazione e di costo delle persone vengono esportate solo con il
+permesso per i dati del personale e delle paghe, quelle dei progetti solo con il
+permesso per la fatturazione dei progetti. Senza il permesso le colonne mancano nel
+file; un file che le contiene può essere scaricato solo da chi ha quel permesso.
+All'importazione workDiary ignora tali colonne senza il permesso e le indica nel
+rapporto di verifica; le altre colonne vengono importate.

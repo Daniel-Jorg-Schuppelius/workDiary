@@ -15,16 +15,17 @@ namespace App\Services\Inventory;
 use App\Enums\Inventory\ValuationMethod;
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Platform\Organization;
+use App\Settings\SettingsRegistry;
 
 /**
  * Löst das Bewertungsverfahren je Organisation auf (Feature 048, E3). Kaskade:
- * organizations.settings['valuation_method'] → Fallback gleitender Durchschnitt.
+ * Einstellung `inventory.valuation_method` → Fallback gleitender Durchschnitt.
  */
 class ValuationMethodResolver {
     public function methodFor(Organization $organization): ValuationMethod {
-        $setting = data_get($organization->settings, 'valuation_method');
-        if (is_string($setting) && $setting !== '') {
-            $method = ValuationMethod::tryFrom($setting);
+        // Altformat ohne Gruppe: vor MVP-1579 gab es keine Schreibstelle, der Wert stand nur von Hand in der Datenbank.
+        foreach ([SettingsRegistry::organizationValue($organization, 'inventory.valuation_method'), data_get($organization->settings, 'valuation_method')] as $setting) {
+            $method = is_string($setting) ? ValuationMethod::tryFrom($setting) : null;
             if ($method instanceof ValuationMethod) {
                 return $method;
             }

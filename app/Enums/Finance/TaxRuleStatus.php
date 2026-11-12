@@ -17,9 +17,6 @@ use App\Enums\Contracts\HasLabel;
 /** Stand einer Steuerregel (Phase 23, MVP-238): Regeln werden stillgelegt, nie gelöscht. */
 enum TaxRuleStatus: string implements HasLabel {
     case Active = 'active';
-
-    /** Im Schema vorgesehen, heute von keinem Code geschrieben. */
-    case Draft = 'draft';
     case Retired = 'retired';
 
     public function label(): string {

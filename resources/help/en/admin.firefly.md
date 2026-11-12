@@ -1,7 +1,7 @@
 ---
 title: "Firefly III as a reconciliation source"
 topic: admin.firefly
-version: 1
+version: 3
 keywords:
     - Firefly III
     - account movements
@@ -60,3 +60,9 @@ immediately. **Disconnect** ends the sync.
 - The check fails with 401: the token is wrong or expired.
 - The check reports an internal address: the address points into your own
   network, but **Allow private addresses** is off or not permitted by the operator.
+
+## In the overview
+
+The **Assignment** selection also offers **Open (none or ambiguous)**. Transactions without or with an ambiguous assignment appear in the **work queue** as one bundled item each, and the dashboard tile **Financial transactions** counts them next to the bank statements and shows the latest transactions. Both are visible only to administrators and only while the plugin is enabled.
+
+**Mark as settled:** Movements that need no document (account fee, private withdrawal) can be marked as settled with a reason. They then no longer count in the “Finance movements” tile and the work queue; the “Settled” filter shows them and “Reopen” removes the mark. The synchronisation only changes the assignment, never the settlement.

@@ -1,7 +1,7 @@
 ---
 title: "Auskunftsportal für Betroffene"
 topic: privacy.portal
-version: 1
+version: 2
 keywords:
     - Auskunftsantrag
     - DSGVO-Auskunft
@@ -40,3 +40,7 @@ selbst eine Datenschutzverletzung.
 **Abgrenzung:** Das Auskunftsportal ist nicht das Hinweisgeberportal. Dort
 geht es um Meldungen über Missstände, hier um die eigenen Daten der
 anfragenden Person.
+
+**Frist verlängern:** An einer offenen Anfrage finden Sie die Karte **Frist verlängern**. Nach Art. 12 Abs. 3 DSGVO sind höchstens zwei weitere Monate möglich; Sie geben die neue Frist und den Grund an. Das geht nur, solange die erste Frist läuft, denn innerhalb dieser Frist muss die Person davon erfahren. Hat die Anfrage eine Kontaktadresse (Portal), sendet WorkDiary die Mitteilung mit dem Grund dorthin; sonst teilen Sie beides selbst mit. Der Vorgang zeigt danach die neue Frist mit dem Hinweis auf die ursprüngliche und erinnert rechtzeitig vor der neuen Frist erneut.
+
+**Sprache des Portals:** Die **Standardsprache des Portals** bestimmt, in welcher Sprache das öffentliche Formular erscheint; ohne Auswahl gilt die Sprache der Anwendung.

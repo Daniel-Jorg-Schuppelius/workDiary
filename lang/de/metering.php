@@ -19,6 +19,19 @@ return [
     'blocked_external' => 'Für diesen Kunden führt ein externes System die Faktura — es entsteht kein Beleg.',
     'run_done' => 'Abgerechnet: :created Entwurf/Entwürfe, :skipped übersprungen.',
     'form_hint' => 'Ohne Endstand in der Periode entsteht kein Entwurf, sondern ein Hinweis — geschätzt wird nichts.',
+    'not_runnable' => 'Diese Vereinbarung wird nicht abgerechnet (Status: :status). Zum Abrechnen den Status auf „Aktiv“ setzen.',
+    'project_hint' => 'Die Rechnungsentwürfe des Laufs werden diesem Projekt zugeordnet.',
+    'status_hint' => 'Pausierte und beendete Vereinbarungen überspringt der Lauf. Nach einer Pause rechnet er ab „Nächste Abrechnung“ nach — das Datum bei Bedarf vorziehen.',
+    'tiers' => [
+        'legend' => 'Mengenstaffel',
+        'hint' => 'Optional. Mit Staffel gilt je Stufe ihr Preis statt des Einheitspreises; gerechnet wird stufenweise auf den Verbrauch nach Abzug der Freimenge. Die erste Stufe beginnt bei 0, leere Zeilen werden ignoriert.',
+        'from' => 'Stufe :n ab Menge',
+        'price' => 'Stufe :n Preis je Einheit',
+        'badge' => 'Staffel (:count Stufen)',
+        'badge_title' => 'Statt des Einheitspreises gilt eine Mengenstaffel.',
+        'first_from_zero' => 'Die erste Staffelstufe muss bei 0 beginnen, sonst bliebe Verbrauch unberechnet.',
+        'duplicate_from' => 'Jede Staffelstufe braucht eine eigene Menge „ab“.',
+    ],
     'unit_default' => 'Einheiten',
     'action' => [
         'create' => 'Vereinbarung erfassen',
@@ -37,6 +50,7 @@ return [
         'interval_count' => 'Faktor',
         'next_run_on' => 'Nächste Abrechnung',
         'end_on' => 'Ende',
+        'project' => 'Projekt',
         'status' => 'Status',
     ],
     'interval' => [

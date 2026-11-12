@@ -112,6 +112,16 @@ return [
         ],
     ],
     // Sammelbuchungs-Auflösung je TransactionDetail (Toolkit-Folgepaket 2).
+    // Freie Belegsuche beim Einzelumsatz (MVP-1557).
+    'assign' => [
+        'title' => 'Buscar y asignar un justificante',
+        'hint' => 'Todas las facturas abiertas, los gastos aprobados y las cuentas de cliente — también sin sugerencia. Un importe menor es un pago parcial; uno mayor, un pago en exceso.',
+        'target' => 'Justificante',
+        'kind' => 'Tipo',
+        'kind_auto' => 'Automáticamente según el importe',
+        'note' => 'Nota',
+        'action' => 'Buscar justificante',
+    ],
     'split' => [
         'title' => 'Desglosar asiento colectivo',
         'return_title' => 'Devolución colectiva de adeudo — procesar por transacción individual',

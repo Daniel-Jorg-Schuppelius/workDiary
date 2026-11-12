@@ -1,7 +1,7 @@
 ---
 title: "Fertigungsaufträge"
 topic: manufacturing.orders
-version: 5
+version: 6
 keywords:
     - Produktionsauftrag
     - Stückliste
@@ -130,3 +130,7 @@ sein Gegenstück dort mit der Nummer des Programms. Bezüge, die das Programm
 selbst meldet, etwa ein in Lexoffice angelegter Abschlag, erscheinen ebenfalls.
 Die Spalte **Bezug** sagt, was der Beleg für diesen ist; „über …“ nennt den
 Beleg, über den der Zusammenhang besteht.
+
+## Auslieferung ohne Kunde und Storno
+
+Eine Auslieferung ohne Kunden braucht keine Berechnung; ihr Fakturastatus steht auf **Nicht erforderlich**. Ein stornierter Auftrag schließt seine offenen Fehlmaterial-Bedarfe – sie laufen nicht mehr in die Bestellvorschläge.

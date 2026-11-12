@@ -107,15 +107,8 @@
         ['icon' => 'holiday_village',        'label' => __('housing.branch_label')],
     ];
 
-    // Produktnamen der angebundenen Systeme – bewusst unübersetzt.
-    $integrations = [
-        ['icon' => 'account_balance', 'title' => __('Buchhaltung & E-Rechnung'), 'items' => ['DATEV', 'Lexoffice', 'sevDesk', 'easybill', 'BuchhaltungsButler', 'orgaMAX', 'Peppol']],
-        ['icon' => 'local_shipping',  'title' => __('Handel & Versand'),         'items' => ['JTL-Wawi', 'Billbee', 'Etsy', 'DHL', 'UPS', 'FedEx']],
-        ['icon' => 'task_alt',        'title' => __('Zeit, Aufgaben & Tickets'), 'items' => ['Toggl', 'Clockify', 'Kimai', 'Todoist', 'OpenProject', 'GitHub', 'GitLab', 'Zammad']],
-        ['icon' => 'cloud',           'title' => __('Kalender & Cloud'),         'items' => ['Microsoft 365', 'SharePoint', 'Google Calendar', 'Google Drive', 'Dropbox', 'Nextcloud', 'Calendly', 'CalDAV', 'CardDAV', 'WebDAV', 'S3']],
-        ['icon' => 'forum',           'title' => __('Kommunikation & Ortung'),   'items' => ['Microsoft Teams', 'Mattermost', 'sipgate', 'FRITZ!Box', 'seven.io', 'IMAP', 'TeamViewer', 'AnyDesk', 'RustDesk', 'Splashtop', 'pcvisit', 'OwnTracks', 'Traccar']],
-        ['icon' => 'auto_awesome',    'title' => __('KI & Übersetzung'),         'items' => ['OpenAI', 'Anthropic', 'Gemini', 'Azure OpenAI', 'Ollama', 'DeepL', 'Azure Translator', 'LibreTranslate']],
-    ];
+    // $integrations kommt aus dem HomeController (Plugins über ihr Manifest, dazu fest eingebaute Anbindungen).
+    /** @var list<array{icon: string, title: string, items: list<string>}> $integrations */
 
     $standards = ['XRechnung', 'ZUGFeRD', 'GAEB', 'DATANORM', 'openTRANS', 'OCI', 'SEPA', 'CAMT', 'MT940', 'iCalendar', 'SCORM', 'xAPI', 'cmi5', 'LTI 1.3'];
 

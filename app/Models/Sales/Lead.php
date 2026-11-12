@@ -93,6 +93,14 @@ class Lead extends Model implements ContactDetailsHolder, ContactNameHolder, Cus
         return $this->morphMany(CommunicationNote::class, 'notable');
     }
 
+    /** Letzten Kontakt nachziehen (MVP-1612) — nie zurück, ein nachgetragener älterer Kontakt verkürzt die Frist nicht. */
+    public function touchContact(?\DateTimeInterface $at = null): void {
+        $at = Carbon::instance($at ?? Carbon::now());
+        if ($this->last_contact_at === null || $at->gt($this->last_contact_at)) {
+            $this->forceFill(['last_contact_at' => $at])->save();
+        }
+    }
+
     /** Anzeigename: Firma, sonst Ansprechpartner, sonst Platzhalter. */
     public function displayName(): string {
         return trim((string) ($this->company ?: $this->contact_name)) ?: (string) __('Anonymisierter Lead');

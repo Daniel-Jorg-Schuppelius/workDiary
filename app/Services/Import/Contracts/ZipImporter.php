@@ -32,7 +32,4 @@ interface ZipImporter {
 
     /** @return array{0: int, 1: int, 2: int, 3: int} created, updated, skipped, failed */
     public function import(ImportRun $run, string $zipBinary, Organization $organization, User $actor): array;
-
-    /** @return array<string, mixed> */
-    public function importBinary(string $zipBinary, Organization $organization, User $actor): array;
 }

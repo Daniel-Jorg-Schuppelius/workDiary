@@ -20,6 +20,19 @@
         <header class="wb-header">
             <h1>{{ ($portal ?? null)?->organization?->name ?? __('Meldestelle') }}</h1>
             <p class="wb-sub">{{ __('Vertraulicher Meldekanal') }}</p>
+            @php $wbLocales = ($portal ?? null)?->offeredLocales() ?? []; @endphp
+            @if (count($wbLocales) > 1)
+                <nav class="wb-sub" aria-label="{{ __('Sprache') }}">
+                    @foreach ($wbLocales as $code)
+                        @if ($code === app()->getLocale())
+                            <strong lang="{{ $code }}">{{ \App\Support\Locales::native($code) }}</strong>
+                        @else
+                            <a href="{{ route('whistleblowing.portal', ['portal' => $portal->public_slug, 'lang' => $code]) }}" lang="{{ $code }}" hreflang="{{ $code }}">{{ \App\Support\Locales::native($code) }}</a>
+                        @endif
+                        @if (! $loop->last) · @endif
+                    @endforeach
+                </nav>
+            @endif
         </header>
 
         @yield('content')

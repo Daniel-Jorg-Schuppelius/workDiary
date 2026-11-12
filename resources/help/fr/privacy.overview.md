@@ -1,7 +1,7 @@
 ---
 title: "Aperçu de la gestion de la protection des données"
 topic: privacy.overview
-version: 2
+version: 5
 keywords:
     - RGPD
     - registre des traitements
@@ -249,3 +249,15 @@ indications d'identité valent comme auto-déclaration non vérifiée.
 
 **Autorisation :** un droit propre pour gérer le portail des personnes
 concernées ; sans ce droit, l'entrée de menu n'apparaît pas.
+
+**Destruction de la clé après la conservation :** l'analyse de suppression propose, sous **Conservation**, la destruction des demandes de personnes concernées et des violations de données clôturées dont le délai de conservation a expiré. Ce n'est qu'après votre confirmation et l'exécution que WorkDiary détruit la clé du dossier : les contenus ne sont alors plus lisibles, les justificatifs stockés sans chiffrement sont supprimés et la consultation d'un dossier de réponse chiffré répond « n'existe plus ». Le numéro, le type, les délais, la décision et l'historique restent comme preuve.
+
+**Sous-traitance :** en saisissant un contrat de sous-traitance, vous indiquez si les mesures techniques et organisationnelles (MTO) sont vérifiées et fixez la prochaine revue. La liste met en évidence les revues en retard.
+
+## État du traitement, statut de mise en œuvre et maîtrise
+
+**Demandes des personnes concernées :** la carte **État du traitement** consigne qu'un justificatif d'identité a été demandé, qu'une question a été posée ou que la réponse est arrivée ; **Retirée par la personne** clôture le dossier. Le délai légal continue de courir pendant les questions.
+
+**MTO :** vous saisissez le statut de mise en œuvre et le besoin de protection (normal, élevé, très élevé) à la création et les modifiez sur la mesure. La validation d'une activité de traitement fige les deux dans l'instantané des MTO.
+
+**Violations de données :** lorsque toutes les mesures sont terminées, une violation non encore signalée affiche **Maîtrisé** ; le signalement et la clôture restent des étapes distinctes.

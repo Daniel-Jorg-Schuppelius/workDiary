@@ -1,7 +1,7 @@
 ---
 title: "Operatività: ripartizione del tempo, procedure, materiale, reperibilità"
 topic: reports.operations
-version: 6
+version: 8
 keywords:
     - report operativo
     - ordini di servizio
@@ -143,6 +143,9 @@ accettate** o **Solo aperte**) e **Misura di follow-up** (**Con punto
 aperto/ordine successivo** o **Senza follow-up**). Esportazione in PDF, CSV ed
 Excel; CSV ed Excel contengono inoltre l’azione proposta e la motivazione.
 
+L'accettazione del rischio avviene nell'esecuzione della procedura, sullo
+scostamento (**Accetta rischio**, permesso «Accetta uno scostamento critico»).
+
 ## Esecuzioni di procedura bloccate
 
 **Report** → **Progetti e clienti** → **Esecuzioni di procedura bloccate**
@@ -216,14 +219,16 @@ menu compare per gli amministratori e con il diritto **Visualizza i report**.
   periodo), **Punti aperti** (attualmente aperti, indipendentemente dal
   periodo), **Escalato** (punti aperti nello stato **Bloccato**), **Difetti**
   (verbali di difetto di questi ordini nel periodo), **Tasso di difetti %**
-  (difetti rispetto agli ordini) e **Ultimo incidente**.
+  (difetti rispetto agli ordini), **Difetti ricorrenti** (asset della riga con
+  almeno tre segnalazioni di difetto nei dodici mesi fino alla fine del
+  periodo, di cui almeno una nel periodo) e **Ultimo incidente**.
 - Se nel periodo esistono registrazioni di tempo da sessioni di
   manutenzione remota per i dispositivi, si aggiungono **Sessioni di
   manutenzione** e **Tempo di manutenzione** e un grafico del tempo di
   manutenzione.
 - Grafici: **Difetti nel periodo (top 20)** e **Tasso di difetti (top 15)**. I
-  numeri di punti aperti, escalation e difetti e le barre portano agli elenchi
-  di dettaglio corrispondenti.
+  numeri di punti aperti, escalation, difetti e difetti ricorrenti e le barre
+  portano agli elenchi di dettaglio corrispondenti.
 
 Esportazione in PDF, CSV ed Excel.
 

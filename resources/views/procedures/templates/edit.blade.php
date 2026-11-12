@@ -23,6 +23,14 @@
     $entryTypesVal = old('applicability_entry_types', implode(', ', (array) ($applicability['diary_entry_type'] ?? [])));
     $tagsVal = old('applicability_tags', implode(', ', (array) ($applicability['tags_any'] ?? [])));
 
+    $selected = static fn (string $field, string $rule, string $model): array => old($field) !== null
+        ? (array) old($field)
+        : array_map(static fn ($id): string => \App\Support\Sqid::encode($model, $id), (array) ($applicability[$rule] ?? []));
+    $customerSqids = $selected('applicability_customers', 'customer_ids', \App\Models\Customer\Customer::class);
+    $productSqids = $selected('applicability_products', 'product_ids', \App\Models\Article\Product::class);
+    $slaSqids = $selected('applicability_sla_contracts', 'sla_contract_ids', \App\Models\ServiceTicket\SlaContract::class);
+    $categoryCodes = (array) old('applicability_asset_categories', (array) ($applicability['asset_categories'] ?? []));
+
     $stepTemplate = [
         'code' => '',
         'step_type' => \App\Enums\Procedure\ProcedureStepType::Confirm->value,
@@ -34,9 +42,7 @@
         'requires_proof_type' => '',
         'required_role' => '',
         'required_qualification_code' => '',
-        'condition_step' => '',
-        'condition_equals' => '',
-    ];
+    ] + \App\Services\Procedure\StepConfigForm::BLANK;
 
     $stepItems = old('steps', $draft
         ? $draft->steps->map(fn($s) => [
@@ -50,9 +56,7 @@
             'requires_proof_type' => $s->requires_proof_type?->value ?? '',
             'required_role' => (string) ($s->required_role ?? ''),
             'required_qualification_code' => (string) ($s->required_qualification_code ?? ''),
-            'condition_step' => (string) (data_get($s->config, 'depends_on.step_code') ?? ''),
-            'condition_equals' => (string) (data_get($s->config, 'depends_on.equals') ?? ''),
-        ])->values()->all()
+        ] + $stepConfig->toForm($s->config))->values()->all()
         : []);
 @endphp
 
@@ -124,7 +128,7 @@
                 <x-input-field name="name" :label="__('procedure.field.name')" required minlength="3" maxlength="180" span="2" :value="old('name', $template->name)" />
                 <div class="sm:col-span-2"><x-translation-fields name="name_i18n" :values="$template->name_i18n" /></div>
                 <x-input-field name="domain" :label="__('procedure.field.domain')" maxlength="40" :value="old('domain', $template->domain)" />
-                <x-select-field name="risk_level" :label="__('procedure.field.riskLevel')" :disabled="$draft === null">
+                <x-select-field name="risk_level" :label="__('procedure.field.riskLevel')" :hint="__('procedure.hint.riskCritical')" :disabled="$draft === null">
                     @foreach ($riskLevels as $level)
                         <option value="{{ $level->value }}" @selected(old('risk_level', $draft?->risk_level?->value) === $level->value)>{{ $level->label() }}</option>
                     @endforeach
@@ -137,6 +141,30 @@
                 <p class="text-xs text-muted sm:col-span-2">{{ __('procedure.hint.applicability') }}</p>
                 <x-input-field name="applicability_entry_types" :label="__('procedure.field.applicabilityEntryTypes')" maxlength="2000" placeholder="{{ __('procedure.hint.commaList') }}" :value="$entryTypesVal" :disabled="$draft === null" />
                 <x-input-field name="applicability_tags" :label="__('procedure.field.applicabilityTags')" maxlength="2000" placeholder="{{ __('procedure.hint.commaList') }}" :value="$tagsVal" :disabled="$draft === null" />
+                <x-select-field name="applicability_customers[]" id="applicability_customers" error="applicability_customers" :label="__('procedure.field.applicabilityCustomers')" :hint="__('procedure.hint.multiSelect')" multiple size="5" :disabled="$draft === null">
+                    @foreach ($customers as $customer)
+                        <option value="{{ $customer->sqid }}" @selected(in_array($customer->sqid, $customerSqids, true))>{{ $customer->name }}@if ($customer->number) ({{ $customer->number }})@endif</option>
+                    @endforeach
+                </x-select-field>
+                <x-select-field name="applicability_asset_categories[]" id="applicability_asset_categories" error="applicability_asset_categories" :label="__('procedure.field.applicabilityAssetCategories')" :hint="__('procedure.hint.applicabilityAsset')" multiple size="5" :disabled="$draft === null">
+                    @foreach ($assetCategories + array_combine($categoryCodes, $categoryCodes) as $code => $label)
+                        <option value="{{ $code }}" @selected(in_array((string) $code, $categoryCodes, true))>{{ $label }}</option>
+                    @endforeach
+                </x-select-field>
+                <x-select-field name="applicability_products[]" id="applicability_products" error="applicability_products" :label="__('procedure.field.applicabilityProducts')" :hint="__('procedure.hint.applicabilityAsset')" multiple size="5" :disabled="$draft === null">
+                    @foreach ($products as $product)
+                        <option value="{{ $product->sqid }}" @selected(in_array($product->sqid, $productSqids, true))>{{ $product->name }}</option>
+                    @endforeach
+                </x-select-field>
+                <x-select-field name="applicability_sla_contracts[]" id="applicability_sla_contracts" error="applicability_sla_contracts" :label="__('procedure.field.applicabilitySla')" :hint="__('procedure.hint.applicabilityAsset')" multiple size="5" :disabled="$draft === null">
+                    @foreach ($slaContracts as $contract)
+                        <option value="{{ $contract->sqid }}" @selected(in_array($contract->sqid, $slaSqids, true))>{{ $contract->label }}@if ($contract->code) ({{ $contract->code }})@endif</option>
+                    @endforeach
+                </x-select-field>
+                <div class="sm:col-span-2">
+                    <x-checkbox-field name="allow_blocked" :label="__('procedure.field.allowBlocked')" :hint="__('procedure.hint.allowBlocked')"
+                                      :checked="(bool) old('allow_blocked', $draft?->allow_blocked ?? false)" :disabled="$draft === null" />
+                </div>
                 <x-input-field name="change_note" :label="__('procedure.field.changeNote')" maxlength="2000" span="2" :value="old('change_note', $draft?->change_note)" :disabled="$draft === null" />
             </x-form-group>
 
@@ -236,9 +264,121 @@
                                     <div class="fieldset">
                                         <label :for="fieldName(i, 'required_qualification_code')" class="fieldset-label">{{ __('procedure.field.requiredQualification') }}</label>
                                         <input type="text" maxlength="60"
+                                               list="procedure-qualification-codes"
                                                :id="fieldName(i, 'required_qualification_code')" :name="fieldName(i, 'required_qualification_code')" x-model="it.required_qualification_code"
                                                class="input input-sm input-bordered w-full">
                                     </div>
+                                </div>
+
+                                {{-- Konfiguration je Schrittart (MVP-1569); unbekannte Schlüssel reisen in config_extra mit. --}}
+                                <input type="hidden" :name="fieldName(i, 'config_extra')" :value="it.config_extra">
+                                <div class="grid grid-cols-1 gap-2 sm:grid-cols-3" x-show="['choice', 'number', 'messreihe', 'wait'].includes(it.step_type)">
+                                    <div class="fieldset sm:col-span-3" x-show="it.step_type === 'choice'">
+                                        <label :for="fieldName(i, 'options')" class="fieldset-label">{{ __('procedure.field.options') }}</label>
+                                        <input type="text" maxlength="2000" placeholder="{{ __('procedure.hint.options') }}"
+                                               :id="fieldName(i, 'options')" :name="fieldName(i, 'options')" x-model="it.options"
+                                               class="input input-sm input-bordered w-full">
+                                    </div>
+                                    <div class="fieldset" x-show="['number', 'messreihe'].includes(it.step_type)">
+                                        <label :for="fieldName(i, 'unit')" class="fieldset-label">{{ __('procedure.field.unit') }}</label>
+                                        <input type="text" maxlength="20"
+                                               :id="fieldName(i, 'unit')" :name="fieldName(i, 'unit')" x-model="it.unit"
+                                               class="input input-sm input-bordered w-full">
+                                    </div>
+                                    <div class="fieldset" x-show="['number', 'messreihe'].includes(it.step_type)">
+                                        <label :for="fieldName(i, 'min')" class="fieldset-label">{{ __('procedure.field.min') }}</label>
+                                        <input type="number" step="any"
+                                               :id="fieldName(i, 'min')" :name="fieldName(i, 'min')" x-model="it.min"
+                                               class="input input-sm input-bordered w-full">
+                                    </div>
+                                    <div class="fieldset" x-show="['number', 'messreihe'].includes(it.step_type)">
+                                        <label :for="fieldName(i, 'max')" class="fieldset-label">{{ __('procedure.field.max') }}</label>
+                                        <input type="number" step="any"
+                                               :id="fieldName(i, 'max')" :name="fieldName(i, 'max')" x-model="it.max"
+                                               class="input input-sm input-bordered w-full">
+                                    </div>
+                                    <div class="fieldset" x-show="it.step_type === 'wait'">
+                                        <label :for="fieldName(i, 'wait_seconds')" class="fieldset-label">{{ __('procedure.field.waitSeconds') }}</label>
+                                        <input type="number" min="1" placeholder="{{ __('procedure.hint.waitSeconds') }}"
+                                               :id="fieldName(i, 'wait_seconds')" :name="fieldName(i, 'wait_seconds')" x-model="it.wait_seconds"
+                                               class="input input-sm input-bordered w-full">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 gap-2 sm:grid-cols-3" x-show="it.step_type === 'backup'">
+                                    <div class="fieldset">
+                                        <label :for="fieldName(i, 'backup_scope')" class="fieldset-label">{{ __('procedure.backup.scope') }}</label>
+                                        <select :id="fieldName(i, 'backup_scope')" :name="fieldName(i, 'backup_scope')" x-model="it.backup_scope" class="select select-sm select-bordered">
+                                            <option value="">{{ __('procedure.field.chosenAtRun') }}</option>
+                                            @foreach (\App\Enums\Procedure\ProcedureBackupScope::cases() as $scope)
+                                                <option value="{{ $scope->value }}">{{ $scope->label() }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="fieldset">
+                                        <label :for="fieldName(i, 'storage_target')" class="fieldset-label">{{ __('procedure.backup.storage') }}</label>
+                                        <select :id="fieldName(i, 'storage_target')" :name="fieldName(i, 'storage_target')" x-model="it.storage_target" class="select select-sm select-bordered">
+                                            <option value="">{{ __('procedure.field.chosenAtRun') }}</option>
+                                            @foreach (\App\Enums\Procedure\ProcedureBackupStorageTarget::cases() as $target)
+                                                <option value="{{ $target->value }}">{{ $target->label() }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="fieldset">
+                                        <label :for="fieldName(i, 'verify_method')" class="fieldset-label">{{ __('procedure.backup.method') }}</label>
+                                        <select :id="fieldName(i, 'verify_method')" :name="fieldName(i, 'verify_method')" x-model="it.verify_method" class="select select-sm select-bordered">
+                                            <option value="">{{ __('procedure.field.chosenAtRun') }}</option>
+                                            @foreach (\App\Enums\Procedure\ProcedureBackupVerifyMethod::cases() as $verify)
+                                                <option value="{{ $verify->value }}">{{ $verify->label() }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="fieldset">
+                                        <label :for="fieldName(i, 'min_size_kb')" class="fieldset-label">{{ __('procedure.field.backupMinSize') }}</label>
+                                        <input type="number" min="0"
+                                               :id="fieldName(i, 'min_size_kb')" :name="fieldName(i, 'min_size_kb')" x-model="it.min_size_kb"
+                                               class="input input-sm input-bordered w-full">
+                                    </div>
+                                    <div class="fieldset">
+                                        <label :for="fieldName(i, 'max_age_minutes')" class="fieldset-label">{{ __('procedure.field.backupMaxAge') }}</label>
+                                        <input type="number" min="1"
+                                               :id="fieldName(i, 'max_age_minutes')" :name="fieldName(i, 'max_age_minutes')" x-model="it.max_age_minutes"
+                                               class="input input-sm input-bordered w-full">
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-wrap items-end gap-4" x-show="it.step_type !== 'backup'">
+                                    <label class="label cursor-pointer gap-2">
+                                        <input type="checkbox" class="checkbox checkbox-sm"
+                                               :name="fieldName(i, 'requires_prior_backup')" x-model="it.requires_prior_backup">
+                                        <span class="label-text text-xs">{{ __('procedure.field.requiresPriorBackup') }}</span>
+                                    </label>
+                                    <div class="fieldset" x-show="it.requires_prior_backup">
+                                        <label :for="fieldName(i, 'prior_backup_max_age_minutes')" class="fieldset-label">{{ __('procedure.field.backupMaxAge') }}</label>
+                                        <input type="number" min="1"
+                                               :id="fieldName(i, 'prior_backup_max_age_minutes')" :name="fieldName(i, 'prior_backup_max_age_minutes')" x-model="it.prior_backup_max_age_minutes"
+                                               class="input input-sm input-bordered w-40">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 items-end gap-2 sm:grid-cols-3" x-show="it.requires_second_person || it.step_type === 'freigabe'">
+                                    <div class="fieldset">
+                                        <label :for="fieldName(i, 'second_person_role')" class="fieldset-label">{{ __('procedure.field.secondPersonRole') }}</label>
+                                        <input type="text" maxlength="40"
+                                               :id="fieldName(i, 'second_person_role')" :name="fieldName(i, 'second_person_role')" x-model="it.second_person_role"
+                                               class="input input-sm input-bordered w-full">
+                                    </div>
+                                    <div class="fieldset">
+                                        <label :for="fieldName(i, 'second_person_min_qualification')" class="fieldset-label">{{ __('procedure.field.secondPersonQualification') }}</label>
+                                        <input type="text" maxlength="60" list="procedure-qualification-codes"
+                                               :id="fieldName(i, 'second_person_min_qualification')" :name="fieldName(i, 'second_person_min_qualification')" x-model="it.second_person_min_qualification"
+                                               class="input input-sm input-bordered w-full">
+                                    </div>
+                                    <label class="label cursor-pointer gap-2">
+                                        <input type="checkbox" class="checkbox checkbox-sm"
+                                               :name="fieldName(i, 'second_person_allow_self')" x-model="it.second_person_allow_self">
+                                        <span class="label-text text-xs">{{ __('procedure.field.secondPersonAllowSelf') }}</span>
+                                    </label>
                                 </div>
 
                                 {{-- Bedingter Schritt (wenn-dann), additiv in config.depends_on --}}
@@ -275,6 +415,12 @@
                 </div>
             @endif
         </form>
+
+        <datalist id="procedure-qualification-codes">
+            @foreach ($qualificationCodes as $qualificationCode)
+                <option value="{{ $qualificationCode }}"></option>
+            @endforeach
+        </datalist>
 
         {{-- Rezeptur / Materialbedarf (MVP-455) — eigenständige Formulare. --}}
         @include('procedures.templates._recipe')

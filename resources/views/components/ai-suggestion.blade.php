@@ -27,6 +27,10 @@
       fieldName     → Name des Textfelds im Übernehmen-Formular
       editable      → true = Vorschlag vor Übernahme editierbar
       hint          → Fußnote für Vorschläge ohne Übernahme (Einsichten)
+      capability    → Capability des Vorschlags; mit regenerateAction zeigt die
+                      Komponente die Verbindungswahl, wenn die Organisation
+                      „Nutzer dürfen wählen" erlaubt (MVP-1590)
+      regenerateAction → Route, die den Vorschlag neu erzeugt (POST)
 --}}
 @props([
     'original' => null,
@@ -39,9 +43,17 @@
     'fieldName' => 'suggestion',
     'editable' => true,
     'hint' => null,
+    'capability' => null,
+    'regenerateAction' => null,
 ])
 
-@php $suggestionId = 'ai-suggestion-' . \Illuminate\Support\Str::random(6); @endphp
+@php
+    $suggestionId = 'ai-suggestion-' . \Illuminate\Support\Str::random(6);
+    $choiceOrganization = \App\Support\OrganizationContext::current();
+    $connectionChoices = $capability !== null && $regenerateAction !== null && $choiceOrganization !== null
+        ? app(\App\Services\Ai\AiConnectionChoice::class)->optionsFor($choiceOrganization, $capability)
+        : [];
+@endphp
 
 <section {{ $attributes->class(['rounded-box border border-info/30 bg-info/5 p-3 space-y-2']) }}
          aria-label="{{ __('ai.suggestion.title') }}">
@@ -76,6 +88,21 @@
             @endif
         </div>
     </div>
+
+    @if ($connectionChoices !== [])
+        {{-- Verbindungswahl (Feature 025): neu erzeugen mit einer anderen erlaubten Verbindung. --}}
+        <form method="POST" action="{{ $regenerateAction }}" class="flex flex-wrap items-center justify-end gap-2" data-ai-connection-choice>
+            @csrf
+            <input type="hidden" name="capability" value="{{ $capability }}">
+            <label for="{{ $suggestionId }}-connection" class="text-xs text-muted">{{ __('ai.suggestion.connection') }}</label>
+            <select id="{{ $suggestionId }}-connection" name="connection_id" class="select select-bordered select-xs w-auto">
+                @foreach ($connectionChoices as $connection)
+                    <option value="{{ $connection->sqid }}" @selected($provider !== null && $connection->provider->value === $provider)>{{ $connection->name }}</option>
+                @endforeach
+            </select>
+            <x-button type="submit" tone="ghost" size="xs" icon="refresh">{{ __('ai.suggestion.regenerate') }}</x-button>
+        </form>
+    @endif
 
     {{-- MVP-732: Einsichten (Welle 2/3) haben kein Schreibziel — sie zeigen nur
          „verwerfen". Der Fuß erscheint daher schon bei rejectAction allein. --}}

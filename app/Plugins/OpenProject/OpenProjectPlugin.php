@@ -32,7 +32,7 @@ use CommonToolkit\Helper\Data\WebLinkHelper;
  * Plugin-Id ist "openproject". Pro Organisation konfigurierbar über
  * plugin_settings; ENV/config dient nur als Fallback.
  */
-class OpenProjectPlugin extends AbstractPlugin implements TimeImporter {
+class OpenProjectPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, TimeImporter {
     public const string ID = 'openproject';
 
     public const string SERVICE_PROVIDER = OpenProjectServiceProvider::class;
@@ -120,5 +120,10 @@ class OpenProjectPlugin extends AbstractPlugin implements TimeImporter {
         }
 
         return ApiHealthProbe::probe($this->name(), fn () => $client->probe());
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Tasks];
     }
 }

@@ -30,6 +30,12 @@ return [
         'criticality' => 'Criticité',
         'last_status' => 'Résultat',
         'source' => 'Origine du plan',
+        'run_options' => 'Exécution',
+        'timezone' => 'Fuseau horaire',
+        'quiet_from' => 'Repos à partir de',
+        'quiet_until' => 'Reprise à partir de',
+        'retry_attempts' => 'Nouvelles tentatives après échec',
+        'retry_delay_minutes' => 'Intervalle entre les tentatives (min)',
     ],
     'action' => [
         'reschedule' => 'Replanifier',
@@ -115,6 +121,7 @@ return [
             'lti_rotate_keys' => 'Renouveler les clés de signature LTI',
             'lti_prune_nonces' => 'Supprimer les nonces LTI expirés',
         ],
+        'flex' => ['recompute' => 'Recalculer les soldes d’horaire variable'],
         'attendance' => ['close_open' => 'Clôturer les pointages oubliés', 'open_reminder' => 'Rappeler les pointages ouverts le soir'],
         'audit' => ['verify' => 'Vérifier la chaîne d\'audit'],
         'backup' => [
@@ -254,6 +261,10 @@ return [
         'day' => 'Jour de semaine 0–6 (0 = dimanche) ou jour du mois 1–31.',
         'expression' => 'Réservé aux exploitants : minute heure jour mois jour-semaine.',
         'allowlist' => 'Durée prévue env. :runtime min. La tâche s\'exécute avec protection contre les chevauchements ; les intervalles trop courts sont refusés côté serveur.',
+        'timezone_default' => 'Fuseau horaire de l’installation (:tz)',
+        'quiet_window' => 'Les heures situées dans la période de repos sont reportées à sa fin ; les cadences s’interrompent pendant celle-ci. Sans période de repos propre, la fenêtre de fonctionnement du serveur (:window) s’applique — pas avec un fuseau horaire propre, car elle est définie dans le fuseau de l’installation.',
+        'quiet_window_none' => 'Les heures situées dans la période de repos sont reportées à sa fin ; les cadences s’interrompent pendant celle-ci. Sans indication, la tâche s’exécute en continu.',
+        'retry' => 'Si une exécution échoue, la tâche redémarre après l’intervalle — au plus autant de fois qu’indiqué, avec protection contre les chevauchements et visible dans le journal d’exécution. 0 = aucune nouvelle tentative.',
     ],
     'flash' => [
         'rescheduled' => 'La tâche :job a été replanifiée.',

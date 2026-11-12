@@ -43,7 +43,10 @@ class RentalPortalController extends Controller {
         abort_unless($user !== null && $user->customer_id !== null, 403);
         abort_unless((int) $rental->customer_id === (int) $user->customer_id, 404);
 
-        $rental->load(['caseAssets.asset', 'handoverReports.accessoryItems', 'returnReports']);
+        $rental->load([
+            'caseAssets.asset', 'handoverReports.accessoryItems', 'handoverReports.conditionItems',
+            'returnReports.asset', 'returnReports.accessoryItems', 'returnReports.conditionItems',
+        ]);
 
         return view('customer.rental.show', ['case' => $rental]);
     }

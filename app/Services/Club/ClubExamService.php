@@ -99,6 +99,7 @@ class ClubExamService {
             if ($member->organization_id !== $offer->organization_id) {
                 throw ValidationException::withMessages(['club_member_id' => __('club.error.member_foreign')]);
             }
+            $this->assertNotReleased($offer, 'club_member_id');
             if (! $offer->targetGrades()->whereKey($targetGrade->id)->exists()) {
                 throw ValidationException::withMessages(['target_grade_id' => __('club.exams.error.grade_not_offered')]);
             }
@@ -146,6 +147,10 @@ class ClubExamService {
         /** @var ClubMember $member */
         $member = $candidate->member()->firstOrFail();
         $report = $this->eligibility->evaluate($member, $requirement, CarbonImmutable::instance($event->started_at), $candidate->approved_at !== null);
+        // Nach der Ergebnisfreigabe bleiben Bericht und Nachweisreferenzen eingefroren (MVP-1616).
+        if ($offer->results_released_at !== null) {
+            return $report;
+        }
 
         $candidate->update([
             'eligibility_met' => $report->met,
@@ -239,6 +244,7 @@ class ClubExamService {
             if ($candidate->status === $result) {
                 return $candidate;
             }
+            $this->assertNotReleased($candidate->offer()->firstOrFail(), 'result');
             $this->assertStatusTransition($candidate->status, $result);
             $this->check($candidate);
 
@@ -266,6 +272,41 @@ class ClubExamService {
             $candidate->audit('club.exam.resultRecorded', ['result' => $result->value, 'awarded' => $awardedId !== null]);
 
             return $candidate->refresh();
+        });
+    }
+
+    /**
+     * Ergebnisfreigabe (Feature 159 §Prüfung, MVP-1616): erst danach sehen
+     * Prüflinge und Vertretungen ihr Ergebnis im Mitgliederbereich. Die
+     * Freigabe setzt erfasste Ergebnisse für alle Kandidaten voraus und friert
+     * Bericht und Nachweisreferenzen ein; spätere Korrekturen laufen über
+     * Überprüfung bzw. Widerruf des Grades.
+     */
+    public function releaseResults(ClubExamOffer $offer, User $actor): ClubExamOffer {
+        return DB::transaction(function () use ($offer, $actor): ClubExamOffer {
+            /** @var ClubExamOffer $offer */
+            $offer = ClubExamOffer::query()->whereKey($offer->id)->lockForUpdate()->firstOrFail();
+            if ($offer->results_released_at !== null) {
+                return $offer;
+            }
+            $candidates = $offer->candidates()->get();
+            if ($candidates->contains(fn (ClubExamCandidate $candidate): bool => $candidate->status->isOpen())) {
+                throw ValidationException::withMessages(['results' => __('club.exams.error.release_open_candidates')]);
+            }
+            $results = $candidates->filter(fn (ClubExamCandidate $candidate): bool => $candidate->status->isResult());
+            if ($results->isEmpty()) {
+                throw ValidationException::withMessages(['results' => __('club.exams.error.release_no_results')]);
+            }
+
+            $offer->update(['results_released_at' => now()]);
+            $offer->audit('club.exam.resultsReleased', [
+                'passed' => $results->where('status', ClubExamCandidateStatus::Passed)->count(),
+                'failed' => $results->where('status', ClubExamCandidateStatus::Failed)->count(),
+                'no_show' => $results->where('status', ClubExamCandidateStatus::NoShow)->count(),
+                'actor_id' => $actor->id,
+            ]);
+
+            return $offer->refresh();
         });
     }
 
@@ -334,6 +375,12 @@ class ClubExamService {
         }
 
         return $requirement;
+    }
+
+    private function assertNotReleased(ClubExamOffer $offer, string $field): void {
+        if ($offer->results_released_at !== null) {
+            throw ValidationException::withMessages([$field => __('club.exams.error.released')]);
+        }
     }
 
     private function close(ClubExamCandidate $candidate, ClubExamCandidateStatus $status, User $actor, ?string $note, string $auditKey): ClubExamCandidate {

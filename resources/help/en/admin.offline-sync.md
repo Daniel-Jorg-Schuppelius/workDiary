@@ -1,7 +1,7 @@
 ---
 title: "Offline synchronisation"
 topic: admin.offline-sync
-version: 1
+version: 2
 keywords:
     - work offline
     - no internet
@@ -43,3 +43,7 @@ the full stock — a set filter does not hide them.
 **Captured (offline)** is the device time of recording, **Transmitted** the
 arrival on the server. The span between them is the offline latency — a day
 is normal for field work, a week is a hint that a device does not synchronise.
+
+## Decisions on conflicts
+
+Next to the result "Conflict" you see how the person decided — "Other version kept", "Discarded" or "Sent again" — or "open" as long as no decision has been made. An entry that was sent again appears as a row of its own with its own result. Commands for an area that is switched off for the organisation are rejected.

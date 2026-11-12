@@ -42,6 +42,9 @@ return [
         'message' => 'Aucune clé de registre pour cette portée ou ce terme de recherche.',
         'history' => 'Aucune modification consignée pour le moment.',
     ],
+    'error' => [
+        'service_managed' => 'Le paramètre :key est géré sur sa page métier et ne peut pas être modifié ici.',
+    ],
     'flash' => [
         'saved' => 'Paramètre :key enregistré.',
         'reset' => 'Paramètre :key rétabli à la valeur par défaut.',

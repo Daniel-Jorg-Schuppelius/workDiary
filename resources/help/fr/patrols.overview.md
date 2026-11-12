@@ -1,7 +1,7 @@
 ---
 title: "Rondes de surveillance"
 topic: patrols.overview
-version: 1
+version: 2
 keywords:
     - ronde de sécurité
     - contrôle de ronde
@@ -56,3 +56,23 @@ par le système existant, pas de canal séparé.
 
 Les horaires cibles sont une **preuve, pas une métrique de pression** : pas
 de données de position au scan ni d’évaluation durable par personne.
+
+## Gérer les itinéraires et les points de contrôle
+
+**Modifier** change la désignation, le site et la **personne responsable** de
+l'itinéraire. Un itinéraire peut être **désactivé** — une ronde en cours peut se
+terminer, aucune nouvelle ne peut être lancée. Les points de contrôle peuvent
+être modifiés (lieu, consigne, tolérance ; les scans enregistrés conservent
+leur évaluation) et **désactivés** : dès lors, ils ne sont plus attendus et ne
+peuvent plus être scannés. Les rondes antérieures restent inchangées : une
+ronde commencée avant la désactivation attend toujours le point.
+
+## Escalade
+
+Le point ouvert est créé **dès l'écart** — au premier scan hors fenêtre ou dès
+qu'un point échu a été sauté — et va à la personne responsable de
+l'itinéraire, à défaut au responsable d'équipe de la personne qui effectue la
+ronde. Il y a un point ouvert par ronde ; il est mis à jour jusqu'à la fin. Si
+une ronde est encore en cours après la durée prévue plus la tolérance du
+dernier point, le contrôle des échéances la signale une fois comme **non
+terminée** ; le poste de contrôle peut alors l'interrompre avec un motif.

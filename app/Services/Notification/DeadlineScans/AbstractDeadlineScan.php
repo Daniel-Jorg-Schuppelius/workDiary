@@ -14,6 +14,7 @@ namespace App\Services\Notification\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Platform\{Organization, User};
+use App\Services\Licensing\ModuleExtensions;
 use App\Services\Notification\NotificationDispatcher;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,10 @@ use Illuminate\Database\Eloquent\Model;
  * delegierenden Scans. Payloads tragen `due_at` (MVP-331) für den
  * Kalender-Kanal. Läuft ohne Mandantenkontext → sieht alle Organisationen;
  * Regel-Auflösung pro Datensatz über organization_id.
+ *
+ * Modul-Gate (MVP-1587): {@see runScan()} und {@see sumPerOrganization()}
+ * überspringen Organisationen, für die das Modul des Scans nicht aktiv ist;
+ * Scans mit eigener Schleife fragen {@see moduleActiveFor()} je Datensatz.
  *
  * @phpstan-type TNotifyPayload array{title: string, message?: string|null, url?: string|null, icon?: string|null, due_at?: \DateTimeInterface|string|null}
  */
@@ -57,6 +62,9 @@ abstract class AbstractDeadlineScan implements DeadlineScan {
             ['query' => $query, 'event' => $event, 'payload' => $payload] = $scan[$phase];
 
             foreach ($query()->lazyById(200) as $row) {
+                if (! $this->moduleActiveFor($row->getAttribute('organization_id'))) {
+                    continue;
+                }
                 $user = $affected($row);
                 if ($requireAffected && $user === null) {
                     continue;
@@ -86,12 +94,21 @@ abstract class AbstractDeadlineScan implements DeadlineScan {
 
         foreach ($query->distinct()->pluck('organization_id') as $organizationId) {
             $organization = Organization::query()->whereKey($organizationId)->first();
-            if ($organization !== null) {
+            if ($organization !== null && $this->moduleActiveFor($organization)) {
                 $sent += $handler($organization);
             }
         }
 
         return $sent;
+    }
+
+    /** Ist das Modul, das diesen Scan meldet, für die Organisation aktiv? Datensätze ohne Organisation bleiben. */
+    protected function moduleActiveFor(Organization|int|string|null $organization): bool {
+        if ($organization === null) {
+            return true;
+        }
+
+        return app(ModuleExtensions::class)->allows(static::class, $organization instanceof Organization ? $organization : (int) $organization);
     }
 
     protected function safeRoute(string $name): ?string {

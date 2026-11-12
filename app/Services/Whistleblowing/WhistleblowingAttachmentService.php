@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Whistleblowing;
 
 use App\Enums\Whistleblowing\AttachmentScanStatus;
+use App\Models\Platform\User;
 use App\Models\Whistleblowing\{Attachment, WhistleblowingCase};
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\CryptoHelper;
@@ -102,6 +103,15 @@ class WhistleblowingAttachmentService {
     }
 
     public function storeReporterUpload(WhistleblowingCase $case, UploadedFile $file): Attachment {
+        return $this->store($case, $file, 'reporter', null);
+    }
+
+    /** Unterlage der Meldestelle: gleicher verschlüsselter Weg, gleiche Quarantäne bis zum Scan. */
+    public function storeHandlerUpload(WhistleblowingCase $case, UploadedFile $file, User $actor): Attachment {
+        return $this->store($case, $file, 'handler', $actor);
+    }
+
+    private function store(WhistleblowingCase $case, UploadedFile $file, string $uploadedBy, ?User $actor): Attachment {
         $this->guard($case, $file);
 
         $disk = (string) config('whistleblowing.disk', 'whistleblowing');
@@ -126,7 +136,7 @@ class WhistleblowingAttachmentService {
         $attachment->organization_id = $case->getAttribute('organization_id');
         $attachment->case_id = $case->getKey();
         $attachment->setRelation('case', $case); // DEK fuer den Cast verfuegbar machen
-        $attachment->uploaded_by_type = 'reporter';
+        $attachment->uploaded_by_type = $uploadedBy;
         $attachment->storage_key = $key;
         $attachment->encrypted = true;
         $attachment->original_name_ciphertext = $file->getClientOriginalName();
@@ -142,7 +152,7 @@ class WhistleblowingAttachmentService {
         $attachment->metadata_scrubbed = false;
         $attachment->save();
 
-        $this->events->record($case, WhistleblowingEventService::ATTACHMENT_UPLOADED, null, [
+        $this->events->record($case, WhistleblowingEventService::ATTACHMENT_UPLOADED, $actor, [
             'mime' => $attachment->mime_detected,
             'size' => $attachment->size,
         ]);

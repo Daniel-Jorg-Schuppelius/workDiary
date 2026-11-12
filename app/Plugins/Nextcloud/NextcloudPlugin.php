@@ -18,7 +18,7 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{BackupTarget, DocumentIntakeSource, Plugin, PluginCapability};
 use App\Plugins\Nextcloud\Api\{NextcloudBackupClient, NextcloudIntakeClient};
 use App\Plugins\Support\Backup\BackupAccount;
-use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
+use App\Plugins\Support\Intake\{IntakeChangePage, IntakeItem};
 use App\Plugins\Support\PluginOrgContext;
 use App\Support\Ui\UiAction;
 use Psr\Http\Message\StreamInterface;
@@ -40,7 +40,7 @@ use Throwable;
  * Kein installationsweiter App-Key: angebunden wird je Verbindung mit
  * Server-URL, Nutzer und verschlüsseltem App-Passwort.
  */
-class NextcloudPlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\IntakeSourceConnector, BackupTarget, DocumentIntakeSource {
+class NextcloudPlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\IntakeSourceConnector, \App\Plugins\Contracts\WritesDataDomains, BackupTarget, DocumentIntakeSource {
     public const string ID = 'nextcloud';
 
     /** Von der Plugin-Discovery VOR der Instanziierung registriert. */
@@ -66,10 +66,6 @@ class NextcloudPlugin extends AbstractPlugin implements \App\Plugins\Contracts\B
     }
 
     // ── DocumentIntakeSource (Feature 080, MVP-382) ─────────────────────
-
-    public function intakeAccount(CloudDocumentConnection $connection): IntakeAccount {
-        return (new NextcloudIntakeClient($connection))->account();
-    }
 
     public function intakeContainers(CloudDocumentConnection $connection, ?string $search = null): array {
         return (new NextcloudIntakeClient($connection))->containers(); // Nextcloud: keine Container-Suche
@@ -192,7 +188,14 @@ class NextcloudPlugin extends AbstractPlugin implements \App\Plugins\Contracts\B
         return new UiAction('sync', (string) __('backup_targets.reconnect'), route('admin.backup-targets.nextcloud.connect-form', ['connection' => $connection->sqid]), modal: true);
     }
 
-    public function intakeConnectAction(): UiAction {
-        return new UiAction('add', (string) __('nextcloud::cloud_intake.action.connect_nextcloud'), route('admin.cloud-intake.nextcloud.connect-form'), modal: true);
+    public function intakeConnectAction(?CloudDocumentConnection $connection = null): UiAction {
+        return $connection !== null
+            ? new UiAction('sync', (string) __('cloud_intake.action.reconnect'), route('admin.cloud-intake.nextcloud.connect-form', ['connection' => $connection->sqid]), modal: true)
+            : new UiAction('add', (string) __('nextcloud::cloud_intake.action.connect_nextcloud'), route('admin.cloud-intake.nextcloud.connect-form'), modal: true);
+    }
+
+    /** Datenführerschaft (MVP-1592): Cloud-Dokumenteingang legt DMS-Dokumente an. */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Documents];
     }
 }

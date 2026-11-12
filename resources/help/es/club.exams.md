@@ -1,7 +1,7 @@
 ---
 title: "Exámenes"
 topic: club.exams
-version: 1
+version: 2
 keywords:
     - examen de cinturón
     - examen de grado
@@ -29,3 +29,5 @@ Una convocatoria de examen es una cita de la asociación de tipo «examen» con 
 **Resultado:** Los examinadores de la convocatoria o quienes tienen el derecho «examinador» registran aprobado, suspenso o no presentado. Solo «aprobado» concede el grado objetivo, exactamente una vez y con referencia al examen; el informe de aptitud se congela con el resultado. Un suspenso no elimina un grado existente ni reinicia el tiempo de entrenamiento.
 
 **Certificado:** Cada grado válido tiene un certificado PDF con fecha, origen, examen y persona confirmante. Una revocación se imprime de forma visible; el historial de graduaciones sigue siendo determinante.
+
+**Publicación de resultados:** los candidatos y representantes solo ven los resultados registrados cuando usted ejecuta «Publicar resultados» — hasta entonces «Mi club» muestra «Resultado pendiente», y el nuevo grado y el certificado aún no aparecen allí. Se puede publicar en cuanto cada candidato está decidido: ninguna solicitud abierta, ninguna admisión sin resultado. La publicación congela el examen; los informes de admisión y los justificantes usados ya no cambian, y no se admiten nuevos candidatos ni resultados. Las correcciones posteriores se hacen mediante la revisión o la revocación del grado.

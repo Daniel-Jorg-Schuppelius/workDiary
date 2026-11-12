@@ -1,7 +1,7 @@
 ---
 title: "Personal: Urlaub, Krankheit, Qualifikation, Arbeitsschutz"
 topic: reports.personnel
-version: 8
+version: 9
 keywords:
     - Fehlzeiten
     - Resturlaub
@@ -205,6 +205,8 @@ Hinweis nennt alle Befunde, die Kachel führt zum Plan/Ist-Reiter **Projekt je
 Person**. Sie erscheint nur, wenn es im Zeitraum Befunde gibt, und nur für
 Administratoren und Personen mit dem Recht **Anwesenheitsbericht einsehen
 (Organisation)**.
+
+Der Bereich **Personal** zeigt die **Krankheitstage** (Werktage) im Zeitraum wie die Auswertung **Krankheiten** ohne Filter, im Hinweis Krankmeldungen, betroffene Personen und erschöpfte Entgeltfortzahlung; die **abgelaufenen Qualifikationen** wie die Qualifikationsmatrix (Stand heute), im Hinweis die in 30 Tagen ablaufenden; und die **offenen Urlaubsanträge** (Stand heute), im Hinweis die in den nächsten 14 Tagen beginnenden. Krankheitstage und Qualifikationen setzen das Zusatzmodul Team-Auswertungen und das Recht **Krankmeldungen einsehen** bzw. **Qualifikationen verwalten** voraus, die Urlaubsanträge das Recht **Urlaub genehmigen**; Administratoren sehen alle drei. Überstunden- und Gleitzeitsalden stehen hier nicht: Es gibt keine organisationsweite Auswertung, in der die Zahl nachzurechnen wäre.
 
 Die Karte **Wiederkehrende Probleme** sammelt die Frühwarnungen der Module, die
 Ihre Organisation nutzt, gruppiert nach Art:

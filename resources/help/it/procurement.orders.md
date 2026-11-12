@@ -1,7 +1,7 @@
 ---
 title: "Approvvigionamento e ordini"
 topic: procurement.orders
-version: 3
+version: 6
 keywords:
     - acquisti
     - ordine d'acquisto
@@ -58,3 +58,17 @@ Se al fornitore sono richiesti documenti obbligatori (ad esempio certificato di 
 ## Risposta del fornitore via GAEB
 
 Oltre alla conferma openTRANS, **Importare la risposta del fornitore** legge anche i file commerciali GAEB. Un **X97** (conferma dell’ordine X96) registra quantità, prezzo e data confermati per riga e segnala gli scostamenti senza modificare l’ordine. Un **X94** (offerta di prezzo alla richiesta X93) applica i prezzi unitari offerti all’ordine finché è in bozza. Le righe vengono abbinate tramite il codice articolo del fornitore; il file deve riferirsi al numero dell’ordine. La richiesta di prezzo stessa (**Richiesta di prezzo (GAEB X93)**) e il campo per l’offerta si trovano nell’ordine in bozza.
+
+## Unità d’ordine e ricevimento merci
+
+Se l’articolo ha altre unità, Lei sceglie l’**unità d’ordine** quando aggiunge la posizione (per esempio rotolo invece di metro). Quantità e prezzo unitario valgono allora per unità d’ordine, così come le quantità ordinata e ricevuta della riga. Il ricevimento merci converte nell’unità base: il magazzino riceve la quantità in unità base, il prezzo di costo è tenuto per unità base e il giornale di magazzino mostra l’inserimento nell’unità d’ordine. La confezione di un articolo fornitore resta una grandezza di arrotondamento delle proposte d’ordine in unità base.
+
+Gli articoli con la proprietà «scadenza obbligatoria» richiedono lotto e data di scadenza al ricevimento merci; un lotto già noto porta con sé la propria data.
+
+## Tipi di attestazione e proposta d’ordine
+
+In **Attestazioni obbligatorie → Tipi di attestazione** Lei gestisce i tipi propri dell’organizzazione: denominazione, validità standard, preavviso, comportamento se manca l’attestazione e obbligatorietà. Con i tag l’obbligo vale solo per i fornitori che ne portano uno (mestiere, tipo di prestazione). I tipi del catalogo sono modelli e possono essere adottati come tipo proprio; i tipi propri vengono disattivati invece che eliminati.
+
+La loro gestione richiede il permesso **Gestire i tipi di attestazione dei fornitori** (predefinito: amministrazione e direzione). Il permesso di modificare i fornitori non basta, perché un tipo di attestazione può bloccare l’invio degli ordini a tutti i fornitori dell’organizzazione.
+
+La **proposta d’ordine** arrotonda alla confezione dell’articolo fornitore. Se l’articolo ha un’unità con esattamente questo fattore, la proposta ordina in tale unità e converte il prezzo per unità d’ordine.

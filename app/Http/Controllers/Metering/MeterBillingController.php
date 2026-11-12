@@ -63,14 +63,14 @@ class MeterBillingController extends Controller {
             'agreement' => $agreement,
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name', 'company']),
             'assets' => Asset::query()->orderBy('name')->get(['id', 'name']),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
         ]);
     }
 
     public function store(SaveMeterBillingAgreementRequest $request): RedirectResponse {
         $this->authorizeBilling();
 
-        MeterBillingAgreement::query()->create($request->validated() + [
+        MeterBillingAgreement::query()->create($request->agreementData() + [
             'organization_id' => $this->currentOrganization()->id,
             'created_by' => $request->user()?->id,
         ]);
@@ -80,7 +80,7 @@ class MeterBillingController extends Controller {
 
     public function update(SaveMeterBillingAgreementRequest $request, MeterBillingAgreement $agreement): RedirectResponse {
         $this->authorizeBilling();
-        $agreement->update($request->validated());
+        $agreement->update($request->agreementData());
 
         return redirect()->route('metering.index')->with('status', __('metering.updated'));
     }
@@ -88,6 +88,10 @@ class MeterBillingController extends Controller {
     /** Einzelne Vereinbarung sofort abrechnen (Nachlauf ohne auf den Scheduler zu warten). */
     public function run(Request $request, MeterBillingAgreement $agreement): RedirectResponse {
         $this->authorizeBilling();
+        // Pausierte und beendete Vereinbarungen rechnet der Lauf nicht ab — das sagt die Aktion offen.
+        if (! $agreement->isRunnable()) {
+            return back()->with('error', __('metering.not_runnable', ['status' => $agreement->status->label()]));
+        }
         $result = $this->billing->runAgreement($agreement);
 
         if ($result['blocked'] > 0) {

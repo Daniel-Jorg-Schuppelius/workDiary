@@ -1,7 +1,7 @@
 ---
 title: "Usare la chat"
 topic: communication.chat
-version: 1
+version: 2
 keywords:
     - messaggio
     - inviare un messaggio
@@ -29,3 +29,5 @@ cliente, progetto o commessa vanno documentate anche sul relativo
 record. Non condivida credenziali o dati personali non necessari;
 messaggi eliminati o modificati possono restare tracciabili in base a
 permessi e requisiti di audit.
+
+**Sondaggio con scadenza:** creando un sondaggio nella chat potete indicare facoltativamente quando termina la votazione. Dopo, il sondaggio non accetta più voti.

@@ -20,6 +20,11 @@
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('procurement.credentials.subtitle')">
+        @can(\App\Enums\User\Permission::SupplierCredentialTypeManage->value)
+            <x-slot:actions>
+                <x-icon-btn icon="rule" size="sm" :href="route('suppliers.credential-types.index')" show-label>{{ __('procurement.credential_types.title') }}</x-icon-btn>
+            </x-slot:actions>
+        @endcan
         <div class="alert bg-info/10 border-info/30 text-sm text-base-content" role="note">
             <x-icon name="info" />
             <span>{{ $blockingEnabled ? __('procurement.credentials.blocking_on') : __('procurement.credentials.blocking_off') }}</span>

@@ -38,6 +38,9 @@
 <x-index-page overflow="clip" :subtitle="__('scorecard.overview_subtitle', ['version' => $metricVersion])">
     <x-slot:actions>
         <span class="text-xs text-muted">{{ $label }}</span>
+        @can(\App\Enums\User\Permission::InventoryConfigure->value)
+            <x-icon-btn icon="tune" size="sm" data-entry-modal-trigger :href="route('supplier-scorecards.weights.edit')" show-label>{{ __('scorecard.weights.action') }}</x-icon-btn>
+        @endcan
     </x-slot:actions>
 
     <x-filter-bar :action="route('supplier-scorecards.index')" :reset="route('supplier-scorecards.index')">

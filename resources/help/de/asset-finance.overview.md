@@ -1,7 +1,7 @@
 ---
 title: "Leasing & Asset-Verträge"
 topic: asset-finance.overview
-version: 2
+version: 3
 keywords:
     - Leasingvertrag
     - Leasingraten
@@ -54,3 +54,7 @@ ab 20.11.2026, betrifft Verbraucherverträge und wird hier nicht geprüft).
 **Rückgabe/Ende:** Der Ende-Prozess dokumentiert Zustand, Kilometer/
 Betriebsstunden, Schäden und die Entscheidung — Rückgabe, Kauf,
 Verlängerung oder Ersatzinvestition — mit Kostenfolge und DMS-Nachweisen.
+
+**Bestellbezug:** Im Vertragsformular wählen Sie die zugehörige Bestellung,
+sofern der Einkauf freigeschaltet ist und Sie Bestellungen lesen dürfen. Die
+Akte zeigt die Bestellnummer mit Link.

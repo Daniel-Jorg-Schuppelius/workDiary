@@ -181,6 +181,30 @@
         <x-input-field name="certificate_valid_months" type="number" :label="__('Zertifikat gültig (Monate)')" min="1" :value="old('certificate_valid_months', $event?->certificate_valid_months)" />
     </x-form-group>
 
+    {{-- Erinnerungen je Termin (MVP-1619): leer = Vorgabe der Kategorie bzw. der Installation. --}}
+    <x-form-group :legend="__('Erinnerungen')" icon="notifications" tone="info">
+        <p class="text-xs opacity-70 mb-2">
+            {{ __('Minuten vor Beginn, je Eintrag eine Zeile. Ohne Eintrag gelten die Erinnerungen der Kategorie.') }}
+        </p>
+        @php($reminderOverrideItems = array_values((array) old('reminder_overrides', $event?->reminder_overrides ?? [])))
+        <div x-data="reminderOffsets" data-field="reminder_overrides" data-items="{{ json_encode($reminderOverrideItems) }}" class="space-y-2">
+            <template x-for="(it, i) in items" :key="i">
+                <div class="flex items-center gap-2">
+                    <input type="number" min="0"
+                           :name="fieldName(i)"
+                           x-model.number="it.value"
+                           aria-label="{{ __('Minuten') }}"
+                           class="input input-sm input-bordered w-32 font-mono">
+                    <span class="opacity-70 text-xs">{{ __('Minuten') }}</span>
+                    <x-icon-btn icon="close" tone="error" type="button" :label="__('Entfernen')" @click="remove(i)" />
+                </div>
+            </template>
+            <x-icon-btn icon="add" tone="ghost" size="sm" type="button" show-label @click="add()">
+                {{ __('Reminder hinzufügen') }}
+            </x-icon-btn>
+        </div>
+    </x-form-group>
+
     {{-- Räume ------------------------------------------------------------- --}}
     <x-form-group :legend="__('Räume')" icon="meeting_room" tone="ghost">
         <div x-data="repeater"

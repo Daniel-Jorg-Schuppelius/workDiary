@@ -148,23 +148,61 @@ class ClassificationManagerTest extends TestCase {
             ->domain(ClassificationDomain::Activity)
             ->create(['code' => 'referenced_code']);
 
-        Schema::create('classification_refs', function ($table): void {
-            $table->id();
-            $table->unsignedBigInteger('classification_id');
-        });
-
-        DB::table('classification_refs')->insert(['classification_id' => $classification->id]);
-
-        $this->manager->registerReference(ClassificationDomain::Activity, 'classification_refs', 'classification_id');
+        // Zuordnung über das Pivot — ohne Anmeldung geschützt, weil der Fremdschlüssel im Schema steht.
+        DB::table('classifiables')->insert([
+            'classification_id' => $classification->id,
+            'classifiable_type' => 'customers',
+            'classifiable_id' => 1,
+        ]);
 
         try {
             $this->manager->delete($classification);
             $this->fail('Expected ClassificationValidationException was not thrown.');
         } catch (ClassificationValidationException $e) {
             $this->assertSame(ClassificationValidationException::CODE_REFERENCED, $e->errorCode);
-        } finally {
-            Schema::dropIfExists('classification_refs');
+            $this->assertSame(['classifiables' => 1], $e->usage);
         }
+        $this->assertDatabaseHas('classifications', ['id' => $classification->id]);
+    }
+
+    /** MVP-1588: Jede Spalte, die auf eine Klassifikation zeigt, trägt den Fremdschlüssel, aus dem der Löschschutz liest. */
+    public function test_every_classification_column_is_covered_by_the_deletion_guard(): void {
+        $unprotected = [];
+        $protected = 0;
+        foreach (Schema::getTableListing(Schema::getCurrentSchemaListing(), false) as $table) {
+            $columns = array_values(array_filter(Schema::getColumnListing($table), static fn (string $c): bool => str_ends_with($c, 'classification_id')));
+            if ($columns === []) {
+                continue;
+            }
+            $constrained = [];
+            foreach (Schema::getForeignKeys($table) as $foreignKey) {
+                if ($foreignKey['foreign_table'] === 'classifications') {
+                    array_push($constrained, ...$foreignKey['columns']);
+                }
+            }
+            foreach ($columns as $column) {
+                in_array($column, $constrained, true) ? $protected++ : $unprotected[] = "{$table}.{$column}";
+            }
+        }
+
+        $this->assertGreaterThanOrEqual(8, $protected);
+        $this->assertSame([], $unprotected, 'Spalte auf classifications ohne Fremdschlüssel — der Löschschutz sieht sie nicht: ' . implode(', ', $unprotected));
+    }
+
+    public function test_reference_counts_name_every_place_a_value_is_used(): void {
+        $classification = Classification::factory()
+            ->forOrganization($this->org->id)
+            ->domain(ClassificationDomain::AssetCategory)
+            ->create(['code' => 'counted_code']);
+        $this->assertSame([], $this->manager->referenceCounts($classification));
+
+        DB::table('classifiables')->insert([
+            ['classification_id' => $classification->id, 'classifiable_type' => 'customers', 'classifiable_id' => 1],
+            ['classification_id' => $classification->id, 'classifiable_type' => 'customers', 'classifiable_id' => 2],
+        ]);
+        \App\Models\Asset\Asset::factory()->create(['organization_id' => $this->org->id, 'category_code' => 'counted_code']);
+
+        $this->assertSame(['classifiables' => 2, 'assets' => 1], $this->manager->referenceCounts($classification));
     }
 
     public function test_delete_removes_org_local_classification_when_unreferenced(): void {

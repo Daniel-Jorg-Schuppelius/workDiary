@@ -190,7 +190,7 @@ class InvoiceRetentionTest extends TestCase {
         // ohne den Abzug läge die Untergrenze bei 9.700 und eine korrekte
         // Zahlung von 9.500 wäre dauerhaft eine Unterzahlung.
         $this->assertSame(
-            round(9500.0 * (1 - MatchingService::SKONTO_PERCENT / 100), 2),
+            round(9500.0 * (1 - MatchingService::DEFAULT_SKONTO_PERCENT / 100), 2),
             round(app(MatchingService::class)->minAcceptableFor($invoice), 2),
         );
     }
@@ -277,5 +277,55 @@ class InvoiceRetentionTest extends TestCase {
             ->assertRedirect();
 
         $this->assertSame(RetentionStatus::Released, $retention->refresh()->status);
+    }
+
+    /** MVP-1560: Die Rechnungsseite bietet die Freigabe an — nur am ausgestellten Beleg. */
+    public function test_invoice_page_offers_the_release_dialog_for_issued_invoices(): void {
+        $invoice = $this->invoice();
+        $retention = app(RetentionService::class)->add($invoice, RetentionKind::Warranty, 5.0, null, now()->addYear()->toDateString(), $this->admin);
+        $dialog = route('invoices.retentions.release.form', [$invoice, $retention]);
+
+        $this->actingAs($this->admin)->get(route('invoices.show', $invoice))
+            ->assertOk()
+            ->assertSee(__('invoicing.retention.heading'))
+            ->assertDontSee($dialog, false);
+
+        $invoice->forceFill(['status' => InvoiceStatus::Issued])->save();
+
+        $this->actingAs($this->admin)->get(route('invoices.show', $invoice))
+            ->assertOk()
+            ->assertSee($dialog, false);
+        $this->actingAs($this->admin)->get($dialog)
+            ->assertOk()
+            ->assertSee(route('invoices.retentions.release', [$invoice, $retention]), false)
+            ->assertSee('name="note"', false);
+    }
+
+    public function test_release_endpoint_stores_the_note_and_hides_the_button_afterwards(): void {
+        $invoice = $this->invoice();
+        $retention = app(RetentionService::class)->add($invoice, RetentionKind::Warranty, 5.0, null, now()->addYear()->toDateString(), $this->admin);
+        $invoice->forceFill(['status' => InvoiceStatus::Issued])->save();
+
+        $this->actingAs($this->admin)
+            ->post(route('invoices.retentions.release', [$invoice, $retention]), ['note' => 'Mängel beseitigt'])
+            ->assertSessionHas('status');
+
+        $retention->refresh();
+        $this->assertSame(RetentionStatus::Released, $retention->status);
+        $this->assertSame('Mängel beseitigt', $retention->note);
+        $this->assertSame(0.0, app(RetentionService::class)->openAmountOf($invoice->refresh()));
+        $this->actingAs($this->admin)->get(route('invoices.show', $invoice))
+            ->assertOk()
+            ->assertDontSee(route('invoices.retentions.release.form', [$invoice, $retention]), false);
+    }
+
+    public function test_release_dialog_requires_the_billing_right_and_the_matching_invoice(): void {
+        $invoice = $this->invoice();
+        $other = $this->invoice();
+        $retention = app(RetentionService::class)->add($invoice, RetentionKind::Warranty, 5.0, null, null, $this->admin);
+        $worker = User::factory()->create(['organization_id' => $this->org->id]);
+
+        $this->actingAs($worker)->get(route('invoices.retentions.release.form', [$invoice, $retention]))->assertForbidden();
+        $this->actingAs($this->admin)->get(route('invoices.retentions.release.form', [$other, $retention]))->assertNotFound();
     }
 }

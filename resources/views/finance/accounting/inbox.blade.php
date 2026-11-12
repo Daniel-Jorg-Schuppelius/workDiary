@@ -138,14 +138,15 @@
                                                         :label="__('accounting.ledger.action.post')" />
                                         </x-action-form>
                                     @endunless
-                                    @if ($item['kind'] instanceof \App\Enums\Finance\DirectBookingKind)
-                                        <x-action-form :action="route('finance.accounting.journal.discard', $entry)" method="POST"
-                                                       :confirm="__('accounting.ledger.confirm.discard')" confirm-icon="delete" confirm-tone="error"
-                                                       :confirm-label="__('accounting.ledger.action.discard')">
-                                            <x-icon-btn icon="delete" size="xs" tone="error" type="submit"
-                                                        :label="__('accounting.ledger.action.discard')" />
-                                        </x-action-form>
-                                    @endif
+                                @endif
+                                {{-- Jeder Entwurf lässt sich verwerfen (MVP-1556); Fachvorgänge nur mit Festschreibrecht. --}}
+                                @if ($entry->status->isMutable() && ($item['kind'] instanceof \App\Enums\Finance\DirectBookingKind ? $canPost : $canPrepare))
+                                    <x-action-form :action="route('finance.accounting.journal.discard', $entry)" method="POST"
+                                                   :confirm="__('accounting.ledger.confirm.discard')" confirm-icon="delete" confirm-tone="error"
+                                                   :confirm-label="__('accounting.ledger.action.discard')">
+                                        <x-icon-btn icon="delete" size="xs" tone="error" type="submit"
+                                                    :label="__('accounting.ledger.action.discard')" />
+                                    </x-action-form>
                                 @endif
                             @elseif ($canPrepare && $proposal?->isPostable())
                                 <x-action-form :action="route('finance.accounting.inbox.prepare')" method="POST">

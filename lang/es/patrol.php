@@ -29,4 +29,30 @@ return [
     'scan' => [
         'implausibleTime' => 'La hora de escaneo del dispositivo está fuera de la ronda; compruebe el reloj del dispositivo.',
     ],
+    // Mantenimiento y desviaciones (MVP-1611).
+    'route' => [
+        'edit_title' => 'Editar ruta',
+        'responsible' => 'Responsable de las desviaciones',
+        'responsible_hint' => 'Recibe el punto abierto en caso de desviaciones. Vacío: la jefatura de equipo de la persona que realiza la ronda.',
+        'updated' => 'Ruta guardada.',
+        'deactivate_confirm' => '¿Desactivar la ruta? Una ronda en curso puede terminar; no se pueden iniciar nuevas.',
+        'deactivated' => 'Ruta desactivada: ya no se puede iniciar.',
+        'activated' => 'La ruta vuelve a estar activa.',
+    ],
+    'checkpoint' => [
+        'edit_title' => 'Editar punto de control',
+        'edit_hint' => 'Los cambios se aplican a escaneos futuros; los escaneos registrados conservan su valoración.',
+        'updated' => 'Punto de control «:label» guardado.',
+        'deactivate_confirm' => '¿Desactivar el punto de control? A partir de ahora ya no se espera ni se puede escanear; las rondas anteriores no cambian.',
+        'deactivated_done' => 'Punto de control «:label» desactivado.',
+        'deactivated' => 'Este punto de control está desactivado.',
+        'inactive_badge' => 'desactivado',
+    ],
+    'deviation' => [
+        'running_title' => 'La ronda «:route» presenta desviaciones',
+        'late_line' => '«:label» fuera de la ventana (:delta min)',
+        'missed_line' => ':count puntos de control vencidos sin escaneo',
+        'overdue_title' => 'Ronda «:route» no finalizada',
+        'overdue_line' => 'Duración prevista de :minutes minutos superada (inicio :start).',
+    ],
 ];

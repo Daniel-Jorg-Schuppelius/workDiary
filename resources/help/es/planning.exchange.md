@@ -1,7 +1,7 @@
 ---
 title: "Intercambio de turnos con aprobación"
 topic: planning.exchange
-version: 2
+version: 3
 keywords:
     - cambiar turno
     - cambio de turno
@@ -35,3 +35,18 @@ Proceso:
    intercambio real, la de ambos turnos.
 
 Una solicitud puede retirarse mientras todavía no se haya decidido.
+
+**Turno a cambio:** en el diálogo **Solicitar intercambio**, elija en
+**Turno a cambio (opcional)** un turno próximo de una compañera o un
+compañero. Sin **persona deseada**, el turno a cambio determina la persona
+con la que intercambia; debe pertenecer a la persona elegida. La lista
+muestra entonces la solicitud con la marca **Intercambio** y el turno a
+cambio. En la comprobación ya no cuenta el turno que cede la otra parte.
+
+**Infracción de reglas al aprobar:** si la nueva asignación infringe una
+regla de tiempo de trabajo, la solicitud lleva la marca **Infracción de
+reglas** y, en lugar de **Liberar**, el botón **Revisar y aprobar**. El
+diálogo indica las reglas infringidas; solo puede aprobar con **Aprobar pese
+a la infracción de reglas** y un **Motivo** (al menos 10 caracteres). El
+motivo y las reglas anuladas quedan en el registro de auditoría. La
+excepción no levanta un bloqueo por cualificación.

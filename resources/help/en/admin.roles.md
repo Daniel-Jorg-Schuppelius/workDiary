@@ -1,7 +1,7 @@
 ---
 title: "Roles & permissions"
 topic: admin.roles
-version: 3
+version: 4
 keywords:
     - permissions
     - user rights
@@ -82,3 +82,5 @@ person and time under **Permission changes** (button at the top of access
 control and of the audit log). The view is read-only and needs the
 permission “View role and permission changes”; support accounts have it so they can
 trace what happened without changing anything.
+
+**Copy a role:** The “Copy” icon on an organisation role opens the create dialog with its permissions preselected. Give the role its own name and trim the permissions; the source role is recorded under **Permission changes**. Global platform roles cannot be copied.

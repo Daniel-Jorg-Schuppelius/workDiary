@@ -118,6 +118,18 @@ return [
         'type' => 'Type d’article',
         'status' => 'Statut',
         'base_unit' => 'Unité de base',
+        'tax_class' => 'Catégorie de TVA',
+        'numbers_locked_hint' => 'Le numéro d’article, le SKU des variantes et le GTIN sont gérés par :program. Ils arrivent avec la synchronisation et ne peuvent pas être modifiés ici.',
+        'valuation_method' => 'Méthode de valorisation',
+        'valuation_method_default' => 'Comme l’organisation (:method)',
+        'valuation_method_hint' => 'Une méthode propre ne vaut que pour cet article. Le retour au coût moyen pondéré n’est possible que lorsqu’il ne reste plus de stock en couches FIFO/FEFO.',
+        'serial_prefix' => 'Préfixe des numéros de série',
+        'serial_prefix_hint' => 'Avec un préfixe, l’article compte ses propres numéros de série (préfixe-00001). Vide = plage de numéros de l’organisation.',
+        'serial_padding' => 'Chiffres du numéro courant',
+        'serial_check_digit' => 'Ajouter un chiffre de contrôle',
+        'default_procedure' => 'Gamme de fabrication par défaut',
+        'default_procedure_hint' => 'Version de procédure publiée selon laquelle les ordres et la planification de fabrication produisent cet article, tant qu’un ordre n’en choisit pas une autre.',
+        'default_procedure_none' => 'Aucune gamme par défaut',
         'category' => 'Groupe de marchandises',
         'category_hint' => 'Pour les rapports et l\'export DATANORM (fichier WRG).',
         'subcategory' => 'Sous-groupe de marchandises',
@@ -150,10 +162,18 @@ return [
         'net_weight_kg_hint' => 'Poids sans emballage ; les documents douaniers le multiplient par la quantité.',
     ],
 
+    'tax_class' => [
+        'standard' => 'Taux normal',
+        'reduced' => 'Taux réduit',
+        'increased' => 'Taux majoré',
+    ],
+
     'group' => [
+        'inventory' => 'Stock et valorisation',
         'pricing' => 'Prix',
         'flags' => 'Propriétés',
         'customs' => 'Douane et exportation',
+        'manufacturing' => 'Fabrication',
     ],
 
     'flag' => [

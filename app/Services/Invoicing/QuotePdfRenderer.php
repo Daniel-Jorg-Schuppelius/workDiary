@@ -14,7 +14,7 @@ namespace App\Services\Invoicing;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Sales\Quote;
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, IssuerIdentity};
 use App\Services\UI\BrandingService;
 
 /**
@@ -53,9 +53,25 @@ class QuotePdfRenderer {
         return [
             'quote' => $quote,
             'orgLegal' => app(BrandingService::class)->legalFor($quote->organization),
-            'design' => $this->design->context($this->design->payloadForDocument($quote, RenderDocumentKind::Quote)),
+            'design' => $this->design->contextForDocument($quote, RenderDocumentKind::Quote, $this->design->payloadForDocument($quote, RenderDocumentKind::Quote)),
+            // Versandt: Aussteller und Ansprechpartner des Versandtages (MVP-1624).
+            'issuer' => is_array($quote->issuer_snapshot['issuer'] ?? null) ? $quote->issuer_snapshot['issuer'] : IssuerIdentity::for($quote->organization),
+            'contactPerson' => is_array($quote->issuer_snapshot) && array_key_exists('contact', $quote->issuer_snapshot)
+                ? (is_array($quote->issuer_snapshot['contact']) ? $quote->issuer_snapshot['contact'] : null)
+                : self::contactPerson($quote),
             'taxRows' => $this->taxBreakdown($quote),
         ];
+    }
+
+    /**
+     * Ansprechpartner des Angebots: die Person, die es angelegt hat.
+     *
+     * @return array{name: string, phone: string, email: string}|null
+     */
+    public static function contactPerson(Quote $quote): ?array {
+        $person = $quote->creator;
+
+        return $person === null ? null : ['name' => (string) $person->name, 'phone' => (string) ($person->phone ?? ''), 'email' => (string) ($person->email ?? '')];
     }
 
     /**

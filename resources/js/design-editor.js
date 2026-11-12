@@ -36,7 +36,7 @@ const DEFAULT_PAGE_H = 297;
 /** @typedef {{preset?: string, use_brand_colors?: boolean, overrides?: Record<string, string | number | boolean | null>}} DesignTableStyle */
 /** @typedef {{code: string, message: string, page?: string, block?: string}} DesignPreflightIssue */
 /** @typedef {{ok?: boolean, errors: DesignPreflightIssue[], warnings: DesignPreflightIssue[]}} DesignPreflight */
-/** @typedef {{header_text: string | null, footer_text: string | null}} DesignContentTexts */
+/** @typedef {{header_text: string | null, footer_text: string | null, confidentiality_text?: string | null}} DesignContentTexts */
 
 /**
  * Editor-Config aus admin/document-design/editor (data-config). Leere
@@ -131,7 +131,7 @@ export function registerDesignEditor(Alpine) {
         blockLabels: {},
         // Kopf-/Fußtexte des Belegs (MVP-651, vormals invoice_templates).
         /** @type {DesignContentTexts} */
-        contentTexts: { header_text: null, footer_text: null },
+        contentTexts: { header_text: null, footer_text: null, confidentiality_text: null },
         // Eingebettete PDF-Vorschau (#83): Art/Szenario umschaltbar; tick
         // erzwingt das Neuladen des iframes nach dem Speichern.
         pageW: DEFAULT_PAGE_W,
@@ -198,9 +198,12 @@ export function registerDesignEditor(Alpine) {
             this.previewUrl = cfg.previewUrl ?? null;
             this.pageW = cfg.pageW ?? DEFAULT_PAGE_W;
             this.pageH = cfg.pageH ?? DEFAULT_PAGE_H;
-            this.contentTexts = cfg.contentTexts ?? {
+            // Ältere Versionen kennen den Vertraulichkeitsvermerk noch nicht.
+            this.contentTexts = {
                 header_text: null,
                 footer_text: null,
+                confidentiality_text: null,
+                ...(cfg.contentTexts ?? {}),
             };
             this.assets = {
                 first: cfg.assets?.first ?? "",

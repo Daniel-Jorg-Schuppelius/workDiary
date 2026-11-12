@@ -213,6 +213,8 @@ class MailAdminController extends Controller {
 
         try {
             $resolver->bookAsServiceTicket($item, $customer, $admin);
+        } catch (\App\Exceptions\ExternallyLedQueueException $e) {
+            return back()->with('error', $e->getMessage());
         } catch (Throwable) {
             return back()->with('error', __('mail.flash.ticket_failed'));
         }

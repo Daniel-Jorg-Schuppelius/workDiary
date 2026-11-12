@@ -76,6 +76,15 @@ class AssetComplianceProfile extends Model {
         return $this->hasMany(AssetComplianceRequirement::class);
     }
 
+    /**
+     * Anforderungen, die neue Prüfungen abfragen; deaktivierte bleiben für alte Protokolle erhalten.
+     *
+     * @return HasMany<AssetComplianceRequirement, $this>
+     */
+    public function activeRequirements(): HasMany {
+        return $this->requirements()->where('is_active', true);
+    }
+
     /** @return HasMany<AssetComplianceAssignment, $this> */
     public function assignments(): HasMany {
         return $this->hasMany(AssetComplianceAssignment::class);

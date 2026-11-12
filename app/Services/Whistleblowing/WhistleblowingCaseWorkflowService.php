@@ -14,7 +14,7 @@ namespace App\Services\Whistleblowing;
 
 use App\Enums\Whistleblowing\CaseStatus;
 use App\Models\Platform\User;
-use App\Models\Whistleblowing\WhistleblowingCase;
+use App\Models\Whistleblowing\{Portal, WhistleblowingCase};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -50,10 +50,13 @@ class WhistleblowingCaseWorkflowService {
     }
 
     /**
-     * Generischer Statuswechsel. Abschluss-Status (closed_*) verlangen eine
-     * Begründung; diese wird als interne Notiz verschluesselt abgelegt.
+     * Generischer Statuswechsel. Abschluss und Wiedereröffnung verlangen eine
+     * Begründung, die Löschsperre Rechtsgrundlage, Verantwortlichen und
+     * Prüfdatum (Abschnitt 8); alles wird als interne Notiz verschluesselt abgelegt.
+     *
+     * @param  array{basis?: ?string, responsible?: ?string, review_at?: ?\Carbon\CarbonInterface}  $legalHold
      */
-    public function transition(WhistleblowingCase $case, CaseStatus $to, ?User $actor = null, ?string $reason = null): void {
+    public function transition(WhistleblowingCase $case, CaseStatus $to, ?User $actor = null, ?string $reason = null, array $legalHold = []): void {
         $from = $this->status($case);
         // Gelöscht wird nur über den WhistleblowingDeletionService: Ein bloßer
         // Statuswechsel ließe Inhalte und Schlüssel stehen und schriebe keinen Grabstein.
@@ -66,18 +69,49 @@ class WhistleblowingCaseWorkflowService {
             throw new InvalidArgumentException('Ein Abschluss verlangt eine Begründung.');
         }
 
-        DB::transaction(function () use ($case, $from, $to, $actor, $reason): void {
+        $reopening = $from->isClosed() && $to === CaseStatus::Investigating;
+        if ($reopening && ($reason === null || trim($reason) === '')) {
+            throw new InvalidArgumentException('Eine Wiedereröffnung verlangt eine Begründung.');
+        }
+
+        $basis = trim((string) ($legalHold['basis'] ?? ''));
+        $responsible = trim((string) ($legalHold['responsible'] ?? ''));
+        $reviewAt = $legalHold['review_at'] ?? null;
+        if ($to === CaseStatus::LegalHold && ($basis === '' || $responsible === '' || $reviewAt === null)) {
+            throw new InvalidArgumentException('Eine Löschsperre verlangt Rechtsgrundlage, Verantwortlichen und Prüfdatum.');
+        }
+
+        DB::transaction(function () use ($case, $from, $to, $actor, $reason, $reopening, $basis, $responsible, $reviewAt): void {
             $attributes = ['status' => $to->value];
+            // Wer die Bestätigung überspringt (eingegangen → Prüfung), bestätigt den Eingang
+            // damit: Das Postfach zeigt der meldenden Person ab hier „in Prüfung“.
+            $acknowledges = $from === CaseStatus::Submitted && $case->getAttribute('acknowledged_at') === null;
+            if ($acknowledges) {
+                $attributes['acknowledged_at'] = Carbon::now();
+            }
 
             if ($to->isClosed()) {
                 $now = Carbon::now();
                 $attributes['closed_at'] = $now;
-                $attributes['retention_due_at'] = $now->copy()->addMonths(
-                    (int) config('whistleblowing.retention_months', 36)
-                );
+                $attributes['retention_due_at'] = $now->copy()->addMonths($this->retentionMonths($case));
             }
             if ($to === CaseStatus::LegalHold) {
                 $attributes['legal_hold_at'] = Carbon::now();
+                $attributes['legal_hold_review_at'] = $reviewAt;
+                $reason = implode("\n", array_filter([
+                    __('Rechtsgrundlage') . ': ' . $basis,
+                    __('Verantwortlich') . ': ' . $responsible,
+                    __('Prüfung am') . ': ' . $reviewAt->format('Y-m-d'),
+                    trim((string) $reason),
+                ], static fn (string $line): bool => $line !== ''));
+            }
+            if ($from === CaseStatus::LegalHold) {
+                $attributes['legal_hold_review_at'] = null;
+            }
+            if ($reopening) {
+                // Die Aufbewahrungsfrist beginnt mit dem nächsten Abschluss neu.
+                $attributes['closed_at'] = null;
+                $attributes['retention_due_at'] = null;
             }
 
             $case->forceFill($attributes)->save();
@@ -86,15 +120,30 @@ class WhistleblowingCaseWorkflowService {
                 $this->messages->addInternalNote($case, $reason, $actor);
             }
 
-            $event = $to === CaseStatus::LegalHold
-                ? WhistleblowingEventService::CASE_LEGAL_HOLD_SET
-                : WhistleblowingEventService::CASE_STATUS_CHANGED;
+            if ($acknowledges) {
+                $this->events->record($case, WhistleblowingEventService::CASE_ACKNOWLEDGED, $actor);
+            }
+
+            $event = match (true) {
+                $to === CaseStatus::LegalHold => WhistleblowingEventService::CASE_LEGAL_HOLD_SET,
+                $reopening => WhistleblowingEventService::CASE_REOPENED,
+                default => WhistleblowingEventService::CASE_STATUS_CHANGED,
+            };
 
             $this->events->record($case, $event, $actor, [
                 'from' => $from->value,
                 'to' => $to->value,
             ]);
         });
+    }
+
+    /** Aufbewahrung des Portals der Organisation, sonst der Konfigurationswert. */
+    private function retentionMonths(WhistleblowingCase $case): int {
+        $months = Portal::withoutGlobalScopes()
+            ->where('organization_id', $case->getAttribute('organization_id'))
+            ->value('retention_months');
+
+        return (int) ($months ?: config('whistleblowing.retention_months', 36));
     }
 
     private function assertAllowed(CaseStatus $from, CaseStatus $to): void {

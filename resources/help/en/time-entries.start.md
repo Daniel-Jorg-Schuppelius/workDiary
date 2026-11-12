@@ -1,7 +1,7 @@
 ---
 title: "Starting time tracking"
 topic: time-entries.start
-version: 2
+version: 3
 keywords:
     - stopwatch
     - start timer
@@ -52,6 +52,8 @@ time clock, time entries and traceable corrections.
 
 ![Today view with timer row, daily balance and time clock](media/zeit/heute-erfassung.png)
 *The today view: start the timer, target/actual balance and the time clock at a glance.*
+
+**Without a connection:** The entry bar on "Today" stores bookings with duration or from/to also without a network and transfers them on the next contact — with the same rules as online. If the day has been closed by then or the project is missing, the booking is not silently dropped but appears as a conflict under "Offline changes". The timer is not available offline.
 
 ## Practical example
 

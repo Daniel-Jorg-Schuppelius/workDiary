@@ -19,6 +19,19 @@ return [
     'blocked_external' => 'Per questo cliente la fatturazione è gestita da un sistema esterno — non viene creato alcun documento.',
     'run_done' => 'Fatturato: :created bozza/e, :skipped saltate.',
     'form_hint' => 'Senza lettura finale nel periodo non nasce una bozza, ma una segnalazione — non si stima nulla.',
+    'not_runnable' => 'Questo accordo non viene fatturato (stato: :status). Per fatturarlo imposti lo stato su «Attivo».',
+    'project_hint' => 'Le bozze di fattura dell’elaborazione vengono assegnate a questo progetto.',
+    'status_hint' => 'L’elaborazione salta gli accordi in pausa e terminati. Dopo una pausa recupera a partire da «Prossima fatturazione»: se necessario, sposti in avanti la data.',
+    'tiers' => [
+        'legend' => 'Scaglioni di quantità',
+        'hint' => 'Facoltativo. Con gli scaglioni vale il prezzo di ciascuno scaglione al posto del prezzo unitario; il calcolo è progressivo sul consumo al netto della quantità gratuita. Il primo scaglione parte da 0, le righe vuote vengono ignorate.',
+        'from' => 'Scaglione :n da quantità',
+        'price' => 'Scaglione :n prezzo per unità',
+        'badge' => 'Scaglioni (:count)',
+        'badge_title' => 'Al posto del prezzo unitario valgono gli scaglioni di quantità.',
+        'first_from_zero' => 'Il primo scaglione deve partire da 0, altrimenti parte del consumo resterebbe non fatturata.',
+        'duplicate_from' => 'Ogni scaglione richiede una propria quantità «da».',
+    ],
     'unit_default' => 'unità',
     'action' => [
         'create' => 'Registra accordo',
@@ -37,6 +50,7 @@ return [
         'interval_count' => 'Fattore',
         'next_run_on' => 'Prossima fatturazione',
         'end_on' => 'Fine',
+        'project' => 'Progetto',
         'status' => 'Stato',
     ],
     'interval' => [

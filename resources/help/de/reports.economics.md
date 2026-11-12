@@ -61,3 +61,18 @@ Hinweise zur Datenqualität:
 Export als **PDF**, **CSV** oder **Excel** für Geschäftsführung und
 Controlling. Die Seite zeigt organisationsweite Finanzdaten und steht nur
 Personen mit dem Recht **Auswertungen einsehen** offen.
+
+## Kostensatz je Mitarbeiter pflegen
+
+Der **interne Kostensatz** je Person ist die Grundgröße der Nachkalkulation.
+Er steht im Mitarbeiter-Dialog (**Organisation** → **Mitarbeiter** →
+bearbeiten) in der Gruppe **Sätze für Abrechnung und Nachkalkulation** neben
+dem **Stundensatz (Verrechnung)**. Beide Felder sieht und ändert nur, wer das
+Recht „Personal-/Lohndaten verwalten“ hat; im eigenen Profil erscheinen sie
+nicht, und jede Änderung wird protokolliert.
+
+Reihenfolge der Satzermittlung: Der Kostensatz der Person geht dem von
+Aufgabe, Projekt und Kunde vor. Der Stundensatz der Person geht ebenfalls dem
+von Aufgabe, Projekt und Kunde vor — Vorrang haben nur Sonderkonditionen und
+ein Satz direkt am Zeiteintrag. Ein neuer Satz wirkt auf Zeiten, die danach
+erfasst oder neu berechnet werden.

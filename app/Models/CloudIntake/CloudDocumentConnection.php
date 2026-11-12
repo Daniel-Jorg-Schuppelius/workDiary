@@ -13,10 +13,12 @@ namespace App\Models\CloudIntake;
 use App\Enums\CloudIntake\{CloudIntakeConnectionStatus, CloudIntakeProvider};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth, HasSqid};
 use App\Models\Platform\User;
+use App\Plugins\Support\ConnectionFailure;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
+use Throwable;
 
 /**
  * Cloud-Dokumenteingang-Verbindung (Feature 080, MVP-352): OAuth-gebundenes
@@ -44,6 +46,7 @@ use Illuminate\Support\Carbon;
  * @property CloudIntakeConnectionStatus $status
  * @property string|null $checkpoint
  * @property Carbon|null $last_run_at
+ * @property Carbon|null $start_confirmed_at Erstlaufvorschau bestätigt (MVP-1613)
  * @property string|null $subscription_id
  * @property string|null $subscription_resource_id
  * @property Carbon|null $subscription_expires_at
@@ -80,6 +83,7 @@ class CloudDocumentConnection extends Model {
         'status',
         'checkpoint',
         'last_run_at',
+        'start_confirmed_at',
         'subscription_id',
         // Google verlangt die resourceId zum Beenden eines Push-Kanals (W4.4).
         'subscription_resource_id',
@@ -105,6 +109,7 @@ class CloudDocumentConnection extends Model {
         'token_expires_at' => 'datetime',
         'granted_scopes' => 'array',
         'last_run_at' => 'datetime',
+        'start_confirmed_at' => 'datetime',
         'subscription_expires_at' => 'datetime',
     ];
 
@@ -121,6 +126,33 @@ class CloudDocumentConnection extends Model {
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    /**
+     * Status nach einer Bereitschaftsprüfung: aktiv erst, wenn die Verbindung
+     * bereit ist UND der Start nach der Erstlaufvorschau bestätigt wurde
+     * (Feature 080 §Vorschau und Erstabgleich, MVP-1613).
+     */
+    public function readyStatus(bool $ready): CloudIntakeConnectionStatus {
+        return $ready && $this->start_confirmed_at !== null ? CloudIntakeConnectionStatus::Active : CloudIntakeConnectionStatus::Draft;
+    }
+
+    /**
+     * Stand nach einem abgebrochenen Lauf (Feature 080, MVP-1620): abgewiesene
+     * Anmeldung → „neu anmelden“, Abschaltschwelle erreicht → „deaktiviert“.
+     * Zurück auf aktiv führt nur die erneute Verbindung.
+     */
+    public function degradeAfter(Throwable $error): void {
+        $target = match (true) {
+            ConnectionFailure::requiresReauth($error) => CloudIntakeConnectionStatus::ReauthRequired,
+            $this->isConnectionFailing() => CloudIntakeConnectionStatus::Disabled,
+            default => null,
+        };
+        if ($target === null || $this->status !== CloudIntakeConnectionStatus::Active) {
+            return;
+        }
+        $this->forceFill(['status' => $target])->save();
+        $this->audit('cloudIntake.statusChanged', ['status' => $target->value, 'error' => class_basename($error)]);
     }
 
     /** Nur aktiv UND mit mindestens einer aktiven Route läuft der Import. */

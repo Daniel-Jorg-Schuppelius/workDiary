@@ -1,7 +1,7 @@
 ---
 title: "Protokoll erstellen"
 topic: protocols.create
-version: 3
+version: 4
 keywords:
     - Abnahmeprotokoll
     - Wartungsprotokoll
@@ -50,6 +50,19 @@ Vorgang zugeordnet und in der Fallakte auffindbar.
 5. Reichen Sie das Protokoll **zur Prüfung** ein oder schließen Sie es mit
    **„Abschließen / Unterschreiben“** ab; für Kunden gibt es den
    **Signaturlink**.
+
+Im Dialog vergeben Sie außerdem **Tags**; sie stehen danach in den Stammdaten
+des Protokolls. Dateien, die zum ganzen Protokoll gehören – ein Lageplan, ein
+Lieferschein –, laden Sie auf der Detailseite unter **Anhänge** hoch. Über
+**Punkte umsortieren** ziehen Sie die Punkte in die gewünschte Reihenfolge;
+Unterpunkte bleiben bei ihrer Gruppe. Tags, Anhänge und Reihenfolge lassen
+sich nur im Entwurf ändern, jeder Anhang und jede Umsortierung steht im
+**Verlauf**.
+
+Den Aufnahmeort eines Fotos übernimmt das System nur, wenn die Organisation
+das unter **Einstellungen → Datei-Uploads** eingeschaltet hat (Standard: aus). Die
+Koordinaten sieht, wer das Recht dazu hat; aus der Bilddatei werden sie immer
+entfernt.
 
 ## Beispiel aus der Praxis
 

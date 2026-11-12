@@ -78,7 +78,11 @@ final class DemoShowcaseTest extends TestCase {
         // Verzeichnis (die Pfade sind deterministisch — alte wurden gelöscht,
         // bevor die neuen mit gleichem Namen entstanden).
         $this->assertCount(2, Storage::disk('local')->allFiles('attachments/demo/' . $organization->id));
-        $this->assertSame(2, Attachment::query()->where('organization_id', $organization->id)->count());
+        $this->assertSame(2, Attachment::query()->where('organization_id', $organization->id)->where('attachable_type', '!=', \App\Support\MorphMap::alias(\App\Models\Travel\Expense::class))->count());
+        // Demo-Belege der Auslagen (Belegpflicht, MVP-1619): je Auslage einer, die vom ersten Lauf sind weg.
+        $expenseReceipts = Attachment::query()->where('organization_id', $organization->id)->where('attachable_type', \App\Support\MorphMap::alias(\App\Models\Travel\Expense::class))->count();
+        $this->assertSame(\App\Models\Travel\Expense::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->count(), $expenseReceipts);
+        $this->assertCount($expenseReceipts, Storage::disk('local')->allFiles('expenses/demo'));
         $this->assertSame(1, ProcedureRun::query()->where('organization_id', $organization->id)->count());
     }
 

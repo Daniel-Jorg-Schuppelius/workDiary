@@ -35,6 +35,7 @@ class TicketLinkController extends Controller {
         return view('service-tickets._link_dialog', [
             'ticket' => $ticket,
             'targets' => ServiceTicket::query()
+                ->visibleTo($this->authUser())
                 ->whereKeyNot($ticket->id)
                 ->where('organization_id', $ticket->organization_id)
                 ->orderByDesc('reported_at')

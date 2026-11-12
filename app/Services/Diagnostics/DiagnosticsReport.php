@@ -13,6 +13,9 @@ namespace App\Services\Diagnostics;
 use Carbon\CarbonImmutable;
 
 final class DiagnosticsReport {
+    /** Kennzahlen mit Namen oder Adressen — die externe Überwachung (MVP-1618) bekommt sie nicht. */
+    private const array PERSONAL_METRICS = ['licensee', 'from'];
+
     /** @param  list<DiagnosticSection>  $sections */
     public function __construct(
         public readonly array $sections,
@@ -41,6 +44,22 @@ final class DiagnosticsReport {
             'generated_at' => $this->generatedAt->toIso8601String(),
             'overall_status' => $this->overallStatus()->value,
             'sections' => array_map(static fn(DiagnosticSection $s): array => $s->toArray(), $this->sections),
+        ];
+    }
+
+    /** @return array<string, mixed> Bericht ohne personenbezogene Kennzahlen, für den Token-Zugang. */
+    public function toMonitoringArray(): array {
+        $drop = array_flip(self::PERSONAL_METRICS);
+
+        return [
+            'generated_at' => $this->generatedAt->toIso8601String(),
+            'overall_status' => $this->overallStatus()->value,
+            'sections' => array_map(static function (DiagnosticSection $section) use ($drop): array {
+                $row = $section->toArray();
+                $row['metrics'] = array_diff_key($section->metrics, $drop);
+
+                return $row;
+            }, $this->sections),
         ];
     }
 }

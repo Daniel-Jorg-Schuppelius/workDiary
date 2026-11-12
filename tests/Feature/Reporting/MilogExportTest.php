@@ -90,6 +90,18 @@ class MilogExportTest extends TestCase {
         $this->assertStringContainsString('10:30', $line);
     }
 
+    public function test_homeoffice_and_errand_minutes_are_listed_per_day(): void {
+        $this->attendance($this->user->id, '2030-03-06', '08:00:00', '12:00:00')->forceFill(['homeoffice_minutes' => 90, 'errand_minutes' => 15])->save();
+        $this->attendance($this->user->id, '2030-03-06', '13:00:00', '17:00:00')->forceFill(['homeoffice_minutes' => 30])->save();
+
+        $csv = (string) $this->download()->assertOk()->getContent();
+        $this->assertStringContainsString((string) __('compliance.milog.csv.homeoffice'), $csv);
+        $this->assertStringContainsString((string) __('compliance.milog.csv.errand'), $csv);
+        $cells = str_getcsv(trim($this->lineContaining($csv, '2030-03-06')), ';');
+        // Netto 8:00, davon 2:00 Homeoffice und 0:15 Dienstgang.
+        $this->assertSame(['8:00', '2:00', '0:15'], array_slice($cells, -3));
+    }
+
     public function test_multiple_stamps_per_day_are_aggregated(): void {
         // Zwei Spannen: 08–12 und 13–17 (30 min Pause) → Beginn 08:00, Ende 17:00, netto 7:30.
         $this->attendance($this->user->id, '2030-03-05', '08:00:00', '12:00:00');

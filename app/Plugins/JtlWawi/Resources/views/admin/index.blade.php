@@ -256,6 +256,13 @@
             @csrf
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('jtl_wawi::jtl_wawi.inventory.heading') }}</h2>
             <p class="text-sm text-muted">{{ __('jtl_wawi::jtl_wawi.inventory.explain') }}</p>
+            @if ($inventoryMode !== \App\Enums\Inventory\InventoryMode::Local && ($inventoryPlugin ?? '') !== '' && $inventoryPlugin !== \App\Plugins\JtlWawi\JtlWawiPlugin::ID)
+                {{-- Ein anderes Plugin führt (MVP-1626): umgestellt wird auf dessen Seite. --}}
+                <div role="status" class="alert alert-info alert-soft text-sm">
+                    <x-icon name="info" />
+                    <span>{{ __('jtl_wawi::jtl_wawi.flash.mode_other_plugin', ['plugin' => app(\App\Plugins\PluginManager::class)->find($inventoryPlugin)?->name() ?? $inventoryPlugin]) }}</span>
+                </div>
+            @endif
 
             <div class="flex flex-col gap-2">
                 @foreach (\App\Enums\Inventory\InventoryMode::cases() as $mode)
@@ -271,6 +278,19 @@
                 <x-button type="submit">{{ __('jtl_wawi::jtl_wawi.action.change_mode') }}</x-button>
             </div>
         </x-card>
+
+        {{-- Übernahme-Inventur erneut anstoßen, etwa nach einem Fehlschlag beim Moduswechsel (idempotent je Tag). --}}
+        @if ($canRetryTakeover && $connection?->isActive())
+            <x-card as="form" class="space-y-3" method="POST" action="{{ route('admin.jtl.takeover') }}"
+                    data-confirm-dialog data-confirm-message="{{ __('jtl_wawi::jtl_wawi.confirm.takeover') }}">
+                @csrf
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('jtl_wawi::jtl_wawi.inventory.takeover_heading') }}</h2>
+                <p class="text-sm text-muted">{{ __('jtl_wawi::jtl_wawi.inventory.takeover_explain') }}</p>
+                <div class="flex flex-wrap justify-end gap-2">
+                    <x-button type="submit" tone="ghost">{{ __('jtl_wawi::jtl_wawi.action.takeover') }}</x-button>
+                </div>
+            </x-card>
+        @endif
     @endif
 </x-index-page>
 @endsection

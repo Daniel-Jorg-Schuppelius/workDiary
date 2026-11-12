@@ -1,7 +1,7 @@
 ---
 title: "Stempeluhr & Anwesenheit"
 topic: attendance.manage
-version: 1
+version: 2
 keywords:
     - einstempeln
     - ausstempeln
@@ -53,3 +53,5 @@ sie 15 Minuten gesperrt.
 **Erinnerung am Abend:** Sind Sie um 19 Uhr seit mindestens acht Stunden
 eingestempelt, bekommen Sie eine Erinnerung – einmal je Stempelung. Wer abends
 eine Schicht beginnt, wird nicht erinnert.
+
+**Stempelung korrigieren:** Auf „Heute“ öffnet das Stift-Symbol in der Stempelliste den Korrekturdialog — Beginn, Ende, Pause und eine Begründung. Die Korrektur läuft als Antrag durch die Freigabe; erlaubt Ihre Organisation die Selbstkorrektur, gilt sie sofort. Ohne Netz wird sie gespeichert und später übertragen. Hat jemand die Stempelung inzwischen geändert, überschreibt Ihre Korrektur sie nicht: Online erscheint ein Hinweis, offline ein Konflikt unter „Offline-Änderungen“.

@@ -17,7 +17,7 @@
         <x-page-toolbar>
             <div class="text-sm text-base-content/70">{{ __('Pipeline, Budgetauslastung und offene Entscheidungen.') }}</div>
             <x-slot:actions>
-                <x-report-export :url="fn (string $format) => route('investments.report', array_merge($standardFilters->toQueryParams(), ['export' => $format]))" :formats="['csv', 'xlsx']" tone="ghost" />
+                <x-report-export :url="fn (string $format) => route('investments.report', array_merge($standardFilters->toQueryParams(), ['export' => $format]))" :formats="['pdf', 'csv', 'xlsx']" tone="ghost" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

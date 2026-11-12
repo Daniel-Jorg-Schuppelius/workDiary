@@ -15,9 +15,11 @@ namespace App\Services\Guarantee\DeadlineScans;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Guarantee\Guarantee;
 use App\Models\Platform\User;
+use App\Services\Guarantee\GuaranteeService;
 use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Carbon;
+use RuntimeException;
 
 /**
  * Bürgschaften (Feature 114, MVP-603).
@@ -27,10 +29,13 @@ use Illuminate\Support\Carbon;
  *    danach die Sicherheit weg; bei einer gestellten muss sie ggf.
  *    verlängert werden.
  *  - **Rückgabe fällig** (`overdue`): Eine GESTELLTE Bürgschaft, deren
- *    abgelöster Einbehalt freigegeben ist, gehört zurückgefordert — sonst
- *    läuft die Avalprovision weiter.
+ *    abgelöster Einbehalt freigegeben oder deren gekoppelte Gewährleistung
+ *    beendet ist, gehört zurückgefordert — sonst läuft die Avalprovision
+ *    weiter ({@see Guarantee::scopeReturnDue()}).
  */
 class GuaranteeDeadlineScan extends AbstractDeadlineScan {
+    public function __construct(private readonly GuaranteeService $guarantees) {}
+
     public function key(): string {
         return 'guarantees';
     }
@@ -38,6 +43,15 @@ class GuaranteeDeadlineScan extends AbstractDeadlineScan {
     public function run(NotificationDispatcher $dispatcher, DeadlineScanOptions $options): int {
         $today = Carbon::today();
         $expiringDays = $options->expiringDays;
+        // Befristung überschritten: Die Sicherheit besteht nicht mehr, der Status folgt (MVP-1561).
+        Guarantee::query()->pastExpiry()->lazyById(200)->each(function (Guarantee $guarantee): void {
+            try {
+                $this->guarantees->markExpired($guarantee);
+            } catch (RuntimeException) {
+                // Inzwischen von Hand entschieden (zurück, gezogen, verlängert): nichts zu tun.
+            }
+        });
+
         $active = static fn () => Guarantee::query()
             ->where('status', \App\Enums\Guarantee\GuaranteeStatus::Active->value);
 
@@ -53,15 +67,7 @@ class GuaranteeDeadlineScan extends AbstractDeadlineScan {
                 'payload' => fn (Guarantee $guarantee): array => $this->guaranteePayload($guarantee, 'guarantee_expiring', $guarantee->expires_on),
             ],
             'overdue' => [
-                // Der abgelöste Einbehalt ist freigegeben ⇒ die Sicherung ist
-                // beendet, die Urkunde gehört zurück.
-                // Ebenso, wenn die gekoppelte Gewährleistung geendet hat (MVP-1282).
-                'query' => fn () => $active()
-                    ->where(fn ($q) => $q
-                        ->whereHas('retention', fn ($r) => $r->whereIn('status', [
-                            \App\Enums\Invoicing\RetentionStatus::Released->value,
-                        ]))
-                        ->orWhereHas('warrantyPeriod', fn ($w) => $w->where('ends_on', '<', \App\Support\Query\DateRange::dayAfter($today)))),
+                'query' => fn () => Guarantee::query()->returnDue(),
                 'event' => NotificationEvent::GuaranteeReturnDue,
                 'payload' => fn (Guarantee $guarantee): array => $this->guaranteePayload($guarantee, 'guarantee_return_due', $guarantee->expires_on),
             ],

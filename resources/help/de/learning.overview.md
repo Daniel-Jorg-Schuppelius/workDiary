@@ -1,7 +1,7 @@
 ---
 title: "Lernplattform"
 topic: learning.overview
-version: 6
+version: 8
 keywords:
     - E-Learning
     - LMS
@@ -54,6 +54,33 @@ Version einer Prozedur; gestartet wird sie an einem Tagebucheintrag.
 der Anwendung blockiert fremde Seiten sonst still im Kurs; deshalb lehnt der
 Editor einen nicht freigegebenen Host sofort sichtbar ab. Erlaubte Hosts
 werden in den Einstellungen gepflegt.
+
+**Ein Video kann einen Pflichtanteil tragen.** Im Feld „Mindestens gesehen (%)“
+legen Sie fest, wie viel eines hochgeladenen Videos gesehen sein muss, bevor
+sich die Einheit abschließen lässt. Gezählt werden die tatsächlich
+abgespielten Abschnitte — Vorspulen und Springen zählen nicht, dieselbe Stelle
+zählt nur einmal. Unter dem Video steht der Stand („Gesehen: 40 % –
+erforderlich: 80 %“); „Als erledigt markieren“ bleibt bis dahin gesperrt. Gespeichert
+wird nur der erreichte Anteil je Person und Video, keine Abspielspur. Für
+fremde Einbettungen lässt sich kein Pflichtanteil setzen, weil ihr Fortschritt
+nicht messbar ist; der Zugang ohne Benutzerkonto spielt keine Videos ab und
+kann solche Einheiten nicht abschließen.
+
+Beim Auswählen eines Videos nennt der Editor den **zu erwartenden
+Speicherbedarf**: das Original plus die umgerechneten Fassungen. Alles zählt
+gegen das Speicherkontingent — die Größenordnung steht damit vor dem Upload
+fest, nicht erst an der Quote.
+
+Die Einheitenarten **Prozedur**, **Umfrage** und **Extern** zeigen auf ein
+Ziel außerhalb des Kurses; den Verweis wählen Sie beim Anlegen der Einheit, er
+ist dort Pflicht. Eine Prozedur-Einheit gilt als erledigt, sobald die Person
+einen Lauf der gewählten Prozedurvorlage abschließt (als ausführende oder
+zugewiesene Person). Eine Umfrage-Einheit öffnet den gewählten Fragebogen;
+das Absenden schließt sie ab. Eine externe Einheit nennt eine Adresse, und die
+Person bestätigt „erledigt“ — auf Wunsch nur mit hochgeladenem Nachweis, den
+die Teilnehmerliste des Kurses zum Herunterladen anbietet. Von Hand abhaken
+lassen sich diese Einheiten nicht; im Kundenportal und im Zugang ohne
+Benutzerkonto stehen sie nicht zur Verfügung.
 
 Ein Kurs kann **Voraussetzungen** haben (alle oder eine genügt): sie sperren den
 Start, nicht die Zuweisung — Pflicht-Einschreibungen sind ausgenommen. Eine
@@ -151,6 +178,26 @@ Versuchsgrenze oder Sperrfrist, genau einmal und mit Begründung.
 
 Das **Notenbuch** je Kurs zeigt Lernende × Bestandteile. Ohne Komponenten addiert es die Punkte aus Prüfungen und Aufgaben; legt die Betreuung **Komponenten** fest (Prüfung, Aufgabe, manuelle Note), kann sie Gewichte vergeben — alle zusammen 100 oder gar keine. Manuelle Noten sind additiv: eine Korrektur ist ein neuer Eintrag, der jüngste zählt. Das **Zeugnis** (PDF) und der CSV-Export kommen aus derselben Rechnung; solange etwas offen ist, trägt das Zeugnis den Vermerk „vorläufig“.
 
+Das **Notenschema** pflegen Sie in den Einstellungen der Lernplattform: eine
+Stufe je Zeile in der Form „Bezeichnung = Mindestprozent“, oder eine Vorlage
+(Schulnoten 1–6, Buchstaben A–F, bestanden/nicht bestanden), die Sie danach
+anpassen. Es gilt die höchste Stufe, deren Mindestprozent erreicht ist; ohne
+Schema zeigen Notenbuch, CSV und Zeugnis nur den Prozentwert.
+
+Die **Nachweismappe** (Lernen → Nachweismappe) lässt sich nach Team, einzelner
+Person, Projekt und Standort eingrenzen; die Auswahlen wirken zusammen. Die
+Auswahl einer einzelnen Person gibt es nur in der namentlichen Mappe (mit
+Anlass). Zum
+Projekt gehören seine Einzelmitglieder und die Mitglieder seiner Teams; am
+Standort eingesetzt ist, wer im Zeitraum an einem Kontrollpunkt des Standorts
+gestempelt hat oder ein Zutrittsmedium für den Standort hält. Personen, die zu Beginn des Zeitraums
+beschäftigt waren und inzwischen ausgeschieden sind, stehen mit dem Vermerk
+„ausgeschieden am …“ in der Mappe — gefragt ist der Stand am Stichtag. Mit
+Anlass gibt es die Mappe zusätzlich als **ZIP**: die Mappe als PDF und JSON,
+jedes Zertifikat als eigene PDF-Datei und eine Index-Datei (CSV), die jede
+Zeile ihrer Datei zuordnet. Bei mehr als 300 Zertifikaten grenzen Sie die
+Auswahl ein.
+
 Feinheiten je Frage: Antwortoptionen können **eigene Punkte** tragen („Label {3}“, auch negativ) — dann zählt die gewählte Option statt alles-oder-nichts; eine **Selbsteinschätzung** ist eine Skala ohne richtige Antwort, die gewählte Stufe ist der Wert; ein **Aufsatz** nimmt Text, eine Datei oder beides an — die Datei liegt in der Bewertung bereit. Je Prüfung lässt sich das Bestehen zusätzlich **in Punkten** verlangen und die Teilmenge je Versuch **in Prozent** der verfügbaren Fragen festlegen.
 
 Über **Fragen importieren** im Fragenkatalog kommen Fragen aus einer CSV- oder Excel-Datei. Pflicht sind die Spalten **kind** (Art, als Kürzel wie single oder als Bezeichnung) und **prompt**; **options** enthält die Antwortzeilen untereinander in einer Zelle, mit derselben Schreibweise wie im Editor. Optional sind **title**, **category** (fehlende Kategorien werden angelegt), **points**, **explanation** und **hint**. Dieselbe Frage (Art und Fragetext) wird beim zweiten Lauf übersprungen; Hotspot-Fragen brauchen ein Bild und lassen sich nicht über eine Datei einlesen.
@@ -168,6 +215,17 @@ Nachweiswelt.
 
 Zertifikate lassen sich über einen Link prüfen. Die Prüfseite zeigt Kurs,
 Datum, Gültigkeit und Aussteller — den Namen nur abgekürzt.
+
+**Zertifikat widerrufen:** In der Teilnehmerliste eines Kurses steht die
+Zertifikatsnummer an der Person. Mit dem Recht **Lernen verwalten** widerrufen
+Sie ein falsch ausgestelltes Zertifikat dort über „Zertifikat widerrufen“ —
+der Grund ist Pflicht. Der Widerruf lässt sich nicht zurücknehmen: Prüfseite,
+maschinenlesbarer Nachweis, Ausdruck und Nachweismappe zeigen ihn ab seinem
+Zeitpunkt, die Person wird mit dem Grund benachrichtigt, und ein gespiegelter
+Pflichtnachweis des Subunternehmers endet am selben Tag. Unterweisungsnachweis
+und Qualifikation bleiben in ihren Registern und werden dort berichtigt. Den
+**Einstiegslink** einer externen Person entwerten Sie an derselben Stelle über
+„Einstiegslink entwerten“; er gilt dann sofort nicht mehr.
 
 Lerndaten gehören der Person: Die **Betroffenenauskunft** (Datenschutz-Modul)
 nennt Einschreibungen, Prüfungsversuche, Zertifikate, Lernzeit und Buchungen
@@ -287,3 +345,5 @@ Lernzeit-Freigabe. Die KI hat drei Eingänge — Gliederungsentwurf und
 Fragenentwurf im Editor, Tutor im Player — und schlägt nur vor; übernommen
 und bewertet wird von Hand. Punkte und Abzeichen erscheinen unter „Meine
 Schulungen“, die Bestenliste zeigt nur Personen mit eigenem Opt-in.
+
+**Gastzugang mit Medien:** Externe ohne Benutzerkonto sehen alle Inhaltsblöcke wie im Player — Bilder, Dateien, Audio und Videos laden über ihren Zugang, Verweise auf interne Seiten entfallen. Videos mit Pflichtanteil lassen sich dort weiter nicht abschließen.

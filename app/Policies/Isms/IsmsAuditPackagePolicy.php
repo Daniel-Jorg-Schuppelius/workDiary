@@ -43,6 +43,15 @@ class IsmsAuditPackagePolicy extends PermissionPolicy {
         'manageTokens' => P::IsmsManage,
     ];
 
+    /** Nur Entwürfe sind änderbar; finalisierte Pakete sperrt zusätzlich das Modell. */
+    public function update(User $user, mixed $model = null): bool {
+        return $model instanceof IsmsAuditPackage && ! $model->isFinalized() && $this->allows($user, 'update');
+    }
+
+    public function delete(User $user, mixed $model = null): bool {
+        return $model instanceof IsmsAuditPackage && ! $model->isFinalized() && $this->allows($user, 'delete');
+    }
+
     /** Entwurf finalisieren (Snapshot + Hash, friert ein). */
     public function finalize(User $user, IsmsAuditPackage $package): bool {
         return $this->allows($user, 'finalize');

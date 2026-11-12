@@ -87,6 +87,7 @@
             <x-detail-grid.row :label="__('Verantwortlich')">{{ $job->responsible->name ?? '—' }}</x-detail-grid.row>
             <x-detail-grid.row :label="__('disposal.field.picked_up_on')">{{ $job->picked_up_on?->fdate() ?? '—' }}</x-detail-grid.row>
             <x-detail-grid.row :label="__('disposal.field.total_weight')">{{ $job->total_weight_kg !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $job->total_weight_kg, 3, withThousandsSeparator: true) . ' kg' : '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('disposal.form.is_photo_in_record')">{{ $job->is_photo_in_record ? __('Ja') : __('Nein') }}</x-detail-grid.row>
             <x-detail-grid.row :label="__('disposal.field.created')">{{ $job->creator->name ?? '—' }} · {{ $job->created_at?->fdatetime() }}</x-detail-grid.row>
             @if ($job->status === \App\Enums\Disposal\DisposalJobStatus::Cancelled)
                 <x-detail-grid.row :label="__('disposal.field.cancelled_at')" class="text-error">{{ $job->cancelled_at?->fdatetime() ?? '—' }}</x-detail-grid.row>
@@ -101,6 +102,18 @@
             <p class="mt-2 whitespace-pre-line text-sm">{{ $job->notes }}</p>
         @endif
     </x-card>
+
+    @if ($pendingAssets->isNotEmpty())
+        <div role="alert" class="alert alert-warning text-sm">
+            {{ __('disposal.asset.pending_decommission', ['assets' => $pendingAssets->pluck('name')->implode(', ')]) }}
+        </div>
+    @endif
+    @if ($prefillAsset !== null && $isEditable && $canUpdate && ! $job->items->contains('asset_id', $prefillAsset->id))
+        <div role="alert" class="alert alert-info flex flex-wrap items-center gap-2 text-sm">
+            <span>{{ __('disposal.asset.add_hint', ['asset' => $prefillAsset->name]) }}</span>
+            <x-button type="button" size="sm" data-open-dialog="disposal-item-create">{{ __('disposal.action.add_item') }}</x-button>
+        </div>
+    @endif
 
     {{-- b) Abschluss-Prüfung (offene Gates) --}}
     @if ($completionBlockers !== [] && $job->status->isOpen())
@@ -138,7 +151,20 @@
             @forelse ($job->items as $item)
                 <tr>
                     <td>{{ $item->category }}</td>
-                    <td>{{ trim(($item->manufacturer ?? '') . ' ' . ($item->model ?? '')) ?: '—' }}</td>
+                    <td>
+                        {{ trim(($item->manufacturer ?? '') . ' ' . ($item->model ?? '')) ?: '—' }}
+                        @if ($item->asset !== null)
+                            <div class="text-xs text-muted">
+                                {{ __('disposal.item.asset') }}:
+                                @can('view', $item->asset)
+                                    <a class="link" href="{{ route('assets.show', $item->asset) }}">{{ $item->asset->asset_no ? $item->asset->asset_no . ' · ' : '' }}{{ $item->asset->name }}</a>
+                                @else
+                                    {{ $item->asset->name }}
+                                @endcan
+                                · {{ $item->asset->status->label() }}
+                            </div>
+                        @endif
+                    </td>
                     <td class="font-mono">{{ $item->serial_number ?? '—' }}</td>
                     <td class="text-right font-mono">{{ $item->quantity }}</td>
                     <td class="text-right font-mono">{{ $item->weight_kg !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->weight_kg, 3, withThousandsSeparator: true) : '—' }}</td>
@@ -201,6 +227,42 @@
                                     </li>
                                 @endforeach
                             </ul>
+                        </td>
+                    </tr>
+                @endif
+                {{-- Fotos je Position (MVP-1578): Träger ist die Position, Rechte folgen der Akte. --}}
+                @if ($item->attachments->isNotEmpty() || ($isEditable && $canUpdate))
+                    <tr>
+                        <td colspan="8" class="bg-base-200/40">
+                            <div class="flex flex-wrap items-center gap-3 py-1 text-xs">
+                                <span class="text-muted"><x-icon name="photo_camera" size="1em" /> {{ __('disposal.photo.label') }}</span>
+                                @foreach ($item->attachments as $photo)
+                                    @php $photoUrl = \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($photo); @endphp
+                                    <span class="inline-flex items-center gap-1">
+                                        <a href="{{ $photoUrl }}" target="_blank" rel="noopener" title="{{ $photo->original_name }}">
+                                            @if ($photo->isImage())
+                                                <img src="{{ $photoUrl }}" alt="{{ __('disposal.photo.alt', ['item' => $item->category]) }}" class="h-12 w-16 rounded border border-base-300 bg-white object-cover" loading="lazy">
+                                            @else
+                                                {{ $photo->original_name }}
+                                            @endif
+                                        </a>
+                                        @if ($isEditable && $canUpdate && Gate::allows('delete', $photo))
+                                            <x-action-form :action="route('attachments.destroy', $photo)" method="DELETE"
+                                                           :confirm="__('Anhang löschen?')" confirm-icon="delete" confirm-tone="error" :confirm-label="__('Löschen')">
+                                                <x-icon-btn icon="delete" tone="error" size="xs" type="submit" :label="__('Löschen')" />
+                                            </x-action-form>
+                                        @endif
+                                    </span>
+                                @endforeach
+                                @if ($isEditable && $canUpdate)
+                                    <form method="POST" action="{{ route('disposal.items.photos.store', $item) }}" enctype="multipart/form-data" class="flex items-center gap-1">
+                                        @csrf
+                                        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" capture="environment" required
+                                               class="file-input file-input-xs file-input-bordered" aria-label="{{ __('disposal.photo.upload_for', ['item' => $item->category]) }}">
+                                        <x-icon-btn icon="upload" size="xs" type="submit" show-label>{{ __('disposal.photo.upload') }}</x-icon-btn>
+                                    </form>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @endif
@@ -339,9 +401,9 @@
 
 {{-- Ad-hoc-Dialoge (lokale <dialog>-Modals, geöffnet via data-open-dialog) --}}
 @if ($isEditable && $canUpdate)
-    @include('disposal._item_dialog', ['job' => $job, 'item' => null, 'wasteCodes' => $wasteCodes])
+    @include('disposal._item_dialog', ['job' => $job, 'item' => null, 'wasteCodes' => $wasteCodes, 'assets' => $assets, 'prefillAsset' => $prefillAsset])
     @foreach ($job->items as $item)
-        @include('disposal._item_dialog', ['job' => $job, 'item' => $item, 'wasteCodes' => $wasteCodes])
+        @include('disposal._item_dialog', ['job' => $job, 'item' => $item, 'wasteCodes' => $wasteCodes, 'assets' => $assets, 'prefillAsset' => null])
         @include('disposal._treatment_dialog', ['item' => $item, 'users' => $users])
     @endforeach
 @endif

@@ -25,4 +25,5 @@
         @endforeach
     </x-select-field>
     <x-input-field name="ttl_days" type="number" min="1" max="30" :label="__('protocol.dialog.ttl_days')" :value="old('ttl_days', 7)" />
+    <x-checkbox-field name="send_email" :label="__('protocol.dialog.token_send_email')" :hint="__('protocol.dialog.token_send_email_hint')" :checked="(bool) old('send_email', true)" />
 </x-modal>

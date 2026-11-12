@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, ReservationStatus};
+use App\Events\Inventory\StockReservationQuantityChanged;
 use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\{StockReservation, Warehouse, WarehouseBin};
 use App\Support\DecimalQty;
@@ -123,16 +124,68 @@ class ReservationService {
             [$variant, $warehouse] = $this->endpoints($reservation);
             $this->ledger->releaseReservation($variant, $warehouse, $amount, $reservation->ownership_type, bin: $reservation->bin);
 
-            $reservation->quantity = bcsub($reservation->quantity, $amount, self::SCALE);
-            if (bccomp($reservation->openQuantity(), '0', self::SCALE) <= 0) {
-                $reservation->status = bccomp($reservation->consumed_qty, '0', self::SCALE) > 0
-                    ? ReservationStatus::Fulfilled
-                    : ReservationStatus::Released;
-            }
-            $reservation->save();
+            $this->reduce($reservation, $amount);
 
             return $reservation;
         });
+    }
+
+    /**
+     * Umverteilung (MVP-1626, Feature 048 „manuelle Umverteilung“): offene
+     * Menge einer Reservierung geht an eine andere desselben Bestandstopfs
+     * (Variante, Lager, Platz, Eigentum). Der reservierte Bestand bleibt
+     * gleich, nur seine Zuordnung wandert — sichtbar und auditiert, nie still
+     * nach Priorität. Leer = die ganze offene Menge.
+     */
+    public function redistribute(StockReservation $from, StockReservation $to, ?string $qty = null, ?int $actorUserId = null): StockReservation {
+        return DB::transaction(function () use ($from, $to, $qty, $actorUserId): StockReservation {
+            $rows = StockReservation::query()->whereKey([$from->id, $to->id])->lockForUpdate()->get()->keyBy('id');
+            $source = $rows->get($from->id);
+            $target = $rows->get($to->id);
+            if (! $source instanceof StockReservation || ! $target instanceof StockReservation || $source->id === $target->id) {
+                throw new RuntimeException((string) __('inventory.reservation.redistribute_invalid'));
+            }
+            if (! $source->status->isOpen() || ! $target->status->isOpen()
+                || $source->article_variant_id !== $target->article_variant_id
+                || $source->warehouse_id !== $target->warehouse_id
+                || $source->bin_id !== $target->bin_id
+                || $source->ownership_type !== $target->ownership_type) {
+                throw new RuntimeException((string) __('inventory.reservation.redistribute_mismatch'));
+            }
+
+            $open = $source->openQuantity();
+            $amount = $qty === null ? $open : DecimalQty::positive($qty);
+            if (bccomp($amount, '0', self::SCALE) <= 0 || bccomp($amount, $open, self::SCALE) > 0) {
+                throw new RuntimeException((string) __('inventory.reservation.redistribute_too_much'));
+            }
+
+            $this->reduce($source, $amount);
+            $target->quantity = bcadd($target->quantity, $amount, self::SCALE);
+            $target->save();
+            StockReservationQuantityChanged::dispatch($target, $amount);
+
+            $target->audit('inventory.reservationRedistributed', [
+                'from_reservation_id' => $source->id,
+                'from_priority' => $source->priority,
+                'to_priority' => $target->priority,
+                'qty' => $amount,
+                'actor_id' => $actorUserId,
+            ]);
+
+            return $target;
+        });
+    }
+
+    /** @param numeric-string $amount */
+    private function reduce(StockReservation $reservation, string $amount): void {
+        $reservation->quantity = bcsub($reservation->quantity, $amount, self::SCALE);
+        if (bccomp($reservation->openQuantity(), '0', self::SCALE) <= 0) {
+            $reservation->status = bccomp($reservation->consumed_qty, '0', self::SCALE) > 0
+                ? ReservationStatus::Fulfilled
+                : ReservationStatus::Released;
+        }
+        $reservation->save();
+        StockReservationQuantityChanged::dispatch($reservation, bcsub('0', $amount, self::SCALE));
     }
 
     /**

@@ -45,6 +45,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property \Illuminate\Support\Carbon|null $followed_up_at
  * @property \Illuminate\Support\Carbon|null $viewed_at
  * @property array<string, mixed>|null $decision_snapshot
+ * @property array{issuer?: array<string, string>, contact?: array{name: string, phone: string, email: string}|null}|null $issuer_snapshot
  * @property Money|null $subtotal
  * @property Money|null $tax_amount
  * @property Money|null $total
@@ -71,6 +72,8 @@ class Quote extends Model implements AuditsChanges, HasDocumentLines {
         'subtotal', 'tax_amount', 'total', 'acceptance_token_hash',
         'decided_at', 'decision_snapshot', 'created_by', 'is_labour_cost_disclosed',
         'invoiced_externally_at', 'external_invoice_number',
+        // Aussteller und Ansprechpartner beim Versand (MVP-1624).
+        'issuer_snapshot',
     ];
 
     /** @var array<string, string> */
@@ -84,6 +87,7 @@ class Quote extends Model implements AuditsChanges, HasDocumentLines {
         'decided_at' => 'datetime',
         'invoiced_externally_at' => 'datetime',
         'decision_snapshot' => 'array',
+        'issuer_snapshot' => 'array',
         'version' => 'integer',
         // Angebote führen keine Währungsspalte — der Cast fällt auf Euro zurück.
         'subtotal' => MoneyCast::class,
@@ -121,6 +125,11 @@ class Quote extends Model implements AuditsChanges, HasDocumentLines {
     /** @return BelongsTo<User, $this> */
     public function followUpUser(): BelongsTo {
         return $this->belongsTo(User::class, 'follow_up_user_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function creator(): BelongsTo {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**

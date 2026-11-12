@@ -1,7 +1,7 @@
 ---
 title: "Hoy y Kanban"
 topic: work.overview
-version: 1
+version: 2
 keywords:
     - vista de hoy
     - resumen del día
@@ -29,3 +29,5 @@ abrir un encargo, completarlo o iniciar el registro de tiempo, y en el
 permitido. Si faltan entradas, compruebe primero el periodo, los
 filtros y la organización activa; los cambios de estado siguen los
 mismos permisos y campos obligatorios que en la lista de trabajo.
+
+**De viaje sin red:** en «Hoy» también puede registrar sin conexión tiempo de proyecto (barra de entrada, duración o desde/hasta), material y correcciones de sus propios fichajes. Se transmiten en el siguiente contacto; lo que no pueda adoptarse aparece en «Cambios sin conexión».

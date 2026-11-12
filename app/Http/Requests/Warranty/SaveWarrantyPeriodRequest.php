@@ -17,7 +17,7 @@ use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
 
 /**
- * Gewährleistungsfrist anlegen (Feature 115, MVP-604). Bezüge kommen als
+ * Gewährleistungsfrist anlegen und ändern (Feature 115, MVP-604/1564). Bezüge kommen als
  * Sqid und werden org-gescopt geprüft; die Fristlogik (Grundlage → Enddatum,
  * Begründungspflicht bei Abweichung) liegt im WarrantyService.
  */
@@ -39,8 +39,9 @@ class SaveWarrantyPeriodRequest extends BaseFormRequest {
         return [
             'side' => ['required', Rule::enum(WarrantySide::class)],
             'basis' => ['required', Rule::enum(WarrantyBasis::class)],
-            'starts_on' => ['required', 'date'],
-            'ends_on' => ['nullable', 'date', 'after:starts_on'],
+            // Ohne Beginn gilt der Abnahmetag des gewählten Protokolls.
+            'starts_on' => ['nullable', 'required_without:protocol_id', 'date'],
+            'ends_on' => ['nullable', 'date', Rule::when($this->filled('starts_on'), ['after:starts_on'])],
             'override_reason' => ['nullable', 'string', 'max:500'],
             'protocol_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('protocols')],
             'project_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('projects')],

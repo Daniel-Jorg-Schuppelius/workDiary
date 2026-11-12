@@ -68,6 +68,23 @@ class MaterialUsage extends Model {
         'billed' => 'boolean',
     ];
 
+    /** Zeilen- und Zettelsumme sind decimal(12,2) (UI-Fuzz 2026-09-21: 1264). */
+    public const float MAX_TIMESHEET_SUM = 9999999999.99;
+
+    /** Sprengt Menge × Preis zusammen mit den übrigen Zeilen des Zettels die speicherbare Summe? */
+    public static function exceedsTimesheetSum(Timesheet $timesheet, mixed $quantity, mixed $unitPrice, ?int $exceptId = null): bool {
+        $others = $timesheet->materialUsages()
+            ->when($exceptId !== null, fn ($q) => $q->whereKeyNot($exceptId))
+            ->sum('line_total_net');
+
+        $line = DocumentTotalsCalculator::lineNet(
+            is_numeric($quantity) ? (string) $quantity : '0',
+            $unitPrice instanceof Money || is_numeric($unitPrice) ? $unitPrice : null,
+        )->withScale(2);
+
+        return (float) $line->getAmount() + (float) $others > self::MAX_TIMESHEET_SUM;
+    }
+
     protected static function booted(): void {
         static::saving(function (MaterialUsage $usage): void {
             $qty = ($usage->quantity?->getValue()->toFloat() ?? 0.0);

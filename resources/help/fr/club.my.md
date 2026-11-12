@@ -1,7 +1,7 @@
 ---
 title: "Mon association"
 topic: club.my
-version: 1
+version: 2
 keywords:
     - espace membre
     - portail adhérent
@@ -39,3 +39,5 @@ lieu d’entraînement, scannez-le avec votre smartphone et pointez vous-même o
 les membres que vous représentez — de 60 minutes avant le début jusqu’à la
 fin. La présence est inscrite dans la liste de l’entraîneur, qui la confirme
 ou la corrige comme d’habitude.
+
+**Groupes :** sous « Groupes », vous voyez vos groupes et les demandes ouvertes. Vous demandez ici l’admission dans les groupes qui admettent sur demande ; le responsable du groupe décide. Les résultats d’examen n’apparaissent qu’une fois publiés par le club.

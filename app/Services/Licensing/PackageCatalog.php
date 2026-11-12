@@ -86,10 +86,6 @@ class PackageCatalog {
         return $out;
     }
 
-    public function hasBundle(string $key): bool {
-        return array_key_exists($key, $this->bundles());
-    }
-
     /**
      * Lizenzmodule eines Pakets (kumulativ) oder Bündels; leer bei unbekanntem Schlüssel.
      *

@@ -1,7 +1,7 @@
 ---
 title: "Print orders (print & copy shop)"
 topic: print.orders
-version: 1
+version: 2
 keywords:
     - print shop
     - copy shop
@@ -46,3 +46,5 @@ compares against the approved state and documents release, hold or rework.
 the existing shipment logic, and counter sales stay data-minimal. When the
 retention period expires only the customer file is removed — order, snapshot
 and checksum remain as commercial evidence.
+
+**Safety margin and spot colours:** In the print approval you record the safety margin in millimetres and the spot colours. Both then appear in the order’s production snapshot.

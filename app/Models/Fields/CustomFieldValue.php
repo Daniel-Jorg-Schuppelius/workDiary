@@ -27,13 +27,14 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string $subject_type
  * @property int $subject_id
  * @property FieldValues $values
+ * @property string|null $search_text Anzeigetexte für die Suchbereiche
  * @property int $schema_version
  */
 class CustomFieldValue extends Model {
     use Auditable;
     use BelongsToOrganization;
 
-    protected $fillable = ['organization_id', 'subject_type', 'subject_id', 'values', 'schema_version'];
+    protected $fillable = ['organization_id', 'subject_type', 'subject_id', 'values', 'search_text', 'schema_version'];
 
     /** @var array<string, string> */
     protected $casts = [

@@ -74,13 +74,13 @@ class LearningDueScan extends AbstractDeadlineScan {
 
         $tomorrow = $today->copy()->addDay();
         foreach ($external()->whereNull('final_reminded_at')->whereBetween('due_at', DateRange::days($tomorrow, $tomorrow))->lazyById(200) as $enrollment) {
-            if ($access->deliver($enrollment, null, null, null, $enrollment->due_at, true)) {
+            if ($this->moduleActiveFor($enrollment->organization_id) && $access->deliver($enrollment, null, null, null, $enrollment->due_at, true)) {
                 $enrollment->forceFill(['final_reminded_at' => Carbon::now(), 'reminded_at' => $enrollment->reminded_at ?? Carbon::now()])->save();
                 $sent++;
             }
         }
         foreach ($external()->whereNull('reminded_at')->where('due_at', '>=', $today->toDateString())->where('due_at', '<=', $horizon)->lazyById(200) as $enrollment) {
-            if ($access->deliver($enrollment, null, null, null, $enrollment->due_at)) {
+            if ($this->moduleActiveFor($enrollment->organization_id) && $access->deliver($enrollment, null, null, null, $enrollment->due_at)) {
                 $enrollment->forceFill(['reminded_at' => Carbon::now()])->save();
                 $sent++;
             }

@@ -1,7 +1,7 @@
 ---
 title: "Equipment rental"
 topic: rental.overview
-version: 6
+version: 9
 keywords:
     - landlord
     - holiday apartment
@@ -45,6 +45,26 @@ The contact person is pre-filled from the customer when you choose one and stays
 **Handover & return:** Separate reports document condition, accessories,
 meter readings, photos and signature. The return carries the follow-up
 decision: cleaning, repair/block or controlled escalation to claims.
+
+**Report items:** The handover and return forms record a checklist, the
+accessories, individual condition items and, on return, consumption in
+addition to the overall condition. Check points and accessories come from the
+rental profile; untick an accessory that is missing. The file shows the items
+under “Show items”, and so does the customer portal, without internal remarks.
+
+**Minimum condition:** In the rental profile you set the home site, the
+minimum condition and the current condition. Every return takes the condition
+from the report. If it is below the minimum, the device cannot be reserved or
+used as a replacement until you adjust the condition in the profile after the
+repair.
+
+**Cleaning:** “Cleaning required” in the return report creates a cleaning
+window; the device cannot be assigned during it. “Cleaning done” in the file
+releases it before the window ends.
+
+**Tentative bookings:** If another case holds a tentative booking in the
+period, the file shows a notice with the cases affected. Reserving remains
+possible.
 
 **Billing:** Rental charges are released and invoiced locally or handed
 over to the leading invoicing system. Deposits are separate financial
@@ -99,3 +119,9 @@ leads to the payment page of the payment provider:
   payment and invoice back into the posting inbox (reverse and post again).
   The account mapping needs the role "Advance payments received" for this
   (included in the SKR03 and SKR04 templates).
+
+**Minimum condition at handover:** The rental profile’s minimum condition also applies at handover. If the condition has dropped since the reservation, WorkDiary refuses the handover until the device is repaired and the condition is updated in the profile.
+
+## Waive a deposit
+
+A requested deposit that has not been received can be **waived** with a reason. It then shows **Waived**; the reason is recorded in the rental's log.

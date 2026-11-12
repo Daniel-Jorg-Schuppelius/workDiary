@@ -1,7 +1,7 @@
 ---
 title: "Sincronización sin conexión"
 topic: admin.offline-sync
-version: 1
+version: 2
 keywords:
     - trabajar sin conexión
     - sin internet
@@ -41,3 +41,7 @@ el total — un filtro puesto no los oculta.
 **Registrado (sin conexión)** es la hora del dispositivo, **Transmitido** la
 llegada al servidor. La distancia entre ambas es la latencia sin conexión — un
 día es normal en campo, una semana indica un dispositivo que no sincroniza.
+
+## Decisiones sobre conflictos
+
+Junto al resultado «Conflicto» aparece cómo decidió la persona —«Versión del servidor aceptada», «Descartado» o «Reenviado»— o «abierto» mientras no haya decidido. Un registro reenviado aparece en una fila propia con su propio resultado. Los comandos para un área desactivada en la organización se rechazan.

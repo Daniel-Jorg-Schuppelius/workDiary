@@ -1,7 +1,7 @@
 ---
 title: "Cloud-Dokumenteingang"
 topic: cloud-intake.overview
-version: 2
+version: 5
 keywords:
     - Paperless-ngx
     - Seafile
@@ -33,3 +33,11 @@ WorkDiary übernimmt Dokumente LESEND aus überwachten Ordnern in Dropbox, OneDr
 **Regeln:** Pfadmuster mit * und ** sowie Variablen wie {customer_number} ordnen Dateien vorhandenen Kunden, Projekten, Aufträgen, Assets oder Verträgen zu — nie per Auto-Anlage. Unsichere Treffer landen in der Integrations-Inbox.
 
 **Sicherheit:** Nur Lese-Scopes, Tokens verschlüsselt, Quelldateien bleiben unverändert; Webhooks sind reine Aufwecksignale, maßgeblich ist der wiederanlaufbare Delta-Lauf.
+
+**Regeltest und Start:** Jede Regel braucht einen Testpfad, etwa einen echten Kundenordner. Beim Speichern prüft WorkDiary, ob der Pfad das Muster trifft, welche Variablen erkannt werden und welches Ziel entsteht; ohne bestandenen Test wird nicht gespeichert. Eine feste Zielreferenz ordnet alle Dateien einer Regel einem bestimmten Kunden, Projekt, Auftrag, Asset oder Vertrag zu. Aktive Regeln einer Verbindung dürfen sich nicht überschneiden: Gleiche Muster oder ein Testpfad, der zwei Regeln trifft, blockieren die Aktivierung. Den ersten Import beginnt eine Verbindung erst, wenn Sie die Vorschau angesehen und „Import starten“ bestätigt haben; ein neuer Stammordner verlangt eine neue Bestätigung.
+
+**Datenführerschaft:** Führt laut Datenführerschaft ein anderes System die Dokumente, übernimmt die Verbindung keine Dateien ins DMS; je Datei entsteht ein Fall im Integrations-Eingang, ohne Übergabenachweis. **Einmalig übernehmen** lädt die Datei neu und legt sie nach den Regeln an. Regeln für Eingangsrechnungen, Bestellungen und Vergabepakete betrifft das nicht.
+
+## Anmeldung abgelaufen, blockiert, abgeschaltet
+
+Lehnt der Anbieter die Anmeldung ab (abgelaufen oder widerrufen), steht die Verbindung auf **Neu anmelden**. Fehlen bei der Anmeldung Leserechte, steht sie auf **Blockiert**; nach wiederholten Fehlern bis zur Abschaltschwelle auf **Deaktiviert**. In allen drei Fällen ruht der Import, und die Karte bietet **Neu anmelden** an. Erst die erneute Anmeldung macht die Verbindung wieder aktiv; Änderungen an Ordner oder Regeln tun das nicht.

@@ -1,7 +1,7 @@
 ---
 title: "Supplier catalogues"
 topic: supplier-catalogs.overview
-version: 3
+version: 4
 keywords:
     - DATANORM
     - BMEcat
@@ -87,3 +87,7 @@ number is part of the login is stated in its access letter.
 
 Reading requires inventory view permissions; creating, importing and
 linking require inventory posting permissions.
+
+## Ignore items
+
+Items that are not linked can deliberately be **not adopted** (eye icon in the row). Ignored items are excluded from proposals, bulk adoption and price updates; the same icon includes them again. Unlink a linked item first.

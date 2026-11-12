@@ -16,6 +16,13 @@ return [
     'title' => 'Supplier scorecards',
     'overview_subtitle' => 'Ranking by overall score from purchasing, warehouse, complaints and ISMS (definition v:version).',
     'apply' => 'Show',
+    'weights' => [
+        'action' => 'Weights',
+        'title' => 'Weighting of the overall score',
+        'description' => 'Weight per metric in percent. The total need not be 100: missing metrics are skipped and the remaining weights are distributed proportionally. An empty field restores the default.',
+        'saved' => 'Weighting saved.',
+        'error_all_zero' => 'At least one metric needs a weight above zero.',
+    ],
     'weights_hint' => 'Overall score weighting: on-time delivery :ontime %, complaint rate :complaints %, ISMS quality :quality %, price trend :price %, recourse behaviour :recourse %. Unavailable metrics are skipped and the weights re-normalised.',
     'empty_ranking' => 'No suppliers with evaluable purchasing, complaint or ISMS data in this period yet.',
     'chart_ranking' => 'Overall score per supplier (top 15)',

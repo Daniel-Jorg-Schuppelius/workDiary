@@ -30,6 +30,8 @@ use Illuminate\Support\Facades\Gate;
  * als CSV — Quelle sind die Stempelzeiten (attendances), je Kalendertag
  * aggregiert (Beginn = erste Start-, Ende = letzte Endzeit, Pausen summiert,
  * Dauer = netto). Deterministisch sortiert (Mitarbeitername, ID, Datum).
+ * Homeoffice- und Dienstgang-Minuten stehen als „davon“-Spalten daneben
+ * (MVP-1627): Sie zählen zur Arbeitszeit, der Nachweis zeigt ihren Ort.
  *
  * Recht: bestehendes compliance.viewAny (gleiche Datensicht wie der
  * ArbZG-Report) — bewusst KEIN neues globales Recht.
@@ -58,7 +60,7 @@ class MilogEvidenceExportController extends Controller {
             ->get(['id', 'name', 'personnel_number']);
 
         // Stempel-Spannen je User/Kalendertag aggregieren (ohne abgesagte/offene).
-        /** @var array<int, array<string, array{start: \Illuminate\Support\Carbon, end: \Illuminate\Support\Carbon, gross: int, breaks: int}>> $byUserDate */
+        /** @var array<int, array<string, array{start: \Illuminate\Support\Carbon, end: \Illuminate\Support\Carbon, gross: int, breaks: int, homeoffice: int, errand: int}>> $byUserDate */
         $byUserDate = [];
         Attendance::query()
             ->whereIn('user_id', $users->pluck('id')->all())
@@ -76,10 +78,12 @@ class MilogEvidenceExportController extends Controller {
                 $slot = $byUserDate[(int) $a->user_id][$dateKey] ?? null;
                 $gross = max(0, (int) $a->started_at->diffInMinutes($a->ended_at, false));
                 if ($slot === null) {
-                    $slot = ['start' => $a->started_at, 'end' => $a->ended_at, 'gross' => 0, 'breaks' => 0];
+                    $slot = ['start' => $a->started_at, 'end' => $a->ended_at, 'gross' => 0, 'breaks' => 0, 'homeoffice' => 0, 'errand' => 0];
                 }
                 $slot['gross'] += $gross;
                 $slot['breaks'] += $a->break_minutes_total;
+                $slot['homeoffice'] += (int) $a->homeoffice_minutes;
+                $slot['errand'] += (int) $a->errand_minutes;
                 if ($a->started_at->lessThan($slot['start'])) {
                     $slot['start'] = $a->started_at;
                 }
@@ -97,6 +101,8 @@ class MilogEvidenceExportController extends Controller {
             (string) __('compliance.milog.csv.end'),
             (string) __('compliance.milog.csv.breaks'),
             (string) __('compliance.milog.csv.duration'),
+            (string) __('compliance.milog.csv.homeoffice'),
+            (string) __('compliance.milog.csv.errand'),
         ];
 
         $tz = Tz::current();
@@ -114,6 +120,8 @@ class MilogEvidenceExportController extends Controller {
                     $agg['end']->copy()->setTimezone($tz)->format('H:i'),
                     $agg['breaks'],
                     Duration::ofMinutes($net)->toClock(),
+                    Duration::ofMinutes($agg['homeoffice'])->toClock(),
+                    Duration::ofMinutes($agg['errand'])->toClock(),
                 ]);
             }
         }

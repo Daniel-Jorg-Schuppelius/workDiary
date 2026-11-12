@@ -83,9 +83,10 @@ class PerDiemTrip extends Model {
     protected static function booted(): void {
         static::saving(function (self $trip): void {
             $trip->country = strtoupper((string) $trip->country);
-            if (empty($trip->workplace_key) && ! empty($trip->location)) {
-                // Ort ist varchar(255), der Schlüssel nur 100 (UI-Fuzz 2026-09-21: 1406).
-                $trip->workplace_key = StringHelper::truncate(strtolower($trip->location), 100, '', true);
+            // Ort ist varchar(255), der Schlüssel nur 100 (UI-Fuzz 2026-09-21: 1406); klein geschrieben, damit die Frist je Stätte zählt.
+            $source = trim((string) ($trip->workplace_key ?: $trip->location));
+            if ($source !== '') {
+                $trip->workplace_key = StringHelper::truncate(mb_strtolower($source), 100, '', true);
             }
         });
     }

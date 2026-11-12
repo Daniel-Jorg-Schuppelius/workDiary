@@ -12,7 +12,7 @@ namespace Tests\Feature\Plugins\Zammad;
 
 use App\Models\Audit\AuditLog;
 use App\Models\ServiceTicket\ServiceQueue;
-use App\Plugins\Contracts\{PluginCapability, TaskSyncer};
+use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\{PluginDiscovery, PluginHealth};
 use App\Plugins\Support\PluginApiException;
 use App\Plugins\Zammad\Contracts\{ZammadGateway, ZammadGatewayFactory};
@@ -210,29 +210,6 @@ final class ZammadPluginTest extends TestCase {
         $plugin = new ZammadPlugin();
         $this->assertContains(PluginCapability::TaskSync, $plugin->capabilities());
         $this->assertTrue($plugin->isPerOrganization());
-        $this->assertInstanceOf(TaskSyncer::class, $plugin);
-    }
-
-    public function test_sync_tasks_aggregates_created_then_unchanged(): void {
-        $this->fakeFactory([$this->ticket(1), $this->ticket(2)]);
-        $this->connection();
-
-        $first = (new ZammadPlugin())->syncTasks($this->organization);
-        $this->assertSame(2, $first['created']);
-        $this->assertSame(0, $first['unchanged']);
-
-        $second = (new ZammadPlugin())->syncTasks($this->organization);
-        $this->assertSame(0, $second['created']);
-        $this->assertSame(2, $second['unchanged']);
-        $this->assertSame(0, $second['failed']);
-    }
-
-    public function test_sync_tasks_skips_inactive_connection(): void {
-        $this->fakeFactory([$this->ticket(1)]);
-        $this->connection(active: false);
-
-        $result = (new ZammadPlugin())->syncTasks($this->organization);
-        $this->assertSame(0, $result['created']);
     }
 
     public function test_health_ok_when_probe_succeeds(): void {

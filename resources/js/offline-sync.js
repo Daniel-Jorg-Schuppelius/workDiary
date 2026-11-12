@@ -47,6 +47,7 @@ import { getJson, postForm, postJson } from "./lib/http.js";
  * @property {string | null} [current_version]
  * @property {string} [detected_at]
  * @property {string} [rejected_at]
+ * @property {boolean} [remote] offener Konflikt vom Server, nicht in diesem Gerät (MVP-1595)
  */
 
 /**
@@ -463,12 +464,62 @@ async function flush() {
 }
 
 /**
+ * Benannte Felder wie beim normalen Absenden: FormData lässt gesperrte Felder
+ * aus (inaktive Modi der Eingabeleiste), `name[]` wird zur Liste, Leeres fällt weg.
+ * @param {HTMLFormElement} form
+ * @param {string[]} names
+ * @returns {Record<string, string | string[]>}
+ */
+function formFields(form, names) {
+    /** @type {Record<string, string | string[]>} */
+    const out = {};
+    for (const [name, value] of new FormData(form).entries()) {
+        if (typeof value !== "string") continue;
+        const list = name.endsWith("[]");
+        const key = list ? name.slice(0, -2) : name;
+        if (!names.includes(key)) continue;
+        if (list) {
+            const current = out[key];
+            out[key] = Array.isArray(current) ? [...current, value] : [value];
+        } else if (value !== "") {
+            out[key] = value;
+        }
+    }
+    return out;
+}
+
+/**
  * Payload je Befehlstyp aus dem abgefangenen Formular ableiten.
  * @param {string} type
  * @param {HTMLFormElement} form
  */
 function buildPayload(type, form) {
     const now = new Date().toISOString();
+
+    if (type === "time.entry") {
+        // Eingabeleiste auf „Heute“ (MVP-1593): Dauer oder Von/Bis als
+        // Wanduhrzeit, umgerechnet wird beim Abgleich. Der Timer braucht den
+        // Server — ohne Zeitangabe wird nicht abgefangen.
+        const payload = formFields(form, [
+            "project_id", "task_id", "diary_entry_id", "description", "date",
+            "minutes", "start_time", "end_time", "break_minutes", "tag_ids", "new_tags",
+        ]);
+        return payload.minutes || payload.start_time ? payload : null;
+    }
+
+    if (type === "material.usage") {
+        // Material auf „Heute“ (MVP-1594): Projekt und Tag, der Stundenzettel folgt beim Abgleich.
+        return formFields(form, ["project_id", "date", "material_id", "description", "quantity", "unit"]);
+    }
+
+    if (type === "attendance.correct") {
+        // Stempelkorrektur (MVP-1595): base_version ist der Stand, den der Dialog gezeigt hat.
+        return {
+            attendance: form.dataset.syncPayloadAttendance || "",
+            base_version: form.dataset.syncPayloadBaseVersion || "",
+            ...formFields(form, ["started_at", "ended_at", "break_minutes", "reason"]),
+        };
+    }
 
     if (type === "attendance.clock-in") {
         return { started_at: now };
@@ -495,11 +546,16 @@ function buildPayload(type, form) {
     }
 
     if (type === "inventory.count") {
-        return {
+        /** @type {{count: string, code: string, qty: string, unit?: string}} */
+        const payload = {
             count: form.dataset.syncPayloadCount || "",
             code: /** @type {FormField | null} */ (form.querySelector('[name="code"]'))?.value || "",
             qty: /** @type {FormField | null} */ (form.querySelector('[name="qty"]'))?.value || "1",
         };
+        // Erfasste Einheit wie online (MVP-1584); leer = Basiseinheit.
+        const unit = /** @type {FormField | null} */ (form.querySelector('[name="unit"]'))?.value;
+        if (unit) payload.unit = unit;
+        return payload;
     }
 
     if (type === "comment.diary") {
@@ -644,6 +700,8 @@ function bindForms() {
                 .then(() => queuePhotos(clientUuid, form, payload))
                 .then(() => {
                     form.reset();
+                    // Dialogformulare (Korrektur, Material) schließen wie nach dem Speichern.
+                    form.closest("dialog")?.close();
                     // Fortlaufende Erfassung (Inventur-Scan): gleich weiter scannen.
                     /** @type {HTMLElement | null} */ (form.querySelector("[autofocus]"))?.focus();
                     updateBadge();
@@ -674,15 +732,168 @@ function isLogoutForm(form) {
 }
 
 /**
- * Offline-Änderungs-Seite (Phase 3, MVP-367): rendert Outbox + abgelehnte
- * Befehle aus IndexedDB; Texte kommen als data-Attribute/Template aus Blade
- * (übersetzt, CSP-konform). Aktionen: „Erneut anwenden" (neue client_uuid →
- * Outbox) und „Verwerfen".
+ * Offline-Änderungs-Seite (Phase 3, MVP-367): rendert Outbox, Konflikte und
+ * abgelehnte Befehle aus IndexedDB; Texte kommen als data-Attribute/Template
+ * aus Blade (übersetzt, CSP-konform). Aktionen: „Erneut anwenden" (neue
+ * client_uuid → Outbox) und „Verwerfen"; Konflikte siehe resolveConflict().
  */
 const rejectedAll = () => /** @type {Promise<SyncEntry[]>} */ (storeAll(REJECTED));
 /** @param {string} clientUuid */
 const rejectedDelete = (clientUuid) => storeDelete(REJECTED, clientUuid);
 const conflictAll = () => /** @type {Promise<SyncEntry[]>} */ (storeAll(CONFLICTS));
+
+/**
+ * Konflikt entscheiden (MVP-1595): erst meldet das Gerät die Entscheidung an
+ * den Server (`sync.conflict.resolved` in der Audit-Kette), dann räumt es den
+ * Konflikt. 404 heißt, dort gibt es ihn nicht (mehr) — geräumt wird trotzdem.
+ * Ohne Verbindung bleibt alles, wie es ist.
+ *
+ * @param {string} url
+ * @param {string} clientUuid
+ * @param {"server" | "discarded" | "resent"} resolution
+ * @param {{resent_client_uuid?: string, edited?: boolean}} [extra]
+ * @returns {Promise<boolean>}
+ */
+async function resolveConflict(url, clientUuid, resolution, extra = {}) {
+    let response;
+    try {
+        response = await postJson(url, { client_uuid: clientUuid, resolution, ...extra }, { on419: "ignore" });
+    } catch (_) {
+        return false;
+    }
+    if (!response.ok && response.status !== 404) return false;
+
+    await conflictDelete(clientUuid);
+    updateBadge();
+    return true;
+}
+
+/**
+ * Konflikt mit eigener Fassung erneut senden: zuerst in die Outbox, dann die
+ * Entscheidung melden — scheitert die Meldung, fliegt der neue Befehl wieder
+ * heraus. So geht weder der Konflikt noch die Erfassung verloren.
+ *
+ * @param {string} url
+ * @param {SyncEntry} item
+ * @param {SyncPayload} payload
+ * @param {boolean} edited
+ * @returns {Promise<boolean>}
+ */
+async function resendConflict(url, item, payload, edited) {
+    const clientUuid = crypto.randomUUID();
+    await outboxPut({
+        client_uuid: clientUuid,
+        type: item.type,
+        payload,
+        owner: currentOwner(),
+        captured_at: item.captured_at || new Date().toISOString(),
+    });
+    if (!(await resolveConflict(url, item.client_uuid, "resent", { resent_client_uuid: clientUuid, edited }))) {
+        await outboxDelete(clientUuid);
+        return false;
+    }
+    await flush();
+    return true;
+}
+
+/** Eingabetyp je bearbeitbarem Feld; alles andere ist Text. */
+/** @type {Record<string, string>} */
+const EDIT_TYPES = {
+    date: "date",
+    start_time: "time",
+    end_time: "time",
+    started_at: "datetime-local",
+    ended_at: "datetime-local",
+    minutes: "number",
+    break_minutes: "number",
+    quantity: "number",
+};
+
+/** @param {number} n */
+const pad2 = (n) => String(n).padStart(2, "0");
+
+/**
+ * Wert für das Bearbeiten-Feld: Zeitstempel mit Zonenangabe (ältere Geräte)
+ * werden zur Wanduhrzeit des Geräts, wie sie das Eingabefeld erwartet.
+ * @param {string} key
+ * @param {unknown} value
+ */
+function editorValue(key, value) {
+    if (value === undefined || value === null) return "";
+    const text = String(value);
+    if (EDIT_TYPES[key] === "datetime-local" && /(?:[zZ]|[+-]\d{2}:?\d{2})$/.test(text)) {
+        const d = new Date(text);
+        if (!Number.isNaN(d.getTime())) {
+            return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+        }
+    }
+    return text;
+}
+
+/**
+ * Server-Stand lesbar machen: ISO-Zeitstempel in Ortszeit.
+ * @param {unknown} value
+ */
+function displayValue(value) {
+    if (value === null || value === undefined || value === "") return "—";
+    const text = String(value);
+    if (/^\d{4}-\d{2}-\d{2}T/.test(text)) {
+        const d = new Date(text);
+        if (!Number.isNaN(d.getTime())) return d.toLocaleString(document.documentElement?.lang || undefined);
+    }
+    return text;
+}
+
+/**
+ * @param {string} key
+ * @param {unknown} value
+ * @param {string} label
+ */
+function editorField(key, value, label) {
+    const wrap = document.createElement("label");
+    wrap.className = "fieldset";
+    const caption = document.createElement("span");
+    caption.className = "fieldset-label";
+    caption.textContent = label;
+
+    const multi = key === "reason" || key === "description";
+    /** @type {HTMLInputElement | HTMLTextAreaElement} */
+    let input;
+    if (multi) {
+        input = document.createElement("textarea");
+        input.className = "textarea textarea-bordered textarea-sm w-full";
+        input.rows = 2;
+    } else {
+        input = document.createElement("input");
+        input.type = EDIT_TYPES[key] || "text";
+        if (input.type === "number") input.step = "any";
+        input.className = "input input-bordered input-sm w-full";
+    }
+    input.dataset.editorKey = key;
+    input.value = editorValue(key, value);
+    wrap.append(caption, input);
+    return wrap;
+}
+
+/**
+ * JSON aus einem data-Attribut der Seite.
+ * @param {HTMLElement} root
+ * @param {string} name
+ * @returns {unknown}
+ */
+function dataJson(root, name) {
+    try {
+        return JSON.parse(root.dataset[name] || "null");
+    } catch (_) {
+        return null;
+    }
+}
+
+/**
+ * Auf dieser Seite schon entschiedene Konflikte — die Serverliste ist der Stand beim Laden.
+ * @type {Set<string>}
+ */
+const resolvedHere = new Set();
 
 /** @param {HTMLElement} root */
 async function renderChangesPage(root) {
@@ -691,14 +902,23 @@ async function renderChangesPage(root) {
     );
     if (!template) return;
 
-    /** @param {string | undefined} type */
-    const typeLabel = (type) =>
-        root.dataset[
-            "labelType" +
-                (type || "")
-                    .replace(/[.-](\w)/g, (_, c) => c.toUpperCase())
-                    .replace(/^(\w)/, (_, c) => c.toUpperCase())
-        ] || type;
+    const typeLabels = /** @type {Record<string, string>} */ (dataJson(root, "typeLabels") || {});
+    const fieldLabels = /** @type {Record<string, string>} */ (dataJson(root, "fieldLabels") || {});
+    const editFields = /** @type {Record<string, string[]>} */ (dataJson(root, "editFields") || {});
+    const resolveUrl = root.dataset.resolveUrl || "";
+    const failed = () => {
+        if (typeof window.notifyAction === "function") {
+            window.notifyAction({ tone: "error", message: root.dataset.labelResolveFailed || "" });
+        }
+    };
+
+    // Offene Konflikte vom Server, die nicht (mehr) auf diesem Gerät liegen —
+    // anderes Gerät oder geleerter Speicher: hier nur noch verwerfbar.
+    const local = await conflictAll();
+    const onDevice = new Set(local.map((c) => c.client_uuid));
+    const remote = /** @type {SyncEntry[]} */ (dataJson(root, "serverConflicts") || [])
+        .filter((c) => c && c.client_uuid && !onDevice.has(c.client_uuid) && !resolvedHere.has(c.client_uuid))
+        .map((c) => ({ ...c, remote: true }));
 
     /** @type {Record<string, {items: SyncEntry[], label: string | undefined, retry: boolean, conflict?: boolean}>} */
     const sections = {
@@ -710,7 +930,7 @@ async function renderChangesPage(root) {
         // Konflikte stehen VOR den Ablehnungen: sie sind das Einzige auf der
         // Seite, das ohne Entscheidung des Nutzers nicht weitergeht.
         conflicts: {
-            items: await conflictAll(),
+            items: [...local, ...remote],
             label: root.dataset.labelConflict,
             retry: false,
             conflict: true,
@@ -737,11 +957,10 @@ async function renderChangesPage(root) {
             const node = /** @type {HTMLElement} */ (
                 /** @type {Element} */ (template.content.firstElementChild).cloneNode(true)
             );
-            /** @type {Element} */ (node.querySelector("[data-item-type]")).textContent = /** @type {string} */ (typeLabel(
-                item.type,
-            ));
+            /** @type {Element} */ (node.querySelector("[data-item-type]")).textContent =
+                typeLabels[item.type || ""] || item.type || "";
             /** @type {Element} */ (node.querySelector("[data-item-time]")).textContent =
-                item.captured_at || item.rejected_at || "";
+                displayValue(item.captured_at || item.rejected_at || "");
 
             const errorsEl = /** @type {HTMLElement} */ (
                 node.querySelector("[data-item-errors]")
@@ -763,6 +982,7 @@ async function renderChangesPage(root) {
                         client_uuid: crypto.randomUUID(),
                         type: item.type,
                         payload: item.payload,
+                        owner: currentOwner(),
                         captured_at: new Date().toISOString(),
                     });
                     await rejectedDelete(item.client_uuid);
@@ -770,6 +990,10 @@ async function renderChangesPage(root) {
                     renderChangesPage(root);
                 });
             }
+
+            const discardBtn = /** @type {HTMLElement} */ (
+                node.querySelector("[data-item-discard]")
+            );
 
             if (section.conflict) {
                 const hint = /** @type {HTMLElement} */ (
@@ -781,10 +1005,18 @@ async function renderChangesPage(root) {
                     ).replace(
                         ":server",
                         Object.entries(item.server)
-                            .map(([k, v]) => `${k}: ${v ?? "—"}`)
+                            .map(([k, v]) => `${fieldLabels[k] || k}: ${displayValue(v)}`)
                             .join(", "),
                     );
                     hint.hidden = false;
+                }
+
+                if (item.remote) {
+                    const remoteHint = /** @type {HTMLElement | null} */ (node.querySelector("[data-item-remote]"));
+                    if (remoteHint) {
+                        remoteHint.textContent = root.dataset.labelRemoteHint || "";
+                        remoteHint.hidden = false;
+                    }
                 }
 
                 // „Meine Fassung senden": neu in die Outbox, aber mit dem
@@ -793,41 +1025,70 @@ async function renderChangesPage(root) {
                 const forceBtn = /** @type {HTMLElement} */ (
                     node.querySelector("[data-item-force]")
                 );
-                if (forceBtn && item.payload && item.current_version) {
+                if (forceBtn && item.payload && item.current_version && !item.remote) {
                     forceBtn.hidden = false;
                     forceBtn.addEventListener("click", async () => {
-                        await outboxPut({
-                            client_uuid: crypto.randomUUID(),
-                            type: item.type,
-                            payload: {
-                                ...item.payload,
-                                base_version: item.current_version,
-                            },
-                            captured_at: new Date().toISOString(),
-                        });
-                        await conflictDelete(item.client_uuid);
-                        await flush();
+                        const payload = { ...item.payload, base_version: item.current_version };
+                        if (!(await resendConflict(resolveUrl, item, payload, false))) failed();
                         renderChangesPage(root);
                     });
                 }
-            }
 
-            const discardBtn = /** @type {HTMLElement} */ (
-                node.querySelector("[data-item-discard]")
-            );
-            if (section.conflict && root.dataset.labelTakeServer) {
-                // Im Konfliktfall heisst „Verwerfen" fachlich etwas anderes:
-                // die eigene Fassung fallen lassen und den fremden Stand
-                // stehen lassen. Der Knopf sagt das auch.
-                discardBtn.textContent = root.dataset.labelTakeServer;
-                discardBtn.classList.remove("text-error");
+                // Bearbeiten und erneut senden: die Felder des Typs, vorbelegt mit der eigenen Fassung.
+                const keys = editFields[item.type || ""] || [];
+                const editBtn = /** @type {HTMLElement | null} */ (node.querySelector("[data-item-edit]"));
+                const editor = /** @type {HTMLFormElement | null} */ (node.querySelector("[data-item-editor]"));
+                const fieldsBox = editor?.querySelector("[data-editor-fields]");
+                if (editBtn && editor && fieldsBox && item.payload && keys.length > 0 && !item.remote) {
+                    const own = item.payload;
+                    editBtn.hidden = false;
+                    editBtn.addEventListener("click", () => {
+                        fieldsBox.textContent = "";
+                        for (const key of keys) {
+                            fieldsBox.appendChild(editorField(key, own[key], fieldLabels[key] || key));
+                        }
+                        editor.hidden = false;
+                    });
+                    editor.querySelector("[data-editor-cancel]")?.addEventListener("click", () => {
+                        editor.hidden = true;
+                    });
+                    editor.addEventListener("submit", async (event) => {
+                        event.preventDefault();
+                        /** @type {SyncPayload} */
+                        const payload = { ...own };
+                        for (const input of /** @type {NodeListOf<HTMLInputElement | HTMLTextAreaElement>} */ (editor.querySelectorAll("[data-editor-key]"))) {
+                            const key = input.dataset.editorKey || "";
+                            const value = input.value.trim();
+                            if (value === "") delete payload[key];
+                            else payload[key] = value;
+                        }
+                        if (item.current_version) payload.base_version = item.current_version;
+                        if (!(await resendConflict(resolveUrl, item, payload, true))) failed();
+                        renderChangesPage(root);
+                    });
+                }
+
+                // Mit Server-Stand (geänderte Stempelung) heißt Verwerfen: den
+                // fremden Stand übernehmen. Der Knopf sagt das auch.
+                if (item.current_version && root.dataset.labelTakeServer) {
+                    discardBtn.textContent = root.dataset.labelTakeServer;
+                    discardBtn.classList.remove("text-error");
+                }
             }
 
             discardBtn.addEventListener("click", async () => {
-                if (name === "outbox") await outboxDelete(item.client_uuid);
-                else if (name === "conflicts")
-                    await conflictDelete(item.client_uuid);
-                else await rejectedDelete(item.client_uuid);
+                if (name === "conflicts") {
+                    const resolution = item.current_version ? "server" : "discarded";
+                    if (!(await resolveConflict(resolveUrl, item.client_uuid, resolution))) {
+                        failed();
+                        return;
+                    }
+                    resolvedHere.add(item.client_uuid);
+                } else if (name === "outbox") {
+                    await outboxDelete(item.client_uuid);
+                } else {
+                    await rejectedDelete(item.client_uuid);
+                }
                 updateBadge();
                 renderChangesPage(root);
             });
@@ -1010,6 +1271,10 @@ export function initOfflineSync() {
 // importiert dieses Objekt.
 export const __testables = {
     buildPayload,
+    formFields,
+    resolveConflict,
+    resendConflict,
+    editorValue,
     isLogoutForm,
     courseStore,
     courseGet,

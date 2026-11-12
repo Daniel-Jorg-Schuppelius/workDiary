@@ -71,6 +71,17 @@ class WhistleblowingCasePolicy {
             && $user->hasEffectivePermission('whistleblowing.case.assign');
     }
 
+    /**
+     * Ereignisprotokoll eines Falls (Abschnitt 12): eigenes Recht, ohne Zuweisung –
+     * die Prüfung soll nicht voraussetzen, dass der Prüfer den Fall bearbeitet.
+     * Das Protokoll ist inhaltsfrei; gesperrte Personen sehen es trotzdem nicht.
+     */
+    public function audit(User $user, WhistleblowingCase $case): bool {
+        return $this->sameOrganization($user, $case)
+            && $user->hasEffectivePermission('whistleblowing.audit.view')
+            && ! $case->isBlockedFor($user);
+    }
+
     /** Jede berechtigte Person darf sich SELBST wegen Konflikts sperren. */
     public function declareConflict(User $user, WhistleblowingCase $case): bool {
         return $this->sameOrganization($user, $case)

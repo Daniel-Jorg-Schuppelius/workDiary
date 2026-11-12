@@ -13,17 +13,14 @@ declare(strict_types=1);
 namespace App\Plugins\Gitlab;
 
 use App\Models\Integration\ExternalReference;
-use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{LinksExternalRecords, Plugin, PluginCapability, TaskSyncer};
+use App\Plugins\Contracts\{LinksExternalRecords, Plugin, PluginCapability};
 use App\Plugins\Gitlab\Api\GitlabClientFactory;
-use App\Plugins\Gitlab\Services\GitlabIssueImporter;
 use App\Plugins\Support\ApiHealthProbe;
-use Throwable;
 
 /**
  * Ticketsystem-Anbindung GitLab Issues (Feature 060, MVP-129, Bauturbo A6):
- * dritter Provider gegen den {@see TaskSyncer}-Vertrag nach dem
+ * dritter Provider nach dem
  * Zammad-Referenzmuster.
  *
  * - Issues EINES konfigurierten Projekts (Projekt-ID + Token je Organisation,
@@ -40,7 +37,7 @@ use Throwable;
  *   `X-Gitlab-Token`) stößt nur an — GitLab deaktiviert Hooks nach
  *   wiederholten Fehlern selbst, das Polling schließt jede Lücke.
  */
-class GitlabPlugin extends AbstractPlugin implements LinksExternalRecords, TaskSyncer {
+class GitlabPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, LinksExternalRecords {
     public const string ID = 'gitlab';
 
     public const string SERVICE_PROVIDER = GitlabServiceProvider::class;
@@ -76,33 +73,6 @@ class GitlabPlugin extends AbstractPlugin implements LinksExternalRecords, TaskS
         ];
     }
 
-    /**
-     * Einheitlicher Sync-Einstieg (TaskSyncer): Issue-Import der Organisation.
-     * Einbahnig — `created`/`updated` aus dem Import, `unchanged` =
-     * übersprungene (unveränderte) Issues; `conflicts` bleibt 0.
-     */
-    public function syncTasks(Organization $organization): array {
-        $counters = ['created' => 0, 'updated' => 0, 'unchanged' => 0, 'conflicts' => 0, 'inbox' => 0, 'failed' => 0];
-
-        $config = GitlabConfig::resolve((int) $organization->id);
-        if (! $config['enabled'] || ! GitlabConfig::isConfigured((int) $organization->id)) {
-            return $counters;
-        }
-
-        try {
-            $client = app(GitlabClientFactory::class)->for((int) $organization->id);
-            $result = app(GitlabIssueImporter::class)->import($organization, $client, $config);
-            $counters['created'] += $result['created'];
-            $counters['updated'] += $result['updated'];
-            $counters['unchanged'] += $result['skipped'];
-            $counters['inbox'] += $result['inbox'];
-        } catch (Throwable) {
-            $counters['failed']++;
-        }
-
-        return $counters;
-    }
-
     /** @return array<int, array{key: string, label: string, type: string, options?: array<string, string>, help?: string, required?: bool, default?: mixed}> */
     public function settingsSchema(): array {
         return [
@@ -136,5 +106,10 @@ class GitlabPlugin extends AbstractPlugin implements LinksExternalRecords, TaskS
 
             return (string) __('Verbunden mit GitLab als :login.', ['login' => (string) ($user['username'] ?? '?')]);
         });
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Tasks];
     }
 }

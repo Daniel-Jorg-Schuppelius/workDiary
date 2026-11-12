@@ -104,6 +104,10 @@ final class PortalReturnService {
             $rma = $this->rma->announce($claim, [
                 'serial_no' => $claim->serial_no,
                 'qty' => $data['quantity'] ?? null,
+                // Lager ergänzt der interne Wareneingang (MVP-1576).
+                'article_id' => $claim->article_id,
+                'article_variant_id' => $delivery?->article_variant_id,
+                'stock_serial_id' => $serial?->id,
             ]);
             foreach ($photos as $photo) {
                 $this->files->store($claim, $photo, $portalUser->id);

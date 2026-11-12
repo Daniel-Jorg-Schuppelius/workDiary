@@ -26,6 +26,8 @@ return [
     // E-Rechnung (Feature 045, Abschnitt 8): XRechnung (UBL 2.1, EN 16931).
     'buyer_reference' => 'Leitweg-ID / Käuferreferenz (BT-10)',
     'buyer_reference_hint' => 'Pflichtangabe für die XRechnung (E-Rechnung): bei Behörden die Leitweg-ID, sonst eine vom Kunden vorgegebene Referenz.',
+    // USt-IdNr. des Kunden im Rechnungs-PDF (§ 14a UStG, MVP-1623).
+    'buyer_vat_id' => 'Ihre USt-IdNr.',
     'einvoice' => [
         'button' => 'XRechnung',
         'button_title' => 'XRechnung (UBL 2.1, EN 16931) herunterladen',
@@ -43,6 +45,12 @@ return [
         ],
         'payment_terms' => 'Zahlbar innerhalb von :days Tagen ohne Abzug.',
         'exemption_small_business' => 'Keine Umsatzsteuer gemäß § 19 UStG (Kleinunternehmerregelung).',
+        'exemption_reverse_charge' => 'Steuerschuldnerschaft des Leistungsempfängers',
+        'exemption_intra_community' => 'Steuerfreie innergemeinschaftliche Lieferung (§ 4 Nr. 1 Buchstabe b i. V. m. § 6a UStG)',
+        'exemption_export_goods' => 'Steuerfreie Ausfuhrlieferung (§ 4 Nr. 1 Buchstabe a i. V. m. § 6 UStG)',
+        'exemption_export_services' => 'Nicht im Inland steuerbare Leistung (Leistungsort beim Empfänger, § 3a UStG)',
+        'exemption_not_subject' => 'Nicht im Inland steuerbarer Umsatz',
+        'exemption_tax_free' => 'Steuerfreier Umsatz',
         'rule_violation' => 'Regel :code: :text',
         'note_supporting_documents' => 'Rechnungsbegründende Unterlagen in der Anlage: :list',
         'line_note_entries' => ':count Einsätze, :from – :to',
@@ -53,6 +61,12 @@ return [
             'missing_buyer_reference' => 'Beim Kunden fehlt die Leitweg-ID/Käuferreferenz (BT-10).',
             'missing_seller_field' => 'Verkäuferangabe fehlt: :field (Organisations-Einstellungen → Rechnungen).',
             'missing_tax_id' => 'Weder USt-IdNr. noch Steuernummer in den Organisations-Einstellungen hinterlegt.',
+            'reverse_charge_buyer_vat_id' => 'Reverse Charge (Kategorie AE) verlangt die USt-IdNr. des Kunden (BR-AE-02) — bitte beim Kunden hinterlegen.',
+            'intra_community_buyer_vat_id' => 'Innergemeinschaftliche Lieferung (Kategorie K) verlangt die USt-IdNr. des Kunden (BR-IC-02) — bitte beim Kunden hinterlegen.',
+            'seller_vat_id_required' => 'Innergemeinschaftliche Lieferung und Ausfuhr (Kategorien K und G) verlangen die USt-IdNr. der Organisation (BR-IC-02, BR-G-02) — bitte in den Organisations-Einstellungen hinterlegen.',
+            'not_subject_mixed' => 'Nicht steuerbare Positionen (Kategorie O) dürfen in der E-Rechnung nicht neben anderen Steuerkategorien stehen (BR-O-11) — bitte getrennt abrechnen.',
+            'not_subject_tax_number' => 'Nicht steuerbare Umsätze (Kategorie O) tragen keine USt-IdNr. (BR-O-02); die E-Rechnung braucht dafür die Steuernummer in den Organisations-Einstellungen.',
+            'line_category_rate' => 'Position „:line“: Die Steuerkategorie :category trägt keine Steuer, die Position aber :rate % — Rechnung und E-Rechnung wichen voneinander ab. Bitte den Steuersatz der Position auf 0 % setzen.',
             'missing_iban' => 'IBAN für die SEPA-Überweisung fehlt in den Organisations-Einstellungen.',
             'missing_tax_rate' => 'Die Rechnung trägt keinen Steuersatz.',
             'totals_mismatch' => 'Die Rechnungssummen sind inkonsistent (Positionen, Zwischensumme, Steuer, Gesamt).',
@@ -65,6 +79,9 @@ return [
             'missing_buyer_email' => 'Kunden-E-Mail fehlt (elektronische Empfängeradresse BT-49).',
             'missing_due_date' => 'Fälligkeitsdatum fehlt — das Standard-Zahlungsziel wird verwendet.',
             'service_date_fallback' => 'Keine Position nennt ein Leistungsdatum oder einen Zeitraum; als Leistungszeitpunkt gilt das Rechnungsdatum (§ 14 Abs. 4 Nr. 6 UStG).',
+            'intra_community_delivery_country' => 'Innergemeinschaftliche Lieferung (Kategorie K): Die E-Rechnung enthält noch kein Lieferland (BT-80, Regel BR-IC-12) — strenge Empfänger weisen sie ab.',
+            'not_subject_line_rate' => 'Nicht steuerbare Umsätze (Kategorie O): Die E-Rechnung nennt in den Positionen noch einen Steuersatz von 0 % (Regel BR-O-05) — strenge Empfänger weisen sie ab.',
+            'exemption_unspecified' => 'Steuerfreie Positionen (Kategorie E): Es ist kein Befreiungsgrund hinterlegt, die E-Rechnung nennt nur „Steuerfreier Umsatz“. Legen Sie in der Steuerregelmatrix eine Regel mit der Satzart „Befreit“ an und tragen Sie den Befreiungstatbestand als Beleg-Hinweistext ein (§ 14 Abs. 4 Nr. 8 UStG).',
             'activity_report_missing' => 'Für diesen Empfänger wird ein Leistungsnachweis erwartet, die Rechnung trägt aber keine Unterlagen.',
             'near_limit' => 'Die E-Rechnung mit Unterlagen ist :size groß und liegt nahe an der Grenze des Empfängers (:limit).',
         ],
@@ -136,6 +153,9 @@ return [
         'position_hint' => 'Bestimmt die Reihenfolge; Titel nummerieren die folgenden Positionen.',
     ],
     // Arbeitskosten nach § 35a EStG (MVP-1053).
+    'approval' => [
+        'self' => 'Bei Freigabezwang kann die Rechnung nicht von der Person freigegeben werden, die sie angelegt hat.',
+    ],
     'labour_costs' => [
         'disclosure' => [
             'off' => 'Nie ausweisen',
@@ -279,6 +299,11 @@ return [
         'dunning_note' => 'abzüglich Sicherheitseinbehalt',
         'added' => 'Sicherheitseinbehalt hinterlegt.',
         'released' => 'Sicherheitseinbehalt freigegeben.',
+        'released_on' => 'Freigegeben am',
+        'release_due' => 'Freigabe fällig',
+        'release_title' => 'Sicherheitseinbehalt freigeben',
+        'release_hint' => 'Mit der Freigabe wird der Betrag ein normaler offener Posten: Er zählt wieder zum Zahlbetrag und wird gemahnt.',
+        'release_hint_secured' => 'Dieser Einbehalt wurde durch eine Bürgschaft abgelöst und ist bereits ausgezahlt. Die Freigabe beendet nur den Sicherungszweck: Es entsteht keine neue Forderung, die Bürgschaftsurkunde ist zurückzugeben.',
     ],
 
     // Leistungszeitraum je Position (Feature 152, Review 2026-09-11).
@@ -333,7 +358,6 @@ return [
             'delivery_foreign' => 'Die Auslieferung gehört nicht zu dieser Organisation.',
             'delivery_customer' => 'Die Auslieferung gehört zu einem anderen Kunden.',
             'delivery_external' => 'Die Auslieferung wird extern fakturiert.',
-            'delivery_not_delivered' => 'Die Auslieferung ist noch nicht erfolgt.',
             'delivery_invoiced' => 'Die Auslieferung ist bereits abgerechnet.',
             'delivery_reserved' => 'Auslieferung „:name“ ist bereits im Entwurf :number reserviert.',
             'delivery_currency' => 'Die Auslieferung ist in :currency, der Beleg in :invoice — keine automatische Umrechnung.',
@@ -346,6 +370,7 @@ return [
         'service_period' => 'Leistungszeitraum',
         'service_from' => 'Leistungszeitraum von',
         'service_to' => 'Leistungszeitraum bis',
+        'tax_category_hint' => 'Leer = aus dem Beleg abgeleitet (S/AE/Z/E/G/K/O). Kategorien ohne Steuer (AE, Z, E, G, K, O) setzen den Satz auf 0 %.',
     ],
     'service_rules' => [
         'title' => 'Abrechnungs-Regeln',
@@ -514,5 +539,28 @@ return [
             'total_limit' => 'Unterlage :name nicht übernommen: Die Unterlagen dieses Eingangs überschreiten zusammen 50 MB.',
             'unreadable' => 'Unterlage :name nicht übernommen: größer als :limit oder nicht lesbar.',
         ],
+    ],
+    // Steuerfall der Eingangsrechnung (MVP-1621) und § 13b als Leistender (MVP-1622).
+    'incoming_tax_case' => [
+        'title' => 'Steuerfall',
+        'field' => 'Steuerfall',
+        'hint' => 'Bei Steuerschuld des Empfängers (§ 13b UStG, innergemeinschaftlicher Erwerb) ist die Rechnung netto; die Buchung bildet Umsatzsteuer und Vorsteuer selbst. Gilt für die nächste Buchung.',
+        'automatic' => 'Automatisch (aus Beleg und Lieferant)',
+        'detected' => 'Ermittelt: :case (:source).',
+        'action' => 'Steuerfall ändern',
+        'supplier_field' => 'Steuerfall seiner Eingangsrechnungen',
+        'supplier_hint' => 'Vorbelegung im Rechnungseingang, solange die Rechnung keine Steuer ausweist — etwa für Bauleistungen nach § 13b UStG.',
+        'source' => ['manual' => 'von Hand', 'document' => 'aus der E-Rechnung', 'supplier' => 'Vorgabe des Lieferanten', 'default' => 'Standard'],
+        'flash' => ['saved' => 'Steuerfall gespeichert.'],
+        'error' => ['booked' => 'Die Eingangsrechnung ist bereits in der Buchhaltung (Entwurf oder Buchung). Den Steuerfall ändern Sie nach dem Verwerfen des Entwurfs bzw. dem Storno der Buchung.'],
+    ],
+    'reverse_charge_recipient' => [
+        'label' => 'Leistungsempfänger schuldet die Umsatzsteuer (§ 13b UStG)',
+        'hint' => 'Inländischer Kunde, der für Ihre Leistungen die Steuer schuldet, etwa bei Bauleistungen an Bauleistende. Rechnungen gehen ohne Umsatzsteuer und mit dem Hinweis „Steuerschuldnerschaft des Leistungsempfängers“ hinaus (Kennziffer 60).',
+    ],
+    // Steuerfall des Rechnungsentwurfs (MVP-1623).
+    'tax_case' => [
+        'changed_on_issue' => 'Der Steuerfall des Kunden hat sich seit der letzten Bearbeitung geändert (Reverse Charge, Ausfuhr oder steuerfrei). Der Entwurf wurde angepasst — bitte prüfen Sie die Summen und stellen Sie die Rechnung erneut.',
+        'note_kept' => 'Der Rechnungstext wurde von Hand geändert und deshalb nicht angepasst: Bitte prüfen Sie den Hinweis zum Steuerfall (etwa Reverse Charge, Ausfuhr oder Steuerbefreiung) selbst.',
     ],
 ];

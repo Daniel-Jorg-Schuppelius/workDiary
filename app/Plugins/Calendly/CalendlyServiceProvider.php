@@ -34,5 +34,6 @@ class CalendlyServiceProvider extends PluginServiceProviderBase {
         $this->commands([
             CalendlyBackfillCommand::class,
         ]);
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\CalendlyIngestService::class);
     }
 }

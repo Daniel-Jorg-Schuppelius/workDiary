@@ -97,7 +97,7 @@ class ProcedureTemplateServiceTest extends TestCase {
         $this->assertSame($v2->id, $later->id);
     }
 
-    public function test_update_step_def_blocked_after_publish(): void {
+    public function test_steps_are_locked_after_publish(): void {
         [$org, $user] = $this->makeOrgAndUser();
         $template = $this->service->create($org, $user, ['code' => 'X4', 'name' => 'X4']);
         $version = $template->versions->first();
@@ -109,7 +109,7 @@ class ProcedureTemplateServiceTest extends TestCase {
         $this->service->publish($version, $user);
 
         $this->expectException(PublishedProcedureVersionLockedException::class);
-        $this->service->updateStepDef($step->fresh(), ['label' => 'B']);
+        $this->service->syncSteps($version->fresh(), [['code' => $step->code, 'step_type' => ProcedureStepType::Text->value, 'label' => 'B']]);
     }
 
     /** @return array{0: Organization, 1: User} */

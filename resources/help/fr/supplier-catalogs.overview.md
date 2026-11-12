@@ -1,7 +1,7 @@
 ---
 title: "Catalogues fournisseurs"
 topic: supplier-catalogs.overview
-version: 3
+version: 4
 keywords:
     - DATANORM
     - BMEcat
@@ -98,3 +98,7 @@ lettre d’accès indique si le numéro client fait partie de la connexion.
 
 La lecture est possible avec des droits de lecture du stock ; la
 création, l'import et la liaison exigent des droits d'écriture du stock.
+
+## Ignorer des positions
+
+Les positions non liées peuvent être volontairement **non reprises** (icône en forme d'œil dans la ligne). Les positions ignorées sont exclues des propositions, de la reprise groupée et de la mise à jour des prix ; la même icône les reprend. Supprimez d'abord le lien d'une position liée.

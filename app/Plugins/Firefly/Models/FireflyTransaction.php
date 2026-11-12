@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\Firefly\Models;
 
 use App\Casts\MoneyCast;
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Invoicing\{IncomingEInvoice, Invoice};
+use App\Models\Platform\User;
 use App\Plugins\Firefly\Enums\{FireflyMatchStatus, FireflyTransactionKind};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
@@ -44,11 +45,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property FireflyMatchStatus $match_status
  * @property int|null $invoice_id
  * @property int|null $incoming_einvoice_id
+ * @property CarbonImmutable|null $settled_at
+ * @property int|null $settled_by
+ * @property string|null $note
  * @property-read Invoice|null $invoice
  * @property-read IncomingEInvoice|null $incomingEinvoice
  */
 class FireflyTransaction extends Model {
     use BelongsToOrganization;
+    use HasSqid;
 
     protected $table = 'firefly_transactions';
 
@@ -66,6 +71,7 @@ class FireflyTransaction extends Model {
         'foreign_currency' => CurrencyCode::class,
         'references' => 'array',
         'match_status' => FireflyMatchStatus::class,
+        'settled_at' => 'immutable_datetime',
     ];
 
     /** @return BelongsTo<Invoice, $this> */
@@ -76,6 +82,25 @@ class FireflyTransaction extends Model {
     /** @return BelongsTo<IncomingEInvoice, $this> */
     public function incomingEinvoice(): BelongsTo {
         return $this->belongsTo(IncomingEInvoice::class);
+    }
+
+    /**
+     * Offen für die Nacharbeit (MVP-1617/1628): ohne oder mit mehrdeutiger
+     * Zuordnung und nicht als erledigt markiert — so zählen Liste, Kachel und Arbeitsvorrat.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeOpenForReview(Builder $query): void {
+        $query->whereIn('match_status', FireflyMatchStatus::openValues())->whereNull('settled_at');
+    }
+
+    public function isSettled(): bool {
+        return $this->settled_at !== null;
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function settledBy(): BelongsTo {
+        return $this->belongsTo(User::class, 'settled_by');
     }
 
     /**

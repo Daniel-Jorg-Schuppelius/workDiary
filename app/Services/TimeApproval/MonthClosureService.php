@@ -14,6 +14,7 @@ use App\Enums\TimeApproval\MonthClosureStatus;
 use App\Models\Platform\User;
 use App\Models\Time\{MonthClosure, MonthClosureEvent};
 use App\Services\Concerns\ResolvesActorId;
+use App\Services\Flextime\FlexCalculator;
 use App\Services\TimeApproval\Concerns\GuardsApprovalWorkflow;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -190,6 +191,8 @@ class MonthClosureService {
             return $closure->refresh();
         });
 
+        $this->recomputeFlexBalance($closure, true);
+
         // Vollaudit 2026-07 (N4): Entscheidung an die betroffene Person.
         $this->notifyDecision($closure, 'month_approved_title');
 
@@ -282,10 +285,20 @@ class MonthClosureService {
             return $closure->refresh();
         });
 
+        $this->recomputeFlexBalance($closure, false);
+
         // Vollaudit 2026-07 (N4): Wiedereröffnung durch Admin an die betroffene Person.
         $this->notifyDecision($closure, 'month_reopened_title');
 
         return $closure;
+    }
+
+    /**
+     * Gespeicherter Gleitzeitsaldo folgt dem freigegebenen bzw. wieder geöffneten
+     * Monat (MVP-1550); die Freigabe friert den Monat ein, die Wiedereröffnung löst ihn (MVP-1627).
+     */
+    private function recomputeFlexBalance(MonthClosure $closure, bool $lock): void {
+        app(FlexCalculator::class)->recomputeFrom($this->ownerOf($closure), (int) $closure->period_year, (int) $closure->period_month, $lock);
     }
 
     /**

@@ -117,6 +117,26 @@ class LearningNotifier {
         ]);
     }
 
+    /** Widerruf (MVP-1599): die betroffene Person erfährt ihn mit Grund, nicht erst an der Prüfseite. */
+    public function certificateRevoked(LearningCertificate $certificate): int {
+        $enrollment = $certificate->enrollment;
+        $user = $enrollment?->user;
+        if ($enrollment === null || $user === null) {
+            return 0;
+        }
+
+        $course = $this->courseTitle($enrollment);
+        $params = ['number' => (string) $certificate->number, 'course' => $course, 'reason' => (string) $certificate->revoked_reason];
+
+        return $this->dispatcher->notify(NotificationEvent::LearningCertificateRevoked, $certificate, $user, [
+            'title' => $course,
+            'message' => (string) __('notification.message.learning_certificate_revoked', $params),
+            'message_key' => 'notification.message.learning_certificate_revoked',
+            'message_params' => $params,
+            'url' => $this->enrollmentUrl($enrollment),
+        ]);
+    }
+
     /**
      * Prüfung endgültig nicht bestanden (MVP-1266): an die Person und ihre
      * Teamleitung, einmal je Versuch. Die Einschreibung bleibt offen — eine

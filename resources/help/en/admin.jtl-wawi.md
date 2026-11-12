@@ -1,7 +1,7 @@
 ---
 title: "Connecting JTL-Wawi"
 topic: admin.jtl-wawi
-version: 1
+version: 3
 keywords:
     - inventory management system
     - ERP
@@ -56,3 +56,9 @@ posts back through the outbox) or *read only*. Switching back to
 programme. After the official release it may become edition-dependent
 and chargeable; a lapsed licence leads to a visible blocked state,
 never to silent mispostings.
+
+**Run the opening stocktake again:** If the import failed when switching to “local”, start it again on the same day with “Run opening stocktake”; a second run books nothing twice. From the next day the local stock leads and the action is no longer offered.
+
+**Data ownership:** The stock management on this page is also the lead of the inventory area on the “Data ownership” page, which only displays it. If another system leads inventory, the opening stock takeover books nothing for the affected pair; the case waits in the integration inbox to be taken over once.
+
+**Inventory led elsewhere:** If another program (such as Billbee) leads the stock, the page says so and does not switch the mode; otherwise the JTL-Wawi takeover count would run against stock it does not lead.

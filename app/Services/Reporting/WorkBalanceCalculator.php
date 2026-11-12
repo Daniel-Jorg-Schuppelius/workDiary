@@ -11,7 +11,6 @@
 namespace App\Services\Reporting;
 
 use App\Enums\Attendance\AttendanceStatus;
-use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Models\Platform\User;
 use App\Models\Time\{Attendance, TimeEntry};
 use App\Services\Flextime\FlexCalculator;
@@ -41,6 +40,7 @@ class WorkBalanceCalculator {
         $entries = TimeEntry::query()
             ->where('user_id', $user->id)
             ->whereDate('date', $dayStr)
+            ->with('activityCategory')
             ->get();
 
         return $this->computeDay($user, $day, $attendances, $entries);
@@ -74,15 +74,13 @@ class WorkBalanceCalculator {
         $byActivity = [];
         $byKind = [];
         $trackedMinutes = 0;
-        $countedKinds = (array) config('timesheet.flex.count_kinds', [TimeEntryKind::Work->value, TimeEntryKind::Travel->value]);
-        $excluded = (array) config('timesheet.flex.exclude_activity_types', [TimeEntryActivityType::Break_->value, TimeEntryActivityType::Absence->value]);
         foreach ($entries as $e) {
             $minutes = (int) $e->minutes;
             $activityValue = $e->activity_type->value;
             $byActivity[$activityValue] = ($byActivity[$activityValue] ?? 0) + $minutes;
             $kindValue = $e->kind->value;
             $byKind[$kindValue] = ($byKind[$kindValue] ?? 0) + $minutes;
-            if (in_array($kindValue, $countedKinds, true) && ! in_array($activityValue, $excluded, true)) {
+            if ($e->countsAsWork()) {
                 $trackedMinutes += $minutes;
             }
         }
@@ -129,6 +127,7 @@ class WorkBalanceCalculator {
         $entriesByDay = TimeEntry::query()
             ->where('user_id', $user->id)
             ->whereBetween('date', [$fromStr, $toStr])
+            ->with('activityCategory')
             ->get()
             ->groupBy(fn (TimeEntry $e): string => CarbonImmutable::parse($e->date)->toDateString());
 

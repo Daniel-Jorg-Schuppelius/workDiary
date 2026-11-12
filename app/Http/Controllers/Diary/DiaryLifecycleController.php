@@ -31,11 +31,12 @@ class DiaryLifecycleController extends Controller {
         try {
             match ($action) {
                 'accept' => $orders->accept($diary, $actor),
+                'reject' => $orders->reject($diary, $actor, $this->requiredText($request, 'reason', 2000)),
                 'start' => $orders->start($diary, $actor),
                 'pause' => $orders->pause($diary, $actor, ...$this->pauseData($request)),
                 'resume' => $orders->resume($diary, $actor),
                 'complete' => $orders->complete($diary, $actor, $this->requiredText($request, 'summary', 5000)),
-                'handover' => $orders->handover($diary, $actor, $this->protocol($request, $diary)),
+                'handover' => $orders->handover($diary, $actor, $this->protocol($request, $diary), $this->signerName($request)),
                 'markInvoiced' => $orders->markInvoiced($diary, $actor, $this->requiredText($request, 'reference', 120)),
                 'cancel' => $orders->cancel($diary, $actor, $this->requiredText($request, 'reason', 2000)),
                 default => abort(404),
@@ -50,6 +51,7 @@ class DiaryLifecycleController extends Controller {
     private function ability(string $action): string {
         return match ($action) {
             'accept' => 'accept',
+            'reject' => 'reject',
             'start' => 'start',
             'pause' => 'pause',
             'resume' => 'resume',
@@ -77,6 +79,13 @@ class DiaryLifecycleController extends Controller {
         ]);
 
         return $data[$field];
+    }
+
+    /** Nur gefragt, wenn das Protokoll keine Kundenunterschrift trägt. */
+    private function signerName(Request $request): ?string {
+        $data = $request->validate(['accepted_by' => ['nullable', 'string', 'max:120']]);
+
+        return $data['accepted_by'] ?? null;
     }
 
     private function protocol(Request $request, DiaryEntry $diary): Protocol {

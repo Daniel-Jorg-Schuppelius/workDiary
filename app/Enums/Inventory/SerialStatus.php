@@ -24,7 +24,6 @@ enum SerialStatus: string implements HasLabel {
 
     case Created = 'created';     // erzeugt, noch nicht eingelagert
     case InStock = 'in_stock';    // auf Lager, verfügbar
-    case Reserved = 'reserved';   // einem Auftrag zugeordnet
     case Shipped = 'shipped';     // ausgeliefert (Eigentum beim Kunden)
     case Returned = 'returned';   // zurückgenommen
     case Blocked = 'blocked';     // gesperrt (verloren/gestohlen/Rückruf)
@@ -36,7 +35,7 @@ enum SerialStatus: string implements HasLabel {
 
     /** Darf die Seriennummer ausgeliefert werden? */
     public function isShippable(): bool {
-        return $this === self::InStock || $this === self::Reserved;
+        return $this === self::InStock;
     }
 
     /** Endzustand ohne weitere Übergänge. */

@@ -78,6 +78,7 @@ class OrganizationController extends Controller {
             'plan' => ['required', 'in:' . implode(',', Organization::$plans)],
             'locale' => ['required', \Illuminate\Validation\Rule::in(\App\Support\Locales::enabledCodes())],
             'timezone' => ['required', 'timezone'],
+            'legal_region' => ['sometimes', 'required', 'string', \Illuminate\Validation\Rule::in(app(\App\Services\Retention\RetentionRegistry::class)->regions())],
             'is_active' => ['boolean'],
             // Funktionsumfang-Preset (Feature 081, MVP-373): optional beim
             // Anlegen; ohne Auswahl bleibt der volle Lizenzumfang aktiv.
@@ -88,6 +89,14 @@ class OrganizationController extends Controller {
         unset($data['scope_preset']);
 
         $data['is_active'] = $request->boolean('is_active', true);
+
+        // max_orgs der Installationslizenz gilt auch für die Anlage durch den Plattformbetrieb (MVP-1618).
+        try {
+            $actor = $this->authUser();
+            app(\App\Services\Licensing\LimitGuard::class)->ensureCanCreateOrganization($actor->organization, $actor);
+        } catch (\App\Exceptions\LimitExceededException $e) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['name' => $e->getMessage()]);
+        }
 
         $organization = Organization::create($data);
 
@@ -127,6 +136,8 @@ class OrganizationController extends Controller {
             'plan' => [$platform ? 'required' : 'sometimes', 'in:' . implode(',', Organization::$plans)],
             'locale' => ['required', \Illuminate\Validation\Rule::in(\App\Support\Locales::enabledCodes())],
             'timezone' => ['required', 'timezone'],
+            // Rechtsraum (MVP-1589): bestimmt Aufbewahrungsfristen und Verfahrensdokumentation.
+            'legal_region' => ['sometimes', 'required', 'string', \Illuminate\Validation\Rule::in(app(\App\Services\Retention\RetentionRegistry::class)->regions())],
             'is_active' => ['boolean'],
             'compliance' => ['sometimes', 'array'],
             'compliance.mode' => ['sometimes', 'in:' . implode(',', Organization::$complianceModes)],

@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Export\Specs;
 
 use App\Enums\Export\ExportEntity;
+use App\Enums\User\Permission;
 use App\Models\Platform\{Organization, User};
+use App\Services\Import\Contracts\GuardsColumns;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -25,13 +27,18 @@ use Illuminate\Database\Eloquent\Model;
  * Filter:
  * - `q`: Freitextsuche über Name / E-Mail
  */
-class UserExportSpec extends AbstractExportSpec {
+class UserExportSpec extends AbstractExportSpec implements GuardsColumns {
     public function entity(): ExportEntity {
         return ExportEntity::Users;
     }
 
     public function columns(): array {
         return ['name', 'personnel_number', 'email', 'hourly_rate', 'internal_rate', 'home_address'];
+    }
+
+    /** Sätze stehen sonst hinter der Personalverwaltung (MVP-1565, MVP-1625). */
+    public function columnPermissions(): array {
+        return ['hourly_rate' => Permission::UserPayrollManage, 'internal_rate' => Permission::UserPayrollManage];
     }
 
     public function query(Organization $organization, array $filters): iterable {

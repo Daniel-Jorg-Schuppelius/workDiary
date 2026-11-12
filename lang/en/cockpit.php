@@ -21,6 +21,23 @@ return [
         'summary_nps' => 'NPS :nps from :answers ratings · :responded of :total invitations answered',
     ],
     'purchase_orders' => ['title' => 'Purchase orders'],
+    'supplier_catalogs' => [
+        'title' => 'Catalogues',
+        'items' => '{1} 1 item|[0,*] :count items',
+        'active' => 'active',
+        'inactive' => 'inactive',
+    ],
+    'supplier_scorecard' => [
+        'title' => 'Performance (scorecard)',
+        'summary' => 'Overall score :score of 100 · last :months months',
+        'summary_none' => 'No overall score · last :months months',
+    ],
+    'asset_finance' => ['title' => 'Leasing and financing'],
+    'claims' => ['title' => 'Open complaints'],
+    'appointments' => [
+        'title' => 'Appointments',
+        'untitled' => 'Appointment',
+    ],
     'credentials' => [
         'title' => 'Mandatory credentials',
         'summary' => 'Overall status: :status',

@@ -1,7 +1,7 @@
 ---
 title: "Disposición y avisos de conflicto"
 topic: dispatch.overview
-version: 3
+version: 4
 keywords:
     - planificación de trabajos
     - asignar trabajo
@@ -56,3 +56,13 @@ pedidos abiertos de un día entre los conductores. Se tienen en cuenta las
 ventanas de trabajo, las franjas horarias de los pedidos, las pausas y las
 cualificaciones; los conductores salen y vuelven a casa. La propuesta solo se
 convierte en rutas al adoptarla.
+
+## Matriz de cualificaciones y semáforo de intervención
+
+Si una orden exige cualificaciones, la **matriz de cualificaciones** muestra por
+empleado el estado al inicio de la orden: verde **cumplida**, amarillo **caduca
+pronto** (la vigencia termina en 30 días) o **en formación** (hay un curso de la
+plataforma de aprendizaje para esta cualificación asignado o iniciado), rojo
+**falta**. En amarillo o rojo, la celda indica el curso publicado que transmite
+la cualificación. El semáforo informa; una asignación sigue bloqueándose solo
+por la propia cualificación.

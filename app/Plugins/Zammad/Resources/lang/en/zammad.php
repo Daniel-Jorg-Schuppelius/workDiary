@@ -98,4 +98,7 @@ return [
     'resolution' => [
         'note' => 'Resolved in WorkDiary.',
     ],
+    'ownership' => [
+        'target_changed' => 'The connection no longer imports as service tickets — please discard the case or switch the target mode back.',
+    ],
 ];

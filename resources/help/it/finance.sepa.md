@@ -1,7 +1,7 @@
 ---
 title: "Pagamenti in uscita SEPA"
 topic: finance.sepa
-version: 1
+version: 2
 keywords:
     - bonifico cumulativo
     - distinta di pagamento
@@ -68,3 +68,7 @@ Un addebito diretto può riferirsi a una fattura aperta del cliente del mandato:
 causale precompilati. Con il riferimento alla fattura, la previsione di
 liquidità conta l'importo una sola volta: nel flusso di pagamento e non anche
 come credito aperto.
+
+## Scadenza dopo 36 mesi
+
+Secondo il regolamento SEPA un mandato decade se per 36 mesi non è stato presentato alcun addebito. Il ciclo di pagamento non utilizza già più tale mandato; il controllo giornaliero delle scadenze lo imposta inoltre su **Scaduto** e lo annota nel registro. Per ulteriori addebiti raccolga un nuovo mandato.

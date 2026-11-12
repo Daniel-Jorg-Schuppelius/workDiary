@@ -80,6 +80,9 @@
                     $needsLangHint = ! isset($translated[$unit->id]) && $sourceLocale !== app()->getLocale();
                     // Freischaltplan (MVP-788): die Sperre sitzt im Dienst; hier nur die Anzeige.
                     $isLocked = ! $isDone && ! $unit->isReleasedFor($enrollment, null, $completedUnitIds);
+                    // Pflichtanteil der Videos (MVP-1598): die Sperre sitzt im Dienst; hier Anzeige und Knopf.
+                    $videoGated = ! $isDone && ! $isLocked && ! $unit->reportsOwnResult()
+                        && app(\App\Services\Learning\LearningVideoProgressService::class)->unmetFor($enrollment, $unit, $videoProgress) !== [];
                 @endphp
                 <x-card>
                     <div class="flex flex-wrap items-start justify-between gap-3">
@@ -150,6 +153,20 @@
                                         </li>
                                     @endforeach
                                 </ul>
+                            @elseif ($unit->kind === \App\Enums\Learning\LearningUnitKind::Survey && $unit->surveyId())
+                                {{-- Umfrage (MVP-1600): das Absenden des Fragebogens schließt ab. --}}
+                                <form method="POST" action="{{ route('learning.my.units.survey', [$enrollment, $unit]) }}" target="_blank">
+                                    @csrf
+                                    <x-icon-btn icon="rate_review" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.open_survey') }}</x-icon-btn>
+                                </form>
+                            @elseif ($unit->kind === \App\Enums\Learning\LearningUnitKind::Procedure && $unit->procedureTemplateId())
+                                {{-- Prozedur (MVP-1600): der abgeschlossene Lauf schließt ab — kein Abhaken von Hand. --}}
+                                <x-status-badge tone="info" size="sm" outline>
+                                    <x-icon name="fact_check" /> {{ __('learning.badge.awaits_procedure') }}
+                                </x-status-badge>
+                            @elseif ($unit->kind === \App\Enums\Learning\LearningUnitKind::External && $unit->externalUrl())
+                                <x-icon-btn icon="open_in_new" tone="primary" size="sm" :href="$unit->externalUrl()"
+                                            target="_blank" rel="noopener noreferrer" show-label>{{ __('learning.action.open_external') }}</x-icon-btn>
                             @else
                                 @if ($unit->kind === \App\Enums\Learning\LearningUnitKind::Lti && $unit->ltiLink)
                                     {{-- LTI ohne Ergebnisrückmeldung: Start beim Tool, bestätigt wird von Hand. --}}
@@ -168,10 +185,14 @@
                                           data-offline-sync="learning.unit-complete"
                                           data-sync-payload-enrollment="{{ $enrollment->sqid }}"
                                           data-sync-payload-unit="{{ $unit->sqid }}"
-                                      @endunless>
+                                      @endunless
+                                      data-video-gate="{{ $unit->sqid }}">
                                     @csrf
-                                    <x-icon-btn icon="task_alt" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.complete_unit') }}</x-icon-btn>
+                                    <x-icon-btn icon="task_alt" tone="primary" size="sm" type="submit" :disabled="$videoGated" show-label>{{ __('learning.action.complete_unit') }}</x-icon-btn>
                                 </form>
+                                @if ($videoGated)
+                                    <p class="w-full text-right text-xs text-warning" data-video-gate-hint="{{ $unit->sqid }}">{{ __('learning.help.video_gate') }}</p>
+                                @endif
                             @endif
                         @endunless
                     </div>
@@ -196,6 +217,11 @@
                         'mediaState' => $mediaState,
                         'mediaUrl' => fn (int $id): ?string => ($a = $unit->attachments->firstWhere('id', $id))
                             ? route('learning.my.units.media', [$enrollment->sqid, $unit->sqid, $a->sqid])
+                            : null,
+                        'videoProgress' => $videoProgress,
+                        'videoGate' => $unit->sqid,
+                        'videoProgressUrl' => fn (int $id): ?string => ! $enrollment->status->isFinal() && ! $unit->reportsOwnResult() && ($a = $unit->attachments->firstWhere('id', $id))
+                            ? route('learning.my.units.video-progress', [$enrollment->sqid, $unit->sqid, $a->sqid])
                             : null,
                     ])
                     @endunless
@@ -226,6 +252,47 @@
                             </form>
                         </details>
                     @endunless
+
+                    {{-- Einheitenarten mit Verweis (MVP-1600). --}}
+                    @if ($unit->kind === \App\Enums\Learning\LearningUnitKind::Procedure && $unit->procedureTemplateId())
+                        <p class="mt-3 text-sm text-base-content/80">
+                            <x-icon name="fact_check" class="text-muted" />
+                            {{ __('learning.help.unit_procedure', ['procedure' => $unitLinks['procedures'][$unit->procedureTemplateId()] ?? '–']) }}
+                        </p>
+                    @elseif ($unit->kind === \App\Enums\Learning\LearningUnitKind::Survey && $unit->surveyId())
+                        <p class="mt-3 text-sm text-base-content/80">
+                            <x-icon name="rate_review" class="text-muted" />
+                            {{ __('learning.help.unit_survey', ['survey' => $unitLinks['surveys'][$unit->surveyId()] ?? '–']) }}
+                        </p>
+                    @elseif ($unit->kind === \App\Enums\Learning\LearningUnitKind::External && $unit->externalUrl())
+                        @php $proofs = $progressByUnit[$unit->id]?->attachments ?? collect(); @endphp
+                        @if (! $isDone && ! $isLocked)
+                            <form method="POST" action="{{ route('learning.my.units.external-complete', [$enrollment, $unit]) }}"
+                                  enctype="multipart/form-data" class="mt-3">
+                                @csrf
+                                <p class="text-sm text-base-content/80">{{ __('learning.help.unit_external') }}</p>
+                                <label class="label" for="external-proof-{{ $unit->id }}">
+                                    <span class="label-text">{{ __('learning.field.unit_proof') }}@if ($unit->requiresProof()) *@endif</span>
+                                </label>
+                                <input type="file" id="external-proof-{{ $unit->id }}" name="proof" @required($unit->requiresProof())
+                                       class="file-input file-input-bordered file-input-sm w-full">
+                                <p class="mt-1 text-xs text-muted">{{ __('learning.help.submission_files', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
+                                <div class="mt-2 flex justify-end">
+                                    <x-icon-btn icon="task_alt" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.confirm_external') }}</x-icon-btn>
+                                </div>
+                            </form>
+                        @endif
+                        @if ($proofs->isNotEmpty())
+                            <ul class="mt-2 space-y-1 text-sm">
+                                @foreach ($proofs as $proof)
+                                    <li>
+                                        <x-icon name="attach_file" class="text-muted" />
+                                        <a class="link" href="{{ route('learning.my.units.proof', [$enrollment->sqid, $unit->sqid, $proof->sqid]) }}">{{ $proof->original_name }}</a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    @endif
 
                     @if ($unit->kind === \App\Enums\Learning\LearningUnitKind::Event && $unit->event)
                         <p class="mt-3 text-sm text-base-content/80">

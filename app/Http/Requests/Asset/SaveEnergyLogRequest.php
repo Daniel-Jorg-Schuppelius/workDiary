@@ -37,8 +37,6 @@ class SaveEnergyLogRequest extends BaseFormRequest {
             'cost_total' => ['nullable', 'numeric', 'min:0', 'max:99999'],
             'odometer_km' => ['nullable', 'integer', 'min:0', 'max:9999999'],
             'location_address' => ['nullable', 'string', 'max:255'],
-            'location_lat' => ['nullable', 'numeric', 'between:-90,90'],
-            'location_lng' => ['nullable', 'numeric', 'between:-180,180'],
             'started_at' => ['required', 'date'],
             'ended_at' => ['nullable', 'date', 'after_or_equal:started_at'],
             'soc_before' => ['nullable', 'integer', 'between:0,100'],

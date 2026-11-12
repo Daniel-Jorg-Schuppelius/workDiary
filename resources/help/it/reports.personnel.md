@@ -1,7 +1,7 @@
 ---
 title: "Personale: ferie, malattia, qualifiche, sicurezza"
 topic: reports.personnel
-version: 8
+version: 9
 keywords:
     - tasso di assenza
     - ferie residue
@@ -208,6 +208,8 @@ confermati; l'indicazione riporta tutti i riscontri e il riquadro porta alla
 scheda piano/effettivo **Progetto per persona**. Compare solo se nel periodo
 esistono riscontri e solo per gli amministratori e le persone con il permesso
 **Consultare il rapporto presenze (organizzazione)**.
+
+L’area **Personale** mostra i **giorni di malattia** (giorni lavorativi) nel periodo come il report **Malattie** senza filtri, con nella nota i certificati, le persone interessate e la retribuzione continuata esaurita; le **qualifiche scadute** come la matrice delle qualifiche (a oggi), con nella nota quelle in scadenza entro 30 giorni; e le **richieste di ferie aperte** (a oggi), con nella nota quelle che iniziano nei prossimi 14 giorni. Giorni di malattia e qualifiche richiedono il modulo aggiuntivo Report di team e il diritto **Visualizza i congedi per malattia** o **Gestisci le qualifiche**, le richieste di ferie il diritto **Approva le ferie**; gli amministratori vedono tutte e tre. I saldi di straordinari e orario flessibile non compaiono qui: non esiste un report a livello di organizzazione in cui ricalcolare il dato.
 
 La scheda **Problemi ricorrenti** raccoglie gli allarmi precoci dei moduli
 utilizzati dalla Sua organizzazione, raggruppati per tipo:

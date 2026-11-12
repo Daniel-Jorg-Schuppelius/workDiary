@@ -62,3 +62,20 @@ Export en **PDF**, **CSV** ou **Excel** pour la direction et le contrôle
 de gestion. La page présente des données financières de toute
 l’organisation et n’est accessible qu’aux personnes disposant du droit
 **Voir les rapports**.
+
+## Gérer le taux de coût par collaborateur
+
+Le **taux de coût interne** par personne est la base du calcul a posteriori.
+Il se trouve dans la boîte de dialogue du collaborateur (**Organisation** →
+**Employés** → modifier), dans le groupe **Taux pour la facturation et le
+calcul a posteriori**, à côté du **Taux horaire (facturation)**. Les deux
+champs ne sont visibles et modifiables qu'avec le droit « Gérer les données du
+personnel et de la paie » ; ils n'apparaissent pas dans le profil personnel, et
+chaque modification est journalisée.
+
+Ordre de détermination des taux : le taux de coût de la personne prime sur
+celui de la tâche, du projet et du client. Le taux horaire de la personne
+prime lui aussi sur celui de la tâche, du projet et du client — seules les
+conditions particulières et un taux saisi directement sur l'entrée de temps
+passent avant. Un nouveau taux s'applique aux temps saisis ou recalculés par la
+suite.

@@ -30,6 +30,12 @@ return [
         'criticality' => 'Criticality',
         'last_status' => 'Result',
         'source' => 'Plan source',
+        'run_options' => 'Execution',
+        'timezone' => 'Time zone',
+        'quiet_from' => 'Quiet from',
+        'quiet_until' => 'Runs again from',
+        'retry_attempts' => 'Retries after failure',
+        'retry_delay_minutes' => 'Delay between retries (min)',
     ],
     'action' => [
         'reschedule' => 'Reschedule',
@@ -115,6 +121,7 @@ return [
             'lti_rotate_keys' => 'Rotate LTI signing keys',
             'lti_prune_nonces' => 'Remove expired LTI nonces',
         ],
+        'flex' => ['recompute' => 'Recompute flextime balances'],
         'attendance' => ['close_open' => 'Close forgotten clock-ins', 'open_reminder' => 'Remind about open clock-ins in the evening'],
         'audit' => ['verify' => 'Verify audit chain'],
         'backup' => [
@@ -254,6 +261,10 @@ return [
         'day' => 'Weekday 0–6 (0 = Sunday) or day of month 1–31.',
         'expression' => 'Operators only: minute hour day month weekday.',
         'allowlist' => 'Expected runtime approx. :runtime min. The job runs with overlap protection; intervals that are too tight are rejected server-side.',
+        'timezone_default' => 'Installation time zone (:tz)',
+        'quiet_window' => 'Times inside the quiet period move to its end; intervals pause during it. Without a quiet period of its own, the server operating window (:window) applies — not with a time zone of its own, because the window is defined in the installation time zone.',
+        'quiet_window_none' => 'Times inside the quiet period move to its end; intervals pause during it. If left empty, the job runs around the clock.',
+        'retry' => 'If a run fails, the job starts again after the delay — at most as often as set, with overlap protection and visible in the run log. 0 = no retry.',
     ],
     'flash' => [
         'rescheduled' => 'Job :job has been rescheduled.',

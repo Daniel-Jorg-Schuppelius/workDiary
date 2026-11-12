@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
   Tauschantrag (Feature 007): eigene kommende Schicht abgeben, optional an
-  eine Wunschperson. Wirksam erst nach Freigabe durch die Teamleitung.
+  eine Wunschperson und eine Gegenschicht. Wirksam erst nach Freigabe durch die Teamleitung.
 --}}
 <x-modal
     :title="__('schedule.exchange.request_title')"
@@ -29,6 +29,18 @@
         <option value="">{{ __('schedule.exchange.open_target') }}</option>
         @foreach ($colleagues as $colleague)
             <option value="{{ $colleague->sqid }}" @selected((string) old('target_user_id') === $colleague->sqid)>{{ $colleague->name }}</option>
+        @endforeach
+    </x-select-field>
+    {{-- Echter Tausch (MVP-1553): Gegenschicht der Tauschperson; sie legt die Person fest, wenn keine gewählt ist. --}}
+    <x-select-field name="offered_shift_id" id="exchange-offered" :label="__('schedule.exchange.field_offered')"
+                    :hint="__('schedule.exchange.field_offered_hint')">
+        <option value="">{{ __('schedule.exchange.no_offered') }}</option>
+        @foreach ($offerableShifts as $colleagueName => $colleagueShifts)
+            <optgroup label="{{ $colleagueName }}">
+                @foreach ($colleagueShifts as $offered)
+                    <option value="{{ $offered->sqid }}" @selected((string) old('offered_shift_id') === $offered->sqid)>{{ $offered->date?->fdate() }} · {{ $offered->shiftType?->name ?? '—' }}</option>
+                @endforeach
+            </optgroup>
         @endforeach
     </x-select-field>
     <x-input-field name="reason" id="exchange-reason" :label="__('schedule.exchange.field_reason')" maxlength="255" :value="old('reason')" />

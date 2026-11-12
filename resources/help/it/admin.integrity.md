@@ -1,7 +1,7 @@
 ---
 title: "Integrità del codice sorgente"
 topic: admin.integrity
-version: 1
+version: 2
 keywords:
     - rilevamento manomissioni
     - integrità dei file
@@ -43,3 +43,12 @@ firmato — una baseline manipolata fallisce la verifica della firma.
 
 L’esecuzione giornaliera si disattiva con `INTEGRITY_CHECK_ENABLED` e si
 ripianifica dalla pagina dello scheduler.
+
+**Revocare il blocco:** Se il blocco di integrità ha messo l'installazione in
+modalità manutenzione, una baseline appena congelata («Congela baseline»,
+`integrity:freeze`) lo revoca automaticamente. Senza nuova baseline, la
+gestione della piattaforma lo revoca con **Revocare il blocco** in questa
+pagina (accesso tramite il segreto di bypass) o con `php artisan
+integrity:release --reason=…`. Entrambi restano nel registro di audit con
+motivo e persona. Una modalità manutenzione con altra causa (ad esempio un
+deploy) non viene revocata da queste vie.

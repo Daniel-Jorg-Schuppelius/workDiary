@@ -1,7 +1,7 @@
 ---
 title: "Applications & tenders"
 topic: applications.overview
-version: 3
+version: 4
 keywords:
     - recruiting
     - applicant tracking
@@ -76,3 +76,5 @@ rejected there (with a reason) — a new version then starts the next round.
 
 Legal note: WorkDiary documents the process but does not replace legal
 advice.
+
+**Interviewer and bid opening:** When scheduling a job interview you choose who conducts it. For tenders you record since when recorded competitor bids have been known and add a note.

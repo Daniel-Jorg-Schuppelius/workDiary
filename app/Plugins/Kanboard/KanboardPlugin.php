@@ -13,9 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Kanboard;
 
 use App\Models\Integration\ExternalReference;
-use App\Models\Platform\Organization;
 use App\Plugins\AbstractPlugin;
-use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer, TaskSyncer};
+use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer};
 use App\Plugins\Kanboard\Api\KanboardClientFactory;
 use App\Plugins\Kanboard\Models\KanboardConnection;
 use App\Plugins\Kanboard\Services\KanboardImportService;
@@ -24,7 +23,7 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSett
 /**
  * Kanboard-Aufgabenimport (Feature 173, Phase 158): Aufgaben ausgewählter Kanboard-Projekte werden als Aufgaben in WorkDiary-Projekte übernommen, nur lesend.
  */
-class KanboardPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
+class KanboardPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, LinksExternalRecords, SlotRenderer {
     use ChecksConnectionHealth, RendersTaskLink;
 
     public const string ID = 'kanboard';
@@ -56,10 +55,6 @@ class KanboardPlugin extends AbstractPlugin implements LinksExternalRecords, Slo
         return [PluginCapability::TaskSync];
     }
 
-    public function syncTasks(Organization $organization): array {
-        return app(KanboardImportService::class)->run($organization);
-    }
-
     public function adminPanel(): ?array {
         return ['route' => 'admin.kanboard.index', 'label' => 'Kanboard', 'icon' => 'view_kanban'];
     }
@@ -82,5 +77,10 @@ class KanboardPlugin extends AbstractPlugin implements LinksExternalRecords, Slo
 
     protected function taskLinkType(): string {
         return self::EXT_TYPE_TASK;
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Tasks];
     }
 }

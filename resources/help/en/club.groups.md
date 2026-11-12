@@ -1,7 +1,7 @@
 ---
 title: "Club groups and change proposals"
 topic: club.groups
-version: 1
+version: 2
 keywords:
     - training group
     - youth group
@@ -47,3 +47,5 @@ now" triggers the check immediately.
 **Group leaders:** Whoever leads a group sees and operates only that group:
 admissions, requests, endings and proposals of their own group. Group master
 data and exceptions remain with the club administration.
+
+**Admission mode:** With “by the leader”, the leader admits directly. With “request with approval” there is no direct admission: the leader records a request, and members or their guardians request admission themselves under “My club”. Open requests appear in the leader’s work queue; criteria and capacity are checked on approval. A confirmed change proposal into such a group also becomes a request.

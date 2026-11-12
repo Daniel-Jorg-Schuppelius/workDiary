@@ -39,7 +39,7 @@ class ProjectTimelineService {
             $this->milestoneItems($project),
             $this->documentItems($project, $viewer),
             $this->communicationItems($project, $viewer),
-            $this->ticketItems($project),
+            $this->ticketItems($project, $viewer),
         );
 
         if ($from !== null || $to !== null) {
@@ -167,9 +167,10 @@ class ProjectTimelineService {
     }
 
     /** @return list<TimelineItem> */
-    private function ticketItems(Project $project): array {
+    private function ticketItems(Project $project, User $viewer): array {
         $items = [];
         $tickets = ServiceTicket::query()
+            ->visibleTo($viewer)
             ->where('project_id', $project->id)
             ->orderByDesc('created_at')
             ->limit(self::PER_SOURCE_CAP)

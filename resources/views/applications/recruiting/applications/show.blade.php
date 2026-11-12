@@ -139,6 +139,12 @@
                             <option value="remote">{{ __('Remote') }}</option>
                             <option value="phone">{{ __('Telefon') }}</option>
                         </select>
+                        <select name="interviewer_id" class="select select-sm select-bordered" aria-label="{{ __('recruiting.offer.interviewer') }}">
+                            <option value="">{{ __('recruiting.offer.interviewer') }}: —</option>
+                            @foreach ($users as $u)
+                                <option value="{{ $u->sqid }}">{{ $u->name }}</option>
+                            @endforeach
+                        </select>
                         <x-icon-btn icon="event" tone="primary" size="sm" type="submit" show-label>{{ __('Gespräch planen') }}</x-icon-btn>
                     </form>
                     {{-- Terminwahl durch den Bewerber (MVP-925) --}}

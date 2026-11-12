@@ -12,6 +12,16 @@ return [
     // Mehrzahl für Menü, Seitentitel und Zählkacheln; Spalten und Felder nutzen „Mitarbeiter“ (Einzahl).
     'employees' => 'Mitarbeiter',
 
+    // Verrechnungs- und Kostensatz je Person (MVP-1565), sichtbar nur mit user.payroll.manage.
+    'rates' => [
+        'legend' => 'Sätze für Abrechnung und Nachkalkulation',
+        'hint' => 'Vertraulich: sichtbar und änderbar nur mit dem Recht „Personal-/Lohndaten verwalten“. Änderungen wirken auf Zeiten, die danach erfasst oder neu berechnet werden, und werden protokolliert.',
+        'hourly_rate' => 'Stundensatz (Verrechnung)',
+        'hourly_rate_hint' => 'Geht dem Satz von Aufgabe, Projekt und Kunde vor; nur Sonderkonditionen und ein Satz am Zeiteintrag haben Vorrang. Leer lassen, wenn der Projekt- oder Kundensatz gelten soll.',
+        'internal_rate' => 'Interner Kostensatz',
+        'internal_rate_hint' => 'Kosten je Stunde dieser Person für die Nachkalkulation; geht dem Kostensatz von Aufgabe, Projekt und Kunde vor.',
+    ],
+
     'role' => [
         'admin' => 'Administrator',
         'meldestelle' => 'Meldestelle',

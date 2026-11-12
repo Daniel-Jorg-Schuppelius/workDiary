@@ -11,7 +11,7 @@
 namespace App\Plugins\Lexoffice\Services;
 
 use APIToolkit\Exceptions\ApiException;
-use App\Enums\Integration\IntegrationInboxStatus;
+use App\Enums\Integration\{DataDomain, IntegrationInboxStatus};
 use App\Enums\Numbering\ContactNumberOutcome;
 use App\Models\Contacts\ContactAddress;
 use App\Models\Customer\Customer;
@@ -22,7 +22,12 @@ use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Services\Integration\Attributes\WritesDataDomain;
+use App\Services\Integration\Contracts\OwnershipConflictReplay;
+use App\Services\Integration\DataOwnershipGuard;
+use App\Services\Integration\Dto\OwnershipClaim;
 use App\Services\Stammdaten\{ContactNumberAdopter, ContactPersons};
+use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\PersonNameHelper;
 use CommonToolkit\ValueObjects\VatNumber;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -42,8 +47,16 @@ use Lexoffice\API\Endpoints\ContactsEndpoint;
  *
  * Arbeitet mit der Array-Form der SDK-Kontakte (Konflikt-Vergleich Feld für
  * Feld).
+ *
+ * Datenführerschaft „Kunden und Lieferanten“ (MVP-1592): Feldübernahme
+ * (`LexofficeWins`) und Neuanlage nur, wenn Lexoffice schreiben darf; sonst
+ * Führerschaftskonflikt. Verknüpfen und die Lexoffice-Kontaktnummer
+ * (Nummernvergabe, eigene Achse) bleiben.
  */
-class LexofficeContactSync {
+#[WritesDataDomain(DataDomain::Customers)]
+class LexofficeContactSync implements OwnershipConflictReplay {
+    public const string OWNERSHIP_KIND = 'lexoffice.contact';
+
     /** @var array<string, int> */
     private array $counters = [];
 
@@ -62,22 +75,7 @@ class LexofficeContactSync {
         bool $stageUnmatched = false,
     ): array {
         $client = app(LexofficeClientFactory::class)->for((int) $organization->id);
-
-        $this->counters = [
-            'matched' => 0,
-            'linked' => 0,
-            'created' => 0,
-            'conflicts' => 0,
-            'updated' => 0,
-            'unmatched' => 0,
-            'ambiguous' => 0,
-            'supplier_matched' => 0,
-            'supplier_linked' => 0,
-            'supplier_created' => 0,
-            'supplier_conflicts' => 0,
-            'supplier_updated' => 0,
-            'supplier_unmatched' => 0,
-        ];
+        $this->resetCounters();
 
         $contacts = new ContactsEndpoint($client);
 
@@ -109,6 +107,24 @@ class LexofficeContactSync {
         $result = $this->counters;
 
         return $result;
+    }
+
+    private function resetCounters(): void {
+        $this->counters = [
+            'matched' => 0,
+            'linked' => 0,
+            'created' => 0,
+            'conflicts' => 0,
+            'updated' => 0,
+            'unmatched' => 0,
+            'ambiguous' => 0,
+            'supplier_matched' => 0,
+            'supplier_linked' => 0,
+            'supplier_created' => 0,
+            'supplier_conflicts' => 0,
+            'supplier_updated' => 0,
+            'supplier_unmatched' => 0,
+        ];
     }
 
     /**
@@ -166,7 +182,8 @@ class LexofficeContactSync {
             // Unveränderte Lexoffice-Version: kein Abgleich von Feldern, Adressen und
             // Ansprechpartnern (perf-07) — nur die Kontaktnummer (lokal kann sie frei
             // geworden sein) und die Konfliktprüfung darunter bleiben.
-            if ($this->unchangedSince($existingRef, $remote)) {
+            // Fremd geführt wie unverändert: nur die Nummer, die Felder warten auf das Übernehmen.
+            if ($this->unchangedSince($existingRef, $remote) || ! $this->permits($organization, $kind, $remote, $policy, $createMissingLocal, $stageUnmatched, $record)) {
                 if ($this->applyContactNumber($record, $remote)) {
                     $record->save();
                     $this->bump($kind, 'updated');
@@ -223,7 +240,12 @@ class LexofficeContactSync {
             // Frischer Match: ein evtl. zuvor gestagtes Unmatched-Item ist erledigt.
             $this->resolveUnmatchedInbox($organization, $morphClass, $externalId, $match);
             $this->bump($kind, 'linked');
-            if ($this->applyRemote($match, $remote, $policy, $externalId)) {
+            if (! $this->permits($organization, $kind, $remote, $policy, $createMissingLocal, $stageUnmatched, $match)) {
+                if ($this->applyContactNumber($match, $remote)) {
+                    $match->save();
+                    $this->bump($kind, 'updated');
+                }
+            } elseif ($this->applyRemote($match, $remote, $policy, $externalId)) {
                 $this->bump($kind, 'updated');
             }
             if ($policy === LexofficeMatchPolicy::ManualReview && $this->hasConflict($match, $remote)) {
@@ -235,6 +257,9 @@ class LexofficeContactSync {
         }
 
         if ($createMissingLocal) {
+            if (! $this->permits($organization, $kind, $remote, $policy, $createMissingLocal, $stageUnmatched, null)) {
+                return;
+            }
             $new = $this->createFromRemote($kind, $organization, $remote);
             if ($new instanceof Model) {
                 ExternalReference::create([
@@ -265,6 +290,61 @@ class LexofficeContactSync {
             $this->recordUnmatched($organization, $morphClass, $externalId, $remote);
             $this->bump($kind, 'unmatched');
         }
+    }
+
+    /**
+     * Schreibt Lexoffice hier Stammdaten? Nur die Feldübernahme (`LexofficeWins`)
+     * und die Neuanlage fragen die Datenführerschaft; Verknüpfen und Nummer nicht.
+     *
+     * @param  'customer'|'vendor'  $kind
+     * @param  array<string, mixed>  $remote
+     */
+    private function permits(Organization $organization, string $kind, array $remote, LexofficeMatchPolicy $policy, bool $createMissingLocal, bool $stageUnmatched, ?Model $record): bool {
+        if ($record !== null && $policy !== LexofficeMatchPolicy::LexofficeWins) {
+            return true;
+        }
+        $mapped = $this->buildChangesFromRemote($remote);
+
+        return app(DataOwnershipGuard::class)->allows($organization, DataDomain::Customers, LexofficePlugin::ID, new OwnershipClaim(
+            kind: self::OWNERSHIP_KIND,
+            key: $kind . ':' . $remote['id'],
+            title: (string) ($mapped['name'] ?? $remote['id']),
+            target: $kind === 'vendor' ? Supplier::class : Customer::class,
+            payload: ['role' => $kind, 'contact' => $remote, 'policy' => $policy->value, 'create_missing' => $createMissingLocal, 'stage_unmatched' => $stageUnmatched],
+            externalId: (string) $remote['id'],
+            local: $record,
+            subtitle: isset($mapped['email']) ? (string) $mapped['email'] : null,
+        ));
+    }
+
+    /** @return list<string> */
+    public function ownershipKinds(): array {
+        return [self::OWNERSHIP_KIND];
+    }
+
+    /** „Einmalig übernehmen“: den gespeicherten Lexoffice-Kontakt wie im Abgleich verarbeiten. */
+    public function replayOwnershipConflict(Organization $organization, IntegrationInboxItem $item): ?Model {
+        $payload = (array) (($item->remote_snapshot ?? [])['payload'] ?? []);
+        $remote = (array) ($payload['contact'] ?? []);
+        if (empty($remote['id'])) {
+            return null;
+        }
+        $kind = ($payload['role'] ?? null) === 'vendor' ? 'vendor' : 'customer';
+        $this->resetCounters();
+        $this->processKind(
+            $kind,
+            $organization,
+            $remote,
+            LexofficeMatchPolicy::tryFrom((string) ($payload['policy'] ?? '')) ?? LexofficeMatchPolicy::LexofficeWins,
+            (bool) ($payload['create_missing'] ?? false),
+            (bool) ($payload['stage_unmatched'] ?? false),
+        );
+
+        return ExternalReference::query()
+            ->forPlugin($organization, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
+            ->where('referenceable_type', MorphMap::alias($kind === 'vendor' ? Supplier::class : Customer::class))
+            ->forExternalId((string) $remote['id'])
+            ->first()?->referenceable;
     }
 
     /**

@@ -111,15 +111,17 @@ class AgileBoardService {
      * Pflicht-Begründung → override.*-Events), Task-Status-Sync auf die
      * Spaltenkategorie, Ereignis column.moved.
      *
+     * @param list<int> $confirmedDod bestätigte Positionen der DoD-Liste des Boards
+     *
      * @throws AgileConflictException 409 bei lock_version-Konflikt
      * @throws AgileFlowException 422 bei WIP/Kriterien/DoD ohne Override
      */
-    public function move(\App\Models\Agile\AgileWorkItem $item, \App\Models\Agile\AgileBoardColumn $targetColumn, int $expectedLockVersion, ?string $overrideReason = null, ?User $actor = null, bool $mayOverride = false): \App\Models\Agile\AgileWorkItem {
+    public function move(\App\Models\Agile\AgileWorkItem $item, \App\Models\Agile\AgileBoardColumn $targetColumn, int $expectedLockVersion, ?string $overrideReason = null, ?User $actor = null, bool $mayOverride = false, array $confirmedDod = []): \App\Models\Agile\AgileWorkItem {
         if ((int) $targetColumn->board_id !== (int) $item->board_id) {
             throw new \InvalidArgumentException('Zielspalte liegt auf einem anderen Board.');
         }
 
-        return DB::transaction(function () use ($item, $targetColumn, $expectedLockVersion, $overrideReason, $actor, $mayOverride): \App\Models\Agile\AgileWorkItem {
+        return DB::transaction(function () use ($item, $targetColumn, $expectedLockVersion, $overrideReason, $actor, $mayOverride, $confirmedDod): \App\Models\Agile\AgileWorkItem {
             $board = $item->board()->firstOrFail();
             $fromColumn = $item->column;
             $overrides = [];
@@ -134,7 +136,7 @@ class AgileBoardService {
                     if (! $mayOverride || trim((string) $overrideReason) === '') {
                         throw new AgileFlowException('wip', (string) __('WIP-Limit der Spalte erreicht (:limit).', ['limit' => $targetColumn->wip_limit]));
                     }
-                    $overrides[] = 'override.wip';
+                    $overrides['override.wip'] = [];
                 }
             }
 
@@ -148,12 +150,15 @@ class AgileBoardService {
                     if (! $mayOverride || trim((string) $overrideReason) === '') {
                         throw new AgileFlowException('criteria', (string) __(':count Akzeptanzkriterien sind noch offen.', ['count' => $openCriteria]));
                     }
-                    $overrides[] = 'override.criteria';
+                    $overrides['override.criteria'] = [];
                 }
-                if ((array) ($board->dod_items ?? []) !== [] && $overrideReason === null && ! $mayOverride) {
-                    // DoD ist eine Bestätigungs-/Übersteuerungsfrage nur bei
-                    // vorhandener Liste — ohne Override-Recht erinnert der
-                    // Client (Bestätigungsdialog); serverseitig weich.
+                // DoD gilt beim Eintritt in den Abschluss, nicht beim Umsortieren innerhalb.
+                $unconfirmed = $fromColumn?->category === AgileColumnCategory::Done ? [] : $this->unconfirmedDod($board, $confirmedDod);
+                if ($unconfirmed !== []) {
+                    if (! $mayOverride || trim((string) $overrideReason) === '') {
+                        throw new AgileFlowException('dod', (string) __(':count Punkte der Definition of Done sind nicht bestätigt.', ['count' => count($unconfirmed)]));
+                    }
+                    $overrides['override.dod'] = ['unconfirmed' => $unconfirmed];
                 }
             }
 
@@ -171,8 +176,8 @@ class AgileBoardService {
                 $task->forceFill(['status' => $targetColumn->category->value])->save();
             }
 
-            foreach ($overrides as $overrideEvent) {
-                $this->recordEvent($board, $overrideEvent, $actor, $item, ['reason' => (string) $overrideReason]);
+            foreach ($overrides as $overrideEvent => $detail) {
+                $this->recordEvent($board, $overrideEvent, $actor, $item, ['reason' => (string) $overrideReason, ...$detail]);
             }
             $this->recordEvent($board, 'column.moved', $actor, $item, [
                 'from' => $fromColumn?->id,
@@ -187,9 +192,10 @@ class AgileBoardService {
      * Task→Board-Nachzieh-Sync (Feature 064, P3): Statuswechsel außerhalb des
      * Boards schiebt das Work-Item in die erste Spalte der Zielkategorie.
      * Läuft BEWUSST an {@see move()} vorbei: Der Statuswechsel ist bereits
-     * vollzogen, hier wird nur gespiegelt — keine WIP-/Kriterien-Prüfung,
-     * keine optimistische Sperre. Kein Task-Write → keine Endlos-Schleife
-     * mit move(). Aufrufer: {@see \App\Observers\TaskObserver::saved()}.
+     * vollzogen, hier wird nur gespiegelt — keine WIP-Prüfung, keine
+     * optimistische Sperre. Offene Kriterien und DoD beim Zug nach „erledigt“
+     * stehen als Abweichung im Board-Journal (MVP-1628). Kein Task-Write →
+     * keine Endlos-Schleife mit move(). Aufrufer: {@see \App\Observers\TaskObserver::saved()}.
      */
     public function syncColumnFromTask(Task $task): void {
         if (! $task->wasChanged('status')) {
@@ -216,7 +222,22 @@ class AgileBoardService {
         $from = $item->column_id;
         \App\Models\Agile\AgileWorkItem::query()->whereKey($item->id)
             ->update(['column_id' => $target->id, 'lock_version' => DB::raw('lock_version + 1')]);
-        \App\Models\Agile\AgileEvent::log(null, 'column.moved', ['from' => $from, 'to' => $target->id, 'origin' => 'task_sync'], null, extra: ['organization_id' => $item->organization_id, 'board_id' => $item->board_id, 'work_item_id' => $item->id]);
+        $extra = ['organization_id' => $item->organization_id, 'board_id' => $item->board_id, 'work_item_id' => $item->id];
+        \App\Models\Agile\AgileEvent::log(null, 'column.moved', ['from' => $from, 'to' => $target->id, 'origin' => 'task_sync'], null, extra: $extra);
+
+        // Außerhalb des Boards erledigt (MVP-1628): der Zug wird gespiegelt, offene Kriterien und die
+        // unbestätigte DoD aber als Abweichung festgehalten — wie eine Übersteuerung in move().
+        if ($target->category === AgileColumnCategory::Done && $item->column?->category !== AgileColumnCategory::Done) {
+            $board = $item->board()->first();
+            $openCriteria = \App\Models\Agile\AgileAcceptanceCriterion::query()->where('work_item_id', $item->id)->whereNull('checked_at')->count();
+            if ($openCriteria > 0) {
+                \App\Models\Agile\AgileEvent::log(null, 'override.criteria', ['reason' => null, 'origin' => 'task_sync', 'open' => $openCriteria], null, extra: $extra);
+            }
+            $unconfirmed = $board instanceof AgileBoard ? $this->unconfirmedDod($board, []) : [];
+            if ($unconfirmed !== []) {
+                \App\Models\Agile\AgileEvent::log(null, 'override.dod', ['reason' => null, 'origin' => 'task_sync', 'unconfirmed' => $unconfirmed], null, extra: $extra);
+            }
+        }
     }
 
     /** Blockieren mit Pflichtgrund (Karte bleibt in der Spalte). */
@@ -339,6 +360,22 @@ class AgileBoardService {
         foreach ($ordered as $index => $col) {
             \App\Models\Agile\AgileBoardColumn::query()->whereKey($col->id)->update(['position' => $index + 1]);
         }
+    }
+
+    /**
+     * @param list<int> $confirmed
+     *
+     * @return list<string> Texte der nicht bestätigten DoD-Punkte
+     */
+    public function unconfirmedDod(AgileBoard $board, array $confirmed): array {
+        $open = [];
+        foreach (array_values((array) ($board->dod_items ?? [])) as $position => $text) {
+            if (! in_array($position, $confirmed, true)) {
+                $open[] = (string) $text;
+            }
+        }
+
+        return $open;
     }
 
     /** @param array<string, mixed> $payload */

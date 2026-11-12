@@ -49,7 +49,8 @@ enum AssetStatus: string implements HasLabel, HasStatusTransitions {
             self::Reserved => [self::Active, self::LoanOut, self::Blocked, self::Decommissioned],
             self::LoanOut => [self::Active, self::Blocked, self::Lost, self::Decommissioned],
             self::Replaced => [self::Decommissioned],
-            self::Decommissioned => [],
+            // Wieder in Betrieb nehmen nur über die eigene Aktion mit Grund (MVP-1628), nie über das Formular.
+            self::Decommissioned => [self::Active],
             self::Lost => [self::Active, self::Decommissioned],
         };
     }

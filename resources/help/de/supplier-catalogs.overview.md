@@ -1,7 +1,7 @@
 ---
 title: "Lieferantenkataloge"
 topic: supplier-catalogs.overview
-version: 3
+version: 4
 keywords:
     - DATANORM
     - BMEcat
@@ -90,3 +90,7 @@ die Kundennummer zur Anmeldung gehört, steht in dessen Zugangsbrief.
 
 Lesen ist mit Lager-Leserechten möglich; Anlegen, Importieren und
 Verknüpfen erfordern Lager-Buchungsrechte.
+
+## Positionen ignorieren
+
+Nicht verknüpfte Positionen lassen sich bewusst **nicht übernehmen** (Augen-Symbol in der Zeile). Ignorierte Positionen fallen aus Vorschlag, Massenübernahme und Preisabgleich; dasselbe Symbol nimmt sie wieder auf. Eine verknüpfte Position lösen Sie zuerst.

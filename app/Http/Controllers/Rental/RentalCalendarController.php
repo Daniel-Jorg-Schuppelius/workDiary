@@ -87,6 +87,7 @@ class RentalCalendarController extends Controller {
                 ->filter(fn (RentalReservation $reservation): bool => $reservation->rental_case_id === null && isset($shown[$reservation->id]))
                 ->values(),
             'assets' => Asset::query()
+                ->inOperation()
                 ->whereHas('rentalProfile', fn($q) => $q->where('is_rentable', true))
                 ->orderBy('name')
                 ->get(['id', 'name']),

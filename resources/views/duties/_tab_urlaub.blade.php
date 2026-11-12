@@ -54,6 +54,12 @@
                                 <x-icon name="info" class="text-error" />
                             </span>
                         @endif
+                        @if ($v->status === VacationStatus::Revision && $v->revision_note)
+                            {{-- Hinweis der Rückgabe zur Korrektur (MVP-1554). --}}
+                            <span class="tooltip tooltip-right" data-tip="{{ $v->revision_note }}">
+                                <x-icon name="info" class="text-info" />
+                            </span>
+                        @endif
                         @php $vBalance = ($vacationBalances ?? [])[$v->user_id . '-' . $v->start_date->year] ?? null; @endphp
                         @if ($vBalance !== null && $vBalance->hasEntitlement)
                             {{-- MVP-413: Genehmiger sieht den Rest des Antragstellers; Warnung bei Überbuchung. --}}
@@ -79,6 +85,13 @@
                                                 :href="route('vacations.reject-form', $v) . '?dialog=1'"
                                                 :label="__('Ablehnen')" />
                                 @endif
+                            @endcan
+
+                            @can('requestRevision', $v)
+                                <x-icon-btn icon="undo" tone="info"
+                                            data-entry-modal-trigger
+                                            :href="route('vacations.revision-form', $v) . '?dialog=1'"
+                                            :label="__('vacation.revision.action')" />
                             @endcan
 
                             @can('update', $v)

@@ -24,4 +24,6 @@ enum OpenIssueEventType: string {
     case VisibilityChanged = 'issue.visibilityChanged';
     case CommentAdded = 'issue.commentAdded';
     case AttachmentAdded = 'issue.attachmentAdded';
+    case AttachmentRemoved = 'issue.attachmentRemoved';
+    case TicketOpened = 'issue.ticketOpened';
 }

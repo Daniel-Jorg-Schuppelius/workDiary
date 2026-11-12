@@ -13,6 +13,7 @@ namespace Tests\Feature\Finance;
 use App\Enums\Finance\{AccountType, ProfitDetermination, TaxCodeDirection, VatFilingInterval};
 use App\Models\Accounting\{AccountingAccount, AccountingFilingObligation, AccountingTaxCode};
 use App\Models\Customer\Customer;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService};
 use App\Services\Accounting\Filing\{FilingObligationService, RecapitulativeStatementService, VatFieldBreakdownService};
@@ -119,6 +120,36 @@ class AccountingRecapitulativeTest extends TestCase {
         $this->assertSame('1750.00', $report['total']);
         $this->assertSame('1500.00', collect($report['rows'])->firstWhere('vat_id', 'ATU12345678')['amount']);
         $this->assertSame([], $report['unclear']);
+    }
+
+    /** Gemeldet wird die USt-IdNr. der ausgestellten Rechnung, auch wenn der Kunde sie später ändert. */
+    public function test_the_vat_id_comes_from_the_issued_invoice(): void {
+        $customer = $this->customer('ATU12345678');
+        $invoice = Invoice::factory()->create([
+            'organization_id' => $this->org->id,
+            'customer_id' => $customer->id,
+            'party_snapshot' => ['buyer' => ['name' => (string) $customer->name, 'vat_id' => 'ATU12345678']],
+        ]);
+        app(JournalService::class)->postDirect($this->org, [
+            'booked_on' => CarbonImmutable::create(2026, 2, 10),
+            'memo' => 'i.g. Lieferung',
+            'source_type' => $invoice->getMorphClass(),
+            'source_id' => $invoice->id,
+            'source_key' => 'zm-test:' . uniqid('', true),
+            'lines' => [
+                ['accounting_account_id' => $this->accounts['receivable']->id, 'debit' => '900.00', 'credit' => '0.00'],
+                [
+                    'accounting_account_id' => $this->accounts['igl']->id, 'debit' => '0.00', 'credit' => '900.00',
+                    'accounting_tax_code_id' => $this->iglCode->id,
+                    'counterparty_type' => MorphMap::alias(Customer::class), 'counterparty_id' => $customer->id,
+                ],
+            ],
+        ], $this->admin);
+        $customer->forceFill(['vat_id' => 'ATU99999999'])->save();
+
+        $report = $this->service()->report($this->org, CarbonImmutable::create(2026, 1, 1), CarbonImmutable::create(2026, 3, 31));
+
+        $this->assertSame(['ATU12345678'], array_column($report['rows'], 'vat_id'));
     }
 
     /** Ohne USt-IdNr. ist die Steuerfreiheit nicht nachweisbar — Klärungsfall. */

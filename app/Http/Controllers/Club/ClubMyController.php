@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Club;
 
-use App\Enums\Club\{ClubAttendanceSheetStatus, ClubAttendanceStatus, ClubGuardianPermission, ClubParticipationSource, ClubParticipationStatus};
+use App\Enums\Club\{ClubAdmissionMode, ClubAttendanceSheetStatus, ClubAttendanceStatus, ClubGroupMembershipStatus, ClubGuardianPermission, ClubParticipationSource, ClubParticipationStatus};
 use App\Http\Controllers\Controller;
 use App\Models\Calendar\Event;
-use App\Models\Club\{ClubAttendanceRecord, ClubExamCandidate, ClubExamOffer, ClubMember, ClubMemberGrade, ClubNotification};
-use App\Services\Club\{ClubAttendanceService, ClubEventService, ClubExamService, ClubGradeCertificatePdfRenderer, ClubGradingService, ClubMatchService, ClubPortalContext, ClubPortalSubject};
+use App\Models\Club\{ClubAttendanceRecord, ClubExamCandidate, ClubExamOffer, ClubGroup, ClubGroupMembership, ClubMember, ClubMemberGrade, ClubNotification};
+use App\Services\Club\{ClubAttendanceService, ClubEventService, ClubExamService, ClubGradeCertificatePdfRenderer, ClubGradingService, ClubGroupService, ClubMatchService, ClubPortalContext, ClubPortalSubject};
 use App\Services\UI\DateRangeContext;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -84,9 +84,54 @@ class ClubMyController extends Controller {
             // Wettkämpfe (MVP-855): angebotene Disziplinen und eigene Meldungen je Termin.
             'competitionByEvent' => \App\Models\Club\ClubCompetitionDetails::query()->whereIn('event_id', $upcoming->pluck('event.id')->all())->with('profile')->get()->keyBy('event_id'),
             'entriesByEvent' => \App\Models\Club\ClubCompetitionEntry::query()->where('club_member_id', $member->id)->whereIn('event_id', $upcoming->pluck('event.id')->all())->get()->groupBy('event_id'),
-            // Prüfungen (MVP-847): eigene Kandidaturen je Termin.
-            'candidates' => ClubExamCandidate::query()->where('club_member_id', $member->id)->with('offer:id,event_id')->get()->keyBy(fn(ClubExamCandidate $c): int => (int) ($c->offer->event_id ?? 0)),
+            // Prüfungen (MVP-847): eigene Kandidaturen je Termin; Ergebnisse erst nach Freigabe (MVP-1616).
+            'candidates' => ClubExamCandidate::query()->where('club_member_id', $member->id)->with('offer:id,event_id,results_released_at')->get()->keyBy(fn(ClubExamCandidate $c): int => (int) ($c->offer->event_id ?? 0)),
+            // Gruppen (MVP-1616): eigene Zuordnungen und Gruppen, die Aufnahmeanträge annehmen.
+            'groupMemberships' => $this->groupMemberships($member),
+            'openGroups' => $subject->allows(ClubGuardianPermission::Register) ? $this->openGroups($member) : collect(),
         ]);
+    }
+
+    /**
+     * Aufnahmeantrag für eine Gruppe im Modus „Antrag mit Freigabe“
+     * (MVP-1616); die Leitung entscheidet im Arbeitsvorrat bzw. an der Gruppe.
+     */
+    public function groupRequest(ClubGroup $group): RedirectResponse {
+        Gate::authorize('club-my');
+        $subject = $this->subject();
+        abort_unless($subject->allows(ClubGuardianPermission::Register), 403);
+        abort_unless($this->openGroups($subject->member)->contains(fn (ClubGroup $open): bool => $open->is($group)), 404);
+
+        app(ClubGroupService::class)->request($group, $subject->member, CarbonImmutable::today(), $this->authUser(), (string) __('club.note.self_request'));
+
+        return redirect()->route('club.my.index')->with('success', __('club.my.flash.group_requested', ['group' => $group->name]));
+    }
+
+    /** @return \Illuminate\Support\Collection<int, ClubGroupMembership> */
+    private function groupMemberships(ClubMember $member) {
+        $today = CarbonImmutable::today();
+
+        return ClubGroupMembership::query()
+            ->where('club_member_id', $member->id)
+            ->where(fn (Builder $query) => $query->where('status', ClubGroupMembershipStatus::Requested->value)
+                ->orWhere(fn (Builder $active) => $active->where('status', ClubGroupMembershipStatus::Active->value)
+                    ->where(fn (Builder $valid) => $valid->whereNull('valid_to')->orWhere('valid_to', '>=', $today->toDateString()))))
+            ->with('group:id,name')
+            ->orderBy('valid_from')
+            ->get();
+    }
+
+    /** @return \Illuminate\Support\Collection<int, ClubGroup> aktive Antragsgruppen ohne bestehende Zuordnung des Mitglieds */
+    private function openGroups(ClubMember $member) {
+        $taken = $this->groupMemberships($member)->pluck('club_group_id')->all();
+
+        return ClubGroup::query()
+            ->where('organization_id', $member->organization_id)
+            ->where('is_active', true)
+            ->where('admission_mode', ClubAdmissionMode::Application->value)
+            ->whereNotIn('id', $taken)
+            ->orderBy('name')
+            ->get();
     }
 
     /**
@@ -212,7 +257,7 @@ class ClubMyController extends Controller {
     public function certificate(ClubMemberGrade $memberGrade): Response {
         Gate::authorize('club-my');
         $subject = $this->subject();
-        abort_unless($memberGrade->club_member_id === $subject->member->id, 404);
+        abort_unless($memberGrade->club_member_id === $subject->member->id && $memberGrade->isReleased(), 404);
         $renderer = app(ClubGradeCertificatePdfRenderer::class);
 
         return response($renderer->output($memberGrade), 200, [
@@ -235,11 +280,12 @@ class ClubMyController extends Controller {
 
         return \App\Models\Club\ClubGradingSystem::query()->where('is_active', true)->orderBy('name')->get()
             ->map(function (\App\Models\Club\ClubGradingSystem $system) use ($grading, $member, $today): array {
-                $requirement = $grading->nextRequirement($member, $system, $today);
+                // Mitgliedersicht: Prüfungsgrade erst nach der Ergebnisfreigabe (MVP-1616).
+                $requirement = $grading->nextRequirement($member, $system, $today, releasedOnly: true);
 
                 return [
                     'system' => $system,
-                    'current' => $grading->currentGrade($member, $system, $today),
+                    'current' => $grading->currentGrade($member, $system, $today, releasedOnly: true),
                     'next' => $requirement?->grade,
                     'report' => $requirement !== null ? app(\App\Services\Club\ClubEligibilityService::class)->evaluate($member, $requirement, $today) : null,
                 ];

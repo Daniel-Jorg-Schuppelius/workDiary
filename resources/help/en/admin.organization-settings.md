@@ -1,7 +1,7 @@
 ---
 title: "Organization and settings"
 topic: admin.organization-settings
-version: 6
+version: 8
 keywords:
     - company settings
     - tenant settings
@@ -276,6 +276,12 @@ the platform operations' organization overview is a system setting under
 
 How invoices are created is described in the topic “Invoices & documents”.
 
+- **Require approval before issuing (four-eyes principle)**: An invoice can
+  only be issued, sent or handed over to the accounting program after a second
+  person has confirmed it with **Release**. Whoever created the invoice cannot
+  approve it. Only switch this on if at least two people are allowed to issue
+  invoices; without the tick, approval stays optional.
+
 ## Dunning
 
 Level defaults for single dunning and the dunning run; the procedure is
@@ -315,6 +321,9 @@ Three fields also affect all locally created invoices:
   VAT and carry the note “No VAT in accordance with § 19 UStG (German small
   business scheme).”; the XRechnung receives tax category E (exempt). The tick
   takes precedence over **Default tax rate (%)** and reverse charge.
+- **Issue validated e-invoices only**: The e-invoice validation runs before
+  issuing. If the invoice fails it, issuing is aborted and the validation
+  report opens.
 
 ## E-invoice: documents and recipients
 
@@ -330,6 +339,17 @@ Rules for supporting documents in the e-invoice:
 ## Accounting: four-eyes principle
 
 The **Four-eyes principle** switch in the **Accounting** group requires a second person to approve: whoever prepares an entry or a direct booking (cash discount, write-off, clearing booking, internal transfer, opening balances, special prepayment) does not post it themselves; whoever compiles a SEPA payment run does not release it themselves. Direct bookings are then created as drafts in the **Posting inbox** and only take effect once posted. Without the switch, WorkDiary posts them immediately.
+
+## Bank reconciliation: tolerances
+
+The **Bank reconciliation** group controls the matching suggestions in payment
+reconciliation.
+
+- **Cent tolerance (amount)** (0–1, default 0.02): rounding difference up to which
+  a payment amount counts as matching.
+- **Cash discount tolerance (%)** (0–10, default 3): underpayment suggested as
+  full payment with cash discount when the invoice has no cash discount terms of
+  its own.
 
 ## Fixed assets: low-value assets and pool
 
@@ -542,8 +562,11 @@ server.
   automatically allows the browser to load images from this server.
 - **Maximum zoom** (1–22, default 19): strongest magnification of the maps.
   Choose at most the level the tile server delivers.
-- The attribution at the bottom of the map is set by the operator's base
-  configuration; it cannot be changed here.
+- **Attribution** (up to 255 characters, text without HTML): credit required by
+  the tile provider, shown at the bottom right of every map, for example
+  “© Provider”. If empty, the attribution of the base configuration applies,
+  which the grey text names. For your own tile server, enter the credit its
+  terms of use require.
 
 ## Travel billing
 
@@ -583,6 +606,12 @@ well as **Switzerland (nationwide)** and all 26 cantons. Regional holidays
 such as Corpus Christi or Reformation Day only apply in certain states – so
 choose the region of your business. If empty, the system-wide default
 applies, which the first entry of the list names as “Default …”.
+
+**Language of holiday names** determines the language in which calendar,
+duty roster and reports name public holidays. You can choose German (Germany,
+Austria, Switzerland), French and Italian (Switzerland) as well as English,
+French, Italian and Spanish. Your own holidays keep their names. If empty, the
+system-wide default applies.
 
 The region takes effect wherever workDiary takes holidays into account,
 including:
@@ -667,3 +696,14 @@ organization.
   during maintenance.
 
 Switching maintenance mode on and off is recorded in the audit log.
+
+**Legal region:** In the master data you select the organisation’s legal
+region. It determines the retention periods of the deletion proposals and the
+details in the procedure documentation; the change is recorded in the audit
+log.
+
+Under the advanced settings you also define: the interval of the driving
+licence check, the helpdesk priority matrix (impact × urgency, empty cell =
+default), the warning threshold of capacity planning, the threshold of the
+second approval step for investments, delimiter and meta lines of the report
+CSV export, and the deletion period for rejected job applications.

@@ -16,6 +16,8 @@ use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\Task\TaskStatus;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Project\Task;
+use App\Services\Integration\Contracts\OwnershipConflictReplay;
+use App\Services\Integration\Dto\OwnershipClaim;
 use Illuminate\Support\Collection;
 
 /**
@@ -51,9 +53,14 @@ use Illuminate\Support\Collection;
  *   Todoist lässt '' durch, To Do ersetzt durch '—'
  *   ({@see remoteDisplayTitle()}).
  *
+ * Datenführerschaft (MVP-1592): Jeder Schreibweg fragt vor dem Schreiben den
+ * `DataOwnershipGuard` mit {@see ownershipClaim()}; „Einmalig übernehmen“
+ * spielt die Quellaufgabe über {@see OwnershipConflictReplay} erneut ein.
+ * Der frühere Fall `<präfix>:<id>:ownership` wird dabei zum Konflikt.
+ *
  * @template TLink of TaskSyncLink
  */
-abstract class AbstractTaskSyncService {
+abstract class AbstractTaskSyncService implements OwnershipConflictReplay {
     /** Plugin-ID — zugleich `source` der Inbox-Fälle (beide Plugins identisch). */
     abstract protected function pluginId(): string;
 
@@ -121,6 +128,31 @@ abstract class AbstractTaskSyncService {
     /** @param TLink $link */
     protected function taskBelongsToLink(TaskSyncLink $link, Task $task): bool {
         return true;
+    }
+
+    /** @return list<string> */
+    public function ownershipKinds(): array {
+        return [$this->pluginId() . '.task'];
+    }
+
+    /**
+     * Schreibversuch einer Quellaufgabe für den Guard; `$payload` trägt alles,
+     * was das Übernehmen zum erneuten Einspielen braucht.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    protected function ownershipClaim(string $externalId, string $title, string $subtitle, array $payload, ?Task $task): OwnershipClaim {
+        return new OwnershipClaim(
+            kind: $this->pluginId() . '.task',
+            key: $externalId,
+            title: $title,
+            target: Task::class,
+            payload: $payload,
+            externalId: $externalId,
+            local: $task,
+            subtitle: $subtitle !== '' ? $subtitle : null,
+            legacyKey: $this->dedupePrefix() . ':' . $externalId . ':ownership',
+        );
     }
 
     /** @return array{created: int, updated: int, unchanged: int, conflicts: int, inbox: int, failed: int} */

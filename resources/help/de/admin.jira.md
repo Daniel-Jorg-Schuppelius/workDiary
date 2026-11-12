@@ -1,7 +1,7 @@
 ---
 title: "Jira-Aufgabenimport"
 topic: admin.jira
-version: 1
+version: 2
 keywords:
     - Jira
     - Jira Cloud
@@ -120,3 +120,5 @@ nach Jira schreibt WorkDiary nichts. Sie finden die Seite im Systemmenü
   Atlassian widerrufen oder ist abgelaufen. Verbinden Sie neu.
 - Nichts wird angelegt: Die Zuordnung ist noch nicht bestätigt, pausiert,
   oder die Vorgänge sind bereits erledigt.
+
+**Datenführerschaft:** Führt ein anderes System die Aufgaben, legt der Abgleich je Aufgabe einen Fall „Datenführerschaft“ im Integrations-Eingang an. **Einmalig übernehmen** spielt die Aufgabe über dieselbe Zuordnung ein, solange diese aktiv ist; ändert sich die Aufgabe danach in der Quelle, öffnet sich der Fall wieder.

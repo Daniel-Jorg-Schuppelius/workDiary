@@ -49,6 +49,7 @@ return [
         'search' => 'Suche',
         'search_placeholder' => 'Verwendungszweck, Gegenpartei, Belegnummer',
         'all_matches' => 'Alle Zuordnungen',
+        'open_matches' => 'Offen (ohne oder mehrdeutig)',
         'col' => [
             'date' => 'Datum',
             'kind' => 'Art',
@@ -56,9 +57,23 @@ return [
             'description' => 'Verwendungszweck',
             'match' => 'Zuordnung',
             'amount' => 'Betrag',
+            'actions' => 'Aktionen',
         ],
         'empty' => 'Noch keine Bewegungen',
         'foreign_amount' => 'Betrag in zweiter Währung',
+    ],
+    // Erledigt markieren (MVP-1628)
+    'settle' => [
+        'title' => 'Bewegung als erledigt markieren',
+        'action' => 'Erledigt',
+        'intro' => 'Die Bewegung braucht keinen Beleg (etwa Kontoführungsgebühr oder Privatentnahme). Sie zählt danach nicht mehr in der Kachel „Finanzbewegungen“ und im Arbeitsvorrat; der Abgleich ändert daran nichts.',
+        'note' => 'Begründung',
+        'done' => 'Bewegung als erledigt markiert.',
+        'already' => 'Die Bewegung ist bereits erledigt.',
+        'reopened' => 'Bewegung wieder geöffnet.',
+        'reopen' => 'Wieder öffnen',
+        'filter' => 'Erledigt',
+        'badge' => 'Erledigt von :name am :date',
     ],
     'search' => [
         'domain' => 'Firefly-III-Bewegungen',
@@ -76,5 +91,10 @@ return [
     'health' => [
         'not_configured' => 'Firefly III ist nicht eingerichtet (Adresse oder Token fehlt).',
         'not_connected' => 'Firefly-III-Verbindung noch nicht geprüft.',
+    ],
+    'work_queue' => [
+        'source' => 'Firefly III',
+        'unmatched' => '{1} 1 Firefly-Bewegung ohne Zuordnung|[2,*] :count Firefly-Bewegungen ohne Zuordnung',
+        'ambiguous' => '{1} 1 Firefly-Bewegung mit mehrdeutiger Zuordnung|[2,*] :count Firefly-Bewegungen mit mehrdeutiger Zuordnung',
     ],
 ];

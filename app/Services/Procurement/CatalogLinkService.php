@@ -70,6 +70,22 @@ class CatalogLinkService {
     }
 
     /**
+     * Bewusst nicht übernehmen (Feature 050, MVP-1620): eine nicht verknüpfte
+     * Position fällt aus Vorschlägen, Massenübernahme und Preisabgleich;
+     * erneut aufgerufen wird sie wieder „neu“.
+     */
+    public function toggleIgnored(SupplierCatalogItem $item): SupplierCatalogItem {
+        if ($item->article_id !== null) {
+            throw new RuntimeException((string) __('procurement.catalog.error.ignore_linked'));
+        }
+        $item->forceFill([
+            'status' => ($item->status === CatalogItemStatus::Ignored ? CatalogItemStatus::New : CatalogItemStatus::Ignored)->value,
+        ])->save();
+
+        return $item;
+    }
+
+    /**
      * Schlägt anhand der EAN/GTIN einen internen Artikel vor (Status „Proposed",
      * noch nicht verbindlich). Liefert den getroffenen Artikel oder null.
      */

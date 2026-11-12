@@ -137,6 +137,7 @@
                     <td class="text-base-content/70">{{ $incident->detected_at?->fdate() ?? '—' }}</td>
                     <td class="text-right">
                         <div class="flex justify-end gap-1">
+                            <x-crisis-open-link from="isms_incident" :source="$incident->sqid" size="xs" icon-only />
                             @can('update', $incident)
                                 <x-icon-btn icon="edit" tone="outline" size="xs"
                                             data-entry-modal-trigger

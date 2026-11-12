@@ -92,10 +92,11 @@ class ChartOfAccountsTemplateService {
         return DB::transaction(function () use ($organization, $template, $validFrom): array {
             $accounts = $this->applyAccounts($organization, $template['accounts'] ?? []);
             $taxCodes = $this->applyTaxCodes($organization, $template['tax_codes'] ?? [], $accounts['byNumber'], $validFrom);
+            $this->applyAutomaticAccounts($template['accounts'] ?? [], $accounts['created'], $accounts['byNumber'], $taxCodes['byCode']);
             $rules = $this->applyRules($organization, $template['rules'] ?? [], $accounts['byNumber'], $taxCodes['byCode'], $validFrom);
 
             return [
-                'accounts' => $accounts['created'],
+                'accounts' => count($accounts['created']),
                 'tax_codes' => $taxCodes['created'],
                 'rules' => $rules['created'],
                 'skipped' => $accounts['skipped'] + $taxCodes['skipped'] + $rules['skipped'],
@@ -105,10 +106,10 @@ class ChartOfAccountsTemplateService {
 
     /**
      * @param  array<int, array<string, mixed>>  $definitions
-     * @return array{created: int, skipped: int, byNumber: array<string, AccountingAccount>}
+     * @return array{created: list<string>, skipped: int, byNumber: array<string, AccountingAccount>}
      */
     private function applyAccounts(Organization $organization, array $definitions): array {
-        $created = 0;
+        $created = [];
         $skipped = 0;
         $byNumber = [];
 
@@ -144,10 +145,30 @@ class ChartOfAccountsTemplateService {
                 'datev_account' => $number,
                 'is_active' => true,
             ]);
-            $created++;
+            $created[] = $number;
         }
 
         return ['created' => $created, 'skipped' => $skipped, 'byNumber' => $byNumber];
+    }
+
+    /**
+     * DATEV-Automatikkonten (MVP-1622): Das Konto führt das Kennzeichen, dessen
+     * Steuer DATEV selbst aus dem Konto errechnet. Nur an Konten aus diesem Lauf —
+     * ein vorhandenes Konto bleibt unangetastet.
+     *
+     * @param  array<int, array<string, mixed>>  $definitions
+     * @param  list<string>  $created
+     * @param  array<string, AccountingAccount>  $accounts
+     * @param  array<string, AccountingTaxCode>  $taxCodes
+     */
+    private function applyAutomaticAccounts(array $definitions, array $created, array $accounts, array $taxCodes): void {
+        foreach ($definitions as $definition) {
+            $number = (string) $definition['number'];
+            $code = $taxCodes[(string) ($definition['datev_automatic'] ?? '')] ?? null;
+            if ($code instanceof AccountingTaxCode && isset($accounts[$number]) && in_array($number, $created, true)) {
+                $accounts[$number]->update(['default_tax_code_id' => $code->id]);
+            }
+        }
     }
 
     /**
@@ -177,6 +198,7 @@ class ChartOfAccountsTemplateService {
             $taxAccount = $definition['tax_account'] !== null
                 ? ($accounts[(string) $definition['tax_account']] ?? null)
                 : null;
+            $inputTaxAccount = isset($definition['input_tax_account']) ? ($accounts[(string) $definition['input_tax_account']] ?? null) : null;
 
             $byCode[$code] = AccountingTaxCode::query()->create([
                 'organization_id' => $organization->id,
@@ -184,11 +206,16 @@ class ChartOfAccountsTemplateService {
                 'name' => (string) $definition['name'],
                 'direction' => TaxCodeDirection::from((string) $definition['direction']),
                 'rate' => (string) $definition['rate'],
+                'tax_category' => isset($definition['tax_category']) ? (string) $definition['tax_category'] : null,
                 'tax_account_id' => $taxAccount?->id,
+                'input_tax_account_id' => $inputTaxAccount?->id,
+                'tax_case' => isset($definition['tax_case']) ? (string) $definition['tax_case'] : null,
                 'valid_from' => $validFrom->toDateString(),
                 'is_active' => true,
                 'ustva_base_field' => isset($definition['ustva_base_field']) ? (string) $definition['ustva_base_field'] : null,
                 'ustva_tax_field' => isset($definition['ustva_tax_field']) ? (string) $definition['ustva_tax_field'] : null,
+                'ustva_input_tax_field' => isset($definition['ustva_input_tax_field']) ? (string) $definition['ustva_input_tax_field'] : null,
+                'datev_tax_key' => isset($definition['datev_tax_key']) ? (string) $definition['datev_tax_key'] : null,
             ]);
             $created++;
         }

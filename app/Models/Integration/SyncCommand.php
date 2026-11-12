@@ -10,7 +10,7 @@
 
 namespace App\Models\Integration;
 
-use App\Enums\Sync\SyncCommandStatus;
+use App\Enums\Sync\{SyncCommandStatus, SyncConflictResolution};
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -33,6 +33,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $result_ref
  * @property array<string, mixed>|null $result_errors
  * @property Carbon|null $captured_at
+ * @property SyncConflictResolution|null $resolution
+ * @property Carbon|null $resolved_at
+ * @property string|null $resent_client_uuid
  */
 class SyncCommand extends Model {
     use BelongsToOrganization;
@@ -47,6 +50,9 @@ class SyncCommand extends Model {
         'result_ref',
         'result_errors',
         'captured_at',
+        'resolution',
+        'resolved_at',
+        'resent_client_uuid',
     ];
 
     /** @var array<string, string> */
@@ -55,6 +61,8 @@ class SyncCommand extends Model {
         'result_status' => SyncCommandStatus::class,
         'result_errors' => 'array',
         'captured_at' => 'datetime',
+        'resolution' => SyncConflictResolution::class,
+        'resolved_at' => 'datetime',
     ];
 
     /** @return BelongsTo<User, $this> */

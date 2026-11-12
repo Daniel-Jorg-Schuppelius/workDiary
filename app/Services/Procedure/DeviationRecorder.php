@@ -36,6 +36,8 @@ class DeviationRecorder {
 
     public const int MIN_REASON_LENGTH = 20;
 
+    public const int MIN_RISK_NOTE_LENGTH = 5;
+
     public function __construct(
         private readonly OpenIssueService $openIssues,
         private readonly FollowUpOrderService $followUps,
@@ -121,7 +123,22 @@ class DeviationRecorder {
         });
     }
 
+    /**
+     * Risikoakzeptanz einer kritischen Abweichung (MVP-1567): nur mit
+     * Begründung, nur einmal; die Begründung steht im Lauf-Journal.
+     */
     public function acceptRisk(ProcedureDeviation $deviation, User $actor, ?string $note = null): ProcedureDeviation {
+        if ($deviation->severity !== ProcedureDeviationSeverity::Critical) {
+            throw ProcedureDeviationValidationException::for(ProcedureDeviationValidationException::REASON_RISK_NOT_CRITICAL);
+        }
+        if ($deviation->risk_accepted_at !== null) {
+            throw ProcedureDeviationValidationException::for(ProcedureDeviationValidationException::REASON_RISK_ALREADY_ACCEPTED);
+        }
+        $note = trim((string) $note);
+        if (mb_strlen($note) < self::MIN_RISK_NOTE_LENGTH) {
+            throw ProcedureDeviationValidationException::for(ProcedureDeviationValidationException::REASON_RISK_NOTE_MISSING);
+        }
+
         return DB::transaction(function () use ($deviation, $actor, $note) {
             $deviation->risk_accepted_by_user_id = $actor->id;
             $deviation->risk_accepted_at = Carbon::now();
@@ -141,8 +158,10 @@ class DeviationRecorder {
     }
 
     /**
-     * Liefert kritische Abweichungen ohne Risk-Accept, die einen
-     * Run-Abschluss blockieren.
+     * Kritische Abweichungen, die den Abschluss sperren: ohne Risikoakzeptanz
+     * und ohne Folgemaßnahme. Als Folgemaßnahme zählt, was den Fall weiterführt
+     * — ein offener Punkt, ein Folgeauftrag oder ein Wiederholungslauf; die
+     * Eskalation bittet erst um die Entscheidung.
      *
      * @return list<int>
      */
@@ -151,9 +170,21 @@ class DeviationRecorder {
             ->whereIn('procedure_step_run_id', $run->stepRuns()->pluck('id'))
             ->where('severity', ProcedureDeviationSeverity::Critical->value)
             ->whereNull('risk_accepted_at')
+            ->whereNull('open_issue_id')
+            ->whereNull('follow_up_diary_entry_id')
+            ->whereNull('requalify_run_id')
             ->pluck('id');
 
         return array_values(array_map(static fn($id): int => (int) $id, $rows->all()));
+    }
+
+    /** Sperrt diese Abweichung den Abschluss des Laufs? */
+    public function blocksCompletion(ProcedureDeviation $deviation): bool {
+        return $deviation->severity === ProcedureDeviationSeverity::Critical
+            && $deviation->risk_accepted_at === null
+            && $deviation->open_issue_id === null
+            && $deviation->follow_up_diary_entry_id === null
+            && $deviation->requalify_run_id === null;
     }
 
     /**
@@ -190,6 +221,23 @@ class DeviationRecorder {
                 $detail['follow_up_diary_entry_id'] = (int) $entry->id;
             } catch (ClassificationRequirementException $e) {
                 $detail['follow_up_error'] = $e->getMessage();
+            }
+        } elseif ($action === ProcedureDeviationProposedAction::Requalify) {
+            // „Erneut durchlaufen“ (prozedur-abweichungen §4): neuer Lauf derselben Vorlage am selben Objekt.
+            // Eine Sperre des Assets verhindert ihn, nicht die Abweichung — der Grund steht im Lauf-Ereignis.
+            $template = $run->templateVersion?->template;
+            $subject = $run->subject;
+            try {
+                if ($template === null || $subject === null) {
+                    throw new \RuntimeException((string) __('procedure.deviation.requalify_unavailable'));
+                }
+                $repeat = app(ProcedureExecutionService::class)->start($template, $subject, $actor, $run->assignee);
+                $deviation->requalify_run_id = $repeat->id;
+                $deviation->save();
+                $detail['requalify_run_id'] = (int) $repeat->id;
+            } catch (\RuntimeException $e) {
+                // Auch die Asset-Sperre (AssetNotUsableException) ist eine RuntimeException.
+                $detail['requalify_error'] = $e->getMessage();
             }
         } elseif ($action === ProcedureDeviationProposedAction::Escalate) {
             $step = (string) $stepRun->stepDef?->label;

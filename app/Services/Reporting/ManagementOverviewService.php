@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Reporting;
 
 use App\Models\Platform\{Organization, User};
-use App\Modules\ModuleRegistry;
+use App\Services\Licensing\ModuleExtensions;
 use App\Services\Reporting\Contracts\ManagementKpiSource;
 use App\Services\Reporting\Dto\ManagementKpi;
 use Carbon\CarbonImmutable;
@@ -24,13 +24,13 @@ use Throwable;
  * Module für einen Betrachter — Seite, PDF und E-Mail nutzen dieselben Zahlen.
  */
 final class ManagementOverviewService {
-    public const array GROUPS = ['finance', 'operations', 'sales', 'service', 'quality'];
+    public const array GROUPS = ['finance', 'operations', 'hr', 'sales', 'service', 'quality'];
 
-    public function __construct(private readonly ModuleRegistry $modules) {}
+    public function __construct(private readonly ModuleExtensions $extensions) {}
 
     /** @return array<string, list<ManagementKpi>> Bereich → Kennzahlen, leere Bereiche entfallen */
     public function build(User $viewer, Organization $organization, CarbonImmutable $from, CarbonImmutable $to): array {
-        $sources = array_map(static fn (string $class): ManagementKpiSource => app($class), $this->modules->extensions(ManagementKpiSource::class));
+        $sources = array_map(static fn (string $class): ManagementKpiSource => app($class), $this->extensions->activeFor(ManagementKpiSource::class, $organization));
         usort($sources, static fn (ManagementKpiSource $a, ManagementKpiSource $b): int => $a->order() <=> $b->order());
 
         $groups = array_fill_keys(self::GROUPS, []);

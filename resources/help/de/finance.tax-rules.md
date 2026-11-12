@@ -1,7 +1,7 @@
 ---
 title: "Steuerregelmatrix"
 topic: finance.tax-rules
-version: 1
+version: 2
 keywords:
     - Steuersätze
     - Mehrwertsteuer
@@ -66,3 +66,11 @@ Standardsteuersatz der Organisation geht der Matrix im Inland vor.
 EU-Kunden mit formal gültiger USt-IdNr. erhalten automatisch Reverse
 Charge (0 %), Drittlandskunden den Export-Hinweis (0 %) — passende
 Matrix-Zeilen liefern dafür den Hinweistext auf dem Beleg.
+
+Eine Zeile mit der Satzart **Befreit** nennt den Befreiungstatbestand
+steuerfreier Umsätze nach § 4 UStG: Ihr Hinweistext steht in der
+E-Rechnung als Befreiungsgrund der steuerfreien Positionen (Kategorie E),
+zum Leistungsdatum der Rechnung, etwa „Steuerfreie Heilbehandlung (§ 4
+Nr. 14 UStG)“. Fehlt sie, nennt die E-Rechnung nur „Steuerfreier Umsatz“.
+Ändert sich ein Steuerfall im Rechnungsentwurf, ersetzt workDiary den
+Hinweistext der Matrix, solange er unverändert im Rechnungstext steht.

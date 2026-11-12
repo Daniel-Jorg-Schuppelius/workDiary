@@ -21,10 +21,13 @@ use App\Services\Article\PriceSuggestionService;
  * Erzeugt Kalkulationswarnungen bei Einkaufspreisänderungen (Feature 050,
  * MVP-094): Steigt der Lieferanten-EK eines verknüpften Artikels so, dass der
  * hinterlegte Verkaufspreis unter die greifende Mindestmarge (oder unter 0)
- * fällt, entsteht eine offene Warnung. Zusätzlich entsteht bei einer
+ * fällt, entsteht eine offene Warnung — ebenso, wenn die Position eines offenen
+ * Angebots oder Auftrags mit ihrem Belegpreis darunter fällt (MVP-1581).
+ * Zusätzlich entsteht bei einer
  * Verfügbarkeitsänderung eines verknüpften Artikels mit offenen Vorgängen eine
  * Verfügbarkeitswarnung. Beide Warnungen tragen die betroffenen offenen
- * Vorgänge (Bestellungen, LV-Positionen, Fertigungsaufträge) als Snapshot.
+ * Vorgänge (Bestellungen, LV-Positionen, Fertigungsaufträge, Angebote,
+ * Aufträge) als Snapshot.
  * Verkaufspreise werden nicht automatisch geändert — die Reaktion bleibt beim
  * Anwender.
  */
@@ -57,25 +60,49 @@ class PriceChangeAlertService {
         }
 
         $article = Article::query()->find($item->article_id);
-        if (! $article instanceof Article || $article->default_sale_price === null) {
+        if (! $article instanceof Article) {
             return null;
         }
 
-        $sale = $article->default_sale_price->toFloat();
-        if ($sale <= 0) {
-            return null;
-        }
-
-        $newMargin = ($sale - (float) $newPrice) / $sale * 100;
         $rule = $this->pricing->resolveRule($item->organization_id, $item->supplier_id, $item->category, $item->article?->category);
         $minMargin = $rule !== null && $rule->min_margin !== null ? (float) $rule->min_margin->getNumericValue() : null;
+        $isBelow = static fn (float $margin): bool => ($minMargin !== null && $margin < $minMargin - 0.0001) || $margin < 0;
 
-        $below = ($minMargin !== null && $newMargin < $minMargin - 0.0001) || $newMargin < 0;
-        if (! $below) {
+        $sale = $article->default_sale_price?->toFloat() ?? 0.0;
+        $newMargin = $sale > 0 ? ($sale - (float) $newPrice) / $sale * 100 : null;
+
+        // MVP-1581: offene Angebote und Aufträge tragen ihren Preis als Snapshot —
+        // gemessen wird der Belegpreis der Position, nicht der Stammpreis.
+        $documentMargins = [];
+        foreach ($this->impacts->salesLines((int) $item->organization_id, (int) $article->id) as $group => $entries) {
+            foreach ($entries as ['line' => $line, 'number' => $number]) {
+                $quantity = (float) $line->lineQuantity();
+                $unitNet = $quantity > 0 ? $line->netAmount()->toFloat() / $quantity : 0.0;
+                if ($unitNet <= 0) {
+                    continue;
+                }
+                $margin = ($unitNet - (float) $newPrice) / $unitNet * 100;
+                if ($isBelow($margin)) {
+                    $documentMargins[] = [
+                        'group' => $group,
+                        'number' => $number,
+                        'position' => $line->linePosition(),
+                        'unit_price' => round($unitNet, 4),
+                        'margin' => round($margin, 3),
+                    ];
+                }
+            }
+        }
+
+        $masterBelow = $newMargin !== null && $isBelow($newMargin);
+        if (! $masterBelow && $documentMargins === []) {
             return null;
         }
 
         $impacts = $this->impacts->scan((int) $item->organization_id, (int) $article->id);
+        if ($documentMargins !== []) {
+            $impacts['document_margins'] = $documentMargins;
+        }
 
         return PricingChangeAlert::query()->create([
             'organization_id' => $item->organization_id,
@@ -86,7 +113,7 @@ class PriceChangeAlertService {
             'old_purchase_price' => $oldPrice,
             'new_purchase_price' => $newPrice,
             'sale_price' => $article->default_sale_price,
-            'new_margin' => round($newMargin, 3),
+            'new_margin' => $newMargin !== null ? round($newMargin, 3) : null,
             'min_margin' => $minMargin,
             'impacts' => $this->impacts->isEmpty($impacts) ? null : $impacts,
             'status' => PricingChangeAlertStatus::Open,

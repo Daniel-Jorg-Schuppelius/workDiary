@@ -71,7 +71,7 @@ class DisposalJob extends Model {
     protected $fillable = [
         'organization_id', 'number', 'status', 'customer_id', 'site_id',
         'diary_entry_id', 'responsible_user_id', 'picked_up_on',
-        'total_weight_kg', 'notes', 'record_document_id', 'signer_name',
+        'total_weight_kg', 'notes', 'is_photo_in_record', 'record_document_id', 'signer_name',
         'signed_at', 'signature_attachment_id', 'signature_hash',
         'completed_at', 'completed_by', 'cancelled_at', 'cancel_reason',
         'created_by_user_id',
@@ -82,6 +82,7 @@ class DisposalJob extends Model {
         'status' => DisposalJobStatus::class,
         'picked_up_on' => 'date',
         'total_weight_kg' => 'decimal:3',
+        'is_photo_in_record' => 'boolean',
         'signed_at' => 'datetime',
         'completed_at' => 'datetime',
         'cancelled_at' => 'datetime',

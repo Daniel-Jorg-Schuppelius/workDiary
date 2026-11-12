@@ -76,6 +76,9 @@ class IntegrationInboxItem extends Model {
     /** Kalender-Abo: Termin in der Quelle entfernt, die gebuchte Zeit steht noch (MVP-1516). */
     public const string REASON_REMOTE_DELETED = 'remote_deleted';
 
+    /** Schlüssel im `remote_snapshot` eines Führerschaftskonflikts: Bereich, Führung, Art (MVP-1592). */
+    public const string SNAPSHOT_OWNERSHIP = 'ownership';
+
     public const string CASE_CONFLICT = 'conflict';
     public const string CASE_AMBIGUOUS = 'ambiguous';
 
@@ -135,6 +138,21 @@ class IntegrationInboxItem extends Model {
     public function isRemoteDeletion(): bool {
         return $this->case_type === self::CASE_CONFLICT
             && (($this->remote_snapshot ?? [])['reason'] ?? null) === self::REASON_REMOTE_DELETED;
+    }
+
+    /**
+     * Führerschaftskonflikt (MVP-1592): nicht geschrieben, weil ein anderes
+     * System den Bereich führt; „übernehmen“ schreibt einmal.
+     *
+     * @return array{domain: string, owner: string, kind: string}|null
+     */
+    public function ownershipMarker(): ?array {
+        $marker = ($this->remote_snapshot ?? [])[self::SNAPSHOT_OWNERSHIP] ?? null;
+        if (! is_array($marker) || ! is_string($marker['domain'] ?? null) || ! is_string($marker['kind'] ?? null)) {
+            return null;
+        }
+
+        return ['domain' => $marker['domain'], 'owner' => (string) ($marker['owner'] ?? ''), 'kind' => $marker['kind']];
     }
 
     /**

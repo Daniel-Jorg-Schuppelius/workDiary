@@ -93,9 +93,7 @@ class AssetShowControllerTest extends TestCase {
             'work_date' => now()->toDateString(),
             'status' => TimesheetStatus::Draft->value,
             'totals_minutes' => 0,
-            'attendance_total_minutes' => 0,
             'entries_total_minutes' => 0,
-            'untracked_minutes' => 0,
             'totals_material_net' => '0.00',
         ]);
 

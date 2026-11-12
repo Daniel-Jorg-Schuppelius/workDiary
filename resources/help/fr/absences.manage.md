@@ -1,7 +1,7 @@
 ---
 title: "Congés & maladie"
 topic: absences.manage
-version: 4
+version: 5
 keywords:
     - absence
     - demande de congé
@@ -74,3 +74,12 @@ rapport **Maladies** montre la situation par personne. Toutes les indications
 servent d'orientation et ne constituent pas un conseil juridique.
 
 Comme les congés, les jours d’arrêt maladie n’ont pas de temps prévu : **Compte de temps de travail**, **Bilan de travail**, **Présence** et **Plan/réel** ne les comptent pas comme un déficit. Les arrêts maladie annulés ne sont comptés nulle part, pas même dans les comptes de temps.
+
+**Demander une correction :** tant qu’aucune validation n’est enregistrée,
+les responsables renvoient une demande en attente avec **Demander une
+correction** (flèche de retour dans la ligne) et une remarque. La demande
+passe alors à **Correction demandée** ; la personne qui l’a faite reçoit une
+notification et une entrée dans la file de travail, voit la remarque dans la
+boîte de dialogue de modification, modifie la demande et la soumet de
+nouveau en enregistrant. D’ici là, elle ne peut être ni approuvée ni
+refusée ; la personne peut la retirer en l’annulant.

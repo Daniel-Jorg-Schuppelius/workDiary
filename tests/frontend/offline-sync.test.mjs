@@ -321,6 +321,7 @@ const {
     buildPayload, flush, updateBadge, uploadPhotos,
     outboxAll, outboxPut, outboxDelete, storeAll, storePut, clearAll,
     courseStore, courseGet, courseDelete, currentOwner, enforceOwner,
+    resolveConflict, resendConflict, editorValue,
 } = __testables;
 
 /**
@@ -426,6 +427,22 @@ test("buildPayload: inventory.count nimmt Inventur-Sqid, Code und Menge mit (MVP
         count: "sqc1",
         code: "DUE-8",
         qty: "2",
+    });
+});
+
+test("buildPayload: inventory.count sendet die gewählte Einheit mit (MVP-1626)", () => {
+    /** @type {Record<string, { value: string }>} */
+    const values = { '[name="code"]': { value: "DUE-8" }, '[name="qty"]': { value: "3" }, '[name="unit"]': { value: "KAR" } };
+    /** @type {FakeForm} */
+    const form = {
+        dataset: { syncPayloadCount: "sqc1" },
+        querySelector: (sel) => values[sel] || null,
+    };
+    assert.deepEqual(buildPayload("inventory.count", form), {
+        count: "sqc1",
+        code: "DUE-8",
+        qty: "3",
+        unit: "KAR",
     });
 });
 
@@ -906,4 +923,148 @@ test("Abmelde-Erkennung übersteht ein Formularfeld namens action", () => {
     assert.equal(isLogoutForm(clobbered), false);
     assert.equal(isLogoutForm({ getAttribute: () => "https://app.example.test/logout" }), true);
     assert.equal(isLogoutForm({ getAttribute: () => null }), false);
+});
+
+/* ------------------------------------------------------------------ */
+/* Projektzeit, Material und Stempelkorrektur offline (MVP-1593–1595)  */
+/* ------------------------------------------------------------------ */
+
+test("buildPayload: time.entry nimmt die Felder der Eingabeleiste, Tags als Liste, kein Token", () => {
+    /** @type {FakeForm} */
+    const form = {
+        dataset: {},
+        querySelector: () => null,
+        _entries: [
+            ["_token", "geheim"],
+            ["project_id", "prj1"],
+            ["date", "2030-01-15"],
+            ["minutes", "90"],
+            ["description", "Wartung"],
+            ["task_id", ""],
+            ["tag_ids[]", "t1"],
+            ["tag_ids[]", "t2"],
+        ],
+    };
+    assert.deepEqual(buildPayload("time.entry", form), {
+        project_id: "prj1",
+        date: "2030-01-15",
+        minutes: "90",
+        description: "Wartung",
+        tag_ids: ["t1", "t2"],
+    });
+});
+
+test("buildPayload: time.entry im Timer-Modus (ohne Zeitangabe) wird nicht abgefangen", () => {
+    /** @type {FakeForm} */
+    const form = { dataset: {}, querySelector: () => null, _entries: [["project_id", "prj1"], ["description", "läuft"]] };
+    assert.equal(buildPayload("time.entry", form), null);
+});
+
+test("buildPayload: time.entry mit Von/Bis braucht keine Dauer", () => {
+    /** @type {FakeForm} */
+    const form = {
+        dataset: {},
+        querySelector: () => null,
+        _entries: [["project_id", "prj1"], ["date", "2030-01-15"], ["start_time", "08:00"], ["end_time", "09:30"], ["break_minutes", "15"]],
+    };
+    assert.deepEqual(buildPayload("time.entry", form), {
+        project_id: "prj1", date: "2030-01-15", start_time: "08:00", end_time: "09:30", break_minutes: "15",
+    });
+});
+
+test("buildPayload: material.usage nimmt Projekt, Tag, Material, Menge und Einheit", () => {
+    /** @type {FakeForm} */
+    const form = {
+        dataset: {},
+        querySelector: () => null,
+        _entries: [["project_id", "prj1"], ["date", "2030-01-15"], ["material_id", ""], ["description", "Dübel"], ["quantity", "8"], ["unit", "Stk."], ["fremd", "x"]],
+    };
+    assert.deepEqual(buildPayload("material.usage", form), {
+        project_id: "prj1", date: "2030-01-15", description: "Dübel", quantity: "8", unit: "Stk.",
+    });
+});
+
+test("buildPayload: attendance.correct trägt Stempelung und gezeigten Stand mit", () => {
+    /** @type {FakeForm} */
+    const form = {
+        dataset: { syncPayloadAttendance: "att1", syncPayloadBaseVersion: "v1" },
+        querySelector: () => null,
+        _entries: [["base_version", "v1"], ["started_at", "2030-01-16T07:30"], ["ended_at", "2030-01-16T16:00"], ["break_minutes", ""], ["reason", "Vergessen auszustempeln, kein Empfang."]],
+    };
+    assert.deepEqual(buildPayload("attendance.correct", form), {
+        attendance: "att1",
+        base_version: "v1",
+        started_at: "2030-01-16T07:30",
+        ended_at: "2030-01-16T16:00",
+        reason: "Vergessen auszustempeln, kein Empfang.",
+    });
+});
+
+test("resolveConflict: meldet die Entscheidung und räumt erst danach", async () => {
+    await storePut("conflicts", { client_uuid: "k1", type: "time.entry", payload: { minutes: "30" } });
+    const calls = installFetch([jsonResponse(200, { resolved: true })]);
+
+    assert.equal(await resolveConflict("https://app.test/resolve", "k1", "discarded"), true);
+
+    assert.equal(calls.length, 1);
+    assert.deepEqual(JSON.parse(/** @type {JsonInit} */ (calls[0].init).body), { client_uuid: "k1", resolution: "discarded" });
+    assert.equal((await storeAll("conflicts")).length, 0);
+});
+
+test("resolveConflict: ohne Bestätigung bleibt der Konflikt, 404 räumt trotzdem", async () => {
+    await storePut("conflicts", { client_uuid: "k1", type: "time.entry" });
+    installFetch([jsonResponse(500, {})]);
+    assert.equal(await resolveConflict("https://app.test/resolve", "k1", "server"), false);
+    assert.equal((await storeAll("conflicts")).length, 1);
+
+    installFetch([new Error("offline")]);
+    assert.equal(await resolveConflict("https://app.test/resolve", "k1", "server"), false);
+    assert.equal((await storeAll("conflicts")).length, 1);
+
+    installFetch([jsonResponse(404, { resolved: false })]);
+    assert.equal(await resolveConflict("https://app.test/resolve", "k1", "server"), true);
+    assert.equal((await storeAll("conflicts")).length, 0);
+});
+
+test("resendConflict: neuer Befehl in der Outbox, Konflikt als erneut gesendet gemeldet", async () => {
+    /** @type {SyncEntry} */
+    const item = { client_uuid: "k1", type: "attendance.correct", payload: { attendance: "a1", base_version: "alt" }, captured_at: "2030-01-16T12:00:00Z", current_version: "neu" };
+    await storePut("conflicts", item);
+    // Meldung ok, danach der Flush ohne Ergebnisse — der Befehl bleibt ausstehend.
+    const calls = installFetch([jsonResponse(200, { resolved: true }), jsonResponse(200, { results: [] })]);
+
+    assert.equal(await resendConflict("https://app.test/resolve", item, { attendance: "a1", base_version: "neu" }, true), true);
+
+    const outbox = await outboxAll();
+    assert.equal(outbox.length, 1);
+    assert.equal(outbox[0].type, "attendance.correct");
+    assert.deepEqual(outbox[0].payload, { attendance: "a1", base_version: "neu" });
+    assert.equal(outbox[0].captured_at, "2030-01-16T12:00:00Z");
+    const resolve = JSON.parse(/** @type {JsonInit} */ (calls[0].init).body);
+    assert.equal(resolve.resolution, "resent");
+    assert.equal(resolve.resent_client_uuid, outbox[0].client_uuid);
+    assert.equal(resolve.edited, true);
+    assert.equal((await storeAll("conflicts")).length, 0);
+});
+
+test("resendConflict: scheitert die Meldung, verschwindet der neue Befehl wieder", async () => {
+    /** @type {SyncEntry} */
+    const item = { client_uuid: "k1", type: "time.entry", payload: { minutes: "30" } };
+    await storePut("conflicts", item);
+    installFetch([jsonResponse(503, {})]);
+
+    assert.equal(await resendConflict("https://app.test/resolve", item, { minutes: "45" }, true), false);
+
+    assert.equal((await outboxAll()).length, 0);
+    assert.equal((await storeAll("conflicts")).length, 1);
+});
+
+test("editorValue: Zeitstempel mit Zone wird zur Wanduhrzeit des Eingabefelds", () => {
+    const d = new Date("2030-01-16T07:30:00Z");
+    const pad = (/** @type {number} */ n) => String(n).padStart(2, "0");
+    const local = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    assert.equal(editorValue("started_at", "2030-01-16T07:30:00Z"), local);
+    assert.equal(editorValue("started_at", "2030-01-16T07:30"), "2030-01-16T07:30");
+    assert.equal(editorValue("minutes", 45), "45");
+    assert.equal(editorValue("reason", null), "");
 });

@@ -1,7 +1,7 @@
 ---
 title: "Connexion Todoist"
 topic: admin.todoist
-version: 2
+version: 3
 keywords:
     - Todoist
     - synchroniser les tâches
@@ -171,3 +171,5 @@ rapprochement filtrée sur Todoist.
   connexion**. Si une synchronisation échoue pour une autre raison, la page
   indique la dernière erreur jusqu’à ce qu’une synchronisation réussisse de
   nouveau ; une tâche d’exploitation est également créée.
+
+**Souveraineté des données :** si un autre système est maître des tâches, la synchronisation crée un cas « Souveraineté des données » par tâche dans la boîte d’intégration. **Reprendre une fois** importe la tâche via la même affectation tant qu’elle est active ; si la tâche change ensuite dans la source, le cas se rouvre.

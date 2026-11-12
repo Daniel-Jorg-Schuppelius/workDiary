@@ -77,6 +77,8 @@ return [
         'pick_list_pdf' => 'Pick list (PDF)',
     ],
     'field' => [
+        'unit_base' => 'Base unit',
+        'unit_option' => ':unit (= :factor :base)',
         'code' => 'Code',
         'default' => 'Default',
         'available' => 'Available',
@@ -130,7 +132,6 @@ return [
         'active' => 'Active',
         'fulfilled' => 'Fulfilled',
         'released' => 'Released',
-        'cancelled' => 'Cancelled',
     ],
     'count_status' => [
         'counting' => 'Counting',
@@ -139,6 +140,7 @@ return [
         'cancelled' => 'Cancelled',
     ],
     'count_ui' => [
+        'four_eyes_blocked' => 'Four-eyes approval: this stock count contains differences above the threshold that you counted yourself. Another person must approve it.',
         'title' => 'Stocktake',
         'open' => 'Open stocktake',
         'save' => 'Save counts',
@@ -166,6 +168,17 @@ return [
         'qty_positive' => 'The quantity must be greater than zero.',
         'not_found' => 'Stocktake not found.',
         'forbidden' => 'No permission for stocktake counts.',
+        'nothing_counted' => 'No counted quantity recorded yet — the review needs at least one.',
+        'submit_review' => 'Finish counting',
+        'submit_review_confirm' => 'Finish counting? Quantities are then locked until approval or reopening.',
+        'reopen' => 'Reopen counting',
+        'cancel' => 'Discard stocktake',
+        'cancel_confirm' => 'Discard the stocktake? Nothing will be posted.',
+        'status_flash' => [
+            'review' => 'Counting finished — the differences await review and approval.',
+            'counting' => 'Counting reopened.',
+            'cancelled' => 'Stocktake discarded — nothing was posted.',
+        ],
     ],
     'overview' => [
         'avg' => 'Avg cost',
@@ -191,7 +204,6 @@ return [
         'status' => [
             'created' => 'Created',
             'in_stock' => 'In stock',
-            'reserved' => 'Reserved',
             'shipped' => 'Shipped',
             'returned' => 'Returned',
             'blocked' => 'Blocked',
@@ -310,7 +322,82 @@ return [
         ],
     ],
 
+    'settings' => [
+        'title' => 'Inventory settings',
+        'valuation' => [
+            'heading' => 'Valuation',
+            'description' => 'The method used to value receipts and issues. Individual articles can carry their own method in the article form.',
+            'label' => 'Valuation method',
+            'hint' => 'When switching to FIFO or FEFO, existing stock receives an opening layer at the previous average price. Switching back to the moving average is only possible once no stock remains in layers.',
+        ],
+        'reservation' => [
+            'heading' => 'Reservation',
+            'description' => 'When a manufacturing order reserves its material. The order records the timing applied; a later change only affects new orders.',
+            'label' => 'Reservation timing',
+            'hint' => 'Reserving at start keeps material available for longer but may fail at start if stock is missing.',
+            'option' => [
+                'release' => 'When the order is released',
+                'start' => 'When production starts',
+            ],
+        ],
+        'four_eyes' => [
+            'heading' => 'Four-eyes approval',
+            'description' => 'Stock count differences at or above the threshold are not approved by the person who counted them. Threshold and approver are recorded in the audit log.',
+            'enabled' => 'Four-eyes approval for stock count differences',
+            'threshold' => 'Threshold (stock value per line)',
+            'threshold_hint' => '0 = every difference requires the second person.',
+            'negative' => 'Four-eyes approval for issues into negative stock',
+            'negative_hint' => 'An issue with “Allow negative stock” becomes a request in the approval inbox; it is posted only once another person with the “Approve negative stock” permission agrees.',
+        ],
+        'numbers' => [
+            'heading' => 'Article numbers',
+            'description' => 'Who maintains article number, variant SKU and GTIN. If a merchandise management system maintains them, the fields are locked in the article master and arrive with the synchronisation.',
+            'label' => 'SKU and GTIN maintained by',
+            'link' => 'Change at the number range “Article”',
+        ],
+        'flash' => [
+            'saved' => 'Inventory settings saved.',
+            'saved_layers' => 'Inventory settings saved. Opening layers created for existing stock: :count.',
+        ],
+    ],
+    'journal' => [
+        'title' => 'Stock journal',
+        'subtitle' => 'All stock movements in the base unit, with the quantity and unit in which they were entered.',
+        'search_placeholder' => 'Article or SKU',
+        'empty' => 'No stock movements in the period.',
+        'col' => [
+            'occurred_at' => 'Time',
+            'state' => 'Stock state',
+            'qty_base' => 'Quantity (base unit)',
+            'entered' => 'Entered as',
+            'lot' => 'Lot',
+            'actor' => 'Posted by',
+        ],
+    ],
+    'reservation' => [
+        'edit' => 'Change reservation',
+        'saved' => 'Reservation saved.',
+        'reserved' => 'Reserved',
+        'consumed' => 'Of which issued',
+        'open' => 'Still open',
+        'reserved_at' => 'Reserved on',
+        'priority_hint' => 'A lower number means higher priority (default 100). The list of reservations is ordered by it.',
+        'release_qty' => 'Release partial quantity',
+        'release_hint' => 'Releases this quantity again, for example to assign it to another order. Empty = release nothing.',
+        'redistribute' => 'Redistribute',
+        'redistribute_hint' => 'Hand over open quantity to another reservation of the same article, warehouse and ownership, for example to an order with higher priority. The reserved stock stays the same; the redistribution is recorded in the audit log.',
+        'redistribute_to' => 'To reservation',
+        'redistribute_option' => 'Priority :priority · open :open :unit · since :date',
+        'redistribute_qty' => 'Quantity',
+        'redistribute_qty_hint' => 'Empty = the entire open quantity.',
+        'redistribute_invalid' => 'The target reservation is unknown.',
+        'redistribute_mismatch' => 'Redistribution is only possible between active reservations of the same article, warehouse, bin and ownership.',
+        'redistribute_too_much' => 'The quantity exceeds the open quantity of the reservation.',
+    ],
     'valuation' => [
+        'switch' => [
+            'blocked_layers' => 'Switching to the moving average is not possible while stock is valued in FIFO/FEFO layers. The average was not maintained during that time. Reduce the stock first or keep the layer method.',
+        ],
         'method' => [
             'moving_average' => 'Moving average',
             'fifo' => 'FIFO',
@@ -436,5 +523,19 @@ return [
         'serial_qty_one' => 'Serial-tracked articles are received one serial at a time (quantity 1).',
         'tracked_article_manual_move' => 'Batch-/serial-tracked article: post via goods receipt (purchase order) or lot/serial management — not as anonymous stock.',
         'lot_required' => 'Batch-tracked article: the lots do not cover the quantity; stock without a lot is not issued.',
+        'unit_not_maintained' => 'The unit “:unit” is not maintained for the article “:article”.',
+        'unit_factor_invalid' => 'The unit “:unit” of the article “:article” has no valid conversion factor.',
+        'unit_quantity_too_small' => 'The quantity amounts to zero in the base unit. Please check the quantity and the unit “:unit”.',
+        'shelf_life_required' => 'Article with shelf life: please enter the lot and the best-before date.',
+        'shelf_life_manual_receipt' => 'Article with shelf life: please post the receipt via goods receipt (purchase order) with lot and best-before date.',
+    ],
+    // Vier-Augen-Freigabe Negativbestand (MVP-1626)
+    'negative' => [
+        'requested' => 'The issue into negative stock has been requested. It is posted as soon as a second person approves it in the approval inbox.',
+        'no_customer_cost' => 'With four-eyes approval, an issue into negative stock cannot also be charged to a customer. Post the material costs after the approval.',
+        'delegate_without_right' => 'The person you delegate to needs the “Approve negative stock” permission.',
+        'not_open' => 'The request has already been decided.',
+        'inbox_title' => 'Negative stock: :qty :unit :article',
+        'inbox_reference' => 'Warehouse :warehouse · requested by :name',
     ],
 ];

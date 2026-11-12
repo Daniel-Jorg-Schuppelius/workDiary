@@ -266,7 +266,7 @@ class ChangeController extends Controller {
             // Nur FREIGEGEBENE Vorlagen anbieten — der Service erzwingt es.
             'templates' => ChangeTemplate::query()->where('approved', true)->orderBy('name')->get(['id', 'name', 'version']),
             'problems' => Problem::query()->whereNotIn('status', ['closed'])->orderByDesc('id')->limit(100)->get(['id', 'title']),
-            'tickets' => ServiceTicket::query()->orderByDesc('reported_at')->limit(100)->get(['id', 'ticket_no', 'title']),
+            'tickets' => ServiceTicket::query()->visibleTo($this->authUser())->orderByDesc('reported_at')->limit(100)->get(['id', 'ticket_no', 'title']),
             'assets' => Asset::query()->orderBy('name')->limit(200)->get(['id', 'asset_no', 'name']),
             'orgUsers' => User::query()
                 ->where('organization_id', (int) $this->authUser()->organization_id)

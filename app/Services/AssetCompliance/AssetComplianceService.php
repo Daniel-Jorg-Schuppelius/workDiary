@@ -84,6 +84,149 @@ class AssetComplianceService implements AssetComplianceStatusProvider {
     }
 
     /**
+     * Prüfpflicht ändern (MVP-1575): Intervall je Asset, Fälligkeit und
+     * Zuständigkeit. Ein geändertes Intervall rechnet die Fälligkeit ab der
+     * letzten Prüfung neu, sofern sie nicht ausdrücklich mitgegeben ist.
+     *
+     * @param array<string, mixed> $attributes
+     */
+    public function updateAssignment(AssetComplianceAssignment $assignment, User $actor, array $attributes): AssetComplianceAssignment {
+        $intervalBefore = $assignment->intervalMonths();
+        $assignment->fill($attributes);
+
+        if (empty($attributes['next_due_on']) && $assignment->intervalMonths() !== $intervalBefore && $assignment->last_done_on !== null) {
+            $assignment->next_due_on = $assignment->last_done_on->copy()->addMonthsNoOverflow($assignment->intervalMonths());
+        }
+        $assignment->save();
+
+        $asset = $assignment->asset()->firstOrFail();
+        $asset->audit('assetCompliance.assignmentUpdated', [
+            'assignment_id' => $assignment->id,
+            'interval_months' => $assignment->intervalMonths(),
+            'next_due_on' => $assignment->next_due_on?->toDateString(),
+            'actor_id' => $actor->id,
+        ]);
+        $this->releaseObsoleteOverdueBlocks($assignment, $actor);
+        $this->refreshAssetNextInspection($asset);
+
+        return $assignment;
+    }
+
+    /**
+     * Prüfpflicht ruhen lassen oder wieder aufnehmen (MVP-1575). Gelöscht wird
+     * nie: Prüfprotokolle hängen an der Pflicht. Beim Ruhen enden offene
+     * Termine und die Überfälligkeitssperre dieser Pflicht.
+     */
+    public function setAssignmentActive(AssetComplianceAssignment $assignment, bool $active, ?User $actor, ?string $reason = null): AssetComplianceAssignment {
+        if ($assignment->is_active === $active) {
+            return $assignment;
+        }
+
+        return DB::transaction(function () use ($assignment, $active, $actor, $reason): AssetComplianceAssignment {
+            $assignment->forceFill(['is_active' => $active])->save();
+
+            if (! $active) {
+                $assignment->schedules()->open()->get()
+                    ->each(fn (AssetInspectionSchedule $schedule) => $this->cancelSchedule($schedule, $actor, $reason ?? (string) __('asset_compliance.schedule.cancelled_by_deactivation')));
+                $this->releaseObsoleteOverdueBlocks($assignment, $actor);
+            }
+
+            $asset = $assignment->asset()->first();
+            if ($asset !== null) {
+                $asset->audit($active ? 'assetCompliance.assignmentReactivated' : 'assetCompliance.assignmentDeactivated', [
+                    'assignment_id' => $assignment->id,
+                    'actor_id' => $actor?->id,
+                ]);
+                $this->refreshAssetNextInspection($asset);
+            }
+
+            return $assignment;
+        });
+    }
+
+    /** Prüftermin stornieren (MVP-1575) — nur solange er nicht durchgeführt ist. */
+    public function cancelSchedule(AssetInspectionSchedule $schedule, ?User $actor, string $reason): AssetInspectionSchedule {
+        return DB::transaction(function () use ($schedule, $actor, $reason): AssetInspectionSchedule {
+            // Unter Sperre neu lesen: eine gleichzeitig erfasste Prüfung darf nicht storniert werden.
+            $locked = AssetInspectionSchedule::query()->withoutGlobalScopes()->whereKey($schedule->id)->lockForUpdate()->firstOrFail();
+            if (! $locked->status->canTransitionTo(AssetInspectionScheduleStatus::Cancelled)) {
+                throw new \InvalidArgumentException((string) __('asset_compliance.schedule.error.not_cancellable'));
+            }
+
+            $from = $locked->status;
+            $locked->forceFill([
+                'status' => AssetInspectionScheduleStatus::Cancelled->value,
+                'cancel_reason' => trim($reason),
+            ])->save();
+            $locked->audit('assetCompliance.scheduleCancelled', [
+                'from' => $from->value,
+                'reason' => trim($reason),
+                'actor_id' => $actor?->id,
+            ]);
+
+            return $schedule->refresh();
+        });
+    }
+
+    /**
+     * Offene Prüftermine, deren Tag ohne Prüfung verstrichen ist, gelten als
+     * versäumt (MVP-1575). Maßgeblich ist der geplante Tag, sonst die Fälligkeit.
+     */
+    public function markMissedSchedules(Organization $organization): int {
+        $today = now()->toDateString();
+        $missed = 0;
+
+        $schedules = AssetInspectionSchedule::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->open()
+            ->whereRaw('coalesce(planned_on, due_on) < ?', [$today])
+            ->get();
+
+        foreach ($schedules as $schedule) {
+            $from = $schedule->status;
+            $schedule->forceFill(['status' => AssetInspectionScheduleStatus::Missed->value])->save();
+            $schedule->audit('assetCompliance.scheduleMissed', ['from' => $from->value]);
+            $missed++;
+        }
+
+        return $missed;
+    }
+
+    /** Asset außer Betrieb (MVP-1574): alle Prüfpflichten ruhen, offene Termine sind storniert. */
+    public function closeForDecommissionedAsset(Asset $asset, ?User $actor): void {
+        AssetComplianceAssignment::query()
+            ->withoutGlobalScopes()
+            ->where('asset_id', $asset->id)
+            ->active()
+            ->get()
+            ->each(fn (AssetComplianceAssignment $assignment) => $this->setAssignmentActive(
+                $assignment,
+                false,
+                $actor,
+                (string) __('asset_compliance.schedule.cancelled_by_decommission'),
+            ));
+    }
+
+    /** Überfälligkeitssperre der Pflicht aufheben, sobald sie nicht mehr überfällig oder nicht mehr aktiv ist. */
+    private function releaseObsoleteOverdueBlocks(AssetComplianceAssignment $assignment, ?User $actor): void {
+        $assignment->loadMissing('profile');
+        if ($assignment->is_active && $assignment->isOverdue()) {
+            return;
+        }
+
+        AssetBlock::query()
+            ->withoutGlobalScopes()
+            ->where('asset_id', $assignment->asset_id)
+            ->active()
+            ->where('reason', AssetBlockReason::InspectionOverdue->value)
+            ->where('source_type', $assignment->getMorphClass())
+            ->where('source_id', $assignment->id)
+            ->get()
+            ->each(fn (AssetBlock $block) => $this->blocks->release($block, $actor, (string) __('asset_compliance.assignment.block_released')));
+    }
+
+    /**
      * Prüfung erfassen (MVP-286/287): unveränderbares Ereignis mit
      * Ergebniszeilen (Grenzwert-Snapshot), Messwerten und optionalem
      * Zertifikat; aktualisiert Fälligkeit und wendet die Folgeentscheidung
@@ -159,7 +302,7 @@ class AssetComplianceService implements AssetComplianceStatusProvider {
             }
 
             foreach ((array) ($data['measurements'] ?? []) as $measurement) {
-                if (! is_array($measurement) || ! isset($measurement['value'])) {
+                if (! is_array($measurement) || ! isset($measurement['value']) || $measurement['value'] === '') {
                     continue;
                 }
 
@@ -255,6 +398,7 @@ class AssetComplianceService implements AssetComplianceStatusProvider {
      */
     public function scanAssignments(Organization $organization): int {
         $sent = 0;
+        $this->markMissedSchedules($organization);
 
         $assignments = AssetComplianceAssignment::query()
             ->withoutGlobalScopes()
@@ -267,7 +411,8 @@ class AssetComplianceService implements AssetComplianceStatusProvider {
             $asset = $assignment->asset;
             $profile = $assignment->profile;
 
-            if ($asset === null || $profile === null) {
+            // Außer Betrieb genommene Assets haben keine Prüfpflicht mehr, auch wenn das Modul beim Ausmustern aus war.
+            if ($asset === null || $profile === null || ! $asset->isInOperation()) {
                 continue;
             }
 
@@ -357,6 +502,7 @@ class AssetComplianceService implements AssetComplianceStatusProvider {
             ->value('next_due_on');
 
         $asset->forceFill(['next_inspection_on' => $earliest])->saveQuietly();
+        app(\App\Services\Asset\AssetHealthService::class)->sync($asset);
     }
 
     /**

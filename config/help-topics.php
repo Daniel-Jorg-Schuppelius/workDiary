@@ -258,6 +258,7 @@ return [
         // Servicekatalog + Genehmigungs-Inbox (Feature 065, MVP-154):
         // bewusst KEIN neues Topic (Paritätspflicht ×alle Locales).
         'servicedesk.catalog.*' => 'helpdesk.overview',
+        'servicedesk.order.*' => 'helpdesk.overview',
         'servicedesk.service-map.*' => 'helpdesk.overview',
         // Problem-Management (Feature 065, MVP-156): gleiches Topic.
         'servicedesk.problems.*' => 'helpdesk.overview',
@@ -644,6 +645,9 @@ return [
         'lexoffice.handover.*' => 'lexware.supplements',
         'materials.*' => 'materials.manage',
         'inventory.stock' => 'inventory.stock',
+        'inventory.journal' => 'inventory.stock',
+        'inventory.settings.*' => 'inventory.stock',
+        'inventory.reservations.*' => 'inventory.stock',
         'inventory.lots' => 'inventory.stock',
         'inventory.lots.*' => 'inventory.stock',
         'inventory.scan' => 'inventory.stock',

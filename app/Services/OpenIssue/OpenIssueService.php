@@ -13,8 +13,10 @@ namespace App\Services\OpenIssue;
 use App\Automation\RuleEngine;
 use App\Enums\OpenIssue\{OpenIssueEventType, OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Exceptions\InvalidOpenIssueTransitionException;
+use App\Models\Communication\Comment;
 use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Platform\User;
+use App\Services\Diary\Contracts\IssueTicketOpener;
 use App\Services\OpenIssue\Automation\OpenIssueCreatedTrigger;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -245,6 +247,10 @@ class OpenIssueService {
     }
 
     public function changeDueDate(OpenIssue $issue, ?Carbon $dueAt, User $actor): OpenIssue {
+        if ($issue->due_at?->getTimestamp() === $dueAt?->getTimestamp()) {
+            return $issue;
+        }
+
         $old = $issue->due_at?->toIso8601String();
         $issue->update(['due_at' => $dueAt]);
         $this->record($issue, OpenIssueEventType::DueDateChanged, $actor, [
@@ -267,7 +273,30 @@ class OpenIssueService {
             'new' => $severity->value,
         ]);
 
+        // Wie bei der Anlage: kritisch braucht eine Frist und eine zuständige Person.
+        if ($severity === OpenIssueSeverity::Critical && $issue->due_at === null) {
+            $this->changeDueDate($issue, Carbon::now()->addDays(7), $actor);
+        }
+        if ($severity->requiresAssignee() && $issue->assignee_user_id === null) {
+            $this->assign($issue, $actor, $actor);
+        }
+
         return $issue;
+    }
+
+    /** Kommentar am Punkt; der Verlauf hält fest, dass und von wem kommentiert wurde. */
+    public function addComment(OpenIssue $issue, User $actor, string $body): Comment {
+        return DB::transaction(function () use ($issue, $actor, $body): Comment {
+            /** @var Comment $comment */
+            $comment = $issue->comments()->create([
+                'organization_id' => $issue->organization_id,
+                'user_id' => $actor->id,
+                'body' => $body,
+            ]);
+            $this->record($issue, OpenIssueEventType::CommentAdded, $actor, ['comment_id' => $comment->id]);
+
+            return $comment;
+        });
     }
 
     public function changeVisibility(OpenIssue $issue, OpenIssueVisibility $visibility, User $actor): OpenIssue {
@@ -302,6 +331,21 @@ class OpenIssueService {
 
         $issue->update(['status' => $target->value]);
         $this->record($issue, $event, $actor, $payload);
+    }
+
+    /**
+     * Ticket aus dem offenen Punkt (MVP-1549): der Helpdesk legt es über den
+     * Contract an, der Punkt hält die Eröffnung im Journal fest.
+     *
+     * @return array{label: string, url: string|null, created: bool}|null
+     */
+    public function openTicket(OpenIssue $issue, User $actor, IssueTicketOpener $opener): ?array {
+        $ticket = $opener->open($issue, $actor);
+        if ($ticket !== null && $ticket['created']) {
+            $this->record($issue, OpenIssueEventType::TicketOpened, $actor, ['ticket_no' => $ticket['label']]);
+        }
+
+        return $ticket;
     }
 
     /**

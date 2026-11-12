@@ -59,15 +59,20 @@ class AssetTimelinePresenter {
      */
     private function assetAuditDetail(array $payload): string {
         $name = trim((string) ($payload['user_name'] ?? ''));
+        $by = $name !== '' ? __('durch :name', ['name' => $name]) : '';
+        $location = trim((string) ($payload['location'] ?? ''));
 
-        return $name !== '' ? __('durch :name', ['name' => $name]) : '';
+        return trim($location . ($location !== '' && $by !== '' ? ' · ' : '') . $by);
     }
 
     private function assetAuditTitle(string $auditEvent): string {
         return match ($auditEvent) {
             'asset.statusChanged' => __('Status geändert'),
             'asset.decommissioned' => __('Außer Betrieb gesetzt'),
-            'asset.ownershipTransferred' => __('Eigentum übertragen'),
+            'asset.ownership_changed' => __('asset.timeline.ownership_changed'),
+            'asset.healthChanged' => __('asset.timeline.health_changed'),
+            'asset.blocked' => __('asset.timeline.blocked'),
+            'asset.unblocked' => __('asset.timeline.unblocked'),
             'asset.moved' => __('Standort geändert'),
             'asset.updated' => __('Asset aktualisiert'),
             'asset.created' => __('Asset angelegt'),

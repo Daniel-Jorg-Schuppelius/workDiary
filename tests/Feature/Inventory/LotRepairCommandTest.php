@@ -57,7 +57,7 @@ final class LotRepairCommandTest extends TestCase {
             ->assertSuccessful();
 
         $this->assertSame($journal, StockMovement::query()->count());
-        $this->assertSame('10.0000', app(LotStockReader::class)->balanceOf($lot));
+        $this->assertSame('10.0000', app(LotStockReader::class)->balancesOf([$lot])[$lot->id]);
     }
 
     public function test_apply_detaches_the_excess_pot_by_pot_and_keeps_the_physical_stock(): void {
@@ -85,7 +85,7 @@ final class LotRepairCommandTest extends TestCase {
         foreach ($this->repairs() as $movement) {
             $this->assertSame([StockMovementType::Correction, StockState::Physical, null], [$movement->movement_type, $movement->stock_state, $movement->actor_user_id]);
         }
-        $this->assertSame('4.0000', app(LotStockReader::class)->balanceOf($lot));
+        $this->assertSame('4.0000', app(LotStockReader::class)->balancesOf([$lot])[$lot->id]);
         $this->assertSame($before, [$this->ledger->balance($this->variant, $this->warehouse, StockState::Physical), $this->ledger->available($this->variant, $this->warehouse)]);
         $this->assertSame('6.0000', $this->ledger->balance($this->variant, $this->warehouse, StockState::Physical, bin: $bin));
 

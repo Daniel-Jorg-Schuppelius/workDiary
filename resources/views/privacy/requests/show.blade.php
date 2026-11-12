@@ -29,9 +29,20 @@
                         @if ($request->deadline_at)
                             <span class="text-sm {{ $request->isOverdue() ? 'text-error font-semibold' : 'text-base-content/70' }}">
                                 {{ __('Frist') }}: {{ $request->deadline_at->fdate() }}
+                                @if ($request->deadline_extended_at && $request->original_deadline_at)
+                                    ({{ __('verlängert, ursprünglich :date', ['date' => $request->original_deadline_at->fdate()]) }})
+                                @endif
                             </span>
                         @endif
                     </div>
+                    @if ($request->isShredded())
+                        <div role="status" class="alert alert-warning text-sm">
+                            <span>{{ __('Der Schlüssel dieses Vorgangs wurde nach Ablauf der Aufbewahrungsfrist vernichtet. Inhalte und Auskunftspakete sind nicht mehr lesbar; Nummer, Fristen, Entscheidung und Verlauf bleiben als Nachweis.') }}</span>
+                        </div>
+                    @endif
+                    @if ($request->deadline_extended_at && $request->deadline_extension_reason_ciphertext)
+                        <p class="whitespace-pre-line text-sm"><span class="font-semibold">{{ __('Grund der Fristverlängerung') }}:</span> {{ $request->deadline_extension_reason_ciphertext }}</p>
+                    @endif
                     @if ($request->isFromPortal())
                         <div role="status" class="alert alert-info text-sm">
                             <span>{{ __('dsar.internal.portal_banner') }}</span>
@@ -68,6 +79,65 @@
                             <p class="text-xs text-success">{{ __('Identität bestätigt') }} ({{ $request->identity_verified_at->fdate() }})</p>
                         </x-card>
                     @endunless
+                @endcan
+
+                {{-- Bearbeitungsstand (MVP-1620): Identitätsnachweis, Rückfrage, Antwort, Rücknahme — die Frist läuft weiter. --}}
+                @can('update', $request)
+                    @if ($request->status->isOpen() && ! $request->isShredded())
+                        @php
+                            $dsrStatus = \App\Enums\Privacy\DataSubjectRequestStatus::class;
+                            $steps = array_filter([
+                                $request->identity_verified_at === null && $request->status->canTransitionTo($dsrStatus::IdentityCheck) && $request->status !== $dsrStatus::AwaitingInfo
+                                    ? ['status' => $dsrStatus::IdentityCheck, 'icon' => 'badge', 'label' => __('dsar.internal.status_action.identity_check')] : null,
+                                $request->status->canTransitionTo($dsrStatus::AwaitingInfo)
+                                    ? ['status' => $dsrStatus::AwaitingInfo, 'icon' => 'contact_support', 'label' => __('dsar.internal.status_action.awaiting_info')] : null,
+                                $request->status === $dsrStatus::AwaitingInfo
+                                    ? ['status' => $request->identity_verified_at === null && $request->isFromPortal() ? $dsrStatus::IdentityCheck : $dsrStatus::InProgress, 'icon' => 'mark_email_read', 'label' => __('dsar.internal.status_action.info_received')] : null,
+                            ]);
+                        @endphp
+                        <x-card>
+                            <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('dsar.internal.status_heading') }}</h2>
+                            <div class="mt-2 flex flex-col gap-1">
+                                @foreach ($steps as $step)
+                                    <form method="post" action="{{ route('dataprotection.requests.transition', $request) }}">
+                                        @csrf
+                                        <input type="hidden" name="status" value="{{ $step['status']->value }}">
+                                        <x-icon-btn :icon="$step['icon']" tone="outline" size="sm" type="submit" show-label class="w-full">{{ $step['label'] }}</x-icon-btn>
+                                    </form>
+                                @endforeach
+                                <x-action-form :action="route('dataprotection.requests.transition', $request)" :confirm="__('dsar.internal.status_action.withdrawn_confirm')" :confirm-label="__('dsar.internal.status_action.withdrawn')">
+                                    <input type="hidden" name="status" value="{{ $dsrStatus::Withdrawn->value }}">
+                                    <x-icon-btn icon="undo" tone="ghost" size="sm" type="submit" show-label class="w-full">{{ __('dsar.internal.status_action.withdrawn') }}</x-icon-btn>
+                                </x-action-form>
+                            </div>
+                        </x-card>
+                    @endif
+                @endcan
+
+                {{-- Art. 12 Abs. 3 DSGVO: höchstens zwei weitere Monate, mit Grund, Mitteilung innerhalb der ersten Frist. --}}
+                @can('update', $request)
+                    @php $latestDeadline = $request->latestPossibleDeadline(); @endphp
+                    @if ($request->status->isOpen() && ! $request->isShredded() && $request->deadline_at && $latestDeadline && $request->deadline_at->lt($latestDeadline->copy()->startOfDay()) && ($request->original_deadline_at ?? $request->deadline_at)->isFuture())
+                        <x-card>
+                            <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Frist verlängern') }}</h2>
+                            <p class="mt-1 text-sm text-base-content/70">
+                                {{ __('Bei komplexen oder vielen Anträgen um höchstens zwei weitere Monate (Art. 12 Abs. 3 DSGVO), spätestens bis :date. Die Person muss innerhalb der ersten Frist davon erfahren.', ['date' => $latestDeadline->fdate()]) }}
+                                {{ $request->contact_email_ciphertext
+                                    ? __('WorkDiary sendet die Mitteilung mit dem Grund an die Kontaktadresse der Anfrage.')
+                                    : __('Die Anfrage hat keine Kontaktadresse: Teilen Sie der Person Verlängerung und Grund selbst mit.') }}
+                            </p>
+                            <form method="post" action="{{ route('dataprotection.requests.extend', $request) }}" class="mt-2 space-y-1">
+                                @csrf
+                                <x-form-group tone="ghost" cols="1">
+                                    <x-input-field name="deadline_at" type="date" :label="__('Neue Frist')" required
+                                                   :value="old('deadline_at', $latestDeadline->toDateString())"
+                                                   min="{{ $request->deadline_at->copy()->addDay()->toDateString() }}" max="{{ $latestDeadline->toDateString() }}" />
+                                    <x-textarea-field name="extension_reason" rows="3" maxlength="5000" :label="__('Grund der Fristverlängerung')" :value="old('extension_reason')" required />
+                                </x-form-group>
+                                <x-icon-btn icon="event_repeat" tone="outline" size="sm" type="submit" show-label class="w-full">{{ __('Frist verlängern') }}</x-icon-btn>
+                            </form>
+                        </x-card>
+                    @endif
                 @endcan
 
                 @can('assign', $request)

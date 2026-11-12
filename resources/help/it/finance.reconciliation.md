@@ -1,7 +1,7 @@
 ---
 title: "Riconciliazione dei pagamenti"
 topic: finance.reconciliation
-version: 3
+version: 5
 keywords:
     - riconciliazione bancaria
     - importare estratto conto
@@ -53,10 +53,28 @@ data di pagamento) oppure contrassegna una nota spese come rimborsata.
 
 ## Casi pratici
 
-- **Sconto cassa:** un pagamento inferiore entro la tolleranza di sconto
-  (standard 3 %) vale come pagamento completo.
-- **Tolleranza di centesimi:** differenze di arrotondamento fino a 2
-  centesimi non impediscono una proposta.
+- **Cerca documento:** se nessun suggerimento è adatto, **Cerca documento**
+  sul movimento aperto mostra l'elenco di tutte le fatture aperte, delle spese
+  approvate e dei conti cliente. Si sceglie il documento, l'importo (inferiore
+  = pagamento parziale, superiore = pagamento in eccesso) e, se si vuole, il
+  tipo e una nota.
+- **Movimento senza documento:** con la contabilità locale, spese bancarie,
+  interessi, un prelievo privato o una compensazione si registrano
+  direttamente banca a conto con **Registra su un conto**, se si vuole con
+  codice imposta (il movimento è l'importo lordo) e centro di costo. Il
+  movimento risulta poi messo da parte e registrato. Restano disponibili
+  **Registrare sul conto transitorio** e il giroconto interno.
+- **Sconto cassa:** un pagamento inferiore entro la tolleranza di sconto vale
+  come pagamento completo con sconto. Se la fattura prevede condizioni di sconto
+  proprie, valgono il loro importo e la loro scadenza; altrimenti la tolleranza
+  di sconto dell'organizzazione (standard 3 %).
+- **Tolleranza di centesimi:** differenze di arrotondamento fino alla
+  tolleranza di centesimi dell'organizzazione (standard 0,02) non impediscono
+  una proposta. Entrambe le tolleranze si impostano nelle impostazioni
+  dell'organizzazione, in **Riconciliazione bancaria**.
+- **Spese:** gli addebiti vengono proposti solo per rimborsare note spese
+  approvate pagate privatamente; carta aziendale, cassa e bonifico bancario
+  sono fondi aziendali.
 - **Pagamento parziale/in eccesso:** vengono gestiti come tipo di
   assegnazione a sé; in caso di pagamento parziale la fattura resta
   aperta.

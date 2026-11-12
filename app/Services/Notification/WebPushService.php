@@ -102,19 +102,6 @@ class WebPushService {
         return $sent;
     }
 
-    /**
-     * @param  iterable<User>  $users
-     * @param  array{title: string, body?: string, url?: string, tag?: string, icon?: string}  $payload
-     */
-    public function sendToUsers(iterable $users, array $payload): int {
-        $sum = 0;
-        foreach ($users as $user) {
-            $sum += $this->sendToUser($user, $payload);
-        }
-
-        return $sum;
-    }
-
     /** @param list<string> $pins `host:port:ip`-Bindungen der Endpunkte dieses Laufs (ssrf-5). */
     protected function webPush(array $pins = []): ?WebPush {
         if ($this->webPush !== null) {

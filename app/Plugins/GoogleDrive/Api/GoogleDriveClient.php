@@ -13,12 +13,11 @@ namespace App\Plugins\GoogleDrive\Api;
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
 use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Plugins\GoogleDrive\{GoogleDriveConfig, GoogleDrivePlugin};
-use App\Plugins\Support\{ConnectionTokenStore, PluginHttpFactory};
+use App\Plugins\Support\{ConnectionTokenStore, PluginApiException, PluginHttpFactory};
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeContainer, IntakeItem};
 use App\Services\CloudIntake\StaleCheckpointException;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Psr\Http\Message\StreamInterface;
-use RuntimeException;
 
 /**
  * Google-Drive-Gateway (Feature 080, MVP-355). Zweiphasiger Checkpoint
@@ -57,7 +56,7 @@ class GoogleDriveClient {
     public function account(): IntakeAccount {
         $response = $this->api->getResponse($this->base . '/about', ['fields' => 'user(permissionId,displayName,emailAddress)']);
         if (! $response->successful()) {
-            throw new RuntimeException('Drive /about fehlgeschlagen (HTTP ' . $response->status() . ').');
+            throw new PluginApiException('Drive /about fehlgeschlagen (HTTP ' . $response->status() . ').', $response->status());
         }
 
         /** @var array{user?: array{permissionId?: string, displayName?: string, emailAddress?: string}} $data */
@@ -108,7 +107,7 @@ class GoogleDriveClient {
         );
 
         if (! $response->successful()) {
-            throw new RuntimeException('Drive-Download fehlgeschlagen (HTTP ' . $response->status() . ').');
+            throw new PluginApiException('Drive-Download fehlgeschlagen (HTTP ' . $response->status() . ').', $response->status());
         }
 
         return $response->toPsrResponse()->getBody();
@@ -346,7 +345,7 @@ class GoogleDriveClient {
             'expiration' => (string) ((time() + $ttlSeconds) * 1000),
         ]);
         if (! $response->successful()) {
-            throw new RuntimeException('Drive changes.watch fehlgeschlagen (HTTP ' . $response->status() . ').');
+            throw new PluginApiException('Drive changes.watch fehlgeschlagen (HTTP ' . $response->status() . ').', $response->status());
         }
 
         /** @var array{id?: string, resourceId?: string, expiration?: string|int} $data */
@@ -378,7 +377,7 @@ class GoogleDriveClient {
 
         $response = $this->api->getResponse($this->base . '/changes/startPageToken', $query);
         if (! $response->successful()) {
-            throw new RuntimeException('Drive startPageToken fehlgeschlagen (HTTP ' . $response->status() . ').');
+            throw new PluginApiException('Drive startPageToken fehlgeschlagen (HTTP ' . $response->status() . ').', $response->status());
         }
 
         /** @var array{startPageToken?: string} $data */
@@ -421,7 +420,7 @@ class GoogleDriveClient {
             throw new StaleCheckpointException('Drive-pageToken ungültig/abgelaufen.');
         }
         if (! $response->successful()) {
-            throw new RuntimeException('Drive-Abfrage fehlgeschlagen (HTTP ' . $response->status() . ').');
+            throw new PluginApiException('Drive-Abfrage fehlgeschlagen (HTTP ' . $response->status() . ').', $response->status());
         }
     }
 

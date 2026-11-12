@@ -49,4 +49,7 @@
         <p style="margin-top: 8pt;">{{ $takeoff->note }}</p>
     @endif
     <p style="margin-top: 12pt; font-size: 8pt;">{{ __('takeoff.pdf_note') }}</p>
+    {{-- Firmenangaben nach Blockzustand des Designs (MVP-1624). --}}
+    @push('pdf-styles')<style>.tpl-issuer { margin-top: 6px; font-size: 9px; color: #555; }</style>@endpush
+    @include('pdf._design_issuer')
 </x-pdf-layout>

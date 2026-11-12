@@ -10,7 +10,14 @@
 
 return [
     // Löschbereiche der Aufbewahrung (Schlüssel == config/retention.php areas.*).
+    'dsr_extension' => [
+        'closed' => 'Die Frist lässt sich nur an einer offenen Anfrage verlängern.',
+        'first_deadline_passed' => 'Die erste Frist ist abgelaufen. Eine Verlängerung muss der Person innerhalb dieser Frist mitgeteilt werden und ist nicht mehr möglich.',
+        'not_later' => 'Die neue Frist muss nach der bisherigen liegen.',
+        'too_late' => 'Die Frist lässt sich um höchstens zwei weitere Monate verlängern, also bis zum :date.',
+    ],
     'retention_area' => [
+        'privacy_incidents' => 'Datenschutzvorfälle (abgeschlossen)',
         'incoming_invoices_rejected' => 'Abgelehnte Rechnungseingänge',
         'audit_logs' => 'Audit-Protokoll',
         'exports' => 'Lohn-/Zeitexporte',
@@ -76,5 +83,16 @@ return [
         'dpia_missing' => '„:name“ mit DSFA-Bedarf ohne abgeschlossene DSFA',
         'tom_missing' => '„:name“ ohne zugeordnete TOM',
         'tom_proof_expiring' => 'TOM-Nachweise laufen ab oder sind abgelaufen: :names',
+    ],
+    'legal_region' => [
+        'label' => 'Rechtsraum',
+        'hint' => 'Bestimmt die Aufbewahrungsfristen der Löschvorschläge und die Angaben der Verfahrensdokumentation. Eine Änderung wirkt auf künftige Löschvorschläge.',
+    ],
+    'tom' => [
+        'implementation_status' => 'Umsetzungsstatus',
+        'protection_level' => 'Schutzbedarf',
+        'protection_level_none' => '— nicht festgelegt —',
+        'state_save' => 'Stand speichern',
+        'state_saved' => 'Umsetzungsstatus und Schutzbedarf gespeichert.',
     ],
 ];

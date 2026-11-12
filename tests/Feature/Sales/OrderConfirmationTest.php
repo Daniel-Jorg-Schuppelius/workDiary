@@ -67,6 +67,26 @@ final class OrderConfirmationTest extends TestCase {
         return static fn (): Psr7Response => FakePluginHttp::response($body, $status);
     }
 
+    /**
+     * Befund 2026-11-10: die Vorbelegung des Arbeitsanteils schrieb an der
+     * Auftragsposition eine Spalte, die es dort nicht gibt (SQL 1054).
+     */
+    public function test_accepted_quote_with_article_position_becomes_an_order_confirmation(): void {
+        $article = \App\Models\Article\Article::factory()->create(['organization_id' => $this->org->id]);
+        $service = app(QuoteService::class);
+        $quote = $service->create(['customer_id' => $this->customer->id, 'valid_until' => now()->addWeeks(2)->toDateString()], [
+            ['description' => 'Schaltschrank', 'quantity' => 1, 'unit_price' => 800, 'tax_rate' => '19.00', 'article_id' => $article->id],
+        ], $this->user);
+        $quote = $service->approve($quote, $this->user);
+        ['quote' => $quote, 'acceptance_token' => $token] = $service->send($quote, $this->user);
+        $quote = $service->accept($quote, null, $token);
+
+        $confirmation = app(\App\Services\Sales\OrderConfirmationService::class)->fromQuote($quote, $this->user);
+
+        $this->assertSame($article->id, $confirmation->items->sole()->article_id);
+        $this->assertSame(800.0, $confirmation->subtotal?->toFloat());
+    }
+
     public function test_quote_becomes_an_order_confirmation_with_its_own_number(): void {
         $quote = $this->acceptedQuote();
 
@@ -86,7 +106,6 @@ final class OrderConfirmationTest extends TestCase {
         $pdf = $this->actingAs($this->user)->get(route('order-confirmations.pdf', $confirmation));
         $pdf->assertOk();
         $this->assertStringStartsWith('%PDF', (string) $pdf->getContent());
-        $this->actingAs($this->user)->get(route('quotes.order-confirmation', $quote))->assertRedirect(route('order-confirmations.pdf', $confirmation));
         $this->actingAs($this->user)->get(route('quotes.show', $quote))->assertOk()->assertSee(__('quotes.order_confirmation.open', ['number' => 'AB-2026-0001']));
 
         // Ein zweites Erstellen öffnet dieselbe AB.

@@ -14,9 +14,11 @@ namespace App\Http\Controllers\Privacy;
 
 use App\Http\Controllers\Controller;
 use App\Models\Privacy\DsarPortal;
+use App\Support\Locales;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -37,7 +39,7 @@ class DsarPortalController extends Controller {
 
         $data = $request->validate([
             'intro_text' => ['nullable', 'string', 'max:5000'],
-            'default_locale' => ['nullable', 'string', 'max:10'],
+            'default_locale' => ['nullable', Rule::in(Locales::enabledCodes())],
         ]);
 
         $portal = $this->portal();

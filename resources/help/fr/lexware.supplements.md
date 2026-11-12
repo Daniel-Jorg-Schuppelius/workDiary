@@ -1,7 +1,7 @@
 ---
 title: "Compléments Lexware : tarif, matrice des fonctions et remise"
 topic: lexware.supplements
-version: 2
+version: 3
 keywords:
     - Lexoffice
     - Lexware Office
@@ -32,3 +32,7 @@ Dans le menu système, sous **Finances et paie → Compléments Lexware**, vous 
 **Remise automatique :** Le canal « automatique » nécessite une clé API propre (tarif XL) et un canal de remise validé ; d'ici là, l'export manuel reste la voie standard. Les remises ouvertes restent visibles lors d'un changement de tarif.
 
 **Droits :** Toute personne ayant « Lister les factures » voit les pages ; seul « Configuration financière » modifie le profil tarifaire ; l'export et la confirmation nécessitent « Exporter les factures ». Dans le menu système, le profil tarifaire n'apparaît qu'avec « Configuration financière » ; depuis la liste de remise, il reste consultable pour toute personne ayant « Lister les factures ».
+
+## Filtre de la liste de transmission
+
+Le filtre propose les états de la voie manuelle : ouvert, exporté, confirmé manuellement. Transmis, vérification requise et échoué ne sont définis que par la transmission automatique, qui suivra une fois la voie de transmission prouvée.

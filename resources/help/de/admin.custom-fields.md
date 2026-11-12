@@ -1,7 +1,7 @@
 ---
 title: "Eigene Felder"
 topic: admin.custom-fields
-version: 1
+version: 2
 keywords:
     - Zusatzfelder
     - benutzerdefinierte Felder
@@ -43,3 +43,5 @@ Hinweise:
   dabei nie überschrieben.
 - Datei-, Foto- und Unterschriftsfelder gibt es hier nicht — dafür stehen
   Anhänge und Formulare zur Verfügung.
+
+**Liste, Export und Suche:** Eigene Felder gibt es für Kunden, Lieferanten, Leads, Aufträge, Assets, Artikel und Projekte. Felder mit Listenspalte erscheinen in der jeweiligen Übersicht. Der CSV-Export von Kunden, Lieferanten und Aufträgen hängt die Felder als Spalten an; die globale Suche findet die Werte so, wie sie angezeigt werden — auch Auswahl, Datum und Zahl. Die Datenübertragung zum Wiedereinlesen enthält keine eigenen Felder.

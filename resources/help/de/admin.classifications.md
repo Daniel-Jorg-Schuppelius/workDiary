@@ -57,3 +57,9 @@ mit eigenem Code erscheint dort zusätzlich, einer mit dem Code einer
 allgemeinen Kategorie ersetzt deren Bezeichnung, ein deaktivierter blendet
 sie aus. Eine Kategorie, die ein Asset verwendet, lässt sich nur deaktivieren,
 nicht löschen.
+
+Ein Wert, den Datensätze noch verwenden – etwa Zeiteinträge, Reklamationen,
+Artikel oder Zuordnungen –, lässt sich nicht löschen. Die Meldung nennt, wo und
+wie oft er benutzt wird. Legen Sie ihn stattdessen über **Stilllegen** in der
+Zeile still: Er verschwindet aus neuen Auswahlen, bestehende Datensätze
+behalten ihn.

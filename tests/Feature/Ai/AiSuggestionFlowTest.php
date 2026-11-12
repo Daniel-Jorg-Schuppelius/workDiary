@@ -328,4 +328,53 @@ class AiSuggestionFlowTest extends TestCase {
             AiTextSuggestion::query()->where('subject_id', $item->id)->value('status')
         );
     }
+
+    /** MVP-1590: Erlaubt die Organisation die Wahl, nimmt der Aufruf die gewählte Verbindung und auditiert sie. */
+    public function test_user_can_choose_an_allowed_connection_in_the_suggestion_component(): void {
+        $second = AiProviderConnection::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Zweitverbindung']);
+        \App\Models\Ai\AiCapabilitySetting::query()
+            ->where('organization_id', $this->organization->id)
+            ->where('capability', ItemTextSuggestionService::CAPABILITY_ITEM)
+            ->update(['allowed_connection_ids' => json_encode([$this->connection->id, $second->id]), 'default_connection_id' => $this->connection->id, 'allow_user_choice' => true]);
+        $invoice = $this->draftInvoice();
+        $item = $this->item($invoice);
+
+        $this->actingAs($this->user)->post(route('ai.suggestions.invoice-item', [$invoice, $item]))->assertRedirect();
+        $this->assertSame((int) $this->connection->id, (int) AiTextSuggestion::query()->firstOrFail()->connection_id);
+
+        // Die Komponente bietet die Auswahl an.
+        $this->get(route('invoices.show', $invoice))->assertOk()
+            ->assertSee('data-ai-connection-choice', false)
+            ->assertSee('Zweitverbindung');
+
+        $this->post(route('ai.suggestions.invoice-item', [$invoice, $item]), [
+            'connection_id' => $second->sqid,
+            'capability' => ItemTextSuggestionService::CAPABILITY_ITEM,
+        ])->assertRedirect()->assertSessionHas('success');
+
+        $this->assertSame((int) $second->id, (int) AiTextSuggestion::query()->firstOrFail()->connection_id);
+        $audit = \App\Models\Audit\AuditLog::query()->where('event', 'ai.invoked')->orderByDesc('id')->firstOrFail();
+        $this->assertTrue((bool) $audit->changes['connection_chosen']);
+        $this->assertSame((int) $second->id, (int) $audit->changes['chosen_connection_id']);
+    }
+
+    /** MVP-1590: Ohne Erlaubnis der Organisation gibt es keine Auswahl, und eine gesendete Wahl wird abgelehnt. */
+    public function test_connection_choice_is_refused_when_the_organization_does_not_allow_it(): void {
+        $second = AiProviderConnection::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Zweitverbindung']);
+        \App\Models\Ai\AiCapabilitySetting::query()
+            ->where('organization_id', $this->organization->id)
+            ->where('capability', ItemTextSuggestionService::CAPABILITY_ITEM)
+            ->update(['allowed_connection_ids' => json_encode([$this->connection->id, $second->id]), 'allow_user_choice' => false]);
+        $invoice = $this->draftInvoice();
+        $item = $this->item($invoice);
+
+        $this->actingAs($this->user)->post(route('ai.suggestions.invoice-item', [$invoice, $item]))->assertRedirect();
+        $this->get(route('invoices.show', $invoice))->assertOk()->assertDontSee('data-ai-connection-choice', false);
+
+        $this->post(route('ai.suggestions.invoice-item', [$invoice, $item]), [
+            'connection_id' => $second->sqid,
+            'capability' => ItemTextSuggestionService::CAPABILITY_ITEM,
+        ])->assertRedirect()->assertSessionHas('error');
+        $this->assertSame((int) $this->connection->id, (int) AiTextSuggestion::query()->firstOrFail()->connection_id);
+    }
 }

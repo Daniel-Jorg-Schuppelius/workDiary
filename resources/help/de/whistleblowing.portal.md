@@ -1,7 +1,7 @@
 ---
 title: "Meldeportal konfigurieren"
 topic: whistleblowing.portal
-version: 1
+version: 2
 keywords:
     - Hinweisgeberportal
     - Whistleblower-Portal
@@ -50,3 +50,11 @@ einen neuen Slug.
 Risiko: Nach dem Rotieren sind **bereits verteilte Links sofort
 ungültig**. Verwenden Sie das nur, wenn ein Link nicht mehr genutzt werden
 soll, und kommunizieren Sie den neuen Link anschließend aktiv.
+
+**Sprachen**: Die **Standardsprache** bestimmt, in welcher Sprache das Portal erscheint. Unter **Weitere Sprachen** wählen Sie, auf welche Sprachen die meldende Person umschalten kann; ohne Auswahl gibt es keine Umschaltung.
+
+**Externe Meldewege**: Das Portal weist immer darauf hin, dass neben der internen Meldestelle externe Meldestellen der Behörden offenstehen. Tragen Sie die für Ihre Organisation zuständigen Stellen mit Bezeichnung und Internetadresse ein; sie erscheinen als Liste im Portal.
+
+**Stand des Datenschutzhinweises**: Die Angabe erscheint unter dem Einleitungstext, damit erkennbar ist, welche Fassung gilt.
+
+**Aufbewahrung**: Die hier eingestellten Monate gelten für jeden Fall, der ab jetzt abgeschlossen wird. Bereits abgeschlossene Fälle behalten ihre beim Abschluss gerechnete Frist.

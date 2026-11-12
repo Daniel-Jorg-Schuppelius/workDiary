@@ -131,6 +131,14 @@ final class JtlModeSwitchTest extends TestCase {
         // Wiederholung am selben Tag bucht nichts doppelt.
         $this->actingAs($this->admin)->post(route('admin.jtl.takeover'))->assertSessionHas('success');
         $this->assertSame(1, StockMovement::query()->where('idempotency_key', 'like', 'takeover:%')->count());
+        $this->actingAs($this->admin)->get(route('admin.jtl.index'))->assertSee(route('admin.jtl.takeover'), false);
+
+        // Am Folgetag führt der lokale Bestand: die Übernahme überschriebe ihn (MVP-1619).
+        $this->travel(1)->days();
+        $this->actingAs($this->admin)->post(route('admin.jtl.takeover'))
+            ->assertSessionHas('error', __('jtl_wawi::jtl_wawi.flash.takeover_not_today'));
+        $this->assertSame(1, StockMovement::query()->where('idempotency_key', 'like', 'takeover:%')->count());
+        $this->actingAs($this->admin)->get(route('admin.jtl.index'))->assertDontSee(route('admin.jtl.takeover'), false);
     }
 
     public function test_disconnect_is_blocked_while_external_mode_is_active(): void {

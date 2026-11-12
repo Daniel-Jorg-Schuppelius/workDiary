@@ -14,6 +14,8 @@ namespace App\Http\Requests\Whistleblowing;
 
 use App\Enums\Whistleblowing\CaseRole;
 use App\Http\Requests\BaseFormRequest;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Models\Platform\User;
 use Illuminate\Validation\Rule;
 
 /**
@@ -22,6 +24,11 @@ use Illuminate\Validation\Rule;
  * (WhistleblowingCasePolicy::assign).
  */
 class AssignWhistleblowingCaseRequest extends BaseFormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> Der Widerruf sendet die Sqid, das Zuweisen die Benutzer-ID. */
+    protected array $sqidFields = ['user_id' => User::class];
+
     /** @return array<string, mixed> */
     public function rules(): array {
         return [

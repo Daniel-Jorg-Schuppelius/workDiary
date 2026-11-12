@@ -1,7 +1,7 @@
 ---
 title: "Data protection management at a glance"
 topic: privacy.overview
-version: 2
+version: 5
 keywords:
     - GDPR
     - ROPA
@@ -257,3 +257,15 @@ self-disclosure.
 
 **Permission:** a separate permission for managing the data subject portal;
 without it the menu entry is missing.
+
+**Key destruction after retention:** The retention scan proposes closed data subject requests and data breaches for destruction under **Retention** once their retention period has expired. Only after your confirmation and execution does WorkDiary destroy the key of the record: content can then no longer be read, evidence stored unencrypted is deleted, and retrieving an encrypted information package answers “gone”. Number, type, deadlines, decision and the history remain as evidence.
+
+**Data processing agreements:** When recording a data processing agreement you note whether the technical and organisational measures (TOMs) have been checked and set the next review. The list highlights overdue reviews.
+
+## Processing status, implementation status and containment
+
+**Data subject requests:** The **Processing status** card records that proof of identity was requested, a query was sent or the answer arrived; **Withdrawn by the person** closes the case. The statutory deadline keeps running during queries.
+
+**TOMs:** You capture the implementation status and the protection requirement (normal, high, very high) when creating a measure and change them on the measure. Approving a processing activity freezes both in the TOM snapshot.
+
+**Data breaches:** Once all measures are done, a breach that has not been reported shows **Contained**; reporting and closing remain separate steps.

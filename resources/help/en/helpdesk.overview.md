@@ -1,7 +1,7 @@
 ---
 title: "Helpdesk & service desk"
 topic: helpdesk.overview
-version: 3
+version: 5
 keywords:
     - ticket system
     - create ticket
@@ -78,3 +78,56 @@ rating in the portal — one per ticket. Reports show volume per queue,
 response and resolution times, SLA compliance, waiting reasons, change
 outcomes, problem backlog and catalogue demand. Rankings of individual
 agents are deliberately omitted.
+
+**Changing the status:** Use **Change status** on the ticket to pick the new
+status; only permitted transitions are offered. When resolving and closing
+you record the **Close code** and the **Resolution summary**. A waiting state
+needs a reason, a follow-up date and a responsible person; once the follow-up
+is due, WorkDiary reminds that person. Whether the SLA clock stops is decided
+by the SLA contract. You reopen a resolved ticket only with a reason; the
+previous response and resolution times are kept.
+
+**Queue settings:** For each queue you define the supported ticket types,
+business hours, holiday region, sender name and reply address. New tickets
+without an assignment go to the default queue; if it does not accept the
+ticket type, they go to the first queue that does. The default SLA of the
+queue applies if neither the ticket's asset nor the project nor the customer
+has a contract of its own.
+
+**Externally led queue:** If a connected system such as Zammad leads the
+tickets of a queue, status changes and replies to the customer are locked in
+WorkDiary and the ticket shows a notice. Assignment, internal notes, times
+and billing remain possible. Once you switch the ticket target of the
+integration back, WorkDiary leads the queue again.
+
+**Confidentiality:** A confidential ticket is visible only to the assignee,
+watchers, the queue's team and administrators. You set the level when
+creating the ticket or in the classification.
+
+**Ordering a service:** Under **Order a service** employees order service
+catalog items for themselves. The details from the order form are shown on
+the ticket and in the decision dialog of the approval; the ticket also shows
+which record fulfils the order.
+
+**Delivery status:** Every reply sent by e-mail shows whether sending is
+queued, done or has failed.
+
+**Ticket from an open issue:** On the open issue, **Open ticket** creates a
+ticket with the title, description and reference of the issue. At most one
+ticket is created per issue; the issue links to it.
+
+**Customer portal:** When the customer confirms the resolution or reopens the
+ticket with a reason, this runs like an internal status change — with history
+and unchanged response and resolution times. For externally led queues, reply,
+acceptance and reopening are locked in the portal as well; there the portal
+only shows the state.
+
+**Changing the queue and mailbox:** When a ticket changes its queue, the
+default SLA of the new queue applies if its contract so far came from the
+queue or the organisation or was missing; a contract of the asset, project
+or customer and an explicitly set contract stay. Under **Inbound mailbox** you
+assign a mailbox to the queue — one per queue.
+
+**Confidential tickets in lists:** Pick lists and references show a
+confidential ticket only to authorised people. In report drill-downs it still
+counts but appears to others only as “Confidential ticket”.

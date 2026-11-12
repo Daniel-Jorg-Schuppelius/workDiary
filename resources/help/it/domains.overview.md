@@ -1,7 +1,7 @@
 ---
 title: "Gestione dei domini"
 topic: domains.overview
-version: 2
+version: 5
 keywords:
     - registrare un dominio
     - rinnovo dominio
@@ -80,3 +80,17 @@ per subutente. Per ogni sottoutente può inserire il numero cliente presso il
 fornitore; i documenti mensili costruiti dal giornale contabile nel registro
 di rivendita portano allora i numeri di fattura del portale («numero
 cliente-MM-AAAA»).
+
+**Comandi incerti:** se la risposta del fornitore resta incompleta, il comando passa a «incerto» e non viene mai ripetuto. La prossima sincronizzazione legge lo stato del dominio presso il fornitore: registrazione, modalità di rinnovo, blocco di trasferimento e rinnovo vengono così confermati, riconosciuti come falliti o segnati come conflitto. Trasferimenti, DNS e azioni ad alto rischio non hanno una richiesta di stato — li verifichi presso il fornitore e li chiuda manualmente con una motivazione nel giornale dei comandi.
+
+**Costi e saldo:** nelle impostazioni dell’organizzazione stabilisce una soglia di costo per i rinnovi e un saldo minimo. La gestione domini segnala i rinnovi imminenti sopra la soglia e i conti fornitore il cui saldo, incluso il limite di credito, non copre i rinnovi dei prossimi giorni — senza copertura il fornitore elimina i domini alla data di mancato rinnovo.
+
+**Modalità di rinnovo:** si possono scegliere le tre modalità documentate dal
+fornitore: rinnovo automatico, scadenza automatica ed eliminazione automatica. Un
+valore salvato in precedenza, «Rinnova una volta», risulta sconosciuto dopo
+l'aggiornamento; la sincronizzazione successiva legge la modalità effettiva presso
+il fornitore.
+
+## Stato di sincronizzazione di un dominio
+
+Mentre è in corso un comando verso il fornitore, il dominio mostra **In sospeso**. Se l'esito resta incerto o il fornitore diverge dopo la scrittura, mostra **Incerto** o **Conflitto** e compare nel riquadro dei problemi di sincronizzazione; una sincronizzazione non lo sovrascrive finché il comando è aperto. Dopo la chiusura – automatica o manuale – il dominio mostra **Obsoleto** finché la sincronizzazione successiva non lo rilegge.

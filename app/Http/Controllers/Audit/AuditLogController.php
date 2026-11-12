@@ -80,7 +80,7 @@ class AuditLogController extends Controller {
         return view('audit.index', [
             'logs' => $logs,
             'users' => LookupCache::userDropdown(),
-            'events' => ['created', 'updated', 'deleted', 'archived', 'restored', 'import.confirmed', 'import.started', 'import.finished', 'import.partial', 'import.preflightFailed'],
+            'events' => AuditLog::FILTER_EVENTS,
             'types' => AuditLog::FILTER_TYPES,
             'filters' => $filters,
             'sort' => $sort,

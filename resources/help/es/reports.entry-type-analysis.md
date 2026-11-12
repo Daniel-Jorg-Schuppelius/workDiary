@@ -1,7 +1,7 @@
 ---
 title: "Análisis por tipo de orden"
 topic: reports.entry-type-analysis
-version: 3
+version: 4
 keywords:
     - previsto frente a real
     - desviación plan real
@@ -31,3 +31,5 @@ ambos indicios de necesidades de formación o de ajuste de precios.
 
 La duración planificada de una orden es su **Duración prevista (HH:MM)**; si
 está vacía, cuenta la duración del servicio de una orden planificada; si no, la duración de la franja horaria o de la cita.
+
+La columna **Causas principales** muestra, por tipo de pedido, las tres clasificaciones más frecuentes del motivo de retrabajo de los tiempos registrados y de la causa raíz de las reclamaciones del pedido. Cada pedido cuenta una vez; un clic muestra los tiempos y reclamaciones afectados. La exportación CSV también incluye la columna.

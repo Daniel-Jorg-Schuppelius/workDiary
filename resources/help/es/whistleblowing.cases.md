@@ -1,7 +1,7 @@
 ---
 title: "Canal de denuncias – Gestión de casos"
 topic: whistleblowing.cases
-version: 4
+version: 5
 keywords:
     - denunciante
     - canal ético
@@ -94,3 +94,15 @@ pierden de forma irrecuperable; solo queda un justificante de borrado
 sin contenido. Es irreversible. Si se opone un procedimiento o una
 obligación de conservación, establezca en su lugar el estado «Bloqueo de
 borrado (legal hold)».
+
+**Filtros de la lista**: la barra sobre la lista filtra por **estado**, **categoría**, **prioridad**, persona asignada, estado de los plazos («Plazo vencido», «Plazo en 14 días», «Respuesta pendiente») y periodo de entrada. Categoría y prioridad solo se aplican a los casos que tiene asignados; de lo contrario, la lista de resultados revelaría ambas.
+
+**Plazos y respuesta**: si al enviar un mensaje marca **Esta es la respuesta conforme al art. 17 HinSchG**, WorkDiary registra el momento en el caso; una simple consulta no cuenta. A partir de entonces cesa el recordatorio del plazo de respuesta. Los gestores asignados reciben recordatorios sin contenido: 48 horas antes de vencer el acuse de recibo, 14 días y 48 horas antes del plazo de respuesta (una vez cada uno) y después a diario mientras un plazo esté vencido. Pasar un caso directamente de «Recibido» a «Revisión» confirma la recepción.
+
+**Otras acciones en el expediente**:
+
+- **Revocar asignación** (icono junto al gestor): la persona pierde el acceso de inmediato.
+- **Añadir un documento del canal de denuncias**: el archivo se cifra como un adjunto de la persona informante y solo se libera tras el análisis; la persona informante no lo ve.
+- El estado «Bloqueo de eliminación» exige **base jurídica**, **responsable** y **fecha de revisión**; en esa fecha WorkDiary avisa a los gestores.
+- Una reapertura (de «Cerrado – …» a «En curso») exige un **motivo**; el plazo de conservación vuelve a empezar con el siguiente cierre.
+- **Registro de eventos**: con el permiso de consulta del registro verá quién abrió, modificó o exportó el caso y cuándo, sin contenido de la denuncia. Cada consulta del registro queda a su vez registrada.

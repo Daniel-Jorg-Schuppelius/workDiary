@@ -46,6 +46,8 @@ return [
     ],
 
     'form' => [
+        'is_photo_in_record' => 'Show photos in the customer record',
+        'is_photo_in_record_hint' => 'Up to two photos per device item appear in the record PDF.',
         'title_create' => 'New disposal case',
         'title_edit' => 'Edit disposal case',
         'submit_create' => 'Create case',
@@ -76,6 +78,13 @@ return [
     ],
 
     'item' => [
+        'asset' => 'Asset',
+        'asset_none' => '— no asset reference —',
+        'asset_hint' => 'Only assets in operation. The selection pre-fills name, manufacturer, model and serial number; completing the file decommissions the asset.',
+        'error' => [
+            'asset_not_in_operation' => 'The asset is no longer in operation and cannot be disposed of.',
+            'asset_taken' => 'The asset is already part of an open disposal file.',
+        ],
         'title_create' => 'Add item',
         'title_edit' => 'Edit item',
         'group_device' => 'Device',
@@ -157,6 +166,23 @@ return [
         'reason' => 'Reason',
     ],
 
+    // Asset-Bezug und Fotos der Gerätepositionen (MVP-1578).
+    'asset' => [
+        'action' => 'Dispose',
+        'create_hint' => 'After creating the file, record “:asset” as a device item; the asset is already selected there.',
+        'add_hint' => 'Record asset “:asset” as a device item — it is already selected in the dialog.',
+        'pending_decommission' => 'Not decommissioned: :assets. The asset is still checked out or in a final state — take it back and decommission it in the asset file.',
+    ],
+    'photo' => [
+        'label' => 'Photos',
+        'alt' => 'Photo of :item',
+        'upload' => 'Upload photo',
+        'upload_for' => 'Select photo for :item',
+        'flash' => [
+            'added' => 'Photo saved for the device item.',
+        ],
+    ],
+
     'action' => [
         'create' => 'New disposal case',
         'collect' => 'Record pickup',
@@ -177,6 +203,8 @@ return [
     ],
 
     'pdf' => [
+        'photos' => 'Photos',
+        'photo_of' => 'Item :number',
         'title' => 'Takeover and disposal record',
         'number' => 'Case number',
         'customer' => 'Customer',

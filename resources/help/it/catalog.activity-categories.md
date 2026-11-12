@@ -1,7 +1,7 @@
 ---
 title: "Categorie di attività"
 topic: catalog.activity-categories
-version: 1
+version: 2
 keywords:
     - tipi di attività
     - tipi di lavoro
@@ -29,3 +29,11 @@ icona e ordinamento determinano la visualizzazione in liste e campi di
 selezione. Le categorie inattive restano conservate ma non vengono più
 proposte; ricerca e ordinamento delle colonne aiutano con cataloghi
 estesi.
+
+**Effetto delle opzioni:** «Conta come lavoro» stabilisce se un tempo con
+questa categoria conta come orario di lavoro nel conto ore, nella chiusura
+giornaliera e nel bilancio di lavoro; se disattivata resta escluso, come i
+tipi di attività pausa e assenza. I tempi timbrati contano comunque.
+«Fatturabile per impostazione predefinita» preimposta la fatturabilità dei
+nuovi tempi di amministrazione con questa categoria; per i tempi con
+progetto continua a decidere il progetto.

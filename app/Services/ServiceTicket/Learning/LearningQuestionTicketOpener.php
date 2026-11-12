@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\ServiceTicket\Learning;
 
 use App\Enums\ServiceTicket\{ServiceTicketKind, ServiceTicketSource};
+use App\Exceptions\ExternallyLedQueueException;
 use App\Models\Platform\{Organization, User};
 use App\Models\ServiceTicket\ServiceTicket;
 use App\Services\Learning\Contracts\QuestionTicketOpener;
@@ -22,14 +23,18 @@ use App\Services\ServiceTicket\ServiceTicketService;
 final class LearningQuestionTicketOpener implements QuestionTicketOpener {
     public function __construct(private readonly ServiceTicketService $tickets) {}
 
-    public function open(Organization $organization, User $learner, array $attributes, User $assignee): ServiceTicket {
-        $ticket = $this->tickets->create($organization, $learner, [
-            'kind' => ServiceTicketKind::Question->value,
-            'title' => (string) ($attributes['title'] ?? ''),
-            'description' => (string) ($attributes['description'] ?? ''),
-            'source' => ServiceTicketSource::Manual->value,
-            'source_reference' => (string) ($attributes['source_reference'] ?? ''),
-        ]);
+    public function open(Organization $organization, User $learner, array $attributes, User $assignee): ?ServiceTicket {
+        try {
+            $ticket = $this->tickets->create($organization, $learner, [
+                'kind' => ServiceTicketKind::Question->value,
+                'title' => (string) ($attributes['title'] ?? ''),
+                'description' => (string) ($attributes['description'] ?? ''),
+                'source' => ServiceTicketSource::Manual->value,
+                'source_reference' => (string) ($attributes['source_reference'] ?? ''),
+            ]);
+        } catch (ExternallyLedQueueException) {
+            return null; // Fragen-Queue extern geführt: die Frage geht per Mail an die Kursverantwortung
+        }
         // Zuständig ist die verantwortliche Person des Kurses, sonst der
         // erste Trainer — so landet die Frage nicht in einer leeren Queue.
         $ticket->forceFill(['assigned_to_user_id' => $assignee->id])->save();

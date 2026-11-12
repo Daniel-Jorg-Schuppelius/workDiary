@@ -114,7 +114,7 @@ final class PickListTest extends TestCase {
         );
         // Der Bestand ist nicht weg: Lagerbuch und Chargenbestand stehen wie zuvor, die Charge ist gesperrt.
         $this->assertSame('8.0000', $ledger->balance($variant, $this->warehouse, StockState::Physical));
-        $this->assertSame('5.0000', app(LotStockReader::class)->balanceOf($held));
+        $this->assertSame('5.0000', app(LotStockReader::class)->balancesOf([$held])[$held->id]);
         $this->assertSame(StockLotStatus::Blocked, $held->fresh()?->status);
 
         // Freigegeben steht sie wieder vorn.

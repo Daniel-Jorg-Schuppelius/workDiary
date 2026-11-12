@@ -32,6 +32,20 @@
         <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
     @endif
 
+    @if ($isEdit && $vacation->status === \App\Enums\Vacation\VacationStatus::Revision)
+        {{-- Zur Korrektur zurückgegeben (MVP-1554): Hinweis zeigen; Speichern reicht neu ein. --}}
+        <div role="alert" class="alert alert-info mb-3 items-start">
+            <x-icon name="undo" />
+            <div>
+                <p class="font-semibold">{{ __('vacation.revision.returned') }}</p>
+                @if ($vacation->revision_note)
+                    <p class="text-sm">{{ $vacation->revision_note }}</p>
+                @endif
+                <p class="text-sm">{{ __('vacation.revision.resubmit_hint') }}</p>
+            </div>
+        </div>
+    @endif
+
     @if ($canAssignOthers && $assignableUsers->isNotEmpty())
         <x-form-group :legend="__('Zuordnung')" icon="person" tone="primary">
                 <div class="fieldset">

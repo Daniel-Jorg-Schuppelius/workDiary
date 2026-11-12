@@ -1,7 +1,7 @@
 ---
 title: "Moyens de contrôle et étalonnage"
 topic: asset-compliance.overview
-version: 2
+version: 4
 keywords:
     - métrologie
     - gestion des instruments de mesure
@@ -222,3 +222,55 @@ et taux de contrôle.
 
 **Autorisation :** **Lister les obligations de contrôle et moyens de
 contrôle** – cela vaut aussi pour figer un instantané.
+
+## Modifier, désactiver, annuler
+
+**Profils de contrôle :** sur la page **Profils de contrôle**, **Modifier**
+ouvre un profil d'organisation (nom, type de contrôle, intervalle, délai
+d'avertissement, tolérance, délai supplémentaire, effet de blocage,
+obligation de certificat, organisme de contrôle par défaut) ; le code reste
+inchangé. Un intervalle modifié s'applique à partir du prochain contrôle à
+toutes les obligations sans intervalle propre. **Désactiver** retire le
+profil de la sélection pour les nouvelles affectations ; les obligations et
+rapports existants sont conservés. Les profils désactivés figurent en bas
+sous « Profils d'organisation désactivés » et peuvent y être réactivés. Vous
+ne modifiez pas les modèles globaux : créez un profil d'organisation avec le
+même code. Rien n'est supprimé.
+
+**Exigences :** pour chaque exigence, vous modifiez le libellé, les limites,
+l'unité et le caractère obligatoire. Les nouvelles limites s'appliquent aux
+nouveaux contrôles ; les anciens rapports conservent leurs valeurs d'origine.
+La boîte de dialogue de contrôle ne demande plus une exigence désactivée.
+
+**Obligations de contrôle :** dans la liste **Obligations de contrôle** de la
+page **Moyen de contrôle**, **Modifier** change l'**Intervalle pour cette
+ressource (mois)**, le dernier contrôle, la prochaine échéance, la personne
+responsable, l'organisme de contrôle et la note. Si vous laissez l'échéance
+vide, elle est recalculée à partir du dernier contrôle lorsque l'intervalle
+change. Vous pouvez aussi indiquer l'intervalle par ressource dès
+l'affectation. **Désactiver** suspend l'obligation : les rendez-vous ouverts
+sont annulés, le blocage pour retard de cette obligation prend fin, les
+rapports sont conservés. Sous **Désactivées**, vous voyez les obligations
+suspendues et les reprenez.
+
+**Annuler un rendez-vous :** dans le **Calendrier des contrôles**, l'action
+**Annuler** annule un rendez-vous ouvert ou manqué ; le motif est obligatoire
+et figure ensuite sous le statut. L'obligation de contrôle continue.
+
+**Rendez-vous manqués :** si le jour planifié d'un rendez-vous ouvert – ou
+l'échéance en l'absence de jour planifié – est passé sans contrôle, le
+traitement nocturne des échéances le fait passer à **Manqué**. Vous
+enregistrez alors le contrôle au moyen d'un nouveau rendez-vous.
+
+**Mesures brutes :** dans la boîte de dialogue de contrôle, la section
+**Mesures brutes** accueille jusqu'à quatre points de mesure libres avec
+valeur et unité, sans contrôle des limites. Le tableau **Rapports de
+contrôle**, sous le calendrier, affiche les 20 derniers contrôles avec le
+résultat, les valeurs mesurées par exigence et les mesures brutes.
+
+**Autorisation :** modifier, désactiver et annuler avec **Gérer les profils
+et obligations de contrôle**.
+
+## Ordre de contrôle et état des rendez-vous
+
+Lorsque vous acceptez l'offre d'un prestataire de contrôle, les rendez-vous de l'ordre affichent **En cours**. Un ordre annulé libère à nouveau les rendez-vous annoncés et en cours ; ils affichent alors **Planifié**.

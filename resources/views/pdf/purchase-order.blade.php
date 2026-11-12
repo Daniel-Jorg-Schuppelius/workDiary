@@ -72,4 +72,7 @@
     @if ($order->note)
         <div class="meta" style="margin-top: 12pt;">{{ __('procurement.pdf.note') }}: {{ $order->note }}</div>
     @endif
+    {{-- Firmenangaben nach Blockzustand des Designs (MVP-1624). --}}
+    @push('pdf-styles')<style>.tpl-issuer { margin-top: 6px; font-size: 9px; color: #555; }</style>@endpush
+    @include('pdf._design_issuer')
 </x-pdf-layout>

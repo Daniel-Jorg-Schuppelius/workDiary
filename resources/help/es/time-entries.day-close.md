@@ -1,7 +1,7 @@
 ---
 title: "Cierre del día"
 topic: time-entries.day-close
-version: 5
+version: 6
 keywords:
     - cerrar el día
     - fin de jornada
@@ -58,6 +58,13 @@ bloqueados. Quien tenga el permiso **Reabrir un cierre diario** también
 puede desbloquear un día cerrado sin solicitud con **Reabrir día**; el
 motivo se guarda en el registro de auditoría.
 
+El bloqueo también vale para las **imputaciones de tiempo** del día: mientras
+el día esté cerrado o en corrección, los tiempos de proyecto y de
+administración de ese día no se pueden crear, modificar ni eliminar, tampoco
+con el cronómetro, la imputación rápida, la importación o la interfaz. La
+barra de entrada queda oculta; la aplicación remite a la solicitud de
+corrección.
+
 Los días de un mes ya aprobado están completamente bloqueados; allí
 cualquier cambio pasa por la aprobación mensual.
 
@@ -66,3 +73,11 @@ salvo que nadie más en la organización tenga ese permiso; el registro de
 auditoría deja constancia de la autoaprobación. Quien solo puede ver los
 cierres diarios del equipo ve únicamente a los miembros de sus propios equipos
 en «Equipo hoy» y en las vistas diarias.
+
+En la cabecera del día aparece **Previsto/real**: el tiempo previsto del
+modelo horario con el inicio del horario central junto al primer y al último
+fichaje y a la presencia. Aparecen marcas de aviso si el inicio es tardío o
+las horas se desvían; la organización fija los umbrales en **Ajustes** →
+**Previsto/real de la presencia** (por defecto 15 minutos y 10 %). Los
+fichajes muestran además los minutos de **Teletrabajo** y de **Salida de
+servicio**.

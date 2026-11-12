@@ -35,6 +35,9 @@
                 @if ($contract->is_default)
                     <x-status-badge tone="info" size="sm">{{ __('Standard') }}</x-status-badge>
                 @endif
+                @if ($contract->is_ola)
+                    <x-status-badge tone="warning" size="sm" outline>{{ __('sla.form.olaBadge', ['team' => $olaTeam?->name ?? '—']) }}</x-status-badge>
+                @endif
                 <x-status-badge :tone="$contract->is_active ? 'success' : 'ghost'" size="sm" outline>
                     {{ $contract->is_active ? __('Aktiv') : __('Inaktiv') }}
                 </x-status-badge>
@@ -91,17 +94,22 @@
                 <x-empty-state icon="notifications_active" :title="__('Keine Eskalationsstufen hinterlegt.')" compact />
             @else
                 <ul class="space-y-1 text-sm">
-                    @foreach ($contract->escalation_chain as $stage)
-                        <li>{{ __('nach :min Min.', ['min' => $stage['after_minutes'] ?? '—']) }} → {{ $stage['notify'] ?? '—' }}</li>
+                    @foreach (array_values($contract->escalation_chain) as $i => $stage)
+                        <li>{{ __('nach :min Min.', ['min' => $stage['after_minutes'] ?? '—']) }} → {{ $escalationTargets[$i] ?? '—' }}</li>
                     @endforeach
                 </ul>
             @endif
         </x-card>
     </div>
 
-    {{-- Inklusivzeit-Kontingente (Rang 44) --}}
+    {{-- Inklusivzeit-Kontingente (Rang 44) mit Pauschale und Mehrstundensatz (Feature 010) --}}
     <x-card>
-        <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Inklusivzeit-Kontingente') }}</h3>
+        <div class="mb-3 flex items-center justify-between gap-2">
+            <h3 class="text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Inklusivzeit-Kontingente') }}</h3>
+            @can(\App\Enums\User\Permission::SlaContractManage->value)
+                <x-icon-btn icon="add" size="xs" data-entry-modal-trigger :href="route('sla-contracts.quotas.create', $contract)" show-label>{{ __('sla.quota.create') }}</x-icon-btn>
+            @endcan
+        </div>
         @if (empty($quotaUsage))
             <x-empty-state icon="data_usage" :title="__('Keine Kontingente hinterlegt.')" compact />
         @else
@@ -111,7 +119,16 @@
                     <div>
                         <div class="mb-1 flex items-center justify-between gap-2 text-sm">
                             <span class="font-medium">{{ $item['quota']->period_kind->label() }} · {{ $u['period_key'] }}</span>
-                            <span class="text-xs tabular-nums text-muted">{{ $u['percentage'] }} %</span>
+                            <span class="flex items-center gap-1">
+                                <span class="text-xs tabular-nums text-muted">{{ $u['percentage'] }} %</span>
+                                @can(\App\Enums\User\Permission::SlaContractManage->value)
+                                    <x-icon-btn icon="edit" size="xs" tone="ghost" data-entry-modal-trigger
+                                                :href="route('sla-contracts.quotas.edit', [$contract, $item['quota']])" :label="__('sla.quota.edit')" />
+                                    <x-action-form :action="route('sla-contracts.quotas.destroy', [$contract, $item['quota']])" method="DELETE" :confirm="__('sla.quota.delete_confirm')">
+                                        <x-icon-btn icon="delete" size="xs" tone="ghost" type="submit" :label="__('sla.quota.delete')" />
+                                    </x-action-form>
+                                @endcan
+                            </span>
                         </div>
                         <progress class="progress w-full {{ $u['threshold_reached'] ? 'progress-warning' : 'progress-success' }}"
                                   value="{{ min(100, $u['percentage']) }}" max="100"></progress>
@@ -121,6 +138,13 @@
                                 <span class="text-error"> · {{ __(':min Min. über Kontingent', ['min' => $u['over_minutes']]) }}</span>
                             @endif
                         </div>
+                        @if ($u['flat_fee'] !== null || $u['overage_rate'] !== null)
+                            <div class="mt-0.5 text-xs tabular-nums text-muted">
+                                @if ($u['flat_fee'] !== null){{ __('sla.quota.flat_fee') }}: {{ $u['flat_fee']->format() }}@endif
+                                @if ($u['flat_fee'] !== null && $u['overage_rate'] !== null) · @endif
+                                @if ($u['overage_rate'] !== null){{ __('sla.quota.overage_line', ['rate' => $u['overage_rate']->format(), 'amount' => $u['overage_amount']?->format() ?? '—']) }}@endif
+                            </div>
+                        @endif
                     </div>
                 @endforeach
             </div>

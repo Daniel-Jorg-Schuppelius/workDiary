@@ -41,6 +41,21 @@ automatiquement de l'astérisque du code déchet — elle n'est jamais saisie
 à la main. Les positions ne sont modifiables que jusqu'à la remise à
 l'éliminateur.
 
+**Actif sur la position :** Dans la boîte de dialogue de la position,
+vous pouvez choisir un actif en service ; la sélection préremplit la
+désignation, le fabricant, le modèle et le numéro de série. Le dossier et
+le justificatif affichent l’actif. La clôture met hors service les
+actifs liés. Si un actif est encore remis, il reste en service
+et le dossier le signale. Dans la fiche de l’actif, « Éliminer »
+ouvre un nouveau dossier d’élimination avec l’actif comme position
+préparée.
+
+**Photos :** Vous téléversez des photos (JPG, PNG, WebP) pour chaque
+position d’appareil tant que le dossier est modifiable. Après la remise à
+l’éliminateur, les photos ne peuvent plus être ajoutées ni supprimées.
+Avec « Afficher les photos dans le justificatif client » sur le dossier,
+jusqu’à deux photos par position figurent dans le PDF du justificatif.
+
 **Traitement des supports de données :** Pour chaque appareil contenant
 des supports de données, le traitement est documenté — type de support,
 procédé (p. ex. effacement logiciel, démagnétisation, broyage ou démontage

@@ -1,7 +1,7 @@
 ---
 title: "Cataloghi fornitori"
 topic: supplier-catalogs.overview
-version: 3
+version: 4
 keywords:
     - DATANORM
     - BMEcat
@@ -98,3 +98,7 @@ indica la sua lettera di accesso.
 La lettura è possibile con permessi di lettura del magazzino; la
 creazione, l'importazione e il collegamento richiedono permessi di
 registrazione del magazzino.
+
+## Ignorare posizioni
+
+Le posizioni non collegate possono essere deliberatamente **non adottate** (icona a forma di occhio nella riga). Le posizioni ignorate sono escluse da proposte, adozione in blocco e aggiornamento prezzi; la stessa icona le include di nuovo. Rimuova prima il collegamento di una posizione collegata.

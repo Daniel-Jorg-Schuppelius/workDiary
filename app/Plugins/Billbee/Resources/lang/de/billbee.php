@@ -46,4 +46,17 @@ return [
     'cockpit' => [
         'title' => 'Billbee-Bestellungen',
     ],
+    // Bestandsführung (MVP-1626)
+    'inventory' => [
+        'heading' => 'Bestandsführung',
+        'explain' => 'Mit „Billbee“ bucht WorkDiary weiter im eigenen Lagerjournal und meldet jeden Stand als Absolutbestand je SKU an Billbee, das ihn an die Marktplätze verteilt. „Lokal“ meldet nichts. Einen Nur-lesen-Modus gibt es nicht: Billbee führt keinen eigenen Bestand.',
+        'mode_local' => 'Lokal — WorkDiary führt die Bestände, Billbee erhält nichts.',
+        'mode_external' => 'Billbee — WorkDiary führt und meldet jeden Bestand an Billbee.',
+        'save' => 'Bestandsführung speichern',
+        'confirm' => 'Bestandsführung wirklich umstellen?',
+        'changed' => 'Bestandsführung geändert.',
+        'unchanged' => 'Die Bestandsführung ist bereits so eingestellt.',
+        'needs_connection' => 'Für die Meldung an Billbee fehlen die Zugangsdaten in den Plugin-Einstellungen.',
+        'other_leads' => 'Den Bestand führt gerade :plugin. Stellen Sie die Bestandsführung zuerst dort auf lokal.',
+    ],
 ];

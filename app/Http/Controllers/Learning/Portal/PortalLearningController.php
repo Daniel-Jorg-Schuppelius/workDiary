@@ -15,14 +15,15 @@ namespace App\Http\Controllers\Learning\Portal;
 use App\Enums\Learning\{LearningAudience, LearningCourseStatus, LearningProgressStatus};
 use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Learning\Concerns\ReportsVideoProgress;
 use App\Models\Attachments\Attachment;
 use App\Models\Learning\{LearningCourse, LearningCourseCategory, LearningEnrollment, LearningUnit};
 use App\Models\Media\MediaRendition;
 use App\Services\Learning\{LearningBookingService, LearningEnrollmentService};
-use App\Services\Learning\LearningMedia;
+use App\Services\Learning\{LearningMedia, LearningVideoProgressService};
 use App\Services\Media\MediaResponder;
 use App\Support\Sqid;
-use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -37,6 +38,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * technisch nicht erreichbar.
  */
 class PortalLearningController extends Controller {
+    use ReportsVideoProgress;
     use ResolvesPortalUser;
 
     public function __construct(
@@ -126,7 +128,16 @@ class PortalLearningController extends Controller {
                 ->pluck('learning_unit_id')
                 ->all(),
             'mediaState' => app(LearningMedia::class)->stateFor($enrollment, 'customer.learning.units.rendition', $this->portalUser()),
+            // Pflichtanteil der Videos (MVP-1598): Stand je Anhang.
+            'videoProgress' => app(LearningVideoProgressService::class)->percentsFor($enrollment),
         ]);
+    }
+
+    /** Neu gesehene Videosekunden anrechnen (MVP-1598). */
+    public function videoProgress(Request $request, LearningEnrollment $enrollment, LearningUnit $unit, Attachment $attachment): JsonResponse {
+        $this->guardOwnUnit($enrollment, $unit);
+
+        return $this->recordVideoProgress($request, $enrollment, $unit, $attachment);
     }
 
     /** Medien eines Inhaltsblocks — nur Anhänge dieser Einheit aus dem Kurs der eigenen Einschreibung. */
@@ -149,6 +160,8 @@ class PortalLearningController extends Controller {
     public function completeUnit(LearningEnrollment $enrollment, LearningUnit $unit): RedirectResponse {
         $this->guardOwn($enrollment);
         abort_unless($unit->learning_course_id === $enrollment->learning_course_id, 404);
+        // Wie in „Meine Schulungen": Einheiten mit eigener Ergebnisquelle hakt niemand von Hand ab.
+        abort_if($unit->reportsOwnResult(), 403);
 
         $this->enrollments->completeUnit($enrollment, $unit);
 

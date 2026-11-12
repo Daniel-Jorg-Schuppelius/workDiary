@@ -60,6 +60,16 @@ return [
     'dms' => [
         'source_hint' => 'Document text from :name',
     ],
+    'budget' => [
+        'title' => 'Monthly budget',
+        'legend' => 'Monthly budget per family',
+        'description' => 'Upper limit of AI usage per calendar month. Once it is reached, workDiary rejects further calls of this family until the end of the month. Empty = operator default, unlimited without a default.',
+        'field' => [
+            'llm' => 'Language model (tokens per month)',
+            'translation' => 'Translation (characters per month)',
+        ],
+        'saved' => 'Monthly budget saved.',
+    ],
     'usage' => [
         'title' => 'AI usage',
         'subtitle' => 'Monthly usage per family, budget utilisation, and the suggestion funnel per capability.',
@@ -360,6 +370,8 @@ return [
         'dismiss' => 'No, discard',
     ],
     'suggestion' => [
+        'connection' => 'Connection',
+        'regenerate' => 'Regenerate',
         'suggest' => 'AI suggestion for this item',
         'suggest_all' => 'AI suggestions for all items',
         'suggest_all_title' => 'Creates a text suggestion per item in the background — nothing is applied until you click.',

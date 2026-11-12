@@ -1,7 +1,7 @@
 ---
 title: "My club"
 topic: club.my
-version: 1
+version: 2
 keywords:
     - member area
     - member portal
@@ -39,3 +39,5 @@ related:
 training venue, scan it with your smartphone and check in yourself or the
 members you represent — from 60 minutes before the start until the end. The
 attendance goes into the trainer’s list, who confirms or corrects it as usual.
+
+**Groups:** Under “Groups” you see your groups and open requests. You request admission to groups that admit on request here; the group leader decides. Exam results only appear once the club has released them.

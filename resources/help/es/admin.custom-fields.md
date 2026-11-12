@@ -1,7 +1,7 @@
 ---
 title: "Campos propios"
 topic: admin.custom-fields
-version: 1
+version: 2
 keywords:
     - campos personalizados
     - campos adicionales
@@ -40,3 +40,5 @@ Indicaciones:
   nunca se sobrescriben.
 - Aquí no hay campos de archivo, foto ni firma — para ello utilice adjuntos
   y formularios.
+
+**Lista, exportación y búsqueda:** hay campos propios para clientes, proveedores, leads, pedidos, activos, artículos y proyectos. Los campos con columna de lista aparecen en la vista general correspondiente. La exportación CSV de clientes, proveedores y pedidos añade los campos como columnas; la búsqueda global encuentra los valores tal como se muestran — también selecciones, fechas y números. La transferencia de datos para reimportar no contiene campos propios.

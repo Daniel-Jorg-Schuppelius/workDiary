@@ -453,6 +453,39 @@ class EntryTypeAnalysisReportTest extends TestCase {
             ->first();
     }
 
+    /** MVP-1619 (H3-05): häufigste Nacharbeitsgründe je Auftragstyp, je Auftrag einmal gezählt, mit Drilldown. */
+    public function test_top_causes_count_orders_per_rework_reason(): void {
+        $wrongPart = \App\Models\Classification\Classification::factory()->forOrganization($this->organization->id)
+            ->domain(\App\Enums\Classification\ClassificationDomain::ReworkReason)->create(['label' => 'Falsches Teil']);
+        $missing = \App\Models\Classification\Classification::factory()->forOrganization($this->organization->id)
+            ->domain(\App\Enums\Classification\ClassificationDomain::ReworkReason)->create(['label' => 'Material fehlte']);
+        $entryA = $this->createEntryTypeDiaryEntry();
+        $entryB = $this->createEntryTypeDiaryEntry();
+        foreach ([[$entryA, $wrongPart, 8], [$entryA, $wrongPart, 10], [$entryB, $wrongPart, 12], [$entryB, $missing, 14]] as [$entry, $reason, $hour]) {
+            TimeEntry::create([
+                'organization_id' => $this->organization->id,
+                'project_id' => $this->project->id,
+                'diary_entry_id' => $entry->id,
+                'user_id' => $this->user->id,
+                'date' => now()->subDays(2)->toDateString(),
+                'started_at' => now()->subDays(2)->setTime($hour, 0)->toDateTimeString(),
+                'ended_at' => now()->subDays(2)->setTime($hour + 1, 0)->toDateTimeString(),
+                'kind' => TimeEntryKind::Work->value,
+                'billable' => false,
+                'rework_reason_classification_id' => $reason->id,
+            ]);
+        }
+
+        $rows = app(\App\Services\Reporting\EntryTypeAnalysisReportBuilder::class)->build(\Carbon\CarbonImmutable::now()->subDays(30)->startOfDay(), \Carbon\CarbonImmutable::now()->endOfDay(), null, null, $this->entryType->id, null);
+
+        $this->assertSame([['Falsches Teil', 2], ['Material fehlte', 1]], array_map(static fn (array $c): array => [$c['label'], $c['count']], $rows[0]['topCauses']));
+
+        $this->getWithDateRange('reports.entry-types')->assertOk()->assertSee('Falsches Teil (2)');
+        $this->getWithDateRange('reports.entry-types.drilldown.causes', ['entry_type_id' => $this->entryType->sqid, 'cause' => $wrongPart->sqid])
+            ->assertOk()
+            ->assertViewHas('timeEntries', fn ($entries): bool => $entries->count() === 3);
+    }
+
     private function getWithDateRange(string $routeName, array $parameters = []): TestResponse {
         return $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))

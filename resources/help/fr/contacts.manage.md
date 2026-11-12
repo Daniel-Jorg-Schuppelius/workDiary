@@ -1,7 +1,7 @@
 ---
 title: "Clients & fournisseurs"
 topic: contacts.manage
-version: 15
+version: 17
 keywords:
     - Aperçu en tant que client
     - Mot de passe initial
@@ -248,3 +248,7 @@ correspondant et qu'il existe des entrées ; les chiffres correspondent à la
 liste concernée. L'administration voit les commandes boutique d'Etsy et de
 Billbee. Comme les clients, les fournisseurs disposent de champs personnalisés
 et de documents.
+
+Chez le fournisseur s’ajoutent les **Catalogues** (nom, nombre d’articles, dernière importation ; avec le droit de lecture du stock) et la **Performance** : la scorecard des douze derniers mois avec score global, respect des délais, taux de réclamation, évolution des prix, qualité ISMS, comportement en recours et délai de traitement — chaque ligne ouvre la scorecard sur la même période. Les contrats de leasing et de financement avec le fournisseur comme bailleur figurent dans la fiche avec le droit aux dossiers de leasing. Chez le client apparaissent en plus les **Rendez-vous** réservés et demandés (Calendly, prise de rendez-vous) pour toute personne autorisée à ouvrir la page « Demandes de rendez-vous ».
+
+**La comptabilité pilote :** si, selon la gouvernance des données, la comptabilité pilote les données de base des clients et fournisseurs, le formulaire affiche un avertissement. Tout reste modifiable, mais la prochaine synchronisation écrase les modifications locales — effectuez les modifications durables dans le logiciel comptable.

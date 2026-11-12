@@ -38,3 +38,19 @@ modo permanente con data e motivo.
 ## Collegamento alla garanzia
 
 Una fideiussione può riferirsi a un **periodo di garanzia**. Al suo termine, il controllo delle scadenze segnala la **restituzione** del documento, come dopo lo svincolo di una ritenuta sostituita. Allo stesso modo, una ritenuta in fattura assume la fine della garanzia scelta come data di svincolo e si aggiorna se il periodo cambia.
+
+## Restituzione dovuta e scadenza
+
+**Restituzione dovuta:** il riquadro e il filtro mostrano le fideiussioni
+attive il cui scopo di garanzia è terminato: la ritenuta sostituita è stata
+liberata nella fattura, oppure la garanzia collegata è giunta al termine. Una
+ritenuta sostituita è già stata pagata; la sua liberazione (pagina della
+fattura, scheda **Ritenute a garanzia**) non crea alcun nuovo credito e
+segnala soltanto l’atto da restituire.
+
+**Scaduta:** superato il termine, il controllo giornaliero delle scadenze
+imposta la fideiussione su *Scaduta*; l’ultimo giorno del termine conta
+ancora. Nel registro può anche annotarlo subito con **Registra come scaduta**.
+Le fideiussioni scadute non contano più come attive. La restituzione dell’atto
+può ancora essere registrata, e inserendo una proroga (nuova data di scadenza)
+la fideiussione torna attiva.

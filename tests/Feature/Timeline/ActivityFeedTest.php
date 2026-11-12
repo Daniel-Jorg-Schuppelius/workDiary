@@ -112,6 +112,25 @@ class ActivityFeedTest extends TestCase {
         $this->actingAs($this->orgUser())->get(route('activity.index'))->assertForbidden();
     }
 
+    public function test_global_feed_filters_by_event_and_business_events(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Zephyr Ereignis']);
+        $customer->audit('customer.zephyrChecked', ['by' => 'test']);
+        $now = CarbonImmutable::now();
+        $feed = app(ActivityFeedService::class);
+
+        $created = $feed->global((int) $this->organization->id, $now->subDay(), $now, Customer::class, event: 'created')['items'];
+        $domain = $feed->global((int) $this->organization->id, $now->subDay(), $now, Customer::class, event: ActivityFeedService::DOMAIN_EVENTS)['items'];
+
+        $this->assertCount(1, $created);
+        $this->assertStringContainsString((new AuditLog(['event' => 'created']))->eventLabel(), $created[0]->title);
+        $this->assertCount(1, $domain);
+        $this->assertStringContainsString('customer.zephyrChecked', $domain[0]->title);
+
+        $this->get(route('activity.index', ['event' => ActivityFeedService::DOMAIN_EVENTS]))
+            ->assertOk()->assertSee('customer.zephyrChecked')->assertSee(__('activity.filter.domain_events'));
+        $this->get(route('activity.index', ['event' => 'unbekannt']))->assertOk()->assertSee('customer.zephyrChecked');
+    }
+
     public function test_team_activity_tile_follows_the_audit_right(): void {
         $widget = app(TeamActivityWidget::class);
 

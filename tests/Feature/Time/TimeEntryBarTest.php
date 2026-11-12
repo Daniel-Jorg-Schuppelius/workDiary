@@ -186,7 +186,8 @@ class TimeEntryBarTest extends TestCase {
                 'date' => '2026-07-07',
                 'minutes' => 30,
             ])
-            ->assertNotFound();
+            // Eingabefehler statt 404 — dieselbe Regel gilt für den Offline-Befehl (MVP-1593).
+            ->assertSessionHasErrors('task_id');
 
         $this->assertDatabaseCount('time_entries', 0);
     }

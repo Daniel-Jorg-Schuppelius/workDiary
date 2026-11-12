@@ -1,7 +1,7 @@
 ---
 title: "Article master data"
 topic: articles.master
-version: 1
+version: 5
 keywords:
     - item master
     - products
@@ -44,3 +44,23 @@ and option values are complete, because variants are composed from them.
 For customs documents, articles carry the customs tariff number (6 to 11
 digits; spaces and dots are removed), the country of origin as an ISO code and
 the net weight per unit under “Customs and export”.
+
+## Inventory and valuation
+
+Under “Inventory and valuation” you set a separate **valuation method** in the article dialog; without a selection the method of the organisation applies. Switching to FIFO or FEFO creates an opening layer for existing stock; switching back to the moving average is only possible once no stock of the article remains in layers.
+
+With a **serial number prefix** the article counts its own serial numbers (prefix and running number, optionally with a check digit); without a prefix the number range of the organisation applies.
+
+The additional **units** take effect in stock postings, scanning, purchase orders and goods receipts: the quantity can be entered in the unit, and the posting is made in the base unit. The property “shelf life required” demands a lot and a best-before date at goods receipt.
+
+If a merchandise management system maintains the article numbers (“Number ranges” page, range “Article”), article number and GTIN are read-only in the dialog; new articles and variants receive their number with the synchronisation.
+
+**Tax class:** In the article form you record the tax class (standard, reduced, increased). It is stored with the article, taken over on import and compared for duplicates and merges; the tax rate of a document is still set on the line.
+
+## Manufacturing
+
+Under “Manufacturing” you choose the article’s **default work plan**: a
+published version of an active procedure template. Manufacturing orders and
+manufacturing planning then produce the article with it unless an order selects
+its own version; material requirements planning reads it as well. The section
+appears as soon as published procedure versions exist.

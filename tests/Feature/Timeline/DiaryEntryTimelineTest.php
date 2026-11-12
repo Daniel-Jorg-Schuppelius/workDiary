@@ -462,4 +462,41 @@ class DiaryEntryTimelineTest extends TestCase {
         $this->assertContains('Auftrag Org A', $summaries);
         $this->assertNotContains('Auftrag Org B', $summaries);
     }
+
+    /** MVP-1596: Zeitraum, Person und „nur kundenrelevant“ filtern serverseitig. */
+    public function test_filter_by_period_actor_and_customer_relevance(): void {
+        $user = User::factory()->user()->create(['name' => 'Kim Beispiel']);
+        $colleague = User::factory()->user()->create(['organization_id' => $user->organization_id, 'name' => 'Robin Probe']);
+        $entry = DiaryEntry::factory()->for($user)->create();
+        $old = $entry->comments()->create(['organization_id' => $user->organization_id, 'user_id' => $user->id, 'body' => 'Alter Kommentar']);
+        $old->forceFill(['created_at' => now()->subDays(10), 'updated_at' => now()->subDays(10)])->saveQuietly();
+        $entry->comments()->create(['organization_id' => $user->organization_id, 'user_id' => $colleague->id, 'body' => 'Neuer Kommentar']);
+
+        $this->actingAsWithContext($user);
+        $service = $this->service();
+
+        $recent = $service->forDiaryEntry($entry, $user, ['comment'], filter: new \App\Services\Timeline\TimelineFilter(from: now()->subDays(2)));
+        $this->assertSame(['Neuer Kommentar'], array_map(fn ($item) => $item->summary, $recent['items']));
+
+        $past = $service->forDiaryEntry($entry, $user, ['comment'], filter: new \App\Services\Timeline\TimelineFilter(to: now()->subDays(5)));
+        $this->assertSame(['Alter Kommentar'], array_map(fn ($item) => $item->summary, $past['items']));
+
+        $byActor = $service->forDiaryEntry($entry, $user, ['comment'], filter: new \App\Services\Timeline\TimelineFilter(actorId: $colleague->id));
+        $this->assertSame(['Neuer Kommentar'], array_map(fn ($item) => $item->summary, $byActor['items']));
+        // Die Personenauswahl bleibt vollständig, auch wenn nach einer Person gefiltert ist.
+        $this->assertSame([$user->id => 'Kim Beispiel', $colleague->id => 'Robin Probe'], $byActor['actors']);
+
+        $customerOnly = $service->forDiaryEntry($entry, $user, filter: new \App\Services\Timeline\TimelineFilter(customerOnly: true));
+        $this->assertNotEmpty($customerOnly['items']);
+        foreach ($customerOnly['items'] as $item) {
+            $this->assertSame('customer', $item->visibility);
+        }
+
+        $this->actingAs($user)
+            ->get(route('diary.show', [$entry, 'timeline_types' => ['comment'], 'timeline_actor' => $colleague->sqid]))
+            ->assertOk()
+            ->assertSee('name="timeline_from"', false)
+            ->assertSee('value="' . $colleague->sqid . '" selected', false)
+            ->assertSee('value="comment"', false);
+    }
 }

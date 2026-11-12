@@ -1,7 +1,7 @@
 ---
 title: "Mein Verein"
 topic: club.my
-version: 1
+version: 2
 keywords:
     - Mitgliederbereich
     - Mitgliederportal
@@ -40,3 +40,5 @@ scannen Sie ihn mit dem Smartphone und checken sich selbst oder die von Ihnen
 vertretenen Mitglieder ein — ab 60 Minuten vor Beginn bis Terminende. Die
 Anwesenheit landet in der Liste der Trainingsleitung, die sie wie gewohnt
 bestätigt oder korrigiert.
+
+**Gruppen:** Unter „Gruppen“ sehen Sie Ihre Gruppen und offene Anträge. Gruppen mit Aufnahme auf Antrag beantragen Sie hier; die Gruppenleitung entscheidet. Prüfungsergebnisse erscheinen erst, wenn der Verein sie freigegeben hat.

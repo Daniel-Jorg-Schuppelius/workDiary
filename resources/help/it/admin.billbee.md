@@ -1,7 +1,7 @@
 ---
 title: "Collegare Billbee"
 topic: admin.billbee
-version: 2
+version: 3
 keywords:
     - multicanale
     - ordini marketplace
@@ -48,3 +48,5 @@ rispetta automaticamente questo limite.
 d'ordine, numero del marketplace, nome o e-mail dell'acquirente. La ricerca
 globale mostra gli stessi ordini in «Ordini Billbee» — per l'amministrazione,
 finché il plugin è attivo.
+
+**Gestione delle giacenze:** con l’impostazione «Billbee», WorkDiary continua a registrare nel proprio giornale di magazzino e comunica ogni livello come valore assoluto per SKU a Billbee. Possono cambiarla le persone autorizzate a configurare il magazzino; se un altro programma (ad esempio JTL-Wawi) gestisce già le giacenze, riportatelo prima lì su locale. Non esiste una modalità di sola lettura, perché Billbee non tiene giacenze proprie.

@@ -80,8 +80,44 @@
                     <x-input-field name="intro_text" :label="__('Einleitungstext (optional)')" span="2">
                         <textarea id="intro_text" name="intro_text" rows="4" class="textarea textarea-bordered w-full">{{ old('intro_text', $portal->intro_text) }}</textarea>
                     </x-input-field>
-                    <x-input-field name="default_locale" :label="__('Standardsprache (optional, z. B. de)')" :value="old('default_locale', $portal->default_locale)" />
+                    <x-input-field name="default_locale" :label="__('Standardsprache')">
+                        <select id="default_locale" name="default_locale" class="select select-bordered w-full">
+                            <option value="">{{ __('Sprache der Anwendung') }}</option>
+                            @foreach (\App\Support\Locales::enabledCodes() as $code)
+                                <option value="{{ $code }}" @selected(old('default_locale', $portal->default_locale) === $code)>{{ \App\Support\Locales::native($code) }}</option>
+                            @endforeach
+                        </select>
+                    </x-input-field>
                     <x-input-field name="retention_months" type="number" :label="__('Aufbewahrung nach Abschluss (Monate)')" :value="old('retention_months', $portal->retention_months ?? 36)" required min="1" max="600" />
+                </x-form-group>
+
+                <x-form-group :legend="__('Weitere Sprachen')" icon="translate" tone="ghost" cols="1">
+                    <p class="text-sm text-base-content/70">{{ __('Die meldende Person kann das Portal auf diese Sprachen umschalten. Ohne Auswahl erscheint es nur in der Standardsprache.') }}</p>
+                    <div class="flex flex-wrap gap-4">
+                        @foreach (\App\Support\Locales::enabledCodes() as $code)
+                            <label class="label cursor-pointer justify-start gap-2">
+                                <input type="checkbox" name="allowed_locales[]" value="{{ $code }}" class="checkbox checkbox-sm" @checked(in_array($code, (array) old('allowed_locales', $portal->allowed_locales ?? []), true))>
+                                <span class="fieldset-label">{{ \App\Support\Locales::native($code) }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </x-form-group>
+
+                {{-- Pflichthinweis nach § 13 HinSchG: Das Portal nennt die externen Meldestellen. --}}
+                <x-form-group :legend="__('Externe Meldewege')" icon="account_balance" tone="ghost" cols="2">
+                    <p class="text-sm text-base-content/70 md:col-span-2">{{ __('Das Portal weist immer auf externe Meldestellen hin. Tragen Sie hier die für Ihre Organisation zuständigen Stellen ein, etwa die externe Meldestelle des Bundes; Zeilen ohne Bezeichnung entfallen.') }}</p>
+                    @php
+                        $channelRows = array_values((array) old('external_channels', $portal->external_channels ?? []));
+                        $channelRows = array_pad($channelRows, min(10, count($channelRows) + 2), ['label' => '', 'url' => '']);
+                    @endphp
+                    @foreach ($channelRows as $i => $row)
+                        <x-input-field name="external_channels[{{ $i }}][label]" id="external-channel-label-{{ $i }}" error="external_channels.{{ $i }}.label" maxlength="200"
+                                       :label="__('Bezeichnung :n', ['n' => $i + 1])" :value="is_array($row) ? ($row['label'] ?? '') : (string) $row" />
+                        <x-input-field name="external_channels[{{ $i }}][url]" id="external-channel-url-{{ $i }}" error="external_channels.{{ $i }}.url" type="url" maxlength="500"
+                                       :label="__('Internetadresse :n', ['n' => $i + 1])" :value="is_array($row) ? ($row['url'] ?? '') : ''" />
+                    @endforeach
+                    <x-input-field name="privacy_text_version" maxlength="32" :label="__('Stand des Datenschutzhinweises (optional)')" :value="old('privacy_text_version', $portal->privacy_text_version)"
+                                   :hint="__('Erscheint im Portal unter dem Einleitungstext, etwa „2026-11“.')" />
                 </x-form-group>
 
                 <x-icon-btn icon="save" tone="primary" size="sm" type="submit" show-label>{{ __('Speichern') }}</x-icon-btn>

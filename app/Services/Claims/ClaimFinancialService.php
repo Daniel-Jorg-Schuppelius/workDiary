@@ -61,6 +61,23 @@ class ClaimFinancialService {
     }
 
     /**
+     * Ablehnung im Vier-Augen-Schritt (MVP-1620): der Vorschlag endet ohne
+     * Beleg; ein neuer Vorschlag ist jederzeit möglich.
+     */
+    public function reject(ClaimFinancialOutcome $outcome): ClaimFinancialOutcome {
+        return DB::transaction(function () use ($outcome): ClaimFinancialOutcome {
+            /** @var ClaimFinancialOutcome $locked */
+            $locked = ClaimFinancialOutcome::query()->whereKey($outcome->id)->lockForUpdate()->firstOrFail();
+            if ($locked->status !== ClaimFinancialStatus::Proposed) {
+                throw new \RuntimeException((string) __('claims.financial.error.not_rejectable'));
+            }
+            $locked->forceFill(['status' => ClaimFinancialStatus::Rejected->value])->save();
+
+            return $locked;
+        });
+    }
+
+    /**
      * Ausführung (MVP-252): erzeugt je nach Art den Faktura-Folgebeleg
      * (Gutschrift/Storno als Entwurf, reason_kind strukturiert gesetzt)
      * oder schließt ohne Beleg ab (Rückerstattung, Ersatzrechnung als
@@ -92,9 +109,17 @@ class ClaimFinancialService {
                 if ($invoice === null) {
                     throw new \RuntimeException((string) __('Für diese Folge fehlt der Quellbeleg (Rechnung).'));
                 }
-                $result = $outcome->kind === ClaimFinancialKind::Cancellation
-                    ? $this->invoices->cancellationFor($invoice, $outcome->justification, $actor->id)
-                    : $this->invoices->creditNoteFor($invoice, $actor->id);
+                $cancels = $outcome->kind === ClaimFinancialKind::Cancellation;
+                try {
+                    $result = $cancels
+                        ? $this->invoices->cancellationFor($invoice, $outcome->justification, $actor->id)
+                        : $this->invoices->creditNoteFor($invoice, $actor->id);
+                } catch (\LogicException) {
+                    // Storno nur für ausgestellte offene, Gutschrift nur für bezahlte Rechnungen ohne Korrektur.
+                    throw new \RuntimeException((string) __($cancels
+                        ? 'claims.financial.error.not_cancellable'
+                        : 'claims.financial.error.not_creditable', ['number' => $invoice->number]));
+                }
                 // D1: strukturierter Grund am Beleg statt neuem Belegtyp.
                 $result->forceFill(['reason_kind' => $outcome->kind->value])->save();
             }
@@ -117,6 +142,13 @@ class ClaimFinancialService {
         $outcome->forceFill(['external_reference' => $reference])->save();
 
         return $outcome;
+    }
+
+    /** Entstehen Gutschrift und Storno dieser Akte hier (lokale Rechnungshoheit)? Dann braucht die Folge die Rechnung. */
+    public function localBilling(ClaimCase $case): bool {
+        $customer = $case->customer ?? $case->invoice?->customer;
+
+        return $customer === null || ! $this->billingModes->effectiveFor($customer)->isExternal();
     }
 
     /** Hoheits-Kaskade: Fall-Kunde, sonst Kunde des Quellbelegs, sonst lokal. */

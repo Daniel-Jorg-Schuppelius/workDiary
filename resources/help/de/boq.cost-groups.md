@@ -1,7 +1,7 @@
 ---
 title: "Kostengruppen nach DIN 276"
 topic: boq.cost-groups
-version: 1
+version: 2
 keywords:
     - Kostengruppe zuordnen
     - Kostenermittlung
@@ -168,3 +168,7 @@ Der Wechsel der Norm läuft über **Zuordnen → Ausgabe wechseln** und zeigt zu
 eine **Vorschau**. Umgestellt wird nur, was eine eindeutige Entsprechung hat;
 alles andere bleibt stehen. Die Lücken sind das Eigentliche — sie zeigen, wo
 jemand entscheiden muss. Eine geratene Nummer wäre schlimmer als die alte.
+
+## Import ohne Ausgabe der Norm
+
+Nennt der Kostengruppenkatalog einer GAEB-Datei keine Ausgabe der Norm, übernimmt der Import die Kostengruppen und hält einen **Befund** fest: Er steht in der Importhistorie des Leistungsverzeichnisses. Ordnen Sie dem Katalog danach über **Zuordnen → Ausgabe wechseln** die Ausgabe zu, bevor Sie auswerten.

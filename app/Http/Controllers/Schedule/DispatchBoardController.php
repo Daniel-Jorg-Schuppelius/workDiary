@@ -141,19 +141,25 @@ class DispatchBoardController extends Controller {
      * Mitarbeitende; Zellen erfüllt/läuft ab (< 30 Tage)/fehlt — Datenquelle
      * ausschließlich {@see \App\Services\Schedule\QualificationGate}.
      */
-    public function qualifications(\App\Models\Diary\DiaryEntry $diary, \App\Services\Schedule\QualificationGate $gate): View {
+    public function qualifications(\App\Models\Diary\DiaryEntry $diary, \App\Services\Schedule\QualificationGate $gate, \App\Services\Schedule\Contracts\QualificationTrainingSource $training): View {
         $this->authorizeView();
 
         $required = $diary->requiredQualifications()->orderBy('name')->get();
         $date = $diary->start_at !== null ? \Carbon\CarbonImmutable::parse((string) $diary->start_at) : null;
 
         $rows = [];
+        $courses = [];
         if ($required->isNotEmpty()) {
             $users = User::inCurrentOrganization()->with('qualifications')->orderBy('name')->get();
+            $requiredIds = array_values(array_map('intval', $required->pluck('id')->all()));
+            // Einsatz-Ampel (Feature 149): ein laufender Kurs macht „fehlt“ und „läuft ab“ gelb.
+            $open = $training->openEnrollments($users, $requiredIds);
+            $courses = $training->suggestedCourses($requiredIds);
             foreach ($users as $user) {
                 $rows[] = [
                     'user' => $user,
                     'status' => $gate->statusFor($user, $required, $date),
+                    'training' => $open[(int) $user->id] ?? [],
                 ];
             }
         }
@@ -162,6 +168,7 @@ class DispatchBoardController extends Controller {
             'diary' => $diary,
             'required' => $required,
             'rows' => $rows,
+            'courses' => $courses,
             'date' => $date,
         ]);
     }

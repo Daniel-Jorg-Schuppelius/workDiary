@@ -14,13 +14,15 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
-use App\Models\Platform\User;
+use App\Models\Platform\{Team, User};
 use App\Models\Project\Project;
 use App\Models\ServiceTicket\SlaContract;
 use App\Services\ServiceTicket\SlaQuotaService;
 use App\Support\SortableQuery;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Spatie\Permission\Models\Role;
 
 /**
  * SLA-Vertrags-Detailseite (Feature 010): read-only Übersicht und Detail der
@@ -64,6 +66,7 @@ class SlaContractController extends Controller {
             'projects' => $canManage
                 ? Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id'])
                 : collect(),
+            ...($canManage ? $this->formOptions() : ['teams' => collect(), 'orgUsers' => collect(), 'roleNames' => []]),
         ]);
     }
 
@@ -91,7 +94,28 @@ class SlaContractController extends Controller {
         return view('sla-contracts._form_dialog', [
             'contract' => $slaContract->loadMissing('project'),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
+            ...$this->formOptions(),
         ]);
+    }
+
+    /**
+     * Auswahl für OLA-Team und Empfänger der Eskalationsstufen.
+     *
+     * @return array{teams: \Illuminate\Support\Collection<int, Team>, orgUsers: \Illuminate\Support\Collection<int, User>, roleNames: list<string>}
+     */
+    private function formOptions(): array {
+        $organizationId = (int) $this->currentOrganization()->id;
+
+        return [
+            'teams' => Team::query()->orderBy('name')->get(['id', 'name']),
+            'orgUsers' => User::query()->where('organization_id', $organizationId)->whereNull('deactivated_at')->orderBy('name')->get(['id', 'name']),
+            'roleNames' => array_values(Role::query()
+                ->where((string) config('permission.column_names.team_foreign_key', 'team_id'), $organizationId)
+                ->where('guard_name', 'web')
+                ->orderBy('name')
+                ->pluck('name')
+                ->all()),
+        ];
     }
 
     public function update(Request $request, SlaContract $slaContract): \Illuminate\Http\RedirectResponse {
@@ -110,6 +134,7 @@ class SlaContractController extends Controller {
         // bei Fehlern der Sqid bleibt (vgl. DecodesSqidInputs).
         $input = $request->all();
         $input['project_id'] = \App\Support\Sqid::decodeOrNumeric(\App\Models\Project\Project::class, $request->input('project_id'));
+        $input['ola_team_id'] = \App\Support\Sqid::decodeOrNumeric(Team::class, $request->input('ola_team_id'));
         $data = \Illuminate\Support\Facades\Validator::make($input, [
             'code' => ['required', 'string', 'min:2', 'max:60'],
             'label' => ['required', 'string', 'min:2', 'max:180'],
@@ -122,8 +147,18 @@ class SlaContractController extends Controller {
             'is_active' => ['nullable', 'boolean'],
             'is_default' => ['nullable', 'boolean'],
             'is_ola' => ['nullable', 'boolean'],
-            'ola_team_id' => ['nullable', new \App\Rules\ExistsInCurrentOrganization('teams')],
+            'ola_team_id' => ['nullable', 'required_if_accepted:is_ola', new \App\Rules\ExistsInCurrentOrganization('teams')],
+            'escalation' => ['nullable', 'array', 'max:10'],
+            'escalation.*.after_minutes' => ['nullable', 'integer', 'min:1', 'max:525600'],
+            'escalation.*.notify' => ['nullable', 'string', 'max:140'],
+        ], [
+            'ola_team_id.required_if_accepted' => __('sla.form.olaTeamRequired'),
         ])->validate();
+        // Ein OLA ist ein internes Ziel: nie Standardvertrag und nie an Kunde oder Projekt gebunden.
+        $isOla = (bool) ($data['is_ola'] ?? false);
+        if ($isOla && (($data['is_default'] ?? false) || ($data['customer_id'] ?? null) !== null || ($data['project_id'] ?? '') !== '')) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['is_ola' => __('sla.form.olaNotCustomer')]);
+        }
 
         return [
             'code' => $data['code'],
@@ -139,8 +174,48 @@ class SlaContractController extends Controller {
             'is_active' => (bool) ($data['is_active'] ?? true),
             'is_default' => (bool) ($data['is_default'] ?? false),
             'is_ola' => (bool) ($data['is_ola'] ?? false),
-            'ola_team_id' => ($data['is_ola'] ?? false) ? ($data['ola_team_id'] ?? null) : null,
+            'ola_team_id' => $isOla ? ($data['ola_team_id'] ?? null) : null,
+            // Ohne Eskalationsfelder im Request (Alt-Aufrufer) bleibt die Kette des Vertrags.
+            'escalation_chain' => array_key_exists('escalation', $data)
+                ? $this->escalationChain((array) $data['escalation'])
+                : $contract?->escalation_chain,
         ];
+    }
+
+    /**
+     * Stufen in der Form, die der SlaTicketScan liest: `after_minutes` und
+     * `notify` (leer = Bearbeiter des Tickets, Rollenname oder Nutzer-ID).
+     *
+     * @param  array<int|string, mixed>  $rows
+     * @return list<array{after_minutes: int, notify: string}>|null
+     */
+    private function escalationChain(array $rows): ?array {
+        $organizationId = (int) $this->currentOrganization()->id;
+        $chain = [];
+        foreach ($rows as $index => $row) {
+            $minutes = NumberHelper::toIntOrNull(is_array($row) ? ($row['after_minutes'] ?? null) : null);
+            if ($minutes === null) {
+                continue;
+            }
+            $target = (string) (is_array($row) ? ($row['notify'] ?? '') : '');
+            $notify = '';
+            if (str_starts_with($target, 'user:')) {
+                $userId = \App\Support\Sqid::decode(User::class, substr($target, 5));
+                if ($userId === null || ! User::query()->whereKey($userId)->where('organization_id', $organizationId)->exists()) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(["escalation.{$index}.notify" => __('sla.form.escalationTargetUnknown')]);
+                }
+                $notify = (string) $userId;
+            } elseif (str_starts_with($target, 'role:')) {
+                $notify = substr($target, 5);
+                if (\App\Services\Org\OrganizationRoles::matching([$notify], $organizationId)->isEmpty()) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(["escalation.{$index}.notify" => __('sla.form.escalationTargetUnknown')]);
+                }
+            }
+            $chain[] = ['after_minutes' => $minutes, 'notify' => $notify];
+        }
+        usort($chain, static fn (array $a, array $b): int => $a['after_minutes'] <=> $b['after_minutes']);
+
+        return $chain !== [] ? $chain : null;
     }
 
     /** Genau ein Default-Vertrag je Org (ohne Kundenbezug). */
@@ -168,7 +243,19 @@ class SlaContractController extends Controller {
             ->orderBy('next_due_on')
             ->get();
 
+        $chain = array_values((array) ($slaContract->escalation_chain ?? []));
+        $userNames = User::query()
+            ->where('organization_id', $slaContract->organization_id)
+            ->whereIn('id', array_filter(array_map(static fn (array $step): ?int => ctype_digit($step['notify']) ? (int) $step['notify'] : null, $chain)))
+            ->pluck('name', 'id');
+
         return view('sla-contracts.show', [
+            'escalationTargets' => array_map(static fn (array $step): string => match (true) {
+                $step['notify'] === '' => (string) __('sla.form.escalationAssignee'),
+                ctype_digit($step['notify']) => (string) ($userNames[(int) $step['notify']] ?? __('sla.form.escalationTargetGone')),
+                default => \App\Support\Trans::or('user.role.' . $step['notify'], $step['notify']),
+            }, $chain),
+            'olaTeam' => $slaContract->is_ola && $slaContract->ola_team_id !== null ? Team::query()->find($slaContract->ola_team_id, ['id', 'name']) : null,
             'contract' => $slaContract,
             'quotaUsage' => $quotaUsage,
             'maintenancePlans' => $maintenancePlans,

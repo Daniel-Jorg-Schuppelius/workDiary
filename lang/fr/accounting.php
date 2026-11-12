@@ -71,6 +71,8 @@ return [
             'valid_from' => 'Valable à partir du',
             'reason' => 'Motif',
             'datev_account' => 'Compte DATEV',
+            'datev_automatic' => 'Automatisme DATEV',
+            'datev_automatic_none' => '— pas de compte automatique —',
             'euer_category' => 'Ligne recettes-dépenses',
             'euer_category_none' => '— sans affectation —',
             'bwa_group' => 'Ligne BWA',
@@ -92,6 +94,7 @@ return [
             'sovereignty_switch' => 'Le transfert des données reste le changement de comptabilité ; ici, seule la direction est réattribuée.',
             'external_provider' => 'Uniquement en cas dʼautorité externe : nom du système directeur (p. ex. lexoffice).',
             'datev_account' => 'Uniquement pour l\'export ; l\'écriture locale n\'en dépend pas.',
+            'datev_automatic' => 'Code de taxe dont DATEV calcule lui-même la taxe sur ce compte (compte automatique, p. ex. 8400 au SKR03). Le lot DATEV n’y met aucune clé de taxe.',
             'euer_category' => 'Détermine la ligne du formulaire dans laquelle le compte apparaît. Sans affectation, il figure parmi les cas non élucidés.',
             'bwa_group' => 'Ligne de l\'analyse de gestion (BWA). Sans affectation, le rapport déduit la ligne de la plage SKR03/SKR04 ; si cela reste ouvert, le compte apparaît sous « non affecté ».',
             'deductible_percent' => "N'agit que sur l'aperçu recettes-dépenses — le journal porte toujours le montant intégral (p. ex. 70 % pour les frais de représentation).",
@@ -99,7 +102,6 @@ return [
             'post_now' => 'Une fois comptabilisée, l\'écriture ne se corrige que par une contre-écriture.',
             'reversal_booked_on' => 'Laisser vide pour le jour d\'origine, tant que sa période est ouverte.',
             'cost_center_required' => 'Les écritures sur ce compte ne peuvent être validées qu’avec un centre de coûts, y compris depuis la boîte de propositions.',
-            'cost_center' => 'S’applique aux lignes débit et crédit.',
         ],
         'action' => [
             'activate' => 'Activer la comptabilité locale',
@@ -162,6 +164,8 @@ return [
             'entry_posted' => 'Écriture comptabilisée.',
             'entry_reversed' => 'Contre-écriture créée.',
             'entry_discarded' => 'Brouillon rejeté — l’opération peut être relancée.',
+            'entry_updated' => 'Brouillon modifié.',
+            'cost_centers_saved' => 'Centres de coûts enregistrés.',
             'reversal_awaiting_approval' => 'Principe des quatre yeux : l’extourne attend la validation comme brouillon dans la boîte de saisie comptable. L’écriture reste comptabilisée jusqu’à ce qu’une deuxième personne comptabilise la contre-écriture.',
         ],
         'error' => [
@@ -184,7 +188,8 @@ return [
             'unbalanced' => 'Le débit (:debit) et le crédit (:credit) ne correspondent pas.',
             'reverse_not_posted' => 'Seule une écriture comptabilisée peut être extournée.',
             'reversal_pending' => 'Une extourne de cette écriture attend déjà la validation.',
-            'discard_not_allowed' => 'Seul un brouillon en attente issu d’un escompte, d’un passage en perte, d’une écriture d’attente, d’un virement, des soldes initiaux, d’un acompte spécial ou d’une extourne peut être rejeté ; les écritures comptabilisées restent inchangées.',
+            'discard_not_allowed' => 'Seul un brouillon peut être rejeté ; les écritures validées restent inchangées.',
+            'edit_not_allowed' => 'Ce brouillon provient d’une opération métier (escompte, passage en perte, compte d’attente, virement interne, soldes d’ouverture, acompte spécial, extourne). Ses lignes ne peuvent pas être modifiées — seul le centre de coûts ; sinon, rejetez-le et relancez l’opération.',
             'reversal_reason_required' => 'L\'extourne exige un motif.',
             'account_in_use' => 'Ce compte a déjà été mouvementé — il ne peut qu\'être désactivé.',
             'entry_without_organization' => 'L\'écriture n\'a pas d\'organisation — merci d\'informer l\'administrateur.',
@@ -332,6 +337,11 @@ return [
             'year_closed' => 'L\'exercice :year est clôturé.',
             'period_closed' => 'La période du :date est clôturée.',
             'no_exchange_rate' => 'Le taux mensuel :month pour :currency (conversion en :base) manque — ajoutez-le sous Taux de change.',
+            'self_assessed_with_tax' => 'Cas fiscal « :case », mais la pièce indique une taxe — vérifiez le cas fiscal ou les valeurs dans les factures entrantes.',
+            'self_assessed_small_business' => 'Les petites entreprises (§ 19 UStG) doivent la TVA pour « :case » mais ne déduisent pas de TVA — veuillez comptabiliser cette facture manuellement.',
+            'missing_self_assessed_code' => 'Aucun code de taxe pour « :case » à :rate % — créez dans le plan comptable un code « TVA collectée et déductible » avec ce cas fiscal, un compte de taxe et un compte de TVA déductible.',
+            'missing_input_tax_code' => 'Aucun code de TVA déductible à :rate % — créez dans le plan comptable un code « TVA déductible » avec ce taux et un compte de taxe.',
+            'expense_rate_without_input_tax' => 'Dépense avec :rate % de taxe : aucun code de TVA déductible à ce taux. La TVA étrangère n\'est pas de la TVA déductible — saisissez la dépense en brut sans taux ; les factures en autoliquidation relèvent des factures entrantes.',
         ],
         'memo' => [
             'sales_invoice' => 'Facture :number · :customer',
@@ -522,6 +532,134 @@ return [
     ],
 
     // Offene Posten (Feature 125, MVP-674).
+    // Handbuchung und Entwurf bearbeiten (MVP-1556/1558).
+    'entry_form' => [
+        'title_edit' => 'Modifier le brouillon',
+        'counterparty' => 'Contrepartie',
+        'counterparty_hint' => 'Client ou fournisseur. S’applique aux lignes sur des comptes à postes ouverts et aux lignes avec code de taxe.',
+        'rows_hint' => 'Un compte et un montant par ligne, au débit ou au crédit. Avec un code de taxe, la ligne porte le montant hors taxe ; la ligne de taxe est créée à l’enregistrement. Les lignes vides sont ignorées.',
+        'tax_code' => 'Code de taxe',
+        'line_memo' => 'Libellé de ligne',
+        'cost_centers_title' => 'Affecter les centres de coûts',
+        'no_cost_centers' => 'Aucun centre de coûts actif n’est créé.',
+        'cost_center_required' => 'Obligatoire',
+        'action' => [
+            'edit' => 'Modifier le brouillon',
+            'cost_centers' => 'Centres de coûts',
+        ],
+        'error' => [
+            'row' => 'Ligne :row :',
+            'one_side' => 'Veuillez saisir exactement un montant — au débit ou au crédit.',
+            'tax_account_missing' => 'Le code de taxe :code n’a pas de compte de taxe.',
+            'unknown_counterparty' => 'La contrepartie est introuvable.',
+            'unknown_tax_code' => 'Le code de taxe est introuvable.',
+            'tax_code_not_valid' => 'Le code de taxe :code n’est pas valable le :date.',
+        ],
+    ],
+    // Steuerkennzeichen pflegen (MVP-1558).
+    'tax_codes' => [
+        'category' => [
+            'K' => 'Livraison intracommunautaire',
+            'AE' => 'Autoliquidation',
+            'G' => 'Exportation',
+            'O' => 'Non imposable',
+            'E' => 'Exonéré',
+        ],
+        'empty' => 'Aucun code de taxe pour l’instant.',
+        'inactive' => 'Désactivé',
+        'in_use_hint' => 'Ce code a déjà servi à des écritures. Le nom et les cases changent immédiatement. Le taux, le sens ou le compte de taxe ne s’appliquent qu’à partir d’une nouvelle date d’effet postérieure au :date — la version précédente prend fin la veille, les écritures existantes restent inchangées.',
+        'action' => [
+            'add' => 'Créer un code de taxe',
+        ],
+        'field' => [
+            'code' => 'Code',
+            'rate' => 'Taux de taxe (%)',
+            'tax_account' => 'Compte de taxe',
+            'valid_from' => 'Valable à partir du',
+            'tax_category' => 'Catégorie de taxe (vente sans taxe)',
+            'validity' => 'Validité',
+            'input_tax_account' => 'Compte de TVA déductible',
+            'tax_case' => 'Cas fiscal des factures entrantes',
+            'ustva_input_tax_field' => 'Case de la TVA déductible',
+            'datev_tax_key' => 'Clé de taxe DATEV',
+        ],
+        'hint' => [
+            'code' => 'Court et unique, par exemple USt19. Lettres, chiffres, point, tiret et tiret bas.',
+            'tax_account' => 'Compte de la ligne de taxe automatique. Inutile à 0 %.',
+            'valid_from' => 'Nouvelle date d’effet pour un taux, un sens ou un compte de taxe modifié.',
+            'tax_category' => 'Uniquement pour les codes à 0 % : la boîte de saisie choisit par la catégorie le code d’une vente sans taxe.',
+            'tax_case' => 'La boîte de comptabilisation choisit le code d’une facture entrante en autoliquidation selon le cas fiscal et le taux.',
+            'datev_tax_key' => 'Clé de taxe du lot DATEV, p. ex. 3 pour TVA 19 %, 9 pour TVA déductible 19 %, 94 pour le § 13b. Vide : aucune clé.',
+        ],
+        'self_assessed' => [
+            'legend' => 'Autoliquidation par le destinataire',
+            'hint' => 'Uniquement pour le sens « TVA collectée et déductible » (§ 13b UStG, acquisition intracommunautaire) : la TVA collectée va au compte de taxe, la même TVA déductible au compte de TVA déductible.',
+        ],
+        'confirm' => [
+            'deactivate' => 'Désactiver ce code de taxe ? Les nouvelles écritures ne pourront plus le choisir, les existantes le conservent.',
+        ],
+        'flash' => [
+            'saved' => 'Code de taxe enregistré.',
+            'versioned' => 'Nouvelle version du code de taxe créée à partir du :date ; les règles d’écriture et les valeurs par défaut des comptes la suivent.',
+            'deactivated' => 'Code de taxe désactivé.',
+        ],
+        'error' => [
+            'code_taken' => 'Le code :code est déjà utilisé.',
+            'tax_account_required' => 'Un code de taxe dont le taux dépasse 0 % nécessite un compte de taxe.',
+            'input_tax_account_required' => 'En autoliquidation, le code a besoin d’un compte de TVA déductible.',
+            'valid_from_required' => 'Ce code a déjà servi à des écritures. Veuillez indiquer une date d’effet postérieure au :date à partir de laquelle la modification s’applique.',
+        ],
+    ],
+    // Bankumsatz ohne Beleg direkt aufs Sachkonto (MVP-1557).
+    'bank_direct' => [
+        'title' => 'Comptabiliser sans pièce sur un compte général',
+        'hint' => 'Pour les mouvements sans pièce : frais bancaires, intérêts, prélèvement privé ou compensation. Le mouvement est comptabilisé banque à compte général ou inversement et mis de côté dans le rapprochement.',
+        'memo' => 'Mouvement bancaire : :note',
+        'field' => [
+            'account' => 'Compte général',
+            'tax_code' => 'Code de taxe',
+            'note' => 'Libellé',
+        ],
+        'hint_field' => [
+            'tax_code' => 'Le mouvement est le montant TTC ; la taxe en est extraite.',
+            'note' => 'Par exemple « Frais de tenue de compte mars ».',
+        ],
+        'action' => [
+            'post' => 'Comptabiliser sur un compte général',
+            'post_submit' => 'Comptabiliser',
+        ],
+        'flash' => [
+            'posted' => 'Mouvement comptabilisé sur le compte général.',
+        ],
+        'error' => [
+            'money_account' => 'Les comptes de banque, de caisse et d’attente ne peuvent pas être choisis ici — utilisez le virement interne ou l’écriture d’attente.',
+            'already_assigned' => 'Le mouvement est déjà affecté à une pièce.',
+        ],
+    ],
+    // Offener Posten strittig (MVP-1559).
+    'dispute' => [
+        'title' => 'Marquer le poste comme litigieux',
+        'hint' => 'Un poste litigieux reste ouvert. Il n’est pas relancé (blocage de relance sur la facture) et ne compte pas comme encaissement attendu dans la prévision de trésorerie.',
+        'reason' => 'Motif',
+        'since' => 'Litigieux depuis le :date : :reason',
+        'dunning_reason' => 'Poste ouvert litigieux : :reason',
+        'filter_all' => 'Tous les postes ouverts',
+        'action' => [
+            'mark' => 'Marquer comme litigieux',
+            'withdraw' => 'Lever le litige',
+        ],
+        'confirm' => [
+            'withdraw' => 'Lever la mention « litigieux » ? Le blocage de relance posé par cette mention est supprimé.',
+        ],
+        'flash' => [
+            'marked' => 'Poste marqué comme litigieux.',
+            'withdrawn' => 'La mention « litigieux » a été levée.',
+        ],
+        'error' => [
+            'not_open' => 'Seul un poste ouvert peut être marqué comme litigieux.',
+            'not_disputed' => 'Le poste n’est pas marqué comme litigieux.',
+        ],
+    ],
     'open_items' => [
         'title' => 'Postes ouverts',
         'menu' => 'Postes ouverts',
@@ -531,6 +669,9 @@ return [
         'settle_hint' => 'Ouvert : :open. Les paiements viennent du rapprochement bancaire — ici seulement escompte, retenue ou passage en perte.',
         'awaiting_approval' => 'Brouillon en attente de validation',
         'four_eyes_hint' => 'Principe des quatre yeux actif : l’escompte et le passage en perte sont créés comme brouillons dans la boîte de saisie comptable. Le poste reste ouvert jusqu’à ce qu’une deuxième personne comptabilise la contre-écriture.',
+        'discount_tax_hint' => 'L’escompte est réparti entre net et part de taxe (:rates) : la taxe de la pièce est corrigée (§ 17 UStG).',
+        'discount_no_tax_hint' => 'Escompte sans correction de taxe : l’écriture de ce poste ne porte aucune taxe (petite entreprise, autoliquidation, exonéré ou solde d’ouverture).',
+        'discount_self_assessed_hint' => 'Escompte sur une facture en autoliquidation (:rates) : il réduit la base d’imposition ; la TVA collectée et la TVA déductible baissent du même montant (§ 17, al. 1, phrase 5 UStG).',
         'column' => [
             'counterparty' => 'Tiers',
             'due_date' => 'Échéance',
@@ -556,6 +697,7 @@ return [
         ],
         'error' => [
             'draft_pending' => 'Une contre-écriture attend déjà la validation pour ce poste. Un autre règlement n’est possible qu’une fois celle-ci comptabilisée.',
+            'counter_account_missing' => 'Le compte de contrepartie :account pour :kind est absent du plan comptable. Créez le compte ou saisissez un compte existant dans les paramètres DATEV — sans contre-écriture, le poste n\'est pas lettré.',
         ],
     ],
 
@@ -595,7 +737,7 @@ return [
         'hint' => [
             'kind' => 'L\'attente de pièce attend un original ; le modèle d\'écriture crée un brouillon.',
             'due_day' => '1–28, pour que chaque mois comporte ce jour.',
-            'accounts' => 'Uniquement pour les modèles d\'écriture — avec le montant attendu.',
+            'accounts' => 'Lignes d’écriture uniquement pour les modèles d’écriture. Si le montant attendu reste vide, le total de l’écriture s’applique.',
             'responsible' => 'Reçoit, en plus de la comptabilité, l\'avis des opérations en retard.',
         ],
         'action' => [
@@ -628,10 +770,12 @@ return [
         ],
         'error' => [
             'already_closed' => 'Cette opération est déjà close.',
-            'template_incomplete' => 'Un modèle d\'écriture exige un compte débit, un compte crédit et un montant.',
+            'template_incomplete' => 'Un modèle d’écriture nécessite au moins deux lignes avec compte et montant.',
+            'template_unbalanced' => 'Les lignes du modèle d’écriture ne sont pas équilibrées : débit et crédit doivent être égaux.',
         ],
         'blocker' => [
             'no_lines' => 'Le modèle n\'a aucune ligne d\'écriture.',
+            'draft_discarded' => 'Le brouillon d’écriture a été rejeté.',
         ],
         'notification' => [
             'title' => 'Opération récurrente en retard : :name',
@@ -732,6 +876,10 @@ return [
             'ten_day_rule' => ':count paiements se situent entre le 22.12 et le 10.01 et relèvent de l’année voisine selon la pièce (§ 11 al. 1 phr. 2 EStG).',
             'open_clearing' => ":count comptes d'attente ne sont pas encore soldés.",
             'overdue_filings' => ':count échéances déclaratives sont dépassées et non marquées comme déposées.',
+            'unbooked_settlements' => ':count lettrages par escompte ou passage en perte n\'ont pas d\'écriture au journal — le poste est clos, le compte de créances ou de dettes le porte encore. Veuillez comptabiliser manuellement : :items',
+            'discounts_without_tax_correction' => ':count lettrages par escompte ont été comptabilisés sans correction de taxe (§ 17 UStG) ; part de taxe calculée au total :tax. Rien n’est comptabilisé automatiquement — veuillez décider des écritures de correction avec votre conseil fiscal : :items',
+            'self_assessed_without_tax' => ':count factures entrantes comptabilisées indiquent une autoliquidation (§ 13b UStG, acquisition intracommunautaire), mais leur écriture ne porte ni TVA collectée ni TVA déductible. Rien n’est comptabilisé automatiquement — veuillez décider des écritures de correction avec votre conseiller fiscal : :items',
+            'tax_share' => 'part de taxe',
             'kpi' => [
                 'drafts' => 'Brouillons',
                 'unbalanced' => 'Déséquilibrés',
@@ -1125,7 +1273,7 @@ return [
             'note_required' => 'Un motif est obligatoire.',
         ],
         'blocker' => [
-            'unassigned' => "Aucune pièce affectée — comptabilisable uniquement via une affectation ou le compte d'attente.",
+            'unassigned' => 'Aucune pièce affectée — comptabilisable par une affectation, directement sur un compte général ou par le compte d’attente.',
         ],
         'flash' => [
             'posted' => "Écriture d'attente créée.",
@@ -1270,6 +1418,11 @@ return [
         'total' => 'Livraisons intracommunautaires',
         'column' => [
             'vat_id' => 'N° de TVA',
+            'kind' => 'Type',
+        ],
+        'kind' => [
+            'goods' => 'Livraisons intracommunautaires',
+            'services' => 'Autres prestations',
         ],
         'unclear' => [
             'missing_vat_id' => 'Écriture :entry (:customer) sans n° de TVA du destinataire.',

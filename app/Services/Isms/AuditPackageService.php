@@ -80,6 +80,53 @@ class AuditPackageService {
     }
 
     /**
+     * Ändert Titel, Geltungsbereich, Stichtag und Norm-Filter eines Entwurfs.
+     *
+     * @param  array<string, mixed>  $attributes  title, as_of_date, norm?, edition?
+     * @throws ValidationException wenn das Paket bereits finalisiert ist
+     */
+    public function update(IsmsAuditPackage $package, IsmsScope $scope, array $attributes, User $actor): IsmsAuditPackage {
+        $this->assertDraft($package);
+
+        $package->fill([
+            'isms_scope_id' => $scope->id,
+            'title' => trim((string) ($attributes['title'] ?? '')),
+            'as_of_date' => $attributes['as_of_date'],
+            'norm' => $this->trimmedOrNull($attributes['norm'] ?? null),
+            'edition' => $this->trimmedOrNull($attributes['edition'] ?? null),
+        ]);
+        $changed = array_keys($package->getDirty());
+        $package->save();
+
+        if ($changed !== []) {
+            $package->audit('isms.audit_package.updated', ['actor_user_id' => $actor->id, 'fields' => $changed]);
+        }
+
+        return $package;
+    }
+
+    /**
+     * Verwirft einen Entwurf (weich gelöscht). Ein Entwurf hat weder Datei
+     * noch Prüfer-Link — beides entsteht erst beim Finalisieren.
+     *
+     * @throws ValidationException wenn das Paket bereits finalisiert ist
+     */
+    public function delete(IsmsAuditPackage $package, User $actor): void {
+        $this->assertDraft($package);
+
+        $package->audit('isms.audit_package.deleted', ['actor_user_id' => $actor->id, 'package_no' => $package->package_no]);
+        $package->delete();
+    }
+
+    private function assertDraft(IsmsAuditPackage $package): void {
+        if ($package->isFinalized()) {
+            throw ValidationException::withMessages([
+                'status' => __('isms.error.package_already_finalized'),
+            ]);
+        }
+    }
+
+    /**
      * Finalisiert ein Entwurfs-Paket: baut den JSON-Snapshot, legt die
      * Datei ab, persistiert SHA-256 + finalized_by/at und friert das
      * Paket damit ein (Model-Guard: finalized = unveränderlich).
@@ -87,11 +134,7 @@ class AuditPackageService {
      * @throws ValidationException wenn das Paket bereits finalisiert ist
      */
     public function finalize(IsmsAuditPackage $package, User $actor): IsmsAuditPackage {
-        if ($package->isFinalized()) {
-            throw ValidationException::withMessages([
-                'status' => __('isms.error.package_already_finalized'),
-            ]);
-        }
+        $this->assertDraft($package);
 
         $snapshot = $this->buildSnapshot($package, $actor);
         $json = JsonHelper::encode($snapshot, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

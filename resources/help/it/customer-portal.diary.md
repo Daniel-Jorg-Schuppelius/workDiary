@@ -1,7 +1,7 @@
 ---
 title: "Registro ordini e fascicolo del caso"
 topic: customer-portal.diary
-version: 4
+version: 5
 keywords:
     - registro degli incarichi
     - interventi eseguiti
@@ -66,6 +66,14 @@ Accanto a ogni foto che non ha ancora confermato ci sono due pulsanti:
 - **Contesta** – si apre il campo **Cosa non va?**. Descriva il problema con almeno 3 e al massimo 2000 caratteri e clicchi su **Invia**.
 
 Una contestazione viene inviata al Suo fornitore come richiesta relativa a questo ordine, e il fornitore ne viene informato. Il messaggio **Contestazione inviata — la ricontatteremo.** conferma l'invio. La risposta Le arriva via e-mail all'indirizzo di accesso; se le domande sono rilasciate per Lei, compare anche nella sezione **Richieste e commenti**.
+
+## Accettare i protocolli
+
+Se un protocollo attende la Sua accettazione, sopra l'elenco **Protocolli** compare la sezione **In attesa di accettazione**. **Visualizza e firma** apre il protocollo con tutti i suoi punti. Per accettarlo inserisca il Suo nome, firmi nel riquadro di firma con il dito, una penna o il mouse, confermi la correttezza dei dati e faccia clic su **Firma**. La firma non può essere ritirata.
+
+Se ha domande o obiezioni, le chiarisca con il Suo fornitore prima di firmare, tramite le richieste se sono rilasciate per Lei. Dopo la Sua firma il fornitore chiude il protocollo; in seguito è disponibile per il download in **Protocolli**.
+
+Se non è d'accordo con il protocollo, utilizzi il rifiuto sottostante: indichi una motivazione e, se necessario, i singoli difetti. Il Suo fornitore riceve una notifica e rielabora il protocollo; ricompare in **In attesa di accettazione** non appena viene inviato di nuovo.
 
 ## Scaricare i protocolli
 

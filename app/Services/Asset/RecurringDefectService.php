@@ -39,13 +39,20 @@ class RecurringDefectService {
      * Pareto der Assets nach Defektzahl im Zeitraum [$from, $to], absteigend.
      * `is_recurring` bezieht sich auf die feste Schwelle (≥ THRESHOLD Defekte im
      * 12-Monats-Fenster bis $to), unabhängig von der gewählten Zeitraumlänge.
+     * `$assetIds` grenzt auf eine Auswahl ein (Zeile der Produktanalyse).
      *
+     * @param  array<int, int>|null  $assetIds
      * @return list<array{asset_id: int, asset_sqid: string|null, asset_name: string, asset_no: string|null, total: int, by_severity: array<string, int>, recent_total: int, is_recurring: bool}>
      */
-    public function pareto(int $organizationId, CarbonInterface $from, CarbonInterface $to): array {
+    public function pareto(int $organizationId, CarbonInterface $from, CarbonInterface $to, ?array $assetIds = null): array {
+        if ($assetIds === []) {
+            return [];
+        }
+
         $periodRows = AssetDefect::query()
             ->withoutGlobalScope(OrganizationScope::class)
             ->where('organization_id', $organizationId)
+            ->when($assetIds !== null, fn ($q) => $q->whereIn('asset_id', $assetIds))
             ->whereBetween('reported_at', [$from, $to])
             ->get(['asset_id', 'severity']);
 

@@ -43,8 +43,4 @@ final readonly class VacationBalance {
     public function remainingAfterPendingDays(): float {
         return $this->remainingDays() - $this->pendingDays;
     }
-
-    public function wouldOverdraw(float $additionalDays): bool {
-        return $this->hasEntitlement && ($this->remainingAfterPendingDays() - $additionalDays) < 0;
-    }
 }

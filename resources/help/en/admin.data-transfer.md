@@ -1,7 +1,7 @@
 ---
 title: "Data transfer"
 topic: admin.data-transfer
-version: 2
+version: 3
 keywords:
     - data export
     - export data
@@ -44,3 +44,12 @@ permission for an entity. Every export is recorded in the audit log.
 
 Note: this area is for data migration/transfer. For full system
 backups see **Backups**.
+
+## Columns with their own permission
+
+Billing and cost rates of people are only exported with the permission for
+personnel and payroll data, project rates only with the permission for project
+billing. Without it, the columns are missing from the file; a file containing them
+can only be downloaded by someone with that permission. On import, workDiary skips
+such columns without the permission and lists them in the check report; the other
+columns are imported.

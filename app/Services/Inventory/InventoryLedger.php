@@ -349,10 +349,11 @@ class InventoryLedger {
     }
 
     // ── Semantische Buchungen ───────────────────────────────────────────
-    // `$bin` (MVP-706) ist optionales letztes Argument — bestehende Aufrufer bleiben unverändert.
+    // `$bin` (MVP-706) und `$entered` (MVP-1584, Eingabe in Artikeleinheit) sind optionale letzte Argumente;
+    // `$qty` ist immer die Menge in Basiseinheit.
 
-    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null): StockMovement {
-        return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::positive($qty), StockMovementType::Receipt, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId, bin: $bin));
+    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null, ?EnteredQuantity $entered = null): StockMovement {
+        return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::positive($qty), StockMovementType::Receipt, $ownership, idempotencyKey: $idempotencyKey, originalQty: $entered?->originalQty, originalUnit: $entered?->originalUnit, actorUserId: $actorUserId, bin: $bin));
     }
 
     /**
@@ -366,11 +367,11 @@ class InventoryLedger {
      *
      * @param  (Closure(StockLot|null, numeric-string): array{unit: numeric-string, total: numeric-string})|null  $costing
      */
-    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, bool $allowNegative = false, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null, ?StockLot $lot = null, ?Closure $costing = null, bool $requireLot = false): StockIssue {
+    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, bool $allowNegative = false, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null, ?StockLot $lot = null, ?Closure $costing = null, bool $requireLot = false, ?EnteredQuantity $entered = null): StockIssue {
         $qty = DecimalQty::positive($qty);
 
         // Prüfung, Zuteilung und Buchung in einer Transaktion: availableForUpdate() und die Zuteilung sperren den Bestand gegen parallele Abgänge.
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $allowNegative, $idempotencyKey, $actorUserId, $bin, $lot, $costing, $requireLot): StockIssue {
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $allowNegative, $idempotencyKey, $actorUserId, $bin, $lot, $costing, $requireLot, $entered): StockIssue {
             $orgId = $variant->organization_id;
             if ($idempotencyKey !== null && $orgId !== null) {
                 $earlier = $this->findByIdempotencyKey($orgId, $idempotencyKey, lock: true);
@@ -395,6 +396,8 @@ class InventoryLedger {
                 $movement = $this->post(new StockPosting(
                     $variant, $warehouse, StockState::Physical, DecimalQty::negative($partQty), StockMovementType::Issue, $ownership,
                     idempotencyKey: $idempotencyKey !== null && count($parts) > 1 ? $idempotencyKey . '#' . ($index + 1) : $idempotencyKey,
+                    originalQty: $entered?->originalFor($partQty),
+                    originalUnit: $entered?->originalUnit,
                     actorUserId: $actorUserId,
                     costUnit: $cost['unit'] ?? null,
                     costTotal: $cost['total'] ?? null,
@@ -437,16 +440,16 @@ class InventoryLedger {
         return $parts;
     }
 
-    public function reserve(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null): StockMovement {
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $idempotencyKey, $actorUserId, $bin): StockMovement {
+    public function reserve(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null, ?EnteredQuantity $entered = null): StockMovement {
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $idempotencyKey, $actorUserId, $bin, $entered): StockMovement {
             $this->guardSufficient($variant, $warehouse, $qty, false, $bin);
 
-            return $this->post(new StockPosting($variant, $warehouse, StockState::Reserved, DecimalQty::positive($qty), StockMovementType::Reserve, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId, bin: $bin));
+            return $this->post(new StockPosting($variant, $warehouse, StockState::Reserved, DecimalQty::positive($qty), StockMovementType::Reserve, $ownership, idempotencyKey: $idempotencyKey, originalQty: $entered?->originalQty, originalUnit: $entered?->originalUnit, actorUserId: $actorUserId, bin: $bin));
         });
     }
 
-    public function releaseReservation(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null): StockMovement {
-        return $this->post(new StockPosting($variant, $warehouse, StockState::Reserved, DecimalQty::negative($qty), StockMovementType::ReleaseReservation, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId, bin: $bin));
+    public function releaseReservation(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null, ?EnteredQuantity $entered = null): StockMovement {
+        return $this->post(new StockPosting($variant, $warehouse, StockState::Reserved, DecimalQty::negative($qty), StockMovementType::ReleaseReservation, $ownership, idempotencyKey: $idempotencyKey, originalQty: $entered?->originalQty, originalUnit: $entered?->originalUnit, actorUserId: $actorUserId, bin: $bin));
     }
 
     public function finishedGoodReceipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null): StockMovement {

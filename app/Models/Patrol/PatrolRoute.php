@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int|null $organization_id
  * @property string $name
  * @property int|null $site_id
+ * @property int|null $responsible_user_id
  * @property bool $active
  * @property int|null $created_by
  */
@@ -33,7 +34,7 @@ class PatrolRoute extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    protected $fillable = ['organization_id', 'name', 'site_id', 'active', 'created_by'];
+    protected $fillable = ['organization_id', 'name', 'site_id', 'responsible_user_id', 'active', 'created_by'];
 
     /** @var array<string, string> */
     protected $casts = ['active' => 'boolean'];
@@ -41,6 +42,11 @@ class PatrolRoute extends Model {
     /** @return BelongsTo<Site, $this> */
     public function site(): BelongsTo {
         return $this->belongsTo(Site::class);
+    }
+
+    /** @return BelongsTo<\App\Models\Platform\User, $this> */
+    public function responsible(): BelongsTo {
+        return $this->belongsTo(\App\Models\Platform\User::class, 'responsible_user_id');
     }
 
     /** @return HasMany<PatrolCheckpoint, $this> */

@@ -60,6 +60,13 @@ return [
         'no_deadline_effect' => 'El plazo de tramitación sigue corriendo desde la recepción de su solicitud; la confirmación no lo aplaza.',
     ],
 
+    'extension_mail' => [
+        'subject' => 'Ampliación del plazo de su solicitud :nr',
+        'headline' => 'La tramitación de su solicitud requiere más tiempo',
+        'intro' => 'Para su solicitud de protección de datos con la referencia :nr ampliamos el plazo de respuesta conforme al art. 12.3 del RGPD. Recibirá nuestra respuesta a más tardar el :date.',
+        'reason' => 'Motivo de la ampliación:',
+        'rights' => 'Tiene derecho a presentar una reclamación ante una autoridad de control de protección de datos.',
+    ],
     'mail' => [
         'subject' => 'Acuse de recibo de su solicitud de protección de datos :nr',
         'headline' => 'Su solicitud de protección de datos se ha recibido',
@@ -86,6 +93,21 @@ return [
         'email_confirmed' => 'confirmada el :date',
         'email_unconfirmed' => 'sin confirmar',
         'identity_required' => 'Antes de facilitar información debe verificarse y confirmarse la identidad (entrada por el portal).',
+        'status_heading' => 'Estado de la tramitación',
+        'status_invalid' => 'No es posible pasar de «:from» a «:to».',
+        'status_action' => [
+            'identity_check' => 'Solicitar prueba de identidad',
+            'awaiting_info' => 'Consulta enviada',
+            'info_received' => 'Respuesta recibida',
+            'withdrawn' => 'Retirada por la persona',
+            'withdrawn_confirm' => '¿Cerrar la solicitud como retirada? El plazo termina.',
+        ],
+        'status_flash' => [
+            'identity_check' => 'Comprobación de identidad en curso.',
+            'in_progress' => 'Tramitación reanudada.',
+            'awaiting_info' => 'Consulta registrada: el plazo sigue corriendo.',
+            'withdrawn' => 'Solicitud cerrada como retirada.',
+        ],
     ],
 
     'admin' => [
@@ -103,7 +125,7 @@ return [
         'allow_attachments' => 'Permitir archivos adjuntos',
         'presentation' => 'Presentación',
         'intro_text' => 'Texto introductorio (opcional)',
-        'default_locale' => 'Idioma predeterminado (opcional, p. ej. es)',
+        'default_locale' => 'Idioma predeterminado del portal',
         'saved' => 'Portal de interesados guardado.',
         'rotated' => 'El enlace del portal se ha rotado. Los enlaces ya publicados ya no son válidos.',
     ],

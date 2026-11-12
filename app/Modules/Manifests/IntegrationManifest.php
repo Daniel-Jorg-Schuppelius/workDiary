@@ -147,6 +147,10 @@ final class IntegrationManifest extends Manifest {
             ],
             \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
             ],
+            // Datenführerschaft (MVP-1592): Übernehmen der Kalender-Konflikte; Plugins melden ihre über contribute().
+            \App\Services\Integration\Contracts\OwnershipConflictReplay::class => [
+                \App\Plugins\Support\Calendar\CalendarImportStager::class,
+            ],
         ];
     }
 

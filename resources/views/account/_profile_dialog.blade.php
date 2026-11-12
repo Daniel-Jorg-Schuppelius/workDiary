@@ -196,6 +196,19 @@
                        :label="__('notification.field.quiet_to')"
                        type="time"
                        value="{{ old('preferences.notifications.quiet_to', $notifPrefs['quiet_to'] ?? '') }}" />
+
+        {{-- Opt-out der Neues-Gerät-Meldung (Feature 096, MVP-1612); das Abschalten wird auditiert. --}}
+        <div class="fieldset md:col-span-2">
+            <label class="label cursor-pointer justify-start gap-3">
+                <input type="hidden" name="preferences[security_new_device_alert]" value="0">
+                <input type="checkbox" name="preferences[security_new_device_alert]" value="1" class="toggle toggle-primary"
+                       aria-describedby="new-device-alert-hint"
+                       @checked(filter_var(old('preferences.security_new_device_alert', $prefs[\App\Services\Security\KnownDeviceService::PREFERENCE_KEY] ?? true), FILTER_VALIDATE_BOOL))>
+                <span class="label-text">{{ __('notification.field.new_device_alert') }}</span>
+            </label>
+            <p id="new-device-alert-hint" class="mt-1 text-xs text-muted">{{ __('notification.field.new_device_alert_hint') }}</p>
+            @error('preferences.security_new_device_alert')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
+        </div>
     </x-form-group>
 
     {{-- CTI-Anrufer-Pop-up (MVP-118): eigene Durchwahl als Opt-in. --}}

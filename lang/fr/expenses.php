@@ -11,6 +11,7 @@
 return [
     'error' => [
         'self_approval' => 'Vous ne pouvez pas approuver votre propre note de frais.',
+        'receipt_required' => 'La catégorie « :category » exige un justificatif. La note de frais est enregistrée mais pas soumise — téléversez le justificatif, puis soumettez-la.',
         'invalid_transition' => 'L’action :action n’est pas possible dans l’état :status.',
     ],
     'receipt' => [
@@ -31,6 +32,8 @@ return [
         'push_unsupported' => ':program n’accepte pas les dépenses comme pièces — associez plutôt une pièce existante.',
         'title' => 'Justificatif',
         'hint' => 'Joignez le justificatif à la note de frais — sans lui, elle n\'est ni vérifiable ni transmissible à la comptabilité.',
+        'required_hint' => 'Cette catégorie exige un justificatif. Vous pouvez enregistrer à tout moment ; la note de frais ne peut être soumise qu\'avec un justificatif joint (action « Justificatif » dans la liste).',
+        'required_present' => 'Cette catégorie exige un justificatif — il est joint.',
     ],
     'title' => [
         'index' => 'Frais',

@@ -35,7 +35,7 @@ use Closure;
  *
  * Kündigt {@see PluginCapability::CalendarPublish} an.
  */
-class GoogleCalendarPlugin extends AbstractPlugin implements CalendarPublisher {
+class GoogleCalendarPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, CalendarPublisher {
     public const string ID = 'google_calendar';
 
     public const string SERVICE_PROVIDER = GoogleCalendarServiceProvider::class;
@@ -140,5 +140,10 @@ class GoogleCalendarPlugin extends AbstractPlugin implements CalendarPublisher {
 
             return (string) __('google_calendar::google_calendar.health.ok');
         });
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Calendar];
     }
 }

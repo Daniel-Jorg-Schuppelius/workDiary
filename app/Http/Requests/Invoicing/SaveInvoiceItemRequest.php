@@ -14,6 +14,7 @@ use App\Http\Requests\BaseFormRequest;
 
 class SaveInvoiceItemRequest extends BaseFormRequest {
     use \App\Http\Requests\Concerns\DecodesSqidInputs;
+    use \App\Http\Requests\Concerns\ZeroesRateOfUntaxedCategory;
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [

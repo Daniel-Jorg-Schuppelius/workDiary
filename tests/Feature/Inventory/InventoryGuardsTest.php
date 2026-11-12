@@ -80,6 +80,42 @@ final class InventoryGuardsTest extends TestCase {
         ]);
     }
 
+    public function test_negative_issue_waits_for_a_second_person_when_four_eyes_are_required(): void {
+        \App\Support\Setting::set(\App\Services\Inventory\NegativeStockApproval::SETTING, true, \App\Settings\SettingScope::Organization, $this->organization);
+        $this->organization->refresh();
+
+        $this->actingAs($this->teamlead)->post(route('inventory.movements.store'), $this->movementPayload())
+            ->assertSessionHas('success', __('inventory.negative.requested'));
+        $ledger = app(InventoryLedger::class);
+        $this->assertSame('0.0000', $ledger->available($this->variant, $this->warehouse), 'Vor der Freigabe wird nichts gebucht.');
+        $request = \App\Models\Inventory\NegativeStockRequest::query()->sole();
+        $this->assertSame(\App\Enums\Inventory\NegativeStockRequestStatus::Pending, $request->status);
+        $step = \App\Models\Approval\Approval::query()->where('approvable_id', $request->id)->where('approvable_type', $request->getMorphClass())->sole();
+
+        // Wer beantragt hat, sieht den Antrag nicht im Eingang und entscheidet ihn nicht.
+        $this->actingAs($this->teamlead)->get(route('approvals.index'))->assertOk()->assertDontSee(__('inventory.negative.inbox_reference', ['warehouse' => $this->warehouse->name, 'name' => $this->teamlead->name]));
+        $this->actingAs($this->teamlead)->post(route('approvals.decide', $step), ['decision' => 'approved']);
+        $this->assertSame(\App\Enums\Inventory\NegativeStockRequestStatus::Pending, $request->fresh()->status);
+
+        $second = User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
+        $this->actingAs($second)->get(route('approvals.index'))->assertOk()
+            ->assertSee(__('inventory.negative.inbox_reference', ['warehouse' => $this->warehouse->name, 'name' => $this->teamlead->name]));
+        $this->actingAs($second)->post(route('approvals.decide', $step), ['decision' => 'approved'])->assertRedirect(route('approvals.index'));
+
+        $this->assertSame(\App\Enums\Inventory\NegativeStockRequestStatus::Approved, $request->fresh()->status);
+        $this->assertSame('-3.0000', $ledger->available($this->variant, $this->warehouse));
+        $audit = \App\Models\Audit\AuditLog::query()->where('event', 'inventory.negativeApproved')->sole();
+        $this->assertSame([(int) $this->teamlead->id, (int) $second->id, true], [(int) $audit->changes['requested_by'], (int) $audit->changes['decided_by'], $audit->changes['four_eyes']]);
+
+        // Abgelehnt wird nichts gebucht.
+        $this->actingAs($this->teamlead)->post(route('inventory.movements.store'), $this->movementPayload());
+        $next = \App\Models\Inventory\NegativeStockRequest::query()->latest('id')->firstOrFail();
+        $nextStep = \App\Models\Approval\Approval::query()->where('approvable_id', $next->id)->where('approvable_type', $next->getMorphClass())->sole();
+        $this->actingAs($second)->post(route('approvals.decide', $nextStep), ['decision' => 'rejected', 'reason' => 'Bestand erst zählen']);
+        $this->assertSame(\App\Enums\Inventory\NegativeStockRequestStatus::Rejected, $next->fresh()->status);
+        $this->assertSame('-3.0000', $ledger->available($this->variant, $this->warehouse));
+    }
+
     public function test_read_only_mode_blocks_local_postings(): void {
         $this->organization->forceFill([
             'settings' => array_merge($this->organization->settings ?? [], [

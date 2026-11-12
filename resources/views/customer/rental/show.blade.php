@@ -41,7 +41,10 @@
                 @forelse ($case->handoverReports as $report)
                     <tr>
                         <td>{{ $report->reported_at->fdatetime() }}</td>
-                        <td>{{ $report->accessoryItems->map(fn($i) => $i->label)->implode(', ') ?: '—' }}</td>
+                        <td>
+                            {{ $report->accessoryItems->map(fn($i) => $i->label)->implode(', ') ?: '—' }}
+                            @include('rental.partials._report_details', ['report' => $report, 'internal' => false])
+                        </td>
                         <td>
                             @if ($report->portal_confirmed_at !== null)
                                 {{ __('bestätigt am :date', ['date' => $report->portal_confirmed_at->fdatetime()]) }}
@@ -58,5 +61,26 @@
                 @endforelse
     </x-table>
     </x-card>
+
+    {{-- Rücknahmeprotokolle (MVP-1604): Zustand, Zubehör und Checkliste, ohne interne Notizen. --}}
+    @if ($case->returnReports->isNotEmpty())
+        <x-card :title="__('rental.report.returns')" icon="assignment_return" padding="p-0">
+        <x-table bare>
+            <x-slot:head>
+                <tr><x-table.th>{{ __('Zeitpunkt') }}</x-table.th><x-table.th>{{ __('Gerät') }}</x-table.th><x-table.th>{{ __('Zustand') }}</x-table.th></tr>
+            </x-slot:head>
+            @foreach ($case->returnReports as $report)
+                <tr>
+                    <td>{{ $report->reported_at->fdatetime() }}</td>
+                    <td>{{ $report->asset->name ?? '—' }}</td>
+                    <td>
+                        {{ $report->condition->label() }}
+                        @include('rental.partials._report_details', ['report' => $report, 'internal' => false])
+                    </td>
+                </tr>
+            @endforeach
+        </x-table>
+        </x-card>
+    @endif
 </div>
 @endsection

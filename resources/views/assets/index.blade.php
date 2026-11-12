@@ -118,6 +118,9 @@
                     <td>
                         <div class="flex flex-wrap items-center gap-1">
                             <x-status-badge :tone="$isBlocked ? 'error' : 'ghost'" :outline="! $isBlocked">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</x-status-badge>
+                            @if ($asset->health !== \App\Enums\Asset\AssetHealth::Ok)
+                                <x-status-badge :tone="$asset->health->tone()" size="sm" outline :title="__('asset.health.hint')">{{ $asset->health->label() }}</x-status-badge>
+                            @endif
                             @if ($defectBlocked)
                                 <x-status-badge tone="error" size="sm">{{ __('gesperrt: Defekt') }}</x-status-badge>
                             @elseif ($checkedOut)

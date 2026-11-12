@@ -18,8 +18,10 @@ return [
     'updated' => 'Caution mise à jour.',
     'returned' => 'Restitution enregistrée.',
     'drawn' => 'Appel de la caution enregistré.',
+    'expired' => 'Caution enregistrée comme expirée.',
     'secured' => 'Retenue de garantie remplacée par la caution.',
     'not_active' => 'Cette caution n’est plus active.',
+    'not_expired' => 'L’échéance de cette caution n’est pas dépassée.',
     'retention_not_open' => 'Cette retenue n’est plus ouverte.',
     'foreign_organization' => 'La caution et la retenue appartiennent à des organisations différentes.',
     'amount_too_low' => 'La caution ne couvre pas la retenue — une caution plus faible ne la remplace pas.',
@@ -30,10 +32,12 @@ return [
         'edit' => 'Modifier la caution',
         'returned' => 'Acte restitué',
         'drawn' => 'Enregistrer l’appel de la caution',
+        'expired' => 'Enregistrer comme expirée',
         'secure' => 'Remplacer la retenue',
     ],
     'confirm' => [
         'drawn' => 'Enregistrer l’appel de la caution :reference ? Elle ne compte ensuite plus comme sûreté et l’enregistrement ne peut pas être annulé.',
+        'expired' => 'Enregistrer la caution :reference comme expirée ? Son échéance est dépassée ; elle ne compte ensuite plus comme sûreté.',
     ],
     'secure' => [
         'title' => 'Remplacer la retenue de garantie',
@@ -49,7 +53,7 @@ return [
         'received_hint' => 'Si elle expire sans qu’on le remarque, la garantie disparaît.',
         'expiring' => 'Expire sous 90 jours',
         'return_due' => 'Restitution à demander',
-        'return_due_hint' => 'La retenue remplacée est libérée — l’acte doit revenir.',
+        'return_due_hint' => 'La retenue remplacée est libérée ou la garantie liée est terminée — l’acte doit revenir.',
     ],
     'column' => [
         'reference' => 'N° de caution',

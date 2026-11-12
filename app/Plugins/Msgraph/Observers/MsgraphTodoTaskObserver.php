@@ -14,7 +14,6 @@ namespace App\Plugins\Msgraph\Observers;
 
 use App\Models\Integration\ExternalReference;
 use App\Models\Project\Task;
-use App\Plugins\Msgraph\Enums\MsgraphTaskListLinkStatus;
 use App\Plugins\Msgraph\Models\{MsgraphTaskConnection, MsgraphTaskListLink};
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Services\{MsgraphOutboxDispatcher, MsgraphTodoSyncService};
@@ -126,7 +125,7 @@ class MsgraphTodoTaskObserver {
                 ->where('target_kind', MsgraphTaskListLink::KIND_GLOBAL_KANBAN))
             ->first();
 
-        return $link !== null && $link->exportsToTodo() && $link->status === MsgraphTaskListLinkStatus::Active
+        return $link !== null && $link->exportsToTodo()
             ? $link
             : null;
     }

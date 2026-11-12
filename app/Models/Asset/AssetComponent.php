@@ -16,6 +16,7 @@ use App\Enums\Asset\AssetComponentStatus;
 use App\Models\Article\Article;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Inventory\StockSerial;
+use App\Models\Material\MaterialUsage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -42,6 +43,7 @@ class AssetComponent extends Model {
         'position',
         'serial_no',
         'stock_serial_id',
+        'material_usage_id',
         'installed_on',
         'removed_on',
         'replace_interval_months',
@@ -103,6 +105,15 @@ class AssetComponent extends Model {
         $due = $this->dueOn();
 
         return $this->isInstalled() && $due !== null && $due->lessThanOrEqualTo($reference ?? Carbon::today());
+    }
+
+    /**
+     * Materialverbrauch, aus dem das Teil übernommen wurde (Feature 118).
+     *
+     * @return BelongsTo<MaterialUsage, $this>
+     */
+    public function materialUsage(): BelongsTo {
+        return $this->belongsTo(MaterialUsage::class);
     }
 
     /**

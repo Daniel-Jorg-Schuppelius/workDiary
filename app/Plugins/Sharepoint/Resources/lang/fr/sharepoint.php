@@ -99,6 +99,7 @@ return [
         'drive_invalid' => 'La bibliothèque de documents choisie n\'appartient pas au site choisi.',
         'target_saved' => 'Bibliothèque cible enregistrée.',
         'saved' => 'Paramètres SharePoint enregistrés.',
+        'saved_and_mirrored' => 'Paramètres SharePoint enregistrés et activés — tous les objets publiés jusqu’ici sont en file pour la réplication.',
         'mirror_done' => 'Réplication lancée.',
     ],
 ];

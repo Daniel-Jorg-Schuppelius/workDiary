@@ -1,7 +1,7 @@
 ---
 title: "Solicitudes de cita"
 topic: appointments.inbox
-version: 1
+version: 2
 keywords:
     - reserva online
     - reserva de citas
@@ -42,3 +42,14 @@ es reservable o no; el porqué no incumbe al cliente.
 **Confirmar** crea la entrada y vincula la solicitud. **Rechazar** exige un
 motivo — va al cliente. Si el cliente cancela dentro del plazo, la solicitud
 desaparece de la bandeja.
+
+## Asignar y mantener
+
+Una solicitud sin cliente (por ejemplo, una reserva de Calendly con una
+dirección de correo desconocida) se asigna a un cliente o a un lead mediante
+**Asignar**; con ello queda resuelto el caso abierto en la bandeja de
+integración. Los tipos de servicio se modifican con **Editar**. Si un tipo de
+servicio está vinculado a un **objeto**, el portal y la búsqueda de huecos solo
+lo ofrecen al cliente propietario del objeto; la confirmación toma la
+dirección del objeto como lugar de intervención del pedido (si no, la del
+cliente).

@@ -1,7 +1,7 @@
 ---
 title: "Zuordnungs-Inbox"
 topic: admin.integration-inbox
-version: 4
+version: 6
 keywords:
     - Integrations-Inbox
     - Importkonflikte
@@ -89,3 +89,7 @@ Notiz am Auftrag buchen** hängt die Mail an einen offenen Auftrag, etwa wenn
 ein Kunde auf die Rechnung antwortet, aber den Auftrag meint.
 
 Die Seite steht Personen offen, die die Abrechnung verwalten dürfen.
+
+**Datenführerschaft:** Fälle mit dem Kennzeichen „Datenführerschaft“ hat eine Integration angelegt, die den Bereich nicht führt (siehe Seite „Datenführerschaft“). Der Fall nennt das führende System; geschrieben wurde nichts. **Einmalig übernehmen** schreibt den zurückgehaltenen Stand genau einmal – etwa das Ticket, den Termin oder die Bestandsbuchung –, **Verwerfen** lässt ihn fallen, und derselbe Vorgang kommt nicht wieder. Der Typ-Filter „Datenführerschaft“ zeigt nur diese Fälle.
+
+**Wieder offen:** Ein übernommener Fall „Datenführerschaft“ öffnet sich erneut, wenn die Integration einen neuen Stand desselben Vorgangs schreiben will; ein verworfener bleibt verworfen. Lässt die Führung den Schreibweg wieder zu, schließt der nächste Abgleich offene Fälle selbst als übernommen. Klärfälle „fremd geführt“ aus der Zeit davor werden beim nächsten Abgleich zu Fällen „Datenführerschaft“.

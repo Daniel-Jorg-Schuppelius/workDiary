@@ -1,7 +1,7 @@
 ---
 title: "SEPA-Zahlungsausgang"
 topic: finance.sepa
-version: 1
+version: 2
 keywords:
     - Sammelüberweisung
     - Zahllauf
@@ -68,3 +68,7 @@ Eine Lastschrift kann sich auf eine offene Rechnung des Mandatskunden beziehen:
 „Per Lastschrift einziehen“ auf der Rechnung öffnet den Einzug mit Betrag und
 Verwendungszweck vorbelegt. Mit Rechnungsbezug zählt die Liquiditätsvorschau
 den Betrag nur einmal — im Zahllauf statt zusätzlich als offene Forderung.
+
+## Verfall nach 36 Monaten
+
+Nach dem SEPA-Regelwerk erlischt ein Mandat, wenn 36 Monate lang kein Einzug eingereicht wurde. Der Zahlungslauf nimmt ein solches Mandat schon nicht mehr; der tägliche Fristenlauf setzt es zusätzlich auf **Abgelaufen** und vermerkt das im Protokoll. Für weitere Einzüge holen Sie ein neues Mandat ein.

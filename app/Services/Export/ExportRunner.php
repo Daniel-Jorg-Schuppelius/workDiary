@@ -15,6 +15,8 @@ namespace App\Services\Export;
 use App\Enums\Export\{ExportFormat, ExportRunState};
 use App\Models\Integration\ExportRun;
 use App\Models\Platform\{Organization, User};
+use App\Services\Import\ColumnAccess;
+use App\Services\Import\Contracts\GuardsColumns;
 use App\Support\{CsvExport, XlsxExport};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CSV\StringHelper;
@@ -28,7 +30,9 @@ use Throwable;
  *
  * Die Kopfzeile besteht aus den kanonischen Spalten-Codes der Spec; bei
  * Import-Entitäten ist das Resultat daher ohne Anpassung re-importierbar
- * (verlustfreier Round-Trip).
+ * (verlustfreier Round-Trip). Spalten mit eigenem Recht ({@see GuardsColumns})
+ * fehlen in der Datei, wenn die Person das Recht nicht hat (MVP-1625); welche
+ * enthalten sind, hält der Lauf für den Download fest.
  */
 final class ExportRunner {
     public const string DISK = 'local';
@@ -46,6 +50,9 @@ final class ExportRunner {
     ): ExportRun {
         $filename = $this->buildFilename($spec, $organization, $format);
         $relativePath = $this->buildPath($organization, $filename);
+        $denied = ColumnAccess::denied($spec, $user);
+        $columns = array_values(array_diff($spec->columns(), $denied));
+        $restricted = $spec instanceof GuardsColumns ? array_values(array_intersect($columns, array_keys($spec->columnPermissions()))) : [];
 
         $run = ExportRun::create([
             'organization_id' => $organization->id,
@@ -56,11 +63,12 @@ final class ExportRunner {
             'output_filename' => $filename,
             'storage_path' => $relativePath,
             'rows_total' => 0,
+            'restricted_columns' => $restricted === [] ? null : $restricted,
             'created_by_user_id' => $user?->id,
         ]);
 
         try {
-            $rowsTotal = $this->write($spec, $organization, $filters, $format, $relativePath);
+            $rowsTotal = $this->write($spec, $organization, $filters, $format, $relativePath, $columns);
 
             $run->rows_total = $rowsTotal;
             $run->state = ExportRunState::Ready;
@@ -76,6 +84,7 @@ final class ExportRunner {
 
     /**
      * @param  array<string, mixed>  $filters
+     * @param  list<string>  $columns
      */
     private function write(
         ExportSpec $spec,
@@ -83,8 +92,8 @@ final class ExportRunner {
         array $filters,
         ExportFormat $format,
         string $relativePath,
+        array $columns,
     ): int {
-        $columns = $spec->columns();
         $disk = Storage::disk(self::DISK);
         $disk->makeDirectory(dirname($relativePath));
         $absolutePath = $disk->path($relativePath);

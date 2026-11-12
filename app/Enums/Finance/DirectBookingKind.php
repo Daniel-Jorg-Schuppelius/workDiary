@@ -30,6 +30,9 @@ enum DirectBookingKind: string implements HasLabel {
     case OpeningBalance = 'opening_balance';
     case VatSpecialPrepayment = 'vat_special_prepayment';
 
+    /** Bankumsatz ohne Beleg direkt aufs Sachkonto (Gebühr, Zins, Privat — MVP-1557). */
+    case BankDirect = 'bank_direct';
+
     /** Storno von Hand (E23); das automatische Storno bucht sofort. */
     case Reversal = 'reversal';
 
@@ -52,6 +55,7 @@ enum DirectBookingKind: string implements HasLabel {
             self::InternalTransfer => 'primary',
             self::OpeningBalance => 'neutral',
             self::VatSpecialPrepayment => 'accent',
+            self::BankDirect => 'info',
             self::Reversal => 'warning',
         };
     }

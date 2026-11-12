@@ -174,6 +174,10 @@ return [
     ],
 
     'alert' => [
+        'document_margin' => [
+            'quotes' => 'Presupuesto :number, posición :position: el precio del documento :price da un :margin % de margen',
+            'orders' => 'Pedido :number, posición :position: el precio del documento :price da un :margin % de margen',
+        ],
         'title' => 'Alertas de precio',
         'subtitle' => 'Cambios de precio de compra por debajo del margen mínimo',
         'empty' => 'No hay alertas de precio abiertas.',
@@ -192,6 +196,8 @@ return [
             'purchase_orders' => 'Pedidos',
             'boq_items' => 'Posiciones de presupuesto',
             'manufacturing_orders' => 'Órdenes de fabricación',
+            'quotes' => 'Presupuestos',
+            'orders' => 'Pedidos de cliente',
         ],
         'action' => [
             'acknowledge' => 'Hecho',
@@ -334,6 +340,7 @@ return [
             'host_not_allowed' => 'El host remoto no está permitido (destino interno/privado).',
             'xlsx_invalid' => 'El archivo no es un archivo XLSX legible.',
             'sheet_not_found' => 'Hoja «:sheet» no encontrada (distingue mayúsculas y minúsculas).',
+            'ignore_linked' => 'Una posición vinculada no se puede ignorar: elimine primero el vínculo.',
         ],
         'subtitle' => 'Gestionar fuentes de catálogo e importar listas de precios CSV',
         'empty' => 'No hay fuentes de catálogo.',
@@ -408,6 +415,8 @@ return [
             'propose' => 'Sugerir',
             'adopt' => 'Adoptar como artículos',
             'adopt_item' => 'Adoptar el grupo tarifario como artículo',
+            'ignore' => 'No adoptar (ignorar)',
+            'unignore' => 'Volver a incluir',
         ],
         'adopt' => [
             'title' => 'Adoptar artículos de catálogo',
@@ -474,10 +483,13 @@ return [
             'unlinked' => 'Vínculo eliminado.',
             'proposed' => 'Sugerencia: «:article» — revise y vincule.',
             'no_match' => 'No se encontró ningún artículo interno coincidente (EAN/GTIN, SKU de variante, fuente de suministro, nombre).',
+            'ignored' => 'Posición ignorada: queda excluida de las propuestas, la adopción y la actualización de precios.',
+            'unignored' => 'Posición incluida de nuevo.',
         ],
     ],
 
     'field' => [
+        'unit' => 'Unidad de pedido',
         'number' => 'N.º',
         'supplier' => 'Proveedor',
         'warehouse' => 'Almacén',
@@ -493,6 +505,7 @@ return [
     ],
 
     'flash' => [
+        'unknown_unit' => 'Esta unidad no está definida en el artículo.',
         'created' => 'Pedido creado.',
         'line_added' => 'Línea añadida.',
         'conditions_saved' => 'Condiciones guardadas.',
@@ -587,6 +600,52 @@ return [
         ],
     ],
     // Pflichtnachweise Subunternehmer (Feature 117, MVP-606).
+    'credential_types' => [
+        'title' => 'Tipos de acreditación',
+        'subtitle' => 'Qué acreditaciones deben presentar los proveedores. Los tipos del catálogo son plantilla; los tipos propios los complementan.',
+        'empty' => 'Aún no hay tipos de acreditación.',
+        'saved' => 'Tipo de acreditación guardado.',
+        'months' => ':count meses',
+        'action' => [
+            'create' => 'Tipo de acreditación propio',
+            'edit' => 'Editar tipo de acreditación',
+            'adopt' => 'Adoptar como tipo propio',
+        ],
+        'origin' => [
+            'catalog' => 'Catálogo',
+            'own' => 'Tipo propio',
+        ],
+        'mode' => [
+            'warn' => 'Solo avisar',
+            'block' => 'Bloquear el encargo',
+        ],
+        'state' => [
+            'active' => 'Activo',
+            'inactive' => 'Desactivado',
+        ],
+        'required' => [
+            'description' => 'Las acreditaciones obligatorias cuentan para el semáforo del proveedor. Con etiquetas, la obligación solo se aplica a los proveedores que tengan una de ellas, por ejemplo un oficio o un tipo de servicio.',
+            'yes' => 'Acreditación obligatoria',
+            'optional' => 'Opcional',
+            'all' => 'Obligatorio para todos los proveedores',
+            'tags' => 'Obligatorio para: :tags',
+        ],
+        'field' => [
+            'name' => 'Denominación',
+            'description' => 'Descripción',
+            'origin' => 'Origen',
+            'required' => 'Obligación',
+            'required_tags' => 'Obligatorio solo para proveedores con etiqueta',
+            'required_tags_hint' => 'Sin selección, la obligación se aplica a todos los proveedores.',
+            'blocking_mode' => 'Si falta la acreditación',
+            'blocking_mode_hint' => 'El bloqueo solo se aplica si la organización ha activado el bloqueo de encargos.',
+            'validity' => 'Validez habitual (meses)',
+            'validity_hint' => 'Vacío = indefinido.',
+            'warn_days_before' => 'Preaviso (días antes del vencimiento)',
+            'state' => 'Estado',
+            'state_hint' => 'Los tipos desactivados ya no se ofrecen ni cuentan para el semáforo; las acreditaciones guardadas se conservan.',
+        ],
+    ],
     'credentials' => [
         'badge' => 'Justificantes: :status',
         'hint' => 'Justificantes obligatorios del proveedor (certificado de exención, seguro, etc.)',

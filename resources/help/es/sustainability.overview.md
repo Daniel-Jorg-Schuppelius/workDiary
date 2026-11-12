@@ -1,7 +1,7 @@
 ---
 title: "Sostenibilidad y ESG"
 topic: sustainability.overview
-version: 2
+version: 3
 keywords:
     - huella de carbono
     - emisiones de CO2
@@ -58,3 +58,15 @@ de datos, exportación CSV con indicación de la metodología y snapshot
 congelable de la evaluación de la dirección. La matriz de referencia
 VSME 1.0 muestra qué datos de WorkDiary preparan qué sección del
 informe.
+
+**Evaluación con objeto:** «Iniciar evaluación» pregunta por el objeto
+evaluado: activo, vehículo, sede, sala, proyecto, pedido, proveedor, artículo,
+inversión o contrato. Se ofrecen los objetos de los módulos activados que usted
+puede leer; sin objeto, usted introduce una denominación. El activo, el
+proveedor y la inversión llevan el botón «Evaluar la sostenibilidad». La
+evaluación enlaza con su objeto y con todas las evaluaciones del mismo objeto;
+cada nueva evaluación de un objeto es una nueva versión.
+
+**Medidas por evaluación:** una medida puede asignarse a una evaluación, al
+registrarla en el resumen o directamente en la evaluación. La lista de medidas
+enlaza con la evaluación.

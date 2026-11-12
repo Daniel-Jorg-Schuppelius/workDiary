@@ -31,5 +31,11 @@
             @endforeach
             <x-button type="submit" size="md" class="w-full">{{ __('Antworten absenden') }}</x-button>
         </form>
+        @if ($canOptOut ?? false)
+            <p class="mt-4 text-center text-xs text-muted">
+                {{ __('Sie möchten keine Umfragen mehr von uns erhalten?') }}
+                <a class="link" href="{{ route('surveys.public-opt-out', $token) }}">{{ __('Umfragen abbestellen') }}</a>
+            </p>
+        @endif
     </div>
 </x-public-page>

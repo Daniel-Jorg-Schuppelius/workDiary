@@ -148,10 +148,14 @@
                     <ul class="space-y-1">
                         @foreach ($change->tickets as $ticket)
                             <li>
-                                <a href="{{ route('service-tickets.show', $ticket) }}" class="link link-hover">
-                                    <span class="font-mono text-xs">{{ $ticket->ticket_no }}</span>
-                                    {{ $ticket->title }}
-                                </a>
+                                @can('view', $ticket)
+                                    <a href="{{ route('service-tickets.show', $ticket) }}" class="link link-hover">
+                                        <span class="font-mono text-xs">{{ $ticket->ticket_no }}</span>
+                                        {{ $ticket->title }}
+                                    </a>
+                                @else
+                                    <span class="text-muted"><x-icon name="lock" class="text-[14px]" /> {{ __('helpdesk.confidentiality.masked') }}</span>
+                                @endcan
                             </li>
                         @endforeach
                     </ul>

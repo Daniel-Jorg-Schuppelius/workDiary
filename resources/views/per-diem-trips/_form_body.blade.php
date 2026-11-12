@@ -26,6 +26,14 @@
     </x-select-field>
     <x-input-field name="location" :label="__('Ort / Tätigkeitsstätte')" required maxlength="255" :value="old('location', $trip?->location)" :placeholder="__('z. B. Frankfurt am Main')"
                    data-prefill-from="customer_id" data-prefill-key="location" data-prefill-guard :data-prefill-on-load="$trip === null" />
+    <x-input-field name="workplace_key" :label="__('Tätigkeitsstätte für die Dreimonatsfrist')" span="2" maxlength="100" list="per-diem-workplaces"
+                   :value="old('workplace_key', $trip?->workplace_key)"
+                   :hint="__('Leer lassen: der Ort zählt. Bei verschiedenen Schreibweisen derselben Stätte hier denselben Eintrag wählen, damit die Frist richtig zählt.')" />
+    <datalist id="per-diem-workplaces">
+        @foreach ($workplaceKeys ?? [] as $workplace)
+            <option value="{{ $workplace }}"></option>
+        @endforeach
+    </datalist>
     <x-input-field name="purpose" :label="__('Zweck')" required span="2" maxlength="255" :value="old('purpose', $trip?->purpose)" :placeholder="__('z. B. Workshop, Onsite-Termin, Schulung …')" />
     <x-date-range layout="split" grid-class="contents" form-control size="" type="datetime-local"
                   from-name="started_at" to-name="ended_at"

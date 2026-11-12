@@ -42,6 +42,9 @@ return [
         'message' => 'No existen claves de registro para este ámbito o término de búsqueda.',
         'history' => 'Aún no se han registrado cambios.',
     ],
+    'error' => [
+        'service_managed' => 'El ajuste :key se gestiona en su propia página y no puede cambiarse aquí.',
+    ],
     'flash' => [
         'saved' => 'Configuración :key guardada.',
         'reset' => 'Configuración :key restablecida al valor predeterminado.',

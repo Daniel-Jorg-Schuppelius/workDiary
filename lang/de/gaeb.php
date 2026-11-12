@@ -50,6 +50,9 @@ return [
     ],
 
     'show' => [
+        'findings' => 'Befunde',
+        'findings_count' => ':count Befund(e) anzeigen',
+        'conflict_line' => 'Position :ref (:status): Menge :quantity, in der Datei :incoming_quantity; Einheitspreis :price, in der Datei :incoming_price',
         'back_to_boq' => 'Zum Leistungsverzeichnis',
         'positions' => 'Positionen',
         'history' => 'Importhistorie',
@@ -137,6 +140,7 @@ return [
         'title' => 'Vorbemerkungen',
     ],
     'preflight' => [
+        'catalog_without_edition' => 'Kostengruppenkatalog „:catalog“ nennt keine Ausgabe der Norm. Die Kostengruppen wurden übernommen; bitte ordnen Sie dem Katalog die Ausgabe zu, bevor Sie auswerten.',
         'version_unknown' => 'GAEB-Version konnte nicht erkannt werden.',
         'version_unsupported' => 'GAEB-Version :version wird nicht unterstützt (Ziellinie 3.3).',
         'phase_unknown' => 'Austauschphase „:code" ist unbekannt.',
@@ -170,6 +174,25 @@ return [
     ],
 
     'progress' => [
+        'dialog' => [
+            'open' => 'Fortschritt melden und Meldungen ansehen',
+            'title' => 'Fortschritt melden',
+            'quantity_hint' => 'Ausgeführte Menge in der Einheit der Position. Für eine reine Kostenzuordnung eines Materialverbrauchs 0 eintragen.',
+            'source' => 'Quelle',
+            'material_usage_hint' => 'Materialverbrauch des Projekts, der noch keiner Position zugeordnet ist. Seine Kosten zählen in der Auswertung zu dieser Position.',
+            'protocol_hint' => 'Protokoll des Projekts, aus dem die Meldung stammt. Die Meldung verweist dauerhaft darauf.',
+            'history' => 'Bisherige Meldungen',
+            'history_empty' => 'Noch keine Meldungen.',
+            'captured_at' => 'Erfasst am',
+            'reference' => 'Bezug',
+        ],
+        'error' => [
+            'material_usage' => 'Der Materialverbrauch gehört nicht zu diesem Projekt oder ist schon einer Position zugeordnet.',
+            'protocol' => 'Das Protokoll gehört nicht zu diesem Projekt.',
+            'one_reference' => 'Bitte wählen Sie entweder einen Materialverbrauch oder ein Protokoll.',
+            'reference_required' => 'Die Quellen „Protokoll“ und „Materialverbrauch“ brauchen den zugehörigen Beleg.',
+            'position' => 'Die Position gehört nicht zu einem Leistungsverzeichnis dieses Projekts oder ist abgeschlossen.',
+        ],
         'from_takeoff' => 'Menge aus :lines Aufmaßzeilen der X31 nachgerechnet.',
         'takeoff_skipped' => ':count Zeilen mit nicht unterstützter Formel blieben unberücksichtigt.',
         'title' => 'Aufmaß / Fortschritt',

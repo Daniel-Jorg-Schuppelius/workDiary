@@ -26,6 +26,8 @@ return [
     // Fatturazione elettronica (funzionalità 045, sezione 8): XRechnung (UBL 2.1, EN 16931).
     'buyer_reference' => 'Leitweg-ID / riferimento acquirente (BT-10)',
     'buyer_reference_hint' => 'Obbligatorio per la XRechnung (fattura elettronica): il Leitweg-ID per le amministrazioni, altrimenti un riferimento fornito dal cliente.',
+    // Partita IVA del cliente nella fattura PDF (§ 14a UStG, MVP-1623).
+    'buyer_vat_id' => 'Vostra partita IVA',
     'einvoice' => [
         'button' => 'XRechnung',
         'button_title' => 'Scarica la XRechnung (UBL 2.1, EN 16931)',
@@ -43,6 +45,12 @@ return [
         ],
         'payment_terms' => 'Pagabile entro :days giorni senza sconto.',
         'exemption_small_business' => 'Nessuna IVA applicata ai sensi del § 19 UStG (regime tedesco delle piccole imprese).',
+        'exemption_reverse_charge' => 'Inversione contabile',
+        'exemption_intra_community' => 'Cessione intracomunitaria esente (§ 4 n. 1 lett. b in combinato disposto con § 6a UStG)',
+        'exemption_export_goods' => 'Cessione all’esportazione esente (§ 4 n. 1 lett. a in combinato disposto con § 6 UStG)',
+        'exemption_export_services' => 'Prestazione non imponibile in Germania (luogo della prestazione presso il destinatario, § 3a UStG)',
+        'exemption_not_subject' => 'Operazione non imponibile in Germania',
+        'exemption_tax_free' => 'Operazione esente',
         'rule_violation' => 'Regola :code: :text',
         'note_supporting_documents' => 'Documenti giustificativi allegati: :list',
         'line_note_entries' => ':count interventi, :from – :to',
@@ -53,6 +61,12 @@ return [
             'missing_buyer_reference' => 'Al cliente manca il Leitweg-ID/riferimento acquirente (BT-10).',
             'missing_seller_field' => 'Dato del venditore mancante: :field (impostazioni dell\'organizzazione → fatturazione).',
             'missing_tax_id' => 'Né partita IVA né codice fiscale configurati nelle impostazioni dell\'organizzazione.',
+            'reverse_charge_buyer_vat_id' => 'L\'inversione contabile (categoria AE) richiede la partita IVA del cliente (BR-AE-02): la inserisca nel cliente.',
+            'intra_community_buyer_vat_id' => 'La cessione intracomunitaria (categoria K) richiede la partita IVA del cliente (BR-IC-02): la inserisca nel cliente.',
+            'seller_vat_id_required' => 'Le cessioni intracomunitarie e le esportazioni (categorie K e G) richiedono la partita IVA dell’organizzazione (BR-IC-02, BR-G-02): la inserisca nelle impostazioni dell’organizzazione.',
+            'not_subject_mixed' => 'Le posizioni non imponibili (categoria O) non possono stare accanto ad altre categorie IVA in una fattura elettronica (BR-O-11): le fatturi separatamente.',
+            'not_subject_tax_number' => 'Le operazioni non imponibili (categoria O) non riportano la partita IVA (BR-O-02); la fattura elettronica richiede quindi il codice fiscale nelle impostazioni dell’organizzazione.',
+            'line_category_rate' => 'Posizione «:line»: la categoria IVA :category non prevede imposta, ma la posizione riporta il :rate %: fattura e fattura elettronica differirebbero. Imposti l’aliquota della posizione allo 0 %.',
             'missing_iban' => 'Manca l\'IBAN per il bonifico SEPA nelle impostazioni dell\'organizzazione.',
             'missing_tax_rate' => 'La fattura non riporta alcuna aliquota fiscale.',
             'totals_mismatch' => 'I totali della fattura sono incoerenti (posizioni, subtotale, imposta, totale).',
@@ -65,6 +79,9 @@ return [
             'missing_buyer_email' => 'Manca l\'e-mail del cliente (indirizzo elettronico di ricezione BT-49).',
             'missing_due_date' => 'Data di scadenza mancante — viene usato il termine di pagamento predefinito.',
             'service_date_fallback' => 'Nessuna posizione indica data o periodo della prestazione; vale la data della fattura (§ 14 c. 4 n. 6 UStG).',
+            'intra_community_delivery_country' => 'Cessione intracomunitaria (categoria K): la fattura elettronica non contiene ancora il paese di consegna (BT-80, regola BR-IC-12): i destinatari rigorosi la respingono.',
+            'not_subject_line_rate' => 'Operazioni non imponibili (categoria O): la fattura elettronica riporta ancora un’aliquota dello 0 % nelle posizioni (regola BR-O-05): i destinatari rigorosi la respingono.',
+            'exemption_unspecified' => 'Posizioni esenti (categoria E): non è registrato alcun motivo di esenzione, la fattura elettronica riporta solo «Operazione esente». Crei nella matrice delle regole fiscali una regola con il tipo di aliquota «Esente» e inserisca la norma di esenzione come testo di avviso del giustificativo (§ 14 c. 4 n. 8 UStG).',
             'activity_report_missing' => 'Questo destinatario si aspetta un’attestazione delle prestazioni, ma la fattura non ha documenti.',
             'near_limit' => 'La fattura elettronica con documenti pesa :size ed è vicina al limite del destinatario (:limit).',
         ],
@@ -136,6 +153,9 @@ return [
         'position_hint' => 'Determina l’ordine; i titoli numerano le posizioni che seguono.',
     ],
     // Arbeitskosten nach § 35a EStG (MVP-1053).
+    'approval' => [
+        'self' => 'Con approvazione obbligatoria, la fattura non può essere approvata dalla persona che l’ha creata.',
+    ],
     'labour_costs' => [
         'disclosure' => [
             'off' => 'Non indicare mai',
@@ -279,6 +299,11 @@ return [
         'dunning_note' => 'meno la ritenuta a garanzia',
         'added' => 'Ritenuta registrata.',
         'released' => 'Ritenuta liberata.',
+        'released_on' => 'Liberata il',
+        'release_due' => 'Liberazione scaduta',
+        'release_title' => 'Liberare la ritenuta a garanzia',
+        'release_hint' => 'Con la liberazione l’importo diventa una normale partita aperta: rientra nell’importo da pagare e viene sollecitato.',
+        'release_hint_secured' => 'Questa ritenuta è stata sostituita da una fideiussione ed è già stata pagata. La liberazione pone fine solo allo scopo di garanzia: non nasce alcun nuovo credito e l’atto di fideiussione va restituito.',
     ],
 
     // Leistungszeitraum je Position (Feature 152, Review 2026-09-11).
@@ -333,7 +358,6 @@ return [
             'delivery_foreign' => 'La consegna non appartiene a questa organizzazione.',
             'delivery_customer' => 'La consegna appartiene a un altro cliente.',
             'delivery_external' => 'La consegna viene fatturata esternamente.',
-            'delivery_not_delivered' => 'La consegna non è ancora avvenuta.',
             'delivery_invoiced' => 'La consegna è già fatturata.',
             'delivery_reserved' => 'La consegna «:name» è già riservata nella bozza :number.',
             'delivery_currency' => 'La consegna è in :currency, il documento in :invoice — nessuna conversione automatica.',
@@ -346,6 +370,7 @@ return [
         'service_period' => 'Periodo di prestazione',
         'service_from' => 'Periodo di prestazione dal',
         'service_to' => 'Periodo di prestazione al',
+        'tax_category_hint' => 'Vuoto = ricavato dal documento (S/AE/Z/E/G/K/O). Le categorie senza imposta (AE, Z, E, G, K, O) impostano l\'aliquota allo 0 %.',
     ],
     'service_rules' => [
         'title' => 'Regole di fatturazione',
@@ -514,5 +539,28 @@ return [
             'total_limit' => 'Documento :name non ripreso: i documenti di questa fattura superano in totale 50 MB.',
             'unreadable' => 'Documento :name non ripreso: più grande di :limit o non leggibile.',
         ],
+    ],
+    // Steuerfall der Eingangsrechnung (MVP-1621) und § 13b als Leistender (MVP-1622).
+    'incoming_tax_case' => [
+        'title' => 'Caso fiscale',
+        'field' => 'Caso fiscale',
+        'hint' => 'Con l’inversione contabile (§ 13b UStG, acquisto intracomunitario) la fattura è al netto; la registrazione rileva da sé IVA a debito e a credito. Vale per la prossima registrazione.',
+        'automatic' => 'Automatico (da documento e fornitore)',
+        'detected' => 'Determinato: :case (:source).',
+        'action' => 'Modifica caso fiscale',
+        'supplier_field' => 'Caso fiscale delle sue fatture in entrata',
+        'supplier_hint' => 'Preimpostazione nelle fatture in entrata finché la fattura non riporta imposta — p. es. per lavori edili ai sensi del § 13b UStG.',
+        'source' => ['manual' => 'impostato a mano', 'document' => 'dalla fattura elettronica', 'supplier' => 'impostazione del fornitore', 'default' => 'predefinito'],
+        'flash' => ['saved' => 'Caso fiscale salvato.'],
+        'error' => ['booked' => 'La fattura in entrata è già in contabilità (bozza o registrazione). Modifichi il caso fiscale dopo aver scartato la bozza o stornato la registrazione.'],
+    ],
+    'reverse_charge_recipient' => [
+        'label' => 'Il destinatario è debitore dell’IVA (§ 13b UStG)',
+        'hint' => 'Cliente nazionale debitore dell’imposta sulle Sue prestazioni, p. es. lavori edili a imprese edili. Le fatture partono senza IVA e con la dicitura «Inversione contabile» (rigo 60).',
+    ],
+    // Steuerfall des Rechnungsentwurfs (MVP-1623).
+    'tax_case' => [
+        'changed_on_issue' => 'Il regime fiscale del cliente è cambiato dall\'ultima modifica della bozza (inversione contabile, esportazione o esenzione). La bozza è stata adeguata: verifichi gli importi ed emetta di nuovo la fattura.',
+        'note_kept' => 'Il testo della fattura è stato modificato a mano e quindi non è stato adeguato: verifichi personalmente l’indicazione sul regime fiscale (ad esempio inversione contabile, esportazione o esenzione).',
     ],
 ];

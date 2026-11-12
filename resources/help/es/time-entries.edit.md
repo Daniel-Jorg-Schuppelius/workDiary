@@ -1,7 +1,7 @@
 ---
 title: "Editar un registro de tiempo"
 topic: time-entries.edit
-version: 3
+version: 4
 keywords:
     - corregir horas
     - cambiar registro
@@ -91,6 +91,8 @@ registro está bloqueado si
 - la ventana de corrección ha caducado (por defecto, 7 días después del día
   del registro),
 - el mes ya se ha aprobado para usted,
+- usted ya ha cerrado el día de la imputación (los cambios pasan entonces
+  por **Solicitar corrección** en la vista del día),
 - la hoja de horas correspondiente está firmada o bloqueada, o
 - el registro ya se ha exportado.
 

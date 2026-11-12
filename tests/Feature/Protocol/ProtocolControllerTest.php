@@ -16,6 +16,7 @@ use App\Models\Asset\Asset;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Protocol\{Protocol, ProtocolItemPhoto};
+use App\Services\Protocol\Fields\ProtocolItemFields;
 use App\Services\Protocol\ProtocolService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -257,7 +258,7 @@ class ProtocolControllerTest extends TestCase {
         $this->actingAs($user)
             ->from(route('diary.show', $entry))
             ->put(route('protocols.items.fill', $item), [
-                'value_json' => ['value' => true],
+                'values' => [ProtocolItemFields::key($item) => '1'],
                 'note' => 'i. O.',
             ])
             ->assertRedirect();

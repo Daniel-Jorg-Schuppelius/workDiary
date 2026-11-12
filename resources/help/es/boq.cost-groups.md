@@ -1,7 +1,7 @@
 ---
 title: "Grupos de costes según DIN 276"
 topic: boq.cost-groups
-version: 1
+version: 2
 keywords:
     - asignar grupo de costes
     - estimación de costes
@@ -166,3 +166,7 @@ El cambio de norma se hace en **Asignar → Cambiar edición** y muestra primero
 **vista previa**. Solo se convierten las correspondencias unívocas; el resto
 permanece. Los huecos son lo esencial: muestran dónde alguien tiene que decidir.
 Un código adivinado sería peor que el antiguo.
+
+## Importación sin edición de la norma
+
+Si el catálogo de grupos de costes de un archivo GAEB no indica la edición de la norma, la importación adopta los grupos de costes y deja constancia de un **hallazgo**: aparece en el historial de importaciones del presupuesto de obra. Asigne después la edición al catálogo mediante **Asignar → Cambiar edición** antes de evaluar.

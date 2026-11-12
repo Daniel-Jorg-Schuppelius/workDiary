@@ -1,7 +1,7 @@
 ---
 title: "Ordres de fabrication"
 topic: manufacturing.orders
-version: 5
+version: 6
 keywords:
     - ordre de production
     - nomenclature
@@ -126,3 +126,7 @@ transmissions. Si un logiciel de comptabilité a repris un document, son
 logiciel lui-même, par exemple un acompte créé dans Lexoffice, apparaissent
 aussi. La colonne **Lien** indique ce que le document représente pour
 celui-ci ; « via … » nomme le document par lequel le lien existe.
+
+## Livraison sans client et annulation
+
+Une livraison sans client ne nécessite pas de facturation ; son statut de facturation affiche **Non requis**. Un ordre annulé clôture ses besoins de matériel manquant ouverts – ils n'alimentent plus les propositions de commande.

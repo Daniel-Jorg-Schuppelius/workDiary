@@ -14,17 +14,32 @@
     @if ($portal->intro_text)
         <section class="wb-card">
             <p>{{ $portal->intro_text }}</p>
+            @if ($portal->privacy_text_version)
+                <p class="wb-hint">{{ __('Stand des Datenschutzhinweises: :version', ['version' => $portal->privacy_text_version]) }}</p>
+            @endif
         </section>
     @endif
 
     <section class="wb-card">
         <h2>{{ __('Wofür ist dieser Kanal?') }}</h2>
         <p>{{ __('Hinweise auf Rechtsverstöße, Korruption, Betrug und andere erhebliche Compliance-Verstöße. Nicht jeder Konflikt am Arbeitsplatz fällt darunter.') }}</p>
+        {{-- Pflichthinweis auf externe Meldestellen (§ 13 HinSchG) — auch ohne eingetragene Stellen. --}}
+        <h3>{{ __('Externe Meldewege') }}</h3>
+        <p>{{ __('Sie können frei wählen, ob Sie sich an diese interne Meldestelle oder an eine externe Meldestelle der Behörden wenden. Eine externe Meldung steht Ihnen auch offen, wenn Ihrem Hinweis intern nicht abgeholfen wird.') }}</p>
         @if (is_array($portal->external_channels) && count($portal->external_channels) > 0)
-            <h3>{{ __('Externe Meldewege') }}</h3>
             <ul>
                 @foreach ($portal->external_channels as $channel)
-                    <li>{{ is_array($channel) ? ($channel['label'] ?? '') . ' ' . ($channel['url'] ?? '') : $channel }}</li>
+                    @php
+                        $channelLabel = is_array($channel) ? (string) ($channel['label'] ?? '') : (string) $channel;
+                        $channelUrl = is_array($channel) ? (string) ($channel['url'] ?? '') : '';
+                    @endphp
+                    <li>
+                        @if (\Illuminate\Support\Str::startsWith($channelUrl, ['https://', 'http://']))
+                            <a href="{{ $channelUrl }}" rel="noopener noreferrer" target="_blank">{{ $channelLabel }}</a>
+                        @else
+                            {{ $channelLabel }}
+                        @endif
+                    </li>
                 @endforeach
             </ul>
         @endif

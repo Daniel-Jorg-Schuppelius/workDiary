@@ -1,7 +1,7 @@
 ---
 title: "Descriptifs de prestations GAEB"
 topic: boq.overview
-version: 1
+version: 3
 keywords:
     - DPGF
     - DQE
@@ -72,3 +72,11 @@ Le **contrôle avant remise** signale en outre les postes dont le prix est dans 
 ## Commentaires du soumissionnaire
 
 Dans la demande d’offre, le maître d’ouvrage décide si les soumissionnaires peuvent commenter les postes. La vue du bordereau indique ce que dit le fichier. Si les commentaires ne sont pas autorisés, l’import n’en reprend aucun (le journal d’import en indique le nombre) et l’offre n’en contient pas. Réimporter l’offre ne modifie pas ce que fixe la demande.
+
+## Avancement avec pièce et constats de l’import
+
+Outre la saisie rapide de quantité, l’icône du mètre ruban d’une position ouvre la fenêtre **Déclarer l’avancement**. Vous y choisissez en plus une **consommation de matériel** du projet ou un **procès-verbal** du projet. La pièce choisie détermine la source de la déclaration et y reste attachée ; la fenêtre affiche les déclarations précédentes avec leur référence. Une consommation de matériel ne peut être affectée qu’à une seule position ; ses coûts sont imputés à cette position dans l’analyse de rentabilité. Pour une simple affectation de coûts, saisissez la quantité 0.
+
+L’**historique des imports** affiche les constats de chaque exécution. Un réimport refusé y figure avec le statut « conflit » et indique, pour chaque position protégée, la quantité et le prix unitaire existants à côté des valeurs du fichier. Il ne modifie rien dans le devis quantitatif lui-même.
+
+Le procès-verbal lui-même propose aussi, dans son menu, **Déclarer l’avancement d’une position du devis quantitatif** lorsque le projet du procès-verbal possède un devis quantitatif avec des positions ouvertes. La déclaration reçoit la source « procès-verbal » et renvoie à ce procès-verbal.

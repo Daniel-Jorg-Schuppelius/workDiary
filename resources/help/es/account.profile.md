@@ -1,7 +1,7 @@
 ---
 title: "Perfil y cuenta"
 topic: account.profile
-version: 3
+version: 4
 keywords:
     - ajustes
     - cambiar contraseña
@@ -47,3 +47,11 @@ queda vacío, bajo la respuesta aparecen su nombre y la organización. El pie de
 correo de la organización (razón social, dirección, datos obligatorios) se
 añade automáticamente; lo gestiona la administración de la organización en los
 ajustes.
+
+## Inicio de sesión desde un dispositivo nuevo
+
+Si alguien inicia sesión con su cuenta desde un dispositivo desconocido o
+desde otro país, recibe un mensaje por correo electrónico y en la aplicación.
+En **Notificaciones** puede desactivar este aviso; la desactivación y la
+reactivación quedan registradas. Si es posible, mantenga el aviso activo: suele
+ser el primer indicio de una usurpación de la cuenta.

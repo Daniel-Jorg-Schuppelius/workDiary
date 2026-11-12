@@ -39,6 +39,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $returned_by_user_id
  * @property string|null $condition_out
  * @property string|null $condition_in
+ * @property string|null $return_note
  * @property string|null $note
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -65,6 +66,7 @@ class AssetAssignment extends Model {
         'returned_by_user_id',
         'condition_out',
         'condition_in',
+        'return_note',
         'note',
     ];
 

@@ -1,7 +1,7 @@
 ---
 title: "Creare un verbale"
 topic: protocols.create
-version: 3
+version: 4
 keywords:
     - verbale di collaudo
     - rapporto di manutenzione
@@ -46,6 +46,18 @@ sua pratica e reperibile nel fascicolo.
    **«Compila elemento»**: testo, sì/no, scelta, misura, difetto.
 4. Alleghi le **foto prima/dopo** al punto corrispondente.
 5. Invii il protocollo **in verifica** o lo chiuda con **«Finalizza / firma»**; ai clienti arriva il **link di firma**.
+
+Nella finestra assegna inoltre i **tag**; compaiono poi nei dati di base del
+protocollo. I file che riguardano l'intero protocollo – una planimetria, una
+bolla di consegna – si caricano nella pagina di dettaglio sotto **Allegati**.
+Con **Riordina i punti** trascina i punti nell'ordine desiderato; i sottopunti
+restano nel loro gruppo. Tag, allegati e ordine si modificano solo nella
+bozza; ogni allegato e ogni riordino compare nella **Cronologia**.
+
+Il luogo dello scatto di una foto viene ripreso solo se l'organizzazione lo ha
+attivato in **Impostazioni → Caricamenti** (predefinito: disattivato). Le
+coordinate sono visibili a chi ha il relativo permesso; dal file immagine
+vengono sempre rimosse.
 
 ## Esempio pratico
 

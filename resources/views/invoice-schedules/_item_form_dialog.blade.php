@@ -56,11 +56,13 @@
         <x-input-field name="position" type="number" :label="__('Position')" min="0" step="1" :value="old('position', (string) ($item->position ?? ''))" />
         <x-input-field name="discount_percent" type="number" :label="__('Rabatt %')" min="0" max="100" step="0.01" :value="old('discount_percent', $item->discount_percent?->getNumericValue() ?? '')" :hint="__('Prozent oder Betrag — nicht beides.')" />
         <x-input-field name="discount_amount" type="number" :label="__('Rabatt (Betrag)')" min="0" step="0.01" :value="old('discount_amount', $item->discount_amount?->getAmount() ?? '')" />
-        <x-input-field name="tax_rate" type="number" :label="__('USt-Satz % (leer = Standard)')" min="0" max="99.99" step="0.01" :value="old('tax_rate', $item->tax_rate?->getNumericValue() ?? '')" />
-        <x-select-field name="tax_category" :label="__('Steuerkategorie (EN 16931)')" :hint="__('Leer = aus Beleg abgeleitet (S/AE/Z/E/G).')">
+        {{-- MVP-1623: Kategorien ohne Steuer setzen 0 % (Binder data-prefill-from, Server ZeroesRateOfUntaxedCategory). --}}
+        <x-input-field name="tax_rate" type="number" :label="__('USt-Satz % (leer = Standard)')" min="0" max="99.99" step="0.01" :value="old('tax_rate', $item->tax_rate?->getNumericValue() ?? '')"
+                       data-prefill-from="tax_category" data-prefill-key="rate" data-prefill-on-load />
+        <x-select-field name="tax_category" :label="__('Steuerkategorie (EN 16931)')" :hint="__('invoicing.item.tax_category_hint')">
             <option value="">{{ __('— automatisch —') }}</option>
             @foreach (['S' => 'S — Standard', 'AE' => 'AE — Reverse Charge', 'Z' => 'Z — Nullsatz', 'E' => 'E — befreit', 'G' => 'G — Export', 'K' => 'K — ig. Lieferung', 'O' => 'O — nicht steuerbar'] as $code => $label)
-                <option value="{{ $code }}" @selected(old('tax_category', $item->tax_category ?? '') === $code)>{{ $label }}</option>
+                <option value="{{ $code }}" @selected(old('tax_category', $item->tax_category ?? '') === $code) @if ($code !== 'S') data-prefill-rate="0" @endif>{{ $label }}</option>
             @endforeach
         </x-select-field>
         @if (\App\Models\Invoicing\Invoice::labourCostDisclosureRule($schedule->organization) !== \App\Enums\Invoicing\LabourCostDisclosure::Off)

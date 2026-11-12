@@ -366,6 +366,19 @@ class SupplierCatalogController extends Controller {
         return back()->with('success', __('procurement.catalog.flash.unlinked'));
     }
 
+    /** Position bewusst nicht übernehmen bzw. wieder aufnehmen (Feature 050, MVP-1620). */
+    public function toggleIgnored(SupplierCatalogItem $catalogItem, CatalogLinkService $links): RedirectResponse {
+        $this->canManage();
+        $this->assertSameOrganization($catalogItem);
+        try {
+            $item = $links->toggleIgnored($catalogItem);
+        } catch (\RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return back()->with('success', __($item->status === \App\Enums\Procurement\CatalogItemStatus::Ignored ? 'procurement.catalog.flash.ignored' : 'procurement.catalog.flash.unignored'));
+    }
+
     /** Auto-Vorschlag eines internen Artikels anhand der EAN/GTIN (MVP-093). */
     public function propose(SupplierCatalogItem $catalogItem, CatalogLinkService $links): RedirectResponse {
         $this->canManage();

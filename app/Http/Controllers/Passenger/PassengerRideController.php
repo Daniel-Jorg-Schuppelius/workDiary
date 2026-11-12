@@ -218,9 +218,14 @@ class PassengerRideController extends Controller {
             'payment_method' => ['required', 'string', 'max:24'],
             'occupied_km' => ['nullable', 'numeric', 'min:0'],
             'empty_km' => ['nullable', 'numeric', 'min:0'],
-            'waiting_seconds' => ['nullable', 'integer', 'min:0'],
+            'waiting_minutes' => ['nullable', 'integer', 'min:0', 'max:1440'],
             'odometer_end_km' => ['nullable', 'integer', 'min:0'],
         ]);
+        // Erfasst wird in Minuten, gespeichert wie vom Taxameter in Sekunden.
+        if (isset($validated['waiting_minutes'])) {
+            $validated['waiting_seconds'] = (int) $validated['waiting_minutes'] * 60;
+        }
+        unset($validated['waiting_minutes']);
         $this->rides->complete($ride, $validated, $request->user() ?? abort(401));
 
         return redirect()->route('passenger-rides.show', $ride)->with('status', (string) __('passenger.flash.completed'));

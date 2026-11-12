@@ -1,7 +1,7 @@
 ---
 title: "Kunden & Lieferanten"
 topic: contacts.manage
-version: 15
+version: 17
 keywords:
     - Vorschau als Kunde
     - Startpasswort
@@ -240,3 +240,7 @@ Fristen. Ein Abschnitt erscheint nur, wenn das Modul freigeschaltet ist, Sie
 das Recht dazu haben und es Einträge gibt; die Zahlen entsprechen der
 jeweiligen Liste. Shop-Bestellungen aus Etsy und Billbee sieht die
 Administration. Lieferanten haben wie Kunden eigene Felder und Dokumente.
+
+Beim Lieferanten kommen die **Kataloge** (Name, Zahl der Artikel, letzter Import; mit dem Leserecht des Lagers) und die **Leistung** hinzu: die Scorecard der letzten zwölf Monate mit Gesamt-Score, Termintreue, Reklamationsquote, Preisentwicklung, ISMS-Qualität, Regressverhalten und Durchlaufzeit — jede Zeile öffnet die Scorecard mit demselben Zeitraum. Leasing- und Finanzierungsverträge mit dem Lieferanten als Leasinggeber stehen mit dem Recht auf die Leasingakten in der Akte. Am Kunden erscheinen zusätzlich die gebuchten und angefragten **Termine** (Calendly, Terminbuchung) für alle, die die Seite „Terminanfragen“ öffnen dürfen.
+
+**Buchhaltung führt:** Führt laut Datenführerschaft die Buchhaltung die Stammdaten von Kunden und Lieferanten, zeigt das Formular einen Hinweis. Ändern lässt sich weiter alles, doch der nächste Abgleich überschreibt lokale Änderungen — dauerhaft ändern Sie die Daten im Buchhaltungsprogramm.

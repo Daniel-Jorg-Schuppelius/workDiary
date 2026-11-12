@@ -20,7 +20,8 @@ use App\Plugins\Webdav\Services\WebdavMirrorTarget;
  * Voll-Spiegellauf der WebDAV-Ablage (Feature 058, MVP-127; Kern seit
  * A10/MVP-330 im gemeinsamen {@see MirrorBackfillCommand}): reiht alle
  * aktuell freigegebenen Dokumente je Organisation idempotent in die
- * Integrations-Outbox ein. Läuft manuell aus der Admin-UI.
+ * Integrations-Outbox ein. Läuft beim Aktivieren der Ablage und manuell aus
+ * der Admin-UI, ohne Zeitplan (Begründung im Basisbefehl).
  */
 class WebdavMirrorCommand extends MirrorBackfillCommand {
     protected $signature = 'webdav:mirror

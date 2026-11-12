@@ -87,6 +87,7 @@ class WhistleblowingCase extends Model implements ProvidesCaseDek {
         'closed_at' => 'datetime',
         'retention_due_at' => 'datetime',
         'legal_hold_at' => 'datetime',
+        'legal_hold_review_at' => 'date',
     ];
 
     protected static function booted(): void {

@@ -134,6 +134,9 @@ class TimeEntryReassignService {
                 if (! $hard['locked'] && (int) $entry->user_id !== (int) $target->id && $this->editPolicy->isMonthClosedFor($target, $entry)) {
                     $hard = ['locked' => true, 'reason' => TimeEntryEditPolicy::REASON_MONTH_CLOSED];
                 }
+                if (! $hard['locked'] && (int) $entry->user_id !== (int) $target->id && $this->editPolicy->isDayClosedFor($target, $entry)) {
+                    $hard = ['locked' => true, 'reason' => TimeEntryEditPolicy::REASON_DAY_CLOSED];
+                }
                 if ($hard['locked']) {
                     $lockedLabels[] = ($entry->date?->format(\App\Support\Formats::date()) ?? '#' . $entry->id)
                         . ' (' . $this->editPolicy->reasonLabel($hard['reason']) . ')';

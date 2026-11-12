@@ -79,6 +79,10 @@ final class CalendarManifest extends Manifest {
             \App\Services\Demo\Contracts\DemoBlock::class => [
                 \App\Services\Calendar\Demo\AppointmentDemoBlock::class,
             ],
+            // Termine am Lead und am Kunden (MVP-1617).
+            \App\Services\Cockpit\Contracts\CockpitPanel::class => [
+                \App\Services\Calendar\Cockpit\AppointmentRequestCockpitPanel::class,
+            ],
         ];
     }
 }

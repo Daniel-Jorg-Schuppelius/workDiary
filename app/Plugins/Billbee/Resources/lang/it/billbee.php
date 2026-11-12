@@ -46,4 +46,17 @@ return [
     'cockpit' => [
         'title' => 'Ordini Billbee',
     ],
+    // Bestandsführung (MVP-1626)
+    'inventory' => [
+        'heading' => 'Gestione delle giacenze',
+        'explain' => 'Con «Billbee», WorkDiary continua a registrare nel proprio giornale di magazzino e comunica ogni livello come giacenza assoluta per SKU a Billbee, che la distribuisce ai marketplace. «Locale» non comunica nulla. Non esiste una modalità di sola lettura: Billbee non tiene giacenze proprie.',
+        'mode_local' => 'Locale — WorkDiary gestisce le giacenze, Billbee non riceve nulla.',
+        'mode_external' => 'Billbee — WorkDiary gestisce le giacenze e comunica ogni livello a Billbee.',
+        'save' => 'Salva gestione delle giacenze',
+        'confirm' => 'Cambiare davvero la gestione delle giacenze?',
+        'changed' => 'Gestione delle giacenze modificata.',
+        'unchanged' => 'La gestione delle giacenze è già impostata così.',
+        'needs_connection' => 'Mancano le credenziali per la comunicazione a Billbee nelle impostazioni del plugin.',
+        'other_leads' => 'Le giacenze sono attualmente gestite da :plugin. Riportare prima lì la gestione su locale.',
+    ],
 ];

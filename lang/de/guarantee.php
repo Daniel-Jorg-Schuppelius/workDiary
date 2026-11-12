@@ -18,8 +18,10 @@ return [
     'updated' => 'Bürgschaft aktualisiert.',
     'returned' => 'Rückgabe protokolliert.',
     'drawn' => 'Ziehung protokolliert.',
+    'expired' => 'Bürgschaft als verfallen vermerkt.',
     'secured' => 'Sicherheitseinbehalt durch die Bürgschaft abgelöst.',
     'not_active' => 'Diese Bürgschaft ist nicht mehr aktiv.',
+    'not_expired' => 'Die Befristung dieser Bürgschaft ist nicht überschritten.',
     'retention_not_open' => 'Dieser Sicherheitseinbehalt ist nicht mehr offen.',
     'foreign_organization' => 'Bürgschaft und Einbehalt gehören zu verschiedenen Organisationen.',
     'amount_too_low' => 'Die Bürgschaft deckt den Einbehalt nicht — eine kleinere Bürgschaft löst ihn nicht ab.',
@@ -30,10 +32,12 @@ return [
         'edit' => 'Bürgschaft bearbeiten',
         'returned' => 'Urkunde zurückerhalten',
         'drawn' => 'Als gezogen vermerken',
+        'expired' => 'Als verfallen vermerken',
         'secure' => 'Einbehalt ablösen',
     ],
     'confirm' => [
         'drawn' => 'Ziehung der Bürgschaft :reference vermerken? Sie gilt danach nicht mehr als Sicherheit, und der Vermerk lässt sich nicht zurücknehmen.',
+        'expired' => 'Bürgschaft :reference als verfallen vermerken? Die Befristung ist überschritten; sie gilt danach nicht mehr als Sicherheit.',
     ],
     'secure' => [
         'title' => 'Sicherheitseinbehalt ablösen',
@@ -49,7 +53,7 @@ return [
         'received_hint' => 'Läuft sie unbemerkt ab, ist die Sicherheit weg.',
         'expiring' => 'Läuft in 90 Tagen ab',
         'return_due' => 'Rückgabe fällig',
-        'return_due_hint' => 'Der abgelöste Einbehalt ist freigegeben — die Urkunde gehört zurück.',
+        'return_due_hint' => 'Der abgelöste Einbehalt ist freigegeben oder die gekoppelte Gewährleistung beendet — die Urkunde gehört zurück.',
     ],
     'column' => [
         'reference' => 'Bürgschaftsnr.',

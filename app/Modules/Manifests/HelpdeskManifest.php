@@ -133,6 +133,7 @@ final class HelpdeskManifest extends Manifest {
         return [
             \App\Services\Learning\Contracts\QuestionTicketOpener::class => \App\Services\ServiceTicket\Learning\LearningQuestionTicketOpener::class,
             \App\Services\Asset\Contracts\ServiceLevelResolver::class => \App\Services\ServiceTicket\SlaTimer::class,
+            \App\Services\Diary\Contracts\IssueTicketOpener::class => \App\Services\ServiceTicket\Diary\OpenIssueTicketOpener::class,
         ];
     }
 

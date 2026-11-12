@@ -14,6 +14,8 @@ namespace App\Http\Requests\Crisis;
 
 use App\Http\Requests\BaseFormRequest;
 use App\Models\Crisis\CrisisCase;
+use App\Services\Crisis\CrisisLinkTargets;
+use Illuminate\Validation\Rule;
 
 /**
  * Validierung für das Eröffnen einer Krisenakte (Feature 070, MVP-212).
@@ -29,6 +31,9 @@ class StoreCrisisCaseRequest extends BaseFormRequest {
             'trigger_source' => ['nullable', 'string', 'max:200'],
             'description' => ['nullable', 'string', 'max:10000'],
             'affected_summary' => ['nullable', 'string', 'max:10000'],
+            // Eröffnen aus einem Vorfall (MVP-1605): der Vorfall wird mit der Akte verknüpft.
+            'origin_type' => ['nullable', 'required_with:origin_sqid', Rule::in(array_filter(CrisisLinkTargets::keys(), CrisisLinkTargets::isIncident(...)))],
+            'origin_sqid' => ['nullable', 'required_with:origin_type', 'string', 'max:64'],
         ];
     }
 }

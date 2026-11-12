@@ -77,7 +77,7 @@ class DoctorCommand extends Command {
     private function checkCapabilities(Plugin $plugin, array &$violations): void {
         foreach ($plugin->capabilities() as $cap) {
             $interface = $cap->interface();
-            if (! $plugin instanceof $interface) {
+            if ($interface !== null && ! $plugin instanceof $interface) {
                 $violations[] = sprintf('%s: kündigt %s an, implementiert aber %s nicht.', $plugin->id(), $cap->identifier(), $interface);
             }
         }

@@ -13,6 +13,11 @@
 @section('content')
 <x-index-page :subtitle="__('ai.usage.subtitle')">
     <x-slot:actions>
+        @if ($canManage ?? false)
+            <x-icon-btn icon="savings" size="sm" data-entry-modal-trigger
+                        :href="route('admin.ai.budget.edit')"
+                        show-label>{{ __('ai.budget.title') }}</x-icon-btn>
+        @endif
         <x-action-menu icon="download" :label="__('Export')">
             <x-icon-btn icon="download" size="sm" show-label :href="route('admin.ai.usage', ['export' => 'csv'])">{{ __('CSV') }}</x-icon-btn>
             <x-icon-btn icon="table_view" size="sm" show-label :href="route('admin.ai.usage', ['export' => 'xlsx'])">Excel</x-icon-btn>

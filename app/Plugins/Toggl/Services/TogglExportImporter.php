@@ -10,6 +10,7 @@
 
 namespace App\Plugins\Toggl\Services;
 
+use App\Enums\Integration\DataDomain;
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Customer\{Customer, ForeignCustomer};
@@ -17,9 +18,12 @@ use App\Models\Integration\{ExternalReference, ExternalReferenceAlias};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
+use App\Plugins\PluginManager;
 use App\Plugins\Support\AttachesImportedTags;
 use App\Plugins\Toggl\Sources\{FolderWorkspaceSource, TogglEntry, TogglWorkspaceReader, WorkspaceSourceInterface};
 use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
+use App\Services\Integration\Attributes\WritesDataDomain;
+use App\Services\Integration\DataOwnershipResolver;
 use App\Support\Tz;
 use CommonToolkit\Helper\Data\EmailHelper;
 use CommonToolkit\Helper\FileSystem\Folder;
@@ -47,6 +51,7 @@ use Illuminate\Support\Str;
  * einer Transaktion ausgeführt und am Ende zurückgerollt — liefert exakte
  * „Würde anlegen/buchen"-Zahlen ohne zu schreiben.
  */
+#[WritesDataDomain(DataDomain::Customers)]
 class TogglExportImporter {
     use AttachesImportedTags;
 
@@ -373,6 +378,17 @@ class TogglExportImporter {
             $stats['customers_reused']++;
 
             return $this->customerCache[$cacheKey] = $existing;
+        }
+
+        // Datenführerschaft (MVP-1592): Führt ein anderes System die Kunden, legt die
+        // Migration keinen an — sie bricht mit Hinweis ab, auch in der Vorschau.
+        $ownership = app(DataOwnershipResolver::class);
+        if (! $ownership->mayWrite($organization, DataDomain::Customers, TogglPlugin::ID)) {
+            $owner = $ownership->ownerFor($organization, DataDomain::Customers);
+            throw new \RuntimeException((string) __('toggl::integration.ownership.migration_refused', [
+                'name' => $name,
+                'owner' => $owner === DataOwnershipResolver::ACCOUNTING ? __('integration.ownership.matrix.accounting_any') : (app(PluginManager::class)->find($owner)?->name() ?? $owner),
+            ]));
         }
 
         $customer = Customer::query()->create([

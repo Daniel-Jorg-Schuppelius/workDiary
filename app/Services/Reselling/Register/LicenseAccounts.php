@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Register;
 
-use App\Enums\Reselling\SubscriptionProvider;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\ResaleSubscription;
 use Illuminate\Support\Collection;
@@ -157,17 +156,5 @@ final class LicenseAccounts {
         }
 
         return 'holder:' . $head->holderKey();
-    }
-
-    /** @return array{0: SubscriptionProvider, 1: string}|null Anbieter und Konto aus einem Schlüssel */
-    public static function parseKey(string $key): ?array {
-        $pos = strpos($key, ':');
-        if ($pos === false) {
-            return null;
-        }
-        $provider = SubscriptionProvider::tryFrom(substr($key, 0, $pos));
-        $account = substr($key, $pos + 1);
-
-        return $provider === null || $account === '' ? null : [$provider, $account];
     }
 }

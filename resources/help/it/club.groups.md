@@ -1,7 +1,7 @@
 ---
 title: "Gruppi dell'associazione e proposte di cambio"
 topic: club.groups
-version: 1
+version: 2
 keywords:
     - gruppo di allenamento
     - gruppo giovanile
@@ -50,3 +50,5 @@ controllo.
 ammissioni, richieste, chiusure e proposte del proprio gruppo. L'anagrafica
 del gruppo e le eccezioni restano riservate all'amministrazione
 dell'associazione.
+
+**Modalità di ammissione:** con «dalla direzione» la direzione ammette direttamente. Con «richiesta con approvazione» non c’è ammissione diretta: la direzione registra una richiesta, e i membri o i loro rappresentanti richiedono l’ammissione da sé in «Il mio club». Le richieste aperte compaiono nella coda di lavoro della direzione; criteri e capienza vengono verificati all’approvazione. Anche una proposta di cambio confermata verso un gruppo simile diventa una richiesta.

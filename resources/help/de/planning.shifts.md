@@ -1,7 +1,7 @@
 ---
 title: "Dienst- und Schichtplanung"
 topic: planning.shifts
-version: 4
+version: 5
 keywords:
     - Dienstplan
     - Schichtplan
@@ -56,3 +56,8 @@ Mit **Für alle Dienstpläne** gilt ein Eintrag planübergreifend: in jedem Dien
 Eine veröffentlichte Planung ist für Mitarbeitende verbindlich sichtbar.
 Ändern Sie sie nur mit der vorgesehenen Berechtigung und informieren Sie
 Betroffene bei kurzfristigen Anpassungen.
+
+**Fehlende Pflichtqualifikation:** Der Hinweis an der Schicht nennt je
+fehlender Qualifikation, ob die Person den passenden Kurs der Lernplattform
+schon begonnen hat („Kurs läuft“) oder welcher freigegebene Kurs sie vermittelt.
+Gesperrt bleibt die Zuweisung, bis die Qualifikation selbst vorliegt.

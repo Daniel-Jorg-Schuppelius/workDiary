@@ -40,6 +40,6 @@ class FlexController extends Controller {
         $year = (int) $request->input('year', CarbonImmutable::now()->year);
         $month = (int) $request->input('month', CarbonImmutable::now()->month);
 
-        return response()->json(['data' => $this->calc->monthlyBalance($this->authUser(), $year, $month)]);
+        return response()->json(['data' => $this->calc->accountMonth($this->authUser(), $year, $month)]);
     }
 }

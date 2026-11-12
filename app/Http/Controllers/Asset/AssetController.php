@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Asset;
 
 use App\Enums\Asset\{AssetOwnership, AssetStatus};
+use App\Enums\User\Permission;
 use App\Exceptions\AssetValidationException;
 use App\Http\Controllers\Concerns\{ParsesIndexQuery, SavesCustomFields};
 use App\Http\Controllers\Controller;
@@ -179,13 +180,14 @@ class AssetController extends Controller {
         Gate::authorize('create', Asset::class);
 
         $prefill = $this->options->resolvePrefill($request);
+        $asset = new Asset([
+            'status' => AssetStatus::Active->value,
+            'customer_id' => $prefill['customer_id'],
+            'room_id' => $prefill['room_id'],
+        ]);
 
         return view('assets._form_dialog', [
-            'asset' => new Asset([
-                'status' => AssetStatus::Active->value,
-                'customer_id' => $prefill['customer_id'],
-                'room_id' => $prefill['room_id'],
-            ]),
+            'asset' => $asset,
             'classOptions' => $this->options->classOptions(),
             'statusOptions' => $this->options->statusOptionsForCreate(),
             'customers' => $this->options->customerOptions(),
@@ -194,6 +196,7 @@ class AssetController extends Controller {
             'products' => $this->productOptions(),
             'prefill' => $prefill,
             'allTags' => Tag::query()->orderBy('name')->get(),
+            'contractOptions' => $this->contractOptions($asset),
         ] + $this->options->facilityData());
     }
 
@@ -245,13 +248,14 @@ class AssetController extends Controller {
         return view('assets._form_dialog', [
             'asset' => $asset->load('tags'),
             'classOptions' => $this->options->classOptions(),
-            'statusOptions' => $this->options->statusOptions(),
+            'statusOptions' => $this->options->statusOptionsForEdit($asset),
             'customers' => $this->options->customerOptions(),
             'foreignCustomers' => $this->options->foreignCustomerOptions(),
             'categoryOptions' => $this->categories->options((int) $asset->organization_id, $asset->category_code),
             'products' => $this->productOptions(),
             'prefill' => $prefill,
             'allTags' => Tag::query()->orderBy('name')->get(),
+            'contractOptions' => $this->contractOptions($asset),
         ] + $this->options->facilityData());
     }
 
@@ -270,6 +274,12 @@ class AssetController extends Controller {
         $payload['owned_by'] = ($payload['customer_id'] ?? null) === null
             ? AssetOwnership::Organization->value
             : AssetOwnership::Customer->value;
+
+        // Ein anderer Kunde ist ein Eigentümerwechsel und braucht dessen Recht.
+        $customerChanged = (int) ($payload['customer_id'] ?? 0) !== (int) ($asset->customer_id ?? 0);
+        if ($customerChanged && Gate::denies('transferOwnership', $asset)) {
+            return back()->withInput()->withErrors(['customer_id' => __('asset.ownership.error.forbidden')]);
+        }
 
         try {
             $assetService->update($asset, $user, $payload);
@@ -313,6 +323,17 @@ class AssetController extends Controller {
         return redirect()
             ->route('assets.show', $asset)
             ->with('success', __('Asset-Sperre aufgehoben.'));
+    }
+
+    /**
+     * Vertragsbindung nur mit Leserecht auf SLA-Verträge (wie am Wartungsplan).
+     *
+     * @return \Illuminate\Support\Collection<int, \App\Models\ServiceTicket\SlaContract>|null
+     */
+    private function contractOptions(Asset $asset): ?\Illuminate\Support\Collection {
+        return $this->authUser()->can(Permission::SlaContractView->value)
+            ? $this->options->assetContractOptions($asset)
+            : null;
     }
 
     private function normalizeAssetClass(string $value): ?string {

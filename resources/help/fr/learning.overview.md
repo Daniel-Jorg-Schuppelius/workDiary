@@ -1,7 +1,7 @@
 ---
 title: "Plateforme d'apprentissage"
 topic: learning.overview
-version: 6
+version: 8
 keywords:
     - e-learning
     - LMS
@@ -54,6 +54,33 @@ lance depuis une entrée du journal.
 de l'application bloquerait silencieusement la page dans le cours ; l'éditeur
 refuse donc immédiatement et visiblement un hôte non autorisé. Les hôtes
 autorisés se règlent dans les paramètres.
+
+**Une vidéo peut porter une part obligatoire.** Dans le champ « Vu au
+minimum (%) », vous définissez quelle part d'une vidéo téléversée doit avoir
+été visionnée avant que l'unité puisse être terminée. Seuls les passages
+réellement lus comptent — l'avance rapide et les sauts ne comptent pas, et un
+même passage ne compte qu'une fois. L'état figure sous la vidéo (« Visionné :
+40 % – requis : 80 % ») ; « Marquer comme terminé » reste verrouillé jusque-là. Seule la
+part atteinte par personne et par vidéo est enregistrée, sans trace de
+lecture. Aucune part obligatoire ne peut être définie pour une intégration
+externe, car sa progression n'est pas mesurable ; l'accès sans compte ne lit
+pas les vidéos et ne peut pas terminer ces unités.
+
+Lorsqu'une vidéo est sélectionnée, l'éditeur indique l'**espace de stockage
+attendu** : l'original plus les versions converties. Tout est décompté du
+quota de stockage — l'ordre de grandeur est ainsi connu avant le
+téléversement, et non seulement au quota.
+
+Les types d'unité **Procédure**, **Enquête** et **Externe** renvoient à une
+cible hors du cours ; vous choisissez la référence à la création de l'unité,
+où elle est obligatoire. Une unité de procédure est considérée comme terminée
+dès que la personne termine une exécution du modèle de procédure choisi (comme
+personne exécutante ou affectée). Une unité d'enquête ouvre le questionnaire
+choisi ; son envoi clôt l'unité. Une unité externe indique une adresse, et la
+personne confirme « terminé » — si vous le souhaitez, uniquement avec un
+justificatif téléversé, que la liste des participants du cours propose au
+téléchargement. Ces unités ne peuvent pas être cochées à la main ; elles ne
+sont pas disponibles dans le portail client ni avec l'accès sans compte.
 
 Un cours peut avoir des **prérequis** (tous, ou un seul suffit) : ils bloquent
 le démarrage, pas l’attribution — les inscriptions obligatoires en sont
@@ -152,6 +179,26 @@ accordée malgré la limite ou le délai, une seule fois et avec un motif.
 
 Le **carnet de notes** par cours montre apprenants × composantes. Sans composantes, il additionne les points des évaluations et devoirs ; si l'encadrement définit des **composantes** (évaluation, devoir, note manuelle), il peut leur donner des poids — tous totalisant 100 ou aucun. Les notes manuelles sont additives : une correction est une nouvelle entrée, la plus récente compte. Le **bulletin** (PDF) et l'export CSV viennent du même calcul ; tant qu'une composante est ouverte, le bulletin porte la mention « provisoire ».
 
+Vous gérez le **barème de notes** dans les paramètres de la plateforme
+d'apprentissage : un niveau par ligne sous la forme « libellé = pourcentage
+minimal », ou un modèle (notes scolaires 1–6, lettres A–F, réussi/non réussi)
+que vous ajustez ensuite. Le niveau le plus élevé dont le pourcentage minimal
+est atteint s'applique ; sans barème, le carnet de notes, le CSV et le
+bulletin n'affichent que le pourcentage.
+
+Le **dossier de qualification** (Apprentissage → Dossier de qualification)
+peut être restreint par équipe, personne, projet et site ; les sélections se
+combinent. La sélection d'une seule personne n'est proposée que dans le
+dossier nominatif (avec motif). Un projet comprend ses membres individuels et les membres de ses
+équipes ; est affectée à un site toute personne qui a pointé à un point de
+contrôle du site sur la période ou détient un moyen d'accès pour le site. Les personnes employées au
+début de la période et parties depuis figurent dans le dossier avec la mention
+« parti(e) le … » — c'est la situation à la date de référence qui compte.
+Avec un motif, le dossier est aussi disponible en **ZIP** : le dossier en PDF
+et JSON, chaque certificat dans son propre fichier PDF et un fichier d'index
+(CSV) qui associe chaque ligne à son fichier. Au-delà de 300 certificats,
+restreignez la sélection.
+
 Finesse par question : les options de réponse peuvent porter **leurs propres points** (« Libellé {3} », négatif possible) — l'option choisie compte alors au lieu du tout-ou-rien ; une **auto-évaluation** est une échelle sans bonne réponse, le niveau choisi est le score ; une **rédaction** accepte du texte, un fichier ou les deux — le fichier est disponible à l'évaluation. Par évaluation, la réussite peut en plus être exigée **en points** et le sous-ensemble par tentative fixé **en pourcentage** des questions disponibles.
 
 **Importer des questions** dans le catalogue de questions lit des questions depuis un fichier CSV ou Excel. Les colonnes **kind** (type, sous forme de code court comme single ou de libellé) et **prompt** sont obligatoires ; **options** contient les lignes de réponse les unes sous les autres dans une seule cellule, écrites comme dans l’éditeur. **title**, **category** (les catégories manquantes sont créées), **points**, **explanation** et **hint** sont facultatives. La même question (type et texte) est ignorée lors d’un second passage ; les questions à zone cliquable nécessitent une image et ne peuvent pas être importées depuis un fichier.
@@ -169,6 +216,18 @@ créé.
 
 Les certificats se vérifient par un lien. La page affiche cours, date,
 validité et émetteur — le nom seulement abrégé.
+
+**Révoquer un certificat :** la liste des participants d'un cours affiche le
+numéro de certificat auprès de la personne. Avec le droit **Gérer
+l'apprentissage**, vous y révoquez un certificat délivré à tort via « Révoquer
+le certificat » — le motif est obligatoire. La révocation est irréversible :
+la page de vérification, l'attestation lisible par machine, l'impression et le
+dossier de qualification l'indiquent à partir de sa date, la personne est informée
+du motif, et le justificatif obligatoire reflété chez le sous-traitant prend
+fin le même jour. L'attestation d'instruction et la qualification restent dans
+leurs registres et y sont rectifiées. Vous invalidez le **lien d'accès** d'une
+personne externe au même endroit via « Invalider le lien d’accès » ; il cesse
+aussitôt de fonctionner.
 
 Les données d'apprentissage appartiennent à la personne : le **rapport
 d'accès** (module protection des données) énumère inscriptions, tentatives,
@@ -292,3 +351,5 @@ entrées — plan et questions en brouillon dans l’éditeur, tuteur dans le
 lecteur — et ne fait que proposer ; reprise et évaluation restent manuelles.
 Points et badges apparaissent sous « Mes formations » ; le classement ne
 montre que les personnes ayant elles-mêmes consenti.
+
+**Accès invité avec médias :** les externes sans compte voient tous les blocs de contenu comme dans le lecteur — images, fichiers, audio et vidéos se chargent via leur accès, les liens vers des pages internes sont omis. Les vidéos avec part obligatoire ne peuvent toujours pas y être terminées.

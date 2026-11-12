@@ -40,7 +40,7 @@ class SalesDocumentPdfTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->org = Organization::factory()->create([
+        $this->org = Organization::factory()->state([
             'settings' => [
                 'branding' => [
                     'legal' => [
@@ -50,7 +50,7 @@ class SalesDocumentPdfTest extends TestCase {
                     ],
                 ],
             ],
-        ]);
+        ])->withIssuerIdentity()->create();
         app()->instance('currentOrganization', $this->org);
         $this->user = User::factory()->buchhaltung()->create(['organization_id' => $this->org->id]);
         $this->customer = Customer::factory()->create(['organization_id' => $this->org->id]);

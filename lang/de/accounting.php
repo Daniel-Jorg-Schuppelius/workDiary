@@ -71,6 +71,8 @@ return [
             'valid_from' => 'Gültig ab',
             'reason' => 'Begründung',
             'datev_account' => 'DATEV-Konto',
+            'datev_automatic' => 'DATEV-Automatik',
+            'datev_automatic_none' => '— kein Automatikkonto —',
             'euer_category' => 'EÜR-Zeile',
             'euer_category_none' => '— ohne Zuordnung —',
             'bwa_group' => 'BWA-Zeile',
@@ -92,6 +94,7 @@ return [
             'sovereignty_switch' => 'Der Datenumzug bleibt der Buchhaltungswechsel; hier wird nur die Führung ab Stichtag umgehängt.',
             'external_provider' => 'Nur bei externer Hoheit: Name des führenden Systems (z. B. lexoffice).',
             'datev_account' => 'Nur für den Export; die lokale Buchung hängt nicht daran.',
+            'datev_automatic' => 'Steuerkennzeichen, dessen Steuer DATEV auf diesem Konto selbst errechnet (Automatikkonto, etwa 8400 im SKR03). Der DATEV-Stapel setzt dort keinen BU-Schlüssel.',
             'euer_category' => 'Bestimmt, in welcher Zeile der Anlage EÜR das Konto erscheint. Ohne Zuordnung landet es in den ungeklärten Fällen.',
             'bwa_group' => 'Zeile der betriebswirtschaftlichen Auswertung. Ohne Zuordnung leitet die BWA die Zeile aus dem SKR03/SKR04-Nummernkreis ab; bleibt auch das offen, erscheint das Konto unter „nicht zugeordnet".',
             'deductible_percent' => 'Wirkt nur in der EÜR-Auswertung — im Journal steht immer der volle Betrag (z. B. 70 % bei Bewirtung).',
@@ -99,7 +102,6 @@ return [
             'post_now' => 'Nach dem Festschreiben ist die Buchung nur noch über eine Gegenbuchung korrigierbar.',
             'reversal_booked_on' => 'Leer lassen für den Originaltag, sofern dessen Periode noch offen ist.',
             'cost_center_required' => 'Buchungen auf dieses Konto lassen sich nur mit Kostenstelle festschreiben — auch aus der Buchungs-Inbox.',
-            'cost_center' => 'Gilt für Soll- und Habenzeile.',
         ],
         'action' => [
             'activate' => 'Lokale Buchhaltung aktivieren',
@@ -162,6 +164,8 @@ return [
             'entry_posted' => 'Buchung festgeschrieben.',
             'entry_reversed' => 'Gegenbuchung erzeugt.',
             'entry_discarded' => 'Entwurf verworfen — der Vorgang lässt sich neu anstoßen.',
+            'entry_updated' => 'Entwurf geändert.',
+            'cost_centers_saved' => 'Kostenstellen gespeichert.',
             'reversal_awaiting_approval' => 'Vier-Augen-Prinzip: Das Storno wartet als Entwurf in der Buchungs-Inbox auf die Freigabe. Die Buchung bleibt festgeschrieben, bis eine zweite Person die Gegenbuchung festschreibt.',
         ],
         'error' => [
@@ -184,7 +188,8 @@ return [
             'unbalanced' => 'Soll (:debit) und Haben (:credit) stimmen nicht überein.',
             'reverse_not_posted' => 'Nur eine festgeschriebene Buchung kann storniert werden.',
             'reversal_pending' => 'Für diese Buchung wartet bereits ein Storno auf die Freigabe.',
-            'discard_not_allowed' => 'Verwerfen lässt sich nur ein wartender Entwurf aus Skonto, Ausbuchung, Klärung, Umbuchung, Startsalden, Sondervorauszahlung oder Storno; festgeschriebene Buchungen bleiben unverändert.',
+            'discard_not_allowed' => 'Verwerfen lässt sich nur ein Entwurf; festgeschriebene Buchungen bleiben unverändert.',
+            'edit_not_allowed' => 'Dieser Entwurf stammt aus einem Fachvorgang (Skonto, Ausbuchung, Klärung, Umbuchung, Startsalden, Sondervorauszahlung, Storno). Seine Zeilen lassen sich nicht ändern — nur die Kostenstelle; sonst verwerfen und den Vorgang neu anstoßen.',
             'reversal_reason_required' => 'Für den Storno ist eine Begründung Pflicht.',
             'account_in_use' => 'Auf dieses Konto wurde bereits gebucht — es kann nur stillgelegt werden.',
             'entry_without_organization' => 'Die Buchung hat keine Organisation — bitte den Systembetreuer informieren.',
@@ -332,6 +337,11 @@ return [
             'year_closed' => 'Das Geschäftsjahr :year ist geschlossen.',
             'period_closed' => 'Die Periode zum :date ist geschlossen.',
             'no_exchange_rate' => 'Für :currency fehlt der Monatskurs :month (Umrechnung in :base) — unter Umrechnungskurse nachtragen.',
+            'self_assessed_with_tax' => 'Steuerfall „:case“, aber der Beleg weist Steuer aus — Steuerfall oder Werte im Rechnungseingang prüfen.',
+            'self_assessed_small_business' => 'Kleinunternehmer (§ 19 UStG) schulden bei „:case“ die Umsatzsteuer, ziehen aber keine Vorsteuer ab — diese Rechnung bitte von Hand buchen.',
+            'missing_self_assessed_code' => 'Kein Steuerkennzeichen für „:case“ zu :rate % — unter Kontenplan ein Kennzeichen „Umsatz- und Vorsteuer“ mit diesem Steuerfall, Steuerkonto und Vorsteuerkonto anlegen.',
+            'missing_input_tax_code' => 'Kein Vorsteuerkennzeichen zu :rate % — unter Kontenplan ein Kennzeichen „Vorsteuer“ mit diesem Satz und Steuerkonto anlegen.',
+            'expense_rate_without_input_tax' => 'Auslage mit :rate % Steuer: Zu diesem Satz gibt es kein Vorsteuerkennzeichen. Ausländische Umsatzsteuer ist keine Vorsteuer — die Auslage brutto ohne Steuersatz erfassen; Rechnungen mit Steuerschuld des Empfängers gehören in den Rechnungseingang.',
         ],
         'memo' => [
             'sales_invoice' => 'Rechnung :number · :customer',
@@ -522,6 +532,134 @@ return [
     ],
 
     // Offene Posten (Feature 125, MVP-674).
+    // Handbuchung und Entwurf bearbeiten (MVP-1556/1558).
+    'entry_form' => [
+        'title_edit' => 'Entwurf bearbeiten',
+        'counterparty' => 'Gegenpartei',
+        'counterparty_hint' => 'Kunde oder Lieferant. Gilt für Zeilen auf Konten mit offenen Posten und für Zeilen mit Steuerkennzeichen.',
+        'rows_hint' => 'Je Zeile ein Konto und ein Betrag im Soll oder im Haben. Mit Steuerkennzeichen steht der Nettobetrag in der Zeile; die Steuerzeile entsteht beim Speichern. Leere Zeilen werden ignoriert.',
+        'tax_code' => 'Steuerkennzeichen',
+        'line_memo' => 'Zeilentext',
+        'cost_centers_title' => 'Kostenstellen zuordnen',
+        'no_cost_centers' => 'Es sind keine aktiven Kostenstellen angelegt.',
+        'cost_center_required' => 'Pflicht',
+        'action' => [
+            'edit' => 'Entwurf bearbeiten',
+            'cost_centers' => 'Kostenstellen',
+        ],
+        'error' => [
+            'row' => 'Zeile :row:',
+            'one_side' => 'Bitte genau einen Betrag eintragen — im Soll oder im Haben.',
+            'tax_account_missing' => 'Das Steuerkennzeichen :code hat kein Steuerkonto.',
+            'unknown_counterparty' => 'Die Gegenpartei wurde nicht gefunden.',
+            'unknown_tax_code' => 'Das Steuerkennzeichen wurde nicht gefunden.',
+            'tax_code_not_valid' => 'Das Steuerkennzeichen :code gilt am :date nicht.',
+        ],
+    ],
+    // Steuerkennzeichen pflegen (MVP-1558).
+    'tax_codes' => [
+        'category' => [
+            'K' => 'Innergemeinschaftliche Lieferung',
+            'AE' => 'Steuerschuld des Leistungsempfängers',
+            'G' => 'Ausfuhr',
+            'O' => 'Nicht steuerbar',
+            'E' => 'Steuerfrei',
+        ],
+        'empty' => 'Noch kein Steuerkennzeichen angelegt.',
+        'inactive' => 'Stillgelegt',
+        'in_use_hint' => 'Mit diesem Kennzeichen wurde bereits gebucht. Name und Kennziffern ändern sich sofort. Satz, Richtung oder Steuerkonto gelten erst ab einem neuen Stichtag nach dem :date — die bisherige Fassung endet am Vortag, Altbuchungen bleiben unverändert.',
+        'action' => [
+            'add' => 'Steuerkennzeichen anlegen',
+        ],
+        'field' => [
+            'code' => 'Kürzel',
+            'rate' => 'Steuersatz (%)',
+            'tax_account' => 'Steuerkonto',
+            'valid_from' => 'Gültig ab',
+            'tax_category' => 'Steuerkategorie (Umsatz ohne Steuer)',
+            'validity' => 'Gültigkeit',
+            'input_tax_account' => 'Vorsteuerkonto',
+            'tax_case' => 'Steuerfall im Rechnungseingang',
+            'ustva_input_tax_field' => 'Kennziffer der Vorsteuer',
+            'datev_tax_key' => 'DATEV-BU-Schlüssel',
+        ],
+        'hint' => [
+            'code' => 'Kurz und eindeutig, zum Beispiel USt19. Buchstaben, Ziffern, Punkt, Binde- und Unterstrich.',
+            'tax_account' => 'Konto der automatischen Steuerzeile. Bei 0 % nicht nötig.',
+            'valid_from' => 'Neuer Stichtag für geänderten Satz, Richtung oder Steuerkonto.',
+            'tax_category' => 'Nur für Kennzeichen mit 0 %: Über die Kategorie wählt die Buchungs-Inbox das Kennzeichen eines Umsatzes ohne Steuer.',
+            'tax_case' => 'Über Steuerfall und Satz wählt die Buchungs-Inbox das Kennzeichen einer Eingangsrechnung mit Steuerschuld des Empfängers.',
+            'datev_tax_key' => 'Steuerschlüssel im DATEV-Buchungsstapel, z. B. 3 für Umsatzsteuer 19 %, 9 für Vorsteuer 19 %, 94 für § 13b. Leer: kein Schlüssel.',
+        ],
+        'self_assessed' => [
+            'legend' => 'Steuerschuld des Empfängers',
+            'hint' => 'Nur für die Richtung „Umsatz- und Vorsteuer“ (§ 13b UStG, innergemeinschaftlicher Erwerb): Die Umsatzsteuer geht auf das Steuerkonto, dieselbe Vorsteuer auf das Vorsteuerkonto.',
+        ],
+        'confirm' => [
+            'deactivate' => 'Steuerkennzeichen stilllegen? Neue Buchungen können es nicht mehr wählen, bestehende behalten es.',
+        ],
+        'flash' => [
+            'saved' => 'Steuerkennzeichen gespeichert.',
+            'versioned' => 'Neue Fassung des Steuerkennzeichens ab :date angelegt; Buchungsregeln und Konten-Vorgaben folgen ihr.',
+            'deactivated' => 'Steuerkennzeichen stillgelegt.',
+        ],
+        'error' => [
+            'code_taken' => 'Das Kürzel :code ist bereits vergeben.',
+            'tax_account_required' => 'Bei einem Steuersatz über 0 % braucht das Kennzeichen ein Steuerkonto.',
+            'input_tax_account_required' => 'Bei Steuerschuld des Empfängers braucht das Kennzeichen ein Vorsteuerkonto.',
+            'valid_from_required' => 'Mit diesem Kennzeichen wurde bereits gebucht. Bitte einen Stichtag nach dem :date angeben, ab dem die Änderung gilt.',
+        ],
+    ],
+    // Bankumsatz ohne Beleg direkt aufs Sachkonto (MVP-1557).
+    'bank_direct' => [
+        'title' => 'Ohne Beleg auf Sachkonto buchen',
+        'hint' => 'Für Umsätze ohne Beleg: Bankgebühr, Zinsen, Privatentnahme oder Verrechnung. Der Umsatz wird Bank an Sachkonto bzw. Sachkonto an Bank gebucht und im Abgleich beiseitegelegt.',
+        'memo' => 'Bankumsatz: :note',
+        'field' => [
+            'account' => 'Sachkonto',
+            'tax_code' => 'Steuerkennzeichen',
+            'note' => 'Buchungstext',
+        ],
+        'hint_field' => [
+            'tax_code' => 'Der Umsatz ist der Bruttobetrag; die Steuer wird herausgerechnet.',
+            'note' => 'Zum Beispiel „Kontoführung März“.',
+        ],
+        'action' => [
+            'post' => 'Auf Sachkonto buchen',
+            'post_submit' => 'Buchen',
+        ],
+        'flash' => [
+            'posted' => 'Umsatz auf das Sachkonto gebucht.',
+        ],
+        'error' => [
+            'money_account' => 'Bank-, Kassen- und Klärungskonten sind hier nicht wählbar — dafür gibt es die interne Umbuchung und die Klärungsbuchung.',
+            'already_assigned' => 'Der Umsatz ist bereits einem Beleg zugeordnet.',
+        ],
+    ],
+    // Offener Posten strittig (MVP-1559).
+    'dispute' => [
+        'title' => 'Posten als strittig kennzeichnen',
+        'hint' => 'Ein strittiger Posten bleibt offen. Er wird nicht gemahnt (Mahnsperre an der Rechnung) und zählt in der Liquiditätsvorschau nicht als erwarteter Eingang.',
+        'reason' => 'Grund',
+        'since' => 'Strittig seit :date: :reason',
+        'dunning_reason' => 'Offener Posten strittig: :reason',
+        'filter_all' => 'Alle offenen',
+        'action' => [
+            'mark' => 'Als strittig kennzeichnen',
+            'withdraw' => 'Strittig zurücknehmen',
+        ],
+        'confirm' => [
+            'withdraw' => 'Kennzeichen „strittig“ zurücknehmen? Die Mahnsperre aus diesem Kennzeichen wird aufgehoben.',
+        ],
+        'flash' => [
+            'marked' => 'Posten als strittig gekennzeichnet.',
+            'withdrawn' => 'Kennzeichen „strittig“ zurückgenommen.',
+        ],
+        'error' => [
+            'not_open' => 'Nur ein offener Posten lässt sich als strittig kennzeichnen.',
+            'not_disputed' => 'Der Posten ist nicht als strittig gekennzeichnet.',
+        ],
+    ],
     'open_items' => [
         'title' => 'Offene Posten',
         'menu' => 'Offene Posten',
@@ -531,6 +669,9 @@ return [
         'settle_hint' => 'Offen: :open. Zahlungen kommen aus dem Zahlungsabgleich — hier nur Skonto, Einbehalt oder Ausbuchung.',
         'awaiting_approval' => 'Entwurf wartet auf Freigabe',
         'four_eyes_hint' => 'Vier-Augen-Prinzip aktiv: Skonto und Ausbuchung entstehen als Entwurf in der Buchungs-Inbox. Der Posten bleibt offen, bis eine zweite Person die Gegenbuchung festschreibt.',
+        'discount_tax_hint' => 'Skonto wird in Netto und Steueranteil geteilt (:rates): Die Steuer des Belegs wird berichtigt (§ 17 UStG).',
+        'discount_no_tax_hint' => 'Skonto ohne Steuerberichtigung: Die Buchung dieses Postens hat keinen Steuerbezug (Kleinunternehmer, Reverse Charge, steuerfrei oder Startsaldo).',
+        'discount_self_assessed_hint' => 'Skonto auf eine Rechnung mit Steuerschuld des Empfängers (:rates): Es mindert die Bemessungsgrundlage, Umsatzsteuer und Vorsteuer sinken um denselben Betrag (§ 17 Abs. 1 Satz 5 UStG).',
         'column' => [
             'counterparty' => 'Gegenpartei',
             'due_date' => 'Fällig',
@@ -556,6 +697,7 @@ return [
         ],
         'error' => [
             'draft_pending' => 'Für diesen Posten wartet bereits eine Gegenbuchung auf die Freigabe. Ein weiterer Ausgleich ist erst möglich, wenn sie festgeschrieben ist.',
+            'counter_account_missing' => 'Für :kind fehlt das Gegenkonto :account im Kontenplan. Legen Sie das Konto an oder tragen Sie in den DATEV-Einstellungen ein vorhandenes Konto ein — ohne Gegenbuchung wird der Posten nicht ausgeglichen.',
         ],
     ],
 
@@ -595,7 +737,7 @@ return [
         'hint' => [
             'kind' => 'Belegerwartung wartet auf ein Original; die Buchungsvorlage erzeugt einen Entwurf.',
             'due_day' => '1–28, damit jeder Monat den Tag hat.',
-            'accounts' => 'Nur für Buchungsvorlagen — zusammen mit dem erwarteten Betrag.',
+            'accounts' => 'Buchungszeilen nur für Buchungsvorlagen. Bleibt der erwartete Betrag leer, gilt die Buchungssumme.',
             'responsible' => 'Erhält zusätzlich zur Buchhaltung die Meldung über überfällige Vorgänge.',
         ],
         'action' => [
@@ -628,10 +770,12 @@ return [
         ],
         'error' => [
             'already_closed' => 'Der Vorgang ist bereits abgeschlossen.',
-            'template_incomplete' => 'Eine Buchungsvorlage braucht Soll-, Habenkonto und Betrag.',
+            'template_incomplete' => 'Eine Buchungsvorlage braucht mindestens zwei Buchungszeilen mit Konto und Betrag.',
+            'template_unbalanced' => 'Die Zeilen der Buchungsvorlage gehen nicht auf: Soll und Haben müssen gleich sein.',
         ],
         'blocker' => [
             'no_lines' => 'Der Vorlage fehlen Buchungszeilen.',
+            'draft_discarded' => 'Der Buchungsentwurf wurde verworfen.',
         ],
         'notification' => [
             'title' => 'Wiederkehrender Vorgang überfällig: :name',
@@ -732,6 +876,10 @@ return [
             'ten_day_rule' => ':count Zahlungen liegen im Fenster 22.12.–10.01. und gehören belegseitig ins Nachbarjahr (§ 11 Abs. 1 S. 2 EStG).',
             'open_clearing' => ':count Klärungskonten sind noch nicht ausgeglichen.',
             'overdue_filings' => ':count Meldefristen sind überschritten und noch nicht als abgegeben markiert.',
+            'unbooked_settlements' => ':count Skonto- oder Ausbuchungsausgleiche haben keine Buchung im Journal — der Posten ist geschlossen, das Forderungs- bzw. Verbindlichkeitskonto steht noch. Bitte von Hand nachbuchen: :items',
+            'discounts_without_tax_correction' => ':count Skonto-Ausgleiche wurden ohne Steuerberichtigung gebucht (§ 17 UStG); rechnerischer Steueranteil zusammen :tax. Es wird nichts automatisch nachgebucht — bitte mit der Steuerberatung über Korrekturbuchungen entscheiden: :items',
+            'self_assessed_without_tax' => ':count festgeschriebene Eingangsrechnungen nennen Steuerschuld des Empfängers (§ 13b UStG, innergemeinschaftlicher Erwerb), ihre Buchung trägt aber keine Umsatz- und Vorsteuer. Es wird nichts automatisch nachgebucht — bitte mit der Steuerberatung über Korrekturbuchungen entscheiden: :items',
+            'tax_share' => 'Steueranteil',
             'kpi' => [
                 'drafts' => 'Entwürfe',
                 'unbalanced' => 'Unausgeglichen',
@@ -1125,7 +1273,7 @@ return [
             'note_required' => 'Eine Begründung ist Pflicht.',
         ],
         'blocker' => [
-            'unassigned' => 'Kein zugeordneter Beleg — buchbar nur über eine Zuordnung oder das Klärungskonto.',
+            'unassigned' => 'Kein zugeordneter Beleg — buchbar über eine Zuordnung, direkt auf ein Sachkonto oder über das Klärungskonto.',
         ],
         'flash' => [
             'posted' => 'Klärungsbuchung angelegt.',
@@ -1270,6 +1418,11 @@ return [
         'total' => 'Innergemeinschaftliche Lieferungen',
         'column' => [
             'vat_id' => 'USt-IdNr.',
+            'kind' => 'Art',
+        ],
+        'kind' => [
+            'goods' => 'Innergemeinschaftliche Lieferungen',
+            'services' => 'Sonstige Leistungen',
         ],
         'unclear' => [
             'missing_vat_id' => 'Buchung :entry (:customer) ohne USt-IdNr. des Empfängers.',

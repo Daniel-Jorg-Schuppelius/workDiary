@@ -13,14 +13,14 @@ declare(strict_types=1);
 namespace App\Services\Accounting;
 
 use App\Enums\Finance\AccountingEntryStatus;
-use App\Models\Accounting\{AccountingEntry, AccountingEntryLine, AccountingOpenItem};
+use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingEntryLine, AccountingOpenItem, AccountingTaxCode};
 use App\Models\Platform\Organization;
 use App\Services\Billing\FinancialFormatsSupport;
 use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig, DatevBookingFieldResolver};
 use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\ValueObjects\Money;
+use CommonToolkit\ValueObjects\{Decimal, Money};
 
 /**
  * DATEV-Übergabe aus den lokalen Festbuchungen (Feature 125, MVP-677).
@@ -32,8 +32,19 @@ use CommonToolkit\ValueObjects\Money;
  *
  * Der Export ist reproduzierbar: gleiche Buchungen, gleicher Zeitraum,
  * gleiche Datei.
+ *
+ * Der EXTF-Stapel bildet je Buchung Buchungssätze gegen eine Ankerzeile
+ * (Personen- oder Geldkonto), damit DATEV dieselben Beträge und Steuern
+ * rechnet wie das Journal (MVP-1622): Eine Nettozeile mit Kennzeichen geht
+ * brutto mit dem BU-Schlüssel des Kennzeichens hinaus, ihre Steuerzeilen
+ * entfallen; auf einem Automatikkonto (Vorgabe-Kennzeichen am Konto) rechnet
+ * DATEV selbst, dort steht kein Schlüssel. Passt die Automatik nicht, hebt
+ * BU-Schlüssel 40 sie auf und die Steuer bleibt eine eigene Zeile.
  */
 class LedgerDatevExportService {
+    /** Berichtigungsschlüssel 4 „Aufhebung der Automatik“ ohne Steuerschlüssel. */
+    public const string SUSPEND_AUTOMATIC = '40';
+
     /** Spaltenköpfe der Übergabedatei. */
     public const array HEADERS = [
         'Umsatz', 'Soll_Haben', 'Konto', 'Gegenkonto', 'Belegdatum',
@@ -123,7 +134,7 @@ class LedgerDatevExportService {
             ->whereIn('status', [AccountingEntryStatus::Posted->value, AccountingEntryStatus::Reversed->value])
             ->whereDate('booked_on', '>=', $from->toDateString())
             ->whereDate('booked_on', '<=', $to->toDateString())
-            ->with(['lines.account', 'lines.taxCode', 'lines.costCenter', 'source'])
+            ->with(['lines.account.defaultTaxCode', 'lines.taxCode', 'lines.costCenter', 'source'])
             ->orderBy('journal_no')
             ->get();
 
@@ -142,7 +153,6 @@ class LedgerDatevExportService {
         $credit = Money::zero($currency);
 
         foreach ($entries as $entry) {
-            $counter = $entry->lines->count() === 2 ? $entry->lines : null;
             $source = $entry->source;
             $extra = $fields->forSource($source instanceof \Illuminate\Database\Eloquent\Model ? $source : null);
             $openItem = $dueDates->get((int) $entry->id);
@@ -150,15 +160,21 @@ class LedgerDatevExportService {
                 ? new \DateTimeImmutable($openItem->due_date->toDateString())
                 : $extra['due_on'];
 
-            foreach ($entry->lines as $index => $line) {
+            foreach ($entry->lines as $line) {
                 $isDebit = $line->debit?->isPositive() ?? false;
                 $amount = ($isDebit ? $line->debit : $line->credit) ?? Money::zero($line->currency);
+                $isDebit
+                    ? $debit = $debit->plus($amount)
+                    : $credit = $credit->plus($amount);
+            }
+
+            foreach ($this->batchRows($entry) as $batchRow) {
                 $rows[] = [
-                    'amount' => $amount->getAmount(),
-                    'soll_haben' => $isDebit ? 'S' : 'H',
-                    'account' => $this->accountNumber($line),
-                    'contra_account' => $this->counterAccount($counter, $index),
-                    'tax_key' => $line->taxCode instanceof \App\Models\Accounting\AccountingTaxCode ? (string) $line->taxCode->code : null,
+                    'amount' => $batchRow['amount'],
+                    'soll_haben' => $batchRow['side'],
+                    'account' => $batchRow['account'],
+                    'contra_account' => $batchRow['contra'],
+                    'tax_key' => $batchRow['tax_key'],
                     'date' => new \DateTimeImmutable($entry->booked_on->toDateString()),
                     'document_ref' => (string) ($entry->document_reference ?? ($entry->journal_no !== null ? 'J' . $entry->journal_no : '')),
                     'text' => (string) $entry->memo,
@@ -166,15 +182,11 @@ class LedgerDatevExportService {
                     // stehen als eigene Buchung im Journal, keine Generalumkehr.
                     // Ledger-Wahrheit zuerst: die Zeile trägt ihre Kostenstelle
                     // (Feature 142), erst ohne sie greift die Beleg-Regel.
-                    'cost_center1' => $line->costCenter->code ?? $extra['cost_center1'],
+                    'cost_center1' => $batchRow['cost_center'] ?? $extra['cost_center1'],
                     'due_on' => $dueOn,
                     'discount_amount' => $extra['discount_amount'],
                     'discount_type' => $extra['discount_type'],
                 ];
-
-                $isDebit
-                    ? $debit = $debit->plus($amount)
-                    : $credit = $credit->plus($amount);
             }
         }
 
@@ -200,6 +212,172 @@ class LedgerDatevExportService {
             'debit' => $debit->getAmount(),
             'credit' => $credit->getAmount(),
         ];
+    }
+
+    /**
+     * Buchungssätze einer Buchung für den EXTF-Stapel.
+     *
+     * @return list<array{amount: numeric-string, side: string, account: string, contra: string, tax_key: ?string, cost_center: ?string}>
+     */
+    public function batchRows(AccountingEntry $entry): array {
+        $lines = array_values($entry->lines->all());
+        $debitSide = [];
+        $remaining = [];
+        $keys = [];
+        $handled = [];
+        foreach ($lines as $i => $line) {
+            $debitSide[$i] = $line->debit?->isPositive() ?? false;
+            $remaining[$i] = (($debitSide[$i] ? $line->debit : $line->credit) ?? Money::zero($line->currency))->abs();
+            $keys[$i] = null;
+        }
+
+        foreach ($lines as $i => $line) {
+            $code = $line->taxCode;
+            if (! $code instanceof AccountingTaxCode || $code->isTaxAccount((int) $line->accounting_account_id)) {
+                continue;
+            }
+            $handled[$i] = true;
+            $automatic = $line->account?->defaultTaxCode;
+            $tax = ($line->tax_amount ?? Money::zero($line->currency))->abs();
+
+            if ($tax->isZero()) {
+                // Umsatz ohne Steuer: die Kennziffer über den Schlüssel, auf dem Automatikkonto über das Konto.
+                $keys[$i] = $automatic instanceof AccountingTaxCode
+                    ? ($this->isTaxed($automatic) ? self::SUSPEND_AUTOMATIC : null)
+                    : $this->key($code);
+
+                continue;
+            }
+            $sameAutomatic = $automatic instanceof AccountingTaxCode && $automatic->code === $code->code;
+            if (($automatic instanceof AccountingTaxCode && ! $sameAutomatic) || (! $sameAutomatic && $this->key($code) === null)) {
+                $keys[$i] = $automatic instanceof AccountingTaxCode ? self::SUSPEND_AUTOMATIC : null;
+
+                continue;
+            }
+
+            $targets = $code->isSelfAssessed()
+                ? [[(int) $code->input_tax_account_id, $debitSide[$i]], [(int) $code->tax_account_id, ! $debitSide[$i]]]
+                : [[(int) $code->tax_account_id, $debitSide[$i]]];
+            $taxLines = $this->taxLines($lines, $debitSide, $remaining, $i, $targets, $tax);
+            if ($taxLines === null) {
+                $keys[$i] = $sameAutomatic ? self::SUSPEND_AUTOMATIC : null;
+
+                continue;
+            }
+            foreach ($taxLines as $j) {
+                $remaining[$j] = $remaining[$j]->minus($tax);
+            }
+            // DATEV rechnet die Steuer aus dem Bruttobetrag heraus; bei Eigenberechnung bleibt er netto.
+            if (! $code->isSelfAssessed()) {
+                $remaining[$i] = $remaining[$i]->plus($tax);
+            }
+            $keys[$i] = $sameAutomatic ? null : $this->key($code);
+        }
+
+        // Ohne Kennzeichen auf einem Automatikkonto mit Steuer: DATEV darf nichts herausrechnen.
+        foreach ($lines as $i => $line) {
+            $automatic = $line->account?->defaultTaxCode;
+            if (! isset($handled[$i]) && $automatic instanceof AccountingTaxCode && $this->isTaxed($automatic)) {
+                $keys[$i] = self::SUSPEND_AUTOMATIC;
+            }
+        }
+
+        $live = array_keys(array_filter($remaining, static fn (Money $amount): bool => ! $amount->isZero()));
+        if (count($live) < 2) {
+            return [];
+        }
+        $anchor = $this->anchor($lines, $live, $debitSide, $keys, $remaining);
+
+        $rows = [];
+        foreach ($live as $i) {
+            if ($i === $anchor) {
+                continue;
+            }
+            $rows[] = [
+                'amount' => $remaining[$i]->getAmount(),
+                'side' => $debitSide[$i] ? 'S' : 'H',
+                'account' => $this->accountNumber($lines[$i]),
+                'contra' => $this->accountNumber($lines[$anchor]),
+                'tax_key' => $keys[$i],
+                'cost_center' => $lines[$i]->costCenter?->code,
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Steuerzeilen eines Kennzeichens auf der erwarteten Seite, die den Betrag
+     * noch tragen; null, wenn eine fehlt — dann bleiben sie eigene Sätze.
+     *
+     * @param  list<AccountingEntryLine>  $lines
+     * @param  array<int, bool>  $debitSide
+     * @param  array<int, Money>  $remaining
+     * @param  list<array{0: int, 1: bool}>  $targets  Konto und Soll-Seite
+     * @return list<int>|null
+     */
+    private function taxLines(array $lines, array $debitSide, array $remaining, int $net, array $targets, Money $tax): ?array {
+        $found = [];
+        foreach ($targets as [$accountId, $onDebit]) {
+            $match = null;
+            foreach ($lines as $j => $line) {
+                if ($j !== $net && ! in_array($j, $found, true)
+                    && (int) $line->accounting_account_id === $accountId
+                    && $debitSide[$j] === $onDebit
+                    && ! $remaining[$j]->lessThan($tax)) {
+                    $match = $j;
+
+                    break;
+                }
+            }
+            if ($match === null) {
+                return null;
+            }
+            $found[] = $match;
+        }
+
+        return $found;
+    }
+
+    /**
+     * Gegenkonto aller Sätze einer Buchung: eine Zeile ohne eigenen Schlüssel,
+     * bevorzugt die einzige ihrer Seite, dann ein Personen- oder Geldkonto,
+     * dann der größte Betrag.
+     *
+     * @param  list<AccountingEntryLine>  $lines
+     * @param  list<int>  $live
+     * @param  array<int, bool>  $debitSide
+     * @param  array<int, ?string>  $keys
+     * @param  array<int, Money>  $remaining
+     */
+    private function anchor(array $lines, array $live, array $debitSide, array $keys, array $remaining): int {
+        $debits = count(array_filter($live, static fn (int $i): bool => $debitSide[$i]));
+        $score = function (int $i) use ($lines, $live, $debitSide, $keys, $debits): int {
+            $account = $lines[$i]->account;
+            $alone = ($debitSide[$i] ? $debits : count($live) - $debits) === 1;
+
+            return ($keys[$i] === null ? 4 : 0)
+                + ($alone ? 2 : 0)
+                + ($account instanceof AccountingAccount && ($account->is_open_item || $account->is_bank || $account->is_cash || $account->is_clearing) ? 1 : 0);
+        };
+        $best = $live[0];
+        foreach ($live as $i) {
+            if ($score($i) > $score($best) || ($score($i) === $score($best) && $remaining[$i]->greaterThan($remaining[$best]))) {
+                $best = $i;
+            }
+        }
+
+        return $best;
+    }
+
+    private function isTaxed(AccountingTaxCode $code): bool {
+        return ! Decimal::of((string) $code->rate, 2)->isZero();
+    }
+
+    private function key(AccountingTaxCode $code): ?string {
+        $key = trim((string) $code->datev_tax_key);
+
+        return $key === '' ? null : $key;
     }
 
     /** DATEV-Konto, falls gepflegt — sonst die eigene Kontonummer. */

@@ -76,6 +76,13 @@ return [
             'basis' => ['DE' => 'Art. 5 Abs. 2 DSGVO / §195 BGB', 'AT' => 'Art. 5 Abs. 2 DSGVO / §1489 ABGB', 'CH' => 'Art. 127 OR'],
         ],
 
+        // Abgeschlossene Datenschutzvorfälle: Dokumentation nach Art. 33 Abs. 5 DSGVO;
+        // Vollzug ist wie bei den Anfragen die Schlüsselvernichtung (MVP-1602).
+        'privacy_incidents' => [
+            'years' => ['DE' => 3, 'AT' => 3, 'CH' => 5],
+            'basis' => ['DE' => 'Art. 33 Abs. 5 DSGVO / §195 BGB', 'AT' => 'Art. 33 Abs. 5 DSGVO / §1489 ABGB', 'CH' => 'Art. 127 OR'],
+        ],
+
         // CTI-Anrufmetadaten (Feature 056, MVP-118; Vollaudit 2026-07 M18):
         // Verbindungsdaten (Rufnummer) werden anonymisiert, die Notiz-Zeile
         // (Richtung/Zeitpunkt/Dauer) bleibt als Vorgangsnachweis.

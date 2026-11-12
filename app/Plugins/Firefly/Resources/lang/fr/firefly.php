@@ -49,6 +49,7 @@ return [
         'search' => 'Recherche',
         'search_placeholder' => 'Libellé, contrepartie, numéro de pièce',
         'all_matches' => 'Tous les rattachements',
+        'open_matches' => 'Ouverts (sans rattachement ou ambigus)',
         'col' => [
             'date' => 'Date',
             'kind' => 'Type',
@@ -56,9 +57,23 @@ return [
             'description' => 'Libellé',
             'match' => 'Rattachement',
             'amount' => 'Montant',
+            'actions' => 'Actions',
         ],
         'empty' => 'Pas encore de mouvements',
         'foreign_amount' => 'Montant dans une seconde devise',
+    ],
+    // Erledigt markieren (MVP-1628)
+    'settle' => [
+        'title' => 'Marquer le mouvement comme traité',
+        'action' => 'Traité',
+        'intro' => 'Le mouvement n’a pas besoin de justificatif (par exemple frais de tenue de compte ou prélèvement privé). Il ne compte plus ensuite dans la tuile « Mouvements financiers » ni dans la file de travail ; la synchronisation n’y change rien.',
+        'note' => 'Motif',
+        'done' => 'Mouvement marqué comme traité.',
+        'already' => 'Le mouvement est déjà traité.',
+        'reopened' => 'Mouvement rouvert.',
+        'reopen' => 'Rouvrir',
+        'filter' => 'Traités',
+        'badge' => 'Traité par :name le :date',
     ],
     'search' => [
         'domain' => 'Mouvements Firefly III',
@@ -76,5 +91,10 @@ return [
     'health' => [
         'not_configured' => 'Firefly III n’est pas configuré (adresse ou jeton manquant).',
         'not_connected' => 'La connexion Firefly III n’a pas encore été vérifiée.',
+    ],
+    'work_queue' => [
+        'source' => 'Firefly III',
+        'unmatched' => '{1} 1 mouvement Firefly sans rattachement|[2,*] :count mouvements Firefly sans rattachement',
+        'ambiguous' => '{1} 1 mouvement Firefly au rattachement ambigu|[2,*] :count mouvements Firefly au rattachement ambigu',
     ],
 ];

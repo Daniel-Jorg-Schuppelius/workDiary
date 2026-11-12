@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Privacy;
 
-use App\Enums\Privacy\{MeasureCategory, ReviewResult};
+use App\Enums\Privacy\{ImplementationStatus, MeasureCategory, ProtectionLevel, ReviewResult};
 use App\Http\Controllers\Controller;
 use App\Models\Privacy\{ProcessingActivity, TechnicalMeasure, TechnicalMeasureVersion};
 use App\Services\Privacy\TechnicalMeasureService;
@@ -20,6 +20,7 @@ use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /** Zentraler TOM-Katalog (Art. 32) mit Versionierung, Zuordnung und Wirksamkeitspruefung. */
@@ -37,7 +38,11 @@ class TechnicalMeasureController extends Controller {
     public function create(): View {
         Gate::authorize('create', TechnicalMeasure::class);
 
-        return view('privacy.tom._form_dialog', ['categories' => MeasureCategory::cases()]);
+        return view('privacy.tom._form_dialog', [
+            'categories' => MeasureCategory::cases(),
+            'statuses' => ImplementationStatus::cases(),
+            'protectionLevels' => ProtectionLevel::cases(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse {
@@ -47,7 +52,9 @@ class TechnicalMeasureController extends Controller {
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'category' => ['required', \Illuminate\Validation\Rule::enum(MeasureCategory::class)],
+            'category' => ['required', Rule::enum(MeasureCategory::class)],
+            'implementation_status' => ['required', Rule::enum(ImplementationStatus::class)],
+            'protection_level' => ['nullable', Rule::enum(ProtectionLevel::class)],
             'description' => ['nullable', 'string', 'max:10000'],
             'addressed_risks' => ['nullable', 'string', 'max:10000'],
             'evidence' => ['nullable', 'string', 'max:10000'],
@@ -59,6 +66,8 @@ class TechnicalMeasureController extends Controller {
             MeasureCategory::from($data['category']),
             $this->payload($data),
             $request->user(),
+            ImplementationStatus::from((string) $data['implementation_status']),
+            ProtectionLevel::tryFrom((string) ($data['protection_level'] ?? '')),
         );
 
         return redirect()->route('dataprotection.tom.show', $measure)
@@ -73,7 +82,25 @@ class TechnicalMeasureController extends Controller {
             'versions' => $measure->versions()->get(),
             'activities' => ProcessingActivity::query()->orderBy('name')->get(['id', 'name']),
             'results' => ReviewResult::cases(),
+            'statuses' => ImplementationStatus::cases(),
+            'protectionLevels' => ProtectionLevel::cases(),
         ]);
+    }
+
+    /** Umsetzungsstand und Schutzbedarf der Maßnahme (Feature 043, MVP-1620). */
+    public function updateState(Request $request, TechnicalMeasure $measure): RedirectResponse {
+        Gate::authorize('update', $measure);
+        $data = $request->validate([
+            'implementation_status' => ['required', Rule::enum(ImplementationStatus::class)],
+            'protection_level' => ['nullable', Rule::enum(ProtectionLevel::class)],
+        ]);
+        $this->service->updateState(
+            $measure,
+            ImplementationStatus::from((string) $data['implementation_status']),
+            ProtectionLevel::tryFrom((string) ($data['protection_level'] ?? '')),
+        );
+
+        return back()->with('status', __('privacy.tom.state_saved'));
     }
 
     public function addVersion(Request $request, TechnicalMeasure $measure): RedirectResponse {

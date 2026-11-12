@@ -1,7 +1,7 @@
 ---
 title: "Matrice delle regole fiscali"
 topic: finance.tax-rules
-version: 1
+version: 2
 keywords:
     - aliquote IVA
     - IVA
@@ -72,3 +72,12 @@ partita IVA formalmente valida ricevono automaticamente il reverse
 charge (0 %), i clienti di paesi terzi la dicitura di esportazione
 (0 %) — le righe corrispondenti della matrice forniscono a tal fine il
 testo informativo sul documento.
+
+Una riga con il tipo **Esente** indica la norma di esenzione delle
+operazioni esenti ai sensi del § 4 UStG: il suo testo informativo compare
+nella fattura elettronica come motivo di esenzione delle posizioni esenti
+(categoria E), alla data della prestazione della fattura, ad esempio «Cure
+mediche esenti (§ 4 n. 14 UStG)». In sua assenza la fattura elettronica
+riporta solo «Operazione esente». Se il regime fiscale di una bozza cambia,
+workDiary sostituisce il testo della matrice finché è invariato nel testo
+della fattura.

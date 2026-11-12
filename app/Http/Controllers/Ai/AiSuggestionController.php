@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Ai;
 
 use App\Enums\Ai\AiMemoryEntryType;
 use App\Enums\User\Permission;
+use App\Http\Controllers\Ai\Concerns\AppliesConnectionChoice;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Ai\AiTextSuggestion;
@@ -39,6 +40,7 @@ use Illuminate\View\View;
  * enden IMMER als Flash — der Beleg-Workflow hängt nie an der KI.
  */
 class AiSuggestionController extends Controller {
+    use AppliesConnectionChoice;
     use ResolvesCurrentOrganization;
     public function __construct(
         private readonly ItemTextSuggestionService $suggestions,
@@ -240,6 +242,7 @@ class AiSuggestionController extends Controller {
 
     private function guarded(callable $action): RedirectResponse {
         try {
+            $this->applyConnectionChoice(request());
             $message = $action();
         } catch (AiException $e) {
             return back()->with('error', $e->getMessage());

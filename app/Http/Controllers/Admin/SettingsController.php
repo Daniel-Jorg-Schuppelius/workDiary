@@ -51,7 +51,8 @@ class SettingsController extends Controller {
 
         $rows = [];
         foreach ($this->registry->forScope($scope) as $key => $definition) {
-            if ($search !== '' && stripos($key, $search) === false) {
+            // Dienstgeführte Schlüssel (etwa das Bewertungsverfahren) pflegt ihre Fachseite.
+            if ($definition->serviceManaged || ($search !== '' && stripos($key, $search) === false)) {
                 continue;
             }
             $effective = $this->registry->effective($key, $scope === SettingScope::Organization ? $organization : null);

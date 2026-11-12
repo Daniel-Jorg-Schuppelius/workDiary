@@ -32,6 +32,9 @@ final class InvoiceIssueException extends RuntimeException {
     /** Das vergebende Programm hat den Beleg nicht übernommen (MVP-1166). */
     public const string REASON_PROGRAM = 'program';
 
+    /** Der Steuerfall des Kunden hat sich seit der letzten Bearbeitung geändert; der Entwurf wurde angepasst (MVP-1623). */
+    public const string REASON_TAX_CASE_CHANGED = 'tax_case_changed';
+
     public function __construct(public readonly string $reason, string $message, ?\Throwable $previous = null) {
         parent::__construct($message, 0, $previous);
     }

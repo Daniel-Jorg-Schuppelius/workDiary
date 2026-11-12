@@ -14,12 +14,11 @@ namespace App\Services\Manufacturing;
 
 use App\Enums\Manufacturing\ProcurementMode;
 use App\Models\Inventory\Warehouse;
-use App\Models\Manufacturing\{ManufacturingOrder, ManufacturingOrderMaterial};
+use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Platform\Organization;
 use App\Models\Procurement\PurchaseOrder;
 use App\Models\Supplier\Supplier;
 use App\Services\Procurement\PurchaseOrderService;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -58,15 +57,5 @@ class SubcontractService {
 
             return $po;
         });
-    }
-
-    /**
-     * Beistellmaterial: die Materialpositionen, die dem Lohnfertiger gestellt
-     * werden (ohne Werkzeuge).
-     *
-     * @return Collection<int, ManufacturingOrderMaterial>
-     */
-    public function providedMaterials(ManufacturingOrder $order): Collection {
-        return $order->materials()->where('is_tool', false)->get();
     }
 }

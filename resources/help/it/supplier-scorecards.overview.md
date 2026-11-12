@@ -1,7 +1,7 @@
 ---
 title: "Scorecard fornitori"
 topic: supplier-scorecards.overview
-version: 2
+version: 3
 keywords:
     - valutazione fornitori
     - rating fornitori
@@ -27,3 +27,5 @@ Le scorecard valutano i fornitori sulla base di dati reali: puntualità (ricevim
 **Classifica e drill-down:** l'elenco è ordinato per punteggio; la scorecard di dettaglio mostra gli indicatori con grafici e drill-down firmati sui documenti sottostanti.
 
 **Fornitori nascosti:** i fornitori contrassegnati con **Nascondi nelle analisi** sono esclusi dalla classifica; l'interruttore **Includi i fornitori nascosti** li reintegra.
+
+**Impostare i pesi:** con il diritto di configurazione del magazzino Lei apre **Pesi** nella classifica e inserisce un peso in percentuale per ogni indicatore. La somma non deve essere 100; un campo vuoto ripristina il valore predefinito. La nota sopra la classifica indica i pesi in vigore.

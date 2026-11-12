@@ -38,6 +38,20 @@ clasificación «peligroso» se deriva automáticamente del asterisco del
 código de residuo — nunca se establece a mano. Las posiciones solo pueden
 modificarse hasta la entrega al gestor de residuos.
 
+**Activo en la posición:** En el diálogo de la posición puede elegir un
+activo que esté en servicio; la selección rellena la denominación, el
+fabricante, el modelo y el número de serie. El expediente y el
+justificante muestran el activo. El cierre da de baja los activos
+vinculados. Si un activo sigue entregado, permanece en servicio y el
+expediente lo indica. En la ficha del activo, «Eliminar como residuo» abre
+un nuevo expediente de eliminación con el activo como posición preparada.
+
+**Fotos:** Puede subir fotos (JPG, PNG, WebP) de cada posición de equipo
+mientras el expediente sea modificable. Tras la entrega al gestor de
+residuos, las fotos no se pueden añadir ni eliminar. Con «Mostrar fotos en
+el justificante del cliente» en el expediente, aparecen hasta dos fotos
+por posición en el PDF del justificante.
+
 **Tratamiento de soportes de datos:** Para cada equipo que contiene
 soportes de datos se documenta el tratamiento — tipo de soporte,
 procedimiento (p. ej. borrado por software, desmagnetización, triturado o

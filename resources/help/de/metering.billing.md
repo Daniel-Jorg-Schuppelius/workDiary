@@ -38,3 +38,20 @@ Stand, wird die Periode nicht abgerechnet, statt zu schätzen.
 **Lauf:** Der monatliche Lauf erzeugt Rechnungsentwürfe, keine versendeten
 Rechnungen — die Freigabe bleibt beim Menschen. Jede Periode wird nur einmal
 abgerechnet; ein zweiter Lauf erzeugt keine Dublette.
+
+## Staffel, Status und Projekt
+
+**Mengenstaffel:** Im Dialog der Vereinbarung stehen Zeilen mit **ab Menge**
+und **Preis je Einheit**. Die erste Stufe beginnt bei 0; leere Zeilen werden
+ignoriert. Mit Staffel gilt je Stufe ihr Preis statt des Einheitspreises, und
+gerechnet wird stufenweise auf den Verbrauch nach Abzug der Freimenge — eine
+Einheit mehr macht die Rechnung nie billiger. Die Liste zeigt dann „Staffel“
+statt des Einheitspreises.
+
+**Status:** *Aktiv* wird abgerechnet, *Pausiert* und *Beendet* überspringt der
+Lauf; **Jetzt abrechnen** steht nur bei aktiven Vereinbarungen. Nach einer
+Pause rechnet der Lauf ab dem Datum **Nächste Abrechnung** nach — wer die
+Pausenzeit nicht berechnen will, zieht das Datum vor dem Reaktivieren vor.
+
+**Projekt:** Ein gewähltes Projekt wird den Rechnungsentwürfen des Laufs
+zugeordnet.

@@ -197,21 +197,6 @@ class HelpTopicLoader {
         return $all;
     }
 
-    /** @return list<string> */
-    public function allTopicCodes(): array {
-        $codes = [];
-        foreach ($this->locales() as $locale) {
-            foreach ($this->topicsForLocale($locale) as $topic) {
-                $codes[$topic] = true;
-            }
-        }
-
-        $unique = array_keys($codes);
-        sort($unique);
-
-        return $unique;
-    }
-
     /**
      * Schreibt relative Bild-Referenzen (`![Alt](media/…)`) auf die
      * auth-geschützte Auslieferungsroute um (MVP-754) und löst dabei den

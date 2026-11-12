@@ -171,7 +171,6 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
 
             'tour_id' => [$requiresTour ? 'required' : 'nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tours')],
             'tour_position' => ['nullable', 'integer', 'min:0', 'max:65535'],
-            'notes' => ['nullable', 'string', 'max:65535'],
         ];
     }
 

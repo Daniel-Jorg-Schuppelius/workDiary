@@ -46,5 +46,6 @@ class TodoistServiceProvider extends PluginServiceProviderBase {
         $this->app->make(\App\Services\Operations\Expiry\ExpiryScanner::class)->extend(new \App\Plugins\Todoist\Services\TodoistExpiryProbe);
         Task::observe(TodoistTaskObserver::class);
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new TodoistOutboxDispatcher());
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\TodoistImportService::class);
     }
 }

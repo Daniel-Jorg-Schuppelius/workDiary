@@ -44,4 +44,38 @@ return [
         'format' => 'Indique la duración prevista en horas:minutos, p. ej. 1:30.',
         'range' => 'La duración prevista debe estar entre 0:01 y 168:00.',
     ],
+    // Kennzahl Plan/Ist am Auftrag (MVP-1552).
+    'plan_actual' => [
+        'label' => 'Previsto/real',
+        'no_plan' => 'sin previsión',
+        'own_only' => 'solo tiempos propios',
+    ],
+    // Auftrags-Lebenszyklus (MVP-1596).
+    'lifecycle' => [
+        'action' => [
+            'reject' => 'Devolver la aceptación',
+            'revert_invoiced' => 'Revertir la facturación',
+        ],
+        'reject' => [
+            'title' => 'Devolver la aceptación',
+            'legend' => 'Devolución',
+            'hint' => 'La orden vuelve a «Planificado» y otra persona puede aceptarla. El motivo queda en el historial.',
+        ],
+        'handover' => [
+            'legend' => 'Recepción',
+            'accepted_by' => 'Recibido por (nombre en el cliente)',
+            'hint' => 'El protocolo no lleva firma del cliente. Indique la persona que recibió el trabajo en el cliente.',
+        ],
+        'accepted_final_by' => 'Recibido por :name el :date',
+        'invoiced_with' => 'Facturado con :reference',
+        'invoiced' => [
+            'transfer_reference' => 'Traspaso n.º :id',
+        ],
+        'cancel' => [
+            'run_abort_reason' => 'Orden cancelada: :reason',
+        ],
+        'error' => [
+            'stopwatch_running' => 'La orden solo puede cerrarse cuando no haya ningún cronómetro en marcha. Aún activo: :names.',
+        ],
+    ],
 ];

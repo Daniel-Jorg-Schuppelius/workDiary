@@ -1,7 +1,7 @@
 ---
 title: "Importación de tareas de Jira"
 topic: admin.jira
-version: 1
+version: 2
 keywords:
     - Jira
     - Jira Cloud
@@ -125,3 +125,5 @@ plugin esté activo.
   revocó en Atlassian o caducó. Vuelva a conectar.
 - No se crea nada: la asignación aún no está confirmada, está en pausa o las
   incidencias ya están terminadas.
+
+**Soberanía de datos:** Si otro sistema lidera las tareas, la sincronización crea un caso «Soberanía de datos» por tarea en la bandeja de integraciones. **Asumir una vez** importa la tarea a través de la misma asignación mientras esté activa; si la tarea cambia después en la fuente, el caso se vuelve a abrir.

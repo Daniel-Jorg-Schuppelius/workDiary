@@ -1,7 +1,7 @@
 ---
 title: "Toggl-Import"
 topic: admin.toggl
-version: 5
+version: 6
 keywords:
     - Toggl Track
     - Zeiten importieren
@@ -136,3 +136,5 @@ Webhook (optional):
   Toggl-Kunde, Projektname als Toggl-Projekt; vorhandene werden am Namen
   erkannt), danach gehen die Zeiten im nächsten Lauf nach. Den Rückstand
   älterer Zeiten holt `toggl:push --days=90` nach.
+
+**Datenführerschaft:** Führt ein anderes System Kunden und Lieferanten, legt die Migration keine Kunden an und bricht mit einem Hinweis ab – auch in der Vorschau. Legen Sie fehlende Kunden im führenden System an und gleichen Sie ab, oder ordnen Sie den Arbeitsbereich einem vorhandenen Kunden zu.

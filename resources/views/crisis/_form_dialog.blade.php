@@ -17,11 +17,21 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Krisenakte eröffnen')"
 >
+    @php($source = $source ?? null)
+    @if ($source !== null)
+        {{-- Eröffnen aus einem Vorfall (MVP-1605): der Vorfall wird mit der Akte verknüpft. --}}
+        <input type="hidden" name="origin_type" value="{{ $source['type'] }}">
+        <input type="hidden" name="origin_sqid" value="{{ $source['sqid'] }}">
+        <div role="status" class="alert alert-info alert-soft text-sm">
+            <x-icon name="link" />
+            <span>{{ __('crisis.open.from', ['source' => $source['label']]) }}</span>
+        </div>
+    @endif
     <x-form-group :legend="__('Krise')" icon="emergency_home" tone="error" cols="2">
-        <x-input-field name="title" :label="__('Titel')" required maxlength="200" span="2" :value="old('title')" />
+        <x-input-field name="title" :label="__('Titel')" required maxlength="200" span="2" :value="old('title', $source['title'] ?? null)" />
         <x-select-field name="category" :label="__('Kategorie')" required :hint="__('Bestimmt die Meldefristen (DSGVO/NIS2/KRITIS).')">
             @foreach (\App\Models\Crisis\CrisisCase::CATEGORIES as $category)
-                <option value="{{ $category }}" @selected(old('category', 'it_outage') === $category)>{{ __("values.$category") }}</option>
+                <option value="{{ $category }}" @selected(old('category', $source['category'] ?? 'it_outage') === $category)>{{ __("values.$category") }}</option>
             @endforeach
         </x-select-field>
         <x-select-field name="severity" :label="__('Schweregrad')" required>
@@ -29,7 +39,7 @@
                 <option value="{{ $severity }}" @selected(old('severity', 'major') === $severity)>{{ __("values.$severity") }}</option>
             @endforeach
         </x-select-field>
-        <x-input-field name="trigger_source" :label="__('Auslöser (Ticket/Vorfall/extern)')" maxlength="200" span="2" :value="old('trigger_source')" />
+        <x-input-field name="trigger_source" :label="__('Auslöser (Ticket/Vorfall/extern)')" maxlength="200" span="2" :value="old('trigger_source', $source['label'] ?? null)" />
         <x-textarea-field name="description" :label="__('Lage/Beschreibung')" rows="3" span="2">{{ old('description') }}</x-textarea-field>
         <x-textarea-field name="affected_summary" :label="__('Betroffen (Standorte/Services/Kunden/Assets)')" rows="2" span="2">{{ old('affected_summary') }}</x-textarea-field>
     </x-form-group>

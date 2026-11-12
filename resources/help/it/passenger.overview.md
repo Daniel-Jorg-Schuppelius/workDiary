@@ -1,7 +1,7 @@
 ---
 title: "Trasporto passeggeri (taxi/NCC)"
 topic: passenger.overview
-version: 1
+version: 3
 keywords:
     - servizio taxi
     - noleggio con conducente
@@ -47,3 +47,9 @@ finché non vengono chiarite con motivazione.
 WorkDiary non sostituisce né tassametro/contachilometri né la TSE — questi
 sistemi restano autoritativi; i loro valori vengono documentati e
 riconciliati.
+
+**Tempo di attesa alla chiusura della corsa:** alla chiusura di una corsa inserite il tempo di attesa in minuti; è precompilato con il tempo tra inizio attesa e prelievo. Viene salvato al secondo.
+
+## Corse nel rendiconto del turno
+
+Alla chiusura di un rendiconto del turno, WorkDiary collega le corse concluse dell'autista in quel turno (orari del turno, altrimenti il giorno del turno): quelle completate risultano liquidate, quelle annullate, interrotte e non presentate chiuse senza importo. La corsa mostra poi il suo rendiconto.

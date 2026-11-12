@@ -19,11 +19,22 @@
             <div class="flex min-w-0 items-center gap-2">
                 <span class="truncate font-medium">{{ $route->name }}</span>
                 @if ($route->site)<span class="text-sm text-muted">· {{ $route->site->name }}</span>@endif
+                @unless ($route->active)<x-status-badge size="xs">{{ __('inaktiv') }}</x-status-badge>@endunless
+                @if ($route->responsible)<span class="text-sm text-muted" title="{{ __('patrol.route.responsible') }}">· {{ $route->responsible->name }}</span>@endif
             </div>
             <x-slot:actions>
-                <x-action-form :action="route('patrols.start', $route)">
-                    <x-icon-btn icon="play_arrow" tone="primary" size="sm" type="submit" show-label>{{ __('Rundgang starten') }}</x-icon-btn>
-                </x-action-form>
+                @if ($route->active)
+                    <x-action-form :action="route('patrols.start', $route)">
+                        <x-icon-btn icon="play_arrow" tone="primary" size="sm" type="submit" show-label>{{ __('Rundgang starten') }}</x-icon-btn>
+                    </x-action-form>
+                @endif
+                @if ($canManage)
+                    <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('patrols.edit', $route)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                    <x-action-form :action="route('patrols.toggle', $route)"
+                                   :confirm="$route->active ? __('patrol.route.deactivate_confirm') : null">
+                        <x-icon-btn :icon="$route->active ? 'pause' : 'play_arrow'" size="sm" type="submit" show-label>{{ $route->active ? __('Deaktivieren') : __('Aktivieren') }}</x-icon-btn>
+                    </x-action-form>
+                @endif
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -58,19 +69,35 @@
                             </tr>
                         </x-slot:head>
                         @foreach ($route->checkpoints as $checkpoint)
-                            <tr>
+                            <tr @class(['opacity-60' => $checkpoint->deactivated_at !== null])>
                                 <td class="tabular-nums">{{ $checkpoint->position }}</td>
-                                <td>{{ $checkpoint->label }}</td>
+                                <td>
+                                    {{ $checkpoint->label }}
+                                    @if ($checkpoint->deactivated_at !== null)
+                                        <x-status-badge size="xs" :title="$checkpoint->deactivated_at->orgTz()->fdatetime()">{{ __('patrol.checkpoint.inactive_badge') }}</x-status-badge>
+                                    @endif
+                                </td>
                                 <td class="tabular-nums">+{{ $checkpoint->expected_offset_minutes }} min</td>
                                 <td class="tabular-nums">± {{ $checkpoint->tolerance_minutes }} min</td>
                                 <td class="font-mono text-xs text-muted">…{{ $checkpoint->token_suffix }}</td>
                                 @if ($canManage)
                                     <td class="text-right">
-                                        <x-action-form :action="route('patrols.checkpoints.reissue', [$route, $checkpoint])"
-                                                       :confirm="__('Neuen Token ausgeben? Der alte Tag wird damit sofort wertlos.')"
-                                                       :confirm-label="__('Neu ausgeben')">
-                                            <x-icon-btn icon="refresh" size="sm" type="submit" :title="__('Token neu ausgeben (Tag verloren)')" />
-                                        </x-action-form>
+                                        @if ($checkpoint->deactivated_at === null)
+                                            <div class="flex justify-end gap-1">
+                                                <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger
+                                                            :href="route('patrols.checkpoints.edit', [$route, $checkpoint])" :label="__('patrol.checkpoint.edit_title')" />
+                                                <x-action-form :action="route('patrols.checkpoints.reissue', [$route, $checkpoint])"
+                                                               :confirm="__('Neuen Token ausgeben? Der alte Tag wird damit sofort wertlos.')"
+                                                               :confirm-label="__('Neu ausgeben')">
+                                                    <x-icon-btn icon="refresh" size="sm" type="submit" :title="__('Token neu ausgeben (Tag verloren)')" />
+                                                </x-action-form>
+                                                <x-action-form :action="route('patrols.checkpoints.deactivate', [$route, $checkpoint])"
+                                                               :confirm="__('patrol.checkpoint.deactivate_confirm')"
+                                                               :confirm-label="__('Deaktivieren')">
+                                                    <x-icon-btn icon="block" size="sm" type="submit" :label="__('Deaktivieren')" />
+                                                </x-action-form>
+                                            </div>
+                                        @endif
                                     </td>
                                 @endif
                             </tr>

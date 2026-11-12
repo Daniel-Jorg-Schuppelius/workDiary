@@ -1,7 +1,7 @@
 ---
 title: "Emergency & crisis management"
 topic: crisis.overview
-version: 2
+version: 4
 keywords:
     - crisis team
     - emergency management
@@ -52,3 +52,28 @@ dissemination stay separately traceable.
 substitute processes; after the all-clear the post-review follows
 (mandatory before closing). Exercises run separately and never distort
 real case files.
+
+You maintain your own reporting deadlines on the **Reporting deadlines** tab:
+adopt a category’s defaults as own deadlines, add, change and deactivate
+deadlines. As soon as a category has an active own deadline, only the own
+deadlines apply to it; without an active own deadline the defaults apply
+again.
+
+**Actions with a predecessor:** When recording an action you may choose a
+predecessor from the same file. The action can only be completed once the
+predecessor is done or cancelled; you can start working on it earlier.
+
+**Substitute process and residual status:** For a critical process you record
+the substitute process in addition to the workaround. With the recovery status
+you note the remaining limitation.
+
+**Opening a crisis from an incident:** Security incidents, data protection
+incidents, occupational safety events and major-incident tickets carry the
+“Open crisis” button. The dialog prefills title, category and trigger and
+links the incident to the new file. You link further records in the file via
+“Link a record” from a selection; only what you may read is offered.
+
+**Emergency attendance list:** With the right for the emergency attendance
+list, an active crisis file leads straight to it.
+
+**Change predecessor:** You change or remove a measure’s predecessor directly in the list of measures. Only measures of the same case can be chosen; WorkDiary rejects a choice that would create a cycle (A waits for B, B for A).

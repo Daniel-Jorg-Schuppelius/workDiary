@@ -36,5 +36,7 @@ class EtsyServiceProvider extends PluginServiceProviderBase {
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Retention\Contracts\RetentionPolicyProvider::class, \App\Plugins\Etsy\Services\EtsyRetentionPolicies::class);
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Search\Contracts\SearchDomain::class, \App\Plugins\Etsy\Search\EtsyReceiptSearchDomain::class);
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Cockpit\Contracts\CockpitPanel::class, \App\Plugins\Etsy\Services\EtsyCustomerOrdersPanel::class);
+        // Shopkonto in der Kachel „Finanzbewegungen“ (MVP-1617).
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Dashboard\Contracts\FinanceMovementSource::class, \App\Plugins\Etsy\Services\EtsyFinanceMovements::class);
     }
 }

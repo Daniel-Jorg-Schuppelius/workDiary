@@ -1,7 +1,7 @@
 ---
 title: "CalDAV-Kalender"
 topic: admin.caldav
-version: 3
+version: 4
 keywords:
     - CalDAV
     - Nextcloud Kalender
@@ -155,3 +155,5 @@ herausfallen, bleiben dort stehen.
 - Dienstpläne fehlen im Kalender: Unter **Publizierte Inhalte** ist
   **Dienstpläne & Urlaube** nicht angehakt, oder die Schichten sind noch nicht
   veröffentlicht.
+
+**Datenführerschaft:** Termine aus diesem Kalender gehören zum Bereich Kalender. Führt ein anderes System den Kalender, erscheinen Vorschläge, Serien und Änderungen im Integrations-Eingang als Fall „Datenführerschaft“; **Einmalig übernehmen** legt den Termin bzw. die Serie an. Lösch-Hinweise bleiben gewöhnliche Fälle.

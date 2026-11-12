@@ -9,7 +9,14 @@
  */
 
 return [
+    'dsr_extension' => [
+        'closed' => 'Le délai ne peut être prolongé que pour une demande ouverte.',
+        'first_deadline_passed' => 'Le premier délai est expiré. Une prolongation doit être notifiée à la personne dans ce délai et n\'est plus possible.',
+        'not_later' => 'Le nouveau délai doit être postérieur au délai actuel.',
+        'too_late' => 'Le délai peut être prolongé de deux mois supplémentaires au plus, soit jusqu\'au :date.',
+    ],
     'retention_area' => [
+        'privacy_incidents' => 'Violations de données (clôturées)',
         'incoming_invoices_rejected' => 'Factures entrantes refusées',
         'audit_logs' => 'Journal d’audit',
         'exports' => 'Exports de paie et de temps',
@@ -74,5 +81,16 @@ return [
         'dpia_missing' => '« :name » nécessite une AIPD mais n’a pas d’AIPD achevée',
         'tom_missing' => '« :name » sans mesures techniques et organisationnelles attribuées',
         'tom_proof_expiring' => 'Des preuves de mesures techniques et organisationnelles expirent ou ont expiré : :names',
+    ],
+    'legal_region' => [
+        'label' => 'Espace juridique',
+        'hint' => 'Détermine les durées de conservation des propositions de suppression et les indications de la documentation des procédures. Une modification s’applique aux futures propositions de suppression.',
+    ],
+    'tom' => [
+        'implementation_status' => 'Statut de mise en œuvre',
+        'protection_level' => 'Besoin de protection',
+        'protection_level_none' => '— non défini —',
+        'state_save' => 'Enregistrer l\'état',
+        'state_saved' => 'Statut de mise en œuvre et besoin de protection enregistrés.',
     ],
 ];

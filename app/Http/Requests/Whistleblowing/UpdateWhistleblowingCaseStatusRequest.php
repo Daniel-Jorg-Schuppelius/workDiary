@@ -14,6 +14,7 @@ namespace App\Http\Requests\Whistleblowing;
 
 use App\Enums\Whistleblowing\CaseStatus;
 use App\Http\Requests\BaseFormRequest;
+use App\Models\Whistleblowing\WhistleblowingCase;
 use Illuminate\Validation\Rule;
 
 /**
@@ -26,8 +27,23 @@ class UpdateWhistleblowingCaseStatusRequest extends BaseFormRequest {
         return [
             // „Gelöscht" ist kein wählbarer Status: Gelöscht wird nur über den Löschweg (Schlüsselvernichtung).
             'to' => ['required', Rule::enum(CaseStatus::class)->except([CaseStatus::Deleted])],
-            // Ein Abschluss ohne Begründung endete sonst als Ausnahme im Dienst (HTTP 500).
-            'reason' => [Rule::requiredIf(fn (): bool => CaseStatus::tryFrom((string) $this->input('to'))?->isClosed() === true), 'nullable', 'string', 'max:5000'],
+            // Abschluss und Wiedereröffnung ohne Begründung endeten sonst als Ausnahme im Dienst (HTTP 500).
+            'reason' => [Rule::requiredIf(fn (): bool => $this->target()?->isClosed() === true || $this->reopens()), 'nullable', 'string', 'max:5000'],
+            'legal_hold_basis' => [Rule::requiredIf(fn (): bool => $this->target() === CaseStatus::LegalHold), 'nullable', 'string', 'max:2000'],
+            'legal_hold_responsible' => [Rule::requiredIf(fn (): bool => $this->target() === CaseStatus::LegalHold), 'nullable', 'string', 'max:255'],
+            'legal_hold_review_at' => [Rule::requiredIf(fn (): bool => $this->target() === CaseStatus::LegalHold), 'nullable', 'date', 'after:today'],
         ];
+    }
+
+    private function target(): ?CaseStatus {
+        return CaseStatus::tryFrom((string) $this->input('to'));
+    }
+
+    private function reopens(): bool {
+        $case = $this->route('case');
+
+        return $case instanceof WhistleblowingCase
+            && $case->status->isClosed()
+            && $this->target() === CaseStatus::Investigating;
     }
 }

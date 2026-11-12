@@ -13,7 +13,9 @@ namespace App\Http\Controllers\Finance;
 use App\Enums\Finance\{ChartOfAccounts, DatevBatchStatus, DatevTransmissionStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
+use App\Models\Accounting\AccountingAccount;
 use App\Models\Finance\DatevBookingBatch;
+use App\Models\Platform\Organization;
 use App\Models\Travel\ExpenseCategory;
 use App\Services\Billing\FinancialFormatsSupport;
 use App\Services\Finance\Datev\DatevBookingConfig;
@@ -22,7 +24,7 @@ use App\Settings\SettingsTree;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Gate, Storage};
-use Illuminate\Validation\Rule;
+use Illuminate\Validation\{Rule, ValidationException};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -290,6 +292,8 @@ class DatevBookingController extends Controller {
             // MVP-334: Aufwands-/Vorsteuerkonto je Spesenkategorie (org-scoped
             // über das BelongsToOrganization-Scope der Kategorie).
             'expenseCategories' => ExpenseCategory::query()->active()->ordered()->get(),
+            // Gegenkonten des OPOS-Ausgleichs, die im lokalen Kontenplan fehlen (MVP-1555).
+            'missingSettlementAccounts' => $org === null ? [] : $this->missingSettlementAccounts($org, DatevBookingConfig::forOrganization($org)),
         ]);
     }
 
@@ -308,6 +312,8 @@ class DatevBookingController extends Controller {
             // S-38): leer = Vorgabe des gewählten Kontenrahmens.
             'datev.discount_account' => ['nullable', 'string', 'max:12'],
             'datev.write_off_account' => ['nullable', 'string', 'max:12'],
+            'datev.received_discount_account' => ['nullable', 'string', 'max:12'],
+            'datev.payable_write_off_account' => ['nullable', 'string', 'max:12'],
             'datev.debtor_base' => ['nullable', 'integer', 'min:1', 'max:99999999'],
             'datev.tax_keys' => ['nullable', 'array'],
             'datev.tax_keys.*' => ['nullable', 'string', 'max:4'],
@@ -341,6 +347,19 @@ class DatevBookingController extends Controller {
             $data['datev']['expense_accounts'] = $mapped;
         }
 
+        // Mit lokalem Kontenplan muss ein eingetragenes Gegenkonto dort existieren —
+        // sonst scheitert der Ausgleich erst am offenen Posten (MVP-1555).
+        if (AccountingAccount::query()->where('organization_id', $org->id)->exists()) {
+            foreach (['discount_account', 'write_off_account', 'received_discount_account', 'payable_write_off_account'] as $key) {
+                $number = trim((string) ($data['datev'][$key] ?? ''));
+                if ($number !== '' && AccountingAccount::query()->where('organization_id', $org->id)->where('number', $number)->doesntExist()) {
+                    throw ValidationException::withMessages([
+                        'datev.' . $key => (string) __('finance.datev.error.account_not_in_chart', ['account' => $number]),
+                    ]);
+                }
+            }
+        }
+
         $settings = is_array($org->settings) ? $org->settings : [];
         $existing = is_array($settings['datev'] ?? null) ? $settings['datev'] : [];
 
@@ -371,6 +390,26 @@ class DatevBookingController extends Controller {
     }
 
     // ── intern ─────────────────────────────────────────────────────────
+
+    /**
+     * Wirksame Skonto- und Ausbuchungskonten, die im lokalen Kontenplan fehlen.
+     * Ohne lokalen Kontenplan (reiner DATEV-Export) gibt es nichts zu melden.
+     *
+     * @return list<string>
+     */
+    private function missingSettlementAccounts(Organization $org, DatevBookingConfig $config): array {
+        $numbers = AccountingAccount::query()->where('organization_id', $org->id)->pluck('number')->all();
+        if ($numbers === []) {
+            return [];
+        }
+
+        return array_values(array_diff(array_unique([
+            $config->discountAccount,
+            $config->writeOffAccount,
+            $config->receivedDiscountAccount,
+            $config->payableWriteOffAccount,
+        ]), $numbers));
+    }
 
     /**
      * Preflight aus den persistierten Quell-Snapshots: prüft Stammdaten und

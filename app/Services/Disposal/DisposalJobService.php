@@ -373,7 +373,11 @@ class DisposalJobService {
                 if (! $asset->status->canTransitionTo(AssetStatus::Decommissioned)) {
                     continue; // Endzustände respektieren, Abschluss nicht blockieren
                 }
-                $this->assets->decommission($asset, $actor, now()->toDateString());
+                try {
+                    $this->assets->decommission($asset, $actor, now()->toDateString(), (string) __('asset.decommission.by_disposal'));
+                } catch (\App\Exceptions\AssetValidationException) {
+                    continue; // noch ausgegeben: Rücknahme und Außerbetriebnahme folgen an der Asset-Akte
+                }
             }
 
             $this->logEvent($job, DisposalJobEventType::Completed, $actor, [

@@ -22,6 +22,8 @@ use Tests\TestCase;
 class ProtocolServiceTest extends TestCase {
     use RefreshDatabase;
 
+    private const array CUSTOMER_SIGNATURE = ['role' => 'customer', 'signer_name' => 'Erika Muster', 'method' => 'onscreen'];
+
     private ProtocolService $service;
 
     protected function setUp(): void {
@@ -58,7 +60,8 @@ class ProtocolServiceTest extends TestCase {
         $this->service->requestReview($protocol, $creator);
         $this->assertSame(ProtocolStatus::InReview, $protocol->refresh()->status);
 
-        $this->service->sign($protocol, $creator);
+        // Abnahme: ohne Unterschrift des Kunden kein Abschluss (MVP-1572).
+        $this->service->sign($protocol, $creator, self::CUSTOMER_SIGNATURE);
         $protocol->refresh();
         $this->assertSame(ProtocolStatus::Signed, $protocol->status);
         $this->assertNotNull($protocol->signed_at);
@@ -77,14 +80,14 @@ class ProtocolServiceTest extends TestCase {
         ]);
 
         $this->service->sign($protocol, $creator, [
-            'role' => ProtocolSignatureRole::Contractor->value,
+            'role' => ProtocolSignatureRole::Customer->value,
             'signer_name' => 'Daniel Schuppelius',
             'method' => ProtocolSignatureMethod::Onscreen->value,
         ]);
 
         $this->assertDatabaseHas('protocol_signatures', [
             'protocol_id' => $protocol->id,
-            'role' => ProtocolSignatureRole::Contractor->value,
+            'role' => ProtocolSignatureRole::Customer->value,
             'signer_name' => 'Daniel Schuppelius',
             'method' => ProtocolSignatureMethod::Onscreen->value,
         ]);
@@ -112,7 +115,7 @@ class ProtocolServiceTest extends TestCase {
             'type' => ProtocolType::Acceptance->value,
             'title' => 'Original',
         ]);
-        $this->service->sign($protocol, $creator);
+        $this->service->sign($protocol, $creator, self::CUSTOMER_SIGNATURE);
 
         $copy = $this->service->supersede($protocol->refresh(), $creator, 'Tippfehler korrigiert');
 
@@ -134,7 +137,7 @@ class ProtocolServiceTest extends TestCase {
             'type' => ProtocolType::Acceptance->value,
             'title' => 'X',
         ]);
-        $this->service->sign($protocol, $creator);
+        $this->service->sign($protocol, $creator, self::CUSTOMER_SIGNATURE);
 
         $this->expectException(InvalidArgumentException::class);
         $this->service->supersede($protocol->refresh(), $creator, '');

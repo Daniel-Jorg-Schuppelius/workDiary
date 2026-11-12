@@ -10,7 +10,7 @@
 
 namespace App\Services\Asset;
 
-use App\Enums\Asset\MaintenanceIntervalKind;
+use App\Enums\Asset\{MaintenanceDueAction, MaintenanceIntervalKind};
 use App\Exceptions\AssetValidationException;
 use App\Models\Asset\{Asset, MaintenancePlan};
 use App\Models\Platform\User;
@@ -36,12 +36,14 @@ class MaintenancePlanService {
             'interval_kind' => $kind->value,
             'interval_value' => $value,
             'tolerance_days' => max(0, (int) ($payload['tolerance_days'] ?? 0)),
-            'procedure_template_code' => $payload['procedure_template_code'] ?? null,
             'last_run_at' => $payload['last_run_at'] ?? null,
             'next_due_on' => $this->parseDate($payload['next_due_on'] ?? null)
                 ?? $this->computeNextDue(null, $kind, $value),
             'is_active' => (bool) ($payload['is_active'] ?? true),
             'notes' => $payload['notes'] ?? null,
+            'sla_contract_id' => isset($payload['sla_contract_id']) ? (int) $payload['sla_contract_id'] : null,
+            'is_contractual' => (bool) ($payload['is_contractual'] ?? false),
+            'due_action' => $this->parseDueAction($payload['due_action'] ?? null),
         ]);
 
         DB::transaction(function () use ($plan, $asset): void {
@@ -65,7 +67,7 @@ class MaintenancePlanService {
         if (array_key_exists('tolerance_days', $payload)) {
             $plan->tolerance_days = max(0, (int) $payload['tolerance_days']);
         }
-        foreach (['code', 'label', 'procedure_template_code', 'notes'] as $field) {
+        foreach (['code', 'label', 'notes'] as $field) {
             if (array_key_exists($field, $payload)) {
                 $plan->{$field} = $payload[$field];
             }
@@ -75,6 +77,15 @@ class MaintenancePlanService {
         }
         if (array_key_exists('is_active', $payload)) {
             $plan->is_active = (bool) $payload['is_active'];
+        }
+        if (array_key_exists('sla_contract_id', $payload)) {
+            $plan->sla_contract_id = $payload['sla_contract_id'] !== null ? (int) $payload['sla_contract_id'] : null;
+        }
+        if (array_key_exists('is_contractual', $payload)) {
+            $plan->is_contractual = (bool) $payload['is_contractual'];
+        }
+        if (array_key_exists('due_action', $payload)) {
+            $plan->due_action = $this->parseDueAction($payload['due_action']);
         }
 
         DB::transaction(function () use ($plan): void {
@@ -152,6 +163,7 @@ class MaintenancePlanService {
 
         $asset->next_maintenance_on = $earliest !== null ? Carbon::parse($earliest) : null;
         $asset->saveQuietly();
+        app(AssetHealthService::class)->sync($asset);
     }
 
     private function computeNextDue(?Carbon $from, MaintenanceIntervalKind $kind, int $value): ?Carbon {
@@ -172,6 +184,14 @@ class MaintenancePlanService {
         }
 
         return $kind;
+    }
+
+    private function parseDueAction(mixed $value): MaintenanceDueAction {
+        if ($value instanceof MaintenanceDueAction) {
+            return $value;
+        }
+
+        return MaintenanceDueAction::tryFrom((string) $value) ?? MaintenanceDueAction::None;
     }
 
     private function generateCode(Asset $asset): string {

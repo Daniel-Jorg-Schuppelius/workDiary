@@ -14,8 +14,11 @@ namespace App\Http\Middleware\Privacy;
 
 use App\Models\Privacy\DsarPortal;
 use App\Services\Licensing\FeatureFlagResolver;
+use App\Support\Locales;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -55,6 +58,11 @@ class ResolveDsarPortal {
         }
 
         $request->attributes->set('dsar_portal', $portal);
+
+        // Standardsprache des Portals; ohne Angabe die Sprache der Anwendung.
+        $locale = Locales::isSupported((string) $portal->default_locale) ? (string) $portal->default_locale : (string) config('app.locale', 'de');
+        App::setLocale($locale);
+        Carbon::setLocale(Locales::carbon($locale));
 
         return $next($request);
     }

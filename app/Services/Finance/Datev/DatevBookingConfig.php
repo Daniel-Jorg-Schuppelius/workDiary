@@ -30,6 +30,9 @@ use CommonToolkit\ValueObjects\Decimal;
  * Debitorennummern-Vergaberegel.
  */
 final class DatevBookingConfig {
+    /** @var array<string, mixed>|null Kontenplan-Vorlage des Rahmens, einmal je Konfiguration gelesen */
+    private ?array $template = null;
+
     /**
      * @param array<string, string> $taxKeyMap  Steuersatz (als 2-NK-String) ⇒ DATEV-BU-Schlüssel
      * @param array<int, array{account: string, tax_key: string}> $expenseAccounts  Spesenkategorie-ID ⇒ Aufwandskonto + Vorsteuer-BU (MVP-334)
@@ -45,6 +48,10 @@ final class DatevBookingConfig {
         public readonly string $discountAccount,
         /** Gegenkonto für die Ausbuchung uneinbringlicher Forderungen — S-38. */
         public readonly string $writeOffAccount,
+        /** Gegenkonto für erhaltenes Skonto an Verbindlichkeiten. */
+        public readonly string $receivedDiscountAccount,
+        /** Gegenkonto (sonstiger Ertrag) für die Ausbuchung von Verbindlichkeiten. */
+        public readonly string $payableWriteOffAccount,
         public readonly int $debtorBase,
         public readonly array $taxKeyMap,
         public readonly bool $finalize,
@@ -67,6 +74,8 @@ final class DatevBookingConfig {
         $revenueFree = trim((string) ($datev['revenue_account_tax_free'] ?? ''));
         $discount = trim((string) ($datev['discount_account'] ?? ''));
         $writeOff = trim((string) ($datev['write_off_account'] ?? ''));
+        $receivedDiscount = trim((string) ($datev['received_discount_account'] ?? ''));
+        $payableWriteOff = trim((string) ($datev['payable_write_off_account'] ?? ''));
 
         $encoding = strtoupper(trim((string) ($datev['encoding'] ?? '')));
         if ($encoding !== 'UTF-8' && $encoding !== 'ISO-8859-1') {
@@ -84,6 +93,8 @@ final class DatevBookingConfig {
             taxFreeRevenueAccount: $revenueFree !== '' ? $revenueFree : $skr->defaultTaxFreeRevenueAccount(),
             discountAccount: $discount !== '' ? $discount : $skr->defaultDiscountAccount(),
             writeOffAccount: $writeOff !== '' ? $writeOff : $skr->defaultWriteOffAccount(),
+            receivedDiscountAccount: $receivedDiscount !== '' ? $receivedDiscount : $skr->defaultReceivedDiscountAccount(),
+            payableWriteOffAccount: $payableWriteOff !== '' ? $payableWriteOff : $skr->defaultPayableWriteOffAccount(),
             debtorBase: (int) ($datev['debtor_base'] ?? 10000),
             taxKeyMap: self::resolveTaxKeyMap($datev['tax_keys'] ?? null),
             finalize: self::boolish($datev['finalize'] ?? null, true),
@@ -97,6 +108,47 @@ final class DatevBookingConfig {
      */
     public function revenueAccountFor(float $taxRate): string {
         return $taxRate <= 0.0 ? $this->taxFreeRevenueAccount : $this->revenueAccount;
+    }
+
+    /**
+     * Erlöskonto und BU-Schlüssel eines Umsatzes ohne Steuer nach seiner
+     * Steuerkategorie (MVP-1623) — aus der Kontenplan-Vorlage des Rahmens
+     * (SKR03/SKR04), derselben Quelle wie der Journal-Weg: Kennzeichen der
+     * Kategorie (bei `AE` Kz 60 im Inland, sonst Kz 21), Erlösregel des
+     * Kennzeichens, Konto. Auf einem Automatikkonto setzt der Stapel keinen
+     * Schlüssel. Steuerfrei (`E`) und unbekannte Fälle bleiben beim
+     * eingestellten Konto für steuerfreie Erlöse (null).
+     *
+     * @return array{account: string, tax_key: ?string, automatic: bool}|null
+     */
+    public function zeroRatedRevenue(string $category, bool $domestic): ?array {
+        if ($category === 'E') {
+            return null;
+        }
+        if ($this->template === null) {
+            $templates = app(\App\Services\Accounting\ChartOfAccountsTemplateService::class)->available();
+            $this->template = (array) ($templates[$this->skr->value] ?? []);
+        }
+
+        $code = collect((array) ($this->template['tax_codes'] ?? []))->first(static fn (array $code): bool => ($code['direction'] ?? '') !== 'both'
+            && ($code['tax_category'] ?? null) === $category
+            && ($category !== 'AE' || (($code['ustva_base_field'] ?? null) === '60') === $domestic));
+        $rule = $code === null ? null : collect((array) ($this->template['rules'] ?? []))->first(static fn (array $rule): bool => $rule['source_kind'] === 'sales_invoice'
+            && $rule['role'] === 'revenue'
+            && ($rule['match'] ?? null) === ['tax_code' => $code['code']]);
+        if ($rule === null) {
+            return null;
+        }
+
+        $account = (string) $rule['account'];
+        $automatic = collect((array) ($this->template['accounts'] ?? []))
+            ->contains(static fn (array $definition): bool => (string) $definition['number'] === $account && ($definition['datev_automatic'] ?? null) === $code['code']);
+
+        return [
+            'account' => $account,
+            'tax_key' => $automatic ? null : (isset($code['datev_tax_key']) ? (string) $code['datev_tax_key'] : null),
+            'automatic' => $automatic,
+        ];
     }
 
     /**

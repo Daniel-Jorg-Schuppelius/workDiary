@@ -21,7 +21,7 @@ use App\Models\Platform\{ScheduledJobOverride, ScheduledJobState, User};
 use App\Scheduling\{Cadence, CadenceType, JobCriticality, JobDefinition, JobRegistry, SchedulerOverrideService, SchedulerRegistrar};
 use App\Support\{MorphMap, SortableQuery};
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\StringHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use Cron\CronExpression;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\{Collection, Str};
@@ -190,6 +190,8 @@ class SchedulerController extends Controller {
             // Eingestellte, nicht die ins Betriebsfenster verschobene Zeit — sonst
             // schriebe jedes Speichern die Verschiebung als Override fest.
             'cadence' => $this->registrar->configuredCadence($definition),
+            'override' => ScheduledJobOverride::systemMap()[$definition->key] ?? [],
+            'installationWindow' => $this->registrar->operatingWindow()?->label(),
         ]);
     }
 
@@ -204,6 +206,11 @@ class SchedulerController extends Controller {
             'time' => ['nullable', 'date_format:H:i', 'required_if:cadence_type,dailyAt,weeklyOn,monthlyOn'],
             'day' => ['nullable', 'integer', 'required_if:cadence_type,weeklyOn,monthlyOn', 'min:0', 'max:31'],
             'expression' => ['nullable', 'string', 'max:100', 'required_if:cadence_type,cron'],
+            'timezone' => ['nullable', 'timezone:all'],
+            'quiet_from' => ['nullable', 'date_format:H:i', 'required_with:quiet_until', 'different:quiet_until'],
+            'quiet_until' => ['nullable', 'date_format:H:i', 'required_with:quiet_from'],
+            'retry_attempts' => ['nullable', 'integer', 'min:0', 'max:' . SchedulerOverrideService::MAX_RETRIES],
+            'retry_delay_minutes' => ['nullable', 'integer', 'min:1', 'max:240'],
         ]);
 
         $type = CadenceType::from($validated['cadence_type']);
@@ -217,6 +224,16 @@ class SchedulerController extends Controller {
             day: isset($validated['day']) ? (int) $validated['day'] : null,
             expression: $validated['expression'] ?? null,
         ), $request->user()?->id);
+
+        $this->overrides->configureRun(
+            $job,
+            StringHelper::trimToNull($validated['timezone'] ?? null),
+            StringHelper::trimToNull($validated['quiet_from'] ?? null),
+            StringHelper::trimToNull($validated['quiet_until'] ?? null),
+            (int) ($validated['retry_attempts'] ?? 0),
+            NumberHelper::toIntOrNull($validated['retry_delay_minutes'] ?? null),
+            $request->user()?->id,
+        );
 
         return redirect()->toList('admin.scheduler.index')
             ->with('status', __('scheduler.flash.rescheduled', ['job' => $definition->label()]));

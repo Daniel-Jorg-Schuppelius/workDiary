@@ -1,7 +1,7 @@
 ---
 title: "Gestionar eventos"
 topic: events.manage
-version: 1
+version: 2
 keywords:
     - planificar evento
     - crear evento
@@ -31,3 +31,5 @@ citas individuales generadas antes de enviar invitaciones o
 recordatorios. Los cambios de hora o lugar afectan a todas las personas
 invitadas, y los eventos cancelados deben documentarse como tales para
 que el historial y las notificaciones sigan siendo comprensibles.
+
+**Recordatorios por evento:** en la sección «Recordatorios» del diálogo del evento define cuántos minutos antes del inicio se envía un recordatorio. Sin entradas se aplican los recordatorios de la categoría o el valor predeterminado de la instalación.

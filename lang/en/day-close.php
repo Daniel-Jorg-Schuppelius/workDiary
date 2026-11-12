@@ -79,6 +79,14 @@ return [
         'billable' => 'billable',
     ],
 
+    // Plan/Ist der Anwesenheit im Kopf des Tages (MVP-1552).
+    'plan_ist' => [
+        'label' => 'Plan/actual',
+        'plan' => 'Plan from :start (:duration)',
+        'plan_no_start' => 'Plan :duration',
+        'actual' => 'Actual :start–:end (:duration)',
+        'actual_none' => 'Actual: no clocking yet',
+    ],
     'hint' => [
         'no_attendance' => 'No clock events on this day.',
         'attendance_correction_only' => 'Clock events can only be changed via a correction request.',
@@ -87,6 +95,7 @@ return [
         'break_recorded' => 'Break: :min min',
         'no_issues' => 'No findings — the day is recorded consistently.',
         'month_locked' => 'This day belongs to an approved month and is locked — closing and correction requests go through the monthly approval.',
+        'day_closed' => 'This day is closed — stamps and bookings can only be changed via a correction request.',
         'correction_intro' => 'Describe what should be corrected on this day.',
         'reopen_intro' => 'The day is reopened without a correction request — the reason is stored in the audit log.',
     ],
@@ -130,6 +139,8 @@ return [
 
     'errors' => [
         'month_entry_locked' => 'The month has been released — please file a time correction request for later entries.',
+        'day_entry_locked' => 'The day is closed — please submit a correction request for subsequent times.',
+        'day_closed_reason' => 'Day already closed',
         'future_day' => 'A future day cannot be closed.',
         'blocking_warnings' => 'The day has blocking warnings and cannot be closed.',
         'illegal_day_status' => 'Action not allowed: day status is :status.',

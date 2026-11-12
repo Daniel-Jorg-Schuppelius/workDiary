@@ -27,6 +27,11 @@ return [
         'dirty' => 'Git working tree not clean within the scan scope: :count path(s) — :paths (WARN).',
     ],
     'lockdown' => [
+        'release_action' => 'Lift lockdown',
+        'release_confirm' => 'Lift the lockdown and make the installation available again? Check the deviations first or freeze a new baseline.',
+        'released' => 'Lockdown lifted — the installation is available again.',
+        'not_engaged' => 'No integrity lockdown is active.',
+        'active_notice' => 'The integrity lockdown keeps the installation in maintenance mode.',
         'crisis_title' => 'Integrity lockdown: source code tampered with',
         'crisis_description' => 'A signed release baseline shows deviations across consecutive runs (:modified modified, :added added, :deleted deleted). The installation is in maintenance mode.',
     ],

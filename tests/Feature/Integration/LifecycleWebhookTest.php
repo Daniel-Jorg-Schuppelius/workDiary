@@ -157,6 +157,7 @@ final class LifecycleWebhookTest extends TestCase {
         $renderer = $this->mock(ProtocolPdfRenderer::class);
         $renderer->shouldReceive('render')->andReturn('protocols/fake.pdf');
         $renderer->shouldReceive('hashFor')->andReturn(str_repeat('c', 64));
+        $renderer->shouldReceive('discardSuperseded');
         $protocol = Protocol::factory()->inReview()->create(['organization_id' => $this->organization->id, 'created_by_user_id' => $this->admin->id]);
 
         $signed = app(ProtocolService::class)->sign($protocol, $this->admin);

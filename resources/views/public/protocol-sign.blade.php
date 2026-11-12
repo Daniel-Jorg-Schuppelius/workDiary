@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-<x-public-page :title="__('Protokoll unterschreiben')">
+<x-public-page :title="__('Protokoll unterschreiben')" :assets="['resources/css/app.css', 'resources/js/app.js', 'resources/js/signature.js']">
     <div class="mb-4 rounded-box bg-base-100 p-4 shadow">
         <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ $protocol->title }}</h1>
         <div class="mt-1 text-sm text-base-content/70">
@@ -51,21 +51,32 @@
             {{ __('protocol.signature.alreadyDecided') }}
         </div>
     @else
-    <form method="POST" action="{{ route('protocols.public-sign.submit', ['token' => $token]) }}" class="mb-4 rounded-box bg-base-100 p-4 shadow">
+    <form method="POST" action="{{ route('protocols.public-sign.submit', ['token' => $token]) }}" class="mb-4 rounded-box bg-base-100 p-4 shadow"
+          x-data="signaturePad" @submit="prepare($event)">
         @csrf
         <h2 class="mb-2 text-sm font-semibold">{{ __('protocol.signature.approveHeading') }}</h2>
         <div class="form-control mb-3">
-            <label class="label"><span class="label-text">{{ __('Name des Unterzeichners') }}</span></label>
-            <input type="text" name="signer_name" class="input input-bordered" value="{{ old('signer_name', $record->signer_name) }}" required maxlength="120">
+            <label class="label" for="protocol-sign-name"><span class="label-text">{{ __('Name des Unterzeichners') }}</span></label>
+            <input type="text" id="protocol-sign-name" name="signer_name" class="input input-bordered" value="{{ old('signer_name', $record->signer_name) }}" required minlength="2" maxlength="120">
         </div>
-        {{-- Feld entfernt (S-63): der Pfad wurde vom Client übernommen und
-             ungeprüft gespeichert. Er gehört serverseitig gesetzt. --}}
+        {{-- Unterschrift zeichnen (MVP-1572): das Bild geht als PNG an den Server, nie ein Pfad (S-63). --}}
+        <div class="mb-3">
+            <span class="label-text">{{ __('protocol.signature.drawHeading') }}</span>
+            <div class="mt-1 rounded-box border border-base-300 bg-white p-2">
+                <canvas x-ref="canvas" class="block h-40 w-full touch-none rounded bg-white" aria-label="{{ __('protocol.signature.drawHeading') }}"></canvas>
+            </div>
+            <input type="hidden" name="signature" x-ref="sigInput">
+            <div class="mt-1 flex items-center justify-between gap-2">
+                <x-button tone="ghost" size="xs" @click="clear()">{{ __('protocol.dialog.signature_clear') }}</x-button>
+                <span class="text-xs text-base-content/70">{{ __('protocol.signature.drawHint') }}</span>
+            </div>
+        </div>
         <label class="label cursor-pointer justify-start gap-3">
             <input type="checkbox" name="accept" value="1" class="checkbox" required>
             <span class="label-text">{{ __('Ich bestätige die Richtigkeit der Angaben.') }}</span>
         </label>
         <div class="mt-4 flex justify-end">
-            <x-button type="submit" tone="primary">{{ __('Unterschreiben') }}</x-button>
+            <x-button type="submit" tone="primary" ::disabled="isEmpty">{{ __('Unterschreiben') }}</x-button>
         </div>
     </form>
 

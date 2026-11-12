@@ -67,7 +67,7 @@
                                 :title="__('ai.assist.explain_support')">{{ __('ai.assist.explain_support') }}</x-icon-btn>
                 </x-action-form>
             @else
-                @include('ai._insight', ['suggestion' => $aiDiagnose])
+                @include('ai._insight', ['suggestion' => $aiDiagnose, 'regenerateAction' => route('ai.assist.support-diagnose')])
             @endif
         </x-card>
     @endif

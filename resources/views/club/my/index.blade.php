@@ -104,7 +104,10 @@
                             <td class="text-right">
                                 @if ($details?->kind === \App\Enums\Club\ClubEventKind::Exam && ! $event->isCancelled())
                                     @php $candidate = $candidates->get($event->id); @endphp
-                                    @if ($candidate)
+                                    @if ($candidate && $candidate->status->isResult() && $candidate->offer?->results_released_at === null)
+                                        {{-- Ergebnisse erst nach der Freigabe (MVP-1616). --}}
+                                        <x-status-badge tone="info" size="sm">{{ __('club.exams.label.result_pending') }}</x-status-badge>
+                                    @elseif ($candidate)
                                         <x-status-badge :tone="$candidate->status->tone()" size="sm">{{ $candidate->status->label() }}</x-status-badge>
                                     @elseif ($canRegister && $row['eligible'] && $event->started_at->isFuture())
                                         <x-action-form :action="route('club.my.exam.request', $event)">
@@ -226,6 +229,39 @@
                     <p class="text-2xl font-semibold tabular-nums">{{ $hours }}:{{ str_pad((string) $minutes, 2, '0', STR_PAD_LEFT) }} <span class="text-sm font-normal text-muted">{{ __('club.my.label.hours') }}</span></p>
                     <p class="text-xs text-muted">{{ __('club.my.hint.attendance', ['from' => $range['from']->format('d.m.Y'), 'to' => $range['to']->format('d.m.Y')]) }}</p>
                     <a href="{{ route('club.my.attendance') }}" class="link link-primary text-sm">{{ __('club.my.action.attendance') }}</a>
+                </x-card>
+            @endif
+
+            @if ($groupMemberships->isNotEmpty() || $openGroups->isNotEmpty())
+                {{-- Gruppen und Aufnahmeanträge (MVP-1616). --}}
+                <x-card :title="__('club.my.card.groups')" icon="groups">
+                    <ul class="space-y-1 text-sm">
+                        @foreach ($groupMemberships as $membership)
+                            <li class="flex flex-wrap items-center justify-between gap-2">
+                                <span>{{ $membership->group?->name ?? '—' }}</span>
+                                @if ($membership->status === \App\Enums\Club\ClubGroupMembershipStatus::Requested)
+                                    <x-status-badge tone="warning" size="xs" :label="__('club.my.label.group_requested')" />
+                                @else
+                                    <span class="text-xs text-muted">{{ __('club.my.label.group_since', ['date' => $membership->valid_from->format('d.m.Y')]) }}</span>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                    @if ($openGroups->isNotEmpty())
+                        <p class="mt-3 text-xs text-muted">{{ __('club.my.hint.groups') }}</p>
+                        <ul class="mt-1 space-y-1 text-sm">
+                            @foreach ($openGroups as $openGroup)
+                                <li class="flex flex-wrap items-center justify-between gap-2">
+                                    <span>{{ $openGroup->name }}</span>
+                                    <x-action-form :action="route('club.my.group-request', $openGroup)"
+                                                   :confirm="__('club.my.confirm.group_request', ['group' => $openGroup->name])"
+                                                   :confirm-label="__('club.my.action.group_request')">
+                                        <x-icon-btn type="submit" icon="group_add" tone="primary" size="xs" show-label>{{ __('club.my.action.group_request') }}</x-icon-btn>
+                                    </x-action-form>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
                 </x-card>
             @endif
 

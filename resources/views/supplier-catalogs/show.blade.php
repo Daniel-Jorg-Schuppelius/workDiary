@@ -283,6 +283,13 @@
                                             <x-icon-btn icon="link_off" size="xs" type="submit" :title="__('procurement.catalog.action.unlink')" />
                                         </form>
                                     @else
+                                        <form method="POST" action="{{ route('supplier-catalogs.items.ignore', $item) }}">@csrf
+                                            @if ($item->status === \App\Enums\Procurement\CatalogItemStatus::Ignored)
+                                                <x-icon-btn icon="visibility" size="xs" type="submit" :title="__('procurement.catalog.action.unignore')" />
+                                            @else
+                                                <x-icon-btn icon="visibility_off" size="xs" type="submit" :title="__('procurement.catalog.action.ignore')" />
+                                            @endif
+                                        </form>
                                         <form method="POST" action="{{ route('supplier-catalogs.items.adopt', $item) }}">@csrf
                                             <x-icon-btn icon="library_add" size="xs" type="submit" :title="__('procurement.catalog.action.adopt_item')" />
                                         </form>

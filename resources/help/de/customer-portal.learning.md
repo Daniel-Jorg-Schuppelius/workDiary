@@ -105,3 +105,8 @@ Abschluss wird dokumentiert und ist für Ihren Auftragnehmer nachvollziehbar.
   Wissensdatenbank Ihres Auftragnehmers.
 - Abmelden oder eine Buchungsanfrage zurückziehen können Sie im Portal
   nicht.
+- Trägt ein Video einen Pflichtanteil, lässt sich die Einheit erst
+  abschließen, wenn dieser Anteil gesehen ist; der Stand steht unter dem
+  Video. Vorspulen zählt nicht.
+- Einheiten, die über eine Prozedur, einen Fragebogen oder eine externe
+  Bestätigung abschließen, lassen sich im Portal nicht bearbeiten.

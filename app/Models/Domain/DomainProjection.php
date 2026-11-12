@@ -10,7 +10,7 @@
 
 namespace App\Models\Domain;
 
-use App\Enums\Domain\{DomainRenewalMode, DomainSyncStatus};
+use App\Enums\Domain\{DomainProviderCommandStatus, DomainRenewalMode, DomainSyncStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\{Customer, ForeignCustomer};
 use CommonToolkit\Enums\CurrencyCode;
@@ -131,6 +131,69 @@ class DomainProjection extends Model {
     /** Deterministischer Hash für Unique/Lookup (lower-case Domainname). */
     public static function hashFor(string $domain): string {
         return CryptoHelper::hash(mb_strtolower(trim($domain)));
+    }
+
+    /**
+     * Abgleichsstand aus den offenen Befehlen je Domain (MVP-1620): Konflikt
+     * vor unklarem Ausgang vor laufendem Befehl. Ein Abgleich überschreibt
+     * ihn nicht, solange der Befehl offen ist.
+     *
+     * @return array<string, DomainSyncStatus> kleingeschriebener Domainname → Stand
+     */
+    public static function commandSyncStatuses(int $organizationId, ?string $domain = null): array {
+        $weight = static fn (DomainSyncStatus $status): int => match ($status) {
+            DomainSyncStatus::Conflict => 3,
+            DomainSyncStatus::Unknown => 2,
+            DomainSyncStatus::Pending => 1,
+            default => 0,
+        };
+        $statuses = [];
+        DomainProviderCommand::query()->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->whereIn('status', [DomainProviderCommandStatus::Pending->value, DomainProviderCommandStatus::Unknown->value, DomainProviderCommandStatus::Conflict->value])
+            ->whereNotNull('target')
+            ->when($domain !== null, fn ($query) => $query->where('target', trim((string) $domain)))
+            ->get(['target', 'status'])
+            ->each(function (DomainProviderCommand $command) use ($weight, &$statuses): void {
+                $status = match ($command->status) {
+                    DomainProviderCommandStatus::Pending => DomainSyncStatus::Pending,
+                    DomainProviderCommandStatus::Unknown => DomainSyncStatus::Unknown,
+                    DomainProviderCommandStatus::Conflict => DomainSyncStatus::Conflict,
+                    default => null,
+                };
+                if ($status === null) {
+                    return;
+                }
+                $key = mb_strtolower(trim((string) $command->target));
+                if (! isset($statuses[$key]) || $weight($status) > $weight($statuses[$key])) {
+                    $statuses[$key] = $status;
+                }
+            });
+
+        return $statuses;
+    }
+
+    /**
+     * Folgt dem Stand eines Befehls auf seiner Domain: offen → laufend,
+     * unklar oder Konflikt; erledigt ohne weiteren offenen Befehl → veraltet,
+     * bis der nächste Abgleich die Wirkung liest.
+     */
+    public static function followCommand(DomainProviderCommand $command): void {
+        if ($command->organization_id === null || trim((string) $command->target) === '') {
+            return;
+        }
+        $projection = self::query()->withoutGlobalScopes()
+            ->where('organization_id', $command->organization_id)
+            ->where('domain_hash', self::hashFor((string) $command->target))
+            ->first();
+        if ($projection === null) {
+            return;
+        }
+        $open = self::commandSyncStatuses((int) $command->organization_id, (string) $command->target)[mb_strtolower(trim((string) $command->target))] ?? null;
+        $target = $open ?? (in_array($projection->sync_status, [DomainSyncStatus::Pending, DomainSyncStatus::Unknown, DomainSyncStatus::Conflict], true) ? DomainSyncStatus::Stale : $projection->sync_status);
+        if ($target !== $projection->sync_status) {
+            $projection->forceFill(['sync_status' => $target->value])->save();
+        }
     }
 
     /** @return BelongsTo<DomainProviderConnection, $this> */

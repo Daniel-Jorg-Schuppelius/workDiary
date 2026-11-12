@@ -83,6 +83,26 @@ final class SearchAnswerAiTest extends TestCase {
             ->assertSee('Partnerhaus IT GmbH › Metallbau Sonnenschein');
     }
 
+    public function test_answer_can_be_regenerated_with_a_chosen_connection(): void {
+        $this->scenario();
+        $this->fake->textResponse = 'Kunde A: Sendeconnector umgestellt.';
+        $first = AiProviderConnection::query()->where('organization_id', $this->organization->id)->sole();
+        $second = AiProviderConnection::factory()->local()->create(['organization_id' => $this->organization->id, 'name' => 'Zweitverbindung']);
+        AiCapabilitySetting::query()->where('organization_id', $this->organization->id)
+            ->update(['allowed_connection_ids' => json_encode([$first->id, $second->id]), 'default_connection_id' => $first->id, 'allow_user_choice' => true]);
+
+        $this->actingAs($this->admin)->post(route('ai.assist.search-answer'), ['q' => 'smtp exchange'])->assertSessionHas('success');
+        $this->actingAs($this->admin)->get(route('search.index', ['q' => 'smtp exchange']))->assertOk()
+            ->assertSee('data-ai-connection-choice', false)
+            ->assertSee(route('ai.assist.search-answer') . '?', false);
+
+        $this->actingAs($this->admin)->post(route('ai.assist.search-answer', ['q' => 'smtp exchange']), [
+            'connection_id' => $second->sqid,
+            'capability' => SearchAnswerSuggestionService::CAPABILITY,
+        ])->assertSessionHas('success');
+        $this->assertSame((int) $second->id, (int) AiTextSuggestion::query()->withoutGlobalScopes()->latest('id')->firstOrFail()->connection_id);
+    }
+
     public function test_only_the_searching_user_may_dismiss_the_answer(): void {
         $this->scenario();
         $this->fake->textResponse = 'Kunde A: Sendeconnector umgestellt.';

@@ -12,19 +12,24 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting\Reports;
 
-use App\Enums\Finance\{AccountingEntryStatus, RecurringRunStatus};
-use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingFilingObligation, AccountingRecurringRun};
+use App\Enums\Finance\{AccountingEntryStatus, RecurringRunStatus, TaxCodeDirection};
+use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingFilingObligation, AccountingOpenItemSettlement, AccountingRecurringRun};
+use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\Organization;
+use App\Services\Accounting\OpenItemService;
+use App\Services\Invoicing\EInvoice\IncomingInvoiceTaxCaseResolver;
+use App\Support\{Formats, MorphMap};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Money;
 
 /**
  * Buchungsqualität: was der Auswertung im Weg steht (Feature 125, MVP-676).
  */
 class DataQualityBuilder extends AbstractAccountingReportBuilder {
     /**
-     * @return array{drafts: int, unbalanced: int, blocked_runs: int, open_expectations: int, accounts_without_rule: int, ten_day_cases: int, open_clearing: int, overdue_filings: int, findings: list<string>}
+     * @return array{self_assessed_without_tax: int, discounts_without_tax_correction: int, unbooked_settlements: int, drafts: int, unbalanced: int, blocked_runs: int, open_expectations: int, accounts_without_rule: int, ten_day_cases: int, open_clearing: int, overdue_filings: int, findings: list<string>}
      */
     public function build(Organization $organization, CarbonImmutable $from, CarbonImmutable $to): array {
         $drafts = AccountingEntry::query()
@@ -66,6 +71,9 @@ class DataQualityBuilder extends AbstractAccountingReportBuilder {
             ->where('due_on', '<', DateRange::day($to))
             ->count();
 
+        // Altbestand vor MVP-1555, unabhängig vom Zeitraum: Der Posten ist zu, das Journal weiß nichts davon.
+        $unbooked = app(OpenItemService::class)->settlementsWithoutEntry($organization);
+
         $findings = [];
         if ($drafts > 0) {
             $findings[] = (string) __('accounting.reports.quality.drafts', ['count' => $drafts]);
@@ -89,7 +97,48 @@ class DataQualityBuilder extends AbstractAccountingReportBuilder {
             $findings[] = (string) __('accounting.reports.quality.overdue_filings', ['count' => $overdueFilings]);
         }
 
+        if ($unbooked->isNotEmpty()) {
+            $findings[] = (string) __('accounting.reports.quality.unbooked_settlements', [
+                'count' => $unbooked->count(),
+                'items' => $unbooked->take(10)->map(fn (AccountingOpenItemSettlement $settlement): string => sprintf(
+                    '%s (%s %s, %s)',
+                    (string) ($settlement->openItem->document_reference ?? '#' . $settlement->accounting_open_item_id),
+                    $settlement->kind->label(),
+                    $settlement->amount?->format() ?? '',
+                    $settlement->booked_on->format(Formats::date()),
+                ))->implode('; '),
+            ]);
+        }
+
+        // Skonto ohne Steuerberichtigung (§ 17 UStG) — Altbestand, unabhängig vom Zeitraum.
+        $uncorrected = app(OpenItemService::class)->discountsWithoutTaxCorrection($organization);
+        if ($uncorrected !== []) {
+            $findings[] = (string) __('accounting.reports.quality.discounts_without_tax_correction', [
+                'count' => count($uncorrected),
+                'tax' => Money::sum(array_column($uncorrected, 'tax'), $uncorrected[0]['tax']->getCurrency())->format(),
+                'items' => implode('; ', array_map(static fn (array $row): string => sprintf(
+                    '%s (%s, %s %s)',
+                    (string) ($row['settlement']->openItem->document_reference ?? '#' . $row['settlement']->accounting_open_item_id),
+                    $row['settlement']->amount?->format() ?? '',
+                    (string) __('accounting.reports.quality.tax_share'),
+                    $row['tax']->format(),
+                ), array_slice($uncorrected, 0, 10))),
+            ]);
+        }
+
+        // Steuerschuld des Empfängers ohne Steuerbuchung (MVP-1621) — Festbuchungen aus der Zeit davor, unabhängig vom Zeitraum.
+        $selfAssessed = $this->selfAssessedWithoutTax($organization);
+        if ($selfAssessed !== []) {
+            $findings[] = (string) __('accounting.reports.quality.self_assessed_without_tax', [
+                'count' => count($selfAssessed),
+                'items' => implode('; ', array_slice($selfAssessed, 0, 10)),
+            ]);
+        }
+
         return [
+            'self_assessed_without_tax' => count($selfAssessed),
+            'discounts_without_tax_correction' => count($uncorrected),
+            'unbooked_settlements' => $unbooked->count(),
             'drafts' => $drafts,
             'unbalanced' => $unbalanced,
             'blocked_runs' => $blockedRuns,
@@ -100,6 +149,35 @@ class DataQualityBuilder extends AbstractAccountingReportBuilder {
             'overdue_filings' => $overdueFilings,
             'findings' => $findings,
         ];
+    }
+
+    /**
+     * Festgeschriebene Eingangsrechnungen, deren Beleg Steuerschuld des
+     * Empfängers nennt (§ 13b, innergemeinschaftlicher Erwerb), deren Buchung
+     * aber keine Umsatz- und Vorsteuer trägt. Nur lesend: Über Korrekturen
+     * entscheidet die Steuerberatung.
+     *
+     * @return list<string> Belegnummer (Kurzbezeichnung des Steuerfalls)
+     */
+    private function selfAssessedWithoutTax(Organization $organization): array {
+        $resolver = app(IncomingInvoiceTaxCaseResolver::class);
+        $found = [];
+        AccountingEntry::query()
+            ->where('organization_id', $organization->id)
+            ->where('status', AccountingEntryStatus::Posted->value)
+            ->where('source_type', MorphMap::alias(IncomingEInvoice::class))
+            ->whereDoesntHave('lines.taxCode', fn ($query) => $query->where('direction', TaxCodeDirection::SelfAssessed->value))
+            ->orderBy('booked_on')
+            ->orderBy('id')
+            ->with('source')
+            ->each(function (AccountingEntry $entry) use ($resolver, &$found): void {
+                $source = $entry->source;
+                if ($source instanceof IncomingEInvoice && ($case = $resolver->resolve($source)['case'])->isSelfAssessed()) {
+                    $found[] = sprintf('%s (%s)', (string) ($source->invoice_number ?? $entry->document_reference ?? '#' . $entry->journal_no), $case->label());
+                }
+            });
+
+        return $found;
     }
 
     /**

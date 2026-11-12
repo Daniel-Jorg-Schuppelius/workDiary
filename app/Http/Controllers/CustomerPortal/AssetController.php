@@ -41,7 +41,8 @@ class AssetController extends Controller {
         abort_unless((int) $asset->customer_id === (int) $user->customer_id, 404);
 
         $asset->load([
-            'maintenancePlans' => fn ($q) => $q->orderBy('next_due_on'),
+            // Das Portal sagt Termine zu; ein pausierter Plan hat keinen.
+            'maintenancePlans' => fn ($q) => $q->where('is_active', true)->orderBy('next_due_on'),
             'protocols' => fn ($q) => $q->releasedToCustomer(),
         ]);
 
@@ -55,6 +56,8 @@ class AssetController extends Controller {
         return view('customer.assets.show', [
             'asset' => $asset,
             'timeline' => $timeline,
+            // Zur Abnahme eingereicht und noch ohne Unterschrift des Kunden (MVP-1572).
+            'pendingProtocols' => $asset->protocols()->awaitingCustomerSignature()->get(),
         ]);
     }
 }

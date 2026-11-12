@@ -26,6 +26,8 @@ return [
         'retired' => 'Supporto di accesso dismesso',
     ],
     'appointment' => [
+        'party_assigned' => 'Richiesta di appuntamento assegnata',
+        'service_updated' => 'Tipo di servizio prenotabile modificato',
         'proposed' => 'Appuntamento alternativo proposto',
         'proposal_accepted' => 'Appuntamento alternativo accettato',
         'proposal_declined' => 'Appuntamento alternativo rifiutato',
@@ -49,6 +51,8 @@ return [
         'synced' => 'Asana sincronizzato manualmente',
     ],
     'firefly' => [
+        'transaction_settled' => 'Firefly III: movimento evaso',
+        'transaction_reopened' => 'Firefly III: movimento riaperto',
         'connected' => 'Connessione Firefly III verificata',
         'disconnected' => 'Firefly III scollegato',
     ],
@@ -165,6 +169,7 @@ return [
     ],
     'sepaMandate' => [
         'revoked' => 'Mandato SEPA revocato',
+        'expired' => 'Mandato SEPA scaduto (36 mesi senza addebito)',
     ],
     'circular' => [
         'send_started' => 'Invio della circolare avviato',
@@ -200,6 +205,7 @@ return [
     ],
     'archived' => 'Archiviato',
     'asset' => [
+        'recommissioned' => 'Asset rimesso in servizio',
         'blockExceptionGranted' => 'Eccezione di blocco asset concessa',
         'blockExceptionRevoked' => 'Eccezione di blocco asset revocata',
         'blocked' => 'Asset bloccato',
@@ -209,6 +215,7 @@ return [
         'decommissioned' => 'Asset dismesso',
         'defectReported' => 'Difetto di asset segnalato',
         'defectUpdated' => 'Difetto di asset aggiornato',
+        'healthChanged' => 'Stato dell\'asset modificato',
         'moved' => 'Asset spostato',
         'ownershipTransferred' => 'Proprietà dell\'asset trasferita',
         'ownership_changed' => 'Proprietà dell\'asset modificata',
@@ -226,11 +233,16 @@ return [
     ],
     'assetCompliance' => [
         'assigned' => 'Profilo di conformità assegnato',
+        'assignmentDeactivated' => 'Obbligo di ispezione disattivato',
+        'assignmentReactivated' => 'Obbligo di ispezione ripreso',
+        'assignmentUpdated' => 'Obbligo di ispezione modificato',
         'claimOpened' => 'Conformità: reclamo aperto',
         'decommissionRequested' => 'Dismissione richiesta',
         'inspected' => 'Asset ispezionato',
         'measurementImported' => 'Misura di ispezione importata',
         'restrictedUse' => 'Utilizzo limitato',
+        'scheduleCancelled' => 'Appuntamento di ispezione annullato',
+        'scheduleMissed' => 'Appuntamento di ispezione mancato',
     ],
     'assetDefect' => [
         'reported' => 'Difetto segnalato',
@@ -284,6 +296,7 @@ return [
         'connected' => 'Destinazione di backup connessa',
         'disconnected' => 'Destinazione di backup disconnessa',
         'scopeBlocked' => 'Destinazione di backup: ambito bloccato',
+        'statusChanged' => 'Destinazione di backup: stato modificato',
     ],
     'branch_profile' => [
         'installed' => 'Profilo di filiale installato',
@@ -296,6 +309,8 @@ return [
         'publish_manual' => 'CalDAV pubblicato manualmente',
     ],
     'calendly' => [
+        'user_mapped' => 'Utente Calendly assegnato',
+        'user_unmapped' => 'Assegnazione utente Calendly rimossa',
         'booking_link_created' => 'Link di prenotazione Calendly creato',
         'cancel_synced' => 'Annullamento Calendly sincronizzato',
         'subscribed' => 'Webhook Calendly sottoscritto',
@@ -333,6 +348,9 @@ return [
         'connected' => 'Ricezione documenti cloud connessa',
         'disconnected' => 'Ricezione documenti cloud disconnessa',
         'folderSelected' => 'Cartella di ricezione cloud selezionata',
+        'startConfirmed' => 'Avvio dell’ingresso cloud confermato',
+        'statusChanged' => 'Acquisizione documenti cloud: stato modificato',
+        'scopeBlocked' => 'Acquisizione documenti cloud: autorizzazione mancante, bloccata',
     ],
     'collection' => [
         'imported' => 'Contenuti importati nella raccolta',
@@ -457,6 +475,7 @@ return [
         'communication_approved' => 'Comunicazione di crisi approvata',
         'communication_sent' => 'Comunicazione di crisi inviata',
         'exercise_documented' => 'Esercitazione di crisi documentata',
+        'deadline_template_created' => 'Termine di notifica di crisi creato',
         'linked' => 'Caso di crisi collegato',
         'reported' => 'Caso di crisi segnalato',
         'reviewed' => 'Riesame post-crisi completato',
@@ -496,6 +515,8 @@ return [
     'diagnostics' => [
         'testTriggered' => 'Test diagnostico attivato',
         'viewed' => 'Diagnostica consultata',
+        'tokenCreated' => 'Accesso di monitoraggio creato',
+        'tokenRevoked' => 'Accesso di monitoraggio revocato',
     ],
     'document' => [
         'purged' => 'Documento distrutto',
@@ -565,6 +586,8 @@ return [
         'created' => 'Fideiussione registrata',
         'returned' => 'Fideiussione restituita',
         'drawn' => 'Fideiussione escussa',
+        'expired' => 'Fideiussione scaduta',
+        'reactivated' => 'Fideiussione di nuovo attiva dopo la proroga',
         'secured_retention' => 'La fideiussione sostituisce una ritenuta',
     ],
     'idea_map' => [
@@ -593,6 +616,7 @@ return [
         'candidate_dismissed' => 'Trasmissione creata nonostante una corrispondenza',
         'direction_corrected' => 'Direzione del documento corretta',
         'values_captured' => 'Valori del documento registrati',
+        'tax_case_set' => 'Caso fiscale del documento impostato',
         'reanalyzed' => 'Riconoscimento del documento ripetuto',
         'revalidated' => 'Controllo del documento ripetuto',
         'assigned' => 'Fattura in entrata assegnata',
@@ -617,6 +641,8 @@ return [
         'conflict_resolved' => 'Conflitto con sistema esterno risolto',
         'data_ownership_changed' => 'Titolarità dei dati modificata',
         'inbox_resolved' => 'Elemento della inbox risolto',
+        'ownership_blocked' => 'Scrittura trattenuta per la titolarità dei dati',
+        'ownership_overridden' => 'Conflitto di titolarità dei dati acquisito',
         'settings_changed' => 'Impostazioni di integrazione modificate',
     ],
     'integrity' => [
@@ -626,8 +652,13 @@ return [
         'lockdown_released' => 'Lockdown di integrità revocato',
     ],
     'inventory' => [
+        'negativeRequested' => 'Giacenza negativa richiesta',
+        'negativeRejected' => 'Giacenza negativa respinta',
+        'reservationRedistributed' => 'Prenotazione ridistribuita',
         'mode_changed' => 'Modalità di gestione scorte modificata',
         'negativeApproved' => 'Scorta negativa approvata',
+        'countApproved' => 'Differenze inventariali approvate',
+        'countStatusChanged' => 'Inventario: stato modificato',
     ],
     'stock_lot' => [
         'blocked' => 'Lotto bloccato',
@@ -646,6 +677,7 @@ return [
         'deviation_decided' => 'Scostamento di investimento deciso',
         'linked' => 'Investimento collegato',
         'option_recommended' => 'Opzione di investimento raccomandata',
+        'acquisition_supplier_set' => 'Fornitore dell’acquisizione ripreso dall’investimento',
         'proposed' => 'Investimento proposto',
         'reviewed' => 'Investimento riesaminato',
     ],
@@ -661,6 +693,7 @@ return [
         'retention_released' => 'Ritenuta a garanzia liberata',
         'retention_secured' => 'Ritenuta sostituita da fideiussione',
         'approved' => 'Fattura approvata',
+        'approval_revoked' => 'Approvazione revocata da una modifica alla bozza',
         'dunned' => 'Fattura sollecitata',
         'dunningBlocked' => 'Blocco sollecito impostato',
         'dunningUnblocked' => 'Blocco sollecito rimosso',
@@ -681,6 +714,8 @@ return [
             'transitioned' => 'Audit ISMS: stato modificato',
         ],
         'audit_package' => [
+            'updated' => 'Bozza del pacchetto di audit modificata',
+            'deleted' => 'Bozza del pacchetto di audit scartata',
             'created' => 'Pacchetto di audit creato',
             'finalized' => 'Pacchetto di audit finalizzato',
             'token_created' => 'Token del pacchetto di audit creato',
@@ -863,6 +898,12 @@ return [
         'vehicle_profile_updated' => 'Profilo veicolo aggiornato',
     ],
     'patrol' => [
+        'route_updated' => 'Percorso di ronda modificato',
+        'route_activated' => 'Percorso di ronda attivato',
+        'route_deactivated' => 'Percorso di ronda disattivato',
+        'checkpoint_updated' => 'Punto di controllo modificato',
+        'checkpoint_deactivated' => 'Punto di controllo disattivato',
+        'overdue_flagged' => 'Ronda non terminata dopo la durata prevista',
         'route_created' => 'Percorso di ronda creato',
         'started' => 'Ronda avviata',
         'completed' => 'Ronda conclusa',
@@ -1021,6 +1062,7 @@ return [
         'chargeCancelled' => 'Addebito di noleggio annullato',
         'chargesInvoiced' => 'Addebiti di noleggio fatturati',
         'chargesTransferred' => 'Addebiti di noleggio trasferiti',
+        'cleaningDone' => 'Pulizia dopo la restituzione completata',
         'claimOpened' => 'Reclamo di noleggio aperto',
         'closed' => 'Noleggio chiuso',
         'completed' => 'Noleggio completato',
@@ -1035,6 +1077,7 @@ return [
         'termsAttached' => 'Condizioni di noleggio associate alla pratica',
         'returned' => 'Attrezzatura a noleggio restituita',
         'termsFrozen' => 'Condizioni di noleggio congelate',
+        'depositWaived' => 'Cauzione condonata',
     ],
     'report' => [
         'exported' => 'Report esportato',
@@ -1090,6 +1133,7 @@ return [
         'dependencies_changed' => 'Dipendenze del servizio aziendale modificate',
     ],
     'service_ticket' => [
+        'confidentiality_changed' => 'Riservatezza modificata',
         'service_changed' => 'Servizio del ticket modificato',
         'opened_from_intake' => 'Ticket creato dalla richiesta del cliente',
         'accepted_by_customer' => 'Ticket accettato dal cliente',
@@ -1122,6 +1166,9 @@ return [
         'settings_saved' => 'Impostazioni SharePoint salvate',
         'target_selected' => 'Destinazione SharePoint selezionata',
     ],
+    'shift_exchange' => [
+        'compliance_overridden' => 'Scambio di turno approvato nonostante la violazione delle regole',
+    ],
     'shiftRotation' => [
         'activated' => 'Rotazione di turni attivata',
         'assigned' => 'Rotazione di turni assegnata',
@@ -1139,6 +1186,7 @@ return [
         'opt_out' => 'Allarme via SMS revocato',
         'verification_started' => 'Codice di conferma SMS richiesto',
         'budget_warning' => 'Soglia di avviso costi SMS raggiunta',
+        'budget_exhausted' => 'Contingente SMS esaurito',
     ],
     'sla_violation' => [
         'acknowledged' => 'Violazione di SLA confermata',
@@ -1183,11 +1231,16 @@ return [
         'assessment_versioned' => 'Versione di valutazione ESG creata',
     ],
     'survey' => [
+        'updated' => 'Questionario modificato',
+        'opted_out' => 'Disiscrizione dai sondaggi tramite il link di annullamento',
         'created' => 'Questionario creato',
         'invited' => 'Invito al sondaggio inviato',
     ],
     'sync' => [
         'applied' => 'Sincronizzazione offline applicata',
+        'conflict' => [
+            'resolved' => 'Conflitto offline risolto',
+        ],
     ],
     'tax_rule' => [
         'created' => 'Regola fiscale creata',
@@ -1267,6 +1320,8 @@ return [
         'corrected' => 'Viaggio corretto tramite viaggio di storno',
     ],
     'user' => [
+        'newDeviceAlertDisabled' => 'Avviso «Accesso da un nuovo dispositivo» disattivato',
+        'newDeviceAlertEnabled' => 'Avviso «Accesso da un nuovo dispositivo» attivato',
         'deputyReplaced' => 'Sostituzione riassegnata',
         'anonymized' => 'Collaboratore anonimizzato (dati personali rimossi, giustificativi conservati)',
         'offboardingScheduled' => 'Uscita programmata',
@@ -1339,6 +1394,9 @@ return [
         'entry_posted' => 'Registrazione definitiva',
         'entry_reversed' => 'Registrazione stornata',
         'entry_discarded' => 'Bozza scartata',
+        'open_item_disputed' => 'Partita aperta contrassegnata come contestata',
+        'open_item_dispute_withdrawn' => 'Contrassegno «contestata» ritirato',
+        'entry_edited' => 'Bozza modificata',
         'period_soft_closed' => 'Periodo chiuso provvisoriamente',
         'period_closed' => 'Periodo chiuso',
         'period_reopened' => 'Periodo riaperto',
@@ -1462,6 +1520,7 @@ return [
             'rechecked' => 'Ammissioni riverificate',
             'reviewRequired' => 'Verifica dell\'ammissione necessaria',
             'reviewCleared' => 'Verifica chiusa',
+            'resultsReleased' => 'Risultati dell’esame pubblicati',
         ],
         'team' => [
             'profileCreated' => 'Profilo sportivo creato',
@@ -1606,5 +1665,9 @@ return [
         'packaged' => 'Versione di invio creata',
         'sent' => 'Fattura del fornitore consegnata',
         'deliveryResolved' => 'Esito dell’invio registrato',
+    ],
+    'domain' => [
+        'commandReconciled' => 'Comando di dominio riconciliato',
+        'commandResolved' => 'Comando di dominio chiuso manualmente',
     ],
 ];

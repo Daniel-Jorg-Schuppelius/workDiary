@@ -11,7 +11,10 @@
 namespace Tests\Feature\Platform;
 
 use App\Enums\Modules\ModuleKind;
+use App\Http\Controllers\Platform\HomeController;
 use App\Modules\{Manifest, ModuleRegistry};
+use App\Plugins\PluginManager;
+use App\Plugins\RemoteSupport\Providers\RemoteProviders;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -51,6 +54,27 @@ class GuestHomePageTest extends TestCase {
         $profiles = glob(database_path('data/branchprofiles/*.php')) ?: [];
 
         $this->assertSame(count($profiles), $this->stat(__('Branchenprofile')), 'Neues Branchenprofil auch in resources/views/home.blade.php ($branches) eintragen.');
+    }
+
+    /** gl-148: Die Anbindungen folgen den Plugins mit Implementierung, nicht einer Handliste. */
+    public function test_every_plugin_product_is_listed_in_a_named_group(): void {
+        $response = $this->get(route('home'))->assertOk();
+        $html = (string) $response->getContent();
+        $plugins = app(PluginManager::class)->all();
+        $this->assertNotEmpty($plugins);
+
+        foreach ($plugins as $id => $plugin) {
+            foreach (HomeController::PRODUCT_NAMES[$id] ?? [$plugin->name()] as $name) {
+                $this->assertStringContainsString(e($name), $html, "Plugin {$id} fehlt auf der Startseite.");
+            }
+        }
+        foreach (RemoteProviders::labels() as $label) {
+            $this->assertStringContainsString(e($label), $html, "Fernwartungs-Anbieter {$label} fehlt — HomeController::PRODUCT_NAMES['remote-support'] nachziehen.");
+        }
+        $this->assertStringNotContainsString(e(__('Weitere Anbindungen')), $html, 'Plugin ohne Startseiten-Gruppe — Modul in HomeController::integrationGroups() zuordnen.');
+
+        $chips = array_sum(array_map(static fn(array $group): int => count($group['items']), (array) $response->viewData('integrations')));
+        $this->assertSame($chips, $this->stat(__('Anbindungen')));
     }
 
     private function stat(string $label): ?int {

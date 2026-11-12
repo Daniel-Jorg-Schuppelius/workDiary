@@ -1,7 +1,7 @@
 ---
 title: "Categorie di spesa"
 topic: catalog.expense-categories
-version: 1
+version: 2
 keywords:
     - tipi di spesa
     - rimborsi spese
@@ -28,3 +28,5 @@ predefinita e se è richiesta una ricevuta; l'aliquota impostata viene
 proposta alla registrazione di nuove spese. Le categorie inattive
 restano conservate ma non vengono più proposte; una categoria ancora
 usata da spese non può essere eliminata — la imposti come inattiva.
+
+**Ricevuta obbligatoria:** se è attivo «Ricevuta obbligatoria», una nota spese di questa categoria può essere inviata solo con una ricevuta allegata. Il salvataggio come bozza è sempre possibile; il modulo segnala l’obbligo e l’invio senza ricevuta apre la finestra della ricevuta.

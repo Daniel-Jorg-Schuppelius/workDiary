@@ -105,29 +105,6 @@ final class UnitPriceCatalog {
         return $this->resolved[self::groupKey($entitlement)][$entitlement->fee->getMinorAmount()]['unit'] ?? $entitlement->fee;
     }
 
-    /**
-     * @return array<string, list<Money>> Edition → erkannte Stückpreise (bei mehreren Währungen „Edition|Währung")
-     */
-    public function unitPrices(): array {
-        $out = [];
-        $currencies = [];
-        foreach (array_keys($this->resolved) as $key) {
-            $currencies[substr($key, 0, (int) strrpos($key, '|'))][] = substr($key, (int) strrpos($key, '|') + 1);
-        }
-        foreach ($this->resolved as $key => $entries) {
-            $edition = substr($key, 0, (int) strrpos($key, '|'));
-            $label = count(array_unique($currencies[$edition] ?? [])) > 1 ? $key : $edition;
-            $seen = [];
-            foreach ($entries as $entry) {
-                $seen[$entry['unit']->getMinorAmount()] = $entry['unit'];
-            }
-            ksort($seen);
-            $out[$label] = array_values($seen);
-        }
-
-        return $out;
-    }
-
     private static function groupKey(MarketplaceEntitlement $entitlement): string {
         return $entitlement->edition . '|' . $entitlement->fee->getCurrency()->value;
     }

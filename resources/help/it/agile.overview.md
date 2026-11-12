@@ -1,7 +1,7 @@
 ---
 title: "Gestione agile dei progetti"
 topic: agile.overview
-version: 2
+version: 4
 keywords:
     - Kanban
     - Scrum
@@ -45,6 +45,17 @@ suoi criteri: aggiungere, spuntare uno per uno, rimuovere. Il numero accanto
 mostra i criteri soddisfatti ed esistenti; prima di spostare in una colonna
 «fatto», la board indica i criteri non soddisfatti.
 
+**Definizione di completato:** le impostazioni del board contengono la
+definizione di completato del progetto, una riga per punto. Quando una
+scheda viene spostata in una colonna di completamento, il board apre una
+finestra di dialogo con questi punti e i criteri di accettazione ancora
+aperti. La scheda viene spostata solo quando ogni punto è confermato. Chi
+dispone dell'autorizzazione alla forzatura può spostarla nonostante i punti
+aperti indicando una motivazione; lo stesso vale per un limite WIP
+raggiunto. Ogni forzatura compare nella cronologia e conta nella serie
+qualità dei report, che mostra anche il tasso di scostamento DoD per
+settimana.
+
 **Board:** le colonne rappresentano il flusso di lavoro; le schede si
 spostano da sinistra a destra. Con uno sprint selezionato, la board
 mostra esclusivamente gli elementi di quello sprint.
@@ -74,3 +85,5 @@ compare solo quando sono disponibili abbastanza settimane
 confrontabili, invece di simulare una precisione fittizia. La
 panoramica mostra solo i progetti che la persona che la consulta può
 comunque vedere.
+
+**Completata fuori dalla board:** se il compito di una scheda viene completato altrove (elenco attività, importazione), la scheda segue nella colonna completata. I criteri di accettazione aperti e la definition of done non confermata compaiono allora come deviazione nella cronologia della board e contano nel tasso di deviazione DoD.

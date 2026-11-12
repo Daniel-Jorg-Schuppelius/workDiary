@@ -1,7 +1,7 @@
 ---
 title: "Duty and shift planning"
 topic: planning.shifts
-version: 4
+version: 5
 keywords:
     - roster
     - rota
@@ -53,3 +53,8 @@ and cancelled shifts do not. The report **Coverage** calculates by the same
 rules.
 
 With **For all duty plans** an entry applies across plans: in every duty plan and on days without a duty plan, for example for shifts entered directly in the **Shift plan**. The list marks such entries with **All duty plans**; you see and edit them in every duty plan.
+
+**Missing required qualification:** For each missing qualification, the note
+on the shift states whether the person has already started the matching course
+of the learning platform (“course in progress”) or which released course teaches
+it. The assignment stays blocked until the qualification itself is held.

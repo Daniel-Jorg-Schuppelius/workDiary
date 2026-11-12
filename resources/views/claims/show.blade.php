@@ -31,6 +31,7 @@
             </div>
             <x-slot:actions>
                 @can('update', $claim)
+                    <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('claims.edit', $claim)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                     <form method="POST" action="{{ route('claims.transition', $claim) }}" class="flex items-center gap-1">
                         @csrf
                         <select name="status" class="select select-sm select-bordered" aria-label="{{ __('Status') }}">
@@ -83,9 +84,17 @@
                 <x-detail-grid.row :label="__('Service-Ticket')">{{ $claim->serviceTicket->ticket_no ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Asset')">{{ $claim->asset->name ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Artikel')">{{ $claim->article->name ?? '—' }}</x-detail-grid.row>
+                @if ($claim->stockLot !== null)
+                    <x-detail-grid.row :label="__('validation.attributes.stock_lot_id')" class="font-mono">{{ $claim->stockLot->lot_no }}</x-detail-grid.row>
+                @endif
                 <x-detail-grid.row :label="__('Rechnung')">{{ $claim->invoice->number ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Lieferant')">{{ $claim->supplier->name ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('validation.attributes.protocol_id')">{{ $claim->protocol->title ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('validation.attributes.purchase_order_id')">{{ $claim->purchaseOrder->number ?? '—' }}</x-detail-grid.row>
             </x-detail-grid>
+            @if ($claim->serial_no !== null && $claim->stock_serial_id !== null)
+                <p class="mt-1 text-xs text-muted">{{ __('claims.form.serial_linked') }}</p>
+            @endif
             @can('update', $claim)
                 <form method="POST" action="{{ route('claims.update', $claim) }}" class="mt-3 grid grid-cols-2 gap-2 text-sm">
                     @csrf
@@ -240,6 +249,19 @@
                         <span class="font-mono text-muted">SN {{ $rma->serial_no }}</span>
                     @endif
                 </div>
+                <p class="mt-1 text-muted">
+                    @if ($rma->articleVariant !== null)
+                        {{ $rma->qty !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((string) $rma->qty, 4, trimTrailingZeros: true) . ' × ' : '' }}{{ trim(($rma->articleVariant->sku ? $rma->articleVariant->sku . ' · ' : '') . ($rma->articleVariant->name ?? $rma->article?->name ?? '')) }}@if ($rma->warehouse !== null), {{ $rma->warehouse->name }}@endif
+                        @if ($rma->stockLot !== null)
+                            · {{ __('validation.attributes.stock_lot_id') }} {{ $rma->stockLot->lot_no }}
+                        @endif
+                    @else
+                        {{ __('claims.rma.without_stock') }}
+                    @endif
+                </p>
+                @if ($rma->disposition_note !== null)
+                    <p class="mt-1">{{ $rma->disposition_note }}</p>
+                @endif
                 @foreach ($rma->inspections as $inspection)
                     <p class="mt-1">
                         {{ __('Prüfung: :result', ['result' => __("values.{$inspection->result}")]) }}
@@ -280,16 +302,7 @@
                             </form>
                         @endif
                         @if ($rma->status === \App\Enums\Claims\ClaimRmaStatus::Announced)
-                            <form method="POST" action="{{ route('claims.rma.receive', $rma) }}" class="flex flex-wrap items-center gap-1">
-                                @csrf
-                                <select name="stock_state" class="select select-xs select-bordered" aria-label="{{ __('Quarantäne-Zustand') }}">
-                                    @foreach (\App\Enums\Inventory\StockState::quarantine() as $state)
-                                        <option value="{{ $state->value }}">{{ $state->value }}</option>
-                                    @endforeach
-                                </select>
-                                <input aria-label="{{ __('Zustand (optional)') }}" name="condition_note" class="input input-xs input-bordered w-48" placeholder="{{ __('Zustand (optional)') }}">
-                                <x-button type="submit" size="xs">{{ __('Wareneingang buchen') }}</x-button>
-                            </form>
+                            <x-button type="button" size="xs" data-open-dialog="claim-rma-receive-{{ $rma->id }}">{{ __('Wareneingang buchen') }}</x-button>
                         @endif
                         @if (in_array($rma->status, [\App\Enums\Claims\ClaimRmaStatus::Received, \App\Enums\Claims\ClaimRmaStatus::Inspecting], true))
                             <form method="POST" action="{{ route('claims.rma.inspect', $rma) }}" class="flex flex-wrap items-center gap-1">
@@ -302,27 +315,14 @@
                                 <input aria-label="{{ __('Befund') }}" name="findings" class="input input-xs input-bordered w-48" placeholder="{{ __('Befund') }}">
                                 <x-button type="submit" tone="plain" size="xs">{{ __('Prüfen') }}</x-button>
                             </form>
-                            <form method="POST" action="{{ route('claims.rma.disposition', $rma) }}" class="flex flex-wrap items-center gap-1">
-                                @csrf
-                                <select name="disposition" class="select select-xs select-bordered" aria-label="{{ __('Verwendung') }}">
-                                    @foreach (\App\Enums\Claims\ClaimRmaDisposition::cases() as $disp)
-                                        <option value="{{ $disp->value }}">{{ $disp->label() }}</option>
-                                    @endforeach
-                                </select>
-                                <x-button type="submit" tone="plain" size="xs">{{ __('Verwendung entscheiden') }}</x-button>
-                            </form>
+                            <x-button type="button" tone="plain" size="xs" data-open-dialog="claim-rma-disposition-{{ $rma->id }}">{{ __('Verwendung entscheiden') }}</x-button>
                         @endif
                     </div>
                 @endcan
             </div>
         @endforeach
         @can('warehouse', $claim)
-            <form method="POST" action="{{ route('claims.rma.store', $claim) }}" class="mt-2 flex flex-wrap items-end gap-2 text-sm">
-                @csrf
-                <input aria-label="{{ __('Seriennummer (optional)') }}" name="serial_no" class="input input-sm input-bordered w-48" placeholder="{{ __('Seriennummer (optional)') }}" value="{{ $claim->serial_no }}">
-                <input name="expected_at" type="date" class="input input-sm input-bordered" aria-label="{{ __('Erwartet am') }}">
-                <x-button type="submit">{{ __('Rücksendung ankündigen') }}</x-button>
-            </form>
+            <x-button type="button" class="mt-2" data-open-dialog="claim-rma-create">{{ __('Rücksendung ankündigen') }}</x-button>
         @endcan
     </x-card>
 
@@ -336,6 +336,10 @@
                     @if ($action->assignee !== null)
                         <span class="text-muted">{{ $action->assignee->name }}</span>
                     @endif
+                    @if ($action->followUp instanceof \App\Models\Diary\DiaryEntry)
+                        <span class="text-muted">{{ __('claims.action.follow_up_order') }}:</span>
+                        <x-order-link :entry="$action->followUp" link-class="link">{{ $action->followUp->title ?? ('#' . $action->followUp->id) }}</x-order-link>
+                    @endif
                     @can('update', $claim)
                         <form method="POST" action="{{ route('claims.actions.update', $action) }}" class="flex items-center gap-1">
                             @csrf
@@ -343,6 +347,12 @@
                             <select name="status" class="select select-xs select-bordered" aria-label="{{ __('Status') }}">
                                 @foreach (\App\Enums\Claims\ClaimActionStatus::cases() as $status)
                                     <option value="{{ $status->value }}" @selected($action->status === $status)>{{ $status->label() }}</option>
+                                @endforeach
+                            </select>
+                            <select name="follow_up_order_id" class="select select-xs select-bordered max-w-48" aria-label="{{ __('claims.action.follow_up_order') }}">
+                                <option value="">{{ __('claims.action.follow_up_none') }}</option>
+                                @foreach ($followUpOrders as $order)
+                                    <option value="{{ $order->sqid }}" @selected((int) $action->follow_up_id === (int) $order->id && $action->followUp instanceof \App\Models\Diary\DiaryEntry)>{{ $order->title ?? ('#' . $order->id) }}</option>
                                 @endforeach
                             </select>
                             <x-button type="submit" tone="plain" size="xs">{{ __('OK') }}</x-button>
@@ -360,6 +370,18 @@
                     </select>
                     <input aria-label="{{ __('Titel') }}" name="title" class="input input-sm input-bordered w-56" placeholder="{{ __('Titel') }}" required>
                     <input name="due_at" type="date" class="input input-sm input-bordered" aria-label="{{ __('Frist') }}">
+                    <select name="assigned_user_id" class="select select-sm select-bordered" aria-label="{{ __('Verantwortlich') }}">
+                        <option value="">{{ __('Verantwortlich') }}</option>
+                        @foreach ($users as $assignee)
+                            <option value="{{ $assignee->sqid }}">{{ $assignee->name }}</option>
+                        @endforeach
+                    </select>
+                    <select name="follow_up_order_id" class="select select-sm select-bordered max-w-56" aria-label="{{ __('claims.action.follow_up_order') }}">
+                        <option value="">{{ __('claims.action.follow_up_none') }}</option>
+                        @foreach ($followUpOrders as $order)
+                            <option value="{{ $order->sqid }}">{{ $order->title ?? ('#' . $order->id) }}</option>
+                        @endforeach
+                    </select>
                     <x-button type="submit">{{ __('Maßnahme anlegen') }}</x-button>
                 </form>
             @endcan
@@ -373,6 +395,9 @@
                         <x-status-badge size="md" outline>{{ $outcome->status->label() }}</x-status-badge>
                         @if ($outcome->amount !== null)
                             <span class="font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $outcome->amount, 2, withThousandsSeparator: true) }} {{ $outcome->currency->value }}</span>
+                        @endif
+                        @if ($outcome->invoice !== null)
+                            <span class="text-muted">{{ __('claims.financial.source_invoice', ['number' => $outcome->invoice->number]) }}</span>
                         @endif
                         @if ($outcome->resultInvoice !== null)
                             <x-status-badge size="md">{{ __('Beleg :number', ['number' => $outcome->resultInvoice->number]) }}</x-status-badge>
@@ -389,6 +414,9 @@
                                     @csrf
                                     <x-button type="submit" size="xs">{{ __('Freigeben (Vier-Augen)') }}</x-button>
                                 </form>
+                                <x-action-form :action="route('claims.financial.reject', $outcome)" :confirm="__('claims.financial.reject_confirm')" :confirm-label="__('claims.financial.reject')">
+                                    <x-button type="submit" tone="plain" size="xs">{{ __('claims.financial.reject') }}</x-button>
+                                </x-action-form>
                             @endif
                             @if ($outcome->status === \App\Enums\Claims\ClaimFinancialStatus::Approved)
                                 <form method="POST" action="{{ route('claims.financial.execute', $outcome) }}">
@@ -408,19 +436,7 @@
                 </div>
             @endforeach
             @can('update', $claim)
-                <form method="POST" action="{{ route('claims.financial.store', $claim) }}" class="mt-2 space-y-2 text-sm">
-                    @csrf
-                    <div class="flex flex-wrap gap-2">
-                        <select name="kind" class="select select-sm select-bordered" aria-label="{{ __('Art') }}">
-                            @foreach (\App\Enums\Claims\ClaimFinancialKind::cases() as $kind)
-                                <option value="{{ $kind->value }}">{{ $kind->label() }}</option>
-                            @endforeach
-                        </select>
-                        <input aria-label="{{ __('Betrag') }}" name="amount" type="number" step="0.01" min="0" class="input input-sm input-bordered w-32" placeholder="{{ __('Betrag') }}">
-                    </div>
-                    <textarea aria-label="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" name="justification" rows="2" class="textarea textarea-bordered textarea-sm w-full" placeholder="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" required></textarea>
-                    <x-button type="submit">{{ __('Folge vorschlagen') }}</x-button>
-                </form>
+                <x-button type="button" class="mt-2" data-open-dialog="claim-financial-create">{{ __('Folge vorschlagen') }}</x-button>
             @endcan
         </x-card>
     </div>
@@ -433,6 +449,8 @@
                     <x-status-badge size="md" outline>{{ $recourse->status->label() }}</x-status-badge>
                     @if ($recourse->response_due_at !== null)
                         <span class="text-muted">{{ __('Antwortfrist: :date', ['date' => $recourse->response_due_at->fdatetime()]) }}</span>
+                    @elseif ($recourse->response_due_days !== null)
+                        <span class="text-muted">{{ __('claims.recourse.due_days', ['days' => $recourse->response_due_days]) }}</span>
                     @endif
                     @if ($recourse->amount_claimed !== null)
                         <span class="font-mono">{{ __('gefordert') }}: {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $recourse->amount_claimed, 2, withThousandsSeparator: true) }}</span>
@@ -441,6 +459,29 @@
                         <span class="font-mono text-success">{{ __('erstattet') }}: {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $recourse->amount_recovered, 2, withThousandsSeparator: true) }}</span>
                     @endif
                 </div>
+                <p class="mt-1 flex flex-wrap gap-x-3 text-muted">
+                    @if ($recourse->purchaseOrder !== null)
+                        <span>{{ __('validation.attributes.purchase_order_id') }} {{ $recourse->purchaseOrder->number }}</span>
+                    @endif
+                    @if ($recourse->incomingEInvoice !== null)
+                        <span>{{ __('claims.recourse.field_incoming_invoice') }} {{ $recourse->incomingEInvoice->invoice_number ?? '#' . $recourse->incomingEInvoice->id }}</span>
+                    @endif
+                    @if ($recourse->article !== null)
+                        <span>{{ __('Artikel') }} {{ $recourse->article->name }}</span>
+                    @endif
+                    @if ($recourse->serial_no !== null)
+                        <span class="font-mono">SN {{ $recourse->serial_no }}</span>
+                    @endif
+                    @if ($recourse->external_reference !== null)
+                        <span>{{ __('Externe RMA-Nr.') }} {{ $recourse->external_reference }}</span>
+                    @endif
+                </p>
+                @if ($recourse->warranty_terms !== null)
+                    <p class="mt-1 whitespace-pre-line"><span class="text-muted">{{ __('validation.attributes.warranty_terms') }}:</span> {{ $recourse->warranty_terms }}</p>
+                @endif
+                @if ($recourse->outcome_note !== null)
+                    <p class="mt-1">{{ $recourse->outcome_note }}</p>
+                @endif
                 @can('recourse', $claim)
                     <form method="POST" action="{{ route('claims.recourses.update', $recourse) }}" class="mt-1 flex flex-wrap items-center gap-1">
                         @csrf
@@ -450,6 +491,10 @@
                                 <option value="{{ $status->value }}" @selected($recourse->status === $status)>{{ $status->label() }}</option>
                             @endforeach
                         </select>
+                        @if ($recourse->submitted_at === null)
+                            <input aria-label="{{ __('validation.attributes.response_due_days') }}" title="{{ __('validation.attributes.response_due_days') }}" name="response_due_days" type="number" min="1" max="365" step="1"
+                                   class="input input-xs input-bordered w-24" value="{{ $recourse->response_due_days }}" placeholder="{{ (int) config('claims.recourse_response_days', 14) }}">
+                        @endif
                         <input aria-label="{{ __('Erstattet') }}" name="amount_recovered" type="number" step="0.01" min="0" class="input input-xs input-bordered w-28" placeholder="{{ __('Erstattet') }}">
                         <input aria-label="{{ __('Ergebnis (optional)') }}" name="outcome_note" class="input input-xs input-bordered w-48" placeholder="{{ __('Ergebnis (optional)') }}">
                         <x-button type="submit" tone="plain" size="xs">{{ __('Aktualisieren') }}</x-button>
@@ -458,14 +503,26 @@
             </div>
         @endforeach
         @can('recourse', $claim)
-            <form method="POST" action="{{ route('claims.recourses.store', $claim) }}" class="mt-2 flex flex-wrap items-end gap-2 text-sm">
-                @csrf
-                <input aria-label="{{ __('Lieferant (Sqid)') }}" name="supplier_id" class="input input-sm input-bordered w-40" placeholder="{{ __('Lieferant (Sqid)') }}" value="{{ $claim->supplier?->sqid }}" required>
-                <input aria-label="{{ __('Externe RMA-Nr.') }}" name="external_reference" class="input input-sm input-bordered w-40" placeholder="{{ __('Externe RMA-Nr.') }}">
-                <input aria-label="{{ __('Forderung') }}" name="amount_claimed" type="number" step="0.01" min="0" class="input input-sm input-bordered w-32" placeholder="{{ __('Forderung') }}">
-                <x-button type="submit">{{ __('Regress anlegen') }}</x-button>
-            </form>
+            <x-button type="button" class="mt-2" data-open-dialog="claim-recourse-create">{{ __('Regress anlegen') }}</x-button>
         @endcan
     </x-card>
 </x-page-shell>
+
+{{-- Lokale Dialoge (geöffnet via data-open-dialog) --}}
+@can('update', $claim)
+    @include('claims._financial_dialog', ['claim' => $claim, 'invoices' => $financialInvoices, 'localBilling' => $localBilling])
+@endcan
+@if ($recourseOptions !== null)
+    @include('claims._recourse_dialog', ['claim' => $claim, 'recourseOptions' => $recourseOptions])
+@endif
+@can('warehouse', $claim)
+    @include('claims._rma_dialog', ['claim' => $claim, 'stock' => $stock])
+    @foreach ($claim->rmaReturns as $rma)
+        @if ($rma->status === \App\Enums\Claims\ClaimRmaStatus::Announced)
+            @include('claims._rma_receive_dialog', ['claim' => $claim, 'rma' => $rma, 'stock' => $stock])
+        @elseif (in_array($rma->status, [\App\Enums\Claims\ClaimRmaStatus::Received, \App\Enums\Claims\ClaimRmaStatus::Inspecting], true))
+            @include('claims._rma_disposition_dialog', ['rma' => $rma, 'stock' => $stock])
+        @endif
+    @endforeach
+@endcan
 @endsection

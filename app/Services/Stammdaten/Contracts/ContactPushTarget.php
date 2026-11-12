@@ -22,6 +22,13 @@ use App\Models\Supplier\Supplier;
  * Finanzmodul (`ContactPushService`). Null-Bindung: kein Push.
  */
 interface ContactPushTarget {
+    /** Stammdatenhoheit je Organisation (Feature 122); die Datenführerschaft „Kunden“ leitet sich daraus ab (MVP-1592). */
+    public const string AUTHORITY_KEY = 'finance.master_data_authority';
+
+    public const string AUTHORITY_WORKDIARY = 'workdiary';
+
+    public const string AUTHORITY_ACCOUNTING = 'accounting';
+
     /** Führt workDiary die Stammdaten? Nur dann darf übertragen werden. */
     public function pushAllowed(): bool;
 

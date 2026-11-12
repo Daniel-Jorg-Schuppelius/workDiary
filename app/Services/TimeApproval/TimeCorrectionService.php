@@ -10,7 +10,7 @@
 
 namespace App\Services\TimeApproval;
 
-use App\Enums\Attendance\AttendanceSource;
+use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
 use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Models\Platform\User;
 use App\Models\Time\{Attendance, TimeCorrectionItem, TimeCorrectionRequest, TimeEntry};
@@ -51,13 +51,13 @@ class TimeCorrectionService {
      * @var array<class-string, list<string>>
      */
     private const array EDITABLE_FIELDS = [
-        TimeEntry::class => ['date', 'started_at', 'ended_at', 'break_minutes', 'minutes', 'description', 'project_id', 'task_id', 'activity_category_id', 'kind', 'activity_type', 'billable'],
+        TimeEntry::class => ['date', 'started_at', 'ended_at', 'break_minutes', 'minutes', 'description', 'project_id', 'task_id', 'diary_entry_id', 'activity_category_id', 'kind', 'activity_type', 'billable'],
         // `source` wird beim Anwenden ohnehin auf Manual gesetzt.
         Attendance::class => ['date', 'started_at', 'ended_at', 'break_minutes_manual', 'duration_minutes', 'status', 'note', 'source'],
     ];
 
     /** Verweise, die in der Organisation des Antrags liegen müssen. */
-    private const array ORGANIZATION_REFERENCES = ['project_id' => 'projects', 'task_id' => 'tasks', 'activity_category_id' => 'activity_categories'];
+    private const array ORGANIZATION_REFERENCES = ['project_id' => 'projects', 'task_id' => 'tasks', 'diary_entry_id' => 'diary_entries', 'activity_category_id' => 'activity_categories'];
 
     public function __construct(
         private readonly MonthClosureService $monthClosures,
@@ -285,6 +285,52 @@ class TimeCorrectionService {
         return $this->apply($request);
     }
 
+    /**
+     * Eigene Stempelung korrigieren (MVP-1595, Dialog auf „Heute“ und
+     * Offline-Befehl `attendance.correct`): Antrag anlegen und einreichen; bei
+     * erlaubter Selbstkorrektur sofort angewendet. Kein Weg am Genehmigungsweg vorbei.
+     *
+     * @param  array{started_at?: string|null, ended_at?: string|null, break_minutes?: int|string|null}  $changes  UTC-Zeitstempel
+     */
+    public function correctAttendance(User $user, Attendance $attendance, array $changes, string $reason): TimeCorrectionRequest {
+        $before = [
+            'started_at' => $attendance->started_at?->toDateTimeString(),
+            'ended_at' => $attendance->ended_at?->toDateTimeString(),
+            'break_minutes_manual' => (int) ($attendance->break_minutes_manual ?? 0),
+        ];
+        $after = $before;
+        foreach (['started_at', 'ended_at'] as $field) {
+            if (($changes[$field] ?? null) !== null) {
+                $after[$field] = CarbonImmutable::parse((string) $changes[$field], 'UTC')->toDateTimeString();
+            }
+        }
+        if (($changes['break_minutes'] ?? null) !== null) {
+            $after['break_minutes_manual'] = (int) $changes['break_minutes'];
+        }
+
+        if ($after === $before) {
+            throw new TimeCorrectionWorkflowException('noChange', __('Die Korrektur enthält keine Änderung.'));
+        }
+
+        $request = $this->createDraft(
+            $user,
+            CarbonImmutable::parse($attendance->date?->toDateString() ?? $attendance->started_at?->toDateString() ?? 'today'),
+            $reason,
+            [[
+                'target_type' => MorphMap::alias(Attendance::class),
+                'target_id' => (int) $attendance->id,
+                'action' => 'update',
+                'before' => $before,
+                'after' => $after,
+            ]],
+            $user,
+        );
+
+        $request = $this->submit($request, $user);
+
+        return $this->selfApplicable($request) ? $this->selfApply($request) : $request;
+    }
+
     /** submitted → rejected. Pflicht-Begründung. */
     public function reject(TimeCorrectionRequest $request, User $actor, string $reason): TimeCorrectionRequest {
         $this->assertWorkflowTransition($request->status, TimeCorrectionStatus::Rejected);
@@ -453,7 +499,12 @@ class TimeCorrectionService {
             );
         }
         $this->assertDayUnlocked($owner, $model->getAttribute('date'));
-        $model->fill($attrs)->save();
+        $model->fill($attrs);
+        // Eine korrigierte, abgeschlossene Stempelung heißt „angepasst“ (MVP-1620); eine laufende bleibt offen zum Ausstempeln.
+        if ($model instanceof Attendance && $model->ended_at !== null && $model->status !== AttendanceStatus::Cancelled) {
+            $model->status = AttendanceStatus::Adjusted;
+        }
+        $model->save();
         $this->auditApplied($model, $item);
     }
 

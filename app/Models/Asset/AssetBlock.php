@@ -61,6 +61,17 @@ class AssetBlock extends Model {
             });
     }
 
+    /**
+     * Sperren, die der wählbare Asset-Status trägt: Quelle ist das Asset selbst.
+     *
+     * @param Builder<self> $query
+     */
+    public function scopeFromStatus(Builder $query, Asset $asset): void {
+        $query->where('asset_id', $asset->id)
+            ->where('source_type', $asset->getMorphClass())
+            ->where('source_id', $asset->id);
+    }
+
     public function isActive(): bool {
         return $this->released_at === null
             && ($this->blocked_until === null || $this->blocked_until->endOfDay()->isFuture());

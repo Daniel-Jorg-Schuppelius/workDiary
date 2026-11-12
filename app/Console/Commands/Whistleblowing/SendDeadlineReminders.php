@@ -43,7 +43,18 @@ class SendDeadlineReminders extends Command {
             }
             $kind = (string) $reminder['kind'];
 
-            // Idempotenz (Abschnitt 15): pro Fall/Art/Tag nur einmal erinnern.
+            // Ohne Bearbeiter keine Zeile: Die Vorwarnung wäre sonst verbraucht, bevor sie jemand erhält.
+            $handlers = $case->handlers()->get();
+            if ($handlers->isEmpty()) {
+                continue;
+            }
+
+            // Idempotenz (Abschnitt 15): Vorwarnstufen je Fall einmal, überfällige Fristen einmal am Tag.
+            $sentBefore = in_array($kind, WhistleblowingDeadlineService::ONCE, true)
+                && DB::table('whistleblowing_deadline_reminders')->where('case_id', $case->getKey())->where('kind', $kind)->exists();
+            if ($sentBefore) {
+                continue;
+            }
             $inserted = DB::table('whistleblowing_deadline_reminders')->insertOrIgnore([
                 'case_id' => $case->getKey(),
                 'kind' => $kind,
@@ -54,13 +65,7 @@ class SendDeadlineReminders extends Command {
                 continue; // heute bereits erinnert
             }
 
-            $handlers = $case->handlers()->get();
-            if ($handlers->isEmpty()) {
-                continue;
-            }
-
-            $due = $kind === 'acknowledge' ? $case->acknowledgement_due_at : $case->feedback_due_at;
-
+            $due = $deadlines->dueAt($case, $kind);
             Notification::send($handlers, new WhistleblowingDeadlineNotification(
                 caseNumber: (string) $case->getAttribute('case_number'),
                 priority: $case->priority->value,

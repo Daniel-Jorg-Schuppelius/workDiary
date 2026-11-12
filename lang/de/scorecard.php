@@ -16,6 +16,13 @@ return [
     'title' => 'Lieferanten-Scorecards',
     'overview_subtitle' => 'Ranking nach Gesamt-Score aus Einkauf, Lager, Reklamation und ISMS (Definition v:version).',
     'apply' => 'Anzeigen',
+    'weights' => [
+        'action' => 'Gewichte',
+        'title' => 'Gewichtung des Gesamt-Scores',
+        'description' => 'Gewicht je Kennzahl in Prozent. Die Summe muss nicht 100 ergeben: fehlende Kennzahlen werden übersprungen und die übrigen Gewichte anteilig verteilt. Ein leeres Feld setzt die Vorgabe.',
+        'saved' => 'Gewichtung gespeichert.',
+        'error_all_zero' => 'Mindestens eine Kennzahl braucht ein Gewicht über null.',
+    ],
     'weights_hint' => 'Gewichtung Gesamt-Score: Termintreue :ontime %, Reklamationsquote :complaints %, ISMS-Qualität :quality %, Preisentwicklung :price %, Regressverhalten :recourse %. Nicht verfügbare Kennzahlen werden übersprungen und die Gewichte re-normalisiert.',
     'empty_ranking' => 'Noch keine Lieferanten mit auswertbaren Einkaufs-, Reklamations- oder ISMS-Daten im Zeitraum.',
     'chart_ranking' => 'Gesamt-Score je Lieferant (Top 15)',

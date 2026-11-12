@@ -1,7 +1,7 @@
 ---
 title: "Organisation et paramètres"
 topic: admin.organization-settings
-version: 6
+version: 8
 keywords:
     - paramètres de l'entreprise
     - réglages du locataire
@@ -310,6 +310,13 @@ l'exploitation de la plateforme est un paramètre système sous **Paramètres
 
 La création des factures est décrite dans le thème « Factures & pièces ».
 
+- **Exiger une validation avant l’émission (principe des quatre yeux)** : une
+  facture ne peut être émise, envoyée ou transmise au logiciel de comptabilité
+  qu’après confirmation par une deuxième personne via **Valider**. La personne
+  qui a créé la facture ne peut pas la valider elle-même. À n’activer que si au
+  moins deux personnes sont autorisées à émettre des factures ; sans la coche,
+  la validation reste facultative.
+
 ## Relances
 
 Valeurs par défaut par niveau pour la relance individuelle et la série de
@@ -354,6 +361,9 @@ Trois champs agissent en outre sur toutes les factures créées localement :
   § 19 UStG (régime des petites entreprises). » ; la XRechnung reçoit la
   catégorie de taxe E (exonérée). La case prime sur **Taux de TVA par défaut
   (%)** et l'autoliquidation.
+- **N’émettre que des factures électroniques validées** : la validation de la
+  facture électronique s’exécute avant l’émission. Si la facture échoue,
+  l’émission est interrompue et le rapport de contrôle s’ouvre.
 
 ## Facture électronique : pièces et destinataires
 
@@ -369,6 +379,17 @@ Règles pour les pièces justificatives dans la facture électronique :
 ## Comptabilité : principe des quatre yeux
 
 L’option **Principe des quatre yeux** du groupe **Comptabilité** impose la validation par une seconde personne : la personne qui prépare une écriture ou une écriture directe (escompte, passage en perte, écriture d’attente, virement interne, soldes d’ouverture, acompte spécial) ne la valide pas elle-même ; celle qui constitue un lot de paiements SEPA ne le libère pas elle-même. Les écritures directes sont alors créées comme brouillons dans la **Boîte de saisie comptable** et ne prennent effet qu’après leur validation. Sans cette option, WorkDiary les valide immédiatement.
+
+## Rapprochement bancaire : tolérances
+
+Le groupe **Rapprochement bancaire** pilote les propositions d'affectation du
+rapprochement des paiements.
+
+- **Tolérance en centimes (montant)** (0–1, 0,02 par défaut) : écart d'arrondi
+  jusqu'auquel un montant payé est considéré comme correspondant.
+- **Tolérance d'escompte (%)** (0–10, 3 par défaut) : paiement insuffisant
+  proposé comme paiement complet avec escompte lorsque la facture ne comporte
+  pas ses propres conditions d'escompte.
 
 ## Immobilisations : biens de faible valeur et pool
 
@@ -601,8 +622,11 @@ les charge directement depuis le serveur de tuiles configuré.
   navigateur à charger des images depuis ce serveur.
 - **Zoom maximum** (1–22, par défaut 19) : agrandissement maximal des cartes.
   Choisissez au plus le niveau que fournit le serveur de tuiles.
-- La mention de source en bas de la carte est fixée par la configuration de
-  base de l'exploitant ; elle ne peut pas être modifiée ici.
+- **Mention de la source** (jusqu’à 255 caractères, texte sans HTML) : mention
+  exigée par le fournisseur de tuiles, en bas à droite de chaque carte, par
+  exemple « © Fournisseur ». Vide, la mention de la configuration de base
+  s’applique ; le texte grisé l’indique. Pour votre propre serveur de tuiles,
+  saisissez la mention exigée par ses conditions d’utilisation.
 
 ## Facturation du déplacement
 
@@ -644,6 +668,13 @@ Les jours fériés régionaux comme la Fête-Dieu ou le jour de la Réforme ne
 s'appliquent que dans certains Länder – choisissez donc la région de votre
 entreprise. Vide, la valeur par défaut du système s'applique ; la première
 entrée de la liste la nomme « Par défaut … ».
+
+**Langue des noms des jours fériés** détermine la langue dans laquelle le
+calendrier, le planning et les rapports nomment les jours fériés légaux. Vous
+pouvez choisir l’allemand (Allemagne, Autriche, Suisse), le français et
+l’italien (Suisse) ainsi que l’anglais, le français, l’italien et l’espagnol.
+Vos propres jours fériés gardent leur nom. Vide, la valeur par défaut du système
+s’applique.
 
 La région agit partout où workDiary tient compte des jours fériés, entre
 autres pour :
@@ -737,3 +768,15 @@ votre organisation.
 
 L'activation et la désactivation du mode maintenance sont consignées dans le
 journal d'audit.
+
+**Espace juridique :** dans les données de base, vous choisissez l’espace
+juridique de l’organisation. Il détermine les durées de conservation des
+propositions de suppression et les indications de la documentation des
+procédures ; la modification figure dans le journal d’audit.
+
+Dans les paramètres avancés, vous définissez également : l’intervalle du
+contrôle du permis de conduire, la matrice de priorité du helpdesk (impact ×
+urgence, cellule vide = valeur par défaut), le seuil d’alerte de la
+planification des capacités, le seuil du second niveau d’approbation des
+investissements, le séparateur et les lignes de métadonnées de l’export CSV
+des rapports ainsi que le délai de suppression des candidatures refusées.

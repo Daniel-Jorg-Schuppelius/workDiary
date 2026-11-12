@@ -1,7 +1,7 @@
 ---
 title: "Coda di lavoro"
 topic: work-queue.overview
-version: 3
+version: 4
 keywords:
     - Coda di lavoro
     - Elementi aperti
@@ -56,3 +56,7 @@ compaiono raggruppate con il loro numero.
 ordinato così; i filtri lo limitano a un'area, a un'origine o solo agli
 elementi assegnati a Lei. Il riquadro «Coda di lavoro» della dashboard
 mostra gli elementi più urgenti.
+
+**Scadenza:** il filtro «Scadenza» mostra solo gli elementi scaduti, in scadenza oggi o in questa settimana (fino a domenica), oppure senza scadenza.
+
+**Firefly III:** se il plugin è attivo, gli amministratori vedono i movimenti Firefly senza assegnazione e quelli con assegnazione ambigua come un elemento raggruppato ciascuno, senza scadenza. Il link apre l’elenco filtrato corrispondente nella pagina Firefly; quando la riconciliazione successiva assegna un movimento a una fattura, il numero diminuisce.

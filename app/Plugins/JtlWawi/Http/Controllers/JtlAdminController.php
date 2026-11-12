@@ -70,8 +70,10 @@ class JtlAdminController extends Controller {
             'openInbox' => $openInbox,
             'linkedArticles' => $linkedArticles,
             'inventoryMode' => $resolver->modeFor($organization),
+            'inventoryPlugin' => (string) data_get($organization->settings, 'inventory_plugin_id', ''),
             'scopeCheck' => $connection !== null ? $preflight->check($connection) : null,
             'canConfigureInventory' => $user->can(Permission::InventoryConfigure->value),
+            'canRetryTakeover' => $this->switchedToLocalToday($organization),
         ]);
     }
 
@@ -251,6 +253,11 @@ class JtlAdminController extends Controller {
         ]);
         $targetMode = InventoryMode::from($data['inventory_mode']);
         $currentMode = $resolver->modeFor($organization);
+        // Führt ein anderes Plugin (Billbee), stellt nur dessen Seite um (MVP-1626) — sonst übernähme JTL fremde Bestände.
+        $currentPlugin = (string) data_get($organization->settings, 'inventory_plugin_id', '');
+        if ($currentMode !== InventoryMode::Local && $currentPlugin !== '' && $currentPlugin !== JtlWawiPlugin::ID) {
+            return back()->with('error', __('jtl_wawi::jtl_wawi.flash.mode_other_plugin', ['plugin' => app(\App\Plugins\PluginManager::class)->find($currentPlugin)?->name() ?? $currentPlugin]));
+        }
 
         if ($targetMode === $currentMode) {
             return back()->with('success', __('jtl_wawi::jtl_wawi.flash.mode_unchanged'));
@@ -308,6 +315,11 @@ class JtlAdminController extends Controller {
         [$user, $organization] = $this->authorizeAdmin($request);
         abort_unless($user->can(Permission::InventoryConfigure->value), 403);
 
+        // Nur am Tag des Wechsels: danach führt der lokale Bestand, ein späterer Lauf überschriebe ihn mit JTL.
+        if (! $this->switchedToLocalToday($organization)) {
+            return back()->with('error', __('jtl_wawi::jtl_wawi.flash.takeover_not_today'));
+        }
+
         try {
             $result = $takeover->importOpeningStock($organization, $user->id);
         } catch (Throwable $e) {
@@ -315,6 +327,19 @@ class JtlAdminController extends Controller {
         }
 
         return back()->with('success', __('jtl_wawi::jtl_wawi.flash.takeover_done', ['booked' => $result['booked'], 'pairs' => $result['pairs']]));
+    }
+
+    /** Letzter Moduswechsel ging heute auf „lokal“ — derselbe Tag wie der Idempotenzstempel der Übernahme. */
+    private function switchedToLocalToday(Organization $organization): bool {
+        $last = AuditLog::query()
+            ->where('organization_id', $organization->id)
+            ->where('event', 'inventory.mode_changed')
+            ->latest('id')
+            ->first();
+
+        return $last instanceof AuditLog
+            && ($last->changes['to'] ?? null) === InventoryMode::Local->value
+            && $last->created_at?->isSameDay(now()) === true;
     }
 
     /** @return array{0: User, 1: Organization} */

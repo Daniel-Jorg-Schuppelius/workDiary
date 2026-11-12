@@ -13,7 +13,8 @@
 --}}
 @php
     /** @var \App\Models\Diary\DiaryEntry $diary */
-    $serviceTickets = $diary->serviceTickets;
+    // Vertrauliche Tickets nur für Berechtigte (MVP-1548).
+    $serviceTickets = auth()->user() !== null ? $diary->serviceTickets()->visibleTo(auth()->user())->get() : collect();
 @endphp
 @if ($serviceTickets->isNotEmpty())
     <x-card>

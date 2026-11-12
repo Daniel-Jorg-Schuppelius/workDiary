@@ -1,7 +1,7 @@
 ---
 title: "Gruppi di costo secondo DIN 276"
 topic: boq.cost-groups
-version: 1
+version: 2
 keywords:
     - assegnare gruppo di costo
     - stima dei costi
@@ -166,3 +166,7 @@ Il cambio di norma avviene tramite **Assegna → Cambia edizione** e mostra prim
 un’**anteprima**. Vengono convertite solo le corrispondenze univoche; tutto il
 resto resta. Le lacune sono l’essenziale — mostrano dove qualcuno deve decidere.
 Un codice indovinato sarebbe peggio di quello vecchio.
+
+## Importazione senza edizione della norma
+
+Se il catalogo dei gruppi di costo di un file GAEB non indica l’edizione della norma, l’importazione acquisisce i gruppi di costo e registra un **rilievo**: compare nello storico delle importazioni del computo. Assegni poi l’edizione al catalogo tramite **Assegnare → Cambiare edizione** prima di valutare.

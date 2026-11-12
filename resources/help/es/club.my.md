@@ -1,7 +1,7 @@
 ---
 title: "Mi asociación"
 topic: club.my
-version: 1
+version: 2
 keywords:
     - área de socios
     - portal del socio
@@ -39,3 +39,5 @@ de una cita, escanéelo con su smartphone y registre su entrada o la de los
 socios a los que representa, desde 60 minutos antes del inicio hasta el
 final. La asistencia pasa a la lista del entrenador, que la confirma o
 corrige como siempre.
+
+**Grupos:** en «Grupos» ve sus grupos y las solicitudes abiertas. Aquí solicita la admisión en los grupos que admiten previa solicitud; decide la dirección del grupo. Los resultados de examen solo aparecen cuando el club los ha publicado.

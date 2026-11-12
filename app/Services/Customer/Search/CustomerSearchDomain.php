@@ -48,7 +48,8 @@ final class CustomerSearchDomain implements SearchDomain {
             ->where('organization_id', $organizationId)
             ->where(fn ($q) => $q->whereLikeEscaped('name', $term)
                 ->orWhereLikeEscaped('number', $term)
-                ->orWhereLikeEscaped('email', $term));
+                ->orWhereLikeEscaped('email', $term)
+                ->orWhereCustomFieldText($term));
         $filters->range($query, 'created_at');
 
         return array_values($query->orderBy('name')->limit($limit)->get()

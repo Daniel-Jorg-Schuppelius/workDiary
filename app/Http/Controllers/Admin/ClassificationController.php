@@ -20,7 +20,7 @@ use App\Support\Setting;
 use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\Parsers\CSVDocumentParser;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Gate, Lang};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -255,11 +255,37 @@ class ClassificationController extends Controller {
             $this->manager->delete($classification);
         } catch (ClassificationValidationException $exception) {
             return redirect()->route('admin.classifications.index')
-                ->with('error', $exception->getMessage());
+                ->with('error', $exception->usage === [] ? $exception->getMessage() : $this->referencedMessage($classification, $exception->usage));
         }
 
         return redirect()->route('admin.classifications.index')
             ->with('success', __('Klassifikation wurde gelöscht.'));
+    }
+
+    /** Ausweg, wenn der Löschschutz greift: stilllegen statt löschen (Konzept „Kernklassifikationen“ §6). */
+    public function deactivate(Classification $classification): RedirectResponse {
+        Gate::authorize('update', $classification);
+        $this->ensureKnownClassification($classification);
+
+        try {
+            $this->manager->deactivate($classification);
+        } catch (ClassificationValidationException $exception) {
+            return $this->redirectWithManagerError($exception);
+        }
+
+        return redirect()->route('admin.classifications.index')
+            ->with('success', __('classification.flash.deactivated', ['label' => $classification->label]));
+    }
+
+    /** @param  array<string, int>  $usage  Tabelle → Anzahl */
+    private function referencedMessage(Classification $classification, array $usage): string {
+        $parts = [];
+        foreach ($usage as $table => $count) {
+            $key = 'classification.reference.' . $table;
+            $parts[] = (Lang::has($key) ? __($key) : $table) . ': ' . $count;
+        }
+
+        return (string) __('classification.error.referenced', ['label' => $classification->label, 'usage' => implode(', ', $parts)]);
     }
 
     public function deactivateDefault(Classification $classification): RedirectResponse {

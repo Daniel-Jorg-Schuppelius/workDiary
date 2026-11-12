@@ -10,6 +10,7 @@
     /** @var \App\Models\Protocol\Protocol $protocol */
     /** @var string $hash */
     /** @var \Illuminate\Support\Carbon $generatedAt */
+    $signatureImages ??= [];
 @endphp
 <!DOCTYPE html>
 <html lang="de">
@@ -33,6 +34,7 @@
         .notok { background: #f8d7da; }
         .n_a { background: #e2e3e5; }
         .open { background: #fff3cd; }
+        .tpl-issuer { margin-top: 6px; font-size: 9px; color: #555; }
     </style>
 </head>
 <body>
@@ -115,12 +117,17 @@
     <h2>{{ __('protocol.pdf.signatures') }}</h2>
     @foreach ($protocol->signatures as $sig)
         <div class="signature">
+            {!! isset($signatureImages[$sig->id]) ? '<img src="' . e($signatureImages[$sig->id]) . '" style="display: block; max-width: 70mm; max-height: 28mm; margin-bottom: 1mm;">' : '' !!}
             <strong>{{ $sig->signer_name }}</strong> — {{ $sig->role->label() }}<br>
             {{ $sig->method->label() }} • {{ $sig->signed_at->fdatetime() }}
+            @if ($sig->method === \App\Enums\Protocol\ProtocolSignatureMethod::Paper)<br><small>{{ __('protocol.pdf.paper_note') }}</small>@endif
             @if ($sig->ip)<br><small>{{ $sig->ip?->getValue() }}</small>@endif
         </div>
     @endforeach
 @endif
+
+{{-- Firmenangaben nach Blockzustand des Designs (MVP-1624). --}}
+@include('pdf._design_issuer')
 
 <div class="footer">
     {{ __('protocol.pdf.footer.hash') }}: {{ $hash }}<br>

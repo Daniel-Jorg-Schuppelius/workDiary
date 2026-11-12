@@ -1,7 +1,7 @@
 ---
 title: "Ordini di produzione"
 topic: manufacturing.orders
-version: 5
+version: 6
 keywords:
     - ordine di lavorazione
     - distinta base
@@ -125,3 +125,7 @@ collegamenti segnalati dal programma stesso, per esempio un acconto creato in
 Lexoffice. La colonna **Relazione** indica che cosa è il documento rispetto a
 questo; «tramite …» nomina il documento attraverso cui esiste il
 collegamento.
+
+## Consegna senza cliente e annullamento
+
+Una consegna senza cliente non richiede fatturazione; il suo stato di fatturazione mostra **Non richiesto**. Un ordine annullato chiude i fabbisogni di materiale mancante aperti, che non confluiscono più nelle proposte d'ordine.

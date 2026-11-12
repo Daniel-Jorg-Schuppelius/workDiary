@@ -14,7 +14,7 @@ namespace App\Services\Invoicing;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Invoicing\Invoice;
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, IssuerIdentity};
 use App\Services\UI\BrandingService;
 use Carbon\CarbonInterface;
 
@@ -25,7 +25,8 @@ use Carbon\CarbonInterface;
  * offener Betrag), optional Mahngebühr und Zahlungsziel — es bleibt ein
  * Anschreiben, KEIN neuer Beleg (kein Nummernkreis, „Mahnstatus ist
  * Lifecycle"). Kein Render-Snapshot: gerendert wird beim Versand, das
- * versandte PDF liegt als Mail-Anhang vor.
+ * versandte PDF liegt als Mail-Anhang vor. Deshalb adressiert es den Kunden
+ * mit seiner heutigen Anschrift, nicht mit dem Empfänger der Rechnung.
  */
 class DunningPdfRenderer {
     public function __construct(private readonly DocumentDesignRenderer $design) {}
@@ -73,6 +74,7 @@ class DunningPdfRenderer {
             'girocode' => app(GirocodeService::class)->dataUri($invoice, $legal, $claimTotal),
             'orgLegal' => $legal,
             'design' => $this->design->context($this->designPayload($invoice)),
+            'issuer' => IssuerIdentity::for($organization),
         ];
     }
 

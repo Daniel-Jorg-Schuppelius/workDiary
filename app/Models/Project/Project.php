@@ -21,7 +21,7 @@ use App\Models\Platform\{Team, User};
 use App\Models\Time\{TimeEntry, Timesheet};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 use Illuminate\Support\{Carbon, Collection};
 
 /**
@@ -39,7 +39,6 @@ use Illuminate\Support\{Carbon, Collection};
  * @property string|null $color
  * @property ProjectStatus $status
  * @property bool $is_default
- * @property bool $is_maintenance
  * @property LocationMode|null $default_location_mode
  * @property Carbon|null $starts_on
  * @property Carbon|null $ends_on
@@ -52,7 +51,6 @@ use Illuminate\Support\{Carbon, Collection};
  * @property string|null $budget_type
  * @property bool|null $billable
  * @property bool|null $weather_auto_fetch
- * @property bool $global_activities
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
@@ -87,7 +85,6 @@ class Project extends Model implements CustomFieldSubject {
         'color',
         'status',
         'is_default',
-        'is_maintenance',
         'default_location_mode',
         'starts_on',
         'ends_on',
@@ -103,7 +100,6 @@ class Project extends Model implements CustomFieldSubject {
         'billable',
         'bills_target_time',
         'weather_auto_fetch',
-        'global_activities',
     ];
 
     /** @var array<string, string> */
@@ -121,9 +117,7 @@ class Project extends Model implements CustomFieldSubject {
         'billable' => 'boolean',
         'bills_target_time' => 'boolean',
         'weather_auto_fetch' => 'boolean',
-        'global_activities' => 'boolean',
         'is_default' => 'boolean',
-        'is_maintenance' => 'boolean',
         'status' => ProjectStatus::class,
         'default_location_mode' => LocationMode::class,
     ];
@@ -296,6 +290,14 @@ class Project extends Model implements CustomFieldSubject {
     /** @return HasMany<Milestone, $this> */
     public function milestones(): HasMany {
         return $this->hasMany(Milestone::class)->orderBy('position')->orderBy('due_date');
+    }
+
+    /** @return MorphMany<\App\Models\Diary\OpenIssue, $this> */
+    public function openIssues(): MorphMany {
+        /** @var MorphMany<\App\Models\Diary\OpenIssue, $this> $relation */
+        $relation = $this->morphMany(\App\Models\Diary\OpenIssue::class, 'subject')->latest('id');
+
+        return $relation;
     }
 
     /** @return HasMany<Task, $this> */

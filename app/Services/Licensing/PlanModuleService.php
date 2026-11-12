@@ -65,21 +65,4 @@ class PlanModuleService {
         }
         PlanModuleGrace::forgetPending((int) $organization->id); // Massenlöschung feuert keine Modell-Events
     }
-
-    /**
-     * Module, die aktuell in laufender Karenz sind (Zugriff bleibt erhalten).
-     *
-     * @return list<string>
-     */
-    public function activeGraceModules(int $organizationId): array {
-        /** @var list<string> $modules */
-        $modules = PlanModuleGrace::query()
-            ->where('organization_id', $organizationId)
-            ->whereNull('purged_at')
-            ->where('grace_until', '>', Carbon::now())
-            ->pluck('module')
-            ->all();
-
-        return $modules;
-    }
 }

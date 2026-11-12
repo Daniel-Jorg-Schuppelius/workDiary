@@ -1,7 +1,7 @@
 ---
 title: "Transport de personnes (taxi/VTC)"
 topic: passenger.overview
-version: 1
+version: 3
 keywords:
     - société de taxi
     - entreprise de VTC
@@ -48,3 +48,9 @@ ouverts jusqu'à leur clarification motivée.
 
 WorkDiary ne remplace ni le taximètre/compteur kilométrique ni la TSE — ces
 systèmes restent souverains ; leurs valeurs sont documentées et rapprochées.
+
+**Temps d’attente à la clôture de la course :** à la clôture d’une course, vous saisissez le temps d’attente en minutes ; il est prérempli avec le temps entre le début de l’attente et la prise en charge. Il est enregistré à la seconde près.
+
+## Courses dans le décompte de service
+
+À la clôture d'un décompte de service, WorkDiary rattache les courses terminées du chauffeur pendant ce service (horaires du service, à défaut le jour du service) : les courses effectuées sont réglées, les courses annulées, interrompues et non honorées sont soldées sans montant. La course affiche ensuite son décompte.

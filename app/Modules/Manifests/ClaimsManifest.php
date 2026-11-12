@@ -119,6 +119,10 @@ final class ClaimsManifest extends Manifest {
             \App\Services\Reporting\Contracts\EarlyWarningSource::class => [
                 \App\Services\Claims\EarlyWarnings\ClaimPatternWarningSource::class,
             ],
+            // Offene Reklamationen am Asset (MVP-1617).
+            \App\Services\Cockpit\Contracts\CockpitPanel::class => [
+                \App\Services\Claims\Cockpit\ClaimCaseCockpitPanel::class,
+            ],
         ];
     }
 }

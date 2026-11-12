@@ -11,7 +11,7 @@
 namespace App\Models\Learning;
 
 use App\Enums\Learning\LearningProgressStatus;
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,9 +31,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $completed_at
  * @property int $attempts
  * @property int $progress_percent
+ * @property int|null $survey_invitation_id
  */
 class LearningUnitProgress extends Model {
     use BelongsToOrganization;
+    use HasAttachments;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
@@ -50,6 +52,7 @@ class LearningUnitProgress extends Model {
         'completed_at',
         'attempts',
         'progress_percent',
+        'survey_invitation_id',
     ];
 
     /** @var array<string, string> */

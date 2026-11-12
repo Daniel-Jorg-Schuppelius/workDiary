@@ -1,7 +1,7 @@
 ---
 title: "Órdenes de fabricación"
 topic: manufacturing.orders
-version: 5
+version: 6
 keywords:
     - orden de producción
     - lista de materiales
@@ -121,3 +121,7 @@ contraparte aparece allí con el número del programa. También aparecen las
 relaciones que comunica el propio programa, por ejemplo un anticipo creado en
 Lexoffice. La columna **Relación** indica qué es el documento respecto a este;
 «a través de …» nombra el documento por el que existe la relación.
+
+## Entrega sin cliente y cancelación
+
+Una entrega sin cliente no requiere facturación; su estado de facturación muestra **No requerido**. Una orden cancelada cierra sus necesidades de material faltante abiertas: ya no pasan a las propuestas de pedido.

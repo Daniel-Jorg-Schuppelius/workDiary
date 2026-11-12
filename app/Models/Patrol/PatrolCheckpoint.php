@@ -33,6 +33,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $token_suffix
  * @property int $expected_offset_minutes
  * @property int $tolerance_minutes
+ * @property \Illuminate\Support\Carbon|null $deactivated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  */
 class PatrolCheckpoint extends Model {
     use BelongsToOrganization;
@@ -43,7 +45,7 @@ class PatrolCheckpoint extends Model {
 
     protected $fillable = [
         'organization_id', 'patrol_route_id', 'position', 'label',
-        'token_hash', 'token_suffix', 'expected_offset_minutes', 'tolerance_minutes',
+        'token_hash', 'token_suffix', 'expected_offset_minutes', 'tolerance_minutes', 'deactivated_at',
     ];
 
     /** @var array<string, string> */
@@ -51,10 +53,25 @@ class PatrolCheckpoint extends Model {
         'position' => 'integer',
         'expected_offset_minutes' => 'integer',
         'tolerance_minutes' => 'integer',
+        'deactivated_at' => 'datetime',
     ];
 
     public static function hashToken(string $token): string {
         return CryptoHelper::hash(trim($token));
+    }
+
+    /**
+     * Punkte, die ein Lauf mit diesem Start erwartet: beim Start nicht deaktiviert
+     * (MVP-1611) — eine spätere Deaktivierung verändert frühere Läufe nicht.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder<self> $query
+     */
+    public function scopeExpectedAt(\Illuminate\Database\Eloquent\Builder $query, \DateTimeInterface $startedAt): void {
+        $query->where(fn ($q) => $q->whereNull('deactivated_at')->orWhere('deactivated_at', '>', $startedAt));
+    }
+
+    public function isExpectedAt(\DateTimeInterface $startedAt): bool {
+        return $this->deactivated_at === null || $this->deactivated_at->gt($startedAt);
     }
 
     /** @return BelongsTo<PatrolRoute, $this> */

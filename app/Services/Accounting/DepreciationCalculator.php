@@ -187,17 +187,6 @@ final class DepreciationCalculator {
         return $rows;
     }
 
-    /** AfA-Betrag eines Geschäftsjahres (Startjahr) oder null. */
-    public function amountForYear(FixedAsset $asset, int $fiscalYearStartYear, int $fiscalYearStartMonth = 1): Money {
-        foreach ($this->scheduleFor($asset, $fiscalYearStartMonth) as $row) {
-            if ($row->fiscalYear === $fiscalYearStartYear) {
-                return $row->amount;
-            }
-        }
-
-        return Money::zero($asset->currency);
-    }
-
     /** Zeile eines Geschäftsjahres oder null, wenn die Anlage dort keine AfA hat. */
     public function rowForYear(FixedAsset $asset, int $fiscalYearStartYear, int $fiscalYearStartMonth = 1): ?DepreciationScheduleRow {
         foreach ($this->scheduleFor($asset, $fiscalYearStartMonth) as $row) {

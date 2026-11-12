@@ -173,8 +173,8 @@ return [
     'plan_ist' => [
         'warning' => [
             'presence' => [
-                'lateStart' => 'Inicio más de 15 minutos después de lo previsto',
-                'hoursDiff' => 'Horas con desviación superior al 10 %',
+                'lateStart' => 'Inicio más de :minutes minutos después de lo previsto',
+                'hoursDiff' => 'Horas con desviación superior al :percent %',
             ],
         ],
     ],
@@ -236,6 +236,7 @@ return [
         'group' => [
             'finance' => 'Finanzas',
             'operations' => 'Operaciones',
+            'hr' => 'Personal',
             'sales' => 'Ventas',
             'service' => 'Servicio',
             'quality' => 'Calidad',
@@ -257,6 +258,12 @@ return [
             'resale_open_hint' => 'pendiente :amount',
             'resale_margin' => 'Margen de suscripciones y licencias',
             'resale_margin_hint' => ':periods periodos, :actual con compra real',
+            'sick_days' => 'Días de baja',
+            'sick_days_hint' => ':episodes bajas de :users personas · prestación agotada: :exhausted',
+            'qualifications_expired' => 'Cualificaciones vencidas',
+            'qualifications_expiring' => 'A día de hoy · vencen en :days días: :count',
+            'vacation_pending' => 'Solicitudes de vacaciones abiertas',
+            'vacation_pending_hint' => 'A día de hoy · comienzan en los próximos 14 días: :count',
         ],
         'digest' => [
             'subject' => 'Informe de dirección :organization · :range',
@@ -347,6 +354,8 @@ return [
         'tracked_minutes' => 'Registrado (min)',
         'invoiced_minutes' => 'Facturado (min)',
         'present_minutes' => 'Presente (min)',
+        'homeoffice_minutes' => 'Teletrabajo (min)',
+        'errand_minutes' => 'Salida de servicio (min)',
         'booked_minutes' => 'Registrado (min)',
         'balance_minutes' => 'Saldo (min)',
         'plan_minutes' => 'Plan (min)',
@@ -384,6 +393,7 @@ return [
         'defects_period' => 'Defectos en el período',
         'defects_12_months' => 'Defectos 12 meses',
         'recurring_defect' => 'Defecto recurrente',
+        'recurring_defects' => 'Defectos recurrentes',
         'maintenance_sessions' => 'Sesiones de mantenimiento',
         'maintenance_minutes' => 'Tiempo de mantenimiento (min)',
         'last_incident' => 'Último incidente',
@@ -480,6 +490,7 @@ return [
         'median_actual_minutes' => 'Real mediano (min)',
         'p90_actual_minutes' => 'Real P90 (min)',
         'contribution_per_order_eur' => 'Margen por orden (€)',
+        'top_causes' => 'Causas principales (pedidos)',
         'license_plate' => 'Matrícula',
         'propulsion' => 'Propulsión',
         'trips' => 'Viajes',

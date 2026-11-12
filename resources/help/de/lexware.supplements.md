@@ -1,7 +1,7 @@
 ---
 title: "Lexware-Ergänzungen: Tarif, Funktionsmatrix und Übergabe"
 topic: lexware.supplements
-version: 2
+version: 3
 keywords:
     - Lexoffice
     - Lexware Office
@@ -34,3 +34,7 @@ Im Systemmenü unter **Finanzen & Lohn → Lexware-Ergänzungen** hinterlegen Si
 **Automatische Übergabe:** Der Übergabeweg „automatisch“ setzt einen eigenen API-Schlüssel (Tarif XL) und den nachgewiesenen Übergabeweg voraus; bis dahin bleibt der manuelle Export der Regelweg. Offene Übergaben bleiben bei einem Tarifwechsel sichtbar.
 
 **Rechte:** Die Seiten sehen alle mit „Rechnungen auflisten“; das Tarifprofil ändert nur, wer „Finanzkonfiguration“ hat; Export und Bestätigung brauchen „Rechnungen exportieren“. Im Systemmenü erscheint das Tarifprofil nur mit „Finanzkonfiguration“; von der Übergabeliste aus bleibt es für alle mit „Rechnungen auflisten“ lesbar.
+
+## Filter der Übergabeliste
+
+Das Filter bietet die Stände des manuellen Wegs an: offen, exportiert, manuell bestätigt. Übertragen, Prüfung erforderlich und fehlgeschlagen setzt erst die automatische Übergabe, die nach dem Nachweis des Übergabewegs folgt.

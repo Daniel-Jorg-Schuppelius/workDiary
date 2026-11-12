@@ -40,6 +40,9 @@ return [
         'next_action' => 'Angebot :number erneut nachfassen',
         'wrong_status' => 'Nur versandte oder freigegebene Angebote lassen sich nachfassen.',
         'no_customer' => 'Das Angebot hat keinen Kunden — ohne Kunden gibt es keine Akte für den Vermerk.',
+        'owner_field' => 'Zuständig fürs Nachfassen',
+        'owner_default' => 'Ersteller des Angebots (Vorgabe)',
+        'owner_hint' => 'Erhält die Erinnerung, wenn der Nachfasstermin fällig ist, und erscheint unter „Nur meine“.',
         'kpi' => [
             'due' => 'Fällig',
             'upcoming' => 'Anstehend',
@@ -114,7 +117,6 @@ return [
         'flash' => [
             'confirmed' => 'Auftragsbestätigung :number bestätigt.',
             'cancelled' => 'Auftragsbestätigung storniert.',
-            'create_first' => 'Erstellen Sie zuerst die Auftragsbestätigung.',
         ],
         'error' => [
             'not_won' => 'Nur angenommene Angebote werden bestätigt.',

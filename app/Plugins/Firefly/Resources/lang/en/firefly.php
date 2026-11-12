@@ -49,6 +49,7 @@ return [
         'search' => 'Search',
         'search_placeholder' => 'Description, counterparty, document number',
         'all_matches' => 'All assignments',
+        'open_matches' => 'Open (none or ambiguous)',
         'col' => [
             'date' => 'Date',
             'kind' => 'Type',
@@ -56,9 +57,23 @@ return [
             'description' => 'Description',
             'match' => 'Assignment',
             'amount' => 'Amount',
+            'actions' => 'Actions',
         ],
         'empty' => 'No movements yet',
         'foreign_amount' => 'Amount in second currency',
+    ],
+    // Erledigt markieren (MVP-1628)
+    'settle' => [
+        'title' => 'Mark movement as settled',
+        'action' => 'Settled',
+        'intro' => 'The movement needs no document (for example an account fee or a private withdrawal). It then no longer counts in the “Finance movements” tile and the work queue; the synchronisation does not change that.',
+        'note' => 'Reason',
+        'done' => 'Movement marked as settled.',
+        'already' => 'The movement is already settled.',
+        'reopened' => 'Movement reopened.',
+        'reopen' => 'Reopen',
+        'filter' => 'Settled',
+        'badge' => 'Settled by :name on :date',
     ],
     'search' => [
         'domain' => 'Firefly III movements',
@@ -76,5 +91,10 @@ return [
     'health' => [
         'not_configured' => 'Firefly III is not set up (address or token missing).',
         'not_connected' => 'Firefly III connection not checked yet.',
+    ],
+    'work_queue' => [
+        'source' => 'Firefly III',
+        'unmatched' => '{1} 1 Firefly transaction without assignment|[2,*] :count Firefly transactions without assignment',
+        'ambiguous' => '{1} 1 Firefly transaction with ambiguous assignment|[2,*] :count Firefly transactions with ambiguous assignment',
     ],
 ];

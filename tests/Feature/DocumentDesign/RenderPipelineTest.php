@@ -35,7 +35,7 @@ class RenderPipelineTest extends TestCase {
     }
 
     private function makeOrgAdmin(): array {
-        $org = Organization::factory()->create();
+        $org = Organization::factory()->withIssuerIdentity()->create();
         $this->app->instance('currentOrganization', $org);
         $admin = User::factory()->admin()->create(['organization_id' => $org->id]);
 

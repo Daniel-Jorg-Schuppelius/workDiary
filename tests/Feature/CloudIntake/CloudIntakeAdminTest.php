@@ -145,6 +145,8 @@ class CloudIntakeAdminTest extends TestCase {
             'root_folder_path' => '/WorkDiary',
         ]);
 
+        \App\Models\Customer\Customer::factory()->create(['organization_id' => $this->organization->id, 'number' => 'K-10023']);
+
         // Unbekannte Variable blockiert das Speichern.
         $this->actingAs($this->admin)->from(route('admin.cloud-intake.index'))
             ->post(route('admin.cloud-intake.routes.store', $connection), [
@@ -152,19 +154,33 @@ class CloudIntakeAdminTest extends TestCase {
                 'priority' => 10,
                 'target' => CloudIntakeRouteTarget::Document->value,
                 'document_type' => 'other',
+                'test_path' => 'Kunden/K-10023/a.pdf',
             ])->assertSessionHasErrors('path_pattern');
 
-        // Gültige Regel aktiviert die Verbindung (Konto+Ordner+Regel).
+        // Gültige, getestete Regel: Konto+Ordner+Regel stehen, importiert wird
+        // aber erst nach bestätigter Vorschau (MVP-1613) — bis dahin Entwurf.
         $this->actingAs($this->admin)->post(route('admin.cloud-intake.routes.store', $connection), [
             'path_pattern' => 'Kunden/{customer_number}/**',
             'priority' => 10,
             'target' => CloudIntakeRouteTarget::Document->value,
             'document_type' => 'contract',
             'allowed_extensions' => 'PDF, docx',
+            'test_path' => 'Kunden/K-10023/Vertraege/rahmen.pdf',
         ])->assertRedirect();
 
         $route = CloudDocumentRoute::query()->sole();
         $this->assertSame(['pdf', 'docx'], $route->allowed_extensions);
+        $this->assertSame(CloudIntakeConnectionStatus::Draft, $connection->fresh()->status);
+        $connection->forceFill(['start_confirmed_at' => now()])->save();
+        $this->actingAs($this->admin)->put(route('admin.cloud-intake.routes.update', $route), [
+            'path_pattern' => 'Kunden/{customer_number}/**',
+            'priority' => 10,
+            'target' => CloudIntakeRouteTarget::Document->value,
+            'document_type' => 'contract',
+            'allowed_extensions' => 'PDF, docx',
+            'test_path' => 'Kunden/K-10023/Vertraege/rahmen.pdf',
+            'active' => '1',
+        ])->assertRedirect();
         $this->assertSame(CloudIntakeConnectionStatus::Active, $connection->fresh()->status);
 
         // Dialoge rendern (Modal-Konvention).

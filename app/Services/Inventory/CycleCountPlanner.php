@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Services\Inventory;
 
-use App\Models\Inventory\{StockValuation, Warehouse};
+use App\Models\Inventory\Warehouse;
 
 /**
  * Zyklische Inventurplanung per ABC-Analyse (Feature 048, E6). Klassifiziert die
- * Varianten eines Lagers nach Bestandswert (Menge × Durchschnittskosten) in
+ * Varianten eines Lagers nach Bestandswert (nach dem wirksamen Bewertungsverfahren) in
  * A/B/C (kumulativ ≤80 % = A, ≤95 % = B, sonst C) und liefert die fälligen
  * Varianten einer Klasse für eine zyklische Zählung
  * ({@see StocktakeService::openCycle()}).
@@ -24,18 +24,22 @@ use App\Models\Inventory\{StockValuation, Warehouse};
 class CycleCountPlanner {
     public const int SCALE = 4;
 
+    public function __construct(private readonly InventoryValuationManager $valuation) {}
+
     /** @return array<int, string> variantId => 'A'|'B'|'C' */
     public function classify(Warehouse $warehouse): array {
         /** @var array<int, numeric-string> $values */
         $values = [];
         $total = '0';
 
-        foreach (StockValuation::query()->where('warehouse_id', $warehouse->id)->get() as $valuation) {
-            $value = bcmul($valuation->qty_on_hand, $valuation->avg_cost?->getAmount() ?? '0', self::SCALE);
+        // Wert nach dem wirksamen Verfahren je Variante — bei FIFO/FEFO aus den Schichten.
+        $organization = $warehouse->organization;
+        foreach ($organization !== null ? $this->valuation->summariesForWarehouse($warehouse, $organization) : [] as $variantId => $summary) {
+            $value = $summary['value'];
             if (bccomp($value, '0', self::SCALE) <= 0) {
                 continue;
             }
-            $values[(int) $valuation->article_variant_id] = $value;
+            $values[(int) $variantId] = $value;
             $total = bcadd($total, $value, self::SCALE);
         }
 

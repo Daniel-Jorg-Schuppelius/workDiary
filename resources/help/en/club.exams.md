@@ -1,7 +1,7 @@
 ---
 title: "Exams"
 topic: club.exams
-version: 1
+version: 2
 keywords:
     - belt test
     - grading exam
@@ -31,3 +31,5 @@ An exam offer is a club event of kind “exam” with system, target grades, exa
 **Result:** Examiners of the offer or holders of the “examiner” right record passed, failed or no-show. Only “passed” awards the target grade, exactly once and with a reference to the exam; the eligibility report is frozen with the result. A failure removes no existing grade and resets no training time.
 
 **Certificate:** Every valid grade has a PDF certificate with date, source, exam and confirming person. A revocation is printed visibly; the grading history remains authoritative.
+
+**Releasing results:** Candidates and guardians only see recorded results once you run “Release results” — until then “My club” shows “Result pending”, and the new grade and the certificate do not appear there yet. You can release as soon as every candidate is decided: no open request, no admission without a result. Releasing freezes the exam; admission reports and the evidence used no longer change, and new candidates and results are no longer possible. Later corrections go through the review or the revocation of the grade.

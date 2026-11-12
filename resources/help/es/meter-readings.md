@@ -1,7 +1,7 @@
 ---
 title: "Lecturas de contadores"
 topic: meter-readings
-version: 1
+version: 2
 keywords:
     - lectura del contador
     - registrar lectura
@@ -28,3 +28,5 @@ unidad para seguir la evolución del consumo por contador. Una nueva
 lectura puede crearse directamente desde el contexto de un activo;
 valores no plausibles, como una lectura inferior a la anterior, se
 rechazan, y el registro requiere el permiso correspondiente.
+
+**Foto del contador:** al registrar puede adjuntar una foto de la lectura (en el móvil, directamente con la cámara). Se guarda como adjunto de la lectura; en la lista, el icono de la cámara abre la foto.

@@ -22,7 +22,11 @@ final class NullRmaStockHandler implements RmaStockHandler {
         return false;
     }
 
-    public function bookReturn(ClaimRmaReturn $rma, string $state, User $actor): void {}
+    public function bookReturn(ClaimRmaReturn $rma, string $state, User $actor): bool {
+        return false;
+    }
 
-    public function applyDisposition(ClaimRmaReturn $rma, ClaimRmaDisposition $disposition, User $actor): void {}
+    public function applyDisposition(ClaimRmaReturn $rma, ClaimRmaDisposition $disposition, User $actor): bool {
+        return false;
+    }
 }

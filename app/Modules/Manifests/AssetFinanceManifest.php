@@ -97,6 +97,10 @@ final class AssetFinanceManifest extends Manifest {
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\AssetFinance\DeadlineScans\AssetFinanceDeadlineScan::class,
             ],
+            // Verträge am Asset und beim Leasinggeber (MVP-1617).
+            \App\Services\Cockpit\Contracts\CockpitPanel::class => [
+                \App\Services\AssetFinance\Cockpit\AssetFinanceCockpitPanel::class,
+            ],
         ];
     }
 }

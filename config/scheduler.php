@@ -612,6 +612,14 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 1,
         ],
+        // Gespeicherte Gleitzeitsalden (MVP-1550): nachts, vor dem Arbeitsbeginn; Kachel, Terminal und Prognose lesen sie.
+        'flex.recompute' => [
+            'command' => 'flex:recompute',
+            'cadence' => ['type' => 'dailyAt', 'time' => '02:40'],
+            'allowed' => ['dailyAt', 'hourly'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 10,
+        ],
         'attendance.close_open' => [
             'command' => 'attendance:close-open',
             'cadence' => ['type' => 'everyFifteenMinutes'],

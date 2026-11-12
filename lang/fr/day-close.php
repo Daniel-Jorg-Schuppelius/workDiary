@@ -79,6 +79,14 @@ return [
         'billable' => 'facturable',
     ],
 
+    // Plan/Ist der Anwesenheit im Kopf des Tages (MVP-1552).
+    'plan_ist' => [
+        'label' => 'Prévu/réel',
+        'plan' => 'Prévu dès :start (:duration)',
+        'plan_no_start' => 'Prévu :duration',
+        'actual' => 'Réel :start–:end (:duration)',
+        'actual_none' => 'Réel : pas encore de pointage',
+    ],
     'hint' => [
         'no_attendance' => 'Aucun pointage ce jour-là.',
         'attendance_correction_only' => 'Les pointages ne peuvent être modifiés que via une demande de correction.',
@@ -87,6 +95,7 @@ return [
         'break_recorded' => 'Pause : :min min',
         'no_issues' => 'Aucune anomalie — la journée est saisie de manière cohérente.',
         'month_locked' => 'Ce jour appartient à un mois approuvé et est verrouillé — la clôture et les demandes de correction passent par l\'approbation mensuelle.',
+        'day_closed' => 'Cette journée est clôturée — les pointages et les saisies se modifient par une demande de correction.',
         'correction_intro' => 'Décrivez ce qui doit être corrigé ce jour-là.',
         'reopen_intro' => 'La journée est rouverte sans demande de correction — la justification est enregistrée dans le journal d\'audit.',
     ],
@@ -130,6 +139,8 @@ return [
 
     'errors' => [
         'month_entry_locked' => 'Le mois est validé — pour des temps ultérieurs, veuillez déposer une demande de correction.',
+        'day_entry_locked' => 'La journée est clôturée — veuillez déposer une demande de correction pour les temps saisis après coup.',
+        'day_closed_reason' => 'Journée déjà clôturée',
         'future_day' => 'Un jour futur ne peut pas être clôturé.',
         'blocking_warnings' => 'La journée comporte des avertissements bloquants et ne peut pas être clôturée.',
         'illegal_day_status' => 'Action non autorisée : le statut du jour est :status.',

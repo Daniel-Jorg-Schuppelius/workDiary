@@ -1,7 +1,7 @@
 ---
 title: "Betrieb: Zeitaufteilung, Prozeduren, Material, Notdienst"
 topic: reports.operations
-version: 6
+version: 8
 keywords:
     - Betriebsauswertung
     - Service-Aufträge
@@ -142,6 +142,9 @@ Folge-Punkt/-Auftrag** oder **Ohne Folgemaßnahme**). Export als PDF, CSV und
 Excel; CSV und Excel enthalten zusätzlich die vorgeschlagene Aktion und die
 Begründung.
 
+Die Risikoakzeptanz selbst geschieht im Prozedurlauf an der Abweichung
+(**Risiko akzeptieren**, Recht „Kritische Abweichung akzeptieren“).
+
 ## Blockierte Prozedurläufe
 
 **Auswertungen** → **Projekte & Kunden** → **Blockierte Prozedurläufe** zeigt
@@ -215,13 +218,15 @@ erscheint für Administratoren und mit dem Recht **Auswertungen einsehen**.
   Asset), **Offene Punkte** (derzeit offen, unabhängig vom Zeitraum),
   **Eskaliert** (offene Punkte im Status **Blockiert**), **Defekte**
   (Defektprotokolle dieser Aufträge im Zeitraum), **Defektrate %** (Defekte im
-  Verhältnis zu den Aufträgen) und **Letzter Vorfall**.
+  Verhältnis zu den Aufträgen), **Wiederholdefekte** (Assets der Zeile mit
+  mindestens drei Defektmeldungen in den zwölf Monaten bis zum Ende des
+  Zeitraums, davon mindestens eine im Zeitraum) und **Letzter Vorfall**.
 - Gibt es im Zeitraum Zeiteinträge aus Fernwartungssitzungen zu den
   Geräten, kommen **Wartungssitzungen** und **Wartungszeit** sowie ein
   Diagramm der Wartungszeit hinzu.
 - Diagramme: **Defekte im Zeitraum (Top 20)** und **Defektrate (Top 15)**.
-  Die Zahlen bei offenen Punkten, Eskalationen und Defekten sowie die Balken
-  führen in die zugehörigen Detaillisten.
+  Die Zahlen bei offenen Punkten, Eskalationen, Defekten und
+  Wiederholdefekten sowie die Balken führen in die zugehörigen Detaillisten.
 
 Export als PDF, CSV und Excel.
 

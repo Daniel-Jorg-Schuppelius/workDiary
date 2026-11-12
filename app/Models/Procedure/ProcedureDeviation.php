@@ -32,6 +32,7 @@ use Illuminate\Support\Carbon;
  * @property ProcedureDeviationProposedAction|null $proposed_action
  * @property int|null $open_issue_id
  * @property int|null $follow_up_diary_entry_id
+ * @property int|null $requalify_run_id
  * @property int|null $risk_accepted_by_user_id
  * @property Carbon|null $risk_accepted_at
  * @property int $created_by_user_id
@@ -51,6 +52,7 @@ class ProcedureDeviation extends Model {
         'proposed_action',
         'open_issue_id',
         'follow_up_diary_entry_id',
+        'requalify_run_id',
         'risk_accepted_by_user_id',
         'risk_accepted_at',
         'created_by_user_id',
@@ -76,6 +78,11 @@ class ProcedureDeviation extends Model {
     /** @return BelongsTo<User, $this> */
     public function riskAcceptedBy(): BelongsTo {
         return $this->belongsTo(User::class, 'risk_accepted_by_user_id');
+    }
+
+    /** @return BelongsTo<ProcedureRun, $this> */
+    public function requalifyRun(): BelongsTo {
+        return $this->belongsTo(ProcedureRun::class, 'requalify_run_id');
     }
 
     /** @return BelongsTo<OpenIssue, $this> */

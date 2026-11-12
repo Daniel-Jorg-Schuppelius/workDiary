@@ -28,6 +28,7 @@ class IssueProtocolSignatureTokenRequest extends BaseFormRequest {
             'signer_name' => ['nullable', 'string', 'max:120'],
             'signer_email' => ['required', 'email', 'max:180'],
             'ttl_days' => ['nullable', 'integer', 'min:1', 'max:30'],
+            'send_email' => ['nullable', 'boolean'],
         ];
     }
 }

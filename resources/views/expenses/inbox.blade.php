@@ -135,12 +135,10 @@
                                         :href="route('expense-approvals.reject-form', $expense)"
                                         :label="__('Ablehnen')" />
                         @elseif ($expense->status === \App\Enums\Expense\ExpenseStatus::Approved)
-                            <x-action-form :action="route('expense-approvals.reimburse', $expense)"
-                                  :confirm="__('Als erstattet markieren?')"
-                                  :confirm-label="__('Markieren')">
-                                <x-icon-btn icon="payments" tone="info" size="sm" type="submit"
-                                            :label="__('Als erstattet markieren')" />
-                            </x-action-form>
+                            <x-icon-btn icon="payments" tone="info" size="sm"
+                                        data-entry-modal-trigger
+                                        :href="route('expense-approvals.reimburse-form', $expense)"
+                                        :label="__('Als erstattet markieren')" />
                         @endif
                     </td>
                 </tr>

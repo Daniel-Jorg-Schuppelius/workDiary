@@ -1,7 +1,7 @@
 ---
 title: "Complementos Lexware: tarifa, matriz de funciones y entrega"
 topic: lexware.supplements
-version: 2
+version: 3
 keywords:
     - Lexoffice
     - Lexware Office
@@ -32,3 +32,7 @@ En el menú del sistema, en **Finanzas y nómina → Complementos Lexware**, reg
 **Entrega automática:** La vía «automática» requiere una clave API propia (tarifa XL) y una vía de entrega comprobada; hasta entonces la exportación manual sigue siendo la vía estándar. Las entregas abiertas permanecen visibles al cambiar de tarifa.
 
 **Permisos:** Ven las páginas todas las personas con «Listar facturas»; solo «Configuración financiera» cambia el perfil de tarifa; la exportación y la confirmación requieren «Exportar facturas». En el menú del sistema, el perfil de tarifa solo aparece con «Configuración financiera»; desde la lista de entrega sigue siendo legible para todas las personas con «Listar facturas».
+
+## Filtro de la lista de entrega
+
+El filtro ofrece los estados de la vía manual: abierto, exportado, confirmado manualmente. Transmitido, revisión necesaria y fallido solo los establece la entrega automática, que llegará cuando se haya comprobado la vía de entrega.

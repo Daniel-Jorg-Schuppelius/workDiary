@@ -20,4 +20,9 @@ class InvalidOrderTransitionException extends RuntimeException {
             'status' => $status->label(),
         ]));
     }
+
+    /** @param list<string> $names Personen mit laufender Stoppuhr auf dem Auftrag */
+    public static function stopwatchRunning(array $names): self {
+        return new self((string) __('diary.lifecycle.error.stopwatch_running', ['names' => implode(', ', $names)]));
+    }
 }

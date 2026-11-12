@@ -42,7 +42,6 @@ class RecurrenceGeneratorTest extends TestCase {
             'organization_id' => $this->organization->id,
             'name' => 'Wartung ' . uniqid('', true),
             'status' => ProjectStatus::Active->value,
-            'is_maintenance' => true,
         ]);
         $this->now = CarbonImmutable::create(2026, 5, 19);
     }

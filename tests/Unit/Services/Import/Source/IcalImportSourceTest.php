@@ -58,7 +58,7 @@ class IcalImportSourceTest extends TestCase {
         $rows = $this->collect($source);
 
         $this->assertCount(1, $rows);
-        $this->assertFalse($rows[0]->isWarning());
+        $this->assertNull($rows[0]->warning);
         $this->assertSame([
             'user_email' => 'worker@example.com',
             'date' => '2026-07-01',
@@ -80,8 +80,8 @@ class IcalImportSourceTest extends TestCase {
         $rows = $this->collect($source);
 
         $this->assertCount(2, $rows);
-        $this->assertTrue($rows[0]->isWarning());
-        $this->assertTrue($rows[1]->isWarning());
+        $this->assertNotNull($rows[0]->warning);
+        $this->assertNotNull($rows[1]->warning);
     }
 
     public function test_transparent_event_is_kept_for_project_times(): void {
@@ -96,7 +96,7 @@ class IcalImportSourceTest extends TestCase {
         }
 
         $this->assertCount(1, $rows);
-        $this->assertFalse($rows[0]->isWarning());
+        $this->assertNull($rows[0]->warning);
         $this->assertSame('Projekt X', $rows[0]->data['project']);
         $this->assertSame('Analyse', $rows[0]->data['description']);
         $this->assertSame('12:00', $rows[0]->data['start_time']);
@@ -131,11 +131,11 @@ class IcalImportSourceTest extends TestCase {
         $window = [new \DateTimeImmutable('2026-07-01'), new \DateTimeImmutable('2026-08-01')];
         $rows = $this->collect(new IcalImportSource($path, new AttendanceIcalMapper(), 'Europe/Berlin', [], $window));
         $this->assertCount(1, $rows);
-        $this->assertTrue($rows[0]->isWarning());
+        $this->assertNotNull($rows[0]->warning);
 
         $rows = $this->collect(new IcalImportSource($path, new AttendanceIcalMapper(), 'Europe/Berlin'));
         $this->assertCount(2, $rows);
-        $this->assertTrue($rows[0]->isWarning());
+        $this->assertNotNull($rows[0]->warning);
         $this->assertSame('serie-2', $rows[1]->data['external_id']);
     }
 }

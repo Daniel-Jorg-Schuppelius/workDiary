@@ -46,4 +46,17 @@ return [
     'cockpit' => [
         'title' => 'Commandes Billbee',
     ],
+    // Bestandsführung (MVP-1626)
+    'inventory' => [
+        'heading' => 'Gestion des stocks',
+        'explain' => 'Avec « Billbee », WorkDiary continue de comptabiliser dans son propre journal de stock et transmet chaque niveau comme stock absolu par SKU à Billbee, qui le répartit sur les places de marché. « Local » ne transmet rien. Il n’existe pas de mode lecture seule : Billbee ne tient pas de stock propre.',
+        'mode_local' => 'Local — WorkDiary gère les stocks, Billbee ne reçoit rien.',
+        'mode_external' => 'Billbee — WorkDiary gère les stocks et transmet chaque niveau à Billbee.',
+        'save' => 'Enregistrer la gestion des stocks',
+        'confirm' => 'Vraiment changer la gestion des stocks ?',
+        'changed' => 'Gestion des stocks modifiée.',
+        'unchanged' => 'La gestion des stocks est déjà réglée ainsi.',
+        'needs_connection' => 'Les identifiants pour la transmission à Billbee manquent dans les paramètres du plugin.',
+        'other_leads' => 'Le stock est actuellement piloté par :plugin. Repassez-y d’abord la gestion des stocks en local.',
+    ],
 ];

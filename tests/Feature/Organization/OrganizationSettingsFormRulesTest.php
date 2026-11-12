@@ -228,4 +228,22 @@ class OrganizationSettingsFormRulesTest extends TestCase {
         $this->assertAccepted(['holidays' => ['provider' => '']]);
         $this->assertArrayNotHasKey('holidays', $this->organization->refresh()->settings ?? []);
     }
+
+    /** MVP-1620: Quellenvermerk der Kacheln und Sprache der Feiertagsnamen haben einen Schreibweg. */
+    public function test_tile_attribution_and_holiday_locale(): void {
+        $this->assertAccepted(['routing' => ['tiles' => ['attribution' => '&copy; Kachelserver Musterstadt']], 'holidays' => ['locale' => 'fr_CH']]);
+        $settings = (array) $this->organization->refresh()->settings;
+        $this->assertSame('&copy; Kachelserver Musterstadt', data_get($settings, 'routing.tiles.attribution'));
+        $this->assertSame('fr_CH', data_get($settings, 'holidays.locale'));
+
+        app()->instance('currentOrganization', $this->organization);
+        $this->assertSame('fr_CH', app(\App\Services\Calendar\HolidayService::class)->locale());
+
+        $this->assertRejected(['routing' => ['tiles' => ['attribution' => '<img src=x onerror=alert(1)>']]], 'settings.routing.tiles.attribution');
+        $this->assertRejected(['holidays' => ['locale' => 'xx_YY']], 'settings.holidays.locale');
+
+        $this->actingAs($this->admin)->get(route('admin.organizations.edit', $this->organization))->assertOk()
+            ->assertSee('name="settings[routing][tiles][attribution]"', false)
+            ->assertSee('name="settings[holidays][locale]"', false);
+    }
 }

@@ -14,6 +14,7 @@ use App\Enums\Domain\DomainProviderCommandStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
@@ -100,6 +101,33 @@ class DomainProviderCommand extends Model {
         'reconciled_at' => 'datetime',
         'attempts' => 'integer',
     ];
+
+    protected static function booted(): void {
+        // Der Abgleichsstand der Domain folgt jedem Statuswechsel (MVP-1620).
+        static::saved(static function (self $command): void {
+            if ($command->wasChanged('status') || $command->wasRecentlyCreated) {
+                DomainProjection::followCommand($command);
+            }
+        });
+    }
+
+    /**
+     * Hinweis des Abgleichs (MVP-1614) als Text: gespeichert ist ein Code
+     * mit Werten, damit der Hinweis in jeder Sprache lesbar bleibt.
+     */
+    public function reconciliationText(): ?string {
+        $raw = (string) $this->reconciliation_note;
+        if ($raw === '') {
+            return null;
+        }
+        $note = JsonHelper::isValid($raw) ? JsonHelper::decode($raw, true) : null;
+        if (! is_array($note) || ! is_string($note['code'] ?? null)) {
+            return $raw;
+        }
+        $params = array_map(static fn (mixed $value): string => is_scalar($value) ? (string) $value : '', array_diff_key($note, ['code' => true]));
+
+        return (string) __('domain.reconciliation.' . $note['code'], $params);
+    }
 
     /** Vier-Augen erfüllt: Freigeber gesetzt und ≠ Antragsteller. */
     public function hasFourEyesApproval(): bool {

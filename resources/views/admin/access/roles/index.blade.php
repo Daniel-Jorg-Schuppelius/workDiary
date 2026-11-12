@@ -45,6 +45,10 @@
                                     data-entry-modal-trigger
                                     :href="route('admin.access.roles.edit', $role)"
                                     :title="__('access.action.edit')" />
+                        <x-icon-btn icon="content_copy" size="xs"
+                                    data-entry-modal-trigger
+                                    :href="route('admin.access.roles.create', ['copy' => \App\Support\Sqid::encode(\Spatie\Permission\Models\Role::class, $role->id)])"
+                                    :title="__('access.action.copy')" />
                         @if (! in_array($role->name, $systemRoleNames, true))
                             <form method="POST" action="{{ route('admin.access.roles.destroy', $role) }}" class="inline">
                                 @csrf @method('DELETE')

@@ -16,7 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Article\ArticleVariant;
 use App\Models\Customer\Customer;
 use App\Models\Inventory\{StockLevelSetting, StockLot, StockMovement, StockReservation, Warehouse, WarehouseBin};
-use App\Services\Inventory\{CustomerStockAllocationService, InventoryLedger, LotStockReader, ReservationService, StockLevelService, ValuationService};
+use App\Services\Inventory\{CustomerStockAllocationService, EnteredQuantity, InventoryLedger, InventoryValuationManager, LotStockReader, NegativeStockApproval, ReservationService, StockLevelService};
 use App\Support\{ErrorText, Sqid};
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -30,9 +30,12 @@ use RuntimeException;
  * {@see InventoryLedger}. Lesen mit inventory.viewAny, Buchen mit inventory.post.
  */
 class StockController extends Controller {
+    use \App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+    use \App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+
     public function __construct(
         private readonly InventoryLedger $ledger,
-        private readonly ValuationService $valuation,
+        private readonly InventoryValuationManager $valuation,
         private readonly ReservationService $reservations,
         private readonly StockLevelService $levels,
         private readonly LotStockReader $lotStock,
@@ -71,7 +74,8 @@ class StockController extends Controller {
             // Salden und Bewertung je Lager in je einer Query statt ≥ 8 Queries
             // je Variante (Vollscan 2026-08-23, A4).
             $balances = $this->ledger->balancesByVariant($selected);
-            $valuations = $this->valuation->summariesForWarehouse($selected);
+            // Bewertung nach dem wirksamen Verfahren je Variante (Durchschnitt oder Schichten).
+            $valuations = $this->valuation->summariesForWarehouse($selected, $this->currentOrganization());
 
             $rows = ArticleVariant::query()->with('article')->whereIn('id', $variantIds)->orderBy('id')
                 ->paginate(50)->withQueryString()
@@ -122,8 +126,9 @@ class StockController extends Controller {
             'lotOptions' => $lotOptions,
             'showBlocked' => $rows !== null && collect($rows->items())->contains(fn (array $row): bool => $row['blocked'] !== null),
             'canPost' => Auth::user()?->can(P::InventoryPost->value) ?? false,
+            'canReserve' => Auth::user()?->can(P::InventoryReserve->value) ?? false,
             'canConfigure' => Auth::user()?->can(P::InventoryConfigure->value) ?? false,
-            'pickerVariants' => ArticleVariant::query()->with('article')
+            'pickerVariants' => ArticleVariant::query()->with(['article.units' => fn ($q) => $q->where('active', true)->orderBy('code')])
                 ->where('status', \App\Enums\Article\ArticleStatus::Active->value)
                 ->orderBy('id')->limit(500)->get(),
             'ownerships' => OwnershipType::cases(),
@@ -132,12 +137,86 @@ class StockController extends Controller {
         ]);
     }
 
-    public function releaseReservation(StockReservation $reservation): RedirectResponse {
-        Gate::authorize(P::InventoryPost->value);
+    /**
+     * Lagerjournal (MVP-1584): die Bewegungen eines Lagerorts mit der Menge in
+     * Basiseinheit und der Eingabe, wie sie erfasst wurde.
+     */
+    public function journal(Request $request): View {
+        Gate::authorize('viewAny', Warehouse::class);
 
-        $this->reservations->release($reservation);
+        $warehouses = Warehouse::query()->orderByDesc('is_default')->orderBy('name')->get();
+        $selectedId = Sqid::decodeOrNumeric(Warehouse::class, $request->query('warehouse'));
+        $selected = $selectedId !== null ? $warehouses->firstWhere('id', $selectedId) : null;
+        $search = $request->string('q')->toString();
+        $range = $this->globalDateRange();
 
-        return back()->with('success', __('inventory.overview.reservation_released'));
+        return view('inventory.journal', [
+            'warehouses' => $warehouses,
+            'selected' => $selected,
+            'search' => $search,
+            'movements' => StockMovement::query()
+                ->with(['variant.article', 'warehouse', 'bin', 'lot', 'actor'])
+                ->when($selected instanceof Warehouse, fn ($q) => $q->where('warehouse_id', $selected?->id))
+                ->when($search !== '', fn ($q) => $q->whereHas('variant', fn ($v) => $v
+                    ->whereLikeEscaped('sku', $search)
+                    ->orWhereHas('article', fn ($a) => $a->whereLikeEscaped('name', $search))))
+                ->whereBetween('occurred_at', [$range['from']->startOfDay(), $range['to']->endOfDay()])
+                ->orderByDesc('occurred_at')->orderByDesc('id')
+                ->paginate(50)
+                ->withQueryString(),
+        ]);
+    }
+
+    /**
+     * Reservierung ändern (MVP-1585): Priorität setzen, Teilmenge freigeben; reservierte, verbrauchte und offene Menge im Blick.
+     * Umverteilen (MVP-1626) an eine andere aktive Reservierung desselben Bestandstopfs.
+     */
+    public function editReservation(StockReservation $reservation): View {
+        Gate::authorize(P::InventoryReserve->value);
+
+        return view('inventory._reservation_dialog', [
+            'reservation' => $reservation->load('variant.article', 'warehouse'),
+            'redistributionTargets' => StockReservation::query()
+                ->where('status', \App\Enums\Inventory\ReservationStatus::Active->value)
+                ->where('article_variant_id', $reservation->article_variant_id)
+                ->where('warehouse_id', $reservation->warehouse_id)
+                ->where('bin_id', $reservation->bin_id)
+                ->where('ownership_type', $reservation->ownership_type)
+                ->whereKeyNot($reservation->id)
+                ->orderBy('priority')->orderBy('reserved_at')
+                ->get(),
+        ]);
+    }
+
+    public function updateReservation(Request $request, StockReservation $reservation): RedirectResponse {
+        Gate::authorize(P::InventoryReserve->value);
+
+        $data = $request->validate([
+            'priority' => ['required', 'integer', 'min:1', 'max:999'],
+            'release_qty' => ['nullable', 'numeric', 'gt:0'],
+            'redistribute_to' => ['nullable', 'string'],
+            'redistribute_qty' => ['nullable', 'numeric', 'gt:0'],
+        ]);
+
+        // Auditable hält die alte und neue Priorität fest.
+        $reservation->update(['priority' => (int) $data['priority']]);
+        if (($data['release_qty'] ?? null) !== null) {
+            $this->reservations->release($reservation, (string) $data['release_qty']);
+        }
+        if (($data['redistribute_to'] ?? null) !== null) {
+            $target = StockReservation::query()->find(Sqid::decodeOrNumeric(StockReservation::class, (string) $data['redistribute_to']));
+            if (! $target instanceof StockReservation) {
+                return back()->withErrors(['redistribute_to' => __('inventory.reservation.redistribute_invalid')]);
+            }
+            try {
+                $this->reservations->redistribute($reservation->refresh(), $target, isset($data['redistribute_qty']) ? (string) $data['redistribute_qty'] : null, Auth::id() !== null ? (int) Auth::id() : null);
+            } catch (RuntimeException $e) {
+                return back()->withErrors(['redistribute_qty' => ErrorText::for($e)]);
+            }
+        }
+
+        return redirect()->route('inventory.stock', ['warehouse' => $reservation->warehouse?->sqid])
+            ->with('success', __('inventory.reservation.saved'));
     }
 
     public function setLevels(Request $request): RedirectResponse {
@@ -159,13 +238,16 @@ class StockController extends Controller {
     }
 
     public function storeMovement(Request $request): RedirectResponse {
-        Gate::authorize(P::InventoryPost->value);
+        // MVP-1585: Reservieren und Freigeben ist ein eigenes Recht neben dem Buchen.
+        Gate::authorize(in_array($request->input('movement'), ['reserve', 'release'], true) ? P::InventoryReserve->value : P::InventoryPost->value);
 
         $data = $request->validate([
             'warehouse' => ['required', 'string'],
             'variant' => ['required', 'string'],
             'movement' => ['required', 'in:receipt,issue,reserve,release'],
             'qty' => ['required', 'numeric', 'gt:0'],
+            // Einheit des Artikels (MVP-1584); leer = Basiseinheit.
+            'unit' => ['nullable', 'string', 'max:20'],
             'ownership' => ['required', \Illuminate\Validation\Rule::enum(OwnershipType::class)],
             'allow_negative' => ['sometimes', 'boolean'],
             'cost_customer' => ['nullable', 'string'],
@@ -185,7 +267,13 @@ class StockController extends Controller {
             }
         }
         $ownership = OwnershipType::from((string) $data['ownership']);
-        $qty = (string) $data['qty'];
+        // Gebucht wird in Basiseinheit; Eingabe und Einheit bleiben an der Bewegung.
+        try {
+            $entered = EnteredQuantity::of($variant, (string) $data['qty'], $data['unit'] ?? null);
+        } catch (RuntimeException $e) {
+            return back()->withInput()->with('error', ErrorText::for($e));
+        }
+        $qty = $entered->base;
         $actor = Auth::id() !== null ? (int) Auth::id() : null;
 
         // Charge nur für die Entnahme (leer = FEFO); dass sie zur Variante gehört und aktiv ist, prüft die Zuteilung.
@@ -223,11 +311,28 @@ class StockController extends Controller {
             return back()->with('error', __('inventory.error.tracked_article_manual_move'));
         }
 
+        // MHD-Pflicht (MVP-1579): der manuelle Zugang kennt weder Charge noch Datum.
+        if ((string) $data['movement'] === 'receipt' && ($article->shelf_life_required ?? false)) {
+            return back()->with('error', __('inventory.error.shelf_life_manual_receipt'));
+        }
+
         // Vollaudit 2026-07 (M22): negative Bestände sind eine eigene,
         // rollenbasierte und auditierte Freigabe — nicht Teil von inventory.post.
         $allowNegative = (bool) ($data['allow_negative'] ?? false);
         if ($allowNegative) {
             Gate::authorize(P::InventoryNegative->value);
+            // Vier Augen (MVP-1626): die Entnahme wird Antrag, gebucht wird nach Freigabe einer zweiten Person.
+            $negative = app(NegativeStockApproval::class);
+            $organization = $warehouse->organization;
+            if ((string) $data['movement'] === 'issue' && $organization !== null && $negative->required($organization)) {
+                if ($costCustomer instanceof Customer) {
+                    return back()->withInput()->with('error', __('inventory.negative.no_customer_cost'));
+                }
+                $negative->request($variant, $warehouse, $entered, $ownership, $this->authUser(), $bin, $lot);
+
+                return redirect()->route('inventory.stock', ['warehouse' => $warehouse->sqid])
+                    ->with('success', __('inventory.negative.requested'));
+            }
             \App\Models\Audit\AuditLog::query()->create([
                 'organization_id' => $variant->organization_id,
                 'user_id' => $actor,
@@ -240,12 +345,12 @@ class StockController extends Controller {
 
         try {
             match ((string) $data['movement']) {
-                'receipt' => $this->ledger->receipt($variant, $warehouse, $qty, $ownership, actorUserId: $actor, bin: $bin),
+                'receipt' => $this->ledger->receipt($variant, $warehouse, $qty, $ownership, actorUserId: $actor, bin: $bin, entered: $entered),
                 'issue' => $costCustomer instanceof Customer && $ownership === OwnershipType::Own
-                    ? app(CustomerStockAllocationService::class)->issueForCustomer($costCustomer, $variant, $warehouse, $qty, actorUserId: $actor, lot: $lot, requireLot: $lotTracked)
-                    : $this->ledger->issue($variant, $warehouse, $qty, $ownership, allowNegative: $allowNegative, actorUserId: $actor, bin: $bin, lot: $lot, requireLot: $lotTracked),
-                'reserve' => $this->ledger->reserve($variant, $warehouse, $qty, $ownership, actorUserId: $actor, bin: $bin),
-                'release' => $this->ledger->releaseReservation($variant, $warehouse, $qty, $ownership, actorUserId: $actor, bin: $bin),
+                    ? app(CustomerStockAllocationService::class)->issueForCustomer($costCustomer, $variant, $warehouse, $qty, actorUserId: $actor, lot: $lot, requireLot: $lotTracked, entered: $entered)
+                    : $this->ledger->issue($variant, $warehouse, $qty, $ownership, allowNegative: $allowNegative, actorUserId: $actor, bin: $bin, lot: $lot, requireLot: $lotTracked, entered: $entered),
+                'reserve' => $this->ledger->reserve($variant, $warehouse, $qty, $ownership, actorUserId: $actor, bin: $bin, entered: $entered),
+                'release' => $this->ledger->releaseReservation($variant, $warehouse, $qty, $ownership, actorUserId: $actor, bin: $bin, entered: $entered),
                 default => throw new RuntimeException('Unbekannte Bewegungsart.'),
             };
         } catch (RuntimeException $e) {

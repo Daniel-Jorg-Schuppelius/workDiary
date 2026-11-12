@@ -1,7 +1,7 @@
 ---
 title: "Expense Categories"
 topic: catalog.expense-categories
-version: 1
+version: 2
 keywords:
     - expense types
     - out-of-pocket expenses
@@ -31,3 +31,5 @@ recorded.
 Inactive categories are retained but no longer offered for selection. A
 category that is still used by expenses cannot be deleted; set it to
 inactive in that case.
+
+**Receipt required:** If “Receipt required” is set, an expense in this category can only be submitted once a receipt is attached. Saving as a draft always works; the form points out the requirement, and submitting without a receipt opens the receipt dialog.

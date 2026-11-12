@@ -22,8 +22,8 @@ use Spatie\Permission\PermissionRegistrar;
 
 /**
  * Wer eine Freigabestufe im Genehmigungs-Eingang entscheiden darf: die
- * genannte Person, die genannte Rolle oder — bei Stufen nach Art — die
- * Rolle, die die Organisation der Stufe dieser Art zuordnet.
+ * genannte Person, die genannte Rolle, wer das genannte Recht hat, oder — bei
+ * Stufen nach Art — die Rolle, die die Organisation der Stufe dieser Art zuordnet.
  */
 class ApprovalResponsibility {
     /** @var array<string, UserRole|null> „Org-Id:Einstellung“ → Rolle, je Anfrage */
@@ -37,6 +37,8 @@ class ApprovalResponsibility {
         return match ((string) ($rule['type'] ?? '')) {
             'user' => (int) ($rule['value'] ?? 0) === (int) $user->id,
             'role' => $user->hasRole((string) ($rule['value'] ?? '')),
+            // Stufe nach Recht (MVP-1626), etwa die Freigabe eines Negativbestands.
+            'permission' => $user->can((string) ($rule['value'] ?? '')),
             default => ($role = $this->mappedRole($approval)) !== null && $user->hasRole($role->value),
         };
     }

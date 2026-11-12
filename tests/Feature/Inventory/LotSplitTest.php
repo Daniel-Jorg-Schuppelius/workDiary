@@ -58,7 +58,7 @@ final class LotSplitTest extends TestCase {
         $this->assertSame('2.0000', StockValuationLayer::query()->where('stock_lot_id', $target->id)->value('unit_cost')?->getAmount());
 
         // Im Lagerbuch eine Umbuchung: Abgang an der Quelle, Zugang an der abgeteilten Charge, ohne Kosten.
-        $this->assertSame(['6.0000', '4.0000'], [$this->stock()->balanceOf($source), $this->stock()->balanceOf($target)]);
+        $this->assertSame(['6.0000', '4.0000'], [$this->stock()->balancesOf([$source])[$source->id], $this->stock()->balancesOf([$target])[$target->id]]);
         $this->assertSame('10.0000', app(InventoryLedger::class)->balance($this->variant, $this->warehouse, StockState::Physical));
         $moves = StockMovement::query()->whereIn('movement_type', [StockMovementType::TransferOut->value, StockMovementType::TransferIn->value])->orderBy('id')->get();
         $prefix = 'lot-split:' . $source->id . ':' . $target->id . ':1:';
@@ -93,8 +93,8 @@ final class LotSplitTest extends TestCase {
             StockMovement::query()->where('stock_lot_id', $target->id)->orderBy('id')->get()
                 ->map(fn (StockMovement $m): array => [$m->warehouse_id, $m->bin_id, $m->qty_base, (int) explode(':', (string) $m->idempotency_key)[3]])->all(),
         );
-        $this->assertSame(['6.0000', '0.0000'], [$this->stock()->balanceOf($target, $first), $this->stock()->balanceOf($target, $second)]);
-        $this->assertSame(['1.0000', '5.0000'], [$this->stock()->balanceOf($source, $first), $this->stock()->balanceOf($source, $second)]);
+        $this->assertSame(['6.0000', '0.0000'], [$this->stock()->balancesOf([$target], $first)[$target->id], $this->stock()->balancesOf([$target], $second)[$target->id]]);
+        $this->assertSame(['1.0000', '5.0000'], [$this->stock()->balancesOf([$source], $first)[$source->id], $this->stock()->balancesOf([$source], $second)[$source->id]]);
         // Erst die Schicht des gebuchten Lagers, dann der Rest aus der ältesten Schicht.
         $this->assertSame(
             [[$first->id, '4.0000', '2.0000'], [$second->id, '2.0000', '3.0000']],
@@ -122,7 +122,7 @@ final class LotSplitTest extends TestCase {
 
         $this->assertSame(2, StockMovement::query()->count());
         $this->assertNull(StockLot::query()->where('lot_no', 'L1-A')->first());
-        $this->assertSame(['6.0000', '2.0000'], [$this->stock()->balanceOf($source), $this->layerQty($source)]);
+        $this->assertSame(['6.0000', '2.0000'], [$this->stock()->balancesOf([$source])[$source->id], $this->layerQty($source)]);
     }
 
     public function test_split_beyond_stock_throws(): void {
@@ -141,8 +141,8 @@ final class LotSplitTest extends TestCase {
 
         $this->split->merge($b, $a);
 
-        $this->assertSame('11.0000', $this->stock()->balanceOf($a));
-        $this->assertSame('0.0000', $this->stock()->balanceOf($b));
+        $this->assertSame('11.0000', $this->stock()->balancesOf([$a])[$a->id]);
+        $this->assertSame('0.0000', $this->stock()->balancesOf([$b])[$b->id]);
         $this->assertSame(StockLotStatus::Merged, $b->fresh()->status);
     }
 
@@ -159,7 +159,7 @@ final class LotSplitTest extends TestCase {
             $ledger->balance($this->variant, $this->warehouse, StockState::Physical),
             $ledger->available($this->variant, $this->warehouse),
             $fefo->onHand($this->variant, $this->warehouse),
-            $fefo->totalValue($this->variant, $this->warehouse),
+            $fefo->summariesForWarehouse($this->warehouse)[$this->variant->id]['value'],
         ];
         $journal = StockMovement::query()->orderBy('id')->get()->map->getAttributes()->all();
         $this->assertSame(['11.0000', '11.0000', '11.0000', '27.0000'], $before);
@@ -170,7 +170,7 @@ final class LotSplitTest extends TestCase {
             $ledger->balance($this->variant, $this->warehouse, StockState::Physical),
             $ledger->available($this->variant, $this->warehouse),
             $fefo->onHand($this->variant, $this->warehouse),
-            $fefo->totalValue($this->variant, $this->warehouse),
+            $fefo->summariesForWarehouse($this->warehouse)[$this->variant->id]['value'],
         ]);
         $this->assertSame('0.0000', $this->ledgerBalance($b));
         $this->assertSame('11.0000', $this->ledgerBalance($a));
@@ -231,7 +231,7 @@ final class LotSplitTest extends TestCase {
         }
         // Zugang und Sperrbuchung, keine Umbuchung.
         $this->assertSame(2, StockMovement::query()->count());
-        $this->assertSame('5.0000', $this->stock()->balanceOf($b));
+        $this->assertSame('5.0000', $this->stock()->balancesOf([$b])[$b->id]);
 
         // Zusammengeführt ist Endzustand: weder Quelle noch Ziel.
         $this->split->merge($c, $a);
@@ -266,8 +266,8 @@ final class LotSplitTest extends TestCase {
         $this->assertSame(2, StockMovement::query()->count());
         $this->assertSame(StockLotStatus::Active, $b->fresh()?->status);
         $this->assertNull($b->fresh()?->merged_into_lot_id);
-        $this->assertSame('9.0000', $this->stock()->balanceOf($b));
-        $this->assertSame('0.0000', $this->stock()->balanceOf($a));
+        $this->assertSame('9.0000', $this->stock()->balancesOf([$b])[$b->id]);
+        $this->assertSame('0.0000', $this->stock()->balancesOf([$a])[$a->id]);
     }
 
     public function test_blocked_lot_cannot_be_split(): void {

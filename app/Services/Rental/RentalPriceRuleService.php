@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Services\Rental;
 
 use App\Enums\Rental\RentalRateRuleKind;
-use App\Models\Asset\Asset;
 use App\Models\Rental\{RentalProfile, RentalReservation};
 use App\Services\Calendar\HolidayService;
 use Illuminate\Support\Carbon;
@@ -84,9 +83,5 @@ final class RentalPriceRuleService {
         }
 
         return $out;
-    }
-
-    public function groupCodeFor(Asset $asset): ?string {
-        return $asset->rentalProfile?->group_code;
     }
 }

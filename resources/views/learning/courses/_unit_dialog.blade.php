@@ -37,4 +37,24 @@
         <x-input-field name="points" type="number" min="0" max="1000" :label="__('learning.field.points')" :value="old('points', 0)" />
         <x-checkbox-field name="is_mandatory" :label="__('learning.field.is_mandatory')" :checked="(bool) old('is_mandatory', true)" span="2" />
     </x-form-group>
+
+    {{-- Verweis je Art (MVP-1600): Prozedur, Umfrage und Extern schließen über ihr
+         Ziel ab — ohne Verweis wären sie funktionslos, deshalb ist er dort Pflicht. --}}
+    <x-form-group :legend="__('learning.field.unit_link')" icon="link" tone="info" cols="2">
+        <p class="text-xs text-muted sm:col-span-2">{{ __('learning.help.unit_link') }}</p>
+        <x-select-field name="procedure_template" :label="__('learning.field.unit_procedure')">
+            <option value="">–</option>
+            @foreach ($procedureTemplates as $template)
+                <option value="{{ $template->sqid }}" @selected(old('procedure_template') === $template->sqid)>{{ $template->name }} ({{ $template->code }})</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="survey" :label="__('learning.field.unit_survey')">
+            <option value="">–</option>
+            @foreach ($surveys as $survey)
+                <option value="{{ $survey->sqid }}" @selected(old('survey') === $survey->sqid)>{{ $survey->title }}</option>
+            @endforeach
+        </x-select-field>
+        <x-input-field name="external_url" type="url" :label="__('learning.field.unit_external_url')" maxlength="2000" span="2" :value="old('external_url')" />
+        <x-checkbox-field name="proof_required" :label="__('learning.field.unit_proof_required')" :hint="__('learning.help.unit_proof_required')" :checked="(bool) old('proof_required')" span="2" />
+    </x-form-group>
 </x-modal>

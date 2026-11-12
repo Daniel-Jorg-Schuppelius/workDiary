@@ -47,4 +47,9 @@ return [
             'saved' => 'Valutazione salvata.',
         ],
     ],
+    // Bestellbezug im Vertragsformular (MVP-1606).
+    'purchase_order' => [
+        'label' => 'Ordine (facoltativo)',
+        'none' => 'nessun ordine',
+    ],
 ];

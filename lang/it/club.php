@@ -124,6 +124,7 @@ return [
         'dismiss' => 'Respingi',
         'decide' => 'Decidi',
         'import' => 'Importazione CSV',
+        'admit_request' => 'Registra richiesta di ammissione',
     ],
     'label' => [
         'yes' => 'Sì',
@@ -183,6 +184,7 @@ return [
         'no_suggestion' => 'Nessun gruppo di destinazione univoco trovato — scegliere un gruppo o terminare soltanto l\'assegnazione.',
         'member_no' => 'Lasciare vuoto per il prossimo numero libero.',
         'discipline' => 'Per i sistemi di graduazione (ad es. judo, karate); altrimenti lasciare vuoto.',
+        'request_only' => 'Questo gruppo ammette solo tramite richiesta con approvazione. Criteri e capienza vengono verificati all’approvazione.',
     ],
     'confirm' => [
         'revoke_guardian' => 'Revocare questo rappresentante? L\'assegnazione resta come attestazione.',
@@ -245,12 +247,14 @@ return [
         'proposal_decided' => 'La proposta è già stata decisa.',
         'group_foreign' => 'Il gruppo di destinazione non appartiene a questa organizzazione.',
         'age_range' => 'L\'età massima non può essere inferiore all\'età minima.',
+        'admission_by_application' => 'Questo gruppo ammette solo tramite richiesta con approvazione.',
     ],
     'note' => [
         'member_left' => 'Uscita',
         'membership_ended' => 'Assegnazione terminata',
         'criteria_met_again' => 'Criteri nuovamente rispettati',
         'proposal_confirmed' => 'Cambio confermato',
+        'self_request' => 'Richiesta dall’area membri',
     ],
     // Vereinstermine (MVP-843)
     'events' => [
@@ -478,6 +482,8 @@ return [
             'delivery_failed' => 'Errore di consegna',
             'delivered' => 'consegnato',
             'recipient_account' => 'Account',
+            'group_requested' => 'Richiesta in sospeso',
+            'group_since' => 'dal :date',
         ],
         'kind' => [
             'reminder' => 'Promemoria',
@@ -490,6 +496,7 @@ return [
             'cancel' => 'Disdici',
             'attendance' => 'Le mie presenze',
             'back' => 'Torna a La mia associazione',
+            'group_request' => 'Richiedi ammissione',
         ],
         'card' => [
             'upcoming' => 'Prossimi appuntamenti',
@@ -497,11 +504,13 @@ return [
             'attendance' => 'Presenza confermata',
             'changes' => 'Modifiche',
             'deliveries' => 'Registro consegne',
+            'groups' => 'Gruppi',
         ],
         'hint' => [
             'upcoming' => 'Tutti gli appuntamenti a cui può iscriversi — quelli dei propri gruppi compaiono senza invito personale.',
             'attendance' => 'Tempo confermato nel periodo :from – :to (intestazione).',
             'changes' => 'Spostamenti, annullamenti e posti assegnati degli ultimi appuntamenti. Un messaggio non vale come letto.',
+            'groups' => 'Questi gruppi ammettono su richiesta; decide la direzione del gruppo.',
         ],
         'empty' => [
             'upcoming' => 'Nessun appuntamento in programma.',
@@ -510,11 +519,13 @@ return [
         ],
         'confirm' => [
             'cancel' => 'Disdire l\'iscrizione a «:title»? Il posto liberato va alla lista d\'attesa.',
+            'group_request' => 'Richiedere l’ammissione a «:group»? La direzione del gruppo decide sulla richiesta.',
         ],
         'flash' => [
             'registered' => 'Iscritto a «:title».',
             'waitlisted' => 'In lista d\'attesa per «:title».',
             'cancelled' => 'Iscrizione a «:title» disdetta.',
+            'group_requested' => 'Ammissione a «:group» richiesta.',
         ],
     ],
     // Graduierungen (MVP-846)
@@ -725,6 +736,7 @@ return [
             'request' => 'Iscriversi all\'esame',
             'certificate' => 'Attestato (PDF)',
             'open_event' => 'All\'appuntamento',
+            'release' => 'Pubblica risultati',
         ],
         'card' => [
             'offer' => 'Offerta d\'esame',
@@ -739,6 +751,8 @@ return [
             'exception' => 'Eccezione',
             'review_required' => 'Verifica necessaria',
             'checked_at' => 'verificato :date',
+            'released_at' => 'Risultati pubblicati il :date.',
+            'result_pending' => 'Risultato in arrivo',
         ],
         'empty' => [
             'offers' => 'Nessuna offerta d\'esame nel periodo.',
@@ -760,6 +774,7 @@ return [
         'confirm' => [
             'reject' => 'Rifiutare il candidato? Un posto occupato viene liberato.',
             'clear_review' => 'Chiudere la verifica? L\'ammissione resta.',
+            'release' => 'Pubblicare ora i risultati? Candidati e rappresentanti vedranno il loro risultato; risultati e attestazioni vengono congelati.',
         ],
         'flash' => [
             'offer_saved' => 'Offerta d\'esame salvata.',
@@ -772,6 +787,7 @@ return [
             'result_saved' => 'Risultato registrato.',
             'self_admitted' => 'Ammesso e iscritto a «:title».',
             'self_requested' => 'Richiesta per «:title» inviata — la direzione verifica l\'ammissione.',
+            'results_released' => 'Risultati pubblicati.',
         ],
         'error' => [
             'no_active_version' => 'Il regolamento non ha una versione delle regole attiva.',
@@ -781,6 +797,9 @@ return [
             'grades_required' => 'Scegliere almeno un grado obiettivo.',
             'no_requirement' => 'La versione delle regole non ha requisiti per il grado obiettivo.',
             'no_target_grade' => 'Nessun grado offerto è superiore al grado attuale.',
+            'released' => 'I risultati di questo esame sono pubblicati — modifiche solo tramite verifica o revoca del grado.',
+            'release_open_candidates' => 'Decida prima su tutti i candidati: richieste aperte e ammissioni senza risultato impediscono la pubblicazione.',
+            'release_no_results' => 'Non è ancora stato registrato alcun risultato.',
         ],
         'pdf' => [
             'kind' => 'Attestato di graduazione',

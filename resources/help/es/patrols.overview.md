@@ -1,7 +1,7 @@
 ---
 title: "Rondas de vigilancia"
 topic: patrols.overview
-version: 1
+version: 2
 keywords:
     - ronda de seguridad
     - control de rondas
@@ -55,3 +55,24 @@ escalada corre por el sistema existente, sin canal propio.
 
 Las horas previstas son **prueba, no métrica de presión**: sin datos de
 posición en el escaneo ni evaluación personal duradera.
+
+## Mantener rutas y puntos de control
+
+**Editar** cambia la denominación, el objeto y la **persona responsable** de la
+ruta. Una ruta se puede **desactivar**: una ronda en curso puede terminar, no
+se pueden iniciar nuevas. Los puntos de control se pueden editar (lugar,
+previsto, tolerancia; los escaneos registrados conservan su valoración) y
+**desactivar**: a partir de entonces ya no se esperan ni se pueden escanear.
+Las rondas anteriores no cambian: una ronda iniciada antes de la desactivación
+sigue esperando el punto.
+
+## Escalado
+
+El punto abierto se crea **en el mismo momento de la desviación** —con el
+primer escaneo fuera de la ventana o en cuanto se salta un punto vencido— y
+va a la persona responsable de la ruta o, si no la hay, a la jefatura de equipo
+de quien realiza la ronda. Hay un punto abierto por ronda, que se actualiza
+hasta el final. Si una ronda sigue en curso tras la duración prevista más la
+tolerancia del último punto de control, el proceso de plazos la notifica una
+vez como **no finalizada**; la central puede entonces cancelarla con
+motivo.

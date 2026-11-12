@@ -1,7 +1,7 @@
 ---
 title: "Auftragsbuch und Fallakte"
 topic: customer-portal.diary
-version: 4
+version: 5
 keywords:
     - Auftragsbuch
     - Arbeitsnachweis
@@ -68,6 +68,14 @@ Neben jedem Foto, das Sie noch nicht bestätigt haben, stehen zwei Knöpfe:
 - **Beanstanden** – es öffnet sich das Feld **Was stimmt nicht?**. Beschreiben Sie das Problem in mindestens 3 und höchstens 2000 Zeichen und klicken Sie auf **Senden**.
 
 Eine Beanstandung geht als Rückfrage zu diesem Auftrag an Ihren Auftragnehmer, der darüber benachrichtigt wird. Die Meldung **Beanstandung übermittelt — wir melden uns.** bestätigt den Versand. Die Antwort erhalten Sie per E-Mail an Ihre Anmelde-E-Mail; sind Rückfragen für Sie freigegeben, steht sie zusätzlich im Abschnitt **Rückfragen und Kommentare**.
+
+## Protokolle abnehmen
+
+Wartet ein Protokoll auf Ihre Abnahme, steht über der Liste **Protokolle** der Abschnitt **Zur Abnahme**. Mit **Ansehen und unterschreiben** öffnen Sie das Protokoll mit allen Punkten. Zum Abnehmen tragen Sie Ihren Namen ein, unterschreiben im Unterschriftsfeld mit Finger, Stift oder Maus, bestätigen die Richtigkeit der Angaben und klicken auf **Unterschreiben**. Die Unterschrift lässt sich nicht zurücknehmen.
+
+Haben Sie Fragen oder Einwände, klären Sie diese vor der Unterschrift mit Ihrem Auftragnehmer – über die Rückfragen, sofern sie für Sie freigegeben sind. Nach Ihrer Unterschrift schließt Ihr Auftragnehmer das Protokoll ab; danach steht es unter **Protokolle** zum Herunterladen bereit.
+
+Sind Sie mit dem Protokoll nicht einverstanden, nutzen Sie darunter **Ablehnen**: Geben Sie eine Begründung an und nennen Sie bei Bedarf einzelne Mängel. Ihr Auftragnehmer wird benachrichtigt und überarbeitet das Protokoll; es erscheint wieder unter **Zur Abnahme**, sobald er es erneut einreicht.
 
 ## Protokolle herunterladen
 

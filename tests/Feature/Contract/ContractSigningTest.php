@@ -182,7 +182,10 @@ final class ContractSigningTest extends TestCase {
         // Review-Wiedervorlage über die Obligationen.
         $this->assertDatabaseHas('contract_obligations', ['contract_id' => $this->contract->id, 'kind' => 'review']);
 
-        // Nachweis und Paket (9).
+        // Nachweis und Paket (9). Der Abschluss friert die Gestaltung ein; der Nachweis nennt den Aussteller (MVP-1624).
+        $this->assertSame(\App\Services\DocumentDesign\DocumentDesignRenderer::GENERATOR_VERSION, \App\Models\DocumentDesign\DocumentRenderSnapshot::query()->withoutGlobalScopes()
+            ->where('documentable_type', $revision->getMorphClass())->where('documentable_id', $revision->id)->value('generator_version'));
+        $this->assertStringContainsString('data-block="company_identity"', view('contracts.signing.certificate-pdf', app(\App\Services\Contract\SigningCertificatePdfRenderer::class)->viewData($revision))->render());
         $this->actingAs($this->admin)->get(route('contracts.signing.certificate', $revision))->assertOk()->assertHeader('Content-Type', 'application/pdf');
         $this->actingAs($this->admin)->get(route('contracts.signing.package', $revision))->assertOk()->assertHeader('Content-Type', 'application/zip');
         $this->actingAs($this->admin)->get(route('contracts.show', $this->contract))->assertOk()->assertSee((string) __('contract-signing.revision_status.signed'));

@@ -1,7 +1,7 @@
 ---
 title: "Alquiler de equipos"
 topic: rental.overview
-version: 6
+version: 9
 keywords:
     - arrendador
     - apartamento vacacional
@@ -43,6 +43,26 @@ La persona de contacto se rellena desde el cliente al elegirlo y sigue siendo ed
 **Entrega y devolución:** protocolos separados documentan estado,
 accesorios, contadores, fotos y firma; la devolución lleva la decisión
 posterior (limpieza, reparación/bloqueo, reclamación).
+
+**Puntos del acta:** los formularios de entrega y devolución registran,
+además del estado general, una lista de comprobación, los accesorios, puntos
+de estado y, en la devolución, el consumo. Los puntos de control y los
+accesorios proceden del perfil de alquiler; desmarque un accesorio que falte.
+El expediente muestra los puntos en «Mostrar los puntos», y también el portal
+del cliente, sin observaciones internas.
+
+**Estado mínimo:** en el perfil de alquiler usted define la sede habitual, el
+estado mínimo y el estado actual. Cada devolución toma el estado del acta. Si
+es inferior al mínimo, el equipo no puede reservarse ni usarse como sustituto
+hasta que ajuste el estado en el perfil tras la reparación.
+
+**Limpieza:** «Limpieza necesaria» en el acta de devolución crea una franja de
+limpieza; durante ella el equipo no puede asignarse. «Limpieza terminada» en
+el expediente lo libera antes de que termine la franja.
+
+**Prerreservas:** si otro expediente tiene una prerreserva en el periodo, el
+expediente muestra un aviso con los expedientes afectados. La reserva sigue
+siendo posible.
 
 **Facturación:** las partidas se aprueban y facturan localmente o se
 transfieren al sistema de facturación principal. La fianza es una
@@ -98,3 +118,9 @@ proveedor de pagos:
   contabilización (anular y volver a contabilizar). Para ello, la asignación
   de cuentas necesita el rol «Anticipos recibidos» (incluido en las
   plantillas SKR03 y SKR04).
+
+**Estado mínimo en la entrega:** el estado mínimo del perfil de alquiler también se aplica en la entrega. Si el estado ha empeorado desde la reserva, WorkDiary rechaza la entrega hasta que el equipo esté reparado y el estado actualizado en el perfil.
+
+## Condonar una fianza
+
+Una fianza solicitada que aún no se ha recibido se puede **condonar** con un motivo. Después muestra **Renunciado**; el motivo queda en el registro del alquiler.

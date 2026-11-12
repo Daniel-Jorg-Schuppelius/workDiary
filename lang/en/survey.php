@@ -22,4 +22,10 @@ return [
         'scheduleHint' => 'Customers with a completed order or resolved ticket within the interval, at most once per interval. Empty = off.',
         'saved' => 'Triggers saved.',
     ],
+    // Questionnaire header (MVP-1610).
+    'header' => [
+        'edit_title' => 'Edit questionnaire',
+        'updated' => 'Questionnaire saved.',
+        'anonymous_locked' => 'Anonymity can no longer be changed after the first invitation.',
+    ],
 ];

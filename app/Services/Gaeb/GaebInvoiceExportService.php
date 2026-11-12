@@ -181,15 +181,11 @@ final class GaebInvoiceExportService implements InvoiceGaebExporter {
         return [$first->format('Y-m-d'), $last->format('Y-m-d')];
     }
 
+    /** Empfänger wie auf dem Beleg: ausgestellt der eingefrorene Stand (MVP-1624). */
     private function recipient(Invoice $invoice): ?GaebParty {
-        $customer = $invoice->customer;
+        $recipient = $invoice->recipient();
 
-        return $this->party(
-            $customer->name,
-            $customer->address_street,
-            $customer->address_zip,
-            $customer->address_city,
-        );
+        return $this->party($recipient['name'], $recipient['street'], $recipient['zip'], $recipient['city']);
     }
 
     /**

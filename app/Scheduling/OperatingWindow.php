@@ -58,6 +58,11 @@ final readonly class OperatingWindow {
         return self::format($this->start) . '–' . ($this->end === 0 ? '24:00' : self::format($this->end));
     }
 
+    /** Liegt die Uhrzeit im Fenster? Für Takt-Kadenzen, die nicht verschoben werden. */
+    public function isOpenAt(\DateTimeInterface $at): bool {
+        return $this->shift((int) $at->format('G') * 60 + (int) $at->format('i')) === null;
+    }
+
     /** Kadenz mit Uhrzeiten außerhalb des Fensters an den Fensterbeginn verschoben. */
     public function apply(Cadence $cadence): Cadence {
         return match ($cadence->type) {

@@ -35,6 +35,9 @@ final readonly class SettingDefinition {
      * @param list<string> $affects Job-Keys/Module für Risiko-Hinweise
      * @param class-string<ValidationRule>|null $ruleClass eigene Regel für
      *        strukturierte Werte (JSON), als Klassenname config-cachebar
+     * @param bool $serviceManaged der Wert wird nur von seinem Fachdienst
+     *        geschrieben (Wechsel mit Folgen, etwa das Bewertungsverfahren);
+     *        generische Formulare nehmen ihn nicht an
      */
     public function __construct(
         public string $key,
@@ -47,6 +50,7 @@ final readonly class SettingDefinition {
         public mixed $fallback = null,
         public array $affects = [],
         public ?string $ruleClass = null,
+        public bool $serviceManaged = false,
     ) {
         if ($scopes === []) {
             throw new InvalidArgumentException("Setting [{$key}] braucht mindestens einen Scope.");
@@ -85,6 +89,7 @@ final readonly class SettingDefinition {
             fallback: $data['fallback'] ?? null,
             affects: array_values((array) ($data['affects'] ?? [])),
             ruleClass: isset($data['rule_class']) && is_string($data['rule_class']) && is_subclass_of($data['rule_class'], ValidationRule::class) ? $data['rule_class'] : null,
+            serviceManaged: (bool) ($data['service_managed'] ?? false),
         );
     }
 

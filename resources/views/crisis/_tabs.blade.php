@@ -11,4 +11,5 @@
     ['route' => 'crisis.index', 'routeIs' => 'crisis.index', 'icon' => 'emergency_home', 'label' => __('Krisenmanagement')],
     ['route' => 'crisis.bia.index', 'routeIs' => 'crisis.bia.index', 'icon' => 'account_tree', 'label' => __('crisis.bia.title')],
     ['route' => 'crisis.bcm-report', 'routeIs' => 'crisis.bcm-report', 'icon' => 'insights', 'label' => __('crisis.bcm_report.title')],
+    ['route' => 'crisis.deadlines.index', 'routeIs' => 'crisis.deadlines.*', 'icon' => 'timer', 'label' => __('crisis.deadlines.title')],
 ]" />

@@ -100,6 +100,15 @@
         </x-select-field>
         <x-project-select :label="__('Projekt (optional)')" :placeholder="__('ohne Projektbezug')"
             :projects="$projects" :selected="(string) old('project_id', $contract?->project?->sqid)" />
+        {{-- Bestellbezug (Feature 074, MVP-1606): nur mit Einkaufsmodul und Leserecht. --}}
+        @if ($purchaseOrders->isNotEmpty())
+            <x-select-field name="purchase_order_id" :label="__('asset_finance.purchase_order.label')">
+                <option value="">{{ __('asset_finance.purchase_order.none') }}</option>
+                @foreach ($purchaseOrders as $po)
+                    <option value="{{ $po->sqid }}" @selected((string) old('purchase_order_id', $contract?->purchaseOrder?->sqid) === $po->sqid)>{{ $po->number }}@if ($po->supplier) — {{ $po->supplier->name }}@endif</option>
+                @endforeach
+            </x-select-field>
+        @endif
         @unless ($contract)
             <x-select-field name="investment_case_id" :label="__('Investitionsakte (optional)')" span="2">
                 <option value="">{{ __('keine Verknüpfung') }}</option>

@@ -15,10 +15,10 @@ namespace App\Http\Controllers\Crisis;
 use App\Enums\Crisis\{CrisisActionStatus, CrisisCaseStatus, CrisisCommunicationStatus, CrisisContinuityImpactStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Crisis\{AddCrisisLinkRequest, AssignCrisisTeamRequest, DiscardCrisisCaseRequest, MarkCrisisCommunicationSentRequest, StoreCrisisActionRequest, StoreCrisisCaseRequest, StoreCrisisCommunicationRequest, StoreCrisisContinuityImpactRequest, StoreCrisisDecisionRequest, StoreCrisisReviewRequest, StoreCrisisRoleRequest, StoreCrisisSituationReportRequest, UpdateCrisisActionRequest, UpdateCrisisCaseStatusRequest, UpdateCrisisContinuityImpactRequest};
+use App\Http\Requests\Crisis\{AddCrisisLinkRequest, AssignCrisisTeamRequest, DiscardCrisisCaseRequest, MarkCrisisCommunicationSentRequest, StoreCrisisActionRequest, StoreCrisisCaseRequest, StoreCrisisCommunicationRequest, StoreCrisisContinuityImpactRequest, StoreCrisisDecisionRequest, StoreCrisisReviewRequest, StoreCrisisRoleRequest, StoreCrisisSituationReportRequest, UpdateCrisisActionPredecessorRequest, UpdateCrisisActionRequest, UpdateCrisisCaseStatusRequest, UpdateCrisisContinuityImpactRequest};
 use App\Models\Crisis\{CrisisCase, CrisisCommunication, CrisisRole, CrisisTeamAssignment};
 use App\Models\Platform\User;
-use App\Services\Crisis\{CrisisAlertService, CrisisDeadlineService};
+use App\Services\Crisis\{CrisisAlertService, CrisisDeadlineService, CrisisLinkTargets};
 use App\Support\ErrorText;
 use App\Support\Query\DateRange;
 use Illuminate\Contracts\View\View;
@@ -35,6 +35,7 @@ class CrisisCaseController extends Controller {
     public function __construct(
         private readonly CrisisAlertService $alerts,
         private readonly CrisisDeadlineService $deadlines,
+        private readonly CrisisLinkTargets $targets,
     ) {}
 
     public function index(Request $request): View {
@@ -68,15 +69,33 @@ class CrisisCaseController extends Controller {
         ]);
     }
 
-    public function create(): View {
+    /** Mit `from` und `source` eröffnet der Dialog die Krise aus einem Vorfall (MVP-1605). */
+    public function create(Request $request): View {
         Gate::authorize('create', CrisisCase::class);
 
-        return view('crisis._form_dialog', ['case' => new CrisisCase()]);
+        $type = $request->string('from')->toString();
+        $source = CrisisLinkTargets::isIncident($type) ? $this->targets->resolve($type, $request->string('source')->toString()) : null;
+
+        return view('crisis._form_dialog', [
+            'case' => new CrisisCase(),
+            'source' => $source === null ? null : [
+                'type' => $type,
+                'sqid' => $request->string('source')->toString(),
+                'label' => $this->targets->typeLabel($type) . ' ' . $this->targets->label($type, $source),
+                'title' => (string) ($source->getAttribute('title') ?? ''),
+                'category' => $this->targets->category($type),
+            ],
+        ]);
     }
 
     public function store(StoreCrisisCaseRequest $request): RedirectResponse {
         Gate::authorize('create', CrisisCase::class);
-        $data = $request->validated();
+        $data = $request->safe()->except(['origin_type', 'origin_sqid']);
+        $sourceType = $request->validated('origin_type');
+        $source = is_string($sourceType) ? $this->targets->resolve($sourceType, (string) $request->validated('origin_sqid')) : null;
+        if (is_string($sourceType) && $source === null) {
+            return back()->withInput()->with('error', __('Zielobjekt nicht gefunden.'));
+        }
 
         /** @var User $actor */
         $actor = Auth::user();
@@ -88,13 +107,23 @@ class CrisisCaseController extends Controller {
             'created_by' => $actor->id,
         ]);
         $case->audit('crisis.reported', ['title' => $case->title, 'severity' => $case->severity]);
+        if ($source !== null) {
+            $case->links()->create([
+                'organization_id' => $case->organization_id,
+                'linkable_type' => $source->getMorphClass(),
+                'linkable_id' => $source->getKey(),
+                'note' => (string) __('crisis.link.opened_from'),
+                'created_by' => $actor->id,
+            ]);
+            $case->audit('crisis.linked', ['type' => $sourceType, 'id' => $source->getKey()]);
+        }
 
         return redirect()->route('crisis.show', $case)->with('status', __('Krisenakte eröffnet.'));
     }
 
     public function show(CrisisCase $case): View {
         Gate::authorize('view', $case);
-        $case->load(['team.user', 'team.deputy', 'team.role', 'situationReports', 'decisions', 'actions.assignee', 'communications', 'continuityImpacts', 'links.linkable', 'review', 'responsible']);
+        $case->load(['team.user', 'team.deputy', 'team.role', 'situationReports', 'decisions', 'actions.assignee', 'actions.dependsOn', 'communications', 'continuityImpacts', 'links.linkable', 'review', 'responsible']);
 
         return view('crisis.show', [
             'businessProcesses' => \App\Models\Crisis\CrisisBusinessProcess::query()->where('is_active', true)->orderBy('name')->get(),
@@ -285,6 +314,9 @@ class CrisisCaseController extends Controller {
     public function storeAction(StoreCrisisActionRequest $request, CrisisCase $case): RedirectResponse {
         Gate::authorize('update', $case);
         $data = $request->validated();
+        if (($data['depends_on_id'] ?? null) !== null && ! $case->actions()->whereKey($data['depends_on_id'])->exists()) {
+            return back()->withInput()->withErrors(['depends_on_id' => __('crisis.action.depends_foreign')]);
+        }
 
         $case->actions()->create([
             'organization_id' => $case->organization_id,
@@ -301,6 +333,11 @@ class CrisisCaseController extends Controller {
         $data = $request->validated();
 
         $status = CrisisActionStatus::from($data['status']);
+        // Abhängigkeit (MVP-1605): erledigt wird erst nach dem Vorgänger; ein abgebrochener Vorgänger gibt frei.
+        $predecessor = $action->dependsOn;
+        if ($status === CrisisActionStatus::Done && $predecessor !== null && ! $predecessor->status->isSettled()) {
+            return back()->with('error', __('crisis.action.blocked_by', ['title' => $predecessor->title]));
+        }
         $action->update([
             'status' => $status,
             'evidence_note' => $data['evidence_note'] ?? $action->evidence_note,
@@ -308,6 +345,35 @@ class CrisisCaseController extends Controller {
         ]);
 
         return back()->with('status', __('Maßnahme aktualisiert.'));
+    }
+
+    /**
+     * Vorgänger nachträglich setzen oder lösen (MVP-1628): nur Maßnahmen derselben
+     * Akte, nie die Maßnahme selbst und nie eine, die schon auf sie wartet (Zyklus).
+     */
+    public function updateActionPredecessor(UpdateCrisisActionPredecessorRequest $request, CrisisCase $case, \App\Models\Crisis\CrisisAction $action): RedirectResponse {
+        Gate::authorize('update', $case);
+        abort_unless($action->crisis_case_id === $case->id, 404);
+        $predecessorId = $request->validated()['depends_on_id'] ?? null;
+
+        if ($predecessorId !== null) {
+            $predecessor = $case->actions()->whereKey($predecessorId)->first();
+            if ($predecessor === null) {
+                return back()->withErrors(['depends_on_id' => __('crisis.action.depends_foreign')]);
+            }
+            // Zyklus: die Kette ab dem neuen Vorgänger führt zurück zur Maßnahme.
+            for ($cursor = $predecessor, $seen = []; $cursor !== null && ! isset($seen[$cursor->id]); $cursor = $cursor->dependsOn) {
+                if ((int) $cursor->id === (int) $action->id) {
+                    return back()->withErrors(['depends_on_id' => __('crisis.action.depends_cycle')]);
+                }
+                $seen[$cursor->id] = true;
+            }
+        }
+
+        // Auditable hält den alten und den neuen Vorgänger fest.
+        $action->update(['depends_on_id' => $predecessorId]);
+
+        return back()->with('status', __('crisis.action.predecessor_saved'));
     }
 
     // ── Kommunikation (MVP-217) ──────────────────────────────────────────
@@ -380,24 +446,18 @@ class CrisisCaseController extends Controller {
         return back()->with('status', __('Wiederanlaufstatus aktualisiert.'));
     }
 
+    /** Dialog „Vorgang verknüpfen“ (MVP-1605): Auswahl statt Sqid-Eingabe. */
+    public function linkForm(CrisisCase $case): View {
+        Gate::authorize('update', $case);
+
+        return view('crisis._link_dialog', ['case' => $case, 'groups' => $this->targets->options()]);
+    }
+
     public function addLink(AddCrisisLinkRequest $request, CrisisCase $case): RedirectResponse {
         Gate::authorize('update', $case);
         $data = $request->validated();
 
-        $map = [
-            'service_ticket' => \App\Models\ServiceTicket\ServiceTicket::class,
-            'isms_incident' => \App\Models\Isms\IsmsSecurityIncident::class,
-            'privacy_incident' => \App\Models\Privacy\Incident::class,
-            'safety_event' => \App\Models\Safety\SafetyEvent::class,
-            'procedure_run' => \App\Models\Procedure\ProcedureRun::class,
-            'document' => \App\Models\Document\Document::class,
-            // Objekte mit Koordinaten für die Lagekarte (MVP-963).
-            'asset' => \App\Models\Asset\Asset::class,
-            'customer' => \App\Models\Customer\Customer::class,
-        ];
-        $class = $map[$data['linkable_type']];
-        $id = \App\Support\Sqid::decodeOrNumeric($class, $data['linkable_sqid']);
-        $target = $id !== null ? $class::query()->whereKey($id)->first() : null;
+        $target = $this->targets->resolve($data['linkable_type'], $data['linkable_sqid']);
         if ($target === null) {
             return back()->with('error', __('Zielobjekt nicht gefunden.'));
         }

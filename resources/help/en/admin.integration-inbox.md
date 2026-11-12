@@ -1,7 +1,7 @@
 ---
 title: "Mapping inbox"
 topic: admin.integration-inbox
-version: 4
+version: 6
 keywords:
     - integration inbox
     - import conflicts
@@ -87,3 +87,7 @@ attaches the e-mail to an open order, for example when a customer replies to
 the invoice but means the order.
 
 The page is open to people who are allowed to manage billing.
+
+**Data ownership:** Cases marked “Data ownership” were created by an integration that does not lead the area (see the “Data ownership” page). The case names the leading system; nothing was written. **Take over once** writes the held-back state exactly once – for example the ticket, the appointment or the stock booking – while **Discard** drops it, and the same operation does not come back. The type filter “Data ownership” shows only these cases.
+
+**Reopened:** An applied “Data ownership” case reopens when the integration wants to write a new state of the same operation; a dismissed one stays dismissed. If the leadership allows the write again, the next synchronisation closes open cases itself as applied. Earlier “led elsewhere” review cases become “Data ownership” cases at the next synchronisation.

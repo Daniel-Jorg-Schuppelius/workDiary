@@ -1,7 +1,7 @@
 ---
 title: "Clienti & fornitori"
 topic: contacts.manage
-version: 15
+version: 17
 keywords:
     - Anteprima come cliente
     - Password iniziale
@@ -239,3 +239,7 @@ e le scadenze. Una sezione compare solo se il modulo è attivo, se dispone del
 permesso e se esistono voci; i numeri corrispondono all'elenco relativo.
 L'amministrazione vede gli ordini del negozio da Etsy e Billbee. Come i
 clienti, i fornitori hanno campi personalizzati e documenti.
+
+Per il fornitore si aggiungono i **Cataloghi** (nome, numero di articoli, ultima importazione; con il diritto di lettura del magazzino) e le **Prestazioni**: la scorecard degli ultimi dodici mesi con punteggio complessivo, puntualità, tasso di reclami, andamento dei prezzi, qualità ISMS, comportamento nei regressi e tempo di consegna — ogni riga apre la scorecard sullo stesso periodo. I contratti di leasing e finanziamento con il fornitore come locatore compaiono nella scheda con il diritto ai fascicoli di leasing. Per il cliente compaiono inoltre gli **Appuntamenti** prenotati e richiesti (Calendly, prenotazione appuntamenti) per chi può aprire la pagina «Richieste di appuntamento».
+
+**Guida la contabilità:** se, secondo la titolarità dei dati, la contabilità gestisce i dati anagrafici di clienti e fornitori, il modulo mostra un avviso. Si può ancora modificare tutto, ma la prossima sincronizzazione sovrascrive le modifiche locali: le modifiche durature vanno fatte nel programma contabile.

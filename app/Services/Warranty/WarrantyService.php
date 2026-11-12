@@ -18,6 +18,7 @@ use App\Models\Protocol\Protocol;
 use App\Models\Warranty\WarrantyPeriod;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
@@ -70,22 +71,7 @@ class WarrantyService {
         array $attributes = [],
     ): WarrantyPeriod {
         $start = CarbonImmutable::parse($startsOn);
-        $months = $basis->months();
-
-        if ($endsOn === null) {
-            if ($months === null) {
-                throw new RuntimeException((string) __('warranty.custom_needs_end'));
-            }
-            $end = $start->addMonths($months);
-        } else {
-            $end = CarbonImmutable::parse($endsOn);
-            if ($end->lessThanOrEqualTo($start)) {
-                throw new RuntimeException((string) __('warranty.end_before_start'));
-            }
-            if ($months !== null && ! $end->equalTo($start->addMonths($months)) && trim((string) $overrideReason) === '') {
-                throw new RuntimeException((string) __('warranty.override_needs_reason'));
-            }
-        }
+        $end = $this->resolveEnd($basis, $start, $endsOn, $overrideReason);
 
         $period = WarrantyPeriod::query()->create($attributes + [
             'side' => $side->value,
@@ -107,6 +93,64 @@ class WarrantyService {
     }
 
     /**
+     * Frist ändern (MVP-1564), etwa nach Hemmung oder Neubeginn: gleiche
+     * Regeln wie beim Anlegen. Ein verschobenes Ende zieht gekoppelte offene
+     * Einbehalte nach (Modell-Hook); Bürgschaften lesen das Ende der Frist.
+     *
+     * @param array<string, mixed> $attributes
+     */
+    public function update(
+        WarrantyPeriod $period,
+        WarrantySide $side,
+        WarrantyBasis $basis,
+        string $startsOn,
+        ?string $endsOn = null,
+        ?string $overrideReason = null,
+        array $attributes = [],
+    ): WarrantyPeriod {
+        if ($period->status === WarrantyStatus::Closed) {
+            throw new RuntimeException((string) __('warranty.closed_locked'));
+        }
+        $start = CarbonImmutable::parse($startsOn);
+        $end = $this->resolveEnd($basis, $start, $endsOn, $overrideReason);
+
+        $period->update($attributes + [
+            'side' => $side->value,
+            'basis' => $basis->value,
+            'starts_on' => $start->toDateString(),
+            'ends_on' => $end->toDateString(),
+            'override_reason' => $overrideReason,
+        ]);
+
+        return $period->refresh();
+    }
+
+    /**
+     * Ohne eigenes Enddatum ergibt es sich aus der Grundlage; ein abweichendes
+     * Ende braucht eine Begründung.
+     */
+    private function resolveEnd(WarrantyBasis $basis, CarbonImmutable $start, ?string $endsOn, ?string $overrideReason): CarbonImmutable {
+        $months = $basis->months();
+        if ($endsOn === null) {
+            if ($months === null) {
+                throw new RuntimeException((string) __('warranty.custom_needs_end'));
+            }
+
+            return $start->addMonths($months);
+        }
+
+        $end = CarbonImmutable::parse($endsOn);
+        if ($end->lessThanOrEqualTo($start)) {
+            throw new RuntimeException((string) __('warranty.end_before_start'));
+        }
+        if ($months !== null && ! $end->equalTo($start->addMonths($months)) && trim((string) $overrideReason) === '') {
+            throw new RuntimeException((string) __('warranty.override_needs_reason'));
+        }
+
+        return $end;
+    }
+
+    /**
      * Subunternehmer-Fristen, die VOR der eigenen Haftung enden — der teure
      * Fall: Danach haftet man allein für einen Mangel, den ein anderer
      * verursacht hat.
@@ -118,8 +162,9 @@ class WarrantyService {
      * @return Collection<int, WarrantyPeriod>
      */
     public function subcontractorsEndingFirst(?int $organizationId = null, int $leadDays = 90): Collection {
+        // Eine gerügte eigene Frist haftet weiter (MVP-1625); eine gerügte Sub-Frist ist schon gesichert.
         $open = WarrantyPeriod::query()
-            ->where('status', WarrantyStatus::Open->value)
+            ->whereIn('status', [WarrantyStatus::Open->value, WarrantyStatus::Claimed->value])
             ->whereNotNull('project_id')
             ->when($organizationId !== null, fn ($q) => $q->where('organization_id', $organizationId))
             ->get();
@@ -138,6 +183,7 @@ class WarrantyService {
 
         return $open
             ->where('side', WarrantySide::Claimable)
+            ->where('status', WarrantyStatus::Open)
             ->filter(function (WarrantyPeriod $period) use ($ownEndByProject, $threshold): bool {
                 $ownEnd = $ownEndByProject[(int) $period->project_id] ?? null;
                 if ($ownEnd === null) {
@@ -153,20 +199,26 @@ class WarrantyService {
             ->values();
     }
 
-    /** Frist mit einer Reklamation verknüpfen (Rüge innerhalb der Frist). */
-    public function markClaimed(WarrantyPeriod $period, int $claimCaseId, ?User $actor = null): WarrantyPeriod {
-        if ($period->status !== WarrantyStatus::Open) {
-            throw new RuntimeException((string) __('warranty.not_open'));
-        }
+    /**
+     * Rüge innerhalb der Frist festhalten, wahlweise mit der Reklamationsakte.
+     * Die Frist läuft weiter — Hemmung und Neubeginn bleiben Rechtsfragen.
+     */
+    public function markClaimed(WarrantyPeriod $period, ?int $claimCaseId = null, ?User $actor = null): WarrantyPeriod {
+        return DB::transaction(function () use ($period, $claimCaseId, $actor): WarrantyPeriod {
+            $period = WarrantyPeriod::query()->lockForUpdate()->findOrFail($period->id);
+            if (! $period->status->canTransitionTo(WarrantyStatus::Claimed)) {
+                throw new RuntimeException((string) __('warranty.not_open'));
+            }
 
-        $period->forceFill([
-            'status' => WarrantyStatus::Claimed->value,
-            'claim_case_id' => $claimCaseId,
-        ])->save();
+            $period->forceFill([
+                'status' => WarrantyStatus::Claimed->value,
+                'claim_case_id' => $claimCaseId,
+            ])->save();
 
-        $period->audit('warranty.claimed', ['claim_case_id' => $claimCaseId, 'by' => $actor?->id]);
+            $period->audit('warranty.claimed', ['claim_case_id' => $claimCaseId, 'by' => $actor?->id]);
 
-        return $period->refresh();
+            return $period->refresh();
+        });
     }
 
     /** Frist abschließen (abgelaufen bzw. erledigt). */

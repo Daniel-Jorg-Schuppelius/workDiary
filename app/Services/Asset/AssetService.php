@@ -11,15 +11,21 @@
 namespace App\Services\Asset;
 
 use App\Enums\Asset\{AssetHealth, AssetOwnership, AssetStatus};
+use App\Events\Asset\AssetDecommissioned;
 use App\Exceptions\AssetValidationException;
-use App\Models\Asset\Asset;
+use App\Models\Asset\{Asset, MaintenancePlan};
+use App\Models\Disposal\DisposalItem;
 use App\Models\Facility\Room;
 use App\Models\Platform\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class AssetService {
     public function __construct(
         private readonly AssetNumberGenerator $numbers,
+        private readonly AssetBlockService $blocks,
+        private readonly AssetHealthService $health,
+        private readonly AssetLifecycleService $lifecycle,
     ) {}
 
     /** @param array<string, mixed> $payload */
@@ -47,13 +53,14 @@ class AssetService {
             'inventory_no' => $payload['inventory_no'] ?? null,
             'customer_id' => $payload['customer_id'] ?? null,
             'foreign_customer_id' => $payload['foreign_customer_id'] ?? null,
+            'sla_contract_id' => $payload['sla_contract_id'] ?? null,
             'room_id' => $payload['room_id'] ?? null,
             'owned_by' => $ownedBy->value,
             'location_text' => $payload['location_text'] ?? null,
             'location_lat' => $payload['location_lat'] ?? null,
             'location_lng' => $payload['location_lng'] ?? null,
             'status' => $status->value,
-            'health' => (string) ($payload['health'] ?? AssetHealth::Ok->value),
+            'health' => AssetHealth::Ok->value,
             'commissioned_on' => $payload['commissioned_on'] ?? null,
             'decommissioned_on' => $payload['decommissioned_on'] ?? null,
             'warranty_until' => $payload['warranty_until'] ?? null,
@@ -64,6 +71,8 @@ class AssetService {
         ]);
 
         $asset->audit('asset.created', ['asset_no' => $asset->asset_no]);
+        $this->blocks->syncStatusBlock($asset, $actor);
+        $this->health->sync($asset);
 
         return $asset->refresh();
     }
@@ -74,7 +83,9 @@ class AssetService {
             ? $this->parseStatus((string) $payload['status'])
             : $asset->status;
 
-        if ($nextStatus !== $asset->status && ! $asset->status->canTransitionTo($nextStatus)) {
+        // Aus „außer Betrieb“ führt nur {@see recommission()} mit Grund heraus.
+        $leavesDecommission = $asset->status === AssetStatus::Decommissioned && $nextStatus !== AssetStatus::Decommissioned;
+        if ($nextStatus !== $asset->status && ($leavesDecommission || ! $asset->status->canTransitionTo($nextStatus))) {
             throw AssetValidationException::invalidStatusTransition($asset->status->value, $nextStatus->value);
         }
 
@@ -99,6 +110,17 @@ class AssetService {
         $this->validateDecommissionConsistency($nextStatus, $payload['decommissioned_on'] ?? $asset->decommissioned_on);
         $this->validateRoomConsistency($nextRoom, $nextCustomer);
 
+        // Eigentum wechselt nur über die Historie (append-only), nie still im Speichern.
+        $this->lifecycle->changeOwnership($asset, $actor, $nextOwnedBy, $nextCustomer, isset($payload['ownership_note']) ? (string) $payload['ownership_note'] : null);
+        unset($payload['ownership_note']);
+
+        $location = [
+            'location_text' => array_key_exists('location_text', $payload) ? $payload['location_text'] : $asset->location_text,
+            'room_id' => $nextRoom,
+        ];
+        $previousLocation = ['location_text' => $asset->location_text, 'room_id' => $asset->room_id];
+        $previousStatus = $asset->status;
+
         $asset->fill($payload);
         $asset->status = $nextStatus;
         $asset->owned_by = $nextOwnedBy;
@@ -107,80 +129,116 @@ class AssetService {
         $asset->room_id = $nextRoom;
         $asset->save();
 
-        if ($nextStatus !== $asset->getOriginal('status')) {
+        if ($nextStatus !== $previousStatus) {
             $asset->audit('asset.statusChanged', [
-                'from' => $asset->getOriginal('status'),
+                'from' => $previousStatus->value,
                 'to' => $nextStatus->value,
                 'actor_id' => $actor->id,
             ]);
+            $this->blocks->syncStatusBlock($asset, $actor);
         } else {
             $asset->audit('asset.updated', ['actor_id' => $actor->id]);
         }
 
+        if (self::locationKey($location) !== self::locationKey($previousLocation)) {
+            $this->recordMove($asset, $actor, $previousLocation, $location);
+        }
+        $this->health->sync($asset);
+
         return $asset->refresh();
     }
 
-    public function decommission(Asset $asset, User $actor, string $date): Asset {
+    /**
+     * Nimmt ein Asset endgültig außer Betrieb. Eine offene Ausgabe muss vorher
+     * zurückgenommen sein; Wartungspläne ruhen danach, Prüfpflichten und
+     * geplante Prüftermine schließt das Prüfwesen über {@see AssetDecommissioned}.
+     */
+    public function decommission(Asset $asset, User $actor, string $date, ?string $reason = null): Asset {
         if ($asset->status !== AssetStatus::Decommissioned && ! $asset->status->canTransitionTo(AssetStatus::Decommissioned)) {
             throw AssetValidationException::invalidStatusTransition($asset->status->value, AssetStatus::Decommissioned->value);
         }
+        if ($asset->assignments()->whereNull('returned_at')->exists()) {
+            throw AssetValidationException::checkedOutOnDecommission();
+        }
 
-        $asset->status = AssetStatus::Decommissioned;
-        $asset->decommissioned_on = $this->normalizeDate($date);
-        $asset->save();
+        $reason = $reason !== null && trim($reason) !== '' ? trim($reason) : null;
 
-        $asset->audit('asset.decommissioned', [
-            'actor_id' => $actor->id,
-            'decommissioned_on' => $date,
-        ]);
+        DB::transaction(function () use ($asset, $actor, $date, $reason): void {
+            $from = $asset->status;
+            $asset->status = AssetStatus::Decommissioned;
+            $asset->decommissioned_on = $this->normalizeDate($date);
+            $asset->decommission_reason = $reason;
+            $asset->next_maintenance_on = null;
+            $asset->save();
+
+            MaintenancePlan::query()->where('asset_id', $asset->id)->where('is_active', true)->update(['is_active' => false]);
+
+            $asset->audit('asset.decommissioned', [
+                'actor_id' => $actor->id,
+                'from' => $from->value,
+                'decommissioned_on' => $date,
+                'reason' => $reason,
+            ]);
+            $this->blocks->syncStatusBlock($asset, $actor);
+            $this->health->sync($asset);
+        });
+
+        AssetDecommissioned::dispatch($asset, $actor->id);
 
         return $asset->refresh();
     }
 
-    public function transferOwnership(Asset $asset, User $actor, AssetOwnership $ownership, ?int $customerId = null): Asset {
-        $this->validateOwnershipConsistency($ownership, $customerId);
+    /**
+     * Wieder in Betrieb nehmen (MVP-1628), Gegenaktion zu {@see decommission()}
+     * mit Pflichtgrund. Pausierte Wartungspläne und ruhende Prüfpflichten bleiben
+     * aus — die Akte nimmt sie einzeln wieder auf. Ein über einen
+     * Entsorgungsauftrag entsorgtes Asset ist physisch weg und bleibt außer Betrieb.
+     */
+    public function recommission(Asset $asset, User $actor, string $reason): Asset {
+        DB::transaction(function () use ($asset, $actor, $reason): void {
+            $locked = Asset::query()->whereKey($asset->getKey())->lockForUpdate()->firstOrFail();
+            if ($locked->status !== AssetStatus::Decommissioned || ! $locked->status->canTransitionTo(AssetStatus::Active)) {
+                throw AssetValidationException::invalidStatusTransition($locked->status->value, AssetStatus::Active->value);
+            }
+            $disposed = DisposalItem::query()
+                ->where('asset_id', $locked->id)
+                ->whereHas('job', fn ($q) => $q->whereNotNull('completed_at'))
+                ->exists();
+            if ($disposed) {
+                throw AssetValidationException::disposed();
+            }
 
-        $asset->owned_by = $ownership;
-        $asset->customer_id = $customerId;
-        $asset->save();
+            $previous = ['decommissioned_on' => $locked->decommissioned_on?->toDateString(), 'decommission_reason' => $locked->decommission_reason];
+            $locked->status = AssetStatus::Active;
+            $locked->decommissioned_on = null;
+            $locked->decommission_reason = null;
+            $locked->save();
 
-        $asset->audit('asset.ownershipTransferred', [
-            'actor_id' => $actor->id,
-            'owned_by' => $ownership->value,
-            'customer_id' => $customerId,
-        ]);
+            $locked->audit('asset.recommissioned', ['actor_id' => $actor->id, 'reason' => trim($reason)] + $previous);
+            $this->blocks->syncStatusBlock($locked, $actor);
+            $this->health->sync($locked);
+        });
 
         return $asset->refresh();
     }
 
-    public function move(Asset $asset, User $actor, ?string $locationText, ?string $lat = null, ?string $lng = null): Asset {
-        $asset->location_text = $locationText;
-        $asset->location_lat = $lat;
-        $asset->location_lng = $lng;
-        $asset->save();
-
+    /**
+     * @param array{location_text: mixed, room_id: mixed} $from
+     * @param array{location_text: mixed, room_id: mixed} $to
+     */
+    private function recordMove(Asset $asset, User $actor, array $from, array $to): void {
         $asset->audit('asset.moved', [
             'actor_id' => $actor->id,
-            'location_text' => $locationText,
-            'location_lat' => $lat,
-            'location_lng' => $lng,
+            'from_location_text' => $from['location_text'],
+            'to_location_text' => $to['location_text'],
+            'from_room_id' => $from['room_id'],
+            'to_room_id' => $to['room_id'],
         ]);
-
-        return $asset->refresh();
     }
 
-    public function scheduleMaintenance(Asset $asset, User $actor, ?string $nextMaintenanceOn, ?string $nextInspectionOn): Asset {
-        $asset->next_maintenance_on = $this->normalizeDate($nextMaintenanceOn);
-        $asset->next_inspection_on = $this->normalizeDate($nextInspectionOn);
-        $asset->save();
-
-        $asset->audit('asset.updated', [
-            'actor_id' => $actor->id,
-            'next_maintenance_on' => $nextMaintenanceOn,
-            'next_inspection_on' => $nextInspectionOn,
-        ]);
-
-        return $asset->refresh();
+    /** @param array{location_text: mixed, room_id: mixed} $location */
+    private static function locationKey(array $location): string {
+        return trim((string) ($location['location_text'] ?? '')) . '|' . (int) ($location['room_id'] ?? 0);
     }
 
     private function validateOwnershipConsistency(AssetOwnership $ownedBy, mixed $customerId): void {

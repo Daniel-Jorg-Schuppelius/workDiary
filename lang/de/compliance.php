@@ -129,6 +129,8 @@ return [
             'end' => 'Ende',
             'breaks' => 'Pausen (Min.)',
             'duration' => 'Dauer',
+            'homeoffice' => 'davon Homeoffice',
+            'errand' => 'davon Dienstgang',
         ],
     ],
     'driving' => [

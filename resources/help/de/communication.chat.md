@@ -1,7 +1,7 @@
 ---
 title: "Chat verwenden"
 topic: communication.chat
-version: 1
+version: 2
 keywords:
     - Chatnachricht
     - Nachricht senden
@@ -33,3 +33,5 @@ zusätzlich am jeweiligen Datensatz dokumentiert werden.
 Teilen Sie keine Zugangsdaten oder unnötigen personenbezogenen Daten.
 Gelöschte oder bearbeitete Nachrichten können je nach Berechtigung und
 Audit-Vorgaben weiterhin nachvollziehbar sein.
+
+**Umfrage mit Ende:** Beim Anlegen einer Umfrage im Chat legen Sie optional fest, wann die Abstimmung endet. Danach nimmt die Umfrage keine Stimmen mehr an.

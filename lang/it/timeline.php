@@ -17,6 +17,10 @@ return [
     'filter' => [
         'label' => 'Filtra cronologia',
         'all' => 'Tutti',
+        'types' => 'Tipi',
+        'actor' => 'Persona',
+        'all_actors' => 'Tutte le persone',
+        'customer_only' => 'Solo rilevante per il cliente',
         'status' => 'Stato',
         'time' => 'Tempi',
         'comment' => 'Commenti',
@@ -74,6 +78,7 @@ return [
             'visibilityChanged' => 'Visibilità del punto aperto modificata',
             'commentAdded' => 'Commento sul punto aperto',
             'attachmentAdded' => 'Allegato sul punto aperto',
+            'ticketOpened' => 'Ticket aperto dal punto aperto',
         ],
     ],
     'action' => [

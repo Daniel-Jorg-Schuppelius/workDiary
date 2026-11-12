@@ -52,7 +52,7 @@ class DomainRegistrationController extends Controller {
             'domain' => ['required', 'string', 'max:253'],
             'customer' => ['required', 'string'],
             'period' => ['nullable', 'integer', 'min:1', 'max:10'],
-            'renewal_mode' => ['nullable', 'string'],
+            'renewal_mode' => ['nullable', \Illuminate\Validation\Rule::enum(\App\Enums\Domain\DomainRenewalMode::class)],
             'owner_contact' => ['required', 'string', 'max:190'],
             'admin_contact' => ['nullable', 'string', 'max:190'],
             'tech_contact' => ['nullable', 'string', 'max:190'],

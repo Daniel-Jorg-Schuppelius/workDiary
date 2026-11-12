@@ -13,7 +13,7 @@ namespace App\Console\Commands\Domain;
 use App\Console\Concerns\IteratesModuleOrganizations;
 use App\Enums\Domain\DomainConnectionStatus;
 use App\Models\Domain\DomainProviderConnection;
-use App\Services\Domain\{DomainAccountingService, DomainSyncService};
+use App\Services\Domain\{DomainAccountingService, DomainCommandReconciler, DomainSyncService};
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -29,7 +29,7 @@ class DomainSyncCommand extends Command {
 
     protected $description = 'Gleicht DomainReselling-Portfolio, Reseller und Accounting ab.';
 
-    public function handle(DomainSyncService $sync, DomainAccountingService $accounting): int {
+    public function handle(DomainSyncService $sync, DomainAccountingService $accounting, DomainCommandReconciler $reconciler): int {
         $query = $this->whereModuleActive(DomainProviderConnection::query()->where('status', DomainConnectionStatus::Active->value), withoutOrganization: true);
         if (($id = $this->option('connection')) !== null) {
             $query->whereKey($id);
@@ -44,6 +44,8 @@ class DomainSyncCommand extends Command {
                 $sync->syncAll($connection);
                 $sync->markStale($connection);
                 $accounting->sync($connection);
+                // Unklare Befehle gegen den Anbieterzustand abgleichen (MVP-1614).
+                $reconciler->reconcileOpen($connection);
                 $connection->recordConnectionSuccess();
                 $processed++;
             } catch (Throwable $e) {

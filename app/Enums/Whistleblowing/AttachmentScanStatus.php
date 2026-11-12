@@ -21,7 +21,6 @@ enum AttachmentScanStatus: string implements HasLabel {
     case Pending = 'pending';
     case Clean = 'clean';
     case Rejected = 'rejected';
-    case Failed = 'failed';
 
     public function label(): string {
         return (string) __('whistleblowing.attachment_scan.' . $this->value);

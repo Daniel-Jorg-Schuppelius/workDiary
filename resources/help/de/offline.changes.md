@@ -1,7 +1,7 @@
 ---
 title: "Offline-Änderungen"
 topic: offline.changes
-version: 1
+version: 2
 keywords:
     - offline arbeiten
     - ohne Internet
@@ -27,3 +27,17 @@ Ohne Netzverbindung erfasste Aktionen (Stempel, Auftrags-Kommentare, Formulare) 
 **Abgelehnt:** Vom Server nicht übernommene Einträge (z. B. Pflichtfeld fehlt oder bereits eingestempelt) — mit Begründung. „Erneut anwenden" stellt den Eintrag mit aktuellem Stand neu in die Warteschlange.
 
 **Wichtig:** Die Liste liegt nur auf diesem Gerät; beim Abmelden wird sie geleert. Dateien und Unterschriften können nicht offline erfasst werden.
+
+## Was ohne Verbindung geht
+
+Neben Stempeln, Auftrags-Kommentaren und Formularen erfassen Sie offline auch **Projektzeiten** über die Eingabeleiste auf „Heute“ (Dauer oder Von/Bis — den Timer nicht), **Material** über „Material“ auf „Heute“ und **Korrekturen Ihrer Stempelungen** über das Stift-Symbol in der Stempelliste auf „Heute“. Diese Dialoge liegen in der Seite; sie öffnen also auch ohne Netz, wenn „Heute“ vorher geladen war.
+
+## Konflikte entscheiden
+
+Ein Konflikt heißt: Die Erfassung wurde **nicht** übernommen, weil sich seit der Erfassung etwas geändert hat oder eine Pflichtangabe fehlt — etwa eine inzwischen geänderte Stempelung, ein abgeschlossener Tag oder eine Buchung ohne Projekt. Sie entscheiden:
+
+- **Fremden Stand übernehmen** bzw. **Verwerfen** — Ihre Fassung entfällt.
+- **Meine Fassung senden** — nur bei geänderter Stempelung: Ihre Korrektur geht auf den neuen Stand.
+- **Bearbeiten** — Felder anpassen (etwa Datum, Dauer oder Begründung) und als neuen Eintrag senden.
+
+Jede Entscheidung wird im Prüfprotokoll festgehalten. Offene Konflikte zeigt die Seite auch, wenn sie auf einem anderen Gerät entstanden sind; die Inhalte liegen dann dort, hier lässt sich der Konflikt nur verwerfen.

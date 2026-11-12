@@ -1,7 +1,7 @@
 ---
 title: "Schichttausch mit Freigabe"
 topic: planning.exchange
-version: 2
+version: 3
 keywords:
     - Schicht tauschen
     - Dienst tauschen
@@ -39,3 +39,18 @@ Ablauf:
 
 Ein Antrag kann zurückgenommen werden, solange er noch nicht entschieden
 ist.
+
+**Gegenschicht:** Im Dialog **Tausch beantragen** wählen Sie unter
+**Gegenschicht (optional)** eine kommende Schicht einer Kollegin oder eines
+Kollegen. Ohne **Gewünschte Person** legt die Gegenschicht die Tauschperson
+fest; sie muss der gewählten Person gehören. Die Liste zeigt den Antrag dann
+mit der Marke **Tausch** und der Gegenschicht. Bei der Prüfung zählt die
+abgegebene Schicht der jeweils anderen Seite nicht mehr mit.
+
+**Regelverstoß bei der Freigabe:** Verstößt die neue Zuordnung gegen eine
+Arbeitszeitregel, steht am Antrag die Marke **Regelverstoß** und statt
+**Freigeben** die Schaltfläche **Prüfen und freigeben**. Der Dialog nennt die
+verletzten Regeln; freigeben können Sie nur mit **Trotz Regelverstoß
+freigeben** und einer **Begründung** (mindestens 10 Zeichen). Begründung und
+übersteuerte Regeln stehen im Audit-Protokoll. Eine Qualifikationssperre hebt
+die Übersteuerung nicht auf.

@@ -47,7 +47,7 @@ final class FifoValuationTest extends TestCase {
         $this->fifo->receipt($this->variant, $this->warehouse, '10', '2.00');
 
         $this->assertSame('10.0000', $this->fifo->onHand($this->variant, $this->warehouse));
-        $this->assertSame('20.0000', $this->fifo->totalValue($this->variant, $this->warehouse));
+        $this->assertSame('20.0000', $this->fifo->summariesForWarehouse($this->warehouse)[$this->variant->id]['value']);
     }
 
     public function test_issue_consumes_oldest_layer_first(): void {
@@ -62,7 +62,7 @@ final class FifoValuationTest extends TestCase {
         $this->assertSame('35.0000', $issue->costTotal());
         $this->assertSame('35.0000', $issue->first()->cost_total?->getAmount());
         $this->assertSame('5.0000', $this->fifo->onHand($this->variant, $this->warehouse));
-        $this->assertSame('15.0000', $this->fifo->totalValue($this->variant, $this->warehouse));
+        $this->assertSame('15.0000', $this->fifo->summariesForWarehouse($this->warehouse)[$this->variant->id]['value']);
     }
 
     public function test_manager_resolves_method_per_article(): void {

@@ -24,6 +24,12 @@
     // mitgibt (Autoren-Vorschau ohne Verarbeitung).
     $mediaState ??= [];
     $portal ??= false;
+    // Pflichtanteil der Videos (MVP-1598): nur im Player gesetzt. $videoProgressUrl
+    // (Closure attachment_id → URL|null) meldet, $videoProgress trägt den Stand,
+    // $videoGate ist der Schlüssel der Einheit für den Abschließen-Knopf.
+    $videoProgress ??= [];
+    $videoProgressUrl ??= null;
+    $videoGate ??= '';
 @endphp
 
 @foreach ($blocks as $block)
@@ -95,6 +101,10 @@
                 // Feature 150: gespielt wird die umgerechnete Fassung, nie das
                 // Original — das kann HEVC/MOV sein und spielt dann nicht.
                 $media = $attachmentId !== null ? ($mediaState[$attachmentId] ?? null) : null;
+                $videoId = null;
+                $requiredPercent = $attachmentId !== null ? (int) ($block['require_percent'] ?? 0) : 0;
+                $seenPercent = (int) ($videoProgress[$attachmentId] ?? 0);
+                $progressUrl = $requiredPercent > 0 && $videoProgressUrl !== null ? $videoProgressUrl($attachmentId) : null;
             @endphp
             <figure class="mt-3">
                 @if ($media && ! $media['ready'])
@@ -117,6 +127,7 @@
                            @if (! empty($block['autoplay'])) autoplay muted playsinline @endif
                            @if (! empty($block['remember_position'])) data-remember-position="{{ 'lrn-video-' . md5((string) ($variants[0]['url'] ?? $media['video'] ?? $url)) }}" @endif
                            @if ($media && $media['poster']) poster="{{ $media['poster'] }}" @endif
+                           @if ($progressUrl) data-video-progress="{{ $progressUrl }}" data-progress-required="{{ $requiredPercent }}" data-progress-gate="{{ $videoGate }}" data-progress-status="{{ $videoId }}-progress" @endif
                            src="{{ $media['video'] ?? $url }}">
                         @foreach (($media['subtitles'] ?? []) as $track)
                             {{-- Eine noch nicht durchgesehene Maschinenspur trägt
@@ -149,6 +160,14 @@
                         <x-icon name="movie" />
                         <span>{{ __('learning.help.block_media_missing') }}</span>
                     </div>
+                @endif
+                @if ($requiredPercent > 0 && $videoProgressUrl !== null)
+                    {{-- Stand des Pflichtanteils; der Player schreibt ihn fort. --}}
+                    <p id="{{ ($videoId ?? 'lrn-video-' . $loop->index) }}-progress" role="status" aria-live="polite"
+                       class="mt-1 text-xs {{ $seenPercent >= $requiredPercent ? 'text-success' : 'text-warning' }}"
+                       data-template="{{ __('learning.help.video_progress', ['percent' => '__P__', 'required' => $requiredPercent]) }}">{{ __('learning.help.video_progress', ['percent' => $seenPercent, 'required' => $requiredPercent]) }}</p>
+                @elseif ($requiredPercent > 0)
+                    <p class="mt-1 text-xs text-muted">{{ __('learning.help.video_required', ['required' => $requiredPercent]) }}</p>
                 @endif
                 @if (! empty($block['caption']))
                     <figcaption class="mt-1 text-xs text-muted">{{ $block['caption'] }}</figcaption>

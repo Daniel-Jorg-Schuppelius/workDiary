@@ -174,6 +174,10 @@ return [
     ],
 
     'alert' => [
+        'document_margin' => [
+            'quotes' => 'Angebot :number, Position :position: Belegpreis :price ergibt :margin % Marge',
+            'orders' => 'Auftrag :number, Position :position: Belegpreis :price ergibt :margin % Marge',
+        ],
         'title' => 'Preis-Warnungen',
         'subtitle' => 'Einkaufspreisänderungen unter Mindestmarge',
         'empty' => 'Keine offenen Preis-Warnungen.',
@@ -192,6 +196,8 @@ return [
             'purchase_orders' => 'Bestellungen',
             'boq_items' => 'LV-Positionen',
             'manufacturing_orders' => 'Fertigungsaufträge',
+            'quotes' => 'Angebote',
+            'orders' => 'Aufträge',
         ],
         'action' => [
             'acknowledge' => 'Erledigt',
@@ -334,6 +340,7 @@ return [
             'host_not_allowed' => 'Der Remote-Host ist nicht zulässig (internes/privates Ziel).',
             'xlsx_invalid' => 'Die Datei ist keine lesbare XLSX-Datei.',
             'sheet_not_found' => 'Tabellenblatt „:sheet" nicht gefunden (Groß-/Kleinschreibung beachten).',
+            'ignore_linked' => 'Eine verknüpfte Position lässt sich nicht ignorieren — lösen Sie zuerst die Verknüpfung.',
         ],
         'subtitle' => 'Katalogquellen und CSV-Preislisten importieren',
         'empty' => 'Keine Katalogquellen vorhanden.',
@@ -408,6 +415,8 @@ return [
             'propose' => 'Vorschlag',
             'adopt' => 'Als Artikel übernehmen',
             'adopt_item' => 'Tarif-Gruppe als Artikel übernehmen',
+            'ignore' => 'Nicht übernehmen (ignorieren)',
+            'unignore' => 'Wieder aufnehmen',
         ],
         'adopt' => [
             'title' => 'Katalogartikel übernehmen',
@@ -474,10 +483,13 @@ return [
             'unlinked' => 'Verknüpfung gelöst.',
             'proposed' => 'Vorschlag: „:article" — bitte prüfen und verknüpfen.',
             'no_match' => 'Kein passender interner Artikel gefunden (EAN/GTIN, Varianten-SKU, Bezugsquelle, Name).',
+            'ignored' => 'Position wird ignoriert — sie fällt aus Vorschlägen, Übernahme und Preisabgleich.',
+            'unignored' => 'Position wieder aufgenommen.',
         ],
     ],
 
     'field' => [
+        'unit' => 'Bestelleinheit',
         'number' => 'Nr.',
         'supplier' => 'Lieferant',
         'warehouse' => 'Lager',
@@ -493,6 +505,7 @@ return [
     ],
 
     'flash' => [
+        'unknown_unit' => 'Diese Einheit ist am Artikel nicht gepflegt.',
         'created' => 'Bestellung angelegt.',
         'line_added' => 'Position hinzugefügt.',
         'conditions_saved' => 'Konditionen gespeichert.',
@@ -587,6 +600,52 @@ return [
         ],
     ],
     // Pflichtnachweise Subunternehmer (Feature 117, MVP-606).
+    'credential_types' => [
+        'title' => 'Nachweisarten',
+        'subtitle' => 'Welche Nachweise Lieferanten vorlegen müssen. Die Arten des Katalogs sind Vorlage; eigene Arten ergänzen sie.',
+        'empty' => 'Noch keine Nachweisarten.',
+        'saved' => 'Nachweisart gespeichert.',
+        'months' => ':count Monate',
+        'action' => [
+            'create' => 'Eigene Nachweisart',
+            'edit' => 'Nachweisart bearbeiten',
+            'adopt' => 'Als eigene Art übernehmen',
+        ],
+        'origin' => [
+            'catalog' => 'Katalog',
+            'own' => 'Eigene Art',
+        ],
+        'mode' => [
+            'warn' => 'Nur warnen',
+            'block' => 'Beauftragung sperren',
+        ],
+        'state' => [
+            'active' => 'Aktiv',
+            'inactive' => 'Deaktiviert',
+        ],
+        'required' => [
+            'description' => 'Pflichtnachweise zählen in die Ampel des Lieferanten. Mit Tags gilt die Pflicht nur für Lieferanten, die eines davon tragen, etwa ein Gewerk oder eine Leistungsart.',
+            'yes' => 'Pflichtnachweis',
+            'optional' => 'Freiwillig',
+            'all' => 'Pflicht für alle Lieferanten',
+            'tags' => 'Pflicht für: :tags',
+        ],
+        'field' => [
+            'name' => 'Bezeichnung',
+            'description' => 'Beschreibung',
+            'origin' => 'Herkunft',
+            'required' => 'Pflicht',
+            'required_tags' => 'Pflicht nur für Lieferanten mit Tag',
+            'required_tags_hint' => 'Ohne Auswahl gilt die Pflicht für alle Lieferanten.',
+            'blocking_mode' => 'Bei fehlendem Nachweis',
+            'blocking_mode_hint' => 'Gesperrt wird nur, wenn die Organisation das Sperren der Beauftragung eingeschaltet hat.',
+            'validity' => 'Regel-Gültigkeit (Monate)',
+            'validity_hint' => 'Leer = unbefristet.',
+            'warn_days_before' => 'Vorwarnung (Tage vor Ablauf)',
+            'state' => 'Zustand',
+            'state_hint' => 'Deaktivierte Arten stehen nicht mehr zur Auswahl und zählen nicht in die Ampel; hinterlegte Nachweise bleiben erhalten.',
+        ],
+    ],
     'credentials' => [
         'badge' => 'Nachweise: :status',
         'hint' => 'Pflichtnachweise des Lieferanten (Freistellungsbescheinigung, Versicherung usw.)',

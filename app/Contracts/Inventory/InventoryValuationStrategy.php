@@ -15,7 +15,7 @@ namespace App\Contracts\Inventory;
 use App\Enums\Inventory\ValuationMethod;
 use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\{StockLot, StockMovement, Warehouse};
-use App\Services\Inventory\StockIssue;
+use App\Services\Inventory\{EnteredQuantity, StockIssue};
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -26,11 +26,11 @@ use Illuminate\Database\Eloquent\Model;
 interface InventoryValuationStrategy {
     public function method(): ValuationMethod;
 
-    /** Wareneingang mit Einzelkosten; optional mit Herkunftsbeleg (z. B. Bestellzeile). */
-    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null): StockMovement;
+    /** Wareneingang mit Einzelkosten je Basiseinheit; optional mit Herkunftsbeleg (z. B. Bestellzeile) und Eingabe in Artikeleinheit. */
+    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?EnteredQuantity $entered = null): StockMovement;
 
     /** Abgang je Charge (gewählt oder FEFO-zugeteilt), jeder Teil verfahrensgemäß bewertet; `$requireLot` weist einen Teil ohne Charge ab. */
-    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false): StockIssue;
+    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false, ?EnteredQuantity $entered = null): StockIssue;
 
     /** Bewerteter Bestand in Basiseinheit. @return numeric-string */
     public function onHand(ArticleVariant $variant, Warehouse $warehouse): string;
@@ -43,6 +43,10 @@ interface InventoryValuationStrategy {
      */
     public function unitCost(ArticleVariant $variant, Warehouse $warehouse): string;
 
-    /** Bewerteter Gesamtwert des Bestands. @return numeric-string */
-    public function totalValue(ArticleVariant $variant, Warehouse $warehouse): string;
+    /**
+     * Bewertung aller Varianten eines Lagers nach diesem Verfahren (Durchschnitt und Wert in einer Query).
+     *
+     * @return array<int, array{avg: numeric-string, value: numeric-string}> Variante → Bewertung
+     */
+    public function summariesForWarehouse(Warehouse $warehouse): array;
 }

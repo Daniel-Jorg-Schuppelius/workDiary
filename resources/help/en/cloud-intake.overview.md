@@ -1,7 +1,7 @@
 ---
 title: "Cloud document intake"
 topic: cloud-intake.overview
-version: 2
+version: 5
 keywords:
     - Paperless-ngx
     - Seafile
@@ -32,3 +32,11 @@ WorkDiary READS documents from monitored folders in Dropbox, OneDrive/SharePoint
 **Rules:** Path patterns with * and ** plus variables like {customer_number} assign files to existing customers, projects, orders, assets or contracts — never by auto-creation. Unclear matches go to the integration inbox.
 
 **Security:** Read-only scopes, encrypted tokens, source files remain untouched; webhooks are wake-up signals only — the resumable delta run is authoritative.
+
+**Rule test and start:** Every rule needs a test path, e.g. a real customer folder. When saving, WorkDiary checks whether the path matches the pattern, which variables are recognised and which target results; without a passed test nothing is saved. A fixed target reference assigns all files of a rule to a specific customer, project, order, asset or contract. Active rules of a connection must not overlap: identical patterns or a test path matching two rules block activation. A connection only begins its first import after you have reviewed the preview and confirmed “Start import”; a new root folder requires a new confirmation.
+
+**Data ownership:** If, according to data ownership, another system leads the documents, the connection does not take any files into the DMS; each file becomes a case in the integration inbox, without a handover record. **Take over once** downloads the file again and creates it according to the rules. Rules for incoming invoices, orders and tender packages are not affected.
+
+## Sign-in expired, blocked or switched off
+
+If the provider rejects the sign-in (expired or revoked), the connection shows **Re-authenticate**. If read permissions are missing when signing in, it shows **Blocked**; after repeated errors up to the switch-off threshold, **Disabled**. In all three cases the import pauses and the card offers **Sign in again**. Only signing in again makes the connection active; changing the folder or rules does not.

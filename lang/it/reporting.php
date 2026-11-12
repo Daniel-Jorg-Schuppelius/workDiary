@@ -173,8 +173,8 @@ return [
     'plan_ist' => [
         'warning' => [
             'presence' => [
-                'lateStart' => 'Inizio oltre 15 minuti dopo il previsto',
-                'hoursDiff' => 'Ore con scostamento superiore al 10 %',
+                'lateStart' => 'Inizio oltre :minutes minuti dopo il previsto',
+                'hoursDiff' => 'Ore con scostamento superiore al :percent %',
             ],
         ],
     ],
@@ -236,6 +236,7 @@ return [
         'group' => [
             'finance' => 'Finanze',
             'operations' => 'Operatività',
+            'hr' => 'Personale',
             'sales' => 'Vendite',
             'service' => 'Assistenza',
             'quality' => 'Qualità',
@@ -257,6 +258,12 @@ return [
             'resale_open_hint' => 'aperto :amount',
             'resale_margin' => 'Margine abbonamenti e licenze',
             'resale_margin_hint' => ':periods periodi, :actual con acquisto effettivo',
+            'sick_days' => 'Giorni di malattia',
+            'sick_days_hint' => ':episodes certificati di :users persone · retribuzione continuata esaurita: :exhausted',
+            'qualifications_expired' => 'Qualifiche scadute',
+            'qualifications_expiring' => 'A oggi · scadono entro :days giorni: :count',
+            'vacation_pending' => 'Richieste di ferie aperte',
+            'vacation_pending_hint' => 'A oggi · inizio nei prossimi 14 giorni: :count',
         ],
         'digest' => [
             'subject' => 'Report direzionale :organization · :range',
@@ -347,6 +354,8 @@ return [
         'tracked_minutes' => 'Registrato (min)',
         'invoiced_minutes' => 'Fatturato (min)',
         'present_minutes' => 'Presente (min)',
+        'homeoffice_minutes' => 'Lavoro da casa (min)',
+        'errand_minutes' => 'Uscita di servizio (min)',
         'booked_minutes' => 'Registrato (min)',
         'balance_minutes' => 'Saldo (min)',
         'plan_minutes' => 'Piano (min)',
@@ -384,6 +393,7 @@ return [
         'defects_period' => 'Difetti nel periodo',
         'defects_12_months' => 'Difetti 12 mesi',
         'recurring_defect' => 'Difetto ricorrente',
+        'recurring_defects' => 'Difetti ricorrenti',
         'maintenance_sessions' => 'Sessioni di manutenzione',
         'maintenance_minutes' => 'Tempo di manutenzione (min)',
         'last_incident' => 'Ultimo incidente',
@@ -480,6 +490,7 @@ return [
         'median_actual_minutes' => 'Effettivo mediano (min)',
         'p90_actual_minutes' => 'Effettivo P90 (min)',
         'contribution_per_order_eur' => 'Margine per ordine (€)',
+        'top_causes' => 'Cause principali (ordini)',
         'license_plate' => 'Targa',
         'propulsion' => 'Propulsione',
         'trips' => 'Viaggi',

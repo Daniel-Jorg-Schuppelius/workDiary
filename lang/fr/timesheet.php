@@ -43,4 +43,10 @@ return [
         'hash' => 'SHA-256 : :hash',
         'none' => '— aucune signature —',
     ],
+    // Material auf „Heute“, auch offline (MVP-1594).
+    'day_material' => [
+        'action' => 'Matériel',
+        'title' => 'Saisir du matériel',
+        'hint' => 'Le matériel est ajouté à votre feuille de temps ouverte du projet pour ce jour ; s’il n’y en a pas, elle est créée. Sans connexion, il est enregistré sur l’appareil et transmis au prochain contact.',
+    ],
 ];

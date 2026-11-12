@@ -1,7 +1,7 @@
 ---
 title: "Zeiteintrag bearbeiten"
 topic: time-entries.edit
-version: 3
+version: 4
 keywords:
     - Zeit korrigieren
     - Zeitbuchung ändern
@@ -95,6 +95,8 @@ Gesperrt ist ein Eintrag, wenn
 - das Korrekturfenster abgelaufen ist (standardmäßig 7 Tage nach dem Tag des
   Eintrags),
 - der Monat für Sie bereits freigegeben ist,
+- Sie den Tag des Eintrags bereits abgeschlossen haben (Änderungen laufen
+  dann über **Korrektur anfordern** in der Tagesansicht),
 - der zugehörige Stundenzettel signiert oder gesperrt ist oder
 - der Eintrag bereits exportiert wurde.
 

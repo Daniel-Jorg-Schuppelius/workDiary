@@ -1,7 +1,7 @@
 ---
 title: "Leads"
 topic: sales.leads
-version: 4
+version: 6
 keywords:
     - prospectos
     - clientes potenciales
@@ -72,3 +72,12 @@ las cuenta por origen y conversión. Como en cliente, proveedor y proyecto, los
 paneles de otros módulos muestran solo lo que existe para el lead — un módulo
 sin datos del lead no aparece. El historial lista las entradas de auditoría del
 lead, ofertas incluidas; las reservas de cita se vinculan al lead abierto.
+
+Quien puede abrir la página «Solicitudes de cita» ve en el panel **Citas** las citas reservadas y solicitadas del lead (por ejemplo, de Calendly) con fecha, lugar y estado; el clic abre las solicitudes de cita.
+
+## Último contacto
+
+El plazo cuenta desde el **último contacto**. Avanza con cada nota de
+comunicación en el lead (con su fecha), con cada modificación de contenido, con
+cada cambio de estado y con cada presupuesto creado desde el lead. Cambiar solo
+la persona responsable no cuenta como contacto.

@@ -217,4 +217,28 @@ return [
         'waiting_role' => 'Ruolo :role',
         'not_responsible' => 'Lei non è responsabile della fase di approvazione aperta.',
     ],
+    // Nutzungsdauer der Variante, Listenfilter, PDF-Bericht (MVP-1606).
+    'option' => [
+        'useful_life' => 'Vita utile (anni)',
+        'useful_life_short' => 'Vita utile',
+        'years' => ':count anno|:count anni',
+    ],
+    'filter' => [
+        'all_responsible' => 'Tutti i responsabili',
+        'all_cost_centers' => 'Tutti i centri di costo',
+        'budget' => 'Stato del budget',
+        'all_budget' => 'Qualsiasi stato del budget',
+        'budget_none' => 'senza richiesta di budget',
+        'all_urgency' => 'Qualsiasi urgenza',
+        'with_risk' => 'Solo con nota di rischio',
+        'risk_badge' => 'Rischio',
+    ],
+    'report' => [
+        'pdf_title' => 'Rapporto sugli investimenti',
+        'pdf_meta' => 'Approvazioni aperte: :approvals · scostamenti aperti: :deviations',
+        'approved' => 'Approvato',
+        'committed' => 'Impegnato',
+        'actual' => 'Effettivo',
+        'remaining' => 'Residuo',
+    ],
 ];

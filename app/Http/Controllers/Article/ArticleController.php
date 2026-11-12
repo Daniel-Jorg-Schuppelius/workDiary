@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Article\SaveArticleRequest;
 use App\Models\Article\{Article, ArticleOptionDefinition, ArticleOptionValue, ArticleVariant};
 use App\Services\Article\{ArticleService, VariantResolver};
+use App\Services\Article\Contracts\ArticleValuation;
 use App\Support\ErrorText;
 use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -142,7 +143,7 @@ class ArticleController extends Controller {
         return $this->form($article);
     }
 
-    public function update(SaveArticleRequest $request, Article $article): RedirectResponse {
+    public function update(SaveArticleRequest $request, Article $article, ArticleValuation $valuation): RedirectResponse {
         Gate::authorize('update', $article);
 
         $data = $request->validated();
@@ -151,7 +152,10 @@ class ArticleController extends Controller {
         $newTagsRaw = (string) ($data['new_tags'] ?? '');
         unset($data['tag_ids'], $data['new_tags'], $data['custom']);
 
-        $article->update($data);
+        // Verfahrenswechsel (MVP-1579): das Lager prüft ihn und überträgt den Bestand ins neue Bewertungsbuch.
+        $valuation->saveArticle($article, $data, $this->currentOrganization(), static function () use ($article, $data): void {
+            $article->update($data);
+        });
         $article->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
         $article->syncCustomFields($custom);
 
@@ -293,7 +297,17 @@ class ArticleController extends Controller {
             'statuses' => ArticleStatus::cases(),
             'allTags' => \App\Models\Classification\Tag::query()->orderBy('name')->get(),
             // Feature 107 W9: Verkaufs-Rabattgruppe für den DATANORM-Export.
+            'numbersLockedBy' => app(\App\Services\Numbering\NumberAuthority::class)->articleNumbersLockedBy($this->currentOrganization()),
+            'orgValuationMethod' => app(ArticleValuation::class)->organizationMethod($this->currentOrganization()),
             'salesDiscountGroups' => \App\Models\Sales\SalesDiscountGroup::query()->orderBy('code')->get(),
+            // Standard-Arbeitsplan (Feature 047): veröffentlichte Versionen der eigenen Prozedurvorlagen.
+            'procedureVersions' => \App\Models\Procedure\ProcedureTemplateVersion::query()
+                ->with('template:id,name,code')
+                ->whereNotNull('published_at')
+                ->whereHas('template', static fn ($template) => $template->where('active', true))
+                ->orderBy('procedure_template_id')
+                ->orderByDesc('version')
+                ->get(['id', 'procedure_template_id', 'version']),
             // Typ-Picker (produktmodell-konzept.md, MVP-370).
             'products' => \App\Models\Article\Product::query()
                 ->orderBy('manufacturer')

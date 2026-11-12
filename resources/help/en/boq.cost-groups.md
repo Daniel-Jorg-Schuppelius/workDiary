@@ -1,7 +1,7 @@
 ---
 title: "Cost groups per DIN 276"
 topic: boq.cost-groups
-version: 1
+version: 2
 keywords:
     - assign cost group
     - cost planning
@@ -163,3 +163,7 @@ Changing the standard runs via **Assign → Change edition** and first shows a
 **preview**. Only unambiguous counterparts are converted; everything else stays.
 The gaps are the point — they show where someone has to decide. A guessed code
 would be worse than the old one.
+
+## Import without the edition of the standard
+
+If the cost group catalogue of a GAEB file does not state the edition of the standard, the import takes over the cost groups and records a **finding**: it appears in the import history of the bill of quantities. Afterwards assign the edition to the catalogue via **Assign → Change edition** before you evaluate.

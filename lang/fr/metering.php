@@ -19,6 +19,19 @@ return [
     'blocked_external' => 'Un système externe gère la facturation de ce client — aucun document n’est créé.',
     'run_done' => 'Facturé : :created brouillon(s), :skipped ignoré(s).',
     'form_hint' => 'Sans relevé de fin sur la période, aucun brouillon n’est créé, seulement une alerte — rien n’est estimé.',
+    'not_runnable' => 'Cet accord n’est pas facturé (statut : :status). Pour le facturer, passez le statut à « Actif ».',
+    'project_hint' => 'Les brouillons de facture du traitement sont rattachés à ce projet.',
+    'status_hint' => 'Le traitement ignore les accords en pause et terminés. Après une pause, il rattrape à partir de « Prochaine facturation » — avancez la date si nécessaire.',
+    'tiers' => [
+        'legend' => 'Barème par tranches',
+        'hint' => 'Facultatif. Avec un barème, le prix de chaque tranche s’applique à la place du prix unitaire ; le calcul est progressif sur la consommation après déduction de la franchise. La première tranche commence à 0, les lignes vides sont ignorées.',
+        'from' => 'Tranche :n à partir de la quantité',
+        'price' => 'Tranche :n prix par unité',
+        'badge' => 'Barème (:count tranches)',
+        'badge_title' => 'Un barème par tranches s’applique à la place du prix unitaire.',
+        'first_from_zero' => 'La première tranche doit commencer à 0, sinon une partie de la consommation ne serait pas facturée.',
+        'duplicate_from' => 'Chaque tranche doit avoir sa propre quantité « à partir de ».',
+    ],
     'unit_default' => 'unités',
     'action' => [
         'create' => 'Enregistrer une convention',
@@ -37,6 +50,7 @@ return [
         'interval_count' => 'Facteur',
         'next_run_on' => 'Prochaine facturation',
         'end_on' => 'Fin',
+        'project' => 'Projet',
         'status' => 'Statut',
     ],
     'interval' => [

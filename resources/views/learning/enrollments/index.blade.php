@@ -82,6 +82,7 @@
             @php
                 $isExternal = $enrollment->external_participant_id !== null;
                 $isOpen = ! $enrollment->status->isFinal();
+                $certificate = $certificates[$enrollment->id] ?? null;
             @endphp
             <tr class="hover">
                 <td class="font-medium">
@@ -101,6 +102,14 @@
                     @if ($isOpen && $enrollment->isAccessExpired())
                         <x-status-badge tone="warning" size="sm" outline>{{ __('learning.field.access_expired') }}</x-status-badge>
                     @endif
+                    @if ($certificate)
+                        {{-- Zertifikat (MVP-1599): Nummer, bei Widerruf mit Grund. --}}
+                        <x-status-badge :tone="$certificate->isRevoked() ? 'error' : 'success'" size="sm" outline
+                                        :title="$certificate->isRevoked() ? $certificate->revoked_reason : null">
+                            <x-icon :name="$certificate->isRevoked() ? 'block' : 'workspace_premium'" />
+                            {{ $certificate->isRevoked() ? __('learning.badge.certificate_revoked', ['number' => $certificate->number]) : $certificate->number }}
+                        </x-status-badge>
+                    @endif
                 </td>
                 <td class="text-sm">
                     <x-status-badge :tone="$enrollment->source->tone()" size="sm" outline>{{ $enrollment->source->label() }}</x-status-badge>
@@ -113,6 +122,26 @@
                 <td class="text-sm">{{ $enrollment->created_at?->translatedFormat('d.m.Y') }}</td>
                 <td class="text-right whitespace-nowrap">
                     <div class="flex justify-end gap-1">
+                        @foreach (($proofs[$enrollment->id] ?? []) as $proofProgress)
+                            @foreach ($proofProgress->attachments as $proof)
+                                <x-icon-btn icon="attach_file" tone="ghost" size="xs"
+                                            :href="route('learning.courses.enrollments.proofs.show', [$course->sqid, $enrollment->sqid, $proof->sqid])"
+                                            :label="__('learning.action.download_proof', ['unit' => $proofProgress->unit?->title ?? ''])" />
+                            @endforeach
+                        @endforeach
+                        @if ($canRevokeCertificate && $certificate && ! $certificate->isRevoked())
+                            <x-icon-btn icon="block" tone="outline" size="xs"
+                                        data-entry-modal-trigger
+                                        :href="route('learning.courses.enrollments.certificate.revoke', [$course, $enrollment])"
+                                        :label="__('learning.action.revoke_certificate')" />
+                        @endif
+                        @if ($isExternal && in_array($enrollment->id, $activeLinkIds, true))
+                            <form method="POST" action="{{ route('learning.courses.enrollments.access-link.revoke', [$course, $enrollment]) }}"
+                                  data-confirm-dialog data-confirm-message="{{ __('learning.confirm.revoke_access_link') }}">
+                                @csrf
+                                <x-icon-btn icon="link_off" tone="outline" size="xs" type="submit" :label="__('learning.action.revoke_access_link')" />
+                            </form>
+                        @endif
                         @if ($isOpen)
                             <x-icon-btn icon="event_repeat" tone="outline" size="xs"
                                         data-entry-modal-trigger

@@ -1,7 +1,7 @@
 ---
 title: "Démarrer la saisie des temps"
 topic: time-entries.start
-version: 2
+version: 3
 keywords:
     - chronomètre
     - lancer le chrono
@@ -52,6 +52,8 @@ traçables.
 
 ![Vue du jour avec ligne de chronomètre, bilan quotidien et pointeuse](media/zeit/heute-erfassung.png)
 *La vue du jour : démarrer le chronomètre, bilan prévu/réel et la pointeuse d’un coup d’œil.*
+
+**Sans connexion :** la barre de saisie d’« Aujourd’hui » enregistre aussi sans réseau les saisies avec durée ou de/à et les transmet au prochain contact — avec les mêmes règles qu’en ligne. Si la journée a été clôturée entre-temps ou si le projet manque, la saisie n’est pas abandonnée en silence mais apparaît comme conflit sous « Modifications hors ligne ». Le minuteur n’est pas disponible hors ligne.
 
 ## Exemple pratique
 

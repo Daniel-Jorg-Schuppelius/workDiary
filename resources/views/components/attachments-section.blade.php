@@ -11,6 +11,7 @@
     'uploadType' => null,   // morph-Typ für attachments.store (z. B. 'customer')
     'uploadId' => null,     // Sqid des Parents
     'canUpload' => false,
+    'canDelete' => true,    // false: kein Löschen, auch nicht für die Policy (Träger ist ein Nachweis)
     'details' => false,     // je Anhang Symbol, Größe, hochgeladen von und wann; unter dem Upload der Hinweis auf Größe und Typen
 ])
 
@@ -43,13 +44,13 @@
                             <span class="text-muted">· {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($att->size / 1024, 0, withThousandsSeparator: true) }} KB</span>
                         </div>
                     @endif
-                    @can('delete', $att)
+                    @if ($canDelete && Gate::allows('delete', $att) && ! ($att->meta_type !== null && $att->attachable instanceof \App\Models\Contracts\GuardsAttachments && $att->attachable->attachmentsLocked($att)))
                         <x-action-form :action="route('attachments.destroy', $att)" method="DELETE"
                                        :confirm="__('Anhang löschen?')" confirm-icon="delete"
                                        confirm-tone="error" :confirm-label="__('Löschen')">
                             <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                         </x-action-form>
-                    @endcan
+                    @endif
                 </li>
             @endforeach
         </ul>

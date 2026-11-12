@@ -23,12 +23,12 @@ use App\Models\Platform\User;
 class DomainLifecycleService {
     public function __construct(private readonly DomainCommandService $commands) {}
 
-    /** Renewal-Modus ändern (getrennt vom manuellen Renewal). */
+    /** Renewal-Modus ändern (getrennt vom manuellen Renewal); eigener Befehl laut Handbuch 2.3.2.10, `ModifyDomain` kennt den Parameter nicht. */
     public function setRenewalMode(DomainProjection $domain, DomainRenewalMode $mode, User $actor): DomainProviderCommand {
         $command = $this->commands->createAndDispatch(
             $domain->providerConnection(),
             DomainCapabilityArea::Renewal,
-            'ModifyDomain',
+            'SetDomainRenewalMode',
             $domain->external_domain,
             ['domain' => $domain->external_domain, 'renewalmode' => $mode->value],
             $domain,
@@ -56,7 +56,8 @@ class DomainLifecycleService {
             ['domain' => $domain->external_domain, 'period' => $period],
             $domain,
             $domain->customer_id,
-            null,
+            // Ablaufdatum vorher: der Abgleich erkennt eine Verlängerung am späteren Datum (MVP-1614).
+            ['expiration_at' => $domain->expiration_at?->toIso8601String()],
             $actor,
         );
     }

@@ -70,6 +70,7 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
             'comment',
             'invoice_text',
             'billable',
+            'survey_opt_out',
             'external_id',
             'tags',
         ];
@@ -122,6 +123,8 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
             'notiz' => 'comment',
             'rechnungstext' => 'invoice_text',
             'abrechenbar' => 'billable',
+            'keine umfragen' => 'survey_opt_out',
+            'umfrage-opt-out' => 'survey_opt_out',
         ];
     }
 
@@ -130,7 +133,7 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
         foreach ($this->columns() as $col) {
             $raw = $row[$col] ?? null;
             $out[$col] = match ($col) {
-                'billable' => $raw === null || $raw === '' ? null : (bool) StringHelper::parseBool($raw),
+                'billable', 'survey_opt_out' => $raw === null || $raw === '' ? null : (bool) StringHelper::parseBool($raw),
                 'hourly_rate', 'internal_rate' => $this->decimal($this->trimmedString($raw)),
                 'country', 'currency' => $this->upperOrNull($this->trimmedString($raw)),
                 'contact_salutation' => \App\Enums\Stammdaten\ContactSalutation::fromText($this->trimmedString($raw))?->value,

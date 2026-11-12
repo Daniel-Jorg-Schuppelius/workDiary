@@ -18,6 +18,7 @@ use App\Models\Platform\User;
 use App\Models\Privacy\Casts\RecordEncrypted;
 use App\Models\Privacy\Concerns\ProvidesRecordDek;
 use App\Services\Privacy\DataProtectionCryptoService;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
 
@@ -31,6 +32,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
  * @property string|null $contact_email_ciphertext
  * @property string|null $content_ciphertext
  * @property string|null $decision_note_ciphertext
+ * @property string|null $deadline_extension_reason_ciphertext
  */
 class DataSubjectRequest extends Model implements ProvidesRecordDek {
     use BelongsToOrganization;
@@ -56,6 +58,9 @@ class DataSubjectRequest extends Model implements ProvidesRecordDek {
         'assigned_user_id',
         'received_at',
         'deadline_at',
+        'original_deadline_at',
+        'deadline_extended_at',
+        'deadline_extension_reason_ciphertext',
         'subject_ciphertext',
         'contact_email_ciphertext',
         'content_ciphertext',
@@ -75,6 +80,9 @@ class DataSubjectRequest extends Model implements ProvidesRecordDek {
         'contact_email_ciphertext' => RecordEncrypted::class,
         'content_ciphertext' => RecordEncrypted::class,
         'decision_note_ciphertext' => RecordEncrypted::class,
+        'deadline_extension_reason_ciphertext' => RecordEncrypted::class,
+        'original_deadline_at' => 'datetime',
+        'deadline_extended_at' => 'datetime',
         'identity_verified_at' => 'datetime',
         'contact_email_confirmed_at' => 'datetime',
         'received_at' => 'datetime',
@@ -127,6 +135,18 @@ class DataSubjectRequest extends Model implements ProvidesRecordDek {
     /** Anfrage kam ueber das oeffentliche Selbstmeldeportal (ungeprueftes Gegenueber). */
     public function isFromPortal(): bool {
         return (string) $this->getAttribute('channel') === self::CHANNEL_PORTAL;
+    }
+
+    /** Schlüssel vernichtet: Die verschlüsselten Inhalte sind nicht mehr lesbar. */
+    public function isShredded(): bool {
+        return empty($this->getAttribute('dek_wrapped'));
+    }
+
+    /** Späteste Frist nach Art. 12 Abs. 3 DSGVO: zwei weitere Monate nach der ersten. */
+    public function latestPossibleDeadline(): ?CarbonInterface {
+        $first = $this->getAttribute('original_deadline_at') ?? $this->getAttribute('deadline_at');
+
+        return $first?->copy()->addMonthsNoOverflow(2);
     }
 
     public function isOverdue(): bool {

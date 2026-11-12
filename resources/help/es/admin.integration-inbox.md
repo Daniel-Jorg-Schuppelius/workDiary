@@ -1,7 +1,7 @@
 ---
 title: "Bandeja de conciliación"
 topic: admin.integration-inbox
-version: 4
+version: 6
 keywords:
     - bandeja de integraciones
     - conflictos de importación
@@ -91,3 +91,7 @@ correo a un pedido abierto, por ejemplo cuando un cliente responde a la
 factura pero se refiere al pedido.
 
 La página está abierta a quienes pueden gestionar la facturación.
+
+**Soberanía de datos:** Los casos marcados como «Soberanía de datos» los creó una integración que no gestiona el área (véase la página «Soberanía de datos»). El caso indica el sistema principal; no se escribió nada. **Asumir una vez** escribe exactamente una vez el estado retenido –por ejemplo, el ticket, la cita o el movimiento de existencias–; **Descartar** lo desecha y la misma operación no vuelve. El filtro de tipo «Soberanía de datos» muestra solo estos casos.
+
+**Reabierto:** Un caso «Soberanía de datos» aplicado se vuelve a abrir cuando la integración quiere escribir un nuevo estado de la misma operación; uno descartado sigue descartado. Si la soberanía vuelve a permitir la escritura, la siguiente sincronización cierra por sí misma los casos abiertos como aplicados. Los casos de revisión anteriores «gestionado por otro sistema» se convierten en casos «Soberanía de datos» en la siguiente sincronización.

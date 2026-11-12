@@ -22,4 +22,10 @@ return [
         'scheduleHint' => 'Kunden mit abgeschlossenem Auftrag oder gelöstem Ticket im Abstand, höchstens einmal je Abstand. Leer = aus.',
         'saved' => 'Auslöser gespeichert.',
     ],
+    // Fragebogen-Kopf (MVP-1610).
+    'header' => [
+        'edit_title' => 'Fragebogen bearbeiten',
+        'updated' => 'Fragebogen gespeichert.',
+        'anonymous_locked' => 'Die Anonymität lässt sich nach der ersten Einladung nicht mehr ändern.',
+    ],
 ];

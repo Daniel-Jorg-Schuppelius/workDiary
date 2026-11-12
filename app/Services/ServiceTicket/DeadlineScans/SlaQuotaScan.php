@@ -43,6 +43,9 @@ class SlaQuotaScan extends AbstractDeadlineScan {
             ->chunkById(200, function (Collection $rows) use ($dispatcher, $now, &$sent): void {
                 /** @var Collection<int, SlaContractQuota> $rows */
                 foreach ($rows as $quota) {
+                    if (! $this->moduleActiveFor($quota->organization_id)) {
+                        continue;
+                    }
                     $contract = SlaContract::query()->withoutGlobalScopes()->find($quota->sla_contract_id);
                     if (! $contract instanceof SlaContract || ! $contract->is_active) {
                         continue;

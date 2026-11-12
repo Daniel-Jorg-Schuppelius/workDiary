@@ -1,7 +1,7 @@
 ---
 title: "Vereinsgruppen und Wechselvorschläge"
 topic: club.groups
-version: 1
+version: 2
 keywords:
     - Trainingsgruppe
     - Kindergruppe
@@ -49,3 +49,5 @@ den Abgleich sofort an.
 **Gruppenleitung:** Wer eine Gruppe leitet, sieht und bedient nur diese:
 Aufnahmen, Anträge, Beenden und Vorschläge der eigenen Gruppe. Stammdaten
 der Gruppe und Ausnahmen bleiben der Vereinsverwaltung vorbehalten.
+
+**Aufnahmemodus:** Bei „durch Leitung“ nimmt die Leitung direkt auf. Bei „Antrag mit Freigabe“ gibt es keine direkte Aufnahme: Die Leitung erfasst einen Antrag, und Mitglieder bzw. ihre Vertretungen beantragen die Aufnahme selbst unter „Mein Verein“. Offene Anträge stehen im Arbeitsvorrat der Leitung; Kriterien und Obergrenze prüft die Freigabe. Ein bestätigter Wechselvorschlag in eine solche Gruppe wird ebenfalls zum Antrag.

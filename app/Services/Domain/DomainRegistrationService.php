@@ -101,6 +101,23 @@ class DomainRegistrationService {
         return $mode instanceof DomainRenewalMode ? $mode->value : DomainRenewalMode::Autorenew->value;
     }
 
+    /**
+     * Nachträglich bestätigte Registrierung (Abgleich unklarer Befehle,
+     * MVP-1614): Projektion und Kundenzuordnung wie beim direkten Erfolg.
+     */
+    public function materializeConfirmed(DomainProviderCommand $command): void {
+        $actor = $command->requester;
+        if ($command->command !== 'AddDomain' || $command->customer_id === null || ! $actor instanceof User || $command->target === null) {
+            return;
+        }
+        $payload = $command->payload ?? [];
+        $snapshot = $command->preflight_snapshot ?? [];
+        $this->materializeProjection($command->providerConnection(), $command->target, [
+            'provider_user' => $snapshot['provider_user'] ?? null,
+            'renewal_mode' => $payload['renewalmode'] ?? null,
+        ], (int) $command->customer_id, $actor);
+    }
+
     /** @param  array<string, mixed>  $options */
     private function materializeProjection(DomainProviderConnection $connection, string $domain, array $options, int $customerId, User $actor): void {
         $projection = DomainProjection::query()->updateOrCreate(

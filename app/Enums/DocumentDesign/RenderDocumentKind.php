@@ -187,6 +187,20 @@ enum RenderDocumentKind: string implements HasLabel {
     }
 
     /**
+     * Druckt die Art Firmen- und Steuerangaben nach ihrem Blockzustand? Genau
+     * die Arten mit Pflichtblock Firmenangaben (MVP-1624): die Vertriebsbelege
+     * über die gemeinsame Schluss-Teilansicht (MVP-1609), alle übrigen über
+     * `pdf._design_issuer`. Nur dann prüft der Preflight, ob „dynamisch“ mit
+     * Stammdaten gedeckt ist. Ohne Firmenblock bleiben Stundenzettel,
+     * Formular, Bericht, Fallakte und Leistungsnachweis — keine Geschäftsbriefe
+     * an einen Empfänger, der Nachweis zur Rechnung hängt an der Rechnung —
+     * sowie das Etikett (Spezialformat ohne Organisation).
+     */
+    public function printsIssuerBlocks(): bool {
+        return in_array(InformationBlock::CompanyIdentity, $this->mandatoryBlocks(), true);
+    }
+
+    /**
      * Pflichtblöcke je Dokumentart: müssen `dynamic` oder nachweislich
      * `provided_by_letterhead` sein, sonst blockiert der Preflight (MVP-298).
      *

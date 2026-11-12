@@ -55,6 +55,9 @@ final class PatrolManifest extends Manifest {
             \App\Services\Demo\Contracts\DemoBlock::class => [
                 \App\Services\Patrol\Demo\PatrolDemoBlock::class,
             ],
+            \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
+                \App\Services\Patrol\DeadlineScans\PatrolOverdueScan::class,
+            ],
         ];
     }
 }

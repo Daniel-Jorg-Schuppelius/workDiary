@@ -1,7 +1,7 @@
 ---
 title: "Sincronizzazione offline"
 topic: admin.offline-sync
-version: 1
+version: 2
 keywords:
     - lavorare offline
     - senza internet
@@ -43,3 +43,7 @@ contano sempre l’intero insieme — un filtro impostato non li nasconde.
 **Rilevato (offline)** è l’ora del dispositivo, **Trasmesso** l’arrivo sul
 server. La distanza fra i due è la latenza offline — un giorno è normale in
 esterno, una settimana segnala un dispositivo che non sincronizza.
+
+## Decisioni sui conflitti
+
+Accanto al risultato «Conflitto» compare come ha deciso la persona — «Versione del server accettata», «Scartato» o «Inviato di nuovo» — oppure «aperto» finché non ha deciso. Una registrazione inviata di nuovo compare in una riga propria con un proprio risultato. I comandi per un’area disattivata per l’organizzazione vengono respinti.

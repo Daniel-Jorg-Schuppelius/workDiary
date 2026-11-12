@@ -73,7 +73,7 @@
         @endif
     </x-card>
 
-    <x-filter-bar :action="route('admin.firefly.index')" :reset="$search !== null || $status !== null ? route('admin.firefly.index') : null">
+    <x-filter-bar :action="route('admin.firefly.index')" :reset="$search !== null || $status !== null || $open || $settled ? route('admin.firefly.index') : null">
         <x-filter-field :label="__('firefly::firefly.list.search')" for="ff-q">
             <input id="ff-q" type="search" name="q" value="{{ $search }}" maxlength="100"
                    class="input input-sm input-bordered w-56 shrink-0" placeholder="{{ __('firefly::firefly.list.search_placeholder') }}">
@@ -81,9 +81,11 @@
         <x-filter-field :label="__('firefly::firefly.list.col.match')" for="ff-match">
             <select id="ff-match" name="match" class="select select-sm select-bordered shrink-0" data-autosubmit>
                 <option value="">{{ __('firefly::firefly.list.all_matches') }}</option>
+                <option value="{{ \App\Plugins\Firefly\Http\Controllers\FireflyAdminController::OPEN }}" @selected($open)>{{ __('firefly::firefly.list.open_matches') }}</option>
                 @foreach (\App\Plugins\Firefly\Enums\FireflyMatchStatus::cases() as $option)
                     <option value="{{ $option->value }}" @selected($status === $option)>{{ $option->label() }}</option>
                 @endforeach
+                <option value="{{ \App\Plugins\Firefly\Http\Controllers\FireflyAdminController::SETTLED }}" @selected($settled)>{{ __('firefly::firefly.settle.filter') }}</option>
             </select>
         </x-filter-field>
     </x-filter-bar>
@@ -97,6 +99,7 @@
                 <th>{{ __('firefly::firefly.list.col.description') }}</th>
                 <th>{{ __('firefly::firefly.list.col.match') }}</th>
                 <th class="text-right">{{ __('firefly::firefly.list.col.amount') }}</th>
+                <th class="text-right"><span class="sr-only">{{ __('firefly::firefly.list.col.actions') }}</span></th>
             </tr>
         </x-slot:head>
         @forelse ($transactions as $transaction)
@@ -112,6 +115,11 @@
                     @elseif ($transaction->incomingEinvoice?->document_id)
                         <div><a href="{{ route('finance.incoming-invoices.show', \App\Support\Sqid::encode(\App\Models\Document\Document::class, (int) $transaction->incomingEinvoice->document_id)) }}" class="link link-hover text-xs">{{ $transaction->incomingEinvoice->invoice_number }}</a></div>
                     @endif
+                    @if ($transaction->isSettled())
+                        <div class="text-xs text-muted" title="{{ $transaction->note }}">
+                            {{ __('firefly::firefly.settle.badge', ['name' => $transaction->settledBy?->name ?? '—', 'date' => $transaction->settled_at?->fdate()]) }}
+                        </div>
+                    @endif
                 </td>
                 <td class="text-right font-mono text-sm whitespace-nowrap">
                     {{ $transaction->booked_amount->format() }}
@@ -119,9 +127,18 @@
                         <div class="text-xs text-muted" title="{{ __('firefly::firefly.list.foreign_amount') }}">{{ $transaction->foreign_amount->format() }}</div>
                     @endif
                 </td>
+                <td class="text-right whitespace-nowrap">
+                    @if ($transaction->isSettled())
+                        <x-action-form :action="route('admin.firefly.transactions.reopen', $transaction)">
+                            <x-icon-btn icon="undo" size="xs" type="submit" :label="__('firefly::firefly.settle.reopen')" />
+                        </x-action-form>
+                    @elseif ($transaction->match_status !== \App\Plugins\Firefly\Enums\FireflyMatchStatus::Matched)
+                        <x-icon-btn icon="task_alt" size="xs" data-entry-modal-trigger :href="route('admin.firefly.transactions.settle.form', $transaction)" :label="__('firefly::firefly.settle.action')" />
+                    @endif
+                </td>
             </tr>
         @empty
-            <x-table.empty :colspan="6" icon="account_balance" :title="__('firefly::firefly.list.empty')" compact />
+            <x-table.empty :colspan="7" icon="account_balance" :title="__('firefly::firefly.list.empty')" compact />
         @endforelse
     </x-table>
 

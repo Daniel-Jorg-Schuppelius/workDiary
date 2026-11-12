@@ -189,10 +189,17 @@ Welle 4 leer; ein neuer Verstoß wird gelöst, nicht eingetragen.
   Feature 182; Recht, Modul und leere Liste prüft das Panel, gemeinsame Liste
   `cockpit._list`), `ManagementKpiSource` (Kennzahl der Leitungssicht und des
   Leitungsberichts, Feature 184; rechnet mit dem Builder der Fachauswertung und liefert
-  nichts ohne deren Recht). Änderungsverlauf je Objekt über `<x-activity-feed :subject>`
+  nichts ohne deren Recht), `FinanceMovementSource` (Kachel „Finanzbewegungen“, zählt
+  nur Bewegungen ohne Zuordnung, MVP-1617), `OwnershipConflictReplay` (spielt einen
+  Führerschaftskonflikt beim Übernehmen ab, siehe „Datenführerschaft“). Änderungsverlauf je Objekt über `<x-activity-feed :subject>`
   (Audit + Journal, nur lesend, Feature 183). Neue Scans, Specs, Quellen,
   Demo-Blöcke, Löschbereiche usw. **nie** in eine feste Liste, sondern ins
-  Manifest des Moduls. Plugins haben kein Manifest und tragen sich beim Booten
+  Manifest des Moduls. **Sammler lesen Beiträge über
+  `App\Services\Licensing\ModuleExtensions::activeFor($interface, $org)`** (nur Module
+  und Plugins, die für die Organisation aktiv sind; ohne Organisation nur Plattform und
+  Kern), nicht roh über `ModuleRegistry::extensions()` — ein neuer Erweiterungspunkt
+  steht in `ExtensionModuleGateRuleTest` unter `GATED` oder mit Grund unter `UNGATED`
+  (Aufbewahrung, Austritt; MVP-1587). Plugins haben kein Manifest und tragen sich beim Booten
   über `ModuleRegistry::contribute(Interface, Klasse)` ein (MVP-1045) — nie
   Plugin-Klassen in ein Manifest schreiben.
 - **Contract mit Null-Bindung** — der Aufrufer braucht eine Antwort:
@@ -442,6 +449,29 @@ Plugin-Klasse holen den Client aus der Fabrik für die Organisation des
 Datensatzes — kein `$config['api_key']`, kein Client aus Rohwerten, keine
 Singletons mit Schlüssel, kein `forgetInstance()` (Gate
 `PluginCredentialsRuleTest`; Lexoffice-Dienste nehmen nur `?int $organizationId`).
+
+## Datenführerschaft: Prüfung vor jedem Plugin-Schreibweg (MVP-1592)
+
+Je Organisation führt genau ein System einen Bereich (`DataDomain`: Tickets,
+Bestände, Kalender, Dokumente, Kunden und Lieferanten, Aufgaben). Ein Plugin,
+das in einen Bereich schreibt, fragt vorher
+`App\Services\Integration\DataOwnershipGuard::allows($org, $domain, $pluginId, new OwnershipClaim(…))`;
+bei `false` schreibt es nichts — der Guard hat einen Führerschaftskonflikt im
+Integrations-Eingang angelegt („Einmalig übernehmen“ spielt den Schreibweg
+über `OwnershipConflictReplay` erneut ab). Lesen bleibt erlaubt.
+
+- Die schreibende Klasse trägt `#[WritesDataDomain(DataDomain::X)]` und
+  implementiert `OwnershipConflictReplay` (`ownershipKinds()`,
+  `replayOwnershipConflict()`); Plugins melden sie über
+  `ModuleRegistry::contribute()`, Kern und `app/Plugins/Support` im Manifest.
+  Das Plugin nennt seine Bereiche in `dataDomains()` (`WritesDataDomains`) —
+  nur solche Plugins bietet die Matrix an. Gate `DataOwnershipWriteRuleTest`.
+- Bestände leitet der Resolver aus der Bestandsführung ab
+  (`inventory_mode`/`inventory_plugin_id`), Kunden und Lieferanten aus
+  `finance.master_data_authority` — kein zweiter Schalter.
+- Der Schlüssel des Konflikts ist stabil je Fremdobjekt und Vorgang:
+  verworfen bleibt verworfen, ein übernommener Fall öffnet bei neuem Stand
+  wieder.
 
 ## Aufgabenimporte: ein Baustein für Jira, Asana und Nachfolger (Phase 157)
 

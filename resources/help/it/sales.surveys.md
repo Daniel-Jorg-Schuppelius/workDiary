@@ -1,7 +1,7 @@
 ---
 title: "Sondaggi"
 topic: sales.surveys
-version: 1
+version: 2
 keywords:
     - soddisfazione del cliente
     - indagine di soddisfazione
@@ -47,3 +47,13 @@ di stato del ticket.
 **Punteggio NPS** = %promotori (9–10) − %detrattori (0–6). Senza risposte
 niente punteggio — nessun valore significa «niente da calcolare», non zero.
 La CSAT dei ticket (valutazione nel portale) resta indipendente.
+
+## Registrare un'opposizione
+
+L'opt-out si imposta sul cliente: nella finestra del cliente, in **Portale e altro**, selezioni **Nessun sondaggio**. Anche la persona invitata può opporsi da sé: ogni invito a un cliente e la pagina del sondaggio riportano il link **Annullare l'iscrizione ai sondaggi**. Porta, senza accesso, a una richiesta di conferma; dopo la conferma la casella è selezionata sul cliente e l'operazione è annotata nella cronologia delle modifiche del cliente. Il link funziona anche se il sondaggio è già stato compilato o è scaduto. Gli inviti senza collegamento a un cliente non riportano il link di annullamento. Nell'esportazione e importazione dei clienti il valore si trova nella colonna `survey_opt_out`.
+
+## Modificare un questionario
+
+**Modifica** nella pagina del questionario cambia il titolo e il testo
+introduttivo. L'anonimato si può cambiare solo fino al primo invito; dopo resta
+come è stato promesso ai partecipanti.

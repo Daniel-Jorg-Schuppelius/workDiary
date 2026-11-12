@@ -38,9 +38,12 @@
     <x-form-group :legend="__('Stammdaten')" icon="inventory_2" tone="primary" cols="2">
         <x-input-field name="name" :label="__('Name')" required maxlength="255"
                        :value="old('name', $article?->name)" />
+        {{-- MVP-1583: führt eine Warenwirtschaft SKU und GTIN, sind beide hier nur lesbar. --}}
         <x-input-field name="number" :label="__('article.field.sku')" maxlength="64"
                        :value="old('number', $article?->number)"
-                       :placeholder="__('article.sku_auto_hint')" />
+                       :disabled="($numbersLockedBy ?? null) !== null"
+                       :hint="($numbersLockedBy ?? null) !== null ? __('article.field.numbers_locked_hint', ['program' => $numbersLockedBy]) : null"
+                       :placeholder="($numbersLockedBy ?? null) !== null ? null : __('article.sku_auto_hint')" />
 
         <x-select-field name="type" :label="__('article.field.type')" required>
             @foreach ($types as $type)
@@ -76,7 +79,9 @@
             @endforeach
         </x-select-field>
         <x-input-field name="gtin" :label="__('article.field.gtin')" maxlength="14"
-                       :value="old('gtin', $article?->gtin)" />
+                       :value="old('gtin', $article?->gtin)"
+                       :disabled="($numbersLockedBy ?? null) !== null"
+                       :hint="($numbersLockedBy ?? null) !== null ? __('article.field.numbers_locked_hint', ['program' => $numbersLockedBy]) : null" />
         <x-select-field name="product_id" :label="__('products.field.product')" :hint="__('products.field.product_help')">
             <option value="">{{ __('products.field.no_product') }}</option>
             @foreach ($products ?? [] as $productOption)
@@ -106,6 +111,19 @@
         <x-select-field name="currency" :label="__('article.field.currency')">
             <x-currency-options :selected="old('currency', $article?->currency?->value ?? 'EUR')" />
         </x-select-field>
+        {{-- Gespeichert wie aus Import und DATANORM-Katalog; die Zusammenführung prüft auf Gleichheit (MVP-1619). --}}
+        @php
+            $taxClass = (string) old('tax_class', $article?->tax_class ?? '');
+            $taxClasses = ['' => __('article.tax_class.standard'), 'ermäßigt' => __('article.tax_class.reduced'), 'erhöht' => __('article.tax_class.increased')];
+            if ($taxClass !== '' && ! array_key_exists($taxClass, $taxClasses)) {
+                $taxClasses[$taxClass] = $taxClass;
+            }
+        @endphp
+        <x-select-field name="tax_class" :label="__('article.field.tax_class')">
+            @foreach ($taxClasses as $value => $label)
+                <option value="{{ $value }}" @selected($taxClass === (string) $value)>{{ $label }}</option>
+            @endforeach
+        </x-select-field>
     </x-form-group>
 
     <x-form-group :legend="__('article.group.flags')" icon="tune" tone="primary" cols="2">
@@ -118,6 +136,56 @@
             </label>
         @endforeach
     </x-form-group>
+
+    {{-- MVP-1579: Bewertungsverfahren und Seriennummernschema des Artikels. --}}
+    @php
+        $valuationMethod = (string) old('valuation_method', $article?->valuation_method ?? '');
+        $serialScheme = (array) old('serial_scheme', $article?->serial_scheme ?? []);
+    @endphp
+    <x-form-group :legend="__('article.group.inventory')" icon="warehouse" tone="primary" cols="3">
+        <x-select-field name="valuation_method" :label="__('article.field.valuation_method')" span="3"
+                        :hint="__('article.field.valuation_method_hint')">
+            <option value="">{{ __('article.field.valuation_method_default', ['method' => $orgValuationMethod->label()]) }}</option>
+            @foreach (\App\Enums\Inventory\ValuationMethod::cases() as $method)
+                <option value="{{ $method->value }}" @selected($valuationMethod === $method->value)>{{ $method->label() }}</option>
+            @endforeach
+        </x-select-field>
+        <x-input-field name="serial_scheme[prefix]" id="serial-scheme-prefix" :label="__('article.field.serial_prefix')" maxlength="20"
+                       error="serial_scheme.prefix"
+                       :value="$serialScheme['prefix'] ?? ''" :hint="__('article.field.serial_prefix_hint')" />
+        <x-input-field name="serial_scheme[padding]" id="serial-scheme-padding" type="number" min="1" max="12" step="1" inputmode="numeric"
+                       :label="__('article.field.serial_padding')" error="serial_scheme.padding"
+                       :value="$serialScheme['padding'] ?? ''" placeholder="5" />
+        <label class="label cursor-pointer justify-start gap-3 self-end">
+            <input type="hidden" name="serial_scheme[check_digit]" value="0">
+            <input type="checkbox" name="serial_scheme[check_digit]" value="1" class="checkbox checkbox-sm"
+                   @checked((bool) ($serialScheme['check_digit'] ?? false))>
+            <span class="label-text">{{ __('article.field.serial_check_digit') }}</span>
+        </label>
+    </x-form-group>
+
+    {{-- Standard-Arbeitsplan (Feature 047): liest Fertigungsauftrag und -planung, solange ein Auftrag keinen eigenen wählt. --}}
+    @php
+        $procedureVersions = $procedureVersions ?? collect();
+        $currentProcedureVersion = $article?->defaultProcedureVersion;
+        if ($currentProcedureVersion !== null && ! $procedureVersions->contains('id', $currentProcedureVersion->id)) {
+            $procedureVersions = $procedureVersions->push($currentProcedureVersion->loadMissing('template:id,name,code'));
+        }
+        $selectedProcedureVersion = (string) old('default_procedure_template_version_id', $currentProcedureVersion?->sqid ?? '');
+    @endphp
+    @if ($procedureVersions->isNotEmpty())
+        <x-form-group :legend="__('article.group.manufacturing')" icon="precision_manufacturing" tone="primary" cols="1">
+            <x-select-field name="default_procedure_template_version_id" :label="__('article.field.default_procedure')"
+                            :hint="__('article.field.default_procedure_hint')">
+                <option value="">{{ __('article.field.default_procedure_none') }}</option>
+                @foreach ($procedureVersions as $procedureVersion)
+                    <option value="{{ $procedureVersion->sqid }}" @selected($selectedProcedureVersion === $procedureVersion->sqid)>
+                        {{ $procedureVersion->template?->name ?? '—' }} · v{{ $procedureVersion->version }}
+                    </option>
+                @endforeach
+            </x-select-field>
+        </x-form-group>
+    @endif
 
     @php
         $allTags = $allTags ?? collect();

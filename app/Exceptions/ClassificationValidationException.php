@@ -36,6 +36,8 @@ class ClassificationValidationException extends RuntimeException {
         public readonly string $errorCode,
         string $message = '',
         public readonly ?string $reason = null,
+        /** @var array<string, int> Tabelle → Anzahl der Datensätze, die den Wert benutzen */
+        public readonly array $usage = [],
     ) {
         parent::__construct($message !== '' ? $message : $errorCode);
     }
@@ -56,8 +58,9 @@ class ClassificationValidationException extends RuntimeException {
         return new self(self::CODE_DUPLICATE, "Code bereits vorhanden: {$code}", $code);
     }
 
-    public static function referenced(): self {
-        return new self(self::CODE_REFERENCED, 'Klassifikation wird noch referenziert und kann nicht gelöscht werden.');
+    /** @param  array<string, int>  $usage */
+    public static function referenced(array $usage = []): self {
+        return new self(self::CODE_REFERENCED, 'Klassifikation wird noch referenziert und kann nicht gelöscht werden.', null, $usage);
     }
 
     public static function platformProtected(): self {

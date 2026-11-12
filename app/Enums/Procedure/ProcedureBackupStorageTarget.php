@@ -10,7 +10,13 @@
 
 namespace App\Enums\Procedure;
 
-enum ProcedureBackupStorageTarget: string {
+use App\Enums\Contracts\HasLabel;
+
+enum ProcedureBackupStorageTarget: string implements HasLabel {
     case Attachment = 'attachment';
     case External = 'external';
+
+    public function label(): string {
+        return (string) __('enums.procedure.backup-storage-target.' . $this->value);
+    }
 }

@@ -56,6 +56,9 @@
     :method="$project ? 'PUT' : 'POST'"
     :form-data="['data-entry-form' => '']"
     :submit-label="$project ? __('Speichern') : __('Anlegen')">
+    <x-slot:headerActions>
+        <x-dialog-status-controls :name="null" :color="$project?->color ?: '#94a3b8'" />
+    </x-slot:headerActions>
     <div x-data="projectForm"
           data-parent-id="{{ (string) old('parent_id', \App\Support\Sqid::encode(\App\Models\Project\Project::class, $project?->parent_id)) }}"
           data-parent-customers="{{ json_encode($parentCustomerSqids) }}"

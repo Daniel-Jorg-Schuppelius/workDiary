@@ -1,7 +1,7 @@
 ---
 title: "Planification des services et des postes"
 topic: planning.shifts
-version: 4
+version: 5
 keywords:
     - planning
     - tableau de service
@@ -49,3 +49,9 @@ postes annulés ne comptent pas. Le rapport **Couverture** calcule selon les
 mêmes règles.
 
 Avec **Pour tous les plannings de service**, une entrée s’applique à tous les plannings : dans chaque planning de service et les jours sans planning, par exemple pour les services saisis directement dans le **Planning des services**. La liste signale ces entrées par **Tous les plannings de service** ; vous les voyez et les modifiez dans chaque planning de service.
+
+**Qualification obligatoire manquante :** Pour chaque qualification manquante,
+la remarque sur le poste indique si la personne a déjà commencé le cours
+correspondant de la plateforme d’apprentissage (« cours en cours ») ou quel
+cours publié la transmet. L’affectation reste bloquée jusqu’à l’obtention de la
+qualification elle-même.

@@ -1,7 +1,7 @@
 ---
 title: "Leasing y contratos de activos"
 topic: asset-finance.overview
-version: 2
+version: 3
 keywords:
     - contrato de leasing
     - cuotas de leasing
@@ -48,3 +48,7 @@ consumidores).
 
 **Proceso de fin:** documenta estado, kilómetros/horas, daños y la
 decisión — devolución, compra, prórroga o sustitución.
+
+**Pedido:** en el formulario del contrato usted selecciona el pedido
+correspondiente, si las compras están activadas y puede leer pedidos. El
+expediente muestra el número de pedido con enlace.

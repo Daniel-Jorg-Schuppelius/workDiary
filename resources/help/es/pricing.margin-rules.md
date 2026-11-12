@@ -1,7 +1,7 @@
 ---
 title: "Reglas de precios y márgenes"
 topic: pricing.margin-rules
-version: 1
+version: 2
 keywords:
     - recargo
     - margen comercial
@@ -61,3 +61,5 @@ por los cambios de reglas — una regla modificada solo surte efecto en la
 siguiente aceptación de precio. Leer requiere permisos de lectura de
 almacén; administrar las reglas y las solicitudes, permisos de
 configuración de almacén.
+
+La alerta de cálculo tras un cambio del precio de compra comprueba también el margen mínimo frente a presupuestos abiertos y pedidos no anulados con el artículo: se mide el precio del documento de la posición, no el precio maestro. La alerta indica el documento, la posición, el precio del documento y el margen resultante. Los documentos conservan su precio.

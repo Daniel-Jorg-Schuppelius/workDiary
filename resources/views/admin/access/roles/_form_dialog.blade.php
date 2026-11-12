@@ -11,10 +11,13 @@
     /** @var \Spatie\Permission\Models\Role $role */
     /** @var array<int, \App\Enums\User\Permission[]> $permissions */
     /** @var list<string> $assigned */
+    /** @var \Spatie\Permission\Models\Role|null $copySource */
     $isEdit = (bool) ($role->id ?? false);
+    $copySource = $copySource ?? null;
+    $copyLabel = $copySource !== null ? \App\Support\Trans::or("user.role.{$copySource->name}", $copySource->name) : null;
 @endphp
 <x-modal
-    :title="$isEdit ? __('access.title.role_edit', ['name' => $role->name]) : __('access.title.role_new')"
+    :title="$isEdit ? __('access.title.role_edit', ['name' => $role->name]) : ($copySource !== null ? __('access.title.role_copy', ['name' => $copyLabel]) : __('access.title.role_new'))"
     icon="shield_person"
     tone="primary"
     size="xl"
@@ -34,6 +37,10 @@
                    required />
             <p class="text-xs text-muted mt-1">{{ __('access.help.role_name') }}</p>
         </x-form-group>
+        @if ($copySource !== null)
+            <input type="hidden" name="copied_from" value="{{ \App\Support\Sqid::encode(\Spatie\Permission\Models\Role::class, $copySource->id) }}" />
+            <div role="status" class="alert alert-info mt-2 text-sm">{{ __('access.help.role_copied_from', ['name' => $copyLabel]) }}</div>
+        @endif
     @endunless
 
     <div class="mt-3">

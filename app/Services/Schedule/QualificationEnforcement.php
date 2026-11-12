@@ -62,14 +62,6 @@ final class QualificationEnforcement implements AssignmentQualificationGuard {
         return $user instanceof User ? $this->message('schedule.qualification.blocked', $user, $this->gate->missingFor($shift), $shift->date) : null;
     }
 
-    /** @throws ValidationException */
-    public function assertShiftAssignable(ScheduledShift $shift, string $field = 'user_id'): void {
-        $message = $this->shiftBlockMessage($shift);
-        if ($message !== null) {
-            throw ValidationException::withMessages([$field => $message]);
-        }
-    }
-
     /**
      * Ablehnungstext für die Zuweisung eines Auftrags an eine Person; Stichtag
      * ist der geplante Beginn, sonst der geplante Tag.

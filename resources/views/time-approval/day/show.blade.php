@@ -74,6 +74,7 @@
         </x-slot:actions>
 
         <x-validation-errors first tone="warning" />
+        @include('time-approval.day._plan_ist', ['planIst' => $planIst ?? null])
 
         @if ($monthLocked)
             <div role="alert" class="alert alert-info">
@@ -126,6 +127,12 @@
                             <x-status-badge tone="ghost" size="sm">{{ $a->source->label() }}</x-status-badge>
                             @if ($a->break_minutes_total > 0)
                                 <span class="opacity-70">{{ __('day-close.hint.break_recorded', ['min' => $a->break_minutes_total]) }}</span>
+                            @endif
+                            @if ($a->homeoffice_minutes > 0)
+                                <span class="opacity-70">{{ __('attendance.intermediate.homeoffice') }}: {{ $fmtMin((int) $a->homeoffice_minutes) }}</span>
+                            @endif
+                            @if ($a->errand_minutes > 0)
+                                <span class="opacity-70">{{ __('attendance.intermediate.errand') }}: {{ $fmtMin((int) $a->errand_minutes) }}</span>
                             @endif
                             @if ($a->ended_at)
                                 <span class="tabular-nums opacity-70">{{ $fmtMin((int) $a->duration_minutes) }}</span>

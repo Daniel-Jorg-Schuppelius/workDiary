@@ -1,7 +1,7 @@
 ---
 title: "Cibles de sauvegarde cloud"
 topic: backup-targets.overview
-version: 2
+version: 3
 keywords:
     - sauvegarde externalisée
     - sauvegarde des données
@@ -33,3 +33,7 @@ WorkDiary sauvegarde toute l'installation de manière chiffrée vers Dropbox, On
 **Clés :** BACKUP_MASTER_KEY (ENV, à conserver hors ligne !) est le seul chemin de déchiffrement régulier ; une paire de clés de récupération optionnelle déchiffre en cas d'urgence. Sans clé de récupération, la page avertit en permanence — la perte de la clé maîtresse rend toutes les sauvegardes inutilisables.
 
 **Exploitation :** L'exécution nocturne crée un instantané (dump BD + fichiers), le chiffre, téléverse les parties de façon reprenable et applique la rétention (7 quotidiennes / 4 hebdomadaires / 12 mensuelles ; la conservation légale protège des générations individuelles). Une vérification hebdomadaire par échantillonnage contrôle signature et empreintes ; le test de restauration restaure dans un répertoire isolé et journalise RPO/RTO — jusqu'au premier test vert, une génération vaut « sauvegardée, restauration non confirmée ».
+
+## Connexion expirée ou cible désactivée
+
+Si le fournisseur refuse la connexion lors d'une sauvegarde ou d'une vérification, la cible affiche **Reconnexion requise** ; après des erreurs répétées jusqu'au seuil de désactivation, **Désactivée**. La cible ne participe alors plus à aucune exécution jusqu'à ce que vous la reconnectiez via **Se reconnecter**.

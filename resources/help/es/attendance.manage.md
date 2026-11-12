@@ -1,7 +1,7 @@
 ---
 title: "Reloj de fichaje y presencia"
 topic: attendance.manage
-version: 1
+version: 2
 keywords:
     - fichar
     - fichaje
@@ -49,3 +49,5 @@ si la administración le ha asignado uno. Tras cinco intentos fallidos se bloque
 **Recordatorio por la tarde:** Si a las 19:00 lleva al menos ocho horas con la
 entrada fichada, recibe un recordatorio, una vez por fichaje. Quien empieza un
 turno por la tarde no recibe recordatorio.
+
+**Corregir un fichaje:** en «Hoy», el icono del lápiz de la lista de fichajes abre el diálogo de corrección: inicio, fin, pausa y un motivo. La corrección se tramita como solicitud de aprobación; si su organización permite la autocorrección, se aplica de inmediato. Sin red se guarda y se transmite más tarde. Si alguien modificó el fichaje entretanto, su corrección no lo sobrescribe: en línea aparece un aviso; sin conexión, un conflicto en «Cambios sin conexión».

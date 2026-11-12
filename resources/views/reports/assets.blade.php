@@ -80,6 +80,7 @@
                     <x-table.th sort type="number" align="right">{{ __('Eskaliert') }}</x-table.th>
                     <x-table.th sort type="number" align="right">{{ __('Defekte') }}</x-table.th>
                     <x-table.th sort type="number" align="right">{{ __('Defektrate %') }}</x-table.th>
+                    <x-table.th sort type="number" align="right">{{ __('Wiederholdefekte') }}</x-table.th>
                     @if ($hasMaintenance)
                         <x-table.th sort type="number" align="right">{{ __('Wartungssitzungen') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Wartungszeit') }}</x-table.th>
@@ -113,6 +114,13 @@
                             @endif
                         </td>
                         <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['defectRate'], 2, withThousandsSeparator: true) }}</td>
+                        <td class="text-right tabular-nums">
+                            @if($row['recurringDefectCount'] > 0)
+                                <a href="{{ route('reports.assets.drilldown.recurring-defects', array_merge($row['drilldown'], ['recurring' => 1])) }}" class="link link-hover">{{ $row['recurringDefectCount'] }}</a>
+                            @else
+                                {{ $row['recurringDefectCount'] }}
+                            @endif
+                        </td>
                         @if ($hasMaintenance)
                             <td class="text-right tabular-nums">{{ $row['maintenanceSessions'] }}</td>
                             <td class="text-right tabular-nums" data-sort-value="{{ $row['maintenanceMinutes'] }}">{{ $row['maintenanceMinutes'] > 0 ? \App\Support\Formats::duration($row['maintenanceMinutes'], 'clock') : '—' }}</td>

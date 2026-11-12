@@ -239,7 +239,7 @@ final class IncomingInvoiceWorklistTest extends TestCase {
         $this->get(route('finance.incoming-invoices.values.form', $incoming))->assertOk();
         $this->post(route('finance.incoming-invoices.values', $incoming), [
             'invoice_number' => 'SC-77', 'issue_date' => '2026-09-30', 'currency' => 'eur', 'amount_gross' => '59.50',
-            'amount_net' => '50.00', 'amount_tax' => '9.50', 'party_name' => 'Scan GmbH', 'party_vat_id' => 'DE456456456',
+            'tax_breakdown' => [['percent' => '19', 'net' => '50.00', 'tax' => '9.50']], 'party_name' => 'Scan GmbH', 'party_vat_id' => 'DE456456456',
         ])->assertRedirect()->assertSessionHas('success');
 
         $incoming->refresh();

@@ -15,8 +15,10 @@ use App\Enums\Contracts\HasLabel;
 
 /**
  * Verlängerungsmodus einer Domain (Feature 083). Provider-Werte des
- * DomainReselling-`RENEWALMODE`. `Autoexpire`/`Autodelete` sind
- * risikobehaftet und werden in Berichten/Kennzahlen hervorgehoben.
+ * DomainReselling-`RENEWALMODE`: nur die drei Werte, die das Handbuch für
+ * `SetDomainRenewalMode` und `StatusDomain` nennt (2.3.2.10, MVP-1625).
+ * `Autoexpire`/`Autodelete` sind risikobehaftet und werden in
+ * Berichten/Kennzahlen hervorgehoben.
  */
 enum DomainRenewalMode: string implements HasLabel {
     use HasOptions;
@@ -24,7 +26,6 @@ enum DomainRenewalMode: string implements HasLabel {
     case Autorenew = 'AUTORENEW';
     case Autoexpire = 'AUTOEXPIRE';
     case Autodelete = 'AUTODELETE';
-    case Renewonce = 'RENEWONCE';
 
     public function label(): string {
         return (string) __('enums.domain.renewal_mode.' . strtolower($this->value));

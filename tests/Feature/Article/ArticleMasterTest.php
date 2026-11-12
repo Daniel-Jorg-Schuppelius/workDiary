@@ -117,7 +117,6 @@ final class ArticleMasterTest extends TestCase {
 
         $this->assertSame('200.0000', $converter->toBase($article, '2', 'Rolle'));
         $this->assertSame('5.0000', $converter->toBase($article, '5', 'm')); // Basiseinheit = Faktor 1
-        $this->assertSame('2.0000', $converter->fromBase($article, '200', 'Rolle'));
 
         // Liter↔kg ohne gepflegten Faktor ⇒ keine Einheit ⇒ Fehler.
         $this->expectException(RuntimeException::class);

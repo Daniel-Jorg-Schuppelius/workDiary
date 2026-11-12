@@ -398,7 +398,8 @@ final class RentalPrepaymentTest extends TestCase {
         $this->assertSame('2026-10-05', $proposal->bookedOn->toDateString());
         // 208,25 € brutto = 175,00 € Anzahlung + 33,25 € Umsatzsteuer, fällig im Oktober.
         $this->assertSame(['1360 S 208.25 H 0.00', '1718 S 0.00 H 175.00', '1776 S 0.00 H 33.25'], $this->journalLines($proposal));
-        $this->assertSame('33.25', $proposal->lines[2]->taxAmount);
+        // Kennzeichen und Steuer stehen an der Nettozeile der Anzahlung, nicht an der Steuerzeile.
+        $this->assertSame(['33.25', null], [$proposal->lines[1]->taxAmount, $proposal->lines[2]->taxAmount]);
     }
 
     public function test_the_invoice_resolves_the_advance_so_the_vat_arises_once(): void {
@@ -417,7 +418,7 @@ final class RentalPrepaymentTest extends TestCase {
             '1718 S 175.00 H 0.00',
             '1776 S 33.25 H 0.00',
         ], $this->journalLines($proposal));
-        $this->assertSame('-33.25', $proposal->lines[4]->taxAmount);
+        $this->assertSame(['57.00', '-33.25', null], [$proposal->lines[1]->taxAmount, $proposal->lines[3]->taxAmount, $proposal->lines[4]->taxAmount]);
         $entry = $this->postEntry($proposal);
 
         // Umsatzsteuer gesamt = Steuer der Rechnung: 33,25 € im Oktober, 23,75 € im November.
@@ -480,7 +481,7 @@ final class RentalPrepaymentTest extends TestCase {
             '1718 S 0.00 H 175.00',
             '1776 S 0.00 H 33.25',
         ], $this->journalLines($proposal));
-        $this->assertSame(['-57.00', '33.25'], [$proposal->lines[2]->taxAmount, $proposal->lines[4]->taxAmount]);
+        $this->assertSame(['-57.00', '33.25'], [$proposal->lines[1]->taxAmount, $proposal->lines[3]->taxAmount]);
         $this->postEntry($proposal);
         $this->assertSame('175.00', $this->balance('1718'));
         $this->assertSame('33.25', $this->balance('1776'));

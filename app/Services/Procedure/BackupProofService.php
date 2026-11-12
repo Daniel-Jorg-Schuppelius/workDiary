@@ -27,6 +27,10 @@ class BackupProofService {
     use \App\Services\Procedure\Concerns\RecordsProcedureRunEvents;
 
     /**
+     * `file_checksum` ist die am hochgeladenen Nachweis berechnete Prüfsumme;
+     * stimmt sie mit der erwarteten überein, gilt der Nachweis ohne zweite
+     * Person als verifiziert.
+     *
      * @param  array{
      *     backup_scope: string,
      *     source_label: string,
@@ -34,6 +38,7 @@ class BackupProofService {
      *     size_bytes?: int,
      *     checksum_algo?: ?string,
      *     checksum_value?: ?string,
+     *     file_checksum?: ?string,
      *     storage_target: string,
      *     attachment_id?: ?int,
      *     external_ref?: ?string,
@@ -42,38 +47,9 @@ class BackupProofService {
      * }  $payload
      */
     public function register(ProcedureStepRun $stepRun, User $actor, array $payload): ProcedureBackupProof {
-        $this->assertBackupStep($stepRun);
+        [$takenAt, $sizeBytes, $storageTarget, $verifyMethod, $expected, $automatic] = $this->checked($stepRun, $payload, false);
 
-        $config = $this->stepConfig($stepRun);
-        $rawTakenAt = $payload['taken_at'] ?? null;
-        $takenAt = $rawTakenAt instanceof \DateTimeInterface
-            ? Carbon::instance($rawTakenAt)
-            : ($rawTakenAt !== null ? Carbon::parse((string) $rawTakenAt) : Carbon::now());
-
-        $sizeBytes = (int) ($payload['size_bytes'] ?? 0);
-        $minSizeKb = (int) ($config['min_size_kb'] ?? 0);
-        if ($minSizeKb > 0 && $sizeBytes < $minSizeKb * 1024) {
-            throw ProcedureBackupValidationException::for(ProcedureBackupValidationException::REASON_TOO_SMALL);
-        }
-
-        $maxAgeMinutes = (int) ($config['max_age_minutes'] ?? 0);
-        if ($maxAgeMinutes > 0 && abs((int) $takenAt->diffInMinutes(Carbon::now())) > $maxAgeMinutes) {
-            throw ProcedureBackupValidationException::for(ProcedureBackupValidationException::REASON_TOO_OLD);
-        }
-
-        $storageTarget = ProcedureBackupStorageTarget::from($payload['storage_target']);
-        if ($storageTarget === ProcedureBackupStorageTarget::External) {
-            $externalRef = isset($payload['external_ref']) ? (string) $payload['external_ref'] : '';
-            if ($externalRef === '') {
-                throw ProcedureBackupValidationException::for(ProcedureBackupValidationException::REASON_MISSING_EXTERNAL_REF);
-            }
-        } elseif (($payload['attachment_id'] ?? null) === null) {
-            throw ProcedureBackupValidationException::for(ProcedureBackupValidationException::REASON_MISSING_ATTACHMENT);
-        }
-
-        $verifyMethod = ProcedureBackupVerifyMethod::from($payload['verify_method']);
-
-        return DB::transaction(function () use ($stepRun, $actor, $payload, $takenAt, $sizeBytes, $storageTarget, $verifyMethod) {
+        return DB::transaction(function () use ($stepRun, $actor, $payload, $takenAt, $sizeBytes, $storageTarget, $verifyMethod, $expected, $automatic) {
             $existing = ProcedureBackupProof::query()
                 ->where('procedure_step_run_id', $stepRun->id)
                 ->first();
@@ -88,10 +64,11 @@ class BackupProofService {
                 'taken_at' => $takenAt,
                 'size_bytes' => $sizeBytes,
                 'checksum_algo' => $payload['checksum_algo'] ?? null,
-                'checksum_value' => $payload['checksum_value'] ?? null,
+                'checksum_value' => $expected,
                 'storage_target' => $storageTarget->value,
                 'attachment_id' => $payload['attachment_id'] ?? null,
                 'external_ref' => $payload['external_ref'] ?? null,
+                'registered_by_user_id' => $actor->id,
                 'verified' => false,
                 'verify_method' => $verifyMethod->value,
                 'verify_note' => $payload['verify_note'] ?? null,
@@ -103,61 +80,54 @@ class BackupProofService {
                 'verify_method' => $verifyMethod->value,
             ]);
 
+            if ($automatic) {
+                $this->markVerified($proof, $actor, null, true);
+            }
+
             return $proof->refresh();
         });
     }
 
     /**
-     * Markiert einen Backup-Nachweis als verifiziert. Bei `checksum`
-     * wird der vom Aufrufer uebergebene Wert mit dem gespeicherten
-     * verglichen; bei `restoreCheck`/`managerConfirmation` reicht ein
-     * Berechtigter aus (Vier-Augen-Pruefung folgt in MVP-028).
+     * Markiert einen Backup-Nachweis als verifiziert. Bei `checksum` wird der
+     * übergebene Wert mit dem gespeicherten verglichen; Rückspieltest und
+     * Bestätigung durch die Leitung verlangen eine andere Person als die, die
+     * den Nachweis erfasst hat.
      */
     public function verify(ProcedureBackupProof $proof, User $verifier, ?string $checksumProbe = null, ?string $note = null): ProcedureBackupProof {
         if ($proof->verify_method === ProcedureBackupVerifyMethod::Checksum) {
             $expected = (string) ($proof->checksum_value ?? '');
-            if ($expected === '' || $checksumProbe === null || ! hash_equals($expected, $checksumProbe)) {
+            $probe = self::normalizeChecksum($checksumProbe);
+            if ($expected === '' || $probe === null || ! hash_equals($expected, $probe)) {
                 throw ProcedureBackupValidationException::for(ProcedureBackupValidationException::REASON_CHECKSUM_MISMATCH);
             }
+        } elseif ($proof->registered_by_user_id !== null && (int) $proof->registered_by_user_id === (int) $verifier->id) {
+            throw ProcedureBackupValidationException::for(ProcedureBackupValidationException::REASON_SELF_VERIFY);
         }
 
-        return DB::transaction(function () use ($proof, $verifier, $note) {
-            $proof->verified = true;
-            $proof->verified_at = Carbon::now();
-            $proof->verified_by_user_id = $verifier->id;
-            if ($note !== null) {
-                $proof->verify_note = $note;
-            }
+        return DB::transaction(fn (): ProcedureBackupProof => $this->markVerified($proof, $verifier, $note, false));
+    }
+
+    /** Lehnt einen Nachweis mit Begründung ab; der Schritt bleibt gesperrt, bis ein neuer Nachweis erfasst ist. */
+    public function reject(ProcedureBackupProof $proof, User $actor, string $reason): ProcedureBackupProof {
+        return DB::transaction(function () use ($proof, $actor, $reason) {
+            $proof->verified = false;
+            $proof->verified_at = null;
+            $proof->verified_by_user_id = $actor->id;
+            $proof->rejected_at = Carbon::now();
+            $proof->verify_note = $reason;
             $proof->save();
 
             $stepRun = $proof->stepRun;
             if ($stepRun instanceof ProcedureStepRun) {
-                $this->recordStepEvent($stepRun, ProcedureRunEventType::BackupVerified, $verifier, [
+                $this->recordStepEvent($stepRun, ProcedureRunEventType::BackupRejected, $actor, [
                     'proof_id' => $proof->id,
+                    'reason' => $reason,
                 ]);
             }
 
             return $proof->refresh();
         });
-    }
-
-    /**
-     * Pruefung fuer {@see ProcedureExecutionService}:
-     * Backup-Schritt darf nur `done` werden, wenn ein Nachweis
-     * existiert und verifiziert ist.
-     */
-    public function ensureReleaseAllowed(ProcedureStepRun $stepRun): void {
-        $stepDef = $stepRun->stepDef;
-        if ($stepDef === null || $stepDef->step_type !== ProcedureStepType::Backup) {
-            return;
-        }
-
-        $proof = ProcedureBackupProof::query()
-            ->where('procedure_step_run_id', $stepRun->id)
-            ->first();
-        if (! $proof instanceof ProcedureBackupProof || ! $proof->verified) {
-            throw ProcedureBackupValidationException::for(ProcedureBackupValidationException::REASON_NOT_VERIFIED);
-        }
     }
 
     /**
@@ -206,6 +176,93 @@ class BackupProofService {
     }
 
     /**
+     * Prüft einen Nachweis vor dem Hochladen der Datei, damit ein abgewiesener
+     * Nachweis keinen Anhang hinterlässt.
+     *
      * @param  array<string, mixed>  $payload
      */
+    public function assertRegistrable(ProcedureStepRun $stepRun, array $payload): void {
+        $this->checked($stepRun, $payload, true);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array{0: Carbon, 1: int, 2: ProcedureBackupStorageTarget, 3: ProcedureBackupVerifyMethod, 4: ?string, 5: bool}
+     */
+    private function checked(ProcedureStepRun $stepRun, array $payload, bool $attachmentPending): array {
+        $this->assertBackupStep($stepRun);
+
+        $config = $this->stepConfig($stepRun);
+        $rawTakenAt = $payload['taken_at'] ?? null;
+        $takenAt = $rawTakenAt instanceof \DateTimeInterface
+            ? Carbon::instance($rawTakenAt)
+            : ($rawTakenAt !== null ? Carbon::parse((string) $rawTakenAt) : Carbon::now());
+
+        $sizeBytes = (int) ($payload['size_bytes'] ?? 0);
+        $minSizeKb = (int) ($config['min_size_kb'] ?? 0);
+        if ($minSizeKb > 0 && $sizeBytes < $minSizeKb * 1024) {
+            throw ProcedureBackupValidationException::for(ProcedureBackupValidationException::REASON_TOO_SMALL);
+        }
+
+        $maxAgeMinutes = (int) ($config['max_age_minutes'] ?? 0);
+        if ($maxAgeMinutes > 0 && abs((int) $takenAt->diffInMinutes(Carbon::now())) > $maxAgeMinutes) {
+            throw ProcedureBackupValidationException::for(ProcedureBackupValidationException::REASON_TOO_OLD);
+        }
+
+        $storageTarget = ProcedureBackupStorageTarget::from($payload['storage_target']);
+        if ($storageTarget === ProcedureBackupStorageTarget::External) {
+            $externalRef = isset($payload['external_ref']) ? (string) $payload['external_ref'] : '';
+            if ($externalRef === '') {
+                throw ProcedureBackupValidationException::for(ProcedureBackupValidationException::REASON_MISSING_EXTERNAL_REF);
+            }
+        } elseif (! $attachmentPending && ($payload['attachment_id'] ?? null) === null) {
+            throw ProcedureBackupValidationException::for(ProcedureBackupValidationException::REASON_MISSING_ATTACHMENT);
+        }
+
+        $verifyMethod = ProcedureBackupVerifyMethod::from($payload['verify_method']);
+        $expected = self::normalizeChecksum($payload['checksum_value'] ?? null);
+        $fileChecksum = self::normalizeChecksum($payload['file_checksum'] ?? null);
+        $automatic = false;
+        if ($verifyMethod === ProcedureBackupVerifyMethod::Checksum) {
+            if ($expected === null) {
+                throw ProcedureBackupValidationException::for(ProcedureBackupValidationException::REASON_CHECKSUM_MISSING);
+            }
+            if ($fileChecksum !== null) {
+                if (! hash_equals($expected, $fileChecksum)) {
+                    throw ProcedureBackupValidationException::for(ProcedureBackupValidationException::REASON_CHECKSUM_MISMATCH);
+                }
+                $automatic = true;
+            }
+        }
+
+        return [$takenAt, $sizeBytes, $storageTarget, $verifyMethod, $expected, $automatic];
+    }
+
+    private function markVerified(ProcedureBackupProof $proof, User $verifier, ?string $note, bool $automatic): ProcedureBackupProof {
+        $proof->verified = true;
+        $proof->verified_at = Carbon::now();
+        $proof->verified_by_user_id = $verifier->id;
+        $proof->rejected_at = null;
+        if ($note !== null) {
+            $proof->verify_note = $note;
+        }
+        $proof->save();
+
+        $stepRun = $proof->stepRun;
+        if ($stepRun instanceof ProcedureStepRun) {
+            $this->recordStepEvent($stepRun, ProcedureRunEventType::BackupVerified, $verifier, array_filter([
+                'proof_id' => $proof->id,
+                'automatic' => $automatic,
+            ]));
+        }
+
+        return $proof->refresh();
+    }
+
+    /** Prüfsummen vergleichen wir ohne Leerraum und ohne Groß-/Kleinschreibung (Hex aus verschiedenen Werkzeugen). */
+    private static function normalizeChecksum(mixed $value): ?string {
+        $text = is_scalar($value) ? mb_strtolower(trim((string) $value)) : '';
+
+        return $text === '' ? null : $text;
+    }
 }

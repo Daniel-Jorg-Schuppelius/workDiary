@@ -17,7 +17,7 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\User;
 use App\Models\Sales\Quote;
-use App\Services\Invoicing\{InvoiceGenerator, InvoicePdfRenderer, QuoteService};
+use App\Services\Invoicing\{InvoiceGenerator, InvoiceIssueService, InvoicePdfRenderer, QuoteService};
 use App\Services\Org\Install\SettingDefaultsInstallStep;
 use App\Settings\{SettingScope, SettingsRegistry};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -182,6 +182,21 @@ class LabourCostDisclosureTest extends TestCase {
         $response = $this->actingAs($this->admin)->get(route('invoices.einvoice', $invoice));
         $response->assertOk();
         $this->assertStringContainsString('§ 35a EStG: 119,00 EUR', (string) $response->getContent());
+    }
+
+    /** Beim Ausstellen festgeschrieben: Regel und Kundenart ändern den Nachdruck nicht mehr (MVP-1624). */
+    public function test_issuing_freezes_the_disclosure(): void {
+        $this->setRule('private_customers');
+        $this->actingAs($this->admin);
+        $issued = app(InvoiceIssueService::class)->issue($this->invoice([['unit_price' => '100.00', 'labour_share_percent' => '100']]))->refresh();
+        $this->assertTrue($issued->is_labour_cost_disclosed);
+
+        $this->setRule('off');
+        $this->privateCustomer->update(['company' => 'Mustermann Immobilien GmbH']);
+        $reprint = Invoice::query()->findOrFail($issued->id)->load(['items', 'customer', 'organization']);
+
+        $this->assertNotNull($reprint->disclosedLabourCosts());
+        $this->assertStringContainsString('§ 35a EStG', view('invoices.pdf', app(InvoicePdfRenderer::class)->viewData($reprint))->render());
     }
 
     public function test_rule_off_shows_nothing(): void {

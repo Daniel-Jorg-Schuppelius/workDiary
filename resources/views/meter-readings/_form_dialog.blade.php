@@ -21,7 +21,7 @@
     tone="primary"
     :action="route('meter-readings.store')"
     method="POST"
-    :form-data="['data-entry-form' => '']"
+    :form-data="['data-entry-form' => '', 'enctype' => 'multipart/form-data']"
     :submit-label="__('Erfassen')">
     @if ($isDialog)
         <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
@@ -38,6 +38,8 @@
                        :value="old('unit', 'kWh')" />
         <x-checkbox-field name="is_estimated" span="2" :label="__('Geschätzter Wert')"
                           :toggle="false" :checked="old('is_estimated')" />
+        <x-input-field name="photo" type="file" span="2" :label="__('Foto des Zählers')"
+                       accept="image/*" capture="environment" />
     </x-form-group>
 
     <x-form-group :legend="__('Notizen')" icon="description" tone="ghost">

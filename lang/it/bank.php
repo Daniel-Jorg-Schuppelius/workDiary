@@ -112,6 +112,16 @@ return [
         ],
     ],
     // Sammelbuchungs-Auflösung je TransactionDetail (Toolkit-Folgepaket 2).
+    // Freie Belegsuche beim Einzelumsatz (MVP-1557).
+    'assign' => [
+        'title' => 'Cerca e assegna un documento',
+        'hint' => 'Tutte le fatture aperte, le spese approvate e i conti cliente — anche senza suggerimento. Un importo inferiore è un pagamento parziale, uno superiore un pagamento in eccesso.',
+        'target' => 'Documento',
+        'kind' => 'Tipo',
+        'kind_auto' => 'Automaticamente dall’importo',
+        'note' => 'Nota',
+        'action' => 'Cerca documento',
+    ],
     'split' => [
         'title' => 'Scomponi registrazione cumulativa',
         'return_title' => 'Storno cumulativo di addebito — elabora per singola transazione',

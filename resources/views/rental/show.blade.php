@@ -53,6 +53,30 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
+    {{-- Weiche Vormerkungen anderer Vorgänge im Zeitraum (MVP-1604): Hinweis, keine Sperre. --}}
+    @if ($softConflicts->isNotEmpty())
+        <div role="status" class="alert alert-warning alert-soft items-start">
+            <x-icon name="event_busy" />
+            <div class="text-sm">
+                <p class="font-medium">{{ __('rental.soft.title') }}</p>
+                <ul class="mt-1 list-disc pl-5">
+                    @foreach ($softConflicts as $soft)
+                        <li>
+                            {{ $soft->asset->name ?? '—' }}: {{ $soft->starts_at->fdatetime() }} – {{ $soft->ends_at->fdatetime() }}
+                            @if ($soft->rentalCase !== null)
+                                · <a class="link" href="{{ route('rental.show', $soft->rentalCase) }}">{{ $soft->rentalCase->number }}</a>
+                                @if ($soft->rentalCase->customer !== null) ({{ $soft->rentalCase->customer->name }}) @endif
+                            @elseif (filled($soft->note))
+                                · {{ $soft->note }}
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+                <p class="mt-1 text-xs">{{ __('rental.soft.hint') }}</p>
+            </div>
+        </div>
+    @endif
+
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Akte')">
             <x-detail-grid class="grid-cols-2">
@@ -142,11 +166,14 @@
                     <td>{{ $caseAsset->asset->name ?? '—' }}</td>
                     <td>
                         <x-status-badge size="md" outline>{{ $caseAsset->status->label() }}</x-status-badge>
+                        @if ($caseAsset->status->isOpen() && $caseAsset->asset?->rentalProfile?->isBelowMinCondition())
+                            <x-status-badge tone="error" size="md" outline>{{ __('rental.condition.below_badge') }}</x-status-badge>
+                        @endif
                         @if ($caseAsset->replacedBy !== null)
                             <span class="text-xs text-muted">{{ __('ersetzt durch :name', ['name' => $caseAsset->replacedBy->asset->name ?? '—']) }}</span>
                         @endif
                     </td>
-                    <td class="text-sm">{{ collect($caseAsset->accessories ?? [])->implode(', ') ?: '—' }}</td>
+                    <td class="text-sm">{{ collect($caseAsset->accessories ?: $caseAsset->asset?->rentalProfile?->accessories)->implode(', ') ?: '—' }}</td>
                     <td class="text-right">
                         @can('handover', $case)
                             @if ($caseAsset->status === \App\Enums\Rental\RentalCaseAssetStatus::Planned && in_array($case->status, [\App\Enums\Rental\RentalCaseStatus::Reserved, \App\Enums\Rental\RentalCaseStatus::HandedOver], true))
@@ -204,6 +231,7 @@
                         <td>{{ $report->condition->label() }}
                             @if ($report->meter_value !== null)<span class="text-xs text-muted"> · {{ __('Zähler') }} {{ $report->meter_value }}</span>@endif
                             @if ($report->operating_hours !== null)<span class="text-xs text-muted"> · {{ $report->operating_hours }} h</span>@endif
+                            @include('rental.partials._report_details', ['report' => $report])
                         </td>
                         <td>{{ $report->signature_name ?? '—' }}</td>
                         <td>{{ $report->portal_confirmed_at !== null ? $report->portal_confirmed_at->fdatetime() : '—' }}</td>
@@ -226,8 +254,14 @@
                         <td>{{ $report->condition->label() }}
                             @if (filled($report->damages))<span class="text-error text-xs"> · {{ __('Schaden') }}</span>@endif
                             @if (filled($report->missing_parts))<span class="text-warning text-xs"> · {{ __('Fehlteile') }}</span>@endif
+                            @include('rental.partials._report_details', ['report' => $report])
                         </td>
-                        <td><x-status-badge size="md" outline>{{ $report->follow_up->label() }}</x-status-badge></td>
+                        <td>
+                            <x-status-badge size="md" outline>{{ $report->follow_up->label() }}</x-status-badge>
+                            @if ($report->cleaning_required && $report->follow_up !== \App\Enums\Rental\RentalReturnFollowUp::Cleaning)
+                                <x-status-badge tone="warning" size="md" outline>{{ __('Reinigung erforderlich') }}</x-status-badge>
+                            @endif
+                        </td>
                     </tr>
                 @empty
                     <x-table.empty :colspan="4" :title="__('Noch keine Rücknahme protokolliert.')" compact />
@@ -356,6 +390,15 @@
                                 <form method="POST" action="{{ route('rental.deposits.receive', $deposit) }}" class="inline">@csrf
                                     <x-button type="submit" size="xs">{{ __('Erhalten') }}</x-button>
                                 </form>
+                                {{-- Erlass einer nicht gezahlten Kaution, nur mit Begründung (MVP-1620) --}}
+                                <details class="inline-block text-left">
+                                    <summary class="btn btn-xs btn-ghost">{{ __('rental.deposit.waive') }}</summary>
+                                    <form method="POST" action="{{ route('rental.deposits.waive', $deposit) }}" class="mt-2 flex flex-wrap items-end gap-2 rounded-box border border-base-300 p-3">
+                                        @csrf
+                                        <x-input-field name="reason" :id="'deposit-waive-reason-' . $deposit->sqid" :label="__('rental.deposit.waive_reason')" required maxlength="2000" />
+                                        <x-button type="submit" tone="plain">{{ __('rental.deposit.waive') }}</x-button>
+                                    </form>
+                                </details>
                             @endif
                             @if ($deposit->status === \App\Enums\Rental\RentalDepositStatus::Received)
                                 <details class="inline-block text-left">
@@ -392,7 +435,7 @@
     <x-card :title="__('Belegungsfenster')" padding="p-0">
         <x-table bare>
             <x-slot:head>
-                <tr><th>{{ __('Asset') }}</th><th>{{ __('Art') }}</th><th>{{ __('Zeitraum (inkl. Puffer)') }}</th><th>{{ __('Status') }}</th></tr>
+                <tr><th>{{ __('Asset') }}</th><th>{{ __('Art') }}</th><th>{{ __('Zeitraum (inkl. Puffer)') }}</th><th>{{ __('Status') }}</th><th class="text-right">{{ __('Aktionen') }}</th></tr>
             </x-slot:head>
             {{-- Ohne Storno: Fenster einer Akte enden über Rücknahme, Tausch oder Storno der Akte. --}}
             @forelse ($case->reservations as $reservation)
@@ -401,9 +444,19 @@
                     <td>{{ $reservation->kind->label() }}</td>
                     <td>{{ $reservation->blockedFrom()->fdatetime() }} – {{ $reservation->blockedUntil()->fdatetime() }}</td>
                     <td><x-status-badge size="md" outline>{{ $reservation->status->label() }}</x-status-badge></td>
+                    <td class="text-right">
+                        {{-- Reinigung erledigt (MVP-1604): gibt das Gerät vor Ablauf des Fensters frei. --}}
+                        @can('handover', $case)
+                            @if ($reservation->kind === \App\Enums\Rental\RentalReservationKind::Cleaning && $reservation->status === \App\Enums\Rental\RentalReservationStatus::Active && $reservation->ends_at->isFuture())
+                                <form method="POST" action="{{ route('rental.cleaning.done', $reservation) }}" class="inline">@csrf
+                                    <x-button type="submit" size="xs">{{ __('rental.cleaning.mark_done') }}</x-button>
+                                </form>
+                            @endif
+                        @endcan
+                    </td>
                 </tr>
             @empty
-                <x-table.empty :colspan="4" :title="__('Keine Belegungsfenster — entstehen mit der Reservierung.')" compact />
+                <x-table.empty :colspan="5" :title="__('Keine Belegungsfenster — entstehen mit der Reservierung.')" compact />
             @endforelse
         </x-table>
     </x-card>

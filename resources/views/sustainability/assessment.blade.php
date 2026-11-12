@@ -17,6 +17,16 @@
         <x-page-toolbar :title="$assessment->subject_label . ' · V' . $assessment->version" :badge="$assessment->status->label()" badge-tone="outline"
                         back-route="sustainability.index" :back-label="__('Übersicht')">
         <div class="text-sm text-base-content/70">
+            {{-- Bezugsobjekt (MVP-1607) mit Link zur Akte und zu allen Versionen. --}}
+            @if ($assessment->subject !== null)
+                {{ $subjectType }}:
+                @if ($subjectUrl !== null)
+                    <a class="link link-hover" href="{{ $subjectUrl }}">{{ $assessment->subject_label }}</a>
+                @else
+                    {{ $assessment->subject_label }}
+                @endif
+                · <a class="link link-hover" href="{{ route('sustainability.assessments.index', ['subject' => $subjectFilter]) }}">{{ __('sustainability.subject.all_versions') }}</a> ·
+            @endif
             @if ($assessment->total_score !== null)
                 {{ __('Score :score / 5', ['score' => $assessment->total_score]) }} ·
                 {{ __('Datenqualität: :quality', ['quality' => $assessment->data_quality !== null ? __("values.{$assessment->data_quality}") : '—']) }}
@@ -124,6 +134,38 @@
                     'sets' => implode('; ', (array) data_get($assessment->snapshot, 'methodology.factor_sets', [])),
                 ]) }}
             </p>
+        @endif
+    </x-card>
+    {{-- Maßnahmen dieser Bewertung (MVP-1607). --}}
+    <x-card :title="__('sustainability.measure.for_assessment')" icon="task_alt" :count="$assessment->measures->count()">
+        @if ($canCreateMeasure)
+            <form method="POST" action="{{ route('sustainability.measures.store') }}" class="mb-3 flex flex-wrap items-end gap-2">
+                @csrf
+                <input type="hidden" name="assessment_id" value="{{ $assessment->sqid }}">
+                <input aria-label="{{ __('Maßnahme') }}" name="title" required maxlength="300" class="input input-sm input-bordered flex-1" placeholder="{{ __('Maßnahme (z. B. Umstellung auf LED)') }}">
+                <select name="effort" class="select select-sm select-bordered" aria-label="{{ __('Aufwand') }}">
+                    <option value="low">{{ __('values.low') }}</option>
+                    <option value="medium" selected>{{ __('values.medium') }}</option>
+                    <option value="high">{{ __('values.high') }}</option>
+                </select>
+                <input name="due_on" type="date" class="input input-sm input-bordered" aria-label="{{ __('Fällig am') }}">
+                <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Erfassen') }}</x-icon-btn>
+            </form>
+        @endif
+        @if ($assessment->measures->isEmpty())
+            <x-empty-state icon="task_alt" :title="__('sustainability.measure.none_for_assessment')" compact />
+        @else
+            <ul class="space-y-1.5 text-sm">
+                @foreach ($assessment->measures as $measure)
+                    <li class="flex flex-wrap items-center gap-2">
+                        <x-status-badge size="xs" outline>{{ $measure->status->label() }}</x-status-badge>
+                        <span class="font-medium">{{ $measure->title }}</span>
+                        @if ($measure->responsible)<span class="text-xs text-muted">{{ $measure->responsible->name }}</span>@endif
+                        @if ($measure->due_on)<span class="text-xs text-muted">{{ $measure->due_on->fdate() }}</span>@endif
+                    </li>
+                @endforeach
+            </ul>
+            <p class="mt-2 text-xs"><a class="link link-hover" href="{{ route('sustainability.measures.index') }}">{{ __('sustainability.measure.to_list') }}</a></p>
         @endif
     </x-card>
 </x-page-shell>

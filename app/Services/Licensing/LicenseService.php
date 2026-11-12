@@ -230,6 +230,8 @@ class LicenseService {
         ?string $email = null,
         ?int $maxUsers = null,
         ?string $package = null,
+        ?int $maxOrgs = null,
+        ?int $storageQuotaGb = null,
     ): ?string {
         $private = $this->privateKey();
         if ($private === null || $private === '') {
@@ -252,6 +254,8 @@ class LicenseService {
                 : null,
             'domain' => ($domain !== null && $domain !== '') ? $domain : null,
             'max_users' => $maxUsers,
+            'max_orgs' => $maxOrgs,
+            'storage_quota_gb' => $storageQuotaGb,
             'plan' => $plan,
             'addons' => array_values($addons),
             'organization' => ($organizationUid !== null && $organizationUid !== '') ? $organizationUid : null,
@@ -277,8 +281,10 @@ class LicenseService {
         string $licensee,
         ?int $maxUsers = null,
         ?string $package = null,
+        ?int $storageQuotaGb = null,
     ): LicenseResult {
-        $key = $this->signLicense($plan, $addons, $expires, $licensee, (string) $org->license_uid, null, null, $maxUsers, $package);
+        // max_orgs zählt alle Organisationen der Installation und gehört nicht in eine Organisationslizenz.
+        $key = $this->signLicense($plan, $addons, $expires, $licensee, (string) $org->license_uid, null, null, $maxUsers, $package, null, $storageQuotaGb);
         if ($key === null) {
             return LicenseResult::fail(LicenseStatus::PublicKeyMissing, 'Kein Private Key konfiguriert.');
         }

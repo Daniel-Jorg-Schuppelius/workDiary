@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Export\Specs;
 
 use App\Enums\Export\ExportEntity;
+use App\Enums\User\Permission;
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
+use App\Services\Import\Contracts\GuardsColumns;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -27,7 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  * - `status`: active|archived (Standard: alle)
  * - `q`: Freitextsuche über Name / Nummer
  */
-class ProjectExportSpec extends AbstractExportSpec {
+class ProjectExportSpec extends AbstractExportSpec implements GuardsColumns {
     public function entity(): ExportEntity {
         return ExportEntity::Projects;
     }
@@ -48,6 +50,11 @@ class ProjectExportSpec extends AbstractExportSpec {
             'time_budget',
             'billable',
         ];
+    }
+
+    /** Sätze stehen sonst hinter der Projektabrechnung (Reiter „Abrechnung“, MVP-1625). */
+    public function columnPermissions(): array {
+        return ['hourly_rate' => Permission::ProjectManageBilling, 'internal_rate' => Permission::ProjectManageBilling];
     }
 
     public function query(Organization $organization, array $filters): iterable {

@@ -1,7 +1,7 @@
 ---
 title: "Work queue"
 topic: work-queue.overview
-version: 3
+version: 4
 keywords:
     - Work queue
     - Open items
@@ -55,3 +55,7 @@ bundled with their count.
 sorted accordingly; filters narrow it to one area, one source or only items
 assigned to you personally. The "Work queue" tile on the dashboard shows the
 most urgent items.
+
+**Due date:** The “Due date” filter shows only overdue items, items due today or this week (until Sunday), or items without a due date.
+
+**Firefly III:** If the plugin is enabled, administrators see Firefly transactions without an assignment and those with an ambiguous assignment as one bundled item each, without a due date. The link opens the matching filtered list on the Firefly page; once the next reconciliation assigns a transaction to an invoice, the count goes down.

@@ -1,7 +1,7 @@
 ---
 title: "Procedure designer"
 topic: procedures.designer
-version: 3
+version: 4
 keywords:
     - work instruction
     - create checklist
@@ -53,9 +53,48 @@ steps. Each step has a **Code**, a **Label**, an optional
 - **Condition: step** and **Condition: value** (if-then): the step only
   becomes relevant when another step has a given value.
 
+## Configuration by step type
+
+Depending on its **Type**, a step shows further fields:
+
+- “Choice”: **Choice options**, comma-separated. Without options the step
+  takes free text during the run.
+- “Number/measurement” and “Measurement series”: **Unit**, **Lower limit**
+  and **Upper limit** (tolerance).
+- “Wait time”: **Fixed waiting time (seconds)**; if empty, the duration is
+  entered during the run.
+- “Backup record”: **Scope**, **Storage**, **Verification method**,
+  **Minimum size (KB)** and **Maximum backup age (minutes)**. “Chosen
+  during the run” leaves the entry to the executing person.
+- Any other step: **Prior backup required** blocks it until a backup step
+  of the same run is done and its proof confirmed, optionally with a
+  maximum age.
+- Four-eyes steps: **Role of the second person**, **Qualification of the
+  second person** and **Executing person may countersign themselves**
+  (normally off).
+
+**Qualification** means the abbreviation of an employee qualification, or
+its name; the check is whether the person currently holds it. The **Step
+library** offers the same fields under **Configuration by step type**.
+Entries from industry profiles or imports that the designer does not show
+are kept when saving.
+
+The risk level “Critical” requires at least one four-eyes step: without it
+the version cannot be published, and a run is only completed once a
+four-eyes approval is done.
+
 ## Automatic assignment
 
-Via **Order types** and **Tags** you define which orders the template is
-automatically suggested for. On the order detail page, matching published
-templates appear in the **Procedures** card under “Procedures suggested
-for this order:” as a start button.
+A template is suggested when **all** criteria set match: **Order types**,
+**Tags**, **Customers**, **Asset categories**, **Products** and **SLA
+contracts**. Category, product and SLA refer to the asset of the order.
+Without criteria the template applies to every order.
+
+- On the order detail page, matching published templates appear in the
+  **Procedures** card under “Procedures suggested for this order:” as a
+  start button.
+- If the template names an asset category, a product or an SLA contract,
+  it is also offered on the asset record under “Procedures intended for
+  this asset:”.
+- **May run on blocked assets** allows starting on a blocked asset, for
+  repair and inspection procedures for example.

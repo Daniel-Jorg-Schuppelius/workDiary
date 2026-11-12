@@ -23,6 +23,11 @@ enum FireflyMatchStatus: string implements HasLabel {
     case Matched = 'matched';
     case Ambiguous = 'ambiguous';
 
+    /** @return list<string> Zuordnung offen: ohne oder mehrdeutig (Liste, Kachel, Arbeitsvorrat; MVP-1617). */
+    public static function openValues(): array {
+        return [self::Unmatched->value, self::Ambiguous->value];
+    }
+
     public function label(): string {
         return (string) __('firefly::enums.match_status.' . $this->value);
     }

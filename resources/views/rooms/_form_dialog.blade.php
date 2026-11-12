@@ -165,7 +165,10 @@
                             @if ($req->level)<x-status-badge tone="plain" outline>{{ $req->level }}</x-status-badge>@endif
                             @unless ($req->is_active)<x-status-badge>{{ __('inaktiv') }}</x-status-badge>@endunless
                             @if ($req->note)<span class="text-muted">— {{ $req->note }}</span>@endif
-                            <x-button tone="ghost" size="xs" class="ml-auto text-error"
+                            <x-button tone="ghost" size="xs" class="ml-auto"
+                               :href="route('rooms.requirements.edit', [$room, $req])"
+                               data-entry-modal-trigger>{{ __('Bearbeiten') }}</x-button>
+                            <x-button tone="ghost" size="xs" class="text-error"
                                href="#"
                                data-submit-form="req-del-{{ $req->id }}">{{ __('Entfernen') }}</x-button>
                         </li>

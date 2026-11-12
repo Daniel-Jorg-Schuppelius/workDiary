@@ -1,7 +1,7 @@
 ---
 title: "Avviare la registrazione dei tempi"
 topic: time-entries.start
-version: 2
+version: 3
 keywords:
     - cronometro
     - avviare il timer
@@ -51,6 +51,8 @@ timbratura, registrazioni e correzioni tracciabili.
 
 ![Vista di oggi con riga del cronometro, bilancio giornaliero e timbratura](media/zeit/heute-erfassung.png)
 *La vista di oggi: avvio del cronometro, bilancio previsto/effettivo e timbratura a colpo d’occhio.*
+
+**Senza connessione:** la barra di inserimento di «Oggi» salva anche senza rete le registrazioni con durata o da/a e le trasmette al contatto successivo, con le stesse regole valide online. Se nel frattempo la giornata è stata chiusa o manca il progetto, la registrazione non viene scartata in silenzio ma compare come conflitto in «Modifiche offline». Il timer non è disponibile offline.
 
 ## Esempio pratico
 

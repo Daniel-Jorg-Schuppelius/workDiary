@@ -1,7 +1,7 @@
 ---
 title: "Cuenta de tiempo de trabajo y aprobación mensual"
 topic: time-accounts.flex
-version: 2
+version: 3
 keywords:
     - bolsa de horas
     - horas extra
@@ -35,3 +35,5 @@ administración, salvo que nadie más en la organización tenga el permiso de
 aprobación; el registro de auditoría deja constancia de esa autoaprobación.
 Quien solo puede ver los meses y las solicitudes de corrección del equipo ve
 únicamente a los miembros de sus propios equipos.
+
+**Saldo de la cuenta:** el previsto, el real y el saldo del mes en curso solo cuentan los días cerrados hasta ayer, igual que la cuenta guardada, el mosaico y el terminal. El saldo de la cuenta incluye el arrastre del mes anterior. La aprobación del mes lo congela en la cuenta; solo una reapertura lo recalcula.

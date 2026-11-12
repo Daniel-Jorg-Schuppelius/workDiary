@@ -139,4 +139,37 @@ class DispatchCalendarAndMatrixTest extends TestCase {
         $response->assertSee(__('fehlt'));
         $response->assertSee(__('zugewiesen'));
     }
+
+    /** Einsatz-Ampel (Feature 149, MVP-1620): laufender Kurs macht „fehlt“ gelb, sonst nennt die Zelle den Kursvorschlag. */
+    public function test_matrix_shows_training_in_progress_and_course_suggestion(): void {
+        $inTraining = $this->worker('Monteur Lernt');
+        $this->worker('Monteur Ohne');
+        $entry = $this->entry($inTraining, '2026-07-10 08:00', '2026-07-10 16:00', 'Prüfung Gerüst');
+        $qualification = Qualification::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Gerüstbau', 'abbreviation' => 'GB']);
+        $entry->requiredQualifications()->sync([$qualification->id]);
+
+        $course = \App\Models\Learning\LearningCourse::factory()->create([
+            'organization_id' => $this->organization->id,
+            'title' => 'Gerüstbau Grundkurs',
+            'qualification_id' => $qualification->id,
+            'status' => \App\Enums\Learning\LearningCourseStatus::Released->value,
+        ]);
+        \App\Models\Learning\LearningEnrollment::query()->create([
+            'organization_id' => $this->organization->id,
+            'learning_course_id' => $course->id,
+            'user_id' => $inTraining->id,
+            'status' => \App\Enums\Learning\LearningEnrollmentStatus::InProgress->value,
+            'source' => \App\Enums\Learning\LearningEnrollmentSource::Manual->value,
+        ]);
+
+        $training = app(\App\Services\Schedule\Contracts\QualificationTrainingSource::class);
+        $this->assertSame([$inTraining->id => [$qualification->id]], $training->openEnrollments(collect([$inTraining]), [$qualification->id]));
+        $this->assertSame([$qualification->id => 'Gerüstbau Grundkurs'], $training->suggestedCourses([$qualification->id]));
+
+        $this->actingAs($this->dispatcher())->get(route('dispatch.qualifications', $entry))
+            ->assertOk()
+            ->assertSee(__('schedule.qualification.in_training'))
+            ->assertSee(__('fehlt'))
+            ->assertSee(__('schedule.qualification.course', ['course' => 'Gerüstbau Grundkurs']));
+    }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Leads"
 topic: sales.leads
-version: 4
+version: 6
 keywords:
     - prospects
     - prospection
@@ -74,3 +74,12 @@ client, le fournisseur et le projet, les panneaux des autres modules ne
 montrent que ce qui existe pour le lead — un module sans données pour ce lead
 n'apparaît pas. L'historique liste les entrées d'audit du lead, devis compris ;
 les réservations de rendez-vous sont rattachées au lead ouvert.
+
+Toute personne autorisée à ouvrir la page « Demandes de rendez-vous » voit dans le panneau **Rendez-vous** les rendez-vous réservés et demandés du prospect (par exemple via Calendly) avec date, lieu et statut ; un clic ouvre les demandes de rendez-vous.
+
+## Dernier contact
+
+Le délai court à partir du **dernier contact**. Il avance à chaque note de
+communication sur le lead (à sa date), à chaque modification de contenu, à
+chaque changement de statut et à chaque devis créé depuis le lead. Changer
+seulement la personne responsable ne compte pas comme contact.

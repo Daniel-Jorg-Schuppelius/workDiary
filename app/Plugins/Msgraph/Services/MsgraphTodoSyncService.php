@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Msgraph\Services;
 
-use App\Enums\Integration\IntegrationInboxStatus;
+use App\Enums\Integration\{DataDomain, IntegrationInboxStatus};
 use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\Organization;
@@ -25,7 +25,10 @@ use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Observers\MsgraphTodoTaskObserver;
 use App\Plugins\Support\TaskSync\{AbstractTaskSyncService, TaskSyncLink};
 use App\Services\CloudIntake\StaleCheckpointException;
+use App\Services\Integration\Attributes\WritesDataDomain;
+use App\Services\Integration\DataOwnershipGuard;
 use CommonToolkit\Helper\Data\StringHelper;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -49,7 +52,10 @@ use Throwable;
  *
  * @extends AbstractTaskSyncService<MsgraphTaskListLink>
  */
+#[WritesDataDomain(DataDomain::Tasks)]
 class MsgraphTodoSyncService extends AbstractTaskSyncService {
+    /** @var array<int, Organization|null> */
+    private array $organizations = [];
     /** Felder des gemeinsamen base-Snapshots (Konfliktbasis). */
     public const array SYNCED_FIELDS = ['title', 'description', 'status', 'priority', 'due_date'];
 
@@ -114,6 +120,29 @@ class MsgraphTodoSyncService extends AbstractTaskSyncService {
     }
 
     // ── Import: To Do → WorkDiary (3-Wege-Kern, Todoist-Muster) ─────────
+
+    /** „Einmalig übernehmen“: die gespeicherte To-Do-Aufgabe als Delta der noch importierenden Zuordnung. */
+    public function replayOwnershipConflict(Organization $organization, IntegrationInboxItem $item): ?Model {
+        $payload = (array) (($item->remote_snapshot ?? [])['payload'] ?? []);
+        $remote = array_filter((array) ($payload['remote'] ?? []), is_string(...), ARRAY_FILTER_USE_KEY);
+        $link = MsgraphTaskListLink::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->find((int) ($payload['link_id'] ?? 0));
+        if (! $link instanceof MsgraphTaskListLink || ! $link->importsFromTodo()) {
+            throw new \RuntimeException((string) __('integration.task_import.ownership_replay.link_gone'));
+        }
+        if ((string) ($remote['id'] ?? '') === '') {
+            return null;
+        }
+        if ($this->importDelta($link, collect([$remote]))['failed'] > 0) {
+            throw new \RuntimeException((string) __('integration.task_import.ownership_replay.failed'));
+        }
+
+        return ExternalReference::query()
+            ->forPlugin($organization, MsgraphPlugin::ID, MsgraphPlugin::EXT_TYPE_TODO_TASK)
+            ->forExternalId((string) $remote['id'])
+            ->first()?->referenceable;
+    }
 
     /**
      * Import über die Delta-Query (Folgeausbau): ohne Checkpoint liefert die
@@ -292,6 +321,13 @@ class MsgraphTodoSyncService extends AbstractTaskSyncService {
         }
         $reference = $references->get($externalId);
         $mapped = $this->mapRemote($remote);
+
+        // Führt ein anderes System die Aufgaben, schreibt der Abgleich nichts (MVP-1592).
+        $organization = $this->organizations[(int) $link->organization_id] ??= Organization::query()->withoutGlobalScopes()->find($link->organization_id);
+        $claim = $this->ownershipClaim($externalId, $this->remoteDisplayTitle($remote), $this->displaySubtitle($link), ['link_id' => (int) $link->id, 'remote' => $remote], $reference?->referenceable instanceof Task ? $reference->referenceable : null);
+        if (! $organization instanceof Organization || ! app(DataOwnershipGuard::class)->allows($organization, DataDomain::Tasks, MsgraphPlugin::ID, $claim)) {
+            return 'inbox';
+        }
 
         if ($reference === null) {
             // In suppressed() gekapselt, damit der created-Export-Trigger die

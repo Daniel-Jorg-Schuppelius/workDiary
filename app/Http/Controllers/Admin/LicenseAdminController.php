@@ -14,6 +14,7 @@ use App\Enums\Organization\TenantStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
+use App\Models\Attachments\Attachment;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\{LicenseFlagOverride, Organization, User};
 use App\Services\Licensing\{FeatureFlagResolver, LicenseResult, LicenseService, LicenseStatus, ModuleCatalog, ModuleScopeService, ModuleStatusResolver, PackageCatalog};
@@ -60,7 +61,7 @@ class LicenseAdminController extends Controller {
         return view('admin.license.index', [
             'license' => $result,
             'badgeTone' => $this->badgeTone($result),
-            'limits' => $this->limits($limitLicense, $userCount, $orgCount),
+            'limits' => $this->limits($limitLicense, $userCount, $orgCount, $result, $org),
             'showInstallation' => $operator,
             'features' => $operator ? $this->features($result) : [],
             'expiresIn' => $this->expiresInDays($result),
@@ -235,6 +236,8 @@ class LicenseAdminController extends Controller {
             'addons.*' => ['string', \Illuminate\Validation\Rule::in($this->moduleCodes())],
             'expires' => ['nullable', 'date'],
             'max_users' => ['nullable', 'integer', 'min:1'],
+            'max_orgs' => ['nullable', 'integer', 'min:1'],
+            'storage_quota_gb' => ['nullable', 'integer', 'min:1'],
             'organization_uid' => ['nullable', 'string', 'max:64'],
             'domain' => ['nullable', 'string', 'max:255'],
         ]);
@@ -252,6 +255,8 @@ class LicenseAdminController extends Controller {
             $data['email'] ?? null,
             isset($data['max_users']) ? (int) $data['max_users'] : null,
             $package,
+            isset($data['max_orgs']) ? (int) $data['max_orgs'] : null,
+            isset($data['storage_quota_gb']) ? (int) $data['storage_quota_gb'] : null,
         );
 
         if ($key === null) {
@@ -275,6 +280,9 @@ class LicenseAdminController extends Controller {
                 'addons' => $addons,
                 'organization' => $data['organization_uid'] ?? null,
                 'domain' => $data['domain'] ?? null,
+                'max_users' => $data['max_users'] ?? null,
+                'max_orgs' => $data['max_orgs'] ?? null,
+                'storage_quota_gb' => $data['storage_quota_gb'] ?? null,
             ],
         ]);
 
@@ -305,6 +313,8 @@ class LicenseAdminController extends Controller {
             'addons' => ['array'],
             'addons.*' => ['string', \Illuminate\Validation\Rule::in($this->moduleCodes())],
             'expires' => ['nullable', 'date'],
+            'max_users' => ['nullable', 'integer', 'min:1'],
+            'storage_quota_gb' => ['nullable', 'integer', 'min:1'],
         ]);
 
         /** @var list<string> $addons */
@@ -316,8 +326,9 @@ class LicenseAdminController extends Controller {
             $addons,
             $data['expires'] ?? null,
             (string) $data['licensee'],
-            null,
+            isset($data['max_users']) ? (int) $data['max_users'] : null,
             $package,
+            isset($data['storage_quota_gb']) ? (int) $data['storage_quota_gb'] : null,
         );
         $this->resolver->flush();
 
@@ -331,7 +342,7 @@ class LicenseAdminController extends Controller {
             'event' => 'license.orgIssued',
             'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $org->id,
-            'changes' => ['license_id' => $result->payload?->licenseId, 'plan' => $result->payload?->plan, 'package' => $package, 'addons' => $result->payload->addons ?? $addons],
+            'changes' => ['license_id' => $result->payload?->licenseId, 'plan' => $result->payload?->plan, 'package' => $package, 'addons' => $result->payload->addons ?? $addons, 'max_users' => $result->payload?->maxUsers, 'storage_quota_gb' => $result->payload?->storageQuotaGb],
         ]);
 
         return $this->withSetupDialog(back()->with('success', __('Lizenz erstellt & installiert. Plan: ') . __('values.' . (string) $data['plan'])), $user);
@@ -493,13 +504,18 @@ class LicenseAdminController extends Controller {
      *     percent:int|null, status:string,
      * }>
      */
-    private function limits(LicenseResult $result, int $userCount, ?int $orgCount): array {
+    private function limits(LicenseResult $result, int $userCount, ?int $orgCount, LicenseResult $installation, ?Organization $org): array {
         $payload = $result->payload;
         $rows = [];
 
         $rows[] = $this->limitRow('users', __('Nutzer'), $userCount, $payload?->maxUsers);
         if ($orgCount !== null) {
-            $rows[] = $this->limitRow('organizations', __('Organisationen'), $orgCount, null);
+            // max_orgs gilt nur aus der Installationslizenz (LimitGuard::ensureCanCreateOrganization).
+            $rows[] = $this->limitRow('organizations', __('Organisationen'), $orgCount, $installation->payload?->maxOrgs);
+        }
+        if ($org !== null) {
+            $bytes = (int) Attachment::query()->where('organization_id', $org->id)->sum('size');
+            $rows[] = $this->limitRow('storage', __('Speicher (GB)'), (int) ceil($bytes / (1024 ** 3)), $payload?->storageQuotaGb);
         }
 
         return $rows;

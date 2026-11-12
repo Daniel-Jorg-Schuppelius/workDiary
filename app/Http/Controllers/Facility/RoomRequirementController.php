@@ -17,6 +17,7 @@ use App\Models\Platform\User;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rules\Enum;
+use Illuminate\View\View;
 
 /**
  * Raumbezogene fachliche Anforderungen je Gewerk (Feature 027).
@@ -42,6 +43,17 @@ class RoomRequirementController extends Controller {
         return back()->with('success', __('Raumanforderung hinzugefügt.'));
     }
 
+    public function edit(Room $room, RoomRequirement $requirement): View {
+        Gate::authorize('update', $room);
+        $this->ensureBelongsToRoom($room, $requirement);
+
+        return view('rooms._requirement_dialog', [
+            'room' => $room,
+            'requirement' => $requirement,
+            'requirementKinds' => RoomRequirementKind::options(),
+        ]);
+    }
+
     public function update(Request $request, Room $room, RoomRequirement $requirement): RedirectResponse {
         Gate::authorize('update', $room);
         $this->ensureBelongsToRoom($room, $requirement);
@@ -52,7 +64,10 @@ class RoomRequirementController extends Controller {
             'updated_by' => $user instanceof User ? $user->id : null,
         ]);
 
-        return back()->with('success', __('Raumanforderung aktualisiert.'));
+        // Zurück in den Raumdialog, damit die geänderte Anforderung dort sichtbar ist.
+        return redirect()->toList('rooms.index')
+            ->with('success', __('Raumanforderung aktualisiert.'))
+            ->with('open_dialog', route('rooms.edit', $room));
     }
 
     public function destroy(Request $request, Room $room, RoomRequirement $requirement): RedirectResponse {

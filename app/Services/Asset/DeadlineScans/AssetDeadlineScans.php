@@ -15,6 +15,7 @@ namespace App\Services\Asset\DeadlineScans;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Asset\{AssetAssignment, MaintenancePlan};
 use App\Models\Platform\User;
+use App\Services\Asset\AssetHealthService;
 use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Carbon;
@@ -31,6 +32,8 @@ class AssetDeadlineScans extends AbstractDeadlineScan {
     }
 
     public function run(NotificationDispatcher $dispatcher, DeadlineScanOptions $options): int {
+        app(AssetHealthService::class)->syncDue();
+
         return $this->scanReturns($dispatcher) + $this->scanMaintenance($dispatcher, $options->expiringDays);
     }
 

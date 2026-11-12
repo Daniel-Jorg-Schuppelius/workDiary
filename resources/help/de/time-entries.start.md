@@ -1,7 +1,7 @@
 ---
 title: "Zeiterfassung starten"
 topic: time-entries.start
-version: 2
+version: 3
 keywords:
     - Stoppuhr
     - Timer starten
@@ -53,6 +53,8 @@ Korrekturen.
 
 ![Heute-Ansicht mit Timer-Zeile, Tagesbilanz und Stempeluhr](media/zeit/heute-erfassung.png)
 *Die Heute-Ansicht: Timer starten, Soll/Ist-Bilanz und die Stempeluhr auf einen Blick.*
+
+**Ohne Verbindung:** Die Eingabeleiste auf „Heute“ speichert Buchungen mit Dauer oder Von/Bis auch ohne Netz und überträgt sie beim nächsten Kontakt — mit denselben Regeln wie online. Ist der Tag bis dahin abgeschlossen oder fehlt das Projekt, wird die Buchung nicht still verworfen, sondern erscheint als Konflikt unter „Offline-Änderungen“. Den Timer gibt es offline nicht.
 
 ## Beispiel aus der Praxis
 

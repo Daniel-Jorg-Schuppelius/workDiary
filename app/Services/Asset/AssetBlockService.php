@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Asset;
 
-use App\Enums\Asset\AssetBlockReason;
+use App\Enums\Asset\{AssetBlockReason, AssetStatus};
 use App\Models\Asset\{Asset, AssetBlock, AssetBlockException};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +26,8 @@ use Illuminate\Support\Collection;
  */
 class AssetBlockService {
     public const int MIN_EXCEPTION_REASON_LENGTH = 20;
+
+    public function __construct(private readonly AssetHealthService $health) {}
 
     public function block(
         Asset $asset,
@@ -52,6 +54,7 @@ class AssetBlockService {
             'block_id' => $block->id,
             'source' => $block->source_type,
         ]);
+        $this->health->sync($asset);
 
         return $block;
     }
@@ -67,12 +70,68 @@ class AssetBlockService {
             'release_note' => $note,
         ])->save();
 
-        $block->asset?->audit('asset.unblocked', [
-            'reason' => $block->reason->value,
-            'block_id' => $block->id,
-        ]);
+        $asset = $block->asset;
+        if ($asset !== null) {
+            $asset->audit('asset.unblocked', [
+                'reason' => $block->reason->value,
+                'block_id' => $block->id,
+            ]);
+            $this->restoreStatusAfterRelease($asset, $block);
+            $this->health->sync($asset);
+        }
 
         return $block;
+    }
+
+    /**
+     * Der wählbare Status „gesperrt“/„in Reparatur“ ist kein zweites
+     * Sperrmodell: er trägt genau eine Sperre mit dem Asset als Quelle
+     * (MVP-1574). Verlässt das Asset den Status, endet die Sperre.
+     */
+    public function syncStatusBlock(Asset $asset, ?User $actor = null): void {
+        $reason = self::statusBlockReason($asset->status);
+        $existing = AssetBlock::query()->fromStatus($asset)->active()->get();
+
+        foreach ($existing as $block) {
+            if ($block->reason !== $reason) {
+                $this->release($block, $actor, (string) __('asset.block.status_left'));
+            }
+        }
+
+        if ($reason === null || $existing->contains(fn (AssetBlock $block): bool => $block->reason === $reason)) {
+            return;
+        }
+
+        // „Gesperrt“ aus einem blockierenden Defekt trägt der Defekt selbst.
+        if ($asset->status === AssetStatus::Blocked && $asset->defects()->blocking()->exists()) {
+            return;
+        }
+
+        $this->block($asset, $reason, $actor, (string) __('asset.block.from_status', ['status' => $asset->status->label()]), $asset);
+    }
+
+    public static function statusBlockReason(AssetStatus $status): ?AssetBlockReason {
+        return match ($status) {
+            AssetStatus::Blocked => AssetBlockReason::Manual,
+            AssetStatus::InRepair => AssetBlockReason::Maintenance,
+            default => null,
+        };
+    }
+
+    /** Wird die Sperre des Status aufgehoben, kehrt das Asset in den Betrieb zurück. */
+    private function restoreStatusAfterRelease(Asset $asset, AssetBlock $block): void {
+        $fromStatus = $block->source_id === $asset->id && $block->source_type === $asset->getMorphClass();
+
+        if (! $fromStatus
+            || self::statusBlockReason($asset->status) !== $block->reason
+            || $asset->defects()->blocking()->exists()) {
+            return;
+        }
+
+        $from = $asset->status;
+        $asset->status = AssetStatus::Active;
+        $asset->save();
+        $asset->audit('asset.statusChanged', ['from' => $from->value, 'to' => AssetStatus::Active->value]);
     }
 
     /**

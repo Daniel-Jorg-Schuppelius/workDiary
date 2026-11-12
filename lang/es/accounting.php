@@ -71,6 +71,8 @@ return [
             'valid_from' => 'Válido desde',
             'reason' => 'Motivo',
             'datev_account' => 'Cuenta DATEV',
+            'datev_automatic' => 'Automatismo DATEV',
+            'datev_automatic_none' => '— sin cuenta automática —',
             'euer_category' => 'Línea ingresos-gastos',
             'euer_category_none' => '— sin asignación —',
             'bwa_group' => 'Línea BWA',
@@ -92,6 +94,7 @@ return [
             'sovereignty_switch' => 'El traslado de datos sigue siendo el cambio de contabilidad; aquí solo se reasigna la dirección.',
             'external_provider' => 'Solo con autoridad externa: nombre del sistema principal (p. ej. lexoffice).',
             'datev_account' => 'Solo para la exportación; el asiento local no depende de ella.',
+            'datev_automatic' => 'Código de impuesto cuyo impuesto calcula DATEV por sí mismo en esta cuenta (cuenta automática, p. ej. 8400 en el SKR03). El lote DATEV no pone ahí ninguna clave.',
             'euer_category' => 'Determina en qué línea del formulario aparece la cuenta. Sin asignación queda entre los casos sin aclarar.',
             'bwa_group' => 'Línea del análisis de gestión (BWA). Sin asignación, el informe deriva la línea del rango SKR03/SKR04; si sigue abierto, la cuenta aparece bajo «sin asignar».',
             'deductible_percent' => 'Solo afecta a la vista previa de ingresos-gastos — en el diario siempre consta el importe íntegro (p. ej. 70 % en gastos de representación).',
@@ -99,7 +102,6 @@ return [
             'post_now' => 'Una vez contabilizado, el asiento solo se corrige con un contraasiento.',
             'reversal_booked_on' => 'Dejar vacío para el día original, mientras su periodo siga abierto.',
             'cost_center_required' => 'Los asientos en esta cuenta solo se pueden contabilizar con centro de coste, también desde la bandeja de propuestas.',
-            'cost_center' => 'Se aplica a la línea del debe y del haber.',
         ],
         'action' => [
             'activate' => 'Activar la contabilidad local',
@@ -162,6 +164,8 @@ return [
             'entry_posted' => 'Asiento contabilizado.',
             'entry_reversed' => 'Contraasiento creado.',
             'entry_discarded' => 'Borrador descartado — la operación puede iniciarse de nuevo.',
+            'entry_updated' => 'Borrador modificado.',
+            'cost_centers_saved' => 'Centros de coste guardados.',
             'reversal_awaiting_approval' => 'Principio de doble control: la anulación espera la aprobación como borrador en la bandeja contable. El asiento sigue contabilizado hasta que una segunda persona contabiliza el contraasiento.',
         ],
         'error' => [
@@ -184,7 +188,8 @@ return [
             'unbalanced' => 'El Debe (:debit) y el Haber (:credit) no coinciden.',
             'reverse_not_posted' => 'Solo se puede anular un asiento contabilizado.',
             'reversal_pending' => 'Ya hay una anulación de este asiento pendiente de aprobación.',
-            'discard_not_allowed' => 'Solo se puede descartar un borrador pendiente de un descuento, una baja, un asiento en suspenso, un traspaso, los saldos iniciales, un pago anticipado especial o una anulación; los asientos contabilizados no cambian.',
+            'discard_not_allowed' => 'Solo se puede descartar un borrador; los asientos contabilizados no se modifican.',
+            'edit_not_allowed' => 'Este borrador procede de una operación (descuento, baja, aclaración, traspaso, saldos iniciales, pago anticipado especial, anulación). Sus líneas no se pueden modificar — solo el centro de coste; en otro caso, descártelo e inicie de nuevo la operación.',
             'reversal_reason_required' => 'La anulación exige un motivo.',
             'account_in_use' => 'Esta cuenta ya tiene asientos — solo puede desactivarse.',
             'entry_without_organization' => 'El asiento no tiene organización — informe al administrador del sistema.',
@@ -332,6 +337,11 @@ return [
             'year_closed' => 'El ejercicio :year está cerrado.',
             'period_closed' => 'El periodo del :date está cerrado.',
             'no_exchange_rate' => 'Falta el tipo mensual :month para :currency (conversión a :base): añádalo en Tipos de cambio.',
+            'self_assessed_with_tax' => 'Caso fiscal «:case», pero el justificante muestra impuesto: compruebe el caso fiscal o los valores en las facturas recibidas.',
+            'self_assessed_small_business' => 'Los pequeños empresarios (§ 19 UStG) deben el IVA en «:case» pero no deducen IVA soportado: contabilice esta factura manualmente.',
+            'missing_self_assessed_code' => 'No hay código de impuesto para «:case» al :rate %: cree en el plan de cuentas un código «IVA repercutido y soportado» con este caso fiscal, cuenta de impuesto y cuenta de IVA soportado.',
+            'missing_input_tax_code' => 'No hay código de IVA soportado al :rate %: cree en el plan de cuentas un código «IVA soportado» con este tipo y una cuenta de impuesto.',
+            'expense_rate_without_input_tax' => 'Gasto con un :rate % de impuesto: no hay código de IVA soportado para este tipo. El IVA extranjero no es IVA soportado deducible: registre el gasto en bruto sin tipo impositivo; las facturas con inversión del sujeto pasivo van a la entrada de facturas.',
         ],
         'memo' => [
             'sales_invoice' => 'Factura :number · :customer',
@@ -522,6 +532,134 @@ return [
     ],
 
     // Offene Posten (Feature 125, MVP-674).
+    // Handbuchung und Entwurf bearbeiten (MVP-1556/1558).
+    'entry_form' => [
+        'title_edit' => 'Editar borrador',
+        'counterparty' => 'Contraparte',
+        'counterparty_hint' => 'Cliente o proveedor. Se aplica a las líneas en cuentas con partidas abiertas y a las líneas con código de impuesto.',
+        'rows_hint' => 'Una cuenta y un importe por línea, en el debe o en el haber. Con código de impuesto la línea lleva el importe neto; la línea de impuesto se crea al guardar. Las líneas vacías se ignoran.',
+        'tax_code' => 'Código de impuesto',
+        'line_memo' => 'Texto de línea',
+        'cost_centers_title' => 'Asignar centros de coste',
+        'no_cost_centers' => 'No hay centros de coste activos.',
+        'cost_center_required' => 'Obligatorio',
+        'action' => [
+            'edit' => 'Editar borrador',
+            'cost_centers' => 'Centros de coste',
+        ],
+        'error' => [
+            'row' => 'Línea :row:',
+            'one_side' => 'Indique exactamente un importe — en el debe o en el haber.',
+            'tax_account_missing' => 'El código de impuesto :code no tiene cuenta de impuesto.',
+            'unknown_counterparty' => 'No se encontró la contraparte.',
+            'unknown_tax_code' => 'No se encontró el código de impuesto.',
+            'tax_code_not_valid' => 'El código de impuesto :code no es válido el :date.',
+        ],
+    ],
+    // Steuerkennzeichen pflegen (MVP-1558).
+    'tax_codes' => [
+        'category' => [
+            'K' => 'Entrega intracomunitaria',
+            'AE' => 'Inversión del sujeto pasivo',
+            'G' => 'Exportación',
+            'O' => 'No sujeto',
+            'E' => 'Exento',
+        ],
+        'empty' => 'Aún no hay códigos de impuesto.',
+        'inactive' => 'Desactivado',
+        'in_use_hint' => 'Este código ya se ha utilizado en asientos. El nombre y las casillas cambian de inmediato. El tipo, el sentido o la cuenta de impuesto solo se aplican a partir de una nueva fecha de efecto posterior al :date — la versión anterior termina el día anterior y los asientos existentes no cambian.',
+        'action' => [
+            'add' => 'Crear código de impuesto',
+        ],
+        'field' => [
+            'code' => 'Código',
+            'rate' => 'Tipo impositivo (%)',
+            'tax_account' => 'Cuenta de impuesto',
+            'valid_from' => 'Válido desde',
+            'tax_category' => 'Categoría fiscal (venta sin impuesto)',
+            'validity' => 'Vigencia',
+            'input_tax_account' => 'Cuenta de IVA soportado',
+            'tax_case' => 'Caso fiscal en facturas recibidas',
+            'ustva_input_tax_field' => 'Casilla del IVA soportado',
+            'datev_tax_key' => 'Clave fiscal DATEV',
+        ],
+        'hint' => [
+            'code' => 'Corto y único, por ejemplo USt19. Letras, cifras, punto, guion y guion bajo.',
+            'tax_account' => 'Cuenta de la línea de impuesto automática. No es necesaria con 0 %.',
+            'valid_from' => 'Nueva fecha de efecto para un tipo, sentido o cuenta de impuesto modificados.',
+            'tax_category' => 'Solo para códigos al 0 %: la bandeja contable elige por la categoría el código de una venta sin impuesto.',
+            'tax_case' => 'La bandeja de contabilización elige el código de una factura recibida con inversión del sujeto pasivo según el caso fiscal y el tipo.',
+            'datev_tax_key' => 'Clave fiscal en el lote DATEV, p. ej. 3 para IVA 19 %, 9 para IVA soportado 19 %, 94 para el § 13b. Vacío: sin clave.',
+        ],
+        'self_assessed' => [
+            'legend' => 'Inversión del sujeto pasivo',
+            'hint' => 'Solo para la dirección «IVA repercutido y soportado» (§ 13b UStG, adquisición intracomunitaria): el IVA repercutido va a la cuenta de impuesto, el mismo IVA soportado a la cuenta de IVA soportado.',
+        ],
+        'confirm' => [
+            'deactivate' => '¿Desactivar este código de impuesto? Los asientos nuevos ya no podrán elegirlo; los existentes lo conservan.',
+        ],
+        'flash' => [
+            'saved' => 'Código de impuesto guardado.',
+            'versioned' => 'Nueva versión del código de impuesto creada desde el :date; las reglas de contabilización y los valores por defecto de las cuentas la siguen.',
+            'deactivated' => 'Código de impuesto desactivado.',
+        ],
+        'error' => [
+            'code_taken' => 'El código :code ya está en uso.',
+            'tax_account_required' => 'Un código de impuesto con un tipo superior al 0 % necesita una cuenta de impuesto.',
+            'input_tax_account_required' => 'Con inversión del sujeto pasivo, el código necesita una cuenta de IVA soportado.',
+            'valid_from_required' => 'Este código ya se ha utilizado en asientos. Indique una fecha de efecto posterior al :date a partir de la cual se aplique el cambio.',
+        ],
+    ],
+    // Bankumsatz ohne Beleg direkt aufs Sachkonto (MVP-1557).
+    'bank_direct' => [
+        'title' => 'Contabilizar sin justificante en una cuenta contable',
+        'hint' => 'Para movimientos sin justificante: comisión bancaria, intereses, retirada privada o compensación. El movimiento se contabiliza banco a cuenta o cuenta a banco y se aparta en la conciliación.',
+        'memo' => 'Movimiento bancario: :note',
+        'field' => [
+            'account' => 'Cuenta contable',
+            'tax_code' => 'Código de impuesto',
+            'note' => 'Texto del asiento',
+        ],
+        'hint_field' => [
+            'tax_code' => 'El movimiento es el importe bruto; el impuesto se extrae de él.',
+            'note' => 'Por ejemplo «Comisión de mantenimiento marzo».',
+        ],
+        'action' => [
+            'post' => 'Contabilizar en cuenta contable',
+            'post_submit' => 'Contabilizar',
+        ],
+        'flash' => [
+            'posted' => 'Movimiento contabilizado en la cuenta contable.',
+        ],
+        'error' => [
+            'money_account' => 'Las cuentas de banco, caja y aclaración no se pueden elegir aquí — utilice el traspaso interno o el asiento de aclaración.',
+            'already_assigned' => 'El movimiento ya está asignado a un justificante.',
+        ],
+    ],
+    // Offener Posten strittig (MVP-1559).
+    'dispute' => [
+        'title' => 'Marcar la partida como en disputa',
+        'hint' => 'Una partida en disputa sigue abierta. No se reclama (bloqueo de reclamación en la factura) y no cuenta como cobro esperado en la previsión de liquidez.',
+        'reason' => 'Motivo',
+        'since' => 'En disputa desde el :date: :reason',
+        'dunning_reason' => 'Partida abierta en disputa: :reason',
+        'filter_all' => 'Todas las abiertas',
+        'action' => [
+            'mark' => 'Marcar como en disputa',
+            'withdraw' => 'Retirar la disputa',
+        ],
+        'confirm' => [
+            'withdraw' => '¿Retirar la marca «en disputa»? Se levanta el bloqueo de reclamación establecido por esta marca.',
+        ],
+        'flash' => [
+            'marked' => 'Partida marcada como en disputa.',
+            'withdrawn' => 'Se retiró la marca «en disputa».',
+        ],
+        'error' => [
+            'not_open' => 'Solo una partida abierta puede marcarse como en disputa.',
+            'not_disputed' => 'La partida no está marcada como en disputa.',
+        ],
+    ],
     'open_items' => [
         'title' => 'Partidas abiertas',
         'menu' => 'Partidas abiertas',
@@ -531,6 +669,9 @@ return [
         'settle_hint' => 'Abierto: :open. Los pagos vienen de la conciliación bancaria — aquí solo descuento, retención o baja.',
         'awaiting_approval' => 'Borrador pendiente de aprobación',
         'four_eyes_hint' => 'Principio de doble control activo: el descuento y la baja se crean como borrador en la bandeja contable. La partida sigue abierta hasta que una segunda persona contabiliza el contraasiento.',
+        'discount_tax_hint' => 'El descuento se divide en neto y parte de impuesto (:rates): se corrige el impuesto del justificante (§ 17 UStG).',
+        'discount_no_tax_hint' => 'Descuento sin corrección de impuesto: el asiento de esta partida no lleva impuesto (pequeño empresario, inversión del sujeto pasivo, exento o saldo inicial).',
+        'discount_self_assessed_hint' => 'Descuento sobre una factura con inversión del sujeto pasivo (:rates): reduce la base imponible; el IVA repercutido y el soportado bajan en el mismo importe (§ 17, apdo. 1, frase 5 UStG).',
         'column' => [
             'counterparty' => 'Contraparte',
             'due_date' => 'Vencimiento',
@@ -556,6 +697,7 @@ return [
         ],
         'error' => [
             'draft_pending' => 'Para esta partida ya hay un contraasiento pendiente de aprobación. Otra compensación solo es posible cuando se haya contabilizado.',
+            'counter_account_missing' => 'Falta la contracuenta :account para :kind en el plan de cuentas. Cree la cuenta o indique una cuenta existente en los ajustes de DATEV — sin contraasiento la partida no se compensa.',
         ],
     ],
 
@@ -595,7 +737,7 @@ return [
         'hint' => [
             'kind' => 'La expectativa espera un original; la plantilla de asiento crea un borrador.',
             'due_day' => '1–28, para que todos los meses tengan ese día.',
-            'accounts' => 'Solo para plantillas de asiento — junto con el importe esperado.',
+            'accounts' => 'Líneas de asiento solo para plantillas de asiento. Si el importe esperado queda vacío, se aplica el total del asiento.',
             'responsible' => 'Recibe, además de contabilidad, el aviso de las operaciones vencidas.',
         ],
         'action' => [
@@ -628,10 +770,12 @@ return [
         ],
         'error' => [
             'already_closed' => 'La operación ya está cerrada.',
-            'template_incomplete' => 'Una plantilla de asiento necesita cuenta del Debe, del Haber e importe.',
+            'template_incomplete' => 'Una plantilla de asiento necesita al menos dos líneas con cuenta e importe.',
+            'template_unbalanced' => 'Las líneas de la plantilla de asiento no cuadran: debe y haber tienen que ser iguales.',
         ],
         'blocker' => [
             'no_lines' => 'La plantilla no tiene líneas de asiento.',
+            'draft_discarded' => 'El borrador del asiento se descartó.',
         ],
         'notification' => [
             'title' => 'Operación recurrente vencida: :name',
@@ -732,6 +876,10 @@ return [
             'ten_day_rule' => ':count pagos caen entre el 22.12 y el 10.01 y corresponden al año contiguo según el documento (§ 11 ap. 1 fr. 2 EStG).',
             'open_clearing' => ':count cuentas puente aún no están saldadas.',
             'overdue_filings' => ':count plazos de declaración han vencido y no constan como presentados.',
+            'unbooked_settlements' => ':count compensaciones por descuento o baja no tienen asiento en el diario — la partida está cerrada, la cuenta de deudores o acreedores aún la mantiene. Contabilice manualmente: :items',
+            'discounts_without_tax_correction' => ':count compensaciones por descuento se contabilizaron sin corrección de impuesto (§ 17 UStG); parte de impuesto calculada en total :tax. No se contabiliza nada automáticamente — decida con su asesoría fiscal los asientos de corrección: :items',
+            'self_assessed_without_tax' => ':count facturas recibidas contabilizadas indican inversión del sujeto pasivo (§ 13b UStG, adquisición intracomunitaria), pero su asiento no lleva IVA repercutido ni soportado. No se contabiliza nada automáticamente: decida con su asesor fiscal sobre los asientos de corrección: :items',
+            'tax_share' => 'parte de impuesto',
             'kpi' => [
                 'drafts' => 'Borradores',
                 'unbalanced' => 'Descuadrados',
@@ -1125,7 +1273,7 @@ return [
             'note_required' => 'La motivación es obligatoria.',
         ],
         'blocker' => [
-            'unassigned' => 'Sin documento asignado — solo contabilizable mediante una asignación o la cuenta puente.',
+            'unassigned' => 'Sin justificante asignado — se puede contabilizar mediante una asignación, directamente en una cuenta contable o mediante la cuenta de aclaración.',
         ],
         'flash' => [
             'posted' => 'Asiento en suspenso creado.',
@@ -1270,6 +1418,11 @@ return [
         'total' => 'Entregas intracomunitarias',
         'column' => [
             'vat_id' => 'NIF-IVA',
+            'kind' => 'Tipo',
+        ],
+        'kind' => [
+            'goods' => 'Entregas intracomunitarias',
+            'services' => 'Otros servicios',
         ],
         'unclear' => [
             'missing_vat_id' => 'Asiento :entry (:customer) sin NIF-IVA del destinatario.',

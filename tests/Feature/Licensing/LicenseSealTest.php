@@ -49,7 +49,6 @@ final class LicenseSealTest extends TestCase {
         $this->assertFalse(LicenseSeal::isSealed());
         $this->assertSame('', LicenseSeal::publicKey());
         $this->assertSame([], LicenseSeal::files());
-        $this->assertSame('', LicenseSeal::sealedAt());
     }
 
     public function test_reads_valid_seal_file(): void {
@@ -63,7 +62,6 @@ final class LicenseSealTest extends TestCase {
 
         $this->assertTrue(LicenseSeal::isSealed());
         $this->assertSame('PUBKEY-XYZ', LicenseSeal::publicKey());
-        $this->assertSame('2026-05-18T10:00:00+00:00', LicenseSeal::sealedAt());
         $this->assertSame(
             ['app/Foo.php' => 'abc123', 'app/Bar.php' => 'def456'],
             LicenseSeal::files(),

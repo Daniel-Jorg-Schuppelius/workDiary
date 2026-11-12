@@ -1,7 +1,7 @@
 ---
 title: "Factures reçues"
 topic: finance.incoming-invoices
-version: 8
+version: 9
 keywords:
     - plusieurs taux de TVA
     - facture fournisseur
@@ -361,6 +361,24 @@ la validation ; un second appel ne change rien.
 **Téléchargement XML :** Le XML de la facture peut être extrait de l’original
 à tout moment (pour ZUGFeRD, de la pièce jointe PDF). Chaque téléchargement
 est enregistré avec une somme de contrôle comme justificatif.
+
+## Cas fiscal
+
+Pour les factures entrantes, la carte **Réception** affiche le **cas fiscal** :
+TVA déductible de la facture, autoliquidation selon le § 13b UStG (al. 1 pour
+les prestations d’un autre pays de l’UE, al. 2 p. ex. pour les travaux de
+construction, le nettoyage de bâtiments, la ferraille, les téléphones mobiles
+et les livraisons avec montage d’entreprises étrangères) ou acquisition
+intracommunautaire. WorkDiary le détermine d’après la catégorie de taxe de la
+facture électronique (`AE` autoliquidation, `K` acquisition intracommunautaire)
+et le pays du fournisseur, sinon d’après le préréglage **Cas fiscal de ses
+factures entrantes** du fournisseur – tant que la facture n’indique pas de
+taxe. **Modifier le cas fiscal** le fixe manuellement ; **Automatique** revient
+à la détermination. Le cas fiscal vaut pour la prochaine comptabilisation dans
+la comptabilité locale : si la facture y figure déjà comme brouillon ou
+écriture, rejetez d’abord le brouillon ou contrepassez l’écriture. Saisissez un
+taux réduit – p. ex. 7 % pour l’acquisition de livres – dans la boîte de
+dialogue **Saisir les valeurs** ; sans taux, le taux normal s’applique.
 
 ## Pièces intégrées
 

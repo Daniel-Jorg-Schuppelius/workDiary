@@ -50,6 +50,7 @@ class ClaimRecourseController extends Controller {
             'external_reference' => ['nullable', 'string', 'max:255'],
             'warranty_terms' => ['nullable', 'string', 'max:4000'],
             'amount_claimed' => ['nullable', 'numeric', 'min:0'],
+            'response_due_days' => ['nullable', 'integer', 'min:1', 'max:365'],
         ]);
 
         // Regress nur aus Eingangsbelegen, nie aus einer Ausgangskopie des Postfachs (MVP-1107).
@@ -85,7 +86,8 @@ class ClaimRecourseController extends Controller {
         if ($status === ClaimRecourseStatus::Submitted && $recourse->submitted_at === null) {
             $fill['submitted_at'] = now();
             // Antwortfrist: Standard 14 Tage, übersteuerbar je Fall.
-            $fill['response_due_at'] = now()->addDays((int) ($data['response_due_days'] ?? config('claims.recourse_response_days', 14)));
+            $fill['response_due_days'] = $data['response_due_days'] ?? $recourse->response_due_days;
+            $fill['response_due_at'] = now()->addDays((int) ($fill['response_due_days'] ?? config('claims.recourse_response_days', 14)));
         }
         if (in_array($status, [ClaimRecourseStatus::Accepted, ClaimRecourseStatus::PartiallyAccepted, ClaimRecourseStatus::Rejected], true) && $recourse->responded_at === null) {
             $fill['responded_at'] = now();

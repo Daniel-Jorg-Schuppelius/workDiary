@@ -37,8 +37,6 @@ class EnergyLogFactory extends Factory {
             'odometer_km' => fake()->numberBetween(10000, 200000),
             'distance_since_last' => null,
             'location_address' => fake()->city(),
-            'location_lat' => null,
-            'location_lng' => null,
             'started_at' => $start,
             'ended_at' => $start->copy()->addMinutes(5),
             'duration_minutes' => 5,

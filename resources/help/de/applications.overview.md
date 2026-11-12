@@ -1,7 +1,7 @@
 ---
 title: "Bewerbungen & Ausschreibungen"
 topic: applications.overview
-version: 3
+version: 4
 keywords:
     - Recruiting
     - Bewerbermanagement
@@ -81,3 +81,5 @@ nächste Runde.
 Rechtlicher Hinweis: WorkDiary dokumentiert den Prozess, ersetzt aber keine
 Rechtsberatung — insbesondere keine Bewertung, ob Vertragsbedingungen
 zulässig oder wirtschaftlich sinnvoll sind.
+
+**Gesprächsführung und Submission:** Beim Planen eines Bewerbungsgesprächs wählen Sie, wer das Gespräch führt. Bei Ausschreibungen halten Sie zu erfassten Wettbewerbsangeboten fest, seit wann sie bekannt sind, und ergänzen eine Notiz.

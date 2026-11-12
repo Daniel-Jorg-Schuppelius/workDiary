@@ -50,4 +50,13 @@ trait HasCustomFields {
     public function customFieldTexts(): array {
         return app(CustomFieldService::class)->texts($this);
     }
+
+    /**
+     * Treffer über die Anzeigetexte der eigenen Felder als Oder-Bedingung der Suchbereiche (MVP-1615).
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
+     */
+    public function scopeOrWhereCustomFieldText(\Illuminate\Database\Eloquent\Builder $query, string $term): void {
+        $query->orWhereHas('customFieldValue', static fn (\Illuminate\Database\Eloquent\Builder $values) => $values->whereLikeEscaped('search_text', $term));
+    }
 }

@@ -122,24 +122,38 @@ class RetentionService {
         });
     }
 
-    /** Einbehalt freigeben — ab jetzt ein ganz normaler offener Posten. */
+    /**
+     * Einbehalt freigeben — ab jetzt ein ganz normaler offener Posten.
+     *
+     * Ein durch Bürgschaft abgelöster Einbehalt ist bereits ausgezahlt: Seine
+     * Freigabe beendet nur den Sicherungszweck (die Urkunde gehört zurück),
+     * der Auszahlungstag bleibt stehen und es entsteht keine Forderung.
+     */
     public function release(InvoiceRetention $retention, ?User $actor = null, ?string $note = null): InvoiceRetention {
-        if ($retention->status !== RetentionStatus::Open) {
-            throw new RuntimeException((string) __('invoicing.retention.not_open'));
-        }
+        return DB::transaction(function () use ($retention, $note): InvoiceRetention {
+            // Unter der Sperre neu lesen: Freigabe und Ablösung durch eine Bürgschaft können sich kreuzen.
+            $retention = InvoiceRetention::query()->lockForUpdate()->findOrFail($retention->id);
+            $previous = $retention->status;
+            if (! $previous->canTransitionTo(RetentionStatus::Released)) {
+                throw new RuntimeException((string) __('invoicing.retention.not_open'));
+            }
 
-        $retention->forceFill([
-            'status' => RetentionStatus::Released->value,
-            'released_on' => CarbonImmutable::today()->toDateString(),
-            'note' => $note ?? $retention->note,
-        ])->save();
+            $retention->forceFill([
+                'status' => RetentionStatus::Released->value,
+                'released_on' => $previous === RetentionStatus::Secured
+                    ? $retention->getAttributes()['released_on']
+                    : CarbonImmutable::today()->toDateString(),
+                'note' => $note ?? $retention->note,
+            ])->save();
 
-        $retention->invoice?->audit('invoice.retention_released', [
-            'retention_id' => $retention->id,
-            'amount' => (string) $retention->getAttributes()['amount'],
-        ]);
+            $retention->invoice?->audit('invoice.retention_released', [
+                'retention_id' => $retention->id,
+                'amount' => (string) $retention->getAttributes()['amount'],
+                'from' => $previous->value,
+            ]);
 
-        return $retention->refresh();
+            return $retention->refresh();
+        });
     }
 
     /**

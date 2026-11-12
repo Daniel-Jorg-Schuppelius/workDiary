@@ -12,4 +12,5 @@
     .muted { color: #6b7280; }
     .tpl-header { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #ddd; white-space: pre-line; }
     .tpl-footer { margin-top: 24px; padding-top: 8px; border-top: 1px solid #ddd; font-size: 10px; color: #555; white-space: pre-line; }
+    .tpl-issuer { margin-top: 6px; font-size: 9px; color: #555; }
     @page { margin: 20mm; }

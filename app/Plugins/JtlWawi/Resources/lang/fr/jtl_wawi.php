@@ -88,6 +88,8 @@ return [
     'inventory' => [
         'heading' => 'Pilotage des stocks',
         'explain' => 'Définit quel système pilote les stocks. Le retour au mode « local » reprend les stocks JTL comme inventaire d’ouverture.',
+        'takeover_heading' => 'Inventaire d’ouverture',
+        'takeover_explain' => 'Relit les stocks JTL et comptabilise l’écart avec le stock local comme correction d’ouverture — par exemple si la reprise a échoué lors du changement de mode. Possible uniquement le jour du passage au mode « local » ; un second passage ne comptabilise rien en double.',
         'mode_local' => 'Local — WorkDiary gère les stocks lui-même.',
         'mode_external' => 'Externe — JTL-Wawi pilote ; WorkDiary lit et transmet les écritures.',
         'mode_read_only' => 'Lecture seule — JTL-Wawi pilote ; WorkDiary affiche uniquement les stocks.',
@@ -101,11 +103,13 @@ return [
         'check_registration' => 'Vérifier l’approbation',
         'map' => 'Associer',
         'change_mode' => 'Changer de mode',
+        'takeover' => 'Lancer l’inventaire d’ouverture',
     ],
 
     'confirm' => [
         'disconnect' => 'Vraiment déconnecter ? Les associations et projections sont conservées, les identifiants sont supprimés.',
         'mode_change' => 'Vraiment changer le mode de pilotage des stocks ?',
+        'takeover' => 'Reprendre maintenant les stocks JTL comme inventaire d’ouverture ?',
     ],
 
     'flash' => [
@@ -127,8 +131,10 @@ return [
         'mode_needs_connection' => 'Le pilotage externe des stocks nécessite une connexion JTL active.',
         'mode_needs_mapping' => 'Le pilotage externe des stocks nécessite au moins un entrepôt JTL associé.',
         'mode_changed' => 'Mode de pilotage des stocks modifié.',
+        'mode_other_plugin' => 'Le stock est actuellement piloté par :plugin. Le changement se fait sur la page de ce plugin.',
         'mode_changed_with_takeover' => 'Mode modifié — :booked corrections d’ouverture reprises de JTL.',
         'takeover_done' => 'Inventaire d’ouverture terminé : :booked corrections sur :pairs paires.',
         'takeover_failed' => 'Échec de l’inventaire d’ouverture (:reason).',
+        'takeover_not_today' => 'L’inventaire d’ouverture n’est possible que le jour du passage au mode « local » — ensuite, c’est le stock local qui fait foi.',
     ],
 ];

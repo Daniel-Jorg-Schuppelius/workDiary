@@ -138,6 +138,7 @@ final class ScheduleManifest extends Manifest {
     public function contracts(): array {
         return [
             \App\Services\Routing\Contracts\TravelLogRecorder::class => \App\Services\Routing\Contracts\NullTravelLogRecorder::class,
+            \App\Services\Schedule\Contracts\QualificationTrainingSource::class => \App\Services\Schedule\Contracts\NullQualificationTrainingSource::class,
         ];
     }
 }

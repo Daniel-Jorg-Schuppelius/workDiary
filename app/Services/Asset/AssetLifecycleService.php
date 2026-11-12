@@ -11,8 +11,9 @@
 namespace App\Services\Asset;
 
 use App\Enums\Asset\{AssetOwnership, AssetStatus};
-use App\Models\Asset\{Asset, AssetOwnershipChange};
+use App\Models\Asset\{Asset, AssetOwnershipChange, MaintenancePlan};
 use App\Models\Platform\User;
+use App\Models\ServiceTicket\SlaContract;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -71,10 +72,20 @@ class AssetLifecycleService {
                 'changed_at' => Carbon::now(),
             ]);
 
+            $released = $fromCustomerId !== $toCustomerId ? $this->foreignContractIds($asset, $toCustomerId) : [];
+
             $asset->forceFill([
                 'owned_by' => $toOwnership->value,
                 'customer_id' => $toCustomerId,
-            ])->save();
+            ] + (in_array((int) $asset->sla_contract_id, $released, true) ? ['sla_contract_id' => null] : []))->save();
+
+            // Eine Kundenzusage bleibt beim Kunden: Wartungspläne verlieren den Vertrag des bisherigen Kunden.
+            if ($released !== []) {
+                MaintenancePlan::query()->where('asset_id', $asset->id)->whereIn('sla_contract_id', $released)->get()
+                    ->each(static function (MaintenancePlan $plan): void {
+                        $plan->forceFill(['sla_contract_id' => null, 'is_contractual' => false])->save();
+                    });
+            }
 
             // Sichtbar in der Objektakte-Timeline (asset.audit); der generische
             // `updated`-Eintrag des Speicherns wird dort ohnehin ausgeblendet.
@@ -83,10 +94,36 @@ class AssetLifecycleService {
                 'to' => $toOwnership->value,
                 'from_customer_id' => $fromCustomerId,
                 'to_customer_id' => $toCustomerId,
-            ]);
+            ] + ($released !== [] ? ['released_sla_contract_ids' => $released] : []));
 
             return $change;
         });
+    }
+
+    /**
+     * Verträge eines anderen Kunden, an die das Asset oder einer seiner Wartungspläne gebunden ist.
+     *
+     * @return list<int>
+     */
+    private function foreignContractIds(Asset $asset, ?int $customerId): array {
+        $bound = MaintenancePlan::query()->where('asset_id', $asset->id)->whereNotNull('sla_contract_id')->pluck('sla_contract_id')
+            ->push($asset->sla_contract_id)
+            ->filter()
+            ->map(static fn ($id): int => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+        if ($bound === []) {
+            return [];
+        }
+
+        return array_values(SlaContract::query()
+            ->whereIn('id', $bound)
+            ->whereNotNull('customer_id')
+            ->when($customerId !== null, fn ($q) => $q->where('customer_id', '!=', $customerId))
+            ->pluck('id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all());
     }
 
     public function phase(Asset $asset): string {

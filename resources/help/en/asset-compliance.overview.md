@@ -1,7 +1,7 @@
 ---
 title: "Test equipment & calibration"
 topic: asset-compliance.overview
-version: 2
+version: 4
 keywords:
     - test equipment management
     - gauge management
@@ -212,3 +212,51 @@ creation time, number of overdue obligations and inspection rate.
 
 **Permission:** **List inspection duties and test equipment** – this also
 applies to freezing a snapshot.
+
+## Editing, deactivating, cancelling
+
+**Inspection profiles:** On the **Inspection profiles** page, **Edit** opens
+an organisation profile (name, inspection type, interval, warning period,
+tolerance, grace period, blocking effect, certificate requirement, default
+inspection body); the code stays. A changed interval applies from the next
+inspection on to all duties without their own interval. **Deactivate** removes
+the profile from the selection for new assignments; existing duties and
+reports remain. Deactivated profiles are listed at the bottom under
+"Deactivated organisation profiles" and can be activated again there. You do
+not change global templates – create an organisation profile with the same
+code. Nothing is deleted.
+
+**Requirements:** For each requirement you change label, limits, unit and
+whether it is mandatory. New limits apply to new inspections; earlier reports
+keep the values valid at the time. The inspection dialog no longer asks for a
+deactivated requirement.
+
+**Inspection duties:** In the **Inspection obligations** list on the **Test
+equipment** page, **Edit** changes the **Interval for this asset (months)**,
+last inspection, next due date, responsible person, inspection body and note.
+If you leave the due date empty, it is recalculated from the last inspection
+when the interval changes. You can also enter the interval per asset right
+when assigning. **Deactivate** suspends the duty: open inspection dates are
+cancelled, the block for this duty being overdue ends, reports remain. Under
+**Deactivated** you see suspended duties and resume them.
+
+**Cancelling a date:** In the **Inspection calendar**, the **Cancel date**
+action cancels an open or missed date; the reason is mandatory and then
+appears below the status. The inspection duty continues.
+
+**Missed dates:** If the planned day of an open date – or the due date when
+no day is planned – has passed without an inspection, the nightly deadline
+run sets it to **Missed**. You then record the inspection through a new date.
+
+**Raw measurements:** In the inspection dialog, the **Raw measurements**
+section takes up to four free measuring points with value and unit, without a
+limit check. The **Inspection reports** table below the calendar shows the
+latest 20 inspections with result, measured values per requirement and the
+raw measurements.
+
+**Permission:** Editing, deactivating and cancelling with **Maintain
+inspection profiles and duties**.
+
+## Inspection order and appointment status
+
+When you accept an inspection provider's offer, the order's appointments show **In progress**. A cancelled order releases announced and running appointments again; they then show **Planned**.

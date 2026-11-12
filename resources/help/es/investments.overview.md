@@ -1,7 +1,7 @@
 ---
 title: "Planificación de inversiones"
 topic: investments.overview
-version: 3
+version: 4
 keywords:
     - solicitud de inversión
     - solicitud de presupuesto
@@ -66,3 +66,13 @@ contabilidad.
 **Evaluación posterior:** Tras el cierre o la cancelación se documentan
 el beneficio real, la rentabilidad, las lecciones aprendidas y las
 medidas de seguimiento.
+
+**Vida útil y proveedor:** cada variante admite una vida útil en años;
+aparece en la comparación y rellena el alta como activo fijo. Cuando se
+vincula un activo al expediente o se cierra el expediente, el activo toma el
+proveedor de la variante recomendada como «Adquirido a», si aún no tiene uno.
+
+**Filtrar la lista:** la lista de inversiones filtra además por periodo,
+responsable, centro de coste, estado del presupuesto (estado de la solicitud
+más reciente), urgencia y nota de riesgo. El informe también puede exportarse
+en PDF.

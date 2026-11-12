@@ -1,7 +1,7 @@
 ---
 title: "Devis"
 topic: quotes.overview
-version: 7
+version: 8
 keywords:
     - créer un devis
     - estimation
@@ -130,3 +130,8 @@ chaque livraison (voir ordres de fabrication).
 ## Consulté et signature
 
 Lorsque le client ouvre le devis via le lien ou dans le portail client, l’en-tête indique **« Consulté par le client le … »** ; c’est la première ouverture d’un devis envoyé qui compte. Lors de l’acceptation, le client peut indiquer son **nom** et **signer**, de manière facultative. La signature est enregistrée comme image sur le devis et figure avec le nom et la date dans l’état d’acceptation figé ; l’acceptation sans signature reste possible.
+
+**L'émetteur et l'interlocuteur** sont figés à l'envoi du devis ou à la
+confirmation de la confirmation de commande — comme la facture lors de son émission.
+Les modifications ultérieures des données de l'entreprise, fiscales ou de contact ne
+changent pas le document envoyé.

@@ -31,7 +31,12 @@
                     </x-slot:head>
                     @foreach ($asset->maintenancePlans as $plan)
                         <tr>
-                            <td>{{ $plan->title }}</td>
+                            <td>
+                                {{ $plan->label }}
+                                @if ($plan->is_contractual)
+                                    <x-status-badge tone="info" size="xs">{{ __('Vertragspflicht') }}</x-status-badge>
+                                @endif
+                            </td>
                             <td class="tabular-nums">{{ optional($plan->next_due_on)->fdate() ?? '—' }}</td>
                         </tr>
                     @endforeach
@@ -53,6 +58,24 @@
                 </ul>
             @endif
         </x-card>
+
+        {{-- Abnahme im Portal (MVP-1572): zur Prüfung eingereicht, noch ohne Unterschrift des Kunden. --}}
+        @if ($pendingProtocols->isNotEmpty())
+            <x-card as="section" :title="__('protocol.portal.pending_title')" icon="draw">
+                <p class="mb-2 text-sm opacity-70">{{ __('protocol.portal.pending_hint') }}</p>
+                <ul class="divide-y divide-base-300 text-sm">
+                    @foreach ($pendingProtocols as $protocol)
+                        <li class="flex flex-wrap items-center justify-between gap-2 py-2">
+                            <span class="min-w-0">{{ $protocol->title }}</span>
+                            <span class="flex items-center gap-2">
+                                <span class="opacity-70">{{ $protocol->type->label() }} · {{ optional($protocol->occurred_at)->fdate() }}</span>
+                                <x-button :href="route('customer.assets.protocols.accept', [$asset, $protocol])" tone="primary" size="sm" icon="draw">{{ __('protocol.portal.open') }}</x-button>
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            </x-card>
+        @endif
 
         <x-card as="section" :title="__('Protokolle')" icon="description">
             @if ($asset->protocols->isEmpty())

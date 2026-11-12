@@ -24,6 +24,7 @@
                 <th class="num">{{ __('Eskaliert') }}</th>
                 <th class="num">{{ __('Defekte') }}</th>
                 <th class="num">{{ __('Defektrate %') }}</th>
+                <th class="num">{{ __('Wiederholdefekte') }}</th>
                 <th class="num">{{ __('Wartungssitzungen') }}</th>
                 <th class="num">{{ __('Wartungszeit') }} (min)</th>
                 <th>{{ __('Letzter Vorfall') }}</th>
@@ -39,6 +40,7 @@
                     <td class="num">{{ $row['escalationCount'] }}</td>
                     <td class="num">{{ $row['defectCount'] }}</td>
                     <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['defectRate'], 2, withThousandsSeparator: true) }}</td>
+                    <td class="num">{{ $row['recurringDefectCount'] }}</td>
                     <td class="num">{{ $row['maintenanceSessions'] }}</td>
                     <td class="num">{{ $row['maintenanceMinutes'] }}</td>
                     <td>{{ $row['lastIncidentAt'] ? \Illuminate\Support\Carbon::parse($row['lastIncidentAt'])->fdate() : '—' }}</td>

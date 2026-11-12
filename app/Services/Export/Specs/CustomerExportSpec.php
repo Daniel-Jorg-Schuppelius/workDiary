@@ -57,6 +57,7 @@ class CustomerExportSpec extends AbstractExportSpec {
             'comment',
             'invoice_text',
             'billable',
+            'survey_opt_out',
             // Roundtrip-Parität zum Import (Vollaudit 2026-07, N55); Export ⊆
             // Import erzwingt der SpecColumnContractTest. `external_id` wird
             // bewusst NICHT exportiert: Import löst sie als Fremd-ID über
@@ -115,6 +116,7 @@ class CustomerExportSpec extends AbstractExportSpec {
             'comment' => $this->str($model->comment),
             'invoice_text' => $this->str($model->invoice_text),
             'billable' => $this->boolCell($model->billable),
+            'survey_opt_out' => $this->boolCell($model->survey_opt_out),
             // Kommagetrennt — der Import splittet an ,/; (AppliesValueMappings).
             'tags' => $model->tags->pluck('name')->implode(', '),
         ];

@@ -16,8 +16,8 @@ use App\Enums\Finance\PostingSourceKind;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
-use App\Models\Accounting\{AccountingAccount, AccountingEntry};
-use App\Models\Finance\BankTransaction;
+use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingTaxCode};
+use App\Models\Finance\{BankTransaction, CostCenter};
 use App\Services\Accounting\{InternalTransferService, JournalService};
 use App\Services\Accounting\Posting\{PostingInboxService, PostingSourceRegistry};
 use App\Support\Sqid;
@@ -176,6 +176,72 @@ class PostingInboxController extends Controller {
 
         return back()->with('status', $entry->status->isPosted()
             ? __('accounting.clearing.flash.posted')
+            : __('accounting.inbox.flash.awaiting_approval'));
+    }
+
+    /** Dialog: Bankumsatz ohne Beleg direkt aufs Sachkonto buchen (MVP-1557). */
+    public function bankDirectForm(BankTransaction $transaction): View {
+        abort_unless(Gate::allows(Permission::AccountingLedgerPost->value), 403);
+        $organization = $this->currentOrganizationOrAbort();
+        abort_unless((int) $transaction->organization_id === (int) $organization->id, 404);
+        abort_if($transaction->isProvisional(), 404);
+
+        return view('finance.accounting._bank_direct_dialog', [
+            'transaction' => $transaction,
+            'accounts' => AccountingAccount::query()
+                ->where('organization_id', $organization->id)
+                ->where('is_bank', false)
+                ->where('is_cash', false)
+                ->where('is_clearing', false)
+                ->active()
+                ->orderBy('number')
+                ->get(),
+            'taxCodes' => AccountingTaxCode::query()
+                ->where('organization_id', $organization->id)
+                ->validOn($transaction->booking_date)
+                ->orderBy('code')
+                ->get(),
+            'costCenters' => CostCenter::query()->where('organization_id', $organization->id)->where('active', true)->orderBy('code')->get(),
+        ]);
+    }
+
+    public function storeBankDirect(Request $request, BankTransaction $transaction): RedirectResponse {
+        abort_unless(Gate::allows(Permission::AccountingLedgerPost->value), 403);
+        $organization = $this->currentOrganizationOrAbort();
+        abort_unless((int) $transaction->organization_id === (int) $organization->id, 404);
+        $actor = $request->user();
+        abort_if($actor === null, 403);
+
+        $data = $request->validate([
+            'account' => ['required', 'string', 'max:64'],
+            'tax_code' => ['nullable', 'string', 'max:64'],
+            'cost_center' => ['nullable', 'string', 'max:64'],
+            'note' => ['required', 'string', 'min:3', 'max:150'],
+        ]);
+
+        $account = AccountingAccount::query()
+            ->where('organization_id', $organization->id)
+            ->whereKey(Sqid::decodeOrNumeric(AccountingAccount::class, (string) $data['account']))
+            ->firstOrFail();
+        $taxCode = empty($data['tax_code']) ? null : AccountingTaxCode::query()
+            ->where('organization_id', $organization->id)
+            ->validOn($transaction->booking_date)
+            ->whereKey(Sqid::decodeOrNumeric(AccountingTaxCode::class, (string) $data['tax_code']))
+            ->firstOrFail();
+
+        $entry = $this->inbox->postBankTransactionToAccount(
+            $organization,
+            $transaction,
+            $account,
+            $taxCode,
+            // Die Zugehörigkeit zur Organisation prüft der JournalService.
+            empty($data['cost_center']) ? null : Sqid::decodeOrNumeric(CostCenter::class, (string) $data['cost_center']),
+            (string) $data['note'],
+            $actor,
+        );
+
+        return back()->with('status', $entry->status->isPosted()
+            ? __('accounting.bank_direct.flash.posted')
             : __('accounting.inbox.flash.awaiting_approval'));
     }
 

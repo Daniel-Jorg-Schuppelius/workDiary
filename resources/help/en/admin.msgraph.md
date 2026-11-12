@@ -1,7 +1,7 @@
 ---
 title: "Connecting Microsoft 365"
 topic: admin.msgraph
-version: 2
+version: 3
 keywords:
     - Microsoft 365
     - shared mailbox
@@ -228,3 +228,5 @@ operations task is listed for it.
 - **Notice about side connections:** if the health check under **Plugins**
   reports that Microsoft 365 side connections need attention, a connection for
   document intake, backup or email sending is disrupted. Sign in there again.
+
+**Data ownership:** Appointments from this calendar belong to the calendar area. If another system leads the calendar, proposals, series and changes appear in the integration inbox as a “Data ownership” case; **Take over once** creates the appointment or the series. Deletion notices remain ordinary cases. Microsoft To Do falls under the tasks area.

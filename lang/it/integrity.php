@@ -27,6 +27,11 @@ return [
         'dirty' => 'Albero di lavoro Git non pulito nell\'ambito di scansione: :count percorso/i — :paths (WARN).',
     ],
     'lockdown' => [
+        'release_action' => 'Revocare il blocco',
+        'release_confirm' => 'Revocare il blocco e rendere di nuovo disponibile l\'installazione? Verificare prima gli scostamenti o congelare una nuova baseline.',
+        'released' => 'Blocco revocato: l\'installazione è di nuovo raggiungibile.',
+        'not_engaged' => 'Nessun blocco di integrità attivo.',
+        'active_notice' => 'Il blocco di integrità mantiene l\'installazione in modalità manutenzione.',
         'crisis_title' => 'Lockdown di integrità: codice sorgente manomesso',
         'crisis_description' => 'Una baseline di release firmata mostra deviazioni in più controlli consecutivi (:modified modificati, :added nuovi, :deleted eliminati). L\'installazione è in modalità manutenzione.',
     ],

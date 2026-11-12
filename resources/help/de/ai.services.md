@@ -1,7 +1,7 @@
 ---
 title: "KI-Dienste"
 topic: ai.services
-version: 3
+version: 5
 keywords:
     - KI
     - künstliche Intelligenz
@@ -64,3 +64,18 @@ jede Position, und im Protokoll formuliert „Alle Punkte veredeln“ jeden Punk
 mit Text neu. Beides läuft im Hintergrund. Jede Position und jeder Punkt
 erhält einen eigenen Vorschlag, den Sie einzeln übernehmen oder verwerfen;
 nichts wird automatisch übernommen.
+
+**Verbindung wählen:** Erlaubt Ihre Organisation für einen Dienst „Nutzer
+dürfen wählen“ und sind mehrere Verbindungen zugelassen, zeigt der Vorschlag
+eine Auswahl. „Neu erzeugen“ erstellt den Vorschlag mit der gewählten
+Verbindung; der bisherige offene Vorschlag wird ersetzt. Die Wahl steht im
+Audit-Protokoll.
+
+**Verbindungswahl:** Erlaubt die Organisation für einen Dienst „Nutzer dürfen wählen“, lässt sich ein Vorschlag auch an der Übergabe (Positionstexte), in der Tätigkeitsrecherche der Suche und bei „Plan-Ist erklären“ mit einer anderen zugelassenen Verbindung neu erzeugen.
+
+**Monatsbudget:** Auf der Seite **KI-Verbrauch** legt „Monatsbudget“ je Familie
+eine Obergrenze je Kalendermonat fest – für Sprachmodelle in Token, für
+Übersetzungen in Zeichen. Ist sie erreicht, lehnt workDiary weitere Aufrufe
+dieser Familie bis zum Monatsende mit einer Meldung ab; die Kacheln zeigen die
+Auslastung. Leer gilt die Vorgabe des Betreibers, ohne Vorgabe ist der Verbrauch
+unbegrenzt.

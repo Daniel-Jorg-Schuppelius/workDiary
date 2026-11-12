@@ -11,7 +11,8 @@
 namespace App\Rules;
 
 use App\Models\Platform\User;
-use App\Services\TimeApproval\MonthClosureService;
+use App\Services\TimeApproval\DayCloseService;
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -28,6 +29,9 @@ use Illuminate\Support\Facades\Auth;
  * stiegen mit, ganz ohne Korrekturantrag.
  *
  * Der Weg für nachträgliche Änderungen ist der Zeitkorrektur-Antrag.
+ *
+ * Seit MVP-1551 gilt dasselbe für den abgeschlossenen Tag
+ * ({@see DayCloseService::bookingLock()}); die Regel nimmt Datum oder Zeitstempel.
  */
 class NotInLockedMonth implements ValidationRule {
     public function __construct(private readonly ?User $target = null) {}
@@ -44,13 +48,17 @@ class NotInLockedMonth implements ValidationRule {
         }
 
         try {
-            $day = CarbonImmutable::parse(is_string($value) ? $value : $value->format('Y-m-d'));
+            $day = is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', trim($value)) === 1
+                ? CarbonImmutable::parse(trim($value))
+                // Zeitstempel: der Kalendertag der Buchung ist der lokale Tag.
+                : CarbonImmutable::parse($value)->setTimezone(Tz::current())->startOfDay();
         } catch (\Throwable) {
             return; // Formatfehler meldet die `date`-Regel.
         }
 
-        if (app(MonthClosureService::class)->isPeriodLockedForUser($user, $day)) {
-            $fail((string) __('day-close.errors.month_entry_locked'));
+        $lock = app(DayCloseService::class)->bookingLock($user, CarbonImmutable::parse($day->toDateString()));
+        if ($lock !== null) {
+            $fail((string) __($lock === 'month' ? 'day-close.errors.month_entry_locked' : 'day-close.errors.day_entry_locked'));
         }
     }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Utiliser le chat"
 topic: communication.chat
-version: 1
+version: 2
 keywords:
     - message instantané
     - envoyer un message
@@ -30,3 +30,5 @@ documentées en plus sur l'enregistrement concerné. Ne partagez pas
 d'identifiants ni de données personnelles inutiles ; les messages
 supprimés ou modifiés peuvent rester traçables selon les droits et les
 exigences d'audit.
+
+**Sondage avec fin :** en créant un sondage dans le chat, vous fixez éventuellement la fin du vote. Ensuite, le sondage n’accepte plus de voix.

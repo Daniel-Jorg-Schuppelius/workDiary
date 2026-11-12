@@ -10,9 +10,11 @@
 
 namespace App\Models\Protocol;
 
-use App\Enums\Protocol\{ProtocolStatus, ProtocolType, ProtocolVisibility};
+use App\Enums\Protocol\{ProtocolEventType, ProtocolSignatureRole, ProtocolStatus, ProtocolType, ProtocolVisibility};
 use App\Exceptions\InvalidProtocolTransitionException;
+use App\Models\Attachments\Attachment;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasCommunicationNotes, HasJournal, HasSqid, HasTags};
+use App\Models\Contracts\GuardsAttachments;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
@@ -42,7 +44,12 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
  * @property \Illuminate\Support\Carbon|null $signed_at
  * @property \Illuminate\Support\Carbon|null $archived_at
  */
-class Protocol extends Model {
+class Protocol extends Model implements GuardsAttachments {
+    /** Anhangsrollen (`attachments.meta_type`), die das Protokoll selbst anlegt und die nie einzeln entfallen. */
+    public const string META_SIGNATURE = 'protocol_signature';
+
+    public const string META_PDF = 'protocol_pdf';
+
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
@@ -178,5 +185,49 @@ class Protocol extends Model {
                 static fn (ProtocolStatus $status): string => $status->value,
                 array_filter(ProtocolStatus::cases(), static fn (ProtocolStatus $status): bool => $status->isImmutable()),
             ));
+    }
+
+    /**
+     * Was der Kunde im Portal noch abnehmen kann (MVP-1572): kundensichtbar,
+     * zur Prüfung eingereicht — also nicht mehr änderbar — und ohne
+     * Unterschrift des Kunden.
+     *
+     * @param Builder<self> $query
+     */
+    public function scopeAwaitingCustomerSignature(Builder $query): void {
+        $query->where('visibility', ProtocolVisibility::Customer->value)
+            ->where('status', ProtocolStatus::InReview->value)
+            ->whereDoesntHave('signatures', static fn (Builder $signatures) => $signatures->where('role', ProtocolSignatureRole::Customer->value));
+    }
+
+    /**
+     * Rollen, deren Pflichtunterschrift noch fehlt (MVP-1572).
+     *
+     * @return list<ProtocolSignatureRole>
+     */
+    public function missingSignatureRoles(?ProtocolSignatureRole $incoming = null): array {
+        $required = $this->type->requiredSignatureRoles();
+        if ($required === []) {
+            return [];
+        }
+        $present = $this->signatures()->pluck('role')->all();
+        if ($incoming !== null) {
+            $present[] = $incoming;
+        }
+
+        return array_values(array_filter($required, static fn (ProtocolSignatureRole $role): bool => ! in_array($role, $present, true)));
+    }
+
+    public function attachmentsLocked(?Attachment $attachment = null): bool {
+        return ! $this->status->isEditable()
+            || in_array($attachment?->meta_type, [self::META_SIGNATURE, self::META_PDF], true);
+    }
+
+    public function attachmentAdded(Attachment $attachment, ?User $actor): void {
+        $this->record(ProtocolEventType::AttachmentAdded, ['attachment_id' => $attachment->id, 'name' => $attachment->original_name], $actor);
+    }
+
+    public function attachmentRemoved(Attachment $attachment, ?User $actor): void {
+        $this->record(ProtocolEventType::AttachmentRemoved, ['attachment_id' => $attachment->id, 'name' => $attachment->original_name], $actor);
     }
 }

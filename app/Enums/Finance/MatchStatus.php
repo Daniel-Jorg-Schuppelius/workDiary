@@ -15,16 +15,15 @@ use App\Enums\Contracts\HasLabel;
 
 /**
  * Zuordnungsstatus eines Bankumsatzes im Prüfbereich (Feature 045,
- * „Priorität 3"). Der Import erzeugt Umsätze immer als `unmatched` (bzw.
- * `duplicate` bei org-weiter Fingerprint-Dublette); erst die Bestätigung
- * setzt `matched`.
+ * „Priorität 3"). Der Import erzeugt Umsätze immer als `unmatched` und
+ * überspringt org-weite Fingerprint-Dubletten; erst die Bestätigung setzt
+ * `matched`.
  *
  *   unmatched    = noch keine Zuordnung (ggf. mit Vorschlägen)
  *   suggested    = Vorschläge vorhanden (rein darstellungsbezogen, optional)
  *   matched      = bestätigt zugeordnet (Allocations vorhanden)
  *   ignored      = bewusst beiseitegelegt (z. B. Bankgebühr, interner Umsatz)
  *   unassignable = geprüft und als nicht zuordenbar markiert
- *   duplicate    = bereits bekannter Umsatz (Fingerprint-Treffer über Auszüge)
  */
 enum MatchStatus: string implements HasLabel {
     use HasOptions;
@@ -34,7 +33,6 @@ enum MatchStatus: string implements HasLabel {
     case Matched = 'matched';
     case Ignored = 'ignored';
     case Unassignable = 'unassignable';
-    case Duplicate = 'duplicate';
 
     public function label(): string {
         return (string) __('enums.finance.match-status.' . $this->value);
@@ -53,7 +51,6 @@ enum MatchStatus: string implements HasLabel {
             self::Matched => 'success',
             self::Ignored => 'neutral',
             self::Unassignable => 'neutral',
-            self::Duplicate => 'error',
         };
     }
 }

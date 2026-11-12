@@ -50,8 +50,9 @@ class WarrantyPeriodScan extends AbstractDeadlineScan {
                 ? null
                 : User::query()->find($period->responsible_user_id),
             'due' => [
+                // Auch gerügte Fristen (MVP-1625): Die Rüge beendet die Frist nicht, sie ist weiter zu verfolgen.
                 'query' => fn () => WarrantyPeriod::query()
-                    ->where('status', WarrantyStatus::Open->value)
+                    ->whereIn('status', [WarrantyStatus::Open->value, WarrantyStatus::Claimed->value])
                     ->whereDate('ends_on', '>=', $today->toDateString())
                     ->whereDate('ends_on', '<=', $today->copy()->addDays(max($windows))->toDateString()),
                 'event' => NotificationEvent::WarrantyExpiring,

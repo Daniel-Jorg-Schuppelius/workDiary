@@ -1,7 +1,7 @@
 ---
 title: "Dispacciamento e avvisi di conflitto"
 topic: dispatch.overview
-version: 3
+version: 4
 keywords:
     - pianificazione interventi
     - assegnare un intervento
@@ -57,3 +57,13 @@ gli ordini aperti di una giornata tra i conducenti. Vengono considerati
 finestre di lavoro, fasce orarie degli ordini, pause e qualifiche; i
 conducenti partono e rientrano a casa. La proposta diventa giri solo dopo
 l'adozione.
+
+## Matrice delle qualifiche e semaforo d'intervento
+
+Se un ordine richiede qualifiche, la **matrice delle qualifiche** mostra per
+ogni collaboratore lo stato all'inizio dell'ordine: verde **soddisfatta**,
+giallo **in scadenza** (validità che termina entro 30 giorni) o **in
+formazione** (un corso della piattaforma di apprendimento per questa qualifica è
+assegnato o iniziato), rosso **mancante**. In giallo o rosso la cella indica il
+corso pubblicato che trasmette la qualifica. Il semaforo informa; un'assegnazione
+resta bloccata solo dalla qualifica stessa.

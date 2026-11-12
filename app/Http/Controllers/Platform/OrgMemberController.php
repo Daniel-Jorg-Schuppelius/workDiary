@@ -566,6 +566,10 @@ class OrgMemberController extends Controller {
 
         if ($this->canManagePayroll($user)) {
             $rules['payroll_hourly_wage'] = ['nullable', 'numeric', 'min:0', 'max:99999999.99'];
+            // Verrechnungs- und Kostensatz der Person (MVP-1565): Grundgrößen der Satzermittlung
+            // und Nachkalkulation, vertraulich wie der Lohn.
+            $rules['hourly_rate'] = ['nullable', 'numeric', 'min:0', 'max:99999.99'];
+            $rules['internal_rate'] = ['nullable', 'numeric', 'min:0', 'max:99999.99'];
 
             // Vergütungsmodell (auch extern): je nach Modell Pauschale (Betrag+Intervall) bzw. Stundensatz.
             $rules['compensation_model'] = ['nullable', Rule::enum(\App\Enums\User\CompensationModel::class)];
@@ -596,6 +600,12 @@ class OrgMemberController extends Controller {
 
         if ($this->canManagePayroll($auth)) {
             $payload['payroll_hourly_wage'] = $data['payroll_hourly_wage'] ?? null;
+            // Nur gesendete Sätze schreiben: ein Aufruf ohne die Felder löscht sie nicht.
+            foreach (['hourly_rate', 'internal_rate'] as $rate) {
+                if (array_key_exists($rate, $data)) {
+                    $payload[$rate] = $data[$rate];
+                }
+            }
 
             $model = $this->blankToNull($data['compensation_model'] ?? null);
             $payload['compensation_model'] = $model;

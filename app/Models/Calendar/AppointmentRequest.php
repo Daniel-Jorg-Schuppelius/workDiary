@@ -67,7 +67,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $decided_at
  * @property string|null $decline_reason
  */
-class AppointmentRequest extends Model {
+class AppointmentRequest extends Model implements \App\Services\Integration\Contracts\AcceptsInboxAssignment {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
@@ -168,6 +168,43 @@ class AppointmentRequest extends Model {
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    /** @return BelongsTo<\App\Models\Sales\Lead, $this> */
+    public function lead(): BelongsTo {
+        return $this->belongsTo(\App\Models\Sales\Lead::class);
+    }
+
+    /**
+     * Kunde und/oder Lead festhalten (MVP-1610); ein konvertierter Lead bringt
+     * seinen Kunden mit. Entschiedene Anfragen bleiben, wie sie entschieden wurden.
+     */
+    public function assignParty(?Customer $customer, ?\App\Models\Sales\Lead $lead): void {
+        if (! $this->isAssignable()) {
+            throw new \RuntimeException((string) __('appointment.assign.decided'));
+        }
+        $customerId = $customer->id ?? $lead?->customer_id;
+        $this->forceFill(array_filter([
+            'customer_id' => $customerId,
+            'lead_id' => $lead?->id,
+        ], static fn ($value): bool => $value !== null))->save();
+        $this->audit('appointment.party_assigned', ['customer_id' => $customerId, 'lead_id' => $lead?->id]);
+    }
+
+    public function isAssignable(): bool {
+        return in_array($this->status, [AppointmentRequestStatus::Requested, AppointmentRequestStatus::Proposed], true);
+    }
+
+    /** Zuordnung aus dem Integrations-Eingang (Calendly-Buchung ohne Kundentreffer); eine entschiedene Anfrage bleibt unberührt. */
+    public function acceptInboxAssignment(Model $target): void {
+        if (! $this->isAssignable()) {
+            return;
+        }
+        if ($target instanceof Customer) {
+            $this->assignParty($target, null);
+        } elseif ($target instanceof \App\Models\Sales\Lead) {
+            $this->assignParty(null, $target);
+        }
     }
 
     /** @return BelongsTo<User, $this> */

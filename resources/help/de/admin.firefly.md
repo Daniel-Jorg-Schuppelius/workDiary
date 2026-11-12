@@ -1,7 +1,7 @@
 ---
 title: "Firefly III als Abgleichquelle"
 topic: admin.firefly
-version: 1
+version: 3
 keywords:
     - Firefly III
     - Kontobewegungen
@@ -62,3 +62,9 @@ startet sofort. **Trennen** beendet den Abgleich.
 - Die Prüfung scheitert mit 401: Der Token ist falsch oder abgelaufen.
 - Die Prüfung meldet eine interne Adresse: Die Adresse zeigt ins eigene Netz,
   aber **Private Adressen erlauben** ist aus oder vom Betreiber nicht zugelassen.
+
+## Im Überblick
+
+Die Auswahl **Zuordnung** kennt zusätzlich **Offen (ohne oder mehrdeutig)**. Bewegungen ohne oder mit mehrdeutiger Zuordnung erscheinen im **Arbeitsvorrat** als je ein gebündelter Vorgang, und die Dashboard-Kachel **Finanzbewegungen** zählt sie neben den Kontoauszügen und zeigt die jüngsten Bewegungen. Beides sieht nur die Administration und nur, solange das Plugin eingeschaltet ist.
+
+**Als erledigt markieren:** Bewegungen, die keinen Beleg brauchen (Kontoführungsgebühr, Privatentnahme), markieren Sie mit Begründung als erledigt. Sie zählen dann nicht mehr in der Kachel „Finanzbewegungen“ und im Arbeitsvorrat; der Filter „Erledigt“ zeigt sie, „Wieder öffnen“ nimmt die Markierung zurück. Der Abgleich ändert nur die Zuordnung, nie die Erledigung.

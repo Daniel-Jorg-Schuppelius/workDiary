@@ -47,4 +47,9 @@ return [
             'saved' => 'Evaluación guardada.',
         ],
     ],
+    // Bestellbezug im Vertragsformular (MVP-1606).
+    'purchase_order' => [
+        'label' => 'Pedido (opcional)',
+        'none' => 'sin pedido',
+    ],
 ];

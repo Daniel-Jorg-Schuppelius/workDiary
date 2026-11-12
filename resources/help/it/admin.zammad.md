@@ -1,7 +1,7 @@
 ---
 title: "Connessione Zammad"
 topic: admin.zammad
-version: 3
+version: 4
 keywords:
     - Zammad
     - helpdesk
@@ -194,3 +194,5 @@ ticket come**, per i ticket di servizio anche la **Coda**, e clicchi su
   di servizio.
 - I ticket finiscono nel progetto sbagliato: controlli gli ID gruppo in
   **Coda → progetto** e i suggerimenti di cliente nell’inbox.
+
+**Titolarità dei dati:** In modalità «ticket di servizio» l’importazione scrive solo se Zammad può scrivere l’area ticket, cioè se la gestisce WorkDiary o Zammad. Se un altro sistema gestisce i ticket, l’importazione non crea né chiude ticket; i casi restano nella casella delle integrazioni per essere acquisiti una volta. Zammad gestisce la coda di destinazione: WorkDiary non vi accetta creazione manuale, registrazione di e-mail né risposte via e-mail. In modalità «attività» vale l’area attività.

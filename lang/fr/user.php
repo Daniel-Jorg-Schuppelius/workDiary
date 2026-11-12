@@ -11,6 +11,16 @@
 return [
     'employees' => 'Employés',
 
+    // Taux de facturation et de coût par personne (MVP-1565), visible uniquement avec user.payroll.manage.
+    'rates' => [
+        'legend' => 'Taux pour la facturation et le calcul a posteriori',
+        'hint' => 'Confidentiel : visible et modifiable uniquement avec le droit « Gérer les données du personnel et de la paie ». Les modifications s’appliquent aux temps saisis ou recalculés par la suite et sont journalisées.',
+        'hourly_rate' => 'Taux horaire (facturation)',
+        'hourly_rate_hint' => 'Prime sur le taux de la tâche, du projet et du client ; seules les conditions particulières et un taux saisi sur l’entrée de temps passent avant. Laissez vide si le taux du projet ou du client doit s’appliquer.',
+        'internal_rate' => 'Taux de coût interne',
+        'internal_rate_hint' => 'Coût horaire de cette personne pour le calcul a posteriori ; prime sur le taux de coût de la tâche, du projet et du client.',
+    ],
+
     'role' => [
         'admin' => 'Administrateur',
         'meldestelle' => 'Point de signalement',

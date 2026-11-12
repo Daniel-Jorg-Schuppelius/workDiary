@@ -162,9 +162,10 @@ class AccountingJournalTest extends TestCase {
         $payload = [
             'booked_on' => $this->startsOn->subMonths(2)->toDateString(),
             'memo' => 'Vor dem Stichtag',
-            'debit_account' => (string) $this->bank->id,
-            'credit_account' => (string) $this->revenue->id,
-            'amount' => '10.00',
+            'rows' => [
+                ['account' => $this->bank->number, 'debit' => '10.00'],
+                ['account' => $this->revenue->number, 'credit' => '10.00'],
+            ],
             'post' => '1',
         ];
 
@@ -385,9 +386,11 @@ class AccountingJournalTest extends TestCase {
         $this->actingAs($this->admin)->post(route('finance.accounting.journal.store'), [
             'booked_on' => $this->startsOn->addMonth()->toDateString(),
             'memo' => 'Bareinzahlung',
-            'debit_account' => $this->bank->sqid,
-            'credit_account' => $this->revenue->sqid,
-            'amount' => '250.00',
+            'rows' => [
+                ['account' => $this->bank->number, 'debit' => '250.00'],
+                ['account' => $this->revenue->number, 'credit' => '250.00'],
+                ['account' => '', 'debit' => '', 'credit' => ''],
+            ],
             'post' => '1',
         ])->assertRedirect();
 

@@ -1,7 +1,7 @@
 ---
 title: "Configurare il portale di segnalazione"
 topic: whistleblowing.portal
-version: 1
+version: 2
 keywords:
     - portale whistleblowing
     - attivare il portale
@@ -35,3 +35,11 @@ dei casi chiusi. Il link pubblico contiene uno slug casuale non deducibile
 dal nome dell'organizzazione; con **Ruota link** ne genera uno nuovo.
 Attenzione: dopo la rotazione i link già distribuiti diventano subito non
 validi — comunichi attivamente il nuovo link.
+
+**Lingue**: la **lingua predefinita** determina in quale lingua appare il portale. In **Altre lingue** sceglie le lingue a cui la persona segnalante può passare; senza selezione non è previsto il cambio di lingua.
+
+**Canali di segnalazione esterni**: il portale ricorda sempre che, oltre all'ufficio interno, sono disponibili gli uffici di segnalazione esterni delle autorità. Inserisca quelli competenti per la Sua organizzazione con denominazione e indirizzo web; appaiono come elenco nel portale.
+
+**Versione dell'informativa sulla privacy**: l'indicazione appare sotto il testo introduttivo, così da rendere riconoscibile la versione applicabile.
+
+**Conservazione**: i mesi impostati qui valgono per ogni caso chiuso da ora in poi. I casi già chiusi mantengono il termine calcolato alla chiusura.

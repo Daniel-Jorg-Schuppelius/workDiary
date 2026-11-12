@@ -30,7 +30,9 @@ class ProcedureBackupValidationException extends RuntimeException {
 
     public const string REASON_MISSING_ATTACHMENT = 'missingAttachment';
 
-    public const string REASON_NOT_VERIFIED = 'notVerified';
+    public const string REASON_CHECKSUM_MISSING = 'checksumMissing';
+
+    public const string REASON_SELF_VERIFY = 'selfVerify';
 
     public function __construct(public readonly string $reason, string $message = '') {
         parent::__construct($message !== '' ? $message : sprintf('Backup proof invalid: %s', $reason));

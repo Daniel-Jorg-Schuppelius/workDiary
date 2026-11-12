@@ -141,8 +141,38 @@ class LearningUnit extends Model {
             LearningUnitKind::Quiz => $this->quiz()->exists(),
             LearningUnitKind::Scorm => $this->scormPackage()->exists(),
             LearningUnitKind::Cmi5 => $this->cmi5Package()->exists(),
+            // MVP-1600: Prozedurlauf, Fragebogen und externe Bestätigung schließen selbst ab.
+            LearningUnitKind::Procedure => $this->procedureTemplateId() !== null,
+            LearningUnitKind::Survey => $this->surveyId() !== null,
+            LearningUnitKind::External => $this->externalUrl() !== null,
             default => false,
         };
+    }
+
+    /** Prozedurvorlage, deren abgeschlossener Lauf die Einheit erledigt (`completion_rule.procedure_template_id`). */
+    public function procedureTemplateId(): ?int {
+        $id = (int) (($this->completion_rule ?? [])['procedure_template_id'] ?? 0);
+
+        return $id > 0 ? $id : null;
+    }
+
+    /** Fragebogen, dessen Absenden die Einheit erledigt (`completion_rule.survey_id`). */
+    public function surveyId(): ?int {
+        $id = (int) (($this->completion_rule ?? [])['survey_id'] ?? 0);
+
+        return $id > 0 ? $id : null;
+    }
+
+    /** Adresse der externen Leistung (`completion_rule.external_url`). */
+    public function externalUrl(): ?string {
+        $url = trim((string) (($this->completion_rule ?? [])['external_url'] ?? ''));
+
+        return $url !== '' ? $url : null;
+    }
+
+    /** Verlangt die externe Einheit einen hochgeladenen Nachweis? */
+    public function requiresProof(): bool {
+        return (bool) (($this->completion_rule ?? [])['proof_required'] ?? false);
     }
 
     /**

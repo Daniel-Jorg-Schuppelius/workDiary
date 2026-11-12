@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\ServiceTicket;
 
+use App\Enums\ServiceTicket\ServiceTicketKind;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\Team;
 use Illuminate\Database\Eloquent\Model;
@@ -43,6 +44,10 @@ class ServiceQueue extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
+    public const string OWNERSHIP_NATIVE = 'native';
+
+    public const string OWNERSHIP_EXTERNAL = 'external';
+
     protected $fillable = [
         'organization_id',
         'name',
@@ -66,6 +71,18 @@ class ServiceQueue extends Model {
         'sender_identity' => 'array',
         'is_default' => 'boolean',
     ];
+
+    /** Leere Liste = alle Ticketarten. */
+    public function supportsKind(ServiceTicketKind $kind): bool {
+        $kinds = (array) ($this->supported_kinds ?? []);
+
+        return $kinds === [] || in_array($kind->value, $kinds, true);
+    }
+
+    /** Ein Fremdsystem führt Status und Kundenkommunikation der Tickets dieser Queue. */
+    public function isExternallyLed(): bool {
+        return $this->data_ownership === self::OWNERSHIP_EXTERNAL;
+    }
 
     /** @return BelongsTo<Team, $this> */
     public function team(): BelongsTo {

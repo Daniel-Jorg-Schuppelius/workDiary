@@ -110,6 +110,7 @@ class ProtocolTextSuggestionService {
                 $this->textRequest($organization, $protocol, $item, $source),
                 StoreProtocolItemSuggestionHandler::class,
                 ['organization_id' => (int) $organization->id, 'item_id' => (int) $item->id, 'original' => $source, 'user_id' => $user?->getKey()],
+                app(\App\Services\Ai\AiConnectionChoice::class)->for(self::CAPABILITY_TEXT),
             );
             $count++;
         }

@@ -77,23 +77,6 @@ class WeatherService {
     }
 
     /**
-     * Bequemabruf der Vorhersage für einen Einsatzort mit Koordinaten.
-     *
-     * @return array<string, array{date: string, temp_min: float|null, temp_max: float|null, precipitation_mm: float|null, wind_max_kmh: float|null, wind_gust_kmh: float|null, weather_code: int|null}>|null
-     */
-    public function forecastForSite(Site $site, int $days = 3): ?array {
-        if ($site->geo_lat === null || $site->geo_lng === null) {
-            return null;
-        }
-        $organization = $site->organization;
-        if (! $organization instanceof Organization) {
-            return null;
-        }
-
-        return $this->forecast($organization, (float) $site->geo_lat, (float) $site->geo_lng, $days);
-    }
-
-    /**
      * Koordinaten eines Einsatzes: Auftragsadresse, sonst Kunde (MVP-716,
      * `coordsForSubject`-Muster).
      *

@@ -86,6 +86,7 @@ class ItemTextSuggestionService implements ItemTextSuggester {
                     'original' => (string) $item->description,
                     'user_id' => $user?->getKey(),
                 ],
+                app(\App\Services\Ai\AiConnectionChoice::class)->for($capability),
             );
             $count++;
         }
@@ -125,6 +126,7 @@ class ItemTextSuggestionService implements ItemTextSuggester {
                     'original' => (string) $item->description,
                     'user_id' => $user?->getKey(),
                 ],
+                app(\App\Services\Ai\AiConnectionChoice::class)->for(self::CAPABILITY_TRANSLATE),
             );
             $count++;
         }
@@ -292,24 +294,6 @@ class ItemTextSuggestionService implements ItemTextSuggester {
         $this->auditDecision($suggestion, $edited ? 'edited' : 'accepted', $user);
 
         return $edited;
-    }
-
-    /**
-     * Offene Vorschläge eines Belegs verfallen bei Ausstellung/Versand.
-     *
-     * @param list<int> $subjectIds
-     */
-    public function expireForSubjects(string $subjectType, array $subjectIds): void {
-        if ($subjectIds === []) {
-            return;
-        }
-
-        AiTextSuggestion::query()
-            ->withoutGlobalScopes()
-            ->where('subject_type', $subjectType)
-            ->whereIn('subject_id', $subjectIds)
-            ->where('status', AiTextSuggestionStatus::Proposed)
-            ->update(['status' => AiTextSuggestionStatus::Expired]);
     }
 
     private function invokeAndStore(

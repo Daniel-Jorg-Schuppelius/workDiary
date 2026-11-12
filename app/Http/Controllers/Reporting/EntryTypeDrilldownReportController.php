@@ -13,11 +13,13 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{BuildsOpenIssueDrilldown, RendersReportPdf, WritesReportCsv};
-use App\Models\Classification\EntryType;
+use App\Models\Claims\ClaimCase;
+use App\Models\Classification\{Classification, EntryType};
 use App\Models\Customer\Customer;
 use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Platform\User;
 use App\Models\Protocol\Protocol;
+use App\Models\Time\TimeEntry;
 use App\Support\{MorphMap, Sqid};
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
@@ -177,6 +179,52 @@ class EntryTypeDrilldownReportController extends Controller {
             'customerId' => $customerId,
             'userId' => $userId,
             'statusFilter' => $statusFilter,
+        ]);
+    }
+
+    /**
+     * Belege einer Ursache (H3-05): Nacharbeitszeiten und Reklamationen der
+     * Aufträge des Typs mit dieser Klassifikation — dieselbe Abgrenzung wie
+     * die Spalte „Top-Ursachen“ der Analyse.
+     */
+    public function causes(Request $request): View {
+        $this->authorizeTeamReport();
+
+        $range = $this->globalDateRange();
+        [$from, $to] = $this->globalDateRangeBounds();
+
+        $entryTypeId = Sqid::decodeOrNumeric(EntryType::class, $request->query('entry_type_id')) ?? 0;
+        $customerId = Sqid::decodeOrNumeric(Customer::class, $request->query('customer_id'));
+        $userId = Sqid::decodeOrNumeric(User::class, $request->query('user_id'));
+        $statusFilter = $request->filled('status') ? (int) $request->integer('status') : null;
+        $classification = Classification::query()->find(Sqid::decodeOrNumeric(Classification::class, $request->query('cause')) ?? 0);
+        abort_unless($classification instanceof Classification, 404);
+
+        $entryIds = $this->entryIds($from->toDateTimeString(), $to->toDateTimeString(), $entryTypeId, $customerId, $userId, $statusFilter);
+        $ids = $entryIds === [] ? [0] : $entryIds;
+
+        return view('reports.drilldown.entry-type-causes', [
+            'classification' => $classification,
+            'entryType' => $entryTypeId > 0 ? EntryType::query()->find($entryTypeId) : null,
+            'label' => $range['label'],
+            'entryTypeId' => $entryTypeId,
+            'customerId' => $customerId,
+            'userId' => $userId,
+            'statusFilter' => $statusFilter,
+            'timeEntries' => TimeEntry::query()
+                ->whereIn('diary_entry_id', $ids)
+                ->where('rework_reason_classification_id', $classification->id)
+                ->with(['user:id,name', 'diaryEntry'])
+                ->orderBy('date')
+                ->limit(500)
+                ->get(),
+            'claims' => ClaimCase::query()
+                ->whereIn('diary_entry_id', $ids)
+                ->where('root_cause_classification_id', $classification->id)
+                ->with('diaryEntry')
+                ->orderByDesc('id')
+                ->limit(500)
+                ->get(),
         ]);
     }
 

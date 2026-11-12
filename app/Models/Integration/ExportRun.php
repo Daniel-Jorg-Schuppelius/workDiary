@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ExportFormat $format
  * @property ExportRunState $state
  * @property array<string, mixed>|null $filters
+ * @property list<string>|null $restricted_columns Enthaltene Spalten mit eigenem Recht (MVP-1625)
  * @property string $output_filename
  * @property string $storage_path
  * @property int $rows_total
@@ -50,6 +51,7 @@ class ExportRun extends Model {
         'format',
         'state',
         'filters',
+        'restricted_columns',
         'output_filename',
         'storage_path',
         'rows_total',
@@ -63,6 +65,7 @@ class ExportRun extends Model {
         'format' => ExportFormat::class,
         'state' => ExportRunState::class,
         'filters' => 'array',
+        'restricted_columns' => 'array',
     ];
 
     /** @return BelongsTo<User, $this> */

@@ -1,7 +1,7 @@
 ---
 title: "Lexware supplements: plan, feature matrix and handover"
 topic: lexware.supplements
-version: 2
+version: 3
 keywords:
     - Lexoffice
     - Lexware Office
@@ -33,3 +33,7 @@ In the system menu under **Finance & payroll → Lexware supplements** you store
 **Automatic handover:** The route “automatic” requires your own API key (plan XL) and a proven handover route; until then manual export remains the standard route. Open handovers stay visible when the plan changes.
 
 **Permissions:** Everyone with “List invoices” sees the pages; only “Finance configuration” changes the plan profile; export and confirmation require “Export invoices”. The plan profile appears in the system menu only with “Finance configuration”; from the handover list it stays readable for everyone with “List invoices”.
+
+## Filter of the handover list
+
+The filter offers the states of the manual route: open, exported, manually confirmed. Transferred, review required and failed are only set by the automatic handover, which follows once the handover route has been proven.

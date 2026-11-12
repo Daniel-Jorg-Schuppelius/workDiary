@@ -63,14 +63,6 @@ final readonly class MarketplaceEntitlement {
         return $this->frequency === BillingFrequency::Monthly ? 1 : 12;
     }
 
-    public function isOpenEnded(): bool {
-        return $this->endsOn === null;
-    }
-
-    public function isRunningOn(CarbonImmutable $date): bool {
-        return $this->startsOn->lessThanOrEqualTo($date) && ($this->endsOn === null || $this->endsOn->greaterThan($date));
-    }
-
     public function sourceLabel(): string {
         return self::labelFor($this->source);
     }

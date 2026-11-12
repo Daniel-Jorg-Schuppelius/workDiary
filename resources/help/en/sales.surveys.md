@@ -1,7 +1,7 @@
 ---
 title: "Surveys"
 topic: sales.surveys
-version: 1
+version: 2
 keywords:
     - customer satisfaction
     - customer survey
@@ -47,3 +47,13 @@ status change.
 **NPS score** = %promoters (9–10) − %detractors (0–6). Without answers there
 is no score — no value means “nothing to compute”, not zero. The ticket CSAT
 (portal rating) remains independent.
+
+## Recording an objection
+
+You set the opt-out on the customer: in the customer dialog under **Portal & miscellaneous**, tick **No surveys**. The invited person can also object themselves – every invitation sent to a customer and the survey page carry the link **Unsubscribe from surveys**. It leads to a confirmation prompt without login; after confirming, the box on the customer is ticked and the event is noted in the customer's change history. The link also works if the survey has already been answered or has expired. Invitations without a customer link carry no opt-out link. In the customer export and import the value is in the column `survey_opt_out`.
+
+## Editing a questionnaire
+
+**Edit** on the questionnaire page changes the title and the introduction
+text. Anonymity can only be switched until the first invitation — after that it
+stays as it was promised to the participants.

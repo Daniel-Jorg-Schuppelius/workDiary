@@ -13,9 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Taiga;
 
 use App\Models\Integration\ExternalReference;
-use App\Models\Platform\Organization;
 use App\Plugins\AbstractPlugin;
-use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer, TaskSyncer};
+use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer};
 use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSettings};
 use App\Plugins\Taiga\Api\TaigaClientFactory;
 use App\Plugins\Taiga\Models\TaigaConnection;
@@ -24,7 +23,7 @@ use App\Plugins\Taiga\Services\TaigaImportService;
 /**
  * Taiga-Aufgabenimport (Feature 173, Phase 158): Userstories ausgewählter Taiga-Projekte werden als Aufgaben in WorkDiary-Projekte übernommen, nur lesend.
  */
-class TaigaPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
+class TaigaPlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, LinksExternalRecords, SlotRenderer {
     use ChecksConnectionHealth, RendersTaskLink;
 
     public const string ID = 'taiga';
@@ -56,10 +55,6 @@ class TaigaPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRe
         return [PluginCapability::TaskSync];
     }
 
-    public function syncTasks(Organization $organization): array {
-        return app(TaigaImportService::class)->run($organization);
-    }
-
     public function adminPanel(): ?array {
         return ['route' => 'admin.taiga.index', 'label' => 'Taiga', 'icon' => 'view_week'];
     }
@@ -82,5 +77,10 @@ class TaigaPlugin extends AbstractPlugin implements LinksExternalRecords, SlotRe
 
     protected function taskLinkType(): string {
         return self::EXT_TYPE_USER_STORY;
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Tasks];
     }
 }

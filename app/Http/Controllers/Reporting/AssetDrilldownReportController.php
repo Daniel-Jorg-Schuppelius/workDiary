@@ -40,7 +40,8 @@ class AssetDrilldownReportController extends Controller {
     /**
      * Wiederholdefekt-Statistik (Feature 009 → Rang 47): Pareto der Assets nach
      * Defektzahl im Zeitraum, mit Wiederholdefekt-Flag (≥ 3 in 12 Monaten) und
-     * Drilldown ins Asset-Dossier.
+     * Drilldown ins Asset-Dossier. Einstieg aus der Spalte „Wiederholdefekte“ der
+     * Produktanalyse mit deren Zeilenfiltern und `recurring=1`.
      */
     public function recurringDefects(Request $request, RecurringDefectService $service): View|Response|SymfonyResponse {
         $this->authorizeTeamReport();
@@ -53,16 +54,26 @@ class AssetDrilldownReportController extends Controller {
         $range = $this->globalDateRange();
         [$from, $to] = $this->globalDateRangeBounds();
 
-        $rows = $service->pareto((int) $user->organization_id, $from, $to);
+        $filters = $this->collectFilters($request);
+        $recurringOnly = $request->boolean('recurring');
+        $scoped = array_filter($filters, static fn ($v): bool => $v !== null) !== [];
+
+        $rows = $service->pareto((int) $user->organization_id, $from, $to, $scoped ? $this->assetIds($filters) : null);
+        if ($recurringOnly) {
+            $rows = array_values(array_filter($rows, static fn (array $row): bool => $row['is_recurring']));
+        }
 
         if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
-            $exportFilters = ['from' => $from->toDateString(), 'to' => $to->toDateString()];
+            $exportFilters = $filters + ['recurring' => $recurringOnly, 'from' => $from->toDateString(), 'to' => $to->toDateString()];
 
             return $this->exportRecurringDefectsCsv($rows, $exportFilters, $from->toDateString(), $to->toDateString(), $request);
         }
 
         return view('reports.drilldown.asset-recurring-defects', [
             'rows' => $rows,
+            'filters' => $filters,
+            'recurringOnly' => $recurringOnly,
+            'scopeLabel' => $this->scopeLabel($filters),
             'label' => $range['label'],
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
@@ -251,7 +262,7 @@ class AssetDrilldownReportController extends Controller {
 
     /**
      * @param  list<array{asset_id:int, asset_name:string, asset_no:string|null, total:int, by_severity:array<string,int>, recent_total:int, is_recurring:bool}>  $rows
-     * @param  array{from:string, to:string}  $filters
+     * @param  array<string, mixed>  $filters
      */
     private function exportRecurringDefectsCsv(array $rows, array $filters, string $from, string $to, Request $request): Response {
         $filename = sprintf('produktanalyse-drilldown-wiederholdefekte_%s_%s.csv', $from, $to);

@@ -1,7 +1,7 @@
 ---
 title: "Conflitti Lexoffice"
 topic: admin.lexoffice
-version: 7
+version: 8
 keywords:
     - Lexware Office
     - conflitto di sincronizzazione
@@ -73,3 +73,5 @@ pulsante richiede il permesso **Sincronizza i giustificativi con Lexoffice** e c
 
 Autorizzazione: la Inbox di riconciliazione è accessibile agli
 amministratori e al ruolo **Contabilità**.
+
+**Titolarità dei dati:** se, secondo la titolarità dei dati, un altro programma gestisce clienti e fornitori, la sincronizzazione dei contatti non acquisisce campi e non crea contatti; il collegamento e il numero di contatto Lexoffice restano. Lo stato trattenuto attende nella posta in arrivo delle integrazioni **Acquisisci una volta**.

@@ -1,7 +1,7 @@
 ---
 title: "Scadenze fiscali e obblighi dichiarativi"
 topic: accounting.filings
-version: 1
+version: 2
 keywords:
     - liquidazione IVA
     - dichiarazione IVA periodica
@@ -44,6 +44,11 @@ periodo. La proroga **non** si applica — è l'errore più frequente.
 Tutte le scadenze sono calcolate: se cadono di sabato, domenica o in un giorno
 festivo slittano al primo giorno lavorativo successivo. Viene memorizzato solo
 ciò che è stato presentato.
+
+Il rapporto **Elenco riepilogativo** riporta, per partita IVA del destinatario,
+le cessioni intracomunitarie (rigo 41) e i servizi verso altri paesi UE (rigo
+21) separati con il loro tipo. Solo le cessioni decidono se la dichiarazione è
+mensile.
 
 > Il programma non trasmette nulla all'amministrazione finanziaria. La
 > presentazione avviene tramite ELSTER o il consulente fiscale; i prospetti sono

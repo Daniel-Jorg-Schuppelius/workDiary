@@ -15,7 +15,8 @@
     Kurznarrativ → Kommentar) übergeben zusätzlich $acceptAction.
 
     Erwartet: $suggestion (AiTextSuggestion)
-    Optional: $acceptAction (string|null), $showOriginal (bool)
+    Optional: $acceptAction (string|null), $showOriginal (bool),
+              $regenerateAction (string|null) — Route für „neu erzeugen" mit Verbindungswahl
 --}}
 @php
     $insightAccept = $acceptAction ?? null;
@@ -30,6 +31,8 @@
     :cached="$suggestion->from_cache"
     :accept-action="$insightAccept"
     :reject-action="route('ai.assist.reject', $suggestion)"
+    :capability="$suggestion->capability"
+    :regenerate-action="$regenerateAction ?? null"
     :editable="$insightAccept !== null"
     :hint="__('ai.assist.insight_hint')"
     field-name="text" />

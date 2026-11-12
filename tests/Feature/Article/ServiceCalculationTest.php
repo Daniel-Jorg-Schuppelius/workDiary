@@ -82,8 +82,8 @@ class ServiceCalculationTest extends TestCase {
         $result = $calculation->calculate($this->service->fresh());
         $this->assertNotNull($result);
         // Lohn 0,2 h × 42,50 = 8,50 → +25 % = 10,63; Material 0,25 × 4,00 = 1,00 → +20 % = 1,20.
-        $this->assertSame('10.63', $result->priceOf(CostKind::Labour)?->getAmount());
-        $this->assertSame('1.20', $result->priceOf(CostKind::Material)?->getAmount());
+        $this->assertSame('10.63', $result->kinds[CostKind::Labour->value]['price']->getAmount());
+        $this->assertSame('1.20', $result->kinds[CostKind::Material->value]['price']->getAmount());
         $this->assertSame('11.83', $result->price->getAmount());
         $this->assertSame('9.5000', $result->cost->getAmount());
         $this->assertSame('89.86', $result->labourShare?->getNumericValue());

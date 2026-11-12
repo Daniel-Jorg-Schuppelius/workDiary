@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Services\Article\Dto;
 
-use App\Enums\Article\CostKind;
 use CommonToolkit\ValueObjects\{Money, Percentage};
 
 /**
@@ -31,10 +30,6 @@ final readonly class ServiceCalculation {
         public float $labourMinutes,
         public ?Percentage $labourShare,
     ) {}
-
-    public function priceOf(CostKind $kind): ?Money {
-        return $this->kinds[$kind->value]['price'] ?? null;
-    }
 
     /**
      * Schnappschuss für die Belegposition: Zahlen als Dezimalstrings.

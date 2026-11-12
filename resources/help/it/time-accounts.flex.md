@@ -1,7 +1,7 @@
 ---
 title: "Conto ore e approvazione mensile"
 topic: time-accounts.flex
-version: 2
+version: 3
 keywords:
     - banca ore
     - straordinari
@@ -35,3 +35,5 @@ l'amministrazione, a meno che nell'organizzazione nessun altro abbia il
 permesso di approvazione; il registro di audit annota allora
 l'autoapprovazione. Chi può vedere mesi e richieste di correzione solo per il
 team vede soltanto i membri dei propri team.
+
+**Saldo del conto:** previsto, effettivo e saldo del mese in corso contano solo i giorni conclusi fino a ieri, come il conto salvato, il riquadro e il terminale. Il saldo del conto include il riporto del mese precedente. L’approvazione del mese lo congela nel conto; solo una riapertura lo ricalcola.

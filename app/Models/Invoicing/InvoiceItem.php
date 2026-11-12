@@ -79,6 +79,12 @@ class InvoiceItem extends Model implements DocumentLine {
 
         static::updating($assertMutable);
         static::deleting($assertMutable);
+        // Eine geänderte Position hebt die Freigabe des Entwurfs auf (MVP-1624).
+        $revokeApproval = static function (self $item): void {
+            Invoice::query()->withoutGlobalScopes()->whereKey($item->invoice_id)->whereNotNull('approved_at')->first()?->revokeApproval(['items']);
+        };
+        static::saved($revokeApproval);
+        static::deleted($revokeApproval);
         // MVP-1055: Einzelkosten kalkulierter Leistungen für den Deckungsbeitrag.
         static::creating(static function (self $item): void {
             if ($item->unit_cost_amount === null && $item->article_id !== null && $item->lineKind()->isPriced()) {

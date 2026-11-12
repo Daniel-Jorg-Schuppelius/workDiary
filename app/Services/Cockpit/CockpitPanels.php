@@ -13,20 +13,21 @@ declare(strict_types=1);
 namespace App\Services\Cockpit;
 
 use App\Models\Platform\User;
-use App\Modules\ModuleRegistry;
 use App\Services\Cockpit\Contracts\CockpitPanel;
+use App\Services\Licensing\ModuleExtensions;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use Throwable;
 
 /** Sammelt die Panels der Module für ein Cockpit (Feature 182), sortiert nach `order()`. */
 final class CockpitPanels {
-    public function __construct(private readonly ModuleRegistry $modules) {}
+    public function __construct(private readonly ModuleExtensions $extensions) {}
 
     /** @return list<HtmlString> gerenderte Panels — Blade gibt sie mit `{{ }}` unverändert aus */
     public function render(Model $subject, User $viewer): array {
+        $organizationId = $subject->getAttribute('organization_id') ?? $viewer->organization_id;
         $panels = [];
-        foreach ($this->modules->extensions(CockpitPanel::class) as $class) {
+        foreach ($this->extensions->activeFor(CockpitPanel::class, $organizationId !== null ? (int) $organizationId : null) as $class) {
             /** @var CockpitPanel $panel */
             $panel = app($class);
             if ($panel->supports($subject)) {

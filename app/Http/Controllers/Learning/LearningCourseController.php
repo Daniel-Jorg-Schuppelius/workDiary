@@ -24,7 +24,7 @@ use App\Models\Training\TrainingCourse;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Ai\Exceptions\AiException;
 use App\Services\Attachments\{ChunkedUploadStore, FileAttacher};
-use App\Services\Learning\{LearningAiSuggestionService, LearningAttendanceListPdfRenderer, LearningContentService, LearningCoursePortabilityService, LearningCourseService, LearningOutlineParser, LearningQuestionCatalogService, LearningQuestionEditorService, LearningTranslationService};
+use App\Services\Learning\{LearningAiSuggestionService, LearningAttendanceListPdfRenderer, LearningContentService, LearningCoursePortabilityService, LearningCourseService, LearningOutlineParser, LearningQuestionCatalogService, LearningQuestionEditorService, LearningTranslationService, LearningUnitLinkService};
 use App\Services\Media\VideoTranscodingService;
 use App\Support\Sqid;
 use CommonToolkit\Helper\Data\JsonHelper;
@@ -233,6 +233,7 @@ class LearningCourseController extends Controller {
         return view('learning.courses._unit_dialog', [
             'course' => $course,
             'sections' => $course->sections()->get(),
+            ...$this->unitLinkOptions(),
         ]);
     }
 
@@ -266,7 +267,10 @@ class LearningCourseController extends Controller {
             'points' => ['nullable', 'integer', 'min:0', 'max:1000'],
             'is_mandatory' => ['nullable', 'boolean'],
             'is_preview' => ['nullable', 'boolean'],
+            ...self::UNIT_LINK_RULES,
         ]);
+        $kind = LearningUnitKind::from($data['kind']);
+        $link = $this->unitLinkRule($kind, $data);
 
         $section = null;
         if (! empty($data['learning_section_id'])) {
@@ -283,6 +287,7 @@ class LearningCourseController extends Controller {
             'points' => $data['points'] ?? 0,
             'is_mandatory' => (bool) ($data['is_mandatory'] ?? true),
             'is_preview' => (bool) ($data['is_preview'] ?? false),
+            'completion_rule' => $link !== [] ? $link : null,
         ]);
 
         return redirect()->back()->with('success', __('learning.flash.unit_added'));
@@ -312,9 +317,8 @@ class LearningCourseController extends Controller {
             // Freischaltplan (MVP-1268): andere Einheiten des Kurses als Vorgänger, Präsenztermine als Stichtag.
             'otherUnits' => $course->units()->where('learning_units.id', '!=', $unit->id)->get(['learning_units.id', 'learning_units.title', 'learning_units.kind', 'learning_units.event_id']),
             'allowedHosts' => $this->content->allowedHosts($this->currentOrganization()),
-            // Prozedurblock (MVP-806): nur aktive Vorlagen der eigenen Organisation.
-            'procedureTemplates' => \App\Models\Procedure\ProcedureTemplate::query()->where('active', true)->orderBy('name')->get(['id', 'name', 'code']),
             'subtitles' => $subtitles,
+            ...$this->unitLinkOptions(),
             'canTranscribe' => app(VideoTranscodingService::class)->isTranscriptionAvailable(),
             // LTI-Einheit (Feature 149): die aktiven Tools der Organisation zur Auswahl.
             'ltiTools' => $unit->kind === \App\Enums\Learning\LearningUnitKind::Lti
@@ -343,6 +347,7 @@ class LearningCourseController extends Controller {
             'release_after_unit' => ['nullable', 'string', 'max:64'],
             'release_after_event' => ['nullable', 'string', 'max:64'],
             'min_seconds' => ['nullable', 'integer', 'min:0', 'max:86400'],
+            ...self::UNIT_LINK_RULES,
         ]);
 
         // Freischaltplan (Drip, MVP-788/1268): Tage ab Einschreibung, festes
@@ -360,6 +365,8 @@ class LearningCourseController extends Controller {
         } else {
             unset($completion['min_seconds']);
         }
+        // Verweis der Arten Prozedur, Umfrage, Extern (MVP-1600).
+        $completion = [...array_diff_key($completion, array_flip(LearningUnitLinkService::RULE_KEYS)), ...$this->unitLinkRule($unit->kind, $data)];
 
         $unit->update([
             'title' => $data['title'],
@@ -375,6 +382,39 @@ class LearningCourseController extends Controller {
     }
 
     /** Einheit des Freischaltplans: aus demselben Kurs, nicht die Einheit selbst. */
+    /** Eingaben für den Verweis einer Einheit der Arten Prozedur, Umfrage, Extern (MVP-1600). */
+    private const array UNIT_LINK_RULES = [
+        'procedure_template' => ['nullable', 'string', 'max:64'],
+        'survey' => ['nullable', 'string', 'max:64'],
+        'external_url' => ['nullable', 'string', 'url:http,https', 'max:2000'],
+        'proof_required' => ['nullable', 'boolean'],
+    ];
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, int|string|bool>
+     */
+    private function unitLinkRule(LearningUnitKind $kind, array $data): array {
+        return app(LearningUnitLinkService::class)->ruleFor($kind, [
+            'procedure_template_id' => Sqid::decode(\App\Models\Procedure\ProcedureTemplate::class, (string) ($data['procedure_template'] ?? '')),
+            'survey_id' => Sqid::decode(\App\Models\Survey\Survey::class, (string) ($data['survey'] ?? '')),
+            'external_url' => $data['external_url'] ?? null,
+            'proof_required' => (bool) ($data['proof_required'] ?? false),
+        ], (int) $this->currentOrganization()->id);
+    }
+
+    /**
+     * Auswahl für den Verweis: aktive Prozedurvorlagen und Fragebögen.
+     *
+     * @return array{procedureTemplates: \Illuminate\Support\Collection<int, \App\Models\Procedure\ProcedureTemplate>, surveys: \Illuminate\Support\Collection<int, \App\Models\Survey\Survey>}
+     */
+    private function unitLinkOptions(): array {
+        return [
+            'procedureTemplates' => \App\Models\Procedure\ProcedureTemplate::query()->where('active', true)->orderBy('name')->get(['id', 'name', 'code']),
+            'surveys' => \App\Models\Survey\Survey::query()->where('active', true)->orderBy('title')->get(['id', 'title']),
+        ];
+    }
+
     private function releaseUnitId(LearningCourse $course, LearningUnit $unit, string $sqid, string $field, ?LearningUnitKind $kind): ?int {
         if ($sqid === '') {
             return null;

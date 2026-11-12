@@ -71,6 +71,7 @@ trait BuildsTimeEntryOptions {
      */
     protected function ticketOptions(Project $project, ?int $currentId = null): Collection {
         return ServiceTicket::query()
+            ->visibleTo($this->authUser())
             ->select(['id', 'ticket_no', 'title', 'status'])
             ->where(function ($q) use ($project, $currentId): void {
                 $q->where(function ($open) use ($project): void {

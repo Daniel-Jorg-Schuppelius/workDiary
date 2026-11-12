@@ -88,6 +88,8 @@ return [
     'inventory' => [
         'heading' => 'Bestandsführung',
         'explain' => 'Legt fest, welches System die Bestände führt. Der Wechsel zurück auf „lokal“ übernimmt die JTL-Bestände als Eröffnungs-Inventur.',
+        'takeover_heading' => 'Übernahme-Inventur',
+        'takeover_explain' => 'Liest die JTL-Bestände erneut und bucht die Differenz zum lokalen Bestand als Eröffnungs-Korrektur — etwa wenn die Übernahme beim Moduswechsel fehlgeschlagen ist. Möglich nur am Tag des Wechsels auf „lokal“; ein zweiter Lauf bucht nichts doppelt.',
         'mode_local' => 'Lokal — WorkDiary führt die Bestände selbst.',
         'mode_external' => 'Extern — JTL-Wawi führt; WorkDiary liest und übergibt Buchungen.',
         'mode_read_only' => 'Nur lesen — JTL-Wawi führt; WorkDiary zeigt Bestände nur an.',
@@ -101,11 +103,13 @@ return [
         'check_registration' => 'Freigabe prüfen',
         'map' => 'Zuordnen',
         'change_mode' => 'Modus wechseln',
+        'takeover' => 'Übernahme-Inventur ausführen',
     ],
 
     'confirm' => [
         'disconnect' => 'Verbindung wirklich trennen? Zuordnungen und Projektionen bleiben erhalten, die Zugangsdaten werden gelöscht.',
         'mode_change' => 'Bestandsführungs-Modus wirklich wechseln?',
+        'takeover' => 'JTL-Bestände jetzt als Eröffnungs-Inventur übernehmen?',
     ],
 
     'flash' => [
@@ -127,8 +131,10 @@ return [
         'mode_needs_connection' => 'Für externe Bestandsführung wird eine aktive JTL-Verbindung benötigt.',
         'mode_needs_mapping' => 'Für externe Bestandsführung muss mindestens ein JTL-Lager zugeordnet sein.',
         'mode_changed' => 'Bestandsführungs-Modus geändert.',
+        'mode_other_plugin' => 'Den Bestand führt gerade :plugin. Umgestellt wird auf dessen Seite.',
         'mode_changed_with_takeover' => 'Modus geändert — :booked Eröffnungs-Korrekturen aus JTL übernommen.',
         'takeover_done' => 'Übernahme-Inventur abgeschlossen: :booked Korrekturen aus :pairs Paaren.',
         'takeover_failed' => 'Übernahme-Inventur fehlgeschlagen (:reason).',
+        'takeover_not_today' => 'Die Übernahme-Inventur ist nur am Tag des Wechsels auf „lokal“ möglich — danach führt der lokale Bestand.',
     ],
 ];

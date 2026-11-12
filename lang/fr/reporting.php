@@ -173,8 +173,8 @@ return [
     'plan_ist' => [
         'warning' => [
             'presence' => [
-                'lateStart' => 'Début plus de 15 minutes après le prévu',
-                'hoursDiff' => 'Écart d’heures supérieur à 10 %',
+                'lateStart' => 'Début plus de :minutes minutes après le prévu',
+                'hoursDiff' => 'Écart d’heures supérieur à :percent %',
             ],
         ],
     ],
@@ -236,6 +236,7 @@ return [
         'group' => [
             'finance' => 'Finances',
             'operations' => 'Exploitation',
+            'hr' => 'Personnel',
             'sales' => 'Ventes',
             'service' => 'Service',
             'quality' => 'Qualité',
@@ -257,6 +258,12 @@ return [
             'resale_open_hint' => 'ouvert :amount',
             'resale_margin' => 'Marge abonnements et licences',
             'resale_margin_hint' => ':periods périodes, :actual avec achat réel',
+            'sick_days' => 'Jours de maladie',
+            'sick_days_hint' => ':episodes arrêts de :users personnes · maintien de salaire épuisé : :exhausted',
+            'qualifications_expired' => 'Qualifications expirées',
+            'qualifications_expiring' => 'À ce jour · expirent sous :days jours : :count',
+            'vacation_pending' => 'Demandes de congé ouvertes',
+            'vacation_pending_hint' => 'À ce jour · début dans les 14 prochains jours : :count',
         ],
         'digest' => [
             'subject' => 'Rapport de direction :organization · :range',
@@ -347,6 +354,8 @@ return [
         'tracked_minutes' => 'Saisi (min)',
         'invoiced_minutes' => 'Facturé (min)',
         'present_minutes' => 'Présent (min)',
+        'homeoffice_minutes' => 'Télétravail (min)',
+        'errand_minutes' => 'Déplacement de service (min)',
         'booked_minutes' => 'Comptabilisé (min)',
         'balance_minutes' => 'Solde (min)',
         'plan_minutes' => 'Plan (min)',
@@ -384,6 +393,7 @@ return [
         'defects_period' => 'Défauts sur la période',
         'defects_12_months' => 'Défauts sur 12 mois',
         'recurring_defect' => 'Défaut récurrent',
+        'recurring_defects' => 'Défauts récurrents',
         'maintenance_sessions' => 'Sessions de maintenance',
         'maintenance_minutes' => 'Temps de maintenance (min)',
         'last_incident' => 'Dernier incident',
@@ -480,6 +490,7 @@ return [
         'median_actual_minutes' => 'Réel médian (min)',
         'p90_actual_minutes' => 'Réel P90 (min)',
         'contribution_per_order_eur' => 'Marge par commande (€)',
+        'top_causes' => 'Principales causes (commandes)',
         'license_plate' => 'Plaque d’immatriculation',
         'propulsion' => 'Motorisation',
         'trips' => 'Trajets',

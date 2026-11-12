@@ -72,6 +72,8 @@
                         <x-table.th sort type="number" align="right">{{ __('Arbeitstage') }}</x-table.th>
                         <x-table.th sort type="duration" align="right">{{ __('Soll') }}</x-table.th>
                         <x-table.th sort type="duration" align="right">{{ __('Anwesend') }}</x-table.th>
+                        <x-table.th sort type="duration" align="right">{{ __('attendance.intermediate.homeoffice') }}</x-table.th>
+                        <x-table.th sort type="duration" align="right">{{ __('attendance.intermediate.errand') }}</x-table.th>
                         <x-table.th sort type="duration" align="right">{{ __('Gebucht') }}</x-table.th>
                         <x-table.th sort type="duration" align="right">{{ __('Saldo') }}</x-table.th>
                     </tr>
@@ -82,6 +84,8 @@
                         <td></td>
                         <td class="text-right tabular-nums">{{ $fmtMin($totals['target']) }}</td>
                         <td class="text-right tabular-nums">{{ $fmtMin($totals['attendance']) }}</td>
+                        <td class="text-right tabular-nums">{{ $fmtMin($totals['homeoffice']) }}</td>
+                        <td class="text-right tabular-nums">{{ $fmtMin($totals['errand']) }}</td>
                         <td class="text-right tabular-nums">{{ $fmtMin($totals['time_entry']) }}</td>
                         <td class="text-right tabular-nums {{ $totals['variance'] < 0 ? 'text-error' : ($totals['variance'] > 0 ? 'text-success' : '') }}">{{ $fmtMin($totals['variance']) }}</td>
                     </tr>
@@ -92,6 +96,8 @@
                         <td class="text-right tabular-nums">{{ $r['workdays'] }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (int) $r['target_minutes'] }}">{{ $fmtMin($r['target_minutes']) }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (int) $r['attendance_minutes'] }}">{{ $fmtMin($r['attendance_minutes']) }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (int) $r['homeoffice_minutes'] }}">{{ $r['homeoffice_minutes'] > 0 ? $fmtMin($r['homeoffice_minutes']) : '—' }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (int) $r['errand_minutes'] }}">{{ $r['errand_minutes'] > 0 ? $fmtMin($r['errand_minutes']) : '—' }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (int) $r['time_entry_minutes'] }}">{{ $fmtMin($r['time_entry_minutes']) }}</td>
                         <td class="text-right tabular-nums {{ $r['variance'] < 0 ? 'text-error font-semibold' : ($r['variance'] > 0 ? 'text-success' : '') }}" data-sort-value="{{ (int) $r['variance'] }}">{{ $fmtMin($r['variance']) }}</td>
                     </tr>

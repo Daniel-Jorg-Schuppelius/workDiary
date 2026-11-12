@@ -16,7 +16,7 @@ use App\Http\Requests\CloudIntake\SaveCloudRouteRequest;
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem, CloudDocumentRoute};
 use App\Plugins\Contracts\{DocumentIntakeSource, IntakeSourceConnector};
 use App\Plugins\PluginManager;
-use App\Services\CloudIntake\RoutePatternValidator;
+use App\Services\CloudIntake\{CloudRouteTargets, CloudRouteTester, RoutePatternValidator};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -29,6 +29,11 @@ use Throwable;
  * Trennen löscht weder Nachweise noch importierte Dokumente.
  */
 class CloudIntakeAdminController extends Controller {
+    /** Vorschau je Verbindung in der Sitzung; der Start ist nur kurz danach bestätigbar (MVP-1613). */
+    private const string PREVIEW_SESSION = 'cloud_intake.previews';
+
+    private const int PREVIEW_VALID_MINUTES = 60;
+
     public function index(Request $request): View {
         Gate::authorize('viewAny', CloudDocumentConnection::class);
 
@@ -66,7 +71,7 @@ class CloudIntakeAdminController extends Controller {
             }
         }
 
-        // Verbinden liefert das Anbieter-Plugin (MVP-1041).
+        // Verbinden liefert das Anbieter-Plugin (MVP-1041), ebenso die erneute Anmeldung (MVP-1620).
         $connectActions = [];
         foreach (CloudIntakeProvider::cases() as $provider) {
             $plugin = app(PluginManager::class)->find($provider->pluginId());
@@ -74,10 +79,18 @@ class CloudIntakeAdminController extends Controller {
                 $connectActions[] = $plugin->intakeConnectAction();
             }
         }
+        $reconnectActions = [];
+        foreach ($connections as $connection) {
+            $plugin = $connection->status->needsReconnect() ? app(PluginManager::class)->find($connection->provider->pluginId()) : null;
+            if ($plugin instanceof IntakeSourceConnector) {
+                $reconnectActions[(int) $connection->id] = $plugin->intakeConnectAction($connection);
+            }
+        }
 
         return view('admin.cloud-intake.index', [
             'connections' => $connections,
             'connectActions' => $connectActions,
+            'reconnectActions' => $reconnectActions,
             'items' => $items,
             'canManage' => Gate::allows('create', CloudDocumentConnection::class),
             'canManageRoutes' => Gate::allows('create', CloudDocumentRoute::class),
@@ -85,6 +98,8 @@ class CloudIntakeAdminController extends Controller {
             'containerSearch' => $containerSearch,
             'containerOptions' => $containerOptions,
             'containerLoadFailed' => $containerLoadFailed,
+            'previews' => (array) $request->session()->get(self::PREVIEW_SESSION, []),
+            'targetLabels' => $this->targetLabels($connections),
         ]);
     }
 
@@ -118,13 +133,16 @@ class CloudIntakeAdminController extends Controller {
         }
 
         // Ordnerwechsel = neuer Abgleich: Checkpoint verwerfen (Nachweise
-        // dedupen den Wieder-Import).
+        // dedupen den Wieder-Import); der neue Erstlauf braucht wieder eine
+        // bestätigte Vorschau.
         $connection->forceFill([
             'container_id' => $data['container_id'],
             'root_folder_id' => ($data['root_folder_id'] ?? '') !== '' ? $data['root_folder_id'] : null,
             'root_folder_path' => $normalized,
             'checkpoint' => null,
+            'start_confirmed_at' => null,
         ])->save();
+        $request->session()->forget(self::PREVIEW_SESSION . '.' . $connection->id);
 
         $this->refreshStatus($connection);
         $connection->audit('cloudIntake.folderSelected', ['path' => $normalized]);
@@ -145,7 +163,7 @@ class CloudIntakeAdminController extends Controller {
     }
 
     /** Erstlaufvorschau: erste Delta-Seite OHNE Übernahme (Konzept §Vorschau). */
-    public function preview(CloudDocumentConnection $connection): RedirectResponse {
+    public function preview(Request $request, CloudDocumentConnection $connection): RedirectResponse {
         Gate::authorize('view', $connection);
         abort_unless(Gate::allows('viewAny', CloudDocumentConnection::class), 403);
 
@@ -172,13 +190,47 @@ class CloudIntakeAdminController extends Controller {
             }
         }
 
-        return back()->with('success', __('cloud_intake.flash.preview_result', [
+        $result = [
             'files' => count($page->items),
             'matched' => $matched,
             'unmatched' => count($page->items) - $matched,
             'size' => \Illuminate\Support\Number::fileSize($bytes, precision: 1),
             'more' => $page->hasMore ? ' (+)' : '',
-        ]));
+        ];
+        $request->session()->put(self::PREVIEW_SESSION . '.' . $connection->id, $result + ['at' => now()->toIso8601String()]);
+
+        return back()->with('success', __('cloud_intake.flash.preview_result', $result));
+    }
+
+    /**
+     * Start nach der Vorschau bestätigen (Feature 080 §Vorschau und
+     * Erstabgleich): erst danach importiert die Verbindung.
+     */
+    public function confirmStart(Request $request, CloudDocumentConnection $connection): RedirectResponse {
+        Gate::authorize('update', $connection);
+
+        $key = self::PREVIEW_SESSION . '.' . $connection->id;
+        $preview = $request->session()->get($key);
+        $at = is_array($preview) && is_string($preview['at'] ?? null) ? \Illuminate\Support\Carbon::parse($preview['at']) : null;
+        if ($at === null || $at->lt(now()->subMinutes(self::PREVIEW_VALID_MINUTES))) {
+            return back()->with('error', __('cloud_intake.flash.preview_required'));
+        }
+        if ($connection->start_confirmed_at !== null) {
+            return back()->with('success', __('cloud_intake.flash.start_confirmed'));
+        }
+
+        $connection->forceFill(['start_confirmed_at' => now()])->save();
+        $request->session()->forget($key);
+        $connection->audit('cloudIntake.startConfirmed', [
+            'files' => (int) ($preview['files'] ?? 0),
+            'matched' => (int) ($preview['matched'] ?? 0),
+            'unmatched' => (int) ($preview['unmatched'] ?? 0),
+        ]);
+        $this->refreshStatus($connection);
+
+        return back()->with('success', $connection->status === CloudIntakeConnectionStatus::Active
+            ? __('cloud_intake.flash.start_confirmed')
+            : __('cloud_intake.flash.start_confirmed_not_ready'));
     }
 
     /** Verbindung trennen: Tokens/Checkpoint weg, Nachweise bleiben. */
@@ -204,19 +256,16 @@ class CloudIntakeAdminController extends Controller {
     public function createRoute(CloudDocumentConnection $connection): View {
         Gate::authorize('create', CloudDocumentRoute::class);
 
-        return view('admin.cloud-intake._route_dialog', [
-            'connection' => $connection,
-            'route' => new CloudDocumentRoute(['priority' => 100, 'active' => true]),
-        ]);
+        return $this->routeDialog($connection, new CloudDocumentRoute(['priority' => 100, 'active' => true]));
     }
 
     public function editRoute(CloudDocumentRoute $cloudRoute): View {
         Gate::authorize('update', $cloudRoute);
 
-        return view('admin.cloud-intake._route_dialog', [
-            'connection' => $cloudRoute->connection,
-            'route' => $cloudRoute,
-        ]);
+        $connection = $cloudRoute->connection;
+        abort_if($connection === null, 404);
+
+        return $this->routeDialog($connection, $cloudRoute);
     }
 
     public function storeRoute(SaveCloudRouteRequest $request, CloudDocumentConnection $connection): RedirectResponse {
@@ -227,7 +276,7 @@ class CloudIntakeAdminController extends Controller {
         ]);
         $this->refreshStatus($connection);
 
-        return back()->with('success', __('cloud_intake.flash.route_saved'));
+        return back()->with('success', __('cloud_intake.flash.route_saved') . ' ' . $request->testSummary());
     }
 
     public function updateRoute(SaveCloudRouteRequest $request, CloudDocumentRoute $cloudRoute): RedirectResponse {
@@ -236,7 +285,44 @@ class CloudIntakeAdminController extends Controller {
         $cloudRoute->update($request->routeAttributes());
         $this->refreshStatus($cloudRoute->connection);
 
-        return back()->with('success', __('cloud_intake.flash.route_saved'));
+        return back()->with('success', __('cloud_intake.flash.route_saved') . ' ' . $request->testSummary());
+    }
+
+    /** Regeldialog mit fester Zielreferenz und — beim Bearbeiten — der Vorschau des gespeicherten Testpfads. */
+    private function routeDialog(CloudDocumentConnection $connection, CloudDocumentRoute $route): View {
+        $targets = app(CloudRouteTargets::class);
+        $current = $targets->resolveStored($route->target_ref_type, $route->target_ref_id !== null ? (int) $route->target_ref_id : null);
+
+        return view('admin.cloud-intake._route_dialog', [
+            'connection' => $connection,
+            'route' => $route,
+            'targetOptions' => $targets->options($current),
+            'targetValue' => $targets->value($current),
+            'testPreview' => $route->exists && $route->test_path !== null
+                ? app(CloudRouteTester::class)->test($connection, $route, $route->test_path)
+                : null,
+        ]);
+    }
+
+    /**
+     * Feste Zielreferenzen der angezeigten Regeln als Text.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, CloudDocumentConnection>  $connections
+     * @return array<int, string>
+     */
+    private function targetLabels(\Illuminate\Database\Eloquent\Collection $connections): array {
+        $targets = app(CloudRouteTargets::class);
+        $labels = [];
+        foreach ($connections as $connection) {
+            foreach ($connection->routes as $route) {
+                $ref = $targets->resolveStored($route->target_ref_type, $route->target_ref_id !== null ? (int) $route->target_ref_id : null);
+                if ($ref !== null) {
+                    $labels[(int) $route->id] = $targets->describe($ref);
+                }
+            }
+        }
+
+        return $labels;
     }
 
     public function destroyRoute(CloudDocumentRoute $cloudRoute): RedirectResponse {
@@ -250,11 +336,13 @@ class CloudIntakeAdminController extends Controller {
     }
 
     /**
-     * Aktiv erst mit bestätigtem Konto, gewähltem Ordner UND mindestens
-     * einer aktiven Regel (Konzept §Verbindung und Preflight).
+     * Aktiv erst mit bestätigtem Konto, gewähltem Ordner, mindestens einer
+     * aktiven Regel (Konzept §Verbindung und Preflight) und bestätigtem
+     * Start nach der Vorschau.
      */
     private function refreshStatus(?CloudDocumentConnection $connection): void {
-        if ($connection === null || $connection->status === CloudIntakeConnectionStatus::Disabled) {
+        // Abgelaufen, blockiert oder abgeschaltet heilt nur die erneute Anmeldung (MVP-1620).
+        if ($connection === null || $connection->status->needsReconnect()) {
             return;
         }
 
@@ -262,8 +350,6 @@ class CloudIntakeAdminController extends Controller {
             && $connection->container_id !== null
             && $connection->routes()->where('active', true)->exists();
 
-        $connection->forceFill([
-            'status' => $ready ? CloudIntakeConnectionStatus::Active : CloudIntakeConnectionStatus::Draft,
-        ])->save();
+        $connection->forceFill(['status' => $connection->readyStatus($ready)])->save();
     }
 }

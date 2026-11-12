@@ -121,12 +121,19 @@
 
     @if ($tracksTarget)
         {{-- Soll/Ist/Saldo-Modelle — Saldo mit Ampelphasen (MVP-521). --}}
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {{-- Soll und Ist zählen wie das gespeicherte Konto nur abgeschlossene Tage (MVP-1627). --}}
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <x-kpi-tile :label="__('Soll')" :value="$fmt($summary['target'])" />
             <x-kpi-tile :label="__('Ist')" :value="$fmt($summary['actual'])" />
             <x-kpi-tile :label="__('Saldo')" term="flexzeit" :value="$fmt($summary['balance'])"
-                        :tone="($trafficLight ?? null)?->tone((int) $summary['balance']) ?? ($summary['balance'] < 0 ? 'error' : 'success')" />
+                        :tone="$summary['balance'] < 0 ? 'error' : 'success'" />
+            <x-kpi-tile :label="__('flex.account.balance')" :value="$fmt($summary['account'])"
+                        :hint="__('flex.account.carry', ['value' => $fmt($summary['carry'])])"
+                        :tone="($trafficLight ?? null)?->tone((int) $summary['account']) ?? ($summary['account'] < 0 ? 'error' : 'success')" />
         </div>
+        @if ($summary['settled_through'] !== null)
+            <p class="text-xs text-muted">{{ __('flex.account.settled_through', ['date' => \Carbon\Carbon::parse($summary['settled_through'])->translatedFormat('d.m.Y')]) }}</p>
+        @endif
 
         @if (($forecast['months'] ?? []) !== [])
             {{-- Vorausberechnung (MVP-521): projizierter Saldo je Zukunftsmonat. --}}

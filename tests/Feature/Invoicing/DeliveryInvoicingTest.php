@@ -14,7 +14,7 @@ namespace Tests\Feature\Invoicing;
 
 use App\Enums\Article\ArticleType;
 use App\Enums\Invoicing\InvoiceStatus;
-use App\Enums\Manufacturing\{DeliveryFacturationStatus, DeliveryStockStatus};
+use App\Enums\Manufacturing\DeliveryFacturationStatus;
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Customer\Customer;
 use App\Models\Inventory\{StockDelivery, Warehouse};
@@ -193,11 +193,11 @@ final class DeliveryInvoicingTest extends TestCase {
         $wrongCustomer = $this->delivery('1', ['customer_id' => $otherCustomer->id]);
         $external = $this->delivery('1', ['facturation_target' => 'lexoffice']);
         $foreignCurrency = $this->delivery('1', ['currency' => 'CHF']);
-        $notDelivered = $this->delivery('1', ['stock_status' => DeliveryStockStatus::Cancelled]);
+        $invoiced = $this->delivery('1', ['facturation_status' => DeliveryFacturationStatus::Invoiced]);
         $other = Organization::factory()->create();
         $foreign = StockDelivery::query()->create(['organization_id' => $other->id, 'article_variant_id' => $this->variant->id, 'warehouse_id' => Warehouse::factory()->create(['organization_id' => $other->id])->id, 'customer_id' => Customer::factory()->create(['organization_id' => $other->id])->id, 'quantity' => '1', 'unit' => 'Stk', 'name_snapshot' => 'Fremd', 'unit_price_snapshot' => '1.0000', 'currency' => 'EUR', 'stock_status' => 'delivered', 'facturation_status' => 'pending', 'facturation_target' => 'workdiary', 'delivered_at' => now()]);
 
-        foreach ([$wrongCustomer, $external, $foreignCurrency, $notDelivered, $foreign] as $delivery) {
+        foreach ([$wrongCustomer, $external, $foreignCurrency, $invoiced, $foreign] as $delivery) {
             try {
                 $this->service()->attach($draft, [$delivery->id]);
                 $this->fail('Auslieferung ' . $delivery->id . ' hätte abgewiesen werden müssen.');

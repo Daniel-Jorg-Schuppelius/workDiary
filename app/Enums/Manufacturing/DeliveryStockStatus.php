@@ -15,7 +15,4 @@ namespace App\Enums\Manufacturing;
 /** Lagerstand einer Auslieferung (Feature 047, MVP-074), getrennt vom Fakturastand. */
 enum DeliveryStockStatus: string {
     case Delivered = 'delivered';
-
-    /** Im Schema vorgesehen, heute von keinem Code geschrieben. */
-    case Cancelled = 'cancelled';
 }

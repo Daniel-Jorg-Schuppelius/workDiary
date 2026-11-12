@@ -29,7 +29,7 @@ return [
         'environment' => ['ote' => 'OT&E (test/pilota)', 'production' => 'Produzione'],
         'connection_status' => ['draft' => 'Bozza', 'active' => 'Attivo', 'blocked' => 'Bloccato', 'disconnected' => 'Disconnesso'],
         'sync_status' => ['current' => 'Aggiornato', 'stale' => 'Obsoleto', 'pending' => 'In sospeso', 'conflict' => 'Conflitto', 'unknown' => 'Incerto'],
-        'renewal_mode' => ['autorenew' => 'Rinnovo automatico', 'autoexpire' => 'Scadenza automatica', 'autodelete' => 'Eliminazione automatica', 'renewonce' => 'Rinnova una volta'],
+        'renewal_mode' => ['autorenew' => 'Rinnovo automatico', 'autoexpire' => 'Scadenza automatica', 'autodelete' => 'Eliminazione automatica'],
         'command_status' => ['draft' => 'Bozza', 'approved' => 'Approvato', 'pending' => 'In sospeso', 'confirmed' => 'Confermato', 'failed' => 'Fallito', 'unknown' => 'Incerto', 'conflict' => 'Conflitto'],
         'capability_area' => ['authentication' => 'Autenticazione', 'subuser' => 'Sottoutente', 'domains' => 'Domini', 'contacts' => 'Contatti', 'nameservers' => 'Nameserver', 'dns' => 'Zone DNS', 'events' => 'Eventi', 'renewal' => 'Rinnovo', 'transfer' => 'Trasferimento', 'accounting' => 'Contabilità', 'invoices' => 'Fatture'],
     ],
@@ -55,6 +55,7 @@ return [
             'customer' => 'Cliente',
             'external' => 'Esterno',
         ],
+        'asset_health' => ['ok' => 'In ordine', 'degraded' => 'Limitato', 'critical' => 'Critico'],
         'asset_block_reason' => ['defect' => 'Difetto', 'safety' => 'Sicurezza sul lavoro', 'recall' => 'Richiamo', 'inspection_overdue' => 'Controllo scaduto', 'inspection_failed' => 'Controllo non superato', 'rental_damage' => 'Danno da noleggio', 'policy_hold' => 'Blocco interno', 'manual' => 'Bloccato manualmente', 'maintenance' => 'Manutenzione', 'other' => 'Altro motivo'],
         'asset_status' => ['active' => 'Attivo', 'in_maintenance' => 'In manutenzione', 'in_repair' => 'In riparazione', 'blocked' => 'Bloccato', 'reserved' => 'Riservato', 'loan_out' => 'In prestito', 'replaced' => 'Sostituito', 'decommissioned' => 'Fuori servizio', 'lost' => 'Perso'],
     ],
@@ -209,6 +210,7 @@ return [
             'approved' => 'Approvato',
             'rejected' => 'Rifiutato',
             'cancelled' => 'Annullato',
+            'revision' => 'Correzione richiesta',
         ],
     ],
     'cloud_intake' => [
@@ -343,6 +345,7 @@ return [
     ],
     'sync_command' => [
         'status' => ['applied' => 'Applicato', 'duplicate' => 'Duplicato', 'conflict' => 'Conflitto', 'rejected' => 'Respinto'],
+        'resolution' => ['server' => 'Versione del server accettata', 'discarded' => 'Scartato', 'resent' => 'Inviato di nuovo'],
     ],
     'task' => [
         'status' => [
@@ -423,6 +426,7 @@ return [
                 'submissionReceived' => 'Consegna in attesa di valutazione',
                 'graded' => 'Valutazione disponibile',
                 'certificateIssued' => 'Certificato emesso',
+                'certificateRevoked' => 'Certificato revocato',
                 'failedFinal' => 'Esame definitivamente non superato',
                 'waitlistPromoted' => 'Promosso dalla lista d’attesa',
                 'bookingDecided' => 'Prenotazione del corso decisa',
@@ -538,6 +542,7 @@ return [
             'sla' => [
                 'atRisk' => 'Scadenza SLA a rischio',
                 'breached' => 'Scadenza SLA violata',
+                'olaBreached' => 'Obiettivo interno (OLA) superato',
                 'quotaWarning' => 'Quota SLA quasi esaurita',
             ],
             'asset' => [
@@ -564,6 +569,10 @@ return [
                 'requested' => 'Scambio turno richiesto',
                 'decided' => 'Scambio turno deciso',
             ],
+            'protocol' => [
+                'customerSigned' => 'Il cliente ha firmato un protocollo',
+                'customerRejected' => 'Il cliente ha rifiutato l’accettazione',
+            ],
             'customer' => [
                 'queryRaised' => 'Il cliente ha posto una domanda',
                 'intakeSubmitted' => 'Il cliente ha inviato una richiesta',
@@ -587,6 +596,8 @@ return [
                 'transferChanged' => 'Stato trasferimento dominio cambiato',
                 'syncFailed' => 'Sincronizzazione dominio non riuscita',
                 'highRiskAction' => 'Azione dominio ad alto rischio approvata',
+                'renewalCostHigh' => 'Rinnovo di dominio sopra la soglia di costo',
+                'balanceRisk' => 'Il saldo presso il fornitore non copre i rinnovi dei domini',
             ],
             'finance' => [
                 'retentionReleaseDue' => 'Liberazione ritenuta dovuta',
@@ -622,6 +633,7 @@ return [
                 'problemReportReceived' => 'Nuova segnalazione di problema ricevuta',
                 'cloudIntakeReauth' => 'Ingresso cloud: nuovo accesso necessario',
                 'cloudIntakeQuarantined' => 'Ingresso cloud: importazioni rifiutate',
+                'smsBudgetWarning' => 'Contingente SMS quasi o del tutto esaurito',
             ],
             'quote' => [
                 'followUpDue' => 'Preventivo: sollecito da fare',
@@ -665,7 +677,6 @@ return [
         ],
         'sms_status' => [
             'sent' => 'Inviato',
-            'delivered' => 'Consegnato',
             'failed' => 'Non riuscito',
             'blocked' => 'Non inviato',
         ],
@@ -1421,6 +1432,7 @@ return [
             'internal_transfer' => 'Giroconto interno',
             'opening_balance' => 'Saldi iniziali',
             'vat_special_prepayment' => 'Acconto speciale',
+            'bank_direct' => 'Movimento bancario senza documento',
             'reversal' => 'Storno',
         ],
         'posting-account-role' => [
@@ -1485,6 +1497,7 @@ return [
             'output' => 'IVA a debito',
             'input' => 'IVA a credito',
             'none' => 'Senza imposta',
+            'both' => 'IVA a debito e a credito (inversione contabile)',
         ],
         // Lokale Buchhaltung (Feature 125, MVP-671).
         'accounting-sovereignty' => [
@@ -1630,7 +1643,6 @@ return [
             'matched' => 'Assegnato',
             'ignored' => 'Accantonato',
             'unassignable' => 'Non assegnabile',
-            'duplicate' => 'Duplicato',
         ],
         'allocation-kind' => [
             'payment' => 'Pagamento',
@@ -2173,6 +2185,7 @@ return [
         ],
         'incoming_e_invoice_status' => ['received' => 'Ricevuta', 'approved' => 'Approvata (verifica)', 'rejected' => 'Rifiutato', 'question' => 'Richiesta di chiarimento', 'payment_released' => 'Pagamento autorizzato'],
         'incoming_invoice_recognition' => ['structured' => 'Fattura elettronica (strutturata)', 'extracted' => 'Riconosciuta da PDF o immagine', 'none' => 'Non riconosciuta (da chiarire)'],
+        'incoming_invoice_tax_case' => ['regular' => 'IVA a credito dalla fattura', 'reverse_charge_eu' => '§ 13b, comma 1 UStG: prestazione di servizi da un altro paese UE', 'reverse_charge' => '§ 13b, comma 2 UStG: imposta dovuta dal destinatario (p. es. lavori edili)', 'intra_community_acquisition' => 'Acquisto intracomunitario (§ 1a UStG)'],
         'incoming_invoice_match_kind' => ['vat_id' => 'Partita IVA', 'tax_number' => 'Codice fiscale', 'iban' => 'IBAN', 'sender_rule' => 'Regola mittente', 'manual' => 'Manuale', 'rule' => 'Regola della posta in arrivo', 'template' => 'Modello di documento'],
         'incoming_invoice_transfer_status' => ['pending' => 'In attesa', 'waiting' => 'Da chiarire', 'failed' => 'Non riuscito', 'transferred' => 'Trasferita', 'linked' => 'Già presente, collegata'],
         'invoice_schedule_status' => ['active' => 'Attivo', 'paused' => 'In pausa', 'ended' => 'Terminato'],
@@ -2239,7 +2252,7 @@ return [
     'disposal' => [
         'data_medium_type' => ['hdd' => 'Disco rigido (HDD)', 'ssd' => 'SSD', 'usb_flash' => 'Chiavetta USB', 'memory_card' => 'Scheda di memoria', 'mobile_device' => 'Dispositivo mobile', 'magnetic_tape' => 'Nastro magnetico', 'optical' => 'Supporto ottico', 'other' => 'Altro supporto dati'],
         'din_category' => ['p' => 'P — carta', 'f' => 'F — film/pellicola', 'o' => 'O — supporti ottici', 't' => 'T — supporti magnetici', 'h' => 'H — dischi rigidi', 'e' => 'E — supporti elettronici'],
-        'disposal_job_event_type' => ['created' => 'Pratica creata', 'item_added' => 'Posizione apparecchio registrata', 'item_updated' => 'Posizione apparecchio modificata', 'item_removed' => 'Posizione apparecchio rimossa', 'treatment_added' => 'Trattamento del supporto dati documentato', 'treatment_removed' => 'Trattamento del supporto dati rimosso', 'handover_added' => 'Consegna allo smaltitore registrata', 'handover_removed' => 'Consegna allo smaltitore rimossa', 'status_changed' => 'Stato modificato', 'signed' => 'Presa in carico firmata', 'record_rendered' => 'Attestato cliente generato', 'completed' => 'Pratica conclusa', 'cancelled' => 'Pratica annullata'],
+        'disposal_job_event_type' => ['created' => 'Pratica creata', 'item_added' => 'Posizione apparecchio registrata', 'item_updated' => 'Posizione apparecchio modificata', 'item_removed' => 'Posizione apparecchio rimossa', 'item_photo_added' => 'Foto aggiunta alla posizione apparecchio', 'item_photo_removed' => 'Foto della posizione apparecchio rimossa', 'treatment_added' => 'Trattamento del supporto dati documentato', 'treatment_removed' => 'Trattamento del supporto dati rimosso', 'handover_added' => 'Consegna allo smaltitore registrata', 'handover_removed' => 'Consegna allo smaltitore rimossa', 'status_changed' => 'Stato modificato', 'signed' => 'Presa in carico firmata', 'record_rendered' => 'Attestato cliente generato', 'completed' => 'Pratica conclusa', 'cancelled' => 'Pratica annullata'],
         'disposal_job_status' => ['draft' => 'Creato', 'collected' => 'Ritirato', 'in_treatment' => 'In trattamento', 'handed_over' => 'Consegnato allo smaltitore', 'completed' => 'Completato', 'cancelled' => 'Annullato'],
         'disposal_proof_type' => ['transfer_note' => 'Bolla di presa in carico', 'consignment_note' => 'Formulario di accompagnamento', 'disposal_certificate' => 'Attestato di smaltimento', 'eanv' => 'Riferimento al registro eANV', 'disposer_certificate' => 'Certificato dello smaltitore'],
         'media_treatment_method' => ['software_wipe' => 'Cancellazione software', 'degaussing' => 'Smagnetizzazione', 'shredding' => 'Triturazione', 'removed_for_destruction' => 'Rimosso per la distruzione'],
@@ -2261,7 +2274,7 @@ return [
     ],
     'integration' => [
         'conflict_field_policy' => ['remote_wins' => 'Vince il remoto', 'local_wins' => 'Vince il locale', 'manual_review' => 'Verifica manuale (inbox)'],
-        'data_domain' => ['tasks' => 'Attività', 'tickets' => 'Ticket', 'inventory' => 'Giacenza di magazzino', 'calendar' => 'Calendario', 'documents' => 'Documenti', 'customers' => 'Clienti'],
+        'data_domain' => ['tasks' => 'Attività', 'tickets' => 'Ticket', 'inventory' => 'Giacenza di magazzino', 'calendar' => 'Calendario', 'documents' => 'Documenti', 'customers' => 'Clienti e fornitori'],
         'import_match_policy' => ['auto_link_exact_only' => 'Associa solo le corrispondenze esatte (resto in inbox)', 'auto_link_and_create' => 'Associa, altrimenti crea', 'manual_review' => 'Verifica tutto manualmente'],
         'integration_inbox_status' => ['open' => 'Aperto', 'resolved_linked' => 'Associato', 'resolved_created' => 'Creato', 'resolved_local' => 'Mantieni locale', 'resolved_remote' => 'Remoto applicato', 'dismissed' => 'Scartato'],
         'shop_order_status' => ['open' => 'Aperto', 'processing' => 'In lavorazione', 'completed' => 'Completato', 'cancelled' => 'Annullato', 'refunded' => 'Rimborsato'],
@@ -2305,6 +2318,7 @@ return [
         'dpia_outcome' => ['open' => 'Aperto', 'proceed' => 'Accettabile – esecuzione', 'consult_authority' => 'Consultazione dell\'autorità di controllo', 'abort' => 'Non realizzabile'],
         'dpia_step_status' => ['pending' => 'Aperto', 'done' => 'Completato'],
         'implementation_status' => ['planned' => 'Pianificato', 'partial' => 'Parzialmente attuato', 'implemented' => 'Attuato', 'not_applicable' => 'Non applicabile'],
+        'protection_level' => ['normal' => 'Normale', 'high' => 'Elevato', 'very_high' => 'Molto elevato'],
         'incident_status' => ['detected' => 'Rilevato', 'assessing' => 'In valutazione', 'contained' => 'Contenuto', 'reported' => 'Segnalato', 'closed' => 'Completato'],
         'incident_type' => ['loss' => 'Perdita', 'misdelivery' => 'Invio errato', 'unauthorized_access' => 'Accesso non autorizzato', 'disclosure' => 'Divulgazione', 'alteration' => 'Modifica non autorizzata', 'unavailability' => 'Indisponibilità'],
         'measure_category' => ['physical_access' => 'Controllo degli accessi fisici', 'system_access' => 'Controllo dell\'accesso ai sistemi', 'data_access' => 'Controllo dell\'accesso ai dati', 'transfer' => 'Controllo della trasmissione', 'input' => 'Controllo dell\'inserimento', 'availability' => 'Controllo della disponibilità', 'recovery' => 'Ripristinabilità', 'separation' => 'Controllo della separazione', 'management' => 'Gestione della protezione dei dati'],
@@ -2320,6 +2334,12 @@ return [
         'rental_charge_kind' => ['daily_rate' => 'Tariffa giornaliera', 'hourly_rate' => 'Tariffa oraria', 'flat_rate' => 'Importo forfettario', 'weekend_surcharge' => 'Supplemento weekend', 'holiday_surcharge' => 'Maggiorazione per giorni festivi', 'cleaning' => 'Pulizia', 'consumable' => 'Materiale di consumo', 'delivery' => 'Consegna/trasporto', 'damage' => 'Danno', 'loss' => 'Perdita', 'discount' => 'Riduzione/abbuono', 'other' => 'Varie'],
         'rental_charge_status' => ['draft' => 'Bozza', 'released' => 'Approvato', 'invoiced' => 'Fatturato', 'transferred' => 'Trasmesso esternamente', 'cancelled' => 'Annullato'],
         'rental_condition' => ['new' => 'Come nuovo', 'good' => 'Buono', 'used' => 'Usato', 'worn' => 'Usurato', 'damaged' => 'Danneggiato'],
+        'rental_condition_item_state' => [
+            'ok' => 'In ordine',
+            'worn' => 'Usurato',
+            'damaged' => 'Danneggiato',
+            'missing' => 'Mancante',
+        ],
         'rental_deposit_status' => ['requested' => 'Richiesto', 'received' => 'Ricevuto', 'refunded' => 'Rimborsato', 'partially_retained' => 'Parzialmente trattenuta', 'retained' => 'Trattenuto', 'waived' => 'Rinunciato'],
         'rental_rate_card_status' => ['draft' => 'Bozza', 'active' => 'Attivo', 'retired' => 'Sostituito'],
         'rental_request_status' => ['requested' => 'richiesta', 'accepted' => 'accettato', 'declined' => 'rifiutata', 'withdrawn' => 'ritirata', 'awaiting_payment' => 'pagamento in sospeso', 'expired' => 'scaduta'],
@@ -2335,6 +2355,7 @@ return [
         'service_ticket_source' => ['manual' => 'Manuale', 'maintenance_plan' => 'Piano di manutenzione', 'open_issue' => 'Punti aperti', 'email' => 'E-mail', 'customer_portal' => 'Portale clienti', 'api' => 'API'],
         'service_ticket_status' => ['reported' => 'Segnalato', 'triaged' => 'Triagiato', 'scheduled' => 'Pianificato', 'in_progress' => 'In lavorazione', 'done' => 'Risolto', 'accepted' => 'Accettato', 'closed' => 'Chiuso', 'rejected' => 'Rifiutato', 'waiting_customer' => 'In attesa del cliente', 'waiting_external' => 'In attesa di terzi', 'paused' => 'In pausa'],
         'ticket_close_code' => ['solved' => 'Risolto', 'workaround' => 'Soluzione temporanea', 'duplicate' => 'Duplicato', 'no_fault' => 'Nessun guasto', 'rejected' => 'Rifiutato', 'other' => 'Varie'],
+        'ticket_message_delivery_status' => ['queued' => 'Invio in coda', 'sent' => 'Inviato', 'failed' => 'Invio non riuscito'],
         'ticket_message_kind' => ['public_reply' => 'Risposta', 'internal_note' => 'Nota interna', 'system_event' => 'Evento di sistema'],
         'ticket_severity' => ['low' => 'Bassa', 'medium' => 'Media', 'high' => 'Alta'],
     ],
@@ -2343,7 +2364,7 @@ return [
         'software_license_type' => ['perpetual' => 'Licenza d\'acquisto', 'subscription' => 'Abbonamento', 'oem' => 'OEM', 'volume' => 'Licenza per volume', 'free' => 'Gratuito', 'open_source' => 'Open Source', 'other' => 'Altri'],
     ],
     'survey' => [
-        'survey_invitation_status' => ['created' => 'creato', 'sent' => 'inviato', 'responded' => 'risposta', 'expired' => 'scaduto'],
+        'survey_invitation_status' => ['created' => 'creato', 'sent' => 'inviato', 'responded' => 'risposta'],
     ],
     'tenders' => [
         'tender_notice_match_state' => ['new' => 'Nuovo', 'muted' => 'Nascosti', 'converted' => 'Acquisiti'],
@@ -2367,5 +2388,14 @@ return [
     'work_queue' => [
         'category' => ['approval' => 'Approvazioni', 'inbox' => 'Caselle in arrivo', 'task' => 'Attività', 'reminder' => 'Promemoria'],
         'urgency' => ['overdue' => 'Scaduto', 'due_soon' => 'In scadenza', 'open' => 'Aperto'],
+        'due' => ['overdue' => 'Scaduto', 'today' => 'In scadenza oggi', 'week' => 'In scadenza questa settimana', 'none' => 'Senza scadenza'],
+    ],
+    // Lager (MVP-1626)
+    'inventory' => [
+        'negative-stock-request-status' => [
+            'pending' => 'Aperta',
+            'approved' => 'Approvata',
+            'rejected' => 'Respinta',
+        ],
     ],
 ];

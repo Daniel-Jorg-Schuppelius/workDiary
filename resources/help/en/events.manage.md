@@ -1,7 +1,7 @@
 ---
 title: "Managing events"
 topic: events.manage
-version: 1
+version: 2
 keywords:
     - event planning
     - create event
@@ -32,3 +32,5 @@ the generated instances before invitations or reminders are sent.
 
 Changes to time or location affect every invited person. Mark cancelled
 events accordingly so history and notifications remain understandable.
+
+**Reminders per event:** In the “Reminders” section of the event dialog you set how many minutes before the start a reminder is sent. Without an entry, the category’s reminders or the installation default apply.

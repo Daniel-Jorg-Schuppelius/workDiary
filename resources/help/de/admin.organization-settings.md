@@ -1,7 +1,7 @@
 ---
 title: "Organisation und Einstellungen"
 topic: admin.organization-settings
-version: 6
+version: 8
 keywords:
     - Firmeneinstellungen
     - Mandanteneinstellungen
@@ -284,6 +284,13 @@ Plattformbetriebs ist eine Systemeinstellung unter **Einstellungen
 
 Wie Rechnungen entstehen, beschreibt das Thema „Rechnungen & Belege“.
 
+- **Freigabe vor der Ausstellung verlangen (Vier-Augen-Prinzip)**: Eine
+  Rechnung lässt sich erst ausstellen, versenden oder an das
+  Buchhaltungsprogramm übergeben, nachdem eine zweite Person sie über
+  **Freigeben** bestätigt hat. Wer die Rechnung angelegt hat, kann sie nicht
+  selbst freigeben. Nur einschalten, wenn mindestens zwei Personen Rechnungen
+  ausstellen dürfen; ohne den Haken bleibt die Freigabe freiwillig.
+
 ## Mahnwesen
 
 Stufen-Vorgaben für Einzelmahnung und Mahnlauf; den Ablauf beschreibt das
@@ -324,6 +331,9 @@ Drei Felder wirken darüber hinaus auf alle lokal erstellten Rechnungen:
   gemäß § 19 UStG (Kleinunternehmerregelung).“; die XRechnung erhält die
   Steuerkategorie E (steuerbefreit). Der Haken hat Vorrang vor
   **Standard-Steuersatz (%)** und Reverse Charge.
+- **Nur validierte E-Rechnungen ausstellen**: Vor der Ausstellung läuft die
+  E-Rechnungs-Validierung. Besteht die Rechnung sie nicht, wird die Ausstellung
+  abgebrochen und der Prüfbericht geöffnet.
 
 ## E-Rechnung: Unterlagen und Empfänger
 
@@ -339,6 +349,16 @@ Regeln für rechnungsbegründende Unterlagen in der E-Rechnung:
 ## Buchhaltung: Vier-Augen-Prinzip
 
 Der Schalter **Vier-Augen-Prinzip** in der Gruppe **Buchhaltung** legt fest, dass eine zweite Person freigibt: Wer eine Buchung oder eine Direktbuchung (Skonto, Ausbuchung, Klärungsbuchung, interne Umbuchung, Startsalden, Sondervorauszahlung) vorbereitet, schreibt sie nicht selbst fest; wer einen SEPA-Zahlungslauf zusammenstellt, gibt ihn nicht selbst frei. Direktbuchungen entstehen dann als Entwurf in der **Buchungs-Inbox** und wirken erst nach der Festschreibung. Ohne den Schalter schreibt WorkDiary sie sofort fest.
+
+## Bankabgleich: Toleranzen
+
+Die Gruppe **Bankabgleich** steuert die Zuordnungsvorschläge im Zahlungsabgleich.
+
+- **Cent-Toleranz (Betrag)** (0–1, Vorgabe 0,02): Rundungsdifferenz, bis zu der
+  ein Zahlbetrag als passend gilt.
+- **Skonto-Toleranz (%)** (0–10, Vorgabe 3): Unterzahlung, die als vollständige
+  Zahlung mit Skontoabzug vorgeschlagen wird, wenn die Rechnung keine eigene
+  Skontokondition trägt.
 
 ## Anlagen: GWG und Sammelposten
 
@@ -556,8 +576,10 @@ eingetragenen Kachelserver.
   laden.
 - **Maximaler Zoom** (1–22, Vorgabe 19): stärkste Vergrößerung der Karten.
   Wählen Sie höchstens die Stufe, die der Kachelserver liefert.
-- Den Quellenvermerk unten auf der Karte legt die Grundkonfiguration des
-  Betreibers fest; hier lässt er sich nicht ändern.
+- **Quellenvermerk** (bis 255 Zeichen, Text ohne HTML): Pflichtangabe des
+  Kachelanbieters unten rechts auf jeder Karte, etwa „© Anbieter“. Leer gilt der
+  Vermerk der Grundkonfiguration, den der graue Text nennt. Bei einem eigenen
+  Kachelserver tragen Sie den Vermerk ein, den dessen Nutzungsbedingungen verlangen.
 
 ## Anfahrt-Abrechnung
 
@@ -595,6 +617,12 @@ Kantone. Regionale Feiertage wie Fronleichnam oder Reformationstag gelten nur
 in bestimmten Bundesländern – wählen Sie deshalb die Region Ihres Betriebs.
 Leer gilt die systemweite Vorgabe, die der erste Eintrag der Liste als
 „Standard …“ nennt.
+
+**Sprache der Feiertagsnamen** legt fest, in welcher Sprache Kalender,
+Dienstplan und Auswertungen die gesetzlichen Feiertage benennen. Zur Wahl stehen
+Deutsch (Deutschland, Österreich, Schweiz), Französisch und Italienisch
+(Schweiz) sowie Englisch, Französisch, Italienisch und Spanisch. Eigene
+Feiertage behalten ihren Namen. Leer gilt die systemweite Vorgabe.
 
 Die Region wirkt überall, wo workDiary Feiertage berücksichtigt, unter
 anderem bei:
@@ -678,3 +706,14 @@ Organisation.
 
 Das Ein- und Ausschalten des Wartungsmodus wird im Audit-Protokoll
 festgehalten.
+
+**Rechtsraum:** In den Stammdaten wählen Sie den Rechtsraum der Organisation.
+Er bestimmt die Aufbewahrungsfristen der Löschvorschläge und die Angaben der
+Verfahrensdokumentation; die Änderung steht im Audit-Protokoll.
+
+Unter den erweiterten Einstellungen legen Sie außerdem fest: den Abstand der
+Führerscheinkontrolle, die Prioritätsmatrix des Helpdesks (Auswirkung ×
+Dringlichkeit, leere Zelle = Standard), die Warnschwelle der
+Kapazitätsplanung, die Schwelle der zweiten Freigabestufe bei Investitionen,
+Trennzeichen und Metazeilen des CSV-Exports der Berichte sowie die Löschfrist
+abgelehnter Bewerbungen.

@@ -18,6 +18,7 @@ use App\Models\Platform\{Organization, User};
 use App\Plugins\Support\Concerns\HandlesOAuthPopup;
 use App\Plugins\Support\{OAuthStateHandshake, PluginOrgContext};
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Symfony\Component\HttpFoundation\Response;
@@ -61,11 +62,44 @@ abstract class IntakeOAuthController extends Controller {
         return [];
     }
 
+    /**
+     * Pflicht-Scopes (Feature 080 §Verbindung und Preflight): fehlt einer in der
+     * Token-Antwort, ist die Verbindung blockiert statt teilaktiv (MVP-1620).
+     *
+     * @return list<string>
+     */
+    protected function requiredScopes(): array {
+        return array_values(array_diff($this->scopes(), ['offline_access', 'openid', 'profile', 'email']));
+    }
+
+    /**
+     * Pflicht-Scopes, die die Token-Antwort nicht nennt. Microsoft meldet sie
+     * mit Ressourcen-Präfix und anderer Schreibweise; ohne Scope-Angabe gilt
+     * die Anfrage als gewährt.
+     *
+     * @return list<string>
+     */
+    private function missingScopes(?string $granted): array {
+        if ($granted === null || trim($granted) === '') {
+            return [];
+        }
+        $have = array_map('mb_strtolower', StringHelper::words($granted));
+
+        return array_values(array_filter($this->requiredScopes(), static function (string $scope) use ($have): bool {
+            $needle = mb_strtolower($scope);
+            foreach ($have as $entry) {
+                if ($entry === $needle || str_ends_with($entry, '/' . $needle)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }));
+    }
+
     /** Status nach erfolgreichem Callback (Neuanlagen bleiben Entwurf bis Ordner + Route stehen, P8). */
     protected function connectedStatus(CloudDocumentConnection $connection): CloudIntakeConnectionStatus {
-        return $connection->root_folder_id !== null && $connection->routes()->where('active', true)->exists()
-            ? CloudIntakeConnectionStatus::Active
-            : CloudIntakeConnectionStatus::Draft;
+        return $connection->readyStatus($connection->root_folder_id !== null && $connection->routes()->where('active', true)->exists());
     }
 
     /** Startet den OAuth-Flow (optional `?connection=<sqid>` für Re-Auth). */
@@ -146,6 +180,14 @@ abstract class IntakeOAuthController extends Controller {
             $connection->recordConnectionFailure(class_basename($e));
 
             return $this->respondToOAuth($isPopup, false, $this->backToOverview()->with('error', __('cloud_intake.flash.account_failed', ['class' => class_basename($e)])));
+        }
+
+        $missing = $this->missingScopes($scope);
+        if ($missing !== []) {
+            $connection->forceFill(['status' => CloudIntakeConnectionStatus::Blocked])->save();
+            $connection->audit('cloudIntake.scopeBlocked', ['by_user_id' => (int) $admin->id, 'provider' => $this->provider()->value, 'missing' => $missing]);
+
+            return $this->respondToOAuth($isPopup, false, $this->backToOverview()->with('error', __('cloud_intake.flash.scope_missing', ['scope' => implode(', ', $missing)])));
         }
 
         $connection->forceFill(['status' => $this->connectedStatus($connection)])->save();

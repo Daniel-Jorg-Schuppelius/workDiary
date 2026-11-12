@@ -16,6 +16,8 @@ return [
         'all_categories' => 'Alle Bereiche',
         'source' => 'Quelle',
         'all_sources' => 'Alle Quellen',
+        'due' => 'Fälligkeit',
+        'all_due' => 'Alle Fälligkeiten',
         'mine' => 'Nur mir zugewiesen',
     ],
     'column' => [
@@ -40,6 +42,7 @@ return [
         'resale' => 'Abos & Lizenzen',
         'approval' => 'Freigabeketten',
         'vacation_approval' => 'Urlaubsanträge',
+        'vacation_revision' => 'Urlaubsanträge zur Korrektur',
         'expense_approval' => 'Spesen',
         'month_closure' => 'Monatsabschlüsse',
         'price_change' => 'Preisänderungen',
@@ -67,6 +70,7 @@ return [
     ],
     'item' => [
         'vacation' => 'Urlaubsantrag von :name',
+        'vacation_revision' => 'Urlaubsantrag korrigieren',
         'expense' => 'Spese von :name',
         'month_closure' => 'Monat :period von :name',
         'price_change' => 'Preisänderung: :article',

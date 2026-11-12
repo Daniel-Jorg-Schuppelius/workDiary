@@ -1,7 +1,7 @@
 ---
 title: "Data subject request portal"
 topic: privacy.portal
-version: 1
+version: 2
 keywords:
     - GDPR request
     - subject access request
@@ -39,3 +39,7 @@ than answer. Disclosure to the wrong person is itself a data breach.
 **Not the same as:** The request portal is not the whistleblowing portal. That
 one is for reports about misconduct; this one is about the requester's own
 data.
+
+**Extending the deadline:** On an open request you will find the card **Extend deadline**. Under Art. 12(3) GDPR no more than two further months are possible; you enter the new deadline and the reason. This only works while the first deadline is still running, because the person must be informed within that period. If the request has a contact address (portal), WorkDiary sends the notice with the reason there; otherwise you communicate both yourself. The record then shows the new deadline with a note on the original one and reminds you again in good time before the new deadline.
+
+**Portal language:** The **default language of the portal** determines the language of the public form; without a selection the application language applies.

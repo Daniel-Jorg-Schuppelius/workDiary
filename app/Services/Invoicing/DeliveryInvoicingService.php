@@ -163,9 +163,6 @@ class DeliveryInvoicingService {
         if ($delivery->facturation_target !== self::TARGET_LOCAL) {
             return (string) __('invoicing.free.error.delivery_external');
         }
-        if ($delivery->stock_status !== DeliveryStockStatus::Delivered) {
-            return (string) __('invoicing.free.error.delivery_not_delivered');
-        }
         if ($delivery->facturation_status === DeliveryFacturationStatus::Invoiced) {
             return (string) __('invoicing.free.error.delivery_invoiced');
         }

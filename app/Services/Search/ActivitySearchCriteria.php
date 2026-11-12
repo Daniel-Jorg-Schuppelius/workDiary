@@ -94,11 +94,6 @@ final class ActivitySearchCriteria {
         );
     }
 
-    /** Ohne Suchwort oder Bezugsfilter wird nicht gesucht (sonst: „alles"). */
-    public function hasScope(): bool {
-        return $this->query !== '' || $this->hasEntityFilter();
-    }
-
     public function hasEntityFilter(): bool {
         return $this->personId !== null || $this->customerId !== null || $this->foreignCustomerId !== null || $this->projectId !== null
             || $this->tagId !== null || $this->collectionId !== null;

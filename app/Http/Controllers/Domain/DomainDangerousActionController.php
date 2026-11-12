@@ -12,10 +12,11 @@ namespace App\Http\Controllers\Domain;
 
 use App\Http\Controllers\Controller;
 use App\Models\Domain\{DomainProjection, DomainProviderCommand};
-use App\Services\Domain\{DomainActionException, DomainCommandService, DomainDangerousActionService};
+use App\Services\Domain\{DomainActionException, DomainCommandReconciler, DomainCommandService, DomainDangerousActionService};
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 use RuntimeException;
 
 /**
@@ -70,6 +71,27 @@ class DomainDangerousActionController extends Controller {
         $command->forceFill(['status' => \App\Enums\Domain\DomainProviderCommandStatus::Failed, 'last_error' => 'rejected'])->save();
 
         return back()->with('success', __('domain.flash.dangerous_rejected'));
+    }
+
+    /** Dialog: unklaren Befehl oder Konflikt von Hand abschließen (MVP-1614). */
+    public function resolveDialog(DomainProviderCommand $command): View {
+        $this->authorizeCommand($command);
+        abort_unless($command->status->needsReconciliation(), 404);
+
+        return view('domain._command_resolve_dialog', ['command' => $command]);
+    }
+
+    public function resolve(Request $request, DomainProviderCommand $command, DomainCommandReconciler $reconciler): RedirectResponse {
+        $this->authorizeCommand($command);
+        abort_unless($command->status->needsReconciliation(), 404);
+
+        $data = $request->validate([
+            'outcome' => ['required', 'string', 'in:confirmed,failed'],
+            'reconciliation_note' => ['required', 'string', 'max:200'],
+        ]);
+        $reconciler->resolveManually($command, $data['outcome'] === 'confirmed', (string) $data['reconciliation_note'], $this->authUser());
+
+        return back()->with('success', __('domain.flash.command_resolved'));
     }
 
     private function authorizeCommand(DomainProviderCommand $command): void {

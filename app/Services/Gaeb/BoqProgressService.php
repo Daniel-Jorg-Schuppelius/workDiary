@@ -33,7 +33,7 @@ class BoqProgressService implements TakeoffProgressRecorder {
     }
 
     /**
-     * @param array{source?: BoqProgressSource, diary_entry_id?: int|null, material_usage_id?: int|null, note?: string|null, created_by?: int|null, captured_at?: Carbon|null} $options
+     * @param array{source?: BoqProgressSource, diary_entry_id?: int|null, material_usage_id?: int|null, protocol_id?: int|null, note?: string|null, created_by?: int|null, captured_at?: Carbon|null} $options
      */
     public function record(BoqItem $item, float|string $quantity, array $options = []): BoqItemProgress {
         $progress = BoqItemProgress::query()->create([
@@ -43,6 +43,7 @@ class BoqProgressService implements TakeoffProgressRecorder {
             'source' => ($options['source'] ?? BoqProgressSource::Manual)->value,
             'diary_entry_id' => $options['diary_entry_id'] ?? null,
             'material_usage_id' => $options['material_usage_id'] ?? null,
+            'protocol_id' => $options['protocol_id'] ?? null,
             'note' => $options['note'] ?? null,
             'captured_at' => $options['captured_at'] ?? $item->freshTimestamp(),
             'created_by' => $options['created_by'] ?? null,

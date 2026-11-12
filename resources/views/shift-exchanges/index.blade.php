@@ -40,6 +40,10 @@
                                 <span class="opacity-60">{{ $exchange->scheduledShift?->shiftType?->abbreviation }}</span>
                                 @if ($exchange->isSwap())
                                     <x-status-badge tone="info" size="xs">{{ __('schedule.exchange.swap') }}</x-status-badge>
+                                    <span class="block text-xs text-muted">{{ __('schedule.exchange.offered_for') }} {{ $exchange->offeredShift?->date?->fdate() }} {{ $exchange->offeredShift?->shiftType?->abbreviation }}</span>
+                                @endif
+                                @if (in_array($exchange->id, $blocked, true))
+                                    <x-status-badge tone="warning" size="xs">{{ __('schedule.exchange.violation_badge') }}</x-status-badge>
                                 @endif
                             </td>
                             <td>{{ $exchange->requester?->name }}</td>
@@ -47,10 +51,16 @@
                             <td><x-status-badge :tone="$exchange->statusTone()" size="sm">{{ $exchange->statusLabel() }}</x-status-badge></td>
                             <td class="text-xs">{{ $exchange->reason }}</td>
                             <td class="text-right whitespace-nowrap">
-                                <form method="POST" action="{{ route('schedule.exchanges.approve', $exchange) }}" class="inline">
-                                    @csrf @method('PATCH')
-                                    <x-button type="submit" tone="success" size="xs">{{ __('Freigeben') }}</x-button>
-                                </form>
+                                @if (in_array($exchange->id, $blocked, true))
+                                    {{-- Regelverstoß: Freigabe nur über den Dialog mit Begründung (MVP-1553). --}}
+                                    <x-button tone="warning" size="xs" data-entry-modal-trigger
+                                              href="{{ route('schedule.exchanges.approve-form', $exchange) }}?dialog=1">{{ __('schedule.exchange.approve_override_action') }}</x-button>
+                                @else
+                                    <form method="POST" action="{{ route('schedule.exchanges.approve', $exchange) }}" class="inline">
+                                        @csrf @method('PATCH')
+                                        <x-button type="submit" tone="success" size="xs">{{ __('Freigeben') }}</x-button>
+                                    </form>
+                                @endif
                                 <form method="POST" action="{{ route('schedule.exchanges.reject', $exchange) }}" class="inline">
                                     @csrf @method('PATCH')
                                     <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('Ablehnen') }}</x-button>
@@ -81,6 +91,10 @@
                         <td class="whitespace-nowrap">
                             {{ $exchange->scheduledShift?->date?->fdate() }}
                             <span class="opacity-60">{{ $exchange->scheduledShift?->shiftType?->abbreviation }}</span>
+                            @if ($exchange->isSwap())
+                                <x-status-badge tone="info" size="xs">{{ __('schedule.exchange.swap') }}</x-status-badge>
+                                <span class="block text-xs text-muted">{{ __('schedule.exchange.offered_for') }} {{ $exchange->offeredShift?->date?->fdate() }} {{ $exchange->offeredShift?->shiftType?->abbreviation }}</span>
+                            @endif
                         </td>
                         <td>{{ $exchange->requester?->name }}</td>
                         <td>{{ $exchange->targetUser?->name ?? __('schedule.exchange.open_target') }}</td>

@@ -24,6 +24,7 @@ use App\Services\Finance\{BankImportException, BankImportService, MatchingServic
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Gate, Storage};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -157,7 +158,6 @@ class PaymentReconciliationController extends Controller {
             'splitSuggestions' => $splitSuggestions,
             'detailReturnOrigins' => $detailReturnOrigins,
             'splitTargets' => $splitSuggestions !== [] ? $this->splitTargetOptions() : [],
-            'kinds' => AllocationKind::cases(),
         ]);
     }
 
@@ -194,12 +194,13 @@ class PaymentReconciliationController extends Controller {
         $invoices = Invoice::query()
             ->whereNotIn('status', [InvoiceStatus::Paid, InvoiceStatus::Cancelled])
             ->where('type', Invoice::TYPE_INVOICE)
+            ->with('customer:id,name')
             ->orderBy('number')
             ->get();
         foreach ($invoices as $invoice) {
             $options[] = [
                 'value' => 'invoice:' . $invoice->sqid,
-                'label' => $invoice->number . ' · ' . ($invoice->total?->format(withSymbol: false) ?? '0,00'),
+                'label' => $invoice->number . ' · ' . ($invoice->customer->name ?? '') . ' · ' . ($invoice->total?->format(withSymbol: false) ?? '0,00'),
             ];
         }
 
@@ -262,20 +263,41 @@ class PaymentReconciliationController extends Controller {
         return back()->with('success', __('bank.return.flash.processed'));
     }
 
+    /**
+     * Dialog: freie Belegsuche für einen Einzelumsatz (MVP-1557) — derselbe
+     * Kandidatenpool wie bei der Sammelbuchung, unabhängig von den Vorschlägen.
+     */
+    public function assignForm(BankTransaction $transaction): View {
+        Gate::authorize('reconcile', $transaction);
+        abort_unless($transaction->match_status->isOpen() && ! $transaction->isProvisional(), 404);
+
+        return view('finance.reconciliation._assign_dialog', [
+            'transaction' => $transaction,
+            'targets' => $this->splitTargetOptions(),
+            // Rückläufer laufen über ihren eigenen Weg, nie über die freie Zuordnung.
+            'kinds' => array_values(array_filter(AllocationKind::cases(), static fn (AllocationKind $kind): bool => $kind !== AllocationKind::Chargeback)),
+        ]);
+    }
+
     public function confirm(Request $request, BankTransaction $transaction): RedirectResponse {
         Gate::authorize('reconcile', $transaction);
 
         $validated = $request->validate([
             'allocations' => ['required', 'array', 'min:1'],
-            'allocations.*.type' => ['required', 'string', 'in:invoice,expense,account,fee'],
-            'allocations.*.id' => ['required', 'string'],
+            // Die freie Belegsuche (MVP-1557) nennt das Ziel in einem Feld: `invoice:<sqid>`.
+            'allocations.*.target' => ['nullable', 'string', 'max:80', 'regex:/^(invoice|expense|account|fee):.+$/'],
+            'allocations.*.type' => ['required_without:allocations.*.target', 'nullable', 'string', 'in:invoice,expense,account,fee'],
+            'allocations.*.id' => ['required_without:allocations.*.target', 'nullable', 'string'],
             'allocations.*.amount' => ['required', 'numeric', 'min:0.01'],
-            'allocations.*.kind' => ['nullable', 'string'],
+            'allocations.*.kind' => ['nullable', Rule::enum(AllocationKind::class)->except([AllocationKind::Chargeback])],
             'allocations.*.note' => ['nullable', 'string', 'max:500'],
         ]);
 
         $allocations = [];
         foreach ($validated['allocations'] as $row) {
+            if (! empty($row['target'])) {
+                [$row['type'], $row['id']] = explode(':', (string) $row['target'], 2);
+            }
             $targetClass = match ($row['type']) {
                 'invoice' => Invoice::class,
                 'account' => \App\Models\Billing\CustomerBillingAgreement::class,

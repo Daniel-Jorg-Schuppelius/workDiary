@@ -123,6 +123,27 @@ return [
     // Pflichtnachweise: Sperrt ein fehlender Nachweis die Beauftragung?
     // (Feature 117, MVP-606) — Default AUS, siehe config/procurement.php.
     'procurement.credential_blocking' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+
+    // --- Lager (Feature 048, MVP-1579/1580) ---
+    // Bewertungsverfahren: `service_managed` — nur ValuationMethodSwitch (Lager-Einstellungen) schreibt,
+    // weil ein Wechsel den Bestand ins andere Bewertungsbuch übertragen muss.
+    'inventory.valuation_method' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Enums\Inventory\ValuationMethod::class, 'values'], 'fallback' => 'moving_average', 'service_managed' => true],
+    // Zeitpunkt der Materialreservierung eines Fertigungsauftrags: Freigabe oder Start.
+    'inventory.reservation_timing' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['release', 'start'], 'fallback' => 'release'],
+    // Vier-Augen-Freigabe der Inventurdifferenzen (MVP-1585): ab dem Grenzwert (Bestandswert der
+    // Differenz je Zeile) gibt nicht frei, wer gezählt hat. Grenzwert 0 = jede Differenz.
+    'inventory.four_eyes.count' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    'inventory.four_eyes.count_threshold' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:999999999', 'fallback' => 0],
+    // Vier-Augen-Freigabe für Entnahmen in den Negativbestand (MVP-1626): bucht erst nach Freigabe im Genehmigungs-Eingang.
+    'inventory.four_eyes.negative' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+
+    // --- Lieferantenbewertung (Feature 050, MVP-1581) ---
+    // Gewichte der Teilkennzahlen als Anteil (0–1); die Summe muss nicht 1 sein, der Dienst normalisiert.
+    'scorecard.weight.ontime' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:1', 'fallback' => 0.35],
+    'scorecard.weight.complaints' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:1', 'fallback' => 0.30],
+    'scorecard.weight.quality' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:1', 'fallback' => 0.20],
+    'scorecard.weight.price' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:1', 'fallback' => 0.15],
+    'scorecard.weight.recourse' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:1', 'fallback' => 0.15],
     'invoicing.girocode_enabled' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
     // RF-Gläubigerreferenz (ISO 11649, MVP-978) aus der Rechnungsnummer im Girocode und Zahlungshinweis.
     'invoicing.creditor_reference' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
@@ -172,6 +193,10 @@ return [
     // Zweitfolgejahres (§ 149 Abs. 3 AO). Eine Angabe, keine Ableitung —
     // ob eine Kanzlei mandatiert ist, weiß das Programm nicht.
     'finance.accounting_tax_advised' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    // Bankabgleich (Feature 045, MVP-1623): Rundungsdifferenz, die einen Betrag noch passen lässt, und
+    // Skontoabzug, der ohne Skontokondition am Beleg als Vollzahlung gilt. Vorgaben wie MatchingService::DEFAULT_*.
+    'finance.reconciliation.cent_tolerance' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:1', 'fallback' => 0.02],
+    'finance.reconciliation.skonto_percent' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:10', 'fallback' => 3.0],
     // GWG und Sammelposten (MVP-892): Wertgrenzen netto, gesetzliche Werte prüft der Betrieb.
     'finance.fixed_assets.gwg_limit' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:100000', 'fallback' => 800],
     'finance.fixed_assets.pool_lower' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:100000', 'fallback' => 250],
@@ -193,6 +218,9 @@ return [
     'invoicing.quote_follow_up_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:90', 'fallback' => 7],
     // Bindefrist in Kalendertagen ab Belegdatum (Vollscan 2026-10-21, tk-09).
     'invoicing.quote_validity_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:1|max:365', 'fallback' => 30],
+    // Freigabe vor der Ausstellung (Vier-Augen, MVP-1562); liest InvoiceIssueService. Default aus:
+    // Wer allein arbeitet, hätte sonst eine Sperre ohne Ausweg.
+    'invoicing.require_approval' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
     'invoicing.transfer_intro_text' => ['type' => 'text', 'scopes' => ['organization'], 'rules' => 'nullable|max:2000'],
     'invoicing.transfer_closing_text' => ['type' => 'text', 'scopes' => ['organization'], 'rules' => 'nullable|max:2000'],
     // Mahnwesen (Feature 127, MVP-691): Karenz/Gebühr/Zahlungsfrist je Stufe
@@ -223,6 +251,31 @@ return [
     'rental.geofence_radius_m' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:50|max:50000', 'fallback' => 500],
     // MVP-994: keine neue Fahrt mit einem Fahrzeug, dessen Pflichtprüfung (HU/UVV) überfällig ist.
     'fleet.block_trips_on_overdue_inspection' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    // --- Einstellungen mit Schreibstelle (MVP-1589) ---
+    // Abstand der Führerscheinkontrolle in Monaten.
+    'fleet.license_check_interval_months' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:1|max:60', 'fallback' => 6],
+    // Auslastung in Prozent, ab der die Frühwarnung „Kapazität“ meldet.
+    'hr.capacity.threshold' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:50|max:300', 'fallback' => 100],
+    // Investitionssumme, ab der die zweite Freigabestufe greift (Default config/investments.php).
+    'investments.approval_threshold' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:1000000000'],
+    // Domainverwaltung (MVP-1614): Benachrichtigung vor teuren Verlängerungen und bei knappem Anbieterguthaben; leer = aus.
+    'domain.renewal_cost_threshold' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:1000000'],
+    'domain.balance_threshold' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:100000000'],
+    // CSV-Export der Berichte (Default config/reports.php); Trennzeichen als Name, weil ein Komma keine Regeloption sein kann.
+    'reports.csv_delimiter_name' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['semicolon', 'comma', 'tab']],
+    'reports.csv_meta_lines' => ['type' => 'boolean', 'scopes' => ['organization']],
+    // Löschfrist abgelehnter und zurückgezogener Bewerbungen in Monaten (Default config/applications.php).
+    'applications.rejected_retention_months' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:1|max:36'],
+    // Prioritätsmatrix des Helpdesks: Auswirkung (1–3) × Dringlichkeit (1–3) → Priorität; leere Zelle = Standard.
+    'helpdesk.priority_matrix.1.1' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['low', 'normal', 'high', 'urgent']],
+    'helpdesk.priority_matrix.1.2' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['low', 'normal', 'high', 'urgent']],
+    'helpdesk.priority_matrix.1.3' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['low', 'normal', 'high', 'urgent']],
+    'helpdesk.priority_matrix.2.1' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['low', 'normal', 'high', 'urgent']],
+    'helpdesk.priority_matrix.2.2' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['low', 'normal', 'high', 'urgent']],
+    'helpdesk.priority_matrix.2.3' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['low', 'normal', 'high', 'urgent']],
+    'helpdesk.priority_matrix.3.1' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['low', 'normal', 'high', 'urgent']],
+    'helpdesk.priority_matrix.3.2' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['low', 'normal', 'high', 'urgent']],
+    'helpdesk.priority_matrix.3.3' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['low', 'normal', 'high', 'urgent']],
     // MVP-1514: fehlende Pflichtqualifikation nur anzeigen oder die Zuweisung (Schicht, Auftrag, Tour) ablehnen.
     'qualifications.enforcement' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['hint', 'block'], 'fallback' => 'hint'],
     // Reklamationsmuster (MVP-886): ab wie vielen gleichartigen Fällen in wie vielen Tagen.
@@ -236,6 +289,11 @@ return [
     // Neuigkeiten-Rail: externe Kommunikation bleibt installationsweit Opt-in.
     'ui.news_feed.enabled' => ['type' => 'boolean', 'scopes' => ['system'], 'fallback' => false, 'affects' => ['news-feed.refresh']],
     'ui.news_feed.url' => ['type' => 'string', 'scopes' => ['system'], 'rules' => 'nullable|url:http,https|max:2048', 'affects' => ['news-feed.refresh']],
+
+    // --- Protokolle ---
+    // GPS-Koordinaten aus den EXIF-Daten der Protokollfotos übernehmen (MVP-1573). Default aus (DSGVO):
+    // Standortdaten sind personenbeziehbar; die Datei selbst wird immer bereinigt. Liest ProtocolController::uploadPhoto.
+    'protocol.photo_geo' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
 
     // --- Wetter/Zeiterfassung ---
     // weather.auto_fetch hat keinen config-Default (harter Default false in Protocol)
@@ -259,6 +317,9 @@ return [
     'project.keyword_matching.enabled' => ['type' => 'boolean', 'scopes' => ['system', 'organization'], 'fallback' => true],
     // Toleranz der Projekt-Sollzeiten (Feature 194): Minuten unter Soll, die noch keinen Befund ergeben.
     'project.target_tolerance_minutes' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'nullable|min:0|max:480', 'fallback' => 15],
+    // Schwellen des Plan/Ist-Abgleichs der Anwesenheit (MVP-1552): später Beginn in Minuten, Stundenabweichung in Prozent.
+    'plan_ist.late_start_minutes' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'nullable|min:0|max:240', 'fallback' => 15],
+    'plan_ist.hours_diff_percent' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'nullable|min:0|max:100', 'fallback' => 10],
 
     // --- Reselling-Register (Feature 152, Serienlauf 2026-09-11) ---
     // Serienrechnung bei lokaler Rechnungshoheit: resale:draft-local legt je
@@ -314,6 +375,8 @@ return [
     'einvoice.account_holder' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'max:200'],
     'einvoice.payment_terms_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:0|max:365'],
     'einvoice.small_business' => ['type' => 'boolean', 'scopes' => ['organization']],
+    // Ausstellung nur mit bestandener E-Rechnungs-Validierung (MVP-1562); liest InvoiceIssueService.
+    'einvoice.enforce_validation' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
     // Rechnungsbegründende Unterlagen und Empfängerprofil (Feature 196, MVP-1486). Die Grenzen
     // je Profil stehen in config/einvoice-profiles.php, der Kunde kann sie überschreiben.
     'einvoice.recipient_profile_default' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['standard', 'public_sector'], 'fallback' => 'standard'],
@@ -354,11 +417,15 @@ return [
     // Die Platzhalter {z}/{x}/{y} im Pfad stören die Regel nicht.
     'routing.tiles.url' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'url|max:255'],
     'routing.tiles.max_zoom' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:1|max:22'],
+    // Quellenvermerk des eigenen Kachelservers; die Karte setzt ihn als HTML, darum ohne spitze Klammern.
+    'routing.tiles.attribution' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => ['max:255', 'not_regex:/[<>]/']],
 
     // --- Zeiterfassung/Feiertage/Anwesenheit ---
     'timesheet.default_schedule_type' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Enums\WorkSchedule\ScheduleType::class, 'values']],
     // Yasumi-Provider-Pfad (Feature 034); leer → config('holidays.provider').
     'holidays.provider' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Support\HolidayRegions::class, 'providers']],
+    // Sprache der Feiertagsnamen (Yasumi-Locale) für die angebotenen Regionen; leer → config('holidays.locale').
+    'holidays.locale' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['de_DE', 'de_AT', 'de_CH', 'fr_CH', 'it_CH', 'en_US', 'fr_FR', 'it_IT', 'es_ES']],
     'attendance.self_correction' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['request', 'self']],
     // Zuschlags-Stacking (Feature 005; Audit 2026-08, W4.3): 'highest' = es
     // gewinnt der hoechste Prozentsatz (Bestandsverhalten, Default),
@@ -407,6 +474,10 @@ return [
     // Zeilen-/kommagetrennte HTTPS-Origins für die Iframe-Einbettung (frame-ancestors).
     'applications.portal.embed_origins' => ['type' => 'text', 'scopes' => ['organization'], 'rules' => 'nullable|max:2000'],
     'applications.portal.contact_email' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|email|max:190'],
+
+    // --- KI-Monatsbudget je Familie (Feature 025, MVP-399): LLM in Token, Übersetzung in Zeichen; leer → config('ai.budget') ---
+    'ai.budget.monthly_units.llm' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:0|max:2000000000'],
+    'ai.budget.monthly_units.translation' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:0|max:2000000000'],
 
     // --- Nutzungsabrechnung je Mandant (MVP-956): Einheitspreise des Betreibers ---
     'platform_billing.base_fee' => ['type' => 'decimal', 'scopes' => ['system'], 'rules' => 'nullable|min:0|max:100000', 'fallback' => 0],

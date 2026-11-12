@@ -1,7 +1,7 @@
 ---
 title: "Calendario CalDAV"
 topic: admin.caldav
-version: 3
+version: 4
 keywords:
     - CalDAV
     - calendario Nextcloud
@@ -157,3 +157,5 @@ finestra temporale vi restano.
   disattivata o incompleta.
 - Nel calendario mancano i turni: in **Contenuti pubblicati** non è spuntato
   **Turni e ferie**, oppure i turni non sono ancora pubblicati.
+
+**Titolarità dei dati:** Gli appuntamenti di questo calendario appartengono all’area calendario. Se un altro sistema gestisce il calendario, proposte, serie e modifiche compaiono nella casella delle integrazioni come caso «Titolarità dei dati»; **Acquisisci una volta** crea l’appuntamento o la serie. Gli avvisi di eliminazione restano casi ordinari.

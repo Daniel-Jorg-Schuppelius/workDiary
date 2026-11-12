@@ -85,6 +85,13 @@ class AssetCheckoutController extends Controller {
         return redirect()->route('assets.show', $asset)->with('success', __('Asset ausgegeben.'));
     }
 
+    public function returnForm(Asset $asset, AssetAssignment $assignment): View {
+        Gate::authorize('checkout', $asset);
+        $this->ensureAssignmentBelongsToAsset($asset, $assignment);
+
+        return view('assets._return_dialog', ['asset' => $asset, 'assignment' => $assignment]);
+    }
+
     public function update(Asset $asset, AssetAssignment $assignment, Request $request): RedirectResponse {
         Gate::authorize('checkout', $asset);
         $this->ensureAssignmentBelongsToAsset($asset, $assignment);
@@ -96,10 +103,11 @@ class AssetCheckoutController extends Controller {
 
         $validated = $request->validate([
             'condition_in' => ['nullable', 'string', 'max:180'],
+            'return_note' => ['nullable', 'string', 'max:2000'],
         ]);
 
         try {
-            $this->assignments->checkIn($assignment, $user, $validated['condition_in'] ?? null);
+            $this->assignments->checkIn($assignment, $user, $validated['condition_in'] ?? null, $validated['return_note'] ?? null);
         } catch (AssetValidationException $exception) {
             return back()->withInput()->withErrors(['condition_in' => __($exception->getMessage())]);
         }

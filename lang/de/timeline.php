@@ -17,6 +17,10 @@ return [
     'filter' => [
         'label' => 'Verlauf filtern',
         'all' => 'Alle',
+        'types' => 'Typen',
+        'actor' => 'Person',
+        'all_actors' => 'Alle Personen',
+        'customer_only' => 'Nur kundenrelevant',
         'status' => 'Status',
         'time' => 'Zeiten',
         'comment' => 'Kommentare',
@@ -74,6 +78,7 @@ return [
             'visibilityChanged' => 'Sichtbarkeit des offenen Punkts geändert',
             'commentAdded' => 'Kommentar zum offenen Punkt',
             'attachmentAdded' => 'Anhang zum offenen Punkt',
+            'ticketOpened' => 'Ticket aus offenem Punkt eröffnet',
         ],
     ],
     'action' => [

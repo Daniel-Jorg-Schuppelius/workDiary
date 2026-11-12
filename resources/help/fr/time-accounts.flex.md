@@ -1,7 +1,7 @@
 ---
 title: "Compte de temps de travail & validation mensuelle"
 topic: time-accounts.flex
-version: 2
+version: 3
 keywords:
     - compte d'heures
     - heures supplémentaires
@@ -35,3 +35,5 @@ administration comprise – sauf si personne d'autre dans l'organisation ne
 dispose du droit de validation ; le journal d'audit consigne alors cette
 auto-validation. Qui ne peut voir les mois et demandes de correction que pour
 l'équipe voit uniquement les membres de ses propres équipes.
+
+**Solde du compte :** l’objectif, le réel et le solde du mois en cours ne comptent que les jours terminés jusqu’à hier, comme le compte enregistré, la tuile et le terminal. Le solde du compte inclut le report du mois précédent. La validation du mois le fige dans le compte ; seule une réouverture le recalcule.

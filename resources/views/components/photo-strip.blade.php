@@ -18,6 +18,7 @@
     use App\Enums\Protocol\ProtocolItemPhotoPhase;
     $byPhase = $item->photos->sortBy('sort_order')->groupBy(fn($p) => $p->phase->value);
     $phases = collect(ProtocolItemPhotoPhase::cases())->filter(fn($phase) => $byPhase->has($phase->value));
+    $canViewGeo = auth()->user()?->can(\App\Enums\User\Permission::ProtocolItemPhotoViewGeo->value) ?? false;
 @endphp
 
 <div class="space-y-2">
@@ -40,6 +41,12 @@
                                 <figcaption class="mt-0.5 truncate text-[11px] text-muted" title="{{ $photo->caption }}">
                                     {{ $photo->caption ?? '—' }}
                                 </figcaption>
+                                {{-- Aufnahmeort (MVP-1573): nur mit Recht; erfasst wird er nur bei eingeschalteter Organisationseinstellung. --}}
+                                @if ($canViewGeo && $photo->geo_lat !== null && $photo->geo_lng !== null)
+                                    <p class="flex items-center gap-0.5 truncate text-[10px] tabular-nums text-muted" title="{{ __('protocol.photo.geo_title', ['lat' => $photo->geo_lat, 'lng' => $photo->geo_lng]) }}">
+                                        <x-icon name="location_on" class="text-xs" />{{ $photo->geo_lat }}, {{ $photo->geo_lng }}
+                                    </p>
+                                @endif
                                 @if ($canManage)
                                     <div class="mt-0.5 flex items-center gap-1">
                                         @if (! $loop->first)

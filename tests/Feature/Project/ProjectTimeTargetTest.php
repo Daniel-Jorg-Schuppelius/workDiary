@@ -118,4 +118,10 @@ class ProjectTimeTargetTest extends TestCase {
         $this->assertStringContainsString('Offene Unterschreitungen', $html);
         $this->assertStringContainsString(route('projects.time-targets.edit', $this->project), $html);
     }
+
+    /** MVP-1617 (F9-04): Soll je Objekt trägt nicht — die nie geschriebene Spalte ist entfernt. */
+    public function test_targets_carry_no_site(): void {
+        $this->assertFalse(\Illuminate\Support\Facades\Schema::hasColumn('project_time_targets', 'site_id'));
+        $this->assertNotContains('site_id', (new ProjectTimeTarget())->getFillable());
+    }
 }

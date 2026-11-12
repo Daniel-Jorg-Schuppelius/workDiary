@@ -36,3 +36,19 @@ reading is missing, the period is not billed rather than estimated.
 **Run:** The monthly run creates draft invoices, not sent ones — the
 approval stays with a person. Each period is billed only once; a second run
 produces no duplicate.
+
+## Tiers, status and project
+
+**Volume tiers:** The agreement dialog offers rows with **from quantity** and
+**price per unit**. The first tier starts at 0; empty rows are ignored. With
+tiers, each tier's price applies instead of the unit price, and the
+calculation is progressive on the consumption after deducting the free units —
+one more unit never makes the invoice cheaper. The list then shows “Tiered”
+instead of the unit price.
+
+**Status:** *Active* is billed; the run skips *Paused* and *Ended*, and **Bill
+now** is only offered for active agreements. After a pause the run catches up
+from the **Next billing** date — if the paused time should not be billed, move
+the date forward before reactivating.
+
+**Project:** A selected project is assigned to the draft invoices of the run.

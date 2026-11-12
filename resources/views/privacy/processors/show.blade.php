@@ -57,6 +57,14 @@
                         <textarea id="data_categories" name="data_categories" rows="2" class="textarea textarea-bordered w-full"></textarea>
                     </x-input-field>
                     <x-input-field type="file" name="document" :label="__('Dokument')" span="2" accept=".pdf,.doc,.docx" />
+                    <x-input-field type="date" name="review_due_at" :label="__('Nächster Review')" />
+                    <div class="fieldset">
+                        <label class="label cursor-pointer justify-start gap-3">
+                            <input type="hidden" name="tom_checked" value="0">
+                            <input type="checkbox" name="tom_checked" value="1" class="checkbox checkbox-sm">
+                            <span class="fieldset-label">{{ __('TOM des Dienstleisters geprüft') }}</span>
+                        </label>
+                    </div>
                 </x-form-group>
             </x-modal>
         @endcan

@@ -49,6 +49,16 @@ class OrderConfirmationItem extends Model implements DocumentLine {
         'quantity' => 'decimal:4',
     ];
 
+    /**
+     * Die AB führt keinen Arbeitsanteil: die Rechnung entsteht aus dem
+     * Annahme-Snapshot des Angebots, nicht aus der AB.
+     *
+     * @return array<string, string|null>
+     */
+    protected static function lineColumns(): array {
+        return ['labour_share_percent' => null];
+    }
+
     /** @return BelongsTo<OrderConfirmation, $this> */
     public function orderConfirmation(): BelongsTo {
         return $this->belongsTo(OrderConfirmation::class);

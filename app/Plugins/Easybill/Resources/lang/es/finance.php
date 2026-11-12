@@ -15,6 +15,8 @@ return [
         'unit_piece' => 'uds.',
     ],
     'error' => [
+        'ownership_unavailable' => 'La conexión no está configurada; el estado no se puede aplicar en este momento.',
+        'ownership_not_ready' => 'La fuente no proporciona el estado en este momento; vuelva a aplicarlo más tarde.',
         'easybill_no_customer' => 'El documento no tiene cliente y no se puede transferir a easybill.',
         'easybill_cancel_not_transferred' => 'La factura :number no está en easybill; la anulación no se puede crear allí. Asigne la serie «Anulación» a WorkDiary para numerarla localmente.',
         'easybill_not_configured' => 'easybill no está configurado para esta organización (falta la clave de API).',

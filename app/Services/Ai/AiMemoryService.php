@@ -30,6 +30,11 @@ use Illuminate\Support\Facades\DB;
  * entsteht allein durch Prompt-Einspeisung.
  */
 class AiMemoryService implements AiMemory {
+    /** @var array<int, int> Eintrag → Nutzungen seit dem letzten {@see flushUsage()} */
+    private array $pendingUsage = [];
+
+    private bool $flushRegistered = false;
+
     /**
      * Budget-getrimmte, vorrangsortierte Einträge für einen Aufruf.
      * Capability-Defaults gelten nur für die angefragte Capability;
@@ -78,7 +83,7 @@ class AiMemoryService implements AiMemory {
         ?int $customerId = null,
         ?string $targetLanguage = null,
     ): array {
-        return array_values($this->entriesFor($organization, $capabilityKey, $customerId, AiMemoryEntryType::Glossary)
+        return array_values($this->used($this->entriesFor($organization, $capabilityKey, $customerId, AiMemoryEntryType::Glossary))
             ->map(static function (AiMemoryEntry $entry) use ($targetLanguage): GlossaryEntry {
                 $translation = $targetLanguage !== null
                     ? (($entry->translations ?? [])[$targetLanguage] ?? null)
@@ -149,7 +154,7 @@ class AiMemoryService implements AiMemory {
         string $capabilityKey,
         ?int $customerId = null,
     ): array {
-        return array_values($this->entriesFor($organization, $capabilityKey, $customerId, AiMemoryEntryType::StyleRule)
+        return array_values($this->used($this->entriesFor($organization, $capabilityKey, $customerId, AiMemoryEntryType::StyleRule))
             ->map(static fn (AiMemoryEntry $entry): string => $entry->content)
             ->all());
     }
@@ -160,12 +165,55 @@ class AiMemoryService implements AiMemory {
         string $capabilityKey,
         ?int $customerId = null,
     ): array {
-        return array_values($this->entriesFor($organization, $capabilityKey, $customerId, AiMemoryEntryType::Example)
+        return array_values($this->used($this->entriesFor($organization, $capabilityKey, $customerId, AiMemoryEntryType::Example))
             ->map(static fn (AiMemoryEntry $entry): ExamplePair => new ExamplePair(
                 source: (string) $entry->source_text,
                 target: $entry->content,
             ))
             ->all());
+    }
+
+    /**
+     * Einträge, die in einen Prompt einfließen, zählen als benutzt (MVP-1590).
+     * Im Request sammelt der Dienst und schreibt einmal am Ende; Konsole und
+     * Queue haben kein Request-Ende und schreiben sofort.
+     *
+     * @param Collection<int, AiMemoryEntry> $entries
+     * @return Collection<int, AiMemoryEntry>
+     */
+    private function used(Collection $entries): Collection {
+        if ($entries->isEmpty()) {
+            return $entries;
+        }
+        if (app()->runningInConsole() && ! app()->runningUnitTests()) {
+            $this->markUsed($entries);
+
+            return $entries;
+        }
+        foreach ($entries as $entry) {
+            $this->pendingUsage[(int) $entry->id] = ($this->pendingUsage[(int) $entry->id] ?? 0) + 1;
+        }
+        if (! $this->flushRegistered) {
+            $this->flushRegistered = true;
+            app()->terminating(fn () => $this->flushUsage());
+        }
+
+        return $entries;
+    }
+
+    /** Gesammelte Nutzungen schreiben: eine Anweisung je Nutzungszahl, nicht je Eintrag. */
+    public function flushUsage(): void {
+        $byCount = [];
+        foreach ($this->pendingUsage as $id => $count) {
+            $byCount[$count][] = $id;
+        }
+        $this->pendingUsage = [];
+        foreach ($byCount as $count => $ids) {
+            AiMemoryEntry::query()
+                ->withoutGlobalScopes()
+                ->whereIn('id', $ids)
+                ->increment('usage_count', (int) $count, ['last_used_at' => Carbon::now()]);
+        }
     }
 
     /**

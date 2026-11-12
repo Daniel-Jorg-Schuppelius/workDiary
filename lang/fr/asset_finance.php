@@ -47,4 +47,9 @@ return [
             'saved' => 'Évaluation enregistrée.',
         ],
     ],
+    // Bestellbezug im Vertragsformular (MVP-1606).
+    'purchase_order' => [
+        'label' => 'Commande (facultatif)',
+        'none' => 'aucune commande',
+    ],
 ];

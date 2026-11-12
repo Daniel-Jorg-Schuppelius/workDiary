@@ -1,7 +1,7 @@
 ---
 title: "Offerte"
 topic: quotes.overview
-version: 7
+version: 8
 keywords:
     - creare un'offerta
     - preventivo
@@ -130,3 +130,8 @@ produzione nascono con ogni consegna (vedi ordini di produzione).
 ## Visualizzato e firma
 
 Quando il cliente apre l’offerta tramite il link o nel portale clienti, l’intestazione mostra **«Visualizzato dal cliente il …»**; conta la prima apertura di un’offerta inviata. All’accettazione il cliente può indicare facoltativamente il proprio **nome** e **firmare**. La firma viene salvata come immagine sull’offerta e registrata con nome e data nello stato di accettazione congelato; accettare senza firma resta possibile.
+
+**Emittente e referente** vengono fissati all'invio dell'offerta o alla
+conferma della conferma d'ordine, come la fattura all'emissione. Le modifiche
+successive ai dati aziendali, fiscali o di contatto non cambiano il documento
+inviato.

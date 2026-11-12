@@ -270,6 +270,18 @@
                                 <input type="date" name="expires" value="{{ old('expires') }}"
                                     class="input input-sm input-bordered w-full @error('expires') input-error @enderror">
                             </div>
+                            <div>
+                                <label class="text-xs uppercase tracking-wider text-muted" for="org-issue-max-users">{{ __('Max. Nutzer (optional)') }}</label>
+                                <input id="org-issue-max-users" type="number" name="max_users" min="1" value="{{ old('max_users', $op->maxUsers ?? null) }}"
+                                    class="input input-sm input-bordered w-full @error('max_users') input-error @enderror">
+                                @error('max_users')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label class="text-xs uppercase tracking-wider text-muted" for="org-issue-storage-quota">{{ __('Speicherkontingent in GB (optional)') }}</label>
+                                <input id="org-issue-storage-quota" type="number" name="storage_quota_gb" min="1" value="{{ old('storage_quota_gb', $op->storageQuotaGb ?? null) }}"
+                                    class="input input-sm input-bordered w-full @error('storage_quota_gb') input-error @enderror">
+                                @error('storage_quota_gb')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                            </div>
                         </div>
                         <div>
                             <label class="text-xs uppercase tracking-wider text-muted">{{ __('Einzeln gebuchte Module (Add-ons)') }}</label>

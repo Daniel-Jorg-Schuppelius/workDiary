@@ -39,6 +39,17 @@
                 <option value="{{ $val }}" @selected(old('priority', 'normal') === $val)>{{ $label }}</option>
             @endforeach
         </x-select-field>
+
+        <x-select-field name="kind" :label="__('helpdesk.kind.label')">
+            @foreach (\App\Enums\ServiceTicket\ServiceTicketKind::cases() as $kind)
+                <option value="{{ $kind->value }}" @selected(old('kind', 'incident') === $kind->value)>{{ $kind->label() }}</option>
+            @endforeach
+        </x-select-field>
+
+        <x-select-field name="confidentiality" :label="__('helpdesk.confidentiality.label')" :hint="__('helpdesk.confidentiality.hint')">
+            <option value="normal" @selected(old('confidentiality', 'normal') === 'normal')>{{ __('helpdesk.confidentiality.normal') }}</option>
+            <option value="restricted" @selected(old('confidentiality') === 'restricted')>{{ __('helpdesk.confidentiality.restricted') }}</option>
+        </x-select-field>
     </x-form-group>
 
     <x-form-group :legend="__('Verknüpfungen (optional)')" icon="link" tone="ghost" cols="2">

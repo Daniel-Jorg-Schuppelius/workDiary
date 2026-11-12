@@ -66,7 +66,6 @@ use Illuminate\Support\Carbon;
  * @property string|null $address_lng
  * @property int|null $tour_id
  * @property int|null $tour_position
- * @property string|null $notes
  * @property Mode $mode
  * @property Carbon|null $due_date
  * @property Carbon|null $window_start_date
@@ -84,6 +83,7 @@ use Illuminate\Support\Carbon;
  * @property int $wait_seconds_total
  * @property Carbon|null $completed_at
  * @property Carbon|null $accepted_final_at
+ * @property string|null $accepted_final_by Name der abnehmenden Person beim Kunden
  * @property Carbon|null $invoiced_at
  * @property Carbon|null $cancelled_at
  */
@@ -161,7 +161,6 @@ class DiaryEntry extends Model implements CustomFieldSubject {
         'address_lng',
         'tour_id',
         'tour_position',
-        'notes',
         'mode',
         'due_date',
         'window_start_date',
@@ -431,6 +430,17 @@ class DiaryEntry extends Model implements CustomFieldSubject {
             });
             $q->orWhereIn('mode', [Mode::Backlog->value, Mode::Recurring->value]);
         });
+    }
+
+    /**
+     * Gebuchte Personenzeit am Auftrag für die Kennzahl Plan/Ist (MVP-1552);
+     * ohne das Recht auf fremde Zeiten zählen nur die eigenen.
+     */
+    public function bookedMinutesVisibleTo(User $viewer): int {
+        return (int) $this->timeEntries()
+            ->personTime()
+            ->when(! $viewer->canViewAllTimeEntries(), static fn ($query) => $query->where('user_id', $viewer->id))
+            ->sum('minutes');
     }
 
     /**

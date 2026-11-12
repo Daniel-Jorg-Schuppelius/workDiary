@@ -1,7 +1,7 @@
 ---
 title: "Importaciones de tareas desde herramientas de código abierto"
 topic: admin.oss-task-imports
-version: 1
+version: 2
 keywords:
     - Vikunja
     - Kanboard
@@ -168,3 +168,5 @@ asignaciones.
 - Leantime o GLPI no muestran ningún origen: la clave de API no está asignada a
   ningún proyecto o la API REST no está activada en GLPI.
 - FreeScout responde con 404: el módulo «API & Webhooks» no está activo.
+
+**Soberanía de datos:** Si otro sistema lidera las tareas, la sincronización crea un caso «Soberanía de datos» por tarea en la bandeja de integraciones. **Asumir una vez** importa la tarea a través de la misma asignación mientras esté activa; si la tarea cambia después en la fuente, el caso se vuelve a abrir.

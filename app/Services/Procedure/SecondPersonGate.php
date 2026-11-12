@@ -30,6 +30,7 @@ class SecondPersonGate {
 
     public function __construct(
         private readonly NotificationDispatcher $notifications,
+        private readonly StepQualificationCheck $qualifications,
     ) {}
 
     /**
@@ -112,10 +113,10 @@ class SecondPersonGate {
         }
 
         $requiredQualification = $config['second_person_min_qualification'] ?? null;
-        if (is_string($requiredQualification) && $requiredQualification !== '') {
-            // Qualifikationsmodell ist noch nicht modelliert (Feature 013).
-            // Wir signalisieren das ausdruecklich, damit Aufrufer wissen,
-            // dass diese Vorlage aktuell keine Freigabe vergeben kann.
+        if (
+            is_string($requiredQualification) && $requiredQualification !== ''
+            && ! $this->qualifications->holds($taker, $requiredQualification, (int) $stepRun->run?->organization_id)
+        ) {
             throw new ProcedureSecondPersonException(
                 ProcedureSecondPersonException::CODE_MISSING,
                 ProcedureSecondPersonException::REASON_QUALIFICATION_MISSING,

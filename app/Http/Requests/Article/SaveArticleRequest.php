@@ -66,15 +66,19 @@ class SaveArticleRequest extends BaseFormRequest {
             ? $article->organization_id
             : $this->currentOrganizationId();
 
+        // SKU-/GTIN-Hoheit (MVP-1583): führt eine Warenwirtschaft die Nummern, schreibt sie nur deren Abgleich.
+        $lockedNumbers = Rule::prohibitedIf(fn (): bool => app(\App\Services\Numbering\NumberAuthority::class)->articleNumbersLockedBy($organizationId) !== null);
+
         return [
             'name' => ['required', 'string', 'max:255'],
             'number' => [
+                $lockedNumbers,
                 'nullable', 'string', 'max:64',
                 Rule::unique('articles', 'number')
                     ->where(fn($q) => $q->where('organization_id', $organizationId))
                     ->ignore($article?->id),
             ],
-            'gtin' => ['nullable', 'string', 'max:14'],
+            'gtin' => [$lockedNumbers, 'nullable', 'string', 'max:14'],
             // Zollangaben (MVP-1007): HS-Code bis TARIC-Zusatz, 6–11 Ziffern.
             'customs_tariff_number' => ['nullable', 'string', 'max:11', 'regex:/^\d{6,11}$/'],
             'origin_country' => ['nullable', Rule::enum(\CommonToolkit\Enums\CountryCode::class)],
@@ -110,11 +114,37 @@ class SaveArticleRequest extends BaseFormRequest {
                 }),
             ],
             ...array_fill_keys(self::FLAGS, ['boolean']),
+            // Lager (MVP-1579): leer = Verfahren der Organisation bzw. Nummernkreis der Organisation.
+            'valuation_method' => ['sometimes', 'nullable', Rule::enum(\App\Enums\Inventory\ValuationMethod::class)],
+            'serial_scheme' => ['sometimes', 'nullable', 'array'],
+            'serial_scheme.prefix' => ['nullable', 'string', 'max:20', 'regex:/^[A-Za-z0-9][A-Za-z0-9._\/-]*$/'],
+            'serial_scheme.padding' => ['nullable', 'integer', 'min:1', 'max:12'],
+            'serial_scheme.check_digit' => ['nullable', 'boolean'],
             // Artikel-Tagging (MVP-339): analog PartyFormFields.
             'tag_ids' => ['nullable', 'array'],
             'tag_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization('tags')],
             'new_tags' => ['nullable', 'string', 'max:500'],
         ];
+    }
+
+    /**
+     * Ohne Präfix gibt es kein Artikelschema: der Generator fällt dann auf den
+     * Nummernkreis der Organisation zurück, die Spalte bleibt leer.
+     */
+    public function validated($key = null, $default = null): mixed {
+        /** @var array<string, mixed> $data */
+        $data = parent::validated();
+        if (array_key_exists('serial_scheme', $data)) {
+            $scheme = (array) $data['serial_scheme'];
+            $prefix = trim((string) ($scheme['prefix'] ?? ''));
+            $data['serial_scheme'] = $prefix === '' ? null : [
+                'prefix' => $prefix,
+                'padding' => (int) ($scheme['padding'] ?? 5),
+                'check_digit' => (bool) ($scheme['check_digit'] ?? false),
+            ];
+        }
+
+        return data_get($data, $key, $default);
     }
 
     private function currentOrganizationId(): ?int {

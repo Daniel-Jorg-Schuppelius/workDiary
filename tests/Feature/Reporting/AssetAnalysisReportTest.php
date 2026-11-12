@@ -159,6 +159,33 @@ class AssetAnalysisReportTest extends TestCase {
         $this->assertSame(75, $row['maintenanceMinutes']);
     }
 
+    /** MVP-1628: Die Spalte „Wiederholdefekte“ zählt die Fälle der Zeile und führt in den Drilldown. */
+    public function test_recurring_defect_column_counts_cases_and_links_to_drilldown(): void {
+        $recurring = Asset::factory()->create(['organization_id' => $this->organization->id, 'manufacturer' => 'ACME', 'model' => 'PX-300', 'category_code' => 'PUMP']);
+        $single = Asset::factory()->create(['organization_id' => $this->organization->id, 'manufacturer' => 'ACME', 'model' => 'PX-300', 'category_code' => 'PUMP']);
+        foreach ([1, 3, 5] as $daysAgo) {
+            \App\Models\Asset\AssetDefect::factory()->create(['organization_id' => $this->organization->id, 'asset_id' => $recurring->id, 'reported_by_user_id' => $this->user->id, 'reported_at' => now()->subDays($daysAgo)]);
+        }
+        \App\Models\Asset\AssetDefect::factory()->create(['organization_id' => $this->organization->id, 'asset_id' => $single->id, 'reported_by_user_id' => $this->user->id, 'reported_at' => now()->subDay()]);
+
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subMonth()->startOfMonth(), now()->endOfMonth()))
+            ->get(route('reports.assets', ['group_by' => 'model']));
+        $response->assertOk();
+
+        /** @var list<array<string, mixed>> $rows */
+        $rows = $response->viewData('rows');
+        $row = collect($rows)->firstWhere('label', 'ACME PX-300');
+        $this->assertNotNull($row);
+        $this->assertSame(1, $row['recurringDefectCount']);
+        $response->assertSee(route('reports.assets.drilldown.recurring-defects', array_merge($row['drilldown'], ['recurring' => 1])));
+
+        $drilldown = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subMonth()->startOfMonth(), now()->endOfMonth()))
+            ->get(route('reports.assets.drilldown.recurring-defects', array_merge($row['drilldown'], ['recurring' => 1])));
+        $this->assertSame([$recurring->id], array_column($drilldown->viewData('rows'), 'asset_id'));
+    }
+
     public function test_group_by_model_aggregates_assets(): void {
         Asset::factory()->count(2)->create([
             'organization_id' => $this->organization->id,

@@ -22,4 +22,10 @@ return [
         'scheduleHint' => 'Clienti con un incarico concluso o un ticket risolto nell’intervallo, al massimo una volta per intervallo. Vuoto = disattivato.',
         'saved' => 'Attivatori salvati.',
     ],
+    // Intestazione del questionario (MVP-1610).
+    'header' => [
+        'edit_title' => 'Modifica questionario',
+        'updated' => 'Questionario salvato.',
+        'anonymous_locked' => 'L\'anonimato non può più essere modificato dopo il primo invito.',
+    ],
 ];

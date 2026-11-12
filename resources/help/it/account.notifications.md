@@ -1,7 +1,7 @@
 ---
 title: "Notifiche"
 topic: account.notifications
-version: 1
+version: 2
 keywords:
     - avvisi
     - messaggi
@@ -34,3 +34,5 @@ parsimoniosa: esiste un contingente mensile, i testi lunghi vengono accorciati
 e l'organizzazione viene avvisata prima che si esaurisca. L'SMS non sostituisce
 la notifica nell'applicazione, l'accompagna per quando nessuno è davanti a uno
 schermo.
+
+L’avviso sul contingente SMS raggiunge l’amministrazione dell’organizzazione come attività operativa con notifica: una volta al raggiungimento della soglia e un’altra quando il contingente è esaurito, per ogni mese. Con il nuovo mese il conteggio riparte.

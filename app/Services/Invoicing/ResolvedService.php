@@ -41,24 +41,4 @@ final class ResolvedService {
          */
         public readonly bool $priceIsExplicit = false,
     ) {}
-
-    /**
-     * Stunden-Leistung? Nur solche werden automatisch gegen erfasste Zeiten
-     * gerechnet — bei einer Pauschale wäre „Menge = Stunden" schlicht falsch.
-     */
-    public function isHourly(): bool {
-        $unit = mb_strtolower(trim((string) $this->unitName));
-        if ($unit === '') {
-            // Ohne Einheit bleibt es bei der bisherigen Stundenabrechnung.
-            return true;
-        }
-
-        foreach (['stunde', 'std', 'hour', 'hr', 'h', 'ora', 'heure', 'hora'] as $needle) {
-            if ($unit === $needle || str_starts_with($unit, $needle)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }

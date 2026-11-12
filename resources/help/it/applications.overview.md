@@ -1,7 +1,7 @@
 ---
 title: "Candidature e gare d'appalto"
 topic: applications.overview
-version: 3
+version: 4
 keywords:
     - recruiting
     - selezione del personale
@@ -84,3 +84,5 @@ Avvertenza legale: WorkDiary documenta il processo, ma non sostituisce
 una consulenza legale — in particolare nessuna valutazione
 sull'ammissibilità o sulla convenienza economica delle condizioni
 contrattuali.
+
+**Conduzione del colloquio e apertura delle offerte:** pianificando un colloquio di lavoro scegliete chi lo conduce. Per le gare registrate da quando sono note le offerte concorrenti inserite e aggiungete una nota.

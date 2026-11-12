@@ -49,9 +49,8 @@ class TeamManagementTest extends TestCase {
         $this->assertNotNull($team);
         $this->assertSame($this->organization->id, $team->organization_id);
         $this->assertSame($lead->id, $team->lead_user_id);
-        // Teamleiter + ausgewähltes Mitglied sind Mitglieder; Leiter ist als is_lead markiert.
+        // Teamleiter + ausgewähltes Mitglied sind Mitglieder; wer leitet, steht in lead_user_id.
         $this->assertEqualsCanonicalizing([$lead->id, $m1->id], $team->members()->pluck('users.id')->all());
-        $this->assertSame(1, (int) $team->members()->where('users.id', $lead->id)->first()->pivot->is_lead);
     }
 
     public function test_regular_member_can_view_but_not_create(): void {
@@ -85,7 +84,7 @@ class TeamManagementTest extends TestCase {
             'organization_id' => $this->organization->id,
             'lead_user_id' => $lead->id,
         ]);
-        $team->members()->attach($lead->id, ['is_lead' => true]);
+        $team->members()->attach($lead->id);
 
         $this->actingAs($lead)
             ->delete(route('teams.members.detach', [$team, $lead]))

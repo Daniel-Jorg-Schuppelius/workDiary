@@ -1,7 +1,7 @@
 ---
 title: "Transporte de pasajeros (taxi/VTC)"
 topic: passenger.overview
-version: 1
+version: 3
 keywords:
     - empresa de taxi
     - alquiler con conductor
@@ -46,3 +46,9 @@ quedan abiertas hasta aclararse con motivo.
 
 WorkDiary no sustituye ni el taxímetro/cuentakilómetros ni la TSE — esos
 sistemas siguen siendo soberanos; sus valores se documentan y concilian.
+
+**Tiempo de espera al cerrar el viaje:** al cerrar un viaje introduce el tiempo de espera en minutos; viene precargado con el tiempo entre el inicio de la espera y la recogida. Se guarda al segundo.
+
+## Viajes en la liquidación del turno
+
+Al cerrar una liquidación de turno, WorkDiary vincula los viajes terminados del conductor en ese turno (horario del turno o, si falta, el día del turno): los realizados cuentan como liquidados; los cancelados, interrumpidos y no presentados, como cerrados sin importe. El viaje muestra después su liquidación.

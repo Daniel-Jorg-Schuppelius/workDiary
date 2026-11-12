@@ -1,7 +1,7 @@
 ---
 title: "Wächterrundgänge"
 topic: patrols.overview
-version: 1
+version: 2
 keywords:
     - Wächterkontrollsystem
     - Kontrollgang
@@ -58,3 +58,24 @@ Eskalation läuft über das vorhandene System, kein eigener Kanal.
 Die Soll-Zeiten sind **Nachweis-, keine Leistungsdruck-Metrik**: Es gibt
 bewusst keine Positionsdaten am Scan und keine personenbezogene
 Dauerauswertung.
+
+## Routen und Kontrollpunkte pflegen
+
+**Bearbeiten** ändert Bezeichnung, Objekt und die **Verantwortliche** der
+Route. Eine Route lässt sich **deaktivieren** — ein laufender Rundgang darf zu
+Ende gehen, neue lassen sich nicht starten. Kontrollpunkte lassen sich
+bearbeiten (Ort, Soll, Toleranz; erfasste Scans behalten ihre Bewertung) und
+**deaktivieren**: Ab dann werden sie nicht mehr erwartet und lassen sich nicht
+mehr scannen. Frühere Rundgänge bleiben unverändert: Ein Lauf, der vor der
+Deaktivierung begonnen hat, erwartet den Punkt weiter.
+
+## Eskalation
+
+Der offene Punkt entsteht **sofort bei der Abweichung** — mit dem ersten Scan
+außerhalb des Fensters oder sobald ein fälliger Punkt übersprungen ist — und
+geht an die Verantwortliche der Route, ohne Eintrag an die Teamleitung der
+Person, die den Rundgang durchführt. Je Lauf gibt es einen offenen Punkt; er
+wird bis zum Abschluss fortgeschrieben. Läuft ein Rundgang nach der Soll-Dauer
+plus Toleranz des letzten Kontrollpunkts noch, meldet ihn der Fristenlauf
+einmal als **nicht beendet**; die Leitstelle kann ihn dann mit Begründung
+abbrechen.

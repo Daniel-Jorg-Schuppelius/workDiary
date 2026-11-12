@@ -58,6 +58,7 @@ class BackupVerifyService {
                     'last_error' => mb_substr(class_basename($e) . ': ' . $e->getMessage(), 0, 300),
                 ])->save();
                 $generation->connection?->recordConnectionFailure('Verify: ' . class_basename($e));
+                $generation->connection?->degradeAfter($e);
                 $failed[$generation->snapshot_uuid] = class_basename($e);
             }
         }

@@ -91,6 +91,7 @@ return [
         'missing_iban' => 'IBAN fehlt',
         'zero_amount' => 'Betrag 0',
         'iban_differs' => 'IBAN weicht vom Stammsatz ab',
+        'disputed' => 'Offener Posten strittig',
     ],
 
     'error' => [

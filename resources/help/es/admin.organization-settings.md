@@ -1,7 +1,7 @@
 ---
 title: "Organización y configuración"
 topic: admin.organization-settings
-version: 6
+version: 8
 keywords:
     - configuración de la empresa
     - ajustes del inquilino
@@ -304,6 +304,13 @@ ajuste del sistema en **Configuración (registro)**.
 
 Cómo se crean las facturas se describe en el tema «Facturas & documentos».
 
+- **Exigir aprobación antes de emitir (principio de cuatro ojos)**: una
+  factura solo puede emitirse, enviarse o transferirse al programa de
+  contabilidad después de que una segunda persona la confirme con **Liberar**.
+  Quien creó la factura no puede aprobarla. Actívelo solo si al menos dos
+  personas pueden emitir facturas; sin la marca, la aprobación sigue siendo
+  opcional.
+
 ## Reclamaciones
 
 Valores por defecto por nivel para la reclamación individual y la serie de
@@ -349,6 +356,9 @@ Además, tres campos influyen en todas las facturas creadas localmente:
   pequeñas empresas).»; la XRechnung recibe la categoría fiscal E (exenta).
   La marca prevalece sobre **Tipo impositivo predeterminado (%)** y la
   inversión del sujeto pasivo.
+- **Emitir solo facturas electrónicas validadas**: la validación de la factura
+  electrónica se ejecuta antes de la emisión. Si la factura no la supera, la
+  emisión se cancela y se abre el informe de validación.
 
 ## Factura electrónica: documentos y destinatarios
 
@@ -364,6 +374,17 @@ Reglas para los documentos justificativos en la factura electrónica:
 ## Contabilidad: principio de los cuatro ojos
 
 La opción **Principio de los cuatro ojos** del grupo **Contabilidad** exige la aprobación de una segunda persona: quien prepara un asiento o un asiento directo (descuento por pronto pago, cancelación, asiento de aclaración, traspaso interno, saldos iniciales, pago anticipado especial) no lo contabiliza personalmente; quien compone una remesa de pagos SEPA no la libera personalmente. Los asientos directos se crean entonces como borradores en la **Bandeja contable** y solo surten efecto tras su contabilización. Sin la opción, WorkDiary los contabiliza de inmediato.
+
+## Conciliación bancaria: tolerancias
+
+El grupo **Conciliación bancaria** controla las propuestas de asignación de la
+conciliación de pagos.
+
+- **Tolerancia en céntimos (importe)** (0–1, por defecto 0,02): diferencia de
+  redondeo hasta la cual un importe pagado se considera coincidente.
+- **Tolerancia de descuento por pronto pago (%)** (0–10, por defecto 3): pago
+  inferior que se propone como pago completo con descuento si la factura no tiene
+  condiciones de descuento propias.
 
 ## Inmovilizado: bienes de escaso valor y fondo colectivo
 
@@ -594,8 +615,11 @@ desde el servidor de teselas configurado.
   al navegador cargar imágenes de este servidor.
 - **Zoom máximo** (1–22, predeterminado 19): ampliación máxima de los mapas.
   Elija como máximo el nivel que entrega el servidor de teselas.
-- La atribución al pie del mapa la fija la configuración básica del operador;
-  aquí no puede cambiarse.
+- **Atribución** (hasta 255 caracteres, texto sin HTML): mención exigida por el
+  proveedor de teselas, abajo a la derecha de cada mapa, por ejemplo
+  «© Proveedor». Si queda vacía, se aplica la atribución de la configuración
+  básica que indica el texto gris. Para un servidor de teselas propio, introduzca
+  la mención que exijan sus condiciones de uso.
 
 ## Facturación del desplazamiento
 
@@ -638,6 +662,12 @@ el Corpus Christi o el Día de la Reforma solo se aplican en determinados
 estados; por eso, elija la región de su empresa. Si queda vacío, se aplica el
 valor predeterminado del sistema, que la primera entrada de la lista indica
 como «Predeterminado …».
+
+**Idioma de los nombres de festivos** determina en qué idioma el calendario,
+los turnos y los informes nombran los festivos oficiales. Puede elegir alemán
+(Alemania, Austria, Suiza), francés e italiano (Suiza), así como inglés,
+francés, italiano y español. Sus propios festivos conservan su nombre. Si queda
+vacío, se aplica el valor predeterminado del sistema.
 
 La región actúa en todos los lugares donde workDiary tiene en cuenta los
 festivos, entre otros en:
@@ -731,3 +761,15 @@ organización.
 
 La activación y desactivación del modo de mantenimiento quedan registradas en
 el registro de auditoría.
+
+**Ámbito jurídico:** en los datos maestros se elige el ámbito jurídico de la
+organización. Determina los plazos de conservación de las propuestas de
+eliminación y los datos de la documentación de procedimientos; el cambio
+queda en el registro de auditoría.
+
+En los ajustes avanzados se definen además: el intervalo del control del
+permiso de conducir, la matriz de prioridad del helpdesk (impacto × urgencia,
+celda vacía = valor predeterminado), el umbral de aviso de la planificación
+de capacidad, el umbral del segundo nivel de aprobación de inversiones, el
+separador y las líneas de metadatos de la exportación CSV de los informes y el
+plazo de eliminación de candidaturas rechazadas.

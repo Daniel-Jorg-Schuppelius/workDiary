@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Sales;
 
-use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
+use App\Http\Controllers\Concerns\{ChecksTenantPublicSurfaces, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
  */
 class QuoteController extends Controller {
     use ChecksTenantPublicSurfaces;
+    use ResolvesCurrentOrganization;
 
     public function __construct(private readonly QuoteService $quotes) {}
 
@@ -51,6 +52,8 @@ class QuoteController extends Controller {
             'prefillProjectId' => $prefillProject?->sqid,
             'prefillLeadId' => $prefillLead?->sqid,
             'defaultValidUntil' => \App\Services\Invoicing\QuoteService::defaultValidUntil()->toDateString(),
+            // Zuständig fürs Nachfassen (Feature 112): leer = Ersteller.
+            'followUpUsers' => User::query()->where('organization_id', $this->currentOrganizationId())->whereNull('deactivated_at')->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -61,6 +64,7 @@ class QuoteController extends Controller {
             'customer_id' => \App\Support\Sqid::decodeOrNumeric(Customer::class, $request->input('customer_id')),
             'project_id' => \App\Support\Sqid::decodeOrNumeric(\App\Models\Project\Project::class, $request->input('project_id')),
             'lead_id' => \App\Support\Sqid::decode(\App\Models\Sales\Lead::class, (string) $request->input('lead_id', '')),
+            'follow_up_user_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('follow_up_user_id')),
         ]);
         $data = $request->validate([
             'lead_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('leads')],
@@ -70,6 +74,7 @@ class QuoteController extends Controller {
             'terms' => ['nullable', 'string', 'max:5000'],
             // MVP-1053: leer = Regel der Organisation.
             'labour_cost_disclosure' => ['nullable', 'in:0,1'],
+            'follow_up_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
         ]);
 
         /** @var User $actor */
@@ -81,9 +86,11 @@ class QuoteController extends Controller {
             'valid_until' => $data['valid_until'] ?? null,
             'terms' => $data['terms'] ?? null,
             'is_labour_cost_disclosed' => isset($data['labour_cost_disclosure']) ? $data['labour_cost_disclosure'] === '1' : null,
+            'follow_up_user_id' => $data['follow_up_user_id'] ?? null,
         ], [], $actor);
         if ($quote->lead !== null) {
             $quote->lead->audit('lead.quote_created', ['quote' => $quote->number]);
+            $quote->lead->touchContact();
         }
 
         return redirect()->route('quotes.show', $quote)->with('status', __('Angebot :nr angelegt — Positionen hinzufügen und freigeben.', ['nr' => $quote->number]));
@@ -127,27 +134,6 @@ class QuoteController extends Controller {
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => sprintf('attachment; filename="angebot-%s-v%d.pdf"', $quote->number, $quote->version),
         ]);
-    }
-
-    /**
-     * Auftragsbestätigung (MVP-650): bestätigt die angenommenen Positionen
-     * eines (teil-)angenommenen Angebots — kein eigener Beleg/Nummernkreis.
-     */
-    /**
-     * Bestandsroute (MVP-650): Die AB ist seit Phase 145 (MVP-1162) ein eigener
-     * Beleg; die Route führt auf ihr PDF bzw. ihre Seite.
-     */
-    public function orderConfirmationPdf(Quote $quote): RedirectResponse {
-        Gate::authorize('view', $quote);
-        $confirmation = \App\Models\Sales\OrderConfirmation::query()->where('quote_id', $quote->id)
-            ->where('status', '!=', \App\Enums\Sales\OrderConfirmationStatus::Cancelled)->latest('id')->first();
-        if ($confirmation === null) {
-            return redirect()->route('quotes.show', $quote)->with('info', __('quotes.order_confirmation.flash.create_first'));
-        }
-
-        return $confirmation->status === \App\Enums\Sales\OrderConfirmationStatus::Confirmed
-            ? redirect()->route('order-confirmations.pdf', $confirmation)
-            : redirect()->route('order-confirmations.show', $confirmation);
     }
 
     // ── Positionen (nur Entwurf) ─────────────────────────────────────────

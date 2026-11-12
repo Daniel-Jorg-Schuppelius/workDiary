@@ -115,4 +115,36 @@ class CustomerApiTest extends TestCase {
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.name', 'Alpha');
     }
+
+    /** MVP-1591: Die API sperrt wie die Oberfläche, solange externe Referenzen am Kunden hängen. */
+    public function test_delete_is_refused_while_external_references_exist(): void {
+        Sanctum::actingAs($this->admin, ['*']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        \App\Models\Integration\ExternalReference::create([
+            'organization_id' => $this->organization->id, 'plugin_id' => 'lexoffice', 'external_type' => 'contact', 'external_id' => 'c-1',
+            'referenceable_type' => $customer->getMorphClass(), 'referenceable_id' => $customer->getKey(),
+        ]);
+
+        $this->deleteJson(route('api.customers.destroy', $customer))->assertStatus(409);
+        $this->assertDatabaseHas('customers', ['id' => $customer->id]);
+    }
+
+    /** MVP-1591: Löschen über die API löscht das KI-Gedächtnis auditiert und nimmt das Standardprojekt mit. */
+    public function test_delete_removes_ai_memory_with_audit_and_the_default_project(): void {
+        Sanctum::actingAs($this->admin, ['*']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $entry = \App\Models\Ai\AiMemoryEntry::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id]);
+        $defaultProjects = $customer->projects()->where('is_default', true)->pluck('id')->all();
+
+        $this->deleteJson(route('api.customers.destroy', $customer))->assertNoContent();
+
+        $this->assertDatabaseMissing('customers', ['id' => $customer->id]);
+        $this->assertDatabaseMissing('ai_memory_entries', ['id' => $entry->id]);
+        // Einzel-Audit je Eintrag statt stiller FK-Kaskade.
+        $this->assertTrue(\App\Models\Audit\AuditLog::query()
+            ->where('auditable_type', \App\Support\MorphMap::stableKey(\App\Models\Ai\AiMemoryEntry::class))
+            ->where('auditable_id', $entry->id)->where('event', 'deleted')->exists());
+        $this->assertNotSame([], $defaultProjects);
+        $this->assertSame(0, \App\Models\Project\Project::query()->whereIn('id', $defaultProjects)->count());
+    }
 }

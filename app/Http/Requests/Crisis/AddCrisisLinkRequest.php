@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Requests\Crisis;
 
 use App\Http\Requests\BaseFormRequest;
+use App\Services\Crisis\CrisisLinkTargets;
+use Illuminate\Validation\Rule;
 
 /**
  * Validierung für die Verknüpfung eines Fachvorgangs mit der Krisenakte
@@ -20,10 +22,19 @@ use App\Http\Requests\BaseFormRequest;
  * bleibt im Controller. Berechtigung trägt der Controller.
  */
 class AddCrisisLinkRequest extends BaseFormRequest {
+    /** Die Auswahl des Dialogs nennt Art und Sqid in einem Feld (`art:sqid`, MVP-1605). */
+    protected function prepareForValidation(): void {
+        $target = $this->input('link_target');
+        if (is_string($target) && str_contains($target, ':')) {
+            [$type, $sqid] = explode(':', $target, 2);
+            $this->merge(['linkable_type' => $type, 'linkable_sqid' => $sqid]);
+        }
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'linkable_type' => ['required', 'in:service_ticket,isms_incident,privacy_incident,safety_event,procedure_run,document,asset,customer'],
+            'linkable_type' => ['required', Rule::in(CrisisLinkTargets::keys())],
             'linkable_sqid' => ['required', 'string', 'max:64'],
             'note' => ['nullable', 'string', 'max:500'],
         ];

@@ -71,6 +71,11 @@ class ProtocolSignatureToken extends Model {
         return $this->belongsTo(Protocol::class);
     }
 
+    /** @return BelongsTo<\App\Models\Platform\User, $this> Wer den Link ausgestellt hat. */
+    public function creator(): BelongsTo {
+        return $this->belongsTo(\App\Models\Platform\User::class, 'created_by_user_id');
+    }
+
     /** @return BelongsTo<ProtocolSignature, $this> */
     public function signature(): BelongsTo {
         return $this->belongsTo(ProtocolSignature::class, 'signed_signature_id');

@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Hr\Qualification;
 use App\Models\Platform\User;
+use App\Services\Reporting\QualificationMatrixBuilder;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -33,7 +34,7 @@ class QualificationReportController extends Controller {
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
-    private const int EXPIRY_WARN_DAYS = 30;
+    public function __construct(private readonly QualificationMatrixBuilder $builder) {}
 
     /** E10: Ohne Verwaltungsrecht zeigt die Matrix nur die eigene Zeile. */
     protected function exportIsPersonal(Request $request): bool {
@@ -45,65 +46,25 @@ class QualificationReportController extends Controller {
         $seesTeam = $this->viewerHolds(Permission::QualificationManage);
 
         $today = Carbon::today();
-        $warnDate = $today->copy()->addDays(self::EXPIRY_WARN_DAYS);
 
         // Stichtagsreport (heute) — der Zeitraum dient nur Filterkontext/Links.
         [$rangeFrom, $rangeTo] = $this->resolveRange($request);
         $filters = $this->standardFilters($request, ['user', 'team'], $rangeFrom, $rangeTo);
 
         // Inaktive Qualifikationen sind aus dem Katalog genommen — weder Spalte noch Zählung.
-        /** @var Collection<int, Qualification> $qualifications */
-        $qualifications = Qualification::query()
-            ->active()
-            ->orderBy('name')
-            ->get(['id', 'name', 'abbreviation', 'is_active']);
-
-        $activeOnly = static fn($q) => $q->where('qualifications.is_active', true);
-        $usersQuery = User::inCurrentOrganization()
-            ->whereHas('qualifications', $activeOnly)
-            ->orderBy('name');
-        if (! $seesTeam) {
-            $usersQuery->where('id', $userId);
-        }
-        $filters->applyUserAndTeam($usersQuery, 'id');
-        /** @var Collection<int, User> $users */
-        $users = $usersQuery->with(['qualifications' => fn($q) => $activeOnly($q)->select(['qualifications.id', 'qualifications.name'])])->get(['id', 'name']);
-
-        /** @var array<int, array<int, array{valid_from: ?string, valid_until: ?string, state: string}>> $matrix */
-        $matrix = [];
-        /** @var array<int, array{valid: int, expiring: int, expired: int}> $stateByQualification */
-        $stateByQualification = [];
-        $expiring = 0;
-        $expired = 0;
-        $totalAssignments = 0;
-        foreach ($users as $u) {
-            $uid = (int) $u->id;
-            $matrix[$uid] = [];
-            foreach ($u->qualifications as $q) {
-                $totalAssignments++;
-                $pivot = $q->getRelationValue('pivot');
-                $validUntil = $pivot !== null ? $pivot->getAttribute('valid_until') : null;
-                $validFrom = $pivot !== null ? $pivot->getAttribute('valid_from') : null;
-                $state = 'valid';
-                if ($validUntil !== null) {
-                    $end = Carbon::parse((string) $validUntil)->startOfDay();
-                    if ($end->lt($today)) {
-                        $state = 'expired';
-                        $expired++;
-                    } elseif ($end->lte($warnDate)) {
-                        $state = 'expiring';
-                        $expiring++;
-                    }
-                }
-                $matrix[$uid][(int) $q->id] = [
-                    'valid_from' => $validFrom !== null ? Carbon::parse((string) $validFrom)->toDateString() : null,
-                    'valid_until' => $validUntil !== null ? Carbon::parse((string) $validUntil)->toDateString() : null,
-                    'state' => $state,
-                ];
-                $stateByQualification[(int) $q->id] ??= ['valid' => 0, 'expiring' => 0, 'expired' => 0];
-                $stateByQualification[(int) $q->id][$state]++;
+        $qualifications = $this->builder->qualifications();
+        $users = $this->builder->users(function ($usersQuery) use ($seesTeam, $userId, $filters): void {
+            if (! $seesTeam) {
+                $usersQuery->where('id', $userId);
             }
-        }
+            $filters->applyUserAndTeam($usersQuery, 'id');
+        });
+        $computed = $this->builder->matrix($users, $today);
+        $matrix = $computed['matrix'];
+        $stateByQualification = $computed['byQualification'];
+        $expiring = $computed['expiring'];
+        $expired = $computed['expired'];
+        $totalAssignments = $computed['assignments'];
 
         $exportFilters = array_merge(['date' => $today->toDateString()], $filters->toAuditArray());
 

@@ -16,14 +16,15 @@ use App\Enums\Finance\{AccountingEntryStatus, DirectBookingKind};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
-use App\Models\Accounting\{AccountingAccount, AccountingEntry};
+use App\Models\Accounting\AccountingEntry;
 use App\Models\Finance\CostCenter;
-use App\Services\Accounting\JournalService;
+use App\Models\Platform\Organization;
+use App\Services\Accounting\{JournalService, ManualEntryLines};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
-use CommonToolkit\ValueObjects\Decimal;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{DB, Gate};
 use Illuminate\View\View;
 
 /**
@@ -35,7 +36,10 @@ class JournalController extends Controller {
     use ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange;
 
-    public function __construct(private readonly JournalService $journal) {}
+    public function __construct(
+        private readonly JournalService $journal,
+        private readonly ManualEntryLines $manualLines,
+    ) {}
 
     public function index(Request $request): View {
         abort_unless(Gate::allows(Permission::AccountingLedgerView->value), 403);
@@ -76,8 +80,9 @@ class JournalController extends Controller {
         $actor = $request->user();
 
         return view('finance.accounting.entry', [
-            'entry' => $entry->load(['lines.account', 'lines.taxCode', 'postedBy', 'reversedBy', 'reverses']),
+            'entry' => $entry->load(['lines.account', 'lines.taxCode', 'lines.costCenter', 'lines.counterparty', 'postedBy', 'reversedBy', 'reverses']),
             'canPost' => Gate::allows(Permission::AccountingLedgerPost->value),
+            'canPrepare' => Gate::allows(Permission::AccountingLedgerPrepare->value),
             'awaitsSecondPerson' => $actor !== null && $this->journal->awaitsSecondPerson($entry, $actor),
             // Wartende Direktbuchung (verwerfbar) bzw. wartendes Storno (E23/E24).
             'directKind' => $entry->status->isMutable() ? DirectBookingKind::of($entry) : null,
@@ -87,19 +92,29 @@ class JournalController extends Controller {
         ]);
     }
 
-    /** Erfassungsdialog: zwei Zeilen (Soll/Haben) reichen für die Handbuchung. */
-    public function form(): View {
+    /**
+     * Erfassungsdialog der Handbuchung; mit `$entry` das Bearbeiten eines
+     * Entwurfs (MVP-1556/1558): mehrere Zeilen, Steuerkennzeichen und
+     * Kostenstelle je Zeile, Gegenpartei für OPOS- und Steuerzeilen.
+     */
+    public function form(?AccountingEntry $entry = null): View {
         abort_unless(Gate::allows(Permission::AccountingLedgerPrepare->value), 403);
         $organization = $this->currentOrganizationOrAbort();
+        if ($entry instanceof AccountingEntry) {
+            $this->assertSameOrganization($entry);
+            abort_unless($entry->status->isMutable() && DirectBookingKind::of($entry) === null, 404);
+        }
+
+        $lines = $entry instanceof AccountingEntry ? $this->manualLines->lineData($entry->load('lines')) : [];
+        $rows = $this->manualLines->rows($lines);
 
         return view('finance.accounting._entry_dialog', [
-            'accounts' => AccountingAccount::query()
-                ->where('organization_id', $organization->id)
-                ->active()
-                ->orderBy('number')
-                ->get(),
-            'costCenters' => CostCenter::query()->where('organization_id', $organization->id)->where('active', true)->orderBy('code')->get(),
-        ]);
+            'entry' => $entry,
+            'rows' => $rows,
+            'rowCount' => $this->manualLines->rowCount($rows),
+            'counterparty' => $this->manualLines->counterpartyValue($lines),
+            'canPost' => Gate::allows(Permission::AccountingLedgerPost->value),
+        ] + $this->manualLines->formOptions($organization, $entry?->booked_on !== null ? CarbonImmutable::parse($entry->booked_on) : CarbonImmutable::now()));
     }
 
     public function store(Request $request): RedirectResponse {
@@ -108,35 +123,10 @@ class JournalController extends Controller {
         $actor = $request->user();
         abort_if($actor === null, 403);
 
-        $data = $request->validate([
-            'booked_on' => ['required', 'date'],
-            'document_on' => ['nullable', 'date'],
-            'memo' => ['required', 'string', 'max:191'],
-            'document_reference' => ['nullable', 'string', 'max:64'],
-            'debit_account' => ['required', 'string'],
-            'credit_account' => ['required', 'string'],
-            // decimal statt nur numeric: keine Exponentenschreibweise (bcmath).
-            'amount' => ['required', 'numeric', 'decimal:0,8', 'gt:0'],
-            'cost_center' => ['nullable', 'string'],
-            'post' => ['nullable', 'boolean'],
-        ]);
-        // Die Zugehörigkeit zur Organisation prüft der JournalService.
-        $costCenterId = empty($data['cost_center']) ? null : (int) Sqid::decodeOrNumeric(CostCenter::class, (string) $data['cost_center']);
-
-        $debitId = (int) Sqid::decodeOrNumeric(AccountingAccount::class, (string) $data['debit_account']);
-        $creditId = (int) Sqid::decodeOrNumeric(AccountingAccount::class, (string) $data['credit_account']);
-        $this->assertOwnAccounts($organization->id, [$debitId, $creditId]);
-
-        $amount = Decimal::of((string) $data['amount'], 2)->getValue();
-        $draft = [
-            'booked_on' => CarbonImmutable::parse((string) $data['booked_on']),
-            'document_on' => isset($data['document_on']) ? CarbonImmutable::parse((string) $data['document_on']) : null,
-            'memo' => (string) $data['memo'],
-            'document_reference' => $data['document_reference'] ?? null,
-            'lines' => [
-                ['accounting_account_id' => $debitId, 'debit' => $amount, 'credit' => '0.00', 'cost_center_id' => $costCenterId],
-                ['accounting_account_id' => $creditId, 'debit' => '0.00', 'credit' => $amount, 'cost_center_id' => $costCenterId],
-            ],
+        $data = $this->validatedEntry($request);
+        $bookedOn = CarbonImmutable::parse((string) $data['booked_on']);
+        $draft = $this->head($data) + [
+            'lines' => $this->manualLines->build($organization, $bookedOn, $data['rows'], (string) ($data['counterparty'] ?? '')),
         ];
 
         // Recht vor dem Schreiben prüfen und atomar festschreiben — sonst
@@ -151,6 +141,68 @@ class JournalController extends Controller {
         return redirect()
             ->route('finance.accounting.journal.show', $entry)
             ->with('status', __('accounting.ledger.flash.entry_saved'));
+    }
+
+    /** Entwurf ändern (MVP-1556); Festbuchungen und Fachvorgänge weist der Dienst ab. */
+    public function update(Request $request, AccountingEntry $entry): RedirectResponse {
+        abort_unless(Gate::allows(Permission::AccountingLedgerPrepare->value), 403);
+        $this->assertSameOrganization($entry);
+        $organization = $this->currentOrganizationOrAbort();
+        $actor = $request->user();
+        abort_if($actor === null, 403);
+
+        $data = $this->validatedEntry($request);
+        $bookedOn = CarbonImmutable::parse((string) $data['booked_on']);
+        $lines = $this->manualLines->build(
+            $organization,
+            $bookedOn,
+            $data['rows'],
+            (string) ($data['counterparty'] ?? ''),
+            $this->manualLines->lineData($entry->load('lines')),
+        );
+
+        $this->journal->updateDraft($entry, $this->head($data), $lines, $actor);
+
+        return redirect()
+            ->route('finance.accounting.journal.show', $entry)
+            ->with('status', __('accounting.ledger.flash.entry_updated'));
+    }
+
+    /** Dialog: Kostenstelle je Zeile nachtragen (Feature 142, MVP-1556) — an jedem Entwurf, auch aus Inbox und Fachvorgang. */
+    public function costCenterForm(AccountingEntry $entry): View {
+        abort_unless(Gate::allows(Permission::AccountingLedgerPrepare->value), 403);
+        $this->assertSameOrganization($entry);
+        abort_unless($entry->status->isMutable(), 404);
+
+        return view('finance.accounting._entry_cost_center_dialog', [
+            'entry' => $entry->load('lines.account'),
+            'costCenters' => $this->costCenters($this->currentOrganizationOrAbort()),
+        ]);
+    }
+
+    public function assignCostCenters(Request $request, AccountingEntry $entry): RedirectResponse {
+        abort_unless(Gate::allows(Permission::AccountingLedgerPrepare->value), 403);
+        $this->assertSameOrganization($entry);
+
+        $data = $request->validate([
+            'cost_centers' => ['required', 'array'],
+            'cost_centers.*' => ['nullable', 'string', 'max:64'],
+        ]);
+
+        DB::transaction(function () use ($entry, $data): void {
+            foreach ($entry->lines as $line) {
+                if (! array_key_exists($line->sqid, $data['cost_centers'])) {
+                    continue;
+                }
+                $key = (string) ($data['cost_centers'][$line->sqid] ?? '');
+                // Die Zugehörigkeit zur Organisation prüft der JournalService.
+                $this->journal->assignCostCenter($line, $key === '' ? null : Sqid::decodeOrNumeric(CostCenter::class, $key));
+            }
+        });
+
+        return redirect()
+            ->route('finance.accounting.journal.show', $entry)
+            ->with('status', __('accounting.ledger.flash.cost_centers_saved'));
     }
 
     public function post(Request $request, AccountingEntry $entry): RedirectResponse {
@@ -197,30 +249,66 @@ class JournalController extends Controller {
     }
 
     /**
-     * Wartende Direktbuchung verwerfen (E24). Zurück zur Liste, auf der der
-     * Vorgang wieder offen steht — die Detailseite gibt es danach nicht mehr.
+     * Entwurf verwerfen (E24, MVP-1556). Zurück zur Liste, auf der der Vorgang
+     * wieder offen steht — die Detailseite gibt es danach nicht mehr.
+     * Fachvorgänge verwirft, wer festschreiben darf; alle anderen Entwürfe,
+     * wer sie vorbereiten darf.
      */
     public function discard(Request $request, AccountingEntry $entry): RedirectResponse {
-        abort_unless(Gate::allows(Permission::AccountingLedgerPost->value), 403);
+        $kind = DirectBookingKind::of($entry);
+        abort_unless(Gate::allows(($kind instanceof DirectBookingKind ? Permission::AccountingLedgerPost : Permission::AccountingLedgerPrepare)->value), 403);
         $this->assertSameOrganization($entry);
         $actor = $request->user();
         abort_if($actor === null, 403);
 
-        $kind = DirectBookingKind::of($entry);
+        $fromInbox = $entry->source_key !== null && $entry->source_key !== '';
         $this->journal->discard($entry, $actor);
 
         return redirect()
-            ->toList($kind === DirectBookingKind::OpenItemSettlement ? 'finance.accounting.open-items.index' : 'finance.accounting.inbox.index')
+            ->toList(match (true) {
+                $kind === DirectBookingKind::OpenItemSettlement => 'finance.accounting.open-items.index',
+                $kind instanceof DirectBookingKind, $fromInbox => 'finance.accounting.inbox.index',
+                default => 'finance.accounting.journal.index',
+            })
             ->with('status', __('accounting.ledger.flash.entry_discarded'));
     }
 
-    /** @param list<int> $ids */
-    private function assertOwnAccounts(int $organizationId, array $ids): void {
-        $count = AccountingAccount::query()
-            ->where('organization_id', $organizationId)
-            ->whereIn('id', $ids)
-            ->count();
+    /** @return array<string, mixed> */
+    private function validatedEntry(Request $request): array {
+        return $request->validate([
+            'booked_on' => ['required', 'date'],
+            'document_on' => ['nullable', 'date'],
+            'memo' => ['required', 'string', 'max:191'],
+            'document_reference' => ['nullable', 'string', 'max:64'],
+            'counterparty' => ['nullable', 'string', 'max:80'],
+            'rows' => ['required', 'array', 'min:2', 'max:60'],
+            'rows.*.line' => ['nullable', 'integer', 'min:0'],
+            'rows.*.account' => ['nullable', 'string', 'max:64'],
+            // decimal statt nur numeric: keine Exponentenschreibweise (bcmath).
+            'rows.*.debit' => ['nullable', 'numeric', 'decimal:0,2', 'gte:0'],
+            'rows.*.credit' => ['nullable', 'numeric', 'decimal:0,2', 'gte:0'],
+            'rows.*.tax_code' => ['nullable', 'string', 'max:64'],
+            'rows.*.cost_center' => ['nullable', 'string', 'max:64'],
+            'rows.*.memo' => ['nullable', 'string', 'max:191'],
+            'post' => ['nullable', 'boolean'],
+        ]);
+    }
 
-        abort_unless($count === count(array_unique($ids)), 422);
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{booked_on: CarbonImmutable, document_on: CarbonImmutable|null, memo: string, document_reference: string|null}
+     */
+    private function head(array $data): array {
+        return [
+            'booked_on' => CarbonImmutable::parse((string) $data['booked_on']),
+            'document_on' => isset($data['document_on']) ? CarbonImmutable::parse((string) $data['document_on']) : null,
+            'memo' => (string) $data['memo'],
+            'document_reference' => $data['document_reference'] ?? null,
+        ];
+    }
+
+    /** @return Collection<int, CostCenter> */
+    private function costCenters(Organization $organization): Collection {
+        return CostCenter::query()->where('organization_id', $organization->id)->where('active', true)->orderBy('code')->get();
     }
 }

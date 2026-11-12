@@ -1,7 +1,7 @@
 ---
 title: "Managing projects"
 topic: projects.manage
-version: 6
+version: 7
 keywords:
     - create project
     - project management
@@ -118,3 +118,5 @@ contribution margin and – if a budget is maintained – its consumption in the
 selected period; a click opens the profitability report with the same figures.
 Warranty periods and guarantees for the project appear below. Imported tasks
 name their plugin, for example "From GitHub Issues".
+
+**Project colour:** In the top right of the project dialog you choose the colour that marks the project in lists, times and the monthly overview.

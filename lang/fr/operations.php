@@ -36,6 +36,7 @@ return [
         'problem_report_open' => 'Signalement de problème ouvert',
         'cloud_intake_reauth' => 'Réception cloud : nouvelle connexion requise',
         'cloud_intake_quarantined' => 'Réception cloud : importations refusées',
+        'sms_budget_warning' => 'Quota de SMS',
     ],
     'severity' => [
         'info' => 'Information',
@@ -96,6 +97,8 @@ return [
         'problem_report_summary' => ':count signalement(s) ouvert(s) en attente de traitement.',
         'cloud_intake_reauth' => 'La réception de documents cloud :provider (« :folder ») doit être reconnectée (:status).',
         'cloud_intake_quarantined' => ':count fichier(s) de la réception de documents cloud ont été refusés (dernier motif : :reason).',
+        'sms_budget_warning' => 'Quota de SMS :month : :used sur :limit segments utilisés (:percent %).',
+        'sms_budget_exhausted' => 'Quota de SMS :month épuisé (:used sur :limit segments) — aucun autre SMS ne sera envoyé avant la fin du mois.',
         'support_grant_summary' => ':count autorisation(s) de support active(s) — vérifier et révoquer si nécessaire.',
     ],
     'filter' => [

@@ -1,7 +1,7 @@
 ---
 title: "Offene Vorgänge"
 topic: open-issues
-version: 1
+version: 2
 keywords:
     - offene Punkte
     - Mängelliste
@@ -39,3 +39,15 @@ Aus einem offenen Punkt lassen sich **mehrere Folgeaufträge** anlegen. Jeder
 übernimmt Kunde, Projekt und Beschreibung, dazu die Fälligkeit des Punkts und
 eine Kopie seiner Anhänge — bei Mängeln aus einem Protokoll auch die Fotos des
 Protokollpunkts.
+
+**Ändern:** Im Bearbeitungsdialog ändern Sie auch Frist, Schweregrad und – mit
+dem Recht zur Kundenfreigabe – die Sichtbarkeit; jede Änderung steht im Verlauf
+des Punkts. Ein kritischer Punkt ohne Frist erhält sieben Tage.
+
+**Projekt, Kunde, Asset:** Offene Punkte legen Sie auch an einem Projekt, einem
+Kunden und einem Asset an; das Panel steht auf deren Seiten. Mit dem
+Zuweisungsrecht wählen Sie die zuständige Person schon bei der Anlage.
+
+**Details:** Der Dialog **Details** zeigt Verlauf, Kommentare und Anhänge. Ein
+geschlossener Punkt nimmt keine Anhänge mehr an und gibt keine ab. Die Liste
+filtern Sie nach Status, Schweregrad und zuständiger Person.

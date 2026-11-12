@@ -180,6 +180,10 @@ class AppServiceProvider extends ServiceProvider {
 
         // Selbstfreigabe und Team-Sicht (Entscheidung 2026-10-23): Policies
         // fragen je Zeile — Ergebnis je Request/Job einmal.
+        // Modul-Gate der Erweiterungspunkte (MVP-1587): Modulstatus je Organisation je Request/Job einmal.
+        $this->app->scoped(\App\Services\Licensing\ModuleExtensions::class);
+        // Verbindungswahl der KI-Vorschlagskomponente (MVP-1590): gilt nur für den laufenden Request.
+        $this->app->scoped(\App\Services\Ai\AiConnectionChoice::class);
         $this->app->scoped(\App\Services\Approval\SelfApproval::class);
         $this->app->scoped(\App\Services\Users\TeamScope::class);
         // Eigene Arbeitsbereiche je Request einmal (Leistungsanalyse 2026-11-02, perfc-10).
@@ -250,6 +254,9 @@ class AppServiceProvider extends ServiceProvider {
 
         // Generische Integrations-Outbox (MVP-114): gleiche Registry-Mechanik.
         $this->app->singleton(\App\Services\Integration\IntegrationOutboxDispatcherResolver::class);
+
+        // Datenführerschaft (MVP-1592): die laufende Übernahme gilt nur innerhalb von Request bzw. Job.
+        $this->app->scoped(\App\Services\Integration\DataOwnershipGuard::class);
 
         // Belegfluss-Quellen (Feature 105; Vollscan 2026-08, B9): Kern-Quellen
         // hier, Plugin-Quellen (Lexoffice/orgaMAX) registriert der jeweilige
@@ -1301,6 +1308,7 @@ class AppServiceProvider extends ServiceProvider {
             \App\Dashboard\Widgets\DocumentChainWidget::class,
             \App\Dashboard\Widgets\OpenTimesWidget::class,
             \App\Dashboard\Widgets\OpenItemsWidget::class,
+            \App\Dashboard\Widgets\FinanceMovementsWidget::class,
             \App\Dashboard\Widgets\ResalePeriodsWidget::class,
             \App\Dashboard\Widgets\TaxFilingsWidget::class,
 

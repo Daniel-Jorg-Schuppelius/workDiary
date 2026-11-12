@@ -1,7 +1,7 @@
 ---
 title: "Domainverwaltung"
 topic: domains.overview
-version: 2
+version: 5
 keywords:
     - Domain registrieren
     - Domain verlängern
@@ -75,3 +75,16 @@ Portfolio, Salden und Ebene und erlaubt die Kundenzuordnung je Subuser. Je
 Subuser lässt sich die Kundennummer beim Anbieter eintragen; damit heißen die
 Monatsbelege aus dem Buchungsjournal im Reselling-Register wie die Rechnungen
 des Portals („Kundennummer-MM-JJJJ“).
+
+**Unklare Befehle:** Bleibt die Antwort des Anbieters unvollständig, steht der Befehl auf „unklar“ und wird nie wiederholt. Der nächste Sync-Lauf liest den Zustand der Domain beim Anbieter: Registrierung, Renewal-Modus, Transfersperre und Verlängerung werden so bestätigt, als fehlgeschlagen erkannt oder als Konflikt markiert. Für Transfers, DNS und Hochrisikoaktionen gibt es keinen Statusabruf — prüfen Sie diese beim Anbieter und schließen Sie sie im Befehlsjournal mit Begründung von Hand ab.
+
+**Kosten und Guthaben:** In den Organisationseinstellungen legen Sie eine Kostenschwelle für Verlängerungen und ein Mindestguthaben fest. Die Domainverwaltung meldet anstehende Verlängerungen ab der Schwelle und Anbieterkonten, deren Guthaben samt Kreditrahmen die Verlängerungen der nächsten Tage nicht deckt — ohne Deckung löscht der Anbieter die Domains zum Ausfalldatum.
+
+**Renewal-Modus:** Wählbar sind die drei Modi, die der Anbieter dokumentiert:
+Auto-Renew, Auto-Expire und Auto-Delete. Ein früher gespeicherter Wert „Einmal
+verlängern“ gilt nach dem Update als unbekannt; der nächste Sync liest den
+tatsächlichen Modus beim Anbieter.
+
+## Abgleichsstand einer Domain
+
+Läuft ein Befehl an den Anbieter, steht die Domain auf **Ausstehend**. Bleibt sein Ausgang unklar oder weicht der Anbieter nach dem Schreiben ab, steht sie auf **Unklar** bzw. **Konflikt** und erscheint in der Kachel **Abgleichsprobleme**; ein Abgleich überschreibt das nicht, solange der Befehl offen ist. Nach dem Abschluss – automatisch oder von Hand – steht die Domain auf **Veraltet**, bis der nächste Abgleich sie neu liest.

@@ -14,7 +14,7 @@ namespace App\Services\Invoicing;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Sales\OrderConfirmation;
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, IssuerIdentity};
 use App\Services\UI\BrandingService;
 
 /**
@@ -47,7 +47,23 @@ class OrderConfirmationPdfRenderer {
         return [
             'confirmation' => $confirmation,
             'orgLegal' => app(BrandingService::class)->legalFor($confirmation->organization),
-            'design' => $this->design->context($this->design->payloadForDocument($confirmation, RenderDocumentKind::OrderConfirmation)),
+            'design' => $this->design->contextForDocument($confirmation, RenderDocumentKind::OrderConfirmation, $this->design->payloadForDocument($confirmation, RenderDocumentKind::OrderConfirmation)),
+            // Bestätigt: Aussteller und Ansprechpartner des Bestätigungstages (MVP-1624).
+            'issuer' => is_array($confirmation->issuer_snapshot['issuer'] ?? null) ? $confirmation->issuer_snapshot['issuer'] : IssuerIdentity::for($confirmation->organization),
+            'contactPerson' => is_array($confirmation->issuer_snapshot) && array_key_exists('contact', $confirmation->issuer_snapshot)
+                ? (is_array($confirmation->issuer_snapshot['contact']) ? $confirmation->issuer_snapshot['contact'] : null)
+                : self::contactPerson($confirmation),
         ];
+    }
+
+    /**
+     * Ansprechpartner der Auftragsbestätigung: die Person, die sie angelegt hat.
+     *
+     * @return array{name: string, phone: string, email: string}|null
+     */
+    public static function contactPerson(OrderConfirmation $confirmation): ?array {
+        $person = $confirmation->creator;
+
+        return $person === null ? null : ['name' => (string) $person->name, 'phone' => (string) ($person->phone ?? ''), 'email' => (string) ($person->email ?? '')];
     }
 }

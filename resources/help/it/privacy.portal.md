@@ -1,7 +1,7 @@
 ---
 title: "Portale delle richieste degli interessati"
 topic: privacy.portal
-version: 1
+version: 2
 keywords:
     - richiesta GDPR
     - diritto di accesso
@@ -37,3 +37,7 @@ violazione dei dati.
 
 **Da non confondere:** Questo portale non è quello per le segnalazioni. Quello
 riguarda gli illeciti, questo i dati propri di chi presenta la richiesta.
+
+**Prorogare il termine:** in una richiesta aperta trova la scheda **Prorogare il termine**. Ai sensi dell'art. 12, par. 3, del GDPR sono possibili al massimo altri due mesi; indichi il nuovo termine e il motivo. È possibile solo finché decorre il primo termine, perché la persona deve esserne informata entro tale termine. Se la richiesta ha un indirizzo di contatto (portale), WorkDiary vi invia la comunicazione con il motivo; altrimenti comunichi entrambi Lei stesso. La pratica mostra poi il nuovo termine con l'indicazione di quello originario e lo ricorda di nuovo per tempo.
+
+**Lingua del portale:** la **lingua predefinita del portale** determina la lingua del modulo pubblico; senza selezione vale la lingua dell'applicazione.

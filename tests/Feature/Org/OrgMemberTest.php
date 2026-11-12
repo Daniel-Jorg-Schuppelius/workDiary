@@ -307,6 +307,73 @@ class OrgMemberTest extends TestCase {
         $this->assertFalse($member->hasRole(UserRole::Admin->value));
     }
 
+    /** MVP-1565: Stunden- und Kostensatz der Person pflegt, wer das Lohnrecht hat — mit Audit. */
+    public function test_payroll_right_maintains_hourly_and_cost_rate_with_audit(): void {
+        $management = $this->management();
+        $member = $this->orgUser();
+
+        $this->actingAs($management)
+            ->get(route('org.members.edit', $member))
+            ->assertOk()
+            ->assertSee('name="hourly_rate"', false)
+            ->assertSee('name="internal_rate"', false);
+
+        $this->actingAs($management)
+            ->put(route('org.members.update', $member), ['hourly_rate' => '95.50', 'internal_rate' => '48.20'])
+            ->assertRedirect(route('org.members.index'));
+
+        $member->refresh();
+        $this->assertSame('95.50', $member->hourly_rate?->getAmount());
+        $this->assertSame('48.20', $member->internal_rate?->getAmount());
+        $audit = \App\Models\Audit\AuditLog::query()
+            ->where('auditable_type', \App\Support\MorphMap::stableKey(User::class))
+            ->where('auditable_id', $member->id)->where('event', 'updated')->latest('id')->firstOrFail();
+        $this->assertArrayHasKey('internal_rate', (array) ($audit->changes['after'] ?? []));
+
+        $this->assertSame('48.20', (string) $audit->changes['after']['internal_rate']);
+
+        // Ein Aufruf ohne die Felder löscht die Sätze nicht; ein leeres Feld schon.
+        $this->actingAs($management)->put(route('org.members.update', $member), ['tax_class' => '1'])->assertRedirect();
+        $this->assertSame('48.20', $member->refresh()->internal_rate?->getAmount());
+        $this->actingAs($management)->put(route('org.members.update', $member), ['internal_rate' => ''])->assertRedirect();
+        $this->assertNull($member->refresh()->internal_rate);
+        $this->assertSame('95.50', $member->hourly_rate?->getAmount());
+    }
+
+    /** MVP-1565: Ohne Lohnrecht sind die Sätze weder sichtbar noch schreibbar — auch nicht im eigenen Profil. */
+    public function test_rates_are_hidden_and_ignored_without_the_payroll_right(): void {
+        $editor = $this->orgUser();
+        $editor->givePermissionTo(\App\Enums\User\Permission::UserUpdate->value);
+        $member = $this->orgUser();
+        $member->forceFill(['hourly_rate' => '90.00', 'internal_rate' => '45.00'])->save();
+        $this->assertFalse($editor->fresh()->can(\App\Enums\User\Permission::UserPayrollManage->value));
+
+        $this->actingAs($editor->fresh())
+            ->get(route('org.members.edit', $member))
+            ->assertOk()
+            ->assertDontSee('name="hourly_rate"', false)
+            ->assertDontSee('name="internal_rate"', false)
+            ->assertDontSee('45.00');
+
+        $this->actingAs($editor->fresh())
+            ->put(route('org.members.update', $member), [
+                'name' => $member->name,
+                'email' => $member->email,
+                'role' => UserRole::User->value,
+                'hourly_rate' => '1.00',
+                'internal_rate' => '1.00',
+            ]);
+
+        $member->refresh();
+        $this->assertSame('90.00', $member->hourly_rate?->getAmount());
+        $this->assertSame('45.00', $member->internal_rate?->getAmount());
+
+        $this->actingAs($member)->get(route('account.profile.edit'))
+            ->assertOk()
+            ->assertDontSee('name="internal_rate"', false)
+            ->assertDontSee('45.00');
+    }
+
     public function test_compensation_rate_is_required_for_time_based_compensation(): void {
         $management = $this->management();
         $member = $this->orgUser();

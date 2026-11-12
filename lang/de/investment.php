@@ -217,4 +217,28 @@ return [
         'waiting_role' => 'Rolle :role',
         'not_responsible' => 'Für die offene Freigabestufe sind Sie nicht zuständig.',
     ],
+    // Nutzungsdauer der Variante, Listenfilter, PDF-Bericht (MVP-1606).
+    'option' => [
+        'useful_life' => 'Nutzungsdauer (Jahre)',
+        'useful_life_short' => 'Nutzungsdauer',
+        'years' => ':count Jahr|:count Jahre',
+    ],
+    'filter' => [
+        'all_responsible' => 'Alle Verantwortlichen',
+        'all_cost_centers' => 'Alle Kostenstellen',
+        'budget' => 'Budgetstatus',
+        'all_budget' => 'Jeder Budgetstatus',
+        'budget_none' => 'ohne Budgetantrag',
+        'all_urgency' => 'Jede Dringlichkeit',
+        'with_risk' => 'Nur mit Risikohinweis',
+        'risk_badge' => 'Risiko',
+    ],
+    'report' => [
+        'pdf_title' => 'Investitionsbericht',
+        'pdf_meta' => 'Offene Freigaben: :approvals · offene Abweichungen: :deviations',
+        'approved' => 'Genehmigt',
+        'committed' => 'Gebunden',
+        'actual' => 'Ist',
+        'remaining' => 'Rest',
+    ],
 ];

@@ -39,6 +39,10 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     Route::post('admin/calendly/requests/{appointmentRequest}/confirm', [CalendlyAdminController::class, 'confirm'])->name('admin.calendly.requests.confirm');
     Route::post('admin/calendly/requests/{appointmentRequest}/decline', [CalendlyAdminController::class, 'decline'])->name('admin.calendly.requests.decline');
 
+    // Gastgeber mit abweichender Calendly-Adresse einem Benutzer zuordnen (MVP-1610).
+    Route::post('admin/calendly/hosts', [CalendlyAdminController::class, 'mapHost'])->name('admin.calendly.hosts.store');
+    Route::delete('admin/calendly/hosts/{reference}', [CalendlyAdminController::class, 'unmapHost'])->name('admin.calendly.hosts.destroy');
+
     // Outbound (P5): Einmal-Buchungslink (one_off_event_types) erzeugen.
     Route::post('admin/calendly/booking-link', [CalendlyAdminController::class, 'createBookingLink'])->name('admin.calendly.booking-link');
 });

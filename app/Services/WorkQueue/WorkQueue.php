@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Services\WorkQueue;
 
 use App\Models\Platform\{Organization, User};
-use App\Modules\ModuleRegistry;
+use App\Services\Licensing\ModuleExtensions;
 use App\Services\WorkQueue\Contracts\WorkItemSource;
 use App\Services\WorkQueue\Dto\WorkItem;
+use App\Support\OrganizationContext;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Facades\Cache;
@@ -42,12 +43,12 @@ final class WorkQueue {
 
     private const int CACHE_VERSION = 1;
 
-    public function __construct(private readonly ModuleRegistry $modules) {}
+    public function __construct(private readonly ModuleExtensions $extensions) {}
 
     /** @return array<string, WorkItemSource> Schlüssel → Quelle, nur die für den Nutzer verfügbaren */
     public function sourcesFor(User $viewer): array {
         $sources = [];
-        foreach ($this->modules->extensions(WorkItemSource::class) as $class) {
+        foreach ($this->extensions->activeFor(WorkItemSource::class, OrganizationContext::currentId() ?? $viewer->organization_id) as $class) {
             /** @var WorkItemSource $source */
             $source = app($class);
             if ($source->available($viewer)) {

@@ -30,6 +30,15 @@
         @error('timezone')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
     </div>
 
+    {{-- Rechtsraum (MVP-1589): Fristen der Aufbewahrung und der Verfahrensdokumentation. --}}
+    <x-select-field name="legal_region" :label="__('privacy.legal_region.label')" required :hint="__('privacy.legal_region.hint')">
+        @foreach (app(\App\Services\Retention\RetentionRegistry::class)->regions() as $region)
+            <option value="{{ $region }}" @selected(old('legal_region', $organization?->legal_region ?? config('retention.default_region', 'DE')) === $region)>
+                {{ \CommonToolkit\Enums\CountryCode::tryFrom($region)?->getLabel(app()->getLocale()) ?? $region }} ({{ $region }})
+            </option>
+        @endforeach
+    </x-select-field>
+
     <div class="fieldset">
         <label for="settings-personalization-date_format" class="fieldset-label">{{ __('Datumsformat') }}</label>
         <x-format-select id="settings-personalization-date_format" type="date" name="settings[personalization][date_format]"

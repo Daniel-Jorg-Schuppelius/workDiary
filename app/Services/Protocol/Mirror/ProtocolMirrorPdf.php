@@ -16,9 +16,8 @@ use App\Models\Protocol\Protocol;
 use App\Plugins\Support\Mirror\Contracts\MirrorPdfRenderer;
 use App\Services\Protocol\ProtocolPdfRenderer;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
-/** Der Renderer schreibt das PDF idempotent auf seine Disk und liefert den Pfad. */
+/** Nachweise liegen idempotent auf der Disk des Renderers; Entwürfe entstehen je Abruf neu. */
 final class ProtocolMirrorPdf implements MirrorPdfRenderer {
     public function __construct(private readonly ProtocolPdfRenderer $renderer) {}
 
@@ -31,6 +30,6 @@ final class ProtocolMirrorPdf implements MirrorPdfRenderer {
             throw new \InvalidArgumentException('Protocol erwartet.');
         }
 
-        return (string) Storage::disk(ProtocolPdfRenderer::DISK)->get($this->renderer->render($document));
+        return $this->renderer->content($document);
     }
 }

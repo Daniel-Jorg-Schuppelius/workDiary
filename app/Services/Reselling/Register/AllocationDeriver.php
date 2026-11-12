@@ -28,10 +28,7 @@ use Illuminate\Support\Facades\DB;
  * tragen `sync_status = alloc:<id>` und folgen jeder Änderung der Aufteilung.
  */
 final class AllocationDeriver {
-    public function __construct(
-        private readonly LicenseAccounts $accounts,
-        private readonly PeriodPlanner $planner,
-    ) {}
+    public function __construct(private readonly PeriodPlanner $planner) {}
 
     /**
      * Aufteilung eines Kontos auf seine Verträge anwenden.
@@ -165,17 +162,6 @@ final class AllocationDeriver {
         });
 
         return $result;
-    }
-
-    /**
-     * Konto eines Abos neu ableiten (nach Dialog, Import, Löschen einer Aufteilung).
-     *
-     * @return array{created: int, updated: int, removed: int, conflicts: list<array{allocation: ResaleAccountAllocation, missing: int}>}
-     */
-    public function applyFor(Organization $organization, ResaleSubscription $subscription, ?CarbonImmutable $reference = null): array {
-        $group = $this->accounts->group($organization, $this->accounts->keyFor($organization, $subscription));
-
-        return $group === null ? ['created' => 0, 'updated' => 0, 'removed' => 0, 'conflicts' => []] : $this->apply($organization, $group, $reference);
     }
 
     /**

@@ -153,4 +153,21 @@ final class SlaQuotaTest extends TestCase {
 
         Carbon::setTestNow();
     }
+
+    /** Feature 010 (MVP-1620): Pauschale und Mehrstundenbetrag als Nachweis der Kontingentabrechnung. */
+    public function test_usage_states_flat_fee_and_overage_amount(): void {
+        $this->quota->update(['flat_fee' => '150.00', 'overage_rate' => '80.00']);
+        $this->billableEntry(690, '2026-06-10', projectId: $this->project->id); // 90 Min. über 600
+
+        $usage = app(SlaQuotaService::class)->usage($this->contract, $this->quota->refresh(), Carbon::parse('2026-06-15'));
+
+        $this->assertSame(90, $usage['over_minutes']);
+        $this->assertSame('150.00', $usage['flat_fee']?->getAmount());
+        $this->assertSame('120.00', $usage['overage_amount']?->getAmount()); // 1,5 h × 80,00
+
+        $this->quota->update(['flat_fee' => null, 'overage_rate' => null]);
+        $plain = app(SlaQuotaService::class)->usage($this->contract, $this->quota->refresh(), Carbon::parse('2026-06-15'));
+        $this->assertNull($plain['flat_fee']);
+        $this->assertNull($plain['overage_amount']);
+    }
 }

@@ -20,6 +20,8 @@ import { mergePrefill, valuesFromDataset } from "./lib/option-prefill.js";
 import { registerServiceWorker, bindInstallPrompt } from "./pwa.js";
 import { initOfflineSync } from "./offline-sync.js";
 import { initVideoPositions } from "./video-position.js";
+import { initVideoProgress } from "./video-progress.js";
+import { initStorageEstimate } from "./storage-estimate.js";
 import { initVideoQuality } from "./video-quality.js";
 import { initNfc } from "./nfc.js";
 import { initDialogForms } from "./dialog-forms.js";
@@ -52,6 +54,7 @@ import "./dashboard-customize.js";
 import "./workspace-editor.js";
 import "./kanban.js";
 import "./tour-stops.js";
+import "./protocol-item-order.js";
 import "./layout.js";
 import "./oauth-popup.js";
 import "./action-menu.js";
@@ -73,6 +76,8 @@ if (typeof window !== "undefined") {
         initOfflineSync();
         initVideoPositions();
         initVideoQuality();
+        initVideoProgress();
+        initStorageEstimate();
     });
 }
 
@@ -1034,10 +1039,18 @@ document.addEventListener("click", (event) => {
                 keys[field.name] = "prefill" + key.replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase());
             });
             const guard = fields.filter((field) => field.hasAttribute("data-prefill-guard")).map((field) => field.name);
+            // `data-prefill-default`: Vorgabe eines Pflichtfelds (etwa „heute“). Sie gilt als
+            // unberührt und kehrt zurück, wenn die Elternauswahl keinen Wert liefert.
+            /** @type {Record<string, string>} */
+            const defaults = {};
+            fields.forEach((field) => {
+                if (field.dataset.prefillDefault !== undefined) defaults[field.name] = field.dataset.prefillDefault;
+            });
+            const hasDefaults = Object.keys(defaults).length > 0;
             /** @type {Partial<Record<string, string>> | null} */
-            let previous = null;
+            let previous = hasDefaults ? { ...defaults } : null;
             const apply = () => {
-                const incoming = valuesFromDataset(parent.selectedOptions[0]?.dataset, keys);
+                const incoming = valuesFromDataset(parent.selectedOptions[0]?.dataset, keys) ?? (hasDefaults ? { ...defaults } : null);
                 /** @type {Record<string, string>} */
                 const current = {};
                 fields.forEach((field) => {

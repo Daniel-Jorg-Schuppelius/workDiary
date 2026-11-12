@@ -1,7 +1,7 @@
 ---
 title: "Piattaforma di apprendimento"
 topic: learning.overview
-version: 6
+version: 8
 keywords:
     - e-learning
     - LMS
@@ -54,6 +54,33 @@ voce del diario.
 sicurezza bloccherebbe la pagina silenziosamente nel corso; l'editor rifiuta
 quindi subito e in modo visibile un host non abilitato. Gli host consentiti si
 gestiscono nelle impostazioni.
+
+**Un video può avere una quota obbligatoria.** Nel campo «Visto almeno (%)»
+Lei definisce quanta parte di un video caricato deve essere stata vista prima
+che l'unità possa essere completata. Contano solo le parti effettivamente
+riprodotte — l'avanzamento rapido e i salti non contano, e lo stesso passaggio
+conta una sola volta. Lo stato compare sotto il video («Visto: 40 % –
+richiesto: 80 %»); «Segna come completata» resta bloccato fino ad allora. Viene salvata
+solo la quota raggiunta per persona e video, nessuna traccia di riproduzione.
+Per gli incorporamenti esterni non si può impostare una quota obbligatoria,
+perché il loro avanzamento non è misurabile; l'accesso senza account non
+riproduce video e non può completare tali unità.
+
+Alla selezione di un video, l'editor indica lo **spazio di archiviazione
+previsto**: l'originale più le versioni convertite. Tutto viene conteggiato
+nella quota di archiviazione — l'ordine di grandezza è quindi noto prima del
+caricamento, e non solo al raggiungimento della quota.
+
+I tipi di unità **Procedura**, **Sondaggio** ed **Esterna** rimandano a una
+destinazione esterna al corso; Lei sceglie il riferimento alla creazione
+dell'unità, dove è obbligatorio. Un'unità di procedura risulta completata non
+appena la persona conclude un'esecuzione del modello di procedura scelto (come
+persona esecutrice o assegnata). Un'unità di sondaggio apre il questionario
+scelto; con l'invio l'unità risulta completata. Un'unità esterna indica un
+indirizzo, e la persona conferma «completata» — se desiderato, solo con
+un'attestazione caricata, che l'elenco dei partecipanti del corso offre per il
+download. Queste unità non si possono spuntare a mano; non sono disponibili
+nel portale clienti né con l'accesso senza account.
 
 Un corso può avere **prerequisiti** (tutti, o ne basta uno): bloccano l’avvio,
 non l’assegnazione — le iscrizioni obbligatorie sono esenti. Un **esame senza
@@ -149,6 +176,26 @@ nonostante limite o attesa, una sola volta e con motivazione.
 
 Il **registro voti** per corso mostra chi apprende × componenti. Senza componenti somma i punti di verifiche e compiti; se i formatori definiscono **componenti** (verifica, compito, voto manuale) possono assegnare pesi — tutti insieme 100 oppure nessuno. I voti manuali sono additivi: una correzione è una nuova voce, vale l'ultima. La **pagella** (PDF) e l'export CSV derivano dallo stesso calcolo; finché qualcosa è aperto la pagella riporta «provvisorio».
 
+Lei gestisce la **scala dei voti** nelle impostazioni della piattaforma di
+apprendimento: un livello per riga nella forma «denominazione = percentuale
+minima», oppure un modello (voti scolastici 1–6, lettere A–F, superato/non
+superato) che può adattare in seguito. Vale il livello più alto la cui
+percentuale minima è raggiunta; senza scala, registro voti, CSV e pagella
+mostrano solo la percentuale.
+
+Il **fascicolo delle qualifiche** (Apprendimento → Fascicolo delle qualifiche)
+può essere ristretto per team, singola persona, progetto e sede; le selezioni
+si combinano. La selezione di una singola persona è disponibile solo nel
+fascicolo nominativo (con motivazione). Un progetto comprende i suoi membri individuali e i membri dei
+suoi team; è considerata impiegata in una sede la persona che ha timbrato a un
+punto di controllo della sede nel periodo o detiene un mezzo di accesso per la sede. Le persone
+occupate all'inizio del periodo e nel frattempo uscite figurano nel fascicolo
+con la nota «uscita il …» — conta la situazione alla data di riferimento. Con
+una motivazione il fascicolo è disponibile anche come **ZIP**: il fascicolo in
+PDF e JSON, ogni certificato come file PDF a sé e un file indice (CSV) che
+associa ogni riga al suo file. Con più di 300 certificati, restringa la
+selezione.
+
 Finezze per domanda: le opzioni di risposta possono avere **punti propri** («Etichetta {3}», anche negativi) — conta allora l'opzione scelta invece del tutto-o-niente; un'**autovalutazione** è una scala senza risposta corretta, il livello scelto è il valore; un **elaborato** accetta testo, file o entrambi — il file è disponibile nella valutazione. Per verifica il superamento può essere richiesto in aggiunta **in punti** e il sottoinsieme per tentativo fissato **in percentuale** delle domande disponibili.
 
 Con **Importa domande** nel catalogo delle domande si caricano domande da un file CSV o Excel. Le colonne **kind** (tipo, come codice breve, ad es. single, o come denominazione) e **prompt** sono obbligatorie; **options** contiene le righe di risposta una sotto l’altra in un’unica cella, scritte come nell’editor. Sono facoltative **title**, **category** (le categorie mancanti vengono create), **points**, **explanation** e **hint**. La stessa domanda (tipo e testo) viene saltata in un secondo caricamento; le domande hotspot richiedono un’immagine e non possono essere importate da un file.
@@ -165,6 +212,18 @@ qualifica prolungata. Non nasce un secondo sistema di prove.
 
 I certificati si verificano tramite un link. La pagina mostra corso, data,
 validità ed emittente — il nome solo abbreviato.
+
+**Revocare un certificato:** l'elenco dei partecipanti di un corso mostra il
+numero del certificato accanto alla persona. Con il diritto **Gestire
+l'apprendimento** Lei revoca lì un certificato emesso per errore tramite
+«Revoca il certificato» — il motivo è obbligatorio. La revoca non può essere
+annullata: pagina di verifica, attestazione leggibile dalla macchina, stampa e
+fascicolo delle qualifiche la mostrano dalla sua data, la persona viene
+informata del motivo, e l'attestazione obbligatoria rispecchiata del
+subappaltatore termina lo stesso giorno. L'attestazione di istruzione e la
+qualifica restano nei rispettivi registri e vanno corrette lì. Il **link di
+accesso** di una persona esterna si invalida nello stesso punto tramite
+«Invalida il link di accesso»; smette subito di funzionare.
 
 I dati di apprendimento appartengono alla persona: il **rapporto per
 l'interessato** (modulo protezione dati) elenca iscrizioni, tentativi,
@@ -288,3 +347,5 @@ approvazione del tempo di apprendimento. L’IA ha tre ingressi — bozza della
 struttura e delle domande nell’editor, tutor nel player — e si limita a
 proporre; adozione e valutazione restano manuali. Punti e riconoscimenti
 compaiono in «I miei corsi»; la classifica mostra solo chi ha acconsentito.
+
+**Accesso ospite con media:** gli esterni senza account vedono tutti i blocchi di contenuto come nel player: immagini, file, audio e video si caricano tramite il loro accesso, i rimandi a pagine interne sono omessi. I video con quota obbligatoria continuano a non poter essere completati lì.

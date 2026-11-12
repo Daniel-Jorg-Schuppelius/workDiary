@@ -20,4 +20,8 @@ Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class
         Route::post('verify', [FireflyAdminController::class, 'verify'])->name('verify');
         Route::post('sync', [FireflyAdminController::class, 'syncNow'])->name('sync');
         Route::post('disconnect', [FireflyAdminController::class, 'disconnect'])->name('disconnect');
+        // Bewegungen ohne Beleg als erledigt markieren (MVP-1628).
+        Route::get('bewegungen/{transaction}/erledigen', [FireflyAdminController::class, 'settleForm'])->name('transactions.settle.form');
+        Route::post('bewegungen/{transaction}/erledigen', [FireflyAdminController::class, 'settle'])->name('transactions.settle');
+        Route::post('bewegungen/{transaction}/wieder-oeffnen', [FireflyAdminController::class, 'reopen'])->name('transactions.reopen');
     });

@@ -101,7 +101,7 @@ class ClubEventTest extends TestCase {
         $group = ClubGroup::factory()->create();
         $event = $this->makeEvent([$group->id], ['max_participants' => 2]);
         $staff = $this->orgUser();
-        app(EventService::class)->addParticipant($event, $staff, ParticipantRole::Attendee, ParticipantStatus::Accepted);
+        app(EventService::class)->syncParticipants($event, [['user_id' => $staff->id, 'role' => ParticipantRole::Attendee->value, 'status' => ParticipantStatus::Accepted->value]]);
 
         $one = $this->clubEvents()->register($event, $this->memberIn($group), $this->admin, ClubParticipationSource::Admin);
         $two = $this->clubEvents()->register($event, $this->memberIn($group), $this->admin, ClubParticipationSource::Admin);

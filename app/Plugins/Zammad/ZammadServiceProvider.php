@@ -45,5 +45,6 @@ class ZammadServiceProvider extends PluginServiceProviderBase {
         // Zeit-Rückkanal (Rang 23): erfasste Zeit einer verknüpften Aufgabe → Outbox.
         TimeEntry::observe(ZammadTimeEntryObserver::class);
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new ZammadOutboxDispatcher());
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\ZammadTicketImporter::class);
     }
 }

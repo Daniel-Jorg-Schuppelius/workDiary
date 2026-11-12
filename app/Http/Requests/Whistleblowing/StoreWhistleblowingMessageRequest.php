@@ -24,6 +24,8 @@ class StoreWhistleblowingMessageRequest extends BaseFormRequest {
     public function rules(): array {
         return [
             'body' => ['required', 'string', 'max:20000'],
+            // Nur bei Nachrichten an die meldende Person: Rückmeldung nach § 17 HinSchG.
+            'is_feedback' => ['nullable', 'boolean'],
         ];
     }
 }

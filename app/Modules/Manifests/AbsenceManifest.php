@@ -52,6 +52,11 @@ final class AbsenceManifest extends Manifest {
         return [
             \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
                 \App\Services\Absence\WorkQueue\VacationApprovalWorkItemSource::class,
+                \App\Services\Absence\WorkQueue\VacationRevisionWorkItemSource::class,
+            ],
+            // Personalbereich der Leitungssicht (MVP-1617).
+            \App\Services\Reporting\Contracts\ManagementKpiSource::class => [
+                \App\Services\Absence\Management\VacationKpiSource::class,
             ],
         ];
     }

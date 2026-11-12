@@ -1,7 +1,7 @@
 ---
 title: "Oggi e Kanban"
 topic: work.overview
-version: 1
+version: 2
 keywords:
     - vista di oggi
     - panoramica giornaliera
@@ -28,3 +28,5 @@ avvii la rilevazione tempi, poi nel **Kanban** filtri le voci per stato e
 le sposti nello stato successivo consentito. Se mancano voci, verifichi prima
 periodo, filtri e organizzazione attiva; i cambi di stato sono soggetti agli
 stessi permessi e campi obbligatori della lista di lavoro.
+
+**In viaggio senza rete:** su «Oggi» può registrare anche offline tempo di progetto (barra di inserimento, durata o da/a), materiale e correzioni delle proprie timbrature. Vengono trasmessi al contatto successivo; ciò che non può essere acquisito compare in «Modifiche offline».

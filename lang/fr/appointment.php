@@ -62,4 +62,23 @@ return [
         'proposed_action' => 'Accepter ou refuser dans le portail client',
         'rescheduled_title' => 'Votre rendez-vous a été déplacé',
     ],
+    // Attribution et gestion (MVP-1610, MVP-1612).
+    'assign' => [
+        'action' => 'Attribuer',
+        'title' => 'Attribuer la demande',
+        'submit' => 'Attribuer',
+        'invitee' => 'Réservé par :name (:email).',
+        'customer_hint' => 'À la confirmation, la commande est créée pour ce client.',
+        'lead' => 'Lead',
+        'lead_hint' => 'Si le lead est déjà client, le client est également attribué.',
+        'required' => 'Veuillez choisir un client ou un lead.',
+        'done' => 'Demande attribuée.',
+        'decided' => 'Les demandes décidées ne peuvent plus être attribuées.',
+    ],
+    'service' => [
+        'edit_title' => 'Modifier le type de prestation',
+        'updated' => 'Type de prestation « :title » enregistré.',
+        'site_foreign' => 'Ce type de prestation est lié à un site d\'un autre client.',
+        'site_hint' => 'Avec un site, seul le client propriétaire du site peut réserver ; il devient le lieu d\'intervention de la commande.',
+    ],
 ];

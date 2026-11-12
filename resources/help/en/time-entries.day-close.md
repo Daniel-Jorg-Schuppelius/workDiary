@@ -1,7 +1,7 @@
 ---
 title: "Daily close"
 topic: time-entries.day-close
-version: 6
+version: 7
 keywords:
     - close the day
     - end of day
@@ -60,6 +60,12 @@ locked. Anyone with the **Reopen day closure** permission can also
 unlock a closed day without a request via **Reopen day**; the reason is
 stored in the audit log.
 
+The lock also covers the day's **time entries**: while the day is closed or
+in correction, project and administrative times of that day can neither be
+created nor changed or deleted, not even via stopwatch, quick booking,
+import or API. The entry bar is hidden then; the application points to the
+correction request.
+
 Days in an already approved month are fully locked; any change there
 goes through the monthly approval.
 
@@ -67,3 +73,10 @@ goes through the monthly approval.
 nobody else in the organisation holds this right; the audit log then records
 the self-approval. Whoever may see day closings for the team only sees the
 members of their own teams under "Team today" and in the day views.
+
+The head of the day shows **Plan/actual**: the target of the working time
+model with the start of core time next to the first and last clocking and the
+attendance. Warning badges appear for a late start and for deviating hours;
+the organisation sets the thresholds under **Settings** → **Plan/actual
+attendance** (default 15 minutes and 10 %). The clockings also show the
+minutes in **Home office** and on a **Business errand**.

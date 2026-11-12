@@ -1,7 +1,7 @@
 ---
 title: "Oggetti"
 topic: customer-portal.assets
-version: 3
+version: 5
 keywords:
     - apparecchi
     - impianti
@@ -42,15 +42,25 @@ In alto compaiono nome e numero di serie dell'oggetto, seguiti da tre
 sezioni:
 
 - **Appuntamenti di controllo & manutenzione** – i piani di controllo e
-  manutenzione registrati con **Denominazione** e **Prossima scadenza**, la
-  scadenza più vicina per prima. Senza piano compare **Nessun appuntamento
-  registrato.**
+  manutenzione in corso con **Denominazione** e **Prossima scadenza**, la
+  scadenza più vicina per prima. **Obbligo contrattuale** indica un
+  appuntamento previsto dal suo contratto. I piani in pausa non compaiono,
+  perché per essi non è previsto alcun appuntamento. Senza piano in corso
+  compare **Nessun appuntamento registrato.**
 - **Manutenzioni completate** – le manutenzioni eseguite con denominazione e
   data.
 - **Protocolli** – i protocolli firmati dell'oggetto che il Suo fornitore ha
   rilasciato per Lei, con titolo, stato e data, il più recente per primo,
   ciascuno con **Scarica PDF**. Se non ve ne sono, compare
   **Nessun verbale approvato.**
+
+## Accettare i protocolli
+
+Se un protocollo attende la Sua accettazione, sopra l'elenco **Protocolli** compare la sezione **In attesa di accettazione**. **Visualizza e firma** apre il protocollo con tutti i suoi punti. Per accettarlo inserisca il Suo nome, firmi nel riquadro di firma con il dito, una penna o il mouse, confermi la correttezza dei dati e faccia clic su **Firma**. La firma non può essere ritirata.
+
+Se ha domande o obiezioni, le chiarisca con il Suo fornitore prima di firmare, tramite le richieste se sono rilasciate per Lei. Dopo la Sua firma il fornitore chiude il protocollo; in seguito è disponibile per il download in **Protocolli**.
+
+Se non è d'accordo con il protocollo, utilizzi il rifiuto sottostante: indichi una motivazione e, se necessario, i singoli difetti. Il Suo fornitore riceve una notifica e rielabora il protocollo; ricompare in **In attesa di accettazione** non appena viene inviato di nuovo.
 
 ## Scaricare i protocolli
 

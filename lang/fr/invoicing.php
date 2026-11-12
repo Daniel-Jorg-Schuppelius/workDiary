@@ -26,6 +26,8 @@ return [
     // Facturation électronique (fonctionnalité 045, section 8) : XRechnung (UBL 2.1, EN 16931).
     'buyer_reference' => 'Leitweg-ID / référence acheteur (BT-10)',
     'buyer_reference_hint' => 'Obligatoire pour la XRechnung (facture électronique) : le Leitweg-ID pour les administrations, sinon une référence fournie par le client.',
+    // Numéro de TVA du client sur la facture PDF (§ 14a UStG, MVP-1623).
+    'buyer_vat_id' => 'Votre n° de TVA intracommunautaire',
     'einvoice' => [
         'button' => 'XRechnung',
         'button_title' => 'Télécharger la XRechnung (UBL 2.1, EN 16931)',
@@ -43,6 +45,12 @@ return [
         ],
         'payment_terms' => 'Payable sous :days jours sans escompte.',
         'exemption_small_business' => 'Pas de TVA facturée conformément au § 19 UStG (régime allemand des petites entreprises).',
+        'exemption_reverse_charge' => 'Autoliquidation',
+        'exemption_intra_community' => 'Livraison intracommunautaire exonérée (§ 4 n° 1 let. b en liaison avec § 6a UStG)',
+        'exemption_export_goods' => 'Livraison à l’exportation exonérée (§ 4 n° 1 let. a en liaison avec § 6 UStG)',
+        'exemption_export_services' => 'Prestation non imposable en Allemagne (lieu de prestation chez le destinataire, § 3a UStG)',
+        'exemption_not_subject' => 'Opération non imposable en Allemagne',
+        'exemption_tax_free' => 'Opération exonérée',
         'rule_violation' => 'Règle :code : :text',
         'note_supporting_documents' => 'Pièces justificatives jointes : :list',
         'line_note_entries' => ':count interventions, :from – :to',
@@ -53,6 +61,12 @@ return [
             'missing_buyer_reference' => 'Le Leitweg-ID/la référence acheteur (BT-10) manque chez le client.',
             'missing_seller_field' => 'Donnée vendeur manquante : :field (paramètres de l\'organisation → facturation).',
             'missing_tax_id' => 'Ni numéro de TVA intracommunautaire ni numéro fiscal configuré dans les paramètres de l\'organisation.',
+            'reverse_charge_buyer_vat_id' => 'L\'autoliquidation (catégorie AE) exige le numéro de TVA du client (BR-AE-02) — veuillez le renseigner chez le client.',
+            'intra_community_buyer_vat_id' => 'La livraison intracommunautaire (catégorie K) exige le numéro de TVA du client (BR-IC-02) — veuillez le renseigner chez le client.',
+            'seller_vat_id_required' => 'Les livraisons intracommunautaires et les exportations (catégories K et G) exigent le numéro de TVA de l’organisation (BR-IC-02, BR-G-02) — veuillez le renseigner dans les paramètres de l’organisation.',
+            'not_subject_mixed' => 'Les positions non imposables (catégorie O) ne peuvent pas figurer à côté d’autres catégories de TVA dans une facture électronique (BR-O-11) — veuillez les facturer séparément.',
+            'not_subject_tax_number' => 'Les opérations non imposables (catégorie O) ne portent pas de numéro de TVA (BR-O-02) ; la facture électronique a donc besoin du numéro fiscal dans les paramètres de l’organisation.',
+            'line_category_rate' => 'Position « :line » : la catégorie de TVA :category ne porte pas de taxe, mais la position porte :rate % — la facture et la facture électronique divergeraient. Veuillez mettre le taux de la position à 0 %.',
             'missing_iban' => 'L\'IBAN pour le virement SEPA manque dans les paramètres de l\'organisation.',
             'missing_tax_rate' => 'La facture ne porte aucun taux de taxe.',
             'totals_mismatch' => 'Les totaux de la facture sont incohérents (lignes, sous-total, taxe, total).',
@@ -65,6 +79,9 @@ return [
             'missing_buyer_email' => 'L\'e-mail du client manque (adresse électronique de réception BT-49).',
             'missing_due_date' => 'Date d\'échéance manquante — le délai de paiement par défaut est utilisé.',
             'service_date_fallback' => 'Aucune position n’indique de date ou de période de prestation ; la date de facture vaut date de prestation (§ 14 al. 4 n° 6 UStG).',
+            'intra_community_delivery_country' => 'Livraison intracommunautaire (catégorie K) : la facture électronique ne contient pas encore de pays de livraison (BT-80, règle BR-IC-12) — les destinataires stricts la rejettent.',
+            'not_subject_line_rate' => 'Opérations non imposables (catégorie O) : la facture électronique indique encore un taux de 0 % dans les positions (règle BR-O-05) — les destinataires stricts la rejettent.',
+            'exemption_unspecified' => 'Positions exonérées (catégorie E) : aucun motif d’exonération n’est enregistré, la facture électronique indique seulement « Opération exonérée ». Créez dans la matrice des règles fiscales une règle avec le type de taux « Exonéré » et saisissez la disposition d’exonération comme mention sur le justificatif (§ 14 al. 4 n° 8 UStG).',
             'activity_report_missing' => 'Ce destinataire attend un justificatif de prestations, mais la facture ne porte aucune pièce.',
             'near_limit' => 'La facture électronique avec pièces pèse :size, proche de la limite du destinataire (:limit).',
         ],
@@ -136,6 +153,9 @@ return [
         'position_hint' => 'Détermine l’ordre ; les titres numérotent les lignes qui suivent.',
     ],
     // Arbeitskosten nach § 35a EStG (MVP-1053).
+    'approval' => [
+        'self' => 'Lorsque la validation est obligatoire, la facture ne peut pas être validée par la personne qui l’a créée.',
+    ],
     'labour_costs' => [
         'disclosure' => [
             'off' => 'Ne jamais indiquer',
@@ -279,6 +299,11 @@ return [
         'dunning_note' => 'moins la retenue de garantie',
         'added' => 'Retenue enregistrée.',
         'released' => 'Retenue libérée.',
+        'released_on' => 'Libérée le',
+        'release_due' => 'Libération échue',
+        'release_title' => 'Libérer la retenue de garantie',
+        'release_hint' => 'Une fois libéré, le montant redevient un poste ouvert ordinaire : il compte de nouveau dans le montant à payer et fait l’objet de relances.',
+        'release_hint_secured' => 'Cette retenue a été remplacée par une caution et a déjà été versée. La libération met seulement fin à l’objet de la garantie : aucune nouvelle créance n’est créée et l’acte de caution doit être restitué.',
     ],
 
     // Leistungszeitraum je Position (Feature 152, Review 2026-09-11).
@@ -333,7 +358,6 @@ return [
             'delivery_foreign' => 'La livraison n\'appartient pas à cette organisation.',
             'delivery_customer' => 'La livraison appartient à un autre client.',
             'delivery_external' => 'La livraison est facturée en externe.',
-            'delivery_not_delivered' => 'La livraison n\'a pas encore eu lieu.',
             'delivery_invoiced' => 'La livraison est déjà facturée.',
             'delivery_reserved' => 'La livraison « :name » est déjà réservée dans le brouillon :number.',
             'delivery_currency' => 'La livraison est en :currency, le document en :invoice — pas de conversion automatique.',
@@ -346,6 +370,7 @@ return [
         'service_period' => 'Période de prestation',
         'service_from' => 'Période de prestation du',
         'service_to' => 'Période de prestation au',
+        'tax_category_hint' => 'Vide = déduit du document (S/AE/Z/E/G/K/O). Les catégories sans taxe (AE, Z, E, G, K, O) fixent le taux à 0 %.',
     ],
     'service_rules' => [
         'title' => 'Règles de facturation',
@@ -514,5 +539,28 @@ return [
             'total_limit' => 'Pièce :name non reprise : les pièces de cette facture dépassent 50 Mo au total.',
             'unreadable' => 'Pièce :name non reprise : plus grande que :limit ou illisible.',
         ],
+    ],
+    // Steuerfall der Eingangsrechnung (MVP-1621) und § 13b als Leistender (MVP-1622).
+    'incoming_tax_case' => [
+        'title' => 'Cas fiscal',
+        'field' => 'Cas fiscal',
+        'hint' => 'En autoliquidation (§ 13b UStG, acquisition intracommunautaire), la facture est hors taxe ; l’écriture enregistre elle-même la TVA collectée et la TVA déductible. S’applique à la prochaine comptabilisation.',
+        'automatic' => 'Automatique (d’après la pièce et le fournisseur)',
+        'detected' => 'Déterminé : :case (:source).',
+        'action' => 'Modifier le cas fiscal',
+        'supplier_field' => 'Cas fiscal de ses factures entrantes',
+        'supplier_hint' => 'Préremplissage dans les factures entrantes tant que la facture n’indique pas de taxe — p. ex. pour des travaux de construction relevant du § 13b UStG.',
+        'source' => ['manual' => 'saisi manuellement', 'document' => 'd’après la facture électronique', 'supplier' => 'préréglage du fournisseur', 'default' => 'par défaut'],
+        'flash' => ['saved' => 'Cas fiscal enregistré.'],
+        'error' => ['booked' => 'La facture entrante est déjà en comptabilité (brouillon ou écriture). Modifiez le cas fiscal après avoir rejeté le brouillon ou contrepassé l’écriture.'],
+    ],
+    'reverse_charge_recipient' => [
+        'label' => 'Le destinataire est redevable de la TVA (§ 13b UStG)',
+        'hint' => 'Client national redevable de la taxe sur vos prestations, p. ex. travaux de construction pour des entreprises du bâtiment. Les factures partent sans TVA avec la mention « Autoliquidation par le destinataire » (case 60).',
+    ],
+    // Steuerfall des Rechnungsentwurfs (MVP-1623).
+    'tax_case' => [
+        'changed_on_issue' => 'Le régime fiscal du client a changé depuis la dernière modification du brouillon (autoliquidation, exportation ou exonération). Le brouillon a été ajusté — veuillez vérifier les montants et émettre à nouveau la facture.',
+        'note_kept' => 'Le texte de la facture a été modifié manuellement et n’a donc pas été ajusté : veuillez vérifier vous-même la mention du régime fiscal (autoliquidation, exportation ou exonération, par exemple).',
     ],
 ];

@@ -77,5 +77,6 @@ class MsgraphServiceProvider extends PluginServiceProviderBase {
         // (Opt-in je Org, Plugin-Einstellung oof_enabled).
         \App\Models\Absence\Vacation::observe(\App\Plugins\Msgraph\Observers\MsgraphVacationObserver::class);
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new MsgraphOutboxDispatcher());
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Integration\Contracts\OwnershipConflictReplay::class, Services\MsgraphTodoSyncService::class);
     }
 }

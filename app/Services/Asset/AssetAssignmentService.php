@@ -14,7 +14,7 @@ use App\Automation\RuleEngine;
 use App\Enums\Asset\AssetStatus;
 use App\Enums\Asset\{DefectSeverity, DefectStatus};
 use App\Exceptions\AssetValidationException;
-use App\Models\Asset\{Asset, AssetAssignment, AssetDefect};
+use App\Models\Asset\{Asset, AssetAssignment, AssetBlock, AssetDefect};
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Team, User};
 use App\Services\Asset\Automation\AssetCheckedOutTrigger;
@@ -35,6 +35,7 @@ use Illuminate\Support\Facades\DB;
 class AssetAssignmentService {
     public function __construct(
         private readonly AssetUsageGuard $usageGuard,
+        private readonly AssetHealthService $health,
     ) {}
 
     // ── Ausgabe / Rückgabe ─────────────────────────────────────────────────
@@ -56,6 +57,10 @@ class AssetAssignmentService {
         // Blockierender Defekt zuerst (eigene, spezifische Fehlermeldung).
         if ($this->isBlocked($asset)) {
             throw AssetValidationException::blockedByDefect();
+        }
+
+        if (! $this->isStatusAvailable($asset)) {
+            throw AssetValidationException::notAvailableForCheckout();
         }
 
         // Vollaudit 2026-07 (H2/H3): D12-Sperrmodell greift auch beim internen
@@ -114,16 +119,19 @@ class AssetAssignmentService {
         return $assignment;
     }
 
-    public function checkIn(AssetAssignment $assignment, User $actor, ?string $conditionIn = null): AssetAssignment {
+    public function checkIn(AssetAssignment $assignment, User $actor, ?string $conditionIn = null, ?string $returnNote = null): AssetAssignment {
         if ($assignment->returned_at !== null) {
             throw AssetValidationException::assignmentAlreadyReturned();
         }
 
-        return DB::transaction(function () use ($assignment, $actor, $conditionIn): AssetAssignment {
+        return DB::transaction(function () use ($assignment, $actor, $conditionIn, $returnNote): AssetAssignment {
             $assignment->returned_at = Carbon::now();
             $assignment->returned_by_user_id = $actor->id;
             if ($conditionIn !== null && trim($conditionIn) !== '') {
                 $assignment->condition_in = $conditionIn;
+            }
+            if ($returnNote !== null && trim($returnNote) !== '') {
+                $assignment->return_note = trim($returnNote);
             }
             $assignment->save();
 
@@ -180,6 +188,7 @@ class AssetAssignmentService {
                 'actor_id' => $actor->id,
             ]);
             $asset->audit('asset.defectReported', ['defect_id' => $defect->id, 'blocks_usage' => $blocksUsage, 'actor_id' => $actor->id]);
+            $this->health->sync($asset);
 
             return $defect->refresh();
         });
@@ -231,6 +240,7 @@ class AssetAssignmentService {
                     $this->syncStatusTo($asset, $target);
                 }
                 $asset->audit('asset.defectUpdated', ['defect_id' => $defect->id, 'to' => $to->value, 'actor_id' => $actor->id]);
+                $this->health->sync($asset);
             }
 
             $defect->audit('assetDefect.statusChanged', [
@@ -273,11 +283,7 @@ class AssetAssignmentService {
      * der blockierende Defekt bzw. die offene Zuweisung ab.
      */
     private function isStatusAvailable(Asset $asset): bool {
-        return ! in_array($asset->status, [
-            AssetStatus::Decommissioned,
-            AssetStatus::Replaced,
-            AssetStatus::Lost,
-        ], true);
+        return $asset->isInOperation();
     }
 
     /**
@@ -290,7 +296,13 @@ class AssetAssignmentService {
         if ($asset->status === $target) {
             return;
         }
-        if (! $asset->status->canTransitionTo($target)) {
+        // Aus „außer Betrieb“ führt nur die Wiederinbetriebnahme mit Grund (MVP-1628).
+        if ($asset->status === AssetStatus::Decommissioned || ! $asset->status->canTransitionTo($target)) {
+            return;
+        }
+        // Eine Sperre aus dem Status endet nur über Statuswechsel oder Freigabe, nicht nebenbei.
+        if (AssetBlockService::statusBlockReason($asset->status) !== null
+            && AssetBlock::query()->fromStatus($asset)->active()->exists()) {
             return;
         }
         $asset->status = $target;

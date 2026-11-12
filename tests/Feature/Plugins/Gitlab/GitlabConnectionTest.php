@@ -12,7 +12,7 @@ namespace Tests\Feature\Plugins\Gitlab;
 
 use App\Enums\Plugin\PluginHealthStatus;
 use App\Models\Platform\{Organization, PluginSetting, PluginState};
-use App\Plugins\Contracts\{PluginCapability, TaskSyncer};
+use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Gitlab\{GitlabConfig, GitlabPlugin};
 use App\Plugins\{PluginDiscovery, PluginHealth};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -57,7 +57,6 @@ final class GitlabConnectionTest extends TestCase {
         $plugin = new GitlabPlugin();
         $this->assertContains(PluginCapability::TaskSync, $plugin->capabilities());
         $this->assertTrue($plugin->isPerOrganization());
-        $this->assertInstanceOf(TaskSyncer::class, $plugin);
     }
 
     public function test_healthcheck_without_configuration_is_degraded_not_configured(): void {

@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\Calendly\Services;
 
 use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{Organization, User};
+use App\Plugins\Calendly\CalendlyPlugin;
 use CommonToolkit\Helper\Data\EmailHelper;
 
 /**
@@ -24,6 +26,9 @@ use CommonToolkit\Helper\Data\EmailHelper;
  * Treffer (→ Zuordnungs-Inbox).
  */
 class CalendlyAppointmentMatcher {
+    /** Externe Art der gepflegten Gastgeber-Zuordnung (Calendly-E-Mail → Benutzer, MVP-1610). */
+    public const string HOST_REFERENCE = 'calendly_host';
+
     /** Invitee-E-Mail → Kunde (E-Mail, Kontaktpersonen-E-Mail, eindeutiger Name). */
     public function matchCustomer(Organization $organization, ?string $email, ?string $name): ?Customer {
         $email = trim((string) $email);
@@ -70,7 +75,8 @@ class CalendlyAppointmentMatcher {
     }
 
     /**
-     * Host-E-Mail(s) aus `scheduled_event.event_memberships` → WorkDiary-Benutzer-ID.
+     * Host-E-Mail(s) aus `scheduled_event.event_memberships` → WorkDiary-Benutzer-ID;
+     * eine gepflegte Zuordnung geht der gleichen E-Mail-Adresse vor.
      *
      * @param  array<string, mixed>  $scheduledEvent
      */
@@ -80,6 +86,14 @@ class CalendlyAppointmentMatcher {
             $email = is_array($membership) ? trim((string) ($membership['user_email'] ?? '')) : '';
             if ($email === '') {
                 continue;
+            }
+            $mapped = ExternalReference::query()
+                ->forPlugin($organization, CalendlyPlugin::ID, self::HOST_REFERENCE)
+                ->forExternalId(mb_strtolower($email))
+                ->where('referenceable_type', (new User)->getMorphClass())
+                ->value('referenceable_id');
+            if ($mapped !== null) {
+                return (int) $mapped;
             }
             $user = User::query()
                 ->where('organization_id', $organization->id)

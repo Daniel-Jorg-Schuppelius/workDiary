@@ -45,7 +45,8 @@ final class TicketThreadMailIntakeHandler implements MailIntakeHandler {
             return null;
         }
         $ticket = $this->matchThreadedTicket($organization, $message);
-        if ($ticket === null) {
+        // Extern geführte Queue (MVP-1592): die Kundenkommunikation führt das andere System, die Mail bleibt im Eingang.
+        if ($ticket === null || $ticket->isExternallyLed()) {
             return null;
         }
 

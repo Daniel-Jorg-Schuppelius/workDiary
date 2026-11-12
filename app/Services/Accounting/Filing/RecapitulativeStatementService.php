@@ -15,6 +15,7 @@ namespace App\Services\Accounting\Filing;
 use App\Enums\Finance\{AccountingEntryStatus, VatFilingInterval};
 use App\Models\Accounting\{AccountingEntryLine, AccountingTaxCode};
 use App\Models\Customer\Customer;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
@@ -31,8 +32,11 @@ use CommonToolkit\ValueObjects\Money;
  * Frist ist der 25. Tag danach, und die **Dauerfristverlängerung gilt hier
  * nicht**.
  *
- * Erkannt werden die Umsätze über die Kennziffer 41 des Steuerkennzeichens
- * (MVP-688) — nicht über Kontonummern.
+ * Erkannt werden die Umsätze über die Kennziffer des Steuerkennzeichens
+ * (MVP-688) — nicht über Kontonummern: 41 innergemeinschaftliche Lieferungen,
+ * 21 sonstige Leistungen nach § 3a Abs. 2 UStG (MVP-1622). Die Meldung trennt
+ * je Empfänger nach der Art; die Schwelle für den Monatszeitraum zählt nur
+ * Lieferungen.
  */
 class RecapitulativeStatementService {
     /** § 18a Abs. 1 S. 2 UStG. */
@@ -40,6 +44,13 @@ class RecapitulativeStatementService {
 
     /** Kennziffer der innergemeinschaftlichen Lieferungen in der UStVA. */
     public const string FIELD = '41';
+
+    /** Kennziffer der im übrigen Gemeinschaftsgebiet steuerpflichtigen sonstigen Leistungen. */
+    public const string SERVICES_FIELD = '21';
+
+    public const string KIND_GOODS = 'goods';
+
+    public const string KIND_SERVICES = 'services';
 
     private const array POSTED = [AccountingEntryStatus::Posted->value, AccountingEntryStatus::Reversed->value];
 
@@ -52,7 +63,7 @@ class RecapitulativeStatementService {
 
         for ($back = 0; $back <= 4; $back++) {
             $from = $quarterStart->subMonths(3 * $back);
-            $sum = $this->totalFor($organization, $from, $from->addMonths(2)->endOfMonth());
+            $sum = $this->sum($this->lines($organization, $from, $from->addMonths(2)->endOfMonth(), [self::FIELD]));
 
             if (NumberHelper::comparePrecise($sum, self::QUARTERLY_THRESHOLD, 2) > 0) {
                 return VatFilingInterval::Monthly;
@@ -63,14 +74,21 @@ class RecapitulativeStatementService {
     }
 
     /**
-     * Summe der innergemeinschaftlichen Lieferungen im Zeitraum.
+     * Summe der meldepflichtigen Umsätze (Lieferungen und sonstige Leistungen) im Zeitraum.
      *
      * @return numeric-string
      */
     public function totalFor(Organization $organization, CarbonImmutable $from, CarbonImmutable $to): string {
-        $lines = $this->lines($organization, $from, $to);
+        return $this->sum($this->lines($organization, $from, $to));
+    }
 
-        // Erlöse stehen im Haben: Haben − Soll je Zeile, exakt summiert.
+    /**
+     * Erlöse stehen im Haben: Haben − Soll je Zeile, exakt summiert.
+     *
+     * @param  \Illuminate\Support\Collection<int, AccountingEntryLine>  $lines
+     * @return numeric-string
+     */
+    private function sum(\Illuminate\Support\Collection $lines): string {
         return Money::sum(
             $lines->map(static fn (AccountingEntryLine $line): Money => $line->signedAmount()->negated()),
             $lines->first()->currency ?? CurrencyCode::Euro,
@@ -78,30 +96,35 @@ class RecapitulativeStatementService {
     }
 
     /**
-     * Meldung je Empfänger-USt-IdNr.
+     * Meldung je Empfänger-USt-IdNr. und Art (Lieferung oder sonstige Leistung).
      *
      * Ein Umsatz ohne USt-IdNr. ist ein **Klärungsfall**: Ohne sie ist die
      * Steuerfreiheit der Lieferung nicht nachweisbar (§ 6a UStG), und die
      * Meldung wäre unvollständig.
      *
-     * @return array{rows: list<array<string, mixed>>, total: string, unclear: list<string>, interval: VatFilingInterval}
+     * @return array{rows: list<array<string, mixed>>, total: string, total_goods: string, total_services: string, unclear: list<string>, interval: VatFilingInterval}
      */
     public function report(Organization $organization, CarbonImmutable $from, CarbonImmutable $to): array {
-        /** @var array<string, array{vat_id: string, name: string, amount: numeric-string}> $rows */
+        /** @var array<string, array{vat_id: string, name: string, kind: string, amount: numeric-string}> $rows */
         $rows = [];
         $unclear = [];
         $lines = $this->lines($organization, $from, $to);
-        $total = Money::zero($lines->first()->currency ?? CurrencyCode::Euro);
+        $zero = Money::zero($lines->first()->currency ?? CurrencyCode::Euro);
+        $totals = [self::KIND_GOODS => $zero, self::KIND_SERVICES => $zero];
 
         foreach ($lines as $line) {
             $amount = $line->signedAmount()->negated();
-            $total = $total->plus($amount);
+            $kind = $line->taxCode?->ustva_base_field === self::SERVICES_FIELD ? self::KIND_SERVICES : self::KIND_GOODS;
+            $totals[$kind] = $totals[$kind]->plus($amount);
 
             $customer = MorphMap::is($line->counterparty_type, Customer::class) && $line->counterparty_id !== null
                 ? Customer::query()->find($line->counterparty_id)
                 : null;
 
-            $vatId = $customer instanceof Customer ? trim((string) $customer->vat_id) : '';
+            // Gemeldet wird die USt-IdNr. der ausgestellten Rechnung, nicht die heutige des Kunden.
+            $invoice = $line->entry?->source;
+            $recipient = $invoice instanceof Invoice ? $invoice->recipient() : null;
+            $vatId = trim($recipient !== null ? $recipient['vat_id'] : (string) ($customer->vat_id ?? ''));
 
             if ($vatId === '') {
                 $unclear[] = (string) __('accounting.recapitulative.unclear.missing_vat_id', [
@@ -112,29 +135,34 @@ class RecapitulativeStatementService {
                 continue;
             }
 
-            $rows[$vatId] ??= ['vat_id' => $vatId, 'name' => (string) $customer->name, 'amount' => '0.00'];
-            $rows[$vatId]['amount'] = NumberHelper::addPrecise($rows[$vatId]['amount'], $amount->getAmount(), 2);
+            $key = $vatId . '|' . $kind;
+            $name = $recipient !== null ? $recipient['name'] : (string) ($customer->name ?? '');
+            $rows[$key] ??= ['vat_id' => $vatId, 'name' => $name, 'kind' => $kind, 'amount' => '0.00'];
+            $rows[$key]['amount'] = NumberHelper::addPrecise($rows[$key]['amount'], $amount->getAmount(), 2);
         }
 
         ksort($rows);
 
         return [
             'rows' => array_values($rows),
-            'total' => $total->getAmount(),
+            'total' => $totals[self::KIND_GOODS]->plus($totals[self::KIND_SERVICES])->getAmount(),
+            'total_goods' => $totals[self::KIND_GOODS]->getAmount(),
+            'total_services' => $totals[self::KIND_SERVICES]->getAmount(),
             'unclear' => array_values(array_unique($unclear)),
             'interval' => $this->intervalFor($organization, $to),
         ];
     }
 
     /**
-     * Buchungszeilen mit Kennziffer 41 im Zeitraum.
+     * Buchungszeilen mit Kennziffer 41 bzw. 21 im Zeitraum.
      *
+     * @param  list<string>  $fields
      * @return \Illuminate\Support\Collection<int, AccountingEntryLine>
      */
-    private function lines(Organization $organization, CarbonImmutable $from, CarbonImmutable $to): \Illuminate\Support\Collection {
+    private function lines(Organization $organization, CarbonImmutable $from, CarbonImmutable $to, array $fields = [self::FIELD, self::SERVICES_FIELD]): \Illuminate\Support\Collection {
         $codeIds = AccountingTaxCode::query()
             ->where('organization_id', $organization->id)
-            ->where('ustva_base_field', self::FIELD)
+            ->whereIn('ustva_base_field', $fields)
             ->pluck('id');
 
         if ($codeIds->isEmpty()) {
@@ -148,7 +176,7 @@ class RecapitulativeStatementService {
                 ->whereIn('status', self::POSTED)
                 ->whereDate('booked_on', '>=', $from->toDateString())
                 ->whereDate('booked_on', '<=', $to->toDateString()))
-            ->with('entry')
+            ->with(['entry.source', 'taxCode'])
             ->get();
     }
 }

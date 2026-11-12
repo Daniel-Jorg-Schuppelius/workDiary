@@ -70,6 +70,7 @@ return [
 
     'error' => [
         'email_taken' => 'Diese E-Mail-Adresse ist bereits vergeben.',
+        'column_forbidden' => 'Spalte :column übergangen: Diese Werte darf nur ändern, wer das zugehörige Recht hat. Die übrigen Spalten werden importiert.',
         'required' => 'Pflichtfeld :field fehlt.',
         'tooLong' => 'Feld :field überschreitet die maximale Länge von :max Zeichen.',
         'header' => [

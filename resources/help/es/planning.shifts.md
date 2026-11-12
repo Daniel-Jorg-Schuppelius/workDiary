@@ -1,7 +1,7 @@
 ---
 title: "Planificación de servicios y turnos"
 topic: planning.shifts
-version: 4
+version: 5
 keywords:
     - cuadrante
     - horario de turnos
@@ -47,3 +47,9 @@ turnos cancelados no cuentan. El análisis **Cobertura** calcula con las mismas
 reglas.
 
 Con **Para todos los planes de turnos**, una entrada se aplica a todos los planes: en cada plan de turnos y en los días sin plan, por ejemplo para los turnos introducidos directamente en el **Plan de turnos**. La lista marca estas entradas con **Todos los planes de turnos**; usted las ve y las edita en cada plan de turnos.
+
+**Cualificación obligatoria faltante:** Para cada cualificación que falta, el
+aviso del turno indica si la persona ya ha iniciado el curso correspondiente de
+la plataforma de aprendizaje («curso en marcha») o qué curso publicado la
+transmite. La asignación sigue bloqueada hasta que se tenga la propia
+cualificación.

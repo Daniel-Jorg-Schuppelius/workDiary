@@ -75,9 +75,10 @@ class AccountingChartTemplateTest extends TestCase {
         $result = $this->service()->apply($this->org, 'skr03', $this->startsOn);
 
         $this->assertGreaterThan(40, $result['accounts']);
-        // Fünf Sätze plus das Kennzeichen für innergemeinschaftliche
-        // Lieferungen (MVP-687/688).
-        $this->assertSame(6, $result['tax_codes']);
+        // Vier Sätze, steuerfrei, die Kennzeichen der Umsätze ohne Steuer
+        // (innergemeinschaftlich, § 18b, § 13b Abs. 5, Ausfuhr, nicht steuerbar — MVP-687/688/1558/1622)
+        // und die der Steuerschuld des Empfängers (§ 13b Abs. 1 und 2, ig. Erwerb 19/7 % — MVP-1621).
+        $this->assertSame(14, $result['tax_codes']);
         $this->assertGreaterThan(15, $result['rules']);
 
         $bank = AccountingAccount::query()->where('number', '1200')->sole();

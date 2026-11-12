@@ -96,8 +96,8 @@ final class BarcodeScanTest extends TestCase {
             StockMovement::query()->where('movement_type', StockMovementType::TransferIn->value)->orderBy('id')->get()
                 ->map(fn (StockMovement $m): array => [$m->stock_lot_id, $m->qty_base])->all(),
         );
-        $this->assertSame(['0.0000', '1.0000'], [$stock->balanceOf($early, $this->warehouse), $stock->balanceOf($late, $this->warehouse)]);
-        $this->assertSame(['4.0000', '2.0000'], [$stock->balanceOf($early, $target), $stock->balanceOf($late, $target)]);
+        $this->assertSame(['0.0000', '1.0000'], [$stock->balancesOf([$early], $this->warehouse)[$early->id], $stock->balancesOf([$late], $this->warehouse)[$late->id]]);
+        $this->assertSame(['4.0000', '2.0000'], [$stock->balancesOf([$early], $target)[$early->id], $stock->balancesOf([$late], $target)[$late->id]]);
 
         $list = app(PickListBuilder::class)->fromLines([['variant' => $this->variant, 'warehouse' => $target, 'qty' => '5.0000']]);
         $this->assertSame(
@@ -117,7 +117,7 @@ final class BarcodeScanTest extends TestCase {
 
         app(ScanActionService::class)->book('L-LATE', ScanAction::Transfer, $this->warehouse, '2', ['target' => $target]);
 
-        $this->assertSame(['0.0000', '2.0000'], [app(LotStockReader::class)->balanceOf($early, $target), app(LotStockReader::class)->balanceOf($late, $target)]);
+        $this->assertSame(['0.0000', '2.0000'], [app(LotStockReader::class)->balancesOf([$early], $target)[$early->id], app(LotStockReader::class)->balancesOf([$late], $target)[$late->id]]);
     }
 
     public function test_scan_unknown_code_throws(): void {

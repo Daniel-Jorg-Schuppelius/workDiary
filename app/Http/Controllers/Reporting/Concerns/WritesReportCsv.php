@@ -14,6 +14,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\User;
+use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Http\{Request, Response};
@@ -67,11 +68,17 @@ trait WritesReportCsv {
             $this->auditExport($request, $auditReportCode ?? $reportCode, 'csv', $filters);
         }
 
-        $delimiter = (string) config('reports.csv_delimiter', ';');
+        // Je Organisation wählbar (MVP-1589), sonst der Systemwert.
+        $delimiter = match (Setting::get('reports.csv_delimiter_name')) {
+            'semicolon' => ';',
+            'comma' => ',',
+            'tab' => "\t",
+            default => (string) config('reports.csv_delimiter', ';'),
+        };
         $delimiter = $delimiter === '' ? ';' : $delimiter[0];
 
         $commentLines = [];
-        if ((bool) config('reports.csv_meta_lines', true)) {
+        if ((bool) Setting::get('reports.csv_meta_lines', true)) {
             $commentLines = [
                 '#report:' . $reportCode,
                 '#generated:' . CarbonImmutable::now('UTC')->format('Y-m-d\TH:i:s\Z'),

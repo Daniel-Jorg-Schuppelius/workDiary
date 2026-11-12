@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Whistleblowing;
 
 use App\Http\Controllers\Controller;
 use App\Models\Whistleblowing\Portal;
+use App\Support\Locales;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -22,6 +23,7 @@ use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -47,9 +49,20 @@ class WhistleblowingPortalController extends Controller {
 
         $data = $request->validate([
             'intro_text' => ['nullable', 'string', 'max:5000'],
-            'default_locale' => ['nullable', 'string', 'max:10'],
+            'default_locale' => ['nullable', Rule::in(Locales::enabledCodes())],
+            'allowed_locales' => ['nullable', 'array'],
+            'allowed_locales.*' => [Rule::in(Locales::enabledCodes())],
+            'privacy_text_version' => ['nullable', 'string', 'max:32'],
+            'external_channels' => ['nullable', 'array', 'max:10'],
+            'external_channels.*.label' => ['nullable', 'string', 'max:200', 'required_with:external_channels.*.url'],
+            'external_channels.*.url' => ['nullable', 'url:http,https', 'max:500'],
             'retention_months' => ['required', 'integer', 'min:1', 'max:600'],
         ]);
+
+        $channels = array_values(array_filter(array_map(
+            static fn (array $row): array => ['label' => trim((string) ($row['label'] ?? '')), 'url' => trim((string) ($row['url'] ?? ''))],
+            $data['external_channels'] ?? [],
+        ), static fn (array $row): bool => $row['label'] !== ''));
 
         $portal = $this->portal();
         if (! $portal->exists) {
@@ -62,6 +75,9 @@ class WhistleblowingPortalController extends Controller {
             'allow_confidential' => $request->boolean('allow_confidential'),
             'intro_text' => $data['intro_text'] ?? null,
             'default_locale' => $data['default_locale'] ?? null,
+            'allowed_locales' => array_values($data['allowed_locales'] ?? []),
+            'privacy_text_version' => $data['privacy_text_version'] ?? null,
+            'external_channels' => $channels,
             'retention_months' => (int) $data['retention_months'],
         ]);
         $portal->save();

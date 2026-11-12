@@ -1,7 +1,7 @@
 ---
 title: "Auditpakete & Prüfer-Links"
 topic: isms.packages
-version: 2
+version: 3
 keywords:
     - Prüferzugang
     - Auditor-Link
@@ -61,3 +61,5 @@ Risiken und unumkehrbare Aktionen:
 Berechtigungen: Einsicht erfordert ISMS-Leserechte; Erstellung
 und Pflege erfordern ISMS-Pflegerechte. Die Prüfer-Ansicht und der Download laufen
 über einen geschützten Link, ohne WorkDiary-Konto.
+
+**Entwurf bearbeiten oder verwerfen:** Solange ein Paket nicht finalisiert ist, ändern Sie Titel, Geltungsbereich, Stichtag und Norm-Filter über „Paket bearbeiten“ oder verwerfen den Entwurf im selben Dialog. Finalisierte Pakete bleiben unveränderlich und lassen sich nicht löschen.

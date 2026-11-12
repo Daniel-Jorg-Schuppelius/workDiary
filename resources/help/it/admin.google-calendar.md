@@ -1,7 +1,7 @@
 ---
 title: "Collegare Google Calendar"
 topic: admin.google-calendar
-version: 2
+version: 3
 keywords:
     - Google Calendar
     - calendario Google
@@ -134,3 +134,5 @@ operativa lo segnala.
 - **Sospensione:** dopo ripetuti errori consecutivi WorkDiary sospende la
   connessione; ricompare allora **Collega a Google**. Verifichi la causa e
   ripeta il collegamento.
+
+**Titolarità dei dati:** Gli appuntamenti di questo calendario appartengono all’area calendario. Se un altro sistema gestisce il calendario, proposte, serie e modifiche compaiono nella casella delle integrazioni come caso «Titolarità dei dati»; **Acquisisci una volta** crea l’appuntamento o la serie. Gli avvisi di eliminazione restano casi ordinari.

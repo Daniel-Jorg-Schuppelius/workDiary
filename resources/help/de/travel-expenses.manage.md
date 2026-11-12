@@ -1,7 +1,7 @@
 ---
 title: "Fahrten, Spesen & Pauschalen"
 topic: travel-expenses.manage
-version: 5
+version: 7
 keywords:
     - Reisekostenabrechnung
     - Spesenabrechnung
@@ -152,3 +152,7 @@ markieren Überfahrten, bei denen das Fahrzeug auf Fähre oder Zug mitfährt.
 Der zweite Fahrer bekommt dadurch keine Lenkzeit, seine Zeit im Fahrzeug gilt
 aber nicht als Ruhezeit; im Mehrfahrerbetrieb genügen 9 Stunden Ruhe binnen
 30 Stunden. Eine Überfahrt mit Fähre oder Zug unterbricht die Ruhezeit nicht.
+
+**Belegpflicht und Erstattung:** Verlangt die Kategorie einen Beleg, bleibt die Auslage ohne Beleg ein Entwurf; laden Sie ihn über „Belegdatei“ hoch und reichen Sie dann ein. Beim Markieren als erstattet fragt ein Dialog nach der Erstattungsreferenz (etwa dem Verwendungszweck der Überweisung); sie erscheint im Spesen-Export.
+
+**Erstattungsreferenz und Fahrzeug:** Beim Erstatten einer Spese oder Pauschale tragen Sie eine Referenz ein, etwa den Verwendungszweck der Überweisung. Im Fahrtenbuch halten Sie zu privaten oder fremden Fahrzeugen Kennzeichen oder Bezeichnung fest.

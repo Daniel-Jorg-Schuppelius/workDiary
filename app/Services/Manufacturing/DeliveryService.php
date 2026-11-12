@@ -97,7 +97,8 @@ class DeliveryService {
                 'unit_price_snapshot' => $variant->effectiveSalePrice(),
                 'currency' => $variant->currency ?? 'EUR',
                 'stock_status' => DeliveryStockStatus::Delivered,
-                'facturation_status' => DeliveryFacturationStatus::Pending->value,
+                // Ohne Kunden gibt es niemanden zu berechnen — die Auslieferung bleibt sonst ewig offen (MVP-1620).
+                'facturation_status' => ($customer !== null ? DeliveryFacturationStatus::Pending : DeliveryFacturationStatus::NotRequired)->value,
                 'facturation_target' => $target,
                 'delivered_at' => Carbon::now(),
                 'created_by' => $createdBy,

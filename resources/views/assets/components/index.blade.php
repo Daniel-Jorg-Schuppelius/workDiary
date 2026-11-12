@@ -43,6 +43,38 @@
             </div>
         @endif
 
+        @if ($adoptable->isNotEmpty())
+            {{-- Übernahme aus dem Materialverbrauch (Feature 118): eingeklappt vor der Voll-Höhe-Tabelle. --}}
+            <x-card as="details" padding="p-0">
+                <summary class="cursor-pointer px-4 py-3 text-sm font-medium">{{ __('asset.components.adopt.heading') }} ({{ $adoptable->count() }})</summary>
+                <div class="px-4 pb-4">
+                    <p class="mb-2 text-xs text-base-content/70">{{ __('asset.components.adopt.hint') }}</p>
+                    <x-table :bare="true">
+                        <x-slot:head>
+                            <tr>
+                                <th>{{ __('asset.components.adopt.column_date') }}</th>
+                                <th>{{ __('asset.components.column.name') }}</th>
+                                <th class="text-right">{{ __('asset.components.column.quantity') }}</th>
+                                <th class="text-right"></th>
+                            </tr>
+                        </x-slot:head>
+                        @foreach ($adoptable as $usage)
+                            <tr class="hover">
+                                <td class="whitespace-nowrap">{{ optional($usage->timesheet?->work_date)->fdate() ?? '—' }}</td>
+                                <td>{{ $usage->description }}</td>
+                                <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($usage->quantity?->getNumericValue() ?? 0), 2) }} {{ $usage->unit }}</td>
+                                <td class="text-right">
+                                    <x-action-form :action="route('assets.components.adopt', [$asset, $usage])">
+                                        <x-icon-btn icon="playlist_add" size="xs" tone="ghost" type="submit" show-label>{{ __('asset.components.action.adopt') }}</x-icon-btn>
+                                    </x-action-form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </x-table>
+                </div>
+            </x-card>
+        @endif
+
         @if ($history->count() > $installed->count())
             {{-- Historie VOR der Voll-Höhe-Tabelle (scroll=flex): Inhalt unter
                  der flex-Tabelle läge unter dem Fold und bliebe unentdeckt.

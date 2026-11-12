@@ -1,7 +1,7 @@
 ---
 title: "Clientes & proveedores"
 topic: contacts.manage
-version: 15
+version: 17
 keywords:
     - Vista previa como cliente
     - Contraseña inicial
@@ -242,3 +242,7 @@ módulo está activado, usted tiene el permiso y existen entradas; las cifras
 coinciden con la lista correspondiente. La administración ve los pedidos de
 tienda de Etsy y Billbee. Igual que los clientes, los proveedores tienen
 campos propios y documentos.
+
+En el proveedor se añaden los **Catálogos** (nombre, número de artículos, última importación; con el derecho de lectura del almacén) y el **Rendimiento**: el scorecard de los últimos doce meses con puntuación global, puntualidad, tasa de reclamaciones, evolución de precios, calidad ISMS, comportamiento ante recursos y plazo de entrega; cada fila abre el scorecard con el mismo periodo. Los contratos de leasing y financiación con el proveedor como arrendador aparecen en la ficha con el derecho a los expedientes de leasing. En el cliente aparecen además las **Citas** reservadas y solicitadas (Calendly, reserva de citas) para quienes pueden abrir la página «Solicitudes de cita».
+
+**Lidera la contabilidad:** si, según la titularidad de datos, la contabilidad gestiona los datos maestros de clientes y proveedores, el formulario muestra un aviso. Todo sigue siendo editable, pero la próxima sincronización sobrescribe los cambios locales; haga los cambios permanentes en el programa contable.

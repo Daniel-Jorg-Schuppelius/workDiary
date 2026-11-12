@@ -1,7 +1,7 @@
 ---
 title: "Gestion des domaines"
 topic: domains.overview
-version: 2
+version: 5
 keywords:
     - enregistrer un domaine
     - renouveler un domaine
@@ -82,3 +82,16 @@ l'affectation client par sous-utilisateur. Pour chaque sous-utilisateur, vous
 pouvez saisir le numéro client chez le fournisseur ; les pièces mensuelles
 construites à partir du journal comptable dans le registre de revente portent
 alors les numéros de facture du portail (« numéro client-MM-AAAA »).
+
+**Commandes incertaines :** si la réponse du fournisseur reste incomplète, la commande passe à « incertaine » et n’est jamais répétée. La prochaine synchronisation lit l’état du domaine chez le fournisseur : enregistrement, mode de renouvellement, verrou de transfert et renouvellement sont ainsi confirmés, reconnus comme échoués ou marqués en conflit. Les transferts, le DNS et les actions à haut risque n’ont pas de consultation d’état — vérifiez-les chez le fournisseur et clôturez-les manuellement avec un motif dans le journal des commandes.
+
+**Coûts et solde :** dans les paramètres de l’organisation, vous fixez un seuil de coût pour les renouvellements et un solde minimal. La gestion des domaines signale les renouvellements à venir au-dessus du seuil et les comptes fournisseur dont le solde, limite de crédit comprise, ne couvre pas les renouvellements des prochains jours — sans couverture, le fournisseur supprime les domaines à leur date d’échec.
+
+**Mode de renouvellement :** vous pouvez choisir les trois modes documentés
+par le fournisseur : renouvellement auto, expiration auto et suppression auto. Une
+valeur enregistrée auparavant, « Renouveler une fois », devient inconnue après la
+mise à jour ; la synchronisation suivante lit le mode réel chez le fournisseur.
+
+## État de synchronisation d'un domaine
+
+Pendant qu'une commande au fournisseur est en cours, le domaine affiche **En attente**. Si son résultat reste incertain ou si le fournisseur diverge après l'écriture, il affiche **Incertain** ou **Conflit** et apparaît dans la tuile des problèmes de synchronisation ; une synchronisation ne l'écrase pas tant que la commande est ouverte. Après la clôture – automatique ou manuelle – le domaine affiche **Obsolète** jusqu'à ce que la prochaine synchronisation le relise.

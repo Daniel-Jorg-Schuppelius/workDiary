@@ -1,7 +1,7 @@
 ---
 title: "Roles & permisos"
 topic: admin.roles
-version: 3
+version: 4
 keywords:
     - permisos de usuario
     - derechos de acceso
@@ -85,3 +85,5 @@ hora en **Cambios de permisos** (botón en la parte superior del control de
 acceso y del registro de auditoría). La vista es de solo lectura y requiere
 el permiso «Ver cambios de roles y permisos»; las cuentas de soporte lo tienen
 para poder reconstruir lo ocurrido sin modificar nada.
+
+**Copiar un rol:** el icono «Copiar» de un rol de la organización abre el diálogo de creación con sus permisos preseleccionados. Asigne un nombre propio y ajuste los permisos; el rol de origen queda registrado en **Cambios de permisos**. Los roles globales de la plataforma no se pueden copiar.

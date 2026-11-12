@@ -21,7 +21,6 @@ use App\Services\Export\Specs\{
     TourExportSpec,
     UserExportSpec
 };
-use InvalidArgumentException;
 
 /**
  * Lookup-Registry für entitätsspezifische Export-Spezifikationen.
@@ -45,12 +44,5 @@ class ExportSpecRegistry {
             ExportEntity::ScheduledShifts => $this->scheduledShifts,
             ExportEntity::Tours => $this->tours,
         };
-    }
-
-    public function byValue(string $entityValue): ExportSpec {
-        $entity = ExportEntity::tryFrom($entityValue)
-            ?? throw new InvalidArgumentException("Unbekannte Export-Entität: {$entityValue}");
-
-        return $this->for($entity);
     }
 }

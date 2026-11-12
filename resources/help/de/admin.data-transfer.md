@@ -1,7 +1,7 @@
 ---
 title: "Datentransfer"
 topic: admin.data-transfer
-version: 2
+version: 3
 keywords:
     - Datenexport
     - Daten exportieren
@@ -45,3 +45,12 @@ Entität besitzt. Jeder Export wird im Audit-Log protokolliert.
 
 Hinweis: Dieser Bereich dient der Datenübernahme/-übertragung. Für
 vollständige System-Sicherungen siehe **Backups**.
+
+## Spalten mit eigenem Recht
+
+Verrechnungs- und Kostensätze von Personen stehen nur mit dem Recht für Personal-
+und Lohndaten im Export, die Sätze von Projekten nur mit dem Recht für die
+Projektabrechnung. Fehlt das Recht, fehlen die Spalten in der Datei; eine Datei mit
+diesen Spalten lädt nur herunter, wer das Recht hat. Beim Import übergeht workDiary
+solche Spalten ohne das Recht und nennt sie im Prüfbericht; die übrigen Spalten
+werden übernommen.

@@ -37,6 +37,10 @@ class WhistleblowingEventService {
     public const string EMERGENCY_ACCESS_GRANTED = 'emergency_access.granted';
     public const string CASE_CONFLICT_DECLARED = 'case.conflict_declared';
     public const string CASE_SUBJECT_ADDED = 'case.subject_added';
+    public const string CASE_ASSIGNMENT_REVOKED = 'case.assignment_revoked';
+    public const string CASE_FEEDBACK_SENT = 'case.feedback_sent';
+    public const string CASE_REOPENED = 'case.reopened';
+    public const string CASE_AUDIT_VIEWED = 'case.audit_viewed';
 
     /**
      * @param array<string, scalar|null> $metadata minimiert, ohne Meldeinhalte

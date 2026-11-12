@@ -11,7 +11,7 @@
 namespace App\Services\Reporting;
 
 use App\Models\Platform\Organization;
-use App\Modules\ModuleRegistry;
+use App\Services\Licensing\ModuleExtensions;
 use App\Services\Reporting\Contracts\EarlyWarningSource;
 use App\Services\Reporting\Dto\EarlyWarning;
 use App\Support\OrganizationContext;
@@ -23,13 +23,13 @@ use Throwable;
  * fehlerhafte Quelle fällt einzeln aus, statt die übrigen zu verdecken.
  */
 final class EarlyWarningService {
-    public function __construct(private readonly ModuleRegistry $modules) {}
+    public function __construct(private readonly ModuleExtensions $extensions) {}
 
     /** @return list<EarlyWarning> */
     public function collect(Organization $organization): array {
         return OrganizationContext::run($organization, function () use ($organization): array {
             $all = [];
-            foreach ($this->modules->extensions(EarlyWarningSource::class) as $class) {
+            foreach ($this->extensions->activeFor(EarlyWarningSource::class, $organization) as $class) {
                 try {
                     /** @var EarlyWarningSource $source */
                     $source = app($class);

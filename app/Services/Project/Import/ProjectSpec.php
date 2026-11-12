@@ -14,9 +14,11 @@ namespace App\Services\Project\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Enums\Project\ProjectStatus;
+use App\Enums\User\Permission;
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
+use App\Services\Import\Contracts\GuardsColumns;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\AbstractEntitySpec;
 use App\Services\Import\Specs\Concerns\ValidatesImportDates;
@@ -30,7 +32,7 @@ use Throwable;
  * erfolgt per `customer_number` (Kundennummer) — fehlt der Kunde, wird
  * die Zeile mit {@see ImportErrorCode::FkMissing} markiert.
  */
-class ProjectSpec extends AbstractEntitySpec {
+class ProjectSpec extends AbstractEntitySpec implements GuardsColumns {
     use ValidatesImportDates;
 
     private const array DATE_COLUMNS = ['starts_on', 'ends_on'];
@@ -59,6 +61,11 @@ class ProjectSpec extends AbstractEntitySpec {
 
     public function requiredColumns(): array {
         return ['name', 'customer_number'];
+    }
+
+    /** Sätze stehen sonst hinter der Projektabrechnung (Reiter „Abrechnung“, MVP-1625). */
+    public function columnPermissions(): array {
+        return ['hourly_rate' => Permission::ProjectManageBilling, 'internal_rate' => Permission::ProjectManageBilling];
     }
 
     public function headerAliases(): array {

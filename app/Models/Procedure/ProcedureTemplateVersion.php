@@ -32,6 +32,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int|null $published_by_user_id
  * @property ProcedureRiskLevel $risk_level
  * @property array<string, mixed>|null $applicability
+ * @property bool $allow_blocked
  */
 class ProcedureTemplateVersion extends Model {
     /** @use HasFactory<ProcedureTemplateVersionFactory> */
@@ -51,6 +52,7 @@ class ProcedureTemplateVersion extends Model {
         'published_by_user_id',
         'risk_level',
         'applicability',
+        'allow_blocked',
     ];
 
     protected $casts = [
@@ -59,6 +61,7 @@ class ProcedureTemplateVersion extends Model {
         'published_at' => 'datetime',
         'risk_level' => ProcedureRiskLevel::class,
         'applicability' => 'array',
+        'allow_blocked' => 'bool',
     ];
 
     /** @return BelongsTo<ProcedureTemplate, $this> */

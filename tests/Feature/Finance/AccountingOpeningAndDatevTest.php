@@ -181,7 +181,8 @@ class AccountingOpeningAndDatevTest extends TestCase {
 
         $result = app(LedgerDatevExportService::class)->buildExtf($this->org, $this->startsOn, $this->startsOn->addMonth());
 
-        $this->assertSame(2, $result['rows']);
+        // Ein Buchungssatz je Buchung: Konto und Gegenkonto in einer Zeile (MVP-1622) — zwei Zeilen buchten DATEV doppelt.
+        $this->assertSame(1, $result['rows']);
         $this->assertSame('123.45', $result['debit']);
         $this->assertStringStartsWith('EXTF_Buchungsstapel_', $result['filename']);
         $this->assertStringStartsWith('EXTF;700;', $result['content']);
@@ -193,7 +194,7 @@ class AccountingOpeningAndDatevTest extends TestCase {
         $roundtrip = app(\App\Services\Finance\Datev\DatevBookingAdapter::class)->validateRoundtrip(
             $result['content'],
             \App\Services\Finance\Datev\DatevBookingConfig::forOrganization($this->org),
-            2,
+            1,
         );
         $this->assertTrue($roundtrip['ok'], json_encode($roundtrip) ?: '');
     }
@@ -247,9 +248,9 @@ class AccountingOpeningAndDatevTest extends TestCase {
 
         $result = app(LedgerDatevExportService::class)->buildExtf($this->org, $this->startsOn, $this->startsOn->addMonth());
         $lines = explode("\n", $result['content']);
-        $this->assertSame(2, $result['rows']);
+        $this->assertSame(1, $result['rows']);
 
-        foreach ([2, 3] as $index) {
+        foreach ([2] as $index) {
             $fields = explode(';', $lines[$index]);
             $this->assertSame('2,38', $fields[12], 'Skonto');
             $this->assertSame('KST7', $fields[36], 'KOST1');
@@ -261,7 +262,7 @@ class AccountingOpeningAndDatevTest extends TestCase {
         $roundtrip = app(\App\Services\Finance\Datev\DatevBookingAdapter::class)->validateRoundtrip(
             $result['content'],
             \App\Services\Finance\Datev\DatevBookingConfig::forOrganization($this->org),
-            2,
+            1,
         );
         $this->assertTrue($roundtrip['ok'], json_encode($roundtrip) ?: '');
     }

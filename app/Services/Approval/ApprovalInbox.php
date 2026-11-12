@@ -14,10 +14,10 @@ namespace App\Services\Approval;
 
 use App\Models\Approval\Approval;
 use App\Models\Platform\User;
-use App\Modules\ModuleRegistry;
 use App\Services\Approval\Contracts\ApprovalInboxSubject;
 use App\Services\Approval\Dto\ApprovalInboxEntry;
-use App\Support\MorphMap;
+use App\Services\Licensing\ModuleExtensions;
+use App\Support\{MorphMap, OrganizationContext};
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 
@@ -28,17 +28,17 @@ use Illuminate\Support\Collection;
  * der geltenden Runde, gefiltert auf die Zuständigkeit; eigene Anträge nie.
  */
 class ApprovalInbox {
-    /** @var array<class-string, ApprovalInboxSubject>|null */
-    private ?array $subjects = null;
+    /** @var array<int, array<class-string, ApprovalInboxSubject>> Organisation → Modellklasse → Gegenstand */
+    private array $subjects = [];
 
     public function __construct(
         private readonly ApprovalResponsibility $responsibility,
-        private readonly ModuleRegistry $modules,
+        private readonly ModuleExtensions $extensions,
     ) {}
 
     /** @return Collection<int, Approval> */
     public function openStepsFor(User $user): Collection {
-        $subjects = $this->subjects();
+        $subjects = $this->subjects(OrganizationContext::currentId() ?? $user->organization_id);
         $steps = Approval::query()
             ->currentRound()
             ->whereIn('approvable_type', array_map(MorphMap::alias(...), array_keys($subjects)))
@@ -90,7 +90,7 @@ class ApprovalInbox {
         $approvals->loadMissing('approvable');
         $approvals->loadMorph('approvable', array_map(
             static fn(ApprovalInboxSubject $subject): array => $subject->eagerLoad(),
-            $this->subjects(),
+            $this->subjects($approvals->first()?->organization_id),
         ));
     }
 
@@ -106,20 +106,21 @@ class ApprovalInbox {
     public function subjectFor(Approval $approval): ?ApprovalInboxSubject {
         $class = MorphMap::classFor($approval->approvable_type);
 
-        return $class === null ? null : ($this->subjects()[$class] ?? null);
+        return $class === null ? null : ($this->subjects($approval->organization_id)[$class] ?? null);
     }
 
-    /** @return array<class-string, ApprovalInboxSubject> Modellklasse → angemeldeter Gegenstand */
-    private function subjects(): array {
-        if ($this->subjects === null) {
-            $this->subjects = [];
-            foreach ($this->modules->extensions(ApprovalInboxSubject::class) as $class) {
+    /** @return array<class-string, ApprovalInboxSubject> Modellklasse → angemeldeter Gegenstand, nur aktive Module der Organisation */
+    private function subjects(?int $organizationId): array {
+        $key = (int) $organizationId;
+        if (! isset($this->subjects[$key])) {
+            $this->subjects[$key] = [];
+            foreach ($this->extensions->activeFor(ApprovalInboxSubject::class, $organizationId) as $class) {
                 /** @var ApprovalInboxSubject $subject */
                 $subject = app($class);
-                $this->subjects[$subject->approvableClass()] = $subject;
+                $this->subjects[$key][$subject->approvableClass()] = $subject;
             }
         }
 
-        return $this->subjects;
+        return $this->subjects[$key];
     }
 }

@@ -46,6 +46,8 @@ return [
     ],
 
     'form' => [
+        'is_photo_in_record' => 'Fotos im Kundennachweis zeigen',
+        'is_photo_in_record_hint' => 'Je Geräteposition erscheinen bis zu zwei Fotos im Nachweis-PDF.',
         'title_create' => 'Neue Entsorgungsakte',
         'title_edit' => 'Entsorgungsakte bearbeiten',
         'submit_create' => 'Akte anlegen',
@@ -76,6 +78,13 @@ return [
     ],
 
     'item' => [
+        'asset' => 'Asset',
+        'asset_none' => '— ohne Asset-Bezug —',
+        'asset_hint' => 'Nur Assets in Betrieb. Die Auswahl belegt Bezeichnung, Hersteller, Modell und Seriennummer vor; der Abschluss der Akte nimmt das Asset außer Betrieb.',
+        'error' => [
+            'asset_not_in_operation' => 'Das Asset ist nicht mehr in Betrieb und kann nicht entsorgt werden.',
+            'asset_taken' => 'Das Asset steht bereits in einer offenen Entsorgungsakte.',
+        ],
         'title_create' => 'Position erfassen',
         'title_edit' => 'Position bearbeiten',
         'group_device' => 'Gerät',
@@ -157,6 +166,23 @@ return [
         'reason' => 'Begründung',
     ],
 
+    // Asset-Bezug und Fotos der Gerätepositionen (MVP-1578).
+    'asset' => [
+        'action' => 'Entsorgen',
+        'create_hint' => 'Nach dem Anlegen erfassen Sie „:asset“ als Geräteposition; das Asset ist dort schon gewählt.',
+        'add_hint' => 'Asset „:asset“ als Geräteposition erfassen — es ist im Dialog schon gewählt.',
+        'pending_decommission' => 'Nicht außer Betrieb genommen: :assets. Das Asset ist noch ausgegeben oder in einem Endzustand — nehmen Sie es an der Asset-Akte zurück und außer Betrieb.',
+    ],
+    'photo' => [
+        'label' => 'Fotos',
+        'alt' => 'Foto zu :item',
+        'upload' => 'Foto hochladen',
+        'upload_for' => 'Foto zu :item auswählen',
+        'flash' => [
+            'added' => 'Foto zur Geräteposition gespeichert.',
+        ],
+    ],
+
     'action' => [
         'create' => 'Neue Entsorgungsakte',
         'collect' => 'Abholung erfassen',
@@ -177,6 +203,8 @@ return [
     ],
 
     'pdf' => [
+        'photos' => 'Fotos',
+        'photo_of' => 'Position :number',
         'title' => 'Übernahme- und Entsorgungsnachweis',
         'number' => 'Aktennummer',
         'customer' => 'Kunde',

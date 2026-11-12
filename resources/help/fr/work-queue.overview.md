@@ -1,7 +1,7 @@
 ---
 title: "File de travail"
 topic: work-queue.overview
-version: 3
+version: 4
 keywords:
     - File de travail
     - Éléments ouverts
@@ -58,3 +58,7 @@ Les boîtes partagées apparaissent regroupées avec leur nombre.
 est triée ainsi ; les filtres la limitent à un domaine, une source ou aux
 seuls éléments qui vous sont attribués. La tuile « File de travail » du
 tableau de bord affiche les éléments les plus urgents.
+
+**Échéance :** le filtre « Échéance » n’affiche que les éléments en retard, dus aujourd’hui ou cette semaine (jusqu’à dimanche), ou sans échéance.
+
+**Firefly III :** si le plugin est activé, les administrateurs voient les mouvements Firefly sans rattachement et ceux au rattachement ambigu sous la forme d’un élément groupé chacun, sans échéance. Le lien ouvre la liste filtrée correspondante sur la page Firefly ; dès que le rapprochement suivant rattache un mouvement à une facture, le nombre diminue.

@@ -121,21 +121,6 @@ final readonly class ReportFilters {
     }
 
     /**
-     * Kunden-Stammabfragen (Builder, die direkt über customers aggregieren):
-     * org-weit ausgeblendete Kunden herausfiltern.
-     *
-     * @param  Builder<\App\Models\Customer\Customer>  $query
-     * @return Builder<\App\Models\Customer\Customer>
-     */
-    public function applyToCustomerQuery(Builder $query): Builder {
-        if ($this->customerExclusionActive()) {
-            $query->whereNotIn('customers.id', $this->excludedCustomerIds);
-        }
-
-        return $query;
-    }
-
-    /**
      * Nur Mitarbeiter-/Team-Einschränkung (z. B. Abwesenheiten, Stempelzeiten
      * — Tabellen ohne Kunden-/Projektbezug).
      *
@@ -191,10 +176,6 @@ final readonly class ReportFilters {
             'status' => (string) ($this->status ?? ''),
             'include_excluded' => $this->includeExcludedCustomers ? '1' : '',
         ], fn(string $value): bool => $value !== '');
-    }
-
-    public function toQueryString(): string {
-        return http_build_query($this->toQueryParams());
     }
 
     /**

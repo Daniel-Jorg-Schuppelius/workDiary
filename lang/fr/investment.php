@@ -217,4 +217,28 @@ return [
         'waiting_role' => 'Rôle :role',
         'not_responsible' => 'Vous n’êtes pas responsable de l’étape d’approbation en cours.',
     ],
+    // Nutzungsdauer der Variante, Listenfilter, PDF-Bericht (MVP-1606).
+    'option' => [
+        'useful_life' => 'Durée d’utilisation (années)',
+        'useful_life_short' => 'Durée d’utilisation',
+        'years' => ':count an|:count ans',
+    ],
+    'filter' => [
+        'all_responsible' => 'Tous les responsables',
+        'all_cost_centers' => 'Tous les centres de coûts',
+        'budget' => 'État du budget',
+        'all_budget' => 'Tout état du budget',
+        'budget_none' => 'sans demande de budget',
+        'all_urgency' => 'Toute urgence',
+        'with_risk' => 'Uniquement avec note de risque',
+        'risk_badge' => 'Risque',
+    ],
+    'report' => [
+        'pdf_title' => 'Rapport d’investissement',
+        'pdf_meta' => 'Validations en attente : :approvals · écarts ouverts : :deviations',
+        'approved' => 'Approuvé',
+        'committed' => 'Engagé',
+        'actual' => 'Réel',
+        'remaining' => 'Reste',
+    ],
 ];

@@ -1,7 +1,7 @@
 ---
 title: "Ferie e malattia"
 topic: absences.manage
-version: 4
+version: 5
 keywords:
     - assenza
     - richiesta ferie
@@ -75,3 +75,12 @@ report **Malattie** mostra la situazione per persona. Tutte le indicazioni sono
 un orientamento, non una consulenza legale.
 
 Come le ferie, i giorni con certificato di malattia non hanno un orario previsto: **Conto ore di lavoro**, **Bilancio lavoro**, **Presenza** e **Piano/effettivo** non li contano come scoperto. I certificati di malattia annullati non vengono conteggiati da nessuna parte, nemmeno nei conti ore.
+
+**Richiedi correzione:** finché non è registrata alcuna approvazione, i
+responsabili restituiscono una richiesta in sospeso con **Richiedi
+correzione** (freccia indietro nella riga) e un’indicazione. La richiesta
+passa allora a **Correzione richiesta**; la persona richiedente riceve una
+notifica e una voce nella coda di lavoro, vede l’indicazione nella finestra
+di modifica, modifica la richiesta e la presenta di nuovo salvando. Fino ad
+allora non può essere né approvata né rifiutata; la persona può ritirarla
+annullandola.

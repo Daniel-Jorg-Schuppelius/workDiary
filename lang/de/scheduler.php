@@ -30,6 +30,12 @@ return [
         'criticality' => 'Einstufung',
         'last_status' => 'Ergebnis',
         'source' => 'Planquelle',
+        'run_options' => 'Ausführung',
+        'timezone' => 'Zeitzone',
+        'quiet_from' => 'Ruht ab',
+        'quiet_until' => 'Läuft wieder ab',
+        'retry_attempts' => 'Wiederholungen nach Fehlschlag',
+        'retry_delay_minutes' => 'Abstand der Wiederholungen (Min.)',
     ],
     'action' => [
         'reschedule' => 'Umplanen',
@@ -115,6 +121,7 @@ return [
             'lti_rotate_keys' => 'LTI-Signaturschlüssel tauschen',
             'lti_prune_nonces' => 'Abgelaufene LTI-Nonces entfernen',
         ],
+        'flex' => ['recompute' => 'Gleitzeitsalden neu berechnen'],
         'attendance' => ['close_open' => 'Offene Stempelungen schließen', 'open_reminder' => 'Offene Stempelungen am Abend erinnern'],
         'audit' => ['verify' => 'Audit-Kette prüfen'],
         'backup' => [
@@ -254,6 +261,10 @@ return [
         'day' => 'Wochentag 0–6 (0 = Sonntag) bzw. Monatstag 1–31.',
         'expression' => 'Nur für Betreiber: Minute Stunde Tag Monat Wochentag.',
         'allowlist' => 'Erwartete Laufzeit ca. :runtime Min. Der Job läuft mit Überschneidungsschutz; zu enge Intervalle werden serverseitig abgelehnt.',
+        'timezone_default' => 'Zeitzone der Installation (:tz)',
+        'quiet_window' => 'Uhrzeiten außerhalb der Ruhezeit rücken an ihr Ende, Takte setzen in ihr aus. Ohne eigene Ruhezeit gilt das Betriebsfenster des Servers (:window) — mit eigener Zeitzone nicht, denn es gilt in der Zeitzone der Installation.',
+        'quiet_window_none' => 'Uhrzeiten außerhalb der Ruhezeit rücken an ihr Ende, Takte setzen in ihr aus. Ohne Angabe läuft der Job rund um die Uhr.',
+        'retry' => 'Schlägt ein Lauf fehl, startet der Job nach dem Abstand erneut — höchstens so oft wie angegeben, mit Überschneidungsschutz und im Laufnachweis sichtbar. 0 = keine Wiederholung.',
     ],
     'flash' => [
         'rescheduled' => 'Job :job wurde umgeplant.',

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Appointments;
 
+use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Sales\BookableService;
 use App\Services\Calendar\Contracts\FreeSlotSource;
@@ -31,11 +32,17 @@ class AppointmentSlotService {
     public function __construct(private readonly FreeSlotSource $gaps) {}
 
     /**
-     * Anonyme Zeitfenster eines Tages für eine Leistungsart.
+     * Anonyme Zeitfenster eines Tages für eine Leistungsart. Ist die Leistung an
+     * das Objekt eines anderen Kunden gebunden, gibt es für diesen Kunden keine
+     * Fenster (MVP-1612); die Disposition kennt keinen Standort je Kraft, die
+     * Bindung wirkt daher über den Kunden.
      *
      * @return list<array{start: CarbonImmutable, end: CarbonImmutable}>
      */
-    public function slotsFor(BookableService $service, CarbonImmutable $date, int $limit = 12): array {
+    public function slotsFor(BookableService $service, CarbonImmutable $date, int $limit = 12, ?Customer $customer = null): array {
+        if ($customer !== null && ! $service->bookableBy($customer)) {
+            return [];
+        }
         $required = $service->duration_minutes + $service->buffer_minutes;
         $earliest = CarbonImmutable::parse($service->earliestStart());
 

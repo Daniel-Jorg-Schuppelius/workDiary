@@ -13,9 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Plane;
 
 use App\Models\Integration\ExternalReference;
-use App\Models\Platform\Organization;
 use App\Plugins\AbstractPlugin;
-use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer, TaskSyncer};
+use App\Plugins\Contracts\{LinksExternalRecords, PluginCapability, SlotRenderer};
 use App\Plugins\Plane\Api\PlaneClientFactory;
 use App\Plugins\Plane\Models\PlaneConnection;
 use App\Plugins\Plane\Services\PlaneImportService;
@@ -24,7 +23,7 @@ use App\Plugins\Support\{ChecksConnectionHealth, RendersTaskLink, SelfHostedSett
 /**
  * Plane-Aufgabenimport (Feature 173, Phase 158): Arbeitspakete ausgewählter Plane-Projekte werden als Aufgaben in WorkDiary-Projekte übernommen, nur lesend.
  */
-class PlanePlugin extends AbstractPlugin implements LinksExternalRecords, SlotRenderer, TaskSyncer {
+class PlanePlugin extends AbstractPlugin implements \App\Plugins\Contracts\WritesDataDomains, LinksExternalRecords, SlotRenderer {
     use ChecksConnectionHealth, RendersTaskLink;
 
     public const string ID = 'plane';
@@ -56,10 +55,6 @@ class PlanePlugin extends AbstractPlugin implements LinksExternalRecords, SlotRe
         return [PluginCapability::TaskSync];
     }
 
-    public function syncTasks(Organization $organization): array {
-        return app(PlaneImportService::class)->run($organization);
-    }
-
     public function adminPanel(): ?array {
         return ['route' => 'admin.plane.index', 'label' => 'Plane', 'icon' => 'view_timeline'];
     }
@@ -82,5 +77,10 @@ class PlanePlugin extends AbstractPlugin implements LinksExternalRecords, SlotRe
 
     protected function taskLinkType(): string {
         return self::EXT_TYPE_WORK_ITEM;
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Tasks];
     }
 }

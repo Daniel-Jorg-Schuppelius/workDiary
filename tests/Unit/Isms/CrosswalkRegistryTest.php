@@ -92,13 +92,6 @@ class CrosswalkRegistryTest extends TestCase {
         }
     }
 
-    public function test_find_key_resolves_source_and_target(): void {
-        $registry = new CrosswalkRegistry;
-
-        $this->assertSame(self::CSF_KEY, $registry->findKey('NIST CSF', '2.0', 'ISO/IEC 27001', '2022'));
-        $this->assertNull($registry->findKey('NIST CSF', '2.0', 'ISO 9001', '2015'));
-    }
-
     public function test_unknown_key_throws(): void {
         $registry = new CrosswalkRegistry;
 

@@ -26,11 +26,14 @@ class ProcedureRunIncompleteException extends RuntimeException {
     public function __construct(
         public readonly ProcedureRun $run,
         public readonly array $missingStepRunIds,
+        public readonly ?string $reason = null,
     ) {
-        parent::__construct(sprintf(
-            'Procedure run #%d cannot be completed: %d required step(s) still open.',
-            $run->id,
-            count($missingStepRunIds),
-        ));
+        parent::__construct($reason !== null
+            ? sprintf('Procedure run #%d cannot be completed: %s.', $run->id, $reason)
+            : sprintf(
+                'Procedure run #%d cannot be completed: %d required step(s) still open.',
+                $run->id,
+                count($missingStepRunIds),
+            ));
     }
 }

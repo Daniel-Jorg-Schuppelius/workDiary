@@ -21,15 +21,15 @@ use App\Models\Platform\User;
  * Bestandswirkung von Reklamationsrückläufern (MVP-863): definiert von den
  * Reklamationen, gebunden vom Lager ({@see \App\Services\Inventory\Claims\InventoryRmaStockHandler}).
  * Null-Bindung: keine Lagerbuchung, keine Seriennummernprüfung — der Fall
- * dokumentiert nur.
+ * dokumentiert nur. Die Buchungsmethoden melden, ob Bestand bewegt wurde.
  */
 interface RmaStockHandler {
     /** Wurde die Seriennummer je an den Fall-Kunden geliefert? */
     public function wasShippedTo(int $organizationId, string $serialNo, Customer $customer): bool;
 
     /** Wareneingang: Menge idempotent in den Quarantäne-Zustand buchen, Seriennummer als Rückläufer markieren. */
-    public function bookReturn(ClaimRmaReturn $rma, string $state, User $actor): void;
+    public function bookReturn(ClaimRmaReturn $rma, string $state, User $actor): bool;
 
     /** Bestandswirkung der Verwendungsentscheidung als idempotente Ledger-Buchungen. */
-    public function applyDisposition(ClaimRmaReturn $rma, ClaimRmaDisposition $disposition, User $actor): void;
+    public function applyDisposition(ClaimRmaReturn $rma, ClaimRmaDisposition $disposition, User $actor): bool;
 }

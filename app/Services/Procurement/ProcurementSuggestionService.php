@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement;
 
+use App\Enums\Article\ArticleUnitKind;
 use App\Enums\Manufacturing\ProcurementStatus;
-use App\Models\Article\{Article, ArticleSupply, ArticleVariant};
+use App\Models\Article\{Article, ArticleSupply, ArticleUnit, ArticleVariant};
 use App\Models\Inventory\Warehouse;
 use App\Models\Platform\Organization;
 use App\Models\Procurement\{ProcurementRequest, PurchaseOrder};
@@ -109,9 +110,14 @@ class ProcurementSuggestionService {
             }
             $order = $this->orders->createDraft($organization, $supplier, $warehouse, ['created_by' => $createdBy]);
             foreach ($items as $item) {
-                $this->orders->addLine($order, $item['article'], $item['qty'], [
+                $unit = $this->orderUnit($item['article'], $item['supply']);
+                $this->orders->addLine($order, $item['article'], $unit !== null ? bcdiv($item['qty'], $item['supply']->pack_size, self::SCALE) : $item['qty'], [
                     'supplier_sku' => $item['supply']->supplier_sku,
-                    'unit_price' => $item['supply']->purchase_price,
+                    // Der Bezugspreis gilt je Basiseinheit, die Zeile rechnet je Bestelleinheit.
+                    'unit_price' => $unit !== null && $item['supply']->purchase_price !== null
+                        ? bcmul($item['supply']->purchase_price->getAmount(), $item['supply']->pack_size, self::SCALE)
+                        : $item['supply']->purchase_price,
+                    'unit' => $unit,
                 ]);
             }
             $created[] = $order;
@@ -125,6 +131,29 @@ class ProcurementSuggestionService {
         }
 
         return $created;
+    }
+
+    /**
+     * Bestelleinheit des Lieferantenartikels (MVP-1584): die gepflegte Einheit
+     * des Artikels, deren Faktor der Verpackungseinheit entspricht (1 Rolle =
+     * 100 m bei Packungsgröße 100). Ohne solche Einheit bleibt die Basiseinheit.
+     */
+    private function orderUnit(Article $article, ArticleSupply $supply): ?string {
+        $pack = $supply->pack_size;
+        if (bccomp($pack, '0', self::SCALE) <= 0 || bccomp($pack, '1', self::SCALE) === 0) {
+            return null;
+        }
+
+        /** @var ArticleUnit|null $unit */
+        $unit = $article->units()->where('active', true)
+            ->orderByRaw('kind = ? desc', [ArticleUnitKind::Purchase->value])->orderBy('id')->get()
+            ->first(function (ArticleUnit $candidate) use ($pack): bool {
+                $factor = (string) $candidate->factor_to_base;
+
+                return is_numeric($factor) && bccomp($factor, $pack, self::SCALE) === 0;
+            });
+
+        return $unit?->code;
     }
 
     /**

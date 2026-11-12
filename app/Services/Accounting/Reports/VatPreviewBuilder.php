@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting\Reports;
 
-use App\Enums\Finance\{AccountType, PostingAccountRole, SettlementKind};
+use App\Enums\Finance\{AccountType, OpenItemDirection, PostingAccountRole, SettlementKind, TaxCodeDirection};
 use App\Models\Accounting\{AccountingAccount, AccountingOpenItem, AccountingPostingRule, AccountingTaxCode};
 use App\Models\Platform\Organization;
 use App\Services\Accounting\TaxationMethodResolver;
@@ -43,10 +43,12 @@ class VatPreviewBuilder extends AbstractAccountingReportBuilder {
         // Steuerkennzeichen oder eine Buchungsregel mit Steuerrolle. Aus der
         // Kontoart allein ließe sich das nicht ableiten — nicht jedes
         // Passivkonto ist Umsatzsteuer.
-        $taxAccountIds = AccountingTaxCode::query()
-            ->where('organization_id', $organization->id)
-            ->whereNotNull('tax_account_id')
-            ->pluck('tax_account_id')
+        $codes = AccountingTaxCode::query()->where('organization_id', $organization->id)->get(['tax_account_id', 'input_tax_account_id', 'direction']);
+        // Die Steuer nach § 13b und auf den innergemeinschaftlichen Erwerb entsteht mit der Rechnung, auch bei Ist-Versteuerung (MVP-1621).
+        $selfAssessedAccountIds = $codes->where('direction', TaxCodeDirection::SelfAssessed)->pluck('tax_account_id')->filter()->map(intval(...))->all();
+        $taxAccountIds = $codes->pluck('tax_account_id')
+            ->merge($codes->pluck('input_tax_account_id'))
+            ->filter()
             ->merge(AccountingPostingRule::query()
                 ->where('organization_id', $organization->id)
                 ->whereIn('role', [PostingAccountRole::TaxOutput->value, PostingAccountRole::TaxInput->value])
@@ -78,7 +80,7 @@ class VatPreviewBuilder extends AbstractAccountingReportBuilder {
             // eines Aktivkontos — die Kontoart entscheidet, nicht die Nummer.
             $isOutput = $account->type === AccountType::Liability;
 
-            if ($isOutput && $method->followsPayments()) {
+            if ($isOutput && $method->followsPayments() && ! in_array((int) $account->id, $selfAssessedAccountIds, true)) {
                 $amount = $collected[$account->id] ?? '0.00';
                 if (NumberHelper::isZeroPrecise($amount)) {
                     continue;
@@ -127,7 +129,8 @@ class VatPreviewBuilder extends AbstractAccountingReportBuilder {
         foreach ($this->settlementsInPeriod($organization, $from, $to) as $settlement) {
             $item = $settlement->openItem;
             $entry = $item?->entry;
-            if (! $item instanceof AccountingOpenItem || $entry === null) {
+            // Vereinnahmt wird nur über Forderungen; eine Verbindlichkeit trägt keine eigene Umsatzsteuer.
+            if (! $item instanceof AccountingOpenItem || $entry === null || $item->direction !== OpenItemDirection::Receivable) {
                 continue;
             }
 

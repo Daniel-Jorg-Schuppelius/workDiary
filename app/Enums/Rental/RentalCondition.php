@@ -27,6 +27,11 @@ enum RentalCondition: string implements HasLabel {
     case Worn = 'worn';
     case Damaged = 'damaged';
 
+    /** Mindestzustand des Verleihprofils (MVP-1604): Reihenfolge der Fälle, neuwertig zuerst. */
+    public function meets(self $minimum): bool {
+        return array_search($this, self::cases(), true) <= array_search($minimum, self::cases(), true);
+    }
+
     public function label(): string {
         return match ($this) {
             self::New => (string) __('enums.rental.rental_condition.new'),

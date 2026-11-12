@@ -10,13 +10,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Exceptions\PartyDeletionBlockedException;
+use App\Exceptions\CustomerDeletionBlockedException;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\SaveCustomerRequest;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer\Customer;
-use App\Services\Stammdaten\PartyDeletionGuard;
+use App\Services\Customer\CustomerDeletion;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -107,18 +107,12 @@ class CustomerController extends Controller {
     )]
     public function destroy(Customer $customer): Response {
         Gate::authorize('delete', $customer);
-        // Legal Hold (MVP-801): auch über die API kein Löschen gesperrter Kunden.
-        abort_if(
-            app(\App\Services\Retention\LegalHoldService::class)->activeHoldFor($customer) !== null,
-            423,
-            __('Kunde steht unter Legal Hold — Löschen ist bis zur Aufhebung ausgeschlossen.'),
-        );
+        // Dieselben Sperren und Folgen wie in der Oberfläche (MVP-1591): Legal Hold 423, sonst 409.
         try {
-            app(PartyDeletionGuard::class)->assertDeletable($customer);
-        } catch (PartyDeletionBlockedException $e) {
-            abort(409, $e->getMessage());
+            app(CustomerDeletion::class)->delete($customer);
+        } catch (CustomerDeletionBlockedException $e) {
+            abort($e->status(), $e->getMessage());
         }
-        $customer->delete();
 
         return response()->noContent();
     }

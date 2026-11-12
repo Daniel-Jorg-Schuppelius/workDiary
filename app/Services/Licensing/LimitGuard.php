@@ -141,7 +141,8 @@ class LimitGuard {
             $additionalBytes = 0;
         }
 
-        $payload = $this->licenses->current()->payload;
+        // Kontingent je Organisation: die eigene Lizenz geht vor, sonst die Installationslizenz (wie max_users).
+        $payload = $this->licenseFor($organization)->payload;
         $quotaGb = $payload?->storageQuotaGb;
         if ($quotaGb === null || $quotaGb <= 0) {
             return;

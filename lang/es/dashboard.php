@@ -133,6 +133,17 @@ return [
         'open_times' => [
             'description' => 'Tiempos facturables que aún no están en ninguna factura.',
         ],
+        'finance_movements' => [
+            'label' => 'Movimientos financieros',
+            'description' => 'Asignaciones abiertas y los últimos movimientos de extractos bancarios, Firefly III y cuentas de tienda; se editan en la lista de origen.',
+            'empty' => 'No hay ninguna fuente de movimientos financieros configurada.',
+            'unassigned' => ':source: sin asignar',
+            'latest' => 'Últimos :days días',
+            'none_latest' => 'No hay movimientos en este periodo.',
+            'open' => 'abierto',
+            'no_counterparty' => 'Sin contraparte',
+            'source' => ['bank' => 'Extractos bancarios'],
+        ],
         'open_items' => [
             'description' => 'Cuentas por cobrar y pagar abiertas, con la parte vencida.',
             'feed_link' => 'Flujo de documentos →',

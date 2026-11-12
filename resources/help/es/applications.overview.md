@@ -1,7 +1,7 @@
 ---
 title: "Candidaturas y licitaciones"
 topic: applications.overview
-version: 3
+version: 4
 keywords:
     - reclutamiento
     - selección de personal
@@ -85,3 +85,5 @@ aprobación desde el expediente; allí también se puede rechazar una etapa
 Aviso legal: WorkDiary documenta el proceso, pero no sustituye el
 asesoramiento jurídico — en particular, ninguna valoración sobre si las
 condiciones contractuales son admisibles o económicamente razonables.
+
+**Entrevistador y apertura de ofertas:** al planificar una entrevista de trabajo elige quién la realiza. En las licitaciones registra desde cuándo se conocen las ofertas de la competencia registradas y añade una nota.

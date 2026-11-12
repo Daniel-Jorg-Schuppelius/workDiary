@@ -165,6 +165,24 @@ class WarrantyPeriodTest extends TestCase {
         ]);
     }
 
+    /** MVP-1625: Die Rüge beendet die Frist nicht — die Erinnerung läuft weiter, die eigene gerügte Frist zählt im Sub-Vergleich. */
+    public function test_claimed_periods_stay_in_the_reminders(): void {
+        $this->rule(NotificationEvent::WarrantyExpiring);
+        $own = $this->period(WarrantySide::Owed, now()->subYears(4)->toDateString(), now()->addDays(60)->toDateString(), WarrantyBasis::Custom);
+        app(WarrantyService::class)->markClaimed($own, null, $this->admin);
+        $this->assertSame(WarrantyStatus::Claimed, $own->refresh()->status);
+
+        $this->artisan('notifications:scan-deadlines')->assertExitCode(0);
+        $this->assertDatabaseHas('notification_dispatch_log', ['event' => NotificationEvent::WarrantyExpiring->value]);
+
+        $sub = $this->period(WarrantySide::Claimable, now()->subYears(4)->toDateString(), now()->addDays(30)->toDateString(), WarrantyBasis::Custom);
+        $this->assertSame([$sub->id], app(WarrantyService::class)->subcontractorsEndingFirst((int) $this->org->id)->pluck('id')->all());
+
+        // Ist die Sub-Frist selbst gerügt, ist der Anspruch gesichert — keine Warnung mehr.
+        app(WarrantyService::class)->markClaimed($sub, null, $this->admin);
+        $this->assertCount(0, app(WarrantyService::class)->subcontractorsEndingFirst((int) $this->org->id));
+    }
+
     public function test_closing_a_period_ends_the_reminders(): void {
         $period = $this->period(WarrantySide::Owed, now()->subYears(4)->toDateString(), now()->addDays(60)->toDateString(), WarrantyBasis::Custom);
 
@@ -199,6 +217,149 @@ class WarrantyPeriodTest extends TestCase {
         $period = WarrantyPeriod::query()->sole();
         $this->assertSame('2030-05-01', $period->ends_on->toDateString());
         $this->assertSame((int) $this->supplier->id, (int) $period->supplier_id);
+    }
+
+    // ── Ändern, Rüge, Abnahmedatum (MVP-1564) ───────────────────────────
+
+    /** Verschobenes Fristende: der gekoppelte offene Einbehalt folgt, ein freigegebener nicht. */
+    public function test_edit_dialog_moves_the_end_and_linked_retentions_follow(): void {
+        $period = $this->period(WarrantySide::Owed, '2026-01-15');
+        $invoice = \App\Models\Invoicing\Invoice::create([
+            'organization_id' => $this->org->id, 'customer_id' => $this->customer->id, 'number' => 'R-GW-1',
+            'status' => \App\Enums\Invoicing\InvoiceStatus::Draft, 'currency' => 'EUR', 'tax_rate' => '0.00',
+        ]);
+        $retention = static fn (string $status): \App\Models\Invoicing\InvoiceRetention => \App\Models\Invoicing\InvoiceRetention::query()->create([
+            'organization_id' => $invoice->organization_id, 'invoice_id' => $invoice->id,
+            'kind' => \App\Enums\Invoicing\RetentionKind::Warranty->value, 'base_amount' => '1000.00', 'amount' => '50.00',
+            'currency' => 'EUR', 'due_on' => '2030-01-15', 'warranty_period_id' => $period->id, 'status' => $status,
+        ]);
+        $open = $retention('open');
+        $released = $retention('released');
+
+        $this->actingAs($this->admin)->get(route('warranties.edit', $period))
+            ->assertOk()
+            ->assertSee(route('warranties.update', $period), false)
+            ->assertSee('value="2030-01-15"', false);
+
+        $this->actingAs($this->admin)->put(route('warranties.update', $period), [
+            'side' => WarrantySide::Owed->value,
+            'basis' => WarrantyBasis::Vob4Years->value,
+            'starts_on' => '2026-01-15',
+            'ends_on' => '2030-07-15',
+            'override_reason' => 'Hemmung während der Mängelbeseitigung',
+            'project_id' => $this->project->sqid,
+            'customer_id' => $this->customer->sqid,
+            'trade' => 'Dach',
+        ])->assertSessionHasNoErrors()->assertRedirect(route('warranties.index'));
+
+        $period->refresh();
+        $this->assertSame('2030-07-15', $period->ends_on->toDateString());
+        $this->assertSame('Dach', $period->trade);
+        $this->assertSame('2030-07-15', $open->refresh()->due_on->toDateString());
+        $this->assertSame('2030-01-15', $released->refresh()->due_on->toDateString());
+        $this->assertDatabaseHas('audit_logs', ['event' => 'updated', 'auditable_id' => $period->id, 'auditable_type' => \App\Support\MorphMap::stableKey(WarrantyPeriod::class)]);
+    }
+
+    public function test_update_keeps_the_rules_of_creation_and_refuses_closed_periods(): void {
+        $period = $this->period(WarrantySide::Owed, '2026-01-15');
+        $input = ['side' => WarrantySide::Owed->value, 'basis' => WarrantyBasis::Vob4Years->value, 'starts_on' => '2026-01-15'];
+
+        // Abweichendes Ende ohne Begründung.
+        $this->actingAs($this->admin)->put(route('warranties.update', $period), $input + ['ends_on' => '2031-01-15'])->assertSessionHas('error');
+        $this->assertSame('2030-01-15', $period->refresh()->ends_on->toDateString());
+
+        // Ohne Ende rechnet die Grundlage neu.
+        $this->actingAs($this->admin)->put(route('warranties.update', $period), ['basis' => WarrantyBasis::Bgb5Years->value] + $input)->assertSessionHasNoErrors();
+        $this->assertSame('2031-01-15', $period->refresh()->ends_on->toDateString());
+
+        app(WarrantyService::class)->close($period, $this->admin);
+        $this->actingAs($this->admin)->put(route('warranties.update', $period), $input)->assertSessionHas('error');
+        $this->assertSame('2031-01-15', $period->refresh()->ends_on->toDateString());
+    }
+
+    public function test_claim_dialog_records_the_notice_with_the_claim_case(): void {
+        $period = $this->period(WarrantySide::Claimable, '2026-01-15');
+        $case = \App\Models\Claims\ClaimCase::create([
+            'organization_id' => $this->org->id, 'number' => 'RK-2026-0001', 'title' => 'Undichtes Flachdach',
+            'status' => \App\Enums\Claims\ClaimStatus::Received->value, 'source' => \App\Enums\Claims\ClaimSource::Internal->value,
+            'priority' => 'normal', 'severity' => 'minor', 'reported_at' => now(),
+            'project_id' => $this->project->id, 'supplier_id' => $this->supplier->id,
+        ]);
+
+        $this->actingAs($this->admin)->get(route('warranties.index'))
+            ->assertSee(route('warranties.claim.form', $period), false);
+        $this->actingAs($this->admin)->get(route('warranties.claim.form', $period))
+            ->assertOk()
+            ->assertSee('RK-2026-0001')
+            ->assertSee($case->sqid, false);
+
+        $this->actingAs($this->admin)->post(route('warranties.claim', $period), ['claim_case_id' => $case->sqid])
+            ->assertSessionHas('status');
+
+        $period->refresh();
+        $this->assertSame(WarrantyStatus::Claimed, $period->status);
+        $this->assertSame((int) $case->id, (int) $period->claim_case_id);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'warranty.claimed', 'auditable_id' => $period->id]);
+
+        $this->actingAs($this->admin)->get(route('warranties.index', ['status' => WarrantyStatus::Claimed->value]))
+            ->assertOk()
+            ->assertSee(WarrantyStatus::Claimed->label())
+            ->assertSee('RK-2026-0001')
+            ->assertDontSee(route('warranties.claim.form', $period), false)
+            ->assertSee(route('warranties.close', $period), false);
+
+        // Eine zweite Rüge auf dieselbe Frist gibt es nicht.
+        $this->actingAs($this->admin)->post(route('warranties.claim', $period))->assertSessionHas('error');
+    }
+
+    public function test_notice_without_a_claim_case_and_foreign_cases_are_refused(): void {
+        $period = $this->period(WarrantySide::Owed, '2026-01-15');
+        $other = Organization::factory()->create();
+        $foreign = \App\Models\Claims\ClaimCase::withoutGlobalScopes()->create([
+            'organization_id' => $other->id, 'number' => 'RK-FREMD-1', 'title' => 'Fremd',
+            'status' => \App\Enums\Claims\ClaimStatus::Received->value, 'source' => \App\Enums\Claims\ClaimSource::Internal->value,
+            'priority' => 'normal', 'severity' => 'minor', 'reported_at' => now(),
+        ]);
+
+        $this->actingAs($this->admin)->post(route('warranties.claim', $period), ['claim_case_id' => $foreign->sqid])
+            ->assertSessionHas('error');
+        $this->assertSame(WarrantyStatus::Open, $period->refresh()->status);
+
+        $this->actingAs($this->admin)->post(route('warranties.claim', $period))->assertSessionHas('status');
+        $this->assertSame(WarrantyStatus::Claimed, $period->refresh()->status);
+        $this->assertNull($period->claim_case_id);
+    }
+
+    /** Fristbeginn ist der Abnahmetag: die Protokollwahl belegt ihn vor, ohne Beginn gilt er serverseitig. */
+    public function test_acceptance_protocol_prefills_and_supplies_the_start(): void {
+        $protocol = \App\Models\Protocol\Protocol::factory()->create([
+            'organization_id' => $this->org->id,
+            'type' => \App\Enums\Protocol\ProtocolType::Acceptance->value,
+            'occurred_at' => '2026-03-10 09:00:00',
+        ]);
+
+        $this->actingAs($this->admin)->get(route('warranties.create'))
+            ->assertOk()
+            ->assertSee('data-prefill-date="2026-03-10"', false)
+            ->assertSee('data-prefill-from="protocol_id"', false)
+            ->assertSee('data-prefill-default="' . now()->toDateString() . '"', false);
+
+        $this->actingAs($this->admin)->post(route('warranties.store'), [
+            'side' => WarrantySide::Owed->value,
+            'basis' => WarrantyBasis::Vob4Years->value,
+            'protocol_id' => $protocol->sqid,
+            'customer_id' => $this->customer->sqid,
+        ])->assertSessionHasNoErrors()->assertRedirect(route('warranties.index'));
+
+        $period = WarrantyPeriod::query()->sole();
+        $this->assertSame('2026-03-10', $period->starts_on->toDateString());
+        $this->assertSame('2030-03-10', $period->ends_on->toDateString());
+        $this->assertSame((int) $protocol->id, (int) $period->protocol_id);
+
+        $this->actingAs($this->admin)->post(route('warranties.store'), [
+            'side' => WarrantySide::Owed->value,
+            'basis' => WarrantyBasis::Vob4Years->value,
+        ])->assertSessionHasErrors('starts_on');
     }
 
     private function rule(NotificationEvent $event): void {

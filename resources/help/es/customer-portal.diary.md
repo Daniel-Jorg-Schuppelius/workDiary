@@ -1,7 +1,7 @@
 ---
 title: "Libro de órdenes y expediente del caso"
 topic: customer-portal.diary
-version: 4
+version: 5
 keywords:
     - libro de órdenes
     - trabajos realizados
@@ -66,6 +66,14 @@ Junto a cada foto que aún no ha confirmado hay dos botones:
 - **Reclamar** – se abre el campo **¿Qué está mal?**. Describa el problema con un mínimo de 3 y un máximo de 2000 caracteres y haga clic en **Enviar**.
 
 Una reclamación llega a su proveedor como consulta sobre este pedido, y su proveedor recibe un aviso. El mensaje **Reclamación enviada — nos pondremos en contacto.** confirma el envío. La respuesta le llega por correo electrónico a su correo de inicio de sesión; si las consultas están liberadas para usted, aparece además en la sección **Consultas y comentarios**.
+
+## Aceptar protocolos
+
+Si un protocolo espera su aceptación, encima de la lista **Protocolos** aparece la sección **Pendientes de aceptación**. **Ver y firmar** abre el protocolo con todos sus puntos. Para aceptarlo, introduzca su nombre, firme en el recuadro de firma con el dedo, un lápiz o el ratón, confirme que los datos son correctos y haga clic en **Firmar**. La firma no se puede retirar.
+
+Si tiene preguntas u objeciones, aclárelas con su proveedor antes de firmar, mediante las consultas si están liberadas para usted. Tras su firma, su proveedor cierra el protocolo; después está disponible para descargar en **Protocolos**.
+
+Si no está de acuerdo con el protocolo, utilice el rechazo situado debajo: indique un motivo y, si procede, los defectos concretos. Su proveedor recibe una notificación y revisa el protocolo; vuelve a aparecer en **Pendientes de aceptación** en cuanto lo envía de nuevo.
 
 ## Descargar protocolos
 

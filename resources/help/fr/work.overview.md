@@ -1,7 +1,7 @@
 ---
 title: "Aujourd'hui & Kanban"
 topic: work.overview
-version: 1
+version: 2
 keywords:
     - vue du jour
     - aperçu du jour
@@ -30,3 +30,5 @@ prochain statut autorisé. Si des entrées manquent, contrôlez d'abord la
 période, les filtres et l'organisation active ; les changements de
 statut obéissent aux mêmes droits et champs obligatoires que dans la
 liste de travail.
+
+**En déplacement sans réseau :** sur « Aujourd’hui », le temps de projet (barre de saisie, durée ou de/à), le matériel et les corrections de vos propres pointages se saisissent aussi hors ligne. Ils sont transmis au prochain contact ; ce qui ne peut pas être repris figure sous « Modifications hors ligne ».

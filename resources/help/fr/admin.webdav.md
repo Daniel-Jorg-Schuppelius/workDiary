@@ -1,7 +1,7 @@
 ---
 title: "Stockage WebDAV"
 topic: admin.webdav
-version: 3
+version: 4
 keywords:
     - WebDAV
     - Nextcloud
@@ -169,3 +169,5 @@ le stockage. Pour le réactiver, cochez **Actif** et enregistrez.
   l’émission ou de la signature.
 - Un document n’est plus mis à jour : un conflit est ouvert dans la boîte, ou
   sa copie a été détachée.
+
+**L’activation rattrape :** lorsque le stockage est activé, WorkDiary met immédiatement en file tous les objets déjà publiés — y compris ceux publiés en l’absence de stockage actif. La copie n’a pas besoin de planification ; « Copier maintenant » reste disponible si vous voulez rattraper vous-même.

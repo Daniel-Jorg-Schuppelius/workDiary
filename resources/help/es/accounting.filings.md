@@ -1,7 +1,7 @@
 ---
 title: "Plazos fiscales y obligaciones de declaración"
 topic: accounting.filings
-version: 1
+version: 2
 keywords:
     - declaración de IVA
     - IVA mensual
@@ -40,6 +40,11 @@ La prórroga **no** se aplica — el error más frecuente en la práctica.
 
 Todos los plazos se calculan: si uno cae en sábado, domingo o festivo, pasa al
 siguiente día hábil. Solo se guarda lo que ya se ha presentado.
+
+El informe **Estado recapitulativo** muestra, por NIF-IVA del
+destinatario, las entregas intracomunitarias (casilla 41) y los servicios a
+otros países de la UE (casilla 21) por separado con su tipo. Solo las entregas
+deciden si la declaración es mensual.
 
 > El programa no transmite nada a la administración tributaria. La presentación
 > sigue haciéndose por ELSTER o a través de la asesoría; los informes son vistas

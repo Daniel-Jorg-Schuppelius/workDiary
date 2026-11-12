@@ -13,10 +13,12 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Posting\Adapters;
 
 use App\Enums\Finance\{AllocationKind, PostingAccountRole, PostingSourceKind, SettlementKind};
+use App\Models\Accounting\{AccountingAccount, AccountingOpenItem, AccountingPostingRule, AccountingTaxCode};
 use App\Models\Finance\{BankTransaction, PaymentAllocation};
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Models\Travel\Expense;
+use App\Services\Accounting\DiscountTaxSplit;
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine};
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
@@ -138,7 +140,12 @@ class PaymentAdapter extends AbstractPostingAdapter {
                 $target instanceof Invoice ? $target->customer_id : ($target instanceof Expense ? $target->user_id : null),
             );
 
-            foreach ([$moneyLine, $counterLine] as $line) {
+            // Skonto mindert auch die Umsatzsteuer (§ 17 UStG) — dieselbe Teilung wie beim Ausgleich von Hand.
+            $discountLines = $isDiscount && ! $isRefund && $target instanceof Invoice
+                ? $this->discountLines($organization, $target, $absolute, $moneyRule, $bookedOn, $purpose)
+                : [];
+
+            foreach ([...($discountLines !== [] ? $discountLines : [$moneyLine]), $counterLine] as $line) {
                 if ($line instanceof PostingProposalLine) {
                     $lines[] = $line;
                 }
@@ -164,6 +171,45 @@ class PaymentAdapter extends AbstractPostingAdapter {
             title: $this->targetLabel($target),
             extra: $this->settlementContext($source),
         );
+    }
+
+    /**
+     * Skontozeilen mit Steuerberichtigung: je Steuerkennzeichen der Nettobetrag
+     * auf dem Skontokonto der Regel (mit `tax_rate` im Kontext, damit eine Regel
+     * je Satz greift) und die Steuer auf dem Steuerkonto. Leer, wenn die
+     * Rechnung keinen offenen Posten mit Steuerbezug hat — dann bleibt es bei
+     * der einen Skontozeile.
+     *
+     * @param  numeric-string  $amount
+     * @return list<PostingProposalLine>
+     */
+    private function discountLines(Organization $organization, Invoice $invoice, string $amount, AccountingPostingRule $fallback, CarbonImmutable $on, string $memo): array {
+        $item = AccountingOpenItem::query()
+            ->where('organization_id', $organization->id)
+            ->where('source_type', $invoice->getMorphClass())
+            ->where('source_id', $invoice->getKey())
+            ->orderByDesc('id')
+            ->first();
+        if (! $item instanceof AccountingOpenItem) {
+            return [];
+        }
+
+        $lines = [];
+        foreach (app(DiscountTaxSplit::class)->split($item, $amount) as $part) {
+            $code = $part['tax_code'];
+            $taxed = $code instanceof AccountingTaxCode && ! $part['tax']->isZero();
+            $rule = $taxed
+                ? ($this->rule($organization, PostingAccountRole::Discount, ['tax_rate' => (string) $code->rate], $on) ?? $fallback)
+                : $fallback;
+
+            $lines[] = $this->line(PostingAccountRole::Discount, $rule, $part['net']->getAmount(), '0.00', $memo)
+                ?->withTax($taxed ? $code->id : null, $taxed ? $part['tax']->negated()->getAmount() : null);
+            if ($taxed && $code->taxAccount instanceof AccountingAccount) {
+                $lines[] = new PostingProposalLine(PostingAccountRole::TaxOutput, $code->taxAccount, $part['tax']->getAmount(), '0.00', memo: $code->code);
+            }
+        }
+
+        return array_values(array_filter($lines));
     }
 
     /**

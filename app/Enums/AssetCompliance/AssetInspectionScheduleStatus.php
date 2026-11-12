@@ -12,14 +12,15 @@ declare(strict_types=1);
 
 namespace App\Enums\AssetCompliance;
 
-use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Concerns\{HasOptions, HasTransitions};
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Status eines Prüftermins (MVP-285).
  */
-enum AssetInspectionScheduleStatus: string implements HasLabel {
+enum AssetInspectionScheduleStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
+    use HasTransitions;
 
     case Planned = 'planned';
     case Announced = 'announced';
@@ -36,6 +37,28 @@ enum AssetInspectionScheduleStatus: string implements HasLabel {
             self::Done => (string) __('enums.asset_compliance.asset_inspection_schedule_status.done'),
             self::Missed => (string) __('enums.asset_compliance.asset_inspection_schedule_status.missed'),
             self::Cancelled => (string) __('enums.asset_compliance.asset_inspection_schedule_status.cancelled'),
+        };
+    }
+
+    /** @return list<self> */
+    public function allowedTransitions(): array {
+        return match ($this) {
+            self::Planned => [self::Announced, self::InProgress, self::Done, self::Missed, self::Cancelled],
+            // Ein stornierter Prüfauftrag gibt seine Termine wieder frei.
+            self::Announced => [self::Planned, self::InProgress, self::Done, self::Missed, self::Cancelled],
+            self::InProgress => [self::Planned, self::Done, self::Missed, self::Cancelled],
+            // Eine versäumte Prüfung lässt sich nachholen oder absagen.
+            self::Missed => [self::Done, self::Cancelled],
+            self::Done, self::Cancelled => [],
+        };
+    }
+
+    public function tone(): string {
+        return match ($this) {
+            self::Done => 'success',
+            self::Missed => 'error',
+            self::Cancelled => 'ghost',
+            default => 'info',
         };
     }
 

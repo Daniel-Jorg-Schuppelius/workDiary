@@ -79,6 +79,44 @@ final class FreeInvoiceTest extends TestCase {
         $this->assertSame(1, Invoice::query()->count(), 'Der Doppelklick darf keine zweite Rechnung erzeugen.');
     }
 
+    /**
+     * MVP-1623: Der freie Entwurf übernimmt Reverse Charge aus dem TaxResolver wie
+     * generierte Rechnungen; ändert sich der Steuerfall des Kunden danach, zieht
+     * die nächste Bearbeitung ihn nach, und die Ausstellung eines veralteten
+     * Entwurfs hält an, bis der angepasste Stand geprüft ist.
+     */
+    public function test_manual_draft_follows_the_customers_tax_case(): void {
+        $this->customer->update(['is_reverse_charge_recipient' => true]);
+        $invoice = $this->draft();
+        $this->assertTrue($invoice->is_reverse_charge);
+        $this->assertTrue($invoice->tax_rate?->isZero());
+
+        // Kunde ist kein Leistungsempfänger nach § 13b mehr: die nächste Position zieht den Fall nach.
+        $this->customer->update(['is_reverse_charge_recipient' => false]);
+        $this->actingAs($this->admin)->post(route('invoices.items.store', $invoice), ['description' => 'Montage', 'quantity' => '1', 'unit' => 'pausch.', 'unit_price' => '100.00'])->assertRedirect();
+        $invoice->refresh();
+        $this->assertFalse($invoice->is_reverse_charge);
+        $this->assertSame('19.00', $invoice->tax_amount?->getAmount());
+
+        // EU-Kunde mit USt-IdNr. nach der letzten Bearbeitung: die Ausstellung passt an und hält an.
+        $this->customer->update(['country' => 'AT', 'vat_id' => 'ATU13585627']);
+        try {
+            app(InvoiceIssueService::class)->issue($invoice->refresh());
+            $this->fail('Ein veralteter Steuerfall darf nicht unbemerkt ausgestellt werden.');
+        } catch (InvoiceIssueException $e) {
+            $this->assertSame(InvoiceIssueException::REASON_TAX_CASE_CHANGED, $e->reason);
+        }
+        $invoice->refresh();
+        $this->assertSame(InvoiceStatus::Draft, $invoice->status);
+        $this->assertTrue($invoice->is_reverse_charge);
+        $this->assertSame('0.00', $invoice->tax_amount?->getAmount());
+
+        app(InvoiceIssueService::class)->issue($invoice);
+        $invoice->refresh();
+        $this->assertSame(InvoiceStatus::Issued, $invoice->status);
+        $this->assertSame('AE', $invoice->tax_context['category'] ?? null);
+    }
+
     public function test_manual_draft_respects_external_billing_sovereignty_and_foreign_project(): void {
         $this->customer->update(['billing_mode' => 'lexoffice']);
         $this->actingAs($this->admin)->post(route('invoices.store'), $this->manualPayload())->assertSessionHasErrors('customer_id');

@@ -14,7 +14,7 @@ namespace App\Scheduling;
 
 use App\Services\Diagnostics\DiagnosticsService;
 use Carbon\CarbonImmutable;
-use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Console\Scheduling\{Event, Schedule};
 use Illuminate\Support\Facades\{Cache, Log};
 
 /**
@@ -88,8 +88,45 @@ class SchedulerRegistrar {
     /** @param array<string, mixed>|null $override */
     private function registerJob(Schedule $schedule, JobDefinition $definition, ?array $override, ?OperatingWindow $window): void {
         $cadence = $this->resolveCadence($definition, $override['cadence'] ?? null);
+        $timezone = is_string($override['timezone'] ?? null) ? $override['timezone'] : null;
+        $quiet = OperatingWindow::fromTimes($override['quiet_until'] ?? null, $override['quiet_from'] ?? null);
+        $effectiveWindow = $this->windowFor($override, $window);
+
         $event = $schedule->command($definition->command);
-        $event->cron(($window?->apply($cadence) ?? $cadence)->cronExpression());
+        $event->cron(($effectiveWindow?->apply($cadence) ?? $cadence)->cronExpression());
+        $this->configureEvent($event, $definition, $timezone, $quiet);
+
+        $retries = (int) ($override['retry_attempts'] ?? 0);
+        if ($retries < 1) {
+            return;
+        }
+
+        $key = $definition->key;
+        $delay = max(1, (int) ($override['retry_delay_minutes'] ?? SchedulerOverrideService::DEFAULT_RETRY_DELAY));
+        $mutex = 'scheduler-job:' . $key;
+        $event->createMutexNameUsing($mutex)
+            ->onFailure(static fn () => JobRetry::afterFailure($key, $retries, $delay))
+            ->onSuccess(static fn () => JobRetry::clear($key));
+
+        $retry = $schedule->command($definition->command)->everyMinute()->name($key . ':retry');
+        $retry->when(static fn (): bool => JobRetry::isDue($key));
+        $this->configureEvent($retry, $definition, $timezone, $quiet);
+        $retry->createMutexNameUsing($mutex)
+            ->before(static fn () => JobRetry::claim($key))
+            ->onFailure(static fn () => JobRetry::afterRetryFailure($key, $retries, $delay))
+            ->onSuccess(static fn () => JobRetry::clear($key));
+    }
+
+    /** Laufbedingungen, die für den regulären Lauf und die Wiederholung gleich gelten. */
+    private function configureEvent(Event $event, JobDefinition $definition, ?string $timezone, ?OperatingWindow $quiet): void {
+        if ($timezone !== null) {
+            $event->timezone($timezone);
+        }
+        // Verschobene Uhrzeiten liegen schon im Fenster; die Sperre trifft die Takt-Kadenzen.
+        if ($quiet !== null) {
+            $zone = $timezone ?? (string) config('app.schedule_timezone', config('app.timezone'));
+            $event->skip(static fn (): bool => ! $quiet->isOpenAt(CarbonImmutable::now($zone)));
+        }
 
         // Wartungsfenster-Kopplung (MVP-055): Jobs mit
         // runs_in_maintenance=false pausieren im aktiven System-Fenster.
@@ -139,9 +176,25 @@ class SchedulerRegistrar {
 
     /** Effektive Kadenz inkl. System-Override und Betriebsfenster (für Adminseite/Watchdog). */
     public function resolvedCadence(JobDefinition $definition): Cadence {
-        $cadence = $this->configuredCadence($definition);
+        $override = \App\Models\Platform\ScheduledJobOverride::systemMap()[$definition->key] ?? null;
+        $cadence = $this->resolveCadence($definition, $override['cadence'] ?? null);
 
-        return $this->operatingWindow()?->apply($cadence) ?? $cadence;
+        return $this->windowFor($override, $this->operatingWindow())?->apply($cadence) ?? $cadence;
+    }
+
+    /**
+     * Eine eigene Ruhezeit ersetzt das Betriebsfenster; eine eigene Zeitzone
+     * ebenso, weil das Fenster in der Zeitzone der Installation gilt (MVP-1619).
+     *
+     * @param array<string, mixed>|null $override
+     */
+    private function windowFor(?array $override, ?OperatingWindow $installationWindow): ?OperatingWindow {
+        $quiet = OperatingWindow::fromTimes($override['quiet_until'] ?? null, $override['quiet_from'] ?? null);
+        if ($quiet !== null) {
+            return $quiet;
+        }
+
+        return is_string($override['timezone'] ?? null) ? null : $installationWindow;
     }
 
     /** Eingestellte Kadenz vor der Verschiebung ins Betriebsfenster (Umplanen-Dialog). */

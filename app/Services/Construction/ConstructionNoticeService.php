@@ -21,6 +21,7 @@ use App\Models\Document\DocumentDispatch;
 use App\Models\Facility\Site;
 use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssignsSequentialNo;
+use App\Services\DocumentDesign\DocumentDesignRenderer;
 use App\Services\Weather\WeatherService;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Carbon;
@@ -148,13 +149,17 @@ class ConstructionNoticeService {
         return $dispatch;
     }
 
-    /** Erster Versand friert das Schreiben ein; spaetere Versande aendern nichts. */
+    /** Erster Versand friert das Schreiben ein — auch seine Gestaltung (MVP-1624); spaetere Versande aendern nichts. */
     public function markSent(ConstructionNotice $notice, ?Carbon $at = null): ConstructionNotice {
         if ($notice->status === ConstructionNoticeStatus::Draft) {
             $notice->forceFill([
                 'status' => ConstructionNoticeStatus::Sent,
                 'sent_at' => $at ?? Carbon::now(),
             ])->save();
+            $organization = Organization::query()->withoutGlobalScopes()->find($notice->organization_id);
+            if ($organization !== null) {
+                app(DocumentDesignRenderer::class)->snapshot($notice, $notice->kind, $organization);
+            }
         }
 
         return $notice;

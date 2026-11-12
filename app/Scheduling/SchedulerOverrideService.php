@@ -14,6 +14,7 @@ namespace App\Scheduling;
 
 use App\Models\Platform\ScheduledJobOverride;
 use Cron\CronExpression;
+use DateTimeZone;
 use InvalidArgumentException;
 
 /**
@@ -23,6 +24,10 @@ use InvalidArgumentException;
  * Jobs oder freien Kommandos planen. Audit über das Override-Model.
  */
 class SchedulerOverrideService {
+    public const int MAX_RETRIES = 3;
+
+    public const int DEFAULT_RETRY_DELAY = 10;
+
     public function __construct(private readonly JobRegistry $registry) {}
 
     public function pause(string $jobKey, ?int $userId = null): void {
@@ -42,7 +47,7 @@ class SchedulerOverrideService {
         if ($override === null) {
             return;
         }
-        if ($override->cadence === null) {
+        if (! $override->hasSettings()) {
             $override->delete(); // kein Rest-Override → Default gilt wieder
 
             return;
@@ -67,6 +72,41 @@ class SchedulerOverrideService {
         $override->enabled = $override->exists ? $override->enabled : true;
         $override->cadence = $cadence->toArray();
         $override->updated_by_user_id = $userId;
+        $override->save();
+    }
+
+    /**
+     * Zeitzone, Ruhezeit (von–bis, über Mitternacht erlaubt) und Wiederholung
+     * nach Fehlschlag (MVP-1619). Leere Werte heben die Abweichung auf; ohne
+     * eigene Ruhezeit und Zeitzone gilt das Betriebsfenster der Installation.
+     */
+    public function configureRun(string $jobKey, ?string $timezone, ?string $quietFrom, ?string $quietUntil, int $retryAttempts, ?int $retryDelayMinutes, ?int $userId = null): void {
+        $this->registry->definition($jobKey);
+        if ($timezone !== null && ! in_array($timezone, DateTimeZone::listIdentifiers(), true)) {
+            throw new InvalidArgumentException('Unbekannte Zeitzone.');
+        }
+        if (($quietFrom === null) !== ($quietUntil === null) || ($quietFrom !== null && OperatingWindow::fromTimes($quietUntil, $quietFrom) === null)) {
+            throw new InvalidArgumentException('Ruhezeit braucht Beginn und Ende (HH:MM, verschieden).');
+        }
+        if ($retryAttempts < 0 || $retryAttempts > self::MAX_RETRIES) {
+            throw new InvalidArgumentException('Wiederholungen außerhalb des erlaubten Bereichs.');
+        }
+
+        $override = ScheduledJobOverride::query()->firstOrNew(
+            ['job_key' => $jobKey, 'organization_id' => null],
+        );
+        $override->enabled = $override->exists ? $override->enabled : true;
+        $override->fill([
+            'timezone' => $timezone,
+            'quiet_from' => $quietFrom,
+            'quiet_until' => $quietUntil,
+            'retry_attempts' => $retryAttempts,
+            'retry_delay_minutes' => $retryAttempts > 0 ? max(1, $retryDelayMinutes ?? self::DEFAULT_RETRY_DELAY) : null,
+            'updated_by_user_id' => $userId,
+        ]);
+        if (! $override->exists && ! $override->hasSettings()) {
+            return;
+        }
         $override->save();
     }
 

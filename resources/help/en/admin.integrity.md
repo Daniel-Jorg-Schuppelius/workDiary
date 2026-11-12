@@ -1,7 +1,7 @@
 ---
 title: "Source code integrity"
 topic: admin.integrity
-version: 1
+version: 2
 keywords:
     - tamper detection
     - file integrity monitoring
@@ -43,3 +43,11 @@ signature check.
 
 The daily run can be toggled via `INTEGRITY_CHECK_ENABLED` and rescheduled on
 the scheduler page.
+
+**Lifting the lockdown:** If the integrity lockdown has put the installation
+into maintenance mode, a newly frozen baseline ("Freeze baseline",
+`integrity:freeze`) lifts it automatically. Without a new baseline, platform
+operations lift it via **Lift lockdown** on this page (access via the bypass
+secret) or with `php artisan integrity:release --reason=…`. Both are recorded in
+the audit log with reason and person. A maintenance mode with another cause
+(such as a deploy) is not lifted by these paths.

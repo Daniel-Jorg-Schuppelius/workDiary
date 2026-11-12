@@ -14,7 +14,31 @@
                   back-route="dataprotection.tom.index" :back-label="__('Zurück')">
         <x-slot:badges>
             <x-status-badge tone="ghost" size="sm">{{ $measure->category->label() }} · {{ $measure->implementation_status->label() }}</x-status-badge>
+            @if ($measure->protection_level)
+                <x-status-badge tone="ghost" size="sm">{{ __('privacy.tom.protection_level') }}: {{ $measure->protection_level->label() }}</x-status-badge>
+            @endif
         </x-slot:badges>
+
+        {{-- Umsetzungsstand und Schutzbedarf (Feature 043, MVP-1620) --}}
+        @can('update', $measure)
+            <x-card>
+                <form method="post" action="{{ route('dataprotection.tom.state', $measure) }}" class="flex flex-wrap items-end gap-2">
+                    @csrf
+                    <x-input-field name="implementation_status" :id="'tom-state-status'" :label="__('privacy.tom.implementation_status')">
+                        <select id="tom-state-status" name="implementation_status" class="select select-sm select-bordered">
+                            @foreach ($statuses as $s)<option value="{{ $s->value }}" @selected($measure->implementation_status === $s)>{{ $s->label() }}</option>@endforeach
+                        </select>
+                    </x-input-field>
+                    <x-input-field name="protection_level" :id="'tom-state-protection'" :label="__('privacy.tom.protection_level')">
+                        <select id="tom-state-protection" name="protection_level" class="select select-sm select-bordered">
+                            <option value="">{{ __('privacy.tom.protection_level_none') }}</option>
+                            @foreach ($protectionLevels as $p)<option value="{{ $p->value }}" @selected($measure->protection_level === $p)>{{ $p->label() }}</option>@endforeach
+                        </select>
+                    </x-input-field>
+                    <x-icon-btn icon="save" tone="primary" size="sm" type="submit" show-label>{{ __('privacy.tom.state_save') }}</x-icon-btn>
+                </form>
+            </x-card>
+        @endcan
 
 
         @if ($measure->currentVersion)

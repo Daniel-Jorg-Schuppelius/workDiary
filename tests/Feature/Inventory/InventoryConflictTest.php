@@ -218,7 +218,8 @@ final class InventoryConflictTest extends TestCase {
         $this->actingAs($reader)->post(route('inventory.conflicts.compensate', $stock))->assertForbidden();
         $this->actingAs($reader)->post(route('inventory.conflicts.keep-local', $stock))->assertForbidden();
 
-        $poster = $this->userWithPermissions(P::InventoryViewAny, P::InventoryPost);
+        // MVP-1585: Kompensieren ist ein eigenes Recht, nicht mehr Teil des Buchens.
+        $poster = $this->userWithPermissions(P::InventoryViewAny, P::InventoryExternalResolve);
         $this->actingAs($poster)->get(route('inventory.conflicts.index'))->assertOk()
             ->assertSee('action="' . route('inventory.conflicts.compensate', $stock) . '"', false);
 

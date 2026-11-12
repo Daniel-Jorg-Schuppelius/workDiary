@@ -41,18 +41,6 @@ final readonly class PurchasesImport {
     }
 
     /**
-     * @return array<string, list<MarketplaceEntitlement>>
-     */
-    public function byCompany(): array {
-        $grouped = [];
-        foreach ($this->entitlements as $entitlement) {
-            $grouped[$entitlement->company->key][] = $entitlement;
-        }
-
-        return $grouped;
-    }
-
-    /**
      * @return array<string, int> Quelle → Anzahl Positionen
      */
     public function countBySource(): array {

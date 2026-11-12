@@ -18,8 +18,10 @@ return [
     'updated' => 'Guarantee updated.',
     'returned' => 'Return recorded.',
     'drawn' => 'Drawing recorded.',
+    'expired' => 'Guarantee recorded as expired.',
     'secured' => 'Retention replaced by the guarantee.',
     'not_active' => 'This guarantee is no longer active.',
+    'not_expired' => 'The term of this guarantee has not passed.',
     'retention_not_open' => 'This retention is no longer open.',
     'foreign_organization' => 'Guarantee and retention belong to different organizations.',
     'amount_too_low' => 'The guarantee does not cover the retention — a smaller guarantee does not replace it.',
@@ -30,10 +32,12 @@ return [
         'edit' => 'Edit guarantee',
         'returned' => 'Certificate returned',
         'drawn' => 'Record as drawn',
+        'expired' => 'Record as expired',
         'secure' => 'Replace retention',
     ],
     'confirm' => [
         'drawn' => 'Record guarantee :reference as drawn? It no longer counts as security afterwards, and the record cannot be undone.',
+        'expired' => 'Record guarantee :reference as expired? Its term has passed; it no longer counts as security afterwards.',
     ],
     'secure' => [
         'title' => 'Replace retention',
@@ -49,7 +53,7 @@ return [
         'received_hint' => 'If it expires unnoticed, the security is gone.',
         'expiring' => 'Expiring within 90 days',
         'return_due' => 'Return due',
-        'return_due_hint' => 'The replaced retention is released — the certificate belongs back.',
+        'return_due_hint' => 'The replaced retention is released or the linked warranty has ended — the certificate belongs back.',
     ],
     'column' => [
         'reference' => 'Guarantee no.',

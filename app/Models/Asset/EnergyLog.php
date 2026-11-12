@@ -32,8 +32,6 @@ use Illuminate\Support\Carbon;
  * @property int|null $odometer_km
  * @property int|null $distance_since_last
  * @property string|null $location_address
- * @property string|null $location_lat
- * @property string|null $location_lng
  * @property Carbon $started_at
  * @property Carbon|null $ended_at
  * @property int $duration_minutes
@@ -117,8 +115,6 @@ class EnergyLog extends Model {
         'odometer_km',
         'distance_since_last',
         'location_address',
-        'location_lat',
-        'location_lng',
         'started_at',
         'ended_at',
         'duration_minutes',
@@ -138,8 +134,6 @@ class EnergyLog extends Model {
         'soc_after' => 'integer',
         'quantity' => 'decimal:3',
         'cost_total' => 'decimal:2',
-        'location_lat' => 'decimal:7',
-        'location_lng' => 'decimal:7',
     ];
 
     public static function booted(): void {

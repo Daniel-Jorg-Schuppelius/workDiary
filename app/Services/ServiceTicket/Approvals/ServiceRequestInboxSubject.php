@@ -48,7 +48,7 @@ final class ServiceRequestInboxSubject implements ApprovalInboxSubject {
 
         return $ticket === null
             ? new ApprovalInboxEntry('—')
-            : new ApprovalInboxEntry($ticket->title, route('service-tickets.show', $ticket), $ticket->ticket_no);
+            : new ApprovalInboxEntry($ticket->title, route('service-tickets.show', $ticket), $ticket->ticket_no, fields: $approvable->formDocument());
     }
 
     public function decide(Approval $approval, User $actor, string $decision, ?string $reason, ?int $delegateUserId): void {

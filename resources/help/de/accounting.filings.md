@@ -1,7 +1,7 @@
 ---
 title: "Steuertermine und Meldepflichten"
 topic: accounting.filings
-version: 1
+version: 2
 keywords:
     - Umsatzsteuervoranmeldung
     - UStVA
@@ -47,6 +47,11 @@ häufigste Praxisfehler.
 Alle Fristen sind berechnet, nicht gepflegt: Fällt ein Fristende auf einen
 Samstag, Sonntag oder Feiertag, verschiebt es sich auf den nächsten Werktag.
 Gespeichert wird nur, was erledigt ist.
+
+Die Auswertung **Zusammenfassende Meldung** führt je USt-IdNr. des Empfängers
+die innergemeinschaftlichen Lieferungen (Kennziffer 41) und die sonstigen
+Leistungen ins übrige Gemeinschaftsgebiet (Kennziffer 21) getrennt mit ihrer
+Art. Ob monatlich gemeldet wird, entscheiden allein die Lieferungen.
 
 > Das Programm übermittelt nichts an die Finanzverwaltung. Abgegeben wird
 > weiterhin über ELSTER oder die Steuerberatung; die Auswertungen sind

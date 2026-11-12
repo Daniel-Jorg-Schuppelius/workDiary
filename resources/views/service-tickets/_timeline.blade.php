@@ -72,6 +72,9 @@
                         </div>
                         <p class="text-xs text-muted">
                             {{ $item->actor ?? __('timeline.actor_system') }}
+                            @if ($item->badge !== null)
+                                <x-status-badge :tone="$item->badgeTone" size="xs" outline class="ml-1 align-middle" data-message-delivery>{{ $item->badge }}</x-status-badge>
+                            @endif
                         </p>
                         @if ($item->summary)
                             @if ($item->type === 'attachment' && $item->url)

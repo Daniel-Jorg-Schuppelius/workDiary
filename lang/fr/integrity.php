@@ -27,6 +27,11 @@ return [
         'dirty' => 'Arbre de travail Git non propre dans le périmètre : :count chemin(s) — :paths (AVERT.).',
     ],
     'lockdown' => [
+        'release_action' => 'Lever le verrouillage',
+        'release_confirm' => 'Lever le verrouillage et rendre l\'installation de nouveau accessible ? Vérifiez d\'abord les écarts ou figez une nouvelle référence.',
+        'released' => 'Verrouillage levé — l\'installation est de nouveau accessible.',
+        'not_engaged' => 'Aucun verrouillage d\'intégrité n\'est actif.',
+        'active_notice' => 'Le verrouillage d\'intégrité maintient l\'installation en mode maintenance.',
         'crisis_title' => 'Verrouillage d\'intégrité : code source altéré',
         'crisis_description' => 'Une référence signée montre des écarts sur plusieurs contrôles consécutifs (:modified modifiés, :added ajoutés, :deleted supprimés). L\'installation est en mode maintenance.',
     ],

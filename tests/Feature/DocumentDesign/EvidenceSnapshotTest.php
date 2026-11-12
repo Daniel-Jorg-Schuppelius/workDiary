@@ -43,7 +43,7 @@ class EvidenceSnapshotTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         Storage::fake('local');
-        $this->org = Organization::factory()->create();
+        $this->org = Organization::factory()->withIssuerIdentity()->create();
         app()->instance('currentOrganization', $this->org);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->org->id]);
 

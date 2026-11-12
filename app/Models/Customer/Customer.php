@@ -74,6 +74,7 @@ use Illuminate\Support\Carbon;
  * @property bool $billable
  * @property bool $exclude_from_reports
  * @property bool $no_bulk_mail
+ * @property bool $survey_opt_out
  * @property string|null $buyer_reference
  * @property string|null $peppol_participant_id
  * @property string|null $peppol_scheme
@@ -122,6 +123,8 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
         'company',
         'vat_id',
         'tax_number',
+        // Leistungsempfänger schuldet die Steuer (§ 13b UStG, MVP-1622).
+        'is_reverse_charge_recipient',
         'contact_name',
         'contact_salutation',
         'contact_title',
@@ -182,6 +185,7 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
         // Rundschreiben-Opt-out (Feature 119, MVP-608) — getrennt von der
         // Auswertungs-Ausblendung, weil es eine andere Entscheidung ist.
         'no_bulk_mail',
+        'survey_opt_out',
         'archived_at',
         'created_by',
     ];
@@ -198,11 +202,13 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
         // Kennungen: geschrieben kanonisch, gelesen Text (MVP-1512).
         'vat_id' => VatNumberCast::class,
         'tax_number' => GermanTaxNumberCast::class,
+        'is_reverse_charge_recipient' => 'boolean',
         'billing_cutover_on' => 'date',
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'billable' => 'boolean',
         'exclude_from_reports' => 'boolean',
         'no_bulk_mail' => 'boolean',
+        'survey_opt_out' => 'boolean',
         'billing_mode' => \App\Enums\Finance\BillingMode::class,
         // Kunden-Default fürs E-Rechnungs-Ausgabeformat (NULL = PDF).
         'delivery_format' => \App\Enums\Invoicing\InvoiceDeliveryFormat::class,
@@ -291,6 +297,14 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
         return ContactAddress::KIND_BILLING;
     }
 
+    /** @return MorphMany<\App\Models\Diary\OpenIssue, $this> */
+    public function openIssues(): MorphMany {
+        /** @var MorphMany<\App\Models\Diary\OpenIssue, $this> $relation */
+        $relation = $this->morphMany(\App\Models\Diary\OpenIssue::class, 'subject')->latest('id');
+
+        return $relation;
+    }
+
     /** @return HasMany<Project, $this> */
     public function projects(): HasMany {
         return $this->hasMany(Project::class);
@@ -343,7 +357,6 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
             'status' => ProjectStatus::Active->value,
             'is_default' => true,
             'billable' => $billable === null ? null : StringHelper::parseBool($billable) ?? false,
-            'global_activities' => true,
         ]);
 
         return $project;

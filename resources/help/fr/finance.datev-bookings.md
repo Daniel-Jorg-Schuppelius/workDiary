@@ -1,7 +1,7 @@
 ---
 title: "Lot d'écritures DATEV"
 topic: finance.datev-bookings
-version: 2
+version: 6
 keywords:
     - export DATEV
     - expert-comptable
@@ -58,6 +58,16 @@ client. Créer, finaliser et télécharger les lots revient au rôle
 **comptabilité** (et aux administrateurs) ; la configuration relève
 des administrateurs.
 
+Pour la comptabilité locale, la section **Comptes** contient en outre le
+**compte d'escompte** et le **compte de passage en perte (créances
+irrécouvrables)** : les contreparties utilisées lorsqu'un poste ouvert est
+soldé par escompte ou passé en perte. Laissés vides, la valeur par défaut du
+plan comptable s'applique (SKR03 8736 et 2400, SKR04 4736 et 6930). Pour les dettes, il existe le
+**compte d'escomptes obtenus** (3736 ou 5736) et le **compte d'annulation de
+dettes** (autre produit, 2709 ou 4839). S'il existe
+un plan comptable local, un compte saisi doit y exister ; si un compte effectif
+manque, la page le signale.
+
 ## Déroulement recommandé
 
 1. **Créer le lot :** choisir la période, inclure au besoin les notes
@@ -105,3 +115,29 @@ n'exporter la période suivante qu'après sa clôture.
 Après la finalisation, **Saisir la transmission** consigne ce qu’il advient du lot : **transmis** au cabinet, puis **confirmé** ou **refusé** par celui-ci. Un lot refusé est transmis à nouveau une fois le point éclairci ; les corrections de pièces passent toujours par le lot suivant. Chaque étape figure avec la date, la personne et une remarque facultative dans l’historique du lot, et la liste affiche l’état actuel. Les remarques doivent rester sans données personnelles, car l’historique est immuable.
 
 Le **rapport d’accompagnement (PDF)** résume le lot pour le cabinet : période, numéros de conseiller et de client, nombre d’écritures et de contre-passations, total, somme de contrôle du fichier, totaux par compte de produits et par code fiscal, ainsi que l’historique.
+
+## Transfert DATEV depuis le journal
+
+Si WorkDiary tient le grand livre, le lot d’écritures DATEV est issu des
+écritures validées du journal (carte **Transfert DATEV** dans **Clôture des
+périodes**). Chaque écriture devient des écritures DATEV face à une ligne
+d’ancrage – le plus souvent le compte client, fournisseur ou de trésorerie –,
+de sorte que DATEV la comptabilise une seule fois. Une ligne avec code de taxe
+part en brut avec sa **Clé de taxe DATEV** ; les lignes de taxe disparaissent,
+car DATEV comptabilise la taxe lui-même. En autoliquidation (§ 13b,
+acquisition intracommunautaire), le montant reste hors taxe et DATEV
+comptabilise TVA collectée et déductible. Sur un compte automatique (champ
+**Automatisme DATEV** du compte), DATEV calcule la taxe d’après le compte et le
+lot n’y met aucune clé. Si l’automatisme ne correspond pas à l’écriture, la clé
+40 le suspend et la taxe reste une écriture distincte. Un escompte avec
+correction de taxe part aussi en une seule écriture.
+
+## Ventes sans taxe
+
+Si une facture n'indique pas de taxe, le lot la comptabilise selon son régime
+fiscal, comme la comptabilité : livraison intracommunautaire (SKR03 8125 / SKR04
+4125), prestation vers un autre pays de l'UE (8336/4336), autoliquidation nationale
+(8337/4337), exportation (8120/4120), vente non imposable dans un pays tiers
+(8338/4338). Ce sont des comptes automatiques DATEV ; le lot n'y indique pas de clé
+de taxe. Les ventes exonérées nationales restent sur le compte configuré pour les
+produits exonérés.

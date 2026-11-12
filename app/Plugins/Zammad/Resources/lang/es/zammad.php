@@ -98,4 +98,7 @@ return [
     'resolution' => [
         'note' => 'Resuelto en WorkDiary.',
     ],
+    'ownership' => [
+        'target_changed' => 'La conexión ya no importa como ticket de servicio: descarte el caso o vuelva a cambiar el modo de destino.',
+    ],
 ];

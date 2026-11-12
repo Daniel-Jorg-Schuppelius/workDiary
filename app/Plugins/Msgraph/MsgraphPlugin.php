@@ -21,7 +21,7 @@ use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
 use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Calendar\{OrganizationEventSource, RemoteCalendarEvent, RemoteCalendarPublishService};
-use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
+use App\Plugins\Support\Intake\{IntakeChangePage, IntakeItem};
 use App\Support\Ui\UiAction;
 use Closure;
 use Psr\Http\Message\StreamInterface;
@@ -44,7 +44,7 @@ use Psr\Http\Message\StreamInterface;
  * Dokumenteingang aus OneDrive/SharePoint über eigene, von der
  * Kalender-Verbindung getrennte {@see CloudDocumentConnection}s.
  */
-class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\ContactSyncer, \App\Plugins\Contracts\DocumentIntakeSubscriptions, \App\Plugins\Contracts\IntakeSourceConnector, \App\Plugins\Contracts\SlotRenderer, \App\Plugins\Contracts\TaskSyncer, BackupTarget, CalendarPublisher, DocumentIntakeSource {
+class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\ContactSyncer, \App\Plugins\Contracts\DocumentIntakeSubscriptions, \App\Plugins\Contracts\IntakeSourceConnector, \App\Plugins\Contracts\SlotRenderer, \App\Plugins\Contracts\WritesDataDomains, BackupTarget, CalendarPublisher, DocumentIntakeSource {
     public const string ID = 'msgraph';
 
     /** Wert in `email_connections.transport` für Graph-Postfächer (Feature 102). */
@@ -80,18 +80,7 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
         ];
     }
 
-    // ── TaskSyncer (Feature 102, Schnitt E) ─────────────────────────────
-
-    /** @return array{created: int, updated: int, unchanged: int, conflicts: int, inbox: int, failed: int} */
-    public function syncTasks(Organization $organization): array {
-        return app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($organization);
-    }
-
     // ── DocumentIntakeSource (Feature 080, MVP-354) ─────────────────────
-
-    public function intakeAccount(CloudDocumentConnection $connection): IntakeAccount {
-        return (new MsgraphIntakeClient($connection))->account();
-    }
 
     public function intakeContainers(CloudDocumentConnection $connection, ?string $search = null): array {
         return (new MsgraphIntakeClient($connection))->containers($search);
@@ -495,7 +484,14 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
         return new UiAction('sync', (string) __('backup_targets.reconnect'), route('admin.backup-targets.microsoft.oauth.start', ['connection' => $connection->sqid]), post: true);
     }
 
-    public function intakeConnectAction(): UiAction {
-        return new UiAction('add', (string) __('msgraph::cloud_intake.action.connect_microsoft'), route('admin.cloud-intake.microsoft.oauth.start'), post: true);
+    public function intakeConnectAction(?CloudDocumentConnection $connection = null): UiAction {
+        return $connection !== null
+            ? new UiAction('sync', (string) __('cloud_intake.action.reconnect'), route('admin.cloud-intake.microsoft.oauth.start', ['connection' => $connection->sqid]), post: true)
+            : new UiAction('add', (string) __('msgraph::cloud_intake.action.connect_microsoft'), route('admin.cloud-intake.microsoft.oauth.start'), post: true);
+    }
+
+    /** Bereiche der Datenführerschaft, in die das Plugin schreibt (MVP-1592). */
+    public function dataDomains(): array {
+        return [\App\Enums\Integration\DataDomain::Tasks, \App\Enums\Integration\DataDomain::Calendar, \App\Enums\Integration\DataDomain::Documents];
     }
 }

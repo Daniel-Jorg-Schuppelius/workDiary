@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Enums\Numbering\NumberScope;
 use App\Enums\User\Permission;
-use App\Exceptions\PartyDeletionBlockedException;
+use App\Exceptions\CustomerDeletionBlockedException;
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, ResolvesGlobalDateRange};
 use App\Http\Controllers\Concerns\SavesCustomFields;
 use App\Http\Controllers\Controller;
@@ -22,9 +22,9 @@ use App\Models\Classification\Tag;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Plugins\PluginManager;
-use App\Services\Customer\CustomerDetailAssembler;
+use App\Services\Customer\{CustomerDeletion, CustomerDetailAssembler};
 use App\Services\Numbering\NumberAuthority;
-use App\Services\Stammdaten\{ContactMasterDataPusher, PartyDeletionGuard};
+use App\Services\Stammdaten\ContactMasterDataPusher;
 use App\Support\{CsvExport, Setting};
 use App\Support\OrganizationContext;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -180,44 +180,12 @@ class CustomerController extends Controller {
     public function destroy(Customer $customer): RedirectResponse {
         Gate::authorize('delete', $customer);
 
-        // Legal Hold (MVP-801): gesperrte Kunden werden nicht gelöscht.
-        if (app(\App\Services\Retention\LegalHoldService::class)->activeHoldFor($customer) !== null) {
-            return redirect()->route('customers.show', $customer)
-                ->with('error', __('Kunde steht unter Legal Hold — Löschen ist bis zur Aufhebung ausgeschlossen.'));
-        }
-
-        // Am Sammelkunden hängen die Belege vieler Einmalkunden (MVP-1109).
-        if ($customer->is_collective && \App\Models\Invoicing\IncomingEInvoice::query()->where('customer_id', $customer->id)->exists()) {
-            return redirect()->route('customers.show', $customer)
-                ->with('error', __('Der Sammelkontakt hat Belege und lässt sich nicht löschen.'));
-        }
-
-        if ($customer->hasNonDefaultProjects()) {
-            return redirect()->route('customers.show', $customer)
-                ->with('error', __('Kunde kann nicht gelöscht werden: Es existieren noch Projekte. Bitte zuerst archivieren oder Projekte entfernen.'));
-        }
-
-        if ($customer->externalReferences()->exists()) {
-            return redirect()->route('customers.show', $customer)
-                ->with('error', __('Kunde kann nicht gelöscht werden: Es existieren externe Referenzen (z. B. Lexoffice). Bitte stattdessen archivieren.'));
-        }
-
+        // Sperren, KI-Gedächtnis und Standardprojekt wie über die API (MVP-1591).
         try {
-            app(PartyDeletionGuard::class)->assertDeletable($customer);
-        } catch (PartyDeletionBlockedException $e) {
+            app(CustomerDeletion::class)->delete($customer);
+        } catch (CustomerDeletionBlockedException $e) {
             return redirect()->route('customers.show', $customer)->with('error', $e->getMessage());
         }
-
-        // Vollaudit 2026-07 (M9): KI-Gedächtnis auditiert löschen (Einzel-Audit
-        // je Eintrag + Provider-Glossar-Hook) statt stiller FK-Kaskade.
-        app(\App\Services\Ai\Contracts\AiMemory::class)->deleteForCustomer(
-            $customer->organization()->firstOrFail(),
-            (int) $customer->id,
-        );
-
-        // Standardprojekt(e) zusammen mit dem Kunden entfernen.
-        $customer->projects()->where('is_default', true)->delete();
-        $customer->delete();
 
         return redirect()->toList('customers.index')
             ->with('success', __('Kunde gelöscht.'));
@@ -250,8 +218,14 @@ class CustomerController extends Controller {
             ->orderBy('name');
 
         $filename = 'kunden-' . now()->format('Y-m-d-His') . '.csv';
+        // Eigene Felder der Organisation als Zusatzspalten (MVP-1615).
+        $customFields = app(\App\Services\Fields\CustomFieldService::class);
+        $customColumns = $customFields->exportColumns(Customer::class, (int) Auth::user()?->organization_id);
+        if ($customColumns !== []) {
+            $query->with('customFieldValue');
+        }
 
-        $rows = (static function () use ($query): \Generator {
+        $rows = (static function () use ($query, $customFields): \Generator {
             /** @var Customer $c */
             foreach ($query->lazy(500) as $c) {
                 yield [
@@ -270,6 +244,7 @@ class CustomerController extends Controller {
                     $c->billable ? 'ja' : 'nein',
                     $c->archived_at?->format('Y-m-d') ?? '',
                     $c->created_at?->format('Y-m-d') ?? '',
+                    ...$customFields->exportRow($c),
                 ];
             }
         })();
@@ -290,6 +265,7 @@ class CustomerController extends Controller {
             'Abrechenbar',
             'Archiviert',
             'Angelegt',
+            ...array_column($customColumns, 'label'),
         ], $rows);
     }
 }

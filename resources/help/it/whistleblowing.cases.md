@@ -1,7 +1,7 @@
 ---
 title: "Canale di segnalazione – gestione dei casi"
 topic: whistleblowing.cases
-version: 4
+version: 5
 keywords:
     - whistleblowing
     - segnalante
@@ -94,3 +94,15 @@ assegnazioni vanno persi irrimediabilmente; resta solo una prova di
 cancellazione priva di contenuti. L’operazione è irreversibile. Se vi si
 oppongono un procedimento o un obbligo di conservazione, imposti invece
 lo stato «Blocco della cancellazione (legal hold)».
+
+**Filtri dell'elenco**: la barra sopra l'elenco filtra per **stato**, **categoria**, **priorità**, persona assegnata, stato delle scadenze («Scadenza superata», «Scadenza entro 14 giorni», «Riscontro in sospeso») e periodo di ricezione. Categoria e priorità si applicano solo ai casi a Lei assegnati, altrimenti l'elenco dei risultati rivelerebbe entrambe.
+
+**Scadenze e riscontro**: se all'invio di un messaggio seleziona **Questo è il riscontro ai sensi dell'art. 17 HinSchG**, WorkDiary registra il momento nel caso; una semplice richiesta di chiarimento non conta. Da quel momento cessa il promemoria per il termine di riscontro. Gli incaricati assegnati ricevono promemoria privi di contenuto: 48 ore prima della scadenza della conferma di ricezione, 14 giorni e 48 ore prima del termine di riscontro (una volta ciascuno) e poi ogni giorno finché una scadenza è superata. Portare un caso direttamente da «Ricevuto» a «Verifica» conferma la ricezione.
+
+**Altre azioni nel fascicolo**:
+
+- **Revoca assegnazione** (icona accanto all'incaricato): la persona perde subito l'accesso.
+- **Aggiungere un documento dell'ufficio segnalazioni**: il file viene cifrato come un allegato della persona segnalante ed è disponibile solo dopo la scansione; la persona segnalante non lo vede.
+- Lo stato «Blocco della cancellazione» richiede **base giuridica**, **responsabile** e **data di verifica**; in quella data WorkDiary avvisa gli incaricati.
+- Una riapertura (da «Chiuso – …» a «In lavorazione») richiede una **motivazione**; il termine di conservazione riparte dalla chiusura successiva.
+- **Registro eventi**: con il permesso di consultazione del registro vede chi ha aperto, modificato o esportato il caso e quando, senza contenuti della segnalazione. Ogni accesso al registro viene a sua volta registrato.

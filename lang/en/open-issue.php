@@ -12,9 +12,11 @@ return [
     'title' => [
         'index' => 'Open Issues',
         'show' => 'Open Issue :title',
+        'history' => 'History',
     ],
 
     'field' => [
+        'ticket' => 'Ticket',
         'title' => 'Title',
         'description' => 'Description',
         'category' => 'Category',
@@ -32,6 +34,8 @@ return [
     ],
 
     'action' => [
+        'details' => 'Details',
+        'openTicket' => 'Open ticket',
         'create' => 'Create open issue',
         'edit' => 'Edit',
         'assign' => 'Assign',
@@ -47,6 +51,8 @@ return [
     ],
 
     'flash' => [
+        'ticketOpened' => 'Ticket :no was opened from the open issue.',
+        'ticketExists' => 'Ticket :no already exists for this open issue.',
         'created' => 'Open issue created.',
         'updated' => 'Open issue updated.',
         'deleted' => 'Open issue deleted.',
@@ -63,5 +69,15 @@ return [
 
     'follow_up' => [
         'content_intro' => 'Follow-up job for open issue #:id “:title”',
+    ],
+    'hint' => [
+        'edit_tracked' => 'Changes to due date, severity and visibility are recorded in the item\'s history.',
+    ],
+
+    'filter' => [
+        'all_statuses' => 'All statuses',
+        'all_severities' => 'All severities',
+        'all_assignees' => 'All assignees',
+        'no_match' => 'No open item matches the filter.',
     ],
 ];

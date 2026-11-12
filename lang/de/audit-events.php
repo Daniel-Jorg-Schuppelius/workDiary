@@ -26,6 +26,8 @@ return [
         'retired' => 'Zutrittsmedium ausgemustert',
     ],
     'appointment' => [
+        'party_assigned' => 'Terminanfrage zugeordnet',
+        'service_updated' => 'Buchbare Leistungsart geändert',
         'proposed' => 'Ersatztermin vorgeschlagen',
         'proposal_accepted' => 'Ersatztermin angenommen',
         'proposal_declined' => 'Ersatztermin abgelehnt',
@@ -49,6 +51,8 @@ return [
         'synced' => 'Asana: manuell abgeglichen',
     ],
     'firefly' => [
+        'transaction_settled' => 'Firefly III: Bewegung erledigt',
+        'transaction_reopened' => 'Firefly III: Bewegung wieder geöffnet',
         'connected' => 'Firefly III: Verbindung geprüft',
         'disconnected' => 'Firefly III: getrennt',
     ],
@@ -165,6 +169,7 @@ return [
     ],
     'sepaMandate' => [
         'revoked' => 'SEPA-Mandat widerrufen',
+        'expired' => 'SEPA-Mandat verfallen (36 Monate ohne Einzug)',
     ],
     'circular' => [
         'send_started' => 'Versand des Rundschreibens gestartet',
@@ -200,6 +205,7 @@ return [
     ],
     'archived' => 'Archiviert',
     'asset' => [
+        'recommissioned' => 'Asset wieder in Betrieb genommen',
         'blockExceptionGranted' => 'Asset-Sperr-Ausnahme erteilt',
         'blockExceptionRevoked' => 'Asset-Sperr-Ausnahme widerrufen',
         'blocked' => 'Asset gesperrt',
@@ -209,6 +215,7 @@ return [
         'decommissioned' => 'Asset stillgelegt',
         'defectReported' => 'Asset-Mangel gemeldet',
         'defectUpdated' => 'Asset-Mangel aktualisiert',
+        'healthChanged' => 'Asset-Zustand geändert',
         'moved' => 'Asset verlagert',
         'ownershipTransferred' => 'Asset-Eigentum übertragen',
         'ownership_changed' => 'Asset-Eigentum geändert',
@@ -226,11 +233,16 @@ return [
     ],
     'assetCompliance' => [
         'assigned' => 'Compliance-Profil zugewiesen',
+        'assignmentDeactivated' => 'Prüfpflicht deaktiviert',
+        'assignmentReactivated' => 'Prüfpflicht wieder aufgenommen',
+        'assignmentUpdated' => 'Prüfpflicht geändert',
         'claimOpened' => 'Compliance: Reklamation eröffnet',
         'decommissionRequested' => 'Stilllegung angefordert',
         'inspected' => 'Asset geprüft',
         'measurementImported' => 'Prüfmesswert importiert',
         'restrictedUse' => 'Nutzung eingeschränkt',
+        'scheduleCancelled' => 'Prüftermin storniert',
+        'scheduleMissed' => 'Prüftermin versäumt',
     ],
     'assetDefect' => [
         'reported' => 'Mangel gemeldet',
@@ -284,6 +296,7 @@ return [
         'connected' => 'Backup-Ziel verbunden',
         'disconnected' => 'Backup-Ziel getrennt',
         'scopeBlocked' => 'Backup-Ziel: Scope blockiert',
+        'statusChanged' => 'Backup-Ziel: Status geändert',
     ],
     'branch_profile' => [
         'installed' => 'Branch-Profil installiert',
@@ -296,6 +309,8 @@ return [
         'publish_manual' => 'CalDAV manuell veröffentlicht',
     ],
     'calendly' => [
+        'user_mapped' => 'Calendly-Nutzer zugeordnet',
+        'user_unmapped' => 'Calendly-Nutzerzuordnung entfernt',
         'booking_link_created' => 'Calendly-Buchungslink erstellt',
         'cancel_synced' => 'Calendly-Absage synchronisiert',
         'subscribed' => 'Calendly-Webhook abonniert',
@@ -333,6 +348,9 @@ return [
         'connected' => 'Cloud-Dokumenteingang verbunden',
         'disconnected' => 'Cloud-Dokumenteingang getrennt',
         'folderSelected' => 'Cloud-Eingangsordner gewählt',
+        'startConfirmed' => 'Start des Cloud-Eingangs bestätigt',
+        'statusChanged' => 'Cloud-Dokumenteingang: Status geändert',
+        'scopeBlocked' => 'Cloud-Dokumenteingang: Berechtigung fehlt, blockiert',
     ],
     'collection' => [
         'imported' => 'Inhalte in Sammlung übernommen',
@@ -457,6 +475,7 @@ return [
         'communication_approved' => 'Krisen-Kommunikation freigegeben',
         'communication_sent' => 'Krisen-Kommunikation versendet',
         'exercise_documented' => 'Krisen-Übung dokumentiert',
+        'deadline_template_created' => 'Krisen-Meldefrist angelegt',
         'linked' => 'Krisenfall verknüpft',
         'reported' => 'Krisenfall gemeldet',
         'reviewed' => 'Krisen-Nachbereitung abgeschlossen',
@@ -496,6 +515,8 @@ return [
     'diagnostics' => [
         'testTriggered' => 'Diagnose-Test ausgelöst',
         'viewed' => 'Diagnose aufgerufen',
+        'tokenCreated' => 'Überwachungszugang angelegt',
+        'tokenRevoked' => 'Überwachungszugang widerrufen',
     ],
     'document' => [
         'purged' => 'Dokument vernichtet',
@@ -565,6 +586,8 @@ return [
         'created' => 'Bürgschaft erfasst',
         'returned' => 'Bürgschaft zurückgegeben',
         'drawn' => 'Bürgschaft gezogen',
+        'expired' => 'Bürgschaft verfallen',
+        'reactivated' => 'Bürgschaft nach Verlängerung wieder aktiv',
         'secured_retention' => 'Bürgschaft löst Sicherheitseinbehalt ab',
     ],
     'idea_map' => [
@@ -593,6 +616,7 @@ return [
         'candidate_dismissed' => 'Übergabe trotz Treffer neu angelegt',
         'direction_corrected' => 'Richtung des Eingangs korrigiert',
         'values_captured' => 'Werte des Eingangs erfasst',
+        'tax_case_set' => 'Steuerfall des Eingangs gesetzt',
         'reanalyzed' => 'Erkennung des Eingangs wiederholt',
         'revalidated' => 'Prüfung des Eingangs wiederholt',
         'assigned' => 'Eingangsrechnung zugeordnet',
@@ -617,6 +641,8 @@ return [
         'conflict_resolved' => 'Fremdsystem-Konflikt aufgelöst',
         'data_ownership_changed' => 'Datenhoheit geändert',
         'inbox_resolved' => 'Inbox-Eintrag aufgelöst',
+        'ownership_blocked' => 'Schreibversuch wegen Datenführerschaft zurückgehalten',
+        'ownership_overridden' => 'Führerschaftskonflikt übernommen',
         'settings_changed' => 'Integrations-Einstellungen geändert',
     ],
     'integrity' => [
@@ -626,8 +652,13 @@ return [
         'lockdown_released' => 'Integritäts-Lockdown aufgehoben',
     ],
     'inventory' => [
+        'negativeRequested' => 'Negativbestand beantragt',
+        'negativeRejected' => 'Negativbestand abgelehnt',
+        'reservationRedistributed' => 'Reservierung umverteilt',
         'mode_changed' => 'Bestandsführungs-Modus geändert',
         'negativeApproved' => 'Negativbestand genehmigt',
+        'countApproved' => 'Inventurdifferenzen freigegeben',
+        'countStatusChanged' => 'Inventur: Status geändert',
     ],
     'stock_lot' => [
         'blocked' => 'Charge gesperrt',
@@ -646,6 +677,7 @@ return [
         'deviation_decided' => 'Investitions-Abweichung entschieden',
         'linked' => 'Investition verknüpft',
         'option_recommended' => 'Investitions-Option empfohlen',
+        'acquisition_supplier_set' => 'Lieferant der Anschaffung aus der Investition übernommen',
         'proposed' => 'Investition vorgeschlagen',
         'reviewed' => 'Investition nachbetrachtet',
     ],
@@ -661,6 +693,7 @@ return [
         'retention_released' => 'Sicherheitseinbehalt freigegeben',
         'retention_secured' => 'Sicherheitseinbehalt durch Bürgschaft abgelöst',
         'approved' => 'Rechnung freigegeben',
+        'approval_revoked' => 'Freigabe durch Änderung am Entwurf aufgehoben',
         'dunned' => 'Rechnung angemahnt',
         'dunningBlocked' => 'Mahnsperre gesetzt',
         'dunningUnblocked' => 'Mahnsperre aufgehoben',
@@ -681,6 +714,8 @@ return [
             'transitioned' => 'ISMS-Audit: Status geändert',
         ],
         'audit_package' => [
+            'updated' => 'Entwurf des Audit-Pakets geändert',
+            'deleted' => 'Entwurf des Audit-Pakets verworfen',
             'created' => 'Audit-Paket erstellt',
             'finalized' => 'Audit-Paket finalisiert',
             'token_created' => 'Audit-Paket-Token erstellt',
@@ -863,6 +898,12 @@ return [
         'vehicle_profile_updated' => 'Fahrzeugprofil geändert',
     ],
     'patrol' => [
+        'route_updated' => 'Rundgangs-Route geändert',
+        'route_activated' => 'Rundgangs-Route aktiviert',
+        'route_deactivated' => 'Rundgangs-Route deaktiviert',
+        'checkpoint_updated' => 'Kontrollpunkt geändert',
+        'checkpoint_deactivated' => 'Kontrollpunkt deaktiviert',
+        'overdue_flagged' => 'Rundgang nach Soll-Dauer nicht beendet',
         'route_created' => 'Rundgangs-Route angelegt',
         'started' => 'Rundgang gestartet',
         'completed' => 'Rundgang abgeschlossen',
@@ -1021,6 +1062,7 @@ return [
         'chargeCancelled' => 'Mietgebühr storniert',
         'chargesInvoiced' => 'Mietgebühren fakturiert',
         'chargesTransferred' => 'Mietgebühren übergeben',
+        'cleaningDone' => 'Reinigung nach Rücknahme erledigt',
         'claimOpened' => 'Miet-Reklamation eröffnet',
         'closed' => 'Mietvorgang geschlossen',
         'completed' => 'Mietvorgang abgeschlossen',
@@ -1035,6 +1077,7 @@ return [
         'termsAttached' => 'Mietbedingungen am Verleihvorgang festgehalten',
         'returned' => 'Mietgerät zurückgenommen',
         'termsFrozen' => 'Mietkonditionen eingefroren',
+        'depositWaived' => 'Kaution erlassen',
     ],
     'report' => [
         'exported' => 'Report exportiert',
@@ -1090,6 +1133,7 @@ return [
         'dependencies_changed' => 'Abhängigkeiten des Fachdienstes geändert',
     ],
     'service_ticket' => [
+        'confidentiality_changed' => 'Vertraulichkeit geändert',
         'service_changed' => 'Service des Tickets geändert',
         'opened_from_intake' => 'Ticket aus Kundeneingang angelegt',
         'accepted_by_customer' => 'Ticket vom Kunden abgenommen',
@@ -1122,6 +1166,9 @@ return [
         'settings_saved' => 'SharePoint-Einstellungen gespeichert',
         'target_selected' => 'SharePoint-Ziel gewählt',
     ],
+    'shift_exchange' => [
+        'compliance_overridden' => 'Schichttausch trotz Regelverstoß freigegeben',
+    ],
     'shiftRotation' => [
         'activated' => 'Schichtrotation aktiviert',
         'assigned' => 'Schichtrotation zugewiesen',
@@ -1139,6 +1186,7 @@ return [
         'opt_out' => 'SMS-Alarmierung widerrufen',
         'verification_started' => 'SMS-Bestätigungscode angefordert',
         'budget_warning' => 'SMS-Kostenwarnschwelle erreicht',
+        'budget_exhausted' => 'SMS-Kontingent aufgebraucht',
     ],
     'sla_violation' => [
         'acknowledged' => 'SLA-Verletzung quittiert',
@@ -1183,11 +1231,16 @@ return [
         'assessment_versioned' => 'ESG-Bewertungsversion erstellt',
     ],
     'survey' => [
+        'updated' => 'Fragebogen geändert',
+        'opted_out' => 'Umfragen über den Abmeldelink abbestellt',
         'created' => 'Fragebogen angelegt',
         'invited' => 'Umfrage-Einladung versendet',
     ],
     'sync' => [
         'applied' => 'Offline-Sync angewendet',
+        'conflict' => [
+            'resolved' => 'Offline-Konflikt entschieden',
+        ],
     ],
     'tax_rule' => [
         'created' => 'Steuerregel angelegt',
@@ -1267,6 +1320,8 @@ return [
         'corrected' => 'Fahrt per Stornofahrt korrigiert',
     ],
     'user' => [
+        'newDeviceAlertDisabled' => 'Meldung „Anmeldung von neuem Gerät“ abgeschaltet',
+        'newDeviceAlertEnabled' => 'Meldung „Anmeldung von neuem Gerät“ eingeschaltet',
         'deputyReplaced' => 'Vertretung neu besetzt',
         'anonymized' => 'Mitarbeiter anonymisiert (PII entfernt, Nachweise bleiben)',
         'offboardingScheduled' => 'Austritt vorgemerkt',
@@ -1339,6 +1394,9 @@ return [
         'entry_posted' => 'Buchung festgeschrieben',
         'entry_reversed' => 'Buchung storniert',
         'entry_discarded' => 'Entwurf verworfen',
+        'open_item_disputed' => 'Offener Posten als strittig gekennzeichnet',
+        'open_item_dispute_withdrawn' => 'Kennzeichen „strittig“ zurückgenommen',
+        'entry_edited' => 'Entwurf geändert',
         'period_soft_closed' => 'Periode vorläufig geschlossen',
         'period_closed' => 'Periode geschlossen',
         'period_reopened' => 'Periode wieder geöffnet',
@@ -1462,6 +1520,7 @@ return [
             'rechecked' => 'Zulassungen neu geprüft',
             'reviewRequired' => 'Überprüfung der Zulassung nötig',
             'reviewCleared' => 'Überprüfung abgeschlossen',
+            'resultsReleased' => 'Prüfungsergebnisse freigegeben',
         ],
         'team' => [
             'profileCreated' => 'Sportartenprofil angelegt',
@@ -1606,5 +1665,9 @@ return [
         'packaged' => 'Versandfassung erstellt',
         'sent' => 'Anbieterrechnung zugestellt',
         'deliveryResolved' => 'Zustellausgang festgehalten',
+    ],
+    'domain' => [
+        'commandReconciled' => 'Domain-Befehl abgeglichen',
+        'commandResolved' => 'Domain-Befehl von Hand abgeschlossen',
     ],
 ];

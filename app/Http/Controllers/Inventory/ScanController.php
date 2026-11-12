@@ -54,6 +54,7 @@ class ScanController extends Controller {
             'action' => ['required', 'string'],
             'warehouse' => ['required', 'string'],
             'qty' => ['required', 'numeric', 'gt:0'],
+            'unit' => ['nullable', 'string', 'max:20'],
             'target' => ['nullable', 'string'],
         ]);
 
@@ -63,7 +64,7 @@ class ScanController extends Controller {
             return back()->with('error', __('inventory.scan.invalid'));
         }
 
-        $options = ['actor' => Auth::id() !== null ? (int) Auth::id() : null];
+        $options = ['actor' => Auth::id() !== null ? (int) Auth::id() : null, 'unit' => $data['unit'] ?? null];
         $targetRaw = (string) ($data['target'] ?? '');
         if ($targetRaw !== '') {
             $options['target'] = Warehouse::query()->find(Sqid::decodeOrNumeric(Warehouse::class, $targetRaw));

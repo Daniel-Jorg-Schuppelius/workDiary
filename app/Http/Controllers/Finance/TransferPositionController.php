@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Finance;
 
 use App\Enums\Finance\TransferStatus;
 use App\Enums\User\Permission;
+use App\Http\Controllers\Ai\Concerns\AppliesConnectionChoice;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\{BillingTransfer, BillingTransferPosition};
 use App\Services\Ai\Contracts\ItemTextSuggester;
@@ -30,6 +31,8 @@ use Illuminate\Support\Facades\{Auth, Gate};
  * Rechnungsbetrag. Nach dem Übertragen ist nichts mehr änderbar.
  */
 class TransferPositionController extends Controller {
+    use AppliesConnectionChoice;
+
     public function __construct(private readonly ItemTextSuggester $suggestions) {}
 
     public function update(Request $request, BillingTransfer $transfer, BillingTransferPosition $position): RedirectResponse {
@@ -185,11 +188,13 @@ class TransferPositionController extends Controller {
     }
 
     /** KI-Textvorschlag für eine Position (Feature 084 / MVP-488). */
-    public function suggest(BillingTransfer $transfer, BillingTransferPosition $position): RedirectResponse {
+    public function suggest(Request $request, BillingTransfer $transfer, BillingTransferPosition $position): RedirectResponse {
         $this->authorizePosition($transfer, $position);
         abort_unless(Gate::allows(Permission::AiUse->value), 403);
 
         try {
+            // „Neu erzeugen“ mit gewählter Verbindung wie an Rechnung und Angebot (MVP-1628).
+            $this->applyConnectionChoice($request);
             $this->suggestions->suggestForTransferPosition($transfer, $position, Auth::user());
         } catch (AiException $e) {
             return back()->with('error', $e->getMessage());

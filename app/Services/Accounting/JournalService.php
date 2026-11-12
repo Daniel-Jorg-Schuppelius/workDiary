@@ -12,12 +12,13 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting;
 
-use App\Enums\Finance\{AccountingEntryStatus, DirectBookingKind};
+use App\Enums\Finance\{AccountingEntryStatus, DirectBookingKind, MatchStatus};
 use App\Models\Accounting\{AccountingEntry, AccountingEntryLine, AccountingPeriod, AccountingProfile, AccountingTransfer};
-use App\Models\Finance\CostCenter;
+use App\Models\Finance\{BankTransaction, CostCenter};
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\Filing\VatSpecialPrepaymentService;
 use App\Services\Accounting\Posting\PostingInboxService;
+use App\Services\Finance\ReconciliationService;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
@@ -117,6 +118,58 @@ class JournalService {
             $this->replaceLines($entry, $lines);
 
             return $entry->fresh(['lines']) ?? $entry;
+        });
+    }
+
+    /**
+     * Entwurf bearbeiten (MVP-1556): Kopf und Zeilen eines Arbeitsstands.
+     *
+     * Entwürfe aus Fachvorgängen (Skonto, Klärung, Umbuchung, Storno …) sind
+     * ausgenommen — ihre Zeilen folgen dem Vorgang; dort lässt sich nur die
+     * Kostenstelle nachtragen ({@see self::assignCostCenter()}). Wer ändert,
+     * gilt als Vorbereiter: Bei Vier-Augen schreibt eine andere Person fest.
+     *
+     * @param  array{booked_on: CarbonImmutable, memo: string, document_on?: CarbonImmutable|null, document_reference?: string|null}  $head
+     * @param  array<int, array<string, mixed>>  $lines
+     *
+     * @throws ValidationException
+     */
+    public function updateDraft(AccountingEntry $entry, array $head, array $lines, User $actor): AccountingEntry {
+        $this->assertMutable($entry);
+        if (DirectBookingKind::of($entry) instanceof DirectBookingKind) {
+            throw ValidationException::withMessages([
+                'status' => (string) __('accounting.ledger.error.edit_not_allowed'),
+            ]);
+        }
+
+        $organization = $this->organizationOf($entry);
+        $period = $this->periodOrFail($organization, $head['booked_on']);
+
+        return DB::transaction(function () use ($entry, $head, $lines, $actor, $organization, $period): AccountingEntry {
+            $this->lockAndAssertMutable($entry);
+            $before = ['booked_on' => $entry->booked_on->toDateString(), 'memo' => $entry->memo, 'debit' => $entry->debitTotal()->getAmount()];
+
+            $entry->update([
+                'accounting_fiscal_year_id' => $period->accounting_fiscal_year_id,
+                'accounting_period_id' => $period->id,
+                'booked_on' => $head['booked_on']->toDateString(),
+                'document_on' => ($head['document_on'] ?? null)?->toDateString(),
+                'memo' => StringHelper::truncate((string) $head['memo'], 191, '…'),
+                'document_reference' => $head['document_reference'] ?? null,
+                'created_by' => $actor->id,
+            ]);
+            $entry = $this->updateLines($entry, $lines);
+
+            $this->events->record($organization, 'accounting.entry_edited', [
+                'before' => $before,
+                'booked_on' => $entry->booked_on->toDateString(),
+                'memo' => $entry->memo,
+                'debit' => $entry->debitTotal()->getAmount(),
+                'credit' => $entry->creditTotal()->getAmount(),
+                'source_key' => $entry->source_key,
+            ], $entry, $actor);
+
+            return $entry;
         });
     }
 
@@ -355,22 +408,23 @@ class JournalService {
     }
 
     /**
-     * Wartende Direktbuchung verwerfen (E24). Der Entwurf wird gelöscht, der
-     * Vorgang lässt sich danach neu anstoßen: Posten, Bankumsatz,
+     * Entwurf verwerfen (E24, MVP-1556). Der Entwurf wird gelöscht; was ihn
+     * ausgelöst hat, steht danach wieder offen: Posten, Bankumsatz,
      * Sondervorauszahlung, Startsalden und Original eines Stornos lesen ihren
-     * Stand aus der Buchung und stehen wieder offen. Ein Inbox-Vorschlag hat
-     * seine Quelle und bleibt; Festbuchungen sind unantastbar.
+     * Stand aus der Buchung, ein Inbox-Vorschlag hat seine Quelle und erscheint
+     * neu. Der Lauf einer Buchungsvorlage gilt als übersprungen — die Periode
+     * ist entschieden, die nächste läuft normal. Festbuchungen sind unantastbar.
      *
      * @throws ValidationException
      */
     public function discard(AccountingEntry $entry, User $actor): void {
-        $kind = DirectBookingKind::of($entry);
-        if (! $kind instanceof DirectBookingKind || ! $entry->status->isMutable()) {
+        if (! $entry->status->isMutable()) {
             throw ValidationException::withMessages([
                 'status' => (string) __('accounting.ledger.error.discard_not_allowed'),
             ]);
         }
 
+        $kind = DirectBookingKind::of($entry);
         $organization = $this->organizationOf($entry);
 
         DB::transaction(function () use ($entry, $actor, $organization, $kind): void {
@@ -379,7 +433,7 @@ class JournalService {
             $entry->load('lines');
 
             $this->events->record($organization, 'accounting.entry_discarded', [
-                'kind' => $kind->value,
+                'kind' => $kind?->value,
                 'memo' => $entry->memo,
                 'booked_on' => $entry->booked_on->toDateString(),
                 'debit' => $entry->debitTotal()->getAmount(),
@@ -395,9 +449,31 @@ class JournalService {
                 ->get()
                 ->each(fn (AccountingTransfer $transfer): ?bool => $transfer->delete());
 
+            app(RecurringAccountingService::class)->skipFromDiscardedEntry($entry);
+            $this->reopenBankTransaction($entry, $actor);
+
             // Zeilen folgen per Fremdschlüssel (cascade).
             $entry->delete();
         });
+    }
+
+    /**
+     * Verworfene Direktbuchung eines Bankumsatzes aufs Sachkonto: Hat sie den
+     * Umsatz beiseitegelegt, steht er wieder offen — sonst verschwände er aus
+     * dem Abgleich, ohne gebucht zu sein.
+     */
+    private function reopenBankTransaction(AccountingEntry $entry, User $actor): void {
+        $snapshot = is_array($entry->snapshot) ? $entry->snapshot : [];
+        if (DirectBookingKind::of($entry) !== DirectBookingKind::BankDirect
+            || ($snapshot['bank_direct']['set_aside'] ?? false) !== true
+            || ! MorphMap::is($entry->source_type, BankTransaction::class)) {
+            return;
+        }
+
+        $transaction = BankTransaction::query()->where('organization_id', $entry->organization_id)->find($entry->source_id);
+        if ($transaction instanceof BankTransaction && $transaction->match_status === MatchStatus::Ignored) {
+            app(ReconciliationService::class)->reopen($transaction, $actor);
+        }
     }
 
     /**

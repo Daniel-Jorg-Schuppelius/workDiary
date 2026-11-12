@@ -12,15 +12,17 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting\Posting;
 
-use App\Enums\Finance\{AccountingEntryStatus, DirectBookingKind, PostingAccountRole, PostingSourceKind};
-use App\Models\Accounting\{AccountingAccount, AccountingEntry};
+use App\Enums\Finance\{AccountingEntryStatus, DirectBookingKind, PostingAccountRole, PostingSourceKind, TaxCodeDirection};
+use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingTaxCode};
 use App\Models\Finance\BankTransaction;
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingSovereigntyResolver, InternalTransferService, JournalService};
+use App\Services\Finance\ReconciliationService;
 use App\Services\TimeExport\CostCenterResolver;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\{Collection, Str};
 use Illuminate\Validation\ValidationException;
@@ -214,6 +216,129 @@ class PostingInboxService {
     }
 
     /**
+     * Bankumsatz ohne Beleg direkt aufs Sachkonto (Feature 125, MVP-1557):
+     * Bankgebühr, Zinsen, Privatentnahme, Verrechnung. Der Umsatz ist der
+     * Bruttobetrag; mit Steuerkennzeichen wird die Steuer herausgerechnet.
+     * Geld- und Klärungskonten sind ausgeschlossen — dafür gibt es die
+     * interne Umbuchung und die Klärungsbuchung.
+     *
+     * @throws ValidationException
+     */
+    public function postBankTransactionToAccount(
+        Organization $organization,
+        BankTransaction $transaction,
+        AccountingAccount $account,
+        ?AccountingTaxCode $taxCode,
+        ?int $costCenterId,
+        string $note,
+        User $actor,
+    ): AccountingEntry {
+        if ($account->is_bank || $account->is_cash || $account->is_clearing) {
+            throw ValidationException::withMessages([
+                'account' => [(string) __('accounting.bank_direct.error.money_account')],
+            ]);
+        }
+
+        // Vorläufige Umsätze (MVP-1274) bucht erst der verbindliche Auszug.
+        if ($transaction->isProvisional()) {
+            throw ValidationException::withMessages([
+                'account' => [(string) __('bank.reconcile.error.provisional')],
+            ]);
+        }
+        // Mit Zuordnung bucht die Zahlung; eine zweite Buchung verdoppelte den Umsatz.
+        if ($transaction->allocations()->exists()) {
+            throw ValidationException::withMessages([
+                'account' => [(string) __('accounting.bank_direct.error.already_assigned')],
+            ]);
+        }
+
+        // Klärungsbuchung und Direktbuchung schließen einander aus.
+        foreach ([$this->directKey($transaction), $this->clearingKey($transaction)] as $key) {
+            $existing = $this->journal->activeEntryForSource($organization, $key);
+            if ($existing instanceof AccountingEntry) {
+                return $existing;
+            }
+        }
+
+        $bookedOn = CarbonImmutable::parse($transaction->booking_date)->startOfDay();
+        $this->sovereignty->assertLocalPostingAllowed($organization, $bookedOn);
+
+        $bankRule = $this->rules->resolve($organization, PostingSourceKind::Payment, PostingAccountRole::Bank, [], $bookedOn);
+        if ($bankRule === null) {
+            throw ValidationException::withMessages([
+                'account' => [(string) __('accounting.inbox.blocker.missing_rule', ['role' => PostingAccountRole::Bank->label(), 'criteria' => ''])],
+            ]);
+        }
+
+        $gross = Money::of(NumberHelper::absPrecise(NumberHelper::normalizeDecimalString((string) $transaction->amount)), $this->journal->baseCurrency($organization));
+        if ($gross->isZero()) {
+            throw ValidationException::withMessages([
+                'account' => [(string) __('accounting.inbox.blocker.no_amount')],
+            ]);
+        }
+
+        // Geldeingang: Bank im Soll, Sachkonto im Haben — Geldausgang umgekehrt.
+        $accountOnDebit = ! $transaction->isCredit();
+        $side = static fn (Money $amount, bool $debit): array => [
+            'debit' => $debit ? $amount->getAmount() : '0.00',
+            'credit' => $debit ? '0.00' : $amount->getAmount(),
+        ];
+
+        $net = $gross;
+        $taxLine = [];
+        $taxAmount = null;
+        if ($taxCode instanceof AccountingTaxCode && $taxCode->isSelfAssessed() && $taxCode->tax_account_id !== null && $taxCode->input_tax_account_id !== null && ! NumberHelper::isZeroPrecise((string) $taxCode->rate)) {
+            // Steuerschuld des Empfängers (MVP-1621): Der Umsatz ist netto; Vorsteuer und Umsatzsteuer entstehen in gleicher Höhe.
+            $tax = $gross->percentage((string) $taxCode->rate);
+            $taxAmount = $accountOnDebit ? $tax->getAmount() : NumberHelper::negatePrecise($tax->getAmount());
+            $taxLine = [
+                ['accounting_account_id' => (int) $taxCode->input_tax_account_id, 'memo' => $taxCode->code] + $side($tax, $accountOnDebit),
+                ['accounting_account_id' => (int) $taxCode->tax_account_id, 'memo' => $taxCode->code] + $side($tax, ! $accountOnDebit),
+            ];
+        } elseif ($taxCode instanceof AccountingTaxCode && ! $taxCode->isSelfAssessed() && $taxCode->tax_account_id !== null && ! NumberHelper::isZeroPrecise((string) $taxCode->rate)) {
+            $net = $gross->times(100)->dividedBy(NumberHelper::addPrecise('100', (string) $taxCode->rate, 2));
+            $tax = $gross->minus($net);
+            // Vorzeichen nach Wirkung: Vorsteuer im Soll, Umsatzsteuer im Haben erhöhen die Kennziffer.
+            $increases = $taxCode->direction === TaxCodeDirection::Input ? $accountOnDebit : ! $accountOnDebit;
+            $taxAmount = $increases ? $tax->getAmount() : NumberHelper::negatePrecise($tax->getAmount());
+            $taxLine = [['accounting_account_id' => (int) $taxCode->tax_account_id, 'memo' => $taxCode->code] + $side($tax, $accountOnDebit)];
+        }
+
+        $entry = $this->journal->postDirectOrSubmit($organization, [
+            'booked_on' => $bookedOn,
+            'memo' => (string) __('accounting.bank_direct.memo', ['note' => $note]),
+            'source_type' => $transaction->getMorphClass(),
+            'source_id' => $transaction->getKey(),
+            'source_key' => $this->directKey($transaction),
+            // `set_aside`: Die Buchung legt den Umsatz beiseite — wird sie verworfen, steht er wieder offen.
+            'snapshot' => ['bank_direct' => ['account' => $account->number, 'note' => $note, 'set_aside' => $transaction->match_status->isOpen()]],
+            'lines' => [
+                ['accounting_account_id' => $bankRule->accounting_account_id] + $side($gross, ! $accountOnDebit),
+                [
+                    'accounting_account_id' => $account->id,
+                    'accounting_tax_code_id' => $taxCode?->id,
+                    'tax_amount' => $taxAmount,
+                    'cost_center_id' => $costCenterId,
+                    'memo' => $note,
+                ] + $side($net, $accountOnDebit),
+                ...$taxLine,
+            ],
+        ], $actor, DirectBookingKind::BankDirect);
+
+        // Ohne Beleg gibt es nichts zuzuordnen: Der Umsatz verlässt die offene Liste des Abgleichs.
+        if ($transaction->match_status->isOpen()) {
+            app(ReconciliationService::class)->ignore($transaction, $actor);
+        }
+
+        return $entry;
+    }
+
+    /** Idempotenzschlüssel der Direktbuchung eines Bankumsatzes aufs Sachkonto. */
+    public function directKey(BankTransaction $transaction): string {
+        return 'bankdirect:bank:' . $transaction->getKey();
+    }
+
+    /**
      * Kostenstelle je Zeile aus der gemeinsamen KOST-Regel (Feature 142):
      * dieselbe Entscheidung wie im DATEV-Stapel, damit Journal und Export
      * nicht zwei Kostenstellen für denselben Beleg behaupten.
@@ -254,6 +379,7 @@ class PostingInboxService {
         foreach ($transactions as $transaction) {
             $rows[$transaction->getKey()] = $transaction;
             $keys[] = $this->clearingKey($transaction);
+            $keys[] = $this->directKey($transaction);
             foreach ($transaction->allocations as $allocation) {
                 $keys[] = $adapter->sourceKey($allocation);
             }
@@ -263,7 +389,8 @@ class PostingInboxService {
         $result = [];
 
         foreach ($rows as $id => $transaction) {
-            $clearing = $entries[$this->clearingKey($transaction)] ?? null;
+            // Klärungsbuchung oder Direktbuchung aufs Sachkonto (MVP-1557).
+            $clearing = $entries[$this->clearingKey($transaction)] ?? $entries[$this->directKey($transaction)] ?? null;
             if ($clearing instanceof AccountingEntry) {
                 $result[$id] = ['state' => $this->stateOf($clearing, null), 'entry' => $clearing, 'blockers' => []];
 

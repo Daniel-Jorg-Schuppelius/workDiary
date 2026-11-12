@@ -37,6 +37,10 @@ class TicketConversationController extends Controller {
 
     public function reply(Request $request, ServiceTicket $ticket): RedirectResponse {
         Gate::authorize(Permission::ServiceTicketUpdate->value);
+        // Extern geführte Queue: die Kundenkommunikation führt das Fremdsystem; interne Notizen bleiben möglich.
+        if ($ticket->isExternallyLed()) {
+            return back()->with('error', __('helpdesk.external.replyLocked'));
+        }
 
         $data = $request->validate([
             'body' => ['required', 'string', 'min:2', 'max:10000'],

@@ -34,15 +34,15 @@ class PurgeFilePointerRuleTest extends TestCase {
         'caldav_connections.calendar_path' => 'Pfad auf dem fremden CalDAV-Server.',
         'cloud_document_connections.root_folder_path' => 'Ordner beim Cloud-Anbieter.',
         'cloud_document_items.source_path' => 'Pfad beim Cloud-Anbieter.',
+        'cloud_document_routes.test_path' => 'Beispielpfad beim Cloud-Anbieter, gegen den die Route vor dem Start geprüft wird.',
         'supplier_catalog_sources.remote_path' => 'Pfad auf dem Server des Lieferanten.',
-        'meter_readings.photo_path' => 'Wert aus der Eingabe; die App legt dort keine Datei ab — darf nie ein Löschziel sein.',
         'learning_certificates.pdf_path' => 'Wird nicht beschrieben; das PDF entsteht beim Abruf.',
     ];
 
     /** @var array<string, string> Tabellen ohne `organization_id` => wie ihre Dateien erfasst werden */
     private const array WITHOUT_ORGANIZATION_COLUMN = [
         'document_versions' => 'Über `documents.organization_id` eingesammelt (`fileTargetsFor()`).',
-        'protocol_signatures' => '`signature_image_path` wird nicht beschrieben; der Wert kam früher aus der Eingabe und darf nie ein Löschziel sein.',
+        'protocol_signatures' => 'Das Unterschriftsbild ist ein Anhang am Protokoll (`signature_attachment_id`) und geht über `attachments` mit; `signature_image_path` nennt nur dessen Pfad — Altwerte kamen aus der Eingabe und dürfen nie ein Löschziel sein.',
     ];
 
     public function test_every_file_pointer_column_is_covered_by_the_purge(): void {

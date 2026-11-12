@@ -1,7 +1,7 @@
 ---
 title: "Calendar"
 topic: account.calendar
-version: 1
+version: 2
 keywords:
     - schedule
     - appointments
@@ -35,3 +35,7 @@ the ICS calendar subscription in your profile.
 ## Tender deadlines
 
 With the tenders module, the calendar shows the deadlines of open tenders: question, participation and submission deadlines, the opening date and the binding period. Your calendar contains the tenders you are responsible for; the team view shows all of them. Clicking opens the tender.
+
+## Contract deadlines
+
+With the Contract management module, the calendar shows the open and missed obligations of contracts — including the notice deadline —, the end of fixed-term contracts, every renewal date for automatically renewing contracts, and the index review. Your calendar shows the obligations and contracts you are responsible for (an obligation without its own responsible person counts for the person responsible for the contract); the team view shows all you may see, employment contracts only with HR rights. Clicking opens the contract.

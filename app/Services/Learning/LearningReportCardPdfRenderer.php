@@ -14,7 +14,8 @@ namespace App\Services\Learning;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Learning\LearningEnrollment;
-use App\Services\DocumentDesign\DocumentDesignRenderer;
+use App\Models\Platform\Organization;
+use App\Services\DocumentDesign\{DocumentDesignRenderer, IssuerIdentity};
 
 /**
  * Zeugnis je Einschreibung (Feature 149, MVP-790): die Bestandteile des
@@ -28,14 +29,22 @@ class LearningReportCardPdfRenderer {
     public function output(LearningEnrollment $enrollment): string {
         $enrollment->loadMissing(['course', 'user', 'externalParticipant']);
 
-        return app(DocumentDesignRenderer::class)->renderPdf(
+        $design = app(DocumentDesignRenderer::class);
+        $organization = Organization::query()->withoutGlobalScopes()->find($enrollment->organization_id);
+        $payload = $organization !== null ? $design->payloadFor($organization, RenderDocumentKind::Certificate) : null;
+
+        return $design->renderPdf(
             RenderDocumentKind::Certificate,
             'learning.pdf.report-card',
             [
                 'enrollment' => $enrollment,
                 'result' => $this->gradebook->forEnrollment($enrollment),
+                // Aussteller nach Blockzustand (MVP-1624); das Zeugnis ist ein Auszug zum Druckdatum, kein festgeschriebener Beleg.
+                'design' => $design->context($payload),
+                'issuer' => IssuerIdentity::for($organization),
             ],
-            (int) $enrollment->organization_id,
+            $organization,
+            payload: $payload,
         );
     }
 

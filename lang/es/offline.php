@@ -11,8 +11,8 @@
 // Offline-Sync (Feature 035): Offline-Änderungs-Seite + Statusanzeige.
 return [
     'title' => 'Cambios sin conexión',
-    'subtitle' => 'Acciones registradas sin conexión en este dispositivo: pendientes, en conflicto o rechazadas.',
-    'notice' => 'Esta lista solo existe en este dispositivo. Las entradas pendientes se transfieren automáticamente en cuanto hay conexión; las rechazadas pueden reenviarse o descartarse. Los conflictos requieren una decisión: otra persona modificó el mismo registro.',
+    'subtitle' => 'Acciones registradas sin conexión: pendientes, en conflicto o rechazadas.',
+    'notice' => 'Las entradas pendientes y rechazadas solo existen en este dispositivo; las pendientes se transfieren automáticamente en cuanto hay conexión. Los conflictos requieren su decisión: los datos cambiaron desde el registro (por ejemplo el fichaje, o el día se cerró entretanto) o falta un dato obligatorio. Los conflictos abiertos también aparecen aquí cuando surgieron en otro dispositivo.',
     'empty' => 'No hay cambios sin conexión en este dispositivo.',
     'section' => [
         'pending' => 'Pendientes',
@@ -25,13 +25,36 @@ return [
         'comment' => 'Comentario de la orden',
         'form' => 'Formulario',
         'attendance_correct' => 'Corrección de fichaje',
+        'time_entry' => 'Tiempo de proyecto',
+        'material_usage' => 'Material',
+        'learning_unit' => 'Unidad de aprendizaje completada',
+        'inventory_count' => 'Escaneo de inventario',
+        'tour_arrive' => 'Parada de ruta: llegada',
+        'tour_depart' => 'Parada de ruta: salida',
+        'patrol_scan' => 'Punto de control',
+        'takeoff_line' => 'Línea de medición',
     ],
     'action' => [
         'retry' => 'Aplicar de nuevo',
         'discard' => 'Descartar',
         'take_server' => 'Conservar la otra versión',
         'force_local' => 'Enviar mi versión',
+        'edit' => 'Editar',
+        'send_edited' => 'Enviar editado',
+        'cancel_edit' => 'Cancelar',
     ],
     'conflict_hint' => 'Estado del servidor: :server',
     'photos_queued' => 'Fotos en cola: :count',
+    // Konflikte entscheiden (MVP-1595).
+    'field' => [
+        'missing' => 'Falta',
+        'lock' => 'Bloqueo',
+    ],
+    'remote_hint' => 'Registrado en otro dispositivo: el contenido está allí. Aquí solo puede descartar el conflicto.',
+    'resolve_failed' => 'No se pudo transmitir la decisión. Vuelva a intentarlo con conexión.',
+    'unresolved' => 'abierto',
+    'flash' => [
+        'resolved' => 'Conflicto resuelto.',
+        'not_found' => 'Este conflicto ya no existe.',
+    ],
 ];
