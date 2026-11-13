@@ -58,8 +58,8 @@ final class CustomerDeadlineProfileInstallTest extends TestCase {
 
         $result = app(BranchProfileInstaller::class)->install($this->organization->refresh(), 'steuerberater', $this->admin);
 
-        // v5: Leistungsvorlagen des Leistungsplans (Feature 199, MVP-1674); v6: Prüfpaket GwG (Feature 200, MVP-1642).
-        $this->assertSame(6, $result['version']);
+        // v3: Leistungsort (MVP-1688); v6: Leistungsvorlagen des Leistungsplans (Feature 199, MVP-1674); v7: Prüfpaket GwG (Feature 200, MVP-1642).
+        $this->assertSame(7, $result['version']);
         $this->assertSame(1, $result['created']['deadline_rule_sets'] ?? null);
         $this->assertSame(['home_care', 'tax_advisory'], $ruleSets->enabledKeys($this->organization->refresh()));
 

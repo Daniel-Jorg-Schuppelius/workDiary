@@ -80,8 +80,8 @@ final class PeriodOrderTest extends TestCase {
         EntryType::factory()->create(['organization_id' => $organization->id, 'slug' => 'lohn', 'label' => 'Lohn (eigen)', 'requires_period' => null]);
 
         $result = (new BranchProfileInstaller)->install($organization, 'steuerberater', $this->admin);
-        // v3 (Feature 198), v4 Kundenfristen (Feature 197), v5 Leistungsvorlagen (Feature 199), v6 Prüfpaket GwG (Feature 200).
-        $this->assertSame(6, $result['version']);
+        // v3 Leistungsort (MVP-1688), v4 (Feature 198), v5 Kundenfristen (Feature 197), v6 Leistungsvorlagen (Feature 199), v7 Prüfpaket GwG (Feature 200).
+        $this->assertSame(7, $result['version']);
         $kinds = EntryType::query()->where('organization_id', $organization->id)->get()->mapWithKeys(
             static fn (EntryType $t): array => [$t->slug => array_map(static fn (PeriodKind $k): string => $k->value, $t->requiredPeriodKinds())],
         )->all();
