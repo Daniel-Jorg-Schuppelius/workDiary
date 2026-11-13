@@ -35,6 +35,12 @@ otro caso, el vencimiento. El importe ya viene entonces reducido por el
 descuento. Cada posición puede desmarcarse; una factura sin IBAN se muestra
 como bloqueada y no entra en la remesa.
 
+**GiroCode y PDF agrupado:** Si el IBAN del GiroCode de una factura difiere de
+la factura o de los datos maestros del proveedor, la posición queda bloqueada
+hasta que alguien con permiso de autorización confirme la diferencia con
+**Confirmar IBAN**; la aprobación de una remesa lo vuelve a comprobar. Un PDF
+agrupado cuyos límites de factura aún no se han decidido no se paga.
+
 **Tres pasos:** componer (borrador) → aprobar → exportar. La aprobación es un
 permiso propio: quien compone la remesa no tiene por qué poder aprobarla.
 Tras la exportación la remesa es inmutable; la anulación solo es posible

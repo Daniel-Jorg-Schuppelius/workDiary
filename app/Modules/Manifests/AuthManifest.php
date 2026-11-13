@@ -42,6 +42,7 @@ final class AuthManifest extends Manifest {
     /** @return list<string> */
     public function tables(): array {
         return [
+            'organization_login_policies',
             'personal_access_tokens',
             'scim_groups',
             'scim_tokens',

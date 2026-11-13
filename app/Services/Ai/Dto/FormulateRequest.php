@@ -60,4 +60,16 @@ final class FormulateRequest implements AiRequestInterface {
     public function estimatedUnits(): int {
         return $this->estimateTokens($this->text, implode(' ', $this->styleRules));
     }
+
+    /** Text, Kontext und Beispielpaare (gelernt aus Nutzertexten); Stil und Glossar sind Terminologie. */
+    public function mapTexts(\Closure $map): static {
+        return new self(
+            $map($this->text),
+            $this->language,
+            $this->styleRules,
+            $this->glossary,
+            array_map(static fn (ExamplePair $e): ExamplePair => new ExamplePair($map($e->source), $map($e->target)), $this->examples),
+            array_map($map, $this->contextHints),
+        );
+    }
 }

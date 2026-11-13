@@ -50,7 +50,7 @@ final class InvoicingDemoBlock implements DemoBlock {
     }
 
     /** @var list<string> */
-    private const array DEMO_INCOMING_KEYS = ['demo-incoming-assigned', 'demo-incoming-unrecognized'];
+    private const array DEMO_INCOMING_KEYS = ['demo-incoming-assigned', 'demo-incoming-unrecognized', 'demo-incoming-girocode'];
 
     private static function demoSha(Organization $organization, string $key): string {
         return \CommonToolkit\Helper\Data\CryptoHelper::hash($organization->id . ':' . $key);
@@ -182,6 +182,19 @@ final class InvoicingDemoBlock implements DemoBlock {
                 ['sha' => 'demo-incoming-unrecognized', 'title' => 'Rechnungseingang ohne erkannte Daten — scan-0815.pdf', 'attributes' => [
                     'recognition' => \App\Enums\Invoicing\IncomingInvoiceRecognition::None,
                 ]],
+                // GiroCode mit anderer IBAN als auf der Rechnung (Feature 208, MVP-1663): Warnung im Zuordnungsdialog.
+                ['sha' => 'demo-incoming-girocode', 'title' => 'Eingangsrechnung RE-2026-1203 — Bürobedarf Muster GmbH', 'attributes' => [
+                    'recognition' => \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted, 'invoice_number' => 'RE-2026-1203',
+                    'seller_name' => 'Bürobedarf Muster GmbH', 'seller_vat_id' => 'DE299999999', 'issue_date' => \Carbon\Carbon::now()->subDays(1)->toDateString(),
+                    'currency' => 'EUR', 'amount_net' => '80.00', 'amount_tax' => '15.20', 'amount_gross' => '95.20',
+                    'supplier_id' => $supplier->id, 'match_kind' => \App\Enums\Invoicing\IncomingInvoiceMatchKind::VatId, 'matched_at' => now(),
+                    'creditor_iban' => 'DE89370400440532013000',
+                ], 'girocode' => [
+                    'status' => \App\Services\Invoicing\GiroCode\GiroCodeReader::FOUND, 'page' => 1, 'version' => '002',
+                    'iban' => 'DE02120300000000202051', 'iban_valid' => true, 'bic' => null, 'name' => 'Bürobedarf Muster GmbH',
+                    'amount' => '95.20', 'reference' => null, 'remittance' => 'RE-2026-1203', 'codes' => 1, 'conflicting' => false,
+                    'filled_iban' => false, 'read_at' => now()->toIso8601String(),
+                ]],
             ];
             foreach ($rows as $row) {
                 $sha256 = (string) self::demoSha($organization, $row['sha']);
@@ -195,7 +208,7 @@ final class InvoicingDemoBlock implements DemoBlock {
                     'status' => \App\Enums\Document\DocumentStatus::Active->value,
                     'created_by_user_id' => $actor->id,
                 ]);
-                \App\Models\Invoicing\IncomingEInvoice::query()->create([
+                $incoming = \App\Models\Invoicing\IncomingEInvoice::query()->create([
                     'organization_id' => $organization->id,
                     'document_id' => $document->id,
                     'sha256' => $sha256,
@@ -206,6 +219,9 @@ final class InvoicingDemoBlock implements DemoBlock {
                     'summary' => [],
                     ...$row['attributes'],
                 ]);
+                if (isset($row['girocode'])) {
+                    $incoming->forceFill(['girocode' => $row['girocode']])->save();
+                }
             }
 
             return count($rows);

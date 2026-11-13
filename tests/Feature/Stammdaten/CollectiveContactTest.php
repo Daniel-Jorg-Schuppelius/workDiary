@@ -113,7 +113,8 @@ final class CollectiveContactTest extends TestCase {
         $proposals = app(PaymentProposalService::class);
 
         $this->assertTrue($proposals->ibanDiffersFromMaster($incoming, $collective));
-        $incoming->forceFill(['creditor_iban_confirmed_at' => now()])->save();
+        // Gebunden an die bestätigte IBAN (Feature 208, M4).
+        $incoming->forceFill(['creditor_iban_confirmed_at' => now(), 'creditor_iban_confirmed_hash' => \App\Support\Crypto\BlindIndex::ofIban('DE89370400440532013000')])->save();
         $this->assertFalse($proposals->ibanDiffersFromMaster($incoming->refresh(), $collective));
     }
 

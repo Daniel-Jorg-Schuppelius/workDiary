@@ -52,6 +52,8 @@ final class SalesManifest extends Manifest {
             'commission_rule_tiers',
             'commission_rules',
             'commission_settlement_runs',
+            // Aufnahmeakte am Lead (Feature 200, MVP-1641).
+            'lead_intakes',
             'leads',
             'order_confirmation_items',
             'order_confirmations',
@@ -125,6 +127,8 @@ final class SalesManifest extends Manifest {
             ],
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\Sales\DeadlineScans\QuoteFollowUpScan::class,
+                // Aktualisierung der Aufnahmeakten (Feature 200, MVP-1643).
+                \App\Services\Sales\Intake\DeadlineScans\LeadIntakeRefreshScan::class,
             ],
             \App\Services\Import\EntitySpec::class => [
                 \App\Services\Sales\Import\QuoteSpec::class,
@@ -137,6 +141,29 @@ final class SalesManifest extends Manifest {
             ],
             \App\Services\Demo\Contracts\DemoBlock::class => [
                 \App\Services\Sales\Demo\LeadDemoBlock::class,
+                // Nach dem Lead-Block: Aufnahmeakte am Demo-Lead (Feature 200).
+                \App\Services\Sales\Intake\Demo\LeadIntakeDemoBlock::class,
+            ],
+            // Aufnahmeakte am Lead (Feature 200, MVP-1641–1644, MVP-1675): Prüfpakete als Klasse (GwG),
+            // Profildaten über `intake_packages`, Sperre und Übernahme an der Umwandlung, Cockpit, Arbeitsvorrat.
+            \App\Services\Sales\Intake\Contracts\IntakeCheckPackage::class => [
+                \App\Services\Sales\Intake\Packages\GwgIntakeCheckPackage::class,
+            ],
+            \App\Services\Sales\Contracts\LeadConversionCheck::class => [
+                \App\Services\Sales\Intake\LeadIntakeConversionCheck::class,
+            ],
+            \App\Services\Classification\Contracts\ProfileInstallStep::class => [
+                \App\Services\Sales\Intake\Install\IntakePackageInstallStep::class,
+            ],
+            \App\Services\Cockpit\Contracts\CockpitPanel::class => [
+                \App\Services\Sales\Intake\Cockpit\LeadIntakeCockpitPanel::class,
+            ],
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Sales\Intake\WorkQueue\LeadIntakeWorkItemSource::class,
+            ],
+            // Fachtyp USt-IdNr. (formale Prüfung) für das Paket B2B-Neukunde.
+            \App\Services\Fields\Contracts\FieldExtension::class => [
+                \App\Services\Sales\Intake\Fields\VatIdField::class,
             ],
         ];
     }

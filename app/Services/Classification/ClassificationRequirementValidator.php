@@ -46,6 +46,19 @@ class ClassificationRequirementValidator {
             $values[ClassificationDomain::Priority->value] = [$priority->value];
         }
 
+        // Am Auftrag zugeordnete Klassifikationen (Produktgruppe, Ergebnis …,
+        // Feature 198); eine noch nicht gespeicherte Instanz hat keine.
+        if ($entry->exists) {
+            $assigned = $entry->relationLoaded('classifications') ? $entry->classifications : $entry->classifications()->get();
+            foreach ($assigned as $classification) {
+                $domain = $classification->domain->value;
+                if ($domain === ClassificationDomain::EntryType->value || $domain === ClassificationDomain::Priority->value) {
+                    continue;
+                }
+                $values[$domain][] = (string) $classification->code;
+            }
+        }
+
         return $values;
     }
 

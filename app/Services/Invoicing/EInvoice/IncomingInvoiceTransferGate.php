@@ -29,6 +29,7 @@ class IncomingInvoiceTransferGate {
 
         return array_values(array_filter([
             $incoming->status === IncomingEInvoiceStatus::Rejected ? (string) __('Der Eingang ist abgelehnt.') : null,
+            $incoming->isSplitBundle() ? (string) __('incoming_pdf.split.blocked.split') : null,
             $party === null ? (string) __('Noch keiner Partei zugeordnet.') : null,
             $incoming->recognition === IncomingInvoiceRecognition::None && ! isset(((array) $incoming->summary)['manual'])
                 ? (string) __('Werte fehlen (Klärfall).') : null,
@@ -36,6 +37,8 @@ class IncomingInvoiceTransferGate {
             in_array('own_invoice_copy', $flags, true) ? (string) __('Kopie einer eigenen Rechnung.') : null,
             in_array('totals_mismatch', $flags, true) ? (string) __('Summen widersprüchlich.') : null,
             $incoming->isPossibleDuplicate() ? (string) __('Möglicher Doppel-Eingang — erst „Kein Doppel“ bestätigen oder den Eingang ablehnen.') : null,
+            // Sammel-PDF (MVP-1662): erst aufteilen oder als eine Rechnung bestätigen.
+            \App\Services\Invoicing\Split\IncomingInvoiceSplitter::isHolding($incoming) ? (string) __('incoming_pdf.split.gate') : null,
             $party !== null && $party->is_collective && CollectiveContacts::requiresNamedContact($incoming)
                 ? (string) __('Reverse Charge, innergemeinschaftlicher Fall oder Drittland: Dafür braucht es einen echten Firmenkontakt, keinen Sammelkontakt.') : null,
         ]));

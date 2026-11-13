@@ -452,8 +452,14 @@ class TourService implements InspectionTourPlanner {
         ])->save();
         $entry = $stop->diaryEntry;
         if ($entry instanceof DiaryEntry && $outcome === TourStop::OUTCOME_DONE) {
+            // Prüfpflichtige Aufträge (Feature 198) legt der Lebenszyklus zur Prüfung vor;
+            // abgeschlossen werden sie erst nach der Freigabe.
             if (in_array($entry->status, [DiaryStatus::Open, DiaryStatus::InProgress], true)) {
-                $entry->forceFill(['status' => DiaryStatus::Done])->save();
+                if ($entry->requires_review) {
+                    $entry = app(\App\Services\Diary\OrderService::class)->submitFinishedWork($entry, $actor);
+                } else {
+                    $entry->forceFill(['status' => DiaryStatus::Done])->save();
+                }
             }
             app(DispatchStatusResolver::class)->transition($entry, DispatchStatus::Done);
         }

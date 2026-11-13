@@ -59,6 +59,12 @@
                                     show-label>{{ __('Neuer Antrag') }}</x-icon-btn>
                     @endcan
                 @endif
+                @if ($tab === 'urlaub' || $tab === 'krank')
+                    {{-- Vertretungen (Feature 202): Liste und freie Anlage. --}}
+                    <x-icon-btn icon="supervisor_account" size="sm"
+                                :href="route('delegations.index')"
+                                show-label>{{ __('delegation.title') }}</x-icon-btn>
+                @endif
                 @if ($tab === 'krank')
                     @can('create', \App\Models\Absence\SickLeave::class)
                         <x-icon-btn icon="add" tone="warning" size="sm"

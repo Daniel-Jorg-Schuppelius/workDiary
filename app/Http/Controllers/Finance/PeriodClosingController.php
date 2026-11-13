@@ -17,6 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\{AccountingFiscalYear, AccountingPeriod};
 use App\Services\Accounting\{FixedAssetService, LedgerDatevExportService, OpeningBalanceImportService, PeriodClosingService};
+use App\Services\Finance\Datev\TaxCheck\DatevTaxCheckService;
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -36,6 +37,7 @@ class PeriodClosingController extends Controller {
         private readonly OpeningBalanceImportService $openingBalances,
         private readonly LedgerDatevExportService $datev,
         private readonly FixedAssetService $fixedAssets,
+        private readonly DatevTaxCheckService $taxCheck,
     ) {}
 
     public function index(): View {
@@ -173,17 +175,55 @@ class PeriodClosingController extends Controller {
             : __('accounting.inbox.flash.awaiting_approval'));
     }
 
+    /**
+     * Steuerprüfung vor der DATEV-Übergabe (Feature 207, MVP-1661): Befunde
+     * mit Sprung zur Buchung, Export und — bei Fehlern — die begründete
+     * Freigabe auf einer Seite.
+     */
+    public function datevCheck(Request $request): View {
+        abort_unless(Gate::allows(Permission::AccountingLedgerClose->value), 403);
+        $organization = $this->currentOrganizationOrAbort();
+        [$from, $to] = $this->datevPeriod($request);
+
+        return view('finance.accounting.datev_check', [
+            'from' => $from,
+            'to' => $to,
+            'check' => $this->taxCheck->forLedger($organization, $from, $to),
+            'canRelease' => Gate::allows(Permission::AccountingTaxCheckRelease->value),
+        ]);
+    }
+
+    /** Offene Fehler der Steuerprüfung begründet freigeben (auditiert in der Ereigniskette). */
+    public function datevRelease(Request $request): RedirectResponse {
+        abort_unless(Gate::allows(Permission::AccountingLedgerClose->value), 403);
+        abort_unless(Gate::allows(Permission::AccountingTaxCheckRelease->value), 403);
+        $organization = $this->currentOrganizationOrAbort();
+        [$from, $to] = $this->datevPeriod($request);
+        $reason = (string) $request->validate(['reason' => ['required', 'string', 'min:10', 'max:500']])['reason'];
+
+        $count = $this->taxCheck->releaseLedger($organization, $from, $to, $reason, $this->authUser());
+
+        return redirect()
+            ->route('finance.accounting.closing.datev-check', ['from' => $from->toDateString(), 'to' => $to->toDateString()])
+            ->with('status', $count > 0
+                ? __('accounting.datev_check.flash.released', ['count' => $count])
+                : __('accounting.datev_check.flash.nothing_to_release'));
+    }
+
     /** DATEV-Übergabe aus den Festbuchungen des globalen Zeitraums. */
     public function datevExport(Request $request): \Symfony\Component\HttpFoundation\Response {
         abort_unless(Gate::allows(Permission::AccountingLedgerClose->value), 403);
         $organization = $this->currentOrganizationOrAbort();
 
-        $data = $request->validate([
-            'from' => ['required', 'date'],
-            'to' => ['required', 'date', 'after_or_equal:from'],
-        ]);
-        $from = \Carbon\CarbonImmutable::parse((string) $data['from']);
-        $to = \Carbon\CarbonImmutable::parse((string) $data['to']);
+        [$from, $to] = $this->datevPeriod($request);
+        $data = ['from' => $from->toDateString(), 'to' => $to->toDateString()];
+
+        // Steuerprüfung vor dem Schreiben (MVP-1661): offene Fehler sperren, die Exportlogik bleibt unberührt.
+        if ($this->taxCheck->forLedger($organization, $from, $to)->isBlocked()) {
+            return redirect()
+                ->route('finance.accounting.closing.datev-check', $data)
+                ->with('error', __('accounting.datev_check.error.blocked'));
+        }
 
         // EXTF-V700 (von DATEV importierbar), sobald das financial-formats-
         // Paket vorliegt; sonst die einfache Journal-CSV als Zweitformat
@@ -207,5 +247,18 @@ class PeriodClosingController extends Controller {
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="datev-journal-' . $data['from'] . '_' . $data['to'] . '.csv"',
         ]);
+    }
+
+    /** @return array{0: \Carbon\CarbonImmutable, 1: \Carbon\CarbonImmutable} */
+    private function datevPeriod(Request $request): array {
+        $data = $request->validate([
+            'from' => ['required', 'date'],
+            'to' => ['required', 'date', 'after_or_equal:from'],
+        ]);
+
+        return [
+            \Carbon\CarbonImmutable::parse((string) $data['from'])->startOfDay(),
+            \Carbon\CarbonImmutable::parse((string) $data['to'])->startOfDay(),
+        ];
     }
 }

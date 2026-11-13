@@ -134,6 +134,8 @@ class AttendanceClockService {
             $attendance->closed_by = $user->id;
             $attendance->updated_by = $user->id;
             $attendance->save();
+            // Selbstauskunft am Board (MVP-1669) erlischt mit dem Gehen.
+            app(PresenceStatusService::class)->clear($user);
 
             return $attendance->refresh();
         });
@@ -270,6 +272,8 @@ class AttendanceClockService {
                     $attendance->source = AttendanceSource::AutoClose;
                     $attendance->note = trim(($attendance->note ?? '') . "\nAuto-closed by system.");
                     $attendance->save();
+                    // Selbstauskunft am Board (MVP-1669) erlischt auch beim automatischen Schließen.
+                    app(PresenceStatusService::class)->clear((int) $attendance->user_id);
                     $count++;
                 }
             });

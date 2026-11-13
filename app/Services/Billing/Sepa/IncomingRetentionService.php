@@ -43,6 +43,10 @@ class IncomingRetentionService {
         if ($invoice->status === \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected) {
             throw new RuntimeException((string) __('sepa.retention.error.rejected'));
         }
+        // Aufgeteilte Sammel-PDF (Feature 208): Einbehalte gehören an die Teile.
+        if ($invoice->isSplitBundle()) {
+            throw new RuntimeException((string) __('incoming_pdf.split.blocked.split'));
+        }
         $gross = (string) ($invoice->amount_gross?->getAmount() ?? '0');
         if ($percent !== null) {
             $amount = NumberHelper::percentOfPrecise($gross, $percent, 2);

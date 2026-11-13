@@ -85,7 +85,8 @@ class IncomingInvoiceController extends Controller {
             'failed' => IncomingEInvoice::query()->visibleTo($user)->inTransfer($failed),
             'duplicates' => IncomingEInvoice::query()->visibleTo($user)->openDuplicates(),
             'rejected' => IncomingEInvoice::query()->visibleTo($user)->rejected(),
-            default => IncomingEInvoice::query()->visibleTo($user)->whereBetween('received_at', [$from, $to]),
+            // Aufgeteilte Sammel-PDF (Feature 208): in der Liste stehen ihre Teile, der Sammel-Eingang bleibt am Original.
+            default => IncomingEInvoice::query()->visibleTo($user)->where('status', '!=', IncomingEInvoiceStatus::Split->value)->whereBetween('received_at', [$from, $to]),
         };
         $query->with(['document', 'supplier:id,name,is_collective', 'customer:id,name,is_collective', 'duplicateOf:id,status'])
             ->when(in_array($tab, ['transfer', 'failed'], true), static fn ($q) => $q->with('transfers'))
@@ -444,6 +445,11 @@ class IncomingInvoiceController extends Controller {
         Gate::authorize('view', $document);
         abort_unless($document->document_type === DocumentType::Invoice, 404);
         $incoming = \App\Models\Invoicing\IncomingEInvoice::query()->where('document_id', $document->id)->first();
+        // Aufgeteilte Sammel-PDF (Feature 208): die Seite zeigt das Original mit seinen Teilen, nicht den Sammel-Eingang zur Bearbeitung.
+        $splitContainer = $incoming?->isSplitBundle() ? $incoming : null;
+        if ($splitContainer !== null) {
+            $incoming = null;
+        }
 
         $version = $document->currentVersion;
         $parsed = null;
@@ -459,6 +465,7 @@ class IncomingInvoiceController extends Controller {
 
         return view('finance.incoming-invoices.show', [
             'incoming' => $incoming,
+            'splitContainer' => $splitContainer,
             'transferTargets' => $targets,
             'transferJournals' => $incoming !== null && $targets !== [] ? $incoming->transfers()->get()->keyBy('target') : collect(),
             'transferBlockers' => $incoming !== null && $targets !== [] ? app(IncomingInvoiceTransferGate::class)->blockers($incoming) : [],

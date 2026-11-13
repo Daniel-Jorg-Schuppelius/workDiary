@@ -116,6 +116,7 @@ return [
         'calendly' => ['backfill' => 'Synchronisation des rendez-vous Calendly'],
         'ai' => ['maintenance' => 'Maintenance IA (santé des fournisseurs, nettoyage des suggestions)'],
         'archive' => ['run' => 'Exécution de l\'archivage'],
+        'knowledge_pages' => ['empty_trash' => 'Vider la corbeille des pages de connaissances après le délai'],
         'learning' => [
             'close_stale_sessions' => 'Clôturer les sessions d’apprentissage abandonnées',
             'lti_rotate_keys' => 'Renouveler les clés de signature LTI',
@@ -172,6 +173,7 @@ return [
         "accounting" => ["issue_contact_numbers" => "Récupérer les numéros de client et de fournisseur auprès du logiciel de comptabilité", "recurring" => "Attentes de pièces et brouillons d'écriture récurrents", "filings" => "Synchroniser les échéances fiscales et rappeler", "liquidity_snapshot" => "Enregistrer la prévision de trésorerie hebdomadaire"],
         'platform' => ['usage_snapshot' => 'Enregistrer l’utilisation par client'],
         'contracts' => ['price_index_sync' => 'Synchroniser l’indice des prix à la consommation depuis la Bundesbank'],
+        'customer_deadlines' => ['sync' => 'Générer et mettre à jour les échéances clients à partir des jeux de règles'],
         'invoicing' => ['recurring' => 'Générer les brouillons de factures récurrentes', 'base_rate_sync' => 'Synchroniser le taux de base de la Bundesbank', 'online_payments_refresh' => 'Rapprocher les paiements en ligne avec le prestataire de paiement', 'incoming_digest' => 'Signaler les factures reçues à attribuer', 'incoming_transfer' => 'Relancer les transmissions des factures reçues'],
         'jtl' => ['sync' => 'Synchronisation JTL Wawi', 'pull-vouchers' => 'Récupérer les factures JTL Wawi'],
         'resale' => [
@@ -228,7 +230,7 @@ return [
         'recurrence' => ['generate' => 'Générer les commandes récurrentes'],
         'remote' => ['sync_sessions' => 'Importer les sessions de téléassistance'],
         'scheduler' => ['watchdog' => 'Surveillance du planificateur'],
-        'security' => ['advisories_pull' => 'Récupérer les avis de sécurité', 'integrity' => 'Vérification de l’intégrité du code source', 'evaluate' => 'Évaluer la détection d’attaques', 'geoip_update' => 'Mettre à jour la base de géolocalisation IP'],
+        'security' => ['advisories_pull' => 'Récupérer les avis de sécurité', 'integrity' => 'Vérification de l’intégrité du code source', 'evaluate' => 'Évaluer la détection d’attaques', 'geoip_update' => 'Mettre à jour la base de géolocalisation IP', 'resolve_login_networks' => 'Résoudre les réseaux de bureau des politiques de connexion'],
         'tickets' => ['scan_sla_breaches' => 'Détecter les violations de SLA'],
         'retention' => ['prune_models' => 'Appliquer les durées de conservation (journaux de livraison, outbox, erreurs de plugin)'],
         'whistleblowing' => ['deadlines' => 'Vérifier les délais des signalements', 'retention_review' => 'Revue de conservation des signalements', 'scan' => 'Analyser les pièces jointes des signalements (quarantaine)'],

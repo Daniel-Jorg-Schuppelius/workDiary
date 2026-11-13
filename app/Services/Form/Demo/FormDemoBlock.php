@@ -16,6 +16,7 @@ use App\Models\DocumentDesign\DocumentRenderSnapshot;
 use App\Models\Form\{FormSubmission, FormTemplate};
 use App\Models\Platform\Organization;
 use App\Services\Demo\Contracts\{DemoBlock, DemoSeedContext};
+use App\Services\Fields\FieldValues;
 use App\Services\Form\FormService;
 use App\Support\MorphMap;
 
@@ -77,6 +78,43 @@ final class FormDemoBlock implements DemoBlock {
             ],
         ]);
 
+        // Langer Bogen (Feature 203): vier Abschnitte, Knöpfe statt Auswahlliste,
+        // Ergänzung zur Einschätzung; ein angefangener Entwurf am Hauptauftrag.
+        $channels = [
+            (string) __('demo.forms.intake.channel_phone'),
+            (string) __('demo.forms.intake.channel_mail'),
+            (string) __('demo.forms.intake.channel_visit'),
+        ];
+        $intake = $this->forms->createTemplate($admin, [
+            'name' => (string) __('demo.forms.intake.name'),
+            'description' => (string) __('demo.forms.intake.description'),
+            'fields' => [
+                ['key' => 'section_contact', 'label' => (string) __('demo.forms.intake.section_contact'), 'type' => 'section'],
+                ['key' => 'person', 'label' => (string) __('demo.forms.intake.person'), 'type' => 'text', 'required' => true],
+                ['key' => 'channel', 'label' => (string) __('demo.forms.intake.channel'), 'type' => 'choice', 'options' => $channels],
+                ['key' => 'section_request', 'label' => (string) __('demo.forms.intake.section_request'), 'type' => 'section'],
+                ['key' => 'request', 'label' => (string) __('demo.forms.intake.request'), 'type' => 'textarea', 'required' => true],
+                ['key' => 'urgent', 'label' => (string) __('demo.forms.intake.urgent'), 'type' => 'boolean'],
+                ['key' => 'section_risk', 'label' => (string) __('demo.forms.intake.section_risk'), 'type' => 'section'],
+                ['key' => 'risk', 'label' => (string) __('demo.forms.intake.risk'), 'type' => 'choice', 'required' => true, 'allows_note' => true, 'options' => [
+                    (string) __('demo.forms.intake.risk_low'),
+                    (string) __('demo.forms.intake.risk_medium'),
+                    (string) __('demo.forms.intake.risk_high'),
+                ]],
+                ['key' => 'documents_checked', 'label' => (string) __('demo.forms.intake.documents_checked'), 'type' => 'boolean'],
+                ['key' => 'section_close', 'label' => (string) __('demo.forms.intake.section_close'), 'type' => 'section'],
+                ['key' => 'next_step', 'label' => (string) __('demo.forms.intake.next_step'), 'type' => 'text'],
+                ['key' => 'follow_up', 'label' => (string) __('demo.forms.intake.follow_up'), 'type' => 'date'],
+            ],
+        ]);
+        $this->forms->activate($intake, $admin);
+        $draft = $this->forms->startDraft($intake, $context->mainDiary, $operatorA);
+        $draft->storeFieldAutosave(FieldValues::fromArray([
+            'person' => (string) __('demo.forms.intake.person_value'),
+            'channel' => $channels[0],
+            'request' => (string) __('demo.forms.intake.request_value'),
+        ]), $draft->version + 1);
+
         /** @var array{title: string, content: string} $main */
         $main = $context->blueprint['main_case'];
         $submissions = 0;
@@ -103,7 +141,7 @@ final class FormDemoBlock implements DemoBlock {
         ], $operatorB);
         $submissions++;
 
-        return ['form_templates' => 3, 'form_submissions' => $submissions];
+        return ['form_templates' => 4, 'form_submissions' => $submissions];
     }
 
     public function purge(Organization $organization): void {

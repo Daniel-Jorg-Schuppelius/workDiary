@@ -90,6 +90,7 @@ use Illuminate\Support\Carbon;
  * @property int<0, max>|null $skonto_days
  * @property string|null $debtor_no
  * @property Carbon|null $archived_at
+ * @property Carbon|null $relationship_ended_on Ende der Geschäftsbeziehung — Anker der Aufbewahrung der Aufnahmeakte (Feature 200, § 8 Abs. 4 GwG)
  * @property int|null $created_by
  */
 class Customer extends Model implements ContactDetailsHolder, ContactNameHolder, CustomFieldSubject {
@@ -227,6 +228,7 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
         'skonto_percent' => PercentageCast::class . ':2',
         'skonto_days' => 'integer',
         'archived_at' => 'datetime',
+        'relationship_ended_on' => 'date',
         'hourly_rate' => MoneyCast::class . ':currency,2',
         'internal_rate' => MoneyCast::class . ':currency,2',
         'billing_increment_minutes' => 'integer',

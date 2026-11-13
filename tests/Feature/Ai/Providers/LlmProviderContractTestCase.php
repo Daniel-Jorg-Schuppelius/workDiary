@@ -97,6 +97,25 @@ abstract class LlmProviderContractTestCase extends TestCase {
         $this->assertStringContainsString('Wartung der Serversysteme', $captured);
     }
 
+    /** Maskierte Werte (MVP-1671): nur dann die Regel, Platzhalter unverändert zu übernehmen. */
+    public function test_placeholder_rule_only_when_the_request_is_masked(): void {
+        $captured = [];
+        FakePluginHttp::fake([
+            $this->completionUrlPattern() => function (RequestInterface $request) use (&$captured): Psr7Response {
+                $captured[] = (string) $request->getBody();
+
+                return FakePluginHttp::response($this->successBody('ok'));
+            },
+        ]);
+
+        $provider = $this->provider($this->connection());
+        $provider->formulate(new FormulateRequest(text: 'überweisung auf [IBAN-1] bestätigt'));
+        $provider->formulate(new FormulateRequest(text: 'überweisung bestätigt'));
+
+        $this->assertStringContainsString('Platzhalter in eckigen Klammern', $captured[0]);
+        $this->assertStringNotContainsString('Platzhalter in eckigen Klammern', $captured[1]);
+    }
+
     public function test_classify_returns_only_catalog_values(): void {
         FakePluginHttp::fake([
             $this->completionUrlPattern() => $this->successBody('["wartung", "halluziniert"]'),

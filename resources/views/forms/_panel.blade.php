@@ -22,6 +22,7 @@
     $panelUser = auth()->user();
     $panelSubjectSqid = \App\Support\Sqid::encode(get_class($subject), (int) $subject->getKey());
     $panelSubmissionsQuery = \App\Models\Form\FormSubmission::query()
+        ->submitted()
         ->where('subject_type', $subject->getMorphClass())
         ->where('subject_id', $subject->getKey())
         ->with(['template', 'submitter'])
@@ -31,6 +32,15 @@
         $panelSubmissionsQuery->where('submitted_by_user_id', $panelUser->id);
     }
     $panelSubmissions = $panelSubmissionsQuery->get();
+    // Eigene Entwürfe am Bezug (Feature 203): weiter ausfüllen statt neu beginnen.
+    $panelDrafts = \App\Models\Form\FormSubmission::query()
+        ->drafts()
+        ->where('subject_type', $subject->getMorphClass())
+        ->where('subject_id', $subject->getKey())
+        ->where('submitted_by_user_id', $panelUser->id)
+        ->with('template')
+        ->latest('updated_at')
+        ->get();
     // Zuordnungsfilter (Feature 032 MVP; Vollaudit 2026-07, M11): am Bezug nur
     // Vorlagen anbieten, deren Ziel (Auftragstyp/Kunde) zum Subject passt.
     $panelEntryTypeId = $subject instanceof \App\Models\Diary\DiaryEntry ? ($subject->entry_type_id !== null ? (int) $subject->entry_type_id : null) : null;
@@ -62,6 +72,25 @@
             </x-action-menu>
         @endif
     </div>
+
+    @if ($panelDrafts->isNotEmpty())
+        <ul class="mb-3 divide-y divide-base-300 rounded-box bg-base-200/40 px-3">
+            @foreach ($panelDrafts as $panelDraft)
+                <li id="form-draft-{{ $panelDraft->id }}" class="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
+                    <div class="min-w-0">
+                        <span class="flex items-center gap-2 font-medium">
+                            <x-icon name="edit_note" class="text-muted" />
+                            {{ optional($panelDraft->template)->name ?? '—' }}
+                            <x-status-badge :tone="$panelDraft->status->tone()">{{ $panelDraft->status->label() }}</x-status-badge>
+                        </span>
+                        <span class="block text-xs text-muted">{{ __('form.draft.saved_at', ['date' => $panelDraft->updated_at?->fdatetime() ?? '—']) }}</span>
+                    </div>
+                    <x-button tone="primary" size="xs" icon="edit" data-entry-modal-trigger
+                              :href="route('form-submissions.edit', $panelDraft)">{{ __('form.action.continue') }}</x-button>
+                </li>
+            @endforeach
+        </ul>
+    @endif
 
     @if ($panelSubmissions->isEmpty())
         <x-empty-state compact icon="edit_note"

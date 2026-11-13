@@ -22,6 +22,12 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Kunden des Mandanten verwalten.')">
     <x-slot:actions>
+        {{-- Kundenfristen (Feature 197): Übersicht aller Fristen aus den Regelsätzen. --}}
+        @can('viewAny', \App\Models\Customer\CustomerDeadline::class)
+            <x-icon-btn icon="event_upcoming" size="sm"
+                        :href="route('customer-deadlines.index')"
+                        show-label>{{ __('customer_deadline.title') }}</x-icon-btn>
+        @endcan
         @can(\App\Enums\User\Permission::CustomerExport->value)
             <x-icon-btn icon="download" size="sm"
                         :href="route('customers.export', array_filter(['status' => $status, 'q' => $search]))"

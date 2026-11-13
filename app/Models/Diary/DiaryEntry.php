@@ -10,12 +10,14 @@
 
 namespace App\Models\Diary;
 
+use App\Casts\PeriodKeyCast;
+use App\Enums\Classification\ClassificationDomain;
 use App\Enums\Diary\{DispatchStatus, LocationMode, Mode, Priority, Status};
 use App\Models\Asset\Asset;
-use App\Models\Classification\EntryType;
+use App\Models\Classification\{Classification, EntryType};
 use App\Models\Communication\Comment;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasCommunicationNotes, HasCustomFields, HasJournal, HasSqid, HasTags, Searchable};
-use App\Models\Contracts\CustomFieldSubject;
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasClassifications, HasCommunicationNotes, HasCustomFields, HasJournal, HasSqid, HasTags, Searchable};
+use App\Models\Contracts\{CustomFieldSubject, PeriodicOccurrence};
 use App\Models\Customer\Customer;
 use App\Models\Hr\Qualification;
 use App\Models\Platform\{Team, User};
@@ -23,6 +25,7 @@ use App\Models\Project\{Project, RecurrenceRule};
 use App\Models\Protocol\Protocol;
 use App\Models\ServiceTicket\ServiceTicket;
 use App\Models\Time\TimeEntry;
+use App\Support\Period\PeriodKey;
 use App\Support\Query\DateRange;
 use CommonToolkit\ValueObjects\Duration;
 use Database\Factories\Diary\DiaryEntryFactory;
@@ -86,11 +89,17 @@ use Illuminate\Support\Carbon;
  * @property string|null $accepted_final_by Name der abnehmenden Person beim Kunden
  * @property Carbon|null $invoiced_at
  * @property Carbon|null $cancelled_at
+ * @property PeriodKey|null $period_key Periode des Auftrags (Feature 198)
+ * @property bool $requires_review Prüfpflicht dieses Auftrags (Feature 198)
+ * @property int|null $reviewer_user_id benannte prüfende Person
+ * @property \Carbon\CarbonImmutable|null $review_submitted_at jüngste Vorlage zur Prüfung
+ * @property int|null $review_submitter_user_id wer zuletzt vorgelegt hat
  */
-class DiaryEntry extends Model implements CustomFieldSubject {
+class DiaryEntry extends Model implements CustomFieldSubject, PeriodicOccurrence {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
+    use HasClassifications;
     use HasCommunicationNotes;
     use HasJournal;
 
@@ -169,6 +178,11 @@ class DiaryEntry extends Model implements CustomFieldSubject {
         'recurrence_rule_id',
         'is_archived',
         'archived_at',
+        'period_key',
+        'requires_review',
+        'reviewer_user_id',
+        'review_submitted_at',
+        'review_submitter_user_id',
     ];
 
     /** @var array<string, string> */
@@ -201,6 +215,9 @@ class DiaryEntry extends Model implements CustomFieldSubject {
         'priority' => Priority::class,
         'location_mode' => LocationMode::class,
         'mode' => Mode::class,
+        'period_key' => PeriodKeyCast::class,
+        'requires_review' => 'boolean',
+        'review_submitted_at' => 'immutable_datetime',
     ];
 
     /** @return BelongsTo<User, $this> */
@@ -211,6 +228,16 @@ class DiaryEntry extends Model implements CustomFieldSubject {
     /** @return BelongsTo<User, $this> */
     public function assignedUser(): BelongsTo {
         return $this->belongsTo(User::class, 'assigned_user_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function reviewer(): BelongsTo {
+        return $this->belongsTo(User::class, 'reviewer_user_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function reviewSubmitter(): BelongsTo {
+        return $this->belongsTo(User::class, 'review_submitter_user_id');
     }
 
     /** @return BelongsTo<Project, $this> */
@@ -366,9 +393,11 @@ class DiaryEntry extends Model implements CustomFieldSubject {
      */
     public function scopeVisibleInBulkTo(Builder $query, User $user): void {
         if (! $user->can(\App\Enums\User\Permission::DiaryViewAny->value)) {
-            $query->where(static function (Builder $own) use ($user): void {
+            // Zugewiesen auch an Personen, die der Nutzer heute vertritt (Feature 202, MVP-1648).
+            $assignees = app(\App\Services\Delegation\ActsForResolver::class)->assigneeIds($user);
+            $query->where(static function (Builder $own) use ($user, $assignees): void {
                 $own->where($own->getModel()->qualifyColumn('user_id'), $user->id)
-                    ->orWhere($own->getModel()->qualifyColumn('assigned_user_id'), $user->id);
+                    ->orWhereIn($own->getModel()->qualifyColumn('assigned_user_id'), $assignees);
             });
         }
     }
@@ -378,7 +407,7 @@ class DiaryEntry extends Model implements CustomFieldSubject {
         $query->where('is_archived', false);
     }
 
-    /** Noch nicht finalisierte Aufträge.
+    /** Noch nicht finalisierte Aufträge (die Prüfzustände aus Feature 198 eingeschlossen).
      *
      * @param  Builder<DiaryEntry>  $query
      */
@@ -389,7 +418,75 @@ class DiaryEntry extends Model implements CustomFieldSubject {
             Status::InProgress->value,
             Status::WaitingCustomer->value,
             Status::WaitingMaterial->value,
+            Status::InReview->value,
+            Status::ReviewQueried->value,
+            Status::ReviewApproved->value,
         ]);
+    }
+
+    /**
+     * Aktionen, die der Lebenszyklus aus dem aktuellen Status erlaubt — mit
+     * Prüfpflicht über Vorlage und Freigabe (Feature 198).
+     *
+     * @return list<string>
+     */
+    public function lifecycleActions(): array {
+        return $this->status->allowedActions((bool) $this->requires_review);
+    }
+
+    /** Code der Produktgruppe (Klassifikation `product_group`), null ohne. */
+    public function productGroupCode(): ?string {
+        $groups = $this->relationLoaded('classifications')
+            ? $this->classifications
+            : ($this->exists ? $this->classifications()->get() : null);
+        $code = $groups?->first(static fn (Classification $c): bool => $c->domain === ClassificationDomain::ProductGroup)?->code;
+
+        return is_string($code) && $code !== '' ? $code : null;
+    }
+
+    /** Produktgruppe setzen oder entfernen (null); unbekannte Codes der Organisation entfallen. */
+    public function assignProductGroup(?string $code): void {
+        $classification = $code !== null && $code !== ''
+            ? app(\App\Services\Classification\ClassificationResolver::class)->resolveCode((int) $this->organization_id, ClassificationDomain::ProductGroup, $code)
+            : null;
+        $this->syncClassificationDomain(ClassificationDomain::ProductGroup, $classification !== null ? [(int) $classification->id] : []);
+        $this->unsetRelation('classifications');
+    }
+
+    /**
+     * Reihe der Merker (Feature 201): Kunde × Eintragsart × Produktgruppe;
+     * ohne Periode, Kunde oder Eintragsart gehört der Auftrag zu keiner Reihe.
+     */
+    public function carryForwardSeries(): ?string {
+        if ($this->period_key === null && $this->recurrence_rule_id !== null) {
+            // Wiederkehrender Auftrag ohne Periode (MVP-1646): Reihe = Wiederholungsregel.
+            return $this->recurrenceRule?->carryForwardSeries();
+        }
+        if ($this->period_key === null || $this->customer_id === null || $this->entry_type_id === null) {
+            return null;
+        }
+
+        return self::carryForwardOrderPrefix((int) $this->customer_id) . (int) $this->entry_type_id . ':' . ($this->productGroupCode() ?? '');
+    }
+
+    /**
+     * Gemeinsamer Anfang der Merker-Reihen aller Periodenaufträge eines Kunden
+     * (`order:<kunde>:`, danach `<eintragsart>:<produktgruppe>`) — das Cockpit
+     * des Kunden findet darüber die Reihen mit offenen Merkern (MVP-1646).
+     */
+    public static function carryForwardOrderPrefix(int $customerId): string {
+        return 'order:' . $customerId . ':';
+    }
+
+    public function carryForwardPeriod(): ?PeriodKey {
+        if ($this->period_key === null && $this->recurrence_rule_id !== null) {
+            // Wiederkehrender Auftrag (MVP-1646): Fälligkeit in der Art der Regel.
+            $at = $this->due_date ?? $this->start_at;
+
+            return $at !== null ? $this->recurrenceRule?->carryForwardPeriodAt($at) : null;
+        }
+
+        return $this->carryForwardSeries() !== null ? $this->period_key : null;
     }
 
     /** Bestätigte Einträge (Status 1 = In Bearbeitung).

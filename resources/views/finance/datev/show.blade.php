@@ -51,7 +51,7 @@
                     @csrf
                     <x-icon-btn type="submit" icon="lock" tone="primary" size="sm"
                                 show-label
-                                :disabled="! $importAvailable || $preflight['errors'] !== []">
+                                :disabled="! $importAvailable || $preflight['errors'] !== [] || ($taxCheck?->isBlocked() ?? false)">
                         {{ __('finance.datev.action.finalize') }}
                     </x-icon-btn>
                 </form>
@@ -122,6 +122,18 @@
         @if ($preflight['warnings'] !== [])
             <div role="alert" class="alert alert-warning text-sm mb-3">
                 <ul class="list-disc pl-5">@foreach ($preflight['warnings'] as $w)<li>{{ $w }}</li>@endforeach</ul>
+            </div>
+        @endif
+
+        @if ($taxCheck)
+            {{-- Steuerprüfung vor dem Schreiben (Feature 207, MVP-1661). --}}
+            <div class="mb-4">
+                @include('finance.datev._tax_check', [
+                    'check' => $taxCheck,
+                    'canRelease' => $canReleaseTaxCheck,
+                    'releaseAction' => route('finance.datev.tax-check.release', $batch),
+                    'releaseFields' => [],
+                ])
             </div>
         @endif
 

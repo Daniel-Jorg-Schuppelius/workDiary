@@ -102,6 +102,13 @@ use Tests\TestCase;
  * Angepasst 2026-10-26 (Branchenprofil Vermieter): einziges Delta ist
  * `/verleih/wohnungen` in `enterprise_admin/sidebar` — „Wohnungen & Belegung“
  * im Verleih, am Modul Verleih.
+ * Neu aufgenommen 2026-11-12 (Feature 199 und 200): nur Zugänge —
+ * `/leistungsplan` im Tagesgeschäft (`enterprise_admin`, `free_admin`; Recht
+ * „Leistungsplan ansehen“) und `/aufnahmen` (`enterprise_admin`,
+ * `enterprise_user`).
+ * Angepasst 2026-11-12 (Feature 197): einziges Delta ist `/kundenfristen` im
+ * Tagesgeschäft nach dem Leistungsplan (`enterprise_admin`, `free_admin`; Recht
+ * „Kundenfristen ansehen“) — die Übersicht hatte keinen Menüeintrag.
  */
 class NavigationGoldenTest extends TestCase {
     use RefreshDatabase;

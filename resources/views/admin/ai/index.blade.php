@@ -13,6 +13,12 @@
 @section('content')
 <x-index-page :subtitle="__('ai.title.connections_subtitle')">
     <x-slot:actions>
+        @if ($canApprove ?? false)
+            <x-icon-btn icon="shield_lock" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('admin.ai.privacy.edit')"
+                        show-label>{{ __('ai.privacy.title') }}</x-icon-btn>
+        @endif
         @if ($canManage ?? false)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
@@ -33,8 +39,9 @@
                     tone="info" :hint="__('ai.field.usage_period', ['period' => now()->format('m/Y')])" :href="route('admin.ai.usage')" />
     </div>
 
-    {{-- Provider-Verbindungen --}}
-    <x-card :title="__('ai.section.connections')" padding="p-0">
+    {{-- Provider-Verbindungen; Datenschutz-Stand je Verbindung (MVP-1671/1672) --}}
+    <x-card :title="__('ai.section.connections')" padding="p-0"
+            :subtitle="__($requireApproval ? 'ai.privacy.summary.required' : 'ai.privacy.summary.optional') . ' ' . __($maskLocal ? 'ai.privacy.summary.mask_all' : 'ai.privacy.summary.mask_cloud')">
         <x-table bare :caption="__('ai.section.connections')">
             <x-slot:head>
                 <tr>
@@ -42,11 +49,16 @@
                     <x-table.th>{{ __('ai.field.family') }}</x-table.th>
                     <x-table.th>{{ __('ai.field.locality') }}</x-table.th>
                     <x-table.th>{{ __('ai.field.status') }}</x-table.th>
+                    <x-table.th>{{ __('ai.privacy.column') }}</x-table.th>
                     <x-table.th>{{ __('ai.field.model') }}</x-table.th>
                     <th></th>
                 </tr>
             </x-slot:head>
             @forelse ($connections as $connection)
+                @php
+                    $approvalState = $approvals[$connection->id]['state'];
+                    $approvalExpires = $approvals[$connection->id]['expires_at'];
+                @endphp
                 <tr>
                     <td>
                         <div class="font-medium">{{ $connection->name }}</div>
@@ -67,8 +79,19 @@
                             <x-status-badge tone="warning" size="sm">{{ __('ai.health.preflight_open') }}</x-status-badge>
                         @endif
                     </td>
+                    <td>
+                        <x-status-badge :tone="$approvalState->badge()" size="sm"
+                                        :title="$approvalExpires !== null ? __('ai.privacy.approval.expires', ['date' => $approvalExpires->isoFormat('L')]) : null">{{ $approvalState->label() }}</x-status-badge>
+                        @if ($requireApproval && ! $approvalState->isApproved() && $connection->status !== \App\Enums\Ai\AiConnectionStatus::Blocked)
+                            <div class="text-xs text-warning">{{ __('ai.privacy.not_used') }}</div>
+                        @endif
+                    </td>
                     <td class="font-mono text-xs">{{ $connection->model ?? '—' }}</td>
                     <td class="text-right whitespace-nowrap">
+                        @if ($canApprove ?? false)
+                            <x-icon-btn icon="verified_user" size="xs" data-entry-modal-trigger
+                                        :href="route('admin.ai.approval.edit', $connection)" :title="__('ai.privacy.approval.action')" />
+                        @endif
                         @if ($canManage ?? false)
                             <x-icon-btn icon="edit" size="xs" data-entry-modal-trigger
                                         :href="route('admin.ai.edit', $connection)" :title="__('ai.action.edit_connection')" />
@@ -92,7 +115,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty :colspan="6" :title="__('ai.empty.connections')" compact />
+                <x-table.empty :colspan="7" :title="__('ai.empty.connections')" compact />
             @endforelse
         </x-table>
     </x-card>

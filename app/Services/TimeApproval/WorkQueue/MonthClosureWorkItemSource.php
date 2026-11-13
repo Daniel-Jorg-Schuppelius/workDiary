@@ -64,6 +64,8 @@ final class MonthClosureWorkItemSource implements WorkItemSource {
                 title: (string) __('work-queue.item.month_closure', ['name' => $closure->user->name ?? '—', 'period' => $period]),
                 url: route('admin.month-approval.index', ['status' => MonthClosureStatus::Submitted->value]),
                 detail: $closure->days_open > 0 ? (string) __('work-queue.detail.days_open', ['days' => $closure->days_open]) : null,
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($closure->updated_at),
             );
         }
     }

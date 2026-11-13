@@ -125,5 +125,31 @@
             </x-table>
         @endif
     </x-card>
+
+    {{-- Durchlaufzeit je Auftragstyp (Feature 179, MVP-1670): im Zeitraum abgeschlossene Aufträge,
+         Median Anlegen bis Abschluss. Der Personenfilter gilt hier bewusst nicht (nie je Person). --}}
+    <x-card id="lead-time" class="scroll-mt-24" :title="__('reporting.lead_time.title')" :subtitle="__('reporting.lead_time.subtitle')" icon="timelapse">
+        <div class="mb-3 text-xs text-muted">{{ __('Zeitraum') }}: {{ $label }}</div>
+        @if ($leadTimes === [])
+            <x-empty-state compact icon="timelapse" :title="__('reporting.lead_time.empty')" />
+        @else
+            <x-table bare table-sort="client">
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('reporting.lead_time.column.type') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('reporting.lead_time.column.completed') }}</x-table.th>
+                        <x-table.th sort type="number" align="right" default="desc">{{ __('reporting.lead_time.column.median') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($leadTimes as $leadTime)
+                    <tr>
+                        <td>{{ $leadTime['entryTypeName'] }}</td>
+                        <td class="text-right tabular-nums">{{ $leadTime['completed'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ $leadTime['medianDays'] }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($leadTime['medianDays'], 1) }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
+        @endif
+    </x-card>
 </x-page-shell>
 @endsection

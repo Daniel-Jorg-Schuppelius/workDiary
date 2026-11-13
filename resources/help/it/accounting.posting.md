@@ -1,7 +1,7 @@
 ---
 title: "Registrare e posta contabile"
 topic: accounting.posting
-version: 10
+version: 11
 keywords:
     - registrazione contabile
     - registrare documenti
@@ -18,6 +18,10 @@ keywords:
     - libro giornale
     - partite aperte
     - registrazione ricorrente
+    - proposta di imputazione
+    - movimento senza documento
+    - identificativo del creditore
+    - riferimento del mandato
 audience:
     - admin
     - geschaeftsfuehrung
@@ -325,3 +329,32 @@ giustificativo. Se per quell'aliquota non esiste un codice IVA a credito — di 
 IVA estera, non detraibile —, la proposta si ferma: registri la spesa al lordo senza
 aliquota. Le fatture con inversione contabile vanno nelle fatture in entrata, che
 conoscono il regime fiscale.
+
+## Proposte di imputazione per movimenti bancari senza documento
+
+Affitto, leasing, assicurazione, spese di conto: un movimento bancario che la
+vostra organizzazione ha già registrato con **Registra su un conto** riceve la
+volta successiva una **proposta** — conto, codice IVA, centro di costo e testo
+dell'ultima registrazione simile. Simile significa: stessa direzione e, in
+quest'ordine, stesso **riferimento del mandato**, stesso **identificativo del
+creditore** dell'addebito, stesso **IBAN della controparte** o stesse **parole
+chiave della causale** (mese, data e numeri non contano). Viene mostrata la
+motivazione, ad esempio «Registrato così 3 volte, l'ultima a 03/2026, stesso
+riferimento del mandato», insieme alla forza della proposta. La registrazione
+più recente determina la proposta: se registrate una volta su un altro conto,
+la volta successiva vale quello — nessuna regola da mantenere.
+
+La finestra **Registra su un conto** è precompilata con la proposta. In
+**Proposte di imputazione** nella posta contabile, i movimenti aperti simili
+sono raggruppati con l'anteprima delle registrazioni; **Registrare tutti i …
+movimenti** li registra con un'unica conferma. Un movimento il cui importo
+differisce di oltre il 10 % dall'ultima volta e le proposte con avviso (conto
+disattivato, codice IVA non più valido) compaiono a parte in **Verificare
+singolarmente**. Viene registrato solo ciò che confermate; con il principio
+dei quattro occhi attivo vengono create bozze da approvare.
+
+Viene proposto solo ciò che l'organizzazione ha già registrato così — nessuna
+IA. L'importazione riprende l'identificativo del creditore dai file CAMT e
+MT940, se la banca lo fornisce. La causale resta cifrata; per il confronto
+workDiary memorizza solo un'impronta con chiave delle parole chiave.
+**Permesso:** **Registrare definitivamente**.

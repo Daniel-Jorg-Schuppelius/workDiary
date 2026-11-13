@@ -208,6 +208,9 @@
     </div>
     @include('service-tickets._major_incident')
 
+    {{-- Interne Wissensdatenbank (Feature 191): verknüpfte Wissensseiten --}}
+    @include('knowledge-pages._linked_card', ['subject' => $ticket])
+
     {{-- Timeline (MVP-152): Konversation + Status-Audits + SLA + Anhänge
          gemischt; Antwort vs. interne Notiz bleiben getrennte Typen/Aktionen —
          Notizen sind nie kundensichtbar. --}}

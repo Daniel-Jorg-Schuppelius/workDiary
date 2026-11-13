@@ -112,6 +112,16 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 1,
         ],
+        // --- Kundenfristen (Feature 197, MVP-1632) ---
+        // Jahreslauf: Fristen des Vorjahres, laufenden und Folgejahres aus Fristmerkmalen und
+        // Leistungsumfang; idempotent, monatlich, damit das Folgejahr rechtzeitig steht.
+        'customer_deadlines.sync' => [
+            'command' => 'customer-deadlines:sync',
+            'cadence' => ['type' => 'monthlyOn', 'time' => '05:50', 'day' => 1],
+            'allowed' => ['monthlyOn', 'weeklyOn', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 5,
+        ],
         // Wochenstand der Liquiditätsvorschau für Plan/Ist (MVP-984).
         'accounting.liquidity_snapshot' => [
             'command' => 'accounting:liquidity-snapshot',
@@ -244,6 +254,19 @@ return [
             'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes', 'everyThirtyMinutes', 'hourly'],
             'criticality' => 'core',
             'expected_runtime_minutes' => 1,
+        ],
+
+        // --- Büronetze der Anmelderichtlinien: DNS-Namen auflösen (Feature 205, MVP-1655) ---
+        // Die Anmeldung liest nur den Cache und wartet nie auf DNS.
+        'security.resolve_login_networks' => [
+            'command' => 'security:resolve-login-networks',
+            'guard' => \App\Scheduling\Guards\LoginNetworksConfigured::class,
+            'cadence' => ['type' => 'everyFiveMinutes'],
+            'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes', 'everyThirtyMinutes'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 1,
+            // DNS kann hängen (Zeitlimit je Name): den Scheduler-Lauf nicht aufhalten.
+            'run_in_background' => true,
         ],
 
         // --- Scheduler-Selbstüberwachung (MVP-177) ---
@@ -595,6 +618,14 @@ return [
             'allowed' => ['dailyAt', 'hourly'],
             'criticality' => 'housekeeping',
             'expected_runtime_minutes' => 1,
+        ],
+        // Papierkorb der Wissensseiten nach Frist leeren (Feature 191, MVP-1664).
+        'knowledge_pages.empty_trash' => [
+            'command' => 'knowledge-pages:empty-trash',
+            'cadence' => ['type' => 'dailyAt', 'time' => '04:10'],
+            'allowed' => ['dailyAt'],
+            'criticality' => 'housekeeping',
+            'expected_runtime_minutes' => 2,
         ],
         // Teile abgebrochener Uploads (MVP-1265) nach einem Tag entfernen.
         'uploads.prune_chunks' => [

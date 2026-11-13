@@ -25,6 +25,11 @@ enum Status: int implements HasLabel {
     case AcceptedFinal = 6;
     case Invoiced = 7;
     case Cancelled = 8;
+    // Interne Prüfung (Feature 198, MVP-1635): nur bei Aufträgen mit Prüfpflicht,
+    // zwischen „In Bearbeitung“ und „Abgeschlossen“.
+    case InReview = 9;
+    case ReviewQueried = 10;
+    case ReviewApproved = 11;
 
     public const self Completed = self::Done;
     public const self Planned = self::Open;
@@ -43,6 +48,9 @@ enum Status: int implements HasLabel {
             self::Problem, self::WaitingMaterial => 'alert',
             self::AcceptedFinal, self::Invoiced => 'done',
             self::Cancelled => 'neutral',
+            // Zur Prüfung und freigegeben laufen weiter, die Rückfrage verlangt Arbeit.
+            self::InReview, self::ReviewApproved => 'progress',
+            self::ReviewQueried => 'alert',
         };
     }
 
@@ -77,21 +85,51 @@ enum Status: int implements HasLabel {
             self::AcceptedFinal => 'accepted_final',
             self::Invoiced => 'invoiced',
             self::Cancelled => 'cancelled',
+            self::InReview => 'in_review',
+            self::ReviewQueried => 'review_queried',
+            self::ReviewApproved => 'review_approved',
         };
     }
 
-    /** @return list<string> */
-    public function allowedActions(): array {
+    /**
+     * Bezeichnung für das Kundenportal: die interne Prüfung (Feature 198) ist
+     * kein Kundenschritt und erscheint dort als „In Bearbeitung“.
+     */
+    public function customerLabel(): string {
+        return $this->isReview() ? self::InProgress->label() : $this->label();
+    }
+
+    /** Einer der drei Prüfzustände (Feature 198)? */
+    public function isReview(): bool {
+        return in_array($this, self::reviewCases(), true);
+    }
+
+    /** @return list<self> Prüfzustände in Ablaufreihenfolge */
+    public static function reviewCases(): array {
+        return [self::InReview, self::ReviewQueried, self::ReviewApproved];
+    }
+
+    /**
+     * Aktionen aus diesem Status. Mit Prüfpflicht (Feature 198) führt „In
+     * Bearbeitung“ über die Vorlage statt direkt zum Abschluss, abgeschlossen
+     * wird erst nach der Freigabe; ohne Prüfpflicht bleibt alles wie bisher.
+     *
+     * @return list<string>
+     */
+    public function allowedActions(bool $requiresReview = false): array {
         return match ($this) {
             self::Open => ['accept', 'cancel'],
             self::Accepted => ['start', 'reject', 'cancel'],
-            self::InProgress => ['pause', 'complete', 'cancel'],
+            self::InProgress => $requiresReview ? ['pause', 'submitReview', 'cancel'] : ['pause', 'complete', 'cancel'],
             self::Problem, self::WaitingMaterial => ['resume'],
             self::Done => ['handover'],
             self::AcceptedFinal => ['markInvoiced'],
             // Nur der Beleg nimmt „Berechnet“ zurück, wenn er storniert wird (MVP-1596).
             self::Invoiced => ['revertInvoiced'],
             self::Cancelled => [],
+            self::InReview => ['approveReview', 'queryReview', 'approveAndComplete', 'withdrawReview', 'cancel'],
+            self::ReviewQueried => ['resubmitReview', 'cancel'],
+            self::ReviewApproved => ['complete', 'cancel'],
         };
     }
 }

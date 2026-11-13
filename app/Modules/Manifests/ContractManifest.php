@@ -96,6 +96,8 @@ final class ContractManifest extends Manifest {
             \App\Services\Cockpit\Contracts\CockpitPanel::class => [
                 \App\Services\Contract\Cockpit\AgreementCockpitPanel::class,
                 \App\Services\Contract\Cockpit\ContractCockpitPanel::class,
+                // Offene Merker an wiederkehrenden Pflichten (Feature 201, MVP-1646).
+                \App\Services\Contract\Cockpit\ContractCarryForwardCockpitPanel::class,
             ],
             \App\Services\Search\Contracts\SearchDomain::class => [
                 \App\Services\Contract\Search\ContractSearchDomain::class,
@@ -110,6 +112,10 @@ final class ContractManifest extends Manifest {
             // Vertragsfristen im Kalender (MVP-1617).
             \App\Services\Calendar\Contracts\CalendarEventSource::class => [
                 \App\Services\Contract\Calendar\ContractCalendarSource::class,
+            ],
+            // Feature 197 (MVP-1673): Hinweis, die alten Beratungsbesuch-Pflichten „alle drei Monate“ zu schließen.
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Contract\WorkQueue\CounsellingVisitObligationNoticeSource::class,
             ],
         ];
     }

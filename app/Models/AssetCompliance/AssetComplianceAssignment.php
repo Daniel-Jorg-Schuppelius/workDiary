@@ -12,10 +12,13 @@ declare(strict_types=1);
 
 namespace App\Models\AssetCompliance;
 
+use App\Enums\Period\PeriodKind;
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Contacts\ExternalContact;
 use App\Models\Platform\User;
+use App\Support\Period\PeriodKey;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
@@ -123,5 +126,19 @@ class AssetComplianceAssignment extends Model {
     /** @return HasMany<AssetInspectionEvent, $this> */
     public function events(): HasMany {
         return $this->hasMany(AssetInspectionEvent::class)->latest('performed_at');
+    }
+
+    /**
+     * Reihe der Merker für die nächste Periode (Feature 201, MVP-1646): die
+     * Prüfpflicht. Prüftermine und Positionen von Prüfaufträgen derselben
+     * Pflicht sind ihre Vorkommen.
+     */
+    public function carryForwardSeries(): string {
+        return 'asset_inspection:' . (int) $this->id;
+    }
+
+    /** Periode eines Vorkommens am Tag in der Art des Prüfintervalls (12 Monate → Jahr …). */
+    public function carryForwardPeriodAt(DateTimeInterface $date): PeriodKey {
+        return PeriodKey::containing(PeriodKind::forMonths($this->intervalMonths()), $date);
     }
 }

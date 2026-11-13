@@ -11,12 +11,15 @@
 namespace App\Models\Project;
 
 use App\Enums\Diary\{LocationMode, Priority};
+use App\Enums\Period\PeriodKind;
 use App\Enums\Recurrence\RecurrenceFrequency;
 use App\Models\Classification\EntryType;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
+use App\Support\Period\PeriodKey;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -139,5 +142,30 @@ class RecurrenceRule extends Model {
 
     public function frequencyLabel(): string {
         return $this->frequency->label();
+    }
+
+    /**
+     * Reihe der Merker für die nächste Periode (Feature 201, MVP-1646): die
+     * Regel selbst; ihre Aufträge sind die Vorkommen. Nur Monats- und
+     * Jahresregeln — Tage und Wochen kennt die Periode nicht, ein Merker „ab
+     * nächstem Monat“ träfe bei einer Wochenregel nicht das nächste Mal.
+     */
+    public function carryForwardSeries(): ?string {
+        return $this->carryForwardKind() !== null ? 'recurrence_rule:' . (int) $this->id : null;
+    }
+
+    /** Periode eines Vorkommens am Tag (Monatsregel alle 3 Monate → Quartal, Jahresregel → Jahr). */
+    public function carryForwardPeriodAt(DateTimeInterface $date): ?PeriodKey {
+        $kind = $this->carryForwardKind();
+
+        return $kind !== null ? PeriodKey::containing($kind, $date) : null;
+    }
+
+    private function carryForwardKind(): ?PeriodKind {
+        return match ($this->frequency) {
+            RecurrenceFrequency::Monthly => PeriodKind::forMonths(max(1, (int) $this->interval)),
+            RecurrenceFrequency::Yearly => PeriodKind::Year,
+            RecurrenceFrequency::Daily, RecurrenceFrequency::Weekly => null,
+        };
     }
 }

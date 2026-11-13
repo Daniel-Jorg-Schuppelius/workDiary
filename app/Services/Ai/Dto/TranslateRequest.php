@@ -61,4 +61,8 @@ final class TranslateRequest implements AiRequestInterface {
     public function estimatedUnits(): int {
         return max(1, mb_strlen($this->text));
     }
+
+    public function mapTexts(\Closure $map): static {
+        return new self($map($this->text), $this->targetLanguage, $this->sourceLanguage, $this->format, $this->formality, $this->glossary);
+    }
 }

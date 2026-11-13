@@ -24,6 +24,9 @@ return [
         'memory_type' => ['glossary' => 'Glossaire', 'style_rule' => 'Règle de style', 'example' => 'Paire d\'exemples'],
         'sensitivity' => ['low' => 'Faible', 'medium' => 'Moyenne', 'high' => 'Élevée'],
         'ai_text_suggestion_status' => ['proposed' => 'Proposé', 'accepted' => 'Accepté', 'edited' => 'Modifié', 'rejected' => 'Refusé', 'expired' => 'Expiré'],
+        // Datenschutz der KI-Verbindungen (MVP-1671/1672)
+        'mask_kind' => ['iban' => 'IBAN', 'vat_id' => 'Numéro de TVA', 'tax_number' => 'Numéro fiscal', 'tax_id' => 'Identifiant fiscal', 'email' => 'Adresse e-mail', 'phone' => 'Numéro de téléphone'],
+        'approval_state' => ['approved' => 'Validée', 'expiring' => 'Expire bientôt', 'expired' => 'Expirée', 'missing' => 'Non validée'],
     ],
     'domain' => [
         'environment' => ['ote' => 'OT&E (test/pilote)', 'production' => 'Production'],
@@ -270,6 +273,11 @@ return [
         'order_confirmation_status' => ['draft' => 'Brouillon', 'confirmed' => 'Confirmée', 'cancelled' => 'Annulée'],
         'lead_status' => ['new' => 'Nouveau', 'contacted' => 'Contacté', 'qualified' => 'Qualifié', 'converted' => 'Converti', 'discarded' => 'Écarté'],
         'lead_source' => ['referral' => 'Recommandation', 'web' => 'Web', 'trade_fair' => 'Salon', 'phone' => 'Téléphone', 'booking' => 'Prise de rendez-vous', 'other' => 'Autre'],
+        // Aufnahmeakte (Feature 200).
+        'lead_intake_stage' => ['inquiry' => 'Demande', 'interview' => 'Entretien', 'documents' => 'Pièces', 'decision' => 'Décision', 'setup' => 'Mise en place', 'completed' => 'Mis en place', 'rejected' => 'Refusé'],
+        'lead_intake_decision' => ['accepted' => 'Accepté', 'rejected' => 'Refusé'],
+        'intake_risk_level' => ['low' => 'Faible', 'normal' => 'Normal', 'high' => 'Élevé'],
+        'intake_sensitivity' => ['identity' => 'Données d\'identité', 'health' => 'Données de santé'],
     ],
     // Sicherheitseinbehalte (Feature 113, MVP-602).
     // Bürgschaftsregister (Feature 114, MVP-603).
@@ -577,6 +585,14 @@ return [
                 'queryRaised' => 'Le client a posé une question',
                 'intakeSubmitted' => 'Le client a soumis une demande',
                 'intakeActivity' => 'Nouvelle activité sur une demande client',
+                'deadlineDueSoon' => 'Échéances clients proches',
+                'deadlineOverdue' => 'Échéances clients dépassées',
+            ],
+            'leadIntake' => [
+                'refreshDue' => 'Des dossiers d\'admission sont à mettre à jour',
+            ],
+            'knowledgePage' => [
+                'reviewDue' => 'Des pages de connaissances sont à contrôler',
             ],
             'ideaMap' => [
                 'shared' => 'Carte d\'idées partagée avec vous',
@@ -652,6 +668,18 @@ return [
                 'threat' => 'Détection d’attaques',
                 'newDevice' => 'Connexion depuis un nouvel appareil',
                 'lockout' => 'Compte temporairement verrouillé',
+                'organizationLockdown' => 'Arrêt d’urgence de l’organisation',
+                'passkeyRecovery' => 'Connexion avec un code de récupération malgré la passkey obligatoire',
+            ],
+            'auth' => [
+                'deviceApprovalRequested' => 'Appareil en attente d’approbation',
+            ],
+            'delegation' => [
+                'created' => 'Remplacement confié',
+            ],
+            'wish' => [
+                'submitted' => 'Nouveau souhait concernant l’application',
+                'answered' => 'Réponse à un souhait concernant l’application',
             ],
             'diary' => [
                 'commentCreated' => 'Nouveau commentaire dans le journal',
@@ -841,6 +869,11 @@ return [
         ],
     ],
     'knowledge' => [
+        // Interne Wissensdatenbank (Feature 191).
+        'page_status' => ['draft' => 'Brouillon', 'valid' => 'En vigueur', 'outdated' => 'Obsolète'],
+        'page_kind' => ['page' => 'Page', 'guide' => 'Guide illustré'],
+        'audience_kind' => ['all' => 'Tous', 'role' => 'Rôle', 'team' => 'Équipe', 'user' => 'Personne'],
+        'marker_kind' => ['arrow' => 'Flèche', 'number' => 'Numéro', 'frame' => 'Cadre', 'text' => 'Texte'],
         'status' => [
             'draft' => 'Brouillon',
             'published' => 'Publié',
@@ -856,6 +889,10 @@ return [
             'draft' => 'Brouillon',
             'active' => 'Actif',
             'archived' => 'Archivé',
+        ],
+        'submission_status' => [
+            'draft' => 'Brouillon',
+            'submitted' => 'Envoyé',
         ],
     ],
     'fields' => [
@@ -1434,6 +1471,19 @@ return [
             'vat_special_prepayment' => 'Acompte spécial',
             'bank_direct' => 'Mouvement bancaire sans pièce',
             'reversal' => 'Extourne',
+        ],
+        'booking-suggestion-basis' => [
+            'mandate' => 'Référence du mandat',
+            'creditor' => 'Identifiant créancier',
+            'iban' => 'IBAN de la contrepartie',
+            'keywords' => 'Mots-clés du libellé',
+        ],
+        'datev-tax-check-kind' => [
+            'missing_tax_code' => 'Code de TVA manquant',
+            'missing_vat_id' => 'Numéro de TVA du partenaire manquant',
+            'inactive_account' => 'Compte désactivé',
+            'automatic_suspended' => 'Automatisme levé (BU 40)',
+            'rate_mismatch' => 'Taux différent du compte automatique',
         ],
         'posting-account-role' => [
             'receivable' => 'Créance',
@@ -2183,7 +2233,7 @@ return [
             'expired' => 'Expiré',
             'refunded' => 'Remboursé',
         ],
-        'incoming_e_invoice_status' => ['received' => 'Reçue', 'approved' => 'Validée (contrôle)', 'rejected' => 'Refusé', 'question' => 'Question', 'payment_released' => 'Paiement libéré'],
+        'incoming_e_invoice_status' => ['received' => 'Reçue', 'approved' => 'Validée (contrôle)', 'rejected' => 'Refusé', 'question' => 'Question', 'payment_released' => 'Paiement libéré', 'split' => 'Scindée (PDF groupé)'],
         'incoming_invoice_recognition' => ['structured' => 'Facture électronique (structurée)', 'extracted' => 'Reconnue à partir du PDF ou de l’image', 'none' => 'Non reconnue (à clarifier)'],
         'incoming_invoice_tax_case' => ['regular' => 'TVA déductible de la facture', 'reverse_charge_eu' => '§ 13b, al. 1 UStG : prestation de services d’un autre pays de l’UE', 'reverse_charge' => '§ 13b, al. 2 UStG : autoliquidation par le destinataire (p. ex. travaux de construction)', 'intra_community_acquisition' => 'Acquisition intracommunautaire (§ 1a UStG)'],
         'place_of_supply_kind' => ['general' => 'Générale (§ 3a al. 1/2 UStG)', 'catalog' => 'Prestation du catalogue (§ 3a al. 4 UStG)', 'property' => 'Prestation liée à un bien immobilier (§ 3a al. 3 n° 1 UStG)'],
@@ -2224,6 +2274,8 @@ return [
     ],
     'auth' => [
         'two_factor_type' => ['totp' => 'Application d\'authentification', 'email' => 'Code e-mail', 'webauthn' => 'Clé de sécurité / passkey'],
+        'login_policy_mode' => ['off' => 'Désactivé', 'log' => 'Journaliser uniquement', 'enforce' => 'Appliquer'],
+        'login_policy_reason' => ['lockdown' => 'Arrêt d’urgence', 'hours' => 'Hors des horaires de connexion', 'network' => 'Hors des réseaux du bureau', 'device' => 'Appareil non approuvé', 'device_rejected' => 'Approbation de l’appareil refusée', 'passkey' => 'Passkey requise'],
     ],
     'claims' => [
         'claim_action_kind' => ['rework' => 'Reprise', 'repair' => 'Réparation', 'replacement' => 'Livraison de remplacement', 'service_visit' => 'Intervention de service', 'price_reduction' => 'Rabais', 'refund' => 'Remboursement', 'supplier_recourse' => 'Recours contre le fournisseur', 'root_cause_fix' => 'Correction de la cause racine', 'other' => 'Divers'],
@@ -2408,5 +2460,21 @@ return [
             'no_warehouse' => 'Non comptabilisé – aucun entrepôt par défaut',
             'read_only' => 'Non comptabilisé – stock géré en externe, lecture seule',
         ],
+    ],
+    // Periodenart (Feature 198/201)
+    'period' => [
+        'period_kind' => ['year' => 'Année', 'half_year' => 'Semestre', 'quarter' => 'Trimestre', 'month' => 'Mois'],
+    ],
+    // Vertretung bei Abwesenheit (Feature 202)
+    'delegation' => [
+        'work_delegation_kind' => ['vacation' => 'Congés', 'sickness' => 'Maladie', 'other' => 'Autre'],
+    ],
+    // Kundenfristen aus Regelsätzen (Feature 197)
+    'customer' => [
+        'customer_deadline_status' => ['open' => 'Ouverte', 'completed' => 'Faite', 'extended' => 'Prolongée', 'waived' => 'Sans objet'],
+    ],
+    // Plan des prestations par client et période (Feature 199)
+    'service_plan' => [
+        'service_plan_cell_state' => ['missing' => 'Manquant', 'optional' => 'Facultatif', 'planned' => 'Créé', 'accepted' => 'Accepté', 'in_progress' => 'En cours', 'waiting' => 'En attente', 'review' => 'En vérification', 'done' => 'Terminé', 'waived' => 'Sans objet', 'none' => 'Hors périmètre'],
     ],
 ];

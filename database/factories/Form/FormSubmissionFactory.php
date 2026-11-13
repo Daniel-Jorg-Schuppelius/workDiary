@@ -10,6 +10,7 @@
 
 namespace Database\Factories\Form;
 
+use App\Enums\Form\FormSubmissionStatus;
 use App\Models\Form\{FormSubmission, FormTemplate};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -37,5 +38,15 @@ class FormSubmissionFactory extends Factory {
             'submitted_by_user_id' => User::factory(),
             'submitted_at' => now(),
         ];
+    }
+
+    /** Entwurf (Feature 203): je Feld gespeichert, noch nicht abgesendet. */
+    public function draft(): self {
+        return $this->state(fn () => [
+            'status' => FormSubmissionStatus::Draft->value,
+            'version' => 1,
+            'values' => [],
+            'submitted_at' => null,
+        ]);
     }
 }

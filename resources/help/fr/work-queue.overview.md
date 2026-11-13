@@ -1,7 +1,7 @@
 ---
 title: "File de travail"
 topic: work-queue.overview
-version: 4
+version: 6
 keywords:
     - File de travail
     - Éléments ouverts
@@ -11,6 +11,7 @@ keywords:
 audience: []
 related:
     - approvals.inbox
+    - delegations.manage
 ---
 
 La file de travail rassemble en un seul endroit ce qui vous attend :
@@ -19,7 +20,8 @@ supplémentaires, corrections de temps, corrections de clôture journalière,
 plannings de service à approuver, échanges de poste, dépôts au dossier
 personnel, réservations de cours, auto-évaluations des fournisseurs,
 demandes d'admission dans les groupes de l'association, modifications de
-prix, temps de formation, circuits de validation), boîtes de réception (boîte
+prix, temps de formation, circuits de validation, validations de protection des données des
+connexions d'IA), boîtes de réception (boîte
 d'affectation avec les clarifications d'e-mails, factures entrantes, demandes
 sur factures, demandes clients du portail, demandes de location), tâches qui
 vous sont attribuées (points ouverts, commandes, tâches de projet, tickets de
@@ -62,3 +64,7 @@ tableau de bord affiche les éléments les plus urgents.
 **Échéance :** le filtre « Échéance » n’affiche que les éléments en retard, dus aujourd’hui ou cette semaine (jusqu’à dimanche), ou sans échéance.
 
 **Firefly III :** si le plugin est activé, les administrateurs voient les mouvements Firefly sans rattachement et ceux au rattachement ambigu sous la forme d’un élément groupé chacun, sans échéance. Le lien ouvre la liste filtrée correspondante sur la page Firefly ; dès que le rapprochement suivant rattache un mouvement à une facture, le nombre diminue.
+
+**En remplacement :** Si vous remplacez actuellement quelqu’un, ses commandes, tâches de projet et tickets de service attribués figurent aussi dans votre file, marqués « En remplacement de … » – uniquement pour les domaines que vous pouvez ouvrir vous-même, et sans doublon. Ils disparaissent à la fin du remplacement. Voir « Remplacement pendant une absence ».
+
+**Temps d’attente :** La colonne « Temps d’attente » indique depuis combien de jours un élément n’a pas bougé – c’est-à-dire le dernier changement de statut, la dernière note ou saisie de temps sur l’élément (pour les commandes aussi les commentaires et temps saisis, pour les tâches et tickets de service les temps saisis). Au-delà d’un seuil, la file marque l’élément comme **dormant** ; la personne autorisée à modifier l’organisation règle ce seuil sous **Paramètres** (par défaut 14 jours). Le filtre « Uniquement les dormants » et le tri par temps d’attente font remonter les éléments en souffrance. Les entrées groupées n’ont pas de temps d’attente. La mesure porte sur l’élément, jamais sur la personne : la vue de direction affiche le nombre d’éléments dormants dans votre propre file et le délai de traitement par type de commande, mais aucune évaluation individuelle.

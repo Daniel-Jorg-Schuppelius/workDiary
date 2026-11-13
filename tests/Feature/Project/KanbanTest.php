@@ -58,6 +58,37 @@ class KanbanTest extends TestCase {
             ->assertDontSee(route('diary.lifecycle', [$entry, 'action' => 'accept']), false);
     }
 
+    /**
+     * Prüfpflicht (Feature 198): die Karte nennt sie, damit kanban.js beim Zug
+     * nach „Erledigt“ und in die Prüfspalten auf den Auftrag verweist; die
+     * Aktion „Abschließen“ wird ihr gar nicht erst angeboten.
+     */
+    public function test_review_card_carries_its_review_requirement_for_the_move_hint(): void {
+        $user = User::factory()->user()->create();
+        $type = \App\Models\Classification\EntryType::factory()->create(['organization_id' => $user->organization_id, 'requires_review' => true]);
+        $review = DiaryEntry::factory()->for($user)->create([
+            'organization_id' => $user->organization_id,
+            'entry_type_id' => $type->id,
+            'status' => Status::InProgress,
+            'is_archived' => false,
+        ]);
+        $plain = DiaryEntry::factory()->for($user)->create([
+            'organization_id' => $user->organization_id,
+            'status' => Status::InProgress,
+            'is_archived' => false,
+        ]);
+
+        $html = (string) $this->actingAs($user)->get(route('kanban.index'))
+            ->assertOk()
+            ->assertSee('data-status="' . Status::InReview->value . '"', false)
+            ->assertDontSee(route('diary.lifecycle', [$review, 'action' => 'complete']), false)
+            ->assertSee(route('diary.lifecycle', [$plain, 'action' => 'complete']), false)
+            ->getContent();
+
+        $this->assertMatchesRegularExpression('/data-id="' . $review->id . '"\s+data-status="1"\s+data-requires-review="1"/', $html);
+        $this->assertMatchesRegularExpression('/data-id="' . $plain->id . '"\s+data-status="1"\s+data-requires-review="0"/', $html);
+    }
+
     public function test_kanban_limits_entries_to_200_for_large_ranges(): void {
         $user = User::factory()->user()->create();
         DiaryEntry::factory()->count(250)->for($user)->create(['is_archived' => false]);

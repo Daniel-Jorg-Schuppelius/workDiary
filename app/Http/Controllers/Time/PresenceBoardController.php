@@ -16,7 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Absence\{SickLeave, Vacation};
 use App\Models\Platform\{Organization, User};
 use App\Models\Schedule\ScheduledShift;
-use App\Services\Attendance\EmergencyAttendanceService;
+use App\Services\Attendance\{EmergencyAttendanceService, PresenceStatusService};
 use App\Services\Calendar\HolidayService;
 use App\Services\Flextime\WorkScheduleResolver;
 use Carbon\CarbonImmutable;
@@ -31,6 +31,9 @@ use Illuminate\View\View;
  * Nutzt dieselbe Momentaufnahme wie die Notfallliste (MVP-518), aber ohne
  * deren sensible Detailtiefe und ohne eigene Berechtigungsstufe — sichtbar
  * für alle angemeldeten Mitglieder der Organisation.
+ *
+ * Selbstauskunft (MVP-1669): jede Person setzt ihren Stand selbst („nicht
+ * stören“, „kurz weg“, „außer Haus“) — nur der aktuelle Stand, kein Verlauf.
  */
 class PresenceBoardController extends Controller {
     public function index(EmergencyAttendanceService $service): View {
@@ -47,6 +50,8 @@ class PresenceBoardController extends Controller {
         return view('presence.board', [
             'snapshot' => $snapshot,
             'returns' => $this->returnTimes($snapshot),
+            // Selbstauskunft (MVP-1669): der eigene Stand für „Mein Stand“; die der anderen zeigt <x-presence-status>.
+            'myStatus' => app(PresenceStatusService::class)->current($user),
         ]);
     }
 

@@ -636,6 +636,63 @@ return [
             'already_assigned' => 'Der Umsatz ist bereits einem Beleg zugeordnet.',
         ],
     ],
+    // Kontierungsvorschläge für Bankumsätze ohne Beleg (Feature 207, MVP-1660).
+    'suggestions' => [
+        'title' => 'Kontierungsvorschläge',
+        'subtitle' => 'Bankumsätze ohne Beleg, die Ihre Organisation schon einmal so gebucht hat.',
+        'hint' => 'Vorgeschlagen wird nur, was Ihre Organisation selbst schon so gebucht hat — erkannt an Mandatsreferenz, Gläubiger-ID, IBAN der Gegenpartei oder Stichwörtern im Verwendungszweck, in dieser Rangfolge. Die jüngste Buchung bestimmt den Vorschlag; eine Korrektur wirkt beim nächsten Mal. Gebucht wird nur, was Sie bestätigen.',
+        'empty' => 'Keine offenen Bankumsätze mit Vorschlag zum Bestätigen.',
+        'reason' => ':count-mal so gebucht, zuletzt :month, :basis',
+        'reason_mixed' => ':count von :total gleichartigen Buchungen so, zuletzt :month, :basis',
+        'deviates' => 'Der Betrag weicht um mehr als 10 % vom letzten Mal ab (zuletzt :last).',
+        'basis' => [
+            'mandate' => 'gleiche Mandatsreferenz',
+            'creditor' => 'gleiche Gläubiger-ID',
+            'iban' => 'gleiche IBAN der Gegenpartei',
+            'keywords' => 'gleiche Stichwörter im Verwendungszweck',
+        ],
+        'strength' => [
+            'strong' => 'Starker Vorschlag',
+            'medium' => 'Mittlerer Vorschlag',
+            'weak' => 'Schwacher Vorschlag',
+        ],
+        'warning' => [
+            'account_inactive' => 'Das Konto der letzten Buchung ist stillgelegt — bitte ein anderes wählen.',
+            'tax_code_invalid' => 'Das Steuerkennzeichen der letzten Buchung gilt am Buchungstag nicht — bitte prüfen.',
+        ],
+        'dialog' => [
+            'title' => 'Vorschlag aus Ihren früheren Buchungen',
+        ],
+        'kpi' => [
+            'groups' => 'Gruppen zum Bestätigen',
+            'singles' => 'Einzeln zu prüfen',
+            'without' => 'Offen ohne Vorschlag',
+        ],
+        'column' => [
+            'date' => 'Buchungstag',
+            'counterparty' => 'Gegenpartei und Verwendungszweck',
+            'booking' => 'Vorschau der Buchung',
+            'suggestion' => 'Vorschlag',
+        ],
+        'preview' => [
+            'credit' => 'Bank an :account',
+            'debit' => ':account an Bank',
+        ],
+        'singles' => [
+            'title' => 'Einzeln prüfen',
+            'subtitle' => 'Abweichender Betrag oder Hinweis zum Vorschlag — diese Umsätze buchen Sie einzeln im vorbelegten Dialog.',
+        ],
+        'action' => [
+            'open' => 'Kontierungsvorschläge',
+            'confirm_group' => 'Umsatz buchen|Alle :count Umsätze buchen',
+        ],
+        'confirm' => [
+            'group' => 'Diesen Umsatz wie angezeigt buchen?|Alle :count Umsätze wie angezeigt buchen?',
+        ],
+        'flash' => [
+            'confirmed' => 'Gebucht: :posted, zur Freigabe vorgelegt: :submitted, übersprungen: :skipped.',
+        ],
+    ],
     // Offener Posten strittig (MVP-1559).
     'dispute' => [
         'title' => 'Posten als strittig kennzeichnen',
@@ -1191,6 +1248,61 @@ return [
         'hint' => 'Erzeugt aus den Festbuchungen — nicht erneut aus den Belegen abgeleitet.',
         'action' => [
             'export' => 'Exportieren',
+            'check' => 'Prüfen und exportieren',
+        ],
+    ],
+
+    // Steuerprüfung vor dem DATEV-Export (Feature 207, MVP-1661).
+    'datev_check' => [
+        'title' => 'Steuerprüfung vor dem DATEV-Export',
+        'subtitle' => 'Zeitraum :from – :to',
+        'hint' => 'Prüft Konten und Steuerkennzeichen gegen die Automatikkonten des Kontenplans, bevor der Stapel geschrieben wird. Die Prüfung ändert nichts an der Übergabedatei. Fehler sperren den Export, bis sie berichtigt oder begründet freigegeben sind; Hinweise sind zur Durchsicht.',
+        'counts' => ':errors Fehler · :hints Hinweise',
+        'clean' => 'Keine Befunde — der Stapel kann exportiert werden.',
+        'blocked' => 'Der Export ist gesperrt: :count Fehler sind weder berichtigt noch freigegeben.',
+        'released_badge' => 'Freigegeben',
+        'column' => [
+            'severity' => 'Art',
+            'finding' => 'Befund',
+            'reference' => 'Buchung',
+        ],
+        'severity' => [
+            'error' => 'Fehler',
+            'hint' => 'Hinweis',
+        ],
+        'message' => [
+            'missing_tax_code' => 'Zeile auf :account ohne Steuerkennzeichen, obwohl die Buchung Steuer auf Konto :tax_account ausweist.',
+            'missing_tax_code_batch' => 'Beleg :ref: Steuersatz :rate % ohne Steuerschlüssel auf Konto :account, das kein Automatikkonto ist.',
+            'missing_vat_id' => 'Kennzeichen :code (:name) ohne USt-IdNr. des Partners.',
+            'missing_vat_id_domestic' => 'Kennzeichen :code (:name) ohne USt-IdNr. des Partners — bei inländischer Steuerschuld des Empfängers genügt die Steuernummer; bitte prüfen.',
+            'missing_vat_id_batch' => 'Beleg :ref: steuerfreie innergemeinschaftliche Lieferung oder Steuerschuld des Empfängers ohne USt-IdNr. des Kunden.',
+            'missing_vat_id_batch_domestic' => 'Beleg :ref: inländische Steuerschuld des Empfängers, Kunde ohne USt-IdNr. — die Steuernummer genügt; bitte prüfen.',
+            'inactive_account' => 'Konto :account ist stillgelegt.',
+            'automatic_suspended' => ':count Buchungssätze heben auf Konto :account die Automatik mit BU 40 auf.',
+            'rate_mismatch' => 'Konto :account führt :automatic (:automatic_rate %), die Zeile :code (:rate %).',
+            'rate_mismatch_batch' => 'Beleg :ref: Satz :rate % auf Automatikkonto :account mit :automatic_rate %.',
+        ],
+        'reference' => [
+            'journal' => 'Journal :no',
+            'document' => 'Beleg :ref',
+        ],
+        'action' => [
+            'export' => 'Exportieren',
+            'release' => 'Begründet freigeben',
+            'back' => 'Zurück zum Abschluss',
+        ],
+        'release' => [
+            'title' => 'Fehler begründet freigeben',
+            'hint' => 'Manche Fälle sind richtig, obwohl die Prüfung anschlägt, etwa ein Sonderfall der Kanzlei. Die Freigabe gilt für die angezeigten Fehler und wird mit Ihrer Begründung protokolliert; ein neuer Fehler sperrt wieder.',
+            'reason' => 'Begründung',
+            'no_permission' => 'Freigeben darf, wer das Recht „Steuerprüfung vor dem DATEV-Export freigeben“ hat.',
+        ],
+        'flash' => [
+            'released' => ':count Fehler begründet freigegeben.',
+            'nothing_to_release' => 'Es gibt keine offenen Fehler zum Freigeben.',
+        ],
+        'error' => [
+            'blocked' => 'Der DATEV-Export ist gesperrt: Die Steuerprüfung meldet Fehler, die weder berichtigt noch freigegeben sind.',
         ],
     ],
 

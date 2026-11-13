@@ -1,7 +1,7 @@
 ---
 title: "Configurer l'authentification à deux facteurs"
 topic: account.two-factor
-version: 1
+version: 2
 keywords:
     - 2FA
     - MFA
@@ -36,3 +36,13 @@ Si vous ne reconnaissez pas une connexion ou un appareil, utilisez « Ce
 n’était pas moi – sécuriser le compte » : toutes les sessions prennent fin, le
 mot de passe et les clés d’accès deviennent invalides, et vous recevez par
 e-mail un lien pour définir un nouveau mot de passe.
+
+**Connexion avec une passkey** : avec une passkey, vous vous connectez
+sans mot de passe (« Se connecter avec une passkey ») ; elle compte comme
+deux facteurs. Donnez un nom à chaque passkey lors de sa configuration :
+la liste affiche le nom et la dernière utilisation et permet de la
+renommer. La supprimer exige votre mot de passe ou une connexion récente.
+Si votre organisation exige une passkey pour votre rôle, chaque page mène
+à la configuration jusqu’à ce qu’une passkey soit enregistrée ; ensuite,
+la connexion ne fonctionne qu’avec elle, un code de récupération restant
+la voie de secours.

@@ -54,11 +54,19 @@ final class NotificationText {
      */
     public static function message(array $data, ?string $tz = null): string {
         $key = $data['message_key'] ?? null;
-        if (! is_string($key) || $key === '') {
-            return (string) ($data['message'] ?? '');
+        $text = ! is_string($key) || $key === ''
+            ? (string) ($data['message'] ?? '')
+            : self::render($key, (array) ($data['message_params'] ?? []), $tz);
+
+        // Zustellung an eine Vertretung (Feature 202): Hinweis vor der Nachricht.
+        $onBehalfOf = $data['on_behalf_of'] ?? null;
+        if (is_string($onBehalfOf) && $onBehalfOf !== '') {
+            $hint = (string) __('delegation.notification.on_behalf_of', ['name' => $onBehalfOf]);
+
+            return $text !== '' ? $hint . ' ' . $text : $hint;
         }
 
-        return self::render($key, (array) ($data['message_params'] ?? []), $tz);
+        return $text;
     }
 
     /**

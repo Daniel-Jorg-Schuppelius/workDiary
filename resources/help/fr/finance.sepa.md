@@ -37,6 +37,12 @@ qu’elle est atteignable, sinon l’échéance. Le montant est alors déjà ré
 de l’escompte. Chaque position est décochable ; une facture sans IBAN
 s’affiche comme bloquée et n’entre pas dans l’ordre.
 
+**GiroCode et PDF groupé :** Si l’IBAN du GiroCode d’une facture diffère de
+la facture ou des données de base du fournisseur, la position est bloquée
+jusqu’à ce qu’une personne habilitée à valider confirme l’écart via
+**Confirmer l’IBAN** ; la validation d’un ordre le vérifie à nouveau. Un PDF
+groupé dont les limites de facture ne sont pas encore décidées n’est pas payé.
+
 **Trois étapes :** composer (brouillon) → valider → exporter. La validation
 est un droit distinct : qui compose l’ordre n’a pas nécessairement le droit
 de le valider. Après l’export, l’ordre est immuable ; l’annulation n’est

@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Services\Accounting;
 
 use App\Enums\Finance\{RecurringRunStatus, RecurringTemplateKind, RecurringTemplateStatus};
-use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Accounting\{AccountingEntry, AccountingRecurringRun, AccountingRecurringTemplate};
 use App\Models\Document\Document;
@@ -167,7 +166,7 @@ class RecurringAccountingService {
         return IncomingEInvoice::query()
             ->purchases()
             ->where('organization_id', $run->organization_id)
-            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
+            ->whereNotIn('status', IncomingEInvoice::CLOSED_STATUSES)
             ->whereIn('document_id', Document::query()->visibleTo($viewer)->select('id'))
             ->whereNotIn('id', AccountingRecurringRun::query()
                 ->where('fulfilled_by_type', MorphMap::alias(IncomingEInvoice::class))

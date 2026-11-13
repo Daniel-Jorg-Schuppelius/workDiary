@@ -12,6 +12,7 @@ namespace App\Observers;
 
 use App\Enums\Diary\Status;
 use App\Enums\Notification\NotificationEvent;
+use App\Models\Classification\EntryType;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Services\Notification\NotificationDispatcher;
@@ -19,6 +20,17 @@ use App\Support\Setting;
 use Illuminate\Support\Facades\Auth;
 
 class DiaryEntryObserver {
+    /**
+     * Prüfpflicht der Eintragsart (Feature 198): jeder Anlegeweg übernimmt sie,
+     * solange der Aufrufer sie nicht selbst setzt (Folgeperiode, Demo).
+     */
+    public function creating(DiaryEntry $entry): void {
+        if ($entry->entry_type_id === null || $entry->isDirty('requires_review')) {
+            return;
+        }
+        $entry->requires_review = (bool) EntryType::query()->withoutGlobalScopes()->whereKey($entry->entry_type_id)->value('requires_review');
+    }
+
     public function created(DiaryEntry $entry): void {
         $actor = Auth::user();
         $entry->record('order.created', [], $actor instanceof User ? $actor : null, extra: [
@@ -57,6 +69,8 @@ class DiaryEntryObserver {
      */
     public function deleting(DiaryEntry $entry): void {
         $entry->comments()->delete();
+        // Klassifikationen am Auftrag (Feature 198) hängen am Pivot ohne Kaskade.
+        $entry->classifications()->detach();
     }
 
     /** Statuswechsel-Benachrichtigung über den zentralen Dispatcher (B7). */

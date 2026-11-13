@@ -23,6 +23,10 @@
     <x-index-page overflow="clip" :subtitle="__('accounting.inbox.subtitle')">
         <x-slot:actions>
             @if ($canPost)
+                {{-- Kontierungsvorschläge für Bankumsätze ohne Beleg (Feature 207, MVP-1660). --}}
+                <x-icon-btn icon="lightbulb" size="sm" tone="ghost" show-label
+                            :href="route('finance.accounting.inbox.suggestions.index')"
+                            :label="__('accounting.suggestions.action.open')" />
                 {{-- Interne Umbuchung (MVP-681): eine Buchung für beide Seiten. --}}
                 <x-icon-btn icon="swap_horiz" size="sm" tone="ghost" show-label
                             data-entry-modal-trigger

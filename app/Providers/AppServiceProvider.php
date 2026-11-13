@@ -481,6 +481,10 @@ class AppServiceProvider extends ServiceProvider {
             'locale' => (string) config('geoip.locale', 'de'),
         ]);
 
+        // Pixelgrenze aller Rasterwege des pdf-toolkit (Sicherheitsprüfung Feature 208, H1):
+        // Vorschau, Seitenbilder, Barcodes und OCR — auch die synchrone Erkennung beim Upload.
+        \PDFToolkit\Helper\RasterLimit::configure((int) config('media.pdf_raster_max_pixels', 70_000_000));
+
         // LIKE-Suche mit escapten Wildcards (`%`/`_` in Nutzereingaben wirken
         // sonst als Wildcards). Explizites ESCAPE-Zeichen '!' statt Backslash,
         // da Backslash in MySQL- und SQLite-String-Literalen unterschiedlich
@@ -1298,6 +1302,12 @@ class AppServiceProvider extends ServiceProvider {
             \App\Dashboard\Widgets\RecentAttachmentsWidget::class,
             \App\Dashboard\Widgets\TeamActivityWidget::class,
             \App\Dashboard\Widgets\KanbanStatusWidget::class,
+            // Interne Prüfung der Aufträge (Feature 198, MVP-1636).
+            \App\Dashboard\Widgets\OrderReviewWidget::class,
+            // Aufnahmen je Stufe (Feature 200, MVP-1641).
+            \App\Dashboard\Widgets\LeadIntakesWidget::class,
+            // Leistungsplan: offene Perioden der zuständigen Person (Feature 199, MVP-1639).
+            \App\Dashboard\Widgets\MyPeriodsWidget::class,
             \App\Dashboard\Widgets\ServiceTicketsWidget::class,
             \App\Dashboard\Widgets\ChatUnreadWidget::class,
             \App\Dashboard\Widgets\ApprovalsWidget::class,

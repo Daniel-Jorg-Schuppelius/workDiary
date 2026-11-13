@@ -34,38 +34,8 @@ import { __ } from "./i18n.js";
 import { submitForm } from "./lib/http.js";
 import { sameOriginPath } from "./lib/html.js";
 import { pointerSort } from "./lib/pointer-sort.js";
-
-// from-Status → to-Status → Aktion (Status-Codes aus App\Enums\Diary\Status).
-// dialog: Dialog-ID für Pflichtangaben; fields: feste Zusatzfelder;
-// blockedMessage: Zug existiert fachlich, ist aber bewusst nicht per Geste.
-/**
- * @typedef {object} TransitionSpec
- * @property {string} [action]
- * @property {string} [dialog]
- * @property {Record<string, string>} [fields]
- * @property {string} [blockedMessage]
- */
-/** @type {Record<string, Record<string, TransitionSpec>>} */
-const TRANSITIONS = {
-    2: {
-        4: { action: "accept" },
-        8: { action: "cancel", dialog: "kanban-cancel-dialog" },
-    },
-    4: {
-        1: { action: "start" },
-        8: { action: "cancel", dialog: "kanban-cancel-dialog" },
-    },
-    1: {
-        3: { action: "pause", fields: { reason: "customer" } },
-        5: { action: "pause", fields: { reason: "material" } },
-        "-1": { action: "complete", dialog: "kanban-complete-dialog" },
-        8: { action: "cancel", dialog: "kanban-cancel-dialog" },
-    },
-    3: { 1: { action: "resume" } },
-    5: { 1: { action: "resume" } },
-    "-1": { 6: { blockedMessage: "js.kanban.handover_via_order" } },
-    6: { 7: { action: "markInvoiced", dialog: "kanban-invoice-dialog" } },
-};
+// Fachliche Zug-Entscheidung (Übergangstabelle, Prüfspalten) ohne DOM — getestet in tests/frontend.
+import { planMove as planStatusMove } from "./lib/kanban-moves.js";
 
 const MOVE_DIALOG_ID = "kanban-move-dialog";
 
@@ -127,21 +97,16 @@ function cardActions(card) {
  *
  * @param {HTMLElement} card
  * @param {string} toStatus
- * @returns {{spec: TransitionSpec, url: string} | {error: string, tone: string} | null}
+ * @returns {import("./lib/kanban-moves.js").PlannedMove | import("./lib/kanban-moves.js").RejectedMove | null}
  *          null = kein Zug (gleiche Spalte / unvollständige Daten)
  */
 function planMove(card, toStatus) {
-    const from = card.dataset.status ?? "";
-    if (from === "" || toStatus === "" || from === toStatus) return null;
-
-    const spec = (TRANSITIONS[from] || {})[toStatus];
-    if (!spec) return { error: "js.kanban.invalid_move", tone: "warning" };
-    if (spec.blockedMessage) return { error: spec.blockedMessage, tone: "info" };
-
-    const url = cardActions(card)[/** @type {string} */ (spec.action)];
-    if (!url) return { error: "js.kanban.not_allowed", tone: "warning" };
-
-    return { spec, url };
+    return planStatusMove(
+        card.dataset.status ?? "",
+        toStatus,
+        cardActions(card),
+        card.dataset.requiresReview === "1",
+    );
 }
 
 /**

@@ -10,13 +10,17 @@
 
 namespace App\Http\Requests\Diary;
 
-use App\Enums\Diary\{LocationMode, Mode, Priority};
+use App\Enums\Classification\ClassificationDomain;
+use App\Enums\Diary\{LocationMode, Mode, Priority, Status};
+use App\Enums\Period\PeriodKind;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use App\Models\Classification\EntryType;
 use App\Models\Customer\Customer;
 use App\Rules\IsoCountryCode;
-use App\Support\Tz;
+use App\Services\Classification\ClassificationResolver;
+use App\Support\{OrganizationContext, Tz};
+use App\Support\Period\PeriodKey;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\ValueObjects\Duration;
@@ -44,6 +48,8 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
         // Folgeauftrag aus offenem Punkt (Feature 139): Prefill-Hidden-Felder.
         'project_id' => \App\Models\Project\Project::class,
         'open_issue_id' => \App\Models\Diary\OpenIssue::class,
+        // Benannte prüfende Person (Feature 198).
+        'reviewer_user_id' => \App\Models\Platform\User::class,
     ];
 
     protected function prepareForValidation(): void {
@@ -60,6 +66,16 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
         }
         if ($this->input('assigned_user_id') === '' || $this->input('assigned_user_id') === '0') {
             $this->merge(['assigned_user_id' => null]);
+        }
+        // Periode und Prüfung (Feature 198): Schlüssel kanonisch, Leerwerte als null.
+        foreach (['reviewer_user_id', 'product_group'] as $key) {
+            if ($this->input($key) === '' || $this->input($key) === '0') {
+                $this->merge([$key => null]);
+            }
+        }
+        if ($this->has('period_key')) {
+            $period = StringHelper::trimToNull(is_string($this->input('period_key')) ? $this->input('period_key') : null);
+            $this->merge(['period_key' => $period !== null ? (PeriodKey::tryParse($period)?->key() ?? $period) : null]);
         }
         if ($this->input('asset_id') === '' || $this->input('asset_id') === '0') {
             $this->merge(['asset_id' => null]);
@@ -133,7 +149,8 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
         return [
             'content' => ['required', 'string', 'max:65535'],
             'response' => ['nullable', 'string', 'max:65535'],
-            'status' => ['required', 'integer', 'in:-1,1,2,3,4,5,6,7,8'],
+            // Der Status kommt nur als Rundreise aus dem Formular; gesetzt wird er im Lebenszyklus.
+            'status' => ['required', Rule::enum(Status::class)],
             'start_at' => [$startRequired ? 'required' : 'nullable', 'date'],
             'end_at' => [$startRequired ? 'required' : 'nullable', 'date', 'after_or_equal:start_at'],
 
@@ -171,7 +188,46 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
 
             'tour_id' => [$requiresTour ? 'required' : 'nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tours')],
             'tour_position' => ['nullable', 'integer', 'min:0', 'max:65535'],
+
+            // Periode (Feature 198, MVP-1634): Pflicht beim Anlegen, wenn die Eintragsart sie verlangt.
+            'period_key' => [$this->periodRequired($type) ? 'required' : 'nullable', 'string', 'max:10', $this->periodRule($type)],
+            'product_group' => ['nullable', 'string', 'max:64', $this->productGroupRule()],
+            'reviewer_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
         ];
+    }
+
+    /** Pflicht nur beim Anlegen: Bestand ohne Periode bleibt bearbeitbar. */
+    private function periodRequired(?EntryType $type): bool {
+        return $type !== null && $type->requiredPeriodKinds() !== [] && $this->route('diary') === null;
+    }
+
+    /** Gültiger Schlüssel; verlangt die Eintragsart Periodenarten, muss er zu einer davon passen. */
+    private function periodRule(?EntryType $type): \Closure {
+        return static function (string $attribute, mixed $value, \Closure $fail) use ($type): void {
+            $period = is_string($value) ? PeriodKey::tryParse($value) : null;
+            if ($period === null) {
+                $fail((string) __('diary.period.invalid'));
+
+                return;
+            }
+            $kinds = $type?->requiredPeriodKinds() ?? [];
+            if ($kinds !== [] && ! in_array($period->kind, $kinds, true)) {
+                $fail((string) __('diary.period.kind_mismatch', [
+                    'kinds' => implode(', ', array_map(static fn (PeriodKind $kind): string => $kind->label(), $kinds)),
+                ]));
+            }
+        };
+    }
+
+    /** Produktgruppe nur aus den aktiven Klassifikationen der Organisation. */
+    private function productGroupRule(): \Closure {
+        return static function (string $attribute, mixed $value, \Closure $fail): void {
+            $exists = is_string($value) && app(ClassificationResolver::class)
+                ->resolveCode(OrganizationContext::currentId(), ClassificationDomain::ProductGroup, $value) !== null;
+            if (! $exists) {
+                $fail((string) __('diary.product_group.invalid'));
+            }
+        };
     }
 
     /** @return array<string, string> */

@@ -1,7 +1,7 @@
 ---
 title: "Zwei-Faktor-Authentifizierung einrichten"
 topic: account.two-factor
-version: 1
+version: 2
 keywords:
     - 2FA
     - MFA
@@ -49,3 +49,12 @@ Recovery-Codes niemals mit anderen Personen.
 Kennen Sie eine Anmeldung oder ein Gerät nicht, nutzen Sie „Das war ich nicht
 – Konto sichern“: Alle Sitzungen enden, Passwort und Passkeys werden ungültig,
 und Sie erhalten per E-Mail einen Link zum Festlegen eines neuen Passworts.
+
+**Anmeldung mit Passkey**: Mit einem Passkey melden Sie sich ohne
+Passwort an („Mit Passkey anmelden“); er zählt als zwei Faktoren. Geben
+Sie jedem Passkey beim Einrichten einen Namen – die Liste zeigt Name und
+letzte Nutzung und erlaubt das Umbenennen. Entfernen verlangt Ihr
+Passwort oder eine frische Anmeldung. Verlangt Ihre Organisation für
+Ihre Rolle einen Passkey, führt jede Seite zur Einrichtung, bis einer
+hinterlegt ist; danach gelingt die Anmeldung nur mit Passkey, ein
+Wiederherstellungscode bleibt der Notweg.

@@ -83,6 +83,16 @@ class SickLeave extends Model {
         'cancelled_at' => 'datetime',
     ];
 
+    protected static function booted(): void {
+        // Vertretung (Feature 202, MVP-1648): eine stornierte Krankmeldung beendet die Vertretung aus ihr.
+        static::updated(static function (self $sickLeave): void {
+            if ($sickLeave->wasChanged('cancelled_at') && $sickLeave->cancelled_at !== null) {
+                $actor = auth()->user();
+                app(\App\Services\Delegation\WorkDelegationService::class)->endForAbsence($sickLeave, $actor instanceof User ? $actor : null);
+            }
+        });
+    }
+
     // ── Relations ──────────────────────────────────────────────────────────
 
     /** @return BelongsTo<User, $this> */

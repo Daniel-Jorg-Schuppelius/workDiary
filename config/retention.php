@@ -65,6 +65,15 @@ return [
             'basis' => ['DE' => 'Art. 6 Abs. 1 lit. f DSGVO (Praxis 6 Monate)', 'AT' => 'Art. 6 Abs. 1 lit. f DSGVO', 'CH' => 'DSG (Zweckbindung)'],
         ],
 
+        // Aufnahmeakten am Lead (Feature 200, MVP-1643): die Frist steht an der
+        // Akte (`retention_until`) und kommt aus der Regel ihres Prüfpakets —
+        // GwG fünf Jahre ab Schluss des Kalenderjahres, in dem die
+        // Geschäftsbeziehung endet. Der Eintrag nennt Bereich und Grundlage.
+        'lead_intakes' => [
+            'years' => ['DE' => 5],
+            'basis' => ['DE' => 'Art. 6 Abs. 1 lit. c DSGVO i. V. m. § 8 Abs. 4 GwG (Paketregel der Akte)'],
+        ],
+
         'applications' => [
             'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
             'basis' => ['DE' => 'AGG §15 Abs. 4 / ArbGG §61b (Praxis 4–6 Monate)', 'AT' => 'GlBG §15 (Praxis 7 Monate)', 'CH' => 'DSG (Zweckbindung)'],

@@ -16,6 +16,7 @@ return [
         'submission' => 'Ausgefülltes Formular',
         'values' => 'Eingaben',
         'panel' => 'Formulare',
+        'drafts' => 'Meine Entwürfe',
     ],
 
     'subtitle' => [
@@ -65,6 +66,8 @@ return [
         'download_pdf' => 'PDF herunterladen',
         'clear_signature' => 'Signatur leeren',
         'back' => 'Zurück',
+        'continue' => 'Weiter ausfüllen',
+        'discard' => 'Entwurf verwerfen',
     ],
 
     'filter' => [
@@ -112,6 +115,17 @@ return [
 
         'no_upload_field' => 'Für diesen Feld-Schlüssel gibt es kein Datei-/Fotofeld im Formular.',
         'template_not_active' => 'Diese Vorlage ist nicht aktiv und kann nicht ausgefüllt werden.',
+        'not_draft' => 'Dieses Formular ist kein Entwurf mehr.',
+    ],
+
+    // Entwürfe langer Formulare (Feature 203, MVP-1650).
+    'draft' => [
+        'resumed' => 'Ihr Entwurf (zuletzt gespeichert :date) wird fortgesetzt. Abgesendet wird erst mit „Absenden“.',
+        'rebased' => 'Die Vorlage wurde seit Ihrem Entwurf geändert. Antworten, deren Antwortart nicht mehr passt, stehen als Ergänzung bei der Frage.',
+        'saved_at' => 'Zuletzt gespeichert :date',
+        'confirm_discard' => 'Entwurf wirklich verwerfen? Die gespeicherten Antworten gehen verloren.',
+        'discarded' => 'Entwurf verworfen.',
+        'show_hint' => 'Entwurf – noch nicht abgesendet.',
     ],
 
     'flash' => [

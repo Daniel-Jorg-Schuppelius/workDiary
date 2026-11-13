@@ -64,7 +64,8 @@ class QueueBoardController extends Controller {
             $query->where('queue_id', $queueId);
         }
         if ($assigneeFilter === 'me') {
-            $query->where('assigned_to_user_id', $user->id);
+            // Auch die Tickets der heute Vertretenen (Feature 202, MVP-1648).
+            $query->whereIn('assigned_to_user_id', app(\App\Services\Delegation\ActsForResolver::class)->assigneeIds($user));
         } elseif ($assigneeFilter === 'unassigned') {
             $query->whereNull('assigned_to_user_id');
         }

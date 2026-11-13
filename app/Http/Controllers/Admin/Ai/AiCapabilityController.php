@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Admin\Ai;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection};
-use App\Services\Ai\{AiCapabilityRegistry, AiMemoryService, AiRoutingResolver};
+use App\Services\Ai\{AiCapabilityRegistry, AiConnectionPrivacy, AiMemoryService, AiRoutingResolver};
 use App\Services\Ai\Exceptions\AiUnavailableException;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -112,6 +112,7 @@ class AiCapabilityController extends Controller {
         AiCapabilityRegistry $registry,
         AiRoutingResolver $resolver,
         AiMemoryService $memory,
+        AiConnectionPrivacy $privacy,
     ): View {
         Gate::authorize('viewAny', AiProviderConnection::class);
         abort_unless($registry->has($capability), 404);
@@ -132,6 +133,11 @@ class AiCapabilityController extends Controller {
             'candidates' => $candidates,
             'unavailableReason' => $unavailableReason,
             'cloudAllowed' => $resolver->cloudAllowed($organization, $definition),
+            // Maskierung je Kandidat (MVP-1671): Cloud immer, lokal nach Einstellung.
+            'maskedIds' => array_values(array_map(
+                static fn (AiProviderConnection $c): int => (int) $c->id,
+                array_filter($candidates, static fn (AiProviderConnection $c): bool => $privacy->masksFor($organization, $c)),
+            )),
             'memoryCounts' => [
                 'glossary' => count($memory->glossaryFor($organization, $capability)),
                 'style_rules' => count($memory->styleRulesFor($organization, $capability)),

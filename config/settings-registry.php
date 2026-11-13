@@ -485,6 +485,10 @@ return [
     // --- KI-Monatsbudget je Familie (Feature 025, MVP-399): LLM in Token, Übersetzung in Zeichen; leer → config('ai.budget') ---
     'ai.budget.monthly_units.llm' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:0|max:2000000000'],
     'ai.budget.monthly_units.translation' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:0|max:2000000000'],
+    // --- KI-Datenschutz (Feature 025, MVP-1671/1672): Freigabepflicht je Verbindung (neue Organisationen an, Bestand per Migration aus), Frist in Monaten, Maskierung lokaler Verbindungen ---
+    'ai.privacy.require_approval' => ['type' => 'boolean', 'scopes' => ['system', 'organization']],
+    'ai.privacy.approval_months' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'min:1|max:60'],
+    'ai.privacy.mask_local' => ['type' => 'boolean', 'scopes' => ['system', 'organization']],
 
     // --- Nutzungsabrechnung je Mandant (MVP-956): Einheitspreise des Betreibers ---
     'platform_billing.base_fee' => ['type' => 'decimal', 'scopes' => ['system'], 'rules' => 'nullable|min:0|max:100000', 'fallback' => 0],
@@ -492,4 +496,28 @@ return [
     'platform_billing.per_active_user' => ['type' => 'decimal', 'scopes' => ['system'], 'rules' => 'nullable|min:0|max:10000', 'fallback' => 0],
     'platform_billing.per_gb' => ['type' => 'decimal', 'scopes' => ['system'], 'rules' => 'nullable|min:0|max:10000', 'fallback' => 0],
     'platform_billing.currency' => ['type' => 'string', 'scopes' => ['system'], 'rules' => 'nullable|size:3', 'fallback' => 'EUR'],
+
+    // --- Kundenfristen (Feature 197, MVP-1630/1633): eingeschaltete Regelsätze (Liste der Schlüssel,
+    // setzt das Branchenprofil `deadline_rule_sets` bzw. der Einstellungsdialog der Fristenübersicht),
+    // Vorwarnung in Tagen (Vorgabe 7) und Abweichungen je Regelsatz (Schlüssel → Tage) ---
+    'customer_deadlines.rule_sets' => ['type' => 'json', 'scopes' => ['organization'], 'rules' => 'nullable', 'fallback' => []],
+    'customer_deadlines.warn_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:0|max:90', 'fallback' => 7],
+    'customer_deadlines.warn_days_by_rule_set' => ['type' => 'json', 'scopes' => ['organization'], 'rules' => 'nullable', 'fallback' => []],
+
+    // --- Aufnahmeakte (Feature 200, MVP-1641–1643): eingeschaltete Prüfpakete (Schlüssel; Profil `intake_packages`
+    // oder Einstellungsdialog der Aufnahmen), Paketdaten aus dem Profil, Aktualisierung je GwG-Risikostufe in Monaten
+    // (Vorgabe jährlich) und zweiter Blick vor der Annahme (Vorgabe aus) ---
+    'lead_intake.packages' => ['type' => 'json', 'scopes' => ['organization'], 'rules' => 'nullable', 'fallback' => []],
+    'lead_intake.package_definitions' => ['type' => 'json', 'scopes' => ['organization'], 'rules' => 'nullable', 'fallback' => []],
+    'lead_intake.gwg_refresh_months' => ['type' => 'json', 'scopes' => ['organization'], 'rules' => 'nullable', 'fallback' => []],
+    'lead_intake.second_review' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+
+    // --- Arbeitsvorrat (Feature 179, MVP-1670): ab so vielen Tagen ohne Bewegung gilt ein Vorgang als ruhend ---
+    'work_queue.dormant_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:1|max:365', 'fallback' => 14],
+
+    // --- Wünsche an die App (Feature 206, MVP-1677): Herstellerkanal für selbst betriebene Installationen.
+    // Eigener Opt-in nach der Regel aus Feature 036 (externer Versand nur mit Zustimmung), Vorgabe aus;
+    // Herstelleradresse leer → config('support.module_contact') ---
+    'wishes.vendor_channel' => ['type' => 'boolean', 'scopes' => ['system'], 'fallback' => false],
+    'wishes.vendor_address' => ['type' => 'string', 'scopes' => ['system'], 'rules' => 'nullable|email|max:191'],
 ];

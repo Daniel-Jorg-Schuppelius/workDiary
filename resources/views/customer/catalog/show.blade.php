@@ -9,22 +9,25 @@
 @extends('customer.layout')
 
 {{-- Bestellseite (Feature 065, MVP-154): 032-Formular aus der Vorlage des
-     Katalogeintrags; Upload-/Signatur-Felder werden im Portal ausgelassen. --}}
+     Katalogeintrags; Upload-/Signatur-Felder werden im Portal ausgelassen.
+     Lange Formulare (Feature 203): <x-field-form> gliedert in Abschnitte mit Fortschritt. --}}
 
 @section('content')
     <x-page-toolbar :title="$item->name" :subtitle="$item->description" :back="route('customer.catalog.index')" :back-label="__('Servicekatalog')" class="mb-4" />
 
-    <x-card as="form" class="space-y-3" method="POST" action="{{ route('customer.catalog.order', $item) }}">
+    <form class="space-y-3" method="POST" action="{{ route('customer.catalog.order', $item) }}">
         @csrf
 
-        @forelse ($fields as $field)
-            <x-field-input :field="$field" :wide="false" />
-        @empty
-            <p class="text-sm text-muted">{{ __('Für diese Leistung sind keine weiteren Angaben nötig.') }}</p>
-        @endforelse
+        @if ($fields->isEmpty())
+            <x-card>
+                <p class="text-sm text-muted">{{ __('Für diese Leistung sind keine weiteren Angaben nötig.') }}</p>
+            </x-card>
+        @else
+            <x-field-form :schema="$fields" :title="$item->name" :heading-level="2" />
+        @endif
 
         <x-button type="submit" size="md">{{ __('Bestellung absenden') }}</x-button>
-    </x-card>
+    </form>
 
     @if ($canRequest ?? false)
         <x-card class="mt-4">

@@ -1,7 +1,7 @@
 ---
 title: "Configurar la autenticación de dos factores"
 topic: account.two-factor
-version: 1
+version: 2
 keywords:
     - 2FA
     - MFA
@@ -36,3 +36,12 @@ Si no reconoce un inicio de sesión o un dispositivo, utilice «No fui yo –
 proteger la cuenta»: todas las sesiones terminan, la contraseña y las llaves
 de acceso dejan de ser válidas y recibe por correo electrónico un enlace para
 establecer una nueva contraseña.
+
+**Inicio de sesión con passkey**: con una passkey inicia sesión sin
+contraseña («Iniciar sesión con passkey»); cuenta como dos factores. Dé
+un nombre a cada passkey al configurarla: la lista muestra el nombre y el
+último uso y permite cambiar el nombre. Eliminarla exige su contraseña o
+un inicio de sesión reciente. Si su organización exige una passkey para
+su rol, cada página lleva a la configuración hasta que haya una; después
+solo se puede iniciar sesión con la passkey y un código de recuperación
+sigue siendo la vía de emergencia.

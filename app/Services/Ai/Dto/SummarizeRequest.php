@@ -56,4 +56,8 @@ final class SummarizeRequest implements AiRequestInterface {
     public function estimatedUnits(): int {
         return $this->estimateTokens(implode("\n", $this->items));
     }
+
+    public function mapTexts(\Closure $map): static {
+        return new self(array_map($map, $this->items), $this->language, $this->period, $this->styleRules, $this->glossary);
+    }
 }

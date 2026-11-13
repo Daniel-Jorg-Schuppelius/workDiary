@@ -132,7 +132,8 @@ class OrglessUserDeniedTest extends TestCase {
                 // 32 Zeichen: Termincode des Vereins-Check-ins (club.checkin.show, MVP-1004).
                 // `221`: EFB-Formblatt (bill-of-quantities.efb, MVP-1056).
                 // 40 Zeichen: Meldungen des Shop-Rücksprungs (oci-carts.result, MVP-1071).
-                foreach (['1', 'a', 'csv', 'block', 'timesheet', 'sign', str_repeat('a', 32), '221', str_repeat('a', 40)] as $candidate) {
+                // `jahresliste`: Importvorlage des Leistungsplans (service-plan.import.template, MVP-1640).
+                foreach (['1', 'a', 'csv', 'block', 'timesheet', 'sign', str_repeat('a', 32), '221', str_repeat('a', 40), 'jahresliste'] as $candidate) {
                     if (! is_string($where) || preg_match('#^(?:' . $where . ')$#', $candidate) === 1) {
                         return $candidate;
                     }

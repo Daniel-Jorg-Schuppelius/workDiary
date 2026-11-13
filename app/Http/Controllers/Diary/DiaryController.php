@@ -67,7 +67,8 @@ class DiaryController extends Controller {
         $row = DiaryEntry::query()->selectRaw(
             'COUNT(CASE WHEN is_archived = 0 THEN 1 END) as cnt_all,' .
                 'COUNT(CASE WHEN is_archived = 0 AND status = 2 THEN 1 END) as cnt_planned,' .
-                'COUNT(CASE WHEN is_archived = 0 AND status IN (1,3,4,5) THEN 1 END) as cnt_active,' .
+                // 9–11: Prüfzustände (Feature 198) zählen zu „In Bearbeitung“.
+                'COUNT(CASE WHEN is_archived = 0 AND status IN (1,3,4,5,9,10,11) THEN 1 END) as cnt_active,' .
                 'COUNT(CASE WHEN is_archived = 0 AND status IN (-1,6,7) THEN 1 END) as cnt_done,' .
                 'COUNT(CASE WHEN is_archived = 0 AND status = 8 THEN 1 END) as cnt_cancelled,' .
                 'COUNT(CASE WHEN is_archived = 1 THEN 1 END) as cnt_archived'
@@ -89,6 +90,8 @@ class DiaryController extends Controller {
             'allTags' => $this->allTags(),
             'entryTypes' => EntryType::query()->active()->ordered()->get(),
             'customColumns' => app(\App\Services\Fields\CustomFieldService::class)->listColumnsFor($entries->getCollection(), DiaryEntry::class, (int) Auth::user()?->organization_id),
+            // Mehrfachauswahl „Zuständigkeit ändern“ (Feature 202, MVP-1648): aktive Mitglieder als Ziel.
+            'assigneeOptions' => User::inCurrentOrganization()->whereNull('deactivated_at')->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -180,6 +183,9 @@ class DiaryController extends Controller {
         $custom = $this->validatedCustomFields($request, DiaryEntry::class);
         unset($data['custom'], $data['planned_duration']); // Eingabeform von planned_minutes
         $data['status'] = \App\Enums\Diary\Status::Planned->value;
+        // Produktgruppe (Feature 198) hängt als Klassifikation am Auftrag, nicht als Spalte.
+        $productGroup = isset($data['product_group']) && is_string($data['product_group']) ? $data['product_group'] : null;
+        unset($data['product_group']);
         $tagIds = $this->extractTagIds($request);
         $newTagNames = $this->extractNewTagNames($request);
 
@@ -215,8 +221,12 @@ class DiaryController extends Controller {
         }
         $candidate = new DiaryEntry($data);
         $candidate->organization_id = $ownerOrganizationId;
+        $values = $this->requirements->valuesFor($candidate);
+        if ($productGroup !== null) {
+            $values[\App\Enums\Classification\ClassificationDomain::ProductGroup->value] = [$productGroup];
+        }
         try {
-            $this->requirements->assertSatisfied($candidate, ClassificationRequirementPhase::OnCreate);
+            $this->requirements->assertSatisfied($candidate, ClassificationRequirementPhase::OnCreate, $values);
         } catch (ClassificationRequirementException $exception) {
             return back()->withErrors(['classification' => $exception->getMessage()])->withInput();
         }
@@ -225,6 +235,9 @@ class DiaryController extends Controller {
         $entry = $owner->diaryEntries()->create($data);
         $entry->syncTagsFromInput($tagIds, $newTagNames);
         $entry->syncCustomFields($custom);
+        if ($productGroup !== null) {
+            $entry->assignProductGroup($productGroup);
+        }
 
         if ($issue !== null) {
             app(OpenIssueService::class)->linkFollowUp($issue, $entry, $auth);
@@ -246,6 +259,9 @@ class DiaryController extends Controller {
             'journal.actor:id,name',
             'protocols',
             'entryType:id,slug,label',
+            'reviewer:id,name',
+            'reviewSubmitter:id,name',
+            'classifications',
         ]);
 
         // Datenqualität (Feature 024): rein lesende Hinweise auf fehlende
@@ -344,7 +360,7 @@ class DiaryController extends Controller {
     public function edit(Request $request, DiaryEntry $diary): View {
         Gate::authorize('update', $diary);
 
-        $diary->load('tags:id,name,color');
+        $diary->load(['tags:id,name,color', 'classifications']);
 
         /** @var User $auth */
         $auth = Auth::user();
@@ -370,6 +386,13 @@ class DiaryController extends Controller {
         $data = $request->validated();
         $custom = $this->validatedCustomFields($request, DiaryEntry::class);
         unset($data['user_id'], $data['status'], $data['custom'], $data['planned_duration']); // Eigentümer und Lebenszyklus werden separat gesteuert
+        $hasProductGroup = $request->has('product_group');
+        $productGroup = isset($data['product_group']) && is_string($data['product_group']) ? $data['product_group'] : null;
+        unset($data['product_group']);
+        // Neue Eintragsart vor der Vorlage: die Prüfpflicht folgt ihr (Feature 198); in der Prüfung bleibt sie.
+        if (array_key_exists('entry_type_id', $data) && (int) $data['entry_type_id'] !== (int) $diary->entry_type_id && ! $diary->status->isReview()) {
+            $data['requires_review'] = (bool) EntryType::query()->whereKey($data['entry_type_id'])->value('requires_review');
+        }
         $tagIds = $this->extractTagIds($request);
         $newTagNames = $this->extractNewTagNames($request);
 
@@ -386,6 +409,13 @@ class DiaryController extends Controller {
         $diary->update($data);
         $diary->syncTagsFromInput($tagIds, $newTagNames);
         $diary->syncCustomFields($custom);
+        if ($hasProductGroup) {
+            $diary->assignProductGroup($productGroup);
+        }
+        // Neue prüfende Person während der Prüfung: die Stufe im Genehmigungs-Eingang folgt ihr (Feature 198).
+        if ($diary->wasChanged('reviewer_user_id') && $diary->status === \App\Enums\Diary\Status::InReview) {
+            app(\App\Services\Diary\Review\OrderReviewChain::class)->open($diary);
+        }
 
         return redirect()->route('diary.show', $diary)->with('success', __('Eintrag aktualisiert.'));
     }
@@ -462,9 +492,28 @@ class DiaryController extends Controller {
     }
 
     /**
+     * Vorschläge für die Periode (Feature 198): je verlangter Art die
+     * vorige, laufende und nächste Periode.
+     *
+     * @return list<array{key: string, label: string}>
+     */
+    private function periodSuggestions(EntryType $type): array {
+        $now = CarbonImmutable::now();
+        $rows = [];
+        foreach ($type->requiredPeriodKinds() as $kind) {
+            $current = \App\Support\Period\PeriodKey::containing($kind, $now);
+            foreach ([$current->previous(), $current, $current->next()] as $period) {
+                $rows[] = ['key' => $period->key(), 'label' => $period->label()];
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
      * Liefert EntryTypes + Flags-Map + Kunden- & Tour-Optionen für die Formularansicht.
      *
-     * @return array{entryTypes: Collection<int, EntryType>, entryTypeFlags: array<string, array<string, mixed>>, customerOptions: Collection<int, Customer>, tourOptions: Collection<int, Tour>}
+     * @return array{entryTypes: Collection<int, EntryType>, entryTypeFlags: array<string, array<string, mixed>>, customerOptions: Collection<int, Customer>, tourOptions: Collection<int, Tour>, periodSuggestions: array<string, list<array{key: string, label: string}>>, productGroupOptions: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Classification\Classification>, reviewerOptions: Collection<int, mixed>}
      */
     private function entryTypeFormData(?DiaryEntry $entry = null): array {
         /** @var Collection<int, EntryType> $types */
@@ -494,11 +543,21 @@ class DiaryController extends Controller {
             ->limit(100)
             ->get(['id', 'tour_date', 'name']);
 
+        // Periode und Prüfung (Feature 198): Vorschläge je Eintragsart, Produktgruppen, prüfende Personen.
+        $periodSuggestions = $types->mapWithKeys(fn (EntryType $t): array => [$t->sqid => $this->periodSuggestions($t)])->all();
+        $organizationId = $entry->organization_id ?? \App\Support\OrganizationContext::currentId();
+        $productGroups = app(\App\Services\Classification\ClassificationResolver::class)
+            ->list($organizationId !== null ? (int) $organizationId : null, \App\Enums\Classification\ClassificationDomain::ProductGroup);
+        $reviewNeeded = $types->contains(static fn (EntryType $t): bool => (bool) $t->requires_review);
+
         return [
             'entryTypes' => $types,
             'entryTypeFlags' => $flagsMap,
             'customerOptions' => $customers,
             'tourOptions' => $tours,
+            'periodSuggestions' => $periodSuggestions,
+            'productGroupOptions' => $productGroups,
+            'reviewerOptions' => $reviewNeeded || $entry?->reviewer_user_id !== null ? LookupCache::userDropdown() : collect(),
         ];
     }
 }

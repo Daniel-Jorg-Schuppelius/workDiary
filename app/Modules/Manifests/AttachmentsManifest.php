@@ -40,6 +40,8 @@ final class AttachmentsManifest extends Manifest {
     public function tables(): array {
         return [
             'attachment_confirmations',
+            // Suchtext abgelegter Mail-Dateien (Feature 204).
+            'attachment_texts',
             'attachments',
         ];
     }
@@ -49,6 +51,10 @@ final class AttachmentsManifest extends Manifest {
         return [
             \App\Services\Search\Contracts\SearchDomain::class => [
                 \App\Services\Attachments\Search\AttachmentSearchDomain::class,
+            ],
+            // Erfundene abgelegte Mail am Hauptauftrag (Feature 204).
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Attachments\Demo\MailFileDemoBlock::class,
             ],
         ];
     }

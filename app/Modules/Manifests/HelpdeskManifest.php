@@ -98,6 +98,14 @@ final class HelpdeskManifest extends Manifest {
             \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
                 \App\Services\ServiceTicket\WorkQueue\ServiceTicketWorkItemSource::class,
             ],
+            // Vertretung (Feature 202): zugewiesene Tickets übernimmt die Vertretung.
+            \App\Services\Delegation\Contracts\DelegableWork::class => [
+                \App\Services\ServiceTicket\WorkQueue\ServiceTicketWorkItemSource::class,
+            ],
+            // Endgültige Übergabe und Austritt (Feature 202/126): zugewiesene Tickets an eine Nachfolge.
+            \App\Services\Org\Contracts\OffboardingHandover::class => [
+                \App\Services\ServiceTicket\Offboarding\AssignedTicketOffboardingHandover::class,
+            ],
             \App\Services\Reporting\Contracts\EarlyWarningSource::class => [
                 \App\Services\ServiceTicket\EarlyWarnings\RecurringTicketWarningSource::class,
             ],

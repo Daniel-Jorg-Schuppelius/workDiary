@@ -115,6 +115,10 @@ class IncomingInvoiceAssignmentController extends Controller {
         if ($incoming->status === IncomingEInvoiceStatus::Rejected) {
             return back()->with('error', __('Der Eingang ist als „keine Rechnung“ abgelegt — Zuordnung, Werte und Einbehalte lassen sich nicht mehr ändern.'));
         }
+        // Aufgeteilte Sammel-PDF (Feature 208): bearbeitet werden ihre Teile.
+        if ($incoming->isSplitBundle()) {
+            return back()->with('error', __('incoming_pdf.split.blocked.split'));
+        }
 
         $applyToOpen = (bool) ($data['apply_to_open'] ?? false);
         if ($data['mode'] === 'not_invoice') {
@@ -199,6 +203,10 @@ class IncomingInvoiceAssignmentController extends Controller {
         if ($incoming->status === IncomingEInvoiceStatus::Rejected) {
             return back()->with('error', __('Der Eingang ist als „keine Rechnung“ abgelegt — Zuordnung, Werte und Einbehalte lassen sich nicht mehr ändern.'));
         }
+        // Aufgeteilte Sammel-PDF (Feature 208): bearbeitet werden ihre Teile.
+        if ($incoming->isSplitBundle()) {
+            return back()->with('error', __('incoming_pdf.split.blocked.split'));
+        }
         // Steuersätze je Zeile (Satz, Netto, Steuer); leere Zeilen des Dialogs fallen vor der Prüfung weg.
         $taxRows = IncomingInvoiceTaxBreakdown::filled((array) $request->input('tax_breakdown', []));
         $request->merge(['tax_breakdown' => $taxRows]);
@@ -281,6 +289,10 @@ class IncomingInvoiceAssignmentController extends Controller {
         abort_if($incoming->direction === DocumentDirection::Outgoing, 404);
         if ($incoming->status === IncomingEInvoiceStatus::Rejected) {
             return back()->with('error', __('Der Eingang ist als „keine Rechnung“ abgelegt — Zuordnung, Werte und Einbehalte lassen sich nicht mehr ändern.'));
+        }
+        // Aufgeteilte Sammel-PDF (Feature 208): bearbeitet werden ihre Teile.
+        if ($incoming->isSplitBundle()) {
+            return back()->with('error', __('incoming_pdf.split.blocked.split'));
         }
         if ($incoming->transferred_at !== null) {
             return back()->with('error', __('Der Eingang ist bereits an die Buchhaltung übergeben — die Zuordnung ist dort zu ändern.'));
@@ -379,7 +391,7 @@ class IncomingInvoiceAssignmentController extends Controller {
         ]);
         $ids = Sqid::decodeMany(IncomingEInvoice::class, $data['ids']);
         $incomings = IncomingEInvoice::query()->whereKey($ids)->whereNull('transferred_at')
-            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)->get();
+            ->whereNotIn('status', IncomingEInvoice::CLOSED_STATUSES)->get();
 
         return view('finance.incoming-invoices._bulk_confirm_dialog', [
             'party' => (string) $data['party'],

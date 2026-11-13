@@ -24,6 +24,9 @@ return [
         'memory_type' => ['glossary' => 'Glossary', 'style_rule' => 'Style rule', 'example' => 'Example pair'],
         'sensitivity' => ['low' => 'Low', 'medium' => 'Medium', 'high' => 'High'],
         'ai_text_suggestion_status' => ['proposed' => 'Proposed', 'accepted' => 'Accepted', 'edited' => 'Modified', 'rejected' => 'Rejected', 'expired' => 'Expired'],
+        // Datenschutz der KI-Verbindungen (MVP-1671/1672)
+        'mask_kind' => ['iban' => 'IBAN', 'vat_id' => 'VAT ID', 'tax_number' => 'Tax number', 'tax_id' => 'Tax ID', 'email' => 'Email address', 'phone' => 'Phone number'],
+        'approval_state' => ['approved' => 'Approved', 'expiring' => 'Expiring soon', 'expired' => 'Expired', 'missing' => 'Not approved'],
     ],
     'domain' => [
         'environment' => ['ote' => 'OT&E (test/pilot)', 'production' => 'Production'],
@@ -270,6 +273,11 @@ return [
         'order_confirmation_status' => ['draft' => 'Draft', 'confirmed' => 'Confirmed', 'cancelled' => 'Cancelled'],
         'lead_status' => ['new' => 'New', 'contacted' => 'Contacted', 'qualified' => 'Qualified', 'converted' => 'Converted', 'discarded' => 'Discarded'],
         'lead_source' => ['referral' => 'Referral', 'web' => 'Web', 'trade_fair' => 'Trade fair', 'phone' => 'Phone', 'booking' => 'Appointment booking', 'other' => 'Other'],
+        // Aufnahmeakte (Feature 200).
+        'lead_intake_stage' => ['inquiry' => 'Enquiry', 'interview' => 'Interview', 'documents' => 'Documents', 'decision' => 'Decision', 'setup' => 'Setup', 'completed' => 'Set up', 'rejected' => 'Rejected'],
+        'lead_intake_decision' => ['accepted' => 'Accepted', 'rejected' => 'Rejected'],
+        'intake_risk_level' => ['low' => 'Low', 'normal' => 'Normal', 'high' => 'High'],
+        'intake_sensitivity' => ['identity' => 'Identity details', 'health' => 'Health details'],
     ],
     // Sicherheitseinbehalte (Feature 113, MVP-602).
     // Bürgschaftsregister (Feature 114, MVP-603).
@@ -577,6 +585,14 @@ return [
                 'queryRaised' => 'Customer raised a query',
                 'intakeSubmitted' => 'Customer submitted a request',
                 'intakeActivity' => 'New activity on a customer intake',
+                'deadlineDueSoon' => 'Customer deadlines approaching',
+                'deadlineOverdue' => 'Customer deadlines overdue',
+            ],
+            'leadIntake' => [
+                'refreshDue' => 'Intake files need updating',
+            ],
+            'knowledgePage' => [
+                'reviewDue' => 'Knowledge pages need reviewing',
             ],
             'ideaMap' => [
                 'shared' => 'Idea map shared with you',
@@ -652,6 +668,18 @@ return [
                 'threat' => 'Threat detection',
                 'newDevice' => 'Sign-in from new device',
                 'lockout' => 'Account temporarily locked',
+                'organizationLockdown' => 'Organisation emergency lockdown',
+                'passkeyRecovery' => 'Sign-in with recovery code despite passkey requirement',
+            ],
+            'auth' => [
+                'deviceApprovalRequested' => 'Device awaiting approval',
+            ],
+            'delegation' => [
+                'created' => 'Deputyship assigned to you',
+            ],
+            'wish' => [
+                'submitted' => 'New wish for the app',
+                'answered' => 'Reply to a wish for the app',
             ],
             'diary' => [
                 'commentCreated' => 'New diary comment',
@@ -841,6 +869,11 @@ return [
         ],
     ],
     'knowledge' => [
+        // Interne Wissensdatenbank (Feature 191).
+        'page_status' => ['draft' => 'Draft', 'valid' => 'Valid', 'outdated' => 'Outdated'],
+        'page_kind' => ['page' => 'Page', 'guide' => 'Picture guide'],
+        'audience_kind' => ['all' => 'All', 'role' => 'Role', 'team' => 'Team', 'user' => 'Person'],
+        'marker_kind' => ['arrow' => 'Arrow', 'number' => 'Number', 'frame' => 'Frame', 'text' => 'Text'],
         'status' => [
             'draft' => 'Draft',
             'published' => 'Published',
@@ -856,6 +889,10 @@ return [
             'draft' => 'Draft',
             'active' => 'Active',
             'archived' => 'Archived',
+        ],
+        'submission_status' => [
+            'draft' => 'Draft',
+            'submitted' => 'Submitted',
         ],
     ],
     'fields' => [
@@ -1434,6 +1471,19 @@ return [
             'vat_special_prepayment' => 'Special prepayment',
             'bank_direct' => 'Bank transaction without document',
             'reversal' => 'Reversal',
+        ],
+        'booking-suggestion-basis' => [
+            'mandate' => 'Mandate reference',
+            'creditor' => 'Creditor identifier',
+            'iban' => 'Counterparty IBAN',
+            'keywords' => 'Keywords in the payment reference',
+        ],
+        'datev-tax-check-kind' => [
+            'missing_tax_code' => 'Tax code missing',
+            'missing_vat_id' => 'Partner VAT ID missing',
+            'inactive_account' => 'Account deactivated',
+            'automatic_suspended' => 'Automatic tax suspended (BU 40)',
+            'rate_mismatch' => 'Rate differs from automatic account',
         ],
         'posting-account-role' => [
             'receivable' => 'Receivable',
@@ -2183,7 +2233,7 @@ return [
             'expired' => 'Expired',
             'refunded' => 'Refunded',
         ],
-        'incoming_e_invoice_status' => ['received' => 'Received', 'approved' => 'Approved (review)', 'rejected' => 'Rejected', 'question' => 'Query', 'payment_released' => 'Payment released'],
+        'incoming_e_invoice_status' => ['received' => 'Received', 'approved' => 'Approved (review)', 'rejected' => 'Rejected', 'question' => 'Query', 'payment_released' => 'Payment released', 'split' => 'Split (combined PDF)'],
         'incoming_invoice_recognition' => ['structured' => 'E-invoice (structured)', 'extracted' => 'Recognised from PDF or image', 'none' => 'Not recognised (needs clarification)'],
         'incoming_invoice_tax_case' => ['regular' => 'Input tax from the invoice', 'reverse_charge_eu' => '§ 13b (1) UStG: service from another EU country', 'reverse_charge' => '§ 13b (2) UStG: recipient liable for tax (e.g. construction services)', 'intra_community_acquisition' => 'Intra-Community acquisition (§ 1a UStG)'],
         'place_of_supply_kind' => ['general' => 'General (§ 3a (1)/(2) UStG)', 'catalog' => 'Catalogue service (§ 3a (4) UStG)', 'property' => 'Service connected with immovable property (§ 3a (3) no. 1 UStG)'],
@@ -2224,6 +2274,8 @@ return [
     ],
     'auth' => [
         'two_factor_type' => ['totp' => 'Authenticator app', 'email' => 'Email code', 'webauthn' => 'Security key / passkey'],
+        'login_policy_mode' => ['off' => 'Off', 'log' => 'Log only', 'enforce' => 'Enforce'],
+        'login_policy_reason' => ['lockdown' => 'Emergency lockdown', 'hours' => 'Outside sign-in hours', 'network' => 'Outside the office networks', 'device' => 'Device not approved', 'device_rejected' => 'Device approval rejected', 'passkey' => 'Passkey required'],
     ],
     'claims' => [
         'claim_action_kind' => ['rework' => 'Rework', 'repair' => 'Repair', 'replacement' => 'Replacement delivery', 'service_visit' => 'Service call', 'price_reduction' => 'Discount', 'refund' => 'Refund', 'supplier_recourse' => 'Supplier recourse', 'root_cause_fix' => 'Root cause remediation', 'other' => 'Miscellaneous'],
@@ -2408,5 +2460,21 @@ return [
             'no_warehouse' => 'Not posted – no default warehouse',
             'read_only' => 'Not posted – stock managed externally, read-only',
         ],
+    ],
+    // Periodenart (Feature 198/201)
+    'period' => [
+        'period_kind' => ['year' => 'Year', 'half_year' => 'Half-year', 'quarter' => 'Quarter', 'month' => 'Month'],
+    ],
+    // Vertretung bei Abwesenheit (Feature 202)
+    'delegation' => [
+        'work_delegation_kind' => ['vacation' => 'Vacation', 'sickness' => 'Sickness', 'other' => 'Other'],
+    ],
+    // Kundenfristen aus Regelsätzen (Feature 197)
+    'customer' => [
+        'customer_deadline_status' => ['open' => 'Open', 'completed' => 'Done', 'extended' => 'Extended', 'waived' => 'Waived'],
+    ],
+    // Service plan per customer and period (Feature 199)
+    'service_plan' => [
+        'service_plan_cell_state' => ['missing' => 'Missing', 'optional' => 'Optional', 'planned' => 'Created', 'accepted' => 'Accepted', 'in_progress' => 'In progress', 'waiting' => 'Waiting', 'review' => 'In review', 'done' => 'Done', 'waived' => 'Not required', 'none' => 'Not in scope'],
     ],
 ];

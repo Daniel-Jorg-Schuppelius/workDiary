@@ -11,6 +11,7 @@
 namespace App\Models\Classification;
 
 use App\Enums\Diary\Priority;
+use App\Enums\Period\PeriodKind;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Diary\DiaryEntry;
 use Database\Factories\Classification\EntryTypeFactory;
@@ -38,6 +39,8 @@ use Illuminate\Support\Carbon;
  * @property int $default_status
  * @property int|null $default_service_minutes
  * @property Priority|null $default_priority
+ * @property array<int, mixed>|null $requires_period Periodenarten, von denen eine beim Anlegen Pflicht ist (Feature 198)
+ * @property bool $requires_review Prüfpflicht vor dem Abschluss (Feature 198)
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -78,6 +81,8 @@ class EntryType extends Model {
         'default_status',
         'default_service_minutes',
         'default_priority',
+        'requires_period',
+        'requires_review',
     ];
 
     /** @var array<string, string> */
@@ -93,6 +98,8 @@ class EntryType extends Model {
         'default_status' => 'integer',
         'default_service_minutes' => 'integer',
         'default_priority' => Priority::class,
+        'requires_period' => 'array',
+        'requires_review' => 'boolean',
     ];
 
     /** @return HasMany<DiaryEntry, $this> */
@@ -116,6 +123,24 @@ class EntryType extends Model {
         return $query->orderBy('sort')->orderBy('label');
     }
 
+    /**
+     * Periodenarten, von denen der Auftrag beim Anlegen eine tragen muss
+     * (Feature 198); leer = keine Pflicht. Unbekannte Werte entfallen.
+     *
+     * @return list<PeriodKind>
+     */
+    public function requiredPeriodKinds(): array {
+        $kinds = [];
+        foreach ((array) ($this->requires_period ?? []) as $value) {
+            $kind = is_string($value) ? PeriodKind::tryFrom($value) : null;
+            if ($kind !== null && ! in_array($kind, $kinds, true)) {
+                $kinds[] = $kind;
+            }
+        }
+
+        return $kinds;
+    }
+
     /** Flag-Sammlung als Array fürs Frontend (Alpine x-data). */
     /** @return array<string, bool|int|string|null> */
     public function flagsArray(): array {
@@ -129,6 +154,8 @@ class EntryType extends Model {
             'default_service_minutes' => $this->default_service_minutes,
             'default_priority' => $this->default_priority?->value,
             'default_status' => $this->default_status,
+            'requires_period' => implode(',', array_map(static fn (PeriodKind $kind): string => $kind->value, $this->requiredPeriodKinds())),
+            'requires_review' => (bool) $this->requires_review,
         ];
     }
 }

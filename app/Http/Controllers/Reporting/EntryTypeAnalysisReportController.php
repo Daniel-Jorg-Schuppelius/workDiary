@@ -11,13 +11,13 @@
 namespace App\Http\Controllers\Reporting;
 
 use App\Enums\Diary\Status as DiaryStatus;
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Classification\EntryType;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
-use App\Services\Reporting\{EntryTypeAnalysisReportBuilder, ReportFilters};
+use App\Services\Reporting\{EntryTypeAnalysisReportBuilder, EntryTypeLeadTimeBuilder, ReportFilters};
 use App\Support\{CarbonFmt, Sqid};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
@@ -27,11 +27,15 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class EntryTypeAnalysisReportController extends Controller {
     use Concerns\RequiresTeamReportAccess;
     use RendersReportPdf;
+    use ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange;
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
-    public function __construct(private readonly EntryTypeAnalysisReportBuilder $builder) {}
+    public function __construct(
+        private readonly EntryTypeAnalysisReportBuilder $builder,
+        private readonly EntryTypeLeadTimeBuilder $leadTimes,
+    ) {}
 
     public function index(Request $request): View|Response|SymfonyResponse {
         $this->authorizeTeamReport();
@@ -96,6 +100,8 @@ class EntryTypeAnalysisReportController extends Controller {
             'filterFields' => $filterFields,
             'planVsIstSeries' => $this->planVsIstSeries($rows, $filters),
             'overrunSeries' => $this->overrunSeries($rows, $filters),
+            // Durchlaufzeit je Auftragstyp (MVP-1670): im Zeitraum abgeschlossene Aufträge, nachrechenbar zur Leitungssicht.
+            'leadTimes' => $this->leadTimes->build((int) $this->currentOrganization()->id, $from, $to, $excludedCustomerIds, $entryTypeFilter, $customerId, $filters->projectId),
             ...$this->standardFilterOptions(['customer', 'project', 'user', 'include_excluded'], $filters),
         ]);
     }

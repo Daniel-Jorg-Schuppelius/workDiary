@@ -49,7 +49,8 @@ class FieldComponentsTest extends TestCase {
             'lang' => '<textarea name="values[lang]"',
             'zahl' => 'type="number"',
             'ok' => 'type="checkbox" name="values[ok]"',
-            'wahl' => '<select name="values[wahl]"',
+            // Bis FieldLayout::CHOICE_BUTTONS_MAX Möglichkeiten als Knöpfe (Feature 203, MVP-1651).
+            'wahl' => 'type="radio" name="values[wahl]" value="a"',
             'mehr' => 'name="values[mehr][]"',
             'datum' => 'type="date"',
             'zeit' => 'type="datetime-local"',

@@ -1,7 +1,7 @@
 ---
 title: "Lot d'écritures DATEV"
 topic: finance.datev-bookings
-version: 6
+version: 7
 keywords:
     - export DATEV
     - expert-comptable
@@ -15,6 +15,8 @@ keywords:
     - compte de produits
     - export comptable
     - écritures comptables
+    - contrôle fiscal
+    - numéro de TVA manquant
 audience: []
 modules:
     - module.finance
@@ -141,3 +143,20 @@ fiscal, comme la comptabilité : livraison intracommunautaire (SKR03 8125 / SKR0
 (8338/4338). Ce sont des comptes automatiques DATEV ; le lot n'y indique pas de clé
 de taxe. Les ventes exonérées nationales restent sur le compte configuré pour les
 produits exonérés.
+
+## Contrôle fiscal avant la finalisation
+
+L'aperçu d'un brouillon affiche le **contrôle fiscal** du lot avec un lien vers
+la pièce. Les **erreurs** bloquent **Finaliser** : un enregistrement avec taux
+de TVA mais sans clé BU sur un compte qui n'est pas automatique ; une
+livraison intracommunautaire exonérée ou une autoliquidation dans un autre
+pays de l'UE sans numéro de TVA du client ; un compte désactivé du plan
+comptable local. Les **remarques** signalent les enregistrements dont le taux
+diffère du code du compte automatique et l'autoliquidation nationale sans
+numéro de TVA. Sont des comptes automatiques ceux qui portent un code de TVA
+par défaut dans le plan comptable local ; sans plan local, ceux du modèle du
+plan configuré. Si une erreur est justifiée dans un cas particulier, une
+personne disposant de **Lever le contrôle fiscal avant l'export DATEV** la
+lève avec un motif ; la levée figure dans le journal du lot et vaut aussi
+lorsque la même pièce figure dans un nouveau brouillon. Le contrôle ne modifie
+pas le lot.

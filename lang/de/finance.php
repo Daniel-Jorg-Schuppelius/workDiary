@@ -91,6 +91,7 @@ return [
         'failed' => 'Fehlgeschlagen',
         'voided' => 'Verworfen',
         'cancelled' => 'Storniert',
+        'tax_check_released' => 'Steuerprüfung begründet freigegeben',
     ],
 
     'hint' => [

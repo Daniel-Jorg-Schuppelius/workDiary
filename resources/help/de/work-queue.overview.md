@@ -1,7 +1,7 @@
 ---
 title: "Arbeitsvorrat"
 topic: work-queue.overview
-version: 4
+version: 6
 keywords:
     - Arbeitsvorrat
     - Offene Vorgänge
@@ -11,6 +11,7 @@ keywords:
 audience: []
 related:
     - approvals.inbox
+    - delegations.manage
 ---
 
 Der Arbeitsvorrat sammelt an einer Stelle, was gerade auf Sie wartet:
@@ -18,7 +19,8 @@ Freigaben (Urlaub, Spesen, Monatsabschlüsse, Überstundenanträge,
 Zeitkorrekturen, Korrekturen am Tagesabschluss, Dienstpläne zur Genehmigung,
 Schichttausch, Einreichungen zur Personalakte, Kursbuchungen,
 Lieferanten-Selbstauskünfte, Aufnahmeanträge in Vereinsgruppen,
-Preisänderungen, Lernzeiten, Freigabeketten), Eingänge (Zuordnungs-Inbox samt
+Preisänderungen, Lernzeiten, Freigabeketten, Datenschutzfreigaben der
+KI-Verbindungen), Eingänge (Zuordnungs-Inbox samt
 E-Mail-Klärfällen, Rechnungseingang, Rechnungsnachfragen, Kundeneingänge aus
 dem Portal, Verleihanfragen), Ihnen zugewiesene Aufgaben (offene Punkte,
 Aufträge, Projektaufgaben, Service-Tickets) und Erinnerungen
@@ -59,3 +61,7 @@ Quelle oder nur Ihnen persönlich zugewiesene Vorgänge ein. Die Kachel
 **Fälligkeit:** Der Filter „Fälligkeit“ zeigt nur überfällige, heute fällige oder diese Woche (bis Sonntag) fällige Vorgänge oder solche ohne Frist.
 
 **Firefly III:** Ist das Plugin eingeschaltet, sehen Administratoren Firefly-Bewegungen ohne Zuordnung und solche mit mehrdeutiger Zuordnung als je einen gebündelten Vorgang ohne Frist. Der Link öffnet die passend gefilterte Liste auf der Firefly-Seite; ordnet der nächste Abgleich eine Bewegung einer Rechnung zu, sinkt die Zahl.
+
+**In Vertretung:** Vertreten Sie gerade jemanden, stehen dessen zugewiesene Aufträge, Projektaufgaben und Service-Tickets zusätzlich in Ihrem Vorrat, gekennzeichnet „In Vertretung für …“ – nur aus Bereichen, die Sie selbst öffnen dürfen, und ohne Doppel. Mit dem Ende der Vertretung verschwinden sie wieder. Mehr unter „Vertretung bei Abwesenheit“.
+
+**Liegezeit:** Die Spalte „Liegezeit“ zeigt, seit wie vielen Tagen sich ein Vorgang nicht bewegt hat – gemeint ist die letzte Statusänderung, Notiz oder Zeitbuchung am Vorgang (bei Aufträgen auch Kommentare und gebuchte Zeiten, bei Aufgaben und Service-Tickets gebuchte Zeiten). Ab einer Schwelle markiert der Vorrat den Vorgang als **ruhend**; die Schwelle stellt, wer die Organisation bearbeiten darf, über **Einstellungen** ein (Vorgabe 14 Tage). Der Filter „Nur ruhende“ und die Sortierung nach Liegezeit holen liegengebliebene Vorgänge nach oben. Gebündelte Eingänge haben keine Liegezeit. Gemessen wird am Vorgang, nie je Person: Die Leitungssicht zeigt die Zahl der ruhenden Vorgänge im eigenen Vorrat und die Durchlaufzeit je Auftragsart, aber keine Auswertung einzelner Personen.

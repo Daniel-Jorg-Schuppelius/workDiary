@@ -14,10 +14,6 @@
 @extends('customer.layout')
 
 @section('content')
-@php
-    $conditions = fn ($fields) => collect($fields->all())->filter(fn ($f) => $f->hasCondition())->mapWithKeys(fn ($f) => [$f->key => $f->visibleIf])->all();
-    $initial = fn ($fields, string $prefix) => collect($fields->all())->mapWithKeys(fn ($f) => [$f->key => is_scalar(old("{$prefix}.{$f->key}")) ? (string) old("{$prefix}.{$f->key}") : ''])->all();
-@endphp
     <div class="mx-auto max-w-2xl space-y-4">
         <x-page-toolbar :title="$catalogItem !== null ? __('customer_intake.portal.request_catalog', ['item' => $catalogItem->name]) : __('customer_intake.portal.create_title', ['kind' => $kind->label()])"
                         :subtitle="__('customer_intake.portal.create_intro')" :back="route('customer.intakes.index')" :back-label="__('customer_intake.portal.title')" />
@@ -53,41 +49,13 @@
                     @error('desired_date')<p class="text-error text-sm">{{ $message }}</p>@enderror
                 </div>
 
-                <fieldset class="grid gap-3 sm:grid-cols-2" x-data="formFill" data-conditions="{{ json_encode($conditions($schema)) }}" data-initial="{{ json_encode($initial($schema, 'values')) }}"
-                          @input.capture="track($event)" @change.capture="track($event)">
-                    <legend class="mb-1 text-sm font-semibold">{{ __('customer_intake.portal.details', ['kind' => $kind->label()]) }}</legend>
-                    @foreach ($schema as $field)
-                        @if ($field->hasCondition())
-                            <div class="contents" x-show="visible('{{ $field->key }}')" x-cloak>
-                        @endif
-                        <x-field-input :field="$field" />
-                        @if ($field->hasCondition())
-                            </div>
-                        @endif
-                    @endforeach
-                    @foreach ($schema as $field)
-                        @error('values.' . $field->key)<p class="text-error text-sm sm:col-span-2">{{ $message }}</p>@enderror
-                    @endforeach
-                </fieldset>
+                {{-- Lange Formulare (Feature 203): Abschnitte mit Fortschritt, Bedingungslogik, Fehler am Feld. --}}
+                @if (! $schema->isEmpty())
+                    <x-field-form :schema="$schema" :title="__('customer_intake.portal.details', ['kind' => $kind->label()])" :heading-level="2" />
+                @endif
 
                 @if ($catalogSchema !== null && ! $catalogSchema->isEmpty())
-                    <fieldset class="grid gap-3 sm:grid-cols-2" x-data="formFill" data-prefix="catalog" data-conditions="{{ json_encode($conditions($catalogSchema)) }}" data-initial="{{ json_encode($initial($catalogSchema, 'catalog')) }}"
-                              @input.capture="track($event)" @change.capture="track($event)">
-                        <legend class="mb-1 text-sm font-semibold">{{ $catalogItem->name }}</legend>
-                        @foreach ($catalogSchema as $field)
-                            @if ($field->hasCondition())
-                                <div class="contents" x-show="visible('{{ $field->key }}')" x-cloak>
-                            @endif
-                            <x-field-input :field="$field" prefix="catalog" />
-                            @if ($field->hasCondition())
-                                </div>
-                            @endif
-                        @endforeach
-                        @foreach ($catalogSchema as $field)
-                            @error('catalog.' . $field->key)<p class="text-error text-sm sm:col-span-2">{{ $message }}</p>@enderror
-                            @error('files.' . $field->key)<p class="text-error text-sm sm:col-span-2">{{ $message }}</p>@enderror
-                        @endforeach
-                    </fieldset>
+                    <x-field-form :schema="$catalogSchema" prefix="catalog" :title="$catalogItem->name" :heading-level="2" />
                 @endif
 
                 @if ($assets->isNotEmpty())

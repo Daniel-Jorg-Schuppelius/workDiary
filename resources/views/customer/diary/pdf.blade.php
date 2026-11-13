@@ -26,7 +26,7 @@
 </head>
 <body>
     <h1>{{ $diary->title }}</h1>
-    <p class="muted">{{ optional($diary->start_at)->fdate() }} · {{ $diary->status?->label() }}</p>
+    <p class="muted">{{ optional($diary->start_at)->fdate() }} · {{ $diary->status?->customerLabel() }}</p>
 
     <h2>{{ __('Fotos') }}</h2>
     @if ($photos->isEmpty())

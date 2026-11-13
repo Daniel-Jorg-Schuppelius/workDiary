@@ -179,6 +179,11 @@ return [
         ],
     ],
     'warning' => [
+        'customer_deadline_overdue' => [
+            'title' => 'Überfällige Fristen bei :name',
+            'detail' => 'Überfällige Frist(en): :count, älteste vom :date.',
+            'recommendation' => 'Empfehlung: Frist erledigen, Verlängerung beantragen oder Zuständigkeit klären — die zuständige Person wurde bereits erinnert.',
+        ],
         'capacity' => [
             'title' => 'Engpass im Team :name',
             'detail' => 'Woche ab :week: :percent % der Kapazität verplant.',
@@ -219,6 +224,17 @@ return [
         ],
     ],
     // Management-Auswertung (MVP-926).
+    // Durchlaufzeit je Auftragstyp in der Auftragstypanalyse (Feature 179, MVP-1670)
+    'lead_time' => [
+        'title' => 'Durchlaufzeit je Auftragstyp',
+        'subtitle' => 'Im Zeitraum abgeschlossene Aufträge: Median der Tage vom Anlegen bis zum Abschluss. Gemessen am Auftrag, nie je Person.',
+        'empty' => 'Im Zeitraum wurde kein Auftrag abgeschlossen.',
+        'column' => [
+            'type' => 'Auftragstyp',
+            'completed' => 'Abgeschlossen',
+            'median' => 'Median (Tage)',
+        ],
+    ],
     'management' => [
         'title' => 'Management-Auswertung',
         'nav' => 'Probleme & Schulung',
@@ -264,6 +280,10 @@ return [
             'qualifications_expiring' => 'Stand heute · laufen in :days Tagen ab: :count',
             'vacation_pending' => 'Offene Urlaubsanträge',
             'vacation_pending_hint' => 'Stand heute · Beginn in den nächsten 14 Tagen: :count',
+            // Durchlaufzeit je Auftragsart (Feature 179, MVP-1670)
+            'lead_time' => 'Durchlaufzeit: :type',
+            'lead_time_days' => '{1} :days Tag|[0,*] :days Tage',
+            'lead_time_hint' => 'Median Anlegen bis Abschluss · :count Abschlüsse in 12 Monaten',
         ],
         'digest' => [
             'subject' => 'Leitungsbericht :organization · :range',
@@ -278,6 +298,7 @@ return [
             'capacity' => 'Personal-Engpässe',
             'project_target' => 'Sollzeiten unterschritten',
             'resale_unbilled' => 'Abos ohne Rechnung',
+            'customer_deadline_overdue' => 'Überfällige Kundenfristen',
         ],
     ],
     'product_revenue' => [

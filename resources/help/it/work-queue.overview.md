@@ -1,7 +1,7 @@
 ---
 title: "Coda di lavoro"
 topic: work-queue.overview
-version: 4
+version: 6
 keywords:
     - Coda di lavoro
     - Elementi aperti
@@ -11,6 +11,7 @@ keywords:
 audience: []
 related:
     - approvals.inbox
+    - delegations.manage
 ---
 
 La coda di lavoro raccoglie in un unico posto ciò che La attende:
@@ -19,7 +20,8 @@ straordinario, correzioni dei tempi, correzioni della chiusura giornaliera,
 piani di servizio da approvare, scambi di turno, consegne al fascicolo
 personale, prenotazioni di corsi, autovalutazioni dei fornitori, richieste di
 ammissione ai gruppi dell'associazione, variazioni di prezzo, tempo di
-formazione, catene di approvazione), caselle in arrivo (casella di
+formazione, catene di approvazione, approvazioni sulla protezione dei dati delle
+connessioni IA), caselle in arrivo (casella di
 assegnazione con i chiarimenti e-mail, fatture in entrata, richieste su
 fatture, richieste dei clienti dal portale, richieste di noleggio), attività
 assegnate a Lei (punti aperti, ordini, attività di progetto, ticket di
@@ -60,3 +62,7 @@ mostra gli elementi più urgenti.
 **Scadenza:** il filtro «Scadenza» mostra solo gli elementi scaduti, in scadenza oggi o in questa settimana (fino a domenica), oppure senza scadenza.
 
 **Firefly III:** se il plugin è attivo, gli amministratori vedono i movimenti Firefly senza assegnazione e quelli con assegnazione ambigua come un elemento raggruppato ciascuno, senza scadenza. Il link apre l’elenco filtrato corrispondente nella pagina Firefly; quando la riconciliazione successiva assegna un movimento a una fattura, il numero diminuisce.
+
+**In sostituzione:** Se sta sostituendo qualcuno, i suoi ordini, compiti di progetto e ticket di assistenza assegnati compaiono anche nella Sua coda, contrassegnati «In sostituzione di …», solo dalle aree che può aprire Lei stesso e senza doppioni. Scompaiono al termine della sostituzione. Vedere «Sostituzione durante un’assenza».
+
+**Tempo di giacenza:** La colonna «Tempo di giacenza» indica da quanti giorni un elemento non si muove, cioè dall’ultimo cambio di stato, nota o registrazione del tempo sull’elemento (per gli ordini anche commenti e tempi registrati, per attività e ticket di assistenza i tempi registrati). Oltre una soglia la coda contrassegna l’elemento come **inattivo**; chi può modificare l’organizzazione imposta la soglia in **Impostazioni** (predefinito 14 giorni). Il filtro «Solo inattivi» e l’ordinamento per tempo di giacenza portano in alto gli elementi fermi. Le entrate raggruppate non hanno tempo di giacenza. Si misura per elemento, mai per persona: la vista di direzione mostra il numero di elementi inattivi nella propria coda e il tempo di attraversamento per tipo di ordine, ma nessuna valutazione delle singole persone.

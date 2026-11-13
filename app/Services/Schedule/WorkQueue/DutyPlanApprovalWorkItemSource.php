@@ -66,6 +66,8 @@ final class DutyPlanApprovalWorkItemSource implements WorkItemSource {
                 url: route(self::ROUTE, $plan),
                 detail: CarbonFmt::period($plan->from_date, $plan->to_date),
                 dueAt: CarbonImmutable::instance($plan->from_date),
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($plan->updated_at),
             );
         }
     }

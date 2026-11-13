@@ -99,6 +99,29 @@ class TourActualsTest extends TestCase {
         $this->assertSame(DiaryStatus::Done, $a->fresh()->status);
     }
 
+    /**
+     * Prüfpflicht (Feature 198): „erledigt“ am Stopp legt einen prüfpflichtigen
+     * Auftrag über den Lebenszyklus zur Prüfung vor, statt ihn zu erledigen.
+     */
+    public function test_done_stop_submits_a_review_order_instead_of_completing_it(): void {
+        [$driver, $tour, $a, $b] = $this->runningTour();
+        $a->forceFill(['requires_review' => true])->save();
+        $service = app(TourService::class);
+        $stopA = TourStop::query()->where('tour_id', $tour->id)->where('diary_entry_id', $a->id)->firstOrFail();
+        $stopB = TourStop::query()->where('tour_id', $tour->id)->where('diary_entry_id', $b->id)->firstOrFail();
+
+        $service->arriveAtStop($stopA, $driver);
+        $service->departStop($stopA->refresh(), $driver, TourStop::OUTCOME_DONE);
+        $service->departStop($stopB, $driver, TourStop::OUTCOME_DONE);
+
+        $a->refresh();
+        $this->assertSame(DiaryStatus::InReview, $a->status);
+        $this->assertSame($driver->id, (int) $a->review_submitter_user_id);
+        $this->assertContains('order.submitReview', $a->journal()->pluck('event')->all());
+        $this->assertSame(DispatchStatus::Done, $a->dispatch_status);
+        $this->assertSame(DiaryStatus::Done, $b->fresh()?->status, 'Ohne Prüfpflicht erledigt der Stopp den Auftrag wie bisher.');
+    }
+
     public function test_service_duration_suggester_uses_median_of_done_stops_and_feeds_the_report(): void {
         [$driver, $tour, $a, $b] = $this->runningTour();
         $typeId = (int) $a->entry_type_id;

@@ -27,6 +27,7 @@ return [
         'appointment_requests' => 'Demandes de rendez-vous (décidées)',
         'marketplace_buyers' => 'Données acheteurs des commandes de places de marché',
         'leads' => 'Leads (non convertis)',
+        'lead_intakes' => 'Dossiers d\'admission (après la durée de conservation)',
         'applications' => 'Candidatures (refusées/retirées)',
         'privacy_requests' => 'Demandes des personnes concernées (clôturées)',
         'cti_calls' => 'Métadonnées d’appels CTI',

@@ -18,7 +18,7 @@ use App\Models\Platform\User;
 use App\Services\Calendar\HolidayService;
 use App\Services\Concerns\ResolvesActorId;
 use App\Services\Finance\Banking\{BankStatementParser, NormalizedStatement, NormalizedTransaction};
-use App\Support\Crypto\BlindIndex;
+use App\Support\Crypto\{BlindIndex, PurposeKeywordIndex};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper};
@@ -266,10 +266,14 @@ class BankImportService {
             'currency' => $tx->currency,
             'end_to_end_id' => $tx->endToEndId,
             'mandate_ref' => $tx->mandateRef,
+            // Merkmale der Kontierungshilfe (Feature 207, MVP-1660): Gläubiger-ID
+            // im Klartext wie die Mandatsreferenz, Zweck-Stichwörter nur als Abdruck.
+            'creditor_identifier' => $tx->creditorIdentifier,
             'counterparty_name' => $tx->counterpartyName,
             'counterparty_iban' => $tx->counterpartyIban,
             'counterparty_iban_hash' => BlindIndex::ofIban($tx->counterpartyIban),
             'purpose' => $tx->purpose,
+            'purpose_keyword_hash' => PurposeKeywordIndex::hash($tx->purpose),
             'extracted_refs' => $tx->extractedRefs,
             'is_reversal' => $tx->isReversal,
             'return_reason' => $tx->returnReason,
@@ -298,6 +302,7 @@ class BankImportService {
                 'amount' => NumberHelper::toUSFormat($detail->signedAmount, 2),
                 'end_to_end_id' => $detail->endToEndId,
                 'mandate_ref' => $detail->mandateRef,
+                'creditor_identifier' => $detail->creditorIdentifier,
                 'counterparty_name' => $detail->counterpartyName,
                 'counterparty_iban' => $detail->counterpartyIban,
                 'counterparty_iban_hash' => BlindIndex::ofIban($detail->counterpartyIban),

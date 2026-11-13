@@ -91,6 +91,8 @@ return [
         'missing_iban' => 'IBAN manquant',
         'zero_amount' => 'Montant nul',
         'iban_differs' => 'IBAN différent des données de base',
+        'girocode_differs' => 'IBAN du GiroCode non vérifié — confirmation requise',
+        'bundle_unresolved' => 'PDF groupé pas encore scindé',
         'disputed' => 'Poste ouvert litigieux',
     ],
 
@@ -100,6 +102,9 @@ return [
         'not_draft' => 'L’ordre de paiement n’est plus un brouillon.',
         'not_released' => 'L’ordre de paiement n’est pas validé.',
         'four_eyes' => 'Principe des quatre yeux : la personne qui a préparé l’ordre de paiement ne peut pas le valider elle-même.',
+        'girocode_unconfirmed' => 'La facture :number porte un GiroCode avec un IBAN différent. L’ordre ne peut être validé qu’après confirmation de l’écart dans la proposition de paiement.',
+        'position_held' => 'La facture :number est bloquée pour le paiement (:reason). L’ordre ne peut être validé qu’après clarification dans la proposition de paiement.',
+        'confirmation_stale' => 'La situation a changé depuis le chargement de la page — veuillez vérifier et confirmer à nouveau.',
         'exported_final' => 'Un ordre de paiement exporté ne s’annule plus.',
         'invalid_amount' => 'Le montant payé doit être supérieur à 0 et ne pas dépasser le montant facturé.',
         'reason_required' => 'Un montant réduit exige un motif.',

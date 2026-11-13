@@ -82,6 +82,7 @@ return [
         'note' => 'Nota',
         'idea_map' => 'Mappa di idee',
         'knowledge_article' => 'Articolo della knowledge base',
+        'knowledge_page' => 'Pagina di conoscenza',
         'document' => 'Documento',
         'learning_course' => 'Corso',
         'learning_path' => 'Percorso formativo',

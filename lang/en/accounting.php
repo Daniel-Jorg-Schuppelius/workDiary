@@ -636,6 +636,63 @@ return [
             'already_assigned' => 'The transaction is already assigned to a document.',
         ],
     ],
+    // Kontierungsvorschläge für Bankumsätze ohne Beleg (Feature 207, MVP-1660).
+    'suggestions' => [
+        'title' => 'Posting suggestions',
+        'subtitle' => 'Bank transactions without a document that your organisation has booked this way before.',
+        'hint' => 'Only what your organisation has already booked this way is suggested — recognised by mandate reference, creditor identifier, counterparty IBAN or keywords in the payment reference, in this order. The most recent booking determines the suggestion; a correction takes effect next time. Only what you confirm is booked.',
+        'empty' => 'No open bank transactions with a suggestion to confirm.',
+        'reason' => 'Booked this way :count times, last in :month, :basis',
+        'reason_mixed' => ':count of :total similar bookings this way, last in :month, :basis',
+        'deviates' => 'The amount differs by more than 10% from last time (last: :last).',
+        'basis' => [
+            'mandate' => 'same mandate reference',
+            'creditor' => 'same creditor identifier',
+            'iban' => 'same counterparty IBAN',
+            'keywords' => 'same keywords in the payment reference',
+        ],
+        'strength' => [
+            'strong' => 'Strong suggestion',
+            'medium' => 'Medium suggestion',
+            'weak' => 'Weak suggestion',
+        ],
+        'warning' => [
+            'account_inactive' => 'The account of the last booking is deactivated — please choose another one.',
+            'tax_code_invalid' => 'The tax code of the last booking is not valid on the booking date — please check.',
+        ],
+        'dialog' => [
+            'title' => 'Suggestion from your earlier bookings',
+        ],
+        'kpi' => [
+            'groups' => 'Groups to confirm',
+            'singles' => 'To check individually',
+            'without' => 'Open without suggestion',
+        ],
+        'column' => [
+            'date' => 'Booking date',
+            'counterparty' => 'Counterparty and payment reference',
+            'booking' => 'Booking preview',
+            'suggestion' => 'Suggestion',
+        ],
+        'preview' => [
+            'credit' => 'Bank to :account',
+            'debit' => ':account to bank',
+        ],
+        'singles' => [
+            'title' => 'Check individually',
+            'subtitle' => 'Different amount or a note on the suggestion — book these transactions one by one in the pre-filled dialog.',
+        ],
+        'action' => [
+            'open' => 'Posting suggestions',
+            'confirm_group' => 'Book transaction|Book all :count transactions',
+        ],
+        'confirm' => [
+            'group' => 'Book this transaction as shown?|Book all :count transactions as shown?',
+        ],
+        'flash' => [
+            'confirmed' => 'Booked: :posted, submitted for approval: :submitted, skipped: :skipped.',
+        ],
+    ],
     // Offener Posten strittig (MVP-1559).
     'dispute' => [
         'title' => 'Mark item as disputed',
@@ -1191,6 +1248,61 @@ return [
         'hint' => 'Generated from posted entries — not derived from the documents again.',
         'action' => [
             'export' => 'Export',
+            'check' => 'Check and export',
+        ],
+    ],
+
+    // Steuerprüfung vor dem DATEV-Export (Feature 207, MVP-1661).
+    'datev_check' => [
+        'title' => 'Tax check before the DATEV export',
+        'subtitle' => 'Period :from – :to',
+        'hint' => 'Checks accounts and tax codes against the automatic accounts of the chart of accounts before the batch is written. The check does not change the export file. Errors block the export until they are corrected or released with a reason; notes are for review.',
+        'counts' => ':errors errors · :hints notes',
+        'clean' => 'No findings — the batch can be exported.',
+        'blocked' => 'The export is blocked: :count errors are neither corrected nor released.',
+        'released_badge' => 'Released',
+        'column' => [
+            'severity' => 'Type',
+            'finding' => 'Finding',
+            'reference' => 'Booking',
+        ],
+        'severity' => [
+            'error' => 'Error',
+            'hint' => 'Note',
+        ],
+        'message' => [
+            'missing_tax_code' => 'Line on :account without a tax code although the booking shows tax on account :tax_account.',
+            'missing_tax_code_batch' => 'Document :ref: tax rate :rate% without a tax key on account :account, which is not an automatic account.',
+            'missing_vat_id' => 'Tax code :code (:name) without the partner\'s VAT ID.',
+            'missing_vat_id_domestic' => 'Tax code :code (:name) without the partner\'s VAT ID — for domestic reverse charge the tax number is sufficient; please check.',
+            'missing_vat_id_batch' => 'Document :ref: tax-exempt intra-Community supply or reverse charge without the customer\'s VAT ID.',
+            'missing_vat_id_batch_domestic' => 'Document :ref: domestic reverse charge, customer without a VAT ID — the tax number is sufficient; please check.',
+            'inactive_account' => 'Account :account is deactivated.',
+            'automatic_suspended' => ':count booking records suspend the automatic tax on account :account with BU 40.',
+            'rate_mismatch' => 'Account :account carries :automatic (:automatic_rate%), the line :code (:rate%).',
+            'rate_mismatch_batch' => 'Document :ref: rate :rate% on automatic account :account with :automatic_rate%.',
+        ],
+        'reference' => [
+            'journal' => 'Journal :no',
+            'document' => 'Document :ref',
+        ],
+        'action' => [
+            'export' => 'Export',
+            'release' => 'Release with reason',
+            'back' => 'Back to closing',
+        ],
+        'release' => [
+            'title' => 'Release errors with a reason',
+            'hint' => 'Some cases are correct even though the check flags them, for example a special case of the tax adviser. The release applies to the errors shown and is logged with your reason; a new error blocks again.',
+            'reason' => 'Reason',
+            'no_permission' => 'Releasing requires the permission “Release the tax check before the DATEV export”.',
+        ],
+        'flash' => [
+            'released' => ':count errors released with a reason.',
+            'nothing_to_release' => 'There are no open errors to release.',
+        ],
+        'error' => [
+            'blocked' => 'The DATEV export is blocked: the tax check reports errors that are neither corrected nor released.',
         ],
     ],
 

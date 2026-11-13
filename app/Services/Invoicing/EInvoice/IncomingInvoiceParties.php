@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Invoicing\EInvoice;
 
 use App\Enums\Billing\DocumentDirection;
-use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceMatchKind};
+use App\Enums\Invoicing\IncomingInvoiceMatchKind;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\{Organization, User};
@@ -66,12 +66,19 @@ class IncomingInvoiceParties {
             'name' => $text($isPurchase ? $incoming->seller_name : $incoming->buyer_name),
             'vat_id' => $text($isPurchase ? $incoming->seller_vat_id : $incoming->buyer_vat_id),
             'email' => $this->unlessOwn($incoming, $text($isPurchase ? ($summary['seller_email'] ?? $incoming->sender_email) : ($summary['buyer_email'] ?? null))),
-            'iban' => $isPurchase ? $text($incoming->creditor_iban) : null,
+            // Eine IBAN nur aus dem GiroCode kommt erst nach ausdrücklicher Bestätigung in den Stamm (Feature 208, M3).
+            'iban' => $isPurchase && ! self::unconfirmedCodeIban($incoming) ? $text($incoming->creditor_iban) : null,
             'street' => $text($address['street'] ?? null),
             'zip' => $text($address['zip'] ?? null),
             'city' => $text($address['city'] ?? null),
             'country' => $country === null ? null : strtoupper($country),
         ];
+    }
+
+    /** Rechnungs-IBAN stammt aus dem GiroCode und ist nicht bestätigt. */
+    private static function unconfirmedCodeIban(IncomingEInvoice $incoming): bool {
+        return \App\Services\Invoicing\GiroCode\GiroCodeCheck::ibanFromCode($incoming)
+            && ! app(\App\Services\Invoicing\GiroCode\GiroCodeCheck::class)->isConfirmed($incoming);
     }
 
     /**
@@ -317,7 +324,7 @@ class IncomingInvoiceParties {
     public function parkedAtCollective(int $organizationId): array {
         $rows = IncomingEInvoice::query()->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
-            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
+            ->whereNotIn('status', IncomingEInvoice::CLOSED_STATUSES)
             ->where(static fn ($query) => $query
                 ->whereHas('supplier', static fn ($supplier) => $supplier->withoutGlobalScopes()->where('is_collective', true))
                 ->orWhereHas('customer', static fn ($customer) => $customer->withoutGlobalScopes()->where('is_collective', true)))
@@ -358,7 +365,7 @@ class IncomingInvoiceParties {
         $left = 0;
         $members = IncomingEInvoice::query()->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
-            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
+            ->whereNotIn('status', IncomingEInvoice::CLOSED_STATUSES)
             ->where($direction === DocumentDirection::Outgoing ? 'customer_id' : 'supplier_id', $direction === DocumentDirection::Outgoing ? $group['first']->customer_id : $group['first']->supplier_id)
             ->orderBy('id')->get();
         foreach ($this->groups($members) as $parked) {

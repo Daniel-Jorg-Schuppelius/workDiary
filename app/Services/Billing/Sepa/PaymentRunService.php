@@ -236,6 +236,24 @@ class PaymentRunService {
         if ($run->items()->count() === 0) {
             throw new RuntimeException((string) __('sepa.error.no_positions'));
         }
+        // GiroCode (MVP-1663): der Code wird im Hintergrund gelesen und kann nach dem Zusammenstellen
+        // eine abweichende IBAN melden — dann gibt erst die bestätigte Abweichung den Lauf frei. Gleiches
+        // gilt für Einbehalt-Auszahlungen (N1) und eine nach dem Zusammenstellen geänderte Rechnungs-IBAN.
+        foreach ($run->items()->with(['incomingEInvoice', 'retention.incomingEInvoice'])->get() as $item) {
+            $invoice = $item->incomingEInvoice ?? $item->retention?->incomingEInvoice;
+            if ($invoice === null) {
+                continue;
+            }
+            $supplier = $this->proposals->supplierFor($invoice);
+            $hold = $this->proposals->paymentHold($invoice, $supplier)
+                ?? ($this->proposals->ibanDiffersFromMaster($invoice, $supplier) ? 'iban_differs' : null);
+            if ($hold === 'girocode_differs') {
+                throw new RuntimeException((string) __('sepa.error.girocode_unconfirmed', ['number' => $invoice->invoice_number ?? '—']));
+            }
+            if ($hold !== null) {
+                throw new RuntimeException((string) __('sepa.error.position_held', ['number' => $invoice->invoice_number ?? '—', 'reason' => __('sepa.blocked.' . $hold)]));
+            }
+        }
         // Dasselbe Vier-Augen-Setting wie der Buchungskern (Vollscan 2026-08-23,
         // E4): Geldausgang ist der sensiblere Pfad — wer zusammenstellt, gibt
         // bei aktivem Prinzip nicht selbst frei.
@@ -372,7 +390,9 @@ class PaymentRunService {
                 continue;
             }
             $proposal = $this->proposals->proposalFor($invoice);
-            if ($proposal['iban'] === null || $this->proposals->ibanDiffersFromMaster($invoice, $proposal['supplier'])) {
+            if ($proposal['iban'] === null || $this->proposals->ibanDiffersFromMaster($invoice, $proposal['supplier'])
+                // Einbehalt-Auszahlung wie die Rechnung (Feature 208, N1): GiroCode-Sperre und Sammel-PDF halten an.
+                || $this->proposals->paymentHold($invoice, $proposal['supplier']) !== null) {
                 continue;
             }
             PaymentRunItem::query()->create([

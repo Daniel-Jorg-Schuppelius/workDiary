@@ -1,7 +1,7 @@
 ---
 title: "Facturas recibidas"
 topic: finance.incoming-invoices
-version: 11
+version: 12
 keywords:
     - varios tipos impositivos
     - factura de proveedor
@@ -398,3 +398,49 @@ identificador del objeto si la factura los contiene. Para las facturas recibidas
 antes de esta función, el comando
 `php artisan incoming-invoices:extract-documents --dry-run` extrae los
 documentos después (primero como prueba, luego sin la opción).
+
+## PDF agrupado y GiroCode
+
+**PDF agrupado:** Si un PDF sin datos de factura electrónica, subido o recibido
+por correo, tiene varias páginas, WorkDiary comprueba en segundo plano si
+contiene varias facturas. Indicios de una factura nueva son otro número de
+factura, un nuevo remitente (NIF-IVA o IBAN), «Página 1 de …», un bloque de
+totales en la página anterior y otro membrete. Hasta que usted decida, esperan
+el traspaso a la contabilidad y el pago. **Revisar límites** muestra cada página
+como imagen de vista previa y le permite marcar dónde empieza una nueva
+factura; **Dividir** crea una entrada propia con su propio PDF parcial por
+factura. **Es una sola factura** mantiene la entrada tal como está.
+
+El original se conserva sin cambios en la gestión documental y muestra sus
+partes; cada parte remite al original con su rango de páginas. Cada parte pasa
+por la comprobación de duplicados: se detecta el mismo archivo de nuevo o el
+mismo número de factura del mismo remitente, así como una nueva subida del PDF
+agrupado completo. Mientras existan partes,
+el original no se puede eliminar. Se comprueban PDF de hasta 60
+páginas; solo se pueden dividir entradas abiertas que aún no se hayan
+traspasado.
+
+**GiroCode:** Si una factura lleva un GiroCode (código QR EPC), WorkDiary lo lee
+en segundo plano — en las tres primeras páginas y en la última. Si el propio
+documento no indica ningún IBAN, se adopta el IBAN del código cuando sus dígitos
+de control son correctos. La tarjeta **GiroCode** muestra beneficiario, IBAN,
+importe y concepto y los compara con la factura: el importe y el nombre del
+beneficiario solo generan un aviso. Si el IBAN del código difiere de la factura
+o de las cuentas bancarias del proveedor, el diálogo de asignación avisa y la
+propuesta de pago bloquea la factura hasta que alguien con permiso de
+autorización confirme la diferencia — unos datos bancarios cambiados son un
+patrón de fraude conocido. La confirmación queda registrada y solo vale
+mientras el IBAN y el proveedor no cambien. Si falta en el servidor la
+herramienta de lectura (zbarimg), la tarjeta muestra «GiroCode no legible».
+
+**Prueba y nuevos datos bancarios:** Tras la división, la entrada agrupada se
+conserva como prueba con el estado «Dividida»; no aparece en ninguna lista de
+trabajo y no se traspasa ni se paga. El original no se puede eliminar mientras
+existan partes. Se separan como máximo 30 facturas por PDF agrupado, y las
+partes en conjunto no pueden ser mucho mayores que el original. Un IBAN del
+GiroCode solo se adopta mientras la entrada no esté aprobada. Si para el
+proveedor no hay ninguna cuenta bancaria registrada, cuenta como dato bancario
+nuevo y debe confirmarse antes del pago; solo pasa a los datos maestros del
+proveedor si alguien lo introduce allí expresamente. Cada confirmación vale
+solo para el IBAN confirmado: si cambia, la propuesta de pago vuelve a
+bloquear.

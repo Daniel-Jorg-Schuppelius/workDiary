@@ -69,13 +69,15 @@ class KanbanStatusWidget extends Widget {
         $counts = DiaryEntry::query()
             ->where('assigned_user_id', $user->id)
             ->where('is_archived', false)
-            ->whereIn('status', array_map(static fn (Status $s): int => $s->value, self::ACTIVE_STATUSES))
+            ->whereIn('status', array_map(static fn (Status $s): int => $s->value, [...self::ACTIVE_STATUSES, ...Status::reviewCases()]))
             ->selectRaw('status, COUNT(*) as cnt')
             ->groupBy('status')
             ->pluck('cnt', 'status');
+        // Prüfzustände (Feature 198) nur, wenn ein Auftrag darin steht — sonst bleibt die Kachel wie bisher.
+        $review = array_values(array_filter(Status::reviewCases(), static fn (Status $s): bool => (int) ($counts[$s->value] ?? 0) > 0));
 
         return view('dashboard.widgets.kanban-status', [
-            'statuses' => self::ACTIVE_STATUSES,
+            'statuses' => [...self::ACTIVE_STATUSES, ...$review],
             'counts' => $counts,
         ]);
     }

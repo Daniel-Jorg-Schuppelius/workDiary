@@ -13,9 +13,12 @@ declare(strict_types=1);
 namespace App\Services\WorkQueue;
 
 use App\Models\Platform\{Organization, User};
+use App\Services\Delegation\ActsForResolver;
+use App\Services\Delegation\Contracts\DelegableWork;
 use App\Services\Licensing\ModuleExtensions;
 use App\Services\WorkQueue\Contracts\WorkItemSource;
 use App\Services\WorkQueue\Dto\WorkItem;
+use App\Settings\SettingsRegistry;
 use App\Support\OrganizationContext;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CryptoHelper;
@@ -34,6 +37,13 @@ use Throwable;
  * der Fläche der Quelle. Je Quelle zählen höchstens {@see SOURCE_LIMIT}
  * Vorgänge (die dringendsten); der Rest wird nur gezählt
  * (Leistungsanalyse 2026-11-02, perfc-06).
+ *
+ * Vertretung (Feature 202, MVP-1647): Vertritt der Nutzer heute jemanden
+ * ({@see ActsForResolver}), kommen aus den Quellen, die zugleich
+ * {@see DelegableWork} sind, die persönlich zugewiesenen Vorgänge der
+ * vertretenen Person dazu — gekennzeichnet „in Vertretung für …“, nur wenn der
+ * Nutzer die Fläche der Quelle selbst öffnen darf, und ohne Doppel: hat er
+ * denselben Gegenstand (`morph:id`) selbst, bleibt seine Zeile.
  */
 final class WorkQueue {
     /** Höchstzahl je Quelle; darüber zählt der Vorrat nur noch. */
@@ -41,9 +51,21 @@ final class WorkQueue {
 
     private const int CACHE_TTL = 60;
 
-    private const int CACHE_VERSION = 1;
+    // 3: WorkItem trägt den Abarbeitungsrang (Feature 198).
+    // 4: WorkItem trägt „zuletzt bewegt“ (Feature 179, MVP-1670).
+    private const int CACHE_VERSION = 4;
 
-    public function __construct(private readonly ModuleExtensions $extensions) {}
+    /** Organisationseinstellung: ab so vielen Tagen ohne Bewegung gilt ein Vorgang als ruhend (MVP-1670). */
+    public const string SETTING_DORMANT_DAYS = 'work_queue.dormant_days';
+
+    public const int DEFAULT_DORMANT_DAYS = 14;
+
+    public const int MAX_DORMANT_DAYS = 365;
+
+    public function __construct(
+        private readonly ModuleExtensions $extensions,
+        private readonly ActsForResolver $delegations,
+    ) {}
 
     /** @return array<string, WorkItemSource> Schlüssel → Quelle, nur die für den Nutzer verfügbaren */
     public function sourcesFor(User $viewer): array {
@@ -86,6 +108,13 @@ final class WorkQueue {
      */
     public function overflowFor(User $viewer, Organization $organization, ?array $sources = null): array {
         return $this->cached($viewer, $organization, $sources ?? $this->sourcesFor($viewer), CarbonImmutable::now())['overflow'];
+    }
+
+    /** Schwelle „ruhend“ der Organisation in Tagen (Organisationseinstellung, Vorgabe 14; MVP-1670). */
+    public function dormantDays(Organization $organization): int {
+        $value = SettingsRegistry::organizationValue($organization, self::SETTING_DORMANT_DAYS);
+
+        return $value !== \INF && is_numeric($value) ? max(1, min(self::MAX_DORMANT_DAYS, (int) $value)) : self::DEFAULT_DORMANT_DAYS;
     }
 
     /**
@@ -157,7 +186,55 @@ final class WorkQueue {
             }
         }
 
+        foreach ($this->delegatedItems($viewer, $organization, $sources, $now, $overflow) as $item) {
+            // Eigene Zeile und die erste Vertretung gewinnen — derselbe Gegenstand erscheint einmal.
+            $items[$item->key] ??= $item;
+        }
+
         return ['items' => array_map(static fn (WorkItem $item): array => $item->toArray(), array_values($items)), 'overflow' => $overflow];
+    }
+
+    /**
+     * Persönlich zugewiesene Vorgänge der Personen, die der Nutzer heute
+     * vertritt — nur aus delegierbaren Quellen, die der Nutzer selbst öffnen darf.
+     *
+     * @param  array<string, WorkItemSource>  $sources  für den Nutzer verfügbare Quellen
+     * @param  array<string, int>  $overflow
+     * @return list<WorkItem>
+     */
+    private function delegatedItems(User $viewer, Organization $organization, array $sources, CarbonImmutable $now, array &$overflow): array {
+        $items = [];
+        // Vertretung gilt nur in der eigenen Organisation (kein Org-Wechsel der Plattformverwaltung).
+        if ((int) $viewer->organization_id !== (int) $organization->id) {
+            return $items;
+        }
+        foreach ($this->delegations->for($viewer) as $principal) {
+            foreach ($sources as $source) {
+                if (! $source instanceof DelegableWork || ! $source->available($principal)) {
+                    continue;
+                }
+                try {
+                    $theirs = [];
+                    foreach ($source->items($principal, $organization) as $item) {
+                        if ($item->personal) {
+                            $theirs[] = $item->delegatedFor((string) $principal->name);
+                        }
+                    }
+                } catch (Throwable $e) {
+                    report($e);
+
+                    continue;
+                }
+                if (count($theirs) > self::SOURCE_LIMIT) {
+                    usort($theirs, static fn (WorkItem $a, WorkItem $b): int => self::compare($a, $b, $now));
+                    $overflow[$source->key()] = ($overflow[$source->key()] ?? 0) + count($theirs) - self::SOURCE_LIMIT;
+                    $theirs = array_slice($theirs, 0, self::SOURCE_LIMIT);
+                }
+                array_push($items, ...$theirs);
+            }
+        }
+
+        return $items;
     }
 
     /** @param  array<string, WorkItemSource>  $sources */
@@ -165,11 +242,15 @@ final class WorkQueue {
         $keys = array_keys($sources);
         sort($keys);
 
-        return implode(':', ['work-queue', self::CACHE_VERSION, (int) $viewer->id, (int) $organization->id, app()->getLocale(), substr((string) CryptoHelper::hash(implode(',', $keys)), 0, 16)]);
+        // Wen der Nutzer heute vertritt, gehört zum Schlüssel: Beginn und Ende einer Vertretung wirken sofort.
+        $principals = implode(',', $this->delegations->principalIds($viewer));
+
+        return implode(':', ['work-queue', self::CACHE_VERSION, (int) $viewer->id, (int) $organization->id, app()->getLocale(), substr((string) CryptoHelper::hash(implode(',', $keys) . '|' . $principals), 0, 16)]);
     }
 
     private static function compare(WorkItem $a, WorkItem $b, CarbonImmutable $now): int {
-        return [$a->urgency($now)->rank(), $a->dueAt === null, $a->dueAt?->getTimestamp(), mb_strtolower($a->title)]
-            <=> [$b->urgency($now)->rank(), $b->dueAt === null, $b->dueAt?->getTimestamp(), mb_strtolower($b->title)];
+        // Der Rang einer Quelle (Abarbeitungsreihenfolge, Feature 198) ordnet innerhalb gleicher Dringlichkeit vor der Fälligkeit.
+        return [$a->urgency($now)->rank(), $a->rank, $a->dueAt === null, $a->dueAt?->getTimestamp(), mb_strtolower($a->title)]
+            <=> [$b->urgency($now)->rank(), $b->rank, $b->dueAt === null, $b->dueAt?->getTimestamp(), mb_strtolower($b->title)];
     }
 }

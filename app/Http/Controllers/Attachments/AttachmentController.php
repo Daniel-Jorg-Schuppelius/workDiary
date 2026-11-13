@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Attachments;
 
+use App\Enums\Attachments\UploadPurpose;
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
 use App\Models\Attachments\Attachment;
@@ -100,38 +101,29 @@ class AttachmentController extends Controller {
 
         // W2.3: Belege an Ausgaben haben ein eigenes, konfigurierbares Limit
         // und eine eigene MIME-Whitelist (config/expenses.php).
-        $maxKb = $parent instanceof Expense
-            ? min(FileAttacher::maxKb(), max(1, (int) config('expenses.max_upload_mb', 10)) * 1024)
-            : FileAttacher::maxKb();
-
         $request->validate([
-            'file' => ['required', 'file', 'max:' . $maxKb],
+            'file' => ['required', 'file', 'max:' . FileAttacher::maxKbFor($parent)],
         ]);
 
         $file = $request->file('file');
 
-        if ($parent instanceof Expense) {
-            $expenseMimes = (array) config('expenses.allowed_mime_types', []);
-            if ($expenseMimes !== [] && ! in_array($file->getMimeType() ?? '', $expenseMimes, true)) {
-                return back()->withErrors(['file' => __('Dateityp nicht erlaubt.')]);
-            }
+        $carrierProblem = FileAttacher::carrierRejection($parent, $file->getMimeType() ?? '');
+        if ($carrierProblem !== null) {
+            return back()->withErrors(['file' => $carrierProblem]);
         }
 
-        $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
-        if (! in_array($ext, FileAttacher::ALLOWED_EXTENSIONS, true)) {
-            return back()->withErrors(['file' => __('Dateityp nicht erlaubt.')]);
-        }
-
-        // Serverseitiger MIME-Check über PHP Fileinfo – unabhängig vom Client-Header
-        $serverMime = $file->getMimeType() ?? '';
-        if (! in_array($serverMime, FileAttacher::ALLOWED_MIMES, true)) {
-            return back()->withErrors(['file' => __('Dateityp nicht erlaubt.')]);
+        // Endung und serverseitiger MIME-Check über PHP Fileinfo – unabhängig vom
+        // Client-Header. Interne Fläche: Mail-Dateien (.eml/.msg, Feature 204) sind
+        // erlaubt, beim Hochladen nur billig vorgeprüft; gelesen wird im Hintergrund.
+        $problem = FileAttacher::rejection($file, UploadPurpose::Internal);
+        if ($problem !== null) {
+            return back()->withErrors(['file' => $problem]);
         }
 
         // Kanonische Ablage über FileAttacher (M46-Rest, Folgepunkt 2026-07-20):
         // Ordner/UUID/sanitize/morphMany UND der H8-Quota-Guard (wirft
         // ValidationException → Redirect mit errors['file'], wie zuvor).
-        $attachment = app(FileAttacher::class)->store($parent, $file, Auth::id() !== null ? (int) Auth::id() : null);
+        $attachment = app(FileAttacher::class)->store($parent, $file, Auth::id() !== null ? (int) Auth::id() : null, purpose: UploadPurpose::Internal);
         if ($parent instanceof GuardsAttachments) {
             $parent->attachmentAdded($attachment, $this->authUser());
         }

@@ -30,9 +30,12 @@ final class DocumentRetentionPolicies implements RetentionPolicyProvider {
                     ->where('organization_id', $organization->id)
                     ->where('document_type', \App\Enums\Document\DocumentType::Invoice->value)
                     ->where('created_at', '<', $cutoff),
-                exempt: fn($subject): ?string => $subject->getAttribute('status') !== \App\Enums\Document\DocumentStatus::Archived
-                    ? 'Noch nicht archiviert — Dokument gilt als in Verwendung (GoBD).'
-                    : null,
+                exempt: fn($subject): ?string => match (true) {
+                    $subject->getAttribute('status') !== \App\Enums\Document\DocumentStatus::Archived => 'Noch nicht archiviert — Dokument gilt als in Verwendung (GoBD).',
+                    // Original einer aufgeteilten Sammel-PDF (Feature 208): bleibt, solange Teile darauf verweisen.
+                    \App\Models\Invoicing\IncomingEInvoice::query()->withoutGlobalScopes()->where('source_document_id', $subject->getKey())->exists() => 'Original einer aufgeteilten Sammel-PDF — bleibt, solange Teile bestehen (GoBD).',
+                    default => null,
+                },
             ),
             // Digitale Personalakte (Feature 141, MVP-708): Anker ist das am
             // Dokument gesetzte Aufbewahrungsende (users.left_at + Kategorie-

@@ -107,6 +107,7 @@ class ViewConventionRuleTest extends TestCase {
         'resources/views/admin/maintenance-windows/index.blade.php' => 'Verlängern mit Dauerfeld im Popover.',
         'resources/views/admin/operations/index.blade.php' => 'Delegieren/Ignorieren mit Begründung im Popover.',
         'resources/views/procedures/runs/show.blade.php' => 'Abbruch mit Pflichtbegründung im Popover.',
+        'resources/views/service-plan/_filters.blade.php' => 'Leistungsauswahl als Checkboxen der Filterleiste im Popover (Feature 199) — Formularfelder, kein Aktionsmenü.',
     ];
 
     /** @var array<string, string> V13 — Popover-Formulare im Kopf, ihr Auslöser ist ein <summary> */

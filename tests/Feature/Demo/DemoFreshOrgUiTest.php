@@ -75,7 +75,9 @@ final class DemoFreshOrgUiTest extends TestCase {
         // Projekten "mindestens" (analog DemoSeederServiceTest).
         $this->assertSame(3, Customer::query()->withoutGlobalScopes()->where('organization_id', $demo->id)->count());
         $this->assertGreaterThanOrEqual(5, Project::query()->withoutGlobalScopes()->where('organization_id', $demo->id)->count());
-        $this->assertSame(26, DiaryEntry::query()->withoutGlobalScopes()->where('organization_id', $demo->id)->count());
+        // 26 Blueprint-Aufträge + 2 Periodenaufträge mit Prüfung und Merker (Feature 198, PeriodOrderDemoBlock).
+        // + 5 Aufträge des Leistungsplans (Feature 199, ServicePlanDemoBlock).
+        $this->assertSame(33, DiaryEntry::query()->withoutGlobalScopes()->where('organization_id', $demo->id)->count());
         $this->assertSame(6, User::query()
             ->where('organization_id', $demo->id)
             ->where('email', 'like', 'demo+%@workdiary.test')

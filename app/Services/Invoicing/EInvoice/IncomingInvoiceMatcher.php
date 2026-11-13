@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Invoicing\EInvoice;
 
 use App\Enums\Billing\DocumentDirection;
-use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceMatchKind, IncomingInvoiceRecognition, IncomingInvoiceTransferStatus};
+use App\Enums\Invoicing\{IncomingInvoiceMatchKind, IncomingInvoiceRecognition, IncomingInvoiceTransferStatus};
 use App\Events\Invoicing\IncomingInvoiceAssigned;
 use App\Exceptions\CollectiveContactException;
 use App\Models\Contacts\ContactBankAccount;
@@ -88,7 +88,7 @@ class IncomingInvoiceMatcher {
     public function autoAssign(IncomingEInvoice $incoming): bool {
         // Ein Klärfall ohne erfasste Werte hat nichts, worüber er treffen könnte.
         $withoutValues = $incoming->recognition === IncomingInvoiceRecognition::None && ! isset(((array) $incoming->summary)['manual']);
-        if ($incoming->supplier_id !== null || $incoming->customer_id !== null || $withoutValues || $incoming->transferred_at !== null) {
+        if ($incoming->supplier_id !== null || $incoming->customer_id !== null || $withoutValues || $incoming->transferred_at !== null || $incoming->isSplitBundle()) {
             return false;
         }
 
@@ -128,7 +128,7 @@ class IncomingInvoiceMatcher {
             ->where('organization_id', $organizationId)
             ->whereNull('supplier_id')->whereNull('customer_id')
             ->whereNull('transferred_at')
-            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
+            ->whereNotIn('status', IncomingEInvoice::CLOSED_STATUSES)
             ->when($except, static fn ($query, IncomingEInvoice $skip) => $query->whereKeyNot($skip->getKey()))
             ->orderBy('id')
             ->chunkById(200, function ($incomings) use (&$assigned, &$open): void {
@@ -147,6 +147,10 @@ class IncomingInvoiceMatcher {
     public function assign(IncomingEInvoice $incoming, Supplier|Customer $party, IncomingInvoiceMatchKind $kind, ?User $actor): void {
         if ($incoming->transferred_at !== null) {
             throw new RuntimeException((string) __('Der Eingang ist bereits an die Buchhaltung übergeben — die Zuordnung ist dort zu ändern.'));
+        }
+        // Aufgeteilte Sammel-PDF (Feature 208): zugeordnet werden ihre Teile.
+        if ($incoming->isSplitBundle()) {
+            throw new RuntimeException((string) __('incoming_pdf.split.blocked.split'));
         }
         $isSupplier = $party instanceof Supplier;
         if ($isSupplier !== ($incoming->direction !== DocumentDirection::Outgoing)) {

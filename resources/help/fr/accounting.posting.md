@@ -1,7 +1,7 @@
 ---
 title: "Comptabiliser et boîte de saisie"
 topic: accounting.posting
-version: 10
+version: 11
 keywords:
     - passer une écriture
     - écriture comptable
@@ -18,6 +18,10 @@ keywords:
     - journal comptable
     - postes ouverts
     - écriture récurrente
+    - proposition d'imputation
+    - opération sans pièce
+    - identifiant créancier
+    - référence de mandat
 audience:
     - admin
     - geschaeftsfuehrung
@@ -332,3 +336,33 @@ taux du justificatif. S'il n'existe pas de code de TVA déductible pour ce taux 
 généralement de la TVA étrangère, non déductible —, la proposition s'arrête :
 saisissez la dépense en brut sans taux. Les factures en autoliquidation relèvent des
 factures entrantes, qui connaissent le régime fiscal.
+
+## Propositions d'imputation pour les opérations bancaires sans pièce
+
+Loyer, leasing, assurance, frais de compte : une opération bancaire que votre
+organisation a déjà comptabilisée via **Comptabiliser sur un compte général** reçoit
+la fois suivante une **proposition** — compte, code de TVA, centre de coûts et
+libellé de la dernière écriture similaire. Similaire signifie : même sens et,
+dans cet ordre, même **référence de mandat**, même **identifiant créancier**
+du prélèvement, même **IBAN de la contrepartie** ou mêmes **mots-clés du
+libellé** (mois, date et numéros ne comptent pas). Le motif est affiché, par
+exemple « Comptabilisé ainsi 3 fois, la dernière en 03/2026, même référence de
+mandat », avec la force de la proposition. L'écriture la plus récente
+détermine la proposition : si vous comptabilisez une fois sur un autre compte,
+c'est celui-ci qui vaut la fois suivante — aucune règle à entretenir.
+
+La boîte de dialogue **Comptabiliser sur un compte général** est préremplie avec la
+proposition. Sous **Propositions d'imputation** dans la boîte de saisie, les
+opérations ouvertes similaires sont regroupées avec l'aperçu de leurs
+écritures ; **Comptabiliser les … opérations** les comptabilise en une seule
+confirmation. Une opération dont le montant diffère de plus de 10 % par
+rapport à la dernière fois et les propositions avec remarque (compte
+désactivé, code de TVA plus valable) figurent à part sous **Vérifier une à
+une**. Seul ce que vous confirmez est comptabilisé ; avec le principe des
+quatre yeux, des brouillons sont créés pour validation.
+
+Seul ce que l'organisation a déjà comptabilisé ainsi est proposé — sans IA.
+L'import reprend l'identifiant créancier des fichiers CAMT et MT940 si la
+banque le fournit. Le libellé reste chiffré ; pour la comparaison, workDiary
+ne stocke qu'une empreinte à clé des mots-clés. **Droit :** **Comptabiliser les
+écritures**.

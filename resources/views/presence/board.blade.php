@@ -7,6 +7,8 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
   Aktuelle Personal-Belegung (MVP-524): Alltagssicht ohne Fehlgründe.
+  Selbstauskunft (MVP-1669): „Mein Stand“ setzt jede Person selbst; $myStatus
+  ist der eigene Stand, die der anderen zeigt die Komponente presence-status am Namen.
 --}}
 
 @extends('layouts.app')
@@ -16,7 +18,20 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Wer ist gerade im Haus? Stand: :time', ['time' => $snapshot['at']->setTimezone(\App\Support\Tz::current())->format('H:i')])" />
+        <x-page-toolbar :subtitle="__('Wer ist gerade im Haus? Stand: :time', ['time' => $snapshot['at']->setTimezone(\App\Support\Tz::current())->format('H:i')])">
+            <x-slot:actions>
+                @if ($myStatus !== null)
+                    <x-presence-status :user-id="auth()->id()" size="sm" />
+                    <x-action-form :action="route('presence.status.destroy')" method="DELETE">
+                        <x-icon-btn icon="close" tone="ghost" size="sm" type="submit" :label="__('presence.action.clear')" show-label>{{ __('presence.action.clear') }}</x-icon-btn>
+                    </x-action-form>
+                @endif
+                <x-icon-btn icon="person_pin_circle" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('presence.status.edit') . '?dialog=1'"
+                            show-label>{{ __('presence.action.set') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
     </x-slot:toolbar>
 
     <div class="grid gap-3 grid-cols-2 sm:grid-cols-4">
@@ -35,6 +50,7 @@
                 @forelse ([...$snapshot['present'], ...$snapshot['present_unmapped']] as $row)
                     <li class="py-1.5 flex items-center gap-2">
                         <span class="font-medium">{{ $row['user']->name }}</span>
+                        <x-presence-status :user-id="$row['user']->id" />
                         @if ($row['on_break'])
                             <x-status-badge tone="warning" size="sm">{{ __('Pause') }}</x-status-badge>
                         @endif
@@ -65,6 +81,7 @@
                     @forelse ($snapshot['off_site'] as $row)
                         <li class="py-1.5 flex items-center gap-2">
                             <span class="font-medium">{{ $row['user']->name }}</span>
+                            <x-presence-status :user-id="$row['user']->id" />
                             <span class="ml-auto text-sm text-muted">{{ $row['context'] ?? '' }}</span>
                         </li>
                     @empty

@@ -22,6 +22,9 @@
     $selectId = $id ?? $name;
     $placeholderText = $placeholder ?? __('Benutzer auswählen…');
     $errorKey = preg_replace('/\\[\\]$/', '', $name);
+    // Selbstauskunft am Anwesenheits-Board (MVP-1669): Stand als Zusatz am Namen, nur bei eingeschaltetem Board.
+    $presenceService = app(\App\Services\Attendance\PresenceStatusService::class);
+    $presence = $presenceService->visibleFor(\App\Support\OrganizationContext::current());
 @endphp
 
 <select id="{{ $selectId }}"
@@ -36,9 +39,10 @@
         @php
             $value = is_array($user) ? ($user[$valueKey] ?? null) : ($user->{$valueKey} ?? null);
             $label = is_array($user) ? ($user[$labelKey] ?? $value) : ($user->{$labelKey} ?? $value);
+            $presenceStatus = $presence[(int) (is_array($user) ? ($user['id'] ?? 0) : ($user->id ?? 0))] ?? null;
         @endphp
         <option value="{{ $value }}" @selected((string) old($errorKey, $selected) === (string) $value)>
-            {{ $label }}
+            {{ $label }}@if ($presenceStatus !== null) · {{ $presenceService->describe($presenceStatus) }}@endif
         </option>
     @endforeach
 </select>

@@ -153,6 +153,8 @@ class FormTemplateController extends Controller {
             'fields.*.label' => ['nullable', 'string', 'max:160'],
             'fields.*.type' => ['nullable', 'string', 'max:32'],
             'fields.*.required' => ['nullable'],
+            // Ergänzung zur Antwort bei Auswahlfragen (Feature 203, MVP-1651).
+            'fields.*.allows_note' => ['nullable'],
             'fields.*.options' => ['nullable', 'string', 'max:2000'],
             'fields.*.help' => ['nullable', 'string', 'max:500'],
             'fields.*.unit' => ['nullable', 'string', 'max:20'],

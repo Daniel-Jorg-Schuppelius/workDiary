@@ -56,7 +56,10 @@ class DiaryController extends Controller {
             $q->whereDate('start_at', '<=', $request->to);
         }
         if ($request->boolean('mine')) {
-            $q->where('user_id', Auth::id());
+            // Während einer Vertretung auch die den Vertretenen zugewiesenen (Feature 202, MVP-1648).
+            $principals = app(\App\Services\Delegation\ActsForResolver::class)->principalIds($user);
+            $q->where(static fn ($mine) => $mine->where('user_id', Auth::id())
+                ->when($principals !== [], static fn ($own) => $own->orWhereIn('assigned_user_id', $principals)));
         }
         if (! $request->boolean('archived')) {
             $q->where('is_archived', false);
@@ -100,7 +103,8 @@ class DiaryController extends Controller {
         requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(required: ['content', 'status'], properties: [
             new OA\Property(property: 'content', type: 'string', maxLength: 65535),
             new OA\Property(property: 'response', type: 'string', maxLength: 65535, nullable: true),
-            new OA\Property(property: 'status', type: 'integer', enum: [-1, 1, 2, 3, 4, 5, 6, 7, 8]),
+            new OA\Property(property: 'status', type: 'integer', enum: [-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
+            new OA\Property(property: 'period_key', type: 'string', maxLength: 10, nullable: true, example: '2026-Q1'),
             new OA\Property(property: 'start_at', type: 'string', format: 'date-time', nullable: true),
             new OA\Property(property: 'end_at', type: 'string', format: 'date-time', nullable: true),
             new OA\Property(property: 'tag_ids', type: 'array', description: 'Tag-Sqids', items: new OA\Items(type: 'string', example: 'k7Qx2Ab')),
@@ -135,7 +139,8 @@ class DiaryController extends Controller {
         requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(required: ['content', 'status'], properties: [
             new OA\Property(property: 'content', type: 'string', maxLength: 65535),
             new OA\Property(property: 'response', type: 'string', maxLength: 65535, nullable: true),
-            new OA\Property(property: 'status', type: 'integer', enum: [-1, 1, 2, 3, 4, 5, 6, 7, 8]),
+            new OA\Property(property: 'status', type: 'integer', enum: [-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
+            new OA\Property(property: 'period_key', type: 'string', maxLength: 10, nullable: true, example: '2026-Q1'),
             new OA\Property(property: 'start_at', type: 'string', format: 'date-time', nullable: true),
             new OA\Property(property: 'end_at', type: 'string', format: 'date-time', nullable: true),
             new OA\Property(property: 'tag_ids', type: 'array', description: 'Tag-Sqids', items: new OA\Items(type: 'string', example: 'k7Qx2Ab')),
@@ -225,9 +230,16 @@ class DiaryController extends Controller {
         return $request->validate([
             'content' => ['required', 'string', 'max:65535'],
             'response' => ['nullable', 'string', 'max:65535'],
-            'status' => ['required', 'integer', 'in:-1,1,2,3,4,5,6,7,8'],
+            // Rundreise aus GET (auch die Prüfzustände 9–11, Feature 198); gesetzt wird der Status im Lebenszyklus.
+            'status' => ['required', \Illuminate\Validation\Rule::enum(Status::class)],
             'start_at' => ['nullable', 'date'],
             'end_at' => ['nullable', 'date', 'after_or_equal:start_at'],
+            // Periode (Feature 198): Schlüssel wie 2026, 2026-H1, 2026-Q3, 2026-03.
+            'period_key' => ['nullable', 'string', 'max:10', static function (string $attribute, mixed $value, \Closure $fail): void {
+                if (! is_string($value) || \App\Support\Period\PeriodKey::tryParse($value) === null) {
+                    $fail((string) __('diary.period.invalid'));
+                }
+            }],
         ]);
     }
 

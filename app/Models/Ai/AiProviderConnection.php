@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Models\Ai;
 
 use App\Enums\Ai\{AiConnectionStatus, AiFamily, AiProviderType, AiVerb};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth, HasSqid};
+use App\Models\Attachments\Attachment;
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasConnectionHealth, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -28,6 +29,10 @@ use Illuminate\Support\Carbon;
  * Capability-Sensibilität und Branchenprofil, ob die Verbindung geroutet
  * werden darf; bei Typen ohne freie Einstufung erzwingt das Model den
  * Typ-Default (nur `openai_compatible` darf der Admin bewusst einstufen).
+ *
+ * Datenschutzfreigabe (MVP-1672): AVV liegt vor (`has_dpa`, Dokument als
+ * Anhang {@see DPA_META}), Verarbeitung in der EU, keine Trainingsnutzung,
+ * geprüft am/von — ausgewertet in {@see \App\Services\Ai\AiConnectionPrivacy}.
  *
  * @property int $id
  * @property int|null $organization_id
@@ -45,16 +50,25 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $last_error_at
  * @property int $consecutive_failures
  * @property Carbon|null $disabled_at
+ * @property bool $has_dpa
+ * @property bool $is_eu_processing
+ * @property bool $is_training_excluded
+ * @property Carbon|null $privacy_reviewed_at
+ * @property int|null $privacy_reviewed_by
  */
 class AiProviderConnection extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasAttachments;
     use HasConnectionHealth;
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     use HasSqid;
+
+    /** Ablage des AVV-Dokuments als Anhang (`attachments.meta_type`). */
+    public const string DPA_META = 'ai_dpa';
 
     protected $fillable = [
         'organization_id',
@@ -87,6 +101,10 @@ class AiProviderConnection extends Model {
         'preflight_at' => 'datetime',
         'last_error_at' => 'datetime',
         'disabled_at' => 'datetime',
+        'has_dpa' => 'boolean',
+        'is_eu_processing' => 'boolean',
+        'is_training_excluded' => 'boolean',
+        'privacy_reviewed_at' => 'datetime',
     ];
 
     protected static function booted(): void {
@@ -117,5 +135,32 @@ class AiProviderConnection extends Model {
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    /**
+     * Wer die Datenschutzangaben zuletzt geprüft und freigegeben hat (MVP-1672).
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function privacyReviewer(): BelongsTo {
+        return $this->belongsTo(User::class, 'privacy_reviewed_by');
+    }
+
+    /** Jüngstes AVV-Dokument der Verbindung. */
+    public function dpaDocument(): ?Attachment {
+        return $this->attachmentByMeta(self::DPA_META);
+    }
+
+    /**
+     * Freigabe und Widerruf heißen im Audit-Protokoll so, nicht „geändert“.
+     *
+     * @param  array<string, mixed>  $changes
+     */
+    protected function resolveAuditEvent(string $event, array $changes): string {
+        if ($event === 'updated' && array_key_exists('privacy_reviewed_at', $changes)) {
+            return $changes['privacy_reviewed_at'] === null ? 'ai.connection_approval_revoked' : 'ai.connection_approved';
+        }
+
+        return $event;
     }
 }

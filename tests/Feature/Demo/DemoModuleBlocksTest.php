@@ -73,7 +73,8 @@ final class DemoModuleBlocksTest extends TestCase {
         // IT empfiehlt Planung, Spesen, Formulare, Wissen, Team-Auswertungen, Verträge und Lager.
         $this->assertSame(2, $counts['duty_plans']);
         $this->assertSame(38, $counts['scheduled_shifts']);
-        $this->assertSame(3, $counts['form_templates']);
+        // Seit Feature 203 mit einem langen Bogen (Abschnitte) samt Entwurf.
+        $this->assertSame(4, $counts['form_templates']);
         $this->assertSame(3, $counts['form_submissions']);
         $this->assertSame(3, $counts['knowledge_articles']);
         $this->assertSame(2, $counts['warehouses']);
@@ -125,10 +126,12 @@ final class DemoModuleBlocksTest extends TestCase {
         $this->assertSame(5, CoverageRequirement::query()->where('organization_id', $org)->where('min_staff', 2)->count());
         $this->assertSame(ShiftExchangeStatus::Accepted, ShiftExchange::query()->where('organization_id', $org)->firstOrFail()->status);
 
-        // Formulare: zwei aktive Vorlagen, Einreichungen am Hauptauftrag.
-        $this->assertSame(2, \App\Models\Form\FormTemplate::query()->where('organization_id', $org)->where('status', FormTemplateStatus::Active->value)->count());
+        // Formulare: drei aktive Vorlagen (eine als langer Bogen, Feature 203), Einreichungen am Hauptauftrag
+        // und ein angefangener Entwurf daneben.
+        $this->assertSame(3, \App\Models\Form\FormTemplate::query()->where('organization_id', $org)->where('status', FormTemplateStatus::Active->value)->count());
         $mainDiary = DiaryEntry::query()->where('organization_id', $org)->where('title', 'like', '%Beispielauftrag%')->firstOrFail();
-        $this->assertSame(2, FormSubmission::query()->where('subject_type', MorphMap::alias(DiaryEntry::class))->where('subject_id', $mainDiary->id)->count());
+        $this->assertSame(2, FormSubmission::query()->submitted()->where('subject_type', MorphMap::alias(DiaryEntry::class))->where('subject_id', $mainDiary->id)->count());
+        $this->assertSame(1, FormSubmission::query()->drafts()->where('subject_type', MorphMap::alias(DiaryEntry::class))->where('subject_id', $mainDiary->id)->count());
 
         // Wissen: aus dem Hauptfall der Branche, am Auftrag verknüpft.
         $this->assertSame(2, KnowledgeArticle::query()->where('organization_id', $org)->where('status', ArticleStatus::Published->value)->count());

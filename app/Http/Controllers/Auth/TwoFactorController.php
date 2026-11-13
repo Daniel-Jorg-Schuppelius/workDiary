@@ -15,7 +15,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Auth\TwoFactorCredential;
 use App\Models\Platform\User;
 use App\Services\Auth\{EmailOtpService, TwoFactorService, WebAuthnService};
+use App\Services\Auth\LoginPolicy\LoginPolicyEvaluator;
 use App\Services\Security\AccountTakeoverResponder;
+use App\Support\Auth\RecentAuthentication;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Hash};
@@ -25,6 +27,9 @@ use Illuminate\Support\Facades\{Auth, Hash};
  * Authenticator-App (TOTP) und E-Mail-Einmalcode; Recovery-Codes; entfernen.
  */
 class TwoFactorController extends Controller {
+    /** Länge eines Faktor-Namens (Spalte `label`, 255; Anzeige knapp). */
+    private const int LABEL_MAX = 100;
+
     public function __construct(
         private readonly TwoFactorService $twoFactor,
         private readonly EmailOtpService $emailOtp,
@@ -53,7 +58,7 @@ class TwoFactorController extends Controller {
 
         try {
             $options = $this->webauthn->creationOptionsFromJson($optionsJson);
-            $this->webauthn->verifyRegistration($user, $request->getContent(), $options, $request->getSchemeAndHttpHost(), $request->input('label'));
+            $this->webauthn->verifyRegistration($user, $request->getContent(), $options, $request->getSchemeAndHttpHost(), $this->credentialLabel($request->query('label')));
         } catch (\Throwable) {
             return response()->json(['message' => __('Sicherheitsschlüssel konnte nicht registriert werden.')], 422);
         }
@@ -99,7 +104,22 @@ class TwoFactorController extends Controller {
             'qrSvg' => $pendingTotp ? $this->twoFactor->qrSvg($user, (string) $user->two_factor_secret) : null,
             'secret' => $pendingTotp ? (string) $user->two_factor_secret : null,
             'recoveryCodes' => $request->session()->get('two_factor_recovery_codes'),
+            // Passkey-Pflicht der Rolle (Feature 205, MVP-1656) und frische Anmeldung (Entfernen ohne Passwortfeld).
+            'passkeyRequired' => app(LoginPolicyEvaluator::class)->requiresPasskey($user),
+            'recentlyAuthenticated' => RecentAuthentication::isRecent($request),
         ]);
+    }
+
+    /** Anmeldemittel umbenennen (Feature 205, MVP-1656: Passkeys mit Namen verwalten). */
+    public function renameCredential(Request $request, TwoFactorCredential $credential): RedirectResponse {
+        /** @var User $user */
+        $user = Auth::user();
+        abort_unless((int) $credential->user_id === (int) $user->getKey(), 404);
+
+        $data = $request->validate(['label' => ['required', 'string', 'max:' . self::LABEL_MAX]]);
+        $credential->forceFill(['label' => $this->credentialLabel($data['label'])])->save();
+
+        return redirect()->route('account.2fa.show')->with('success', __('login_policy.passkey.renamed'));
     }
 
     /**
@@ -221,6 +241,14 @@ class TwoFactorController extends Controller {
             return back()->withErrors(['credential' => __('Ihre Organisation verlangt Zwei-Faktor-Authentifizierung; der letzte Faktor kann nicht entfernt werden.')]);
         }
 
+        // Passkey-Pflicht der Rolle (Feature 205, N4): der letzte Passkey bleibt,
+        // bis ein neuer eingerichtet ist — sonst gälte wieder Passwort plus Code.
+        if ($credential->type === TwoFactorType::Webauthn
+            && app(LoginPolicyEvaluator::class)->requiresPasskey($user)
+            && ! $user->twoFactorCredentials()->where('type', TwoFactorType::Webauthn->value)->whereNotNull('confirmed_at')->where('id', '!=', $credential->id)->exists()) {
+            return back()->withErrors(['credential' => __('login_policy.passkey.last_required')]);
+        }
+
         $credential->delete();
 
         return redirect()->route('account.2fa.show')->with('success', __('Faktor entfernt.'));
@@ -277,6 +305,11 @@ class TwoFactorController extends Controller {
      * Faktor-Verwaltung nicht unbenutzbar wird.
      */
     private function confirmsIdentity(Request $request, User $user): bool {
+        // Frische Anmeldung bzw. Passwortbestätigung der Sitzung (wie `reauth`).
+        if (RecentAuthentication::isRecent($request)) {
+            return true;
+        }
+
         $password = (string) $request->input('current_password', '');
         $code = (string) $request->input('code', '');
 
@@ -294,6 +327,13 @@ class TwoFactorController extends Controller {
 
         // Weder Passwort noch TOTP verfügbar: kein Nachweis möglich.
         return ! $user->is_new_system && blank($user->two_factor_secret);
+    }
+
+    /** Name eines Anmeldemittels: getrimmt, gekürzt, ohne Steuerzeichen; leer = Vorgabe. */
+    private function credentialLabel(mixed $label): ?string {
+        $label = is_string($label) ? trim((string) preg_replace('/[\x00-\x1F\x7F]/u', '', $label)) : '';
+
+        return $label === '' ? null : mb_substr($label, 0, self::LABEL_MAX);
     }
 
     /** Hinweis-Mail über ein neu hinterlegtes Anmeldemittel; darf nie die Registrierung brechen. */

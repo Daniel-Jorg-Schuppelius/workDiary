@@ -35,6 +35,13 @@ scadenza. L’importo è allora già ridotto dello sconto. Ogni posizione è
 deselezionabile; una fattura senza IBAN viene mostrata come bloccata e non
 entra nella distinta.
 
+**GiroCode e PDF cumulativo:** se l’IBAN nel GiroCode di una fattura
+differisce dalla fattura o dall’anagrafica del fornitore, la posizione è
+bloccata finché una persona con permesso di autorizzazione non conferma la
+differenza con **Conferma IBAN**; l’approvazione di una distinta lo
+verifica di nuovo. Un PDF cumulativo i cui confini non sono ancora decisi non
+viene pagato.
+
 **Tre passaggi:** comporre (bozza) → approvare → esportare. L’approvazione è
 un diritto a sé: chi compone la distinta non deve necessariamente poterla
 approvare. Dopo l’esportazione la distinta è immutabile; l’annullamento è

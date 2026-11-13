@@ -244,6 +244,9 @@ class PermissionsSeeder extends Seeder {
                     PermissionEnum::DiaryExport->value,
                     // Kundenliste als CSV; vor dem Vollscan 2026-10-21 ohne Recht möglich.
                     PermissionEnum::CustomerExport->value,
+                    // Aufnahmeakte (Feature 200): Annahme ist Sache der Leitung bzw. des Berufsträgers.
+                    // Die engen Sichtrechte (Ausweis, Gesundheit) vergibt die Organisation einzeln.
+                    PermissionEnum::LeadIntakeDecide->value,
                     PermissionEnum::ClassificationList->value,
                     // Geschäftsführung darf — wie die Personalverwaltung —
                     // Personal-/Lohndaten und das Arbeitszeit-Modell pflegen.
@@ -296,6 +299,13 @@ class PermissionsSeeder extends Seeder {
                     // MVP-1075: Kundeneingänge bearbeiten und beauftragte übernehmen.
                     PermissionEnum::CustomerPortalIntakeManage->value,
                     PermissionEnum::CustomerPortalIntakeHandover->value,
+                    // Feature 205 (MVP-1657): Notaus der Organisation — Inhaber bzw.
+                    // Geschäftsleitung neben den Org-Admins.
+                    PermissionEnum::AuthLockdown->value,
+                    // Feature 202 (MVP-1647): Vertretungen für andere anlegen und beenden.
+                    PermissionEnum::UserDelegationManage->value,
+                    // Feature 206 (MVP-1658/1659): Wünsche beantworten und an den Betrieb weitergeben.
+                    PermissionEnum::WishesManage->value,
                 ], true);
             }
         ));
@@ -381,6 +391,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::UserFlexManage,
             PermissionEnum::CustomerViewAny,
             PermissionEnum::CustomerView,
+            // Kundenfristen (Feature 197): Übersicht, Fristmerkmale und Leistungsumfang.
+            PermissionEnum::CustomerDeadlineView,
+            PermissionEnum::CustomerDeadlineManage,
             PermissionEnum::ProjectViewAny,
             PermissionEnum::ProjectView,
             PermissionEnum::ProjectCreate,
@@ -425,6 +438,12 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::OrderComplete,
             PermissionEnum::OrderHandover,
             PermissionEnum::OrderCancel,
+            // Interne Prüfung (Feature 198): die Teamleitung prüft und darf die Prüfpflicht abschalten.
+            PermissionEnum::OrderReview,
+            PermissionEnum::OrderWaiveReview,
+            // Leistungsplan (Feature 199): ganzer Plan, „entfällt“, Perioden anlegen, Listen übernehmen.
+            PermissionEnum::DiaryServicePlanView,
+            PermissionEnum::DiaryServicePlanManage,
             // Disposition / Einsatzplanung (Feature 028): Teamleitung disponiert
             // Aufträge (Konfliktwarnungen, Status, Fahrzeug-Reservierung).
             PermissionEnum::DispatchViewAny,
@@ -461,6 +480,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::VacationCancel,
             PermissionEnum::SickLeaveViewAny,
             PermissionEnum::SickLeaveManage,
+            // Vertretung bei Abwesenheit (Feature 202): Leitung legt Vertretungen für ihr Team an.
+            PermissionEnum::UserDelegationManage,
             PermissionEnum::AttendanceViewAny,
             PermissionEnum::AttendanceManage,
             // ArbZG-Compliance auf Ist-Arbeitszeit (Feature 006).
@@ -527,6 +548,10 @@ class PermissionsSeeder extends Seeder {
             // Sammlungen (MVP-809): ordnen, was man ohnehin sehen darf.
             PermissionEnum::CollectionViewAny,
             PermissionEnum::CollectionManage,
+            // Wissensseiten (Feature 191): Teamleitung schreibt und verwaltet
+            // (Bereiche, Pflichtlektüre, Glossar), endgültiges Löschen bleibt Admin.
+            PermissionEnum::KnowledgePageEdit,
+            PermissionEnum::KnowledgePageManage,
             // Ideenlandkarten (Feature 054): eigene Karten anlegen; Inhalte
             // regeln Eigentum + Freigaben (IdeaMapPolicy), nicht das Recht.
             PermissionEnum::IdeasViewAny,
@@ -668,6 +693,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::VacationEntitlementsManage,
             PermissionEnum::SickLeaveViewAny,
             PermissionEnum::SickLeaveManage,
+            // Vertretung bei Abwesenheit (Feature 202), auch aus der Krankmeldung.
+            PermissionEnum::UserDelegationManage,
             PermissionEnum::ReportView,
             // Team-Auswertungen exportieren (Phase 137, E27).
             PermissionEnum::ReportExport,
@@ -737,6 +764,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::DiaryViewAny,
             // Auftragsliste für den Abrechnungsabgleich exportieren; vor lk-06 ohne Recht möglich.
             PermissionEnum::DiaryExport,
+            // Leistungsplan (Feature 199): Fibu/Lohn je Monat und Jahresarbeiten der Kunden führen.
+            PermissionEnum::DiaryServicePlanView,
+            PermissionEnum::DiaryServicePlanManage,
             PermissionEnum::CommunicationViewAny,
             PermissionEnum::CommunicationView,
             // Dokumente (MVP-031): nur lesend (z. B. Verträge, Versicherungen).
@@ -750,6 +780,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::CustomerExport,
             PermissionEnum::CustomerImport,
             PermissionEnum::CustomerLexofficeSync,
+            // Kundenfristen (Feature 197): Steuer- und Beitragstermine der Kunden führen.
+            PermissionEnum::CustomerDeadlineView,
+            PermissionEnum::CustomerDeadlineManage,
             // Portalzugänge der Kunden verwalten (MVP-510) + Sichtbarkeiten (MVP-511).
             PermissionEnum::CustomerPortalAccessManage,
             PermissionEnum::CustomerPortalVisibilityManage,
@@ -939,6 +972,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::KnowledgeUpdate,
             PermissionEnum::CollectionViewAny,
             PermissionEnum::CollectionManage,
+            // Wissensseiten (Feature 191): schreiben; freigeben darf die verantwortliche Person.
+            PermissionEnum::KnowledgePageEdit,
             // Ideenlandkarten (Feature 054): eigene Karten anlegen; Inhalte
             // regeln Eigentum + Freigaben (IdeaMapPolicy), nicht das Recht.
             PermissionEnum::IdeasViewAny,
@@ -1035,6 +1070,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::KnowledgeCreate,
             PermissionEnum::CollectionViewAny,
             PermissionEnum::CollectionManage,
+            // Wissensseiten (Feature 191): Anleitungen aus dem Einsatz schreiben.
+            PermissionEnum::KnowledgePageEdit,
             // Ideenlandkarten (Feature 054): eigene Karten auch mobil.
             PermissionEnum::IdeasViewAny,
             PermissionEnum::IdeasCreate,
@@ -1188,9 +1225,14 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::TeamManageMembers,
         ];
 
+        // Interne Wissensdatenbank (Feature 191): lesen darf jede interne Rolle;
+        // eingeschränkte Bereiche grenzen über ihre Leser weiter ein.
+        $knowledgePagesRead = [PermissionEnum::KnowledgePageViewAny];
+
         // Eigenes (lk-06): bis zur Umstellung der Policies durfte das jedes Konto.
         // Die Vergabe an alle internen Profile hält diesen Stand; Support bleibt lesend.
         $ownView = [
+            ...$knowledgePagesRead,
             PermissionEnum::TimeEntryViewOwn,
             PermissionEnum::FlexBalanceView,
             PermissionEnum::TravelLogViewAny,

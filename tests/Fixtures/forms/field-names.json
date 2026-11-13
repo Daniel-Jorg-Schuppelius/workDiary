@@ -156,6 +156,7 @@
         "location_mode",
         "mode",
         "new_tags",
+        "period_key",
         "planned_duration",
         "priority",
         "response",

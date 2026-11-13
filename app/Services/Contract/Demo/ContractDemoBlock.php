@@ -13,8 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Contract\Demo;
 
 use App\Enums\Contract\{ContractKind, ContractObligationKind, ContractPartnerType, ContractTermKind, IndexationMethod};
+use App\Models\CarryForward\CarryForwardNote;
 use App\Models\Contract\{Contract, ContractIndexation, ContractObligation};
 use App\Models\Platform\Organization;
+use App\Models\Scopes\OrganizationScope;
+use App\Services\CarryForward\CarryForwardNotes;
 use App\Services\Contract\ContractService;
 use App\Services\Demo\Contracts\{DemoBlock, DemoSeedContext};
 use App\Support\Tz;
@@ -24,11 +27,14 @@ use CommonToolkit\Enums\CurrencyCode;
 /**
  * Verträge zur Vorführung (MVP-1533): ein laufender Wartungsvertrag mit dem
  * Hauptkunden (Kündigungsfrist und Jahresgespräch im Fristenkalender), eine
- * unbefristete Softwarelizenz mit jährlicher Zahlung und ein Mietvertrag im
- * Entwurf.
+ * unbefristete Softwarelizenz mit jährlicher Zahlung (samt Merker fürs nächste
+ * Jahr, MVP-1646) und ein Mietvertrag im Entwurf.
  */
 final class ContractDemoBlock implements DemoBlock {
-    public function __construct(private readonly ContractService $contracts) {}
+    public function __construct(
+        private readonly ContractService $contracts,
+        private readonly CarryForwardNotes $notes,
+    ) {}
 
     public function supports(DemoSeedContext $context): bool {
         return true;
@@ -89,7 +95,7 @@ final class ContractDemoBlock implements DemoBlock {
             'responsible_user_id' => $admin->id,
         ]);
         $this->contracts->activate($license, $admin);
-        $this->contracts->addObligation($license, [
+        $payment = $this->contracts->addObligation($license, [
             'kind' => ContractObligationKind::Payment,
             'title' => (string) __('demo.contracts.payment_title'),
             'due_on' => $today->addDays(45)->toDateString(),
@@ -98,6 +104,8 @@ final class ContractDemoBlock implements DemoBlock {
             'recurrence_months' => 12,
             'responsible_user_id' => $admin->id,
         ]);
+        // Merker fürs nächste Mal an der wiederkehrenden Pflicht (Feature 201, MVP-1646).
+        $this->notes->create($payment, (string) __('demo.contracts.carry_forward_note'), $admin);
 
         $this->contracts->create($organization, $admin, [
             'title' => (string) __('demo.contracts.rent_title'),
@@ -122,6 +130,15 @@ final class ContractDemoBlock implements DemoBlock {
 
     public function purge(Organization $organization): void {
         $contractIds = Contract::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->pluck('id');
+        // Merker der Pflicht-Reihen (Reihenschlüssel kommt von der Pflicht).
+        $series = ContractObligation::query()->withoutGlobalScopes()->whereIn('contract_id', $contractIds)->get()
+            ->map(static fn (ContractObligation $obligation): ?string => $obligation->carryForwardSeries())->filter()->unique()->values()->all();
+        if ($series !== []) {
+            CarryForwardNote::query()->withoutGlobalScope(OrganizationScope::class)
+                ->where('organization_id', $organization->id)
+                ->whereIn('series_key', $series)
+                ->delete();
+        }
         ContractObligation::query()->withoutGlobalScopes()->whereIn('contract_id', $contractIds)->delete();
         ContractIndexation::query()->withoutGlobalScopes()->whereIn('contract_id', $contractIds)->delete();
         Contract::query()->withoutGlobalScopes()->whereKey($contractIds)->delete();

@@ -24,6 +24,9 @@ return [
         'memory_type' => ['glossary' => 'Glossar', 'style_rule' => 'Stil-Regel', 'example' => 'Beispielpaar'],
         'sensitivity' => ['low' => 'Niedrig', 'medium' => 'Mittel', 'high' => 'Hoch'],
         'ai_text_suggestion_status' => ['proposed' => 'Vorgeschlagen', 'accepted' => 'Angenommen', 'edited' => 'Geändert', 'rejected' => 'Abgelehnt', 'expired' => 'Abgelaufen'],
+        // Datenschutz der KI-Verbindungen (MVP-1671/1672)
+        'mask_kind' => ['iban' => 'IBAN', 'vat_id' => 'USt-IdNr.', 'tax_number' => 'Steuernummer', 'tax_id' => 'Steuer-ID', 'email' => 'E-Mail-Adresse', 'phone' => 'Telefonnummer'],
+        'approval_state' => ['approved' => 'Freigegeben', 'expiring' => 'Läuft bald ab', 'expired' => 'Abgelaufen', 'missing' => 'Nicht freigegeben'],
     ],
     'domain' => [
         'environment' => ['ote' => 'OT&E (Test/Pilot)', 'production' => 'Produktiv'],
@@ -270,6 +273,11 @@ return [
         'order_confirmation_status' => ['draft' => 'Entwurf', 'confirmed' => 'Bestätigt', 'cancelled' => 'Storniert'],
         'lead_status' => ['new' => 'Neu', 'contacted' => 'Kontaktiert', 'qualified' => 'Qualifiziert', 'converted' => 'Konvertiert', 'discarded' => 'Verworfen'],
         'lead_source' => ['referral' => 'Empfehlung', 'web' => 'Web', 'trade_fair' => 'Messe', 'phone' => 'Telefon', 'booking' => 'Terminbuchung', 'other' => 'Sonstige'],
+        // Aufnahmeakte (Feature 200).
+        'lead_intake_stage' => ['inquiry' => 'Anfrage', 'interview' => 'Gespräch', 'documents' => 'Unterlagen', 'decision' => 'Entscheidung', 'setup' => 'Einrichtung', 'completed' => 'Eingerichtet', 'rejected' => 'Abgelehnt'],
+        'lead_intake_decision' => ['accepted' => 'Angenommen', 'rejected' => 'Abgelehnt'],
+        'intake_risk_level' => ['low' => 'Gering', 'normal' => 'Normal', 'high' => 'Hoch'],
+        'intake_sensitivity' => ['identity' => 'Ausweisangaben', 'health' => 'Gesundheitsangaben'],
     ],
     // Sicherheitseinbehalte (Feature 113, MVP-602).
     // Bürgschaftsregister (Feature 114, MVP-603).
@@ -577,6 +585,14 @@ return [
                 'queryRaised' => 'Kunde hat eine Rückfrage gestellt',
                 'intakeSubmitted' => 'Kunde hat eine Anfrage eingereicht',
                 'intakeActivity' => 'Neue Aktivität an einem Kundeneingang',
+                'deadlineDueSoon' => 'Kundenfristen rücken näher',
+                'deadlineOverdue' => 'Kundenfristen überfällig',
+            ],
+            'leadIntake' => [
+                'refreshDue' => 'Aufnahmeakten sind zu aktualisieren',
+            ],
+            'knowledgePage' => [
+                'reviewDue' => 'Wissensseiten sind zu prüfen',
             ],
             'ideaMap' => [
                 'shared' => 'Ideenlandkarte für Sie freigegeben',
@@ -652,6 +668,18 @@ return [
                 'threat' => 'Angriffserkennung',
                 'newDevice' => 'Anmeldung von neuem Gerät',
                 'lockout' => 'Konto vorübergehend gesperrt',
+                'organizationLockdown' => 'Notaus der Organisation',
+                'passkeyRecovery' => 'Anmeldung per Wiederherstellungscode trotz Passkey-Pflicht',
+            ],
+            'auth' => [
+                'deviceApprovalRequested' => 'Gerät wartet auf Freigabe',
+            ],
+            'delegation' => [
+                'created' => 'Vertretung übernommen',
+            ],
+            'wish' => [
+                'submitted' => 'Neuer Wunsch an die App',
+                'answered' => 'Antwort auf einen Wunsch an die App',
             ],
             'diary' => [
                 'commentCreated' => 'Neuer Kommentar im Auftragsbuch',
@@ -841,6 +869,11 @@ return [
         ],
     ],
     'knowledge' => [
+        // Interne Wissensdatenbank (Feature 191).
+        'page_status' => ['draft' => 'Entwurf', 'valid' => 'Gültig', 'outdated' => 'Veraltet'],
+        'page_kind' => ['page' => 'Seite', 'guide' => 'Bildanleitung'],
+        'audience_kind' => ['all' => 'Alle', 'role' => 'Rolle', 'team' => 'Team', 'user' => 'Person'],
+        'marker_kind' => ['arrow' => 'Pfeil', 'number' => 'Nummer', 'frame' => 'Rahmen', 'text' => 'Text'],
         'status' => [
             'draft' => 'Entwurf',
             'published' => 'Veröffentlicht',
@@ -856,6 +889,10 @@ return [
             'draft' => 'Entwurf',
             'active' => 'Aktiv',
             'archived' => 'Archiviert',
+        ],
+        'submission_status' => [
+            'draft' => 'Entwurf',
+            'submitted' => 'Abgesendet',
         ],
     ],
     'fields' => [
@@ -1437,6 +1474,19 @@ return [
             'vat_special_prepayment' => 'Sondervorauszahlung',
             'bank_direct' => 'Bankumsatz ohne Beleg',
             'reversal' => 'Storno',
+        ],
+        'booking-suggestion-basis' => [
+            'mandate' => 'Mandatsreferenz',
+            'creditor' => 'Gläubiger-ID',
+            'iban' => 'IBAN der Gegenpartei',
+            'keywords' => 'Stichwörter im Verwendungszweck',
+        ],
+        'datev-tax-check-kind' => [
+            'missing_tax_code' => 'Steuerkennzeichen fehlt',
+            'missing_vat_id' => 'USt-IdNr. des Partners fehlt',
+            'inactive_account' => 'Konto stillgelegt',
+            'automatic_suspended' => 'Automatik aufgehoben (BU 40)',
+            'rate_mismatch' => 'Satz weicht vom Automatikkonto ab',
         ],
         'posting-account-role' => [
             'receivable' => 'Forderung',
@@ -2188,7 +2238,7 @@ return [
             'expired' => 'Abgelaufen',
             'refunded' => 'Erstattet',
         ],
-        'incoming_e_invoice_status' => ['received' => 'Empfangen', 'approved' => 'Fachlich freigegeben', 'rejected' => 'Abgelehnt', 'question' => 'Rückfrage', 'payment_released' => 'Zahlung freigegeben'],
+        'incoming_e_invoice_status' => ['received' => 'Empfangen', 'approved' => 'Fachlich freigegeben', 'rejected' => 'Abgelehnt', 'question' => 'Rückfrage', 'payment_released' => 'Zahlung freigegeben', 'split' => 'Aufgeteilt (Sammel-PDF)'],
         'incoming_invoice_recognition' => ['structured' => 'E-Rechnung (strukturiert)', 'extracted' => 'Aus PDF bzw. Bild erkannt', 'none' => 'Nicht erkannt (Klärfall)'],
         'incoming_invoice_tax_case' => ['regular' => 'Vorsteuer aus der Rechnung', 'reverse_charge_eu' => '§ 13b Abs. 1 UStG: sonstige Leistung aus dem EU-Ausland', 'reverse_charge' => '§ 13b Abs. 2 UStG: Steuerschuld des Leistungsempfängers (z. B. Bauleistungen)', 'intra_community_acquisition' => 'Innergemeinschaftlicher Erwerb (§ 1a UStG)'],
         'place_of_supply_kind' => ['general' => 'Allgemein (§ 3a Abs. 1/2 UStG)', 'catalog' => 'Katalogleistung (§ 3a Abs. 4 UStG)', 'property' => 'Grundstücksleistung (§ 3a Abs. 3 Nr. 1 UStG)'],
@@ -2229,6 +2279,8 @@ return [
     ],
     'auth' => [
         'two_factor_type' => ['totp' => 'Authenticator-App', 'email' => 'E-Mail-Code', 'webauthn' => 'Sicherheitsschlüssel / Passkey'],
+        'login_policy_mode' => ['off' => 'Aus', 'log' => 'Nur protokollieren', 'enforce' => 'Durchsetzen'],
+        'login_policy_reason' => ['lockdown' => 'Notaus', 'hours' => 'Außerhalb der Anmeldezeit', 'network' => 'Außerhalb der Büronetze', 'device' => 'Gerät nicht freigegeben', 'device_rejected' => 'Gerätefreigabe abgelehnt', 'passkey' => 'Passkey verlangt'],
     ],
     'claims' => [
         'claim_action_kind' => ['rework' => 'Nacharbeit', 'repair' => 'Reparatur', 'replacement' => 'Ersatzlieferung', 'service_visit' => 'Serviceeinsatz', 'price_reduction' => 'Preisnachlass', 'refund' => 'Rückerstattung', 'supplier_recourse' => 'Lieferantenregress', 'root_cause_fix' => 'Ursachenbehebung', 'other' => 'Sonstiges'],
@@ -2413,5 +2465,21 @@ return [
             'no_warehouse' => 'Nicht gebucht – kein Standardlager',
             'read_only' => 'Nicht gebucht – Bestand extern, nur lesend',
         ],
+    ],
+    // Periodenart (Feature 198/201)
+    'period' => [
+        'period_kind' => ['year' => 'Jahr', 'half_year' => 'Halbjahr', 'quarter' => 'Quartal', 'month' => 'Monat'],
+    ],
+    // Vertretung bei Abwesenheit (Feature 202)
+    'delegation' => [
+        'work_delegation_kind' => ['vacation' => 'Urlaub', 'sickness' => 'Krankheit', 'other' => 'Sonstiges'],
+    ],
+    // Kundenfristen aus Regelsätzen (Feature 197)
+    'customer' => [
+        'customer_deadline_status' => ['open' => 'Offen', 'completed' => 'Erledigt', 'extended' => 'Verlängert', 'waived' => 'Entfällt'],
+    ],
+    // Leistungsplan je Kunde und Periode (Feature 199)
+    'service_plan' => [
+        'service_plan_cell_state' => ['missing' => 'Fehlt', 'optional' => 'Wahl', 'planned' => 'Angelegt', 'accepted' => 'Angenommen', 'in_progress' => 'In Arbeit', 'waiting' => 'Wartet', 'review' => 'Zur Prüfung', 'done' => 'Erledigt', 'waived' => 'Entfällt', 'none' => 'Nicht im Umfang'],
     ],
 ];

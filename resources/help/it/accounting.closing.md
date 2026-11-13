@@ -1,7 +1,7 @@
 ---
 title: "Chiusura e analisi"
 topic: accounting.closing
-version: 3
+version: 4
 keywords:
     - chiusura mensile
     - chiusura annuale
@@ -15,6 +15,10 @@ keywords:
     - export verifica fiscale
     - ripartizione costi
     - export DATEV
+    - controllo fiscale DATEV
+    - conto automatico
+    - BU 40
+    - partita IVA mancante
 audience:
     - admin
     - geschaeftsfuehrung
@@ -68,3 +72,19 @@ registrata. Nella previsione di liquidità Lei aggiunge **voci pianificate** (ad
 esempio acconti d'imposta o rate di finanziamento); ogni lunedì l'app registra
 lo stato della settimana e «piano/consuntivo» lo confronta poi con i
 movimenti bancari effettivi.
+
+**Controllo fiscale prima dell'esportazione DATEV:** **Controllare ed
+esportare** nella consegna DATEV mostra prima i rilievi del periodo, ciascuno
+con collegamento alla registrazione. Gli **errori** bloccano l'esportazione:
+una riga di ricavo o costo senza codice IVA benché la registrazione riporti
+IVA a debito o a credito; una cessione intracomunitaria o un'inversione
+contabile in un altro paese UE senza partita IVA del partner; una
+registrazione su un conto disattivato. Gli **avvisi** sono da rivedere:
+scritture su cui l'esportazione annulla l'automatismo del conto con BU 40 (con
+numero e conto), un'aliquota diversa dal codice del conto automatico e
+l'inversione contabile nazionale senza partita IVA. Il controllo legge i conti
+automatici del piano dei conti e non modifica il file. Un errore scompare non
+appena la registrazione o i dati anagrafici sono corretti. Se nel vostro caso
+è corretto, una persona con il permesso **Sbloccare il controllo fiscale prima
+dell'esportazione DATEV** lo sblocca con motivazione; lo sblocco resta nella
+catena di prova della contabilità e vale solo per gli errori mostrati.

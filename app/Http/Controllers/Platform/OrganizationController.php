@@ -61,7 +61,14 @@ class OrganizationController extends Controller {
 
         $organizations = $query->paginate((int) Setting::get('pagination.organizations', 25))->withQueryString();
 
-        return view('admin.organizations.index', compact('organizations', 'sort', 'dir', 'showDemo', 'demoCount'));
+        // Organisationen im Notaus (Feature 205, MVP-1657): der Plattformbetrieb kann aufheben.
+        $lockdowns = \App\Models\Auth\OrganizationLoginPolicy::query()->withoutGlobalScopes()
+            ->whereNotNull('lockdown_at')
+            ->whereIn('organization_id', $organizations->getCollection()->modelKeys())
+            ->pluck('lockdown_at', 'organization_id')
+            ->all();
+
+        return view('admin.organizations.index', compact('organizations', 'sort', 'dir', 'showDemo', 'demoCount', 'lockdowns'));
     }
 
     public function create(): View {

@@ -72,6 +72,15 @@ enum Permission: string implements HasLabel {
         // ── Sitzungsverwaltung / Fernabmeldung (Feature 085) ────────
     case SecuritySessionsView = 'security.sessions.view';
     case SecuritySessionsRevoke = 'security.sessions.revoke';
+        // ── Anmelderichtlinie der Organisation (Feature 205, MVP-1654–1657) ──
+        // remote = Anmeldung von außerhalb der Büronetze (nur freigegebene Geräte);
+        // policy.manage = Zeiten, Netze, Passkey-Pflicht, Gerätefreigaben;
+        // lockdown = Notaus auslösen und aufheben.
+    case AuthRemote = 'auth.remote';
+        // Persönliche API-/MCP-Zugänge auch außerhalb der Büronetze (ohne Gerätecookie).
+    case AuthRemoteToken = 'auth.remote.token';
+    case AuthPolicyManage = 'auth.policy.manage';
+    case AuthLockdown = 'auth.lockdown';
         // ── Backup & Restore-Status (Feature 017) ───────────────────
     case BackupView = 'backup.view';
     case BackupRestoreTestLog = 'backup.restoreTest.log';
@@ -122,6 +131,15 @@ enum Permission: string implements HasLabel {
     case UserFlexManage = 'user.flex.manage';
     case UserPayrollManage = 'user.payroll.manage';
     case UserImport = 'user.import';
+        // Vertretung bei Abwesenheit (Feature 202, MVP-1647): Vertretungen für
+        // andere anlegen (auch aus der Krankmeldung), alle sehen und beenden.
+        // Die eigene Vertretung regelt jede Person ohne dieses Recht. Seit
+        // MVP-1648 auch: Zuständigkeiten aktiver Mitglieder endgültig übergeben.
+    case UserDelegationManage = 'user.delegation.manage';
+        // Wünsche an die App (Feature 206, MVP-1658/1659): Status und Antwort
+        // setzen, Wünsche ohne Personenbezug an den Plattformbetrieb weitergeben.
+        // Äußern und abstimmen darf jedes Mitglied ohne eigenes Recht.
+    case WishesManage = 'wishes.manage';
 
         // ── Arbeits-Teams ──────────────────────────────────────────────────
     case TeamViewAny = 'team.viewAny';
@@ -140,6 +158,16 @@ enum Permission: string implements HasLabel {
     case CustomerExport = 'customer.export';
     case CustomerImport = 'customer.import';
     case CustomerLexofficeSync = 'customer.lexoffice.sync';
+        // Kundenfristen aus Regelsätzen (Feature 197): sehen (Übersicht, Cockpit, Kalender, Export) und pflegen
+        // (Fristmerkmale, Leistungsumfang, alle Fristen bearbeiten); die zuständige Person — auch in Vertretung — bearbeitet ihre Fristen mit dem Leserecht.
+    case CustomerDeadlineView = 'customer.deadline.view';
+    case CustomerDeadlineManage = 'customer.deadline.manage';
+        // Aufnahmeakte am Lead (Feature 200): entscheiden (Annahme/Ablehnung, Prüfpakete einstellen) und die enge
+        // Sicht auf Ausweisangaben und Ausweiskopie (§ 8 Abs. 2 GwG) bzw. Gesundheitsangaben (Art. 9 DSGVO) — beide
+        // erben nicht die Kundenrechte; den Bogen füllt aus, wer den Lead bearbeiten darf.
+    case LeadIntakeDecide = 'lead.intake.decide';
+    case LeadIntakeIdentity = 'lead.intake.identity';
+    case LeadIntakeHealth = 'lead.intake.health';
 
         // ── Fremdkunden (Endkunden) ────────────────────────────────────────
     case ForeignCustomerViewAny = 'foreignCustomer.viewAny';
@@ -314,6 +342,14 @@ enum Permission: string implements HasLabel {
     case AccountingLedgerClose = 'finance.accounting.close';
     case AccountingLedgerReopen = 'finance.accounting.reopen';
 
+    /**
+     * Steuerprüfung vor dem DATEV-Export (Feature 207, MVP-1661): einen
+     * sperrenden Befund mit Begründung freigeben. Eigenes Recht wie das
+     * Wiedereröffnen — die Freigabe übergeht eine Prüfung und bleibt dem
+     * Admin vorbehalten, solange keine Rolle es ausdrücklich bekommt.
+     */
+    case AccountingTaxCheckRelease = 'finance.accounting.releaseTaxCheck';
+
         // ── Rechnungen ─────────────────────────────────────────────────────
     case InvoiceViewAny = 'invoice.viewAny';
     case InvoiceView = 'invoice.view';
@@ -339,12 +375,20 @@ enum Permission: string implements HasLabel {
     case DiaryDelete = 'diary.delete';
     case DiaryCreateForOthers = 'diary.create-for-others';
     case DiaryExport = 'diary.export';
+        // Leistungsplan je Kunde und Periode (Feature 199): view = ganzer Plan samt Export;
+        // manage = „entfällt“, Unterlagen/Bemerkung aller Zellen, Perioden anlegen, Listen
+        // importieren, Kundenliste abgleichen. Ohne view sieht jede Person nur ihre Zellen.
+    case DiaryServicePlanView = 'diary.servicePlan.view';
+    case DiaryServicePlanManage = 'diary.servicePlan.manage';
     case OrderAccept = 'order.accept';
     case OrderWork = 'order.work';
     case OrderComplete = 'order.complete';
     case OrderHandover = 'order.handover';
     case OrderMarkInvoiced = 'order.markInvoiced';
     case OrderCancel = 'order.cancel';
+    // Interne Prüfung (Feature 198, MVP-1635): prüfen (freigeben, Rückfrage) und Prüfpflicht am Auftrag abschalten.
+    case OrderReview = 'order.review';
+    case OrderWaiveReview = 'order.waiveReview';
 
         // ── Disposition / Einsatzplanung (Feature 028) ─────────────────────
     case DispatchViewAny = 'dispatch.viewAny';
@@ -501,6 +545,15 @@ enum Permission: string implements HasLabel {
     // ── Sammlungen (MVP-809, Feature 155) ──────────────────────────────
     case CollectionViewAny = 'collection.viewAny';
     case CollectionManage = 'collection.manage';
+
+    // ── Interne Wissensdatenbank (Feature 191, MVP-1664–1668) ──────────
+    // Lesen je Bereich (eingeschränkte Bereiche über ihre Leser), Bearbeiten
+    // mit Fassung, Verwalten (Bereiche, Pflichtlektüre, Glossar, Suchlücken,
+    // Freigabe fremder Seiten), endgültiges Löschen aus dem Papierkorb.
+    case KnowledgePageViewAny = 'knowledge.page.viewAny';
+    case KnowledgePageEdit = 'knowledge.page.edit';
+    case KnowledgePageManage = 'knowledge.page.manage';
+    case KnowledgePageForceDelete = 'knowledge.page.forceDelete';
 
         // ── Ideenlandkarten (Feature 054, MVP-104) ─────────────────────────
         // Inhaltszugriff läuft über Eigentum + Freigaben (IdeaMapPolicy); diese
@@ -799,6 +852,11 @@ enum Permission: string implements HasLabel {
         // Fachrechte.
     case AiManage = 'ai.manage';
     case AiUse = 'ai.use';
+        // approve = Datenschutzfreigabe der Verbindungen (AVV, EU, kein Training)
+        // erteilen und widerrufen, Freigabepflicht und Maskierung lokaler
+        // Verbindungen einstellen (MVP-1671/1672) — getrennt von `ai.manage`,
+        // damit die Datenschutzprüfung nicht bei der KI-Verwaltung liegen muss.
+    case AiApprove = 'ai.approve';
 
     public function label(): string {
         // Slugs enthalten Punkte — __()/trans() würde sie als verschachtelten
@@ -812,10 +870,16 @@ enum Permission: string implements HasLabel {
     public function group(): PermissionGroup {
         return match (true) {
             str_starts_with($this->value, 'access.'), str_starts_with($this->value, 'audit-log.') => PermissionGroup::Access,
+            // Anmelderichtlinie (Feature 205) gehört zum Modul „Anmeldung, Sicherheit“ (AuthManifest → Access).
+            str_starts_with($this->value, 'auth.') => PermissionGroup::Access,
             str_starts_with($this->value, 'organization.'), str_starts_with($this->value, 'branding.'), str_starts_with($this->value, 'documentDesign.'), str_starts_with($this->value, 'org.onboarding.'), str_starts_with($this->value, 'privacy.'), str_starts_with($this->value, 'support.') => PermissionGroup::Organization,
+            // Wünsche an die App (Feature 206): Plattform-Baustein der Organisation.
+            str_starts_with($this->value, 'wishes.') => PermissionGroup::Organization,
             str_starts_with($this->value, 'team.') => PermissionGroup::Teams,
             str_starts_with($this->value, 'user.') => PermissionGroup::Members,
             str_starts_with($this->value, 'customer.') => PermissionGroup::Customers,
+            // Aufnahmeakte am Lead (Feature 200): Leads laufen über die Kundenrechte.
+            str_starts_with($this->value, 'lead.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'foreignCustomer.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'supplier.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'permit.') => PermissionGroup::Customers,

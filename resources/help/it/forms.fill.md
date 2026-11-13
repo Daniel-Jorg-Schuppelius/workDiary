@@ -1,7 +1,7 @@
 ---
 title: "Compilare moduli"
 topic: forms.fill
-version: 3
+version: 4
 keywords:
     - compilare checklist
     - riempire modulo
@@ -12,6 +12,11 @@ keywords:
     - stampare modulo
     - moduli compilati
     - lista di controllo
+    - salvare bozza del modulo
+    - bozza
+    - continua a compilare
+    - modalità colloquio
+    - sezioni
 audience: []
 modules:
     - module.forms
@@ -49,6 +54,32 @@ viene **congelata come snapshot**. La visualizzazione e la stampa usano
 sempre questo snapshot – le modifiche successive al modello (o persino la
 sua eliminazione) non alterano mai a posteriori il Suo modulo compilato.
 Nella vista di un modulo sono disponibili **Stampa** e **Scarica PDF**.
+
+Moduli lunghi: se un modello ha sezioni, ogni sezione compare come
+scheda propria con numero, titolo e «x di y risposte»; davanti a ogni
+domanda un punto indica se è aperta (anello) o con risposta (spunta). Da
+quattro sezioni in su un indice porta a ogni sezione. Le domande a
+scelta con al massimo sei possibilità compaiono come pulsanti: con il
+tasto Tab si entra nel gruppo, con le frecce si sceglie e, nella scelta
+multipla, con la barra spaziatrice. Alcune domande a scelta hanno un
+campo **Integrazione** per un’annotazione. Sul tablet, **Modalità
+colloquio** ingrandisce le aree di tocco.
+
+Salvataggio per campo: ogni risposta viene salvata appena si lascia il
+campo – in alto compare allora «Tutte le risposte salvate.». Fino a
+**Invia** il modulo resta una **Bozza**; i campi obbligatori vengono
+controllati solo all’invio. Le Sue bozze si trovano nella panoramica
+**Moduli** sotto **Le mie bozze** e nella scheda **Moduli**
+dell’incarico: **Continua a compilare** riapre una bozza, **Scarta
+bozza** la elimina. File, foto e firme vengono trasmessi solo all’invio.
+Se la bozza è stata modificata nel frattempo altrove (ad esempio in una
+seconda finestra), nulla viene sovrascritto senza avviso: Lei sceglie
+**Salva la mia immissione** o **Carica la versione attuale**. Solo chi ha
+creato una bozza può vederla.
+
+La stampa e il PDF mostrano il modulo come un modello cartaceo: tabella
+di intestazione, una tabella «Tema / Dati» per sezione, scelte come ☐/☑
+e, nel piè di pagina, stato, riferimento e numero di pagina.
 
 Autorizzazioni: può compilare moduli chi dispone del permesso **Compilare
 moduli**. Nella panoramica le persone con il permesso **Vedere i modelli

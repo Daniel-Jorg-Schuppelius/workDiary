@@ -52,6 +52,8 @@ final class IncomingInvoiceSearchDomain implements SearchDomain {
         $query = IncomingEInvoice::query()
             ->visibleTo($user)
             ->where('organization_id', $organizationId)
+            // Aufgeteilte Sammel-PDF (Feature 208): gefunden werden ihre Teile.
+            ->where('status', '!=', \App\Enums\Invoicing\IncomingEInvoiceStatus::Split->value)
             ->where(fn ($q) => $q->whereLikeEscaped('invoice_number', $term)
                 ->orWhereLikeEscaped('seller_name', $term)
                 ->orWhereLikeEscaped('buyer_name', $term))

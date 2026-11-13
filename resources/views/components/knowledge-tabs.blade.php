@@ -50,10 +50,20 @@
             'label' => __('communication.title.notes'),
         ],
         [
+            // Interne Wissensdatenbank (Feature 191): Seiten, Glossar, Suchlücken, Lektüre.
+            'when' => $tabsShows('knowledge_page'),
+            'route' => $tabsTypes->listRoute('knowledge_page'),
+            'params' => $tabsCarry('knowledge_page'),
+            'routeIs' => ['knowledge.pages.*', 'knowledge.readings.*', 'knowledge.glossary.*', 'knowledge.gaps.*'],
+            'icon' => 'auto_stories',
+            'label' => __('knowledge_pages.title'),
+        ],
+        [
             'when' => $tabsShows('knowledge_article'),
             'route' => $tabsTypes->listRoute('knowledge_article'),
             'params' => $tabsCarry('knowledge_article'),
-            'routeIs' => 'knowledge.*',
+            // Ohne die Wissensseiten, die ebenfalls unter knowledge.* liegen.
+            'active' => request()->routeIs('knowledge.*') && ! request()->routeIs('knowledge.pages.*', 'knowledge.readings.*', 'knowledge.glossary.*', 'knowledge.gaps.*', 'knowledge.spaces.*', 'knowledge.sections.*'),
             'icon' => 'school',
             'label' => __('knowledge.title.index'),
         ],

@@ -45,7 +45,10 @@ class BranchProfilePageContentTest extends TestCase {
     public function test_pflege_installs_the_templates_and_domains_of_the_profile_page(): void {
         $result = (new BranchProfileInstaller)->install($this->org, 'pflege', $this->actor);
 
-        $this->assertSame(6, $result['version']);
+        // v7: Eintragsart Beratungsbesuch mit Pflicht-Periode (Feature 198, MVP-1634).
+        // v8: Beratungsbesuch als Kundenfrist statt Vertragspflicht alle drei Monate (Feature 197, MVP-1673).
+        // v9: Pflegevisite und Leistungsvorlagen (Feature 199, MVP-1674); v10: Prüfpaket Pflege-Erstaufnahme (Feature 200, MVP-1675).
+        $this->assertSame(10, $result['version']);
         $procedures = ['AP_TOUR_EINSATZ', 'AP_MEDIKAMENTENGABE', 'AP_BTM_GABE', 'AP_WUNDVERSORGUNG', 'AP_VITALWERTE', 'AP_STURZ_PROTOKOLL', 'AP_DEKUBITUS_RISIKO', 'AP_PFLEGEVISITE', 'AP_BERATUNGSBESUCH_37_3', 'AP_NEUAUFNAHME_KLIENT', 'AP_UEBERGABE_SCHICHT', 'AP_HYGIENE_BEGEHUNG', 'AP_QM_REVIEW'];
         $this->assertEqualsCanonicalizing($procedures, ProcedureTemplate::query()->where('organization_id', $this->org->id)->pluck('code')->all());
         $this->assertEqualsCanonicalizing(
@@ -65,20 +68,28 @@ class BranchProfilePageContentTest extends TestCase {
         $this->assertNotNull($this->category('btmSchrank'));
     }
 
-    public function test_pflege_contract_template_keeps_the_quarterly_counselling_grid_per_client(): void {
+    /**
+     * Seit Profilversion 8 (Feature 197, MVP-1673) kein Beratungsbesuch „alle
+     * drei Monate“ mehr als Vertragspflicht: § 37 Abs. 3 SGB XI verlangt ihn nur
+     * bei Pflegegeld und je Halbjahr — die Frist rechnet der Regelsatz
+     * `home_care`. Die Pflegevisite bleibt wiederkehrende Vertragspflicht.
+     */
+    public function test_pflege_contract_template_keeps_the_care_visit_but_no_quarterly_counselling_grid(): void {
         (new BranchProfileInstaller)->install($this->org, 'pflege', $this->actor);
         $template = ContractTemplate::query()->where('organization_id', $this->org->id)
             ->where('name', 'Pflegevertrag mit Beratungsbesuch (§ 37 Abs. 3 SGB XI)')->firstOrFail();
         $contract = Contract::factory()->create(['organization_id' => $this->org->id, 'starts_on' => '2027-01-01', 'ends_on' => null]);
 
         app(ContractTemplateService::class)->applyObligations($template, $contract);
-        $visit = $contract->obligations()->where('title', 'Beratungsbesuch nach § 37 Abs. 3 SGB XI')->firstOrFail();
-        $this->assertSame('2027-04-01', $visit->due_on->toDateString());
+        $this->assertFalse($contract->obligations()->where('title', 'Beratungsbesuch nach § 37 Abs. 3 SGB XI')->exists());
+        $visit = $contract->obligations()->where('title', 'Pflegevisite')->firstOrFail();
+        $this->assertSame('2027-07-01', $visit->due_on->toDateString());
 
         app(ContractService::class)->completeObligation($visit, $this->actor);
-        $next = $contract->obligations()->where('title', 'Beratungsbesuch nach § 37 Abs. 3 SGB XI')->where('id', '!=', $visit->id)->firstOrFail();
-        $this->assertSame('2027-07-01', $next->due_on->toDateString());
+        $next = $contract->obligations()->where('title', 'Pflegevisite')->where('id', '!=', $visit->id)->firstOrFail();
+        $this->assertSame('2028-01-01', $next->due_on->toDateString());
         $this->assertTrue($next->recurring);
+        $this->assertContains('home_care', data_get($this->org->refresh()->settings, 'customer_deadlines.rule_sets'));
     }
 
     public function test_partyservice_installs_the_templates_and_event_types_of_the_profile_page(): void {
@@ -121,7 +132,8 @@ class BranchProfilePageContentTest extends TestCase {
 
         $result = (new BranchProfileInstaller)->install($this->org->refresh(), 'pflege', $this->actor);
 
-        $this->assertSame(6, data_get($this->org->refresh()->settings, 'branch_profile_versions.pflege'));
+        // Aktuelle Profilversion (v9 Feature 199, v10 Feature 200).
+        $this->assertSame(10, data_get($this->org->refresh()->settings, 'branch_profile_versions.pflege'));
         $old = ProcedureTemplate::query()->where('organization_id', $this->org->id)->where('code', 'PF_MEDIKAMENTENGABE')->firstOrFail();
         $this->assertFalse($old->active);
         $this->assertTrue(ProcedureTemplate::query()->where('organization_id', $this->org->id)->where('code', 'AP_MEDIKAMENTENGABE')->value('active'));

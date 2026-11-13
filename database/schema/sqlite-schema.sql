@@ -751,6 +751,8 @@ CREATE TABLE IF NOT EXISTS "entry_types"(
   "default_priority" varchar,
   "created_at" datetime,
   "updated_at" datetime,
+  "requires_period" text,
+  "requires_review" tinyint(1) not null default '0',
   foreign key("organization_id") references "organizations"("id") on delete cascade
 );
 CREATE UNIQUE INDEX "entry_types_organization_id_slug_unique" on "entry_types"(
@@ -2257,35 +2259,6 @@ CREATE INDEX "form_tpl_org_status_idx" on "form_templates"(
   "organization_id",
   "status"
 );
-CREATE TABLE IF NOT EXISTS "form_submissions"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "form_template_id" integer not null,
-  "fields_snapshot" text not null,
-  "values" text not null,
-  "subject_type" varchar,
-  "subject_id" integer,
-  "submitted_by_user_id" integer not null,
-  "submitted_at" datetime not null,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "deleted_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("form_template_id") references "form_templates"("id") on delete cascade,
-  foreign key("submitted_by_user_id") references "users"("id") on delete cascade
-);
-CREATE INDEX "form_sub_subject_idx" on "form_submissions"(
-  "subject_type",
-  "subject_id"
-);
-CREATE INDEX "form_sub_org_tpl_idx" on "form_submissions"(
-  "organization_id",
-  "form_template_id"
-);
-CREATE INDEX "form_sub_org_at_idx" on "form_submissions"(
-  "organization_id",
-  "submitted_at"
-);
 CREATE TABLE IF NOT EXISTS "isms_controls"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -2843,6 +2816,8 @@ CREATE TABLE IF NOT EXISTS "bank_transactions"(
   "updated_at" datetime,
   "return_reason" varchar,
   "transaction_details" text,
+  "creditor_identifier" varchar,
+  "purpose_keyword_hash" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("bank_statement_id") references "bank_statements"("id") on delete cascade
 );
@@ -11401,37 +11376,6 @@ CREATE UNIQUE INDEX "dei_org_conn_invoice_uq" on "domain_external_invoices"(
   "connection_id",
   "external_invoice_id"
 );
-CREATE TABLE IF NOT EXISTS "ai_provider_connections"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "family" varchar not null,
-  "provider" varchar not null,
-  "name" varchar not null,
-  "base_url" varchar,
-  "api_key" text,
-  "model" varchar,
-  "options" text,
-  "is_local" tinyint(1) not null default '0',
-  "status" varchar not null default 'draft',
-  "preflight_at" datetime,
-  "last_error" varchar,
-  "last_error_at" datetime,
-  "consecutive_failures" integer not null default '0',
-  "disabled_at" datetime,
-  "created_by_user_id" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("created_by_user_id") references "users"("id") on delete set null
-);
-CREATE INDEX "aipc_org_family_idx" on "ai_provider_connections"(
-  "organization_id",
-  "family"
-);
-CREATE UNIQUE INDEX "aipc_org_name_uq" on "ai_provider_connections"(
-  "organization_id",
-  "name"
-);
 CREATE TABLE IF NOT EXISTS "ai_capability_settings"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -11836,24 +11780,6 @@ CREATE UNIQUE INDEX "caldel_org_hash_unique" on "calendly_webhook_deliveries"(
   "organization_id",
   "delivery_hash"
 );
-CREATE TABLE IF NOT EXISTS "user_known_devices"(
-  "id" integer primary key autoincrement not null,
-  "user_id" integer not null,
-  "fingerprint" varchar not null,
-  "label" varchar not null,
-  "country" varchar,
-  "last_seen_at" datetime not null,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "latitude" numeric,
-  "longitude" numeric,
-  foreign key("user_id") references "users"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "ukd_user_fp_uq" on "user_known_devices"(
-  "user_id",
-  "fingerprint"
-);
-CREATE INDEX "ukd_seen_idx" on "user_known_devices"("last_seen_at");
 CREATE TABLE IF NOT EXISTS "customer_billing_agreements"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer,
@@ -16546,6 +16472,7 @@ CREATE TABLE IF NOT EXISTS "customers"(
   "is_reverse_charge_recipient" tinyint(1) not null default '0',
   "register_number" varchar,
   "is_consumer" tinyint(1) not null default '0',
+  "relationship_ended_on" date,
   foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
   foreign key("created_by") references "users"("id") on delete set null on update no action,
   foreign key("document_render_profile_id") references "document_render_profiles"("id") on delete set null on update no action
@@ -23006,102 +22933,6 @@ CREATE INDEX "incoming_invoice_templates_org_supplier_idx" on "incoming_invoice_
   "organization_id",
   "supplier_id"
 );
-CREATE TABLE IF NOT EXISTS "incoming_einvoices"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "document_id" integer not null,
-  "sha256" varchar not null,
-  "source" varchar not null default('upload'),
-  "received_at" datetime not null,
-  "status" varchar not null default('received'),
-  "decided_by" integer,
-  "decided_at" datetime,
-  "decision_note" varchar,
-  "summary" text,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "transferred_at" datetime,
-  "transferred_by" integer,
-  "invoice_number" varchar,
-  "seller_name" varchar,
-  "issue_date" date,
-  "due_date" date,
-  "currency" varchar,
-  "amount_net" numeric,
-  "amount_tax" numeric,
-  "amount_gross" numeric,
-  "creditor_iban" text,
-  "creditor_bic" text,
-  "discount_percent" numeric,
-  "discount_days" integer,
-  "paid_in_run_id" integer,
-  "seller_vat_id" varchar,
-  "creditor_iban_confirmed_at" datetime,
-  "creditor_iban_confirmed_by" integer,
-  "direction" varchar not null default('incoming'),
-  "kind" varchar not null default('invoice'),
-  "recognition" varchar not null default('structured'),
-  "buyer_name" varchar,
-  "buyer_vat_id" varchar,
-  "sender_email" varchar,
-  "source_reference" varchar,
-  "supplier_id" integer,
-  "customer_id" integer,
-  "match_kind" varchar,
-  "matched_user_id" integer,
-  "matched_at" datetime,
-  "invoice_number_key" varchar,
-  "duplicate_of_id" integer,
-  "duplicate_cleared_user_id" integer,
-  "duplicate_cleared_at" datetime,
-  "template_id" integer,
-  "tax_case" varchar,
-  foreign key("duplicate_cleared_user_id") references "users"("id") on delete set null on update no action,
-  foreign key("duplicate_of_id") references "incoming_einvoices"("id") on delete set null on update no action,
-  foreign key("creditor_iban_confirmed_by") references "users"("id") on delete set null on update no action,
-  foreign key("paid_in_run_id") references "payment_runs"("id") on delete set null on update no action,
-  foreign key("decided_by") references "users"("id") on delete set null on update no action,
-  foreign key("document_id") references "documents"("id") on delete cascade on update no action,
-  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
-  foreign key("transferred_by") references "users"("id") on delete set null on update no action,
-  foreign key("supplier_id") references "suppliers"("id") on delete set null on update no action,
-  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
-  foreign key("matched_user_id") references "users"("id") on delete set null on update no action,
-  foreign key("template_id") references "incoming_invoice_templates"("id") on delete set null
-);
-CREATE INDEX "inc_einv_org_due_idx" on "incoming_einvoices"(
-  "organization_id",
-  "due_date"
-);
-CREATE INDEX "inc_einv_org_issue_idx" on "incoming_einvoices"(
-  "organization_id",
-  "issue_date"
-);
-CREATE INDEX "incoming_einv_org_customer_idx" on "incoming_einvoices"(
-  "organization_id",
-  "customer_id"
-);
-CREATE INDEX "incoming_einv_org_dir_status_idx" on "incoming_einvoices"(
-  "organization_id",
-  "direction",
-  "status"
-);
-CREATE INDEX "incoming_einv_org_source_ref_idx" on "incoming_einvoices"(
-  "organization_id",
-  "source_reference"
-);
-CREATE INDEX "incoming_einv_org_supplier_idx" on "incoming_einvoices"(
-  "organization_id",
-  "supplier_id"
-);
-CREATE UNIQUE INDEX "ine_org_hash_unique" on "incoming_einvoices"(
-  "organization_id",
-  "sha256"
-);
-CREATE INDEX "ine_org_number_key_idx" on "incoming_einvoices"(
-  "organization_id",
-  "invoice_number_key"
-);
 CREATE TABLE IF NOT EXISTS "procedure_step_runs"(
   "id" integer primary key autoincrement not null,
   "procedure_run_id" integer not null,
@@ -25093,140 +24924,6 @@ CREATE INDEX "boqp_item_captured_idx" on "boq_item_progress"(
   "boq_item_id",
   "captured_at"
 );
-CREATE TABLE IF NOT EXISTS "diary_entries"(
-  "id" integer primary key autoincrement not null,
-  "legacy_id" integer,
-  "user_id" integer not null,
-  "content" text not null,
-  "response" text,
-  "status" integer not null default('2'),
-  "start_at" datetime,
-  "end_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "on_call_shift_id" integer,
-  "emergency_assignment_id" integer,
-  "is_archived" tinyint(1) not null default('0'),
-  "archived_at" datetime,
-  "project_id" integer,
-  "organization_id" integer,
-  "entry_type_id" integer,
-  "customer_id" integer,
-  "assigned_user_id" integer,
-  "title" varchar,
-  "address_line" varchar,
-  "address_zip" varchar,
-  "address_city" varchar,
-  "address_country" varchar,
-  "address_lat" numeric,
-  "address_lng" numeric,
-  "scheduled_for" date,
-  "time_window_start" time,
-  "time_window_end" time,
-  "service_minutes" integer,
-  "priority" varchar,
-  "tour_id" integer,
-  "tour_position" integer,
-  "mode" varchar not null default('fixed'),
-  "due_date" date,
-  "window_start_date" date,
-  "window_end_date" date,
-  "location_mode" varchar not null default('onsite'),
-  "recurrence_rule_id" integer,
-  "asset_id" integer,
-  "planned_minutes" integer,
-  "planned_at" datetime,
-  "planned_by_user_id" integer,
-  "dispatch_status" varchar,
-  "dispatch_confirmed_at" datetime,
-  "dispatch_override_reason" text,
-  "dispatch_override_by_user_id" integer,
-  "accepted_at" datetime,
-  "accepted_by_user_id" integer,
-  "started_at" datetime,
-  "paused_at" datetime,
-  "pause_reason" varchar,
-  "pause_note" text,
-  "resumed_at" datetime,
-  "wait_seconds_total" integer not null default('0'),
-  "completed_at" datetime,
-  "completed_by_user_id" integer,
-  "completion_summary" text,
-  "accepted_final_at" datetime,
-  "signature_attachment_id" integer,
-  "protocol_id" integer,
-  "invoiced_at" datetime,
-  "invoice_reference" varchar,
-  "cancelled_at" datetime,
-  "cancelled_by_user_id" integer,
-  "cancellation_reason" text,
-  "accepted_final_by" varchar,
-  foreign key("cancelled_by_user_id") references "users"("id") on delete set null on update no action,
-  foreign key("protocol_id") references "protocols"("id") on delete set null on update no action,
-  foreign key("signature_attachment_id") references "attachments"("id") on delete set null on update no action,
-  foreign key("completed_by_user_id") references "users"("id") on delete set null on update no action,
-  foreign key("accepted_by_user_id") references "users"("id") on delete set null on update no action,
-  foreign key("planned_by_user_id") references "users"("id") on delete set null on update no action,
-  foreign key("recurrence_rule_id") references "recurrence_rules"("id") on delete set null on update no action,
-  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
-  foreign key("emergency_assignment_id") references "emergency_assignments"("id") on delete set null on update no action,
-  foreign key("on_call_shift_id") references "on_call_shifts"("id") on delete set null on update no action,
-  foreign key("user_id") references "users"("id") on delete cascade on update no action,
-  foreign key("project_id") references "projects"("id") on delete set null on update no action,
-  foreign key("entry_type_id") references "entry_types"("id") on delete set null on update no action,
-  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
-  foreign key("assigned_user_id") references "users"("id") on delete set null on update no action,
-  foreign key("tour_id") references "tours"("id") on delete set null on update no action,
-  foreign key("asset_id") references "assets"("id") on delete set null on update no action,
-  foreign key("dispatch_override_by_user_id") references "users"("id") on delete set null on update no action
-);
-CREATE INDEX "de_assigned_sched_idx" on "diary_entries"(
-  "assigned_user_id",
-  "scheduled_for"
-);
-CREATE INDEX "de_due_date_idx" on "diary_entries"("due_date");
-CREATE INDEX "de_entry_type_idx" on "diary_entries"("entry_type_id");
-CREATE INDEX "de_location_mode_idx" on "diary_entries"("location_mode");
-CREATE INDEX "de_org_asset_idx" on "diary_entries"(
-  "organization_id",
-  "asset_id"
-);
-CREATE INDEX "de_org_mode_idx" on "diary_entries"("organization_id", "mode");
-CREATE INDEX "de_org_sched_idx" on "diary_entries"(
-  "organization_id",
-  "scheduled_for"
-);
-CREATE INDEX "de_recurrence_rule_idx" on "diary_entries"("recurrence_rule_id");
-CREATE INDEX "de_scheduled_for_idx" on "diary_entries"("scheduled_for");
-CREATE INDEX "de_tour_pos_idx" on "diary_entries"("tour_id", "tour_position");
-CREATE INDEX "diary_entries_archived_at_index" on "diary_entries"(
-  "archived_at"
-);
-CREATE INDEX "diary_entries_is_archived_index" on "diary_entries"(
-  "is_archived"
-);
-CREATE INDEX "diary_entries_legacy_id_index" on "diary_entries"("legacy_id");
-CREATE INDEX "diary_entries_project_id_index" on "diary_entries"("project_id");
-CREATE INDEX "diary_entries_start_at_index" on "diary_entries"("start_at");
-CREATE INDEX "diary_entries_user_id_status_start_at_index" on "diary_entries"(
-  "user_id",
-  "status",
-  "start_at"
-);
-CREATE INDEX "diary_lifecycle_status_idx" on "diary_entries"(
-  "organization_id",
-  "status",
-  "scheduled_for"
-);
-CREATE INDEX "diary_org_dispatch_idx" on "diary_entries"(
-  "organization_id",
-  "dispatch_status"
-);
-CREATE INDEX "diary_org_start_idx" on "diary_entries"(
-  "organization_id",
-  "start_at"
-);
-CREATE INDEX "idx_diary_entries_org" on "diary_entries"("organization_id");
 CREATE TABLE IF NOT EXISTS "learning_video_progress"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -25573,6 +25270,1060 @@ CREATE INDEX "material_usages_org_asset_idx" on "material_usages"(
 );
 CREATE INDEX "material_usages_timesheet_id_index" on "material_usages"(
   "timesheet_id"
+);
+CREATE TABLE IF NOT EXISTS "form_submissions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "form_template_id" integer not null,
+  "fields_snapshot" text not null,
+  "values" text not null,
+  "subject_type" varchar,
+  "subject_id" integer,
+  "submitted_by_user_id" integer not null,
+  "submitted_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "deleted_at" datetime,
+  "status" varchar not null default('submitted'),
+  "version" integer not null default('1'),
+  foreign key("submitted_by_user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("form_template_id") references "form_templates"("id") on delete cascade on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action
+);
+CREATE INDEX "form_sub_org_at_idx" on "form_submissions"(
+  "organization_id",
+  "submitted_at"
+);
+CREATE INDEX "form_sub_org_status_user_idx" on "form_submissions"(
+  "organization_id",
+  "status",
+  "submitted_by_user_id"
+);
+CREATE INDEX "form_sub_org_tpl_idx" on "form_submissions"(
+  "organization_id",
+  "form_template_id"
+);
+CREATE INDEX "form_sub_subject_idx" on "form_submissions"(
+  "subject_type",
+  "subject_id"
+);
+CREATE TABLE IF NOT EXISTS "organization_login_policies"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "hours_mode" varchar not null default 'off',
+  "hours" text,
+  "hours_roles" text,
+  "network_mode" varchar not null default 'off',
+  "networks" text,
+  "passkey_roles" text,
+  "lockdown_at" datetime,
+  "lockdown_by" integer,
+  "lockdown_reason" text,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("lockdown_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE INDEX "olp_lockdown_idx" on "organization_login_policies"(
+  "lockdown_at"
+);
+CREATE UNIQUE INDEX "olp_org_uq" on "organization_login_policies"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "user_known_devices"(
+  "id" integer primary key autoincrement not null,
+  "user_id" integer not null,
+  "fingerprint" varchar not null,
+  "label" varchar not null,
+  "country" varchar,
+  "last_seen_at" datetime not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "latitude" numeric,
+  "longitude" numeric,
+  "device_hash" varchar,
+  "approval_requested_at" datetime,
+  "approved_at" datetime,
+  "approved_by" integer,
+  "rejected_at" datetime,
+  "rejected_by" integer,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("approved_by") references "users"("id") on delete set null,
+  foreign key("rejected_by") references "users"("id") on delete set null
+);
+CREATE INDEX "ukd_seen_idx" on "user_known_devices"("last_seen_at");
+CREATE UNIQUE INDEX "ukd_user_fp_uq" on "user_known_devices"(
+  "user_id",
+  "fingerprint"
+);
+CREATE INDEX "ukd_user_device_idx" on "user_known_devices"(
+  "user_id",
+  "device_hash"
+);
+CREATE INDEX "ukd_requested_idx" on "user_known_devices"(
+  "approval_requested_at"
+);
+CREATE TABLE IF NOT EXISTS "carry_forward_notes"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "series_key" varchar not null,
+  "period_key" varchar not null,
+  "valid_from" date not null,
+  "note" text not null,
+  "origin_type" varchar,
+  "origin_id" integer,
+  "origin_period_key" varchar,
+  "created_by" integer,
+  "resolved_at" datetime,
+  "resolved_by" integer,
+  "resolved_occurrence_type" varchar,
+  "resolved_occurrence_id" integer,
+  "resolution_note" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("resolved_by") references "users"("id") on delete set null
+);
+CREATE INDEX "cfn_series_idx" on "carry_forward_notes"(
+  "organization_id",
+  "series_key",
+  "resolved_at",
+  "valid_from"
+);
+CREATE INDEX "cfn_origin_idx" on "carry_forward_notes"(
+  "origin_type",
+  "origin_id"
+);
+CREATE INDEX "cfn_resolved_idx" on "carry_forward_notes"(
+  "resolved_occurrence_type",
+  "resolved_occurrence_id"
+);
+CREATE TABLE IF NOT EXISTS "work_delegations"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "represented_user_id" integer not null,
+  "deputy_user_id" integer not null,
+  "valid_from" date not null,
+  "valid_until" date,
+  "kind" varchar not null,
+  "absence_type" varchar,
+  "absence_id" integer,
+  "note" text,
+  "created_by" integer,
+  "ended_at" datetime,
+  "ended_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("represented_user_id") references "users"("id") on delete cascade,
+  foreign key("deputy_user_id") references "users"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("ended_by") references "users"("id") on delete set null
+);
+CREATE INDEX "wd_represented_idx" on "work_delegations"(
+  "organization_id",
+  "represented_user_id",
+  "valid_from"
+);
+CREATE INDEX "wd_deputy_idx" on "work_delegations"(
+  "organization_id",
+  "deputy_user_id",
+  "valid_from"
+);
+CREATE INDEX "wd_absence_idx" on "work_delegations"(
+  "absence_type",
+  "absence_id"
+);
+CREATE TABLE IF NOT EXISTS "ai_provider_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "family" varchar not null,
+  "provider" varchar not null,
+  "name" varchar not null,
+  "base_url" varchar,
+  "api_key" text,
+  "model" varchar,
+  "options" text,
+  "is_local" tinyint(1) not null default('0'),
+  "status" varchar not null default('draft'),
+  "preflight_at" datetime,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default('0'),
+  "disabled_at" datetime,
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "has_dpa" tinyint(1) not null default '0',
+  "is_eu_processing" tinyint(1) not null default '0',
+  "is_training_excluded" tinyint(1) not null default '0',
+  "privacy_reviewed_at" datetime,
+  "privacy_reviewed_by" integer,
+  foreign key("created_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("privacy_reviewed_by") references "users"("id") on delete set null
+);
+CREATE INDEX "aipc_org_family_idx" on "ai_provider_connections"(
+  "organization_id",
+  "family"
+);
+CREATE UNIQUE INDEX "aipc_org_name_uq" on "ai_provider_connections"(
+  "organization_id",
+  "name"
+);
+CREATE TABLE IF NOT EXISTS "diary_entries"(
+  "id" integer primary key autoincrement not null,
+  "legacy_id" integer,
+  "user_id" integer not null,
+  "content" text not null,
+  "response" text,
+  "status" integer not null default('2'),
+  "start_at" datetime,
+  "end_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "on_call_shift_id" integer,
+  "emergency_assignment_id" integer,
+  "is_archived" tinyint(1) not null default('0'),
+  "archived_at" datetime,
+  "project_id" integer,
+  "organization_id" integer,
+  "entry_type_id" integer,
+  "customer_id" integer,
+  "assigned_user_id" integer,
+  "title" varchar,
+  "address_line" varchar,
+  "address_zip" varchar,
+  "address_city" varchar,
+  "address_country" varchar,
+  "address_lat" numeric,
+  "address_lng" numeric,
+  "scheduled_for" date,
+  "time_window_start" time,
+  "time_window_end" time,
+  "service_minutes" integer,
+  "priority" varchar,
+  "tour_id" integer,
+  "tour_position" integer,
+  "mode" varchar not null default('fixed'),
+  "due_date" date,
+  "window_start_date" date,
+  "window_end_date" date,
+  "location_mode" varchar not null default('onsite'),
+  "recurrence_rule_id" integer,
+  "asset_id" integer,
+  "planned_minutes" integer,
+  "planned_at" datetime,
+  "planned_by_user_id" integer,
+  "dispatch_status" varchar,
+  "dispatch_confirmed_at" datetime,
+  "dispatch_override_reason" text,
+  "dispatch_override_by_user_id" integer,
+  "accepted_at" datetime,
+  "accepted_by_user_id" integer,
+  "started_at" datetime,
+  "paused_at" datetime,
+  "pause_reason" varchar,
+  "pause_note" text,
+  "resumed_at" datetime,
+  "wait_seconds_total" integer not null default('0'),
+  "completed_at" datetime,
+  "completed_by_user_id" integer,
+  "completion_summary" text,
+  "accepted_final_at" datetime,
+  "signature_attachment_id" integer,
+  "protocol_id" integer,
+  "invoiced_at" datetime,
+  "invoice_reference" varchar,
+  "cancelled_at" datetime,
+  "cancelled_by_user_id" integer,
+  "cancellation_reason" text,
+  "accepted_final_by" varchar,
+  "period_key" varchar,
+  "requires_review" tinyint(1) not null default '0',
+  "reviewer_user_id" integer,
+  "review_submitted_at" datetime,
+  "review_submitter_user_id" integer,
+  foreign key("dispatch_override_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("asset_id") references "assets"("id") on delete set null on update no action,
+  foreign key("tour_id") references "tours"("id") on delete set null on update no action,
+  foreign key("assigned_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("entry_type_id") references "entry_types"("id") on delete set null on update no action,
+  foreign key("project_id") references "projects"("id") on delete set null on update no action,
+  foreign key("user_id") references "users"("id") on delete cascade on update no action,
+  foreign key("on_call_shift_id") references "on_call_shifts"("id") on delete set null on update no action,
+  foreign key("emergency_assignment_id") references "emergency_assignments"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
+  foreign key("recurrence_rule_id") references "recurrence_rules"("id") on delete set null on update no action,
+  foreign key("planned_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("accepted_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("completed_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("signature_attachment_id") references "attachments"("id") on delete set null on update no action,
+  foreign key("protocol_id") references "protocols"("id") on delete set null on update no action,
+  foreign key("cancelled_by_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("reviewer_user_id") references "users"("id") on delete set null,
+  foreign key("review_submitter_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "de_assigned_sched_idx" on "diary_entries"(
+  "assigned_user_id",
+  "scheduled_for"
+);
+CREATE INDEX "de_due_date_idx" on "diary_entries"("due_date");
+CREATE INDEX "de_entry_type_idx" on "diary_entries"("entry_type_id");
+CREATE INDEX "de_location_mode_idx" on "diary_entries"("location_mode");
+CREATE INDEX "de_org_asset_idx" on "diary_entries"(
+  "organization_id",
+  "asset_id"
+);
+CREATE INDEX "de_org_mode_idx" on "diary_entries"("organization_id", "mode");
+CREATE INDEX "de_org_sched_idx" on "diary_entries"(
+  "organization_id",
+  "scheduled_for"
+);
+CREATE INDEX "de_recurrence_rule_idx" on "diary_entries"("recurrence_rule_id");
+CREATE INDEX "de_scheduled_for_idx" on "diary_entries"("scheduled_for");
+CREATE INDEX "de_tour_pos_idx" on "diary_entries"("tour_id", "tour_position");
+CREATE INDEX "diary_entries_archived_at_index" on "diary_entries"(
+  "archived_at"
+);
+CREATE INDEX "diary_entries_is_archived_index" on "diary_entries"(
+  "is_archived"
+);
+CREATE INDEX "diary_entries_legacy_id_index" on "diary_entries"("legacy_id");
+CREATE INDEX "diary_entries_project_id_index" on "diary_entries"("project_id");
+CREATE INDEX "diary_entries_start_at_index" on "diary_entries"("start_at");
+CREATE INDEX "diary_entries_user_id_status_start_at_index" on "diary_entries"(
+  "user_id",
+  "status",
+  "start_at"
+);
+CREATE INDEX "diary_lifecycle_status_idx" on "diary_entries"(
+  "organization_id",
+  "status",
+  "scheduled_for"
+);
+CREATE INDEX "diary_org_dispatch_idx" on "diary_entries"(
+  "organization_id",
+  "dispatch_status"
+);
+CREATE INDEX "diary_org_start_idx" on "diary_entries"(
+  "organization_id",
+  "start_at"
+);
+CREATE INDEX "idx_diary_entries_org" on "diary_entries"("organization_id");
+CREATE INDEX "diary_period_series_idx" on "diary_entries"(
+  "organization_id",
+  "customer_id",
+  "entry_type_id",
+  "period_key"
+);
+CREATE TABLE IF NOT EXISTS "customer_services"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "customer_id" integer not null,
+  "entry_type_id" integer not null,
+  "product_group_code" varchar,
+  "is_mandatory" tinyint(1) not null default '1',
+  "period_kind" varchar not null,
+  "valid_from" date not null,
+  "valid_until" date,
+  "note" text,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete cascade,
+  foreign key("entry_type_id") references "entry_types"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "cs_customer_idx" on "customer_services"(
+  "organization_id",
+  "customer_id"
+);
+CREATE INDEX "cs_entry_type_idx" on "customer_services"(
+  "organization_id",
+  "entry_type_id"
+);
+CREATE TABLE IF NOT EXISTS "customer_deadline_profiles"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "customer_id" integer not null,
+  "rule_set" varchar not null,
+  "traits" text,
+  "valid_from" date not null,
+  "valid_until" date,
+  "responsible_user_id" integer,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete cascade,
+  foreign key("responsible_user_id") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "cdp_lookup_idx" on "customer_deadline_profiles"(
+  "organization_id",
+  "customer_id",
+  "rule_set",
+  "valid_from"
+);
+CREATE INDEX "cdp_responsible_idx" on "customer_deadline_profiles"(
+  "organization_id",
+  "responsible_user_id"
+);
+CREATE TABLE IF NOT EXISTS "customer_deadlines"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "customer_id" integer not null,
+  "customer_deadline_profile_id" integer,
+  "rule_set" varchar not null,
+  "kind" varchar not null,
+  "period_key" varchar not null,
+  "due_on" date not null,
+  "original_due_on" date not null,
+  "status" varchar not null default 'open',
+  "is_due_fixed" tinyint(1) not null default '0',
+  "advance_requested_on" date,
+  "extension_reason" text,
+  "completed_at" datetime,
+  "completed_by" integer,
+  "diary_entry_id" integer,
+  "responsible_user_id" integer,
+  "is_region_assumed" tinyint(1) not null default '0',
+  "warned_at" datetime,
+  "overdue_warned_at" datetime,
+  "note" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete cascade,
+  foreign key("customer_deadline_profile_id") references "customer_deadline_profiles"("id") on delete set null,
+  foreign key("completed_by") references "users"("id") on delete set null,
+  foreign key("diary_entry_id") references "diary_entries"("id") on delete set null,
+  foreign key("responsible_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "cd_unique" on "customer_deadlines"(
+  "organization_id",
+  "customer_id",
+  "rule_set",
+  "kind",
+  "period_key"
+);
+CREATE INDEX "cd_status_due_idx" on "customer_deadlines"(
+  "organization_id",
+  "status",
+  "due_on"
+);
+CREATE INDEX "cd_responsible_idx" on "customer_deadlines"(
+  "organization_id",
+  "responsible_user_id",
+  "due_on"
+);
+CREATE TABLE IF NOT EXISTS "customer_deadline_events"(
+  "id" integer primary key autoincrement not null,
+  "customer_deadline_id" integer not null,
+  "event" varchar not null,
+  "actor_user_id" integer,
+  "payload" text,
+  "occurred_at" datetime not null default CURRENT_TIMESTAMP,
+  foreign key("customer_deadline_id") references "customer_deadlines"("id") on delete cascade,
+  foreign key("actor_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "cde_chrono_idx" on "customer_deadline_events"(
+  "customer_deadline_id",
+  "occurred_at"
+);
+CREATE TABLE IF NOT EXISTS "service_templates"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "entry_type_id" integer not null,
+  "product_group_code" varchar,
+  "period_kind" varchar not null,
+  "is_mandatory" tinyint(1) not null default '1',
+  "label" varchar not null,
+  "label_i18n" text,
+  "sort" integer not null default '0',
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("entry_type_id") references "entry_types"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "st_entry_type_idx" on "service_templates"(
+  "organization_id",
+  "entry_type_id"
+);
+CREATE TABLE IF NOT EXISTS "customer_service_waivers"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "customer_id" integer not null,
+  "entry_type_id" integer not null,
+  "product_group_code" varchar,
+  "period_key" varchar not null,
+  "reason" text not null,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete cascade,
+  foreign key("entry_type_id") references "entry_types"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "csw_customer_period_idx" on "customer_service_waivers"(
+  "organization_id",
+  "customer_id",
+  "period_key"
+);
+CREATE TABLE IF NOT EXISTS "customer_service_period_notes"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "customer_id" integer not null,
+  "entry_type_id" integer not null,
+  "product_group_code" varchar,
+  "period_key" varchar not null,
+  "documents_received_on" date,
+  "note" text,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete cascade,
+  foreign key("entry_type_id") references "entry_types"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE INDEX "cspn_customer_period_idx" on "customer_service_period_notes"(
+  "organization_id",
+  "customer_id",
+  "period_key"
+);
+CREATE TABLE IF NOT EXISTS "attachment_texts"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "attachment_id" integer not null,
+  "text" text,
+  "summary" text,
+  "parts_disk" varchar,
+  "parts_path" varchar,
+  "extracted_at" datetime,
+  "failure_reason" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete set null,
+  foreign key("attachment_id") references "attachments"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "attachment_texts_attachment_unique" on "attachment_texts"(
+  "attachment_id"
+);
+CREATE TABLE IF NOT EXISTS "lead_intakes"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "lead_id" integer not null,
+  "customer_id" integer,
+  "revision" integer not null default '1',
+  "supersedes_id" integer,
+  "superseded_at" datetime,
+  "stage" varchar not null default 'inquiry',
+  "packages" text,
+  "form" text,
+  "sensitive_values" text,
+  "version" integer not null default '1',
+  "decision" varchar,
+  "decision_reason" text,
+  "decider_user_id" integer,
+  "decided_at" datetime,
+  "second_reviewer_user_id" integer,
+  "second_reviewed_at" datetime,
+  "protocol_id" integer,
+  "refresh_due_on" date,
+  "refresh_warned_at" datetime,
+  "relationship_ended_on" date,
+  "retention_until" date,
+  "completed_at" datetime,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("lead_id") references "leads"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete set null,
+  foreign key("supersedes_id") references "lead_intakes"("id") on delete set null,
+  foreign key("decider_user_id") references "users"("id") on delete set null,
+  foreign key("second_reviewer_user_id") references "users"("id") on delete set null,
+  foreign key("protocol_id") references "protocols"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE INDEX "li_stage_idx" on "lead_intakes"("organization_id", "stage");
+CREATE INDEX "li_lead_idx" on "lead_intakes"("organization_id", "lead_id");
+CREATE INDEX "li_customer_idx" on "lead_intakes"(
+  "organization_id",
+  "customer_id"
+);
+CREATE INDEX "li_refresh_idx" on "lead_intakes"(
+  "organization_id",
+  "refresh_due_on"
+);
+CREATE INDEX "li_retention_idx" on "lead_intakes"(
+  "organization_id",
+  "retention_until"
+);
+CREATE INDEX "bank_tx_org_creditor_idx" on "bank_transactions"(
+  "organization_id",
+  "creditor_identifier"
+);
+CREATE INDEX "bank_tx_org_mandate_idx" on "bank_transactions"(
+  "organization_id",
+  "mandate_ref"
+);
+CREATE INDEX "bank_tx_org_keywords_idx" on "bank_transactions"(
+  "organization_id",
+  "purpose_keyword_hash"
+);
+CREATE TABLE IF NOT EXISTS "knowledge_spaces"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "title" varchar not null,
+  "description" text,
+  "position" integer not null default '0',
+  "is_restricted" tinyint(1) not null default '0',
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE INDEX "ksp_org_position_idx" on "knowledge_spaces"(
+  "organization_id",
+  "position"
+);
+CREATE TABLE IF NOT EXISTS "knowledge_space_readers"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "knowledge_space_id" integer not null,
+  "kind" varchar not null,
+  "role_name" varchar,
+  "team_id" integer,
+  "user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("knowledge_space_id") references "knowledge_spaces"("id") on delete cascade,
+  foreign key("team_id") references "teams"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade
+);
+CREATE TABLE IF NOT EXISTS "knowledge_sections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "knowledge_space_id" integer not null,
+  "title" varchar not null,
+  "position" integer not null default '0',
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("knowledge_space_id") references "knowledge_spaces"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE INDEX "ksec_space_position_idx" on "knowledge_sections"(
+  "knowledge_space_id",
+  "position"
+);
+CREATE TABLE IF NOT EXISTS "knowledge_pages"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "knowledge_space_id" integer not null,
+  "knowledge_section_id" integer,
+  "parent_id" integer,
+  "kind" varchar not null default 'page',
+  "position" integer not null default '0',
+  "title" varchar not null,
+  "body" text,
+  "status" varchar not null default 'draft',
+  "version" integer not null default '1',
+  "approved_version" integer,
+  "approved_at" datetime,
+  "approved_by" integer,
+  "owner_user_id" integer,
+  "review_interval_months" integer,
+  "next_review_on" date,
+  "reviewed_at" datetime,
+  "reviewed_by" integer,
+  "review_warned_at" datetime,
+  "valid_until" date,
+  "valid_warned_at" datetime,
+  "is_emergency" tinyint(1) not null default '0',
+  "created_by" integer,
+  "updated_by" integer,
+  "deleted_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "deleted_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("knowledge_space_id") references "knowledge_spaces"("id") on delete restrict,
+  foreign key("knowledge_section_id") references "knowledge_sections"("id") on delete set null,
+  foreign key("parent_id") references "knowledge_pages"("id") on delete set null,
+  foreign key("approved_by") references "users"("id") on delete set null,
+  foreign key("owner_user_id") references "users"("id") on delete set null,
+  foreign key("reviewed_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null,
+  foreign key("deleted_by") references "users"("id") on delete set null
+);
+CREATE INDEX "kp_tree_idx" on "knowledge_pages"(
+  "organization_id",
+  "knowledge_space_id",
+  "knowledge_section_id",
+  "parent_id"
+);
+CREATE INDEX "kp_status_idx" on "knowledge_pages"("organization_id", "status");
+CREATE INDEX "kp_review_idx" on "knowledge_pages"(
+  "organization_id",
+  "next_review_on"
+);
+CREATE INDEX "kp_valid_idx" on "knowledge_pages"(
+  "organization_id",
+  "valid_until"
+);
+CREATE INDEX "kp_trash_idx" on "knowledge_pages"(
+  "organization_id",
+  "deleted_at"
+);
+CREATE TABLE IF NOT EXISTS "knowledge_page_versions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "knowledge_page_id" integer not null,
+  "version" integer not null,
+  "title" varchar not null,
+  "body" text,
+  "steps" text,
+  "note" varchar,
+  "created_by" integer,
+  "approved_at" datetime,
+  "approved_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("knowledge_page_id") references "knowledge_pages"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("approved_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "kpv_page_version_uq" on "knowledge_page_versions"(
+  "knowledge_page_id",
+  "version"
+);
+CREATE TABLE IF NOT EXISTS "knowledge_page_reads"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "knowledge_page_id" integer not null,
+  "knowledge_page_version_id" integer not null,
+  "version" integer not null,
+  "user_id" integer not null,
+  "confirmed_at" datetime not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("knowledge_page_id") references "knowledge_pages"("id") on delete cascade,
+  foreign key("knowledge_page_version_id") references "knowledge_page_versions"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "kpr_page_version_user_uq" on "knowledge_page_reads"(
+  "knowledge_page_id",
+  "version",
+  "user_id"
+);
+CREATE TABLE IF NOT EXISTS "knowledge_page_assignments"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "knowledge_page_id" integer not null,
+  "kind" varchar not null,
+  "role_name" varchar,
+  "team_id" integer,
+  "user_id" integer,
+  "is_onboarding" tinyint(1) not null default '0',
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("knowledge_page_id") references "knowledge_pages"("id") on delete cascade,
+  foreign key("team_id") references "teams"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "kpa_org_kind_idx" on "knowledge_page_assignments"(
+  "organization_id",
+  "kind"
+);
+CREATE TABLE IF NOT EXISTS "knowledge_page_visits"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "knowledge_page_id" integer not null,
+  "user_id" integer not null,
+  "seen_version" integer not null,
+  "visited_at" datetime not null,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("knowledge_page_id") references "knowledge_pages"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "kpvis_page_user_uq" on "knowledge_page_visits"(
+  "knowledge_page_id",
+  "user_id"
+);
+CREATE TABLE IF NOT EXISTS "knowledge_glossary_terms"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "term" varchar not null,
+  "synonyms" text,
+  "description" text,
+  "knowledge_page_id" integer,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("knowledge_page_id") references "knowledge_pages"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE INDEX "kgt_org_term_idx" on "knowledge_glossary_terms"(
+  "organization_id",
+  "term"
+);
+CREATE TABLE IF NOT EXISTS "knowledge_search_gaps"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "term" varchar not null,
+  "searches" integer not null default '1',
+  "first_searched_at" datetime not null,
+  "last_searched_at" datetime not null,
+  "dismissed_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "ksg_org_term_uq" on "knowledge_search_gaps"(
+  "organization_id",
+  "term"
+);
+CREATE TABLE IF NOT EXISTS "knowledge_guide_steps"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "knowledge_page_id" integer not null,
+  "position" integer not null default '0',
+  "body" text,
+  "attachment_id" integer,
+  "markers" text,
+  "redacted_at" datetime,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("knowledge_page_id") references "knowledge_pages"("id") on delete cascade,
+  foreign key("attachment_id") references "attachments"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE INDEX "kgs_page_position_idx" on "knowledge_guide_steps"(
+  "knowledge_page_id",
+  "position"
+);
+CREATE TABLE IF NOT EXISTS "app_wishes"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "kind" varchar not null,
+  "body" text not null,
+  "route_name" varchar,
+  "status" varchar not null default 'new',
+  "answer" text,
+  "answered_at" datetime,
+  "answered_by" integer,
+  "app_version" varchar,
+  "created_by" integer,
+  "forwarded_at" datetime,
+  "forwarded_by" integer,
+  "forwarded_body" text,
+  "platform_status" varchar,
+  "platform_answer" text,
+  "platform_answered_at" datetime,
+  "platform_bundle_id" integer,
+  "vendor_body" text,
+  "vendor_sent_at" datetime,
+  "vendor_sent_by" integer,
+  "vendor_answer" text,
+  "vendor_answered_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("answered_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("forwarded_by") references "users"("id") on delete set null,
+  foreign key("platform_bundle_id") references "app_wishes"("id") on delete set null,
+  foreign key("vendor_sent_by") references "users"("id") on delete set null
+);
+CREATE INDEX "app_wishes_org_status_idx" on "app_wishes"(
+  "organization_id",
+  "status",
+  "created_at"
+);
+CREATE INDEX "app_wishes_author_idx" on "app_wishes"(
+  "created_by",
+  "created_at"
+);
+CREATE INDEX "app_wishes_forwarded_idx" on "app_wishes"("forwarded_at");
+CREATE TABLE IF NOT EXISTS "app_wish_votes"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "app_wish_id" integer not null,
+  "user_id" integer not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("app_wish_id") references "app_wishes"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "app_wish_votes_unique" on "app_wish_votes"(
+  "app_wish_id",
+  "user_id"
+);
+CREATE TABLE IF NOT EXISTS "presence_statuses"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "user_id" integer not null,
+  "kind" varchar not null,
+  "valid_until" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "presence_statuses_user_unique" on "presence_statuses"(
+  "user_id"
+);
+CREATE INDEX "presence_statuses_org_until_idx" on "presence_statuses"(
+  "organization_id",
+  "valid_until"
+);
+CREATE TABLE IF NOT EXISTS "incoming_einvoices"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "document_id" integer not null,
+  "sha256" varchar not null,
+  "source" varchar not null default('upload'),
+  "received_at" datetime not null,
+  "status" varchar not null default('received'),
+  "decided_by" integer,
+  "decided_at" datetime,
+  "decision_note" varchar,
+  "summary" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "transferred_at" datetime,
+  "transferred_by" integer,
+  "invoice_number" varchar,
+  "seller_name" varchar,
+  "issue_date" date,
+  "due_date" date,
+  "currency" varchar,
+  "amount_net" numeric,
+  "amount_tax" numeric,
+  "amount_gross" numeric,
+  "creditor_iban" text,
+  "creditor_bic" text,
+  "discount_percent" numeric,
+  "discount_days" integer,
+  "paid_in_run_id" integer,
+  "seller_vat_id" varchar,
+  "creditor_iban_confirmed_at" datetime,
+  "creditor_iban_confirmed_by" integer,
+  "direction" varchar not null default('incoming'),
+  "kind" varchar not null default('invoice'),
+  "recognition" varchar not null default('structured'),
+  "buyer_name" varchar,
+  "buyer_vat_id" varchar,
+  "sender_email" varchar,
+  "source_reference" varchar,
+  "supplier_id" integer,
+  "customer_id" integer,
+  "match_kind" varchar,
+  "matched_user_id" integer,
+  "matched_at" datetime,
+  "invoice_number_key" varchar,
+  "duplicate_of_id" integer,
+  "duplicate_cleared_user_id" integer,
+  "duplicate_cleared_at" datetime,
+  "template_id" integer,
+  "tax_case" varchar,
+  "source_document_id" integer,
+  "source_page_from" integer,
+  "source_page_to" integer,
+  "source_sha256" varchar,
+  "split_proposal" text,
+  "girocode" text,
+  "girocode_confirmed_at" datetime,
+  "girocode_confirmed_by" integer,
+  "creditor_iban_confirmed_hash" varchar,
+  foreign key("template_id") references "incoming_invoice_templates"("id") on delete set null on update no action,
+  foreign key("matched_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null on update no action,
+  foreign key("supplier_id") references "suppliers"("id") on delete set null on update no action,
+  foreign key("transferred_by") references "users"("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete cascade on update no action,
+  foreign key("document_id") references "documents"("id") on delete cascade on update no action,
+  foreign key("decided_by") references "users"("id") on delete set null on update no action,
+  foreign key("paid_in_run_id") references "payment_runs"("id") on delete set null on update no action,
+  foreign key("creditor_iban_confirmed_by") references "users"("id") on delete set null on update no action,
+  foreign key("duplicate_of_id") references "incoming_einvoices"("id") on delete set null on update no action,
+  foreign key("duplicate_cleared_user_id") references "users"("id") on delete set null on update no action,
+  foreign key("girocode_confirmed_by") references "users"("id") on delete set null on update no action,
+  foreign key("source_document_id") references "documents"("id") on delete restrict
+);
+CREATE INDEX "inc_einv_org_due_idx" on "incoming_einvoices"(
+  "organization_id",
+  "due_date"
+);
+CREATE INDEX "inc_einv_org_issue_idx" on "incoming_einvoices"(
+  "organization_id",
+  "issue_date"
+);
+CREATE INDEX "incoming_einv_org_customer_idx" on "incoming_einvoices"(
+  "organization_id",
+  "customer_id"
+);
+CREATE INDEX "incoming_einv_org_dir_status_idx" on "incoming_einvoices"(
+  "organization_id",
+  "direction",
+  "status"
+);
+CREATE INDEX "incoming_einv_org_source_ref_idx" on "incoming_einvoices"(
+  "organization_id",
+  "source_reference"
+);
+CREATE INDEX "incoming_einv_org_supplier_idx" on "incoming_einvoices"(
+  "organization_id",
+  "supplier_id"
+);
+CREATE UNIQUE INDEX "ine_org_hash_unique" on "incoming_einvoices"(
+  "organization_id",
+  "sha256"
+);
+CREATE INDEX "ine_org_number_key_idx" on "incoming_einvoices"(
+  "organization_id",
+  "invoice_number_key"
+);
+CREATE INDEX "ine_org_source_sha_idx" on "incoming_einvoices"(
+  "organization_id",
+  "source_sha256"
 );
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
@@ -26697,3 +27448,21 @@ INSERT INTO migrations VALUES(1119,'2027_04_18_120000_add_register_number_to_cus
 INSERT INTO migrations VALUES(1120,'2027_04_19_110000_add_article_variant_to_material_usages',1);
 INSERT INTO migrations VALUES(1121,'2027_04_19_120000_add_is_consumer_to_customers',1);
 INSERT INTO migrations VALUES(1122,'2027_04_19_120100_add_place_of_supply_kind_to_articles_and_billing_rules',1);
+INSERT INTO migrations VALUES(1123,'2027_04_18_100000_add_draft_status_and_version_to_form_submissions',1);
+INSERT INTO migrations VALUES(1124,'2027_04_18_200000_create_organization_login_policies_table',1);
+INSERT INTO migrations VALUES(1125,'2027_04_18_200100_add_device_approval_to_user_known_devices',1);
+INSERT INTO migrations VALUES(1126,'2027_04_18_300000_create_carry_forward_notes_table',1);
+INSERT INTO migrations VALUES(1127,'2027_04_18_300100_create_work_delegations_table',1);
+INSERT INTO migrations VALUES(1128,'2027_04_18_500000_add_privacy_approval_to_ai_provider_connections',1);
+INSERT INTO migrations VALUES(1129,'2027_04_18_500100_keep_ai_connection_approval_optional_for_existing_organizations',1);
+INSERT INTO migrations VALUES(1130,'2027_04_19_100000_add_period_and_review_to_diary_entries',1);
+INSERT INTO migrations VALUES(1131,'2027_04_20_100000_create_customer_deadline_tables',1);
+INSERT INTO migrations VALUES(1132,'2027_04_20_200000_create_service_plan_tables',1);
+INSERT INTO migrations VALUES(1133,'2027_04_21_100000_create_attachment_texts_table',1);
+INSERT INTO migrations VALUES(1134,'2027_04_22_100000_create_lead_intakes_table',1);
+INSERT INTO migrations VALUES(1135,'2027_04_22_200000_add_creditor_identifier_and_purpose_keywords_to_bank_transactions',1);
+INSERT INTO migrations VALUES(1136,'2027_04_22_300000_add_split_and_girocode_to_incoming_einvoices',1);
+INSERT INTO migrations VALUES(1137,'2027_04_23_100000_create_knowledge_pages_tables',1);
+INSERT INTO migrations VALUES(1138,'2027_04_23_200000_create_app_wishes_tables',1);
+INSERT INTO migrations VALUES(1139,'2027_04_23_200100_create_presence_statuses_table',1);
+INSERT INTO migrations VALUES(1140,'2027_04_24_300000_bind_iban_confirmations_and_protect_split_originals',1);

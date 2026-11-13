@@ -33,5 +33,7 @@ final class NormalizedTransactionDetail {
         public readonly ?string $purpose,
         /** ISO-20022-Rückgabegrund je Detail (RtrInf/Rsn/Cd, z. B. AC04). */
         public readonly ?string $returnReason,
+        /** Gläubiger-ID je Detail (Feature 207, MVP-1660). */
+        public readonly ?string $creditorIdentifier = null,
     ) {}
 }

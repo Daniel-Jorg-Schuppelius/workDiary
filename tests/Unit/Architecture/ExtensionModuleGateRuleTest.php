@@ -35,7 +35,11 @@ class ExtensionModuleGateRuleTest extends TestCase {
     private const array GATED = [
         'DeadlineScan', 'EarlyWarningSource', 'ApprovalInboxSubject', 'CockpitPanel', 'WorkItemSource',
         'ManagementKpiSource', 'CalendarEventSource', 'SearchDomain', 'PortalNoticeSource', 'FinanceMovementSource',
-        'SyncCommandHandler',
+        'SyncCommandHandler', 'DelegableWork',
+        // Kundenfristen (Feature 197): nur Regelsätze aktiver Module, dann die eingeschalteten der Organisation.
+        'CustomerDeadlineRuleSet',
+        // Aufnahmeakte (Feature 200): Prüfpakete aktiver Module, dann die eingeschalteten; Prüfungen der Umwandlung.
+        'IntakeCheckPackage', 'LeadConversionCheck',
     ];
 
     /** Dateien, die einen gefilterten Punkt roh lesen dürfen — mit Grund. */

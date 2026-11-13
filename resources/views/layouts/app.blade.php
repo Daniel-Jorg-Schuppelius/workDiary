@@ -414,7 +414,7 @@
                                                 ['label' => __('Regeln & Prozesse'), 'icon' => 'account_tree', 'routes' => ['admin.automations.index', 'admin.notification-rules.index', 'admin.webhooks.index', 'form-templates.index', 'procedures.index', 'admin.report-targets.index', 'whistleblowing.portal.edit']],
                                                 ['key' => 'finance', 'label' => __('Finanzen & Lohn'), 'icon' => 'payments', 'routes' => ['finance.bank-accounts.index', 'finance.tax-rules.index', 'admin.surcharge-rules.index', 'admin.cost-center-rules.index', 'admin.wage-type-mappings.index', 'admin.text-corrections.index']],
                                                 ['key' => 'data', 'label' => __('Daten & Schnittstellen'), 'icon' => 'sync_alt', 'routes' => ['admin.data.index', 'admin.integration.inbox', 'admin.mail.index', 'admin.chat.index', 'admin.cti.index', 'admin.cloud-intake.index', 'admin.domain-provider.index', 'admin.ai.index', 'admin.data-ownership.index', 'admin.support.grants.index', 'admin.legacy-migration.index']],
-                                                ['label' => __('Systembetrieb'), 'icon' => 'monitor_heart', 'routes' => ['audit.index', 'admin.audit-diff.index', 'admin.license.index', 'admin.billing-profile.show', 'admin.ui-patterns.index', 'admin.metrics.index', 'admin.diagnostics.index', 'admin.components.index', 'admin.security.index', 'admin.sessions.index', 'admin.integrity.index', 'admin.security-events.index', 'admin.backup.status', 'admin.backup-targets.index', 'admin.scheduler.index', 'admin.problem-reports.index', 'admin.operations.index', 'admin.maintenance-windows.index', 'admin.settings.index', 'admin.support.report.index']],
+                                                ['label' => __('Systembetrieb'), 'icon' => 'monitor_heart', 'routes' => ['audit.index', 'admin.audit-diff.index', 'admin.license.index', 'admin.billing-profile.show', 'admin.ui-patterns.index', 'admin.metrics.index', 'admin.diagnostics.index', 'admin.components.index', 'admin.security.index', 'admin.sessions.index', 'admin.login-policy.index', 'admin.integrity.index', 'admin.security-events.index', 'admin.backup.status', 'admin.backup-targets.index', 'admin.scheduler.index', 'admin.problem-reports.index', 'admin.wishes.index', 'admin.operations.index', 'admin.maintenance-windows.index', 'admin.settings.index', 'admin.support.report.index']],
                                                 ['label' => __('Plugins'), 'icon' => 'extension', 'routes' => ['admin.plugins.index', 'admin.plugin-errors.index']],
                                             ];
                                             $adminByRoute = collect($adminNavItems)->keyBy('route');
@@ -593,6 +593,22 @@
                                       class="badge badge-primary badge-xs absolute -right-1 -top-1 tabular-nums {{ $chatUnread > 0 ? '' : 'hidden' }}">{{ $chatUnread > 99 ? '99+' : $chatUnread }}</span>
                             </a>
                             @endif
+                            {{-- Wünsche an die App (Feature 206, MVP-1658): Wunsch zu dieser Seite (nimmt den Routennamen mit) und Liste der Organisation. --}}
+                            <div class="dropdown dropdown-end">
+                                <label tabindex="0"
+                                       class="btn btn-sm btn-ghost btn-square {{ request()->routeIs('wishes.*') ? 'btn-active' : '' }}"
+                                       title="{{ __('wishes.header.button') }}"
+                                       aria-label="{{ __('wishes.header.button') }}">
+                                    <x-icon name="lightbulb" class="text-base" />
+                                </label>
+                                <div tabindex="0" class="dropdown-content header-dropdown-panel z-50 mt-2 w-[min(20rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
+                                    <x-button :href="route('wishes.create', array_filter(['route' => \Illuminate\Support\Facades\Route::currentRouteName()]))"
+                                              data-entry-modal-trigger
+                                              tone="ghost" size="sm" icon="add_comment" class="w-full justify-start"
+                                              title="{{ __('wishes.header.hint') }}">{{ __('wishes.create') }}</x-button>
+                                    <x-button :href="route('wishes.index')" tone="ghost" size="sm" icon="lightbulb" class="w-full justify-start">{{ __('wishes.title') }}</x-button>
+                                </div>
+                            </div>
                             <div class="dropdown dropdown-end">
                                 <label tabindex="0"
                                        class="btn btn-sm btn-ghost btn-square"
@@ -1247,6 +1263,8 @@
             <x-maintenance-banner :organization="$_activeOrg" />
             <x-maintenance-window-banner />
             <x-support-banner />
+            {{-- Vertretung (Feature 202): „Sie vertreten …“ / „Vertreten durch …“. --}}
+            <x-delegation-banner />
         @endauth
         <div class="mx-auto @yield('wrapper-height-class', 'wd-page-fill') w-full {{ $_wrapperMaxW }} px-2 pt-(--sidebar-gap) pb-[calc(var(--app-footer-h)+var(--sidebar-gap))] md:pb-(--sidebar-gap) sm:px-4 xl:px-8 2xl:px-12 @auth @unless($isLegacyMode) with-help-pad with-sidebar-pad @endunless @endauth">
             {{-- Zentrale Flashes (I4): einzige Render-Stelle für success/error/

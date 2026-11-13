@@ -240,6 +240,16 @@ class ForeignKeyCoverageTest extends TestCase {
         'whistleblowing_case_tombstones.organization_id',
         'whistleblowing_case_tombstones.public_id',
         'whistleblowing_cases.public_id',
+        // Phase 177 (MVP-1645/1646): Merker hängen polymorph am Vorkommen einer Reihe
+        // (`origin_type`/`origin_id` = angelegt an, `resolved_occurrence_type`/`…_id` =
+        // abgehakt an; Auftrag, Vertragspflicht, Prüftermin, Prüfposition) — kein FK auf
+        // eine Tabelle möglich; die Reihe trägt `series_key`, Löschen eines Vorkommens
+        // lässt den Merker der Reihe bestehen.
+        'carry_forward_notes.origin_id',
+        'carry_forward_notes.resolved_occurrence_id',
+        // MVP-1647: Anlass der Vertretung polymorph (`absence_type`/`absence_id`:
+        // Urlaub oder Krankmeldung); Storno beendet die Vertretung über den Hook am Anlass.
+        'work_delegations.absence_id',
     ];
 
     public function test_id_columns_carry_a_foreign_key_or_a_documented_exception(): void {

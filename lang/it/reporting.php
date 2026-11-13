@@ -179,6 +179,11 @@ return [
         ],
     ],
     'warning' => [
+        'customer_deadline_overdue' => [
+            'title' => 'Scadenze superate per :name',
+            'detail' => 'Scadenza/e superata/e: :count, la più vecchia del :date.',
+            'recommendation' => 'Raccomandazione: completare la scadenza, chiedere una proroga o chiarire la responsabilità — la persona responsabile è già stata avvisata.',
+        ],
         'capacity' => [
             'title' => 'Carenza di capacità nel team :name',
             'detail' => 'Settimana dal :week: :percent % della capacità pianificata.',
@@ -219,6 +224,17 @@ return [
         ],
     ],
     // Management-Auswertung (MVP-926).
+    // Durchlaufzeit je Auftragstyp in der Auftragstypanalyse (Feature 179, MVP-1670)
+    'lead_time' => [
+        'title' => 'Tempo di attraversamento per tipo di ordine',
+        'subtitle' => 'Ordini chiusi nel periodo: mediana dei giorni dalla creazione alla chiusura. Misurato per ordine, mai per persona.',
+        'empty' => 'Nel periodo non è stato chiuso alcun ordine.',
+        'column' => [
+            'type' => 'Tipo di ordine',
+            'completed' => 'Chiusi',
+            'median' => 'Mediana (giorni)',
+        ],
+    ],
     'management' => [
         'title' => 'Analisi direzionale',
         'nav' => 'Problemi e formazione',
@@ -264,6 +280,10 @@ return [
             'qualifications_expiring' => 'A oggi · scadono entro :days giorni: :count',
             'vacation_pending' => 'Richieste di ferie aperte',
             'vacation_pending_hint' => 'A oggi · inizio nei prossimi 14 giorni: :count',
+            // Durchlaufzeit je Auftragsart (Feature 179, MVP-1670)
+            'lead_time' => 'Tempo di attraversamento: :type',
+            'lead_time_days' => '{1} :days giorno|[0,*] :days giorni',
+            'lead_time_hint' => 'Mediana dalla creazione alla chiusura · :count chiusure in 12 mesi',
         ],
         'digest' => [
             'subject' => 'Report direzionale :organization · :range',
@@ -278,6 +298,7 @@ return [
             'capacity' => 'Carenze di personale',
             'project_target' => 'Tempi obiettivo non raggiunti',
             'resale_unbilled' => 'Abbonamenti senza fattura',
+            'customer_deadline_overdue' => 'Scadenze dei clienti superate',
         ],
     ],
     'product_revenue' => [

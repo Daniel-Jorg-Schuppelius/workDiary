@@ -15,11 +15,15 @@ return [
     'label' => 'Handwerk / Service allgemein',
     'description' => 'Handwerk und Service allgemein: Service, Wartung, Reparatur, Installation, Inspektion und Aufmaß als Grundausstattung für gemischte Betriebe.',
     // v3: Asset-Kategorien werden als Kategorien der Organisation installiert (MVP-1508).
-    'version' => 3,
+    // v4: Prüfpaket B2B-Neukunde der Aufnahmeakte, einschaltbar (Feature 200, MVP-1675).
+    'version' => 4,
     // MVP-1053: Arbeitskosten nach § 35a EStG bei Privatkunden ausweisen; eigene Einstellungen bleiben.
     'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers'],
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
+    // Feature 200 (MVP-1675): Prüfpaket B2B-Neukunde der Aufnahmeakte (Katalog database/data/intake_packages.php) —
+    // übernommen, aber aus; einschalten im Einstellungsdialog der Aufnahmen. Ergänzt nur.
+    'intake_packages' => [['code' => 'b2b_new_customer', 'enabled' => false]],
     'modules_recommended' => [
         'module.planung',
         'module.spesen',

@@ -40,7 +40,8 @@ final class DiaryEnumsTest extends TestCase {
     }
 
     public function test_status_values_and_tones(): void {
-        $this->assertSame([-1, 1, 2, 3, 4, 5, 6, 7, 8], Status::values());
+        // 9–11: Prüfzustände der internen Prüfung (Feature 198, MVP-1635).
+        $this->assertSame([-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], Status::values());
         $this->assertSame('done', Status::Done->stage());
         $this->assertSame('progress', Status::InProgress->stage());
         $this->assertSame('open', Status::Open->stage());

@@ -6,9 +6,19 @@
  * Standard-Build, daher migrierbar OHNE Build-Wechsel.
  */
 import { clearHtml, setHtml, trustedServerHtml } from "../lib/html.js";
-import { getJson, patchJson, postJson, request } from "../lib/http.js";
+import { getJson, patchJson, postForm, postJson, request } from "../lib/http.js";
 import { __ } from "../i18n.js";
 import { ADDRESS_FIELDS, ADDRESS_INPUT_NAMES, customerAddressFromDataset, mergePrefill } from "../lib/option-prefill.js";
+import { SaveQueue, isAnswered, isVisible, parseFieldName, progressText, sectionProgress } from "../lib/field-form.js";
+
+/**
+ * Warteschlangen der langen Formulare je Wurzelelement — außerhalb der
+ * reaktiven Alpine-Daten, damit die Schlange ihre Aufträge nicht als Proxy
+ * vergleicht (Feature 203).
+ *
+ * @type {WeakMap<HTMLElement, SaveQueue>}
+ */
+const saveQueues = new WeakMap();
 
 /** @typedef {HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement} FormControl */
 
@@ -2226,6 +2236,351 @@ export function registerAlpineComponents(Alpine) {
                 default:
                     return actual === val;
             }
+        },
+    }));
+
+    // Lange Formulare (Feature 203, MVP-1649/1650): Zählung je Abschnitt und
+    // Punkt offen/beantwortet nachführen (ohne Neuaufbau, Fokus und
+    // Tab-Folge bleiben), Bedingungslogik wie formFill, Fehler am Feld und
+    // kurz oben, Gesprächsmodus. Mit data-autosave speichert jedes Feld beim
+    // Verlassen über die Warteschlange aus lib/field-form.js; vor dem
+    // Absenden wartet das Formular, bis sie leer ist. Konfiguration über
+    // data-Attribute (CSP-Build, keine Objekt-Literale in Direktiven).
+    Alpine.data("fieldForm", () => ({
+        /** @type {Record<string, string>} */
+        vals: {},
+        /** @type {Record<string, import("../lib/field-form.js").FieldCondition>} */
+        conditions: {},
+        /** @type {Record<string, string[]>} Abschnitt → Feldschlüssel */
+        sections: {},
+        /** @type {Record<string, {answered: number, total: number}>} */
+        progress: {},
+        /** @type {Record<string, boolean>} */
+        booleans: {},
+        /** @type {Record<string, string>} */
+        texts: {},
+        /** @type {Record<string, string>} Feld → Meldung */
+        errors: {},
+        prefix: "values",
+        notesPrefix: "notes",
+        idBase: "fld",
+        talk: false,
+        /** @type {import("../lib/field-form.js").SaveState | "none"} */
+        saveState: "none",
+        conflict: false,
+        canOverride: false,
+        /** Dialog des Trägers frisch laden (nach Konflikt); leer: ganze Seite neu laden. */
+        reloadUrl: "",
+        init() {
+            const ds = this.$el.dataset;
+            this.prefix = ds.prefix || "values";
+            this.notesPrefix = ds.notesPrefix || "notes";
+            this.idBase = ds.idBase || "fld";
+            this.conditions = JSON.parse(ds.conditions || "{}");
+            this.vals = Object.assign({}, JSON.parse(ds.initial || "{}"));
+            this.sections = JSON.parse(ds.sections || "{}");
+            this.texts = JSON.parse(ds.texts || "{}");
+            /** @type {string[]} */
+            const booleans = JSON.parse(ds.booleans || "[]");
+            this.booleans = Object.fromEntries(booleans.map((k) => [k, true]));
+            this.recount();
+
+            const form = this.$el.closest("form");
+            if (form) {
+                // app.js meldet 422 des Dialog-Absendens als Ereignis am Formular.
+                form.addEventListener("entry-form:invalid", (event) => {
+                    const detail = /** @type {CustomEvent<{errors?: Record<string, string[]>}>} */ (event).detail;
+                    this.showServerErrors(detail?.errors || {});
+                });
+            }
+            const config = JSON.parse(ds.autosave || "null");
+            if (config && form) this.setupAutosave(config, form);
+        },
+
+        // ── Werte, Sichtbarkeit, Zählung ───────────────────────────────
+        /** @param {Event} e */
+        track(e) {
+            const t = /** @type {HTMLInputElement | null} */ (e.target);
+            if (!t || !t.name) return;
+            const parsed = parseFieldName(t.name, this.prefix, this.notesPrefix);
+            if (!parsed || parsed.kind === "note") return;
+            this.vals[parsed.key] = this.scalarOf(parsed.kind, t);
+            if (this.errors[parsed.key]) this.clearError(parsed.key);
+            this.recount();
+        },
+        /** @param {Event} e */
+        changed(e) {
+            this.track(e);
+            const queue = saveQueues.get(this.$el);
+            const t = /** @type {HTMLInputElement | null} */ (e.target);
+            if (!queue || !t || !t.name) return;
+            const parsed = parseFieldName(t.name, this.prefix, this.notesPrefix);
+            if (!parsed) return;
+            if (parsed.kind === "note") {
+                queue.enqueue({ key: parsed.key, note: t.value });
+                return;
+            }
+            queue.enqueue({ key: parsed.key, value: this.payloadOf(parsed.kind, t) });
+        },
+        /**
+         * @param {"value" | "list"} kind
+         * @param {HTMLInputElement} t
+         * @returns {string}
+         */
+        scalarOf(kind, t) {
+            if (kind === "list") return this.checkedValues(t.name).join(",");
+            if (t.type === "checkbox") return t.checked ? "1" : "0";
+            return t.value;
+        },
+        /**
+         * @param {"value" | "list"} kind
+         * @param {HTMLInputElement} t
+         * @returns {string | string[]}
+         */
+        payloadOf(kind, t) {
+            if (kind === "list") return this.checkedValues(t.name);
+            if (t.type === "checkbox") return t.checked ? "1" : "0";
+            return t.value;
+        },
+        /** @param {string} name @returns {string[]} */
+        checkedValues(name) {
+            return [.../** @type {NodeListOf<HTMLInputElement>} */ (this.$el.querySelectorAll(`input[name="${CSS.escape(name)}"]:checked`))].map((i) => i.value);
+        },
+        recount() {
+            this.progress = sectionProgress(
+                this.sections,
+                (key) => this.answered(key),
+                (key) => this.visible(key),
+            );
+        },
+        /** @param {string} key */
+        answered(key) {
+            return isAnswered(this.vals[key], this.booleans[key] === true);
+        },
+        /** @param {string} key */
+        visible(key) {
+            return isVisible(this.conditions[key], this.vals);
+        },
+        /** @param {string} key */
+        dotClass(key) {
+            return this.answered(key) ? "wd-field-dot--done" : "";
+        },
+        /** @param {string} section */
+        sectionText(section) {
+            return progressText(this.texts.progress || ":answered/:total", this.progress[section]);
+        },
+        /** @param {string} section */
+        sectionShort(section) {
+            return progressText(":answered/:total", this.progress[section]);
+        },
+        /** @param {string} section */
+        navClass(section) {
+            const p = this.progress[section];
+            return p && p.total > 0 && p.answered === p.total ? "wd-field-nav__link--done" : "";
+        },
+        /** @param {string} id Sprung zur Abschnittskarte; Fokus auf die Karte für Tastatur und Screenreader. */
+        jump(id) {
+            const target = document.getElementById(id);
+            if (!target) return;
+            const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+            target.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+            target.focus({ preventScroll: true });
+        },
+
+        // ── Gesprächsmodus ────────────────────────────────────────────
+        toggleTalk() {
+            this.talk = !this.talk;
+        },
+        get rootClass() {
+            return this.talk ? "wd-field-form--talk" : "";
+        },
+        get talkPressed() {
+            return this.talk ? "true" : "false";
+        },
+
+        // ── Fehler am Feld und kurz oben ──────────────────────────────
+        /** @param {Record<string, string[]>} errors Laravel-Schlüssel → Meldungen */
+        showServerErrors(errors) {
+            /** @type {Record<string, string>} */
+            const mapped = {};
+            for (const [name, messages] of Object.entries(errors)) {
+                const m = name.match(/^([A-Za-z_]+)\.([^.]+)/);
+                if (!m || ![this.prefix, this.notesPrefix, "files", "signatures"].includes(m[1])) continue;
+                mapped[m[2]] ||= String((messages || [])[0] || "");
+            }
+            this.errors = mapped;
+            for (const key of Object.keys(mapped)) this.markInvalid(key, true);
+        },
+        /** @param {string} key @param {string} message */
+        setError(key, message) {
+            this.errors = { ...this.errors, [key]: message };
+            this.markInvalid(key, true);
+        },
+        /** @param {string} key */
+        clearError(key) {
+            const next = { ...this.errors };
+            delete next[key];
+            this.errors = next;
+            this.markInvalid(key, false);
+        },
+        /** @param {string} key @param {boolean} invalid */
+        markInvalid(key, invalid) {
+            const row = this.$el.querySelector(`[data-field="${CSS.escape(key)}"]`);
+            if (!row) return;
+            const errorId = `${this.idBase}-${key}-cerror`;
+            row.querySelectorAll("input, select, textarea").forEach((control) => {
+                if (/** @type {HTMLInputElement} */ (control).type === "hidden") return;
+                const ids = (control.getAttribute("aria-describedby") || "").split(/\s+/).filter((id) => id && id !== errorId);
+                if (invalid) {
+                    control.setAttribute("aria-invalid", "true");
+                    ids.push(errorId);
+                } else {
+                    control.removeAttribute("aria-invalid");
+                }
+                if (ids.length > 0) control.setAttribute("aria-describedby", ids.join(" "));
+                else control.removeAttribute("aria-describedby");
+            });
+        },
+        /** @param {string} key */
+        hasError(key) {
+            return Boolean(this.errors[key]);
+        },
+        /** @param {string} key */
+        errorText(key) {
+            return this.errors[key] || "";
+        },
+        get errorCount() {
+            return Object.keys(this.errors).length;
+        },
+        get errorSummary() {
+            return (this.texts.errors || ":count").replace(/:count\b/g, String(this.errorCount));
+        },
+        focusFirstError() {
+            const key = Object.keys(this.errors)[0];
+            if (!key) return;
+            const control = /** @type {HTMLElement | null} */ (this.$el.querySelector(`[data-field="${CSS.escape(key)}"] input:not([type="hidden"]), [data-field="${CSS.escape(key)}"] select, [data-field="${CSS.escape(key)}"] textarea`));
+            control?.focus();
+        },
+
+        // ── Speichern je Feld (MVP-1650) ──────────────────────────────
+        /**
+         * @param {{url?: string, version?: number | null, start_url?: string, start_fields?: string[], reload_url?: string}} config
+         * @param {HTMLFormElement} form
+         */
+        setupAutosave(config, form) {
+            const draftInput = /** @type {HTMLInputElement | null} */ (form.querySelector('input[name="draft"]'));
+            const versionInput = /** @type {HTMLInputElement | null} */ (form.querySelector('input[name="draft_version"]'));
+            let fieldUrl = config.url || "";
+            this.reloadUrl = config.reload_url || "";
+            const queue = new SaveQueue({
+                version: typeof config.version === "number" ? config.version : null,
+                // Träger entsteht beim ersten Speichern (Entwurf); die Kopffelder nennen Vorlage und Bezug.
+                prepare: async () => {
+                    const body = new FormData();
+                    for (const name of config.start_fields || []) {
+                        const input = /** @type {HTMLInputElement | null} */ (form.querySelector(`[name="${CSS.escape(name)}"]`));
+                        if (input) body.append(name, input.value);
+                    }
+                    const result = await postForm(String(config.start_url || ""), body);
+                    const data = /** @type {{url?: string, version?: number, draft?: string, reload_url?: string} | null} */ (result.data);
+                    if (!result.ok || !data || typeof data.version !== "number" || !data.url) {
+                        throw new Error("start failed");
+                    }
+                    fieldUrl = data.url;
+                    if (data.reload_url) this.reloadUrl = data.reload_url;
+                    if (draftInput && data.draft) draftInput.value = data.draft;
+                    return data.version;
+                },
+                send: async (job, version) => {
+                    /** @type {Record<string, unknown>} */
+                    const payload = { version };
+                    if ("value" in job) payload.value = job.value;
+                    if ("note" in job) payload.note = job.note;
+                    try {
+                        const result = await patchJson(fieldUrl.replace("__FIELD__", encodeURIComponent(job.key)), payload);
+                        const data = /** @type {{version?: number, reason?: string, message?: string} | null} */ (result.data);
+                        if (result.ok && data && typeof data.version === "number") {
+                            return { ok: true, version: data.version, data };
+                        }
+                        if (result.status === 409) {
+                            return { ok: false, kind: data?.reason === "closed" ? "closed" : "conflict", version: data?.version, message: data?.message };
+                        }
+                        if (result.status === 422) {
+                            const first = result.errors ? Object.values(result.errors).flat()[0] : null;
+                            return { ok: false, kind: "invalid", message: String(first || this.texts.invalid || "") };
+                        }
+                        return { ok: false, kind: "error", message: data?.message };
+                    } catch (_error) {
+                        return { ok: false, kind: "offline" };
+                    }
+                },
+                onState: (state, q) => {
+                    this.saveState = state;
+                    this.conflict = state === "conflict" || state === "closed";
+                    this.canOverride = state === "conflict";
+                    if (versionInput && q.version !== null) versionInput.value = String(q.version);
+                },
+                onSaved: (job) => {
+                    if (this.errors[job.key]) this.clearError(job.key);
+                },
+                onInvalid: (job, outcome) => {
+                    this.setError(job.key, ("message" in outcome && outcome.message) || this.texts.invalid || "");
+                },
+            });
+            saveQueues.set(this.$el, queue);
+            if (versionInput && queue.version !== null) versionInput.value = String(queue.version);
+            window.addEventListener("online", () => queue.resume());
+
+            // Vor dem Absenden die Schlange leeren — sonst prüft der Server
+            // gegen eine Version, die gleich noch weiterzählt.
+            form.addEventListener(
+                "submit",
+                (event) => {
+                    if (event.defaultPrevented || !queue.busy || queue.isHalted()) {
+                        if (versionInput && queue.version !== null) versionInput.value = String(queue.version);
+                        return;
+                    }
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    void queue.whenIdle().then(() => {
+                        if (versionInput && queue.version !== null) versionInput.value = String(queue.version);
+                        form.requestSubmit();
+                    });
+                },
+                { capture: true },
+            );
+        },
+        get statusText() {
+            switch (this.saveState) {
+                case "saving":
+                    return this.texts.saving || "";
+                case "retrying":
+                    return this.texts.retrying || "";
+                case "stalled":
+                    return this.texts.stalled || "";
+                case "conflict":
+                    return this.texts.conflict || "";
+                case "closed":
+                    return this.texts.closed || "";
+                case "idle":
+                    return this.texts.saved || "";
+                default:
+                    return this.texts.hint || "";
+            }
+        },
+        get conflictText() {
+            return this.saveState === "closed" ? this.texts.closed || "" : this.texts.conflict || "";
+        },
+        overrideConflict() {
+            const queue = saveQueues.get(this.$el);
+            if (queue && queue.conflictVersion !== null) queue.resumeWith(queue.conflictVersion);
+        },
+        reloadDocument() {
+            if (this.reloadUrl) {
+                document.dispatchEvent(new CustomEvent("entry-dialog:open", { detail: { url: this.reloadUrl } }));
+                return;
+            }
+            window.location.reload();
         },
     }));
 

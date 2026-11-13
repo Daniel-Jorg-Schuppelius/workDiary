@@ -16,6 +16,7 @@ return [
         'submission' => 'Formulaire rempli',
         'values' => 'Saisies',
         'panel' => 'Formulaires',
+        'drafts' => 'Mes brouillons',
     ],
 
     'subtitle' => [
@@ -65,6 +66,8 @@ return [
         'download_pdf' => 'Télécharger le PDF',
         'clear_signature' => 'Effacer la signature',
         'back' => 'Retour',
+        'continue' => 'Continuer la saisie',
+        'discard' => 'Abandonner le brouillon',
     ],
 
     'filter' => [
@@ -112,6 +115,17 @@ return [
 
         'no_upload_field' => 'Aucun champ fichier/photo ne porte cette clé dans le formulaire.',
         'template_not_active' => 'Ce modèle n’est pas actif et ne peut pas être rempli.',
+        'not_draft' => 'Ce formulaire n’est plus un brouillon.',
+    ],
+
+    // Entwürfe langer Formulare (Feature 203, MVP-1650).
+    'draft' => [
+        'resumed' => 'Votre brouillon (dernier enregistrement :date) est repris. Il n’est envoyé qu’avec « Envoyer ».',
+        'rebased' => 'Le modèle a changé depuis votre brouillon. Les réponses dont le type ne convient plus sont conservées comme complément à la question.',
+        'saved_at' => 'Dernier enregistrement :date',
+        'confirm_discard' => 'Abandonner vraiment le brouillon ? Les réponses enregistrées seront perdues.',
+        'discarded' => 'Brouillon abandonné.',
+        'show_hint' => 'Brouillon – pas encore envoyé.',
     ],
 
     'flash' => [

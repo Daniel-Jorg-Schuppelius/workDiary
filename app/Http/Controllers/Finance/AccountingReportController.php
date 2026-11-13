@@ -20,9 +20,10 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\Accounting\{AccountingAccount, AccountingProfile};
 use App\Models\Finance\CostCenter;
 use App\Services\Accounting\DepreciationCalculator;
-use App\Services\Accounting\Filing\{FilingDeadlineCalculator, RecapitulativeStatementService, VatFilingPeriodService, VatReturnService};
+use App\Services\Accounting\Filing\{RecapitulativeStatementService, VatFilingPeriodService, VatReturnService};
 use App\Services\Accounting\{OpenItemService, TaxationMethodResolver, VatFilingProfileResolver};
 use App\Services\Accounting\Reports\{AbstractAccountingReportBuilder, AccountLedgerBuilder, BwaBuilder, DataQualityBuilder, EuerPreviewBuilder, ExportContextBuilder, FixedAssetScheduleBuilder, LiquidityBuilder, LiquidityForecastBuilder, ProfitAndLossBuilder, ReplacementForecastBuilder, TrialBalanceBuilder};
+use App\Services\Calendar\Filing\FilingDeadlineCalculator;
 use App\Support\{Setting, Sqid, Tz};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
@@ -314,7 +315,7 @@ class AccountingReportController extends Controller {
         return view('reports.accounting.recapitulative', $data + [
             'period' => $period,
             'periods' => $period !== null ? $this->periods->periodsFor($organization, $period->year) : [],
-            'due_on' => $period !== null ? $this->deadlines->recapitulative($period) : null,
+            'due_on' => $period !== null ? $this->deadlines->recapitulative($this->filing->filingProfile($organization, $period->to), $period->periodKey()) : null,
             'from' => $rangeFrom,
             'to' => $rangeTo,
         ]);

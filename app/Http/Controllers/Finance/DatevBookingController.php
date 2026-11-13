@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Enums\Finance\{ChartOfAccounts, DatevBatchStatus, DatevTransmissionStatus};
+use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\AccountingAccount;
@@ -19,6 +20,7 @@ use App\Models\Platform\Organization;
 use App\Models\Travel\ExpenseCategory;
 use App\Services\Billing\FinancialFormatsSupport;
 use App\Services\Finance\Datev\DatevBookingConfig;
+use App\Services\Finance\Datev\TaxCheck\DatevTaxCheckService;
 use App\Services\Finance\{DatevBatchReportPdfRenderer, DatevBookingException, DatevBookingService};
 use App\Settings\SettingsTree;
 use App\Support\Sqid;
@@ -41,6 +43,7 @@ class DatevBookingController extends Controller {
 
     public function __construct(
         private readonly DatevBookingService $service,
+        private readonly DatevTaxCheckService $taxCheck,
     ) {}
 
     public function index(Request $request): View {
@@ -145,6 +148,9 @@ class DatevBookingController extends Controller {
         return view('finance.datev.show', [
             'batch' => $batch,
             'preflight' => $preflight,
+            // Steuerprüfung vor dem Schreiben (Feature 207, MVP-1661) — ein finalisierter Stapel ist geschrieben.
+            'taxCheck' => $batch->isFinal() ? null : $this->taxCheck->forBatch($batch, $config),
+            'canReleaseTaxCheck' => Gate::allows('finalize', $batch) && Gate::allows(Permission::AccountingTaxCheckRelease->value),
             'transmission' => $this->service->transmissionStatus($batch),
             'canTransmit' => Gate::allows('transmit', $batch),
             'importAvailable' => FinancialFormatsSupport::isAvailable(),
@@ -200,12 +206,18 @@ class DatevBookingController extends Controller {
     /** draft → exported: CSV erzeugen, Hash, Datei, Quellen als übergeben markieren. */
     public function finalize(DatevBookingBatch $batch): RedirectResponse {
         Gate::authorize('finalize', $batch);
+        $config = DatevBookingConfig::forOrganization($this->currentOrganizationOrUserOrganization());
+
+        // Steuerprüfung vor dem Schreiben (Feature 207, MVP-1661): offene Fehler
+        // sperren, bis berichtigt oder begründet freigegeben — die Exportlogik bleibt unberührt.
+        if (! $batch->isFinal() && $this->taxCheck->forBatch($batch, $config)->isBlocked()) {
+            return back()->withErrors(['status' => __('accounting.datev_check.error.blocked')]);
+        }
 
         if (! FinancialFormatsSupport::isAvailable()) {
             return back()->withErrors(['status' => FinancialFormatsSupport::unavailableMessage('finance.datev.error.unavailable')]);
         }
 
-        $config = DatevBookingConfig::forOrganization($this->currentOrganizationOrUserOrganization());
         $preflight = $this->preflightFromSources($batch, $config);
         if ($preflight['errors'] !== []) {
             return back()->withErrors(['status' => __('finance.datev.error.preflight_failed')]);
@@ -218,6 +230,20 @@ class DatevBookingController extends Controller {
         }
 
         return back()->with('success', __('finance.datev.flash.finalized'));
+    }
+
+    /** Sperrende Befunde der Steuerprüfung begründet freigeben (Feature 207, MVP-1661). */
+    public function releaseTaxCheck(Request $request, DatevBookingBatch $batch): RedirectResponse {
+        Gate::authorize('finalize', $batch);
+        abort_unless(Gate::allows(Permission::AccountingTaxCheckRelease->value), 403);
+
+        $data = $request->validate(['reason' => ['required', 'string', 'min:10', 'max:500']]);
+        $config = DatevBookingConfig::forOrganization($this->currentOrganizationOrUserOrganization());
+        $count = $this->taxCheck->releaseBatch($batch, $config, (string) $data['reason'], $this->authUser());
+
+        return back()->with('success', $count > 0
+            ? __('accounting.datev_check.flash.released', ['count' => $count])
+            : __('accounting.datev_check.flash.nothing_to_release'));
     }
 
     /** Dialog: Übermittlungsschritt erfassen (MVP-1277). */

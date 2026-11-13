@@ -77,6 +77,17 @@ final class ProcedureManifest extends Manifest {
             \App\Services\Cockpit\Contracts\CockpitPanel::class => [
                 \App\Services\Procedure\Cockpit\ProcedureCockpitPanel::class,
             ],
+            // Zugewiesene Prozedurläufe im Arbeitsvorrat; die Vertretung übernimmt sie (Feature 202, MVP-1648).
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Procedure\WorkQueue\ProcedureRunWorkItemSource::class,
+            ],
+            \App\Services\Delegation\Contracts\DelegableWork::class => [
+                \App\Services\Procedure\WorkQueue\ProcedureRunWorkItemSource::class,
+            ],
+            // Endgültige Übergabe und Austritt (Feature 202/126): laufende Prozedurläufe an eine Nachfolge.
+            \App\Services\Org\Contracts\OffboardingHandover::class => [
+                \App\Services\Procedure\Offboarding\ProcedureRunOffboardingHandover::class,
+            ],
         ];
     }
 

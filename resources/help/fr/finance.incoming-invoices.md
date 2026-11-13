@@ -1,7 +1,7 @@
 ---
 title: "Factures reçues"
 topic: finance.incoming-invoices
-version: 11
+version: 12
 keywords:
     - plusieurs taux de TVA
     - facture fournisseur
@@ -408,3 +408,52 @@ Le résumé indique aussi la période ou la date de prestation et un identifiant
 d’objet si la facture les porte. Pour les factures reçues avant cette fonction,
 la commande `php artisan incoming-invoices:extract-documents --dry-run`
 extrait les pièces après coup (d’abord à blanc, puis sans l’option).
+
+## PDF groupé et GiroCode
+
+**PDF groupé :** Si un PDF sans données de facture électronique, téléversé ou
+reçu par e-mail, comporte plusieurs pages, WorkDiary vérifie en arrière-plan
+s’il contient plusieurs factures. Indices d’une nouvelle facture : un autre
+numéro de facture, un nouvel expéditeur (numéro de TVA ou IBAN), « Page 1 sur
+… », un bloc de totaux sur la page précédente et un autre en-tête. Tant que
+vous n’avez pas décidé, le transfert à la comptabilité et le paiement
+attendent. **Vérifier les limites** affiche chaque page en aperçu et vous
+permet de marquer où commence une nouvelle facture ; **Scinder** crée une
+réception distincte avec son propre PDF partiel par facture. **C’est une seule
+facture** conserve la réception telle quelle.
+
+L’original reste inchangé dans la gestion documentaire et affiche ses parties ;
+chaque partie renvoie à l’original avec sa plage de pages. Chaque partie passe
+par le contrôle des doublons : le même fichier ou le même numéro de facture du
+même expéditeur est détecté, tout comme un nouveau téléversement du PDF groupé
+entier. Tant que des parties existent,
+l’original ne peut pas être supprimé. Les PDF jusqu’à 60 pages sont
+vérifiés ; seules les réceptions ouvertes et non transférées peuvent être
+scindées.
+
+**GiroCode :** Si une facture porte un GiroCode (code QR EPC), WorkDiary le lit
+en arrière-plan — sur les trois premières pages et la dernière. Si le document
+lui-même n’indique aucun IBAN, l’IBAN du code est repris lorsque sa clé de
+contrôle est correcte. La carte **GiroCode** affiche bénéficiaire, IBAN,
+montant et motif et les compare à la facture : le montant et le nom du
+bénéficiaire ne donnent lieu qu’à un avertissement. Si l’IBAN du code diffère
+de la facture ou des coordonnées bancaires du fournisseur, la boîte de dialogue
+d’affectation avertit et la proposition de paiement bloque la facture jusqu’à
+ce qu’une personne habilitée à valider confirme l’écart — des coordonnées
+bancaires modifiées sont une fraude connue. La confirmation est journalisée et
+ne vaut que tant que l’IBAN et le fournisseur restent inchangés. Si l’outil de
+lecture (zbarimg) manque sur le serveur, la carte affiche « GiroCode
+illisible ».
+
+**Preuve et nouvelles coordonnées bancaires :** Après la scission, la
+réception groupée est conservée comme preuve avec le statut « Scindée » ; elle
+n’apparaît dans aucune liste de travail et n’est ni transférée ni payée.
+L’original ne peut pas être supprimé tant que des parties existent. Au plus
+30 factures sont séparées par PDF groupé, et les parties ensemble ne doivent
+pas devenir beaucoup plus volumineuses que l’original. Un IBAN du GiroCode
+n’est repris que tant que la réception n’est pas validée. Si aucune coordonnée
+bancaire du fournisseur n’est enregistrée, il compte comme nouvelle
+coordonnée bancaire et doit être confirmé avant le paiement ; il n’entre dans
+les données de base du fournisseur que si quelqu’un l’y saisit expressément.
+Chaque confirmation ne vaut que pour l’IBAN confirmé — s’il change, la
+proposition de paiement bloque à nouveau.

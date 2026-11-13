@@ -125,6 +125,10 @@ return Application::configure(basePath: dirname(__DIR__))
             // Organisations-Sprache (currentOrganization) auflösen kann.
             SetOrganizationContext::class,
             SetLocale::class,
+            // Anmelderichtlinie der Organisation (Feature 205): Zeitfenster,
+            // Netze/Geräte, Notaus und Passkey-Pflicht je Anfrage — nach der
+            // Organisation (Richtlinie) und der Sprache (Meldung).
+            \App\Http\Middleware\EnforceLoginPolicy::class,
             ForcePasswordChange::class,
             RequireTwoFactorSetup::class,
             // Standardfilter einer Liste (gespeicherte Filter, „Standard für diesen Bereich“).
@@ -183,6 +187,9 @@ return Application::configure(basePath: dirname(__DIR__))
             // lassen tokenbasierte Ingest-Routen ohne Auth-User durch.
             EnsureValidLicense::class,
             EnforceTenantStatus::class,
+            // Persönliche API-Tokens folgen der Anmelderichtlinie (Feature 205);
+            // Ingest-Wege mit Gerätetoken tragen keinen Nutzer und bleiben frei.
+            \App\Http\Middleware\EnforceLoginPolicy::class,
             // Sicherheitsaudit 2026-09-13: Beide Pflichten galten nur im
             // Web-Stack. Wer zum Passwortwechsel oder zur 2FA-Einrichtung
             // gezwungen war, arbeitete ueber einen bestehenden Token

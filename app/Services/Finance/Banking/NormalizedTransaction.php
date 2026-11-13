@@ -45,5 +45,10 @@ final class NormalizedTransaction {
          * @var list<NormalizedTransactionDetail>
          */
         public readonly array $details = [],
+        /**
+         * Gläubiger-ID einer SEPA-Lastschrift (CRED+ bzw. CdtrSchmeId), sofern
+         * die Datei sie trägt — Merkmal der Kontierungshilfe (Feature 207, MVP-1660).
+         */
+        public readonly ?string $creditorIdentifier = null,
     ) {}
 }

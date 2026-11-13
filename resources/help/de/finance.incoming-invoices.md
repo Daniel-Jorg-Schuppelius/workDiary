@@ -1,7 +1,7 @@
 ---
 title: "Rechnungseingang"
 topic: finance.incoming-invoices
-version: 11
+version: 12
 keywords:
     - Mehrere Steuersätze
     - Eingangsrechnung
@@ -382,3 +382,48 @@ und eine Objektkennung, wenn die Rechnung sie trägt. Für Eingänge, die vor
 dieser Funktion empfangen wurden, löst der Befehl
 `php artisan incoming-invoices:extract-documents --dry-run` die Unterlagen
 nach (erst als Trockenlauf, dann ohne die Option).
+
+## Sammel-PDF und GiroCode
+
+**Sammel-PDF:** Enthält eine hochgeladene oder per Mail empfangene PDF ohne
+E-Rechnungsdaten mehrere Seiten, prüft WorkDiary im Hintergrund, ob darin
+mehrere Rechnungen stecken. Zeichen für eine neue Rechnung sind eine andere
+Rechnungsnummer, ein neuer Absender (USt-IdNr. oder IBAN), „Seite 1 von …“,
+ein Summenblock auf der Vorseite und ein anderer Briefkopf. Bis Sie
+entscheiden, warten Übergabe an die Buchhaltung und Zahlung. Über
+**Grenzen prüfen** sehen Sie jede Seite als Vorschaubild und markieren, wo eine
+neue Rechnung beginnt; **Aufteilen** legt je Rechnung einen eigenen Eingang mit
+eigener Teil-PDF an. **Ist eine Rechnung** behält den Eingang, wie er ist.
+
+Das Original bleibt unverändert im DMS und zeigt seine Teile; jeder Teil
+verweist mit Seitenbereich auf das Original. Jeder Teil durchläuft die
+Dublettenprüfung: dieselbe Datei noch einmal oder dieselbe Rechnungsnummer
+desselben Absenders fällt auf, ebenso ein erneuter Upload der ganzen
+Sammel-PDF. Solange Teile bestehen,
+lässt sich das Original nicht löschen. Geprüft werden PDFs bis 60 Seiten;
+aufteilen lassen sich nur offene Eingänge, die noch nicht übergeben sind.
+
+**GiroCode:** Trägt eine Rechnung einen GiroCode (EPC-QR-Code), liest
+WorkDiary ihn im Hintergrund — auf den ersten drei und der letzten Seite. Nennt
+der Beleg selbst keine IBAN, wird die IBAN aus dem Code übernommen, wenn ihre
+Prüfziffer stimmt. Die Karte **GiroCode** zeigt Empfänger, IBAN, Betrag und
+Verwendungszweck und vergleicht sie mit der Rechnung: Betrag und Empfängername
+weichen nur mit Hinweis ab. Weicht die IBAN im Code von der Rechnung oder von
+den Bankverbindungen des Lieferanten ab, warnt der Zuordnungsdialog, und der
+Zahlungsvorschlag sperrt die Rechnung, bis jemand mit Freigaberecht die
+Abweichung bestätigt — eine geänderte Bankverbindung ist ein bekanntes
+Betrugsmuster. Die Bestätigung wird protokolliert und gilt nur, solange sich
+IBAN und Lieferant nicht ändern. Fehlt auf dem Server das Lesewerkzeug
+(zbarimg), zeigt die Karte „GiroCode nicht lesbar“.
+
+**Nachweis und neue Bankverbindungen:** Nach dem Aufteilen bleibt der
+Sammel-Eingang mit dem Status „Aufgeteilt“ als Nachweis erhalten; er steht in
+keiner Arbeitsliste und wird weder übergeben noch gezahlt. Das Original lässt
+sich nicht löschen, solange Teile bestehen. Höchstens 30 Rechnungen je
+Sammel-PDF werden getrennt, und die Teile zusammen dürfen nicht viel größer
+werden als das Original. Eine IBAN aus dem GiroCode wird nur übernommen,
+solange der Eingang noch nicht freigegeben ist. Ist für den Lieferanten keine
+Bankverbindung hinterlegt, gilt sie als neue Bankverbindung und muss vor der
+Zahlung bestätigt werden; in den Lieferantenstamm kommt sie nur, wenn jemand
+sie dort ausdrücklich einträgt. Jede Bestätigung gilt nur für die bestätigte
+IBAN — ändert sie sich, sperrt der Zahlungsvorschlag erneut.

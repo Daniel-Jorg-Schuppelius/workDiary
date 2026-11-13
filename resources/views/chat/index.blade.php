@@ -86,6 +86,10 @@
                 <div class="min-w-0 flex-1">
                     <h1 class="truncate font-['Space_Grotesk'] text-lg font-semibold leading-tight">
                         <x-icon :name="$icon[$activeChannel->type] ?? 'tag'" size="1.1rem" class="opacity-60" /> {{ $channelTitle($activeChannel) }}
+                        {{-- Selbstauskunft am Anwesenheits-Board (MVP-1669) an der Person der Direktnachricht. --}}
+                        @if ($activeChannel->type === 'direct' && $activeChannel->members->firstWhere('id', '!=', $me?->id) !== null)
+                            <x-presence-status :user-id="$activeChannel->members->firstWhere('id', '!=', $me?->id)->id" size="sm" />
+                        @endif
                     </h1>
                     @if ($activeChannel->description)<p class="truncate text-xs text-muted">{{ $activeChannel->description }}</p>@endif
                 </div>
@@ -233,7 +237,9 @@
         <label for="user_id" class="fieldset-label">{{ __('Person') }}</label>
         <select id="user_id" name="user_id" required class="select select-bordered w-full">
             <option value="">{{ __('— Person wählen —') }}</option>
-            @foreach ($orgUsers as $u)<option value="{{ $u->sqid }}">{{ $u->name }}</option>@endforeach
+            {{-- Selbstauskunft (MVP-1669) als Zusatz am Namen. --}}
+            @php $dmPresence = app(\App\Services\Attendance\PresenceStatusService::class); $dmStatuses = $dmPresence->visibleFor(\App\Support\OrganizationContext::current()); @endphp
+            @foreach ($orgUsers as $u)<option value="{{ $u->sqid }}">{{ $u->name }}@isset($dmStatuses[(int) $u->id]) · {{ $dmPresence->describe($dmStatuses[(int) $u->id]) }}@endisset</option>@endforeach
         </select>
         @if ($orgUsers->isEmpty())
             {{-- raw-markup-ok: Hinweis am Formularfeld, kein Leerzustand einer Liste --}}

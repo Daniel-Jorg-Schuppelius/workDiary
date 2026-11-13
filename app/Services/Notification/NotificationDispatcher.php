@@ -18,6 +18,7 @@ use App\Models\Chat\ChatWebhook;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Models\Platform\{Organization, User};
 use App\Notifications\GenericEventNotification;
+use App\Services\Delegation\ActsForResolver;
 use App\Services\Integration\WebhookDispatchService;
 use App\Services\Notification\Sms\SmsChannelService;
 use App\Support\{NotificationText, Setting, Tz};
@@ -172,12 +173,15 @@ class NotificationDispatcher {
             NotificationDispatchLog::STAGE_ESCALATION3 => $this->escalationLevelRecipients($rule, $organizationId, 3),
             default => $this->resolveRecipients($rule, $organizationId, $affected),
         };
+        $deputies = $stage === NotificationDispatchLog::STAGE_INITIAL
+            ? $this->deputyRecipients($event, $rule, $organizationId, $affected, $recipients)
+            : collect();
 
-        if ($recipients->isEmpty()) {
+        if ($recipients->isEmpty() && $deputies->isEmpty()) {
             return 0;
         }
 
-        if ($dedup && ! $this->claimDispatch($organizationId, $event, $subject, $stage, $recipients->count())) {
+        if ($dedup && ! $this->claimDispatch($organizationId, $event, $subject, $stage, $recipients->count() + $deputies->count())) {
             return 0;
         }
 
@@ -187,8 +191,34 @@ class NotificationDispatcher {
                 $sent++;
             }
         }
+        // Vertretung (Feature 202): dieselbe Meldung, gekennzeichnet „in Vertretung für …“.
+        foreach ($deputies as $deputy) {
+            if ($affected !== null && $this->deliverTo($deputy, $rule, $event, $subject, $payload + ['on_behalf_of' => (string) $affected->name], $stage)) {
+                $sent++;
+            }
+        }
 
         return $sent;
+    }
+
+    /**
+     * Vertretungen der betroffenen Person (Feature 202, MVP-1647): nur für
+     * Ereignisse zugewiesener Arbeit ({@see NotificationEvent::forwardsToDeputy()}),
+     * nur wenn die Regel die betroffene Person benachrichtigt, und ohne wen die
+     * Regel ohnehin erreicht. Die Vertretung bekommt keine Rollen-Meldungen.
+     *
+     * @param  Collection<int, User>  $recipients
+     * @return Collection<int, User>
+     */
+    private function deputyRecipients(NotificationEvent $event, NotificationRule $rule, int $organizationId, ?User $affected, Collection $recipients): Collection {
+        if (! $event->forwardsToDeputy() || ! $rule->notify_affected || $affected === null || (int) $affected->organization_id !== $organizationId) {
+            return collect();
+        }
+        $known = $recipients->map(static fn (User $u): int => (int) $u->id)->all();
+
+        return collect(app(ActsForResolver::class)->deputiesOf($affected))
+            ->filter(static fn (User $deputy): bool => (int) $deputy->organization_id === $organizationId && ! in_array((int) $deputy->id, $known, true))
+            ->values();
     }
 
     /**

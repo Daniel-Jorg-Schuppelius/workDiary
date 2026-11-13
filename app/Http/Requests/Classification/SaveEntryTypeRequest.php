@@ -26,7 +26,11 @@ class SaveEntryTypeRequest extends BaseFormRequest {
             'requires_tour' => $this->boolean('requires_tour'),
             'allow_priority' => $this->boolean('allow_priority'),
             'allow_tour' => $this->boolean('allow_tour') || $this->boolean('requires_tour'),
+            'requires_review' => $this->boolean('requires_review'),
         ]);
+        // Periodenpflicht (Feature 198): Liste der Arten, leer = keine Pflicht.
+        $kinds = array_values(array_filter((array) $this->input('requires_period', []), 'is_string'));
+        $this->merge(['requires_period' => $kinds !== [] ? $kinds : null]);
 
         if ($this->input('default_priority') === '') {
             $this->merge(['default_priority' => null]);
@@ -72,6 +76,9 @@ class SaveEntryTypeRequest extends BaseFormRequest {
             'default_status' => ['required', 'integer', 'in:-1,1,2,3'],
             'default_service_minutes' => ['nullable', 'integer', 'min:0', 'max:10080'],
             'default_priority' => ['nullable', Rule::enum(Priority::class)],
+            'requires_period' => ['nullable', 'array'],
+            'requires_period.*' => [Rule::enum(\App\Enums\Period\PeriodKind::class)],
+            'requires_review' => ['boolean'],
         ];
     }
 }

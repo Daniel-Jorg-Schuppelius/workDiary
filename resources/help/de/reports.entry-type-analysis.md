@@ -1,7 +1,7 @@
 ---
 title: "Auftragstyp-Analyse"
 topic: reports.entry-type-analysis
-version: 4
+version: 5
 keywords:
     - Soll-Ist-Vergleich
     - Plan-Ist-Abweichung
@@ -38,3 +38,12 @@ Die Plan-Dauer eines Auftrags ist seine **Geplante Dauer (HH:MM)**; ist sie
 leer, zählt die Servicedauer eines disponierten Auftrags, sonst die Länge des Zeitfensters bzw. die Dauer des Termins.
 
 Die Spalte **Top-Ursachen** nennt je Auftragstyp die drei häufigsten Klassifikationen aus dem Nacharbeitsgrund der gebuchten Zeiten und der Grundursache der Reklamationen zum Auftrag. Gezählt wird je Auftrag einmal; ein Klick zeigt die betroffenen Zeiten und Reklamationen. Der CSV-Export enthält die Spalte ebenfalls.
+
+## Durchlaufzeit je Auftragstyp
+
+Der Abschnitt **Durchlaufzeit je Auftragstyp** zeigt für die im Zeitraum
+abgeschlossenen Aufträge den Median der Tage vom Anlegen bis zum Abschluss,
+dazu die Zahl der Abschlüsse. Stornierte Aufträge zählen nicht. Der
+Personenfilter wirkt hier bewusst nicht: Gemessen wird am Auftrag, nie je
+Person. Die Leitungssicht zeigt dieselbe Zahl für die häufigsten
+Auftragstypen der letzten zwölf Monate und verlinkt hierher.

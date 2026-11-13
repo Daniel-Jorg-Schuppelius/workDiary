@@ -52,4 +52,9 @@ final class FindRequest implements AiRequestInterface {
     public function estimatedUnits(): int {
         return $this->estimateTokens($this->query, implode("\n", $this->corpus));
     }
+
+    /** Frage und Korpustexte; die Referenz-Keys bleiben, sie kommen als Treffer zurück. */
+    public function mapTexts(\Closure $map): static {
+        return new self($map($this->query), array_map($map, $this->corpus), $this->maxResults, $this->language);
+    }
 }

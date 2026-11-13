@@ -101,7 +101,15 @@
         const err = errId ? document.getElementById(errId) : null;
         el.addEventListener('click', function () {
             el.disabled = true;
-            fn(el.getAttribute('data-options'), el.getAttribute('data-target'), function (m) {
+            // Name des neuen Passkeys (Feature 205): als Query-Parameter, der
+            // Rumpf bleibt die reine Browser-Antwort.
+            let target = el.getAttribute('data-target') || '';
+            const labelId = el.getAttribute('data-label-input');
+            const label = labelId ? (document.getElementById(labelId)?.value || '').trim() : '';
+            if (label !== '') {
+                target += (target.includes('?') ? '&' : '?') + 'label=' + encodeURIComponent(label);
+            }
+            fn(el.getAttribute('data-options'), target, function (m) {
                 el.disabled = false;
                 if (err) { err.textContent = m; err.classList.remove('hidden'); }
             });

@@ -84,6 +84,8 @@
             </x-card>
         @endif
         <div @class(['flex min-w-0 flex-col gap-4', 'xl:min-h-0 xl:overflow-y-auto' => $previewMime !== null])>
+            {{-- Sammel-PDF (Feature 208, MVP-1662). --}}
+            @include('finance.incoming-invoices._split')
             @if ($unparsed && $incoming !== null && ($incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted || $manual !== []))
                 {{-- PDF bzw. Bild (MVP-1066): erkannte Werte sind Vorschläge; erfasste Werte stehen auch beim Klärfall hier. --}}
                 <x-card :title="$manual !== [] ? __('Rechnungsdaten (von Hand erfasst)') : __('Rechnungsdaten (erkannt)')">
@@ -291,6 +293,8 @@
                     <x-attachments-section :attachments="$incoming->attachments" details />
                 @endif
                 @include('finance.incoming-invoices._supporting_documents', ['incoming' => $incoming])
+                {{-- GiroCode und Gegenprobe (Feature 208, MVP-1663). --}}
+                @include('finance.incoming-invoices._girocode', ['incoming' => $incoming])
             @endif
 
             {{-- Eingangs-Validierung (MVP-166): getrennt von Original/Feldern. --}}

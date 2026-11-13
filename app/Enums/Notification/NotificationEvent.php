@@ -207,6 +207,14 @@ enum NotificationEvent: string implements HasLabel {
 
     // Welle D (CLM): allgemeine Vertragsfrist/-obligation wird fällig.
     case ContractDeadlineDue = 'contract.deadlineDue';
+    /** Scanner: Kundenfristen der zuständigen Person rücken in die Vorwarnzeit — gebündelt je Person (Feature 197, MVP-1633). */
+    case CustomerDeadlineDueSoon = 'customer.deadlineDueSoon';
+    /** Scanner: Kundenfristen sind überfällig — gebündelt je Person (Feature 197, MVP-1633). */
+    case CustomerDeadlineOverdue = 'customer.deadlineOverdue';
+    /** Scanner: Aufnahmeakten der zuständigen Person sind zu aktualisieren (GwG-Re-Identifizierung u. a., Feature 200, MVP-1643). */
+    case LeadIntakeRefreshDue = 'leadIntake.refreshDue';
+    /** Scanner: Wissensseiten der verantwortlichen Person sind zu prüfen bzw. ihre Gültigkeit endet — gebündelt je Person (Feature 191, MVP-1665). */
+    case KnowledgePageReviewDue = 'knowledgePage.reviewDue';
 
     // Feature 157 (MVP-822): Unterschrift oder Nachweis zu einer
     // Kundenvereinbarung eingegangen — Nachweise warten auf die Prüfung.
@@ -321,6 +329,18 @@ enum NotificationEvent: string implements HasLabel {
     case SecurityThreat = 'security.threat';
     case SecurityNewDevice = 'security.newDevice';
     case SecurityLockout = 'security.lockout';
+    /** Synchron: OrganizationLockdownService — Notaus der Organisation ausgelöst bzw. aufgehoben (Feature 205, MVP-1657); direkt an alle Org-Admins. */
+    case SecurityOrganizationLockdown = 'security.organizationLockdown';
+    /** Synchron: TwoFactorChallengeController — Anmeldung per Wiederherstellungscode trotz Passkey-Pflicht (Feature 205, MVP-1656); direkt an Person und Org-Admins. */
+    case SecurityPasskeyRecovery = 'security.passkeyRecovery';
+    /** Synchron: DeviceApprovalService — ein Gerät fragt die Freigabe für die Anmeldung von außerhalb an (Feature 205, MVP-1655). */
+    case AuthDeviceApprovalRequested = 'auth.deviceApprovalRequested';
+    /** Synchron: WorkDelegationService — eine Vertretung wurde angelegt (Feature 202, MVP-1648); an die Vertretung, nie mit dem Anlass der Abwesenheit. */
+    case DelegationCreated = 'delegation.created';
+    /** Synchron: AppWishService — neuer Wunsch an die App (Feature 206, MVP-1658); an die Bearbeitenden der Organisation (Rollen der Regel), nie an die verfassende Person. */
+    case WishSubmitted = 'wish.submitted';
+    /** Synchron: AppWishService — Antwort auf einen Wunsch von Organisation, Plattformbetrieb oder Hersteller (Feature 206, MVP-1658/1659/1677); an Verfassende und Abstimmende. */
+    case WishAnswered = 'wish.answered';
 
     // Vollscan 2026-08-23 (B7): Legacy-Mail-/PushNotifier abgelöst — Auftrags-
     // buch-, Notdienst-, Stundenzettel- und Chat-Ereignisse laufen über den
@@ -384,6 +404,15 @@ enum NotificationEvent: string implements HasLabel {
         if (str_starts_with($this->value, 'operations.') || str_starts_with($this->value, 'security.')) {
             return false;
         }
+        // Freigabeanfrage eines Geräts (Feature 205): Empfänger sind die
+        // Freigebenden, nicht die anfragende Person.
+        if ($this === self::AuthDeviceApprovalRequested) {
+            return false;
+        }
+        // Neuer Wunsch (Feature 206): Empfänger sind die Bearbeitenden, nicht die verfassende Person.
+        if ($this === self::WishSubmitted) {
+            return false;
+        }
 
         return ! in_array($this, [self::TimeCorrectionRequested, self::OvertimeRequested, self::VacationRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ProcedureDeviationEscalated, self::ProcedureSecondPersonRequested, self::ClaimPattern, self::ReportWarning, self::SafetyAssessmentReviewDue, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::CustomerIntakeSubmitted, self::RentalRequested, self::AppointmentRequested, self::ShipmentDeliveryProblem, self::SlaQuotaWarning,
             // Domain-/Finanz-/Fristereignisse betreffen keine Einzelperson (Vollaudit 2026-07, W3.2).
@@ -406,6 +435,10 @@ enum NotificationEvent: string implements HasLabel {
         }
 
         return match ($this) {
+            // Gerätefreigabe (Feature 205, MVP-1655): Org-Admins geben frei.
+            self::AuthDeviceApprovalRequested => [UserRole::Admin->value],
+            // Wünsche an die App (Feature 206, MVP-1658): wer `wishes.manage` laut Seeder trägt.
+            self::WishSubmitted => [UserRole::Admin->value, UserRole::Geschaeftsfuehrung->value],
             self::TimeCorrectionRequested,
             self::OvertimeRequested,
             self::VacationRequested,
@@ -643,6 +676,10 @@ enum NotificationEvent: string implements HasLabel {
             self::HrFileAckRequested, self::HrFileSubmissionReceived, self::HrFileSubmissionDecided => 'badge',
             self::AssetFinanceDeadline => 'request_quote',
             self::ContractDeadlineDue => 'contract',
+            self::CustomerDeadlineDueSoon,
+            self::CustomerDeadlineOverdue => 'event_upcoming',
+            self::LeadIntakeRefreshDue => 'assignment_ind',
+            self::KnowledgePageReviewDue => 'fact_check',
             self::ContractSignatureReceived => 'draw',
             self::ContractIndexationProposed => 'trending_up',
             self::InvoiceRecurringDraft => 'receipt_long',
@@ -714,6 +751,12 @@ enum NotificationEvent: string implements HasLabel {
             self::SecurityThreat => 'gpp_bad',
             self::SecurityNewDevice => 'devices',
             self::SecurityLockout => 'lock_person',
+            self::SecurityOrganizationLockdown => 'emergency_home',
+            self::SecurityPasskeyRecovery => 'key_off',
+            self::AuthDeviceApprovalRequested => 'devices',
+            self::DelegationCreated => 'supervisor_account',
+            self::WishSubmitted => 'lightbulb',
+            self::WishAnswered => 'reply',
             self::DiaryCommentCreated => 'comment',
             self::DiaryProblem => 'report',
             self::DiaryCompleted => 'task_alt',
@@ -774,11 +817,55 @@ enum NotificationEvent: string implements HasLabel {
             self::RentalReturnOverdue,
             self::AssetFinanceDeadline,
             self::ContractDeadlineDue,
+            // Überfällige Kundenfristen (Feature 197) eskalieren nach der Regel der Organisation.
+            self::CustomerDeadlineOverdue,
             self::AssetInspectionDue,
             // Backup-Alarm eskaliert 26 h→72 h (Feature 017, MVP-056).
             self::OperationsBackupOverdue,
             // Überfällige Einschreibung (Feature 149, MVP-780).
             self::LearningOverdue,
+        ], true);
+    }
+
+    /**
+     * Geht dieses Ereignis an die betroffene Person während einer Vertretung
+     * zusätzlich an die Vertretung (Feature 202, MVP-1647)? Nur zugewiesene
+     * Arbeit — Aufträge, offene Punkte, Tickets, Fristen, Kundenvorgänge. Nie
+     * Persönliches (Urlaub, Zeiten, Personalakte, Lernen, Sicherheit, Chat)
+     * und nichts, was ein Recht statt einer Zuweisung zustellt. Die Liste ist
+     * bewusst eine Positivliste: ein neues Ereignis bleibt persönlich, bis es
+     * hier steht.
+     */
+    public function forwardsToDeputy(): bool {
+        return in_array($this, [
+            self::OpenIssueAssigned,
+            self::OpenIssueDueSoon,
+            self::OpenIssueOverdue,
+            self::CommunicationFollowupDueSoon,
+            self::CommunicationFollowupOverdue,
+            self::TicketAssigned,
+            self::TicketCustomerReplied,
+            self::TicketWaitingExpired,
+            self::SlaAtRisk,
+            self::SlaBreached,
+            self::SlaOlaBreached,
+            self::CustomerQueryRaised,
+            self::CustomerIntakeSubmitted,
+            self::CustomerIntakeActivity,
+            self::ProtocolCustomerSigned,
+            self::ProtocolCustomerRejected,
+            self::DiaryCommentCreated,
+            self::DiaryProblem,
+            self::DiaryCompleted,
+            self::DiaryAttachmentAdded,
+            self::ContractDeadlineDue,
+            // Kundenfristen der zuständigen Person (Feature 197, Anschluss MVP-1648).
+            self::CustomerDeadlineDueSoon,
+            self::CustomerDeadlineOverdue,
+            // Aktualisierung der Aufnahmeakte (Feature 200).
+            self::LeadIntakeRefreshDue,
+            self::QuoteFollowUpDue,
+            self::QuoteExpiringWithoutReaction,
         ], true);
     }
 }

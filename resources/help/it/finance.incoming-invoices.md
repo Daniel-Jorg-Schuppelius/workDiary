@@ -1,7 +1,7 @@
 ---
 title: "Fatture ricevute"
 topic: finance.incoming-invoices
-version: 11
+version: 12
 keywords:
     - più aliquote
     - fattura fornitore
@@ -400,3 +400,49 @@ dell’oggetto se la fattura li contiene. Per le fatture ricevute prima di quest
 funzione, il comando
 `php artisan incoming-invoices:extract-documents --dry-run` estrae i
 documenti in seguito (prima come prova, poi senza l’opzione).
+
+## PDF cumulativo e GiroCode
+
+**PDF cumulativo:** se un PDF senza dati di fattura elettronica, caricato o
+ricevuto per e-mail, ha più pagine, WorkDiary verifica in background se contiene
+più fatture. Indizi di una nuova fattura sono un altro numero di fattura, un
+nuovo mittente (partita IVA o IBAN), «Pagina 1 di …», un blocco dei totali nella
+pagina precedente e un’altra intestazione. Finché Lei non decide, trasferimento
+alla contabilità e pagamento restano in attesa. **Verificare i confini** mostra
+ogni pagina come anteprima e Le permette di segnare dove inizia una nuova
+fattura; **Dividere** crea per ogni fattura una ricezione a sé con il proprio
+PDF parziale. **È un’unica fattura** mantiene la ricezione così com’è.
+
+L’originale resta invariato nella gestione documentale e mostra le sue parti;
+ogni parte rimanda all’originale con il proprio intervallo di pagine. Ogni
+parte passa per il controllo dei duplicati: viene riconosciuto lo stesso file
+oppure lo stesso numero di fattura dello stesso mittente, così come un nuovo
+caricamento dell’intero PDF cumulativo. Finché esistono parti,
+l’originale non si può eliminare.
+Si verificano PDF fino a 60 pagine; si possono dividere solo ricezioni aperte
+non ancora trasferite.
+
+**GiroCode:** se una fattura riporta un GiroCode (codice QR EPC), WorkDiary lo
+legge in background — nelle prime tre pagine e nell’ultima. Se il documento
+stesso non indica alcun IBAN, l’IBAN del codice viene ripreso quando le cifre
+di controllo sono corrette. La scheda **GiroCode** mostra beneficiario, IBAN,
+importo e causale e li confronta con la fattura: importo e nome del
+beneficiario generano solo un avviso. Se l’IBAN del codice differisce dalla
+fattura o dalle coordinate bancarie del fornitore, il dialogo di assegnazione
+avvisa e la proposta di pagamento blocca la fattura finché una persona con
+permesso di autorizzazione non conferma la differenza — coordinate bancarie
+modificate sono un noto schema di frode. La conferma viene registrata e vale
+solo finché IBAN e fornitore non cambiano. Se sul server manca lo strumento di
+lettura (zbarimg), la scheda mostra «GiroCode non leggibile».
+
+**Prova e nuove coordinate bancarie:** dopo la divisione, la ricezione
+cumulativa resta come prova con lo stato «Divisa»; non compare in alcun elenco
+di lavoro e non viene né trasferita né pagata. L’originale non si può
+eliminare finché esistono parti. Si separano al massimo 30 fatture per PDF
+cumulativo, e le parti nel complesso non possono diventare molto più grandi
+dell’originale. Un IBAN del GiroCode viene ripreso solo finché la ricezione non
+è approvata. Se per il fornitore non è registrata alcuna coordinata bancaria,
+vale come nuova coordinata bancaria e deve essere confermata prima del
+pagamento; entra nell’anagrafica del fornitore solo se qualcuno la inserisce lì
+espressamente. Ogni conferma vale solo per l’IBAN confermato — se cambia, la
+proposta di pagamento blocca di nuovo.

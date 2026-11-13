@@ -41,6 +41,7 @@ import { initCharts } from "./charts.js";
 import "./sortable-tables.js";
 import "./bulk-selection.js";
 import "./zone-editor.js";
+import "./guide-editor.js";
 import "./inline-actions.js";
 import "./contact-persons.js";
 import "./global-search.js";
@@ -61,6 +62,7 @@ import "./action-menu.js";
 import "./toolbar-overflow.js";
 import "./dictation.js";
 import "./upload-form.js";
+import "./attachment-drop.js";
 import "./chunk-upload.js";
 import "./collapsible-section.js";
 // facility-picker.js / tag-picker.js / work-schedule-form.js wurden in
@@ -1375,6 +1377,12 @@ document.addEventListener("click", (event) => {
 
                     if (response.status === 422) {
                         const payload = await response.json().catch(() => null);
+                        // Feldfehler an Komponenten melden (lange Formulare zeigen sie am Feld, Feature 203).
+                        form.dispatchEvent(
+                            new CustomEvent("entry-form:invalid", {
+                                detail: { errors: (payload && payload.errors) || {} },
+                            }),
+                        );
                         const firstError =
                             payload && payload.errors
                                 ? Object.values(payload.errors).flat()[0]

@@ -1,7 +1,7 @@
 ---
 title: "Cola de trabajo"
 topic: work-queue.overview
-version: 4
+version: 6
 keywords:
     - Cola de trabajo
     - Elementos abiertos
@@ -11,6 +11,7 @@ keywords:
 audience: []
 related:
     - approvals.inbox
+    - delegations.manage
 ---
 
 La cola de trabajo reúne en un solo lugar lo que le está esperando:
@@ -19,7 +20,8 @@ extra, correcciones de tiempo, correcciones del cierre diario, planes de
 servicio por aprobar, cambios de turno, entregas al expediente personal,
 reservas de cursos, autoevaluaciones de proveedores, solicitudes de admisión
 en grupos del club, cambios de precio, tiempo de formación, cadenas de
-aprobación), bandejas de entrada (bandeja de asignación con las aclaraciones
+aprobación, aprobaciones de protección de datos de las conexiones de IA),
+bandejas de entrada (bandeja de asignación con las aclaraciones
 de correo, facturas recibidas, consultas sobre facturas, entradas de clientes
 del portal, solicitudes de alquiler), tareas asignadas a usted (puntos
 abiertos, pedidos, tareas de proyecto, tickets de servicio) y recordatorios
@@ -61,3 +63,7 @@ los elementos más urgentes.
 **Vencimiento:** El filtro «Vencimiento» muestra solo los elementos vencidos, los que vencen hoy o esta semana (hasta el domingo), o los que no tienen plazo.
 
 **Firefly III:** Si el complemento está activado, los administradores ven los movimientos de Firefly sin asignación y los de asignación ambigua como un elemento agrupado cada uno, sin plazo. El enlace abre la lista filtrada correspondiente en la página de Firefly; cuando la siguiente conciliación asigna un movimiento a una factura, el número baja.
+
+**En sustitución:** Si está sustituyendo a alguien, sus pedidos, tareas de proyecto y tickets de servicio asignados aparecen también en su cola, marcados «En sustitución de …», solo de áreas que usted mismo puede abrir y sin duplicados. Desaparecen al terminar la sustitución. Más información en «Sustitución durante una ausencia».
+
+**Tiempo sin movimiento:** La columna «Tiempo sin movimiento» muestra cuántos días lleva un elemento sin moverse, es decir, desde el último cambio de estado, nota o registro de tiempo en el elemento (en los pedidos también comentarios y tiempos registrados; en tareas y tickets de servicio, tiempos registrados). A partir de un umbral, la cola marca el elemento como **inactivo**; quien puede editar la organización ajusta el umbral en **Ajustes** (valor predeterminado 14 días). El filtro «Solo inactivos» y la ordenación por tiempo sin movimiento suben los elementos estancados. Las entradas agrupadas no tienen tiempo sin movimiento. Se mide por elemento, nunca por persona: la vista de dirección muestra el número de elementos inactivos en su propia cola y el tiempo de ciclo por tipo de pedido, pero ninguna evaluación de personas concretas.

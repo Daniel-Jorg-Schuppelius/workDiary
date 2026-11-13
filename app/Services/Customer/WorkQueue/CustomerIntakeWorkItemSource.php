@@ -76,6 +76,8 @@ final class CustomerIntakeWorkItemSource implements WorkItemSource {
                 detail: $intake->customer->name ?? null,
                 dueAt: $intake->desired_date !== null ? CarbonImmutable::instance($intake->desired_date) : null,
                 personal: (int) $intake->assigned_user_id === (int) $viewer->id,
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($intake->updated_at),
             );
         }
     }

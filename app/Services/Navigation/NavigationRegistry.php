@@ -392,6 +392,14 @@ class NavigationRegistry {
                         // Kalender (Bereitschaft, Notdienst, Auftragsbuch): hing seit dem Kimai-Umbau an keinem Menü.
                         ['route' => 'calendar.index', 'label' => __('Kalender'), 'icon' => 'calendar_month', 'modal' => false, 'matches' => ['calendar.index']],
                         ['route' => 'kanban.index', 'label' => __('Kanban'), 'icon' => 'view_kanban', 'modal' => false, 'matches' => ['kanban.index']],
+                        // Leistungsplan je Kunde und Periode (Feature 199): im Menü für den ganzen Plan; die eigenen Zellen erreicht jede Person über „Meine Perioden“.
+                        Gate::allows('viewAll', \App\Models\ServicePlan\CustomerServiceWaiver::class)
+                            ? ['route' => 'service-plan.index', 'label' => __('service_plan.title'), 'icon' => 'calendar_view_month', 'modal' => false, 'matches' => ['service-plan.*']]
+                            : null,
+                        // Kundenfristen aus Regelsätzen (Feature 197): Übersicht aller Fristen; Kundenmodul ist Kern, sichtbar mit Leserecht.
+                        Gate::allows('viewAny', \App\Models\Customer\CustomerDeadline::class)
+                            ? ['route' => 'customer-deadlines.index', 'label' => __('customer_deadline.title'), 'icon' => 'event_upcoming', 'modal' => false, 'matches' => ['customer-deadlines.*']]
+                            : null,
                         // Agile Übersicht (Feature 064): org-weiter Einstieg; Board/Backlog sind projektgebunden.
                         Gate::allows(Permission::AgileReportView->value)
                             ? ['route' => 'agile.reports.overview', 'label' => __('Agile Übersicht'), 'icon' => 'sprint', 'modal' => false, 'matches' => ['agile.*']]
@@ -577,6 +585,8 @@ class NavigationRegistry {
                         ['route' => 'customers.index', 'label' => __('Kunden'), 'icon' => 'badge', 'modal' => false, 'matches' => ['customers.*']],
                         // Feature 091: Interessenten vor dem Kundenstatus.
                         ['route' => 'leads.index', 'label' => __('Leads'), 'icon' => 'person_search', 'modal' => false, 'matches' => ['leads.*']],
+                        // Feature 200: Aufnahmeakten der Leads je Stufe.
+                        ['route' => 'leads.intakes.index', 'label' => __('lead_intake.index_title'), 'icon' => 'assignment_ind', 'modal' => false, 'matches' => ['leads.intakes.index']],
                         // Feature 090: NPS und freie Umfragen.
                         ['route' => 'surveys.index', 'label' => __('Umfragen'), 'icon' => 'reviews', 'modal' => false, 'matches' => ['surveys.*']],
                         // Feature 119: Rundschreiben sitzen beim Kundenstamm, nicht im Marketing.
@@ -2143,6 +2153,10 @@ class NavigationRegistry {
                 if (Gate::allows(Permission::SecuritySessionsView->value)) {
                     $adminNavItems[] = ['route' => 'admin.sessions.index', 'label' => __('sessions.title.index'), 'icon' => 'devices', 'modal' => false, 'matches' => ['admin.sessions.*']];
                 }
+                // Anmelderichtlinie der Organisation (Feature 205).
+                if (Gate::any([Permission::AuthPolicyManage->value, Permission::AuthLockdown->value])) {
+                    $adminNavItems[] = ['route' => 'admin.login-policy.index', 'label' => __('login_policy.title.index'), 'icon' => 'admin_panel_settings', 'modal' => false, 'matches' => ['admin.login-policy.*']];
+                }
                 // Quelltext-Integrität (095) + Angriffserkennung (096):
                 // installationsweit, daher nur für Plattform-Admins sichtbar.
                 if (Auth::user()?->isGlobalAdmin() === true) {
@@ -2180,6 +2194,10 @@ class NavigationRegistry {
                 }
                 if (Gate::allows(Permission::ProblemReportManage->value)) {
                     $adminNavItems[] = ['route' => 'admin.problem-reports.index', 'label' => __('problemreport.title.inbox'), 'icon' => 'flag', 'modal' => false];
+                }
+                // Wünsche der Organisationen (Feature 206, MVP-1659/1677): Plattformsicht, nur Plattform-Betreiber.
+                if ($isPlatformAdmin) {
+                    $adminNavItems[] = ['route' => 'admin.wishes.index', 'label' => __('wishes.platform.nav'), 'icon' => 'lightbulb', 'modal' => false, 'matches' => ['admin.wishes.*']];
                 }
                 // Diagnose (Plattform-Betreiber) und Supportbericht: waren nur per Direkt-URL erreichbar.
                 if ($isPlatformAdmin && Gate::allows(Permission::PlatformDiagnosticsView->value)) {

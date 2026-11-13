@@ -59,6 +59,8 @@ final class PriceChangeWorkItemSource implements WorkItemSource {
                 key: $request->getMorphClass() . ':' . $request->id,
                 title: (string) __('work-queue.item.price_change', ['article' => $request->article->name ?? '—']),
                 url: route(self::ROUTE),
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($request->updated_at),
             );
         }
     }

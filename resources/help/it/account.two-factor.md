@@ -1,7 +1,7 @@
 ---
 title: "Configurare l'autenticazione a due fattori"
 topic: account.two-factor
-version: 1
+version: 2
 keywords:
     - 2FA
     - MFA
@@ -34,3 +34,12 @@ chiave manuale, codici monouso o codici di recupero.
 Se non riconosce un accesso o un dispositivo, usi «Non ero io – proteggi
 account»: tutte le sessioni terminano, password e passkey non sono più valide
 e riceve via e-mail un link per impostare una nuova password.
+
+**Accesso con passkey**: con una passkey accede senza password («Accedi
+con passkey»); vale come due fattori. Dia un nome a ogni passkey durante
+la configurazione: l’elenco mostra nome e ultimo utilizzo e permette di
+rinominarla. Rimuoverla richiede la password o un accesso recente. Se la
+sua organizzazione richiede una passkey per il suo ruolo, ogni pagina
+porta alla configurazione finché non ne è registrata una; in seguito
+l’accesso riesce solo con la passkey, un codice di recupero resta la via
+di emergenza.

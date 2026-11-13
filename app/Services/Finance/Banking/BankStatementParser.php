@@ -35,6 +35,7 @@ use CommonToolkit\FinancialFormats\Parsers\OFX\OfxDocumentParser;
 use CommonToolkit\FinancialFormats\Parsers\QIF\QifDocumentParser;
 use CommonToolkit\FinancialFormats\Parsers\QXF\QxfDocumentParser;
 use CommonToolkit\FinancialFormats\Parsers\Swift\{Mt940DocumentParser, Mt942DocumentParser};
+use CommonToolkit\ValueObjects\CreditorIdentifier;
 use DateTimeInterface;
 use Throwable;
 
@@ -186,6 +187,7 @@ final class BankStatementParser {
                     isReversal: $entry->isReversal(),
                     returnReason: $entry->getReturnReason()?->value,
                     details: $this->camtTransactionDetails($entry),
+                    creditorIdentifier: $this->creditorIdentifier($reference->getCreditorId()),
                 );
             }
 
@@ -229,10 +231,12 @@ final class BankStatementParser {
                 if ($entry instanceof Camt054Transaction) {
                     $endToEnd = $this->nullableRef($entry->getEndToEndId());
                     $mandate = $this->nullableRef($entry->getFirstTransactionDetail()?->getMandateId());
+                    $creditor = $this->creditorIdentifier($entry->getFirstTransactionDetail()?->getCreditorId());
                     $purpose = $entry->getRemittanceInfo();
                 } else {
                     $endToEnd = $this->nullableRef($entry->getReference()?->getEndToEndId());
                     $mandate = $this->nullableRef($entry->getReference()?->getMandateId());
+                    $creditor = $this->creditorIdentifier($entry->getReference()?->getCreditorId());
                     $purpose = $entry->getPurpose() ?: $entry->getRemittanceInfo();
                 }
 
@@ -251,6 +255,7 @@ final class BankStatementParser {
                     extractedRefs: ReferenceExtractor::extract($purpose, $endToEnd),
                     isReversal: $entry->isReversal(),
                     returnReason: $entry->getReturnReason()?->value,
+                    creditorIdentifier: $creditor,
                 );
             }
 
@@ -359,6 +364,7 @@ final class BankStatementParser {
             extractedRefs: ReferenceExtractor::extract($purposeRaw, $endToEnd),
             isReversal: $tx->isReversal(),
             returnReason: $purposeObject?->getReturnReason(),
+            creditorIdentifier: $this->creditorIdentifier($purposeObject?->getCreditorId()),
         );
     }
 
@@ -649,6 +655,7 @@ final class BankStatementParser {
                 counterpartyIban: $detail->getCounterpartyIban(),
                 purpose: $detail->getRemittanceInfo(),
                 returnReason: $detail->getReturnReason()?->value,
+                creditorIdentifier: $this->creditorIdentifier($detail->getCreditorId()),
             );
         }
 
@@ -675,6 +682,15 @@ final class BankStatementParser {
         }
 
         return $statements;
+    }
+
+    /**
+     * Gläubiger-ID nur, wenn sie eine ist (Feature 207): Der Parser liefert
+     * ersatzweise die strukturierte Gläubigerreferenz (RF…) — die wäre ein
+     * falsches Merkmal für die Kontierungshilfe.
+     */
+    private function creditorIdentifier(?string $value): ?string {
+        return CreditorIdentifier::tryFrom($this->nullableRef($value))?->getValue();
     }
 
     private function nullableRef(?string $value): ?string {

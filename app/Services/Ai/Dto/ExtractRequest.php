@@ -50,4 +50,8 @@ final class ExtractRequest implements AiRequestInterface {
     public function estimatedUnits(): int {
         return $this->estimateTokens($this->text, implode(' ', array_keys($this->schema)));
     }
+
+    public function mapTexts(\Closure $map): static {
+        return new self($map($this->text), $this->schema, $this->language);
+    }
 }

@@ -19,6 +19,7 @@ use App\Services\Ai\Contracts\AiInvoker;
 use App\Services\Ai\Contracts\{AiRequestInterface, LlmProviderInterface, TranslatesTextInterface};
 use App\Services\Ai\Dto\{AiCapability, AiClassificationResult, AiExtractionResult, AiFindResult, AiInvocationResult, AiTextResult, AiTranslationResult, ClassifyRequest, ExplainRequest, ExtractRequest, FindRequest, FormulateRequest, SummarizeRequest, TranslateRequest};
 use App\Services\Ai\Exceptions\{AiException, AiUnavailableException};
+use App\Services\Ai\Support\SensitiveDataMask;
 use App\Support\MorphMap;
 use Illuminate\Support\Facades\{Auth, Cache};
 use Throwable;
@@ -32,6 +33,12 @@ use Throwable;
  * Health-Tracking vermerkt (Auto-Disable nach Schwelle); erfolgreiche
  * Aufrufe schreiben Verbrauch und ein Audit-Ereignis OHNE
  * Prompt-/Antwort-Klartext.
+ *
+ * Maskierung (MVP-1671): Je Kandidat entscheidet die Verbindung — Cloud
+ * immer, lokal nach `ai.privacy.mask_local` —, ob IBAN, USt-IdNr.,
+ * Steuer-IDs, E-Mail und Telefon vor dem Anbieter durch Platzhalter ersetzt
+ * werden. Cache-Schlüssel und Cache-Wert beziehen sich auf die maskierte
+ * Anfrage bzw. Antwort; die Rückersetzung geschieht erst beim Zurückgeben.
  */
 class AiInvocationService implements AiInvoker {
     /** Cache-Art je Ergebnisklasse: kurze Schlüssel statt Klassennamen im Cache. */
@@ -49,6 +56,7 @@ class AiInvocationService implements AiInvoker {
         private readonly AiBudgetService $budget,
         private readonly AiProviderFactory $providers,
         private readonly AiConnectionChoice $choice,
+        private readonly AiConnectionPrivacy $privacy,
     ) {}
 
     public function invoke(
@@ -73,18 +81,21 @@ class AiInvocationService implements AiInvoker {
 
         $lastError = null;
         foreach ($candidates as $index => $connection) {
-            $cacheKey = $this->cacheKey($organization, $capability, $connection, $request);
+            // Je Kandidat neu: ein Fallback von lokal auf Cloud maskiert, der umgekehrte Weg nicht.
+            $mask = $this->privacy->masksFor($organization, $connection) ? new SensitiveDataMask() : null;
+            $sent = $mask?->maskRequest($request) ?? $request;
+            $cacheKey = $this->cacheKey($organization, $capability, $connection, $sent);
 
             $cached = $this->fromCache(Cache::get($cacheKey));
             if ($cached !== null) {
-                return $this->wrap($organization, $capability, $connection, $cached, $index > 0, true, $requestedConnectionId);
+                return $this->wrap($organization, $capability, $connection, $mask?->restoreResult($cached) ?? $cached, $index > 0, true, $requestedConnectionId, $mask);
             }
 
-            $this->budget->assertWithinBudget($organization, $connection->family, $request->estimatedUnits());
+            $this->budget->assertWithinBudget($organization, $connection->family, $sent->estimatedUnits());
 
             try {
                 $provider = $this->providers->make($connection);
-                $result = $this->perform($provider, $request);
+                $result = $this->perform($provider, $sent);
             } catch (Throwable $e) {
                 // Redigiert: gekürzte, lokalisierte Meldung, nie Prompt-Inhalte.
                 $lastError = $e;
@@ -99,12 +110,13 @@ class AiInvocationService implements AiInvoker {
             $this->budget->recordUsage(
                 $organization,
                 $connection->family,
-                $units > 0 ? $units : $request->estimatedUnits()
+                $units > 0 ? $units : $sent->estimatedUnits()
             );
 
+            // Im Cache liegt die maskierte Antwort — kein Klartext der Platzhalter.
             Cache::put($cacheKey, $this->cacheable($result), now()->addDays(max(1, (int) config('ai.cache_ttl_days', 7))));
 
-            return $this->wrap($organization, $capability, $connection, $result, $index > 0, false, $requestedConnectionId);
+            return $this->wrap($organization, $capability, $connection, $mask?->restoreResult($result) ?? $result, $index > 0, false, $requestedConnectionId, $mask);
         }
 
         if ($lastError !== null && ! $lastError instanceof AiException) {
@@ -149,6 +161,7 @@ class AiInvocationService implements AiInvoker {
         bool $fallbackUsed,
         bool $fromCache,
         ?int $requestedConnectionId = null,
+        ?SensitiveDataMask $mask = null,
     ): AiInvocationResult {
         // Audit ohne Prompt-/Antwort-Klartext (Feature 025, Leitprinzip 8);
         // Cache-Treffer erzeugen keinen neuen Provider-Kontakt und werden
@@ -170,6 +183,8 @@ class AiInvocationService implements AiInvoker {
                     // Nutzerwahl der Verbindung (Feature 025): gewählt und ob sie auch geantwortet hat.
                     'connection_chosen' => $requestedConnectionId !== null,
                     'chosen_connection_id' => $requestedConnectionId,
+                    // Maskierung (MVP-1671): null = nicht angewandt (lokal), sonst nur Anzahl je Art — nie Werte.
+                    'masked' => $mask?->counts(),
                 ],
             ]);
         }

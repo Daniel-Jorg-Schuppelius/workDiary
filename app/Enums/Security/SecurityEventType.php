@@ -31,15 +31,23 @@ enum SecurityEventType: string {
     case IpBanned = 'auth.ip_banned';
     /** Konto nach bestätigter Übernahme gesichert (MVP-1008). */
     case AccountSecured = 'auth.account_secured';
+    /** Anmelderichtlinie der Organisation hat abgewiesen (Feature 205, MVP-1654/1655/1657). */
+    case LoginPolicyDenied = 'auth.policy_denied';
+    /** Regel im Modus „nur protokollieren“ hätte abgewiesen (Feature 205, MVP-1655). */
+    case LoginPolicyLogged = 'auth.policy_logged';
+    /** Notaus einer Organisation ausgelöst oder aufgehoben (Feature 205, MVP-1657). */
+    case OrganizationLockdown = 'auth.org_lockdown';
+    /** Anmeldung mit Wiederherstellungscode trotz Passkey-Pflicht (Feature 205, MVP-1656). */
+    case PasskeyRecoveryUsed = 'auth.passkey_recovery';
 
     /** CEF-Schweregrad 0–10 für den SIEM-Export (MVP-452). */
     public function cefSeverity(): int {
         return match ($this) {
-            self::PasswordResetRequested => 3,
-            self::TerminalBadgeUnknown => 4,
+            self::PasswordResetRequested, self::LoginPolicyLogged => 3,
+            self::TerminalBadgeUnknown, self::LoginPolicyDenied => 4,
             self::AuthFailed, self::WbLoginFailed, self::SsoFailed => 5,
-            self::TwoFactorFailed, self::ApiTokenInvalid => 6,
-            self::AuthLockout, self::WebhookSignatureInvalid, self::AccountSecured => 7,
+            self::TwoFactorFailed, self::ApiTokenInvalid, self::PasskeyRecoveryUsed => 6,
+            self::AuthLockout, self::WebhookSignatureInvalid, self::AccountSecured, self::OrganizationLockdown => 7,
             self::PlatformAdminIpBlocked, self::ImpossibleTravel, self::IpBanned => 8,
         };
     }
@@ -47,7 +55,7 @@ enum SecurityEventType: string {
     /** PSR-3-Level der Log-Zeile. */
     public function level(): string {
         return match ($this) {
-            self::PasswordResetRequested => 'info',
+            self::PasswordResetRequested, self::LoginPolicyLogged => 'info',
             default => 'warning',
         };
     }

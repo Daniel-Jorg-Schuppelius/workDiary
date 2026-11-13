@@ -18,9 +18,10 @@ use App\Models\Communication\CommunicationNote;
 use App\Models\Concerns\HasTags;
 use App\Models\Document\Document;
 use App\Models\Ideas\IdeaMap;
-use App\Models\Knowledge\KnowledgeArticle;
+use App\Models\Knowledge\{KnowledgeArticle, KnowledgePage};
 use App\Models\Learning\{LearningCourse, LearningPath};
 use App\Models\Platform\User;
+use App\Services\Knowledge\Pages\KnowledgePageAccess;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Support\Content\ContentSubjectResolver;
 use App\Support\Sqid;
@@ -49,6 +50,8 @@ final class CollectableTypes {
         'note' => ['class' => CommunicationNote::class, 'module' => null, 'icon' => 'sticky_note_2', 'list' => ['route' => 'communication-notes.index', 'filters' => ['q', 'tag', 'customer']]],
         'idea_map' => ['class' => IdeaMap::class, 'module' => 'module.ideas', 'icon' => 'emoji_objects', 'list' => ['route' => 'ideas.index', 'filters' => []]],
         'knowledge_article' => ['class' => KnowledgeArticle::class, 'module' => 'module.knowledge', 'icon' => 'school', 'list' => ['route' => 'knowledge.index', 'filters' => ['q', 'tag', 'collection']]],
+        // Interne Wissensdatenbank (Feature 191): Seiten liegen in Sammlungen und tragen Verweise wie die übrigen Inhalte.
+        'knowledge_page' => ['class' => KnowledgePage::class, 'module' => 'module.knowledge', 'icon' => 'auto_stories', 'list' => ['route' => 'knowledge.pages.index', 'filters' => ['q']]],
         'document' => ['class' => Document::class, 'module' => 'module.documents', 'icon' => 'description', 'list' => ['route' => 'documents.index', 'filters' => ['q', 'tag', 'customer']]],
         'learning_course' => ['class' => LearningCourse::class, 'module' => 'module.lms', 'icon' => 'cast_for_education', 'list' => null],
         'learning_path' => ['class' => LearningPath::class, 'module' => 'module.lms', 'icon' => 'route', 'list' => null],
@@ -71,6 +74,7 @@ final class CollectableTypes {
     public function __construct(
         private readonly FeatureFlagResolver $modules,
         private readonly ContentSubjectResolver $subjects,
+        private readonly KnowledgePageAccess $pages,
     ) {}
 
     /** @return list<string> */
@@ -191,6 +195,7 @@ final class CollectableTypes {
             'note' => Gate::forUser($user)->allows('viewAny', CommunicationNote::class),
             'idea_map' => Gate::forUser($user)->allows('viewAny', IdeaMap::class),
             'knowledge_article' => Gate::forUser($user)->allows('viewAny', KnowledgeArticle::class),
+            'knowledge_page' => Gate::forUser($user)->allows('viewAny', KnowledgePage::class),
             'document' => Gate::forUser($user)->allows('viewAny', Document::class),
             'learning_course' => Gate::forUser($user)->allows('viewAny', LearningCourse::class),
             // Lernpfade haben keine Policy; die Verwaltung hängt am Verwaltungsrecht.
@@ -230,7 +235,8 @@ final class CollectableTypes {
     public function authorized(string $key, User $user, array $models): array {
         return array_values(array_filter(
             $models,
-            static fn (Model $model): bool => $key === 'learning_path' || Gate::forUser($user)->allows('view', $model),
+            // Wissensseiten: der Scope aus scopedQuery() ist bereits die Regel der Policy (Bereich, Freigabe).
+            static fn (Model $model): bool => $key === 'learning_path' || $key === 'knowledge_page' || Gate::forUser($user)->allows('view', $model),
         ));
     }
 
@@ -252,6 +258,7 @@ final class CollectableTypes {
             $model instanceof CommunicationNote => route('communication-notes.index', ['note' => $sqid]),
             $model instanceof IdeaMap => route('ideas.show', $sqid),
             $model instanceof KnowledgeArticle => route('knowledge.show', $sqid),
+            $model instanceof KnowledgePage => route('knowledge.pages.show', $sqid),
             $model instanceof Document => route('documents.show', $sqid),
             $model instanceof LearningCourse => route('learning.courses.show', $sqid),
             $model instanceof LearningPath => route('learning.paths.show', $sqid),
@@ -264,7 +271,7 @@ final class CollectableTypes {
      * Listen; `null`, wenn Tarif oder Listenrecht fehlen. Die Policy am
      * einzelnen Inhalt prüft danach {@see authorized()}.
      *
-     * @return Builder<CommunicationNote>|Builder<IdeaMap>|Builder<Document>|Builder<LearningCourse>|Builder<LearningPath>|Builder<KnowledgeArticle>|null
+     * @return Builder<CommunicationNote>|Builder<IdeaMap>|Builder<Document>|Builder<LearningCourse>|Builder<LearningPath>|Builder<KnowledgeArticle>|Builder<KnowledgePage>|null
      */
     public function scopedQuery(string $key, User $user): ?Builder {
         if (! $this->typeAvailableTo($key, $user)) {
@@ -277,6 +284,7 @@ final class CollectableTypes {
             'document' => Document::query()->visibleTo($user),
             'learning_course' => LearningCourse::query()->visibleTo($user),
             'learning_path' => LearningPath::query(),
+            'knowledge_page' => $this->pages->scope(KnowledgePage::query(), $user),
             'knowledge_article' => KnowledgeArticle::query()
                 ->when(
                     // Wie in der Artikelliste: Entwürfe anderer nur mit Freigaberecht.

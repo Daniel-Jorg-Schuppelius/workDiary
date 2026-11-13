@@ -374,6 +374,7 @@ class DocumentService implements \App\Plugins\Support\Mirror\Contracts\DocumentV
      */
     public function delete(Document $document, User $actor): void {
         $this->assertNotBound($document);
+        $this->assertNoSplitParts($document);
 
         DB::transaction(function () use ($document, $actor): void {
             // Fachliches Event VOR dem Delete, damit es gemeinsam mit dem
@@ -390,6 +391,7 @@ class DocumentService implements \App\Plugins\Support\Mirror\Contracts\DocumentV
      */
     public function purge(Document $document, ?User $actor, string $reason): void {
         $this->assertNotBound($document);
+        $this->assertNoSplitParts($document);
         app(\App\Services\Retention\LegalHoldService::class)->assertNotHeld($document);
 
         // Versionen sind für Eloquent append-only; sie fallen per FK mit dem
@@ -424,11 +426,28 @@ class DocumentService implements \App\Plugins\Support\Mirror\Contracts\DocumentV
     }
 
     /**
+     * Original einer aufgeteilten Sammel-PDF (Feature 208, MVP-1662): bleibt,
+     * solange einer seiner Teile besteht — die Teile verweisen darauf als
+     * Nachweis (GoBD).
+     */
+    private function assertNoSplitParts(Document $document): void {
+        $hasParts = \App\Models\Invoicing\IncomingEInvoice::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $document->organization_id)
+            ->where('source_document_id', $document->id)
+            ->exists();
+        if ($hasParts) {
+            throw ValidationException::withMessages(['document' => (string) __('incoming_pdf.split.error.original_protected')]);
+        }
+    }
+
+    /**
      * Erweiterungs- und Server-MIME-Prüfung (analog AttachmentController) —
      * eine Wahrheit für Dokument-Upload, Versions-Upload und Personalakte.
      */
     public function assertAllowedFile(UploadedFile $file): void {
-        if (! FileAttacher::accepts($file)) {
+        // Interne Fläche: auch Mail-Dateien (Feature 204), ihr Text kommt über den DocumentTextExtractor.
+        if (! FileAttacher::accepts($file, \App\Enums\Attachments\UploadPurpose::Internal)) {
             throw ValidationException::withMessages([
                 'file' => (string) __('Dateityp nicht erlaubt.'),
             ]);

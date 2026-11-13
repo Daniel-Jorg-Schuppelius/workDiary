@@ -424,5 +424,8 @@
 
         {{-- Rezeptur / Materialbedarf (MVP-455) — eigenständige Formulare. --}}
         @include('procedures.templates._recipe')
+
+        {{-- Hintergrund statt Wiederholung: verknüpfte Wissensseiten (Feature 191) --}}
+        @include('knowledge-pages._linked_card', ['subject' => $template])
     </x-page-shell>
 @endsection

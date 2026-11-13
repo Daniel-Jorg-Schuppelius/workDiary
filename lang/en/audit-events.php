@@ -202,6 +202,8 @@ return [
     'ai' => [
         'invoked' => 'AI invoked',
         'suggestion_decided' => 'AI suggestion decided',
+        'connection_approved' => 'AI connection approved for data protection',
+        'connection_approval_revoked' => 'Data protection approval of AI connection revoked',
     ],
     'archived' => 'Archived',
     'asset' => [
@@ -320,6 +322,9 @@ return [
         'connection_saved' => 'CardDAV connection saved',
         'disconnected' => 'CardDAV disconnected',
         'sync_manual' => 'CardDAV synced manually',
+    ],
+    'carry_forward_note' => [
+        'resolved' => 'Note for next period ticked off',
     ],
     'change' => [
         'asset_attached' => 'Change: asset attached',
@@ -524,6 +529,7 @@ return [
         'confidentialAccessed' => 'Confidential document accessed',
         'deleted' => 'Document deleted',
         'einvoice_received' => 'E-invoice received',
+        'invoice_split' => 'Combined PDF split into invoices',
         'einvoice_xml_exported' => 'E-invoice XML exported',
         'released_to_customer' => 'Document released to customer',
         'revoked_from_customer' => 'Customer release revoked',
@@ -612,6 +618,11 @@ return [
     ],
     'incoming_einvoice' => [
         'duplicate_cleared' => 'Confirmed as not a duplicate receipt',
+        'split' => 'Combined PDF split',
+        'split_dismissed' => 'Combined PDF kept as one invoice',
+        'split_reset' => 'Split of the combined PDF reset',
+        'girocode_read' => 'GiroCode read',
+        'girocode_confirmed' => 'Different GiroCode IBAN confirmed',
         'candidate_linked' => 'Handover linked to existing voucher',
         'candidate_dismissed' => 'Handover created despite a match',
         'direction_corrected' => 'Incoming document direction corrected',
@@ -795,6 +806,35 @@ return [
         'linked' => 'Knowledge article linked',
         'published' => 'Knowledge article published',
         'unlinked' => 'Knowledge article unlinked',
+    ],
+    'knowledge_page' => [
+        'approved' => 'Version approved',
+        'outdated' => 'Marked as outdated',
+        'reviewed' => 'Confirmed as current',
+        'expired' => 'Validity expired (outdated)',
+        'restored' => 'Restored from the trash',
+        'purged' => 'Deleted permanently',
+        'version_restored' => 'Older version restored',
+        'assigned' => 'Required reading assigned',
+        'unassigned' => 'Required reading removed',
+        'linked' => 'Linked',
+        'unlinked' => 'Link removed',
+        'exported' => 'Exported as PDF',
+        'step_redacted' => 'Step image redacted',
+        'owner_transferred' => 'Responsibility transferred',
+    ],
+    'lead_intake' => [
+        'stage_changed' => 'Intake stage changed',
+        'decided' => 'Intake decided',
+        'second_review' => 'Acceptance confirmed in second review',
+        'second_review_returned' => 'Acceptance returned in second review',
+        'refreshed' => 'Intake file updated (new version)',
+        'completed' => 'Intake set up (lead converted)',
+        'document_added' => 'Document filed for the intake',
+        'document_removed' => 'Document of the intake removed',
+        'pdf_downloaded' => 'PDF of the intake file downloaded',
+        'pdf_archived' => 'PDF of the intake file filed as document',
+        'relationship_ended' => 'End of business relationship set',
     ],
     'lead' => [
         'quote_created' => 'Quote created from the lead',
@@ -1328,6 +1368,7 @@ return [
         'anonymized' => 'Employee anonymized (PII removed, evidence retained)',
         'offboardingScheduled' => 'Offboarding scheduled',
         'offboarded' => 'Employee offboarded (account deactivated)',
+        'workHandedOver' => 'Responsibilities handed over permanently (without leaving)',
         'permission' => [
             'granted' => 'Permission granted',
             'revoked' => 'Permission revoked',
@@ -1374,6 +1415,13 @@ return [
         'disconnected' => 'WooCommerce disconnected',
         'import_confirmed' => 'WooCommerce import confirmed',
     ],
+    'app_wish' => [
+        'forwarded' => 'Forwarded to platform operations',
+        'vendor_sent' => 'Sent to the vendor',
+    ],
+    'work_delegation' => [
+        'ended' => 'Deputyship ended',
+    ],
     'zammad' => [
         'connection_saved' => 'Zammad connection saved',
         'disconnected' => 'Zammad disconnected',
@@ -1408,6 +1456,7 @@ return [
         'vat_extension_recorded' => 'Deadline extension recorded',
         'fixed_asset_disposed' => 'Fixed asset disposal recorded',
         'depreciation_proposed' => 'Annual depreciation proposed',
+        'datev_check_released' => 'Tax check before the DATEV export released with a reason',
     ],
     'accounting_migration' => [
         'planned' => 'Accounting migration planned',
@@ -1671,5 +1720,14 @@ return [
     'domain' => [
         'commandReconciled' => 'Domain command reconciled',
         'commandResolved' => 'Domain command resolved manually',
+    ],
+    // Anmelderichtlinie der Organisation (Feature 205).
+    'login_policy' => [
+        'lockdown_engaged' => 'Emergency lockdown triggered',
+        'lockdown_lifted' => 'Emergency lockdown lifted',
+        'device_approved' => 'Device approved for sign-in from outside',
+        'device_rejected' => 'Device approval request rejected',
+        'device_revoked' => 'Device approval revoked',
+        'device_forgotten' => 'Device rejection forgotten (may ask again)',
     ],
 ];

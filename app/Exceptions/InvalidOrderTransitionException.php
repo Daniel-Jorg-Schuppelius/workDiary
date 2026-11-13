@@ -25,4 +25,14 @@ class InvalidOrderTransitionException extends RuntimeException {
     public static function stopwatchRunning(array $names): self {
         return new self((string) __('diary.lifecycle.error.stopwatch_running', ['names' => implode(', ', $names)]));
     }
+
+    /** Vier Augen (Feature 198): wer vorgelegt hat, prüft nicht selbst. */
+    public static function ownReview(): self {
+        return new self((string) __('diary.review.error.own_submission'));
+    }
+
+    /** Die Prüfpflicht wechselt nur vor der Vorlage, nie während der Prüfung oder nach dem Abschluss. */
+    public static function reviewRequirementLocked(Status $status): self {
+        return new self((string) __('diary.review.error.requirement_locked', ['status' => $status->label()]));
+    }
 }

@@ -21,7 +21,8 @@
     Weitere Attribute (z. B. `id` als Sprungziel) gehen an die Karte.
 --}}
 
-<x-card :title="__('Anhänge')" icon="attach_file" :count="$attachments->count()" {{ $attributes }}>
+<x-card :title="__('Anhänge')" icon="attach_file" :count="$attachments->count()"
+        :data-attachment-drop-zone="$canUpload && $uploadType && $uploadId ? 'true' : null" {{ $attributes }}>
     @if ($attachments->isEmpty())
         <x-empty-state compact icon="attach_file"
                        :title="__('Keine Anhänge')"
@@ -44,6 +45,10 @@
                             <span class="text-muted">· {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($att->size / 1024, 0, withThousandsSeparator: true) }} KB</span>
                         </div>
                     @endif
+                    {{-- Mail-Datei (.eml/.msg, Feature 204): Ansicht mit Kopf, Text und Anhängen. --}}
+                    @if ($att->mailFormat() !== null)
+                        <x-icon-btn icon="mail" :href="route('attachments.mail.show', $att)" :label="__('mail_file.section.view')" />
+                    @endif
                     @if ($canDelete && Gate::allows('delete', $att) && ! ($att->meta_type !== null && $att->attachable instanceof \App\Models\Contracts\GuardsAttachments && $att->attachable->attachmentsLocked($att)))
                         <x-action-form :action="route('attachments.destroy', $att)" method="DELETE"
                                        :confirm="__('Anhang löschen?')" confirm-icon="delete"
@@ -57,14 +62,18 @@
     @endif
 
     @if ($canUpload && $uploadType && $uploadId)
+        {{-- Ziehen und Ablegen (Feature 204): eine Datei auf die Karte ziehen lädt sie über dieses Formular hoch (resources/js/attachment-drop.js). --}}
         <form method="POST" action="{{ route('attachments.store', ['type' => $uploadType, 'id' => $uploadId]) }}"
-              enctype="multipart/form-data" class="mt-3 flex items-center gap-2">
+              enctype="multipart/form-data" class="mt-3 flex items-center gap-2"
+              data-attachment-drop data-drop-single="{{ __('mail_file.section.drop_single') }}">
             @csrf
-            <input type="file" name="file" required class="file-input file-input-sm file-input-bordered">
+            <input type="file" name="file" required class="file-input file-input-sm file-input-bordered"
+                   accept="{{ collect(\App\Enums\Attachments\UploadPurpose::Internal->extensions())->map(fn (string $ext): string => '.' . $ext)->implode(',') }}">
             <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Hochladen') }}</x-icon-btn>
         </form>
+        <p class="mt-1 text-xs text-muted" data-attachment-drop-status aria-live="polite">{{ __('mail_file.section.drop') }}</p>
         @if ($details)
-            <p class="mt-2 text-xs text-muted">{{ __('Max. :mb MB. Erlaubt: jpg, png, gif, webp, pdf, txt, csv, log, zip, docx, xlsx.', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
+            <p class="mt-2 text-xs text-muted">{{ __('mail_file.section.hint', ['mb' => \App\Services\Attachments\FileAttacher::maxMb(), 'formats' => implode(', ', \App\Enums\Attachments\UploadPurpose::Internal->extensions())]) }}</p>
         @endif
     @endif
 </x-card>

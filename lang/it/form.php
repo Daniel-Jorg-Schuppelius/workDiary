@@ -16,6 +16,7 @@ return [
         'submission' => 'Modulo compilato',
         'values' => 'Inserimenti',
         'panel' => 'Moduli',
+        'drafts' => 'Le mie bozze',
     ],
 
     'subtitle' => [
@@ -65,6 +66,8 @@ return [
         'download_pdf' => 'Scarica PDF',
         'clear_signature' => 'Cancella firma',
         'back' => 'Indietro',
+        'continue' => 'Continua a compilare',
+        'discard' => 'Scarta bozza',
     ],
 
     'filter' => [
@@ -112,6 +115,17 @@ return [
 
         'no_upload_field' => 'Nel modulo non esiste un campo file/foto con questa chiave.',
         'template_not_active' => 'Questo modello non è attivo e non può essere compilato.',
+        'not_draft' => 'Questo modulo non è più una bozza.',
+    ],
+
+    // Entwürfe langer Formulare (Feature 203, MVP-1650).
+    'draft' => [
+        'resumed' => 'Si riprende la sua bozza (ultimo salvataggio :date). Viene inviata solo con «Invia».',
+        'rebased' => 'Il modello è cambiato dalla sua bozza. Le risposte il cui tipo non è più adatto restano come integrazione alla domanda.',
+        'saved_at' => 'Ultimo salvataggio :date',
+        'confirm_discard' => 'Scartare davvero la bozza? Le risposte salvate andranno perse.',
+        'discarded' => 'Bozza scartata.',
+        'show_hint' => 'Bozza – non ancora inviata.',
     ],
 
     'flash' => [

@@ -375,6 +375,35 @@ class PassengerRideLifecycleTest extends TestCase {
         $this->assertSame('7.12', $this->tariff()->calculate('1,006', 0), 'Komma-Eingabe wird gelesen, nicht zu 0');
     }
 
+    /**
+     * Prüfpflicht (Feature 198): ein Fahrtauftrag mit Prüfpflicht wird beim
+     * Fahrtabschluss über den Lebenszyklus zur Prüfung vorgelegt, nie direkt
+     * erledigt; ohne Prüfpflicht bleibt er wie bisher „Erledigt“.
+     */
+    public function test_completion_submits_a_review_order_and_completes_the_others_as_before(): void {
+        $this->qualifyDriver();
+        $this->concession();
+        $this->vehicleProfile();
+        $closing = ['meter_net' => '30.00', 'tax_rate' => '19', 'payment_method' => 'cash'];
+
+        $ride = $this->occupiedRide();
+        $ride->diaryEntry?->forceFill(['requires_review' => true])->save();
+        $ride = $this->service()->complete($ride->refresh(), $closing, $this->dispatcher);
+
+        $this->assertSame(RideStatus::Completed, $ride->status);
+        $entry = $ride->diaryEntry()->firstOrFail();
+        $this->assertSame(\App\Enums\Diary\Status::InReview, $entry->status);
+        $this->assertSame($this->dispatcher->id, (int) $entry->review_submitter_user_id);
+        $this->assertNotNull($entry->end_at);
+        $this->assertContains('order.submitReview', $entry->journal()->pluck('event')->all());
+
+        $plain = $this->service()->complete($this->occupiedRide(), $closing, $this->dispatcher);
+        $plainEntry = $plain->diaryEntry()->firstOrFail();
+        $this->assertSame(\App\Enums\Diary\Status::Done, $plainEntry->status);
+        $this->assertNull($plainEntry->review_submitter_user_id);
+        $this->assertNotContains('order.submitReview', $plainEntry->journal()->pluck('event')->all());
+    }
+
     public function test_status_machine_rejects_backward_and_skip_transitions(): void {
         $ride = $this->acceptTaxiRide();
 

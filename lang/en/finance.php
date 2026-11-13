@@ -89,6 +89,7 @@ return [
         'failed' => 'Failed',
         'voided' => 'Voided',
         'cancelled' => 'Cancelled',
+        'tax_check_released' => 'Tax check released with a reason',
     ],
 
     'hint' => [

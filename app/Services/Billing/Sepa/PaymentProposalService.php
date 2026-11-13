@@ -16,6 +16,8 @@ use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Models\Accounting\AccountingOpenItem;
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Supplier\Supplier;
+use App\Services\Invoicing\GiroCode\GiroCodeCheck;
+use App\Services\Invoicing\Split\IncomingInvoiceSplitter;
 use App\Support\Crypto\BlindIndex;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{BankHelper, NumberHelper};
@@ -29,7 +31,10 @@ use Illuminate\Support\Collection;
  * was gezahlt wird, entscheidet der Mensch im nächsten Schritt.
  */
 class PaymentProposalService {
-    public function __construct(private readonly IncomingRetentionService $retentions) {}
+    public function __construct(
+        private readonly IncomingRetentionService $retentions,
+        private readonly GiroCodeCheck $giroCodes,
+    ) {}
 
     /**
      * Offene, zur Zahlung freigegebene Eingangsrechnungen mit Vorschlagswerten.
@@ -111,6 +116,10 @@ class PaymentProposalService {
         if ($this->ibanDiffersFromMaster($invoice, $supplier)) {
             return 'iban_differs';
         }
+        $hold = $this->paymentHold($invoice, $supplier);
+        if ($hold !== null) {
+            return $hold;
+        }
         // Strittige Verbindlichkeit (MVP-1559): gezahlt wird erst, wenn das Kennzeichen am offenen Posten zurückgenommen ist.
         $disputed = AccountingOpenItem::query()
             ->where('organization_id', $invoice->organization_id)
@@ -131,11 +140,8 @@ class PaymentProposalService {
      * (MVP-1108), nicht nur die primäre.
      */
     public function ibanDiffersFromMaster(IncomingEInvoice $invoice, ?Supplier $supplier): bool {
-        if ($invoice->creditor_iban_confirmed_at !== null) {
-            return false;
-        }
         $invoiceIban = BankHelper::normalizeIBAN(trim((string) ($invoice->creditor_iban ?? '')));
-        if ($invoiceIban === null || $supplier === null) {
+        if ($invoiceIban === null || $supplier === null || self::confirmedFor($invoice, $invoiceIban)) {
             return false;
         }
         // Der Sammellieferant (MVP-1109) hat keine Bankverbindung: jede Rechnungs-IBAN ist zu bestätigen.
@@ -145,6 +151,60 @@ class PaymentProposalService {
         $known = $supplier->bankAccounts()->withoutGlobalScopes()->whereNotNull('iban_hash')->pluck('iban_hash')->all();
 
         return $known !== [] && array_intersect($known, BlindIndex::ibanCandidates($invoiceIban)) === [];
+    }
+
+    /**
+     * Die Bestätigung einer abweichenden Rechnungs-IBAN gilt nur für genau
+     * die bestätigte IBAN (Sicherheitsprüfung Feature 208, M4): jede spätere
+     * Änderung sperrt wieder. Abdruck als geschlüsselter Blind-Index.
+     */
+    public static function confirmedFor(IncomingEInvoice $invoice, ?string $iban): bool {
+        $hash = $invoice->creditor_iban_confirmed_hash;
+
+        return $invoice->creditor_iban_confirmed_at !== null
+            && is_string($hash) && $hash !== ''
+            && in_array($hash, BlindIndex::ibanCandidates($iban), true);
+    }
+
+    /** GiroCode-IBAN weicht ab und ist nicht bestätigt (MVP-1663) — sperrt Vorschlag und Freigabe des Laufs. */
+    public function giroCodeUnconfirmed(IncomingEInvoice $invoice): bool {
+        return $this->giroCodes->requiresConfirmation($invoice, $this->supplierFor($invoice));
+    }
+
+    /**
+     * Gründe, die eine Zahlung zur Rechnung anhalten — auch die Auszahlung
+     * ihrer Einbehalte (Feature 208, N1): GiroCode-Abweichung ohne
+     * Bestätigung oder unentschiedene Sammel-PDF.
+     */
+    public function paymentHold(IncomingEInvoice $invoice, ?Supplier $supplier = null): ?string {
+        $supplier ??= $this->supplierFor($invoice);
+        // GiroCode (MVP-1663): IBAN im Code ≠ Rechnungs-IBAN bzw. Lieferanten-Bankverbindung, oder neu — bis zur Bestätigung.
+        if ($this->giroCodes->requiresConfirmation($invoice, $supplier)) {
+            return 'girocode_differs';
+        }
+        // Sammel-PDF (MVP-1662): unentschiedene Grenzen bzw. aufgeteilt — gezahlt werden die Teile.
+        if (IncomingInvoiceSplitter::isHolding($invoice) || $invoice->isSplitBundle()) {
+            return 'bundle_unresolved';
+        }
+
+        return null;
+    }
+
+    /**
+     * Abdruck der Lage, die jemand im Zahlungsvorschlag bestätigt (N2):
+     * Rechnungs-IBAN, GiroCode-IBAN, Lieferant. Geht als verstecktes Feld
+     * mit und wird unter Sperre verglichen — ändert sich dazwischen etwas,
+     * gilt die Bestätigung nicht.
+     */
+    public function confirmationToken(IncomingEInvoice $invoice): string {
+        $reading = (array) $invoice->girocode;
+
+        return BlindIndex::of(implode('|', [
+            BankHelper::normalizeIBAN(trim((string) ($invoice->creditor_iban ?? ''))) ?? '',
+            BankHelper::normalizeIBAN(is_string($reading['iban'] ?? null) ? $reading['iban'] : null) ?? '',
+            (string) $this->supplierFor($invoice)?->id,
+            (string) $invoice->id,
+        ]));
     }
 
     /** @return array{0: string|null, 1: string|null} */
@@ -163,7 +223,8 @@ class PaymentProposalService {
         return [$iban === '' ? null : $iban, $bic === '' ? null : $bic];
     }
 
-    private function supplierFor(IncomingEInvoice $invoice): ?Supplier {
+    /** Lieferant, den der Zahlungsvorschlag für die Rechnung annimmt (für Bestätigung und Gegenprobe). */
+    public function supplierFor(IncomingEInvoice $invoice): ?Supplier {
         // Feste Zuordnung (MVP-1108) zuerst; die Heuristik bleibt für Altbestand.
         if ($invoice->supplier_id !== null) {
             return $invoice->supplier;

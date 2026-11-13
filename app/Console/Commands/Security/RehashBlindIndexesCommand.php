@@ -16,7 +16,7 @@ use App\Models\Applications\JobApplication;
 use App\Models\Contacts\ContactBankAccount;
 use App\Models\Finance\{BankAccount, BankTransaction, SepaMandate};
 use App\Models\Platform\{SystemSetting, User};
-use App\Support\Crypto\BlindIndex;
+use App\Support\Crypto\{BlindIndex, PurposeKeywordIndex};
 use Illuminate\Console\Command;
 
 /**
@@ -66,6 +66,10 @@ class RehashBlindIndexesCommand extends Command {
 
         $total += $this->rehash('Bankumsätze', BankTransaction::query()->withoutGlobalScopes()->whereNotNull('counterparty_iban'),
             'counterparty_iban_hash', static fn (BankTransaction $m): ?string => BlindIndex::ofIban($m->counterparty_iban), $dry);
+
+        // Zweck-Stichwörter der Kontierungshilfe (Feature 207): nur vorhandene Abdrücke umrechnen.
+        $total += $this->rehash('Zweck-Stichwörter', BankTransaction::query()->withoutGlobalScopes()->whereNotNull('purpose_keyword_hash'),
+            'purpose_keyword_hash', static fn (BankTransaction $m): ?string => PurposeKeywordIndex::hash($m->purpose), $dry);
 
         $total += $this->rehash('Bewerbungen', JobApplication::query()->withoutGlobalScopes()->whereNotNull('email'),
             'email_hash', static fn (JobApplication $m): ?string => BlindIndex::ofEmail($m->email), $dry);

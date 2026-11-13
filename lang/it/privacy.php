@@ -27,6 +27,7 @@ return [
         'appointment_requests' => 'Richieste di appuntamento (decise)',
         'marketplace_buyers' => 'Dati acquirenti degli ordini marketplace',
         'leads' => 'Lead (non convertiti)',
+        'lead_intakes' => 'Fascicoli di ammissione (dopo il periodo di conservazione)',
         'applications' => 'Candidature (respinte/ritirate)',
         'privacy_requests' => 'Richieste degli interessati (chiuse)',
         'cti_calls' => 'Metadati delle chiamate CTI',

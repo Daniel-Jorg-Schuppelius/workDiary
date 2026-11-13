@@ -16,6 +16,7 @@ return [
         'submission' => 'Submitted form',
         'values' => 'Entries',
         'panel' => 'Forms',
+        'drafts' => 'My drafts',
     ],
 
     'subtitle' => [
@@ -65,6 +66,8 @@ return [
         'download_pdf' => 'Download PDF',
         'clear_signature' => 'Clear signature',
         'back' => 'Back',
+        'continue' => 'Continue filling in',
+        'discard' => 'Discard draft',
     ],
 
     'filter' => [
@@ -112,6 +115,17 @@ return [
 
         'no_upload_field' => 'There is no file/photo field with this key in the form.',
         'template_not_active' => 'This template is not active and cannot be filled out.',
+        'not_draft' => 'This form is no longer a draft.',
+    ],
+
+    // Entwürfe langer Formulare (Feature 203, MVP-1650).
+    'draft' => [
+        'resumed' => 'Continuing your draft (last saved :date). It is only submitted with “Submit”.',
+        'rebased' => 'The template has changed since your draft. Answers whose answer type no longer fits are kept as a note on the question.',
+        'saved_at' => 'Last saved :date',
+        'confirm_discard' => 'Really discard this draft? The saved answers will be lost.',
+        'discarded' => 'Draft discarded.',
+        'show_hint' => 'Draft – not yet submitted.',
     ],
 
     'flash' => [

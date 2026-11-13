@@ -119,6 +119,20 @@ class Attachment extends Model {
                 $attachment->organization_id = (int) $parentOrg;
             }
         });
+
+        // Mail-Dateien (Feature 204): einmal im Hintergrund lesen — für jeden Weg,
+        // der einen Anhang anlegt (Upload, Mail-Eingang, Übernahme). Beim Löschen
+        // fallen die extrahierten Teile mit; die Zeile per Fremdschlüssel.
+        static::created(function (Attachment $attachment): void {
+            if ($attachment->mailFormat() !== null) {
+                app(\App\Services\Attachments\Mail\MailAttachmentContents::class)->queue($attachment);
+            }
+        });
+        static::deleting(function (Attachment $attachment): void {
+            if ($attachment->mailFormat() !== null) {
+                app(\App\Services\Attachments\Mail\MailAttachmentContents::class)->forget($attachment);
+            }
+        });
     }
 
     /** @return MorphTo<Model, $this> */
@@ -143,6 +157,20 @@ class Attachment extends Model {
 
     public function isImage(): bool {
         return str_starts_with((string) $this->mime, 'image/');
+    }
+
+    /** Mail-Datei (`.eml`/`.msg`, Feature 204) — dann gibt es die Ansicht „Mail“. */
+    public function mailFormat(): ?\App\Enums\Attachments\MailFileFormat {
+        return \App\Enums\Attachments\MailFileFormat::detect((string) $this->original_name, $this->mime);
+    }
+
+    /**
+     * Gelesene Mail-Datei (Feature 204): Suchtext, Zusammenfassung, Teile.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne<AttachmentText, $this>
+     */
+    public function extractedText(): \Illuminate\Database\Eloquent\Relations\HasOne {
+        return $this->hasOne(AttachmentText::class);
     }
 
     public function humanSize(): string {

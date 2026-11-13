@@ -36,4 +36,12 @@ return [
         'dictation_timeout' => (int) env('DICTATION_TIMEOUT', 300),
         'dictation_max_kb' => (int) env('DICTATION_MAX_KB', 20480),
     ],
+
+    /*
+     * Pixelgrenze je Seite für jedes Rastern von PDFs im pdf-toolkit
+     * (RasterLimit, gemessen an der größeren von MediaBox und CropBox):
+     * Vorschau, Seitenbilder, Barcodes, OCR. Vorgabe ≈ eine Seite mit
+     * 2000 pt Kantenlänge bei 300 dpi (Sicherheitsprüfung Feature 208, H1).
+     */
+    'pdf_raster_max_pixels' => (int) env('PDF_RASTER_MAX_PIXELS', 70_000_000),
 ];

@@ -68,7 +68,12 @@ final class LeadDemoBlock implements DemoBlock {
         // steht — ohne zusätzlichen Kunden, die Blueprint-Zähler bleiben stabil.
         $won = Lead::query()->where('organization_id', $organization->id)->where('company', 'Autohaus Krüger (Demo)')->first();
         if ($won !== null && $context->mainCustomer !== null) {
-            $this->leads->convert($won, $actor, $context->mainCustomer);
+            try {
+                $this->leads->convert($won, $actor, $context->mainCustomer);
+            } catch (\RuntimeException) {
+                // Prüfpaket mit Entscheidungspflicht aktiv (Feature 200, etwa GwG im Profil
+                // Steuerberatung): ohne angenommene Aufnahmeakte bleibt der Lead offen.
+            }
         }
 
         return ['leads' => $count];

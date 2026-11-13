@@ -15,6 +15,7 @@ use App\Http\Controllers\Auth\Concerns\SendsEmailOtpChallenge;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Services\Auth\{EmailOtpService, TwoFactorService, WebAuthnService};
+use App\Services\Auth\LoginPolicy\{LoginPolicyEvaluator, LoginPolicyGate};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, RateLimiter};
 use Illuminate\View\View;
@@ -96,6 +97,15 @@ class TwoFactorChallengeController extends Controller {
             return response()->json(['message' => __('Sicherheitsschlüssel ungültig.')], 422);
         }
 
+        // Anmelderichtlinie (Feature 205): erst nach vollständigem Nachweis
+        // entscheidet sich auch die Gerätefreigabe.
+        $policy = app(LoginPolicyGate::class)->checkLogin($user, $request, 'webauthn');
+        if (! $policy->allowed()) {
+            $request->session()->forget(['auth.2fa.id', 'auth.2fa.remember', 'auth.2fa.username']);
+
+            return response()->json(['message' => $policy->message(), 'redirect' => route('login')], 403);
+        }
+
         $remember = (bool) $request->session()->pull('auth.2fa.remember', false);
         $username = (string) $request->session()->pull('auth.2fa.username', '');
         $request->session()->forget('auth.2fa.id');
@@ -162,29 +172,72 @@ class TwoFactorChallengeController extends Controller {
         $code = trim((string) $request->input('code', ''));
         $recovery = trim((string) $request->input('recovery_code', ''));
         $emailCode = trim((string) $request->input('email_code', ''));
-        $passed = false;
+        $attempted = implode('+', array_keys(array_filter(['totp' => $code, 'email' => $emailCode, 'recovery' => $recovery], static fn (string $value): bool => $value !== ''))) ?: 'none';
 
-        if ($code !== '' && filled($user->two_factor_secret) && $this->twoFactor->verifyForUser($user, (string) $user->two_factor_secret, $code)) {
-            $passed = true;
-        } elseif ($emailCode !== '' && $this->emailOtp->verify($user, $emailCode)) {
-            $passed = true;
-        } elseif ($recovery !== '' && $this->twoFactor->consumeRecoveryCode($user, $recovery)) {
-            $passed = true;
+        // Passkey-Pflicht der Rolle (Feature 205, MVP-1656): wer einen Passkey
+        // hat, meldet sich damit an. Ausgewertet wird dann nur noch ein
+        // Wiederherstellungscode — der Notweg, wenn das Gerät fehlt; App- und
+        // E-Mail-Code werden abgewiesen, auch neben einem Wiederherstellungscode
+        // (Sicherheitsprüfung H1). Die Anmeldung per Notweg melden wir der
+        // Person und den Org-Admins (N4); einen neuen Passkey richtet die
+        // Person danach im Konto ein, den alten entfernt sie erst dann.
+        $evaluator = app(LoginPolicyEvaluator::class);
+        $passkeyOnly = $evaluator->requiresPasskey($user) && $evaluator->hasPasskey($user);
+        if ($passkeyOnly && ($code !== '' || $emailCode !== '' || $recovery === '')) {
+            app(LoginPolicyGate::class)->recordPasskeyRefused($user, $attempted);
+
+            return back()->withErrors(['code' => __('login_policy.denied.passkey')]);
         }
 
-        if (! $passed) {
+        // Erst prüfen, dann die Richtlinie, dann verbrauchen: ein abgewiesener
+        // Versuch (z. B. Gerät nicht freigegeben) kostet keinen
+        // Wiederherstellungscode (Sicherheitsprüfung N12).
+        $method = null;
+        if ($code !== '' && filled($user->two_factor_secret) && $this->twoFactor->verifyForUser($user, (string) $user->two_factor_secret, $code)) {
+            $method = 'totp';
+        } elseif ($emailCode !== '' && $this->emailOtp->verify($user, $emailCode)) {
+            $method = 'email';
+        } elseif ($recovery !== '' && $this->twoFactor->matchesRecoveryCode($user, $recovery)) {
+            $method = 'recovery';
+        }
+
+        if ($method === null) {
             RateLimiter::hit($throttleKey, 60);
             RateLimiter::hit($userKey, self::USER_DECAY_SECONDS);
             app(\App\Services\Security\SecurityEventLogger::class)->log(
                 \App\Enums\Security\SecurityEventType::TwoFactorFailed,
-                ['user' => $user->email, 'method' => $recovery !== '' ? 'recovery' : ($emailCode !== '' ? 'email' : 'totp')],
+                ['user' => $user->email, 'method' => $attempted],
             );
+
+            return back()->withErrors(['code' => __('Der Code ist ungültig.')]);
+        }
+
+        // Anmelderichtlinie (Feature 205) nach vollständigem Nachweis — erst
+        // hier entsteht für ein unbekanntes Gerät die Freigabeanfrage.
+        $gate = app(LoginPolicyGate::class);
+        $policy = $gate->checkLogin($user, $request, $method);
+        if (! $policy->allowed()) {
+            $request->session()->forget(['auth.2fa.id', 'auth.2fa.remember', 'auth.2fa.username']);
+
+            return redirect()->route('login')->withErrors(['username' => $policy->message()]);
+        }
+
+        // Wiederherstellungscode erst jetzt verbrauchen; scheitert das (zweite
+        // Anfrage mit demselben Code), gilt der Versuch als fehlgeschlagen.
+        if ($method === 'recovery' && ! $this->twoFactor->consumeRecoveryCode($user, $recovery)) {
+            RateLimiter::hit($throttleKey, 60);
+            RateLimiter::hit($userKey, self::USER_DECAY_SECONDS);
 
             return back()->withErrors(['code' => __('Der Code ist ungültig.')]);
         }
 
         RateLimiter::clear($throttleKey);
         RateLimiter::clear($userKey);
+
+        if ($passkeyOnly) {
+            $gate->recordPasskeyRecovery($user, $request);
+        }
+
         $remember = (bool) $request->session()->pull('auth.2fa.remember', false);
         $username = (string) $request->session()->pull('auth.2fa.username', '');
         $request->session()->forget('auth.2fa.id');

@@ -100,6 +100,10 @@ class CustomerController extends Controller {
             'numberLockedBy' => app(NumberAuthority::class)->numberLockedBy(NumberScope::Customer, OrganizationContext::currentId() ?? Auth::user()?->organization_id),
             'allTags' => Tag::query()->orderBy('name')->get(),
             'customerGroups' => app(\App\Services\Classification\ClassificationResolver::class)->list((int) Auth::user()?->organization_id, \App\Enums\Classification\ClassificationDomain::CustomerGroup),
+            // Leistungsvorlagen als Vorschlag für den Leistungsumfang (Feature 199, MVP-1674).
+            'serviceTemplates' => Gate::allows('manage', \App\Models\Customer\CustomerDeadline::class)
+                ? app(\App\Services\ServicePlan\ServiceTemplates::class)->offered((int) (OrganizationContext::currentId() ?? Auth::user()?->organization_id))
+                : collect(),
         ]);
     }
 
@@ -119,6 +123,11 @@ class CustomerController extends Controller {
         $customer->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
         $customer->syncCustomFields($custom);
         $customer->syncClassificationDomain(\App\Enums\Classification\ClassificationDomain::CustomerGroup, $customerGroupId !== null ? [(int) $customerGroupId] : []);
+        // Gewählte Leistungsvorlagen als Leistungsumfang (Feature 199, MVP-1674); ergänzt nur Fehlendes.
+        $templates = array_values(array_filter((array) $request->input('service_templates', []), 'is_string'));
+        if ($templates !== [] && Gate::allows('manage', \App\Models\Customer\CustomerDeadline::class)) {
+            app(\App\Services\ServicePlan\ServiceTemplates::class)->applyToCustomer($customer, $templates, $this->authUser());
+        }
 
         $flash = $this->issueContactNumber($customer) + ['success' => __('Kunde angelegt.')];
         // Leitweg-ID (MVP-1687): gespeichert wird trotzdem, die Warnung steht neben einer Nummernwarnung.

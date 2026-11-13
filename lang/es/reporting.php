@@ -179,6 +179,11 @@ return [
         ],
     ],
     'warning' => [
+        'customer_deadline_overdue' => [
+            'title' => 'Plazos vencidos de :name',
+            'detail' => 'Plazo(s) vencido(s): :count, el más antiguo del :date.',
+            'recommendation' => 'Recomendación: cumplir el plazo, solicitar una prórroga o aclarar la responsabilidad; la persona responsable ya ha sido avisada.',
+        ],
         'capacity' => [
             'title' => 'Falta de capacidad en el equipo :name',
             'detail' => 'Semana desde :week: :percent % de la capacidad planificada.',
@@ -219,6 +224,17 @@ return [
         ],
     ],
     // Management-Auswertung (MVP-926).
+    // Durchlaufzeit je Auftragstyp in der Auftragstypanalyse (Feature 179, MVP-1670)
+    'lead_time' => [
+        'title' => 'Tiempo de ciclo por tipo de pedido',
+        'subtitle' => 'Pedidos cerrados en el período: mediana de días desde la creación hasta el cierre. Se mide por pedido, nunca por persona.',
+        'empty' => 'En el período no se cerró ningún pedido.',
+        'column' => [
+            'type' => 'Tipo de pedido',
+            'completed' => 'Cerrados',
+            'median' => 'Mediana (días)',
+        ],
+    ],
     'management' => [
         'title' => 'Análisis de dirección',
         'nav' => 'Problemas y formación',
@@ -264,6 +280,10 @@ return [
             'qualifications_expiring' => 'A día de hoy · vencen en :days días: :count',
             'vacation_pending' => 'Solicitudes de vacaciones abiertas',
             'vacation_pending_hint' => 'A día de hoy · comienzan en los próximos 14 días: :count',
+            // Durchlaufzeit je Auftragsart (Feature 179, MVP-1670)
+            'lead_time' => 'Tiempo de ciclo: :type',
+            'lead_time_days' => '{1} :days día|[0,*] :days días',
+            'lead_time_hint' => 'Mediana desde la creación hasta el cierre · :count cierres en 12 meses',
         ],
         'digest' => [
             'subject' => 'Informe de dirección :organization · :range',
@@ -278,6 +298,7 @@ return [
             'capacity' => 'Falta de personal',
             'project_target' => 'Tiempos objetivo no alcanzados',
             'resale_unbilled' => 'Suscripciones sin factura',
+            'customer_deadline_overdue' => 'Plazos de clientes vencidos',
         ],
     ],
     'product_revenue' => [

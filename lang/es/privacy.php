@@ -27,6 +27,7 @@ return [
         'appointment_requests' => 'Solicitudes de cita (decididas)',
         'marketplace_buyers' => 'Datos de compradores de pedidos de marketplace',
         'leads' => 'Leads (no convertidos)',
+        'lead_intakes' => 'Expedientes de admisión (tras el plazo de conservación)',
         'applications' => 'Candidaturas (rechazadas/retiradas)',
         'privacy_requests' => 'Solicitudes de afectados (cerradas)',
         'cti_calls' => 'Metadatos de llamadas CTI',

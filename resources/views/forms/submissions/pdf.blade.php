@@ -8,12 +8,17 @@
 --}}
 {{--
   PDF-Ausgabe eines ausgefüllten Formulars (Feature 032, Rang 31) — dompdf.
-  Immer gegen fields_snapshot gerendert (Versionssicherheit). Abgeleitet von
-  submissions/show.blade.php, ohne Bedien-Elemente.
+  Immer gegen fields_snapshot gerendert (Versionssicherheit).
+  Papierlayout (Feature 203, MVP-1651): Kopftabelle, je Abschnitt „Thema /
+  Angaben“, Auswahl als ☐/☑, Fußzeile Stand · Bezug · Seite x von y. Die
+  Seitenzahl setzt dompdf (counter(page)); die Gesamtzahl kommt aus einem
+  ersten Lauf des FormSubmissionPdfRenderer ($pages, null im ersten Lauf).
 --}}
 @php
     /** @var \App\Models\Form\FormSubmission $submission */
-    $values = (array) $submission->values;
+    $pages ??= null;
+    $asOf = $submission->submitted_at ?? $submission->updated_at;
+    $reference = $subjectLabel ?? ((optional($submission->template)->name ?? __('form.title.submission')) . ' #' . $submission->id);
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -21,51 +26,36 @@
     <meta charset="utf-8">
     <title>{{ __('form.title.submission') }} #{{ $submission->id }}</title>
     <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #111; }
-        h1 { font-size: 20px; margin: 0 0 4px; }
-        h2 { font-size: 14px; margin: 22px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #111; text-transform: uppercase; letter-spacing: 0.06em; }
-        .meta { color: #555; font-size: 10px; margin-bottom: 14px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
-        th, td { padding: 5px 8px; border: 1px solid #ddd; vertical-align: top; text-align: left; }
-        th { background: #f5f5f5; font-weight: 600; }
-        .kv th { width: 220px; }
-        .muted { color: #666; }
+        @page { margin: 16mm 14mm 20mm 14mm; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: 10.5px; color: #111; }
+        h1 { font-size: 17px; margin: 0 0 8px; }
+        table { width: 100%; border-collapse: collapse; }
+        .paper-head { margin-bottom: 10px; }
+        .paper-head th, .paper-head td, .paper-section th, .paper-section td { border: 1px solid #8f99a3; padding: 4px 6px; vertical-align: top; text-align: left; }
+        .paper-head th { width: 17%; background: #f1f3f5; font-weight: bold; }
+        .paper-section-title { font-size: 11.5px; margin: 14px 0 4px; padding: 3px 6px; background: #e9edf1; border-left: 3px solid #333; page-break-after: avoid; }
+        .paper-section thead th { background: #f1f3f5; font-size: 9.5px; }
+        .paper-section td.paper-topic { width: 38%; font-weight: bold; }
+        .paper-section tr { page-break-inside: avoid; }
+        .muted { color: #555; }
         .pre { white-space: pre-wrap; }
+        .wd-ballot__mark { margin-right: 10px; white-space: nowrap; }
+        .wd-field-note-display { color: #333; font-style: italic; }
+        .paper-foot { position: fixed; bottom: -12mm; left: 0; right: 0; padding-top: 3px; border-top: 1px solid #8f99a3; font-size: 8.5px; color: #444; }
+        .paper-page:after { content: counter(page); }
+        /* Die Fußzeile trägt die Seitenzahl; eine zweite aus dem Dokumentdesign entfällt. */
+        .dd-pagenum { display: none; }
     </style>
 </head>
 <body>
-    <h1>{{ optional($submission->template)->name ?? __('form.title.submission') }}</h1>
-    <div class="meta">
-        {{ __('form.field.submitted_at') }}: {{ $submission->submitted_at?->orgTz()->format('d.m.Y H:i') }}
-        — {{ __('form.field.submitted_by') }}: {{ optional($submission->submitter)->name ?? '—' }}
-        @if ($subjectLabel !== null)
-            — {{ $subjectLabel }}
-        @endif
+    <div class="paper-foot">
+        {{ __('fields.paper.as_of') }}: {{ $asOf?->orgTz()->format('d.m.Y H:i') ?? '—' }}
+        · {{ __('fields.paper.reference') }}: {{ $reference }}
+        · <span class="paper-page">{{ __('fields.paper.page') }} </span>@if ($pages !== null) {{ __('fields.paper.of_pages', ['pages' => $pages]) }}@endif
     </div>
 
-    <h2>{{ __('form.title.values') }}</h2>
-    @php
-        $schema = \App\Services\Fields\FieldSchema::fromArray($submission->fields_snapshot);
-        $fieldValues = \App\Services\Fields\FieldValues::fromArray($submission->values);
-    @endphp
-    <table class="kv">
-        @foreach ($schema->visibleFor($values) as $field)
-            @if (! $field->type->hasValue())
-                <tr><th colspan="2">{{ $field->label }}</th></tr>
-                @continue
-            @endif
-            <tr>
-                <th>
-                    {{ $field->label }}
-                    @if ($field->unit !== null)
-                        <span class="muted">({{ $field->unit }})</span>
-                    @endif
-                </th>
-                <td class="pre">
-                    <x-field-display :field="$field" :values="$fieldValues" :attachment="$submission->attachmentByMeta('field:' . $field->key)" />
-                </td>
-            </tr>
-        @endforeach
-    </table>
+    <h1>{{ optional($submission->template)->name ?? __('form.title.submission') }}</h1>
+
+    @include('forms.submissions._paper')
 </body>
 </html>

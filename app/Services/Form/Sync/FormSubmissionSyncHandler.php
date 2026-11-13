@@ -73,6 +73,11 @@ final class FormSubmissionSyncHandler implements SyncAttachmentTarget, SyncComma
             'subject_kind' => ['nullable', 'string', Rule::in(array_keys(FormSubmissionController::SUBJECT_MAP))],
             'subject_id' => ['nullable', 'string', 'required_with:subject_kind'],
             'values' => ['nullable', 'array'],
+            // Lange Formulare (Feature 203): Ergänzungen und der Entwurf, der beim
+            // Abgleich abgesendet wird, statt eine zweite Einsendung anzulegen.
+            'notes' => ['nullable', 'array'],
+            'notes.*' => ['nullable', 'string', 'max:2000'],
+            'draft' => ['nullable', 'string', 'max:64'],
             // Offline erfasste Foto-/Datei-Felder: der Inhalt kommt separat
             // über `api.internal.sync.attachments` nach (Audit 2026-08, W4.1).
             'pending_files' => ['nullable', 'array'],
@@ -94,15 +99,41 @@ final class FormSubmissionSyncHandler implements SyncAttachmentTarget, SyncComma
             $subject = $this->resolveFormSubject((string) $data['subject_kind'], (string) ($data['subject_id'] ?? ''));
         }
 
-        $submission = $this->forms->submit(
-            $template,
-            $subject,
-            (array) ($data['values'] ?? []),
-            $user,
-            deferredKeys: array_values(array_filter((array) ($data['pending_files'] ?? []), 'is_string')),
-        );
+        $deferredKeys = array_values(array_filter((array) ($data['pending_files'] ?? []), 'is_string'));
+        /** @var array<string, mixed> $notes */
+        $notes = (array) ($data['notes'] ?? []);
+        $draft = $this->ownDraft($user, $template, (string) ($data['draft'] ?? ''));
+        if ($draft !== null && ! $draft->isDraft()) {
+            return 'form_submissions:' . $draft->id;
+        }
+
+        $submission = $draft !== null
+            ? $this->forms->submitDraft($draft, (array) ($data['values'] ?? []), $user, deferredKeys: $deferredKeys, notes: $notes)
+            : $this->forms->submit(
+                $template,
+                $subject,
+                (array) ($data['values'] ?? []),
+                $user,
+                deferredKeys: $deferredKeys,
+                notes: $notes,
+            );
 
         return 'form_submissions:' . $submission->id;
+    }
+
+    /**
+     * Eigene Einsendung zum Entwurfsschlüssel und zur Vorlage — sonst null
+     * (fremder oder unbekannter Entwurf: es entsteht eine neue Einsendung).
+     */
+    private function ownDraft(User $user, FormTemplate $template, string $rawId): ?FormSubmission {
+        $id = $rawId === '' ? null : Sqid::decodeOrNumeric(FormSubmission::class, $rawId);
+        /** @var FormSubmission|null $draft */
+        $draft = $id !== null && $id > 0 ? FormSubmission::query()->find($id) : null;
+        if ($draft === null || (int) $draft->submitted_by_user_id !== (int) $user->id || (int) $draft->form_template_id !== (int) $template->id) {
+            return null;
+        }
+
+        return $draft;
     }
 
     /** Subjekt-Auflösung über die Whitelist des Online-Wegs (org-gescopt). */

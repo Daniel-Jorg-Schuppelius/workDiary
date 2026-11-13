@@ -24,7 +24,8 @@ use App\Models\Supplier\Supplier;
 use App\Modules\ModuleRegistry;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use App\Services\Licensing\FeatureFlagResolver;
-use App\Services\Privacy\SubjectData\{ApplicationRecordsSection,
+use App\Services\Privacy\SubjectData\{AppWishesSection,
+    ApplicationRecordsSection,
     AuditTrailSection,
     ClubMemberMasterDataSection,
     ClubRecordsSection,
@@ -33,6 +34,8 @@ use App\Services\Privacy\SubjectData\{ApplicationRecordsSection,
     CustomerDocumentsSection,
     CustomerMasterDataSection,
     JobApplicationMasterDataSection,
+    KnowledgeRecordsSection,
+    LeadIntakeSection,
     LeadMasterDataSection,
     LearningRecordsSection,
     LocationPointsSection,
@@ -78,6 +81,10 @@ class SubjectDataExporter {
                 new LocationPointsSection,
                 new PersonnelFileSection,
                 new LearningRecordsSection,
+                // Lesebestätigungen und Seitenbesuche der Wissensseiten (Feature 191).
+                new KnowledgeRecordsSection,
+                // Eigene Wünsche und Stimmen (Feature 206).
+                new AppWishesSection,
                 new AuditTrailSection,
             ],
             DataSubjectKind::PortalUser => [
@@ -90,6 +97,8 @@ class SubjectDataExporter {
                 new ContactDetailsSection,
                 new CommunicationNotesSection,
                 new CustomerDocumentsSection,
+                // Aufnahmeakten über den Lead (Feature 200): Aufbewahrung und Rechtsgrundlage je Fassung.
+                new LeadIntakeSection,
             ],
             DataSubjectKind::Supplier => [
                 new SupplierMasterDataSection,
@@ -100,6 +109,7 @@ class SubjectDataExporter {
             DataSubjectKind::Lead => [
                 new LeadMasterDataSection,
                 new CommunicationNotesSection,
+                new LeadIntakeSection,
             ],
             DataSubjectKind::JobApplication => [
                 new JobApplicationMasterDataSection,

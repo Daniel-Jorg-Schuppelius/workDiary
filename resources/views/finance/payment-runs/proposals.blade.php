@@ -64,8 +64,12 @@
                         <td class="text-xs">
                             @if ($proposal['blocked'] !== null)
                                 <x-status-badge tone="error" outline>{{ __('sepa.blocked.' . $proposal['blocked']) }}</x-status-badge>
-                                @if ($proposal['blocked'] === 'iban_differs' && \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::FinancePaymentRelease->value))
+                                @if (in_array($proposal['blocked'], ['iban_differs', 'girocode_differs'], true) && \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::FinancePaymentRelease->value))
                                     <x-button type="submit" tone="ghost" size="xs" form="confirm-iban-{{ $invoice->sqid }}">{{ __('sepa.action.confirm_iban') }}</x-button>
+                                @endif
+                                {{-- GiroCode (MVP-1663): vor dem Bestätigen die gelesenen Werte am Beleg ansehen. --}}
+                                @if ($proposal['blocked'] === 'girocode_differs' && $invoice->document !== null)
+                                    <a class="link text-xs" href="{{ route('finance.incoming-invoices.show', $invoice->document) }}">{{ __('incoming_pdf.girocode.title') }}</a>
                                 @endif
                             @elseif ($proposal['uses_discount'])
                                 <x-status-badge tone="success" outline>{{ __('sepa.discount_used', ['percent' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $proposal['discount_percent'], 2)]) }}</x-status-badge>
@@ -118,10 +122,13 @@
         {{-- Bestätigungs-Formulare außerhalb des Hauptformulars (kein Nesting);
              die Buttons in der Tabelle verweisen per form="…"-Attribut hierher. --}}
         @foreach ($proposals as $proposal)
-            @if ($proposal['blocked'] === 'iban_differs')
+            @if (in_array($proposal['blocked'], ['iban_differs', 'girocode_differs'], true))
                 <form id="confirm-iban-{{ $proposal['invoice']->sqid }}" method="POST"
                       action="{{ route('finance.payment-runs.proposals.confirm-iban', ['invoice' => $proposal['invoice']]) }}"
-                      class="hidden">@csrf</form>
+                      class="hidden">@csrf
+                    {{-- Abdruck der gezeigten Lage (Feature 208): ändert sie sich bis zum Klick, gilt die Bestätigung nicht. --}}
+                    <input type="hidden" name="token" value="{{ app(\App\Services\Billing\Sepa\PaymentProposalService::class)->confirmationToken($proposal['invoice']) }}">
+                </form>
             @endif
         @endforeach
     </x-index-page>

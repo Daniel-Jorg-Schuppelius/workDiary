@@ -423,6 +423,8 @@ class OrganizationLifecycleService {
      */
     private const array FILE_POINTER_TABLES = [
         'attachments' => ['path' => 'path', 'disk' => 'disk'],
+        // Extrahierte Teile gelesener Mail-Dateien (Feature 204): ein Verzeichnis je Anhang.
+        'attachment_texts' => ['path' => 'parts_path', 'disk' => 'parts_disk', 'dir' => true],
         'bank_statements' => ['path' => 'file_path'],
         'billing_transfers' => ['path' => 'file_path'],
         'contract_signature_evidences' => ['path' => 'path', 'disk' => 'disk'],
@@ -569,6 +571,9 @@ class OrganizationLifecycleService {
             'private/uploads/organizations/' . $orgId,
             'private/invoices/' . $orgId,
             'private/exports/' . $orgId,
+            // Rechnungseingang (Feature 208): Vorschaubilder der Sammel-PDF und Seitenbilder des Zonen-Editors je Organisation.
+            'private/incoming-pages/' . $orgId,
+            'private/recognition/' . $orgId,
         ];
 
         // Unique + ohne leere Slugs.

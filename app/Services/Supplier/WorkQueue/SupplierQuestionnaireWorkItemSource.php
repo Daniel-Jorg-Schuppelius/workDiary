@@ -67,6 +67,8 @@ final class SupplierQuestionnaireWorkItemSource implements WorkItemSource {
                     $request->questionnaire->name ?? null,
                     $request->submitted_at !== null ? CarbonFmt::fdate($request->submitted_at) : null,
                 ])) ?: null,
+                // Liegezeit (MVP-1670): letzte Änderung am Gegenstand.
+                movedAt: WorkItem::lastMoved($request->updated_at),
             );
         }
     }

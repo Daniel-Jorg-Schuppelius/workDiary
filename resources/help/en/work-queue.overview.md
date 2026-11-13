@@ -1,7 +1,7 @@
 ---
 title: "Work queue"
 topic: work-queue.overview
-version: 4
+version: 6
 keywords:
     - Work queue
     - Open items
@@ -11,6 +11,7 @@ keywords:
 audience: []
 related:
     - approvals.inbox
+    - delegations.manage
 ---
 
 The work queue collects in one place what is currently waiting for you:
@@ -18,7 +19,7 @@ approvals (leave, expenses, month closings, overtime requests, time
 corrections, daily close corrections, duty plans for approval, shift
 exchanges, personnel file submissions, course bookings, supplier
 self-assessments, admission requests to club groups, price changes, learning
-time, approval chains), inboxes (assignment inbox including e-mail
+time, approval chains, data protection approvals of AI connections), inboxes (assignment inbox including e-mail
 clarifications, incoming invoices, invoice inquiries, customer intakes from
 the portal, rental requests), tasks assigned to you (open issues, orders,
 project tasks, service tickets) and reminders (your own drafts left open,
@@ -59,3 +60,7 @@ most urgent items.
 **Due date:** The “Due date” filter shows only overdue items, items due today or this week (until Sunday), or items without a due date.
 
 **Firefly III:** If the plugin is enabled, administrators see Firefly transactions without an assignment and those with an ambiguous assignment as one bundled item each, without a due date. The link opens the matching filtered list on the Firefly page; once the next reconciliation assigns a transaction to an invoice, the count goes down.
+
+**Covering for someone:** If you are currently covering for someone, their assigned orders, project tasks and service tickets also appear in your queue, marked "Covering for …" – only from areas you may open yourself, and without duplicates. They disappear again when the deputyship ends. See "Deputyship during absence".
+
+**Idle time:** The “Idle time” column shows how many days an item has not moved – meaning the last status change, note or time booking on the item (for orders also comments and booked time, for tasks and service tickets booked time). From a threshold on, the queue marks the item as **dormant**; whoever may edit the organization sets the threshold under **Settings** (default 14 days). The “Dormant only” filter and sorting by idle time bring stalled items to the top. Bundled inboxes have no idle time. It is measured per item, never per person: the management view shows the number of dormant items in your own queue and the lead time per order type, but no evaluation of individual people.

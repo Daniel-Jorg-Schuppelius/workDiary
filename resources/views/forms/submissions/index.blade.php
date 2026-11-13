@@ -34,6 +34,37 @@
         </x-slot:actions>
 
 
+        {{-- Eigene Entwürfe (Feature 203): je Feld gespeichert, noch nicht abgesendet. --}}
+        @if ($drafts->isNotEmpty())
+            <x-card as="section" class="mb-4" :title="__('form.title.drafts')" :count="$drafts->count()">
+                <ul class="divide-y divide-base-300">
+                    @foreach ($drafts as $draft)
+                        <li id="form-draft-{{ $draft->id }}" class="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
+                            <div class="min-w-0">
+                                <span class="flex items-center gap-2 font-medium">
+                                    <x-icon name="edit_note" class="text-muted" />
+                                    {{ optional($draft->template)->name ?? '—' }}
+                                </span>
+                                <span class="block text-xs text-muted">
+                                    <x-subject-link :for="$draft" />
+                                    · {{ __('form.draft.saved_at', ['date' => $draft->updated_at?->fdatetime() ?? '—']) }}
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <x-button tone="primary" size="xs" icon="edit" data-entry-modal-trigger
+                                          :href="route('form-submissions.edit', $draft)">{{ __('form.action.continue') }}</x-button>
+                                <x-action-form :action="route('form-submissions.destroy', $draft)" method="DELETE"
+                                               :confirm="__('form.draft.confirm_discard')" confirm-icon="delete"
+                                               confirm-tone="error" :confirm-label="__('form.action.discard')">
+                                    <x-icon-btn icon="delete" tone="error" size="xs" type="submit" :label="__('form.action.discard')" />
+                                </x-action-form>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            </x-card>
+        @endif
+
         <x-filter-bar :action="route('form-submissions.index')"
                       :reset="$hasActiveFilters ? route('form-submissions.index') : null">
             <x-filter-field :label="__('form.field.template')" for="form-sub-template" class="min-w-52">

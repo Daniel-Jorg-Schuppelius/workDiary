@@ -15,6 +15,7 @@ use App\Models\Platform\User;
 use App\Models\ServiceTicket\ServiceTicket;
 use App\Policies\Concerns\HasAdminBypass;
 use App\Policies\PermissionPolicy;
+use App\Services\Delegation\ActsForResolver;
 
 class ServiceTicketPolicy extends PermissionPolicy {
     use HasAdminBypass;
@@ -44,7 +45,8 @@ class ServiceTicketPolicy extends PermissionPolicy {
         }
         $ticket = $model;
 
-        if ((int) $ticket->assigned_to_user_id === (int) $user->id) {
+        // Bearbeiter — auch in Vertretung (Feature 202, MVP-1648); das Leserecht oben prüft die handelnde Person.
+        if ($ticket->assigned_to_user_id !== null && app(ActsForResolver::class)->actsFor($user, (int) $ticket->assigned_to_user_id)) {
             return true;
         }
         if ($ticket->watchers()->where('user_id', $user->id)->exists()) {

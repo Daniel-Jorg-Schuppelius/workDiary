@@ -27,6 +27,9 @@ final class PageImages {
 
     public const int MAX_PAGES = 3;
 
+    /** Wurzel der Seitenbilder auf der Disk `local`: `recognition/<organisation>/<sha256>`. */
+    public const string DIRECTORY = 'recognition';
+
     public function __construct(private readonly PageImageSource $renderer) {}
 
     /**
@@ -43,6 +46,30 @@ final class PageImages {
         return $pages;
     }
 
+    /** Ordner der Seitenbilder eines Belegs — je Organisation (Feature 208, M5): die Löschung der Organisation räumt ihn mit. */
+    public static function directoryFor(IncomingEInvoice $incoming): string {
+        return self::DIRECTORY . '/' . (int) $incoming->organization_id . '/' . $incoming->sha256;
+    }
+
+    /**
+     * Ordner der alten Ablage `recognition/<sha256>` (vor Feature 208, ohne
+     * Organisation): sie räumt weder das Verwerfen eines Belegs noch die
+     * Löschung der Organisation. Der Befehl
+     * `incoming-invoices:prune-legacy-page-images` entfernt sie einmalig; die
+     * Bilder entstehen bei Bedarf neu.
+     *
+     * @return list<string> Pfade relativ zur Disk `local`
+     */
+    public static function legacyDirectories(): array {
+        $directories = array_values(array_filter(
+            Storage::disk('local')->directories(self::DIRECTORY),
+            static fn (string $directory): bool => preg_match('/^[0-9a-f]{64}$/i', basename($directory)) === 1,
+        ));
+        sort($directories);
+
+        return $directories;
+    }
+
     /** Absoluter Pfad des PNG der Seite; null, wenn das Original kein PDF ist oder das Rendern scheitert. */
     public function pathFor(IncomingEInvoice $incoming, int $page): ?string {
         if ($page < 1) {
@@ -53,7 +80,7 @@ final class PageImages {
             return null;
         }
         $disk = Storage::disk('local');
-        $directory = 'recognition/' . $incoming->sha256;
+        $directory = self::directoryFor($incoming);
         $relative = $directory . '/page-' . $page . '.png';
         if (! $disk->exists($relative)) {
             $disk->makeDirectory($directory);

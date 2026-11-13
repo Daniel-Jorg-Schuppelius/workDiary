@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing\EInvoice;
 
-use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceTransferStatus};
+use App\Enums\Invoicing\IncomingInvoiceTransferStatus;
 use App\Models\Invoicing\{IncomingEInvoice, IncomingEInvoiceTransfer};
 use App\Models\Platform\{Organization, PluginError, User};
 use App\Modules\ModuleRegistry;
@@ -108,7 +108,7 @@ class IncomingInvoiceTransferService {
             IncomingEInvoice::query()->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->where(static fn ($party) => $party->whereNotNull('supplier_id')->orWhereNotNull('customer_id'))
-                ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
+                ->whereNotIn('status', IncomingEInvoice::CLOSED_STATUSES)
                 ->whereNotExists(static fn ($done) => $done->selectRaw('1')->from('incoming_einvoice_transfers')
                     ->whereColumn('incoming_einvoice_transfers.incoming_einvoice_id', 'incoming_einvoices.id')
                     ->where('incoming_einvoice_transfers.target', $target->key())

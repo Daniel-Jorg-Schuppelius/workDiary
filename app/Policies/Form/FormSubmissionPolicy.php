@@ -21,15 +21,32 @@ use App\Policies\Concerns\HasAdminBypass;
  * - teamleitung+ (formTemplate.viewAny): sieht ALLE Submissions der Org.
  * - user/aussendienst: ausfüllen + ausschließlich EIGENE Submissions
  *   einsehen (Liste filtert entsprechend, siehe Controller).
+ * - Entwürfe (Feature 203): persönlich — sehen, je Feld speichern
+ *   (`autosave`) und verwerfen (`discard`) nur, wer sie angelegt hat; auch
+ *   die Admin-Abkürzung greift dort nicht.
  */
 class FormSubmissionPolicy {
-    use HasAdminBypass;
+    use HasAdminBypass {
+        before as adminBypass;
+    }
+
+    public function before(User $user, string $ability, mixed ...$arguments): ?bool {
+        $submission = $arguments[0] ?? null;
+        if ($submission instanceof FormSubmission && $submission->isDraft()) {
+            return null;
+        }
+
+        return $this->adminBypass($user, $ability);
+    }
 
     public function viewAny(User $user): bool {
         return $user->can(P::FormSubmissionViewAny->value);
     }
 
     public function view(User $user, FormSubmission $submission): bool {
+        if ($submission->isDraft()) {
+            return $this->ownsDraft($user, $submission);
+        }
         if (! $user->can(P::FormSubmissionView->value)) {
             return false;
         }
@@ -44,5 +61,19 @@ class FormSubmissionPolicy {
 
     public function create(User $user): bool {
         return $user->can(P::FormSubmissionCreate->value);
+    }
+
+    /** Entwurf je Feld speichern und absenden (Vertrag AutosavesFieldDocument). */
+    public function autosave(User $user, FormSubmission $submission): bool {
+        return $submission->isDraft() && $this->ownsDraft($user, $submission);
+    }
+
+    public function discard(User $user, FormSubmission $submission): bool {
+        return $submission->isDraft() && $this->ownsDraft($user, $submission);
+    }
+
+    private function ownsDraft(User $user, FormSubmission $submission): bool {
+        return (int) $submission->submitted_by_user_id === (int) $user->id
+            && ($user->isAdmin() || $user->can(P::FormSubmissionCreate->value));
     }
 }

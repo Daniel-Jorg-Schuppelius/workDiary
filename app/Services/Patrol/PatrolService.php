@@ -17,6 +17,7 @@ use App\Enums\Patrol\PatrolRunStatus;
 use App\Models\Diary\OpenIssue;
 use App\Models\Patrol\{PatrolCheckpoint, PatrolRoute, PatrolRun};
 use App\Models\Platform\{Organization, User};
+use App\Services\Diary\OrderService;
 use App\Support\CarbonFmt;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -34,6 +35,8 @@ use RuntimeException;
  * entsteht bei der ersten Abweichung und wird bis zum Ende fortgeschrieben.
  */
 class PatrolService {
+    public function __construct(private readonly OrderService $orders) {}
+
     /**
      * Kontrollpunkt anlegen; der Klartext-Token wird genau EINMAL
      * zurückgegeben (Muster Prüfer-Link).
@@ -389,7 +392,9 @@ class PatrolService {
      * Rundgang schreibt sich selbst ins Auftragsbuch — aber nur, wenn das
      * Branchenprofil den Eintragstyp `revierfahrt` mitgebracht hat. Ohne
      * Profil kein Eintrag: Ein Wachbuch, das es fachlich nicht gibt, wird
-     * nicht stillschweigend erfunden.
+     * nicht stillschweigend erfunden. Prüft die Eintragsart (Feature 198),
+     * legt der Lebenszyklus den Eintrag zur Prüfung vor statt ihn als
+     * erledigt anzulegen.
      */
     private function writeLogbookEntry(PatrolRun $run, User $actor, int $missed, int $late): void {
         $entryType = \App\Models\Classification\EntryType::query()
@@ -409,10 +414,17 @@ class PatrolService {
             'missed' => $missed,
             'late' => $late,
         ]) . ($run->deviation_note ? ' ' . $run->deviation_note : ''));
-        $entry->status = \App\Enums\Diary\Status::Done;
+        $reviewed = (bool) $entryType->requires_review;
+        $entry->status = $reviewed ? \App\Enums\Diary\Status::InProgress : \App\Enums\Diary\Status::Done;
         $entry->start_at = $run->started_at;
         $entry->end_at = $run->finished_at;
+        if ($reviewed) {
+            $entry->started_at = $run->started_at;
+        }
         $entry->save();
+        if ($reviewed) {
+            $this->orders->submitFinishedWork($entry, $actor);
+        }
     }
 
     /**

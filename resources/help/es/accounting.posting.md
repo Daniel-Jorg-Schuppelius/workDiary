@@ -1,7 +1,7 @@
 ---
 title: "Contabilizar y bandeja"
 topic: accounting.posting
-version: 10
+version: 11
 keywords:
     - asiento contable
     - contabilizar documentos
@@ -17,6 +17,10 @@ keywords:
     - libro diario
     - partidas abiertas
     - asiento recurrente
+    - propuesta de contabilización
+    - movimiento sin justificante
+    - identificador del acreedor
+    - referencia del mandato
 audience:
     - admin
     - geschaeftsfuehrung
@@ -325,3 +329,33 @@ IVA soportado al tipo del justificante. Si no hay código de IVA soportado para 
 tipo —normalmente IVA extranjero, que no es deducible—, la propuesta se detiene:
 registre el gasto en bruto sin tipo impositivo. Las facturas con inversión del
 sujeto pasivo van a la entrada de facturas, que conoce el supuesto fiscal.
+
+## Propuestas de contabilización para movimientos bancarios sin justificante
+
+Alquiler, leasing, seguro, comisiones de cuenta: un movimiento bancario que su
+organización ya contabilizó mediante **Contabilizar en cuenta contable** recibe la
+próxima vez una **propuesta** — cuenta, código de impuesto, centro de coste y
+texto del último asiento similar. Similar significa: misma dirección y, en
+este orden, misma **referencia del mandato**, mismo **identificador del
+acreedor** del adeudo, mismo **IBAN de la contraparte** o mismas **palabras
+clave del concepto** (mes, fecha y números no cuentan). Se muestra el motivo,
+por ejemplo «Contabilizado así 3 veces, la última en 03/2026, misma referencia
+del mandato», junto con la solidez de la propuesta. El asiento más reciente
+determina la propuesta: si contabiliza una vez en otra cuenta, la próxima vez
+vale esa — no hay que mantener ninguna regla.
+
+El diálogo **Contabilizar en cuenta contable** viene rellenado con la propuesta. En
+**Propuestas de contabilización** de la bandeja, los movimientos abiertos
+similares aparecen agrupados con la vista previa de sus asientos;
+**Contabilizar los … movimientos** los contabiliza con una sola confirmación.
+Un movimiento cuyo importe difiere más de un 10 % de la última vez y las
+propuestas con aviso (cuenta desactivada, código de impuesto ya no válido)
+aparecen por separado en **Revisar uno a uno**. Solo se contabiliza lo que
+usted confirma; con el principio de cuatro ojos activo se crean borradores
+para aprobación.
+
+Solo se propone lo que la organización ya contabilizó así — sin IA. La
+importación toma el identificador del acreedor de los ficheros CAMT y MT940 si
+el banco lo envía. El concepto sigue cifrado; para la comparación workDiary
+solo guarda una huella con clave de las palabras clave. **Permiso:**
+**Contabilizar asientos**.

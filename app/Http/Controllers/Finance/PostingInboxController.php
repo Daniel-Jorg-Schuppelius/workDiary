@@ -19,7 +19,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingTaxCode};
 use App\Models\Finance\{BankTransaction, CostCenter};
 use App\Services\Accounting\{InternalTransferService, JournalService};
-use App\Services\Accounting\Posting\{PostingInboxService, PostingSourceRegistry};
+use App\Services\Accounting\Posting\{BankBookingSuggestions, PostingInboxService, PostingSourceRegistry};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Decimal;
@@ -179,8 +179,12 @@ class PostingInboxController extends Controller {
             : __('accounting.inbox.flash.awaiting_approval'));
     }
 
-    /** Dialog: Bankumsatz ohne Beleg direkt aufs Sachkonto buchen (MVP-1557). */
-    public function bankDirectForm(BankTransaction $transaction): View {
+    /**
+     * Dialog: Bankumsatz ohne Beleg direkt aufs Sachkonto buchen (MVP-1557),
+     * vorbelegt mit der Kontierung gleichartiger früherer Buchungen (Feature 207,
+     * MVP-1660) — gebucht wird erst mit dem Absenden.
+     */
+    public function bankDirectForm(BankTransaction $transaction, BankBookingSuggestions $suggestions): View {
         abort_unless(Gate::allows(Permission::AccountingLedgerPost->value), 403);
         $organization = $this->currentOrganizationOrAbort();
         abort_unless((int) $transaction->organization_id === (int) $organization->id, 404);
@@ -188,6 +192,7 @@ class PostingInboxController extends Controller {
 
         return view('finance.accounting._bank_direct_dialog', [
             'transaction' => $transaction,
+            'suggestion' => $suggestions->forTransaction($organization, $transaction),
             'accounts' => AccountingAccount::query()
                 ->where('organization_id', $organization->id)
                 ->where('is_bank', false)

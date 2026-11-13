@@ -10,10 +10,12 @@
 
 namespace App\Services\Form;
 
-use App\Enums\Form\FormTemplateStatus;
+use App\Enums\Form\{FormSubmissionStatus, FormTemplateStatus};
+use App\Exceptions\FieldDocumentConflictException;
 use App\Models\Form\{FormSubmission, FormTemplate};
 use App\Models\Platform\User;
 use App\Services\Attachments\FileAttacher;
+use App\Services\Concerns\AssertsValidatedTransition;
 use App\Services\Fields\{FieldExtensionRegistry, FieldSchema, FieldValidator, FieldValues};
 use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Database\Eloquent\Model;
@@ -33,6 +35,8 @@ use Illuminate\Validation\ValidationException;
  * nicht — der Lebenszyklus ist trivial.
  */
 class FormService {
+    use AssertsValidatedTransition;
+
     public function __construct(
         private readonly FieldValidator $fieldValidator,
         private readonly FieldExtensionRegistry $extensions,
@@ -171,22 +175,199 @@ class FormService {
      * @param  array<string, UploadedFile>  $files  Datei-/Foto-Uploads je Feld-Key (Rang 32)
      * @param  array<string, string>  $signatures  Base64-PNG je Unterschriftsfeld (Rang 32)
      * @param  list<string>  $deferredKeys  Offline erfasste Upload-Felder, deren Inhalt nachgereicht wird (Audit 2026-08, W4.1)
+     * @param  array<string, mixed>  $notes  Ergänzungen je Feld-Key (Feature 203, MVP-1651)
      *
      * @throws ValidationException bei inaktiver Vorlage oder ungültigen Werten
      */
-    public function submit(FormTemplate $template, ?Model $subject, array $values, User $user, array $files = [], array $signatures = [], array $deferredKeys = []): FormSubmission {
+    public function submit(FormTemplate $template, ?Model $subject, array $values, User $user, array $files = [], array $signatures = [], array $deferredKeys = [], array $notes = []): FormSubmission {
+        $this->assertActive($template);
+
+        $fields = (array) $template->fields;
+        [$visible, $normalized] = $this->validatedValues(FieldSchema::fromArray($fields), $values, $files, $signatures, $deferredKeys, $notes);
+
+        $submission = DB::transaction(function () use ($template, $subject, $fields, $visible, $normalized, $user, $files, $signatures, $deferredKeys): FormSubmission {
+            $submission = FormSubmission::query()->create([
+                'organization_id' => $user->organization_id,
+                'form_template_id' => $template->id,
+                'fields_snapshot' => $fields,
+                'values' => $normalized->toArray(),
+                'status' => FormSubmissionStatus::Submitted->value,
+                'version' => 1,
+                'subject_type' => $subject?->getMorphClass(),
+                'subject_id' => $subject?->getKey(),
+                'submitted_by_user_id' => $user->id,
+                'submitted_at' => now(),
+            ]);
+
+            $this->storeFieldAttachments($submission, $visible, $files, $signatures, $user, $deferredKeys);
+            $this->auditSubmitted($template, $submission, $user);
+
+            return $submission;
+        });
+
+        $this->afterSubmit($submission, $user);
+
+        return $submission;
+    }
+
+    /**
+     * Entwurf einer Einsendung (Feature 203, MVP-1650): entsteht mit dem ersten
+     * gespeicherten Feld. Gibt es zu Vorlage und Bezug schon einen eigenen
+     * Entwurf, wird dieser fortgesetzt statt ein zweiter angelegt. Der Entwurf
+     * friert die Felddefinition ein wie das Absenden.
+     *
+     * @throws ValidationException bei inaktiver Vorlage
+     */
+    public function startDraft(FormTemplate $template, ?Model $subject, User $user): FormSubmission {
+        $this->assertActive($template);
+
+        return DB::transaction(function () use ($template, $subject, $user): FormSubmission {
+            $existing = $this->ownDraft($template, $subject, $user);
+            if ($existing !== null) {
+                return $existing;
+            }
+
+            return FormSubmission::query()->create([
+                'organization_id' => $template->organization_id,
+                'form_template_id' => $template->id,
+                'fields_snapshot' => (array) $template->fields,
+                'values' => [],
+                'status' => FormSubmissionStatus::Draft->value,
+                'version' => 1,
+                'subject_type' => $subject?->getMorphClass(),
+                'subject_id' => $subject?->getKey(),
+                'submitted_by_user_id' => $user->id,
+                'submitted_at' => null,
+            ]);
+        });
+    }
+
+    /** Eigener offener Entwurf zu Vorlage und Bezug (der jüngste). */
+    public function ownDraft(FormTemplate $template, ?Model $subject, User $user): ?FormSubmission {
+        return FormSubmission::query()
+            ->drafts()
+            ->where('form_template_id', $template->id)
+            ->where('submitted_by_user_id', $user->id)
+            ->where('subject_type', $subject?->getMorphClass())
+            ->where('subject_id', $subject?->getKey())
+            ->latest('id')
+            ->first();
+    }
+
+    /**
+     * Entwurf auf die aktuelle Vorlage heben, wenn sie sich seit dem Anlegen
+     * geändert hat (MVP-1651): Antworten, deren Antwortart nicht mehr passt,
+     * bleiben als Ergänzung an der Frage erhalten. Liefert true, wenn sich
+     * der Entwurf geändert hat.
+     */
+    public function rebaseDraft(FormSubmission $draft): bool {
+        $template = $draft->template;
+        if (! $draft->isDraft() || $template === null || $template->status !== FormTemplateStatus::Active) {
+            return false;
+        }
+        $fields = (array) $template->fields;
+        if ($fields === (array) $draft->fields_snapshot) {
+            return false;
+        }
+
+        $values = FieldValues::fromArray($draft->values)
+            ->rebase(FieldSchema::fromArray($draft->fields_snapshot), FieldSchema::fromArray($fields), $this->extensions);
+        $draft->forceFill([
+            'fields_snapshot' => $fields,
+            'values' => $values->toArray(),
+            'version' => $draft->version + 1,
+        ])->saveQuietly();
+
+        return true;
+    }
+
+    /**
+     * Entwurf absenden (MVP-1650): prüft jetzt alle Felder samt Pflicht gegen
+     * den Stand des Entwurfs und schließt ihn ab. Mit `$expectedVersion`
+     * verweigert ein veralteter Stand das Absenden (Hinweis statt stillem
+     * Überschreiben).
+     *
+     * @param  array<string, mixed>  $values
+     * @param  array<string, UploadedFile>  $files
+     * @param  array<string, string>  $signatures
+     * @param  list<string>  $deferredKeys
+     * @param  array<string, mixed>  $notes
+     *
+     * @throws ValidationException bei ungültigen Werten oder wenn kein Entwurf vorliegt
+     * @throws FieldDocumentConflictException bei veralteter Version
+     */
+    public function submitDraft(FormSubmission $draft, array $values, User $user, array $files = [], array $signatures = [], array $deferredKeys = [], array $notes = [], ?int $expectedVersion = null): FormSubmission {
+        $submission = DB::transaction(function () use ($draft, $values, $user, $files, $signatures, $deferredKeys, $notes, $expectedVersion): FormSubmission {
+            /** @var FormSubmission $locked */
+            $locked = FormSubmission::query()->whereKey($draft->getKey())->lockForUpdate()->firstOrFail();
+            $this->assertValidatedTransition($locked->status, FormSubmissionStatus::Submitted, 'form.validation.not_draft');
+            if ($expectedVersion !== null && $locked->version !== $expectedVersion) {
+                throw new FieldDocumentConflictException(FieldDocumentConflictException::STALE, $locked->version);
+            }
+
+            [$visible, $normalized] = $this->validatedValues(
+                FieldSchema::fromArray($locked->fields_snapshot),
+                $values,
+                $files,
+                $signatures,
+                $deferredKeys,
+                $notes,
+                FieldValues::fromArray($locked->values),
+            );
+
+            $locked->update([
+                'values' => $normalized->toArray(),
+                'status' => FormSubmissionStatus::Submitted->value,
+                'version' => $locked->version + 1,
+                'submitted_at' => now(),
+            ]);
+
+            $this->storeFieldAttachments($locked, $visible, $files, $signatures, $user, $deferredKeys);
+            if ($locked->template !== null) {
+                $this->auditSubmitted($locked->template, $locked, $user);
+            }
+
+            return $locked;
+        });
+
+        $this->afterSubmit($submission, $user);
+
+        return $submission;
+    }
+
+    /** Entwurf verwerfen (nur Entwürfe; abgesendete Formulare bleiben Nachweis). */
+    public function discardDraft(FormSubmission $draft): void {
+        if (! $draft->isDraft()) {
+            throw ValidationException::withMessages(['status' => (string) __('form.validation.not_draft')]);
+        }
+        $draft->delete();
+    }
+
+    /** @throws ValidationException */
+    private function assertActive(FormTemplate $template): void {
         if ($template->status !== FormTemplateStatus::Active) {
             throw ValidationException::withMessages([
                 'form_template_id' => (string) __('form.validation.template_not_active'),
             ]);
         }
+    }
 
-        $fields = (array) $template->fields;
-
-        // Bedingungslogik (Rang 33): nur aktuell sichtbare Felder werden
-        // validiert — unsichtbare Pflichtfelder blockieren nicht und ihre
-        // Werte/Dateien werden nicht gespeichert.
-        $visible = FieldSchema::fromArray($fields)->visibleFor($values);
+    /**
+     * Gemeinsame Prüfung von Absenden und Entwurf-Absenden: nur aktuell
+     * sichtbare Felder (Bedingungslogik, Rang 33), Pflicht samt Anhängen,
+     * typtreue Werte; Ergänzungen des Entwurfs bleiben, Eingaben überschreiben sie.
+     *
+     * @param  array<string, mixed>  $values
+     * @param  array<string, UploadedFile>  $files
+     * @param  array<string, string>  $signatures
+     * @param  list<string>  $deferredKeys
+     * @param  array<string, mixed>  $notes
+     * @return array{0: FieldSchema, 1: FieldValues}
+     *
+     * @throws ValidationException
+     */
+    private function validatedValues(FieldSchema $schema, array $values, array $files, array $signatures, array $deferredKeys, array $notes, ?FieldValues $draft = null): array {
+        $visible = $schema->visibleFor($values);
 
         $validated = Validator::make(
             ['values' => $values],
@@ -198,30 +379,26 @@ class FormService {
         // Pflicht-Prüfung für Attachment-Felder (Rang 32): required + kein Inhalt.
         $this->assertRequiredAttachments($visible, $files, $signatures, $deferredKeys);
 
-        $submission = DB::transaction(function () use ($template, $subject, $fields, $visible, $validated, $user, $files, $signatures, $deferredKeys): FormSubmission {
-            $submission = FormSubmission::query()->create([
-                'organization_id' => $user->organization_id,
-                'form_template_id' => $template->id,
-                'fields_snapshot' => $fields,
-                'values' => FieldValues::normalize($visible, (array) ($validated['values'] ?? []), $this->extensions)->toArray(),
-                'subject_type' => $subject?->getMorphClass(),
-                'subject_id' => $subject?->getKey(),
-                'submitted_by_user_id' => $user->id,
-                'submitted_at' => now(),
-            ]);
+        $normalized = FieldValues::normalize($visible, (array) ($validated['values'] ?? []), $this->extensions);
+        foreach ($draft?->notes() ?? [] as $key => $note) {
+            if ($visible->has($key)) {
+                $normalized = $normalized->withNote($key, $note);
+            }
+        }
 
-            $this->storeFieldAttachments($submission, $visible, $files, $signatures, $user, $deferredKeys);
+        return [$visible, $normalized->withNotesFrom($visible, $notes)];
+    }
 
-            $template->audit('form.submitted', [
-                'actor_user_id' => $user->id,
-                'form_submission_id' => $submission->id,
-                'subject_type' => $subject?->getMorphClass(),
-                'subject_id' => $subject?->getKey(),
-            ]);
+    private function auditSubmitted(FormTemplate $template, FormSubmission $submission, User $user): void {
+        $template->audit('form.submitted', [
+            'actor_user_id' => $user->id,
+            'form_submission_id' => $submission->id,
+            'subject_type' => $submission->subject_type,
+            'subject_id' => $submission->subject_id,
+        ]);
+    }
 
-            return $submission;
-        });
-
+    private function afterSubmit(FormSubmission $submission, User $user): void {
         // MVP-650: Einreichungen sind ab Abgabe unveränderlich — der
         // Designstand wird mit eingefroren (idempotent).
         if ($submission->organization !== null) {
@@ -235,8 +412,6 @@ class FormService {
 
         // Telemetry-Light (Feature 036): aggregierter Org-Tageszähler, fire-and-forget.
         app(\App\Services\Metrics\OperationsMetricsService::class)->increment('forms.submitted', (int) $submission->organization_id);
-
-        return $submission;
     }
 
     private function normalizeDescription(mixed $description): ?string {

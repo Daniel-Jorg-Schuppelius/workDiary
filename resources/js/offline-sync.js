@@ -606,12 +606,15 @@ function buildPayload(type, form) {
         // Werte exakt wie der normale Submit serialisieren (FormData respektiert
         // checked-Zustände); Dateien/Unterschriften bleiben dem Online-Weg
         // vorbehalten (Konzept §5) und werden übersprungen.
-        /** @type {{template: string, values: Record<string, string | string[]>, subject_kind?: string, subject_id?: string, pending_files?: string[]}} */
+        /** @type {{template: string, values: Record<string, string | string[]>, notes?: Record<string, string>, draft?: string, subject_kind?: string, subject_id?: string, pending_files?: string[]}} */
         const payload = {
             template:
                 /** @type {FormField | null} */ (form.querySelector('[name="form_template_id"]'))?.value || "",
             values: {},
         };
+        // Entwurf aus dem Speichern je Feld (Feature 203): beim Abgleich wird er abgesendet statt verdoppelt.
+        const draft = /** @type {FormField | null} */ (form.querySelector('[name="draft"]'))?.value;
+        if (draft) payload.draft = draft;
         const kind = /** @type {FormField | null} */ (form.querySelector('[name="subject_kind"]'))?.value;
         const subjectId = /** @type {FormField | null} */ (form.querySelector('[name="subject_id"]'))?.value;
         if (kind && subjectId) {
@@ -632,6 +635,11 @@ function buildPayload(type, form) {
 
         for (const [name, value] of new FormData(form).entries()) {
             if (typeof value !== "string") continue;
+            const note = name.match(/^notes\[([^\]]+)\]$/);
+            if (note) {
+                (payload.notes ||= {})[note[1]] = value;
+                continue;
+            }
             const match = name.match(/^values\[([^\]]+)\](\[\])?$/);
             if (!match) continue;
             if (match[2]) {

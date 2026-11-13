@@ -184,25 +184,49 @@ class PaymentRunController extends Controller {
      */
     public function confirmIban(Request $request, IncomingEInvoice $invoice): RedirectResponse {
         abort_unless(Gate::allows(Permission::FinancePaymentRelease->value), 403);
-        $actor = $request->user();
-        abort_if($actor === null, 403);
+        $actor = $this->authUser();
+        // Abdruck der Lage, die die Person gesehen hat (Feature 208, N2): unter Sperre verglichen.
+        $data = $request->validate(['token' => ['required', 'string', 'size:64']]);
 
-        $supplier = $this->proposals->proposalFor($invoice)['supplier'];
-        if (! $this->proposals->ibanDiffersFromMaster($invoice, $supplier)) {
-            return back()->with('error', (string) __('sepa.error.no_iban_deviation'));
-        }
+        $outcome = \Illuminate\Support\Facades\DB::transaction(function () use ($invoice, $actor, $data): string {
+            $invoice->newQueryWithoutScopes()->whereKey($invoice->getKey())->lockForUpdate()->first();
+            $invoice->refresh();
+            if (! hash_equals($this->proposals->confirmationToken($invoice), (string) $data['token'])) {
+                return 'stale';
+            }
+            $supplier = $this->proposals->supplierFor($invoice);
+            $master = $this->proposals->ibanDiffersFromMaster($invoice, $supplier);
+            // GiroCode (MVP-1663): dieselbe Bestätigung deckt die abweichende bzw. neue IBAN im Code — gebunden an die bestätigte Lage.
+            $giroCode = $this->proposals->giroCodeUnconfirmed($invoice);
+            if (! $master && ! $giroCode) {
+                return 'none';
+            }
 
-        $invoice->forceFill([
-            'creditor_iban_confirmed_at' => now(),
-            'creditor_iban_confirmed_by' => $actor->id,
-        ])->save();
-        $invoice->audit('incomingEInvoice.ibanConfirmed', [
-            'invoice_iban_tail' => substr((string) $invoice->creditor_iban, -4),
-            'master_iban_tail' => substr((string) $supplier?->primaryBankAccount()?->iban, -4),
-            'supplier_id' => $supplier?->id,
-        ]);
+            if ($master) {
+                // An genau diese IBAN gebunden (Feature 208, M4): jede spätere Änderung sperrt wieder.
+                $invoice->forceFill([
+                    'creditor_iban_confirmed_at' => now(),
+                    'creditor_iban_confirmed_by' => $actor->id,
+                    'creditor_iban_confirmed_hash' => \App\Support\Crypto\BlindIndex::ofIban((string) $invoice->creditor_iban),
+                ])->save();
+                $invoice->audit('incomingEInvoice.ibanConfirmed', [
+                    'invoice_iban_tail' => substr((string) $invoice->creditor_iban, -4),
+                    'master_iban_tail' => substr((string) $supplier?->primaryBankAccount()?->iban, -4),
+                    'supplier_id' => $supplier?->id,
+                ]);
+            }
+            if ($giroCode) {
+                app(\App\Services\Invoicing\GiroCode\GiroCodeCheck::class)->confirm($invoice, $actor, $supplier);
+            }
 
-        return back()->with('status', (string) __('sepa.iban_confirmed'));
+            return 'confirmed';
+        });
+
+        return match ($outcome) {
+            'stale' => back()->with('error', (string) __('sepa.error.confirmation_stale')),
+            'none' => back()->with('error', (string) __('sepa.error.no_iban_deviation')),
+            default => back()->with('status', (string) __('sepa.iban_confirmed')),
+        };
     }
 
     public function show(PaymentRun $run): View {
