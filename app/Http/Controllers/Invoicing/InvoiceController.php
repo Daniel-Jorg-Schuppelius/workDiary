@@ -269,7 +269,11 @@ class InvoiceController extends Controller {
         // Teilbezahlt ohne Storno- und Korrekturweg (MVP-1544): sagen, warum.
         $cancellationBlocked = $this->authUser()->canManageBilling() ? $invoice->cancellationBlockedReason() : null;
 
-        return view('invoices.show', compact('invoice', 'openDownPaymentCount', 'settledByInvoice', 'directDebitOffer', 'numberIssuer', 'cancellationBlocked'));
+        // Leistungsort (MVP-1688): Ergeben die Positionen verschiedene Steuerfälle, ist der Entwurf zu teilen.
+        $placeOfSupplyMixed = $invoice->status === InvoiceStatus::Draft && $invoice->derivesTaxCase() && $invoice->organization !== null
+            && count(app(\App\Services\Invoicing\TaxResolver::class)->casesForInvoice($invoice)) > 1;
+
+        return view('invoices.show', compact('invoice', 'openDownPaymentCount', 'settledByInvoice', 'directDebitOffer', 'numberIssuer', 'cancellationBlocked', 'placeOfSupplyMixed'));
     }
 
     /**
@@ -919,6 +923,8 @@ class InvoiceController extends Controller {
     private function flashTaxCaseAlignment(\App\Enums\Invoicing\TaxCaseAlignment $alignment): void {
         if ($alignment === \App\Enums\Invoicing\TaxCaseAlignment::NoteKept) {
             session()->flash('warning', (string) __('invoicing.tax_case.note_kept'));
+        } elseif ($alignment === \App\Enums\Invoicing\TaxCaseAlignment::Mixed) {
+            session()->flash('warning', (string) __('invoicing.tax_case.place_of_supply_mixed'));
         }
     }
 

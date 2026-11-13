@@ -42,5 +42,8 @@ return [
         'export' => 'Nicht im Inland steuerbare Leistung (Leistungsort beim Empfänger, §3a UStG).',
         // Ausfuhr von Waren ins Drittland (Kategorie G, MVP-1684); Leistungen dorthin tragen den Hinweis oben (Kategorie O).
         'export_goods' => 'Steuerfreie Ausfuhrlieferung (§4 Nr. 1 Buchstabe a i. V. m. §6 UStG).',
+        // Leistungsort (MVP-1688, Kategorie O): Katalogleistung an Verbraucher im Drittland, Grundstück im Ausland.
+        'catalog_third_country' => 'Nicht im Inland steuerbare Leistung (Leistungsort am Wohnsitz des Empfängers im Drittland, §3a Abs. 4 UStG).',
+        'property_abroad' => 'Nicht im Inland steuerbare Leistung (Leistungsort am Ort des Grundstücks, §3a Abs. 3 Nr. 1 UStG).',
     ],
 ];

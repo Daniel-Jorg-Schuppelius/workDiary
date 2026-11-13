@@ -114,6 +114,17 @@
                                       error="settings.invoicing.default_service_article"
                                       :hint="$serviceArticles === [] ? __('article.catalog.empty_hint') : __('settings.invoicing.default_service_hint')" />
 
+            {{-- Leistungsort (MVP-1688): Vorgabe, wo weder Abrechnungsregel noch Artikel einen nennen. --}}
+            <x-select-field name="settings[invoicing][place_of_supply_kind]" span="2"
+                            :label="__('settings.invoicing.place_of_supply_kind')"
+                            error="settings.invoicing.place_of_supply_kind"
+                            :hint="__('settings.invoicing.place_of_supply_kind_hint')">
+                <option value="">{{ __('settings.placeholder_default', ['value' => \App\Enums\Invoicing\PlaceOfSupplyKind::General->label()]) }}</option>
+                @foreach (\App\Enums\Invoicing\PlaceOfSupplyKind::options() as $value => $label)
+                    <option value="{{ $value }}" @selected((string) old('settings.invoicing.place_of_supply_kind', data_get($stored, 'invoicing.place_of_supply_kind', '')) === (string) $value)>{{ $label }}</option>
+                @endforeach
+            </x-select-field>
+
             {{-- Rechnungstexte-Vorlagen der Übergabe (MVP-491). --}}
             <x-textarea-field name="settings[invoicing][transfer_intro_text]" span="2" rows="2" maxlength="2000"
                               :label="__('settings.invoicing.transfer_intro_text')"

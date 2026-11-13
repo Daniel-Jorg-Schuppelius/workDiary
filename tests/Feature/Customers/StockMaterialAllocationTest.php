@@ -180,6 +180,41 @@ class StockMaterialAllocationTest extends TestCase {
         $this->assertSame(['0.0000', '14.0000'], [$ledger->balance($this->variant, $this->warehouse, StockState::Blocked), $ledger->available($this->variant, $this->warehouse)]);
     }
 
+    /** MVP-1693: bei FIFO verbraucht die Entnahme Schichten, die Rückbuchung legt eine Schicht zum Stückkostenwert an. */
+    public function test_fifo_issue_and_reverse_use_the_layers_not_the_average_book(): void {
+        // Gegenprobe Durchschnitt: Abgang und Rückbuchung treffen weiter das Durchschnittsbuch.
+        $average = app(CustomerStockAllocationService::class)->issueForCustomer($this->customer, $this->variant, $this->warehouse, '2', actorUserId: $this->admin->id);
+        $this->assertSame('10.00', $average->allocated_amount?->getAmount());
+        app(CustomerStockAllocationService::class)->reverse($average);
+        $book = \App\Models\Inventory\StockValuation::query()->where('article_variant_id', $this->variant->id)->sole();
+        $this->assertSame(['10.0000', '5.0000'], [bcadd((string) $book->qty_on_hand, '0', 4), $book->avg_cost?->getAmount()]);
+
+        app(\App\Settings\SettingsRegistry::class)->setServiceManaged('inventory.valuation_method', 'fifo', $this->organization);
+        $this->organization->refresh();
+        $variant = ArticleVariant::factory()->create([
+            'organization_id' => $this->organization->id,
+            'article_id' => Article::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Kabelbinder', 'base_unit' => 'Stk'])->id,
+            'is_default' => true,
+        ]);
+        $fifo = app(\App\Services\Inventory\FifoValuationService::class);
+        $fifo->receipt($variant, $this->warehouse, '3', '2.00');
+        $fifo->receipt($variant, $this->warehouse, '3', '6.00');
+        $layers = fn (): string => bcadd((string) \App\Models\Inventory\StockValuationLayer::query()->where('article_variant_id', $variant->id)->sum('qty_remaining'), '0', 4);
+
+        $allocation = app(CustomerStockAllocationService::class)->issueForCustomer($this->customer, $variant, $this->warehouse, '4', actorUserId: $this->admin->id);
+
+        $this->assertSame('12.00', $allocation->allocated_amount?->getAmount(), '3 × 2,00 + 1 × 6,00');
+        $this->assertSame('2.0000', $layers());
+
+        app(CustomerStockAllocationService::class)->reverse($allocation);
+
+        $this->assertSame('6.0000', $layers());
+        $returned = \App\Models\Inventory\StockValuationLayer::query()->where('article_variant_id', $variant->id)->latest('id')->firstOrFail();
+        $this->assertSame(['4.0000', '3.0000'], [bcadd((string) $returned->qty_remaining, '0', 4), $returned->unit_cost?->getAmount()], 'Zum Stückkostenwert des Abgangs.');
+        $this->assertFalse(\App\Models\Inventory\StockValuation::query()->where('article_variant_id', $variant->id)->exists(), 'Das Durchschnittsbuch bleibt bei FIFO unberührt.');
+        $this->assertSame('6.0000', app(InventoryLedger::class)->available($variant, $this->warehouse));
+    }
+
     public function test_stock_dialog_blocked_without_module(): void {
         config(['license.feature_overrides' => ['module.lager' => false]]);
 

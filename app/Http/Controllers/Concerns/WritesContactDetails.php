@@ -34,8 +34,9 @@ trait WritesContactDetails {
      * @return array<string, mixed> die entnommene Kontakt-Teilmenge
      */
     private function pullContactDetails(array &$data): array {
-        $fields = array_intersect_key($data, array_flip(self::$contactDetailFields));
-        foreach (self::$contactDetailFields as $field) {
+        $names = [...self::$contactDetailFields, ...ContactDetailsWriter::SHIPPING_FIELDS];
+        $fields = array_intersect_key($data, array_flip($names));
+        foreach ($names as $field) {
             unset($data[$field]);
         }
 
@@ -44,7 +45,9 @@ trait WritesContactDetails {
 
     /**
      * Schreibt die Kontakt-Felder über den Writer und liefert die Namen der
-     * dadurch real geänderten Inline-Spalten (Projektion inklusive refresh).
+     * dadurch real geänderten Inline-Spalten (Projektion inklusive refresh),
+     * bei geänderter Lieferanschrift zusätzlich `shipping_address`. Die
+     * Lieferanschrift schreibt nur ein Formular, das ihre Felder sendet (MVP-1689).
      *
      * @param  array<string, mixed>  $fields
      * @return list<string>
@@ -58,6 +61,7 @@ trait WritesContactDetails {
         foreach (self::$contactDetailFields as $field) {
             $before[$field] = (string) ($contact->getAttribute($field) ?? '');
         }
+        $shippingBefore = $contact->shippingAddressFields();
 
         $writer = app(ContactDetailsWriter::class);
         $writer->writeAddress($contact, [
@@ -72,6 +76,15 @@ trait WritesContactDetails {
             'bic' => $fields['bank_bic'] ?? null,
             'bank_name' => $fields['bank_name'] ?? null,
         ]);
+        if (array_intersect_key($fields, array_flip(ContactDetailsWriter::SHIPPING_FIELDS)) !== []) {
+            $writer->writeShippingAddress($contact, [
+                'street' => $fields['shipping_street'] ?? null,
+                'supplement' => $fields['shipping_supplement'] ?? null,
+                'zip' => $fields['shipping_zip'] ?? null,
+                'city' => $fields['shipping_city'] ?? null,
+                'country' => $fields['shipping_country'] ?? null,
+            ]);
+        }
 
         $contact->refresh();
 
@@ -80,6 +93,9 @@ trait WritesContactDetails {
             if ((string) ($contact->getAttribute($field) ?? '') !== $before[$field]) {
                 $changed[] = $field;
             }
+        }
+        if ($contact->shippingAddressFields() !== $shippingBefore) {
+            $changed[] = 'shipping_address';
         }
 
         return $changed;

@@ -29,4 +29,19 @@ trait ContactSatelliteFields {
             'address_city' => ['nullable', 'string', 'max:128'],
         ] + ($withCountry ? ['country' => ['nullable', 'string', Rule::enum(CountryCode::class)]] : []);
     }
+
+    /**
+     * Abweichende Lieferanschrift (MVP-1689), alles leer = keine.
+     *
+     * @return array<string, list<mixed>>
+     */
+    protected function shippingAddressRules(): array {
+        return [
+            'shipping_street' => ['nullable', 'string', 'max:255'],
+            'shipping_supplement' => ['nullable', 'string', 'max:255'],
+            'shipping_zip' => ['nullable', 'string', 'max:32'],
+            'shipping_city' => ['nullable', 'string', 'max:128'],
+            'shipping_country' => ['nullable', 'string', Rule::enum(CountryCode::class)],
+        ];
+    }
 }

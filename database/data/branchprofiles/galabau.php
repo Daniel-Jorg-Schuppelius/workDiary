@@ -15,9 +15,10 @@ return [
     'label' => 'Garten- und Landschaftsbau',
     'description' => 'Garten- und Landschaftsbau: Pflegegänge, Neuanlagen, Pflanzung, Pflaster, Baumpflege und Winterdienst mit Prüfplänen für Bäume und Spielplätze.',
     // v3: Asset-Kategorien werden als Kategorien der Organisation installiert (MVP-1508).
-    'version' => 3,
+    // v4: Leistungsort-Vorgabe „Grundstück“ (§ 3a Abs. 3 Nr. 1 UStG, MVP-1688); eigene Einstellungen bleiben.
+    'version' => 4,
     // MVP-1053: Arbeitskosten nach § 35a EStG bei Privatkunden ausweisen; eigene Einstellungen bleiben.
-    'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers'],
+    'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers', 'invoicing.place_of_supply_kind' => 'property'],
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
     'modules_recommended' => [

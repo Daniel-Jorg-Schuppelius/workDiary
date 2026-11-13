@@ -11,6 +11,7 @@
 namespace App\Http\Requests\Article;
 
 use App\Enums\Article\{ArticleStatus, ArticleType};
+use App\Enums\Invoicing\PlaceOfSupplyKind;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Article\Article;
@@ -97,6 +98,8 @@ class SaveArticleRequest extends BaseFormRequest {
                 Rule::exists('sales_discount_groups', 'id')->where(fn ($q) => $q->where('organization_id', $organizationId)),
             ],
             'tax_class' => ['nullable', 'string', 'max:40'],
+            // Leistungsort einer Leistung (§ 3a UStG, MVP-1688); leer = Vorgabe der Organisation.
+            'place_of_supply_kind' => ['nullable', Rule::enum(PlaceOfSupplyKind::class)],
             'status' => ['required', Rule::enum(ArticleStatus::class)],
             'default_purchase_price' => ['nullable', 'numeric', 'min:0', 'max:999999999.9999'],
             'default_sale_price' => ['nullable', 'numeric', 'min:0', 'max:999999999.9999'],

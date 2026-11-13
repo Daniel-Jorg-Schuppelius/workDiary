@@ -7,8 +7,8 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 
-{{-- Lagerentnahme zugunsten eines Kunden (bucht Materialkosten zum gleitenden
-     Durchschnitt). Erwartet: $customer, $warehouses, $variants, $projects. --}}
+{{-- Lagerentnahme zugunsten eines Kunden (bucht Materialkosten, bewertet nach dem
+     Verfahren der Variante). Erwartet: $customer, $warehouses, $variants, $projects. --}}
 
 <x-modal
     :title="__('customer-material.stock_title')"

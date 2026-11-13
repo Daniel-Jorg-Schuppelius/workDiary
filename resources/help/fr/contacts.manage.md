@@ -1,8 +1,11 @@
 ---
 title: "Clients & fournisseurs"
 topic: contacts.manage
-version: 18
+version: 20
 keywords:
+    - consommateur
+    - particulier
+    - Adresse de livraison
     - Aperçu en tant que client
     - Mot de passe initial
     - Créer un accès
@@ -156,9 +159,49 @@ d'immatriculation du client (BT-47). Si le client est redevable de la taxe
 (§ 13b UStG) et n'a pas de numéro de TVA, le numéro d'immatriculation suffit
 pour la facture électronique.
 
+**Adresse de livraison :** si la marchandise est livrée à une autre adresse
+que celle de la facture, saisissez-la dans la section repliable **Adresse de
+livraison** (rue, complément d'adresse, code postal, ville, pays). Si la
+section reste vide, l'adresse de facturation est l'adresse de livraison ;
+vider tous les champs supprime une adresse de livraison existante. Les listes,
+l'en-tête du document et le logiciel comptable conservent l'adresse de
+facturation. Pour une livraison intracommunautaire, la facture électronique
+indique l'adresse de livraison avec le pays de livraison ; une facture émise
+conserve celle valable à l'émission, l'annulation et la facture rectificative
+reprennent celle de l'original. La page de détail l'affiche sous **Contact**,
+elle constitue un champ à part lors de la fusion, et la réponse au droit
+d'accès, l'import et l'export CSV la reprennent (colonnes `shipping_street`,
+`shipping_supplement`, `shipping_zip`, `shipping_city`, `shipping_country` ;
+en-têtes tels que « Lieferstraße », « Liefer-PLZ », « Lieferort »,
+« Lieferland »). L'API clients et l'outil MCP `create_customer` acceptent le
+numéro d'immatriculation et l'adresse de livraison ; une mise à jour via l'API
+ne modifie que les champs envoyés de l'adresse de livraison.
+
 La manière dont les pièces entrent dans la facture électronique et les règles
 pour les administrations sont décrites dans la rubrique d'aide **Factures &
 pièces**.
+
+## Consommateurs et lieu de la prestation
+
+Si le client est un particulier ou un autre non-assujetti, cochez
+**Consommateur (pas une entreprise)** dans la section **Portail et divers**.
+Avec le type de lieu de la prestation, cette case détermine le régime fiscal
+(§ 3a UStG) : pour un consommateur hors UE, les prestations du catalogue –
+conseil, traitement de données, droits, publicité, location de biens meubles et
+similaires – ne sont pas imposables en Allemagne ; les autres prestations
+portent la TVA allemande. Sans coche, le client reste considéré comme une
+entreprise ; les clients existants ne changent pas. Un consommateur n’est
+jamais redevable lui-même de la taxe : les cases **Consommateur** et **Le
+destinataire est redevable de la TVA** ne peuvent pas être cochées ensemble.
+
+La page de détail affiche le **Destinataire** (consommateur ou entreprise) ; lors
+de la fusion, c’est un champ à part. Le droit d’accès, l’import et l’export CSV
+(colonne `is_consumer`, en-tête par exemple « Verbraucher »), l’API clients et
+l’outil MCP `create_customer` le reprennent ; une mise à jour par l’API sans ce
+champ le laisse inchangé. Une facture émise conserve l’état à l’émission,
+l’annulation et la facture rectificative celui de l’original. La rubrique
+d’aide **Factures & pièces** explique où le type de lieu de la prestation est
+renseigné.
 
 ## Exemple pratique
 

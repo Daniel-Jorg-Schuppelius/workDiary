@@ -2186,6 +2186,7 @@ return [
         'incoming_e_invoice_status' => ['received' => 'Reçue', 'approved' => 'Validée (contrôle)', 'rejected' => 'Refusé', 'question' => 'Question', 'payment_released' => 'Paiement libéré'],
         'incoming_invoice_recognition' => ['structured' => 'Facture électronique (structurée)', 'extracted' => 'Reconnue à partir du PDF ou de l’image', 'none' => 'Non reconnue (à clarifier)'],
         'incoming_invoice_tax_case' => ['regular' => 'TVA déductible de la facture', 'reverse_charge_eu' => '§ 13b, al. 1 UStG : prestation de services d’un autre pays de l’UE', 'reverse_charge' => '§ 13b, al. 2 UStG : autoliquidation par le destinataire (p. ex. travaux de construction)', 'intra_community_acquisition' => 'Acquisition intracommunautaire (§ 1a UStG)'],
+        'place_of_supply_kind' => ['general' => 'Générale (§ 3a al. 1/2 UStG)', 'catalog' => 'Prestation du catalogue (§ 3a al. 4 UStG)', 'property' => 'Prestation liée à un bien immobilier (§ 3a al. 3 n° 1 UStG)'],
         'incoming_invoice_match_kind' => ['vat_id' => 'N° de TVA', 'tax_number' => 'Numéro fiscal', 'iban' => 'IBAN', 'sender_rule' => 'Règle d’expéditeur', 'manual' => 'Manuel', 'rule' => 'Règle de boîte de réception', 'template' => 'Modèle de document'],
         'incoming_invoice_transfer_status' => ['pending' => 'En attente', 'waiting' => 'À clarifier', 'failed' => 'Échouée', 'transferred' => 'Transmise', 'linked' => 'Déjà présente, liée'],
         'invoice_schedule_status' => ['active' => 'Active', 'paused' => 'En pause', 'ended' => 'Terminé'],

@@ -1,7 +1,7 @@
 ---
 title: "Fichier articles"
 topic: articles.master
-version: 5
+version: 6
 keywords:
     - articles
     - créer un article
@@ -51,6 +51,16 @@ Les **unités** supplémentaires s’appliquent aux mouvements de stock, au scan
 Si une gestion commerciale gère les numéros d’article (page « Plages de numéros », plage « Article »), le numéro d’article et le GTIN sont en lecture seule dans la fenêtre ; les nouveaux articles et variantes reçoivent leur numéro avec la synchronisation.
 
 **Classe fiscale :** dans le formulaire d’article, vous consignez la classe fiscale (normale, réduite, majorée). Elle est enregistrée avec l’article, reprise à l’import et comparée pour les doublons et les fusions ; le taux d’un document reste fixé sur la ligne.
+
+**Lieu de la prestation :** Pour les prestations, choisissez dans le formulaire
+de l’article le type de lieu de la prestation (§ 3a UStG) : **Générale**,
+**Prestation du catalogue** (non imposable pour un consommateur hors UE) ou
+**Prestation liée à un bien immobilier** (taxe au lieu du bien, pour tous les
+clients). Vide signifie la valeur par défaut de l’organisation. La page de
+détail affiche le type choisi ; l’import CSV le reprend dans la colonne
+`place_of_supply_kind` (valeurs `general`, `catalog`, `property`, en-tête par
+exemple « Leistungsort »). La rubrique d’aide **Factures & pièces** explique
+comment il détermine le régime fiscal.
 
 ## Fabrication
 

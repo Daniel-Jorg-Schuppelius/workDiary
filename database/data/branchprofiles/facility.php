@@ -17,9 +17,10 @@ return [
     // v2 (Feature 100): Entsorgungs-Modul empfohlen + AVV-Presets für
     // Leuchtmittel/Batterien/Verpackungen (Objekt-Räumungen).
     // v4: Asset-Kategorien werden als Kategorien der Organisation installiert (MVP-1508).
-    'version' => 4,
+    // v5: Leistungsort-Vorgabe „Grundstück“ (§ 3a Abs. 3 Nr. 1 UStG, MVP-1688); eigene Einstellungen bleiben.
+    'version' => 5,
     // MVP-1053: Arbeitskosten nach § 35a EStG bei Privatkunden ausweisen; eigene Einstellungen bleiben.
-    'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers'],
+    'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers', 'invoicing.place_of_supply_kind' => 'property'],
     // Feature 082 (MVP-379): vorgeschlagener Start-Arbeitsbereich. Nur ein
     // Default-Vorschlag (D16), greift solange die Org keinen eigenen Default
     // setzt und der Nutzer keine eigene Wahl getroffen hat.

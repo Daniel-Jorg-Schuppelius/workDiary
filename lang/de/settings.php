@@ -100,6 +100,8 @@ return [
         'default_service_article' => 'Standardleistung (Artikel)',
         'default_service_none' => '— keine Standardleistung —',
         'default_service_hint' => 'Liefert Bezeichnung, Einheit, Standardtext und — falls kein Satz auffindbar ist — den Preis der Übergabe-Positionen. Abrechnungs-Regeln am Projekt überschreiben sie. Mit der Einheit „Pauschale“ entsteht je Auftrag und Abrechnung eine Position mit Menge 1; andere Einheiten rechnen nach Dauer.',
+        'place_of_supply_kind' => 'Leistungsort der Leistungen',
+        'place_of_supply_kind_hint' => 'Gilt, wo weder die Abrechnungsregel des Projekts noch der Artikel einen Leistungsort nennen. Katalogleistung (Beratung, IT, Rechte u. a.): an Verbraucher im Drittland nicht steuerbar. Grundstück (Bau, Ausbau, Gebäudereinigung): Steuer am Ort des Grundstücks für alle Kunden. Allgemein: wie bisher.',
         'transfer_intro_text' => 'Vorlage: Einleitungstext der Übergabe',
         'transfer_closing_text' => 'Vorlage: Schlussbemerkung der Übergabe',
         'transfer_text_hint' => 'Wird beim Anlegen einer Übergabe in den Nachweis kopiert und ist dort bearbeitbar. Platzhalter: :customer, :from, :to, :channel. Leer = der bisherige Standardtext des Ziels.',

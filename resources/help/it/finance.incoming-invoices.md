@@ -1,7 +1,7 @@
 ---
 title: "Fatture ricevute"
 topic: finance.incoming-invoices
-version: 10
+version: 11
 keywords:
     - più aliquote
     - fattura fornitore
@@ -126,6 +126,12 @@ numero di registro del venditore (registro delle imprese, BT-30), la pagina di
 dettaglio lo mostra con i dati della fattura. Non è un codice fiscale e non
 conta per l'assegnazione; fino a questo aggiornamento WorkDiary lo leggeva dalle
 fatture UBL come codice fiscale.
+La gestione corregge una volta le registrazioni precedenti con
+`php artisan incoming-invoices:repair-seller-ids`: rilegge codice fiscale e
+numero di registro dall'originale archiviato, lascia invariate assegnazioni,
+decisioni e trasmissioni e ripropone le registrazioni aperte per
+l'assegnazione. Le registrazioni assegnate tramite il codice fiscale letto in
+modo errato vengono elencate per la verifica.
 
 **Assegnazione:** un documento viene assegnato automaticamente solo se
 esattamente una parte corrisponde a un identificativo esatto del documento:

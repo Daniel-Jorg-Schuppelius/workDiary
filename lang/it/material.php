@@ -29,4 +29,12 @@ return [
         'notice' => ':status · magazzino «:warehouse»',
         'current' => 'Giacenza: :notice',
     ],
+    // Variante per consumo (MVP-1690).
+    'variant' => [
+        'default' => '— Variante predefinita —',
+        'hint' => 'Solo per articoli gestiti a magazzino con più varianti. Vuoto registra la variante predefinita; senza prezzo unitario vale il prezzo proprio della variante, altrimenti quello del materiale.',
+        'label' => 'Variante: :variant',
+        'mismatch' => 'La variante non appartiene all\'articolo del materiale selezionato.',
+        'inactive' => 'Questa variante non è attiva e non può essere scelta di nuovo.',
+    ],
 ];

@@ -44,4 +44,10 @@ return [
     'contact' => [
         'salutation' => 'Civilité',
     ],
+    // Abweichende Lieferanschrift am Kunden (MVP-1689).
+    'shipping' => [
+        'heading' => 'Adresse de livraison',
+        'description' => 'À remplir uniquement si la marchandise est livrée à une autre adresse que celle de la facture. Si elle reste vide, l’adresse de facturation est l’adresse de livraison.',
+        'supplement' => 'Complément d’adresse',
+    ],
 ];

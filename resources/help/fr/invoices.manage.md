@@ -1,10 +1,12 @@
 ---
 title: "Factures & pièces"
 topic: invoices.manage
-version: 20
+version: 22
 keywords:
+    - lieu de la prestation
+    - prestation du catalogue
+    - bien immobilier
     - créer une facture
-    - établir une facture
     - facture client
     - facturation
     - annuler une facture
@@ -21,10 +23,8 @@ keywords:
     - documents liés
     - chaîne de documents
     - transmettre la facture à Lexoffice
-    - numéro provisoire
     - demande sur facture
     - justificatif de prestations
-    - feuille d’heures
     - pièces justificatives
     - administration publique
     - Leitweg-ID
@@ -340,6 +340,39 @@ dans le texte de la facture, la mention du nouveau régime la remplace ou elle e
 supprimée. Si vous avez modifié la mention à la main, votre texte reste — workDiary
 vous le signale et vous vérifiez la mention vous-même.
 
+## Lieu de la prestation des services
+
+Outre le client, le **type de lieu de la prestation** détermine le régime fiscal
+(§ 3a UStG). Il est renseigné là où la prestation est définie : sur la **règle de
+facturation** du projet, sinon sur son **article** ou sur l’article de
+prestation de la ligne, sinon dans la valeur par défaut de l’organisation
+(paramètres de l’organisation, onglet **Facturation**). Par défaut, tout est
+**Générale** – sans saisie, aucun régime fiscal ne change.
+
+- **Générale :** comme auparavant ; TVA allemande pour un consommateur hors UE
+  (§ 3a al. 1 UStG), « non imposable » pour une entreprise hors UE.
+- **Prestation du catalogue** (§ 3a al. 4 UStG), par exemple conseil, traitement
+  de données, droits, publicité, location de biens meubles : « non imposable »
+  (O) avec sa propre mention pour un consommateur hors UE, sinon comme
+  « Générale ».
+- **Prestation liée à un bien immobilier** (§ 3a al. 3 n° 1 UStG), par exemple
+  travaux de construction, de second œuvre et de nettoyage de bâtiments : si le
+  bien est situé en Allemagne, la facture porte la TVA allemande – y compris
+  pour les clients d’autres pays de l’UE et hors UE ; si le client est redevable
+  de la taxe selon le § 13b UStG, cela reste valable. Si le bien est à
+  l’étranger, la prestation est « non imposable » (O). Le bien se trouve au lieu
+  d’intervention de la commande ; à défaut, l’Allemagne s’applique.
+
+Les marchandises (factures de matériel) ne sont pas concernées. Pour les
+factures à partir des temps, la règle des temps facturés compte ; pour les
+lignes libres, l’article de prestation. Les lignes sans article, les frais de
+déplacement et les lignes avec leur propre catégorie fiscale suivent la
+facture. Si les lignes donnent des régimes fiscaux différents, le brouillon le
+signale, la facture ne peut pas être émise et le contrôle avant l’envoi la
+rejette (avec « non imposable » selon la règle BR-O-11) : scindez la facture,
+une par régime fiscal. L’annulation et la facture rectificative reprennent le
+régime fiscal de l’original.
+
 ## Motifs d'exonération dans la facture électronique
 
 Chaque catégorie de TVA sans taxe porte son motif d'exonération dans la XRechnung et
@@ -367,9 +400,13 @@ les livraisons vers un autre pays de l'UE et les exportations, « non imposable 
 côté d'autres catégories et une position de catégorie sans taxe avec un taux
 supérieur à 0 %. Avec « non imposable », la facture électronique ne porte aucun numéro
 de TVA ; le numéro fiscal suffit. Pour les livraisons intracommunautaires, la
-facture électronique indique l'adresse du client comme adresse de livraison avec
-le pays de livraison (règle BR-IC-12) ; la XRechnung y exige le code postal et la
-ville, sinon le contrôle avant l'envoi s'arrête. Les positions « non imposable »
+facture électronique indique l'adresse de livraison distincte du client (dialogue
+client, section **Adresse de livraison**), à défaut son adresse, comme adresse de
+livraison avec le pays de livraison (règle BR-IC-12) ; la XRechnung y exige le
+code postal et la ville, sinon le contrôle avant l'envoi s'arrête. L'adresse de
+livraison est figée à l'émission ; l'annulation et la facture rectificative
+reprennent celle de l'original. L'immatriculation de l'organisation (**Branding**, champ **Registre du commerce**) figure dans la facture électronique comme
+identifiant d'immatriculation du vendeur (BT-30), également figée. Les positions « non imposable »
 figurent sans taux dans la facture électronique.
 
 ## Mention d'exonération dans le PDF de la facture

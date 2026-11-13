@@ -44,6 +44,14 @@
         </div>
     @endif
 
+    @if ($placeOfSupplyMixed ?? false)
+        {{-- MVP-1688: Positionen mit verschiedenen Leistungsorten — die Rechnung ist zu teilen. --}}
+        <div role="alert" class="alert alert-warning text-sm">
+            <x-icon name="call_split" />
+            {{ __('invoicing.tax_case.place_of_supply_mixed') }}
+        </div>
+    @endif
+
     @if ((int) $invoice->dunning_level > 0)
         <div role="alert" class="alert alert-warning text-sm">
             <x-icon name="notification_important" />

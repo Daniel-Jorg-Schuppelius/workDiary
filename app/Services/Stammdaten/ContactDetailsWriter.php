@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Stammdaten;
 
+use App\Models\Contacts\ContactAddress;
 use App\Models\Contracts\ContactDetailsHolder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -44,6 +45,25 @@ class ContactDetailsWriter {
         'country' => 'country',
     ];
 
+    /**
+     * Eingabenamen der Lieferanschrift (MVP-1689). Sie hat keine Projektion:
+     * die Inline-Spalten bleiben die Rechnungsanschrift.
+     *
+     * @var list<string>
+     */
+    public const array SHIPPING_FIELDS = [
+        'shipping_street', 'shipping_supplement', 'shipping_zip', 'shipping_city', 'shipping_country',
+    ];
+
+    /** Eingabename → Schlüssel von {@see writeShippingAddress}. */
+    private const array SHIPPING_MAP = [
+        'shipping_street' => 'street',
+        'shipping_supplement' => 'supplement',
+        'shipping_zip' => 'zip',
+        'shipping_city' => 'city',
+        'shipping_country' => 'country',
+    ];
+
     /** Inline-Spalte → Schlüssel von {@see writeBankAccount}. */
     private const array BANK_MAP = [
         'bank_account_holder' => 'account_holder',
@@ -53,17 +73,19 @@ class ContactDetailsWriter {
     ];
 
     /**
-     * Nimmt die Inline-Kontaktfelder aus einem Wertesatz heraus (Referenz wird
-     * um sie erleichtert) und gibt sie zurück — damit ein Import den Rest wie
-     * bisher per fill()/create() schreiben kann, die Kontaktdaten aber über
-     * {@see writeInline} in contact_addresses/contact_bank_accounts landen.
+     * Nimmt die Inline-Kontaktfelder und die Lieferanschrift aus einem
+     * Wertesatz heraus (Referenz wird um sie erleichtert) und gibt sie zurück —
+     * damit ein Import den Rest wie bisher per fill()/create() schreiben kann,
+     * die Kontaktdaten aber über {@see writeInline} in
+     * contact_addresses/contact_bank_accounts landen.
      *
      * @param  array<string, mixed>  $attributes
      * @return array<string, mixed>
      */
     public static function pullInline(array &$attributes): array {
-        $fields = array_intersect_key($attributes, array_flip(self::INLINE_FIELDS));
-        foreach (self::INLINE_FIELDS as $field) {
+        $names = [...self::INLINE_FIELDS, ...self::SHIPPING_FIELDS];
+        $fields = array_intersect_key($attributes, array_flip($names));
+        foreach ($names as $field) {
             unset($attributes[$field]);
         }
 
@@ -99,6 +121,18 @@ class ContactDetailsWriter {
                 'iban' => $primary?->iban,
                 'bic' => $primary?->bic,
                 'bank_name' => $primary?->bank_name,
+            ]);
+        }
+
+        $shipping = $this->mapPresent($fields, self::SHIPPING_MAP);
+        if ($shipping !== []) {
+            $current = $contact->shippingAddress();
+            $this->writeShippingAddress($contact, $shipping + [
+                'street' => $current?->street,
+                'supplement' => $current?->supplement,
+                'zip' => $current?->zip,
+                'city' => $current?->city,
+                'country' => $current?->country_code,
             ]);
         }
     }
@@ -150,6 +184,47 @@ class ContactDetailsWriter {
         }
 
         $primary->fill($values)->save();
+    }
+
+    /**
+     * Lieferanschrift upserten (MVP-1689). Alles leer bedeutet „keine
+     * Lieferanschrift“: vorhandene Lieferanschriften entfallen, auch weitere aus
+     * dem Buchhaltungsprogramm. Die Projektion der Rechnungsanschrift bleibt unberührt.
+     *
+     * @param  array{street?: ?string, supplement?: ?string, zip?: ?string, city?: ?string, country?: ?string}  $fields
+     */
+    public function writeShippingAddress(Model&ContactDetailsHolder $contact, array $fields): void {
+        $values = [
+            'street' => $this->nullIfBlank($fields['street'] ?? null),
+            'supplement' => $this->nullIfBlank($fields['supplement'] ?? null),
+            'zip' => $this->nullIfBlank($fields['zip'] ?? null),
+            'city' => $this->nullIfBlank($fields['city'] ?? null),
+            'country_code' => $this->nullIfBlank($fields['country'] ?? null),
+        ];
+        if ($values['country_code'] !== null) {
+            $values['country_code'] = strtoupper($values['country_code']);
+        }
+
+        if (array_filter($values) === []) {
+            foreach ($contact->addresses()->where('kind', ContactAddress::KIND_SHIPPING)->get() as $address) {
+                $address->delete();
+            }
+
+            return;
+        }
+
+        $current = $contact->shippingAddress();
+        if ($current === null) {
+            $contact->addresses()->create($values + [
+                'organization_id' => $contact->getAttribute('organization_id'),
+                'kind' => ContactAddress::KIND_SHIPPING,
+                'is_primary' => false,
+            ]);
+
+            return;
+        }
+
+        $current->fill($values)->save();
     }
 
     /**

@@ -32,6 +32,8 @@ class ContactMasterDataPusher {
     private const array PUSHED_FIELDS = [
         'name', 'company', 'vat_id', 'tax_number', 'email', 'phone', 'mobile',
         'address_street', 'address_zip', 'address_city', 'country',
+        // Lieferanschrift als Ganzes (MVP-1689), der Abgleich überträgt sie mit den Anschriften.
+        'shipping_address',
     ];
 
     public function __construct(

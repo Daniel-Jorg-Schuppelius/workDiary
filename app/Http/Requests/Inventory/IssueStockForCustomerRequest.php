@@ -22,7 +22,7 @@ use Illuminate\Contracts\Validation\Validator;
 /**
  * Lagerentnahme zugunsten eines Kunden (Materialkosten): Variante + Lagerort +
  * Menge; optional einem Projekt zugeordnet. Bewertung/Buchung übernimmt der
- * CustomerStockAllocationService (gleitender Durchschnitt).
+ * CustomerStockAllocationService (Verfahren der Variante, MVP-1693).
  */
 class IssueStockForCustomerRequest extends BaseFormRequest {
     use DecodesSqidInputs;

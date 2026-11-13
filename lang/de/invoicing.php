@@ -568,9 +568,26 @@ return [
         'label' => 'Leistungsempfänger schuldet die Umsatzsteuer (§ 13b UStG)',
         'hint' => 'Inländischer Kunde, der für Ihre Leistungen die Steuer schuldet, etwa bei Bauleistungen an Bauleistende. Rechnungen gehen ohne Umsatzsteuer und mit dem Hinweis „Steuerschuldnerschaft des Leistungsempfängers“ hinaus (Kennziffer 60).',
     ],
+    // Verbraucher und Leistungsort nach § 3a UStG (MVP-1688).
+    'consumer' => [
+        'label' => 'Verbraucher (kein Unternehmen)',
+        'hint' => 'Privatperson oder anderer Nichtunternehmer. Bestimmt den Leistungsort nach § 3a UStG: An Verbraucher im Drittland sind Katalogleistungen (Beratung, Datenverarbeitung, Rechte, Werbung, Vermietung beweglicher Gegenstände u. a.) im Inland nicht steuerbar, die übrigen Leistungen tragen deutsche Umsatzsteuer. Ohne Haken gilt der Kunde als Unternehmen.',
+        'recipient' => 'Leistungsempfänger',
+        'yes' => 'Verbraucher',
+        'no' => 'Unternehmen',
+        'reverse_charge_conflict' => 'Ein Verbraucher schuldet die Umsatzsteuer nicht selbst (§ 13b Abs. 5 UStG gilt nur für Unternehmer). Bitte setzen Sie nur eines der beiden Merkmale.',
+    ],
+    'place_of_supply' => [
+        'label' => 'Leistungsort (§ 3a UStG)',
+        'hint_article' => 'Nur für Leistungen. Katalogleistung: an Verbraucher im Drittland im Inland nicht steuerbar. Grundstück: deutsche Umsatzsteuer, wenn das Grundstück im Inland liegt (Einsatzort des Auftrags, ohne Angabe Inland), sonst nicht steuerbar — für alle Kunden.',
+        'hint_rule' => 'Gilt für die Zeiten dieser Regel. Leer: Leistungsort des Artikels der Regel, sonst die Vorgabe der Organisation.',
+        'inherit_organization' => 'Vorgabe der Organisation',
+        'inherit_article' => 'Wie Artikel bzw. Vorgabe der Organisation',
+    ],
     // Steuerfall des Rechnungsentwurfs (MVP-1623).
     'tax_case' => [
         'changed_on_issue' => 'Der Steuerfall des Kunden hat sich seit der letzten Bearbeitung geändert (Reverse Charge, Ausfuhr oder steuerfrei). Der Entwurf wurde angepasst — bitte prüfen Sie die Summen und stellen Sie die Rechnung erneut.',
         'note_kept' => 'Der Rechnungstext wurde von Hand geändert und deshalb nicht angepasst: Bitte prüfen Sie den Hinweis zum Steuerfall (etwa Reverse Charge, Ausfuhr oder Steuerbefreiung) selbst.',
+        'place_of_supply_mixed' => 'Die Positionen dieser Rechnung haben verschiedene Leistungsorte (§ 3a UStG) und damit verschiedene Steuerfälle. Bitte teilen Sie die Rechnung: je Steuerfall eine Rechnung, etwa Grundstücks- oder Katalogleistungen getrennt von den übrigen Leistungen.',
     ],
 ];

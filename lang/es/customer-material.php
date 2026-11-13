@@ -43,7 +43,7 @@ return [
     'stock_title' => 'Retirar del almacén',
     'stock_issue' => 'Retirar y contabilizar',
     'stock_source' => 'Salida de almacén',
-    'stock_hint' => 'Valoración a precio medio ponderado; la salida reduce las existencias y se contabiliza como coste de material.',
+    'stock_hint' => 'Valoración según el método del artículo (precio medio ponderado, FIFO o FEFO); la salida reduce las existencias y se contabiliza como coste de material.',
     'article' => 'Artículo',
     'warehouse' => 'Almacén',
     'qty' => 'Cantidad',

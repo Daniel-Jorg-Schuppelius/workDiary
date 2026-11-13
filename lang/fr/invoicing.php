@@ -568,9 +568,26 @@ return [
         'label' => 'Le destinataire est redevable de la TVA (§ 13b UStG)',
         'hint' => 'Client national redevable de la taxe sur vos prestations, p. ex. travaux de construction pour des entreprises du bâtiment. Les factures partent sans TVA avec la mention « Autoliquidation par le destinataire » (case 60).',
     ],
+    // Verbraucher und Leistungsort nach § 3a UStG (MVP-1688).
+    'consumer' => [
+        'label' => 'Consommateur (pas une entreprise)',
+        'hint' => 'Particulier ou autre non-assujetti. Détermine le lieu de la prestation selon le § 3a UStG : pour un consommateur hors UE, les prestations du catalogue (conseil, traitement de données, droits, publicité, location de biens meubles, etc.) ne sont pas imposables en Allemagne ; les autres prestations portent la TVA allemande. Sans coche, le client est considéré comme une entreprise.',
+        'recipient' => 'Destinataire',
+        'yes' => 'Consommateur',
+        'no' => 'Entreprise',
+        'reverse_charge_conflict' => 'Un consommateur n’est jamais redevable lui-même de la TVA (le § 13b al. 5 UStG ne vise que les entreprises). Veuillez ne cocher qu’une des deux options.',
+    ],
+    'place_of_supply' => [
+        'label' => 'Lieu de la prestation (§ 3a UStG)',
+        'hint_article' => 'Uniquement pour les prestations. Prestation du catalogue : non imposable en Allemagne pour un consommateur hors UE. Bien immobilier : TVA allemande si le bien est situé en Allemagne (lieu d’intervention de la commande, Allemagne à défaut), sinon non imposable — pour tous les clients.',
+        'hint_rule' => 'S’applique aux temps de cette règle. Vide : lieu de la prestation de l’article de la règle, sinon la valeur par défaut de l’organisation.',
+        'inherit_organization' => 'Valeur par défaut de l’organisation',
+        'inherit_article' => 'Comme l’article ou valeur par défaut de l’organisation',
+    ],
     // Steuerfall des Rechnungsentwurfs (MVP-1623).
     'tax_case' => [
         'changed_on_issue' => 'Le régime fiscal du client a changé depuis la dernière modification du brouillon (autoliquidation, exportation ou exonération). Le brouillon a été ajusté — veuillez vérifier les montants et émettre à nouveau la facture.',
         'note_kept' => 'Le texte de la facture a été modifié manuellement et n’a donc pas été ajusté : veuillez vérifier vous-même la mention du régime fiscal (autoliquidation, exportation ou exonération, par exemple).',
+        'place_of_supply_mixed' => 'Les lignes de cette facture ont des lieux de prestation différents (§ 3a UStG) et donc des régimes fiscaux différents. Veuillez scinder la facture : une facture par régime fiscal, par exemple les prestations immobilières ou du catalogue séparément des autres.',
     ],
 ];

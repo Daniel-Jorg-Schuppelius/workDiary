@@ -36,6 +36,7 @@ class CustomerExportSpec extends AbstractExportSpec {
             'company',
             'vat_id',
             'register_number',
+            'is_consumer',
             'contact_name',
             'contact_salutation',
             'contact_title',
@@ -52,6 +53,11 @@ class CustomerExportSpec extends AbstractExportSpec {
             'address_zip',
             'address_city',
             'country',
+            'shipping_street',
+            'shipping_supplement',
+            'shipping_zip',
+            'shipping_city',
+            'shipping_country',
             'currency',
             'hourly_rate',
             'internal_rate',
@@ -90,12 +96,15 @@ class CustomerExportSpec extends AbstractExportSpec {
 
     public function toRow(Model $model): array {
         /** @var Customer $model */
+        $shipping = $model->shippingAddressFields();
+
         return [
             'name' => $this->str($model->name),
             'number' => $this->str($model->number),
             'company' => $this->str($model->company),
             'vat_id' => $this->str($model->vat_id),
             'register_number' => $this->str($model->register_number),
+            'is_consumer' => $this->boolCell((bool) $model->is_consumer),
             'contact_name' => $this->str($model->contact_name),
             'contact_salutation' => $this->str($model->contact_salutation?->value),
             'contact_title' => $this->str($model->contact_title),
@@ -112,6 +121,12 @@ class CustomerExportSpec extends AbstractExportSpec {
             'address_zip' => $this->str($model->address_zip),
             'address_city' => $this->str($model->address_city),
             'country' => $this->str($model->country),
+            // Abweichende Lieferanschrift (MVP-1689), Spalten wie im Import.
+            'shipping_street' => $this->str($shipping['shipping_street']),
+            'shipping_supplement' => $this->str($shipping['shipping_supplement']),
+            'shipping_zip' => $this->str($shipping['shipping_zip']),
+            'shipping_city' => $this->str($shipping['shipping_city']),
+            'shipping_country' => $this->str($shipping['shipping_country']),
             'currency' => $this->str($model->currency->value),
             'hourly_rate' => $this->decimalCell($model->hourly_rate?->getAmount()),
             'internal_rate' => $this->decimalCell($model->internal_rate?->getAmount()),

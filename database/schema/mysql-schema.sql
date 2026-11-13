@@ -1817,6 +1817,7 @@ CREATE TABLE `articles` (
   `pcf_factor_kg` decimal(12,4) DEFAULT NULL,
   `pcf_process_kg` decimal(12,4) DEFAULT NULL,
   `pcf_source` varchar(200) DEFAULT NULL,
+  `place_of_supply_kind` varchar(16) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `articles_org_number_unique` (`organization_id`,`number`),
   UNIQUE KEY `articles_org_gtin_unique` (`organization_id`,`gtin`),
@@ -8923,6 +8924,7 @@ CREATE TABLE `customers` (
   `company` varchar(200) DEFAULT NULL,
   `vat_id` varchar(64) DEFAULT NULL,
   `is_reverse_charge_recipient` tinyint(1) NOT NULL DEFAULT 0,
+  `is_consumer` tinyint(1) NOT NULL DEFAULT 0,
   `tax_number` varchar(64) DEFAULT NULL,
   `register_number` varchar(200) DEFAULT NULL,
   `contact_name` varchar(200) DEFAULT NULL,
@@ -16916,6 +16918,7 @@ CREATE TABLE `material_usages` (
   `organization_id` bigint(20) unsigned DEFAULT NULL,
   `timesheet_id` bigint(20) unsigned NOT NULL,
   `material_id` bigint(20) unsigned DEFAULT NULL,
+  `article_variant_id` bigint(20) unsigned DEFAULT NULL,
   `asset_id` bigint(20) unsigned DEFAULT NULL,
   `description` varchar(255) NOT NULL,
   `quantity` decimal(10,3) NOT NULL,
@@ -16936,6 +16939,8 @@ CREATE TABLE `material_usages` (
   KEY `material_usages_org_asset_idx` (`organization_id`,`asset_id`),
   KEY `material_usages_billed_index` (`billed`),
   KEY `material_usages_stock_warehouse_id_foreign` (`stock_warehouse_id`),
+  KEY `material_usages_article_variant_id_foreign` (`article_variant_id`),
+  CONSTRAINT `material_usages_article_variant_id_foreign` FOREIGN KEY (`article_variant_id`) REFERENCES `article_variants` (`id`) ON DELETE SET NULL,
   CONSTRAINT `material_usages_asset_id_foreign` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE SET NULL,
   CONSTRAINT `material_usages_material_id_foreign` FOREIGN KEY (`material_id`) REFERENCES `materials` (`id`) ON DELETE SET NULL,
   CONSTRAINT `material_usages_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL,
@@ -20440,6 +20445,7 @@ CREATE TABLE `project_billing_rules` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `article_ref` varchar(80) DEFAULT NULL,
+  `place_of_supply_kind` varchar(16) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `project_billing_rules_organization_id_index` (`organization_id`),
   KEY `pbr_proj_kind_idx` (`project_id`,`applies_to_kind`),
@@ -28985,3 +28991,6 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1116,'2027_04_17_3
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1117,'2027_04_18_110000_add_stock_booking_to_material_usages',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1118,'2027_04_18_110100_add_source_to_negative_stock_requests',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1119,'2027_04_18_120000_add_register_number_to_customers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1120,'2027_04_19_110000_add_article_variant_to_material_usages',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1121,'2027_04_19_120000_add_is_consumer_to_customers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1122,'2027_04_19_120100_add_place_of_supply_kind_to_articles_and_billing_rules',1);

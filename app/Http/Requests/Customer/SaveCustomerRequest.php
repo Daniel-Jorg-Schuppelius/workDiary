@@ -38,7 +38,7 @@ class SaveCustomerRequest extends BaseFormRequest {
             ? $customer->organization_id
             : $this->currentOrganizationId();
 
-        return array_merge($this->partyBaseRules(), [
+        return array_merge($this->partyBaseRules(), $this->shippingAddressRules(), [
             'number' => [
                 // Vergibt ein Buchhaltungsprogramm die Nummer, ist das Feld gesperrt (MVP-1134).
                 Rule::prohibitedIf(fn (): bool => app(NumberAuthority::class)->numberLockedBy(NumberScope::Customer, $organizationId, $customer?->number_source) !== null),
@@ -68,7 +68,10 @@ class SaveCustomerRequest extends BaseFormRequest {
             'no_bulk_mail' => ['sometimes', 'boolean'],
             'survey_opt_out' => ['sometimes', 'boolean'],
             // Leistungsempfänger schuldet die Steuer (§ 13b UStG, MVP-1622).
-            'is_reverse_charge_recipient' => ['sometimes', 'boolean'],
+            // § 13b Abs. 5 UStG: Steuerschuldner ist nur ein Unternehmer, nie ein Verbraucher (MVP-1688).
+            'is_reverse_charge_recipient' => ['sometimes', 'boolean', 'declined_if:is_consumer,true'],
+            // Verbraucher (MVP-1688): Leistungsort nach § 3a Abs. 1/4 UStG; fehlt das Feld (API), bleibt der Wert.
+            'is_consumer' => ['sometimes', 'boolean'],
             // E-Rechnung (Feature 045): Leitweg-ID/Käuferreferenz (BT-10).
             'buyer_reference' => ['nullable', 'string', 'max:64'],
             // Registerangabe (BT-47, MVP-1686), Freitext wie die eigene Angabe der Organisation.
@@ -150,10 +153,18 @@ class SaveCustomerRequest extends BaseFormRequest {
         if ($this->input('document_locale') === '') {
             $this->merge(['document_locale' => null]);
         }
+        // Nur gesendet normalisieren: Fehlt das Feld (API), bleibt die Lieferanschrift unberührt (MVP-1689).
+        if ($this->has('shipping_country')) {
+            $this->merge(['shipping_country' => $this->string('shipping_country')->trim()->upper()->value() ?: null]);
+        }
 
         // Leitweg-ID (MVP-1687): vereinheitlicht gespeichert; eine ungültige meldet leitwegIdWarning(), sperrt aber nicht.
         if ($this->buyerReferenceIsLeitwegId()) {
             $this->merge(['buyer_reference' => LeitwegId::normalize((string) $this->input('buyer_reference'))]);
+        }
+
+        if ($this->has('is_consumer')) {
+            $this->merge(['is_consumer' => $this->boolean('is_consumer')]);
         }
 
         $this->merge(array_merge($this->partyNormalizedData(), [
@@ -164,6 +175,13 @@ class SaveCustomerRequest extends BaseFormRequest {
             'is_reverse_charge_recipient' => $this->boolean('is_reverse_charge_recipient'),
             'travel_settings' => $travel === [] ? null : $travel,
         ]));
+    }
+
+    /** @return array<string, string> */
+    public function messages(): array {
+        return [
+            'is_reverse_charge_recipient.declined_if' => (string) __('invoicing.consumer.reverse_charge_conflict'),
+        ];
     }
 
     /**
@@ -183,7 +201,7 @@ class SaveCustomerRequest extends BaseFormRequest {
         if ($reference === '') {
             return false;
         }
-        if (LeitwegIdCheck::looksLike($reference)) {
+        if (LeitwegId::looksLike($reference)) {
             return true;
         }
         $customer = $this->route('customer');

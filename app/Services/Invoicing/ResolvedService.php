@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
-use App\Support\Locales;
+use App\Enums\Invoicing\PlaceOfSupplyKind;
 use ERechnungToolkit\Enums\UnitCode;
 
 /**
@@ -43,29 +43,18 @@ final class ResolvedService {
          * jemand hat ihn für dieses Projekt bewusst festgelegt.
          */
         public readonly bool $priceIsExplicit = false,
+        /** Leistungsort (§ 3a UStG, MVP-1688): Regel, sonst ihr Artikel; null = Vorgabe der Organisation. */
+        public readonly ?PlaceOfSupplyKind $placeOfSupplyKind = null,
     ) {}
 
     /**
      * Nach Dauer abrechnen? Nur die Einheit „Pauschale“ ergibt je Auftrag eine
-     * Position mit Menge 1 (MVP-1678): UN/ECE `LS` laut erechnung-toolkit oder
-     * die Pauschal-Einheit der App in einer ihrer Sprachen. Alle anderen
-     * Einheiten (leer, Stunde, Stk, Tag, km, Freitext) rechnen nach Dauer.
+     * Position mit Menge 1 (MVP-1678): UN/ECE `LS` laut erechnung-toolkit, das
+     * seit 0.23 auch die Pauschal-Einheit der App in allen fünf Sprachen kennt
+     * (MVP-1699). Alle anderen Einheiten (leer, Stunde, Stk, Tag, km, Freitext)
+     * rechnen nach Dauer.
      */
     public function isHourly(): bool {
-        $unit = trim((string) $this->unitName);
-        if ($unit === '') {
-            return true;
-        }
-        if (UnitCode::fromText($unit) === UnitCode::LUMP_SUM) {
-            return false;
-        }
-        $normalized = mb_strtolower(rtrim($unit, '.'));
-        foreach (Locales::codes() as $locale) {
-            if ($normalized === mb_strtolower(rtrim((string) trans('invoicing.unit_flat', [], $locale), '.'))) {
-                return false;
-            }
-        }
-
-        return true;
+        return UnitCode::fromText(trim((string) $this->unitName)) !== UnitCode::LUMP_SUM;
     }
 }

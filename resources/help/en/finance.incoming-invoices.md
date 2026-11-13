@@ -1,7 +1,7 @@
 ---
 title: "Incoming invoices"
 topic: finance.incoming-invoices
-version: 10
+version: 11
 keywords:
     - several tax rates
     - supplier invoice
@@ -118,6 +118,11 @@ something is left to assign.
 number (commercial register, BT-30), the detail page shows it with the invoice
 data. It is not a tax number and does not count for the assignment; until this
 update WorkDiary read it from UBL invoices as the tax number.
+Operations corrects older entries once with
+`php artisan incoming-invoices:repair-seller-ids`: the command reads tax number and
+register number again from the stored original, leaves assignments, decisions
+and transfers in place and offers open entries for assignment again. Entries
+assigned via the misread tax number are listed for review.
 
 **Assignment:** A document is assigned automatically only if exactly one
 party matches an exact identifier of the document: VAT ID, tax number or

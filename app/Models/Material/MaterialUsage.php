@@ -12,6 +12,7 @@ namespace App\Models\Material;
 
 use App\Casts\{MoneyCast, PercentageCast, QuantityCast};
 use App\Enums\Material\MaterialStockStatus;
+use App\Models\Article\ArticleVariant;
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Inventory\Warehouse;
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $organization_id
  * @property int $timesheet_id
  * @property int|null $material_id
+ * @property int|null $article_variant_id Gewählte Variante (MVP-1690); leer = Standardvariante
  * @property int|null $asset_id
  * @property string $description
  * @property \CommonToolkit\ValueObjects\Quantity|null $quantity
@@ -39,6 +41,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property MaterialStockStatus|null $stock_status Bestandswirkung (MVP-1679); leer = nicht lagergeführt
  * @property int|null $stock_warehouse_id Lager, aus dem gebucht wurde bzw. wird
  * @property-read \App\Models\Material\Material|null $material
+ * @property-read ArticleVariant|null $variant
  * @property-read Warehouse|null $stockWarehouse
  */
 class MaterialUsage extends Model {
@@ -54,6 +57,7 @@ class MaterialUsage extends Model {
         'organization_id',
         'timesheet_id',
         'material_id',
+        'article_variant_id',
         'asset_id',
         'description',
         'quantity',
@@ -91,6 +95,22 @@ class MaterialUsage extends Model {
         return (float) $line->getAmount() + (float) $others > self::MAX_TIMESHEET_SUM;
     }
 
+    /**
+     * Einzelpreis, wenn keiner erfasst ist (MVP-1690): der eigene
+     * Verkaufspreis der gewählten Variante geht wie im Beleg vor, sonst der
+     * Preis des Materials. Ein Variantenpreis in fremder Währung wird nie
+     * still übernommen.
+     */
+    public static function defaultUnitPrice(?Material $material, ?ArticleVariant $variant): ?Money {
+        $fallback = $material?->default_unit_price;
+        $own = $variant?->sale_price;
+        if ($own instanceof Money && $own->getCurrency() === ($fallback?->getCurrency() ?? CurrencyCode::Euro)) {
+            return $own;
+        }
+
+        return $fallback;
+    }
+
     protected static function booted(): void {
         static::saving(function (MaterialUsage $usage): void {
             $qty = ($usage->quantity?->getValue()->toFloat() ?? 0.0);
@@ -107,6 +127,45 @@ class MaterialUsage extends Model {
     /** @return BelongsTo<Material, $this> */
     public function material(): BelongsTo {
         return $this->belongsTo(Material::class);
+    }
+
+    /** @return BelongsTo<ArticleVariant, $this> Verbrauchte Variante (MVP-1690). */
+    public function variant(): BelongsTo {
+        return $this->belongsTo(ArticleVariant::class, 'article_variant_id');
+    }
+
+    /** Variante für Anzeige und Abrechnung wie bei der Auslieferung: „Name (SKU)“; null ohne gewählte Variante. */
+    public function variantLabel(): ?string {
+        $variant = $this->article_variant_id !== null ? $this->variant : null;
+        if (! $variant instanceof ArticleVariant) {
+            return null;
+        }
+        $name = trim((string) $variant->name);
+        $sku = trim((string) $variant->sku);
+        if ($name === '') {
+            return $sku !== '' ? $sku : null;
+        }
+
+        return $sku !== '' ? $name . ' (' . $sku . ')' : $name;
+    }
+
+    /**
+     * Positionsbezeichnung für Rechnung, Übergabe und Stundenzettel-PDF: die
+     * erfasste Bezeichnung, mit gewählter Variante ergänzt um sie — es sei
+     * denn, die Bezeichnung nennt sie schon.
+     */
+    public function billingDescription(): string {
+        $text = trim((string) $this->description);
+        $label = $this->variantLabel();
+        if ($label === null) {
+            return $text;
+        }
+        $name = trim((string) $this->variant?->name);
+        if ($text !== '' && $name !== '' && mb_stripos($text, $name) !== false) {
+            return $text;
+        }
+
+        return $text !== '' ? $text . ' – ' . $label : $label;
     }
 
     /** @return BelongsTo<Asset, $this> */

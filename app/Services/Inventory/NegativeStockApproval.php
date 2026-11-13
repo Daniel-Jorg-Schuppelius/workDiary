@@ -41,6 +41,7 @@ final class NegativeStockApproval {
         private readonly ApprovalService $approvals,
         private readonly InventoryLedger $ledger,
         private readonly SettingsRegistry $settings,
+        private readonly InventoryValuationManager $valuation,
     ) {}
 
     public function required(Organization $organization): bool {
@@ -137,6 +138,24 @@ final class NegativeStockApproval {
         $variant = $request->variant()->with('article')->firstOrFail();
         $warehouse = $request->warehouse()->firstOrFail();
         $entered = EnteredQuantity::of($variant, (string) ($request->entered_qty ?? $request->quantity), $request->entered_unit);
+        $actorUserId = $request->requested_by !== null ? (int) $request->requested_by : null;
+        $requireLot = (bool) ($variant->article->batch_required ?? false);
+
+        // Eigenbestand bewertet wie die Entnahme ohne Freigabe (MVP-1692).
+        $organization = $warehouse->organization;
+        if ($organization instanceof Organization && $request->ownership_kind === OwnershipType::Own) {
+            $this->valuation->forVariant($variant, $organization)->issue(
+                $variant, $warehouse, $entered->base,
+                allowNegative: true,
+                actorUserId: $actorUserId,
+                lot: $request->lot,
+                requireLot: $requireLot,
+                entered: $entered,
+                bin: $request->bin,
+            );
+
+            return;
+        }
 
         $this->ledger->issue(
             $variant,
@@ -144,10 +163,10 @@ final class NegativeStockApproval {
             $entered->base,
             $request->ownership_kind,
             allowNegative: true,
-            actorUserId: $request->requested_by !== null ? (int) $request->requested_by : null,
+            actorUserId: $actorUserId,
             bin: $request->bin,
             lot: $request->lot,
-            requireLot: (bool) ($variant->article->batch_required ?? false),
+            requireLot: $requireLot,
             entered: $entered,
         );
     }

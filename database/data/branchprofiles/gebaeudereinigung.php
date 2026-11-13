@@ -15,9 +15,10 @@ return [
     'label' => 'Gebäudereinigung',
     'description' => 'Gebäudereinigung: Unterhalts-, Grund-, Glas- und Sonderreinigung mit Reinigungsprofilen, Qualitätskontrolle und Reklamationen.',
     // v3: Objektplan als Protokollvorlage (MVP-1509).
-    'version' => 3,
+    // v4: Leistungsort-Vorgabe „Grundstück“ (§ 3a Abs. 3 Nr. 1 UStG, MVP-1688); eigene Einstellungen bleiben.
+    'version' => 4,
     // MVP-1053: Arbeitskosten nach § 35a EStG bei Privatkunden ausweisen; eigene Einstellungen bleiben.
-    'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers'],
+    'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers', 'invoicing.place_of_supply_kind' => 'property'],
     // Vorschlag für den Standard-Arbeitsbereich (MVP-840); nur Default, kein Zwang.
     'nav_focus_default' => 'facility',
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte

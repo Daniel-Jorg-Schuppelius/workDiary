@@ -10,6 +10,7 @@
 
 namespace App\Http\Requests\Project;
 
+use App\Enums\Invoicing\PlaceOfSupplyKind;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Enums\User\Permission;
 use App\Models\Project\Project;
@@ -45,6 +46,8 @@ class SaveProjectBillingRuleRequest extends FormRequest {
             'vat_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'net_unit_price' => ['nullable', 'numeric', 'min:0', 'max:99999999.9999'],
             'priority' => ['nullable', 'integer', 'min:0', 'max:1000'],
+            // Leistungsort (§ 3a UStG, MVP-1688); leer = Artikel der Regel, sonst Vorgabe der Organisation.
+            'place_of_supply_kind' => ['nullable', Rule::enum(PlaceOfSupplyKind::class)],
         ];
     }
 

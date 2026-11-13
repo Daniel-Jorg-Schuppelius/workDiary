@@ -27,7 +27,7 @@ use Laravel\Mcp\Server\Attributes\{Description, Name};
 
 /** MCP (MVP-1064): Kunde anlegen; ein Kunde mit derselben USt-IdNr. wird gemeldet statt doppelt angelegt. */
 #[Name('create_customer')]
-#[Description('Legt einen Kunden mit Kontaktdaten und Anschrift an. Gibt es schon einen Kunden mit derselben USt-IdNr., wird dieser gemeldet und nichts angelegt.')]
+#[Description('Legt einen Kunden mit Kontaktdaten, Anschrift, Registernummer, Merkmal Verbraucher und optional abweichender Lieferanschrift an. Gibt es schon einen Kunden mit derselben USt-IdNr., wird dieser gemeldet und nichts angelegt.')]
 final class CreateCustomerTool extends GuardedTool {
     public function __construct(private readonly ContactDetailsWriter $contacts) {}
 
@@ -40,6 +40,8 @@ final class CreateCustomerTool extends GuardedTool {
             'name' => $schema->string()->required()->description('Name bzw. Anzeigename des Kunden.'),
             'company' => $schema->string()->description('Firmenname; leer bei Privatkunden.'),
             'vat_id' => $schema->string()->description('USt-IdNr.'),
+            'register_number' => $schema->string()->description('Registerangabe, etwa „HRB 12345, Amtsgericht Musterstadt“.'),
+            'is_consumer' => $schema->boolean()->description('Verbraucher (Privatperson) statt Unternehmen; bestimmt den Leistungsort nach § 3a UStG. Ohne Angabe: Unternehmen.'),
             'contact_name' => $schema->string()->description('Ansprechpartner.'),
             'email' => $schema->string()->format('email')->description('E-Mail-Adresse.'),
             'phone' => $schema->string()->description('Telefon.'),
@@ -47,6 +49,11 @@ final class CreateCustomerTool extends GuardedTool {
             'address_zip' => $schema->string()->description('Postleitzahl.'),
             'address_city' => $schema->string()->description('Ort.'),
             'country' => $schema->string()->description('Ländercode nach ISO 3166-1 (z. B. DE).'),
+            'shipping_street' => $schema->string()->description('Abweichende Lieferanschrift: Straße und Hausnummer; leer = Lieferung an die Anschrift oben.'),
+            'shipping_supplement' => $schema->string()->description('Lieferanschrift: Adresszusatz.'),
+            'shipping_zip' => $schema->string()->description('Lieferanschrift: Postleitzahl.'),
+            'shipping_city' => $schema->string()->description('Lieferanschrift: Ort.'),
+            'shipping_country' => $schema->string()->description('Lieferanschrift: Ländercode nach ISO 3166-1.'),
         ];
     }
 
@@ -63,6 +70,8 @@ final class CreateCustomerTool extends GuardedTool {
             'name' => ['required', 'string', 'max:200'],
             'company' => ['nullable', 'string', 'max:200'],
             'vat_id' => ['nullable', 'string', 'max:64'],
+            'register_number' => ['nullable', 'string', 'max:200'],
+            'is_consumer' => ['nullable', 'boolean'],
             'contact_name' => ['nullable', 'string', 'max:200'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:64'],
@@ -70,9 +79,19 @@ final class CreateCustomerTool extends GuardedTool {
             'address_zip' => ['nullable', 'string', 'max:20'],
             'address_city' => ['nullable', 'string', 'max:255'],
             'country' => ['nullable', 'string', 'max:2', new IsoCountryCode],
+            'shipping_street' => ['nullable', 'string', 'max:255'],
+            'shipping_supplement' => ['nullable', 'string', 'max:255'],
+            'shipping_zip' => ['nullable', 'string', 'max:32'],
+            'shipping_city' => ['nullable', 'string', 'max:128'],
+            'shipping_country' => ['nullable', 'string', 'max:2', new IsoCountryCode],
         ]);
-        if (isset($data['country'])) {
-            $data['country'] = strtoupper((string) $data['country']);
+        foreach (['country', 'shipping_country'] as $field) {
+            if (isset($data[$field])) {
+                $data[$field] = strtoupper((string) $data[$field]);
+            }
+        }
+        if (array_key_exists('is_consumer', $data)) {
+            $data['is_consumer'] = (bool) $data['is_consumer'];
         }
         if (($data['vat_id'] ?? '') !== '') {
             $existing = Customer::query()->where('organization_id', $organization->id)->whereIdentifier('vat_id', (string) $data['vat_id'])->first();

@@ -31,6 +31,7 @@
                 </option>
             @endforeach
         </x-select-field>
+        @include('materials._variant_field', ['selectedMaterial' => $usage?->material?->sqid, 'selectedVariant' => $usage?->variant?->sqid])
         <x-input-field span="2" name="description" :label="__('Bezeichnung')" type="text" required maxlength="255" :value="old('description', $usage?->description)" />
         <x-input-field name="quantity" :label="__('Menge')" type="number" :value="old('quantity', $usage?->quantity?->getNumericValue() ?? 1)" required step="0.001" min="0.001" />
         <x-input-field name="unit" :label="__('Einheit')" type="text" :value="old('unit', $usage?->unit ?? 'Stk.')" required maxlength="20" />

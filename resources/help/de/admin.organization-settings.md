@@ -1,7 +1,7 @@
 ---
 title: "Organisation und Einstellungen"
 topic: admin.organization-settings
-version: 10
+version: 11
 keywords:
     - Firmeneinstellungen
     - Mandanteneinstellungen
@@ -291,6 +291,15 @@ Wie Rechnungen entstehen, beschreibt das Thema „Rechnungen & Belege“.
   **Freigeben** bestätigt hat. Wer die Rechnung angelegt hat, kann sie nicht
   selbst freigeben. Nur einschalten, wenn mindestens zwei Personen Rechnungen
   ausstellen dürfen; ohne den Haken bleibt die Freigabe freiwillig.
+
+**Leistungsort der Leistungen** (§ 3a UStG): gilt, wo weder die
+Abrechnungsregel des Projekts noch der Artikel einen Leistungsort nennen. Leer
+gilt **Allgemein** wie bisher. **Katalogleistung** passt etwa zu IT und
+Beratung (an Verbraucher im Drittland nicht steuerbar), **Grundstücksleistung**
+zu Bau, Ausbau und Gebäudereinigung (Steuer am Ort des Grundstücks). Die
+Branchenprofile IT, Steuerberatung, Bau und Ausbau, Gebäudereinigung und weitere
+Gewerke am Gebäude setzen die Vorgabe beim Installieren, wenn die Organisation
+sie noch nicht festgelegt hat.
 
 ## Mahnwesen
 

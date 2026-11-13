@@ -176,7 +176,9 @@ class InvoiceGenerator {
             // Anfahrten wurden oben unter Sperre geladen.
             $this->appendTravelCharges($invoice, $charges, $foreignCustomer, $position);
 
-            $invoice->load('items');
+            // Den Steuerfall bestimmt auch der Leistungsort der abgerechneten Leistungen (MVP-1688).
+            $invoice->load(['items', 'customer', 'organization']);
+            app(InvoiceIssueService::class)->alignTaxCase($invoice);
             $invoice->recalculate();
             $invoice->save();
 
@@ -458,6 +460,7 @@ class InvoiceGenerator {
                     'timesheet.project:id,name,foreign_customer_id',
                     'timesheet.project.foreignCustomer:id,name,company',
                     'material:id,article_id',
+                    'variant:id,article_id,sku,name',
                 ])
                 ->lockForUpdate()
                 ->get();
@@ -497,11 +500,13 @@ class InvoiceGenerator {
                     continue;
                 }
 
-                $materialDesc = trim((string) $usage->description) ?: (string) __('Material');
+                // Gewählte Variante wie bei der Auslieferung in der Bezeichnung (MVP-1690).
+                $materialDesc = $usage->billingDescription() ?: (string) __('Material');
 
                 $invoice->items()->create([
                     'material_usage_id' => $usage->id,
                     'article_id' => $usage->material?->article_id,
+                    'article_variant_id' => $usage->article_variant_id,
                     'service_date' => optional($usage->timesheet?->work_date)->toDateString(),
                     'description' => $this->bookingLine($materialDesc, $usage->timesheet?->project?->foreignCustomer, (int) $invoice->organization_id),
                     'quantity' => $usage->quantity?->getNumericValue() ?? '0',

@@ -44,4 +44,10 @@ return [
     'contact' => [
         'salutation' => 'Salutation',
     ],
+    // Abweichende Lieferanschrift am Kunden (MVP-1689).
+    'shipping' => [
+        'heading' => 'Delivery address',
+        'description' => 'Fill in only if goods go to a different address than the invoice. If left empty, the billing address is the delivery address.',
+        'supplement' => 'Address supplement',
+    ],
 ];

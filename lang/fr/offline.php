@@ -49,7 +49,10 @@ return [
     'field' => [
         'missing' => 'Manquant',
         'lock' => 'Verrou',
+        'stock' => 'Stock',
     ],
+    // Conflit dû à un stock manquant (MVP-1691) : uniquement avec le droit « Autoriser les stocks négatifs ».
+    'allow_negative_hint' => 'Comptabilise la consommation en stock négatif malgré le manque de stock. Si votre organisation exige une seconde validation, une demande est créée dans la boîte des approbations.',
     'remote_hint' => 'Saisi sur un autre appareil — le contenu s’y trouve. Ici, vous pouvez seulement abandonner le conflit.',
     'resolve_failed' => 'La décision n’a pas pu être transmise. Veuillez réessayer avec une connexion.',
     'unresolved' => 'ouvert',

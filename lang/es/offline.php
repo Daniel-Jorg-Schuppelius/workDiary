@@ -49,7 +49,10 @@ return [
     'field' => [
         'missing' => 'Falta',
         'lock' => 'Bloqueo',
+        'stock' => 'Existencias',
     ],
+    // Conflicto por falta de existencias (MVP-1691): solo con el permiso «Autorizar existencias negativas».
+    'allow_negative_hint' => 'Registra el consumo en existencias negativas pese a la falta de existencias. Si su organización exige una segunda autorización, se crea una solicitud en la bandeja de aprobaciones.',
     'remote_hint' => 'Registrado en otro dispositivo: el contenido está allí. Aquí solo puede descartar el conflicto.',
     'resolve_failed' => 'No se pudo transmitir la decisión. Vuelva a intentarlo con conexión.',
     'unresolved' => 'abierto',

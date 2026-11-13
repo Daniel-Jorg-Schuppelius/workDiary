@@ -90,6 +90,7 @@ class ServiceDefaultResolver {
             itemType: (string) ($rule->item_type ?: ($article->itemType ?? 'service')),
             source: ResolvedService::SOURCE_PROJECT_RULE,
             priceIsExplicit: ($rule->net_unit_price?->toFloat() ?? 0.0) > 0.0,
+            placeOfSupplyKind: $rule->place_of_supply_kind ?? $article?->placeOfSupplyKind,
         );
     }
 
@@ -117,6 +118,7 @@ class ServiceDefaultResolver {
             standardText: $article?->description,
             itemType: $article->itemType ?? 'service',
             source: ResolvedService::SOURCE_ORGANIZATION,
+            placeOfSupplyKind: $article?->placeOfSupplyKind,
         );
     }
 

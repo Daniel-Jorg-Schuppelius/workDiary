@@ -1,7 +1,7 @@
 ---
 title: "Rechnungseingang"
 topic: finance.incoming-invoices
-version: 10
+version: 11
 keywords:
     - Mehrere Steuersätze
     - Eingangsrechnung
@@ -116,6 +116,12 @@ solange etwas zuzuordnen ist.
 des Verkäufers (Handelsregister, BT-30), zeigt die Detailseite sie bei den
 Rechnungsdaten. Sie ist keine Steuernummer und zählt nicht für die Zuordnung;
 bis zu diesem Update las WorkDiary sie aus UBL-Rechnungen als Steuernummer.
+Ältere Eingänge berichtigt der Betrieb einmalig mit
+`php artisan incoming-invoices:repair-seller-ids`: Der Befehl liest Steuer- und
+Registernummer aus dem abgelegten Original neu, lässt Zuordnungen, Entscheidungen
+und Übergaben stehen und bietet offene Eingänge erneut der Zuordnung an.
+Eingänge, die über die falsch gelesene Steuernummer zugeordnet wurden, nennt der
+Lauf zur Prüfung.
 
 **Zuordnung:** Automatisch zugeordnet wird nur, wenn genau eine Partei über
 ein exaktes Merkmal des Belegs trifft: USt-IdNr., Steuernummer oder IBAN.

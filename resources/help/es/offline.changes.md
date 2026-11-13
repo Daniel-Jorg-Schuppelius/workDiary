@@ -1,7 +1,7 @@
 ---
 title: "Cambios sin conexión"
 topic: offline.changes
-version: 2
+version: 3
 keywords:
     - trabajar sin conexión
     - sin internet
@@ -37,5 +37,6 @@ Un conflicto significa que el registro **no** se adoptó porque algo cambió des
 - **Conservar la otra versión** o **Descartar**: su versión se elimina.
 - **Enviar mi versión**: solo para un fichaje modificado; su corrección se aplica al nuevo estado.
 - **Editar**: ajustar campos (como fecha, duración o motivo) y enviarlos como nueva entrada.
+- **Existencias insuficientes**: si al material solo le faltan existencias, «Editar» ofrece, con el permiso «Autorizar existencias negativas», la casilla «Permitir stock negativo». Si la organización exige cuatro ojos, el envío crea una solicitud en la bandeja de aprobaciones. Sin el permiso el conflicto se mantiene; ajuste la cantidad o descártelo.
 
 Cada decisión queda registrada en el registro de auditoría. La página también muestra conflictos abiertos surgidos en otro dispositivo; su contenido está allí, de modo que aquí solo pueden descartarse.

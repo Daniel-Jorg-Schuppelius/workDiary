@@ -914,6 +914,9 @@ document.addEventListener("click", (event) => {
     // Leeres data-parent = "passt zu jedem Elternwert" (z. B. Org-Projekt).
     // `data-depends-autoselect="off"`: die leere Option bleibt gewählt, auch wenn
     // nur eine passt (Charge der Entnahme: leer = FEFO).
+    // `data-depends-strict`: ohne Eltern-Wert passt keine Option, und das Feld
+    // (`.fieldset`) verschwindet, solange nur die leere Option bleibt
+    // (Variante des Materials: nur bei mehreren Varianten wählbar).
     /** @param {ParentNode} root */
     const bindDependentSelects = (root) => {
         if (!root) return;
@@ -929,6 +932,7 @@ document.addEventListener("click", (event) => {
             /** @param {boolean} autoSelectSingle */
             const apply = (autoSelectSingle) => {
                 const pv = parent.value;
+                const strict = child.dataset.dependsStrict !== undefined;
                 /** @type {HTMLOptionElement[]} */
                 const visible = [];
                 child.querySelectorAll("option").forEach((opt) => {
@@ -938,7 +942,7 @@ document.addEventListener("click", (event) => {
                         return;
                     }
                     const ov = opt.dataset.parent ?? "";
-                    const match = pv === "" || ov === "" || ov === pv;
+                    const match = ov === "" || ov === pv || (pv === "" && !strict);
                     opt.hidden = !match;
                     opt.disabled = !match;
                     if (match) visible.push(opt);
@@ -952,6 +956,10 @@ document.addEventListener("click", (event) => {
                 const sel = child.selectedOptions[0];
                 if (child.value && sel && sel.hidden) {
                     child.value = "";
+                }
+                if (strict) {
+                    const field = /** @type {HTMLElement | null} */ (child.closest(".fieldset"));
+                    if (field) field.hidden = visible.length === 0;
                 }
                 if (
                     autoSelectSingle &&

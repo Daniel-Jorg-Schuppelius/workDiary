@@ -1,7 +1,7 @@
 ---
 title: "Image de marque"
 topic: admin.branding
-version: 2
+version: 3
 keywords:
     - marque blanche
     - identité visuelle
@@ -50,6 +50,10 @@ Dans le formulaire en dessous, vous gérez :
 - **Mentions légales et pied de page PDF** : n° de TVA, numéro fiscal,
   titulaire du compte, banque, IBAN, BIC, registre du commerce et texte
   du pied de page des documents PDF.
+  Saisissez le registre du commerce avec le tribunal d’immatriculation, par
+  exemple « HRB 12345, Amtsgericht Musterstadt » ; la facture électronique
+  l’indique comme identifiant d’immatriculation de l’organisation (BT-30),
+  figé à l’émission.
 - **Couleurs** : couleur principale et couleur d'accent ; elles
   remplacent les couleurs de base de l'interface.
 - **Configuration PDF par type de document** : variante de logo (claire,

@@ -568,9 +568,26 @@ return [
         'label' => 'El destinatario debe el IVA (§ 13b UStG)',
         'hint' => 'Cliente nacional que debe el impuesto por sus servicios, p. ej. obras de construcción para empresas constructoras. Las facturas salen sin IVA y con la mención «Inversión del sujeto pasivo» (casilla 60).',
     ],
+    // Verbraucher und Leistungsort nach § 3a UStG (MVP-1688).
+    'consumer' => [
+        'label' => 'Consumidor (no empresa)',
+        'hint' => 'Particular u otro no empresario. Determina el lugar de la prestación según el § 3a UStG: para consumidores fuera de la UE, los servicios del catálogo (asesoramiento, tratamiento de datos, derechos, publicidad, alquiler de bienes muebles, etc.) no tributan en Alemania; los demás servicios llevan IVA alemán. Sin marcar, el cliente se considera empresa.',
+        'recipient' => 'Destinatario',
+        'yes' => 'Consumidor',
+        'no' => 'Empresa',
+        'reverse_charge_conflict' => 'Un consumidor nunca debe el IVA por sí mismo (el § 13b apdo. 5 UStG solo se aplica a empresarios). Marque solo una de las dos opciones.',
+    ],
+    'place_of_supply' => [
+        'label' => 'Lugar de la prestación (§ 3a UStG)',
+        'hint_article' => 'Solo para servicios. Servicio del catálogo: no tributa en Alemania para consumidores fuera de la UE. Inmueble: IVA alemán si el inmueble está en Alemania (lugar de intervención del pedido; sin indicación, Alemania); si no, no tributa, para todos los clientes.',
+        'hint_rule' => 'Se aplica a los tiempos de esta regla. Vacío: lugar de la prestación del artículo de la regla; si no, el valor por defecto de la organización.',
+        'inherit_organization' => 'Valor por defecto de la organización',
+        'inherit_article' => 'Como el artículo o valor por defecto de la organización',
+    ],
     // Steuerfall des Rechnungsentwurfs (MVP-1623).
     'tax_case' => [
         'changed_on_issue' => 'El supuesto fiscal del cliente ha cambiado desde la última edición del borrador (inversión del sujeto pasivo, exportación o exención). El borrador se ha ajustado: compruebe los importes y vuelva a emitir la factura.',
         'note_kept' => 'El texto de la factura se modificó manualmente y por eso no se ha ajustado: compruebe usted mismo la indicación del supuesto fiscal (p. ej., inversión del sujeto pasivo, exportación o exención).',
+        'place_of_supply_mixed' => 'Las posiciones de esta factura tienen distintos lugares de prestación (§ 3a UStG) y, por tanto, distintos supuestos fiscales. Divida la factura: una factura por supuesto fiscal, por ejemplo los servicios inmobiliarios o del catálogo por separado de los demás.',
     ],
 ];

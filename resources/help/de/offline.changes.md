@@ -1,7 +1,7 @@
 ---
 title: "Offline-Änderungen"
 topic: offline.changes
-version: 2
+version: 3
 keywords:
     - offline arbeiten
     - ohne Internet
@@ -39,5 +39,6 @@ Ein Konflikt heißt: Die Erfassung wurde **nicht** übernommen, weil sich seit d
 - **Fremden Stand übernehmen** bzw. **Verwerfen** — Ihre Fassung entfällt.
 - **Meine Fassung senden** — nur bei geänderter Stempelung: Ihre Korrektur geht auf den neuen Stand.
 - **Bearbeiten** — Felder anpassen (etwa Datum, Dauer oder Begründung) und als neuen Eintrag senden.
+- **Zu wenig Bestand** — fehlt beim Material nur Lagerbestand, bietet „Bearbeiten“ mit dem Recht „Negative Bestände freigeben“ den Haken „Negativen Bestand zulassen“. Verlangt die Organisation vier Augen, wird daraus beim Senden ein Antrag im Genehmigungs-Eingang. Ohne das Recht bleibt der Konflikt; passen Sie die Menge an oder verwerfen Sie ihn.
 
 Jede Entscheidung wird im Prüfprotokoll festgehalten. Offene Konflikte zeigt die Seite auch, wenn sie auf einem anderen Gerät entstanden sind; die Inhalte liegen dann dort, hier lässt sich der Konflikt nur verwerfen.

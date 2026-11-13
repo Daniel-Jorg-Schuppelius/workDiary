@@ -56,7 +56,9 @@ class CustomerMatchProfile extends AbstractMatchProfile {
         $attributes = array_intersect_key($mapped, array_flip((new Customer)->getFillable()));
         // F8/E6: Adresse und Bankverbindung gehören nach contact_*; die
         // Inline-Spalten füllt danach die Projektion (nie inline anlegen).
-        $contactFields = ContactDetailsWriter::pullInline($attributes);
+        // Die Lieferanschrift (MVP-1689) ist kein Modellfeld und kommt aus dem ganzen Wertesatz.
+        $contactFields = ContactDetailsWriter::pullInline($attributes)
+            + array_intersect_key($mapped, array_flip(ContactDetailsWriter::SHIPPING_FIELDS));
         $attributes['organization_id'] = $organization->id;
         if (! array_key_exists('billable', $attributes)) {
             $attributes['billable'] = true;

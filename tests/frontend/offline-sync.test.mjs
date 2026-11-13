@@ -321,7 +321,7 @@ const {
     buildPayload, flush, updateBadge, uploadPhotos,
     outboxAll, outboxPut, outboxDelete, storeAll, storePut, clearAll,
     courseStore, courseGet, courseDelete, currentOwner, enforceOwner,
-    resolveConflict, resendConflict, editorValue,
+    resolveConflict, resendConflict, editorValue, serverStateText, offersNegativeStock,
 } = __testables;
 
 /**
@@ -982,6 +982,37 @@ test("buildPayload: material.usage nimmt Projekt, Tag, Material, Menge und Einhe
     assert.deepEqual(buildPayload("material.usage", form), {
         project_id: "prj1", date: "2030-01-15", description: "Dübel", quantity: "8", unit: "Stk.",
     });
+});
+
+test("buildPayload: material.usage nimmt Variante und „Negativen Bestand zulassen“ mit (MVP-1690/1691)", () => {
+    /** @type {FakeForm} */
+    const form = {
+        dataset: {},
+        querySelector: () => null,
+        _entries: [["project_id", "prj1"], ["date", "2030-01-15"], ["material_id", "mat1"], ["article_variant_id", "var1"], ["description", "Dose"], ["quantity", "2"], ["unit", "Stk."], ["allow_negative", "0"], ["allow_negative", "1"]],
+    };
+    assert.deepEqual(buildPayload("material.usage", form), {
+        project_id: "prj1", date: "2030-01-15", material_id: "mat1", article_variant_id: "var1", description: "Dose", quantity: "2", unit: "Stk.", allow_negative: "1",
+    });
+});
+
+test("offersNegativeStock: nur Fehlbestand beim Materialverbrauch, nur mit Recht, nur mit eigener Fassung (MVP-1691)", () => {
+    /** @type {SyncEntry} */
+    const shortage = { client_uuid: "k1", type: "material.usage", payload: { quantity: "8" }, server: { field: "quantity", stock: "zu wenig", shortage: true } };
+    assert.equal(offersNegativeStock(shortage, true), true);
+    assert.equal(offersNegativeStock(shortage, false), false);
+    assert.equal(offersNegativeStock({ ...shortage, server: { field: "unit", stock: "Einheit" } }, true), false);
+    assert.equal(offersNegativeStock({ ...shortage, remote: true }, true), false);
+    assert.equal(offersNegativeStock({ ...shortage, payload: null }, true), false);
+    assert.equal(offersNegativeStock({ ...shortage, type: "time.entry" }, true), false);
+});
+
+test("serverStateText: beschriftet und lässt interne Schlüssel aus", () => {
+    assert.equal(
+        serverStateText({ field: "quantity", stock: "Nur 5 Stk verfügbar.", shortage: true }, { stock: "Lager" }),
+        "Lager: Nur 5 Stk verfügbar.",
+    );
+    assert.equal(serverStateText({ missing: "Menge" }, { missing: "Es fehlt" }), "Es fehlt: Menge");
 });
 
 test("buildPayload: attendance.correct trägt Stempelung und gezeigten Stand mit", () => {

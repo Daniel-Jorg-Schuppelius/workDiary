@@ -618,6 +618,7 @@ return [
         'values_captured' => 'Werte des Eingangs erfasst',
         'tax_case_set' => 'Steuerfall des Eingangs gesetzt',
         'reanalyzed' => 'Erkennung des Eingangs wiederholt',
+        'seller_ids_corrected' => 'Verkäufer-Steuernummer aus dem Original berichtigt',
         'revalidated' => 'Prüfung des Eingangs wiederholt',
         'assigned' => 'Eingangsrechnung zugeordnet',
         'sender_rule_saved' => 'Absenderregel gespeichert',

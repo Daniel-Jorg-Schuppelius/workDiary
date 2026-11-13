@@ -1,7 +1,7 @@
 ---
 title: "Managing projects"
 topic: projects.manage
-version: 9
+version: 10
 keywords:
     - create project
     - project management
@@ -100,6 +100,13 @@ If the project's billing rule names the unit "flat" or "Pauschale", each order
 bills one line with quantity 1 at the rule's price; the top-up to agreed hours does
 not apply then, because the flat rate covers the order regardless of its duration.
 All other units, such as hour, day or pcs, bill by duration.
+
+The billing rule also names the **place of supply** of its times (§ 3a UStG):
+**General**, **Catalogue service** or **Service connected with immovable
+property**. Empty means the place of supply of its article, otherwise the
+organisation default. For property services the property is at the site of the
+order, in Germany if none is stated. The rules table shows a chosen type next to
+the item type.
 
 ## Common mistakes
 

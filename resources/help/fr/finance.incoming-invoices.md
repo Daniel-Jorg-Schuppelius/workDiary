@@ -1,7 +1,7 @@
 ---
 title: "Factures reçues"
 topic: finance.incoming-invoices
-version: 10
+version: 11
 keywords:
     - plusieurs taux de TVA
     - facture fournisseur
@@ -130,6 +130,12 @@ le numéro d'immatriculation du vendeur (registre du commerce, BT-30), la page d
 détail l'affiche avec les données de la facture. Ce n'est pas un numéro fiscal
 et il ne compte pas pour l'attribution ; jusqu'à cette mise à jour, WorkDiary le
 lisait dans les factures UBL comme numéro fiscal.
+L'exploitation corrige une fois les entrées plus anciennes avec
+`php artisan incoming-invoices:repair-seller-ids` : la commande relit le numéro
+fiscal et le numéro d'immatriculation dans l'original archivé, laisse en place
+les attributions, décisions et transmissions et propose de nouveau les entrées
+ouvertes à l'attribution. Les entrées attribuées via le numéro fiscal mal lu
+sont listées pour vérification.
 
 **Attribution :** Un document n’est attribué automatiquement que si une seule
 partie correspond à un identifiant exact du document : numéro de TVA,

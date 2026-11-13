@@ -26,6 +26,10 @@
                     {{ $article->status->label() }}
                 </x-status-badge>
                 <span class="text-base-content/70">{{ __('article.field.base_unit') }}: <strong>{{ $article->base_unit }}</strong></span>
+                @if ($article->type === \App\Enums\Article\ArticleType::Service && $article->place_of_supply_kind !== null)
+                    {{-- MVP-1688: Leistungsort der Leistung, sonst Vorgabe der Organisation --}}
+                    <span class="text-base-content/70">{{ __('invoicing.place_of_supply.label') }}: <strong>{{ $article->place_of_supply_kind->label() }}</strong></span>
+                @endif
                 @foreach ($tags ?? collect() as $tag)
                     <x-tag-badge :tag="$tag" />
                 @endforeach

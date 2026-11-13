@@ -26,6 +26,7 @@
         'vat_id' => __('USt-IdNr.'),
         'tax_number' => __('Steuernr.'),
         'register_number' => __('invoicing.register_number'),
+        'is_consumer' => __('invoicing.consumer.recipient'),
         'contact_name' => __('Ansprechpartner'),
         'email' => __('E-Mail'),
         'phone' => __('Telefon'),
@@ -34,6 +35,8 @@
         'address_street' => __('Straße'),
         'address_zip' => __('PLZ'),
         'address_city' => __('Ort'),
+        // Satellit ohne Spalte (MVP-1689): CustomerMergeService behält die des Ziels oder übernimmt die gewählte.
+        'shipping_address' => __('stammdaten.shipping.heading'),
         'hourly_rate' => __('Stundensatz'),
         'internal_rate' => __('Interner Satz'),
         'comment' => __('Notiz'),
@@ -41,6 +44,11 @@
         'bank_iban' => __('IBAN'),
         'debtor_no' => __('Debitor-Nr.'),
     ];
+    $valueOf = static fn (\App\Models\Customer\Customer $customer, string $field): mixed => match ($field) {
+        'shipping_address' => implode(', ', $customer->shippingAddressLines()),
+        'is_consumer' => $customer->is_consumer ? __('invoicing.consumer.yes') : __('invoicing.consumer.no'),
+        default => $customer->getAttribute($field),
+    };
 @endphp
 
 @section('content')

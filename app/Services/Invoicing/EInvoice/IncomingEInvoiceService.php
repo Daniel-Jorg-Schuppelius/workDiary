@@ -820,6 +820,51 @@ class IncomingEInvoiceService {
     }
 
     /**
+     * Verkäuferkennungen aus dem abgelegten Original neu lesen (MVP-1696). Bis
+     * php-erechnung-toolkit 0.22 las der Parser bei UBL ohne Steuernummer die
+     * Registerkennung (BT-30) als Steuernummer. Es ändern sich nur Steuer- und
+     * Registernummer der Zusammenfassung; Zuordnung, Entscheidung und Übergabe
+     * bleiben. Jeder strukturierte Eingang wird einmal bearbeitet — danach trägt
+     * die Zusammenfassung `seller_register_number`, auch leer. War die
+     * Steuernummer falsch, bekommt ein offener, nicht zugeordneter Eingang den
+     * Abgleich erneut.
+     *
+     * @return array{before: ?string, tax_number: ?string, register_number: ?string, changed: bool, rematched: bool}|null null = schon bearbeitet, nicht strukturiert oder Original nicht lesbar
+     */
+    public function correctSellerIds(\App\Models\Invoicing\IncomingEInvoice $incoming, bool $dryRun = false): ?array {
+        $summary = (array) $incoming->summary;
+        if ($incoming->recognition !== \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured || array_key_exists('seller_register_number', $summary)) {
+            return null;
+        }
+        $original = $incoming->storedOriginal();
+        $parsed = $original !== null ? $this->parse($original['contents'], $original['mime'], $original['path']) : null;
+        if ($parsed === null) {
+            return null;
+        }
+
+        $before = is_scalar($summary['seller_tax_number'] ?? null) ? (string) $summary['seller_tax_number'] : null;
+        $taxNumber = $parsed->getSeller()->getTaxRegistrationId();
+        $registerNumber = $parsed->getSeller()->getLegalRegistrationId();
+        $changed = $before !== $taxNumber;
+        if ($dryRun) {
+            return ['before' => $before, 'tax_number' => $taxNumber, 'register_number' => $registerNumber, 'changed' => $changed, 'rematched' => false];
+        }
+
+        $incoming->forceFill(['summary' => [...$summary, 'seller_tax_number' => $taxNumber, 'seller_register_number' => $registerNumber]])->save();
+        if ($changed) {
+            $incoming->audit('incoming_einvoice.seller_ids_corrected', [
+                'seller_tax_number' => ['old' => $before, 'new' => $taxNumber],
+                'seller_register_number' => $registerNumber,
+            ]);
+        }
+        $rematched = $changed
+            && $incoming->status !== \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected
+            && app(IncomingInvoiceMatcher::class)->autoAssign($incoming);
+
+        return ['before' => $before, 'tax_number' => $taxNumber, 'register_number' => $registerNumber, 'changed' => $changed, 'rematched' => $rematched];
+    }
+
+    /**
      * Fachliche Entscheidung (MVP-1110): Übergang nach dem Enum-Vertrag,
      * Entscheider, Zeitpunkt, Anmerkung und Audit — Einzelentscheidung und
      * Sammelfreigabe (MVP-1249) gehen denselben Weg. Eine Rückfrage darf mit

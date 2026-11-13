@@ -2186,6 +2186,7 @@ return [
         'incoming_e_invoice_status' => ['received' => 'Received', 'approved' => 'Approved (review)', 'rejected' => 'Rejected', 'question' => 'Query', 'payment_released' => 'Payment released'],
         'incoming_invoice_recognition' => ['structured' => 'E-invoice (structured)', 'extracted' => 'Recognised from PDF or image', 'none' => 'Not recognised (needs clarification)'],
         'incoming_invoice_tax_case' => ['regular' => 'Input tax from the invoice', 'reverse_charge_eu' => '§ 13b (1) UStG: service from another EU country', 'reverse_charge' => '§ 13b (2) UStG: recipient liable for tax (e.g. construction services)', 'intra_community_acquisition' => 'Intra-Community acquisition (§ 1a UStG)'],
+        'place_of_supply_kind' => ['general' => 'General (§ 3a (1)/(2) UStG)', 'catalog' => 'Catalogue service (§ 3a (4) UStG)', 'property' => 'Service connected with immovable property (§ 3a (3) no. 1 UStG)'],
         'incoming_invoice_match_kind' => ['vat_id' => 'VAT ID', 'tax_number' => 'Tax number', 'iban' => 'IBAN', 'sender_rule' => 'Sender rule', 'manual' => 'Manual', 'rule' => 'Inbox rule', 'template' => 'Document template'],
         'incoming_invoice_transfer_status' => ['pending' => 'Pending', 'waiting' => 'Waiting for clarification', 'failed' => 'Failed', 'transferred' => 'Transferred', 'linked' => 'Already present, linked'],
         'invoice_schedule_status' => ['active' => 'Active', 'paused' => 'Paused', 'ended' => 'Ended'],

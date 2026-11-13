@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
  * @property int|null $organization_id
  * @property int $article_id
  * @property string|null $sku
+ * @property string|null $name
  * @property string $option_signature
  * @property ArticleStatus $status
  * @property bool $is_default

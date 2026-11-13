@@ -1,7 +1,7 @@
 ---
 title: "Artikelstamm"
 topic: articles.master
-version: 5
+version: 6
 keywords:
     - Artikelstammdaten
     - Artikel anlegen
@@ -57,6 +57,15 @@ Die zusätzlichen **Einheiten** wirken in Lagerbuchung, Scan, Bestellung und War
 Führt eine Warenwirtschaft die Artikelnummern (Seite „Nummernkreise“, Kreis „Artikel“), sind Artikelnummer und GTIN im Dialog nur lesbar; neue Artikel und Varianten erhalten ihre Nummer mit dem Abgleich.
 
 **Steuerklasse:** Im Artikelformular halten Sie die Steuerklasse fest (Regelsatz, ermäßigt, erhöht). Sie wird mit dem Artikel gespeichert, beim Import übernommen und bei Dubletten und Zusammenführungen verglichen; den Steuersatz eines Belegs setzt weiter die Position.
+
+**Leistungsort:** Für Leistungen wählen Sie im Artikelformular die
+Leistungsort-Art (§ 3a UStG): **Allgemein**, **Katalogleistung** (an Verbraucher
+im Drittland nicht steuerbar) oder **Grundstücksleistung** (Steuer am Ort des
+Grundstücks, für alle Kunden). Leer gilt die Vorgabe der Organisation. Die
+Detailseite zeigt eine gewählte Art; der CSV-Import nimmt sie in der Spalte
+`place_of_supply_kind` (Werte `general`, `catalog`, `property`, Kopfzeile etwa
+„Leistungsort“). Wie sie den Steuerfall bestimmt, beschreibt das Hilfethema
+**Rechnungen & Belege**.
 
 ## Fertigung
 

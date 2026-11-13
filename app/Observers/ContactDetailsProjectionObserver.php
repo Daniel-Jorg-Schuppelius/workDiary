@@ -44,6 +44,10 @@ class ContactDetailsProjectionObserver {
         }
 
         if ($record instanceof ContactAddress) {
+            // Die Projektion ist die Rechnungsanschrift; eine Lieferanschrift berührt sie nie (MVP-1689).
+            if ($record->kind === ContactAddress::KIND_SHIPPING) {
+                return;
+            }
             $primary = $parent->primaryAddress();
             $parent->updateQuietly([
                 'address_street' => $primary?->street,

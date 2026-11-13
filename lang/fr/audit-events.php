@@ -618,6 +618,7 @@ return [
         'values_captured' => 'Valeurs du document saisies',
         'tax_case_set' => 'Cas fiscal du document saisi',
         'reanalyzed' => 'Reconnaissance du document répétée',
+        'seller_ids_corrected' => 'Numéro fiscal du vendeur corrigé d’après l’original',
         'revalidated' => 'Vérification du document répétée',
         'assigned' => 'Facture entrante attribuée',
         'sender_rule_saved' => 'Règle d’expéditeur enregistrée',

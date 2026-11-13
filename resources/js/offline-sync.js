@@ -508,8 +508,9 @@ function buildPayload(type, form) {
     }
 
     if (type === "material.usage") {
-        // Material auf „Heute“ (MVP-1594): Projekt und Tag, der Stundenzettel folgt beim Abgleich.
-        return formFields(form, ["project_id", "date", "material_id", "description", "quantity", "unit"]);
+        // Material auf „Heute“ (MVP-1594): Projekt und Tag, der Stundenzettel folgt beim Abgleich;
+        // Variante (MVP-1690) und „Negativen Bestand zulassen“ wie online.
+        return formFields(form, ["project_id", "date", "material_id", "article_variant_id", "description", "quantity", "unit", "allow_negative"]);
     }
 
     if (type === "attendance.correct") {
@@ -844,6 +845,61 @@ function displayValue(value) {
     return text;
 }
 
+/** Schlüssel des Serverstands, die nur das Skript liest (Feld des Lagerfehlers, Fehlbestand). */
+const SERVER_STATE_INTERNAL = new Set(["field", "shortage"]);
+
+/**
+ * Serverstand für den Hinweis: „Feld: Wert, …“ ohne interne Schlüssel.
+ * @param {Record<string, unknown>} server
+ * @param {Record<string, string>} fieldLabels
+ */
+function serverStateText(server, fieldLabels) {
+    return Object.entries(server)
+        .filter(([key]) => !SERVER_STATE_INTERNAL.has(key))
+        .map(([key, value]) => `${fieldLabels[key] || key}: ${displayValue(value)}`)
+        .join(", ");
+}
+
+/**
+ * Fehlt einem Materialverbrauch nur Bestand (MVP-1691), löst „Negativen
+ * Bestand zulassen“ den Konflikt — angeboten nur mit Recht `inventory.negative`
+ * und nur für Konflikte, deren Fassung auf diesem Gerät liegt. Recht und
+ * Vier-Augen prüft der Server beim erneuten Senden wie online.
+ * @param {SyncEntry} item
+ * @param {boolean} mayGoNegative
+ */
+function offersNegativeStock(item, mayGoNegative) {
+    return mayGoNegative && item.type === "material.usage" && !item.remote && !!item.payload && item.server?.shortage === true;
+}
+
+/**
+ * Haken „Negativen Bestand zulassen“ im Bearbeiten-Formular des Konflikts.
+ * @param {string} label
+ * @param {string} hint
+ */
+function negativeStockField(label, hint) {
+    const wrap = document.createElement("label");
+    wrap.className = "fieldset sm:col-span-2";
+    const row = document.createElement("span");
+    row.className = "flex items-center gap-2";
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.className = "checkbox checkbox-sm";
+    input.dataset.editorAllowNegative = "1";
+    const caption = document.createElement("span");
+    caption.className = "fieldset-label";
+    caption.textContent = label;
+    row.append(input, caption);
+    wrap.append(row);
+    if (hint) {
+        const note = document.createElement("span");
+        note.className = "text-xs text-muted";
+        note.textContent = hint;
+        wrap.append(note);
+    }
+    return wrap;
+}
+
 /**
  * @param {string} key
  * @param {unknown} value
@@ -905,6 +961,7 @@ async function renderChangesPage(root) {
     const typeLabels = /** @type {Record<string, string>} */ (dataJson(root, "typeLabels") || {});
     const fieldLabels = /** @type {Record<string, string>} */ (dataJson(root, "fieldLabels") || {});
     const editFields = /** @type {Record<string, string[]>} */ (dataJson(root, "editFields") || {});
+    const mayGoNegative = root.dataset.allowNegative === "1";
     const resolveUrl = root.dataset.resolveUrl || "";
     const failed = () => {
         if (typeof window.notifyAction === "function") {
@@ -1002,12 +1059,7 @@ async function renderChangesPage(root) {
                 if (hint && item.server) {
                     hint.textContent = (
                         root.dataset.labelConflictHint || ":server"
-                    ).replace(
-                        ":server",
-                        Object.entries(item.server)
-                            .map(([k, v]) => `${fieldLabels[k] || k}: ${displayValue(v)}`)
-                            .join(", "),
-                    );
+                    ).replace(":server", serverStateText(item.server, fieldLabels));
                     hint.hidden = false;
                 }
 
@@ -1047,6 +1099,9 @@ async function renderChangesPage(root) {
                         for (const key of keys) {
                             fieldsBox.appendChild(editorField(key, own[key], fieldLabels[key] || key));
                         }
+                        if (offersNegativeStock(item, mayGoNegative)) {
+                            fieldsBox.appendChild(negativeStockField(root.dataset.labelAllowNegative || "", root.dataset.labelAllowNegativeHint || ""));
+                        }
                         editor.hidden = false;
                     });
                     editor.querySelector("[data-editor-cancel]")?.addEventListener("click", () => {
@@ -1061,6 +1116,11 @@ async function renderChangesPage(root) {
                             const value = input.value.trim();
                             if (value === "") delete payload[key];
                             else payload[key] = value;
+                        }
+                        const negative = /** @type {HTMLInputElement | null} */ (editor.querySelector("[data-editor-allow-negative]"));
+                        if (negative) {
+                            if (negative.checked) payload.allow_negative = "1";
+                            else delete payload.allow_negative;
                         }
                         if (item.current_version) payload.base_version = item.current_version;
                         if (!(await resendConflict(resolveUrl, item, payload, true))) failed();
@@ -1272,6 +1332,8 @@ export function initOfflineSync() {
 export const __testables = {
     buildPayload,
     formFields,
+    serverStateText,
+    offersNegativeStock,
     resolveConflict,
     resendConflict,
     editorValue,

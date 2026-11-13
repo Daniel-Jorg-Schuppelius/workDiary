@@ -17,13 +17,16 @@ namespace App\Enums\Invoicing;
  * {@see \App\Services\Invoicing\InvoiceIssueService::alignTaxCase()}).
  * `NoteKept`: Der Fall ist angepasst, der Hinweistext aber von Hand geändert
  * und deshalb stehen geblieben — die Person prüft ihn selbst.
+ * `Mixed`: Die Positionen ergeben nach ihrem Leistungsort verschiedene
+ * Steuerfälle (MVP-1688); der Entwurf bleibt, ausgestellt wird er nicht.
  */
 enum TaxCaseAlignment: string {
     case Unchanged = 'unchanged';
     case Aligned = 'aligned';
     case NoteKept = 'note_kept';
+    case Mixed = 'mixed';
 
     public function changed(): bool {
-        return $this !== self::Unchanged;
+        return $this === self::Aligned || $this === self::NoteKept;
     }
 }

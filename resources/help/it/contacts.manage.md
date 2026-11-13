@@ -1,8 +1,11 @@
 ---
 title: "Clienti & fornitori"
 topic: contacts.manage
-version: 18
+version: 20
 keywords:
+    - consumatore
+    - privato
+    - Indirizzo di consegna
     - Anteprima come cliente
     - Password iniziale
     - Crea accesso
@@ -151,9 +154,49 @@ registrazione del cliente (BT-47). Se il cliente è debitore dell'imposta (§ 13
 UStG) e non ha una partita IVA, il numero di registro basta per la fattura
 elettronica.
 
+**Indirizzo di consegna:** se la merce va a un indirizzo diverso da quello
+della fattura, lo inserisca nella sezione richiudibile **Indirizzo di
+consegna** (via, complemento dell'indirizzo, CAP, località, paese). Se la
+sezione resta vuota, l'indirizzo di fatturazione è l'indirizzo di consegna;
+svuotando tutti i campi, un indirizzo di consegna esistente viene eliminato.
+Elenchi, intestazione del documento e programma contabile mantengono
+l'indirizzo di fatturazione. Per una cessione intracomunitaria la fattura
+elettronica indica l'indirizzo di consegna con il paese di consegna; una
+fattura emessa mantiene quello valido all'emissione, storno e fattura di
+rettifica riprendono quello dell'originale. La pagina di dettaglio lo mostra in
+**Contatto**, nella fusione è un campo a sé, e la risposta al diritto di
+accesso, l'importazione e l'esportazione CSV lo riportano (colonne
+`shipping_street`, `shipping_supplement`, `shipping_zip`, `shipping_city`,
+`shipping_country`; intestazioni come «Lieferstraße», «Liefer-PLZ»,
+«Lieferort», «Lieferland»). L'API clienti e lo strumento MCP `create_customer`
+accettano il numero di registro e l'indirizzo di consegna; un aggiornamento
+tramite API modifica solo i campi inviati dell'indirizzo di consegna.
+
 Come i documenti entrano nella fattura elettronica e cosa vale per i clienti
 della pubblica amministrazione lo descrive l'argomento di aiuto **Fatture &
 documenti**.
+
+## Consumatori e luogo della prestazione
+
+Se il cliente è un privato o un altro soggetto non imprenditore, attivi
+**Consumatore (non impresa)** nella sezione **Portale e altro**. Insieme al tipo
+di luogo della prestazione, determina il regime fiscale (§ 3a UStG): per i
+consumatori extra UE le prestazioni del catalogo – consulenza, elaborazione
+dati, diritti, pubblicità, noleggio di beni mobili e simili – non sono
+imponibili in Germania; le altre prestazioni portano l’IVA tedesca. Senza
+spunta il cliente resta un’impresa come finora; i clienti esistenti non
+cambiano. Un consumatore non è mai debitore dell’imposta: le opzioni
+**Consumatore** e **Il destinatario è debitore dell’IVA** non possono essere
+attivate insieme.
+
+La pagina di dettaglio mostra il **Destinatario** (consumatore o impresa); nella
+fusione è un campo a sé. Il diritto di accesso, l’importazione e l’esportazione
+CSV (colonna `is_consumer`, intestazione ad esempio «Verbraucher»), l’API clienti
+e lo strumento MCP `create_customer` lo riportano; un aggiornamento via API
+senza il campo lo lascia invariato. Una fattura emessa conserva lo stato
+all’emissione, l’annullamento e la fattura rettificativa quello dell’originale.
+Dove si imposta il tipo di luogo della prestazione è spiegato nell’argomento di
+aiuto **Fatture & documenti**.
 
 ## Esempio pratico
 

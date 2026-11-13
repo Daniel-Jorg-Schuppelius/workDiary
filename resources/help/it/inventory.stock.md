@@ -1,7 +1,7 @@
 ---
 title: "Giacenze e scansione"
 topic: inventory.stock
-version: 7
+version: 8
 keywords:
     - magazzino
     - carico merce
@@ -95,6 +95,10 @@ segnala soltanto il lotto; i lotti bloccati solo dopo lo sblocco.
 **Giacenza negativa a quattro occhi:** se l’organizzazione richiede nelle impostazioni di magazzino un’approvazione a quattro occhi per i prelievi in giacenza negativa, un prelievo con «Consenti giacenza negativa» diventa una richiesta nella casella delle approvazioni. Viene registrato solo quando un’altra persona con il diritto «Autorizzare giacenze negative» acconsente; richiedente e approvatore compaiono nel protocollo di audit.
 
 **Consumo di materiale sul foglio ore:** il materiale collegato a un articolo gestito a magazzino registra, quando viene inserito sul foglio ore o in «Oggi», il prelievo dal magazzino contrassegnato come «Predefinito» (se ce ne sono più, il primo per nome). Il movimento compare nel giornale di magazzino con la quantità e l’unità inserite; una modifica registra la differenza, l’eliminazione lo riporta in giacenza. Valgono le regole di questa pagina: giacenza negativa solo con il permesso ed eventualmente quattro occhi, lotti per data di scadenza, numeri di serie solo tramite il magazzino. Il materiale che finora prelevava anche qui, d’ora in poi lo registri solo sul foglio ore, altrimenti il prelievo conta due volte.
+
+**Variante del consumo di materiale:** se l’articolo ha più varianti attive, il consumo registra la variante scelta sul foglio ore, senza scelta la variante predefinita. Un cambio di variante riporta in giacenza la precedente e preleva la nuova.
+
+**Valorizzazione dei prelievi:** i prelievi dalla giacenza propria — nel modulo di registrazione, tramite scansione e dopo un’approvazione a quattro occhi — sono valorizzati secondo il metodo dell’articolo, come consegne e consumo di materiale: FIFO e FEFO consumano gli strati di valorizzazione, il costo medio ponderato riduce il libro delle medie al prezzo medio attuale. I prelievi da giacenza di terzi (cliente, conto deposito, fornitore, progetto) restano non valorizzati. Anche il prelievo di magazzino nella scheda cliente registra secondo il metodo dell’articolo; eliminare l’assegnazione lo riporta in giacenza come nuovo strato al costo unitario del prelievo con FIFO e FEFO, e nel libro delle medie con il costo medio ponderato. L’entrata manuale non ha prezzo unitario e resta non valorizzata.
 
 **Ridistribuire le prenotazioni:** nella finestra «Modifica prenotazione» cedete la quantità aperta a un’altra prenotazione dello stesso articolo, magazzino e proprietà, ad esempio a un ordine con priorità più alta. Una prenotazione più recente non ne scalza mai una più vecchia in silenzio; la ridistribuzione compare nel protocollo di audit e la riga materiale di un ordine di produzione la segue.
 

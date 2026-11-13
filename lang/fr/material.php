@@ -29,4 +29,12 @@ return [
         'notice' => ':status · entrepôt « :warehouse »',
         'current' => 'Stock : :notice',
     ],
+    // Variante par consommation (MVP-1690).
+    'variant' => [
+        'default' => '— Variante par défaut —',
+        'hint' => 'Uniquement pour les articles gérés en stock comportant plusieurs variantes. Vide, la variante par défaut est comptabilisée ; sans prix unitaire, le prix propre de la variante s\'applique, sinon celui du matériel.',
+        'label' => 'Variante : :variant',
+        'mismatch' => 'La variante n\'appartient pas à l\'article du matériel choisi.',
+        'inactive' => 'Cette variante n\'est pas active et ne peut pas être choisie à nouveau.',
+    ],
 ];

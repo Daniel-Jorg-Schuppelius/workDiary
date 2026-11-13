@@ -9,11 +9,12 @@
   Feldvergleich vor dem Zusammenführen zweier Stammdatensätze. Parameter:
   $source, $target, $routePrefix (customers|suppliers|articles),
   $identityFields, $overridableFields (Feld => Bezeichnung), $subtitle,
-  $confirm.
+  $confirm, optional $valueOf (Modell, Feld) für Felder ohne eigene Spalte.
 --}}
 @php
     // Beträge formatiert statt als Rohwert des Wertobjekts („85.00 EUR").
     $show = static fn (mixed $value): string => $value instanceof \CommonToolkit\ValueObjects\Money ? $value->format() : (string) ($value ?? '');
+    $valueOf ??= static fn (\Illuminate\Database\Eloquent\Model $model, string $field): mixed => $model->getAttribute($field);
 @endphp
 <x-index-page :subtitle="$subtitle"
               :back-route="$routePrefix . '.duplicates.index'" :back-label="__('Zurück')">
@@ -45,8 +46,8 @@
             </x-slot:head>
                     @foreach ($identityFields as $field => $label)
                         @php
-                            $tv = $show($target->getAttribute($field));
-                            $sv = $show($source->getAttribute($field));
+                            $tv = $show($valueOf($target, $field));
+                            $sv = $show($valueOf($source, $field));
                         @endphp
                         <tr>
                             <td class="text-muted">{{ $label }}</td>
@@ -58,8 +59,8 @@
 
                     @foreach ($overridableFields as $field => $label)
                         @php
-                            $tv = $show($target->getAttribute($field));
-                            $sv = $show($source->getAttribute($field));
+                            $tv = $show($valueOf($target, $field));
+                            $sv = $show($valueOf($source, $field));
                         @endphp
                         @if ($tv !== '' || $sv !== '')
                             <tr>

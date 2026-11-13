@@ -11,11 +11,15 @@
 namespace App\Models\Project;
 
 use App\Casts\{MoneyCast, PercentageCast};
+use App\Enums\Invoicing\PlaceOfSupplyKind;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property PlaceOfSupplyKind|null $place_of_supply_kind Leistungsort (§ 3a UStG, MVP-1688); leer = Artikel der Regel, sonst Vorgabe der Organisation
+ */
 class ProjectBillingRule extends Model {
     use BelongsToOrganization;
 
@@ -32,6 +36,8 @@ class ProjectBillingRule extends Model {
         'vat_rate',
         'net_unit_price',
         'priority',
+        // Leistungsort (§ 3a UStG, MVP-1688); leer = Artikel der Regel, sonst Vorgabe der Organisation.
+        'place_of_supply_kind',
     ];
 
     /** @var array<string, string> */
@@ -39,6 +45,7 @@ class ProjectBillingRule extends Model {
         'vat_rate' => PercentageCast::class . ':2',
         'net_unit_price' => MoneyCast::class . ':currency,4',
         'priority' => 'integer',
+        'place_of_supply_kind' => PlaceOfSupplyKind::class,
     ];
 
     /**

@@ -181,7 +181,13 @@
                                 <span class="text-muted">—</span>
                             @endif
                         </td>
-                        <td class="text-xs">{{ $itemTypes[$rule->item_type] ?? $rule->item_type }}</td>
+                        <td class="text-xs">
+                            {{ $itemTypes[$rule->item_type] ?? $rule->item_type }}
+                            @if ($rule->place_of_supply_kind !== null)
+                                {{-- MVP-1688: Leistungsort der Regel --}}
+                                <x-status-badge size="xs" outline :title="__('invoicing.place_of_supply.label')">{{ $rule->place_of_supply_kind->label() }}</x-status-badge>
+                            @endif
+                        </td>
                         <td class="text-xs">{{ $rule->unit_name ?: '—' }}</td>
                         <td class="text-right text-xs tabular-nums">{{ $rule->vat_rate !== null ? rtrim(rtrim(($rule->vat_rate?->getNumericValue() ?? '0'), '0'), '.') : '—' }}</td>
                         <td class="text-right text-xs tabular-nums">{{ $rule->net_unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($rule->net_unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' €' : '—' }}</td>

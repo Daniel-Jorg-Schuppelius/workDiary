@@ -10,6 +10,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\Warehouse;
 use App\Models\Material\{Material, MaterialUsage};
 use App\Support\Sqid;
@@ -27,6 +28,9 @@ class MaterialUsageResource extends JsonResource {
         return [
             'id' => $this->sqid,
             'material_id' => Sqid::encodeOrNull(Material::class, $this->material_id),
+            // Gewählte Variante (MVP-1690): null = Standardvariante des Artikels.
+            'article_variant_id' => Sqid::encodeOrNull(ArticleVariant::class, $this->article_variant_id),
+            'variant' => $this->variantLabel(),
             'description' => $this->description,
             'quantity' => $this->quantity,
             'unit' => $this->unit,

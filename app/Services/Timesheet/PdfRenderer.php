@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Storage;
 
 class PdfRenderer {
     public function render(Timesheet $timesheet): string {
-        $timesheet->loadMissing(['project', 'user', 'entries.task', 'materialUsages.material', 'signatureAttachment']);
+        $timesheet->loadMissing(['project', 'user', 'entries.task', 'materialUsages.material', 'materialUsages.variant', 'signatureAttachment']);
 
         $signaturePng = null;
         if ($timesheet->signatureAttachment) {

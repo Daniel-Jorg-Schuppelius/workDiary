@@ -12,6 +12,7 @@ namespace App\Models\Article;
 
 use App\Casts\{DecimalCast, GtinCast, MoneyCast};
 use App\Enums\Article\{ArticleStatus, ArticleType};
+use App\Enums\Invoicing\PlaceOfSupplyKind;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasClassifications, HasCustomFields, HasSqid, HasTags, MatchesIdentifiers, Searchable};
 use App\Models\Contracts\CustomFieldSubject;
 use App\Models\Integration\ExternalArticleMapping;
@@ -44,6 +45,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property numeric-string|null $pcf_process_kg
  * @property string|null $pcf_source
  * @property \CommonToolkit\ValueObjects\Money|null $default_sale_price
+ * @property \App\Enums\Invoicing\PlaceOfSupplyKind|null $place_of_supply_kind Leistungsort einer Leistung (§ 3a UStG, MVP-1688); leer = Vorgabe der Organisation
  */
 class Article extends Model implements CustomFieldSubject {
     use Auditable;
@@ -77,6 +79,7 @@ class Article extends Model implements CustomFieldSubject {
         'copper_weight',
         'copper_base_price',
         'tax_class',
+        'place_of_supply_kind',
         'stockable',
         'purchasable',
         'sellable',
@@ -119,6 +122,7 @@ class Article extends Model implements CustomFieldSubject {
         'pcf_process_kg' => 'decimal:4',
         'default_sale_price' => MoneyCast::class . ':currency,4',
         'gtin' => GtinCast::class,
+        'place_of_supply_kind' => PlaceOfSupplyKind::class,
     ];
 
     /** @return HasMany<ArticleVariant, $this> */

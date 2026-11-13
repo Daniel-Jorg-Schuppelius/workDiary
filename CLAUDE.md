@@ -349,6 +349,15 @@ eine Projektion (`address_*`, `bank_*`, `ContactDetailsProjectionObserver`).
   `WritesContactDetails` (`pullContactDetails()` vor, `writeContactDetails()`
   nach dem Speichern); Dienste `ContactDetailsWriter::pullInline()` +
   `writeInline()` (Teil-Update). Anzeige `postalAddressLines()`.
+- **Lieferanschrift (MVP-1689):** Satellit mit `kind = shipping` ohne
+  Projektion — `ContactDetailsProjectionObserver` überspringt ihn,
+  `primaryAddress()` ist nie eine Lieferanschrift. Formular
+  `<x-contact-address-fields kind="shipping">` (Eingaben `shipping_*`, Regeln
+  `ContactSatelliteFields::shippingAddressRules()`), Schreiben über
+  `ContactDetailsWriter::writeShippingAddress()` bzw. `writeInline()`, Lesen
+  über `shippingAddress()`/`shippingAddressFields()` des Vertrags. Der
+  Partei-Snapshot friert sie ein; die E-Rechnung nimmt sie bei `K` als
+  Lieferpartei.
 - **Ansprechpartner strukturiert (MVP-1136/1137):** Kunde, Lieferant,
   Fremdkunde und Lead tragen `contact_salutation`, `contact_title`,
   `contact_first_name`, `contact_middle_names`, `contact_last_name`;

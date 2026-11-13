@@ -1,7 +1,7 @@
 ---
 title: "Gestire i progetti"
 topic: projects.manage
-version: 9
+version: 10
 keywords:
     - creare progetto
     - gestione progetti
@@ -106,6 +106,14 @@ ogni ordine fattura una riga con quantità 1 al prezzo della regola;
 l'integrazione fino alle ore concordate viene quindi meno, perché il forfait
 copre l'ordine indipendentemente dalla durata. Tutte le altre unità, ad esempio
 ora, giorno o pz., contano in base alla durata.
+
+La regola di fatturazione indica anche il **luogo della prestazione** dei suoi
+tempi (§ 3a UStG): **Generale**, **Prestazione del catalogo** o **Prestazione
+relativa a un immobile**. Vuoto significa il luogo della prestazione del suo
+articolo, altrimenti il valore predefinito dell’organizzazione. Per una
+prestazione immobiliare l’immobile si trova nel luogo d’intervento dell’ordine,
+in Germania se non indicato. La tabella delle regole mostra il tipo scelto
+accanto al tipo di elemento.
 
 ## Errori tipici
 

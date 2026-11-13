@@ -22,12 +22,18 @@ class CustomerResource extends JsonResource {
 
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
+        $shipping = $this->resource->shippingAddressFields();
+
         return [
             'id' => $this->sqid,
             'name' => $this->name,
             'number' => $this->number,
             'company' => $this->company,
             'vat_id' => $this->vat_id,
+            // Registerangabe (BT-47 der E-Rechnung, MVP-1694).
+            'register_number' => $this->register_number,
+            // Verbraucher statt Unternehmen: Leistungsort nach § 3a UStG (MVP-1688).
+            'is_consumer' => (bool) $this->is_consumer,
             'contact_name' => $this->contact_name,
             'contact_salutation' => $this->contact_salutation?->value,
             'contact_title' => $this->contact_title,
@@ -40,6 +46,8 @@ class CustomerResource extends JsonResource {
             'address_zip' => $this->address_zip,
             'address_city' => $this->address_city,
             'country' => $this->country,
+            // Abweichende Lieferanschrift (MVP-1689/1694), Felder wie beim Schreiben; leer = Rechnungsanschrift.
+            ...$shipping,
             'currency' => $this->currency,
             'color' => $this->color,
             'hourly_rate' => $this->hourly_rate,

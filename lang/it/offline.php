@@ -49,7 +49,10 @@ return [
     'field' => [
         'missing' => 'Manca',
         'lock' => 'Blocco',
+        'stock' => 'Giacenza',
     ],
+    // Conflitto per giacenza mancante (MVP-1691): solo con il permesso «Autorizzare giacenze negative».
+    'allow_negative_hint' => 'Registra il consumo in giacenza negativa nonostante la giacenza mancante. Se la Sua organizzazione richiede una seconda approvazione, viene creata una richiesta nella casella delle approvazioni.',
     'remote_hint' => 'Registrato su un altro dispositivo: i contenuti si trovano lì. Qui può soltanto scartare il conflitto.',
     'resolve_failed' => 'Non è stato possibile trasmettere la decisione. Riprovi con una connessione.',
     'unresolved' => 'aperto',

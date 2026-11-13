@@ -86,7 +86,7 @@
         <tbody>
             @forelse($timesheet->materialUsages as $u)
                 <tr>
-                    <td>{{ $u->description }}</td>
+                    <td>{{ $u->billingDescription() }}</td>
                     <td class="right">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($u->quantity?->getValue()->toFloat() ?? 0.0), 3, withThousandsSeparator: true), '0'), ',') }}</td>
                     <td>{{ $u->unit }}</td>
                     <td class="right">{{ $u->unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($u->unit_price?->toFloat() ?? 0.0), 4, withThousandsSeparator: true).' €' : '—' }}</td>

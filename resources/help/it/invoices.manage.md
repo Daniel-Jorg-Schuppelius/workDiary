@@ -1,10 +1,12 @@
 ---
 title: "Fatture & documenti"
 topic: invoices.manage
-version: 20
+version: 22
 keywords:
+    - luogo della prestazione
+    - prestazione del catalogo
+    - immobile
     - creare fattura
-    - emettere fattura
     - fattura attiva
     - fatturazione
     - stornare fattura
@@ -21,10 +23,8 @@ keywords:
     - documenti collegati
     - catena dei documenti
     - trasmettere fattura a Lexoffice
-    - numero provvisorio
     - richiesta sulla fattura
     - attestazione delle prestazioni
-    - foglio ore
     - documenti giustificativi
     - pubblica amministrazione
     - Leitweg-ID
@@ -343,6 +343,39 @@ invariato nel testo della fattura, viene sostituito dall'avviso del nuovo regime
 eliminato. Se ha modificato l'avviso a mano, il suo testo resta: workDiary lo
 segnala e lei verifica l'avviso personalmente.
 
+## Luogo della prestazione dei servizi
+
+Oltre al cliente, il **tipo di luogo della prestazione** determina il regime
+fiscale (§ 3a UStG). Si imposta dove la prestazione è definita: sulla **regola
+di fatturazione** del progetto, altrimenti sul suo **articolo** o sull’articolo
+di prestazione della posizione, altrimenti nel valore predefinito
+dell’organizzazione (impostazioni dell’organizzazione, scheda
+**Fatturazione**). Di serie tutto è **Generale**: senza interventi nessun
+regime fiscale cambia.
+
+- **Generale:** come finora; IVA tedesca per consumatori extra UE (§ 3a c. 1
+  UStG), «non imponibile» per imprese extra UE.
+- **Prestazione del catalogo** (§ 3a c. 4 UStG), ad esempio consulenza,
+  elaborazione dati, diritti, pubblicità, noleggio di beni mobili: «non
+  imponibile» (O) con una propria indicazione per consumatori extra UE,
+  altrimenti come «Generale».
+- **Prestazione relativa a un immobile** (§ 3a c. 3 n. 1 UStG), ad esempio
+  lavori edili, di finitura e di pulizia di edifici: se l’immobile si trova in
+  Germania, la fattura porta l’IVA tedesca, anche per clienti di altri paesi UE
+  ed extra UE; se il cliente è debitore dell’imposta secondo il § 13b UStG,
+  resta così. Se si trova all’estero, la prestazione è «non imponibile» (O).
+  L’immobile si trova nel luogo d’intervento dell’ordine; se non indicato, vale
+  la Germania.
+
+Le merci (fatture di materiale) non sono interessate. Per le fatture dai tempi
+conta la regola dei tempi fatturati, per le posizioni libere l’articolo di
+prestazione. Le posizioni senza articolo, le trasferte e le posizioni con una
+propria categoria fiscale seguono la fattura. Se le posizioni danno regimi
+fiscali diversi, la bozza lo segnala, la fattura non può essere emessa e il
+controllo prima dell’invio la respinge (con «non imponibile» secondo la regola
+BR-O-11): divida la fattura, una per regime fiscale. L’annullamento e la
+fattura rettificativa riprendono il regime fiscale dell’originale.
+
 ## Motivi di esenzione nella fattura elettronica
 
 Ogni categoria IVA senza imposta riporta il proprio motivo di esenzione nella
@@ -370,9 +403,13 @@ verso altri paesi UE e nelle esportazioni, «non imponibile» accanto ad altre
 categorie e una posizione di categoria senza imposta con aliquota superiore allo 0 %.
 Con «non imponibile» la fattura elettronica non riporta partite IVA; basta il codice
 fiscale. Nelle cessioni intracomunitarie la fattura
-elettronica indica l'indirizzo del cliente come indirizzo di consegna con il paese
-di consegna (regola BR-IC-12); la XRechnung vi richiede CAP e città, altrimenti il
-controllo prima dell'invio si ferma. Le posizioni «non imponibile» compaiono
+elettronica indica l'indirizzo di consegna diverso del cliente (dialogo cliente,
+sezione **Indirizzo di consegna**), altrimenti il suo indirizzo, come indirizzo
+di consegna con il paese di consegna (regola BR-IC-12); la XRechnung vi richiede
+CAP e città, altrimenti il controllo prima dell'invio si ferma. L'indirizzo di
+consegna viene congelato all'emissione; storno e fattura di rettifica riprendono
+quello dell'originale. La registrazione dell'organizzazione (**Branding**, campo **Registro delle imprese**) compare nella fattura elettronica come
+identificativo di registrazione del venditore (BT-30), anch'essa congelata. Le posizioni «non imponibile» compaiono
 senza aliquota nella fattura elettronica.
 
 ## Indicazione di esenzione nel PDF della fattura

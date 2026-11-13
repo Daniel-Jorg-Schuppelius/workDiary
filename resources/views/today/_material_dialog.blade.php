@@ -8,7 +8,8 @@
 --}}
 {{-- Material auf „Heute“ (MVP-1594): Standalone-Dialog in der Seite, damit er
      auch ohne Verbindung öffnet; offline geht das Formular als Befehl
-     `material.usage` in die Warteschlange. Erwartet $day, $entryBarProjects, $dayMaterials. --}}
+     `material.usage` in die Warteschlange. Erwartet $day, $entryBarProjects, $dayMaterials,
+     $dayMaterialVariants. --}}
 <x-modal id="today-material-dialog"
          :embedded="false"
          icon="category"
@@ -36,6 +37,7 @@
                 <option value="{{ $m->sqid }}" data-prefill-unit="{{ $m->unit }}" data-prefill-description="{{ $m->name }}">{{ $m->name }} ({{ $m->unit }})</option>
             @endforeach
         </x-select-field>
+        @include('materials._variant_field', ['materials' => $dayMaterials, 'variantChoices' => $dayMaterialVariants ?? [], 'variantFieldId' => 'today-material-variant'])
         <x-input-field span="2" name="description" id="today-material-description" :label="__('Bezeichnung')" type="text" required maxlength="255"
                        data-prefill-from="material_id" data-prefill-key="description" />
         <x-input-field name="quantity" id="today-material-quantity" :label="__('Menge')" type="number" value="1" required step="0.001" min="0.001" />

@@ -1,7 +1,7 @@
 ---
 title: "Modifiche offline"
 topic: offline.changes
-version: 2
+version: 3
 keywords:
     - lavorare offline
     - senza connessione
@@ -37,5 +37,6 @@ Un conflitto significa che la registrazione **non** è stata acquisita perché n
 - **Mantieni l’altra versione** o **Elimina**: la Sua versione viene scartata.
 - **Invia la mia versione**: solo per una timbratura modificata; la Sua correzione si applica al nuovo stato.
 - **Modifica**: adattare i campi (data, durata o motivazione) e inviarli come nuova voce.
+- **Giacenza insufficiente**: se per il materiale manca solo la giacenza, «Modifica» offre, con il permesso «Autorizzare giacenze negative», la casella «Consenti giacenza negativa». Se l’organizzazione richiede quattro occhi, l’invio crea una richiesta nella casella delle approvazioni. Senza il permesso il conflitto resta; adatti la quantità o lo scarti.
 
 Ogni decisione viene registrata nel registro di audit. La pagina mostra anche i conflitti aperti nati su un altro dispositivo; i contenuti si trovano lì, quindi qui possono solo essere scartati.

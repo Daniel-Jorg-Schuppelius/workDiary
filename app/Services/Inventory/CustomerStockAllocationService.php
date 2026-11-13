@@ -12,33 +12,38 @@ declare(strict_types=1);
 
 namespace App\Services\Inventory;
 
+use App\Contracts\Inventory\InventoryValuationStrategy;
+use App\Enums\Inventory\ValuationMethod;
 use App\Models\Article\ArticleVariant;
 use App\Models\Customer\Customer;
 use App\Models\Inventory\{StockLot, StockMovement, Warehouse};
 use App\Models\Material\MaterialCostAllocation;
+use App\Models\Platform\Organization;
 use App\Support\DecimalQty;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Verbindet Lagerentnahme und Kunden-Materialkosten: eine Entnahme (gleitender
- * Durchschnitt) wird zugleich als {@see MaterialCostAllocation} auf den Kunden
- * gebucht (Quelle = die erste {@see StockMovement} des Abgangs). Das Löschen
+ * Verbindet Lagerentnahme und Kunden-Materialkosten: eine Entnahme wird
+ * zugleich als {@see MaterialCostAllocation} auf den Kunden gebucht (Quelle =
+ * die erste {@see StockMovement} des Abgangs). Bewertet wird nach dem
+ * Verfahren der Variante (Durchschnitt, FIFO, FEFO; MVP-1693). Das Löschen
  * einer so entstandenen Zuordnung bucht jede Bewegung des Abgangs in ihre
- * Charge zurück (Gegenbuchung vom Typ Return zum ursprünglichen
- * Stückkostenwert — das append-only Journal bleibt intakt).
+ * Charge zurück (Gegenbuchung vom Typ Return zum Stückkostenwert des Abgangs:
+ * ins Durchschnittsbuch bzw. als neue Schicht — das append-only Journal
+ * bleibt intakt).
  */
 class CustomerStockAllocationService {
     public function __construct(
-        private readonly ValuationService $valuation,
+        private readonly InventoryValuationManager $valuation,
         private readonly InventoryLedger $ledger,
     ) {}
 
     /**
-     * Entnimmt `$qty` der Variante aus dem Lager (zum gleitenden Durchschnitt,
-     * gewählte Charge oder FEFO) und bucht den Kostenwert als Materialkosten
-     * auf den Kunden.
+     * Entnimmt `$qty` der Variante aus dem Lager (bewertet nach dem Verfahren
+     * der Variante, gewählte Charge oder FEFO) und bucht den Kostenwert als
+     * Materialkosten auf den Kunden.
      */
     public function issueForCustomer(
         Customer $customer,
@@ -53,7 +58,7 @@ class CustomerStockAllocationService {
         ?EnteredQuantity $entered = null,
     ): MaterialCostAllocation {
         return DB::transaction(function () use ($customer, $variant, $warehouse, $qty, $projectId, $allocatedOn, $actorUserId, $lot, $requireLot, $entered): MaterialCostAllocation {
-            $issue = $this->valuation->issue($variant, $warehouse, $qty, actorUserId: $actorUserId, lot: $lot, requireLot: $requireLot, entered: $entered);
+            $issue = $this->strategyFor($variant)->issue($variant, $warehouse, $qty, actorUserId: $actorUserId, lot: $lot, requireLot: $requireLot, entered: $entered);
             $movement = $issue->first();
             $currency = $customer->currency->value;
 
@@ -86,7 +91,7 @@ class CustomerStockAllocationService {
                 if ($variant === null || $warehouse === null) {
                     continue;
                 }
-                $this->valuation->returnToStock(
+                $this->strategyFor($variant)->returnToStock(
                     $variant,
                     $warehouse,
                     DecimalQty::positive((string) $movement->qty_base),
@@ -100,6 +105,19 @@ class CustomerStockAllocationService {
 
             $allocation->delete();
         });
+    }
+
+    /**
+     * Verfahren der Variante (Artikel vor Organisation). FIFO/FEFO führen ihre
+     * Schichten, das Durchschnittsbuch steht dort still — Abgang und
+     * Rückbuchung müssen dasselbe Buch treffen (MVP-1693).
+     */
+    private function strategyFor(ArticleVariant $variant): InventoryValuationStrategy {
+        $organization = Organization::query()->find($variant->organization_id);
+
+        return $organization instanceof Organization
+            ? $this->valuation->forVariant($variant, $organization)
+            : $this->valuation->strategy(ValuationMethod::MovingAverage);
     }
 
     private function describe(ArticleVariant $variant, string $qty): string {

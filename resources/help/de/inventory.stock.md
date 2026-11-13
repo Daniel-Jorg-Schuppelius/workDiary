@@ -1,7 +1,7 @@
 ---
 title: "Lagerbestände & Scannen"
 topic: inventory.stock
-version: 7
+version: 8
 keywords:
     - Warenbestand
     - Bestand buchen
@@ -103,6 +103,10 @@ Chargen erst nach der Freigabe.
 **Negativbestand mit vier Augen:** Verlangt die Organisation in den Lager-Einstellungen eine Vier-Augen-Freigabe für Entnahmen in den Negativbestand, wird eine Entnahme mit „Negativen Bestand zulassen“ zum Antrag im Genehmigungs-Eingang. Gebucht wird erst, wenn eine andere Person mit dem Recht „Negative Bestände freigeben“ zustimmt; Antragsteller und Freigebende stehen im Audit-Protokoll.
 
 **Materialverbrauch am Stundenzettel:** Material, das mit einem lagergeführten Artikel verknüpft ist, bucht beim Erfassen am Stundenzettel oder auf „Heute“ den Abgang aus dem Lager mit der Kennzeichnung „Standard“ (bei mehreren das erste nach Name). Die Bewegung steht im Lagerjournal mit der erfassten Menge und Einheit; eine Änderung bucht die Differenz, das Löschen bucht zurück. Es gelten die Regeln dieser Seite: Negativbestand nur mit Recht und gegebenenfalls vier Augen, Chargen nach Mindesthaltbarkeit, Seriennummern nur über das Lager. Material, das Sie bisher zusätzlich hier entnommen haben, entnehmen Sie künftig nur noch am Stundenzettel — sonst zählt der Abgang doppelt.
+
+**Variante beim Materialverbrauch:** Hat der Artikel mehrere aktive Varianten, bucht der Verbrauch die am Stundenzettel gewählte Variante, ohne Wahl die Standardvariante. Ein Wechsel der Variante bucht die alte zurück und die neue ab.
+
+**Bewertung der Entnahme:** Entnahmen aus Eigenbestand — im Buchungsformular, per Scan und nach einer Vier-Augen-Freigabe — sind nach dem Bewertungsverfahren des Artikels bewertet wie Auslieferung und Materialverbrauch: FIFO und FEFO verbrauchen die Bewertungsschichten, der gleitende Durchschnitt mindert das Durchschnittsbuch zum aktuellen Durchschnittspreis. Entnahmen aus Fremdbestand (Kunde, Kommission, Lieferant, Projekt) bleiben unbewertet. Die Lagerentnahme in der Kundenakte bucht ebenfalls nach dem Verfahren des Artikels; das Löschen der Zuordnung bucht bei FIFO und FEFO als neue Schicht zum Stückkostenwert der Entnahme zurück, beim gleitenden Durchschnitt ins Durchschnittsbuch. Der manuelle Eingang trägt keinen Einzelpreis und bleibt unbewertet.
 
 **Reservierungen umverteilen:** Im Dialog „Reservierung ändern“ geben Sie offene Menge an eine andere Reservierung desselben Artikels, Lagers und Eigentums ab, etwa an einen Auftrag mit höherer Priorität. Eine jüngere Reservierung verdrängt eine ältere nie still; die Umverteilung steht im Audit-Protokoll, und die Materialposition eines Fertigungsauftrags folgt ihr.
 

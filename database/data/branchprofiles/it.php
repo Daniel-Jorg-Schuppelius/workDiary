@@ -18,7 +18,9 @@ return [
     // Datenträger/Batterien (Altgeräte-Rücknahme beim Kunden).
     // v3: Default-Eintragstypen (Struktur-Typen) ans Profil gekoppelt.
     // v4: Asset-Kategorien werden als Kategorien der Organisation installiert (MVP-1508).
-    'version' => 4,
+    // v5: Leistungsort-Vorgabe „Katalogleistung“ (§ 3a Abs. 4 UStG, MVP-1688); eigene Einstellungen bleiben.
+    'version' => 5,
+    'settings' => ['invoicing.place_of_supply_kind' => 'catalog'],
     // Vorschlag für den Standard-Arbeitsbereich (MVP-840); nur Default, kein Zwang.
     'nav_focus_default' => 'service',
     // Default-Struktur-Typen (EntryTypeSeeder::profiles()) — nicht die

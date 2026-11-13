@@ -97,6 +97,8 @@ return [
         'default_service_article' => 'Default service (article)',
         'default_service_none' => '— no default service —',
         'default_service_hint' => 'Provides name, unit, standard text and — when no rate can be resolved — the price of the handover positions. Billing rules on the project override it. With the unit “flat”, each order gets one line with quantity 1 per billing run; other units bill by duration.',
+        'place_of_supply_kind' => 'Place of supply of services',
+        'place_of_supply_kind_hint' => 'Applies where neither the project’s billing rule nor the article names a place of supply. Catalogue service (consulting, IT, rights etc.): not taxable for consumers in a non-EU country. Immovable property (construction, fit-out, building cleaning): tax at the location of the property for all customers. General: as before.',
         'transfer_intro_text' => 'Template: transfer introduction',
         'transfer_closing_text' => 'Template: transfer closing remark',
         'transfer_text_hint' => 'Copied into the receipt when a transfer is created and editable there. Placeholders: :customer, :from, :to, :channel. Empty = the target’s previous default text.',

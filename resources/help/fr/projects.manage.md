@@ -1,7 +1,7 @@
 ---
 title: "Gérer les projets"
 topic: projects.manage
-version: 9
+version: 10
 keywords:
     - créer un projet
     - gestion de projet
@@ -108,6 +108,13 @@ chaque commande facture une ligne de quantité 1 au prix de la règle ; le
 complément jusqu'aux heures convenues est alors supprimé, car le forfait couvre la
 commande quelle que soit sa durée. Toutes les autres unités, par exemple heure,
 jour ou pièce, comptent selon la durée.
+
+La règle de facturation indique aussi le **lieu de la prestation** de ses temps
+(§ 3a UStG) : **Générale**, **Prestation du catalogue** ou **Prestation liée à
+un bien immobilier**. Vide signifie le lieu de la prestation de son article,
+sinon la valeur par défaut de l’organisation. Pour une prestation immobilière,
+le bien se trouve au lieu d’intervention de la commande, en Allemagne à défaut.
+Le tableau des règles affiche le type choisi à côté du type d’élément.
 
 ## Erreurs fréquentes
 

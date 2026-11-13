@@ -114,6 +114,7 @@
         {{-- Gespeichert wie aus Import und DATANORM-Katalog; die Zusammenführung prüft auf Gleichheit (MVP-1619). --}}
         @php
             $taxClass = (string) old('tax_class', $article?->tax_class ?? '');
+            $placeOfSupply = (string) old('place_of_supply_kind', $article?->place_of_supply_kind?->value ?? '');
             $taxClasses = ['' => __('article.tax_class.standard'), 'ermäßigt' => __('article.tax_class.reduced'), 'erhöht' => __('article.tax_class.increased')];
             if ($taxClass !== '' && ! array_key_exists($taxClass, $taxClasses)) {
                 $taxClasses[$taxClass] = $taxClass;
@@ -122,6 +123,13 @@
         <x-select-field name="tax_class" :label="__('article.field.tax_class')">
             @foreach ($taxClasses as $value => $label)
                 <option value="{{ $value }}" @selected($taxClass === (string) $value)>{{ $label }}</option>
+            @endforeach
+        </x-select-field>
+        {{-- MVP-1688: Leistungsort einer Leistung (§ 3a UStG); leer = Vorgabe der Organisation. --}}
+        <x-select-field name="place_of_supply_kind" :label="__('invoicing.place_of_supply.label')" :hint="__('invoicing.place_of_supply.hint_article')">
+            <option value="">{{ __('invoicing.place_of_supply.inherit_organization') }}</option>
+            @foreach (\App\Enums\Invoicing\PlaceOfSupplyKind::options() as $value => $label)
+                <option value="{{ $value }}" @selected($placeOfSupply === (string) $value)>{{ $label }}</option>
             @endforeach
         </x-select-field>
     </x-form-group>

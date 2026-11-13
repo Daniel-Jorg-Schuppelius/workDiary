@@ -1,7 +1,7 @@
 ---
 title: "Organización y configuración"
 topic: admin.organization-settings
-version: 10
+version: 11
 keywords:
     - configuración de la empresa
     - ajustes del inquilino
@@ -312,6 +312,16 @@ Cómo se crean las facturas se describe en el tema «Facturas & documentos».
   Quien creó la factura no puede aprobarla. Actívelo solo si al menos dos
   personas pueden emitir facturas; sin la marca, la aprobación sigue siendo
   opcional.
+
+**Lugar de la prestación de los servicios** (§ 3a UStG): se aplica cuando ni la
+regla de facturación del proyecto ni el artículo indican un lugar de
+prestación. Vacío significa **General** como hasta ahora. **Servicio del
+catálogo** encaja con informática y asesoramiento (no sujeto para consumidores
+fuera de la UE), **Servicio relacionado con un inmueble** con construcción,
+acabados y limpieza de edificios (impuesto en el lugar del inmueble). Los
+perfiles sectoriales IT, asesoría fiscal, construcción y acabados, limpieza de
+edificios y otros oficios de la edificación fijan el valor al instalarse si la
+organización aún no lo ha definido.
 
 ## Reclamaciones
 

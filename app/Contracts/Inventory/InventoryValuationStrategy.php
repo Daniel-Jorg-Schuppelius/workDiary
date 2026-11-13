@@ -14,7 +14,7 @@ namespace App\Contracts\Inventory;
 
 use App\Enums\Inventory\ValuationMethod;
 use App\Models\Article\ArticleVariant;
-use App\Models\Inventory\{StockLot, StockMovement, Warehouse};
+use App\Models\Inventory\{StockLot, StockMovement, Warehouse, WarehouseBin};
 use App\Services\Inventory\{EnteredQuantity, StockIssue};
 use Illuminate\Database\Eloquent\Model;
 
@@ -31,9 +31,9 @@ interface InventoryValuationStrategy {
 
     /**
      * Abgang je Charge (gewählt oder FEFO-zugeteilt), jeder Teil verfahrensgemäß bewertet; `$requireLot` weist einen Teil ohne Charge ab.
-     * Mit Schlüssel ist der Abgang idempotent, `$source` ist der Beleg der Bewegungen.
+     * Mit Schlüssel ist der Abgang idempotent, `$source` ist der Beleg der Bewegungen; mit `$bin` zählt nur der Bestand dieses Platzes.
      */
-    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false, ?EnteredQuantity $entered = null, ?string $idempotencyKey = null, ?Model $source = null): StockIssue;
+    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false, ?EnteredQuantity $entered = null, ?string $idempotencyKey = null, ?Model $source = null, ?WarehouseBin $bin = null): StockIssue;
 
     /**
      * Rückbuchung eines Abgangs (Bewegungsart Return) zum Stückkostenwert des

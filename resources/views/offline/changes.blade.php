@@ -38,7 +38,10 @@
         ->mapWithKeys(fn (string $key): array => [$key => __('validation.attributes.' . $key)])
         ->put('missing', __('offline.field.missing'))
         ->put('lock', __('offline.field.lock'))
+        ->put('stock', __('offline.field.stock'))
         ->all();
+    // Fehlbestand beim Materialverbrauch (MVP-1691): den Haken bietet das Skript nur mit Recht an.
+    $mayGoNegative = auth()->user()?->can(\App\Enums\User\Permission::InventoryNegative->value) ?? false;
 @endphp
 
 @section('content')
@@ -58,6 +61,9 @@
          data-type-labels="{{ json_encode($typeLabels) }}"
          data-field-labels="{{ json_encode($fieldLabels) }}"
          data-edit-fields="{{ json_encode($editFields) }}"
+         data-allow-negative="{{ $mayGoNegative ? '1' : '0' }}"
+         data-label-allow-negative="{{ __('inventory.field.allow_negative') }}"
+         data-label-allow-negative-hint="{{ __('offline.allow_negative_hint') }}"
          data-label-pending="{{ __('offline.section.pending') }}"
          data-label-rejected="{{ __('offline.section.rejected') }}"
          data-label-conflict="{{ __('offline.section.conflict') }}"

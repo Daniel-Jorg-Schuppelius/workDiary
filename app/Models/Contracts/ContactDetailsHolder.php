@@ -30,6 +30,11 @@ interface ContactDetailsHolder {
 
     public function primaryAddress(): ?ContactAddress;
 
+    public function shippingAddress(): ?ContactAddress;
+
+    /** @return array{shipping_street: ?string, shipping_supplement: ?string, shipping_zip: ?string, shipping_city: ?string, shipping_country: ?string} */
+    public function shippingAddressFields(): array;
+
     public function primaryBankAccount(): ?ContactBankAccount;
 
     public function contactAddressKind(): string;

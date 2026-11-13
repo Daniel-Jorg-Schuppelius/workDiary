@@ -30,6 +30,9 @@ use RuntimeException;
  * Fehlt eine Pflichtangabe, ist das ein Konflikt — der Nutzer ergänzt sie.
  * Verhindert eine Lagerregel die Bestandsbuchung (Bestand, Charge,
  * Seriennummer, Einheit; MVP-1679), ebenso: Konflikt statt stiller Buchung.
+ * Fehlt nur Bestand, sagt `shortage` dem Konfliktformular, dass „Negativen
+ * Bestand zulassen“ ihn auflösen kann (MVP-1691); Recht und Vier-Augen prüft
+ * beim erneuten Senden die Lagerbuchung wie online.
  */
 final class MaterialUsageSyncHandler implements SyncCommandHandler {
     private const array REQUIRED = ['project_id', 'date', 'description', 'quantity', 'unit'];
@@ -66,7 +69,12 @@ final class MaterialUsageSyncHandler implements SyncCommandHandler {
         try {
             $usage = $this->recorder->recordForDay($user, $project, CarbonImmutable::parse((string) $data['date']), Arr::except($data, ['project_id', 'date']));
         } catch (MaterialStockException $e) {
-            throw new SyncConflictException($e->reason(), ['field' => $e->field(), 'stock' => $e->reason()], '');
+            $state = ['field' => $e->field(), 'stock' => $e->reason()];
+            if ($e->isShortage()) {
+                $state['shortage'] = true;
+            }
+
+            throw new SyncConflictException($e->reason(), $state, '');
         }
 
         return 'material_usages:' . $usage->id;

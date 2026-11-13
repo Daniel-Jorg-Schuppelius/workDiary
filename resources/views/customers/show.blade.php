@@ -132,6 +132,13 @@
                 @endif
                 {{-- getLabel(Locale) folgt der UI-Locale (intl), unbekannte Codes bleiben roh --}}
                 <x-detail-grid.row :label="__('Land')" :value="$customer->country ? (\CommonToolkit\Enums\CountryCode::tryFrom($customer->country)?->getLabel(app()->getLocale()) ?? $customer->country) : null" />
+                @php
+                    $shippingLines = $customer->shippingAddressLines();
+                @endphp
+                @if ($shippingLines !== [])
+                    {{-- MVP-1689: abweichende Lieferanschrift --}}
+                    <x-detail-grid.row :label="__('stammdaten.shipping.heading')" class="whitespace-pre-line">{{ implode("\n", $shippingLines) }}</x-detail-grid.row>
+                @endif
             </x-detail-grid>
             <x-contact-persons :persons="$customer->contact_persons" />
         </x-card>
@@ -144,6 +151,8 @@
                 @if ($customer->register_number)
                     <x-detail-grid.row :label="__('invoicing.register_number')" :value="$customer->register_number" />
                 @endif
+                {{-- MVP-1688: Verbraucher statt Unternehmen (Leistungsort § 3a UStG). --}}
+                <x-detail-grid.row :label="__('invoicing.consumer.recipient')" :value="$customer->is_consumer ? __('invoicing.consumer.yes') : __('invoicing.consumer.no')" />
                 @if ($customer->peppol_participant_id)
                     {{-- Peppol (Feature 066, MVP-734): Kennung plus der zuletzt
                          gespeicherte SMP-Befund — die Prüfung löst neu auf. --}}

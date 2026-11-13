@@ -1,8 +1,11 @@
 ---
 title: "Kunden & Lieferanten"
 topic: contacts.manage
-version: 18
+version: 20
 keywords:
+    - Verbraucher
+    - Privatkunde
+    - Lieferanschrift
     - Vorschau als Kunde
     - Startpasswort
     - Zugang anlegen
@@ -150,8 +153,46 @@ Im Abschnitt **Portal & Sonstiges** steht neben der USt-IdNr. die
 Schuldet der Kunde die Steuer (§ 13b UStG) und hat er keine USt-IdNr., genügt
 die Registernummer für die E-Rechnung.
 
+**Lieferanschrift:** Geht Ware an eine andere Anschrift als die Rechnung,
+tragen Sie diese im aufklappbaren Abschnitt **Lieferanschrift** ein (Straße,
+Adresszusatz, PLZ, Ort, Land). Bleibt der Abschnitt leer, ist die
+Rechnungsanschrift die Lieferanschrift; leeren Sie alle Felder, entfällt eine
+vorhandene Lieferanschrift. Listen, Belegkopf und Buchhaltungsprogramm behalten
+die Rechnungsanschrift. Bei einer innergemeinschaftlichen Lieferung nennt die
+E-Rechnung die Lieferanschrift mit Lieferland; eine ausgestellte Rechnung
+behält die beim Ausstellen gültige, Storno und Korrekturrechnung nehmen die des
+Originals. Die Detailseite zeigt sie unter **Kontakt**, beim Zusammenführen ist
+sie ein eigenes Feld, und Datenauskunft, CSV-Import und -Export führen sie mit
+(Spalten `shipping_street`, `shipping_supplement`, `shipping_zip`,
+`shipping_city`, `shipping_country`; Kopfzeilen wie „Lieferstraße“,
+„Liefer-PLZ“, „Lieferort“, „Lieferland“). Die Kunden-API und das MCP-Werkzeug
+`create_customer` nehmen Registernummer und Lieferanschrift an; ein Update über
+die API ändert nur die gesendeten Felder der Lieferanschrift.
+
 Wie Unterlagen in die E-Rechnung kommen und was bei Behördenkunden gilt,
 beschreibt das Hilfethema **Rechnungen & Belege**.
+
+## Verbraucher und Leistungsort
+
+Ist der Kunde eine Privatperson oder ein anderer Nichtunternehmer, setzen Sie im
+Abschnitt **Portal & Sonstiges** den Haken **Verbraucher (kein Unternehmen)**.
+Zusammen mit der Leistungsort-Art der Leistung bestimmt er den Steuerfall (§ 3a
+UStG): An Verbraucher im Drittland sind Katalogleistungen – Beratung,
+Datenverarbeitung, Rechte, Werbung, Vermietung beweglicher Gegenstände und
+ähnliche – im Inland nicht steuerbar; die übrigen Leistungen tragen deutsche
+Umsatzsteuer. Ohne Haken gilt der Kunde wie bisher als Unternehmen,
+Bestandskunden ändern sich nicht. Ein Verbraucher schuldet nie selbst die
+Steuer: Die Haken **Verbraucher** und **Leistungsempfänger schuldet die
+Umsatzsteuer** lassen sich nicht zugleich setzen.
+
+Die Detailseite zeigt den **Leistungsempfänger** (Verbraucher oder Unternehmen);
+beim Zusammenführen ist er ein eigenes Feld. Datenauskunft, CSV-Import und
+-Export (Spalte `is_consumer`, Kopfzeile etwa „Verbraucher“), die Kunden-API und
+das MCP-Werkzeug `create_customer` führen ihn mit; ein Update über die API ohne
+das Feld lässt es unverändert. Eine ausgestellte Rechnung behält den beim
+Ausstellen gültigen Stand, Storno und Korrekturrechnung den des Originals. Wo
+die Leistungsort-Art gepflegt wird, beschreibt das Hilfethema **Rechnungen &
+Belege**.
 
 ## Beispiel aus der Praxis
 

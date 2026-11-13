@@ -18,6 +18,7 @@ use App\Enums\Numbering\NumberScope;
 use App\Enums\Sales\QuoteStatus;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Models\Sales\Quote;
 use App\Services\Billing\BillingModeResolver;
 use App\Services\Numbering\{DocumentIssuers, NumberAuthority, NumberSequenceService};
@@ -322,7 +323,21 @@ class QuoteService {
         return DB::transaction(function () use ($quote, $actor): Invoice {
             // Steuerkontext wie im InvoiceGenerator über den TaxResolver (§19, Reverse Charge, Drittland) statt
             // hartkodierter 19 % — sonst unrichtiger Steuerausweis nach § 14c UStG (Whitebox 2026-07-10, G3).
-            $tax = app(TaxResolver::class)->resolve($quote->organization()->firstOrFail(), $quote->customer()->firstOrFail());
+            // Leistungsort der angenommenen Leistungsartikel (MVP-1688); ergeben sie verschiedene Fälle, hält das Ausstellen an.
+            $organization = $quote->organization()->firstOrFail();
+            $places = app(PlaceOfSupplyResolver::class);
+            $articleIds = array_values(array_filter(array_map(
+                static fn (mixed $item): ?int => is_array($item) && ($item['accepted'] ?? false) && isset($item['article_id']) ? (int) $item['article_id'] : null,
+                (array) ($quote->decision_snapshot['items'] ?? []),
+            )));
+            $project = $quote->project_id !== null ? Project::query()->where('organization_id', $organization->id)->find($quote->project_id) : null;
+            $tax = app(TaxResolver::class)->casesFor(
+                $organization,
+                $quote->customer()->firstOrFail(),
+                null,
+                'services',
+                $places->forArticles($organization, $articleIds) ?: [$places->forProject($organization, $project)],
+            )[0];
             $notes = (string) __('Gemäß Angebot :number (Version :version)', ['number' => $quote->number, 'version' => $quote->version]);
             if ($tax['note'] !== null) {
                 $notes .= "\n" . $tax['note'];

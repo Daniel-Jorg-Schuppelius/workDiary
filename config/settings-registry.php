@@ -117,6 +117,9 @@ return [
     // kommen. Projekt-Abrechnungsregeln überschreiben sie.
     // Katalogschlüssel der Standardleistung (`art:12`, `lex:34`, MVP-1026); nur je Organisation.
     'invoicing.default_service_article' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|max:80'],
+    // Leistungsort der Leistungen (§ 3a UStG, MVP-1688), wo weder Abrechnungsregel noch Artikel einen nennen;
+    // Branchenprofile setzen „catalog“ (IT, Beratung) bzw. „property“ (Bau, Ausbau, Gebäudereinigung).
+    'invoicing.place_of_supply_kind' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Enums\Invoicing\PlaceOfSupplyKind::class, 'values'], 'fallback' => 'general'],
     // Rechnungstexte der Übergabe (MVP-491): Vorlage für Einleitung und
     // Schlussbemerkung; Platzhalter :customer, :from, :to, :channel.
     // Girocode auf Rechnungs-PDFs (Feature 111, MVP-600).

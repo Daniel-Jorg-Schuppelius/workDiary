@@ -14,4 +14,6 @@ return [
         'invoice' => 'Invoice',
         'diary' => 'Diary',
     ],
+    // Registerangabe als BT-30 der E-Rechnung (MVP-1695).
+    'legal_register_hint' => 'For example “HRB 12345, Amtsgericht Musterstadt”. The e-invoice carries it as the organisation’s legal registration identifier (BT-30).',
 ];

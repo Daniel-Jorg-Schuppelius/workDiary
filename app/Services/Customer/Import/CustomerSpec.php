@@ -49,6 +49,8 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
             'company',
             'vat_id',
             'register_number',
+            // Verbraucher statt Unternehmen (MVP-1688); leer = unverändert bzw. Unternehmen.
+            'is_consumer',
             'contact_name',
             'contact_salutation',
             'contact_title',
@@ -65,6 +67,12 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
             'address_zip',
             'address_city',
             'country',
+            // Abweichende Lieferanschrift (MVP-1689), Satellit über den ContactDetailsWriter.
+            'shipping_street',
+            'shipping_supplement',
+            'shipping_zip',
+            'shipping_city',
+            'shipping_country',
             'currency',
             'hourly_rate',
             'internal_rate',
@@ -101,6 +109,8 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
             'ustid' => 'vat_id',
             'registernummer' => 'register_number',
             'handelsregister' => 'register_number',
+            'verbraucher' => 'is_consumer',
+            'privatkunde' => 'is_consumer',
             'ansprechpartner' => 'contact_name',
             'anrede' => 'contact_salutation',
             'titel' => 'contact_title',
@@ -120,6 +130,13 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
             'city' => 'address_city',
             'ort' => 'address_city',
             'land' => 'country',
+            'lieferstraße' => 'shipping_street',
+            'lieferstrasse' => 'shipping_street',
+            'lieferadresszusatz' => 'shipping_supplement',
+            'liefer-plz' => 'shipping_zip',
+            'lieferplz' => 'shipping_zip',
+            'lieferort' => 'shipping_city',
+            'lieferland' => 'shipping_country',
             'währung' => 'currency',
             'waehrung' => 'currency',
             'stundensatz' => 'hourly_rate',
@@ -136,9 +153,9 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
         foreach ($this->columns() as $col) {
             $raw = $row[$col] ?? null;
             $out[$col] = match ($col) {
-                'billable', 'survey_opt_out' => $raw === null || $raw === '' ? null : (bool) StringHelper::parseBool($raw),
+                'billable', 'survey_opt_out', 'is_consumer' => $raw === null || $raw === '' ? null : (bool) StringHelper::parseBool($raw),
                 'hourly_rate', 'internal_rate' => $this->decimal($this->trimmedString($raw)),
-                'country', 'currency' => $this->upperOrNull($this->trimmedString($raw)),
+                'country', 'currency', 'shipping_country' => $this->upperOrNull($this->trimmedString($raw)),
                 'contact_salutation' => \App\Enums\Stammdaten\ContactSalutation::fromText($this->trimmedString($raw))?->value,
                 default => $this->trimmedString($raw),
             };
@@ -160,7 +177,7 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
             $issues[] = $this->formatIssue('email', (string) __('import.error.format.email'));
         }
 
-        foreach (['number' => 64, 'company' => 255, 'vat_id' => 64, 'register_number' => 200, 'address_zip' => 16] as $f => $max) {
+        foreach (['number' => 64, 'company' => 255, 'vat_id' => 64, 'register_number' => 200, 'address_zip' => 16, 'shipping_street' => 255, 'shipping_supplement' => 255, 'shipping_zip' => 32, 'shipping_city' => 128] as $f => $max) {
             if (! empty($row[$f]) && mb_strlen((string) $row[$f]) > $max) {
                 $issues[] = $this->tooLongIssue($f, $max);
             }
@@ -174,8 +191,10 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
             $issues[] = $this->formatIssue('homepage', (string) __('import.error.format.url'));
         }
 
-        if (! empty($row['country']) && CountryCode::tryFrom((string) $row['country']) === null) {
-            $issues[] = $this->formatIssue('country', (string) __('import.error.format.country'));
+        foreach (['country', 'shipping_country'] as $field) {
+            if (! empty($row[$field]) && CountryCode::tryFrom((string) $row[$field]) === null) {
+                $issues[] = $this->formatIssue($field, (string) __('import.error.format.country'));
+            }
         }
         if (! empty($row['currency']) && CurrencyCode::tryFrom((string) $row['currency']) === null) {
             $issues[] = $this->formatIssue('currency', (string) __('import.error.format.currency'));

@@ -151,15 +151,24 @@ class XRechnungGenerator {
             if ($buyerVatId === '') {
                 $errors[] = (string) __('invoicing.einvoice.error.intra_community_buyer_vat_id');
             }
-            // BR-IC-12: Lieferanschrift mit Lieferland ist die Kundenanschrift; XRechnung verlangt dort PLZ und Ort (BR-DE-10/11).
-            if ($this->deliveryCountry($buyer) === null
-                || ($profile->isXRechnung() && (trim($buyer['zip']) === '' || trim($buyer['city']) === ''))) {
+            // BR-IC-12: Lieferanschrift mit Lieferland — die eingefrorene Lieferanschrift, sonst die Kundenanschrift (MVP-1689);
+            // XRechnung verlangt dort PLZ und Ort (BR-DE-10/11).
+            $delivery = $this->deliveryAddress($buyer);
+            if ($this->deliveryCountry($delivery) === null
+                || ($profile->isXRechnung() && ($delivery['zip'] === '' || $delivery['city'] === ''))) {
                 $errors[] = (string) __('invoicing.einvoice.error.intra_community_delivery_address');
             }
         }
         // BR-IC-02, BR-G-02: innergemeinschaftliche Lieferung und Ausfuhr nennen die USt-IdNr. des Verkäufers.
         if (($has(TaxCategory::INTRA_COMMUNITY) || $has(TaxCategory::EXPORT)) && $seller['vat_id'] === '') {
             $errors[] = (string) __('invoicing.einvoice.error.seller_vat_id_required');
+        }
+        // Leistungsort je Position (MVP-1688): Vor dem Ausstellen muss der Beleg genau einen Steuerfall ergeben; mit O ist das BR-O-11.
+        if ($invoice->party_snapshot === null && $invoice->derivesTaxCase()) {
+            $cases = array_column(app(\App\Services\Invoicing\TaxResolver::class)->casesForInvoice($invoice), 'category');
+            if (count($cases) > 1) {
+                $errors[] = (string) __(in_array(TaxCategory::OUT_OF_SCOPE->value, $cases, true) ? 'invoicing.einvoice.error.not_subject_mixed' : 'invoicing.tax_case.place_of_supply_mixed');
+            }
         }
         // BR-O-11 bis -14: „nicht steuerbar“ steht allein; BR-O-02 verbietet die USt-IdNr., es bleibt die Steuernummer.
         if ($has(TaxCategory::OUT_OF_SCOPE)) {
@@ -441,14 +450,17 @@ class XRechnungGenerator {
             $builder->withBuyerLegalRegistration($buyerRegister);
         }
 
-        // BR-IC-12: Bei innergemeinschaftlicher Lieferung geht die Ware an den Empfänger; seine Anschrift nennt das Lieferland (BT-80).
-        $deliveryCountry = $this->deliveryCountry($buyer);
+        // BR-IC-12: Bei innergemeinschaftlicher Lieferung nennt die Lieferanschrift das Lieferland (BT-80) — die abweichende
+        // des Empfängers, sonst seine Rechnungsanschrift (MVP-1689).
+        $delivery = $this->deliveryAddress($buyer);
+        $deliveryCountry = $this->deliveryCountry($delivery);
         if ($deliveryCountry !== null && in_array(TaxCategory::INTRA_COMMUNITY, $this->lineCategories($invoice, $category), true)) {
             $builder->withDeliveryAddress(
-                trim($buyer['street']) ?: null,
-                trim($buyer['zip']) ?: null,
-                trim($buyer['city']) ?: null,
+                $delivery['street'] ?: null,
+                $delivery['zip'] ?: null,
+                $delivery['city'] ?: null,
                 $deliveryCountry,
+                $delivery['supplement'] ?: null,
                 name: $buyerName,
             );
         }
@@ -460,6 +472,13 @@ class XRechnungGenerator {
             if ($precedingNumber !== '') {
                 $builder->withPrecedingInvoiceReference($precedingNumber);
             }
+        }
+
+        // BT-30: Registerangabe der Organisation wie auf dem Beleg (MVP-1695). Der Freitext bleibt ganz: Die Registernummer
+        // ist nur mit dem Registergericht eindeutig; BT-33 (weitere rechtliche Angaben) wäre der falsche Ort.
+        $sellerRegister = trim((string) ($invoice->issuerLegal()['register'] ?? ''));
+        if ($sellerRegister !== '') {
+            $builder->withSellerLegalRegistration($sellerRegister);
         }
 
         // BR-CO-26 verlangt BT-29, BT-30 oder die USt-IdNr. (BT-31). Ohne
@@ -962,13 +981,38 @@ class XRechnungGenerator {
     }
 
     /**
-     * Lieferland (BT-80) aus der Anschrift des Empfängers; ohne Land wie die Käuferanschrift Deutschland,
-     * null bei einem Wert, der kein ISO-3166-Code ist.
+     * Land einer Anschrift (Lieferland BT-80, Inlandsprüfung bei § 13b); ohne Land wie die Käuferanschrift
+     * Deutschland, null bei einem Wert, der kein ISO-3166-Code ist.
+     *
+     * @param array<string, string> $address
+     */
+    private function deliveryCountry(array $address): ?CountryCode {
+        return CountryCode::tryFrom(strtoupper(trim($address['country']) ?: 'DE'));
+    }
+
+    /**
+     * Lieferanschrift (BG-15) aus dem Empfänger: die beim Ausstellen eingefrorene Lieferanschrift, ohne sie die
+     * Rechnungsanschrift (MVP-1689). Eine Lieferanschrift ohne Land liegt im Land des Kunden.
      *
      * @param array<string, string> $buyer
+     * @return array{street: string, supplement: string, zip: string, city: string, country: string}
      */
-    private function deliveryCountry(array $buyer): ?CountryCode {
-        return CountryCode::tryFrom(strtoupper(trim($buyer['country']) ?: 'DE'));
+    private function deliveryAddress(array $buyer): array {
+        $shipping = [
+            'street' => trim($buyer['shipping_street'] ?? ''),
+            'supplement' => trim($buyer['shipping_supplement'] ?? ''),
+            'zip' => trim($buyer['shipping_zip'] ?? ''),
+            'city' => trim($buyer['shipping_city'] ?? ''),
+            'country' => trim($buyer['shipping_country'] ?? ''),
+        ];
+        if (array_filter($shipping, static fn (string $value): bool => $value !== '') === []) {
+            return ['street' => trim($buyer['street']), 'supplement' => '', 'zip' => trim($buyer['zip']), 'city' => trim($buyer['city']), 'country' => trim($buyer['country'])];
+        }
+        if ($shipping['country'] === '') {
+            $shipping['country'] = trim($buyer['country']);
+        }
+
+        return $shipping;
     }
 
     /**

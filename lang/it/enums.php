@@ -2186,6 +2186,7 @@ return [
         'incoming_e_invoice_status' => ['received' => 'Ricevuta', 'approved' => 'Approvata (verifica)', 'rejected' => 'Rifiutato', 'question' => 'Richiesta di chiarimento', 'payment_released' => 'Pagamento autorizzato'],
         'incoming_invoice_recognition' => ['structured' => 'Fattura elettronica (strutturata)', 'extracted' => 'Riconosciuta da PDF o immagine', 'none' => 'Non riconosciuta (da chiarire)'],
         'incoming_invoice_tax_case' => ['regular' => 'IVA a credito dalla fattura', 'reverse_charge_eu' => '§ 13b, comma 1 UStG: prestazione di servizi da un altro paese UE', 'reverse_charge' => '§ 13b, comma 2 UStG: imposta dovuta dal destinatario (p. es. lavori edili)', 'intra_community_acquisition' => 'Acquisto intracomunitario (§ 1a UStG)'],
+        'place_of_supply_kind' => ['general' => 'Generale (§ 3a c. 1/2 UStG)', 'catalog' => 'Prestazione del catalogo (§ 3a c. 4 UStG)', 'property' => 'Prestazione relativa a un immobile (§ 3a c. 3 n. 1 UStG)'],
         'incoming_invoice_match_kind' => ['vat_id' => 'Partita IVA', 'tax_number' => 'Codice fiscale', 'iban' => 'IBAN', 'sender_rule' => 'Regola mittente', 'manual' => 'Manuale', 'rule' => 'Regola della posta in arrivo', 'template' => 'Modello di documento'],
         'incoming_invoice_transfer_status' => ['pending' => 'In attesa', 'waiting' => 'Da chiarire', 'failed' => 'Non riuscito', 'transferred' => 'Trasferita', 'linked' => 'Già presente, collegata'],
         'invoice_schedule_status' => ['active' => 'Attivo', 'paused' => 'In pausa', 'ended' => 'Terminato'],

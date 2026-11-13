@@ -1,7 +1,7 @@
 ---
 title: "Gestionar proyectos"
 topic: projects.manage
-version: 9
+version: 10
 keywords:
     - crear proyecto
     - gestión de proyectos
@@ -105,6 +105,14 @@ cada pedido factura una línea con cantidad 1 al precio de la regla; el compleme
 hasta las horas acordadas se omite entonces, porque la tarifa plana cubre el
 pedido sea cual sea su duración. Todas las demás unidades, por ejemplo hora, día
 o ud., cuentan por duración.
+
+La regla de facturación indica también el **lugar de la prestación** de sus
+tiempos (§ 3a UStG): **General**, **Servicio del catálogo** o **Servicio
+relacionado con un inmueble**. Vacío significa el lugar de la prestación de su
+artículo; si no, el valor por defecto de la organización. En un servicio
+inmobiliario, el inmueble está en el lugar de intervención del pedido; sin
+indicación, en Alemania. La tabla de reglas muestra el tipo elegido junto al
+tipo de elemento.
 
 ## Errores habituales
 

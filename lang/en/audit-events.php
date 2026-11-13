@@ -618,6 +618,7 @@ return [
         'values_captured' => 'Incoming document values recorded',
         'tax_case_set' => 'Incoming document tax case set',
         'reanalyzed' => 'Incoming document recognised again',
+        'seller_ids_corrected' => 'Seller tax number corrected from the original',
         'revalidated' => 'Incoming document checked again',
         'assigned' => 'Incoming invoice assigned',
         'sender_rule_saved' => 'Sender rule saved',

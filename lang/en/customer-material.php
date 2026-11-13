@@ -45,7 +45,7 @@ return [
     'stock_title' => 'Issue from stock',
     'stock_issue' => 'Issue & book',
     'stock_source' => 'Stock issue',
-    'stock_hint' => 'Valued at moving average; the issue reduces stock and is booked as material cost.',
+    'stock_hint' => 'Valued by the item\'s valuation method (moving average, FIFO or FEFO); the issue reduces stock and is booked as material cost.',
     'article' => 'Article',
     'warehouse' => 'Warehouse',
     'qty' => 'Quantity',

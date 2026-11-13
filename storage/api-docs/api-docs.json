@@ -948,6 +948,16 @@
                 ],
                 "summary": "Kunde anlegen",
                 "operationId": "05089f633eadb677aafc9f3d471e7d3e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomerInput"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "201": {
                         "description": "Created"
@@ -1007,6 +1017,16 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomerInput"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -5185,6 +5205,12 @@
                                         "example": "k7Qx2Ab",
                                         "nullable": true
                                     },
+                                    "article_variant_id": {
+                                        "description": "Sqid der Variante des lagergeführten Artikels; leer = Standardvariante",
+                                        "type": "string",
+                                        "example": "k7Qx2Ab",
+                                        "nullable": true
+                                    },
                                     "description": {
                                         "type": "string",
                                         "maxLength": 255
@@ -5288,6 +5314,12 @@
                                 "properties": {
                                     "material_id": {
                                         "description": "Sqid",
+                                        "type": "string",
+                                        "example": "k7Qx2Ab",
+                                        "nullable": true
+                                    },
+                                    "article_variant_id": {
+                                        "description": "Sqid der Variante des lagergeführten Artikels; leer = Standardvariante",
                                         "type": "string",
                                         "example": "k7Qx2Ab",
                                         "nullable": true
@@ -5533,6 +5565,105 @@
     },
     "components": {
         "schemas": {
+            "CustomerInput": {
+                "description": "Kunde anlegen oder ändern; weitere Felder wie im Kundendialog.",
+                "required": [
+                    "name",
+                    "currency"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 200
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "EUR"
+                    },
+                    "number": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 64
+                    },
+                    "company": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 200
+                    },
+                    "vat_id": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 64
+                    },
+                    "register_number": {
+                        "description": "Registerangabe, etwa „HRB 12345, Amtsgericht Musterstadt“ (BT-47 der E-Rechnung)",
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 200
+                    },
+                    "is_consumer": {
+                        "description": "Verbraucher statt Unternehmen (Leistungsort nach § 3a UStG); fehlt das Feld, bleibt der Wert, neu angelegt gilt Unternehmen",
+                        "type": "boolean"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "nullable": true
+                    },
+                    "phone": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 64
+                    },
+                    "address_street": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 255
+                    },
+                    "address_zip": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 32
+                    },
+                    "address_city": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 128
+                    },
+                    "country": {
+                        "description": "ISO 3166-1 alpha-2",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "shipping_street": {
+                        "description": "Abweichende Lieferanschrift; fehlende Felder bleiben unverändert, alle leer = keine",
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 255
+                    },
+                    "shipping_supplement": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 255
+                    },
+                    "shipping_zip": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 32
+                    },
+                    "shipping_city": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 128
+                    },
+                    "shipping_country": {
+                        "description": "ISO 3166-1 alpha-2",
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
             "Money": {
                 "description": "Geldbetrag.",
                 "required": [

@@ -43,7 +43,7 @@ return [
     'stock_title' => 'Sortir du stock',
     'stock_issue' => 'Sortir et comptabiliser',
     'stock_source' => 'Sortie de stock',
-    'stock_hint' => 'Valorisation au coût moyen pondéré ; la sortie réduit le stock et est comptabilisée en coûts matériels.',
+    'stock_hint' => 'Valorisation selon la méthode de l\'article (coût moyen pondéré, FIFO ou FEFO) ; la sortie réduit le stock et est comptabilisée en coûts matériels.',
     'article' => 'Article',
     'warehouse' => 'Entrepôt',
     'qty' => 'Quantité',

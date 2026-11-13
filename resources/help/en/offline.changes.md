@@ -1,7 +1,7 @@
 ---
 title: "Offline changes"
 topic: offline.changes
-version: 2
+version: 3
 keywords:
     - work offline
     - no internet
@@ -38,5 +38,6 @@ A conflict means the entry was **not** taken over because something changed sinc
 - **Keep the other version** or **Discard** — your version is dropped.
 - **Send my version** — only for a changed clocking: your correction is applied to the new state.
 - **Edit** — adjust fields (such as date, duration or reason) and send them as a new entry.
+- **Too little stock** — if only stock is missing for material, “Edit” offers the “Allow negative stock” checkbox with the “Approve negative stock” permission. If the organisation requires four eyes, sending creates a request in the approval inbox. Without the permission the conflict remains; adjust the quantity or discard it.
 
 Every decision is recorded in the audit log. The page also shows open conflicts that arose on another device; their contents are stored there, so here they can only be discarded.

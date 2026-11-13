@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Article\ArticleVariant;
 use App\Models\Customer\Customer;
 use App\Models\Inventory\{StockLevelSetting, StockLot, StockMovement, StockReservation, Warehouse, WarehouseBin};
+use App\Models\Platform\Organization;
 use App\Services\Inventory\{CustomerStockAllocationService, EnteredQuantity, InventoryLedger, InventoryValuationManager, LotStockReader, NegativeStockApproval, ReservationService, StockLevelService};
 use App\Support\{ErrorText, Sqid};
 use App\Support\MorphMap;
@@ -319,11 +320,11 @@ class StockController extends Controller {
         // Vollaudit 2026-07 (M22): negative Bestände sind eine eigene,
         // rollenbasierte und auditierte Freigabe — nicht Teil von inventory.post.
         $allowNegative = (bool) ($data['allow_negative'] ?? false);
+        $organization = $warehouse->organization;
         if ($allowNegative) {
             Gate::authorize(P::InventoryNegative->value);
             // Vier Augen (MVP-1626): die Entnahme wird Antrag, gebucht wird nach Freigabe einer zweiten Person.
             $negative = app(NegativeStockApproval::class);
-            $organization = $warehouse->organization;
             if ((string) $data['movement'] === 'issue' && $organization !== null && $negative->required($organization)) {
                 if ($costCustomer instanceof Customer) {
                     return back()->withInput()->with('error', __('inventory.negative.no_customer_cost'));
@@ -346,9 +347,13 @@ class StockController extends Controller {
         try {
             match ((string) $data['movement']) {
                 'receipt' => $this->ledger->receipt($variant, $warehouse, $qty, $ownership, actorUserId: $actor, bin: $bin, entered: $entered),
-                'issue' => $costCustomer instanceof Customer && $ownership === OwnershipType::Own
-                    ? app(CustomerStockAllocationService::class)->issueForCustomer($costCustomer, $variant, $warehouse, $qty, actorUserId: $actor, lot: $lot, requireLot: $lotTracked, entered: $entered)
-                    : $this->ledger->issue($variant, $warehouse, $qty, $ownership, allowNegative: $allowNegative, actorUserId: $actor, bin: $bin, lot: $lot, requireLot: $lotTracked, entered: $entered),
+                // Eigenbestand bewertet nach dem Verfahren der Variante wie Auslieferung und Verbrauch (MVP-1692);
+                // Fremdbestand (Kunde, Kommission, Lieferant, Projekt) hat keinen eigenen Bewertungsstand.
+                'issue' => match (true) {
+                    $costCustomer instanceof Customer && $ownership === OwnershipType::Own => app(CustomerStockAllocationService::class)->issueForCustomer($costCustomer, $variant, $warehouse, $qty, actorUserId: $actor, lot: $lot, requireLot: $lotTracked, entered: $entered),
+                    $organization instanceof Organization && $ownership === OwnershipType::Own => $this->valuation->forVariant($variant, $organization)->issue($variant, $warehouse, $qty, allowNegative: $allowNegative, actorUserId: $actor, lot: $lot, requireLot: $lotTracked, entered: $entered, bin: $bin),
+                    default => $this->ledger->issue($variant, $warehouse, $qty, $ownership, allowNegative: $allowNegative, actorUserId: $actor, bin: $bin, lot: $lot, requireLot: $lotTracked, entered: $entered),
+                },
                 'reserve' => $this->ledger->reserve($variant, $warehouse, $qty, $ownership, actorUserId: $actor, bin: $bin, entered: $entered),
                 'release' => $this->ledger->releaseReservation($variant, $warehouse, $qty, $ownership, actorUserId: $actor, bin: $bin, entered: $entered),
                 default => throw new RuntimeException('Unbekannte Bewegungsart.'),

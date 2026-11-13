@@ -1,7 +1,7 @@
 ---
 title: "Organization and settings"
 topic: admin.organization-settings
-version: 10
+version: 11
 keywords:
     - company settings
     - tenant settings
@@ -282,6 +282,15 @@ How invoices are created is described in the topic “Invoices & documents”.
   person has confirmed it with **Release**. Whoever created the invoice cannot
   approve it. Only switch this on if at least two people are allowed to issue
   invoices; without the tick, approval stays optional.
+
+**Place of supply of services** (§ 3a UStG): applies where neither the project’s
+billing rule nor the article names a place of supply. Empty means **General** as
+before. **Catalogue service** suits IT and consulting (not taxable for consumers
+in a non-EU country), **Service connected with immovable property** suits
+construction, fit-out and building cleaning (tax at the location of the
+property). The industry profiles IT, tax advisory, construction and fit-out,
+building cleaning and other building trades set the default on installation if
+the organisation has not set it yet.
 
 ## Dunning
 

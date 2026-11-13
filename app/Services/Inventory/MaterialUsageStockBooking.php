@@ -45,7 +45,7 @@ final class MaterialUsageStockBooking implements MaterialStockBooking {
     public const string KEY_PREFIX = 'material_usage:';
 
     /** Felder, deren Änderung den Bestand berührt. */
-    private const array STOCK_FIELDS = ['material_id', 'quantity', 'unit'];
+    private const array STOCK_FIELDS = ['material_id', 'article_variant_id', 'quantity', 'unit'];
 
     public function __construct(
         private readonly InventoryLedger $ledger,
@@ -140,7 +140,7 @@ final class MaterialUsageStockBooking implements MaterialStockBooking {
                 $other[] = $part;
             }
         }
-        // Material gewechselt: der alte Artikel geht vollständig zurück.
+        // Material oder Variante gewechselt: die alte Variante geht vollständig zurück.
         $this->returnParts($usage, $organization, $other, null, $actor);
         if (! $warehouse instanceof Warehouse) {
             $this->mark($usage, MaterialStockStatus::NoWarehouse, null);
@@ -185,7 +185,7 @@ final class MaterialUsageStockBooking implements MaterialStockBooking {
         $available = $this->ledger->availableForUpdate($variant, $warehouse);
         if (! $negative && NumberHelper::comparePrecise($available, $delta, InventoryLedger::SCALE) < 0) {
             if (! $allowNegative) {
-                throw MaterialStockException::on('quantity', (string) __('material.stock.insufficient', [
+                throw MaterialStockException::shortage((string) __('material.stock.insufficient', [
                     'warehouse' => (string) $warehouse->name,
                     'available' => NumberHelper::toGermanFormat($available, InventoryLedger::SCALE, trimTrailingZeros: true),
                     'unit' => (string) ($variant->article->base_unit ?? ''),
@@ -324,7 +324,10 @@ final class MaterialUsageStockBooking implements MaterialStockBooking {
             ->first();
     }
 
-    /** Bestandsführende Variante des Materials: Standard- oder erste Variante eines lagergeführten Artikels. */
+    /**
+     * Bestandsführende Variante: die am Verbrauch gewählte (MVP-1690), sonst
+     * die Standard- oder erste Variante des lagergeführten Artikels.
+     */
     private function stockVariant(MaterialUsage $usage): ?ArticleVariant {
         $material = $usage->material_id !== null
             ? Material::query()->withoutGlobalScopes()->where('organization_id', $usage->organization_id)->find($usage->material_id)
@@ -336,10 +339,10 @@ final class MaterialUsageStockBooking implements MaterialStockBooking {
             return null;
         }
 
-        return ArticleVariant::query()->withoutGlobalScopes()->with('article')
-            ->where('article_id', $article->id)
-            ->orderByDesc('is_default')->orderBy('id')
-            ->first();
+        $variants = ArticleVariant::query()->withoutGlobalScopes()->with('article')->where('article_id', $article->id);
+        $chosen = $usage->article_variant_id !== null ? (clone $variants)->find($usage->article_variant_id) : null;
+
+        return $chosen instanceof ArticleVariant ? $chosen : $variants->orderByDesc('is_default')->orderBy('id')->first();
     }
 
     /**

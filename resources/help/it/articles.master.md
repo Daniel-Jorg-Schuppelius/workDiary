@@ -1,7 +1,7 @@
 ---
 title: "Anagrafica articoli"
 topic: articles.master
-version: 5
+version: 6
 keywords:
     - articoli
     - creare articolo
@@ -50,6 +50,16 @@ Le **unità** aggiuntive valgono per movimenti di magazzino, scansione, ordini e
 Se un gestionale di magazzino gestisce i numeri articolo (pagina «Numerazioni», numerazione «Articolo»), numero articolo e GTIN sono di sola lettura nella finestra; i nuovi articoli e varianti ricevono il numero con la sincronizzazione.
 
 **Classe fiscale:** nel modulo articolo registrate la classe fiscale (ordinaria, ridotta, maggiorata). Viene salvata con l’articolo, ripresa nell’importazione e confrontata per duplicati e unioni; l’aliquota di un documento resta fissata sulla riga.
+
+**Luogo della prestazione:** Per le prestazioni scelga nel modulo dell’articolo
+il tipo di luogo della prestazione (§ 3a UStG): **Generale**, **Prestazione del
+catalogo** (non imponibile per consumatori extra UE) o **Prestazione relativa a
+un immobile** (imposta nel luogo dell’immobile, per tutti i clienti). Vuoto
+significa il valore predefinito dell’organizzazione. La pagina di dettaglio
+mostra il tipo scelto; l’importazione CSV lo riprende nella colonna
+`place_of_supply_kind` (valori `general`, `catalog`, `property`, intestazione ad
+esempio «Leistungsort»). Come determina il regime fiscale è spiegato
+nell’argomento di aiuto **Fatture & documenti**.
 
 ## Produzione
 

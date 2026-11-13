@@ -43,7 +43,7 @@ return [
     'stock_title' => 'Prelevare dal magazzino',
     'stock_issue' => 'Preleva e registra',
     'stock_source' => 'Prelievo da magazzino',
-    'stock_hint' => 'Valutazione al costo medio ponderato; il prelievo riduce la giacenza ed è registrato come costo del materiale.',
+    'stock_hint' => 'Valutazione secondo il metodo dell\'articolo (costo medio ponderato, FIFO o FEFO); il prelievo riduce la giacenza ed è registrato come costo del materiale.',
     'article' => 'Articolo',
     'warehouse' => 'Magazzino',
     'qty' => 'Quantità',

@@ -670,7 +670,9 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
     /**
      * Empfänger, wie er auf dem Beleg steht (MVP-1624): ausgestellt der beim
      * Ausstellen eingefrorene Stand, als Entwurf der heutige Kunde. Felder, die
-     * ein älterer Snapshot noch nicht führt (etwa `company`), ergänzt der heutige Stand.
+     * ein älterer Snapshot noch nicht führt (etwa `company`), ergänzt der heutige
+     * Stand — nicht die Lieferanschrift (MVP-1689) und nicht das Merkmal
+     * Verbraucher (MVP-1688).
      *
      * @return Buyer
      */
@@ -684,6 +686,16 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
             if (array_key_exists($field, $frozen) && is_scalar($frozen[$field])) {
                 $current[$field] = (string) $frozen[$field];
             }
+        }
+        // Vor MVP-1689 ausgestellt: geliefert wurde an die Rechnungsanschrift, eine heutige Lieferanschrift deutet das nicht um.
+        if (! array_key_exists('shipping_country', $frozen)) {
+            foreach (\App\Services\Invoicing\InvoicePartySnapshot::SHIPPING_KEYS as $field) {
+                $current[$field] = '';
+            }
+        }
+        // Vor MVP-1688 ausgestellt: Jeder Kunde galt als Unternehmen.
+        if (! array_key_exists('is_consumer', $frozen)) {
+            $current['is_consumer'] = '0';
         }
 
         return $current;
@@ -704,12 +716,18 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
     /**
      * Rechts- und Bankangaben des Ausstellers wie auf dem Beleg (MVP-1680):
      * ausgestellt der eingefrorene Stand — auch leere Felder —, Felder, die ein
-     * älterer Snapshot nicht führt, aus dem heutigen Branding.
+     * älterer Snapshot nicht führt, aus dem heutigen Branding. Die Registerangabe
+     * (BT-30, MVP-1695) eines Snapshots ohne `legal` kommt aus den eingefrorenen
+     * Ausstellerangaben (MVP-1609), wie sie das PDF druckt.
      *
      * @return array<string, ?string>
      */
     public function issuerLegal(): array {
         $legal = app(\App\Services\UI\BrandingService::class)->legalFor($this->organization);
+        $issuer = is_array($this->party_snapshot) ? ($this->party_snapshot['issuer'] ?? null) : null;
+        if (is_array($issuer) && is_scalar($issuer['register'] ?? null)) {
+            $legal['register'] = trim((string) $issuer['register']) !== '' ? (string) $issuer['register'] : null;
+        }
         $frozen = is_array($this->party_snapshot) ? ($this->party_snapshot['legal'] ?? null) : null;
         if (! is_array($frozen)) {
             return $legal;
@@ -737,6 +755,15 @@ class Invoice extends Model implements HasDocumentLines, SupportingDocumentCarri
 
     public function isCreditNote(): bool {
         return $this->type === self::TYPE_CREDIT_NOTE;
+    }
+
+    /**
+     * Folgt der Steuerfall Kunde und Leistungsort (MVP-1623, MVP-1688)? Storno
+     * und Gutschrift tragen den ihres Originals, importierte Belege den ihrer Datei.
+     */
+    public function derivesTaxCase(): bool {
+        return ! $this->isCreditNote() && $this->type !== self::TYPE_CANCELLATION
+            && ! in_array($this->number_source, ['file_import', \App\Services\Invoicing\Import\InvoiceSpec::NUMBER_SOURCE], true);
     }
 
     /** Nummernkreis der Belegart; bestimmt auch, wer die Nummer vergibt (MVP-1153). */

@@ -15,7 +15,7 @@ namespace App\Services\Inventory;
 use App\Contracts\Inventory\InventoryValuationStrategy;
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState, ValuationMethod};
 use App\Models\Article\ArticleVariant;
-use App\Models\Inventory\{StockLot, StockMovement, StockValuationLayer, Warehouse};
+use App\Models\Inventory\{StockLot, StockMovement, StockValuationLayer, Warehouse, WarehouseBin};
 use App\Support\DecimalQty;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -84,7 +84,7 @@ class FifoValuationService implements InventoryValuationStrategy {
      * Teil verbraucht zuerst die Schichten seiner Charge — der Teil ohne
      * Charge die chargenlosen —, danach die übrigen in Verfahrensfolge.
      */
-    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false, ?EnteredQuantity $entered = null, ?string $idempotencyKey = null, ?Model $source = null): StockIssue {
+    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false, ?EnteredQuantity $entered = null, ?string $idempotencyKey = null, ?Model $source = null, ?WarehouseBin $bin = null): StockIssue {
         return $this->ledger->issue(
             $variant, $warehouse, $qty,
             entered: $entered,
@@ -95,6 +95,7 @@ class FifoValuationService implements InventoryValuationStrategy {
             costing: fn (?StockLot $partLot, string $partQty): array => $this->consumeLayers($variant, $warehouse, $partLot, $partQty),
             requireLot: $requireLot,
             source: $source,
+            bin: $bin,
         );
     }
 

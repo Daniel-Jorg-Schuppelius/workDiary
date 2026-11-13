@@ -106,6 +106,7 @@
                                :label="$label"
                                type="text"
                                :data-iban-check="$field === 'iban' ? '' : null"
+                               :hint="$field === 'register' ? __('branding.legal_register_hint') : null"
                                value="{{ old('branding.legal.'.$field, data_get($organization->settings, 'branding.legal.'.$field, '')) }}" />
             @endforeach
             <x-textarea-field name="branding[legal][footer_text]" :label="__('Fußzeilentext (für PDF-Dokumente)')" rows="3"

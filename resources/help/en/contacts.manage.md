@@ -1,8 +1,11 @@
 ---
 title: "Customers & suppliers"
 topic: contacts.manage
-version: 18
+version: 20
 keywords:
+    - consumer
+    - private customer
+    - Delivery address
     - Preview as customer
     - Start password
     - Create access
@@ -145,8 +148,44 @@ Musterstadt HRB 12345”. The e-invoice states it as the customer's legal
 registration identifier (BT-47). If the customer owes the tax (§ 13b UStG) and
 has no VAT ID, the register number is enough for the e-invoice.
 
+**Delivery address:** If goods go to a different address than the invoice,
+enter it in the collapsible section **Delivery address** (street, address
+supplement, postal code, city, country). If the section stays empty, the
+billing address is the delivery address; clearing all fields removes an
+existing delivery address. Lists, document header and accounting system keep
+the billing address. For an intra-community supply the e-invoice names the
+delivery address with the delivery country; an issued invoice keeps the one
+valid at issue, cancellation and corrective invoice take the one of the
+original. The detail page shows it under **Contact**, it is a field of its own
+when merging, and the data subject access report, CSV import and export include
+it (columns `shipping_street`, `shipping_supplement`, `shipping_zip`,
+`shipping_city`, `shipping_country`; headers such as “Lieferstraße”,
+“Liefer-PLZ”, “Lieferort”, “Lieferland”). The customer API and the MCP tool
+`create_customer` accept the register number and the delivery address; an
+update via the API changes only the delivery address fields that are sent.
+
 How documents get into the e-invoice and what applies to public-authority
 customers is described in the help topic **Invoices & documents**.
+
+## Consumers and place of supply
+
+If the customer is a private individual or another non-business recipient, tick
+**Consumer (not a business)** in the **Portal & miscellaneous** section.
+Together with the place-of-supply type of the service it determines the tax
+case (§ 3a UStG): for consumers in a non-EU country, catalogue services –
+consulting, data processing, rights, advertising, hire of movable goods and
+similar – are not taxable in Germany; other services carry German VAT.
+Unticked, the customer counts as a business as before; existing customers do
+not change. A consumer is never liable for the tax itself: the boxes
+**Consumer** and **Recipient is liable for VAT** cannot both be ticked.
+
+The detail page shows the **Recipient** (consumer or business); when merging it
+is a separate field. Subject access, CSV import and export (column
+`is_consumer`, a header such as “Verbraucher”), the customer API and the MCP
+tool `create_customer` include it; an API update without the field leaves it
+unchanged. An issued invoice keeps the state at issue, cancellation and
+corrective invoice keep that of the original. Where the place-of-supply type is
+maintained is described in the help topic **Invoices & documents**.
 
 ## Practical example
 

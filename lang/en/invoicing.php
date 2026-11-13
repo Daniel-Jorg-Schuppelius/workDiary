@@ -568,9 +568,26 @@ return [
         'label' => 'Recipient is liable for VAT (§ 13b UStG)',
         'hint' => 'Domestic customer liable for the tax on your services, e.g. construction services to construction businesses. Invoices go out without VAT and with the note “Reverse charge: recipient liable for tax” (field 60).',
     ],
+    // Verbraucher und Leistungsort nach § 3a UStG (MVP-1688).
+    'consumer' => [
+        'label' => 'Consumer (not a business)',
+        'hint' => 'Private individual or other non-business recipient. Determines the place of supply under § 3a UStG: for consumers in a non-EU country, catalogue services (consulting, data processing, rights, advertising, hire of movable goods etc.) are not taxable in Germany; other services carry German VAT. Unticked, the customer counts as a business.',
+        'recipient' => 'Recipient',
+        'yes' => 'Consumer',
+        'no' => 'Business',
+        'reverse_charge_conflict' => 'A consumer is never liable for the VAT itself (§ 13b (5) UStG applies to businesses only). Please set only one of the two flags.',
+    ],
+    'place_of_supply' => [
+        'label' => 'Place of supply (§ 3a UStG)',
+        'hint_article' => 'Services only. Catalogue service: not taxable in Germany for consumers in a non-EU country. Immovable property: German VAT if the property is in Germany (site of the order, Germany if not stated), otherwise not taxable — for all customers.',
+        'hint_rule' => 'Applies to the times of this rule. Empty: place of supply of the rule’s article, otherwise the organisation default.',
+        'inherit_organization' => 'Organisation default',
+        'inherit_article' => 'As article or organisation default',
+    ],
     // Steuerfall des Rechnungsentwurfs (MVP-1623).
     'tax_case' => [
         'changed_on_issue' => 'The customer\'s tax case has changed since the draft was last edited (reverse charge, export or tax-exempt). The draft has been adjusted — please check the totals and issue the invoice again.',
         'note_kept' => 'The invoice text was edited by hand and has therefore not been adjusted: please check the tax case notice (such as reverse charge, export or tax exemption) yourself.',
+        'place_of_supply_mixed' => 'The lines of this invoice have different places of supply (§ 3a UStG) and therefore different tax cases. Please split the invoice: one invoice per tax case, e.g. property or catalogue services separately from the other services.',
     ],
 ];

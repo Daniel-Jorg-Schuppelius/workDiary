@@ -29,4 +29,12 @@ return [
         'notice' => ':status · warehouse “:warehouse”',
         'current' => 'Stock: :notice',
     ],
+    // Variant per usage (MVP-1690).
+    'variant' => [
+        'default' => '— Default variant —',
+        'hint' => 'Only for stock-managed items with several variants. Empty books the default variant; without a unit price the variant\'s own price applies, otherwise the material\'s.',
+        'label' => 'Variant: :variant',
+        'mismatch' => 'The variant does not belong to the item of the selected material.',
+        'inactive' => 'This variant is not active and cannot be newly selected.',
+    ],
 ];

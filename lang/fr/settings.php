@@ -97,6 +97,8 @@ return [
         'default_service_article' => 'Prestation par défaut (article)',
         'default_service_none' => '— aucune prestation par défaut —',
         'default_service_hint' => 'Fournit le libellé, l’unité, le texte standard et — si aucun taux n’est trouvé — le prix des positions de transfert. Les règles de facturation du projet la remplacent. Avec l’unité « forfait », chaque commande donne une ligne de quantité 1 par facturation ; les autres unités comptent selon la durée.',
+        'place_of_supply_kind' => 'Lieu de la prestation des services',
+        'place_of_supply_kind_hint' => 'S’applique lorsque ni la règle de facturation du projet ni l’article n’indiquent de lieu de prestation. Prestation du catalogue (conseil, informatique, droits, etc.) : non imposable pour un consommateur hors UE. Bien immobilier (construction, second œuvre, nettoyage de bâtiments) : taxe au lieu du bien pour tous les clients. Générale : comme auparavant.',
         'transfer_intro_text' => 'Modèle : texte d’introduction du transfert',
         'transfer_closing_text' => 'Modèle : remarque finale du transfert',
         'transfer_text_hint' => 'Copié dans le justificatif à la création du transfert et modifiable sur place. Variables : :customer, :from, :to, :channel. Vide = le texte par défaut de la cible.',

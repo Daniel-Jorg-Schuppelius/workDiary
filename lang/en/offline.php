@@ -49,7 +49,10 @@ return [
     'field' => [
         'missing' => 'Missing',
         'lock' => 'Lock',
+        'stock' => 'Stock',
     ],
+    // Conflict from missing stock (MVP-1691): only with the “Approve negative stock” permission.
+    'allow_negative_hint' => 'Books the usage into negative stock despite the shortage. If your organisation requires a second approval, a request is created in the approval inbox.',
     'remote_hint' => 'Captured on another device — the contents are stored there. Here you can only discard the conflict.',
     'resolve_failed' => 'The decision could not be transferred. Please try again with a connection.',
     'unresolved' => 'open',

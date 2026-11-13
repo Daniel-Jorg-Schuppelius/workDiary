@@ -1,7 +1,7 @@
 ---
 title: "Organisation et paramètres"
 topic: admin.organization-settings
-version: 10
+version: 11
 keywords:
     - paramètres de l'entreprise
     - réglages du locataire
@@ -318,6 +318,16 @@ La création des factures est décrite dans le thème « Factures & pièces ».
   qui a créé la facture ne peut pas la valider elle-même. À n’activer que si au
   moins deux personnes sont autorisées à émettre des factures ; sans la coche,
   la validation reste facultative.
+
+**Lieu de la prestation des services** (§ 3a UStG) : s’applique lorsque ni la
+règle de facturation du projet ni l’article n’indiquent de lieu de prestation.
+Vide signifie **Générale** comme auparavant. **Prestation du catalogue**
+convient à l’informatique et au conseil (non imposable pour un consommateur hors
+UE), **Prestation liée à un bien immobilier** à la construction, au second œuvre
+et au nettoyage de bâtiments (taxe au lieu du bien). Les profils de branche IT,
+conseil fiscal, construction et second œuvre, nettoyage de bâtiments et
+d’autres métiers du bâtiment fixent cette valeur à l’installation si
+l’organisation ne l’a pas encore définie.
 
 ## Relances
 

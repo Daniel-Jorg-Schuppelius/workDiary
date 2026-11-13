@@ -618,6 +618,7 @@ return [
         'values_captured' => 'Valori del documento registrati',
         'tax_case_set' => 'Caso fiscale del documento impostato',
         'reanalyzed' => 'Riconoscimento del documento ripetuto',
+        'seller_ids_corrected' => 'Codice fiscale del venditore corretto dall’originale',
         'revalidated' => 'Controllo del documento ripetuto',
         'assigned' => 'Fattura in entrata assegnata',
         'sender_rule_saved' => 'Regola mittente salvata',

@@ -1,7 +1,7 @@
 ---
 title: "Gestionar hojas de horas"
 topic: timesheets.manage
-version: 4
+version: 5
 keywords:
     - parte de horas
     - parte de trabajo
@@ -33,5 +33,9 @@ es una salida del estado guardado, no la fuente de datos principal.
 **Material desde «Hoy»:** con «Material» en «Hoy» registra consumibles con proyecto, cantidad y unidad, también sin red. Se añaden a su parte de horas abierto del proyecto para ese día; si no existe (o ya está firmado), se crea uno nuevo.
 
 **Salida de almacén:** si el material está vinculado a un artículo con gestión de existencias (artículo marcado como «Almacenable») y el módulo de almacén está activo, el consumo registra la salida del almacén predeterminado de la organización, en la unidad introducida y valorada según el método de valoración del almacén. Si cambia la cantidad, solo se registra la diferencia; otro material devuelve el artículo anterior, y eliminar la línea o todo el parte de horas devuelve la salida. Bajo la descripción, la línea muestra si se registró y desde qué almacén. Si las existencias no bastan, se rechaza el registro; con el permiso «Autorizar existencias negativas» marca «Permitir stock negativo». Si la organización exige cuatro ojos para ello, la salida espera la aprobación en la bandeja de aprobaciones («Existencias negativas solicitadas»). Los artículos con número de serie se retiran a través del almacén; los artículos con lote se toman de los lotes, primero la fecha de caducidad más próxima. Sin almacén predeterminado, la línea muestra «No registrado – sin almacén predeterminado»; si las existencias se llevan en otro sistema solo en lectura, WorkDiary no registra nada. Si otro sistema gestiona las existencias, cada movimiento se le envía también. Lo mismo vale sin conexión: si las existencias impiden el registro, la entrada aparece como conflicto en «Cambios sin conexión».
+
+**Variante:** si el artículo con gestión de existencias del material tiene varias variantes activas (por ejemplo colores o tallas), elija la variante consumida en el diálogo del parte de horas y en «Hoy»; el campo solo aparece para esos materiales. Sin elección, el consumo registra como antes la variante predeterminada. Si deja vacío el precio unitario, se aplica el precio de venta propio de la variante; si no, el del material. Un cambio de variante devuelve la anterior y retira la nueva. La línea, el PDF, la factura y la transferencia al programa contable nombran la variante tras la descripción, como en una entrega.
+
+**Sin conexión con existencias insuficientes:** si al material registrado sin conexión solo le faltan existencias, «Editar» en «Cambios sin conexión» ofrece, con el permiso «Autorizar existencias negativas», la casilla «Permitir stock negativo». El envío funciona como en línea: si se exigen cuatro ojos, se crea una solicitud en la bandeja de aprobaciones.
 
 **Límite de suma:** el material que registre en «Hoy» va a la hoja de horas abierta del día. Si cantidad × precio unitario, junto con las demás líneas, superara la suma almacenable de la hoja, el registro se rechaza, en línea y sin conexión.

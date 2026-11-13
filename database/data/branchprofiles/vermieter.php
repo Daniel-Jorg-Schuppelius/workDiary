@@ -16,7 +16,9 @@ return [
     'code' => 'vermieter',
     'label' => 'Vermieter / Wohnungen und Ferienwohnungen',
     'description' => 'Dauer- und Ferienvermietung: Wohnungsbestand mit Belegungsübersicht, Mietverhältnisse, Buchungsanfragen im Kundenportal, Übergabe und Abnahme mit Protokoll sowie Mietvertragsvorlagen mit Fristen.',
-    'version' => 1,
+    // v2: Leistungsort-Vorgabe „Grundstück“ (§ 3a Abs. 3 Nr. 1 UStG, MVP-1688); eigene Einstellungen bleiben.
+    'version' => 2,
+    'settings' => ['invoicing.place_of_supply_kind' => 'property'],
     'modules_recommended' => [
         'module.rental',
         'module.contracts',

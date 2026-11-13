@@ -1,7 +1,7 @@
 ---
 title: "Article master data"
 topic: articles.master
-version: 5
+version: 6
 keywords:
     - item master
     - products
@@ -56,6 +56,15 @@ The additional **units** take effect in stock postings, scanning, purchase order
 If a merchandise management system maintains the article numbers (“Number ranges” page, range “Article”), article number and GTIN are read-only in the dialog; new articles and variants receive their number with the synchronisation.
 
 **Tax class:** In the article form you record the tax class (standard, reduced, increased). It is stored with the article, taken over on import and compared for duplicates and merges; the tax rate of a document is still set on the line.
+
+**Place of supply:** For services, choose the place-of-supply type (§ 3a UStG)
+in the article form: **General**, **Catalogue service** (not taxable for
+consumers in a non-EU country) or **Service connected with immovable property**
+(tax at the location of the property, for all customers). Empty means the
+organisation default. The detail page shows a chosen type; the CSV import takes
+it in the column `place_of_supply_kind` (values `general`, `catalog`,
+`property`, a header such as “Leistungsort”). How it determines the tax case is
+described in the help topic **Invoices & documents**.
 
 ## Manufacturing
 

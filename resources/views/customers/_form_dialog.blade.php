@@ -53,6 +53,7 @@
             old('vat_id', $customer?->vat_id),
             old('register_number', $customer?->register_number),
             (bool) old('is_reverse_charge_recipient', $customer?->is_reverse_charge_recipient ?? false),
+            (bool) old('is_consumer', $customer?->is_consumer ?? false),
             $customerGroupSqid,
             old('timezone', $customer?->timezone),
             old('homepage', $customer?->homepage),
@@ -63,6 +64,10 @@
             old('comment', $customer?->comment),
             $selectedTagIds,
         ];
+        $shippingValues = [];
+        foreach ($customer?->shippingAddressFields() ?? array_fill_keys(\App\Services\Stammdaten\ContactDetailsWriter::SHIPPING_FIELDS, null) as $field => $value) {
+            $shippingValues[$field] = old($field, $value);
+        }
     @endphp
 
     <x-form-group :legend="__('Stammdaten')" icon="badge" tone="primary" cols="2">
@@ -87,6 +92,14 @@
         <x-input-field name="address_city" :label="__('Ort')" maxlength="128" :value="old('address_city', $customer?->address_city)" />
         <x-input-field name="country" :label="__('Land (ISO 2)')" maxlength="2" class="uppercase" :value="old('country', $customer?->country)" />
     </x-form-group>
+
+    {{-- MVP-1689: abweichende Lieferanschrift (Satellit), Lieferpartei der E-Rechnung bei Kategorie K. --}}
+    <x-form-group-collapsible :legend="__('stammdaten.shipping.heading')" icon="pin_drop" tone="ghost" cols="2"
+                              :description="__('stammdaten.shipping.description')"
+                              :fields="array_keys($shippingValues)"
+                              :values="$shippingValues">
+        <x-contact-address-fields :subject="$customer" kind="shipping" />
+    </x-form-group-collapsible>
 
     <x-form-group-collapsible :legend="__('Abrechnung & Darstellung')" icon="payments" tone="warning" cols="2"
                               :fields="['currency', 'document_locale', 'hourly_rate', 'internal_rate', 'billable', 'buyer_reference', 'peppol_participant_id', 'payment_terms_days', 'skonto_percent', 'skonto_days', 'delivery_format', 'einvoice_recipient_profile', 'einvoice_attach_activity_report', 'einvoice_attachment_limit_mb', 'einvoice_dispatch_route', 'billing_mode', 'debtor_no', 'invoice_text']"
@@ -203,7 +216,7 @@
     </x-form-group-collapsible>
 
     <x-form-group-collapsible :legend="__('Portal & Sonstiges')" icon="tune" tone="ghost" cols="2"
-                              :fields="['matchcode', 'vat_id', 'register_number', 'is_reverse_charge_recipient', 'customer_group_id', 'timezone', 'homepage', 'address', 'exclude_from_reports', 'no_bulk_mail', 'survey_opt_out', 'comment', 'tag_ids']"
+                              :fields="['matchcode', 'vat_id', 'register_number', 'is_reverse_charge_recipient', 'is_consumer', 'customer_group_id', 'timezone', 'homepage', 'address', 'exclude_from_reports', 'no_bulk_mail', 'survey_opt_out', 'comment', 'tag_ids']"
                               :values="$miscValues">
         <x-input-field name="matchcode" :label="__('Kürzel (Matchcode)')" maxlength="16" :value="old('matchcode', $customer?->matchcode)"
                        :hint="__('Für den Alias-Abgleich der Fernwartungs-Inbox, z. B. GSL.')" />
@@ -215,6 +228,10 @@
         <x-checkbox-field name="is_reverse_charge_recipient" :label="__('invoicing.reverse_charge_recipient.label')"
                           :hint="__('invoicing.reverse_charge_recipient.hint')"
                           :checked="old('is_reverse_charge_recipient', $customer?->is_reverse_charge_recipient ?? false)" />
+        {{-- MVP-1688: Verbraucher statt Unternehmen — Leistungsort nach § 3a Abs. 1/4 UStG. --}}
+        <x-checkbox-field name="is_consumer" :label="__('invoicing.consumer.label')"
+                          :hint="__('invoicing.consumer.hint')"
+                          :checked="old('is_consumer', $customer?->is_consumer ?? false)" />
         @if (($customerGroups ?? collect())->isNotEmpty())
             {{-- Kundengruppe (MVP-949) --}}
             <x-select-field name="customer_group_id" :label="__('Kundengruppe')">

@@ -57,9 +57,49 @@ trait HasContactAndBankDetails {
         return $this->morphMany(ContactBankAccount::class, 'accountable');
     }
 
+    /** Rechnungs- bzw. Postanschrift; eine Lieferanschrift ist nie die primäre (MVP-1689). */
     public function primaryAddress(): ?ContactAddress {
-        return $this->addresses()->where('is_primary', true)->first()
-            ?? $this->addresses()->first();
+        return $this->addresses()->where('kind', '!=', ContactAddress::KIND_SHIPPING)->where('is_primary', true)->first()
+            ?? $this->addresses()->where('kind', '!=', ContactAddress::KIND_SHIPPING)->orderBy('id')->first();
+    }
+
+    /** Abweichende Lieferanschrift (MVP-1689); mehrere aus dem Buchhaltungsprogramm: die erste. */
+    public function shippingAddress(): ?ContactAddress {
+        return $this->addresses()->where('kind', ContactAddress::KIND_SHIPPING)
+            ->orderByDesc('is_primary')->orderBy('id')->first();
+    }
+
+    /**
+     * Lieferanschrift unter den Eingabenamen des Formulars, leer ohne Lieferanschrift.
+     *
+     * @return array{shipping_street: ?string, shipping_supplement: ?string, shipping_zip: ?string, shipping_city: ?string, shipping_country: ?string}
+     */
+    public function shippingAddressFields(): array {
+        $shipping = $this->shippingAddress();
+
+        return [
+            'shipping_street' => $shipping?->street,
+            'shipping_supplement' => $shipping?->supplement,
+            'shipping_zip' => $shipping?->zip,
+            'shipping_city' => $shipping?->city,
+            'shipping_country' => $shipping?->country_code,
+        ];
+    }
+
+    /** @return list<string> Zeilen der Lieferanschrift für die Anzeige, leer ohne Lieferanschrift. */
+    public function shippingAddressLines(): array {
+        $shipping = $this->shippingAddress();
+        if ($shipping === null) {
+            return [];
+        }
+        $lines = [
+            trim((string) $shipping->street),
+            trim((string) $shipping->supplement),
+            trim(trim((string) $shipping->zip) . ' ' . trim((string) $shipping->city)),
+            trim((string) $shipping->country_code),
+        ];
+
+        return array_values(array_filter($lines, static fn (string $line): bool => $line !== ''));
     }
 
     public function primaryBankAccount(): ?ContactBankAccount {

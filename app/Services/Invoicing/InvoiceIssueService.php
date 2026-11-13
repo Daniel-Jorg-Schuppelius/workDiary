@@ -112,6 +112,9 @@ final class InvoiceIssueService {
         }
         // Hat sich der Steuerfall seit der letzten Bearbeitung geändert, geht der angepasste Entwurf erst nach Prüfung hinaus.
         $alignment = $this->alignTaxCase($invoice);
+        if ($alignment === TaxCaseAlignment::Mixed) {
+            throw new InvoiceIssueException(InvoiceIssueException::REASON_PLACE_OF_SUPPLY_MIXED, (string) __('invoicing.tax_case.place_of_supply_mixed'));
+        }
         if ($alignment->changed()) {
             $invoice->recalculate();
             $invoice->save();
@@ -124,9 +127,7 @@ final class InvoiceIssueService {
         }
         $organization = $invoice->organization;
         $resolvedOn = $invoice->serviceDateTo() ?? now();
-        $taxResolution = $organization !== null
-            ? $this->taxResolver->resolve($organization, $invoice->customer, $resolvedOn, $invoice->isMaterial() ? 'goods' : 'services')
-            : null;
+        $taxResolution = $organization !== null ? $this->taxCaseToFreeze($invoice, $organization, $resolvedOn) : null;
 
         $fromFile = $invoice->number_source === 'file_import';
 
@@ -192,8 +193,7 @@ final class InvoiceIssueService {
      * Originals bzw. ihrer Datei.
      */
     public function alignTaxCase(Invoice $invoice): TaxCaseAlignment {
-        if ($invoice->status !== InvoiceStatus::Draft || $invoice->isCreditNote() || $invoice->type === Invoice::TYPE_CANCELLATION
-            || in_array($invoice->number_source, ['file_import', \App\Services\Invoicing\Import\InvoiceSpec::NUMBER_SOURCE], true)) {
+        if ($invoice->status !== InvoiceStatus::Draft || ! $invoice->derivesTaxCase()) {
             return TaxCaseAlignment::Unchanged;
         }
         $organization = $invoice->organization;
@@ -201,7 +201,12 @@ final class InvoiceIssueService {
             return TaxCaseAlignment::Unchanged;
         }
 
-        $tax = $this->taxResolver->resolve($organization, $invoice->customer, $invoice->serviceDateTo() ?? now(), $invoice->isMaterial() ? 'goods' : 'services');
+        // Leistungsort je Position (MVP-1688): Ergeben die Positionen verschiedene Fälle, bleibt der Entwurf, wie er ist.
+        $cases = $this->taxResolver->casesForInvoice($invoice);
+        if (count($cases) > 1) {
+            return TaxCaseAlignment::Mixed;
+        }
+        $tax = $cases[0];
         $rate = Percentage::of((string) $tax['rate'], 2);
         // Der Fall zählt, nicht der Satz: Reverse Charge oder steuerfrei gegen steuerpflichtig. Ein anderer Regelsatz bleibt Sache des Entwurfs.
         if ((bool) $invoice->is_reverse_charge === $tax['reverse_charge'] && $rate->isZero() === ($invoice->tax_rate?->isZero() ?? true)) {
@@ -213,6 +218,26 @@ final class InvoiceIssueService {
         $invoice->tax_rate = $rate;
 
         return $this->alignTaxNote($invoice, $organization, trim((string) $tax['note']), $hadTaxNote);
+    }
+
+    /**
+     * Steuerfall, den das Ausstellen einfriert: der eigene Beleg nach Kunde und
+     * Leistungsort seiner Positionen (MVP-1688), Storno und Gutschrift der
+     * ihres Originals — sonst wichen Kopf und übernommene Positionskategorien
+     * ab —, importierte Belege nach Kunde und Vorgabe der Organisation.
+     *
+     * @return array{category: ?string, rule: mixed}
+     */
+    private function taxCaseToFreeze(Invoice $invoice, Organization $organization, \Carbon\CarbonInterface $resolvedOn): array {
+        if ($invoice->derivesTaxCase()) {
+            return $this->taxResolver->casesForInvoice($invoice, $resolvedOn)[0];
+        }
+        $original = $invoice->parent;
+        if ($original !== null && ! $original->is($invoice) && (string) data_get($original->tax_context, 'category', '') !== '') {
+            return ['category' => (string) data_get($original->tax_context, 'category'), 'rule' => data_get($original->tax_context, 'rule')];
+        }
+
+        return $this->taxResolver->resolve($organization, $invoice->customer, $resolvedOn, $invoice->isMaterial() ? 'goods' : 'services');
     }
 
     /**

@@ -44,4 +44,10 @@ return [
     'contact' => [
         'salutation' => 'Anrede',
     ],
+    // Abweichende Lieferanschrift am Kunden (MVP-1689).
+    'shipping' => [
+        'heading' => 'Lieferanschrift',
+        'description' => 'Nur ausfüllen, wenn Ware an eine andere Anschrift geht als die Rechnung. Leer bleibt die Rechnungsanschrift die Lieferanschrift.',
+        'supplement' => 'Adresszusatz',
+    ],
 ];

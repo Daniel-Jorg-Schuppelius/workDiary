@@ -1,7 +1,7 @@
 ---
 title: "Branding"
 topic: admin.branding
-version: 2
+version: 3
 keywords:
     - White Label
     - Corporate Design
@@ -50,6 +50,9 @@ Im Formular darunter pflegen Sie:
 - **Kontakt**: Anschrift, Telefon, E-Mail und Web.
 - **Rechtliches & PDF-Fuß**: USt-IdNr., Steuernummer, Kontoinhaber, Bank,
   IBAN, BIC, Handelsregister und der Fußzeilentext für PDF-Dokumente.
+  Den Handelsregister-Eintrag schreiben Sie samt Registergericht, etwa
+  „HRB 12345, Amtsgericht Musterstadt“; die E-Rechnung führt ihn als
+  Registerkennung der Organisation (BT-30), eingefroren beim Ausstellen.
 - **Farben**: Primär- und Akzentfarbe; sie ersetzen die Grundfarben der
   Oberfläche.
 - **PDF-Konfiguration je Dokumenttyp**: Logo-Variante (hell, dunkel oder

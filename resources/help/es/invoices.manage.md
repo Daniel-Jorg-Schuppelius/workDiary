@@ -1,10 +1,12 @@
 ---
 title: "Facturas & documentos"
 topic: invoices.manage
-version: 20
+version: 22
 keywords:
+    - lugar de la prestación
+    - servicio del catálogo
+    - inmueble
     - crear factura
-    - emitir factura
     - factura de venta
     - facturación
     - anular factura
@@ -21,10 +23,8 @@ keywords:
     - documentos relacionados
     - cadena de documentos
     - transferir factura a Lexoffice
-    - número provisional
     - consulta sobre factura
     - justificante de servicios
-    - hoja de horas
     - documentos justificativos
     - administración pública
     - Leitweg-ID
@@ -339,6 +339,39 @@ sin cambios en el texto de la factura, lo sustituye el aviso del nuevo supuesto 
 elimina. Si modificó el aviso a mano, su texto se mantiene: workDiary se lo indica y
 usted lo revisa.
 
+## Lugar de la prestación de los servicios
+
+Además del cliente, el **tipo de lugar de la prestación** determina el supuesto
+fiscal (§ 3a UStG). Se indica donde se define el servicio: en la **regla de
+facturación** del proyecto; si no, en su **artículo** o en el artículo de
+servicio de la posición; si no, en el valor por defecto de la organización
+(configuración de la organización, pestaña **Facturación**). De fábrica todo es
+**General**: sin mantenimiento no cambia ningún supuesto fiscal.
+
+- **General:** como hasta ahora; IVA alemán para consumidores fuera de la UE
+  (§ 3a apdo. 1 UStG), «no sujeto» para empresas fuera de la UE.
+- **Servicio del catálogo** (§ 3a apdo. 4 UStG), p. ej. asesoramiento,
+  tratamiento de datos, derechos, publicidad, alquiler de bienes muebles: «no
+  sujeto» (O) con su propia indicación para consumidores fuera de la UE; si no,
+  como «General».
+- **Servicio relacionado con un inmueble** (§ 3a apdo. 3 n.º 1 UStG), p. ej.
+  obras de construcción, acabados y limpieza de edificios: si el inmueble está
+  en Alemania, la factura lleva IVA alemán, también para clientes de otros
+  países de la UE y de fuera de la UE; si el cliente debe el impuesto según el
+  § 13b UStG, se mantiene. Si está en el extranjero, el servicio es «no sujeto»
+  (O). El inmueble está en el lugar de intervención del pedido; sin indicación,
+  se aplica Alemania.
+
+Las mercancías (facturas de material) no se ven afectadas. En las facturas a
+partir de tiempos cuenta la regla de los tiempos facturados; en las posiciones
+libres, el artículo de servicio. Las posiciones sin artículo, los
+desplazamientos y las posiciones con categoría fiscal propia siguen a la
+factura. Si las posiciones dan supuestos fiscales distintos, el borrador lo
+indica, la factura no puede emitirse y la comprobación antes del envío la
+rechaza (con «no sujeto» según la regla BR-O-11): divida la factura, una por
+supuesto fiscal. La anulación y la factura rectificativa adoptan el supuesto
+fiscal del original.
+
 ## Motivos de exención en la factura electrónica
 
 Cada categoría de IVA sin impuesto lleva su motivo de exención en la XRechnung y en
@@ -364,9 +397,15 @@ entregas intracomunitarias, falta del NIF-IVA de la organización en entregas a 
 países de la UE y exportaciones, «no sujeto» junto a otras categorías y una posición
 de categoría sin impuesto con un tipo superior al 0 %. Con «no sujeto» la factura
 electrónica no lleva NIF-IVA; basta el número fiscal. En las entregas intracomunitarias, la
-factura electrónica indica la dirección del cliente como dirección de entrega con
-el país de entrega (regla BR-IC-12); la XRechnung exige allí código postal y
-localidad; de lo contrario, la comprobación previa al envío se detiene. Las
+factura electrónica indica la dirección de entrega distinta del cliente (diálogo
+del cliente, sección **Dirección de entrega**), si no la hay, su dirección, como
+dirección de entrega con el país de entrega (regla BR-IC-12); la XRechnung exige
+allí código postal y localidad; de lo contrario, la comprobación previa al envío
+se detiene. La dirección de entrega se congela al emitir; la anulación y la
+factura rectificativa toman la del original. El registro de la organización
+(**Marca**, campo **Registro mercantil**) figura en la factura
+electrónica como identificador de registro del vendedor (BT-30), también
+congelado. Las
 posiciones «no sujeto» figuran sin tipo en la factura electrónica.
 
 ## Nota de exención en el PDF de la factura

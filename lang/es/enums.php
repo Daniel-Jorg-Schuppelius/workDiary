@@ -2186,6 +2186,7 @@ return [
         'incoming_e_invoice_status' => ['received' => 'Recibida', 'approved' => 'Aprobada (revisión)', 'rejected' => 'Rechazado', 'question' => 'Consulta', 'payment_released' => 'Pago liberado'],
         'incoming_invoice_recognition' => ['structured' => 'Factura electrónica (estructurada)', 'extracted' => 'Reconocida a partir de PDF o imagen', 'none' => 'No reconocida (pendiente de aclarar)'],
         'incoming_invoice_tax_case' => ['regular' => 'IVA soportado de la factura', 'reverse_charge_eu' => '§ 13b, apdo. 1 UStG: servicio de otro país de la UE', 'reverse_charge' => '§ 13b, apdo. 2 UStG: el destinatario debe el impuesto (p. ej. obras de construcción)', 'intra_community_acquisition' => 'Adquisición intracomunitaria (§ 1a UStG)'],
+        'place_of_supply_kind' => ['general' => 'General (§ 3a apdo. 1/2 UStG)', 'catalog' => 'Servicio del catálogo (§ 3a apdo. 4 UStG)', 'property' => 'Servicio relacionado con un inmueble (§ 3a apdo. 3 n.º 1 UStG)'],
         'incoming_invoice_match_kind' => ['vat_id' => 'NIF-IVA', 'tax_number' => 'Número fiscal', 'iban' => 'IBAN', 'sender_rule' => 'Regla de remitente', 'manual' => 'Manual', 'rule' => 'Regla de bandeja de entrada', 'template' => 'Plantilla de documento'],
         'incoming_invoice_transfer_status' => ['pending' => 'Pendiente', 'waiting' => 'Pendiente de aclarar', 'failed' => 'Fallida', 'transferred' => 'Transferida', 'linked' => 'Ya existente, vinculada'],
         'invoice_schedule_status' => ['active' => 'Activo', 'paused' => 'En pausa', 'ended' => 'Finalizado'],

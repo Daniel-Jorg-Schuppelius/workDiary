@@ -1,7 +1,7 @@
 ---
 title: "Modifications hors ligne"
 topic: offline.changes
-version: 2
+version: 3
 keywords:
     - travailler hors ligne
     - sans connexion
@@ -37,5 +37,6 @@ Un conflit signifie que la saisie n’a **pas** été reprise, parce que quelque
 - **Conserver l’autre version** ou **Supprimer** — votre version est abandonnée.
 - **Envoyer ma version** — uniquement pour un pointage modifié : votre correction s’applique au nouvel état.
 - **Modifier** — ajuster les champs (date, durée ou motif) et les envoyer comme nouvelle entrée.
+- **Stock insuffisant** — s’il ne manque que du stock pour un matériel, « Modifier » propose la case « Autoriser le stock négatif » avec le droit « Autoriser les stocks négatifs ». Si l’organisation exige quatre yeux, l’envoi crée une demande dans la boîte des validations. Sans ce droit, le conflit reste ; adaptez la quantité ou supprimez-le.
 
 Chaque décision est consignée dans le journal d’audit. La page affiche aussi les conflits ouverts nés sur un autre appareil ; leur contenu s’y trouve, ici ils peuvent seulement être abandonnés.

@@ -1,7 +1,7 @@
 ---
 title: "Projekte verwalten"
 topic: projects.manage
-version: 9
+version: 10
 keywords:
     - Projekt anlegen
     - Projektmanagement
@@ -106,6 +106,13 @@ Auftrag eine Position mit Menge 1 zum Preis der Regel; die Auffüllung auf
 vereinbarte Stunden entfällt dann, weil die Pauschale den Auftrag unabhängig von
 der Dauer abdeckt. Alle anderen Einheiten, etwa Stunde, Tag oder Stk, rechnen
 nach Dauer.
+
+Die Abrechnungsregel nennt auch den **Leistungsort** ihrer Zeiten (§ 3a UStG):
+**Allgemein**, **Katalogleistung** oder **Grundstücksleistung**. Leer gilt der
+Leistungsort ihres Artikels, sonst die Vorgabe der Organisation. Bei einer
+Grundstücksleistung liegt das Grundstück am Einsatzort des Auftrags, ohne
+Angabe im Inland. Die Regeltabelle zeigt eine gewählte Art neben dem
+Item-Typ.
 
 ## Typische Fehler
 

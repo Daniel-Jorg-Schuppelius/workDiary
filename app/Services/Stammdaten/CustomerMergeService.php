@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Stammdaten;
 
+use App\Models\Contacts\ContactAddress;
 use App\Models\Customer\Customer;
 use Illuminate\Support\Facades\{DB, Schema};
 use InvalidArgumentException;
@@ -66,6 +67,8 @@ class CustomerMergeService extends AbstractEntityMergeService {
         'country', 'timezone', 'color', 'hourly_rate', 'internal_rate', 'comment',
         'invoice_text', 'bank_account_holder', 'bank_iban', 'bank_bic', 'bank_name',
         'buyer_reference', 'debtor_no',
+        // Wahrheitswert: nie „leer“, also nur übernommen, wenn ausgewählt (MVP-1688).
+        'is_consumer',
     ];
 
     protected function foreignKeyColumn(): string {
@@ -120,6 +123,7 @@ class CustomerMergeService extends AbstractEntityMergeService {
             $this->repointScalarTables($sourceId, $targetId);
             $this->repointExternalReferences($morph, $sourceId, $targetId);
             $this->repointAliases($morph, $sourceId, $targetId);
+            $this->keepOneShippingAddress($morph, $sourceId, $targetId, array_key_exists('shipping_address', $fieldOverrides));
             $this->repointMorphTables($morph, $sourceId, $targetId);
             $this->repointTaggables($morph, $sourceId, $targetId);
             $this->mergeFields($source, $target, $fieldOverrides);
@@ -154,6 +158,25 @@ class CustomerMergeService extends AbstractEntityMergeService {
         }
 
         DB::table('projects')->where('customer_id', $sourceId)->update(['customer_id' => $targetId]);
+    }
+
+    /**
+     * Lieferanschrift wie ein Stammfeld (MVP-1689): das Ziel behält seine,
+     * ohne eigene übernimmt es die der Quelle; ausgewählt ersetzt die der
+     * Quelle die des Ziels. Die übrigen Anschriften wandern mit dem Satelliten.
+     */
+    private function keepOneShippingAddress(string $morph, int $sourceId, int $targetId, bool $preferSource): void {
+        $shipping = static fn (int $id) => DB::table('contact_addresses')
+            ->where('addressable_type', $morph)->where('addressable_id', $id)
+            ->where('kind', ContactAddress::KIND_SHIPPING);
+        if (! $shipping($sourceId)->exists()) {
+            return;
+        }
+        if ($preferSource) {
+            $shipping($targetId)->delete();
+        } elseif ($shipping($targetId)->exists()) {
+            $shipping($sourceId)->delete();
+        }
     }
 
     private function repointSites(int $sourceId, int $targetId): void {

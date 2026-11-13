@@ -240,7 +240,7 @@ class FileTarget implements FacturationTarget {
 
         $usages = MaterialUsage::query()
             ->whereIn('id', $items->keys()->all())
-            ->with(['timesheet:id,work_date,project_id', 'timesheet.project:id,name'])
+            ->with(['timesheet:id,work_date,project_id', 'timesheet.project:id,name', 'variant:id,article_id,sku,name'])
             ->get()
             ->sortBy(fn(MaterialUsage $u) => $u->timesheet?->work_date?->toDateString() ?? '')
             ->values();
@@ -259,7 +259,7 @@ class FileTarget implements FacturationTarget {
             $item = $items->get($usage->id);
             $rows[] = StringHelper::encodeLine(CsvExport::guardRow([
                 $usage->timesheet?->work_date?->toDateString() ?? '',
-                trim((string) $usage->description),
+                $usage->billingDescription(),
                 self::num($item?->quantity),
                 (string) $usage->unit,
                 self::num($usage->unit_price?->toFloat()),

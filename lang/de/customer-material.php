@@ -45,7 +45,7 @@ return [
     'stock_title' => 'Aus Lager entnehmen',
     'stock_issue' => 'Entnehmen & buchen',
     'stock_source' => 'Lagerentnahme',
-    'stock_hint' => 'Bewertung zum gleitenden Durchschnitt; die Entnahme mindert den Bestand und wird als Materialkosten gebucht.',
+    'stock_hint' => 'Bewertung nach dem Verfahren des Artikels (gleitender Durchschnitt, FIFO oder FEFO); die Entnahme mindert den Bestand und wird als Materialkosten gebucht.',
     'article' => 'Artikel',
     'warehouse' => 'Lagerort',
     'qty' => 'Menge',

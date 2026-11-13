@@ -48,9 +48,12 @@ class CustomerMasterDataSection extends AbstractSubjectSection {
             'address_zip' => $this->field(__('PLZ'), $c->address_zip),
             'address_city' => $this->field(__('Ort'), $c->address_city),
             'country' => $this->field(__('Land'), $c->country),
+            // Abweichende Lieferanschrift (MVP-1689), eine Zeile wie in der Detailansicht.
+            'shipping_address' => $this->field(__('stammdaten.shipping.heading'), implode(', ', $c->shippingAddressLines()) ?: null),
             'vat_id' => $this->field(__('USt-IdNr.'), $c->vat_id),
             'tax_number' => $this->field(__('Steuernummer'), $c->tax_number),
             'register_number' => $this->field(__('invoicing.register_number'), $c->register_number),
+            'is_consumer' => $this->field(__('invoicing.consumer.recipient'), $c->is_consumer ? __('invoicing.consumer.yes') : __('invoicing.consumer.no')),
             'bank_account_holder' => $this->field(__('Kontoinhaber'), $c->bank_account_holder),
             'bank_iban' => $this->field(__('IBAN'), $c->bank_iban),
             'bank_bic' => $this->field(__('BIC'), $c->bank_bic),

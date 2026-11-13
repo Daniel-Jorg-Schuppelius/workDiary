@@ -236,7 +236,7 @@ class BillingPositionBuilder {
 
         $usages = MaterialUsage::query()
             ->whereIn('id', $items->keys()->all())
-            ->with(['timesheet:id,work_date,project_id', 'timesheet.project:id,name,foreign_customer_id', 'timesheet.project.foreignCustomer'])
+            ->with(['timesheet:id,work_date,project_id', 'timesheet.project:id,name,foreign_customer_id', 'timesheet.project.foreignCustomer', 'variant:id,article_id,sku,name'])
             ->get()
             ->sortBy(fn(MaterialUsage $u): string => $u->timesheet?->work_date?->toDateString() ?? '')
             ->values();
@@ -252,7 +252,8 @@ class BillingPositionBuilder {
             $date = $usage->timesheet?->work_date?->toDateString();
             $endCustomer = $this->endCustomerName($usage->timesheet?->project);
 
-            $name = (string) $this->corrections->apply(trim((string) $usage->description), (int) $transfer->organization_id) ?: (string) __('Material');
+            // Gewählte Variante wie bei der Auslieferung in der Bezeichnung (MVP-1690).
+            $name = (string) $this->corrections->apply($usage->billingDescription(), (int) $transfer->organization_id) ?: (string) __('Material');
             $descriptionParts = [];
             if ($endCustomer !== null) {
                 $descriptionParts[] = (string) __('Endkunde :name', ['name' => $endCustomer]);

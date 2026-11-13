@@ -1,7 +1,7 @@
 ---
 title: "Existencias y escaneo"
 topic: inventory.stock
-version: 7
+version: 8
 keywords:
     - stock
     - almacén
@@ -98,6 +98,10 @@ lote; los lotes bloqueados, solo tras su liberación.
 **Existencias negativas a cuatro ojos:** si la organización exige en la configuración de almacén una aprobación a cuatro ojos para salidas a existencias negativas, una salida con «Permitir existencias negativas» se convierte en una solicitud en la bandeja de aprobaciones. Solo se registra cuando otra persona con el permiso «Autorizar existencias negativas» da su conformidad; solicitante y aprobador quedan en el registro de auditoría.
 
 **Consumo de material en el parte de horas:** el material vinculado a un artículo con gestión de existencias registra, al anotarlo en el parte de horas o en «Hoy», la salida del almacén marcado como «Predeterminado» (si hay varios, el primero por nombre). El movimiento aparece en el diario de almacén con la cantidad y la unidad introducidas; un cambio registra la diferencia y eliminarlo lo devuelve. Rigen las reglas de esta página: existencias negativas solo con el permiso y, en su caso, cuatro ojos, lotes por fecha de caducidad, números de serie solo a través del almacén. El material que hasta ahora retiraba además aquí, en adelante regístrelo solo en el parte de horas; de lo contrario la salida cuenta dos veces.
+
+**Variante del consumo de material:** si el artículo tiene varias variantes activas, el consumo registra la variante elegida en el parte de horas; sin elección, la variante predeterminada. Un cambio de variante devuelve la anterior y retira la nueva.
+
+**Valoración de las salidas:** las salidas de existencias propias —en el formulario de registro, por escaneo y tras una aprobación a cuatro ojos— se valoran según el método del artículo, como las entregas y el consumo de material: FIFO y FEFO consumen las capas de valoración, el precio medio ponderado reduce el libro de medias al precio medio actual. Las salidas de existencias de terceros (cliente, consignación, proveedor, proyecto) quedan sin valorar. La salida de almacén en la ficha del cliente también registra según el método del artículo; eliminar la asignación la devuelve como nueva capa al coste unitario de la salida en FIFO y FEFO, y al libro de medias con el precio medio ponderado. La entrada manual no lleva precio unitario y queda sin valorar.
 
 **Redistribuir reservas:** en el diálogo «Modificar reserva» cede la cantidad abierta a otra reserva del mismo artículo, almacén y propiedad, por ejemplo a una orden con mayor prioridad. Una reserva más reciente nunca desplaza en silencio a una más antigua; la redistribución queda en el registro de auditoría y la línea de material de una orden de fabricación la sigue.
 

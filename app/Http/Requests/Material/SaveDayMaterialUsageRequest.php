@@ -18,6 +18,7 @@ class SaveDayMaterialUsageRequest extends SaveMaterialUsageRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'material_id' => \App\Models\Material\Material::class,
+        'article_variant_id' => \App\Models\Article\ArticleVariant::class,
         'project_id' => \App\Models\Project\Project::class,
     ];
 

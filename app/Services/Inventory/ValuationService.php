@@ -15,7 +15,7 @@ namespace App\Services\Inventory;
 use App\Contracts\Inventory\InventoryValuationStrategy;
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState, ValuationMethod};
 use App\Models\Article\ArticleVariant;
-use App\Models\Inventory\{StockLot, StockMovement, StockValuation, Warehouse};
+use App\Models\Inventory\{StockLot, StockMovement, StockValuation, Warehouse, WarehouseBin};
 use App\Support\DecimalQty;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
@@ -145,7 +145,7 @@ class ValuationService implements InventoryValuationStrategy {
      * Abgang über das Lagerbuch (Charge gewählt oder FEFO-zugeteilt), jeder
      * Teil zum aktuellen Durchschnitt bewertet (Durchschnitt unverändert).
      */
-    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false, ?EnteredQuantity $entered = null, ?string $idempotencyKey = null, ?Model $source = null): StockIssue {
+    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false, ?EnteredQuantity $entered = null, ?string $idempotencyKey = null, ?Model $source = null, ?WarehouseBin $bin = null): StockIssue {
         return $this->ledger->issue(
             $variant, $warehouse, $qty,
             entered: $entered,
@@ -155,6 +155,7 @@ class ValuationService implements InventoryValuationStrategy {
             lot: $lot,
             requireLot: $requireLot,
             source: $source,
+            bin: $bin,
             // Läuft nach der gesperrten Bestandsprüfung des Lagerbuchs: der Durchschnitt wird erst danach gelesen, sonst
             // schrieben zwei parallele Abgänge ihren Bestand gegen denselben veralteten Stand fort.
             costing: function (?StockLot $partLot, string $partQty) use ($variant, $warehouse): array {

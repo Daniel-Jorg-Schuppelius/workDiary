@@ -1,7 +1,7 @@
 ---
 title: "Maestro de artículos"
 topic: articles.master
-version: 5
+version: 6
 keywords:
     - artículos
     - crear artículo
@@ -50,6 +50,16 @@ Las **unidades** adicionales se aplican en movimientos de almacén, escaneo, ped
 Si un sistema de gestión de mercancías gestiona los números de artículo (página «Rangos de numeración», rango «Artículo»), el número de artículo y el GTIN son de solo lectura en el diálogo; los artículos y variantes nuevos reciben su número con la sincronización.
 
 **Clase fiscal:** en el formulario del artículo registra la clase fiscal (general, reducida, incrementada). Se guarda con el artículo, se toma en la importación y se compara en duplicados y fusiones; el tipo de un documento se sigue fijando en la línea.
+
+**Lugar de la prestación:** Para los servicios, elija en el formulario del
+artículo el tipo de lugar de la prestación (§ 3a UStG): **General**, **Servicio
+del catálogo** (no sujeto para consumidores fuera de la UE) o **Servicio
+relacionado con un inmueble** (impuesto en el lugar del inmueble, para todos
+los clientes). Vacío significa el valor por defecto de la organización. La
+página de detalle muestra el tipo elegido; la importación CSV lo toma en la
+columna `place_of_supply_kind` (valores `general`, `catalog`, `property`,
+cabecera p. ej. «Leistungsort»). Cómo determina el supuesto fiscal lo explica
+el tema de ayuda **Facturas & documentos**.
 
 ## Fabricación
 

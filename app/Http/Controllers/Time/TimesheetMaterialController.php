@@ -27,7 +27,7 @@ class TimesheetMaterialController extends Controller {
         Gate::authorize('update', $timesheet);
         $materials = Material::query()->where('is_active', true)->orderBy('name')->get();
 
-        return view('timesheets._material_form_dialog', compact('project', 'timesheet', 'materials'));
+        return view('timesheets._material_form_dialog', ['project' => $project, 'timesheet' => $timesheet, 'materials' => $materials, 'variantChoices' => Material::variantChoices($materials)]);
     }
 
     /** Materialzeile im selben Dialog bearbeiten (Vollscan 2026-10-21). */
@@ -36,7 +36,13 @@ class TimesheetMaterialController extends Controller {
         abort_unless((int) $usage->timesheet_id === (int) $timesheet->id, 404);
         $materials = Material::query()->where('is_active', true)->orderBy('name')->get();
 
-        return view('timesheets._material_form_dialog', ['project' => $project, 'timesheet' => $timesheet, 'materials' => $materials, 'usage' => $usage->loadMissing('material')]);
+        return view('timesheets._material_form_dialog', [
+            'project' => $project,
+            'timesheet' => $timesheet,
+            'materials' => $materials,
+            'variantChoices' => Material::variantChoices($materials),
+            'usage' => $usage->loadMissing(['material', 'variant']),
+        ]);
     }
 
     public function store(Project $project, Timesheet $timesheet, SaveMaterialUsageRequest $request, MaterialUsageRecorder $recorder): RedirectResponse {

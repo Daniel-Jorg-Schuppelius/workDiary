@@ -32,6 +32,14 @@
         </x-select-field>
         <x-article-catalog-select :articles="$articles" span="2" :selected="$selectedArticle ?? null"
                                   :hint="$articles === [] ? __('article.catalog.empty_hint') : __('article.catalog.service_hint')" />
+        {{-- MVP-1688: Leistungsort (§ 3a UStG); leer = Artikel der Regel, sonst Vorgabe der Organisation. --}}
+        <x-select-field name="place_of_supply_kind" :label="__('invoicing.place_of_supply.label')" span="2"
+                        :hint="__('invoicing.place_of_supply.hint_rule')">
+            <option value="">{{ __('invoicing.place_of_supply.inherit_article') }}</option>
+            @foreach (\App\Enums\Invoicing\PlaceOfSupplyKind::options() as $value => $label)
+                <option value="{{ $value }}" @selected((string) old('place_of_supply_kind', $rule->place_of_supply_kind?->value) === (string) $value)>{{ $label }}</option>
+            @endforeach
+        </x-select-field>
     </x-form-group>
 
     <x-form-group :legend="__('Preis & Priorität')" icon="payments" tone="info" cols="2">

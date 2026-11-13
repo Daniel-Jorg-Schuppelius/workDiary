@@ -44,4 +44,10 @@ return [
     'contact' => [
         'salutation' => 'Tratamiento',
     ],
+    // Abweichende Lieferanschrift am Kunden (MVP-1689).
+    'shipping' => [
+        'heading' => 'Dirección de entrega',
+        'description' => 'Rellénela solo si la mercancía se entrega en una dirección distinta de la de la factura. Si queda vacía, la dirección de facturación es la de entrega.',
+        'supplement' => 'Complemento de dirección',
+    ],
 ];

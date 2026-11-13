@@ -1,7 +1,7 @@
 ---
 title: "Branding"
 topic: admin.branding
-version: 2
+version: 3
 keywords:
     - white label
     - corporate design
@@ -49,6 +49,10 @@ Nel modulo sottostante gestisce:
 - **Legale e piè di pagina PDF**: partita IVA, codice fiscale, titolare
   del conto, banca, IBAN, BIC, registro delle imprese e il testo del piè
   di pagina dei documenti PDF.
+  Indichi il registro delle imprese insieme al tribunale del registro, ad
+  esempio «HRB 12345, Amtsgericht Musterstadt»; la fattura elettronica lo
+  riporta come identificativo di registrazione dell’organizzazione (BT-30),
+  congelato all’emissione.
 - **Colori**: colore primario e colore accento; sostituiscono i colori
   di base dell'interfaccia.
 - **Configurazione PDF per tipo documento**: variante del logo (chiara,

@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Invoicing;
 
 use App\Enums\Finance\TaxRuleStatus;
+use App\Enums\Invoicing\PlaceOfSupplyKind;
 use App\Models\Customer\Customer;
 use App\Models\Finance\TaxRule;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use CommonToolkit\Helper\Data\Validator;
 
@@ -38,13 +40,19 @@ use CommonToolkit\Helper\Data\Validator;
  *    nicht im Inland steuerbar (Kategorie O, § 3a Abs. 2 UStG, MVP-1684).
  *    Die eingefrorene Kategorie lesen E-Rechnung, Befreiungshinweis und
  *    Buchhaltung gleichermaßen.
+ *  - Leistungsort (MVP-1688, {@see PlaceOfSupply}): Grundstücksleistungen am
+ *    Ort des Grundstücks für alle Empfänger (§ 3a Abs. 3 Nr. 1), im Inland
+ *    deutsche Steuer bzw. § 13b, im Ausland O. An Verbraucher im Drittland
+ *    sind Katalogleistungen nicht steuerbar (§ 3a Abs. 4, O), übrige
+ *    Leistungen tragen deutsche Steuer (§ 3a Abs. 1). Ein Verbraucher schuldet
+ *    nie selbst die Steuer. Unternehmen und Waren wie oben.
  * Keine Kursumrechnung — Beträge bleiben in der Belegwährung des Kunden.
  */
 class TaxResolver {
     /**
      * @return array{rate: string, reverse_charge: bool, note: ?string, category: string, rule: ?array{id: int, source: ?string, valid_from: string, org_override: bool}}
      */
-    public function resolve(Organization $organization, Customer $customer, ?\DateTimeInterface $onDate = null, string $category = 'services'): array {
+    public function resolve(Organization $organization, Customer $customer, ?\DateTimeInterface $onDate = null, string $category = 'services', ?PlaceOfSupply $place = null): array {
         $onDate ??= now();
 
         // Kleinunternehmer § 19 UStG (Feature 066, MVP-163): kein
@@ -62,46 +70,34 @@ class TaxResolver {
 
         $sellerCountry = $this->sellerCountry($organization);
         $buyerCountry = strtoupper(trim((string) ($customer->country ?? ''))) ?: $sellerCountry;
+        $services = $category !== 'goods';
+        $consumer = (bool) $customer->is_consumer;
+        // § 13b Abs. 5 UStG: Steuerschuldner ist nur ein Unternehmer.
+        $reverseChargeRecipient = (bool) $customer->is_reverse_charge_recipient && ! $consumer;
+        $place ??= new PlaceOfSupply(app(PlaceOfSupplyResolver::class)->organizationDefault($organization));
 
-        if ($buyerCountry === $sellerCountry && (bool) $customer->is_reverse_charge_recipient) {
-            return [
-                'rate' => '0.00',
-                'reverse_charge' => true,
-                'note' => (string) config('taxation.notes.reverse_charge_domestic'),
-                'category' => 'AE',
-                'rule' => null,
-            ];
+        // Grundstück (§ 3a Abs. 3 Nr. 1): Ort des Grundstücks, gleich wer empfängt; ohne Angabe im Inland.
+        if ($services && $place->kind === PlaceOfSupplyKind::Property) {
+            if (($place->propertyCountry ?? $sellerCountry) !== $sellerCountry) {
+                return ['rate' => '0.00', 'reverse_charge' => false, 'note' => (string) config('taxation.notes.property_abroad'), 'category' => 'O', 'rule' => null];
+            }
+
+            return $reverseChargeRecipient ? $this->domesticReverseCharge() : $this->domestic($organization, $sellerCountry, $category, $onDate);
         }
 
-        // Inland: expliziter Org-Override vor Regelmatrix vor statischem
-        // Katalog (bewusst NICHT Setting::get — das fiele auf den
-        // config-Default 19.00 zurück und würde den Katalog aushebeln).
+        if ($buyerCountry === $sellerCountry && $reverseChargeRecipient) {
+            return $this->domesticReverseCharge();
+        }
+
         if ($buyerCountry === $sellerCountry) {
-            $override = trim((string) data_get((array) ($organization->settings ?? []), 'invoicing.default_tax_rate', ''));
-            if ($override !== '') {
-                return ['rate' => $override, 'reverse_charge' => false, 'note' => null, 'category' => 'S', 'rule' => null];
-            }
-
-            $rule = $this->ruleFor((int) $organization->id, $sellerCountry, $category, 'standard', $onDate);
-            if ($rule !== null) {
-                return [
-                    'rate' => $rule->rate?->getNumericValue() ?? '0.00',
-                    'reverse_charge' => false,
-                    'note' => $rule->note,
-                    'category' => 'S',
-                    'rule' => $this->ruleMeta($rule),
-                ];
-            }
-
-            // Expliziter Fallback (MVP-239): statischer Katalog.
-            return ['rate' => $this->standardRate($sellerCountry), 'reverse_charge' => false, 'note' => null, 'category' => 'S', 'rule' => null];
+            return $this->domestic($organization, $sellerCountry, $category, $onDate);
         }
 
         $eu = array_map('strtoupper', (array) config('taxation.eu_countries', []));
         $vatId = (string) ($customer->vat_id ?? '');
 
         // EU-B2B mit formal gültiger USt-IdNr. → Reverse Charge (AE).
-        if (in_array($buyerCountry, $eu, true) && $vatId !== '' && Validator::isValidVatId($vatId)) {
+        if (in_array($buyerCountry, $eu, true) && ! $consumer && $vatId !== '' && Validator::isValidVatId($vatId)) {
             $rule = $this->ruleFor((int) $organization->id, $sellerCountry, $category, 'reverse_charge', $onDate);
             $note = $rule !== null && $rule->note !== null ? $rule->note : (string) config('taxation.notes.reverse_charge');
 
@@ -116,19 +112,18 @@ class TaxResolver {
 
         // EU-B2C (keine/ungültige USt-ID): Verkäuferland-Satz (kein OSS-Automatismus).
         if (in_array($buyerCountry, $eu, true)) {
-            $rule = $this->ruleFor((int) $organization->id, $sellerCountry, $category, 'standard', $onDate);
+            return $this->sellerRate($organization, $sellerCountry, $category, $onDate);
+        }
 
-            return [
-                'rate' => $rule?->rate?->getNumericValue() ?? $this->standardRate($sellerCountry),
-                'reverse_charge' => false,
-                'note' => $rule?->note,
-                'category' => 'S',
-                'rule' => $rule !== null ? $this->ruleMeta($rule) : null,
-            ];
+        // Verbraucher im Drittland: Katalogleistung am Wohnsitz (§ 3a Abs. 4), sonst am Sitz des Leistenden (§ 3a Abs. 1).
+        if ($services && $consumer) {
+            return $place->kind === PlaceOfSupplyKind::Catalog
+                ? ['rate' => '0.00', 'reverse_charge' => false, 'note' => (string) config('taxation.notes.catalog_third_country'), 'category' => 'O', 'rule' => null]
+                : $this->sellerRate($organization, $sellerCountry, $category, $onDate);
         }
 
         // Drittland: Ware als Ausfuhr (G), Leistung nicht im Inland steuerbar (O).
-        $goods = $category === 'goods';
+        $goods = ! $services;
         $rule = $this->ruleFor((int) $organization->id, $sellerCountry, $category, 'export', $onDate);
         // Die Regel „export“ der Leistungen nennt § 3a; Waren brauchen den Ausfuhrhinweis.
         $note = $rule !== null && $rule->note !== null && (! $goods || $rule->category === $category)
@@ -142,6 +137,43 @@ class TaxResolver {
             'category' => $goods ? 'G' : 'O',
             'rule' => $rule !== null ? $this->ruleMeta($rule) : null,
         ];
+    }
+
+    /**
+     * Steuerfälle eines Belegs je Leistungsort seiner Positionen (MVP-1688),
+     * ohne Doppel. Mehr als einer: Der Beleg ist zu teilen, eine Rechnung
+     * trägt einen Steuerfall.
+     *
+     * @return non-empty-list<array{rate: string, reverse_charge: bool, note: ?string, category: string, rule: ?array{id: int, source: ?string, valid_from: string, org_override: bool}}>
+     */
+    public function casesForInvoice(Invoice $invoice, ?\DateTimeInterface $onDate = null): array {
+        $organization = $invoice->organization;
+        if (! $organization instanceof Organization) {
+            throw new \LogicException('Steuerfall ohne Organisation.');
+        }
+
+        return $this->casesFor(
+            $organization,
+            $invoice->customer,
+            $onDate ?? $invoice->serviceDateTo() ?? now(),
+            $invoice->isMaterial() ? 'goods' : 'services',
+            app(PlaceOfSupplyResolver::class)->forInvoice($invoice),
+        );
+    }
+
+    /**
+     * @param  list<PlaceOfSupply>  $places  leer = Vorgabe der Organisation
+     * @return non-empty-list<array{rate: string, reverse_charge: bool, note: ?string, category: string, rule: ?array{id: int, source: ?string, valid_from: string, org_override: bool}}>
+     */
+    public function casesFor(Organization $organization, Customer $customer, ?\DateTimeInterface $onDate, string $category, array $places): array {
+        $cases = [];
+        foreach ($places !== [] ? $places : [null] as $place) {
+            $case = $this->resolve($organization, $customer, $onDate, $category, $place);
+            // Derselbe Fall aus zwei Gründen (etwa O nach § 3a Abs. 3 und Abs. 4) bleibt einer; der erste Hinweis gilt.
+            $cases[$case['category'] . '|' . ($case['reverse_charge'] ? '1' : '0') . '|' . $case['rate']] ??= $case;
+        }
+
+        return array_values($cases);
     }
 
     /**
@@ -211,6 +243,62 @@ class TaxResolver {
     /** Regelsatz des Landes laut Katalog — auch der Satz der Eigenberechnung bei Steuerschuld des Empfängers (MVP-1621). */
     public function standardRate(string $country): string {
         return (string) config("taxation.rates.{$country}.standard", config('taxation.rates.DE.standard', '19.00'));
+    }
+
+    /**
+     * Inland: expliziter Org-Override vor Regelmatrix vor statischem Katalog
+     * (bewusst NICHT Setting::get — das fiele auf den config-Default 19.00
+     * zurück und würde den Katalog aushebeln).
+     *
+     * @return array{rate: string, reverse_charge: bool, note: ?string, category: string, rule: ?array{id: int, source: ?string, valid_from: string, org_override: bool}}
+     */
+    private function domestic(Organization $organization, string $sellerCountry, string $category, \DateTimeInterface $onDate): array {
+        $override = trim((string) data_get((array) ($organization->settings ?? []), 'invoicing.default_tax_rate', ''));
+        if ($override !== '') {
+            return ['rate' => $override, 'reverse_charge' => false, 'note' => null, 'category' => 'S', 'rule' => null];
+        }
+
+        $rule = $this->ruleFor((int) $organization->id, $sellerCountry, $category, 'standard', $onDate);
+        if ($rule !== null) {
+            return [
+                'rate' => $rule->rate?->getNumericValue() ?? '0.00',
+                'reverse_charge' => false,
+                'note' => $rule->note,
+                'category' => 'S',
+                'rule' => $this->ruleMeta($rule),
+            ];
+        }
+
+        // Expliziter Fallback (MVP-239): statischer Katalog.
+        return ['rate' => $this->standardRate($sellerCountry), 'reverse_charge' => false, 'note' => null, 'category' => 'S', 'rule' => null];
+    }
+
+    /**
+     * Satz des Verkäuferlands ohne Org-Override, wie bei EU-Verbrauchern.
+     *
+     * @return array{rate: string, reverse_charge: bool, note: ?string, category: string, rule: ?array{id: int, source: ?string, valid_from: string, org_override: bool}}
+     */
+    private function sellerRate(Organization $organization, string $sellerCountry, string $category, \DateTimeInterface $onDate): array {
+        $rule = $this->ruleFor((int) $organization->id, $sellerCountry, $category, 'standard', $onDate);
+
+        return [
+            'rate' => $rule?->rate?->getNumericValue() ?? $this->standardRate($sellerCountry),
+            'reverse_charge' => false,
+            'note' => $rule?->note,
+            'category' => 'S',
+            'rule' => $rule !== null ? $this->ruleMeta($rule) : null,
+        ];
+    }
+
+    /** @return array{rate: string, reverse_charge: bool, note: ?string, category: string, rule: null} */
+    private function domesticReverseCharge(): array {
+        return [
+            'rate' => '0.00',
+            'reverse_charge' => true,
+            'note' => (string) config('taxation.notes.reverse_charge_domestic'),
+            'category' => 'AE',
+            'rule' => null,
+        ];
     }
 
     /** @return array{id: int, source: ?string, valid_from: string, org_override: bool} */

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Platform\Catalog;
 
+use App\Enums\Invoicing\PlaceOfSupplyKind;
 use CommonToolkit\ValueObjects\{Money, Percentage};
 
 /**
@@ -37,6 +38,8 @@ final readonly class CatalogArticle {
         public ?Percentage $vatRate = null,
         /** Positionsart für Belege: `service` oder `material`. */
         public string $itemType = 'service',
+        /** Leistungsort (§ 3a UStG, MVP-1688), nur wenn die Quelle ihn am Artikel führt; null = Vorgabe der Organisation. */
+        public ?PlaceOfSupplyKind $placeOfSupplyKind = null,
     ) {}
 
     public function label(): string {

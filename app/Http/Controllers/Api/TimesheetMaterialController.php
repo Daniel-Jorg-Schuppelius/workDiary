@@ -38,7 +38,7 @@ class TimesheetMaterialController extends Controller {
     public function index(Timesheet $timesheet): AnonymousResourceCollection {
         Gate::authorize('view', $timesheet);
 
-        return MaterialUsageResource::collection($timesheet->materialUsages()->get());
+        return MaterialUsageResource::collection($timesheet->materialUsages()->with('variant')->get());
     }
 
     #[OA\Post(
@@ -49,6 +49,7 @@ class TimesheetMaterialController extends Controller {
         parameters: [new OA\Parameter(name: 'timesheet', in: 'path', required: true, description: 'Sqid', schema: new OA\Schema(type: 'string', example: 'k7Qx2Ab'))],
         requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(required: ['description', 'quantity', 'unit'], properties: [
             new OA\Property(property: 'material_id', type: 'string', description: 'Sqid', example: 'k7Qx2Ab', nullable: true),
+            new OA\Property(property: 'article_variant_id', type: 'string', description: 'Sqid der Variante des lagergeführten Artikels; leer = Standardvariante', example: 'k7Qx2Ab', nullable: true),
             new OA\Property(property: 'description', type: 'string', maxLength: 255),
             new OA\Property(property: 'quantity', type: 'number', minimum: 0.001, maximum: 99999.999),
             new OA\Property(property: 'unit', type: 'string', maxLength: 20),
@@ -81,6 +82,7 @@ class TimesheetMaterialController extends Controller {
         ],
         requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(required: ['description', 'quantity', 'unit'], properties: [
             new OA\Property(property: 'material_id', type: 'string', description: 'Sqid', example: 'k7Qx2Ab', nullable: true),
+            new OA\Property(property: 'article_variant_id', type: 'string', description: 'Sqid der Variante des lagergeführten Artikels; leer = Standardvariante', example: 'k7Qx2Ab', nullable: true),
             new OA\Property(property: 'description', type: 'string', maxLength: 255),
             new OA\Property(property: 'quantity', type: 'number', minimum: 0.001, maximum: 99999.999),
             new OA\Property(property: 'unit', type: 'string', maxLength: 20),

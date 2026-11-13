@@ -49,7 +49,10 @@ return [
     'field' => [
         'missing' => 'Es fehlt',
         'lock' => 'Sperre',
+        'stock' => 'Lager',
     ],
+    // Konflikt aus fehlendem Bestand (MVP-1691): nur mit Recht „Negative Bestände freigeben“.
+    'allow_negative_hint' => 'Bucht den Verbrauch trotz fehlendem Bestand in den Negativbestand. Verlangt Ihre Organisation eine zweite Freigabe, entsteht ein Antrag im Genehmigungs-Eingang.',
     'remote_hint' => 'Auf einem anderen Gerät erfasst — die Inhalte liegen dort. Hier können Sie den Konflikt nur verwerfen.',
     'resolve_failed' => 'Die Entscheidung konnte nicht übertragen werden. Bitte versuchen Sie es mit Verbindung erneut.',
     'unresolved' => 'offen',

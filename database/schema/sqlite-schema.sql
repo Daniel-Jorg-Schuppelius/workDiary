@@ -543,6 +543,7 @@ CREATE TABLE IF NOT EXISTS "project_billing_rules"(
   "created_at" datetime,
   "updated_at" datetime,
   "article_ref" varchar,
+  "place_of_supply_kind" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("project_id") references "projects"("id") on delete cascade
 );
@@ -13301,6 +13302,7 @@ CREATE TABLE IF NOT EXISTS "articles"(
   "customs_tariff_number" varchar,
   "origin_country" varchar,
   "net_weight_kg" numeric,
+  "place_of_supply_kind" varchar,
   foreign key("product_id") references "products"("id") on delete set null on update no action,
   foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
   foreign key("default_procedure_template_version_id") references "procedure_template_versions"("id") on delete set null on update no action,
@@ -16543,6 +16545,7 @@ CREATE TABLE IF NOT EXISTS "customers"(
   "einvoice_dispatch_route" varchar,
   "is_reverse_charge_recipient" tinyint(1) not null default '0',
   "register_number" varchar,
+  "is_consumer" tinyint(1) not null default '0',
   foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
   foreign key("created_by") references "users"("id") on delete set null on update no action,
   foreign key("document_render_profile_id") references "document_render_profiles"("id") on delete set null on update no action
@@ -25533,6 +25536,10 @@ CREATE INDEX "asset_comp_org_asset_status_idx" on "asset_components"(
   "asset_id",
   "status"
 );
+CREATE INDEX "negative_stock_requests_source_idx" on "negative_stock_requests"(
+  "source_type",
+  "source_id"
+);
 CREATE TABLE IF NOT EXISTS "material_usages"(
   "id" integer primary key autoincrement not null,
   "timesheet_id" integer not null,
@@ -25550,11 +25557,13 @@ CREATE TABLE IF NOT EXISTS "material_usages"(
   "billed" tinyint(1) not null default('0'),
   "stock_status" varchar,
   "stock_warehouse_id" integer,
-  foreign key("asset_id") references "assets"("id") on delete set null on update no action,
-  foreign key("material_id") references "materials"("id") on delete set null on update no action,
-  foreign key("timesheet_id") references "timesheets"("id") on delete cascade on update no action,
+  "article_variant_id" integer,
+  foreign key("stock_warehouse_id") references "warehouses"("id") on delete set null on update no action,
   foreign key("organization_id") references "organizations"("id") on delete set null on update no action,
-  foreign key("stock_warehouse_id") references "warehouses"("id") on delete set null
+  foreign key("timesheet_id") references "timesheets"("id") on delete cascade on update no action,
+  foreign key("material_id") references "materials"("id") on delete set null on update no action,
+  foreign key("asset_id") references "assets"("id") on delete set null on update no action,
+  foreign key("article_variant_id") references "article_variants"("id") on delete set null
 );
 CREATE INDEX "idx_material_usages_org" on "material_usages"("organization_id");
 CREATE INDEX "material_usages_billed_index" on "material_usages"("billed");
@@ -25564,10 +25573,6 @@ CREATE INDEX "material_usages_org_asset_idx" on "material_usages"(
 );
 CREATE INDEX "material_usages_timesheet_id_index" on "material_usages"(
   "timesheet_id"
-);
-CREATE INDEX "negative_stock_requests_source_idx" on "negative_stock_requests"(
-  "source_type",
-  "source_id"
 );
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
@@ -26689,3 +26694,6 @@ INSERT INTO migrations VALUES(1116,'2027_04_17_370000_drop_unused_columns_of_pro
 INSERT INTO migrations VALUES(1117,'2027_04_18_110000_add_stock_booking_to_material_usages',1);
 INSERT INTO migrations VALUES(1118,'2027_04_18_110100_add_source_to_negative_stock_requests',1);
 INSERT INTO migrations VALUES(1119,'2027_04_18_120000_add_register_number_to_customers',1);
+INSERT INTO migrations VALUES(1120,'2027_04_19_110000_add_article_variant_to_material_usages',1);
+INSERT INTO migrations VALUES(1121,'2027_04_19_120000_add_is_consumer_to_customers',1);
+INSERT INTO migrations VALUES(1122,'2027_04_19_120100_add_place_of_supply_kind_to_articles_and_billing_rules',1);

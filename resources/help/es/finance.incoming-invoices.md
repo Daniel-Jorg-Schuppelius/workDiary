@@ -1,7 +1,7 @@
 ---
 title: "Facturas recibidas"
 topic: finance.incoming-invoices
-version: 10
+version: 11
 keywords:
     - varios tipos impositivos
     - factura de proveedor
@@ -126,6 +126,12 @@ número de registro del vendedor (registro mercantil, BT-30), la página de
 detalle lo muestra con los datos de la factura. No es un número fiscal y no
 cuenta para la asignación; hasta esta actualización, WorkDiary lo leía de las
 facturas UBL como número fiscal.
+La explotación corrige una vez las entradas anteriores con
+`php artisan incoming-invoices:repair-seller-ids`: vuelve a leer el número
+fiscal y el número de registro del original archivado, deja intactas las
+asignaciones, decisiones y transferencias y vuelve a ofrecer las entradas
+abiertas para su asignación. Las entradas asignadas por el número fiscal mal
+leído se listan para su revisión.
 
 **Asignación:** Un documento se asigna automáticamente solo si exactamente
 una parte coincide con un identificador exacto del documento: NIF-IVA,

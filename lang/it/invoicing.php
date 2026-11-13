@@ -568,9 +568,26 @@ return [
         'label' => 'Il destinatario è debitore dell’IVA (§ 13b UStG)',
         'hint' => 'Cliente nazionale debitore dell’imposta sulle Sue prestazioni, p. es. lavori edili a imprese edili. Le fatture partono senza IVA e con la dicitura «Inversione contabile» (rigo 60).',
     ],
+    // Verbraucher und Leistungsort nach § 3a UStG (MVP-1688).
+    'consumer' => [
+        'label' => 'Consumatore (non impresa)',
+        'hint' => 'Privato o altro soggetto non imprenditore. Determina il luogo della prestazione secondo il § 3a UStG: per i consumatori extra UE le prestazioni del catalogo (consulenza, elaborazione dati, diritti, pubblicità, noleggio di beni mobili ecc.) non sono imponibili in Germania; le altre prestazioni portano l’IVA tedesca. Senza spunta il cliente è considerato un’impresa.',
+        'recipient' => 'Destinatario',
+        'yes' => 'Consumatore',
+        'no' => 'Impresa',
+        'reverse_charge_conflict' => 'Un consumatore non è mai debitore dell’IVA (il § 13b c. 5 UStG vale solo per gli imprenditori). Imposti solo una delle due opzioni.',
+    ],
+    'place_of_supply' => [
+        'label' => 'Luogo della prestazione (§ 3a UStG)',
+        'hint_article' => 'Solo per le prestazioni. Prestazione del catalogo: non imponibile in Germania per consumatori extra UE. Immobile: IVA tedesca se l’immobile si trova in Germania (luogo d’intervento dell’ordine, Germania se non indicato), altrimenti non imponibile — per tutti i clienti.',
+        'hint_rule' => 'Vale per i tempi di questa regola. Vuoto: luogo della prestazione dell’articolo della regola, altrimenti il valore predefinito dell’organizzazione.',
+        'inherit_organization' => 'Valore predefinito dell’organizzazione',
+        'inherit_article' => 'Come l’articolo o valore predefinito dell’organizzazione',
+    ],
     // Steuerfall des Rechnungsentwurfs (MVP-1623).
     'tax_case' => [
         'changed_on_issue' => 'Il regime fiscale del cliente è cambiato dall\'ultima modifica della bozza (inversione contabile, esportazione o esenzione). La bozza è stata adeguata: verifichi gli importi ed emetta di nuovo la fattura.',
         'note_kept' => 'Il testo della fattura è stato modificato a mano e quindi non è stato adeguato: verifichi personalmente l’indicazione sul regime fiscale (ad esempio inversione contabile, esportazione o esenzione).',
+        'place_of_supply_mixed' => 'Le posizioni di questa fattura hanno luoghi della prestazione diversi (§ 3a UStG) e quindi regimi fiscali diversi. Divida la fattura: una fattura per regime fiscale, ad esempio le prestazioni immobiliari o del catalogo separate dalle altre.',
     ],
 ];

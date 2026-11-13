@@ -15,10 +15,12 @@ return [
     'code' => 'fliesen-bodenleger',
     'label' => 'Fliesen- und Bodenleger',
     'description' => 'Fliesen-, Platten-, Mosaik- und Bodenleger: Bad und Küche, Bodenbeläge, Estrich, Abdichtung und Sockel mit Aufmaß nach Fläche und Abzug von Öffnungen.',
-    'version' => 1,
+    // v2: Leistungsort-Vorgabe „Grundstück“ (§ 3a Abs. 3 Nr. 1 UStG, MVP-1688); eigene Einstellungen bleiben.
+    'version' => 2,
     // MVP-1053/1058: § 35a bei Privatkunden ausweisen, Aufmaß-Formelvorlagen des Gewerks; eigene Einstellungen bleiben.
     'settings' => [
         'invoicing.labour_cost_disclosure' => 'private_customers',
+        'invoicing.place_of_supply_kind' => 'property',
         'takeoff.presets' => [
             ['label' => 'Bodenfläche', 'formula' => '04', 'unit' => 'm2', 'factor' => '1'],
             ['label' => 'Wandfläche', 'formula' => '04', 'unit' => 'm2', 'factor' => '1'],

@@ -1,7 +1,7 @@
 ---
 title: "Imagen corporativa"
 topic: admin.branding
-version: 2
+version: 3
 keywords:
     - marca blanca
     - white label
@@ -49,6 +49,10 @@ En el formulario de abajo mantiene:
 - **Aspectos legales y pie de PDF**: NIF-IVA, número fiscal, titular de
   la cuenta, banco, IBAN, BIC, registro mercantil y el texto de pie de
   página de los documentos PDF.
+  Indique el registro mercantil junto con el juzgado registral, por
+  ejemplo «HRB 12345, Amtsgericht Musterstadt»; la factura electrónica lo
+  incluye como identificador de registro de la organización (BT-30),
+  congelado al emitir.
 - **Colores**: color principal y color de acento; sustituyen los colores
   base de la interfaz.
 - **Configuración de PDF por tipo de documento**: variante del logotipo

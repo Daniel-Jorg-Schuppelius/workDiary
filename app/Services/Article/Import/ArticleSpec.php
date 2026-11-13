@@ -14,6 +14,7 @@ namespace App\Services\Article\Import;
 
 use App\Enums\Article\{ArticleStatus, ArticleType};
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
+use App\Enums\Invoicing\PlaceOfSupplyKind;
 use App\Models\Platform\Organization;
 use App\Services\Import\{ImportOutcome, InboxFirstSpec, ValidationIssue};
 use App\Services\Import\Specs\AbstractEntitySpec;
@@ -47,6 +48,8 @@ class ArticleSpec extends AbstractEntitySpec implements InboxFirstSpec {
             'type',
             'base_unit',
             'tax_class',
+            // Leistungsort einer Leistung (MVP-1688): general, catalog, property; leer = Vorgabe der Organisation.
+            'place_of_supply_kind',
             'status',
             'stockable',
             'purchasable',
@@ -79,6 +82,7 @@ class ArticleSpec extends AbstractEntitySpec implements InboxFirstSpec {
             'einheit' => 'base_unit',
             'basiseinheit' => 'base_unit',
             'steuerklasse' => 'tax_class',
+            'leistungsort' => 'place_of_supply_kind',
             'lagerführung' => 'stockable',
             'lagerfuehrung' => 'stockable',
             'einkaufspreis' => 'default_purchase_price',
@@ -96,7 +100,7 @@ class ArticleSpec extends AbstractEntitySpec implements InboxFirstSpec {
                 'stockable', 'purchasable', 'sellable', 'manufacturable' => $raw === null || $raw === '' ? null : (bool) StringHelper::parseBool($raw),
                 'default_purchase_price', 'default_sale_price' => $this->decimal($this->trimmedString($raw)),
                 'currency' => $this->upperOrNull($this->trimmedString($raw)),
-                'type', 'status' => $this->lowerOrNull($this->trimmedString($raw)),
+                'type', 'status', 'place_of_supply_kind' => $this->lowerOrNull($this->trimmedString($raw)),
                 default => $this->trimmedString($raw),
             };
         }
@@ -118,6 +122,9 @@ class ArticleSpec extends AbstractEntitySpec implements InboxFirstSpec {
         }
         if (! empty($row['status']) && ArticleStatus::tryFrom((string) $row['status']) === null) {
             $issues[] = $this->formatIssue('status', (string) __('import.error.format.enum'));
+        }
+        if (! empty($row['place_of_supply_kind']) && PlaceOfSupplyKind::tryFrom((string) $row['place_of_supply_kind']) === null) {
+            $issues[] = $this->formatIssue('place_of_supply_kind', (string) __('import.error.format.enum'));
         }
 
         foreach (['number' => 64, 'gtin' => 14, 'base_unit' => 20] as $f => $max) {

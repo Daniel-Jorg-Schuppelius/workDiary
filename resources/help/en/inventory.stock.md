@@ -1,7 +1,7 @@
 ---
 title: "Stock levels & scanning"
 topic: inventory.stock
-version: 7
+version: 8
 keywords:
     - inventory
     - stock on hand
@@ -97,6 +97,10 @@ blocked lots only after their release.
 **Negative stock with four eyes:** If the organisation requires four-eyes approval for issues into negative stock in the inventory settings, an issue with “Allow negative stock” becomes a request in the approval inbox. It is posted only once another person with the “Approve negative stock” permission agrees; requester and approver are recorded in the audit log.
 
 **Material usage on timesheets:** Material linked to a stock-managed item posts the withdrawal from the warehouse marked “Default” (if there are several, the first by name) when it is recorded on a timesheet or on “Today”. The movement appears in the stock journal with the quantity and unit entered; a change posts the difference, deleting returns it. The rules of this page apply: negative stock only with the permission and, if required, four eyes, batches by best-before date, serial numbers only via the warehouse. Material you have so far also withdrawn here should in future only be recorded on the timesheet — otherwise the withdrawal counts twice.
+
+**Variant of a material usage:** If the item has several active variants, the usage posts the variant selected on the timesheet, without a selection the default variant. Changing the variant returns the previous one and withdraws the new one.
+
+**Valuation of issues:** Issues from own stock — in the posting form, by scan and after a four-eyes approval — are valued by the item's valuation method like deliveries and material usage: FIFO and FEFO consume the valuation layers, the moving average reduces the average book at the current average price. Issues from third-party stock (customer, consignment, supplier, project) remain unvalued. The stock issue in the customer file also posts by the item's method; deleting the allocation returns it as a new layer at the issue's unit cost for FIFO and FEFO, and into the average book for the moving average. The manual receipt has no unit price and remains unvalued.
 
 **Redistributing reservations:** In the “Edit reservation” dialog you hand over open quantity to another reservation of the same article, warehouse and ownership, for example to an order with higher priority. A newer reservation never silently displaces an older one; the redistribution is recorded in the audit log and the material line of a manufacturing order follows it.
 

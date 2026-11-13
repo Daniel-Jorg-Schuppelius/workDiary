@@ -43,6 +43,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $vat_id
  * @property string|null $tax_number
  * @property string|null $register_number Handelsregister (BT-47 der E-Rechnung, MVP-1686)
+ * @property bool $is_consumer Verbraucher statt Unternehmen: Leistungsort nach § 3a UStG (MVP-1688)
  * @property string|null $contact_name Ansprechpartner zur Anzeige, gebildet aus den Teilen (MVP-1136)
  * @property \App\Enums\Stammdaten\ContactSalutation|null $contact_salutation
  * @property string|null $contact_title
@@ -128,6 +129,8 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
         'register_number',
         // Leistungsempfänger schuldet die Steuer (§ 13b UStG, MVP-1622).
         'is_reverse_charge_recipient',
+        // Verbraucher (MVP-1688): Leistungsort nach § 3a Abs. 1/4 statt Abs. 2 UStG.
+        'is_consumer',
         'contact_name',
         'contact_salutation',
         'contact_title',
@@ -206,6 +209,7 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
         'vat_id' => VatNumberCast::class,
         'tax_number' => GermanTaxNumberCast::class,
         'is_reverse_charge_recipient' => 'boolean',
+        'is_consumer' => 'boolean',
         'billing_cutover_on' => 'date',
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'billable' => 'boolean',

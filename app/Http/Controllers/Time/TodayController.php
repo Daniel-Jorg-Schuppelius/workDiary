@@ -114,6 +114,8 @@ class TodayController extends Controller {
         $recentEntryTexts = $isFuture ? collect() : $this->recentEntryTexts($user, $projects);
         // MVP-923: Projektvorschlag je offenem Block (Auftrag, Tour, zuletzt gebucht).
         $openBlocks = app(TimeBookingSuggester::class)->suggest($user, $day, $openBlocks, $projects, $recentProjectIds);
+        // Material des Tages (MVP-1594): Auswahl aus dem aktiven Materialstamm, Varianten nur bei mehreren (MVP-1690).
+        $dayMaterials = $isFuture ? collect() : \App\Models\Material\Material::query()->where('is_active', true)->orderBy('name')->get(['id', 'article_id', 'name', 'unit']);
 
         return view('today.show', [
             'day' => $day,
@@ -125,8 +127,8 @@ class TodayController extends Controller {
             'entryBarProjects' => $projects,
             'entryBarRecentIds' => $recentProjectIds,
             'entryBarRecentEntries' => $recentEntryTexts,
-            // Material des Tages (MVP-1594): Auswahl aus dem aktiven Materialstamm.
-            'dayMaterials' => $isFuture ? collect() : \App\Models\Material\Material::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'unit']),
+            'dayMaterials' => $dayMaterials,
+            'dayMaterialVariants' => \App\Models\Material\Material::variantChoices($dayMaterials),
             'allTags' => \App\Support\LookupCache::tagOptions(),
             'recentTagIds' => $this->recentTimeEntryTagSqids((int) $user->id),
             'runningEntry' => $this->stopwatch->current($user),

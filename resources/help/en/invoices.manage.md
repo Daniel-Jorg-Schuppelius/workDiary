@@ -1,10 +1,12 @@
 ---
 title: "Invoices & documents"
 topic: invoices.manage
-version: 20
+version: 22
 keywords:
+    - place of supply
+    - catalogue service
+    - immovable property
     - create invoice
-    - write invoice
     - sales invoice
     - billing
     - cancel invoice
@@ -21,10 +23,8 @@ keywords:
     - related documents
     - document chain
     - transfer invoice to Lexoffice
-    - draft number
     - invoice inquiry
     - activity report
-    - timesheet
     - supporting documents
     - public authority
     - routing ID
@@ -322,6 +322,36 @@ The **notice text** follows the tax case: if the automatic notice of the old cas
 the notice of the new case replaces it, or it is removed. If you edited the notice
 by hand, your text stays — workDiary tells you, and you check the notice yourself.
 
+## Place of supply of services
+
+Besides the customer, the **place-of-supply type** of the service determines the
+tax case (§ 3a UStG). It is set where the service is defined: on the project’s
+**billing rule**, otherwise on its **article** or on the line’s service article,
+otherwise in the organisation default (organisation settings, tab
+**Invoicing**). Out of the box everything is **General** – without maintenance
+no tax case changes.
+
+- **General:** as before; German VAT for consumers in a non-EU country
+  (§ 3a (1) UStG), “not taxable” for businesses in a non-EU country.
+- **Catalogue service** (§ 3a (4) UStG), e.g. consulting, data processing,
+  rights, advertising, hire of movable goods: “not taxable” (O) with its own
+  note for consumers in a non-EU country, otherwise as “General”.
+- **Service connected with immovable property** (§ 3a (3) no. 1 UStG), e.g.
+  construction, fit-out and cleaning work on buildings: if the property is in
+  Germany, the invoice carries German VAT – also for customers in other EU
+  countries and outside the EU; if the customer is liable for the tax under
+  § 13b UStG, that still applies. If the property is abroad, the service is “not
+  taxable” (O). The property is located at the site of the order; if none is
+  stated, Germany applies.
+
+Goods (material invoices) are not affected. For invoices from times, the rule of
+the billed times counts; for free lines, the service article. Lines without an
+article, travel charges and lines with their own tax category follow the
+invoice. If the lines result in different tax cases, the draft says so, the
+invoice cannot be issued and the check before sending rejects it (with “not
+taxable” under rule BR-O-11): split the invoice, one per tax case. Cancellation
+and corrective invoice take over the tax case of the original.
+
 ## Exemption reasons in the e-invoice
 
 Every VAT category without tax carries its exemption reason in the XRechnung and the
@@ -346,9 +376,14 @@ supplies, a missing organisation VAT ID for supplies to other EU countries and
 exports, "not subject to VAT" next to other categories, and an item without tax in
 its category but with a tax rate above 0 %. With "not subject to VAT" the e-invoice
 carries no VAT IDs; the tax number is enough. For intra-Community supplies the
-e-invoice states the customer's address as the delivery address with the
-delivery country (rule BR-IC-12); the XRechnung needs postcode and city there,
-otherwise the check before sending stops. Items "not subject to VAT" appear in
+e-invoice states the customer's different delivery address (customer dialog,
+section **Delivery address**), otherwise the customer's address, as the delivery
+address with the delivery country (rule BR-IC-12); the XRechnung needs postcode
+and city there, otherwise the check before sending stops. The delivery address
+is frozen at issue; cancellation and corrective invoice take the one of the
+original. The organisation's register entry (**Branding**, field **Trade
+register**) appears in the e-invoice as the seller's legal registration
+identifier (BT-30), also frozen. Items "not subject to VAT" appear in
 the e-invoice without a tax rate.
 
 ## Exemption note in the invoice PDF

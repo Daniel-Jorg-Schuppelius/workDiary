@@ -101,7 +101,7 @@ class TimesheetController extends Controller {
     public function show(Timesheet $timesheet): TimesheetResource {
         Gate::authorize('view', $timesheet);
 
-        return new TimesheetResource($timesheet->load(['entries', 'materialUsages', 'user']));
+        return new TimesheetResource($timesheet->load(['entries', 'materialUsages.variant', 'user']));
     }
 
     #[OA\Put(
@@ -129,7 +129,7 @@ class TimesheetController extends Controller {
         Gate::authorize('update', $timesheet);
         $timesheet->update($request->validated());
 
-        return new TimesheetResource($timesheet->fresh(['entries', 'materialUsages']) ?? $timesheet);
+        return new TimesheetResource($timesheet->fresh(['entries', 'materialUsages.variant']) ?? $timesheet);
     }
 
     #[OA\Delete(

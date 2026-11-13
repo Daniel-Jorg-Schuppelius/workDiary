@@ -97,6 +97,8 @@ return [
         'default_service_article' => 'Servicio estándar (artículo)',
         'default_service_none' => '— sin servicio estándar —',
         'default_service_hint' => 'Aporta denominación, unidad, texto estándar y —si no se encuentra ninguna tarifa— el precio de las posiciones del traspaso. Las reglas de facturación del proyecto lo sobrescriben. Con la unidad «global», cada pedido genera una línea con cantidad 1 por facturación; las demás unidades cuentan por duración.',
+        'place_of_supply_kind' => 'Lugar de la prestación de los servicios',
+        'place_of_supply_kind_hint' => 'Se aplica cuando ni la regla de facturación del proyecto ni el artículo indican un lugar de prestación. Servicio del catálogo (asesoramiento, informática, derechos, etc.): no tributa para consumidores fuera de la UE. Inmueble (construcción, acabados, limpieza de edificios): impuesto en el lugar del inmueble para todos los clientes. General: como hasta ahora.',
         'transfer_intro_text' => 'Plantilla: texto de introducción del traspaso',
         'transfer_closing_text' => 'Plantilla: observación final del traspaso',
         'transfer_text_hint' => 'Se copia en el justificante al crear el traspaso y allí es editable. Marcadores: :customer, :from, :to, :channel. Vacío = el texto estándar del destino.',

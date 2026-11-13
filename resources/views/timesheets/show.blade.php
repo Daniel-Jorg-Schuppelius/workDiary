@@ -263,6 +263,10 @@
                 <tr>
                     <td>
                         {{ $u->description }}
+                        @if ($u->variantLabel() !== null)
+                            {{-- Gewählte Variante des lagergeführten Artikels (MVP-1690) --}}
+                            <div class="text-xs text-muted">{{ __('material.variant.label', ['variant' => $u->variantLabel()]) }}</div>
+                        @endif
                         @if ($u->stockNotice() !== null)
                             {{-- Bestandswirkung des Verbrauchs (MVP-1679) --}}
                             <div class="text-xs text-muted">{{ $u->stockNotice() }}</div>

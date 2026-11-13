@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Material;
 
+use App\Models\Article\ArticleVariant;
 use App\Models\Material\{Material, MaterialUsage};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
@@ -25,7 +26,8 @@ use Illuminate\Validation\ValidationException;
 /**
  * Materialverbrauch am Stundenzettel (MVP-1594): Dialog am Zettel, API,
  * „Heute“ und Offline-Befehl `material.usage` schreiben hierüber. Leere Felder
- * kommen aus dem Materialstamm. Ist das Material ein lagergeführter Artikel,
+ * kommen aus dem Materialstamm, der Preis zuerst aus der gewählten Variante
+ * (MVP-1690). Ist das Material ein lagergeführter Artikel,
  * bucht der Verbrauch den Bestand mit (MVP-1679, {@see MaterialStockBooking}):
  * Anlegen, Ändern und Löschen in einer Transaktion mit der Lagerbuchung —
  * verhindert eine Lagerregel die Buchung, wird auch der Verbrauch nicht
@@ -43,7 +45,8 @@ final class MaterialUsageRecorder {
         if (! empty($data['material_id'])) {
             $material = Material::query()->find((int) $data['material_id']);
             if ($material instanceof Material) {
-                $data['unit_price'] = $data['unit_price'] ?? $material->default_unit_price;
+                $variant = ! empty($data['article_variant_id']) ? ArticleVariant::query()->find((int) $data['article_variant_id']) : null;
+                $data['unit_price'] = $data['unit_price'] ?? MaterialUsage::defaultUnitPrice($material, $variant);
                 $data['tax_rate'] = $data['tax_rate'] ?? $material->tax_rate;
                 $data['unit'] = ($data['unit'] ?? '') ?: $material->unit;
                 $data['description'] = ($data['description'] ?? '') ?: $material->name;
@@ -81,12 +84,17 @@ final class MaterialUsageRecorder {
 
     /**
      * Änderung einer Zeile: eine geänderte Menge bucht die Differenz, ein
-     * anderes Material bucht den alten Artikel zurück.
+     * anderes Material oder eine andere Variante bucht die alte zurück.
      *
      * @param  array<string, mixed>  $data
      */
     public function update(MaterialUsage $usage, array $data, User $actor): MaterialUsage {
         [$data, $allowNegative] = $this->split($data);
+        // Die Variante gehört zum alten Material; ohne neue Wahl gilt die Standardvariante.
+        if (array_key_exists('material_id', $data) && ! array_key_exists('article_variant_id', $data)
+            && (int) ($data['material_id'] ?? 0) !== (int) ($usage->material_id ?? 0)) {
+            $data['article_variant_id'] = null;
+        }
 
         return DB::transaction(function () use ($usage, $data, $actor, $allowNegative): MaterialUsage {
             $usage->update($data);

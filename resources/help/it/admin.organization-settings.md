@@ -1,7 +1,7 @@
 ---
 title: "Organizzazione e impostazioni"
 topic: admin.organization-settings
-version: 10
+version: 11
 keywords:
     - impostazioni aziendali
     - impostazioni del tenant
@@ -311,6 +311,16 @@ Come nascono le fatture è descritto nel tema «Fatture & documenti».
   Chi ha creato la fattura non può approvarla. Da attivare solo se almeno due
   persone possono emettere fatture; senza la spunta l’approvazione resta
   facoltativa.
+
+**Luogo della prestazione dei servizi** (§ 3a UStG): vale quando né la regola di
+fatturazione del progetto né l’articolo indicano un luogo della prestazione.
+Vuoto significa **Generale** come finora. **Prestazione del catalogo** è adatta
+a IT e consulenza (non imponibile per consumatori extra UE), **Prestazione
+relativa a un immobile** a costruzione, finiture e pulizia di edifici (imposta
+nel luogo dell’immobile). I profili di settore IT, consulenza fiscale,
+costruzione e finiture, pulizia di edifici e altri mestieri dell’edilizia
+impostano il valore all’installazione se l’organizzazione non l’ha ancora
+definito.
 
 ## Solleciti
 

@@ -29,11 +29,14 @@ use App\Support\DocumentLocale;
  * {@see Invoice::recipient()}, {@see XRechnungGenerator::sellerData()},
  * {@see Invoice::issuerLegal()} und {@see Invoice::documentLocale()} (MVP-1680).
  *
- * @phpstan-type Buyer array{name: string, company: string, street: string, zip: string, city: string, country: string, vat_id: string, register_number: string, email: string, buyer_reference: string}
+ * @phpstan-type Buyer array{name: string, company: string, street: string, zip: string, city: string, country: string, vat_id: string, register_number: string, is_consumer: string, email: string, buyer_reference: string, shipping_street: string, shipping_supplement: string, shipping_zip: string, shipping_city: string, shipping_country: string}
  */
 class InvoicePartySnapshot {
     /** Steuerkategorien, die die USt-IdNr. des Käufers verlangen (BR-AE-02, BR-IC-02). */
     private const array BUYER_VAT_ID_CATEGORIES = ['AE', 'K'];
+
+    /** Lieferanschrift im Empfänger (MVP-1689); leer = die Rechnungsanschrift ist die Lieferanschrift. */
+    public const array SHIPPING_KEYS = ['shipping_street', 'shipping_supplement', 'shipping_zip', 'shipping_city', 'shipping_country'];
 
     public function __construct(private readonly XRechnungGenerator $einvoice) {}
 
@@ -57,22 +60,30 @@ class InvoicePartySnapshot {
      * Gutschrift zu Reverse Charge oder innergemeinschaftlicher Lieferung
      * übernehmen die USt-IdNr. des Originals, wenn der Kunde heute keine mehr
      * führt (MVP-1681), ebenso eine fehlende Registerkennung (MVP-1686) — die
-     * Korrektur betrifft den Umsatz an dieses Unternehmen.
+     * Korrektur betrifft den Umsatz an dieses Unternehmen. Lieferanschrift und
+     * Merkmal Verbraucher kommen bei beiden immer aus dem Original: korrigiert
+     * wird dieselbe Lieferung bzw. Leistung (MVP-1689, MVP-1688).
      *
      * @return Buyer
      */
     public static function buyerFor(Invoice $invoice): array {
         $buyer = self::buyer($invoice->customer);
-        if (trim($buyer['vat_id']) !== '' || ! in_array($invoice->type, [Invoice::TYPE_CANCELLATION, Invoice::TYPE_CREDIT_NOTE], true)) {
+        if (! in_array($invoice->type, [Invoice::TYPE_CANCELLATION, Invoice::TYPE_CREDIT_NOTE], true)) {
             return $buyer;
         }
         $original = $invoice->parent;
         if ($original === null || $original->is($invoice)) {
             return $buyer;
         }
+        $originalBuyer = $original->recipient();
+        foreach ([...self::SHIPPING_KEYS, 'is_consumer'] as $key) {
+            $buyer[$key] = $originalBuyer[$key];
+        }
+        if (trim($buyer['vat_id']) !== '') {
+            return $buyer;
+        }
         $categories = $invoice->items->pluck('tax_category')->filter()->map(static fn ($category): string => (string) $category);
         if ((bool) $invoice->is_reverse_charge || $categories->intersect(self::BUYER_VAT_ID_CATEGORIES)->isNotEmpty()) {
-            $originalBuyer = $original->recipient();
             $buyer['vat_id'] = $originalBuyer['vat_id'];
             if (trim($buyer['register_number']) === '') {
                 $buyer['register_number'] = $originalBuyer['register_number'];
@@ -90,6 +101,8 @@ class InvoicePartySnapshot {
      * @return Buyer
      */
     public static function buyer(?Customer $customer): array {
+        $shipping = $customer?->shippingAddress();
+
         return [
             'name' => (string) ($customer->name ?? ''),
             'company' => (string) ($customer->company ?? ''),
@@ -100,8 +113,16 @@ class InvoicePartySnapshot {
             'vat_id' => (string) ($customer->vat_id ?? ''),
             // Registerkennung (BT-47, MVP-1686): ersetzt bei § 13b die fehlende USt-IdNr.
             'register_number' => (string) ($customer->register_number ?? ''),
+            // Verbraucher statt Unternehmen (MVP-1688), wie beim Ausstellen.
+            'is_consumer' => ($customer->is_consumer ?? false) ? '1' : '0',
             'email' => (string) ($customer->email ?? ''),
             'buyer_reference' => (string) ($customer->buyer_reference ?? ''),
+            // Abweichende Lieferanschrift (MVP-1689): Lieferpartei der E-Rechnung bei Kategorie K.
+            'shipping_street' => (string) ($shipping->street ?? ''),
+            'shipping_supplement' => (string) ($shipping->supplement ?? ''),
+            'shipping_zip' => (string) ($shipping->zip ?? ''),
+            'shipping_city' => (string) ($shipping->city ?? ''),
+            'shipping_country' => strtoupper((string) ($shipping->country_code ?? '')),
         ];
     }
 }

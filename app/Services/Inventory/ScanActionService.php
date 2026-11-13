@@ -15,6 +15,7 @@ namespace App\Services\Inventory;
 use App\Enums\Inventory\{OwnershipType, ScanAction, StockMovementType, StockState};
 use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\{StockLot, StockMovement, Warehouse};
+use App\Models\Platform\Organization;
 use App\Support\DecimalQty;
 use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +34,7 @@ class ScanActionService {
         private readonly BarcodeResolver $resolver,
         private readonly InventoryLedger $ledger,
         private readonly LotStockReader $lotStock,
+        private readonly InventoryValuationManager $valuation,
     ) {}
 
     /**
@@ -69,9 +71,14 @@ class ScanActionService {
             throw new RuntimeException((string) __('inventory.error.shelf_life_manual_receipt'));
         }
 
+        $organization = $warehouse->organization;
+
         return match ($action) {
             ScanAction::Receipt => $this->ledger->receipt($variant, $warehouse, $qty, actorUserId: $actor, entered: $entered),
-            ScanAction::Issue => $this->ledger->issue($variant, $warehouse, $qty, actorUserId: $actor, lot: $match->lot, entered: $entered),
+            // Bewertet wie die Entnahme im Lager (MVP-1692).
+            ScanAction::Issue => $organization instanceof Organization
+                ? $this->valuation->forVariant($variant, $organization)->issue($variant, $warehouse, $qty, actorUserId: $actor, lot: $match->lot, entered: $entered)
+                : $this->ledger->issue($variant, $warehouse, $qty, actorUserId: $actor, lot: $match->lot, entered: $entered),
             ScanAction::Transfer => $this->transfer($variant, $warehouse, $options['target'] ?? null, $entered, $actor, $match->lot),
         };
     }

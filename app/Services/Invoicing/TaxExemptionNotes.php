@@ -27,7 +27,7 @@ final class TaxExemptionNotes {
     private const array RULE_TYPES = ['AE' => 'reverse_charge', 'G' => 'export', 'O' => 'export', 'E' => 'exempt'];
 
     /** Hinweistexte aus config/taxation.php je Kategorie; `export` stand vor MVP-1684 auch an Leistungen unter G. */
-    private const array CONFIG_NOTES = ['AE' => ['reverse_charge', 'reverse_charge_domestic'], 'G' => ['export', 'export_goods'], 'O' => ['export']];
+    private const array CONFIG_NOTES = ['AE' => ['reverse_charge', 'reverse_charge_domestic'], 'G' => ['export', 'export_goods'], 'O' => ['export', 'catalog_third_country', 'property_abroad']];
 
     public function __construct(private readonly XRechnungGenerator $einvoice) {}
 

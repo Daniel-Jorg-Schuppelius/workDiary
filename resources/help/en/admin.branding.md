@@ -1,7 +1,7 @@
 ---
 title: "Branding"
 topic: admin.branding
-version: 2
+version: 3
 keywords:
     - white label
     - corporate design
@@ -48,6 +48,9 @@ In the form below you maintain:
 - **Contact**: address, phone, email and web.
 - **Legal & PDF footer**: VAT ID, tax number, account holder, bank, IBAN,
   BIC, trade register and the footer text for PDF documents.
+  Enter the trade register entry together with the register court, for
+  example “HRB 12345, Amtsgericht Musterstadt”; the e-invoice carries it as
+  the organisation’s legal registration identifier (BT-30), frozen at issue.
 - **Colors**: primary and accent color; they replace the base colors of
   the interface.
 - **PDF configuration per document type**: logo variant (light, dark or

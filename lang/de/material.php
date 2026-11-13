@@ -29,4 +29,12 @@ return [
         'notice' => ':status · Lager „:warehouse“',
         'current' => 'Bestand: :notice',
     ],
+    // Variante je Verbrauch (MVP-1690).
+    'variant' => [
+        'default' => '— Standardvariante —',
+        'hint' => 'Nur bei lagergeführten Artikeln mit mehreren Varianten. Leer bucht die Standardvariante; ohne Einzelpreis gilt der eigene Preis der Variante, sonst der des Materials.',
+        'label' => 'Variante: :variant',
+        'mismatch' => 'Die Variante gehört nicht zum Artikel des gewählten Materials.',
+        'inactive' => 'Diese Variante ist nicht aktiv und kann nicht neu gewählt werden.',
+    ],
 ];

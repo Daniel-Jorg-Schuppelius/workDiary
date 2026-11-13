@@ -15,7 +15,9 @@ return [
     'label' => 'Steuerberatung',
     'description' => 'Steuerberatung: Finanzbuchführung, Lohn, Jahresabschluss, Steuererklärungen und Voranmeldungen mit Fristen und Vier-Augen-Freigaben.',
     // v2: Kommunikations-Domäne, EÜR, Kategorien und Tags nach der Profilseite (MVP-1509).
-    'version' => 2,
+    // v3: Leistungsort-Vorgabe „Katalogleistung“ (§ 3a Abs. 4 UStG, MVP-1688); eigene Einstellungen bleiben.
+    'version' => 3,
+    'settings' => ['invoicing.place_of_supply_kind' => 'catalog'],
     // Vorschlag für den Standard-Arbeitsbereich (MVP-840); nur Default, kein Zwang.
     'nav_focus_default' => 'finance',
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte

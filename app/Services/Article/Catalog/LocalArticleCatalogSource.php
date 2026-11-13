@@ -71,7 +71,7 @@ final class LocalArticleCatalogSource implements ArticleCatalogSource {
     /** @return \Illuminate\Database\Eloquent\Builder<Article> */
     private function query(int $organizationId) {
         return Article::query()->withoutGlobalScopes()->where('organization_id', $organizationId)
-            ->select(['id', 'organization_id', 'number', 'name', 'description', 'type', 'base_unit', 'default_sale_price', 'currency', 'status']);
+            ->select(['id', 'organization_id', 'number', 'name', 'description', 'type', 'base_unit', 'default_sale_price', 'currency', 'status', 'place_of_supply_kind']);
     }
 
     private function toCatalog(Article $article): CatalogArticle {
@@ -88,6 +88,7 @@ final class LocalArticleCatalogSource implements ArticleCatalogSource {
             active: $article->status === ArticleStatus::Active,
             description: $article->description,
             itemType: $article->type === ArticleType::Service ? 'service' : 'material',
+            placeOfSupplyKind: $article->type === ArticleType::Service ? $article->place_of_supply_kind : null,
         );
     }
 }

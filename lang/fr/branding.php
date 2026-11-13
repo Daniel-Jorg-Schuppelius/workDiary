@@ -14,4 +14,6 @@ return [
         'invoice' => 'Facture',
         'diary' => 'Journal de chantier',
     ],
+    // Registerangabe als BT-30 der E-Rechnung (MVP-1695).
+    'legal_register_hint' => 'Par exemple « HRB 12345, Amtsgericht Musterstadt ». La facture électronique l’indique comme identifiant d’immatriculation de l’organisation (BT-30).',
 ];

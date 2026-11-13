@@ -1,10 +1,12 @@
 ---
 title: "Rechnungen & Belege"
 topic: invoices.manage
-version: 20
+version: 22
 keywords:
+    - Leistungsort
+    - Katalogleistung
+    - Grundstücksleistung
     - Rechnung erstellen
-    - Rechnung schreiben
     - Ausgangsrechnung
     - Faktura
     - Rechnung stornieren
@@ -20,10 +22,8 @@ keywords:
     - zugehörige Belege
     - Belegkette
     - Rechnung an Lexoffice übertragen
-    - Entwurfsnummer
     - Rechnungsnachfrage
     - Leistungsnachweis
-    - Stundennachweis
     - rechnungsbegründende Unterlagen
     - Behörde
     - Leitweg-ID
@@ -334,6 +334,36 @@ unverändert im Rechnungstext, ersetzt ihn der Hinweis des neuen Falls oder er
 entfällt. Haben Sie den Hinweis von Hand geändert, bleibt Ihr Text stehen —
 workDiary meldet das, und Sie prüfen den Hinweis selbst.
 
+## Leistungsort der Leistungen
+
+Neben dem Kunden bestimmt die **Leistungsort-Art** der Leistung den Steuerfall
+(§ 3a UStG). Sie steht dort, wo die Leistung festgelegt ist: an der
+**Abrechnungsregel** des Projekts, sonst an deren **Artikel** bzw. am
+Leistungsartikel der Position, sonst in der Vorgabe der Organisation
+(Organisationseinstellungen, Reiter **Rechnungen**). Ab Werk ist alles
+**Allgemein** – ohne Pflege ändert sich kein Steuerfall.
+
+- **Allgemein:** wie bisher; an Verbraucher im Drittland deutsche Umsatzsteuer
+  (§ 3a Abs. 1 UStG), an Unternehmen im Drittland „nicht steuerbar“.
+- **Katalogleistung** (§ 3a Abs. 4 UStG), etwa Beratung, Datenverarbeitung,
+  Rechte, Werbung, Vermietung beweglicher Gegenstände: an Verbraucher im
+  Drittland „nicht steuerbar“ (O) mit eigenem Hinweis, sonst wie „Allgemein“.
+- **Grundstücksleistung** (§ 3a Abs. 3 Nr. 1 UStG), etwa Bau-, Ausbau- und
+  Reinigungsarbeiten an Gebäuden: Liegt das Grundstück im Inland, trägt die
+  Rechnung deutsche Umsatzsteuer – auch für Kunden im EU-Ausland und im
+  Drittland; schuldet der Kunde nach § 13b UStG die Steuer, bleibt es dabei.
+  Liegt es im Ausland, ist die Leistung „nicht steuerbar“ (O). Das Grundstück
+  liegt am Einsatzort des Auftrags; ohne Angabe gilt das Inland.
+
+Waren (Materialrechnungen) betrifft die Leistungsort-Art nicht. Bei Rechnungen
+aus Zeiten zählt die Regel der abgerechneten Zeiten, bei freien Positionen der
+Leistungsartikel; Positionen ohne Artikel, Anfahrten und Positionen mit eigener
+Steuerkategorie folgen der Rechnung. Ergeben die Positionen verschiedene
+Steuerfälle, meldet der Entwurf das, die Rechnung lässt sich nicht stellen, und
+die Prüfung vor dem Versand weist sie ab (mit „nicht steuerbar“ nach Regel
+BR-O-11): Teilen Sie die Rechnung, je Steuerfall eine. Storno und
+Korrekturrechnung übernehmen den Steuerfall des Originals.
+
 ## Befreiungsgründe in der E-Rechnung
 
 Jede Steuerkategorie ohne Steuer trägt in der XRechnung und im ZUGFeRD-PDF ihren
@@ -360,9 +390,14 @@ innergemeinschaftlicher Lieferung, fehlende USt-IdNr. der Organisation bei
 Lieferung ins EU-Ausland und Ausfuhr, „nicht steuerbar“ neben anderen Kategorien
 und eine Position ohne Steuerkategorie mit Steuersatz über 0 %. Bei „nicht
 steuerbar“ stehen keine USt-IdNrn. in der E-Rechnung, es genügt die Steuernummer.
-Bei innergemeinschaftlicher Lieferung nennt die E-Rechnung die Anschrift des
-Kunden als Lieferanschrift mit Lieferland (Regel BR-IC-12); die XRechnung
-braucht dort PLZ und Ort, sonst hält die Prüfung vor dem Versand an. Positionen
+Bei innergemeinschaftlicher Lieferung nennt die E-Rechnung die abweichende
+Lieferanschrift des Kunden (Kundendialog, Abschnitt **Lieferanschrift**), ohne
+sie seine Anschrift, als Lieferanschrift mit Lieferland (Regel BR-IC-12); die
+XRechnung braucht dort PLZ und Ort, sonst hält die Prüfung vor dem Versand an.
+Die Lieferanschrift wird beim Ausstellen eingefroren; Storno und
+Korrekturrechnung nehmen die des Originals. Die Registerangabe der Organisation
+(**Branding**, Feld **Handelsregister**) steht als Registerkennung des
+Verkäufers (BT-30) in der E-Rechnung, ebenfalls eingefroren. Positionen
 „nicht steuerbar“ stehen ohne Steuersatz in der E-Rechnung.
 
 ## Befreiungshinweis im Rechnungs-PDF

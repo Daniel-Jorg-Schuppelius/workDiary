@@ -29,4 +29,12 @@ return [
         'notice' => ':status · almacén «:warehouse»',
         'current' => 'Existencias: :notice',
     ],
+    // Variante por consumo (MVP-1690).
+    'variant' => [
+        'default' => '— Variante predeterminada —',
+        'hint' => 'Solo para artículos con gestión de existencias y varias variantes. Vacío registra la variante predeterminada; sin precio unitario se aplica el precio propio de la variante, si no el del material.',
+        'label' => 'Variante: :variant',
+        'mismatch' => 'La variante no pertenece al artículo del material seleccionado.',
+        'inactive' => 'Esta variante no está activa y no puede seleccionarse de nuevo.',
+    ],
 ];
