@@ -8,6 +8,31 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-13
+
+Phasen 179 und 177 seit 1.3.0.
+
+Phase 179 (MVP-1688–1699): offene Punkte aus Phase 178 — Leistungsort nach
+§ 3a UStG mit Merkmal „Verbraucher“, Lieferanschrift am Kunden (auch in API,
+MCP und E-Rechnung), Registerangabe der Organisation in der E-Rechnung,
+Variante am Materialverbrauch, Offline-Konflikt bei zu wenig Bestand,
+bewertete Lagerentnahme sowie php-common-toolkit 2.18.0 und
+php-erechnung-toolkit 0.23.0.
+
+Phase 177 (MVP-1630–1677): Bausteine aus dem Abgleich mit den internen Apps
+eines Steuerbüros, verallgemeinert für alle Branchen — Kundenfristen aus
+Regelsätzen, Periodenaufträge mit interner Prüfung, Leistungsplan,
+Aufnahmeakte mit GwG-Prüfpaket, Merker, Vertretung, lange Formulare,
+Mail-Dateien, Anmelderichtlinien mit Notaus, Wünsche an die App,
+Kontierungshilfen, Sammel-PDF und GiroCode, Wissensseiten, Selbstauskunft am
+Anwesenheits-Board, Liegezeit im Arbeitsvorrat und KI-Datenschutz. Ein
+Kanzleimodul gibt es nicht; die Branchenprofile liefern Regeln, Vorlagen und
+Prüfpakete.
+
+Umsetzungsberichte im Doku-Repository unter `chronik/umsetzungen/`
+(`phase179-offene-punkte-aus-phase178-umsetzung-2026-11-12.md`,
+`phase177-kanzlei-und-querschnitt-umsetzung-2026-11-13.md`).
+
 ### Hinzugefügt
 
 - Lieferanschrift am Kunden (`MVP-1689`): Der Kundendialog führt den
@@ -91,6 +116,136 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   und Korrekturrechnung nehmen das des Originals. Artikeldialog, Detailseite
   und Artikelimport (Spalte `place_of_supply_kind`) sowie Regeldialog und
   Regeltabelle des Projekts führen die Art.
+- Kundenfristen (Feature 197, `MVP-1630–1633`, `MVP-1673`, `MVP-1676`):
+  Fristmerkmale und Leistungsumfang je Kunde, Fristen je Kunde und Periode
+  aus Regelsätzen, Übersicht `/kundenfristen` mit Export, Kalender, Cockpit,
+  Arbeitsvorrat, Vorwarnung und Frühwarnung. Regelsatz Steuerberatung:
+  USt-Voranmeldung (mit Dauerfristverlängerung und Sondervorauszahlung),
+  Zusammenfassende Meldung, Lohnsteuer-Anmeldung, Jahreserklärungen nach
+  § 149 AO samt Übergangsfristen, Beitragsnachweis und Beitragsfälligkeit der
+  Sozialversicherung nach Bankarbeitstagen (frühester Termin über alle
+  Einzugsstellen); Feiertag am Ort des Finanzamts. Regelsatz ambulante Pflege:
+  Beratungsbesuch nach § 37 Abs. 3 SGB XI in der Fassung ab 2026. Ein
+  abgeschlossener Auftrag der passenden Art und Periode erledigt die Frist.
+  Der Fristenrechner liegt jetzt im Kalender und gilt für eigene Organisation
+  und Kunden. Rechte `customer.deadline.view`, `customer.deadline.manage`.
+- Periodenaufträge mit interner Prüfung (Feature 198, `MVP-1634–1637`):
+  Periode am Auftrag (Jahr, Halbjahr, Quartal, Monat), Pflicht je
+  Eintragsart; Prüfpflicht je Eintragsart mit den Zuständen „Zur Prüfung“,
+  „Rückfrage“ und „Freigegeben“ — nie durch die vorlegende Person;
+  Prüf-Warteschlange, Genehmigungs-Eingang, Kachel „Zur Prüfung“;
+  Folgeperiode einzeln oder gesammelt mit Fälligkeit aus den Kundenfristen.
+  Rechte `order.review`, `order.waiveReview`. Ohne Prüfpflicht bleibt der
+  Ablauf unverändert.
+- Leistungsplan (Feature 199, `MVP-1638–1640`, `MVP-1674`): Jahres- und
+  Periodensicht Kunde × Leistung aus den Aufträgen mit Periode, „entfällt“,
+  Unterlagen und Bemerkung je Periode, Import vorhandener Listen,
+  Kundenabgleich gegen eine Liste aus dem Fremdsystem, Leistungsvorlagen der
+  Branchenprofile. Rechte `diary.servicePlan.view`, `diary.servicePlan.manage`.
+- Aufnahmeakte am Lead (Feature 200, `MVP-1641–1644`, `MVP-1675`):
+  Stufen von der Anfrage bis zur Einrichtung, Prüfpakete GwG
+  (Identifizierung, wirtschaftlich Berechtigte, PEP, Risikostufe, Vermerk),
+  Pflege-Erstaufnahme und B2B-Neukunde; Umwandlung erst nach der
+  Entscheidung; Aufbewahrung nach § 8 Abs. 4 GwG, Aktualisierung je
+  Risikostufe, PDF der Akte, Auskunftsabschnitt. Rechte `lead.intake.decide`,
+  `lead.intake.identity`, `lead.intake.health`.
+- Merker für die nächste Periode (Feature 201, `MVP-1645`, `MVP-1646`) an
+  Aufträgen mit Periode, Aufträgen aus Monats- und Jahresregeln,
+  wiederkehrenden Vertragspflichten und Prüfterminen.
+- Vertretung bei Abwesenheit (Feature 202, `MVP-1647`, `MVP-1648`): leitet
+  zugewiesene Arbeit um, ohne Rechte zu verleihen; endet zum Datum oder mit
+  dem Storno der Abwesenheit; Benachrichtigungen an die Vertretung;
+  endgültige Übergabe von Aufträgen, Aufgaben, Tickets, Prozedurläufen,
+  Kundenfristen und Wissensseiten. Recht `user.delegation.manage`.
+- Lange Formulare (Feature 203, `MVP-1649–1651`): Abschnittskarten mit
+  Fortschritt, Inhaltsleiste, Speichern je Feld mit Entwurf, Knöpfe statt
+  Auswahlliste, PDF im Papierlayout.
+- Mail-Dateien (Feature 204, `MVP-1652`, `MVP-1653`): `.eml` und `.msg` an
+  Vorgänge ziehen, mit Kopf, Text und Anhängen ansehen, Anhänge übernehmen,
+  Inhalt in der Suche; gelesen wird im Hintergrund.
+- Anmelderichtlinien je Organisation (Feature 205, `MVP-1654–1657`):
+  Anmeldezeiten, Büronetze, freigegebene Geräte für außerhalb, Modus „nur
+  protokollieren“, Passkey-Pflicht je Rolle, Notaus. Rechte `auth.remote`,
+  `auth.remote.token`, `auth.policy.manage`, `auth.lockdown`.
+- Wünsche an die App (Feature 206, `MVP-1658`, `MVP-1659`, `MVP-1677`): Wünsche,
+  Fehler und Fragen mit Stimmen und Antwort, Weitergabe an den
+  Plattformbetrieb ohne Personenbezug, Bündeln, Herstellerkanal per Mail für
+  selbst betriebene Installationen (Opt-in, Vorgabe aus). Recht `wishes.manage`.
+- Kontierungshilfen (Feature 207, `MVP-1660`, `MVP-1661`): Vorschläge für
+  Bankumsätze aus früheren Direktbuchungen (Mandat, Gläubiger-ID, IBAN,
+  Stichwörter), gebündelt bestätigt; Steuerprüfung vor dem DATEV-Export, die
+  Export und Festschreiben sperrt, Freigabe mit Begründung. Recht
+  `finance.accounting.releaseTaxCheck` (nur Admin).
+- Sammel-PDF und GiroCode im Rechnungseingang (Feature 208, `MVP-1662`,
+  `MVP-1663`): mehrere Rechnungen in einem PDF erkennen und aufteilen, das
+  Original bleibt; GiroCode lesen und gegen Erkennung und Lieferantenstamm
+  prüfen, eine abweichende IBAN sperrt den Zahlungsvorschlag bis zur
+  Bestätigung.
+- Wissensseiten (Feature 191, `MVP-1664–1668`): Bereiche, Rubriken,
+  Seiten mit Fassungen, Freigabe, Prüfintervall, Pflichtlektüre mit
+  Lesebestätigung, Glossar, Suchlücken, Bildanleitungen mit Schwärzen,
+  Notfallhandbuch als PDF, Papierkorb. Rechte `knowledge.page.viewAny`,
+  `.edit`, `.manage`, `.forceDelete`.
+- Selbstauskunft am Anwesenheits-Board (`MVP-1669`): „Nicht stören“, „Kurz
+  weg“, „Außer Haus“ mit Ende, ohne Verlauf.
+- Arbeitsvorrat (`MVP-1670`): Liegezeit am Vorgang, Filter „Nur ruhende“,
+  Kennzahl „Ruhende Vorgänge“, Durchlaufzeit je Auftragsart — nie je Person.
+- KI (`MVP-1671`, `MVP-1672`): Maskierung von IBAN, USt-IdNr., Steuernummer,
+  Steuer-ID, E-Mail und Telefon mit Rückersetzung; Datenschutzfreigabe je
+  Verbindung (AVV, EU, kein Training) mit Frist. Recht `ai.approve`.
+- Datenschutz: Die Betroffenenauskunft zeigt Lesebestätigungen und
+  Seitenbesuche der Wissensseiten sowie eigene Wünsche und abgegebene Stimmen
+  (ohne Urheber der Wünsche); beim Austritt wird der Anwesenheitsstand
+  gelöscht. Lesebestätigungen gelten als Nachweis und verhindern das harte
+  Löschen eines Mitglieds.
+- Kunden-Cockpit: offene Merker an Periodenaufträgen.
+- Branchenprofile: Steuerberatung v7, ambulante Pflege v10, IT v7,
+  Gebäudereinigung v6, Handwerk v4 (Periodenpflicht, Regelsätze,
+  Leistungsvorlagen, Prüfpakete).
+
+### Geändert
+
+- Jahreserklärung der eigenen Organisation: für die Veranlagungszeiträume
+  2020–2024 gelten jetzt die Übergangsfristen nach Art. 97 § 36 EGAO statt
+  der Regelfrist. Fristen ab 2025 bleiben gleich.
+- Pflegeprofil: Die Pflegevertrags-Vorlage legt keine Pflicht „Beratungsbesuch
+  alle 3 Monate“ mehr an; Beratungsbesuche folgen der Kundenfrist.
+  Bestehende Verträge bleiben, ein Hinweis im Arbeitsvorrat bittet, die alten
+  Pflichten zu schließen.
+- Taxi-Fahrten, Rundgänge und Tour-Stopps schließen Aufträge mit Prüfpflicht
+  nicht mehr direkt ab, sondern legen sie zur Prüfung vor.
+- Anhänge hochladen ist auf 60 Anfragen je Minute gedrosselt, Speichern je
+  Feld auf 120 Anfragen je Minute und Person.
+- KI-Datenschutzfreigabe (`MVP-1672`): Eine Änderung von Adresse, Modell,
+  API-Schlüssel, Familie, Anbieter oder „lokal“ einer Verbindung setzt die
+  Freigabe zurück (auditiert, Hinweis im Bearbeiten-Dialog); auch ein
+  Schlüsseltausch verlangt also eine neue Freigabe. Eine Namensänderung lässt
+  sie stehen.
+- php-common-toolkit 2.17.1 (EPC-Parser, Outlook-.msg-Leser,
+  Compound-File-Leser, Härtung; enthalten in 2.18.0, siehe Phase 179) und
+  php-pdf-toolkit 0.32.1 (Pixelgrenze beim Rastern, Seitenboxen, zbarimg-XML;
+  `^0.32`). Der GiroCode-Erzeuger des Toolkits
+  weist Zeilenumbrüche in Name, Referenz, Zweck und Hinweis jetzt ab.
+
+### Sicherheit
+
+- Anmelderichtlinien (Feature 205), unabhängige Prüfung: Die Passkey-Pflicht
+  ließ sich mit App-Code und Wiederherstellungscode umgehen; eine Anmeldung
+  über „Angemeldet bleiben“ zählte als frische Anmeldung (Notaus ohne
+  Passwort); persönliche Tokens hatten keine Geräteprüfung (neues Recht
+  `auth.remote.token`); DNS-Namen wurden in der Anmeldung synchron
+  aufgelöst. Alle Befunde behoben.
+- Mail-Dateien (Feature 204), unabhängige Prüfung: Rechenlast durch gefaltete
+  Kopfzeilen, Speicherlast durch leere Boundary und Compound-File-Tabellen,
+  Annahme auf externen Flächen. Behoben: lineare Vorprüfung, Lesen im
+  Hintergrund mit Grenzen, Mail-Dateien nur auf internen Flächen, Original-HTML
+  nur abgeschottet.
+- Sammel-PDF und GiroCode (Feature 208), unabhängige Prüfung: Seiten mit
+  riesiger CropBox ließen das Rastern Gigabytes belegen; QR-IBANs wurden ohne
+  Bestätigung zahlungswirksam; die Bestätigung der Lieferanten-IBAN war nicht
+  an die IBAN gebunden; Vorschaubilder überlebten die Löschung der
+  Organisation. Alle Befunde behoben (Pixelgrenze `PDF_RASTER_MAX_PIXELS`,
+  Seitengrenze, Bestätigung an IBAN und Lieferant gebunden).
 
 ### Behoben
 
@@ -125,6 +280,12 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   seit dem Original geändert, wich die Kategorie des Kopfes von den
   übernommenen Positionskategorien ab, und Buchhaltung und E-Rechnung lasen
   verschiedene Fälle.
+- Passkeys entfernen: die frische Anmeldung genügt als Nachweis; bei
+  Passkey-Pflicht bleibt der letzte Passkey.
+- Scheduler-Tests hingen davon ab, ob die Test-Datenbank beim ersten Start
+  schon bestand; ein Test der Qualifikationsprüfung hing von zufälligen
+  Schichten ab.
+- Hilfe „Folgeperiode“: die Fälligkeit kommt aus den Kundenfristen.
 
 ### Hinweise zum Update
 
@@ -160,6 +321,29 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   php-erechnung-toolkit 0.23.0 (`MVP-1697`). Die App nimmt Fehlerart und
   Formprüfung der Leitweg-ID und die Pauschal-Einheit in allen fünf Sprachen
   jetzt aus dem Toolkit (`MVP-1699`); Meldungen und Steuerfälle bleiben gleich.
+- `migrate` spielt 18 Migrationen ein (`2027_04_18_100000` bis
+  `2027_04_24_300000`). In bestehenden Organisationen bleibt die
+  KI-Freigabepflicht aus (`2027_04_18_500100`); Org-Admins schalten sie unter
+  KI › Datenschutz ein. Bestätigte Lieferanten-IBANs werden auf ihren Abdruck
+  umgerechnet, unlesbare verfallen.
+- Die Warteschlange `media` muss laufen: Mail-Dateien und Sammel-PDFs werden
+  dort gelesen und aufgeteilt.
+- `zbar-tools` installiert der Deploy als root (`config/executables.json`);
+  ohne `zbarimg` meldet der Rechnungseingang „GiroCode nicht lesbar“.
+- Neue ENV (optional): `PDF_RASTER_MAX_PIXELS` (Vorgabe 70 000 000),
+  `LOGIN_POLICY_DNS_ALLOW_PRIVATE` (Vorgabe `false`).
+- Neue Scheduler-Jobs: `security.resolve_login_networks`,
+  `customer_deadlines.sync`, `knowledge_pages.empty_trash`.
+- Nach dem Deploy einmal `scripts/artisan.sh
+  incoming-invoices:prune-legacy-page-images --dry-run`, dann ohne
+  `--dry-run`: entfernt alte Erkennungsbilder des Rechnungseingangs
+  (`recognition/{sha}` aus der Zeit vor der Ablage je Organisation).
+- KI-Verbindungen, deren Adresse, Modell oder Schlüssel nach der Freigabe
+  geändert wird, müssen neu freigegeben werden.
+- Branchenprofile über die Profilübersicht aktualisieren (ergänzt nur
+  Fehlendes), danach `scripts/artisan.sh customer-deadlines:sync`.
+- Anmelderichtlinien zuerst im Modus „nur protokollieren“ erproben;
+  Org-Admins sind von Zeitfenstern und Büronetzen ausgenommen.
 
 ## [1.3.0] - 2026-11-12
 
